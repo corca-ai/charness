@@ -91,7 +91,7 @@ SUMMARY_RE = re.compile(r"in \d+(?:\.\d+)?s", re.IGNORECASE)
 #: its own fix is strictly better than a false kill, so `spec` is DETECTED and
 #: refused with that fix named, rather than half-read.
 _NODE_SUMMARY_KEY_RE = re.compile(
-    r"^# (tests|pass|fail|cancelled|skipped|todo|suites) (\d+)\s*$",
+    r"^# (tests|pass|fail|cancelled|skipped|todo|suites) (-?\d+)\s*$",
     re.MULTILINE,
 )
 _NODE_DURATION_RE = re.compile(r"^# duration_ms \d+(?:\.\d+)?\s*$", re.MULTILINE)

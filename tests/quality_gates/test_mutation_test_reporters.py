@@ -486,6 +486,52 @@ def test_an_inner_tap_header_cannot_erase_the_outer_run_diagnostic() -> None:
     assert (counts.passed, counts.failed, counts.errors) == (0, 0, 1)
 
 
+def test_summary_stops_at_an_earlier_duration_after_owning_the_trailing_block() -> None:
+    trailing = "# duration_ms 1\n# tests 1\n# pass 1\n# fail 0\n# cancelled 0\n# duration_ms 2\n"
+
+    summary = reporters.NodeTestReporter._summary_block(trailing)
+
+    assert summary is not None
+    assert summary.startswith("# tests 1")
+    assert "# duration_ms 1" not in summary
+
+
+@pytest.mark.parametrize(
+    "output",
+    [
+        _NODE_PASS.replace("# pass 2", "# pass 2\n# pass 2"),
+        _NODE_PASS.replace("# pass 2", "# pass -1").replace("# fail 0", "# fail 3"),
+        _NODE_PASS.replace("# pass 2", "# pass 1"),
+    ],
+    ids=["duplicate-count", "negative-count", "count-total-mismatch"],
+)
+def test_duplicate_negative_or_inconsistent_counts_are_unreadable(output: str) -> None:
+    assert reporters.NodeTestReporter.read(output) is None
+
+
+def test_a_plan_first_compact_run_owns_the_results_after_its_plan() -> None:
+    output = """\
+1..1
+ok 1 - plan-first
+# tests 1
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3
+"""
+
+    counts = reporters.NodeTestReporter.read(output)
+
+    assert (counts.passed, counts.failed, counts.errors) == (1, 0, 0)
+
+
+def test_summary_returns_only_a_complete_selected_run() -> None:
+    assert reporters.NodeTestReporter.summary(_NODE_PASS) is not None
+    assert reporters.NodeTestReporter.summary("# tests 1\n# pass 1\n") is None
+
+
 @pytest.mark.parametrize("output", [_NODE_INCOMPLETE_SUMMARY, _NODE_PLAN_MISMATCH])
 def test_an_incomplete_or_inconsistent_tap_summary_is_unreadable(output: str) -> None:
     assert reporters.NodeTestReporter.read(output) is None

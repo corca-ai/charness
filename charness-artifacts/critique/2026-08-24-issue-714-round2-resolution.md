@@ -59,8 +59,8 @@ the pre-cap working tree. The final cap repair is therefore captured by a new
 working-tree packet with `changed_ref: null`:
 
 - Packet: `charness-artifacts/critique/2026-08-24-issue-714-r2-cap-final-packet.json`
-- Packet SHA-256: `3e6038f4b24df4f080d00c87fbba1c69831a77b954cd89e3c361df67806f9c33`
-- Reviewed identity: `4c2497fa9293ab5b0f8fe85653917ffb405e2667ac20d335653cc984fa877a5e`
+- Packet SHA-256: `6c184d6a70bafb42d6419a7b454cd2161473da6dc5c0e705c82cd8e391fa72d5`
+- Reviewed identity: `d88ed20b2574771d0ac8edfc25460a8a20e5eba56d6b82ee919ffef5cf0e379c`
 - Verifier command is embedded in the packet and must report `ok: true`,
   `status: current` before commit.
 
@@ -89,6 +89,18 @@ the failed worker proves only that it did not alter the checkout.
   `skills/public/critique/scripts/prepare_packet.py` interface, not an unchanged
   retry. This is the same command-shape/locator family already being recorded in
   the session RCA rather than a product-auth failure.
+
+## Post-Merge Changed-Line Repair
+
+The first committed base-to-HEAD coverage run passed all 11,343 standing tests
+but correctly blocked seven changed reporter lines that the focused semantic
+suite had not executed. The cap repair therefore gains axis-varying regressions
+for duplicate, negative, and arithmetically inconsistent counts; plan-first
+compact TAP; the earlier-duration summary boundary; and both `summary()`
+outcomes. The source/plugin regex now parses a leading minus only to route it to
+the existing nonnegative refusal. These coverage repairs are
+accepted-unreviewed under the consumed two-round cap; no third review or
+approval is claimed.
 
 ## Non-Claims
 

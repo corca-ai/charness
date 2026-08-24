@@ -2,7 +2,7 @@
   "kind": "charness.critique_prepare_packet",
   "version": 1,
   "repo": "charness",
-  "generated_at": "2026-08-24T14:37:34Z",
+  "generated_at": "2026-08-24T15:00:17Z",
   "prepared_for": "issue 714 post-cap final working tree",
   "changed_ref": null,
   "adapter_path": ".agents/critique-adapter.yaml",
@@ -12,7 +12,7 @@
       "title": "Changed Files And Owning Surfaces",
       "content_kind": "script",
       "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
-      "content": "Changed paths for working tree:\n- charness-artifacts/metrics/rca-ledger.jsonl\n- plugins/charness/skills/quality/references/attention-state-visibility.json\n- skills/public/quality/references/attention-state-visibility.json\n- charness-artifacts/critique/2026-08-24-issue-714-implementation-r1-packet.json\n- charness-artifacts/critique/2026-08-24-issue-714-implementation-r1-packet.md\n- charness-artifacts/critique/2026-08-24-issue-714-r2-cap-final-packet.json\n- charness-artifacts/critique/2026-08-24-issue-714-r2-cap-final-packet.md\n- charness-artifacts/critique/2026-08-24-issue-714-round2-packet.json\n- charness-artifacts/critique/2026-08-24-issue-714-round2-packet.md\n- charness-artifacts/critique/2026-08-24-issue-714-round2-resolution.md\n- charness-artifacts/debug/2026-08-24-issue-714.md\n- charness-artifacts/debug/latest.md\n- charness-artifacts/spec/2026-08-24-issue-714-run-window.md\n- plugins/charness/scripts/mutation_test_reporters.py\n- scripts/mutation_test_reporters.py\n- tests/quality_gates/test_mutation_test_reporters.py\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: skills/public/quality/references/attention-state-visibility.json, scripts/mutation_test_reporters.py\n  derived matches: plugins/charness/skills/quality/references/attention-state-visibility.json, plugins/charness/scripts/mutation_test_reporters.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- rca-ledger-metrics: Committed RCA conversion ledger events and the validator/aggregator that keep the JSONL metric well-formed.\n  source matches: charness-artifacts/metrics/rca-ledger.jsonl\n  verify: python3 scripts/validate_rca_ledger.py --repo-root ., python3 scripts/aggregate_rca_ledger.py --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-08-24-issue-714-implementation-r1-packet.md, charness-artifacts/critique/2026-08-24-issue-714-r2-cap-final-packet.md, charness-artifacts/critique/2026-08-24-issue-714-round2-packet.md, charness-artifacts/critique/2026-08-24-issue-714-round2-resolution.md, charness-artifacts/debug/2026-08-24-issue-714.md, charness-artifacts/debug/latest.md, charness-artifacts/spec/2026-08-24-issue-714-run-window.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, python3 scripts/check_docs_graph.py --repo-root . || { [ \"$?\" -eq 3 ] && ! command -v awiki >/dev/null; }, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- prompt-behavior-proof: Prompt-affecting instruction surfaces must follow deterministic Cautilus validation and on-demand proof policy.\n  source matches: skills/public/quality/references/attention-state-visibility.json\n  verify: python3 scripts/validate_cautilus_proof.py --repo-root ., python3 scripts/validate_cautilus_diagnostics.py --repo-root .\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/quality/references/attention-state-visibility.json\n  derived matches: plugins/charness/skills/quality/references/attention-state-visibility.json\n  verify: python3 scripts/validate_skills.py --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py, python3 scripts/check_skill_ownership_overlap.py --repo-root ., python3 scripts/validate_skill_ergonomics.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/quality/references/attention-state-visibility.json\n  verify: python3 scripts/validate_public_skill_validation.py --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/quality/references/attention-state-visibility.json\n  verify: python3 scripts/validate_public_skill_dogfood.py --repo-root .\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-24-issue-714-implementation-r1-packet.json, charness-artifacts/critique/2026-08-24-issue-714-implementation-r1-packet.md, charness-artifacts/critique/2026-08-24-issue-714-r2-cap-final-packet.json, charness-artifacts/critique/2026-08-24-issue-714-r2-cap-final-packet.md, charness-artifacts/critique/2026-08-24-issue-714-round2-packet.json, charness-artifacts/critique/2026-08-24-issue-714-round2-packet.md, charness-artifacts/critique/2026-08-24-issue-714-round2-resolution.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- debug-seam-risk-index: Generated source-linked index over debug artifact seam-risk fields.\n  source matches: charness-artifacts/debug/2026-08-24-issue-714.md, charness-artifacts/debug/latest.md\n  sync: python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n  verify: python3 scripts/build_debug_seam_risk_index.py --repo-root . --check\n- integrations-and-control-plane: Integration manifests and control-plane helper scripts.\n  derived matches: plugins/charness/scripts/mutation_test_reporters.py\n  verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root ., python3 scripts/update_tools.py --repo-root .\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/mutation_test_reporters.py, tests/quality_gates/test_mutation_test_reporters.py\n  derived matches: plugins/charness/scripts/mutation_test_reporters.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/mutation_test_reporters.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n- python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n",
+      "content": "Changed paths for working tree:\n- charness-artifacts/critique/2026-08-24-issue-714-round2-resolution.md\n- charness-artifacts/debug/2026-08-24-issue-714.md\n- charness-artifacts/metrics/rca-ledger.jsonl\n- charness-artifacts/spec/2026-08-24-issue-714-run-window.md\n- plugins/charness/scripts/mutation_test_reporters.py\n- scripts/mutation_test_reporters.py\n- tests/quality_gates/test_mutation_test_reporters.py\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/mutation_test_reporters.py\n  derived matches: plugins/charness/scripts/mutation_test_reporters.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- rca-ledger-metrics: Committed RCA conversion ledger events and the validator/aggregator that keep the JSONL metric well-formed.\n  source matches: charness-artifacts/metrics/rca-ledger.jsonl\n  verify: python3 scripts/validate_rca_ledger.py --repo-root ., python3 scripts/aggregate_rca_ledger.py --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-08-24-issue-714-round2-resolution.md, charness-artifacts/debug/2026-08-24-issue-714.md, charness-artifacts/spec/2026-08-24-issue-714-run-window.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, python3 scripts/check_docs_graph.py --repo-root . || { [ \"$?\" -eq 3 ] && ! command -v awiki >/dev/null; }, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-24-issue-714-round2-resolution.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- debug-seam-risk-index: Generated source-linked index over debug artifact seam-risk fields.\n  source matches: charness-artifacts/debug/2026-08-24-issue-714.md\n  sync: python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n  verify: python3 scripts/build_debug_seam_risk_index.py --repo-root . --check\n- integrations-and-control-plane: Integration manifests and control-plane helper scripts.\n  derived matches: plugins/charness/scripts/mutation_test_reporters.py\n  verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root ., python3 scripts/update_tools.py --repo-root .\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/mutation_test_reporters.py, tests/quality_gates/test_mutation_test_reporters.py\n  derived matches: plugins/charness/scripts/mutation_test_reporters.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/mutation_test_reporters.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n- python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n",
       "ok": true,
       "errors": []
     },
@@ -60,7 +60,7 @@
     "mode": "working-tree",
     "changed_ref": null,
     "resolved_changed_ref": [],
-    "base_head": "b0290729183dcdaf07bcd01f037112c5b3b0752f",
+    "base_head": "b9812124cca577615864ffb7a8af68d04161f9ef",
     "base_head_role": "provenance-only",
     "reviewed_paths": [
       "charness-artifacts/critique/2026-08-24-issue-714-implementation-r1-packet.json",
@@ -68,6 +68,7 @@
       "charness-artifacts/critique/2026-08-24-issue-714-round2-packet.json",
       "charness-artifacts/critique/2026-08-24-issue-714-round2-packet.md",
       "charness-artifacts/debug/2026-08-24-issue-714.md",
+      "charness-artifacts/metrics/rca-ledger.jsonl",
       "charness-artifacts/spec/2026-08-24-issue-714-run-window.md",
       "plugins/charness/scripts/mutation_test_reporters.py",
       "plugins/charness/skills/quality/references/attention-state-visibility.json",
@@ -94,15 +95,19 @@
       },
       {
         "path": "charness-artifacts/debug/2026-08-24-issue-714.md",
-        "content_sha256": "b350d400d98a4793c8b8f34bf999087f93e7c934fc5bef48935c25af4a64614e"
+        "content_sha256": "2b80a4d095a79962644394c463ec8a31d4610d2ef8fbe1d2b23c4e86fe60804c"
+      },
+      {
+        "path": "charness-artifacts/metrics/rca-ledger.jsonl",
+        "content_sha256": "51de3a9ad2023d27947a10ed8bdc4cf82c98fe16180b0fa40060787d4f8477cf"
       },
       {
         "path": "charness-artifacts/spec/2026-08-24-issue-714-run-window.md",
-        "content_sha256": "b29b8b2b9c0a68dc0784b6da185a30e6cea945ed4dee4a777857dbb3ff7417a0"
+        "content_sha256": "a2b6cd58fd071b2224bf9ae9740fff54f82ec2db8bf16c22dd70889934ffa11a"
       },
       {
         "path": "plugins/charness/scripts/mutation_test_reporters.py",
-        "content_sha256": "0969a6efc7a0a44f96d0d61cebe963448d26a1e51424186746e1545d31b1587d"
+        "content_sha256": "c2e0b94f4858aabd3473981acc3053bc57691ef9afa53c8d300f3a98ff396de7"
       },
       {
         "path": "plugins/charness/skills/quality/references/attention-state-visibility.json",
@@ -110,7 +115,7 @@
       },
       {
         "path": "scripts/mutation_test_reporters.py",
-        "content_sha256": "0969a6efc7a0a44f96d0d61cebe963448d26a1e51424186746e1545d31b1587d"
+        "content_sha256": "c2e0b94f4858aabd3473981acc3053bc57691ef9afa53c8d300f3a98ff396de7"
       },
       {
         "path": "skills/public/quality/references/attention-state-visibility.json",
@@ -118,14 +123,14 @@
       },
       {
         "path": "tests/quality_gates/test_mutation_test_reporters.py",
-        "content_sha256": "65b7b6a37b84b2526c2c510fbc6b55be99190fe5c9370b61669a52e957cd2f85"
+        "content_sha256": "58d19067639ed19bf85aadc6f7ea3c000f1e6ea774c71dd522c692575f77dd32"
       }
     ],
     "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "staged_patch_sha256": "0c88ebca6466ce86771cb8d3c6afab6e483e1a2a128216be5c01a2f35f5651f2",
-    "unstaged_patch_sha256": "e442dd6ad0dc9e6418a30f1b32c689c5e1159fcd73e93d92829af17cbeedc760",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "3e44b3e4a370da2087d8770a7999d66a72be9b35cb10030649685948027113d3",
     "declared_untracked": [],
     "auto_excluded_paths": [],
-    "identity_sha256": "4c2497fa9293ab5b0f8fe85653917ffb405e2667ac20d335653cc984fa877a5e"
+    "identity_sha256": "d88ed20b2574771d0ac8edfc25460a8a20e5eba56d6b82ee919ffef5cf0e379c"
   }
 }

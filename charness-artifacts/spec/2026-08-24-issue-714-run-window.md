@@ -132,6 +132,16 @@ plan/result ownership, and count consistency. `read()` derives counts and
   host Node variants, installed exports, mutation changed-line proof, and
   external state are not proven.
 
+## Post-Merge Coverage Repair
+
+Fresh base-to-HEAD coverage ran 11,343 standing tests clean but refused seven
+uncovered reporter lines. The closeout repair adds semantic controls for a
+trailing summary stopping at an earlier duration, duplicate/negative/count-total
+summary rejection, valid plan-first compact ownership, and complete/absent
+`summary()` outcomes. The count regex accepts a leading minus only so the
+existing nonnegative guard can observe and refuse that malformed input; it does
+not admit negative counts into a verdict.
+
 ## Canonical Artifact
 
 `charness-artifacts/debug/2026-08-24-issue-714.md` records the RCA and review

@@ -1,16 +1,17 @@
 # Critique Prepare Packet — charness
 
 - **Kind**: `charness.critique_prepare_packet` (v1)
-- **Generated**: 2026-08-24T14:37:34Z
+- **Generated**: 2026-08-24T15:00:17Z
 - **Prepared for**: issue 714 post-cap final working tree
 - **Adapter**: `.agents/critique-adapter.yaml`
-- **Reviewed input identity**: `4c2497fa9293ab5b0f8fe85653917ffb405e2667ac20d335653cc984fa877a5e`
-- **Reviewed paths**: 11
+- **Reviewed input identity**: `d88ed20b2574771d0ac8edfc25460a8a20e5eba56d6b82ee919ffef5cf0e379c`
+- **Reviewed paths**: 12
   - `charness-artifacts/critique/2026-08-24-issue-714-implementation-r1-packet.json`
   - `charness-artifacts/critique/2026-08-24-issue-714-implementation-r1-packet.md`
   - `charness-artifacts/critique/2026-08-24-issue-714-round2-packet.json`
   - `charness-artifacts/critique/2026-08-24-issue-714-round2-packet.md`
   - `charness-artifacts/debug/2026-08-24-issue-714.md`
+  - `charness-artifacts/metrics/rca-ledger.jsonl`
   - `charness-artifacts/spec/2026-08-24-issue-714-run-window.md`
   - `plugins/charness/scripts/mutation_test_reporters.py`
   - `plugins/charness/skills/quality/references/attention-state-visibility.json`
@@ -24,7 +25,7 @@
 Run this exact command from the repository root:
 
 ```sh
-python3 skills/public/critique/scripts/verify_packet.py --repo-root . --packet-path charness-artifacts/critique/2026-08-24-issue-714-r2-cap-final-packet.json --packet-sha256 3e6038f4b24df4f080d00c87fbba1c69831a77b954cd89e3c361df67806f9c33 --identity-sha256 4c2497fa9293ab5b0f8fe85653917ffb405e2667ac20d335653cc984fa877a5e
+python3 skills/public/critique/scripts/verify_packet.py --repo-root . --packet-path charness-artifacts/critique/2026-08-24-issue-714-r2-cap-final-packet.json --packet-sha256 6c184d6a70bafb42d6419a7b454cd2161473da6dc5c0e705c82cd8e391fa72d5 --identity-sha256 d88ed20b2574771d0ac8edfc25460a8a20e5eba56d6b82ee919ffef5cf0e379c
 ```
 
 Raw sha256sum is not the contract; the verifier owns the domain-separated packet identity check.
@@ -54,18 +55,9 @@ Read this packet first. Then judge what the deterministic surface leaves uncover
 
 ```text
 Changed paths for working tree:
-- charness-artifacts/metrics/rca-ledger.jsonl
-- plugins/charness/skills/quality/references/attention-state-visibility.json
-- skills/public/quality/references/attention-state-visibility.json
-- charness-artifacts/critique/2026-08-24-issue-714-implementation-r1-packet.json
-- charness-artifacts/critique/2026-08-24-issue-714-implementation-r1-packet.md
-- charness-artifacts/critique/2026-08-24-issue-714-r2-cap-final-packet.json
-- charness-artifacts/critique/2026-08-24-issue-714-r2-cap-final-packet.md
-- charness-artifacts/critique/2026-08-24-issue-714-round2-packet.json
-- charness-artifacts/critique/2026-08-24-issue-714-round2-packet.md
 - charness-artifacts/critique/2026-08-24-issue-714-round2-resolution.md
 - charness-artifacts/debug/2026-08-24-issue-714.md
-- charness-artifacts/debug/latest.md
+- charness-artifacts/metrics/rca-ledger.jsonl
 - charness-artifacts/spec/2026-08-24-issue-714-run-window.md
 - plugins/charness/scripts/mutation_test_reporters.py
 - scripts/mutation_test_reporters.py
@@ -73,34 +65,21 @@ Changed paths for working tree:
 
 Owning surfaces:
 - checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.
-  source matches: skills/public/quality/references/attention-state-visibility.json, scripts/mutation_test_reporters.py
-  derived matches: plugins/charness/skills/quality/references/attention-state-visibility.json, plugins/charness/scripts/mutation_test_reporters.py
+  source matches: scripts/mutation_test_reporters.py
+  derived matches: plugins/charness/scripts/mutation_test_reporters.py
   sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .
   verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .
 - rca-ledger-metrics: Committed RCA conversion ledger events and the validator/aggregator that keep the JSONL metric well-formed.
   source matches: charness-artifacts/metrics/rca-ledger.jsonl
   verify: python3 scripts/validate_rca_ledger.py --repo-root ., python3 scripts/aggregate_rca_ledger.py --repo-root .
 - repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.
-  source matches: charness-artifacts/critique/2026-08-24-issue-714-implementation-r1-packet.md, charness-artifacts/critique/2026-08-24-issue-714-r2-cap-final-packet.md, charness-artifacts/critique/2026-08-24-issue-714-round2-packet.md, charness-artifacts/critique/2026-08-24-issue-714-round2-resolution.md, charness-artifacts/debug/2026-08-24-issue-714.md, charness-artifacts/debug/latest.md, charness-artifacts/spec/2026-08-24-issue-714-run-window.md
+  source matches: charness-artifacts/critique/2026-08-24-issue-714-round2-resolution.md, charness-artifacts/debug/2026-08-24-issue-714.md, charness-artifacts/spec/2026-08-24-issue-714-run-window.md
   verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, python3 scripts/check_docs_graph.py --repo-root . || { [ "$?" -eq 3 ] && ! command -v awiki >/dev/null; }, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh
-- prompt-behavior-proof: Prompt-affecting instruction surfaces must follow deterministic Cautilus validation and on-demand proof policy.
-  source matches: skills/public/quality/references/attention-state-visibility.json
-  verify: python3 scripts/validate_cautilus_proof.py --repo-root ., python3 scripts/validate_cautilus_diagnostics.py --repo-root .
-- skill-packages: Public and support skill packages plus their helper scripts.
-  source matches: skills/public/quality/references/attention-state-visibility.json
-  derived matches: plugins/charness/skills/quality/references/attention-state-visibility.json
-  verify: python3 scripts/validate_skills.py --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py, python3 scripts/check_skill_ownership_overlap.py --repo-root ., python3 scripts/validate_skill_ergonomics.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary
-- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.
-  source matches: skills/public/quality/references/attention-state-visibility.json
-  verify: python3 scripts/validate_public_skill_validation.py --repo-root .
-- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.
-  source matches: skills/public/quality/references/attention-state-visibility.json
-  verify: python3 scripts/validate_public_skill_dogfood.py --repo-root .
 - critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.
-  source matches: charness-artifacts/critique/2026-08-24-issue-714-implementation-r1-packet.json, charness-artifacts/critique/2026-08-24-issue-714-implementation-r1-packet.md, charness-artifacts/critique/2026-08-24-issue-714-r2-cap-final-packet.json, charness-artifacts/critique/2026-08-24-issue-714-r2-cap-final-packet.md, charness-artifacts/critique/2026-08-24-issue-714-round2-packet.json, charness-artifacts/critique/2026-08-24-issue-714-round2-packet.md, charness-artifacts/critique/2026-08-24-issue-714-round2-resolution.md
+  source matches: charness-artifacts/critique/2026-08-24-issue-714-round2-resolution.md
   verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all
 - debug-seam-risk-index: Generated source-linked index over debug artifact seam-risk fields.
-  source matches: charness-artifacts/debug/2026-08-24-issue-714.md, charness-artifacts/debug/latest.md
+  source matches: charness-artifacts/debug/2026-08-24-issue-714.md
   sync: python3 scripts/build_debug_seam_risk_index.py --repo-root . --write
   verify: python3 scripts/build_debug_seam_risk_index.py --repo-root . --check
 - integrations-and-control-plane: Integration manifests and control-plane helper scripts.
