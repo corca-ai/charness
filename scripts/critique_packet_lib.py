@@ -202,7 +202,7 @@ def _relative_adapter_path(adapter_path: object, repo_root: Path) -> str | None:
         return path.as_posix()
 
 
-def render_markdown(packet: dict[str, Any]) -> str:
+def render_markdown(packet: dict[str, Any], verification_command: str | None = None) -> str:
     lines: list[str] = []
     title = "Critique Prepare Packet"
     if packet.get("kind") == "charness.retro_prepare_packet":
@@ -228,6 +228,20 @@ def render_markdown(packet: dict[str, Any]) -> str:
         lines.extend(f"  - `{path}`" for path in reviewed_paths if isinstance(path, str))
         lines.append(f"- **Auto-excluded paths**: {len(excluded_paths)}")
         lines.extend(f"  - `{path}`" for path in excluded_paths if isinstance(path, str))
+        if verification_command:
+            lines.append("")
+            lines.append("## Verify Packet")
+            lines.append("")
+            lines.append("Run this exact command from the repository root:")
+            lines.append("")
+            lines.append("```sh")
+            lines.append(verification_command)
+            lines.append("```")
+            lines.append("")
+            lines.append(
+                "Raw sha256sum is not the contract; the verifier owns the "
+                "domain-separated packet identity check."
+            )
     lines.append(f"- **Sections**: {packet['section_count']}")
     lines.append(f"- **Shape validation ok**: {packet['ok']}")
     lines.append("- **Release approval**: not claimed")

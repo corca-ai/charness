@@ -110,7 +110,7 @@ history.
      are delivered through the report/receipt/ledger carrier. The phrase
      "subagent" names the fresh context contract, not permission to downgrade
      to a same-context reread.
-   - Bind prepared-packet identity; use rail-1 snapshot/verify around each reviewer spawn; parent-head movement is drift. Keep counterweight separate and follow `../../shared/references/fresh-eye-subagent-review.md`.
+   - Bind prepared-packet identity, execute the receipt's exact packet-verification command, and use rail-1 snapshot/verify around each reviewer spawn; parent-head movement is drift. Keep counterweight separate and follow `../../shared/references/fresh-eye-subagent-review.md`.
    - Record each round with `record_round_findings.py --window-id <id> --boundary-snapshot <path>`; mismatched snapshots and same-context substitutes refuse. The next round `n+1` reads as prior evidence the recorded findings before choosing a new bounded lens.
 4. Collapse the findings into one candidate concern list.
    - deduplicate overlap

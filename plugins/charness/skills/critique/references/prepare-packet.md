@@ -172,7 +172,9 @@ Rules:
 - The exact packet byte digest cannot be embedded in the packet without a
   circular hash. After writing the JSON, the runner returns
   `reviewed_input_binding` with `packet_path`, `packet_sha256`, and
-  `identity_sha256`. Copy those three fields into the durable critique record:
+  `identity_sha256`, plus one exact executable `verify_command`. Copy the
+  binding fields into the durable critique record and run that command before
+  treating the packet as current:
 
   ```markdown
   ## Reviewed Input Identity
@@ -181,6 +183,11 @@ Rules:
   - Packet SHA256: <exact packet byte digest>
   - Identity SHA256: <reviewed input identity digest>
   ```
+
+  The Markdown packet repeats the same `verify_command`. Raw sha256sum is not
+  the contract: the command delegates to `verify_packet_binding`, which owns
+  the domain-separated `sha256-v2` identity reconstruction. A raw digest of a
+  reviewed file can differ while the packet is current.
 
   The critique validator checks the packet bytes and recomputes only the
   declared inputs. A declared-input change makes the verdict stale; an

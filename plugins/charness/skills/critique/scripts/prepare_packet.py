@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import runpy
+import shlex
 from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
@@ -40,10 +41,33 @@ load_adapter = _critique_adapter_lib.load_adapter
 build_packet = _critique_packet_lib.build_packet
 write_packet = _critique_packet_lib.write_packet
 packet_file_sha256 = _critique_packet_lib.packet_file_sha256
+render_markdown = _critique_packet_lib.render_markdown
 
 
 def _default_slug() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%d-%H%M%S")
+
+
+def _verification_command(repo_root: Path, binding: dict[str, object]) -> str:
+    verifier = Path(__file__).resolve().with_name("verify_packet.py")
+    try:
+        verifier_arg = verifier.relative_to(repo_root).as_posix()
+    except ValueError:
+        verifier_arg = str(verifier)
+    return shlex.join(
+        [
+            "python3",
+            verifier_arg,
+            "--repo-root",
+            ".",
+            "--packet-path",
+            str(binding["packet_path"]),
+            "--packet-sha256",
+            str(binding["packet_sha256"]),
+            "--identity-sha256",
+            str(binding["identity_sha256"]),
+        ]
+    )
 
 
 def main() -> int:
@@ -113,6 +137,11 @@ def main() -> int:
         # Auto-sweep drops, reported so a narrowed binding is never silently narrow.
         "auto_excluded_paths": identity.get("auto_excluded_paths", []),
     }
+    binding["verify_command"] = _verification_command(repo_root, binding)
+    md_path.write_text(
+        render_markdown(packet, verification_command=str(binding["verify_command"])),
+        encoding="utf-8",
+    )
     if not identity.get("reviewed_paths"):
         # A zero-path binding digests to the same constant everywhere and can never
         # go stale, so it would verify as current while proving nothing. Say so here
