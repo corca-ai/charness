@@ -3,7 +3,7 @@
 - Round: 4
 - Recorded date: 2026-08-25
 - Boundary window id: `release-6-4-1-counterweight`
-- Boundary snapshot: `.charness/reviewer-boundary/release-6-4-1-counterweight.before.json`
+- Boundary snapshot: `.charness/reviewer-boundary/release-6-4-1-counterweight.before.json` <!-- reproduction-source -->
 - Boundary snapshot SHA-256: `9551d3b157eca85ea5040e60a8577b3a96972ed21967c8f94834d0a2667d84e2`
 - Findings SHA-256: `2ef87bece3f86f139656e46550a9ddcb0b609e64724bbb82d2a4eb22314a7941`
 
