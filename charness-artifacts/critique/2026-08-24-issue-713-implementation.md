@@ -77,8 +77,8 @@ approval.
 
 - Packet consumed: charness-artifacts/critique/2026-08-24-issue-713-implementation-final-cap-packet.json
 - Packet path: charness-artifacts/critique/2026-08-24-issue-713-implementation-final-cap-packet.json
-- Packet SHA256: 8c8c0f9b7b7a87421c83f069ac9f43415373fb15e776ba570f5c458da5452fb2
-- Identity SHA256: 4433956c65e81e5028b64928eb7b9f3647c6985da775d57347500f51ca8e2d6d
+- Packet SHA256: 5af78f6bc9707c7ba98f55f9e4a3f16471d9645708ed5a63a5fd48ba56da08a0
+- Identity SHA256: 3af185f24698b1668ce8bdb243e3927fba74ad3e503a61f4f0881f60ba91843c
 
 ## Boundary Ownership
 

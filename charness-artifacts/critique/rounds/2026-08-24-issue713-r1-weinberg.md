@@ -3,7 +3,7 @@
 - Round: 2
 - Recorded date: 2026-08-24
 - Boundary window id: `issue713-r1-weinberg`
-- Boundary snapshot: `.charness/reviewer-boundary/issue713-r1-weinberg-boundary.json`
+- Boundary snapshot: `.charness/reviewer-boundary/issue713-r1-weinberg-boundary.json` <!-- reproduction-source -->
 - Boundary snapshot SHA-256: `cd2bce057e716442a7ee11f5a9388827784819c6290fce6b474bbfee9822824b`
 - Findings SHA-256: `c1d5e1861bfb90a0e3bf93e982a581b43ddc7fa6cba5b54f91668d914a53b08f`
 

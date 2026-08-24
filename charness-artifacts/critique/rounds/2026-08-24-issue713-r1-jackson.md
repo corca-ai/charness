@@ -3,7 +3,7 @@
 - Round: 1
 - Recorded date: 2026-08-24
 - Boundary window id: `issue713-r1-jackson`
-- Boundary snapshot: `.charness/reviewer-boundary/issue713-r1-jackson-boundary.json`
+- Boundary snapshot: `.charness/reviewer-boundary/issue713-r1-jackson-boundary.json` <!-- reproduction-source -->
 - Boundary snapshot SHA-256: `9698e71e16f11be7f2a89cbb77062c8fef150e85cb3844061d5377cd6c5b16e6`
 - Findings SHA-256: `8722f716fa0070912d7908b22282a2b85c162cfbc7c60abdee9c5d3cae8c6162`
 

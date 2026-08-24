@@ -1,10 +1,10 @@
 # Critique Prepare Packet — charness
 
 - **Kind**: `charness.critique_prepare_packet` (v1)
-- **Generated**: 2026-08-24T11:27:48Z
+- **Generated**: 2026-08-24T11:30:50Z
 - **Prepared for**: issue 713 final repaired surface under round cap
 - **Adapter**: `.agents/critique-adapter.yaml`
-- **Reviewed input identity**: `4433956c65e81e5028b64928eb7b9f3647c6985da775d57347500f51ca8e2d6d`
+- **Reviewed input identity**: `3af185f24698b1668ce8bdb243e3927fba74ad3e503a61f4f0881f60ba91843c`
 - **Reviewed paths**: 20
   - `charness-artifacts/critique/rounds/2026-08-24-issue713-r1-counterweight-retry.md`
   - `charness-artifacts/critique/rounds/2026-08-24-issue713-r1-jackson.md`
@@ -53,37 +53,18 @@ Read this packet first. Then judge what the deterministic surface leaves uncover
 
 ```text
 Changed paths for working tree:
-- charness-artifacts/critique/2026-08-24-issue-713-implementation.md
-- charness-artifacts/spec/2026-08-24-issue-713-ceal-consumer-friction-p0.md
-- plugins/charness/scripts/risk_interrupt_lib.py
-- scripts/risk_interrupt_lib.py
-- tests/test_risk_interrupt.py
+- charness-artifacts/critique/rounds/2026-08-24-issue713-r1-counterweight-retry.md
+- charness-artifacts/critique/rounds/2026-08-24-issue713-r1-jackson.md
+- charness-artifacts/critique/rounds/2026-08-24-issue713-r1-weinberg.md
+- charness-artifacts/critique/rounds/2026-08-24-issue713-r2.md
 
 Owning surfaces:
-- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.
-  source matches: scripts/risk_interrupt_lib.py
-  derived matches: plugins/charness/scripts/risk_interrupt_lib.py
-  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .
-  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .
 - repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.
-  source matches: charness-artifacts/critique/2026-08-24-issue-713-implementation.md, charness-artifacts/spec/2026-08-24-issue-713-ceal-consumer-friction-p0.md
+  source matches: charness-artifacts/critique/rounds/2026-08-24-issue713-r1-counterweight-retry.md, charness-artifacts/critique/rounds/2026-08-24-issue713-r1-jackson.md, charness-artifacts/critique/rounds/2026-08-24-issue713-r1-weinberg.md, charness-artifacts/critique/rounds/2026-08-24-issue713-r2.md
   verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, python3 scripts/check_docs_graph.py --repo-root . || { [ "$?" -eq 3 ] && ! command -v awiki >/dev/null; }, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh
 - critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.
-  source matches: charness-artifacts/critique/2026-08-24-issue-713-implementation.md
+  source matches: charness-artifacts/critique/rounds/2026-08-24-issue713-r1-counterweight-retry.md, charness-artifacts/critique/rounds/2026-08-24-issue713-r1-jackson.md, charness-artifacts/critique/rounds/2026-08-24-issue713-r1-weinberg.md, charness-artifacts/critique/rounds/2026-08-24-issue713-r2.md
   verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all
-- integrations-and-control-plane: Integration manifests and control-plane helper scripts.
-  derived matches: plugins/charness/scripts/risk_interrupt_lib.py
-  verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root ., python3 scripts/update_tools.py --repo-root .
-- repo-python: Repo-owned Python code and tests.
-  source matches: scripts/risk_interrupt_lib.py, tests/test_risk_interrupt.py
-  derived matches: plugins/charness/scripts/risk_interrupt_lib.py
-  verify: ./scripts/check-python-lint.sh, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only
-- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.
-  source matches: scripts/risk_interrupt_lib.py
-  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing
-
-Planned sync commands before validators:
-- python3 scripts/sync_root_plugin_manifests.py --repo-root .
 ```
 
 ## Non-Goals For This Contract

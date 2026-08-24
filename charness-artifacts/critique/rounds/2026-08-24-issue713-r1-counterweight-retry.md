@@ -3,7 +3,7 @@
 - Round: 3
 - Recorded date: 2026-08-24
 - Boundary window id: `issue713-r1-counterweight-retry`
-- Boundary snapshot: `.charness/reviewer-boundary/issue713-r1-counterweight-retry-boundary.json`
+- Boundary snapshot: `.charness/reviewer-boundary/issue713-r1-counterweight-retry-boundary.json` <!-- reproduction-source -->
 - Boundary snapshot SHA-256: `0c833709e851cd83f577468cb6f4af9452b82a02a8672c54ca6172f256f54c46`
 - Findings SHA-256: `18d22b286fbc682a9ae7d92fbcb224b7990ffa82d57cdbe0ff3ec22ffe2d1838`
 
