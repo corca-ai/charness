@@ -51,6 +51,18 @@ FILLED = IN_SCOPE + (
 )
 
 
+def _complete_shaping_body(goal_lib) -> str:
+    """Render every shaping H2 once, with a valid acceptance sentence."""
+    sections = dict.fromkeys(goal_lib.REQUIRED_SECTIONS + goal_lib.PORTABILITY_SECTIONS)
+    rendered = []
+    for section in sections:
+        value = "User runs X and sees Y." if section == "User Acceptance" else f"{section} fixture value."
+        rendered.append(f"\n## {section}\n{value}\n")
+    rendered.append("\n## Closeout Binding Plan\n")
+    rendered.extend(f"- {field} fixture value\n" for field in goal_lib.CLOSEOUT_PLAN_FIELDS)
+    return "".join(rendered)
+
+
 def test_a_pre_rule_goal_is_grandfathered_and_says_so() -> None:
     """The report must not read as a satisfied floor.
 
@@ -169,16 +181,10 @@ def test_the_floor_actually_gates_activation_not_just_reports() -> None:
 
     draft = (
         "# Achieve Goal: T\n\nStatus: draft\nActivation: `/goal @x.md`\n\n"
-        "## User Acceptance\n\nUser runs X and sees Y.\n"
-        + "".join(
-            # A fixture LINE per section: the hollow-section floor refuses a
-            # required shaping section that is present but says nothing, so bare
-            # headings would fail this test on a dimension it is not about.
-            f"\n## {section}\n{section} fixture value.\n"
-            for section in gal.REQUIRED_SECTIONS + gal.PORTABILITY_SECTIONS
-        )
-        + "\n## Closeout Binding Plan\n"
-        + "".join(f"- {field} fixture value\n" for field in gal.CLOSEOUT_PLAN_FIELDS)
+        # A fixture LINE per section: the hollow-section floor refuses a
+        # required shaping section that is present but says nothing, so bare
+        # headings would fail this test on a dimension it is not about.
+        + _complete_shaping_body(gal)
     )
 
     without = gal.pursue_readiness(draft)
@@ -313,10 +319,7 @@ def test_the_pass_sentence_does_not_call_a_pre_rule_draft_a_non_draft() -> None:
 
     shaped = (
         "# Achieve Goal: T\n\nStatus: draft\nCreated: 2026-08-07\nActivation: `/goal @x.md`\n\n"
-        "## User Acceptance\n\nUser runs X and sees Y.\n"
-        + "".join(f"\n## {s}\n{s} fixture value.\n" for s in gal.REQUIRED_SECTIONS + gal.PORTABILITY_SECTIONS)
-        + "\n## Closeout Binding Plan\n"
-        + "".join(f"- {f} fixture value\n" for f in gal.CLOSEOUT_PLAN_FIELDS)
+        + _complete_shaping_body(gal)
     )
     reason = gal.pursue_readiness(shaped)["reason"]
 

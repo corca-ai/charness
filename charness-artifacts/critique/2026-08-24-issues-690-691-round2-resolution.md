@@ -65,6 +65,18 @@ The cap repair is bound by a working-tree packet with `changed_ref: null`:
 - #718 tracks the prepare-packet substrate mismatch that allowed a historical
   `HEAD` identity to verify as current while reviewed worktree paths differed.
 
+## Post-Merge Standing-Suite Repair
+
+Fresh base-to-HEAD coverage collection ran the full standing suite and exposed
+two legacy backlog fixtures that built `User Acceptance` twice: once explicitly
+and once through `REQUIRED_SECTIONS`. The focused readiness suite had not owned
+those dependent controls. Production correctly refused the duplicate H2; the
+fixtures now share one `_complete_shaping_body` builder that renders every
+required/portability section exactly once and preserves the valid acceptance
+sentence. The backlog file passes 17 tests and Ruff. This test-only repair is
+accepted-unreviewed under the already-consumed round cap; no new semantic review
+or production approval is claimed.
+
 ## Boundary Ownership
 
 - Producer: canonical goal Markdown parsing plus lifecycle/readiness composition.
