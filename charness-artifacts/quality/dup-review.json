@@ -2928,6 +2928,13 @@
     },
     {
       "class": "intentional",
+      "id": "836a9afe9edd2a38",
+      "note": "Fingerprint rotation of the already-reviewed portable sibling-loader family (637bb6af7e7552e5 and 654d828e79ee8ffe). Both members use `spec_from_file_location` because exported achieve scripts are loaded directly in both source and flattened plugin layouts; the loader is the bootstrap that makes a shared helper reachable. The family re-formed after goal_artifact_pursue added a second sibling while both reported spans were outside the current worktree diff. The loader's loaderless-spec refusal is now covered directly; classification does not waive that behavior.",
+      "reviewed_at": "2026-08-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "840ad1d516d197ad",
       "note": "argparse preamble plus `resolve(...)` and the `not found` refusal shared by the two cosmic-ray wrappers. run_cosmic_ray_mutation.py is untouched by this diff (its 96-line main orchestrates baseline/init/exec/dump); filter_cosmic_ray_mutants.py's 29-line main only filters a session. Nothing after the preamble overlaps -- same class as the accepted cautilus argparse-preamble family fce03d2223b4f9dc.",
       "reviewed_at": "2026-08-14",
@@ -3022,6 +3029,13 @@
       "id": "895d96962b294ed4",
       "note": "import preamble shared by check_prescribed_skill_executed and markdown_preview_render; both untouched by S6, surfaced by scan rotation.",
       "reviewed_at": "2026-08-15",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "89c138f666ef465a",
+      "note": "Fingerprint rotation of the reviewed portable sibling-loader family 637bb6af7e7552e5. The fourteen members span independently exported achieve and handoff scripts; each must locate a sibling before an ordinary or shared import is available, so moving the bootstrap behind a helper would require the same bootstrap at every caller and would hide each direct dependency. No member was in the current worktree diff when the family surfaced. The actual same-file Node match-list repetition found in the same gate run was refactored instead of classified.",
+      "reviewed_at": "2026-08-25",
       "surface": "code"
     },
     {
@@ -4233,6 +4247,13 @@
       "id": "c9a1067198c8bb00",
       "note": "the repo's standard sibling-module import bootstrap — `sys.path.insert(0, str(Path(__file__).resolve().parent))` followed by the sibling imports — shared by six untouched scripts (seed_t_events_adapter, seed_usage_episodes_adapter, seed_worktree_adapter, inventory_adapter_gate_design, inventory_dual_implementation, inventory_public_spec_quality) that a seventh, measure_adapter_yaml_uninterpreted.py, joined on 2026-08-01. It is not extractable by construction: it IS the path setup that must run before any sibling import, so a helper module would have to be imported by the very mechanism it provides. Pre-existing family; the new file changed its membership, not its nature. Rotated dcf7602d59906e68 -> c9a1067198c8bb00 on 2026-08-01 when a second measurement script, measure_inventory_consumption_floor.py, joined the same bootstrap; same nature, one more member.",
       "reviewed_at": "2026-08-01",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "c9be3df99a41d8f8",
+      "note": "Fingerprint rotation of reviewed cross-package section-walk family 6357d732d5680de4. `achieve` and `handoff` are independently exported portable skills, so neither may import the other's private parser; the common algorithm needs a future `skills/shared/` compatibility slice, not a covert dependency added during consumer-friction repair. The achieve side now owns all-occurrence semantics for duplicate-heading verdicts while handoff intentionally returns one `Next Session` block, so this classification covers only the remaining cross-package walk and does not claim semantic consolidation.",
+      "reviewed_at": "2026-08-25",
       "surface": "code"
     },
     {

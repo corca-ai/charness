@@ -251,28 +251,31 @@ class NodeTestReporter:
         return _NodeRun(selected_run, block, tuple(counts.items()))
 
     @classmethod
-    def _candidate_for_region(cls, output: str, region_start: int, end: int) -> _NodeRun | None:
-        """Find the first valid header run, then a compact result-owned run."""
-        headers = [
+    def _matches_before(
+        cls,
+        pattern: re.Pattern[str],
+        output: str,
+        region_start: int,
+        end: int,
+    ) -> list[re.Match[str]]:
+        """Return matches starting inside one candidate region."""
+        return [
             match
-            for match in _NODE_TAP_START_RE.finditer(output, region_start)
+            for match in pattern.finditer(output, region_start)
             if match.start() < end
         ]
+
+    @classmethod
+    def _candidate_for_region(cls, output: str, region_start: int, end: int) -> _NodeRun | None:
+        """Find the first valid header run, then a compact result-owned run."""
+        headers = cls._matches_before(_NODE_TAP_START_RE, output, region_start, end)
         for header in headers:
             candidate = cls._validated_run(output, header.start(), end)
             if candidate is not None:
                 return candidate
 
-        plans = [
-            match
-            for match in _NODE_PLAN_RE.finditer(output, region_start)
-            if match.start() < end
-        ]
-        results = [
-            match
-            for match in _NODE_RESULT_START_RE.finditer(output, region_start)
-            if match.start() < end
-        ]
+        plans = cls._matches_before(_NODE_PLAN_RE, output, region_start, end)
+        results = cls._matches_before(_NODE_RESULT_START_RE, output, region_start, end)
         for plan in reversed(plans):
             tests = int(plan.group(1))
             before = [match for match in results if match.start() < plan.start()]

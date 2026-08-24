@@ -127,6 +127,6 @@ diff invariant for lesson state.
 ## Interrupt Decision
 
 - Resolution: open
-- Critique Required: yes — separate issue resolution critiques own each repair.
+- Critique Required: yes
 - Next Step: spec
-- Handoff Artifact: charness-artifacts/debug/2026-08-24-worker-boundary-identity-pattern.md
+- Handoff Artifact: charness-artifacts/spec/2026-08-24-worker-boundary-identity-pattern.md

@@ -161,18 +161,18 @@ universal accounting interface, forcing consumers to fork when formats differ.
 - Interrupt ID: issue-689-node-tap-accounting-2026-08-24
 - Risk Class: external-seam, repeated-symptom
 - Seam: runner output -> reporter -> structured payload -> consumer/adoption fork
-- Disproving observation: same Node fixture accepted by explicit `node-test` and
+- Disproving Observation: same Node fixture accepted by explicit `node-test` and
   refused by default; this rules out “Node is red,” not the seam defect.
-- Local reasoning cannot prove the two sibling repos, installed-host behavior,
+- What Local Reasoning Cannot Prove: the two sibling repos, installed-host behavior,
   or a real TTY-selected reporter.
 - Generalization Pressure: factor-now
 
 ## Interrupt Decision
 
 - Resolution: open
-- Critique Required: yes — separate causal reviewer before repair
+- Critique Required: yes
 - Next Step: spec
-- Handoff Artifact: `charness-artifacts/debug/2026-08-24-issue-689-node-tap-accounting.md`
+- Handoff Artifact: charness-artifacts/spec/2026-08-24-issue-689-node-tap-accounting.md
 
 ## Prevention
 

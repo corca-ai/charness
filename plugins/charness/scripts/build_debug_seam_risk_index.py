@@ -63,6 +63,60 @@ def _relative(repo_root: Path, path: Path) -> str:
     return str(path.relative_to(repo_root))
 
 
+def _artifact_read_error(exc: OSError | UnicodeError) -> str:
+    """Stable reason text; the outer diagnostic already carries the bound path."""
+    if isinstance(exc, UnicodeError):
+        return f"{type(exc).__name__}: artifact is not valid UTF-8"
+    return f"{type(exc).__name__}: artifact metadata or content could not be read"
+
+
+def _copied_pointer_target(identity_paths: list[Path]) -> Path | None:
+    pointer = next((path for path in identity_paths if path.name == "latest.md"), None)
+    if pointer is None or pointer.is_symlink():
+        return None
+    try:
+        pointer_bytes = pointer.read_bytes()
+    except OSError:
+        return None
+
+    matches: list[Path] = []
+    for path in identity_paths:
+        if path == pointer:
+            continue
+        try:
+            equal = path.read_bytes() == pointer_bytes
+        except OSError:
+            equal = False
+        if equal:
+            matches.append(path)
+    return max(matches, key=lambda path: path.name) if matches else None
+
+
+def _discover_artifact_paths(
+    repo_root: Path,
+    output_dir: Path,
+    invalid: list[tuple[str, str]],
+) -> list[Path]:
+    """Return one path per artifact identity, with the current-pointer role preserved."""
+    by_identity: dict[tuple[int, int], Path] = {}
+    for path in sorted(output_dir.glob("*.md")):
+        if path.name == "seam-risk-index.md":
+            continue
+        try:
+            stat = path.stat()
+        except OSError as exc:
+            invalid.append((_relative(repo_root, path), _artifact_read_error(exc)))
+            continue
+        key = (stat.st_dev, stat.st_ino)
+        existing = by_identity.get(key)
+        if existing is None or (existing.name != "latest.md" and path.name == "latest.md"):
+            by_identity[key] = path
+
+    identity_paths = sorted(by_identity.values())
+    copied_target = _copied_pointer_target(identity_paths)
+    return [path for path in identity_paths if path != copied_target]
+
+
 def build_index(repo_root: Path) -> dict[str, Any]:
     output_dir = _load_debug_output_dir(repo_root)
     if not output_dir.is_dir():
@@ -70,30 +124,26 @@ def build_index(repo_root: Path) -> dict[str, Any]:
 
     entries: list[dict[str, Any]] = []
     skipped: list[dict[str, str]] = []
+    invalid: list[tuple[str, str]] = []
     risk_class_counts: dict[str, int] = {}
     generalization_pressure_counts: dict[str, int] = {}
 
-    # Deduplicated by resolved identity, and the pointer's name wins. Where `latest.md`
-    # is a symlink the glob yields it AND its target, so ONE interrupt was indexed twice
-    # -- once with `is_current_pointer: true`, once `false` -- and double-counted in
-    # `risk_class_counts`, `generalization_pressure_counts` and `indexed_artifact_count`.
-    # This is a reporting surface, so the cost was a silently inflated tally rather than a
-    # wrong verdict, but it is the same one-file-two-roles class the validator's role test
-    # closes, and a reader cannot see the inflation from the output.
-    _by_identity: dict[Path, Path] = {}
-    for path in sorted(output_dir.glob("*.md")):
-        if path.name == "seam-risk-index.md":
-            continue
-        key = path.resolve() if path.exists() else path
-        existing = _by_identity.get(key)
-        # The pointer's name is the role-bearing one: keeping it is what lets the single
-        # surviving entry still report `is_current_pointer: true`.
-        if existing is None or (existing.name != "latest.md" and path.name == "latest.md"):
-            _by_identity[key] = path
-    artifact_paths = sorted(_by_identity.values())
+    # Deduplicated by filesystem identity first, and the pointer's name wins. That covers
+    # symlink and hard-link pointer layouts. A byte-copy pointer has a different inode, so
+    # a second pass substitutes `latest.md` for the newest equal-content dated record.
+    # Only the role-bearing pointer gets content dedupe: two dated records with equal bytes
+    # are still two records, and collapsing them would invent identity from content alone.
+    artifact_paths = _discover_artifact_paths(repo_root, output_dir, invalid)
     for artifact_path in artifact_paths:
-        interrupt = parse_debug_interrupt(artifact_path)
         rel_path = _relative(repo_root, artifact_path)
+        try:
+            interrupt = parse_debug_interrupt(artifact_path)
+        except ValidationError as exc:
+            invalid.append((rel_path, str(exc)))
+            continue
+        except (OSError, UnicodeError) as exc:
+            invalid.append((rel_path, _artifact_read_error(exc)))
+            continue
         if not interrupt.get("present"):
             skipped.append(
                 {
@@ -122,6 +172,12 @@ def build_index(repo_root: Path) -> dict[str, Any]:
                 "handoff_artifact": interrupt["handoff_artifact"],
                 "forced": interrupt["forced"],
             }
+        )
+
+    if invalid:
+        details = "\n".join(f"- `{path}`: {reason}" for path, reason in invalid)
+        raise ValidationError(
+            f"{len(invalid)} invalid debug seam-risk artifact(s):\n{details}"
         )
 
     return {

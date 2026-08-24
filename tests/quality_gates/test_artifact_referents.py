@@ -128,6 +128,34 @@ def test_an_unresolvable_sha_is_reported() -> None:
     assert unresolvable_shas("see `deadbee1234`", ROOT, run=lambda *a: False) == ["deadbee1234"]
 
 
+def test_uuid_components_are_not_commit_candidates_but_a_sibling_sha_is() -> None:
+    from scripts.artifact_referents import sha_candidates
+
+    line = (
+        'Lesson evaluation: {"session_id":"2026-08-24-'
+        '01a032f5-c64c-7ad2-a838-8eb738d99824"} commit `4dc3fb851`'
+    )
+
+    assert sha_candidates(line) == ["4dc3fb851"]
+
+
+def test_malformed_uuid_components_remain_commit_candidates() -> None:
+    from scripts.artifact_referents import sha_candidates
+
+    assert sha_candidates("2026-08-24-01a032f5-c64c-7ad2-a838-8eb738d9982") == [
+        "01a032f5",
+        "8eb738d9982",
+    ]
+
+
+def test_a_uuid_component_repeated_outside_the_uuid_remains_a_candidate() -> None:
+    from scripts.artifact_referents import sha_candidates
+
+    line = "session 01a032f5-c64c-7ad2-a838-8eb738d99824 commit `01a032f5`"
+
+    assert sha_candidates(line) == ["01a032f5"]
+
+
 def test_git_absence_does_not_invent_a_defect() -> None:
     """Absence of a resolver is not evidence the referent is bad. A gate that
     fails closed on a missing tool reports defects that are not there."""

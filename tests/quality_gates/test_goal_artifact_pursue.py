@@ -19,6 +19,25 @@ _BACKLOG_SECTION = gal._pursue._BACKLOG.SECTION
 _BACKLOG_FIELDS = gal._pursue._BACKLOG.REQUIRED_FIELDS
 
 
+def test_sibling_loader_refuses_a_spec_without_a_loader(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A discovered filename without an executable loader is not importable."""
+
+    class _LoaderlessSpec:
+        loader = None
+
+    monkeypatch.setattr(
+        importlib.util,
+        "spec_from_file_location",
+        lambda *_args, **_kwargs: _LoaderlessSpec(),
+    )
+
+    with pytest.raises(
+        ImportError,
+        match=r"goal_artifact_backlog\.py not found beside goal_artifact_pursue\.py",
+    ):
+        gal._pursue._load_sibling("goal_artifact_backlog")
+
+
 def _goal_text(tmp_path: Path, slug: str = "g", date: str = "2026-05-27") -> str:
     path = gal.goal_path(tmp_path, date, slug)
     return path.read_text(encoding="utf-8")

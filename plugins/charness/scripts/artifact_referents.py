@@ -176,6 +176,16 @@ def missing_paths(text: str, repo_root: Path) -> list[str]:
 #: "decade") cannot reach the resolver -- those are <7 or contain non-hex.
 SHA_RE = re.compile(r"\b([0-9a-f]{7,40})\b")
 
+# UUID components can be SHA-shaped in durable typed identities such as lesson
+# `session_id` values. Treat the canonical UUID as one non-commit token rather than
+# sending its 8- and 12-hex components to Git independently. This is deliberately
+# shape-bound: malformed UUID-like text and a real SHA elsewhere on the same line
+# remain candidates.
+UUID_RE = re.compile(
+    r"\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b",
+    re.IGNORECASE,
+)
+
 #: Words that are pure hex and >= 7 chars. English has a few; without this they
 #: reach `git cat-file` and are reported as unresolvable SHAs, which is a false
 #: positive on ordinary prose.
@@ -213,7 +223,10 @@ def sha_candidates(text: str) -> list[str]:
     structurally incapable of showing the collapse it was added to detect.
     """
     out = []
+    uuid_spans = [match.span() for match in UUID_RE.finditer(text)]
     for match in SHA_RE.finditer(text):
+        if any(start <= match.start() and match.end() <= end for start, end in uuid_spans):
+            continue
         token = match.group(1)
         if token.lower() in _HEX_WORDS:
             continue

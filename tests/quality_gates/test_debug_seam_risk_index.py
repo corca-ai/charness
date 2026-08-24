@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
 import yaml
 
 from runtime_bootstrap import import_repo_module
@@ -205,6 +206,32 @@ def test_a_symlinked_pointer_indexes_one_interrupt_not_two(tmp_path: Path, monke
     assert index["entries"][0]["is_current_pointer"] is True
 
 
+@pytest.mark.parametrize("pointer_kind", ["byte-copy", "hard-link"])
+def test_a_nonsymlink_pointer_indexes_one_interrupt_not_two(
+    tmp_path: Path, monkeypatch, capsys, pointer_kind: str
+) -> None:
+    repo = seed_repo(tmp_path, ("2026-04-22-host-seam.md", debug_artifact()))
+    debug_dir = repo / "charness-artifacts" / "debug"
+    target = debug_dir / "2026-04-22-host-seam.md"
+    pointer = debug_dir / "latest.md"
+    if pointer_kind == "byte-copy":
+        pointer.write_bytes(target.read_bytes())
+    else:
+        pointer.hardlink_to(target)
+
+    result = run_debug_seam_risk_index(
+        monkeypatch, capsys, "--repo-root", str(repo), "--write"
+    )
+
+    assert result.returncode == 0, result.stderr
+    index = json.loads((debug_dir / "seam-risk-index.json").read_text(encoding="utf-8"))
+    assert index["source_artifact_count"] == 1
+    assert index["indexed_artifact_count"] == 1
+    assert index["risk_class_counts"] == {"external-seam": 1}
+    assert index["entries"][0]["artifact_path"] == "charness-artifacts/debug/latest.md"
+    assert index["entries"][0]["is_current_pointer"] is True
+
+
 def test_the_index_never_indexes_itself(tmp_path: Path, monkeypatch, capsys) -> None:
     # `seam-risk-index.md` lives in the same directory and matches the `*.md` glob, so
     # without the skip the index would ingest its own previous output -- growing a row
@@ -222,3 +249,39 @@ def test_the_index_never_indexes_itself(tmp_path: Path, monkeypatch, capsys) -> 
     skipped = [row["artifact_path"] for row in index["skipped_artifacts"]]
     assert not any("seam-risk-index" in path for path in listed + skipped)
     assert index["source_artifact_count"] == 1
+
+
+def test_invalid_artifacts_are_reported_as_one_complete_batch(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    first = debug_artifact(interrupt_id="first").replace(
+        "- Disproving Observation:", "- Disproving observation:"
+    )
+    second = debug_artifact(interrupt_id="second").replace(
+        "- Critique Required: yes", "- Critique Required: yes — review"
+    )
+    repo = seed_repo(
+        tmp_path,
+        ("2026-04-22-first.md", first),
+        ("2026-04-22-second.md", second),
+    )
+    malformed = repo / "charness-artifacts" / "debug" / "2026-04-22-malformed.md"
+    malformed.write_bytes(b"\xff")
+    broken = repo / "charness-artifacts" / "debug" / "2026-04-22-broken.md"
+    broken.symlink_to("missing-debug-artifact.md")
+
+    result = run_debug_seam_risk_index(
+        monkeypatch, capsys, "--repo-root", str(repo), "--check"
+    )
+
+    assert result.returncode == 1
+    assert "4 invalid debug seam-risk artifact(s)" in result.stderr
+    assert "`charness-artifacts/debug/2026-04-22-broken.md`" in result.stderr
+    assert "FileNotFoundError: artifact metadata or content could not be read" in result.stderr
+    assert "`charness-artifacts/debug/2026-04-22-malformed.md`" in result.stderr
+    assert "UnicodeDecodeError: artifact is not valid UTF-8" in result.stderr
+    assert "`charness-artifacts/debug/2026-04-22-first.md`" in result.stderr
+    assert "missing required line `- Disproving Observation: ...`" in result.stderr
+    assert "`charness-artifacts/debug/2026-04-22-second.md`" in result.stderr
+    assert "`Critique Required` must be `yes` or `no`" in result.stderr
+    assert str(repo) not in result.stderr

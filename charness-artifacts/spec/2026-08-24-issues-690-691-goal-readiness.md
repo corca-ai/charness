@@ -84,3 +84,12 @@ checked-in plugin export aligned through the canonical packaging sync.
   for a later `goal_artifact_closeout_plan.py` extraction. That refactor is
   deferred to parent issue tracking and is not part of this capped repair; no
   line-shaving or extraction claim is made here.
+
+## Critique
+
+- Interrupt Source: issues-690-691-goal-readiness-2026-08-24
+- Seam Summary: source readiness -> installed Charness plugin -> Ceal final consumer.
+- Chosen Next Step: impl
+- Impl Status: allowed
+- Impl Status Reason: source/plugin parity and terminal/hollow/duplicate fixtures establish the local implementation boundary; Ceal host activation and installed adoption remain explicit non-claims.
+- What Disproving Observation Is Resolved: source/plugin parity stayed exact and terminal readiness is now refused; actual host activation and hosted/public readback remain outside this local contract.

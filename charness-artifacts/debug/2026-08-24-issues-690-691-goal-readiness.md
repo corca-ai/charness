@@ -90,9 +90,9 @@ Shared mental model: “non-shaping” means “do not grade,” while consumers
 
 ## Interrupt Decision
 
-- Critique Required: yes — a separate causal reviewer must review root cause and bundle/defer boundary before spec or implementation.
-- Next Step: factor-first
-- Handoff Artifact: `charness-artifacts/debug/2026-08-24-issues-690-691-goal-readiness.md`
+- Critique Required: yes
+- Next Step: spec
+- Handoff Artifact: charness-artifacts/spec/2026-08-24-issues-690-691-goal-readiness.md
 - Resolution: resolved; the accepted-unreviewed capped repair now refuses
   substantive duplicate required/portability H2 sections through the shared
   markdown duplicate owner. The earlier round-2 packet used `changed_ref: HEAD`

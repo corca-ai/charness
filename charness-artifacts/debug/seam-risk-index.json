@@ -3,18 +3,18 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 155,
-  "indexed_artifact_count": 141,
+  "source_artifact_count": 160,
+  "indexed_artifact_count": 146,
   "risk_class_counts": {
     "contract-freeze-risk": 30,
-    "external-seam": 17,
-    "host-disproves-local": 6,
-    "none": 61,
+    "external-seam": 20,
+    "host-disproves-local": 7,
+    "none": 62,
     "operator-visible-recovery": 23,
-    "repeated-symptom": 9
+    "repeated-symptom": 12
   },
   "generalization_pressure_counts": {
-    "factor-now": 14,
+    "factor-now": 19,
     "monitor": 111,
     "none": 16
   },
@@ -1971,6 +1971,20 @@
       "forced": true
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-08-21-reviewer-boundary-runtime-output-unignored.md",
+      "is_current_pointer": false,
+      "interrupt_id": "reviewer-boundary-runtime-output-unignored-2026-08-21",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "worker output path -> git status -> boundary verifier -> critique closeout",
+      "generalization_pressure": "factor-now",
+      "critique_required": true,
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/2026-08-21-fresh-eye-delivery-boundary.md",
+      "forced": true
+    },
+    {
       "artifact_path": "charness-artifacts/debug/2026-08-21-validator-catalog-quality-races.md",
       "is_current_pointer": false,
       "interrupt_id": "consumer-validator-catalog-quality-races-2026-08-21",
@@ -1985,17 +1999,76 @@
       "forced": true
     },
     {
-      "artifact_path": "charness-artifacts/debug/latest.md",
-      "is_current_pointer": true,
-      "interrupt_id": "reviewer-boundary-runtime-output-unignored-2026-08-21",
+      "artifact_path": "charness-artifacts/debug/2026-08-24-gh-auth-network-misclassification.md",
+      "is_current_pointer": false,
+      "interrupt_id": "external-read-capability-conflation-2026-08-24",
       "risk_classes": [
-        "none"
+        "host-disproves-local"
       ],
-      "seam": "worker output path -> git status -> boundary verifier -> critique closeout",
+      "seam": "invocation request -> host sandbox/transport -> provider CLI diagnostic -> issue evidence",
       "generalization_pressure": "factor-now",
       "critique_required": true,
       "next_step": "spec",
-      "handoff_artifact": "charness-artifacts/spec/2026-08-21-fresh-eye-delivery-boundary.md",
+      "handoff_artifact": "charness-artifacts/spec/2026-08-24-external-worker-capability-envelope.md",
+      "forced": true
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-08-24-issue-689-node-tap-accounting.md",
+      "is_current_pointer": false,
+      "interrupt_id": "issue-689-node-tap-accounting-2026-08-24",
+      "risk_classes": [
+        "external-seam",
+        "repeated-symptom"
+      ],
+      "seam": "runner output -> reporter -> structured payload -> consumer/adoption fork",
+      "generalization_pressure": "factor-now",
+      "critique_required": true,
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/2026-08-24-issue-689-node-tap-accounting.md",
+      "forced": true
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-08-24-issues-690-691-goal-readiness.md",
+      "is_current_pointer": false,
+      "interrupt_id": "issues-690-691-goal-readiness-2026-08-24",
+      "risk_classes": [
+        "external-seam",
+        "repeated-symptom"
+      ],
+      "seam": "source readiness → installed Charness plugin → Ceal final consumer",
+      "generalization_pressure": "factor-now",
+      "critique_required": true,
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/2026-08-24-issues-690-691-goal-readiness.md",
+      "forced": true
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-08-24-worker-boundary-identity-pattern.md",
+      "is_current_pointer": false,
+      "interrupt_id": "worker-boundary-identity-2026-08-24",
+      "risk_classes": [
+        "external-seam",
+        "repeated-symptom"
+      ],
+      "seam": "producer output/version/state -> lane transport -> final consumer",
+      "generalization_pressure": "factor-now",
+      "critique_required": true,
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/2026-08-24-worker-boundary-identity-pattern.md",
+      "forced": true
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/latest.md",
+      "is_current_pointer": true,
+      "interrupt_id": "issue-714-node-tap-run-window-2026-08-24",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "TAP transcript -> `NodeTestReporter` -> mutation accounting",
+      "generalization_pressure": "factor-now",
+      "critique_required": true,
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/2026-08-24-issue-714-run-window.md",
       "forced": true
     }
   ],

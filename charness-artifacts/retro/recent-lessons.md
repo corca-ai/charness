@@ -2,8 +2,8 @@
 
 ## Current Focus
 
-- One session, one goal: `charness-artifacts/goals/2026-08-23-gate-by-property-not-by-enumeration.md`. (source: `charness-artifacts/retro/2026-08-23-gate-by-property-four-slices-and-the-goal-committing-its-own-defect-twice.md`)
-- Release publish triggered a configured automatic session retro for `v6.4.0`. (source: `charness-artifacts/retro/2026-08-23-v6-4-0-release-auto-retro.md`; sources: 2)
+- This record disposes the earlier consumer-friction lesson session `2026-08-24-01a032f5-c64c-7ad2-a838-8eb738d99824`. (source: `charness-artifacts/retro/2026-08-25-initial-consumer-friction-session-disposition.md`)
+- This retro covers the Charness/Ceal consumer-friction work from issue #713 through the #689 requalification, #690/#691 readiness repair, #714 Node TAP window repair, and the external-worker capability envelope. (source: `charness-artifacts/retro/2026-08-25-consumer-friction-session-retro.md`)
 
 ## Repeat Traps
 
@@ -50,6 +50,5 @@
 - `charness-artifacts/retro/2026-08-18-session-retro.md`
 - `charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md`
 - `charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md`
-- `charness-artifacts/retro/2026-08-22-v6-4-0-release-auto-retro.md`
-- `charness-artifacts/retro/2026-08-23-gate-by-property-four-slices-and-the-goal-committing-its-own-defect-twice.md`
-- `charness-artifacts/retro/2026-08-23-v6-4-0-release-auto-retro.md`
+- `charness-artifacts/retro/2026-08-25-consumer-friction-session-retro.md`
+- `charness-artifacts/retro/2026-08-25-initial-consumer-friction-session-disposition.md`
