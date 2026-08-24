@@ -249,3 +249,30 @@ the portable contract, but make adapter-selected mode/backend authoritative.
 Bind every identity through the combined report and close stale-output,
 collision, timeout, concurrency, and installed-layout seams before integrating
 the open-issue refresh lanes or mutating any version surface.
+
+## Current Carry-Forward (2026-08-24, Issue #713)
+
+- Interrupt Source: `reviewer-boundary-runtime-output-unignored-2026-08-21`
+- Seam Summary: reviewer runtime output path -> Git visibility -> boundary
+  verifier. Issue #713 changes the `impl` caller's risk-planning bootstrap and
+  its contract tests; it does not change that runtime-output seam.
+- Chosen Next Step: `impl`
+- Impl Status: `allowed`
+- Impl Status Reason: the design carry-forward path set included this handoff
+  because this artifact was actually refreshed; the planner returned
+  `handoff-recorded`, preserved the interrupt, and exited zero. This is evidence
+  for the carry-forward mutation only, not proof that the later #713
+  implementation paths are disjoint. The old review remains quarantined and is
+  not reinterpreted as approval.
+- What Disproving Observation Is Resolved: the existing `git check-ignore` and
+  focused boundary proof establish that canonical reviewer runtime output is
+  ignored while source-like drift remains visible. The #713 slice is disjoint
+  from that seam and instead prevents a pathless global observation from being
+  treated as authority over an unrelated consumer slice.
+- Exact design carry-forward planning command:
+  `python3 skills/shared/scripts/plan_risk_interrupt.py --repo-root . --detail
+  --paths skills/public/impl/SKILL.md plugins/charness/skills/impl/SKILL.md
+  scripts/check_skill_contracts.py
+  tests/quality_gates/test_skill_docs_contracts.py
+  charness-artifacts/spec/2026-08-24-issue-713-ceal-consumer-friction-p0.md
+  charness-artifacts/spec/2026-08-21-fresh-eye-delivery-boundary.md`.
