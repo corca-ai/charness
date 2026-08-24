@@ -152,6 +152,20 @@ def test_plan_risk_interrupt_ignores_stale_current_debug_for_unrelated_slice(tmp
     assert payload["reason"] == "current debug interrupt was not refreshed in this slice"
 
 
+def test_plan_risk_interrupt_distinguishes_explicit_empty_scope_from_global_discovery(
+    tmp_path: Path,
+) -> None:
+    repo = seed_repo(tmp_path, debug_body=debug_artifact(), spec_body=resolved_spec())
+
+    global_payload = _risk_interrupt_lib.plan_risk_interrupt(repo)
+    empty_payload = _risk_interrupt_lib.plan_risk_interrupt(repo, changed_paths=[])
+
+    assert global_payload["status"] == "blocked"
+    assert empty_payload["status"] == "not-applicable"
+    assert empty_payload["required"] is False
+    assert empty_payload["reason"] == "current slice has no Git-observed paths"
+
+
 def test_plan_risk_interrupt_cli_maps_blocked_plan_to_exit_one(
     tmp_path: Path,
     monkeypatch,

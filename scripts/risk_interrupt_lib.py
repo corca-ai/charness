@@ -235,7 +235,6 @@ def parse_spec_interrupt_resolution(spec_path: Path, *, interrupt_id: str) -> di
 
 
 def plan_risk_interrupt(repo_root: Path, changed_paths: list[str] | None = None) -> dict[str, object]:
-    changed = changed_paths or []
     artifact_path = current_debug_artifact_path(repo_root)
     if artifact_path is None or not artifact_path.is_file():
         return {
@@ -243,6 +242,15 @@ def plan_risk_interrupt(repo_root: Path, changed_paths: list[str] | None = None)
             "required": False,
             "reason": "no current debug artifact",
         }
+    if changed_paths == []:
+        return {
+            "status": "not-applicable",
+            "required": False,
+            "artifact_path": str(artifact_path.relative_to(repo_root)),
+            "reason": "current slice has no Git-observed paths",
+        }
+
+    changed = changed_paths or []
 
     try:
         interrupt = parse_debug_interrupt(artifact_path)
@@ -263,7 +271,7 @@ def plan_risk_interrupt(repo_root: Path, changed_paths: list[str] | None = None)
         }
 
     rel_artifact_path = str(artifact_path.relative_to(repo_root))
-    slice_affine = not changed or rel_artifact_path in changed or str(interrupt["handoff_artifact"]) in changed
+    slice_affine = changed_paths is None or rel_artifact_path in changed or str(interrupt["handoff_artifact"]) in changed
     if changed and not slice_affine:
         return {
             "status": "not-applicable",

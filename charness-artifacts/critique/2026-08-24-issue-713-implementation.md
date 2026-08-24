@@ -34,9 +34,19 @@ planner, and export the same behavior in the plugin.
 - The second review round found the post-sync timing bypass. The repository's
   two-round cap forbids presenting the resulting repair as independently
   approved; focused proof supports the candidate but does not replace review.
+- Post-commit changed-line proof then exposed a second observation-contract
+  conflation: `changed_paths is None` means global discovery, while an explicit
+  empty list means the authoritative Git observer found no slice paths. Treating
+  both as falsey reintroduced a global unrelated interrupt. The planner now
+  distinguishes those states directly, rather than teaching the caller to
+  retry or fabricate a path.
 - Fresh-eye pass: scripts/slice_closeout_risk_interrupt.py — round 2 found no
   duplicate-planner or tuple-interpreter blocker; its timing finding belonged
   to the caller, whose repair is accepted unreviewed under the round cap.
+- Fresh-eye pass: scripts/risk_interrupt_lib.py — the post-commit `None` versus
+  explicit-empty repair changes planner verdict logic after round 2 and is
+  accepted unreviewed under the two-round cap; focused None/empty regression,
+  source/plugin parity, and changed-line proof are required before closeout.
 
 ## Structured Findings
 
@@ -45,6 +55,7 @@ planner, and export the same behavior in the plugin.
 - F3 | bin: bundle-anyway | evidence: strong | ref: tests/quality_gates/test_run_slice_closeout_review_obligations.py | action: fix | note: exercise both source and plugin CLIs for omitted actual paths and sync-created interrupt paths.
 - F4 | bin: over-worry | evidence: strong | ref: scripts/slice_closeout_risk_interrupt.py | action: document | note: the extracted policy is an output interpreter, not a duplicate planner.
 - F5 | bin: valid-but-defer | evidence: moderate | ref: scripts/run_slice_closeout.py | action: defer | note: the orchestrator remains in the length warning band, but #713 no longer adds its verdict vocabulary there.
+- F6 | bin: act-before-ship | evidence: strong | ref: scripts/risk_interrupt_lib.py:plan_risk_interrupt | action: fix | note: preserve the semantic distinction between omitted/global discovery (`None`) and an explicit Git-observed empty scope (`[]`).
 
 ## Reviewer Tier Evidence
 
@@ -58,15 +69,16 @@ planner, and export the same behavior in the plugin.
 
 accepted-unreviewed-under-round-cap — round 1 found the caller-path bypass;
 round 2 read the repaired surface and found the post-sync timing bypass. The
-round-2 repair is covered by focused tests and parity checks but deliberately
-receives no third-round approval.
+round-2 repair and the later None/empty observation-contract repair are covered
+by focused tests and parity checks but deliberately receive no third-round
+approval.
 
 ## Reviewed Input Identity
 
 - Packet consumed: charness-artifacts/critique/2026-08-24-issue-713-implementation-final-cap-packet.json
 - Packet path: charness-artifacts/critique/2026-08-24-issue-713-implementation-final-cap-packet.json
-- Packet SHA256: d676b2618f671316e830319ee5afb06d3310ad343b375b0364cf548aaf6d5b04
-- Identity SHA256: 37b7b3a54a8845d788d21f2168c73098bb836c7150597fe472edd3371a5b4232
+- Packet SHA256: 8c8c0f9b7b7a87421c83f069ac9f43415373fb15e776ba570f5c458da5452fb2
+- Identity SHA256: 4433956c65e81e5028b64928eb7b9f3647c6985da775d57347500f51ca8e2d6d
 
 ## Boundary Ownership
 

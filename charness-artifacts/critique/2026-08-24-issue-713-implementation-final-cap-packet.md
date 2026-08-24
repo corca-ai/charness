@@ -1,21 +1,23 @@
 # Critique Prepare Packet — charness
 
 - **Kind**: `charness.critique_prepare_packet` (v1)
-- **Generated**: 2026-08-24T11:21:58Z
+- **Generated**: 2026-08-24T11:27:48Z
 - **Prepared for**: issue 713 final repaired surface under round cap
 - **Adapter**: `.agents/critique-adapter.yaml`
-- **Reviewed input identity**: `37b7b3a54a8845d788d21f2168c73098bb836c7150597fe472edd3371a5b4232`
-- **Reviewed paths**: 17
+- **Reviewed input identity**: `4433956c65e81e5028b64928eb7b9f3647c6985da775d57347500f51ca8e2d6d`
+- **Reviewed paths**: 20
   - `charness-artifacts/critique/rounds/2026-08-24-issue713-r1-counterweight-retry.md`
   - `charness-artifacts/critique/rounds/2026-08-24-issue713-r1-jackson.md`
   - `charness-artifacts/critique/rounds/2026-08-24-issue713-r1-weinberg.md`
   - `charness-artifacts/critique/rounds/2026-08-24-issue713-r2.md`
   - `charness-artifacts/spec/2026-08-24-issue-713-ceal-consumer-friction-p0.md`
   - `plugins/charness/scripts/check_skill_contracts.py`
+  - `plugins/charness/scripts/risk_interrupt_lib.py`
   - `plugins/charness/scripts/run_slice_closeout.py`
   - `plugins/charness/scripts/slice_closeout_risk_interrupt.py`
   - `plugins/charness/skills/impl/SKILL.md`
   - `scripts/check_skill_contracts.py`
+  - `scripts/risk_interrupt_lib.py`
   - `scripts/run_slice_closeout.py`
   - `scripts/slice_closeout_risk_interrupt.py`
   - `skills/public/impl/SKILL.md`
@@ -23,6 +25,7 @@
   - `tests/quality_gates/test_run_slice_closeout_surface_obligations.py`
   - `tests/quality_gates/test_skill_docs_contracts.py`
   - `tests/quality_gates/test_slice_closeout_artifact_citations.py`
+  - `tests/test_risk_interrupt.py`
 - **Auto-excluded paths**: 0
 - **Sections**: 3
 - **Shape validation ok**: True
@@ -50,66 +53,33 @@ Read this packet first. Then judge what the deterministic surface leaves uncover
 
 ```text
 Changed paths for working tree:
-- charness-artifacts/spec/2026-08-24-issue-713-ceal-consumer-friction-p0.md
-- plugins/charness/scripts/check_skill_contracts.py
-- plugins/charness/scripts/run_slice_closeout.py
-- plugins/charness/skills/impl/SKILL.md
-- scripts/check_skill_contracts.py
-- scripts/run_slice_closeout.py
-- skills/public/impl/SKILL.md
-- tests/quality_gates/test_run_slice_closeout_review_obligations.py
-- tests/quality_gates/test_run_slice_closeout_surface_obligations.py
-- tests/quality_gates/test_skill_docs_contracts.py
-- tests/quality_gates/test_slice_closeout_artifact_citations.py
-- charness-artifacts/critique/2026-08-24-issue-713-implementation-final-cap-packet.json
-- charness-artifacts/critique/2026-08-24-issue-713-implementation-final-cap-packet.md
-- charness-artifacts/critique/2026-08-24-issue-713-implementation-r1-packet.json
-- charness-artifacts/critique/2026-08-24-issue-713-implementation-r1-packet.md
-- charness-artifacts/critique/2026-08-24-issue-713-implementation-r2-packet.json
-- charness-artifacts/critique/2026-08-24-issue-713-implementation-r2-packet.md
 - charness-artifacts/critique/2026-08-24-issue-713-implementation.md
-- charness-artifacts/critique/rounds/2026-08-24-issue713-r1-counterweight-retry.md
-- charness-artifacts/critique/rounds/2026-08-24-issue713-r1-jackson.md
-- charness-artifacts/critique/rounds/2026-08-24-issue713-r1-weinberg.md
-- charness-artifacts/critique/rounds/2026-08-24-issue713-r2.md
-- plugins/charness/scripts/slice_closeout_risk_interrupt.py
-- scripts/slice_closeout_risk_interrupt.py
+- charness-artifacts/spec/2026-08-24-issue-713-ceal-consumer-friction-p0.md
+- plugins/charness/scripts/risk_interrupt_lib.py
+- scripts/risk_interrupt_lib.py
+- tests/test_risk_interrupt.py
 
 Owning surfaces:
 - checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.
-  source matches: scripts/check_skill_contracts.py, scripts/run_slice_closeout.py, skills/public/impl/SKILL.md, scripts/slice_closeout_risk_interrupt.py
-  derived matches: plugins/charness/scripts/check_skill_contracts.py, plugins/charness/scripts/run_slice_closeout.py, plugins/charness/skills/impl/SKILL.md, plugins/charness/scripts/slice_closeout_risk_interrupt.py
+  source matches: scripts/risk_interrupt_lib.py
+  derived matches: plugins/charness/scripts/risk_interrupt_lib.py
   sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .
   verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .
 - repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.
-  source matches: charness-artifacts/spec/2026-08-24-issue-713-ceal-consumer-friction-p0.md, skills/public/impl/SKILL.md, charness-artifacts/critique/2026-08-24-issue-713-implementation-final-cap-packet.md, charness-artifacts/critique/2026-08-24-issue-713-implementation-r1-packet.md, charness-artifacts/critique/2026-08-24-issue-713-implementation-r2-packet.md, charness-artifacts/critique/2026-08-24-issue-713-implementation.md, charness-artifacts/critique/rounds/2026-08-24-issue713-r1-counterweight-retry.md, charness-artifacts/critique/rounds/2026-08-24-issue713-r1-jackson.md, charness-artifacts/critique/rounds/2026-08-24-issue713-r1-weinberg.md, charness-artifacts/critique/rounds/2026-08-24-issue713-r2.md
-  derived matches: plugins/charness/skills/impl/SKILL.md
+  source matches: charness-artifacts/critique/2026-08-24-issue-713-implementation.md, charness-artifacts/spec/2026-08-24-issue-713-ceal-consumer-friction-p0.md
   verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, python3 scripts/check_docs_graph.py --repo-root . || { [ "$?" -eq 3 ] && ! command -v awiki >/dev/null; }, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh
-- prompt-behavior-proof: Prompt-affecting instruction surfaces must follow deterministic Cautilus validation and on-demand proof policy.
-  source matches: skills/public/impl/SKILL.md
-  verify: python3 scripts/validate_cautilus_proof.py --repo-root ., python3 scripts/validate_cautilus_diagnostics.py --repo-root .
-- skill-packages: Public and support skill packages plus their helper scripts.
-  source matches: skills/public/impl/SKILL.md
-  derived matches: plugins/charness/skills/impl/SKILL.md
-  verify: python3 scripts/validate_skills.py --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py, python3 scripts/check_skill_ownership_overlap.py --repo-root ., python3 scripts/validate_skill_ergonomics.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary
-- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.
-  source matches: skills/public/impl/SKILL.md
-  verify: python3 scripts/validate_public_skill_validation.py --repo-root .
-- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.
-  source matches: skills/public/impl/SKILL.md
-  verify: python3 scripts/validate_public_skill_dogfood.py --repo-root .
 - critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.
-  source matches: charness-artifacts/critique/2026-08-24-issue-713-implementation-final-cap-packet.json, charness-artifacts/critique/2026-08-24-issue-713-implementation-final-cap-packet.md, charness-artifacts/critique/2026-08-24-issue-713-implementation-r1-packet.json, charness-artifacts/critique/2026-08-24-issue-713-implementation-r1-packet.md, charness-artifacts/critique/2026-08-24-issue-713-implementation-r2-packet.json, charness-artifacts/critique/2026-08-24-issue-713-implementation-r2-packet.md, charness-artifacts/critique/2026-08-24-issue-713-implementation.md, charness-artifacts/critique/rounds/2026-08-24-issue713-r1-counterweight-retry.md, charness-artifacts/critique/rounds/2026-08-24-issue713-r1-jackson.md, charness-artifacts/critique/rounds/2026-08-24-issue713-r1-weinberg.md, charness-artifacts/critique/rounds/2026-08-24-issue713-r2.md
+  source matches: charness-artifacts/critique/2026-08-24-issue-713-implementation.md
   verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all
 - integrations-and-control-plane: Integration manifests and control-plane helper scripts.
-  derived matches: plugins/charness/scripts/check_skill_contracts.py, plugins/charness/scripts/run_slice_closeout.py, plugins/charness/scripts/slice_closeout_risk_interrupt.py
+  derived matches: plugins/charness/scripts/risk_interrupt_lib.py
   verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root ., python3 scripts/update_tools.py --repo-root .
 - repo-python: Repo-owned Python code and tests.
-  source matches: scripts/check_skill_contracts.py, scripts/run_slice_closeout.py, tests/quality_gates/test_run_slice_closeout_review_obligations.py, tests/quality_gates/test_run_slice_closeout_surface_obligations.py, tests/quality_gates/test_skill_docs_contracts.py, tests/quality_gates/test_slice_closeout_artifact_citations.py, scripts/slice_closeout_risk_interrupt.py
-  derived matches: plugins/charness/scripts/check_skill_contracts.py, plugins/charness/scripts/run_slice_closeout.py, plugins/charness/scripts/slice_closeout_risk_interrupt.py
+  source matches: scripts/risk_interrupt_lib.py, tests/test_risk_interrupt.py
+  derived matches: plugins/charness/scripts/risk_interrupt_lib.py
   verify: ./scripts/check-python-lint.sh, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only
 - python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.
-  source matches: scripts/check_skill_contracts.py, scripts/run_slice_closeout.py, scripts/slice_closeout_risk_interrupt.py
+  source matches: scripts/risk_interrupt_lib.py
   verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing
 
 Planned sync commands before validators:

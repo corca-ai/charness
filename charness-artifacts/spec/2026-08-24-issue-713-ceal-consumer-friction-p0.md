@@ -75,7 +75,10 @@ planner.
 
 ## Fixed Decisions
 
-- No change to `risk_interrupt_lib.py` or planner classification.
+- Preserve planner classification for non-empty slice paths. Distinguish
+  `changed_paths: None` (pathless/global discovery) from `changed_paths: []`
+  (an authoritative Git observation found no slice paths); the latter is scoped
+  `not-applicable`, not a global forced-interrupt decision.
 - `run_slice_closeout.py` is an existing caller of the planner and must refuse
   unknown/malformed states, blocked handoffs, and allowed handoffs whose chosen
   next step is not `impl`.
