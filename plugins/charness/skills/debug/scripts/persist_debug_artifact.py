@@ -72,11 +72,11 @@ def main() -> int:
     except ValueError:
         print("debug artifact path must stay inside --repo-root", file=sys.stderr)
         return 1
-    try:
-        relative = candidate_relative
-    except ValueError:
-        print("debug artifact path must stay inside --repo-root", file=sys.stderr)
-        return 1
+    # `candidate_relative` is already the lexical, repo-relative Path validated
+    # above.  There is no operation here that can raise ValueError; keeping a
+    # dead exception arm made the refusal surface look executable without giving
+    # it a reachable contract.
+    relative = candidate_relative
     prefix = output_dir.as_posix().rstrip("/") + "/"
     if not relative.as_posix().startswith(prefix):
         print(
