@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import runpy
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -12,9 +14,10 @@ from tests.script_loader import load_script_module
 from tests.script_main import run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[1]
+CHECKER_PATH = ROOT / "skills/public/quality/scripts/check_provenance_contract.py"
 CHECKER = load_script_module(
     "check_provenance_contract_under_test",
-    ROOT / "skills/public/quality/scripts/check_provenance_contract.py",
+    CHECKER_PATH,
 )
 
 
@@ -116,3 +119,27 @@ def test_contract_checker_reports_fixture_failure(monkeypatch: pytest.MonkeyPatc
     assert result.returncode == 1
     assert payload["fixture_results"][0]["status"] == "failed"
     assert "fixture failed" in payload["errors"][0]
+
+
+def test_contract_checker_refuses_unloadable_yaml_helper(monkeypatch: pytest.MonkeyPatch) -> None:
+    class BrokenSpec:
+        loader = None
+
+    monkeypatch.setattr(
+        CHECKER.importlib.util,
+        "spec_from_file_location",
+        lambda *args, **kwargs: BrokenSpec(),
+    )
+    with pytest.raises(RuntimeError, match="yaml output helper is not loadable"):
+        CHECKER._emit_yaml({}, ROOT)
+
+
+def test_contract_checker_script_entrypoint_exits_cleanly(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["check_provenance_contract.py", "--repo-root", str(ROOT / "plugins/charness")],
+    )
+    with pytest.raises(SystemExit) as raised:
+        runpy.run_path(str(CHECKER_PATH), run_name="__main__")
+    assert raised.value.code == 0
