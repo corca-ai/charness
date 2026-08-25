@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import shlex
 import subprocess
 from pathlib import Path
@@ -7,6 +8,7 @@ from pathlib import Path
 import yaml
 
 from runtime_bootstrap import import_repo_module
+from skills.public.critique.scripts.verification_retry import build_retry_key
 
 ROOT = Path(__file__).resolve().parents[1]
 _export_plugin = import_repo_module(__file__, "scripts.export_plugin")
@@ -29,6 +31,37 @@ def filled_in_template(template: str) -> str:
     """
     head, heading, _ = template.partition("## Fresh-Eye Satisfaction")
     assert heading, "template must still carry the Fresh-Eye Satisfaction heading"
+    scope_values = {
+        "Claim under test": "the scaffolded critique record binds its retry decision",
+        "Changed surfaces": "critique scaffold and its validator consumer",
+        "Minimum sufficient proof": "validator recomputes the retry key",
+        "Deliberately omitted checks": "the subject suite is outside this fixture",
+        "Verifier contract": "critique artifact validator reads this section",
+        "Failure classification": "none",
+        "Negative control": "none with rationale: fixture has no verifier-only claim",
+        "Subject identity": "sha256:" + "1" * 64,
+        "Verifier identity": "sha256:" + "2" * 64,
+        "Input identity": "sha256:" + "3" * 64,
+        "Failure identity": "stable:gate-failed",
+        "Evidence identity": "none",
+        "Retry disposition": "first-attempt",
+    }
+    for field, value in scope_values.items():
+        head, replacements = re.subn(
+            rf"^- {re.escape(field)}:.*$",
+            f"- {field}: {value}",
+            head,
+            flags=re.MULTILINE,
+        )
+        assert replacements == 1, f"scaffold field not found: {field}"
+    retry_key = build_retry_key(
+        subject=scope_values["Subject identity"],
+        verifier=scope_values["Verifier identity"],
+        input_identity=scope_values["Input identity"],
+        failure=scope_values["Failure identity"],
+    )
+    head, replacements = re.subn(r"^- Retry key:.*$", f"- Retry key: {retry_key}", head, flags=re.MULTILINE)
+    assert replacements == 1
     # Replace the scaffold's tier block in place rather than appending a filled
     # one: `_section_field_map` reads the FIRST matching heading, so an appended
     # block would be shadowed by the TODO stub and the test would go on asserting
@@ -182,6 +215,12 @@ def test_scaffold_surfaced_enums_match_validator_frozensets(tmp_path: Path) -> N
     )
     assert set(enums["reviewer_delivery_state"]) == set(validator.DELIVERY_STATE_VALUES)
     assert set(enums["boundary_ownership"]["verdict"]) == set(validator.BOUNDARY_VERDICT_VALUES)
+    assert set(enums["verification_scope"]["failure_classification"]) == set(
+        validator.VERIFICATION_FAILURE_CLASSIFICATIONS
+    )
+    assert set(enums["verification_scope"]["retry_disposition"]) == set(
+        validator.VERIFICATION_RETRY_DISPOSITIONS
+    )
 
 
 def test_exported_critique_scaffold_validator_command_runs_from_consumer_repo(tmp_path: Path) -> None:

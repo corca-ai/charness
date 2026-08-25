@@ -57,19 +57,28 @@ observed result, and receipt (or a typed non-claim).
 Classify a failure as `scope-too-broad`, `verifier-defect`, or
 `subject-defect` before choosing a repair. A retry is justified only when at
 least one member of the canonical identity tuple changed: subject, verifier,
-input, or stable failure code, or when the evidence identity changed. Use
-`verification_retry.py` to emit the retry key and disposition; log timestamps
-and raw output are not failure identities. The same tuple and same failure
-without new evidence is `stop-no-progress`. Record the narrowed scope or
-non-claim and move on. Keep a broad final gate only when the irreversible
-boundary's required consumer closure calls for it.
+input, or stable failure code. These identities must be content-addressed
+`sha256:` digests; log timestamps, raw output, and newly renamed receipts are
+not identity changes. Use `verification_retry.py` to emit the retry key and
+disposition. Evidence is recorded for audit, but a new evidence label never
+authorizes another run for the same tuple. To question an unchanged verifier,
+run its smallest negative-control/input probe and bind that probe's digest as
+the changed input; do not rerun the whole subject suite. The same tuple is
+`stop-no-progress`. Record the narrowed scope or non-claim and move on. Keep a
+broad final gate only when the irreversible boundary's required consumer
+closure calls for it.
 
 ```bash
 python3 "$SKILL_DIR/scripts/verification_retry.py" \
-  --subject <subject-identity> --verifier <verifier-identity> \
-  --input <input-identity> --failure-code <stable-failure-slug> \
-  --evidence <new-evidence-identity-or-none> [--previous-key <key>]
+  --subject sha256:<subject-digest> --verifier sha256:<verifier-digest> \
+  --input sha256:<input-or-negative-control-digest> \
+  --failure-code <stable-failure-slug> \
+  --evidence sha256:<receipt-digest-or-none> [--previous-key <key>]
 ```
+
+The helper is a one-shot scope decision, not a retry ledger or a truth oracle.
+The caller owns any durable history it genuinely needs; adding a second
+attempt counter here would make the retry mechanism another broad verifier.
 
 ## Slice Packet
 

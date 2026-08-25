@@ -71,8 +71,10 @@ not install tools, register hooks, or migrate gates without approval.
    proof. A failing gate does not by itself widen the scope. When the gate or
    validator changed, or its result suggests over-checking or a false green,
    inspect its own contract and a cheap negative control separately before
-   rerunning unrelated subject checks. Use the critique retry helper and its
-   canonical `scope-too-broad` / `verifier-defect` / `subject-defect` terms.
+   rerunning unrelated subject checks. Use content-addressed subject,
+   verifier, and input identities with the critique retry helper and its
+   canonical `scope-too-broad` / `verifier-defect` / `subject-defect` terms;
+   a new receipt label alone never permits a retry.
 5. When the planner emits `structural_review_packet`, answer it before broad
    recommendations. Separate target-skill findings, ambient repo gate failures,
    opportunistic repairs, and non-claims; record a `structural review result:`

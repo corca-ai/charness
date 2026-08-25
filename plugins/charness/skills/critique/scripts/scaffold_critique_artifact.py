@@ -73,6 +73,9 @@ ALLOWED_DELIVERY_STATES = (
 # validator's BOUNDARY_VERDICT_VALUES (drift test pins the equality). See
 # skills/shared/references/boundary-ownership-brief.md.
 ALLOWED_BOUNDARY_VERDICTS = ("single-surface", "owned-correctly", "moved-to-owner", "escalated-to-issue-spec")
+# Verification-scope values are validated when the scaffolded section is present.
+ALLOWED_FAILURE_CLASSIFICATIONS = ("scope-too-broad", "verifier-defect", "subject-defect", "none")
+ALLOWED_RETRY_DISPOSITIONS = ("first-attempt", "retry-new-identity", "stop-no-progress", "non-claim")
 VALIDATOR_SCRIPT_NAMES = ("validate_critique_artifacts.py", "validate-critique-artifacts.py")
 
 
@@ -87,6 +90,10 @@ def allowed_enums() -> dict[str, object]:
         "reviewer_tier_host_exposure_state": list(ALLOWED_HOST_EXPOSURE_STATES),
         "reviewer_delivery_state": list(ALLOWED_DELIVERY_STATES),
         "boundary_ownership": {"verdict": list(ALLOWED_BOUNDARY_VERDICTS)},
+        "verification_scope": {
+            "failure_classification": list(ALLOWED_FAILURE_CLASSIFICATIONS),
+            "retry_disposition": list(ALLOWED_RETRY_DISPOSITIONS),
+        },
         "couplings": [
             "action: file-issue requires a parseable follow-up: (issue URL or 'deferred <handoff-anchor>')",
             "Host exposure state: applied requires Application state: host-confirmed: <signal>",
@@ -123,7 +130,7 @@ def render_template(*, title: str, date_text: str, evidence_mode: bool = False) 
             "- Input identity: TODO sha256:<64 lowercase hex>",
             "- Failure identity: TODO stable:<lowercase-slug>",
             "- Evidence identity: TODO sha256:<64 lowercase hex> or none",
-            "- Retry disposition: TODO first-attempt | retry-new-identity | retry-new-evidence | stop-no-progress | non-claim",
+            "- Retry disposition: TODO first-attempt | retry-new-identity | stop-no-progress | non-claim",
             "- Retry key: TODO output from verification_retry.py",
             "",
         ]

@@ -136,6 +136,7 @@ def run_distinct_channel_floor(
             backend_command=cli.backend_command,
         ),
     )
+    cli.reconcile_public_release_verification(payload)
     # The pre-publish notes audit only runs when a notes FILE was supplied, so
     # the `--generate-notes` default published a body nothing had inspected.
     # Post-hoc by necessity and advisory by design — the release already exists.

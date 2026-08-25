@@ -5,15 +5,16 @@ import pytest
 from skills.public.critique.scripts.verification_retry import (
     build_retry_key,
     canonical_failure_code,
+    canonical_identity,
     decide_retry,
 )
 
 
 def _key(input_identity: str = "input-v1", failure: str = "gate-failed") -> str:
     return build_retry_key(
-        subject="subject-v1",
-        verifier="verifier-v1",
-        input_identity=input_identity,
+        subject="sha256:" + "1" * 64,
+        verifier="sha256:" + "2" * 64,
+        input_identity="sha256:" + ("3" if input_identity == "input-v1" else "4") * 64,
         failure=failure,
     )
 
@@ -29,20 +30,19 @@ def test_same_failure_without_new_evidence_stops() -> None:
         current_key=key,
         current_evidence="none",
         previous_key=key,
-        previous_evidence="none",
     )
     assert result.disposition == "stop-no-progress"
 
 
-def test_same_claim_with_new_evidence_can_retry() -> None:
+def test_same_claim_with_new_evidence_still_stops() -> None:
     key = _key()
     result = decide_retry(
         current_key=key,
-        current_evidence="receipt-v2",
+        current_evidence="sha256:" + "5" * 64,
         previous_key=key,
-        previous_evidence="receipt-v1",
     )
-    assert result.disposition == "retry-new-evidence"
+    assert result.disposition == "stop-no-progress"
+    assert "does not authorize" in result.reason
 
 
 def test_changed_input_can_retry_without_new_receipt() -> None:
@@ -53,3 +53,8 @@ def test_changed_input_can_retry_without_new_receipt() -> None:
 def test_failure_code_rejects_changing_log_prose() -> None:
     with pytest.raises(ValueError, match="stable lowercase slug"):
         canonical_failure_code("failed at 12:42 /tmp/run.log")
+
+
+def test_identity_rejects_caller_labels() -> None:
+    with pytest.raises(ValueError, match="sha256"):
+        canonical_identity("input-label")

@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
-"""Compute a stable, bounded retry decision for a verification claim.
+"""Compute a scope-gated retry decision for a verification claim.
 
 This helper does not run a gate and does not decide whether a claim is true. It
 only makes the retry question explicit: the same subject, verifier, input, and
-stable failure with no new evidence is ``stop-no-progress``. Keeping this
-separate from the gate avoids turning every retry decision into another broad
-verification pass.
+stable failure always stop. Evidence is recorded for audit, but a new label or
+receipt never authorizes another run by itself. Keeping this separate from the
+gate avoids turning every retry decision into another broad verification pass.
+
+This is intentionally one-shot rather than a retry ledger. The caller owns the
+claim record and must provide content-addressed identities; a caller that needs
+history or an attempt budget needs a separate, consumer-owned contract.
 """
 
 from __future__ import annotations
@@ -13,7 +17,6 @@ from __future__ import annotations
 import argparse
 import hashlib
 import re
-from dataclasses import dataclass
 
 IDENTITY_PREFIX = "sha256:"
 FAILURE_PREFIX = "stable:"
@@ -30,14 +33,12 @@ def _normalized(value: str) -> str:
 
 
 def canonical_identity(value: str) -> str:
-    """Return a stable identity, preserving an already-qualified digest."""
+    """Require a content-addressed identity instead of hashing a caller label."""
 
     normalized = _normalized(value).lower()
-    if normalized.startswith(IDENTITY_PREFIX):
-        if not _DIGEST.fullmatch(normalized):
-            raise ValueError("sha256 identity must contain exactly 64 lowercase hex characters")
-        return normalized
-    return f"{IDENTITY_PREFIX}{hashlib.sha256(normalized.encode('utf-8')).hexdigest()}"
+    if not _DIGEST.fullmatch(normalized):
+        raise ValueError("identity must be sha256:<64 lowercase hex characters>")
+    return normalized
 
 
 def canonical_failure_code(value: str) -> str:
@@ -68,10 +69,12 @@ def build_retry_key(*, subject: str, verifier: str, input_identity: str, failure
     return f"{IDENTITY_PREFIX}{hashlib.sha256(payload).hexdigest()}"
 
 
-@dataclass(frozen=True)
 class RetryDecision:
-    disposition: str
-    reason: str
+    __slots__ = ("disposition", "reason")
+
+    def __init__(self, disposition: str, reason: str) -> None:
+        self.disposition = disposition
+        self.reason = reason
 
 
 def decide_retry(
@@ -79,23 +82,24 @@ def decide_retry(
     current_key: str,
     current_evidence: str,
     previous_key: str | None = None,
-    previous_evidence: str = NONE,
 ) -> RetryDecision:
-    """Classify one attempt without treating log churn as new evidence."""
+    """Classify one attempt; evidence never changes the retry disposition."""
 
     if not _DIGEST.fullmatch(current_key):
         raise ValueError("current retry key must be a sha256 digest")
+    current_evidence = evidence_identity(current_evidence)
     if previous_key is None:
         return RetryDecision("first-attempt", "no previous attempt for this claim")
     if not _DIGEST.fullmatch(previous_key):
         raise ValueError("previous retry key must be a sha256 digest")
-    current_evidence = evidence_identity(current_evidence)
-    previous_evidence = evidence_identity(previous_evidence)
     if current_key != previous_key:
         return RetryDecision("retry-new-identity", "subject, verifier, input, or stable failure changed")
-    if current_evidence != NONE and current_evidence != previous_evidence:
-        return RetryDecision("retry-new-evidence", "the same claim has a different evidence identity")
-    return RetryDecision("stop-no-progress", "same claim and stable failure have no new evidence")
+    if current_evidence != NONE:
+        return RetryDecision(
+            "stop-no-progress",
+            "same claim and stable failure; evidence is recorded but does not authorize a retry",
+        )
+    return RetryDecision("stop-no-progress", "same claim and stable failure have no new scope identity")
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -106,7 +110,6 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--failure-code", required=True)
     parser.add_argument("--evidence", default=NONE)
     parser.add_argument("--previous-key")
-    parser.add_argument("--previous-evidence", default=NONE)
     return parser
 
 
@@ -124,7 +127,6 @@ def main(argv: list[str] | None = None) -> int:
             current_key=key,
             current_evidence=current_evidence,
             previous_key=args.previous_key,
-            previous_evidence=args.previous_evidence,
         )
     except ValueError as error:
         print(f"error: {error}")

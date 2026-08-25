@@ -10,12 +10,16 @@ from typing import Any
 
 _observer = runpy.run_path(str(Path(__file__).resolve().with_name("release_observer.py")))
 _same_proxy = runpy.run_path(str(Path(__file__).resolve().with_name("publish_release_same_proxy_guard.py")))
+_verification_state = runpy.run_path(
+    str(Path(__file__).resolve().with_name("publish_release_verification_state.py"))
+)
 release_view_shape = _same_proxy["release_view_shape"]
 _probe_matches_release_view_shape = _same_proxy["_probe_matches_release_view_shape"]
 collect_installed_readback = _observer["collect_installed_readback"]
 write_release_observer = _observer["write_release_observer"]
 safe_write_release_observer = _observer["safe_write_release_observer"]
 validate_release_observer_record = _observer["validate_release_observer_record"]
+reconcile_public_release_verification = _verification_state["reconcile_public_release_verification"]
 
 
 def run_post_publish_install_refresh(

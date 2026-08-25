@@ -53,9 +53,10 @@ python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
    surface verified status and open risks through `references/publication-boundary.md`.
    Before a retry or resume, use the shared `scope-too-broad`,
    `verifier-defect`, or `subject-defect` classification and the critique retry
-   helper; rerun only the smallest proof whose canonical input or evidence
-   identity changed. A release helper's existence does not justify repeating
-   every release check.
+   helper; rerun only the smallest proof whose canonical subject, verifier,
+   input, or stable failure identity changed. A new receipt label is evidence
+   to record, not permission to retry. A release helper's existence does not
+   justify repeating every release check.
 8. End with operator update steps, maintainer install-refresh status, real-host
    proof status when required, and explicit non-claims.
 

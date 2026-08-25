@@ -88,6 +88,25 @@ def test_rung1_floor_passes_confirmation_and_typed_disposition_equally() -> None
     assert _POST_CREATE.evaluate_release_distinct_channel(disposed)["ok"] is True
 
 
+def test_backend_verified_claim_is_downgraded_without_distinct_confirmation() -> None:
+    payload = {
+        "public_release_verification": "verified",
+        "distinct_channel_verification": {"channel": "none", "status": "skipped"},
+    }
+    assert _POST_CREATE.reconcile_public_release_verification(payload) == "unproven"
+    assert payload["public_release_verification"] == "unproven"
+    assert "distinct-channel" in payload["public_release_verification_reason"]
+
+
+def test_backend_and_distinct_confirmation_keep_verified_claim() -> None:
+    payload = {
+        "public_release_verification": "verified",
+        "distinct_channel_verification": {"channel": "https-fetch", "status": "confirmed"},
+    }
+    assert _POST_CREATE.reconcile_public_release_verification(payload) == "verified"
+    assert payload["public_release_verification"] == "verified"
+
+
 # --- rung-2 distinct-channel observer -------------------------------------
 
 
@@ -343,6 +362,7 @@ def _base_cli(observer, recorder: dict) -> SimpleNamespace:
         audit_published_release_body=_POST_CREATE.audit_published_release_body,
         audit_notes_text=lambda text, **k: [],
         evaluate_release_distinct_channel=_POST_CREATE.evaluate_release_distinct_channel,
+        reconcile_public_release_verification=_POST_CREATE.reconcile_public_release_verification,
         fail_release_distinct_channel_floor=_POST_CREATE.fail_release_distinct_channel_floor,
         fail_after_post_create_verification=_POST_CREATE.fail_after_post_create_verification,
         commit_final_release_artifact=record_final,

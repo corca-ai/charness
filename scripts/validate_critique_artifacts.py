@@ -43,6 +43,7 @@ _sections = import_repo_module(__file__, "scripts.markdown_sections")
 # section, shared with the ideation `## Structured Questions` floor.
 _structured_findings = import_repo_module(__file__, "scripts.critique_structured_findings")
 _critique_paths = import_repo_module(__file__, "scripts.critique_artifact_paths")
+_verification_scope = import_repo_module(__file__, "scripts.critique_verification_scope")
 PACKET_CONSUMED_RE = _scope.PACKET_CONSUMED_RE
 critique_observed_date = _scope.critique_observed_date
 # Kept as module attributes: `tests/test_validate_critique_artifacts_dates.py`
@@ -128,6 +129,9 @@ BOUNDARY_OWNERSHIP_RULE_DATE = date(2026, 7, 6)
 BOUNDARY_OWNERSHIP_HEADING = "## Boundary Ownership"
 BOUNDARY_VERDICT_VALUES = ("single-surface", "owned-correctly", "moved-to-owner", "escalated-to-issue-spec")
 BOUNDARY_VERDICT_SUMMARY = "`single-surface` / `owned-correctly` / `moved-to-owner` / `escalated-to-issue-spec`"
+
+VERIFICATION_FAILURE_CLASSIFICATIONS = _verification_scope.FAILURE_CLASSIFICATIONS
+VERIFICATION_RETRY_DISPOSITIONS = _verification_scope.RETRY_DISPOSITIONS
 # Undatable critique artifacts present when the boundary floor landed — a closed
 # allowlist, NOT fail-open (a NEW undatable artifact is still enforced; the
 # scaffold always emits a dated filename). Kept separate from the fresh-eye
@@ -560,6 +564,7 @@ def validate_critique_artifact(
         _check_forbidden_blocker_phrases,
         _check_blocked_signal_detail,
         lambda: validate_structured_findings(path, text),
+        lambda: _verification_scope.validate(path, text),
         _check_reviewer_tier_evidence,
         lambda: _reviewer_evidence.validate_delegation_consistency(
             path, text, status_lowered, section_field_map=_section_field_map

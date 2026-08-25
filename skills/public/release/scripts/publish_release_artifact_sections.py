@@ -49,6 +49,8 @@ def release_record_lines(release_url: str | None, public_release_verification: s
         return [f"- GitHub release record: verified URL `{release_url}`"]
     if release_url and public_release_verification == "failed":
         return [f"- GitHub release record: create returned `{release_url}`, but post-create verification failed"]
+    if release_url and public_release_verification == "unproven":
+        return [f"- GitHub release record: backend-visible URL `{release_url}`; distinct-channel verification remained unproven"]
     if release_url:
         return [f"- GitHub release record: target URL `{release_url}`; creation runs after the branch/tag push"]
     return ["- GitHub release record: not created by this helper run"]
@@ -288,6 +290,8 @@ def public_release_verification_lines(public_release_verification: str, release_
         lines.append("- GitHub release publication: verified by the release backend.")
     elif public_release_verification == "failed":
         lines.append("- GitHub release publication: create returned a result, but post-create verification failed.")
+    elif public_release_verification == "unproven":
+        lines.append("- GitHub release publication: backend-visible, but the required distinct-channel readback did not confirm it.")
     elif release_url:
         lines.append("- GitHub release publication: expected after branch/tag push; not verified yet.")
     else:
