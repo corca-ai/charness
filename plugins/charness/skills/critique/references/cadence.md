@@ -48,17 +48,28 @@ resolution in
 Before a gate or review rerun, record the smallest claim that needs proof and
 the final consumers that can actually observe it. Treat the verifier as a
 separate review surface when its implementation, trigger rules, output schema,
-or trust assumptions changed. The verifier check should be the cheapest
-contract/negative-control proof that can establish that surface; it does not
-implicitly authorize a full subject-suite rerun.
+or trust assumptions changed, or when its output suggests over-checking or a
+false green. The verifier check should be the cheapest contract/negative-control
+proof that can establish that surface; it does not implicitly authorize a full
+subject-suite rerun. Record the negative-control command, expected refusal,
+observed result, and receipt (or a typed non-claim).
 
 Classify a failure as `scope-too-broad`, `verifier-defect`, or
 `subject-defect` before choosing a repair. A retry is justified only when at
-least one member of this identity tuple changed: subject, verifier, input, or
-failure observation. The same tuple and same failure without new evidence is a
-stop condition. Record the narrowed scope or non-claim and move on. Keep a
-broad final gate only when the irreversible boundary's required consumer
-closure calls for it.
+least one member of the canonical identity tuple changed: subject, verifier,
+input, or stable failure code, or when the evidence identity changed. Use
+`verification_retry.py` to emit the retry key and disposition; log timestamps
+and raw output are not failure identities. The same tuple and same failure
+without new evidence is `stop-no-progress`. Record the narrowed scope or
+non-claim and move on. Keep a broad final gate only when the irreversible
+boundary's required consumer closure calls for it.
+
+```bash
+python3 "$SKILL_DIR/scripts/verification_retry.py" \
+  --subject <subject-identity> --verifier <verifier-identity> \
+  --input <input-identity> --failure-code <stable-failure-slug> \
+  --evidence <new-evidence-identity-or-none> [--previous-key <key>]
+```
 
 ## Slice Packet
 

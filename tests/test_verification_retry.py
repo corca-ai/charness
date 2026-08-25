@@ -1,0 +1,55 @@
+from __future__ import annotations
+
+import pytest
+
+from skills.public.critique.scripts.verification_retry import (
+    build_retry_key,
+    canonical_failure_code,
+    decide_retry,
+)
+
+
+def _key(input_identity: str = "input-v1", failure: str = "gate-failed") -> str:
+    return build_retry_key(
+        subject="subject-v1",
+        verifier="verifier-v1",
+        input_identity=input_identity,
+        failure=failure,
+    )
+
+
+def test_first_attempt_is_not_a_retry() -> None:
+    result = decide_retry(current_key=_key(), current_evidence="none")
+    assert result.disposition == "first-attempt"
+
+
+def test_same_failure_without_new_evidence_stops() -> None:
+    key = _key()
+    result = decide_retry(
+        current_key=key,
+        current_evidence="none",
+        previous_key=key,
+        previous_evidence="none",
+    )
+    assert result.disposition == "stop-no-progress"
+
+
+def test_same_claim_with_new_evidence_can_retry() -> None:
+    key = _key()
+    result = decide_retry(
+        current_key=key,
+        current_evidence="receipt-v2",
+        previous_key=key,
+        previous_evidence="receipt-v1",
+    )
+    assert result.disposition == "retry-new-evidence"
+
+
+def test_changed_input_can_retry_without_new_receipt() -> None:
+    result = decide_retry(current_key=_key("input-v2"), current_evidence="none", previous_key=_key())
+    assert result.disposition == "retry-new-identity"
+
+
+def test_failure_code_rejects_changing_log_prose() -> None:
+    with pytest.raises(ValueError, match="stable lowercase slug"):
+        canonical_failure_code("failed at 12:42 /tmp/run.log")

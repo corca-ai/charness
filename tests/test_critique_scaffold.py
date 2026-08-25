@@ -82,6 +82,9 @@ def test_critique_scaffold_reports_validator_and_template(tmp_path: Path) -> Non
     assert "Minimum sufficient proof" in template
     assert "Verifier contract" in template
     assert "scope-too-broad | verifier-defect | subject-defect" in template
+    assert "Negative control:" in template
+    assert "Evidence identity:" in template
+    assert "stop-no-progress" in template
     assert "## Structured Findings" in template
     assert "- F1 | bin: act-before-ship | evidence: moderate |" in template
     assert "## Reviewer Tier Evidence" in template

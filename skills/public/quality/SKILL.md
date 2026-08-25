@@ -69,8 +69,10 @@ not install tools, register hooks, or migrate gates without approval.
    because false positives or false negatives are expected. Before a broad
    gate, state the claim, affected consumer closure, and minimum sufficient
    proof. A failing gate does not by itself widen the scope. When the gate or
-   validator changed, inspect its own contract and a cheap negative control
-   separately before rerunning unrelated subject checks.
+   validator changed, or its result suggests over-checking or a false green,
+   inspect its own contract and a cheap negative control separately before
+   rerunning unrelated subject checks. Use the critique retry helper and its
+   canonical `scope-too-broad` / `verifier-defect` / `subject-defect` terms.
 5. When the planner emits `structural_review_packet`, answer it before broad
    recommendations. Separate target-skill findings, ambient repo gate failures,
    opportunistic repairs, and non-claims; record a `structural review result:`

@@ -117,7 +117,14 @@ def render_template(*, title: str, date_text: str, evidence_mode: bool = False) 
             "- Deliberately omitted checks: TODO what is omitted and why it is not required here.",
             "- Verifier contract: TODO the gate/validator identity and whether it changed or is suspect.",
             "- Failure classification: TODO scope-too-broad | verifier-defect | subject-defect | none",
-            "- Retry key: TODO subject identity + verifier identity + input identity + failure identity",
+            "- Negative control: TODO command | expected refusal | observed result | receipt, or none with rationale.",
+            "- Subject identity: TODO sha256:<64 lowercase hex>",
+            "- Verifier identity: TODO sha256:<64 lowercase hex>",
+            "- Input identity: TODO sha256:<64 lowercase hex>",
+            "- Failure identity: TODO stable:<lowercase-slug>",
+            "- Evidence identity: TODO sha256:<64 lowercase hex> or none",
+            "- Retry disposition: TODO first-attempt | retry-new-identity | retry-new-evidence | stop-no-progress | non-claim",
+            "- Retry key: TODO output from verification_retry.py",
             "",
         ]
     )
