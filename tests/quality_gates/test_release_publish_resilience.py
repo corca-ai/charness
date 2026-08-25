@@ -122,6 +122,7 @@ def test_publish_release_cli_direct_loader_context_without_sys_modules() -> None
     assert callable(module.execute_publish_plan)
     assert callable(context.run)
     assert hasattr(context, "_helpers")
+    assert context.reconcile_public_release_verification is module.reconcile_public_release_verification
 
 
 def test_release_closeout_message_direct_loader_context_without_sys_modules() -> None:

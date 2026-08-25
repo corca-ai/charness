@@ -127,6 +127,7 @@ def _execution_context() -> SimpleNamespace:
         "create_release",
         "verify_release_visible",
         "confirm_release_via_distinct_channel",
+        "reconcile_public_release_verification",
         "audit_published_release_body",
         "audit_notes_text",
         "evaluate_release_distinct_channel",

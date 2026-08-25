@@ -107,6 +107,33 @@ def test_backend_and_distinct_confirmation_keep_verified_claim() -> None:
     assert payload["public_release_verification"] == "verified"
 
 
+def test_confirmed_adapter_probe_without_established_guard_is_unproven() -> None:
+    payload = {
+        "public_release_verification": "verified",
+        "distinct_channel_verification": {
+            "channel": "adapter-probe",
+            "status": "confirmed",
+            "same_proxy_guard": "inconclusive-degenerate-release-view-template",
+        },
+    }
+    assert _POST_CREATE.reconcile_public_release_verification(payload) == "unproven"
+    assert payload["public_release_verification"] == "unproven"
+    assert "without established distinctness" in payload["public_release_verification_reason"]
+
+
+def test_confirmed_adapter_probe_with_evaluated_guard_keeps_verified_claim() -> None:
+    payload = {
+        "public_release_verification": "verified",
+        "distinct_channel_verification": {
+            "channel": "adapter-probe",
+            "status": "confirmed",
+            "same_proxy_guard": "evaluated",
+        },
+    }
+    assert _POST_CREATE.reconcile_public_release_verification(payload) == "verified"
+    assert payload["public_release_verification"] == "verified"
+
+
 # --- rung-2 distinct-channel observer -------------------------------------
 
 
