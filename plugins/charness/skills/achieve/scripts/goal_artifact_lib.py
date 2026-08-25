@@ -424,8 +424,13 @@ def check_goal(text: str) -> dict[str, Any]:
     missing, portability_missing, duplicate_sections = _markdown.required_heading_report(
         _mask_fences(text), REQUIRED_SECTIONS, PORTABILITY_SECTIONS
     )
-    status = read_status(text)
+    status, closeout_plan = read_status(text), _pursue._CLOSEOUT_PLAN.parse_closeout_plan(text)
     issues: list[str] = ["duplicate sections: " + ", ".join(duplicate_sections)] if duplicate_sections else []
+    # A plan is optional for historical/pre-shaping records, but once an author
+    # writes the heading the broad reader must consume the same typed result as
+    # `/goal`; otherwise a malformed duplicate or field is invisible until the
+    # activation path happens to run.
+    issues.extend(closeout_plan.validation_issues())
     if status is None:
         issues.append("missing `Status:` line")
     elif status not in VALID_STATUSES:
@@ -465,7 +470,7 @@ def check_goal(text: str) -> dict[str, Any]:
         "ok": not issues,
         "advisories": [a for a in [_cadence_owner.decline_advisory(cadence)] if a],
         "cadence_owner": cadence,
-        "status": status,
+        "status": status, "closeout_plan": closeout_plan.as_dict(),
         "missing_sections": missing,
         "portability_missing_sections": portability_missing,
         "path_portability": path_portability,

@@ -31,14 +31,8 @@ _H2 = re.compile(r"^## (.+?)[ \t]*\r?$", re.MULTILINE)
 
 # Activation checks only the minimum shape of this plan. It deliberately does
 # not judge SHA values, reviewer quality, or proof truth; those stay with the
-# closeout evidence and fresh-eye workflows.
-CLOSEOUT_PLAN_FIELDS = (
-    "Reviewed inputs:",
-    "Frozen target:",
-    "Fresh-eye:",
-    "Verification lock:",
-    "Complete flip:",
-)
+# closeout evidence and fresh-eye workflows. The typed producer owns the
+# vocabulary and field grammar; this module only composes its verdict.
 
 #: What a ``pursue_readiness`` verdict does NOT establish, carried in the payload
 #: so the caller reads the answer's scope from the answer instead of re-deriving
@@ -65,6 +59,9 @@ def _load_backlog_floor():
 
 _BACKLOG = _load_backlog_floor()
 _LIFECYCLE = _load_sibling("goal_artifact_lifecycle")
+_CLOSEOUT_PLAN = _load_sibling("goal_artifact_closeout_plan")
+
+CLOSEOUT_PLAN_FIELDS = _CLOSEOUT_PLAN.CLOSEOUT_PLAN_FIELDS
 
 NON_SHAPING_STATUSES = _LIFECYCLE.NON_SHAPING_STATUSES
 TERMINAL_STATUSES = _LIFECYCLE.TERMINAL_STATUSES
@@ -279,35 +276,13 @@ def pursue_readiness(
               )}
     )
     hollow_blocking = list(hollow_report.get("blocking") or [])
-    closeout_plan_missing_fields: list[str] = []
-    closeout_plan_duplicate = False
-    if "Closeout Binding Plan" in required_sections:
-        headings = list(_H2.finditer(masked))
-        closeout_headings = [
-            heading
-            for heading in headings
-            if heading.group(1).strip() == "Closeout Binding Plan"
-        ]
-        closeout_plan_duplicate = len(closeout_headings) > 1
-        if len(closeout_headings) == 1:
-            heading = closeout_headings[0]
-            index = headings.index(heading)
-            section_end = headings[index + 1].start() if index + 1 < len(headings) else len(masked)
-            body = masked[heading.end():section_end]
-            for field in CLOSEOUT_PLAN_FIELDS:
-                field_pattern = re.compile(
-                    rf"^[ \t>*-]*[`*_~]*{re.escape(field)}[`*_~]*[ \t]+(.+)$",
-                    re.MULTILINE,
-                )
-                match = field_pattern.search(body)
-                # `_BACKLOG._SUBSTANTIVE`, not a local punctuation class. Round-2 review
-                # found the backlog floor had DIAGNOSED this class in prose (the em-dash
-                # in `Counted: —` slipped straight through an enumerated list) and fixed
-                # only its own copy, ~130 lines away, leaving `- Frozen target: —` still
-                # satisfying this floor. Migrating the diagnosis without the fix is the
-                # defect shape this goal exists to remove.
-                if match is None or not _BACKLOG._SUBSTANTIVE.sub("", match.group(1)):
-                    closeout_plan_missing_fields.append(field)
+    closeout_plan = _CLOSEOUT_PLAN.parse_closeout_plan(
+        text,
+        mask_fences=mask_fences,
+        fences_balanced=fences_balanced,
+    )
+    closeout_plan_missing_fields = list(closeout_plan.missing_fields)
+    closeout_plan_duplicate = closeout_plan.duplicate
     # `shape_ready` keeps its established meaning (no Before-phase marker) so the
     # placeholder signal stays readable on its own; completeness is a separate
     # dimension that gates activation alongside it.
@@ -383,6 +358,7 @@ def pursue_readiness(
         "missing_sections": missing_sections,
         "closeout_plan_missing_fields": closeout_plan_missing_fields,
         "closeout_plan_duplicate": closeout_plan_duplicate,
+        "closeout_plan": closeout_plan.as_dict(),
         "duplicate_sections": duplicate_sections,
         "backlog_recount": backlog_report,
         "backlog_recount_missing_fields": backlog_recount_missing_fields,
