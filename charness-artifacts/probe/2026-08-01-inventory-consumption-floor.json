@@ -1,22 +1,22 @@
 {
  "corpus": "charness-artifacts/quality",
- "artifacts": 154,
+ "artifacts": 155,
  "floor": 5,
  "label_value_residuals": {
-  "count": 423,
+  "count": 419,
   "min": 7,
   "median": 46,
   "below_floor": 0
  },
  "exemption_counts": {
-  "not-claimed": 154,
+  "not-claimed": 155,
   "corroborated": 0,
   "not-corroborated": 0,
   "REFUSED-uncorroborated": 0
  },
  "citations_lowered_below_requirement": [],
  "field_mention_residuals": {
-  "count": 209,
+  "count": 205,
   "min": 0,
   "p5": 5,
   "median": 30
@@ -1691,6 +1691,40 @@
    "citations": {}
   },
   {
+   "path": "charness-artifacts/quality/2026-08-25-critique-debug-evidence-review.md",
+   "declared_date": "2026-08-25",
+   "last_commit_date": "2026-08-25",
+   "claims_pre_contract_exemption": false,
+   "commit_state": "dated",
+   "exemption": "not-claimed",
+   "citations": {}
+  },
+  {
+   "path": "charness-artifacts/quality/2026-08-25-quality-review.md",
+   "declared_date": "2026-08-25",
+   "last_commit_date": "2026-08-25",
+   "claims_pre_contract_exemption": false,
+   "commit_state": "dated",
+   "exemption": "not-claimed",
+   "citations": {}
+  },
+  {
+   "path": "charness-artifacts/quality/2026-08-25-setup-flat-wiki-quality-bootstrap.md",
+   "declared_date": "2026-08-25",
+   "last_commit_date": "2026-08-25",
+   "claims_pre_contract_exemption": false,
+   "commit_state": "dated",
+   "exemption": "not-claimed",
+   "citations": {
+    "inventory_skill_ergonomics.py": {
+     "required": 2,
+     "engaged_presence_only": 0,
+     "engaged_with_a_value": 0,
+     "lost_to_the_floor": []
+    }
+   }
+  },
+  {
    "path": "charness-artifacts/quality/latest.md",
    "declared_date": "2026-08-18",
    "last_commit_date": "2026-08-18",
@@ -1711,12 +1745,12 @@
   "baseline_check": "Refreshed over the checked-in quality artifacts under charness-artifacts/quality. The artifact count and every residual figure live in this file's measured fields, which tests/quality_gates/test_a_declaration_is_not_its_own_corroboration.py pins against today's tree. Re-derive with: python3 scripts/measure_inventory_consumption_floor.py --repo-root .",
   "command": "python3 scripts/measure_inventory_consumption_floor.py --repo-root .",
   "counterfactual_floor_20": "Re-runnable with --floor 20: 11 citations drop below their requirement and 46 label values fall under the floor. That is why the floor is 5, not a round number.",
-    "date": "2026-08-21",
+  "date": "2026-08-25",
   "does_not_license": "This probe measures the residual floor only. It does NOT measure the value-marker rule, which is a separate question (D47) with its own immutable snapshot at charness-artifacts/probe/2026-08-12-inventory-marker-rule-snapshot.json; read the marker counts there. This file measures no marker fields at all, so it can carry no copy of them. It measures this repo's corpus and licenses no claim about a consumer repo's.",
-    "repo_head_at_run": "611f58d49c55a4c57e7b929908de2985fe25e6e1",
-    "synchronized_after": "Refreshed after 495af8a20 through 611f58d49 added four top-level quality artifacts under charness-artifacts/quality. The exact counts are this file's measured fields and are deliberately not transcribed here; the residual field mentions, the floor, the floor-20 citation counterfactual, and the label-value counterfactual are unchanged.",
-    "synchronized_reason": "Refresh the pinned residual-floor measurement because the R2/R3 release-boundary evidence added four checked-in top-level quality artifacts. The rule and floor are unchanged. The drift message also names charness-artifacts/probe/2026-08-01-inventory-marker-rule.json and docs/deferred-decisions.md D47; neither was touched, because #596 replaced the mutable marker pin with the immutable 2026-08-12 snapshot and D47 states in its own text that unrelated quality-corpus growth does not rewrite it.",
+  "repo_head_at_run": "289103a2cc89fc238a26acd99079815e8a18d4ef",
+  "synchronized_after": "Refreshed after 611f58d49 through 289103a2c added three top-level quality artifacts under charness-artifacts/quality. The exact counts are this file's measured fields and are deliberately not transcribed here; the residual field mentions, the floor, the floor-20 citation counterfactual, and the label-value counterfactual are unchanged.",
+  "synchronized_reason": "Refresh the pinned residual-floor measurement because the consumer-boundary release work added three checked-in top-level quality artifacts. The rule and floor are unchanged. The drift message also names charness-artifacts/probe/2026-08-01-inventory-marker-rule.json and docs/deferred-decisions.md D47; neither was touched, because #596 replaced the mutable marker pin with the immutable 2026-08-12 snapshot and D47 states in its own text that unrelated quality-corpus growth does not rewrite it.",
   "why": "The floor is measured rather than argued: it is set so that no checked-in citation drops below its requirement and no label value falls under it, which the measured `citations_lowered_below_requirement` and `label_value_residuals.below_floor` fields report directly. The headline corpus figures are the measured `artifacts` and `field_mention_residuals.count` in this file; they are deliberately NOT transcribed here, because earlier refresh prose went stale while the executable probe correctly followed the corpus.",
-    "worktree": "dirty: the delivery-boundary release slice and this synchronized residual-floor probe are present; the residual rule and floor are unchanged"
+  "worktree": "dirty: the delivery-boundary release slice and this synchronized residual-floor probe are present; the residual rule and floor are unchanged"
  }
 }

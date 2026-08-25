@@ -3,18 +3,18 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 162,
-  "indexed_artifact_count": 148,
+  "source_artifact_count": 163,
+  "indexed_artifact_count": 149,
   "risk_class_counts": {
     "contract-freeze-risk": 30,
-    "external-seam": 22,
+    "external-seam": 23,
     "host-disproves-local": 7,
     "none": 62,
     "operator-visible-recovery": 23,
-    "repeated-symptom": 14
+    "repeated-symptom": 15
   },
   "generalization_pressure_counts": {
-    "factor-now": 21,
+    "factor-now": 22,
     "monitor": 111,
     "none": 16
   },
@@ -2028,6 +2028,20 @@
       "forced": true
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-08-24-issue-714.md",
+      "is_current_pointer": false,
+      "interrupt_id": "issue-714-node-tap-run-window-2026-08-24",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "TAP transcript -> `NodeTestReporter` -> mutation accounting",
+      "generalization_pressure": "factor-now",
+      "critique_required": true,
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/2026-08-24-issue-714-run-window.md",
+      "forced": true
+    },
+    {
       "artifact_path": "charness-artifacts/debug/2026-08-24-issues-690-691-goal-readiness.md",
       "is_current_pointer": false,
       "interrupt_id": "issues-690-691-goal-readiness-2026-08-24",
@@ -2090,15 +2104,16 @@
     {
       "artifact_path": "charness-artifacts/debug/latest.md",
       "is_current_pointer": true,
-      "interrupt_id": "issue-714-node-tap-run-window-2026-08-24",
+      "interrupt_id": "repeated-consumer-boundary-failure-2026-08-25",
       "risk_classes": [
-        "none"
+        "repeated-symptom",
+        "external-seam"
       ],
-      "seam": "TAP transcript -> `NodeTestReporter` -> mutation accounting",
+      "seam": "producer evidence -> task/host transport -> packaged consumer -> verdict",
       "generalization_pressure": "factor-now",
       "critique_required": true,
       "next_step": "spec",
-      "handoff_artifact": "charness-artifacts/spec/2026-08-24-issue-714-run-window.md",
+      "handoff_artifact": "charness-artifacts/spec/2026-08-25-consumer-boundary-invariants.md",
       "forced": true
     }
   ],
