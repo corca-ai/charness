@@ -50,34 +50,27 @@ def _payload(
 
 
 def _reason_code(reason: str) -> str:
-    if "changed-ref-path-mismatch" in reason:
-        return "changed-ref-path-mismatch"
-    if "changed-ref-unavailable" in reason:
-        return "changed-ref-unavailable"
-    if "null-content-hash" in reason:
-        return "null-or-invalid-hash"
-    if "sha256 is null or invalid" in reason:
-        return "null-or-invalid-hash"
-    if "substrate mode" in reason:
-        return "substrate-mode-mismatch"
-    if "changed_ref" in reason:
-        return "changed-ref-mismatch"
-    if "identity" in reason and "stale" in reason:
-        return "reviewed-input-stale"
-    if "content hash" in reason:
-        return "null-or-invalid-hash"
-    if "path" in reason and "outside" in reason:
-        return "path-outside-repo"
-    if "packet bytes" in reason:
-        return "packet-stale-or-tampered"
-    if "not valid JSON" in reason:
-        return "packet-invalid-json"
-    if "wrong kind" in reason:
-        return "packet-kind-mismatch"
-    if "artifact identity" in reason:
-        return "identity-mismatch"
-    if "zero paths" in reason:
-        return "empty-reviewed-paths"
+    if reason == "current":
+        return "current"
+    rules = (
+        (("changed-ref-path-mismatch",), "changed-ref-path-mismatch"),
+        (("changed-ref-unavailable",), "changed-ref-unavailable"),
+        (("null-content-hash",), "null-or-invalid-hash"),
+        (("sha256 is null or invalid",), "null-or-invalid-hash"),
+        (("substrate mode",), "substrate-mode-mismatch"),
+        (("changed_ref",), "changed-ref-mismatch"),
+        (("identity", "stale"), "reviewed-input-stale"),
+        (("path", "outside"), "path-outside-repo"),
+        (("content hash",), "null-or-invalid-hash"),
+        (("packet bytes",), "packet-stale-or-tampered"),
+        (("not valid JSON",), "packet-invalid-json"),
+        (("wrong kind",), "packet-kind-mismatch"),
+        (("artifact identity",), "identity-mismatch"),
+        (("zero paths",), "empty-reviewed-paths"),
+    )
+    for needles, code in rules:
+        if all(needle in reason for needle in needles):
+            return code
     return "packet-binding-refused"
 
 

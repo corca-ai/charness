@@ -117,6 +117,9 @@ class DeliveryLedger:
         prompt_sha256: str | None = None,
         schema_sha256: str | None = None,
         capability_launch_envelope_sha256: str | None = None,
+        output_file: str | None = None,
+        receipt_file: str | None = None,
+        producer_run_id: str | None = None,
         attempt_id: str | None = None,
         recorded_at: str | None = None,
     ) -> DeliveryAttempt:
@@ -132,6 +135,9 @@ class DeliveryLedger:
             prompt_sha256=prompt_sha256,
             schema_sha256=schema_sha256,
             capability_launch_envelope_sha256=capability_launch_envelope_sha256,
+            output_file=output_file,
+            receipt_file=receipt_file,
+            producer_run_id=producer_run_id,
             recorded_at=recorded_at or utc_now(),
         )
         if attempt.attempt_id in self.attempts:
@@ -178,6 +184,9 @@ class DeliveryLedger:
             prompt_sha256=old.prompt_sha256,
             schema_sha256=old.schema_sha256,
             capability_launch_envelope_sha256=old.capability_launch_envelope_sha256,
+            output_file=None,
+            receipt_file=None,
+            producer_run_id=None,
             recorded_at=recorded_at or utc_now(),
             retry_of=old.attempt_id,
             retry_count=old.retry_count + 1,

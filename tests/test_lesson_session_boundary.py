@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import io
 import json
+import threading
 from pathlib import Path
 
 import pytest
@@ -89,6 +90,26 @@ def test_worker_write_fence_refuses_global_lesson_paths(tmp_path: Path) -> None:
     assert accepted["ok"] is True
 
 
+@pytest.mark.parametrize(
+    "path",
+    [
+        "../repo/charness-artifacts/retro/lesson-ledger.json",
+        ".\\charness-artifacts\\retro\\lesson-ledger.json",
+    ],
+)
+def test_worker_write_fence_canonicalizes_aliases_and_foreign_lanes(tmp_path: Path, path: str) -> None:
+    absolute = str((tmp_path / "charness-artifacts/retro/lesson-ledger.json").resolve())
+    candidate = absolute if path.startswith("..") else path
+    with pytest.raises(boundary.LessonSessionBoundaryError, match="parent-owned|forbidden"):
+        boundary.validate_lane_writes(tmp_path, [candidate], lane_id="lane-a")
+    with pytest.raises(boundary.LessonSessionBoundaryError, match="parent-owned|forbidden"):
+        boundary.validate_lane_writes(
+            tmp_path,
+            [".charness/lesson-lanes/foreign/receipt.json"],
+            lane_id="lane-a",
+        )
+
+
 def test_open_session_worker_mode_cannot_mutate_parent_ledger(tmp_path: Path) -> None:
     with pytest.raises(boundary.LessonSessionBoundaryError, match="cannot open or mutate"):
         open_lesson_session.open_session(
@@ -98,3 +119,31 @@ def test_open_session_worker_mode_cannot_mutate_parent_ledger(tmp_path: Path) ->
             stdout=io.BytesIO(),
             worker_mode=True,
         )
+
+
+def test_lane_receipt_write_once_has_one_winner_under_concurrency(tmp_path: Path) -> None:
+    repo, _receipt, _bundle = _parent(tmp_path)
+    context = boundary.load_parent_session(repo, session_id="parent")
+    barrier = threading.Barrier(2)
+    outcomes: list[str] = []
+
+    def writer(owner: str) -> None:
+        barrier.wait()
+        try:
+            boundary.write_lane_receipt(context, lane_id="race", owner_id=owner)
+        except Exception as exc:  # both domain and OS refusal are observable here
+            outcomes.append(type(exc).__name__)
+        else:
+            outcomes.append("success")
+
+    threads = [threading.Thread(target=writer, args=(f"worker-{i}",)) for i in range(2)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+    assert outcomes.count("success") == 1
+    assert len(outcomes) == 2
+    assert json.loads((repo / ".charness/lesson-lanes/race/receipt.json").read_text())["owner_id"] in {
+        "worker-0",
+        "worker-1",
+    }

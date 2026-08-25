@@ -39,6 +39,9 @@ _critique_packet_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(
 yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 load_adapter = _critique_adapter_lib.load_adapter
 build_packet = _critique_packet_lib.build_packet
+parse_changed_ref = _critique_packet_lib.parse_changed_ref
+substrate_refusal = _critique_packet_lib.substrate_refusal
+packet_result_payload = _critique_packet_lib.packet_result_payload
 ReviewedInputError = _critique_packet_lib.ReviewedInputError
 write_packet = _critique_packet_lib.write_packet
 packet_file_sha256 = _critique_packet_lib.packet_file_sha256
@@ -99,32 +102,16 @@ def main() -> int:
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
-    changed_targets = [value for value in (args.changed_ref, args.commit, args.changed_range) if value]
-    if len(changed_targets) > 1:
-        parser.error("use only one of --changed-ref, --commit, or --range")
-    changed_ref = changed_targets[0] if changed_targets else None
+    changed_ref = parse_changed_ref(
+        parser,
+        changed_ref=args.changed_ref,
+        commit=args.commit,
+        changed_range=args.changed_range,
+    )
     substrate_mode = args.substrate_mode or ("committed-ref" if changed_ref else "working-tree")
-    if substrate_mode == "working-tree" and changed_ref:
-        yaml_output.emit_yaml(
-            {
-                "ok": False,
-                "status": "refused",
-                "reason_code": "substrate-ref-mismatch",
-                "error": "working-tree substrate cannot declare --changed-ref",
-                "substrate_mode": substrate_mode,
-            }
-        )
-        return 1
-    if substrate_mode == "committed-ref" and not changed_ref:
-        yaml_output.emit_yaml(
-            {
-                "ok": False,
-                "status": "refused",
-                "reason_code": "substrate-ref-missing",
-                "error": "committed-ref substrate requires --changed-ref",
-                "substrate_mode": substrate_mode,
-            }
-        )
+    refusal = substrate_refusal(substrate_mode=substrate_mode, changed_ref=changed_ref)
+    if refusal is not None:
+        yaml_output.emit_yaml(refusal)
         return 1
     prepared_for = args.prepared_for
     if prepared_for == "working tree" and changed_ref:
@@ -202,18 +189,12 @@ def main() -> int:
             "binding covers zero reviewed paths and proves nothing; re-run with "
             "explicit --reviewed-path values for what was actually reviewed"
         )
-    yaml_output.emit_yaml(
-        {
-            "ok": packet["ok"],
-            "section_count": packet["section_count"],
-            "json_path": str(json_path.relative_to(repo_root)),
-            "md_path": str(md_path.relative_to(repo_root)),
-            "changed_ref": packet["changed_ref"],
-            "substrate_mode": packet["substrate_mode"],
-            "adapter_path": packet["adapter_path"],
-            "reviewed_input_binding": binding,
-        }
+    result = packet_result_payload(
+        packet, repo_root=repo_root, json_path=json_path, md_path=md_path
     )
+    result["substrate_mode"] = packet["substrate_mode"]
+    result["reviewed_input_binding"] = binding
+    yaml_output.emit_yaml(result)
     return 0 if packet["ok"] else 1
 
 

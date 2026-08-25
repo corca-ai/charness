@@ -12,6 +12,15 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+VALIDATOR_TIMEOUT_SECONDS = 60.0
+
+
+def _rollback(target: Path, previous: bytes | None) -> None:
+    if previous is None:
+        target.unlink(missing_ok=True)
+    else:
+        target.write_bytes(previous)
+
 
 def persist_debug_artifact(
     *,
@@ -33,17 +42,40 @@ def persist_debug_artifact(
         relative = target.resolve().relative_to(root).as_posix()
     except ValueError as exc:
         raise ValueError("debug artifact path must stay inside --repo-root") from exc
+    if target.is_symlink():
+        raise ValueError("debug artifact path must be a lexical record path, not a symlink pointer")
+    if target.exists() and target.is_file() and target.stat().st_nlink > 1:
+        raise ValueError("debug artifact path must not be a hardlink with another name")
     previous = target.read_bytes() if target.exists() and target.is_file() else None
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(markdown_text.rstrip() + "\n", encoding="utf-8")
     command = shlex.split(validator_command)
-    completed = subprocess.run(
-        command,
-        cwd=root,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    try:
+        completed = subprocess.run(
+            command,
+            cwd=root,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=VALIDATOR_TIMEOUT_SECONDS,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        _rollback(target, previous)
+        return {
+            "action": "refused",
+            "artifact_path": relative,
+            "status": "incomplete",
+            "validated": False,
+            "validation": {
+                "command": validator_command,
+                "returncode": None,
+                "stdout": getattr(exc, "stdout", "") or "",
+                "stderr": getattr(exc, "stderr", "") or "",
+                "path": relative,
+                "error_type": type(exc).__name__,
+            },
+            "reason": "debug artifact validator did not complete; write was rolled back",
+        }
     validation = {
         "command": validator_command,
         "returncode": completed.returncode,
@@ -52,10 +84,7 @@ def persist_debug_artifact(
         "path": relative,
     }
     if completed.returncode != 0:
-        if previous is None:
-            target.unlink(missing_ok=True)
-        else:
-            target.write_bytes(previous)
+        _rollback(target, previous)
         return {
             "action": "refused",
             "artifact_path": relative,
@@ -71,4 +100,3 @@ def persist_debug_artifact(
         "validated": True,
         "validation": validation,
     }
-

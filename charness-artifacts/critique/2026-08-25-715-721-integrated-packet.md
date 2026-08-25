@@ -1,13 +1,30 @@
 # Critique Prepare Packet — charness
 
 - **Kind**: `charness.critique_prepare_packet` (v1)
-- **Generated**: 2026-08-25T03:22:00Z
-- **Prepared for**: slice3-final-bundle-preflight-contract-repaired
+- **Generated**: 2026-08-25T02:39:09Z
+- **Prepared for**: 715-721 integrated implementation
 - **Substrate mode**: `working-tree`
 - **Adapter**: `.agents/critique-adapter.yaml`
-- **Reviewed input identity**: `f4b2759a14a383e1312f99bf74d1b9f0b61708c2b847b086afefac601fd01dd0`
-- **Reviewed paths**: 1
-  - `charness-artifacts/spec/2026-08-06-final-bundle-preflight-contract.md`
+- **Reviewed input identity**: `b161da1db88279416819b4136a7e4338f3f94cbc2038c24ff93bea8dfd055e9d`
+- **Reviewed paths**: 18
+  - `charness-artifacts/quality/dup-review.json`
+  - `charness-artifacts/retro/lesson-ledger.json`
+  - `charness-artifacts/retro/lesson-session-receipts/2026-08-25-715-721-implementation.json`
+  - `charness-artifacts/retro/lesson-session-receipts/2026-08-25-715-721-implementation.md`
+  - `plugins/charness/scripts/atomic_write_lib.py`
+  - `plugins/charness/scripts/capability_catalog_resolver.py`
+  - `plugins/charness/scripts/critique_packet_lib.py`
+  - `plugins/charness/scripts/lesson_evaluation_continuity_lib.py`
+  - `plugins/charness/scripts/lesson_session_boundary.py`
+  - `plugins/charness/skills/critique/scripts/prepare_packet.py`
+  - `plugins/charness/skills/retro/scripts/prepare_packet.py`
+  - `scripts/atomic_write_lib.py`
+  - `scripts/capability_catalog_resolver.py`
+  - `scripts/critique_packet_lib.py`
+  - `scripts/lesson_evaluation_continuity_lib.py`
+  - `scripts/lesson_session_boundary.py`
+  - `skills/public/critique/scripts/prepare_packet.py`
+  - `skills/public/retro/scripts/prepare_packet.py`
 - **Auto-excluded paths**: 0
 
 ## Verify Packet
@@ -15,7 +32,7 @@
 Run this exact command from the repository root:
 
 ```sh
-python3 skills/public/critique/scripts/verify_packet.py --repo-root . --packet-path charness-artifacts/critique/2026-08-06-041231-packet.json --packet-sha256 ae1d817e638a8b186f992cc789391ae811daed8f0c401328820c324424e6a6f3 --identity-sha256 f4b2759a14a383e1312f99bf74d1b9f0b61708c2b847b086afefac601fd01dd0
+python3 skills/public/critique/scripts/verify_packet.py --repo-root . --packet-path charness-artifacts/critique/2026-08-25-715-721-integrated-packet.json --packet-sha256 490667bab260cb8c619e22c5abfc1ecd2f0302c99d4e806ea41eb832a5e9814f --identity-sha256 b161da1db88279416819b4136a7e4338f3f94cbc2038c24ff93bea8dfd055e9d
 ```
 
 Raw sha256sum is not the contract; the verifier owns the domain-separated packet identity check.
@@ -47,50 +64,18 @@ Read this packet first. Then judge what the deterministic surface leaves uncover
 Changed paths for working tree:
 - charness-artifacts/quality/dup-review.json
 - charness-artifacts/retro/lesson-ledger.json
-- plugins/charness/scripts/adapter-consumer-classification.json
 - plugins/charness/scripts/capability_catalog_resolver.py
 - plugins/charness/scripts/critique_packet_lib.py
-- plugins/charness/scripts/debug_persistence_lib.py
 - plugins/charness/scripts/lesson_evaluation_continuity_lib.py
 - plugins/charness/scripts/lesson_session_boundary.py
-- plugins/charness/scripts/reviewed_input_identity.py
-- plugins/charness/shared/scripts/reviewer_delivery.py
-- plugins/charness/shared/scripts/reviewer_delivery_attempt.py
-- plugins/charness/shared/scripts/reviewer_delivery_fields.py
-- plugins/charness/shared/scripts/reviewer_runner_support.py
-- plugins/charness/shared/scripts/reviewer_worker.py
-- plugins/charness/shared/scripts/reviewer_worker_report.py
-- plugins/charness/shared/scripts/run_reviewer_worker.py
-- plugins/charness/skills/achieve/scripts/goal_artifact_closeout_plan.py
 - plugins/charness/skills/critique/scripts/prepare_packet.py
-- plugins/charness/skills/critique/scripts/verify_packet.py
-- plugins/charness/skills/debug/scripts/persist_debug_artifact.py
-- plugins/charness/skills/quality/scripts/check_dup_ratchet.py
-- plugins/charness/skills/quality/scripts/dup_family_lineage.py
 - plugins/charness/skills/retro/scripts/prepare_packet.py
-- scripts/adapter-consumer-classification.json
 - scripts/capability_catalog_resolver.py
 - scripts/critique_packet_lib.py
-- scripts/debug_persistence_lib.py
 - scripts/lesson_evaluation_continuity_lib.py
 - scripts/lesson_session_boundary.py
-- scripts/reviewed_input_identity.py
-- skills/public/achieve/scripts/goal_artifact_closeout_plan.py
 - skills/public/critique/scripts/prepare_packet.py
-- skills/public/critique/scripts/verify_packet.py
-- skills/public/debug/scripts/persist_debug_artifact.py
-- skills/public/quality/scripts/check_dup_ratchet.py
-- skills/public/quality/scripts/dup_family_lineage.py
 - skills/public/retro/scripts/prepare_packet.py
-- skills/shared/scripts/reviewer_delivery.py
-- skills/shared/scripts/reviewer_delivery_attempt.py
-- skills/shared/scripts/reviewer_delivery_fields.py
-- skills/shared/scripts/reviewer_runner_support.py
-- skills/shared/scripts/reviewer_worker.py
-- skills/shared/scripts/reviewer_worker_report.py
-- skills/shared/scripts/run_reviewer_worker.py
-- charness-artifacts/critique/2026-08-25-715-721-integrated-packet.json
-- charness-artifacts/critique/2026-08-25-715-721-integrated-packet.md
 - charness-artifacts/retro/lesson-session-receipts/2026-08-25-715-721-implementation.json
 - charness-artifacts/retro/lesson-session-receipts/2026-08-25-715-721-implementation.md
 - plugins/charness/scripts/atomic_write_lib.py
@@ -98,12 +83,12 @@ Changed paths for working tree:
 
 Owning surfaces:
 - checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.
-  source matches: scripts/adapter-consumer-classification.json, scripts/capability_catalog_resolver.py, scripts/critique_packet_lib.py, scripts/debug_persistence_lib.py, scripts/lesson_evaluation_continuity_lib.py, scripts/lesson_session_boundary.py, scripts/reviewed_input_identity.py, skills/public/achieve/scripts/goal_artifact_closeout_plan.py, skills/public/critique/scripts/prepare_packet.py, skills/public/critique/scripts/verify_packet.py, skills/public/debug/scripts/persist_debug_artifact.py, skills/public/quality/scripts/check_dup_ratchet.py, skills/public/quality/scripts/dup_family_lineage.py, skills/public/retro/scripts/prepare_packet.py, skills/shared/scripts/reviewer_delivery.py, skills/shared/scripts/reviewer_delivery_attempt.py, skills/shared/scripts/reviewer_delivery_fields.py, skills/shared/scripts/reviewer_runner_support.py, skills/shared/scripts/reviewer_worker.py, skills/shared/scripts/reviewer_worker_report.py, skills/shared/scripts/run_reviewer_worker.py, scripts/atomic_write_lib.py
-  derived matches: plugins/charness/scripts/adapter-consumer-classification.json, plugins/charness/scripts/capability_catalog_resolver.py, plugins/charness/scripts/critique_packet_lib.py, plugins/charness/scripts/debug_persistence_lib.py, plugins/charness/scripts/lesson_evaluation_continuity_lib.py, plugins/charness/scripts/lesson_session_boundary.py, plugins/charness/scripts/reviewed_input_identity.py, plugins/charness/shared/scripts/reviewer_delivery.py, plugins/charness/shared/scripts/reviewer_delivery_attempt.py, plugins/charness/shared/scripts/reviewer_delivery_fields.py, plugins/charness/shared/scripts/reviewer_runner_support.py, plugins/charness/shared/scripts/reviewer_worker.py, plugins/charness/shared/scripts/reviewer_worker_report.py, plugins/charness/shared/scripts/run_reviewer_worker.py, plugins/charness/skills/achieve/scripts/goal_artifact_closeout_plan.py, plugins/charness/skills/critique/scripts/prepare_packet.py, plugins/charness/skills/critique/scripts/verify_packet.py, plugins/charness/skills/debug/scripts/persist_debug_artifact.py, plugins/charness/skills/quality/scripts/check_dup_ratchet.py, plugins/charness/skills/quality/scripts/dup_family_lineage.py, plugins/charness/skills/retro/scripts/prepare_packet.py, plugins/charness/scripts/atomic_write_lib.py
+  source matches: scripts/capability_catalog_resolver.py, scripts/critique_packet_lib.py, scripts/lesson_evaluation_continuity_lib.py, scripts/lesson_session_boundary.py, skills/public/critique/scripts/prepare_packet.py, skills/public/retro/scripts/prepare_packet.py, scripts/atomic_write_lib.py
+  derived matches: plugins/charness/scripts/capability_catalog_resolver.py, plugins/charness/scripts/critique_packet_lib.py, plugins/charness/scripts/lesson_evaluation_continuity_lib.py, plugins/charness/scripts/lesson_session_boundary.py, plugins/charness/skills/critique/scripts/prepare_packet.py, plugins/charness/skills/retro/scripts/prepare_packet.py, plugins/charness/scripts/atomic_write_lib.py
   sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .
   verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .
 - repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.
-  source matches: charness-artifacts/critique/2026-08-25-715-721-integrated-packet.md, charness-artifacts/retro/lesson-session-receipts/2026-08-25-715-721-implementation.md
+  source matches: charness-artifacts/retro/lesson-session-receipts/2026-08-25-715-721-implementation.md
   verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, python3 scripts/check_docs_graph.py --repo-root . || { [ "$?" -eq 3 ] && ! command -v awiki >/dev/null; }, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh
 - quality-baseline-artifacts: Committed quality advisory and ratchet baselines must parse and match their owning inventories.
   source matches: charness-artifacts/quality/dup-review.json
@@ -112,21 +97,18 @@ Owning surfaces:
   source matches: charness-artifacts/quality/dup-review.json
   verify: python3 scripts/check_release_issue_ledger.py --repo-root . --ledger charness-artifacts/issues/2026-08-20-next-release-ledger.json, python3 scripts/validate_quality_artifact.py --repo-root ., ./scripts/check-markdown.sh, ./scripts/check-secrets.sh
 - skill-packages: Public and support skill packages plus their helper scripts.
-  source matches: skills/public/achieve/scripts/goal_artifact_closeout_plan.py, skills/public/critique/scripts/prepare_packet.py, skills/public/critique/scripts/verify_packet.py, skills/public/debug/scripts/persist_debug_artifact.py, skills/public/quality/scripts/check_dup_ratchet.py, skills/public/quality/scripts/dup_family_lineage.py, skills/public/retro/scripts/prepare_packet.py, skills/shared/scripts/reviewer_delivery.py, skills/shared/scripts/reviewer_delivery_attempt.py, skills/shared/scripts/reviewer_delivery_fields.py, skills/shared/scripts/reviewer_runner_support.py, skills/shared/scripts/reviewer_worker.py, skills/shared/scripts/reviewer_worker_report.py, skills/shared/scripts/run_reviewer_worker.py
-  derived matches: plugins/charness/shared/scripts/reviewer_delivery.py, plugins/charness/shared/scripts/reviewer_delivery_attempt.py, plugins/charness/shared/scripts/reviewer_delivery_fields.py, plugins/charness/shared/scripts/reviewer_runner_support.py, plugins/charness/shared/scripts/reviewer_worker.py, plugins/charness/shared/scripts/reviewer_worker_report.py, plugins/charness/shared/scripts/run_reviewer_worker.py, plugins/charness/skills/achieve/scripts/goal_artifact_closeout_plan.py, plugins/charness/skills/critique/scripts/prepare_packet.py, plugins/charness/skills/critique/scripts/verify_packet.py, plugins/charness/skills/debug/scripts/persist_debug_artifact.py, plugins/charness/skills/quality/scripts/check_dup_ratchet.py, plugins/charness/skills/quality/scripts/dup_family_lineage.py, plugins/charness/skills/retro/scripts/prepare_packet.py
+  source matches: skills/public/critique/scripts/prepare_packet.py, skills/public/retro/scripts/prepare_packet.py
+  derived matches: plugins/charness/skills/critique/scripts/prepare_packet.py, plugins/charness/skills/retro/scripts/prepare_packet.py
   verify: python3 scripts/validate_skills.py --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py, python3 scripts/check_skill_ownership_overlap.py --repo-root ., python3 scripts/validate_skill_ergonomics.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary
 - capability-catalog: Deterministic capability inventory, stale-path resolver, and canonical current-pointer artifacts.
   source matches: scripts/capability_catalog_resolver.py
   verify: python3 -m pytest -q tests/test_capability_catalog.py, python3 scripts/validate_current_pointer_freshness.py --repo-root ., python3 -m json.tool .agents/surfaces.json
 - public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.
-  source matches: skills/public/achieve/scripts/goal_artifact_closeout_plan.py, skills/public/critique/scripts/prepare_packet.py, skills/public/critique/scripts/verify_packet.py, skills/public/debug/scripts/persist_debug_artifact.py, skills/public/quality/scripts/check_dup_ratchet.py, skills/public/quality/scripts/dup_family_lineage.py, skills/public/retro/scripts/prepare_packet.py, skills/shared/scripts/reviewer_delivery.py, skills/shared/scripts/reviewer_delivery_attempt.py, skills/shared/scripts/reviewer_delivery_fields.py, skills/shared/scripts/reviewer_runner_support.py, skills/shared/scripts/reviewer_worker.py, skills/shared/scripts/reviewer_worker_report.py, skills/shared/scripts/run_reviewer_worker.py
+  source matches: skills/public/critique/scripts/prepare_packet.py, skills/public/retro/scripts/prepare_packet.py
   verify: python3 scripts/validate_public_skill_validation.py --repo-root .
 - public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.
-  source matches: skills/public/achieve/scripts/goal_artifact_closeout_plan.py, skills/public/critique/scripts/prepare_packet.py, skills/public/critique/scripts/verify_packet.py, skills/public/debug/scripts/persist_debug_artifact.py, skills/public/quality/scripts/check_dup_ratchet.py, skills/public/quality/scripts/dup_family_lineage.py, skills/public/retro/scripts/prepare_packet.py, skills/shared/scripts/reviewer_delivery.py, skills/shared/scripts/reviewer_delivery_attempt.py, skills/shared/scripts/reviewer_delivery_fields.py, skills/shared/scripts/reviewer_runner_support.py, skills/shared/scripts/reviewer_worker.py, skills/shared/scripts/reviewer_worker_report.py, skills/shared/scripts/run_reviewer_worker.py
+  source matches: skills/public/critique/scripts/prepare_packet.py, skills/public/retro/scripts/prepare_packet.py
   verify: python3 scripts/validate_public_skill_dogfood.py --repo-root .
-- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.
-  source matches: charness-artifacts/critique/2026-08-25-715-721-integrated-packet.json, charness-artifacts/critique/2026-08-25-715-721-integrated-packet.md
-  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all
 - retro-lesson-selection-index: Durable retro prepare packets and generated advisory index for source-linked retro lesson digest selection.
   source matches: charness-artifacts/retro/lesson-session-receipts/2026-08-25-715-721-implementation.md
   sync: python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write
@@ -136,14 +118,14 @@ Owning surfaces:
   sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .
   verify: python3 scripts/check_lesson_ledger.py --repo-root ., python3 scripts/check_contract_register.py --repo-root ., python3 -m pytest -q tests/test_lesson_ledger.py tests/test_lesson_lifecycle.py tests/test_contract_register.py
 - integrations-and-control-plane: Integration manifests and control-plane helper scripts.
-  derived matches: plugins/charness/scripts/adapter-consumer-classification.json, plugins/charness/scripts/capability_catalog_resolver.py, plugins/charness/scripts/critique_packet_lib.py, plugins/charness/scripts/debug_persistence_lib.py, plugins/charness/scripts/lesson_evaluation_continuity_lib.py, plugins/charness/scripts/lesson_session_boundary.py, plugins/charness/scripts/reviewed_input_identity.py, plugins/charness/scripts/atomic_write_lib.py
+  derived matches: plugins/charness/scripts/capability_catalog_resolver.py, plugins/charness/scripts/critique_packet_lib.py, plugins/charness/scripts/lesson_evaluation_continuity_lib.py, plugins/charness/scripts/lesson_session_boundary.py, plugins/charness/scripts/atomic_write_lib.py
   verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root ., python3 scripts/update_tools.py --repo-root .
 - repo-python: Repo-owned Python code and tests.
-  source matches: scripts/capability_catalog_resolver.py, scripts/critique_packet_lib.py, scripts/debug_persistence_lib.py, scripts/lesson_evaluation_continuity_lib.py, scripts/lesson_session_boundary.py, scripts/reviewed_input_identity.py, scripts/atomic_write_lib.py
-  derived matches: plugins/charness/scripts/capability_catalog_resolver.py, plugins/charness/scripts/critique_packet_lib.py, plugins/charness/scripts/debug_persistence_lib.py, plugins/charness/scripts/lesson_evaluation_continuity_lib.py, plugins/charness/scripts/lesson_session_boundary.py, plugins/charness/scripts/reviewed_input_identity.py, plugins/charness/scripts/atomic_write_lib.py
+  source matches: scripts/capability_catalog_resolver.py, scripts/critique_packet_lib.py, scripts/lesson_evaluation_continuity_lib.py, scripts/lesson_session_boundary.py, scripts/atomic_write_lib.py
+  derived matches: plugins/charness/scripts/capability_catalog_resolver.py, plugins/charness/scripts/critique_packet_lib.py, plugins/charness/scripts/lesson_evaluation_continuity_lib.py, plugins/charness/scripts/lesson_session_boundary.py, plugins/charness/scripts/atomic_write_lib.py
   verify: ./scripts/check-python-lint.sh, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only
 - python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.
-  source matches: scripts/capability_catalog_resolver.py, scripts/critique_packet_lib.py, scripts/debug_persistence_lib.py, scripts/lesson_evaluation_continuity_lib.py, scripts/lesson_session_boundary.py, scripts/reviewed_input_identity.py, skills/public/achieve/scripts/goal_artifact_closeout_plan.py, skills/public/critique/scripts/prepare_packet.py, skills/public/critique/scripts/verify_packet.py, skills/public/debug/scripts/persist_debug_artifact.py, skills/public/quality/scripts/check_dup_ratchet.py, skills/public/quality/scripts/dup_family_lineage.py, skills/public/retro/scripts/prepare_packet.py, scripts/atomic_write_lib.py
+  source matches: scripts/capability_catalog_resolver.py, scripts/critique_packet_lib.py, scripts/lesson_evaluation_continuity_lib.py, scripts/lesson_session_boundary.py, skills/public/critique/scripts/prepare_packet.py, skills/public/retro/scripts/prepare_packet.py, scripts/atomic_write_lib.py
   verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing
 
 Planned sync commands before validators:

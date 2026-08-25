@@ -15,6 +15,11 @@ ALGORITHM = "sha256-v2"
 SUBSTRATE_WORKING_TREE = "working-tree"
 SUBSTRATE_COMMITTED_REF = "committed-ref"
 SUBSTRATE_MODES = frozenset({SUBSTRATE_WORKING_TREE, SUBSTRATE_COMMITTED_REF})
+_LEGACY_SUBSTRATE_MODE_ALIASES = {
+    "changed-ref": SUBSTRATE_COMMITTED_REF,
+    "committed": SUBSTRATE_COMMITTED_REF,
+    "worktree": SUBSTRATE_WORKING_TREE,
+}
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 # The identity ignores the index/worktree split and untracked-set membership,
 # so a plain `git add` of an unchanged reviewed path does not stale-flag a
@@ -341,7 +346,8 @@ def verify_reviewed_input_identity(repo_root: Path, identity: dict[str, Any]) ->
         # it would verify as `current` while proving nothing. Reject it as a
         # binding rather than let a zero-input verdict read as a checked one.
         return False, "declared reviewed inputs cover zero paths"
-    mode = identity.get("substrate_mode")
+    mode = identity.get("substrate_mode") or identity.get("mode")
+    mode = _LEGACY_SUBSTRATE_MODE_ALIASES.get(mode, mode)
     if mode not in SUBSTRATE_MODES or identity.get("mode") != mode:
         return False, "reviewed input identity has an invalid or missing substrate mode"
     if (mode == SUBSTRATE_COMMITTED_REF) != bool(identity.get("changed_ref")):
@@ -372,6 +378,21 @@ def packet_file_sha256(path: Path) -> str:
     return _sha256(path.read_bytes())
 
 
+def _canonical_packet_path(repo_root: Path, packet_path: str) -> tuple[Path | None, str | None]:
+    raw = Path(packet_path)
+    if raw.is_absolute() or ".." in raw.parts:
+        return None, "reviewed packet path resolves outside repo root"
+    lexical = repo_root / raw
+    if lexical.is_symlink():
+        return None, "reviewed packet path must not be a symlink"
+    candidate = lexical.resolve()
+    try:
+        candidate.relative_to(repo_root.resolve())
+    except ValueError:
+        return None, "reviewed packet path resolves outside repo root"
+    return candidate, None
+
+
 def verify_packet_binding(
     *,
     repo_root: Path,
@@ -381,11 +402,9 @@ def verify_packet_binding(
     expected_kind: str,
     check_current: bool = True,
 ) -> tuple[bool, str]:
-    candidate = (repo_root / packet_path).resolve()
-    try:
-        candidate.relative_to(repo_root.resolve())
-    except ValueError:
-        return False, "reviewed packet path resolves outside repo root"
+    candidate, path_error = _canonical_packet_path(repo_root, packet_path)
+    if path_error is not None or candidate is None:
+        return False, path_error or "reviewed packet path is invalid"
     if not candidate.is_file():
         return False, f"reviewed packet does not exist: {packet_path}"
     packet_bytes = candidate.read_bytes()
@@ -407,19 +426,25 @@ def verify_packet_binding(
     if not _SHA256_RE.fullmatch(str(identity_sha256)):
         return False, "identity sha256 is null or invalid"
     packet_mode = packet.get("substrate_mode")
-    identity_mode = identity.get("substrate_mode")
-    # Pre-v1 packets produced before the explicit envelope field are still
-    # consumable as historical worker evidence.  Every current packet carries
-    # ``version`` and must name the mode explicitly.
-    if packet_mode is None and "version" not in packet:
+    packet_mode = _LEGACY_SUBSTRATE_MODE_ALIASES.get(packet_mode, packet_mode)
+    identity_mode = identity.get("substrate_mode") or identity.get("mode")
+    identity_has_mode = identity_mode is not None
+    identity_mode = _LEGACY_SUBSTRATE_MODE_ALIASES.get(identity_mode, identity_mode)
+    legacy_packet = packet_mode is None
+    if identity_mode is None:
+        identity_mode = SUBSTRATE_COMMITTED_REF if packet.get("changed_ref") else SUBSTRATE_WORKING_TREE
+    # Historical v1 packets carried the mode only inside the reviewed-input
+    # identity.  Preserve that immutable evidence while requiring all newly
+    # produced packets to emit the top-level field.
+    if packet_mode is None:
         packet_mode = identity_mode
     if packet_mode not in SUBSTRATE_MODES or identity_mode != packet_mode:
         return False, "packet and reviewed input identity substrate modes do not match"
     if packet.get("changed_ref") != identity.get("changed_ref"):
         return False, "packet and reviewed input identity changed_ref values do not match"
-    if check_current:
+    if check_current and identity_has_mode:
         return verify_reviewed_input_identity(repo_root, identity)
-    return True, "packet-integrity-only"
+    return True, "legacy-packet-integrity-only" if legacy_packet else "packet-integrity-only"
 
 
 def verify_artifact_binding(

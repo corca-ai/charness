@@ -225,6 +225,56 @@ def test_runner_collection_failure_is_typed_and_retryable(tmp_path) -> None:
     assert len(reports) == 2
 
 
+def test_lesson_write_fence_runs_for_failed_worker_outcomes(tmp_path, monkeypatch) -> None:
+    ledger_path = tmp_path / "delivery.json"
+    receipt_path = tmp_path / "receipt.json"
+    delivery._write(ledger_path, _ledger())
+    receipt_path.write_text(
+        json.dumps({"status": "timed-out", "finished_at": "2026-08-21T00:00:10Z"}),
+        encoding="utf-8",
+    )
+    seen: list[list[str]] = []
+
+    class Boundary:
+        def validate_lane_writes(self, _root, changed, **_kwargs):
+            seen.append(list(changed))
+            raise ValueError("foreign parent lesson path")
+
+    monkeypatch.setattr(reviewer_runner_support, "_lesson_boundary_module", lambda _root: Boundary())
+    monkeypatch.setattr(reviewer_runner_support, "lesson_inventory_delta", lambda _before, _after: [
+        "charness-artifacts/retro/lesson-ledger.json"
+    ])
+    monkeypatch.setattr(reviewer_runner_support, "_lesson_inventory", lambda _root: {})
+
+    def build_report(**_kwargs: object) -> dict[str, object]:
+        return {"delivery_state": delivery._read(ledger_path).require("a1").state}
+
+    report = reviewer_runner_support.finalize_attempt(
+        receipt_path=receipt_path,
+        ledger_path=ledger_path,
+        attempt_id="a1",
+        scope="scope-sha",
+        packet_identity="packet-sha",
+        reviewed_input_identity="reviewed-sha",
+        parent_receipt_identity="receipt-a1",
+        execution_mode="file-backed-worker",
+        build_report=build_report,
+        repo_root=tmp_path,
+        lesson_binding_data={
+            "lane_id": "lane-a",
+            "owner_id": "worker-a",
+            "session_id": "session-a",
+            "snapshot_sha256": "a" * 64,
+            "bundle_sha256": "b" * 64,
+            "parent_receipt_sha256": "c" * 64,
+            "lane_receipt": tmp_path / ".charness/lesson-lanes/lane-a/receipt.json",
+        },
+        lesson_before={"charness-artifacts/retro/lesson-ledger.json": "old"},
+    )
+    assert seen == [["charness-artifacts/retro/lesson-ledger.json"]]
+    assert report["delivery_state"] == delivery.COLLECTION_FAILED
+
+
 def test_duplicate_canonical_transition_is_rejected() -> None:
     ledger = _ledger()
     with pytest.raises(delivery.DeliveryError, match="duplicate canonical state"):

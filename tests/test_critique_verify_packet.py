@@ -122,7 +122,9 @@ def test_raw_worktree_sha_differs_but_canonical_verifier_passes(tmp_path: Path) 
     result = _run(receipt["reviewed_input_binding"]["verify_command"], cwd=tmp_path)
 
     assert result.returncode == 0, result.stderr
-    assert yaml.safe_load(result.stdout)["status"] == "current"
+    payload = yaml.safe_load(result.stdout)
+    assert payload["status"] == "current"
+    assert payload["reason_code"] == "current"
     assert packet_path.is_file()
 
 

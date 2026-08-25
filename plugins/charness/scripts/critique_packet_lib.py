@@ -31,6 +31,62 @@ SUBSTRATE_COMMITTED_REF = _reviewed_input_identity.SUBSTRATE_COMMITTED_REF
 ReviewedInputError = _reviewed_input_identity.ReviewedInputError
 
 
+def changed_ref_targets(
+    *, changed_ref: str | None, commit: str | None, changed_range: str | None
+) -> list[str]:
+    """Return the explicitly supplied ref aliases in stable CLI order."""
+
+    return [value for value in (changed_ref, commit, changed_range) if value]
+
+
+def parse_changed_ref(parser: Any, *, changed_ref: str | None, commit: str | None, changed_range: str | None) -> str | None:
+    """Resolve the three CLI aliases and report mutually-exclusive use once."""
+
+    targets = changed_ref_targets(
+        changed_ref=changed_ref, commit=commit, changed_range=changed_range
+    )
+    if len(targets) > 1:
+        parser.error("use only one of --changed-ref, --commit, or --range")
+    return targets[0] if targets else None
+
+
+def substrate_refusal(*, substrate_mode: str, changed_ref: str | None) -> dict[str, object] | None:
+    """Return a typed refusal when substrate and ref declarations disagree."""
+
+    if substrate_mode == SUBSTRATE_WORKING_TREE and changed_ref:
+        return {
+            "ok": False,
+            "status": "refused",
+            "reason_code": "substrate-ref-mismatch",
+            "error": "working-tree substrate cannot declare --changed-ref",
+            "substrate_mode": substrate_mode,
+        }
+    if substrate_mode == SUBSTRATE_COMMITTED_REF and not changed_ref:
+        return {
+            "ok": False,
+            "status": "refused",
+            "reason_code": "substrate-ref-missing",
+            "error": "committed-ref substrate requires --changed-ref",
+            "substrate_mode": substrate_mode,
+        }
+    return None
+
+
+def packet_result_payload(
+    packet: dict[str, Any], *, repo_root: Path, json_path: Path, md_path: Path
+) -> dict[str, object]:
+    """Build the stable CLI result shared by critique and retro packet runners."""
+
+    return {
+        "ok": packet["ok"],
+        "section_count": packet["section_count"],
+        "json_path": str(json_path.relative_to(repo_root)),
+        "md_path": str(md_path.relative_to(repo_root)),
+        "changed_ref": packet["changed_ref"],
+        "adapter_path": packet["adapter_path"],
+    }
+
+
 def _now_iso() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
@@ -219,7 +275,10 @@ def render_markdown(packet: dict[str, Any], verification_command: str | None = N
     lines.append(f"- **Kind**: `{packet['kind']}` (v{packet['version']})")
     lines.append(f"- **Generated**: {packet['generated_at']}")
     lines.append(f"- **Prepared for**: {packet['prepared_for']}")
-    lines.append(f"- **Substrate mode**: `{packet.get('substrate_mode', '')}`")
+    # Historical v1 packets did not carry this envelope field; their existing
+    # Markdown remains the deterministic rendering of that older JSON shape.
+    if "substrate_mode" in packet:
+        lines.append(f"- **Substrate mode**: `{packet.get('substrate_mode', '')}`")
     if packet.get("changed_ref"):
         lines.append(f"- **Changed ref**: `{packet['changed_ref']}`")
     if packet.get("adapter_path"):

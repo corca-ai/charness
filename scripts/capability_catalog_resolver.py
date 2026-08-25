@@ -48,10 +48,54 @@ def _owner_root() -> Path:
 def _manifest_version(path: Path) -> str | None:
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return None
+    if not isinstance(data, dict):
         return None
     value = data.get("version")
     return value if isinstance(value, str) and value else None
+
+
+def _manifest_error(path: Path) -> str | None:
+    """Return a typed error for an existing candidate manifest, if malformed."""
+    if not path.exists():
+        return None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        return f"unreadable manifest: {exc}"
+    if not isinstance(data, dict):
+        return "manifest must contain an object"
+    version = data.get("version")
+    if not isinstance(version, str) or not version:
+        return "manifest has no readable version"
+    return None
+
+
+def _candidate_manifest_error(path: Path) -> str | None:
+    for parent in (path.parent, *path.parents):
+        for manifest in (
+            parent / ".codex-plugin" / "plugin.json",
+            parent / "plugins" / "charness" / ".codex-plugin" / "plugin.json",
+        ):
+            error = _manifest_error(manifest)
+            if error is not None:
+                return f"{manifest}: {error}"
+    return None
+
+
+def _manifest_observation(path: Path) -> tuple[bool, str | None, str | None]:
+    """Observe every existing manifest; malformed input is not absence."""
+    if not path.exists():
+        return False, None, None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        return True, None, f"unreadable manifest: {exc}"
+    version = data.get("version") if isinstance(data, dict) else None
+    if not isinstance(version, str) or not version:
+        return True, None, "manifest has no readable version"
+    return True, version, None
 
 
 def _package_expectation(*, skill_id: str, marketplace: str, plugin: str) -> dict[str, Any]:
@@ -73,7 +117,24 @@ def _package_expectation(*, skill_id: str, marketplace: str, plugin: str) -> dic
         root / "plugins" / "charness" / ".codex-plugin" / "plugin.json",
         root / ".codex-plugin" / "plugin.json",
     ]
-    versions = {version for path in manifest_candidates if (version := _manifest_version(path))}
+    observations = {
+        path: _manifest_observation(path)
+        for path in manifest_candidates
+    }
+    malformed = [
+        (path, observation[2])
+        for path, observation in observations.items()
+        if observation[0] and observation[2] is not None
+    ]
+    if malformed:
+        return {
+            "status": "unavailable",
+            "reason_code": "package-manifest-invalid",
+            "reason": "an existing Charness manifest is unreadable or malformed",
+            "paths": [str(path) for path, _reason in malformed],
+            "details": [str(reason) for _path, reason in malformed],
+        }
+    versions = {version for _path, (_exists, version, _error) in observations.items() if version}
     source_path = root / "skills" / "public" / skill_id / "SKILL.md"
     plugin_path = root / "plugins" / "charness" / "skills" / skill_id / "SKILL.md"
     installed_path = root / "skills" / skill_id / "SKILL.md"
@@ -148,7 +209,7 @@ def _candidate_version(path: Path, source: str) -> str | None:
         root / "plugins" / "charness" / "skills",
         root / "skills",
     )
-    if any(_is_relative_to(path, candidate_root) for candidate_root in canonical_roots):
+    if any(path.is_relative_to(candidate_root) for candidate_root in canonical_roots):
         for manifest in (
             root / "plugins" / "charness" / ".codex-plugin" / "plugin.json",
             root / ".codex-plugin" / "plugin.json",
@@ -158,18 +219,10 @@ def _candidate_version(path: Path, source: str) -> str | None:
                 return version
     return None
 
-
-def _is_relative_to(path: Path, root: Path) -> bool:
-    try:
-        path.relative_to(root)
-    except ValueError:
-        return False
-    return True
-
-
 def _candidate_record(source: str, path: Path, expectation: dict[str, Any]) -> dict[str, Any]:
     expanded = path.expanduser().resolve()
     exists = expanded.is_file()
+    manifest_error = _candidate_manifest_error(expanded) if exists else None
     observed_version = _candidate_version(expanded, source) if exists else None
     try:
         observed_digest = hashlib.sha256(expanded.read_bytes()).hexdigest() if exists else None
@@ -177,7 +230,9 @@ def _candidate_record(source: str, path: Path, expectation: dict[str, Any]) -> d
         observed_digest = None
         exists = False
     mismatch: str | None = None
-    if not exists:
+    if manifest_error is not None:
+        mismatch = "package-manifest-invalid"
+    elif not exists:
         mismatch = "missing"
     elif expectation.get("status") != "ready":
         mismatch = str(expectation.get("reason_code", "expectation-unavailable"))
@@ -190,6 +245,7 @@ def _candidate_record(source: str, path: Path, expectation: dict[str, Any]) -> d
         "path": str(expanded),
         "exists": exists,
         "observed_version": observed_version,
+        "manifest_error": manifest_error,
         "content_sha256": observed_digest,
         "admissible": mismatch is None,
         "mismatch": mismatch,
@@ -210,8 +266,9 @@ def resolve_skill_path(*, skill_id: str, repo_root: Path, home: Path, codex_home
         skill_id=skill_id, marketplace=marketplace, plugin=plugin
     )
     candidate_records = [_candidate_record(source, path, expectation) for source, path in candidates]
+    invalid_candidates = [record for record in candidate_records if record["mismatch"] == "package-manifest-invalid"]
     admitted = [record for record in candidate_records if record["admissible"]]
-    selected = admitted[0] if admitted else None
+    selected = None if invalid_candidates else (admitted[0] if admitted else None)
     resolved_source = selected["source"] if selected else None
     resolved = Path(selected["path"]) if selected else None
     reported_exists = reported_path.expanduser().is_file() if reported_path is not None else None
@@ -221,6 +278,10 @@ def resolve_skill_path(*, skill_id: str, repo_root: Path, home: Path, codex_home
         status = "reported-ok" if reported_admitted else "stale-reported-path" if reported_path is not None else "ok"
         admission_status = "admitted"
         reason_code = "reported-path-admitted" if reported_admitted else "reported-path-recovered"
+    elif invalid_candidates:
+        status = "mismatch"
+        admission_status = "refused"
+        reason_code = "package-manifest-invalid"
     elif expectation.get("status") == "mismatch":
         status = "mismatch"
         admission_status = "refused"

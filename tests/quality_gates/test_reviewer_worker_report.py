@@ -87,6 +87,9 @@ def _ledger(
         capability_launch_envelope_sha256=receipt_capability_fields("attempt-1", payload=capability)[
             "capability_launch_envelope_sha256"
         ],
+        output_file=str((tmp_path / "result.json").resolve()),
+        receipt_file=str((tmp_path / "receipt.json").resolve()),
+        producer_run_id="worker-1",
     )
     if findings:
         attempt.record_findings(
@@ -136,6 +139,46 @@ def test_matching_typed_receipt_and_findings_ledger_is_approval_eligible(tmp_pat
     assert payload["approval_eligible"] is True
     assert payload["execution_mode"] == "file-backed-worker"
     assert payload["delivery_state"] == "findings-received"
+
+
+def test_producer_output_join_is_checked_at_collection(tmp_path: Path) -> None:
+    receipt = _receipt(tmp_path)
+    ledger, _ = _ledger(tmp_path)
+    payload = json.loads(ledger.read_text(encoding="utf-8"))
+    payload["attempts"][0].update(
+        {
+            "output_file": str((tmp_path / "result.json").resolve()),
+            "receipt_file": str(receipt.resolve()),
+            "producer_run_id": "worker-1",
+        }
+    )
+    ledger.write_text(json.dumps(payload), encoding="utf-8")
+    result = _run(tmp_path, receipt, ledger)
+    assert result.returncode == 0
+
+    payload = json.loads(receipt.read_text(encoding="utf-8"))
+    payload["run_id"] = "foreign-run"
+    receipt.write_text(json.dumps(payload), encoding="utf-8")
+    rejected = _run(tmp_path, receipt, ledger)
+    report = yaml.safe_load(rejected.stdout)
+    assert rejected.returncode == 1
+    assert report["receipt_ok"] is False
+    assert "run_id" in report["reason"]
+
+
+@pytest.mark.parametrize("field", ["output_file", "receipt_file", "producer_run_id"])
+def test_missing_producer_binding_is_not_approval_eligible(tmp_path: Path, field: str) -> None:
+    receipt = _receipt(tmp_path)
+    ledger, _ = _ledger(tmp_path)
+    payload = json.loads(ledger.read_text(encoding="utf-8"))
+    payload["attempts"][0].pop(field)
+    ledger.write_text(json.dumps(payload), encoding="utf-8")
+    result = _run(tmp_path, receipt, ledger)
+    report = yaml.safe_load(result.stdout)
+    assert result.returncode == 1
+    assert report["approval_eligible"] is False
+    assert report["receipt_ok"] is False
+    assert field in report["reason"]
 
 
 @pytest.mark.parametrize("mutation", ["missing", "contradictory", "rebound"])

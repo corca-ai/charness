@@ -16,6 +16,7 @@ import hashlib
 import json
 import subprocess
 import sys
+import uuid
 from pathlib import Path
 from typing import Any
 
@@ -25,7 +26,13 @@ try:
     from reviewer_capability import load_capability_file
     from reviewer_delivery import _read, _write, ledger_lock
     from reviewer_output import emit_yaml
-    from reviewer_runner_support import append_lesson_args, finalize_attempt, lesson_paths
+    from reviewer_runner_support import (
+        append_lesson_args,
+        finalize_attempt,
+        lesson_binding,
+        lesson_inventory_snapshot,
+        lesson_paths,
+    )
     from reviewer_worker_report import ReportError, build_report
 except ImportError:
     from skills.shared.scripts.reviewer_capability import load_capability_file
@@ -34,6 +41,8 @@ except ImportError:
     from skills.shared.scripts.reviewer_runner_support import (
         append_lesson_args,
         finalize_attempt,
+        lesson_binding,
+        lesson_inventory_snapshot,
         lesson_paths,
     )
     from skills.shared.scripts.reviewer_worker_report import ReportError, build_report
@@ -221,6 +230,8 @@ def main(argv: list[str] | None = None) -> int:
             repo_root, args.stderr_file or Path(f"{output_path}.stderr")
         )
         lesson_bundle, lesson_receipt = lesson_paths(repo_root, args)
+        lesson_binding_data = lesson_binding(repo_root, args, lesson_bundle, lesson_receipt)
+        producer_run_id = args.run_id or uuid.uuid4().hex
         if _sha256(schema) != _sha256(DEFAULT_SCHEMA):
             raise ValueError(
                 "file-backed reviewer runner requires the canonical bounded-review result schema"
@@ -273,6 +284,9 @@ def main(argv: list[str] | None = None) -> int:
                 prompt_sha256=prompt_sha,
                 schema_sha256=schema_sha,
                 capability_launch_envelope_sha256=launch_capability.envelope_sha256,
+                output_file=str(output_path),
+                receipt_file=str(receipt_path),
+                producer_run_id=producer_run_id,
             )
             _write(ledger_path, ledger)
 
@@ -310,9 +324,9 @@ def main(argv: list[str] | None = None) -> int:
         ]
         worker_command.extend(["--stdout-file", str(stdout_path), "--stderr-file", str(stderr_path)])
         append_lesson_args(worker_command, args, lesson_bundle, lesson_receipt, repo_root)
+        lesson_before = lesson_inventory_snapshot(repo_root) if lesson_binding_data is not None else None
         worker_command.extend(["--timeout-seconds", str(timeout)])
-        if args.run_id:
-            worker_command.extend(["--run-id", args.run_id])
+        worker_command.extend(["--run-id", producer_run_id])
         worker = subprocess.run(worker_command, cwd=repo_root, check=False)
 
         report = finalize_attempt(
@@ -325,6 +339,9 @@ def main(argv: list[str] | None = None) -> int:
             parent_receipt_identity=args.parent_receipt_identity,
             execution_mode=mode,
             build_report=build_report,
+            repo_root=repo_root,
+            lesson_binding_data=lesson_binding_data,
+            lesson_before=lesson_before,
         )
         _atomic_write_yaml(report_target, report)
         emit_yaml(report)

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import subprocess
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -223,3 +224,24 @@ def test_persist_debug_artifact_refuses_new_invalid_record_before_index_audit(tm
     payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "incomplete"
     assert not (repo / "charness-artifacts/debug/latest.md").exists()
+
+
+@pytest.mark.parametrize("failure", [FileNotFoundError("missing validator"), subprocess.TimeoutExpired("validator", 1)])
+def test_persist_debug_artifact_rolls_back_validator_infrastructure_failure(
+    tmp_path: Path, monkeypatch, capsys, failure: Exception
+) -> None:
+    repo = _repo(tmp_path)
+    target = repo / "charness-artifacts/debug/latest.md"
+    prior = _valid_current_artifact()
+    target.write_text(prior, encoding="utf-8")
+
+    def fail(*_args, **_kwargs):
+        raise failure
+
+    monkeypatch.setattr(PERSIST._persistence.subprocess, "run", fail)
+    result = _run(repo, prior, monkeypatch=monkeypatch, capsys=capsys)
+    assert result.returncode == 1
+    payload = yaml.safe_load(result.stdout)
+    assert payload["status"] == "incomplete"
+    assert payload["validated"] is False
+    assert target.read_text(encoding="utf-8") == prior

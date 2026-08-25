@@ -14,15 +14,16 @@ import hashlib
 import json
 import os
 import re
-import tempfile
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import Any, Iterable
 
 try:
     from scripts import lesson_evaluation_continuity_lib as continuity
+    from scripts.atomic_write_lib import write_once as _atomic_write_once
 except ImportError:
     import lesson_evaluation_continuity_lib as continuity
+    from atomic_write_lib import write_once as _atomic_write_once
 
 LEDGER_RELATIVE = PurePosixPath("charness-artifacts/retro/lesson-ledger.json")
 RECENT_LESSONS_RELATIVE = PurePosixPath("charness-artifacts/retro/recent-lessons.md")
@@ -66,7 +67,7 @@ def _digest(path: Path) -> str:
 
 def _repo_relative(repo_root: Path, value: Path | str, label: str) -> tuple[Path, PurePosixPath]:
     root = repo_root.resolve()
-    candidate = Path(value).expanduser()
+    candidate = Path(str(value).replace("\\", "/")).expanduser()
     resolved = (candidate if candidate.is_absolute() else root / candidate).resolve()
     try:
         relative = PurePosixPath(resolved.relative_to(root).as_posix())
@@ -169,21 +170,12 @@ def _lane_relative(repo_root: Path, value: Path | str, lane_id: str) -> Path:
 
 
 def _write_once(path: Path, payload: dict[str, Any]) -> None:
-    if path.exists() or path.is_symlink():
-        raise LessonSessionBoundaryError(f"lane receipt already exists at `{path}`")
-    path.parent.mkdir(parents=True, exist_ok=True)
+    path = Path(os.fspath(path))
     body = json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
-    temporary: Path | None = None
     try:
-        with tempfile.NamedTemporaryFile("w", encoding="utf-8", dir=path.parent, delete=False) as handle:
-            temporary = Path(handle.name)
-            handle.write(body)
-            handle.flush()
-            os.fsync(handle.fileno())
-        os.replace(temporary, path)
-    finally:
-        if temporary is not None:
-            temporary.unlink(missing_ok=True)
+        _atomic_write_once(path, body.encode("utf-8"), label="lane receipt")
+    except ValueError as exc:
+        raise LessonSessionBoundaryError(str(exc)) from exc
 
 
 def write_lane_receipt(
@@ -230,19 +222,41 @@ def validate_lane_writes(
     worker's sole permitted lesson-state path is its lane-local receipt.
     """
     root = repo_root.resolve()
-    changed = {PurePosixPath(str(path).replace("\\", "/")) for path in changed_paths}
-    assigned = {PurePosixPath(str(path).replace("\\", "/")) for path in assigned_paths}
+    changed: set[PurePosixPath] = set()
+    raw_changed: dict[PurePosixPath, str] = {}
+    for raw in changed_paths:
+        try:
+            _resolved, relative = _repo_relative(root, str(raw), "changed path")
+        except LessonSessionBoundaryError:
+            # An uncanonicalizable path is itself a forbidden write. Keep a
+            # stable spelling for the refusal rather than allowing a traversal
+            # or absolute alias to disappear from the inventory.
+            relative = PurePosixPath(str(raw).replace("\\", "/"))
+        changed.add(relative)
+        raw_changed[relative] = str(raw)
+    assigned: set[PurePosixPath] = set()
+    for raw in assigned_paths:
+        try:
+            _resolved, relative = _repo_relative(root, str(raw), "assigned path")
+        except LessonSessionBoundaryError as exc:
+            raise LessonSessionBoundaryError(str(exc)) from exc
+        assigned.add(relative)
     global_paths = {LEDGER_RELATIVE, RECENT_LESSONS_RELATIVE}
     lane_relative = None
     if lane_id is not None:
         lane_relative = PurePosixPath(lane_receipt_path(root, lane_id).resolve().relative_to(root).as_posix())
     forbidden: list[str] = []
+    lane_prefix = LANE_ROOT.parts
     for path in sorted(changed, key=str):
+        is_lane_path = len(path.parts) >= len(lane_prefix) and path.parts[: len(lane_prefix)] == lane_prefix
         is_receipt = path == LEDGER_RELATIVE or path == RECENT_LESSONS_RELATIVE or (
             len(path.parts) > len(RECEIPTS_PREFIX.parts)
             and path.parts[: len(RECEIPTS_PREFIX.parts)] == RECEIPTS_PREFIX.parts
         )
-        if is_receipt:
+        if is_lane_path:
+            if lane_relative is None or path != lane_relative:
+                forbidden.append(path.as_posix())
+        elif is_receipt:
             if owner_role != "parent" or path not in assigned:
                 forbidden.append(path.as_posix())
         elif lane_relative is not None and path == lane_relative:
@@ -261,6 +275,47 @@ def validate_lane_writes(
     }
 
 
+def validate_lane_receipt(
+    repo_root: Path,
+    receipt_path: Path | str,
+    *,
+    lane_id: str,
+    owner_id: str,
+    session_id: str,
+    snapshot_sha256: str,
+    bundle_sha256: str,
+    parent_receipt_sha256: str,
+) -> dict[str, Any]:
+    """Validate the worker's immutable lane receipt at the final consumer."""
+    path = _lane_relative(repo_root, receipt_path, lane_id)
+    payload = _read_json(path, "worker lane receipt")
+    expected = {
+        "kind": LANE_RECEIPT_KIND,
+        "schema_version": LANE_RECEIPT_VERSION,
+        "lane_id": lane_id,
+        "owner_id": owner_id,
+        "session_id": session_id,
+        "snapshot_sha256": snapshot_sha256,
+        "bundle_sha256": bundle_sha256,
+        "parent_receipt_sha256": parent_receipt_sha256,
+        "writes_enabled": False,
+        "status": "inherited",
+    }
+    for field, value in expected.items():
+        if payload.get(field) != value:
+            raise LessonSessionBoundaryError(
+                f"worker lane receipt {field} does not match the parent lesson binding"
+            )
+    receipt_hash = payload.get("receipt_sha256")
+    body = {key: value for key, value in payload.items() if key != "receipt_sha256"}
+    computed = hashlib.sha256(
+        json.dumps(body, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    if receipt_hash != computed:
+        raise LessonSessionBoundaryError("worker lane receipt hash is invalid")
+    return {"ok": True, "path": path.relative_to(repo_root.resolve()).as_posix(), "receipt_sha256": receipt_hash}
+
+
 def inherit_worker_session(
     repo_root: Path,
     *,
@@ -269,6 +324,7 @@ def inherit_worker_session(
     owner_id: str,
     session_id: str | None = None,
     receipt_path: Path | str | None = None,
+    lane_receipt_path_value: Path | str | None = None,
 ) -> tuple[ParentLessonSession, Path]:
     context = load_parent_session(
         repo_root,
@@ -280,5 +336,5 @@ def inherit_worker_session(
         context,
         lane_id=lane_id,
         owner_id=owner_id,
-        receipt_path=receipt_path,
+        receipt_path=lane_receipt_path_value,
     )

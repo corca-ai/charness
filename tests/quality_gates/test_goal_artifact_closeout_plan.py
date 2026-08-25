@@ -32,6 +32,18 @@ def test_typed_plan_reports_missing_fields() -> None:
     assert result.missing_fields == tuple(plan.CLOSEOUT_PLAN_FIELDS[1:])
 
 
+def test_typed_plan_rejects_duplicate_field_labels() -> None:
+    body = _body(fields="- Reviewed inputs: packet.json\n" + "".join(
+        f"- {field} value\n" for field in plan.CLOSEOUT_PLAN_FIELDS[1:]
+    )).replace(
+        "- Reviewed inputs: packet.json",
+        "- Reviewed inputs: packet.json\n- Reviewed inputs: other-packet.json",
+    )
+    result = plan.parse_closeout_plan(body)
+    assert result.duplicate is True
+    assert result.complete is False
+
+
 def test_typed_plan_reports_duplicate_headings() -> None:
     result = plan.parse_closeout_plan(_body() + "\n" + _body().split("# Goal\n\n", 1)[1])
 
@@ -46,4 +58,3 @@ def test_typed_plan_ignores_fenced_heading_and_fields() -> None:
     assert result.present is False
     assert result.missing_fields == ()
     assert result.complete is False
-

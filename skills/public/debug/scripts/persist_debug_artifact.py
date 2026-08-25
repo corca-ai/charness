@@ -32,9 +32,9 @@ emit_yaml = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True)
-    target = parser.add_mutually_exclusive_group(required=True)
-    target.add_argument("--artifact-path", help="Repo-relative path from scaffold `write_artifact_path`.")
-    target.add_argument("--artifact-name", help="Filename under the adapter-declared debug output directory.")
+    parser.add_argument("--artifact-path", required=True, help="Exact repo-relative path from scaffold `write_artifact_path`.")
+    parser.add_argument("--title", default=None)
+    parser.add_argument("--subject", default=None)
     parser.add_argument("--markdown-file", type=Path, required=True)
     return parser.parse_args()
 
@@ -51,13 +51,29 @@ def main() -> int:
             file=sys.stderr,
         )
         return 1
+    scaffold = _scaffold.payload_for(repo_root, title=args.title, subject=args.subject)
     output_dir = Path(str(adapter["data"]["output_dir"]))
-    if args.artifact_path:
-        candidate = repo_root / Path(args.artifact_path)
-    else:
-        candidate = repo_root / output_dir / str(args.artifact_name)
+    declared_path = Path(str(scaffold["write_artifact_path"]))
+    pointer_path = Path(str(scaffold["artifact_path"]))
+    raw_candidate = Path(args.artifact_path)
+    if raw_candidate.is_absolute() or ".." in raw_candidate.parts:
+        print("debug artifact path must be a repo-relative path", file=sys.stderr)
+        return 1
+    candidate = repo_root / raw_candidate
     try:
-        relative = candidate.resolve().relative_to(repo_root)
+        candidate_relative = raw_candidate
+        candidate.resolve().relative_to(repo_root)
+        if candidate_relative not in {declared_path, pointer_path}:
+            print(
+                "debug artifact path is not the scaffold-selected write_artifact_path",
+                file=sys.stderr,
+            )
+            return 1
+    except ValueError:
+        print("debug artifact path must stay inside --repo-root", file=sys.stderr)
+        return 1
+    try:
+        relative = candidate_relative
     except ValueError:
         print("debug artifact path must stay inside --repo-root", file=sys.stderr)
         return 1

@@ -29,6 +29,8 @@ _packet_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(
 yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 load_adapter = _resolve_adapter.load_adapter
 build_packet = _packet_lib.build_packet
+parse_changed_ref = _packet_lib.parse_changed_ref
+packet_result_payload = _packet_lib.packet_result_payload
 write_packet = _packet_lib.write_packet
 
 RETRO_PACKET_KIND = "charness.retro_prepare_packet"
@@ -75,10 +77,12 @@ def main() -> int:
     )
     try:
         args = parser.parse_args()
-        changed_targets = [value for value in (args.changed_ref, args.commit, args.changed_range) if value]
-        if len(changed_targets) > 1:
-            parser.error("use only one of --changed-ref, --commit, or --range")
-        changed_ref = changed_targets[0] if changed_targets else None
+        changed_ref = parse_changed_ref(
+            parser,
+            changed_ref=args.changed_ref,
+            commit=args.commit,
+            changed_range=args.changed_range,
+        )
         prepared_for = changed_ref if args.prepared_for == "working tree" and changed_ref else args.prepared_for
         repo_root = args.repo_root.resolve()
         adapter = load_adapter(repo_root)
@@ -100,14 +104,7 @@ def main() -> int:
         slug = args.slug or _default_slug()
         json_path, md_path = write_packet(packet, output_dir=output_dir, slug=slug)
         yaml_output.emit_yaml(
-            {
-                "ok": packet["ok"],
-                "section_count": packet["section_count"],
-                "json_path": str(json_path.relative_to(repo_root)),
-                "md_path": str(md_path.relative_to(repo_root)),
-                "changed_ref": packet["changed_ref"],
-                "adapter_path": packet["adapter_path"],
-            }
+            packet_result_payload(packet, repo_root=repo_root, json_path=json_path, md_path=md_path)
         )
         return 0 if packet["ok"] else 1
     finally:

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
+import sys
 import uuid
 from pathlib import Path
 from typing import Any
@@ -54,7 +55,20 @@ def _lesson_boundary_module() -> Any:
             spec = importlib.util.spec_from_file_location("charness_lesson_session_boundary", candidate)
             if spec is not None and spec.loader is not None:
                 module = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(module)
+                previous_path = list(sys.path)
+                previous_module = sys.modules.get(module.__name__)
+                root = candidate.parent.parent
+                if str(root) not in sys.path:
+                    sys.path.insert(0, str(root))
+                sys.modules[module.__name__] = module
+                try:
+                    spec.loader.exec_module(module)
+                finally:
+                    sys.path[:] = previous_path
+                    if previous_module is None:
+                        sys.modules.pop(module.__name__, None)
+                    else:
+                        sys.modules[module.__name__] = previous_module
                 return module
     raise ValueError("lesson session boundary helper is unavailable")
 
@@ -165,7 +179,7 @@ def _inherit_lesson_context(args: argparse.Namespace) -> dict[str, Any]:
         lane_id=args.lesson_lane_id,
         owner_id=args.lesson_owner_id,
         session_id=args.lesson_session_id,
-        receipt_path=args.lesson_lane_receipt,
+        lane_receipt_path_value=args.lesson_lane_receipt,
     )
     return {
         "lesson_session_id": context.session_id,

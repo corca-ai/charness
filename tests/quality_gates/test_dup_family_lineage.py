@@ -67,3 +67,13 @@ def test_missing_lineage_paths_do_not_create_noise_or_accept() -> None:
         baseline_families=[{"fingerprint": "old", "member_hashes": ["old"]}],
         reviewed_ids={"old"},
     ) == []
+
+
+def test_missing_lineage_paths_are_explicitly_not_approval_eligible() -> None:
+    assert lineage.readiness(
+        [_family("old", [], ["old"])], reviewed_ids={"old"}
+    ) == {
+        "status": "unavailable",
+        "reason_code": "baseline-member-paths-missing",
+        "missing_fingerprints": ["old"],
+    }

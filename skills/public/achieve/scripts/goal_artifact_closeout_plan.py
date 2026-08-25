@@ -147,7 +147,10 @@ def parse_closeout_plan(
                 rf"^[ \t>*-]*{_DECORATION}{re.escape(field)}{_DECORATION}[ \t]+(.+?)\s*$",
                 re.MULTILINE,
             )
-            match = pattern.search(body)
+            matches = list(pattern.finditer(body))
+            if len(matches) > 1:
+                duplicate = True
+            match = matches[0] if matches else None
             if match is None or not _has_substance(match.group(1)):
                 missing.append(field)
             else:

@@ -23,6 +23,28 @@ RELATIONS = (
 )
 
 
+def readiness(
+    baseline_families: Iterable[Mapping[str, Any]],
+    *,
+    reviewed_ids: set[str],
+) -> dict[str, Any]:
+    """Report whether the baseline can support a stable lineage join."""
+    missing = []
+    for row in baseline_families:
+        if not isinstance(row, Mapping):
+            continue
+        fingerprint = row.get("fingerprint")
+        if isinstance(fingerprint, str) and fingerprint in reviewed_ids and not family_members(row)[1]:
+            missing.append(fingerprint)
+    if missing:
+        return {
+            "status": "unavailable",
+            "reason_code": "baseline-member-paths-missing",
+            "missing_fingerprints": sorted(set(missing)),
+        }
+    return {"status": "ready", "reason_code": None, "missing_fingerprints": []}
+
+
 def _paths(rows: Iterable[Mapping[str, Any]] | None) -> set[str]:
     paths: set[str] = set()
     for row in rows or []:

@@ -1,0 +1,13 @@
+{
+  "bundle_sha256": "1239cfcdc61279b55ec1763c39e2baac2e057abeb1238b99f1fb1712e4de450d",
+  "kind": "charness.lesson-lane-receipt",
+  "lane_id": "round2-actual",
+  "owner_id": "codex-round2",
+  "parent_receipt_sha256": "0ed096d0114d10aa9f2c9b2d3b33f3b39a4555c955a446de53436b781e991d32",
+  "receipt_sha256": "01aeb0ed14ee65cfe9d9bc62d5ff0f020e1665298bc3869847c524c1e4cd4b6a",
+  "schema_version": 1,
+  "session_id": "2026-08-25-715-721-implementation",
+  "snapshot_sha256": "b72d76d673455868a10d689f08b919dcc3ffd15f2818504bdb1b9b49ceac590d",
+  "status": "inherited",
+  "writes_enabled": false
+}

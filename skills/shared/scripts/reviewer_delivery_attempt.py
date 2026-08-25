@@ -67,6 +67,9 @@ class DeliveryAttempt:
     prompt_sha256: str | None = None
     schema_sha256: str | None = None
     capability_launch_envelope_sha256: str | None = None
+    output_file: str | None = None
+    receipt_file: str | None = None
+    producer_run_id: str | None = None
     findings_identity: str | None = None
     retry_of: str | None = None
     retry_count: int = 0
@@ -89,6 +92,7 @@ class DeliveryAttempt:
         prompt_sha256: str | None = None,
         schema_sha256: str | None = None,
         capability_launch_envelope_sha256: str | None = None,
+        output_file: str | None = None, receipt_file: str | None = None, producer_run_id: str | None = None,
         retry_of: str | None = None,
         retry_count: int = 0,
     ) -> "DeliveryAttempt":
@@ -123,6 +127,7 @@ class DeliveryAttempt:
                 if capability_launch_envelope_sha256 is not None
                 else None
             ),
+            output_file=_text(output_file, "output_file") if output_file is not None else None, receipt_file=_text(receipt_file, "receipt_file") if receipt_file is not None else None, producer_run_id=_text(producer_run_id, "producer_run_id") if producer_run_id is not None else None,
             retry_of=retry_of,
             retry_count=retry_count,
         )
@@ -204,6 +209,7 @@ class DeliveryAttempt:
             prompt_sha256=fields["prompt_sha256"],
             schema_sha256=fields["schema_sha256"],
             capability_launch_envelope_sha256=fields["capability_launch_envelope_sha256"],
+            output_file=fields["output_file"], receipt_file=fields["receipt_file"], producer_run_id=fields["producer_run_id"],
             findings_identity=fields["findings_identity"],
             retry_of=fields["retry_of"],
             retry_count=fields["retry_count"],
@@ -236,6 +242,7 @@ class DeliveryAttempt:
                     "prompt_sha256",
                     "schema_sha256",
                     "capability_launch_envelope_sha256",
+                    "output_file", "receipt_file", "producer_run_id",
                 )
                 if (value := getattr(self, key)) is not None
             }

@@ -6,11 +6,11 @@ import hashlib
 import json
 import os
 import re
-import tempfile
 from datetime import date, datetime
 from pathlib import Path, PurePosixPath
 from typing import Any
 
+from scripts.atomic_write_lib import write_once as _atomic_write_once
 from scripts.critique_enforcement_scope import observed_date
 from scripts.lesson_ledger_lib import RESERVED_SESSION_ID, canonical_json
 
@@ -331,22 +331,11 @@ def load_session_bundle(
 
 
 def _write_once(path: Path, content: bytes, *, label: str) -> None:
-    if path.exists() or path.is_symlink():
-        _fail(f"{label} already exists at `{path}`")
-    path.parent.mkdir(parents=True, exist_ok=True)
-    temporary_path: Path | None = None
+    path = Path(os.fspath(path))
     try:
-        with tempfile.NamedTemporaryFile(
-            "wb", dir=path.parent, prefix=f".{path.name}.", delete=False
-        ) as temporary:
-            temporary_path = Path(temporary.name)
-            temporary.write(content)
-            temporary.flush()
-            os.fsync(temporary.fileno())
-        os.replace(temporary_path, path)
-    finally:
-        if temporary_path is not None:
-            temporary_path.unlink(missing_ok=True)
+        _atomic_write_once(path, content, label=label)
+    except ValueError as exc:
+        _fail(str(exc))
 
 
 def write_bundle(path: Path, content: bytes) -> None:

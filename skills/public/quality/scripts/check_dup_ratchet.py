@@ -102,7 +102,7 @@ def _resolve_stagnation(repo_root: Path, review_rel: str, args) -> tuple[int | N
     return stagnation, anchor, is_ancestor
 
 
-def _evaluate_config(repo_root: Path, config: dict, args) -> dict:
+def _evaluate_config(repo_root: Path, config: dict, args) -> dict:  # noqa: C901
     floor_F = int(config.get("floor_F", 0))
     # The validated adapter always supplies these; the fallbacks match the policy
     # defaults (DEFAULT_DUP_RATCHET) so an ad-hoc/unvalidated config can't silently
@@ -280,10 +280,20 @@ def _evaluate_config(repo_root: Path, config: dict, args) -> dict:
     verdict["algo_skew"] = algo_skew
     if algo_skew:
         verdict["messages"].append(f"WARNING (fingerprint-algo skew): {algo_skew}")
+    baseline_families = _ratchet_baseline.load_gate_baseline_families(raw_baseline) or []
+    lineage_readiness = _lineage.readiness(baseline_families, reviewed_ids=reviewed_code)
+    verdict["lineage_readiness"] = lineage_readiness
+    verdict["lineage_approval_eligible"] = lineage_readiness["status"] == "ready"
+    if lineage_readiness["status"] != "ready":
+        verdict["messages"].append(
+            "REFUSAL (lineage): current baseline lacks stable member paths for "
+            + ", ".join(lineage_readiness["missing_fingerprints"])
+            + "; rotation proof is unavailable until the baseline is backfilled"
+        )
     lineage = _lineage.propose(
         live_members=live_members,
         live_spans=live_spans,
-        baseline_families=_ratchet_baseline.load_gate_baseline_families(raw_baseline) or [],
+        baseline_families=baseline_families,
         reviewed_ids=reviewed_code,
     )
     verdict["lineage_proposals"] = lineage

@@ -85,6 +85,9 @@ def bound_fields(
         if payload.get("capability_launch_envelope_sha256") is not None
         else None
     )
+    output_file = _text(payload["output_file"], "output_file") if payload.get("output_file") is not None else None
+    receipt_file = _text(payload["receipt_file"], "receipt_file") if payload.get("receipt_file") is not None else None
+    producer_run_id = _text(payload["producer_run_id"], "producer_run_id") if payload.get("producer_run_id") is not None else None
     retry_of = attempt_id(payload["retry_of"]) if payload.get("retry_of") is not None else None
     retry_count = payload.get("retry_count", 0)
     if not isinstance(retry_count, int) or retry_count < 0:
@@ -97,6 +100,9 @@ def bound_fields(
         "prompt_sha256": prompt_sha256,
         "schema_sha256": schema_sha256,
         "capability_launch_envelope_sha256": capability_launch_envelope_sha256,
+        "output_file": output_file,
+        "receipt_file": receipt_file,
+        "producer_run_id": producer_run_id,
         "retry_of": retry_of,
         "retry_count": retry_count,
     }

@@ -113,6 +113,7 @@ def _validate_receipt(
     *,
     attempt: Any,
     expected_execution_mode: str,
+    receipt_path: Path,
 ) -> tuple[bool, str]:
     if expected_execution_mode != "file-backed-worker":
         return False, "the file-backed consumer cannot approve a typed-subagent execution"
@@ -142,6 +143,22 @@ def _validate_receipt(
             return False, f"delivery attempt has no bound {field}"
         if receipt.get(field) != expected:
             return False, f"worker receipt {field} does not match the delivery attempt"
+    producer_joins = {
+        "output_file": attempt.output_file,
+        "receipt_file": attempt.receipt_file,
+        "producer_run_id": attempt.producer_run_id,
+    }
+    if any(value is None for value in producer_joins.values()):
+        missing = ", ".join(field for field, value in producer_joins.items() if value is None)
+        return False, f"delivery attempt has no bound producer field(s): {missing}"
+    expected_output = Path(attempt.output_file).expanduser().resolve()
+    if Path(str(receipt.get("output_file", ""))).expanduser().resolve() != expected_output:
+        return False, "worker receipt output_file does not match the producer binding"
+    expected_receipt = Path(attempt.receipt_file).expanduser().resolve()
+    if receipt_path.expanduser().resolve() != expected_receipt:
+        return False, "worker receipt receipt_file does not match the producer binding"
+    if receipt.get("run_id") != attempt.producer_run_id:
+        return False, "worker receipt run_id does not match the producer binding"
     try:
         validate_receipt_capabilities(receipt, attempt_id=attempt.attempt_id)
     except CapabilityError as exc:
@@ -172,6 +189,7 @@ def build_report(
         receipt,
         attempt=attempt,
         expected_execution_mode=expected_execution_mode,
+        receipt_path=receipt_file,
     )
     semantic_result: dict[str, Any] | None = None
     semantic_reason = "canonical bounded-review result is not approval-eligible"

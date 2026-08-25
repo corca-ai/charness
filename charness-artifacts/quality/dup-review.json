@@ -5515,6 +5515,69 @@
       "note": "report_payload's shared shape between check_runtime_budget_universe.py and its sibling check_command_dominance.py: dict(report); if not armed: emit a WARN advisory and return; set did_not_judge; branch on the gate's own blocking condition to set summary+remedy and return; else set the clean summary and an optional advisory. Both gates deliberately reimplement this shape independently per docs/design-north-star.md's 'no gate reads another gate's verdict' boundary -- each report_payload only ever touches its OWN evaluate() dict, never the other gate's. slice 4 ('gate by property, not by enumeration') lengthened check_runtime_budget_universe.report_payload's malformed_budget_profile_blocks branch just enough to register as a near-duplicate of the sibling's already-similar control flow; extracting a shared formatter would either take both gates' report dicts as one shape (coupling two independently-owned proof surfaces through a formatting module) or gain no lines once the two branch bodies' own literal text stays gate-specific. Left as two independently-maintained report_payload functions that happen to rhyme in shape.",
       "reviewed_at": "2026-08-22",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "1a3b042bb0749bc5",
+      "note": "standard two-line SHA-256 file-digest helper shared by final-bundle evidence, slice manifests, root-plugin synchronization, and the parent-owned lesson boundary. Each producer owns a different identity contract and must remain directly usable in source and exported layouts; a cross-domain hash wrapper would add coupling without changing the digest rule.",
+      "reviewed_at": "2026-08-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "4fab455a1df2aacc",
+      "note": "skill-runtime bootstrap and adapter/module binding boilerplate across independently executable public skill entrypoints. The new critique/debug/quality files join an established portability seam: each script must find skill_runtime_bootstrap.py before a shared import exists, and cross-skill extraction would break the source/plugin standalone contract.",
+      "reviewed_at": "2026-08-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "83cc715f6a11fa42",
+      "note": "the required _load_skill_runtime_bootstrap ancestor walk repeated by portable skill scripts. It is the mechanism that locates the loader from both source and collapsed plugin layouts, so factoring it into another module would require the same bootstrap before that module could be imported. The debug persistence entrypoint is a new member of this existing portability idiom.",
+      "reviewed_at": "2026-08-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "91e0c29d22d46ca9",
+      "note": "small JSON-reader error boundary shared by HITL report mode and the parent lesson-session boundary. The two readers deliberately raise different typed errors and name different evidence contracts; a shared formatter would couple independent refusal surfaces for an idiom-sized try/parse/type check.",
+      "reviewed_at": "2026-08-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "ef07412d67691a60",
+      "note": "package-root discovery helpers in capability resolution, lesson command citation, and session-start context. Each command must compute the root of the tree containing its own copy so source and installed-plugin layouts work without importing a sibling first; one shared helper would hide that ownership boundary and add bootstrap coupling.",
+      "reviewed_at": "2026-08-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "ff1376ec0933bec5",
+      "note": "typed exception constructors shared by the review-input identity validator and the portable issue authoring surface. Their error classes carry different domain codes and are intentionally kept local so each consumer can remain independently portable and preserve its own refusal vocabulary.",
+      "reviewed_at": "2026-08-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "24ac5c1886f75bfe",
+      "note": "single-line parent-directory creation idiom shared by the new atomic artifact writer and existing independently-owned script writers. Each writer owns its own filesystem boundary and remains directly executable in source and exported layouts; extracting a one-line mkdir wrapper would add import coupling without centralizing policy.",
+      "reviewed_at": "2026-08-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "b15573310f48e13a",
+      "note": "near-duplicate conditional-return/message construction across independent refusal branches. The members carry different case predicates, recovery instructions, and verdict owners (packet reason mapping, staged-reversion recovery, release and mutation diagnostics); a generic formatter would erase those local contracts for an idiom-sized control-flow overlap.",
+      "reviewed_at": "2026-08-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "e682592175165ff4",
+      "note": "two-line absent-path guard shared by capability-manifest resolution and unrelated registry/collection readers. The callers intentionally return different sentinel types and own different malformed-input policies; factoring an idiom-sized path check would couple independent proof surfaces without reducing behavior.",
+      "reviewed_at": "2026-08-25",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

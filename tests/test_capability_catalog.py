@@ -181,6 +181,57 @@ def test_catalog_resolver_refuses_existing_same_version_content_mismatch(tmp_pat
     assert payload["recovery"]["kind"] == "refresh-plugin-install"
 
 
+def test_catalog_resolver_refuses_valid_plus_malformed_manifest(monkeypatch, tmp_path: Path) -> None:
+    owner = tmp_path / "owner"
+    plugin = owner / "plugins/charness"
+    (plugin / ".codex-plugin").mkdir(parents=True)
+    (owner / ".codex-plugin").mkdir(parents=True)
+    (owner / "skills/public/impl").mkdir(parents=True)
+    (plugin / ".codex-plugin/plugin.json").write_text('{"version":"1.0.0"}\n', encoding="utf-8")
+    (owner / ".codex-plugin/plugin.json").write_text("{broken\n", encoding="utf-8")
+    (owner / "skills/public/impl/SKILL.md").write_text("skill\n", encoding="utf-8")
+    monkeypatch.setattr("scripts.capability_catalog_resolver._owner_root", lambda: owner)
+    payload = resolve_skill_path(
+        skill_id="impl",
+        repo_root=owner,
+        home=tmp_path / "home",
+        codex_home=tmp_path / "home/.codex",
+        reported_path=None,
+    )
+    assert payload["admission_status"] == "refused"
+    assert payload["reason_code"] == "package-manifest-invalid"
+
+
+def test_catalog_resolver_refuses_malformed_candidate_manifest(monkeypatch, tmp_path: Path) -> None:
+    owner = tmp_path / "owner"
+    plugin = owner / "plugins/charness"
+    (plugin / ".codex-plugin").mkdir(parents=True)
+    (owner / ".codex-plugin").mkdir(parents=True)
+    source = owner / "skills/public/impl/SKILL.md"
+    exported = plugin / "skills/impl/SKILL.md"
+    source.parent.mkdir(parents=True)
+    exported.parent.mkdir(parents=True)
+    source.write_text("skill\n", encoding="utf-8")
+    exported.write_text("skill\n", encoding="utf-8")
+    (plugin / ".codex-plugin/plugin.json").write_text('{"version":"1.0.0"}\n', encoding="utf-8")
+    (owner / ".codex-plugin/plugin.json").write_text('{"version":"1.0.0"}\n', encoding="utf-8")
+    cache = tmp_path / "home/.codex/plugins/cache/local/charness/1.0.0/skills/impl"
+    cache.mkdir(parents=True)
+    (cache / "SKILL.md").write_text("skill\n", encoding="utf-8")
+    (cache.parent.parent / ".codex-plugin").mkdir(parents=True)
+    (cache.parent.parent / ".codex-plugin/plugin.json").write_bytes(b"\xff\xfe\x00")
+    monkeypatch.setattr("scripts.capability_catalog_resolver._owner_root", lambda: owner)
+    payload = resolve_skill_path(
+        skill_id="impl",
+        repo_root=owner,
+        home=tmp_path / "home",
+        codex_home=tmp_path / "home/.codex",
+        reported_path=cache / "SKILL.md",
+    )
+    assert payload["admission_status"] == "refused"
+    assert payload["reason_code"] == "package-manifest-invalid"
+
+
 def test_catalog_preserves_sanitized_provider_metadata(monkeypatch, tmp_path: Path) -> None:
     manifest = {
         "tool_id": "github-gh",

@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import shlex
 from pathlib import Path
 from typing import Any, Callable
 
@@ -126,8 +127,26 @@ def critique_inventory(
             identity = packet_data.get("reviewed_input_identity")
             if not isinstance(identity, dict) or identity.get("identity_sha256") != identity_sha:
                 raise ValueError("bound prepare packet does not carry the declared reviewed-input identity")
+            packet_markdown = packet_md.read_text(encoding="utf-8")
             rendered = _packet.render_markdown(packet_data)
-            if packet_md.read_text(encoding="utf-8") != rendered:
+            verify_command = shlex.join(
+                [
+                    "python3",
+                    "skills/public/critique/scripts/verify_packet.py",
+                    "--repo-root",
+                    ".",
+                    "--packet-path",
+                    packet_path,
+                    "--packet-sha256",
+                    packet_sha,
+                    "--identity-sha256",
+                    identity_sha,
+                ]
+            )
+            rendered_with_verifier = _packet.render_markdown(
+                packet_data, verification_command=verify_command
+            )
+            if packet_markdown not in {rendered, rendered_with_verifier}:
                 raise ValueError("prepare packet Markdown is not the deterministic rendering of its JSON")
             declared_md_sha = fields.get("packet markdown sha256")
             if declared_md_sha and _strip_markup(declared_md_sha) != _sha256_file(packet_md):
