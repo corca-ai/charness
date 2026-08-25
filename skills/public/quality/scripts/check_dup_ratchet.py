@@ -290,7 +290,18 @@ def _evaluate_config(repo_root: Path, config: dict, args) -> dict:  # noqa: C901
     # The duplicate consumer owns this verdict.  The shared registry describes
     # the readiness obligation and refusal code but must not become a generic
     # approval calculator for domain-specific semantics.
-    verdict["lineage_approval_eligible"] = lineage_readiness["status"] == "ready"
+    # A degraded run did not establish the inputs that the lineage join needs.
+    # Treating missing/unreadable inputs as an empty baseline lets the lineage
+    # helper return ``ready`` (there is nothing to compare) and turns
+    # unavailable -> empty -> ready into an approval.  Readiness is therefore
+    # necessary but not sufficient: the scan itself must also be established.
+    verdict["lineage_approval_eligible"] = (
+        not verdict["degraded"] and lineage_readiness["status"] == "ready"
+    )
+    if verdict["degraded"] and lineage_readiness["status"] == "ready":
+        verdict["messages"].append(
+            "REFUSAL (lineage): degraded inputs do not establish lineage approval"
+        )
     if lineage_readiness["status"] != "ready":
         verdict["messages"].append(
             "REFUSAL (lineage): current baseline lacks stable member paths for "

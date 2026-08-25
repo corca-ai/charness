@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import shlex
 import shutil
+import sys
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module
@@ -26,6 +27,13 @@ _artifact_shape_gates = _plan_helpers.artifact_shape_gates
 _mirror_drift_gates = _plan_helpers.mirror_drift_gates
 _skill_core_headroom_gates = _plan_helpers.skill_core_headroom_gates
 _timing_pull_gate = _plan_helpers.timing_pull_gate
+_provenance_self_test_gate = _plan_helpers.provenance_contract_self_test_gate
+
+
+_registry_root = Path(__file__).resolve().parents[1]
+_registry_root /= "shared/scripts" if (_registry_root / "shared").is_dir() else "skills/shared/scripts"
+sys.path.insert(0, str(_registry_root))
+import provenance_contract as _provenance_contract  # noqa: E402
 
 # Single source of truth (#314) for the fast structural checkers that must run
 # in BOTH the per-slice aggregate (run_slice_closeout) and the literal git
@@ -83,24 +91,13 @@ def _timing_layer_gates(repo_root: Path, paths: list[str], existing: list[str] |
         # the classification table exhaustive, so the shift-left class cannot recur via
         # an unclassified broad-only check. Flips only on these two files.
         gates.extend(_timing_pull_gate(repo_root, "check-timing-layer-completeness", "scripts/check_timing_layer_completeness.py", "--repo-root", str(repo_root)))
+    # The registry owns the dependency/fixture closure.  Keeping this derived
+    # rather than hand-maintained prevents a new helper from silently falling
+    # outside the commit-time contract gate.
     provenance_paths = {
-        "skills/shared/scripts/provenance_contract.py",
-        "skills/shared/scripts/reviewer_worker_report.py",
-        "skills/shared/scripts/reviewer_runner_support.py",
-        "scripts/capability_catalog_resolver.py",
-        "skills/public/quality/scripts/check_dup_ratchet.py",
-        "skills/public/quality/scripts/check_provenance_contract.py",
-        "plugins/charness/shared/scripts/provenance_contract.py",
-        "plugins/charness/shared/scripts/reviewer_worker_report.py",
-        "plugins/charness/shared/scripts/reviewer_runner_support.py",
-        "plugins/charness/scripts/capability_catalog_resolver.py",
-        "plugins/charness/skills/quality/scripts/check_dup_ratchet.py",
-        "plugins/charness/skills/quality/scripts/check_provenance_contract.py",
-        # The executable negative fixtures are part of the contract surface too.
-        # If one is weakened or removed without firing the contract gate, the
-        # registry can still look healthy while its proof has silently vanished.
-        "tests/quality_gates/test_reviewer_worker_report.py", "tests/quality_gates/test_reviewer_delivery_state_machine.py",
-        "tests/test_capability_catalog.py", "tests/quality_gates/test_dup_ratchet.py",
+        path
+        for contract in _provenance_contract.CONTRACTS
+        for path in contract.trigger_paths
     }
     if any(path in provenance_paths for path in paths):
         gates.extend(
@@ -112,6 +109,12 @@ def _timing_layer_gates(repo_root: Path, paths: list[str], existing: list[str] |
                 str(repo_root),
             )
         )
+        # A second channel exercises the checker through its owning test rather
+        # than trusting the checker process to approve its own decision procedure.
+        # This is intentionally narrow: the exact test invokes the source checker
+        # and asserts executable fixture results, while the checker gate above
+        # remains the operator-facing registry receipt.
+        gates.extend(_provenance_self_test_gate(repo_root))
     if any(
         path in {
             ".agents/consumer-validator-adoption.yaml",

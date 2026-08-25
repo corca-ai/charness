@@ -3,6 +3,7 @@ from __future__ import annotations
 import runpy
 import subprocess
 import sys
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -29,6 +30,13 @@ def test_registry_has_one_complete_row_per_reviewed_boundary() -> None:
         "skill_manifest_selection",
         "duplicate_lineage",
     }
+    assert all(item.trigger_paths for item in contract.CONTRACTS)
+    assert "skills/shared/scripts/reviewer_delivery_schema.py" in contract.contract_for(
+        "reviewer_delivery"
+    ).trigger_paths
+    assert "skills/public/quality/scripts/dup_ratchet_scan.py" in contract.contract_for(
+        "duplicate_lineage"
+    ).trigger_paths
 
 
 def test_missing_producer_binding_is_typed_and_fail_closed() -> None:
@@ -86,9 +94,54 @@ def test_contract_checker_marks_plugin_layout_shape_only() -> None:
     )
     payload = yaml.safe_load(result.stdout)
     assert result.returncode == 0
-    assert payload["proof_level"] == "shape-only"
+    assert payload["proof_level"] == "shape+consumer-anchors"
     assert payload["fixture_results"] == []
     assert payload["non_claims"]
+
+
+def test_plugin_anchor_validation_refuses_missing_consumer(tmp_path: Path) -> None:
+    plugin = tmp_path / "plugin"
+    (plugin / "shared" / "scripts").mkdir(parents=True)
+    (plugin / "skills" / "quality" / "scripts").mkdir(parents=True)
+    for item in contract.CONTRACTS:
+        relative = CHECKER._plugin_relative_path(item.consumer_path)
+        path = plugin / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(item.contract_id, encoding="utf-8")
+    missing = plugin / CHECKER._plugin_relative_path(contract.CONTRACTS[0].consumer_path)
+    missing.unlink()
+    errors = CHECKER._validate_plugin_anchors(plugin, contract.CONTRACTS)
+    assert any("reviewer_delivery" in error and "missing plugin consumer" in error for error in errors)
+    unsafe = replace(contract.CONTRACTS[0], consumer_path="../escape.py")
+    errors = CHECKER._validate_plugin_anchors(plugin, (unsafe,))
+    assert any("unsafe plugin consumer path" in error for error in errors)
+
+
+def test_fixture_status_refuses_skipped_xpassed_and_zero_tests(tmp_path: Path) -> None:
+    skipped = tmp_path / "skipped.xml"
+    skipped.write_text(
+        '<testsuite><testcase><skipped type="pytest.skip" /></testcase></testsuite>',
+        encoding="utf-8",
+    )
+    assert CHECKER._junit_fixture_status(skipped, "") == (
+        "skipped",
+        "pytest marked the fixture skipped",
+    )
+    empty = tmp_path / "empty.xml"
+    empty.write_text("<testsuite />", encoding="utf-8")
+    status, detail = CHECKER._junit_fixture_status(empty, "")
+    assert status == "zero-tests"
+    assert detail
+    assert CHECKER._junit_fixture_status(empty, "XPASS test_example") == (
+        "xpassed",
+        "pytest reported XPASS",
+    )
+    namespaced = tmp_path / "namespaced.xml"
+    namespaced.write_text(
+        '<testsuite xmlns="urn:pytest"><testcase name="fixture" /></testsuite>',
+        encoding="utf-8",
+    )
+    assert CHECKER._junit_fixture_status(namespaced, "") == ("passed", None)
 
 
 def test_contract_checker_reports_fixture_timeout(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -117,7 +170,7 @@ def test_contract_checker_reports_fixture_failure(monkeypatch: pytest.MonkeyPatc
     )
     payload = yaml.safe_load(result.stdout)
     assert result.returncode == 1
-    assert payload["fixture_results"][0]["status"] == "failed"
+    assert payload["fixture_results"][0]["status"] == "missing-result"
     assert "fixture failed" in payload["errors"][0]
 
 

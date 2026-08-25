@@ -213,12 +213,14 @@ def finalize_attempt(
                 raise ValueError("lesson-bound reviewer finalization lacks a pre-worker lesson snapshot")
             boundary = _lesson_boundary_module(repo_root)
             changed = lesson_inventory_delta(lesson_before, _lesson_inventory(repo_root))
-            boundary.validate_lane_writes(
+            fence_result = boundary.validate_lane_writes(
                 repo_root,
                 changed,
                 lane_id=lesson_binding_data["lane_id"],
                 owner_role="worker",
             )
+            if not isinstance(fence_result, dict) or fence_result.get("ok") is not True:
+                raise ValueError("lesson write fence did not establish an ok result")
             lesson_fence_ran = True
             if receipt is not None and receipt.get("status") == "succeeded":
                 boundary.validate_lane_receipt(

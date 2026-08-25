@@ -31,6 +31,7 @@ class BoundaryContract:
     refusal_code: str
     negative_fixture: str
     consumer_path: str
+    trigger_paths: tuple[str, ...]
 
 
 CONTRACTS: tuple[BoundaryContract, ...] = (
@@ -46,6 +47,28 @@ CONTRACTS: tuple[BoundaryContract, ...] = (
             "test_missing_producer_binding_is_not_approval_eligible"
         ),
         consumer_path="skills/shared/scripts/reviewer_worker_report.py",
+        trigger_paths=(
+            "skills/shared/scripts/provenance_contract.py",
+            "skills/shared/scripts/reviewer_worker_report.py",
+            "skills/shared/scripts/reviewer_runner_support.py",
+            "skills/shared/scripts/reviewer_delivery.py",
+            "skills/shared/scripts/reviewer_delivery_attempt.py",
+            "skills/shared/scripts/reviewer_delivery_fields.py",
+            "skills/shared/scripts/reviewer_delivery_schema.py",
+            "skills/shared/scripts/reviewer_delivery_history.py",
+            "plugins/charness/shared/scripts/provenance_contract.py",
+            "plugins/charness/shared/scripts/reviewer_worker_report.py",
+            "plugins/charness/shared/scripts/reviewer_runner_support.py",
+            "plugins/charness/shared/scripts/reviewer_delivery.py",
+            "plugins/charness/shared/scripts/reviewer_delivery_attempt.py",
+            "plugins/charness/shared/scripts/reviewer_delivery_fields.py",
+            "plugins/charness/shared/scripts/reviewer_delivery_schema.py",
+            "plugins/charness/shared/scripts/reviewer_delivery_history.py",
+            "tests/quality_gates/test_reviewer_worker_report.py",
+            "skills/public/quality/scripts/check_provenance_contract.py",
+            "plugins/charness/skills/quality/scripts/check_provenance_contract.py",
+            "tests/test_provenance_contract.py",
+        ),
     ),
     BoundaryContract(
         contract_id="lesson_finalization",
@@ -59,6 +82,13 @@ CONTRACTS: tuple[BoundaryContract, ...] = (
             "test_lesson_finalizer_fences_all_terminal_outcomes"
         ),
         consumer_path="skills/shared/scripts/reviewer_runner_support.py",
+        trigger_paths=(
+            "skills/shared/scripts/reviewer_runner_support.py",
+            "scripts/lesson_session_boundary.py",
+            "plugins/charness/shared/scripts/reviewer_runner_support.py",
+            "plugins/charness/scripts/lesson_session_boundary.py",
+            "tests/quality_gates/test_reviewer_delivery_state_machine.py",
+        ),
     ),
     BoundaryContract(
         contract_id="skill_manifest_selection",
@@ -72,6 +102,11 @@ CONTRACTS: tuple[BoundaryContract, ...] = (
             "test_catalog_resolver_refuses_malformed_candidate_manifest"
         ),
         consumer_path="scripts/capability_catalog_resolver.py",
+        trigger_paths=(
+            "scripts/capability_catalog_resolver.py",
+            "plugins/charness/scripts/capability_catalog_resolver.py",
+            "tests/test_capability_catalog.py",
+        ),
     ),
     BoundaryContract(
         contract_id="duplicate_lineage",
@@ -85,6 +120,21 @@ CONTRACTS: tuple[BoundaryContract, ...] = (
             "test_cli_lineage_unavailability_is_not_approval_eligible"
         ),
         consumer_path="skills/public/quality/scripts/check_dup_ratchet.py",
+        trigger_paths=(
+            "skills/public/quality/scripts/check_dup_ratchet.py",
+            "skills/public/quality/scripts/dup_family_lineage.py",
+            "skills/public/quality/scripts/dup_ratchet_lib.py",
+            "skills/public/quality/scripts/dup_ratchet_baseline_lib.py",
+            "skills/public/quality/scripts/dup_ratchet_scan.py",
+            "skills/public/quality/scripts/dup_ratchet_git.py",
+            "plugins/charness/skills/quality/scripts/check_dup_ratchet.py",
+            "plugins/charness/skills/quality/scripts/dup_family_lineage.py",
+            "plugins/charness/skills/quality/scripts/dup_ratchet_lib.py",
+            "plugins/charness/skills/quality/scripts/dup_ratchet_baseline_lib.py",
+            "plugins/charness/skills/quality/scripts/dup_ratchet_scan.py",
+            "plugins/charness/skills/quality/scripts/dup_ratchet_git.py",
+            "tests/quality_gates/test_dup_ratchet.py",
+        ),
     ),
 )
 
@@ -153,8 +203,14 @@ def validate_registry(repo_root: Path, *, require_repo_anchors: bool = True) -> 
             errors.append(f"{contract.contract_id} lacks required obligations/outcomes")
         if not contract.refusal_code:
             errors.append(f"{contract.contract_id} lacks refusal_code")
+        if not contract.trigger_paths:
+            errors.append(f"{contract.contract_id} lacks trigger_paths")
         if require_repo_anchors:
-            for relative in (contract.consumer_path, contract.negative_fixture.split("::", 1)[0]):
+            for relative in (
+                contract.consumer_path,
+                contract.negative_fixture.split("::", 1)[0],
+                *contract.trigger_paths,
+            ):
                 try:
                     _relative_fixture_parts(relative)
                 except BoundaryContractError as exc:
@@ -185,6 +241,7 @@ def validate_registry(repo_root: Path, *, require_repo_anchors: bool = True) -> 
                 "refusal_code": item.refusal_code,
                 "negative_fixture": item.negative_fixture,
                 "consumer_path": item.consumer_path,
+                "trigger_paths": item.trigger_paths,
             }
             for item in CONTRACTS
         ],

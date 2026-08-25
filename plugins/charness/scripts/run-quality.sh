@@ -1180,7 +1180,20 @@ done
 if [[ -n "$PROVENANCE_CONTRACT_CHECKER" ]]; then
   queue_selected "check-provenance-contract" python3 "$PROVENANCE_CONTRACT_CHECKER" --repo-root "$REPO_ROOT"
 else
-  queue_selected "check-provenance-contract" bash -c 'echo "ADVISORY: provenance contract checker is not packaged in this consumer tree; skipping optional registry proof."'
+  # A missing checker is not a clean proof.  Keep ordinary consumer runs
+  # diagnosable, but refuse the irreversible pre-push boundary unless the
+  # adapter explicitly ships the contract checker (or the operator has a
+  # separate proof packet).  This prevents not-packaged -> exit 0 from being
+  # read as executable provenance approval.
+  queue_selected "check-provenance-contract" bash -c '
+    echo "status: unestablished"
+    echo "proof_level: unavailable"
+    echo "non_claims: [provenance contract checker is not packaged in this consumer tree]"
+    if [[ "${CHARNESS_PRE_PUSH:-0}" == "1" ]]; then
+      echo "REFUSAL: pre-push provenance proof is unavailable"
+      exit 2
+    fi
+  '
 fi
 queue_selected "check-closeout-floor-matrix" python3 scripts/check_closeout_floor_matrix.py --repo-root "$REPO_ROOT"
 # The floor matrix holds ONE copy of the classification vocabulary (its own

@@ -292,6 +292,7 @@ def test_lesson_finalizer_fences_all_terminal_outcomes(tmp_path, monkeypatch, st
     class Boundary:
         def validate_lane_writes(self, _root, _changed, **_kwargs):
             seen.append("writes")
+            return {"ok": True}
 
         def validate_lane_receipt(self, *_args, **_kwargs):
             seen.append("receipt")

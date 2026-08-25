@@ -1062,6 +1062,20 @@
       ],
       "rationale": "Inline-prompt bulk helper marks default-glob scans as advisory-only when no canonical prompt_asset_roots are supplied; classification is in stdout and JSON payload."
     },
+    "skills/public/quality/scripts/check_provenance_contract.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "structured_warning",
+        "stdout_attention"
+      ],
+      "evidence_terms": [
+        "shape+consumer-anchors",
+        "final-consumer pytest fixtures are not packaged"
+      ],
+      "rationale": "The exported plugin contract checker deliberately skips authoring-tree pytest fixtures. It renders the proof level and explicit non-claim so shape/anchor evidence cannot be read as executable final-consumer proof."
+    },
     "skills/public/quality/scripts/check_regenerable_facts.py": {
       "states": [
         "not_configured"

@@ -83,6 +83,24 @@ def timing_pull_gate(repo_root: Path, label: str, script: str, *args: str) -> li
     return [GateCommand(label, ("python3", script, *args))]
 
 
+def provenance_contract_self_test_gate(repo_root: Path) -> list[GateCommand]:
+    """Run the owning test as a second channel for the provenance checker."""
+    if not (repo_root / "tests/test_provenance_contract.py").is_file():
+        return []
+    return [
+        GateCommand(
+            "check-provenance-contract-self-test",
+            (
+                "python3",
+                "-m",
+                "pytest",
+                "-q",
+                "tests/test_provenance_contract.py::test_contract_checker_executes_source_fixtures_in_process",
+            ),
+        )
+    ]
+
+
 _MIRROR_PREFIXES = (
     "scripts/",
     "skills/",

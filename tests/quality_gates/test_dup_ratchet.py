@@ -424,7 +424,23 @@ def test_cli_degraded_when_gate_baseline_missing(tmp_path: Path) -> None:
     (repo / "q" / "dup-ratchet-baseline.json").unlink()
     result = _run_gate(repo, tmp_path, code_ids=["known1", "BRANDNEW"])
     assert result.returncode == 0, result.stdout + result.stderr
-    assert _verdict(result)["status"] == "degraded"
+    verdict = _verdict(result)
+    assert verdict["status"] == "degraded"
+    assert verdict["lineage_approval_eligible"] is False
+
+
+def test_cli_degraded_when_review_overlay_missing_is_not_lineage_approval(
+    tmp_path: Path,
+) -> None:
+    repo = _consumer_repo(tmp_path, baseline_ids=("known1",))
+    (repo / "q" / "dup-review.json").unlink()
+    result = _run_gate(repo, tmp_path, code_ids=["known1"])
+    assert result.returncode == 0, result.stdout + result.stderr
+    verdict = _verdict(result)
+    assert verdict["status"] == "degraded"
+    assert verdict["lineage_readiness"]["status"] == "ready"
+    assert verdict["lineage_approval_eligible"] is False
+    assert any("degraded inputs" in message for message in verdict["messages"])
 
 
 def test_cli_lineage_unavailability_is_not_approval_eligible(tmp_path: Path) -> None:

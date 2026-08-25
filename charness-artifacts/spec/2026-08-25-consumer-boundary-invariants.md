@@ -1,7 +1,7 @@
 # Consumer Boundary Invariants — Structural Hardening Contract
 
 Date: 2026-08-25
-Status: implemented — verification complete
+Status: implemented — adversarial hardening; second review pending
 
 ## Problem
 
@@ -100,19 +100,27 @@ state model; existing producers and approval owners remain authoritative.
 
 - Source gate: `check_provenance_contract.py` ran all four exact negative
   fixtures as executable pytest nodes.
-- Plugin gate: the exported layout passed schema/anchor validation as
-  `proof_level: shape-only`; it explicitly does not claim the authoring-tree
-  final-consumer pytest fixtures are packaged there.
-- Focused consumer/registry/quality tests: 222 passed in the latest slice run.
-- Source/plugin mirror drift, timing-layer completeness, shell syntax, full
-  standing pytest (11,409 passed), and `git diff --check` passed. The pre-commit
-  closeout completed with no blocking findings.
+- Plugin gate: the exported layout passed mapped consumer-anchor validation as
+  `proof_level: shape+consumer-anchors`; it explicitly does not claim the
+  authoring-tree final-consumer pytest fixtures are packaged there.
+- Focused consumer/registry/quality tests (`tests/test_provenance_contract.py`,
+  `tests/quality_gates/test_dup_ratchet.py`, and
+  `tests/quality_gates/test_reviewer_delivery_state_machine.py`): 106 passed in
+  the final repair slice.
+- The canonical standing runner was re-executed at the current HEAD and its
+  fresh count is recorded by the runner receipt, not copied into this prose.
+  Source/plugin mirror drift, timing-layer completeness, shell syntax, and
+  `git diff --check` remain required closeout checks. The pre-commit closeout
+  is not claimed until the repaired verdict surface receives its second
+  fresh-eye review.
 
 ## Boundary Ownership
 
 The registry and gate are auditors. Reviewer delivery, lesson finalization,
 capability selection, and duplicate ratchet remain the producers/consumers that
-own their verdicts. The registry must not manufacture approval or readiness.
+own their verdicts. The registry must not manufacture approval or readiness;
+`required_fields` and `refusal_code` remain metadata obligations whose runtime
+semantics are proven by consumer-owned fixtures, not by the registry alone.
 
 ## Critique
 

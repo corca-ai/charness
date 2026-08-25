@@ -1634,6 +1634,36 @@
         ]
       },
       "snapshot_sha256": "3a209c6b86d15b6c1097788baf8c0ce6a930622f0532d2bea5ea4c73720e9bf1"
+    },
+    {
+      "session_id": "2026-08-25-adversarial-review",
+      "snapshot": {
+        "kind": "charness.lesson-selection-preview",
+        "schema_version": 1,
+        "selection_policy_version": 3,
+        "seed": "2026-08-25-adversarial-review",
+        "eligible_count": 43,
+        "bucket_counts": {
+          "recent": 3,
+          "value": 3,
+          "uncertainty": 3,
+          "archive": 0,
+          "archive_fallback_uncertainty": 1
+        },
+        "lesson_ids": [
+          "skipped-is-not-passed",
+          "global-probe-for-local-fact",
+          "green-test-is-not-covered-line",
+          "positive-effect-cannot-be-cited",
+          "agent-authored-score-role",
+          "changed-line-proof-before-broad-quality",
+          "bar-recorded-as-prose",
+          "goal-closeout-evidence-binding",
+          "stale-current-pointer-at-closeout",
+          "proof-surface-message-drift"
+        ]
+      },
+      "snapshot_sha256": "58b99f318ca9a7519e6713afc5ceacab1548323cd711bc05e0afd8a84e1fb8b4"
     }
   ],
   "score_events": [
