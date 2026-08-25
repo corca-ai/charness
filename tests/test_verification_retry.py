@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import runpy
+import sys
+from pathlib import Path
+
 import pytest
 
 from skills.public.critique.scripts.verification_retry import (
@@ -7,6 +11,7 @@ from skills.public.critique.scripts.verification_retry import (
     canonical_failure_code,
     canonical_identity,
     decide_retry,
+    main,
 )
 
 
@@ -58,3 +63,64 @@ def test_failure_code_rejects_changing_log_prose() -> None:
 def test_identity_rejects_caller_labels() -> None:
     with pytest.raises(ValueError, match="sha256"):
         canonical_identity("input-label")
+
+
+def test_identity_rejects_empty_values() -> None:
+    with pytest.raises(ValueError, match="must not be empty"):
+        canonical_identity("   ")
+
+
+def test_retry_rejects_invalid_current_key() -> None:
+    with pytest.raises(ValueError, match="current retry key"):
+        decide_retry(current_key="not-a-digest", current_evidence="none")
+
+
+def test_retry_rejects_invalid_previous_key() -> None:
+    with pytest.raises(ValueError, match="previous retry key"):
+        decide_retry(current_key=_key(), current_evidence="none", previous_key="not-a-digest")
+
+
+def test_cli_renders_the_retry_decision(capsys: pytest.CaptureFixture[str]) -> None:
+    assert main(
+        [
+            "--subject", "sha256:" + "1" * 64,
+            "--verifier", "sha256:" + "2" * 64,
+            "--input", "sha256:" + "3" * 64,
+            "--failure-code", "gate-failed",
+        ]
+    ) == 0
+    output = capsys.readouterr().out
+    assert "retry_key: sha256:" in output
+    assert "evidence_identity: none" in output
+    assert "retry_disposition: first-attempt" in output
+    assert "reason: no previous attempt for this claim" in output
+
+
+def test_cli_reports_invalid_identity(capsys: pytest.CaptureFixture[str]) -> None:
+    assert main(
+        [
+            "--subject", "caller-label",
+            "--verifier", "sha256:" + "2" * 64,
+            "--input", "sha256:" + "3" * 64,
+            "--failure-code", "gate-failed",
+        ]
+    ) == 2
+    assert "error: identity must be sha256" in capsys.readouterr().out
+
+
+def test_module_entrypoint_runs_the_same_cli(monkeypatch: pytest.MonkeyPatch) -> None:
+    source = Path(__file__).resolve().parents[1] / "skills/public/critique/scripts/verification_retry.py"
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            str(source),
+            "--subject", "sha256:" + "1" * 64,
+            "--verifier", "sha256:" + "2" * 64,
+            "--input", "sha256:" + "3" * 64,
+            "--failure-code", "gate-failed",
+        ],
+    )
+    with pytest.raises(SystemExit) as exc:
+        runpy.run_path(str(source), run_name="__main__")
+    assert exc.value.code == 0

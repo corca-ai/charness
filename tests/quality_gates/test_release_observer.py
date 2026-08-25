@@ -132,6 +132,29 @@ def test_release_observer_capture_error_renders_unavailable_record_disposition()
     assert "- Capture disposition: ValueError: target commit is missing" in lines
 
 
+def test_release_record_lines_keep_unproven_public_state_honest() -> None:
+    lines = ARTIFACT_SECTIONS.release_record_lines(
+        "https://example.test/releases/tag/v2.1.5", "unproven"
+    )
+
+    assert lines == [
+        "- GitHub release record: backend-visible URL `https://example.test/releases/tag/v2.1.5`; distinct-channel verification remained unproven"
+    ]
+
+
+def test_public_release_verification_lines_keep_unproven_state_honest() -> None:
+    lines = ARTIFACT_SECTIONS.public_release_verification_lines(
+        "unproven", "https://example.test/releases/tag/v2.1.5"
+    )
+
+    assert lines == [
+        "",
+        "## Public Release Verification",
+        "",
+        "- GitHub release publication: backend-visible, but the required distinct-channel readback did not confirm it.",
+    ]
+
+
 def test_distinct_channel_section_renders_observer_identity() -> None:
     # The rung-2 audit reads the markdown section, so the observer identity
     # recorded on the verification record must surface there, not only in the
