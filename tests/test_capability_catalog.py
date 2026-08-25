@@ -6,10 +6,10 @@ import shutil
 import sys
 from pathlib import Path
 
-# provenance-contract fixture: skill_manifest_selection
 import pytest
 import yaml
 
+# provenance-contract fixture: skill_manifest_selection
 import scripts.capability_catalog as catalog
 import scripts.capability_catalog_sources as sources
 from scripts.capability_catalog import (
@@ -22,6 +22,13 @@ from scripts.capability_catalog import (
 from scripts.capability_catalog import main as catalog_main
 from scripts.capability_catalog_artifact import persist_catalog
 from scripts.capability_catalog_resolver import _cache_candidates, resolve_skill_path
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+def _current_plugin_version() -> str:
+    manifest = REPO_ROOT / "plugins/charness/.codex-plugin/plugin.json"
+    return json.loads(manifest.read_text(encoding="utf-8"))["version"]
 
 
 def test_catalog_refresh_is_read_only_for_list_and_noop_on_second_refresh(tmp_path: Path) -> None:
@@ -147,9 +154,10 @@ def test_catalog_refresh_rejects_file_root(tmp_path: Path) -> None:
 def test_catalog_resolver_recovers_rotated_cache(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     home = tmp_path / "home"
-    cache = home / ".codex/plugins/cache/local/charness/6.4.1/skills/impl"
+    version = _current_plugin_version()
+    cache = home / f".codex/plugins/cache/local/charness/{version}/skills/impl"
     cache.mkdir(parents=True)
-    source = Path(__file__).resolve().parents[1] / "skills/public/impl/SKILL.md"
+    source = REPO_ROOT / "skills/public/impl/SKILL.md"
     (cache / "SKILL.md").write_bytes(source.read_bytes())
     payload = resolve_skill_path(
         skill_id="impl",
@@ -161,11 +169,12 @@ def test_catalog_resolver_recovers_rotated_cache(tmp_path: Path) -> None:
     assert payload["status"] == "stale-reported-path"
     assert payload["resolved_source"] == "codex-versioned-cache"
     assert payload["admission_status"] == "admitted"
-    assert payload["expectation"]["version"] == "6.4.1"
+    assert payload["expectation"]["version"] == version
 
 
 def test_catalog_resolver_refuses_existing_same_version_content_mismatch(tmp_path: Path) -> None:
-    cache = tmp_path / "home/.codex/plugins/cache/local/charness/6.4.1/skills/impl"
+    version = _current_plugin_version()
+    cache = tmp_path / f"home/.codex/plugins/cache/local/charness/{version}/skills/impl"
     cache.mkdir(parents=True)
     (cache / "SKILL.md").write_text("stale bytes\n", encoding="utf-8")
     payload = resolve_skill_path(
