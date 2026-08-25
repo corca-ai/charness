@@ -37,9 +37,17 @@ DEFAULT_REVIEW_REL = "charness-artifacts/quality/dup-review.json"
 DEFAULT_GATE_BASELINE_REL = "charness-artifacts/quality/dup-ratchet-baseline.json"
 
 
-def write_gate_baseline(out: Path, members: dict, live_version: str) -> None:
+def write_gate_baseline(
+    out: Path,
+    members: dict,
+    live_version: str,
+    member_paths: dict[str, list[str]] | None = None,
+) -> None:
     baseline = _ratchet_baseline.build_gate_baseline(
-        members, tool_version=live_version, algo_version=_fingerprint.FINGERPRINT_ALGO_VERSION
+        members,
+        member_paths=member_paths,
+        tool_version=live_version,
+        algo_version=_fingerprint.FINGERPRINT_ALGO_VERSION,
     )
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(baseline, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -123,7 +131,7 @@ def write_baseline(repo_root: Path, config: dict, args) -> dict:
     # Stamp the producing nose version from THIS scan (the run that minted these
     # fingerprints) plus the fingerprint algo version, never a fresh probe — so the stamps
     # can never disagree with the fingerprints they label.
-    write_gate_baseline(out, members, live_version)
+    write_gate_baseline(out, members, live_version, getattr(args, "_live_member_paths", None))
     message = f"wrote gate baseline ({len(ids)} code family fingerprints) -> {baseline_rel}"
     if delta_note:
         message += f" [{delta_note}]"
@@ -203,7 +211,7 @@ def restamp_tool_version(repo_root: Path, config: dict, args) -> dict:
                 "baseline_tool_version": baseline_version, "tool_version": live_version,
                 "code_family_count": len(existing_members), "gate_baseline_path": baseline_rel,
                 "messages": [f"baseline already stamped {live_version!r}; nothing to re-stamp."]}
-    write_gate_baseline(out, existing_members, live_version)
+    write_gate_baseline(out, existing_members, live_version, getattr(args, "_live_member_paths", None))
     return {
         "ok": True, "inert": False, "status": "restamp-written",
         "baseline_tool_version": baseline_version, "tool_version": live_version,
@@ -271,7 +279,7 @@ def scoped_rebaseline(repo_root: Path, config: dict, args) -> dict:
     # known: unchanged ids from the existing baseline, rotated/accepted ids from the
     # live scan (the only place a brand-new fingerprint's members can come from).
     updated_members = {fid: existing_members.get(fid, live_members.get(fid, [])) for fid in updated_ids}
-    write_gate_baseline(out, updated_members, live_version)
+    write_gate_baseline(out, updated_members, live_version, getattr(args, "_live_member_paths", None))
     message = (
         f"scoped re-baseline: accepted {len(rotations)} rotation(s) + {len(accept_families)} new "
         f"family(ies); baseline now has {len(updated_ids)} code family fingerprints -> {baseline_rel}"

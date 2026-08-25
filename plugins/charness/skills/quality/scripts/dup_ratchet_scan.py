@@ -273,7 +273,18 @@ def live_scan_for_rebaseline(
     resolve the adapter paths, run the live scan, and typed-fail on a scan reason."""
     scope_paths = list(config.get("scope_paths") or [])
     baseline_rel = config.get("gate_baseline_path") or default_baseline_rel
-    members, _spans, reason, live_version = code_family_members(args, repo_root, scope_paths)
+    members, spans, reason, live_version = code_family_members(args, repo_root, scope_paths)
+    # Preserve the path evidence alongside the historical tuple return shape so
+    # callers and consumer fixtures remain compatible while new baselines can
+    # carry stable lineage bindings.
+    setattr(args, "_live_member_paths", {
+        fingerprint: sorted({
+            str(span["file"]).replace("\\", "/")
+            for span in family_spans
+            if isinstance(span, dict) and isinstance(span.get("file"), str) and span.get("file")
+        })
+        for fingerprint, family_spans in spans.items()
+    })
     error = None
     if reason:
         error = {"ok": False, "inert": False, "status": fail_status,
