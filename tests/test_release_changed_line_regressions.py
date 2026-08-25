@@ -352,6 +352,7 @@ def test_capability_resolver_admission_edges(tmp_path: Path, monkeypatch: pytest
     assert parity["reason_code"] == "source-plugin-parity-mismatch"
 
     assert catalog_resolver._candidate_version(Path("/SKILL.md"), "codex-versioned-cache") is None
+    assert catalog_resolver._candidate_version(Path("/"), "codex-versioned-cache") is None
     (owner / ".codex-plugin/plugin.json").write_text('{"version":"1"}', encoding="utf-8")
     manifest_calls: list[Path] = []
     real_manifest_version = catalog_resolver._manifest_version
