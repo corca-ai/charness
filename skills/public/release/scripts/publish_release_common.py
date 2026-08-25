@@ -10,26 +10,6 @@ _evaluate_baton_reconcile = runpy.run_path(
 )["evaluate_baton_reconcile"]
 
 
-def _capture_lifecycle(repo_root: Path, *, tag_name: str) -> dict[str, Any]:
-    """Best-effort capture after the distinct-channel publication proof."""
-
-    helper_path = next(
-        (
-            parent / "scripts" / "lifecycle_usage_capture.py"
-            for parent in Path(__file__).resolve().parents
-            if (parent / "scripts" / "lifecycle_usage_capture.py").is_file()
-        ),
-        None,
-    )
-    if helper_path is None:
-        return {"status": "capture_error", "appended": False, "errors": ["lifecycle capture helper unavailable"]}
-    try:
-        capture = runpy.run_path(str(helper_path))["capture_lifecycle_outcome"]
-        return capture(repo_root=repo_root, lifecycle_kind="release_publish", evidence_locator=tag_name)
-    except Exception as exc:  # telemetry must never undo a completed publication
-        return {"status": "capture_error", "appended": False, "errors": [f"{exc.__class__.__name__}: {exc}"]}
-
-
 def timed(payload: dict[str, Any], key: str, func):
     return _runtime["timed"](payload, key, func)
 
@@ -317,7 +297,6 @@ def run_release_closeout_tail(
     carrier_source: str = "release",
 ) -> None:
     run_distinct_channel_floor(repo_root, args=args, adapter_data=adapter_data, state=state, payload=payload, cli=cli)
-    payload["lifecycle_capture"] = _capture_lifecycle(repo_root, tag_name=state["tag_name"])
     payload["baton_reconcile"] = _baton_reconcile_record(
         repo_root, adapter_data, target_version=str(payload.get("target_version", ""))
     )

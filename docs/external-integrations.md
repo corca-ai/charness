@@ -1,5 +1,8 @@
 # External Integrations Policy
 
+> Status: current
+> Source of truth: this page and its linked executable surfaces
+
 `charness` should integrate external tools without pretending to own them.
 
 This also applies to provider-specific capability surfaces that sit below one

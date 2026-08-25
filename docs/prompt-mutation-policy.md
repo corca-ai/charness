@@ -1,5 +1,8 @@
 # Prompt Mutation Policy
 
+> Status: current
+> Source of truth: this page and its linked executable surfaces
+
 Owner surface for the prompt-surface mutation pipeline: what its verdicts
 mean, what they may and may not authorize, and the gates between a survival
 observation and any change to shipped prompt prose. The pilot that grounded

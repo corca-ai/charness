@@ -5,7 +5,7 @@ policy**: standing/contract-rule docs state the timeless rule and keep
 provenance terse, so a reader opening a contract learns the current rule instead
 of wading through incident history. This reference is the portable description
 of the policy the skill ships; charness states the same policy in its
-authoring-repo-internal `<authoring-repo>/docs/conventions/provenance-placement.md`.
+authoring-repo-internal `<authoring-repo>/docs/provenance-placement.md`.
 
 ## Why It Exists
 
@@ -56,12 +56,12 @@ shape is
 | Class | Examples | Provenance in rule prose? |
 | --- | --- | --- |
 | Standing-rule (scan) | `operating-contract.md`, `implementation-discipline.md`, `authoring-preflight.md`, `prescribed-skill-closeout-contract.md` | dates / multiple refs = the smell |
-| Tracking (allowlist) | `support-tool-followup.md`, `deferred-decisions.md`, `product-success-metrics.md`, `artifact-policy.md` | refs are load-bearing → allowed |
+| Tracking (allowlist) | `support-tool-followup.md`, `deferred-decisions.md`, `artifact-policy.md` | refs are load-bearing → allowed |
 | Record layer (never scanned) | `retro/*`, `debug/*`, `*/latest.md`, `charness-artifacts/*` | this *is* the provenance home |
 
 ## See Also
 
-- `<authoring-repo>/docs/conventions/provenance-placement.md` — charness's authoring-repo-internal
+- `<authoring-repo>/docs/provenance-placement.md` — charness's authoring-repo-internal
   statement of this policy (this reference is the portable copy that ships).
 - `skill_text_quality_lib.py` — the reused anchor/dated-incident regexes.
 - `adapter-contract.md` — the full `standing_doc_provenance` field list.

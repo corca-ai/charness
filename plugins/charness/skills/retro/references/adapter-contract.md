@@ -87,7 +87,7 @@ auto_session_trigger_path_globs: []
   declared `surface_id` in `<repo-root>/.agents/surfaces.json`; an unresolved id is a
   broken adapter contract, not a normal non-match. The charness-maintained
   authoring-repo-internal contract lives at
-  `<authoring-repo>/docs/conventions/surface-driven-adapter-triggers.md`.
+  `<authoring-repo>/docs/surface-driven-adapter-triggers.md`.
 - `auto_session_trigger_path_globs` are optional repo-relative glob patterns for
   the same purpose when surface ids alone are too coarse. Prefer surface ids
   for shared seams; reserve raw globs for narrow repo-specific exceptions.

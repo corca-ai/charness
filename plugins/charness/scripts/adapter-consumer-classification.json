@@ -120,17 +120,9 @@
       "verdict": "no-version-validation",
       "reason": "Reads `.agents/*-adapter.yaml` with a raw YAML load and never reconciles `version`, so there is no `errors` for any consumer to check. A DIFFERENT defect from the unguarded rows: the fix is wiring this onto the shared resolver, not adding a check."
     },
-    "scripts/reconcile_usage_episodes_host_hooks.py": {
-      "verdict": "safe-not-consequential",
-      "reason": "_load_adapter() (lines 30-39) does a raw `yaml.safe_load` of `.agents/usage-episodes-adapter.yaml` with no `version` field / `declared_fields_after_version_check` involvement at all; there is no `usage_episodes_adapter_lib.py`, and no other script in the repo runs this adapter through `scripts.adapter_lib`."
-    },
     "scripts/record_quality_runtime.py": {
       "verdict": "safe-not-consequential",
       "reason": "main() (line 340) calls `load_adapter(repo_root)` (quality resolve_adapter.py) but discards the return value entirely -- it is not assigned to a variable, and no other line in the file references `adapter`/`valid`/`errors`/`data`. `load_quality_adapter` is a pure function with no side effects (confirmed by reading `scripts/quality_adapter_lib.py:476-514`), so the call is a no-op."
-    },
-    "scripts/record_usage_feedback.py": {
-      "verdict": "safe-checks-errors",
-      "reason": "L217 `load_validated_adapter(...)` returns `(adapter, adapter_error)` and the caller branches on `adapter_error`."
     },
     "scripts/refresh_current_pointer.py": {
       "verdict": "guarded-upstream",
@@ -138,14 +130,6 @@
       "covering_rows": [
         "scripts/resolve_artifact_path.py"
       ]
-    },
-    "scripts/report_usage_episodes.py": {
-      "verdict": "safe-not-consequential",
-      "reason": "_load_adapter() (lines 63-67) does a raw `yaml.safe_load` and main() (lines 326-332) validates the result against `manifest.schema.json` via `jsonschema.validate`; there is no `version` field / `declared_fields_after_version_check` mechanism used anywhere in this file."
-    },
-    "scripts/report_usage_product_review.py": {
-      "verdict": "safe-not-consequential",
-      "reason": "main() (lines 128-134) imports and reuses `_load_adapter`/jsonschema validation straight from `report_usage_episodes.py`; same raw-yaml + jsonschema-manifest mechanism, no `version`/`declared_fields_after_version_check` involvement."
     },
     "scripts/resolve_artifact_path.py": {
       "verdict": "guarded-all-doors",
@@ -195,25 +179,9 @@
       "verdict": "safe-checks-errors",
       "reason": "quality_setup_snapshot calls the canonical `load_quality_adapter`, checks `found` and `valid` before classifying configured versus blocked/plan-only, and exposes parser errors rather than applying adapter values. Its tooling inventory is proposal-only and does not perform a mutation."
     },
-    "scripts/skill_t_inventory_lib.py": {
-      "verdict": "no-version-validation",
-      "reason": "Reads `.agents/*-adapter.yaml` with a raw YAML load and never reconciles `version`, so there is no `errors` for any consumer to check. A DIFFERENT defect from the unguarded rows: the fix is wiring this onto the shared resolver, not adding a check."
-    },
-    "scripts/slice_closeout_usage_episode.py": {
-      "verdict": "no-version-validation",
-      "reason": "Reads `.agents/*-adapter.yaml` with a raw YAML load and never reconciles `version`, so there is no `errors` for any consumer to check. A DIFFERENT defect from the unguarded rows: the fix is wiring this onto the shared resolver, not adding a check."
-    },
-    "scripts/t_events_emit_lib.py": {
-      "verdict": "no-version-validation",
-      "reason": "Reads `.agents/*-adapter.yaml` with a raw YAML load and never reconciles `version`, so there is no `errors` for any consumer to check. A DIFFERENT defect from the unguarded rows: the fix is wiring this onto the shared resolver, not adding a check."
-    },
-    "scripts/usage_episode_session_start.py": {
-      "verdict": "no-version-validation",
-      "reason": "Reads `.agents/*-adapter.yaml` with a raw YAML load and never reconciles `version`, so there is no `errors` for any consumer to check. A DIFFERENT defect from the unguarded rows: the fix is wiring this onto the shared resolver, not adding a check."
-    },
     "scripts/validate_adapters.py": {
       "verdict": "safe-checks-errors",
-      "reason": "_require_declared_version (lines 278-297) explicitly calls `validate_adapter_version(data, {}, errors, required=True)` and raises ValidationError on any error, run BEFORE the per-adapter early returns in validate_adapter_yaml (line 300); validate_adapter_yaml also checks `payload['valid']` for cautilus/critique/retro/quality adapters (lines 303-318) and raises on invalidity; validate_adapter_integration_schema (lines 244-275) runs jsonschema.validate against each adapter's integration schema (catching e.g. t-events/usage-episodes version mismatches) and raises ValidationError on rejection."
+      "reason": "_require_declared_version (lines 278-297) explicitly calls `validate_adapter_version(data, {}, errors, required=True)` and raises ValidationError on any error, run BEFORE the per-adapter early returns in validate_adapter_yaml (line 300); validate_adapter_yaml also checks `payload['valid']` for cautilus/critique/retro/quality adapters (lines 303-318) and raises on invalidity; validate_adapter_integration_schema (lines 244-275) runs jsonschema.validate against each adapter's integration schema and raises ValidationError on rejection."
     },
     "scripts/validate_debug_artifact.py": {
       "verdict": "guarded-all-doors",
@@ -230,10 +198,6 @@
     "scripts/validate_retro_artifact.py": {
       "verdict": "guarded-all-doors",
       "reason": "`_unspeakable_adapter_version` is passed as `preflight=` to run_changed_artifact_validator, so a refused version refuses before any scoping. Enumerated only once the census matched loader REFERENCES: this file never calls its loader, it hands `_output_dir.load_retro_adapter` to the verdict helper. LEVEL MIGRATION (#675): `guarded` -> `guarded-all-doors`, measured from this file's own calls rather than asserted."
-    },
-    "scripts/validate_usage_episodes.py": {
-      "verdict": "safe-checks-errors",
-      "reason": "main() loads the adapter (`_load_adapter`, line 130) and immediately runs `jsonschema.validate(adapter, manifest_schema)` (line 131) against integrations/usage-episodes/manifest.schema.json, which declares `version: {const: 1}` and `additionalProperties: false`; a version mismatch raises `jsonschema.ValidationError`, caught at line 132, producing `status: 'invalid_adapter', valid: False` and exit code 1 (lines 133-142) before any records_path resolution or record validation runs."
     },
     "skills/public/achieve/scripts/achieve_adapter_policy.py": {
       "verdict": "accepted-risk-unguarded",

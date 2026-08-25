@@ -192,7 +192,7 @@ def test_a_clean_run_summary_is_unchanged(gate_repo: Path) -> None:
 
 def test_slice_closeout_repeats_its_verdict_last() -> None:
     """`Closeout status:` prints at the TOP of a report that runs to a hundred lines,
-    so truncation kept a usage-episode footer and lost the verdict. It is repeated
+    so truncation kept a telemetry footer and lost the verdict. It is repeated
     last, with the failing command named."""
     import contextlib
     import io

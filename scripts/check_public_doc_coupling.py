@@ -8,7 +8,7 @@ blocking issue-anchor sweep from validate_skill_ergonomics, so this gate
 covers the remaining exported surfaces (shared references, generated docs)
 with the same canonical anchor rule, plus the self-version-pin class across
 all exported guidance. Record-layer artifacts and tracking ledgers are out of
-scope by design: docs/conventions/provenance-placement.md owns the placement
+scope by design: docs/provenance-placement.md owns the placement
 policy. The pin pattern is bound to the charness v0.x release family plus
 `charness <semver>` mentions, so external tools versioned 1.x and above (for
 example a pinned runner release) are out of pattern; an external tool still
@@ -33,12 +33,12 @@ except ModuleNotFoundError:
     from repo_file_listing import iter_matching_repo_files
 
 LIB_ROOT = repo_root_from_script(__file__)
-ANCHOR_PATTERNS = ("skills/shared/references/**/*.md", "docs/generated/**/*.md")
+ANCHOR_PATTERNS = ("skills/shared/references/**/*.md", "docs/cli-reference.md")
 PIN_PATTERNS = (
     "skills/public/**/*.md",
     "skills/support/**/*.md",
     "skills/shared/references/**/*.md",
-    "docs/generated/**/*.md",
+    "docs/cli-reference.md",
 )
 SELF_VERSION_PIN_RE = re.compile(
     r"(?<![A-Za-z0-9.])v0\.\d+\.\d+\b|\bcharness\s+v?\d+\.\d+\.\d+\b", re.IGNORECASE
@@ -111,7 +111,7 @@ def find_coupling(repo_root: Path, *, require_git: bool = False) -> list[dict[st
 # ADVISORY framing and the remedy. Output is unconditionally YAML now, so a
 # finding list with no remedy would tell a reader what is wrong and nothing about
 # where the provenance is supposed to go.
-_REMEDY = "Move provenance to the record layer per docs/conventions/provenance-placement.md."
+_REMEDY = "Move provenance to the record layer per docs/provenance-placement.md."
 
 
 def main() -> int:

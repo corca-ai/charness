@@ -29,8 +29,6 @@ risk_interrupt_observe_final_paths = _slice_closeout_risk_interrupt.observe_fina
 risk_interrupt_block_reason = _slice_closeout_risk_interrupt.block_reason
 _agent_browser_probe_policy = import_repo_module(__file__, "scripts.agent_browser_probe_policy")
 unsafe_agent_browser_probe_reason = _agent_browser_probe_policy.unsafe_agent_browser_probe_reason
-_slice_closeout_usage_episode = import_repo_module(__file__, "scripts.slice_closeout_usage_episode")
-emit_usage_episode_for_slice_closeout = _slice_closeout_usage_episode.emit_usage_episode_for_slice_closeout
 _slice_closeout_parser = import_repo_module(__file__, "scripts.slice_closeout_parser")
 _slice_closeout_command_executor = import_repo_module(__file__, "scripts.slice_closeout_command_executor")
 execute_command_plan = _slice_closeout_command_executor.execute_command_plan
@@ -557,13 +555,6 @@ def main() -> int:
         return blocked
 
     payload["status"] = "completed"
-    usage_episode = emit_usage_episode_for_slice_closeout(repo_root, str(payload["status"]))
-    payload["usage_episode"] = usage_episode
-    payload["status"] = (
-        "failed"
-        if usage_episode["status"] in {"invalid_adapter", "invalid_records_path", "emit_failed"}
-        else payload["status"]
-    )
     _attach_closeout_telemetry(repo_root, payload)
     return _emit_payload(payload)
 

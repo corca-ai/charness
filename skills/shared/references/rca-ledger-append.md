@@ -17,8 +17,8 @@ ledger, or mention a missing recorder in closeout.
 
 The recorder is the always-on Charness self-dev metric from the
 rca-conversion-ledger spec (`<authoring-repo>/charness-artifacts/spec/rca-conversion-ledger.md`);
-it is deliberately independent of the privacy-gated usage-episodes adapter. Do
-not wire it through that adapter or any of its state/session machinery.
+it is deliberately independent of product telemetry adapters. Do not wire it
+through an adapter or any of its state/session machinery.
 
 ## What To Append
 
@@ -36,7 +36,7 @@ from appends nothing.
 All judgment calls (what counts as `converted`, the per-`durable_kind` quality
 bar, `event_kind` rules, and the tie-break default) are owned by the
 **classification rubric** in
-`<authoring-repo>/docs/product-success-metrics.md`. Read
+`<authoring-repo>/charness-artifacts/spec/rca-conversion-ledger.md`. Read
 it before recording; this reference does not restate or extend it. The closed
 enums are owned by `<plugin-dir>/scripts/rca_event.schema.json`.
 

@@ -1,5 +1,8 @@
 # Retro Self-Improvement Spec
 
+> Status: current
+> Source of truth: this page and its linked executable surfaces
+
 ## Problem
 
 `charness` now has the beginnings of durable retrospective memory, but it still

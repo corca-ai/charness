@@ -1,13 +1,8 @@
 #!/usr/bin/env python3
 """Closeout-telemetry emitter (spec achieve-efficiency-improvements, direction E1).
 
-Persist the OBJECTIVE operational-waste signals the slice closeout already
-computes into a durable, accumulating, per-repo stream — a *sibling* of the
-usage-episode stream (``scripts/slice_closeout_usage_episode.py``), NOT the
-product-success episode. Keeping the two streams separate keeps the #184
-product-review consumers clean: usage episodes answer "did the user get value",
-this stream answers "did the run waste effort" (slow-by-design gates,
-over-slicing churn). The weekly retro miner
+Persist the objective operational-waste signals the slice closeout already
+computes into a durable, accumulating, per-repo stream. The weekly retro miner
 (``skills/public/retro/scripts/mine_closeout_telemetry.py``, direction E2a)
 reads the same default path.
 
@@ -16,12 +11,12 @@ Signals are REUSED, not recomputed: ``gate_runtime`` is C's
 ``over_slice`` calls ``slice_closeout_advisories.over_slice_run`` — the same one
 computation B's advisory prints. ``slice_churn`` is the only new signal.
 
-Robustness mirrors the usage-episode emitter: NEVER block or fail closeout
+Robustness mirrors the other best-effort closeout observers: NEVER block or fail closeout
 (degrade silently), suppress under ``CHARNESS_QUALITY_MODE`` so a closeout
 spawned inside a quality/verification run cannot race the test suite (the #194
 state-bleed class), and write only under the gitignored ``.charness/`` tree.
 
-Unlike usage episodes (opt-in via an adapter), this stream is ON by default:
+This stream is ON by default:
 the Problem-5 fix is precisely that operational waste must accumulate WITHOUT a
 human first noticing and opting in. Set ``CHARNESS_CLOSEOUT_TELEMETRY=off`` to
 disable; ``CHARNESS_CLOSEOUT_TELEMETRY_MAX_MB`` tunes rotation (default 5).
@@ -35,10 +30,8 @@ from pathlib import Path
 
 from runtime_bootstrap import import_repo_module
 
-# Sibling of .charness/usage-episodes/usage_episode.jsonl; the whole
-# .charness/usage-episodes/ tree is already gitignored, so the stream is
-# per-repo local. Keep this literal in sync with the retro miner default.
-CLOSEOUT_TELEMETRY_DEFAULT_PATH = Path(".charness/usage-episodes/closeout_telemetry.jsonl")
+# Local operational state is separate from source documents and adapters.
+CLOSEOUT_TELEMETRY_DEFAULT_PATH = Path(".charness/closeout-telemetry/records.jsonl")
 TELEMETRY_DISABLE_VALUES = {"0", "off", "false", "no"}
 DEFAULT_TELEMETRY_MAX_MB = 5
 SLICE_CHURN_BASE = "origin/main"
@@ -159,22 +152,21 @@ def build_closeout_telemetry_record(repo_root: Path, payload: dict[str, object])
 
 
 def _rotate(records_path: Path, pending_bytes: int) -> None:
-    """Single-backup size rotation reusing the usage-episode rotation helper so
-    the stream stays bounded without an adapter file (telemetry is on by
-    default)."""
+    """Keep the local stream bounded without another adapter or producer."""
     if not records_path.exists():
         return
-    usage = import_repo_module(__file__, "scripts.slice_closeout_usage_episode")
-    usage._rotate_usage_episode_records(
-        records_path,
-        {"max_size_mb": _resolve_max_mb(), "max_files": 2},
-        pending_bytes,
-    )
+    max_size = _resolve_max_mb() * 1024 * 1024
+    if records_path.stat().st_size + pending_bytes <= max_size:
+        return
+    backup = records_path.with_suffix(records_path.suffix + ".1")
+    if backup.exists():
+        backup.unlink()
+    records_path.rename(backup)
 
 
 def emit_closeout_telemetry_for_slice(repo_root: Path, payload: dict[str, object]) -> dict[str, object]:
-    """Append one closeout-telemetry record. Returns a status dict (mirrors the
-    usage-episode emitter) and never raises — closeout must not fail on telemetry.
+    """Append one closeout-telemetry record. Returns a status dict and never
+    raises — closeout must not fail on telemetry.
     Suppressed under CHARNESS_QUALITY_MODE and the disable knob; writes only under
     the gitignored .charness/ tree."""
     import json

@@ -1,12 +1,12 @@
 # Capability Catalog
-Date: 2026-08-08
-Updated: 2026-08-08T13:22:23Z
+Date: 2026-08-25
+Updated: 2026-08-25T11:47:01Z
 
 ## Summary
 - public skills: 20
 - support skills: 2
 - support capabilities: 2
-- integrations: 12
+- integrations: 13
 - trusted skills: 0
 
 ## Public Skills
@@ -14,8 +14,8 @@ Updated: 2026-08-08T13:22:23Z
 - `announcement` (public skill): Use when drafting or delivering human-facing repo change communication such as release-note style summaries or chat-ready updates. Draft value comes first; delivery, audience, and omission policy stay adapter-driven.
 - `create-cli` (public skill): Use when creating or upgrading a repo-owned CLI, bootstrap script, or command runner. Define the command surface, install/update contract, structured output, dry-run and doctor behavior, distribution path, and quality gates before spreading ad hoc shell or Python entrypoints.
 - `create-skill` (public skill): Use when creating a new charness skill or improving a migrated one. Defines the canonical portable authoring contract: classify public/support/profile/integration boundaries, simulate failure modes, keep host-specific behavior in adapters and presets, and express external tool dependencies through manifests instead of hidden assumptions.
-- `critique` (public skill): Use when a non-trivial design decision, code change, release, rename, deletion, spec, or workflow change needs a before-the-fact critique. Probe distinct failure angles, then run a counterweight pass that separates real blockers from over-worry before the change locks in.
-- `debug` (public skill): Use when investigating a bug, error, or unexpected behavior. Follow a disciplined root-cause workflow, preserve a durable debug artifact so future sessions inherit what was learned, and do not jump to fixes before a falsifiable hypothesis exists.
+- `critique` (public skill): Use when a non-trivial design decision, code change, release, rename, deletion, spec, or workflow change needs a before-the-fact critique, or when reported review findings need approval-oriented evidence disposition. Probe distinct failure angles, then run a counterweight pass that separates real blockers from over-worry before the change locks in.
+- `debug` (public skill): Use when investigating a bug, error, reported review finding, or unexpected behavior that needs root cause, Five Whys, or recurrence analysis. Follow a disciplined root-cause workflow, adversarially verify the report, preserve a durable debug artifact so future sessions inherit what was learned, and do not jump to fixes before a falsifiable hypothesis exists.
 - `gather` (public skill): Use when a public web page, GitHub content, a published or exported document, an arbitrary URL, a local file, or other public source should become a durable local knowledge asset instead of a transient answer. Gather is public-source only: credentialed organizational data (Slack, Notion, private Google Workspace) is out of scope and belongs to the consuming runtime's own capability/connector. Prefer primary sources, refresh existing assets in place when the source identity matches, and keep the result scoped to the user's actual request.
 - `handoff` (public skill): Use when the user wants the next session prepared or asks to update a handoff artifact. Keep the handoff short, current, and operationally useful, and treat mention-only pickup as an instruction to continue the workflow named in the handoff trigger.
 - `hitl` (public skill): Use when automated review is not enough and deliberate human judgment needs to be inserted into a bounded review loop. Keeps review state resumable, chunked, and adapter-driven without hardcoding one host runtime.
@@ -28,7 +28,7 @@ Updated: 2026-08-08T13:22:23Z
 - `quality` (public skill): Use when the goal is to understand and improve the repo's current quality bar. Detect existing gates, run the available ones, inspect concept integrity, test confidence, and security posture, then propose concrete quality moves instead of only complaining about what is missing.
 - `release` (public skill): Use when a maintainer needs to cut, bump, or verify a repo release surface such as plugin versions, generated install manifests, and operator update instructions.
 - `retro` (public skill): Use after a meaningful work unit or when the user asks for a retrospective. Reviews what happened, what created waste, which decisions mattered, which named expert lens or direct counterfactual would have changed the next move, and which workflow/capability/memory improvements should make the next session better. One retro shape; scale the depth to the work unit under review.
-- `setup` (public skill): Use when a repo needs its initial operating surface created or normalized. Bootstrap README, AGENTS.md, CLAUDE.md symlink policy, roadmap, and operator-acceptance docs from minimal ideation for greenfield repos, or realign those same surfaces for partially-initialized repos without pretending quality review or deep product ideation already happened.
+- `setup` (public skill): Use when a repo needs its initial operating surface created or normalized. Bootstrap the README, AGENTS.md, CLAUDE.md symlink policy, and documentation index from minimal ideation for greenfield repos, conditionally add roadmap or operator-acceptance docs when evidence warrants them, or realign those surfaces for partially-initialized repos without pretending quality review or deep product ideation already happened.
 - `spec` (public skill): Use when a concept needs to become a living implementation contract. Refine ideation artifacts or existing design docs into the current build contract, decide what must be fixed now versus probed during implementation, define testable success criteria, and keep the contract synchronized as `impl` learns new facts.
 
 ## Support Skills
@@ -47,6 +47,7 @@ Updated: 2026-08-08T13:22:23Z
 - `github-worker` (external integration): Authenticated GitHub CLI provider for repository, pull request, issue, and discussion gather flows.
 - `gitleaks` (external integration): Fast Go-based secret scanner. Preferred over the secretlint fallback by `scripts/check-secrets.sh`; sub-second on the charness tree vs ~5s for the npm secretlint path.
 - `glow` (external integration): Terminal markdown renderer used by doc-facing seams such as `narrative` and `quality` for width-specific rendered review artifacts.
+- `lychee` (external integration): Fast Markdown link checker used by the canonical docs lint to validate internal and external links.
 - `nose` (external integration): Required (>=0.17.0) clone scanner used by `quality`: advisory code clone families plus the Markdown near-duplicate engine that replaced the bespoke document near-copy gate. The code path runs `nose query` (`nose scan` was removed in 0.13.3). The committed dup-ratchet/clone baselines are seeded on 0.17.0 (schema v7) and keyed by gate-computed offset/path-independent content fingerprints (slice 4), not nose family ids; the family SET nose groups is still scanner-version-scoped.
 - `ruff` (external integration): Fast Python linter used by `scripts/run-quality.sh` as the standing Python lint gate, including mccabe complexity checks.
 - `specdown` (external integration): Executable specification runner that turns Markdown specs into runnable tests and reports.

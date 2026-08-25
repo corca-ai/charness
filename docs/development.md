@@ -1,5 +1,8 @@
 # charness Development Paths
 
+> Status: current
+> Source of truth: this page and its linked executable surfaces
+
 This document collects development-only and proof-only `charness` flows.
 
 These paths are useful when you are changing this repo itself, validating a

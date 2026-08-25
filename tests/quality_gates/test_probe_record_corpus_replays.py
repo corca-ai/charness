@@ -9,7 +9,7 @@ inert.
 The sweep is deliberately here rather than in the pre-commit path. Each document costs one
 resolve whole plus one or two per declaration, every one a real subprocess, so the corpus
 costs tens of seconds -- far over the ~1s pre-commit budget
-(`docs/conventions/validator-timing-layers.md`) and right for the standing lane, where the
+(`docs/validator-timing-layers.md`) and right for the standing lane, where the
 corpus changes rarely and a dead control is expensive to find any other way.
 
 WHAT A FAILURE HERE MEANS: the named record's `## Stimulus` declares something the owning

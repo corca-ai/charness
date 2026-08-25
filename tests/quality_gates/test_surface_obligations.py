@@ -48,8 +48,7 @@ def test_check_changed_surfaces_reports_expected_obligations_for_readme() -> Non
     assert "python3 scripts/sync_root_plugin_manifests.py --repo-root ." in payload["sync_commands"]
     assert "python3 scripts/validate_packaging.py --repo-root ." in payload["verify_commands"]
     assert "python3 scripts/validate_packaging_committed.py --repo-root ." in payload["verify_commands"]
-    assert "python3 scripts/check_doc_links.py --repo-root ." in payload["verify_commands"]
-    assert "./scripts/check-markdown.sh" in payload["verify_commands"]
+    assert "./scripts/check-docs.sh" in payload["verify_commands"]
 
 
 def _verify_commands_for(*paths: str) -> list[str]:
@@ -137,9 +136,7 @@ def test_repo_markdown_surface_matches_top_level_packaging_readme() -> None:
     # check_doc_links, and check-secrets at closeout. The <dir>/*.md idiom covers
     # both top-level and nested.
     verify = _verify_commands_for("packaging/README.md")
-    assert "./scripts/check-markdown.sh" in verify
-    assert "python3 scripts/check_doc_links.py --repo-root ." in verify
-    assert _SPEC_EVIDENCE in verify
+    assert "./scripts/check-docs.sh" in verify
 
 
 def test_repo_markdown_routes_durable_evidence_before_broad_pytest() -> None:
@@ -286,8 +283,7 @@ def test_select_verifiers_returns_smallest_repo_owned_bundle_for_readme() -> Non
     verify_commands = {item["command"] for item in recommendations if item["phase"] == "verify"}
     assert "python3 scripts/validate_packaging.py --repo-root ." in verify_commands
     assert "python3 scripts/validate_packaging_committed.py --repo-root ." in verify_commands
-    assert "python3 scripts/check_doc_links.py --repo-root ." in verify_commands
-    assert "./scripts/check-markdown.sh" in verify_commands
+    assert "./scripts/check-docs.sh" in verify_commands
 
 
 def test_select_verifiers_includes_public_skill_policy_for_public_skill_changes() -> None:

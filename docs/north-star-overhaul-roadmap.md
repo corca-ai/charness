@@ -1,5 +1,8 @@
 # North-Star Overhaul Roadmap
 
+> Status: current
+> Source of truth: this page and its linked executable surfaces
+
 Plan of record for realigning the charness harness to
 [`docs/design-north-star.md`](./design-north-star.md). Authored 2026-06-18 after
 the #386 pilot (v0.52.4). **Execution is post-compaction**; this is the durable

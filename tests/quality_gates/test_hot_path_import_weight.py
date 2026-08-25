@@ -21,7 +21,6 @@ DEFERRED_IMPORTS = {
     "charness": {"urllib"},
     # `jsonschema` (with `referencing`) was 41ms of run_slice_closeout.py's 133ms
     # startup; that pre-commit gate imports this module for record types.
-    "scripts/usage_episode_records.py": {"jsonschema"},
 }
 
 

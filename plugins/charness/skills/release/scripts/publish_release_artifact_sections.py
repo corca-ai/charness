@@ -295,24 +295,6 @@ def public_release_verification_lines(public_release_verification: str, release_
     return lines
 
 
-def lifecycle_capture_lines(record: dict[str, Any] | None) -> list[str]:
-    lines = ["", "## Lifecycle Usage Capture", ""]
-    if not isinstance(record, dict) or not str(record.get("status", "")).strip():
-        return lines + ["- Lifecycle capture status: not recorded by this helper invocation."]
-    lines.append(f"- Lifecycle capture status: `{record.get('status')}`.")
-    lines.append(f"- Local telemetry pair appended: `{bool(record.get('appended', False))}`.")
-    if episode_id := record.get("episode_id"):
-        lines.append(f"- Delivery episode ID: `{episode_id}`.")
-    if feedback_id := record.get("feedback_id"):
-        lines.append(f"- Linked feedback ID: `{feedback_id}`.")
-    errors = record.get("errors")
-    lines.append(f"- Capture error count: `{len(errors) if isinstance(errors, list) else 0}`.")
-    lines.append(
-        "- Non-claim: objective lifecycle capture is not human approval or general satisfaction evidence."
-    )
-    return lines
-
-
 def fresh_checkout_lines(fresh_checkout_payload: dict[str, Any] | None) -> list[str]:
     lines = ["", "## Fresh Checkout Probes", ""]
     if fresh_checkout_payload is None:

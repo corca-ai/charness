@@ -6,10 +6,12 @@ import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-try:  # reuse the portable-path helper rather than reinventing it
-    from scripts.slice_closeout_usage_episode import _portable_path
-except ImportError:  # standalone invocation (scripts/ on sys.path[0])
-    from slice_closeout_usage_episode import _portable_path
+
+def _portable_path(repo_root: Path, path: Path) -> str:
+    try:
+        return str(path.resolve().relative_to(repo_root.resolve()))
+    except ValueError:
+        return str(path)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCHEMA_PATH = Path(__file__).resolve().parent / "rca_event.schema.json"

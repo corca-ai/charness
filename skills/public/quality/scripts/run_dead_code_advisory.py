@@ -31,9 +31,7 @@ LIKELY_CONVENTION_NAMES = ("pytest_plugins", "pytestmark")
 MOCK_PROTOCOL_NAMES = ("side_effect", "return_value", "call_args", "mock_calls")
 TEST_PROTOCOL_TERMS = ("fake", "mock", "stub", "driver", "protocol")
 STRUCTURED_OUTPUT_NAMES = ("rss_kib",)
-SOURCE_SCANNED_CONTRACTS = {
-    "scripts/report_usage_product_review.py": {"ATTENTION_STATES", "ATTENTION_EVIDENCE_TERMS"},
-}
+SOURCE_SCANNED_CONTRACTS = {}
 GIT_LIST_TIMEOUT_SECONDS = 30
 VULTURE_TIMEOUT_SECONDS = 120
 NON_PYTHON_SOURCE_SUFFIXES = frozenset(

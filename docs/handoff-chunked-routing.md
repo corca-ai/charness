@@ -1,5 +1,8 @@
 # Handoff Chunked Routing
 
+> Status: current
+> Source of truth: this page and its linked executable surfaces
+
 This document is the implementation contract for the
 [handoff auto-chunking goal](../charness-artifacts/goals/2026-05-28-handoff-chunked-routing.md).
 It owns the algorithm, data shape, deterministic-vs-LLM split, trigger rule,
@@ -271,7 +274,7 @@ A token is **non-trivial** when both of the following hold:
   `skills/public/handoff/` to merge)
 
 Skill ids are normalized to `skills/public/<id>/`. Policy doc paths
-under `docs/conventions/` count as one token (the full filename
+under `docs/` count as one token (the full filename
 path), not as `docs` + `conventions`. The merge proposer's
 `shared_boundary_reason` entry quotes the actual shared token(s) so
 the user sees the basis for the merge proposal.
@@ -564,6 +567,6 @@ folded revisions without re-running critique.
 - [achieve check_goal_artifact](../skills/public/achieve/scripts/check_goal_artifact.py) — CLI checking a goal artifact's sections, status, and activation line.
 - [issue SKILL.md (generative-sequence idiom, step 5)](../skills/public/issue/SKILL.md) — the issue skill contract for filing and resolving GitHub issues.
 - [issue resolve-flow reference](../skills/public/issue/references/resolve-flow.md) — how resolve selects, reads, orders, and classifies issues.
-- [implementation discipline](./conventions/implementation-discipline.md) — repo validation, change, repair, and generated-surface rules.
-- [operating contract](./conventions/operating-contract.md) — repo commit, external side-effect, critique, and session rules.
+- [implementation discipline](./implementation-discipline.md) — repo validation, change, repair, and generated-surface rules.
+- [operating contract](./operating-contract.md) — repo commit, external side-effect, critique, and session rules.
 - [docs/handoff.md (current snapshot is the slice-2 fixture)](./handoff.md) — the live pickup state: workflow trigger, continuation capability, current state.

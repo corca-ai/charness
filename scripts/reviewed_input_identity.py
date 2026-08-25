@@ -270,6 +270,13 @@ def _content_components(
             digest = _sha256(content) if content is not None else None
         else:
             digest = _worktree_content_sha256(repo_root, path)
+            # A deletion is still a reviewed input: bind its pre-change bytes
+            # from the working-tree base instead of treating the missing path
+            # as an unreviewable null. This keeps destructive migrations
+            # auditable without resurrecting the file in the worktree.
+            if digest is None:
+                previous = _git_bytes_optional(repo_root, "show", f"{base_head}:{path}")
+                digest = _sha256(previous) if previous is not None else None
         if digest is None:
             _fail(
                 "null-content-hash",

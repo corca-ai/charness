@@ -40,7 +40,7 @@
         "not-configured",
         "state"
       ],
-      "rationale": "`not_configured` is one arm of the three-state probe vocabulary `evaluated | not-configured | not-established` that replaced a bare `triggered: false`. It is a DETERMINED verdict, not a silent pass: the repo deliberately declared no cross-surface probe, so the objective override is off by design while the always-brief and closeout presence floors still apply. It is distinguishable from `not-established` (configured but not evaluable) on two channels at once \u2014 the state word and the exit byte, since undetermined exits 3 and this exits 0. The state leads the payload and `triggered` is emitted ONLY when the probe actually ran, so a caller polling one key cannot read 'could not tell' as 'no'."
+      "rationale": "`not_configured` is one arm of the three-state probe vocabulary `evaluated | not-configured | not-established` that replaced a bare `triggered: false`. It is a DETERMINED verdict, not a silent pass: the repo deliberately declared no cross-surface probe, so the objective override is off by design while the always-brief and closeout presence floors still apply. It is distinguishable from `not-established` (configured but not evaluable) on two channels at once — the state word and the exit byte, since undetermined exits 3 and this exits 0. The state leads the payload and `triggered` is emitted ONLY when the probe actually ran, so a caller polling one key cannot read 'could not tell' as 'no'."
     },
     "scripts/build_debug_seam_risk_index.py": {
       "states": [
@@ -319,7 +319,7 @@
         "not-configured",
         "skipped"
       ],
-      "rationale": "This module exists to stop exactly this failure on the critique evidence surface: a conditional floor that is off emits nothing by construction, so `Validated N critique artifact(s).` read as coverage it never claimed. Every state it names is printed on stdout in the enforcement-scope record on BOTH passing and failing runs \u2014 `binding-currency-check=disabled` when a full sweep deliberately skips re-reading historical bindings, and the typed cross-surface states `not-configured` / `not-established` / `not-resolved`, which the bare boolean previously collapsed into an indistinguishable `False`. None of them is a pass verdict; each names a scope the run did not establish."
+      "rationale": "This module exists to stop exactly this failure on the critique evidence surface: a conditional floor that is off emits nothing by construction, so `Validated N critique artifact(s).` read as coverage it never claimed. Every state it names is printed on stdout in the enforcement-scope record on BOTH passing and failing runs — `binding-currency-check=disabled` when a full sweep deliberately skips re-reading historical bindings, and the typed cross-surface states `not-configured` / `not-established` / `not-resolved`, which the bare boolean previously collapsed into an indistinguishable `False`. None of them is a pass verdict; each names a scope the run did not establish."
     },
     "scripts/doctor.py": {
       "states": [
@@ -444,22 +444,6 @@
       ],
       "rationale": "Same probe vocabulary. Reports that this repo declares no lesson evaluator, so there is no session to reconcile and no score to solicit. Distinct from a repo that declared one and skipped the read, which is what makes a missing-start disposition a finding rather than a configuration state in an opted-in repo."
     },
-    "scripts/lifecycle_usage_capture.py": {
-      "states": [
-        "disabled",
-        "no_adapter"
-      ],
-      "visibility": [
-        "artifact_visible",
-        "terminal_payload"
-      ],
-      "evidence_terms": [
-        "status",
-        "appended",
-        "errors"
-      ],
-      "rationale": "Verified issue/release lifecycle capture returns missing or disabled usage-adapter state as a structured best-effort telemetry disposition. Issue close JSON carries the nested lifecycle_capture payload and release closeout renders it in the durable Lifecycle Usage Capture artifact section; neither disposition means telemetry was appended or lifecycle closeout succeeded."
-    },
     "scripts/measure_inventory_marker_rule.py": {
       "states": [
         "skipped"
@@ -526,22 +510,6 @@
       ],
       "rationale": "Plugin preamble prints disabled runtime self-update status."
     },
-    "scripts/record_usage_feedback.py": {
-      "states": [
-        "disabled",
-        "no_adapter"
-      ],
-      "visibility": [
-        "hard_failure_or_blocker",
-        "terminal_payload"
-      ],
-      "evidence_terms": [
-        "status",
-        "errors",
-        "executed"
-      ],
-      "rationale": "Feedback recording requires an enabled usage_feedback adapter event. Missing or disabled configuration exits 2 and renders a structured status/errors payload (or the same terminal status in plain output), so the command blocks without appending and cannot read as successful feedback capture."
-    },
     "scripts/removed_name_consumers.py": {
       "states": [
         "skipped"
@@ -556,41 +524,6 @@
         "uncomparable"
       ],
       "rationale": "A path with no baseline at the compared ref cannot be examined, and that is NOT the same answer as \"no name was removed\". On a shallow clone, a fresh clone, or a consumer repo with no remote-tracking base ref, EVERY path lands there -- and a silent pass would read as a clean check that never ran. Uncomparable paths are counted per path with the reason, printed on the success line, and carried under `uncomparable` in the YAML payload, so a consumer can distinguish an empty result from an unexamined one. The sibling parity harness lost exactly this distinction in its first draft and had it restored by a bounded review."
-    },
-    "scripts/report_usage_episodes.py": {
-      "states": [
-        "disabled",
-        "no_adapter",
-        "no_records"
-      ],
-      "visibility": [
-        "structured_warning",
-        "stdout_attention"
-      ],
-      "evidence_terms": [
-        "WARNING:",
-        "usage_episodes_adapter_missing",
-        "usage_episodes_no_records",
-        "Non-claims:"
-      ],
-      "rationale": "Usage episode report absence, disabled state, and empty capture remain non-failing but visible, with explicit non-claims so summaries are not mistaken for product-success proof."
-    },
-    "scripts/report_usage_product_review.py": {
-      "states": [
-        "disabled",
-        "no_adapter",
-        "no_records"
-      ],
-      "visibility": [
-        "structured_warning",
-        "stdout_attention"
-      ],
-      "evidence_terms": [
-        "usage_episodes_adapter_missing",
-        "usage_episodes_no_records",
-        "product-review report unavailable"
-      ],
-      "rationale": "The product-review reporter reuses usage-episode adapter readiness states and renders them as explicit warnings or unavailable status instead of treating missing capture as last-seen product-review proof."
     },
     "scripts/retro_persistence_lib.py": {
       "states": [
@@ -616,7 +549,7 @@
         "not-configured",
         "state"
       ],
-      "rationale": "Same probe vocabulary reused rather than a fourth spelling invented. A repo that has not opted into the lesson lifecycle (no ledger) is `not_configured`, and the SessionStart hook stays SILENT for it by design \u2014 injecting a lesson block into a repo that never asked for one is the cost this state exists to avoid. It is not a hidden failure: an opted-in repo's undetermined case is loud and exits 3, so silence here means the repo declared no evaluator, never that the read failed."
+      "rationale": "Same probe vocabulary reused rather than a fourth spelling invented. A repo that has not opted into the lesson lifecycle (no ledger) is `not_configured`, and the SessionStart hook stays SILENT for it by design — injecting a lesson block into a repo that never asked for one is the cost this state exists to avoid. It is not a hidden failure: an opted-in repo's undetermined case is loud and exits 3, so silence here means the repo declared no evaluator, never that the read failed."
     },
     "scripts/skill_outcome_wiring.py": {
       "states": [
@@ -630,7 +563,7 @@
         "judge skipped",
         "skipped"
       ],
-      "rationale": "The A/B harness outcome-grade wiring carries the grader's judge-kind `skipped` verdict into the per-arm report (the `judge skipped` column) and marks an eval with no outcome-assertions.json as `skipped` with an explicit `no outcome-assertions.json \u2014 skipped` cell. Both are surfaced in the rendered outcome section and a high `judge skipped` count is flagged in the caveat, so a non-run live judge or a missing assertion set cannot read as a clean outcome pass. Advisory-only (never gates); an untrustworthy grader fails the self-test gate and grading is skipped-with-reason."
+      "rationale": "The A/B harness outcome-grade wiring carries the grader's judge-kind `skipped` verdict into the per-arm report (the `judge skipped` column) and marks an eval with no outcome-assertions.json as `skipped` with an explicit `no outcome-assertions.json — skipped` cell. Both are surfaced in the rendered outcome section and a high `judge skipped` count is flagged in the caveat, so a non-run live judge or a missing assertion set cannot read as a clean outcome pass. Advisory-only (never gates); an untrustworthy grader fails the self-test gate and grading is skipped-with-reason."
     },
     "scripts/skill_runtime_bootstrap.py": {
       "states": [
@@ -671,22 +604,6 @@
       ],
       "rationale": "Closeout-telemetry emission (spec achieve-efficiency E1) is on by default but returns a disabled status in the closeout payload's closeout_telemetry field when the operator sets CHARNESS_CLOSEOUT_TELEMETRY=off, so the off state stays visible in the terminal payload instead of being treated as a successful waste-signal capture. This is operational-waste telemetry, never quality or release closeout proof."
     },
-    "scripts/slice_closeout_usage_episode.py": {
-      "states": [
-        "disabled",
-        "no_adapter",
-        "skipped"
-      ],
-      "visibility": [
-        "terminal_payload"
-      ],
-      "evidence_terms": [
-        "status",
-        "no_adapter",
-        "classification_skipped"
-      ],
-      "rationale": "Slice closeout usage emission reports disabled or missing adapter state in the closeout payload, and propagates the classifier's skipped reason as classification_skipped on the durable episode record instead of treating telemetry absence as successful capture."
-    },
     "scripts/sync_support.py": {
       "states": [
         "skipped"
@@ -699,22 +616,6 @@
         "skipped"
       ],
       "rationale": "Support sync returns explicit skipped status for non-materialized or irrelevant sync work."
-    },
-    "scripts/t_events_emit_lib.py": {
-      "states": [
-        "disabled",
-        "no_adapter",
-        "skipped"
-      ],
-      "visibility": [
-        "local_noop_not_closeout",
-        "terminal_payload"
-      ],
-      "evidence_terms": [
-        "emitted",
-        "reason"
-      ],
-      "rationale": "T-event emission is runtime telemetry; no-op reasons are returned to callers and are not quality closeout proof."
     },
     "scripts/update_tools.py": {
       "states": [
@@ -729,33 +630,6 @@
         "disabled"
       ],
       "rationale": "Tool update reports disabled adapter state as structured skipped output."
-    },
-    "scripts/usage_episode_product_review.py": {
-      "states": [
-        "skipped"
-      ],
-      "visibility": [
-        "terminal_payload"
-      ],
-      "evidence_terms": [
-        "classification_skipped"
-      ],
-      "rationale": "Missed-detection candidate reporting treats `classification_skipped` as evidence in a reporter payload, not as a silent clean state."
-    },
-    "scripts/usage_episode_session_start.py": {
-      "states": [
-        "disabled",
-        "no_adapter"
-      ],
-      "visibility": [
-        "local_noop_not_closeout"
-      ],
-      "evidence_terms": [
-        "status",
-        "no_adapter",
-        "disabled"
-      ],
-      "rationale": "SessionStart hook payload returns local no-op statuses (no_adapter, disabled) so optional capture can stay silent without ever being treated as closeout proof; statuses are surfaced via CHARNESS_SESSION_START_DEBUG diagnostics."
     },
     "scripts/validate_cautilus_proof.py": {
       "states": [
@@ -783,23 +657,6 @@
         "predates contract start"
       ],
       "rationale": "The validator fails current artifacts missing prose-review engagement and explicitly reports grandfathered artifacts."
-    },
-    "scripts/validate_usage_episodes.py": {
-      "states": [
-        "disabled",
-        "no_adapter",
-        "no_records"
-      ],
-      "visibility": [
-        "structured_warning",
-        "stdout_attention"
-      ],
-      "evidence_terms": [
-        "WARNING:",
-        "usage_episodes_adapter_missing",
-        "usage_episodes_no_records"
-      ],
-      "rationale": "Usage episode opt-in absence and disabled state remain non-failing but visible in JSON and normal output."
     },
     "scripts/worktree_audit_lib.py": {
       "states": [
@@ -1274,7 +1131,7 @@
         "skipped",
         "reason"
       ],
-      "rationale": "run_post_publish_install_refresh returns not_configured (surfaced under install_refresh). confirm_release_via_distinct_channel (WS-1 rung-2) returns status skipped only when there is no published release URL and no adapter post_publish_distinct_channel_probe; that skipped is a TYPED, RECORDED disposition written to payload.distinct_channel_verification and rendered in the release artifact's `## Distinct-Channel Verification` section, which the human rung-2 disposition review audits. It passes the rung-1 presence floor (render-not-declare, F2a) but is never a silent clean pass \u2014 the gap is legible, not green."
+      "rationale": "run_post_publish_install_refresh returns not_configured (surfaced under install_refresh). confirm_release_via_distinct_channel (WS-1 rung-2) returns status skipped only when there is no published release URL and no adapter post_publish_distinct_channel_probe; that skipped is a TYPED, RECORDED disposition written to payload.distinct_channel_verification and rendered in the release artifact's `## Distinct-Channel Verification` section, which the human rung-2 disposition review audits. It passes the rung-1 presence floor (render-not-declare, F2a) but is never a silent clean pass — the gap is legible, not green."
     },
     "skills/public/release/scripts/publish_release_retro.py": {
       "states": [
@@ -1356,7 +1213,7 @@
         "not-configured",
         "unset"
       ],
-      "rationale": "This script used to seed `auto_session_trigger_surfaces: []` and `auto_session_trigger_path_globs: []` into a fresh adapter, which the probe then read as an INTENTIONAL opt-out the repo had never chosen \u2014 two mechanisms agreeing on the wrong default. It now leaves the keys unset so the probe reports `not_configured` and its remediation fires, and the seed report says so rather than implying a configured state."
+      "rationale": "This script used to seed `auto_session_trigger_surfaces: []` and `auto_session_trigger_path_globs: []` into a fresh adapter, which the probe then read as an INTENTIONAL opt-out the repo had never chosen — two mechanisms agreeing on the wrong default. It now leaves the keys unset so the probe reports `not_configured` and its remediation fires, and the seed report says so rather than implying a configured state."
     },
     "skills/public/shared/scripts/reviewer_result.py": {
       "states": [

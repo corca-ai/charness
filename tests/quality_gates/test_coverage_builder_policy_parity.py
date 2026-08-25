@@ -83,7 +83,7 @@ COMMAND_SHAPES = [
     ("python3 scripts/run_standing_pytest.py --print-last 'unterminated", False),
     # The other side of the prefix rule: `--p*` flags that are NOT print flags
     # must stay accepted. `--pytest-target` is the repo's own documented focused
-    # coverage command (docs/conventions/implementation-discipline.md), so
+    # coverage command (docs/implementation-discipline.md), so
     # widening the prefix to `--p` would refuse it.
     ("python3 scripts/run_standing_pytest.py --pytest-target tests/x.py::test_one", True),
     ("python3 scripts/run_standing_pytest.py --extra-pytest-target tests/x.py", True),

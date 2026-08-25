@@ -24,7 +24,7 @@ from scripts.validate_adapters import (
 jsonschema = pytest.importorskip("jsonschema")
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-SIBLING_INTEGRATIONS = ("usage-episodes", "t-events", "worktree")
+SIBLING_INTEGRATIONS = ("worktree",)
 
 
 def _seed_pair(tmp_path: Path, name: str, adapter_text: str, *, with_schema: bool = True) -> Path:
@@ -63,7 +63,7 @@ def test_live_repo_adapter_passes_per_sibling(name: str) -> None:
 
 
 def test_repo_without_schema_inherits_nothing(tmp_path: Path) -> None:
-    adapter_path = _seed_pair(tmp_path, "usage-episodes", "bogus: true\n", with_schema=False)
+    adapter_path = _seed_pair(tmp_path, "worktree", "bogus: true\n", with_schema=False)
     assert integration_schema_path(adapter_path) is None
     validate_adapter_integration_schema(adapter_path)
 
@@ -71,9 +71,9 @@ def test_repo_without_schema_inherits_nothing(tmp_path: Path) -> None:
 def test_cautilus_adapters_subdir_excluded(tmp_path: Path) -> None:
     nested = tmp_path / ".agents" / "cautilus-adapters"
     nested.mkdir(parents=True)
-    nested_path = nested / "usage-episodes-adapter.yaml"
+    nested_path = nested / "worktree-adapter.yaml"
     nested_path.write_text("bogus: true\n", encoding="utf-8")
-    (tmp_path / "integrations" / "usage-episodes").mkdir(parents=True)
+    (tmp_path / "integrations" / "worktree").mkdir(parents=True)
     assert integration_schema_path(nested_path) is None
 
 
@@ -83,20 +83,20 @@ def test_tools_integration_is_not_a_sibling() -> None:
 
 
 def test_broken_schema_json_is_a_hard_error(tmp_path: Path) -> None:
-    adapter_path = _seed_pair(tmp_path, "t-events", "version: 1\nenabled: false\n")
-    (tmp_path / "integrations" / "t-events" / "manifest.schema.json").write_text("{not json", encoding="utf-8")
+    adapter_path = _seed_pair(tmp_path, "worktree", "version: 1\nenabled: false\n")
+    (tmp_path / "integrations" / "worktree" / "manifest.schema.json").write_text("{not json", encoding="utf-8")
     with pytest.raises(ValidationError, match="integration manifest schema is unreadable"):
         validate_adapter_integration_schema(adapter_path)
 
 
 def test_non_mapping_adapter_rejected_with_schema_present(tmp_path: Path) -> None:
-    adapter_path = _seed_pair(tmp_path, "t-events", "- just\n- a\n- list\n")
+    adapter_path = _seed_pair(tmp_path, "worktree", "- just\n- a\n- list\n")
     with pytest.raises(ValidationError, match="must parse to a mapping"):
         validate_adapter_integration_schema(adapter_path)
 
 
 def test_unparseable_adapter_yaml_rejected_with_schema_present(tmp_path: Path) -> None:
-    adapter_path = _seed_pair(tmp_path, "t-events", "key: [unclosed\n")
+    adapter_path = _seed_pair(tmp_path, "worktree", "key: [unclosed\n")
     with pytest.raises(ValidationError, match="failed to parse"):
         validate_adapter_integration_schema(adapter_path)
 
@@ -116,7 +116,7 @@ def test_unparseable_adapter_yaml_rejected_with_schema_present(tmp_path: Path) -
 def test_missing_runtime_dependency_degrades_to_no_gate(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, missing_dep: str
 ) -> None:
-    adapter_path = _seed_pair(tmp_path, "usage-episodes", "bogus: true\n")
+    adapter_path = _seed_pair(tmp_path, "worktree", "bogus: true\n")
     monkeypatch.setitem(sys.modules, missing_dep, None)
     validate_adapter_integration_schema(adapter_path)
 
@@ -124,7 +124,7 @@ def test_missing_runtime_dependency_degrades_to_no_gate(
 def test_cli_main_rejects_schema_violating_adapter(tmp_path: Path) -> None:
     # Pins the main() wiring: without the validate_adapter_integration_schema
     # call, this tmp repo passes the generic shape checks and exits 0.
-    _seed_pair(tmp_path, "t-events", "version: 1\nrepo: tmp\nenabled: false\nnot_in_schema_342: true\n")
+    _seed_pair(tmp_path, "worktree", "version: 1\nrepo: tmp\nenabled: false\nnot_in_schema_342: true\n")
     completed = subprocess.run(
         [sys.executable, str(REPO_ROOT / "scripts" / "validate_adapters.py"), "--repo-root", str(tmp_path)],
         capture_output=True,
@@ -184,7 +184,7 @@ def test_cli_main_preserves_generic_floor_for_retro_adapter(tmp_path: Path) -> N
 
 
 def test_schema_violation_names_offending_key(tmp_path: Path) -> None:
-    adapter_path = _seed_pair(tmp_path, "usage-episodes", "version: 1\nenabled: false\nnot_in_schema_342: true\n")
+    adapter_path = _seed_pair(tmp_path, "worktree", "version: 1\nenabled: false\nnot_in_schema_342: true\n")
     with pytest.raises(ValidationError, match="not_in_schema_342"):
         validate_adapter_integration_schema(adapter_path)
 

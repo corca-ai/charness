@@ -61,9 +61,9 @@ def _seed_repo(tmp_path: Path, *, adapter_block: list[str]) -> Path:
 STANDARD_BLOCK = [
     "standing_doc_provenance:",
     "  standing_docs:",
-    "    - docs/conventions/*.md",
+    "    - docs/*.md",
     "  tracking_allowlist:",
-    "    - docs/conventions/tracking-ledger.md",
+    "    - docs/tracking-ledger.md",
     "  inline_allow_marker: provenance-allow",
 ]
 
@@ -72,7 +72,7 @@ def test_flags_dated_and_multiref_standing_doc_lines(tmp_path: Path) -> None:
     """AC1: a standing-doc rule line with a date or >=2 issue refs is flagged."""
     repo = _seed_repo(tmp_path, adapter_block=STANDARD_BLOCK)
     _write(
-        repo / "docs" / "conventions" / "operating-rules.md",
+        repo / "docs" / "operating-rules.md",
         [
             "# Operating Rules",
             "",
@@ -91,7 +91,7 @@ def test_flags_dated_and_multiref_standing_doc_lines(tmp_path: Path) -> None:
     assert "standing_doc_date" in heuristics
     assert "standing_doc_multiple_issue_refs" in heuristics
     assert all(
-        finding["path"] == "docs/conventions/operating-rules.md" for finding in payload["findings"]
+        finding["path"] == "docs/operating-rules.md" for finding in payload["findings"]
     )
 
 
@@ -99,7 +99,7 @@ def test_allowlisted_tracking_doc_is_silent(tmp_path: Path) -> None:
     """AC2: a tracking doc in tracking_allowlist is not scanned even with dates/refs."""
     repo = _seed_repo(tmp_path, adapter_block=STANDARD_BLOCK)
     _write(
-        repo / "docs" / "conventions" / "tracking-ledger.md",
+        repo / "docs" / "tracking-ledger.md",
         [
             "# Tracking Ledger",
             "",
@@ -110,14 +110,14 @@ def test_allowlisted_tracking_doc_is_silent(tmp_path: Path) -> None:
     assert _returncode(payload) == 0
     assert payload["ok"] is True
     assert payload["findings"] == []
-    assert "docs/conventions/tracking-ledger.md" not in payload["scanned"]
+    assert "docs/tracking-ledger.md" not in payload["scanned"]
 
 
 def test_single_load_bearing_trailing_ref_is_silent(tmp_path: Path) -> None:
     """AC3: a single load-bearing trailing (#NNN) with no date does not flag."""
     repo = _seed_repo(tmp_path, adapter_block=STANDARD_BLOCK)
     _write(
-        repo / "docs" / "conventions" / "load-bearing.md",
+        repo / "docs" / "load-bearing.md",
         [
             "# Load Bearing",
             "",
@@ -128,31 +128,31 @@ def test_single_load_bearing_trailing_ref_is_silent(tmp_path: Path) -> None:
     assert _returncode(payload) == 0
     assert payload["ok"] is True
     assert payload["findings"] == []
-    assert "docs/conventions/load-bearing.md" in payload["scanned"]
+    assert "docs/load-bearing.md" in payload["scanned"]
 
 
 def test_mixed_corpus_flags_only_the_standing_doc(tmp_path: Path) -> None:
     """AC1+AC2+AC3 together: only the standing rule doc is flagged."""
     repo = _seed_repo(tmp_path, adapter_block=STANDARD_BLOCK)
     _write(
-        repo / "docs" / "conventions" / "operating-rules.md",
+        repo / "docs" / "operating-rules.md",
         ["# Rules", "", "Added 2026-05-01 after the mirror regression."],
     )
     _write(
-        repo / "docs" / "conventions" / "tracking-ledger.md",
+        repo / "docs" / "tracking-ledger.md",
         ["# Ledger", "", "2026-06-01: #321 / #322 open."],
     )
     _write(
-        repo / "docs" / "conventions" / "load-bearing.md",
+        repo / "docs" / "load-bearing.md",
         ["# LB", "", "The pre-commit gate blocks the staged/unstaged split (#257)."],
     )
     payload = _run(repo)
     assert _returncode(payload) == 1
     flagged_paths = {finding["path"] for finding in payload["findings"]}
-    assert flagged_paths == {"docs/conventions/operating-rules.md"}
+    assert flagged_paths == {"docs/operating-rules.md"}
     assert set(payload["scanned"]) == {
-        "docs/conventions/load-bearing.md",
-        "docs/conventions/operating-rules.md",
+        "docs/load-bearing.md",
+        "docs/operating-rules.md",
     }
 
 
@@ -163,7 +163,7 @@ def test_inert_when_no_standing_docs_configured(tmp_path: Path) -> None:
         adapter_block=["standing_doc_provenance:", "  standing_docs: []"],
     )
     _write(
-        repo / "docs" / "conventions" / "operating-rules.md",
+        repo / "docs" / "operating-rules.md",
         ["# Rules", "", "Added 2026-05-01 after the regression."],
     )
     payload = _run(repo)
@@ -189,7 +189,7 @@ def test_no_adapter_block_defaults_inert(tmp_path: Path) -> None:
 def test_fenced_and_inline_marked_lines_are_skipped(tmp_path: Path) -> None:
     repo = _seed_repo(tmp_path, adapter_block=STANDARD_BLOCK)
     _write(
-        repo / "docs" / "conventions" / "operating-rules.md",
+        repo / "docs" / "operating-rules.md",
         [
             "# Rules",
             "",
@@ -202,7 +202,7 @@ def test_fenced_and_inline_marked_lines_are_skipped(tmp_path: Path) -> None:
     payload = _run(repo)
     assert _returncode(payload) == 0
     assert payload["findings"] == []
-    assert "docs/conventions/operating-rules.md" in payload["scanned"]
+    assert "docs/operating-rules.md" in payload["scanned"]
 
 
 def test_sanctioned_placements_are_not_flagged(tmp_path: Path) -> None:
@@ -211,7 +211,7 @@ def test_sanctioned_placements_are_not_flagged(tmp_path: Path) -> None:
     inline-code examples. Only free-prose diary noise flags."""
     repo = _seed_repo(tmp_path, adapter_block=STANDARD_BLOCK)
     _write(
-        repo / "docs" / "conventions" / "operating-rules.md",
+        repo / "docs" / "operating-rules.md",
         [
             "# Rules",
             "",
@@ -231,7 +231,7 @@ def test_stacked_refs_in_link_text_still_flag(tmp_path: Path) -> None:
     visible text are diary noise and must still flag."""
     repo = _seed_repo(tmp_path, adapter_block=STANDARD_BLOCK)
     _write(
-        repo / "docs" / "conventions" / "operating-rules.md",
+        repo / "docs" / "operating-rules.md",
         [
             "# Rules",
             "",

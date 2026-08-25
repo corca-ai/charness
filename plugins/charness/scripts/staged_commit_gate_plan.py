@@ -57,7 +57,7 @@ def _timing_layer_gates(repo_root: Path, paths: list[str], existing: list[str] |
     pulls recorded in the same table — each is cheap (<0.3s), deterministic,
     changed-scoped (only its trigger class can flip the verdict), and runs the
     EXACT broad-gate command (single source). ~0.6s combined worst case; see
-    docs/conventions/validator-timing-layers.md for the classification table
+    docs/validator-timing-layers.md for the classification table
     and the ~1s budget line.
 
     ``existing`` is the subset of ``paths`` still on disk. A gate that validates ONE
@@ -86,7 +86,7 @@ def _timing_layer_gates(repo_root: Path, paths: list[str], existing: list[str] |
         # A broken surfaces manifest degrades every surface-driven gate, so it
         # fails earliest.
         gates.extend(_timing_pull_gate(repo_root, "validate-surfaces", "scripts/validate_surfaces.py", "--repo-root", str(repo_root)))
-    if _any_exact(present, "scripts/run-quality.sh", "docs/conventions/validator-timing-layers.md"):
+    if _any_exact(present, "scripts/run-quality.sh", "docs/validator-timing-layers.md"):
         # #368 meta-gate: a new run-quality validator (or a timing-doc edit) must keep
         # the classification table exhaustive, so the shift-left class cannot recur via
         # an unclassified broad-only check. Flips only on these two files.
@@ -403,7 +403,7 @@ def staged_commit_gate_plan(
         #
         # Known hole, shared with `check-doc-links` and `check-plugin-dir-references`
         # (all three sit behind the same staged-`.md` trigger), recorded in
-        # `docs/conventions/validator-timing-layers.md`: a link verdict also flips when
+        # `docs/validator-timing-layers.md`: a link verdict also flips when
         # the link TARGET is renamed, which stages no `.md` at all. Neither gate runs
         # on that commit; the broad gate and the `quality-core.yml` steps are what
         # catch it. Widening the trigger would have to move both gates together, so it
@@ -416,7 +416,7 @@ def staged_commit_gate_plan(
             plan.extend(_plan_helpers.present_gate(repo_root, label, script, "--repo-root", str(repo_root)))
         # SCOPED to the staged `.md` files, unlike the broad-gate and CI invocations which lint
         # every tracked markdown file. Unscoped here failed three of the four criteria in
-        # docs/conventions/validator-timing-layers.md: it is validate-all (a sweep over standing
+        # docs/validator-timing-layers.md: it is validate-all (a sweep over standing
         # artifacts, which that document disqualifies by name), it is not changed-scoped (an
         # unrelated file's lint error blocks your commit), and at ~5.0s over 540 files it is five
         # times the document's own ~1s commit-time budget line, which the budget section never

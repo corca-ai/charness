@@ -1,15 +1,15 @@
 {
  "corpus": "charness-artifacts/quality",
- "artifacts": 152,
+ "artifacts": 154,
  "floor": 5,
  "label_value_residuals": {
-  "count": 416,
+  "count": 423,
   "min": 7,
   "median": 46,
   "below_floor": 0
  },
  "exemption_counts": {
-  "not-claimed": 152,
+  "not-claimed": 154,
   "corroborated": 0,
   "not-corroborated": 0,
   "REFUSED-uncorroborated": 0

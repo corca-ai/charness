@@ -33,9 +33,9 @@ Keep this block short. Detailed routing belongs in installed skill metadata and 
 - Do not substitute a same-agent pass. Fresh-eye review means a different agent context; if that context cannot be obtained, leave the review unproven.
 - **Spawn shape, for EVERY spawn — not only fresh-eye reviews.** Spawn one-shot subagents **without** a host addressing or team `name`. On at least one host a `name` silently routes the spawn onto a teammate protocol: the spawn succeeds, the agent runs correctly, and completion emits an idle notification instead of returning the result — findings the parent can never read, because the matching retrieval tool (`SendMessage`) is often not exposed in that session. Reserve a `name` for an agent you will address repeatedly, and only after confirming the retrieval tool exists in this session. A spawned agent is not a received result: an idle notification reads like success and is not one. If findings do not arrive, that is a delivery failure to report and to retry once unnamed, never a subagent that returned nothing and never grounds for a same-agent substitute. Full rule, upstream lineage, and non-claims: [skills/shared/references/fresh-eye-subagent-review.md](./skills/shared/references/fresh-eye-subagent-review.md).
 - Bounded reviewers run in the **shared parent worktree**: inspect prior versions read-only (`git show <ref>:<path>`) and never run index- or worktree-mutating git ops (`git checkout`/`restore`/`reset`/`stash`, or `git add` of files touched only to inspect them). Staging a base reversion silently corrupts the closeout commit; the canonical rule lives in [skills/shared/references/fresh-eye-subagent-review.md](./skills/shared/references/fresh-eye-subagent-review.md).
-- **A WRITE-CAPABLE spawn requests its own worktree wherever the host offers one** (owner ruling 2026-08-15, S6). Read-only reviewers may share the parent tree under the rule above; anything that can write must not. This is an INSTRUCTION, not enforcement — charness cannot control where a host places a spawn, and claiming otherwise would repeat the prose-rule-as-enforcement mistake it replaces. What IS executable is the checkout side: `charness worktree create --path <path> --branch <branch> --prepare` asserts isolation as it creates, and `charness worktree doctor --require-isolation` refuses a shared checkout. Where a host exposes no isolation control, record that and keep the shared-tree hygiene rule. The three refusal mechanisms that were measured and rejected, and what the doctor does and does not prove, live in [operating contract](./docs/conventions/operating-contract.md) Critique Discipline.
+- **A WRITE-CAPABLE spawn requests its own worktree wherever the host offers one** (owner ruling 2026-08-15, S6). Read-only reviewers may share the parent tree under the rule above; anything that can write must not. This is an INSTRUCTION, not enforcement — charness cannot control where a host places a spawn, and claiming otherwise would repeat the prose-rule-as-enforcement mistake it replaces. What IS executable is the checkout side: `charness worktree create --path <path> --branch <branch> --prepare` asserts isolation as it creates, and `charness worktree doctor --require-isolation` refuses a shared checkout. Where a host exposes no isolation control, record that and keep the shared-tree hygiene rule. The three refusal mechanisms that were measured and rejected, and what the doctor does and does not prove, live in [operating contract](./docs/operating-contract.md) Critique Discipline.
 - Bounded reviewers run read-only: on hosts with typed subagents, spawn them as `bounded-reviewer` ([.claude/agents/bounded-reviewer.md](./.claude/agents/bounded-reviewer.md)), and parents prove worktree+index integrity around each review with [skills/shared/scripts/reviewer_boundary_fingerprint.py](./skills/shared/scripts/reviewer_boundary_fingerprint.py) snapshot/verify; a failed verify quarantines that review's approvals.
-- **A slice that changes VERDICT LOGIC on a proof surface (a gate, validator, or any code rendering a verdict about other code or artifacts) owes a SECOND bounded review round reading the repaired surface** — one round is not enough for this class: every measured slice shipped a fix carrying the class it fixed, and the round that read the REPAIRS has caught blockers the first round could not see. The trigger is what the surface decides, not that its file was touched, a first round that produced no repairs discharges the obligation, and the cap is two rounds (round-2 repairs are recorded as accepted-unreviewed). Full rule: [docs/conventions/operating-contract.md](./docs/conventions/operating-contract.md) Critique Discipline.
+- **A slice that changes VERDICT LOGIC on a proof surface (a gate, validator, or any code rendering a verdict about other code or artifacts) owes a SECOND bounded review round reading the repaired surface** — one round is not enough for this class: every measured slice shipped a fix carrying the class it fixed, and the round that read the REPAIRS has caught blockers the first round could not see. The trigger is what the surface decides, not that its file was touched, a first round that produced no repairs discharges the obligation, and the cap is two rounds (round-2 repairs are recorded as accepted-unreviewed). Full rule: [docs/operating-contract.md](./docs/operating-contract.md) Critique Discipline.
 - **Subagent model/effort defaults are per-host, not one global value.** Use the
   host's own subagent controls and its typed agents where they exist
   (`bounded-reviewer` for read-only review scopes), inheriting the session model
@@ -57,7 +57,7 @@ Keep this block short. Detailed routing belongs in installed skill metadata and 
   request. Report a concrete host block; never claim an unavailable workflow ran.
 - Which channels this covers, why host product names are examples rather than
   contract, the disjoint-writer rule, and the proof floor a fan-out must still
-  clear: [parallel execution](./docs/conventions/parallel-execution.md). The
+  clear: [parallel execution](./docs/parallel-execution.md). The
   canonical root-doc shape lives in
   [agent-docs-policy.md](./skills/public/setup/references/agent-docs-policy.md#dynamic-workflow-standing-request).
 
@@ -65,7 +65,7 @@ Keep this block short. Detailed routing belongs in installed skill metadata and 
 
 - Filing an issue is standing-approved. Closing one is standing-approved only
   after the `issue` closeout floor; details live in
-  [External Side-Effect Discipline](./docs/conventions/operating-contract.md#external-side-effect-discipline).
+  [External Side-Effect Discipline](./docs/operating-contract.md#external-side-effect-discipline).
 - Push, reopen, PR creation, tag, version bump, release publish, and Cautilus
   evaluation each require an explicit phase-scoped grant. Never infer one from a
   green gate.
@@ -74,9 +74,9 @@ Keep this block short. Detailed routing belongs in installed skill metadata and 
 
 ## Execution Discipline
 
-- Follow [implementation discipline](./docs/conventions/implementation-discipline.md)
+- Follow [implementation discipline](./docs/implementation-discipline.md)
   for `mutate -> sync -> verify -> publish`, generated surfaces, and premise
-  checks. Follow the [operating contract](./docs/conventions/operating-contract.md)
+  checks. Follow the [operating contract](./docs/operating-contract.md)
   for commits, artifacts, critique, closeout, and session repair.
 - Treat task-completing critique, closeout, and commit as work, not follow-up.
   Commit after verification before switching to status/installed-machine checks.
@@ -111,13 +111,15 @@ Keep this block short. Detailed routing belongs in installed skill metadata and 
   not silently override current docs.
 - A stale or duplicate page is classified before it is moved or deleted:
   update inbound links, preserve a compatibility pointer when needed, then run
-  `check_doc_links.py`, `check_docs_graph.py`, and the quality doc gates. Graph
-  reachability is not proof that a page is accurate or current.
+  [`scripts/check-docs.sh`](./scripts/check-docs.sh). Its receipt includes Markdown syntax, link
+  resolution, awiki reachability, and exported-doc checks; reachability is not
+  proof that a page is accurate or current.
 
 ## Repository Map
 
 - Current state: [handoff](./docs/handoff.md), [quality](./charness-artifacts/quality/latest.md), [recent lessons](./charness-artifacts/retro/recent-lessons.md).
+- Documentation lint: [`check-docs.sh`](./scripts/check-docs.sh) is the one composite docs receipt; component scripts are diagnostic entry points.
 - Documentation entry point: [docs/index.md](./docs/index.md); architecture audit and migration contract: [evergreen documentation spec](./charness-artifacts/spec/2026-08-25-docs-architecture-evergreen.md).
-- Operator path: [acceptance](./docs/operator-acceptance.md), [development](./docs/development.md), [CLI reference](./docs/generated/cli-reference.md), [host packaging](./docs/host-packaging.md).
+- Operator path: [acceptance](./docs/operator-acceptance.md), [development](./docs/development.md), [CLI reference](./docs/cli-reference.md), [host packaging](./docs/host-packaging.md).
 - Architecture/control plane: [composition](./docs/harness-composition.md), [control plane](./docs/control-plane.md), [external integrations](./docs/external-integrations.md), [runtime capabilities](./docs/runtime-capability-contract.md), [capability resolution](./docs/capability-resolution.md).
 - Policy/memory: [public skill validation](./docs/public-skill-validation.md), [dogfood](./docs/public-skill-dogfood.md), [artifact policy](./docs/artifact-policy.md), [deferred decisions](./docs/deferred-decisions.md).

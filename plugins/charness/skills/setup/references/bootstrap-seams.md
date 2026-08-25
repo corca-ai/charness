@@ -106,32 +106,3 @@ gate through `tail` or `head`, because the final filter can hide the gate's exit
 status. Husky and simple-git-hooks need their own native guidance. This
 Lefthook contract belongs to the consumer's hook configuration, not to
 Charness's worktree adapter `prepare.commands`.
-
-## T-Events
-
-When the repo wants to capture T-loop events such as `skill_invoked`,
-`lesson_cited`, or `anchor_invoked` as Tier C evidence for the Skill-T
-mechanism inventory, seed:
-
-- `<repo-root>/.agents/t-events-adapter.yaml`
-
-Use `$SKILL_DIR/scripts/seed_t_events_adapter.py`. Consumers that prefer not to
-capture events flip `enabled: false` after seeding. Runtime capture stays with
-the `t-events` integration.
-
-## Usage Episodes
-
-When a user-facing product repo wants privacy-bounded H-LAM/T usage episodes,
-seed:
-
-- `<repo-root>/.agents/usage-episodes-adapter.yaml`
-
-The setup implementation uses `$SKILL_DIR/scripts/seed_usage_episodes_adapter.py`,
-but that helper is not a user-facing API. After seeding, run `quality` for the
-validation/report gate; `quality` resolves and runs the Charness package-root
-`validate_usage_episodes.py` validator and `report_usage_episodes.py` report
-when the adapter exists.
-
-Runtime JSONL under `.charness/usage-episodes` remains generated local state.
-Runtime capture and product-specific episode vocabulary stay with the product
-repo and the `usage-episodes` integration.

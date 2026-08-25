@@ -38,7 +38,7 @@ DEFAULT_OVERSLICE_ARTIFACT_RUN = 3
 
 # The rule's own home: excluded from the recorded-call scan so its example prose
 # (`a Floor-Addition Restraint: line`) never counts as a recorded call.
-_FLOOR_RESTRAINT_RULE_DOC = "docs/conventions/implementation-discipline.md"
+_FLOOR_RESTRAINT_RULE_DOC = "docs/implementation-discipline.md"
 # Floors are defined in source and asserted in tests; a `report["ok"] = False` in
 # tests/ is a fixture, not a floor, so detection is scoped to these prefixes.
 _FLOOR_SOURCE_PREFIXES = ("skills/", "scripts/")
@@ -111,7 +111,7 @@ def advise_new_pool_module(
         + ", ".join(new_pool)
         + "; walk each branch (import fallbacks, dep-missing degrades) into the "
         "introducing slice's tests, then run the early changed-line self-check "
-        "(docs/conventions/implementation-discipline.md) so the bundle producer "
+        "(docs/implementation-discipline.md) so the bundle producer "
         "CONFIRMS instead of discovering: run the --produce-mutation-coverage "
         "closeout, then python3 scripts/check_changed_line_mutation_coverage.py "
         f"--repo-root . --base-sha {base} --reuse-coverage. Before citing a "
@@ -469,7 +469,7 @@ def advise_floor_addition_restraint(repo_root: Path, changed_paths: list[str], b
     print(
         "ADVISORY: new blocking floor added without a recorded Floor-Addition Restraint call — "
         + summary + ". Run the Floor-Addition Restraint checklist "
-        "(docs/conventions/implementation-discipline.md): does it raise closeout-contract weight? "
+        "(docs/implementation-discipline.md): does it raise closeout-contract weight? "
         "is a non-blocking advisory/prose enough? can the describe-first preflight absorb it? "
         "Prefer an advisory unless the recurrence is recorded — a blocking floor on first sight "
         "trains token-theater. Then record the call (a `Floor-Addition Restraint:` line in the "

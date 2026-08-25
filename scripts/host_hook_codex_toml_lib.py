@@ -13,7 +13,7 @@ import shlex
 from pathlib import Path
 from typing import Any
 
-CHARNESS_MARKER = "charness:usage-episodes"
+CHARNESS_MARKER = "charness:hook"
 
 
 def script_basename(command: str) -> str | None:
@@ -103,7 +103,7 @@ def find_charness_toml_block(text: str, command: str, marker: str = CHARNESS_MAR
                         break
                     # Stop at the start of ANY charness block, not just this
                     # marker's — once a second distinct marker exists
-                    # (session-routing vs usage-episodes, #244/#245), breaking only
+                    # (session-routing vs another hook, #244/#245), breaking only
                     # on the own marker would run past the next charness block's
                     # header and swallow it, so uninstalling one block would
                     # destroy the adjacent one.

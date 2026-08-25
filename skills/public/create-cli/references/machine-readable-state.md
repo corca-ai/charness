@@ -41,7 +41,8 @@ For agent task envelopes, keep the contract deliberately small:
 
 - `claim` should refuse to overwrite a task already owned by another agent or
   already closed
-- `submit` should include a summary or artifact pointer
+- `submit` should include a summary or one opaque result-carrier pointer
+- `review` may record the parent-owned verdict, but must not create a nested task or subagent
 - `abort` should require a reason
 - `status` should be read-only and structured
 

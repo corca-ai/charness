@@ -27,10 +27,9 @@ def _churn(commits: int, artifact_only: int) -> dict:
     }
 
 
-def test_default_path_is_usage_episode_sibling() -> None:
-    # Sibling of the usage-episode stream, under the already-gitignored tree.
-    assert tel.CLOSEOUT_TELEMETRY_DEFAULT_PATH.parent == Path(".charness/usage-episodes")
-    assert tel.CLOSEOUT_TELEMETRY_DEFAULT_PATH.name == "closeout_telemetry.jsonl"
+def test_default_path_is_dedicated_local_stream() -> None:
+    assert tel.CLOSEOUT_TELEMETRY_DEFAULT_PATH == Path(".charness/closeout-telemetry/records.jsonl")
+    assert tel.CLOSEOUT_TELEMETRY_DEFAULT_PATH.name == "records.jsonl"
 
 
 def test_record_reuses_gate_runtime_verdict_object(monkeypatch, tmp_path) -> None:

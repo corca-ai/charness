@@ -32,9 +32,11 @@ def test_task_claim_submit_and_status_are_structured(tmp_path: Path) -> None:
     assert claim_payload["task_path"] == ".charness/tasks/slice-1.json"
     assert claim_payload["task"]["status"] == "claimed"
     assert claim_payload["task"]["agent_id"] == "agent-a"
-    assert "charness task submit slice-1" in claim_payload["next_step"]
+    assert "charness task --repo-root" in claim_payload["next_step"]
+    assert " submit slice-1" in claim_payload["next_step"]
     claimed_state = json.loads((repo_root / ".charness" / "tasks" / "slice-1.json").read_text())
-    assert "charness task submit slice-1" in claimed_state["next_step"]
+    assert "charness task --repo-root" in claimed_state["next_step"]
+    assert " submit slice-1" in claimed_state["next_step"]
 
     submit = run_cli_in_repo(
         Path(__file__).resolve().parents[2],
@@ -43,9 +45,13 @@ def test_task_claim_submit_and_status_are_structured(tmp_path: Path) -> None:
         str(repo_root),
         "submit",
         "slice-1",
+        "--agent",
+        "agent-a",
+        "--execution-ref",
+        "local:slice-1",
         "--summary",
         "Finished with tests",
-        "--artifact",
+        "--result-carrier",
         "tests/charness_cli/test_task_envelope.py",
         env=env,
     )
@@ -53,7 +59,30 @@ def test_task_claim_submit_and_status_are_structured(tmp_path: Path) -> None:
     submit_payload = yaml.safe_load(submit.stdout)
     assert submit_payload["event"] == "submitted"
     assert submit_payload["task"]["status"] == "submitted"
-    assert submit_payload["task"]["submission"]["artifacts"] == ["tests/charness_cli/test_task_envelope.py"]
+    assert submit_payload["task"]["submission"]["result_carrier"] == "tests/charness_cli/test_task_envelope.py"
+
+    review = run_cli_in_repo(
+        Path(__file__).resolve().parents[2],
+        "task",
+        "--repo-root",
+        str(repo_root),
+        "review",
+        "slice-1",
+        "--agent",
+        "agent-b",
+        "--execution-ref",
+        "local:slice-1",
+        "--verdict",
+        "approve",
+        "--summary",
+        "Result carrier and bounded change reviewed",
+        env=env,
+    )
+    assert review.returncode == 0, review.stderr
+    review_payload = yaml.safe_load(review.stdout)
+    assert review_payload["event"] == "reviewed"
+    assert review_payload["task"]["status"] == "approved"
+    assert review_payload["task"]["review_verdict"] == "approve"
 
     status = run_cli_in_repo(
         Path(__file__).resolve().parents[2],
@@ -66,9 +95,9 @@ def test_task_claim_submit_and_status_are_structured(tmp_path: Path) -> None:
     )
     assert status.returncode == 0, status.stderr
     status_payload = yaml.safe_load(status.stdout)
-    assert status_payload["task"]["status"] == "submitted"
+    assert status_payload["task"]["status"] == "approved"
     submitted_state = json.loads((repo_root / ".charness" / "tasks" / "slice-1.json").read_text())
-    assert submitted_state["status"] == "submitted"
+    assert submitted_state["status"] == "approved"
     assert ".charness/tasks/slice-1.json" in submitted_state["next_step"]
     assert status_payload["task"]["next_step"] == submitted_state["next_step"]
 
@@ -97,6 +126,10 @@ def test_task_claim_conflict_and_abort_reason_are_structured(tmp_path: Path) -> 
         str(repo_root),
         "abort",
         "slice-2",
+        "--agent",
+        "agent-a",
+        "--execution-ref",
+        "local:slice-2",
         "--reason",
         "blocked by missing fixture",
         env=env_a,
@@ -114,13 +147,13 @@ def test_task_rejections_carry_recovering_next_step(tmp_path: Path) -> None:
     env = {**os.environ, "CHARNESS_AGENT_ID": "agent-a"}
     root = Path(__file__).resolve().parents[2]
 
-    missing = run_cli_in_repo(root, "task", "--repo-root", str(repo_root), "submit", "slice-3", "--summary", "x", env=env)
+    missing = run_cli_in_repo(root, "task", "--repo-root", str(repo_root), "submit", "slice-3", "--agent", "agent-a", "--execution-ref", "local:slice-3", "--summary", "x", "--result-carrier", "missing", env=env)
     assert missing.returncode == 1
     missing_payload = yaml.safe_load(missing.stdout)
     assert missing_payload["status"] == "missing"
     assert "charness task claim slice-3" in missing_payload["next_step"]
 
-    missing_abort = run_cli_in_repo(root, "task", "--repo-root", str(repo_root), "abort", "slice-3", "--reason", "x", env=env)
+    missing_abort = run_cli_in_repo(root, "task", "--repo-root", str(repo_root), "abort", "slice-3", "--agent", "agent-a", "--execution-ref", "local:slice-3", "--reason", "x", env=env)
     assert missing_abort.returncode == 1
     assert "charness task claim slice-3" in yaml.safe_load(missing_abort.stdout)["next_step"]
 
@@ -131,33 +164,122 @@ def test_task_rejections_carry_recovering_next_step(tmp_path: Path) -> None:
     claim = run_cli_in_repo(root, "task", "--repo-root", str(repo_root), "claim", "slice-3", env=env)
     assert claim.returncode == 0, claim.stderr
 
+    review_before_submit = run_cli_in_repo(
+        root,
+        "task",
+        "--repo-root",
+        str(repo_root),
+        "review",
+        "slice-3",
+        "--agent",
+        "parent",
+        "--execution-ref",
+        "local:slice-3",
+        "--verdict",
+        "approve",
+        "--summary",
+        "too early",
+        env=env,
+    )
+    assert review_before_submit.returncode == 1
+    review_before_submit_payload = yaml.safe_load(review_before_submit.stdout)
+    assert review_before_submit_payload["status"] == "not-submitted"
+    assert "charness task --repo-root" in review_before_submit_payload["next_step"]
+    assert " review slice-3" in review_before_submit_payload["next_step"]
+    assert "--verdict approve" in review_before_submit_payload["next_step"]
+    assert "VERDICT" not in review_before_submit_payload["next_step"]
+
     reclaim = run_cli_in_repo(root, "task", "--repo-root", str(repo_root), "claim", "slice-3", env=env)
     assert reclaim.returncode == 0, reclaim.stderr
     reclaim_payload = yaml.safe_load(reclaim.stdout)
     assert reclaim_payload["event"] == "claim-existing"
     persisted = json.loads((repo_root / ".charness" / "tasks" / "slice-3.json").read_text())
     assert reclaim_payload["next_step"] == persisted["next_step"]
-    empty_submit = run_cli_in_repo(root, "task", "--repo-root", str(repo_root), "submit", "slice-3", env=env)
+    empty_submit = run_cli_in_repo(root, "task", "--repo-root", str(repo_root), "submit", "slice-3", "--agent", "agent-a", "--execution-ref", "local:slice-3", env=env)
     assert empty_submit.returncode == 1
     empty_payload = yaml.safe_load(empty_submit.stdout)
     assert empty_payload["status"] == "missing-result"
-    assert "charness task submit slice-3" in empty_payload["next_step"]
+    assert "charness task --repo-root" in empty_payload["next_step"]
+    assert " submit slice-3" in empty_payload["next_step"]
 
-    abort = run_cli_in_repo(root, "task", "--repo-root", str(repo_root), "abort", "slice-3", "--reason", "blocked", env=env)
+    abort = run_cli_in_repo(root, "task", "--repo-root", str(repo_root), "abort", "slice-3", "--agent", "agent-a", "--execution-ref", "local:slice-3", "--reason", "blocked", env=env)
     assert abort.returncode == 0, abort.stderr
     abort_payload = yaml.safe_load(abort.stdout)
     assert ".charness/tasks/slice-3.json" in abort_payload["next_step"]
     aborted_state = json.loads((repo_root / ".charness" / "tasks" / "slice-3.json").read_text())
     assert abort_payload["next_step"] == aborted_state["next_step"]
 
-    closed = run_cli_in_repo(root, "task", "--repo-root", str(repo_root), "submit", "slice-3", "--summary", "late", env=env)
+    closed = run_cli_in_repo(root, "task", "--repo-root", str(repo_root), "submit", "slice-3", "--agent", "agent-a", "--execution-ref", "local:slice-3", "--summary", "late", "--result-carrier", "late", env=env)
     assert closed.returncode == 1
     closed_payload = yaml.safe_load(closed.stdout)
     assert closed_payload["status"] == "closed"
     assert ".charness/tasks/slice-3.json" in closed_payload["next_step"]
 
-    closed_abort = run_cli_in_repo(root, "task", "--repo-root", str(repo_root), "abort", "slice-3", "--reason", "again", env=env)
+    closed_abort = run_cli_in_repo(root, "task", "--repo-root", str(repo_root), "abort", "slice-3", "--agent", "agent-a", "--execution-ref", "local:slice-3", "--reason", "again", env=env)
     assert closed_abort.returncode == 1
     closed_abort_payload = yaml.safe_load(closed_abort.stdout)
     assert closed_abort_payload["status"] == "closed"
     assert ".charness/tasks/slice-3.json" in closed_abort_payload["next_step"]
+
+
+def test_task_review_preserves_changes_and_blocked_verdicts(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    root = Path(__file__).resolve().parents[2]
+    env = {**os.environ, "CHARNESS_AGENT_ID": "claimant"}
+    base = [root, "task", "--repo-root", str(repo_root)]
+
+    claim = run_cli_in_repo(root, *base[1:], "claim", "slice-4", "--execution-ref", "lane-4", env=env)
+    assert claim.returncode == 0, claim.stderr
+    submit_args = [
+        *base[1:],
+        "submit",
+        "slice-4",
+        "--agent",
+        "claimant",
+        "--execution-ref",
+        "lane-4",
+        "--result-carrier",
+        "carrier-1",
+    ]
+    assert run_cli_in_repo(root, *submit_args, env=env).returncode == 0
+
+    changes = run_cli_in_repo(
+        root,
+        *base[1:],
+        "review",
+        "slice-4",
+        "--agent",
+        "parent",
+        "--execution-ref",
+        "lane-4",
+        "--verdict",
+        "changes",
+        "--summary",
+        "repair required",
+        env=env,
+    )
+    assert changes.returncode == 0, changes.stderr
+    assert yaml.safe_load(changes.stdout)["task"]["status"] == "changes-requested"
+
+    resubmit = run_cli_in_repo(root, *submit_args[:-1], "carrier-2", env=env)
+    assert resubmit.returncode == 0, resubmit.stderr
+    resubmitted_state = yaml.safe_load(resubmit.stdout)["task"]
+    assert all(key not in resubmitted_state for key in ("reviewer_id", "review_execution_ref", "review_verdict", "review_summary", "reviewed_at"))
+    blocked = run_cli_in_repo(
+        root,
+        *base[1:],
+        "review",
+        "slice-4",
+        "--agent",
+        "parent",
+        "--execution-ref",
+        "lane-4",
+        "--verdict",
+        "blocked",
+        "--summary",
+        "fixture unavailable",
+        env=env,
+    )
+    assert blocked.returncode == 0, blocked.stderr
+    assert yaml.safe_load(blocked.stdout)["task"]["status"] == "blocked"

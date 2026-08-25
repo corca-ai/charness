@@ -52,7 +52,7 @@ def test_inventory_sloc_human_output_marks_degraded(tmp_path: Path) -> None:
 
 def test_inventory_sloc_ignores_mutable_charness_runtime_state(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    runtime_record = repo / ".charness" / "usage-episodes" / "closeout.jsonl"
+    runtime_record = repo / ".charness" / "closeout-telemetry" / "records.jsonl"
     runtime_record.parent.mkdir(parents=True)
     (repo / "main.py").write_text("print('versioned source')\n", encoding="utf-8")
     runtime_record.write_text('{"phase":"before"}\n', encoding="utf-8")

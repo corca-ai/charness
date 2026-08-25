@@ -262,7 +262,7 @@ def test_validate_skills_rejects_author_repo_internal_doc_cite(tmp_path: Path) -
     references_dir = skill_dir / "references"
     references_dir.mkdir(parents=True)
     (references_dir / "note.md").write_text(
-        "Read `docs/conventions/implementation-discipline.md` before editing.\n",
+        "Read `docs/implementation-discipline.md` before editing.\n",
         encoding="utf-8",
     )
     (skill_dir / "SKILL.md").write_text(
@@ -287,7 +287,7 @@ def test_validate_skills_rejects_author_repo_internal_doc_cite(tmp_path: Path) -
 
     assert result.returncode == 1
     assert "author-repo-only cite" in result.stderr
-    assert "docs/conventions/implementation-discipline.md" in result.stderr
+    assert "docs/implementation-discipline.md" in result.stderr
 
 
 def test_validate_skills_rejects_author_repo_internal_test_and_skill_cites(tmp_path: Path) -> None:

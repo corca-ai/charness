@@ -114,7 +114,7 @@ def normalize_path(
     # re-created round 1's blocker with the BASE diverging instead of the slash:
     # issue-derived entries normalize with no artifact dir, so a bare
     # `conventions/x.md` stayed `conventions/x.md` on that side while the handoff
-    # side became `docs/conventions/x.md`, and the merger intersects boundary
+    # side became `docs/x.md`, and the merger intersects boundary
     # tokens as exact strings -- the two never meet. Repo convention writes bare
     # tokens root-relative, and matching the issue side is what keeps one string
     # per surface across both sources.

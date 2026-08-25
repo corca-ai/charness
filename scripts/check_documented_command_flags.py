@@ -109,7 +109,7 @@ CLI_NAME = _command_carrier_discovery.CLI_NAME
 # that rewrites it to the `version` subcommand BEFORE argparse sees it, so
 # `--help` -- this gate's whole authority -- does not declare it. Two adapters
 # probe the CLI with it. The honest repair is to declare the option so the help
-# surface stops lying, which also regenerates `docs/generated/cli-reference.md`;
+# surface stops lying, which also regenerates `docs/cli-reference.md`;
 # widening this regex instead would make the gate report an option the CLI really
 # does accept.
 INVOCATION_RE = re.compile(
@@ -293,8 +293,7 @@ def _cli_name_used_as_a_value(carrier: str, match: re.Match[str], previous_end: 
     """Reject a bare `charness` that is an ARGUMENT of the command in front of it.
 
     `charness` is this repo's product name as well as its CLI, so it is a live
-    option value: `record_usage_feedback.py --repo-root . --product-id charness
-    --target-episode-id ...` is one command, and reading the value as a second
+    option value in a producer command is one command, and reading the value as a second
     invocation cut six real flags off the first and reported all six as drift.
 
     That exact case is now excluded one level earlier -- `INVOCATION_RE` requires a

@@ -154,7 +154,7 @@ def test_comment_line_inside_a_shell_fence_is_skipped(gate, tmp_path: Path) -> N
 
 
 def test_non_shell_fence_is_not_scanned(gate, tmp_path: Path) -> None:
-    # `text` fences carry sample OUTPUT, and `docs/generated/cli-reference.md`
+    # `text` fences carry sample OUTPUT, and `docs/cli-reference.md`
     # alone has 41 of them.
     assert _findings(gate, _repo(tmp_path, _fence("charness verify", language="text"))) == []
 
@@ -235,8 +235,9 @@ def test_subshell_leading_invocation_is_reported(gate, tmp_path: Path) -> None:
 def test_underscore_and_capitalized_drift_are_reported_not_skipped(gate, tmp_path: Path) -> None:
     """The two likeliest REAL drift shapes, which a lowercase-hyphen token rule
     routed into the skipped bucket. A doc written from the code identifier says
-    `session_capture` where the command is `session-capture`; argparse rejects
-    both these tokens, so both are this gate's to report."""
+    an underscore or capitalized spelling where the command is hyphenated and
+    lowercase; argparse rejects both these tokens, so both are this gate's to
+    report."""
     report = _report(gate, _repo(tmp_path, _fence("charness tool_install pkg", "charness Update")))
     assert len(report["findings"]) == 2
     assert "not-a-single-subcommand-token" not in report["skipped"]

@@ -5,8 +5,8 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PREFLIGHT_DOC = ROOT / "docs" / "conventions" / "authoring-preflight.md"
-DISCIPLINE_DOC = ROOT / "docs" / "conventions" / "implementation-discipline.md"
+PREFLIGHT_DOC = ROOT / "docs" / "authoring-preflight.md"
+DISCIPLINE_DOC = ROOT / "docs" / "implementation-discipline.md"
 
 
 def _attention_terms() -> tuple[str, ...]:

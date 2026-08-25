@@ -25,10 +25,10 @@ business/user outcome definitions are treated as final.
 - [AI/ML engineering patterns](../../docs/ai-ml-engineering-patterns.md):
   current-state review, keep/missing pattern split, and three improvement
   candidates.
-- [Product success metrics](../../docs/product-success-metrics.md): current
-  measurable leading indicators and explicit product-success non-claims.
-- [Usage episode report](../../scripts/report_usage_episodes.py): implemented
-  #243 consumer for session grouping, T-signal rate, and capture gaps.
+- The RCA ledger in
+  [charness-artifacts/spec/rca-conversion-ledger.md](./rca-conversion-ledger.md):
+  the current engineering-health learning signal. The former consumer-runtime
+  telemetry experiment was retired and is not evidence for this contract.
 
 ## Necessary Conditions
 
@@ -47,12 +47,13 @@ conditions:
 3. **Feedback becomes learning.** Bugs, repeated corrections, and weak proof
    findings convert into RCA events, tests, gates, issues, or retro lessons
    with a named detection gap and sibling pattern.
-4. **Usage signals are privacy-bounded and denominator-honest.** Usage
-   episodes never carry raw prompts, transcripts, or user identity; reports
-   expose session grouping, T-signal rate, and capture gaps without pretending
-   captured records are the full usage or outcome denominator.
+4. **Runtime claims are evidence-bounded and denominator-honest.** Charness
+   does not maintain a consumer-runtime telemetry stream. Any runtime or
+   adoption claim must cite an independently available host or repo artifact;
+   absent evidence remains a non-claim.
 5. **Operations stay observable.** Quality runtime signals, release proof,
-   install/tool doctor surfaces, attention-state visibility, and usage reports
+   install/tool doctor surfaces, attention-state visibility, and explicit
+   closeout/lesson-ledger records
    make local state inspectable before publication; latency/cost claims stay
    non-claims unless the host or repo artifact actually exposes those metrics.
 6. **Quality remains sustainable.** The local gate surface stays runnable and
@@ -70,16 +71,12 @@ These are necessary conditions, not sufficient product-success criteria.
 | --- | --- |
 | Evaluation | Dispositioned through deterministic gates, public-skill dogfood, Cautilus planner policy, scenario registry validation, and bounded fresh-eye/HITL review for judgment-heavy claims. |
 | Experimentation | Dispositioned for Charness workflow/prompt/adapter changes through specs, goal artifacts, issue closeout matrixing, critique, and retro loops. Charness does not currently run model/search/sampling grid experiments, so those variables must be named in the owning spec when they appear. |
-| Data/feedback | Dispositioned for incidents and engineering learning through RCA/retro/debug; strengthened by #243 usage reporting for ordinary closeout episodes, with capture gaps still visible. Usage episodes are not a labeled training/eval dataset. |
+| Data/feedback | Dispositioned for incidents and engineering learning through RCA/retro/debug; the RCA ledger and lesson ledger are the durable feedback surfaces. Consumer-runtime telemetry is retired and is not a labeled training/eval dataset. |
 | Operations/observability | Dispositioned through quality runtime signals, release/doctor surfaces, attention-state visibility, and run-quality report surfacing. Cost/latency are claimable only where host/runtime artifacts expose them. |
 | Quality/engineering | Dispositioned through `run-quality`, local pre-commit/pre-push gates, packaging mirrors, closeout proof discipline, and explicit advisory-to-gate promotion rules. |
 
 ## Applied Improvements
 
-- #188 implemented the first narrow privacy-bounded `slice_closeout` usage
-  episode emitter.
-- #243 added the usage episode report consumer and quality-visible capture-gap
-  signal.
 - Existing RCA ledger and retro/debug workflows provide the feedback-to-learning
   mechanism that #185 asked for.
 
@@ -94,7 +91,7 @@ These are necessary conditions, not sufficient product-success criteria.
 ## Final-Carrier Note
 
 #185 can close in the final carrier with this artifact, the AI/ML engineering
-patterns doc, and the #188/#243 implementation evidence. The carrier should say
+patterns doc, and the RCA/retro implementation evidence. The carrier should say
 that the issue's investigation checklist is dispositioned for Charness's current
 workflow product boundary, not that product success is solved. #184 should
 remain open with a note that product-success synthesis and source-thread refresh

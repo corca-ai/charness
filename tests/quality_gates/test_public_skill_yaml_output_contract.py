@@ -110,8 +110,6 @@ JSON_FLAG_MUST_BE_UNRECOGNIZED = (
     ("scripts/inventory_skill_script_references.py", "--repo-root", ".", "--strict"),
     ("scripts/measure_inventory_consumption_floor.py", "--repo-root", "."),
     ("scripts/render_lesson_selection_preview.py", "--repo-root", ".", "--seed", "contract-probe"),
-    ("scripts/report_usage_episodes.py", "--repo-root", "."),
-    ("scripts/report_usage_product_review.py", "--repo-root", "."),
     ("scripts/run_slice_closeout.py", "--repo-root", ".", "--paths", "README.md"),
     ("scripts/session_start_lesson_context.py", "--repo-root", "."),
     ("skills/public/setup/scripts/seed_dependencies.py", "--repo-root", ".", "--tool-id", "ruff"),
@@ -123,8 +121,6 @@ JSON_FLAG_MUST_BE_UNRECOGNIZED = (
 # rather than repo-wide: a same-named helper elsewhere may be a legitimate payload
 # builder, and a repo-wide ban would be a rule this contract cannot honestly make.
 DELETED_RENDERERS = (
-    ("scripts/report_usage_episodes.py", ("_print_result",), None),
-    ("scripts/usage_episode_product_review.py", ("print_review_result",), None),
     ("scripts/check_command_docs.py", ("render_report",), None),
     (
         "scripts/check_issue_closeout_commit_msg.py",

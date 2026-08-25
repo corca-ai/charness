@@ -52,12 +52,9 @@ draws from the five `lam-critique` anchors. A `system-improving-itself`
 surface (designing a T-loop, changing how skills self-evolve, changing the
 retro/critique substrate itself) draws Engelbart in addition.
 
-When a `critique` or `retro` run actually selects an anchor from this lineup,
-the `anchor_invoked` t-event (see `<repo-root>/integrations/t-events/event.schema.json`)
-captures `anchor_id` and `applies_when` so Tier C evidence in
-`charness-artifacts/skill-t-mechanism/inventory.{md,json}` can show which
-anchors fire on which surfaces over time. New `applies_when:` values require
-both this spec update and at least one positive dogfood case before landing.
+Anchor selection is durable in the critique/retro artifact itself. New
+`applies_when:` values require this spec update and at least one positive
+dogfood case before landing; no parallel event stream is required.
 
 Good default angles for a non-trivial change:
 

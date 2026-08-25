@@ -51,8 +51,8 @@ which `scripts/cautilus_adapter_lib.py` never reads -- it pins `ADAPTER_PATH` to
 SINGULAR `.agents/cautilus-adapter.yaml`), but 3 are association residue that a warning
 would report as defects: `chunk_policy` in `skills/public/handoff/adapter.example.yaml` is
 genuinely read by `chunked_routing_agentic_policy.py`, and `session_routing` /
-`skill_anchor_edit_guard` in `.agents/usage-episodes-adapter.yaml` are genuinely read
-through `host_hook_registry.py`'s `getattr` dispatch. All three are invisible to a literal
+`skill_anchor_edit_guard` in a host-hook adapter are genuinely read through
+`host_hook_registry.py`'s `getattr` dispatch. All three are invisible to a literal
 scan. A 13% false-positive rate is a wolf-crier, and one of the three ships to consumers
 inside a shipped example -- so arming it would greet every new consumer with a wrong
 warning. Widening `associated_modules` to absorb them is refused separately: that is how

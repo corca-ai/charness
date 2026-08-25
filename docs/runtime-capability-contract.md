@@ -1,5 +1,8 @@
 # Runtime Capability Contract
 
+> Status: current
+> Source of truth: this page and its linked executable surfaces
+
 This document defines how `charness` should reason about external access when
 it runs inside both ordinary local coding environments and isolated agent
 runtimes.

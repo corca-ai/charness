@@ -44,7 +44,7 @@ USAGE_METAVAR_RE = re.compile(r"(--[A-Za-z0-9][A-Za-z0-9-]*)[ =]([^\s\]|]+)")
 # the WHOLE group, so one member with an underscore or a capital made the match
 # fail and blanked the entire parser -- silently, since an empty choice set reads
 # as "this parser has no subcommands". A gate widened to REPORT `charness
-# session_capture` as drift while its authority reader could not represent that
+# a retired command` as drift while its authority reader could not represent that
 # name is the exact defect it was widened to fix, one level down.
 CHOICES_RE = re.compile(r"\{([^\s,{}]+(?:,[^\s,{}]+)*)\}")
 # A documented pipeline's later stage is a different command; its flags are not

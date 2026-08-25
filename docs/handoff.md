@@ -56,7 +56,7 @@
    work. Do not rewrite the published release record in place without a new
    proof packet and public readback.
 4. Preserve the release proof floor documented in the
-   [operating contract](./conventions/operating-contract.md): typed quality
+   [operating contract](./operating-contract.md): typed quality
    receipt, fresh-checkout probes, distinct observer, and distinct-channel
    public verification. A zero exit code or reachable tag alone is not a
    release verdict.
@@ -72,9 +72,9 @@
 
 - The [design north star](./design-north-star.md) holds the different-observer rule and
   the proof-surface reading of the irreversible boundary.
-- The [operating contract](./conventions/operating-contract.md) holds the two-round
+- The [operating contract](./operating-contract.md) holds the two-round
   critique floor and the write-capable isolation rule.
-- [Implementation discipline](./conventions/implementation-discipline.md) holds the
+- [Implementation discipline](./implementation-discipline.md) holds the
   `mutate -> sync -> verify -> publish` order and the generated-surface rule.
-- [Validator timing layers](./conventions/validator-timing-layers.md) holds which gate runs
+- [Validator timing layers](./validator-timing-layers.md) holds which gate runs
   at which boundary and why.

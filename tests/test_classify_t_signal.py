@@ -147,9 +147,9 @@ def test_quality_runner_modified(tmp_path: Path, classify) -> None:
 def test_convention_doc_modified(tmp_path: Path, classify) -> None:
     repo = tmp_path / "repo"
     env = _setup_with_baseline(repo)
-    _write(repo, "docs/conventions/operating-contract.md", "# a\n")
+    _write(repo, "docs/operating-contract.md", "# a\n")
     _commit(repo, "seed convention", env)
-    _write(repo, "docs/conventions/operating-contract.md", "# b\n")
+    _write(repo, "docs/operating-contract.md", "# b\n")
     _commit(repo, "tweak convention", env)
 
     result = classify(repo)
@@ -251,10 +251,10 @@ def test_tie_broken_alphabetically_by_rule_id(tmp_path: Path, classify) -> None:
     repo = tmp_path / "repo"
     env = _setup_with_baseline(repo)
     _write(repo, "scripts/run-quality.sh", "#!/bin/sh\necho one\n")
-    _write(repo, "docs/conventions/operating-contract.md", "# a\n")
+    _write(repo, "docs/operating-contract.md", "# a\n")
     _commit(repo, "seed", env)
     _write(repo, "scripts/run-quality.sh", "#!/bin/sh\necho two\n")
-    _write(repo, "docs/conventions/operating-contract.md", "# b\n")
+    _write(repo, "docs/operating-contract.md", "# b\n")
     _commit(repo, "tweak both medium-confidence surfaces", env)
 
     result = classify(repo)

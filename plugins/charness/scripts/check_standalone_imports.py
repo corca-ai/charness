@@ -112,7 +112,7 @@ SCAN_PATTERNS = (
 #      judgment-bound gate does, which is the false-fire cost the rule actually guards.
 #   3. Can a describe-first preflight absorb it? No. There is nothing to describe; the
 #      property only exists when a fresh interpreter runs.
-# Recorded per Floor-Addition Restraint (docs/conventions/implementation-discipline.md).
+# Recorded per Floor-Addition Restraint (docs/implementation-discipline.md).
 
 # The strings CPython uses when an import cycle is what actually failed. Matching on
 # these rather than on "did it fail" keeps a genuine cycle distinguishable from a

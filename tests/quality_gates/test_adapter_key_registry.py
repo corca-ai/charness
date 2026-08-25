@@ -303,7 +303,7 @@ def test_the_survey_covers_the_population_the_operator_decision_needs() -> None:
     only `.agents/` would answer a different question than the one asked."""
     result = survey(ROOT)
 
-    assert result["adapters"] >= 35, "the adapter population shrank; a glob is stale"
+    assert result["adapters"] >= 33, "the adapter population shrank; a glob is stale"
     assert result["keys"] >= 400
     assert result["registry_problems"] == []
     assert any(gap["adapter"].startswith(".agents/") for gap in result["gaps"]) or not result["gaps"]
@@ -321,7 +321,7 @@ def test_the_survey_covers_the_population_the_operator_decision_needs() -> None:
         ".agents/cautilus-adapters/chatbot-benchmark.yaml",
         ".agents/cautilus-adapters/chatbot-proposals.yaml",
         ".agents/quality-adapter.yaml",
-        ".agents/usage-episodes-adapter.yaml",
+        ".agents/worktree-adapter.yaml",
         "skills/public/handoff/adapter.example.yaml",
         "skills/public/quality/adapter.example.yaml",
     }, f"a new unreconciled adapter surface appeared and needs a decision: {sorted(covered)}"
@@ -487,7 +487,7 @@ def test_the_survey_cli_runs_and_emits_parseable_yaml() -> None:
 
     assert completed.returncode == 0, completed.stderr[-2000:]
     payload = yaml.safe_load(completed.stdout)
-    assert payload["adapters"] >= 35
+    assert payload["adapters"] >= 33
     assert payload["registry_problems"] == []
 
 

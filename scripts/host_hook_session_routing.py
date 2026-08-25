@@ -1,10 +1,8 @@
 """Install/uninstall the contextual SessionStart routing hook (#244).
 
 The #240 routing-reliability fix ships `scripts/session_start_routing.py`
-into the plugin, but the host-hook installer only ever wired the usage-episodes
-hook, so the routing trigger never fired without a manual per-machine edit. This
-module adds a second SessionStart hook — adapter-gated and opt-in via the
-`session_routing` intent — installed *parallel* to usage-episodes through the
+into the plugin. This module provides an adapter-gated, opt-in SessionStart
+hook via the `session_routing` intent, installed through the
 same primitives in `host_hook_install_lib` (carved into its own file to keep that
 module under the Python-length budget, the same split as
 `host_hook_codex_toml_lib`). This only wires the script; the 2026-07-04
@@ -36,7 +34,7 @@ INTENT_SECTION = "session_routing"
 SESSION_ROUTING_SCRIPT_RELATIVE = Path("scripts/session_start_routing.py")
 # Claude SessionStart matcher: fire on session-open events, not on `compact`.
 SESSION_ROUTING_MATCHER = "startup|resume|clear"
-# Distinct TOML marker so it dedups independently of the usage-episodes block.
+# Distinct TOML marker so it dedups independently of other hook blocks.
 SESSION_ROUTING_MARKER = "charness:session-routing"
 # One-way deletion inventory for host state installed before the v1 rename.
 # These values are never accepted as adapter input or advertised as supported.

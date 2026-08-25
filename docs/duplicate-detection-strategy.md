@@ -1,5 +1,8 @@
 # Duplicate Detection Strategy
 
+> Status: current
+> Source of truth: this page and its linked executable surfaces
+
 This note records the intended duplicate-detection posture for Charness and for
 repos that consume the `quality` skill.
 
@@ -70,8 +73,7 @@ Post-cleanup reassessment on 2026-06-04 used maintainer-local `npx --yes jscpd`
   raw hard gate would still be noisy.
 - A higher-floor source scan (`--min-lines 40 --min-tokens 80`) found 3 exact
   clones / 188 duplicated lines: `check_init_repo_rename.py` vs
-  `check_premortem_rename.py`, and `report_usage_episodes.py` vs
-  `validate_usage_episodes.py`. These are meaningful refactoring candidates, but
+  `check_premortem_rename.py`. This is a meaningful refactoring candidate, but
   not enough to justify an unbaselined hard gate.
 
 Recommendation: keep `jscpd` out of the standing gate for now. If adopted, wire it

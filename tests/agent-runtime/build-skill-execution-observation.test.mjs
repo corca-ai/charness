@@ -100,7 +100,7 @@ test("collectReadBasenames excludes Edit and Write paths", () => {
 test("parseReadCommandBasenames counts sed/cat/head/tail/less file operands", () => {
 	assert.deepEqual([...parseReadCommandBasenames("sed -n '1,120p' docs/handoff.md")], ["handoff.md"]);
 	assert.deepEqual([...parseReadCommandBasenames("cat skills/a/x.md skills/b/y.md")].sort(), ["x.md", "y.md"]);
-	assert.ok(parseReadCommandBasenames("head -n 30 docs/conventions/operating-contract.md").has("operating-contract.md"));
+	assert.ok(parseReadCommandBasenames("head -n 30 docs/operating-contract.md").has("operating-contract.md"));
 	assert.ok(parseReadCommandBasenames("less plugins/charness/skills/retro/references/expert-lens.md").has("expert-lens.md"));
 });
 

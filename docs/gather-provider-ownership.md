@@ -1,5 +1,8 @@
 # Gather Provider Ownership
 
+> Status: current
+> Source of truth: this page and its linked executable surfaces
+
 This document defines the ownership boundary for the public `gather` skill.
 
 ## Default Boundary: gather is public-source only

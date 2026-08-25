@@ -39,9 +39,9 @@ def _load_skill_runtime_bootstrap():
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 emit_yaml = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output").emit_yaml
 
-# Sibling of the usage-episode stream; keep in sync with the E1 emitter default
+# Closeout telemetry stream; keep in sync with the E1 emitter default
 # (scripts/slice_closeout_telemetry.CLOSEOUT_TELEMETRY_DEFAULT_PATH).
-DEFAULT_STREAM_PATH = Path(".charness/usage-episodes/closeout_telemetry.jsonl")
+DEFAULT_STREAM_PATH = Path(".charness/closeout-telemetry/records.jsonl")
 DEFAULT_RECUR_MIN = 2
 DISPOSITION_RECURRING = "file-issue"
 DISPOSITION_ONE_OFF = "watch"

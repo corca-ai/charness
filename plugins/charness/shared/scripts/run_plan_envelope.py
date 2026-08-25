@@ -48,7 +48,7 @@ ENVELOPE_VERSION = "charness.run_plan_envelope.v1"
 # are a shared correctness assertion on planner *output* that REPLACES seven
 # bespoke ad hoc plan shapes with one auto-stamped shape — it lowers contract
 # weight, not raises it. The detector's REQUIRED_* heuristic is a false positive
-# here; recorded per docs/conventions/implementation-discipline.md.
+# here; recorded per docs/implementation-discipline.md.
 REQUIRED_ENVELOPE_KEYS = (
     "schema_version",
     "envelope_version",

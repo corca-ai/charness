@@ -227,4 +227,4 @@ free on every `ast.Call`; the cost is the schema change, not the extraction.
 - [Umbrella class disposition plan](./2026-08-10-umbrella-class-disposition-plan.md)
 - [Harness-improvement thesis](./2026-08-11-harness-improvement-thesis.md)
 - [Design north star](../../docs/design-north-star.md)
-- [Validator timing layers](../../docs/conventions/validator-timing-layers.md)
+- [Validator timing layers](../../docs/validator-timing-layers.md)

@@ -158,7 +158,7 @@ def test_render_cli_reference_matches_checked_in_doc(tmp_path: Path) -> None:
 
     assert result.returncode == 0, result.stderr
     assert output.read_text(encoding="utf-8") == (
-        ROOT / "docs" / "generated" / "cli-reference.md"
+        ROOT / "docs" / "cli-reference.md"
     ).read_text(encoding="utf-8")
 
 
@@ -302,6 +302,7 @@ def test_root_cli_mutating_modes_have_side_effect_probe_contracts() -> None:
         "./charness task claim",
         "./charness task submit",
         "./charness task abort",
+        "./charness task review",
         "./charness catalog refresh",
         "./charness capability init",
         "./charness tool doctor",
@@ -309,8 +310,6 @@ def test_root_cli_mutating_modes_have_side_effect_probe_contracts() -> None:
         "./charness tool sync-support",
         "./charness tool install",
         "./charness tool update",
-        "./charness session-capture install",
-        "./charness session-capture uninstall",
         "./charness worktree create",
         "./charness worktree add",
         "./charness worktree prepare",

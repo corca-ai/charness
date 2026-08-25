@@ -100,7 +100,7 @@ def _rule_block(text: str, surface: str) -> str:
     """The rule's own bullet (with its continuation lines), so every assertion below is
     made about THAT block rather than about the whole file.
 
-    The first cut of this test asserted `"docs/conventions/operating-contract.md" in
+    The first cut of this test asserted `"docs/operating-contract.md" in
     always_loaded` — a path AGENTS.md already carries in its Work Phase Map and Policy
     Index, so deleting the rule's own citation left the assertion green. A verdict keyed
     on a field that is constant where it must discriminate is the exact class this rule
@@ -201,7 +201,7 @@ def test_proof_surface_second_review_round_rule_is_pinned_on_both_surfaces() -> 
     sentence saying the obligation does NOT exist, which is why the negation guard below
     is part of the assertion set rather than a comment about it.
     """
-    contract = (ROOT / "docs" / "conventions" / "operating-contract.md").read_text(encoding="utf-8")
+    contract = (ROOT / "docs" / "operating-contract.md").read_text(encoding="utf-8")
     always_loaded = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
 
     for text, surface in ((contract, "operating-contract.md"), (always_loaded, "AGENTS.md")):
@@ -224,7 +224,7 @@ def test_proof_surface_second_review_round_rule_is_pinned_on_both_surfaces() -> 
     # The always-loaded copy stays a POINTER, not a fork: the citation must be on the
     # rule's own block, not merely somewhere in the file.
     pointer = _rule_block(always_loaded, "AGENTS.md")
-    assert "docs/conventions/operating-contract.md" in pointer
+    assert "docs/operating-contract.md" in pointer
     # ...and the owning contract must carry the clauses the pointer omits, asserted on
     # the rule's block for the same reason.
     owner = _rule_block(contract, "operating-contract.md").lower()

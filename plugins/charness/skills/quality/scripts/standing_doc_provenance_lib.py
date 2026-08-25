@@ -3,7 +3,7 @@
 Generalizes the skill-package anchor gate (`skill_text_quality_lib`:
 `ISSUE_ANCHOR_RE`, `DATED_INCIDENT_RE`) to standing *docs* with an explicit
 standing-vs-tracking allowlist. The provenance-placement policy
-(`docs/conventions/provenance-placement.md`) is the rule this enforces: a
+(`docs/provenance-placement.md`) is the rule this enforces: a
 standing-rule doc states the timeless rule; provenance is a terse trailing
 `(#NNN)` only when load-bearing, else a link to the owning record artifact —
 never stacked dates / incident-names in rule prose.

@@ -309,8 +309,6 @@ QUALITY_PYTHON_STUBS = (
     ("validate-skills", "validate_skills.py"),
     ("validate-quality-reference-catalog", "validate_quality_reference_catalog.py"),
     ("validate-skill-ergonomics", "validate_skill_ergonomics.py"),
-    ("validate-usage-episodes", "validate_usage_episodes.py"),
-    ("report-usage-episodes", "report_usage_episodes.py"),
     ("quality-tool-fixtures", "check_quality_tool_fixtures.py"),
     ("check-cli-skill-surface", "check_cli_skill_surface.py"),
     ("check-closeout-floor-matrix", "check_closeout_floor_matrix.py"),
@@ -402,6 +400,7 @@ QUALITY_RUNTIME_STUBS = (
     ("check-regenerable-facts", "check_regenerable_facts.py"),
 )
 QUALITY_SHELL_STUBS = (
+    ("check-docs", "check-docs.sh"),
     ("check-markdown", "check-markdown.sh"),
     ("check-secrets", "check-secrets.sh"),
     ("check-shell", "check-shell.sh"),

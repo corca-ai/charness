@@ -29,8 +29,8 @@ def _git(repo: Path, *args: str) -> None:
 def _contract_sources(repo: Path) -> None:
     for relative, title in (
         ("AGENTS.md", "Alpha"),
-        ("docs/conventions/implementation-discipline.md", "Beta"),
-        ("docs/conventions/operating-contract.md", "Gamma"),
+        ("docs/implementation-discipline.md", "Beta"),
+        ("docs/operating-contract.md", "Gamma"),
     ):
         path = repo / relative
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -331,8 +331,8 @@ def test_proposal_apply_and_retention_review_preserve_retired_history(tmp_path: 
     payload = json.loads(path.read_text(encoding="utf-8"))
     assert {unit["unit_id"] for unit in payload["units"]} == {
         "AGENTS.md#a-new-unit",
-        "docs/conventions/implementation-discipline.md#beta",
-        "docs/conventions/operating-contract.md#gamma",
+        "docs/implementation-discipline.md#beta",
+        "docs/operating-contract.md#gamma",
     }
     assert payload["retired_units"][0]["unit_id"] == alpha
     assert payload["retired_units"][0]["successor_unit_ids"] == ["AGENTS.md#a-new-unit"]

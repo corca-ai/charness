@@ -7,7 +7,6 @@ from typing import Any
 
 from scripts.helper_provenance_lib import require_repo_local_helper
 from scripts.recent_lessons_lib import build_indexed_recent_lessons, write_lesson_selection_index
-from scripts.t_events_emit_lib import emit_retro_lesson_cites
 
 _PERSISTED_LINE_PATTERN = re.compile(r"^Persisted:.*$", re.MULTILINE)
 _GOAL_FIELD_PATTERN = re.compile(r"^Goal:[ \t]*(?P<value>[^\r\n]*)$")
@@ -200,14 +199,6 @@ def persist_retro_artifact(
         result["artifact_name_normalized"] = True
     if goal_identity is not None:
         result.update(goal_identity)
-
-    emit_summary = emit_retro_lesson_cites(
-        repo_root,
-        markdown_text=markdown_text,
-        citing_artifact_path=str(artifact_path.relative_to(repo_root)),
-    )
-    if emit_summary["cite_count"] or emit_summary["emitted_count"]:
-        result["t_events"] = emit_summary
 
     if summary_path is not None and artifact_path.resolve() != summary_path.resolve():
         digest = build_indexed_recent_lessons(repo_root=repo_root, output_dir=output_dir, summary_path=summary_path)

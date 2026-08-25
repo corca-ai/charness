@@ -8,8 +8,8 @@ from pathlib import Path
 
 UNIT_PATHS = (
     "AGENTS.md",
-    "docs/conventions/implementation-discipline.md",
-    "docs/conventions/operating-contract.md",
+    "docs/implementation-discipline.md",
+    "docs/operating-contract.md",
 )
 
 

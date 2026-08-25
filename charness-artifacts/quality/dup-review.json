@@ -5676,6 +5676,69 @@
       "note": "independent CLI-entrypoint argument and runtime setup blocks. Setup inspection and narrative tool recommendation commands need separate portable surfaces and output ownership; extraction would hide their command contracts.",
       "reviewed_at": "2026-08-25",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "1b7f2b3c90351e40",
+      "note": "Closeout, closeout-telemetry, and commit-advisory paths share a git-path-listing shape but answer different bounded questions and have different failure/ownership contracts. A shared helper would couple the advisory and local telemetry boundaries while saving only boilerplate subprocess lines.",
+      "reviewed_at": "2026-08-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "5126aef710a139f2",
+      "note": "Small Path/import preambles in independently executable source and exported scripts. The explicit local bootstrap is the portability boundary; extracting it would hide each command's dependency surface.",
+      "reviewed_at": "2026-08-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "b85db11b30dbe52e",
+      "note": "Unchanged shared module header between HITL artifact and release observer helpers. They remain separate portable owners with distinct output contracts; no behavior is duplicated beyond import setup.",
+      "reviewed_at": "2026-08-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "ba18e82711a3198a",
+      "note": "Unchanged direct-execution argument/bootstrap shape in two independent boundary checks. Their inputs and verdict owners differ; a shared wrapper would obscure the command contracts.",
+      "reviewed_at": "2026-08-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "d0c544d81bdaf72c",
+      "note": "Unchanged tiny return/typing idioms spread across independent readers and validators. The matching lines do not carry shared policy and are below a meaningful extraction boundary.",
+      "reviewed_at": "2026-08-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "d8d07ab95b73ab13",
+      "note": "Closeout advisory and repair-parity advisory retain parallel evidence collection while owning different warnings and proof boundaries. A generic renderer would hide the distinction for no material reduction.",
+      "reviewed_at": "2026-08-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "df63b1e33a104c6b",
+      "note": "Unchanged short artifact/quality identity reads shared by independent validators. The identity rules are intentionally local to each proof surface; extracting the idiom would add coupling.",
+      "reviewed_at": "2026-08-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "502adfbd08b7688a",
+      "note": "Historical/current documentation copies share a short normalized prose witness created by the flat-doc migration. The overlap is editorial structure, not duplicated executable policy; current docs are linted by the composite docs gate.",
+      "reviewed_at": "2026-08-25",
+      "surface": "doc"
+    },
+    {
+      "class": "intentional",
+      "id": "588f7b7c677aa4cc",
+      "note": "Flat documentation pages retain the same short heading/provenance shape by design. The repeated prose is the current-SOT metadata contract, not a candidate for a shared generated paragraph.",
+      "reviewed_at": "2026-08-25",
+      "surface": "doc"
     }
   ],
   "fixable_ceiling": 0,

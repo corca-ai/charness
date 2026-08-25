@@ -186,9 +186,6 @@ def test_publish_release_bumps_pushes_tags_and_creates_release(tmp_path: Path) -
     assert "## Post-Publish Proof" in artifact_text
     assert "Public release check: `gh release view v0.0.1`" in artifact_text
     assert "## Release Runtime" in artifact_text
-    assert "## Lifecycle Usage Capture" in artifact_text
-    assert "Lifecycle capture status: `no_adapter`." in artifact_text
-    assert "objective lifecycle capture is not human approval" in artifact_text
     assert "`quality_command`:" in artifact_text
     assert "`push_create_verify_release`:" in artifact_text
     assert "Run `demo update`." in artifact_text

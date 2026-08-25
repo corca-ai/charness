@@ -25,7 +25,7 @@ def _seed_repo(tmp_path: Path) -> Path:
     repo = tmp_path / "repo"
     (repo / "skills" / "shared" / "references").mkdir(parents=True)
     (repo / "skills" / "public" / "demo" / "references").mkdir(parents=True)
-    (repo / "docs" / "generated").mkdir(parents=True)
+    (repo / "docs").mkdir(parents=True)
     (repo / "skills" / "shared" / "references" / "clean.md").write_text(
         "Portable guidance with no coupling.\n", encoding="utf-8"
     )
@@ -94,7 +94,7 @@ def test_the_payload_names_the_policy_owner(tmp_path: Path) -> None:
     is coupled but not where provenance belongs sends the reader nowhere.
     """
     repo = _seed_repo(tmp_path)
-    (repo / "docs" / "generated" / "ref.md").write_text(
+    (repo / "docs" / "cli-reference.md").write_text(
         "See issues/123 for history.\n", encoding="utf-8"
     )
     result = run_script(SCRIPT, "--repo-root", str(repo))

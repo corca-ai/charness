@@ -230,8 +230,8 @@ def integration_schema_path(path: Path) -> Path | None:
     """Return the integration manifest schema owning this adapter, if any.
 
     `.agents/<name>-adapter.yaml` pairs with
-    `integrations/<name>/manifest.schema.json` (usage-episodes, t-events,
-    worktree). `.agents/cautilus-adapters/*.yaml` is excluded by the
+    `integrations/<name>/manifest.schema.json` (for example, worktree).
+    `.agents/cautilus-adapters/*.yaml` is excluded by the
     parent-dir guard; a repo without the schema file inherits nothing.
     """
     if path.parent.name != ".agents" or not path.name.endswith("-adapter.yaml"):

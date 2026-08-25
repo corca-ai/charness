@@ -54,7 +54,6 @@ def _patch_runtime_dependencies(module, monkeypatch, repo_root: Path, home_root:
         module, "maybe_reexec_refreshed_cli", lambda *_args, **_kwargs: {"status": "reexecuted", "checkout_cli": "checkout/charness"}
     )
     monkeypatch.setattr(module, "install_surface", lambda *_args, **_kwargs: {"host_next_steps": {}, "raw_install_trace": "verbose installer evidence"})
-    monkeypatch.setattr(module, "reconcile_usage_episodes_host_hooks", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(module, "build_doctor_payload", lambda **_kwargs: _doctor_payload())
     monkeypatch.setattr(module, "maybe_install_codex_host", lambda **_kwargs: {"status": "skipped"})
     monkeypatch.setattr(module, "write_install_state", lambda *_args, **_kwargs: None)

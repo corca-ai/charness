@@ -194,7 +194,7 @@ pickup-time rewrite is churn because the session's own work moves the state
 again. A stale `## Next Session` item discovered at pickup (already done, or
 now superseded by the live backlog) is carried in the conversation and folded
 into the single closeout write. The owning rule, in the charness source repo, is
-`<authoring-repo>/docs/conventions/operating-contract.md` (Session Discipline;
+`<authoring-repo>/docs/operating-contract.md` (Session Discipline;
 authoring-repo-internal, not vendored with the skill); `## Next Session`
 is a curation/sequencing memo, not a synced task queue.
 

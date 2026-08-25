@@ -466,4 +466,3 @@ def test_a_tree_with_no_public_skills_claims_no_staleness(monkeypatch, capsys, t
     # reader still tell an EMPTY scan from a clean one.
     assert payload["scanned_skills"] == 0
     assert payload["status"] == "ok"
-

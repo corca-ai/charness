@@ -36,7 +36,7 @@
     "bootstrap-seams.md": {
       "engagement": "on-demand",
       "rationale": "This reference covers optional adapter, policy, or runtime seams that setup may seed only when the repo explicitly uses those Charness features.",
-      "trigger": "repo uses optional Charness seams beyond default surfaces (worktree, T-events, usage episodes, bounded review delegation, skill routing, artifact policy, announcement workflows)."
+      "trigger": "repo uses optional Charness seams beyond default surfaces (worktree, bounded review delegation, skill routing, artifact policy, announcement workflows)."
     },
     "default-surfaces.md": {
       "engagement": "engage-always",

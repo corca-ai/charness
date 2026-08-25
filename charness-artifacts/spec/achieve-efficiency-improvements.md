@@ -94,13 +94,11 @@ silently decays.
    next work" runs, none of #1–#3 surfaced on their own — a human had to name
    them. Verified why: (a) autonomous next-work selection is the **handoff
    chunker**, which reasons over the **issue backlog + handoff doc only** (no
-   usage-episode input) — so it can only pick up waste already *filed* as an
-   issue; (b) **usage episodes** accumulate at
-   `.charness/usage-episodes/usage_episode.jsonl` <!-- reproduction-source --> (gitignored, per-repo,
-   adapter-resolvable) but capture a **product-success** signal
-   (`outcome_status: delivered`, `t_status`) for the #184 conversion metric —
-   they have **no field** for gate runtime, commit churn, validator-rejection
-   rounds, or slice size, and the work-selection loop never reads them; (c)
+   consumer-telemetry input) — so it can only pick up waste already *filed* as an
+   issue; (b) the retired consumer-telemetry experiment accumulated local
+   records <!-- reproduction-source --> but captured a product-success signal
+   rather than gate runtime, commit churn, validator-rejection rounds, or slice
+   size, and the work-selection loop never read them; (c)
    waste-detection therefore lives only in the **agent-authored retro**, with the
    #1–#3 blind spots above. Two compounding facts: cross-repo episodes are
    gitignored local (charness *structurally cannot* see ceal's), and even
@@ -113,6 +111,12 @@ silently decays.
 `describe_goal_closeout_shape`. The ceal pain occurred on a *lighter* closeout
 contract. The current charness contract is *heavier*, so naive propagation would
 make #1 **worse** unless A lands first. This is the central design constraint.
+
+> Status: historical design record (2026-08-25). The usage-episode/product-telemetry
+> implementation described in the original E slice is retired. Current durable
+> feedback surfaces are the RCA ledger, lesson ledger, and explicitly scoped
+> closeout records; this artifact is retained to explain prior decisions, not as
+> an active implementation contract.
 
 ## Current Slice / Sequence
 
@@ -132,7 +136,7 @@ Status (live):
   digest. 15 new tests green; targeted proof per cadence (bundle boundary owns the
   broad re-confirm). See *Implementation Notes (Slice 3 folds — E)*.
 - **Slice 4 = D** — **DONE** (this session). Floor-Addition Restraint checklist
-  added to `docs/conventions/implementation-discipline.md`; closeout-floor audit
+  added to `docs/implementation-discipline.md`; closeout-floor audit
   produced at `charness-artifacts/audit/closeout-floors.md` (complete live set:
   absorb 7 / merge 4 / keep 6 in surface A + keep-all in surface B; no floor
   removed). Load-bearing finding (narrowed after critique): the Problem-1 churn was
@@ -192,9 +196,9 @@ This spec is the canonical contract for all five directions and the canonical
   fires once per slice-intent boundary; further commits in the same intent
   re-fire only when the risk boundary moves.* Reuse #357's
   `meaningful-slice-cadence.md` definition; do not re-define it.
-- **E (close the loop on objective operational-waste telemetry) — PRIORITIZED
-  above D (operator call).** The self-improvement loop today *captures*
-  (episodes) and *surfaces* (retro digest) but never *observes* operational waste
+- **E (historical closeout telemetry design; superseded) — PRIORITIZED
+  above D (operator call).** The original self-improvement loop *captured*
+  (episodes) and *surfaced* (retro digest) but never *observed* operational waste
   objectively or feeds it into work selection (Problem 5). E closes that. Two
   parts:
   - **E1 — record objective waste signals.** Persist the operational-waste
@@ -232,7 +236,7 @@ This spec is the canonical contract for all five directions and the canonical
     this so the deferred trigger is not silently dead.
 - **D (restraint rule + closeout-floor audit) — now AFTER E.** Add a "before
   adding a new deterministic floor" restraint checklist to
-  `docs/conventions/implementation-discipline.md`: (1) does this raise
+  `docs/implementation-discipline.md`: (1) does this raise
   closeout-contract weight (Problem-1 cost)? (2) is advisory/prose enough? (3)
   can an existing describe-first preflight absorb it? Prefer advisory unless
   prose has a recorded recurrence count. Produce an **audit** of existing
@@ -268,16 +272,11 @@ This spec is the canonical contract for all five directions and the canonical
   threshold `N` (consecutive artifact-only commits / commits-per-intent) against
   the recent goal corpus so it does not false-fire on a legitimate multi-commit
   slice. Written back to the adapter and the B acceptance test.
-- **E stream shape — sibling vs episode-schema. RESOLVED (Slice 3): sibling.**
-  `closeout-telemetry.jsonl` is a sibling file in the already-gitignored
-  `.charness/usage-episodes/` tree, with its own `event_type:
-  "closeout_telemetry"` — NOT a `waste_signals` block on the usage-episode schema.
-  This keeps the #184 product-success consumers (and the episode schema) untouched
-  and lets the stream be **on by default** (the usage episode is opt-in via an
-  adapter because it carries a product metric; operational-waste counters are safe
-  to always accumulate locally — and must, or Problem 5 recurs). The miner filters
-  by `event_type`, so the two streams could even share a file safely; separate
-  files are cleaner.
+- **E stream shape — local operational ledger. RESOLVED (Slice 3).**
+  `closeout-telemetry/records.jsonl` is the local stream with its own
+  `event_type: "closeout_telemetry"`. It is not consumer-runtime telemetry and
+  does not share a retired episode schema. The stream is operational evidence,
+  not product-success proof, and the miner reads only this path.
 - **E `fix_after_fail_rounds` capture (Problem-1 analog) — still DEFERRED.** E1
   ships `gate_runtime` + `over_slice` + `slice_churn` (all reusing or cheaply
   derived from existing closeout signals). Counting validator-rejection rounds
@@ -677,7 +676,7 @@ compaction. To resume:
    touching their code. The sibling-vs-schema probe is resolved (sibling);
    `fix_after_fail_rounds` stays deferred.
 3. **Start at Slice 4 = D.** Add the "before adding a new deterministic floor"
-   restraint checklist to `docs/conventions/implementation-discipline.md`, and
+   restraint checklist to `docs/implementation-discipline.md`, and
    produce the closeout-floor audit at `charness-artifacts/audit/closeout-floors.md`
    (per-floor `absorb`/`merge`/`keep`; audit output only, no floor removed). Run a
    fresh bounded critique on the D diff (impl stop gate).

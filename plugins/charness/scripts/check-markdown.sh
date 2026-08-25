@@ -127,7 +127,7 @@ mapfile -t tracked_markdown_files <"$tracked_markdown_list"
 # with it. A path that the broad gate would not lint is not linted here either, so a scoped run
 # can never render a verdict the unscoped run would not — it renders FEWER, never different.
 # The commit-time layer passes the staged `.md` files; the broad gate and CI pass nothing and
-# lint everything. See docs/conventions/validator-timing-layers.md.
+# lint everything. See docs/validator-timing-layers.md.
 scoped_paths=("$@")
 markdown_files=()
 for path in "${tracked_markdown_files[@]}"; do

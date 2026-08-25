@@ -444,9 +444,6 @@ def test_the_commit_msg_carrier_reports_unparseable_yaml_as_an_engine_failure(
     assert "unclosed" in str(excinfo.value)
 
 
-# --- record_usage_feedback / prepare_packet / normalize_host_docs: CLI arms ----
-
-
 def test_the_critique_packet_runner_refuses_an_invalid_adapter_before_writing(
     tmp_path: Path
 ) -> None:
@@ -613,57 +610,6 @@ def test_the_retro_index_preview_emits_the_candidate_payload_without_writing(
     assert "candidates" in payload
     assert "status" not in payload
     assert not index_path.exists()
-
-
-def test_an_invalid_manifest_SCHEMA_is_refused_rather_than_crashing(tmp_path: Path) -> None:
-    """`SchemaError` is the one exception that escapes the adapter loader.
-
-    `load_validated_adapter` catches `OSError`/`ValueError`/`YAMLError`/`ValidationError`
-    itself and returns them as `adapter_error`, so the caller's handler was dead for
-    every exception it declared -- while `jsonschema.SchemaError`, raised when the repo's
-    own `manifest.schema.json` is not a valid JSON Schema, was in neither handler and
-    crashed the command with a traceback. It is a repo-configuration fault, which is
-    exactly what the `invalid_adapter` refusal is for.
-    """
-    repo = tmp_path / "repo"
-    (repo / ".agents").mkdir(parents=True)
-    (repo / ".agents" / "usage-episodes-adapter.yaml").write_text(
-        "version: 1\nenabled: true\n", encoding="utf-8"
-    )
-    schema_dir = repo / "integrations" / "usage-episodes"
-    schema_dir.mkdir(parents=True)
-    # Valid JSON, invalid JSON Schema: `type` must name a type, not an integer.
-    (schema_dir / "manifest.schema.json").write_text('{"type": 123}\n', encoding="utf-8")
-    (schema_dir / "episode.schema.json").write_text('{"type": "object"}\n', encoding="utf-8")
-
-    # `from scripts import ...`, not `load_script_module`: this module imports its
-    # siblings by bare name, which only resolves through the package's own path setup.
-    from scripts import record_usage_feedback
-
-    result = run_loaded_script_main(
-        "record_usage_feedback.py",
-        record_usage_feedback,
-        "--repo-root",
-        str(repo),
-        "--product-id",
-        "acme",
-        "--target-episode-id",
-        "acme-episode-001",
-        "--feedback-signal",
-        "accepted",
-        "--source-kind",
-        "operator",
-        "--evidence-kind",
-        "review",
-        "--evidence-ref",
-        "review-001",
-    )
-
-    payload = yaml.safe_load(result.stdout)
-    assert result.returncode == 2, f"out={result.stdout!r} err={result.stderr!r}"
-    assert payload["status"] == "invalid_adapter"
-    assert payload["executed"] is False
-    assert payload["errors"], "the refusal must carry the schema fault, not an empty list"
 
 
 def test_the_prose_pin_advisory_renders_its_findings_instead_of_crashing(

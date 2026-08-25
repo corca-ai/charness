@@ -1,5 +1,8 @@
 # Public Skill Validation Tiers
 
+> Status: current
+> Source of truth: this page and its linked executable surfaces
+
 This document fixes the deeper-validation policy for current `charness` public
 skills now that the standalone evaluator product boundary is wired into the
 repo, but before maintained evaluator scenarios are part of the normal local

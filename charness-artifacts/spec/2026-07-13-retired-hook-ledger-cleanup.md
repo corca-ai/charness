@@ -3,7 +3,9 @@ Date: 2026-07-13
 
 ## Problem
 
-v1.0.0 removes the `find-skills` runtime/configuration surface, but an already-installed pre-v1 `*:find_skills_routing` key can survive in `.charness/usage-episodes/host-hooks-state.json`. Settings become canonical while aggregate status remains red. <!-- reproduction-source -->
+v1.0.0 removes the `find-skills` runtime/configuration surface, but an
+already-installed pre-v1 hook-state key can survive in the local host-state
+ledger. Settings become canonical while aggregate status remains red. <!-- reproduction-source -->
 
 ## Capability Contract
 

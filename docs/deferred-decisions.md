@@ -1,5 +1,8 @@
 # Deferred Decisions
 
+> Status: current
+> Source of truth: this page and its linked executable surfaces
+
 This document is the canonical closure surface for the deferred product-boundary
 items that were previously listed in [`docs/handoff.md`](./handoff.md) `Discuss`.
 
@@ -206,57 +209,6 @@ the evidence is sufficient for the boundary at hand.
 - Why now: Only one adapter-resolved sibling ([hitl sync_review_artifact.py](../skills/public/hitl/scripts/sync_review_artifact.py)) was discovered, and it was closed in commit `0364886` by migrating to `write_current_pointer_text`. Adding taint analysis on a single sample is premature; the fixture matrix and false-positive surface are larger than the leak surface.
 - Impact surfaces: [scripts/check_current_pointer_writes.py](../scripts/check_current_pointer_writes.py), [scripts/current_pointer_writer_lib.py](../scripts/current_pointer_writer_lib.py), future skill writers that resolve their durable artifact path through an adapter dictionary.
 - Reopen trigger: When a second adapter-resolved current-pointer sibling that bypasses the string-literal scanner appears, or when more than one new skill adds a `latest.md` / `latest.json` writer through adapter-resolved paths without the helper.
-
-### D20. Usage-Episodes Host-Hook State Per-Checkout Scope
-
-- Question: Should `.charness/usage-episodes/host-hooks-state.json` be widened to detect side-by-side charness checkouts so `session-capture status` does not report "in sync" when a sibling checkout has also installed its own SessionStart hook?
-- Current choice: Defer. State stays per-checkout; two checkouts each install their own command-path entry and both fire on each host session. Reporting reads only the local state.
-- Why now: Two-checkout setups are rare and the spec's last-writer-wins semantics already permit duplicate `sessions/<id>/start.json` records. Adding cross-checkout discovery requires a machine-scoped registry that is out of scope for Slice B.
-- Impact surfaces: [scripts/host_hook_install_lib.py](../scripts/host_hook_install_lib.py), [scripts/reconcile_usage_episodes_host_hooks.py](../scripts/reconcile_usage_episodes_host_hooks.py), [charness-artifacts/spec/usage-episodes-h-lam-t-completion.md](../charness-artifacts/spec/usage-episodes-h-lam-t-completion.md)
-- Reopen trigger: When duplicate-recording on the same machine starts contaminating reporting, or when a maintainer reports confusion about which checkout installed an active hook.
-
-### D21. Stale Host-Hook Entries After Checkout Path Change
-
-- Question: How should charness recover the host-side SessionStart entry when the source checkout is moved to a new path so the recorded `command` string no longer matches any entry in host settings?
-- Current choice: Defer cleanup tooling. Uninstall silently no-ops when the recorded command does not match; the maintainer must hand-edit `~/.claude/settings.json` or `~/.codex/config.toml` to remove the orphan.
-- Why now: Slice B's success criteria are satisfied by the install/uninstall round-trip on a single canonical checkout path; orphan cleanup is a follow-up surface needing its own design.
-- Impact surfaces: [scripts/host_hook_install_lib.py](../scripts/host_hook_install_lib.py), [scripts/reconcile_usage_episodes_host_hooks.py](../scripts/reconcile_usage_episodes_host_hooks.py)
-- Reopen trigger: First report of an orphaned host hook after a checkout move, or when `session-capture status` starts reporting confusing drift caused by a stale path.
-
-### D22. Hook Script Depth Cap for Repo-Root Discovery
-
-- Question: Should [`scripts/usage_episode_session_start.py`](../scripts/usage_episode_session_start.py)'s `_discover_repo_root` add a hard depth cap on the parent-directory walk?
-- Current choice: Defer. The existing `seen`-set already prevents infinite loops via symlink cycles, and typical walks resolve in 2–3 parent levels.
-- Why now: No reported stalls on network mounts, and adding a constant adds friction without a forcing function.
-- Impact surfaces: [scripts/usage_episode_session_start.py](../scripts/usage_episode_session_start.py)
-- Reopen trigger: First report of a host session blocking on SessionStart due to slow parent traversal.
-
-### D23. Codex Hook Block Representation Flip And Boundary Fragility
-
-- Question: Should `install_codex_hook` / `uninstall_codex_hook` de-duplicate across the `codex-toml` and `codex-json` representations, and should the TOML block matcher tolerate hand edits between the `# charness:usage-episodes` marker and the `[[hooks.SessionStart]]` table header?
-- Current choice: Defer for usage-episodes. `resolve_codex_target` picks the representation at install time, and the TOML block matcher requires the marker line to be immediately followed (modulo blank lines) by the table header. A user who later creates `~/.codex/hooks.json` can still get a second usage-episodes hook installed there without removing the original TOML block; hand-edited markers silently break uninstall.
-- Session-routing exception: the contextual SessionStart hook removes retired
-  charness-owned TOML blocks when Codex target selection moves to `hooks.json`,
-  so `charness update` can converge the hook back to one user-level representation.
-- Why now: Slice B closeout enables capture on a single canonical Codex layer; cross-representation churn and hand-edit recovery are not on the current dogfood path.
-- Impact surfaces: [scripts/host_hook_install_lib.py](../scripts/host_hook_install_lib.py), [scripts/host_hook_codex_toml_lib.py](../scripts/host_hook_codex_toml_lib.py)
-- Reopen trigger: First report of an orphaned Codex hook block after a representation flip, or a hand-edited Codex TOML hook block where uninstall reports `not_installed` while the block is still on disk.
-
-### D24. Slice Closeout Emitter Best-Effort Posture
-
-- Question: Should [`scripts/run_slice_closeout.py`](../scripts/run_slice_closeout.py) treat `emit_usage_episode_for_slice_closeout` failure (`invalid_adapter`, `invalid_records_path`, `emit_failed`) as a soft warning instead of a slice-fatal `payload["status"] = "failed"`?
-- Current choice: Defer. Current behavior fails the slice on emitter error so a malformed adapter or full disk surfaces loudly. The maintainer accepts that trade-off on the current dogfood path.
-- Why now: SC5/SC6 needs an actual emit to land for verification; a best-effort posture before that signal exists would mask the very evidence the slice is trying to capture.
-- Impact surfaces: [scripts/run_slice_closeout.py](../scripts/run_slice_closeout.py), [scripts/slice_closeout_usage_episode.py](../scripts/slice_closeout_usage_episode.py)
-- Reopen trigger: First time a verified slice fails closeout solely because the local emitter could not append (e.g. full disk, locked JSONL, gitignored path missing); revisit whether emitter errors should warn instead of fail.
-
-### D25. Per-Host Install Exit Code
-
-- Question: Should `cmd_session_capture_install` exit non-zero when one host installs and the other reports a `HostHookError`?
-- Current choice: Defer. `reconcile_host_hooks` swallows per-host `HostHookError` into the JSON payload and the CLI returns 0 as long as the runner produced any payload. The operator must read the JSON to notice partial drift.
-- Why now: First-time install on the maintainer's box succeeded for both hosts; a partial-failure exit code is not on the critical path for SC5/SC6.
-- Impact surfaces: [scripts/host_hook_install_lib.py](../scripts/host_hook_install_lib.py), [`charness`](../charness) `cmd_session_capture_install`
-- Reopen trigger: First time install succeeds on one host and silently fails on the other and the operator misses it because exit code is 0.
 
 ### D26. Hook Command Python Interpreter Resolution
 
@@ -881,7 +833,7 @@ the evidence is sufficient for the boundary at hand.
 - Question: `<plugin-dir>/` is a recognised portable placeholder in
   [check_doc_links.py](../scripts/check_doc_links.py), and it has **zero usage** —
   it appears only in the placeholder list in
-  [authoring-preflight.md](./conventions/authoring-preflight.md), never in a skill.
+  [authoring-preflight.md](./authoring-preflight.md), never in a skill.
   #478 considered it for seven sites and rejected it. Should it be adopted, upgraded,
   or removed?
 - Current choice: **Defer — and the honest reason is that nobody has shown what it
@@ -1143,33 +1095,6 @@ reopen trigger fires.
   skill, at which point force-applying this floor becomes satisfiable and the omission
   becomes real; or a released light-classification close that should have been reviewed
   and was not. Both are in-repo observable, unlike D53's.
-
-### D56. Should the Claude plugin manifest declare the SessionStart hook?
-
-- Question: the SessionStart routing hook (which now also presents the lesson-selection
-  list) is installed at USER level by `charness init` / `charness update`. A consumer who
-  installs charness ONLY through the Claude plugin marketplace, never running the CLI, gets
-  no hook and therefore no lesson presentation seam at all. Declaring `hooks` in
-  [plugin.json](../plugins/charness/.claude-plugin/plugin.json) would reach that
-  population. Should it?
-- Current choice: **Defer.** For every CLI-installed user the plugin-declared hook and the
-  user-settings hook would BOTH fire: two SessionStart entries, two preview subprocesses,
-  two copies of the injected block. Nothing dedups them — `settings_file_scan` /
-  `hook_state_liveness` in
-  [reconcile_usage_episodes_host_hooks.py](../scripts/reconcile_usage_episodes_host_hooks.py)
-  only inspect `~/.claude/settings.json` and `~/.codex/*`, never a plugin-declared hook.
-- Why now: this slice wired the lesson loop through the existing user-level hook and must
-  not smuggle a second install channel in beside it.
-- Non-claims: this is NOT a claim that the marketplace population is small, or that they
-  have another path. They do not — for them the loop is unwired, and that is stated in
-  [host-packaging.md](./host-packaging.md) rather than left implied.
-- Impact surfaces: [plugin.json](../plugins/charness/.claude-plugin/plugin.json),
-  [host_hook_session_routing.py](../scripts/host_hook_session_routing.py),
-  [reconcile_usage_episodes_host_hooks.py](../scripts/reconcile_usage_episodes_host_hooks.py).
-- Reopen trigger: a mutual-exclusion design (plugin hook self-suppresses when the
-  user-settings entry is present, or the installer stops writing user settings when the
-  plugin declares it) plus real-host readback on both hosts; or a marketplace-only consumer
-  reporting the missing loop.
 
 ### D57. Should `build_lesson_selection_preview` take a prebuilt selection index?
 

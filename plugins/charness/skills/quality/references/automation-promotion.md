@@ -156,4 +156,4 @@ in ~1s, not after a ~4-min broad-pytest run.
   shave lines or displace overflow into `references/` to clear the bar.
 
 If you add a new commit-boundary structural check, record its timing verdict in
-the authoring-repo-internal `<authoring-repo>/docs/conventions/validator-timing-layers.md`.
+the authoring-repo-internal `<authoring-repo>/docs/validator-timing-layers.md`.

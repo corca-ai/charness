@@ -151,9 +151,9 @@ this artifact before saving. The spec is ready for implementation.
 - `AGENTS.md` was rewritten to 37 lines with 9 non-link, non-heading prose
   lines, so Acceptance Checks #1 and #5 are satisfied before full closeout.
 - Inline AGENTS policy moved into two convention files:
-  [docs/conventions/operating-contract.md](../../docs/conventions/operating-contract.md)
+  [docs/operating-contract.md](../../docs/operating-contract.md)
   and
-  [docs/conventions/implementation-discipline.md](../../docs/conventions/implementation-discipline.md).
+  [docs/implementation-discipline.md](../../docs/implementation-discipline.md).
 - Host-specific entry resolution used the deterministic `setup` case:
   [CLAUDE.md](../../CLAUDE.md) is now a symlink to [AGENTS.md](../../AGENTS.md).
 - The surface manifest now treats `CLAUDE.md` as a repo markdown and

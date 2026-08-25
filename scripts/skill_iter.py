@@ -8,8 +8,7 @@ Some callers also need to exclude machine-managed sibling directories such
 as `generated`.
 
 Centralizing the walk keeps the SKILL.md-gating contract consistent across
-`public_skill_validation_lib`, `skill_t_inventory_lib`,
-`validate_skill_t_inventory`, and `validate_packaging_install_surface`.
+`public_skill_validation_lib` and `validate_packaging_install_surface`.
 """
 
 from __future__ import annotations

@@ -80,13 +80,13 @@ def test_quality_skill_carries_explicit_skill_ergonomics_lens() -> None:
     assert "growing lint suppressions" in skill_quality
 
 
-def test_quality_skill_runs_usage_episode_validator_even_without_adapter() -> None:
+def test_quality_runner_has_no_retired_usage_episode_gates() -> None:
     run_quality = (ROOT / "scripts" / "run-quality.sh").read_text(encoding="utf-8")
 
     assert "Run applicable `gate_packets` as report-first evidence" in QUALITY_SKILL
     assert "id: read-only-quality" in CATALOG
-    assert "queue_selected \"validate-usage-episodes\" python3 scripts/validate_usage_episodes.py" in run_quality
-    assert "queue_selected \"report-usage-episodes\" python3 scripts/report_usage_episodes.py" in run_quality
+    assert "validate-usage-episodes" not in run_quality
+    assert "report-usage-episodes" not in run_quality
     assert "when `.agents/usage-episodes-adapter.yaml` exists" not in QUALITY_SKILL
 
 

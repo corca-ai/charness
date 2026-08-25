@@ -15,14 +15,11 @@ handoff:artifact:debug:read-only spill target -- handoff cites debug/ artifacts 
 setup:artifact:retro:seed-only -- setup seeds initial recent-lessons.md via seed_retro_memory.py; ongoing writes own to retro
 setup:adapter:retro:seed-only -- setup seeds .agents/retro-adapter.yaml via seed_retro_memory.py; runtime owns to retro
 setup:adapter:worktree:seed-only -- setup seeds .agents/worktree-adapter.yaml; runtime owns to worktree integration
-setup:adapter:t-events:seed-only -- setup seeds .agents/t-events-adapter.yaml via seed_t_events_adapter.py; runtime owns to t-events integration
-setup:adapter:usage-episodes:seed-only -- setup seeds .agents/usage-episodes-adapter.yaml via seed_usage_episodes_adapter.py; runtime owns to usage-episodes integration
 issue:artifact:gather:read-only cite -- issue resolve flow references gather artifacts as evidence sources
 release:artifact:critique:read-only proof -- release helper validates a tracked critique artifact path before rendering review proof in release/latest.md
 release:artifact:release-review:read-write claims boundary -- the release workflow owns the narrowly scoped, committed claims-review evidence that gates a prepared local release record before any publication side effect
 critique:artifact:retro:read-only cite -- code-critique reference cross-links charness-artifacts/retro/recent-lessons.md as the defect-class memory home
 critique:artifact:spec:read-only scan -- autonomous trigger scans spec artifacts only to identify the current pending critique target
-critique:artifact:skill-t-mechanism:read-only cite -- angle-selection lineup cites skill-t-mechanism/inventory as the Tier C anchor_invoked evidence sink
 critique:adapter:retro:boundary cite -- adapter-contract.md names .agents/retro-adapter.yaml as the seam where a future retro-prepare slot would live; ownership stays retro-side
 quality:artifact:cautilus:read-only cite -- cautilus-on-demand.md cites charness-artifacts/cautilus/latest.md as the behavior-proof artifact home so the planner-consult contract can name it
 achieve:artifact:goals:owns -- achieve owns charness-artifacts/goals/<date-slug>.md as the goal lifecycle artifact namespace; no other skill writes there

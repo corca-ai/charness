@@ -56,30 +56,6 @@ CLOSE_PLACEHOLDERS: frozenset[str] = frozenset({"repo", "number", "reason"})
 VIEW_PLACEHOLDERS: frozenset[str] = frozenset({"repo", "number", "json_fields"})
 
 
-def _capture_lifecycle(repo_root: Path, *, repo: str, number: int) -> dict[str, Any]:
-    """Best-effort shared usage capture after the issue state readback."""
-
-    helper_path = next(
-        (
-            parent / "scripts" / "lifecycle_usage_capture.py"
-            for parent in Path(__file__).resolve().parents
-            if (parent / "scripts" / "lifecycle_usage_capture.py").is_file()
-        ),
-        None,
-    )
-    if helper_path is None:
-        return {"status": "capture_error", "appended": False, "errors": ["lifecycle capture helper unavailable"]}
-    try:
-        capture = runpy.run_path(str(helper_path))["capture_lifecycle_outcome"]
-        return capture(
-            repo_root=repo_root,
-            lifecycle_kind="issue_close",
-            evidence_locator=f"{repo}#{number}",
-        )
-    except Exception as exc:  # telemetry must never undo a completed close
-        return {"status": "capture_error", "appended": False, "errors": [f"{exc.__class__.__name__}: {exc}"]}
-
-
 def _authorize_direct_close(
     *, repo: str, number: int, repo_root: Path, body: str, manual_target_declaration: str | None
 ) -> dict[str, Any]:
@@ -355,7 +331,6 @@ def close_with_comment(
     review_advisory = review_advisory + list(
         floor_report.get("resolution_critique", {}).get("review_advisory", []) or []
     )
-    lifecycle_capture = _capture_lifecycle(repo_root, repo=repo, number=number)
     return {
         "ok": True,
         "repo": repo,
@@ -368,5 +343,4 @@ def close_with_comment(
         "reason": reason,
         "closeout_authorization": authorization,
         "review_advisory": review_advisory,
-        "lifecycle_capture": lifecycle_capture,
     }

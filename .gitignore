@@ -28,8 +28,7 @@ plugins/*/.charness/
 # Keep every round-specific runtime ignored before boundary snapshots are taken.
 .charness/reviewer-round-*/
 .charness/dup-ratchet*
-.charness/t-events/
-.charness/usage-episodes/
+.charness/closeout-telemetry/
 .charness/standing-pytest/
 .charness/quality-failure-logs/
 integrations/locks/*.json

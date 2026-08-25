@@ -293,7 +293,7 @@ def test_run_quality_records_full_aggregate_runtime_status(
 ) -> None:
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
     log_path = _capture_run_quality_runtime_records(repo)
-    env["QUALITY_FAIL_LABEL"] = "check-markdown"
+    env["QUALITY_FAIL_LABEL"] = "check-docs"
 
     result = run_shell_script(repo / "scripts" / "run-quality.sh", "--full", cwd=repo, env=env)
 
@@ -370,7 +370,7 @@ def test_run_quality_preserves_gate_failure_when_aggregate_runtime_recording_fai
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
     _capture_run_quality_runtime_records(repo)
     env["QUALITY_RUNTIME_FAIL_AGGREGATE"] = "1"
-    env["QUALITY_FAIL_LABEL"] = "check-markdown"
+    env["QUALITY_FAIL_LABEL"] = "check-docs"
 
     result = run_shell_script(repo / "scripts" / "run-quality.sh", "--full", cwd=repo, env=env)
 

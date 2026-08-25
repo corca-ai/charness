@@ -1,13 +1,13 @@
-"""Install and uninstall charness usage-episodes SessionStart hooks.
+"""Shared host-hook installation primitives.
 
 State for what charness installed lives at
-`.charness/usage-episodes/host-hooks-state.json`. Reconciliation reads state
+`.charness/host-hooks/state.json`. Reconciliation reads state
 first; foreign hooks are identified by absence from state, not by absence of
-the marker comment. Codex `config.toml` entries carry an inline
-`# charness:usage-episodes` marker for human-visible identification only.
+the marker comment. Codex `config.toml` entries carry an inline marker for
+human-visible identification only.
 Claude `settings.json` and Codex `hooks.json` are strict JSON, so the marker
 pattern is not applied there — state-file matching is the sole identification
-path for those formats.
+path for those formats. Concrete hook intents live in sibling modules.
 """
 
 from __future__ import annotations
@@ -21,12 +21,9 @@ from typing import Any
 
 try:
     from host_hook_codex_toml_lib import (
-        CHARNESS_MARKER,
         find_charness_toml_block,
-        install_codex_toml_block,
         read_text_or_empty,
         toml_block_matcher,
-        uninstall_codex_toml_block,
     )
     from host_hook_entry_identity import (
         entries_match_command,
@@ -39,12 +36,9 @@ except ImportError:  # pragma: no cover - used when invoked as a module from els
 
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     from host_hook_codex_toml_lib import (  # type: ignore[no-redef]
-        CHARNESS_MARKER,
         find_charness_toml_block,
-        install_codex_toml_block,
         read_text_or_empty,
         toml_block_matcher,
-        uninstall_codex_toml_block,
     )
     from host_hook_entry_identity import (  # type: ignore[no-redef]
         entries_match_command,
@@ -53,12 +47,11 @@ except ImportError:  # pragma: no cover - used when invoked as a module from els
         matcher_covers,
     )
 
-__all__ = ["CHARNESS_MARKER"]
-
 SESSION_START_EVENT = "SessionStart"
-HOST_HOOKS_STATE_RELATIVE = Path(".charness/usage-episodes/host-hooks-state.json")
-HOOK_SCRIPT_RELATIVE = Path("scripts/usage_episode_session_start.py")
+HOST_HOOKS_STATE_RELATIVE = Path(".charness/host-hooks/state.json")
+HOOK_SCRIPT_RELATIVE = Path("scripts/host-hook.py")
 STATE_SCHEMA_VERSION = 1
+CHARNESS_MARKER = "charness:hook"
 
 
 class HostHookError(Exception):
@@ -261,81 +254,6 @@ def _uninstall_json_event(
     return {"settings_path": str(settings_path), "action": "removed", "entry_count": len(remaining)}
 
 
-def install_claude_hook(repo_root: Path, *, home: Path) -> dict[str, Any]:
-    settings_path = default_claude_settings_path(home)
-    command = build_command(repo_root, host="claude")
-    result = _install_json_event(settings_path, command=command)
-    if result["action"] == "installed":
-        _record_state_entry(
-            repo_root,
-            state_key="claude",
-            settings_path=settings_path,
-            kind="claude-json",
-            command=command,
-        )
-    result["host"] = "claude"
-    result["kind"] = "claude-json"
-    result["command"] = command
-    return result
-
-
-def uninstall_claude_hook(repo_root: Path, *, home: Path) -> dict[str, Any]:
-    state = read_state(repo_root)
-    entry = state.get("claude") if isinstance(state.get("claude"), dict) else None
-    command = entry.get("command") if isinstance(entry, dict) and isinstance(entry.get("command"), str) else build_command(repo_root, host="claude")
-    settings_path = Path(entry["settings_path"]) if isinstance(entry, dict) and isinstance(entry.get("settings_path"), str) else default_claude_settings_path(home)
-    result = _uninstall_json_event(settings_path, command=command)
-    if result["action"] in {"removed", "absent", "not_installed"}:
-        _clear_state_entry(repo_root, "claude")
-    result["host"] = "claude"
-    result["kind"] = "claude-json"
-    result["command"] = command
-    return result
-
-
-def install_codex_hook(repo_root: Path, *, home: Path) -> dict[str, Any]:
-    settings_path, kind = resolve_codex_target(home)
-    command = build_command(repo_root, host="codex")
-    if kind == "codex-json":
-        result = _install_json_event(settings_path, command=command)
-    else:
-        result = install_codex_toml_block(settings_path, command)
-    if result["action"] == "installed":
-        _record_state_entry(
-            repo_root,
-            state_key="codex",
-            settings_path=settings_path,
-            kind=kind,
-            command=command,
-        )
-    result["host"] = "codex"
-    result["kind"] = kind
-    result["command"] = command
-    return result
-
-
-def uninstall_codex_hook(repo_root: Path, *, home: Path) -> dict[str, Any]:
-    state = read_state(repo_root)
-    entry = state.get("codex") if isinstance(state.get("codex"), dict) else None
-    if isinstance(entry, dict):
-        settings_path = Path(entry["settings_path"])
-        kind = entry.get("kind", "codex-toml")
-        command = entry.get("command") or build_command(repo_root, host="codex")
-    else:
-        settings_path, kind = resolve_codex_target(home)
-        command = build_command(repo_root, host="codex")
-    if kind == "codex-json":
-        result = _uninstall_json_event(settings_path, command=command)
-    else:
-        result = uninstall_codex_toml_block(settings_path, command)
-    if result["action"] in {"removed", "absent", "not_installed"}:
-        _clear_state_entry(repo_root, "codex")
-    result["host"] = "codex"
-    result["kind"] = kind
-    result["command"] = command
-    return result
-
-
 def _intent_for(adapter: dict[str, Any], host: str, *, section: str = "host_hooks") -> str:
     raw = adapter.get(section)
     if not isinstance(raw, dict):
@@ -352,24 +270,8 @@ def reconcile_host_hooks(
     adapter: dict[str, Any],
     home: Path,
 ) -> dict[str, Any]:
-    actions: dict[str, Any] = {}
-    for host, installer, uninstaller in (
-        ("claude", install_claude_hook, uninstall_claude_hook),
-        ("codex", install_codex_hook, uninstall_codex_hook),
-    ):
-        intent = _intent_for(adapter, host)
-        actions[host] = {"intent": intent}
-        try:
-            if intent == "enabled":
-                actions[host]["result"] = installer(repo_root, home=home)
-            else:
-                actions[host]["result"] = uninstaller(repo_root, home=home)
-        except HostHookError as exc:
-            actions[host]["error"] = str(exc)
-    # Opt-in sibling hook intents (session routing, anchor edit guard, ...)
-    # reconcile in parallel via the registry table in host_hook_registry; a new
-    # intent is a table row there, not another copied import block. Lazy import
-    # keeps the sibling modules' dependency on this one acyclic.
+    # Only explicitly declared sibling intents are reconciled. There is no
+    # default telemetry hook hidden in this common layer.
     try:
         from host_hook_registry import reconcile_sibling_hooks
     except ImportError:  # pragma: no cover - module-from-elsewhere fallback
@@ -377,8 +279,7 @@ def reconcile_host_hooks(
 
         sys.path.insert(0, str(Path(__file__).resolve().parent))
         from host_hook_registry import reconcile_sibling_hooks  # type: ignore[no-redef]
-    actions.update(reconcile_sibling_hooks(repo_root, adapter=adapter, home=home))
-    return actions
+    return reconcile_sibling_hooks(repo_root, adapter=adapter, home=home)
 
 
 def detect_host_hook_actual(
@@ -467,7 +368,7 @@ def _hook_sync_status(
     drift_prefix: str = "",
     detect_kwargs: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
-    """Shared intent-vs-actual SessionStart-hook drift status (session capture
+    """Shared intent-vs-actual SessionStart-hook drift status (generic hooks
     and contextual session routing differ only in intent section, detect kwargs, and
     the drift noun/prefix)."""
     drift: list[str] = []
@@ -489,11 +390,6 @@ def _hook_sync_status(
             drift.append(f"{host}: {drift_prefix}intent={intent} but {detail} at {actual['settings_path']}")
         per_host[host] = {"intent": intent, "actual": actual, "in_sync": in_sync}
     return {"in_sync": not drift, "drift": drift, "hosts": per_host}
-
-
-def session_capture_status(repo_root: Path, *, adapter: dict[str, Any] | None, home: Path) -> dict[str, Any]:
-    intents = {host: _intent_for(adapter or {}, host) for host in ("claude", "codex")}
-    return _hook_sync_status(repo_root, intents=intents, home=home, noun="charness SessionStart hook")
 
 
 def session_routing_status(repo_root: Path, *, adapter: dict[str, Any] | None, home: Path) -> dict[str, Any]:

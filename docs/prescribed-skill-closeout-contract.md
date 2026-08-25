@@ -1,5 +1,8 @@
 # Prescribed Skill Closeout Contract
 
+> Status: current
+> Source of truth: this page and its linked executable surfaces
+
 This document is the implementation contract for the
 [self-substitution pattern fix](https://github.com/corca-ai/charness/issues/230)
 (#230). It owns the cross-cutting design that
@@ -492,5 +495,5 @@ self-test, all additive.
 - [release SKILL.md](../skills/public/release/SKILL.md) — release workflow contract: planner bootstrap, invariants, publish output.
 - [critique SKILL.md](../skills/public/critique/SKILL.md) — angle probes, counterweight pass, and bounded fresh-subagent rule.
 - [prescribed-path self-test (read-side counterpart)](../skills/shared/references/prescribed-path-self-test.md) — when a self-test counts as evidence for a later agent.
-- [implementation discipline](./conventions/implementation-discipline.md) — validation, change, repair, and generated-surface rules for maintenance.
-- [operating contract](./conventions/operating-contract.md) — commit, external side-effect, critique, and session conventions.
+- [implementation discipline](./implementation-discipline.md) — validation, change, repair, and generated-surface rules for maintenance.
+- [operating contract](./operating-contract.md) — commit, external side-effect, critique, and session conventions.

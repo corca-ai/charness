@@ -1,5 +1,8 @@
 # Workflow Routes
 
+> Status: current
+> Source of truth: this page and its linked executable surfaces
+
 This guide owns the route and procedure examples that would make the README too
 heavy as a first-touch surface.
 

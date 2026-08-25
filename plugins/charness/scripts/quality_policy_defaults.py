@@ -103,7 +103,7 @@ MUTATION_TESTING_REPORT_PATH_KEYS = frozenset(DEFAULT_MUTATION_TESTING["report_p
 # check_standing_doc_provenance.py a no-op so the portable default stays
 # stack-neutral (precedent: empty mutation_testing.commands). A consuming repo
 # opts in by listing its standing-rule docs; the provenance-placement policy
-# lives in docs/conventions/provenance-placement.md.
+# lives in docs/provenance-placement.md.
 DEFAULT_STANDING_DOC_PROVENANCE: dict[str, Any] = {
     "standing_docs": [],
     "tracking_allowlist": [],

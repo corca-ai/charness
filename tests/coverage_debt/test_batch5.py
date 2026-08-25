@@ -249,43 +249,6 @@ def test_the_bare_invocation_emits_the_derived_index_without_touching_the_tree(
 
 
 # ---------------------------------------------------------------------------
-# scripts/validate_skill_t_inventory.py -- the unreadable-inventory verdict
-# ---------------------------------------------------------------------------
-
-SKILL_T_VALIDATOR = load_script_module(
-    "validate_skill_t_inventory_batch5", ROOT / "scripts" / "validate_skill_t_inventory.py"
-)
-
-
-def test_a_corrupt_inventory_is_an_invalid_verdict_not_a_traceback(tmp_path: Path) -> None:
-    """A half-written inventory must fail through the report channel.
-
-    This validator runs inside a quality gate that parses its stdout. A
-    `json.JSONDecodeError` escaping to the top would exit 1 with a traceback on
-    stderr and NO payload, which reads to the gate as a crashed check rather than an
-    invalid artifact -- and the parse error naming the byte offset would be lost.
-    """
-    repo = tmp_path / "repo"
-    (repo / "skills" / "public").mkdir(parents=True)
-    inventory = repo / "inventory.json"
-    inventory.write_text('{"version": 1, "skills": [', encoding="utf-8")
-
-    result = run_loaded_script_main(
-        "validate_skill_t_inventory.py",
-        SKILL_T_VALIDATOR,
-        "--repo-root", str(repo),
-        "--inventory-path", str(inventory),
-    )
-
-    assert result.returncode == 1
-    payload = yaml.safe_load(result.stdout)
-    assert payload["valid"] is False
-    assert any("not valid JSON" in error for error in payload["errors"])
-    assert payload["inventory_path"] == str(inventory)
-    assert result.stderr == "", "the verdict must not leak onto the side channel"
-
-
-# ---------------------------------------------------------------------------
 # scripts/lesson_score_outcome_lib.py -- three refusals on the score vocabulary
 # ---------------------------------------------------------------------------
 
@@ -779,7 +742,7 @@ def test_a_clean_scan_reports_how_many_standing_docs_it_actually_read(tmp_path: 
 
     repo = _seed_repo(tmp_path, adapter_block=STANDARD_BLOCK)
     _write(
-        repo / "docs" / "conventions" / "operating-rules.md",
+        repo / "docs" / "operating-rules.md",
         ["# Operating Rules", "", "Sync the mirror before validators.", "Prefer deleting drift."],
     )
 

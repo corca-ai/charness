@@ -384,7 +384,7 @@ PARTIAL_EXIT=4
 # summary line, a scan that read zero documents, or an awiki exit code outside
 # its clean/findings pair -- and never when it observed a bad graph. An
 # unobserved orphan count is not zero, and this is the byte that says so.
-UNESTABLISHED_CAPABLE_LABELS="check-changed-line-mutation-coverage inventory-nose-clones docs-graph check-closeout-classification-parity check-export-self-sufficiency check-artifact-referents"
+UNESTABLISHED_CAPABLE_LABELS="check-changed-line-mutation-coverage inventory-nose-clones docs-graph check-docs check-closeout-classification-parity check-export-self-sufficiency check-artifact-referents"
 
 label_may_report_unestablished() {
   case " $UNESTABLISHED_CAPABLE_LABELS " in
@@ -935,8 +935,6 @@ fi
 queue_selected "validate-skills" python3 scripts/validate_skills.py --repo-root "$REPO_ROOT"
 queue_selected "validate-quality-reference-catalog" python3 scripts/validate_quality_reference_catalog.py --repo-root "$REPO_ROOT"
 queue_selected "validate-skill-ergonomics" python3 scripts/validate_skill_ergonomics.py --repo-root "$REPO_ROOT"
-queue_selected "validate-usage-episodes" python3 scripts/validate_usage_episodes.py --repo-root "$REPO_ROOT"
-queue_selected "report-usage-episodes" python3 scripts/report_usage_episodes.py --repo-root "$REPO_ROOT"
 queue_selected "quality-tool-fixtures" python3 scripts/check_quality_tool_fixtures.py --repo-root "$REPO_ROOT"
 # Dead-code advisory (vulture-backed): DEFAULT-OFF opt-in. Two full vulture passes
 # are slow and the findings need per-item triage, so it never runs in the default
@@ -1048,22 +1046,18 @@ queue_selected "check-export-safe-imports" python3 scripts/check_export_safe_imp
 queue_selected "check-export-self-sufficiency" python3 scripts/check_export_self_sufficiency.py --repo-root "$REPO_ROOT"
 queue_selected "check-plugin-import-smoke" python3 scripts/check_plugin_import_smoke.py --repo-root "$REPO_ROOT"
 queue_selected "check-command-docs" python3 scripts/check_command_docs.py --repo-root "$REPO_ROOT"
-queue_selected "check-doc-links" python3 scripts/check_doc_links.py --repo-root "$REPO_ROOT" --require-git-file-listing
-# Separate from `check-doc-links` because it asks a question that one cannot:
-# `check_doc_links.py` validates that each link RESOLVES, and stayed correctly
-# green while seven pages were unreachable from the rest of the docs. This lane
-# gates REACHABILITY (orphans/islands) via awiki. It gates on the connectivity
-# metrics rather than awiki's exit code, reports UNPROVEN rather than passing
-# whenever it could not observe the graph (see the UNESTABLISHED_CAPABLE_LABELS
-# note above for the full trigger list), and names what it did not judge on every
-# run. The measured split is in docs/docs-graph-checks.md.
-queue_selected "docs-graph" python3 scripts/check_docs_graph.py --repo-root "$REPO_ROOT"
-# Separate from `check-doc-links` because it judges from a different reader
-# position: `check_doc_links.py` validates links where they are AUTHORED, and this
-# one validates them where they are READ, after the exporter has moved the file
-# and flattened the skill-tier layout. A link can be correct in one and broken in
-# the other, which is why 12 of them shipped green (#479).
-queue_selected "check-plugin-doc-links" python3 scripts/check_plugin_doc_links.py --repo-root "$REPO_ROOT" --require-git-file-listing
+queue_selected "check-docs" ./scripts/check-docs.sh
+# Compatibility entry points remain available for focused diagnostics and older
+# automation. They are never part of the default battery, so the composite does
+# not run the same document population twice.
+if [[ -n "$RUN_QUALITY_LABELS" ]]; then
+  queue_selected "check-doc-links" python3 scripts/check_doc_links.py --repo-root "$REPO_ROOT" --require-git-file-listing
+  queue_selected "docs-graph" python3 scripts/check_docs_graph.py --repo-root "$REPO_ROOT"
+  queue_selected "check-plugin-doc-links" python3 scripts/check_plugin_doc_links.py --repo-root "$REPO_ROOT" --require-git-file-listing
+  queue_selected "check-markdown" ./scripts/check-markdown.sh
+  queue_selected "check-links-internal" ./scripts/check-links-internal.sh
+  queue_selected "check-links-external" ./scripts/check-links-external.sh
+fi
 # Resolves `<plugin-dir>/` against the generated package. Unlike `<repo-root>/`,
 # which means the reader's tree and is unverifiable from here, this placeholder
 # names a tree this repo builds -- so it can be checked, which is the whole
@@ -1079,7 +1073,6 @@ queue_selected "check-documented-subcommands" python3 scripts/check_documented_s
 queue_selected "check-spec-evidence-durability" python3 scripts/check_spec_evidence_durability.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "check-artifact-referents" python3 scripts/check_artifact_referents.py --repo-root "$REPO_ROOT"
 queue_selected "check-references-link-inventory" python3 scripts/check_references_link_inventory.py --repo-root "$REPO_ROOT" --require-git-file-listing
-queue_selected "check-markdown" ./scripts/check-markdown.sh
 
 # No barrier here: `flush_phase` is not fail-fast (every phase runs regardless of
 # an earlier failure), so a barrier between independent gates buys output grouping
@@ -1098,8 +1091,6 @@ if [[ "${CHARNESS_SUPPLY_CHAIN_ONLINE:-0}" == "1" ]]; then
   queue_selected "check-supply-chain-online" python3 scripts/check_supply_chain_online.py --repo-root "$REPO_ROOT" --triage-owner "repo-maintainers"
 fi
 queue_selected "check-shell" ./scripts/check-shell.sh
-queue_selected "check-links-internal" ./scripts/check-links-internal.sh
-queue_selected "check-links-external" ./scripts/check-links-external.sh
 shopt -s nullglob
 python_files=(
   scripts/*.py

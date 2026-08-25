@@ -418,7 +418,6 @@ def test_run_slice_closeout_main_runs_focused_coverage_after_plan(
         or False,
     )
     monkeypatch.setattr(closeout, "attach_gate_runtime_advisory", lambda payload: None)
-    monkeypatch.setattr(closeout, "emit_usage_episode_for_slice_closeout", lambda repo_root, status: {"status": "emitted"})
     monkeypatch.setattr(closeout, "_attach_closeout_telemetry", lambda repo_root, payload: None)
     monkeypatch.setattr(closeout, "_emit_payload", lambda payload, **kwargs: 0)
 
@@ -492,7 +491,6 @@ def test_run_slice_closeout_main_reuses_explicit_campaign_sha_for_both_producers
         or False,
     )
     monkeypatch.setattr(closeout, "attach_gate_runtime_advisory", lambda payload: None)
-    monkeypatch.setattr(closeout, "emit_usage_episode_for_slice_closeout", lambda repo_root, status: {"status": "emitted"})
     monkeypatch.setattr(closeout, "_attach_closeout_telemetry", lambda repo_root, payload: None)
     monkeypatch.setattr(closeout, "_emit_payload", lambda payload, **kwargs: 0)
 

@@ -1,7 +1,7 @@
 """Edit-time #N-anchor guard: adapter-gated PostToolUse hook + guard script.
 
 The firing mechanism is host-specific and adapter-declared
-(`skill_anchor_edit_guard` in the usage-episodes adapter, claude-only); the
+(`skill_anchor_edit_guard` in a host-hook adapter, claude-only); the
 scan stays the repo-owned single source. The guard is additive and fail-open:
 the commit-time validate_skill_ergonomics sweep stays the backstop, and a repo
 or machine without the adapter intent inherits no hook at all.

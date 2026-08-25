@@ -26,7 +26,17 @@ RETRO_LESSON_RE = re.compile(r"^charness-artifacts/retro/\d{4}-\d{2}-\d{2}-.*-se
 DEBUG_RCA_RE = re.compile(r"^charness-artifacts/debug/\d{4}-\d{2}-\d{2}-.*\.md$")
 GATE_SCRIPT_RE = re.compile(r"^scripts/(check|validate)_[A-Za-z0-9_]+\.py$")
 QUALITY_RUNNER_PATH = "scripts/run-quality.sh"
-CONVENTION_DOC_PREFIX = "docs/conventions/"
+CONVENTION_DOC_PATHS = frozenset(
+    {
+        "docs/operating-contract.md",
+        "docs/implementation-discipline.md",
+        "docs/authoring-preflight.md",
+        "docs/parallel-execution.md",
+        "docs/validator-timing-layers.md",
+        "docs/surface-driven-adapter-triggers.md",
+        "docs/provenance-placement.md",
+    }
+)
 SKILL_FILE_RE = re.compile(r"^skills/public/[^/]+/(SKILL\.md|references/.+)$")
 DEFERRED_DECISIONS_PATH = "docs/deferred-decisions.md"
 ISSUE_CLOSE_RE = re.compile(r"\b(?:close[sd]?|fix(?:e[sd])?)\s+#\d+\b", re.IGNORECASE)
@@ -170,7 +180,7 @@ DIFF_RULES = (
         "confidence": "medium",
         "diff_kind": None,
         "statuses": None,
-        "predicate": lambda p: p.startswith(CONVENTION_DOC_PREFIX),
+        "predicate": lambda p: p in CONVENTION_DOC_PATHS,
     },
     {
         "rule_id": "skill-or-reference-modified",

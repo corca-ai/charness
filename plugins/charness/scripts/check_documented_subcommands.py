@@ -153,7 +153,7 @@ INVOCATION_RE = re.compile(
 # Deliberately wider than the names this CLI actually declares (all lowercase and
 # hyphenated). Narrowing it to that shape routes the two most likely REAL drift
 # forms into the skipped bucket instead of reporting them: `charness
-# session_capture status`, written from the code identifier rather than the
+# a retired command`, written from the code identifier rather than the
 # hyphenated command, and `charness Doctor`. Both are single tokens argparse
 # rejects, so both are this gate's to report -- a skip bucket that swallows the
 # likeliest defect is a gate that passes on it.

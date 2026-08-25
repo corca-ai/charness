@@ -1,5 +1,7 @@
 # Spec: Issue #109 — Reusable top-level spec authoring discipline
 
+Status: historical design record; superseded by the current `spec` and `narrative` skills.
+
 Source: https://github.com/corca-ai/charness/issues/109
 
 이 spec은 이슈 #109의 **design extraction 패스**다. 이슈 본문이 명시적으로
@@ -307,6 +309,6 @@ implementation 패스는 본 spec이 정의한 Evidence Required 게이트가 �
 - [skills/public/spec/SKILL.md](../../skills/public/spec/SKILL.md)
 - [skills/public/spec/references/acceptance-checks.md](../../skills/public/spec/references/acceptance-checks.md)
 - [skills/public/spec/references/executable-spec-cost.md](../../skills/public/spec/references/executable-spec-cost.md)
-- [skills/public/spec/references/contract-modes.md](../../skills/public/spec/references/contract-modes.md)
-- [skills/support/specdown/SKILL.md](../../skills/support/specdown/SKILL.md)
-- [skills/public/find-skills/references/support-consumption.md](../../skills/public/find-skills/references/support-consumption.md) (issue #108 closeout)
+- [skills/public/spec/SKILL.md](../../skills/public/spec/SKILL.md) (current contract owner; historical contract-modes path retired)
+- [skills/public/spec/SKILL.md](../../skills/public/spec/SKILL.md) (historical specdown support path retired)
+- [AGENTS.md](../../AGENTS.md) (current routing contract; historical find-skills path retired)

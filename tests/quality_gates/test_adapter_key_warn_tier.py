@@ -290,8 +290,8 @@ def test_the_warn_scope_covers_shipped_examples() -> None:
     public_examples = {path for path in scope if path.startswith("skills/public/")}
     integration_examples = {path for path in scope if path.startswith("integrations/")}
     assert len(public_examples) == 16, sorted(public_examples)
-    assert len(integration_examples) == 3, sorted(integration_examples)
-    assert len(scope) == 37, f"the measured warn population changed: {len(scope)}"
+    assert len(integration_examples) == 1, sorted(integration_examples)
+    assert len(scope) == 33, f"the measured warn population changed: {len(scope)}"
     # And the gate's own narrower validation scope must still be a strict subset, so this
     # widening never silently pulls a template into the REFUSING checks.
     assert {str(path.relative_to(ROOT)) for path in iter_adapter_yaml(ROOT)} < scope

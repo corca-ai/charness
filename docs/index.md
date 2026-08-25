@@ -5,13 +5,14 @@
 > Last verified: 2026-08-25
 
 This is the canonical entry point for Charness's flat documentation wiki. Each
-page owns one question. New evergreen pages are flat under `docs/`; nested
-directories are legacy or generated surfaces and are not moved implicitly.
-Reachability is checked by `check_docs_graph.py`; link resolution is checked by
-`check_doc_links.py`; neither alone proves factual freshness.
+page owns one question and records the current state. History belongs under
+`charness-artifacts/`. The single docs receipt is
+[`check-docs.sh`](../scripts/check-docs.sh); its component checks are retained
+for diagnosis, and no one of them alone proves factual freshness.
 
 ## Start Here
 
+- [Documentation principles](./documentation-principles.md) — current-state and authoring contract.
 - [Design north star](./design-north-star.md) — governing design standard.
 - [Harness composition](./harness-composition.md) — boundary map.
 - [Workflow routes](./workflow-routes.md) — intent-to-skill routing.
@@ -21,13 +22,13 @@ Reachability is checked by `check_docs_graph.py`; link resolution is checked by
 
 ## Operating Contract
 
-- [Operating contract](./conventions/operating-contract.md) — irreversible-boundary rules.
-- [Implementation discipline](./conventions/implementation-discipline.md) — mutate/sync/verify order.
-- [Parallel execution](./conventions/parallel-execution.md) — fan-out proof floor.
-- [Authoring preflight](./conventions/authoring-preflight.md) — pre-edit constraints.
-- [Validator timing layers](./conventions/validator-timing-layers.md) — gate placement.
-- [Surface-driven adapter triggers](./conventions/surface-driven-adapter-triggers.md) — ownership routing.
-- [Provenance placement](./conventions/provenance-placement.md) — rule/history separation.
+- [Operating contract](./operating-contract.md) — irreversible-boundary rules.
+- [Implementation discipline](./implementation-discipline.md) — mutate/sync/verify order.
+- [Parallel execution](./parallel-execution.md) — fan-out proof floor.
+- [Authoring preflight](./authoring-preflight.md) — pre-edit constraints.
+- [Validator timing layers](./validator-timing-layers.md) — gate placement.
+- [Surface-driven adapter triggers](./surface-driven-adapter-triggers.md) — ownership routing.
+- [Provenance placement](./provenance-placement.md) — rule/history separation.
 - [Worktree prepare](./worktree-prepare.md) — isolated mutation paths.
 
 ## Architecture And Runtime
@@ -58,8 +59,7 @@ Reachability is checked by `check_docs_graph.py`; link resolution is checked by
 
 - [Operator acceptance](./operator-acceptance.md) — takeover checks.
 - [Progressive operator path](./operator-progressive-path.md) — capability horizons.
-- [Product success metrics](./product-success-metrics.md) — success baseline.
-- [CLI reference (generated)](./generated/cli-reference.md) — producer-owned command output.
+- [CLI reference (generated)](./cli-reference.md) — producer-owned command output.
 
 ## Living Records
 
@@ -78,5 +78,5 @@ move their durable rationale to `charness-artifacts/` and leave a pointer here.
 ## Compatibility And Status
 
 The [docs/README.md](./README.md) file is a compatibility pointer, not a second index. `handoff.md`
-is live session state. `generated/` is producer-owned output. Historical
-evidence and superseded plans belong under `charness-artifacts/`.
+is live session state. Historical evidence and superseded plans belong under
+`charness-artifacts/`.

@@ -3,8 +3,10 @@
 Source: https://github.com/corca-ai/charness/issues/184 (north-star + first
 instrument), https://github.com/corca-ai/charness/issues/185 (improvement #1)
 
-Baseline doc: [docs/product-success-metrics.md](../../docs/product-success-metrics.md)
-("North-Star And First Instrumented Objective")
+Baseline: the RCA ledger and its schema are the source of truth for this
+engineering-health signal. The former product-success metrics page was
+retired with the consumer-telemetry experiment; this ledger does not depend on
+that removed surface.
 
 ## Problem
 
@@ -47,11 +49,9 @@ surfaces.
    measurable). First *instrumented* objective = RCA-to-learning conversion rate
    (an engineering-health leading indicator), first instrument = this ledger;
    target policy = baseline-first (no guessed number now). (from #184)
-2. **The ledger is independent of the usage-episodes adapter.** usage-episodes
-   captures consumer-repo runtime use and is privacy-gated and disabled by
-   design; this ledger is Charness self-development dogfood with no consumer-PII
-   concern, so it is always-on for Charness's own repo and is NOT gated by, or
-   coupled to, `.agents/usage-episodes-adapter.yaml`.
+2. **The ledger is independent of consumer runtime capture.** The retired
+   consumer-telemetry experiment is not a prerequisite, adapter, or gate for
+   this Charness self-development ledger.
 3. Canonical ledger path: `charness-artifacts/metrics/rca-ledger.jsonl`,
    committed as durable repo state (per artifact policy), append-only, one JSON
    object per line.
@@ -90,8 +90,8 @@ surfaces.
    self-reported, not gate-verified" qualifier. This stops anyone quoting a
    seed-only or fake-zero number as "the metric".
 6. Closed enums are owned by the schema; docs summarize them and must not extend
-   them inline (mirrors usage-episode enum discipline).
-7. **Classification rubric** (lives in `docs/product-success-metrics.md` so the
+   them inline (mirrors the ledger's typed-enum discipline).
+7. **Classification rubric** (lives in this spec so the
    number is reproducible across recorders): `converted=true` requires a named
    durable artifact that prevents *this class* recurring, and the quality bar
    applies to EVERY `durable_kind`, not just `retro_lesson` — each converted
@@ -134,13 +134,10 @@ surfaces.
   baseline window matured (26 live events, 2026-05-24 → 06-11, 76.9%); the
   maintainer confirmed **floor ≥70% rolling 28-day seed-excluded (judged at
   n≥10) + zero falsified conversions** at the baseline review. Decision record:
-  `docs/product-success-metrics.md` (Decisions 2026-06-13) and issue #184.
-- Consumer-repo scope (depends on usage-episode capture; separate deferred
-  decision, do not couple here). **Revisit trigger**: the 2-4 week baseline
-  review. No hard kill-date is encoded now because there is no committed
-  external-audience roadmap to anchor one; if the baseline review passes with no
-  consumer-scope decision, reopen the question then rather than letting it drift
-  silently.
+   this spec (decision recorded 2026-06-13) and issue #184.
+- Consumer-repo scope is out of scope. There is no runtime-capture adapter or
+  consumer denominator to reconcile; reopen only through a new, separately
+  approved spec if that product boundary returns.
 - Automation that feeds the aggregated rate into the weekly/monthly review
   loops described in the baseline doc.
 - **Independent denominator reconciliation** (deferred to the baseline review):
@@ -168,15 +165,9 @@ surfaces.
 
 ## Deliberately Not Doing
 
-- Reusing the usage-episodes adapter/manifest/host-hook machinery. It solves a
-  different problem (consumer runtime capture under privacy gating). Coupling
-  this self-dev metric to a disabled, gated capture surface would either block
-  the metric behind an unrelated opt-in or leak the two concerns into each
-  other. Kept independent on purpose. **This forbids coupling to the adapter and
-  its state/session machinery — it does NOT forbid reusing the small
-  jsonschema-validate-before-write and portable-path utilities from
-  `slice_closeout_usage_episode.py`.** Reuse those helpers; do not reinvent
-  validation or rebuild the adapter.
+- Reintroducing the retired consumer-runtime capture adapter or its host-hook
+  state machinery. It solved a different problem and is no longer part of the
+  current Charness architecture; keep the RCA ledger self-contained.
 
 ## Constraints
 
@@ -200,14 +191,9 @@ surfaces.
 4. The committed ledger is seeded with real recent events of BOTH outcomes —
    converted and unconverted — each marked `seed=true`, so the day-one number is
    honest rather than survivorship-biased toward 100%.
-5. Recording and aggregation work regardless of usage-episodes adapter state
-   (proves independence). Impl note: the adapter is `enabled` in this repo as of
-   this slice (maintainers opted into local capture after the 2026-05-22 quality
-   snapshot that read `disabled`), so independence is proven structurally — the
-   RCA scripts reference no adapter/state/session machinery — which is a stronger
-   proof than the spec's original "works while disabled" framing.
-6. The classification rubric (Fixed Decision 7) is written into
-   `docs/product-success-metrics.md`, with the quality bar applying to every
+5. Recording and aggregation work without consumer-runtime adapter state.
+6. The classification rubric (Fixed Decision 7) is written into this spec, with
+   the quality bar applying to every
    `durable_kind` and the `converted=false` tie-break default.
 7. The aggregator never emits a misreadable number: it emits `n/a` (not `0%`)
    for an empty seed-excluded window, refuses a non-seed baseline rate when no
@@ -234,12 +220,9 @@ surfaces.
   a synthetic seed-only fixture, not the committed ledger, so the test no longer
   regresses once live (non-seed) events accrue; the committed-ledger test asserts
   only the seed subset. The first live event landed in this slice (see below).
-- AC5 -> the AC3 round-trip test runs green regardless of usage-episodes adapter
-  state, and the RCA scripts contain no reference to the adapter file, its
-  emitter, or its state/session storage (structural independence). The adapter is
-  currently `enabled` in this repo, so the test proves independence under the
-  stronger enabled state, not only the disabled default the spec assumed.
-- AC6 -> `docs/product-success-metrics.md` contains the classification rubric
+- AC5 -> the AC3 round-trip test runs green without consumer-runtime adapter
+  state, and the RCA scripts contain no reference to a consumer capture surface.
+- AC6 -> this spec contains the classification rubric
   text matching Fixed Decision 7 (all-kinds quality bar + tie-break default).
 - AC7 -> running `aggregate_rca_ledger.py` against the seed-only committed ledger
   prints `n/a` for the seed-excluded window and exits without printing a baseline
@@ -266,7 +249,7 @@ Bounded fresh-eye subagent review completed; findings incorporated above.
   adapter coupling, not on reusing the jsonschema/portable-path helpers.
 - F6 (one-directional invariant): schema now rejects both invariant directions.
 
-Accepted as over-worry: reusing usage-episode utility helpers is good, not the
+Accepted as over-worry: reusing ledger utility helpers is good, not the
 forbidden coupling; recent-lessons traps (length budgets, gate scoping,
 auto-close keyword) are already addressed.
 
@@ -380,8 +363,8 @@ baseline-first.
 ## Canonical Artifact
 
 This file (`charness-artifacts/spec/rca-conversion-ledger.md`) is canonical
-during implementation. The metric definition of record stays in
-`docs/product-success-metrics.md`.
+during implementation. The metric definition of record stays in this file;
+`docs/` contains only current operator-facing contracts.
 
 ## First Implementation Slice
 
@@ -397,7 +380,7 @@ during implementation. The metric definition of record stays in
    unconverted ones (e.g. a bug that recurred, or a weak-proof finding never
    turned into a gate) so the day-one number is not survivorship-biased.
 5. Write the classification rubric (all-kinds quality bar + tie-break default)
-   into `docs/product-success-metrics.md`.
+   into this spec.
 6. Add unit tests for AC1-AC8.
 
 ## Second Implementation Slice (Auto-Append Wiring) — Landed
@@ -418,7 +401,7 @@ Landed:
 
 1. `skills/shared/references/rca-ledger-append.md` — one portable, presence-gated
    append contract that defers all judgment calls to the
-   `docs/product-success-metrics.md` rubric and the schema (no enum/rubric
+   rubric in this spec and the schema (no enum/rubric
    restatement). Per-source mapping, one-event-per-fix-unit rule, tie-break
    default, and the `--seed` prohibition live here.
 2. A single closeout bullet + References entry in each of the three public
@@ -442,8 +425,8 @@ the baseline review.
 
 Trigger: the baseline window matured (2026-05-24 → 06-11, 26 live events,
 76.9%), satisfying the 2-4 week baseline-first condition. The maintainer
-confirmed the target shape at the 2026-06-13 review (recorded in
-`docs/product-success-metrics.md`, Decisions 2026-06-13, and issue #184).
+confirmed the target shape at the 2026-06-13 review (recorded here and in
+issue #184).
 
 Landed:
 
@@ -475,13 +458,12 @@ Landed:
    `--ref`); the upgrade identity additionally carries the redesign `ref`, so
    it can be appended alongside the original event's identity triple and a
    later redesign with a new ref is never dropped as a duplicate. Judgment
-   calls stay owned by the rubric in `docs/product-success-metrics.md`,
+   calls stay owned by the rubric in this spec,
    including the anti-laundering rule: an actual recurrence is recorded as a
    plain event first; the upgrade never substitutes for it.
 
 The target stays advisory: it is reported by the aggregator and reviewed in the
 weekly loop, never evaluated by `validate_rca_ledger.py` or any blocking gate
 (probe-question posture, unchanged). Still deferred: independent denominator
-reconciliation (the rate is self-reported until then) and the consumer-repo
-scope question, which the baseline review re-confirms as decoupled — reopen it
-with the usage-episode capture decision, not here.
+reconciliation (the rate is self-reported until then). Consumer-repo capture is
+retired and is not a dependency of this ledger.

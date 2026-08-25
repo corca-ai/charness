@@ -27,7 +27,7 @@ SYSTEM_IMPROVING_PREFIXES = (
     "skills/",
     "evals/",
     "scripts/",
-    "docs/conventions/",
+    "docs/",
     ".agents/",
     ".githooks/",
     "plugins/",
@@ -164,10 +164,10 @@ def _work_paths(repo_root: Path, override: list[str] | None) -> tuple[list[str],
 def _classify_work_class(paths: list[str]) -> str:
     if not paths:
         return "unknown"
-    if any(path.startswith(SYSTEM_IMPROVING_PREFIXES) for path in paths):
-        return "system-improving"
     if all(path.startswith("docs/") for path in paths):
         return "docs"
+    if any(path.startswith(SYSTEM_IMPROVING_PREFIXES) for path in paths):
+        return "system-improving"
     return "ordinary"
 
 

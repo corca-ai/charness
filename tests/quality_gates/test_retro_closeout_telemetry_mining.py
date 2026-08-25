@@ -102,7 +102,7 @@ def test_malformed_and_foreign_lines_ignored() -> None:
     lines = [
         "not json",
         "",
-        json.dumps({"event_type": "usage_episode", "outcome_status": "delivered"}),
+        json.dumps({"event_type": "other_record", "outcome_status": "delivered"}),
         _gate_record("pytest", 200.0),
         _gate_record("pytest", 210.0),
     ]
@@ -167,7 +167,7 @@ def test_detail_read_lines_unreadable_stream_is_typed(monkeypatch, tmp_path: Pat
 
 
 def test_cli_over_seeded_stream(tmp_path: Path) -> None:
-    stream = tmp_path / ".charness" / "usage-episodes" / "closeout_telemetry.jsonl"
+    stream = tmp_path / ".charness" / "closeout-telemetry" / "records.jsonl"
     stream.parent.mkdir(parents=True, exist_ok=True)
     stream.write_text("\n".join(_gate_record("pytest -q", 200.0) for _ in range(3)) + "\n", encoding="utf-8")
     completed = run_script(str(MINER_PATH), "--repo-root", str(tmp_path))
@@ -176,18 +176,18 @@ def test_cli_over_seeded_stream(tmp_path: Path) -> None:
     gate = next(f for f in result["findings"] if f["kind"] == "gate_runtime")
     assert gate["disposition"] == "file-issue"
     assert gate["marker"] == "recurs:"
-    assert result["stream_path"].endswith("closeout_telemetry.jsonl")
+    assert result["stream_path"].endswith("records.jsonl")
     assert "detail" not in result
 
 
 def test_detail_cli_audits_population_and_summarizes_entries(tmp_path: Path) -> None:
-    stream = tmp_path / ".charness" / "usage-episodes" / "closeout_telemetry.jsonl"
+    stream = tmp_path / ".charness" / "closeout-telemetry" / "records.jsonl"
     stream.parent.mkdir(parents=True, exist_ok=True)
     lines = [
         "",
         "not json",
         json.dumps(["not", "a", "record"]),
-        json.dumps({"event_type": "usage_episode"}),
+        json.dumps({"event_type": "other_record"}),
         json.dumps({"event_type": "closeout_telemetry", "schema_version": 2}),
         _detail_gate_record("completed", "2026-06-13T01:00:00Z", "pytest -q", 200.0),
         _detail_gate_record("failed", "2026-06-13T02:00:00Z", "pytest -q", 220.0),
@@ -240,7 +240,7 @@ def test_detail_missing_stream_is_not_an_empty_clean_result(tmp_path: Path) -> N
 
 
 def test_detail_recur_min_uses_only_retained_schema_records(tmp_path: Path) -> None:
-    stream = tmp_path / ".charness" / "usage-episodes" / "closeout_telemetry.jsonl"
+    stream = tmp_path / ".charness" / "closeout-telemetry" / "records.jsonl"
     stream.parent.mkdir(parents=True, exist_ok=True)
     unsupported = json.loads(_detail_gate_record("completed", "2026-06-13T00:00:00Z", "pytest -q", 200.0))
     unsupported["schema_version"] = 2

@@ -1,5 +1,8 @@
 # Narrative And Announcement Boundary
 
+> Status: current
+> Source of truth: this page and its linked executable surfaces
+
 ## Problem
 
 `narrative` and `announcement` were drifting into overlapping territory.

@@ -153,7 +153,7 @@ def test_is_nontrivial_token_requires_path_separator(lib):
     assert not lib.is_nontrivial_token("")
     assert lib.is_nontrivial_token("foo/bar")
     assert lib.is_nontrivial_token("integrations/tools/")
-    assert lib.is_nontrivial_token("docs/conventions/implementation-discipline.md")
+    assert lib.is_nontrivial_token("docs/implementation-discipline.md")
 
 
 def test_parser_cli_emits_valid_json_with_expected_shape(tmp_path):
@@ -653,7 +653,7 @@ def test_a_bare_token_uses_the_root_base_on_both_sources(tmp_path: Path, lib) ->
 
     Issue-derived entries normalize with no artifact dir. When bare tokens also
     tried the artifact base, a handoff citation of `conventions/x.md` became
-    `docs/conventions/x.md` while the issue side stayed `conventions/x.md`, and the
+    `docs/x.md` while the issue side stayed `conventions/x.md`, and the
     merger intersects boundary tokens as EXACT strings — so the two never met.
     """
     repo = tmp_path / "repo"

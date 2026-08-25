@@ -8,13 +8,11 @@ state-tracked hooks whose embedded script path no longer exists.
 from __future__ import annotations
 
 import json
-import subprocess
 import sys
 from pathlib import Path
 
 import host_hook_install_lib as lib
 import host_hook_registry as registry
-import yaml
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -47,7 +45,7 @@ def test_reconcile_host_hooks_payload_keys_match_pre_registry_shape(tmp_path: Pa
     repo = _fake_repo(tmp_path)
     home = _fake_home(tmp_path)
     actions = lib.reconcile_host_hooks(repo, adapter={}, home=home)
-    assert list(actions) == ["claude", "codex", "session_routing", "skill_anchor_edit_guard"]
+    assert list(actions) == ["session_routing", "skill_anchor_edit_guard"]
 
 
 def test_fourth_intent_is_a_table_row(tmp_path: Path) -> None:
@@ -102,7 +100,7 @@ def test_import_module_fallback_inserts_scripts_dir(monkeypatch) -> None:
 
 def test_liveness_flags_missing_script(tmp_path: Path) -> None:
     repo = _fake_repo(tmp_path)
-    missing = repo / "scripts" / "usage_episode_session_start.py"
+    missing = repo / "scripts" / "session_start_routing.py"
     _seed_state(
         repo,
         {
@@ -122,7 +120,7 @@ def test_liveness_flags_missing_script(tmp_path: Path) -> None:
 
 def test_liveness_passes_existing_script_and_skips_non_hook_keys(tmp_path: Path) -> None:
     repo = _fake_repo(tmp_path)
-    script = repo / "scripts" / "usage_episode_session_start.py"
+    script = repo / "scripts" / "session_start_routing.py"
     script.touch()
     _seed_state(
         repo,
@@ -174,14 +172,8 @@ def test_known_basenames_derive_from_owning_module_constants() -> None:
     import host_hook_skill_anchor_guard as guard
 
     assert registry.known_hook_script_basenames() == {
-        lib.HOOK_SCRIPT_RELATIVE.name,
         routing.SESSION_ROUTING_SCRIPT_RELATIVE.name,
         guard.GUARD_SCRIPT_RELATIVE.name,
-    }
-    assert registry.known_hook_script_basenames() == {
-        "usage_episode_session_start.py",
-        "session_start_routing.py",
-        "post_edit_skill_anchor_guard.py",
     }
 
 
@@ -189,7 +181,7 @@ def test_settings_scan_flags_deleted_checkout_leftover_in_claude_json(tmp_path: 
     # The deleted-checkout case: NO state file knows this entry; only the
     # settings file does. A foreign hook command is never flagged.
     home = _fake_home(tmp_path)
-    leftover = tmp_path / "deleted-checkout" / "scripts" / "usage_episode_session_start.py"
+    leftover = tmp_path / "deleted-checkout" / "scripts" / "session_start_routing.py"
     settings = home / ".claude" / "settings.json"
     settings.parent.mkdir(parents=True)
     settings.write_text(
@@ -238,7 +230,7 @@ def test_settings_scan_flags_leftover_in_codex_config_toml(tmp_path: Path) -> No
     import host_hook_codex_toml_lib as toml_lib
 
     home = _fake_home(tmp_path)
-    leftover = tmp_path / "gone" / "scripts" / "usage_episode_session_start.py"
+    leftover = tmp_path / "gone" / "scripts" / "session_start_routing.py"
     config = home / ".codex" / "config.toml"
     config.parent.mkdir(parents=True)
     config.write_text(
@@ -268,7 +260,7 @@ def test_settings_scan_walks_malformed_json_shapes_tolerantly(tmp_path: Path) ->
     # flags: hooks-not-dict file, non-list event, non-dict entry, non-list
     # inner hooks, command-less item.
     home = _fake_home(tmp_path)
-    leftover = tmp_path / "gone" / "scripts" / "usage_episode_session_start.py"
+    leftover = tmp_path / "gone" / "scripts" / "session_start_routing.py"
     claude = home / ".claude" / "settings.json"
     claude.parent.mkdir(parents=True)
     claude.write_text(json.dumps({"hooks": "not-a-dict"}), encoding="utf-8")
@@ -315,161 +307,9 @@ def test_settings_scan_flags_known_basename_without_parseable_path(tmp_path: Pat
     claude = home / ".claude" / "settings.json"
     claude.parent.mkdir(parents=True)
     claude.write_text(
-        json.dumps(_claude_settings_payload(["python3 'unclosed usage_episode_session_start.py"])),
+        json.dumps(_claude_settings_payload(["python3 'unclosed session_start_routing.py"])),
         encoding="utf-8",
     )
     scan = registry.settings_file_scan(home)
     assert len(scan["dangling"]) == 1
     assert "no script path found" in scan["dangling"][0]
-
-
-def test_status_mode_reports_settings_leftover_without_state(tmp_path: Path) -> None:
-    # End-to-end deleted-checkout acceptance: the repo's state file is empty
-    # (the deleted checkout's state died with it), only the scratch home's
-    # settings carry the leftover — status still flags it and exits 1.
-    repo = _fake_repo(tmp_path)
-    home = _fake_home(tmp_path)
-    (repo / ".agents" / "usage-episodes-adapter.yaml").write_text(
-        "version: 1\nenabled: false\n", encoding="utf-8"
-    )
-    leftover = tmp_path / "deleted-checkout" / "scripts" / "usage_episode_session_start.py"
-    settings = home / ".claude" / "settings.json"
-    settings.parent.mkdir(parents=True)
-    settings.write_text(
-        json.dumps(_claude_settings_payload([f"python3 {leftover} --host claude"])),
-        encoding="utf-8",
-    )
-    runner = REPO_ROOT / "scripts" / "reconcile_usage_episodes_host_hooks.py"
-    result = subprocess.run(
-        [sys.executable, str(runner), "--repo-root", str(repo), "--home", str(home), "--mode", "status"],
-        capture_output=True,
-        text=True,
-    )
-    assert result.returncode == 1
-    payload = yaml.safe_load(result.stdout)
-    assert payload["in_sync"] is False
-    assert payload["settings_scan"]["dangling"]
-    assert payload["hook_liveness"]["dangling"] == []  # state knows nothing
-    assert any(str(leftover) in line for line in payload["drift"])
-
-
-def test_status_mode_reports_dangling_hook_and_exits_one(tmp_path: Path) -> None:
-    repo = _fake_repo(tmp_path)
-    home = _fake_home(tmp_path)
-    (repo / ".agents" / "usage-episodes-adapter.yaml").write_text(
-        "version: 1\nenabled: false\n", encoding="utf-8"
-    )
-    deleted_checkout_script = tmp_path / "deleted-checkout" / "scripts" / "usage_episode_session_start.py"
-    _seed_state(
-        repo,
-        {
-            "claude": {
-                "settings_path": str(home / ".claude" / "settings.json"),
-                "kind": "claude-json",
-                "command": f"python3 {deleted_checkout_script} --host claude",
-            }
-        },
-    )
-    runner = REPO_ROOT / "scripts" / "reconcile_usage_episodes_host_hooks.py"
-    result = subprocess.run(
-        [sys.executable, str(runner), "--repo-root", str(repo), "--home", str(home), "--mode", "status"],
-        capture_output=True,
-        text=True,
-    )
-    assert result.returncode == 1
-    payload = yaml.safe_load(result.stdout)
-    assert payload["in_sync"] is False
-    assert payload["hook_liveness"]["dangling"]
-    assert any(str(deleted_checkout_script) in line for line in payload["drift"])
-
-
-def test_reconcile_mode_exits_nonzero_when_a_host_hook_errors(tmp_path: Path) -> None:
-    """A refusal that nothing reads is not a refusal.
-
-    `_install_json_event` raises `HostHookError` rather than rewrite a matcher
-    shared with a foreign command. That error is caught per host and recorded as a
-    string so one broken host does not abort the others — and then `--mode
-    reconcile` returned 0 regardless, so `charness init` reported success over a
-    hook that was never installed. The module's own docstring has always promised
-    exit 1 here; only `--mode status` delivered it.
-    """
-    repo = _fake_repo(tmp_path)
-    home = _fake_home(tmp_path)
-    (repo / ".agents" / "usage-episodes-adapter.yaml").write_text(
-        "version: 1\nenabled: true\nskill_anchor_edit_guard:\n  claude: enabled\n",
-        encoding="utf-8",
-    )
-    guard_command = f"python3 {repo / 'scripts' / 'post_edit_skill_anchor_guard.py'} --host claude"
-    settings = home / ".claude" / "settings.json"
-    settings.parent.mkdir(parents=True)
-    settings.write_text(
-        json.dumps(
-            {
-                "hooks": {
-                    "PostToolUse": [
-                        {
-                            "matcher": "Bash",
-                            "hooks": [
-                                {"type": "command", "command": "/home/op/my-own-hook.sh"},
-                                {"type": "command", "command": guard_command},
-                            ],
-                        }
-                    ]
-                }
-            }
-        ),
-        encoding="utf-8",
-    )
-    runner = REPO_ROOT / "scripts" / "reconcile_usage_episodes_host_hooks.py"
-
-    result = subprocess.run(
-        [sys.executable, str(runner), "--repo-root", str(repo), "--home", str(home), "--mode", "reconcile"],
-        capture_output=True,
-        text=True,
-    )
-
-    assert result.returncode == 1, result.stdout
-    payload = yaml.safe_load(result.stdout)
-    assert payload["failed_hosts"] == ["skill_anchor_edit_guard.claude"]
-    # ...and the operator's file is untouched by the refusal.
-    entry = json.loads(settings.read_text(encoding="utf-8"))["hooks"]["PostToolUse"][0]
-    assert entry["matcher"] == "Bash"
-
-
-def test_reconcile_mode_still_exits_zero_when_every_host_succeeds(tmp_path: Path) -> None:
-    """The control: the new exit code must key on the error, not on the mode."""
-    repo = _fake_repo(tmp_path)
-    home = _fake_home(tmp_path)
-    (repo / ".agents" / "usage-episodes-adapter.yaml").write_text(
-        "version: 1\nenabled: true\nskill_anchor_edit_guard:\n  claude: enabled\n",
-        encoding="utf-8",
-    )
-    runner = REPO_ROOT / "scripts" / "reconcile_usage_episodes_host_hooks.py"
-
-    result = subprocess.run(
-        [sys.executable, str(runner), "--repo-root", str(repo), "--home", str(home), "--mode", "reconcile"],
-        capture_output=True,
-        text=True,
-    )
-
-    assert result.returncode == 0, result.stdout
-    assert yaml.safe_load(result.stdout)["failed_hosts"] == []
-
-
-def test_error_scan_ignores_non_dict_action_values() -> None:
-    """`actions` is a payload, not a schema: a host entry can be a string or None
-    from an older state file. Scanning it must not crash the runner whose whole
-    job at that point is to report the errors it DID find.
-    """
-    import importlib.util
-
-    spec = importlib.util.spec_from_file_location(
-        "reconcile_runner", REPO_ROOT / "scripts" / "reconcile_usage_episodes_host_hooks.py"
-    )
-    runner = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(runner)
-
-    assert runner._error_hosts("not-a-dict") == []
-    assert runner._error_hosts(None) == []
-    assert runner._error_hosts({"claude": "legacy-string", "codex": None}) == []
-    assert runner._error_hosts({"claude": "legacy-string", "codex": {"error": "boom"}}) == ["codex"]

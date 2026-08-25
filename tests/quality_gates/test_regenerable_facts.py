@@ -443,7 +443,7 @@ def test_this_repos_adapter_actually_covers_its_forward_looking_prose() -> None:
     scanned = {p.relative_to(ROOT).as_posix() for glob in surfaces for p in ROOT.glob(glob) if p.is_file()}
 
     assert "AGENTS.md" in scanned and "CLAUDE.md" in scanned, "agent prompt files must be in scope"
-    assert any(p.startswith("docs/conventions/") for p in scanned), "the docs tree must be in scope"
+    assert any(p.startswith("docs/") for p in scanned), "the docs tree must be in scope"
     assert any(p.endswith("/SKILL.md") for p in scanned), "shipped skill prose must be in scope"
     assert any("/references/" in p for p in scanned)
     # And the seam holds: dated records stay out, by construction rather than exemption.

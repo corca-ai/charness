@@ -95,7 +95,7 @@ def assert_managed_checkout_has_no_tracked_runtime_dirt(managed_checkout: Path) 
     assert status.stdout == ""
 
     ignored = subprocess.run(
-        ["git", "check-ignore", ".charness/bootstrap-python/bin/python", ".charness/usage-episodes/closeout_telemetry.jsonl"],
+        ["git", "check-ignore", ".charness/bootstrap-python/bin/python", ".charness/closeout-telemetry/records.jsonl"],
         cwd=managed_checkout,
         check=False,
         capture_output=True,
@@ -103,7 +103,7 @@ def assert_managed_checkout_has_no_tracked_runtime_dirt(managed_checkout: Path) 
     )
     assert ignored.returncode == 0, ignored.stderr
     assert ".charness/bootstrap-python/bin/python" in ignored.stdout
-    assert ".charness/usage-episodes/closeout_telemetry.jsonl" in ignored.stdout
+    assert ".charness/closeout-telemetry/records.jsonl" in ignored.stdout
 
 
 def test_git_has_tracked_changes_blocks_tracked_edits_without_blocking_untracked_files(tmp_path: Path) -> None:

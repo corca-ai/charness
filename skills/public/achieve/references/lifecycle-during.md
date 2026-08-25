@@ -126,7 +126,7 @@ module over appending before the hard gate fires), and — via the
 `check_staged_mirror_drift.py` pre-commit gate — a **hard block** when exported
 source is staged without its regenerated `plugins/` mirror. Both are
 owned by the authoring-repo-internal
-`<authoring-repo>/docs/conventions/implementation-discipline.md`.
+`<authoring-repo>/docs/implementation-discipline.md`.
 
 The commit-time gate family (ruff, `check_python_lengths`,
 `validate_attention_state_visibility`, `check-markdown`, mirror-drift,

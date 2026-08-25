@@ -1,5 +1,8 @@
 # Control Plane Contract
 
+> Status: current
+> Source of truth: this page and its linked executable surfaces
+
 This document defines the control-plane contract for external tools,
 support-owned runtime capability metadata, and upstream support-skill reuse in
 `charness`.

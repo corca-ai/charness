@@ -91,7 +91,7 @@ fi
 # catches orphans never ran on the change class that creates them. It is safe to add:
 # it costs ~0.07s, and on a machine without `awiki` it reports UNPROVEN and blocks
 # nothing rather than failing the push.
-DOCS_ONLY_LABELS="check-doc-links,check-markdown,check-links-internal,check-references-link-inventory,check-spec-evidence-durability,validate-handoff-artifact,validate-debug-artifact,validate-quality-artifact,validate-retro-artifact,validate-ideation-artifact,validate-critique-artifacts,inventory-quality-handoff,validate-current-pointer-freshness,docs-graph"
+DOCS_ONLY_LABELS="check-docs,check-references-link-inventory,check-spec-evidence-durability,validate-handoff-artifact,validate-debug-artifact,validate-quality-artifact,validate-retro-artifact,validate-ideation-artifact,validate-critique-artifacts,inventory-quality-handoff,validate-current-pointer-freshness"
 
 if [[ "$classification" == "docs-artifact-only" ]]; then
   echo "charness pre-push: docs/artifact-only push detected ($reason)"

@@ -1,5 +1,12 @@
 # Spec: Usage Episodes — H-LAM/T Completion (Session + T Signal)
 
+> Status: superseded (2026-08-25)
+> Source of truth: none; retained only as historical design evidence
+
+The usage-episodes and T-events experiment was retired. Do not implement or
+use the paths named below; current feedback belongs in the lesson ledger and
+RCA artifacts.
+
 Source: follow-up slice to
 [charness-artifacts/spec/issue-171-hlam-usage-episodes.md](./issue-171-hlam-usage-episodes.md).
 
@@ -341,7 +348,7 @@ Both slices land behind the existing `enabled: false` default; flipping to
 - Commit `6721487` (#188): slice closeout emitter introduction.
 - [gather/2026-05-22-codex-hooks-surface.md](../gather/2026-05-22-codex-hooks-surface.md):
   Codex hook lifecycle surface.
-- [scripts/slice_closeout_usage_episode.py](../../scripts/slice_closeout_usage_episode.py).
-- [scripts/validate_usage_episodes.py](../../scripts/validate_usage_episodes.py).
-- [integrations/usage-episodes/episode.schema.json](../../integrations/usage-episodes/episode.schema.json).
-- [.agents/usage-episodes-adapter.yaml](../../.agents/usage-episodes-adapter.yaml).
+- The usage-episode emitter, validator, schema, and adapter listed by the
+  original completion record were retired on 2026-08-25. This historical
+  artifact is retained for provenance only; it is not a current implementation
+  or proof surface.

@@ -253,7 +253,7 @@ def test_one_underscore_choice_does_not_blank_the_whole_parser() -> None:
     match fail and returned `set()` for that parser -- which reads as "this
     parser has no subcommands", so every documented subcommand under it went
     unchecked AND unskipped. The gate had just been widened to REPORT `charness
-    session_capture` as drift while its authority reader could not represent that
+    a retired command` as drift while its authority reader could not represent that
     name at all.
     """
     hyphen = "usage: x [-h] {doctor,sync-support,install} ...\n\npositional arguments:\n  {doctor,sync-support,install}\n"

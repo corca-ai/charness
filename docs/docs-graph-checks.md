@@ -1,5 +1,8 @@
 # Docs Graph Checks: check_doc_links vs awiki
 
+> Status: current
+> Source of truth: this page and its linked executable surfaces
+
 Two tools look at the same markdown and answer different questions. This page
 says which, so neither is promoted, trusted, or retired on a guess about what the
 other already covers.

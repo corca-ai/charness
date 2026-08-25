@@ -93,6 +93,6 @@ the user requests planning. `<repo-root>/docs/operator-acceptance.md` is a consu
 there is a real install, deployment, or operator takeover path. Both remain
 available as explicit adapter surfaces; neither is required by this profile.
 
-Retro memory, usage episodes, T-events, worktree adapters, and other Charness
-seams remain opt-in or evidence-triggered. They are not silently added while
-bootstrapping the documentation and quality surface.
+Retro memory, worktree adapters, and other Charness seams remain opt-in or
+evidence-triggered. They are not silently added while bootstrapping the
+documentation and quality surface.

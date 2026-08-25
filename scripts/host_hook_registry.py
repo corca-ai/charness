@@ -154,11 +154,9 @@ def known_hook_script_basenames(
     intents: tuple[SiblingHookIntent, ...] = SIBLING_HOOK_INTENTS,
 ) -> set[str]:
     """Charness hook-script basenames, derived from the owning modules'
-    constants (the usage-episodes install lib plus each registry row) — never
-    a forked literal list, so a new hook intent extends the scan by adding
-    its registry row."""
-    install_lib = _import_module("host_hook_install_lib")
-    names = {install_lib.HOOK_SCRIPT_RELATIVE.name}
+    constants from each registry row — never a forked literal list, so a new
+    hook intent extends the scan by adding its registry row."""
+    names: set[str] = set()
     for intent in intents:
         module = _import_module(intent.module)
         names.add(getattr(module, intent.script_relative_attr).name)

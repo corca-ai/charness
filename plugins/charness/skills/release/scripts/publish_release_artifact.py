@@ -25,7 +25,6 @@ post_publish_proof_lines = _sections.post_publish_proof_lines
 install_refresh_lines = _sections.install_refresh_lines
 public_release_verification_lines = _sections.public_release_verification_lines
 distinct_channel_verification_lines = _sections.distinct_channel_verification_lines
-lifecycle_capture_lines = _sections.lifecycle_capture_lines
 real_host_lines = _sections.real_host_lines
 fresh_checkout_lines = _sections.fresh_checkout_lines
 release_runtime_lines = _sections.release_runtime_lines
@@ -60,7 +59,6 @@ def write_release_artifact(
     retro_trigger_evaluation: dict[str, Any] | None = None,
     distinct_channel_verification: dict[str, Any] | None = None,
     published_notes_audit: dict[str, Any] | None = None,
-    lifecycle_capture: dict[str, Any] | None = None,
     release_runtime: list[dict[str, Any]] | None = None,
     baton_reconcile: dict[str, Any] | None = None,
     release_observer: dict[str, Any] | None = None,
@@ -112,7 +110,6 @@ def write_release_artifact(
     lines.extend(public_release_verification_lines(public_release_verification, release_url))
     lines.extend(distinct_channel_verification_lines(distinct_channel_verification))
     lines.extend(published_notes_audit_lines(published_notes_audit))
-    lines.extend(lifecycle_capture_lines(lifecycle_capture))
     lines.extend(release_adapter_preflight_lines(release_adapter_preflight_payload))
     lines.extend(retro_trigger_evaluation_lines(retro_trigger_evaluation))
     lines.extend(real_host_lines(real_host_payload, install_refresh=install_refresh))
@@ -193,7 +190,7 @@ def write_current_artifact(
         review_proof=payload.get("critique_artifact"), requested_review_gate=payload.get("requested_review_gate"),
         retro_trigger_evaluation=payload.get("retro_trigger_evaluation"),
         distinct_channel_verification=payload.get("distinct_channel_verification"),
-        published_notes_audit=payload.get("published_notes_audit"), lifecycle_capture=payload.get("lifecycle_capture"),
+        published_notes_audit=payload.get("published_notes_audit"),
         release_runtime=payload.get("release_runtime"), baton_reconcile=payload.get("baton_reconcile"),
         release_observer=payload.get("release_observer"), claims_review=payload.get("claims_review"),
         release_stage=release_stage or payload.get("release_stage"),

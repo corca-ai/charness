@@ -425,7 +425,7 @@ def test_standing_doc_provenance_scalar_block_is_rejected(tmp_path: Path) -> Non
     """A scalar where the mapping belongs is what a hand-edited adapter produces.
     Without the shape check the loop over `value.items()` raises AttributeError and
     the operator sees a traceback instead of a config error."""
-    payload = _resolve(tmp_path, "standing_doc_provenance: docs/conventions/*.md\n")
+    payload = _resolve(tmp_path, "standing_doc_provenance: docs/*.md\n")
     assert not payload["valid"]
     assert "standing_doc_provenance must be a mapping" in payload["errors"]
     # Honest scope: the message assertion above is what has teeth here. The line
@@ -450,7 +450,7 @@ def test_standing_doc_provenance_unknown_subkey_warns_without_blocking(
         dedent(
             """\
             standing_doc_provenance:
-              standing_doc: ["docs/conventions/*.md"]
+              standing_doc: ["docs/*.md"]
               inline_allow_marker: keep-me
             """
         ),
@@ -479,7 +479,7 @@ def test_standing_doc_provenance_glob_list_rejects_non_strings_by_name(
             f"""\
             standing_doc_provenance:
               {key}:
-                - docs/conventions/*.md
+                - docs/*.md
                 - 7
             """
         ),
@@ -497,7 +497,7 @@ def test_standing_doc_provenance_glob_list_rejects_non_strings_by_name(
 
 
 def test_standing_doc_provenance_glob_list_rejects_a_bare_scalar(tmp_path: Path) -> None:
-    """`standing_docs: docs/conventions/*.md` (no `-`) is the likeliest hand-edit.
+    """`standing_docs: docs/*.md` (no `-`) is the likeliest hand-edit.
     A bare string is iterable, so without the list check it would degrade into a
     per-character glob list rather than failing."""
     payload = _resolve(
@@ -505,7 +505,7 @@ def test_standing_doc_provenance_glob_list_rejects_a_bare_scalar(tmp_path: Path)
         dedent(
             """\
             standing_doc_provenance:
-              standing_docs: docs/conventions/*.md
+              standing_docs: docs/*.md
             """
         ),
     )

@@ -38,9 +38,7 @@ def test_quality_core_runs_the_timing_completeness_gate_but_docs_pre_push_does_n
     labels = re.search(r'^DOCS_ONLY_LABELS="([^"]*)"$', pre_push, re.MULTILINE)
     assert labels is not None
     assert labels.group(1).split(",") == [
-        "check-doc-links",
-        "check-markdown",
-        "check-links-internal",
+        "check-docs",
         "check-references-link-inventory",
         "check-spec-evidence-durability",
         "validate-handoff-artifact",
@@ -51,7 +49,6 @@ def test_quality_core_runs_the_timing_completeness_gate_but_docs_pre_push_does_n
         "validate-critique-artifacts",
         "inventory-quality-handoff",
         "validate-current-pointer-freshness",
-        "docs-graph",
     ]
 
 
@@ -72,11 +69,11 @@ def test_classification_region_is_table_only() -> None:
 def test_unclassified_label_is_detected(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / "scripts").mkdir(parents=True)
-    (repo / "docs/conventions").mkdir(parents=True)
+    (repo / "docs").mkdir(parents=True)
     (repo / "scripts/run-quality.sh").write_text(
         'queue_selected "check-classified" foo\nqueue_selected "check-orphan" bar\n', encoding="utf-8"
     )
-    (repo / "docs/conventions/validator-timing-layers.md").write_text(
+    (repo / "docs/validator-timing-layers.md").write_text(
         "## Classification table\n\n| check-classified | broad only | stays | reason |\n", encoding="utf-8"
     )
     missing, checked = META.unclassified_labels(repo)
@@ -100,7 +97,7 @@ def test_a_label_mentioned_only_in_another_rows_prose_is_not_classified() -> Non
     `\\bcheck-links\\b` still matches inside `check-links-internal`.
     """
     region = META.classification_region(
-        (ROOT / "docs" / "conventions" / "validator-timing-layers.md").read_text(encoding="utf-8")
+        (ROOT / "docs" / "validator-timing-layers.md").read_text(encoding="utf-8")
     )
     classified = META.classified_labels(region)
 
@@ -123,11 +120,11 @@ def test_a_docs_only_push_label_that_names_no_gate_is_refused(tmp_path: Path) ->
     repo = tmp_path / "repo"
     (repo / "scripts").mkdir(parents=True)
     (repo / ".githooks").mkdir(parents=True)
-    (repo / "docs" / "conventions").mkdir(parents=True)
+    (repo / "docs").mkdir(parents=True)
     (repo / "scripts" / "run-quality.sh").write_text(
         'queue_selected "check-doc-links" x\nqueue_selected "check-markdown" y\n', encoding="utf-8"
     )
-    (repo / "docs" / "conventions" / "validator-timing-layers.md").write_text(
+    (repo / "docs" / "validator-timing-layers.md").write_text(
         "## Classification table\n\n| Check | Ran | Verdict | Reason |\n| --- | --- | --- | --- |\n"
         "| check-doc-links, check-markdown | broad | already earlier | x |\n",
         encoding="utf-8",
@@ -157,11 +154,11 @@ def _seed(tmp_path: Path, docs_only_line: str | None) -> Path:
     repo = tmp_path / "repo"
     (repo / "scripts").mkdir(parents=True)
     (repo / ".githooks").mkdir(parents=True)
-    (repo / "docs" / "conventions").mkdir(parents=True)
+    (repo / "docs").mkdir(parents=True)
     (repo / "scripts" / "run-quality.sh").write_text(
         'queue_selected "check-doc-links" x\n', encoding="utf-8"
     )
-    (repo / "docs" / "conventions" / "validator-timing-layers.md").write_text(
+    (repo / "docs" / "validator-timing-layers.md").write_text(
         "## Classification table\n\n| Check | Ran | Verdict | Reason |\n| --- | --- | --- | --- |\n"
         "| check-doc-links | broad | already earlier | x |\n",
         encoding="utf-8",
@@ -241,11 +238,11 @@ def test_an_unresolvable_queue_line_is_a_named_refusal_not_a_traceback(
     hook, from a gate whose subject is the timing table."""
     repo = tmp_path / "repo"
     (repo / "scripts").mkdir(parents=True)
-    (repo / "docs" / "conventions").mkdir(parents=True)
+    (repo / "docs").mkdir(parents=True)
     (repo / "scripts" / "run-quality.sh").write_text(
         'queue_selected "$computed" foo\n', encoding="utf-8"
     )
-    (repo / "docs" / "conventions" / "validator-timing-layers.md").write_text(
+    (repo / "docs" / "validator-timing-layers.md").write_text(
         "## Classification table\n\n| a | b |\n", encoding="utf-8"
     )
     monkeypatch.setattr(sys, "argv", ["prog", "--repo-root", str(repo)])

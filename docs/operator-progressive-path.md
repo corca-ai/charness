@@ -1,5 +1,8 @@
 # Progressive Operator Path
 
+> Status: current
+> Source of truth: this page and its linked executable surfaces
+
 Operator capability that the repo expects at each horizon. Each item is grounded in an observed source from this repo so a maintainer can audit the claim. The horizons are descriptive, not gated — they describe what the repo has already seen an operator do honestly, not certification thresholds.
 
 Evidence source today is `N=1` (charness self-repo); the 8-week / 6-month claims should add an adjacent operating repo source when a second long-running contributor reaches that horizon (per [issue-135 Probe Q3](../charness-artifacts/spec/issue-135-t-first-self-evolving-unit.md)).

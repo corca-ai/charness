@@ -64,7 +64,7 @@ def module_level_names(source: str) -> set[str]:
     Blocks are descended into because a module-scope `try/except ImportError`
     fallback binds a real module-level name, and this repo uses that idiom
     (`rca_link_advisory.py`, `check_bootstrap_shim_consistency.py`,
-    `record_usage_feedback.py`). Scanning `tree.body` alone made the OPPOSITE
+    a retired producer). Scanning `tree.body` alone made the OPPOSITE
     error the loud one: wrapping an existing top-level definition in a portability
     `try/except` -- which removes nothing -- reported it as REMOVED and named every
     still-working reader. That is the false alarm that trains a reader to skip the
@@ -131,7 +131,7 @@ def consumers_of(repo_root: Path, module_path: str, names: list[str]) -> dict[st
     # carry long prose that cites both stems and constant names.
     # The second alternative catches `from <module> import NAME`, which contains no
     # dot at all. That shape fails loudly at import rather than silently, but it is
-    # live in this repo (`tests/test_usage_episodes_report.py`) and costs one branch.
+    # live in this repo and costs one branch.
     patterns = {
         name: re.compile(
             rf"\.[ \t]*{re.escape(name)}\b|from\s[^\n]*\b{re.escape(stem)}\s+import[^\n]*\b{re.escape(name)}\b"

@@ -85,7 +85,7 @@ transcripts. The deferred work:
 
 1. **Live-session capture unit.** Point the fixture at a real later session graded
    against the live `recent-lessons.md` (the non-deterministic consumer side),
-   instead of controls. Requires a session-capture harness that preserves a
+   instead of controls. Requires a transcript harness that preserves a
    transcript bundle for an arbitrary task session (not a single `/charness:<skill>`
    run).
 2. **Lesson rotation.** Generalize beyond the one pinned lesson so the fixture

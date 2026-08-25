@@ -107,20 +107,6 @@ def _print_headroom(payload: dict[str, object]) -> None:
         )
 
 
-def _print_usage_episode(payload: dict[str, object]) -> None:
-    usage_episode = payload.get("usage_episode")
-    if not isinstance(usage_episode, dict):
-        return
-    print("Usage episode:")
-    print(f"- status: {usage_episode['status']}")
-    if usage_episode.get("records_path"):
-        print(f"- records_path: {usage_episode['records_path']}")
-    if usage_episode.get("episode_id"):
-        print(f"- episode_id: {usage_episode['episode_id']}")
-    if usage_episode.get("error"):
-        print(f"- error: {usage_episode['error']}")
-
-
 def _print_mutation_coverage_proof(payload: dict[str, object]) -> None:
     proof = payload.get("mutation_coverage_changed_line_proof")
     if not isinstance(proof, dict) or proof.get("status") != "not_checked":
@@ -157,7 +143,6 @@ def print_text(payload: dict[str, object]) -> None:
     print_broad_pytest_policy(payload)
     _print_mutation_coverage_proof(payload)
     _print_executed_commands(payload)
-    _print_usage_episode(payload)
     _print_final_verdict(payload)
 
 

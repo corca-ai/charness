@@ -1,5 +1,8 @@
 # Proof-Semantics Adapter (#339)
 
+> Status: current
+> Source of truth: this page and its linked executable surfaces
+
 The portable Charness residual/disposition ledger
 ([`scripts/disposition_form.py`](../scripts/disposition_form.py)) stays
 presence/form-enum-only and learns **no** domain proof concept. The **domain

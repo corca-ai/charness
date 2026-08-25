@@ -1,7 +1,8 @@
 # Issue #510 Public Markdown Representation Negotiation Contract
 
 Date: 2026-08-06
-Source: [Issue #510 causal review](../critique/2026-08-06-issue-510-causal-review.md)
+Status: historical design record; superseded by the later resolution critique.
+Source: [Issue #510 resolution critique](../critique/2026-08-06-issue-510-markdown-negotiation-resolution-critique.md)
 
 ## Problem
 

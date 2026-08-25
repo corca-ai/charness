@@ -56,7 +56,7 @@ install/cache readback reports `status: failed`; a zero exit does not hide a
 known delivery failure. Optional host states such as `skipped` or
 `unavailable` remain distinct and require the YAML next action when present.
 
-For the full command surface, see [CLI Reference](./docs/generated/cli-reference.md).
+For the full command surface, see [CLI Reference](./docs/cli-reference.md).
 
 ## Workflow Routes
 
@@ -171,7 +171,7 @@ docs and artifacts that own them:
 
 - every docs page, grouped by the question it answers:
   [docs/index.md](./docs/index.md)
-- CLI command reference: [docs/generated/cli-reference.md](./docs/generated/cli-reference.md)
+- CLI command reference: [docs/cli-reference.md](./docs/cli-reference.md)
 - workflow route examples: [docs/workflow-routes.md](./docs/workflow-routes.md)
 - repo-local development and dogfood paths:
   [docs/development.md](./docs/development.md)

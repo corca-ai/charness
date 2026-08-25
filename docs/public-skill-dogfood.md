@@ -1,5 +1,8 @@
 # Public Skill Dogfood
 
+> Status: current
+> Source of truth: this page and its linked executable surfaces
+
 Canonical machine-readable consumer-dogfood state lives in
 [docs/public-skill-dogfood.json](./public-skill-dogfood.json). This markdown file
 stays as the short human-readable contract for the same reviewed cases.

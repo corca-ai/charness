@@ -1,5 +1,7 @@
 # README Proof And Cautilus Eval Migration
 
+Status: historical migration record; current README proof ownership is maintained in `docs/readme-proof.md`.
+
 ## Purpose
 
 After the current upstream Cautilus redesign is done, migrate Charness from the
@@ -136,7 +138,7 @@ Status:
 
 - No-write seam landed on the Charness side as
   `python3 skills/public/find-skills/scripts/list_capabilities.py --read-only`,
-  documented in [skills/public/find-skills/SKILL.md](../../skills/public/find-skills/SKILL.md)
+  documented in the current [AGENTS.md routing contract](../../AGENTS.md); the historical `find-skills` skill path was retired.
   Bootstrap. The flag emits the inventory payload to stdout, sets
   `artifacts.mode = "read-only"`, and skips the durable artifact write so a
   read-only sandbox can still complete the routing decision. Default behaviour

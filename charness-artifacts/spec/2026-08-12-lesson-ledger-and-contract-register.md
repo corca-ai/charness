@@ -24,12 +24,12 @@ nothing. Scarce capacity was spent on a non-lesson because recurrence rewards
 whatever every retro emits.
 
 **The contract layer only grows.** `AGENTS.md` and the docs under
-[docs/conventions](../../docs/conventions/) accumulate standing rules with no
+[docs/](../../docs/index.md) accumulate standing rules with no
 counter-pressure. Nothing measures whether a rule is ever used, and the cost is
 paid on every session because these surfaces are always loaded. This slice's own
 work is the demonstration: repairing the handoff gate promoted two lessons and
 added a section to
-[implementation-discipline.md](../../docs/conventions/implementation-discipline.md),
+[implementation-discipline.md](../../docs/implementation-discipline.md),
 which is already past four hundred lines.
 
 **The coupling is the reason for one contract.** The ledger's upward exit is the
@@ -555,9 +555,9 @@ deferred.
 - [Harness-improvement thesis](./2026-08-11-harness-improvement-thesis.md) — the
   digest's slot-policy defect and two unimplemented proposals.
 - [Recent lessons digest](../retro/recent-lessons.md) — the surface this replaces.
-- [Implementation discipline](../../docs/conventions/implementation-discipline.md) — a
+- [Implementation discipline](../../docs/implementation-discipline.md) — a
   contract doc this register would measure, including the section this slice added.
-- [Operating contract](../../docs/conventions/operating-contract.md) — the other
+- [Operating contract](../../docs/operating-contract.md) — the other
   always-loaded contract surface.
 - [Ownership gate critique](../critique/2026-08-12-handoff-bullet-ownership-critique.md)
   — four review rounds on the gate whose repair motivated the promotion problem.

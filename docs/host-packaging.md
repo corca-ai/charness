@@ -1,5 +1,8 @@
 # Host Packaging Contract
 
+> Status: current
+> Source of truth: this page and its linked executable surfaces
+
 This document defines the first host-packaging contract for exporting the
 host-neutral `charness` repo into Claude-compatible, Codex-compatible, and
 minimal Grok Build plugin layouts.
@@ -110,7 +113,7 @@ They do not add a Grok marketplace source.
 
 Grok Build currently ignores `SessionStart` and `PostToolUse` hook stdout, so
 this slice does not install Grok-native session-routing or edit-guard hooks.
-Usage-episode capture can still ride Claude-compatible hook settings when Grok
+Host-specific routing can still ride Claude-compatible hook settings when Grok
 reads `~/.claude/settings.json`.
 
 ## Current Export Scope
@@ -229,25 +232,11 @@ networked self-update loop.
 
 ## SessionStart Hook Reach
 
-The SessionStart routing hook — which now also presents the lesson-selection list
-when a repo declares a lesson evaluator — is installed at USER level
-(`~/.claude/settings.json`, `~/.codex/config.toml` or `~/.codex/hooks.json`) by
-`charness init` / `charness update`, gated on the checkout's own
-[usage-episodes-adapter.yaml](../.agents/usage-episodes-adapter.yaml) `session_routing` intent.
-
-What that means for reach:
-
-- the hook fires in EVERY session on that machine and resolves the SESSION's repo
-  from the payload `cwd`, so it operates on a consuming repo while executing from
-  the managed charness checkout;
-- `build_command` hardcodes an absolute path into that checkout, so the command
-  string never changes and an existing installed hook picks up new script content
-  on the next `charness update` — no hook reinstall is required;
-- consequently a CLI-installed consumer gets the lesson presentation seam for
-  free, subject only to that repo's own `init_lesson_ledger.py` opt-in.
-
-The honest hole: a consumer who installs charness ONLY through the Claude plugin
-marketplace, never running the `charness` CLI, gets no SessionStart hook at all.
+Charness does not install a default telemetry or SessionStart hook. Host hooks
+are opt-in, adapter-owned capabilities; a consumer that needs one must declare
+the intent and run its host-specific installer. This keeps a plugin install
+read-only and prevents an unrelated product feature from owning every user's
+host settings.
 [plugin.json](../plugins/charness/.claude-plugin/plugin.json) declares no `hooks` key and there is
 no `plugins/charness/hooks/` directory, so for that population the lesson loop is
 not wired. Declaring the hook in the plugin manifest would double-fire for every

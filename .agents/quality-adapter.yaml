@@ -642,8 +642,6 @@ runtime_budget_profiles:
       check-python-runtime-inheritance: 26500
       validate-packaging-committed: 24000
       validate-adapters: 23000
-      validate-usage-episodes: 22500
-      report-usage-episodes: 22000
       check-boundary-bypass-ratchet: 21000
       check-shell: 19000
       # The aggregate the per-gate bars above are backstopped by; observed max 134796.
@@ -825,17 +823,16 @@ mutation_testing:
 standing_doc_provenance:
   # Dogfood the provenance-placement policy (#325). standing_docs are the
   # timeless rule docs; tracking ledgers and per-goal specs / dated
-  # dispositions stay out. See docs/conventions/provenance-placement.md.
+  # dispositions stay out. See docs/provenance-placement.md.
   standing_docs:
-    - docs/conventions/operating-contract.md
-    - docs/conventions/implementation-discipline.md
-    - docs/conventions/authoring-preflight.md
-    - docs/conventions/provenance-placement.md
+    - docs/operating-contract.md
+    - docs/implementation-discipline.md
+    - docs/authoring-preflight.md
+    - docs/provenance-placement.md
     - docs/prescribed-skill-closeout-contract.md
   tracking_allowlist:
     - docs/support-tool-followup.md
     - docs/deferred-decisions.md
-    - docs/product-success-metrics.md
     - docs/artifact-policy.md
   inline_allow_marker: provenance-allow
 changed_line_mutation_gate:
@@ -890,7 +887,7 @@ regenerable_facts:
       historical context: every entry records the figures its decision was TAKEN
       on, and rewriting them to today's numbers would falsify why the decision was
       made. An entry quoting a LIVE toll still owes the command that regenerates it.
-    docs/conventions/validator-timing-layers.md: >-
+    docs/validator-timing-layers.md: >-
       each row cites the commit that MOVED a gate between timing layers; the sha is
       provenance for a past decision, not a claim about today's tree.
     docs/duplicate-detection-strategy.md: >-

@@ -1,5 +1,11 @@
 # Spec: Issue #171 - H-LAM/T Usage Episodes
 
+> Status: superseded (2026-08-25)
+> Source of truth: none; retained only as historical design evidence
+
+The consumer-runtime usage-episodes and T-events experiment was retired. This
+file records its former rationale and is not an active implementation contract.
+
 Source: https://github.com/corca-ai/charness/issues/171
 
 Sibling issues:

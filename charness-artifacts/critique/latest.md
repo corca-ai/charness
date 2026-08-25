@@ -11,7 +11,7 @@ and reading the accepted option names out of the render. Plus the two live doc
 defects it found, the shared emit helper
 [gate_report_emit.py](../../scripts/gate_report_emit.py) the dup ratchet forced
 out of it, and its timing verdict in
-[validator-timing-layers.md](../../docs/conventions/validator-timing-layers.md).
+[validator-timing-layers.md](../../docs/validator-timing-layers.md).
 
 This closes F8 of the
 [2026-07-25 documented-command-resolution critique](./2026-07-25-documented-command-resolution-gate.md),

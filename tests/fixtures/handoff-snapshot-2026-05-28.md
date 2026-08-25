@@ -8,8 +8,8 @@
 - Refresh live state: `git status --short --branch`,
   `git log --oneline origin/main..HEAD`, and `gh issue list --state open --limit 50`.
 - Before mutating code, generated exports, or validation behavior, read
-  [implementation discipline](./conventions/implementation-discipline.md) and
-  [operating contract](./conventions/operating-contract.md).
+  [implementation discipline](./implementation-discipline.md) and
+  [operating contract](./operating-contract.md).
 - Route external URLs through `gather`.
 
 ## Current State
@@ -84,7 +84,7 @@
 ## Discuss
 
 - Current PR CI posture is intentional maintainer-local enforcement per
-  [operating contract](./conventions/operating-contract.md); do not reopen unless
+  [operating contract](./operating-contract.md); do not reopen unless
   outside PRs become recurring.
 - Watch: Yarn Berry hooks; pnpm+lefthook stale snippets; `filelock`+`pytest-xdist`;
   seed-cache LRU eviction; release proof suppression.

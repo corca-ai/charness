@@ -3,7 +3,6 @@ from __future__ import annotations
 import os
 import subprocess
 import sys
-from argparse import Namespace
 from pathlib import Path
 
 import pytest
@@ -19,33 +18,6 @@ from .support import (
 )
 from .test_managed_install import init_managed_home_from_repo, load_charness_module
 from .tool_fakes import make_fake_cautilus, make_fake_nose
-
-
-def test_session_capture_status_emits_canonical_session_routing_hosts(monkeypatch, capsys) -> None:
-    module = load_charness_module("charness_session_routing_status_output_under_test")
-    payload = {
-        "in_sync": True,
-        "hosts": {},
-        "session_routing": {
-            "hosts": {
-                "claude": {
-                    "intent": "enabled",
-                    "actual": {
-                        "present": True,
-                        "settings_path": "/tmp/claude-settings.json",
-                    },
-                },
-                "ignored": "not-a-mapping",
-            }
-        },
-        "drift": [],
-    }
-    monkeypatch.setattr(module, "_session_capture_invoke", lambda _args, *, mode: (Path.cwd(), payload))
-
-    assert module.cmd_session_capture_status(Namespace()) == 0
-
-    output = yaml.safe_load(capsys.readouterr().out)
-    assert output["session_routing"]["hosts"]["claude"]["actual"]["settings_path"] == "/tmp/claude-settings.json"
 
 
 @pytest.mark.release_only
@@ -94,7 +66,7 @@ def test_installed_cli_update_all_without_json_prints_progress_and_summary(tmp_p
     assert payload["scope"] == "all"
     assert payload["response_level"] == "summary"
     assert payload["tool_update"]["response_level"] == "summary"
-    assert payload["tool_update"]["summary"]["tool_count"] == 14
+    assert payload["tool_update"]["summary"]["tool_count"] == 15
     assert {"cautilus", "github-gh"}.issubset(payload["tool_update"]["attention"]["manual_tool_ids"])
     assert payload["tool_update"]["attention"]["not_ready_tool_ids"]
     assert "results" not in payload["tool_update"]

@@ -1,5 +1,8 @@
 # Support Tool Follow-Up
 
+> Status: current
+> Source of truth: this page and its linked executable surfaces
+
 This document captures the next `charness` workstream after the support-skill
 materialization redesign and the `cautilus` integration tightening pass.
 

@@ -1,5 +1,8 @@
 # Charness Design North Star
 
+> Status: current
+> Source of truth: this page and its linked executable surfaces
+
 **One idea: the harness briefs a capable judge, and keeps teeth only where a
 wrong answer escapes.** Equip judgment; fence only cliffs.
 

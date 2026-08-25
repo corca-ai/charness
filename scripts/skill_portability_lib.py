@@ -113,8 +113,6 @@ def _is_author_only_cite(path: str) -> bool:
         return True
     if path.startswith(("skills/public/", "skills/support/", "skills/shared/")):
         return True
-    if path.startswith("docs/conventions/") and path.endswith(".md"):
-        return True
     if path.startswith("docs/") and path.endswith(".md"):
         return True
     return False

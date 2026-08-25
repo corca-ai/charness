@@ -1,5 +1,8 @@
 # Testability + Test-DSL Initiative
 
+> Status: current
+> Source of truth: this page and its linked executable surfaces
+
 Working record for the test-quality effort started 2026-06-03. Tracks the
 original intent, the decisions taken, what shipped, and the remaining
 obligations. Update this doc as slices land; link it from

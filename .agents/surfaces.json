@@ -92,16 +92,12 @@
       ],
       "sync_commands": [],
       "verify_commands": [
-        "python3 scripts/check_doc_links.py --repo-root .",
-        "python3 scripts/check_command_docs.py --repo-root .",
-        "python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing",
-        "python3 scripts/check_docs_graph.py --repo-root . || { [ \"$?\" -eq 3 ] && ! command -v awiki >/dev/null; }",
-        "./scripts/check-markdown.sh",
+        "./scripts/check-docs.sh",
         "./scripts/check-secrets.sh"
       ],
       "notes": [
         "Keep human-facing docs in sync with generated markdown copies.",
-        "Run the markdown, link, and docs-graph checks before closeout.",
+        "Run the composite docs receipt, then the secret scan, before closeout.",
         "docs-graph is HERE and not only in the pre-push lane: a docs edit that orphaned a page or added a link-only line was caught by the push, after the slice was committed and its closeout had reported completed. The push lane already carried it for exactly this change class; the closeout obligation for the same surface did not, so the only observer of a docs-only regression was the one that runs after the work is done. Exit 3 is tolerated ONLY when awiki is genuinely absent. check_docs_graph reports UNESTABLISHED on that, and the closeout executor fails on ANY nonzero and then stops the plan, so an unmapped 3 would show a docs-graph defect that is not one and would stop check-markdown and check-secrets from running at all. The `command -v awiki` conjunct is load-bearing and was added by review: exit 3 ALSO covers a scanned-document count below the minimum and, through a blanket except, any crash including the gate\u0027s own \u0022misconfigured\u0022 refusal \u2014 a bare `[ $? -eq 3 ]` turned every one of those into a closeout pass.",
         "Markdown source/derived patterns use <dir>/*.md, NOT <dir>/**/*.md: matching is fnmatch (* crosses /), so *.md covers top-level and nested while the bare **/ form misses a top-level <dir>/<file>.md (e.g. packaging/README.md, which previously escaped these checks at closeout) (#331)."
       ]
@@ -200,6 +196,7 @@
       "verify_commands": [
         "python3 scripts/check_release_issue_ledger.py --repo-root . --ledger charness-artifacts/issues/2026-08-20-next-release-ledger.json",
         "python3 scripts/validate_quality_artifact.py --repo-root .",
+        "python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing",
         "./scripts/check-markdown.sh",
         "./scripts/check-secrets.sh"
       ],
@@ -660,7 +657,7 @@
         "python3 scripts/check_github_actions.py --repo-root ."
       ],
       "notes": [
-        "Each CI step invokes a repo-owned validator so rules stay single-source; see docs/conventions/validator-timing-layers.md.",
+        "Each CI step invokes a repo-owned validator so rules stay single-source; see docs/validator-timing-layers.md.",
         "The PR mirror job keeps the plain coverage probe (--write-fresh-marker), never the dynamic-context export."
       ]
     },

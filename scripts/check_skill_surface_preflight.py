@@ -33,7 +33,7 @@ EXEMPT_SECTION_REMEDIATION = (
     "A line under an exempt `## References` / `## Load-Bearing Anchors` / "
     "`## Closeout Vocabulary` heading must stay token-shaped. Rewrite the flagged "
     "line as a single clause, or move the explanation into `references/` — see "
-    "docs/conventions/authoring-preflight.md `## SKILL.md core headroom`."
+    "docs/authoring-preflight.md `## SKILL.md core headroom`."
 )
 # The anchor scan's own remediation, which reached the operator only through
 # `skill_issue_anchor_scan.format_human`. This gate no longer renders human text,

@@ -1,5 +1,9 @@
 # Spec: Issue #135 — T-first Self-Evolving Unit (6-leg umbrella)
 
+> Status: superseded in part (2026-08-25)
+> Source of truth: current skill, retro, and lesson-ledger contracts; the
+> historical T-events leg below is not an active surface
+
 Source: https://github.com/corca-ai/charness/issues/135
 
 이 spec은 issue 135의 design exploration을 implementation contract로 떨어뜨린

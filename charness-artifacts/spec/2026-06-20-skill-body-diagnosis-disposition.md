@@ -45,7 +45,7 @@ the missing lossless half, keyed to the lines a cut actually removes:
 Locked by `tests/quality_gates/test_check_skill_cut_safety.py` (contract-break
 BLOCK, test-literal BLOCK, reference-home-gap REVIEW, sprawl-split-is-lossless
 clean, package-pin-may-move clean, `--strict`). Documented in
-[authoring-preflight.md](../../docs/conventions/authoring-preflight.md) and
+[authoring-preflight.md](../../docs/authoring-preflight.md) and
 drift-guarded.
 
 **Known blind spot (defense in depth, precisely scoped):** the gap applies **only

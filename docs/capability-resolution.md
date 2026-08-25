@@ -1,5 +1,8 @@
 # Capability Resolution
 
+> Status: current
+> Source of truth: this page and its linked executable surfaces
+
 ## Problem
 
 `charness` already models provider capability metadata for external tools and

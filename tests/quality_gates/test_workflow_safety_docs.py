@@ -32,7 +32,7 @@ def test_quality_reference_carries_ci_only_recovery_protocol() -> None:
 
 
 def test_implementation_discipline_mentions_symbol_residue_advisory() -> None:
-    discipline = _read("docs/conventions/implementation-discipline.md")
+    discipline = _read("docs/implementation-discipline.md")
 
     assert "check_symbol_residue.py" in discipline
     assert "advisory by design (#259)" in discipline

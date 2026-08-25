@@ -4,7 +4,7 @@ commands:
     help_command: ./charness --help
     doc_paths:
       - README.md
-      - docs/generated/cli-reference.md
+      - docs/cli-reference.md
     required_help_contains:
       - init
       - doctor
@@ -17,7 +17,6 @@ commands:
       - capability
       - goal
       - tool
-      - session-capture
       - worktree
     required_doc_contains:
       - The CLI is there so humans and agents can inspect local harness state instead of guessing.
@@ -29,23 +28,25 @@ commands:
     help_command: ./charness task --help
     doc_paths:
       - docs/agent-task-envelope.md
-      - docs/generated/cli-reference.md
+      - docs/cli-reference.md
     required_help_contains:
       - claim
       - submit
       - abort
+      - review
       - status
       - --repo-root
     required_doc_contains:
       - charness task claim slice-1
       - charness task submit slice-1
+      - charness task review slice-1
       - charness task abort slice-1
       - .charness/tasks/
   init:
     help_command: ./charness init --help
     doc_paths:
       - README.md
-      - docs/generated/cli-reference.md
+      - docs/cli-reference.md
     required_help_contains:
       - --skip-cli-install
       - --skip-claude-wrapper
@@ -58,7 +59,7 @@ commands:
     help_command: ./charness doctor --help
     doc_paths:
       - README.md
-      - docs/generated/cli-reference.md
+      - docs/cli-reference.md
     required_help_contains:
       - --write-state
       - --next-action
@@ -70,7 +71,7 @@ commands:
     help_command: ./charness update --help
     doc_paths:
       - README.md
-      - docs/generated/cli-reference.md
+      - docs/cli-reference.md
     required_help_contains:
       - --no-pull
       - --skip-codex-cache-refresh
@@ -82,7 +83,7 @@ commands:
   version:
     help_command: ./charness version --help
     doc_paths:
-      - docs/generated/cli-reference.md
+      - docs/cli-reference.md
     required_help_contains:
       - --verbose
       - --check
@@ -91,14 +92,14 @@ commands:
   reset:
     help_command: ./charness reset --help
     doc_paths:
-      - docs/generated/cli-reference.md
+      - docs/cli-reference.md
     required_doc_contains:
       - charness reset
       - Remove host plugin state for Codex and Claude while preserving the managed checkout and CLI.
   uninstall:
     help_command: ./charness uninstall --help
     doc_paths:
-      - docs/generated/cli-reference.md
+      - docs/cli-reference.md
     required_help_contains:
       - --delete-checkout
       - --delete-cli
@@ -108,7 +109,7 @@ commands:
   capability:
     help_command: ./charness capability --help
     doc_paths:
-      - docs/generated/cli-reference.md
+      - docs/cli-reference.md
       - docs/capability-resolution.md
     required_help_contains:
       - init
@@ -124,7 +125,7 @@ commands:
   tool:
     help_command: ./charness tool --help
     doc_paths:
-      - docs/generated/cli-reference.md
+      - docs/cli-reference.md
       - docs/control-plane.md
       - docs/external-integrations.md
       - docs/handoff.md
@@ -144,7 +145,7 @@ commands:
   goal:
     help_command: ./charness goal --help
     doc_paths:
-      - docs/generated/cli-reference.md
+      - docs/cli-reference.md
       - docs/development.md
     required_help_contains:
       - check
@@ -154,7 +155,7 @@ commands:
   goal-check:
     help_command: ./charness goal check --help
     doc_paths:
-      - docs/generated/cli-reference.md
+      - docs/cli-reference.md
       - docs/development.md
     required_help_contains:
       - --goal-path
@@ -167,41 +168,58 @@ commands:
   task-claim:
     help_command: ./charness task claim --help
     doc_paths:
-      - docs/generated/cli-reference.md
+      - docs/cli-reference.md
     required_help_contains:
       - --summary
       - --agent
+      - --execution-ref
     required_doc_contains:
       - charness task claim
   task-submit:
     help_command: ./charness task submit --help
     doc_paths:
-      - docs/generated/cli-reference.md
+      - docs/cli-reference.md
     required_help_contains:
+      - --agent
+      - --execution-ref
       - --summary
-      - --artifact
+      - --result-carrier
     required_doc_contains:
       - charness task submit
   task-abort:
     help_command: ./charness task abort --help
     doc_paths:
-      - docs/generated/cli-reference.md
+      - docs/cli-reference.md
     required_help_contains:
+      - --agent
+      - --execution-ref
       - --reason
     required_doc_contains:
       - charness task abort
   task-status:
     help_command: ./charness task status --help
     doc_paths:
-      - docs/generated/cli-reference.md
+      - docs/cli-reference.md
     required_help_contains:
       - task_id
     required_doc_contains:
       - charness task status
+  task-review:
+    help_command: ./charness task review --help
+    doc_paths:
+      - docs/cli-reference.md
+      - docs/agent-task-envelope.md
+    required_help_contains:
+      - --agent
+      - --execution-ref
+      - --verdict
+      - --summary
+    required_doc_contains:
+      - charness task review
   catalog:
     help_command: ./charness catalog --help
     doc_paths:
-      - docs/generated/cli-reference.md
+      - docs/cli-reference.md
     required_help_contains:
       - list
       - refresh
@@ -213,7 +231,7 @@ commands:
     help_command: ./charness catalog list --help
     doc_paths:
       - AGENTS.md
-      - docs/generated/cli-reference.md
+      - docs/cli-reference.md
     required_help_contains:
       - --repo-root
     required_doc_contains:
@@ -221,7 +239,7 @@ commands:
   catalog-refresh:
     help_command: ./charness catalog refresh --help
     doc_paths:
-      - docs/generated/cli-reference.md
+      - docs/cli-reference.md
     required_help_contains:
       - --repo-root
     required_doc_contains:
@@ -229,7 +247,7 @@ commands:
   catalog-resolve-skill-path:
     help_command: ./charness catalog resolve-skill-path --help
     doc_paths:
-      - docs/generated/cli-reference.md
+      - docs/cli-reference.md
     required_help_contains:
       - --skill-id
       - --reported-path
@@ -238,7 +256,7 @@ commands:
   capability-init:
     help_command: ./charness capability init --help
     doc_paths:
-      - docs/generated/cli-reference.md
+      - docs/cli-reference.md
       - docs/capability-resolution.md
     required_help_contains:
       - --force
@@ -248,7 +266,7 @@ commands:
   capability-resolve:
     help_command: ./charness capability resolve --help
     doc_paths:
-      - docs/generated/cli-reference.md
+      - docs/cli-reference.md
       - docs/capability-resolution.md
     required_help_contains:
       - logical_id
@@ -258,7 +276,7 @@ commands:
   capability-doctor:
     help_command: ./charness capability doctor --help
     doc_paths:
-      - docs/generated/cli-reference.md
+      - docs/cli-reference.md
       - docs/capability-resolution.md
     required_help_contains:
       - logical_id
@@ -267,7 +285,7 @@ commands:
   capability-env:
     help_command: ./charness capability env --help
     doc_paths:
-      - docs/generated/cli-reference.md
+      - docs/cli-reference.md
       - docs/capability-resolution.md
     required_help_contains:
       - logical_id
@@ -276,7 +294,7 @@ commands:
   capability-explain:
     help_command: ./charness capability explain --help
     doc_paths:
-      - docs/generated/cli-reference.md
+      - docs/cli-reference.md
       - docs/capability-resolution.md
     required_help_contains:
       - skill_id
@@ -285,7 +303,7 @@ commands:
   tool-doctor:
     help_command: ./charness tool doctor --help
     doc_paths:
-      - docs/generated/cli-reference.md
+      - docs/cli-reference.md
       - docs/control-plane.md
     required_help_contains:
       - --no-write-locks
@@ -296,7 +314,7 @@ commands:
   tool-repair:
     help_command: ./charness tool repair --help
     doc_paths:
-      - docs/generated/cli-reference.md
+      - docs/cli-reference.md
       - docs/control-plane.md
     required_help_contains:
       - --execute
@@ -306,7 +324,7 @@ commands:
   tool-sync-support:
     help_command: ./charness tool sync-support --help
     doc_paths:
-      - docs/generated/cli-reference.md
+      - docs/cli-reference.md
       - docs/control-plane.md
     required_help_contains:
       - --upstream-checkout
@@ -317,7 +335,7 @@ commands:
   tool-install:
     help_command: ./charness tool install --help
     doc_paths:
-      - docs/generated/cli-reference.md
+      - docs/cli-reference.md
       - docs/control-plane.md
     required_help_contains:
       - --recommendation-role
@@ -328,7 +346,7 @@ commands:
   tool-update:
     help_command: ./charness tool update --help
     doc_paths:
-      - docs/generated/cli-reference.md
+      - docs/cli-reference.md
       - docs/control-plane.md
     required_help_contains:
       - --skip-sync-support
@@ -336,44 +354,10 @@ commands:
       - tool_ids
     required_doc_contains:
       - charness tool update agent-browser
-  session-capture:
-    help_command: ./charness session-capture --help
-    doc_paths:
-      - docs/generated/cli-reference.md
-    required_help_contains:
-      - status
-      - install
-      - uninstall
-    required_doc_contains:
-      - charness session-capture status
-  session-capture-status:
-    help_command: ./charness session-capture status --help
-    doc_paths:
-      - docs/generated/cli-reference.md
-    required_help_contains:
-      - --home-root
-    required_doc_contains:
-      - charness session-capture status
-  session-capture-install:
-    help_command: ./charness session-capture install --help
-    doc_paths:
-      - docs/generated/cli-reference.md
-    required_help_contains:
-      - --host
-    required_doc_contains:
-      - charness session-capture install
-  session-capture-uninstall:
-    help_command: ./charness session-capture uninstall --help
-    doc_paths:
-      - docs/generated/cli-reference.md
-    required_help_contains:
-      - --host
-    required_doc_contains:
-      - charness session-capture uninstall
   worktree:
     help_command: ./charness worktree --help
     doc_paths:
-      - docs/generated/cli-reference.md
+      - docs/cli-reference.md
       - docs/worktree-prepare.md
     required_help_contains:
       - create
@@ -392,7 +376,7 @@ commands:
   worktree-create:
     help_command: ./charness worktree create --help
     doc_paths:
-      - docs/generated/cli-reference.md
+      - docs/cli-reference.md
       - docs/worktree-prepare.md
     required_help_contains:
       - --path
@@ -403,7 +387,7 @@ commands:
   worktree-add:
     help_command: ./charness worktree add --help
     doc_paths:
-      - docs/generated/cli-reference.md
+      - docs/cli-reference.md
       - docs/worktree-prepare.md
     required_help_contains:
       - --path
@@ -414,7 +398,7 @@ commands:
   worktree-doctor:
     help_command: ./charness worktree doctor --help
     doc_paths:
-      - docs/generated/cli-reference.md
+      - docs/cli-reference.md
       - docs/worktree-prepare.md
     required_help_contains:
       - --repo-root
@@ -423,7 +407,7 @@ commands:
   worktree-prepare:
     help_command: ./charness worktree prepare --help
     doc_paths:
-      - docs/generated/cli-reference.md
+      - docs/cli-reference.md
       - docs/worktree-prepare.md
     required_help_contains:
       - --repo-root
@@ -433,7 +417,7 @@ commands:
   worktree-audit:
     help_command: ./charness worktree audit --help
     doc_paths:
-      - docs/generated/cli-reference.md
+      - docs/cli-reference.md
       - docs/worktree-prepare.md
     required_help_contains:
       - --repo-root
@@ -443,7 +427,7 @@ commands:
   worktree-cleanup:
     help_command: ./charness worktree cleanup --help
     doc_paths:
-      - docs/generated/cli-reference.md
+      - docs/cli-reference.md
       - docs/worktree-prepare.md
     required_help_contains:
       - --path

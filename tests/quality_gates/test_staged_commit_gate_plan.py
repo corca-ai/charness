@@ -297,7 +297,7 @@ def test_staged_commit_plan_covers_domain_and_markdown_triggers() -> None:
     assert "check-markdown (staged)" in labels
 
 
-# Timing-layer pulls (docs/conventions/validator-timing-layers.md): one test per
+# Timing-layer pulls (docs/validator-timing-layers.md): one test per
 # pulled guard — the favorable (cheap + changed-scoped + deterministic) subset
 # fires at commit time via this dispatcher, and not for unrelated change classes.
 
@@ -437,7 +437,7 @@ def test_timing_layer_completeness_fires_for_run_quality_or_timing_doc_edits_onl
     # #368 meta-gate: flips only when scripts/run-quality.sh or the timing doc
     # changes, so a newly added validator cannot sit unclassified.
     assert "check-timing-layer-completeness" in _labels(["scripts/run-quality.sh"])
-    assert "check-timing-layer-completeness" in _labels(["docs/conventions/validator-timing-layers.md"])
+    assert "check-timing-layer-completeness" in _labels(["docs/validator-timing-layers.md"])
     assert "check-timing-layer-completeness" not in _labels(["scripts/new_helper.py"])
     assert "check-timing-layer-completeness" not in _labels(["docs/usage.md"])
     assert "check-timing-layer-completeness" in STRUCTURAL_SWEEP_LABELS

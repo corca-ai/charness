@@ -414,13 +414,11 @@ def test_ac4_seed_only_window_baseline_is_empty(tmp_path: Path) -> None:
 
 
 # AC5 -------------------------------------------------------------------------
-def test_ac5_round_trip_independent_of_usage_episodes_adapter(tmp_path: Path) -> None:
-    # Independence is structural: the RCA ledger never touches the
-    # usage-episodes adapter or its state/session machinery, so it works under
-    # any adapter state (the adapter is currently enabled in this repo, which is
-    # a stronger independence proof than the spec's assumed disabled state).
-    # Reusing the pure portable-path helper is the spec-blessed reuse, not coupling.
-    forbidden = ("usage-episodes-adapter", "emit_usage_episode", ".charness/usage-episodes", "usage_episode.jsonl")
+def test_ac5_round_trip_independent_of_product_telemetry(tmp_path: Path) -> None:
+    # Independence is structural: the RCA ledger never depends on product
+    # telemetry or host-session state. Reusing the pure portable-path helper is
+    # the spec-blessed reuse, not coupling.
+    forbidden = ("emit_product_telemetry", ".charness/telemetry", "product_telemetry.jsonl")
     for name in ("record_rca_event.py", "validate_rca_ledger.py", "aggregate_rca_ledger.py", "rca_ledger_lib.py"):
         source = (ROOT / "scripts" / name).read_text(encoding="utf-8")
         for token in forbidden:
@@ -439,15 +437,6 @@ def test_ac5_round_trip_independent_of_usage_episodes_adapter(tmp_path: Path) ->
 
 
 # AC6 -------------------------------------------------------------------------
-def test_ac6_doc_contains_rubric() -> None:
-    doc = (ROOT / "docs" / "product-success-metrics.md").read_text(encoding="utf-8")
-    assert "Classification Rubric" in doc
-    assert "applies to **every** `durable_kind`" in doc
-    assert "Tie-break default" in doc
-    assert "converted=false" in doc
-
-
-# AC7 -------------------------------------------------------------------------
 def test_ac7_on_state_keeps_na_and_no_baseline_number(tmp_path: Path) -> None:
     # Slice 2 wired auto-append, so the banner reads ON. The substantive guard
     # AC7 protects (no numeric baseline while the seed-excluded window is empty)
@@ -515,7 +504,7 @@ def test_slice2_append_reference_is_presence_gated_and_rubric_anchored() -> None
     assert "scripts/record_rca_event.py" in text
     assert "silent no-op" in text
     # judgment calls defer to the rubric instead of being restated/extended here
-    assert "product-success-metrics.md" in text
+    assert "rca-conversion-ledger.md" in text
     # the seed flag must stay reserved for hand-entered history
     assert "Never pass `--seed`" in text
     # tie-break default to converted=false on ambiguity

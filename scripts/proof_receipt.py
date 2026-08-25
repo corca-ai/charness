@@ -139,7 +139,7 @@ def _closeout_cause(payload: dict[str, object], failed_commands: list[dict[str, 
         cause = _first_text(payload.get(key))
         if cause:
             return cause
-    for key in ("mutation_coverage_changed_line_proof", "usage_episode"):
+    for key in ("mutation_coverage_changed_line_proof",):
         value = payload.get(key)
         if isinstance(value, dict):
             cause = _first_text(value.get("error"))

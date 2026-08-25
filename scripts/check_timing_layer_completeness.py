@@ -5,7 +5,7 @@
 Every gate `run-quality.sh` runs (every `queue_*` wrapper's literal label, read by
 the shared `quality_label_universe` reader — this gate saw only `queue_selected`
 until 2026-08-10, so three opt-in gates were unclassified the whole time) must
-carry a recorded timing verdict in `docs/conventions/validator-timing-layers.md`'s
+carry a recorded timing verdict in `docs/validator-timing-layers.md`'s
 classification table — either pulled to the commit boundary or an explicit
 "stays" reason. This closes the recurring shift-left class structurally
 (#314/#319/#332/#366/#368): each prior instance was a cheap, deterministic,
@@ -34,7 +34,7 @@ from runtime_bootstrap import repo_root_from_script
 REPO_ROOT = repo_root_from_script(__file__)
 
 RUN_QUALITY_PATH = Path("scripts/run-quality.sh")
-TIMING_DOC_PATH = Path("docs/conventions/validator-timing-layers.md")
+TIMING_DOC_PATH = Path("docs/validator-timing-layers.md")
 PRE_PUSH_PATH = Path(".githooks/pre-push")
 DOCS_ONLY_RE = re.compile(r'^DOCS_ONLY_LABELS="([^"]*)"', re.MULTILINE)
 TABLE_HEADING = "## Classification table"

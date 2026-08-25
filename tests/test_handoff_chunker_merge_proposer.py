@@ -83,7 +83,7 @@ def test_shared_file_pair_merges_on_full_path(lib):
         lib,
         2,
         "Extend doc-link validator for portable placeholders",
-        paths=("scripts/check_doc_links.py", "docs/conventions/implementation-discipline.md"),
+        paths=("scripts/check_doc_links.py", "docs/implementation-discipline.md"),
     )
     proposal = lib.propose_merges([entry_a, entry_b])
     assert len(proposal.standalone) == 2
@@ -155,7 +155,7 @@ def test_shared_skill_pair_merges_on_skill_id(lib):
 
 
 def test_shared_policy_pair_merges_on_convention_doc(lib):
-    policy = "docs/conventions/implementation-discipline.md"
+    policy = "docs/implementation-discipline.md"
     entry_a = _entry(
         lib,
         5,

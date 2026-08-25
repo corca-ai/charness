@@ -18,7 +18,7 @@ Two signals, both keyed off the current (uncommitted) diff:
 Advisory by default (prints findings, exit 0); ``--strict`` exits non-zero so a
 caller can gate on it. The substring/path heuristic can over-report, so the
 default stays advisory per the proportionality guidance in
-docs/conventions/authoring-preflight.md.
+docs/authoring-preflight.md.
 """
 from __future__ import annotations
 

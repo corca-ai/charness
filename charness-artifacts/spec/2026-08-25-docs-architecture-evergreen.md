@@ -14,9 +14,9 @@ roadmap can therefore become the accidental source of truth.
 ## Architecture Contract
 
 - `README.md` is first-touch orientation and points to the canonical docs index.
-- `docs/index.md` is the one flat-wiki entry point. New evergreen topic pages
-  live directly under `docs/`; an existing nested tree is preserved until an
-  explicit migration proves links and ownership.
+- `docs/index.md` is the one flat-wiki entry point. Evergreen topic pages live
+  directly under `docs/`; the former nested `conventions/` and `generated/`
+  directories were flattened in this migration.
 - An evergreen `docs/` page states its status (`current`, `conditional`, or
   `generated`), owns one question, names its source of truth, and records the
   last verification date when that fact can change. It describes current
@@ -34,9 +34,8 @@ roadmap can therefore become the accidental source of truth.
 
 ## Current Audit Findings
 
-- `docs/README.md` is a substantial, coherent index, but it is named contrary
-  to the setup contract and several machine-readable messages still call it
-  canonical.
+- `docs/README.md` is now a small compatibility pointer; `docs/index.md` is the
+  only maintained index.
 - `docs/operator-acceptance.md` is useful but contains a guarded reference to a
   missing `docs/roadmap.md`; its status and source-of-truth relationship need
   to be explicit rather than silently relying on a missing optional page.
@@ -57,8 +56,7 @@ The repository currently has four cooperating layers:
 consumer/operator
         │
         ├─ README.md ──> docs/index.md ──> docs/*.md
-        │                              ├─ conventions/ (policy)
-        │                              └─ generated/   (producer-owned output)
+        │                              └─ flat pages (policy and generated output)
         │
         ├─ AGENTS.md ──> skill routing, safety, review, and docs principles
         │       └─ CLAUDE.md -> AGENTS.md
@@ -78,33 +76,30 @@ operational memory and evidence
              └─ retro/issue/...   (history, decisions, and external closeout)
 ```
 
-Measured on 2026-08-25: `docs/` contains 44 Markdown pages; the link gate and
-graph gate both pass; the graph reports `orphans=0`, `islands=0`, and
+Measured on 2026-08-25: `docs/` contains 44 Markdown pages; the composite docs
+gate passes its syntax, reference, graph, and link components; the graph reports
+`orphans=0`, `islands=0`, and
 `largest_component_ratio=1.0`. The capability inventory reports 20 public
 skills, 2 support skills, and 12 integrations, with the consumer-validator
 catalog at `status: pass` (14 consumer-facing validators). Source/plugin
 mirrors were regenerated and compared after the setup and achieve changes.
 
-This is structurally healthy but not fully freshness-healthy. The topology,
-ownership boundaries, and generated mirror are green. The existing gates do not
-yet prove that every one of the 44 pages carries current status/source-of-truth
-metadata or that its prose remains factually current. Several pages are active
-contracts; dated plans and working records (notably the north-star roadmap and
-older initiative notes) still need a page-by-page narrative classification
-before they can be safely moved or deleted.
+This is structurally healthy but not fully prose-freshness-proven. The topology,
+ownership boundaries, generated mirror, and required status/source metadata are
+green. The gates do not claim that every sentence remains freshly re-researched;
+dated plans and working records stay under `charness-artifacts/` when they stop
+being current.
 
 ## Migration Slice
 
-1. Add `docs/index.md` as the canonical copy of the current index and make
-   `docs/README.md` a compatibility pointer.
+1. Add `docs/index.md` as the canonical index and make `docs/README.md` a
+   compatibility pointer. **Done 2026-08-25.**
 2. Update root README, docs-graph guidance, and the awiki integration fact to
-   name `docs/index.md`; preserve fixture references that intentionally test a
-   missing path.
-3. Add the documentation principles to root `AGENTS.md` and the setup profile
-   so consumer repos inherit the same evergreen/source-of-truth policy.
-4. Add status/source-of-truth metadata to the canonical index and the two live
-   exceptions (handoff and operator acceptance); classify the roadmap before
-   moving or deleting it.
+   name `docs/index.md`. **Done 2026-08-25.**
+3. Add documentation principles to root `AGENTS.md` and the setup profile.
+   **Done 2026-08-25.**
+4. Flatten the former convention/generated pages and add status/source metadata
+   to current docs. **Done 2026-08-25.**
 
 ## Acceptance
 
@@ -122,7 +117,7 @@ before they can be safely moved or deleted.
 
 ## Non-Claims
 
-This slice does not claim that every existing page is factually current, that
-the roadmap is obsolete, or that a consumer's nested docs can be flattened
-without an explicit migration. A later quality/narrative pass must classify
-remaining pages and choose any moves.
+This slice does not claim that every sentence is freshly re-researched or that
+active roadmaps are product truth. It does claim the repository's current docs
+surface is flat, linked, and governed by the composite docs receipt; history
+and superseded concepts remain clearly classified under `charness-artifacts/`.

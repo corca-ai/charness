@@ -1,5 +1,8 @@
 # Artifact Policy
 
+> Status: current
+> Source of truth: this page and its linked executable surfaces
+
 This document explains where `charness` should keep different kinds of
 knowledge. The goal is not one perfect file pattern. The goal is a stable
 default plus explicit exceptions.

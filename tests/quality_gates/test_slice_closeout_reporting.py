@@ -40,12 +40,6 @@ def _full_payload() -> dict:
             {"path": "scripts/x.py", "lines": 470, "limit": 480, "headroom": 10, "near_limit": True},
             {"path": "scripts/y.py", "lines": 10, "limit": 480, "headroom": 470, "near_limit": False},
         ],
-        "usage_episode": {
-            "status": "recorded",
-            "records_path": "charness-artifacts/usage/x.jsonl",
-            "episode_id": "ep-1",
-            "error": "none-but-shown",
-        },
         "executed_commands": [
             {"phase": "verify", "command": "pytest -q", "returncode": 0, "stdout": "", "stderr": ""},
             {"phase": "verify", "command": "ruff check", "returncode": 1, "stdout": "bad out", "stderr": "bad err\n"},
@@ -87,12 +81,6 @@ def test_print_text_drives_every_reporting_helper(monkeypatch, capsys) -> None:
     assert "[verify] PASS pytest -q" in out
     assert "[verify] FAIL ruff check" in out
     assert "bad out" in out and "bad err" in out
-    # usage episode
-    assert "Usage episode:" in out
-    assert "- status: recorded" in out
-    assert "- records_path: charness-artifacts/usage/x.jsonl" in out
-    assert "- episode_id: ep-1" in out
-    assert "- error: none-but-shown" in out
 
 
 def test_print_text_omits_optional_blocks_when_absent(monkeypatch, capsys) -> None:
@@ -108,7 +96,6 @@ def test_print_text_omits_optional_blocks_when_absent(monkeypatch, capsys) -> No
             "cautilus_plan": {"run_mode": "none", "next_action": "none"},
             "risk_interrupt_plan": {"status": "not-applicable"},
             "headroom": [],
-            "usage_episode": None,
             "executed_commands": [],
         }
     )
@@ -116,7 +103,7 @@ def test_print_text_omits_optional_blocks_when_absent(monkeypatch, capsys) -> No
     assert "Cautilus proof:" not in out
     assert "Risk interrupt:" not in out
     assert "WARN: changed files near the length limit" not in out
-    assert "Usage episode:" not in out
+    assert "Product telemetry:" not in out
     assert "Executed commands:" not in out
 
 

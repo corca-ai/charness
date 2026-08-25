@@ -79,6 +79,15 @@
       "side_effect_watch_paths": [".charness/tasks"]
     },
     {
+      "command": "./charness task review",
+      "mutating": true,
+      "positional_args": ["task_id"],
+      "help_probe": "./charness task review --help",
+      "option_like_positional_probes": ["./charness task review --not-a-task --verdict approve --summary fixture"],
+      "dry_run_waiver": "Task review records the parent-owned verdict in a repo-local envelope; seeded task-envelope tests own sandboxed execution.",
+      "side_effect_watch_paths": [".charness/tasks"]
+    },
+    {
       "command": "./charness catalog refresh",
       "mutating": true,
       "help_probe": "./charness catalog refresh --help",
@@ -134,20 +143,6 @@
       "option_like_positional_probes": ["./charness tool update --not-a-tool"],
       "dry_run_probe": "./charness tool update --dry-run --not-a-tool",
       "side_effect_watch_paths": ["integrations/locks", "skills/support"]
-    },
-    {
-      "command": "./charness session-capture install",
-      "mutating": true,
-      "help_probe": "./charness session-capture install --help",
-      "dry_run_waiver": "Session-capture install edits real host configuration; usage-episode host-hook fixtures own isolated Claude and Codex roundtrips.",
-      "side_effect_watch_paths": ["~/.claude/settings.json", "~/.codex/config.toml", "~/.codex/hooks.json", ".charness/usage-episodes/host-hooks-state.json"]
-    },
-    {
-      "command": "./charness session-capture uninstall",
-      "mutating": true,
-      "help_probe": "./charness session-capture uninstall --help",
-      "dry_run_waiver": "Session-capture uninstall edits real host configuration; usage-episode host-hook fixtures own isolated Claude and Codex roundtrips.",
-      "side_effect_watch_paths": ["~/.claude/settings.json", "~/.codex/config.toml", "~/.codex/hooks.json", ".charness/usage-episodes/host-hooks-state.json"]
     },
     {
       "command": "./charness worktree create",

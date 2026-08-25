@@ -83,7 +83,7 @@ _MARKER = re.compile(r"^[\s>#*_`-]*fresh[- ]eye pass\s*:\s*(?P<target>[^\s,;—-
 # This module documents its own marker form, and a doc that shows the form must
 # not count as a use of it. Same exclusion the sibling floor-addition nudge keeps
 # for its own rule doc.
-_SELF_DOCUMENTING = ("scripts/new_proof_surface_advisory.py", "docs/conventions/implementation-discipline.md")
+_SELF_DOCUMENTING = ("scripts/new_proof_surface_advisory.py", "docs/implementation-discipline.md")
 
 SCOPE_EVALUATED = "evaluated"
 SCOPE_NOT_ESTABLISHED = "not-established"

@@ -4,11 +4,11 @@
   "inventory_schemaVersion": "charness.quality.boundary_bypass_inventory.v2",
   "call_site_fingerprint_algo_version": "1",
   "summary": {
-    "candidate_count": 53,
+    "candidate_count": 52,
     "convertible_count": 2,
-    "internal_boundary_count": 38,
+    "internal_boundary_count": 37,
     "keep_boundary_count": 26,
-    "candidate_key_count": 53
+    "candidate_key_count": 52
   },
   "candidate_keys": [
     "06661433f0e37fc3",
@@ -20,7 +20,6 @@
     "166f19bc4d890176",
     "16dae8afa91ebfea",
     "22272c782774662a",
-    "2a62cc2c688f7059",
     "2ab340eddc888fbc",
     "2afa2f7e74cef060",
     "311f0583cede02c5",
@@ -360,12 +359,6 @@
       ]
     },
     {
-      "test_file": "tests/quality_gates/test_slice_closeout_usage_episode.py",
-      "import_safe_targets": [
-        "scripts/run_slice_closeout.py"
-      ]
-    },
-    {
       "test_file": "tests/quality_gates/test_slice_manifest.py",
       "import_safe_targets": [
         "scripts/validate_slice_manifest.py"
@@ -491,5 +484,5 @@
       ]
     }
   ],
-  "writer_integrity_sha256": "f220fed14237bdd0d278546a15d3eb5a532fe7507361e2c1998110fd4b326b88"
+  "writer_integrity_sha256": "7f1a80585022a252681503b87b847e19e306bc0463bf707103fd50ed624e9444"
 }
