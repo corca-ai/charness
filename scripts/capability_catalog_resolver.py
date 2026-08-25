@@ -15,6 +15,8 @@ import re
 from pathlib import Path
 from typing import Any
 
+BOUNDARY_CONTRACT_ID = "skill_manifest_selection"
+
 _RECOVERY = {
     "kind": "refresh-plugin-install",
     "command": "charness update --detail",

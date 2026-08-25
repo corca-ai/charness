@@ -8,6 +8,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+# provenance-contract fixture: reviewer_delivery
 import pytest
 import yaml
 

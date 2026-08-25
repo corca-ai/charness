@@ -427,6 +427,17 @@ def test_cli_degraded_when_gate_baseline_missing(tmp_path: Path) -> None:
     assert _verdict(result)["status"] == "degraded"
 
 
+def test_cli_lineage_unavailability_is_not_approval_eligible(tmp_path: Path) -> None:
+    """The real duplicate verdict refuses approval when lineage paths are absent."""
+    repo = _consumer_repo(tmp_path, baseline_ids=("known1",), intentional_code=("known1",))
+    result = _run_gate(repo, tmp_path, code_ids=["known1"])
+    assert result.returncode == 0, result.stdout + result.stderr
+    verdict = _verdict(result)
+    assert verdict["lineage_readiness"]["status"] == "unavailable"
+    assert verdict["lineage_approval_eligible"] is False
+    assert any("REFUSAL (lineage)" in message for message in verdict["messages"])
+
+
 # SC5 — adapter-driven F / K honored end-to-end
 def test_cli_below_floor_advisory_honors_adapter_floor(tmp_path: Path) -> None:
     repo = _consumer_repo(tmp_path, fixable_ceiling=2, floor_F=3, escalation_K=1)

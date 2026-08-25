@@ -67,6 +67,8 @@ def _load_skill_runtime_bootstrap():
 
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
+
+
 _ratchet = SKILL_RUNTIME.load_local_skill_module(__file__, "dup_ratchet_lib")
 _ratchet_baseline = SKILL_RUNTIME.load_local_skill_module(__file__, "dup_ratchet_baseline_lib")
 _ratchet_git = SKILL_RUNTIME.load_local_skill_module(__file__, "dup_ratchet_git")
@@ -85,6 +87,8 @@ _quality_adapter = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "s
 
 DEFAULT_REVIEW_REL = "charness-artifacts/quality/dup-review.json"
 DEFAULT_GATE_BASELINE_REL = "charness-artifacts/quality/dup-ratchet-baseline.json"
+# Registry anchor: this consumer owns the domain-specific readiness verdict.
+BOUNDARY_CONTRACT_ID = "duplicate_lineage"
 # C: --write-baseline guardrail. A re-baseline whose added+removed family_id count
 # exceeds this requires an explicit --confirm-baseline-delta (a deliberate nose
 # scanner-version swing or a reviewed batch accept is the legitimate large case).
@@ -283,6 +287,9 @@ def _evaluate_config(repo_root: Path, config: dict, args) -> dict:  # noqa: C901
     baseline_families = _ratchet_baseline.load_gate_baseline_families(raw_baseline) or []
     lineage_readiness = _lineage.readiness(baseline_families, reviewed_ids=reviewed_code)
     verdict["lineage_readiness"] = lineage_readiness
+    # The duplicate consumer owns this verdict.  The shared registry describes
+    # the readiness obligation and refusal code but must not become a generic
+    # approval calculator for domain-specific semantics.
     verdict["lineage_approval_eligible"] = lineage_readiness["status"] == "ready"
     if lineage_readiness["status"] != "ready":
         verdict["messages"].append(

@@ -131,6 +131,7 @@ def _worker_delivered_artifact(
         json.dumps(
             {
                 "schema_version": "charness.reviewer_worker.v1",
+                "run_id": "issue-worker-run-1",
                 "backend": "codex_exec",
                 "status": "succeeded",
                 "terminal": True,
@@ -172,6 +173,9 @@ def _worker_delivered_artifact(
         capability_launch_envelope_sha256=receipt_capability_fields("issue-worker-1", payload=capability_payload)[
             "capability_launch_envelope_sha256"
         ],
+        output_file=str(result_path.resolve()),
+        receipt_file=str(receipt_path.resolve()),
+        producer_run_id="issue-worker-run-1",
         recorded_at="2026-08-21T00:00:00Z",
     )
     attempt.record_findings(

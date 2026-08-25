@@ -83,6 +83,35 @@ def _timing_layer_gates(repo_root: Path, paths: list[str], existing: list[str] |
         # the classification table exhaustive, so the shift-left class cannot recur via
         # an unclassified broad-only check. Flips only on these two files.
         gates.extend(_timing_pull_gate(repo_root, "check-timing-layer-completeness", "scripts/check_timing_layer_completeness.py", "--repo-root", str(repo_root)))
+    provenance_paths = {
+        "skills/shared/scripts/provenance_contract.py",
+        "skills/shared/scripts/reviewer_worker_report.py",
+        "skills/shared/scripts/reviewer_runner_support.py",
+        "scripts/capability_catalog_resolver.py",
+        "skills/public/quality/scripts/check_dup_ratchet.py",
+        "skills/public/quality/scripts/check_provenance_contract.py",
+        "plugins/charness/shared/scripts/provenance_contract.py",
+        "plugins/charness/shared/scripts/reviewer_worker_report.py",
+        "plugins/charness/shared/scripts/reviewer_runner_support.py",
+        "plugins/charness/scripts/capability_catalog_resolver.py",
+        "plugins/charness/skills/quality/scripts/check_dup_ratchet.py",
+        "plugins/charness/skills/quality/scripts/check_provenance_contract.py",
+        # The executable negative fixtures are part of the contract surface too.
+        # If one is weakened or removed without firing the contract gate, the
+        # registry can still look healthy while its proof has silently vanished.
+        "tests/quality_gates/test_reviewer_worker_report.py", "tests/quality_gates/test_reviewer_delivery_state_machine.py",
+        "tests/test_capability_catalog.py", "tests/quality_gates/test_dup_ratchet.py",
+    }
+    if any(path in provenance_paths for path in paths):
+        gates.extend(
+            _timing_pull_gate(
+                repo_root,
+                "check-provenance-contract",
+                "skills/public/quality/scripts/check_provenance_contract.py",
+                "--repo-root",
+                str(repo_root),
+            )
+        )
     if any(
         path in {
             ".agents/consumer-validator-adoption.yaml",

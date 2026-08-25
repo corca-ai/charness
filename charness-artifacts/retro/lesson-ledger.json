@@ -1604,6 +1604,36 @@
         ]
       },
       "snapshot_sha256": "b72d76d673455868a10d689f08b919dcc3ffd15f2818504bdb1b9b49ceac590d"
+    },
+    {
+      "session_id": "2026-08-25-715-721-5whys",
+      "snapshot": {
+        "kind": "charness.lesson-selection-preview",
+        "schema_version": 1,
+        "selection_policy_version": 3,
+        "seed": "2026-08-25-715-721-5whys",
+        "eligible_count": 43,
+        "bucket_counts": {
+          "recent": 3,
+          "value": 3,
+          "uncertainty": 3,
+          "archive": 0,
+          "archive_fallback_uncertainty": 1
+        },
+        "lesson_ids": [
+          "stale-current-pointer-at-closeout",
+          "global-probe-for-local-fact",
+          "skipped-is-not-passed",
+          "goal-closeout-evidence-binding",
+          "positive-effect-cannot-be-cited",
+          "bar-recorded-as-prose",
+          "proof-surface-message-drift",
+          "green-test-is-not-covered-line",
+          "agent-authored-score-role",
+          "changed-line-proof-before-broad-quality"
+        ]
+      },
+      "snapshot_sha256": "3a209c6b86d15b6c1097788baf8c0ce6a930622f0532d2bea5ea4c73720e9bf1"
     }
   ],
   "score_events": [

@@ -1168,6 +1168,20 @@ queue_selected "check-adapter-consumer-classification" python3 scripts/check_ada
 # contract metadata, and an explicit consumer adoption decision. This is the
 # catalog's self-check; a new validator cannot become silent by omission.
 queue_selected "check-consumer-validator-catalog" python3 scripts/check_consumer_validator_catalog.py --repo-root "$REPO_ROOT" --adoption-path .agents/consumer-validator-adoption.yaml --require-adoption
+PROVENANCE_CONTRACT_CHECKER=""
+for candidate in \
+  "$REPO_ROOT/skills/public/quality/scripts/check_provenance_contract.py" \
+  "$REPO_ROOT/skills/quality/scripts/check_provenance_contract.py"; do
+  if [[ -f "$candidate" ]]; then
+    PROVENANCE_CONTRACT_CHECKER="$candidate"
+    break
+  fi
+done
+if [[ -n "$PROVENANCE_CONTRACT_CHECKER" ]]; then
+  queue_selected "check-provenance-contract" python3 "$PROVENANCE_CONTRACT_CHECKER" --repo-root "$REPO_ROOT"
+else
+  queue_selected "check-provenance-contract" bash -c 'echo "ADVISORY: provenance contract checker is not packaged in this consumer tree; skipping optional registry proof."'
+fi
 queue_selected "check-closeout-floor-matrix" python3 scripts/check_closeout_floor_matrix.py --repo-root "$REPO_ROOT"
 # The floor matrix holds ONE copy of the classification vocabulary (its own
 # declaration). This holds the other five, which is #586's recorded instance:

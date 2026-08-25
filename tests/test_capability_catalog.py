@@ -6,6 +6,7 @@ import shutil
 import sys
 from pathlib import Path
 
+# provenance-contract fixture: skill_manifest_selection
 import pytest
 import yaml
 

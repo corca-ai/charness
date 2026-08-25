@@ -39,6 +39,14 @@ try:
 except ImportError:
     from skills.shared.scripts.reviewer_output import emit_yaml
 
+try:
+    from provenance_contract import BoundaryContractError, require_bound_fields
+except ImportError:
+    from skills.shared.scripts.provenance_contract import (
+        BoundaryContractError,
+        require_bound_fields,
+    )
+
 REPORT_SCHEMA_VERSION = "charness.reviewer_worker_report.v1"
 WORKER_SCHEMA_VERSION = "charness.reviewer_worker.v1"
 SUCCESS = "succeeded"
@@ -148,9 +156,10 @@ def _validate_receipt(
         "receipt_file": attempt.receipt_file,
         "producer_run_id": attempt.producer_run_id,
     }
-    if any(value is None for value in producer_joins.values()):
-        missing = ", ".join(field for field, value in producer_joins.items() if value is None)
-        return False, f"delivery attempt has no bound producer field(s): {missing}"
+    try:
+        require_bound_fields("reviewer_delivery", producer_joins)
+    except BoundaryContractError as exc:
+        return False, str(exc)
     expected_output = Path(attempt.output_file).expanduser().resolve()
     if Path(str(receipt.get("output_file", ""))).expanduser().resolve() != expected_output:
         return False, "worker receipt output_file does not match the producer binding"

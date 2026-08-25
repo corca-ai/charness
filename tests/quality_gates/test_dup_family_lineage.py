@@ -3,6 +3,8 @@ from __future__ import annotations
 import importlib.util
 from pathlib import Path
 
+# provenance-contract fixture: duplicate_lineage
+
 ROOT = Path(__file__).parents[2]
 SCRIPT = ROOT / "skills/public/quality/scripts/dup_family_lineage.py"
 spec = importlib.util.spec_from_file_location("dup_family_lineage", SCRIPT)

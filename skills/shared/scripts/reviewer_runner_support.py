@@ -34,6 +34,14 @@ except ImportError:
         utc_now,
     )
 
+try:
+    from provenance_contract import BoundaryContractError, require_terminal_fence
+except ImportError:
+    from skills.shared.scripts.provenance_contract import (
+        BoundaryContractError,
+        require_terminal_fence,
+    )
+
 
 def lesson_paths(repo_root: Path, args: Any) -> tuple[Path | None, Path | None]:
     """Resolve optional parent bundle/lane receipt and enforce all-or-none input."""
@@ -198,6 +206,7 @@ def finalize_attempt(
         receipt_error = exc
     pre_report: dict[str, Any] | None = None
     lesson_error: Exception | None = None
+    lesson_fence_ran = False
     if lesson_binding_data is not None:
         try:
             if repo_root is None or lesson_before is None:
@@ -210,6 +219,7 @@ def finalize_attempt(
                 lane_id=lesson_binding_data["lane_id"],
                 owner_role="worker",
             )
+            lesson_fence_ran = True
             if receipt is not None and receipt.get("status") == "succeeded":
                 boundary.validate_lane_receipt(
                     repo_root,
@@ -221,7 +231,13 @@ def finalize_attempt(
                     bundle_sha256=lesson_binding_data["bundle_sha256"],
                     parent_receipt_sha256=lesson_binding_data["parent_receipt_sha256"],
                 )
-        except (OSError, ValueError, KeyError, TypeError) as exc:
+            outcome = receipt.get("status") if receipt is not None else "missing"
+            if outcome not in {"succeeded", "timed-out", "interrupted"}:
+                outcome = "missing"
+            require_terminal_fence(
+                "lesson_finalization", outcome=outcome, fence_ran=lesson_fence_ran
+            )
+        except (OSError, ValueError, KeyError, TypeError, BoundaryContractError) as exc:
             lesson_error = exc
     if receipt is not None and receipt.get("status") == "succeeded":
         if lesson_error is None:

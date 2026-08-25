@@ -600,6 +600,10 @@ validators:
     consumer_facing: false
     decision: exclude
     reason: "skill-internal implementation or maintenance gate, not a consumer-authored artifact contract"
+  - path: skills/quality/scripts/check_provenance_contract.py
+    consumer_facing: false
+    decision: exclude
+    reason: "skill-internal implementation or maintenance gate, not a consumer-authored artifact contract"
   - path: skills/quality/scripts/check_regenerable_facts.py
     consumer_facing: false
     decision: exclude
