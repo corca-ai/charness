@@ -314,6 +314,7 @@ def test_publish_release_records_distinct_channel_disposition_and_still_closes(t
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
     assert payload["distinct_channel_verification"]["status"] == "not-confirmed"
+    assert payload["public_release_verification"] == "unproven"
     state = json.loads(Path(env["FAKE_GH_ISSUE_STATE"]).read_text(encoding="utf-8"))
     assert state["44"] == "CLOSED"
     artifact_text = (repo / "charness-artifacts" / "release" / "latest.md").read_text(encoding="utf-8")

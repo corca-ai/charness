@@ -413,6 +413,17 @@ def test_distinct_channel_section_does_not_assert_distinctness_it_lacks() -> Non
     )
     assert "did NOT confirm" in next(line for line in not_confirmed if "verdict" in line)
 
+    adapter_not_confirmed = ARTIFACT_SECTIONS.distinct_channel_verification_lines(
+        {
+            "status": "not-confirmed",
+            "channel": "adapter-probe",
+            "same_proxy_guard": "inconclusive-degenerate-release-view-template",
+        }
+    )
+    verdict = next(line for line in adapter_not_confirmed if "verdict" in line)
+    assert "distinctness NOT established" in verdict
+    assert "(a channel distinct from `gh release view`)" not in verdict
+
     # Falsifiable counterpart: the claim survives where it is earned.
     confirmed = ARTIFACT_SECTIONS.distinct_channel_verification_lines(
         {"status": "confirmed", "channel": "https-fetch", "expected_content": "v1.2.3"}

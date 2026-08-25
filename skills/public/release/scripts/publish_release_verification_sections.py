@@ -40,9 +40,14 @@ def _distinct_channel_qualifier(status: str, channel: str, guard: str | None) ->
         )
     if status == "skipped":
         return "**no distinct channel ran**"
-    if status != "confirmed":
-        return "a channel distinct from `gh release view`, which did NOT confirm this release"
     established = guard == "evaluated" if channel == "adapter-probe" else guard in (None, "evaluated")
+    if status != "confirmed":
+        if not established:
+            return (
+                "distinctness NOT established — the same-proxy guard reported "
+                f"`{guard or 'not-run'}`, so this probe did NOT confirm this release"
+            )
+        return "a channel distinct from `gh release view`, which did NOT confirm this release"
     if established:
         return "a channel distinct from `gh release view`"
     return (
