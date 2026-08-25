@@ -107,6 +107,20 @@ def _slug(title: str) -> str:
 def render_template(*, title: str, date_text: str, evidence_mode: bool = False) -> str:
     lines = [f"# {title}", f"Date: {date_text}", ""]
     lines.extend(["## Decision Under Review", "", "TODO the change or decision under critique, in one or two lines.", ""])
+    lines.extend(
+        [
+            "## Verification Scope Decision",
+            "",
+            "- Claim under test: TODO the smallest claim that must be established.",
+            "- Changed surfaces: TODO the changed paths and required final consumers.",
+            "- Minimum sufficient proof: TODO the cheapest proof that reaches those consumers.",
+            "- Deliberately omitted checks: TODO what is omitted and why it is not required here.",
+            "- Verifier contract: TODO the gate/validator identity and whether it changed or is suspect.",
+            "- Failure classification: TODO scope-too-broad | verifier-defect | subject-defect | none",
+            "- Retry key: TODO subject identity + verifier identity + input identity + failure identity",
+            "",
+        ]
+    )
     lines.extend(["## Failure Angles", "", "- TODO a distinct failure angle and why it could bite.", ""])
     lines.extend(["## Counterweight Pass", "", "- TODO separate the real blockers from over-worry.", ""])
     bins_legend = " | ".join(ALLOWED_BINS)

@@ -43,6 +43,23 @@ resolution in
 [meaningful-slice-cadence](../../../shared/references/meaningful-slice-cadence.md)
 *Review Cadence*.
 
+## Verification Boundary And Retry
+
+Before a gate or review rerun, record the smallest claim that needs proof and
+the final consumers that can actually observe it. Treat the verifier as a
+separate review surface when its implementation, trigger rules, output schema,
+or trust assumptions changed. The verifier check should be the cheapest
+contract/negative-control proof that can establish that surface; it does not
+implicitly authorize a full subject-suite rerun.
+
+Classify a failure as `scope-too-broad`, `verifier-defect`, or
+`subject-defect` before choosing a repair. A retry is justified only when at
+least one member of this identity tuple changed: subject, verifier, input, or
+failure observation. The same tuple and same failure without new evidence is a
+stop condition. Record the narrowed scope or non-claim and move on. Keep a
+broad final gate only when the irreversible boundary's required consumer
+closure calls for it.
+
 ## Slice Packet
 
 For standalone fresh-eye critique, pass a bounded packet instead of the whole

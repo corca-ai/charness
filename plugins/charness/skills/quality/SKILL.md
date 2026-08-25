@@ -66,7 +66,11 @@ not install tools, register hooks, or migrate gates without approval.
 4. Run applicable `gate_packets` as report-first evidence. Use each packet's
    `trust_model`, `cost_tier`, `parallel_group`, and `run_when` to decide what
    can be trusted directly, what can run in parallel, and what needs judgment
-   because false positives or false negatives are expected.
+   because false positives or false negatives are expected. Before a broad
+   gate, state the claim, affected consumer closure, and minimum sufficient
+   proof. A failing gate does not by itself widen the scope. When the gate or
+   validator changed, inspect its own contract and a cheap negative control
+   separately before rerunning unrelated subject checks.
 5. When the planner emits `structural_review_packet`, answer it before broad
    recommendations. Separate target-skill findings, ambient repo gate failures,
    opportunistic repairs, and non-claims; record a `structural review result:`
@@ -133,6 +137,10 @@ not install tools, register hooks, or migrate gates without approval.
 ## Invariants
 
 - Passing gates are evidence, not success by themselves.
+- Less is more in verification: a check is justified by the claim and required
+  consumer closure, not by the fact that the repository already has the check.
+  Record omitted checks as bounded non-claims, and do not pay for unrelated
+  reruns merely because one verifier failed.
 - A declaration is not execution: every adapter-derived command remains `not-run`
   until a later receipt records otherwise, and preset lineage remains metadata
   unless a concrete gate route reconciles it.

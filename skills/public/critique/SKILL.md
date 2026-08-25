@@ -32,12 +32,12 @@ Delegated reviewer fast path: read
 `../../shared/references/disposition-reviewer-brief.md` before treating the
 canonical path as blocked.
 
-Caller contract: pass a pending artifact or tight source summary, state success
-and out-of-scope lines, consume the four-bin triage (`Act Before Ship`, `Bundle
-Anyway`, `Over-Worry`, `Valid but Defer`), and write change-affecting results
-back into the durable contract. Record `Fresh-Eye Satisfaction` with the typed
-values in the output shape; `accepted-unreviewed-under-round-cap` explicitly
-means no fresh-eye approval exists for round-2 repairs.
+Caller contract: pass a pending artifact or tight source summary, state success,
+out-of-scope lines, and the scaffold's `Verification Scope Decision` (claim,
+consumer closure, minimum proof, omitted checks, verifier contract, and failure
+classification). Question the verifier itself, consume the four-bin triage
+(`Act Before Ship`, `Bundle Anyway`, `Over-Worry`, `Valid but Defer`), and write
+change-affecting results back into the durable contract; record typed `Fresh-Eye Satisfaction` and use `accepted-unreviewed-under-round-cap` only for round-2 repairs; see `references/cadence.md` for negative controls, retry identity, and the stop rule.
 
 Autonomous trigger: if no pending artifact or source summary is supplied, do
 not ask first by default; follow `references/autonomous-trigger.md`, infer a

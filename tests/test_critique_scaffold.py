@@ -78,6 +78,10 @@ def test_critique_scaffold_reports_validator_and_template(tmp_path: Path) -> Non
 
     template = payload["template"]
     # Exercise the three schemas the validator enforces when present.
+    assert "## Verification Scope Decision" in template
+    assert "Minimum sufficient proof" in template
+    assert "Verifier contract" in template
+    assert "scope-too-broad | verifier-defect | subject-defect" in template
     assert "## Structured Findings" in template
     assert "- F1 | bin: act-before-ship | evidence: moderate |" in template
     assert "## Reviewer Tier Evidence" in template

@@ -51,6 +51,9 @@ python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
    artifact persistence.
 7. Treat helper output as evidence, not terminal success. Judge public release
    surface verified status and open risks through `references/publication-boundary.md`.
+   Before a retry or resume, classify the failure as release-scope, verifier,
+   or subject failure and rerun only the smallest proof whose input changed.
+   A release helper's existence does not justify repeating every release check.
 8. End with operator update steps, maintainer install-refresh status, real-host
    proof status when required, and explicit non-claims.
 
@@ -84,6 +87,8 @@ re-running `--sync`, not by editing the block.
   `../issue/references/closeout-discipline.md` is rendered.
 - Do not treat tag push, workflow completion, or helper green as public release
   verification by itself.
+- Do not repeat a release gate with the same target, verifier, input, and failure
+  identity without new evidence; narrow the proof or record the non-claim first.
 - Do not run sync, export, bump, install/update, or git-mutation commands in
   parallel with validators; mutate, sync, verify, then publish.
 - Do not substitute same-agent review for the release critique gate.
