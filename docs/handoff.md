@@ -2,7 +2,7 @@
 
 > Status: live session state
 > Source of truth: current repository, release, and proof readbacks
-> Last verified: 2026-08-25
+> Last verified: 2026-08-26
 
 ## Workflow Trigger
 
@@ -25,17 +25,19 @@
 
 ## Current State
 
-- Published release: `6.4.1` (`v6.4.1`) — verify locally with
+- Published release: `6.5.0` (`v6.5.0`) — verify locally with
   `git describe --tags --abbrev=0`; the [release record](../charness-artifacts/release/latest.md)
-  and <https://github.com/corca-ai/charness/releases/tag/v6.4.1> are the sources
+  and <https://github.com/corca-ai/charness/releases/tag/v6.5.0> are the sources
   for the public claim.
 - The [quality receipt](../.charness/release-quality-receipt.json) is typed
   `pass` with no unproven subjects; its measured counts and the fresh-checkout
   plus installed `version`/`doctor` readbacks are the evidence source.
 - The claims review is recorded in the
-  [claims review artifact](../charness-artifacts/release-review/2026-08-25-v6.4.1-claims-review.md).
-  Its only finding is advisory: the dated critique narrative becomes stale when
-  revalidated against the final release delta.
+  [claims review artifact](../charness-artifacts/release-review/2026-08-26-v6.5.0-claims-review.json).
+  Its verdict is `unproven`: the bounded independent claims-review spawn timed
+  out without delivering a result, so no distinct claims observer is claimed.
+  Public release readback itself was verified through the unauthenticated HTTP
+  channel and remains separately owned by the release observer record.
 - `charness update` refreshed the installed surface. Restart Codex/Claude
   sessions before relying on newly rotated absolute skill paths; the update
   receipt reports one potentially stale active-session path.
@@ -51,15 +53,15 @@
 2. Requalify the open consumer-friction issues from GitHub, starting with #713
    and checking whether #689/#690/#691 have durable shipped evidence. Keep issue
    status as the source of truth; this release did not close them.
-3. Treat the advisory claims finding and the unauthored generated release body
+3. Treat the `unproven` claims review and the unauthored generated release body
    in the [release record](../charness-artifacts/release/latest.md) as follow-up
    work. Do not rewrite the published release record in place without a new
    proof packet and public readback.
 4. Preserve the release proof floor documented in the
    [operating contract](./operating-contract.md): typed quality
-   receipt, fresh-checkout probes, distinct observer, and distinct-channel
-   public verification. A zero exit code or reachable tag alone is not a
-   release verdict.
+   receipt, fresh-checkout probes, the recorded claims-review state, and
+   distinct-channel public verification. This release's claims review is
+   `unproven`; a zero exit code or reachable tag alone is not a release verdict.
 
 ## Discuss
 
