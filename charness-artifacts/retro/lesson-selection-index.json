@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-26",
-  "source_artifact_count": 569,
-  "candidate_count": 2278,
+  "source_artifact_count": 570,
+  "candidate_count": 2279,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -2380,122 +2380,20 @@
       ]
     },
     {
-      "candidate_id": "class:490052814d4a",
-      "kind": "repeat_trap",
-      "lesson": "Two full gate runs (~140s each) spent establishing that a runtime-budget failure was real rather than flake. Not waste — the first run alone could not distinguish them — but it is the cost of a bar that measures contention.",
-      "normalized_key": "runtime budget contention the first diagnosis treated a noisy aggregate sample as if the",
-      "recurrence_class": "runtime-budget-contention",
-      "source_count": 2,
-      "independent_source_count": 2,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
-      "latest_source_date": "2026-08-11",
-      "age_days": 15,
-      "recency_weight": 0.7937,
-      "alpha": 0.24,
-      "selection_weight": 0.9842,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-06-session-retro.md",
-          "date": "2026-08-06",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "runtime-budget-contention: the first diagnosis treated a noisy aggregate sample as if the validator itself were slow. The standalone timing was gathered only after the broad gate had already spent two failed runs. The waste was causal uncertainty plus rerun cost, not the quality gate itself."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
-          "date": "2026-08-11",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "Two full gate runs (~140s each) spent establishing that a runtime-budget failure was real rather than flake. Not waste — the first run alone could not distinguish them — but it is the cost of a bar that measures contention."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:d16dd802152d",
-      "kind": "repeat_trap",
-      "lesson": "**A single top banner instead of per-section status.** The last session was corrected for exactly this and the correction is in the handoff I read at pickup. I wrote the banner anyway, then described it in the handoff as per-section status, which made it a false claim as well as a rotting one.",
-      "normalized_key": "stale current pointer at closeout the first packet was more current than docs handoff",
-      "recurrence_class": "stale-current-pointer-at-closeout",
-      "source_count": 2,
-      "independent_source_count": 2,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
-      "latest_source_date": "2026-08-11",
-      "age_days": 15,
-      "recency_weight": 0.7937,
-      "alpha": 0.24,
-      "selection_weight": 0.9842,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md",
-          "date": "2026-08-06",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "stale-current-pointer-at-closeout: the first packet was more current than `docs/handoff.md`, `quality/latest.md`, and the prior session retro. A fresh-eye reviewer caught the contradiction; the repair required a quality record, goal-bound retro, and handoff refresh. The avoidable waste was not the review; it was failing to reconcile all current pointers when the host packet was first written."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
-          "date": "2026-08-11",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**A single top banner instead of per-section status.** The last session was corrected for exactly this and the correction is in the handoff I read at pickup. I wrote the banner anyway, then described it in the handoff as per-section status, which made it a false claim as well as a rotting one."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:299cb49409e3",
-      "kind": "repeat_trap",
-      "lesson": "**The deletion sweep grepped the identifier and missed the English.** `domain_language_contract` returned clean while `inventory-dispatch.md` still shipped consumers prose about \"deprecated aliases\", a knob that no longer exists. Found by a handoff critique, two commits later.",
-      "normalized_key": "the deletion sweep grepped the identifier and missed the english domain language contract returned",
-      "recurrence_class": "removal-consumer-grep-incomplete",
-      "source_count": 2,
-      "independent_source_count": 2,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
-      "latest_source_date": "2026-08-11",
-      "age_days": 15,
-      "recency_weight": 0.7937,
-      "alpha": 0.24,
-      "selection_weight": 0.9842,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
-          "date": "2026-08-11",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**The deletion sweep grepped the identifier and missed the English.** `domain_language_contract` returned clean while `inventory-dispatch.md` still shipped consumers prose about \"deprecated aliases\", a knob that no longer exists. Found by a handoff critique, two commits later."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
-          "date": "2026-08-11",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**workflow** — a removal sweep greps the identifier AND the capability's name in prose. The identifier grep returned clean while shipped consumer text still configured the deleted knob."
-        }
-      ]
-    },
-    {
       "candidate_id": "repeat_trap:40312d195e4d",
       "kind": "repeat_trap",
       "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact.",
       "normalized_key": "without the release helper persistence step a successful publish can leave a clean tree",
       "recurrence_class": null,
-      "source_count": 150,
+      "source_count": 151,
       "independent_source_count": 1,
       "generator_authored": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-08-24-v6-4-1-release-auto-retro.md",
-      "latest_source_date": "2026-08-24",
-      "age_days": 2,
-      "recency_weight": 0.9697,
+      "latest_source_path": "charness-artifacts/retro/2026-08-25-v6-5-0-release-auto-retro.md",
+      "latest_source_date": "2026-08-25",
+      "age_days": 1,
+      "recency_weight": 0.9847,
       "alpha": 0.12,
-      "selection_weight": 0.9697,
+      "selection_weight": 0.9847,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-03-v0-17-0-release-auto-retro.md",
@@ -3696,6 +3594,14 @@
           "generator": "release-trigger",
           "kind": "repeat_trap",
           "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-25-v6-5-0-release-auto-retro.md",
+          "date": "2026-08-25",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
         }
       ]
     },
@@ -3705,15 +3611,15 @@
       "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing.",
       "normalized_key": "the release trigger closeout is persisted but it covers the release delta only decide",
       "recurrence_class": null,
-      "source_count": 30,
+      "source_count": 31,
       "independent_source_count": 1,
       "generator_authored": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-08-24-v6-4-1-release-auto-retro.md",
-      "latest_source_date": "2026-08-24",
-      "age_days": 2,
-      "recency_weight": 0.9697,
+      "latest_source_path": "charness-artifacts/retro/2026-08-25-v6-5-0-release-auto-retro.md",
+      "latest_source_date": "2026-08-25",
+      "age_days": 1,
+      "recency_weight": 0.9847,
       "alpha": 0.12,
-      "selection_weight": 0.9697,
+      "selection_weight": 0.9847,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-26-v2-11-1-release-auto-retro.md",
@@ -3950,6 +3856,14 @@
         {
           "artifact_path": "charness-artifacts/retro/2026-08-24-v6-4-1-release-auto-retro.md",
           "date": "2026-08-24",
+          "section": "Next Improvements",
+          "generator": "release-trigger",
+          "kind": "next_improvement",
+          "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-25-v6-5-0-release-auto-retro.md",
+          "date": "2026-08-25",
           "section": "Next Improvements",
           "generator": "release-trigger",
           "kind": "next_improvement",
@@ -3963,15 +3877,15 @@
       "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can.",
       "normalized_key": "not measured here this session s own rework a release delta detector cannot see",
       "recurrence_class": null,
-      "source_count": 30,
+      "source_count": 31,
       "independent_source_count": 1,
       "generator_authored": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-08-24-v6-4-1-release-auto-retro.md",
-      "latest_source_date": "2026-08-24",
-      "age_days": 2,
-      "recency_weight": 0.9697,
+      "latest_source_path": "charness-artifacts/retro/2026-08-25-v6-5-0-release-auto-retro.md",
+      "latest_source_date": "2026-08-25",
+      "age_days": 1,
+      "recency_weight": 0.9847,
       "alpha": 0.12,
-      "selection_weight": 0.9697,
+      "selection_weight": 0.9847,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-26-v2-11-1-release-auto-retro.md",
@@ -4212,6 +4126,142 @@
           "generator": "release-trigger",
           "kind": "repeat_trap",
           "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-25-v6-5-0-release-auto-retro.md",
+          "date": "2026-08-25",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:29ca61a64730",
+      "kind": "current_focus",
+      "lesson": "Release publish triggered a configured automatic session retro for `v6.5.0`.",
+      "normalized_key": "release publish triggered a configured automatic session retro for v6 5 0",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-08-25-v6-5-0-release-auto-retro.md",
+      "latest_source_date": "2026-08-25",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-25-v6-5-0-release-auto-retro.md",
+          "date": "2026-08-25",
+          "section": "Context",
+          "generator": "release-trigger",
+          "kind": "current_focus",
+          "lesson": "Release publish triggered a configured automatic session retro for `v6.5.0`."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:490052814d4a",
+      "kind": "repeat_trap",
+      "lesson": "Two full gate runs (~140s each) spent establishing that a runtime-budget failure was real rather than flake. Not waste — the first run alone could not distinguish them — but it is the cost of a bar that measures contention.",
+      "normalized_key": "runtime budget contention the first diagnosis treated a noisy aggregate sample as if the",
+      "recurrence_class": "runtime-budget-contention",
+      "source_count": 2,
+      "independent_source_count": 2,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+      "latest_source_date": "2026-08-11",
+      "age_days": 15,
+      "recency_weight": 0.7937,
+      "alpha": 0.24,
+      "selection_weight": 0.9842,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-session-retro.md",
+          "date": "2026-08-06",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "runtime-budget-contention: the first diagnosis treated a noisy aggregate sample as if the validator itself were slow. The standalone timing was gathered only after the broad gate had already spent two failed runs. The waste was causal uncertainty plus rerun cost, not the quality gate itself."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+          "date": "2026-08-11",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Two full gate runs (~140s each) spent establishing that a runtime-budget failure was real rather than flake. Not waste — the first run alone could not distinguish them — but it is the cost of a bar that measures contention."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:d16dd802152d",
+      "kind": "repeat_trap",
+      "lesson": "**A single top banner instead of per-section status.** The last session was corrected for exactly this and the correction is in the handoff I read at pickup. I wrote the banner anyway, then described it in the handoff as per-section status, which made it a false claim as well as a rotting one.",
+      "normalized_key": "stale current pointer at closeout the first packet was more current than docs handoff",
+      "recurrence_class": "stale-current-pointer-at-closeout",
+      "source_count": 2,
+      "independent_source_count": 2,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+      "latest_source_date": "2026-08-11",
+      "age_days": 15,
+      "recency_weight": 0.7937,
+      "alpha": 0.24,
+      "selection_weight": 0.9842,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md",
+          "date": "2026-08-06",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "stale-current-pointer-at-closeout: the first packet was more current than `docs/handoff.md`, `quality/latest.md`, and the prior session retro. A fresh-eye reviewer caught the contradiction; the repair required a quality record, goal-bound retro, and handoff refresh. The avoidable waste was not the review; it was failing to reconcile all current pointers when the host packet was first written."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+          "date": "2026-08-11",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**A single top banner instead of per-section status.** The last session was corrected for exactly this and the correction is in the handoff I read at pickup. I wrote the banner anyway, then described it in the handoff as per-section status, which made it a false claim as well as a rotting one."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:299cb49409e3",
+      "kind": "repeat_trap",
+      "lesson": "**The deletion sweep grepped the identifier and missed the English.** `domain_language_contract` returned clean while `inventory-dispatch.md` still shipped consumers prose about \"deprecated aliases\", a knob that no longer exists. Found by a handoff critique, two commits later.",
+      "normalized_key": "the deletion sweep grepped the identifier and missed the english domain language contract returned",
+      "recurrence_class": "removal-consumer-grep-incomplete",
+      "source_count": 2,
+      "independent_source_count": 2,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+      "latest_source_date": "2026-08-11",
+      "age_days": 15,
+      "recency_weight": 0.7937,
+      "alpha": 0.24,
+      "selection_weight": 0.9842,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+          "date": "2026-08-11",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**The deletion sweep grepped the identifier and missed the English.** `domain_language_contract` returned clean while `inventory-dispatch.md` still shipped consumers prose about \"deprecated aliases\", a knob that no longer exists. Found by a handoff critique, two commits later."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+          "date": "2026-08-11",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow** — a removal sweep greps the identifier AND the capability's name in prose. The identifier grep returned clean while shipped consumer text still configured the deleted knob."
         }
       ]
     },
