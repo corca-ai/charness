@@ -25,9 +25,9 @@
     },
     "JSON": {
       "blanks": 0,
-      "code": 217056,
+      "code": 217072,
       "comments": 0,
-      "files": 1188
+      "files": 1189
     },
     "JavaScript": {
       "blanks": 398,
@@ -38,7 +38,7 @@
     "Markdown": {
       "blanks": 82185,
       "code": 0,
-      "comments": 364239,
+      "comments": 364245,
       "files": 3862
     },
     "Plain Text": {
@@ -79,8 +79,8 @@
   "tokei_version": "tokei 14.0.0 compiled with serialization support: json",
   "totals": {
     "blanks": 162695,
-    "code": 733563,
-    "comments": 407899,
-    "files": 7753
+    "code": 733579,
+    "comments": 407905,
+    "files": 7754
   }
 }
