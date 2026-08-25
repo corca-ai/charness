@@ -24,6 +24,7 @@ def _resolver_path(repo_root: Path) -> Path:
 _debug_resolve_adapter = load_path_module("debug_resolve_adapter", _resolver_path(REPO_ROOT))
 load_adapter = _debug_resolve_adapter.load_adapter
 _scripts_artifact_validator_module = import_repo_module(__file__, "scripts.artifact_validator")
+_adversarial_evidence = import_repo_module(__file__, "scripts.adversarial_evidence")
 # The #548 SINGLE OWNER of what a current pointer resolves to. Imported rather than
 # re-derived: five private copies of this rule were consolidated into it precisely
 # because nothing forced them to agree, and the role test below is where a seventh
@@ -48,6 +49,17 @@ validate_title = _scripts_artifact_validator_module.validate_title
 validate_sibling_followups = _scripts_artifact_validator_module.validate_sibling_followups
 is_trivial_short_circuit = _scripts_artifact_validator_module.is_trivial_short_circuit
 run_validation_checks = _scripts_artifact_validator_module.run_validation_checks
+
+
+def validate_adversarial_evidence(
+    text: str, *, artifact_label: str, evidence_mode: bool = False, repo_root: Path | None = None
+) -> None:
+    try:
+        _adversarial_evidence.validate_or_raise(
+            text, artifact_label=artifact_label, evidence_mode=evidence_mode, repo_root=repo_root
+        )
+    except _adversarial_evidence.EvidenceValidationError as exc:
+        raise ValidationError(str(exc)) from exc
 
 # Single source of truth for the Seam Risk taxonomy: reuse the enums the
 # downstream consumer (`risk_interrupt_lib.parse_debug_interrupt`, run via
@@ -311,6 +323,8 @@ def validate_debug_artifact(
     collect_all: bool = False,
     current_pointer: Path | None = None,
     max_words: int | None = None,
+    evidence_mode: bool = False,
+    repo_root: Path | None = None,
 ) -> None:
     """`max_words` None means the built-in default, NOT "unlimited".
 
@@ -332,6 +346,12 @@ def validate_debug_artifact(
         # seven checked-in artifacts went red at the cutover.
         lambda: _validate_size(
             path, lines, max_words=ceiling, artifact_label="debug artifact", artifact_type="debug"
+        ),
+        lambda: validate_adversarial_evidence(
+            "\n".join(lines),
+            artifact_label="debug artifact",
+            evidence_mode=evidence_mode,
+            repo_root=repo_root,
         ),
     )
     if is_current_artifact(path, current_pointer):
@@ -514,13 +534,27 @@ def _validate_factory(run):
         load_adapter, run.repo_root, field=WORD_BUDGET_FIELD, default=MAX_ARTIFACT_WORDS
     )
     return lambda artifact: validate_debug_artifact(
-        artifact, collect_all=run.collect_all, current_pointer=current_pointer, max_words=max_words
+        artifact,
+        collect_all=run.collect_all,
+        current_pointer=current_pointer,
+        max_words=max_words,
+        evidence_mode=run.args.evidence_mode,
+        repo_root=run.repo_root,
     )
 
 
 def _exit_not_a_violation(message: str) -> None:
     print(message, file=sys.stderr)
     raise SystemExit(1)
+
+
+def _add_validator_args(parser) -> None:
+    parser.add_argument(
+        "--evidence-led",
+        dest="evidence_mode",
+        action="store_true",
+        help="Require and validate the typed evidence-led sections.",
+    )
 
 
 def main() -> int:
@@ -546,6 +580,7 @@ def main() -> int:
         preflight=_unspeakable_adapter_version,
         artifacts_fn=_debug_artifacts,
         validate_factory=_validate_factory,
+        extra_args=_add_validator_args,
         no_scope_message="No debug artifacts in scope.",
         per_artifact_success=True,
         fail_fast_help=(

@@ -3,18 +3,18 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 161,
-  "indexed_artifact_count": 147,
+  "source_artifact_count": 162,
+  "indexed_artifact_count": 148,
   "risk_class_counts": {
     "contract-freeze-risk": 30,
-    "external-seam": 21,
+    "external-seam": 22,
     "host-disproves-local": 7,
     "none": 62,
     "operator-visible-recovery": 23,
-    "repeated-symptom": 13
+    "repeated-symptom": 14
   },
   "generalization_pressure_counts": {
-    "factor-now": 20,
+    "factor-now": 21,
     "monitor": 111,
     "none": 16
   },
@@ -2055,6 +2055,21 @@
       "critique_required": true,
       "next_step": "spec",
       "handoff_artifact": "charness-artifacts/spec/2026-08-24-worker-boundary-identity-pattern.md",
+      "forced": true
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-08-25-2026-08-25-adversarial-review.md",
+      "is_current_pointer": false,
+      "interrupt_id": "consumer-boundary-adversarial-review-2026-08-25",
+      "risk_classes": [
+        "repeated-symptom",
+        "external-seam"
+      ],
+      "seam": "producer evidence -> checker -> package/export -> operator claim",
+      "generalization_pressure": "factor-now",
+      "critique_required": true,
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/2026-08-25-consumer-boundary-invariants.md",
       "forced": true
     },
     {

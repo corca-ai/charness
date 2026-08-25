@@ -12,6 +12,7 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 REPO_ROOT = repo_root_from_script(__file__)
 
 _artifact_validator = import_repo_module(__file__, "scripts.artifact_validator")
+_adversarial_evidence = import_repo_module(__file__, "scripts.adversarial_evidence")
 _prepare_packet_markdown_kind = import_repo_module(__file__, "scripts.prepare_packet_markdown_kind")
 ValidationError = _artifact_validator.ValidationError
 report_validation_failure = _artifact_validator.report_validation_failure
@@ -19,6 +20,17 @@ git_changed_paths = _artifact_validator.git_changed_paths
 is_valid_followup_tail = _artifact_validator.is_valid_followup_tail
 run_changed_artifact_validator = _artifact_validator.run_changed_artifact_validator
 run_validation_checks = _artifact_validator.run_validation_checks
+
+
+def validate_adversarial_evidence(
+    text: str, *, artifact_label: str, evidence_mode: bool = False, repo_root: Path | None = None
+) -> None:
+    try:
+        _adversarial_evidence.validate_or_raise(
+            text, artifact_label=artifact_label, evidence_mode=evidence_mode, repo_root=repo_root
+        )
+    except _adversarial_evidence.EvidenceValidationError as exc:
+        raise ValidationError(str(exc)) from exc
 file_is_prepare_packet_markdown_kind = _prepare_packet_markdown_kind.file_is_prepare_packet_markdown_kind
 
 # Cross-surface probe (#408): consulted only when --changed-ref/--changed-path is passed.
@@ -450,6 +462,7 @@ def validate_critique_artifact(
     cross_surface_hit: bool = False,
     check_current_binding: bool = True,
     repo_root: Path | None = None,
+    evidence_mode: bool = False,
 ) -> None:
     text = path.read_text(encoding="utf-8")
     status = fresh_eye_satisfaction_status(text)
@@ -542,6 +555,9 @@ def validate_critique_artifact(
             )
 
     checks = (
+        lambda: validate_adversarial_evidence(
+            text, artifact_label="critique artifact", evidence_mode=evidence_mode, repo_root=repo_root
+        ),
         _check_fresh_eye_typed_presence,
         lambda: check_boundary_ownership_typed_presence(
             path, text, observed_date, cross_surface_hit=cross_surface_hit
@@ -633,9 +649,20 @@ def _validate_factory(run, resolved: dict[str, object] | None = None):
             cross_surface_hit=cross_surface.overrides,
             check_current_binding=not run.args.all,
             repo_root=run.repo_root,
+            evidence_mode=run.args.evidence_mode,
         )
 
     return validate
+
+
+def _add_validator_args(parser) -> None:
+    _scope.add_cross_surface_args(parser)
+    parser.add_argument(
+        "--evidence-led",
+        dest="evidence_mode",
+        action="store_true",
+        help="Require and validate the typed evidence-led sections.",
+    )
 
 
 def main() -> int:
@@ -648,7 +675,7 @@ def main() -> int:
         candidate_paths_fn=candidate_paths,
         validate_factory=validate_factory,
         on_complete=on_complete,
-        extra_args=_scope.add_cross_surface_args,
+        extra_args=_add_validator_args,
         fail_fast_help=(
             "Stop at the first rule violation instead of reporting every violation in one pass."
         ),

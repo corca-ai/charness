@@ -11,6 +11,8 @@ PLUGIN_IMPL_SKILL_PATH = ROOT / "plugins" / "charness" / "skills" / "impl" / "SK
 PROVE_SKILL = (ROOT / "skills" / "public" / "prove" / "SKILL.md").read_text(encoding="utf-8")
 SETUP_SKILL = (ROOT / "skills" / "public" / "setup" / "SKILL.md").read_text(encoding="utf-8")
 QUALITY_SKILL = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
+CRITIQUE_SKILL = (ROOT / "skills" / "public" / "critique" / "SKILL.md").read_text(encoding="utf-8")
+DEBUG_SKILL = (ROOT / "skills" / "public" / "debug" / "SKILL.md").read_text(encoding="utf-8")
 BOOTSTRAP_SEAMS = (
     ROOT / "skills" / "public" / "setup" / "references" / "bootstrap-seams.md"
 ).read_text(encoding="utf-8")
@@ -218,6 +220,45 @@ def test_debug_and_quality_carry_async_and_hidden_network_field_lessons() -> Non
     assert "earliest component that can produce observable status" in debug_text
     assert "external-repo fetch" in maintainer_local
     assert "explicit refresh,\n> update, or release action" in maintainer_local
+
+
+def test_critique_and_debug_share_the_evidence_led_adversarial_route() -> None:
+    critique_reference = (
+        ROOT / "skills" / "public" / "critique" / "references" / "adversarial-evidence-review.md"
+    )
+    pattern_reference = (
+        ROOT / "skills" / "public" / "debug" / "references" / "pattern-ladder.md"
+    )
+    plugin_root = ROOT / "plugins" / "charness" / "skills"
+
+    assert "## Evidence-Led Mode" in CRITIQUE_SKILL
+    assert "Do not treat the counterweight pass as adversarial evidence" in CRITIQUE_SKILL
+    assert "## Reported-Finding Mode" in DEBUG_SKILL
+    assert "## Pattern Ladder" in DEBUG_SKILL
+    assert "`reproduced`, `disconfirmed`, `unproven`, or `not-applicable`" in DEBUG_SKILL
+    assert critique_reference.is_file()
+    assert pattern_reference.is_file()
+    assert "Finding: <stable id>" in critique_reference.read_text(encoding="utf-8")
+    assert "Evidence Digest: sha256:<64 lowercase hex>" in critique_reference.read_text(encoding="utf-8")
+    assert "Report Source SHA256" in critique_reference.read_text(encoding="utf-8")
+    assert "- Finding: <stable id> | source:" in critique_reference.read_text(encoding="utf-8")
+    assert "Level: observed failure | local pattern | interface sibling | pattern of patterns" in pattern_reference.read_text(encoding="utf-8")
+
+    assert (plugin_root / "critique" / "SKILL.md").read_bytes() == CRITIQUE_SKILL.encode()
+    assert (plugin_root / "debug" / "SKILL.md").read_bytes() == DEBUG_SKILL.encode()
+    assert (
+        plugin_root / "critique" / "references" / "adversarial-evidence-review.md"
+    ).read_bytes() == critique_reference.read_bytes()
+    assert (
+        plugin_root / "debug" / "references" / "pattern-ladder.md"
+    ).read_bytes() == pattern_reference.read_bytes()
+    assert (
+        ROOT / "skills" / "public" / "debug" / ".." / "critique" / "references" / "adversarial-evidence-review.md"
+    ).resolve().is_file()
+    assert (
+        plugin_root / "debug" / ".." / "critique" / "references" / "adversarial-evidence-review.md"
+    ).resolve().is_file()
+    assert "Use `critique` first" in critique_reference.read_text(encoding="utf-8")
 
 
 def test_development_doc_carries_mutation_phase_barrier_rule() -> None:

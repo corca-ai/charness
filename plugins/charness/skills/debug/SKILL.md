@@ -1,18 +1,19 @@
 ---
 name: debug
-description: "Use when investigating a bug, error, or unexpected behavior. Follow a disciplined root-cause workflow, preserve a durable debug artifact so future sessions inherit what was learned, and do not jump to fixes before a falsifiable hypothesis exists."
+description: "Use when investigating a bug, error, reported review finding, or unexpected behavior that needs root cause, Five Whys, or recurrence analysis. Follow a disciplined root-cause workflow, adversarially verify the report, preserve a durable debug artifact so future sessions inherit what was learned, and do not jump to fixes before a falsifiable hypothesis exists."
 ---
 
 # Debug
 
 Use this when the goal is to understand and resolve incorrect behavior without guessing.
 
-`debug` is part of the execution cluster, but its job is diagnosis before
-repair. A bug investigation without a durable record only solves the current
-incident and wastes the next one. `debug` is callable directly when no
-GitHub issue exists; bug-class `issue resolve` invokes the same RCA substrate
-through `../issue/references/causal-review.md`, whose lenses map onto the debug
-steps below (so each step states its substrate once, not per lens).
+`debug` is diagnosis before repair; without a durable record an investigation
+only solves the current incident. When the input contains a prior critique or
+review report, `debug` first verifies each claim with a disconfirming stimulus
+and then climbs from the concrete failure to its structural siblings. `debug`
+is callable directly when no GitHub issue exists; bug-class `issue resolve`
+invokes the same RCA substrate through `../issue/references/causal-review.md`,
+whose lenses map onto the debug steps below.
 Do not run critique before the facts needed for diagnosis exist. Once a debug
 slice closes repo work, hands off a fix, or authorizes repair, record the
 required critique before closeout so the next move does not inherit an
@@ -37,31 +38,15 @@ By default, `debug` writes durable artifacts to
 status, related prior incidents, seam-risk interrupt posture, required reads,
 on-demand reads, gate packets, and next action.
 
-Follow the planner's `next_action`. When it says to scaffold, use the scaffold
-helper JSON as the canonical artifact contract: it carries the safe write
-target, current-pointer role, required heading/section order, the word budget
-(`size_budget`), and validator command for the installed Charness layout.
-Write the artifact to fit `size_budget.max_words` on the first pass and heed
-its `guidance` on the overflow-prone section, instead of writing long and then
-trimming against a ceiling the validator only reveals at the end. Write the
-payload's `write_artifact_path`, never `latest.md` by habit. Continuing an
-open investigation? Pass `--subject <its slug>`; without it the run is NEW, so
-the scaffold routes to a fresh record and names what it declined in
-`refused_write_artifact_path`. Only `write_artifact_subject_match: match`
-means the record there is this run's. `write_artifact_effect:
-overwrite_existing_content` means something is at that path — with `match`,
-the investigation you are continuing, so append rather than replace it;
-`create_new_file` means nothing is at THAT path. The key reports what is on
-disk, not why, and its causes are not exhaustive, so pair it with
-`write_artifact_role` and `intent` when the distinction matters.
+Follow the planner's `next_action`; its scaffold JSON is canonical for write target,
+pointer role, section order, word budget, and validator. Write the emitted
+`write_artifact_path` within `size_budget.max_words`. For continuation pass
+`--subject <slug>`; without it the run is NEW. Interpret `write_artifact_subject_match`,
+`write_artifact_effect`, `write_artifact_role`, and `intent` together: the effect
+distinguishes `overwrite_existing_content` from `create_new_file`; `unknown`,
+`not exhaustive`, and `refused_write_artifact_path` remain non-claims.
 
-Before stopping, run the `validator_command` emitted by the scaffold helper or
-the planner's `debug-artifact-shape` packet. Do not replace it with a guessed
-repo-local scripts path unless the emitted command already points there. The
-validator applies the strict current schema to whatever the current pointer
-DESIGNATES -- `latest.md` itself, and the dated record it points at when it is a
-symlink or a byte copy -- and treats every other dated record as legacy debug
-memory; when a record fails, the error names the artifact path.
+Before stopping, run the emitted `validator_command` (never a guessed path); it validates the current pointer's designated artifact strictly, names the failing path, and leaves other dated records as legacy memory.
 
 ```bash
 # Required Tools: rg
@@ -71,9 +56,20 @@ rg -n "error|incident|debug|root cause|repro|stack trace|failure" .
 git status --short
 ```
 
-If the planner lists prior incidents, read the related ones before diagnosing.
-Treat prior debug notes as codebase memory rather than stale trivia, and record
-related incidents in the artifact when they shape the current hypothesis.
+Read planner-listed prior incidents before diagnosing and record those that
+shape the current hypothesis.
+
+## Reported-Finding Mode
+
+For review findings or suspected false-green approvals, read `../critique/references/adversarial-evidence-review.md`, preserve IDs, and type
+each report `reproduced`, `disconfirmed`, `unproven`, or `not-applicable` before
+changing code; no consumer observation means `unproven`. Append
+`--evidence-led` to the emitted validator; reproduced records need a `debug`
+handoff and next move.
+
+## Pattern Ladder
+
+For every reproduced or recurring finding, use `references/pattern-ladder.md`: record observed failure → local pattern → interface sibling → pattern of patterns → structural prevention; each level needs location, proof, and disconfirmation.
 
 ## Workflow
 
@@ -93,20 +89,24 @@ related incidents in the artifact when they shape the current hypothesis.
    - before absence, attribution, liveness, or frequency claims, run the
      cheapest falsifier first (`references/disconfirmer-first.md`); for named
      targets, verify runtime state (`references/named-target-verification.md`)
-3. Build the smallest honest reproduction.
+3. Adversarially verify active reports: run each claim's smallest stimulus
+   through the final consumer and record disposition, output, and proof.
+4. Build the smallest honest reproduction.
    - isolate the smallest input, path, or environment that still fails
    - if local reproduction fails, gather stronger observation instead of
      pretending the problem disappeared
-4. Enumerate diverse causes.
+5. Enumerate diverse causes.
    - list at least three plausible causes before verifying any one of them
    - include environment, dependency, state, and control-flow causes alongside
      obvious logic bugs
    - walk from symptom to structural cause per
      `references/five-whys-causal-chain.md`
-5. Test a falsifiable hypothesis.
+   - complete the Pattern Ladder before naming a root cause; nearby keywords are
+     not siblings
+6. Test a falsifiable hypothesis.
    - state what should change if the hypothesis is true
    - make the smallest change or observation that can verify or falsify it
-6. Resolve and preserve the learning.
+7. Resolve and preserve the learning.
    - record root cause and the confirming evidence
    - for workflow-boundary bugs, propagated diagnostics, or readiness decisions,
      name the producer-to-final-consumer invariant per
@@ -120,13 +120,12 @@ related incidents in the artifact when they shape the current hypothesis.
      proof level separately from the decision
    - persist `valid follow-up outside the slice` siblings with a `follow-up:`
      identifier per `references/sibling-search.md`; missing it blocks closeout
-   - trivial single-file fixes may record `n/a — trivial fix` in the detection
-     gap and sibling-search sections; reviewer-visible, not a default escape
+   - trivial single-file fixes may record `n/a — trivial fix` in detection-gap
+     and sibling-search sections; this is reviewer-visible, not a default escape
    - classify seam risk explicitly when host behavior or repeated symptom fixes
      showed that local reasoning was not enough
-   - if the incident hits an external seam, host-disproves-local behavior, or a
-     repeated symptom on the same seam, set the next step to `spec` with a named
-     handoff artifact instead of handing directly to ordinary `impl`
+   - external-seam or repeated-symptom incidents set the next step to `spec`
+     with a named handoff artifact, not ordinary `impl`
    - record prevention or follow-up; the prevention move should map to the
      detection-gap and sibling-search outputs, not restate the root cause
    - when the investigation is concluded (bug fixed or handed off), set
@@ -135,9 +134,8 @@ related incidents in the artifact when they shape the current hypothesis.
      open continuation; leave it `open` only while the bug is genuinely still
      in progress (a stale `open` pointer is what hijacks a fresh bug)
    - before closing task-completing debug work or handing off a repair, record
-     the required critique as short scoped diagnosis/repair risk or full
-     standalone review when the fix affects design, workflow, compatibility,
-     host-proof, prompt-surface, public-skill, validator, or export behavior
+     the required scoped/full critique when design, workflow, host-proof, or
+     export behavior is affected
    - at closeout, if the fix surfaced an RCA-class event and the repo maintains
      the conversion ledger, append one RCA event per `../../shared/references/rca-ledger-append.md` (`--source debug`); silent no-op otherwise
    - if the fix belongs to normal implementation work, hand off cleanly to
@@ -151,9 +149,11 @@ The durable debug artifact should usually include:
 - `Capability Failure`
 - `Correct Behavior`
 - `Observed Facts`
+- `Reported Findings` / `Adversarial Verification` (when active)
 - `Reproduction`
 - `Candidate Causes`
 - `Hypothesis`
+- `Pattern Ladder` (for reproduced or recurring findings)
 - `Verification`
 - `Root Cause`
 - `Invariant Proof`
@@ -175,6 +175,8 @@ sections. Prefer the scaffold helper over hand-typing the skeleton from memory.
   error preserved, multiple candidate causes, a minimal reproduction,
   web-search-first, and the artifact kept past the fix. If one of these slips, stop
   and repair the process before changing more code.
+- Counterweight is not adversarial verification; every report needs a typed
+  disposition, and one symptom needs a sibling, seam observation, or `unproven`.
 - Do not leave external-seam or host-disproves-local risk as free-form prose;
   carry it forward in the structured handoff fields so the next slice cannot
   quietly reset into ordinary implementation posture.
@@ -184,6 +186,8 @@ sections. Prefer the scaffold helper over hand-typing the skeleton from memory.
 - `references/adapter-contract.md`
 - `references/five-steps.md`
 - `references/five-whys-causal-chain.md`
+- `../critique/references/adversarial-evidence-review.md`
+- `references/pattern-ladder.md`
 - `references/invariant-first-review.md`
 - `references/detection-gap.md`
 - `references/sibling-search.md`

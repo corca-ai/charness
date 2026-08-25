@@ -1,6 +1,6 @@
 ---
 name: critique
-description: "Use when a non-trivial design decision, code change, release, rename, deletion, spec, or workflow change needs a before-the-fact critique. Probe distinct failure angles, then run a counterweight pass that separates real blockers from over-worry before the change locks in."
+description: "Use when a non-trivial design decision, code change, release, rename, deletion, spec, or workflow change needs a before-the-fact critique, or when reported review findings need approval-oriented evidence disposition. Probe distinct failure angles, then run a counterweight pass that separates real blockers from over-worry before the change locks in."
 ---
 
 # Critique
@@ -11,9 +11,11 @@ wrong change or carrying the wrong fear into the next slice.
 `critique` is the structured before-the-fact counterpart to `retro`. The
 substrate is the same across targets — pre-lock-in stress with anchor-
 discriminated multi-angle review followed by one counterweight pass — and the
-target reference shapes the angle distribution and output. Decision pre-mortem
-(Klein lineage) is one of those targets; code/PR critique, release critique,
-rename critique, and spec critique reuse the same substrate.
+target reference shapes the angle distribution and output. Decision pre-mortem (Klein lineage) is one of those targets; code/PR critique, release critique,
+rename critique, and spec critique reuse the same substrate. When a caller
+brings an already-observed failure or a review report, the optional
+evidence-led path verifies that report before debating the repair; it is not a
+replacement for fresh-eye judgment or for `debug`'s causal record.
 
 Task-completing repo work always records critique before closeout. Scale the
 pass, not the obligation: use the risk boundary or meaningful slice as the
@@ -30,16 +32,12 @@ Delegated reviewer fast path: read
 `../../shared/references/disposition-reviewer-brief.md` before treating the
 canonical path as blocked.
 
-Caller contract:
-
-- pass the pending change artifact or a tight source summary
-- state success and out-of-scope lines up front
-- consume the returned four-bin triage directly: `Act Before Ship`, `Bundle Anyway`, `Over-Worry`, `Valid but Defer`
-- write any change-affecting result back into the caller's durable contract
-- record `Fresh-Eye Satisfaction` as
-  `worker-delivered`, `parent-delegated`, `nested-delegated`, `blocked <host-signal>`, or
-  `accepted-unreviewed-under-round-cap <cap-signal>`; the last explicitly means
-  no fresh-eye approval exists for round-2 repairs.
+Caller contract: pass a pending artifact or tight source summary, state success
+and out-of-scope lines, consume the four-bin triage (`Act Before Ship`, `Bundle
+Anyway`, `Over-Worry`, `Valid but Defer`), and write change-affecting results
+back into the durable contract. Record `Fresh-Eye Satisfaction` with the typed
+values in the output shape; `accepted-unreviewed-under-round-cap` explicitly
+means no fresh-eye approval exists for round-2 repairs.
 
 Autonomous trigger: if no pending artifact or source summary is supplied, do
 not ask first by default; follow `references/autonomous-trigger.md`, infer a
@@ -62,6 +60,15 @@ the substrate (angles + counterweight + four bins) is shared.
 
 If the call is ambiguous, ask which target reference applies before spawning
 angles. Do not silently pick a target that changes the angle distribution.
+
+## Evidence-Led Mode
+
+Activate this path for a reported failure, false-green finding, repeated symptom, or explicit reality check. Read `references/adversarial-evidence-review.md`;
+preserve each claim's expected behavior and stimulus, then type it
+`reproduced`, `disconfirmed`, `unproven`, or `not-applicable`. The final
+consumer must observe the result before approval. Append `--evidence-led` to the
+emitted validator command so omission fails closed; hand reproduced/repeated
+interface-shape findings to `debug`, keeping `unproven` as a non-claim.
 
 ## Bootstrap
 
@@ -90,45 +97,31 @@ history.
 
 1. Restate the pending change.
    - what is being changed, removed, or locked
-   - what capability or failure is at stake
-   - what would count as success
+   - what capability or failure is at stake; what would count as success
    - what is explicitly out of scope for this pass
-2. Pick a bounded set of contrasting angles.
-   - at least two independent angle worker runs plus one separate counterweight
-     worker run;
-     default to three angles, expanding to four only for a clearly broad
-     change (cross-surface, breaking, migration-heavy, or release plus doc
-     cascade)
+2. If evidence-led review is active, normalize each report, run its smallest
+   deletion/omission/skip/mutation/stale-input/package stimulus, and record the
+   typed disposition plus final-consumer output before counterweight triage.
+3. Pick a bounded set of contrasting angles.
+   - run at least two independent angle worker runs plus one separate counterweight;
+     default to three angles and add a fourth only for a clearly broad change
    - choose angles that can disagree meaningfully, not five near-duplicates
    - use the target reference's `Anchor Angle Distribution`; see also `references/angle-selection.md`
-3. Run the angle pass.
-   - Resolve the adapter's fresh-eye branch and consume its typed carrier; caller
-     flags cannot cross that branch. See `references/adapter-contract.md` for
-     the execution and delivery contract.
-   - use bounded fresh-eye subagents with one angle each; in the default
-     file-backed mode this means one-shot Charness workers whose typed reports
-     are delivered through the report/receipt/ledger carrier. The phrase
-     "subagent" names the fresh context contract, not permission to downgrade
-     to a same-context reread.
-   - Bind prepared-packet identity, execute the receipt's exact packet-verification command, and use rail-1 snapshot/verify around each reviewer spawn; parent-head movement is drift. Keep counterweight separate and follow `../../shared/references/fresh-eye-subagent-review.md`.
-   - Record each round with `record_round_findings.py --window-id <id> --boundary-snapshot <path>`; mismatched snapshots and same-context substitutes refuse. The next round `n+1` reads as prior evidence the recorded findings before choosing a new bounded lens.
-4. Collapse the findings into one candidate concern list.
+4. Run the angle pass.
+   - Resolve the adapter's fresh-eye branch, consume its typed carrier, and bind
+     packet identity; caller flags cannot cross that branch.
+   - use bounded fresh-eye subagents with one angle each (one worker per angle) and `record_round_findings.py`; rail-1 snapshot/verify around each reviewer spawn uses
+     `--window-id <id>` and
+     `--boundary-snapshot <path>`. Mismatched snapshots refuse; round `n+1` reads as prior evidence.
+5. Collapse the findings into one candidate concern list.
    - deduplicate overlap
    - keep evidence and cited source paths with each concern when available
    - prefer concerns that would change the next move, not generic worry
-5. Run one counterweight pass.
-   - act like a skeptical senior engineer pushing back on paranoia,
-     speculative consumers, and expensive hypotheticals
-   - triage each concern using `references/counterweight-triage.md` plus the
-     target reference's `Counterweight Bins` specifics
-   - preserve the four bins explicitly so caller skills can consume the result
-     without re-triaging the same fear list
-6. Persist the change memory.
-   - if a concern changes the change, tighten the spec, plan, release contract,
-     code diff, or rename plan immediately
-   - if a rejected concern matters to future readers, write it into a short
-     `Deliberately Not Doing` or equivalent section in the durable artifact
-7. End with the next move.
+6. Run one counterweight pass as a skeptical senior engineer: triage each
+   concern with `references/counterweight-triage.md` and preserve all four bins.
+7. Persist any change-affecting concern in the spec, plan, diff, or rename
+   contract; record rejected recurring concerns in `Deliberately Not Doing`.
+8. End with the next move.
    - what must change before implementation, merge, or release
    - what can be bundled cheaply
    - what is over-worry and should be ignored
@@ -147,6 +140,8 @@ The result should usually include:
 - `Target` — which reference shaped this run
 - `Change`
 - `Capability at Stake`
+- `Evidence Disposition` (when active; identity/count/coverage/digest)
+- `Adversarial Verification` (stimulus, observed output, and proof level)
 - `Angles`
 - `Findings`
 - `Counterweight Triage` (optional `Structured Findings` per `references/counterweight-triage.md`)
@@ -172,6 +167,12 @@ state, not a substitute for fresh-eye review.
 
 - Do not turn critique into broad ideation. Start from an actual pending
   change.
+- Do not treat the counterweight pass as adversarial evidence. Counterweight
+  triages concern cost; only a recorded stimulus and final-consumer observation
+  can establish a reported failure.
+- `unproven` is a typed non-claim, not a softened approval. If the report is a
+  repeated seam symptom, hand it to `debug` even when the local reproduction is
+  unavailable.
 - Keep the counterweight pass owned, not a paranoia backlog: triage every concern
   into the four bins, never skip it or treat all concerns as equal, and don't open
   more angles than you can triage honestly. Persist rejected-but-recurring concerns
@@ -190,6 +191,9 @@ state, not a substitute for fresh-eye review.
 - `references/confirmed-input-over-anchoring.md`
 - `references/angle-selection.md`
 - `references/counterweight-triage.md`
+- `references/adversarial-evidence-review.md`
+  optional
+  evidence-led mode remains an additive path.
 - `references/prepare-packet.md`
 - `references/adapter-contract.md`
 - `../../shared/references/agent-assessment-invariant.md`
