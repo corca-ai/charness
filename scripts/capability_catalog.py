@@ -200,7 +200,9 @@ def main(argv: list[str] | None = None) -> int:
         emit_yaml({"error": str(exc), "repo_root": str(exc.repo_root)})
         return 2
     emit_yaml(payload)
-    if args.command == "resolve-skill-path" and payload.get("resolved_path") is None:
+    if args.command == "resolve-skill-path" and payload.get(
+        "admission_status", "admitted" if payload.get("resolved_path") else None
+    ) != "admitted":
         return 1
     if args.command == "list" and catalog_is_blocked(payload):
         return 1

@@ -29,13 +29,13 @@ def test_changed_ref_range_and_empty_path_identity(tmp_path: Path) -> None:
     ranged = identity_lib.build_reviewed_input_identity(
         repo_root=tmp_path, changed_ref="HEAD~1..HEAD"
     )
-    empty = identity_lib.build_reviewed_input_identity(
-        repo_root=tmp_path, changed_ref="HEAD", reviewed_paths=[]
-    )
+    with pytest.raises(ValueError, match="changed-ref path set"):
+        identity_lib.build_reviewed_input_identity(
+            repo_root=tmp_path, changed_ref="HEAD", reviewed_paths=[]
+        )
 
     assert ranged["reviewed_paths"] == ["reviewed.txt"]
     assert ranged["reviewed_patch_sha256"] != hashlib.sha256(b"").hexdigest()
-    assert empty["reviewed_patch_sha256"] == hashlib.sha256(b"").hexdigest()
 
 
 def test_worktree_content_os_error_is_unavailable(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

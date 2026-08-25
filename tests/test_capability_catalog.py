@@ -146,9 +146,10 @@ def test_catalog_refresh_rejects_file_root(tmp_path: Path) -> None:
 def test_catalog_resolver_recovers_rotated_cache(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     home = tmp_path / "home"
-    cache = home / ".codex/plugins/cache/local/charness/2.0.0/skills/impl"
+    cache = home / ".codex/plugins/cache/local/charness/6.4.1/skills/impl"
     cache.mkdir(parents=True)
-    (cache / "SKILL.md").write_text("# impl\n")
+    source = Path(__file__).resolve().parents[1] / "skills/public/impl/SKILL.md"
+    (cache / "SKILL.md").write_bytes(source.read_bytes())
     payload = resolve_skill_path(
         skill_id="impl",
         repo_root=repo,
@@ -158,6 +159,26 @@ def test_catalog_resolver_recovers_rotated_cache(tmp_path: Path) -> None:
     )
     assert payload["status"] == "stale-reported-path"
     assert payload["resolved_source"] == "codex-versioned-cache"
+    assert payload["admission_status"] == "admitted"
+    assert payload["expectation"]["version"] == "6.4.1"
+
+
+def test_catalog_resolver_refuses_existing_same_version_content_mismatch(tmp_path: Path) -> None:
+    cache = tmp_path / "home/.codex/plugins/cache/local/charness/6.4.1/skills/impl"
+    cache.mkdir(parents=True)
+    (cache / "SKILL.md").write_text("stale bytes\n", encoding="utf-8")
+    payload = resolve_skill_path(
+        skill_id="impl",
+        repo_root=tmp_path / "repo",
+        home=tmp_path / "home",
+        codex_home=tmp_path / "home/.codex",
+        reported_path=cache / "SKILL.md",
+    )
+    assert payload["status"] == "mismatch"
+    assert payload["admission_status"] == "refused"
+    assert payload["reason_code"] == "skill-content-mismatch"
+    assert payload["resolved_path"] is None
+    assert payload["recovery"]["kind"] == "refresh-plugin-install"
 
 
 def test_catalog_preserves_sanitized_provider_metadata(monkeypatch, tmp_path: Path) -> None:

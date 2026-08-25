@@ -88,18 +88,20 @@ JSON envelope shape (`charness.critique_prepare_packet.v1`):
   "repo": "<repo-name>",
   "generated_at": "<ISO8601 UTC>",
   "prepared_for": "<short label: commit range, branch, or free text>",
+  "substrate_mode": "working-tree | committed-ref",
   "changed_ref": "<git commit or endpoint-diff range, or null>",
   "adapter_path": "<repo-relative path or null>",
   "reviewed_input_identity": {
     "algorithm": "sha256-v2",
     "status": "captured",
-    "mode": "working-tree | changed-ref",
+    "mode": "working-tree | committed-ref",
+    "substrate_mode": "working-tree | committed-ref",
     "changed_ref": "<commit/range or null>",
     "resolved_changed_ref": ["<resolved endpoint(s)>"] ,
     "base_head": "<commit sha>",
     "base_head_role": "provenance-only | target",
     "reviewed_paths": ["<ordered repo-relative path>"],
-    "reviewed_content": [{"path": "<path>", "content_sha256": "<sha256 or null>"}],
+    "reviewed_content": [{"path": "<path>", "content_sha256": "<non-null sha256>"}],
     "reviewed_patch_sha256": "<changed-ref patch sha256 or empty-payload sha256>",
     "staged_patch_sha256": "<scope-limited sha256>",
     "unstaged_patch_sha256": "<scope-limited sha256>",
@@ -150,6 +152,10 @@ Rules:
   application; the parent review artifact records `requested_fields_sent`,
   `metadata-hidden`, `host-defaulted`, `unsupported`, or `applied` only when
   host-confirmed.
+- `substrate_mode` is explicit in every packet. `working-tree` is the default
+  for uncommitted review input and must not carry `changed_ref`; `committed-ref`
+  requires a commit or endpoint-diff range. A committed-ref packet's declared
+  `reviewed_paths` must exactly equal the paths changed by that ref/range.
 - `reviewed_input_identity` records what the reviewer was given. Its patch and
   untracked components are limited to the declared paths; the existing
   reviewer-boundary fingerprint remains a separate whole-worktree proof that
@@ -162,6 +168,9 @@ Rules:
   change, does not stale a path-scoped verdict — only an actual edit does. A
   changed-ref identity treats its resolved target and patch as inputs. Symlinks are
   hashed by their link payload without following them.
+- Every declared path and patch component must carry a lowercase SHA-256 digest;
+  missing (`null`) hashes are a typed refusal, including deleted or missing
+  review paths.
 - `verify` accepts only the current `sha256-v2` identity contract. Historical
   packets remain byte-addressed evidence, but are not accepted as current review
   proof under a retired digest rule.

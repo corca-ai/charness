@@ -5,12 +5,17 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 import subprocess
 from datetime import date
 from pathlib import Path
 from typing import Any
 
 ALGORITHM = "sha256-v2"
+SUBSTRATE_WORKING_TREE = "working-tree"
+SUBSTRATE_COMMITTED_REF = "committed-ref"
+SUBSTRATE_MODES = frozenset({SUBSTRATE_WORKING_TREE, SUBSTRATE_COMMITTED_REF})
+_SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 # The identity ignores the index/worktree split and untracked-set membership,
 # so a plain `git add` of an unchanged reviewed path does not stale-flag a
 # binding that was current a second earlier. In working-tree mode the bytes the
@@ -32,6 +37,33 @@ ARTIFACT_HEADING = "## Reviewed Input Identity"
 ARTIFACT_REQUIRED_FIELDS = ("packet path", "packet sha256", "identity sha256")
 ARTIFACT_BINDING_RULE_DATE = date(2026, 7, 20)
 LEGACY_UNDATED_ARTIFACTS = frozenset({"release-0-55-1-critique.md"})
+
+
+class ReviewedInputError(ValueError):
+    """Typed refusal while constructing or validating a review substrate."""
+
+    def __init__(self, code: str, message: str) -> None:
+        self.code = code
+        super().__init__(message)
+
+
+def _fail(code: str, message: str) -> None:
+    raise ReviewedInputError(code, message)
+
+
+def _substrate_mode(changed_ref: str | None, substrate_mode: str | None) -> str:
+    inferred = SUBSTRATE_COMMITTED_REF if changed_ref else SUBSTRATE_WORKING_TREE
+    mode = substrate_mode or inferred
+    if mode not in SUBSTRATE_MODES:
+        _fail(
+            "invalid-substrate-mode",
+            f"substrate mode must be `{SUBSTRATE_WORKING_TREE}` or `{SUBSTRATE_COMMITTED_REF}`",
+        )
+    if mode == SUBSTRATE_WORKING_TREE and changed_ref:
+        _fail("substrate-ref-mismatch", "working-tree substrate cannot declare changed_ref")
+    if mode == SUBSTRATE_COMMITTED_REF and not changed_ref:
+        _fail("substrate-ref-missing", "committed-ref substrate requires changed_ref")
+    return mode
 
 
 def artifact_binding_required(path_name: str, observed_date: date | None, packet_consumed: bool) -> bool:
@@ -118,7 +150,10 @@ def _worktree_content_sha256(repo_root: Path, path: str) -> str | None:
 
 
 def _unavailable(
-    reviewed_paths: list[str] | None, changed_ref: str | None, reason: str
+    reviewed_paths: list[str] | None,
+    changed_ref: str | None,
+    substrate_mode: str,
+    reason: str,
 ) -> dict[str, Any]:
     components = {
         "algorithm": ALGORITHM,
@@ -126,6 +161,8 @@ def _unavailable(
         "reason": reason,
         "reviewed_paths": sorted(set(reviewed_paths or [])),
         "changed_ref": changed_ref,
+        "substrate_mode": substrate_mode,
+        "mode": substrate_mode,
     }
     return _with_identity_digest(components)
 
@@ -139,23 +176,18 @@ def _with_identity_digest(components: dict[str, Any]) -> dict[str, Any]:
     return {**components, "identity_sha256": _sha256(canonical.encode("utf-8"))}
 
 
-def build_reviewed_input_identity(
-    *,
+def _review_paths(
     repo_root: Path,
-    reviewed_paths: list[str] | None = None,
-    changed_ref: str | None = None,
-    excluded_paths: list[str] | None = None,
-    excluded_prefixes: list[str] | None = None,
-) -> dict[str, Any]:
-    try:
-        _git_bytes(repo_root, "rev-parse", "--is-inside-work-tree")
-    except ValueError as exc:
-        return _unavailable(reviewed_paths, changed_ref, str(exc))
-
+    reviewed_paths: list[str] | None,
+    changed_ref: str | None,
+    mode: str,
+    excluded_paths: list[str] | None,
+    excluded_prefixes: list[str] | None,
+) -> tuple[list[str], list[str]]:
     auto_excluded: list[str] = []
     if reviewed_paths is None:
-        # Exclusions apply to the auto sweep ONLY: an explicit `--reviewed-path` is a
-        # declaration of what was read and is never silently dropped.
+        # Exclusions apply to the auto sweep ONLY: an explicit --reviewed-path
+        # declaration is what was read and is never silently dropped.
         swept = set(_auto_paths(repo_root, changed_ref))
         prefixes = tuple(excluded_prefixes or ())
         kept = swept - set(excluded_paths or [])
@@ -163,62 +195,123 @@ def build_reviewed_input_identity(
         paths = sorted(path for path in kept if not path.startswith(prefixes))
     else:
         paths = sorted(set(reviewed_paths))
+    if mode == SUBSTRATE_COMMITTED_REF:
+        try:
+            expected_paths = set(_auto_paths(repo_root, changed_ref))
+        except ValueError as exc:
+            _fail("changed-ref-unavailable", str(exc))
+        if set(paths) != expected_paths:
+            _fail(
+                "changed-ref-path-mismatch",
+                "declared reviewed paths do not exactly match the changed-ref path set "
+                f"(declared={sorted(paths)!r}, changed_ref={sorted(expected_paths)!r})",
+            )
     for path in paths:
         if changed_ref:
             _lexical_path(path)
             continue
         candidate = _checked_path(repo_root, path)
-        # A directory binds NOTHING in working-tree mode: its content digest is
-        # `null` and stays `null` however its files change. Reject it rather than
-        # issue a binding that can never go stale.
         if candidate.is_dir() and not candidate.is_symlink():
             raise ValueError(
                 f"reviewed path `{path}` is a directory; declare the individual files "
                 "that were reviewed, since a directory binds no content"
             )
+    return paths, auto_excluded
 
+
+def _patch_components(
+    repo_root: Path, paths: list[str], changed_ref: str | None, mode: str
+) -> tuple[list[str], str, bytes, bytes, bytes]:
     path_args = ["--", *paths]
-    if changed_ref:
-        resolved_ref = _git_bytes(repo_root, "rev-parse", changed_ref).decode().splitlines()
-        base_head = resolved_ref[0]
-        if not paths:
-            reviewed_patch = b""
-        elif ".." in changed_ref:
-            reviewed_patch = _git_bytes(repo_root, "diff", "--binary", changed_ref, *path_args)
+    if mode == SUBSTRATE_COMMITTED_REF:
+        if ".." in changed_ref:
+            start_ref, target_ref = changed_ref.split("..", 1)
+            start_head = _git_bytes(repo_root, "rev-parse", start_ref).decode().strip()
+            target_head = _git_bytes(repo_root, "rev-parse", target_ref).decode().strip()
+            resolved_ref = [start_head, target_head]
         else:
-            reviewed_patch = _git_bytes(repo_root, "show", "--format=", "--binary", changed_ref, *path_args)
-        staged_patch = unstaged_patch = b""
-    else:
-        resolved_ref = []
-        base_head = _git_bytes(repo_root, "rev-parse", "HEAD").decode().strip()
-        reviewed_patch = b""
-        staged_patch = _git_bytes(repo_root, "diff", "--cached", "--binary", *path_args) if paths else b""
-        unstaged_patch = _git_bytes(repo_root, "diff", "--binary", *path_args) if paths else b""
+            target_head = _git_bytes(repo_root, "rev-parse", changed_ref).decode().strip()
+            resolved_ref = [target_head]
+        base_head = target_head
+        reviewed_patch = (
+            b""
+            if not paths
+            else _git_bytes(repo_root, "diff", "--binary", changed_ref, *path_args)
+            if ".." in changed_ref
+            else _git_bytes(repo_root, "show", "--format=", "--binary", changed_ref, *path_args)
+        )
+        return resolved_ref, base_head, reviewed_patch, b"", b""
+    base_head = _git_bytes(repo_root, "rev-parse", "HEAD").decode().strip()
+    staged_patch = _git_bytes(repo_root, "diff", "--cached", "--binary", *path_args) if paths else b""
+    unstaged_patch = _git_bytes(repo_root, "diff", "--binary", *path_args) if paths else b""
+    return [], base_head, b"", staged_patch, unstaged_patch
 
+
+def _content_components(
+    repo_root: Path, paths: list[str], base_head: str, mode: str
+) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
     untracked: set[str] = set()
-    if paths and not changed_ref:
+    path_args = ["--", *paths]
+    if paths and mode == SUBSTRATE_WORKING_TREE:
         raw_untracked = _git_bytes(
             repo_root, "ls-files", "--others", "--exclude-standard", "-z", *path_args
         )
         untracked = set(raw_untracked.decode("utf-8", errors="surrogateescape").split("\0"))
-
-    reviewed_content = []
-    declared_untracked = []
+    reviewed_content: list[dict[str, str]] = []
+    declared_untracked: list[dict[str, str]] = []
     for path in paths:
-        if changed_ref:
+        if mode == SUBSTRATE_COMMITTED_REF:
             content = _git_bytes_optional(repo_root, "show", f"{base_head}:{path}")
             digest = _sha256(content) if content is not None else None
         else:
             digest = _worktree_content_sha256(repo_root, path)
-        entry = {"path": path, "content_sha256": digest}
+        if digest is None:
+            _fail(
+                "null-content-hash",
+                f"reviewed path `{path}` has no content hash in the {mode} substrate",
+            )
+        entry: dict[str, str] = {"path": path, "content_sha256": digest}
         reviewed_content.append(entry)
         if path in untracked:
             declared_untracked.append(entry)
+    return reviewed_content, declared_untracked
+
+
+def build_reviewed_input_identity(
+    *,
+    repo_root: Path,
+    reviewed_paths: list[str] | None = None,
+    changed_ref: str | None = None,
+    substrate_mode: str | None = None,
+    excluded_paths: list[str] | None = None,
+    excluded_prefixes: list[str] | None = None,
+) -> dict[str, Any]:
+    mode = _substrate_mode(changed_ref, substrate_mode)
+    try:
+        _git_bytes(repo_root, "rev-parse", "--is-inside-work-tree")
+    except ValueError as exc:
+        return _unavailable(reviewed_paths, changed_ref, mode, str(exc))
+
+    paths, auto_excluded = _review_paths(
+        repo_root,
+        reviewed_paths,
+        changed_ref,
+        mode,
+        excluded_paths,
+        excluded_prefixes,
+    )
+    resolved_ref, base_head, reviewed_patch, staged_patch, unstaged_patch = _patch_components(
+        repo_root, paths, changed_ref, mode
+    )
+    reviewed_content, declared_untracked = _content_components(
+        repo_root, paths, base_head, mode
+    )
 
     captured: dict[str, Any] = {
         "algorithm": ALGORITHM,
         "status": "captured",
-        "mode": "changed-ref" if changed_ref else "working-tree",
+        "mode": mode,
+        "substrate_mode": mode,
         "changed_ref": changed_ref,
         "resolved_changed_ref": resolved_ref,
         "base_head": base_head,
@@ -239,19 +332,37 @@ def verify_reviewed_input_identity(repo_root: Path, identity: dict[str, Any]) ->
         return False, "reviewed input identity was unavailable when the packet was produced"
     if identity.get("algorithm") != ALGORITHM:
         return False, f"reviewed input identity must use `{ALGORITHM}`"
+    if "reviewed_paths" not in identity or identity.get("reviewed_paths") is None:
+        return False, "declared reviewed inputs cover zero paths"
+    if not isinstance(identity.get("reviewed_paths"), list):
+        return False, "cannot reconstruct reviewed input identity: reviewed_paths must be a list"
     if not identity.get("reviewed_paths"):
         # An empty path set digests to the same constant in every repo forever, so
         # it would verify as `current` while proving nothing. Reject it as a
         # binding rather than let a zero-input verdict read as a checked one.
         return False, "declared reviewed inputs cover zero paths"
+    mode = identity.get("substrate_mode")
+    if mode not in SUBSTRATE_MODES or identity.get("mode") != mode:
+        return False, "reviewed input identity has an invalid or missing substrate mode"
+    if (mode == SUBSTRATE_COMMITTED_REF) != bool(identity.get("changed_ref")):
+        return False, "reviewed input identity substrate mode does not match changed_ref"
     try:
         current = build_reviewed_input_identity(
             repo_root=repo_root,
             reviewed_paths=list(identity["reviewed_paths"]),
             changed_ref=identity.get("changed_ref"),
+            substrate_mode=mode,
         )
+    except ReviewedInputError as exc:
+        return False, f"{exc.code}: {exc}"
     except (KeyError, TypeError, ValueError) as exc:
         return False, f"cannot reconstruct reviewed input identity: {exc}"
+    for item in current.get("reviewed_content", []):
+        if not isinstance(item, dict) or not _SHA256_RE.fullmatch(str(item.get("content_sha256", ""))):
+            return False, "reviewed input identity contains a null or invalid content hash"
+    for field in ("reviewed_patch_sha256", "staged_patch_sha256", "unstaged_patch_sha256"):
+        if not _SHA256_RE.fullmatch(str(current.get(field, ""))):
+            return False, f"reviewed input identity contains a null or invalid {field}"
     if current["identity_sha256"] != identity.get("identity_sha256"):
         return False, "declared reviewed inputs are stale"
     return True, "current"
@@ -278,6 +389,8 @@ def verify_packet_binding(
     if not candidate.is_file():
         return False, f"reviewed packet does not exist: {packet_path}"
     packet_bytes = candidate.read_bytes()
+    if not _SHA256_RE.fullmatch(str(packet_sha256)):
+        return False, "packet sha256 is null or invalid"
     if _sha256(packet_bytes) != packet_sha256:
         return False, "reviewed packet bytes are stale or tampered"
     try:
@@ -291,6 +404,19 @@ def verify_packet_binding(
         return False, "reviewed packet has no reviewed input identity"
     if identity.get("identity_sha256") != identity_sha256:
         return False, "artifact identity does not match the reviewed packet"
+    if not _SHA256_RE.fullmatch(str(identity_sha256)):
+        return False, "identity sha256 is null or invalid"
+    packet_mode = packet.get("substrate_mode")
+    identity_mode = identity.get("substrate_mode")
+    # Pre-v1 packets produced before the explicit envelope field are still
+    # consumable as historical worker evidence.  Every current packet carries
+    # ``version`` and must name the mode explicitly.
+    if packet_mode is None and "version" not in packet:
+        packet_mode = identity_mode
+    if packet_mode not in SUBSTRATE_MODES or identity_mode != packet_mode:
+        return False, "packet and reviewed input identity substrate modes do not match"
+    if packet.get("changed_ref") != identity.get("changed_ref"):
+        return False, "packet and reviewed input identity changed_ref values do not match"
     if check_current:
         return verify_reviewed_input_identity(repo_root, identity)
     return True, "packet-integrity-only"

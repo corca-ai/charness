@@ -26,6 +26,9 @@ DEFAULT_REVIEWER_TIER = "high-leverage"
 _reviewed_input_identity = import_repo_module(__file__, "scripts.reviewed_input_identity")
 build_reviewed_input_identity = _reviewed_input_identity.build_reviewed_input_identity
 packet_file_sha256 = _reviewed_input_identity.packet_file_sha256
+SUBSTRATE_WORKING_TREE = _reviewed_input_identity.SUBSTRATE_WORKING_TREE
+SUBSTRATE_COMMITTED_REF = _reviewed_input_identity.SUBSTRATE_COMMITTED_REF
+ReviewedInputError = _reviewed_input_identity.ReviewedInputError
 
 
 def _now_iso() -> str:
@@ -125,6 +128,7 @@ def build_packet(
     repo_root: Path,
     prepared_for: str,
     changed_ref: str | None = None,
+    substrate_mode: str | None = None,
     packet_kind: str = PACKET_KIND,
     include_reviewer_tier: bool = True,
     include_reviewed_input_identity: bool = True,
@@ -152,6 +156,8 @@ def build_packet(
         "generated_at": _now_iso(),
         "prepared_for": prepared_for,
         "changed_ref": changed_ref,
+        "substrate_mode": substrate_mode
+        or (SUBSTRATE_COMMITTED_REF if changed_ref else SUBSTRATE_WORKING_TREE),
         "adapter_path": _relative_adapter_path(adapter.get("path"), repo_root),
         "sections": sections,
         "section_count": len(sections),
@@ -164,6 +170,7 @@ def build_packet(
             repo_root=repo_root,
             reviewed_paths=reviewed_paths,
             changed_ref=changed_ref,
+            substrate_mode=packet["substrate_mode"],
             excluded_paths=excluded_reviewed_paths,
             excluded_prefixes=excluded_reviewed_prefixes,
         )
@@ -212,6 +219,7 @@ def render_markdown(packet: dict[str, Any], verification_command: str | None = N
     lines.append(f"- **Kind**: `{packet['kind']}` (v{packet['version']})")
     lines.append(f"- **Generated**: {packet['generated_at']}")
     lines.append(f"- **Prepared for**: {packet['prepared_for']}")
+    lines.append(f"- **Substrate mode**: `{packet.get('substrate_mode', '')}`")
     if packet.get("changed_ref"):
         lines.append(f"- **Changed ref**: `{packet['changed_ref']}`")
     if packet.get("adapter_path"):

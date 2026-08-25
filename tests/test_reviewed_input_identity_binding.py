@@ -57,6 +57,7 @@ def _init_identity_repo(repo: Path) -> None:
 def test_reviewed_input_identity_is_ordered_and_content_addressed(tmp_path: Path) -> None:
     _init_identity_repo(tmp_path)
     (tmp_path / "reviewed.txt").write_text("unstaged\n", encoding="utf-8")
+    (tmp_path / "new.txt").write_text("initial\n", encoding="utf-8")
     first = build_reviewed_input_identity(
         repo_root=tmp_path,
         reviewed_paths=["reviewed.txt", "new.txt"],

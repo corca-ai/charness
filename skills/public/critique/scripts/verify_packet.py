@@ -35,16 +35,50 @@ def _payload(
     packet_path: str,
     packet_sha256: str,
     identity_sha256: str,
+    reason_code: str,
 ) -> dict[str, Any]:
     return {
         "ok": ok,
         "status": "current" if ok else "refused",
         "reason": reason,
+        "reason_code": reason_code,
         "expected_kind": EXPECTED_KIND,
         "packet_path": packet_path,
         "packet_sha256": packet_sha256,
         "identity_sha256": identity_sha256,
     }
+
+
+def _reason_code(reason: str) -> str:
+    if "changed-ref-path-mismatch" in reason:
+        return "changed-ref-path-mismatch"
+    if "changed-ref-unavailable" in reason:
+        return "changed-ref-unavailable"
+    if "null-content-hash" in reason:
+        return "null-or-invalid-hash"
+    if "sha256 is null or invalid" in reason:
+        return "null-or-invalid-hash"
+    if "substrate mode" in reason:
+        return "substrate-mode-mismatch"
+    if "changed_ref" in reason:
+        return "changed-ref-mismatch"
+    if "identity" in reason and "stale" in reason:
+        return "reviewed-input-stale"
+    if "content hash" in reason:
+        return "null-or-invalid-hash"
+    if "path" in reason and "outside" in reason:
+        return "path-outside-repo"
+    if "packet bytes" in reason:
+        return "packet-stale-or-tampered"
+    if "not valid JSON" in reason:
+        return "packet-invalid-json"
+    if "wrong kind" in reason:
+        return "packet-kind-mismatch"
+    if "artifact identity" in reason:
+        return "identity-mismatch"
+    if "zero paths" in reason:
+        return "empty-reviewed-paths"
+    return "packet-binding-refused"
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -77,6 +111,7 @@ def main(argv: list[str] | None = None) -> int:
             packet_path=args.packet_path,
             packet_sha256=args.packet_sha256,
             identity_sha256=args.identity_sha256,
+            reason_code=_reason_code(reason),
         )
     )
     return 0 if ok and reason == "current" else 1

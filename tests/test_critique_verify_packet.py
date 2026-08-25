@@ -51,6 +51,24 @@ def _prepare(tmp_path: Path) -> tuple[Path, dict, dict]:
     return packet_path, receipt, packet
 
 
+def _committed_ref_repo(tmp_path: Path) -> Path:
+    _git(tmp_path, "init")
+    _git(tmp_path, "config", "user.email", "test@example.com")
+    _git(tmp_path, "config", "user.name", "test")
+    reviewed = tmp_path / "reviewed.txt"
+    reviewed.write_text("before\n", encoding="utf-8")
+    (tmp_path / ".agents").mkdir()
+    (tmp_path / ".agents/critique-adapter.yaml").write_text(
+        "version: 1\nrepo: test\npacket_sections: []\n", encoding="utf-8"
+    )
+    _git(tmp_path, "add", "reviewed.txt", ".agents/critique-adapter.yaml")
+    _git(tmp_path, "commit", "-m", "initial")
+    reviewed.write_text("after\n", encoding="utf-8")
+    _git(tmp_path, "add", "reviewed.txt")
+    _git(tmp_path, "commit", "-m", "change")
+    return tmp_path
+
+
 def _run(command: str, *, cwd: Path) -> subprocess.CompletedProcess[str]:
     return subprocess.run(shlex.split(command), cwd=cwd, capture_output=True, text=True)
 
@@ -118,6 +136,91 @@ def test_tampered_packet_refuses_with_structured_yaml(tmp_path: Path) -> None:
     payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert "stale or tampered" in payload["reason"]
+
+
+def test_committed_ref_packet_records_explicit_mode_and_exact_paths(tmp_path: Path) -> None:
+    repo = _committed_ref_repo(tmp_path)
+    result = subprocess.run(
+        [
+            "python3",
+            str(PREPARE),
+            "--repo-root",
+            str(repo),
+            "--slug",
+            "committed",
+            "--commit",
+            "HEAD",
+            "--reviewed-path",
+            "reviewed.txt",
+        ],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    receipt = yaml.safe_load(result.stdout)
+    packet = json.loads(
+        (repo / receipt["reviewed_input_binding"]["packet_path"]).read_text(encoding="utf-8")
+    )
+    identity = packet["reviewed_input_identity"]
+    assert packet["substrate_mode"] == "committed-ref"
+    assert identity["substrate_mode"] == "committed-ref"
+    assert identity["reviewed_paths"] == ["reviewed.txt"]
+    assert identity["reviewed_content"][0]["content_sha256"] == hashlib.sha256(
+        b"after\n"
+    ).hexdigest()
+    verify = _run(receipt["reviewed_input_binding"]["verify_command"], cwd=repo)
+    assert verify.returncode == 0, verify.stderr
+    assert yaml.safe_load(verify.stdout)["status"] == "current"
+
+
+def test_committed_ref_packet_refuses_mismatched_declared_paths(tmp_path: Path) -> None:
+    repo = _committed_ref_repo(tmp_path)
+    result = subprocess.run(
+        [
+            "python3",
+            str(PREPARE),
+            "--repo-root",
+            str(repo),
+            "--slug",
+            "mismatch",
+            "--commit",
+            "HEAD",
+            "--reviewed-path",
+            ".agents/critique-adapter.yaml",
+        ],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 1
+    payload = yaml.safe_load(result.stdout)
+    assert payload["status"] == "refused"
+    assert payload["reason_code"] == "changed-ref-path-mismatch"
+    assert not (repo / "charness-artifacts/critique/mismatch-packet.json").exists()
+
+
+def test_verifier_refuses_null_hash_arguments_with_typed_reason(tmp_path: Path) -> None:
+    _packet_path, receipt, _packet = _prepare(tmp_path)
+    binding = receipt["reviewed_input_binding"]
+    result = subprocess.run(
+        [
+            "python3",
+            str(VERIFY_ENTRYPOINTS[0]),
+            "--repo-root",
+            ".",
+            "--packet-path",
+            binding["packet_path"],
+            "--packet-sha256",
+            "null",
+            "--identity-sha256",
+            binding["identity_sha256"],
+        ],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 1
+    payload = yaml.safe_load(result.stdout)
+    assert payload["reason_code"] == "null-or-invalid-hash"
 
 
 def test_stale_reviewed_input_refuses(tmp_path: Path) -> None:
