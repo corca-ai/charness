@@ -222,6 +222,11 @@ def build_report(
     )
     receipt_provenance_ok = receipt_ok
     semantic_ok = semantic_result is not None and semantic_result.get("verdict") == "pass"
+    # This is the pre-terminalization collection gate used by the runner.  It
+    # deliberately does not require a pass verdict: a typed ``block`` result
+    # is still a delivered finding, while a malformed result or receipt must
+    # leave a typed collection failure that can be retried.
+    collection_ready = receipt_ok and semantic_result is not None and provenance_ok
     eligible = receipt_ok and semantic_ok and provenance_ok and ledger_ok
     if not receipt_ok:
         reason = receipt_reason
@@ -261,6 +266,7 @@ def build_report(
         "receipt_ok": receipt_ok,
         "ledger_ok": ledger_ok,
         "result_schema_ok": semantic_result is not None,
+        "collection_ready": collection_ready,
         "review_verdict": semantic_result.get("verdict") if semantic_result else None,
         "receipt_provenance_ok": receipt_provenance_ok,
         "findings_identity": attempt.findings_identity,

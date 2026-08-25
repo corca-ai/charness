@@ -15,11 +15,22 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 ROOT = repo_root_from_script(__file__)
 _continuity = import_repo_module(__file__, "scripts.lesson_evaluation_continuity_lib")
 _session = import_repo_module(__file__, "scripts.record_lesson_session")
+_boundary = import_repo_module(__file__, "scripts.lesson_session_boundary")
 
 
 def open_session(
-    *, repo_root: Path, session_id: str, seed: str, stdout: BinaryIO, emitted_at: str | None = None
+    *,
+    repo_root: Path,
+    session_id: str,
+    seed: str,
+    stdout: BinaryIO,
+    emitted_at: str | None = None,
+    worker_mode: bool = False,
 ) -> dict[str, object]:
+    if worker_mode:
+        raise _boundary.LessonSessionBoundaryError(
+            "worker mode cannot open or mutate the parent lesson ledger; inherit a parent bundle"
+        )
     _continuity.validate_session_id(session_id)
     output_dir = repo_root / "charness-artifacts/retro"
     event, preview = _session.declare_session(
@@ -61,7 +72,43 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, default=ROOT)
     parser.add_argument("--session-id", required=True)
     parser.add_argument("--seed", required=True)
+    parser.add_argument(
+        "--parent-bundle",
+        type=Path,
+        help="worker mode: inherit this parent bundle without opening the global ledger",
+    )
+    parser.add_argument("--lane-id", help="worker mode lane identifier")
+    parser.add_argument("--owner-id", help="worker mode owner identifier")
+    parser.add_argument("--lane-receipt", type=Path, help="worker mode write-once lane receipt")
+    parser.add_argument(
+        "--worker-mode",
+        action="store_true",
+        help="refuse global lesson writes; requires --parent-bundle inheritance",
+    )
     args = parser.parse_args()
+    if args.worker_mode and args.parent_bundle is None:
+        parser.error("--worker-mode requires --parent-bundle")
+    if args.parent_bundle is not None:
+        if not args.lane_id or not args.owner_id:
+            parser.error("--parent-bundle requires --lane-id and --owner-id")
+        try:
+            context, lane_receipt = _boundary.inherit_worker_session(
+                args.repo_root.resolve(),
+                bundle_path=args.parent_bundle,
+                lane_id=args.lane_id,
+                owner_id=args.owner_id,
+                session_id=args.session_id,
+                receipt_path=args.lane_receipt,
+            )
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
+        print(
+            f"worker inherited parent lesson session {context.session_id}; lane receipt at "
+            f"{lane_receipt.relative_to(args.repo_root.resolve())}",
+            file=sys.stderr,
+        )
+        return 0
     result = open_session(
         repo_root=args.repo_root.resolve(),
         session_id=args.session_id,

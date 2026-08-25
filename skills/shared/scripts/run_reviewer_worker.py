@@ -25,11 +25,17 @@ try:
     from reviewer_capability import load_capability_file
     from reviewer_delivery import _read, _write, ledger_lock
     from reviewer_output import emit_yaml
+    from reviewer_runner_support import append_lesson_args, finalize_attempt, lesson_paths
     from reviewer_worker_report import ReportError, build_report
 except ImportError:
     from skills.shared.scripts.reviewer_capability import load_capability_file
     from skills.shared.scripts.reviewer_delivery import _read, _write, ledger_lock
     from skills.shared.scripts.reviewer_output import emit_yaml
+    from skills.shared.scripts.reviewer_runner_support import (
+        append_lesson_args,
+        finalize_attempt,
+        lesson_paths,
+    )
     from skills.shared.scripts.reviewer_worker_report import ReportError, build_report
 
 
@@ -130,6 +136,11 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--schema-file", type=Path, default=DEFAULT_SCHEMA)
     parser.add_argument("--stdout-file", type=Path)
     parser.add_argument("--stderr-file", type=Path)
+    parser.add_argument("--parent-lesson-bundle", type=Path)
+    parser.add_argument("--lesson-session-id")
+    parser.add_argument("--lesson-lane-id")
+    parser.add_argument("--lesson-owner-id")
+    parser.add_argument("--lesson-lane-receipt", type=Path)
     parser.add_argument("--backend", choices=("codex_exec", "claude_p"))
     parser.add_argument("--execution-mode", choices=("file-backed-worker", "typed-subagent"))
     parser.add_argument("--timeout-seconds", type=float)
@@ -209,6 +220,7 @@ def main(argv: list[str] | None = None) -> int:
         stderr_path = _repo_path(
             repo_root, args.stderr_file or Path(f"{output_path}.stderr")
         )
+        lesson_bundle, lesson_receipt = lesson_paths(repo_root, args)
         if _sha256(schema) != _sha256(DEFAULT_SCHEMA):
             raise ValueError(
                 "file-backed reviewer runner requires the canonical bounded-review result schema"
@@ -229,6 +241,8 @@ def main(argv: list[str] | None = None) -> int:
             stdout_path,
             stderr_path,
         )
+        if lesson_bundle is not None and lesson_receipt is not None:
+            all_paths = (*all_paths, lesson_bundle, lesson_receipt)
         for path in all_paths:
             try:
                 path.relative_to(repo_root)
@@ -236,7 +250,11 @@ def main(argv: list[str] | None = None) -> int:
                 raise ValueError(f"runner path resolves outside --repo-root: {path}") from exc
         if len({str(path) for path in all_paths}) != len(all_paths):
             raise ValueError("runner input and output paths must resolve to distinct files")
-        stale_targets = [path for path in (output_path, receipt_path, report_target, stdout_path, stderr_path) if path.exists()]
+        stale_targets = [
+            path
+            for path in (output_path, receipt_path, report_target, stdout_path, stderr_path, lesson_receipt)
+            if path is not None and path.exists()
+        ]
         if stale_targets:
             raise ValueError("refusing stale runner artifacts: " + ", ".join(str(path) for path in stale_targets))
         prompt_sha = _sha256(prompt)
@@ -291,40 +309,22 @@ def main(argv: list[str] | None = None) -> int:
             args.boundary_fingerprint,
         ]
         worker_command.extend(["--stdout-file", str(stdout_path), "--stderr-file", str(stderr_path)])
+        append_lesson_args(worker_command, args, lesson_bundle, lesson_receipt, repo_root)
         worker_command.extend(["--timeout-seconds", str(timeout)])
         if args.run_id:
             worker_command.extend(["--run-id", args.run_id])
         worker = subprocess.run(worker_command, cwd=repo_root, check=False)
 
-        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
-        with ledger_lock(ledger_path):
-            ledger = _read(ledger_path)
-            attempt = ledger.require(args.attempt_id)
-            if receipt.get("status") == "succeeded":
-                attempt.record_findings(
-                    scope=args.scope,
-                    packet_identity=args.packet_identity,
-                    parent_receipt_identity=args.parent_receipt_identity,
-                    findings_identity=receipt.get("output_sha256", ""),
-                    recorded_at=receipt.get("finished_at", ""),
-                )
-            else:
-                attempt.transition(
-                    "timed-out" if receipt.get("status") == "timed-out" else "non-delivery-unknown",
-                    f"file-backed worker ended with status {receipt.get('status')!r}",
-                    receipt.get("finished_at", ""),
-                )
-            _write(ledger_path, ledger)
-
-        report = build_report(
-            receipt_path=str(receipt_path),
-            ledger_path=str(ledger_path),
+        report = finalize_attempt(
+            receipt_path=receipt_path,
+            ledger_path=ledger_path,
             attempt_id=args.attempt_id,
             scope=args.scope,
             packet_identity=args.packet_identity,
             reviewed_input_identity=args.reviewed_input_identity,
             parent_receipt_identity=args.parent_receipt_identity,
-            expected_execution_mode=mode,
+            execution_mode=mode,
+            build_report=build_report,
         )
         _atomic_write_yaml(report_target, report)
         emit_yaml(report)

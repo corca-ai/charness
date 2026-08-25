@@ -9,6 +9,7 @@ import time
 import pytest
 
 from skills.shared.scripts import reviewer_delivery as delivery
+from skills.shared.scripts import reviewer_runner_support
 
 
 def _ledger() -> delivery.DeliveryLedger:
@@ -144,6 +145,84 @@ def test_retry_preserves_original_and_is_bounded_to_one() -> None:
     assert ledger.require("a1").state == delivery.TIMED_OUT
     with pytest.raises(delivery.DeliveryError, match="bounded to one retry"):
         ledger.retry("a2", new_attempt_id="a3", recorded_at="2026-08-21T00:03:00Z")
+
+
+def test_retry_refuses_an_active_parent() -> None:
+    ledger = _ledger()
+    with pytest.raises(delivery.DeliveryError, match="terminal retryable"):
+        ledger.retry("a1", new_attempt_id="a2", recorded_at="2026-08-21T00:02:00Z")
+
+
+def test_readback_refuses_foreign_retry_lineage() -> None:
+    ledger = _ledger()
+    ledger.require("a1").transition(
+        delivery.COLLECTION_FAILED, "collection rejected the receipt", "2026-08-21T00:00:10Z"
+    )
+    payload = ledger.to_dict()
+    retry = delivery.DeliveryAttempt.start(
+        attempt_id="a2",
+        scope="scope-sha",
+        packet_identity="packet-sha",
+        parent_receipt_identity="receipt-a1",
+        boundary_fingerprint="fingerprint-a1",
+        recorded_at="2026-08-21T00:02:00Z",
+        retry_of="foreign",
+        retry_count=1,
+    )
+    payload["attempts"].append(retry.to_dict())
+    with pytest.raises(delivery.DeliveryError, match="existing attempt"):
+        delivery.DeliveryLedger.from_dict(payload)
+
+
+def test_readback_refuses_retry_count_gap_and_non_immediate_predecessor() -> None:
+    ledger = _ledger()
+    ledger.require("a1").transition(
+        delivery.TIMED_OUT, "host signal: timeout", "2026-08-21T00:00:10Z"
+    )
+    retry = ledger.retry("a1", new_attempt_id="a2", recorded_at="2026-08-21T00:02:00Z")
+    payload = ledger.to_dict()
+    forged = {**retry.to_dict(), "attempt_id": "a3", "retry_of": "a1", "retry_count": 1}
+    forged["history"] = [{**event, "attempt_id": "a3"} for event in forged["history"]]
+    payload["attempts"].append(forged)
+    with pytest.raises(delivery.DeliveryError, match="immediate predecessor"):
+        delivery.DeliveryLedger.from_dict(payload)
+
+
+def test_runner_collection_failure_is_typed_and_retryable(tmp_path) -> None:
+    ledger_path = tmp_path / "delivery.json"
+    receipt_path = tmp_path / "receipt.json"
+    ledger = _ledger()
+    delivery._write(ledger_path, ledger)
+    receipt_path.write_text(
+        json.dumps({"status": "succeeded", "finished_at": "2026-08-21T00:00:10Z"}),
+        encoding="utf-8",
+    )
+    reports: list[dict[str, object]] = []
+
+    def build_report(**kwargs: object) -> dict[str, object]:
+        reports.append(kwargs)
+        if len(reports) == 1:
+            return {"collection_ready": False, "reason": "typed result chain is invalid"}
+        restored = delivery._read(ledger_path)
+        return {"delivery_state": restored.require("a1").state}
+
+    report = reviewer_runner_support.finalize_attempt(
+        receipt_path=receipt_path,
+        ledger_path=ledger_path,
+        attempt_id="a1",
+        scope="scope-sha",
+        packet_identity="packet-sha",
+        reviewed_input_identity="reviewed-sha",
+        parent_receipt_identity="receipt-a1",
+        execution_mode="file-backed-worker",
+        build_report=build_report,
+    )
+    assert report["delivery_state"] == delivery.COLLECTION_FAILED
+    assert delivery._read(ledger_path).require("a1").state == delivery.COLLECTION_FAILED
+    retry = delivery._read(ledger_path).retry("a1", new_attempt_id="a2")
+    assert retry.retry_of == "a1"
+    assert retry.retry_count == 1
+    assert len(reports) == 2
 
 
 def test_duplicate_canonical_transition_is_rejected() -> None:

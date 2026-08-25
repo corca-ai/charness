@@ -92,6 +92,12 @@ class DeliveryAttempt:
         retry_of: str | None = None,
         retry_count: int = 0,
     ) -> "DeliveryAttempt":
+        if type(retry_count) is not int or retry_count < 0:
+            raise DeliveryError("retry_count must be a non-negative integer")
+        if retry_count == 0 and retry_of is not None:
+            raise DeliveryError("retry_of requires a positive retry_count")
+        if retry_count > 0 and retry_of is None:
+            raise DeliveryError("positive retry_count requires retry_of")
         when = _text(recorded_at, "recorded_at")
         attempt = cls(
             attempt_id=_attempt_id(attempt_id),

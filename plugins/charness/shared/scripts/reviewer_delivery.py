@@ -32,6 +32,7 @@ for _state_name in (
     "APPROVAL_STATE",
     "HOST_CAPACITY_BLOCKED",
     "HOST_CHANNEL_UNREADABLE",
+    "COLLECTION_FAILED",
     "INTERRUPTED",
     "NON_DELIVERY_UNKNOWN",
     "RECOVERED_FROM_TRANSCRIPT",
@@ -67,6 +68,33 @@ class DeliveryLedger:
             if attempt.attempt_id in attempts:
                 raise DeliveryError(f"duplicate attempt_id: {attempt.attempt_id}")
             attempts[attempt.attempt_id] = attempt
+        ordered = list(attempts.values())
+        for index, attempt in enumerate(ordered):
+            if attempt.retry_of is None:
+                if attempt.retry_count != 0:
+                    raise DeliveryError(
+                        f"attempt `{attempt.attempt_id}` has retry_count without retry_of"
+                    )
+                continue
+            predecessor = attempts.get(attempt.retry_of)
+            if predecessor is None:
+                raise DeliveryError(
+                    f"attempt `{attempt.attempt_id}` retry_of must reference an existing attempt"
+                )
+            if index == 0 or ordered[index - 1].attempt_id != predecessor.attempt_id:
+                raise DeliveryError(
+                    f"attempt `{attempt.attempt_id}` retry_of must reference its immediate predecessor"
+                )
+            if predecessor.state not in _state.RETRYABLE_STATES or not predecessor.terminal:
+                raise DeliveryError(
+                    f"attempt `{attempt.attempt_id}` predecessor `{predecessor.attempt_id}` is not terminal retryable"
+                )
+            if attempt.retry_count != predecessor.retry_count + 1:
+                raise DeliveryError(
+                    f"attempt `{attempt.attempt_id}` retry_count is incoherent with predecessor"
+                )
+            if attempt.retry_count > 1:
+                raise DeliveryError("recovery is bounded to one retry per delivery attempt")
         return cls(attempts)
 
     def to_dict(self) -> dict[str, Any]:
@@ -125,10 +153,19 @@ class DeliveryLedger:
         recorded_at: str | None = None,
     ) -> DeliveryAttempt:
         old = self.require(attempt_id)
-        if old.delivery_complete:
-            raise DeliveryError("cannot retry an approval-eligible attempt")
         if old.retry_count >= 1:
-            raise DeliveryError("recovery is bounded to one retry per delivery attempt")
+            raise DeliveryError(
+                "recovery is bounded to one retry per delivery attempt; "
+                "the retry predecessor must remain terminal retryable"
+            )
+        if old.state not in _state.RETRYABLE_STATES or not old.terminal:
+            raise DeliveryError(
+                f"cannot retry active or non-retryable attempt `{old.attempt_id}`; "
+                "retry requires a terminal retryable state"
+            )
+        ordered_ids = list(self.attempts)
+        if not ordered_ids or ordered_ids[-1] != old.attempt_id:
+            raise DeliveryError("retry predecessor must be the immediate predecessor in the ledger")
         attempt = DeliveryAttempt.start(
             attempt_id=new_attempt_id,
             scope=old.scope,
