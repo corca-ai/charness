@@ -1,0 +1,56 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "2026-08-25-consumer-boundary-r2",
+      "scope": "consumer-boundary-repaired-verdict-surface-r2",
+      "packet_identity": "53760e09896c47393c4bf802963ca9b02217a5bc87ddc23ea587ee789b2af1f3",
+      "parent_receipt_identity": "2026-08-25-consumer-boundary-r2-parent",
+      "boundary_fingerprint": "26c0810296d4912caa89e4fbe8d23d54986e932a1098c4fe76e48879081604c3",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-08-25T13:34:18Z",
+      "history": [
+        {
+          "event_id": "e3ff44c182b1435f9463d9e92205d310",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-08-25T13:21:42Z",
+          "attempt_id": "2026-08-25-consumer-boundary-r2",
+          "scope": "consumer-boundary-repaired-verdict-surface-r2",
+          "packet_identity": "53760e09896c47393c4bf802963ca9b02217a5bc87ddc23ea587ee789b2af1f3",
+          "parent_receipt_identity": "2026-08-25-consumer-boundary-r2-parent",
+          "capability_launch_envelope_sha256": "01088335589394c92926974e2e3cabfb25b6caa9cd7cb4ddfd3204ef6c3df992"
+        },
+        {
+          "event_id": "6ab270c22ac040a2a47ef57a1655ea92",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-08-25T13:34:18Z",
+          "attempt_id": "2026-08-25-consumer-boundary-r2",
+          "scope": "consumer-boundary-repaired-verdict-surface-r2",
+          "packet_identity": "53760e09896c47393c4bf802963ca9b02217a5bc87ddc23ea587ee789b2af1f3",
+          "parent_receipt_identity": "2026-08-25-consumer-boundary-r2-parent",
+          "capability_launch_envelope_sha256": "01088335589394c92926974e2e3cabfb25b6caa9cd7cb4ddfd3204ef6c3df992",
+          "findings_identity": "aadc2f11d58c556252bd2aeaa1a2138c2c153c61b026be25066349b66cb10eb3"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "a2351af508172d3147ca4193d002de3fb10428f4fecabcc636ce733550f7a406",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "854eb7f8d733431e78b351cebf79de6cbbe3ebe475613cf0356eb5a7e8d412e9",
+      "schema_sha256": "a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3",
+      "capability_launch_envelope_sha256": "01088335589394c92926974e2e3cabfb25b6caa9cd7cb4ddfd3204ef6c3df992",
+      "output_file": "/home/hwidong/codes/charness/charness-artifacts/critique/workers/2026-08-25-consumer-boundary-r2/result.json",
+      "receipt_file": "/home/hwidong/codes/charness/charness-artifacts/critique/workers/2026-08-25-consumer-boundary-r2/receipt.json",
+      "producer_run_id": "2026-08-25-consumer-boundary-r2-run",
+      "findings_identity": "aadc2f11d58c556252bd2aeaa1a2138c2c153c61b026be25066349b66cb10eb3"
+    }
+  ]
+}

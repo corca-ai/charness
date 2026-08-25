@@ -348,6 +348,16 @@ def _consumer_repo(
         {"id": fid, "surface": "code", "class": "intentional", "note": "n", "reviewed_at": "d"}
         for fid in intentional_code
     ]
+    entries.extend(
+        {
+            "id": f"fixable-{index}",
+            "surface": "code",
+            "class": "fixable",
+            "note": "n",
+            "reviewed_at": "d",
+        }
+        for index in range(fixable_ceiling)
+    )
     _write_json(repo / "q" / "dup-review.json", {
         "schemaVersion": "charness.quality.dup_review.v1",
         "fixable_ceiling": fixable_ceiling, "entries": entries,

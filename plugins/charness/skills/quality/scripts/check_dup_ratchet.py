@@ -81,6 +81,7 @@ _scan = SKILL_RUNTIME.load_local_skill_module(__file__, "dup_ratchet_scan")
 _nose_report = SKILL_RUNTIME.load_local_skill_module(__file__, "nose_report_lib")
 _fingerprint = SKILL_RUNTIME.load_local_skill_module(__file__, "nose_fingerprint_lib")
 _lineage = SKILL_RUNTIME.load_local_skill_module(__file__, "dup_family_lineage")
+_review = SKILL_RUNTIME.load_local_skill_module(__file__, "dup_review_lib")
 # The three baseline-writing modes and their refusals live together in their own module.
 _rebaseline = SKILL_RUNTIME.load_local_skill_module(__file__, "dup_ratchet_rebaseline")
 _quality_adapter = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.quality_adapter_lib")
@@ -131,9 +132,11 @@ def _evaluate_config(repo_root: Path, config: dict, args) -> dict:  # noqa: C901
             "would fall back to nose DEFAULT_PATHS (likely the wrong tree). Set "
             "scope_paths to this repo's code roots."
         )
-    overlay = _scan.load_json(repo_root / review_rel)
-    if overlay is None:
-        degraded.append(f"overlay missing/unreadable ({review_rel})")
+    overlay, overlay_error = _scan.load_review_overlay(
+        repo_root, review_rel, _review.validate_review
+    )
+    if overlay_error:
+        degraded.append(overlay_error)
     raw_baseline = _scan.load_json(repo_root / baseline_rel)
     baseline_ids = _ratchet_baseline.load_gate_baseline_ids(raw_baseline)
     baseline_members = _ratchet_baseline.load_gate_baseline_members(raw_baseline)
@@ -284,6 +287,14 @@ def _evaluate_config(repo_root: Path, config: dict, args) -> dict:  # noqa: C901
     verdict["algo_skew"] = algo_skew
     if algo_skew:
         verdict["messages"].append(f"WARNING (fingerprint-algo skew): {algo_skew}")
+    verdict["lineage_identity"], lineage_identity_reasons = _lineage.identity(
+        baseline_version=baseline_version,
+        live_version=live_version,
+        baseline_algo=baseline_algo,
+        live_algo=_fingerprint.FINGERPRINT_ALGO_VERSION,
+        scanner_skew=skew,
+        algo_skew=algo_skew,
+    )
     baseline_families = _ratchet_baseline.load_gate_baseline_families(raw_baseline) or []
     lineage_readiness = _lineage.readiness(baseline_families, reviewed_ids=reviewed_code)
     verdict["lineage_readiness"] = lineage_readiness
@@ -296,7 +307,9 @@ def _evaluate_config(repo_root: Path, config: dict, args) -> dict:  # noqa: C901
     # unavailable -> empty -> ready into an approval.  Readiness is therefore
     # necessary but not sufficient: the scan itself must also be established.
     verdict["lineage_approval_eligible"] = (
-        not verdict["degraded"] and lineage_readiness["status"] == "ready"
+        not verdict["degraded"]
+        and lineage_readiness["status"] == "ready"
+        and verdict["lineage_identity"]["status"] == "established"
     )
     if verdict["degraded"] and lineage_readiness["status"] == "ready":
         verdict["messages"].append(
@@ -307,6 +320,11 @@ def _evaluate_config(repo_root: Path, config: dict, args) -> dict:  # noqa: C901
             "REFUSAL (lineage): current baseline lacks stable member paths for "
             + ", ".join(lineage_readiness["missing_fingerprints"])
             + "; rotation proof is unavailable until the baseline is backfilled"
+        )
+    if lineage_identity_reasons:
+        verdict["messages"].append(
+            "REFUSAL (lineage): producer identity is unknown or skewed -- "
+            + "; ".join(lineage_identity_reasons)
         )
     lineage = _lineage.propose(
         live_members=live_members,

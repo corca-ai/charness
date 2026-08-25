@@ -23,6 +23,35 @@ RELATIONS = (
 )
 
 
+def identity(
+    baseline_version: str | None,
+    live_version: str | None,
+    baseline_algo: str | None,
+    live_algo: str,
+    scanner_skew: str | None,
+    algo_skew: str | None,
+) -> tuple[dict[str, Any], list[str]]:
+    reasons: list[str] = []
+    if not baseline_version:
+        reasons.append("baseline scanner version stamp is missing")
+    if not live_version:
+        reasons.append("live scanner version is missing")
+    if not baseline_algo:
+        reasons.append("baseline fingerprint-algorithm stamp is missing")
+    if scanner_skew:
+        reasons.append("scanner version skew is present")
+    if algo_skew:
+        reasons.append("fingerprint-algorithm skew is present")
+    return {
+        "status": "established" if not reasons else "unknown",
+        "reasons": reasons,
+        "baseline_tool_version": baseline_version,
+        "live_tool_version": live_version,
+        "baseline_fingerprint_algo_version": baseline_algo,
+        "live_fingerprint_algo_version": live_algo,
+    }, reasons
+
+
 def readiness(
     baseline_families: Iterable[Mapping[str, Any]],
     *,

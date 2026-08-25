@@ -1,0 +1,51 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 01088335589394c92926974e2e3cabfb25b6caa9cd7cb4ddfd3204ef6c3df992
+capability_launch_envelope_sha256: 01088335589394c92926974e2e3cabfb25b6caa9cd7cb4ddfd3204ef6c3df992
+capability_collection_envelope_sha256: 01088335589394c92926974e2e3cabfb25b6caa9cd7cb4ddfd3204ef6c3df992
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: consumer-boundary-repaired-verdict-surface-r2
+attempt_id: 2026-08-25-consumer-boundary-r2
+boundary_fingerprint: 26c0810296d4912caa89e4fbe8d23d54986e932a1098c4fe76e48879081604c3
+prompt_sha256: 854eb7f8d733431e78b351cebf79de6cbbe3ebe475613cf0356eb5a7e8d412e9
+schema_sha256: a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/charness-artifacts/critique/workers/2026-08-25-consumer-boundary-r2/receipt.json
+ledger_path: /home/hwidong/codes/charness/charness-artifacts/critique/workers/2026-08-25-consumer-boundary-r2/ledger.json
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+review_verdict: block
+receipt_provenance_ok: true
+findings_identity: aadc2f11d58c556252bd2aeaa1a2138c2c153c61b026be25066349b66cb10eb3
+receipt_output_sha256: aadc2f11d58c556252bd2aeaa1a2138c2c153c61b026be25066349b66cb10eb3
+packet_identity: 53760e09896c47393c4bf802963ca9b02217a5bc87ddc23ea587ee789b2af1f3
+reviewed_input_identity: a2351af508172d3147ca4193d002de3fb10428f4fecabcc636ce733550f7a406
+parent_receipt_identity: 2026-08-25-consumer-boundary-r2-parent
+provenance:
+  scope: consumer-boundary-repaired-verdict-surface-r2
+  packet_identity: 53760e09896c47393c4bf802963ca9b02217a5bc87ddc23ea587ee789b2af1f3
+  reviewed_input_identity: a2351af508172d3147ca4193d002de3fb10428f4fecabcc636ce733550f7a406
+  parent_receipt_identity: 2026-08-25-consumer-boundary-r2-parent
+  attempt_id: 2026-08-25-consumer-boundary-r2
+  attempt_scope: consumer-boundary-repaired-verdict-surface-r2
+  attempt_packet_identity: 53760e09896c47393c4bf802963ca9b02217a5bc87ddc23ea587ee789b2af1f3
+  attempt_parent_receipt_identity: 2026-08-25-consumer-boundary-r2-parent
+  result_packet_identity: 53760e09896c47393c4bf802963ca9b02217a5bc87ddc23ea587ee789b2af1f3
+  result_reviewed_input_identity: a2351af508172d3147ca4193d002de3fb10428f4fecabcc636ce733550f7a406
+  boundary_fingerprint: 26c0810296d4912caa89e4fbe8d23d54986e932a1098c4fe76e48879081604c3
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 854eb7f8d733431e78b351cebf79de6cbbe3ebe475613cf0356eb5a7e8d412e9
+  schema_sha256: a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3
+  capability_launch_envelope_sha256: 01088335589394c92926974e2e3cabfb25b6caa9cd7cb4ddfd3204ef6c3df992
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''block'''

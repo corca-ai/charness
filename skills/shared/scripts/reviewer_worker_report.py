@@ -287,6 +287,16 @@ def build_report(
         "receipt_status": receipt.get("status"),
         "receipt_path": str(receipt_file),
         "ledger_path": str(ledger_file),
+        # Retain the producer join in the final consumer's typed carrier.  The
+        # receipt/ledger checks above prove this identity before a verdict is
+        # considered, but dropping it here would make the durable report unable
+        # to answer which producer run its approval (or refusal) describes.
+        "producer_run_id": attempt.producer_run_id,
+        "producer_binding": {
+            "output_file": attempt.output_file,
+            "receipt_file": attempt.receipt_file,
+            "producer_run_id": attempt.producer_run_id,
+        },
         "delivery_state": attempt.state,
         "approval_eligible": eligible,
         "provenance_ok": provenance_ok,

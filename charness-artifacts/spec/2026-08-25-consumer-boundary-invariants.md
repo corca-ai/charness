@@ -1,7 +1,7 @@
 # Consumer Boundary Invariants — Structural Hardening Contract
 
 Date: 2026-08-25
-Status: implemented — adversarial hardening; second review pending
+Status: implemented — adversarial hardening; second review completed; post-round2 repairs accepted-unreviewed
 
 ## Problem
 
@@ -23,7 +23,10 @@ observable refusal for every terminal outcome.
 Add a small typed boundary-invariant registry and deterministic quality gate.
 Bind the four reviewed boundaries to it: reviewer delivery joins, lesson
 all-outcome fencing, candidate-manifest refusal, and duplicate-lineage
-approval eligibility. The registry is a contract index, not a second runtime
+approval eligibility. The repaired slice also validates the duplicate overlay,
+requires established scanner/fingerprint identity for lineage approval, retains
+producer identity in the final report, and schedules the full declared runtime
+dependency closure. The registry is a contract index, not a second runtime
 state model; existing producers and approval owners remain authoritative.
 
 ## Fixed Decisions
@@ -37,6 +40,15 @@ state model; existing producers and approval owners remain authoritative.
   skipped in favor of a valid sibling.
 - Duplicate lineage without stable baseline paths is explicit non-approval, not
   an automatic rebind.
+- Duplicate lineage with missing or skewed scanner/fingerprint stamps is explicit
+  non-approval, even when the family set is otherwise clean.
+- A malformed duplicate review overlay is typed degraded input, never an empty
+  reviewed set.
+- The final reviewer report retains `producer_run_id` together with its output
+  and receipt binding.
+- Registry trigger paths cover the consumer's runtime helpers, schemas, and
+  producer-owned output dependencies; changing one schedules the provenance
+  checker and its independent self-test.
 - The registry must be source-controlled, schema-validated, and covered by
   negative fixtures; prose-only rows do not count.
 - Source and packaged/plugin copies remain byte-identical where required.
@@ -105,8 +117,19 @@ state model; existing producers and approval owners remain authoritative.
   authoring-tree final-consumer pytest fixtures are packaged there.
 - Focused consumer/registry/quality tests (`tests/test_provenance_contract.py`,
   `tests/quality_gates/test_dup_ratchet.py`, and
-  `tests/quality_gates/test_reviewer_delivery_state_machine.py`): 106 passed in
-  the final repair slice.
+  `tests/quality_gates/test_reviewer_worker_report.py`,
+  `tests/quality_gates/test_staged_commit_gate_plan.py`): 156 passed after the
+  second-round repairs.
+- The source provenance checker executed all four exact negative fixtures and
+  returned `proof_level: executable-fixtures`; the packaged checker returned
+  `proof_level: shape+consumer-anchors` with its fixture non-claim.
+- The second bounded review is recorded in
+  `charness-artifacts/critique/rounds/2026-08-25-2026-08-25-consumer-boundary-r2.md`;
+  its delivery ledger bound packet identity
+  `53760e09896c47393c4bf802963ca9b02217a5bc87ddc23ea587ee789b2af1f3`, reviewed
+  input identity `a2351af508172d3147ca4193d002de3fb10428f4fecabcc636ce733550f7a406`,
+  and findings identity
+  `aadc2f11d58c556252bd2aeaa1a2138c2c153c61b026be25066349b66cb10eb3`.
 - The canonical standing runner was re-executed at the current HEAD and its
   fresh count is recorded by the runner receipt, not copied into this prose.
   Source/plugin mirror drift, timing-layer completeness, shell syntax, and
@@ -126,8 +149,10 @@ semantics are proven by consumer-owned fixtures, not by the registry alone.
 
 Required before locking implementation: fresh-eye code/spec critique of the
 registry shape and its consumer hooks. A second verdict-surface round is owed
-only if the implementation changes gate verdict logic; round-2 repairs remain
-accepted-unreviewed under the existing cap.
+only if the implementation changes gate verdict logic. The second round found
+four blockers, all repaired locally; repairs after that round remain
+accepted-unreviewed under the existing cap. No same-agent review substitutes
+for the delivered worker result.
 
 ## Canonical Artifact
 

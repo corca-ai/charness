@@ -21,6 +21,7 @@ import json
 import runpy
 import subprocess
 import sys
+from collections.abc import Callable
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -67,6 +68,20 @@ def load_json(path: Path):
         return json.loads(text)
     except json.JSONDecodeError:
         return None
+
+
+def load_review_overlay(
+    repo_root: Path,
+    review_rel: str,
+    validator: Callable[[object], list[str]],
+) -> tuple[dict | None, str | None]:
+    overlay = load_json(repo_root / review_rel)
+    if overlay is None:
+        return None, f"overlay missing/unreadable ({review_rel})"
+    errors = validator(overlay)
+    if errors:
+        return None, f"overlay integrity ({review_rel}): " + "; ".join(errors)
+    return overlay, None
 
 
 def families_from_text(text: str | None) -> list | None:

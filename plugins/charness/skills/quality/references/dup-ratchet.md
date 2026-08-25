@@ -195,7 +195,10 @@ surface a one-line WARNING per axis when they differ. The warning *explains* a b
 never *suppresses* one (degrading would silently drop the gate and let real new
 duplication through) — the operator reads the hard-block as version/algo drift to
 re-baseline, not dup to remove. A *missing* stamp is "unknown", not a mismatch, so
-legacy baselines do not warn until their next deliberate re-baseline.
+legacy baselines do not warn until their next deliberate re-baseline; however, the
+duplicate-lineage final consumer refuses `lineage_approval_eligible` while either
+producer stamp is unknown or skewed. A clean family set is not lineage proof when
+the scanner or fingerprint identity cannot be established.
 
 ## Stagnation Without A Counter
 
@@ -221,7 +224,9 @@ injectable so the policy stays pure and testable.
 - `dup_ratchet` absent or `enabled: false` → inert (exit 0).
 - enabled but the overlay OR the gate baseline is missing / unreadable → advisory,
   never blocks (a missing reviewed subset must not be a silent all-clear *or* a
-  false block).
+  false block). A present overlay with the wrong schema, a non-list `entries`,
+  malformed entry metadata, or a mismatched `fixable_ceiling` is the same typed
+  degraded/refusal state; it is never read as an empty reviewed set.
 - enabled but `scope_paths` is empty → advisory degrade. A real scan would fall
   back to nose `DEFAULT_PATHS` (the wrong tree on a consumer repo), so the whole
   gate degrades rather than block on — or silently pass — a misconfigured scan.

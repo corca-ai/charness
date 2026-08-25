@@ -1,0 +1,50 @@
+You are a one-shot read-only fresh-eye reviewer. Do not modify, stage, reset,
+checkout, stash, publish, tag, push, or spawn descendants. Read the canonical
+packet and the current files in the packet's 15-path reviewed-input identity.
+
+This is the SECOND bounded review round for the repaired consumer-boundary
+verdict logic. Judge the repaired surface, not the prior discovery process.
+The release goal is additive provenance hardening: a final consumer must not
+turn missing, skipped, degraded, stale, malformed, or unavailable producer
+evidence into approval/readiness. The final consumer must retain producer
+identity, evidence state, dependency closure, and its own typed refusal.
+
+Required review angles:
+
+1. Boundary ownership and semantic completeness: inspect the provenance
+   registry, check_provenance_contract source/plugin gates, reviewer delivery
+   report, duplicate-lineage ratchet, staged gate plan, and capability
+   resolver. Look for any path where a missing/empty/optional/unknown result is
+   converted to ready, passed, or approval-eligible, or where producer identity
+   is dropped before the final consumer decides.
+2. Adversarial counterexamples: test mentally or with read-only inspection
+   degraded duplicate inputs, skipped/xfail/zero-test JUnit nodes, malformed or
+   missing packaged anchors, helper/fixture changes outside declared trigger
+   paths, duplicate lineage, nested worker delivery, stale receipts, and
+   source/plugin drift. A negative fixture or anchor is useful only if the
+   actual final consumer owns and emits the refusal.
+3. Counterweight pass: separate real blockers from concerns already bounded by
+   the contract, and check that the registry metadata is not being mistaken for
+   executable verdict proof. Check source/plugin parity and whether tests cover
+   changed logic rather than merely nearby green behavior.
+
+Use the packet's semantic reviewer question explicitly: name the invariant,
+owning boundary, recorded instance, and an axis-varying counterexample. For
+each reader-facing command or reference changed by this surface, state whether
+it is updated, not applicable, or insufficient evidence.
+
+Return ONLY one JSON object valid against
+skills/shared/references/bounded-review-result.schema.json. Use exactly:
+
+kind: charness.bounded_review.v1
+lens: consumer-boundary-repaired-verdict-surface-r2
+packet_sha256: 53760e09896c47393c4bf802963ca9b02217a5bc87ddc23ea587ee789b2af1f3
+reviewed_input_identity_sha256: a2351af508172d3147ca4193d002de3fb10428f4fecabcc636ce733550f7a406
+
+The verdict must be pass, block, or defer. Findings must be evidence-backed
+and include concrete repo-relative paths and, where useful, line numbers.
+Use counterweight_triage to record concerns that are real but not blockers.
+State non_claims explicitly, including any host/live/install/public proof not
+performed. capability_non_claims is [] unless an external-read limitation must
+be recorded; if nonempty, include the required per-entry identity hash and the
+canonical capability_non_claims_sha256.

@@ -1664,6 +1664,36 @@
         ]
       },
       "snapshot_sha256": "58b99f318ca9a7519e6713afc5ceacab1548323cd711bc05e0afd8a84e1fb8b4"
+    },
+    {
+      "session_id": "2026-08-25-consumer-boundary-release",
+      "snapshot": {
+        "kind": "charness.lesson-selection-preview",
+        "schema_version": 1,
+        "selection_policy_version": 3,
+        "seed": "2026-08-25-consumer-boundary-release",
+        "eligible_count": 43,
+        "bucket_counts": {
+          "recent": 3,
+          "value": 3,
+          "uncertainty": 3,
+          "archive": 0,
+          "archive_fallback_uncertainty": 1
+        },
+        "lesson_ids": [
+          "proof-surface-message-drift",
+          "stale-current-pointer-at-closeout",
+          "positive-effect-cannot-be-cited",
+          "goal-closeout-evidence-binding",
+          "bar-recorded-as-prose",
+          "agent-authored-score-role",
+          "global-probe-for-local-fact",
+          "green-test-is-not-covered-line",
+          "skipped-is-not-passed",
+          "changed-line-proof-before-broad-quality"
+        ]
+      },
+      "snapshot_sha256": "30ac3415fba0f24e6f0a8cabe8232ceb767d9a18a8898b9faef6941aff3cba81"
     }
   ],
   "score_events": [

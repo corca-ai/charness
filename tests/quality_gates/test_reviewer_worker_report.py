@@ -140,6 +140,12 @@ def test_matching_typed_receipt_and_findings_ledger_is_approval_eligible(tmp_pat
     assert payload["approval_eligible"] is True
     assert payload["execution_mode"] == "file-backed-worker"
     assert payload["delivery_state"] == "findings-received"
+    assert payload["producer_run_id"] == "worker-1"
+    assert payload["producer_binding"] == {
+        "output_file": str((tmp_path / "result.json").resolve()),
+        "receipt_file": str((tmp_path / "receipt.json").resolve()),
+        "producer_run_id": "worker-1",
+    }
 
 
 def test_producer_output_join_is_checked_at_collection(tmp_path: Path) -> None:

@@ -39,6 +39,40 @@ def test_registry_has_one_complete_row_per_reviewed_boundary() -> None:
     ).trigger_paths
 
 
+def test_registry_trigger_paths_cover_runtime_dependency_closures() -> None:
+    expected = {
+        "reviewer_delivery": {
+            "skills/shared/scripts/reviewer_capability.py",
+            "skills/shared/scripts/reviewer_capability_preflight.py",
+            "skills/shared/scripts/reviewer_result_contract.py",
+            "skills/shared/scripts/reviewer_delivery_state.py",
+            "scripts/yaml_output.py",
+        },
+        "duplicate_lineage": {
+            "skills/public/quality/scripts/dup_review_lib.py",
+            "skills/public/quality/scripts/dup_ratchet_scope.py",
+            "skills/public/quality/scripts/nose_report_lib.py",
+            "skills/public/quality/scripts/nose_fingerprint_lib.py",
+            "skills/public/quality/scripts/nose_tool_lib.py",
+            "scripts/quality_adapter_lib.py",
+        },
+    }
+    for contract_id, paths in expected.items():
+        assert paths <= set(contract.contract_for(contract_id).trigger_paths)
+
+
+def test_each_registered_dependency_schedules_provenance_gate() -> None:
+    for item in contract.CONTRACTS:
+        for path in item.trigger_paths:
+            labels = [
+                gate.label
+                for gate in staged_commit_gate_plan._timing_layer_gates(
+                    ROOT, [path], existing=[path]
+                )
+            ]
+            assert "check-provenance-contract" in labels, (item.contract_id, path)
+
+
 def test_missing_producer_binding_is_typed_and_fail_closed() -> None:
     with pytest.raises(contract.BoundaryContractError, match="receipt_file"):
         contract.require_bound_fields(

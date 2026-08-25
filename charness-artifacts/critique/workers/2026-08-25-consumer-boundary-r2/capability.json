@@ -1,0 +1,23 @@
+{
+  "schema_version": "charness.capability_envelope.v1",
+  "task_kind": "read",
+  "requested_capabilities": {
+    "filesystem": {
+      "read_roots": ["/home/hwidong/codes/charness"],
+      "write_policy": "deny-all",
+      "write_roots": []
+    },
+    "external_reads": [],
+    "external_effects": {"policy": "deny-all", "entries": []}
+  },
+  "effective_capabilities": {
+    "filesystem": {"write": "denied", "observation": "host"},
+    "external_reads": {"state": "unproved", "observation": "host", "entries": []},
+    "external_effects": {"state": "denied", "observation": "host"},
+    "host_selection_source": "parent-explicit-read-only",
+    "sandbox": {"label": "read-only", "source": "parent-boundary"},
+    "configuration_identity": "consumer-boundary-r2-read-only-v1"
+  },
+  "preflight": [],
+  "capability_non_claims": []
+}
