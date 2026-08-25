@@ -48,6 +48,7 @@ GATE_BASELINE_NOTE = (
 def build_gate_baseline(
     code_families: Mapping[str, Iterable[str]],
     *,
+    member_paths: Mapping[str, Iterable[str]] | None = None,
     tool_version: str = "",
     algo_version: str = "",
     note: str = GATE_BASELINE_NOTE,
@@ -57,7 +58,15 @@ def build_gate_baseline(
     sorted by fingerprint for a deterministic, diff-friendly file."""
     families = sorted(
         (
-            {"fingerprint": str(fid), "member_hashes": sorted(str(h) for h in hashes)}
+            {
+                "fingerprint": str(fid),
+                "member_hashes": sorted(str(h) for h in hashes),
+                **(
+                    {"member_paths": sorted(str(path) for path in member_paths.get(fid, []) if path)}
+                    if member_paths is not None and member_paths.get(fid)
+                    else {}
+                ),
+            }
             for fid, hashes in code_families.items()
             if fid
         ),
@@ -94,17 +103,10 @@ def load_gate_baseline_ids(data: Any) -> set[str] | None:
     malformed/legacy (FD8 degrade). The function name stays identity-agnostic ("the
     accepted identity set"); only the shape it reads changed (v3: per-family
     ``{fingerprint, member_hashes}`` objects, not a bare fingerprint list)."""
-    families = _iter_gate_baseline_families(data)
+    families = load_gate_baseline_families(data)
     if families is None:
         return None
-    ids: set[str] = set()
-    for entry in families:
-        if not isinstance(entry, dict):
-            return None
-        fingerprint = entry.get("fingerprint")
-        if isinstance(fingerprint, str) and fingerprint:
-            ids.add(fingerprint)
-    return ids
+    return {str(entry["fingerprint"]) for entry in families}
 
 
 def load_gate_baseline_members(data: Any) -> dict[str, list[str]] | None:
@@ -113,10 +115,18 @@ def load_gate_baseline_members(data: Any) -> dict[str, list[str]] | None:
     ``load_gate_baseline_ids``. The CLI's reduction pre-pass (``classify_reductions``)
     consumes this to compare a vanished family's member multiset against a
     candidate-new family's."""
+    families = load_gate_baseline_families(data)
+    if families is None:
+        return None
+    return {str(entry["fingerprint"]): list(entry["member_hashes"]) for entry in families}
+
+
+def load_gate_baseline_families(data: Any) -> list[dict[str, Any]] | None:
+    """Return validated family rows, retaining optional lineage member paths."""
     families = _iter_gate_baseline_families(data)
     if families is None:
         return None
-    members: dict[str, list[str]] = {}
+    result: list[dict[str, Any]] = []
     for entry in families:
         if not isinstance(entry, dict):
             return None
@@ -124,8 +134,14 @@ def load_gate_baseline_members(data: Any) -> dict[str, list[str]] | None:
         hashes = entry.get("member_hashes")
         if not isinstance(fingerprint, str) or not fingerprint or not isinstance(hashes, list):
             return None
-        members[fingerprint] = [str(h) for h in hashes]
-    return members
+        row = {"fingerprint": fingerprint, "member_hashes": [str(value) for value in hashes]}
+        paths = entry.get("member_paths")
+        if paths is not None:
+            if not isinstance(paths, list) or any(not isinstance(path, str) or not path for path in paths):
+                return None
+            row["member_paths"] = [str(path) for path in paths]
+        result.append(row)
+    return result
 
 
 def _baseline_string_field(data: Any, key: str) -> str:
@@ -170,6 +186,20 @@ def algo_version_skew(baseline_algo: str | None, live_algo: str | None) -> str |
     return None
 
 
+def _validate_nonempty_strings(value: Any, field: str, *, required: bool = True) -> list[str]:
+    """Validate a list-valued identity field without duplicating its loop."""
+    if value is None and not required:
+        return []
+    if not isinstance(value, list) or (required and not value):
+        suffix = "" if required else " when present"
+        return [f"{field} must be a non-empty list{suffix}"]
+    return [
+        f"{field}[{index}] must be a non-empty string"
+        for index, item in enumerate(value)
+        if not isinstance(item, str) or not item
+    ]
+
+
 def validate_gate_baseline(data: Any) -> list[str]:
     errors: list[str] = []
     if not isinstance(data, dict):
@@ -193,13 +223,6 @@ def validate_gate_baseline(data: Any) -> list[str]:
         fingerprint = entry.get("fingerprint")
         if not isinstance(fingerprint, str) or not fingerprint:
             errors.append(f"code_families[{index}].fingerprint must be a non-empty string")
-        hashes = entry.get("member_hashes")
-        if not isinstance(hashes, list) or not hashes:
-            errors.append(f"code_families[{index}].member_hashes must be a non-empty list")
-        else:
-            for hash_index, member_hash in enumerate(hashes):
-                if not isinstance(member_hash, str) or not member_hash:
-                    errors.append(
-                        f"code_families[{index}].member_hashes[{hash_index}] must be a non-empty string"
-                    )
+        errors.extend(_validate_nonempty_strings(entry.get("member_hashes"), f"code_families[{index}].member_hashes"))
+        errors.extend(_validate_nonempty_strings(entry.get("member_paths"), f"code_families[{index}].member_paths", required=False))
     return errors

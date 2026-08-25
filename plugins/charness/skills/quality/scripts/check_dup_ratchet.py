@@ -78,6 +78,7 @@ _scope_did_not_judge = _scope._scope_did_not_judge
 _scan = SKILL_RUNTIME.load_local_skill_module(__file__, "dup_ratchet_scan")
 _nose_report = SKILL_RUNTIME.load_local_skill_module(__file__, "nose_report_lib")
 _fingerprint = SKILL_RUNTIME.load_local_skill_module(__file__, "nose_fingerprint_lib")
+_lineage = SKILL_RUNTIME.load_local_skill_module(__file__, "dup_family_lineage")
 # The three baseline-writing modes and their refusals live together in their own module.
 _rebaseline = SKILL_RUNTIME.load_local_skill_module(__file__, "dup_ratchet_rebaseline")
 _quality_adapter = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.quality_adapter_lib")
@@ -166,6 +167,14 @@ def _evaluate_config(repo_root: Path, config: dict, args) -> dict:
         degraded.append(doc_reason)
 
     intentional_code, intentional_doc = _ratchet.overlay_intentional(overlay)
+    reviewed_code = {
+        str(entry.get("id"))
+        for entry in (overlay or {}).get("entries") or []
+        if isinstance(entry, dict)
+        and entry.get("surface") == "code"
+        and entry.get("class") in {"fixable", "intentional"}
+        and isinstance(entry.get("id"), str)
+    }
     # Reduction pre-pass (S4-Defer-3): classify each would-be-new fingerprint that is
     # actually a membership-shrunk remainder of a vanished baseline family, so it never
     # reaches evaluate()'s hard-block set. evaluate()'s own signature stays untouched
@@ -271,6 +280,20 @@ def _evaluate_config(repo_root: Path, config: dict, args) -> dict:
     verdict["algo_skew"] = algo_skew
     if algo_skew:
         verdict["messages"].append(f"WARNING (fingerprint-algo skew): {algo_skew}")
+    lineage = _lineage.propose(
+        live_members=live_members,
+        live_spans=live_spans,
+        baseline_families=_ratchet_baseline.load_gate_baseline_families(raw_baseline) or [],
+        reviewed_ids=reviewed_code,
+    )
+    verdict["lineage_proposals"] = lineage
+    for proposal in lineage:
+        old = ", ".join(proposal.get("old_fingerprints") or [])
+        suffix = f" against {old}" if old else ""
+        verdict["messages"].append(
+            f"ADVISORY (lineage): {proposal['new_fingerprint']} is a "
+            f"{proposal['relation']}{suffix}; explicit review/rebind required"
+        )
     _attach_new_family_member_evidence(repo_root, verdict, live_spans)
     return verdict
 
