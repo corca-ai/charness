@@ -1,0 +1,77 @@
+{
+  "attempt_id": "2026-08-25-release-6-5-0-r2",
+  "backend": "codex_exec",
+  "boundary_fingerprint": "5b7977e4a4ad2b283e17ec7f5cd8c90ffccb6c47dc95b5a00f5d8895eb354226",
+  "capability_collection_envelope_sha256": "6a7a74917204e1a41093ce41e139e8a78cbd57cdc53767410491b6d61b00fa1b",
+  "capability_envelope_sha256": "6a7a74917204e1a41093ce41e139e8a78cbd57cdc53767410491b6d61b00fa1b",
+  "capability_file": "/home/hwidong/codes/charness/charness-artifacts/critique/workers/2026-08-25-release-6-5-0-r2/capability.json",
+  "capability_launch_envelope_sha256": "6a7a74917204e1a41093ce41e139e8a78cbd57cdc53767410491b6d61b00fa1b",
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "capability_status": "ready",
+  "effective_capabilities": {
+    "configuration_identity": "release-6-5-0-r2-read-only-v1",
+    "external_effects": {
+      "observation": "host",
+      "state": "denied"
+    },
+    "external_reads": {
+      "entries": [],
+      "observation": "host",
+      "state": "unproved"
+    },
+    "filesystem": {
+      "observation": "host",
+      "write": "denied"
+    },
+    "host_selection_source": "parent-explicit-read-only",
+    "sandbox": {
+      "label": "read-only",
+      "source": "parent-boundary"
+    }
+  },
+  "execution_mode": "file-backed-worker",
+  "exit_code": 0,
+  "finished_at": "2026-08-25T14:29:19Z",
+  "lesson_bundle_sha256": "f0e457e4525370111c3de8cd9ba454f9aa3b1078d9ccf69051cae83ced246fd3",
+  "lesson_lane_id": "release-6-5-0-r2",
+  "lesson_lane_receipt": "/home/hwidong/codes/charness/.charness/lesson-lanes/release-6-5-0-r2/receipt.json",
+  "lesson_session_id": "2026-08-25-consumer-boundary-release",
+  "lesson_writes_enabled": false,
+  "output_file": "/home/hwidong/codes/charness/charness-artifacts/critique/workers/2026-08-25-release-6-5-0-r2/result.json",
+  "output_fresh": true,
+  "output_sha256": "d049b518bc4cf65613d9c6cd861fb658be8031c686b55050839e5bfb514041db",
+  "output_size": 8462,
+  "packet_identity": "385fbae19b1f8013acee105f0ac9e3778c1f3d9db4e6e700c73fdcc7fa652afe",
+  "parent_receipt_identity": "2026-08-25-release-6-5-0-r2-parent",
+  "preflight": [],
+  "prompt_file": "/home/hwidong/codes/charness/charness-artifacts/critique/workers/2026-08-25-release-6-5-0-r2/prompt.txt",
+  "prompt_sha256": "a9a533af850652f4a83d6c538b4c6da5ce834b901fa95ac5d59800e959048aa4",
+  "requested_capabilities": {
+    "external_effects": {
+      "entries": [],
+      "policy": "deny-all"
+    },
+    "external_reads": [],
+    "filesystem": {
+      "read_roots": [
+        "/home/hwidong/codes/charness"
+      ],
+      "write_policy": "deny-all",
+      "write_roots": []
+    }
+  },
+  "reviewed_input_identity": "93340635827fce897c822765de59823f92dda3482356229231f7508dafa0633e",
+  "run_id": "2026-08-25-release-6-5-0-r2-run",
+  "schema_file": "/home/hwidong/codes/charness/skills/shared/references/bounded-review-result.schema.json",
+  "schema_sha256": "a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3",
+  "schema_version": "charness.reviewer_worker.v1",
+  "scope": "release-boundary-6-5-0-repaired-r2",
+  "started_at": "2026-08-25T14:22:18Z",
+  "status": "succeeded",
+  "stderr_file": "/home/hwidong/codes/charness/charness-artifacts/critique/workers/2026-08-25-release-6-5-0-r2/stderr.txt",
+  "stdout_file": "/home/hwidong/codes/charness/charness-artifacts/critique/workers/2026-08-25-release-6-5-0-r2/stdout.txt",
+  "terminal": true,
+  "timeout_seconds": 900.0,
+  "workspace": "/home/hwidong/codes/charness"
+}

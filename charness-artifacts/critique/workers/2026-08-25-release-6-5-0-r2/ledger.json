@@ -1,0 +1,56 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "2026-08-25-release-6-5-0-r2",
+      "scope": "release-boundary-6-5-0-repaired-r2",
+      "packet_identity": "385fbae19b1f8013acee105f0ac9e3778c1f3d9db4e6e700c73fdcc7fa652afe",
+      "parent_receipt_identity": "2026-08-25-release-6-5-0-r2-parent",
+      "boundary_fingerprint": "5b7977e4a4ad2b283e17ec7f5cd8c90ffccb6c47dc95b5a00f5d8895eb354226",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-08-25T14:29:19Z",
+      "history": [
+        {
+          "event_id": "9e4038ce92ed4612b417f2e6a2366ff0",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-08-25T14:22:18Z",
+          "attempt_id": "2026-08-25-release-6-5-0-r2",
+          "scope": "release-boundary-6-5-0-repaired-r2",
+          "packet_identity": "385fbae19b1f8013acee105f0ac9e3778c1f3d9db4e6e700c73fdcc7fa652afe",
+          "parent_receipt_identity": "2026-08-25-release-6-5-0-r2-parent",
+          "capability_launch_envelope_sha256": "6a7a74917204e1a41093ce41e139e8a78cbd57cdc53767410491b6d61b00fa1b"
+        },
+        {
+          "event_id": "be980ecf594648e9886b420e3c5e22e9",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-08-25T14:29:19Z",
+          "attempt_id": "2026-08-25-release-6-5-0-r2",
+          "scope": "release-boundary-6-5-0-repaired-r2",
+          "packet_identity": "385fbae19b1f8013acee105f0ac9e3778c1f3d9db4e6e700c73fdcc7fa652afe",
+          "parent_receipt_identity": "2026-08-25-release-6-5-0-r2-parent",
+          "capability_launch_envelope_sha256": "6a7a74917204e1a41093ce41e139e8a78cbd57cdc53767410491b6d61b00fa1b",
+          "findings_identity": "d049b518bc4cf65613d9c6cd861fb658be8031c686b55050839e5bfb514041db"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "93340635827fce897c822765de59823f92dda3482356229231f7508dafa0633e",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "a9a533af850652f4a83d6c538b4c6da5ce834b901fa95ac5d59800e959048aa4",
+      "schema_sha256": "a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3",
+      "capability_launch_envelope_sha256": "6a7a74917204e1a41093ce41e139e8a78cbd57cdc53767410491b6d61b00fa1b",
+      "output_file": "/home/hwidong/codes/charness/charness-artifacts/critique/workers/2026-08-25-release-6-5-0-r2/result.json",
+      "receipt_file": "/home/hwidong/codes/charness/charness-artifacts/critique/workers/2026-08-25-release-6-5-0-r2/receipt.json",
+      "producer_run_id": "2026-08-25-release-6-5-0-r2-run",
+      "findings_identity": "d049b518bc4cf65613d9c6cd861fb658be8031c686b55050839e5bfb514041db"
+    }
+  ]
+}

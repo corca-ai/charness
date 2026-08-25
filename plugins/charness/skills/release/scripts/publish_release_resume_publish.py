@@ -136,30 +136,14 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
         payload["resume_head_release_content_close_refs"] = close_refs
         if close_refs:
             raise SystemExit("--resume: release-content HEAD contains issue close keywords before post-publication observer evidence: " + str(close_refs))
-    # NO release-surface gate and NO focused adapter preflight here, deliberately. Both were
-    # added on this lane and REVERTED, because the record's unbound claims are a rendering
-    # problem and this is not where they are fixed:
-    #
-    # * `preflight_resume_state` already states the surface gate is "a KNOWN GAP, not a
-    #   decision this slice is entitled to make". Adding it one function away made that
-    #   comment silently false while leaving its reasoning intact.
-    # * `prepared-claims-review` is NOT in `POST_PUBLICATION` and explicitly permits
-    #   `tag_remote`, so the phase reaches here with the tag pushed and the release created
-    #   -- the designed idempotent republish path the `publish()` closure below implements.
-    #   A refusal in front of it strands a stop whose only named safe exit
-    #   (`assert_no_outstanding_prepared_stop`: "a resume republishes idempotently") is this
-    #   very call. `_notes_preflight` guards exactly this with `if state["release_exists"]`.
-    # * On the claims lane the writer below is SKIPPED, so anything computed here never
-    #   reaches the artifact it was added to repair.
-    #
-    # The record instead says what is true of this lane: `version_drift_check` is unset, so
-    # it renders "NOT recorded by this helper invocation" rather than an unbound no-drift
-    # claim. An absent check reported as absent is the repair; a new refusal at a published
-    # boundary is not.
-    # The prepared commit already exists here and nothing is bumped in this run,
-    # so `post-bump, pre-commit` -- what this lane used to stamp -- was false in
-    # both halves. This is the payload `commit_post_publish_artifact` rewrites and
-    # pushes to `main`, so the false phrase was the one that shipped.
+    # The prepared record is a stop, not a permanent assertion about the generated
+    # surface. A maintainer can delete or corrupt a required manifest between the
+    # claims review and this resume, so re-read the target surface immediately before
+    # the gates and carry the disposition into the final release artifact.
+    target_version = payload.get("target_version") or tag_name.removeprefix("v")
+    payload["version_drift_check"] = cli.ensure_release_surface(
+        repo_root, target_version, stage="post-claims-review, pre-push"
+    )
     common.run_pre_push_quality_gates(
         repo_root, adapter_data, payload, cli=cli, stage="post-claims-review, pre-push"
     )

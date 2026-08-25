@@ -1,0 +1,76 @@
+You are a one-shot read-only fresh-eye reviewer. Do not modify, stage, reset,
+checkout, stash, publish, tag, push, or spawn descendants. Read the canonical
+release packet and the current files in its reviewed-input identity. Inspect
+other repository files read-only only when needed to verify a concrete claim.
+
+This is a release-boundary review for the proposed charness v6.5.0 release.
+Review the publication boundary and operator-facing contract, not the prior
+consumer-boundary implementation review. The intended bump is minor because
+the slice adds a typed producer-to-final-consumer provenance contract and
+executable quality checks across reviewer, lesson, manifest, and duplicate-
+lineage boundaries while keeping existing callers compatible.
+
+Required review angles:
+
+1. Surface lock and version safety: inspect the release helper, release
+   adapter, root/package/plugin manifests, marketplace exports, sync producer,
+   release record, and handoff. Check that a release helper can derive one
+   target version, preserve the bump rationale, synchronize generated surfaces,
+   and refuse skew rather than relying on a manual claim. Check dry-run,
+   prepared-stop, resume, rollback, and post-publish ordering where the source
+   shows it.
+2. Evidence and publication safety: inspect the quality/release gates,
+   fresh-checkout probes, requested-review gate, real-host trigger logic,
+   public readback, install refresh, and closeout/handoff binding. Distinguish
+   evidence already executed from evidence that is only planned or not
+   applicable. A local green test is not public or live-host proof.
+3. Operator comprehension and compatibility: read the update/version/doctor
+   path and reader-facing release instructions. Check whether the first
+   operator can discover the upgrade path, whether claims identify their
+   evidence and non-claims, and whether an existing installation remains
+   understandable and recoverable if publication or refresh stops.
+4. Counterweight pass: separate blockers for publishing this target from
+   should-fix concerns and over-worry. In particular, consider the known
+   cumulative origin/main changed-line gate debt, the current-slice changed-line
+   proof, the absence of public readback before publication, and the fact that
+   the real-host trigger was evaluated but did not match this slice. Do not
+   convert a known non-claim into a blocker unless the release contract
+   requires that proof for this target.
+
+Use the packet's semantic reviewer question explicitly: name the invariant,
+owning boundary, recorded instance, and an axis-varying counterexample. For
+each reader-facing command or reference changed by this surface, state whether
+it is updated, not applicable, or insufficient evidence with a reason.
+
+Known evidence to verify rather than assume:
+- focused implementation proof: 156 tests passed;
+- source provenance-contract checker passed;
+- plugin provenance-contract checker passed with shape/consumer anchors, while
+  packaged final-consumer fixtures are an explicit non-claim;
+- narrow current-slice changed-line proof from 7f482ded7cfc3cfde70281832bd52f2878e94360
+  to the current HEAD passed;
+- fresh-checkout probes passed;
+- real-host trigger evaluation for the current slice was completed and found
+  no required host surface, so no real-host proof was performed;
+- a broad run against origin/main is not a clean release claim because its
+  historical cumulative range reports uncovered lines in pre-existing local
+  commits and unmapped mutation-pool files;
+- public hosted readback and install refresh have not yet been performed;
+- the release helper has not yet been executed for publication.
+
+Return ONLY one JSON object valid against
+skills/shared/references/bounded-review-result.schema.json. Use exactly:
+
+kind: charness.bounded_review.v1
+lens: release-boundary-6-5-0
+packet_sha256: b0185a985c9cb1e79a85c447f83ea88f2b86e3de760bc4c417ee65c54c58acde
+reviewed_input_identity_sha256: 1f1d9139c7c870657635da13ece71cf1c85129bbfb01138aa788e41f71ba069d
+
+The verdict must be pass, block, or defer. Findings must be evidence-backed
+and include concrete repo-relative paths and, where useful, line numbers. A
+release blocker must explain the contract it violates and the smallest safe
+action. Use counterweight_triage for concerns that are real but not blockers.
+State non_claims explicitly, including any host/live/install/public proof not
+performed. capability_non_claims is [] unless an external-read limitation must
+be recorded; if nonempty, include the required per-entry identity hash and the
+canonical capability_non_claims_sha256.

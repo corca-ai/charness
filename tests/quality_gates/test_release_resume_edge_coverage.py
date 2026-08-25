@@ -34,12 +34,16 @@ RESUME_STATE = _load("publish_release_resume_state")
 
 class _ClaimsResumeCli:
     def __init__(self, commands: list[list[str]], *, notes_preflights: list[dict] | None = None,
-                 allow_create: bool = False, verify_returncode: int = 0):
+                 allow_create: bool = False, verify_returncode: int = 0,
+                 version_surface_error: str | None = None):
         self.commands = commands
         self.notes_preflights = notes_preflights if notes_preflights is not None else []
         self.allow_create = allow_create
         self.verify_returncode = verify_returncode
+        self.version_surface_error = version_surface_error
+        self.version_surface_checks: list[dict] = []
         self.final_artifact_commits: list[dict] = []
+        self.finalized_payloads: list[dict] = []
 
     def run(self, command, *, cwd, check=True):
         self.commands.append(command)
@@ -92,12 +96,17 @@ class _ClaimsResumeCli:
     def build_retro_trigger_evaluation(*_args, **_kwargs):
         return {"required": False}
 
-    # No `ensure_release_surface` / `run_release_adapter_preflight` stubs: the resume lane
-    # calls neither. Both were added here, and a reviewer showed the stubs were INERT --
-    # they returned a good value into a payload no test read, so the two production lines
-    # they existed for could be deleted with the whole suite green. A stub whose absence
-    # cannot break a test is not coverage; if the calls ever return, they need an assertion
-    # on `payload["version_drift_check"]`, not a double.
+    def ensure_release_surface(self, _repo_root, expected_version, *, stage):
+        self.version_surface_checks.append({"version": expected_version, "stage": stage})
+        if self.version_surface_error:
+            raise SystemExit(self.version_surface_error)
+        return {
+            "status": "passed",
+            "stage": stage,
+            "checked_version": expected_version,
+            "surfaces": ["packaging/charness.json", "plugins/charness/.codex-plugin/plugin.json"],
+            "drift": [],
+        }
 
     def verify_release_visible(self, *_args, **_kwargs):
         return SimpleNamespace(
@@ -105,9 +114,8 @@ class _ClaimsResumeCli:
             stdout="", stderr="release not found",
         )
 
-    @staticmethod
-    def finalize_release_payload(*_args, **_kwargs):
-        return None
+    def finalize_release_payload(self, _repo_root, payload, **_kwargs):
+        self.finalized_payloads.append(dict(payload))
 
     def commit_final_release_artifact(self, *_args, **kwargs):
         self.final_artifact_commits.append(kwargs)

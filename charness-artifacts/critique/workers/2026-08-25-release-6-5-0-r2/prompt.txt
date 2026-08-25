@@ -1,0 +1,59 @@
+You are a one-shot read-only fresh-eye reviewer. Do not modify, stage, reset,
+checkout, stash, publish, tag, push, or spawn descendants. Read the canonical
+repair packet and the current files in its reviewed-input identity. Inspect
+other repository files read-only only when needed to verify a concrete claim.
+
+This is the SECOND bounded review round for the repaired release resume
+verdict surface. The prior release-boundary reviewer found that
+publish_release_resume_publish.py could reach create_release after a claims
+review without rechecking the generated version surface. The repair adds an
+ensure_release_surface call at `post-claims-review, pre-push`, stores its
+disposition in payload[`version_drift_check`], and adds positive binding plus
+missing-required-surface refusal fixtures. Judge the repaired surface and the
+source/plugin mirror, not the prior discovery process.
+
+Required review angles:
+
+1. Boundary ownership and fail-closed behavior: verify that every resume path
+   that can call create_release checks the target release surface after the
+   prepared claims boundary and before any tag/branch push, release creation,
+   or artifact commit that could make the refusal ambiguous. Verify that the
+   checked target is the actual release target and that the result reaches the
+   final release artifact rather than being an inert payload field.
+2. Adversarial counterexamples: inspect or reason through a required manifest
+   or marketplace/plugin surface deleted, corrupted, or version-skewed between
+   prepare and resume; a claims phase with and without a validated claims
+   review; an already-created release requiring idempotent branch/tag repair;
+   and a source/plugin mirror that drifts. Check that the gate refuses the
+   changed semantic state while leaving a safe resumable boundary.
+3. Test ownership and parity: confirm the positive test would fail if the
+   gate/result binding disappeared, the negative fixture prevents publication,
+   the tests cover the actual changed lines, and the exported plugin copy is
+   the same producer output as the source. Check that comments and release
+   artifact semantics no longer claim the old known gap.
+4. Counterweight pass: separate real blockers from concerns already bounded
+   by the contract. Do not re-open the unrelated broad origin/main mutation
+   debt or the pre-publication absence of hosted readback unless the repair
+   itself makes a new claim about them.
+
+Use the packet's semantic reviewer question explicitly: name the invariant,
+owning boundary, recorded instance, and an axis-varying counterexample. For
+each reader-facing command or reference changed by this surface, state whether
+it is updated, not applicable, or insufficient evidence with a reason.
+
+Return ONLY one JSON object valid against
+skills/shared/references/bounded-review-result.schema.json. Use exactly:
+
+kind: charness.bounded_review.v1
+lens: release-boundary-6-5-0-repaired-r2
+packet_sha256: 385fbae19b1f8013acee105f0ac9e3778c1f3d9db4e6e700c73fdcc7fa652afe
+reviewed_input_identity_sha256: 93340635827fce897c822765de59823f92dda3482356229231f7508dafa0633e
+
+The verdict must be pass, block, or defer. Findings must be evidence-backed
+and include concrete repo-relative paths and, where useful, line numbers. A
+blocker must explain the contract it violates and the smallest safe action.
+Use counterweight_triage for concerns that are real but not blockers. State
+non_claims explicitly, including any host/live/install/public proof not
+performed. capability_non_claims is [] unless an external-read limitation must
+be recorded; if nonempty, include the required per-entry identity hash and the
+canonical capability_non_claims_sha256.

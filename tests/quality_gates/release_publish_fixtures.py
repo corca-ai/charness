@@ -6,6 +6,7 @@ import os
 import shlex
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 import yaml
@@ -157,6 +158,34 @@ def _seed_publish_release_repo(tmp_path: Path) -> tuple[Path, Path, Path]:
     _write_fake_distinct_channel_probe(bin_dir)
     _setup_git(repo, remote)
     return repo, remote, bin_dir
+
+
+def _simulate_partial_publish(
+    repo: Path,
+    *,
+    closeout_body: str | None = None,
+    create_tag: bool = True,
+) -> None:
+    """Materialize a valid generated surface in the resumable partial-publish fixture."""
+    output_dir = repo / "charness-artifacts" / "release"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    (output_dir / "latest.md").write_text("# Release demo 0.0.0 (partial)\n", encoding="utf-8")
+    # Resume revalidates generated surfaces after claims review. Keep this success
+    # fixture synced; an absent tree belongs in a refusal fixture instead.
+    subprocess.run(
+        [sys.executable, str(repo / "scripts" / "sync_root_plugin_manifests.py"), "--repo-root", str(repo)],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True, text=True)
+    commit_args = ["git", "commit", "-m", "Release demo 0.0.0"]
+    if closeout_body is not None:
+        commit_args.extend(["-m", closeout_body])
+    subprocess.run(commit_args, cwd=repo, check=True, capture_output=True, text=True)
+    if create_tag:
+        subprocess.run(["git", "tag", "v0.0.0"], cwd=repo, check=True, capture_output=True, text=True)
 
 
 def _release_env(tmp_path: Path, bin_dir: Path) -> dict[str, str]:

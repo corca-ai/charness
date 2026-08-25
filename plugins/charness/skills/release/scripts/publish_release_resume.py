@@ -232,12 +232,11 @@ def preflight_resume_state(
     # yields no marker, so the phase resolves to `release-content` and a HEAD that really is
     # the release commit passes -- publication proceeds with the claims floor never invoked.
     _claims_review["assert_record_readable"](repo_root, record_path=record_path, commit="HEAD", run=cli.run)
-    # NOT gated on the release surface here, and that is a KNOWN GAP, not a decision this
-    # slice is entitled to make: resume is the other path to `create_release`, so a
-    # surface deleted or corrupted between the failed attempt and the resume reaches
-    # publish unchecked. Pre-existing for `drift` as well as for D48's corroboration
-    # arm. Adding the gate is a real contract change -- every resume fixture exercises a
-    # repo with no generated tree at all -- so it is recorded rather than half-shipped.
+    # The publication tail owns the irreversible-boundary check: after claims review and
+    # before push/create it re-reads the target surface and binds the disposition into the
+    # release artifact. Keep this classifier preflight focused on record readability so a
+    # missing record cannot be mistaken for an ordinary release-content state; the tail's
+    # check is the one that catches a surface changed between prepare and resume.
     tag_name = f"v{current_version}"
     state = resumable_state(
         repo_root,

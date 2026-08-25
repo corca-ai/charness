@@ -19,6 +19,7 @@ from .release_publish_fixtures import (
     _run_publish,
     _run_publish_patch,
     _seed_publish_release_repo,
+    _simulate_partial_publish,
     bug_closeout_body,
 )
 
@@ -532,37 +533,6 @@ def test_publish_release_imports_from_exported_plugin_layout() -> None:
     assert "ModuleNotFoundError" not in result.stderr, result.stderr
     assert result.returncode == 0, result.stderr
     assert "--resume" in result.stdout
-
-
-# --- Gap 1: resumable / idempotent publish ------------------------------------
-
-
-def _simulate_partial_publish(
-    repo: Path,
-    *,
-    closeout_body: str | None = None,
-    create_tag: bool = True,
-) -> None:
-    # Reproduce the post-commit, pre-push partial state: a local `Release demo
-    # 0.0.0` commit + tag v0.0.0 that never reached the remote and has no release.
-    output_dir = repo / "charness-artifacts" / "release"
-    output_dir.mkdir(parents=True, exist_ok=True)
-    (output_dir / "latest.md").write_text("# Release demo 0.0.0 (partial)\n", encoding="utf-8")
-    # NOT synced, restoring the original seeding after a sync was tried and reverted with
-    # the resume-lane gate that motivated it. The honest reason is narrower than the one
-    # first written here: no test in this file ASSERTS `absence_corroboration`, so the
-    # uncorroborated state this seeding happens to produce is an incidental property, not
-    # coverage -- the real D48 assertions live in
-    # `test_absent_input_is_not_a_matching_input.py`, which builds its own repos and was
-    # never affected. This is reverted because nothing needs the sync once the gate is
-    # gone, not because it was protecting a population under test.
-    _git(repo, "add", "-A")
-    commit_args = ["commit", "-m", "Release demo 0.0.0"]
-    if closeout_body is not None:
-        commit_args.extend(["-m", closeout_body])
-    _git(repo, *commit_args)
-    if create_tag:
-        _git(repo, "tag", "v0.0.0")
 
 
 def _resume_closeout_args(carrier: Path) -> tuple[str, ...]:
