@@ -5739,6 +5739,27 @@
       "note": "Flat documentation pages retain the same short heading/provenance shape by design. The repeated prose is the current-SOT metadata contract, not a candidate for a shared generated paragraph.",
       "reviewed_at": "2026-08-25",
       "surface": "doc"
+    },
+    {
+      "class": "intentional",
+      "id": "7f87cd0602a842a7",
+      "note": "The critique and debug portable scaffolds intentionally retain parallel artifact renderers. Each binds its own template, validator, and subject identity while carrying the same evidence-mode shape; extracting the remaining local lines would hide skill ownership and weaken exported-skill portability for no behavioral reduction.",
+      "reviewed_at": "2026-08-26",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "ac01c2c1ded5c5c3",
+      "note": "Two adjacent validation guards in critique_verification_scope.py check different fields against different contracts (failure classification versus retry disposition) and deliberately keep each field's refusal beside its own vocabulary. A shared guard would obscure which proof-surface rule failed while saving only the same idiom-sized branch shape.",
+      "reviewed_at": "2026-08-26",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "d3027a8aa9305f56",
+      "note": "Critique and retro are separate exported record scaffolds with parallel whole-module mechanics but different templates, validators, adapter contracts, and lesson/review identity rules. The common dated-record helper is already extracted; merging the skill-local entrypoints would trade explicit ownership for an indirection and violate the less-is-more portability boundary.",
+      "reviewed_at": "2026-08-26",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

@@ -12,6 +12,7 @@ import pytest
 import yaml
 
 from scripts import check_artifact_surface_preflight as preflight
+from skills.public.critique.scripts.verification_retry import build_retry_key
 
 from .support import ROOT
 
@@ -281,6 +282,44 @@ def test_changed_artifacts_passes_scaffold_roundtrip(
         matches = [line for line in filled_in_stub.splitlines() if line.startswith(stub_line)]
         assert matches, f"critique stub must still carry `{stub_line}`"
         filled_in_stub = filled_in_stub.replace(matches[0], filled)
+    scope_values = {
+        "Claim under test": "the scaffolded critique record binds its retry decision",
+        "Changed surfaces": "critique scaffold and its validator consumer",
+        "Minimum sufficient proof": "validator recomputes the retry key",
+        "Deliberately omitted checks": "the subject suite is outside this fixture",
+        "Verifier contract": "critique artifact validator reads this section",
+        "Failure classification": "none",
+        "Negative control": "none with rationale: fixture has no verifier-only claim",
+        "Subject identity": "sha256:" + "1" * 64,
+        "Verifier identity": "sha256:" + "2" * 64,
+        "Input identity": "sha256:" + "3" * 64,
+        "Failure identity": "stable:gate-failed",
+        "Evidence identity": "none",
+        "Retry disposition": "first-attempt",
+    }
+    for field, value in scope_values.items():
+        filled_in_stub, replacements = re.subn(
+            rf"^- {re.escape(field)}:.*$",
+            f"- {field}: {value}",
+            filled_in_stub,
+            count=1,
+            flags=re.MULTILINE,
+        )
+        assert replacements == 1, f"critique stub must still carry `- {field}: TODO`"
+    retry_key = build_retry_key(
+        subject=scope_values["Subject identity"],
+        verifier=scope_values["Verifier identity"],
+        input_identity=scope_values["Input identity"],
+        failure=scope_values["Failure identity"],
+    )
+    filled_in_stub, replacements = re.subn(
+        r"^- Retry key:.*$",
+        f"- Retry key: {retry_key}",
+        filled_in_stub,
+        count=1,
+        flags=re.MULTILINE,
+    )
+    assert replacements == 1, "critique stub must still carry `- Retry key: TODO`"
     target = repo / "charness-artifacts" / "critique" / "_preflight_roundtrip_selftest.md"
     target.parent.mkdir(parents=True)
     target.write_text(filled_in_stub, encoding="utf-8")
