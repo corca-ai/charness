@@ -1,0 +1,16 @@
+{
+  "schema_version": "charness.release.claims-review.v3",
+  "prepared_commit": "0fec32f388f2db712e376c1cb06ff47a5b209775",
+  "release_record_path": "charness-artifacts/release/latest.md",
+  "release_record_sha256": "65b16349f87b41bac00299b3d3f8b2ba35868a818e978ebeed038300ef935e90",
+  "target_version": "6.5.0",
+  "tag_name": "v6.5.0",
+  "verdict": "unproven",
+  "preparer_context": "primary release operator prepared the bound v6.5.0 release record",
+  "reviewer_context": "bounded claims-review spawn was unavailable at closeout; no independent result was delivered",
+  "observer_distinctness": {
+    "kind": "unproven",
+    "signal": "claims-review agent delivery timed out twice; no independent claims-review result was delivered",
+    "review_artifact": null
+  }
+}
