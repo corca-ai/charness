@@ -39,8 +39,7 @@ lifecycle instead of starting a new one.
 ## Workflow
 
 `achieve` runs one goal as three phases. `check_goal_artifact.py` emits a
-`phase_brief` naming the current-phase file plus `references/goal-artifact.md`
-depth; read that file, not the full contract, and follow its `closeout_handoff` note.
+`phase_brief` naming the current-phase file plus `references/goal-artifact.md` depth; read that file, not the full contract, and follow its `closeout_handoff` note.
 
 1. Before — shape and save.
    - interview from prose with a few high-leverage questions; if the request is
@@ -53,6 +52,7 @@ depth; read that file, not the full contract, and follow its `closeout_handoff` 
      reporting expectations, closeout binding plan (minimum fields: semantic
      inputs, fixed target/SHA, fresh-eye channel, lock evidence, terminal-record
      rule), and timebox fields (`Timebox:`, `Activation time:`, `Closeout reserve:`, `Done-early policy: continue_next_improvement`)
+   - keep the goal compact, link detailed phase specs, and put failure→pattern→debug/5-whys operating principles near the top; see `references/goal-artifact.md`
    - replace all `To be filled by the achieve Before-phase` placeholders; any
      leftover marker leaves the goal unshaped to `--pursue-ready`, and so does a
      MISSING required/portability heading (an artifact whose sections were never
@@ -65,13 +65,13 @@ depth; read that file, not the full contract, and follow its `closeout_handoff` 
    - save with `upsert_goal.py --fields-file <json>` at status `draft` (see the
      no-shell prose rule under During); artifact-only — it must not
      consume the host active-goal slot while drafting (only `/goal` pursuit does)
-   - close with `Goal file:`, exact `Activation:` line, and the
-     inert-until-`/goal` status; do not execute slices yourself
+   - close with `Goal file:`, exact `Activation:` line, and inert-until-`/goal`
+     status; do not execute slices yourself
 2. During — slice and record.
    - activation (`/goal`) is pure pursue: check
      `check_goal_artifact.py --pursue-ready --goal-path <artifact>` and
      fail-fast to the Before-phase (`/achieve @...`) if unshaped, missing a
-     required activation-discussion summary, or carrying unresolved consequential
+     required activation-discussion summary, missing phase-spec links, or carrying unresolved consequential
      activation discussion (`/goal` shapes nothing)
    - treat the active goal artifact as the slice memory surface, not `handoff`
    - keep `## Active Operating Frame` current as the short control panel; let

@@ -7,6 +7,17 @@ Activation: `/goal @{goal_rel}`
 This file is the living goal scratchpad. It becomes active only when the user
 runs the activation command.
 
+## Operating Principles
+
+- Treat every failure as a structural signal: inspect the pattern and the
+  pattern of patterns, run `debug` with a 5-whys root-cause pass, and improve
+  the system instead of papering over the symptom with a retry.
+- Keep this goal compact. The goal states outcome, boundaries, and control
+  state; each phase's detailed contract and completion proof lives in its own
+  `charness-artifacts/specs/<goal-slug>/.../spec.md` file.
+- Do not call a phase complete until its spec's acceptance criteria and
+  verification method have an executed, readable receipt.
+
 ## Active Operating Frame
 
 {active_frame}
@@ -14,6 +25,17 @@ runs the activation command.
 ## Goal
 
 {goal_body}
+
+## Phase Specifications
+
+Each planned phase has a detailed contract under
+`charness-artifacts/specs/<goal-slug>/` with objective, scope, completion
+criteria, verification commands, and explicit non-claims. Link every phase
+spec here before activation; use `scaffold_goal_specs.py` to create the files
+and update these links. A draft may say `Phase specs: pending decomposition`,
+but `/goal` activation must not proceed until the planned phases are linked.
+
+- Phase specs: pending decomposition
 
 ## Non-Goals
 

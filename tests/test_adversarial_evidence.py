@@ -1,10 +1,16 @@
 from __future__ import annotations
 
 import hashlib
+import json
+import subprocess
+import sys
+from pathlib import Path
 
 import pytest
 
 from scripts.adversarial_evidence import EvidenceValidationError, validate
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 def _artifact(*records: str, metadata: str | None = None) -> str:
@@ -37,11 +43,12 @@ def _record(
     proof: str = "executable fixture",
     observed: str = "final consumer refused",
 ) -> str:
+    receipt = "receipt: none | receipt sha256: none" if disposition in {"unproven", "not-applicable"} else "receipt: receipt.json | receipt sha256: " + "a" * 64
     return (
         f"- Finding: {finding} | source: review.md | expected: consumer refuses missing input "
         f"| stimulus: remove input in temp fixture | disposition: {disposition} "
         f"| observed: {observed} | proof: {proof} | handoff: debug.md "
-        "| next move: inspect invariant"
+        "| next move: inspect invariant | " + receipt
     )
 
 
@@ -158,12 +165,49 @@ def test_evidence_digest_binds_record_content() -> None:
         )
 
 
+def test_reproduced_claim_cannot_pass_without_consumer_receipt(tmp_path: Path) -> None:
+    with pytest.raises(EvidenceValidationError, match="receipt does not exist"):
+        validate(_artifact(_record()), artifact_label="debug", repo_root=tmp_path)
+
+
 def test_report_source_digest_is_recomputed_when_repo_root_is_available(tmp_path) -> None:
     source = tmp_path / "fixture" / "report.json"
     source.parent.mkdir()
     source.write_bytes(b"reported finding")
     source_sha256 = hashlib.sha256(source.read_bytes()).hexdigest()
-    artifact = _artifact(_record()).replace("a" * 64, source_sha256)
+    record = _record()
+    receipt = tmp_path / "receipt.json"
+    receipt.write_text(
+        json.dumps(
+            {
+                "schema": "charness.adversarial-evidence.receipt.v1",
+                "finding": "F1",
+                "source": "review.md",
+                "expected": "consumer refuses missing input",
+                "stimulus": "remove input in temp fixture",
+                "disposition": "reproduced",
+                "observed": "final consumer refused",
+                "command": "fixture-runner",
+                "fixture": "tmp-fixture",
+                "final_consumer": "consumer",
+                "executed": True,
+                "final_consumer_observed": True,
+                "returncode": 0,
+            },
+            sort_keys=True,
+        ),
+        encoding="utf-8",
+    )
+    receipt_sha256 = hashlib.sha256(receipt.read_bytes()).hexdigest()
+    artifact = _artifact(record.replace("a" * 64, receipt_sha256, 1), metadata="\n".join([
+        "- Report Identity: review:2026-08-25#sha256:" + source_sha256,
+        "- Reported Findings: 1",
+        "- Dispositioned Findings: F1",
+        "- Missing Findings: none",
+        "- Evidence Digest: sha256:" + hashlib.sha256(record.replace("a" * 64, receipt_sha256, 1).encode()).hexdigest(),
+        "- Report Source: fixture/report.json",
+        "- Report Source SHA256: " + source_sha256,
+    ]).replace("receipt.json", "receipt.json"))
     validate(artifact, artifact_label="debug", repo_root=tmp_path)
     source.write_bytes(b"changed report")
     with pytest.raises(EvidenceValidationError, match="stale or tampered"):
@@ -193,3 +237,22 @@ def test_external_source_without_repo_root_is_non_claim() -> None:
         ),
         artifact_label="debug",
     )
+
+
+@pytest.mark.parametrize(
+    ("skill", "heading"),
+    (("critique", "## Evidence Disposition"), ("debug", "## Adversarial Verification")),
+)
+def test_evidence_led_scaffolds_bind_template_and_validator(skill: str, heading: str) -> None:
+    script = REPO_ROOT / "skills" / "public" / skill / "scripts" / f"scaffold_{skill}_artifact.py"
+    result = subprocess.run(
+        [sys.executable, str(script), "--repo-root", str(REPO_ROOT), "--evidence-led", "--subject", "evidence-test"],
+        cwd=REPO_ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "evidence_mode: true" in result.stdout
+    assert "--evidence-led" in result.stdout
+    assert heading in result.stdout

@@ -1,6 +1,9 @@
 # Default Surfaces
 
-`setup` uses these as the default operating surfaces.
+`setup` uses these as the default operating surfaces. The `flat-wiki` profile
+considers README, AGENTS/CLAUDE, and the consumer-owned documentation index at
+`<repo-root>/docs/index.md` <!-- not vendored: consumer-repo path --> the core; roadmap and
+operator-acceptance are conditional surfaces.
 
 Existing repos may already keep equivalent surfaces under local names. Declare
 those names in `<repo-root>/.agents/setup-adapter.yaml` instead of renaming mature repo
@@ -25,6 +28,23 @@ The repo root `<repo-root>/README.md` should answer:
 - where the next planning and operator docs live
 - when the repo ships an installable surface, where the canonical install and
   probe-surface guidance lives
+- that the consumer-owned documentation entry point is `<repo-root>/docs/index.md` <!-- not vendored: consumer-repo path -->
+
+## Documentation Index
+
+The consumer-owned documentation index at `<repo-root>/docs/index.md` <!-- not vendored: consumer-repo path --> is the one entry point for a flat Markdown
+wiki. It should list each current page exactly once, group pages by concern, and
+link to neighboring pages. New greenfield pages stay directly under `docs/`.
+Existing nested trees are preserved until a separately approved migration plan
+proves every link and ownership move.
+
+Treat `docs/` as evergreen notes, not a chronological journal. Every page should
+state whether it is `current`, `conditional`, or `generated`, own one question,
+name its source of truth, and describe current behavior. Dated proposals,
+superseded decisions, raw evidence, and retros belong under
+`charness-artifacts/`; a stale or duplicate page is classified and linked before
+it is moved or removed. Docs are code: use relative links, run link and graph
+checks, and regenerate producer-owned pages instead of editing their output.
 
 ## AGENTS
 
@@ -36,6 +56,12 @@ The repo root `<repo-root>/AGENTS.md` should answer:
 - when retro memory is enabled, include `<repo-root>/charness-artifacts/retro/recent-lessons.md`
   in those memory surfaces
 - validation and commit discipline when the repo has them
+- the quality owner, exact quality-plan command, and whether the quality adapter
+  is configured (setup must not call that a green gate)
+- the hook policy: prefer Lefthook when no manager exists, but preserve and
+  integrate existing Git-native hooks, Husky, simple-git-hooks, or Lefthook
+- hook checks must be staged/related-file scoped and fast; whole-repo checks
+  belong to pre-push/CI unless explicitly approved
 - when the repo routes work through Charness goal/skill routing (a
   `## Skill Routing` block that names installed skill metadata/catalog facts, or explicit Charness
   goal/achieve routing), keep a compact `## Commit Discipline` rule so a long
@@ -146,9 +172,10 @@ Use `$SKILL_DIR/scripts/render_skill_routing.py` to render the block. Keep it sh
 bootstrap-heavy. On a mature repo whose `<repo-root>/AGENTS.md` lacks it, propose
 adding the block instead of rewriting the whole instruction file.
 
-## Roadmap
+## Roadmap (Conditional)
 
-The repo roadmap document, usually `<repo-root>/docs/roadmap.md`, should answer:
+When active ordered work is evidenced or the user requests planning, the repo
+roadmap document, usually `<repo-root>/docs/roadmap.md`, should answer:
 
 - current priorities
 - ordering of the next work items
@@ -157,9 +184,10 @@ The repo roadmap document, usually `<repo-root>/docs/roadmap.md`, should answer:
 
 Prefer short-horizon execution direction over a grand long-range thesis.
 
-## Operator Acceptance
+## Operator Acceptance (Conditional)
 
-The operator takeover document, usually
+When the repo has a real install, deployment, or takeover path, the operator
+takeover document, usually
 `<repo-root>/docs/operator-acceptance.md`, should answer:
 
 - what a human operator should read first
@@ -222,6 +250,12 @@ Keep the baseline small and language-specific:
 honest default family early, then let `quality` own the exact gate wiring and
 ratcheting.
 
+Before proposing a write, run the quality skill's read-only bootstrap and plan.
+Do not invent a parallel linter or ratchet configuration in setup. Prefer
+native staged/related-file commands; use `lint-staged` only when the native tool
+cannot express the same scope. Report tool installation, hook registration,
+adapter migration, and gate execution as separate approval and proof items.
+
 ## GitHub Actions Defaults
 
 When the repo scaffolds GitHub-hosted workflows, pin maintained GitHub Actions
@@ -231,7 +265,7 @@ major upgrades over compatibility env vars.
 
 ## Regenerable Facts In Forward-Looking Prose
 
-The surfaces above (README, AGENTS, roadmap, operator-acceptance) are read as
+The surfaces above (README, AGENTS, docs/index, roadmap, operator-acceptance) are read as
 CURRENT. So a number written into them is read as today's answer, and it starts
 going stale the moment it is written.
 

@@ -66,13 +66,15 @@ def validator_command(
     script_file: str | Path,
     script_names: Sequence[str],
     artifact_path: str | None = None,
+    evidence_mode: bool = False,
 ) -> str:
     if not script_names:
         raise ValueError("script_names must not be empty")
 
     # Repo-local validators win so a consumer repo cites the same strict check
     # as its broad gate; installed-plugin validators are fallback-only.
-    suffix = f" --paths {artifact_path}" if artifact_path else ""
+    suffix = " --evidence-led" if evidence_mode else ""
+    suffix += f" --paths {artifact_path}" if artifact_path else ""
     for script_name in script_names:
         repo_local = repo_root / "scripts" / script_name
         if repo_local.is_file():
@@ -364,6 +366,7 @@ def emit_payload_main(
     payload_for: Callable[..., dict[str, object]],
     *,
     artifact_label: str,
+    supports_evidence_mode: bool = False,
 ) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True, help=f"Repo root to scaffold the {artifact_label} artifact into")
@@ -381,6 +384,12 @@ def emit_payload_main(
             "being continued). Defaults to the family's own derived key."
         ),
     )
+    if supports_evidence_mode:
+        parser.add_argument(
+            "--evidence-led",
+            action="store_true",
+            help="Require typed adversarial evidence and a consumer receipt in the emitted validator command",
+        )
     args = parser.parse_args()
 
     # Always emit the full structured payload — the run reads the template from
@@ -388,7 +397,10 @@ def emit_payload_main(
     # size_budget as sibling fields. There is no bare rendered-template mode: a
     # single output shape removes the "forgot --json → the budget/write-path never
     # reached the run" footgun that a flag-gated structured mode invites.
-    payload = payload_for(args.repo_root.resolve(), title=args.title, subject=args.subject)
+    kwargs = {"title": args.title, "subject": args.subject}
+    if supports_evidence_mode:
+        kwargs["evidence_mode"] = args.evidence_led
+    payload = payload_for(args.repo_root.resolve(), **kwargs)
     emit_yaml(payload)
     return 0
 

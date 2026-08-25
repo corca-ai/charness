@@ -476,7 +476,7 @@ _FAILURE_LABEL = {
 # pass. A link-only line is not a graph defect at all.
 _REMEDY = {
     "orphans": (
-        "Link it from a related page, or from the docs index at docs/README.md. "
+        "Link it from a related page, or from the docs index at docs/index.md. "
         "A page nobody can reach is one nobody decided to retire."
     ),
     "islands": (

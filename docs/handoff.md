@@ -1,5 +1,9 @@
 # Charness Handoff
 
+> Status: live session state
+> Source of truth: current repository, release, and proof readbacks
+> Last verified: 2026-08-25
+
 ## Workflow Trigger
 
 - Run `python3 scripts/open_lesson_session.py --repo-root . --session-id <date-slug> --seed <date-slug>`

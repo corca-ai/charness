@@ -104,7 +104,7 @@ def _slug(title: str) -> str:
     return slug or "critique"
 
 
-def render_template(*, title: str, date_text: str) -> str:
+def render_template(*, title: str, date_text: str, evidence_mode: bool = False) -> str:
     lines = [f"# {title}", f"Date: {date_text}", ""]
     lines.extend(["## Decision Under Review", "", "TODO the change or decision under critique, in one or two lines.", ""])
     lines.extend(["## Failure Angles", "", "- TODO a distinct failure angle and why it could bite.", ""])
@@ -211,6 +211,26 @@ def render_template(*, title: str, date_text: str) -> str:
             "",
         ]
     )
+    if evidence_mode:
+        lines.extend(
+            [
+                "## Evidence Disposition",
+                "",
+                "- Report Identity: TODO source:id#sha256:<64 lowercase hex>",
+                "- Reported Findings: TODO non-negative integer",
+                "- Dispositioned Findings: TODO finding IDs",
+                "- Missing Findings: none",
+                "- Evidence Digest: TODO sha256:<64 lowercase hex>",
+                "- Report Source: TODO repo-relative report or fixture path",
+                "- Report Source SHA256: TODO 64 lowercase hex",
+                "",
+                "## Adversarial Verification",
+                "",
+                "<!-- Replace every TODO with a typed claim and a receipt from the execution harness. -->",
+                "- Finding: TODO-F1 | source: TODO | expected: TODO | stimulus: TODO | disposition: TODO | observed: TODO | proof: TODO | handoff: TODO | next move: TODO | receipt: TODO repo-relative receipt.json | receipt sha256: TODO",
+                "",
+            ]
+        )
     verdict_legend = " | ".join(ALLOWED_BOUNDARY_VERDICTS)
     lines.extend(
         [
@@ -238,16 +258,23 @@ def render_template(*, title: str, date_text: str) -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
-def validator_command(repo_root: Path, write_artifact_path: str) -> str:
+def validator_command(repo_root: Path, write_artifact_path: str, *, evidence_mode: bool = False) -> str:
     return _scaffold_lib.validator_command(
         repo_root=repo_root,
         script_file=__file__,
         script_names=VALIDATOR_SCRIPT_NAMES,
         artifact_path=write_artifact_path,
+        evidence_mode=evidence_mode,
     )
 
 
-def payload_for(repo_root: Path, *, title: str | None, subject: str | None = None) -> dict[str, object]:
+def payload_for(
+    repo_root: Path,
+    *,
+    title: str | None,
+    subject: str | None = None,
+    evidence_mode: bool = False,
+) -> dict[str, object]:
     # GUARDED AT THE READ SITE. Every scaffold in this family reads its write TARGET out
     # of the adapter, so an unhonored declaration does not degrade the answer -- it
     # relocates the artifact. Measured on the real CLI at `0bcb6b227`: a repo declaring
@@ -279,15 +306,17 @@ def payload_for(repo_root: Path, *, title: str | None, subject: str | None = Non
         date_text=date_text,
         title=resolved_title,
         record_slug=_slug(subject or resolved_title),
-        template=render_template(title=resolved_title, date_text=date_text),
-        validator_command_for=lambda path: validator_command(repo_root, path),
+        template=render_template(title=resolved_title, date_text=date_text, evidence_mode=evidence_mode),
+        validator_command_for=lambda path: validator_command(repo_root, path, evidence_mode=evidence_mode),
         remedy="Rerun scaffold_critique_artifact.py with --title <specific decision under review>.",
-        extra={"allowed_enums": allowed_enums()},
+        extra={"allowed_enums": allowed_enums(), "evidence_mode": evidence_mode},
     )
 
 
 def main() -> int:
-    return _scaffold_lib.emit_payload_main(payload_for, artifact_label="critique")
+    return _scaffold_lib.emit_payload_main(
+        payload_for, artifact_label="critique", supports_evidence_mode=True
+    )
 
 
 if __name__ == "__main__":

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sys
+from functools import partial
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module, load_path_module, repo_root_from_script
@@ -51,15 +52,9 @@ is_trivial_short_circuit = _scripts_artifact_validator_module.is_trivial_short_c
 run_validation_checks = _scripts_artifact_validator_module.run_validation_checks
 
 
-def validate_adversarial_evidence(
-    text: str, *, artifact_label: str, evidence_mode: bool = False, repo_root: Path | None = None
-) -> None:
-    try:
-        _adversarial_evidence.validate_or_raise(
-            text, artifact_label=artifact_label, evidence_mode=evidence_mode, repo_root=repo_root
-        )
-    except _adversarial_evidence.EvidenceValidationError as exc:
-        raise ValidationError(str(exc)) from exc
+validate_adversarial_evidence = partial(
+    _adversarial_evidence.validate_for_artifact, error_cls=ValidationError
+)
 
 # Single source of truth for the Seam Risk taxonomy: reuse the enums the
 # downstream consumer (`risk_interrupt_lib.parse_debug_interrupt`, run via
@@ -137,6 +132,8 @@ CURRENT_INTERRUPT_SECTIONS = (
 )
 OPTIONAL_SECTIONS = (
     "## Related Prior Incidents",
+    "## Evidence Disposition",
+    "## Adversarial Verification",
 )
 
 

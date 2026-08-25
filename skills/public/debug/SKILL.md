@@ -63,9 +63,9 @@ shape the current hypothesis.
 
 For review findings or suspected false-green approvals, read `../critique/references/adversarial-evidence-review.md`, preserve IDs, and type
 each report `reproduced`, `disconfirmed`, `unproven`, or `not-applicable` before
-changing code; no consumer observation means `unproven`. Append
-`--evidence-led` to the emitted validator; reproduced records need a `debug`
-handoff and next move.
+changing code; no consumer observation means `unproven`. Run the planner/scaffold
+with `--evidence-led` so the template and emitted validator are bound to the
+typed sections; reproduced records need a receipt, `debug` handoff, and next move.
 
 ## Pattern Ladder
 
@@ -124,8 +124,8 @@ For every reproduced or recurring finding, use `references/pattern-ladder.md`: r
      and sibling-search sections; this is reviewer-visible, not a default escape
    - classify seam risk explicitly when host behavior or repeated symptom fixes
      showed that local reasoning was not enough
-   - external-seam or repeated-symptom incidents set the next step to `spec`
-     with a named handoff artifact, not ordinary `impl`
+   - external-seam, host-disproves-local, or repeated-symptom incidents set the
+     next step to `spec` with a named handoff artifact, not ordinary `impl`
    - record prevention or follow-up; the prevention move should map to the
      detection-gap and sibling-search outputs, not restate the root cause
    - when the investigation is concluded (bug fixed or handed off), set
@@ -134,8 +134,9 @@ For every reproduced or recurring finding, use `references/pattern-ladder.md`: r
      open continuation; leave it `open` only while the bug is genuinely still
      in progress (a stale `open` pointer is what hijacks a fresh bug)
    - before closing task-completing debug work or handing off a repair, record
-     the required scoped/full critique when design, workflow, host-proof, or
-     export behavior is affected
+     the required critique as short scoped diagnosis/repair risk or full
+     standalone review when the fix affects design, workflow, compatibility,
+     host-proof, prompt-surface, public-skill, validator, or export behavior
    - at closeout, if the fix surfaced an RCA-class event and the repo maintains
      the conversion ledger, append one RCA event per `../../shared/references/rca-ledger-append.md` (`--source debug`); silent no-op otherwise
    - if the fix belongs to normal implementation work, hand off cleanly to

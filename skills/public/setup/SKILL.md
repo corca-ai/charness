@@ -1,6 +1,6 @@
 ---
 name: setup
-description: "Use when a repo needs its initial operating surface created or normalized. Bootstrap README, AGENTS.md, CLAUDE.md symlink policy, roadmap, and operator-acceptance docs from minimal ideation for greenfield repos, or realign those same surfaces for partially-initialized repos without pretending quality review or deep product ideation already happened."
+description: "Use when a repo needs its initial operating surface created or normalized. Bootstrap the README, AGENTS.md, CLAUDE.md symlink policy, and documentation index from minimal ideation for greenfield repos, conditionally add roadmap or operator-acceptance docs when evidence warrants them, or realign those surfaces for partially-initialized repos without pretending quality review or deep product ideation already happened."
 ---
 
 # Setup
@@ -12,12 +12,12 @@ normalized.
 
 - detect whether the repo is greenfield or already partially initialized
 - run a short ideation pass when the concept is still too thin for honest docs
-- scaffold or realign the basic durable surfaces a maintainer needs
+- scaffold or realign the basic durable surfaces and probe surfaces a maintainer needs
 - normalize `<repo-root>/AGENTS.md` and `CLAUDE.md` into one explicit host-facing policy
 - leave deeper quality review, long-range planning, and baton-pass work to
   adjacent skills once the operating surface exists
 
-Keep the concept narrow. `setup` is not the whole product-definition skill, not the long-range planning skill, and not the repo-wide quality audit.
+Keep the concept narrow. `setup` is not product definition, long-range planning, or the repo-wide quality audit.
 
 ## Bootstrap
 
@@ -41,16 +41,9 @@ persist. Resolve it, do not assume it:
 python3 "$SKILL_DIR/../../shared/scripts/resolve_subagent_delegation.py" resolve --repo-root .
 ```
 
-By default, `setup` writes any durable normalization note to
-`<repo-root>/charness-artifacts/setup/latest.md`. Repos can override the directory with
-`<repo-root>/.agents/setup-adapter.yaml`.
+By default, `setup` writes `<repo-root>/charness-artifacts/setup/latest.md`; repos can override this in `<repo-root>/.agents/setup-adapter.yaml`.
 
-If the repo is mature and only `<repo-root>/docs/operator-acceptance.md` is missing,
-synthesize a first draft from existing checks before hand-writing a template:
-
-```bash
-python3 "$SKILL_DIR/scripts/synthesize_operator_acceptance.py" --repo-root .
-```
+Only synthesize `<repo-root>/docs/operator-acceptance.md` for a real install, deployment, or takeover path; use `synthesize_operator_acceptance.py` from quality-backed checks and never make it a default file.
 
 ```bash
 # Required Tools: rg
@@ -76,6 +69,7 @@ Then load only the references needed for the detected state:
 - partially initialized repo: `references/normalization-flow.md`
 - any `<repo-root>/AGENTS.md` / `CLAUDE.md` ambiguity: `references/agent-docs-policy.md`
 - scaffolding or rewriting the basic docs: `references/default-surfaces.md`
+- Craken-like flat wiki/profile proposal: `references/craken-like-profile.md`
 - installable CLI / plugin / agent-facing local surface: `references/probe-surface.md`
 - repo wants durable retrospective pickup: `references/retro-memory-seam.md`
 - optional adapter, policy, or runtime seams: `references/bootstrap-seams.md`
@@ -86,6 +80,9 @@ Then load only the references needed for the detected state:
 ## Workflow
 
 1. Detect the current repo mode.
+   - classify `repo_mode` from the flat-wiki core (README, AGENTS/CLAUDE, and
+     docs/index); inspect `conditional_surfaces` for roadmap and
+     operator-acceptance without treating their absence as a defect
    - `GREENFIELD`: little or no durable operating surface exists yet
    - `PARTIAL`: some surface exists, but key files are missing or inconsistent
      - if only one core operating surface is missing, treat this as a targeted
@@ -111,50 +108,51 @@ Then load only the references needed for the detected state:
    - capture verified facts, assumptions, open questions, and the next concrete
      direction before scaffolding
    - do not dump generic templates into a concept vacuum
-4. Scaffold or realign the default operating surfaces.
-   - `<repo-root>/README.md`
-   - `<repo-root>/AGENTS.md`
-   - `<repo-root>/docs/roadmap.md`
-   - `<repo-root>/docs/operator-acceptance.md`
-   - optionally separate bootstrap and uninstall docs only when the repo
-     actually ships an installable surface
-   - when optional Charness seams are requested or detected, use
-     `references/bootstrap-seams.md` for probe surfaces, retro memory, artifact
-     policy, review delegation that is already delegated by repo contract,
-     skill routing, worktree, T-events, and usage episodes; keep runtime
-     ownership with the owning skill or integration
-   - preserve runtime ownership in the owning skill or integration when setup
-     only seeds an adapter or starter artifact
-5. Keep the boundaries honest.
+4. Build a plan before any write, install, move, hook registration, or ratchet change.
+   - use the `flat-wiki` profile and show README, AGENTS/CLAUDE, current docs inventory,
+     the repository documentation index, flat-doc policy, awiki, detected language/code
+     shape, nested-doc conflicts, and other plan inputs
+   - run quality's read-only bootstrap and plan; quality owns the adapter, exact
+     gates, and ratchets, while setup only carries the approved plan into docs
+   - show hook policy: prefer Lefthook when no manager exists; preserve and
+     integrate Git-native hooks, Husky, simple-git-hooks, or existing Lefthook
+   - require staged/related-file scope for fast hooks; whole-repo scans belong to
+     pre-push/CI or an explicit approval, and `lint-staged` is only a fallback
+5. Ask the user to approve the named plan and its `approval_plan.identity`. Immediately
+   re-run inspection with `--expect-plan-identity <digest>` before applying; stop if
+   approval is absent or the plan changes. Never treat a green command, detected
+   binary, or inferred language as approval.
+6. Apply only approved changes, preserving runtime ownership for optional Charness seams; validate through `quality` and report its configured/unconfigured state separately from gate pass/fail.
+7. Keep the boundaries honest.
    - `<repo-root>/README.md`: current repo story and user-facing orientation
    - `<repo-root>/AGENTS.md`: agent operating contract for this repo
-   - `<repo-root>/docs/roadmap.md`: near-term work direction and ordered priorities
-   - `<repo-root>/docs/operator-acceptance.md`: what a human maintainer must do to take over
+   - the repository documentation index: one entry point for the flat documentation wiki
+   - `<repo-root>/docs/roadmap.md`: only when active ordered planning is evidenced or requested
+   - `<repo-root>/docs/operator-acceptance.md`: only when a real operator takeover path exists
    - optional bootstrap docs: install/update/probe semantics for repos with an install contract
    - do not create `<repo-root>/docs/handoff.md` by default; use `handoff` only when the
      next session truly needs a baton-pass artifact
-6. End with a quality-style sanity pass.
+   - treat `docs/` as evergreen, code-like current-state notes: each page owns one
+     question, names its source of truth, and is classified as current, conditional,
+     or generated; move dated history and stale proposals to `charness-artifacts/`
+8. End with a quality-style sanity pass.
    - check for missing or duplicated operating surfaces
    - check that generated guidance is not contradicting itself
    - check that the next human operator can tell what to read and what to do
-   - for nontrivial source trees, recommend a dead-file advisory detector
-     (`vulture` for Python, `knip` for JavaScript/TypeScript)
-   - for task-completing normalization, spawn `high-leverage` bounded reviewers
-     for host policy, adapter fit, operator takeover, and any broad new gate surface
-   - apply host-exposed `reviewer_tiers.high-leverage` fields, and read
-     `../../shared/references/fresh-eye-subagent-review.md` BEFORE spawning rather
-     than only before reporting blocked: it owns the spawn shape, and a
-     wrongly-shaped spawn succeeds while its findings never arrive
-   - use deterministic inspection as reviewer evidence and emit queued
-     `recommendations[]` separately from `normalization.findings`
+   - for nontrivial source trees, recommend a dead-file advisory detector (`vulture` for Python, `knip` for JavaScript/TypeScript)
+   - for task-completing normalization, spawn the repo-delegated (`already delegated`)
+     `high-leverage` bounded reviewers; read
+     `../../shared/references/fresh-eye-subagent-review.md` before spawning, apply
+     host-exposed `reviewer_tiers.high-leverage` fields
+   - use deterministic inspection as reviewer evidence; keep queued
+     `recommendations[]` separate from `normalization.findings`
    - if deeper repo-wide posture review is still needed, hand off to `quality`
      instead of inflating `setup`
-7. Close with the canonical normalization vocabulary.
+9. Close with the canonical normalization vocabulary.
    - emit `Repo mode: <mode>`, then a per-surface status line for each operating
      surface using the `## Closeout Vocabulary` tokens (what was realigned versus
      left already-aligned), and end with an explicit `Normalization non-claims:` line
-   - never report a bare "normalized"/"done": the per-surface CHANGED-versus-LEFT
-     accounting plus honest non-claims are the closeout's substance
+   - never report a bare \"normalized\"/\"done\": per-surface CHANGED-versus-LEFT accounting plus honest non-claims are the closeout's substance
 
 ## Closeout Vocabulary
 
@@ -162,7 +160,7 @@ Emittable-verbatim closeout tokens (validator substring-matches these); WHY-pros
 stays in `references/normalization-flow.md`.
 
 - `Repo mode` is one of `GREENFIELD` / `NORMALIZE` / `PARTIAL` / `read-only <reason>`.
-- Per operating surface (README / AGENTS / roadmap / operator-acceptance, plus any
+- Per operating surface (README / AGENTS / docs/index / roadmap / operator-acceptance, plus any
   optional surface actually touched), the closeout status is one of
   `realigned <drift>` / `already-aligned` / `scaffolded` / `suppressed <reason>` /
   `unverified <reason>`.
@@ -173,9 +171,10 @@ stays in `references/normalization-flow.md`.
 
 - Do not write generic boilerplate without first checking whether the repo
   already has an honest concept or operating surface.
+- Do not write or install anything before explicit approval of the rendered plan.
 - Stay narrow: setup creates and normalizes the operating surface only — it does
-  not do product-definition (`ideation`), repo-wide quality posture (`quality`),
-  or truth-surface narrative alignment (`narrative`); route those out. (The
+  not do product-definition (`ideation`) or truth-surface narrative alignment
+  (`narrative`); route those out. Quality owns quality posture and verdicts. (The
   merge-`CLAUDE.md`-ask and don't-create-`handoff.md` rules live in Workflow
   steps 2 and 5.)
 - Do not invent a full evaluator regime for repos that do not actually keep
@@ -191,6 +190,7 @@ stays in `references/normalization-flow.md`.
 - `references/normalization-flow.md`
 - `references/agent-docs-policy.md`
 - `references/default-surfaces.md`
+- `references/craken-like-profile.md`
 - `references/probe-surface.md`
 - `references/retro-memory-seam.md`
 - `references/bootstrap-seams.md`

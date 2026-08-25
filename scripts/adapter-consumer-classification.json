@@ -191,6 +191,10 @@
       "verdict": "safe-checks-errors",
       "reason": "L141 `load_setup_adapter` returns `(data, path, warnings)`; setup's resolver refuses an unsupported version before surface overrides, driven by tests/quality_gates/test_setup_inspect_adapters.py."
     },
+    "scripts/setup_inspect_quality_lib.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "quality_setup_snapshot calls the canonical `load_quality_adapter`, checks `found` and `valid` before classifying configured versus blocked/plan-only, and exposes parser errors rather than applying adapter values. Its tooling inventory is proposal-only and does not perform a mutation."
+    },
     "scripts/skill_t_inventory_lib.py": {
       "verdict": "no-version-validation",
       "reason": "Reads `.agents/*-adapter.yaml` with a raw YAML load and never reconciles `version`, so there is no `errors` for any consumer to check. A DIFFERENT defect from the unguarded rows: the fix is wiring this onto the shared resolver, not adding a check."

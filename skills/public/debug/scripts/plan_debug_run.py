@@ -197,6 +197,7 @@ def _gate_packets(repo_root: Path, adapter: dict[str, Any], scaffold: dict[str, 
                 ".",
                 "--paths",
                 scaffold["write_artifact_path"],
+                *(["--evidence-led"] if scaffold.get("evidence_mode") else []),
             ),
         ),
         _packet(
@@ -248,7 +249,8 @@ def _scaffold_command(scaffold: dict[str, Any]) -> str:
     """
     subject = scaffold.get("invocation_subject_key")
     suffix = f" --subject {subject}" if isinstance(subject, str) and subject else ""
-    return f"python3 $SKILL_DIR/scripts/scaffold_debug_artifact.py --repo-root .{suffix}"
+    evidence = " --evidence-led" if scaffold.get("evidence_mode") else ""
+    return f"python3 $SKILL_DIR/scripts/scaffold_debug_artifact.py --repo-root .{suffix}{evidence}"
 
 
 def _next_action(repo_root: Path, artifact: dict[str, Any], scaffold: dict[str, Any]) -> dict[str, Any]:
@@ -306,9 +308,11 @@ def _next_action(repo_root: Path, artifact: dict[str, Any], scaffold: dict[str, 
     return next_action
 
 
-def build_plan(repo_root: Path, *, subject: str | None = None) -> dict[str, Any]:
+def build_plan(repo_root: Path, *, subject: str | None = None, evidence_mode: bool = False) -> dict[str, Any]:
     adapter = resolve_adapter.load_adapter(repo_root)
-    scaffold = scaffold_debug_artifact.payload_for(repo_root, title=None, subject=subject)
+    scaffold = scaffold_debug_artifact.payload_for(
+        repo_root, title=None, subject=subject, evidence_mode=evidence_mode
+    )
     scaffold_summary = {key: value for key, value in scaffold.items() if key != "template"}
     artifact = _artifact_summary(repo_root, scaffold)
     output_dir = str(adapter["data"]["output_dir"])
@@ -375,8 +379,13 @@ def main() -> int:
         "--subject",
         help="Slug of the open investigation this run continues; omit to start a new one",
     )
+    parser.add_argument(
+        "--evidence-led",
+        action="store_true",
+        help="Carry reported-finding evidence mode into the scaffold and validator packets",
+    )
     args = parser.parse_args()
-    payload = build_plan(args.repo_root.resolve(), subject=args.subject)
+    payload = build_plan(args.repo_root.resolve(), subject=args.subject, evidence_mode=args.evidence_led)
     yaml_output.emit_yaml(payload)
     return 0 if payload["ok"] else 1
 

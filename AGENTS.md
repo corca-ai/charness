@@ -95,9 +95,29 @@ Keep this block short. Detailed routing belongs in installed skill metadata and 
 - Before claiming an issue or operator request closable, map requested outcomes
   to executed proof and run the required fresh-eye critique.
 
+## Documentation Principles
+
+- [docs/index.md](./docs/index.md) is the canonical entry point for the flat
+  documentation wiki; [docs/README.md](./docs/README.md) is only a compatibility
+  pointer.
+- Evergreen `docs/` pages state their status (`current`, `conditional`, or
+  `generated`), own one question, name their source of truth, and describe
+  current behavior. They are written like code: small changes, explicit
+  ownership, relative links, deterministic link/graph checks, and generated
+  pages changed only through their producer.
+- Live session state (`docs/handoff.md`), active plans, and operator acceptance
+  are labeled exceptions. Dated proposals, superseded decisions, raw evidence,
+  and retros belong under `charness-artifacts/`; they explain history but do
+  not silently override current docs.
+- A stale or duplicate page is classified before it is moved or deleted:
+  update inbound links, preserve a compatibility pointer when needed, then run
+  `check_doc_links.py`, `check_docs_graph.py`, and the quality doc gates. Graph
+  reachability is not proof that a page is accurate or current.
+
 ## Repository Map
 
 - Current state: [handoff](./docs/handoff.md), [quality](./charness-artifacts/quality/latest.md), [recent lessons](./charness-artifacts/retro/recent-lessons.md).
+- Documentation entry point: [docs/index.md](./docs/index.md); architecture audit and migration contract: [evergreen documentation spec](./charness-artifacts/spec/2026-08-25-docs-architecture-evergreen.md).
 - Operator path: [acceptance](./docs/operator-acceptance.md), [development](./docs/development.md), [CLI reference](./docs/generated/cli-reference.md), [host packaging](./docs/host-packaging.md).
 - Architecture/control plane: [composition](./docs/harness-composition.md), [control plane](./docs/control-plane.md), [external integrations](./docs/external-integrations.md), [runtime capabilities](./docs/runtime-capability-contract.md), [capability resolution](./docs/capability-resolution.md).
 - Policy/memory: [public skill validation](./docs/public-skill-validation.md), [dogfood](./docs/public-skill-dogfood.md), [artifact policy](./docs/artifact-policy.md), [deferred decisions](./docs/deferred-decisions.md).

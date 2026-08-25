@@ -65,10 +65,11 @@ angles. Do not silently pick a target that changes the angle distribution.
 
 Activate this path for a reported failure, false-green finding, repeated symptom, or explicit reality check. Read `references/adversarial-evidence-review.md`;
 preserve each claim's expected behavior and stimulus, then type it
-`reproduced`, `disconfirmed`, `unproven`, or `not-applicable`. The final
-consumer must observe the result before approval. Append `--evidence-led` to the
-emitted validator command so omission fails closed; hand reproduced/repeated
-interface-shape findings to `debug`, keeping `unproven` as a non-claim.
+`reproduced`, `disconfirmed`, `unproven`, or `not-applicable`. Run the scaffold
+with `--evidence-led` so its template and emitted validator carry the typed
+sections. The final consumer must observe the result through a receipt bound to
+the claim before approval; hand reproduced/repeated interface-shape findings to
+`debug`, keeping `unproven` as a non-claim.
 
 ## Bootstrap
 
@@ -173,8 +174,7 @@ state, not a substitute for fresh-eye review.
 - `unproven` is a typed non-claim, not a softened approval. If the report is a
   repeated seam symptom, hand it to `debug` even when the local reproduction is
   unavailable.
-- Keep the counterweight pass owned, not a paranoia backlog: triage every concern
-  into the four bins, never skip it or treat all concerns as equal, and don't open
+- Keep the counterweight pass owned, not a paranoia backlog: triage every concern into the four bins, never skip it or treat all concerns as equal, and don't open
   more angles than you can triage honestly. Persist rejected-but-recurring concerns
   to `Deliberately Not Doing` (Workflow step 6), not chat. See
   `references/counterweight-triage.md`.

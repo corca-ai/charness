@@ -24,7 +24,7 @@ evidence review merely by passing the ordinary validator.
 Carry one record per reported finding:
 
 ```text
-- Finding: <stable id> | source: <review, issue, log, or artifact path> | expected: <given/when/then behavior> | stimulus: <smallest input that could disconfirm the claim> | disposition: reproduced | disconfirmed | unproven | not-applicable | observed: <final-consumer output, refusal, or missing observation> | proof: static scan only | local payload proof | executable fixture | runtime/provider roundtrip | handoff: <debug artifact or `none` when not reproduced> | next move: <named next move or `none` when not reproduced>
+- Finding: <stable id> | source: <review, issue, log, or artifact path> | expected: <given/when/then behavior> | stimulus: <smallest input that could disconfirm the claim> | disposition: reproduced | disconfirmed | unproven | not-applicable | observed: <final-consumer output, refusal, or missing observation> | proof: static scan only | local payload proof | executable fixture | runtime/provider roundtrip | handoff: <debug artifact or `none` when not reproduced> | next move: <named next move or `none` when not reproduced> | receipt: <repo-relative JSON receipt or `none` for a non-claim> | receipt sha256: <64 lowercase hex or `none`>
 ```
 
 The containing artifact also records `Report Identity`, `Reported Findings`,
@@ -37,6 +37,15 @@ packet/fixture path and its SHA is recomputed by the canonical validator when a
 repo root is available; an external source without a local packet is `unproven`.
 Add `Evidence Digest: sha256:<64 lowercase hex>`; it is the canonical digest of
 the typed record lines and catches stale/copy-pasted edits.
+
+For `reproduced` or `disconfirmed`, the receipt is mandatory and must be a
+repo-relative JSON file whose SHA is recomputed by the canonical validator. It
+must use schema `charness.adversarial-evidence.receipt.v1`, bind the record's
+finding/source/expected/stimulus/disposition/observed fields exactly, and carry
+the executed command, fixture identity, final-consumer identity,
+`executed: true`, `final_consumer_observed: true`, and an integer return code.
+This is a receipt binding, not an independent claim that a provider was live;
+without the channel, record `unproven` with `receipt: none`.
 
 Do not collapse `missing`, `empty`, `unavailable`, `skipped`, `stale`, and
 `passed` into one boolean. If the report cannot be exercised, preserve
@@ -54,8 +63,9 @@ Choose the cheapest stimulus that can make a false approval visible:
 
 The stimulus must reach the final consumer that decides success, refusal, or
 readiness. A producer log or subprocess exit code alone is not final proof.
-`reproduced` requires `local payload proof`, `executable fixture`, or
-`runtime/provider roundtrip`; `static scan only` is never reproduced. Run
+`reproduced` requires `executable fixture` or `runtime/provider roundtrip` plus
+the receipt binding above; `static scan only` and local payload proof are never
+reproduced. Run
 deletion, corruption, or mutation stimuli in a temporary fixture or isolated
 worktree, never the shared parent checkout, index, or tracked artifact. If
 isolation is unavailable, record `unproven` and the host signal.

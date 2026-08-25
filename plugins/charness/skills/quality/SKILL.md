@@ -38,6 +38,16 @@ no-ops, conflicts preserve the existing adapter and emit exact requested
 surfaces plus a next action, and `--migrate` is the explicit rewrite boundary
 that retains existing comments.
 
+### Setup handoff
+
+When `setup` is proposing an operating surface, consume its quality snapshot
+and bootstrap plan rather than inventing parallel gates. `configured` means the
+quality adapter is present and valid; it does not mean the repo is green, and
+`plan-only` or `unconfigured` remains an explicit non-verdict. `quality` owns
+the adapter, exact gate commands, ratchets, and final quality verdict; setup may
+describe the approved plan and its fast staged/related-file hook scope but must
+not install tools, register hooks, or migrate gates without approval.
+
 ## Workflow
 
 1. Restate the quality question and scope.

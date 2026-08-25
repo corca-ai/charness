@@ -14,8 +14,9 @@ def main() -> None:
     def build_items(repo_name: str, _args: argparse.Namespace) -> list[tuple[str, object]]:
         return [
             *base_adapter_items(repo_name, "charness-artifacts/setup"),
+            ("operating_surface_profile", "flat-wiki"),
+            ("approval_required", True),
             ("prose_wrap_policy", "semantic"),
-            ("surfaces", {"roadmap": "docs/roadmap.md"}),
             ("defaults_version", "issue-64"),
             (
                 "policy_sources",

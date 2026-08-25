@@ -25,6 +25,10 @@ yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "script
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True, help="Repo root to inspect")
+    parser.add_argument(
+        "--expect-plan-identity",
+        help="Refuse when the current read-only inspection does not match an approved plan identity",
+    )
     args = parser.parse_args()
     payload = _inspect_lib.build_setup_inspection_payload(
         args.repo_root.resolve(),
@@ -32,8 +36,18 @@ def main() -> int:
         prose_wrap_state=_setup_adapter_module.prose_wrap_state,
         recommendation_policy=_setup_adapter_module.recommendation_policy,
         surface_overrides=_setup_adapter_module.surface_overrides,
+        operating_surface_profile=_setup_adapter_module.operating_surface_profile,
         skill_routing_payload=_render_skill_routing_module.build_payload,
     )
+    if args.expect_plan_identity and payload["approval_plan"]["identity"] != args.expect_plan_identity:
+        yaml_output.emit_yaml(
+            {
+                "status": "plan-changed",
+                "expected_plan_identity": args.expect_plan_identity,
+                "actual_plan_identity": payload["approval_plan"]["identity"],
+            }
+        )
+        return 2
     yaml_output.emit_yaml(payload)
     return 0
 

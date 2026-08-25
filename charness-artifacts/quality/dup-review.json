@@ -114,6 +114,48 @@
     },
     {
       "class": "intentional",
+      "id": "1cefa4300690fcae",
+      "note": "One-line `if repo_root is None: return` guard idiom in three independently-owned validators. The conditions and follow-on contracts differ; extracting a generic guard would add coupling without removing a meaningful decision surface.",
+      "reviewed_at": "2026-08-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "47ad13ab62f28b00",
+      "note": "Critique and debug portable scaffolds intentionally keep parallel renderers. This family is the evidence-mode expansion of the already-reviewed whole-module scaffold symmetry (05648069e2513071): both skills must emit the same receipt-bearing evidence contract, while their surrounding templates, validators, and subject rules remain skill-owned. Moving the renderer into a repo-only helper would break exported skill portability; a generic renderer would hide each skill's required sections.",
+      "reviewed_at": "2026-08-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "788cd82772594d07",
+      "note": "The validator-command and payload plumbing in critique/debug scaffolds is deliberately parallel so `--evidence-led` cannot drift between producers. The shared mechanics that can be portable already live in `scaffold_artifact_lib`; these remaining lines bind each skill's own validator and artifact identity, so extraction would obscure ownership rather than remove behavior.",
+      "reviewed_at": "2026-08-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "f03125428b95c29c",
+      "note": "Whole-module similarity between critique and retro scaffolds is the established portable records-only scaffold pattern (05648069e2513071 and 9b344dba944af0db). Retro is untouched in this slice; the fingerprint rotated because critique gained the evidence-mode sections. Separate templates, validators, and identity rules are intentional export boundaries.",
+      "reviewed_at": "2026-08-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "f363e27ad06224b5",
+      "note": "Unchanged ideation/retro scaffold section-shape similarity. Neither member changed in this slice and the sections carry different artifact contracts; no shared verdict logic is duplicated. Classified to prevent ambient inventory churn from blocking the repaired evidence slice.",
+      "reviewed_at": "2026-08-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "f48278a32124bd8a",
+      "note": "Three-line direct-execution `main()` tail shared by critique/debug scaffolds. Each calls its own skill payload producer, and keeping the CLI boundary local preserves exported-skill portability; a helper would only hide the command-specific entrypoint.",
+      "reviewed_at": "2026-08-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "05db4f7ed67269ea",
       "note": "portable skill/repo entrypoints independently locate adapter or sibling modules before they can import shared code; this seven-line importlib fallback is the direct-execution boundary, and extracting it would require the import path it establishes",
       "reviewed_at": "2026-08-09",
@@ -5576,6 +5618,62 @@
       "class": "intentional",
       "id": "e682592175165ff4",
       "note": "two-line absent-path guard shared by capability-manifest resolution and unrelated registry/collection readers. The callers intentionally return different sentinel types and own different malformed-input policies; factoring an idiom-sized path check would couple independent proof surfaces without reducing behavior.",
+      "reviewed_at": "2026-08-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "4983cf5b1d920690",
+      "note": "small import/bootstrap blocks in independent artifact validators. Each validator remains directly executable and owns its own artifact contract; extracting an import-only idiom would add coupling without changing behavior.",
+      "reviewed_at": "2026-08-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "51539e48b56a0ea9",
+      "note": "one-line digest/error-boundary idioms across independent quality and artifact readers. The setup inspector's file digest has its own proposal semantics and is not a shared verdict helper.",
+      "reviewed_at": "2026-08-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "6cad6128201ac399",
+      "note": "portable adapter initialization boilerplate across independently installed skills. Each adapter must remain standalone in source and plugin layouts; centralizing it would cross skill ownership boundaries.",
+      "reviewed_at": "2026-08-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "6f838021beb9b366",
+      "note": "the setup inspector's language-marker and quality-tooling scans deliberately use parallel evidence collection shapes with different output schemas. The one shared lexical line is incidental; extracting the collectors would obscure their distinct proposal contracts.",
+      "reviewed_at": "2026-08-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "91eac184511fcf3f",
+      "note": "temporary-repository setup eval fixtures repeat the same isolated scenario scaffold so each scenario owns its expected mode and refusal. A shared fixture helper would hide scenario boundaries and make the eval less readable.",
+      "reviewed_at": "2026-08-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "b9629fac7f1bbd8f",
+      "note": "portable skill-runtime bootstrap and resolver binding boilerplate. It is required independently in exported skill entrypoints before a sibling module can be loaded; extraction would break collapsed plugin portability.",
+      "reviewed_at": "2026-08-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "be2041d108790f11",
+      "note": "two-line safe text-reader helpers in independent setup/artifact modules. Their callers own different missing-file and encoding policies; a shared helper would couple unrelated proof surfaces for an idiom-sized overlap.",
+      "reviewed_at": "2026-08-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "d5d1665aa60f65bf",
+      "note": "independent CLI-entrypoint argument and runtime setup blocks. Setup inspection and narrative tool recommendation commands need separate portable surfaces and output ownership; extraction would hide their command contracts.",
       "reviewed_at": "2026-08-25",
       "surface": "code"
     }

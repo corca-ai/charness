@@ -1,4 +1,13 @@
-# Charness Docs Index
+# Charness Docs Index (Compatibility Pointer)
+
+> Status: compatibility
+> Source of truth: [docs/index.md](./index.md)
+
+The canonical documentation index moved to [docs/index.md](./index.md). This
+file remains so existing links do not break; do not add independent entries
+here.
+
+<!--
 
 Every page under `docs/` reachable from one place, grouped by the question it
 answers. This exists because the tree had no entry point: seven pages were
@@ -123,3 +132,4 @@ and they go stale on purpose rather than being maintained forever.
   contract for the handoff chunker, including its declared trigger rule.
 - [AI/ML engineering patterns](./ai-ml-engineering-patterns.md) — the researched
   investigation behind the engineering patterns this repo adopted.
+-->

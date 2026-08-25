@@ -23,7 +23,96 @@ def test_setup_inspect_repo_flags_targeted_missing_surface(tmp_path: Path) -> No
 
     assert payload["repo_mode"] == "PARTIAL"
     assert payload["partial_kind"] == "targeted_missing_surface"
-    assert payload["missing_surfaces"] == ["operator_acceptance"]
+    assert payload["missing_surfaces"] == ["docs_index"]
+    assert payload["conditional_surfaces"]["roadmap"]["activation"] == "active ordered work is evidenced or requested"
+    assert payload["conditional_surfaces"]["operator_acceptance"]["activation"] == "a real install, deployment, or takeover path exists"
+    assert payload["conditional_surfaces"]["roadmap"]["applicability"] == "unproven — operator decision"
+
+
+def test_setup_inspect_emits_flat_wiki_approval_and_quality_owner_state(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / "docs").mkdir(parents=True)
+    (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
+    (repo / "AGENTS.md").write_text("# Agents\n", encoding="utf-8")
+    (repo / "package.json").write_text(
+        '{"name":"demo","scripts":{"lint":"eslint ."},"devDependencies":{"eslint":"1.0.0"}}\n',
+        encoding="utf-8",
+    )
+
+    payload = _run_inspect(repo)
+
+    profile = payload["profile"]
+    assert profile["id"] == "flat-wiki"
+    assert profile["approval_required"] is True
+    assert profile["plan_only"] is True
+    assert profile["approval_prompt"].startswith("Apply the flat-wiki")
+    assert profile["awiki"]["status"] == "unproven"
+    assert profile["awiki"]["command"] == "awiki lint -root docs -recursive"
+    assert "docs_index" in profile["missing_profile_surfaces"]
+    quality = payload["quality_setup"]
+    assert quality["owner_skill"] == "quality"
+    assert quality["status"] == "plan-only"
+    assert quality["tooling"]["hook_policy"]["recommendation"] == "prefer-lefthook-when-no-hook-manager"
+    assert quality["tooling"]["scope_policy"]["required"] == "staged-and-related-files"
+    assert "package.json:eslint" in quality["tooling"]["existing"]["linters"]
+    assert "bootstrap_adapter.py --repo-root . --dry-run" in quality["plan_commands"]["dry_run"]
+    assert payload["approval_plan"]["identity"].startswith("sha256:")
+
+
+def test_setup_inspect_respects_existing_husky_instead_of_recommending_replacement(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".husky").mkdir(parents=True)
+    (repo / ".husky" / "pre-commit").write_text("#!/bin/sh\nnpm test\n", encoding="utf-8")
+
+    payload = _run_inspect(repo)
+
+    policy = payload["quality_setup"]["tooling"]["hook_policy"]
+    assert payload["quality_setup"]["tooling"]["hook_manager"] == "husky"
+    assert policy["existing_manager_action"] == "preserve-and-integrate"
+
+
+def test_setup_inspect_cannot_disable_approval_in_adapter(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / ".agents" / "setup-adapter.yaml").write_text(
+        "version: 1\nrepo: demo\napproval_required: false\n",
+        encoding="utf-8",
+    )
+
+    payload = _run_inspect(repo)
+
+    assert payload["adapter"]["valid"] is False
+    assert payload["profile"]["approval_required"] is True
+    assert any("approval_required must remain true" in item["message"] for item in payload["adapter"]["warnings"])
+
+
+def test_setup_inspect_binds_nested_docs_inventory_to_approval_plan(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / "docs" / "nested").mkdir(parents=True)
+    (repo / "docs" / "nested" / "topic.md").write_text("# Topic\n", encoding="utf-8")
+
+    first = _run_inspect(repo)
+    assert "docs/nested/topic.md" in first["docs_inventory"]["nested_paths"]
+    assert first["docs_inventory"]["migration_policy"] == "preserve-existing-nested-until-explicit-approval"
+    (repo / "docs" / "nested" / "topic.md").write_text("# Changed\n", encoding="utf-8")
+    second = _run_inspect(repo)
+
+    assert first["approval_plan"]["identity"] != second["approval_plan"]["identity"]
+
+
+def test_setup_inspect_fails_closed_on_unknown_profile(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / ".agents" / "setup-adapter.yaml").write_text(
+        "version: 1\nrepo: demo\noperating_surface_profile: mystery\n",
+        encoding="utf-8",
+    )
+
+    payload = _run_inspect(repo)
+
+    assert payload["adapter"]["valid"] is False
+    assert payload["profile"]["id"] == "flat-wiki"
+    assert payload["profile"]["approval_prompt"].startswith("Apply the flat-wiki")
 
 
 def test_setup_inspect_repo_matches_default_surfaces_case_insensitively(tmp_path: Path) -> None:
@@ -31,6 +120,7 @@ def test_setup_inspect_repo_matches_default_surfaces_case_insensitively(tmp_path
     (repo / "docs").mkdir(parents=True)
     (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
     (repo / "AGENTS.md").write_text("# Agents\n", encoding="utf-8")
+    (repo / "docs" / "index.md").write_text("# Docs\n", encoding="utf-8")
     (repo / "docs" / "ROADMAP.md").write_text("# Roadmap\n", encoding="utf-8")
     (repo / "docs" / "operator-acceptance.md").write_text("# Acceptance\n", encoding="utf-8")
 
@@ -47,6 +137,7 @@ def test_setup_inspect_repo_honors_adapter_surface_overrides(tmp_path: Path) -> 
     (repo / "docs").mkdir(parents=True)
     (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
     (repo / "AGENTS.md").write_text("# Agents\n", encoding="utf-8")
+    (repo / "docs" / "index.md").write_text("# Docs\n", encoding="utf-8")
     (repo / "docs" / "master-plan.md").write_text("# Plan\n", encoding="utf-8")
     (repo / "docs" / "operator-acceptance.md").write_text("# Acceptance\n", encoding="utf-8")
     (repo / ".agents" / "setup-adapter.yaml").write_text(
@@ -68,6 +159,7 @@ def test_setup_inspect_repo_excludes_acknowledged_missing_core_surface(tmp_path:
     (repo / "docs").mkdir(parents=True)
     (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
     (repo / "AGENTS.md").write_text("# Agents\n", encoding="utf-8")
+    (repo / "docs" / "index.md").write_text("# Docs\n", encoding="utf-8")
     (repo / "docs" / "operator-acceptance.md").write_text("# Acceptance\n", encoding="utf-8")
     (repo / ".agents" / "setup-adapter.yaml").write_text(
         "\n".join(["version: 1", "repo: repo", "surfaces:", "  roadmap: null", ""]),

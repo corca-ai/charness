@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable
 
+from scripts import setup_inspect_quality_lib as quality_helpers
 from scripts.setup_agent_docs_lib import (
     FINDING_RECOMMENDATION_PRIORITIES,
     RECOMMENDATION_FINDING_TYPES,
@@ -18,11 +19,17 @@ from scripts.setup_hook_failure_visibility_lib import inspect_hook_failure_visib
 DEFAULT_SURFACES = {
     "readme": Path("README.md"),
     "agents": Path("AGENTS.md"),
+    "docs_index": Path("docs/index.md"),
     "roadmap": Path("docs/roadmap.md"),
     "operator_acceptance": Path("docs/operator-acceptance.md"),
     "handoff": Path("docs/handoff.md"),
 }
-CORE_SURFACES = ("readme", "agents", "roadmap", "operator_acceptance")
+PROFILE_SURFACES = ("readme", "agents", "docs_index")
+# Roadmap and operator acceptance are evidence-triggered additions, not setup
+# prerequisites. Keep their states in the payload for planning without making a
+# missing optional document look like an incomplete core operating surface.
+CORE_SURFACES = PROFILE_SURFACES
+CONDITIONAL_SURFACES = ("roadmap", "operator_acceptance")
 
 
 @dataclass(frozen=True)
@@ -136,12 +143,18 @@ def build_setup_inspection_payload(
     prose_wrap_state: Callable[[Path, dict[str, Any]], dict[str, object]],
     recommendation_policy: Callable[[dict[str, Any]], dict[str, Any]] | None = None,
     surface_overrides: Callable[[dict[str, Any]], dict[str, Any]],
+    operating_surface_profile: Callable[[dict[str, Any]], dict[str, object]] | None = None,
     skill_routing_payload: Callable[[Path], dict[str, Any]] | None = None,
 ) -> dict[str, object]:
     adapter_data, adapter_path, adapter_warnings = load_setup_adapter(repo_root)
     specs = _surface_specs(repo_root, surface_overrides(adapter_data))
     repo_mode = detect_repo_mode(specs)
     policy = recommendation_policy(adapter_data) if recommendation_policy is not None else {}
+    profile_config = (
+        operating_surface_profile(adapter_data)
+        if operating_surface_profile is not None
+        else {"id": "flat-wiki", "approval_required": True}
+    )
     acknowledged = set(policy.get("acknowledged", []))
     agent_docs = detect_agent_docs(repo_root, skill_routing_payload=skill_routing_payload)
     normalization = agent_docs["normalization"]
@@ -181,11 +194,38 @@ def build_setup_inspection_payload(
         "enabled": list(policy.get("enabled", [])),
         "acknowledged": sorted(acknowledged),
     }
-    return {
+    payload = {
         "repo": repo_root.name,
         "repo_mode": repo_mode,
         "partial_kind": detect_partial_kind(specs, repo_mode),
         "missing_surfaces": detect_missing_surfaces(specs),
+        "profile": {
+            "id": profile_config.get("id", "flat-wiki"),
+            "approval_required": profile_config.get("approval_required", True),
+            "profile_surfaces": {
+                surface_id: _surface_state(repo_root, specs[surface_id])
+                for surface_id in PROFILE_SURFACES
+            },
+            "missing_profile_surfaces": [
+                surface_id for surface_id in PROFILE_SURFACES if not _surface_present(specs[surface_id])
+            ],
+            "plan_only": True,
+            "approval_prompt": f"Apply the {profile_config.get('id', 'flat-wiki')} operating surface and the approved quality bootstrap plan?",
+            "awiki": quality_helpers.probe_awiki(repo_root),
+        },
+        "docs_inventory": quality_helpers.docs_inventory(repo_root),
+        "conditional_surfaces": {
+            "roadmap": {
+                **_surface_state(repo_root, specs["roadmap"]),
+                "activation": "active ordered work is evidenced or requested",
+                "applicability": "unproven — operator decision",
+            },
+            "operator_acceptance": {
+                **_surface_state(repo_root, specs["operator_acceptance"]),
+                "activation": "a real install, deployment, or takeover path exists",
+                "applicability": "unproven — operator decision",
+            },
+        },
         "adapter": {
             "found": adapter_path is not None,
             "path": adapter_path,
@@ -194,7 +234,10 @@ def build_setup_inspection_payload(
         },
         "agent_docs": agent_docs,
         "hook_failure_visibility": inspect_hook_failure_visibility(repo_root),
+        "quality_setup": quality_helpers.quality_setup_snapshot(repo_root),
         "recommendations": recommendations,
         "prose_wrap": prose_wrap_state(repo_root, adapter_data),
         "surfaces": {surface_id: _surface_state(repo_root, spec) for surface_id, spec in specs.items()},
     }
+    payload["approval_plan"] = quality_helpers.approval_plan(repo_root, payload, DEFAULT_SURFACES)
+    return payload

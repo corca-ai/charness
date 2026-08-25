@@ -1185,6 +1185,8 @@ else
   # adapter explicitly ships the contract checker (or the operator has a
   # separate proof packet).  This prevents not-packaged -> exit 0 from being
   # read as executable provenance approval.
+  # The single-quoted payload is intentionally evaluated by the inner bash.
+  # shellcheck disable=SC2016
   queue_selected "check-provenance-contract" bash -c '
     echo "status: unestablished"
     echo "proof_level: unavailable"

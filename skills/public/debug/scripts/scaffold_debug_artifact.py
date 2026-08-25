@@ -23,6 +23,7 @@ _adapter_version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
 _scaffold_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.scaffold_artifact_lib")
 _resolve_artifact_path = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.resolve_artifact_path")
 _scaffold_artifact_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.scaffold_artifact_lib")
+_followup_routing = SKILL_RUNTIME.load_local_skill_module(__file__, "debug_followup_routing")
 
 # Single-source the artifact word budget from the validator (the one authority
 # for MAX_ARTIFACT_WORDS) so the scaffold surfaces the exact ceiling the gate
@@ -72,7 +73,7 @@ def _append_placeholder_section(lines: list[str], heading: str) -> None:
     lines.extend((heading, "", "TODO", ""))
 
 
-def render_template(*, title: str, date_text: str) -> str:
+def render_template(*, title: str, date_text: str, evidence_mode: bool = False) -> str:
     lines = [f"# {title}", f"Date: {date_text}", ""]
     for heading in SECTIONS:
         if heading == "## Candidate Causes":
@@ -177,10 +178,32 @@ def render_template(*, title: str, date_text: str) -> str:
             )
             continue
         _append_placeholder_section(lines, heading)
+    if evidence_mode:
+        lines.extend(
+            [
+                "## Evidence Disposition",
+                "",
+                "- Report Identity: TODO source:id#sha256:<64 lowercase hex>",
+                "- Reported Findings: TODO non-negative integer",
+                "- Dispositioned Findings: TODO finding IDs",
+                "- Missing Findings: none",
+                "- Evidence Digest: TODO sha256:<64 lowercase hex>",
+                "- Report Source: TODO repo-relative report or fixture path",
+                "- Report Source SHA256: TODO 64 lowercase hex",
+                "",
+                "## Adversarial Verification",
+                "",
+                "<!-- Replace every TODO with a typed claim and a receipt from the execution harness. -->",
+                "- Finding: TODO-F1 | source: TODO | expected: TODO | stimulus: TODO | disposition: TODO | observed: TODO | proof: TODO | handoff: TODO | next move: TODO | receipt: TODO repo-relative receipt.json | receipt sha256: TODO",
+                "",
+            ]
+        )
     return "\n".join(lines).rstrip() + "\n"
 
 
-def validator_command(repo_root: Path, write_artifact_path: str | None = None) -> str:
+def validator_command(
+    repo_root: Path, write_artifact_path: str | None = None, *, evidence_mode: bool = False
+) -> str:
     """The command that validates THIS artifact, scoped to it when the path is known.
 
     Unscoped, this emitted `--repo-root .`, which for a corpus validator means the whole
@@ -203,6 +226,7 @@ def validator_command(repo_root: Path, write_artifact_path: str | None = None) -
         script_file=__file__,
         script_names=VALIDATOR_SCRIPT_NAMES,
         artifact_path=write_artifact_path,
+        evidence_mode=evidence_mode,
     )
 
 
@@ -230,59 +254,6 @@ def _current_pointer_symlink_target(repo_root: Path, artifact_path: str) -> str 
     return str(target) if isinstance(target, str) else None
 
 
-def _resolved_followup_record_payload(
-    repo_root: Path,
-    *,
-    adapter: dict[str, object],
-    resolved_title: str,
-    artifact_date: dt.date,
-    current_pointer_target_path: str | None,
-    reuse_subject_key: str | None = None,
-) -> dict[str, object]:
-    def _record_payload_for(title_text: str) -> dict[str, object]:
-        return _resolve_artifact_path.payload_for(
-            repo_root,
-            "debug",
-            title_text,
-            intent="record",
-            artifact_date=artifact_date,
-            adapter=adapter,
-        )
-
-    current_target = current_pointer_target_path or ""
-
-    def _usable(candidate_path: str) -> bool:
-        if candidate_path == current_target:
-            return False
-        # A candidate that already holds THIS declared subject's OPEN record is the author's
-        # own investigation, not an obstacle. Without this, resuming `x` while the pointer sits
-        # on `y` routed past the real `x` record to `x-followup`.
-        #
-        # `_resolution` is not optional here, and round 2 found why: this helper is also the
-        # finished-investigation arm, where reusing a record whose own body says
-        # `- Resolution: resolved` writes a fresh template over a completed investigation --
-        # the destructive answer, arriving through the repair for the destructive answer.
-        if (
-            reuse_subject_key is not None
-            and _scaffold_artifact_lib.record_subject_slug(candidate_path) == reuse_subject_key
-            and _resolution(repo_root / candidate_path) != "resolved"
-        ):
-            return True
-        return not (repo_root / candidate_path).exists()
-
-    candidate = _record_payload_for(resolved_title)
-    if _usable(str(candidate["write_artifact_path"])):
-        return candidate
-    for suffix in ("followup", "followup-2", "followup-3", "followup-4"):
-        candidate = _record_payload_for(f"{resolved_title} {suffix}")
-        if _usable(str(candidate["write_artifact_path"])):
-            return candidate
-    raise SystemExit(
-        "resolved current debug artifact needs a fresh dated follow-up record, but every deterministic "
-        "default slug for today already exists; rerun scaffold_debug_artifact.py with --title <specific follow-up title>"
-    )
-
-
 def invocation_subject_key(*, title: str | None, subject: str | None) -> str | None:
     """WHICH investigation this invocation is for — `debug`'s own subject key.
 
@@ -300,7 +271,13 @@ def invocation_subject_key(*, title: str | None, subject: str | None) -> str | N
     return _scaffold_artifact_lib.slugify(declared) if declared else None
 
 
-def payload_for(repo_root: Path, *, title: str | None, subject: str | None = None) -> dict[str, object]:
+def payload_for(
+    repo_root: Path,
+    *,
+    title: str | None,
+    subject: str | None = None,
+    evidence_mode: bool = False,
+) -> dict[str, object]:
     # GUARDED AT THE READ SITE. Every scaffold in this family reads its write TARGET out
     # of the adapter, so an unhonored declaration does not degrade the answer -- it
     # relocates the artifact. Measured on the real CLI at `0bcb6b227`: a repo declaring
@@ -352,7 +329,7 @@ def payload_for(repo_root: Path, *, title: str | None, subject: str | None = Non
         repo_root, write_path=current_target_path, facts=subject_facts
     )
     if _resolution(current_write_path) == "resolved" or subject_unconfirmed:
-        record_payload = _resolved_followup_record_payload(
+        record_payload = _followup_routing.resolved_followup_record_payload(
             repo_root,
             adapter=adapter,
             # The DECLARED subject names the fresh record when there is one: an author who
@@ -367,6 +344,9 @@ def payload_for(repo_root: Path, *, title: str | None, subject: str | None = Non
             # whole point is a fresh record, so reusing one by name is the wrong answer even
             # when the name matches.
             reuse_subject_key=subject_key if subject_unconfirmed else None,
+            scaffold_artifact_lib=_scaffold_artifact_lib,
+            resolve_artifact_path=_resolve_artifact_path,
+            resolution=_resolution,
         )
         for key in (
             "intent",
@@ -396,7 +376,7 @@ def payload_for(repo_root: Path, *, title: str | None, subject: str | None = Non
             "title": resolved_title,
             "artifact_role": "current_pointer",
             "current_pointer_symlink_target": _current_pointer_symlink_target(repo_root, str(payload["artifact_path"])),
-            "template": render_template(title=resolved_title, date_text=date_text),
+            "template": render_template(title=resolved_title, date_text=date_text, evidence_mode=evidence_mode),
         }
     )
     if size_budget is not None:
@@ -408,7 +388,10 @@ def payload_for(repo_root: Path, *, title: str | None, subject: str | None = Non
     # the command NAMES the artifact path, so computing it before the path is final points
     # the validator at a file nothing writes. Unscoped this was swap-insensitive by
     # accident -- it named no path at all.
-    payload["validator_command"] = validator_command(repo_root, str(payload["write_artifact_path"]))
+    payload["validator_command"] = validator_command(
+        repo_root, str(payload["write_artifact_path"]), evidence_mode=evidence_mode
+    )
+    payload["evidence_mode"] = evidence_mode
     payload.update(
         _scaffold_artifact_lib.final_subject_facts(
             invocation_subject_key=subject_key,
@@ -420,7 +403,9 @@ def payload_for(repo_root: Path, *, title: str | None, subject: str | None = Non
 
 
 def main() -> int:
-    return _scaffold_lib.emit_payload_main(payload_for, artifact_label="debug")
+    return _scaffold_lib.emit_payload_main(
+        payload_for, artifact_label="debug", supports_evidence_mode=True
+    )
 
 
 if __name__ == "__main__":

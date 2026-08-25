@@ -1,7 +1,14 @@
 # Operator Acceptance
 
-This document translates the remaining roadmap into operator-owned acceptance runs.
-Use it when you want to take over one roadmap item directly instead of asking an agent to discover the whole repo state again.
+> Status: conditional (operator takeover path)
+> Source of truth: functional checks, [handoff](./handoff.md), and the active plan
+> Last verified: 2026-08-25
+
+This document translates active work into operator-owned acceptance runs. The
+current plan of record is [north-star-overhaul-roadmap.md](./north-star-overhaul-roadmap.md).
+Use this page when you want to take over one item directly instead of asking an
+agent to rediscover the whole repo state. A consumer may add an optional
+roadmap surface when active ordered work requires it.
 Each item names the ownership seam, read-first surfaces, and acceptance bar. Restate that material in your own prompt instead of copying another embedded prompt block into chat.
 
 ## Shared Start
@@ -11,7 +18,7 @@ Run these first at the repo root:
 ```bash
 git status --short
 sed -n '1,220p' docs/handoff.md
-sed -n '1,260p' docs/roadmap.md 2>/dev/null || true
+sed -n '1,260p' docs/north-star-overhaul-roadmap.md
 ./scripts/run-quality.sh
 ```
 

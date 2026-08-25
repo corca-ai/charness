@@ -53,6 +53,26 @@ runs the activation command.
 
 ## Goal
 
+Keep this section short: outcome, boundaries, and why this goal exists. The
+goal is not the phase notebook.
+
+## Operating Principles
+
+Every new goal carries a compact operating frame near the top. When a failure
+appears, stop treating it as a transient symptom: run `debug`, identify the
+pattern and pattern of patterns with 5-whys, and record the structural repair or
+tracked follow-up. A retry may be part of evidence gathering, never the root
+cause. The goal also states that phase detail belongs in linked spec files.
+
+## Phase Specifications
+
+Each phase has one checked-in file at
+`charness-artifacts/specs/<goal-slug>/<phase-slug>/spec.md`. It must state the
+objective, in/out scope, completion criteria, exact verification method and
+receipt, dependencies, and non-claims. The goal links every phase file from
+this section; the spec is the phase's source of truth while the goal retains
+only a concise status/control-panel summary.
+
 ## Non-Goals
 
 ## Boundaries

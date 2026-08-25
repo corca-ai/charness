@@ -37,6 +37,7 @@ def _seed_normalize_repo(repo: Path, agents_text: str) -> None:
     (repo / "docs").mkdir(parents=True)
     (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
     (repo / "AGENTS.md").write_text(agents_text, encoding="utf-8")
+    (repo / "docs" / "index.md").write_text("# Docs\n", encoding="utf-8")
     (repo / "docs" / "roadmap.md").write_text("# Roadmap\n", encoding="utf-8")
     (repo / "docs" / "operator-acceptance.md").write_text("# Acceptance\n", encoding="utf-8")
 

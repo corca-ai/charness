@@ -11,8 +11,10 @@ def test_setup_init_adapter_scaffolds_review_policy_surface(tmp_path) -> None:
 
     raw = load_yaml_file(tmp_path / ".agents" / "setup-adapter.yaml")
     assert isinstance(raw, dict)
+    assert raw["operating_surface_profile"] == "flat-wiki"
+    assert raw["approval_required"] is True
     assert raw["prose_wrap_policy"] == "semantic"
-    assert raw["surfaces"]["roadmap"] == "docs/roadmap.md"
+    assert "surfaces" not in raw
     assert raw["defaults_version"] == "issue-64"
     policy = raw["policy_sources"][0]
     assert policy["path"] == "AGENTS.md"

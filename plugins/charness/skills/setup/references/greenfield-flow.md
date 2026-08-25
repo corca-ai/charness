@@ -20,13 +20,17 @@ Ask only what materially changes the first scaffold:
 If the user already answered these in the session or the repo files, do not
 re-ask them.
 
-## Expected Surfaces
+## Expected Core Surfaces
 
 - `<repo-root>/README.md`
 - `<repo-root>/AGENTS.md`
 - `CLAUDE.md` symlink to `<repo-root>/AGENTS.md`
-- `<repo-root>/docs/roadmap.md`
-- `<repo-root>/docs/operator-acceptance.md`
+- consumer-owned documentation index at `<repo-root>/docs/index.md` <!-- not vendored: consumer-repo path -->
+
+Add `<repo-root>/docs/roadmap.md` only when active ordered work is evidenced or
+requested. Add `<repo-root>/docs/operator-acceptance.md` only when a real
+install, deployment, or operator takeover path exists; neither is a default
+greenfield surface.
 
 Add separate bootstrap and uninstall docs only when the repo actually exposes
 an installable plugin, package, or operator-facing install contract.

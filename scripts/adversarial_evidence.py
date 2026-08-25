@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import re
 from pathlib import Path
 
@@ -20,12 +21,16 @@ REQUIRED_RECORD_FIELDS = (
     "proof",
     "handoff",
     "next move",
+    "receipt",
+    "receipt sha256",
 )
 PLACEHOLDERS = frozenset({"", "todo", "tbd", "missing", "n/a", "na"})
 REPORT_IDENTITY_RE = re.compile(r"^[^:\s|]+:[^|#\s]+#sha256:[0-9a-f]{64}$")
 EVIDENCE_DIGEST_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
 SOURCE_SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 PLACEHOLDER_MARKER_RE = re.compile(r"(?i)(?:\b(?:todo|tbd)\b|<[^>\n]+>)")
+RECEIPT_SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+RECEIPT_SCHEMA = "charness.adversarial-evidence.receipt.v1"
 
 
 class EvidenceValidationError(ValueError):
@@ -77,6 +82,81 @@ def _record(line: str) -> dict[str, str]:
         key, value = item.split(":", 1)
         values[key.strip().lower()] = value.strip()
     return values
+
+
+def _receipt_candidate(
+    repo_root: Path, receipt_path: str, receipt_sha256: str, *, artifact_label: str, index: int
+) -> Path:
+    receipt = Path(receipt_path)
+    if receipt.is_absolute() or ".." in receipt.parts or not receipt_path:
+        raise EvidenceValidationError(f"{artifact_label}: finding record {index} receipt must be repo-relative")
+    if not RECEIPT_SHA256_RE.fullmatch(receipt_sha256):
+        raise EvidenceValidationError(f"{artifact_label}: finding record {index} receipt sha256 is invalid")
+    candidate = (repo_root / receipt_path).resolve()
+    try:
+        candidate.relative_to(repo_root.resolve())
+    except ValueError as exc:
+        raise EvidenceValidationError(f"{artifact_label}: finding record {index} receipt escapes repo root") from exc
+    if not candidate.is_file():
+        raise EvidenceValidationError(f"{artifact_label}: finding record {index} receipt does not exist: {receipt_path}")
+    if hashlib.sha256(candidate.read_bytes()).hexdigest() != receipt_sha256:
+        raise EvidenceValidationError(f"{artifact_label}: finding record {index} receipt sha256 is stale or tampered")
+    return candidate
+
+
+def _validate_receipt_payload(
+    candidate: Path, record: dict[str, str], *, artifact_label: str, index: int
+) -> None:
+    try:
+        payload = json.loads(candidate.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise EvidenceValidationError(f"{artifact_label}: finding record {index} receipt is not valid JSON") from exc
+    if not isinstance(payload, dict) or payload.get("schema") != RECEIPT_SCHEMA:
+        raise EvidenceValidationError(f"{artifact_label}: finding record {index} receipt schema is invalid")
+    for field in ("finding", "source", "expected", "stimulus", "disposition", "observed"):
+        if payload.get(field) != record[field]:
+            raise EvidenceValidationError(f"{artifact_label}: finding record {index} receipt does not bind {field}")
+    for field in ("command", "fixture", "final_consumer"):
+        if not isinstance(payload.get(field), str) or not payload[field].strip():
+            raise EvidenceValidationError(f"{artifact_label}: finding record {index} receipt is missing {field}")
+    if payload.get("executed") is not True or payload.get("final_consumer_observed") is not True:
+        raise EvidenceValidationError(
+            f"{artifact_label}: finding record {index} receipt must assert executed final-consumer observation"
+        )
+    if not isinstance(payload.get("returncode"), int):
+        raise EvidenceValidationError(f"{artifact_label}: finding record {index} receipt returncode must be an integer")
+
+
+def _validate_receipt(
+    record: dict[str, str],
+    *,
+    repo_root: Path | None,
+    artifact_label: str,
+    index: int,
+) -> None:
+    disposition = record["disposition"].lower()
+    receipt_path = record["receipt"].strip()
+    receipt_sha256 = record["receipt sha256"].strip().lower()
+    if disposition in {"unproven", "not-applicable"}:
+        if receipt_path.lower() not in {"none", "n/a", "na"} or receipt_sha256 not in {"none", "n/a", "na"}:
+            raise EvidenceValidationError(
+                f"{artifact_label}: finding record {index} non-claim must use receipt: none and receipt sha256: none"
+            )
+        return
+    if record["proof"].lower() not in {"executable fixture", "runtime/provider roundtrip"}:
+        raise EvidenceValidationError(
+            f"{artifact_label}: {disposition} finding needs executable fixture or runtime/provider roundtrip proof"
+        )
+    if repo_root is None:
+        if receipt_path.lower() in {"none", "n/a", "na"} or not RECEIPT_SHA256_RE.fullmatch(receipt_sha256):
+            raise EvidenceValidationError(f"{artifact_label}: {disposition} finding needs a receipt path and sha256")
+        return
+    _validate_receipt_payload(
+        _receipt_candidate(repo_root, receipt_path, receipt_sha256, artifact_label=artifact_label, index=index),
+        record,
+        artifact_label=artifact_label,
+        index=index,
+    )
 
 
 def _external_source(source: str) -> bool:
@@ -138,7 +218,13 @@ def _metadata(text: str, artifact_label: str) -> tuple[int, dict[str, str | None
     return count, values
 
 
-def _records(text: str, artifact_label: str, expected_count: int) -> tuple[list[str], str, list[str]]:
+def _records(
+    text: str,
+    artifact_label: str,
+    expected_count: int,
+    *,
+    repo_root: Path | None,
+) -> tuple[list[str], str, list[str]]:
     record_lines = [line.strip() for line in _section(text, "## Adversarial Verification") if _record(line)]
     records = [_record(line) for line in record_lines]
     if len(records) != expected_count:
@@ -165,6 +251,7 @@ def _records(text: str, artifact_label: str, expected_count: int) -> tuple[list[
                 raise EvidenceValidationError(f"{artifact_label}: reproduced finding needs a debug handoff")
             if record["next move"].strip().lower() in {"none", "n/a", "na"}:
                 raise EvidenceValidationError(f"{artifact_label}: reproduced finding needs a named next move")
+        _validate_receipt(record, repo_root=repo_root, artifact_label=artifact_label, index=index)
         ids.append(record["finding"])
         dispositions.append(disposition)
     if len(set(ids)) != len(ids):
@@ -230,7 +317,7 @@ def validate(
         )
     count, values = _metadata(text, artifact_label)
     dispositioned = _ids(values["Dispositioned Findings"])
-    ids, digest, dispositions = _records(text, artifact_label, len(dispositioned))
+    ids, digest, dispositions = _records(text, artifact_label, len(dispositioned), repo_root=repo_root)
     _validate_source_binding(
         values,
         dispositions=dispositions,
@@ -250,3 +337,17 @@ def validate_or_raise(
     repo_root: Path | None = None,
 ) -> None:
     validate(text, artifact_label=artifact_label, evidence_mode=evidence_mode, repo_root=repo_root)
+
+
+def validate_for_artifact(
+    text: str,
+    *,
+    artifact_label: str,
+    evidence_mode: bool = False,
+    repo_root: Path | None = None,
+    error_cls: type[Exception] = EvidenceValidationError,
+) -> None:
+    try:
+        validate(text, artifact_label=artifact_label, evidence_mode=evidence_mode, repo_root=repo_root)
+    except EvidenceValidationError as exc:
+        raise error_cls(str(exc)) from exc

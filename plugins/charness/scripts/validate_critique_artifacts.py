@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import re
 from datetime import date
+from functools import partial
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
@@ -22,15 +23,9 @@ run_changed_artifact_validator = _artifact_validator.run_changed_artifact_valida
 run_validation_checks = _artifact_validator.run_validation_checks
 
 
-def validate_adversarial_evidence(
-    text: str, *, artifact_label: str, evidence_mode: bool = False, repo_root: Path | None = None
-) -> None:
-    try:
-        _adversarial_evidence.validate_or_raise(
-            text, artifact_label=artifact_label, evidence_mode=evidence_mode, repo_root=repo_root
-        )
-    except _adversarial_evidence.EvidenceValidationError as exc:
-        raise ValidationError(str(exc)) from exc
+validate_adversarial_evidence = partial(
+    _adversarial_evidence.validate_for_artifact, error_cls=ValidationError
+)
 file_is_prepare_packet_markdown_kind = _prepare_packet_markdown_kind.file_is_prepare_packet_markdown_kind
 
 # Cross-surface probe (#408): consulted only when --changed-ref/--changed-path is passed.

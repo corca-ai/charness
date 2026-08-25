@@ -53,6 +53,39 @@ def test_setup_skill_bootstraps_probe_surface_guidance() -> None:
     assert "local discoverability" in probe_reference
 
 
+def test_setup_skill_requires_approved_flat_wiki_quality_plan() -> None:
+    profile = (ROOT / "skills/public/setup/references/craken-like-profile.md").read_text(encoding="utf-8").lower()
+    skill_text = SETUP_SKILL.lower()
+    defaults = DEFAULT_SURFACES.lower()
+    normalization = (ROOT / "skills/public/setup/references/normalization-flow.md").read_text(encoding="utf-8").lower()
+
+    for text in (profile, defaults, normalization):
+        assert "docs/index.md" in text
+        assert "flat" in text and "wiki" in text
+        assert "explicit" in text and "approval" in text
+        assert "quality" in text
+    assert "documentation index" in skill_text
+    assert "approval" in skill_text
+    assert "prefer-lefthook-when-no-hook-manager" in profile
+    assert "preserve-and-integrate" in profile
+    assert "lint-staged" in profile
+    assert "staged/related-file" in profile
+    assert "bootstrap_adapter.py" in profile and "--dry-run" in profile
+    assert "quality owns" in profile
+
+
+def test_quality_skill_consumes_setup_state_without_claiming_green() -> None:
+    quality = QUALITY_SKILL.lower()
+
+    assert "setup handoff" in quality
+    assert "configured" in quality and "plan-only" in quality
+    assert "does not mean the repo is green" in quality
+    assert "`quality` owns" in quality
+    assert "adapter" in quality and "ratchets" in quality
+    assert "staged/related-file" in quality
+    assert "without approval" in quality
+
+
 def test_setup_default_surfaces_carry_early_quality_baseline() -> None:
     default_surfaces = DEFAULT_SURFACES
 
@@ -240,6 +273,8 @@ def test_critique_and_debug_share_the_evidence_led_adversarial_route() -> None:
     assert pattern_reference.is_file()
     assert "Finding: <stable id>" in critique_reference.read_text(encoding="utf-8")
     assert "Evidence Digest: sha256:<64 lowercase hex>" in critique_reference.read_text(encoding="utf-8")
+    assert "receipt sha256: <64 lowercase hex or `none`>" in critique_reference.read_text(encoding="utf-8")
+    assert "charness.adversarial-evidence.receipt.v1" in critique_reference.read_text(encoding="utf-8")
     assert "Report Source SHA256" in critique_reference.read_text(encoding="utf-8")
     assert "- Finding: <stable id> | source:" in critique_reference.read_text(encoding="utf-8")
     assert "Level: observed failure | local pattern | interface sibling | pattern of patterns" in pattern_reference.read_text(encoding="utf-8")

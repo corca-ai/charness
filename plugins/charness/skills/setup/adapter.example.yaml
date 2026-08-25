@@ -4,6 +4,10 @@ language: en
 output_dir: charness-artifacts/setup
 preset_id: portable-defaults
 customized_from: portable-defaults
+# The default proposal is the approval-gated flat-wiki operating surface. A
+# different profile must be named explicitly; setup never silently switches it.
+operating_surface_profile: flat-wiki
+approval_required: true
 prose_wrap_policy: semantic
 # If prose_wrap_policy is column and fixed-string source guards exist, declare
 # source_guard_matcher.normalize_whitespace: true or an explicit override.

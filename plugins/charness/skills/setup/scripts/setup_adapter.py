@@ -105,6 +105,22 @@ def _policy_sources(value: Any, warnings: list[dict[str, str]]) -> list[dict[str
 
 def _validate_recommendation_fields(adapter_data: dict[str, Any]) -> list[dict[str, str]]:
     warnings: list[dict[str, str]] = []
+    profile = adapter_data.get("operating_surface_profile", "flat-wiki")
+    if profile != "flat-wiki":
+        warnings.append(
+            {
+                "type": "unsupported_operating_surface_profile",
+                "message": "operating_surface_profile must be `flat-wiki`",
+            }
+        )
+    approval_required = adapter_data.get("approval_required", True)
+    if approval_required is not True:
+        warnings.append(
+            {
+                "type": "invalid_adapter_field",
+                "message": "approval_required must remain true for setup mutations",
+            }
+        )
     defaults_version = adapter_data.get("defaults_version", adapter_data.get("recommendation_defaults_version"))
     if defaults_version is not None and not isinstance(defaults_version, str):
         warnings.append(
@@ -120,6 +136,14 @@ def _validate_recommendation_fields(adapter_data: dict[str, Any]) -> list[dict[s
         _string_list(recommendation_sets.get("enabled"), "recommendation_sets.enabled", warnings)
         _acknowledged_ids(recommendation_sets.get("acknowledged"), "recommendation_sets.acknowledged", warnings)
     return warnings
+
+
+def operating_surface_profile(adapter_data: dict[str, Any]) -> dict[str, object]:
+    profile = adapter_data.get("operating_surface_profile", "flat-wiki")
+    return {
+        "id": profile if profile == "flat-wiki" else "flat-wiki",
+        "approval_required": True,
+    }
 
 
 def recommendation_policy(adapter_data: dict[str, Any]) -> dict[str, Any]:

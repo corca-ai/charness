@@ -63,7 +63,7 @@ def run_setup_inspect_states(
                 "setup targeted partial inspect: unexpected partial_kind "
                 f"{targeted.get('partial_kind')!r}"
             )
-        if targeted.get("missing_surfaces") != ["operator_acceptance"]:
+        if targeted.get("missing_surfaces") != ["docs_index"]:
             raise error_type(
                 "setup targeted partial inspect: unexpected missing_surfaces "
                 f"{targeted.get('missing_surfaces')!r}"

@@ -178,7 +178,7 @@ README is the first-touch orientation surface. Deeper contracts live in the
 docs and artifacts that own them:
 
 - every docs page, grouped by the question it answers:
-  [docs/README.md](https://github.com/corca-ai/charness/blob/main/docs/README.md)
+  [docs/index.md](https://github.com/corca-ai/charness/blob/main/docs/index.md)
 - CLI command reference: [docs/generated/cli-reference.md](https://github.com/corca-ai/charness/blob/main/docs/generated/cli-reference.md)
 - workflow route examples: [docs/workflow-routes.md](https://github.com/corca-ai/charness/blob/main/docs/workflow-routes.md)
 - repo-local development and dogfood paths:
