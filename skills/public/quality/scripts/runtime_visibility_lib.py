@@ -10,9 +10,10 @@ from typing import Any
 # that (it hard-failed a fresh machine's first run and permanently failed six
 # legitimately conditional labels, with `--no-verify` as the only escape). The
 # decidable cause -- a label the runner no longer names at all -- is decidable only
-# against a specific runner, so no gate installed WITH this library can decide it: a
-# consumer's label universe is whatever its own runner declares, and a reader that
-# only understands one runner would either refuse every consumer budget or no-op.
+# against a specific runner. The optional `runtime_budget_universe` command lets a
+# consumer provide that runner-owned answer without making this library understand
+# npm, Make, workflow, or custom-dispatcher syntax; absent the command, the report
+# remains non-blocking and explicit about the gap.
 # What was missing here was neither a refusal nor another warning line: it was the
 # COUNT. The reason string says exactly that and names no gate, because naming one
 # would point a consumer at a file their install does not contain -- which is the
@@ -23,7 +24,7 @@ UNENFORCEABLE_BUDGET_ADVISORY_REASON = (
     "absence alone does not distinguish a fresh machine from a conditional gate that "
     "did not run from an abandoned bar, so this is a COUNT and not a verdict -- "
     "reconciling budgeted labels against the labels your runner can actually queue "
-    "is a repo-owned check, and this report does not perform it"
+    "requires the optional runtime_budget_universe command when this report is used"
 )
 
 

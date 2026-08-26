@@ -19,8 +19,9 @@ here. `dead-code-advisory` is the live example: budgeted, spelled in the runner,
 and queued only under `CHARNESS_QUALITY_DEAD_CODE=1`. `runtime_budget_intent`
 now records the adapter's declared trigger for that class and exposes it as an
 execution non-claim, but it cannot prove that the trigger is satisfiable or that
-the label ran. The consumer-installed skill still needs its own runner-universe
-reader before this source gate can make that claim for consumer repositories.
+the label ran. The consumer-installed skill can reconcile membership when its
+adapter supplies the runner-owned `runtime_budget_universe` command; this
+source gate remains the Charness-specific static reader.
 
 Why membership rather than the recorded sample window: a previous repair keyed on
 sample history was built, measured defective and REVERTED. It hard-failed a fresh
@@ -44,9 +45,10 @@ into consumer repos; this gate lives in `scripts/`, so it reaches plugin hosts
 through the `plugins/charness/` mirror but is never installed as part of the
 quality skill a consumer runs. The distinction matters because a consumer's label universe is
 whatever ITS runner declares -- an adapter `command_timing_log`, npm scripts, a
-Makefile -- and shipping a universe reader that only understands `run-quality.sh`
-would either refuse every consumer budget or no-op silently. Consumers therefore
-still carry #546's defect. That is a stated gap, not a claim of coverage.
+Makefile -- and teaching the installed skill one runner's syntax would either
+refuse every other consumer budget or no-op silently. The installed skill instead
+consumes the adapter's runner-neutral one-label-per-line command when a consumer
+opts in; an absent command remains an explicit non-claim, not a claim of coverage.
 """
 
 from __future__ import annotations

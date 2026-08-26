@@ -81,6 +81,7 @@ def apply_runtime_fields(data: dict[str, Any], validated: dict[str, Any], errors
         ("runtime_budgets", runtime_budgets),
         ("runtime_budget_profiles", runtime_budget_profiles),
         ("runtime_budget_intent", runtime_budget_intent),
+        ("runtime_budget_universe", runtime_budget_universe),
         ("startup_probes", startup_probes),
         ("command_timing_log", command_timing_log),
         ("quality_phases", quality_phases),
@@ -112,6 +113,19 @@ def runtime_budgets(value: Any, errors: list[str]) -> dict[str, int] | None:
         else:
             validated[label] = raw
     return validated
+
+
+def runtime_budget_universe(value: Any, errors: list[str]) -> dict[str, Any] | None:
+    """Validate the shape of the optional consumer-owned label lister."""
+    if value is None:
+        return None
+    if not isinstance(value, dict):
+        errors.append("runtime_budget_universe must be a mapping")
+        return None
+    command = value.get("command", "")
+    if not isinstance(command, str):
+        errors.append("runtime_budget_universe.command must be a string")
+    return {"command": command}
 
 
 def _runtime_profile_id(value: Any, field: str, errors: list[str]) -> str | None:

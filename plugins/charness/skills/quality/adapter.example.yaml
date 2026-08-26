@@ -70,6 +70,11 @@ runtime_budget_profiles: {}
 #     dead-code-advisory: "QUALITY_DEAD_CODE=1"
 #   external:
 #     consumer-gate: "runs only in the consuming repository"
+# Optional for consumers whose runner can expose its known runtime labels. The
+# command is trusted repo-owned configuration and must print one label per line.
+# An absent command keeps this reconciliation advisory/inert.
+# runtime_budget_universe:
+#   command: ./scripts/list-quality-labels.sh
 # Optional: ingest an existing per-command timing log as a runtime sample source
 # (inert when omitted). See references/adapter-contract.md.
 # command_timing_log:

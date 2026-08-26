@@ -159,6 +159,26 @@ def test_runtime_budget_intent_helper_handles_none_and_malformed_groups() -> Non
     assert any("unexpected is not a recognized" in error for error in errors)
 
 
+def test_runtime_budget_universe_validator_keeps_the_consumer_command_shape() -> None:
+    errors: list[str] = []
+    result = ADAPTER_VALIDATORS.runtime_budget_universe(
+        {"command": "./scripts/list-quality-labels.sh"},
+        errors,
+    )
+
+    assert errors == []
+    assert result == {"command": "./scripts/list-quality-labels.sh"}
+
+    errors = []
+    result = ADAPTER_VALIDATORS.runtime_budget_universe({"command": 7}, errors)
+    assert result == {"command": 7}
+    assert errors == ["runtime_budget_universe.command must be a string"]
+
+    errors = []
+    assert ADAPTER_VALIDATORS.runtime_budget_universe("broken", errors) is None
+    assert errors == ["runtime_budget_universe must be a mapping"]
+
+
 def test_adapter_validators_adds_its_sibling_directory_for_standalone_load(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

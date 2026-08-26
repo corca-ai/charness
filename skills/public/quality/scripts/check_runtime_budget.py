@@ -37,7 +37,13 @@ def summarize(report: dict) -> dict:
         "runtime_profile": report.get("runtime_profile"),
         "budgets_configured": report.get("budgets_configured"),
         "commands_observed": report.get("commands_observed"),
-        "status": "violations" if violations else "ok",
+        "status": (
+            "configuration-error"
+            if report.get("profile_config_errors")
+            else "violations"
+            if violations
+            else "ok"
+        ),
         "checked_status_counts": {
             "ok": sum(1 for item in checked if item.get("status") == "ok"),
             "other": sum(1 for item in checked if item.get("status") != "ok"),
@@ -59,6 +65,7 @@ def summarize(report: dict) -> dict:
     summary.update(bounded_list(report, "missing_samples"))
     summary["unenforceable_budgets"] = report.get("unenforceable_budgets", {})
     summary["advisory_contracts"] = report.get("advisory_contracts", {})
+    summary["runtime_budget_universe"] = report.get("runtime_budget_universe", {})
     return summary
 
 

@@ -125,6 +125,7 @@ def infer_quality_defaults(repo_root: Path) -> dict[str, Any]:
         "runtime_budgets": {},
         "runtime_budget_profiles": {},
         "runtime_budget_intent": {"always": [], "conditional": {}, "external": {}},
+        "runtime_budget_universe": {},
         "command_timing_log": {},
         "test_file_discovery": {"command": "", "patterns": [], "patterns_mode": "extend"},
         "lint_ignore_discovery": {"directives": []},

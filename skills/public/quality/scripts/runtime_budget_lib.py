@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from runtime_budget_sizing_lib import suggested_bar_ms
+from runtime_budget_universe_lib import read_for_adapter as read_budget_universe
 from runtime_profile_lib import profile_budgets, profile_commands, selected_runtime_profile
 from runtime_timing_log_lib import evaluate_timing_log
 from runtime_visibility_lib import (
@@ -236,6 +237,8 @@ def evaluate(
     adapter_data = adapter["data"]
     selected_profile = selected_runtime_profile(adapter_data, runtime_profile)
     budgets, profile_config_errors = profile_budgets(adapter_data, selected_profile)
+    runtime_budget_universe = read_budget_universe(repo_root, adapter_data)
+    profile_config_errors = list(profile_config_errors) + runtime_budget_universe["errors"]
     signals_path = repo_root / SIGNALS_PATH
     smoothing_path = repo_root / SMOOTHING_PATH
     signals = load_signals(repo_root)
@@ -300,6 +303,7 @@ def evaluate(
         "adapter_path": adapter.get("path"),
         "runtime_profile": selected_profile,
         "profile_config_errors": profile_config_errors,
+        "runtime_budget_universe": runtime_budget_universe,
         "budgets_configured": len(budgets),
         "checked": checked,
         "violations": violations,

@@ -242,6 +242,24 @@ green result never means that an opt-in or mode-specific label was observed.
 Omit the field only when the adapter has no runtime budgets, or accept the
 resulting warning while migrating an older consumer adapter.
 
+`runtime_budget_universe` is the optional consumer boundary for the other half
+of this contract: Charness cannot derive labels from a consumer's npm scripts,
+Makefile, workflow, or custom dispatcher. When present, its trusted repo-owned
+`command` must print the runner's known runtime labels, one label per line. The
+runtime-budget reader compares that result with the union of every top-level and
+profile budget block. A command failure, empty/duplicate output, or budgeted
+label missing from the returned universe is an unestablished/mismatch error;
+unbudgeted labels are reported as context, not as a new gate. If the field is
+absent, the reader remains non-blocking and reports `not-declared`, so old
+consumers do not acquire a false red or a false green. This command proves
+membership only; `runtime_budget_intent.conditional` remains the explicit
+`execution_proven: false` non-claim for labels that may not run.
+
+```yaml
+runtime_budget_universe:
+  command: <repo-root>/scripts/list-quality-labels.sh
+```
+
 `<profile>.<regime>` profiles are evidence, not budget bases. No automatic path
 selects one for enforcement — the regime is applied by the recorder only, never by
 profile selection — so a regime profile accumulating samples with no `budgets`
