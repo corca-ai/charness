@@ -21,6 +21,7 @@ _AUTHZ = _load_local("issue_closeout_authorization")
 _consolidated = _load_local("issue_consolidated_closeout")
 _consolidation_readback = _load_local("issue_consolidation_readback")
 _state_readback = _load_local("issue_state_readback")
+_goal_run_guard = _load_local("issue_goal_run_guard")
 
 GH_COMMENT_DEFAULT = [
     "issue",
@@ -49,6 +50,15 @@ GH_VIEW_DEFAULT = [
     "{number}",
     "--json",
     "{json_fields}",
+]
+GH_VIEW_TARGET_DEFAULT = [
+    "issue",
+    "view",
+    "--repo",
+    "{repo}",
+    "{number}",
+    "--json",
+    "number,state,url,body",
 ]
 
 COMMENT_PLACEHOLDERS: frozenset[str] = frozenset({"repo", "number", "body_file", "reason"})
@@ -115,6 +125,47 @@ def _refuse_completed_consolidation(classification: str, reason: str) -> None:
         )
 
 
+def _refuse_goal_run_target(
+    *, repo: str, number: int, backend: dict[str, Any]
+) -> None:
+    """Read the target body before generic close can emit any side effect."""
+    target_view_argv = _resolve_op(
+        backend,
+        "view",
+        GH_VIEW_TARGET_DEFAULT,
+        VIEW_PLACEHOLDERS,
+        required=frozenset({"repo", "number"}),
+        repo=repo,
+        number=str(number),
+        json_fields="number,state,url,body",
+    )
+    target_result = _run_backend(target_view_argv)
+    if target_result.returncode != 0:
+        raise RuntimeError(
+            "target issue body readback failed; no comment or close was attempted: "
+            f"view_exit={target_result.returncode} "
+            f"view_stderr={target_result.stderr.strip()!r}"
+        )
+    try:
+        target_state = json.loads(target_result.stdout)
+    except Exception as exc:
+        raise RuntimeError(f"target issue body readback returned invalid JSON: {exc}") from exc
+    require_exact_issue_identity(
+        target_state,
+        expected_repo=repo,
+        expected_number=number,
+        context="target issue body readback",
+    )
+    _goal_run_guard.refuse_generic_close(target_state.get("body"), context="target issue body")
+
+
+def _check_goal_run_target(
+    *, repo: str, number: int, backend: dict[str, Any], authorized: bool
+) -> None:
+    if not authorized:
+        _refuse_goal_run_target(repo=repo, number=number, backend=backend)
+
+
 def evaluate_close_comment_carrier(
     repo: str,
     number: int,
@@ -166,7 +217,7 @@ def evaluate_close_comment_carrier(
         ),
         fetch=lambda dest: _state_readback.view_issue_state(
             repo_root, repo=repo, number=dest, backend=backend,
-            json_fields="number,state,url,body",
+            json_fields="number,state,url",
         ),
         applies=classification == _consolidated.CLASSIFICATION,
         expected_repo=repo,
@@ -194,6 +245,7 @@ def close_with_comment(
     backend: dict[str, Any] | None = None,
     reason: str = "completed",
     manual_target_declaration: str | None = None,
+    goal_run_authorized: bool = False,
 ) -> dict[str, Any]:
     backend = backend or {"id": "gh", "binary": "gh", "commands": None}
     # Ahead of the body read, where it has always been: a caller that asked for
@@ -202,6 +254,8 @@ def close_with_comment(
     if not body_file.is_file():
         raise RuntimeError(f"close-comment body file not found: {body_file}")
     body = body_file.read_text(encoding="utf-8")
+    if not goal_run_authorized:
+        _goal_run_guard.refuse_generic_close(body, context="close carrier")
     floor_report = evaluate_close_comment_carrier(
         repo, number, body,
         repo_root=repo_root, classification=classification, backend=backend,
@@ -279,6 +333,12 @@ def close_with_comment(
             expected_number=number,
             context="pre-mutation issue readback",
         )
+    _check_goal_run_target(
+        repo=repo,
+        number=number,
+        backend=backend,
+        authorized=goal_run_authorized,
+    )
     comment_result = _run_backend(comment_argv)
     if comment_result.returncode != 0:
         raise RuntimeError(

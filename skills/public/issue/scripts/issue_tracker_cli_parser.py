@@ -44,6 +44,41 @@ def register_subparsers(
     )
     preflight.set_defaults(func=handlers["command_tracker_preflight"])
 
+    goal_preflight = subparsers.add_parser(
+        "goal-run-preflight", help="Check the complete provider closure for one Goal Run plan"
+    )
+    goal_preflight.add_argument("--repo", required=True, help="Goal Run repository in owner/repo form")
+    goal_preflight.add_argument("--number", type=int, required=True, help="Goal Run parent issue number")
+    goal_preflight.add_argument("--plan-file", type=Path, required=True, help="File-backed Goal Run plan")
+    goal_preflight.add_argument("--repo-root", type=Path, default=cwd_default, help="Repo root")
+    goal_preflight.set_defaults(func=handlers["command_goal_run_preflight"])
+
+    goal_read = subparsers.add_parser(
+        "goal-run-read", help="Read one Goal Run parent and its exact real child graph"
+    )
+    goal_read.add_argument("--repo", required=True, help="Goal Run repository in owner/repo form")
+    goal_read.add_argument("--number", type=int, required=True, help="Goal Run parent issue number")
+    goal_read.add_argument("--repo-root", type=Path, default=cwd_default, help="Repo root")
+    goal_read.set_defaults(func=handlers["command_goal_run_read"])
+
+    goal_apply = subparsers.add_parser(
+        "goal-run-apply", help="Apply one file-backed Goal Run provider primitive"
+    )
+    goal_apply.add_argument("--repo", required=True, help="Goal Run repository in owner/repo form")
+    goal_apply.add_argument("--number", type=int, required=True, help="Goal Run parent issue number")
+    goal_apply.add_argument("--operation-file", type=Path, required=True, help="One provider operation")
+    goal_apply.add_argument("--repo-root", type=Path, default=cwd_default, help="Repo root")
+    goal_apply.set_defaults(func=handlers["command_goal_run_apply"])
+
+    goal_close = subparsers.add_parser(
+        "goal-run-close", help="Close a Goal Run only after exact guarded proof"
+    )
+    goal_close.add_argument("--repo", required=True, help="Goal Run repository in owner/repo form")
+    goal_close.add_argument("--number", type=int, required=True, help="Goal Run parent issue number")
+    goal_close.add_argument("--proof-file", type=Path, required=True, help="File-backed guarded-close proof")
+    goal_close.add_argument("--repo-root", type=Path, default=cwd_default, help="Repo root")
+    goal_close.set_defaults(func=handlers["command_goal_run_close"])
+
     update = subparsers.add_parser("update", help="Replace an issue body and verify exact readback")
     update.add_argument("--repo", required=True, help="Target repository in owner/repo form")
     update.add_argument("--number", type=int, required=True, help="Issue number to update")

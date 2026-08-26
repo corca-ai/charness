@@ -19,6 +19,8 @@ TRACKER = _load_local("issue_tracker")
 TRACKER_OBSERVATION = _load_local("issue_tracker_observation")
 PARSER = _load_local("issue_tracker_cli_parser")
 PREFLIGHT = _load_local("issue_tracker_cli_preflight")
+GOAL_RUN = _load_local("issue_goal_run")
+GOAL_RUN_CLOSE = _load_local("issue_goal_run_close")
 _render_yaml = _load_local("issue_yaml_output", "issue_tracker_cli_yaml").render_yaml
 
 
@@ -289,6 +291,22 @@ def command_remove_sub_issue(args: argparse.Namespace) -> int:
     )
 
 
+def command_goal_run_preflight(args: argparse.Namespace) -> int:
+    return GOAL_RUN.command_preflight(args, resolve_backend=_resolve_backend, emit=emit)
+
+
+def command_goal_run_read(args: argparse.Namespace) -> int:
+    return GOAL_RUN.command_read(args, resolve_backend=_resolve_backend, emit=emit)
+
+
+def command_goal_run_apply(args: argparse.Namespace) -> int:
+    return GOAL_RUN.command_apply(args, resolve_backend=_resolve_backend, emit=emit)
+
+
+def command_goal_run_close(args: argparse.Namespace) -> int:
+    return GOAL_RUN_CLOSE.command_close(args, resolve_backend=_resolve_backend, emit=emit)
+
+
 def register_subparsers(
     subparsers: argparse._SubParsersAction[argparse.ArgumentParser], cwd_default: Path
 ) -> None:
@@ -302,5 +320,9 @@ def register_subparsers(
             "command_list_sub_issues": command_list_sub_issues,
             "command_add_sub_issue": command_add_sub_issue,
             "command_remove_sub_issue": command_remove_sub_issue,
+            "command_goal_run_preflight": command_goal_run_preflight,
+            "command_goal_run_read": command_goal_run_read,
+            "command_goal_run_apply": command_goal_run_apply,
+            "command_goal_run_close": command_goal_run_close,
         },
     )
