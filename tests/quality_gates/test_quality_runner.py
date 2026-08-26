@@ -271,6 +271,32 @@ def test_run_quality_can_reach_the_seed_budget_escape_hatch(
     assert "--repo-root" in argv
 
 
+def test_run_quality_routes_runtime_budget_overruns_to_advisory_path(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    write_executable(
+        repo / "skills" / "public" / "quality" / "scripts" / "check_runtime_budget.py",
+        "\n".join(
+            [
+                "#!/usr/bin/env python3",
+                "import sys",
+                "assert '--advisory' in sys.argv",
+                "print('ADVISORY: runtime budget exceeded: pytest recent median 30000ms (budget 22000ms)')",
+                "",
+            ]
+        ),
+    )
+    env["CHARNESS_QUALITY_LABELS"] = "check-runtime-budget"
+
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
+
+    assert result.returncode == 0, result.stderr
+    assert "PASS check-runtime-budget" in result.stdout
+    assert "ADVISORY: runtime budget exceeded" in result.stdout
+    assert_quality_receipt(repo, result, status="pass", passed=1, failed=0)
+
+
 def test_run_quality_passes_expanded_targets_to_test_completeness(
     tmp_path: Path, seeded_quality_runner_repo: Path
 ) -> None:

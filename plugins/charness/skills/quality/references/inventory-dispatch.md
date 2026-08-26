@@ -126,8 +126,10 @@ feedback, but they should not become the only map from a small behavior change
 to the tests that prove it.
 
 When a hot spot becomes the standing single dominator, define adapter-owned
-`runtime_budgets` or `runtime_budget_profiles`; budgets should fail on
-recent-median drift and report latest-sample spikes separately.
+`runtime_budgets` or `runtime_budget_profiles`; use a blocking check only when
+latency is part of correctness, otherwise pass `--advisory` so recent-median
+drift remains visible without blocking delivery. Report latest-sample spikes
+separately.
 
 Runtime review covers file/process/startup cost, runner isolation/process mode,
 duplicate broad discovery/collection, broad scanner prefiltering, the

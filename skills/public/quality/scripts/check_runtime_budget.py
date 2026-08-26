@@ -102,6 +102,11 @@ def main() -> int:
         help="Named machine/runner profile to enforce. Defaults to CHARNESS_RUNTIME_PROFILE or adapter default.",
     )
     parser.add_argument(
+        "--advisory",
+        action="store_true",
+        help="Report median budget violations without failing; configuration errors still fail.",
+    )
+    parser.add_argument(
         "--suggest-budgets",
         action="store_true",
         help="Print a paste-ready runtime_budget_profiles block derived from this profile's recorded samples, then exit.",
@@ -156,12 +161,14 @@ def main() -> int:
     if report["violations"]:
         for v in report["violations"]:
             print(
-                "runtime budget exceeded: "
+                ("ADVISORY: " if args.advisory else "")
+                + "runtime budget exceeded: "
                 f"{v['label']} recent median {v['median_recent_elapsed_ms']}ms "
                 f"(latest {v['latest_elapsed_ms']}ms, budget {v['budget_ms']}ms)",
                 file=sys.stderr,
             )
-        return 1
+        if not args.advisory:
+            return 1
     return 0
 
 

@@ -258,6 +258,53 @@ def test_runtime_budget_gate_fails_when_over_budget(tmp_path: Path) -> None:
     assert "exceeded" in plain_result.stderr.lower()
 
 
+def test_runtime_budget_gate_can_report_over_budget_as_advisory(tmp_path: Path) -> None:
+    signals = {"commands": {"pytest": {"latest": {"elapsed_ms": 30000, "status": "pass"}}}}
+    repo = seed_runtime_budget_repo(tmp_path, budgets={"pytest": 22000}, signals=signals)
+
+    result = run_script(
+        SCRIPT,
+        "--repo-root",
+        str(repo),
+        "--detail",
+        "--runtime-profile",
+        "default",
+        "--advisory",
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert yaml.safe_load(result.stdout)["violations"] == [
+        {
+            "label": "pytest",
+            "budget_ms": 22000,
+            "median_recent_elapsed_ms": 30000,
+            "latest_elapsed_ms": 30000,
+        }
+    ]
+    assert "ADVISORY: runtime budget exceeded" in result.stderr
+
+
+def test_runtime_budget_advisory_does_not_hide_profile_configuration_errors(tmp_path: Path) -> None:
+    repo = seed_runtime_budget_repo(
+        tmp_path,
+        budgets={"pytest": 22000},
+        budget_profiles={"ci": {"budgets": {"pytest": 54000}}},
+        signals={"profiles": {}},
+    )
+
+    result = run_script(
+        SCRIPT,
+        "--repo-root",
+        str(repo),
+        "--runtime-profile",
+        "missing-profile",
+        "--advisory",
+    )
+
+    assert result.returncode == 1
+    assert "not configured in runtime_budget_profiles" in result.stderr
+
+
 def test_runtime_budget_gate_reports_latest_spike_without_failing(tmp_path: Path) -> None:
     signals = {
         "commands": {

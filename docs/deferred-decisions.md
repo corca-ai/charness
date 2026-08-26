@@ -1015,40 +1015,27 @@ reopen trigger fires.
   carries a 1795ms bar on the 36-CPU profile — roughly 19x, of which ~1.1s is python
   startup plus scheduling contention against the other ~90 gates. Should the sample
   measure the gate's own work instead?
-- Current choice: **Defer — keep wall-clock samples and re-level the bars.** The bars in
-  [quality-adapter.yaml](../.agents/quality-adapter.yaml) are derived by the block's own
-  stated convention (1.4x the worst observed in a recent window) and re-levelled when a
-  bar starts refusing correct runs. This preserves the regression defence — a footprint
-  that genuinely grew still blows the bar — while accepting that the bar is calibrated
-  against the runner's fan-out rather than against the check.
-- Why now: `#580` recorded the mismatch for one label and was re-levelled 1000 → 1795 on
-  2026-08-10, which fixed the blocking half. The adapter comment beside that number said
-  the deeper defect "is tracked separately"; the separate tracker was `#580` itself, so
-  closing it would have left a checked-in comment pointing at nothing. This entry is that
-  destination.
-- Why deferral is right at the time: the class is wider than one label and the fix is
-  structural. Sibling bars sit in the same shape and are unmeasured against it —
-  `charness-version: 500` against ~135ms samples, `check-inventory-declaration-coverage:
-  500` against ~80-160ms samples. Measuring per-gate CPU or isolated time would change
-  what every bar in four profile blocks means and would need all of them re-derived; no
-  *runtime budget* bar is currently red, so nothing forces that now. Regenerate that fact
-  with `python3 skills/public/quality/scripts/check_runtime_budget.py --repo-root .
-  --detail` (2026-08-10 on `local-linux-x86_64-36cpu`: 28 budgets, `missing_samples: []`,
-  `violations: []`, exit 0). Other quality gates may be red independently; this sentence
-  is only about the budget bars.
-- Non-claims: the mismatch is **not** fixed. The bar still grades fan-out, and the
-  self-sustaining feedback `#580` described (the recorded median is whatever the
-  contended lane produces) is unchanged in kind — it is currently below the bar, not
-  broken. The re-level was validated only on `local-linux-x86_64-36cpu`; the 4-core and
-  aarch64 blocks carry different numbers and were not measured. The sibling bars named
-  above were confirmed to be in the same shape but were not re-derived.
+- Current choice: **Keep wall-clock samples as telemetry, but do not block local push or
+  release on a timing violation.** `check_runtime_budget.py` remains blocking by
+  default for an explicit owner invocation; `run-quality.sh` passes `--advisory` so a
+  recent-median overrun stays visible without rejecting an otherwise correct change.
+  Adapter, profile, and label-universe configuration errors remain blocking.
+- Why now: the #668 measurements showed that the value being graded is dominated by
+  `run-quality.sh` contention, not by the standing test set. A 12% reduction in test
+  CPU bought 0.6% of in-gate wall time, and the same tree changed from passing to
+  failing with unrelated processes on the host. Speed is an operability signal; it is
+  not a correctness claim that should prevent delivery.
+- Non-claims: the mismatch is **not** fixed. The bar still grades fan-out, and no CPU
+  time or contention-normalized metric was introduced. The 4-core and aarch64 profile
+  values were not re-derived. Advisory timing output is not evidence that a release or
+  hosted run is healthy.
 - Impact surfaces: [quality-adapter.yaml](../.agents/quality-adapter.yaml) (four
   `runtime_budgets` blocks), [record_quality_runtime.py](../scripts/record_quality_runtime.py),
   [runtime_budget_lib.py](../skills/public/quality/scripts/runtime_budget_lib.py),
   and [run-quality.sh](../scripts/run-quality.sh)'s concurrent queue.
-- Reopen trigger: a bar that cannot be re-levelled without hiding a real regression; or a
-  second gate whose bar exceeds its own work by an order of magnitude and starts
-  false-redding; or per-gate isolated timing becoming available in the runner.
+- Reopen trigger: a real correctness or safety decision becomes dependent on latency;
+  a machine-independent timing metric becomes available; or an owner explicitly
+  chooses to introduce a separately scoped performance SLO.
 
 ### D55. Should the release lane force-apply the resolution-critique floor the way it force-applies the behavioral-verdict floor?
 

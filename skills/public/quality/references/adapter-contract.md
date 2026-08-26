@@ -174,9 +174,13 @@ class that should be selected without an environment override.
 `runtime_budgets` is the backward-compatible default-profile mapping of
 standing-gate label → max elapsed milliseconds. Labels must match the labels
 recorded in `.charness/quality/runtime-signals.json` by the standing gate
-runner. Add `$SKILL_DIR/scripts/check_runtime_budget.py` to the standing gate to fail the
-run when the recent median exceeds the budget. A single latest sample above
-budget is reported as a spike when the recent median is still inside budget.
+runner. Add `$SKILL_DIR/scripts/check_runtime_budget.py` to the standing gate to
+fail the run when the recent median exceeds the budget. If runtime is an
+operability signal rather than a correctness condition, pass `--advisory`: it
+keeps the measurement and visible violation but exits successfully for timing
+violations. Adapter/profile/universe configuration errors still fail in
+advisory mode. A single latest sample above budget is reported as a spike when
+the recent median is still inside budget.
 Labels with no recorded sample yet are warnings, not failures, so a budget can
 be defined before its first run. Omit the field entirely (or leave the mapping
 empty) only as an explicit opt-out; runtime review helpers report that as weak
