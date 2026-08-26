@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import runpy
-import sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -36,8 +35,7 @@ def build_items(repo_name: str, _args: object) -> list[tuple[str, object]]:
 
 
 def main() -> None:
-    output = run_init_adapter(default_output=Path(".agents/hitl-adapter.yaml"), build_items=build_items)
-    sys.stdout.write(f"{output}\n")
+    run_init_adapter(default_output=Path(".agents/hitl-adapter.yaml"), build_items=build_items)
 
 
 if __name__ == "__main__":

@@ -15,6 +15,9 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+import yaml
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 INIT_ENTRYPOINT = REPO_ROOT / "skills/public/impl/scripts/init_adapter.py"
 RESOLVE_ENTRYPOINT = REPO_ROOT / "skills/public/impl/scripts/resolve_adapter.py"
@@ -50,9 +53,9 @@ def _load_init_adapter_lib():
     return module
 
 
-def _run(entrypoint: Path, repo: Path) -> subprocess.CompletedProcess[str]:
+def _run(entrypoint: Path, repo: Path, *extra: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
-        [sys.executable, str(entrypoint), "--repo-root", str(repo)],
+        [sys.executable, str(entrypoint), "--repo-root", str(repo), *extra],
         cwd=repo,
         capture_output=True,
         text=True,
@@ -150,3 +153,128 @@ def test_shared_init_boundary_skips_only_resolver_valid_existing_state(tmp_path:
     assert result == adapter
     assert adapter.read_bytes() == original
     assert "unchanged" in capsys.readouterr().out
+
+
+def test_shared_init_boundary_reports_dry_run_without_writing(tmp_path: Path) -> None:
+    result = _run(INIT_ENTRYPOINT, tmp_path, "--dry-run")
+
+    assert result.returncode == 0, result.stderr
+    assert not (tmp_path / ADAPTER_PATH).exists()
+    receipt = yaml.safe_load(result.stdout)
+    assert receipt == {
+        "kind": "charness.adapter-bootstrap/v1",
+        "skill_id": "impl",
+        "path": str(tmp_path / ADAPTER_PATH),
+        "relative_path": ".agents/impl-adapter.yaml",
+        "state": "absent",
+        "status": "would-initialize",
+        "ok": True,
+        "dry_run": True,
+        "force": False,
+        "mutation_invoked": False,
+        "before_sha256": None,
+        "generated_sha256": receipt["generated_sha256"],
+        "reason": "adapter is absent",
+        "next_action": "rerun without --dry-run to initialize the adapter",
+    }
+
+
+def test_shared_init_boundary_emits_one_idempotent_receipt(tmp_path: Path) -> None:
+    first = _run(INIT_ENTRYPOINT, tmp_path)
+    assert first.returncode == 0, first.stderr
+    first_receipt = yaml.safe_load(first.stdout)
+    assert first_receipt["state"] == "absent"
+    assert first_receipt["status"] == "initialized"
+    assert first_receipt["mutation_invoked"] is True
+
+    before = _file_state(tmp_path / ADAPTER_PATH)
+    second = _run(INIT_ENTRYPOINT, tmp_path)
+    assert second.returncode == 0, second.stderr
+    second_receipt = yaml.safe_load(second.stdout)
+    assert second_receipt["state"] == "valid"
+    assert second_receipt["status"] == "unchanged"
+    assert second_receipt["mutation_invoked"] is False
+    assert second_receipt["before_sha256"] == first_receipt["generated_sha256"]
+    assert _file_state(tmp_path / ADAPTER_PATH) == before
+
+
+def test_shared_init_boundary_refuses_invalid_version_with_typed_receipt(tmp_path: Path) -> None:
+    adapter = _write_adapter(tmp_path, INVALID_ADAPTER)
+
+    result = _run(INIT_ENTRYPOINT, tmp_path)
+
+    assert result.returncode == 1
+    receipt = yaml.safe_load(result.stdout)
+    assert receipt["state"] == "invalid"
+    assert receipt["status"] == "refused"
+    assert receipt["mutation_invoked"] is False
+    assert receipt["before_sha256"] == _file_state(adapter)[0]
+
+
+def test_shared_init_boundary_requires_explicit_force_for_replacement(tmp_path: Path) -> None:
+    adapter = _write_adapter(tmp_path, INVALID_ADAPTER)
+
+    preview = _run(INIT_ENTRYPOINT, tmp_path, "--dry-run", "--force")
+    assert preview.returncode == 0, preview.stderr
+    preview_receipt = yaml.safe_load(preview.stdout)
+    assert preview_receipt["state"] == "invalid"
+    assert preview_receipt["status"] == "would-overwrite"
+    assert preview_receipt["mutation_invoked"] is False
+    assert _file_state(adapter)[0] == preview_receipt["before_sha256"]
+
+    replaced = _run(INIT_ENTRYPOINT, tmp_path, "--force")
+    assert replaced.returncode == 0, replaced.stderr
+    replaced_receipt = yaml.safe_load(replaced.stdout)
+    assert replaced_receipt["state"] == "invalid"
+    assert replaced_receipt["status"] == "overwritten"
+    assert replaced_receipt["mutation_invoked"] is True
+    assert yaml.safe_load(adapter.read_text(encoding="utf-8"))["version"] == 1
+
+
+def test_shared_init_boundary_reports_unestablished_resolver_state(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    module = _load_init_adapter_lib()
+    adapter = _write_adapter(tmp_path, VALID_ADAPTER)
+    monkeypatch.setattr(sys, "argv", ["init_adapter", "--repo-root", str(tmp_path)])
+
+    def unavailable(_path: Path) -> bool:
+        raise RuntimeError("resolver unavailable")
+
+    with pytest.raises(SystemExit) as raised:
+        module.run_init_adapter(
+            default_output=ADAPTER_PATH,
+            build_items=lambda _repo_name, _args: [("version", 1)],
+            existing_adapter_is_valid=unavailable,
+        )
+
+    assert raised.value.code == 1
+    receipt = yaml.safe_load(capsys.readouterr().out)
+    assert receipt["state"] == "unestablished"
+    assert receipt["status"] == "refused"
+    assert receipt["mutation_invoked"] is False
+    assert _file_state(adapter)[0] == receipt["before_sha256"]
+
+
+def test_shared_init_boundary_refuses_outside_and_symlink_targets(tmp_path: Path) -> None:
+    outside = tmp_path.parent / "outside-impl-adapter.yaml"
+
+    outside_result = _run(INIT_ENTRYPOINT, tmp_path, "--output", str(outside))
+    assert outside_result.returncode == 2
+    outside_receipt = yaml.safe_load(outside_result.stdout)
+    assert outside_receipt["status"] == "refused"
+    assert outside_receipt["state"] == "unestablished"
+    assert outside_receipt["relative_path"] is None
+    assert outside.exists() is False
+
+    target = tmp_path / ".agents" / "real.yaml"
+    target.parent.mkdir()
+    target.write_text("version: 1\n", encoding="utf-8")
+    link = tmp_path / ".agents" / "impl-link.yaml"
+    link.symlink_to(target)
+    symlink_result = _run(INIT_ENTRYPOINT, tmp_path, "--output", str(link.relative_to(tmp_path)))
+    assert symlink_result.returncode == 2
+    symlink_receipt = yaml.safe_load(symlink_result.stdout)
+    assert symlink_receipt["status"] == "refused"
+    assert symlink_receipt["state"] == "unestablished"
+    assert target.read_text(encoding="utf-8") == "version: 1\n"

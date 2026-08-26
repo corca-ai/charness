@@ -1,34 +1,31 @@
 #!/usr/bin/env python3
-"""Bootstrap a `.agents/critique-adapter.yaml` skeleton for a repo.
-
-Creates a no-section adapter so the file exists in canonical shape.
-Operators add `packet_sections` entries when they want the
-prepare-packet contract to fire.
-"""
+"""Bootstrap the critique adapter through the shared adapter lifecycle."""
 from __future__ import annotations
 
-import argparse
+import runpy
 from pathlib import Path
-
-SKELETON = (
-    Path(__file__).resolve().parent / "templates" / "critique_adapter.yaml"
-).read_text(encoding="utf-8")
+from types import SimpleNamespace
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(description="Initialize critique adapter skeleton")
-    parser.add_argument("--repo-root", type=Path, default=Path.cwd(), help="Repo root to scaffold the critique adapter into")
-    parser.add_argument("--force", action="store_true",
-                        help="Overwrite an existing adapter file")
-    args = parser.parse_args()
-    target = args.repo_root.resolve() / ".agents" / "critique-adapter.yaml"
-    if target.exists() and not args.force:
-        print(f"adapter already exists at {target}; pass --force to overwrite")
-        return 1
-    target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(SKELETON, encoding="utf-8")
-    print(f"wrote {target}")
-    return 0
+def _load_skill_runtime_bootstrap():
+    bootstrap = next((ancestor / "skill_runtime_bootstrap.py" for ancestor in Path(__file__).resolve().parents if (ancestor / "skill_runtime_bootstrap.py").is_file()), None)
+    if bootstrap is None:
+        raise ImportError("skill_runtime_bootstrap.py not found")
+    return SimpleNamespace(**runpy.run_path(str(bootstrap)))
+
+
+SKILL_RUNTIME = _load_skill_runtime_bootstrap()
+_adapter_init = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_init_lib")
+run_init_adapter = _adapter_init.run_init_adapter
+SKELETON = (Path(__file__).resolve().parent / "templates" / "critique_adapter.yaml").read_text(encoding="utf-8")
+
+
+def main() -> None:
+    run_init_adapter(
+        default_output=Path(".agents/critique-adapter.yaml"),
+        build_items=lambda _repo_name, _args: [],
+        render_contents=lambda _repo_root, _args: SKELETON,
+    )
 
 
 if __name__ == "__main__":

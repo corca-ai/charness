@@ -34,7 +34,7 @@ def main() -> None:
             ),
         ]
 
-    print(run_init_adapter(default_output=Path(".agents/setup-adapter.yaml"), build_items=build_items))
+    run_init_adapter(default_output=Path(".agents/setup-adapter.yaml"), build_items=build_items)
 
 
 if __name__ == "__main__":

@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import argparse
 import runpy
-import sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -72,12 +71,11 @@ def build_items(repo_name: str, args: argparse.Namespace) -> list[tuple[str, obj
 
 
 def main() -> None:
-    output = run_init_adapter(
+    run_init_adapter(
         default_output=Path(".agents/quality-adapter.yaml"),
         build_items=build_items,
         add_arguments=add_arguments,
     )
-    sys.stdout.write(f"{output}\n")
 
 
 if __name__ == "__main__":

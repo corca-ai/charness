@@ -3,11 +3,16 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
-from scripts.adapter_lib import write_adapter_scaffold
+from scripts.adapter_lib import load_yaml_file_report, write_adapter_scaffold
 from scripts.adapter_yaml_render_lib import render_yaml_mapping
+
+SCHEMA_VERSION = "charness.adapter-bootstrap/v1"
+SUPPORTED_ADAPTER_VERSION = 1
 
 
 def base_adapter_items(
@@ -26,30 +31,263 @@ def base_adapter_items(
     ]
 
 
+def _sha256(path: Path) -> str | None:
+    if not path.is_file():
+        return None
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _target_path(repo_root: Path, output: Path) -> Path:
+    """Resolve a bootstrap target without allowing a write outside the repo."""
+    candidate = output if output.is_absolute() else repo_root / output
+    if candidate.is_symlink():
+        raise ValueError(f"adapter target must not be a symlink: {candidate}")
+    resolved = candidate.resolve(strict=False)
+    try:
+        resolved.relative_to(repo_root)
+    except ValueError as exc:
+        raise ValueError(f"adapter target must stay inside --repo-root: {output}") from exc
+    if resolved == repo_root:
+        raise ValueError("adapter target must be a file below --repo-root")
+    return resolved
+
+
+def _structural_state(path: Path, rendered: str) -> tuple[str, str | None]:
+    """Classify an existing adapter before a skill-specific resolver is consulted.
+
+    The shared bootstrap can establish readability and version. Skill-specific
+    semantics remain with the resolver callback; it must never be guessed here.
+    An exact generated file is valid even when no callback exists, which makes
+    repeated first-use bootstrap idempotent for the simple skills.
+    """
+    if path.is_dir():
+        return "invalid", "adapter target is a directory, not a regular file"
+    try:
+        raw, _uninterpreted = load_yaml_file_report(path)
+    except (OSError, UnicodeDecodeError, ValueError) as exc:
+        return "invalid", f"adapter could not be read: {exc}"
+    if not isinstance(raw, dict):
+        return "invalid", "adapter document is not a mapping"
+    version = raw.get("version")
+    if version is not None and (type(version) is not int or version != SUPPORTED_ADAPTER_VERSION):
+        return "invalid", f"adapter version must be {SUPPORTED_ADAPTER_VERSION}"
+    try:
+        if path.read_text(encoding="utf-8") == rendered:
+            return "valid", "generated adapter already matches"
+    except (OSError, UnicodeDecodeError) as exc:
+        return "unestablished", f"adapter bytes could not be compared: {exc}"
+    return "valid", "adapter is readable; skill-specific resolver remains authoritative"
+
+
+def _emit_receipt(
+    *,
+    repo_root: Path,
+    target: Path,
+    skill_id: str,
+    state: str,
+    status: str,
+    ok: bool,
+    dry_run: bool,
+    force: bool,
+    mutation_invoked: bool,
+    reason: str | None,
+    next_action: str | None,
+    before_sha256: str | None,
+    generated_sha256: str,
+) -> None:
+    """Emit one machine-readable receipt for every bootstrap outcome."""
+    try:
+        relative_path = target.relative_to(repo_root).as_posix()
+    except ValueError:
+        relative_path = None
+    items: list[tuple[str, Any]] = [
+        ("kind", SCHEMA_VERSION),
+        ("skill_id", skill_id),
+        ("path", str(target)),
+        ("relative_path", relative_path),
+        ("state", state),
+        ("status", status),
+        ("ok", ok),
+        ("dry_run", dry_run),
+        ("force", force),
+        ("mutation_invoked", mutation_invoked),
+        ("before_sha256", before_sha256),
+        ("generated_sha256", generated_sha256),
+        ("reason", reason),
+        ("next_action", next_action),
+    ]
+    print(render_yaml_mapping(items), end="")
+
+
 def run_init_adapter(
     *,
     default_output: Path,
     build_items: Callable[[str, argparse.Namespace], list[tuple[str, object]]],
     add_arguments: Callable[[argparse.ArgumentParser], None] | None = None,
     existing_adapter_is_valid: Callable[[Path], bool] | None = None,
+    render_contents: Callable[[Path, argparse.Namespace], str] | None = None,
 ) -> Path:
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description="Initialize one repository-local skill adapter")
     parser.add_argument("--repo-root", type=Path, required=True)
     parser.add_argument("--output", type=Path, default=default_output)
     parser.add_argument("--force", action="store_true")
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Report the bootstrap decision without writing the adapter",
+    )
     if add_arguments is not None:
         add_arguments(parser)
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
-    contents = render_yaml_mapping(build_items(repo_root.name, args))
-    resolved_output = args.output if args.output.is_absolute() else repo_root / args.output
-    if (
-        resolved_output.exists()
-        and not args.force
-        and existing_adapter_is_valid is not None
-        and existing_adapter_is_valid(resolved_output)
-    ):
-        print(f"Adapter already exists at {resolved_output}; unchanged.")
+    contents = (
+        render_contents(repo_root, args)
+        if render_contents is not None
+        else render_yaml_mapping(build_items(repo_root.name, args))
+    )
+    generated_sha256 = hashlib.sha256(contents.encode("utf-8")).hexdigest()
+    skill_id = default_output.name.removesuffix("-adapter.yaml")
+    try:
+        resolved_output = _target_path(repo_root, args.output)
+    except ValueError as exc:
+        target = args.output if args.output.is_absolute() else repo_root / args.output
+        _emit_receipt(
+            repo_root=repo_root,
+            target=target.resolve(strict=False),
+            skill_id=skill_id,
+            state="unestablished",
+            status="refused",
+            ok=False,
+            dry_run=args.dry_run,
+            force=args.force,
+            mutation_invoked=False,
+            reason=str(exc),
+            next_action="choose a regular file below --repo-root and rerun",
+            before_sha256=None,
+            generated_sha256=generated_sha256,
+        )
+        raise SystemExit(2)
+
+    if not resolved_output.exists():
+        if args.dry_run:
+            _emit_receipt(
+                repo_root=repo_root,
+                target=resolved_output,
+                skill_id=skill_id,
+                state="absent",
+                status="would-initialize",
+                ok=True,
+                dry_run=True,
+                force=args.force,
+                mutation_invoked=False,
+                reason="adapter is absent",
+                next_action="rerun without --dry-run to initialize the adapter",
+                before_sha256=None,
+                generated_sha256=generated_sha256,
+            )
+            return resolved_output
+        write_adapter_scaffold(repo_root, resolved_output, contents, force=False)
+        _emit_receipt(
+            repo_root=repo_root,
+            target=resolved_output,
+            skill_id=skill_id,
+            state="absent",
+            status="initialized",
+            ok=True,
+            dry_run=False,
+            force=args.force,
+            mutation_invoked=True,
+            reason="adapter was absent",
+            next_action=None,
+            before_sha256=None,
+            generated_sha256=generated_sha256,
+        )
         return resolved_output
-    return write_adapter_scaffold(repo_root, args.output, contents, args.force)
+
+    before_sha256 = _sha256(resolved_output)
+    state, reason = _structural_state(resolved_output, contents)
+    if state == "valid" and existing_adapter_is_valid is not None:
+        try:
+            if not existing_adapter_is_valid(resolved_output):
+                state = "invalid"
+                reason = "skill-specific resolver rejected the existing adapter"
+        except (Exception, SystemExit) as exc:
+            state = "unestablished"
+            reason = f"skill-specific resolver could not establish adapter state: {exc}"
+
+    if state == "valid":
+        _emit_receipt(
+            repo_root=repo_root,
+            target=resolved_output,
+            skill_id=skill_id,
+            state=state,
+            status="unchanged",
+            ok=True,
+            dry_run=args.dry_run,
+            force=args.force,
+            mutation_invoked=False,
+            reason=reason,
+            next_action=None,
+            before_sha256=before_sha256,
+            generated_sha256=generated_sha256,
+        )
+        return resolved_output
+
+    if not args.force:
+        _emit_receipt(
+            repo_root=repo_root,
+            target=resolved_output,
+            skill_id=skill_id,
+            state=state,
+            status="refused",
+            ok=False,
+            dry_run=args.dry_run,
+            force=False,
+            mutation_invoked=False,
+            reason=reason,
+            next_action="repair the adapter or rerun with explicit --force after reviewing the replacement",
+            before_sha256=before_sha256,
+            generated_sha256=generated_sha256,
+        )
+        raise SystemExit(1)
+
+    if args.dry_run:
+        _emit_receipt(
+            repo_root=repo_root,
+            target=resolved_output,
+            skill_id=skill_id,
+            state=state,
+            status="would-overwrite",
+            ok=True,
+            dry_run=True,
+            force=True,
+            mutation_invoked=False,
+            reason=reason,
+            next_action="rerun without --dry-run to apply the explicit replacement",
+            before_sha256=before_sha256,
+            generated_sha256=generated_sha256,
+        )
+        return resolved_output
+
+    write_adapter_scaffold(repo_root, resolved_output, contents, force=True)
+    _emit_receipt(
+        repo_root=repo_root,
+        target=resolved_output,
+        skill_id=skill_id,
+        state=state,
+        status="overwritten",
+        ok=True,
+        dry_run=False,
+        force=True,
+        mutation_invoked=True,
+        reason=reason,
+        next_action=None,
+        before_sha256=before_sha256,
+        generated_sha256=generated_sha256,
+    )
+    return resolved_output

@@ -1,29 +1,29 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import argparse
+import runpy
 from pathlib import Path
-
-TEMPLATE = """version: 1
-default_org: corca-ai
-remote_name: origin
-"""
+from types import SimpleNamespace
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root where the issue adapter should be written")
-    parser.add_argument("--force", action="store_true", help="Overwrite an existing adapter file")
-    args = parser.parse_args()
+def _load_skill_runtime_bootstrap():
+    bootstrap = next((ancestor / "skill_runtime_bootstrap.py" for ancestor in Path(__file__).resolve().parents if (ancestor / "skill_runtime_bootstrap.py").is_file()), None)
+    if bootstrap is None:
+        raise ImportError("skill_runtime_bootstrap.py not found")
+    return SimpleNamespace(**runpy.run_path(str(bootstrap)))
 
-    adapter_path = args.repo_root.resolve() / ".agents" / "issue-adapter.yaml"
-    if adapter_path.exists() and not args.force:
-        print(f"{adapter_path} already exists")
-        return 0
-    adapter_path.parent.mkdir(parents=True, exist_ok=True)
-    adapter_path.write_text(TEMPLATE, encoding="utf-8")
-    print(f"Wrote {adapter_path}")
-    return 0
+
+SKILL_RUNTIME = _load_skill_runtime_bootstrap()
+_adapter_init = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_init_lib")
+run_init_adapter = _adapter_init.run_init_adapter
+
+
+def build_items(repo_name: str, _args: object) -> list[tuple[str, object]]:
+    return [("version", 1), ("default_org", "corca-ai"), ("remote_name", "origin")]
+
+
+def main() -> None:
+    run_init_adapter(default_output=Path(".agents/issue-adapter.yaml"), build_items=build_items)
 
 
 if __name__ == "__main__":

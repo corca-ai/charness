@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import runpy
-import sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -49,12 +48,11 @@ def existing_adapter_is_valid(path: Path) -> bool:
 
 
 def main() -> None:
-    output = run_init_adapter(
+    run_init_adapter(
         default_output=Path(".agents/impl-adapter.yaml"),
         build_items=build_items,
         existing_adapter_is_valid=existing_adapter_is_valid,
     )
-    sys.stdout.write(f"{output}\n")
 
 
 if __name__ == "__main__":

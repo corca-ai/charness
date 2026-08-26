@@ -1,6 +1,10 @@
 {
   "schemaVersion": 1,
   "consumers": {
+    "scripts/adapter_init_lib.py": {
+      "verdict": "safe-not-consequential",
+      "reason": "The shared bootstrap reads an existing adapter only to classify its readability/version before deciding whether initialization may write. An unsupported version becomes `invalid` and refuses without mutation unless the operator supplies explicit `--force`; no skill policy field is consumed as an execution directive here."
+    },
     "scripts/adapter_key_registry.py": {
       "verdict": "safe-not-consequential",
       "reason": "Key REGISTRY, not a gate: L488 wraps `load_yaml_file` so the registry can report what an adapter literally declares. Reading raw is the point -- it inventories declared keys, including ones a refused version would hide."
@@ -310,6 +314,10 @@
     "skills/public/issue/scripts/issue_tool.py": {
       "verdict": "safe-checks-errors",
       "reason": "`_resolve_backend` (line 39-44) and its callers `_run_backend_command` (line 47-51) / `_run_adapter_payload` (line 62-66) all check `adapter[\"valid\"]`/`adapter_ok` and refuse (exit 1) before using `adapter[\"data\"]`; `command_preflight` (line 76-81) relies on `build_preflight_payload`'s `ok = resolved[\"adapter_ok\"] and backend_ok(selected)` (skills/public/issue/scripts/issue_backend.py line 334) so an invalid adapter still surfaces `ok: false` and exit 1 even though the backend used for the probe silently falls back to the default."
+    },
+    "skills/public/issue/scripts/issue_tracker_cli.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "`_resolve_backend` refuses with `adapter_ok: false` when the issue resolver reports an invalid adapter, and every backend-command path checks that flag before using `adapter['data']` or invoking a provider mutation. A refused version therefore cannot silently select the default issue backend."
     },
     "skills/public/narrative/scripts/map_sources.py": {
       "verdict": "guarded-all-doors",
