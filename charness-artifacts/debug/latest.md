@@ -1,1 +1,1 @@
-2026-08-25-debug-review-followup.md
+2026-08-27-issue-669-sigterm-popen.md

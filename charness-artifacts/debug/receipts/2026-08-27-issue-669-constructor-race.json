@@ -1,0 +1,15 @@
+{
+  "schema": "charness.adversarial-evidence.receipt.v1",
+  "finding": "F1",
+  "source": "issue-669",
+  "expected": "SIGTERM during Popen construction reaps the entire child process group",
+  "stimulus": "injected SIGTERM after real Popen and before wrapper return",
+  "disposition": "reproduced",
+  "observed": "pre-fix child remained alive until manual cleanup and repaired fixture killed group and descendant",
+  "command": "python3 -m pytest -q tests/test_subprocess_guard.py -k popen",
+  "fixture": "test_monitored_phase_kills_the_tree_when_sigterm_interrupts_popen",
+  "final_consumer": "run_monitored_phase cleanup envelope",
+  "executed": true,
+  "final_consumer_observed": true,
+  "returncode": 0
+}

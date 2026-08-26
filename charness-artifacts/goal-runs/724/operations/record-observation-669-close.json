@@ -1,0 +1,30 @@
+{
+  "kind": "charness.goal-run-operation/v1",
+  "repo": "corca-ai/charness",
+  "parent_number": 724,
+  "operation": "record-observation",
+  "attempt_id": "record-observation-669-close-20260827-1",
+  "draft_sha256": "ced8410bd896844bf6bb75bff807438cb6f40cb6a3c3b8489ddcd05a662212c2",
+  "binding_sha256": "32ead8148ccfbfbbe0b9b6af1ad5ec1038a9c424c0766f45c1fbc9e54f54516d",
+  "observation_dir": "charness-artifacts/goal-runs/724/observations",
+  "target": {
+    "repo": "corca-ai/charness",
+    "number": 669,
+    "work_item_key": "backlog-669"
+  },
+  "result": {
+    "ok": true,
+    "outcome": "verified-read",
+    "status": "verified-closeout",
+    "operation": "close-with-comment",
+    "mutation_invoked": false,
+    "carrier": "manual-fallback",
+    "manual_fallback_reason": "operator-directed-manual-close",
+    "number": 669,
+    "state": "CLOSED",
+    "url": "https://github.com/corca-ai/charness/issues/669",
+    "close_comment_url": "https://github.com/corca-ai/charness/issues/669#issuecomment-5430539474",
+    "body_verified": true,
+    "review_advisory": "fresh-eye critique was skipped because no Agent/subagent tool is exposed in this session"
+  }
+}
