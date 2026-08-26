@@ -275,6 +275,28 @@ def test_creating_superseded_with_only_the_handoff_record_is_refused(
     assert not goal_lib.goal_path(repo, "2026-08-22", "fresh").exists()
 
 
+def test_create_guard_allows_a_complete_superseded_body(goal_lib, tmp_path: Path) -> None:
+    retro = tmp_path / "charness-artifacts" / "retro" / "2026-08-22-fresh.md"
+    retro.parent.mkdir(parents=True)
+    retro.write_text(_IMPROVING_RETRO, encoding="utf-8")
+    body = (
+        "Status: superseded\nCreated: 2026-08-22\n"
+        "Activation: `/goal @fresh.md`\n\n"
+        "Superseded by: none — the remainder was intentionally abandoned\n\n"
+        "## Final Verification\n\n"
+        "Retro: charness-artifacts/retro/2026-08-22-fresh.md\n\n"
+        "## Auto-Retro\n\n"
+        + _APPLIED_DISPOSITION
+        + "\n"
+    )
+
+    refusal = goal_lib._superseded.refuse_create_reason(
+        body, mask_fences=goal_lib._mask_fences, repo_root=tmp_path
+    )
+
+    assert refusal is None
+
+
 def test_a_successor_pointer_that_names_nothing_is_refused(goal_lib, tmp_path: Path) -> None:
     """The successor pointer is the ENTIRE cost of this status -- roughly fourteen
     closeout floors are skipped for it -- and it was the only evidence line in
