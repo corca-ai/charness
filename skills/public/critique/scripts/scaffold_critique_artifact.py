@@ -22,6 +22,9 @@ _adapter_version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
     __file__, "scripts.adapter_version_verdict"
 )
 _scaffold_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.scaffold_artifact_lib")
+_reviewer_shape = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.critique_reviewer_evidence"
+)
 
 # The critique validator (scripts/validate_critique_artifacts.py) is opt-in but
 # enforces real schemas when their sections appear: `## Structured Findings`
@@ -68,6 +71,8 @@ ALLOWED_DELIVERY_STATES = (
     "spawn-accepted-no-delivery",
     "pending-parent-spawn",
 )
+ALLOWED_EXECUTION_MODES = tuple(_reviewer_shape.REVIEWER_EXECUTION_MODE_VALUES)
+DEFAULT_EXECUTION_MODE = _reviewer_shape.DEFAULT_REVIEWER_EXECUTION_MODE
 # Boundary-ownership verdict enum the validator's presence floor enforces once an
 # artifact is dated on/after its enforce-from date. MUST stay equal to the
 # validator's BOUNDARY_VERDICT_VALUES (drift test pins the equality). See
@@ -89,6 +94,7 @@ def allowed_enums() -> dict[str, object]:
         },
         "reviewer_tier_host_exposure_state": list(ALLOWED_HOST_EXPOSURE_STATES),
         "reviewer_delivery_state": list(ALLOWED_DELIVERY_STATES),
+        "reviewer_execution_mode": list(ALLOWED_EXECUTION_MODES),
         "boundary_ownership": {"verdict": list(ALLOWED_BOUNDARY_VERDICTS)},
         "verification_scope": {
             "failure_classification": list(ALLOWED_FAILURE_CLASSIFICATIONS),
@@ -142,6 +148,7 @@ def render_template(*, title: str, date_text: str, evidence_mode: bool = False) 
     actions_legend = " | ".join(ALLOWED_ACTIONS)
     host_states_legend = " | ".join(ALLOWED_HOST_EXPOSURE_STATES)
     delivery_states_legend = " | ".join(ALLOWED_DELIVERY_STATES)
+    execution_modes_legend = " | ".join(ALLOWED_EXECUTION_MODES)
     lines.extend(
         [
             "## Structured Findings",
@@ -185,6 +192,10 @@ def render_template(*, title: str, date_text: str, evidence_mode: bool = False) 
             f"<!-- allowed Delivery state: {delivery_states_legend}. Boundary "
             "cleanliness is a separate claim and does not imply delivery. -->",
             "- Delivery state: pending-parent-spawn",
+            f"<!-- allowed Execution mode: {execution_modes_legend}. This defaults to "
+            "the Charness-owned file-backed worker; use typed-subagent only when the "
+            "adapter explicitly selects that branch. -->",
+            f"- Execution mode: {DEFAULT_EXECUTION_MODE}",
             "<!-- If Fresh-Eye Satisfaction is `worker-delivered`, also record the "
             "durable combined report carrier below. Approval is owned by that report, "
             "not by this artifact's prose. -->",

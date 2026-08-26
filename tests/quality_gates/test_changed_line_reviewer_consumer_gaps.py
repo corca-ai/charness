@@ -39,6 +39,14 @@ RESOLUTION_OBSERVER = _load(
 )
 
 
+def test_typed_closeout_reads_the_canonical_critique_tier_shape() -> None:
+    assert RESOLUTION_OBSERVER._TYPED_TIER_FIELDS == CRITIQUE_EVIDENCE.TYPED_REVIEWER_TIER_FIELDS
+    assert CRITIQUE_EVIDENCE.REVIEWER_EXECUTION_MODE_VALUES == (
+        "file-backed-worker",
+        "typed-subagent",
+    )
+
+
 def test_worker_loader_refuses_when_every_candidate_has_no_loader(monkeypatch) -> None:
     monkeypatch.setattr(
         CRITIQUE_EVIDENCE.importlib.util,

@@ -68,6 +68,10 @@ REVIEWER_TIER_REQUIRED_FIELDS = (
     "host exposure state",
     "application state",
 )
+REVIEWER_EXECUTION_MODE_FIELD = "execution mode"
+REVIEWER_EXECUTION_MODE_VALUES = ("file-backed-worker", "typed-subagent")
+DEFAULT_REVIEWER_EXECUTION_MODE = REVIEWER_EXECUTION_MODE_VALUES[0]
+TYPED_SUBAGENT_EXECUTION_MODE = "typed-subagent"
 REVIEWER_TIER_HOST_STATES = frozenset(
     {
         "pending-parent-spawn",
@@ -89,6 +93,10 @@ DELIVERY_STATE_VALUES = (
     "findings-recovered-from-transcript",
     "spawn-accepted-no-delivery",
     "pending-parent-spawn",
+)
+TYPED_REVIEWER_TIER_FIELDS = REVIEWER_TIER_REQUIRED_FIELDS + (
+    DELIVERY_STATE_FIELD,
+    REVIEWER_EXECUTION_MODE_FIELD,
 )
 DELIVERY_STATE_VALUES_SUMMARY = (
     "`findings-received` / `findings-recovered-from-transcript <signal>` / "
@@ -151,6 +159,12 @@ def validate_reviewer_tier_evidence(
             f"{path}: reviewer tier evidence fields {stubs} still carry the unedited scaffold "
             "`TODO`/`TBD` placeholder; record what was actually requested and what the host "
             "actually reported (`n/a` is a valid answer when the host exposes no such control)."
+        )
+    execution_mode = fields.get(REVIEWER_EXECUTION_MODE_FIELD)
+    if execution_mode and execution_mode not in REVIEWER_EXECUTION_MODE_VALUES:
+        raise ValidationError(
+            f"{path}: reviewer tier `{REVIEWER_EXECUTION_MODE_FIELD}` `{execution_mode}` must be one of "
+            f"{REVIEWER_EXECUTION_MODE_VALUES}"
         )
     state = fields["host exposure state"]
     if state not in REVIEWER_TIER_HOST_STATES:

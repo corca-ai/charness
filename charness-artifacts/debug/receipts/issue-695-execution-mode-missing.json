@@ -1,0 +1,17 @@
+{
+  "schema": "charness.adversarial-evidence.receipt.v1",
+  "finding": "DBG-695-F1",
+  "source": "charness-artifacts/goal-runs/724/bodies/backlog-695.md",
+  "expected": "critique producers emit Execution mode and an incomplete typed-subagent closeout is refused",
+  "stimulus": "generate the critique scaffold, then pass a typed-subagent tier block without Execution mode to the closeout observer",
+  "disposition": "reproduced",
+  "observed": "the scaffold and packet shape omitted Execution mode while the closeout observer returned the missing field refusal",
+  "handoff": "charness-artifacts/impl/2026-08-27-issue-695-critique-shape.md",
+  "next_move": "make the shared critique shape owner emit and expose the field in every producer",
+  "command": "python3 skills/public/critique/scripts/scaffold_critique_artifact.py --repo-root . --title 'Issue 695 critique shape'; typed observer probe",
+  "fixture": "skills/public/critique/scripts/scaffold_critique_artifact.py + skills/public/issue/scripts/issue_resolution_observer.py",
+  "final_consumer": "skills/public/issue/scripts/issue_resolution_observer.py",
+  "executed": true,
+  "final_consumer_observed": true,
+  "returncode": 0
+}

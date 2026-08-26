@@ -137,6 +137,7 @@ JSON envelope shape (`charness.critique_prepare_packet.v1`):
     "requested_spawn_fields": {"model": "..."},
     "host_exposure_state": "pending-parent-spawn",
     "application_state": "unverified-by-packet",
+    "execution_mode": "file-backed-worker",
     "instruction": "<record host state in the review artifact>"
   },
   "sections": [
@@ -174,7 +175,9 @@ Rules:
   spawn fields before subagents are spawned. The packet cannot prove host
   application; the parent review artifact records `requested_fields_sent`,
   `metadata-hidden`, `host-defaulted`, `unsupported`, or `applied` only when
-  host-confirmed.
+  host-confirmed. `execution_mode` is the canonical `file-backed-worker` or
+  `typed-subagent` branch selected by the adapter; it is rendered in the
+  Markdown evidence block as `Execution mode`.
 - `substrate_mode` is explicit in every packet. `working-tree` is the default
   for uncommitted review input and must not carry `changed_ref`; `committed-ref`
   requires a commit or endpoint-diff range. A committed-ref packet's declared

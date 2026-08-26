@@ -78,6 +78,7 @@ def filled_in_template(template: str) -> str:
         "- Host exposure state: requested_fields_sent\n"
         "- Application state: n/a\n"
         "- Delivery state: findings-received\n\n"
+        "- Execution mode: file-backed-worker\n\n"
         f"{heading}\n\nparent-delegated.\n\n"
         "## Boundary Ownership\n\n- Verdict: single-surface\n"
     )
@@ -122,6 +123,7 @@ def test_critique_scaffold_reports_validator_and_template(tmp_path: Path) -> Non
     assert "- F1 | bin: act-before-ship | evidence: moderate |" in template
     assert "## Reviewer Tier Evidence" in template
     assert "Host exposure state: pending-parent-spawn" in template
+    assert "Execution mode: file-backed-worker" in template
     assert "## Fresh-Eye Satisfaction" in template
     assert "## Reviewed Input Identity" in template
     assert "exact Packet SHA256" in template
@@ -201,6 +203,7 @@ def test_scaffold_surfaced_enums_match_validator_frozensets(tmp_path: Path) -> N
     future change adds/renames a validator enum without updating the scaffold (or
     vice versa), this test fails instead of an author hitting a validate->fix
     round-trip on a value the scaffold told them was allowed."""
+    from scripts import critique_reviewer_evidence as reviewer_shape
     from scripts import validate_critique_artifacts as validator
 
     result = run_script(SCAFFOLD, "--repo-root", str(tmp_path))
@@ -214,6 +217,7 @@ def test_scaffold_surfaced_enums_match_validator_frozensets(tmp_path: Path) -> N
         validator.REVIEWER_TIER_HOST_STATES
     )
     assert set(enums["reviewer_delivery_state"]) == set(validator.DELIVERY_STATE_VALUES)
+    assert set(enums["reviewer_execution_mode"]) == set(reviewer_shape.REVIEWER_EXECUTION_MODE_VALUES)
     assert set(enums["boundary_ownership"]["verdict"]) == set(validator.BOUNDARY_VERDICT_VALUES)
     assert set(enums["verification_scope"]["failure_classification"]) == set(
         validator.VERIFICATION_FAILURE_CLASSIFICATIONS

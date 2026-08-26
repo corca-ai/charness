@@ -1,1 +1,1 @@
-2026-08-27-issue-693-reviewer-provenance.md
+2026-08-27-issue-695-critique-shape.md

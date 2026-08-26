@@ -107,7 +107,8 @@ emission is the persistence layer, not the analysis.
 When persisting the critique record, do not hand-author the file blind: start
 from the scaffold so the validator-required shape — `## Structured Findings` and,
 for a parent-delegated review, `## Reviewer Tier Evidence` (with its required
-fields and host-exposure-state enum) — is present by construction. Hand-authoring
+fields, `Execution mode`, and host-exposure-state enum) — is present by
+construction. Hand-authoring
 without it is how the reviewer-tier section gets silently omitted and only the
 gate (late) catches it.
 

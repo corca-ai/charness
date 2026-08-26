@@ -405,9 +405,11 @@ packet_sections:
         "fork_turns": "none",
     }
     assert evidence["host_exposure_state"] == "pending-parent-spawn"
+    assert evidence["execution_mode"] == "file-backed-worker"
     md = render_markdown(packet)
     assert "model=gpt-5.6-terra" in md
     assert "pending-parent-spawn" in md
+    assert "**Execution mode**: `file-backed-worker`" in md
     evidence["reviewer_runner"] = "not a mapping"
     assert "**Reviewer runner**: `missing`" in render_markdown(packet)
 

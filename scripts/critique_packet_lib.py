@@ -29,6 +29,9 @@ packet_file_sha256 = _reviewed_input_identity.packet_file_sha256
 SUBSTRATE_WORKING_TREE = _reviewed_input_identity.SUBSTRATE_WORKING_TREE
 SUBSTRATE_COMMITTED_REF = _reviewed_input_identity.SUBSTRATE_COMMITTED_REF
 ReviewedInputError = _reviewed_input_identity.ReviewedInputError
+_reviewer_shape = import_repo_module(__file__, "scripts.critique_reviewer_evidence")
+DEFAULT_REVIEWER_EXECUTION_MODE = _reviewer_shape.DEFAULT_REVIEWER_EXECUTION_MODE
+REVIEWER_EXECUTION_MODE_VALUES = _reviewer_shape.REVIEWER_EXECUTION_MODE_VALUES
 
 
 def changed_ref_targets(
@@ -236,15 +239,23 @@ def build_packet(
 def reviewer_tier_evidence(adapter_data: dict[str, Any]) -> dict[str, object]:
     reviewer_tiers = adapter_data.get("reviewer_tiers", {}) or {}
     requested_fields = reviewer_tiers.get(DEFAULT_REVIEWER_TIER, {}) or {}
+    runner = adapter_data.get("reviewer_runner")
+    if not isinstance(runner, dict):
+        runner = {
+            "mode": DEFAULT_REVIEWER_EXECUTION_MODE,
+            "backend": "host-defaulted",
+            "timeout_seconds": 900,
+        }
+    execution_mode = runner.get("mode", DEFAULT_REVIEWER_EXECUTION_MODE)
+    if execution_mode not in REVIEWER_EXECUTION_MODE_VALUES:
+        execution_mode = DEFAULT_REVIEWER_EXECUTION_MODE
     return {
         "requested_tier": DEFAULT_REVIEWER_TIER,
         "requested_spawn_fields": dict(requested_fields),
         "host_exposure_state": "pending-parent-spawn",
         "application_state": "unverified-by-packet",
-        "reviewer_runner": adapter_data.get(
-            "reviewer_runner",
-            {"mode": "file-backed-worker", "backend": "host-defaulted", "timeout_seconds": 900},
-        ),
+        "reviewer_runner": runner,
+        "execution_mode": execution_mode,
         "instruction": (
             "Review artifacts must record requested_fields_sent, metadata-hidden, "
             "host-defaulted, unsupported, or applied only when host-confirmed. "
@@ -374,6 +385,7 @@ def render_reviewer_tier_evidence(raw: object) -> list[str]:
         f"- **Requested spawn fields**: `{rendered_fields}`",
         f"- **Host exposure state**: `{evidence.get('host_exposure_state', '')}`",
         f"- **Application state**: `{evidence.get('application_state', '')}`",
+        f"- **Execution mode**: `{evidence.get('execution_mode', '')}`",
         f"- **Reviewer runner**: `{runner_text}`",
         f"- **Instruction**: {evidence.get('instruction', '')}",
     ]

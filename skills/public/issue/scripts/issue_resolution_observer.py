@@ -9,6 +9,21 @@ from pathlib import Path
 from typing import Any
 
 
+def _load_critique_shape():
+    """Load the package-owned reviewer-tier shape used by critique producers."""
+    here = Path(__file__).resolve()
+    for ancestor in here.parents:
+        candidate = ancestor / "scripts" / "critique_reviewer_evidence.py"
+        if not candidate.is_file():
+            continue
+        spec = importlib.util.spec_from_file_location("charness_critique_shape", candidate)
+        if spec is not None and spec.loader is not None:
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module
+    raise ImportError("scripts/critique_reviewer_evidence.py not found")
+
+
 def _load_shared_helper():
     here = Path(__file__).resolve()
     for ancestor in here.parents:
@@ -29,15 +44,11 @@ _load_local = runpy.run_path(
 )["sibling_loader"](__file__)
 _strip_code_fences = _load_local("issue_markdown_lib").strip_code_fences
 _observer = _load_local("issue_critique_observer")
+_critique_shape = _load_critique_shape()
 
-_TYPED_TIER_FIELDS = (
-    "requested tier",
-    "requested spawn fields",
-    "host exposure state",
-    "application state",
-    "delivery state",
-    "execution mode",
-)
+_TYPED_TIER_FIELDS = _critique_shape.TYPED_REVIEWER_TIER_FIELDS
+_EXECUTION_MODE_FIELD = _critique_shape.REVIEWER_EXECUTION_MODE_FIELD
+_TYPED_EXECUTION_MODE = _critique_shape.TYPED_SUBAGENT_EXECUTION_MODE
 _TYPED_HOST_STATES = {
     "pending-parent-spawn",
     "requested_fields_sent",
@@ -99,8 +110,11 @@ def _typed_delegation_error(text: str) -> str | None:
     ]
     if stubs:
         return f"typed-subagent reviewer evidence contains placeholders: {stubs}"
-    if fields["execution mode"].strip().lower() != "typed-subagent":
-        return f"typed-subagent reviewer evidence execution mode is not typed-subagent: {fields['execution mode']!r}"
+    if fields[_EXECUTION_MODE_FIELD].strip().lower() != _TYPED_EXECUTION_MODE:
+        return (
+            "typed-subagent reviewer evidence execution mode is not "
+            f"{_TYPED_EXECUTION_MODE}: {fields[_EXECUTION_MODE_FIELD]!r}"
+        )
     host_state = fields["host exposure state"].strip().lower()
     if host_state not in _TYPED_HOST_STATES:
         return f"typed-subagent reviewer host exposure state is invalid: {host_state!r}"
