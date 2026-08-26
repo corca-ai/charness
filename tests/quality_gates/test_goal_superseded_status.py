@@ -20,6 +20,7 @@ import importlib.util
 import subprocess
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 import yaml
@@ -252,6 +253,25 @@ def test_creating_straight_to_superseded_is_refused(goal_lib, tmp_path: Path) ->
         )
 
     assert "create this goal `superseded`" in str(excinfo.value)
+    assert not goal_lib.goal_path(repo, "2026-08-22", "fresh").exists()
+
+
+def test_creating_superseded_with_only_the_handoff_record_is_refused(
+    goal_lib, tmp_path: Path
+) -> None:
+    repo = tmp_path / "repo"
+    (repo / "charness-artifacts" / "goals").mkdir(parents=True)
+
+    with pytest.raises(ValueError, match="create this goal.*Retro"):
+        goal_lib.upsert_goal(
+            repo,
+            date="2026-08-22",
+            slug="fresh",
+            title="Fresh",
+            status="superseded",
+            goal_body="Superseded by: none — the remainder was intentionally abandoned",
+        )
+
     assert not goal_lib.goal_path(repo, "2026-08-22", "fresh").exists()
 
 
@@ -578,6 +598,37 @@ def test_superseded_evidence_skip_is_an_explicit_non_claim(goal_lib, tmp_path: P
     assert report["superseded_non_claim"]["claim"] == (
         "retro contents and surfaced improvements were not verified"
     )
+
+
+def test_superseded_evidence_reason_surfaces_each_refusal_category(goal_lib) -> None:
+    reason = goal_lib._closeout.superseded_evidence_reason(
+        {
+            "missing_evidence_files": [{"name": "retro_artifact"}],
+            "invalid_skips": [{"name": "retro_artifact"}],
+            "binding_failures": [{"name": "retro_artifact"}],
+            "stub_evidence": [{"name": "retro_artifact"}],
+            "disposition_form": {"reason": "invalid"},
+        }
+    )
+
+    assert "missing or empty" in reason
+    assert "skip reason is invalid" in reason
+    assert "not bound" in reason
+    assert "identity stub" in reason
+    assert "disposition form" in reason
+
+
+def test_superseded_loader_fails_closed_when_closeout_sibling_is_unavailable(
+    goal_lib, monkeypatch, tmp_path: Path
+) -> None:
+    monkeypatch.setattr(
+        goal_lib._superseded.importlib.util,
+        "spec_from_file_location",
+        lambda *args, **kwargs: SimpleNamespace(loader=None),
+    )
+
+    with pytest.raises(ImportError, match="closeout_evidence.py"):
+        goal_lib._superseded.check_superseded_evidence(tmp_path, "Status: superseded\n")
 
 
 def test_the_write_guard_checks_the_successor_pointer_too(goal_lib, tmp_path: Path) -> None:
