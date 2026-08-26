@@ -182,6 +182,57 @@ def test_generated_mirrors_are_never_advised_about(git_repo: Path, advisory) -> 
     assert advisory.advise_for_edited_file(git_repo, "plugins/charness/scripts/seed.py") is None
 
 
+def test_scope_membership_uses_the_canonical_normalized_prefixes(git_repo: Path, advisory) -> None:
+    """The edit advisory and ratchet gate must agree on equivalent scope spellings."""
+    adapter = git_repo / ".agents/quality-adapter.yaml"
+    adapter.write_text(
+        "dup_ratchet:\n  enabled: true\n  scope_paths:\n    - .\n", encoding="utf-8"
+    )
+    assert advisory.in_ratchet_scope("scripts/seed.py", advisory.scope_paths(git_repo)) is True
+
+    adapter.write_text(
+        "dup_ratchet:\n  enabled: true\n  scope_paths:\n    - ./src/\n", encoding="utf-8"
+    )
+    assert advisory.in_ratchet_scope("src/tool.py", advisory.scope_paths(git_repo)) is True
+    assert advisory.in_ratchet_scope("scripts/seed.py", advisory.scope_paths(git_repo)) is False
+
+
+def test_unresolvable_scope_does_not_widen_the_advisory(git_repo: Path, advisory) -> None:
+    """A glob cannot be proven by a literal prefix matcher, so it stays quiet."""
+    roots = ("src/**/*.py",)
+    assert advisory.in_ratchet_scope("src/tool.py", roots) is False
+    # A known literal sibling remains actionable without turning the unknown entry
+    # into a whole-tree scope.
+    assert advisory.in_ratchet_scope("scripts/seed.py", ("scripts/", "src/**/*.py")) is True
+    assert advisory.in_ratchet_scope("tests/helper.py", ("scripts/", "src/**/*.py")) is False
+
+
+def test_missing_scope_resolver_stays_conservative(tmp_path: Path, advisory, monkeypatch) -> None:
+    helper = tmp_path / "skills/public/quality/scripts/dup_ratchet_scope.py"
+    helper.parent.mkdir(parents=True)
+    helper.write_text("# resolver unavailable\n", encoding="utf-8")
+    module_path = tmp_path / "scripts/dup_ratchet_edit_advisory.py"
+    module_path.parent.mkdir()
+    monkeypatch.setattr(advisory, "__file__", str(module_path))
+    monkeypatch.setattr(advisory.importlib.util, "spec_from_file_location", lambda *_a, **_k: None)
+    assert advisory._resolve_scope_prefixes(tmp_path, ("scripts",)) == ([], ["scripts"])
+
+
+def test_scope_resolver_import_failure_stays_conservative(tmp_path: Path, advisory, monkeypatch) -> None:
+    helper = tmp_path / "skills/public/quality/scripts/dup_ratchet_scope.py"
+    helper.parent.mkdir(parents=True)
+    helper.write_text("def resolve_scope_prefixes(_roots): return (None, [])\n", encoding="utf-8")
+    module_path = tmp_path / "scripts/dup_ratchet_edit_advisory.py"
+    module_path.parent.mkdir()
+    monkeypatch.setattr(advisory, "__file__", str(module_path))
+
+    def fail_import(_spec):
+        raise ImportError("resolver unavailable")
+
+    monkeypatch.setattr(advisory.importlib.util, "module_from_spec", fail_import)
+    assert advisory._resolve_scope_prefixes(tmp_path, ("scripts",)) == ([], ["scripts"])
+
+
 def test_a_disabled_ratchet_says_nothing(git_repo: Path, advisory) -> None:
     """A ratchet that cannot hard-block has no trap to warn about.
 

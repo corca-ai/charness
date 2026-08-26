@@ -30,6 +30,7 @@ early signal, not a new floor.
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import subprocess
 from pathlib import Path
@@ -47,6 +48,44 @@ DEFAULT_ADDED_LINE_THRESHOLD = 30
 # duplicate families, and `dup-ratchet.md` explicitly contemplates a non-Python
 # family member. A `.py`-only advisory would be silent for exactly those.
 _SCANNED_SUFFIXES = (".py", ".mjs", ".sh")
+
+
+def _resolve_scope_prefixes(
+    repo_root: Path, roots: tuple[str, ...]
+) -> tuple[list[str] | None, list[str]]:
+    """Load the canonical scope resolver from the source or exported layout.
+
+    This root-level advisory runs from both layouts. The public skill's
+    ``skills/public`` segment is flattened in an export, so a package import
+    would work in only one of them. If the resolver is unavailable, the scope is
+    unknown and the advisory stays conservative instead of reviving the raw
+    prefix comparison.
+    """
+
+    bases = (repo_root, Path(__file__).resolve().parents[1])
+    seen: set[Path] = set()
+    for base in bases:
+        for relative in (
+            Path("skills/public/quality/scripts/dup_ratchet_scope.py"),
+            Path("skills/quality/scripts/dup_ratchet_scope.py"),
+        ):
+            candidate = (base / relative).resolve()
+            if candidate in seen or not candidate.is_file():
+                continue
+            seen.add(candidate)
+            spec = importlib.util.spec_from_file_location(
+                "_dup_ratchet_scope_for_edit_advisory", candidate
+            )
+            if spec is None or spec.loader is None:
+                continue
+            try:
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+                resolver = module.resolve_scope_prefixes
+            except (AttributeError, ImportError, OSError, SyntaxError, TypeError, ValueError):
+                continue
+            return resolver(roots)
+    return [], list(roots)
 
 
 def scope_paths(repo_root: Path) -> tuple[str, ...]:
@@ -79,7 +118,9 @@ def scope_paths(repo_root: Path) -> tuple[str, ...]:
     return tuple(str(entry) for entry in declared if isinstance(entry, str))
 
 
-def in_ratchet_scope(relpath: str, roots: tuple[str, ...]) -> bool:
+def in_ratchet_scope(
+    relpath: str, roots: tuple[str, ...], *, repo_root: Path | None = None
+) -> bool:
     """Whether the ratchet would scan this repo-relative path at all."""
 
     if not relpath.endswith(_SCANNED_SUFFIXES):
@@ -90,7 +131,15 @@ def in_ratchet_scope(relpath: str, roots: tuple[str, ...]) -> bool:
     if relpath.startswith("plugins/"):
         return False
     posix = Path(relpath).as_posix()
-    return any(posix == root or posix.startswith(f"{root}/") for root in roots)
+    prefixes, _unresolvable = _resolve_scope_prefixes(
+        repo_root or Path(__file__).resolve().parents[1], roots
+    )
+    if prefixes is None:
+        return True
+    # A known literal prefix remains useful when a declaration also contains a
+    # glob or another shape this prefix matcher cannot resolve. Unknown entries
+    # never widen the advisory to every path.
+    return any(posix == root or posix.startswith(f"{root}/") for root in prefixes)
 
 
 def _git(repo_root: Path, *args: str) -> subprocess.CompletedProcess[str] | None:
@@ -187,7 +236,7 @@ def advise_for_edited_file(
     """The advisory text for a just-edited file, or None to stay silent."""
 
     roots = scope_paths(repo_root)
-    if not roots or not in_ratchet_scope(relpath, roots):
+    if not roots or not in_ratchet_scope(relpath, roots, repo_root=repo_root):
         return None
     added = added_lines_vs_head(repo_root, relpath)
     if added is None or added < threshold:
@@ -226,7 +275,7 @@ def advisory_state(repo_root: Path, relpath: str, *, threshold: int = DEFAULT_AD
     """Structured form of the same decision, for tests and callers that want the why."""
 
     roots = scope_paths(repo_root)
-    in_scope = bool(roots) and in_ratchet_scope(relpath, roots)
+    in_scope = bool(roots) and in_ratchet_scope(relpath, roots, repo_root=repo_root)
     added = added_lines_vs_head(repo_root, relpath) if in_scope else None
     return {
         "path": relpath,
