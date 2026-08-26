@@ -180,7 +180,7 @@ def _validate_packet_binding(
 
 
 def _validate_receipt_and_result(
-    *, repo_root: Path, report: dict[str, Any]
+    *, repo_root: Path, report: dict[str, Any], require_pass: bool = True
 ) -> tuple[dict[str, Any], dict[str, Any], str]:
     receipt_value = report.get("receipt_path")
     if not isinstance(receipt_value, str):
@@ -211,7 +211,7 @@ def _validate_receipt_and_result(
             output,
             packet_identity=str(report.get("packet_identity", "")),
             reviewed_input_identity=str(report.get("reviewed_input_identity", "")),
-            require_pass=True,
+            require_pass=require_pass,
         )
     except (ImportError, ValueError) as exc:
         raise WorkerCarrierError(str(exc)) from exc
@@ -282,6 +282,58 @@ def _validate_ledger(
         raise WorkerCarrierError("delivery ledger findings identity does not match the result")
 
 
-def _validate_delivery_chain(*, repo_root: Path, report: dict[str, Any]) -> None:
-    receipt, _result, output_hash = _validate_receipt_and_result(repo_root=repo_root, report=report)
+def _validate_delivery_chain(
+    *, repo_root: Path, report: dict[str, Any], require_pass: bool = True
+) -> tuple[dict[str, Any], dict[str, Any], str]:
+    receipt, result, output_hash = _validate_receipt_and_result(
+        repo_root=repo_root, report=report, require_pass=require_pass
+    )
     _validate_ledger(repo_root=repo_root, report=report, receipt=receipt, output_hash=output_hash)
+    return receipt, result, output_hash
+
+
+def validate_delivered_worker_report(
+    *, repo_root: Path, report: dict[str, Any]
+) -> tuple[dict[str, Any], dict[str, Any], str]:
+    """Validate a delivered typed result without converting it into approval.
+
+    A critique round records findings, so a typed ``block`` or ``defer`` is a
+    valid delivered result even though the approval consumer must reject it.
+    The report remains delivery evidence; the typed result bytes remain the
+    findings carrier. Requiring this chain makes a same-context raw text file
+    impossible to submit as a reviewer round.
+    """
+    expected = {
+        "schema_version": "charness.reviewer_worker_report.v1",
+        "delivery_state": "findings-received",
+        "collection_ready": True,
+        "provenance_ok": True,
+        "receipt_ok": True,
+        "ledger_ok": True,
+        "result_schema_ok": True,
+    }
+    mismatches = [
+        f"{field}={report.get(field)!r} (expected {value!r})"
+        for field, value in expected.items()
+        if report.get(field) != value
+    ]
+    if mismatches:
+        raise WorkerCarrierError(
+            "worker report is not a delivered typed result: " + "; ".join(mismatches)
+        )
+    if report.get("execution_mode") not in ("file-backed-worker", "typed-subagent"):
+        raise WorkerCarrierError("worker report has no supported distinct execution mode")
+    for field in (
+        "attempt_id",
+        "producer_run_id",
+        "scope",
+        "packet_identity",
+        "reviewed_input_identity",
+        "parent_receipt_identity",
+        "boundary_fingerprint",
+        "findings_identity",
+        "receipt_output_sha256",
+    ):
+        if not isinstance(report.get(field), str) or not report[field].strip():
+            raise WorkerCarrierError(f"worker report has no explicit {field}")
+    return _validate_delivery_chain(repo_root=repo_root, report=report, require_pass=False)

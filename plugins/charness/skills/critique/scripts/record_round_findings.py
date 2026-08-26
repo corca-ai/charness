@@ -16,9 +16,10 @@ import hashlib
 import importlib.util
 import json
 import re
-import sys
 from pathlib import Path
 from typing import Any
+
+import yaml
 
 ROUND_DIRECTORY = Path("charness-artifacts/critique/rounds")
 WINDOW_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
@@ -95,21 +96,63 @@ def _read_snapshot(repo_root: Path, snapshot_arg: str, window_id: str) -> tuple[
     return _repo_relative(repo_root, snapshot_path), hashlib.sha256(raw).hexdigest()
 
 
-def _read_findings(findings_arg: str | None) -> tuple[str, str]:
-    if findings_arg in (None, "-"):
-        raw = sys.stdin.buffer.read()
-    else:
-        try:
-            raw = Path(findings_arg).read_bytes()
-        except OSError as exc:
-            raise RoundFindingsError(f"findings file is unreadable: {findings_arg}: {exc}") from exc
-    if not raw.strip():
-        raise RoundFindingsError("reviewer findings must not be empty")
+def _load_worker_support():
+    """Load the adjacent source or exported shared worker-chain owner."""
+    here = Path(__file__).resolve()
+    candidates = (
+        ancestor / "shared/scripts/reviewer_worker_carrier_support.py"
+        for ancestor in (here.parent, *here.parents)
+    )
+    support_path = next((candidate for candidate in candidates if candidate.is_file()), None)
+    if support_path is None:
+        raise RoundFindingsError("shared reviewer worker carrier support is unavailable")
+    spec = importlib.util.spec_from_file_location(
+        "charness_round_worker_carrier_support", support_path
+    )
+    if spec is None or spec.loader is None:
+        raise RoundFindingsError(f"cannot load worker carrier support: {support_path}")
+    module = importlib.util.module_from_spec(spec)
     try:
+        spec.loader.exec_module(module)
+    except Exception as exc:
+        raise RoundFindingsError(f"cannot load worker carrier support: {exc}") from exc
+    return module
+
+
+def _read_worker_report(
+    repo_root: Path, report_arg: str
+) -> tuple[str, str, dict[str, Any]]:
+    support = _load_worker_support()
+    try:
+        report_path = support._report_path(repo_root, report_arg)
+        raw = report_path.read_bytes()
+        payload = yaml.safe_load(raw.decode("utf-8"))
+    except (OSError, UnicodeDecodeError, yaml.YAMLError, support.WorkerCarrierError) as exc:
+        raise RoundFindingsError(f"worker report is unreadable or unsafe: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise RoundFindingsError("worker report must contain a mapping")
+    return _repo_relative(repo_root, report_path), hashlib.sha256(raw).hexdigest(), payload
+
+
+def _read_typed_findings(
+    repo_root: Path, receipt: dict[str, Any], result_sha256: str
+) -> tuple[str, str]:
+    support = _load_worker_support()
+    output_value = receipt.get("output_file")
+    if not isinstance(output_value, str):
+        raise RoundFindingsError("worker receipt has no typed result path")
+    try:
+        result_path = support._report_path(repo_root, output_value)
+        raw = result_path.read_bytes()
         text = raw.decode("utf-8")
-    except UnicodeDecodeError as exc:
-        raise RoundFindingsError("reviewer findings must be UTF-8") from exc
-    return text.rstrip() + "\n", hashlib.sha256(raw).hexdigest()
+    except (OSError, UnicodeDecodeError, support.WorkerCarrierError) as exc:
+        raise RoundFindingsError(f"typed worker result is unreadable: {exc}") from exc
+    if not raw.strip():
+        raise RoundFindingsError("typed worker result must not be empty")
+    observed_sha256 = hashlib.sha256(raw).hexdigest()
+    if observed_sha256 != result_sha256:
+        raise RoundFindingsError("typed worker result changed after delivery-chain validation")
+    return _repo_relative(repo_root, result_path), text if text.endswith("\n") else text + "\n"
 
 
 def _record_path(repo_root: Path, recorded_date: str, window_id: str) -> Path:
@@ -130,7 +173,7 @@ def record_round(
     round_number: int,
     window_id: str,
     snapshot: str,
-    findings: str | None,
+    worker_report: str,
     recorded_date: str,
     goal_lineage_file: str | None = None,
 ) -> dict[str, Any]:
@@ -139,7 +182,36 @@ def record_round(
         raise RoundFindingsError("round must be a positive integer")
     goal_lineage = _load_goal_lineage(repo_root, goal_lineage_file)
     snapshot_path, snapshot_sha256 = _read_snapshot(repo_root, snapshot, window_id)
-    findings_text, findings_sha256 = _read_findings(findings)
+    report_path, report_sha256, report = _read_worker_report(repo_root, worker_report)
+    if report.get("boundary_fingerprint") != snapshot_sha256:
+        raise RoundFindingsError(
+            "worker report boundary fingerprint does not match the supplied boundary snapshot"
+        )
+    support = _load_worker_support()
+    try:
+        receipt, result, findings_sha256 = support.validate_delivered_worker_report(
+            repo_root=repo_root, report=report
+        )
+    except Exception as exc:
+        raise RoundFindingsError(f"worker report delivery is not a typed result: {exc}") from exc
+    result_path, findings_text = _read_typed_findings(repo_root, receipt, findings_sha256)
+    execution_identity = {
+        "attempt_id": report["attempt_id"],
+        "backend": report.get("backend"),
+        "boundary_fingerprint": report["boundary_fingerprint"],
+        "execution_mode": report["execution_mode"],
+        "packet_identity": report["packet_identity"],
+        "parent_receipt_identity": report["parent_receipt_identity"],
+        "producer_run_id": report["producer_run_id"],
+        "reviewed_input_identity": report["reviewed_input_identity"],
+        "scope": report["scope"],
+    }
+    execution_identity_canonical = json.dumps(
+        execution_identity, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    )
+    execution_identity_sha256 = hashlib.sha256(
+        execution_identity_canonical.encode("utf-8")
+    ).hexdigest()
     output_path = _record_path(repo_root, recorded_date, window_id)
     if output_path.exists():
         raise RoundFindingsError(f"round record already exists; refusing overwrite: {output_path}")
@@ -157,6 +229,20 @@ def record_round(
         f"- Boundary snapshot: `{snapshot_path}`\n"
         f"- Boundary snapshot SHA-256: `{snapshot_sha256}`\n"
         f"- Findings SHA-256: `{findings_sha256}`\n\n"
+        "## Reviewer Provenance\n\n"
+        f"- Worker report: `{report_path}`\n"
+        f"- Worker report SHA-256: `{report_sha256}`\n"
+        f"- Worker result: `{result_path}`\n"
+        f"- Worker result SHA-256: `{findings_sha256}`\n"
+        f"- Reviewer execution identity: `attempt_id={report['attempt_id']}; producer_run_id={report['producer_run_id']}; execution_mode={report['execution_mode']}`\n"
+        f"- Reviewer execution identity SHA-256: `{execution_identity_sha256}`\n"
+        f"- Scope: `{report['scope']}`\n"
+        f"- Backend: `{report.get('backend')}`\n"
+        f"- Packet identity SHA-256: `{report['packet_identity']}`\n"
+        f"- Reviewed input identity SHA-256: `{report['reviewed_input_identity']}`\n"
+        f"- Parent receipt identity: `{report['parent_receipt_identity']}`\n"
+        f"- Delivery state: `{report['delivery_state']}`\n"
+        f"- Typed verdict: `{result['verdict']}`\n\n"
         "## Goal Evidence Lineage\n\n"
         f"- Lineage SHA-256: `{lineage_sha256}`\n\n"
         "```json\n"
@@ -177,6 +263,12 @@ def record_round(
         "boundary_snapshot": snapshot_path,
         "boundary_snapshot_sha256": snapshot_sha256,
         "findings_sha256": findings_sha256,
+        "worker_report": report_path,
+        "worker_report_sha256": report_sha256,
+        "worker_result": result_path,
+        "worker_result_sha256": findings_sha256,
+        "reviewer_execution_identity_sha256": execution_identity_sha256,
+        "review_verdict": result["verdict"],
         "goal_lineage": goal_lineage,
     }
 
@@ -187,7 +279,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--round", type=int, required=True, dest="round_number")
     parser.add_argument("--window-id", required=True)
     parser.add_argument("--boundary-snapshot", required=True)
-    parser.add_argument("--findings-file", help="UTF-8 reviewer output; omit or use '-' for stdin")
+    parser.add_argument(
+        "--worker-report",
+        required=True,
+        help="Repo-relative or in-repo path to the typed delivered worker report YAML",
+    )
     parser.add_argument("--goal-lineage-file", help="Repo-relative full Goal Run evidence-lineage JSON")
     parser.add_argument(
         "--recorded-date",
@@ -201,7 +297,7 @@ def main(argv: list[str] | None = None) -> int:
             round_number=args.round_number,
             window_id=args.window_id,
             snapshot=args.boundary_snapshot,
-            findings=args.findings_file,
+            worker_report=args.worker_report,
             recorded_date=args.recorded_date,
             goal_lineage_file=args.goal_lineage_file,
         )

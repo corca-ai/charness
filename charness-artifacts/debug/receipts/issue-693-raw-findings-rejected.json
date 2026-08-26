@@ -1,0 +1,17 @@
+{
+  "schema": "charness.adversarial-evidence.receipt.v1",
+  "finding": "DBG-693-F1",
+  "source": "skills/public/critique/scripts/record_round_findings.py",
+  "expected": "raw same-context findings are rejected while a bound typed worker result is accepted",
+  "stimulus": "invoke the recorder with --findings-file instead of --worker-report",
+  "disposition": "reproduced",
+  "observed": "the CLI exits with argument error and writes no round record; the paired typed-worker test passes",
+  "handoff": "charness-artifacts/impl/2026-08-27-issue-693-reviewer-provenance.md",
+  "next_move": "keep --worker-report as the only findings input",
+  "command": "python3 -m pytest -q tests/test_critique_round_findings.py::test_refuses_raw_same_context_findings_file tests/test_critique_round_findings.py::test_records_typed_worker_findings_with_explicit_provenance",
+  "fixture": "tests/test_critique_round_findings.py",
+  "final_consumer": "skills/public/critique/scripts/record_round_findings.py",
+  "executed": true,
+  "final_consumer_observed": true,
+  "returncode": 0
+}
