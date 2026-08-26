@@ -30,9 +30,11 @@ from scripts.mutation_baseline_abort_lib import (  # noqa: E402
 )
 from scripts.mutation_changed_files_lib import (  # noqa: E402
     classify_changed_sample_scope,
+    invalidate_changed_line_coverage_marker,
 )
 from scripts.mutation_manifest_lib import build_manifest_from_state, write_manifest  # noqa: E402
 from scripts.mutation_sampling_lib import (  # noqa: E402
+    DEFAULT_SAMPLE_COVERAGE_JSON,
     build_mutation_line_coverage,
     filter_eligible_by_coverage,
     filter_eligible_by_mutation_line_coverage,
@@ -60,7 +62,7 @@ MUTATION_POOLS = {
 EXCLUDED_NAMES = {"__init__.py"}
 DEFAULT_MAX_FILES = 10
 DEFAULT_CHANGED_QUOTA = 5
-DEFAULT_COVERAGE_JSON = Path("reports/mutation/test-coverage.json")
+DEFAULT_COVERAGE_JSON = DEFAULT_SAMPLE_COVERAGE_JSON
 DEFAULT_MIN_FILE_COVERAGE = 0.85
 DEFAULT_MAX_EXECUTABLE_MUTANTS = 120
 DEFAULT_MAX_EXECUTABLE_MUTANTS_PER_FILE = 80
@@ -223,6 +225,10 @@ def select_eligible_for_mutation(
 ]:
     if not coverage_enabled:
         return all_eligible, all_eligible, {}, {}
+    # This probe owns the sampler report. If an operator explicitly points it at
+    # a changed-line report, invalidate that producer's marker before replacing
+    # the JSON; otherwise an old matching marker would certify the new corpus.
+    invalidate_changed_line_coverage_marker(coverage_json)
     try:
         run_test_coverage(repo_root, test_command, coverage_json)
     except subprocess.CalledProcessError as exc:

@@ -171,7 +171,7 @@ def _skip_payload(tmp_path: Path, *, stale: bool) -> dict:
         # changed-pool content: the stale branch, which is the one that used to name
         # only the 11-15 minute rebuild.
         cov.write_text('{"files": {}}', encoding="utf-8")
-        (repo / "cov.json.fingerprint").write_text("stale-marker\n", encoding="utf-8")
+        (repo / "cov.json.changed-line.fingerprint").write_text("stale-marker\n", encoding="utf-8")
         args.append("--require-fresh-coverage")
     else:
         args.append("--skip-if-no-coverage")

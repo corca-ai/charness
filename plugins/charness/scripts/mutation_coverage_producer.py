@@ -6,7 +6,8 @@ an explicit focused pytest command while broad pytest stays on the normal
 proof/cache path. The producer exports small coverage JSON and stamps a freshness
 fingerprint. The pre-push consumer
 (`check_changed_line_mutation_coverage.py --require-fresh-coverage`) trusts that
-coverage when its `.fingerprint` marker matches the current changed-pool content.
+coverage when its producer-qualified `.changed-line.fingerprint` marker matches
+the current changed-pool content.
 
 Spec: charness-artifacts/spec/mutation-changed-line-premerge-gate.md (Slice 2).
 This wiring is charness-host-local (closeout-specific); the transferable doctrine

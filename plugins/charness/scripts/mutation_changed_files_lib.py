@@ -7,6 +7,7 @@ in `mutation_sampling_lib`; this module answers the change-set question only.
 from __future__ import annotations
 
 import hashlib
+import json
 import re
 import subprocess
 from pathlib import Path
@@ -253,14 +254,73 @@ def changed_pool_fingerprint(repo_root: Path, base_sha: str) -> str:
 
 
 def coverage_fingerprint_marker_path(coverage_json: Path) -> Path:
-    """Sibling marker the producer stamps and the consumer trusts for freshness."""
+    """Generic portable-gate marker path.
+
+    Charness's changed-line producer uses the namespaced path below so a
+    sampler or another producer cannot silently reuse this gate's marker.
+    """
     return coverage_json.with_name(coverage_json.name + ".fingerprint")
 
 
-def write_coverage_fingerprint_marker(repo_root: Path, coverage_json: Path, base_sha: str) -> str:
-    fingerprint = changed_pool_fingerprint(repo_root, base_sha)
-    coverage_fingerprint_marker_path(coverage_json).write_text(fingerprint + "\n", encoding="utf-8")
+CHANGED_LINE_COVERAGE_PRODUCER = "changed-line-coverage"
+CHANGED_LINE_COVERAGE_MARKER_SCHEMA = "charness.changed-line-coverage-fingerprint.v1"
+
+
+def changed_line_coverage_marker_path(coverage_json: Path) -> Path:
+    """Marker path owned only by the Charness changed-line producer."""
+    return coverage_json.with_name(coverage_json.name + ".changed-line.fingerprint")
+
+
+def read_changed_line_coverage_marker(marker_path: Path) -> str | None:
+    """Read a producer-qualified changed-line marker, or ``None`` if unusable."""
+    try:
+        payload = json.loads(marker_path.read_text(encoding="utf-8"))
+    except (OSError, TypeError, ValueError, json.JSONDecodeError):
+        return None
+    if not isinstance(payload, dict):
+        return None
+    if payload.get("schema") != CHANGED_LINE_COVERAGE_MARKER_SCHEMA:
+        return None
+    if payload.get("producer") != CHANGED_LINE_COVERAGE_PRODUCER:
+        return None
+    fingerprint = payload.get("fingerprint")
+    if not isinstance(fingerprint, str) or not re.fullmatch(r"[0-9a-f]{64}", fingerprint):
+        return None
     return fingerprint
+
+
+def write_coverage_fingerprint_marker(repo_root: Path, coverage_json: Path, base_sha: str) -> str:
+    """Stamp the changed-line producer's content marker.
+
+    The historical function name is retained for callers and test seams. The
+    output is now a namespaced, producer-qualified record rather than a bare
+    hash, so a sampler report cannot satisfy this gate by inheriting a marker.
+    """
+    fingerprint = changed_pool_fingerprint(repo_root, base_sha)
+    marker = changed_line_coverage_marker_path(coverage_json)
+    marker.parent.mkdir(parents=True, exist_ok=True)
+    marker.write_text(
+        json.dumps(
+            {
+                "fingerprint": fingerprint,
+                "producer": CHANGED_LINE_COVERAGE_PRODUCER,
+                "schema": CHANGED_LINE_COVERAGE_MARKER_SCHEMA,
+            },
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    return fingerprint
+
+
+def invalidate_changed_line_coverage_marker(coverage_json: Path) -> None:
+    """Remove a changed-line marker before another producer rewrites the report."""
+    marker = changed_line_coverage_marker_path(coverage_json)
+    try:
+        marker.unlink()
+    except FileNotFoundError:
+        pass
 
 
 def classify_changed_file_exclusions(

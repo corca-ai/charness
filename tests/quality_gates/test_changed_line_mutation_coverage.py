@@ -17,6 +17,11 @@ from types import SimpleNamespace
 import yaml
 
 from runtime_bootstrap import import_repo_module
+from scripts.mutation_changed_files_lib import (
+    CHANGED_LINE_COVERAGE_MARKER_SCHEMA,
+    CHANGED_LINE_COVERAGE_PRODUCER,
+    changed_line_coverage_marker_path,
+)
 
 from .support import ROOT, run_script
 
@@ -264,18 +269,33 @@ def _fingerprint(repo: Path, base: str) -> str:
 
 
 def _marker_path(cov: Path) -> Path:
-    return cov.with_name(cov.name + ".fingerprint")
+    return changed_line_coverage_marker_path(cov)
+
+
+def _write_marker(cov: Path, fingerprint: str, *, producer: str = CHANGED_LINE_COVERAGE_PRODUCER) -> None:
+    cov.with_name(cov.name + ".changed-line.fingerprint").write_text(
+        json.dumps(
+            {
+                "fingerprint": fingerprint,
+                "producer": producer,
+                "schema": CHANGED_LINE_COVERAGE_MARKER_SCHEMA,
+            },
+            sort_keys=True,
+        ),
+        encoding="utf-8",
+    )
 
 
 def test_require_fresh_coverage_skips_when_marker_absent(tmp_path: Path) -> None:
-    # A coverage source with NO `.fingerprint` marker is treated as stale: the
+    # A coverage source with NO producer-qualified `.changed-line.fingerprint`
+    # marker is treated as stale: the
     # pre-push teeth skip non-blocking rather than trust coverage that may predate
     # the changed lines (the stale-coverage false-positive class found in the
     # wiring smoke). Without this guard a stale reports/mutation/test-coverage.json
     # would block a legitimate push.
     repo, base, head = _seed_repo_with_changed_pool_file(tmp_path)
     cov = _write_coverage(repo, executed=[1, 2], missing=[5, 6])  # would block if trusted
-    # no <cov>.fingerprint marker written
+    # no <cov>.changed-line.fingerprint marker written
 
     result = run_script(
         _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
@@ -298,7 +318,7 @@ def test_require_fresh_coverage_skips_when_marker_absent(tmp_path: Path) -> None
 def test_require_fresh_coverage_skips_when_marker_mismatched(tmp_path: Path) -> None:
     repo, base, head = _seed_repo_with_changed_pool_file(tmp_path)
     cov = _write_coverage(repo, executed=[1, 2], missing=[5, 6])
-    _marker_path(cov).write_text("0" * 64, encoding="utf-8")  # wrong fingerprint
+    _write_marker(cov, "0" * 64)  # wrong fingerprint
 
     result = run_script(
         _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
@@ -316,11 +336,12 @@ def test_require_fresh_coverage_skips_when_marker_mismatched(tmp_path: Path) -> 
 
 def test_require_fresh_coverage_fires_when_marker_matches_fingerprint(tmp_path: Path) -> None:
     # The freshness guard does NOT defang the teeth: a coverage source whose
-    # `.fingerprint` marker matches the current changed-pool content still blocks
+    # producer-qualified `.changed-line.fingerprint` matches the current
+    # changed-pool content still blocks
     # an uncovered changed line (AC-WIRE — fresh coverage keeps its teeth).
     repo, base, head = _seed_repo_with_changed_pool_file(tmp_path)
     cov = _write_coverage(repo, executed=[1, 2], missing=[5, 6])  # def b uncovered
-    _marker_path(cov).write_text(_fingerprint(repo, base), encoding="utf-8")
+    _write_marker(cov, _fingerprint(repo, base))
 
     result = run_script(
         _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
@@ -335,7 +356,8 @@ def test_require_fresh_coverage_fires_when_marker_matches_fingerprint(tmp_path: 
 
 def test_write_fresh_marker_stamps_coverage_fingerprint(tmp_path: Path, monkeypatch) -> None:
     # Producer mode (closeout): after coverage is produced, write the
-    # `<coverage-json>.fingerprint` marker = the changed-pool content fingerprint
+    # `<coverage-json>.changed-line.fingerprint` marker = a producer-qualified
+    # changed-pool content fingerprint
     # so the pre-push consumer's --require-fresh-coverage can later trust it. The
     # producer probe drops dynamic_context (lever A), so the stub records the kwarg.
     repo, base, head = _seed_repo_with_changed_pool_file(tmp_path)
@@ -365,8 +387,10 @@ def test_write_fresh_marker_stamps_coverage_fingerprint(tmp_path: Path, monkeypa
     assert rc == 0
     assert seen["dynamic_context"] is False, "producer drops dynamic_context (lever A)"
     marker = _marker_path(cov_path)
-    assert marker.is_file(), "producer must write the .fingerprint marker"
-    assert marker.read_text(encoding="utf-8").strip() == _fingerprint(repo, base)
+    assert marker.is_file(), "producer must write the changed-line marker"
+    payload = json.loads(marker.read_text(encoding="utf-8"))
+    assert payload["producer"] == CHANGED_LINE_COVERAGE_PRODUCER
+    assert payload["fingerprint"] == _fingerprint(repo, base)
 
 
 def _dirty_pool_file(repo: Path) -> None:

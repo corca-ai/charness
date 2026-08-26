@@ -19,6 +19,8 @@ from scripts.mutation_line_coverage_lib import (
     mutation_line_is_covered as _mutation_line_is_covered,
 )
 
+DEFAULT_SAMPLE_COVERAGE_JSON = Path("reports/mutation/sample-coverage.json")
+
 
 def stable_hash(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()

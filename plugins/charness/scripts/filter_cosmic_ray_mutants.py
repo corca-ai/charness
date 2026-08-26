@@ -35,6 +35,9 @@ from scripts.mutation_line_coverage_lib import (  # noqa: E402
     covered_statement_spans,
     mutation_line_is_covered,
 )
+from scripts.mutation_sampling_lib import (  # noqa: E402
+    DEFAULT_SAMPLE_COVERAGE_JSON as DEFAULT_MUTATION_SAMPLE_COVERAGE_JSON,
+)
 from scripts.yaml_output import emit_yaml  # noqa: E402
 
 
@@ -240,7 +243,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=Path("."))
     parser.add_argument("--session", type=Path, required=True)
-    parser.add_argument("--coverage-json", type=Path, default=Path("reports/mutation/test-coverage.json"))
+    parser.add_argument("--coverage-json", type=Path, default=DEFAULT_MUTATION_SAMPLE_COVERAGE_JSON)
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()

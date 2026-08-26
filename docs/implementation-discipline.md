@@ -43,7 +43,7 @@ the root instruction file but still apply to Charness maintenance work.
   `--produce-mutation-coverage` to the final `--verification-lock` closeout. By
   default, it instruments that one broad pytest run with plain coverage (no
   double run) and emits `reports/mutation/test-coverage.json` plus the
-  `.fingerprint` freshness marker. Since D40 the pre-push lane
+  `test-coverage.json.changed-line.fingerprint` freshness marker. Since D40 the pre-push lane
   (`check-changed-line-mutation-coverage`) no longer reuses that artifact: it
   PRODUCES its own incremental coverage from the standing tests the mapper resolves
   for the changed pool files, writes it to `reports/mutation/prepush-focused-coverage.json`

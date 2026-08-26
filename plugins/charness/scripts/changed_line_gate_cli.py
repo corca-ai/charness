@@ -65,9 +65,10 @@ def parse_args() -> argparse.Namespace:
         "--require-fresh-coverage",
         action="store_true",
         help=(
-            "Only trust a coverage JSON whose sibling marker `<coverage-json>.fingerprint` "
-            "matches the current changed-pool content fingerprint; otherwise skip "
-            "non-blocking. The pre-push wiring sets this so a STALE coverage source "
+            "Only trust a coverage JSON whose sibling marker "
+            "`<coverage-json>.changed-line.fingerprint` identifies the changed-line "
+            "producer and matches the current changed-pool content fingerprint; otherwise skip "
+            "non-blocking. The pre-push wiring sets this so a STALE or foreign coverage source "
             "(produced before the changed lines existed) cannot raise false 'uncovered "
             "changed line' positives. The closeout producer writes the marker when it "
             "refreshes coverage."
@@ -104,8 +105,9 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help=(
             "Producer mode: after coverage exists for the analyzed range, write the "
-            "sibling `<coverage-json>.fingerprint` marker recording the changed-pool "
-            "content fingerprint so the pre-push consumer (`--require-fresh-coverage`) "
+            "sibling `<coverage-json>.changed-line.fingerprint` marker recording the "
+            "changed-line producer and changed-pool content fingerprint so the pre-push consumer "
+            "(`--require-fresh-coverage`) "
             "can trust the coverage."
         ),
     )
@@ -135,5 +137,4 @@ def parse_args() -> argparse.Namespace:
             f"{args.test_command!r}; {INSTRUMENTABLE_COMMAND_REFUSAL}"
         )
     return args
-
 

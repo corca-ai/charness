@@ -1,0 +1,17 @@
+{
+  "schema": "charness.adversarial-evidence.receipt.v1",
+  "finding": "DBG-697-F1",
+  "source": "charness-artifacts/goal-runs/724/bodies/backlog-697.md",
+  "expected": "the changed-line consumer must not treat a sampler-written coverage report as its authoritative fresh corpus",
+  "stimulus": "write a sampler-shaped coverage report at reports/mutation/test-coverage.json while leaving a matching legacy changed-line fingerprint marker, then run the reuse consumer",
+  "disposition": "reproduced",
+  "observed": "the consumer returned exit 0 and reported no blocking files for the sampler-shaped report because the content-only marker could not identify its writer",
+  "handoff": "charness-artifacts/impl/2026-08-27-issue-697-distinct-mutation-coverage.md",
+  "next_move": "give the sampler a separate default report path and make the changed-line freshness marker identify the changed-line producer",
+  "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPYCACHEPREFIX=/tmp/charness-697-repro-pycache-20260827 python3 -m pytest -q tests/quality_gates/test_distinct_mutation_coverage.py",
+  "fixture": "tests/quality_gates/test_distinct_mutation_coverage.py",
+  "final_consumer": "scripts/check_changed_line_mutation_coverage.py",
+  "executed": true,
+  "final_consumer_observed": true,
+  "returncode": 0
+}

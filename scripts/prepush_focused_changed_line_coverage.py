@@ -118,7 +118,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         type=Path,
         default=Path("reports/mutation/prepush-focused-coverage.json"),
         help=(
-            "Where the focused producer writes coverage plus its `.fingerprint` marker. "
+            "Where the focused producer writes coverage plus its "
+            "`.changed-line.fingerprint` marker. "
             "Deliberately NOT the canonical `reports/mutation/test-coverage.json`: this "
             "lane's coverage comes from a test SUBSET, and writing it there would leave "
             "subset coverage at the path the broad closeout producer owns, carrying a "

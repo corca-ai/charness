@@ -19,13 +19,18 @@ from scripts.mutation_sampling_lib import (
 
 def test_coverage_runtime_files_are_namespaced_by_report(tmp_path: Path) -> None:
     broad = tmp_path / "reports" / "mutation" / "test-coverage.json"
+    sample = tmp_path / "reports" / "mutation" / "sample-coverage.json"
     focused = tmp_path / "reports" / "mutation" / "prepush-focused-coverage.json"
 
     broad_paths = coverage_runtime_paths(broad)
+    sample_paths = coverage_runtime_paths(sample)
     focused_paths = coverage_runtime_paths(focused)
 
+    assert set(broad_paths).isdisjoint(sample_paths)
     assert set(broad_paths).isdisjoint(focused_paths)
+    assert set(sample_paths).isdisjoint(focused_paths)
     assert broad_paths[0].name == ".test-coverage.mutation-coverage"
+    assert sample_paths[0].name == ".sample-coverage.mutation-coverage"
     assert focused_paths[0].name == ".prepush-focused-coverage.mutation-coverage"
 
 

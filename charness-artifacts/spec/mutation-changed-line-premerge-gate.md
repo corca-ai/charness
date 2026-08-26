@@ -367,7 +367,8 @@ slice 1's `.head` marker).** Closeout runs **pre-commit** (verify → commit), s
 closeout-piggybacked producer stamps the *parent* SHA while the pre-push consumer
 checks the *committed tip* SHA — with the slice-1 SHA marker the gate would
 silently skip on **every** push (a permanent false-negative, defeating the seam
-fix). The marker is now `<coverage-json>.fingerprint` = a content hash of the
+fix). The marker is now `<coverage-json>.changed-line.fingerprint` = a
+producer-qualified content hash of the
 changed eligible pool files over `base→worktree`
 (`mutation_changed_files_lib.changed_pool_fingerprint`), which is identical at the
 producer's pre-commit run and the consumer's post-commit (clean-tree) check of the

@@ -39,7 +39,8 @@ def build_parser(*, repo_root: Path, surfaces_path: Path) -> argparse.ArgumentPa
         "--produce-mutation-coverage",
         action="store_true",
         help=(
-            "Emit reports/mutation/test-coverage.json plus a freshness fingerprint "
+            "Emit reports/mutation/test-coverage.json plus the changed-line producer's "
+            "freshness marker "
             "marker for the pre-push changed-line gate. By default this instruments "
             "the verification-lock broad pytest. With --mutation-coverage-command, "
             "the broad pytest proof stays on the normal closeout/cache path and the "

@@ -1,1 +1,1 @@
-2026-08-27-issue-695-critique-shape.md
+2026-08-27-issue-697-distinct-mutation-coverage.md

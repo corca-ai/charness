@@ -2,7 +2,7 @@
 
 The producer instruments the closeout broad pytest with plain coverage (lever
 A+B: drop dynamic_context, piggyback the run), exports a small coverage JSON, and
-stamps the freshness fingerprint marker the pre-push consumer trusts.
+stamps the producer-qualified freshness marker the pre-push consumer trusts.
 """
 from __future__ import annotations
 
@@ -15,6 +15,11 @@ from types import SimpleNamespace
 
 import pytest
 import yaml
+
+from scripts.mutation_changed_files_lib import (
+    changed_line_coverage_marker_path,
+    read_changed_line_coverage_marker,
+)
 
 from .mutation_coverage_producer_fixtures import git as _git
 from .mutation_coverage_producer_fixtures import seed_mutation_coverage_repo as _seed_repo
@@ -169,9 +174,9 @@ def test_produce_broad_coverage_emits_json_and_marker(tmp_path: Path, monkeypatc
     assert consumer_tokens[consumer_tokens.index("--head-sha") + 1] == "HEAD"
     assert "--reuse-coverage" in consumer_tokens
     assert "--require-fresh-coverage" in consumer_tokens
-    marker = cov.with_name(cov.name + ".fingerprint")
+    marker = changed_line_coverage_marker_path(cov)
     assert marker.is_file()
-    assert marker.read_text(encoding="utf-8").strip() == changed_pool_fingerprint(repo, base)
+    assert read_changed_line_coverage_marker(marker) == changed_pool_fingerprint(repo, base)
 
 
 def test_produce_broad_coverage_appends_extra_pytest_targets(tmp_path: Path, monkeypatch) -> None:
@@ -235,8 +240,8 @@ def test_produce_command_coverage_emits_json_and_marker(tmp_path: Path, monkeypa
     assert "tests/quality_gates/test_mutation_coverage_producer.py" in captured["command"]
     assert captured["show_contexts"] is False
     assert result["produced_mutation_coverage"] is True
-    marker = cov.with_name(cov.name + ".fingerprint")
-    assert marker.read_text(encoding="utf-8").strip() == changed_pool_fingerprint(repo, base)
+    marker = changed_line_coverage_marker_path(cov)
+    assert read_changed_line_coverage_marker(marker) == changed_pool_fingerprint(repo, base)
 
 
 def test_produce_command_coverage_can_export_only_requested_paths(tmp_path: Path, monkeypatch) -> None:
@@ -320,7 +325,7 @@ def test_produce_broad_coverage_skips_emit_on_failure(tmp_path: Path, monkeypatc
     assert result["returncode"] == 1
     assert result["produced_mutation_coverage"] is False
     assert called["combine"] is False  # no export when the broad pytest failed
-    assert not cov.with_name(cov.name + ".fingerprint").is_file()
+    assert not changed_line_coverage_marker_path(cov).is_file()
 
 
 def test_execute_command_plan_routes_broad_to_producer(tmp_path: Path, monkeypatch) -> None:
@@ -431,7 +436,7 @@ def test_make_closeout_producer_binds_base_and_produces(tmp_path: Path, monkeypa
     result = producer(repo, "pytest -q tests", "verify")
 
     assert result["produced_mutation_coverage"] is True
-    marker = repo / "reports" / "mutation" / "test-coverage.json.fingerprint"
+    marker = changed_line_coverage_marker_path(repo / "reports" / "mutation" / "test-coverage.json")
     assert marker.is_file()
 
 
@@ -464,8 +469,8 @@ def test_make_closeout_producer_uses_explicit_campaign_base_once(tmp_path: Path,
     result = producer(repo, "pytest -q tests", "verify")
 
     assert result["produced_mutation_coverage"] is True
-    marker = repo / "reports" / "mutation" / "test-coverage.json.fingerprint"
-    assert marker.read_text(encoding="utf-8").strip() == changed_pool_fingerprint(repo, explicit)
+    marker = changed_line_coverage_marker_path(repo / "reports" / "mutation" / "test-coverage.json")
+    assert read_changed_line_coverage_marker(marker) == changed_pool_fingerprint(repo, explicit)
     assert resolver_called is False
 
 
@@ -744,7 +749,7 @@ def test_explicit_campaign_base_marker_mismatch_is_detectable(tmp_path: Path, mo
         coverage_json=cov,
         run_command=fake_run,
     )
-    marker = cov.with_name(cov.name + ".fingerprint")
+    marker = changed_line_coverage_marker_path(cov)
     assert marker.is_file()
     consumer_args = SimpleNamespace(
         require_fresh_coverage=True,

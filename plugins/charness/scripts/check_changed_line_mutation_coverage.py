@@ -88,11 +88,12 @@ from scripts.changed_line_verdict_codes import (  # noqa: E402
     _verdict_exit_code,
 )
 from scripts.mutation_changed_files_lib import (  # noqa: E402
+    changed_line_coverage_marker_path,
     changed_line_numbers,
     changed_line_scope_gap_targets,
     changed_pool_fingerprint,
     classify_changed_line_scope_gap,
-    coverage_fingerprint_marker_path,
+    read_changed_line_coverage_marker,
     write_coverage_fingerprint_marker,
 )
 from scripts.mutation_sampling_lib import (  # noqa: E402
@@ -153,12 +154,14 @@ def _coverage_source_skip(args, repo_root: Path, coverage_json: Path, base_sha: 
       sampler, not by this lane; skip rather than pay a multi-GB load for columns
       this verdict never reads. Decided from a 4 KB header read, and only on a
       definite ``true`` -- an unreadable header proceeds exactly as before.
-    - ``--require-fresh-coverage``: a coverage JSON whose sibling ``.fingerprint``
-      marker does not match the current changed-pool content fingerprint is STALE
-      (it may predate the changed lines), so trusting it would raise false
-      positives; skip instead. The fingerprint is content-based and computed over
-      base→worktree, so it stays valid across the producer's pre-commit run and
-      the consumer's post-commit (pre-push) check of the same code.
+    - ``--require-fresh-coverage``: a coverage JSON whose sibling
+      ``.changed-line.fingerprint`` marker is not a changed-line producer marker
+      matching the current changed-pool content fingerprint is STALE (it may
+      predate the changed lines or belong to another producer), so trusting it
+      would raise false positives; skip instead. The fingerprint is content-based
+      and computed over base→worktree, so it stays valid across the producer's
+      pre-commit run and the consumer's post-commit (pre-push) check of the same
+      code.
     - ``--skip-if-no-coverage``: no coverage JSON at all; skip rather than fall
       through to the slow probe.
     """
@@ -198,8 +201,8 @@ def _coverage_source_skip(args, repo_root: Path, coverage_json: Path, base_sha: 
             "than paying a multi-GB load for those columns. See `resume_command` below."
         ), **resume_fields(repo_root, base_sha)}
     if args.require_fresh_coverage and coverage_json.is_file():
-        marker = coverage_fingerprint_marker_path(coverage_json)
-        recorded = marker.read_text(encoding="utf-8").strip() if marker.is_file() else None
+        marker = changed_line_coverage_marker_path(coverage_json)
+        recorded = read_changed_line_coverage_marker(marker)
         current = changed_pool_fingerprint(repo_root, base_sha)
         if recorded is None or recorded != current:
             return {**base, "reason": (
@@ -218,7 +221,7 @@ def _coverage_source_skip(args, repo_root: Path, coverage_json: Path, base_sha: 
 
 def _ensure_coverage(args, repo_root: Path, coverage_json: Path, base_sha: str) -> None:
     """Produce coverage when needed, and in producer mode stamp the
-    `.fingerprint` marker so the pre-push consumer's `--require-fresh-coverage`
+    `.changed-line.fingerprint` marker so the pre-push consumer's `--require-fresh-coverage`
     can trust the coverage was built for this changed-pool content. Skip guards
     run before this, so here a missing/stale reuse target means "run the probe".
 

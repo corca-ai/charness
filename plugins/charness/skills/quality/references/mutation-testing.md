@@ -186,6 +186,9 @@ repo's own mutation workflow, not a portable requirement for consumers:
   covered the selected mutation surface, rewrites `[cosmic-ray].test-command`
   for that sampled surface, applies executable-mutant and pytest-nodeid
   workload budgets, and writes the sample manifest.
+  Its coverage probe defaults to `reports/mutation/sample-coverage.json`, which
+  is separate from the changed-line producer's
+  `reports/mutation/test-coverage.json`.
 - `scripts/run_cosmic_ray_mutation.py --mode dry-run` runs baseline + init,
   then filters known low-signal annotation-only work items from the session.
 - `scripts/run_cosmic_ray_mutation.py --mode full` runs baseline + init +

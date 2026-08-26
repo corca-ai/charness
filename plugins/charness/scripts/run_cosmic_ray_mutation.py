@@ -18,13 +18,14 @@ from pathlib import Path
 from runtime_bootstrap import import_repo_module
 
 _abort_lib = import_repo_module(__file__, "scripts.mutation_baseline_abort_lib")
+_sampling = import_repo_module(__file__, "scripts.mutation_sampling_lib")
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_CONFIG = Path("cosmic-ray.toml")
 DEFAULT_SESSION = Path("reports/mutation/cosmic-ray.sqlite")
 DEFAULT_DUMP = Path("reports/mutation/cosmic-ray-dump.jsonl")
 DEFAULT_FILTER = Path("scripts/filter_cosmic_ray_mutants.py")
-DEFAULT_COVERAGE_JSON = Path("reports/mutation/test-coverage.json")
+DEFAULT_COVERAGE_JSON = _sampling.DEFAULT_SAMPLE_COVERAGE_JSON
 DEFAULT_TIMEOUT_MARKER = Path("reports/mutation/exec-timeout.json")
 DEFAULT_EXEC_TIMEOUT_SECONDS = 9000
 

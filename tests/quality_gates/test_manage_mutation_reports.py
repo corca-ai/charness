@@ -252,6 +252,8 @@ def test_adapter_declared_report_paths_are_managed(tmp_path: Path, monkeypatch) 
     coverage = (tmp_path / "reports/mutation/custom-coverage.json").resolve()
     assert coverage in managed
     assert coverage.with_name("custom-coverage.json.fingerprint") in managed
+    assert coverage.with_name("custom-coverage.json.changed-line.fingerprint") in managed
+    assert (tmp_path / "reports/mutation/sample-coverage.json").resolve() in managed
     assert (tmp_path / "reports/mutation/stryker-js.html").resolve() in managed
 
 
