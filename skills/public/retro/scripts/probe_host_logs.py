@@ -45,6 +45,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--repo-root", type=Path, default=Path.cwd(), help="Repo root used to resolve repo-local log paths")
     parser.add_argument("--goal-path", type=Path, help="Optional goal artifact carrying a `Host metric window:` evidence line")
     parser.add_argument(
+        "--goal-lineage-file",
+        type=Path,
+        help="Optional repo-local Goal Run lineage JSON to attach to the host-metric evidence.",
+    )
+    parser.add_argument(
         "--claude-session-file",
         type=Path,
         help="Scope the Claude session audit to this project session JSONL instead of the newest-by-mtime file",
@@ -77,12 +82,25 @@ def render_output(payload: dict, output_format: str) -> str:
 
 def main() -> int:
     args = parse_args()
-    payload = build_payload(
-        home=args.home.expanduser().resolve(),
-        repo_root=args.repo_root.expanduser().resolve(),
-        goal_path=args.goal_path,
-        claude_session_file=args.claude_session_file.expanduser() if args.claude_session_file else None,
-    )
+    try:
+        payload = build_payload(
+            home=args.home.expanduser().resolve(),
+            repo_root=args.repo_root.expanduser().resolve(),
+            goal_path=args.goal_path,
+            claude_session_file=args.claude_session_file.expanduser() if args.claude_session_file else None,
+            goal_lineage_path=args.goal_lineage_file,
+        )
+    except ValueError as exc:
+        print(
+            render_yaml(
+                {
+                    "status": "refused",
+                    "error": {"code": "invalid_lineage", "message": str(exc)},
+                }
+            ),
+            end="",
+        )
+        return 2
     print(render_output(payload, args.format), end="")
     return 0
 

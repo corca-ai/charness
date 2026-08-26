@@ -1,20 +1,19 @@
 # Achieve Lifecycle
 
-`achieve` runs one goal as three phases: **before** (shape and save), **during**
-(slice and record), **after** (prove and reflect). The goal artifact is the
-single durable surface across all three so a compacted or interrupted run can be
-audited from one file.
+`achieve` runs one goal as three phases: **before** (research, approval, and
+binding), **during** (provider pickup and child execution), and **after**
+(issue-owned proof and guarded close). The complete Goal Draft is immutable
+planning provenance; the provider-backed Goal Run is execution authority.
 
 Each phase's contract lives in its own file so a run reads only its current
 phase instead of the full three-phase document:
 
-- `references/lifecycle-before.md` — shape and save.
-- `references/lifecycle-during.md` — slice and record.
-- `references/lifecycle-after.md` — prove and reflect.
+- `references/lifecycle-before.md` — research, interview, approval, and binding.
+- `references/lifecycle-during.md` — exact pickup, child execution, and retry.
+- `references/lifecycle-after.md` — child proof, guarded close, and non-claims.
 
-`check_goal_artifact.py` emits an advisory `phase_brief` naming the goal's
-current-phase file (`lifecycle_file`); read that file, plus the coda below,
-regardless of phase.
+The current implementation's phase brief is advisory. Read the phase file that
+matches the operation and use provider readback as the authority for execution.
 
 ## Honest Proof Discipline
 

@@ -327,7 +327,15 @@ def main(argv: list[str] | None = None) -> int:
         lesson_before = lesson_inventory_snapshot(repo_root) if lesson_binding_data is not None else None
         worker_command.extend(["--timeout-seconds", str(timeout)])
         worker_command.extend(["--run-id", producer_run_id])
-        worker = subprocess.run(worker_command, cwd=repo_root, check=False)
+        worker = subprocess.run(
+            worker_command,
+            cwd=repo_root,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        if worker.stderr:
+            sys.stderr.write(worker.stderr)
 
         report = finalize_attempt(
             receipt_path=receipt_path,

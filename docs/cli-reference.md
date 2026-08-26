@@ -41,8 +41,8 @@ positional arguments:
     capability          Resolve repo-local logical capabilities through
                         `<repo-root>/.charness/local/capability.json` and
                         inspect provider readiness.
-    goal                Run stable goal helper commands without embedding
-                        versioned plugin cache paths.
+    goal                Inspect and resume issue-native Goal Runs without
+                        local goal-file state.
     tool                Inspect, install, update, or sync external tool
                         integrations that charness-managed skills depend on.
     worktree            Create, inspect, prepare, and clean up git worktrees
@@ -540,41 +540,39 @@ options:
 ## `charness goal`
 
 ```text
-usage: charness goal [-h] {check} ...
+usage: charness goal [-h] {run} ...
 
 positional arguments:
-  {check}
-    check     Validate a Charness achieve goal artifact through the installed
-              or source checkout helper.
+  {run}
+    run       Read a provider-backed Goal Run and select its next executable
+              child; no local artifact path is accepted.
 
 options:
   -h, --help  show this help message and exit
 ```
 
-## `charness goal check`
+## `charness goal run`
 
 ```text
-usage: charness goal check [-h] [--repo-root REPO_ROOT]
-                           [--goal-path GOAL_PATH] [--slug SLUG] [--date DATE]
-                           [--pursue-ready] [--home-root HOME_ROOT]
-                           [--repo-url REPO_URL]
-                           [--charness-checkout CHARNESS_CHECKOUT]
+usage: charness goal run [-h] [--repo-root REPO_ROOT] --objective OBJECTIVE
+                         [--home-root HOME_ROOT] [--repo-url REPO_URL]
+                         [--charness-checkout CHARNESS_CHECKOUT]
+
+Resume a provider-backed Goal Run; no local artifact path is accepted.
 
 options:
   -h, --help            show this help message and exit
   --repo-root REPO_ROOT
-                        Repo containing the goal artifact. Defaults to the
-                        current working directory.
-  --goal-path GOAL_PATH
-  --slug SLUG
-  --date DATE
-  --pursue-ready
+                        Target repository containing the Goal Run. Defaults to
+                        the current working directory.
+  --objective OBJECTIVE
+                        Exact issue-native objective, for example `/goal #N`.
   --home-root HOME_ROOT
   --repo-url REPO_URL
   --charness-checkout CHARNESS_CHECKOUT
                         Explicit Charness source checkout containing the
-                        achieve helper. Defaults to this CLI checkout or the
-                        managed checkout.
+                        current Goal Run pickup helper. Defaults to this CLI
+                        checkout or the managed checkout.
 ```
 
 ## `charness tool`

@@ -1,13 +1,13 @@
 ---
 name: prove
-description: "Use when a built implementation or contract slice needs its closeout proven before stopping: run the strongest honest verification, sync truth surfaces, bind the required fresh-eye critique, and emit the slice closeout ledger. `impl` loads this at its stop gate; contract-completing work consumes the same ledger."
+description: "Use when a built implementation or contract slice needs its closeout proven before stopping: run the strongest honest verification, sync truth surfaces, record the risk-based critique disposition, and emit the slice closeout ledger. `impl` loads this at its stop gate; contract-completing work consumes the same ledger."
 ---
 # Prove
 
 Use this when a slice is built and the remaining risk is stopping on unproven
 or unrecorded work. `spec` defines the acceptance boundary, `impl` builds the
 slice, and `prove` demonstrates it: executed evidence, synchronized truth
-surfaces, a bound critique, and the emitted closeout ledger.
+surfaces, a risk-based critique disposition, and the emitted closeout ledger.
 
 `prove` is slice-scoped, reversible-work-scoped. That boundary is what keeps it
 one concept:
@@ -19,8 +19,8 @@ one concept:
   the honest bar
 - irreversible-boundary ledgers (GitHub issue close, release publish) stay in
   `issue` and `release`; `prove` never absorbs their observables
-- the fresh-eye reviewer substrate stays in `critique`; `prove` decides the
-  scale and binds the result, never runs the review itself
+- the fresh-eye reviewer substrate stays in `critique`; `prove` decides whether
+  the risk requires it and records the result, never runs the review itself
 
 ## Bootstrap
 
@@ -73,23 +73,30 @@ verification preferences or `truth_surfaces`.
      reflected in the delivered slice or explicitly deferred or reclassified in
      the contract
 3. Run the stop gate.
-   - every task-completing repo slice records critique before closeout; scale the pass instead of asking whether it is needed
-   - record `Critique: short <scope>` for small local-risk slices, or `Critique: full <artifact-or-worker-status>` after using standalone `critique` for design, release, workflow, compatibility, host-proof, prompt-surface, public-skill, validator, or export decisions
-   - `critique` always means a fresh bounded review, never a same-context pass;
-     the critique adapter selects the file-backed worker or typed-subagent
-     branch and its typed carrier is the authority. Caller flags cannot turn a
-     failed worker/report into a same-context approval. Consume its proof according to the critique delivery contract. Use
-     `Critique: accepted-unreviewed-under-round-cap <cap-signal>` only when the
-     operating contract's two-round cap explicitly accepts a repair without a
-     third fresh-eye run; this is a residual non-claim, never approval. Use
-     `Critique: not-applicable <reason>` only for inspect/status/routing-only
-     requests that do not complete repo work.
-   - if critique delivery is blocked after the capability check, stop and record
-     `Critique: blocked <host-signal>`
-   - run a fresh-eye review for runtime behavior, boundary honesty, and
-     docs/spec synchronization; the
-     [boundary ownership brief](../../shared/references/boundary-ownership-brief.md)
-     owns the producer/consumer questions and the disposition this closeout records
+   - first classify the changed surface. For ordinary reversible local work,
+     record `Critique: not-required <reason>` and continue with deterministic
+     verification. The reason names the boundary that was not crossed; it is a
+     disposition, not a claim that the code is correct.
+   - use `Critique: short <scope>` only when the current contract names a
+     bounded material risk.
+   - use `Critique: full <artifact-or-worker-status>` when the current
+     contract names an authority, durability, external-write, security,
+     release, compatibility, install/update, or proof-surface risk. The owning
+     skill chooses the proof depth.
+   - when `critique` is explicitly selected, it still means a fresh bounded
+     review, never a same-context pass; the critique adapter selects the
+     file-backed worker or typed-subagent branch and its typed carrier is the
+     authority. Caller flags cannot turn a failed worker/report into approval.
+     Use `Critique: accepted-unreviewed-under-round-cap <cap-signal>` only when
+     the operating contract's two-round cap explicitly accepts a repair without
+     a third fresh-eye run; this is a residual non-claim, never approval.
+   - use `Critique: not-applicable <reason>` only for inspect/status/routing-
+     only requests that do not complete repo work. If a selected critique is
+     blocked after the capability check, stop and record
+     `Critique: blocked <host-signal>`.
+   - the [boundary ownership brief](../../shared/references/boundary-ownership-brief.md)
+     owns producer/consumer questions for the risk boundaries that actually
+     require review; reversible local work does not automatically enter them.
    - run `$SKILL_DIR/scripts/check_boundary_escalation.py --repo-root . --detail`; read
      `state` first, never `triggered` alone
    - `state: evaluated` + `triggered: true` — the changed paths matched the repo's
@@ -131,7 +138,7 @@ The closeout should usually include:
 `Implemented`, `Capability Delivered`, `Contract Source`, `Verification` naming
 code/fixture and runtime/evaluator proof, `Lint Gate` per
 `## Closeout Vocabulary`, `Truth Surface Sync`, `Boundary Ownership`, `Critique`,
-`Contract Updates`, `Residual Risks`, `Next Slice`.
+`Goal Evidence Lineage`, `Contract Updates`, `Residual Risks`, `Next Slice`.
 
 ## Closeout Vocabulary
 

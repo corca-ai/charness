@@ -1,0 +1,15 @@
+{
+  "schema": "charness.adversarial-evidence.receipt.v1",
+  "finding": "F1",
+  "source": "charness-artifacts/debug/2026-08-24-issue-689-node-tap-accounting.md",
+  "expected": "a malformed current debug artifact can bypass author-time validation and remain invisible until broad indexing",
+  "stimulus": "validate all three current debug artifacts individually",
+  "disposition": "disconfirmed",
+  "observed": "all three named debug artifacts validate individually; no broad-index failure is present in the current records",
+  "command": "python3 scripts/validate_debug_artifact.py --repo-root . --paths charness-artifacts/debug/2026-08-24-issue-689-node-tap-accounting.md charness-artifacts/debug/2026-08-24-issues-690-691-goal-readiness.md charness-artifacts/debug/2026-08-24-worker-boundary-identity-pattern.md",
+  "fixture": "three checked-in debug artifacts named by #721",
+  "final_consumer": "scripts/validate_debug_artifact.py validation result",
+  "executed": true,
+  "final_consumer_observed": true,
+  "returncode": 0
+}

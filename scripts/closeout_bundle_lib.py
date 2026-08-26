@@ -16,6 +16,7 @@ from runtime_bootstrap import import_repo_module
 
 _preflight = import_repo_module(__file__, "scripts.final_bundle_preflight_lib")
 _identity = import_repo_module(__file__, "scripts.reviewed_input_identity")
+_lineage = import_repo_module(__file__, "scripts.goal_lineage")
 
 KIND = "charness.closeout-bundle"
 SCHEMA_VERSION = 1
@@ -198,14 +199,24 @@ def build_plan(
     critique_paths: list[str],
     behavior_channels: list[str],
     bundle_id: str,
+    goal_lineage_path: Path | None = None,
 ) -> dict[str, Any]:
     if not BUNDLE_ID_RE.fullmatch(bundle_id):
         raise BundleError("bundle-id must match [a-z0-9][a-z0-9._-]{2,79}")
+    try:
+        goal_lineage = (
+            _lineage.load_goal_lineage_file(repo_root, goal_lineage_path, require_work_item=True)
+            if goal_lineage_path is not None
+            else _lineage.not_goal_bound_lineage("closeout bundle was planned without a Goal Run Work Item identity")
+        )
+    except _lineage.LineageError as exc:
+        raise BundleError(str(exc)) from exc
     plan = _preflight.build_plan(
         repo_root,
         manifest_path=manifest_path,
         critique_paths=critique_paths,
         behavior_channels=behavior_channels,
+        goal_lineage_path=goal_lineage_path,
     )
     paths = _safe_changed_paths(list(plan.get("changed_paths", [])))
     authoring = [shlex.join(argv) for argv in _authoring_argv(repo_root, paths)]
@@ -231,6 +242,7 @@ def build_plan(
         "preflight": plan,
         "changed_paths": paths,
         "phases": phases,
+        "goal_lineage": goal_lineage,
         "non_claims": [
             "dry-run only; no pointer, packet, quality, or worktree state was written",
             "behavior commands, provider state, installed-consumer behavior, remote CI, and release state are not claimed",
@@ -245,6 +257,7 @@ def execute(
     critique_paths: list[str],
     behavior_channels: list[str],
     bundle_id: str,
+    goal_lineage_path: Path | None = None,
     runner: Callable[..., subprocess.CompletedProcess[str]] = subprocess.run,
 ) -> dict[str, Any]:
     payload = build_plan(
@@ -253,6 +266,7 @@ def execute(
         critique_paths=critique_paths,
         behavior_channels=behavior_channels,
         bundle_id=bundle_id,
+        goal_lineage_path=goal_lineage_path,
     )
     payload["mode"] = "execute"
     if payload["status"] != "ready":
@@ -276,6 +290,7 @@ def execute(
         manifest_path=manifest_path,
         critique_paths=critique_paths,
         behavior_channels=behavior_channels,
+        goal_lineage_path=goal_lineage_path,
     )
     if refreshed_plan["status"] != "ready":
         return _failed(
@@ -337,6 +352,7 @@ def execute(
         manifest_path=manifest_path,
         critique_paths=critique_paths,
         behavior_channels=behavior_channels,
+        goal_lineage_path=goal_lineage_path,
     )
     closeout = next(
         (item["command"] for item in latest_plan["planned_commands"] if item["phase"] == "closeout"),

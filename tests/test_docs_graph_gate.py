@@ -326,7 +326,8 @@ def test_link_only_lines_slack_is_not_computable_when_unobserved_on_a_failing_ru
     assert result["status"] == "fail"
     assert "link_only_lines" not in result["summary"]
     assert result["not_observed"] == ["link_only_lines"]
-    assert payload["link_only_lines_slack"] == _gate.LINK_ONLY_LINES_SLACK_NOT_COMPUTABLE
+    assert payload["link_only_lines_slack"] is None
+    assert payload["link_only_lines_slack_reason"] == _gate.LINK_ONLY_LINES_SLACK_NOT_COMPUTABLE
 
 
 def test_link_only_lines_slack_is_absent_on_not_run(monkeypatch: pytest.MonkeyPatch) -> None:

@@ -42,10 +42,6 @@ NARRATIVE_GATE = load_script_module(
     "publish_release_narrative_gate_batch6",
     ROOT / "skills/public/release/scripts/publish_release_narrative_gate.py",
 )
-NORMALIZER = load_script_module(
-    "normalize_goal_closeout_batch6",
-    ROOT / "skills/public/achieve/scripts/normalize_goal_closeout.py",
-)
 DISPOSITION_AUDIT = load_script_module(
     "audit_disposition_corpus_batch6",
     ROOT / "skills/public/achieve/scripts/audit_disposition_corpus.py",
@@ -60,7 +56,6 @@ CHATBOT_COMPARE = load_script_module(
 )
 
 QUALITY_RESOLVER_SCRIPT = ROOT / "skills/public/quality/scripts/resolve_quality_artifact.py"
-NORMALIZER_SCRIPT = ROOT / "skills/public/achieve/scripts/normalize_goal_closeout.py"
 
 
 def _run(script: Path, *args: str) -> subprocess.CompletedProcess[str]:
@@ -263,108 +258,6 @@ def test_blank_and_comment_only_requirement_lines_declare_nothing(tmp_path: Path
     )
 
     assert EXPORT_LIB.declared_distributions(export_root) == {"pyyaml", "jsonschema"}
-
-
-# --- normalize_goal_closeout ----------------------------------------------------
-
-_DIRTY_GOAL = (
-    "Status: active\n\n"
-    "## Operator Decision Queue\n\n"
-    "Record decisions, confirmations, credential actions, manual proof steps.\n\n"
-    "- Decision: operator-only decision or confirmation needed\n\n"
-    "## Coordination Cues\n\n"
-    "- Routing: quality — used the quality planner.\n\n"
-    "## Final Verification\n\n"
-    "Retro: `charness-artifacts/retro/2026-07-09-demo.md`\n"
-    "Host log probe: `charness-artifacts/probe/2026-07-09-demo.json`\n"
-    "Disposition review: `charness-artifacts/retro/2026-07-09-demo-disposition.md`\n\n"
-    "## Auto-Retro\n\n"
-    "Retro dispositions: `charness-artifacts/retro/2026-07-09-demo-disposition.md` PASS -- done\n"
-)
-
-_CLEAN_GOAL = (
-    "Status: complete\n\n"
-    "## Operator Decision Queue\n\n"
-    "none — no operator-only decision remains for this completed local goal.\n\n"
-    "## Auto-Retro\n\n"
-    "Retro dispositions: applied: shipped the follow-up.\n"
-)
-
-
-def test_the_closeout_normalizer_defaults_to_a_dry_run_that_writes_nothing(
-    tmp_path: Path,
-) -> None:
-    """Without `--write` the artifact on disk is untouched and the payload says
-    `would change`.
-
-    `changed: true, written: false` is a dry run, and an author who reads it as a
-    completed write leaves the artifact unfixed -- so the verdict WORD has to be
-    in the payload alongside the two booleans.
-    """
-    goal = tmp_path / "goal.md"
-    goal.write_text(_DIRTY_GOAL, encoding="utf-8")
-
-    result = _run(NORMALIZER_SCRIPT, "--goal-path", str(goal), "--complete")
-
-    assert result.returncode == 0, result.stderr
-    payload = yaml.safe_load(result.stdout)
-    assert payload["status"] == "would change"
-    assert payload["changed"] is True
-    assert payload["written"] is False
-    assert payload["fixes"], "a dry run must still name what it would fix"
-    assert goal.read_text(encoding="utf-8") == _DIRTY_GOAL
-
-
-def test_the_closeout_normalizer_writes_only_when_asked(tmp_path: Path) -> None:
-    """`--write` applies the fixes and reports `wrote`."""
-    goal = tmp_path / "goal.md"
-    goal.write_text(_DIRTY_GOAL, encoding="utf-8")
-
-    result = _run(NORMALIZER_SCRIPT, "--goal-path", str(goal), "--complete", "--write")
-
-    assert result.returncode == 0, result.stderr
-    payload = yaml.safe_load(result.stdout)
-    assert payload["status"] == "wrote"
-    assert payload["changed"] is True
-    assert payload["written"] is True
-    assert "Status: complete" in goal.read_text(encoding="utf-8")
-
-
-def test_the_closeout_normalizer_reports_unchanged_for_a_clean_artifact(
-    tmp_path: Path,
-) -> None:
-    """A clean artifact is `unchanged` with no fixes, even under `--write`.
-
-    An affordance that reported a write it did not perform would train authors to
-    ignore its verdict entirely.
-    """
-    goal = tmp_path / "goal.md"
-    goal.write_text(_CLEAN_GOAL, encoding="utf-8")
-
-    result = _run(NORMALIZER_SCRIPT, "--goal-path", str(goal), "--write")
-
-    assert result.returncode == 0, result.stderr
-    payload = yaml.safe_load(result.stdout)
-    assert payload["status"] == "unchanged"
-    assert payload["changed"] is False
-    assert payload["written"] is False
-    assert payload["fixes"] == []
-    assert goal.read_text(encoding="utf-8") == _CLEAN_GOAL
-
-
-def test_a_skill_script_without_its_runtime_bootstrap_says_so(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """Installed outside any layout carrying `skill_runtime_bootstrap.py`, the
-    loader raises a NAMED ImportError.
-
-    The alternative is a `StopIteration` or an `AttributeError` on `None` several
-    frames later, which tells an operator nothing about the missing file.
-    """
-    monkeypatch.setattr(NORMALIZER, "__file__", str(tmp_path / "scripts" / "normalize.py"))
-
-    with pytest.raises(ImportError, match="skill_runtime_bootstrap.py not found"):
-        NORMALIZER._load_skill_runtime_bootstrap()
 
 
 def test_a_skill_script_without_the_repo_yaml_emitter_says_so(

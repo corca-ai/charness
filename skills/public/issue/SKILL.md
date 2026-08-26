@@ -99,6 +99,17 @@ closing anything.
 
 `issue tracker` operations support an issue-native `achieve` goal.
 
+For a complete Goal Run, prefer the file-backed provider surface:
+`goal-run-preflight`, `goal-run-read`, and one `goal-run-apply` per operation
+(`update-body`, `create-or-reuse-child`, `list-children`, `add-child`,
+`remove-child`, or `record-observation`). Inputs are strict repo-contained JSON
+files carrying the parent, immutable draft/binding hashes, attempt identity, and
+observation directory, so the command line stays small without dropping the
+identity proof. `goal-run-close` is the only path that may close a Goal Run; it
+requires a separate proof file and exact graph/child/evidence readback. The
+primitive tracker commands below remain useful compatibility and diagnostic
+surfaces.
+
 1. Run `issue_tool.py tracker-preflight --repo <owner/repo> --number <parent>`;
    backend health, exact parent/repository readback, rendered create/view/
    discover/update/list/resolve/add/remove templates, and capability closure

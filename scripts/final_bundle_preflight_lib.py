@@ -17,6 +17,7 @@ _surfaces = import_repo_module(__file__, "scripts.surfaces_lib")
 _selector = import_repo_module(__file__, "scripts.select_verifiers")
 _evidence = import_repo_module(__file__, "scripts.final_bundle_preflight_evidence")
 _packaging = import_repo_module(__file__, "scripts.packaging_lib")
+_lineage = import_repo_module(__file__, "scripts.goal_lineage")
 
 KIND = "charness.final-bundle-preflight"
 SCHEMA_VERSION = 1
@@ -135,6 +136,18 @@ def _candidate_snapshot(repo_root: Path, base_sha: str, changed_paths: list[str]
     }
 
 
+def _closeout_changed_paths(paths: list[str]) -> list[str]:
+    """Keep ephemeral runtime state out of the durable final-bundle surface.
+
+    ``collect_changed_paths_since_resolved_base`` intentionally includes the
+    worktree, while ``.charness/`` contains local reviewer/runtime output. The
+    closeout wrapper already excluded that directory after planning; filtering
+    here makes the authoritative surface inventory agree with that contract and
+    prevents generated local state from becoming an unmatched-surface blocker.
+    """
+    return sorted({path for path in paths if path and not path.startswith(".charness/")})
+
+
 def _surface_inventory(payload: dict[str, Any]) -> list[dict[str, Any]]:
     rows = []
     for surface in payload.get("matched_surfaces", []):
@@ -230,23 +243,53 @@ def _plan_command(phase: str, command: str, reason_surface_ids: list[str] | None
     }
 
 
-def build_plan(
+def build_plan(  # noqa: C901 -- the plan is one deterministic cross-surface preflight boundary
     repo_root: Path,
     *,
     manifest_path: Path,
     critique_paths: list[str],
     behavior_channels: list[str],
     explicit_paths: list[str] | None = None,
+    goal_lineage_path: Path | None = None,
 ) -> dict[str, Any]:
     repo_root = repo_root.resolve()
     manifest_path = manifest_path.resolve()
     blockers: list[dict[str, str]] = []
+    goal_lineage: dict[str, Any] | None = None
+    # Do not resolve before loading: the lineage loader must see the supplied
+    # path so it can reject symlink inputs. Normalize only after that check has
+    # succeeded for the planned downstream command.
+    resolved_lineage_path: Path | None = None
+    try:
+        if resolved_lineage_path is None:
+            goal_lineage = _lineage.not_goal_bound_lineage(
+                "final-bundle preflight was planned without a Goal Run Work Item identity"
+            )
+        else:
+            goal_lineage = _lineage.require_goal_execution_identity(
+                _lineage.load_goal_lineage_file(repo_root, goal_lineage_path)
+            )
+            resolved_lineage_path = goal_lineage_path.resolve()
+    except _lineage.LineageError as exc:
+        blockers.append(
+            _block(
+                "invalid_goal_lineage",
+                "goal_lineage",
+                str(exc),
+                "repair the repo-local Goal Run lineage record and rerun the preflight",
+            )
+        )
     manifest_result: dict[str, Any] = {}
     captured_identity: dict[str, Any] = {"status": "unavailable"}
     base_sha = ""
     try:
         blockers.extend(_current_manifest_blockers(repo_root, manifest_path))
-        manifest_result = _manifest.validate_manifest(repo_root, manifest_path, verify_current=False)
+        manifest_result = _manifest.validate_manifest(
+            repo_root,
+            manifest_path,
+            verify_current=False,
+            goal_lineage_path=resolved_lineage_path if goal_lineage is not None else None,
+        )
         data = json.loads(manifest_path.read_text(encoding="utf-8"))
         base_sha = data["premise"]["local_head_sha"]
         ancestor = _git(repo_root, "merge-base", "--is-ancestor", base_sha, "HEAD")
@@ -271,7 +314,7 @@ def build_plan(
             if explicit_paths is not None
             else _surfaces.collect_changed_paths_since_resolved_base(repo_root, base_sha)
         )
-        changed_paths = sorted(set(changed_paths))
+        changed_paths = _closeout_changed_paths(changed_paths)
     except (BundleError, _surfaces.SurfaceError) as exc:
         changed_paths = []
         blockers.append(_block("changed_path_collection_failed", "changed_paths", str(exc), "restore a valid git base and rerun the preflight"))
@@ -320,6 +363,11 @@ def build_plan(
                         ".",
                         "--manifest",
                         _manifest_rel(repo_root, manifest_path),
+                        *(
+                            ["--goal-lineage-file", _relative(repo_root, resolved_lineage_path)]
+                            if resolved_lineage_path is not None and goal_lineage is not None
+                            else []
+                        ),
                     ]
                 ),
             )
@@ -361,6 +409,7 @@ def build_plan(
         "mirror_inventory": mirror_inventory,
         "critique_inventory": critique_rows,
         "behavior_channels": behavior_rows,
+        "goal_lineage": goal_lineage,
         "planned_commands": planned,
         "blockers": sorted(blockers, key=lambda item: (item["code"], item["subject"])),
         "non_claims": [

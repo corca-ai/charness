@@ -99,6 +99,44 @@ def test_discussion_deploy_vocab_resolves_from_adapter_else_empty(tmp_path: Path
     assert policy.resolve_discussion_deploy_vocab(tmp_path) == ["rollout", "hotfix"]
 
 
+def test_interview_policy_defaults_to_fifteen_and_no_implicit_fallback(tmp_path: Path) -> None:
+    report = policy.interview_policy_report(tmp_path)
+
+    assert report["valid"] is True
+    assert report["max_questions"] == 15
+    assert report["allow_provisional_local_fallback"] is False
+
+
+def test_interview_policy_accepts_any_positive_integer_override(tmp_path: Path) -> None:
+    _write(
+        tmp_path,
+        ".agents/achieve-adapter.yaml",
+        "version: 1\ninterview:\n  max_questions: 37\n  allow_provisional_local_fallback: true\n",
+    )
+
+    report = policy.interview_policy_report(tmp_path)
+
+    assert report["valid"] is True
+    assert report["max_questions"] == 37
+    assert report["allow_provisional_local_fallback"] is True
+
+
+@pytest.mark.parametrize("value", ["0", "-1", "true", "1.5", "many"])
+def test_interview_policy_rejects_non_positive_or_non_integer_values(
+    tmp_path: Path, value: str
+) -> None:
+    _write(
+        tmp_path,
+        ".agents/achieve-adapter.yaml",
+        f"version: 1\ninterview:\n  max_questions: {value}\n",
+    )
+
+    report = policy.interview_policy_report(tmp_path)
+
+    assert report["valid"] is False
+    assert any("interview.max_questions" in error for error in report["errors"])
+
+
 def test_adapter_contract_yaml_documents_top_level_scaffold() -> None:
     text = ADAPTER_CONTRACT.read_text(encoding="utf-8")
     match = re.search(r"```yaml\n(.*?)\n```", text, re.DOTALL)

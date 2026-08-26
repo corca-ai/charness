@@ -95,56 +95,22 @@ These expand in [README.md Core Concepts](../README.md#core-concepts):
 
 ## Critique Discipline
 
-- Every task-completing repo change runs critique before closeout. Scale the
-  pass, not the obligation; the review unit is the risk boundary or meaningful
-  slice, not every commit.
-- Small local-risk slices may use a short scoped critique artifact that names
-  the decision, the likely misread, counterweight triage, and the next move.
+- Critique is risk-adaptive. Ordinary reversible local work may close with
+  deterministic proof and `Critique: not-required <reason>`; the reason names
+  the boundary classification and is not a correctness claim.
 - Non-trivial design, deletion, rename, release, workflow, compatibility,
   install/update, host-proof, prompt-surface, public-skill, validator, or export
-  decisions use the standalone `critique` skill once per substantial slice or
-  bundle, and rerun it only when later edits introduce a new risk boundary.
-- Slice fresh-eye review consumes a bounded packet: intent, changed files and
-  owning/generated surfaces, expected invariants, tests/proof, non-claims,
-  out-of-scope lines, and reviewer questions. **The packet's NON-CLAIMS are
-  claims** and need the same premise check as a plan's remedies: on 2026-08-02 a
-  packet asserted "no skill files, so no `plugins/` mirror is involved" when the
-  whole `scripts/` tree is mirrored, and that unchecked sentence was the round's
-  only blocker — the export would have shipped the un-repaired gate plus a
-  `ModuleNotFoundError`.
-- **Task-completing work runs a CLOSEOUT-CLAIMS review by a distinct observer
-  before the completion flip** — a bounded reviewer whose subject is what the
-  ARTIFACT ASSERTS, not whether the code is correct. Give it the acceptance bar
-  and ask it to re-derive each figure, check each disposition reason against the
-  text it cites, and name anything claimed as proven that was only reasoned
-  about. It is a different question from the code rounds, so it is not satisfied
-  by running more of them.
-  - **Measured 2026-08-02, and this is why it is standing rather than
-    advisory.** Three code-reading rounds passed over: a verification step the
-    plan required (an adversarial pass over every disposition) that had never
-    run and would have shipped recorded as satisfied; a Slice Log that
-    contradicted its own retro in the flattering direction; an unreconciled
-    headline count (13 vs 14) that WAS the acceptance bar; and a disposition
-    whose stated reason was false at every site it cited. The claims round found
-    all four in one pass, and its own single reading refuted a disposition the
-    code rounds had approved.
-  - The failure mode it catches is structural, not sloppiness: a code reviewer
-    is asked "is this right?", so it reads the diff. Nobody reading the diff is
-    asked "does the artifact's own summary survive contact with it?" — and the
-    author, who wrote both, is the last one who can tell.
-  - Scale it to the work: one bounded reviewer, given the acceptance criteria
-    and the closeout sections. When the host blocks subagent spawning, record
-    the concrete signal and leave the review unproven — never substitute a
-    same-agent reread, which is precisely the observer this floor exists to
-    exclude.
-  - **Surfaces: goal closeout AND release closeout** (2026-08-02). A release
-    publishes a record — notes, a version claim, an announcement — to readers
-    outside the session, with less context and the least chance of correction
-    after the fact. `release`'s own
-    [critique-boundary](../skills/public/release/references/critique-boundary.md)
-    *Claims Review* owns the release form. Not per-commit: the unit is a
-    closeout RECORD, not a diff, and firing it per-diff is how a floor becomes
-    ceremony.
+  decisions use the standalone `critique` skill when their material authority
+  or durability boundary is actually crossed. Scale the pass, not a universal
+  invocation obligation.
+- Closeout-claims review follows the same risk decision. Ordinary reversible
+  local work records deterministic evidence and
+  `Critique: not-required <reason>`; it does not acquire a distinct-observer
+  review merely because it is task-completing. A closeout that crosses a
+  material authority, durability, external-write, security, release,
+  compatibility, installed-host, or proof-surface boundary goes to its owning
+  review surface, which may inspect the claims as well as the implementation.
+  The review unit is the durable or externally visible record, not every diff.
 - **Run the reviewer boundary command**
   `reviewer_boundary_fingerprint.py verify --before <snapshot-path> --window-id <id>`
   the moment the reviewer returns, BEFORE any parent write.
@@ -205,8 +171,8 @@ These expand in [README.md Core Concepts](../README.md#core-concepts):
   - Both rounds run BEFORE the locked `--produce-mutation-coverage` producer run
     (see [implementation-discipline.md](./implementation-discipline.md)); a
     round-2 repair after the producer invalidates the coverage fingerprint.
-  - A docs, artifact, or ordinary-code slice keeps the single-round obligation
-    above.
+  - A docs or ordinary-code edit that does not change verdict logic does not
+    enter this proof-surface rule.
 - **A WRITE-CAPABLE subagent gets its own worktree; a read-only one may share the
   parent's.** Owner ruling 2026-08-15 (S6). The rule this replaces was a sentence
   in the spawn prompt telling write-capable children not to run mutating git ops —
@@ -263,28 +229,11 @@ These expand in [README.md Core Concepts](../README.md#core-concepts):
     hygiene rule in
     [fresh-eye-subagent-review.md](../skills/shared/references/fresh-eye-subagent-review.md)
     remains canonical for reviewers that share it.
-- **A multi-slice goal runs a bounded GOAL-CLAIMS review at its midpoint, not only
-  at closeout.** The slice rule above puts a fresh eye on every repair; nothing
-  put one on the goal's own claims until the end, and a goal artifact is a verdict
-  surface too — it asserts what each row now is, and downstream sessions plan
-  against those assertions rather than against the code.
-  - **Trigger:** a goal with three or more slices. Two-slice goals keep the
-    closeout review alone; the midpoint round is not worth its cost there.
-  - **What the reviewer reads:** the goal artifact's per-row claims against the
-    OWNING records and the commits, not the code. The question is "does the Slice
-    Log claim match what the record says and what the commit did", which is a
-    different question from "is this repair correct" and is answered by a
-    different packet.
-  - **Why the midpoint and not only closeout.** Measured on the 2026-08-01
-    stragglers goal: the closeout review found two blockers — an acceptance
-    criterion (one critique artifact per slice) that had gone unmet for all five
-    slices, and a row marked `FIXED` whose own record's prose still said the
-    opposite. Both were cheap to fix at the midpoint and expensive at the end,
-    because by then five slices of claims had been written against the same
-    unnoticed gap. Catching a claims defect once costs one round; catching it at
-    closeout costs re-writing every artifact the defect touched.
-  - The closeout disposition review still runs. The midpoint round does not
-    replace it, and a goal that stops early runs only the closeout one.
+- A multi-slice goal may use a bounded goal-claims review when its artifact
+  crosses a material durability or external-visibility boundary. A goal does
+  not acquire a midpoint or closeout fresh-eye pass merely because it has many
+  slices; deterministic claim checks and the owning boundary review are enough
+  for ordinary local progress.
 - **Claim fidelity: the assertion is a surface too.** Measured on the 2026-08-01
   three-unarmed-refusals goal: THREE of five bounded rounds found a defect in
   something the author asserted rather than in code — a comment claiming a branch
@@ -304,8 +253,8 @@ These expand in [README.md Core Concepts](../README.md#core-concepts):
     `5 citations across 4 artifacts` are not the same claim, and a measurement
     that lands near an expected number invites narrating agreement that the units
     do not support.
-- `Critique: not-applicable <reason>` is reserved for inspect-only, status-only,
-  or routing-only requests that do not complete repo work.
+- `Critique: not-applicable <reason>` remains reserved for inspect-only,
+  status-only, or routing-only requests that do not complete repo work.
 - If the required bounded-review path is blocked by the host, stop and record
   `Critique: blocked <host-signal>` instead of substituting same-agent review.
 

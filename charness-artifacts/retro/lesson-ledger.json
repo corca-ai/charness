@@ -1724,6 +1724,66 @@
         ]
       },
       "snapshot_sha256": "d2ab38a5cbaf11649460c5ad0e6836ec371e1ff4be96b4944a826adc4b1a1e31"
+    },
+    {
+      "session_id": "2026-08-26-01a03c37-b39b-7541-9dc2-95459b1d7479",
+      "snapshot": {
+        "kind": "charness.lesson-selection-preview",
+        "schema_version": 1,
+        "selection_policy_version": 3,
+        "seed": "2026-08-26-01a03c37-b39b-7541-9dc2-95459b1d7479",
+        "eligible_count": 43,
+        "bucket_counts": {
+          "recent": 3,
+          "value": 3,
+          "uncertainty": 3,
+          "archive": 0,
+          "archive_fallback_uncertainty": 1
+        },
+        "lesson_ids": [
+          "positive-effect-cannot-be-cited",
+          "green-test-is-not-covered-line",
+          "skipped-is-not-passed",
+          "goal-closeout-evidence-binding",
+          "agent-authored-score-role",
+          "changed-line-proof-before-broad-quality",
+          "bar-recorded-as-prose",
+          "stale-current-pointer-at-closeout",
+          "proof-surface-message-drift",
+          "global-probe-for-local-fact"
+        ]
+      },
+      "snapshot_sha256": "5c99c1944b317018af68abbe55c69674ba51b31e8083ba3899245735bab00c3c"
+    },
+    {
+      "session_id": "2026-08-26-resume",
+      "snapshot": {
+        "kind": "charness.lesson-selection-preview",
+        "schema_version": 1,
+        "selection_policy_version": 3,
+        "seed": "2026-08-26-resume",
+        "eligible_count": 43,
+        "bucket_counts": {
+          "recent": 3,
+          "value": 3,
+          "uncertainty": 3,
+          "archive": 0,
+          "archive_fallback_uncertainty": 1
+        },
+        "lesson_ids": [
+          "global-probe-for-local-fact",
+          "green-test-is-not-covered-line",
+          "changed-line-proof-before-broad-quality",
+          "agent-authored-score-role",
+          "skipped-is-not-passed",
+          "stale-current-pointer-at-closeout",
+          "positive-effect-cannot-be-cited",
+          "proof-surface-message-drift",
+          "bar-recorded-as-prose",
+          "goal-closeout-evidence-binding"
+        ]
+      },
+      "snapshot_sha256": "3ae5ef1f1a2a2c3c6186e4b87af1293c774dd0a7d2d84e9ce15b0620172e5482"
     }
   ],
   "score_events": [

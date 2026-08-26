@@ -194,6 +194,41 @@ before the provider call; a terminal receipt binds its hash and the structured
 result. A started receipt with no terminal pair is an unresolved attempt, not a
 successful or no-write claim.
 
+### Goal Run provider surface
+
+When one parent owns a full issue-native Goal Run, use the file-backed provider
+commands instead of assembling a long sequence of primitive flags:
+
+```bash
+python3 "$SKILL_DIR/scripts/issue_tool.py" goal-run-preflight \
+  --repo <owner/repo> --number <parent> --plan-file <plan.json>
+python3 "$SKILL_DIR/scripts/issue_tool.py" goal-run-read \
+  --repo <owner/repo> --number <parent>
+python3 "$SKILL_DIR/scripts/issue_tool.py" goal-run-apply \
+  --repo <owner/repo> --number <parent> --operation-file <operation.json>
+```
+
+The plan and operation files are strict `v1` contracts. Each operation carries
+the parent, draft/binding hashes, a unique attempt id, and a repo-contained
+observation directory; body and expected-graph paths are also required to stay
+inside the repository. The provider routes every operation through the selected
+adapter, persists started/terminal observations, and returns typed
+`verified-read`, `verified-write`, `unverified-write`, or refusal outcomes.
+Create recovery performs exact discovery before any retry, so a provider/index
+race can be read back and reused without a second create.
+
+Closing is deliberately separate:
+
+```bash
+python3 "$SKILL_DIR/scripts/issue_tool.py" goal-run-close \
+  --repo <owner/repo> --number <parent> --proof-file <close-proof.json>
+```
+
+The close provider checks the immutable binding/draft identity, the exact child
+graph, all linked child states, and issue-owned evidence identities before one
+guarded close. Generic `close-with-comment` refuses a body carrying the Goal Run
+marker, preventing a routine issue close from bypassing the Goal Run proof.
+
 When `id != "gh"` and `commands.search_newest_open` is missing, `select`
 without an explicit selector stops with a clear error. Pass an explicit
 issue number or range instead.

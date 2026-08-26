@@ -1,62 +1,49 @@
 # Active Goal Coordination (Shared)
 
-`impl` and `issue` cite this reference directly because they read and write the
-goal artifact during a run; `achieve` reads it to coordinate `quality` and
-`critique` cadence (the sections below cover all four). The point is that a
-long-running autonomous run behaves consistently across the workflow skills
-instead of each skill re-deriving how to treat a live goal. The behavior is
-prompt-enforced through these skills' own discipline, not gate-enforced.
+This reference is a silent no-op when the current work has no verified
+provider-backed Goal Run identity. It does not create a goal, infer one from
+local file presence, or change a standalone workflow's behavior.
 
-## When This Applies
+## Verified identity
 
-This step is **presence-gated**. It applies only when an active `achieve` goal
-artifact exists for the current work — a file under
-`<repo-root>/charness-artifacts/goals/<yyyy-mm-dd-slug>.md` whose `Status:` line
-reads `active`. With no active goal artifact, every rule below is a **silent
-no-op**: do not create a goal artifact, do not mention a missing one, and keep
-the standalone skill behavior unchanged. The guidance here is generally useful;
-it must not turn into an `achieve`-only branch that degrades the standalone
-skill.
+When the operator supplies `/goal #N`, `achieve` resolves and reads the parent,
+immutable binding, frozen draft, current graph, and selected child. The shared
+identity is the `goal_lineage` record:
 
-The goal artifact and its helper scripts are owned by the `achieve` public skill;
-this reference only describes how the coordinated skills read and append to it.
+- frozen Goal Draft path and SHA-256;
+- Goal Binding path and SHA-256;
+- exact Goal Run repository, issue number, and URL; and
+- selected Work Item key and exact child repository/number when applicable.
 
-## Per-Skill Behavior
+Every consumer validates the complete identity before consuming evidence. A
+matching path or issue number alone is not enough. Planning-only and
+not-goal-bound records remain explicit non-execution evidence.
 
-### impl
+## Per-workflow behavior
 
-- Treat the active goal artifact as the slice memory surface. Do not update
-  `handoff` during every slice while a goal is active.
-- Before a substantial slice, state the slice objective and expected evidence.
-- After the slice, append concise evidence with `achieve`'s
-  `append_slice_log.py` (commits, targeted verification, critique, lessons)
-  rather than narrating it only in chat.
-- Use targeted deterministic checks per commit or small change. Reserve broad
-  gates for bundle or final boundaries unless the change warrants them now.
+- `impl` treats the selected provider child as slice context and does not edit
+  the frozen draft or create a local progress ledger.
+- `quality` records verification on the owning child or evidence artifact and
+  distinguishes local, fake-provider, and live-provider proof.
+- `critique` records a material-boundary decision only when the changed surface
+  warrants it; ordinary reversible work may use the explicit not-required
+  disposition owned by `prove`.
+- `issue` routes in-scope graph changes and issue-owned closeout through the
+  selected provider. Off-goal findings are filed or deferred instead of being
+  silently added to the run.
+- `prove` emits the slice closeout with exact Work Item lineage and separate
+  non-claims. It does not turn a provider state change into behavioral proof.
+- `retro` may cite the same lineage as provenance but never changes Goal Run
+  state or the frozen draft.
 
-### quality
+## Parent and child state
 
-- Design verification before the run starts; record the plan in the goal
-  artifact's `Agent Verification Plan`.
-- Run cheap targeted checks during slices.
-- Run broader quality gates near final completion or bundle boundaries.
-- Preserve high-cost, live, or provider checks for the point where the result is
-  stable enough to justify them.
-- Record the final confidence level and residual risks in the goal artifact's
-  `Final Verification` when one is active.
+Routine progress is the provider's fresh child state. Parent updates are sparse:
+shared intent, scope, policy, dependency order, graph amendments, deferrals, or
+completion semantics only. Each provider mutation is a file-backed operation
+with a typed started/terminal observation and distinct readback.
 
-### critique
-
-- Critique the goal plan before activation.
-- Critique each substantial slice, not every tiny commit.
-- Critique the final proof and user verification instructions before completion.
-- Feed lessons forward into the goal artifact so a compacted context keeps the
-  findings.
-
-### issue
-
-- If a finding is not required for the current goal, file or defer it through
-  `issue` instead of silently expanding the active goal.
-- Append only the issue reference and the reason to the goal artifact's
-  `Off-Goal Findings` section.
-- A local fix being possible is not a reason to grow the goal's scope.
+No consumer should require a session handoff or a micro-slice record merely
+because a Goal Run is active. Those are operator choices, not hidden execution
+state. A genuinely blocked run may use `handoff` when the operator requests a
+next-session baton.

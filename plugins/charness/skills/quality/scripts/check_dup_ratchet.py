@@ -258,11 +258,11 @@ def _evaluate_config(repo_root: Path, config: dict, args) -> dict:  # noqa: C901
             # sub-cause is an unreadable member span on families nose DID form, which the
             # scan then discards whole. Nothing downstream sees them either way, but the
             # stronger sentence would be false for that sub-cause.
-            "SCOPE: not reported -- the code scan produced no result this run "
+            "WARN: SCOPE: not reported -- the code scan produced no result this run "
             f"({code_reason}), so this run judged no file for code clone families."
         )
     else:
-        verdict["messages"].extend(scope_messages)
+        verdict["messages"].extend(f"WARN: {message}" for message in scope_messages)
     # A reduction is NEVER silent, even on an otherwise-clean run: print one advisory
     # line per reduction naming the scoped-accept hint that folds it into the baseline.
     verdict["reductions"] = reductions
@@ -443,21 +443,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 
 def summarize(report: dict, *, sample_limit: int = 5) -> dict:
-    new_code = report.get("new_code_families", [])
-    new_docs = report.get("new_doc_families", [])
     messages = report.get("messages", [])
-    return {
+    summary = {
         "summary_note": "summary is triage output; use --detail for full duplicate-family evidence",
         "ok": report.get("ok"),
         "status": report.get("status"),
         "inert": report.get("inert", False),
-        "hard_block": report.get("hard_block", False),
-        "boy_scout_block": report.get("boy_scout_block", False),
-        "new_code_family_count": len(new_code) if isinstance(new_code, list) else 0,
-        "new_code_families_sample": new_code[:sample_limit] if isinstance(new_code, list) else [],
-        "new_doc_family_count": len(new_docs) if isinstance(new_docs, list) else 0,
-        "new_doc_families_sample": new_docs[:sample_limit] if isinstance(new_docs, list) else [],
-        "degraded_reasons": report.get("degraded_reasons", []),
         # WITHHELD, not defaulted, PER KEY, on the paths that judged nothing. `run()`
         # returns early for `adapter-invalid`, `inert`, and the three rebaseline modes without setting
         # any of these, and defaulting `did_not_judge` to `[]` there published an
@@ -483,6 +474,21 @@ def summarize(report: dict, *, sample_limit: int = 5) -> dict:
         "message_count": len(messages) if isinstance(messages, list) else 0,
         "messages_sample": messages[:sample_limit] if isinstance(messages, list) else [],
     }
+    # Presence is the contract for verdict fields. The adapter-invalid, inert,
+    # and baseline-maintenance paths return before a scan has judged families;
+    # synthesizing False/0/[] there makes an unobserved run look clean. A real
+    # evaluate() report supplies these keys, including empty lists on a genuine
+    # clean result, so those zeros remain meaningful.
+    for key in ("hard_block", "boy_scout_block"):
+        if isinstance(report.get(key), bool):
+            summary[key] = report[key]
+    for prefix, families in (("new_code", report.get("new_code_families")), ("new_doc", report.get("new_doc_families"))):
+        if isinstance(families, list):
+            summary[f"{prefix}_family_count"] = len(families)
+            summary[f"{prefix}_families_sample"] = families[:sample_limit]
+    if isinstance(report.get("degraded_reasons"), list):
+        summary["degraded_reasons"] = report["degraded_reasons"]
+    return summary
 
 
 def main(argv: list[str] | None = None) -> int:

@@ -41,6 +41,7 @@ for diagnosis, and no one of them alone proves factual freshness.
 - [Agent task envelope](./agent-task-envelope.md) — agent handoff contract.
 - [Host packaging](./host-packaging.md) — exported install surface.
 - [Artifact policy](./artifact-policy.md) — durable state ownership.
+- [Goal lifecycle](./goal-lifecycle.md) — conditional issue-native goal model and authority split.
 
 ## Skills, Quality, And Proof
 

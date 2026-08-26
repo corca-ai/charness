@@ -15,6 +15,15 @@ import subprocess
 from pathlib import Path, PurePosixPath
 from typing import Any
 
+from scripts.goal_lineage import (
+    LineageError,
+    load_goal_lineage_file,
+    not_goal_bound_lineage,
+    require_goal_execution_identity,
+    validate_goal_lineage,
+    verify_goal_lineage_references,
+)
+
 SCHEMA_VERSION = 1
 MANIFEST_KIND = "charness.slice-manifest"
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
@@ -394,7 +403,34 @@ def _validate_remote_readbacks(data: dict[str, Any], target_sha: str, repository
     return remote_readback["open_issues"]["open_count"]
 
 
-def validate_manifest(repo_root: Path, manifest_path: Path, *, verify_current: bool = False) -> dict[str, Any]:
+def _manifest_lineage(
+    repo_root: Path,
+    data: dict[str, Any],
+    *,
+    goal_lineage_path: Path | None,
+) -> dict[str, Any]:
+    try:
+        if goal_lineage_path is not None:
+            if data.get("goal_lineage") is not None:
+                _error("lineage_mismatch", "goal_lineage", "use either embedded goal_lineage or --goal-lineage-file, not both")
+            return require_goal_execution_identity(
+                load_goal_lineage_file(repo_root, goal_lineage_path)
+            )
+        if data.get("goal_lineage") is None:
+            return not_goal_bound_lineage("slice manifest was captured without a Goal Run Work Item identity")
+        return verify_goal_lineage_references(repo_root, validate_goal_lineage(data["goal_lineage"], repo_root=repo_root))
+    except LineageError as exc:
+        _error("invalid_lineage", "goal_lineage", str(exc))
+    raise AssertionError("unreachable")
+
+
+def validate_manifest(
+    repo_root: Path,
+    manifest_path: Path,
+    *,
+    verify_current: bool = False,
+    goal_lineage_path: Path | None = None,
+) -> dict[str, Any]:
     data = _load_manifest(repo_root, manifest_path)
     if data.get("kind") != MANIFEST_KIND:
         _error("invalid_kind", "kind", f"expected `{MANIFEST_KIND}`")
@@ -407,6 +443,9 @@ def validate_manifest(repo_root: Path, manifest_path: Path, *, verify_current: b
     repository = _require_string(data.get("repository"), "repository")
     goal_path = _safe_repo_path(data.get("goal_path"), "goal_path")
     _require_repo_entry(repo_root, goal_path, "goal_path", file_only=True)
+    goal_lineage = _manifest_lineage(repo_root, data, goal_lineage_path=goal_lineage_path)
+    if goal_lineage["disposition"] == "goal-bound" and goal_lineage["work_item"]["repo"] != repository:
+        _error("lineage_mismatch", "goal_lineage.work_item.repo", f"expected `{repository}`")
     target_sha, carrier_sha, remote_ref = _validate_target_and_premise(repo_root, data, repository)
     open_issue_count = _validate_remote_readbacks(data, target_sha, repository, remote_ref)
 
@@ -426,4 +465,5 @@ def validate_manifest(repo_root: Path, manifest_path: Path, *, verify_current: b
         "live_revalidation": "not-run",
         "reader_root_count": len(data["reader_roots"]),
         "parity_pair_count": len(data["parity_pairs"]),
+        "goal_lineage": goal_lineage,
     }

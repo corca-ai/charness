@@ -46,8 +46,22 @@ def test_critique_skill_surfaces_counterweight_and_deliberately_not_doing() -> N
 
     assert "counterweight" in skill_text
     assert "Deliberately Not Doing" in skill_text
-    assert "Task-completing repo work always records critique before closeout." in skill_text
-    assert "Scale the\npass, not the obligation" in skill_text
+    assert "Critique is selected by risk, not by the fact that a task completed." in skill_text
+    assert "`Critique: not-required <reason>`" in (
+        ROOT / "skills" / "public" / "prove" / "SKILL.md"
+    ).read_text(encoding="utf-8") and all(
+        phrase not in text
+        for text in (
+            (ROOT / "skills" / "public" / "prove" / "SKILL.md").read_text(
+                encoding="utf-8"
+            ),
+            (ROOT / "docs" / "operating-contract.md").read_text(encoding="utf-8"),
+        )
+        for phrase in (
+            "every task-completing repo slice records critique before closeout",
+            "Task-completing work runs a CLOSEOUT-CLAIMS review",
+        )
+    )
     # The default execution mode is now the Charness-owned file-backed worker;
     # typed subagents remain an optional adapter path.
     assert "file-backed worker" in skill_text
@@ -117,20 +131,11 @@ def test_critique_skill_surfaces_counterweight_and_deliberately_not_doing() -> N
     assert "reviewer-packet-semantic-question.md" in critique_adapter_text
     assert "does not fire automatically inside the `critique` workflow" not in packet_text
     for risk_class in (
-        "workflow",
-        "prompt",
-        "public-skill",
-        "validator",
-        "export",
+        "external-write",
+        "security",
         "release",
-        "issue-closeout",
         "compatibility",
-        "host-proof",
-        "install/update",
-        "rename",
-        "deletion",
-        "design-lock",
-        "migration",
+        "proof-\n   surface",
     ):
         assert risk_class in cadence_text
 

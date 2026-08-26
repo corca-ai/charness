@@ -114,11 +114,10 @@ NOT_JUDGED = (
     "both, so a genuine bare link can hide under the wrapping residual (see "
     "`link_only_lines_slack` for how much room that residual currently has)",
 )
-# Emitted in place of a number for `link_only_lines_slack` (see
-# `link_only_lines_slack` below) on the one path where the gap is genuinely
-# unknown rather than merely unfavourable: this run FAILED on some OTHER
-# metric while `link_only_lines` itself went unobserved, so its count is
-# neither printed nor licensed as zero.
+# Sibling reason emitted when `link_only_lines_slack` is null on the one path
+# where the gap is genuinely unknown rather than merely unfavourable: this run
+# FAILED on some OTHER metric while `link_only_lines` itself went unobserved, so
+# its count is neither printed nor licensed as zero.
 LINK_ONLY_LINES_SLACK_NOT_COMPUTABLE = (
     "not computable this run: `link_only_lines` was not observed while a "
     "different metric failed, so its count is neither zero nor printed"
@@ -536,7 +535,7 @@ def assert_metric_tables_complete(
 assert_metric_tables_complete()
 
 
-def link_only_lines_slack(result: dict[str, object]) -> int | str:
+def link_only_lines_slack(result: dict[str, object]) -> int | None:
     """Bar minus the CURRENTLY MEASURED `link_only_lines` count, on a real verdict.
 
     The bar only ever moves on a recorded ratchet entry (`ratchet_rows` above);
@@ -551,11 +550,10 @@ def link_only_lines_slack(result: dict[str, object]) -> int | str:
     directly in the summary, or read as zero off awiki's OWN passing verdict
     token in the licensed branch inside `_evaluate` (a `pass` where the field is
     absent can only be that license, never a genuine unknown). Returns
-    `LINK_ONLY_LINES_SLACK_NOT_COMPUTABLE` instead of a number on the one path
-    where the count is genuinely unknown: this run FAILED on some OTHER metric
-    while `link_only_lines` itself was never printed and the zero-license
-    branch was never reached, so reporting a number here would invent one the
-    gate structurally does not have.
+    ``None`` on the one path where the count is genuinely unknown: this run
+    FAILED on some OTHER metric while `link_only_lines` itself was never printed
+    and the zero-license branch was never reached. The sibling
+    ``link_only_lines_slack_reason`` carries the human-readable explanation.
     """
     summary = result["summary"]
     bar = result["bars"]["link_only_lines"]
@@ -563,6 +561,15 @@ def link_only_lines_slack(result: dict[str, object]) -> int | str:
         return bar - int(summary["link_only_lines"])
     if result["status"] == "pass":
         return bar
+    return None
+
+
+def link_only_lines_slack_reason(result: dict[str, object]) -> str | None:
+    """Explain a null slack value without overloading the numeric field."""
+
+    summary = result["summary"]
+    if "link_only_lines" in summary or result["status"] == "pass":
+        return None
     return LINK_ONLY_LINES_SLACK_NOT_COMPUTABLE
 
 
@@ -593,6 +600,9 @@ def report(result: dict[str, object]) -> dict[str, object]:
     # is silent about a FALL, so this is the one number in the whole payload that
     # can shrink on a green run without anyone having recorded why.
     payload["link_only_lines_slack"] = link_only_lines_slack(result)
+    slack_reason = link_only_lines_slack_reason(result)
+    if slack_reason is not None:
+        payload["link_only_lines_slack_reason"] = slack_reason
     failures = result["failures"]
     if failures:
         payload["failure_label"] = {metric: _FAILURE_LABEL[metric] for metric in failures}

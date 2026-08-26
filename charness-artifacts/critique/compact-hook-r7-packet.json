@@ -1,0 +1,137 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-08-26T02:08:56Z",
+  "prepared_for": "compact-hook-r7",
+  "changed_ref": null,
+  "substrate_mode": "working-tree",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- plugins/charness/scripts/host_hook_session_routing.py\n- plugins/charness/scripts/session_start_lesson_context.py\n- plugins/charness/scripts/session_start_routing.py\n- scripts/host_hook_session_routing.py\n- scripts/session_start_lesson_context.py\n- scripts/session_start_routing.py\n- tests/test_session_routing_host_hook_reconcile.py\n- tests/test_session_start_routing.py\n- .charness/critique/.compact-hook-diagnostic-delivery.json.lock\n- .charness/critique/.compact-hook-framing-delivery.json.lock\n- .charness/critique/.compact-hook-operational-delivery.json.lock\n- .charness/critique/compact-diagnostic.prompt.md\n- .charness/critique/compact-framing.prompt.md\n- .charness/critique/compact-hook-diagnostic-delivery.json\n- .charness/critique/compact-hook-diagnostic-receipt.json\n- .charness/critique/compact-hook-diagnostic-report.yaml\n- .charness/critique/compact-hook-diagnostic-result.json\n- .charness/critique/compact-hook-diagnostic.stderr\n- .charness/critique/compact-hook-diagnostic.stdout\n- .charness/critique/compact-hook-framing-delivery.json\n- .charness/critique/compact-hook-framing-receipt.json\n- .charness/critique/compact-hook-framing-report.yaml\n- .charness/critique/compact-hook-framing-result.json\n- .charness/critique/compact-hook-framing.stderr\n- .charness/critique/compact-hook-framing.stdout\n- .charness/critique/compact-hook-operational-delivery.json\n- .charness/critique/compact-hook-operational-receipt.json\n- .charness/critique/compact-hook-operational-report.yaml\n- .charness/critique/compact-hook-operational-result.json\n- .charness/critique/compact-hook-operational.stderr\n- .charness/critique/compact-hook-operational.stdout\n- .charness/critique/compact-operational.prompt.md\n- .charness/critique/compact-recovery-capability.json\n- charness-artifacts/critique/2026-08-26-005458-packet.json\n- charness-artifacts/critique/2026-08-26-005458-packet.md\n- charness-artifacts/critique/compact-hook-r3-packet.json\n- charness-artifacts/critique/compact-hook-r3-packet.md\n- charness-artifacts/critique/compact-hook-r4-packet.json\n- charness-artifacts/critique/compact-hook-r4-packet.md\n- charness-artifacts/critique/compact-hook-r5-packet.json\n- charness-artifacts/critique/compact-hook-r5-packet.md\n- charness-artifacts/critique/compact-hook-r6-packet.json\n- charness-artifacts/critique/compact-hook-r6-packet.md\n- charness-artifacts/critique/compact-hook-repaired-r2-packet.json\n- charness-artifacts/critique/compact-hook-repaired-r2-packet.md\n- plugins/charness/scripts/session_start_codex_recovery.py\n- scripts/session_start_codex_recovery.py\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/host_hook_session_routing.py, scripts/session_start_lesson_context.py, scripts/session_start_routing.py, scripts/session_start_codex_recovery.py\n  derived matches: plugins/charness/scripts/host_hook_session_routing.py, plugins/charness/scripts/session_start_lesson_context.py, plugins/charness/scripts/session_start_routing.py, plugins/charness/scripts/session_start_codex_recovery.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-08-26-005458-packet.md, charness-artifacts/critique/compact-hook-r3-packet.md, charness-artifacts/critique/compact-hook-r4-packet.md, charness-artifacts/critique/compact-hook-r5-packet.md, charness-artifacts/critique/compact-hook-r6-packet.md, charness-artifacts/critique/compact-hook-repaired-r2-packet.md\n  verify: ./scripts/check-docs.sh, ./scripts/check-secrets.sh\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-26-005458-packet.json, charness-artifacts/critique/2026-08-26-005458-packet.md, charness-artifacts/critique/compact-hook-r3-packet.json, charness-artifacts/critique/compact-hook-r3-packet.md, charness-artifacts/critique/compact-hook-r4-packet.json, charness-artifacts/critique/compact-hook-r4-packet.md, charness-artifacts/critique/compact-hook-r5-packet.json, charness-artifacts/critique/compact-hook-r5-packet.md, charness-artifacts/critique/compact-hook-r6-packet.json, charness-artifacts/critique/compact-hook-r6-packet.md, charness-artifacts/critique/compact-hook-repaired-r2-packet.json, charness-artifacts/critique/compact-hook-repaired-r2-packet.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- integrations-and-control-plane: Integration manifests and control-plane helper scripts.\n  derived matches: plugins/charness/scripts/host_hook_session_routing.py, plugins/charness/scripts/session_start_lesson_context.py, plugins/charness/scripts/session_start_routing.py, .charness/critique/compact-hook-diagnostic-delivery.json, .charness/critique/compact-hook-diagnostic-receipt.json, .charness/critique/compact-hook-diagnostic-result.json, .charness/critique/compact-hook-framing-delivery.json, .charness/critique/compact-hook-framing-receipt.json, .charness/critique/compact-hook-framing-result.json, .charness/critique/compact-hook-operational-delivery.json, .charness/critique/compact-hook-operational-receipt.json, .charness/critique/compact-hook-operational-result.json, .charness/critique/compact-recovery-capability.json, plugins/charness/scripts/session_start_codex_recovery.py\n  verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root ., python3 scripts/update_tools.py --repo-root .\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/host_hook_session_routing.py, scripts/session_start_lesson_context.py, scripts/session_start_routing.py, tests/test_session_routing_host_hook_reconcile.py, tests/test_session_start_routing.py, scripts/session_start_codex_recovery.py\n  derived matches: plugins/charness/scripts/host_hook_session_routing.py, plugins/charness/scripts/session_start_lesson_context.py, plugins/charness/scripts/session_start_routing.py, plugins/charness/scripts/session_start_codex_recovery.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/host_hook_session_routing.py, scripts/session_start_lesson_context.py, scripts/session_start_routing.py, scripts/session_start_codex_recovery.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "reviewer_runner": {
+      "mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "timeout_seconds": 900
+    },
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed. Consume the worker receipt and delivery ledger; do not infer approval from a file or exit code."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "working-tree",
+    "substrate_mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "b2a88e808fdc53efaab10e264dab4f10ab52601d",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      "plugins/charness/scripts/host_hook_session_routing.py",
+      "plugins/charness/scripts/session_start_codex_recovery.py",
+      "plugins/charness/scripts/session_start_lesson_context.py",
+      "plugins/charness/scripts/session_start_routing.py",
+      "scripts/host_hook_session_routing.py",
+      "scripts/session_start_codex_recovery.py",
+      "scripts/session_start_lesson_context.py",
+      "scripts/session_start_routing.py",
+      "tests/test_session_routing_host_hook_reconcile.py",
+      "tests/test_session_start_routing.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "plugins/charness/scripts/host_hook_session_routing.py",
+        "content_sha256": "3ecf68090ac8c2373c842c3714d96eecb6b3a8c0b8d4e7f3f629e4a88b98e3c8"
+      },
+      {
+        "path": "plugins/charness/scripts/session_start_codex_recovery.py",
+        "content_sha256": "dcf287736d69e9d7b0ef3396373277d325bdeb6060cadcbb304d955d3264c6e7"
+      },
+      {
+        "path": "plugins/charness/scripts/session_start_lesson_context.py",
+        "content_sha256": "d585f347d415e35f141fcb528c383313660289cee9dc4f996e91512cda2edce8"
+      },
+      {
+        "path": "plugins/charness/scripts/session_start_routing.py",
+        "content_sha256": "7c5af08f3a6486985c7af9ce94e2fd5867222c1f58f796931aaa7f8a26583d74"
+      },
+      {
+        "path": "scripts/host_hook_session_routing.py",
+        "content_sha256": "3ecf68090ac8c2373c842c3714d96eecb6b3a8c0b8d4e7f3f629e4a88b98e3c8"
+      },
+      {
+        "path": "scripts/session_start_codex_recovery.py",
+        "content_sha256": "dcf287736d69e9d7b0ef3396373277d325bdeb6060cadcbb304d955d3264c6e7"
+      },
+      {
+        "path": "scripts/session_start_lesson_context.py",
+        "content_sha256": "d585f347d415e35f141fcb528c383313660289cee9dc4f996e91512cda2edce8"
+      },
+      {
+        "path": "scripts/session_start_routing.py",
+        "content_sha256": "7c5af08f3a6486985c7af9ce94e2fd5867222c1f58f796931aaa7f8a26583d74"
+      },
+      {
+        "path": "tests/test_session_routing_host_hook_reconcile.py",
+        "content_sha256": "e568f05d5368e5d3502a18a4f4f8e2e988068f8b3286a23c2b3d9d78a8e261cc"
+      },
+      {
+        "path": "tests/test_session_start_routing.py",
+        "content_sha256": "92425dbed20c68339620592623611f5c8766c1a5b0b7e35b98adc0be0bd0d725"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "98fb499712da723f87f60b7e6adcdf772d1db2fd9521dfbc125d79b6b7d9d1a0",
+    "declared_untracked": [
+      {
+        "path": "plugins/charness/scripts/session_start_codex_recovery.py",
+        "content_sha256": "dcf287736d69e9d7b0ef3396373277d325bdeb6060cadcbb304d955d3264c6e7"
+      },
+      {
+        "path": "scripts/session_start_codex_recovery.py",
+        "content_sha256": "dcf287736d69e9d7b0ef3396373277d325bdeb6060cadcbb304d955d3264c6e7"
+      }
+    ],
+    "auto_excluded_paths": [],
+    "identity_sha256": "9c7131260f59779645072ba5945b054ec603492b5771ff61ec270a83bf9959c6"
+  }
+}

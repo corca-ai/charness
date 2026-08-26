@@ -7,18 +7,13 @@ def _read(path: str) -> str:
     return (ROOT / path).read_text(encoding="utf-8")
 
 
-def test_achieve_lifecycle_classifies_post_checkpoint_commits() -> None:
-    # Post-Checkpoint Commit Classification lives in the After-phase file
-    # (lifecycle.md was split by phase into lifecycle-before/-during/-after.md).
+def test_achieve_lifecycle_names_the_provider_closeout_boundary() -> None:
+    # Goal Run provider closeout replaced the old local post-checkpoint prose
+    # contract. Keep the current irreversible-boundary guarantees executable.
     lifecycle = _read("skills/public/achieve/references/lifecycle-after.md")
-    normalized = " ".join(lifecycle.split())
-
-    assert "Post-Checkpoint Commit Classification" in lifecycle
-    assert "runtime-affecting" in lifecycle
-    assert "test-only" in lifecycle
-    assert "audit-doc-only" in lifecycle
-    assert "Any uncertain commit is `runtime-affecting`" in normalized
-    assert "HEAD` differs from the live instance" in lifecycle
+    assert "provider close" in lifecycle
+    assert "post-close readback" in lifecycle
+    assert "second docs-only issue-closeout push" in lifecycle
 
 
 def test_quality_reference_carries_ci_only_recovery_protocol() -> None:

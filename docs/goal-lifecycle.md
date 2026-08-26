@@ -7,9 +7,10 @@
 This page answers one question: how should Charness model a long-running goal
 from planning through provider-verified completion?
 
-Until the implementation and exported consumer proof exist, this page describes
-the intended system. Current installations still use the mutable local goal
-artifact described by the existing `achieve` implementation.
+Until the integrated implementation, exported consumer proof, and live dogfood
+are complete, this page describes the intended system. The source tree is in
+transition; live #724 target pickup has a verified clean-process roundtrip, so
+this page still makes no universal installed-consumer claim.
 
 ## Design Center
 
@@ -162,7 +163,7 @@ Pickup refuses with an actionable type for malformed objective, unresolved or
 ambiguous repository, non-Goal-Run issue, invalid metadata, missing/mismatched
 draft or binding, unestablished/invalid graph, dependency cycle/block, stale
 child, no executable child, all children closed, or closed parent. It never
-falls through to the old local `Status: active` path.
+falls through to a local execution-state fallback.
 
 ## Provider Operations
 
@@ -308,7 +309,7 @@ The cutover must:
 
 - retain the full Markdown artifact only as Goal Draft and semantic provenance
 - remove local status/slice mutation as execution coordination
-- replace `/goal @file` guidance with `/goal #N`
+- replace file-addressed activation guidance with `/goal #N`
 - make handoff use the canonical Goal Draft producer instead of a copied template
 - move active-goal consumers to parent/binding/provider identity
 - keep evidence records linked to frozen draft provenance and Goal Run identity

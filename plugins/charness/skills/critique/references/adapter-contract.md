@@ -66,13 +66,17 @@ Field semantics:
 - `language` — render language hint for the markdown packet
 - `output_dir` — repo-relative directory where packet artifacts land;
   defaults to `charness-artifacts/critique`
-- `reviewer_runner` — execution boundary for the default fresh-eye run. `mode`
-  is `file-backed-worker` (default) or the legacy `typed-subagent`; `backend`
-  is `codex_exec`, `claude_p`, or `host-defaulted`; `timeout_seconds` is a
-  positive integer. File-backed mode is invoked through
-  `../../../shared/scripts/run_reviewer_worker.py`, which uses the repo-owned
-  `../../../shared/references/bounded-review-result.schema.json` and emits the
-  combined worker report. Typed-subagent mode is a separate host branch; the
+- `reviewer_runner` — execution boundary for the default fresh-eye run. The
+  normal operator entry point is `scripts/run_review.py`; it resolves this
+  adapter and derives the low-level runner inputs. `mode` is
+  `file-backed-worker` (default) or the legacy `typed-subagent`; `backend` is
+  `codex_exec`, `claude_p`, or `host-defaulted`; `timeout_seconds` is a
+  positive integer. File-backed mode is ultimately executed through the
+  compatibility runner `../../../shared/scripts/run_reviewer_worker.py`, which
+  uses the repo-owned `../../../shared/references/bounded-review-result.schema.json`
+  and emits the combined worker report. The semantic wrapper owns packet,
+  capability, schema, and artifact-path derivation before that runner starts.
+  Typed-subagent mode is a separate host branch; the
   file-backed runner refuses it rather than silently changing proof mode. The
   adapter is authoritative: a caller may not override the selected mode,
   concrete backend, or timeout for one invocation. `host-defaulted` delegates

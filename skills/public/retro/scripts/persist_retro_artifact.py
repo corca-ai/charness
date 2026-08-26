@@ -49,6 +49,11 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--goal-lineage-file",
+        type=Path,
+        help="Bind the retro to one repo-local Goal Run lineage JSON; cannot be combined with --goal-path.",
+    )
+    parser.add_argument(
         "--force-empty-summary",
         action="store_true",
         help=(
@@ -97,6 +102,7 @@ def main() -> int:
         summary_path=(repo_root / summary_rel) if isinstance(summary_rel, str) else None,
         force_empty_summary=args.force_empty_summary,
         goal_path=args.goal_path,
+        goal_lineage_path=args.goal_lineage_file,
     )
     emit_yaml(result)
     return 0

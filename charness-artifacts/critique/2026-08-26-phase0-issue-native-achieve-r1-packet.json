@@ -1,0 +1,251 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-08-26T05:54:30Z",
+  "prepared_for": "Phase 0 issue-native achieve tracking round 1",
+  "changed_ref": null,
+  "substrate_mode": "working-tree",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- .agents/achieve-adapter.yaml\n- charness-artifacts/gather/latest.md\n- charness-artifacts/goals/2026-08-26-adversarial-priority-backlog-closeout.md\n- charness-artifacts/retro/lesson-ledger.json\n- docs/public-skill-dogfood.json\n- plugins/charness/scripts/check_docs_graph.py\n- plugins/charness/scripts/check_python_lengths.py\n- plugins/charness/scripts/check_runtime_budget_universe.py\n- plugins/charness/scripts/dup_ratchet_edit_advisory.py\n- plugins/charness/scripts/plan_risk_interrupt.py\n- plugins/charness/scripts/setup_agent_docs_lib.py\n- plugins/charness/scripts/setup_inspect_quality_lib.py\n- plugins/charness/shared/references/active-goal-coordination.md\n- plugins/charness/skills/achieve/SKILL.md\n- plugins/charness/skills/achieve/adapter.example.yaml\n- plugins/charness/skills/achieve/references/adapter-contract.md\n- plugins/charness/skills/achieve/references/lifecycle-after.md\n- plugins/charness/skills/achieve/references/lifecycle-before.md\n- plugins/charness/skills/achieve/references/lifecycle-during.md\n- plugins/charness/skills/achieve/scripts/achieve_adapter_policy.py\n- plugins/charness/skills/achieve/scripts/append_slice_log.py\n- plugins/charness/skills/achieve/scripts/check_goal_artifact.py\n- plugins/charness/skills/achieve/scripts/init_adapter.py\n- plugins/charness/skills/issue/SKILL.md\n- plugins/charness/skills/issue/adapter.example.yaml\n- plugins/charness/skills/issue/references/issue-backend.md\n- plugins/charness/skills/issue/scripts/issue_tool.py\n- plugins/charness/skills/quality/scripts/check_dup_ratchet.py\n- plugins/charness/skills/quality/scripts/plan_quality_run.py\n- plugins/charness/skills/quality/scripts/quality_declaration_lifecycle.py\n- scripts/check_docs_graph.py\n- scripts/check_python_lengths.py\n- scripts/check_runtime_budget_universe.py\n- scripts/dup_ratchet_edit_advisory.py\n- scripts/plan_risk_interrupt.py\n- scripts/setup_agent_docs_lib.py\n- scripts/setup_inspect_quality_lib.py\n- skills/public/achieve/SKILL.md\n- skills/public/achieve/adapter.example.yaml\n- skills/public/achieve/references/adapter-contract.md\n- skills/public/achieve/references/lifecycle-after.md\n- skills/public/achieve/references/lifecycle-before.md\n- skills/public/achieve/references/lifecycle-during.md\n- skills/public/achieve/scripts/achieve_adapter_policy.py\n- skills/public/achieve/scripts/append_slice_log.py\n- skills/public/achieve/scripts/check_goal_artifact.py\n- skills/public/achieve/scripts/init_adapter.py\n- skills/public/issue/SKILL.md\n- skills/public/issue/adapter.example.yaml\n- skills/public/issue/references/issue-backend.md\n- skills/public/issue/scripts/issue_tool.py\n- skills/public/quality/scripts/check_dup_ratchet.py\n- skills/public/quality/scripts/plan_quality_run.py\n- skills/public/quality/scripts/quality_declaration_lifecycle.py\n- skills/shared/references/active-goal-coordination.md\n- tests/quality_gates/test_achieve_adapter_policy.py\n- tests/quality_gates/test_dup_ratchet_edit_advisory.py\n- tests/quality_gates/test_dup_ratchet_scope_coverage.py\n- tests/quality_gates/test_issue_skill.py\n- tests/quality_gates/test_python_length_gates.py\n- tests/quality_gates/test_quality_run_planner.py\n- tests/quality_gates/test_runtime_budget_universe.py\n- tests/quality_gates/test_setup_inspect_policy.py\n- tests/test_docs_graph_gate.py\n- tests/test_risk_interrupt.py\n- .charness/host-hooks/state.json\n- .charness/issue-regroup-plan.json\n- charness-artifacts/critique/2026-08-26-005458-packet.json\n- charness-artifacts/critique/2026-08-26-005458-packet.md\n- charness-artifacts/critique/2026-08-26-adversarial-no-change-closeout-packet.json\n- charness-artifacts/critique/2026-08-26-adversarial-no-change-closeout-packet.md\n- charness-artifacts/critique/2026-08-26-adversarial-no-change-f1.json\n- charness-artifacts/critique/2026-08-26-adversarial-no-change-f2.json\n- charness-artifacts/critique/2026-08-26-adversarial-no-change-f3.json\n- charness-artifacts/critique/2026-08-26-adversarial-no-change-issue-closeout.md\n- charness-artifacts/critique/compact-hook-r10-packet.json\n- charness-artifacts/critique/compact-hook-r10-packet.md\n- charness-artifacts/critique/compact-hook-r3-packet.json\n- charness-artifacts/critique/compact-hook-r3-packet.md\n- charness-artifacts/critique/compact-hook-r4-packet.json\n- charness-artifacts/critique/compact-hook-r4-packet.md\n- charness-artifacts/critique/compact-hook-r5-packet.json\n- charness-artifacts/critique/compact-hook-r5-packet.md\n- charness-artifacts/critique/compact-hook-r6-packet.json\n- charness-artifacts/critique/compact-hook-r6-packet.md\n- charness-artifacts/critique/compact-hook-r7-packet.json\n- charness-artifacts/critique/compact-hook-r7-packet.md\n- charness-artifacts/critique/compact-hook-r8-packet.json\n- charness-artifacts/critique/compact-hook-r8-packet.md\n- charness-artifacts/critique/compact-hook-r9-packet.json\n- charness-artifacts/critique/compact-hook-r9-packet.md\n- charness-artifacts/critique/compact-hook-repaired-r2-packet.json\n- charness-artifacts/critique/compact-hook-repaired-r2-packet.md\n- charness-artifacts/gather/2026-08-26-cortex-702-achieve-tracker-reference.md\n- charness-artifacts/issues/2026-08-26-adversarial-priority-backlog-requalification.md\n- charness-artifacts/issues/closeouts/2026-08-26-issue-628.md\n- charness-artifacts/issues/closeouts/2026-08-26-issue-694.md\n- charness-artifacts/issues/closeouts/2026-08-26-issue-721.md\n- charness-artifacts/retro/lesson-session-receipts/2026-08-26-01a03c37-b39b-7541-9dc2-95459b1d7479.json\n- charness-artifacts/retro/lesson-session-receipts/2026-08-26-01a03c37-b39b-7541-9dc2-95459b1d7479.md\n- charness-artifacts/specs/adversarial-priority-backlog-closeout/phase-00-issue-native-achieve-tracking/spec.md\n- plugins/charness/skills/achieve/scripts/goal_tracker_receipt.py\n- plugins/charness/skills/achieve/scripts/interview_contract.py\n- plugins/charness/skills/achieve/scripts/write_goal_receipt.py\n- plugins/charness/skills/issue/scripts/issue_tracker.py\n- skills/public/achieve/scripts/goal_tracker_receipt.py\n- skills/public/achieve/scripts/interview_contract.py\n- skills/public/achieve/scripts/write_goal_receipt.py\n- skills/public/issue/scripts/issue_tracker.py\n- tests/quality_gates/test_achieve_interview_contract.py\n- tests/quality_gates/test_goal_tracker_receipt.py\n- tests/quality_gates/test_issue_tracker.py\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/check_docs_graph.py, scripts/check_python_lengths.py, scripts/check_runtime_budget_universe.py, scripts/dup_ratchet_edit_advisory.py, scripts/plan_risk_interrupt.py, scripts/setup_agent_docs_lib.py, scripts/setup_inspect_quality_lib.py, skills/public/achieve/SKILL.md, skills/public/achieve/adapter.example.yaml, skills/public/achieve/references/adapter-contract.md, skills/public/achieve/references/lifecycle-after.md, skills/public/achieve/references/lifecycle-before.md, skills/public/achieve/references/lifecycle-during.md, skills/public/achieve/scripts/achieve_adapter_policy.py, skills/public/achieve/scripts/append_slice_log.py, skills/public/achieve/scripts/check_goal_artifact.py, skills/public/achieve/scripts/init_adapter.py, skills/public/issue/SKILL.md, skills/public/issue/adapter.example.yaml, skills/public/issue/references/issue-backend.md, skills/public/issue/scripts/issue_tool.py, skills/public/quality/scripts/check_dup_ratchet.py, skills/public/quality/scripts/plan_quality_run.py, skills/public/quality/scripts/quality_declaration_lifecycle.py, skills/shared/references/active-goal-coordination.md, skills/public/achieve/scripts/goal_tracker_receipt.py, skills/public/achieve/scripts/interview_contract.py, skills/public/achieve/scripts/write_goal_receipt.py, skills/public/issue/scripts/issue_tracker.py\n  derived matches: plugins/charness/scripts/check_docs_graph.py, plugins/charness/scripts/check_python_lengths.py, plugins/charness/scripts/check_runtime_budget_universe.py, plugins/charness/scripts/dup_ratchet_edit_advisory.py, plugins/charness/scripts/plan_risk_interrupt.py, plugins/charness/scripts/setup_agent_docs_lib.py, plugins/charness/scripts/setup_inspect_quality_lib.py, plugins/charness/shared/references/active-goal-coordination.md, plugins/charness/skills/achieve/SKILL.md, plugins/charness/skills/achieve/adapter.example.yaml, plugins/charness/skills/achieve/references/adapter-contract.md, plugins/charness/skills/achieve/references/lifecycle-after.md, plugins/charness/skills/achieve/references/lifecycle-before.md, plugins/charness/skills/achieve/references/lifecycle-during.md, plugins/charness/skills/achieve/scripts/achieve_adapter_policy.py, plugins/charness/skills/achieve/scripts/append_slice_log.py, plugins/charness/skills/achieve/scripts/check_goal_artifact.py, plugins/charness/skills/achieve/scripts/init_adapter.py, plugins/charness/skills/issue/SKILL.md, plugins/charness/skills/issue/adapter.example.yaml, plugins/charness/skills/issue/references/issue-backend.md, plugins/charness/skills/issue/scripts/issue_tool.py, plugins/charness/skills/quality/scripts/check_dup_ratchet.py, plugins/charness/skills/quality/scripts/plan_quality_run.py, plugins/charness/skills/quality/scripts/quality_declaration_lifecycle.py, plugins/charness/skills/achieve/scripts/goal_tracker_receipt.py, plugins/charness/skills/achieve/scripts/interview_contract.py, plugins/charness/skills/achieve/scripts/write_goal_receipt.py, plugins/charness/skills/issue/scripts/issue_tracker.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/gather/latest.md, charness-artifacts/goals/2026-08-26-adversarial-priority-backlog-closeout.md, skills/public/achieve/SKILL.md, skills/public/achieve/references/adapter-contract.md, skills/public/achieve/references/lifecycle-after.md, skills/public/achieve/references/lifecycle-before.md, skills/public/achieve/references/lifecycle-during.md, skills/public/issue/SKILL.md, skills/public/issue/references/issue-backend.md, skills/shared/references/active-goal-coordination.md, charness-artifacts/critique/2026-08-26-005458-packet.md, charness-artifacts/critique/2026-08-26-adversarial-no-change-closeout-packet.md, charness-artifacts/critique/2026-08-26-adversarial-no-change-issue-closeout.md, charness-artifacts/critique/compact-hook-r10-packet.md, charness-artifacts/critique/compact-hook-r3-packet.md, charness-artifacts/critique/compact-hook-r4-packet.md, charness-artifacts/critique/compact-hook-r5-packet.md, charness-artifacts/critique/compact-hook-r6-packet.md, charness-artifacts/critique/compact-hook-r7-packet.md, charness-artifacts/critique/compact-hook-r8-packet.md, charness-artifacts/critique/compact-hook-r9-packet.md, charness-artifacts/critique/compact-hook-repaired-r2-packet.md, charness-artifacts/gather/2026-08-26-cortex-702-achieve-tracker-reference.md, charness-artifacts/issues/2026-08-26-adversarial-priority-backlog-requalification.md, charness-artifacts/issues/closeouts/2026-08-26-issue-628.md, charness-artifacts/issues/closeouts/2026-08-26-issue-694.md, charness-artifacts/issues/closeouts/2026-08-26-issue-721.md, charness-artifacts/retro/lesson-session-receipts/2026-08-26-01a03c37-b39b-7541-9dc2-95459b1d7479.md, charness-artifacts/specs/adversarial-priority-backlog-closeout/phase-00-issue-native-achieve-tracking/spec.md\n  derived matches: plugins/charness/shared/references/active-goal-coordination.md, plugins/charness/skills/achieve/SKILL.md, plugins/charness/skills/achieve/references/adapter-contract.md, plugins/charness/skills/achieve/references/lifecycle-after.md, plugins/charness/skills/achieve/references/lifecycle-before.md, plugins/charness/skills/achieve/references/lifecycle-during.md, plugins/charness/skills/issue/SKILL.md, plugins/charness/skills/issue/references/issue-backend.md\n  verify: ./scripts/check-docs.sh, ./scripts/check-secrets.sh\n- operational-evidence-records: Durable issue, quality, and release evidence attachments produced by local planning and closeout workflows.\n  source matches: charness-artifacts/issues/2026-08-26-adversarial-priority-backlog-requalification.md, charness-artifacts/issues/closeouts/2026-08-26-issue-628.md, charness-artifacts/issues/closeouts/2026-08-26-issue-694.md, charness-artifacts/issues/closeouts/2026-08-26-issue-721.md\n  verify: python3 scripts/check_release_issue_ledger.py --repo-root . --ledger charness-artifacts/issues/2026-08-20-next-release-ledger.json, python3 scripts/validate_quality_artifact.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- prompt-behavior-proof: Prompt-affecting instruction surfaces must follow deterministic Cautilus validation and on-demand proof policy.\n  source matches: .agents/achieve-adapter.yaml, skills/public/achieve/SKILL.md, skills/public/achieve/references/adapter-contract.md, skills/public/achieve/references/lifecycle-after.md, skills/public/achieve/references/lifecycle-before.md, skills/public/achieve/references/lifecycle-during.md, skills/public/issue/SKILL.md, skills/public/issue/references/issue-backend.md, skills/shared/references/active-goal-coordination.md\n  verify: python3 scripts/validate_cautilus_proof.py --repo-root ., python3 scripts/validate_cautilus_diagnostics.py --repo-root .\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/achieve/SKILL.md, skills/public/achieve/adapter.example.yaml, skills/public/achieve/references/adapter-contract.md, skills/public/achieve/references/lifecycle-after.md, skills/public/achieve/references/lifecycle-before.md, skills/public/achieve/references/lifecycle-during.md, skills/public/achieve/scripts/achieve_adapter_policy.py, skills/public/achieve/scripts/append_slice_log.py, skills/public/achieve/scripts/check_goal_artifact.py, skills/public/achieve/scripts/init_adapter.py, skills/public/issue/SKILL.md, skills/public/issue/adapter.example.yaml, skills/public/issue/references/issue-backend.md, skills/public/issue/scripts/issue_tool.py, skills/public/quality/scripts/check_dup_ratchet.py, skills/public/quality/scripts/plan_quality_run.py, skills/public/quality/scripts/quality_declaration_lifecycle.py, skills/shared/references/active-goal-coordination.md, skills/public/achieve/scripts/goal_tracker_receipt.py, skills/public/achieve/scripts/interview_contract.py, skills/public/achieve/scripts/write_goal_receipt.py, skills/public/issue/scripts/issue_tracker.py\n  derived matches: plugins/charness/shared/references/active-goal-coordination.md, plugins/charness/skills/achieve/SKILL.md, plugins/charness/skills/achieve/adapter.example.yaml, plugins/charness/skills/achieve/references/adapter-contract.md, plugins/charness/skills/achieve/references/lifecycle-after.md, plugins/charness/skills/achieve/references/lifecycle-before.md, plugins/charness/skills/achieve/references/lifecycle-during.md, plugins/charness/skills/achieve/scripts/achieve_adapter_policy.py, plugins/charness/skills/achieve/scripts/append_slice_log.py, plugins/charness/skills/achieve/scripts/check_goal_artifact.py, plugins/charness/skills/achieve/scripts/init_adapter.py, plugins/charness/skills/issue/SKILL.md, plugins/charness/skills/issue/adapter.example.yaml, plugins/charness/skills/issue/references/issue-backend.md, plugins/charness/skills/issue/scripts/issue_tool.py, plugins/charness/skills/quality/scripts/check_dup_ratchet.py, plugins/charness/skills/quality/scripts/plan_quality_run.py, plugins/charness/skills/quality/scripts/quality_declaration_lifecycle.py, plugins/charness/skills/achieve/scripts/goal_tracker_receipt.py, plugins/charness/skills/achieve/scripts/interview_contract.py, plugins/charness/skills/achieve/scripts/write_goal_receipt.py, plugins/charness/skills/issue/scripts/issue_tracker.py\n  verify: python3 scripts/validate_skills.py --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py, python3 scripts/check_skill_ownership_overlap.py --repo-root ., python3 scripts/validate_skill_ergonomics.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/achieve/SKILL.md, skills/public/achieve/adapter.example.yaml, skills/public/achieve/references/adapter-contract.md, skills/public/achieve/references/lifecycle-after.md, skills/public/achieve/references/lifecycle-before.md, skills/public/achieve/references/lifecycle-during.md, skills/public/achieve/scripts/achieve_adapter_policy.py, skills/public/achieve/scripts/append_slice_log.py, skills/public/achieve/scripts/check_goal_artifact.py, skills/public/achieve/scripts/init_adapter.py, skills/public/issue/SKILL.md, skills/public/issue/adapter.example.yaml, skills/public/issue/references/issue-backend.md, skills/public/issue/scripts/issue_tool.py, skills/public/quality/scripts/check_dup_ratchet.py, skills/public/quality/scripts/plan_quality_run.py, skills/public/quality/scripts/quality_declaration_lifecycle.py, skills/shared/references/active-goal-coordination.md, skills/public/achieve/scripts/goal_tracker_receipt.py, skills/public/achieve/scripts/interview_contract.py, skills/public/achieve/scripts/write_goal_receipt.py, skills/public/issue/scripts/issue_tracker.py\n  verify: python3 scripts/validate_public_skill_validation.py --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: docs/public-skill-dogfood.json, skills/public/achieve/SKILL.md, skills/public/achieve/adapter.example.yaml, skills/public/achieve/references/adapter-contract.md, skills/public/achieve/references/lifecycle-after.md, skills/public/achieve/references/lifecycle-before.md, skills/public/achieve/references/lifecycle-during.md, skills/public/achieve/scripts/achieve_adapter_policy.py, skills/public/achieve/scripts/append_slice_log.py, skills/public/achieve/scripts/check_goal_artifact.py, skills/public/achieve/scripts/init_adapter.py, skills/public/issue/SKILL.md, skills/public/issue/adapter.example.yaml, skills/public/issue/references/issue-backend.md, skills/public/issue/scripts/issue_tool.py, skills/public/quality/scripts/check_dup_ratchet.py, skills/public/quality/scripts/plan_quality_run.py, skills/public/quality/scripts/quality_declaration_lifecycle.py, skills/shared/references/active-goal-coordination.md, skills/public/achieve/scripts/goal_tracker_receipt.py, skills/public/achieve/scripts/interview_contract.py, skills/public/achieve/scripts/write_goal_receipt.py, skills/public/issue/scripts/issue_tracker.py\n  verify: python3 scripts/validate_public_skill_dogfood.py --repo-root .\n- adapters: Repo-local adapter contracts and adapter helper libraries.\n  source matches: .agents/achieve-adapter.yaml\n  verify: python3 scripts/validate_adapters.py --repo-root .\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-26-005458-packet.json, charness-artifacts/critique/2026-08-26-005458-packet.md, charness-artifacts/critique/2026-08-26-adversarial-no-change-closeout-packet.json, charness-artifacts/critique/2026-08-26-adversarial-no-change-closeout-packet.md, charness-artifacts/critique/2026-08-26-adversarial-no-change-f1.json, charness-artifacts/critique/2026-08-26-adversarial-no-change-f2.json, charness-artifacts/critique/2026-08-26-adversarial-no-change-f3.json, charness-artifacts/critique/2026-08-26-adversarial-no-change-issue-closeout.md, charness-artifacts/critique/compact-hook-r10-packet.json, charness-artifacts/critique/compact-hook-r10-packet.md, charness-artifacts/critique/compact-hook-r3-packet.json, charness-artifacts/critique/compact-hook-r3-packet.md, charness-artifacts/critique/compact-hook-r4-packet.json, charness-artifacts/critique/compact-hook-r4-packet.md, charness-artifacts/critique/compact-hook-r5-packet.json, charness-artifacts/critique/compact-hook-r5-packet.md, charness-artifacts/critique/compact-hook-r6-packet.json, charness-artifacts/critique/compact-hook-r6-packet.md, charness-artifacts/critique/compact-hook-r7-packet.json, charness-artifacts/critique/compact-hook-r7-packet.md, charness-artifacts/critique/compact-hook-r8-packet.json, charness-artifacts/critique/compact-hook-r8-packet.md, charness-artifacts/critique/compact-hook-r9-packet.json, charness-artifacts/critique/compact-hook-r9-packet.md, charness-artifacts/critique/compact-hook-repaired-r2-packet.json, charness-artifacts/critique/compact-hook-repaired-r2-packet.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- retro-lesson-selection-index: Durable retro prepare packets and generated advisory index for source-linked retro lesson digest selection.\n  source matches: charness-artifacts/retro/lesson-session-receipts/2026-08-26-01a03c37-b39b-7541-9dc2-95459b1d7479.md\n  sync: python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write\n  verify: for retro_packet_json in charness-artifacts/retro/*-packet.json; do if [ -e \"$retro_packet_json\" ]; then python3 -m json.tool \"$retro_packet_json\" >/dev/null || exit $?; fi; done, python3 scripts/build_retro_lesson_selection_index.py --repo-root . --check\n- lesson-ledger-and-contract-register: Local cited lesson state and the explicit pre-contract-mutation register probe.\n  source matches: charness-artifacts/retro/lesson-ledger.json, charness-artifacts/retro/lesson-session-receipts/2026-08-26-01a03c37-b39b-7541-9dc2-95459b1d7479.json\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/check_lesson_ledger.py --repo-root ., python3 scripts/check_contract_register.py --repo-root ., python3 -m pytest -q tests/test_lesson_ledger.py tests/test_lesson_lifecycle.py tests/test_contract_register.py\n- integrations-and-control-plane: Integration manifests and control-plane helper scripts.\n  derived matches: plugins/charness/scripts/check_docs_graph.py, plugins/charness/scripts/check_python_lengths.py, plugins/charness/scripts/check_runtime_budget_universe.py, plugins/charness/scripts/dup_ratchet_edit_advisory.py, plugins/charness/scripts/plan_risk_interrupt.py, plugins/charness/scripts/setup_agent_docs_lib.py, plugins/charness/scripts/setup_inspect_quality_lib.py, .charness/host-hooks/state.json, .charness/issue-regroup-plan.json\n  verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root ., python3 scripts/update_tools.py --repo-root .\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/check_docs_graph.py, scripts/check_python_lengths.py, scripts/check_runtime_budget_universe.py, scripts/dup_ratchet_edit_advisory.py, scripts/plan_risk_interrupt.py, scripts/setup_agent_docs_lib.py, scripts/setup_inspect_quality_lib.py, tests/quality_gates/test_achieve_adapter_policy.py, tests/quality_gates/test_dup_ratchet_edit_advisory.py, tests/quality_gates/test_dup_ratchet_scope_coverage.py, tests/quality_gates/test_issue_skill.py, tests/quality_gates/test_python_length_gates.py, tests/quality_gates/test_quality_run_planner.py, tests/quality_gates/test_runtime_budget_universe.py, tests/quality_gates/test_setup_inspect_policy.py, tests/test_docs_graph_gate.py, tests/test_risk_interrupt.py, tests/quality_gates/test_achieve_interview_contract.py, tests/quality_gates/test_goal_tracker_receipt.py, tests/quality_gates/test_issue_tracker.py\n  derived matches: plugins/charness/scripts/check_docs_graph.py, plugins/charness/scripts/check_python_lengths.py, plugins/charness/scripts/check_runtime_budget_universe.py, plugins/charness/scripts/dup_ratchet_edit_advisory.py, plugins/charness/scripts/plan_risk_interrupt.py, plugins/charness/scripts/setup_agent_docs_lib.py, plugins/charness/scripts/setup_inspect_quality_lib.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- inference-interpretation-contract: Advisory-interpretation contract meta-validator (#330): the inference-layer surface registry plus every registered Python/prose declaration and its paired consumer reference.\n  source matches: scripts/check_python_lengths.py\n  verify: python3 scripts/validate_inference_interpretation.py --repo-root . --require-git-file-listing\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/check_docs_graph.py, scripts/check_python_lengths.py, scripts/check_runtime_budget_universe.py, scripts/dup_ratchet_edit_advisory.py, scripts/plan_risk_interrupt.py, scripts/setup_agent_docs_lib.py, scripts/setup_inspect_quality_lib.py, skills/public/achieve/scripts/achieve_adapter_policy.py, skills/public/achieve/scripts/append_slice_log.py, skills/public/achieve/scripts/check_goal_artifact.py, skills/public/achieve/scripts/init_adapter.py, skills/public/issue/scripts/issue_tool.py, skills/public/quality/scripts/check_dup_ratchet.py, skills/public/quality/scripts/plan_quality_run.py, skills/public/quality/scripts/quality_declaration_lifecycle.py, skills/public/achieve/scripts/goal_tracker_receipt.py, skills/public/achieve/scripts/interview_contract.py, skills/public/achieve/scripts/write_goal_receipt.py, skills/public/issue/scripts/issue_tracker.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n- python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "reviewer_runner": {
+      "mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "timeout_seconds": 900
+    },
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed. Consume the worker receipt and delivery ledger; do not infer approval from a file or exit code."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "working-tree",
+    "substrate_mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "9c32398c90b874bd624c9e5f89d7ddcfce04d4ab",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      ".agents/achieve-adapter.yaml",
+      "charness-artifacts/goals/2026-08-26-adversarial-priority-backlog-closeout.md",
+      "charness-artifacts/specs/adversarial-priority-backlog-closeout/phase-00-issue-native-achieve-tracking/spec.md",
+      "docs/public-skill-dogfood.json",
+      "skills/public/achieve/SKILL.md",
+      "skills/public/achieve/adapter.example.yaml",
+      "skills/public/achieve/references/adapter-contract.md",
+      "skills/public/achieve/references/lifecycle-after.md",
+      "skills/public/achieve/references/lifecycle-before.md",
+      "skills/public/achieve/references/lifecycle-during.md",
+      "skills/public/achieve/scripts/achieve_adapter_policy.py",
+      "skills/public/achieve/scripts/append_slice_log.py",
+      "skills/public/achieve/scripts/check_goal_artifact.py",
+      "skills/public/achieve/scripts/goal_tracker_receipt.py",
+      "skills/public/achieve/scripts/init_adapter.py",
+      "skills/public/achieve/scripts/interview_contract.py",
+      "skills/public/achieve/scripts/write_goal_receipt.py",
+      "skills/public/issue/SKILL.md",
+      "skills/public/issue/adapter.example.yaml",
+      "skills/public/issue/references/issue-backend.md",
+      "skills/public/issue/scripts/issue_tool.py",
+      "skills/public/issue/scripts/issue_tracker.py",
+      "skills/shared/references/active-goal-coordination.md",
+      "tests/quality_gates/test_achieve_adapter_policy.py",
+      "tests/quality_gates/test_achieve_interview_contract.py",
+      "tests/quality_gates/test_goal_tracker_receipt.py",
+      "tests/quality_gates/test_issue_skill.py",
+      "tests/quality_gates/test_issue_tracker.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": ".agents/achieve-adapter.yaml",
+        "content_sha256": "fe399e6956aeecbd60ad0b00cba3dd4459e9555b3b13acf9fef867b0893dfc2d"
+      },
+      {
+        "path": "charness-artifacts/goals/2026-08-26-adversarial-priority-backlog-closeout.md",
+        "content_sha256": "6a18db0e20743d6d91f210f0323e07a8d4e380c937da479a4b9773a0007281f7"
+      },
+      {
+        "path": "charness-artifacts/specs/adversarial-priority-backlog-closeout/phase-00-issue-native-achieve-tracking/spec.md",
+        "content_sha256": "ec4e08efd404751d39fe20f1a1f278cd5adf0317e528c09b85f0afbd46db1937"
+      },
+      {
+        "path": "docs/public-skill-dogfood.json",
+        "content_sha256": "098c0b552701361f9067a16a30297d432f45c9b84b933bd6208eb352a11aafba"
+      },
+      {
+        "path": "skills/public/achieve/SKILL.md",
+        "content_sha256": "eb844eff4e72eab756d4236414c2771835a53075552abde9da18bb92107bdfee"
+      },
+      {
+        "path": "skills/public/achieve/adapter.example.yaml",
+        "content_sha256": "c15eefc6acd47a4f79847265569e093e5a2a15c8ff5a54e00f32efc05fe6d54c"
+      },
+      {
+        "path": "skills/public/achieve/references/adapter-contract.md",
+        "content_sha256": "071851fb460089460dc65fbaffdf0e912a9614a90445ab90166526e3ff1817e1"
+      },
+      {
+        "path": "skills/public/achieve/references/lifecycle-after.md",
+        "content_sha256": "155e0c962b1295c4365d21f3210c7a4b2adb920e54aeff3c430003bc249cda85"
+      },
+      {
+        "path": "skills/public/achieve/references/lifecycle-before.md",
+        "content_sha256": "ef63539a6d09410e58d5a0c9548f8586972548c48e19a36d440a6b3027ffc75d"
+      },
+      {
+        "path": "skills/public/achieve/references/lifecycle-during.md",
+        "content_sha256": "cbdc535a5e612d3ca1ada670150c4933f46fa17b896753e02ede91d9cf071722"
+      },
+      {
+        "path": "skills/public/achieve/scripts/achieve_adapter_policy.py",
+        "content_sha256": "9984b250ea11169ec99d4e37c3b338434f1740d78a14bf21b624b5f5247eba76"
+      },
+      {
+        "path": "skills/public/achieve/scripts/append_slice_log.py",
+        "content_sha256": "8a95e5b7856f1ab40072a53dff0bbe59c736d7892b82a75993a7f2d9b85e8565"
+      },
+      {
+        "path": "skills/public/achieve/scripts/check_goal_artifact.py",
+        "content_sha256": "c0433a6eb134ccea426cdb836cdc5295491f6c9b295e627b2d4e43c58ede379b"
+      },
+      {
+        "path": "skills/public/achieve/scripts/goal_tracker_receipt.py",
+        "content_sha256": "ccc468d55fa496677d427d9f0882d11e8c7c976a1c54b0f3ab72b99e4b44134f"
+      },
+      {
+        "path": "skills/public/achieve/scripts/init_adapter.py",
+        "content_sha256": "f10c17e5676b55b501edcc88c98e97a1c4fe9a146179ce1db560496d7ae6c7b6"
+      },
+      {
+        "path": "skills/public/achieve/scripts/interview_contract.py",
+        "content_sha256": "503c6296928fdf81bda6be4be25f5385ce4f5e149cc5d7a4c3039df6cadfd32d"
+      },
+      {
+        "path": "skills/public/achieve/scripts/write_goal_receipt.py",
+        "content_sha256": "b9fa11c6299a8efcfc3079bad4312fb582b0a88063cd4306a09bcfc46d047138"
+      },
+      {
+        "path": "skills/public/issue/SKILL.md",
+        "content_sha256": "71efc68960a8fb6d33d2819e173a0782aecbfb2c06f7683f5073c397d0124ca8"
+      },
+      {
+        "path": "skills/public/issue/adapter.example.yaml",
+        "content_sha256": "d954fb11b8118e44d39125bd8b921f50d4403efb86dce51791d16657d2c34634"
+      },
+      {
+        "path": "skills/public/issue/references/issue-backend.md",
+        "content_sha256": "7f2b6ee3162c94a22c79dfe2db1405beaa56f7368222a9d0f57d9ac919eccbe5"
+      },
+      {
+        "path": "skills/public/issue/scripts/issue_tool.py",
+        "content_sha256": "30829c4db57e43d1e8ad3719354228af372d7c3e853903ec7ee19b5896837242"
+      },
+      {
+        "path": "skills/public/issue/scripts/issue_tracker.py",
+        "content_sha256": "28e8f9bdc75c23b2ceb28f316f6af6739a907c3bc93e42df917e8f8eb2258ae6"
+      },
+      {
+        "path": "skills/shared/references/active-goal-coordination.md",
+        "content_sha256": "3b7958b5926179a2db8b04b7adadc461fd484653b0f0faf3e2b32fc321851216"
+      },
+      {
+        "path": "tests/quality_gates/test_achieve_adapter_policy.py",
+        "content_sha256": "b5a77c59eba476acf4dc677c5f2cf7d6a6c96fefe456477c32e5700646496c38"
+      },
+      {
+        "path": "tests/quality_gates/test_achieve_interview_contract.py",
+        "content_sha256": "6dcaa453cda127fab11f242e096e5d5f9958546a18711f6975ad6747d77bcf8f"
+      },
+      {
+        "path": "tests/quality_gates/test_goal_tracker_receipt.py",
+        "content_sha256": "30552832e11c3b78d412c4aeddb2886ed9a88cb37a67b56e957470217e3a363d"
+      },
+      {
+        "path": "tests/quality_gates/test_issue_skill.py",
+        "content_sha256": "8181b238d0cf038b4e29471b3ea0fcfdeeb4646a55ce3582fdd646c254c097ad"
+      },
+      {
+        "path": "tests/quality_gates/test_issue_tracker.py",
+        "content_sha256": "61faf651571af73d503103e7b2f0be30f0f745a26753c688e55f0664ca5dc053"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "29d00ae5ec3e3191c3c1c143f3de48628db2ba8d60cafa55ef3a6b6a3b99e8e3",
+    "declared_untracked": [
+      {
+        "path": "charness-artifacts/specs/adversarial-priority-backlog-closeout/phase-00-issue-native-achieve-tracking/spec.md",
+        "content_sha256": "ec4e08efd404751d39fe20f1a1f278cd5adf0317e528c09b85f0afbd46db1937"
+      },
+      {
+        "path": "skills/public/achieve/scripts/goal_tracker_receipt.py",
+        "content_sha256": "ccc468d55fa496677d427d9f0882d11e8c7c976a1c54b0f3ab72b99e4b44134f"
+      },
+      {
+        "path": "skills/public/achieve/scripts/interview_contract.py",
+        "content_sha256": "503c6296928fdf81bda6be4be25f5385ce4f5e149cc5d7a4c3039df6cadfd32d"
+      },
+      {
+        "path": "skills/public/achieve/scripts/write_goal_receipt.py",
+        "content_sha256": "b9fa11c6299a8efcfc3079bad4312fb582b0a88063cd4306a09bcfc46d047138"
+      },
+      {
+        "path": "skills/public/issue/scripts/issue_tracker.py",
+        "content_sha256": "28e8f9bdc75c23b2ceb28f316f6af6739a907c3bc93e42df917e8f8eb2258ae6"
+      },
+      {
+        "path": "tests/quality_gates/test_achieve_interview_contract.py",
+        "content_sha256": "6dcaa453cda127fab11f242e096e5d5f9958546a18711f6975ad6747d77bcf8f"
+      },
+      {
+        "path": "tests/quality_gates/test_goal_tracker_receipt.py",
+        "content_sha256": "30552832e11c3b78d412c4aeddb2886ed9a88cb37a67b56e957470217e3a363d"
+      },
+      {
+        "path": "tests/quality_gates/test_issue_tracker.py",
+        "content_sha256": "61faf651571af73d503103e7b2f0be30f0f745a26753c688e55f0664ca5dc053"
+      }
+    ],
+    "auto_excluded_paths": [],
+    "identity_sha256": "462231894dce8dbf36dd9eea46ed62cec9efd3eb93cdc424bf08234d412704f0"
+  }
+}

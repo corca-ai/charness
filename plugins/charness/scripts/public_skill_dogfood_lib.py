@@ -70,9 +70,9 @@ EVIDENCE_OVERRIDES = {
         "routes provider execution through adapter-declared repo-owned commands and records an undeclared-capability need as `blocked-needs-capability` instead of improvising",
     ],
     "achieve": [
-        "saves a draft goal artifact under `charness-artifacts/goals/<yyyy-mm-dd-slug>.md` with an explicit `/goal @...` activation line",
-        "tells the user the file is inert until activation and does not start executing slices itself",
-        "keeps the Before-phase artifact-only — drafting does not consume the host active-goal slot, which is consumed only at `/goal @...` pursuit",
+        "saves a complete Goal Draft under `charness-artifacts/goals/<yyyy-mm-dd-slug>.md`, freezes its bytes after approval, and binds it to one provider-backed Goal Run",
+        "resumes only from the exact `/goal #N` objective after provider readback; the draft remains planning provenance and never becomes a progress log",
+        "keeps the Before-phase provider-free until explicit approval, then reads the parent and reconciles the real child graph through the issue-owned Goal Run provider",
     ],
     "create-skill": [
         "treats the public skill frontmatter and core trigger as classifier input, not only documentation",

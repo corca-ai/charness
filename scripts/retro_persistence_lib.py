@@ -5,6 +5,12 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from scripts.goal_lineage import (
+    LineageError,
+    load_goal_lineage_file,
+    not_goal_bound_lineage,
+    planning_only_lineage,
+)
 from scripts.helper_provenance_lib import require_repo_local_helper
 from scripts.recent_lessons_lib import build_indexed_recent_lessons, write_lesson_selection_index
 
@@ -173,13 +179,29 @@ def persist_retro_artifact(
     summary_path: Path | None,
     force_empty_summary: bool = False,
     goal_path: Path | None = None,
+    goal_lineage_path: Path | None = None,
 ) -> dict[str, Any]:
     # Guarded here, at the WRITE boundary, rather than only in the CLIs above it:
     # `publish_release` reaches this function directly, and the four failed publishes
     # this check exists for wrote an old-schema lesson index through exactly this
     # path from an installed plugin copy. See scripts/helper_provenance_lib.py.
     require_repo_local_helper(__file__, repo_root)
+    if goal_path is not None and goal_lineage_path is not None:
+        raise ValueError("retro accepts either --goal-path or --goal-lineage-file, not both")
     goal_identity = _goal_identity(repo_root, goal_path, markdown_text) if goal_path is not None else None
+    try:
+        if goal_lineage_path is not None:
+            goal_lineage = load_goal_lineage_file(repo_root, goal_lineage_path)
+        elif goal_path is not None:
+            goal_lineage = planning_only_lineage(
+                repo_root,
+                goal_path,
+                "legacy goal-aware retro retains draft provenance but has no Goal Run binding",
+            )
+        else:
+            goal_lineage = not_goal_bound_lineage("retro was persisted without a Goal Run identity")
+    except LineageError as exc:
+        raise ValueError(str(exc)) from exc
     if goal_identity is not None:
         markdown_text = _canonicalize_goal_metadata(markdown_text, goal_identity["goal_path"])
     normalized_name, was_normalized = normalize_artifact_name(artifact_name)
@@ -199,6 +221,7 @@ def persist_retro_artifact(
         result["artifact_name_normalized"] = True
     if goal_identity is not None:
         result.update(goal_identity)
+    result["goal_lineage"] = goal_lineage
 
     if summary_path is not None and artifact_path.resolve() != summary_path.resolve():
         digest = build_indexed_recent_lessons(repo_root=repo_root, output_dir=output_dir, summary_path=summary_path)

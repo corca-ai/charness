@@ -7,6 +7,20 @@ This document explains where `charness` should keep different kinds of
 knowledge. The goal is not one perfect file pattern. The goal is a stable
 default plus explicit exceptions.
 
+## Goal Draft And Execution Lineage
+
+Long-running work has one planning artifact and one provider execution identity.
+The complete Markdown Goal Draft may change before approval, then its bytes are
+frozen and referenced by SHA-256. A sibling Goal Binding records the approved
+parent and initial Work Item graph. Execution evidence carries the shared
+`goal_lineage` record: draft path/hash, binding path/hash, exact parent issue,
+and, when selected, exact Work Item issue/key.
+
+Evidence without that identity must say `planning-only` or `not-goal-bound`; a
+local path, filename, or issue number alone is not execution proof. Routine
+progress belongs to provider child state, not a second local ledger or edits to
+the frozen draft.
+
 ## Durability Classes
 
 ### Fixed Knowledge

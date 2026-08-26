@@ -39,6 +39,11 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--bundle-id", required=True)
     parser.add_argument("--critique-path", action="append", required=True)
     parser.add_argument("--behavior-channel", action="append", required=True)
+    parser.add_argument(
+        "--goal-lineage-file",
+        type=Path,
+        help="Optional repo-local Goal Run lineage JSON binding this closeout bundle to one Work Item.",
+    )
     parser.add_argument("--execute", action="store_true", help="Run the bounded local phases; default is a no-write plan.")
     parser.add_argument(
         "--receipt-path",
@@ -63,6 +68,8 @@ def main(argv: list[str] | None = None) -> int:
                 critique_paths=args.critique_path,
                 behavior_channels=args.behavior_channel,
                 bundle_id=args.bundle_id,
+                # Keep the raw input for the lineage loader's symlink check.
+                goal_lineage_path=args.goal_lineage_file,
             )
             if payload["status"] == "completed":
                 receipt = args.receipt_path or Path("charness-artifacts/goals") / f"{args.bundle_id}.json"
@@ -74,6 +81,8 @@ def main(argv: list[str] | None = None) -> int:
                 critique_paths=args.critique_path,
                 behavior_channels=args.behavior_channel,
                 bundle_id=args.bundle_id,
+                # Keep the raw input for the lineage loader's symlink check.
+                goal_lineage_path=args.goal_lineage_file,
             )
     except (_lib.BundleError, OSError, ValueError) as exc:
         payload = {

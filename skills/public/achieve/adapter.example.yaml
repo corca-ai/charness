@@ -2,6 +2,9 @@ version: 1
 repo: CHANGE_ME
 language: en
 artifact_dir: charness-artifacts/goals
+interview:
+  max_questions: 15
+  allow_provisional_local_fallback: false
 closeout_publication:
   default_mode: audit-only
   issue_closeout_carrier: direct-commit
@@ -24,8 +27,7 @@ scaffold:
     - "  the reviewable-intent unit in progress and the commits it spans; critique"
     - "  and broad proof do not re-fire within one unchanged intent — update it when"
     - "  the intent changes, not per commit (meaningful-slice-cadence)."
-    - "- Next action: activate with `/goal @{goal_rel}` after confirming the draft is"
-    - "  still intended."
+    - "- Next action: after approval, resume the provider-backed run with `/goal #<parent>`."
     - "- Verification cadence: cheap deterministic checks at commit boundaries;"
     - "  higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at"
     - "  closeout."

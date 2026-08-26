@@ -50,19 +50,20 @@ After a release or normal operator cycle, go back to the default managed flow:
 charness update
 ```
 
-## Stable Goal Helper Commands
+## Issue-Native Goal Run Pickup
 
-Use the repo-owned CLI surface for common goal helper checks instead of copying
-versioned plugin-cache paths:
+Use the exact issue-number objective for a provider-backed run. The sidecar is
+resolved by the provider metadata; it is not user input:
 
 ```bash
-charness goal check --repo-root . --goal-path charness-artifacts/goals/<goal>.md --pursue-ready
+./charness goal run \
+  --repo-root . --objective '/goal #724'
 ```
 
-`--charness-checkout /path/to/charness` points at an explicit source checkout
-when proving local edits. Paths under
-`~/.codex/plugins/cache/local/charness/<version>/...` are host cache internals
-and may rotate after plugin updates.
+The helper returns a typed refusal until provider establishment and current
+membership readback are verified. Do not use a local artifact path or an
+installed cache path as execution identity.
+No local artifact path is accepted by this command.
 
 ## Closeout Bundle and Handoff Validation
 
@@ -76,7 +77,8 @@ python3 scripts/closeout_bundle.py \
   --manifest <slice-manifest.json> \
   --bundle-id <bundle-id> \
   --critique-path <critique.md> \
-  --behavior-channel 'behavior=<operator proof command>'
+  --behavior-channel 'behavior=<operator proof command>' \
+  --goal-lineage-file <lineage.json>
 ```
 
 Add `--execute` only after inspecting the plan. A completed run writes a

@@ -43,8 +43,7 @@ REFERENCE_CONTRACT_SUFFIXES = {".md", ".txt"}
 # discipline, never a self-classifying gate.
 CORE_CONTRACTS: dict[str, tuple[str, ...]] = {
     "skills/public/critique/SKILL.md": (
-        "Task-completing repo work always records critique before closeout.",
-        "Scale the\npass, not the obligation",
+        "Critique is selected by risk, not by the fact that a task completed.",
         "optional\nevidence-led mode",
         "Do not treat the counterweight pass as adversarial evidence",
         "- `Evidence Disposition` (when active; identity/count/coverage/digest)",
@@ -220,6 +219,7 @@ PACKAGE_CONTRACTS: dict[str, tuple[str, ...]] = {
     ),
     "skills/public/prove/SKILL.md": (
         "$SKILL_DIR/../retro/scripts/check_auto_trigger.py",
+        "`Critique: not-required <reason>`",
         "`Critique: short <scope>`",
         "`Critique: full <artifact-or-worker-status>`",
         "`Critique: not-applicable <reason>`",

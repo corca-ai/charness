@@ -637,3 +637,25 @@ def test_host_log_probe_renders_every_format_it_accepts() -> None:
         rendered = _probe_host_logs.render_output({"hosts": {}}, choice)
         assert rendered.endswith("\n"), choice
         assert rendered.strip(), choice
+
+
+def test_host_log_probe_refuses_invalid_lineage_as_structured_yaml(tmp_path: Path, monkeypatch, capsys) -> None:
+    home = tmp_path / "home"
+    home.mkdir()
+
+    result = run_probe_host_logs(
+        monkeypatch,
+        capsys,
+        "--home",
+        str(home),
+        "--repo-root",
+        str(tmp_path),
+        "--goal-lineage-file",
+        str(tmp_path / "missing-lineage.json"),
+    )
+
+    assert result.returncode == 2
+    payload = yaml.safe_load(result.stdout)
+    assert payload["status"] == "refused"
+    assert payload["error"]["code"] == "invalid_lineage"
+    assert "traceback" not in result.stderr.lower()

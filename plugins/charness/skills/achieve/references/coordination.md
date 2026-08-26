@@ -1,158 +1,67 @@
 # Coordination With Existing Skills
 
-`achieve` is a goal lifecycle operator, not a task execution engine and not a
-replacement for the workflow skills. It coordinates them around one goal
-artifact. Each coordinated skill must still be useful standalone; do not add
-`achieve`-only branches to them.
+`achieve` owns lifecycle policy and identity selection. It does not reimplement
+the engines owned by adjacent workflows.
 
-| Skill | Role inside an achieve goal |
+Material cross-surface changes use the [boundary ownership brief](../../../shared/references/boundary-ownership-brief.md)
+through `critique`; structural retro dispositions use the shared
+[`retro-issue-destination-split.md`](../../../shared/references/retro-issue-destination-split.md)
+contract. These links preserve the handoff without making `achieve` a second
+review or issue engine.
+
+| Workflow | Achieve handoff |
 | --- | --- |
-| `ideation` | clarify the user's intent and upstream decisions before the goal is shaped |
-| `spec` | turn the goal into a living implementation contract when the target is complex enough |
-| `impl` | execute slices; treat an active goal artifact as the slice memory surface |
-| `debug` | for a bug-class goal, drive a falsifiable root-cause *before* the fix slice; record the hypothesis or debug-artifact path in the Slice Plan |
-| `quality` | design verification up front, run cheap checks during, broad gates near final |
-| `issue` | record off-goal findings (reference + reason only); **and**, when the goal resolves a tracked issue, close it through `issue` at closeout (see *Resolving A Tracked Issue*) |
-| `critique` | review the goal plan before activation, substantial slices, and final proof — when a slice touches shared, generic, or cross-surface code, its `critique` runs the [boundary ownership brief](../../../shared/references/boundary-ownership-brief.md) producer/consumer questions and records the typed disposition (floored when that critique writes a durable artifact or the repo probe fires; see the boundary note below) |
-| `retro` | produce the automatic after-action review focused on time/token/waste |
+| `ideation` | clarify demand, status quo, wedge, and product boundaries |
+| `spec` | turn the approved concept into the current implementation contract |
+| `critique` | review material authority, durability, external-write, security, release, compatibility, deletion, migration, or proof-surface risk |
+| `impl` | change the selected Work Item's code, config, tests, or operator artifact |
+| `quality` | choose proportionate deterministic, provider, and boundary checks |
+| `prove` | close the implementation slice with evidence and non-claims |
+| `issue` | own provider operations and issue-owned closeout evidence |
+| `retro` | record lessons and explicit improvement dispositions after the work unit |
+| `handoff` | prepare a next-session baton only when requested or genuinely blocked |
 
-## Resolving A Tracked Issue
+## Shared identity
 
-When the goal's outcome is resolving a tracked GitHub issue (its title or
-`Context Sources` name `#N`), coordinate two existing skills the goal's own
-slices would otherwise bypass, and record both in the goal artifact so the run
-does not improvise them:
+Execution evidence embeds or references one `goal_lineage` record containing
+the frozen Goal Draft path/hash, Goal Binding path/hash, exact Goal Run
+repository/number, and optional selected Work Item identity. Matching a path or
+number alone is insufficient. A planning-only or not-goal-bound disposition is
+explicit and cannot satisfy implementation or closeout proof.
 
-- **`debug` for bug-class.** If the issue is bug-class (real behavior diverges
-  from a documented or implied contract), drive a falsifiable root-cause through
-  `debug` *before* the fix slice, and record the hypothesis (or debug-artifact
-  path) in the Slice Plan. This mirrors the causal-review discipline the
-  `issue resolve` flow mandates for bug-class issues — an `achieve` goal that
-  fixes the bug with its own `impl` slices does not inherit it automatically.
-- **`issue` to close at closeout.** Stage the originating issue's close through
-  `issue`, not by hand: put the close keyword `Close #N` in the body of the
-  commit (or PR) that lands the fix **on the default branch**, so the
-  maintainer's push auto-closes the issue. Preserve the keyword through squash /
-  rebase / edited-merge bodies (the `issue` skill's closeout-discipline owns this
-  failure mode). At `achieve` closeout the issue is still **OPEN** — it is
-  *staged* to auto-close, not closed; `achieve` does **not** push or run an
-  out-of-band close (push timing stays the maintainer's call). Without the
-  keyword a goal can resolve an issue yet leave it open after push; that gap is
-  what this coordination closes.
-- **The resolution critique's fresh-eye round runs BEFORE the close, not after.**
-  The floor requires a critique artifact at close time; it does not by itself
-  order the review that artifact records. Measured once in this harness: a close
-  landed at 14:25 and the bounded review that found its load-bearing claim wrong
-  returned at 14:35, so the correction had to be posted publicly on an issue
-  already closed — a private rework turned into a public one by ten minutes of
-  ordering. Run the review, fold its findings, and only then call the close. The
-  `issue` skill now
-  reads the cited artifact's own `Fresh-eye satisfaction:` value at the close
-  boundary and refuses a record that states no distinct observer read it, so the
-  ordering has teeth as well as prose — but the teeth cannot see a claim written
-  before the review it describes. That part stays discipline.
-- **Record the close-intended ledger.** In `## Coordination Cues`, add
-  `Issue closeout:` with the issue numbers, chosen carrier, close-keyword state,
-  classification/critique evidence, and the exact `validate-closeout-draft` or
-  `verify-closeout` proof. Bundled carriers are allowed, but each issue's
-  critique evidence must be bound through `Critique #N:` or an explicit bundle
-  line owned by the `issue` verifier.
+`impl`, `quality`, `critique`, `issue`, `prove`, and `retro` remain useful
+without an active Goal Run. When they claim goal execution, they consume fresh
+provider identity and refuse cross-draft, cross-binding, cross-parent, or
+cross-child substitutions. They do not create a local progress ledger.
 
-This coordination is **operator-side**: `achieve` (the goal operator) plans the
-two steps into the goal artifact — the `debug` step in the Slice Plan, the close
-keyword at closeout — and invokes `debug` and `issue` **as-is**. Neither skill
-gets an `achieve`-only branch, and each stays useful standalone.
+## Tracked issue resolution
 
-The closeout publication default and issue-closeout carrier are adapter-owned.
-Resolve `references/adapter-contract.md` before final closeout when a goal names
-tracked issues or publication: missing adapters are safe `audit-only`; a repo
-adapter may choose `handoff-only` or a publish-capable carrier and may require
-the `issue` skill's direct-commit draft validator before push.
+For a bug-class Work Item, use `debug` to establish a falsifiable cause before
+the fix. For issue closeout, use the issue-owned closeout contract and preserve
+the exact child evidence reference. A parent close is a separate guarded
+provider operation; a local commit keyword or a closed issue state is not proof
+by itself.
 
-## Coordination Cues (owner-skill routing + closeout floors)
+## Risk-adaptive review
 
-The role table above is the standalone-skill reference, not the run-time router.
-During an active run the goal artifact's `## Coordination Cues` section is where
-phase-appropriate routing actually happens, and it selects the owner skill from
-installed metadata/model judgment (with the read-only catalog available only for
-hidden availability) — `achieve` never bakes a phase→skill
-map into the template or this reference. Seeding the cue in the artifact (read
-mid-run), not only in a table read once at shaping, is deliberate: a read-once
-table is inert exactly when the cue would fire.
+Ordinary reversible local work may close on deterministic proof with
+`Critique: not-required <reason>`. Material boundaries retain their owner and
+their distinct evidence channel. A blocked required review remains blocked; it
+does not become an approval. Removing review machinery is not a reason to
+recursively review the removed machinery.
 
-Four boundaries also earn presence-only closeout floors, because a prose cue
-alone gets skipped under context pressure and the miss is silent and costly:
+## Provider boundary
 
-- **phase routing** — the run DECLARES which phases its work crossed in a
-  `Phases:` line (`Phases: debug, quality`, or `Phases: n/a — <reason>`), and
-  records a `Routing:` line naming the selected owner skill and its basis, or
-  `Routing: n/a — <reason>`, for each declared phase plus the implementation and
-  issue-closeout work detected from records the author already wrote (a
-  `What changed:`/`Commits:` line, a literal `closes #N`). This proves the goal
-  did not remain `achieve`-only.
+Use file-backed `issue_tool.py goal-run-*` operations for parent, child, and
+relationship state. Re-read before mutation and persist typed started/terminal
+observations. External writes, issue closure, push, release, tag, installed-host
+mutation, and deletions require their own authorization and readback. Do not
+infer a stronger claim from local tests.
 
-  The floor asks rather than infers, deliberately. It used to decide what work a
-  goal did by matching words in its prose — and was wrong in both directions:
-  real debug work written in plain English did not register, while the word
-  `hypothesis` in passing, or an `airport gate` metaphor, demanded a route. Your
-  declaration is the input; the floor only checks its form.
-- **gather** — when `## Context Sources` names an external source (URL / Slack /
-  Notion / Docs / Drive), the run records a `Gather:` step (or
-  `Gather: n/a — <reason>`). Mandated by `CLAUDE.md`'s external-source routing.
-- **release** — when the run touches a release surface (version bump / install
-  manifest), the run records a `Release:` step (or `Release: n/a — <reason>`).
-- **issue closeout** — when `## Context Sources` names a tracked/GitHub issue or
-  recorded work sections (`## Slice Log` / `## Final Verification`) carry a
-  close keyword, the run records an `Issue closeout:` step (or
-  `Issue closeout: n/a — <reason>`).
+## Off-goal findings
 
-Boundary-ownership is deliberately **not** a fifth floor here: it is a
-per-*change* disposition. A goal owns no change outside its `impl` slices, and a
-slice's boundary disposition is **recorded** by the `critique` that slice runs
-(see the `critique` role above) — with *teeth* only when that critique writes a
-durable standalone artifact (the `validate_critique_artifacts.py` presence floor
-bites) or the repo's cross-surface probe fires; a probe-less rung-2 inline
-critique leaves it reviewer judgment (the named DBD-4 residual, not something a
-goal-level floor closes: that floor would need the per-change diff, not the goal
-aggregate). Surface the brief through the coordinated critique; do not add a
-goal-artifact boundary floor by reflex.
-
-The gather/release/issue floors are enforced by
-`goal_artifact_coordination_floors.py`; phase routing is enforced by
-`goal_artifact_phase_routing.py`. All run at the `complete` flip,
-grandfathered by `Created` date, and are presence/binding-only (never
-prose-quality classification). Gather/release apply to goals Created on or after
-the gather/release rule landing date; issue closeout and phase routing each
-apply on or after their own landing dates. They are operator-side cues
-`achieve` plans into the artifact — `impl`, `debug`, `quality`, `gather`,
-`release`, and `issue` stay useful standalone, with no `achieve`-only branch. See
-`references/lifecycle-after.md` for the full contract.
-
-## Activation
-
-The user activates a saved goal explicitly:
-
-```text
-/goal @charness-artifacts/goals/<file>.md
-```
-
-`/goal` is the host's autonomous-run entrypoint, not a command `charness` ships.
-Reference it only where the active host exposes an autonomous goal slot; the
-host owns that slot's storage and continuation semantics. `achieve` prepares
-and audits the goal artifact; it does not implement the run loop itself.
-
-## Boundary With `handoff`
-
-Do not make `handoff` the default mid-goal state surface. While a goal is active,
-the goal artifact owns running context. `handoff` is still the right surface when:
-
-- the session is stopping outside an active goal
-- a blocked goal needs the next session to resume with explicit context
-- the user asks for a handoff artifact
-
-## Off-Goal Findings
-
-If a finding is not required for the current goal, file or defer it through
-`issue` and append only the reference and reason to the goal artifact's
-`Off-Goal Findings` section. Do not silently expand the active goal just because
-a local fix is possible.
+If a finding is not required for the current Goal Run, file or defer it through
+`issue` with a reason. Do not expand the graph merely because a local fix is
+convenient. If it is an in-scope independently closable Work Item, add it only
+through the provider's explicit graph-amendment operation and preserve the
+immutable initial binding.

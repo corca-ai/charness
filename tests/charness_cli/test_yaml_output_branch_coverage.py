@@ -667,7 +667,7 @@ def test_doctor_rejects_conflicting_detail_and_next_action_flags() -> None:
         module.build_parser().parse_args(["doctor", "--detail", "--next-action"])
 
 
-def test_worktree_and_goal_helper_fallback_keep_stdout_yaml(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_worktree_and_goal_run_fallback_keep_stdout_yaml(tmp_path: Path, monkeypatch, capsys) -> None:
     module = load_charness_module("charness_yaml_worktree_goal_output_under_test")
 
     class WorktreeAudit:
@@ -703,8 +703,8 @@ def test_worktree_and_goal_helper_fallback_keep_stdout_yaml(tmp_path: Path, monk
     assert module.cmd_worktree_cleanup(cleanup_args) == 0
     assert yaml.safe_load(capsys.readouterr().out)["status"] == "pass"
 
-    monkeypatch.setattr(module, "_resolve_goal_helper_repo_root", lambda _args: tmp_path)
-    monkeypatch.setattr(module, "_goal_check_script_args", lambda _args, _repo: [])
+    monkeypatch.setattr(module, "_resolve_goal_run_helper_repo_root", lambda _args: tmp_path)
+    monkeypatch.setattr(module, "_goal_run_script_args", lambda _args, _repo: [])
     monkeypatch.setattr(module, "resolve_repo_python", lambda _path: sys.executable)
     monkeypatch.setattr(
         module,
@@ -712,7 +712,7 @@ def test_worktree_and_goal_helper_fallback_keep_stdout_yaml(tmp_path: Path, monk
         lambda *_args, **_kwargs: SimpleNamespace(stdout="not json\n", stderr="helper warning\n", returncode=0),
     )
 
-    assert module.cmd_goal_check(Namespace(repo_root=tmp_path)) == 0
+    assert module.cmd_goal_run(Namespace(repo_root=tmp_path, objective="/goal #724")) == 0
     goal_output = capsys.readouterr()
     assert yaml.safe_load(goal_output.out) == {"helper_stdout": "not json"}
     assert goal_output.err == "helper warning\n"

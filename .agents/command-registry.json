@@ -23,7 +23,7 @@
     {"path": ["capability", "env"], "group": "capabilities"},
     {"path": ["capability", "explain"], "group": "capabilities"},
     {"path": ["goal"], "group": "goals"},
-    {"path": ["goal", "check"], "group": "goals"},
+    {"path": ["goal", "run"], "group": "goals"},
     {"path": ["tool"], "group": "external-tools"},
     {"path": ["tool", "doctor"], "group": "external-tools"},
     {"path": ["tool", "repair"], "group": "external-tools"},

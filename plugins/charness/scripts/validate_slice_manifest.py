@@ -29,12 +29,24 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--manifest", type=Path, default=None)
+    parser.add_argument(
+        "--goal-lineage-file",
+        type=Path,
+        help="Optional repo-local goal-lineage JSON binding this manifest to one Work Item.",
+    )
     parser.add_argument("--verify-current", action="store_true", help="Also compare captured reader/parity identities with current files.")
     args = parser.parse_args(argv)
     repo_root = args.repo_root.resolve()
     manifest_path = (args.manifest or (repo_root / DEFAULT_MANIFEST)).resolve()
     try:
-        result = validate_manifest(repo_root, manifest_path, verify_current=args.verify_current)
+        result = validate_manifest(
+            repo_root,
+            manifest_path,
+            verify_current=args.verify_current,
+            # The loader owns symlink/path identity checks; resolving here
+            # would erase the fact that the supplied input was a symlink.
+            goal_lineage_path=args.goal_lineage_file,
+        )
     except ManifestError as exc:
         result = {"status": "invalid", "manifest": str(manifest_path), "error": exc.as_dict()}
         if exc.code == "missing_manifest" and args.manifest is None:

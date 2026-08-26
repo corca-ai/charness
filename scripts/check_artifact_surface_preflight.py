@@ -162,7 +162,7 @@ REGISTRY: tuple[Surface, ...] = (
         "goal-activation", None, None, None, None, False,
         "Goal preamble shape: the `Activation:` `/goal @<goal-rel-path>` line (with `Status:`/`Created:`) required in every goal artifact's preamble; a preamble line, not a `## Heading` section.",
         template_preamble=_GOAL_TEMPLATE,
-        owner="achieve goal validation — the default `check_goal_artifact.py` check (`goal_lib.check_goal`'s `Activation:`-line requirement; e.g. `charness goal check --goal-path <goal>`). NOT `--pursue-ready` (which skips the section/Activation check) and not the complete flip.",
+        owner="achieve goal validation — the default `check_goal_artifact.py` check (`goal_lib.check_goal`'s `Activation:`-line requirement; e.g. `python3 skills/public/achieve/scripts/check_goal_artifact.py --repo-root . --goal-path <goal>`). NOT `--pursue-ready` (which skips the section/Activation check) and not the complete flip.",
     ),
     # debug moved into the fail-fast sweep (#454 follow-up): the validator gained
     # `--paths`, so the documented objection — a validate-ALL gate blocking a commit

@@ -56,16 +56,15 @@ Use `achieve` when the work is bigger than one ordinary implementation prompt
 and needs a durable objective, boundaries, slice plan, proof record, and honest
 non-claims.
 
-`achieve` first shapes prose into a reviewable goal artifact under
-`charness-artifacts/goals/` and returns a `/goal @...` activation line for
-hosts that provide that autonomous-run entrypoint. Once activated, the goal
-artifact becomes the running memory surface: slice progress, verification,
-off-goal findings, residual risks, and user verification instructions stay
-there instead of being scattered across chat or handoff.
+`achieve` first shapes prose into one complete Goal Draft under
+`charness-artifacts/goals/`, freezes it after approval, and binds it to one
+provider-backed Goal Run. Resume with the exact issue-number objective
+`/goal #N`; provider state and child issue state carry execution progress, while
+the frozen draft remains planning provenance.
 
 `achieve` coordinates existing workflows such as `ideation`, `spec`, `impl`,
 `debug`, `quality`, `issue`, `critique`, and `retro`. It does not replace those
-skills, ship the `/goal` host command, or create a separate execution engine.
+skills, ship the host objective command, or create a separate execution engine.
 
 ## Direct Invocation
 

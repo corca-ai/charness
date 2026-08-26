@@ -43,6 +43,7 @@ def _load_adapter_lib():
 
 _adapter_lib = _load_adapter_lib()
 optional_bool = _adapter_lib.optional_bool
+optional_int = _adapter_lib.optional_int
 optional_string = _adapter_lib.optional_string
 declared_fields_after_version_check = _adapter_lib.declared_fields_after_version_check
 optional_string_list = _adapter_lib.optional_string_list
@@ -78,6 +79,10 @@ def _defaults(repo_root: Path) -> dict[str, Any]:
         # own deploy verbs so charness does not hardcode one consumer's boundary words.
         "discussion_deploy_vocab": [],
         "release_surface_tokens": [],
+        "interview": {
+            "max_questions": 15,
+            "allow_provisional_local_fallback": False,
+        },
         "closeout_publication": {
             "default_mode": "audit-only",
             "issue_closeout_carrier": "none",
@@ -148,6 +153,24 @@ def _validate_closeout_publication(data: dict[str, Any], defaults: dict[str, Any
                 "closeout_publication.draft_validation_command_template for direct-commit "
                 "must include " + ", ".join(missing)
             )
+    return policy
+
+
+def _validate_interview(data: dict[str, Any], defaults: dict[str, Any], errors: list[str]) -> dict[str, Any]:
+    policy = dict(defaults["interview"])
+    interview = _mapping(data.get("interview"), "interview", errors)
+    max_questions = optional_int(
+        interview.get("max_questions"), "interview.max_questions", errors, minimum=1
+    )
+    if max_questions is not None:
+        policy["max_questions"] = max_questions
+    fallback = optional_bool(
+        interview.get("allow_provisional_local_fallback"),
+        "interview.allow_provisional_local_fallback",
+        errors,
+    )
+    if fallback is not None:
+        policy["allow_provisional_local_fallback"] = fallback
     return policy
 
 
@@ -253,6 +276,7 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
     )
     if release_tokens is not None:
         validated["release_surface_tokens"] = release_tokens
+    validated["interview"] = _validate_interview(data, validated, errors)
     validated["closeout_publication"] = _validate_closeout_publication(data, validated, errors)
     validated["auto_retro"] = _validate_auto_retro(data, validated, errors)
     validated["scaffold"] = _validate_scaffold(data, validated, errors, repo_root)
@@ -324,6 +348,22 @@ def closeout_policy_report(repo_root: Path) -> dict[str, Any]:
         "auto_retro_disposition_floor": auto_retro["disposition_floor"],
         "auto_retro_valid_dispositions": auto_retro["valid_dispositions"],
         "auto_retro_allow_none_optout": auto_retro["allow_none_optout"],
+        "errors": adapter["errors"],
+        "warnings": adapter["warnings"],
+    }
+
+
+def interview_policy_report(repo_root: Path) -> dict[str, Any]:
+    adapter = load_adapter(repo_root)
+    interview = adapter["data"]["interview"]
+    return {
+        "found": adapter["found"],
+        "valid": adapter["valid"],
+        "path": adapter["path"],
+        "max_questions": interview["max_questions"],
+        "allow_provisional_local_fallback": interview[
+            "allow_provisional_local_fallback"
+        ],
         "errors": adapter["errors"],
         "warnings": adapter["warnings"],
     }

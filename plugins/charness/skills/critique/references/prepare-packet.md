@@ -27,6 +27,29 @@ adapter declares sections. Parent workflows may still prepare a packet earlier,
 but they must pass the packet path/body through and record the consumed path
 rather than silently relying on stale context.
 
+## One-Command Operator Path
+
+For a normal file-backed review, use the semantic wrapper instead of assembling
+the packet and worker arguments by hand:
+
+```bash
+python3 "$SKILL_DIR/scripts/run_review.py" \
+  --repo-root . \
+  --scope "<bounded scope>" \
+  --lens "<review lens>" \
+  --goal-lineage-file <lineage.json> \
+  --dry-run
+```
+
+Remove `--dry-run` only when the derived carrier is ready to start the review.
+The wrapper owns packet verification, packet/input identities, canonical schema
+materialization, the default read-only capability envelope, artifact paths,
+boundary fingerprint, Goal Run lineage, and lifecycle output. An existing packet can be supplied
+with `--packet-file <repo-relative-path>`; its current binding is verified
+before a reviewer starts. The low-level `run_reviewer_worker.py` interface
+remains available for compatibility and diagnostics, not as the normal manual
+operator path.
+
 ## Envelope
 
 The packet is emitted as two artifacts:

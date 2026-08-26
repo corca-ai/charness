@@ -1,8 +1,10 @@
 # Review Gate
 
-Every meaningful implementation slice needs a review pass before stopping.
-What makes a slice meaningful — a reviewable intent unit with a named proof
-intent and verification boundary, never merely a small diff — is owned by
+Every meaningful implementation slice needs a proof decision before stopping.
+A reversible slice may record `Critique: not-required <reason>`; a review pass
+is required only when the slice crosses a named risk boundary. What makes a
+slice meaningful — a reviewable intent unit with a named proof intent and
+verification boundary, never merely a small diff — is owned by
 [meaningful-slice-cadence](../../../shared/references/meaningful-slice-cadence.md).
 
 ## Minimum Lenses
@@ -33,8 +35,8 @@ A good review pass either:
 
 It is not a decorative reread.
 
-Fresh-eye review is the default. The stronger gate adds depth, not the existence
-of review itself.
+Fresh-eye review belongs to the named high-risk boundaries. The stronger gate
+adds depth there; it is not a default tax on reversible local work.
 
 ## Claims Review
 

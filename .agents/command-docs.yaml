@@ -148,23 +148,24 @@ commands:
       - docs/cli-reference.md
       - docs/development.md
     required_help_contains:
-      - check
+      - run
     required_doc_contains:
-      - charness goal check
-      - stable goal helper commands
-  goal-check:
-    help_command: ./charness goal check --help
+      - charness goal run
+      - Issue-Native Goal Run
+  goal-run:
+    help_command: ./charness goal run --help
     doc_paths:
       - docs/cli-reference.md
       - docs/development.md
     required_help_contains:
-      - --goal-path
-      - --pursue-ready
+      - --objective
+      - --repo-root
       - --charness-checkout
     required_doc_contains:
-      - charness goal check
+      - charness goal run
+      - /goal #N
       - --charness-checkout
-      - versioned plugin-cache paths
+      - no local artifact path
   task-claim:
     help_command: ./charness task claim --help
     doc_paths:

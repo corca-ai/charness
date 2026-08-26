@@ -179,7 +179,11 @@ def test_an_unrelated_direct_close_still_reaches_the_backend_unchanged(tmp_path:
     )
 
     assert result["ok"] is True
-    assert [call[1] for call in spy.calls] == ["issue", "issue", "issue", "issue"]
+    # The unrelated carrier remains allowed, while the current ingress performs
+    # two pre-mutation identity reads and one post-close readback around comment
+    # and close. Keep the preservation assertion about the command family, not a
+    # retired four-call topology.
+    assert [call[1] for call in spy.calls] == ["issue"] * 5
     assert result["closeout_authorization"]["applies"] is False
 
 

@@ -1191,6 +1191,23 @@
       ]
     },
     {
+      "surface_id": "goal-run-evidence",
+      "description": "Durable Goal Run provider plans, operations, observations, graph snapshots, and evidence-lineage records.",
+      "source_paths": [
+        "charness-artifacts/goal-runs/**"
+      ],
+      "derived_paths": [],
+      "sync_commands": [],
+      "verify_commands": [
+        "find charness-artifacts/goal-runs -type f -name '*.json' -exec python3 -m json.tool {} \\;"
+      ],
+      "notes": [
+        "The issue-owned Goal Run provider is authoritative for graph identity, mutation observations, and child evidence; this surface only makes durable files visible to final-bundle planning.",
+        "The JSON parse check is syntax proof, not provider or issue-state proof. Active Goal Run reads and mutations require the issue skill's file-backed commands and exact readback.",
+        "Ephemeral `.charness/` runtime output is excluded by final-bundle path collection and is not a durable Goal Run artifact."
+      ]
+    },
+    {
       "surface_id": "command-dominance-registry",
       "description": "The registry of commands this repo has measured as dominated by a cheaper one, and the gates that read it.",
       "source_paths": [

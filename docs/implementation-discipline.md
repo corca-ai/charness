@@ -88,19 +88,12 @@ the root instruction file but still apply to Charness maintenance work.
   changed helper signatures — not only the slice's own test file. Two escapes
   in one goal (2026-07-08) lived exactly in importer/registry tests the
   producer never ran and surfaced only in later broad runs.
-- Run and record the critique required by
-  [operating-contract.md](./operating-contract.md) before final closeout for
-  task-completing repo work.
-- Run the fresh-eye slice critique BEFORE the locked `--produce-mutation-coverage`
-  producer run, not after: critique-driven code or test changes invalidate the
-  coverage fingerprint and force a full instrumented broad-pytest rerun (two
-  reruns in one goal on 2026-06-10 — one per mutating slice). This covers EVERY
-  round: a proof-surface slice owes a second review of its repairs
-  ([operating-contract.md](./operating-contract.md) Critique Discipline), so the
-  order is round 1 -> repairs -> round 2 -> repairs -> producer, and the cap is
-  two rounds (round-2 repairs are recorded as accepted-unreviewed rather than
-  triggering a third). Satisfying "critique before producer" with round 1 alone
-  buys back the exact rerun this rule exists to prevent.
+- Apply the risk-adaptive critique decision from
+  [operating-contract.md](./operating-contract.md) before final closeout. For
+  ordinary reversible work, record `Critique: not-required <reason>` and keep
+  the deterministic proof. For a named proof-surface or irreversible boundary,
+  run its owning review before the locked producer run; later review-driven
+  edits invalidate that producer's fingerprint.
 - `python3 scripts/sync_support.py` and `python3 scripts/update_tools.py` are
   dry-run sanity checks.
 - Use `python3 scripts/doctor.py` only when intentionally collecting real

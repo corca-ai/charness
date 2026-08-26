@@ -2,6 +2,9 @@ version: 1
 repo: charness
 language: en
 artifact_dir: charness-artifacts/goals
+interview:
+  max_questions: 15
+  allow_provisional_local_fallback: false
 closeout_publication:
   default_mode: handoff-only
   issue_closeout_carrier: direct-commit

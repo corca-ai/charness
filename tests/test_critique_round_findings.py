@@ -68,6 +68,8 @@ def test_records_findings_with_snapshot_and_content_digests(tmp_path: Path) -> N
     text = record.read_text(encoding="utf-8")
     assert f"Boundary window id: `{window_id}`" in text
     assert "Act Before Ship: the next round must read this." in text
+    assert "## Goal Evidence Lineage" in text
+    assert receipt["goal_lineage"]["disposition"] == "not-goal-bound"
     assert receipt["boundary_snapshot_sha256"] == hashlib.sha256(snapshot.read_bytes()).hexdigest()
     assert receipt["findings_sha256"] == hashlib.sha256(findings.read_bytes()).hexdigest()
 

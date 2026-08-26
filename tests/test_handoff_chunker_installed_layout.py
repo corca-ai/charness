@@ -92,7 +92,7 @@ def test_cli_with_issues_resolves_installed_issue_skill_layout(tmp_path):
     # layout must carry it. Copied REAL rather than stubbed: a stub here would agree with
     # whatever this test's author had in mind, and this test exists to prove the installed
     # cross-skill route actually works.
-    for name in ("issue_backend.py", "issue_local_import.py"):
+    for name in ("issue_backend.py", "issue_identity.py", "issue_local_import.py"):
         shutil.copy2(REPO_ROOT / "skills/public/issue/scripts" / name, issue_scripts / name)
     docs = tmp_path / "docs"
     docs.mkdir()

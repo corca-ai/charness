@@ -845,40 +845,6 @@ def test_the_repair_command_runner_carries_the_same_repo_and_stderr_context(
     assert "note" in stderr
 
 
-def test_a_goal_check_helper_that_prints_prose_surfaces_it_instead_of_crashing(
-    charness_cli, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys
-) -> None:
-    """`charness goal check` must forward a helper's unparseable stdout, not swallow it.
-
-    This command exists to relay a helper's verdict. When the helper prints prose (an
-    older checkout, a traceback preamble, a usage error) the parse fails, and the
-    only thing that keeps the operator's screen useful is emitting the raw bytes
-    under `helper_stdout` while preserving the helper's exit code.
-    """
-    helper_repo = tmp_path / "helper"
-    helper = helper_repo / "skills" / "public" / "achieve" / "scripts" / "check_goal_artifact.py"
-    helper.parent.mkdir(parents=True)
-    helper.write_text(
-        "import sys\n"
-        "print('a: [1,\\n  b: {')\n"
-        "print('helper is unhappy', file=sys.stderr)\n"
-        "sys.exit(4)\n",
-        encoding="utf-8",
-    )
-    monkeypatch.setattr(charness_cli, "_resolve_goal_helper_repo_root", lambda _args: helper_repo)
-    monkeypatch.setattr(charness_cli, "resolve_repo_python", lambda _root: sys.executable)
-    args = charness_cli.build_parser().parse_args(
-        ["goal", "check", "--repo-root", str(tmp_path / "target")]
-    )
-
-    code = charness_cli.cmd_goal_check(args)
-
-    captured = capsys.readouterr()
-    assert code == 4, "the helper's exit code must survive the unparseable payload"
-    assert yaml.safe_load(captured.out) == {"helper_stdout": "a: [1,\n  b: {"}
-    assert "helper is unhappy" in captured.err
-
-
 def test_tool_install_hands_sync_support_the_plugin_root_and_the_selected_tools(
     charness_cli, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys
 ) -> None:

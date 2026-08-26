@@ -11,23 +11,20 @@ Use the lightest rung that still protects the next irreversible decision:
 
 1. **No repo-change turn** — inspect-only, status-only, and routing-only work may
    record `Critique: not-applicable <reason>`.
-2. **Small local-risk slice** — a same-agent scoped critique is enough when the
-   change is narrow, reversible, and does not alter workflow, prompt,
-   public-skill, validator, export, release, issue-closeout, compatibility,
-   host-proof, install/update, rename, deletion, design-lock, or migration
-   behavior. Record the decision, likely misread, counterweight triage, and next
-   move in the caller artifact. This is recorded in the caller artifact and is
-   not an invocation of standalone `critique`.
-3. **Substantial slice or bundle** — run standalone `critique` with bounded
-   fresh-eye workers once for the meaningful slice or bundle. The adapter may
-   select typed subagents as an alternate execution path. This covers
-   non-trivial workflow, public-skill, prompt, validator, export, release,
-   issue-closeout, compatibility, host-proof, install/update, rename, deletion,
-   and design-lock decisions.
-4. **Final closeout** — for non-trivial goals, use standalone fresh-eye worker review
-   to check cross-slice drift, generated/export sync, disposition of surfaced
-   improvements, and non-claims. Do not redo every slice-level review unless a
-   new risk boundary appeared after the last review.
+2. **Small local-risk slice** — ordinary reversible edits use deterministic
+   proof and may record `Critique: not-required <reason>`. A short scoped
+   critique is optional judgment, not a forced fresh-eye run. The reason must
+   name the boundary classification and the caller still records the next
+   move when one matters.
+3. **Substantial slice or bundle** — select standalone `critique` only when the
+   change crosses a material authority, durability, external-write, security,
+   release, compatibility, install/update, deletion, migration, or proof-
+   surface boundary. The selected critique uses its configured bounded reviewer
+   contract; it is not silently substituted with a same-context pass.
+4. **Final closeout** — the owner of an irreversible boundary decides whether
+   a distinct observer and second evidence channel are required. Do not repeat
+   slice-level review merely because a goal is large; do not make ordinary
+   local work pay a final-boundary cost.
 
 ## Review Unit
 

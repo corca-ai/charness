@@ -80,6 +80,10 @@ Adapter policy:
   `charness worktree prepare`) for the operator to run — do not auto-run prepare
   and do not silently proceed past missing hook-manager state
 
+The shared adapter initializer returns one typed YAML receipt and supports a
+read-only `--dry-run` preview, idempotent valid-state no-ops, and explicit
+`--force` replacement. See [`adapter-bootstrap.md`](../../shared/references/adapter-bootstrap.md).
+
 ## Worktree Readiness
 
 Run the non-fatal readiness probe before mutating code; skip silently when
@@ -127,13 +131,15 @@ command -v charness >/dev/null 2>&1 && charness worktree doctor || true
      external writes, and the prescribed path from `SKILL.md` (not an
      author-composed smoke probe) for skill packages, scheduled workflows, or
      external lookup contracts
-   - when an active `achieve` goal artifact exists, treat it as the slice memory
-     surface and append slice evidence per `../../shared/references/active-goal-coordination.md`
+   - when a verified Goal Run is active, consume the selected Work Item and its
+     `goal_lineage` as context; keep slice evidence in the owning child/closeout
+     artifact and do not create a local progress mirror, handoff update, or
+     micro-slice record merely because the goal is active
 4. Prove and close the slice.
    - when the build work is done, load the sibling `prove` skill and complete
-     its closeout ledger before stopping: the strongest honest verification,
-     truth-surface sync, the bound fresh-eye critique, and the emitted
-     closeout vocabulary all live there
+     its closeout evidence before stopping: the strongest honest verification,
+     truth-surface sync, any explicitly required boundary review, and the
+     emitted closeout vocabulary all live there
    - "code written" is not a stop state; a slice without its `prove` ledger is
      unfinished work, not a smaller slice
 
@@ -148,8 +154,9 @@ by `prove`; emit it from there rather than improvising a local summary shape.
 - Do not stop at "code written": a slice ends when its `prove` ledger is
   complete, blocked-with-signal, or the slice is honestly handed back to
   `spec`/`debug`.
-- Do not run the `prove` stop gate as a same-agent formality; `prove` owns the
-  critique-binding rules and they mean a fresh bounded reviewer context.
+- Do not stop at code written; `prove` still owns closeout evidence. It may
+  record `Critique: not-required <reason>` for reversible local work, and it
+  must hand named high-risk boundaries to their explicit review owner.
 
 ## References
 

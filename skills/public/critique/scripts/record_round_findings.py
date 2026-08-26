@@ -51,6 +51,29 @@ def _repo_relative(repo_root: Path, path: Path) -> str:
         raise RoundFindingsError(f"path must stay under repo root: {path}") from exc
 
 
+def _load_goal_lineage(repo_root: Path, path_value: str | None) -> dict[str, Any]:
+    candidates = [repo_root / "scripts" / "goal_lineage.py"]
+    here = Path(__file__).resolve()
+    candidates.extend(ancestor / "scripts" / "goal_lineage.py" for ancestor in (here, *here.parents))
+    lineage_path = next((candidate for candidate in candidates if candidate.is_file()), None)
+    if lineage_path is None:
+        raise RoundFindingsError("scripts/goal_lineage.py is not available")
+    spec = importlib.util.spec_from_file_location("charness_round_goal_lineage", lineage_path)
+    if spec is None or spec.loader is None:
+        raise RoundFindingsError(f"cannot load goal lineage helper: {lineage_path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    try:
+        if path_value is None:
+            return module.not_goal_bound_lineage(
+                "critique round was recorded without a Goal Run Work Item identity"
+            )
+        loaded = module.load_goal_lineage_file(repo_root, Path(path_value))
+        return module.require_goal_execution_identity(loaded)
+    except module.LineageError as exc:
+        raise RoundFindingsError(str(exc)) from exc
+
+
 def _read_snapshot(repo_root: Path, snapshot_arg: str, window_id: str) -> tuple[str, str]:
     snapshot_path = Path(snapshot_arg)
     if not snapshot_path.is_absolute():
@@ -109,16 +132,23 @@ def record_round(
     snapshot: str,
     findings: str | None,
     recorded_date: str,
+    goal_lineage_file: str | None = None,
 ) -> dict[str, Any]:
     """Write one non-overwritable record and return its machine-readable receipt."""
     if round_number < 1:
         raise RoundFindingsError("round must be a positive integer")
+    goal_lineage = _load_goal_lineage(repo_root, goal_lineage_file)
     snapshot_path, snapshot_sha256 = _read_snapshot(repo_root, snapshot, window_id)
     findings_text, findings_sha256 = _read_findings(findings)
     output_path = _record_path(repo_root, recorded_date, window_id)
     if output_path.exists():
         raise RoundFindingsError(f"round record already exists; refusing overwrite: {output_path}")
     output_path.parent.mkdir(parents=True, exist_ok=True)
+    lineage_canonical = json.dumps(
+        goal_lineage, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ) + "\n"
+    lineage_sha256 = hashlib.sha256(lineage_canonical.encode("utf-8")).hexdigest()
+    lineage_pretty = json.dumps(goal_lineage, ensure_ascii=False, indent=2, sort_keys=True)
     content = (
         "# Critique Round Findings\n\n"
         f"- Round: {round_number}\n"
@@ -127,6 +157,11 @@ def record_round(
         f"- Boundary snapshot: `{snapshot_path}`\n"
         f"- Boundary snapshot SHA-256: `{snapshot_sha256}`\n"
         f"- Findings SHA-256: `{findings_sha256}`\n\n"
+        "## Goal Evidence Lineage\n\n"
+        f"- Lineage SHA-256: `{lineage_sha256}`\n\n"
+        "```json\n"
+        f"{lineage_pretty}\n"
+        "```\n\n"
         "## Findings Returned\n\n"
         f"{findings_text}"
     )
@@ -142,6 +177,7 @@ def record_round(
         "boundary_snapshot": snapshot_path,
         "boundary_snapshot_sha256": snapshot_sha256,
         "findings_sha256": findings_sha256,
+        "goal_lineage": goal_lineage,
     }
 
 
@@ -152,6 +188,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--window-id", required=True)
     parser.add_argument("--boundary-snapshot", required=True)
     parser.add_argument("--findings-file", help="UTF-8 reviewer output; omit or use '-' for stdin")
+    parser.add_argument("--goal-lineage-file", help="Repo-relative full Goal Run evidence-lineage JSON")
     parser.add_argument(
         "--recorded-date",
         default=dt.date.today().isoformat(),
@@ -166,6 +203,7 @@ def main(argv: list[str] | None = None) -> int:
             snapshot=args.boundary_snapshot,
             findings=args.findings_file,
             recorded_date=args.recorded_date,
+            goal_lineage_file=args.goal_lineage_file,
         )
     except RoundFindingsError as exc:
         _emit_yaml({"ok": False, "error": str(exc)})

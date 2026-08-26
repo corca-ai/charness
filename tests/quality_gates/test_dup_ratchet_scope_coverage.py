@@ -580,6 +580,43 @@ def test_summary_reports_the_new_family_count_by_value_on_a_blocking_run(tmp_pat
     assert payload["new_doc_family_count"] == 0
 
 
+def test_summary_withholds_unobserved_verdict_fields_on_non_scan_paths() -> None:
+    """Inert, invalid, and maintenance responses must not manufacture clean zeros."""
+    check = _load("check_dup_ratchet")
+    absent = {
+        "ok": True,
+        "status": "inert",
+        "inert": True,
+        "messages": ["gate inert"],
+    }
+    invalid = {
+        "ok": False,
+        "status": "adapter-invalid",
+        "adapter_errors": ["bad enabled"],
+        "messages": ["adapter invalid"],
+    }
+    maintenance = {
+        "ok": True,
+        "status": "baseline-written",
+        "code_family_count": 4,
+        "messages": ["baseline written"],
+    }
+
+    for report in (absent, invalid, maintenance):
+        summary = check.summarize(report)
+        assert summary["message_count"] == 1
+        for key in (
+            "hard_block",
+            "boy_scout_block",
+            "new_code_family_count",
+            "new_code_families_sample",
+            "new_doc_family_count",
+            "new_doc_families_sample",
+            "degraded_reasons",
+        ):
+            assert key not in summary, (report, key, summary)
+
+
 def test_an_armed_run_still_publishes_the_scope_fields_in_summary(tmp_path: Path) -> None:
     """The other half of the withhold guard: it must not OVER-fire.
 

@@ -176,3 +176,33 @@ def test_plan_risk_interrupt_cli_maps_blocked_plan_to_exit_one(
 
     assert _plan_risk_interrupt_cli.main() == 1
     assert yaml.safe_load(capsys.readouterr().out)["status"] == "blocked"
+
+
+def test_plan_risk_interrupt_cli_checks_helper_provenance_before_planning(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    repo = seed_repo(tmp_path, debug_body=debug_artifact())
+    calls: list[tuple[Path, Path, str]] = []
+
+    def fake_guard(script_file, target_root, *, scan):
+        calls.append((Path(script_file), Path(target_root), scan))
+        return {"status": "consuming-repo"}
+
+    monkeypatch.setattr(_plan_risk_interrupt_cli, "require_repo_local_helper", fake_guard)
+    monkeypatch.setattr(
+        _plan_risk_interrupt_cli,
+        "plan_risk_interrupt",
+        lambda target_root, changed_paths=None: {
+            "status": "not-applicable",
+            "required": False,
+        },
+    )
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["plan_risk_interrupt.py", "--repo-root", str(repo), "--detail"],
+    )
+
+    assert _plan_risk_interrupt_cli.main() == 0
+    assert calls == [(ROOT / "scripts" / "plan_risk_interrupt.py", repo.resolve(), "tree")]
+    assert yaml.safe_load(capsys.readouterr().out)["status"] == "not-applicable"

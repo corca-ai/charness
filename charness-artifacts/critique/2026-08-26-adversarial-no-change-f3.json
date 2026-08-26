@@ -1,0 +1,15 @@
+{
+  "schema": "charness.adversarial-evidence.receipt.v1",
+  "finding": "F3",
+  "source": "skills/public/debug/scripts/scaffold_debug_artifact.py",
+  "expected": "the no-argument debug and quality scaffold probes select an existing current investigation and overwrite it",
+  "stimulus": "run the no-argument debug and quality scaffold probes",
+  "disposition": "disconfirmed",
+  "observed": "both probes report new dated write paths with target_exists false and effect create_new_file; current pointers remain read-only",
+  "command": "python3 skills/public/debug/scripts/scaffold_debug_artifact.py --repo-root . && python3 skills/public/quality/scripts/scaffold_quality_artifact.py --repo-root .",
+  "fixture": "no-argument scaffold probes on current pointers",
+  "final_consumer": "scaffold payload write_artifact_effect and target_exists fields",
+  "executed": true,
+  "final_consumer_observed": true,
+  "returncode": 0
+}

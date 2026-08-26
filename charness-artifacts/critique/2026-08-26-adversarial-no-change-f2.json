@@ -1,0 +1,15 @@
+{
+  "schema": "charness.adversarial-evidence.receipt.v1",
+  "finding": "F2",
+  "source": "skills/public/achieve/scripts/goal_artifact_cadence_owner.py",
+  "expected": "a truthful line with only negated cadence-flag mentions is treated as an active cadence claim and blocks activation",
+  "stimulus": "run the focused cadence-owner test suite",
+  "disposition": "disconfirmed",
+  "observed": "41 focused tests passed; negated-flag cases produce no blocking verdict",
+  "command": "pytest -q tests/quality_gates/test_goal_artifact_cadence_owner.py",
+  "fixture": "tests/quality_gates/test_goal_artifact_cadence_owner.py",
+  "final_consumer": "goal_artifact_cadence_owner verdict path",
+  "executed": true,
+  "final_consumer_observed": true,
+  "returncode": 0
+}

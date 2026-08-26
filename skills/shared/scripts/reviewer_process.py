@@ -20,6 +20,37 @@ class ReviewerProcessError(ValueError):
         self.status = status
         self.exit_code = exit_code
 
+
+def _install_interrupt_handlers(process: subprocess.Popen[Any]) -> dict[int, Any]:
+    """Turn parent termination into backend-tree cleanup and a typed status."""
+    previous: dict[int, Any] = {}
+
+    def interrupt(signum: int, _frame: Any) -> None:
+        terminate_process_group(process)
+        raise ReviewerProcessError(
+            "interrupted",
+            f"backend interrupted by signal {signum}; process group terminated",
+            exit_code=130,
+        )
+
+    for signum in (signal.SIGTERM, signal.SIGINT):
+        try:
+            previous[signum] = signal.signal(signum, interrupt)
+        except (ValueError, OSError):
+            # Python only permits signal installation in the main thread. The
+            # worker still retains its normal timeout cleanup in other hosts.
+            continue
+    return previous
+
+
+def _restore_interrupt_handlers(previous: dict[int, Any]) -> None:
+    for signum, handler in previous.items():
+        try:
+            signal.signal(signum, handler)
+        except (ValueError, OSError):
+            pass
+
+
 def terminate_process_group(process: subprocess.Popen[Any]) -> None:
     """Hard-stop a backend and descendants when a bounded run expires."""
     if os.name == "posix":
@@ -71,6 +102,7 @@ def run_bounded_process(
 ) -> int:
     """Run one backend with file streams and bounded process-group cleanup."""
     process: subprocess.Popen[Any] | None = None
+    previous_handlers: dict[int, Any] = {}
     try:
         with (
             stdin_path.open("rb") as stdin_handle,
@@ -86,6 +118,7 @@ def run_bounded_process(
                 start_new_session=(os.name == "posix"),
                 creationflags=getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0) if os.name == "nt" else 0,
             )
+            previous_handlers = _install_interrupt_handlers(process)
             try:
                 return process.wait(timeout=timeout_seconds)
             except subprocess.TimeoutExpired as exc:
@@ -98,5 +131,6 @@ def run_bounded_process(
     except FileNotFoundError as exc:
         raise ReviewerProcessError("backend-unavailable", f"backend executable unavailable: {exc}") from exc
     finally:
+        _restore_interrupt_handlers(previous_handlers)
         if process is not None and process.poll() is None:
             terminate_process_group(process)

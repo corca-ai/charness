@@ -3,18 +3,18 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 163,
-  "indexed_artifact_count": 149,
+  "source_artifact_count": 164,
+  "indexed_artifact_count": 150,
   "risk_class_counts": {
     "contract-freeze-risk": 30,
-    "external-seam": 23,
+    "external-seam": 24,
     "host-disproves-local": 7,
     "none": 62,
     "operator-visible-recovery": 23,
-    "repeated-symptom": 15
+    "repeated-symptom": 16
   },
   "generalization_pressure_counts": {
-    "factor-now": 22,
+    "factor-now": 23,
     "monitor": 111,
     "none": 16
   },
@@ -2095,6 +2095,21 @@
         "external-seam"
       ],
       "seam": "producer payload → transport/durable artifact → final consumer verdict",
+      "generalization_pressure": "factor-now",
+      "critique_required": true,
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/2026-08-25-consumer-boundary-invariants.md",
+      "forced": true
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-08-27-debug-review.md",
+      "is_current_pointer": false,
+      "interrupt_id": "cutover-dependent-surface-drift-2026-08-27",
+      "risk_classes": [
+        "repeated-symptom",
+        "external-seam"
+      ],
+      "seam": "cutover owner -> dependent test/docs/package/installed consumer -> standing verdict",
       "generalization_pressure": "factor-now",
       "critique_required": true,
       "next_step": "spec",

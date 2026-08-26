@@ -26,6 +26,13 @@ def build_items(repo_name: str, _args: object) -> list[tuple[str, object]]:
         ("language", "en"),
         ("artifact_dir", "charness-artifacts/goals"),
         (
+            "interview",
+            {
+                "max_questions": 15,
+                "allow_provisional_local_fallback": False,
+            },
+        ),
+        (
             "closeout_publication",
             {
                 "default_mode": "audit-only",

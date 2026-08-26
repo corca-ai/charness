@@ -9,6 +9,12 @@ from pathlib import Path
 from typing import Any
 
 from scripts import claude_session_jsonl_audit, codex_session_jsonl_audit
+from scripts.goal_lineage import (
+    LineageError,
+    load_goal_lineage_file,
+    not_goal_bound_lineage,
+    require_goal_execution_identity,
+)
 
 ISO_TS_PREFIX = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}")
 GOAL_WINDOW_LINE = re.compile(r"^Host metric window:\s*(?P<body>.+)$", re.MULTILINE)
@@ -444,13 +450,26 @@ def build_payload(
     repo_root: Path,
     goal_path: Path | None = None,
     claude_session_file: Path | None = None,
+    goal_lineage_path: Path | None = None,
 ) -> dict[str, Any]:
     goal_window = parse_goal_metric_window(repo_root, goal_path)
+    try:
+        if goal_lineage_path is None:
+            goal_lineage = not_goal_bound_lineage(
+                "host metrics were collected without a Goal Run identity"
+            )
+        else:
+            goal_lineage = require_goal_execution_identity(
+                load_goal_lineage_file(repo_root, goal_lineage_path)
+            )
+    except LineageError as exc:
+        raise ValueError(str(exc)) from exc
     return {
         "schema_version": 1,
         "home": str(home),
         "repo_root": str(repo_root),
         "goal_metric_window": goal_window,
+        "goal_lineage": goal_lineage,
         "hosts": {
             "claude": probe_claude(home, repo_root, goal_window, claude_session_file),
             "codex": probe_codex(home, goal_window),

@@ -1,0 +1,14 @@
+{
+  "kind": "charness.expected-sub-issue-set/v1",
+  "repo": "corca-ai/charness",
+  "parent_number": 724,
+  "children": [546, 628, 634, 637, 667, 668, 669, 692, 693, 694, 695, 697, 698, 699, 700, 701, 703, 704, 706, 708, 710, 715, 717, 721, 722, 723, 725, 726, 727, 733, 734],
+  "source": {
+    "status": "verified-cutover-final-graph",
+    "frozen_draft_sha256": "ced8410bd896844bf6bb75bff807438cb6f40cb6a3c3b8489ddcd05a662212c2",
+    "binding_sha256": "32ead8148ccfbfbbe0b9b6af1ad5ec1038a9c424c0766f45c1fbc9e54f54516d",
+    "parent_cutover_body_sha256": "653e372e8fee23449cdc0f9e798ad6c76af72d24300e422d5eadec5fedd6e980",
+    "removed_unexpected_child": 3,
+    "added_system_children": [733, 734]
+  }
+}

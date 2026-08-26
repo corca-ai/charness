@@ -30,6 +30,9 @@ version: 1
 repo: charness
 language: en
 artifact_dir: charness-artifacts/goals
+interview:
+  max_questions: 15
+  allow_provisional_local_fallback: false
 discussion_deploy_vocab:
   - rollout
   - hotfix
@@ -57,10 +60,22 @@ scaffold:
     - "  the reviewable-intent unit in progress and the commits it spans; critique"
     - "  and broad proof do not re-fire within one unchanged intent — update it when"
     - "  the intent changes, not per commit (meaningful-slice-cadence)."
-    - "- Next action: activate with `/goal @{goal_rel}` after confirming the draft is"
-    - "  still intended."
+    - "- Next action: after approval, resume the provider-backed run with `/goal #<parent>`."
   execution_efficiency_context_path: docs/execution-efficiency.md
 ```
+
+`interview.max_questions` is the maximum number of operator questions in one
+goal-shaping interview. It defaults to 15, accepts any positive integer, and is
+a ceiling rather than a target. Zero, negatives, booleans, strings, and
+fractions invalidate the adapter. Reaching the ceiling with consequential
+decisions unresolved yields `interview-cap-reached` and blocks parent creation;
+the skill never truncates unresolved decisions.
+
+`interview.allow_provisional_local_fallback` defaults to `false`. When false,
+missing parent-update or sub-issue backend capability blocks activation. `true`
+permits an explicitly provisional local continuation for offline/non-GitHub
+hosts; it does not create GitHub identity claims and must reconcile into a
+verified parent before authority moves.
 
 `closeout_publication.default_mode` is the default claim boundary. Supported
 values are `audit-only`, `handoff-only`, `direct-commit`, `pull-request`,
@@ -141,7 +156,7 @@ Claude `/goal` Stop-hook and the Codex thread-goal slot are host primitives
 `achieve` coordinates but does not reimplement. The portable draft-vs-active
 contract is uniform across every host and therefore needs no adapter knob: the
 Before-phase is artifact-only and never consumes the host slot, and
-`/goal @artifact` pursuit is the only point that does (see
+`/goal #N` pickup is the only point that does (see
 `lifecycle-before.md` *Drafting does not consume the host goal slot*).
 Deliberately, no `goal_slot.*` adapter field exists — a configurable knob here
 would only be a no-op that fakes portability. A host that auto-activates the

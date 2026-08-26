@@ -6,7 +6,11 @@ import argparse
 import sys
 from pathlib import Path
 
-from runtime_bootstrap import import_repo_module, repo_root_from_script
+from runtime_bootstrap import (
+    import_repo_module,
+    repo_root_from_script,
+    require_repo_local_helper,
+)
 from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
@@ -44,7 +48,12 @@ def main() -> int:
     parser.add_argument("--paths", nargs="*", help="Optional repo-relative changed paths for current-slice affinity.")
     args = parser.parse_args()
 
-    plan = plan_risk_interrupt(args.repo_root.resolve(), changed_paths=args.paths)
+    target_root = args.repo_root.resolve()
+    # This planner is also reached through an installed plugin's shared shim.
+    # Refuse a stale installed copy before it can interpret or persist source-tree
+    # state; ordinary consumer repos remain allowed by the provenance guard.
+    require_repo_local_helper(__file__, target_root, scan="tree")
+    plan = plan_risk_interrupt(target_root, changed_paths=args.paths)
     if args.detail:
         emit_yaml(plan)
     else:
