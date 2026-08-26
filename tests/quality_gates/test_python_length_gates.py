@@ -9,6 +9,8 @@ from pathlib import Path
 
 import pytest
 
+from tests.script_main import run_loaded_script_main
+
 from .support import init_git_repo, run_script
 
 PYTHON_LENGTHS = importlib.import_module("scripts.check_python_lengths")
@@ -57,6 +59,30 @@ def test_check_python_lengths_rejects_too_long_skill_helper_file(tmp_path: Path)
     result = run_script("scripts/check_python_lengths.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "Python code lines 361 exceed limit 360" in result.stderr
+
+
+def test_check_python_lengths_reports_all_over_limit_files_in_one_run(tmp_path: Path) -> None:
+    """One bad file must not hide later hard failures in the same listing."""
+    repo = tmp_path / "repo"
+    helper_dir = repo / "skills" / "public" / "demo" / "scripts"
+    scripts_dir = repo / "scripts"
+    helper_dir.mkdir(parents=True)
+    scripts_dir.mkdir(parents=True)
+    (helper_dir / "helper.py").write_text(
+        "\n".join(f"print({i})" for i in range(361)) + "\n", encoding="utf-8"
+    )
+    (scripts_dir / "tool.py").write_text(
+        "\n".join(f"print({i})" for i in range(481)) + "\n", encoding="utf-8"
+    )
+
+    result = run_loaded_script_main(
+        "check_python_lengths.py", PYTHON_LENGTHS, "--repo-root", str(repo)
+    )
+
+    assert result.returncode == 1
+    assert "skills/public/demo/scripts/helper.py: Python code lines 361 exceed limit 360" in result.stderr
+    assert "scripts/tool.py: Python code lines 481 exceed limit 480" in result.stderr
+    assert "Validation failed for 2 file(s)" in result.stderr
 
 
 def test_check_python_lengths_uses_tokei_code_lines_not_comments_or_blanks(tmp_path: Path) -> None:
