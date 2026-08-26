@@ -339,13 +339,25 @@ def main() -> int:
         return 0
     counts = tokei_code_counts(targets)
     warnings: list[str] = []
+    hard_failures: list[str] = []
     for path in targets:
         try:
             warning = validate_file_length(path, root, code_lines=counts[path])
         except (ValidationError, SyntaxError) as exc:
-            raise ValidationError(str(exc)) from exc
+            hard_failures.append(str(exc))
+            continue
         if warning is not None:
             warnings.append(warning)
+
+    if hard_failures:
+        for failure in hard_failures:
+            print(failure, file=sys.stderr)
+        print(
+            f"Validation failed for {len(hard_failures)} file(s); all hard length "
+            "failures are listed above.",
+            file=sys.stderr,
+        )
+        return 1
 
     for warning in warnings:
         print(warning)

@@ -7,7 +7,6 @@ import sys
 from pathlib import Path
 from typing import NamedTuple
 
-import pytest
 import yaml
 
 from .support import ROOT
@@ -78,7 +77,8 @@ def test_clean_pass_does_not_attach_interpretation(tmp_path: Path) -> None:
 
 def test_hard_over_limit_failure_never_attaches_interpretation(tmp_path: Path) -> None:
     # The cardinal error guard: an over-limit file is a verified deterministic fact
-    # (main() raises ValidationError). The distrust declaration must never attach.
+    # (main() reports every hard failure and returns 1). The distrust declaration
+    # must never attach.
     repo = tmp_path / "repo"
     _write(repo, "skills/public/demo/scripts/over.py", 361)
 
@@ -86,10 +86,12 @@ def test_hard_over_limit_failure_never_attaches_interpretation(tmp_path: Path) -
     saved_argv = sys.argv
     sys.argv = ["check_python_lengths.py", "--repo-root", str(repo)]
     try:
-        with contextlib.redirect_stdout(out), pytest.raises(PYTHON_LENGTHS.ValidationError, match="exceed limit 360"):
-            PYTHON_LENGTHS.main()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(io.StringIO()) as err:
+            code = PYTHON_LENGTHS.main()
     finally:
         sys.argv = saved_argv
+    assert code == 1
+    assert "exceed limit 360" in err.getvalue()
     assert "INTERPRETATION" not in out.getvalue()
 
 
