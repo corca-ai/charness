@@ -17,9 +17,7 @@ brings an already-observed failure or a review report, the optional
 evidence-led path verifies that report before debating the repair; it is not a
 replacement for fresh-eye judgment or for `debug`'s causal record.
 
-Task-completing repo work always records critique before closeout. Scale the
-pass, not the obligation: use the risk boundary or meaningful slice as the
-review unit, not every commit. See `references/cadence.md`.
+Critique is selected by risk, not by the fact that a task completed. When it is selected, scale the pass, not the obligation: use the risk boundary or meaningful slice as the review unit, not every commit. See `references/cadence.md`.
 
 Compatibility contract: When this standalone `critique` skill runs, its default fresh-eye execution is a Charness-owned
 file-backed worker. There is no same-context local standalone `critique` variant.
@@ -27,6 +25,8 @@ The rule is: apply the stop-instead-of-local-substitute rule when neither the co
 worker nor the optional typed-subagent path can provide a separate fresh-eye context.
 Adapter, typed-carrier, and refusal details live in
 `references/adapter-contract.md` and `../../shared/references/fresh-eye-subagent-review.md`.
+
+Use `$SKILL_DIR/scripts/run_review.py` for the semantic review path; its packet, lineage, and lifecycle-carrier contract is in `references/prepare-packet.md`.
 
 Delegated reviewer fast path: read
 `../../shared/references/disposition-reviewer-brief.md` before treating the
