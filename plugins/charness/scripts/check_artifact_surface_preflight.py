@@ -224,6 +224,28 @@ def _run(repo_root: Path, argv: list[str]) -> subprocess.CompletedProcess[str]:
     return subprocess.run(argv, cwd=repo_root, check=False, capture_output=True, text=True)
 
 
+def _resolve_shape_source(raw: str) -> tuple[Path | None, str | None]:
+    """Resolve a registered shape source in source or exported layout.
+
+    Registry paths remain canonical source paths (``skills/public/...``), while
+    an exported plugin flattens them to ``skills/...``. Resolve against the
+    package containing this dispatcher, never against the consumer's artifact
+    root. A package carrying neither layout, or both layouts, is an invalid
+    proof surface and must fail with the candidate paths named.
+    """
+    candidates: list[tuple[str, Path]] = [("canonical", REPO_ROOT / raw)]
+    if raw.startswith("skills/public/"):
+        candidates.append(("flattened-installed", REPO_ROOT / "skills" / raw.removeprefix("skills/public/")))
+    existing = [(label, candidate) for label, candidate in candidates if candidate.is_file()]
+    candidate_text = "; ".join(f"{label}={candidate}" for label, candidate in candidates)
+    if len(existing) == 1:
+        return existing[0][1], None
+    if not existing:
+        return None, f"missing shape source; candidates: {candidate_text}"
+    existing_text = ", ".join(f"{label}={candidate}" for label, candidate in existing)
+    return None, f"ambiguous shape source; multiple candidates exist: {existing_text}"
+
+
 def _validator_argv_path(validator: str) -> str:
     """Resolve an owning validator against the tree this preflight lives in.
 
@@ -243,7 +265,13 @@ def _run_shape_command(repo_root: Path, surface: Surface, *, stub: bool) -> tupl
     """Run a surface's ``shape_command`` (a skill script that prints the required
     shape from the owning validator's live constants). ``--stub`` asks it for a
     starter. Returns ``(text, returncode)``."""
-    argv = ["python3", *surface.shape_command, "--repo-root", str(repo_root)]
+    source, error = _resolve_shape_source(surface.shape_command[0])
+    if source is None:
+        return (
+            f"(could not render shape source {surface.shape_command[0]}: {error})",
+            1,
+        )
+    argv = ["python3", str(source), *surface.shape_command[1:], "--repo-root", str(repo_root)]
     if stub:
         argv.append("--stub")
     proc = _run(repo_root, argv)
@@ -295,7 +323,10 @@ def _run_scaffold_template(repo_root: Path, scaffold: str) -> tuple[str, int]:
     through to the raw stdout unchanged — this stays a strict improvement, never a
     new failure mode.
     """
-    proc = _run(repo_root, ["python3", scaffold, "--repo-root", str(repo_root)])
+    source, error = _resolve_shape_source(scaffold)
+    if source is None:
+        return f"(could not render scaffold {scaffold}: {error})", 1
+    proc = _run(repo_root, ["python3", str(source), "--repo-root", str(repo_root)])
     if proc.returncode != 0 or not proc.stdout.strip():
         return f"(could not render scaffold {scaffold}: {proc.stderr.strip() or 'no output'})", 1
     payload = _parse_structured_stdout(proc.stdout)
@@ -312,18 +343,18 @@ def _shape_text(repo_root: Path, surface: Surface) -> str:
     parts: list[str] = []
     if surface.template_section:
         tpl_rel, _, heading = surface.template_section.partition("|")
-        tpl = repo_root / tpl_rel
+        tpl, error = _resolve_shape_source(tpl_rel)
         parts.append(
             _extract_section(tpl.read_text(encoding="utf-8"), heading)
-            if tpl.is_file()
-            else f"(template {tpl_rel} not found)"
+            if tpl is not None
+            else f"(template {tpl_rel} not found: {error})"
         )
     if surface.template_preamble:
-        tpl = repo_root / surface.template_preamble
+        tpl, error = _resolve_shape_source(surface.template_preamble)
         parts.append(
             _extract_preamble(tpl.read_text(encoding="utf-8"))
-            if tpl.is_file()
-            else f"(template {surface.template_preamble} not found)"
+            if tpl is not None
+            else f"(template {surface.template_preamble} not found: {error})"
         )
     if surface.shape_command:
         parts.append(_run_shape_command(repo_root, surface, stub=False)[0])

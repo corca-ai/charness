@@ -3,6 +3,8 @@ from __future__ import annotations
 import importlib.util
 import re
 import runpy
+import shutil
+import subprocess
 import sys
 from dataclasses import replace
 from pathlib import Path
@@ -12,6 +14,7 @@ import pytest
 import yaml
 
 from scripts import check_artifact_surface_preflight as preflight
+from scripts import export_plugin as export_plugin_module
 from skills.public.critique.scripts.verification_retry import build_retry_key
 
 from .support import ROOT
@@ -215,6 +218,63 @@ def test_emit_stub_critique_carries_required_sections() -> None:
     # the scaffold stub must carry the validator-required sections by construction
     assert "## Reviewer Tier Evidence" in text
     assert "## Structured Findings" in text
+
+
+def test_exported_preflight_resolves_flattened_scaffold_and_refuses_invalid_layout(tmp_path: Path) -> None:
+    """The installed dispatcher must use its package, not the consumer cwd.
+
+    The source registry intentionally keeps ``skills/public/...`` paths, while
+    an exported plugin only carries ``skills/...``. A missing or duplicated
+    candidate is a broken package shape, not permission to fall back to a
+    consumer-owned path.
+    """
+    export_root = tmp_path / "export"
+    manifest = export_plugin_module.load_manifest(ROOT, "charness")
+    plugin_root = export_plugin_module.export_plugin(
+        ROOT,
+        export_root,
+        manifest,
+        "codex",
+        with_marketplace=False,
+    )
+    consumer = tmp_path / "consumer"
+    consumer.mkdir()
+    dispatcher = plugin_root / "scripts" / "check_artifact_surface_preflight.py"
+    command = [
+        sys.executable,
+        str(dispatcher),
+        "--repo-root",
+        str(consumer),
+        "--type",
+        "critique",
+        "--emit-stub",
+    ]
+
+    positive = subprocess.run(command, cwd=consumer, check=False, capture_output=True, text=True)
+    assert positive.returncode == 0, positive.stderr
+    assert "## Reviewer Tier Evidence" in positive.stdout
+    assert "## Structured Findings" in positive.stdout
+
+    flattened_scaffold = plugin_root / "skills" / "critique" / "scripts" / "scaffold_critique_artifact.py"
+    scaffold_backup = tmp_path / "scaffold_critique_artifact.py"
+    shutil.copy2(flattened_scaffold, scaffold_backup)
+    flattened_scaffold.unlink()
+    missing = subprocess.run(command, cwd=consumer, check=False, capture_output=True, text=True)
+    assert missing.returncode == 1
+    missing_output = missing.stdout + missing.stderr
+    assert "missing shape source" in missing_output
+    assert "flattened-installed=" in missing_output
+
+    flattened_scaffold.parent.mkdir(parents=True, exist_ok=True)
+    canonical_scaffold = plugin_root / "skills" / "public" / "critique" / "scripts" / "scaffold_critique_artifact.py"
+    canonical_scaffold.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(scaffold_backup, canonical_scaffold)
+    shutil.copy2(scaffold_backup, flattened_scaffold)
+    ambiguous = subprocess.run(command, cwd=consumer, check=False, capture_output=True, text=True)
+    assert ambiguous.returncode == 1
+    ambiguous_output = ambiguous.stdout + ambiguous.stderr
+    assert "ambiguous shape source" in ambiguous_output
+    assert "canonical=" in ambiguous_output and "flattened-installed=" in ambiguous_output
 
 
 def test_describe_adapter_scoped_binds_artifact_path_never_paths() -> None:
