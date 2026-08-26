@@ -10,12 +10,12 @@ single lifecycle owner or uniform refusal receipt.
 
 Debug artifact: `charness-artifacts/debug/2026-08-27-issue-692-adapter-idempotence.md`
 
-Siblings: the common initializer and all 16 public initializer placements were
-bundled as the same bug and fixed now. `skills/public/issue/scripts/issue_tracker_cli.py`
+Siblings: decision: keep the common initializer as the sole lifecycle owner and
+keep every public wrapper thin; proof: the clean named-worktree contract matrix
+exercised every initializer, the consumer-classification target passed its full
+target, and source/plugin parity matched. `skills/public/issue/scripts/issue_tracker_cli.py`
 is an adjacent direct adapter consumer, not an initializer; it received
-classification proof only and remains behaviorally outside this slice. Proof:
-the clean named-worktree contract matrix executed every initializer, the
-consumer-classification target passed `37`, and source/plugin parity matched.
+classification proof only and remains behaviorally outside this slice.
 
 Resolution brief: route every public wrapper through the common
 `charness.adapter-bootstrap/v1` lifecycle, preserve resolver-specific data,
