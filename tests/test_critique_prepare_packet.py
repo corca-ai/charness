@@ -20,6 +20,7 @@ from scripts.critique_packet_lib import (
     build_reviewed_input_identity,
     execute_section,
     render_markdown,
+    reviewer_tier_evidence,
     write_packet,
 )
 from scripts.prepare_packet_markdown_kind import prepare_packet_markdown_kind
@@ -412,6 +413,15 @@ packet_sections:
     assert "**Execution mode**: `file-backed-worker`" in md
     evidence["reviewer_runner"] = "not a mapping"
     assert "**Reviewer runner**: `missing`" in render_markdown(packet)
+
+
+def test_reviewer_tier_evidence_defaults_malformed_and_unknown_modes() -> None:
+    malformed = reviewer_tier_evidence({"reviewer_runner": "not a mapping"})
+    assert malformed["execution_mode"] == "file-backed-worker"
+    assert malformed["reviewer_runner"]["mode"] == "file-backed-worker"
+
+    unknown = reviewer_tier_evidence({"reviewer_runner": {"mode": "unknown"}})
+    assert unknown["execution_mode"] == "file-backed-worker"
 
 
 def test_write_packet_emits_both_artifacts(tmp_path: Path) -> None:

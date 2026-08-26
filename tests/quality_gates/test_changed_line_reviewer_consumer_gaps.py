@@ -47,6 +47,22 @@ def test_typed_closeout_reads_the_canonical_critique_tier_shape() -> None:
     )
 
 
+def test_reviewer_tier_validator_rejects_unknown_execution_mode() -> None:
+    fields = {
+        "requested tier": "high-leverage",
+        "requested spawn fields": "typed bounded reviewer",
+        "host exposure state": "host-defaulted",
+        "application state": "n/a",
+        "execution mode": "unknown",
+    }
+    with pytest.raises(CRITIQUE_EVIDENCE.ValidationError, match="execution mode"):
+        CRITIQUE_EVIDENCE.validate_reviewer_tier_evidence(
+            Path("critique.md"),
+            "",
+            section_field_map=lambda _text, _heading: fields,
+        )
+
+
 def test_worker_loader_refuses_when_every_candidate_has_no_loader(monkeypatch) -> None:
     monkeypatch.setattr(
         CRITIQUE_EVIDENCE.importlib.util,
@@ -183,6 +199,20 @@ def test_resolution_loader_and_typed_evidence_refusals_are_explicit(monkeypatch,
     result = RESOLUTION_OBSERVER._observer_disposition(tmp_path, check)
     assert result["disposition"] == "delegation-unverified"
     assert "tier_reason" in result
+
+
+def test_critique_shape_loader_reports_missing_module(monkeypatch) -> None:
+    class EmptyPath:
+        @property
+        def parents(self):
+            return ()
+
+        def resolve(self):
+            return self
+
+    monkeypatch.setattr(RESOLUTION_OBSERVER, "Path", lambda _: EmptyPath())
+    with pytest.raises(ImportError, match="critique_reviewer_evidence.py not found"):
+        RESOLUTION_OBSERVER._load_critique_shape()
 
 
 def test_resolution_critique_refuses_when_observer_support_spec_has_no_loader(monkeypatch) -> None:
