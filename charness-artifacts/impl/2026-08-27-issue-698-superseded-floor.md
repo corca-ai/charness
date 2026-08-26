@@ -60,7 +60,7 @@ improvements from disappearing. Keep the non-complete status distinct from
   `charness-artifacts/debug/receipts/issue-698-superseded-bypass.json`.
 - Focused standing gate:
   `python3 scripts/run_standing_pytest.py --repo-root . --mode read-only --pytest-target tests/quality_gates/test_goal_superseded_status.py`
-  — 39 passed.
+  — 43 passed.
 - Related standing gates: `test_goal_artifact_lib.py` — 33 passed;
   `test_goal_disposition_gate.py` — 50 passed;
   `test_disposition_form_floor.py` — 65 passed;
@@ -74,9 +74,20 @@ improvements from disappearing. Keep the non-complete status distinct from
   outside the worktree; no `__pycache__` or `.pytest_cache` remains here.
 - Source/plugin parity: checker, closeout evidence, library, superseded helper,
   and goal-artifact reference comparisons all pass.
-- Changed-line proof and the final implementation commit are recorded after
-  this contract is frozen; issue closeout and Goal Run advancement remain
-  separate operations.
+- Commit sequence: `5ff5769f5f9af10da6e3174486721ddac2e300ca` implemented the
+  floor; `9e3aa04050169a58b6933ec62038996c83ef0ac5` covered refusal categories;
+  `90345b46a546f062b371b4fb5692e5500edf098f` covered the create-success path.
+- Changed-line proof worktree: `/tmp/charness-698-proof-20260827`, named branch
+  `proof/issue-698-superseded-floor-20260827`, clean and non-detached.
+- Changed-line proof scope: base
+  `5345a5a467e1b2723fa072d9fe270007123014a1`, target
+  `90345b46a546f062b371b4fb5692e5500edf098f`, explicit changed-path set from
+  that range, four mapped implementation files, zero unmapped and zero
+  blocking lines, consumer exit 0. Proof coverage and pytest caches were
+  outside the worktree.
+- The first two proof attempts blocked on real uncovered branches; those branches
+  were covered by tests before the final proof passed. Issue closeout and Goal
+  Run advancement remain separate operations.
 
 ## Non-Claims
 
