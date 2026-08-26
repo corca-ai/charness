@@ -298,14 +298,19 @@ def _structural_review_packet(repo_root: Path, skills: list[str], target_skill: 
 
 
 def build_plan(repo_root: Path, *, target_skill: str | None = None) -> dict[str, Any]:
-    skills = _skill_paths(repo_root)
-    skills_in_scope = bool(skills)
+    discovered_skills = _skill_paths(repo_root)
     catalog = _catalog()
     references = catalog.get("references", [])
     gates = catalog.get("gates", [])
     declaration_lifecycle, adapter_packets = _load_declaration_lifecycle().build_declaration_lifecycle(
-        repo_root, skills=skills, catalog_gates=gates
+        repo_root, skills=discovered_skills, catalog_gates=gates
     )
+    skills = [
+        row["path"]
+        for row in declaration_lifecycle.get("skills", [])
+        if isinstance(row, dict) and isinstance(row.get("path"), str)
+    ]
+    skills_in_scope = bool(skills)
     adapter = declaration_lifecycle.get("adapter") or {}
     applicable_gate_ids = declaration_lifecycle.get("applicable_catalog_gate_ids")
     if adapter.get("found") and adapter.get("valid") and isinstance(applicable_gate_ids, list):
@@ -348,7 +353,13 @@ def build_plan(repo_root: Path, *, target_skill: str | None = None) -> dict[str,
         declaration_lifecycle=declaration_lifecycle,
         skills_in_scope=skills_in_scope,
         skill_scope_reason=(
-            f"found {len(skills)} checked-in skill package(s)" if skills else "no skills/public or skills/support SKILL.md files found"
+            f"found {len(skills)} skill package(s) from {declaration_lifecycle.get('skill_scope_source', 'discovery')} scope"
+            if skills
+            else (
+                "adapter-declared skill paths resolved to no SKILL.md files"
+                if declaration_lifecycle.get("skill_scope_source") == "adapter-declared"
+                else "no skills/public or skills/support SKILL.md files found"
+            )
         ),
         sample_skill_paths=skills[:8],
         structural_review_packet=structural_packet,
