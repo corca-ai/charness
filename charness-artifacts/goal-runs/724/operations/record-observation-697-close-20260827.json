@@ -1,0 +1,41 @@
+{
+  "kind": "charness.goal-run-operation/v1",
+  "repo": "corca-ai/charness",
+  "parent_number": 724,
+  "operation": "record-observation",
+  "attempt_id": "record-observation-697-close-20260827-1",
+  "draft_sha256": "ced8410bd896844bf6bb75bff807438cb6f40cb6a3c3b8489ddcd05a662212c2",
+  "binding_sha256": "32ead8148ccfbfbbe0b9b6af1ad5ec1038a9c424c0766f45c1fbc9e54f54516d",
+  "observation_dir": "charness-artifacts/goal-runs/724/observations",
+  "target": {
+    "repo": "corca-ai/charness",
+    "number": 697,
+    "work_item_key": "backlog-697"
+  },
+  "result": {
+    "ok": true,
+    "outcome": "verified-read",
+    "status": "verified-closeout",
+    "operation": "close-with-comment",
+    "mutation_invoked": false,
+    "carrier": "manual-fallback",
+    "manual_fallback_reason": "operator-directed-manual-close",
+    "number": 697,
+    "state": "CLOSED",
+    "url": "https://github.com/corca-ai/charness/issues/697",
+    "close_comment_url": "https://github.com/corca-ai/charness/issues/697#issuecomment-5431967246",
+    "body_verified": true,
+    "proof": {
+      "implementation_commit": "711203fed259af008e4626c49d00ad2f7027ac13",
+      "proof_base_sha": "6b42f7d9b8ec106bcfe575cc149198624753c477",
+      "proof_target_sha": "711203fed259af008e4626c49d00ad2f7027ac13",
+      "proof_path_scope": "scripts/ mutation-coverage changed pool",
+      "analyzed_changed_pool_files": 11,
+      "unmapped_changed_pool_files": 0,
+      "blocking_targets": 0,
+      "consumer_returncode": 0,
+      "fresh_eye": "not claimed: explicit operator direction omitted forced fresh-eye and no Agent/subagent tool is exposed"
+    },
+    "review_advisory": "fresh-eye critique was skipped because explicit operator direction omitted it and no Agent/subagent tool is exposed in this session"
+  }
+}
