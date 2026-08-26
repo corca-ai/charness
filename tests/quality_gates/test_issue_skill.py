@@ -42,6 +42,7 @@ def test_shipped_issue_adapter_example_resolves_every_declared_operation_against
     read = runpy.run_path(str(scripts / "issue_read.py"))
     close = runpy.run_path(str(scripts / "issue_close.py"))
     runtime = runpy.run_path(str(scripts / "issue_runtime.py"))
+    tracker = runpy.run_path(str(scripts / "issue_tracker.py"))
     example = yaml.safe_load(
         (ROOT / "skills" / "public" / "issue" / "adapter.example.yaml").read_text(encoding="utf-8")
     )
@@ -83,6 +84,42 @@ def test_shipped_issue_adapter_example_resolves_every_declared_operation_against
             runtime["NEWEST_OPEN_PLACEHOLDERS"],
             {"required": frozenset({"repo"})},
             {"repo": "corca-ai/demo"},
+        ),
+        "update": (
+            tracker["GH_UPDATE_DEFAULT"],
+            tracker["UPDATE_PLACEHOLDERS"],
+            {"required": frozenset({"repo", "number", "body_file"})},
+            {"repo": "corca-ai/demo", "number": "42", "body_file": "/tmp/body.md"},
+        ),
+        "discover_managed_issues": (
+            tracker["GH_DISCOVER_MANAGED_ISSUES_DEFAULT"],
+            tracker["DISCOVER_MANAGED_ISSUES_PLACEHOLDERS"],
+            {"required": frozenset({"repo"})},
+            {"repo": "corca-ai/demo"},
+        ),
+        "list_sub_issues": (
+            tracker["GH_LIST_SUB_ISSUES_DEFAULT"],
+            tracker["LIST_SUB_ISSUES_PLACEHOLDERS"],
+            {"required": frozenset({"repo", "number"})},
+            {"repo": "corca-ai/demo", "number": "42"},
+        ),
+        "resolve_issue_id": (
+            tracker["GH_RESOLVE_ISSUE_ID_DEFAULT"],
+            tracker["RESOLVE_ISSUE_ID_PLACEHOLDERS"],
+            {"required": frozenset({"repo", "sub_issue_number"})},
+            {"repo": "corca-ai/demo", "sub_issue_number": "43"},
+        ),
+        "add_sub_issue": (
+            tracker["GH_ADD_SUB_ISSUE_DEFAULT"],
+            tracker["MUTATE_SUB_ISSUE_PLACEHOLDERS"],
+            {"required": frozenset({"repo", "number", "sub_issue_id"})},
+            {"repo": "corca-ai/demo", "number": "42", "sub_issue_id": "9001", "sub_issue_number": "43"},
+        ),
+        "remove_sub_issue": (
+            tracker["GH_REMOVE_SUB_ISSUE_DEFAULT"],
+            tracker["MUTATE_SUB_ISSUE_PLACEHOLDERS"],
+            {"required": frozenset({"repo", "number", "sub_issue_id"})},
+            {"repo": "corca-ai/demo", "number": "42", "sub_issue_id": "9001", "sub_issue_number": "43"},
         ),
     }
 

@@ -74,6 +74,15 @@ class IssuePreparationError(RuntimeError):
         self.code = code
 
 
+class IssueMutationError(RuntimeError):
+    """A create command was invoked but its provider outcome is not verified."""
+
+    def __init__(self, message: str, *, exit_code: int) -> None:
+        super().__init__(message)
+        self.exit_code = exit_code
+        self.mutation_invoked = True
+
+
 def _outside_fenced_code(text: str) -> str:
     text = _HTML_COMMENT_RE.sub("", text)
     kept: list[str] = []
@@ -193,9 +202,10 @@ def create_issue(
 
     create_result = run_backend(create_argv)
     if create_result.returncode != 0:
-        raise RuntimeError(
+        raise IssueMutationError(
             f"create failed: exit={create_result.returncode} "
-            f"stderr={create_result.stderr.strip()!r}"
+            f"stderr={create_result.stderr.strip()!r}",
+            exit_code=create_result.returncode,
         )
     created_stdout = create_result.stdout.strip()
     created_number = _parse_created_number(created_stdout)

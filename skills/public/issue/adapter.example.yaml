@@ -7,7 +7,8 @@ remote_name: origin
 # repo has no separate upstream harness.
 harness_upstream: corca-ai/charness
 # Optional: omit entirely (or leave unset) to use the default `gh` backend.
-# Set issue_backend to route create/view/close/comment/search_newest_open
+# Set issue_backend to route create/view/discover/update/sub-issue operations,
+# close/comment/search_newest_open
 # through a host-mediated capability instead, e.g. `acme github issue create
 # -R <repo> ...`. Every {placeholder} below is substituted by the skill; see
 # references/issue-backend.md "Placeholders" for the full set.
@@ -35,6 +36,58 @@ issue_backend:
       - "{number}"
       - "--json"
       - "{json_fields}"
+    discover_managed_issues:
+      - github
+      - api
+      - "--paginate"
+      - "--slurp"
+      - "repos/{repo}/issues?state=all&per_page=100"
+    update:
+      - github
+      - issue
+      - edit
+      - "-R"
+      - "{repo}"
+      - "{number}"
+      - "--body-file"
+      - "{body_file}"
+    list_sub_issues:
+      - github
+      - issue
+      - sub-issues
+      - list
+      - "-R"
+      - "{repo}"
+      - "{number}"
+      - "--json"
+    resolve_issue_id:
+      - github
+      - issue
+      - view
+      - "-R"
+      - "{repo}"
+      - "{sub_issue_number}"
+      - "--json"
+    add_sub_issue:
+      - github
+      - issue
+      - sub-issues
+      - add
+      - "-R"
+      - "{repo}"
+      - "{number}"
+      - "--sub-issue-id"
+      - "{sub_issue_id}"
+    remove_sub_issue:
+      - github
+      - issue
+      - sub-issues
+      - remove
+      - "-R"
+      - "{repo}"
+      - "{number}"
+      - "--sub-issue-id"
+      - "{sub_issue_id}"
     close:
       - github
       - issue

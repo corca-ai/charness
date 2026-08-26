@@ -50,6 +50,7 @@ def verify_created_issue(
     *,
     body_file: Path | None = None,
     backend: dict[str, Any] | None = None,
+    include_body: bool = False,
 ) -> dict[str, Any]:
     """Read a created issue through the issue-tool grammar.
 
@@ -119,4 +120,8 @@ def verify_created_issue(
     }
     if expected_body is not None and not body_verified:
         payload["stored_body_bytes"] = len(stored_body.encode("utf-8"))
+    if include_body:
+        if not isinstance(stored_body, str):
+            raise RuntimeError("create verification read-back did not return a string body")
+        payload["body"] = stored_body
     return payload

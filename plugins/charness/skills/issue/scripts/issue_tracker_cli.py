@@ -1,0 +1,306 @@
+"""Issue-tracker CLI orchestration and immutable provider observations."""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import runpy
+import sys
+from pathlib import Path
+from typing import Any
+
+_load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_import.py"))[
+    "sibling_loader"
+](__file__)
+ADAPTER = _load_local("resolve_adapter", "issue_tracker_cli_adapter")
+BACKEND = _load_local("issue_backend", "issue_tracker_cli_backend")
+READ = _load_local("issue_read", "issue_tracker_cli_read")
+TRACKER = _load_local("issue_tracker")
+TRACKER_OBSERVATION = _load_local("issue_tracker_observation")
+PARSER = _load_local("issue_tracker_cli_parser")
+PREFLIGHT = _load_local("issue_tracker_cli_preflight")
+_render_yaml = _load_local("issue_yaml_output", "issue_tracker_cli_yaml").render_yaml
+
+
+def emit(payload: dict[str, Any]) -> None:
+    sys.stdout.write(_render_yaml(payload))
+
+
+def _resolve_backend(repo_root: Path) -> dict[str, Any]:
+    adapter = ADAPTER.load_adapter(repo_root)
+    if not adapter["valid"]:
+        return {"adapter": adapter, "backend": ADAPTER.default_backend(), "adapter_ok": False}
+    backend = dict(adapter["data"].get("issue_backend") or ADAPTER.default_backend())
+    return {"adapter": adapter, "backend": backend, "adapter_ok": True}
+
+
+def _tracker_parent_number(args: argparse.Namespace) -> int:
+    for field in ("goal_run_parent", "parent_number", "number"):
+        value = getattr(args, field, None)
+        if type(value) is int and value > 0:
+            return value
+    raise RuntimeError("tracker mutation requires an exact Goal Run parent number")
+
+
+def _tracker_target(args: argparse.Namespace) -> dict[str, Any]:
+    target: dict[str, Any] = {"repo": args.repo}
+    for field in ("number", "sub_issue_number", "work_item_key"):
+        value = getattr(args, field, None)
+        if value is not None:
+            target[field] = value
+    return target
+
+
+def _tracker_body_sha256(args: argparse.Namespace) -> str | None:
+    body_file = getattr(args, "body_file", None)
+    if body_file is None:
+        return None
+    path = body_file.resolve()
+    if not path.is_file():
+        raise RuntimeError(f"tracker body file not found: {path}")
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _require_tracker_write_readiness(
+    args: argparse.Namespace, resolved: dict[str, Any], parent_number: int
+) -> None:
+    capability = TRACKER.tracker_capability_report(resolved["backend"])
+    if not capability["ok"]:
+        raise RuntimeError(
+            "tracker capability closure is not ready: "
+            f"missing={capability['missing_operations']!r} "
+            f"template_errors={capability.get('template_errors', {})!r}"
+        )
+    readiness = BACKEND.build_preflight_payload(resolved)
+    if not readiness.get("ok"):
+        raise RuntimeError("tracker backend readiness failed before mutation")
+    READ.read_issue_with_comments(args.repo, parent_number, backend=resolved["backend"])
+
+
+def _run_tracker_backend_command(args: argparse.Namespace, operation: str, call: Any) -> int:
+    resolved = _resolve_backend(args.repo_root.resolve())
+    if not resolved["adapter_ok"]:
+        emit(
+            {
+                "ok": False,
+                "status": "adapter-invalid",
+                "outcome": "refused",
+                "mutation_invoked": False,
+                "adapter": resolved["adapter"],
+            }
+        )
+        return 1
+    try:
+        parent_number = _tracker_parent_number(args)
+        _require_tracker_write_readiness(args, resolved, parent_number)
+        started = TRACKER_OBSERVATION.begin(
+            repo_root=args.repo_root.resolve(),
+            observation_dir=args.observation_dir,
+            attempt_id=args.attempt_id,
+            draft_sha256=args.draft_sha256,
+            binding_sha256=args.binding_sha256,
+            repo=args.repo,
+            parent_number=parent_number,
+            operation=operation,
+            target=_tracker_target(args),
+            submitted_body_sha256=_tracker_body_sha256(args),
+            backend=resolved["backend"],
+        )
+    except RuntimeError as exc:
+        result = {
+            "ok": False,
+            "status": "refused",
+            "outcome": "refused",
+            "mutation_invoked": False,
+            "error": str(exc),
+            "next_action": "repair-input-or-readiness-before-retry",
+            "selected_backend": resolved["backend"],
+        }
+        emit(result)
+        return 2
+    try:
+        result = call(resolved)
+    except RuntimeError as exc:
+        result = {
+            "ok": False,
+            "status": "refused",
+            "outcome": "refused",
+            "mutation_invoked": False,
+            "error": str(exc),
+            "next_action": "repair-input-or-readiness-before-retry",
+        }
+    result["selected_backend"] = resolved["backend"]
+    try:
+        terminal = TRACKER_OBSERVATION.finish(
+            repo_root=args.repo_root.resolve(),
+            observation_dir=args.observation_dir,
+            attempt_id=args.attempt_id,
+            started=started,
+            result=result,
+        )
+        result["observation"] = {
+            "started_path": started["path"],
+            "started_sha256": started["payload"]["receipt_sha256"],
+            "terminal_path": terminal["path"],
+            "terminal_sha256": terminal["payload"]["receipt_sha256"],
+        }
+    except RuntimeError as exc:
+        result = {
+            "ok": False,
+            "status": "unverified-write" if result.get("mutation_invoked") else "refused",
+            "outcome": "unverified-write" if result.get("mutation_invoked") else "refused",
+            "mutation_invoked": bool(result.get("mutation_invoked")),
+            "error": f"terminal provider observation could not be persisted: {exc}",
+            "next_action": "stop-and-preserve-started-observation",
+            "selected_backend": resolved["backend"],
+            "started_observation": started,
+        }
+    emit(result)
+    return 0 if result["ok"] else 2
+
+
+def _run_tracker_read_command(args: argparse.Namespace, call: Any) -> int:
+    resolved = _resolve_backend(args.repo_root.resolve())
+    if not resolved["adapter_ok"]:
+        emit(
+            {
+                "ok": False,
+                "status": "adapter-invalid",
+                "outcome": "refused",
+                "mutation_invoked": False,
+                "adapter": resolved["adapter"],
+            }
+        )
+        return 1
+    try:
+        result = call(resolved)
+    except RuntimeError as exc:
+        result = {
+            "ok": False,
+            "status": "refused",
+            "outcome": "refused",
+            "mutation_invoked": False,
+            "error": str(exc),
+        }
+    result["selected_backend"] = resolved["backend"]
+    emit(result)
+    return 0 if result["ok"] else 2
+
+
+def command_tracker_preflight(args: argparse.Namespace) -> int:
+    return PREFLIGHT.run(
+        args,
+        resolve_backend=_resolve_backend,
+        emit=emit,
+        tracker=TRACKER,
+        backend_owner=BACKEND,
+        issue_reader=READ,
+    )
+
+
+def command_update(args: argparse.Namespace) -> int:
+    return _run_tracker_backend_command(
+        args,
+        "update-body",
+        lambda resolved: TRACKER.update_issue_body(
+            args.repo, args.number, args.body_file.resolve(), backend=resolved["backend"]
+        ),
+    )
+
+
+def command_create_or_reuse_child(args: argparse.Namespace) -> int:
+    body_sha256 = _tracker_body_sha256(args)
+    return _run_tracker_backend_command(
+        args,
+        "create-child",
+        lambda resolved: TRACKER.create_or_reuse_child(
+            args.repo,
+            args.parent_number,
+            args.work_item_key,
+            args.title,
+            args.body_file.resolve(),
+            backend=resolved["backend"],
+            prior_unresolved_observation=TRACKER_OBSERVATION.find_unresolved_create(
+                repo_root=args.repo_root.resolve(),
+                observation_dir=args.observation_dir,
+                repo=args.repo,
+                parent_number=args.parent_number,
+                work_item_key=args.work_item_key,
+                submitted_body_sha256=body_sha256,
+                exclude_attempt_id=args.attempt_id,
+            ),
+        ),
+    )
+
+
+def command_list_sub_issues(args: argparse.Namespace) -> int:
+    def build(resolved: dict[str, Any]) -> dict[str, Any]:
+        result = TRACKER.list_sub_issues(args.repo, args.number, backend=resolved["backend"])
+        expected_source = None
+        if args.expect_child_file is not None:
+            expected_source = TRACKER.load_expected_child_set(
+                args.expect_child_file.resolve(), repo=args.repo, parent_number=args.number
+            )
+            expected = expected_source["children"]
+        else:
+            expected = sorted(set(args.expect_child or []))
+        expectation_supplied = args.expect_child_file is not None or args.expect_child is not None
+        actual = sorted(child["number"] for child in result["children"])
+        result["expected_children"] = expected if expectation_supplied else None
+        result["expected_children_source"] = expected_source
+        result["missing_children"] = [number for number in expected if number not in actual]
+        result["unexpected_children"] = (
+            [number for number in actual if number not in expected] if expectation_supplied else []
+        )
+        result["all_children_closed"] = result["open"] == 0
+        if expectation_supplied and (result["missing_children"] or result["unexpected_children"]):
+            result.update(
+                ok=False, status="graph-mismatch", next_action="reconcile-exact-child-identities"
+            )
+        if args.expect_all_closed and not result["all_children_closed"]:
+            result.update(
+                ok=False,
+                status="linked-open-children",
+                completion_refusal="linked-open-children",
+                next_action="return-open-child-state-to-lifecycle-policy-owner",
+            )
+        return result
+
+    return _run_tracker_read_command(args, build)
+
+
+def command_add_sub_issue(args: argparse.Namespace) -> int:
+    return _run_tracker_backend_command(
+        args,
+        "add-sub-issue",
+        lambda resolved: TRACKER.add_sub_issue(
+            args.repo, args.number, args.sub_issue_number, backend=resolved["backend"]
+        ),
+    )
+
+
+def command_remove_sub_issue(args: argparse.Namespace) -> int:
+    return _run_tracker_backend_command(
+        args,
+        "remove-sub-issue",
+        lambda resolved: TRACKER.remove_sub_issue(
+            args.repo, args.number, args.sub_issue_number, backend=resolved["backend"]
+        ),
+    )
+
+
+def register_subparsers(
+    subparsers: argparse._SubParsersAction[argparse.ArgumentParser], cwd_default: Path
+) -> None:
+    PARSER.register_subparsers(
+        subparsers,
+        cwd_default,
+        handlers={
+            "command_tracker_preflight": command_tracker_preflight,
+            "command_update": command_update,
+            "command_create_or_reuse_child": command_create_or_reuse_child,
+            "command_list_sub_issues": command_list_sub_issues,
+            "command_add_sub_issue": command_add_sub_issue,
+            "command_remove_sub_issue": command_remove_sub_issue,
+        },
+    )

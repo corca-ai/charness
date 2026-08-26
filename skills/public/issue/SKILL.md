@@ -1,6 +1,6 @@
 ---
 name: issue
-description: "Use when filing a GitHub issue from current context or resolving GitHub issues end-to-end through the adapter-resolved backend (`gh` by default, or a host-mediated capability such as `acme github`). Issue creation reports the observed problem before suggesting solutions; issue resolution treats GitHub as the source of truth, classifies the issue, runs a causal review for bug-class issues before designing the fix, and runs a resolution critique so the same class of issue does not recur."
+description: "Use when filing, resolving, or managing parent/sub-issue GitHub trackers through the adapter-resolved backend (`gh` by default, or a host-mediated capability). Issue creation reports the observed problem before suggesting solutions; resolution treats GitHub as source of truth and keeps causal/critique closeout discipline."
 ---
 
 # Issue
@@ -97,6 +97,37 @@ closing anything.
 8. Render the per-issue behavior verdict or typed disposition from a channel
    distinct from `CLOSED` state and the carrier body.
 
+`issue tracker` operations support an issue-native `achieve` goal.
+
+1. Run `issue_tool.py tracker-preflight --repo <owner/repo> --number <parent>`;
+   backend health, exact parent/repository readback, rendered create/view/
+   discover/update/list/resolve/add/remove templates, and capability closure
+   must all pass before a write.
+2. Create a managed child with `create-or-reuse-child`. Its exact body contains
+   `<!-- charness-work-item-key: <key> -->`; retry first performs exhaustive
+   read-only discovery and refuses duplicate or mismatched keys. A prior
+   matching started-only or unverified-write observation interlocks later
+   attempts: they may recover an exact discovered issue but cannot invoke
+   create again until operator disposition resolves the earlier write.
+3. Use `update --body-file` for a complete body replacement. An already-current
+   body is a no-mutation read; an update cannot strip or alter immutable Goal Run
+   metadata, and any performed write needs byte-identical readback. The default
+   assumes one updating agent and adds no concurrency protocol.
+4. Use `add-sub-issue` / `remove-sub-issue` for real relationships and
+   `list-sub-issues --expect-child-file <json>` for exact graph proof. The
+   source file binds kind, repository, parent, child identities, and its
+   complete-byte SHA-256 so a long approved manifest is not transcribed into
+   shell arguments. An explicitly empty set remains an exact expectation; it is
+   not treated as an omitted expectation. An already-linked child is an idempotent
+   no-mutation result; a Markdown link never satisfies readback.
+   Any invoked mutation without conclusive readback is `unverified-write` and
+   stops for a fresh read; it is never reported as `no-write` or retried blindly.
+5. Every tracker mutation requires binding/draft hashes, a unique attempt id,
+   and a repo-contained observation directory. The command persists immutable
+   `started` bytes before provider invocation and a hash-bound terminal receipt
+   afterward; a surviving started-only receipt is unresolved evidence.
+6. Before closing a parent, require `list-sub-issues --expect-all-closed`.
+
 ## Guardrails
 
 - Target repo is durable workflow state once named or first resolved; on retry,
@@ -108,8 +139,9 @@ closing anything.
   `feature` when unsure between `feature` and discussion-only.
 - Do not close before the fix carrier is published and verified through GitHub
   readback. `carrier_verified` and `CLOSED` are necessary, not sufficient.
-- When an active `achieve` goal artifact exists, file or defer off-goal findings
-  here and append only the issue reference/reason to that goal artifact.
+- When an active issue-native `achieve` receipt exists, file or defer off-goal
+  findings here and link a new child only when it is independently closable and
+  in scope. Do not mirror routine progress into the receipt.
 
 ## References
 
@@ -136,4 +168,4 @@ closing anything.
 - `../../shared/references/active-goal-coordination.md` - off-goal issue handling
   while an `achieve` goal is active.
 - `scripts/issue_tool.py` - CLI entrypoint for planner, preflight, read, create,
-  brief path, close, and closeout verification.
+  parent update/sub-issue operations, brief path, close, and closeout verification.

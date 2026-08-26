@@ -184,3 +184,31 @@ def test_issue_preflight_reports_missing_backend_binary_with_explicit_error(tmp_
     assert "acme" in payload["error"]
     # The deleted "backend binary missing" text line, now a payload field.
     assert payload["preflight_status"] == "backend-binary-missing"
+
+
+def test_issue_preflight_rejects_unhealthy_non_gh_version_probe(tmp_path: Path) -> None:
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    fake = bin_dir / "acme"
+    fake.write_text(
+        "#!/usr/bin/env bash\n"
+        "if [[ \"$1\" == \"--version\" ]]; then echo unhealthy >&2; exit 3; fi\n"
+        "exit 0\n",
+        encoding="utf-8",
+    )
+    fake.chmod(0o755)
+    write_issue_adapter_with_backend(tmp_path, backend_id="acme-github", binary="acme")
+
+    result = run_script(
+        SCRIPT,
+        "preflight",
+        "--repo-root",
+        str(tmp_path),
+        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin"},
+    )
+
+    assert result.returncode == 1
+    payload = yaml.safe_load(result.stdout)
+    assert payload["ok"] is False
+    assert payload["selected_backend"]["version"]["exit_code"] == 3
+    assert payload["preflight_status"] == "found-but-not-authenticated-or-unhealthy"

@@ -144,6 +144,56 @@ The skill consumes these operations through the adapter when available:
 - `comment` — append a close-comment with classification artifact
 - `search_newest_open` — used only when `select` is invoked without a selector
 
+Issue-native goal trackers additionally consume:
+
+- `discover_managed_issues` — exhaustively return all issue rows needed for an
+  exact local Work Item key match; search-index-only discovery is insufficient
+- `update` — replace a parent body from `{body_file}`
+- `list_sub_issues` — return a JSON list (or paginated list-of-lists) of real
+  child issue objects, each carrying issue/repository identity and
+  `parent_issue_url`
+- `resolve_issue_id` — return the child issue object with its positive database
+  `id`; GitHub's relationship mutation uses this id rather than issue number
+- `add_sub_issue` / `remove_sub_issue` — mutate one real relationship using
+  `{sub_issue_id}` and preserve prior successful relationships on failure
+
+Run `issue_tool.py tracker-preflight --repo <owner/repo> --number <parent>`
+before the first tracker write. The bootstrap preflight combines adapter/binary/
+auth health, exact existing-parent repository readback, and rendered create,
+view, discover, update, list, resolve, add, and remove templates. The default
+`gh` backend owns canonical CLI/REST commands. A non-`gh` backend must declare
+each command with all required placeholders; missing or malformed capability
+yields `tracker-capability-missing` and blocks activation rather than falling
+through to another backend.
+
+`create-or-reuse-child` requires the exact marker
+`<!-- charness-work-item-key: <key> -->` once in the body. It discovers before
+create and after any invoked create; duplicate, mismatched, or undiscoverable
+outcomes stop without a blind second create. `update` returns without mutation
+when bytes are already current, refuses stripped/malformed Goal Run metadata,
+and performs byte-identical body readback after a write. `list-sub-issues` proves exact
+issue and parent identities; Markdown links never count. `add-sub-issue` is
+idempotent: an existing relationship returns `already-linked` without mutation.
+Before parent close, `list-sub-issues --expect-all-closed` refuses while any
+linked child remains open. Once a mutation command is invoked, command failure,
+readback failure, or identity mismatch is `unverified-write`; retry begins with
+a new read and never calls the mutation again based only on exit status.
+
+For a complete graph comparison, prefer
+`list-sub-issues --expect-child-file <json>` over repeated command-line flags.
+The file is a strict `charness.expected-sub-issue-set/v1` object containing
+`repo`, `parent_number`, and unique positive `children`; the result reports the
+complete input-byte SHA-256. Target mismatch, duplicate numbers, unknown fields,
+and malformed JSON refuse before comparison. Repeated `--expect-child` remains
+only for short ad hoc reads and is mutually exclusive with the file input.
+
+Mutating tracker commands require `--attempt-id`, `--draft-sha256`,
+`--binding-sha256`, and a repo-contained `--observation-dir`. A
+`charness.goal-run-observation/v1` started receipt is atomically made immutable
+before the provider call; a terminal receipt binds its hash and the structured
+result. A started receipt with no terminal pair is an unresolved attempt, not a
+successful or no-write claim.
+
 When `id != "gh"` and `commands.search_newest_open` is missing, `select`
 without an explicit selector stops with a clear error. Pass an explicit
 issue number or range instead.
@@ -276,6 +326,8 @@ Adapter-supplied templates substitute:
 - `{body_file}` — path to a file containing the body
 - `{reason}` — host-required reason text (Acme-style audit reason)
 - `{json_fields}` — comma-separated json field list for `view`
+- `{sub_issue_number}` — child issue number used to resolve its database id
+- `{sub_issue_id}` — positive child database id used by relationship mutations
 
 The placeholder set is the tested contract: adding a new placeholder requires
 adding a substitution test in the authoring-repo-internal

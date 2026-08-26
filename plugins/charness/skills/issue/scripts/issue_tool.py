@@ -7,7 +7,9 @@ import sys
 from pathlib import Path
 from typing import Any
 
-_load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_import.py"))["sibling_loader"](__file__)
+_load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_import.py"))[
+    "sibling_loader"
+](__file__)
 ADAPTER = _load_local("resolve_adapter", "issue_resolve_adapter")
 RUNTIME = _load_local("issue_runtime")
 BRIEF = _load_local("issue_brief")
@@ -21,6 +23,19 @@ VERIFY_BODY = _load_local("issue_verify_closeout_body")
 CLOSEOUT_FLOORS = _load_local("issue_closeout_rung1_floors")
 VALIDATE_DRAFT = _load_local("issue_validate_closeout_draft")
 PLAN = _load_local("issue_plan")
+TRACKER_CLI = _load_local("issue_tracker_cli")
+MILESTONE = _load_local("issue_milestone")
+PARSER = _load_local("issue_tool_parser")
+TRACKER = TRACKER_CLI.TRACKER
+
+_run_tracker_backend_command = TRACKER_CLI._run_tracker_backend_command
+_run_tracker_read_command = TRACKER_CLI._run_tracker_read_command
+command_tracker_preflight = TRACKER_CLI.command_tracker_preflight
+command_update = TRACKER_CLI.command_update
+command_create_or_reuse_child = TRACKER_CLI.command_create_or_reuse_child
+command_list_sub_issues = TRACKER_CLI.command_list_sub_issues
+command_add_sub_issue = TRACKER_CLI.command_add_sub_issue
+command_remove_sub_issue = TRACKER_CLI.command_remove_sub_issue
 
 
 _render_yaml = _load_local("issue_yaml_output", "issue_tool_yaml_output").render_yaml
@@ -104,7 +119,9 @@ def command_resolve_target(args: argparse.Namespace) -> int:
         args,
         lambda adapter: {
             "ok": True,
-            "target": RUNTIME.resolve_target(args.repo_root.resolve(), args.target, adapter["data"]),
+            "target": RUNTIME.resolve_target(
+                args.repo_root.resolve(), args.target, adapter["data"]
+            ),
             "adapter": adapter,
         },
     )
@@ -125,15 +142,25 @@ def command_select(args: argparse.Namespace) -> int:
     except (RuntimeError, ValueError) as exc:
         emit({"ok": False, "error": str(exc), "repo": args.repo, "selected_backend": backend})
         return 1
-    emit({"ok": True, "repo": args.repo, "numbers": numbers, "source": source,
-          "issue": issue, "selected_backend": backend})
+    emit(
+        {
+            "ok": True,
+            "repo": args.repo,
+            "numbers": numbers,
+            "source": source,
+            "issue": issue,
+            "selected_backend": backend,
+        }
+    )
     return 0
 
 
 def command_read(args: argparse.Namespace) -> int:
     return _run_backend_command(
         args,
-        lambda resolved: READ.read_issue_with_comments(args.repo, args.number, backend=resolved["backend"]),
+        lambda resolved: READ.read_issue_with_comments(
+            args.repo, args.number, backend=resolved["backend"]
+        ),
         lambda _result: 0,
     )
 
@@ -164,9 +191,13 @@ def command_close_with_comment(args: argparse.Namespace) -> int:
     return _run_backend_command(
         args,
         lambda resolved: CLOSE.close_with_comment(
-            args.repo, args.number, args.body_file.resolve(),
-            repo_root=args.repo_root.resolve(), classification=args.classification,
-            backend=resolved["backend"], reason=args.reason,
+            args.repo,
+            args.number,
+            args.body_file.resolve(),
+            repo_root=args.repo_root.resolve(),
+            classification=args.classification,
+            backend=resolved["backend"],
+            reason=args.reason,
             manual_target_declaration=args.manual_target_declaration,
         ),
         lambda _result: 0,
@@ -234,45 +265,7 @@ def command_brief_path(args: argparse.Namespace) -> int:
     return 0
 
 
-def resolve_milestone(requested: str | None, existing: list[str]) -> dict[str, Any]:
-    """Resolve a requested milestone against the repo's existing milestone titles.
-
-    The skill must never invent a milestone. This guard assigns only when the
-    requested title exactly matches one the repository already has; otherwise it
-    leaves the issue unassigned and says so, so the agent cannot silently create
-    a fake milestone.
-    """
-    existing_titles = [title for title in existing if title]
-    requested_title = (requested or "").strip()
-    if not requested_title:
-        return {
-            "ok": True,
-            "assignable": False,
-            "milestone": None,
-            "action": "leave-unassigned",
-            "reason": "no milestone requested",
-            "existing": existing_titles,
-        }
-    if requested_title in existing_titles:
-        return {
-            "ok": True,
-            "assignable": True,
-            "milestone": requested_title,
-            "action": "assign",
-            "reason": f"`{requested_title}` is an existing repository milestone",
-            "existing": existing_titles,
-        }
-    return {
-        "ok": True,
-        "assignable": False,
-        "milestone": None,
-        "action": "leave-unassigned",
-        "reason": (
-            f"no existing repository milestone titled `{requested_title}`; "
-            "not creating a new one — state this explicitly to the operator"
-        ),
-        "existing": existing_titles,
-    }
+resolve_milestone = MILESTONE.resolve
 
 
 def command_resolve_milestone(args: argparse.Namespace) -> int:
@@ -281,120 +274,34 @@ def command_resolve_milestone(args: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers(dest="command", required=True)
-
-    cwd_default = Path.cwd()
-    preflight = subparsers.add_parser("preflight", help="Inspect the issue adapter and host readiness before invoking the backend")
-    preflight.add_argument("--repo-root", type=Path, default=cwd_default, help="Repo root used to resolve the issue adapter")
-    preflight.set_defaults(func=command_preflight)
-
-    PLAN.register_plan_subparser(
-        subparsers,
-        cwd_default,
-        adapter_module=ADAPTER,
-        runtime_module=RUNTIME,
-        brief_module=BRIEF,
-        backend_module=BACKEND,
-        resolve_backend=_resolve_backend,
-        emit=emit,
+    return PARSER.build_parser(
+        modules={
+            "plan": PLAN,
+            "adapter": ADAPTER,
+            "runtime": RUNTIME,
+            "brief": BRIEF,
+            "backend": BACKEND,
+            "tracker_cli": TRACKER_CLI,
+            "verify": VERIFY,
+            "validate_draft": VALIDATE_DRAFT,
+            "create": CREATE,
+        },
+        handlers={
+            "preflight": command_preflight,
+            "resolve_target": command_resolve_target,
+            "resolve_invocation": command_resolve_invocation,
+            "select": command_select,
+            "read": command_read,
+            "close_with_comment": command_close_with_comment,
+            "verify_closeout": command_verify_closeout,
+            "check_source_preservation": command_check_source_preservation,
+            "brief_path": command_brief_path,
+            "resolve_milestone": command_resolve_milestone,
+            "resolve_backend": _resolve_backend,
+            "run_backend_command": _run_backend_command,
+            "emit": emit,
+        },
     )
-
-    target = subparsers.add_parser("resolve-target", help="Resolve an issue target selector (owner/repo[#number]) against the adapter")
-    target.add_argument("--repo-root", type=Path, default=cwd_default, help="Repo root used to resolve the issue adapter")
-    target.add_argument("--target", help="Target selector (owner/repo or owner/repo#number); defaults to current repo")
-    target.set_defaults(func=command_resolve_target)
-
-    invocation = subparsers.add_parser("resolve-invocation", help="Interpret raw skill invocation values into a structured target and selector")
-    invocation.add_argument("--repo-root", type=Path, default=cwd_default, help="Repo root used to resolve the issue adapter")
-    invocation.add_argument("values", nargs="*", help="Raw skill invocation values to interpret")
-    invocation.set_defaults(func=command_resolve_invocation)
-
-    select = subparsers.add_parser("select", help="Select one or more issues by number, comma list, or newest-open default")
-    select.add_argument("--repo", required=True, help="Target repository in owner/repo form")
-    select.add_argument("--selector", help="Issue selector (number, comma list, or omit to pick newest open)")
-    select.add_argument("--repo-root", type=Path, default=cwd_default, help="Repo root used to resolve the issue adapter")
-    select.set_defaults(func=command_select)
-
-    read = subparsers.add_parser("read", help="Read an issue body and comments through the selected backend")
-    read.add_argument("--repo", required=True, help="Target repository in owner/repo form")
-    read.add_argument("--number", type=int, required=True, help="Issue number to read")
-    read.add_argument("--repo-root", type=Path, default=cwd_default, help="Repo root used to resolve the issue adapter")
-    read.set_defaults(func=command_read)
-
-    close = subparsers.add_parser("close-with-comment", help="Close an issue with a comment body sourced from --body-file")
-    close.add_argument("--repo", required=True, help="Target repository in owner/repo form")
-    close.add_argument("--number", type=int, required=True, help="Issue number to close")
-    close.add_argument("--body-file", type=Path, required=True, help="Path to the closing comment body file")
-    close.add_argument(
-        "--classification", choices=VERIFY.CLASSIFICATIONS, required=True,
-        help="Fix-unit classification recorded for the closeout; drives the rung-1 presence "
-        "floor (behavioral verdict, resolution critique, source preservation) checked before "
-        "any GitHub mutation",
-    )
-    close.add_argument("--reason", default="completed", help="Close reason passed to the backend (default: completed)")
-    close.add_argument(
-        "--manual-target-declaration", default=None,
-        help="Explicit repository-qualified close target (owner/repo#number). Required only "
-        "when closing an issue protected by the evidence-boundary crosswalk: this carrier's "
-        "body has no close keyword, so --number would otherwise authorize itself",
-    )
-    close.add_argument("--repo-root", type=Path, default=cwd_default, help="Repo root used to resolve the issue adapter")
-    close.set_defaults(func=command_close_with_comment)
-
-    verify = subparsers.add_parser("verify-closeout", help="Verify a closeout's classification, carrier, and backend state for one or more issues")
-    verify.add_argument("--repo", required=True, help="Target repository in owner/repo form")
-    verify.add_argument("--number", action="append", type=int, required=True, help="Issue number to verify; repeat for multiple issues")
-    verify.add_argument("--classification", choices=VERIFY.CLASSIFICATIONS, required=True, help="Fix-unit classification recorded for the closeout")
-    verify.add_argument("--carrier", choices=VERIFY.CARRIERS, required=True, help="Carrier that delivered the fix (direct-commit, pr-body, or manual-fallback)")
-    verify.add_argument("--commit-ref", help="Commit ref carrying the fix when carrier is commit-based")
-    verify.add_argument("--body-file", type=Path, help="Path to the closing comment body file used for verification")
-    verify.add_argument("--manual-fallback-reason", choices=VERIFY.MANUAL_FALLBACK_REASONS, help="Reason code when falling back to a manual closeout carrier")
-    verify.add_argument("--expect-state", choices=("CLOSED",), help="Expected backend issue state after closeout")
-    verify.add_argument("--repo-root", type=Path, default=cwd_default, help="Repo root used to resolve the issue adapter")
-    verify.set_defaults(func=command_verify_closeout)
-
-    VALIDATE_DRAFT.register_validate_closeout_draft_subparser(
-        subparsers,
-        cwd_default,
-        resolve_backend=_resolve_backend,
-        emit=emit,
-        verifier=VERIFY,
-        run_backend_command=_run_backend_command,
-    )
-
-    source = subparsers.add_parser(
-        "check-source-preservation",
-        help="Check a created issue body / artifact for the provider-neutral source-preservation contract",
-    )
-    source.add_argument("--body-file", type=Path, required=True, help="Path to the issue body or local artifact to check")
-    source.add_argument(
-        "--require-external",
-        action="store_true",
-        help="Fail when no `Source origin:` marker is present (assert the issue is externally sourced)",
-    )
-    source.set_defaults(func=command_check_source_preservation)
-
-    brief = subparsers.add_parser("brief-path", help="Print the durable brief path for an issue number on the given date")
-    brief.add_argument("--number", type=int, required=True, help="Issue number whose brief path should be returned")
-    brief.add_argument("--repo-root", type=Path, default=cwd_default, help="Repo root used to resolve the issue adapter")
-    brief.add_argument("--date", help="ISO date (YYYY-MM-DD); defaults to today")
-    brief.set_defaults(func=command_brief_path)
-
-    milestone = subparsers.add_parser(
-        "resolve-milestone",
-        help="Decide whether a requested milestone is assignable from the repo's existing milestones (never invents one)",
-    )
-    milestone.add_argument("--requested", help="Milestone title the operator asked for; omit when none was requested")
-    milestone.add_argument(
-        "--existing",
-        action="append",
-        help="An existing repository milestone title (fetch via the backend, e.g. `gh api repos/{repo}/milestones`); repeat per milestone",
-    )
-    milestone.set_defaults(func=command_resolve_milestone)
-
-    CREATE.register_create_subparser(subparsers, cwd_default)
-    return parser
 
 
 def main() -> int:

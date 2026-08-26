@@ -438,35 +438,35 @@ resolve instead of guessing. Read it once: a `still-running` result is not an
 invitation to poll, and using it at all still means recording a delivery
 failure.
 
-For the default Charness-owned worker, persist the parent-side state packet with
-the shared helper; do not infer delivery from a non-empty output file, process
-exit code, or worker receipt status alone. Consume
-`reviewer_worker_report.py` and require `approval_eligible: true`:
+For the default Charness-owned worker, use the one runner that binds the
+producer paths and run id into the parent-side ledger before launch, then
+collects the typed result through the same contract. Do not assemble
+`reviewer_delivery.py`, `reviewer_worker.py`, and `reviewer_worker_report.py`
+as separate shell steps: that split can create a findings-received ledger with
+no producer binding. Do not infer delivery from a non-empty output file,
+process exit code, or worker receipt status alone. Require the generated report
+to say `collection_ready: true`; a shipping approval additionally requires
+`approval_eligible: true`:
 
 ```bash
-python3 "$SKILL_DIR/../../shared/scripts/reviewer_delivery.py" \
-  --ledger "$RUN_DIR/delivery.json" start \
+python3 "$SKILL_DIR/../../shared/scripts/run_reviewer_worker.py" \
+  --repo-root "$REPO_ROOT" \
+  --prompt-file "$RUN_DIR/prompt.md" \
+  --capability-file "$RUN_DIR/capability.json" \
   --attempt-id "$ATTEMPT_ID" \
   --scope "$SCOPE_ID" \
   --packet-identity "$PACKET_SHA256" \
   --reviewed-input-identity "$INPUT_IDENTITY_SHA256" \
   --parent-receipt-identity "$RECEIPT_ID" \
   --boundary-fingerprint "$BOUNDARY_SHA256" \
+  --ledger-file "$RUN_DIR/delivery.json" \
+  --output-file "$RUN_DIR/result.json" \
+  --receipt-file "$RUN_DIR/receipt.json" \
+  --report-file "$RUN_DIR/report.yaml" \
   --execution-mode file-backed-worker \
   --backend "$BACKEND" \
-  --prompt-sha256 "$PROMPT_SHA256" \
-  --schema-sha256 "$SCHEMA_SHA256"
-
-python3 "$SKILL_DIR/../../shared/scripts/reviewer_delivery.py" \
-  --ledger "$RUN_DIR/delivery.json" show --attempt-id "$ATTEMPT_ID"
-
-python3 "$SKILL_DIR/../../shared/scripts/reviewer_worker_report.py" \
-  --receipt-file "$RUN_DIR/receipt.json" \
-  --ledger-file "$RUN_DIR/delivery.json" \
-  --attempt-id "$ATTEMPT_ID" --scope "$SCOPE_ID" \
-  --packet-identity "$PACKET_SHA256" \
-  --reviewed-input-identity "$INPUT_IDENTITY_SHA256" \
-  --parent-receipt-identity "$RECEIPT_ID"
+  --timeout-seconds 900 \
+  --run-id "$ATTEMPT_ID"
 ```
 
 The backend runner itself must publish a typed receipt and a schema-validated
@@ -479,6 +479,14 @@ identities so a foreign run cannot be paired with the current ledger. A finite t
 absolute paths resolved before `cwd`, unique run artifacts, and a pre-existing
 output refusal are part of that runner boundary; a result file's presence is
 not a terminal success signal.
+
+The launch capability envelope owns `capability_non_claims` and
+`capability_non_claims_sha256`. A reviewer prompt must tell the worker to copy
+those exact values; semantic limits such as “no live provider behavior was
+tested” belong in the result's ordinary `non_claims` array. Do not invite the
+worker to synthesize capability non-claims from semantic review limits: an
+otherwise useful review then fails collection because it no longer matches the
+launch envelope.
 
 ## Required Before Declaring The Canonical Path Blocked
 

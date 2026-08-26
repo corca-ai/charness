@@ -9,6 +9,7 @@ _load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_
 _BACKEND = _load_local("issue_backend", "issue_read_backend")
 _run_backend = _BACKEND.run_backend
 _resolve_op = _BACKEND.resolve_op
+_require_exact_issue_identity = _BACKEND.require_exact_issue_identity
 
 GH_READ_DEFAULT = [
     "issue",
@@ -47,6 +48,12 @@ def read_issue_with_comments(repo: str, number: int, *, backend: dict[str, Any] 
     comments = issue.get("comments") if isinstance(issue, dict) else None
     if not isinstance(comments, list):
         raise RuntimeError("issue read did not return a comments list; retry with comments included")
+    _require_exact_issue_identity(
+        issue,
+        expected_repo=repo,
+        expected_number=number,
+        context="issue read",
+    )
     return {
         "ok": True,
         "repo": repo,

@@ -1,0 +1,12 @@
+{
+  "kind": "charness.expected-sub-issue-set/v1",
+  "repo": "corca-ai/charness",
+  "parent_number": 724,
+  "children": [546, 628, 634, 637, 667, 668, 669, 692, 693, 694, 695, 697, 698, 699, 700, 701, 703, 704, 706, 708, 710, 715, 717, 721, 722, 723, 725, 726, 727],
+  "source": {
+    "status": "approved-bootstrap-existing-graph",
+    "frozen_draft_sha256": "ced8410bd896844bf6bb75bff807438cb6f40cb6a3c3b8489ddcd05a662212c2",
+    "readiness_contract": "charness-artifacts/specs/adversarial-priority-backlog-closeout/phase-00-issue-native-achieve-tracking/existing-work-item-readiness.md",
+    "implementation_briefing_sha256": "3dc848972bd9638184d250ea2049b11be9db64c8a4161ebc5900a5a0082dad38"
+  }
+}
