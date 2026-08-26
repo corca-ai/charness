@@ -244,6 +244,54 @@ class PhaseOutcome(NamedTuple):
         return subprocess.CompletedProcess(self.args, self.returncode, self.stdout, self.stderr)
 
 
+# `Popen` can fork the child before its constructor returns the object that owns
+# the pid. If one of these signals raises in that gap, the caller has no object
+# through which it can kill the new process group. A temporary non-raising
+# handler lets the constructor finish without masking the child it launches.
+_SPAWN_INTERRUPTION_NAMES = ("SIGINT", "SIGTERM", "SIGHUP")
+
+
+def _install_spawn_interruptions(pending: list[int]) -> dict[int, object]:
+    """Record interrupt-like signals until the new ``Popen`` is bound.
+
+    The handler intentionally does not raise: a Python signal exception during
+    construction would arrive before the caller owns the returned process object.
+    Signals that cannot be installed (for example, a non-main thread) keep the
+    caller's existing signal policy rather than making launch fail for an
+    unrelated reason.
+    """
+    def record(signum: int, _frame: object) -> None:
+        pending.append(signum)
+
+    previous: dict[int, object] = {}
+    for name in _SPAWN_INTERRUPTION_NAMES:
+        number = getattr(signal, name, None)
+        if number is None:
+            continue
+        try:
+            previous[number] = signal.signal(number, record)
+        except (OSError, ValueError):
+            continue
+    return previous
+
+
+def _restore_spawn_interruptions(previous: dict[int, object]) -> None:
+    """Restore the caller's signal handlers after ``Popen`` is available."""
+    for number, handler in previous.items():
+        with contextlib.suppress(OSError, TypeError, ValueError):
+            signal.signal(number, handler)
+
+
+def _replay_spawn_interruptions(pending: list[int]) -> None:
+    """Deliver recorded signals after the process tree has been cleaned up."""
+    raise_signal = getattr(signal, "raise_signal", None)
+    for number in pending:
+        if raise_signal is not None:
+            raise_signal(number)
+        else:
+            os.kill(os.getpid(), number)
+
+
 def run_monitored_phase(
     command: Sequence[str] | str,
     *,
@@ -281,24 +329,43 @@ def run_monitored_phase(
     interval = _resolve_interval(heartbeat_seconds, timeout_seconds)
     _emit(events, f"RUN [{phase}] {rendered}")
     started_at = time.monotonic()
-    with subprocess.Popen(
-        command,
-        cwd=cwd,
-        # `None` INHERITS the parent's handles -- it does not discard the output.
-        # The distinction matters: `subprocess.DEVNULL` here would silence the one
-        # kind of child this mode exists for.
-        stdout=subprocess.PIPE if capture else None,
-        stderr=subprocess.PIPE if capture else None,
-        text=True,
-        env=env,
-        shell=shell,
-        executable=executable,
-        # Makes the child's whole descendant tree addressable as one process group.
-        # Without it a timeout can only signal the direct child, and both callers
-        # run a SHELL whose grandchildren outlive it. See `_kill_tree`.
-        start_new_session=True,
-    ) as process:
+    pending_interruptions: list[int] = []
+    previous_spawn_handlers = _install_spawn_interruptions(pending_interruptions)
+    try:
+        process = subprocess.Popen(
+            command,
+            cwd=cwd,
+            # `None` INHERITS the parent's handles -- it does not discard the output.
+            # The distinction matters: `subprocess.DEVNULL` here would silence the one
+            # kind of child this mode exists for.
+            stdout=subprocess.PIPE if capture else None,
+            stderr=subprocess.PIPE if capture else None,
+            text=True,
+            env=env,
+            shell=shell,
+            executable=executable,
+            # Makes the child's whole descendant tree addressable as one process group.
+            # Without it a timeout can only signal the direct child, and both callers
+            # run a SHELL whose grandchildren outlive it. See `_kill_tree`.
+            start_new_session=True,
+        )
+    except BaseException:
+        # `Popen` owns its own partial-construction cleanup. If construction itself
+        # failed, there is no process object we can safely address here.
+        _restore_spawn_interruptions(previous_spawn_handlers)
+        _replay_spawn_interruptions(pending_interruptions)
+        raise
+    with process:
+        spawn_cleanup_done = False
         try:
+            # Restore inside the cleanup envelope: a signal recorded by the
+            # temporary handler can now be replayed only after its tree is dead.
+            _restore_spawn_interruptions(previous_spawn_handlers)
+            if pending_interruptions:
+                _kill_tree(process)
+                _drain(process, timeout=POST_KILL_DRAIN_SECONDS)
+                spawn_cleanup_done = True
+                _replay_spawn_interruptions(pending_interruptions)
             stdout, stderr, timed_out = _await_child(
                 process,
                 events=events,
@@ -314,8 +381,9 @@ def run_monitored_phase(
             # an interrupted publish would leave the quality runner alive and still
             # mutating the worktree while the release lane ran its rollback against
             # that same worktree, and recorded the rollback as clean.
-            _kill_tree(process)
-            _drain(process, timeout=POST_KILL_DRAIN_SECONDS)
+            if not spawn_cleanup_done:
+                _kill_tree(process)
+                _drain(process, timeout=POST_KILL_DRAIN_SECONDS)
             raise
     elapsed = time.monotonic() - started_at
     returncode = TIMEOUT_EXIT_CODE if timed_out else process.returncode

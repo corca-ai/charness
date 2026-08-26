@@ -341,6 +341,84 @@ def test_monitored_phase_kills_the_child_when_the_wait_raises(monkeypatch, tmp_p
         os.kill(seen["pid"], 0)
 
 
+def test_monitored_phase_kills_the_tree_when_sigterm_interrupts_popen(monkeypatch, tmp_path: Path) -> None:
+    """A signal between fork/exec and Popen binding must not orphan the tree."""
+    if not hasattr(os, "killpg"):
+        pytest.skip("constructor interruption tree proof requires process groups")
+
+    marker = tmp_path / "tree-pids.txt"
+    child_code = (
+        "import os, pathlib, subprocess, sys, time\n"
+        f"grandchild = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(30)'])\n"
+        f"pathlib.Path({str(marker)!r}).write_text(f'{{os.getpid()}} {{grandchild.pid}}')\n"
+        "time.sleep(30)\n"
+    )
+    observed: dict[str, object] = {}
+    original_popen = subprocess_guard.subprocess.Popen
+    original_kill_tree = subprocess_guard._kill_tree
+    kill_calls: list[int] = []
+
+    def injected_popen(command, **kwargs):
+        process = original_popen(command, **kwargs)
+        observed["process"] = process
+        observed["pgid"] = os.getpgid(process.pid)
+        deadline = time.monotonic() + 5
+        while not marker.exists() and time.monotonic() < deadline:
+            time.sleep(0.01)
+        if not marker.exists():
+            raise AssertionError("child did not publish its process-group fixture")
+        observed["pids"] = tuple(int(value) for value in marker.read_text().split())
+        observed["injection"] = "after-real-Popen-before-return"
+        os.kill(os.getpid(), signal.SIGTERM)
+        return process
+
+    def record_kill(process):
+        kill_calls.append(process.pid)
+        original_kill_tree(process)
+
+    def raise_sigterm(_signum, _frame):
+        raise KeyboardInterrupt("SIGTERM injected before Popen binding")
+
+    previous_handler = signal.signal(signal.SIGTERM, raise_sigterm)
+    monkeypatch.setattr(subprocess_guard.subprocess, "Popen", injected_popen)
+    monkeypatch.setattr(subprocess_guard, "_kill_tree", record_kill)
+    process = None
+    try:
+        with pytest.raises(KeyboardInterrupt, match="before Popen binding"):
+            run_monitored_phase(
+                [sys.executable, "-c", child_code],
+                cwd=tmp_path,
+                phase="popen-constructor-interrupted",
+                timeout_seconds=30,
+            )
+        process = observed["process"]
+    finally:
+        signal.signal(signal.SIGTERM, previous_handler)
+        process = observed.get("process", process)
+        if process is not None and process.poll() is None:
+            original_kill_tree(process)
+            process.communicate(timeout=2)
+
+    assert observed["injection"] == "after-real-Popen-before-return"
+    assert len(kill_calls) == 1
+    assert process.returncode is not None
+    deadline = time.monotonic() + 2
+    while time.monotonic() < deadline:
+        try:
+            os.killpg(observed["pgid"], 0)
+        except ProcessLookupError:
+            break
+        time.sleep(0.05)
+    else:
+        pytest.fail(f"process group {observed['pgid']} still exists after cleanup")
+    for pid in observed["pids"]:
+        try:
+            os.kill(pid, 0)
+        except ProcessLookupError:
+            continue
+        pytest.fail(f"process {pid} still exists after cleanup")
+
+
 def test_monitored_phase_keeps_partial_output_across_a_timeout(tmp_path: Path) -> None:
     """`whatever output was collected` is a docstring promise; pin it."""
     outcome = run_monitored_phase(
