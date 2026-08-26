@@ -14,6 +14,7 @@ from scripts.setup_critique_adapter_inspection import (
     _detect_critique_adapter_normalization,
 )
 from scripts.setup_markdown_section_lib import extract_section
+from scripts.setup_operating_surface_lib import detect_operating_surface_ownership
 from scripts.setup_skill_routing_lib import (
     COMPACT_SKILL_ROUTING_CALL_RE,
     COMPACT_SKILL_ROUTING_NEGATED_CALL_RE,
@@ -46,7 +47,6 @@ FINDING_RECOMMENDATION_PRIORITIES = {
     "commit_discipline_drift": "review_required",
 }
 RECOMMENDATION_FINDING_TYPES = set(FINDING_RECOMMENDATION_PRIORITIES)
-
 
 def _file_state(path: Path) -> dict[str, object]:
     if not path.exists() and not path.is_symlink():
@@ -413,6 +413,7 @@ def detect_agent_docs(
         detect_worktree_adapter_normalization(repo_root)
     )
     setup_adapter, setup_adapter_recommendations = detect_setup_adapter_normalization(repo_root)
+    ownership = detect_operating_surface_ownership(repo_root, agents_text=agents_text)
     normalization_findings = [
         *retro_findings,
         *fresh_eye_findings,
@@ -443,5 +444,6 @@ def detect_agent_docs(
             "skill_routing": skill_routing,
             "worktree_adapter": worktree_adapter,
             "setup_adapter": setup_adapter,
+            "ownership": ownership,
         },
     }

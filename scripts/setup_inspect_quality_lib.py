@@ -251,6 +251,9 @@ def quality_setup_snapshot(repo_root: Path) -> dict[str, object]:
     """Expose quality's bootstrap state without creating a second contract."""
 
     tooling = _detect_quality_tooling(repo_root)
+    from scripts.setup_operating_surface_lib import detect_operating_surface_ownership
+
+    ownership = detect_operating_surface_ownership(repo_root)
     plan_commands = {
         "dry_run": "python3 $SKILL_DIR/../quality/scripts/bootstrap_adapter.py --repo-root . --dry-run",
         "apply_after_user_approval": "python3 $SKILL_DIR/../quality/scripts/bootstrap_adapter.py --repo-root . --migrate",
@@ -274,10 +277,11 @@ def quality_setup_snapshot(repo_root: Path) -> dict[str, object]:
             "deferred_setup": deferred_setup,
             "plan_commands": plan_commands,
             "tooling": tooling,
+            "operating_surface_ownership": ownership,
             "non_claims": [
                 "setup does not claim that a quality gate is green; quality owns execution and verdicts",
                 "tool installation and hook registration remain unperformed until the user approves the plan",
             ],
         }
     except Exception as exc:
-        return {"owner_skill": "quality", "status": "unavailable", "adapter": {"path": ".agents/quality-adapter.yaml", "found": False, "valid": False}, "tooling": tooling, "plan_commands": plan_commands, "non_claims": [f"quality bootstrap state could not be read: {exc}"]}
+        return {"owner_skill": "quality", "status": "unavailable", "adapter": {"path": ".agents/quality-adapter.yaml", "found": False, "valid": False}, "tooling": tooling, "operating_surface_ownership": ownership, "plan_commands": plan_commands, "non_claims": [f"quality bootstrap state could not be read: {exc}"]}
