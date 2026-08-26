@@ -63,12 +63,22 @@ this slice gate because its repo-wide fixture reports an unrelated unbound
 packet and treats the new debug receipt as unmatched while the worktree is
 dirty.
 
+The first clean-target changed-line run then exposed a standalone import
+regression: the issue observer could not load the canonical shape because its
+`runtime_bootstrap` dependency was not on `sys.path`. The same three preflight
+tests passed on base, isolating this to the new loader. The loader now adds the
+repository root before importing the canonical module; the preflight and
+changed-line runs must be repeated after this repair.
+
 ## Root Cause
 
 `Execution mode` was added as a closeout-consumer requirement in the issue
 resolution observer, but the critique shape producers retained an older,
 duplicated four-field tier block. No shared owner forced the scaffold, packet
 renderer, and closeout consumer to agree.
+The standalone consumer loader also lacked the repository-root import path
+needed by the canonical module, so a direct closeout-shape invocation failed
+before it could render the contract.
 
 ## Invariant Proof
 
@@ -79,6 +89,9 @@ renderer, and closeout consumer to agree.
 - Final-Consumer Proof: `issue_resolution_observer._typed_delegation_error`
   remains fail-closed for missing, placeholder, wrong-mode, invalid-host, and
   invalid-delivery evidence.
+- Standalone-Consumer Proof: the issue observer prepares the repository-root
+  import path before loading the canonical shape, preserving direct script
+  execution as well as in-process imports.
 - Interface-Shape Sibling Scan: source/plugin critique and issue copies are
   compared after export; packet JSON and Markdown carry the same mode.
 - Non-Claims: this proves local shape and typed-carrier refusal, not a live

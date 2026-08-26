@@ -5,6 +5,7 @@ from __future__ import annotations
 import importlib.util
 import re
 import runpy
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -16,6 +17,8 @@ def _load_critique_shape():
         candidate = ancestor / "scripts" / "critique_reviewer_evidence.py"
         if not candidate.is_file():
             continue
+        if str(ancestor) not in sys.path:
+            sys.path.insert(0, str(ancestor))
         spec = importlib.util.spec_from_file_location("charness_critique_shape", candidate)
         if spec is not None and spec.loader is not None:
             module = importlib.util.module_from_spec(spec)
