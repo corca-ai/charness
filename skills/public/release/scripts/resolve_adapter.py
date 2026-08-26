@@ -40,6 +40,7 @@ LIST_FIELDS = (
     "cli_skill_surface_change_globs", "fresh_checkout_probes", "required_release_surfaces",
     "unpublished_release_surfaces",
 )
+SPECIALIZED_RELEASE_LANE_FIELDS = ("id", "workflow", "tag_pattern", "command")
 #: Boolean adapter fields, each with its default in `infer_repo_defaults`.
 #:
 #: `require_derived_release_claims` defaults to TRUE, and the direction is the whole
@@ -220,12 +221,53 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         # ship; their absence then reads as intent instead of as an unexplained pass that
         # nothing corroborates. Empty by default, and absence alone is still never drift.
         "unpublished_release_surfaces": [],
+        "specialized_release_lanes": [],
         # Notes supplied to publish must carry a derived claim block that agrees
         # with the tree. See BOOL_FIELDS for why the default is true rather than
         # an opt-in.
         "require_derived_release_claims": True,
         "release_backend": default_release_backend(),
     }
+
+
+def _specialized_release_lanes(value: Any, errors: list[str]) -> list[dict[str, str]]:
+    """Read the optional, repo-declared release route without executing it.
+
+    A specialized lane is an explicit escape from the generic release adapter. Keeping
+    the declaration structured makes the planner's route exact and keeps a typo from
+    becoming an inert adapter key. The command is read-only to this resolver; the release
+    planner only emits it for an operator to inspect or run through that repo's lane.
+    """
+    if value is None:
+        return []
+    if not isinstance(value, list):
+        errors.append("specialized_release_lanes must be a list of mappings")
+        return []
+    lanes: list[dict[str, str]] = []
+    allowed = set(SPECIALIZED_RELEASE_LANE_FIELDS)
+    seen: set[str] = set()
+    for index, raw_lane in enumerate(value):
+        label = f"specialized_release_lanes[{index}]"
+        if not isinstance(raw_lane, dict):
+            errors.append(f"{label} must be a mapping")
+            continue
+        for key in sorted(set(raw_lane) - allowed):
+            errors.append(f"{label}.{key} is not a recognized key")
+        lane: dict[str, str] = {}
+        for field in SPECIALIZED_RELEASE_LANE_FIELDS:
+            field_value = raw_lane.get(field)
+            if not isinstance(field_value, str) or not field_value.strip():
+                errors.append(f"{label}.{field} must be a non-empty string")
+                continue
+            lane[field] = field_value
+        lane_id = lane.get("id")
+        if lane_id is not None:
+            if lane_id in seen:
+                errors.append(f"{label}.id duplicates specialized release lane {lane_id!r}")
+            seen.add(lane_id)
+        if len(lane) == len(SPECIALIZED_RELEASE_LANE_FIELDS):
+            lanes.append(lane)
+    return lanes
 
 
 def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[str, Any], list[str], list[str]]:
@@ -249,6 +291,10 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
         flag = optional_bool(data.get(field), field, errors)
         if flag is not None:
             validated[field] = flag
+
+    specialized_lanes = _specialized_release_lanes(data.get("specialized_release_lanes"), errors)
+    if not errors or specialized_lanes:
+        validated["specialized_release_lanes"] = specialized_lanes
 
     if data.get("repo") == "CHANGE_ME":
         warnings.append("repo is still set to CHANGE_ME")

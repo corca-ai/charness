@@ -47,6 +47,7 @@ Use `<repo-root>/.agents/release-adapter.yaml`.
 - `unpublished_release_surfaces`
 - `require_derived_release_claims`
 - `release_backend`
+- `specialized_release_lanes`
 
 ## Executed fields
 
@@ -93,6 +94,13 @@ both fields to commands YOUR repo can run.
   `review unavailable`, `review gate unavailable`, and `executor_variants`
 - `review_waiver_phrases`: `review waiver:`, `explicit review waiver:`, and
   `requested review waiver:`
+- `specialized_release_lanes`: empty list. An optional list of mappings with
+  `id`, `workflow`, `tag_pattern`, and `command` strings. A non-empty list is an
+  explicit declaration that this repository's generic release route does not
+  apply; the release planner reports the lane (or asks the operator to choose
+  when several are declared) and does not execute its command. This is local
+  declaration evidence only: hosted workflow state, tag triggers, and release
+  approval remain outside this planner's claim.
 - `product_surfaces`: empty list
 - `cli_skill_surface_*`: empty lists
 - `fresh_checkout_probes`: empty list

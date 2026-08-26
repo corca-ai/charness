@@ -116,6 +116,49 @@ def test_release_run_planner_reports_inspect_packet_without_mutation(tmp_path: P
     assert not (repo / ".quality-ran").exists()
 
 
+def test_release_run_planner_routes_declared_specialized_lane_without_mutation(tmp_path: Path) -> None:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    workflow = repo / ".github" / "workflows" / "demo-release.yml"
+    workflow.parent.mkdir(parents=True)
+    workflow.write_text("name: demo release\n", encoding="utf-8")
+    adapter = repo / ".agents" / "release-adapter.yaml"
+    adapter.write_text(
+        adapter.read_text(encoding="utf-8")
+        + "\nspecialized_release_lanes:\n"
+        + "- id: demo-release\n"
+        + "  workflow: .github/workflows/demo-release.yml\n"
+        + "  tag_pattern: demo-v*\n"
+        + "  command: demo release --plan\n",
+        encoding="utf-8",
+    )
+    manifest = repo / "packaging" / "demo.json"
+    before_manifest = manifest.read_bytes()
+    env = _release_env(tmp_path, bin_dir)
+
+    result = _run_plan(repo, env)
+
+    assert result.returncode == 0, result.stderr
+    payload = yaml.safe_load(result.stdout)
+    assert payload["next_action"] == {
+        "kind": "route_specialized_release_lane",
+        "reason": (
+            "A repo-declared specialized release lane supersedes generic planning; inspect or "
+            "run the declared lane command. This planner performs no release mutation."
+        ),
+        "lane": {
+            "id": "demo-release",
+            "workflow": ".github/workflows/demo-release.yml",
+            "tag_pattern": "demo-v*",
+            "command": "demo release --plan",
+        },
+        "release_mutation": "not-performed",
+    }
+    assert payload["publish_packets"] == []
+    assert "references/adapter-contract.md" in {item["path"] for item in payload["required_reads"]}
+    assert manifest.read_bytes() == before_manifest
+    assert not (repo / ".quality-ran").exists()
+
+
 def test_release_run_planner_uses_release_delta_for_real_host_evidence(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     _git(repo, "tag", "v0.0.0")

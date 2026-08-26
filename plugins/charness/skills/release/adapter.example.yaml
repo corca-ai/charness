@@ -32,6 +32,9 @@ required_release_surfaces: []
 # does refuse a publish -- nothing corroborates reading that absence as intended.
 # Same known names.
 unpublished_release_surfaces: []
+# Optional repository-owned routes for releases that do not use the generic adapter
+# lane. The planner only reports these values; it never executes `command`.
+specialized_release_lanes: []
 review_unavailable_patterns:
 - review unavailable
 - requested review unavailable

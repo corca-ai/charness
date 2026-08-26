@@ -143,7 +143,7 @@ def resume_claims_packets(prepared: dict[str, Any] | None) -> list[dict[str, obj
     return [packet("publish-resume-dry-run", execute=False), packet("publish-resume-execute", execute=True)]
 
 
-def action(kind: str, reason: str) -> dict[str, str]:
+def action(kind: str, reason: str) -> dict[str, Any]:
     return _ENVELOPE.next_action(kind, reason=reason)
 
 
@@ -154,12 +154,42 @@ def first_matching_action(checks: list[tuple[bool, str, str]]) -> dict[str, str]
     return None
 
 
+def specialized_release_lane_action(adapter: dict[str, Any]) -> dict[str, Any] | None:
+    """Route an explicit, unexecuted repo-owned release lane."""
+    if not adapter.get("valid"):
+        return None
+    data = adapter.get("data")
+    lanes = data.get("specialized_release_lanes") if isinstance(data, dict) else None
+    if not isinstance(lanes, list) or not lanes:
+        return None
+    reason = (
+        "A repo-declared specialized release lane supersedes generic planning; inspect or "
+        "run the declared lane command. This planner performs no release mutation."
+    )
+    one_lane = len(lanes) == 1
+    details = {"lane": lanes[0]} if one_lane else {"lanes": lanes}
+    if not one_lane:
+        reason += f" {len(lanes)} lanes are declared, so the planner will not choose one silently."
+    return _ENVELOPE.next_action(
+        "route_specialized_release_lane" if one_lane else "select_specialized_release_lane",
+        reason=reason,
+        release_mutation="not-performed",
+        **details,
+    )
+
+
 def required_reads(args: Any, adapter: dict[str, Any]) -> list[dict[str, str]]:
     reads = [
         read_packet("references/index.md", "Manual progressive-disclosure map for release references."),
         read_packet("references/version-policy.md", "Use when choosing or checking a target bump."),
     ]
-    if not adapter.get("found") or not adapter.get("valid") or adapter.get("warnings"):
+    data = adapter.get("data") if isinstance(adapter.get("data"), dict) else {}
+    if (
+        not adapter.get("found")
+        or not adapter.get("valid")
+        or adapter.get("warnings")
+        or data.get("specialized_release_lanes")
+    ):
         reads.append(read_packet("references/adapter-contract.md", "Adapter is missing, invalid, or warning-bearing."))
 
     critique_reason = (
@@ -175,7 +205,6 @@ def required_reads(args: Any, adapter: dict[str, Any]) -> list[dict[str, str]]:
         )
     )
 
-    data = adapter.get("data") if isinstance(adapter.get("data"), dict) else {}
     if data.get("post_publish_install_refresh"):
         reads.append(
             read_packet(
@@ -314,7 +343,9 @@ def next_action(
     target_version: str | None,
     update_blocker: str | None,
     prepared_claims: dict[str, Any] | None = None,
-) -> dict[str, str]:
+) -> dict[str, Any]:
+    if specialized_action := specialized_release_lane_action(adapter):
+        return specialized_action
     if adapter_action := first_matching_action(
         [
             (
