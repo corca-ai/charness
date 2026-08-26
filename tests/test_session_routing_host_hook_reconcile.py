@@ -87,6 +87,200 @@ def test_session_routing_claude_install_reports_retired_state_cleanup(fake_repo:
     assert entries[0]["hooks"][0]["command"] == routing._command(fake_repo, "claude")
 
 
+def test_session_routing_installs_codex_compact_matcher_but_keeps_claude_matcher(
+    fake_repo: Path, fake_home: Path
+) -> None:
+    routing.install_session_routing_claude_hook(fake_repo, home=fake_home)
+    routing.install_session_routing_codex_hook(fake_repo, home=fake_home)
+
+    claude = json.loads(
+        lib.default_claude_settings_path(fake_home).read_text(encoding="utf-8")
+    )
+    codex = lib.default_codex_config_toml_path(fake_home).read_text(encoding="utf-8")
+    assert claude["hooks"]["SessionStart"][0]["matcher"] == "startup|resume|clear"
+    assert 'matcher = "startup|resume|clear|compact"' in codex
+    status = routing.session_routing_status(
+        fake_repo,
+        adapter={"session_routing": {"claude": "enabled", "codex": "enabled"}},
+        home=fake_home,
+    )
+    assert status["in_sync"] is True
+
+
+def test_session_routing_codex_json_migration_removes_current_toml_duplicate(
+    fake_repo: Path, fake_home: Path
+) -> None:
+    config_toml = lib.default_codex_config_toml_path(fake_home)
+    config_toml.parent.mkdir(parents=True)
+    command = routing._command(fake_repo, "codex")
+    config_toml.write_text(
+        toml.codex_toml_block(command, routing.SESSION_ROUTING_MARKER, matcher="startup|resume|clear"),
+        encoding="utf-8",
+    )
+    hooks_json = lib.default_codex_hooks_json_path(fake_home)
+    hooks_json.write_text(
+        json.dumps({"hooks": {"PreToolUse": [{"matcher": "", "hooks": []}]}}),
+        encoding="utf-8",
+    )
+
+    result = routing.install_session_routing_codex_hook(fake_repo, home=fake_home)
+
+    assert result["kind"] == "codex-json"
+    assert result["retired_state_cleanup"]
+    assert toml.find_charness_toml_block(
+        config_toml.read_text(encoding="utf-8"), command, routing.SESSION_ROUTING_MARKER
+    ) is None
+    data = json.loads(hooks_json.read_text(encoding="utf-8"))
+    assert data["hooks"]["SessionStart"][0]["matcher"] == routing.CODEX_SESSION_ROUTING_MATCHER
+    status = routing.session_routing_status(
+        fake_repo, adapter={"session_routing": {"codex": "enabled"}}, home=fake_home
+    )
+    assert status["in_sync"] is True
+
+
+def test_session_routing_codex_json_migration_updates_old_current_matcher(
+    fake_repo: Path, fake_home: Path
+) -> None:
+    hooks_json = lib.default_codex_hooks_json_path(fake_home)
+    hooks_json.parent.mkdir(parents=True)
+    command = routing._command(fake_repo, "codex")
+    hooks_json.write_text(
+        json.dumps(
+            {
+                "hooks": {
+                    "SessionStart": [
+                        {
+                            "matcher": "startup|resume|clear",
+                            "hooks": [{"type": "command", "command": command}],
+                        }
+                    ]
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = routing.install_session_routing_codex_hook(fake_repo, home=fake_home)
+
+    assert result["kind"] == "codex-json"
+    data = json.loads(hooks_json.read_text(encoding="utf-8"))
+    entries = data["hooks"]["SessionStart"]
+    assert len(entries) == 1
+    assert entries[0]["matcher"] == "startup|resume|clear|compact"
+    assert entries[0]["hooks"] == [{"type": "command", "command": command}]
+
+
+def test_session_routing_status_and_uninstall_inspect_both_codex_representations(
+    fake_repo: Path, fake_home: Path
+) -> None:
+    config_toml = lib.default_codex_config_toml_path(fake_home)
+    config_toml.parent.mkdir(parents=True)
+    hooks_json = lib.default_codex_hooks_json_path(fake_home)
+    command = routing._command(fake_repo, "codex")
+    hooks_json.write_text(
+        json.dumps(
+            {
+                "hooks": {
+                    "SessionStart": [
+                        {
+                            "matcher": routing.CODEX_SESSION_ROUTING_MATCHER,
+                            "hooks": [{"type": "command", "command": command}],
+                        }
+                    ]
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    config_toml.write_text(
+        toml.codex_toml_block(command, routing.SESSION_ROUTING_MARKER, matcher=routing.CODEX_SESSION_ROUTING_MATCHER),
+        encoding="utf-8",
+    )
+    lib.write_state(
+        fake_repo,
+        {
+            "schema_version": lib.STATE_SCHEMA_VERSION,
+            routing._state_key("codex"): {
+                "settings_path": str(hooks_json),
+                "kind": "codex-json",
+                "command": command,
+            },
+        },
+    )
+
+    status = routing.session_routing_status(
+        fake_repo, adapter={"session_routing": {"codex": "enabled"}}, home=fake_home
+    )
+    assert status["in_sync"] is False
+    assert status["hosts"]["codex"]["actual"]["duplicate_toml_present"] is True
+
+    result = routing.uninstall_session_routing_codex_hook(fake_repo, home=fake_home)
+
+    assert result["action"] == "removed"
+    assert toml.find_charness_toml_block(
+        config_toml.read_text(encoding="utf-8"), command, routing.SESSION_ROUTING_MARKER
+    ) is None
+    assert "SessionStart" not in json.loads(hooks_json.read_text(encoding="utf-8")).get("hooks", {})
+
+
+def test_session_routing_status_detects_duplicate_json_when_toml_is_selected(
+    fake_repo: Path, fake_home: Path
+) -> None:
+    config_toml = lib.default_codex_config_toml_path(fake_home)
+    config_toml.parent.mkdir(parents=True)
+    hooks_json = lib.default_codex_hooks_json_path(fake_home)
+    command = routing._command(fake_repo, "codex")
+    config_toml.write_text(
+        toml.codex_toml_block(
+            command,
+            routing.SESSION_ROUTING_MARKER,
+            matcher="startup|resume|clear|compact",
+        ),
+        encoding="utf-8",
+    )
+    hooks_json.write_text(
+        json.dumps(
+            {
+                "hooks": {
+                    "SessionStart": [
+                        {
+                            "matcher": "startup|resume|clear",
+                            "hooks": [{"type": "command", "command": command}],
+                        }
+                    ]
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    lib.write_state(
+        fake_repo,
+        {
+            "schema_version": lib.STATE_SCHEMA_VERSION,
+            routing._state_key("codex"): {
+                "settings_path": str(config_toml),
+                "kind": "codex-toml",
+                "command": command,
+            },
+        },
+    )
+
+    status = routing.session_routing_status(
+        fake_repo, adapter={"session_routing": {"codex": "enabled"}}, home=fake_home
+    )
+
+    assert status["in_sync"] is False
+    assert status["hosts"]["codex"]["actual"]["duplicate_json_present"] is True
+
+    result = routing.uninstall_session_routing_codex_hook(fake_repo, home=fake_home)
+
+    assert result["action"] == "removed"
+    assert toml.find_charness_toml_block(
+        config_toml.read_text(encoding="utf-8"), command, routing.SESSION_ROUTING_MARKER
+    ) is None
+    assert "SessionStart" not in json.loads(hooks_json.read_text(encoding="utf-8")).get("hooks", {})
+
+
 def test_session_routing_claude_uninstall_reports_retired_state_cleanup(fake_repo: Path, fake_home: Path) -> None:
     settings_path = lib.default_claude_settings_path(fake_home)
     settings_path.parent.mkdir(parents=True)
@@ -147,7 +341,7 @@ def test_session_routing_codex_reconcile_removes_retired_duplicate_block(fake_re
     assert text.count("# charness:session-routing") == 1
     assert text.count("[[hooks.SessionStart]]") == 1
     assert text.count("session_start_routing.py") == 1
-    assert 'matcher = "startup|resume|clear"' in text
+    assert f'matcher = "{routing.CODEX_SESSION_ROUTING_MATCHER}"' in text
 
 
 def test_session_routing_codex_reconcile_replaces_retired_only_block(fake_repo: Path, fake_home: Path) -> None:
@@ -176,7 +370,7 @@ def test_session_routing_codex_reconcile_replaces_retired_only_block(fake_repo: 
     assert "find-skills session-start routing trigger (#240)" not in text
     assert text.count("# charness:session-routing") == 1
     assert text.count("[[hooks.SessionStart]]") == 1
-    assert 'matcher = "startup|resume|clear"' in text
+    assert f'matcher = "{routing.CODEX_SESSION_ROUTING_MATCHER}"' in text
 
 
 def test_session_routing_codex_update_preserves_following_foreign_sessionstart(fake_repo: Path, fake_home: Path) -> None:
@@ -208,7 +402,7 @@ def test_session_routing_codex_update_preserves_following_foreign_sessionstart(f
     assert text.count("[[hooks.SessionStart]]") == 2
     assert text.count("session_start_routing.py") == 1
     assert 'command = "python3 /opt/foreign/session_start.py"' in text
-    assert 'matcher = "startup|resume|clear"' in text
+    assert f'matcher = "{routing.CODEX_SESSION_ROUTING_MATCHER}"' in text
 
 
 def test_session_routing_codex_disabled_removes_retired_only_block(fake_repo: Path, fake_home: Path) -> None:
@@ -279,7 +473,7 @@ def test_session_routing_codex_json_install_removes_retired_toml_owned_blocks(fa
     assert data["hooks"]["PreToolUse"][0]["hooks"][0]["command"] == "echo bash"
     session_start = data["hooks"]["SessionStart"]
     assert len(session_start) == 1
-    assert session_start[0]["matcher"] == "startup|resume|clear"
+    assert session_start[0]["matcher"] == routing.CODEX_SESSION_ROUTING_MATCHER
 
 
 def test_codex_toml_matching_existing_command_returns_none_for_foreign_command(fake_repo: Path) -> None:

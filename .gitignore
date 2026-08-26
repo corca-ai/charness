@@ -27,6 +27,9 @@ plugins/*/.charness/
 # File-backed bounded-review runtime is evidence input, not a tracked source surface.
 # Keep every round-specific runtime ignored before boundary snapshots are taken.
 .charness/reviewer-round-*/
+# Critique angle prompts, carriers, receipts, and stderr/stdout are likewise
+# ephemeral worker runtime. Durable findings belong under charness-artifacts/critique/.
+.charness/critique/
 .charness/dup-ratchet*
 .charness/closeout-telemetry/
 .charness/standing-pytest/

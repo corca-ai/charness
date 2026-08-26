@@ -78,11 +78,9 @@ REFRESH_SCRIPT_RELATIVE = (
     Path("skills") / "retro" / "scripts" / "refresh_recent_lessons.py",
 )
 
-# Deliberately larger than `session_start_routing.RESOLVER_TIMEOUT_SECONDS` (3s):
-# the measured preview is ~0.85 s here and grows linearly with retro-artifact
-# count, so a 3 s bound would start reporting `not-established` on a healthy repo
-# with a few thousand retros. Bounded all the same -- an unbounded rebuild inside
-# a session-start hook is a hung host session.
+# The measured preview is ~0.85 s here and grows linearly with retro-artifact
+# count. Bounded all the same -- an unbounded rebuild inside a session-start hook
+# is a hung host session.
 LESSON_PREVIEW_TIMEOUT_SECONDS = 8
 LESSON_ROUTING_TIMEOUT_SECONDS = 8
 

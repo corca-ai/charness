@@ -163,10 +163,6 @@
         "skills/public/debug/scripts/scaffold_debug_artifact.py"
       ]
     },
-    "scripts/session_start_routing.py": {
-      "verdict": "safe-not-consequential",
-      "reason": "L164 parses the stdout of a routing command, not an adapter file."
-    },
     "scripts/setup_critique_adapter_inspection.py": {
       "verdict": "safe-not-consequential",
       "reason": "_detect_critique_adapter_normalization (lines 70-198) calls scripts.critique_adapter_lib.load_adapter and reads only `found`, `path`, and `data.reviewer_tiers` (via `.get('reviewer_tiers', {})`, line 80) without checking `errors`/`valid`, but forwards `valid: bool(adapter.get('valid'))` in its own returned payload (line 186) for the caller to act on."

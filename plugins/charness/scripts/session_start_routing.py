@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """SessionStart hook payload script for contextual session routing hints.
 
-The hook carries context only: pickup follows the handoff, ordinary requests
-start their matching workflow from installed skill metadata and model judgment,
-and hidden support or integration availability uses the exact read-only
+The hook carries context only: ordinary requests start their matching workflow
+from installed skill metadata and model judgment, and hidden support or integration
+availability uses the exact read-only
 `charness catalog list --repo-root <repo> --summary` inventory. A nonzero result
 is reported as a command failure. The hook supplies context for the session.
 
@@ -46,22 +46,10 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import subprocess
 import sys
 from pathlib import Path
 
-try:  # PyYAML is packaged, but this hook must never break a host session.
-    import yaml
-except ImportError:  # pragma: no cover - exercised only on a PyYAML-less interpreter
-    yaml = None
-
-# A repo script without PyYAML falls back to compact JSON (see `scripts/yaml_output.py`),
-# and this hook runs the resolver under its own interpreter, so JSON is exactly the
-# payload shape reachable when the import above failed.
-_YAML_ERRORS: tuple[type[BaseException], ...] = () if yaml is None else (yaml.YAMLError,)
-
 HANDOFF_ADAPTER_RELATIVE = Path(".agents/handoff-adapter.yaml")
-RESOLVER_TIMEOUT_SECONDS = 3
 
 # Fallback-only copy of `session_start_lesson_context.LEDGER_RELATIVE`, pinned
 # equal to it by `tests/test_session_start_routing.py`. It exists for exactly one
@@ -71,6 +59,11 @@ RESOLVER_TIMEOUT_SECONDS = 3
 # its lesson loop is broken rather than silently lose it. A hard import would
 # instead crash the hook in every session on the machine, opted in or not.
 LESSON_LEDGER_RELATIVE = Path("charness-artifacts/retro/lesson-ledger.json")
+# Codex source code gives compaction a distinct SessionStart source. A normal
+# `resume` is not enough evidence that the session just compacted.
+CODEX_RECOVERY_SOURCES = frozenset({"compact"})
+CODEX_SESSION_START_SOURCES = frozenset({"startup", "resume", "clear", "compact"})
+INVALID_PAYLOAD_KEY = "_charness_session_start_payload"
 
 # `except Exception`, not `except ImportError`: the realistic packaging failure is
 # a TRUNCATED or half-written sibling file, which raises `SyntaxError` -- and a
@@ -87,39 +80,60 @@ try:  # sibling module; ships in the same directory in both the authoring and pl
 except Exception:  # noqa: BLE001 - see above; narrowing this re-breaks every session
     _lesson_context = None
 
+# The Codex recovery fragment is optional at import time for the same reason as
+# the lesson sibling: a half-written plugin copy must not take down the common
+# routing directive on Claude or Codex. The fragment itself is host- and
+# source-gated, so an ordinary startup pays no extra text.
+try:
+    import session_start_codex_recovery as _codex_recovery
+except Exception:  # noqa: BLE001 - a hook must survive an incomplete sibling copy
+    _codex_recovery = None
+
 DIRECTIVE = (
-    "charness session-start routing: route the opening message directly. (1) "
-    "Pickup — a bare handoff mention or no explicit task (if the message also "
-    "names a concrete task, the task governs): follow the repo handoff's "
-    "`## Workflow Trigger` (docs/handoff.md; skip this branch if the file "
-    "doesn't exist) and invoke the workflow it names; for the default charness "
-    "handoff that is `charness:handoff`. "
-    "(2) Ordinary requests — use installed skill metadata and your own judgment "
-    "to start the matching workflow directly. (3) Hidden support/integration inventory "
+    "charness session-start routing: route ordinary requests directly using "
+    "installed skill metadata and your own judgment. Hidden support/integration inventory "
     "or an unclear availability question — run the read-only `charness catalog "
     "list --repo-root <repo> --summary` command. Treat its facts only as inventory; "
     "if the command returns nonzero, report the command failure."
 )
 
-
-def _handoff_resolver() -> Path | None:
-    """Find the handoff resolver in either authoring or shipped-plugin layout."""
-    plugin_root = Path(__file__).resolve().parent.parent
-    return next(
-        (
-            candidate
-            for candidate in (
-                plugin_root / "skills" / "public" / "handoff" / "scripts" / "resolve_adapter.py",
-                plugin_root / "skills" / "handoff" / "scripts" / "resolve_adapter.py",
-            )
-            if candidate.is_file()
-        ),
-        None,
-    )
+# These are deliberately prebuilt from constants. The outer hook boundary must
+# still emit usable host context if payload handling, repository discovery, or
+# the normal renderer itself raises; calling that same path again in `except`
+# would recreate the silent-success failure this fallback prevents.
+SAFE_SESSION_START_FALLBACK_CONTEXT = (
+    DIRECTIVE
+    + "\n\ncharness session-start hook (state: not-established, context-only): optional "
+    "session-start context could not be established; use ordinary session-start routing only."
+)
+SAFE_CODEX_SESSION_START_FALLBACK_CONTEXT = (
+    DIRECTIVE
+    + "\n\ncharness Codex SessionStart payload (state: not-established, context-only): "
+    "the session-start hook could not establish optional context. No compact recovery "
+    "context was added; use ordinary session-start routing only."
+)
+SAFE_CLAUDE_SESSION_START_FALLBACK_OUTPUT = json.dumps(
+    {
+        "hookSpecificOutput": {
+            "hookEventName": "SessionStart",
+            "additionalContext": SAFE_SESSION_START_FALLBACK_CONTEXT,
+        }
+    },
+    ensure_ascii=False,
+)
+SAFE_CODEX_SESSION_START_FALLBACK_OUTPUT = json.dumps(
+    {
+        "hookSpecificOutput": {
+            "hookEventName": "SessionStart",
+            "additionalContext": SAFE_CODEX_SESSION_START_FALLBACK_CONTEXT,
+        }
+    },
+    ensure_ascii=False,
+)
 
 
 def _discover_repo_root(cwd: str) -> Path | None:
-    """Find the nearest handoff adapter, otherwise the enclosing Git root."""
+    """Find the nearest Charness adapter, otherwise the enclosing Git root."""
     candidate = Path(cwd).expanduser().resolve()
     if not candidate.is_dir():
         return None
@@ -132,50 +146,6 @@ def _discover_repo_root(cwd: str) -> Path | None:
         if candidate.parent == candidate:
             return git_root
         candidate = candidate.parent
-
-
-def _configured_handoff_state(cwd: object) -> tuple[str, bool] | None:
-    """Return the adapter-owned handoff path and whether it is present.
-
-    SessionStart receives a cwd from both supported hosts.  Resolve the same
-    handoff adapter the workflow uses instead of deciding presence from the
-    author's default path.  This stays deliberately fail-closed: a malformed
-    payload, resolver, or path produces no pickup route rather than a route to
-    an unrelated artifact.
-    """
-    if not isinstance(cwd, str) or not cwd.strip():
-        return None
-    repo_root = _discover_repo_root(cwd)
-    if repo_root is None:
-        return None
-    resolver = _handoff_resolver()
-    if resolver is None:
-        return None
-    try:
-        completed = subprocess.run(
-            [sys.executable, str(resolver), "--repo-root", str(repo_root)],
-            capture_output=True,
-            text=True,
-            timeout=RESOLVER_TIMEOUT_SECONDS,
-            check=False,
-        )
-        if completed.returncode != 0:
-            return None
-        payload = json.loads(completed.stdout) if yaml is None else yaml.safe_load(completed.stdout)
-        artifact_path = payload.get("artifact_path") if isinstance(payload, dict) else None
-        if not isinstance(artifact_path, str) or not artifact_path.strip():
-            return None
-        relative = Path(artifact_path)
-        if relative.is_absolute():
-            return None
-        resolved = (repo_root / relative).resolve()
-        try:
-            resolved.relative_to(repo_root)
-        except ValueError:
-            return None
-        return (relative.as_posix(), resolved.is_file())
-    except (OSError, subprocess.TimeoutExpired, json.JSONDecodeError, ValueError, *_YAML_ERRORS):
-        return None
 
 
 def _lesson_block(cwd: str, payload: dict[str, object] | None) -> str:
@@ -224,51 +194,141 @@ def _debug(message: str) -> None:
         print(f"session_start_routing: {message}", file=sys.stderr)
 
 
-def build_additional_context(
-    cwd: object | None = None, payload: dict[str, object] | None = None
-) -> str:
-    """Return the front-loaded session-start routing directive, plus any lesson block.
+def _codex_recovery_not_established(reason: str) -> str:
+    return (
+        "\n\ncharness Codex compact recovery (state: not-established, context-only): "
+        f"{reason} Do not inspect a different rollout, reconcile state, launch, resume, "
+        "or replay any lane, and do not create a recovery receipt or recovery artifact. "
+        "Report only that compact recovery could not be established."
+    )
 
-    With a host-provided cwd, the pickup branch reflects the configured handoff
-    artifact's actual presence.  The no-argument default preserves the portable
-    context used by direct callers that have no repository state to inspect --
-    including the lesson block, which needs a repo to have an opt-in state at all.
-    """
-    if not isinstance(cwd, str) or not cwd.strip():
-        return DIRECTIVE
-    state = _configured_handoff_state(cwd)
-    if state is None:
-        pickup = (
-            "Pickup — the hook could not resolve the configured handoff artifact; "
-            "report that routing boundary instead of inventing a handoff path. "
-        )
-    else:
-        artifact_path, exists = state
-        if exists:
-            pickup = (
-                "Pickup — a bare handoff mention or no explicit task (if the message also "
-                "names a concrete task, the task governs): follow the repo handoff's "
-                f"`## Workflow Trigger` ({artifact_path}) and invoke the workflow it names; "
-                "for the default charness handoff that is `charness:handoff`. "
-            )
-        else:
-            pickup = (
-                f"Pickup — the configured handoff artifact `{artifact_path}` is absent, "
-                "so skip the handoff branch. "
-            )
-    ordinary = (
-        "(2) Ordinary requests — use installed skill metadata and your own judgment "
-        "to start the matching workflow directly. (3) Hidden support/integration inventory "
-        "or an unclear availability question — run the read-only `charness catalog "
-        "list --repo-root <repo> --summary` command. Treat its facts only as inventory; "
-        "if the command returns nonzero, report the command failure."
+
+def _codex_payload_not_established(reason: str) -> str:
+    return (
+        "\n\ncharness Codex SessionStart payload (state: not-established, context-only): "
+        f"{reason} No compact recovery context was added; use ordinary session-start "
+        "routing only."
+    )
+
+
+def _codex_recovery_ready_context(session_id: str, transcript_path: str) -> str:
+    """Render canonical recovery prose from validated structured fields only."""
+    identity_text = (
+        f"session_id={json.dumps(session_id, ensure_ascii=False)}, "
+        f"transcript_path={json.dumps(transcript_path, ensure_ascii=False)}"
     )
     return (
-        "charness session-start routing: route the opening message directly. (1) "
-        + pickup
-        + ordinary
-        + _lesson_block(cwd, payload)
+        "\n\ncharness Codex compact recovery (state: ready, context-only): after compact, "
+        "use this host-selected rollout identity — "
+        f"`{identity_text}` — and inspect its local Codex session JSONL. "
+        "Identify the current rollout from that path rather than guessing from another "
+        "session. Read only `response_item` records whose `payload.type` is `message` "
+        "and whose role is `user` or `assistant`. Do not read reasoning, tool calls or "
+        "outputs, or file-diff renderings. Use the user-text anchor stated by the current "
+        "recovery request (not by this hook's SessionStart payload); if that exact anchor "
+        "is absent or matches zero or multiple user messages, report compact recovery not "
+        "established and take no recovery action. Do not trust a stale numeric message "
+        "index; when the index and text disagree, trust the text, and read through the "
+        "compaction boundary. Reconcile only the delta against (1) user-confirmed "
+        "principles and still-live promises, (2) the current compact summary's "
+        "completed/in-progress state and active lane/session IDs, and (3) the actual "
+        "worktree. Classify items as `완료 / 진행 중 / 미완료`; do not rerun completed "
+        "work; do not terminate or restart active lanes. Each existing lane/session ID "
+        "has one owner: continue an active lane, resume uncompleted work only when no "
+        "live owner exists, never create a second lane for an existing ID, and treat "
+        "ambiguous ownership as no-action recovery. Do not create any recovery receipt "
+        "or recovery artifact, even for form. Briefly report the recovered incomplete "
+        "delta and lanes to continue, then resume; parallelize independent work and "
+        "keep complex design, verification, and synthesis direct. This hook supplies "
+        "context only; it does not prove that the recovery was read or performed."
     )
+
+
+def _codex_recovery_block(host: str, payload: dict[str, object] | None) -> str:
+    """Append only the Codex compact context, never for Claude or known ordinary sources."""
+    if host != "codex":
+        return ""
+    if type(payload) is not dict:
+        return _codex_payload_not_established(
+            "The Codex SessionStart payload was missing or malformed."
+        )
+    if payload.get(INVALID_PAYLOAD_KEY):
+        return _codex_payload_not_established(
+            "The Codex SessionStart payload was missing or malformed."
+        )
+    source = payload.get("source")
+    if type(source) is not str or source not in CODEX_SESSION_START_SOURCES:
+        return _codex_payload_not_established(
+            "The Codex SessionStart source was missing, non-string, or unknown."
+        )
+    if source not in CODEX_RECOVERY_SOURCES:
+        return ""
+    if _codex_recovery is None:
+        return _codex_recovery_not_established(
+            "The installed Codex recovery helper is missing or could not be imported."
+        )
+    try:
+        host_session_id = payload.get("session_id")
+        host_transcript_path = payload.get("transcript_path")
+        if (
+            type(host_session_id) is not str
+            or not host_session_id.strip()
+            or type(host_transcript_path) is not str
+            or not host_transcript_path.strip()
+        ):
+            return _codex_recovery_not_established(
+                "The host did not provide one unambiguous session_id and transcript_path."
+            )
+        result = _codex_recovery.build_recovery_context(payload)
+        result_type = getattr(_codex_recovery, "RecoveryContext", None)
+        if type(result_type) is not type or type(result) is not result_type:
+            return _codex_recovery_not_established(
+                "The installed Codex recovery helper returned an invalid recovery context."
+            )
+        state = getattr(result, "state", None)
+        if type(state) is str and state == "not-established":
+            reason = getattr(result, "reason", None)
+            if type(reason) is str and reason == "missing-identity":
+                return _codex_recovery_not_established(
+                    "The host did not provide one unambiguous session_id and transcript_path."
+                )
+            return _codex_recovery_not_established(
+                "The installed Codex recovery helper reported that recovery was not established."
+            )
+        session_id = getattr(result, "session_id", None)
+        transcript_path = getattr(result, "transcript_path", None)
+        if (
+            type(state) is str
+            and state == "ready"
+            and type(session_id) is str
+            and session_id.strip()
+            and type(transcript_path) is str
+            and transcript_path.strip()
+            and type(host_session_id) is str
+            and type(host_transcript_path) is str
+            and session_id == host_session_id
+            and transcript_path == host_transcript_path
+        ):
+            return _codex_recovery_ready_context(host_session_id, host_transcript_path)
+        return _codex_recovery_not_established(
+            "The installed Codex recovery helper returned an invalid ready context."
+        )
+    except Exception as exc:  # pragma: no cover - defensive hook boundary
+        _debug(f"codex recovery validation failed: {exc!r}")
+        return _codex_recovery_not_established(
+            f"The installed Codex recovery helper raised {type(exc).__name__}."
+        )
+
+
+def build_additional_context(
+    cwd: object | None = None,
+    payload: dict[str, object] | None = None,
+    *,
+    host: str = "unknown",
+) -> str:
+    """Return the session-start routing directive, plus lesson and compact context."""
+    lesson = _lesson_block(cwd, payload) if isinstance(cwd, str) and cwd.strip() else ""
+    return DIRECTIVE + lesson + _codex_recovery_block(host, payload)
 
 
 def render_output(host: str, *, directive: str | None = None) -> str:
@@ -278,7 +338,7 @@ def render_output(host: str, *, directive: str | None = None) -> str:
     add it to session context. `unknown` falls back to plain stdout, which both
     hosts also add to context.
     """
-    text = directive if directive is not None else build_additional_context()
+    text = directive if directive is not None else build_additional_context(host=host)
     if host in ("claude", "codex"):
         return json.dumps(
             {
@@ -294,20 +354,29 @@ def render_output(host: str, *, directive: str | None = None) -> str:
     return text
 
 
+def _safe_fallback_output(host: str) -> str:
+    """Return a prebuilt output without entering any normal hook code path."""
+    if host == "claude":
+        return SAFE_CLAUDE_SESSION_START_FALLBACK_OUTPUT
+    if host == "codex":
+        return SAFE_CODEX_SESSION_START_FALLBACK_OUTPUT
+    return SAFE_SESSION_START_FALLBACK_CONTEXT
+
+
 def _read_payload(stream) -> dict[str, object]:
     try:
         raw = (stream.read() or "").strip()
     except OSError as exc:
         _debug(f"stdin read failed: {exc}")
-        return {}
+        return {INVALID_PAYLOAD_KEY: "not-established"}
     if not raw:
-        return {}
+        return {INVALID_PAYLOAD_KEY: "not-established"}
     try:
         payload = json.loads(raw)
     except json.JSONDecodeError as exc:
         _debug(f"stdin JSON decode failed: {exc}")
-        return {}
-    return payload if isinstance(payload, dict) else {}
+        return {INVALID_PAYLOAD_KEY: "not-established"}
+    return payload if isinstance(payload, dict) else {INVALID_PAYLOAD_KEY: "not-established"}
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -319,13 +388,15 @@ def main(argv: list[str] | None = None) -> int:
         help="Host that fired the hook; selects the stdout injection format.",
     )
     args = parser.parse_args(argv)
+    fallback = _safe_fallback_output(args.host)
     try:
         payload = _read_payload(sys.stdin)
         _debug(f"source={payload.get('source')!r} cwd={payload.get('cwd')!r}")
-        directive = build_additional_context(payload.get("cwd"), payload)
+        directive = build_additional_context(payload.get("cwd"), payload, host=args.host)
         sys.stdout.write(render_output(args.host, directive=directive) + "\n")
     except Exception as exc:  # pragma: no cover - never propagate hook errors
         _debug(f"unhandled error: {exc!r}")
+        sys.stdout.write(fallback + "\n")
     return 0
 
 
