@@ -1,1 +1,1 @@
-2026-08-27-issue-697-distinct-mutation-coverage.md
+2026-08-27-issue-698-superseded-floor.md

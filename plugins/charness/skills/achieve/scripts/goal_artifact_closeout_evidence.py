@@ -402,3 +402,66 @@ def check_complete_evidence(repo_root: Path, text: str) -> dict[str, Any]:
     _attach_adapter_policy(report, repo_root)
 
     return report
+
+
+def check_superseded_evidence(repo_root: Path, text: str) -> dict[str, Any]:
+    """Check the smaller evidence floor for a non-complete terminal goal.
+
+    ``superseded`` still needs a bound retro so surfaced improvements cannot
+    disappear, but it must not inherit complete-only host-log, review, or
+    coordination requirements. The shared disposition rungs are reused because
+    they already own the deterministic improvement-preservation floor.
+    """
+    helper = _load_shared_helper()
+    parsed = parse_closeout_evidence(text)
+    evidence = {
+        name: payload["value"]
+        for name, payload in parsed.items()
+        if payload["kind"] == "evidence" and name == "retro_artifact"
+    }
+    skips = {
+        name: payload["value"]
+        for name, payload in parsed.items()
+        if payload["kind"] == "skip" and name == "retro_artifact"
+    }
+    report = helper.check(
+        repo_root=repo_root,
+        required=["retro_artifact"],
+        evidence=evidence,
+        skips=skips,
+        kind="achieve-superseded",
+        residual_tokens=derive_goal_tokens(text),
+    )
+    _apply_evidence_binding(helper, report, text)
+    apply_disposition_rungs(report, text, disposition_gate_applies(text))
+    for entry in report.get("skipped", []):
+        if entry.get("name") == "retro_artifact":
+            report["superseded_non_claim"] = {
+                "reason": entry["reason"],
+                "claim": "retro contents and surfaced improvements were not verified",
+            }
+    report["reason"] = superseded_evidence_reason(report)
+    return report
+
+
+def superseded_evidence_reason(report: dict[str, Any]) -> str:
+    """Render the actionable part of a superseded-evidence refusal."""
+    reasons: list[str] = []
+    if report.get("missing"):
+        reasons.append("missing `Retro:` evidence")
+    if report.get("missing_evidence_files"):
+        reasons.append("the cited retro file is missing or empty")
+    if report.get("invalid_skips"):
+        reasons.append("the `Retro:` skip reason is invalid")
+    if report.get("binding_failures") or report.get("unbound_evidence"):
+        reasons.append("the cited retro is not bound to this goal")
+    if report.get("stub_evidence"):
+        reasons.append("the cited retro is only an identity stub")
+    if report.get("disposition_blank"):
+        reasons.append(
+            "the bound retro lists improvements but no `## Auto-Retro` disposition is recorded"
+        )
+    for key in ("disposition_form", "recurrence_lineage", "structural_followup", "residual_ledger"):
+        if report.get(key):
+            reasons.append(f"the `{key.replace('_', ' ')}` floor is unmet")
+    return "; ".join(reasons) or "the superseded evidence floor is unmet"

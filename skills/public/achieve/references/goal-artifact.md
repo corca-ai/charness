@@ -306,10 +306,12 @@ a filled-looking empty field is the class this contract's other floors already
 learned.
 
 The record is checked by `check_goal_artifact.py` when the status is
-`superseded`, and `upsert_goal.py` refuses the flip without it. The
-complete-evidence floor is deliberately NOT applied: this goal says it did not
-complete, and grading it against closeout evidence would ask the record to prove
-something it states it did not do.
+`superseded`, and `upsert_goal.py` refuses the flip without it. A superseded
+goal also carries a `Retro:` line (or an explicit allowed skip, which is a
+non-claim) and uses the deterministic `## Auto-Retro` disposition floor when
+that bound retro lists improvements. The complete-evidence floor is deliberately
+NOT applied: this goal says it did not complete, so it does not inherit
+complete-only host-log, disposition-review, or coordination requirements.
 
 This record is audit traceability, not activation permission. The public
 `--pursue-ready` report always sets both `pursue_ready` and `activation_ready` to

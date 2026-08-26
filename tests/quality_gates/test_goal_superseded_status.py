@@ -30,6 +30,15 @@ _ACHIEVE = ROOT / "skills" / "public" / "achieve" / "scripts"
 _SOURCE_CHECKER = _ACHIEVE / "check_goal_artifact.py"
 _PLUGIN_CHECKER = ROOT / "plugins" / "charness" / "skills" / "achieve" / "scripts" / "check_goal_artifact.py"
 
+_IMPROVING_RETRO = (
+    "# Session Retro — x\n"
+    "Date: 2026-08-22\n"
+    "Mode: goal\n\n"
+    "## Next Improvements\n\n"
+    "- carry the surfaced improvement into the successor\n"
+)
+_APPLIED_DISPOSITION = "Retro dispositions: applied: carried the improvement into the successor"
+
 
 def _load(name: str):
     spec = importlib.util.spec_from_file_location(name, _ACHIEVE / f"{name}.py")
@@ -173,9 +182,20 @@ def test_upsert_allows_the_flip_once_the_record_is_present(goal_lib, tmp_path: P
     (repo / "charness-artifacts" / "goals" / "2026-09-01-next.md").write_text(
         "# next\n", encoding="utf-8"
     )
+    (repo / "charness-artifacts" / "retro").mkdir(parents=True)
+    (repo / "charness-artifacts" / "retro" / "2026-08-22-demo.md").write_text(
+        _IMPROVING_RETRO, encoding="utf-8"
+    )
     path = goal_lib.goal_path(repo, "2026-08-22", "demo")
     path.write_text(
-        "# Demo\n\nStatus: active\n\nSuperseded by: charness-artifacts/goals/2026-09-01-next.md\n",
+        "# Demo\n\nStatus: active\nCreated: 2026-08-22\n"
+        "Activation: `/goal @demo.md`\n\n"
+        "Superseded by: charness-artifacts/goals/2026-09-01-next.md\n\n"
+        "## Final Verification\n\n"
+        "Retro: charness-artifacts/retro/2026-08-22-demo.md\n\n"
+        "## Auto-Retro\n\n"
+        + _APPLIED_DISPOSITION
+        + "\n",
         encoding="utf-8",
     )
 
@@ -184,6 +204,34 @@ def test_upsert_allows_the_flip_once_the_record_is_present(goal_lib, tmp_path: P
     )
 
     assert "Status: superseded" in path.read_text(encoding="utf-8")
+
+
+def test_upsert_refuses_a_superseded_flip_with_undispositioned_improvement(
+    goal_lib, tmp_path: Path
+) -> None:
+    repo = tmp_path / "repo"
+    (repo / "charness-artifacts" / "goals").mkdir(parents=True)
+    (repo / "charness-artifacts" / "retro").mkdir(parents=True)
+    (repo / "charness-artifacts" / "retro" / "2026-08-22-demo.md").write_text(
+        _IMPROVING_RETRO, encoding="utf-8"
+    )
+    path = goal_lib.goal_path(repo, "2026-08-22", "demo")
+    path.write_text(
+        "# Demo\n\nStatus: active\nCreated: 2026-08-22\n"
+        "Activation: `/goal @demo.md`\n\n"
+        "Superseded by: none — the remainder was intentionally abandoned\n\n"
+        "## Final Verification\n\n"
+        "Retro: charness-artifacts/retro/2026-08-22-demo.md\n\n"
+        "## Auto-Retro\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="Auto-Retro|disposition"):
+        goal_lib.upsert_goal(
+            repo, date="2026-08-22", slug="demo", title="Demo", status="superseded"
+        )
+
+    assert "Status: active" in path.read_text(encoding="utf-8")
 
 
 # --------------------------------------------------------------------------- #
@@ -232,7 +280,14 @@ def test_prose_is_never_treated_as_a_pointer(goal_lib, tmp_path: Path) -> None:
     assert report["ok"] is True
 
 
-def _run_checker(repo: Path, status: str, record: str = "") -> dict:
+def _run_checker(
+    repo: Path,
+    status: str,
+    record: str = "",
+    *,
+    retro_text: str | None = None,
+    auto_retro: str | None = None,
+) -> dict:
     """Drive the REAL validator and return its payload."""
     goals = repo / "charness-artifacts" / "goals"
     goals.mkdir(parents=True, exist_ok=True)
@@ -246,6 +301,18 @@ def _run_checker(repo: Path, status: str, record: str = "") -> dict:
         record,
         "",
     ]
+    if retro_text is not None:
+        retro_path = repo / "charness-artifacts" / "retro" / "2026-08-22-x.md"
+        retro_path.parent.mkdir(parents=True, exist_ok=True)
+        retro_path.write_text(retro_text, encoding="utf-8")
+        body.extend([
+            "## Final Verification",
+            "",
+            "Retro: charness-artifacts/retro/2026-08-22-x.md",
+            "",
+        ])
+    if auto_retro is not None:
+        body.extend(["## Auto-Retro", "", auto_retro, ""])
     (goals / "2026-08-22-demo.md").write_text("\n".join(body), encoding="utf-8")
     result = subprocess.run(
         ["python3", str(_ACHIEVE / "check_goal_artifact.py"),
@@ -255,7 +322,14 @@ def _run_checker(repo: Path, status: str, record: str = "") -> dict:
     return yaml.safe_load(result.stdout)
 
 
-def _readiness_fixture(goal_lib, status: str, record: str = "") -> str:
+def _readiness_fixture(
+    goal_lib,
+    status: str,
+    record: str = "",
+    *,
+    retro_text: str | None = None,
+    auto_retro: str | None = None,
+) -> str:
     lines = [
         "# Achieve Goal: readiness fixture",
         "",
@@ -264,10 +338,14 @@ def _readiness_fixture(goal_lib, status: str, record: str = "") -> str:
         "Activation: `/goal @x.md`",
         "",
     ]
-    for section in goal_lib.REQUIRED_SECTIONS + goal_lib.PORTABILITY_SECTIONS:
-        lines.extend([f"## {section}", f"Written fixture content for {section}.", ""])
     if record:
         lines.extend([record, ""])
+    for section in goal_lib.REQUIRED_SECTIONS + goal_lib.PORTABILITY_SECTIONS:
+        lines.extend([f"## {section}", f"Written fixture content for {section}.", ""])
+        if section == "Final Verification" and retro_text is not None:
+            lines.extend(["Retro: charness-artifacts/retro/2026-08-22-x.md", ""])
+        if section == "Auto-Retro" and auto_retro is not None:
+            lines.extend([auto_retro, ""])
     return "\n".join(lines)
 
 
@@ -280,10 +358,27 @@ def _run_public_checker(checker: Path, repo: Path, goal: Path, *, pursue_ready: 
     return yaml.safe_load(result.stdout)
 
 
-def _write_readiness_fixture(goal_lib, repo: Path, status: str, record: str = "") -> Path:
+def _write_readiness_fixture(
+    goal_lib,
+    repo: Path,
+    status: str,
+    record: str = "",
+    *,
+    retro_text: str | None = None,
+    auto_retro: str | None = None,
+) -> Path:
     goal = repo / "charness-artifacts" / "goals" / "2026-08-22-readiness.md"
     goal.parent.mkdir(parents=True, exist_ok=True)
-    goal.write_text(_readiness_fixture(goal_lib, status, record), encoding="utf-8")
+    if retro_text is not None:
+        retro = repo / "charness-artifacts" / "retro" / "2026-08-22-x.md"
+        retro.parent.mkdir(parents=True, exist_ok=True)
+        retro.write_text(retro_text, encoding="utf-8")
+    goal.write_text(
+        _readiness_fixture(
+            goal_lib, status, record, retro_text=retro_text, auto_retro=auto_retro
+        ),
+        encoding="utf-8",
+    )
     return goal
 
 
@@ -342,12 +437,20 @@ def test_terminal_status_never_allows_readiness(goal_lib, status: str) -> None:
 def test_full_validation_and_pursue_readiness_share_terminal_permission_boundary(
     goal_lib, tmp_path: Path, record: str, record_ok: bool
 ) -> None:
-    goal = _write_readiness_fixture(goal_lib, tmp_path, "superseded", record)
+    goal = _write_readiness_fixture(
+        goal_lib,
+        tmp_path,
+        "superseded",
+        record,
+        retro_text=_IMPROVING_RETRO if record_ok else None,
+        auto_retro=_APPLIED_DISPOSITION if record_ok else None,
+    )
 
     full = _run_public_checker(_SOURCE_CHECKER, tmp_path, goal, pursue_ready=False)
     pursue = _run_public_checker(_SOURCE_CHECKER, tmp_path, goal, pursue_ready=True)
 
     assert full["superseded_record"]["ok"] is record_ok
+    assert full["superseded_evidence"]["ok"] is record_ok
     assert full["ok"] is record_ok
     assert pursue["pursue_ready"] is False
     assert pursue["activation_ready"] is False
@@ -361,6 +464,8 @@ def test_source_and_plugin_cli_payloads_are_consumer_compatible(goal_lib, tmp_pa
         tmp_path,
         "superseded",
         "Superseded by: none — remainder is intentionally abandoned",
+        retro_text=_IMPROVING_RETRO,
+        auto_retro=_APPLIED_DISPOSITION,
     )
 
     source = _run_public_checker(_SOURCE_CHECKER, tmp_path, goal, pursue_ready=True)
@@ -436,9 +541,43 @@ def test_a_superseded_goal_with_a_real_successor_clears_the_floor(tmp_path: Path
     payload = _run_checker(
         tmp_path, "superseded",
         "Superseded by: charness-artifacts/goals/2026-09-01-next.md",
+        retro_text=_IMPROVING_RETRO,
+        auto_retro=_APPLIED_DISPOSITION,
     )
 
     assert payload["superseded_record"]["ok"] is True, payload
+
+
+def test_superseded_checker_refuses_an_improvement_without_disposition(tmp_path: Path) -> None:
+    payload = _run_checker(
+        tmp_path,
+        "superseded",
+        "Superseded by: none — the remainder was intentionally abandoned",
+        retro_text=_IMPROVING_RETRO,
+        auto_retro="",
+    )
+
+    assert payload["superseded_record"]["ok"] is True, payload
+    assert payload["superseded_evidence"]["ok"] is False, payload
+    assert "disposition" in payload["issues"][-1].lower()
+    assert "superseded-evidence floor" in payload["issues"][-1]
+
+
+def test_superseded_evidence_skip_is_an_explicit_non_claim(goal_lib, tmp_path: Path) -> None:
+    text = (
+        "Status: superseded\nCreated: 2026-08-22\n"
+        "Activation: `/goal @x.md`\n\n"
+        "## Final Verification\n\n"
+        "Retro: skipped: host-log-not-exposed: this host does not expose the retro lane\n\n"
+        "## Auto-Retro\n"
+    )
+
+    report = goal_lib.check_superseded_evidence(tmp_path, text)
+
+    assert report["ok"] is True, report
+    assert report["superseded_non_claim"]["claim"] == (
+        "retro contents and surfaced improvements were not verified"
+    )
 
 
 def test_the_write_guard_checks_the_successor_pointer_too(goal_lib, tmp_path: Path) -> None:

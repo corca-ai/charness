@@ -9,6 +9,7 @@ contract here is to separate a concept, never to shave lines.
 
 from __future__ import annotations
 
+import importlib.util
 import re
 from pathlib import Path
 from typing import Any
@@ -99,6 +100,39 @@ def _pointer_path(value: str) -> str | None:
     return match.group(1) if match else None
 
 
+def _load_closeout():
+    spec = importlib.util.spec_from_file_location(
+        "goal_artifact_closeout_evidence",
+        Path(__file__).resolve().with_name("goal_artifact_closeout_evidence.py"),
+    )
+    if spec is None or spec.loader is None:
+        raise ImportError("goal_artifact_closeout_evidence.py not found beside goal_artifact_superseded.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def check_superseded_evidence(repo_root: Path, text: str) -> dict[str, Any]:
+    return _load_closeout().check_superseded_evidence(repo_root, text)
+
+
+def _superseded_evidence_refusal(text: str, repo_root: Path | None) -> str | None:
+    report = check_superseded_evidence(repo_root or Path.cwd(), text)
+    if report["ok"]:
+        return None
+    return "refusing to mark this goal `superseded`: " + report["reason"]
+
+
+def refuse_create_reason(body: str, *, mask_fences, repo_root: Path | None = None) -> str | None:
+    report = check_superseded_record(body, mask_fences=mask_fences, repo_root=repo_root)
+    if not report["ok"]:
+        return "refusing to create this goal `superseded`: " + report["reason"]
+    evidence_refusal = _superseded_evidence_refusal(body, repo_root)
+    if evidence_refusal is None:
+        return None
+    return evidence_refusal.replace("mark this goal", "create this goal", 1)
+
+
 
 
 def refuse_flip_reason(status: str, original: str, *, mask_fences, read_status,
@@ -119,6 +153,6 @@ def refuse_flip_reason(status: str, original: str, *, mask_fences, read_status,
     if status != "superseded" or read_status(original) == "superseded":
         return None
     report = check_superseded_record(original, mask_fences=mask_fences, repo_root=repo_root)
-    if report["ok"]:
-        return None
-    return "refusing to mark this goal `superseded`: " + report["reason"]
+    if not report["ok"]:
+        return "refusing to mark this goal `superseded`: " + report["reason"]
+    return _superseded_evidence_refusal(original, repo_root)

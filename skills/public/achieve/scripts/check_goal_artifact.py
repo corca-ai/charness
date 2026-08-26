@@ -203,6 +203,16 @@ def main() -> int:
         if not superseded_report["ok"]:
             result["ok"] = False
             result["issues"].append("superseded-record floor — " + superseded_report["reason"])
+        superseded_evidence = goal_lib.check_superseded_evidence(
+            args.repo_root.expanduser().resolve(), text
+        )
+        result["superseded_evidence"] = superseded_evidence
+        if not superseded_evidence["ok"]:
+            result["ok"] = False
+            result["issues"].append(
+                "superseded-evidence floor — "
+                + superseded_evidence.get("reason", "the evidence floor is unmet")
+            )
     if result.get("status") == "complete":
         repo_root = args.repo_root.expanduser().resolve()
         evidence_report = goal_lib.check_complete_evidence(repo_root, text)

@@ -245,6 +245,15 @@ flip (`upsert_goal.py`) and post-flip (`check_goal_artifact.py`), so it is
 visible from both directions; a goal already `complete` is diagnosed but never
 re-refused.
 
+The non-complete terminal status `superseded` uses a smaller version of this
+floor. Its existing `Superseded by:` record remains the handoff identity, and
+the artifact must carry `Retro:` evidence (or an allowed skip recorded as an
+explicit non-claim). When a bound retro lists improvements, the deterministic
+`## Auto-Retro` disposition floor still applies. `superseded` does not inherit
+the complete-only host-log, disposition-review, coordination, or other
+After-phase requirements; its checker and writer enforce the same smaller
+boundary before and after the status transition.
+
 **Honest limit.** #253 asked for a "deterministic check". A fully deterministic
 *substantive* check is infeasible — a prose word-list over-fires or passes pure
 narration (proven on the live goal corpus) — so the gate is a deterministic

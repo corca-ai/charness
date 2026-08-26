@@ -41,10 +41,10 @@ _naming = _load_sibling("goal_artifact_naming")
 _superseded = _load_sibling("goal_artifact_superseded")
 _scaffold = _load_sibling("goal_artifact_scaffold")
 _timebox = _load_sibling("goal_artifact_timebox")
+check_complete_evidence, check_superseded_evidence = _closeout.check_complete_evidence, _superseded.check_superseded_evidence
 CLOSEOUT_EVIDENCE_NAMES = _closeout.CLOSEOUT_EVIDENCE_NAMES
 NARRATION_REQUIRED_SECTIONS = _closeout.NARRATION_REQUIRED_SECTIONS
 parse_closeout_evidence = _closeout.parse_closeout_evidence
-check_complete_evidence = _closeout.check_complete_evidence
 derive_goal_tokens = _closeout.derive_goal_tokens
 narration_sections_present = _closeout.narration_sections_present
 discussion_readiness = _discussion.discussion_readiness
@@ -185,10 +185,9 @@ def _create_status_refusal(status: str, body: str, rel: str,
     next terminal status from having to rediscover it.
     """
     if status == "superseded":
-        report = _superseded.check_superseded_record(
-            body, mask_fences=_mask_fences, repo_root=repo_root)
-        if not report["ok"]:
-            raise ValueError("refusing to create this goal `superseded`: " + report["reason"])
+        refusal = _superseded.refuse_create_reason(body, mask_fences=_mask_fences, repo_root=repo_root)
+        if refusal:
+            raise ValueError(refusal)
     if status == "blocked":
         refusal = _blocked_matrix.flip_refusal(body, rel, None)
         if refusal is not None:

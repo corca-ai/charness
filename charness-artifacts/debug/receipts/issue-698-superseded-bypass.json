@@ -1,0 +1,17 @@
+{
+  "schema": "charness.adversarial-evidence.receipt.v1",
+  "finding": "DBG-698-F1",
+  "source": "charness-artifacts/goal-runs/724/bodies/backlog-698.md",
+  "expected": "a superseded goal must not bypass the Auto-Retro disposition floor when its bound retro surfaces improvements",
+  "stimulus": "create a valid goal artifact with a bound retro containing ## Next Improvements, leave Auto-Retro at its seeded unresolved placeholder disposition, add Superseded by: none — an explicit abandonment reason, and run the real check_goal_artifact.py",
+  "disposition": "reproduced",
+  "observed": "the superseded validator returned exit 0 and ok: true while the surfaced improvement remained undisposed; its payload contained only superseded_record and no disposition verdict",
+  "handoff": "charness-artifacts/impl/2026-08-27-issue-698-superseded-floor.md",
+  "next_move": "apply the existing deterministic Auto-Retro disposition floor to superseded transitions without importing complete-only evidence requirements, and require the transition's handoff identity",
+  "command": "PYTHONPYCACHEPREFIX=/tmp/charness-698-debug-pycache-20260827 python3 <diagnostic fixture> && python3 skills/public/achieve/scripts/check_goal_artifact.py --repo-root <fixture> --goal-path <fixture>/charness-artifacts/goals/2026-08-27-superseded-repro.md",
+  "fixture": "charness-artifacts/debug/receipts/issue-698-superseded-bypass.json diagnostic fixture",
+  "final_consumer": "skills/public/achieve/scripts/check_goal_artifact.py",
+  "executed": true,
+  "final_consumer_observed": true,
+  "returncode": 0
+}
