@@ -40,10 +40,16 @@ the separate provider readback and closeout floor are complete.
 ## Verification receipt
 
 - Base: `48a69fd6b1117f403dcec2a0e18994fc32ee3cce`
-- Target: pending implementation commit
-- Proof branch/path: pending clean named proof worktree
-- Focused standing command: `python3 scripts/run_standing_pytest.py --repo-root . --mode read-only --pytest-target tests/test_critique_round_findings.py`
-- Pre-commit and related combined gates: pending
+- Target: `35ca8bc79a82db7cd7adbd24d85b358dae8c4ee1`
+- Proof base: `48a69fd6b1117f403dcec2a0e18994fc32ee3cce`
+- Proof branch: `proof/issue-693-reviewer-provenance-20260827`
+- Proof path: `/tmp/charness-693-proof-20260827`
+- Proof path scope: `tests/test_critique_round_findings.py`; `skills/public/critique/scripts/record_round_findings.py`; `skills/shared/scripts/reviewer_worker_carrier_support.py`; and their checked-in plugin mirrors.
+- Focused standing command: `python3 scripts/run_standing_pytest.py --repo-root . --mode read-only --basetemp /tmp/charness-693-proof-pytest-20260827 --keep-basetemp --pytest-target tests/test_critique_round_findings.py` — 8 passed.
+- Related combined standing command: same runner with `tests/test_critique_round_findings.py`, `tests/quality_gates/test_reviewer_worker_report.py`, and `tests/quality_gates/test_public_skill_yaml_output_contract.py` — 76 passed.
+- Debug artifact validation, ruff, Python length, py_compile, diff check, and source/plugin parity: passed.
+- Pre-commit: all 24 planned commands passed before the implementation commit.
+- Proof worktree pre/post status: clean; caches were kept outside the proof tree.
 
 ## Non-claims
 
