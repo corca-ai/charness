@@ -93,15 +93,32 @@ command proves membership, not trigger execution or budget firing.
 - Pre-commit for the implementation commit completed successfully; source /
   generated-mirror drift checks and documentation link checks passed.
 
-## Boundary and remaining acceptance
+## Accepted ownership boundary and successor non-claims
 
-This is still local deterministic proof. Charness does not parse a consumer's
-npm, Make, workflow, or custom-runner syntax, and this slice does not change
-the scheduler or claim hosted, installed-host, or remote-CI enforcement. The
-optional command is a consumer-owned membership seam; conditional trigger
-execution remains unproven. No issue closure, push, release, tag, or fresh-eye
-review is claimed. The user-authorized implementation path also omits forced
-handoff and micro-slice rituals.
+The Charness-owned portion of this work item is complete: the adapter declares
+runtime-budget intent, the validator reconciles the complete budget label
+universe, and the optional consumer-owned runner command makes membership
+observable without inferring execution.
 
-Issue `#546` remains open because consumer trigger execution and hosted /
-installed enforcement are still outside this local boundary.
+The following remain explicit successor non-claims and are not required for
+this issue's completion:
+
+- scheduler changes or scheduler-side trigger execution;
+- hosted or installed-host enforcement;
+- consumer-repository runner adoption, conditional-label schema, or command
+  implementation;
+- conditional trigger execution or budget firing; and
+- profile-scoped unreachable-label and unbudgeted-command advisories becoming
+  new gates.
+
+The local evidence is deterministic and complete for this boundary: focused
+consumer/adapter/runtime regressions passed, the exact runtime-budget target
+passed, adapter validation passed, and the isolated consumer-universe
+changed-line proof analyzed all mapped changed files with no blockers or
+unmapped files. The implementation and generated mirror were checked for
+parity. This is not a claim about remote CI, provider behavior beyond the
+recorded local adapter seam, or installed consumers.
+
+This accepted boundary is a completed Charness contract with the remaining
+work intentionally handed to a successor issue or goal. No fresh-eye,
+handoff, or micro-slice ritual is part of this closeout path.
