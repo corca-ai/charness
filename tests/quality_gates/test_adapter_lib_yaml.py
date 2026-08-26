@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import importlib.util
+import sys
+from pathlib import Path
 
 import pytest
 
@@ -87,6 +89,89 @@ def test_startup_probe_validator_rejects_invalid_timeout_seconds() -> None:
 
     assert result == []
     assert errors == ["startup_probes[0].timeout_seconds must be a positive number"]
+
+
+def test_runtime_budget_intent_validates_always_conditional_and_external_groups() -> None:
+    errors: list[str] = []
+    result = ADAPTER_VALIDATORS.runtime_budget_intent(
+        {
+            "always": ["pytest"],
+            "conditional": {"dead-code": "QUALITY_DEAD_CODE=1"},
+            "external": {"consumer-gate": "runs in the consumer"},
+        },
+        errors,
+    )
+
+    assert errors == []
+    assert result == {
+        "always": ["pytest"],
+        "conditional": {"dead-code": "QUALITY_DEAD_CODE=1"},
+        "external": {"consumer-gate": "runs in the consumer"},
+    }
+
+
+def test_runtime_budget_intent_rejects_duplicate_and_unknown_groups() -> None:
+    errors: list[str] = []
+    result = ADAPTER_VALIDATORS.runtime_budget_intent(
+        {
+            "always": ["pytest", "pytest"],
+            "conditional": {"pytest": "--release", "other": "trigger"},
+            "unexpected": {},
+        },
+        errors,
+    )
+
+    assert result is not None
+    assert any("unexpected is not a recognized key" in error for error in errors)
+    assert any("declared more than once" in error for error in errors)
+
+
+def test_runtime_budget_intent_helper_handles_none_and_malformed_groups() -> None:
+    from skills.public.quality.scripts import runtime_budget_intent as helper
+
+    assert helper.runtime_budget_intent(None, []) is None
+    top_level_errors: list[str] = []
+    assert helper.runtime_budget_intent("broken", top_level_errors) is None
+    assert top_level_errors == ["runtime_budget_intent must be a mapping"]
+    assert helper.runtime_budget_intent({"conditional": None}, []) == {
+        "always": [],
+        "conditional": {},
+        "external": {},
+    }
+
+    errors: list[str] = []
+    result = helper.runtime_budget_intent(
+        {
+            "always": "pytest",
+            "conditional": ["not-a-mapping"],
+            "external": {"": "trigger", "empty": "", "bad": 1},
+            "unexpected": {},
+        },
+        errors,
+    )
+
+    assert result == {"always": [], "conditional": {}, "external": {}}
+    assert any("always must be a list" in error for error in errors)
+    assert any("conditional must be a mapping" in error for error in errors)
+    assert any("external keys must be non-empty" in error for error in errors)
+    assert any("external.empty must be a non-empty" in error for error in errors)
+    assert any("external.bad must be a non-empty" in error for error in errors)
+    assert any("unexpected is not a recognized" in error for error in errors)
+
+
+def test_adapter_validators_adds_its_sibling_directory_for_standalone_load(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    resolver_dir = str(Path(ADAPTER_VALIDATORS.__file__).resolve().parent)
+    monkeypatch.setattr(sys, "path", [entry for entry in sys.path if entry != resolver_dir])
+    spec = importlib.util.spec_from_file_location(
+        "adapter_validators_sibling_path_under_test",
+        ADAPTER_VALIDATORS.__file__,
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    assert resolver_dir in sys.path
 
 
 def test_adapter_lib_loads_quoted_list_items_with_colons() -> None:

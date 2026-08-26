@@ -300,10 +300,77 @@ def test_gate_does_not_refuse_a_conditional_label_that_never_runs(tmp_path: Path
     gate deliberately passes. Membership is what is decidable without operator
     intent; whether a named condition is still satisfiable is not, and refusing it
     here is exactly what got the previous repair reverted."""
-    adapter = "runtime_budgets:\n  opt-in-gate: 1000\n"
+    adapter = (
+        "runtime_budgets:\n"
+        "  opt-in-gate: 1000\n"
+        "runtime_budget_intent:\n"
+        "  conditional:\n"
+        "    opt-in-gate: \"OPT_IN=1\"\n"
+    )
     repo = _write_repo(tmp_path, adapter=adapter)
     result = _run(GATE, "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
+    payload = _payload(result)
+    assert payload["runtime_budget_intent"]["status"] == "configured"
+    assert payload["conditional_non_claims"] == [
+        {"label": "opt-in-gate", "trigger": "OPT_IN=1", "execution_proven": False}
+    ]
+
+
+def test_gate_refuses_intent_that_does_not_cover_every_budget(tmp_path: Path) -> None:
+    adapter = (
+        "runtime_budgets:\n"
+        "  alpha-gate: 1000\n"
+        "  beta-gate: 1000\n"
+        "runtime_budget_intent:\n"
+        "  always:\n"
+        "    - alpha-gate\n"
+    )
+    repo = _write_repo(tmp_path, adapter=adapter)
+    result = _run(GATE, "--repo-root", str(repo))
+    assert result.returncode == 1
+    payload = _payload(result)
+    assert payload["runtime_budget_intent"]["status"] == "invalid"
+    assert payload["runtime_budget_intent"]["missing_labels"] == ["beta-gate"]
+    assert any(
+        "does not classify budgeted label(s): beta-gate" in error
+        for error in payload["runtime_budget_intent"]["errors"]
+    )
+
+
+def test_gate_rejects_a_non_mapping_runtime_budget_intent(tmp_path: Path) -> None:
+    adapter = "runtime_budgets:\n  alpha-gate: 1000\nruntime_budget_intent: broken\n"
+    repo = _write_repo(tmp_path, adapter=adapter)
+    result = _run(GATE, "--repo-root", str(repo))
+    assert result.returncode == 1
+    payload = _payload(result)
+    assert payload["runtime_budget_intent"]["status"] == "invalid"
+    assert any(
+        "runtime_budget_intent must be a mapping" in error
+        for error in payload["runtime_budget_intent"]["errors"]
+    )
+
+
+def test_gate_rejects_an_intent_label_without_a_budget(tmp_path: Path) -> None:
+    adapter = (
+        "runtime_budgets:\n"
+        "  alpha-gate: 1000\n"
+        "runtime_budget_intent:\n"
+        "  always:\n"
+        "    - alpha-gate\n"
+        "  external:\n"
+        "    ghost-gate: \"consumer-owned\"\n"
+    )
+    repo = _write_repo(tmp_path, adapter=adapter)
+    result = _run(GATE, "--repo-root", str(repo))
+    assert result.returncode == 1
+    payload = _payload(result)
+    assert payload["runtime_budget_intent"]["status"] == "invalid"
+    assert payload["runtime_budget_intent"]["extra_labels"] == ["ghost-gate"]
+    assert any(
+        "classifies label(s) with no budget: ghost-gate" in error
+        for error in payload["runtime_budget_intent"]["errors"]
+    )
 
 
 def test_gate_reads_no_sample_history(tmp_path: Path) -> None:
@@ -365,6 +432,10 @@ def test_this_repo_has_no_orphaned_budget(tmp_path: Path) -> None:
     payload = _payload(result)
     assert payload["armed"] is True
     assert payload["unknown_labels"] == []
+    assert payload["runtime_budget_intent"]["status"] == "configured"
+    assert payload["runtime_budget_intent"]["missing_labels"] == []
+    assert payload["runtime_budget_intent"]["extra_labels"] == []
+    assert len(payload["conditional_non_claims"]) == 9
     # `> 0` would have stayed green through the regression that matters most here:
     # dropping `runtime_budget_profiles` from `budgeted_labels` leaves the ten
     # top-level budgets and hides every profile block, which is the exact
@@ -595,6 +666,8 @@ def test_unreachable_by_selected_profile_names_a_block_this_run_cannot_select(tm
     labels = {entry["label"] for entry in payload["unreachable_by_selected_profile"]}
     assert labels == {"beta-gate"}
     assert payload["unreachable_by_selected_profile_reason"] is None
+    assert payload["advisory"].startswith("WARN:")
+    assert "beta-gate" in payload["advisory"]
 
 
 def test_malformed_block_classifier_covers_every_shape_it_discriminates() -> None:

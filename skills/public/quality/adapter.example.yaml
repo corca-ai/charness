@@ -58,6 +58,18 @@ skill_ergonomics_gate_rules:
 runtime_profile_default: default
 runtime_budgets: {}
 runtime_budget_profiles: {}
+# Optional for adapters without runtime budgets. When budgets are declared, use
+# this compact map to state scheduling intent: `always` is the default run,
+# `conditional` names a runner trigger, and `external` explains why a label is
+# not locally enforceable. The universe check reports conditional execution as
+# unproven; this field is not a substitute for a runtime sample.
+# runtime_budget_intent:
+#   always:
+#     - pytest
+#   conditional:
+#     dead-code-advisory: "QUALITY_DEAD_CODE=1"
+#   external:
+#     consumer-gate: "runs only in the consuming repository"
 # Optional: ingest an existing per-command timing log as a runtime sample source
 # (inert when omitted). See references/adapter-contract.md.
 # command_timing_log:

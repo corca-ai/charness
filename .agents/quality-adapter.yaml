@@ -110,6 +110,46 @@ runtime_budgets:
   check-secrets: 19500
   run-evals: 6500
   specdown: 10500
+runtime_budget_intent:
+  # `always` means the label has no runner-side mode or opt-in guard in the
+  # default quality run. It does not claim that a filtered invocation ran it.
+  always:
+    - charness-version
+    - check-boundary-bypass-ratchet
+    - check-changed-line-mutation-coverage
+    - check-cli-skill-surface
+    - check-documented-command-flags
+    - check-export-safe-imports
+    - check-inventory-declaration-coverage
+    - check-plugin-import-smoke
+    - check-python-runtime-inheritance
+    - check-references-link-inventory
+    - check-secrets
+    - check-seed-fixture-budget
+    - check-shell
+    - check-spec-evidence-durability
+    - doc-duplicates
+    - inventory-ci-local-gate-parity
+    - inventory-sloc
+    - run-evals
+    - specdown
+    - validate-adapters
+    - validate-attention-state-visibility
+    - validate-cautilus-call-provenance
+    - validate-inference-interpretation
+    - validate-inventory-consumption-declaration
+    - validate-packaging-committed
+    - validate-skill-ergonomics
+  conditional:
+    check-coverage: "CHARNESS_QUALITY_MODE=full or coverage_relevant_changes_present"
+    check-markdown: "CHARNESS_QUALITY_LABELS is non-empty and includes check-markdown"
+    dead-code-advisory: "CHARNESS_QUALITY_DEAD_CODE=1 or CHARNESS_QUALITY_LABELS includes dead-code-advisory"
+    pytest: "--release is absent"
+    pytest-release: "--release is present"
+    run-quality-full: "CHARNESS_QUALITY_MODE=full and --release is absent"
+    run-quality-full-release: "CHARNESS_QUALITY_MODE=full and --release is present"
+    run-quality-read-only: "CHARNESS_QUALITY_MODE=read-only and --release is absent"
+    run-quality-read-only-release: "CHARNESS_QUALITY_MODE=read-only and --release is present"
 runtime_budget_profiles:
   local-linux-x86_64-36cpu:
     # 2026-07-26 relevel. `run-quality.sh` dropped the two barriers that separated

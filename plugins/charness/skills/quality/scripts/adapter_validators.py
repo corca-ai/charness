@@ -7,7 +7,8 @@ or None, appending human-readable errors to the shared list.
 from __future__ import annotations
 
 import re
-from pathlib import PurePosixPath, PureWindowsPath
+import sys
+from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Any
 
 from scripts.adapter_lib import (
@@ -16,6 +17,11 @@ from scripts.adapter_lib import (
     optional_string_list,
 )
 from scripts.quality_policy_defaults import validate_skill_ergonomics_gate_rules
+
+_RESOLVER_DIR = Path(__file__).resolve().parent
+if str(_RESOLVER_DIR) not in sys.path:
+    sys.path.insert(0, str(_RESOLVER_DIR))
+from runtime_budget_intent import runtime_budget_intent  # noqa: E402
 
 RUNTIME_PROFILE_ID_RE = re.compile(r"^[A-Za-z0-9_.-]+$")
 DEFAULT_STARTUP_PROBE_TIMEOUT_SECONDS = 20
@@ -74,6 +80,7 @@ def apply_runtime_fields(data: dict[str, Any], validated: dict[str, Any], errors
     for field, validator in (
         ("runtime_budgets", runtime_budgets),
         ("runtime_budget_profiles", runtime_budget_profiles),
+        ("runtime_budget_intent", runtime_budget_intent),
         ("startup_probes", startup_probes),
         ("command_timing_log", command_timing_log),
         ("quality_phases", quality_phases),

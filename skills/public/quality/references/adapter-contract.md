@@ -219,6 +219,29 @@ and a recorded sample says only how long the label took, never how much it was
 competing with. Pooled, the enforcement median stops being a function of the code
 and becomes a function of how the gate happened to be invoked.
 
+`runtime_budget_intent` is the small adapter-owned companion for a non-empty
+budget declaration. It records why a label is expected to be scheduled; it does
+not claim that the trigger occurred or that the label ran. Put unguarded labels
+under `always`, guarded labels under `conditional` with a named trigger, and
+labels that this repo cannot run under `external` with a reason. Every budgeted
+label should appear in exactly one group; the runtime-universe check reconciles
+the groups with the union of `runtime_budgets` and every profile block.
+
+```yaml
+runtime_budget_intent:
+  always:
+    - pytest
+  conditional:
+    dead-code-advisory: "QUALITY_DEAD_CODE=1"
+  external:
+    consumer-gate: "runs only in the consuming repository"
+```
+
+The check emits each conditional entry as an explicit execution non-claim, so a
+green result never means that an opt-in or mode-specific label was observed.
+Omit the field only when the adapter has no runtime budgets, or accept the
+resulting warning while migrating an older consumer adapter.
+
 `<profile>.<regime>` profiles are evidence, not budget bases. No automatic path
 selects one for enforcement — the regime is applied by the recorder only, never by
 profile selection — so a regime profile accumulating samples with no `budgets`

@@ -16,11 +16,11 @@ WHAT THIS GATE DOES NOT DECIDE, and must not be read as deciding. A label the
 runner still names but does not RUN -- queued only under a condition that never
 holds, or moved behind an opt-in nobody sets -- is in the universe and passes
 here. `dead-code-advisory` is the live example: budgeted, spelled in the runner,
-and queued only under `CHARNESS_QUALITY_DEAD_CODE=1`, so its bar can never fail
-and this gate reports it clean. Separating "legitimately conditional" from
-"abandoned behind an opt-in" needs an adapter-declared expectation, because the
-runner does not have that information either; it lives in operator intent. #546
-stays open for that half.
+and queued only under `CHARNESS_QUALITY_DEAD_CODE=1`. `runtime_budget_intent`
+now records the adapter's declared trigger for that class and exposes it as an
+execution non-claim, but it cannot prove that the trigger is satisfiable or that
+the label ran. The consumer-installed skill still needs its own runner-universe
+reader before this source gate can make that claim for consumer repositories.
 
 Why membership rather than the recorded sample window: a previous repair keyed on
 sample history was built, measured defective and REVERTED. It hard-failed a fresh
@@ -57,7 +57,12 @@ from pathlib import Path
 import adapter_lib
 import quality_label_universe
 
-from runtime_bootstrap import load_path_module, repo_root_from_script, skill_script
+from runtime_bootstrap import (
+    import_repo_module,
+    load_path_module,
+    repo_root_from_script,
+    skill_script,
+)
 from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
@@ -65,6 +70,7 @@ REPO_ROOT = repo_root_from_script(__file__)
 ADAPTER_PATH = Path(".agents/quality-adapter.yaml")
 
 _PROFILE_LIB_CACHE = {}
+_ADAPTER_VALIDATORS_CACHE = {}
 
 
 def _runtime_profile_lib():
@@ -75,6 +81,17 @@ def _runtime_profile_lib():
             skill_script(REPO_ROOT, "quality", "runtime_profile_lib.py"),
         )
     return _PROFILE_LIB_CACHE["lib"]
+
+
+def _adapter_validators():
+    """Load the quality adapter field owner once for intent validation."""
+    if "module" not in _ADAPTER_VALIDATORS_CACHE:
+        # Reuse the quality resolver's loaded validator so its sibling schema
+        # modules stay on the same import path in source and exported layouts.
+        _ADAPTER_VALIDATORS_CACHE["module"] = import_repo_module(
+            __file__, "scripts.quality_adapter_lib"
+        ).adapter_validators
+    return _ADAPTER_VALIDATORS_CACHE["module"]
 
 
 def _labels_outside(budgeted: dict[str, list[str]], reference: set[str]) -> list[dict[str, object]]:
@@ -99,6 +116,63 @@ def budgeted_labels(adapter: dict) -> dict[str, list[str]]:
     disagree about a bar.
     """
     return _runtime_profile_lib().budgeted_label_union(adapter)
+
+
+def _runtime_budget_intent(adapter: dict, budgeted: dict[str, list[str]]) -> dict[str, object]:
+    """Reconcile explicit scheduling intent with every declared budget.
+
+    Missing intent stays a migration warning for older consumer adapters. Once an
+    adapter declares the field, an omitted or extra label is a configuration error;
+    otherwise a budget can be added or removed without its scheduling meaning
+    changing with it. The conditional list is deliberately a non-claim: a trigger
+    string names intent, not evidence that the trigger fired.
+    """
+    labels = set(budgeted)
+    empty = {
+        "status": "not-applicable" if not labels else "not-declared",
+        "always": [],
+        "conditional": {},
+        "external": {},
+        "missing_labels": sorted(labels),
+        "extra_labels": [],
+        "errors": [],
+        "conditional_non_claims": [],
+    }
+    if not labels or "runtime_budget_intent" not in adapter or adapter.get("runtime_budget_intent") is None:
+        return empty
+
+    errors: list[str] = []
+    normalized = _adapter_validators().runtime_budget_intent(
+        adapter.get("runtime_budget_intent"), errors
+    )
+    if normalized is None:
+        normalized = {"always": [], "conditional": {}, "external": {}}
+    declared = set(normalized["always"]) | set(normalized["conditional"]) | set(normalized["external"])
+    missing = sorted(labels - declared)
+    extra = sorted(declared - labels)
+    if missing:
+        errors.append(
+            "runtime_budget_intent does not classify budgeted label(s): "
+            + ", ".join(missing)
+        )
+    if extra:
+        errors.append(
+            "runtime_budget_intent classifies label(s) with no budget: " + ", ".join(extra)
+        )
+    conditional = dict(normalized["conditional"])
+    return {
+        "status": "configured" if not errors else "invalid",
+        "always": list(normalized["always"]),
+        "conditional": conditional,
+        "external": dict(normalized["external"]),
+        "missing_labels": missing,
+        "extra_labels": extra,
+        "errors": errors,
+        "conditional_non_claims": [
+            {"label": label, "trigger": trigger, "execution_proven": False}
+            for label, trigger in sorted(conditional.items())
+        ],
+    }
 
 
 _DOMINANCE_GATE_CACHE = {}
@@ -274,6 +348,7 @@ def evaluate(repo_root: Path) -> dict[str, object]:
     adapter = adapter_lib.load_yaml_file(adapter_path)
     adapter_dict = adapter if isinstance(adapter, dict) else {}
     budgeted = budgeted_labels(adapter_dict)
+    intent = _runtime_budget_intent(adapter_dict, budgeted)
     known = set(universe["labels"])
     unknown = _labels_outside(budgeted, known)
     dominance_report, second_direction_status = _dominance_arm(repo_root)
@@ -297,6 +372,8 @@ def evaluate(repo_root: Path) -> dict[str, object]:
         "armed": True,
         "reason": None,
         "unknown_labels": unknown,
+        "runtime_budget_intent": intent,
+        "conditional_non_claims": intent["conditional_non_claims"],
         "unbudgeted_expensive_commands": _findings_to_unbudgeted(dominance_report, set(budgeted)),
         "second_direction_status": second_direction_status,
         "malformed_budget_profile_blocks": lib.malformed_budget_profile_blocks(adapter_dict),
@@ -318,6 +395,8 @@ def evaluate(repo_root: Path) -> dict[str, object]:
 NOT_JUDGED = (
     "whether a named label ever RUNS -- a label queued only under a condition that "
     "never holds is in the universe and passes here (see #546)",
+    "whether a declared conditional trigger occurred -- runtime_budget_intent records "
+    "operator intent, not execution evidence",
     "whether an expensive command NOBODY REGISTERED is budgeted -- the second "
     "direction reads the dominance registry, which is a denylist, so its silence "
     "is not coverage",
@@ -325,6 +404,13 @@ NOT_JUDGED = (
     "asks only whether a budgeted LABEL names it, and a config literal can carry "
     "no label at all, so that seam is structurally always-report",
 )
+
+
+def _append_advisory(payload: dict[str, object], message: str) -> None:
+    """Keep independent attention findings visible in one report."""
+
+    previous = payload.get("advisory")
+    payload["advisory"] = f"{previous}\n{message}" if previous else message
 
 
 def report_payload(report: dict[str, object]) -> dict[str, object]:
@@ -344,6 +430,25 @@ def report_payload(report: dict[str, object]) -> dict[str, object]:
         payload["advisory"] = f"WARN  runtime budget universe: not armed -- {report['reason']}"
         return payload
     payload["did_not_judge"] = list(NOT_JUDGED)
+    intent = report.get("runtime_budget_intent") or {}
+    if intent.get("status") == "not-declared":
+        _append_advisory(payload, (
+            "WARN: runtime budget intent is not declared for the budgeted labels; "
+            "conditional execution remains unproven. Add `runtime_budget_intent` "
+            "to the adapter when migrating it."
+        ))
+    elif intent.get("status") == "invalid":
+        errors = "; ".join(str(error) for error in intent.get("errors", []))
+        _append_advisory(payload, f"WARN: runtime budget intent is invalid: {errors}")
+    unreachable = report.get("unreachable_by_selected_profile") or []
+    if unreachable:
+        labels = ", ".join(str(entry.get("label")) for entry in unreachable)
+        _append_advisory(payload, (
+            f"WARN: runtime budget universe: {len(unreachable)} budgeted label(s) "
+            f"are unreachable by selected profile {report.get('selected_runtime_profile')!r} "
+            f"in this run ({labels}); this is profile-scoped, not a claim that they "
+            "never run under another profile."
+        ))
     unknown = report["unknown_labels"]
     if unknown:
         payload["summary"] = (
@@ -381,13 +486,13 @@ def report_payload(report: dict[str, object]) -> dict[str, object]:
         # implement. Each entry carries its own `basis`; the summary must not
         # collapse the two into one claim.
         no_label = sum(1 for entry in unbudgeted if not entry.get("queue_label"))
-        payload["advisory"] = (
+        _append_advisory(payload, (
             f"WARN: {len(unbudgeted)} registered expensive command(s) are named by no "
             f"budgeted LABEL ({no_label} carry no queue label at all, "
             f"{len(unbudgeted) - no_label} carry a label with no budget entry). This is "
             "not a claim that nothing bounds their runtime; see "
             "`unbudgeted_expensive_commands`, where each entry states its own basis."
-        )
+        ))
     return payload
 
 
@@ -403,7 +508,8 @@ def main() -> int:
     emit_yaml(report_payload(report))
     if not report["armed"]:
         return 0
-    return 1 if report["unknown_labels"] else 0
+    intent = report.get("runtime_budget_intent") or {}
+    return 1 if report["unknown_labels"] or intent.get("status") == "invalid" else 0
 
 
 if __name__ == "__main__":
