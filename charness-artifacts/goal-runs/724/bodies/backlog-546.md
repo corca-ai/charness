@@ -59,3 +59,49 @@ installed-host enforcement is claimed. Conditional trigger execution remains
 unproven, and consumer repositories still need their own runner-universe reader
 and conditional-label schema. Existing profile-scoped unreachable-label and
 unbudgeted-command advisories remain explicit non-claims rather than new gates.
+
+## 2026-08-27 follow-up — runner-neutral consumer universe seam
+
+The consumer boundary now has an adapter-owned, optional
+`runtime_budget_universe.command`. A configured repo-owned command emits one
+runtime label per line; the generic reader reconciles that output with the
+union of every top-level and profile budget block. This keeps consumer runner
+syntax outside Charness while making the boundary observable when a consumer
+chooses to provide it.
+
+An absent command is `not-declared`/non-blocking for compatibility with older
+consumers. A command failure, empty output, duplicate output, or budgeted label
+missing from the emitted universe is an explicit configuration error. Labels
+that are known by the runner but unbudgeted remain context only and do not
+become a new gate. Conditional intent remains `execution_proven: false`; the
+command proves membership, not trigger execution or budget firing.
+
+## Follow-up verification — runner-neutral consumer seam
+
+- Commit `459e3c084bcfd7d49ee6c3acf80c9b10e33e1ee7` — `feat(issue-546):
+  reconcile consumer runtime label universes`; source and generated plugin
+  mirrors are included.
+- Focused consumer/adapter/runtime regressions: `87 passed`.
+- Exact standing target
+  `tests/quality_gates/test_runtime_budget_universe.py`: `35 passed`.
+- Isolated changed-line proof from proof branch
+  `proof/issue-546-consumer-universe-final-3`: `status: clean`,
+  `consumer_returncode: 0`, `blocking: []`,
+  `unmapped_changed_pool_files: []`; all `7` mapped changed source files were
+  analyzed and every changed line was covered. The producer standing pytest
+  also passed inside that receipt.
+- Pre-commit for the implementation commit completed successfully; source /
+  generated-mirror drift checks and documentation link checks passed.
+
+## Boundary and remaining acceptance
+
+This is still local deterministic proof. Charness does not parse a consumer's
+npm, Make, workflow, or custom-runner syntax, and this slice does not change
+the scheduler or claim hosted, installed-host, or remote-CI enforcement. The
+optional command is a consumer-owned membership seam; conditional trigger
+execution remains unproven. No issue closure, push, release, tag, or fresh-eye
+review is claimed. The user-authorized implementation path also omits forced
+handoff and micro-slice rituals.
+
+Issue `#546` remains open because consumer trigger execution and hosted /
+installed enforcement are still outside this local boundary.
