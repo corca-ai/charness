@@ -5145,6 +5145,29 @@ def cmd_worktree_exec(args: argparse.Namespace) -> int:
 
 
 def cmd_task_run(args: argparse.Namespace) -> int:
+    explicit_fields = [name for name in ("path", "branch", "base") if getattr(args, name) is not None]
+    if args.lane is not None:
+        if explicit_fields:
+            raise CharnessError(
+                "--lane cannot be combined with "
+                + ", ".join(f"--{name}" for name in explicit_fields)
+                + "; choose shorthand or the fully explicit --path/--branch/--base form"
+            )
+        if args.task_id is not None:
+            raise CharnessError("--task-id is derived from --lane; omit it in shorthand mode")
+        if args.effort is None:
+            raise CharnessError("shorthand task runs require the orchestrator-selected --effort")
+    elif len(explicit_fields) != 3:
+        missing = [name for name in ("path", "branch", "base") if name not in explicit_fields]
+        raise CharnessError(
+            "explicit task runs require "
+            + ", ".join(f"--{name}" for name in missing)
+            + "; otherwise pass --lane <id>"
+        )
+    if args.prepare and args.skip_prepare:
+        raise CharnessError("--prepare and --skip-prepare cannot be used together")
+    if args.require_change and args.allow_no_change:
+        raise CharnessError("--require-change and --allow-no-change cannot be used together")
     lib = _load_task_run_lib(args)
     prompt_text = args.prompt
     if args.prompt_file is not None:
@@ -5157,13 +5180,18 @@ def cmd_task_run(args: argparse.Namespace) -> int:
         target_path=args.path,
         branch=args.branch,
         base=args.base,
+        lane=args.lane,
         scopes=args.scope,
         prompt=prompt_text or "",
         codex=args.codex,
         codex_args=args.codex_arg,
+        model=args.model,
+        effort=args.effort,
         task_id=args.task_id,
         prepare=args.prepare,
         require_change=args.require_change,
+        skip_prepare=args.skip_prepare,
+        allow_no_change=args.allow_no_change,
         timeout_seconds=args.timeout_seconds,
         dry_run=args.dry_run,
     )
@@ -5464,9 +5492,9 @@ def build_parser() -> argparse.ArgumentParser:
         "run",
         help="Run one independently delegable Codex lane in a clean named worktree and emit a compact receipt.",
         description=(
-            "Run one independently delegable lane: create a named linked worktree from an explicit "
-            "base, run Codex with external runtime paths, and report the scoped candidate. The "
-            "parent worktree must be clean; the parent orchestrator owns parallel fan-out and integration."
+            "Run one independently delegable lane: shorthand derives a named branch, external "
+            "worktree, task id, and HEAD base; the explicit form remains available for diagnostics. "
+            "The parent worktree must be clean; the parent orchestrator owns parallel fan-out and integration."
         ),
     )
     # Keep the parent `task --repo-root ... run` spelling working while also
@@ -5477,9 +5505,10 @@ def build_parser() -> argparse.ArgumentParser:
         default=argparse.SUPPRESS,
         help="Clean parent repo from which the linked worktree is created. Defaults to the current working directory.",
     )
-    task_run_parser.add_argument("--path", required=True, type=Path, help="New linked worktree path outside the parent repo.")
-    task_run_parser.add_argument("--branch", required=True, help="Named local branch for the new worktree.")
-    task_run_parser.add_argument("--base", required=True, help="Commit/ref from which the named worktree is created.")
+    task_run_parser.add_argument("--lane", help="Safe lane id; derives the task id, task/<id> branch, external worktree, and HEAD base.")
+    task_run_parser.add_argument("--path", type=Path, help="New linked worktree path outside the parent repo (explicit form).")
+    task_run_parser.add_argument("--branch", help="Named local branch for the new worktree (explicit form).")
+    task_run_parser.add_argument("--base", help="Commit/ref from which the named worktree is created (explicit form).")
     task_run_parser.add_argument(
         "--scope",
         action="append",
@@ -5490,10 +5519,14 @@ def build_parser() -> argparse.ArgumentParser:
     task_run_prompt.add_argument("--prompt", help="Implementation instructions passed to `codex exec`.")
     task_run_prompt.add_argument("--prompt-file", type=Path, help="Read implementation instructions from this file.")
     task_run_parser.add_argument("--codex", default="codex", help="Codex executable (default: codex).")
+    task_run_parser.add_argument("--model", help="Codex model id; translated to the host's model option.")
+    task_run_parser.add_argument("--effort", help="Orchestrator-selected Codex reasoning effort.")
     task_run_parser.add_argument("--codex-arg", action="append", default=[], help="Extra argument passed before the prompt; repeatable.")
-    task_run_parser.add_argument("--task-id", help="Optional receipt/log identifier; defaults to the branch name.")
-    task_run_parser.add_argument("--prepare", action="store_true", help="Run the worktree adapter prepare step before Codex.")
-    task_run_parser.add_argument("--require-change", action="store_true", help="Fail unless the candidate changes at least one path.")
+    task_run_parser.add_argument("--task-id", help="Optional receipt/log identifier for explicit runs; shorthand derives it from --lane.")
+    task_run_parser.add_argument("--prepare", action="store_true", default=None, help="Run the worktree adapter prepare step before Codex.")
+    task_run_parser.add_argument("--require-change", action="store_true", default=None, help="Fail unless the candidate changes at least one path.")
+    task_run_parser.add_argument("--skip-prepare", action="store_true", help="Shorthand diagnostic opt-out: skip the default preparation step.")
+    task_run_parser.add_argument("--allow-no-change", action="store_true", help="Shorthand diagnostic opt-out: allow an unchanged candidate.")
     task_run_parser.add_argument("--timeout-seconds", type=int, default=3600)
     task_run_parser.add_argument("--dry-run", action="store_true", help="Validate inputs and show the planned lane without creating or running it.")
     task_run_parser.add_argument("--home-root", type=Path, default=default_home_root(), help=argparse.SUPPRESS)

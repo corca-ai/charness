@@ -271,6 +271,17 @@ def _generated_files(
 _TASK_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,95}$")
 
 
+def validate_lane_id(lane: str) -> str:
+    """Validate the safe identifier used by the shorthand lane mode."""
+    value = lane.strip()
+    if not _TASK_ID_RE.fullmatch(value):
+        raise TaskRunError(
+            "--lane must be a non-empty id starting with a letter or digit and "
+            "containing only letters, digits, dot, underscore, or dash (maximum 96 characters)"
+        )
+    return value
+
+
 def _task_id(branch: str, requested: str | None) -> str:
     if requested is not None:
         task_id = requested.strip()
@@ -282,6 +293,23 @@ def _task_id(branch: str, requested: str | None) -> str:
         return task_id
     generated = re.sub(r"[^A-Za-z0-9._-]+", "-", branch.replace("/", "-")).strip("-")[:96]
     return generated or "task"
+
+
+def build_codex_args(
+    *, model: str | None = None, effort: str | None = None, extra: Sequence[str] = ()
+) -> list[str]:
+    """Build Codex host arguments from the ergonomic flags and rare extras."""
+    args: list[str] = []
+    if model is not None:
+        if not model.strip():
+            raise TaskRunError("--model must be a non-empty model id")
+        args.extend(["-m", model])
+    if effort is not None:
+        if not effort.strip():
+            raise TaskRunError("--effort must be a non-empty reasoning effort")
+        args.extend(["-c", f"model_reasoning_effort={effort}"])
+    args.extend(extra)
+    return args
 
 
 def task_runtime_root(repo_root: Path) -> Path:

@@ -44,19 +44,13 @@ The parent must be clean. The ordinary implementation preset is:
 ```sh
 charness task run \
   --repo-root <repo> \
-  --path <lane-root>/<lane-name> \
-  --branch luna/<lane-name> \
-  --base <base-ref> \
+  --lane <lane-name> \
   --scope <path-1> \
   --scope <path-2> \
   --prompt-file <brief-file> \
-  --codex-arg=-m \
-  --codex-arg=gpt-5.6-luna \
-  --codex-arg=-c \
-  --codex-arg=model_reasoning_effort=high \
-  --codex-arg=--approve-for-me \
-  --prepare \
-  --require-change
+  --model gpt-5.6-luna \
+  --effort high \
+  --codex-arg=--approve-for-me
 ```
 
 The task result is the only lane result carrier. Review the retained worktree

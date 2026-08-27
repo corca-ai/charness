@@ -170,14 +170,18 @@ commands:
       - docs/agent-task-envelope.md
       - docs/cli-reference.md
     required_help_contains:
+      - --lane
       - --path
       - --branch
       - --base
       - --scope
       - --prompt
       - --prompt-file
+      - --model
+      - --effort
     required_doc_contains:
       - charness task run
+      - --lane feature-lane
       - clean parent
       - external runtime
   catalog:

@@ -262,26 +262,33 @@ options:
 ## `charness task run`
 
 ```text
-usage: charness task run [-h] [--repo-root REPO_ROOT] --path PATH --branch
-                         BRANCH --base BASE --scope SCOPE
-                         (--prompt PROMPT | --prompt-file PROMPT_FILE)
-                         [--codex CODEX] [--codex-arg CODEX_ARG]
-                         [--task-id TASK_ID] [--prepare] [--require-change]
+usage: charness task run [-h] [--repo-root REPO_ROOT] [--lane LANE]
+                         [--path PATH] [--branch BRANCH] [--base BASE] --scope
+                         SCOPE (--prompt PROMPT | --prompt-file PROMPT_FILE)
+                         [--codex CODEX] [--model MODEL] [--effort EFFORT]
+                         [--codex-arg CODEX_ARG] [--task-id TASK_ID]
+                         [--prepare] [--require-change] [--skip-prepare]
+                         [--allow-no-change]
                          [--timeout-seconds TIMEOUT_SECONDS] [--dry-run]
 
-Run one independently delegable lane: create a named linked worktree from an
-explicit base, run Codex with external runtime paths, and report the scoped
-candidate. The parent worktree must be clean; the parent orchestrator owns
-parallel fan-out and integration.
+Run one independently delegable lane: shorthand derives a named branch,
+external worktree, task id, and HEAD base; the explicit form remains available
+for diagnostics. The parent worktree must be clean; the parent orchestrator
+owns parallel fan-out and integration.
 
 options:
   -h, --help            show this help message and exit
   --repo-root REPO_ROOT
                         Clean parent repo from which the linked worktree is
                         created. Defaults to the current working directory.
-  --path PATH           New linked worktree path outside the parent repo.
-  --branch BRANCH       Named local branch for the new worktree.
-  --base BASE           Commit/ref from which the named worktree is created.
+  --lane LANE           Safe lane id; derives the task id, task/<id> branch,
+                        external worktree, and HEAD base.
+  --path PATH           New linked worktree path outside the parent repo
+                        (explicit form).
+  --branch BRANCH       Named local branch for the new worktree (explicit
+                        form).
+  --base BASE           Commit/ref from which the named worktree is created
+                        (explicit form).
   --scope SCOPE         Repository-relative candidate path; existing
                         directories include descendants, while files and
                         absent paths are exact.
@@ -289,12 +296,18 @@ options:
   --prompt-file PROMPT_FILE
                         Read implementation instructions from this file.
   --codex CODEX         Codex executable (default: codex).
+  --model MODEL         Codex model id; translated to the host's model option.
+  --effort EFFORT       Orchestrator-selected Codex reasoning effort.
   --codex-arg CODEX_ARG
                         Extra argument passed before the prompt; repeatable.
-  --task-id TASK_ID     Optional receipt/log identifier; defaults to the
-                        branch name.
+  --task-id TASK_ID     Optional receipt/log identifier for explicit runs;
+                        shorthand derives it from --lane.
   --prepare             Run the worktree adapter prepare step before Codex.
   --require-change      Fail unless the candidate changes at least one path.
+  --skip-prepare        Shorthand diagnostic opt-out: skip the default
+                        preparation step.
+  --allow-no-change     Shorthand diagnostic opt-out: allow an unchanged
+                        candidate.
   --timeout-seconds TIMEOUT_SECONDS
   --dry-run             Validate inputs and show the planned lane without
                         creating or running it.

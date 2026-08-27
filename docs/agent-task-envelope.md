@@ -11,17 +11,23 @@ for reading its external result store. It does not add a scheduler lifecycle.
 ```bash
 charness task run \
   --repo-root . \
-  --path ../feature-lane \
-  --branch feature/lane \
-  --base HEAD \
+  --lane feature-lane \
   --scope src/example.py \
-  --prompt "Implement the requested slice and run its focused tests"
+  --prompt "Implement the requested slice and run its focused tests" \
+  --effort high
 ```
 
 A clean parent is required for tracked and untracked paths. The command creates
-the named branch from the explicit base, retains the linked worktree, routes
-runtime, cache, and logs outside the repo, and records target identity and
-candidate scope evidence.
+the `task/feature-lane` branch from `HEAD`, derives the task id and linked
+worktree under the external task runtime, routes cache and logs outside the
+repo, and records the resolved base SHA, target identity, and candidate scope
+evidence. The orchestrator supplies the reasoning effort; `--model` is
+available when it also needs to select the Codex model.
+
+The fully explicit `--path/--branch/--base` form remains available for
+diagnostics and exceptional host setup. In shorthand, preparation and requiring
+a changed candidate are on by default; `--skip-prepare` and `--allow-no-change`
+are diagnostic opt-outs.
 
 Scopes resolve existing directories as descendant scopes. Existing files and
 absent paths are exact scopes. Candidate and parent overlap use the same rule.

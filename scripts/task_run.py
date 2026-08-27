@@ -40,6 +40,8 @@ _snapshot_payload = _support._snapshot_payload
 _task_id = _support._task_id
 _validate_branch = _support._validate_branch
 _validate_worktree_path = _support._validate_worktree_path
+_validate_lane_id = _support.validate_lane_id
+build_codex_args = _support.build_codex_args
 normalize_scopes = _support.normalize_scopes
 
 
@@ -223,19 +225,114 @@ def _complete_task(
     return payload
 
 
+def _resolve_task_inputs(
+    resolved_repo: Path,
+    *,
+    target_path: Path | None,
+    branch: str | None,
+    base: str | None,
+    lane: str | None,
+    scopes: Sequence[str],
+    prompt: str,
+    codex: str,
+    codex_args: Sequence[str],
+    model: str | None,
+    effort: str | None,
+    task_id: str | None,
+    prepare: bool | None,
+    require_change: bool | None,
+    skip_prepare: bool,
+    allow_no_change: bool,
+    timeout_seconds: int,
+) -> dict[str, Any]:
+    if prepare and skip_prepare:
+        raise TaskRunError("--prepare and --skip-prepare cannot be used together")
+    if require_change and allow_no_change:
+        raise TaskRunError("--require-change and --allow-no-change cannot be used together")
+    if lane is not None:
+        if any(value is not None for value in (target_path, branch, base)):
+            raise TaskRunError(
+                "--lane cannot be combined with --path, --branch, or --base; "
+                "choose shorthand or the fully explicit form"
+            )
+        if task_id is not None:
+            raise TaskRunError("--task-id is derived from --lane; omit it in shorthand mode")
+        resolved_lane = _validate_lane_id(lane)
+        runtime_path = _runtime_preview(resolved_repo)
+        resolved_task_id = resolved_lane
+        resolved_branch = _validate_branch(resolved_repo, f"task/{resolved_lane}")
+        resolved_target = _validate_worktree_path(
+            resolved_repo, runtime_path / "task-run" / resolved_task_id / "worktree"
+        )
+        resolved_base = "HEAD"
+        resolved_prepare = not skip_prepare if prepare is None else prepare
+        resolved_require_change = (
+            not allow_no_change if require_change is None else require_change
+        )
+    else:
+        if any(value is None for value in (target_path, branch, base)):
+            raise TaskRunError(
+                "explicit task runs require --path, --branch, and --base; "
+                "otherwise pass --lane <id>"
+            )
+        resolved_lane = None
+        resolved_target = _validate_worktree_path(resolved_repo, target_path)
+        resolved_branch = _validate_branch(resolved_repo, branch)
+        resolved_base = base
+        resolved_prepare = bool(prepare) and not skip_prepare
+        resolved_require_change = bool(require_change) and not allow_no_change
+    normalized_scopes = normalize_scopes(scopes)
+    if not prompt.strip():
+        raise TaskRunError("--prompt or --prompt-file must contain non-empty instructions")
+    if effort is None and lane is not None:
+        raise TaskRunError("shorthand task runs require the orchestrator-selected --effort")
+    base_sha = _resolve_base_sha(resolved_repo, resolved_base)
+    codex_path = _resolve_codex(codex)
+    if not isinstance(timeout_seconds, int) or timeout_seconds < 1:
+        raise TaskRunError("--timeout-seconds must be a positive integer")
+    if lane is None:
+        resolved_task_id = _task_id(resolved_branch, task_id)
+        runtime_path = _runtime_preview(resolved_repo)
+    command = [
+        codex_path,
+        "exec",
+        *build_codex_args(model=model, effort=effort, extra=codex_args),
+        prompt,
+    ]
+    return {
+        "lane": resolved_lane,
+        "target_path": resolved_target,
+        "branch": resolved_branch,
+        "base": resolved_base,
+        "base_sha": base_sha,
+        "scopes": normalized_scopes,
+        "codex_path": codex_path,
+        "command": command,
+        "task_id": resolved_task_id,
+        "runtime_path": runtime_path,
+        "prepare": resolved_prepare,
+        "require_change": resolved_require_change,
+    }
+
+
 def run_task(
     repo_root: Path,
     *,
-    target_path: Path,
-    branch: str,
-    base: str,
+    target_path: Path | None = None,
+    branch: str | None = None,
+    base: str | None = None,
+    lane: str | None = None,
     scopes: Sequence[str],
     prompt: str,
     codex: str = "codex",
     codex_args: Sequence[str] = (),
+    model: str | None = None,
+    effort: str | None = None,
     task_id: str | None = None,
-    prepare: bool = False,
-    require_change: bool = False,
+    prepare: bool | None = None,
+    require_change: bool | None = None,
+    skip_prepare: bool = False,
+    allow_no_change: bool = False,
     timeout_seconds: int = 3600,
     dry_run: bool = False,
 ) -> dict[str, Any]:
@@ -251,26 +348,45 @@ def run_task(
                 "parent worktree must be clean before launching a task; "
                 "checkpoint current changes or choose a clean named worktree"
             )
-        resolved_target = _validate_worktree_path(resolved_repo, target_path)
-        resolved_branch = _validate_branch(resolved_repo, branch)
-        normalized_scopes = normalize_scopes(scopes)
-        if not prompt.strip():
-            raise TaskRunError("--prompt or --prompt-file must contain non-empty instructions")
-        base_sha = _resolve_base_sha(resolved_repo, base)
-        codex_path = _resolve_codex(codex)
-        if not isinstance(timeout_seconds, int) or timeout_seconds < 1:
-            raise TaskRunError("--timeout-seconds must be a positive integer")
-        resolved_task_id = _task_id(resolved_branch, task_id)
-        runtime_path = _runtime_preview(resolved_repo)
-        command = [codex_path, "exec", *codex_args, prompt]
+        resolved = _resolve_task_inputs(
+            resolved_repo,
+            target_path=target_path,
+            branch=branch,
+            base=base,
+            lane=lane,
+            scopes=scopes,
+            prompt=prompt,
+            codex=codex,
+            codex_args=codex_args,
+            model=model,
+            effort=effort,
+            task_id=task_id,
+            prepare=prepare,
+            require_change=require_change,
+            skip_prepare=skip_prepare,
+            allow_no_change=allow_no_change,
+            timeout_seconds=timeout_seconds,
+        )
     except (OSError, TaskRunError, subprocess.SubprocessError) as exc:
         return _failure_payload(
             repo_root=resolved_repo or repo_root.expanduser().resolve(),
-            target_path=resolved_target or target_path.expanduser().resolve(),
+            target_path=(resolved_target or target_path or Path.cwd()).expanduser().resolve(),
             task_id=task_id,
             error=str(exc),
         )
 
+    resolved_lane = resolved["lane"]
+    resolved_target = resolved["target_path"]
+    resolved_branch = resolved["branch"]
+    resolved_base = resolved["base"]
+    base_sha = resolved["base_sha"]
+    normalized_scopes = resolved["scopes"]
+    codex_path = resolved["codex_path"]
+    command = resolved["command"]
+    resolved_task_id = resolved["task_id"]
+    runtime_path = resolved["runtime_path"]
+    resolved_prepare = resolved["prepare"]
+    resolved_require_change = resolved["require_change"]
     payload: dict[str, Any] = {
         "schema_version": _support.SCHEMA_VERSION,
         "event": "task-run",
@@ -282,16 +398,18 @@ def run_task(
         "repo_root": str(resolved_repo),
         "worktree_path": str(resolved_target),
         "branch": resolved_branch,
-        "base": base,
+        "base": resolved_base,
         "base_sha": base_sha,
         "scopes": normalized_scopes,
         "codex": {"executable": codex_path, "command": command[:-1] + ["<prompt>"]},
         "runtime_root": str(runtime_path),
         "result_path": str(_support.task_result_path(runtime_path, resolved_task_id)),
-        "prepare": prepare,
-        "require_change": require_change,
+        "prepare": resolved_prepare,
+        "require_change": resolved_require_change,
         "keep_worktree": True,
     }
+    if resolved_lane is not None:
+        payload["lane"] = resolved_lane
     if dry_run:
         payload["status"] = PASS
         payload["approval_eligibility"] = "not-applicable"
@@ -313,8 +431,8 @@ def run_task(
             resolved_repo,
             target_path=resolved_target,
             branch=resolved_branch,
-            base=base,
-            prepare=prepare,
+            base=resolved_base,
+            prepare=resolved_prepare,
         )
     except KeyboardInterrupt:
         return _terminal(
@@ -334,7 +452,9 @@ def run_task(
 
     payload["create"] = create_payload
     payload["created"] = bool(create_payload.get("created"))
-    if not create_payload.get("created") or (prepare and create_payload.get("status") != PASS):
+    if not create_payload.get("created") or (
+        resolved_prepare and create_payload.get("status") != PASS
+    ):
         return _terminal(
             payload,
             runtime_path,
@@ -387,7 +507,7 @@ def run_task(
         before_exec=before_exec,
         base_sha=base_sha,
         scope_specs=scope_specs,
-        require_change=require_change,
+        require_change=resolved_require_change,
         parent_before=parent_before,
         parent_before_head=parent_before_head,
         stdout_log=stdout_log,
@@ -427,9 +547,10 @@ def main() -> int:
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, required=True)
-    parser.add_argument("--path", dest="target_path", type=Path, required=True)
-    parser.add_argument("--branch", required=True)
-    parser.add_argument("--base", required=True)
+    parser.add_argument("--lane")
+    parser.add_argument("--path", dest="target_path", type=Path)
+    parser.add_argument("--branch")
+    parser.add_argument("--base")
     parser.add_argument(
         "--scope",
         action="append",
@@ -440,10 +561,14 @@ def main() -> int:
     prompt.add_argument("--prompt")
     prompt.add_argument("--prompt-file", type=Path)
     parser.add_argument("--codex", default="codex")
+    parser.add_argument("--model")
+    parser.add_argument("--effort")
     parser.add_argument("--codex-arg", action="append", default=[])
-    parser.add_argument("--task-id")
-    parser.add_argument("--prepare", action="store_true")
-    parser.add_argument("--require-change", action="store_true")
+    parser.add_argument("--task-id", help="Optional receipt/log identifier for explicit runs; shorthand derives it from --lane.")
+    parser.add_argument("--prepare", action="store_true", default=None)
+    parser.add_argument("--require-change", action="store_true", default=None)
+    parser.add_argument("--skip-prepare", action="store_true")
+    parser.add_argument("--allow-no-change", action="store_true")
     parser.add_argument("--timeout-seconds", type=int, default=3600)
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
@@ -455,13 +580,18 @@ def main() -> int:
         target_path=args.target_path,
         branch=args.branch,
         base=args.base,
+        lane=args.lane,
         scopes=args.scope,
         prompt=prompt_text or "",
         codex=args.codex,
         codex_args=args.codex_arg,
+        model=args.model,
+        effort=args.effort,
         task_id=args.task_id,
         prepare=args.prepare,
         require_change=args.require_change,
+        skip_prepare=args.skip_prepare,
+        allow_no_change=args.allow_no_change,
         timeout_seconds=args.timeout_seconds,
         dry_run=args.dry_run,
     )

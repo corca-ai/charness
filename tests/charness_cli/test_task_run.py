@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import os
 import subprocess
 from pathlib import Path
@@ -62,6 +63,104 @@ def _run(repo: Path, tmp_path: Path, executable: Path, **kwargs):
         require_change=require_change,
         **kwargs,
     )
+
+
+def test_codex_argument_shorthands_preserve_extra_host_arguments() -> None:
+    assert task_run.build_codex_args(
+        model="example-model",
+        effort="high",
+        extra=["--approve-for-me"],
+    ) == ["-m", "example-model", "-c", "model_reasoning_effort=high", "--approve-for-me"]
+
+
+def test_task_run_lane_shorthand_owns_safe_defaults_and_external_target(tmp_path: Path, monkeypatch) -> None:
+    repo = _repo(tmp_path)
+    executable = _codex(tmp_path, "exit 0")
+    monkeypatch.setenv("TMPDIR", str(tmp_path / "runtime-base"))
+
+    payload = task_run.run_task(
+        repo,
+        lane="short-lane",
+        scopes=["module.py"],
+        prompt="update the module",
+        codex=str(executable),
+        model="example-model",
+        effort="high",
+        dry_run=True,
+    )
+
+    assert payload["status"] == "pass"
+    assert payload["lane"] == "short-lane"
+    assert payload["task_id"] == "short-lane"
+    assert payload["branch"] == "task/short-lane"
+    assert payload["base"] == "HEAD"
+    assert payload["base_sha"] == _git(repo, "rev-parse", "HEAD").stdout.strip()
+    assert Path(payload["worktree_path"]) == Path(payload["runtime_root"]) / "task-run" / "short-lane" / "worktree"
+    assert payload["prepare"] is True
+    assert payload["require_change"] is True
+    assert payload["codex"]["command"] == [
+        str(executable),
+        "exec",
+        "-m",
+        "example-model",
+        "-c",
+        "model_reasoning_effort=high",
+        "<prompt>",
+    ]
+
+
+def test_task_run_lane_shorthand_optouts_enable_diagnostics(tmp_path: Path, monkeypatch) -> None:
+    repo = _repo(tmp_path)
+    executable = _codex(tmp_path, "printf 'VALUE = 2\\n' > module.py")
+    monkeypatch.setenv("TMPDIR", str(tmp_path / "runtime-base"))
+
+    payload = task_run.run_task(
+        repo,
+        lane=f"diagnostic-{hashlib.sha256(str(tmp_path).encode()).hexdigest()[:12]}",
+        scopes=["module.py"],
+        prompt="update the module",
+        codex=str(executable),
+        effort="medium",
+        skip_prepare=True,
+        allow_no_change=True,
+    )
+
+    assert payload["status"] == "completed"
+    assert payload["prepare"] is False
+    assert payload["require_change"] is False
+
+
+def test_task_run_cli_rejects_lane_and_explicit_identity_mix(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    executable = _codex(tmp_path, "exit 0")
+    result = subprocess.run(
+        [
+            os.fspath(Path(__file__).resolve().parents[2] / "charness"),
+            "task",
+            "run",
+            "--repo-root",
+            str(repo),
+            "--lane",
+            "ambiguous",
+            "--path",
+            str(tmp_path / "lane"),
+            "--scope",
+            "module.py",
+            "--prompt",
+            "noop",
+            "--effort",
+            "high",
+            "--codex",
+            str(executable),
+        ],
+        cwd=repo,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 1
+    assert "--lane cannot be combined with --path" in result.stderr
 
 
 def test_task_run_creates_named_lane_and_keeps_runtime_external(tmp_path: Path) -> None:
