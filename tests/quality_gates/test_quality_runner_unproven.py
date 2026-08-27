@@ -15,6 +15,7 @@ from .support import (
     write_executable,
 )
 
+
 def _assert_external_failure_recovery(repo: Path, label: str) -> None:
     receipt = json.loads((repo / "receipt.json").read_text(encoding="utf-8"))
     recovery = receipt["adverse_subjects"][0]["recovery"]
