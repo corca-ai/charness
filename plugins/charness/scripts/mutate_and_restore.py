@@ -59,6 +59,7 @@ from __future__ import annotations
 import argparse
 import glob as globlib
 import json
+import os
 import subprocess
 import sys
 from dataclasses import dataclass, field
@@ -214,8 +215,27 @@ def measure_baseline(command: list[str], cwd: Path, reporter=_reporters.PytestRe
     return Baseline(returncode=completed.returncode, passed=passed, output=output, refusal=refusal)
 
 
+def bytecode_cache_paths(path: Path) -> tuple[Path, ...]:
+    """Return local and externally-prefixed bytecode paths for one source file."""
+    if path.suffix != ".py":
+        return ()
+    directories = [path.parent / "__pycache__"]
+    prefix = os.environ.get("PYTHONPYCACHEPREFIX") or getattr(sys, "pycache_prefix", None)
+    if prefix:
+        external = Path(prefix).expanduser().resolve() / path.resolve().as_posix().lstrip("/")
+        directories.append(external.parent)
+    cached: list[Path] = []
+    seen: set[Path] = set()
+    for directory in directories:
+        if directory in seen:
+            continue
+        seen.add(directory)
+        cached.extend(directory.glob(f"{globlib.escape(path.stem)}.*.pyc"))
+    return tuple(cached)
+
+
 def invalidate_bytecode(path: Path) -> None:
-    """Drop the cached bytecode for a source file we just rewrote.
+    """Drop cached bytecode, whether Python stores it in-tree or by external prefix.
 
     Found by this file's own tests. CPython invalidates a `.pyc` by comparing the
     source's SIZE and its mtime truncated to whole seconds, so a same-length edit
@@ -225,13 +245,11 @@ def invalidate_bytecode(path: Path) -> None:
     reporting a verdict about code that never executed, which is the defect this
     runner exists to make unreachable, reproduced inside the runner itself.
     """
-    if path.suffix != ".py":
-        return
     # NOT `cache_from_source` alone: that resolves against THIS process's
     # `cache_tag`, while the plan's `test_command` is an arbitrary interpreter
-    # (a venv, `uv run`, another minor version). Clearing only our own tag leaves
-    # the test runner's stale .pyc valid and the mutation unexecuted.
-    for cached in path.parent.glob(f"__pycache__/{globlib.escape(path.stem)}.*.pyc"):
+    # (a venv, `uv run`, another minor version). Clearing every matching tag in
+    # both possible storage roots leaves no stale test-runner bytecode valid.
+    for cached in bytecode_cache_paths(path):
         cached.unlink(missing_ok=True)
 
 

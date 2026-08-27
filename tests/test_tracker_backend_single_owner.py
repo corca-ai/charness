@@ -135,6 +135,13 @@ _KNOWN_UNCONSOLIDATED = {
     # parts that MUST still agree so the pair cannot drift again silently.
     "skills/public/release/scripts/publish_release_helpers.py",
 }
+_SELECTION_OWNERS = {
+    # Provider selection owns the adapter-to-provider boundary, including the
+    # binary identity. It does not render a backend command, so the command
+    # renderer's duplication census must not mistake this deliberate split for
+    # a re-grown command implementation.
+    "skills/public/issue/scripts/issue_provider_selection.py",
+}
 
 
 def _code_only(source: str) -> str:
@@ -179,7 +186,7 @@ def test_no_other_module_re_derives_the_backend_binary_and_template_rule() -> No
 
     offenders: dict[str, list[str]] = {}
     for relative, source in _backend_modules().items():
-        if relative == owner_rel or relative in _KNOWN_UNCONSOLIDATED:
+        if relative == owner_rel or relative in _KNOWN_UNCONSOLIDATED or relative in _SELECTION_OWNERS:
             continue
         hits = [tell for tell in _TELLS if tell in source]
         if hits:
@@ -499,4 +506,3 @@ def test_a_listing_shaped_answer_whose_first_row_is_another_issue_is_not_that_is
         return []
 
     assert handoff.issue_state("o/r", 451, backend=dict(_GH_BACKEND), runner=empty_listing_runner) is None
-

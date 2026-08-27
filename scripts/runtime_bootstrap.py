@@ -1,18 +1,136 @@
 from __future__ import annotations
 
+import hashlib
 import importlib
 import importlib.util
 import os
 import sys
+import tempfile
+from collections.abc import MutableMapping
 from pathlib import Path
 from types import ModuleType
+
+
+class RuntimeEnvironmentError(RuntimeError):
+    """The runtime was explicitly pointed at a repo-local output path."""
+
+
+def _is_inside(path: Path, root: Path) -> bool:
+    try:
+        path.relative_to(root)
+    except ValueError:
+        return False
+    return True
+
+
+def _repo_runtime_key(repo_root: Path) -> str:
+    return hashlib.sha256(str(repo_root.resolve()).encode("utf-8")).hexdigest()[:16]
+
+
+def _runtime_root(repo_root: Path, env: MutableMapping[str, str]) -> tuple[Path, bool]:
+    runtime_key = _repo_runtime_key(repo_root)
+    configured = env.get("CHARNESS_RUNTIME_ROOT", "").strip()
+    auto_root = env.get("CHARNESS_RUNTIME_ROOT_AUTO") == "1"
+    if configured and not (auto_root and env.get("CHARNESS_RUNTIME_REPO_KEY") != runtime_key):
+        root = Path(configured).expanduser().resolve()
+        if _is_inside(root, repo_root.resolve()):
+            raise RuntimeEnvironmentError(
+                "CHARNESS_RUNTIME_ROOT must be outside the repository: "
+                f"{root} (repo: {repo_root.resolve()})"
+            )
+        return root, False
+
+    base_text = (
+        env.get("XDG_CACHE_HOME", "").strip()
+        or env.get("TMPDIR", "").strip()
+        or tempfile.gettempdir()
+    )
+    base = Path(base_text).expanduser().resolve()
+    if _is_inside(base, repo_root.resolve()):
+        base = Path(tempfile.gettempdir()).resolve()
+    if _is_inside(base, repo_root.resolve()):
+        base = Path("/tmp").resolve()
+    return base / "charness" / "runtime" / runtime_key, True
+
+
+def _external_setting(
+    env: MutableMapping[str, str],
+    key: str,
+    default: Path,
+    repo_root: Path,
+) -> str:
+    raw = env.get(key, "").strip()
+    if raw in {"", ":memory:"}:
+        return str(default.resolve()) if raw == "" else raw
+    candidate = Path(raw).expanduser()
+    if not candidate.is_absolute() or _is_inside(candidate.resolve(), repo_root.resolve()):
+        return str(default.resolve())
+    return str(candidate.resolve())
+
+
+def configure_runtime_environment(
+    repo_root: str | Path,
+    env: MutableMapping[str, str] | None = None,
+) -> dict[str, str]:
+    """Route interpreter and tool scratch output outside ``repo_root``.
+
+    The returned mapping is also written into ``env``. With no mapping supplied,
+    the real process environment and Python's active bytecode prefix are updated so
+    direct repo scripts and their children share the same external runtime root.
+    """
+    root = Path(repo_root).expanduser().resolve()
+    target = os.environ if env is None else env
+    runtime_root, auto_root = _runtime_root(root, target)
+    paths = {
+        "CHARNESS_RUNTIME_ROOT": runtime_root,
+        "PYTHONPYCACHEPREFIX": runtime_root / "pycache",
+        "TMPDIR": runtime_root / "tmp",
+        "PYTEST_DEBUG_TEMPROOT": runtime_root / "pytest-tmp",
+        "CHARNESS_PYTEST_CACHE_DIR": runtime_root / "pytest-cache",
+        "RUFF_CACHE_DIR": runtime_root / "ruff",
+        "COVERAGE_FILE": runtime_root / "coverage" / ".coverage",
+    }
+    for key, default in paths.items():
+        if key == "CHARNESS_RUNTIME_ROOT":
+            value = str(default)
+        else:
+            value = _external_setting(target, key, default, root)
+        target[key] = value
+    if auto_root:
+        target["CHARNESS_RUNTIME_ROOT_AUTO"] = "1"
+        target["CHARNESS_RUNTIME_REPO_KEY"] = _repo_runtime_key(root)
+    else:
+        target.pop("CHARNESS_RUNTIME_ROOT_AUTO", None)
+        target.pop("CHARNESS_RUNTIME_REPO_KEY", None)
+
+    for key in (
+        "CHARNESS_RUNTIME_ROOT",
+        "PYTHONPYCACHEPREFIX",
+        "TMPDIR",
+        "PYTEST_DEBUG_TEMPROOT",
+        "CHARNESS_PYTEST_CACHE_DIR",
+        "RUFF_CACHE_DIR",
+    ):
+        Path(target[key]).mkdir(parents=True, exist_ok=True)
+    coverage_file = target["COVERAGE_FILE"]
+    if coverage_file != ":memory:":
+        Path(coverage_file).parent.mkdir(parents=True, exist_ok=True)
+
+    if env is None:
+        if hasattr(sys, "pycache_prefix"):
+            sys.pycache_prefix = target["PYTHONPYCACHEPREFIX"]
+        tempfile.tempdir = target["TMPDIR"]
+    return dict(target)
 
 
 def repo_root_from_script(script_file: str | Path) -> Path:
     override = os.environ.get("CHARNESS_REPO_ROOT")
     if override:
-        return Path(override).expanduser().resolve()
-    return Path(script_file).resolve().parent.parent
+        root = Path(override).expanduser().resolve()
+    else:
+        root = Path(script_file).resolve().parent.parent
+    configure_runtime_environment(root)
+    return root
 
 
 def import_repo_module(script_file: str | Path, module_name: str) -> ModuleType:

@@ -11,6 +11,7 @@ _load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_
 )
 CONTRACT = _load_local("issue_goal_run_contract")
 PROVIDER = _load_local("issue_goal_run", "issue_goal_run_close_provider")
+SELECTION = _load_local("issue_provider_selection", "issue_goal_run_close_selection")
 READ = _load_local("issue_read", "issue_goal_run_close_read")
 TRACKER = _load_local("issue_tracker", "issue_goal_run_close_tracker")
 OBSERVATION = _load_local("issue_tracker_observation", "issue_goal_run_close_observation")
@@ -74,6 +75,13 @@ def command_close(args: Any, *, resolve_backend: Any, emit: Any) -> int:
         emit(_refusal(exc.code, str(exc), repo=args.repo, parent=args.number))
         return 2
     resolved = resolve_backend(args.repo_root.resolve())
+    try:
+        resolved = SELECTION.bind_provider_selection(
+            resolved, target_repo=args.repo, operations=["close-goal-run"]
+        )
+    except RuntimeError as exc:
+        emit(_refusal("provider-selection-invalid", str(exc), repo=args.repo, parent=args.number))
+        return 2
     if not resolved.get("adapter_ok"):
         emit(_refusal("adapter-invalid", "issue adapter is invalid", repo=args.repo, parent=args.number))
         return 2

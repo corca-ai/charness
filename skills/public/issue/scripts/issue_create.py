@@ -24,7 +24,7 @@ _load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_
 
 _emit_yaml = _load_local("issue_yaml_output", "issue_create_yaml_output").emit_yaml
 _BACKEND = _load_local("issue_backend", "issue_create_backend")
-_ADAPTER = _load_local("resolve_adapter", "issue_create_adapter")
+_PROVIDER = _load_local("issue_provider_selection", "issue_create_provider")
 _VERIFY = _load_local("issue_create_verify", "issue_create_verify")
 run_backend = _BACKEND.run_backend
 resolve_op = _BACKEND.resolve_op
@@ -265,11 +265,11 @@ def _emit(payload: dict[str, Any]) -> None:
 
 
 def _resolve_backend(repo_root: Path) -> dict[str, Any]:
-    adapter = _ADAPTER.load_adapter(repo_root)
-    if not adapter["valid"]:
-        return {"adapter": adapter, "backend": _ADAPTER.default_backend(), "adapter_ok": False}
-    backend = dict(adapter["data"].get("issue_backend") or _ADAPTER.default_backend())
-    return {"adapter": adapter, "backend": backend, "adapter_ok": True}
+    return _PROVIDER.select_backend(repo_root)
+
+
+def _bind_backend(resolved: dict[str, Any], target_repo: str) -> dict[str, Any]:
+    return _PROVIDER.bind_provider_selection(resolved, target_repo=target_repo)
 
 
 def command_create(args: argparse.Namespace) -> int:
@@ -277,6 +277,11 @@ def command_create(args: argparse.Namespace) -> int:
     if not resolved["adapter_ok"]:
         _emit({"ok": False, "adapter": resolved["adapter"]})
         return 1
+    try:
+        resolved = _bind_backend(resolved, args.repo)
+    except RuntimeError as exc:
+        _emit({"ok": False, "error": str(exc), "selected_backend": resolved["backend"]})
+        return 2
     try:
         result = create_issue(
             args.repo,
@@ -302,6 +307,7 @@ def command_create(args: argparse.Namespace) -> int:
         _emit({"ok": False, "error": str(exc), "selected_backend": resolved["backend"]})
         return 2
     result["selected_backend"] = resolved["backend"]
+    result["provider_selection"] = resolved["provider_selection"]
     _emit(result)
     return 0
 
@@ -311,6 +317,11 @@ def command_verify_create(args: argparse.Namespace) -> int:
     if not resolved["adapter_ok"]:
         _emit({"ok": False, "adapter": resolved["adapter"]})
         return 1
+    try:
+        resolved = _bind_backend(resolved, args.repo)
+    except RuntimeError as exc:
+        _emit({"ok": False, "error": str(exc), "selected_backend": resolved["backend"]})
+        return 2
     try:
         result = verify_created_issue(
             args.repo,
@@ -322,6 +333,7 @@ def command_verify_create(args: argparse.Namespace) -> int:
         _emit({"ok": False, "error": str(exc), "selected_backend": resolved["backend"]})
         return 2
     result["selected_backend"] = resolved["backend"]
+    result["provider_selection"] = resolved["provider_selection"]
     _emit(result)
     return 0
 

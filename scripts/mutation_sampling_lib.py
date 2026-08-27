@@ -12,12 +12,9 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from scripts import coverage_instrumentation_policy as _policy
-from scripts.mutation_line_coverage_lib import (
-    covered_statement_spans as _covered_statement_spans,
-)
-from scripts.mutation_line_coverage_lib import (
-    mutation_line_is_covered as _mutation_line_is_covered,
-)
+from scripts.mutation_line_coverage_lib import covered_statement_spans as _covered_statement_spans
+from scripts.mutation_line_coverage_lib import mutation_line_is_covered as _mutation_line_is_covered
+from scripts.runtime_bootstrap import configure_runtime_environment
 
 DEFAULT_SAMPLE_COVERAGE_JSON = Path("reports/mutation/sample-coverage.json")
 
@@ -89,7 +86,9 @@ def _sitecustomize_source(*, dynamic_context: bool) -> str:
     return "\n".join(lines) + "\n"
 
 
-def coverage_runtime_paths(coverage_json: Path) -> tuple[Path, Path, Path]:
+def coverage_runtime_paths(
+    coverage_json: Path, *, repo_root: Path
+) -> tuple[Path, Path, Path]:
     """Return the isolated runtime files owned by one coverage report.
 
     The broad pytest producer and the incremental changed-line producer can run
@@ -101,11 +100,19 @@ def coverage_runtime_paths(coverage_json: Path) -> tuple[Path, Path, Path]:
     producers have disjoint write surfaces while keeping their public JSON
     outputs unchanged.
     """
+    runtime = configure_runtime_environment(repo_root)
+    repo_key = hashlib.sha256(str(repo_root.resolve()).encode("utf-8")).hexdigest()[:16]
+    runtime_dir = (
+        Path(runtime["CHARNESS_RUNTIME_ROOT"])
+        / "coverage"
+        / f"{repo_key}-{coverage_json.stem}"
+    )
+    runtime_dir.mkdir(parents=True, exist_ok=True)
     prefix = f".{coverage_json.stem}"
     return (
-        coverage_json.with_name(f"{prefix}.mutation-coverage"),
-        coverage_json.with_name(f"{prefix}.mutation-coveragerc"),
-        coverage_json.with_name(f"{prefix}.mutation-sitecustomize"),
+        runtime_dir / f"{prefix}.mutation-coverage",
+        runtime_dir / f"{prefix}.mutation-coveragerc",
+        runtime_dir / f"{prefix}.mutation-sitecustomize",
     )
 
 
@@ -113,7 +120,9 @@ def _write_coverage_config(
     repo_root: Path, coverage_json: Path, *, dynamic_context: bool
 ) -> tuple[Path, Path, Path]:
     coverage_json.parent.mkdir(parents=True, exist_ok=True)
-    data_file, rcfile, sitecustomize_dir = coverage_runtime_paths(coverage_json)
+    data_file, rcfile, sitecustomize_dir = coverage_runtime_paths(
+        coverage_json, repo_root=repo_root
+    )
     sitecustomize_dir.mkdir(parents=True, exist_ok=True)
     sitecustomize_dir.joinpath("sitecustomize.py").write_text(
         _sitecustomize_source(dynamic_context=dynamic_context), encoding="utf-8"
@@ -126,10 +135,12 @@ def _write_coverage_config(
     return data_file, rcfile, sitecustomize_dir
 
 
-def coverage_subprocess_env(rcfile: Path, sitecustomize_dir: Path) -> dict[str, str]:
+def coverage_subprocess_env(
+    rcfile: Path, sitecustomize_dir: Path, *, data_file: Path | None = None
+) -> dict[str, str]:
     """Environment that turns on coverage in pytest and its subprocesses."""
     existing_pythonpath = os.environ.get("PYTHONPATH")
-    return {
+    env = {
         **os.environ,
         "COVERAGE_PROCESS_START": str(rcfile),
         "COVERAGE_RCFILE": str(rcfile),
@@ -139,6 +150,13 @@ def coverage_subprocess_env(rcfile: Path, sitecustomize_dir: Path) -> dict[str, 
             else os.pathsep.join([str(sitecustomize_dir), existing_pythonpath])
         ),
     }
+    # A parent quality run may already have a default COVERAGE_FILE. Letting that
+    # leak into a subprocess-started coverage session sends its data to the parent
+    # file instead of this report's namespaced database, so the child disappears
+    # from the combined JSON. The report owner is the only honest data-file target.
+    if data_file is not None:
+        env["COVERAGE_FILE"] = str(data_file)
+    return env
 
 
 def clear_stale_coverage_data(data_file: Path) -> None:
@@ -163,7 +181,7 @@ def combine_and_export_coverage(
     # the producer piggybacks on the broad pytest. Errors still surface on stderr.
     subprocess.run(
         [sys.executable, "-m", "coverage", "combine", "--rcfile", str(rcfile),
-         "--data-file", str(data_file), str(coverage_json.parent)],
+         "--data-file", str(data_file), str(data_file.parent)],
         cwd=repo_root, check=True, env=env, stdout=subprocess.DEVNULL,
     )
     json_command = [
@@ -191,7 +209,9 @@ def prepare_plain_coverage(
         repo_root, coverage_json, dynamic_context=False
     )
     clear_stale_coverage_data(data_file)
-    return data_file, rcfile, coverage_subprocess_env(rcfile, sitecustomize_dir)
+    return data_file, rcfile, coverage_subprocess_env(
+        rcfile, sitecustomize_dir, data_file=data_file
+    )
 
 
 def run_test_coverage(
@@ -202,7 +222,7 @@ def run_test_coverage(
     )
     clear_stale_coverage_data(data_file)
     command = coverage_run_command(test_command, data_file)
-    env = coverage_subprocess_env(rcfile, sitecustomize_dir)
+    env = coverage_subprocess_env(rcfile, sitecustomize_dir, data_file=data_file)
     # Captured (not streamed) so a failure can be inspected for failing nodeids
     # by the caller; teed back to stdout/stderr to preserve CI step-log fidelity.
     result = subprocess.run(

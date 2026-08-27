@@ -306,32 +306,32 @@ def test_mutating_a_source_file_drops_its_stale_bytecode(tmp_path: Path) -> None
     # subprocess, so the parent's `sys.dont_write_bytecode` cannot explain it; only
     # the inherited env vars are causal, and if none of them is the reason, the
     # directory listing and the child's own stdout are what will name it.
-    assert list(repo.glob("__pycache__/subject.*.pyc")), (
+    assert mar.bytecode_cache_paths(repo / "subject.py"), (
         "precondition: bytecode cache exists. The inner pytest PASSED, so nothing was "
         "written where this test looks. Inherited env: PYTHONDONTWRITEBYTECODE="
         f"{os.environ.get('PYTHONDONTWRITEBYTECODE')!r}, PYTHONPYCACHEPREFIX="
         f"{os.environ.get('PYTHONPYCACHEPREFIX')!r}. repo contents="
-        f"{sorted(p.name for p in repo.iterdir())}; __pycache__ contents="
-        f"{sorted(p.name for p in (repo / '__pycache__').iterdir()) if (repo / '__pycache__').is_dir() else 'no __pycache__ dir'}"
+        f"{sorted(p.name for p in repo.iterdir())}; bytecode paths="
+        f"{list(mar.bytecode_cache_paths(repo / 'subject.py'))}"
         f"\n--- inner pytest stdout ---\n{completed.stdout}"
     )
 
     original = mar.apply_mutation(repo / "subject.py", "a + b", "a * b")
     try:
-        assert list(repo.glob("__pycache__/subject.*.pyc")) == [], (
+        assert mar.bytecode_cache_paths(repo / "subject.py") == (), (
             "apply_mutation left stale bytecode; a same-length mutant can read as survived"
         )
         # Run under the mutation so a .pyc is regenerated from the MUTATED
         # source. Without this the assertion below is vacuous -- the cache was
         # already cleared above -- and deleting restore's guard passes it.
         mar.run_command(PYTEST_CMD, repo)
-        assert list(repo.glob("__pycache__/subject.*.pyc")), "precondition: mutated bytecode cached"
+        assert mar.bytecode_cache_paths(repo / "subject.py"), "precondition: mutated bytecode cached"
     finally:
         mar.restore(repo / "subject.py", original)
 
     # Same size, possibly the same second: a surviving mutated .pyc would make
     # the NEXT command run mutated code against a restored source.
-    assert list(repo.glob("__pycache__/subject.*.pyc")) == [], (
+    assert mar.bytecode_cache_paths(repo / "subject.py") == (), (
         "restore left stale bytecode built from the mutated source"
     )
 

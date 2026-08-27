@@ -240,7 +240,7 @@ def test_tracker_preflight_combines_backend_capabilities_and_exact_parent(
         }
     )
     command.__globals__["TRACKER"] = SimpleNamespace(
-        tracker_capability_report=lambda _backend: {
+        tracker_capability_report=lambda _backend, **_kwargs: {
             "ok": True,
             "operations": {"create": True, "view": True, "update": True},
             "missing_operations": [],

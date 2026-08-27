@@ -16,17 +16,21 @@ def _load_runtime_bootstrap_module():
 
 _RUNTIME_BOOTSTRAP = _load_runtime_bootstrap_module()
 arm_cli_timeout = _RUNTIME_BOOTSTRAP.arm_cli_timeout
+configure_runtime_environment = _RUNTIME_BOOTSTRAP.configure_runtime_environment
 import_repo_module = _RUNTIME_BOOTSTRAP.import_repo_module
 load_path_module = _RUNTIME_BOOTSTRAP.load_path_module
 repo_root_from_script = _RUNTIME_BOOTSTRAP.repo_root_from_script
+RuntimeEnvironmentError = _RUNTIME_BOOTSTRAP.RuntimeEnvironmentError
 skill_script = _RUNTIME_BOOTSTRAP.skill_script
 require_repo_local_helper = _RUNTIME_BOOTSTRAP.require_repo_local_helper
 
 __all__ = [
     "arm_cli_timeout",
+    "configure_runtime_environment",
     "import_repo_module",
     "load_path_module",
     "repo_root_from_script",
+    "RuntimeEnvironmentError",
     "require_repo_local_helper",
     "skill_script",
 ]

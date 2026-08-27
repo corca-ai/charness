@@ -12,6 +12,7 @@ _load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_
 )
 CONTRACT = _load_local("issue_goal_run_contract")
 BACKEND = CONTRACT.BACKEND
+PROVIDER = _load_local("issue_provider_selection", "issue_goal_run_provider_selection")
 READ = _load_local("issue_read", "issue_goal_run_read")
 TRACKER = _load_local("issue_tracker", "issue_goal_run_tracker")
 OBSERVATION = _load_local("issue_tracker_observation", "issue_goal_run_observation")
@@ -76,7 +77,7 @@ def _preflight(
     resolved: dict[str, Any],
     read_parent: bool = True,
 ) -> dict[str, Any]:
-    capability = CONTRACT.capability_report(resolved["backend"], operations)
+    capability = CONTRACT.capability_report(resolved["backend"], operations, repo=repo)
     readiness = BACKEND.build_preflight_payload(resolved)
     result: dict[str, Any] = {
         "repo": repo,
@@ -110,6 +111,10 @@ def _preflight(
     return result
 
 
+def _bind_provider(resolved: dict[str, Any], repo: str, operations: list[str]) -> dict[str, Any]:
+    return PROVIDER.bind_provider_selection(resolved, target_repo=repo, operations=operations)
+
+
 def command_preflight(args: Any, *, resolve_backend: Any, emit: Any) -> int:
     try:
         plan = CONTRACT.load_plan(args.plan_file.resolve(), repo=args.repo, parent_number=args.number)
@@ -117,6 +122,15 @@ def command_preflight(args: Any, *, resolve_backend: Any, emit: Any) -> int:
         emit(_refusal(exc.code, str(exc), repo=args.repo, parent_number=args.number))
         return 2
     resolved = resolve_backend(args.repo_root.resolve())
+    try:
+        resolved = _bind_provider(resolved, args.repo, plan["operations"])
+    except RuntimeError as exc:
+        emit(
+            _refusal(
+                "provider-selection-invalid", str(exc), repo=args.repo, parent_number=args.number
+            )
+        )
+        return 2
     result = _preflight(
         repo=args.repo,
         parent_number=args.number,
@@ -133,6 +147,16 @@ def command_preflight(args: Any, *, resolve_backend: Any, emit: Any) -> int:
 
 def command_read(args: Any, *, resolve_backend: Any, emit: Any) -> int:
     resolved = resolve_backend(args.repo_root.resolve())
+    try:
+        resolved = _bind_provider(
+            resolved, args.repo, ["read-body", "read-state", "list-children"]
+        )
+    except RuntimeError as exc:
+        result = _refusal(
+            "provider-selection-invalid", str(exc), repo=args.repo, parent_number=args.number
+        )
+        emit(result)
+        return 2
     if not resolved.get("adapter_ok"):
         result = _refusal("adapter-invalid", "issue adapter is invalid", repo=args.repo, parent_number=args.number)
     else:
@@ -150,6 +174,7 @@ def command_read(args: Any, *, resolve_backend: Any, emit: Any) -> int:
             except RuntimeError as exc:
                 result = _refusal("readback-failed", str(exc), repo=args.repo, parent_number=args.number)
     result["selected_backend"] = resolved.get("backend")
+    result["provider_selection"] = resolved.get("provider_selection")
     emit(result)
     return 0 if result["ok"] else 2
 
@@ -260,6 +285,15 @@ def command_apply(args: Any, *, resolve_backend: Any, emit: Any) -> int:
         return 2
     resolved = resolve_backend(args.repo_root.resolve())
     name = operation["operation"]
+    try:
+        resolved = _bind_provider(resolved, args.repo, [name])
+    except RuntimeError as exc:
+        emit(
+            _refusal(
+                "provider-selection-invalid", str(exc), repo=args.repo, parent_number=args.number
+            )
+        )
+        return 2
     if name == "record-observation":
         preflight = {"ok": True, "status": "local-only", "outcome": "verified-read", "mutation_invoked": False}
     else:
@@ -304,6 +338,7 @@ def command_apply(args: Any, *, resolve_backend: Any, emit: Any) -> int:
     except RuntimeError as exc:
         result = _refusal("provider-refused", str(exc), repo=args.repo, parent_number=args.number)
     result["selected_backend"] = resolved.get("backend")
+    result["provider_selection"] = resolved.get("provider_selection")
     try:
         terminal = OBSERVATION.finish(
             repo_root=args.repo_root.resolve(),

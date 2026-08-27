@@ -48,6 +48,28 @@ GATE_ACCEPTS_REPO_ROOT_HATCH=0
 # shellcheck source=scripts/exported-copy-guard.sh
 source "$CHARNESS_GATE_DIR/exported-copy-guard.sh"
 
+# Ruff otherwise creates `.ruff_cache` in whichever checkout launched the gate.
+# Keep an explicitly external caller cache, but repair an unset or repo-local one
+# at the boundary so the lint command cannot dirty the worktree by construction.
+LINT_RUNTIME_ROOT="${CHARNESS_RUNTIME_ROOT:-${TMPDIR:-/tmp}/charness-runtime}"
+case "$LINT_RUNTIME_ROOT/" in
+  "$REPO_ROOT"|"$REPO_ROOT/"*) LINT_RUNTIME_ROOT="/tmp/charness-runtime" ;;
+esac
+case "$LINT_RUNTIME_ROOT" in
+  /*) ;;
+  *) LINT_RUNTIME_ROOT="/tmp/charness-runtime" ;;
+esac
+if [[ -z "${RUFF_CACHE_DIR:-}" ]]; then
+  export RUFF_CACHE_DIR="$LINT_RUNTIME_ROOT/ruff"
+else
+  case "$RUFF_CACHE_DIR" in
+    "$REPO_ROOT"|"$REPO_ROOT"/*) export RUFF_CACHE_DIR="$LINT_RUNTIME_ROOT/ruff" ;;
+    /*) ;;
+    *) export RUFF_CACHE_DIR="$LINT_RUNTIME_ROOT/ruff" ;;
+  esac
+fi
+mkdir -p -- "$RUFF_CACHE_DIR"
+
 # Hard failure, not the `check-shell.sh` skip. ruff is a pinned, installed dependency
 # (`integrations/tools/ruff.json` records the lint phase cannot honestly complete
 # without it), so a silent skip here would report a clean lint that never ran -- which

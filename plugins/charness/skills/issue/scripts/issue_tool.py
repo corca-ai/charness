@@ -16,6 +16,7 @@ BRIEF = _load_local("issue_brief")
 CLOSE = _load_local("issue_close")
 CREATE = _load_local("issue_create")
 BACKEND = _load_local("issue_backend", "issue_tool_backend")
+PROVIDER = _load_local("issue_provider_selection", "issue_tool_provider")
 READ = _load_local("issue_read")
 VERIFY = _load_local("issue_verify_closeout")
 VERIFY_BODY = _load_local("issue_verify_closeout_body")
@@ -52,11 +53,11 @@ def emit(payload: dict[str, Any]) -> None:
 
 
 def _resolve_backend(repo_root: Path) -> dict[str, Any]:
-    adapter = ADAPTER.load_adapter(repo_root)
-    if not adapter["valid"]:
-        return {"adapter": adapter, "backend": ADAPTER.default_backend(), "adapter_ok": False}
-    backend = dict(adapter["data"].get("issue_backend") or ADAPTER.default_backend())
-    return {"adapter": adapter, "backend": backend, "adapter_ok": True}
+    return PROVIDER.select_backend(repo_root)
+
+
+def _bind_backend(resolved: dict[str, Any], target_repo: str) -> dict[str, Any]:
+    return PROVIDER.bind_provider_selection(resolved, target_repo=target_repo)
 
 
 def _run_backend_command(args: argparse.Namespace, call: Any, exit_code: Any) -> int:
@@ -64,12 +65,20 @@ def _run_backend_command(args: argparse.Namespace, call: Any, exit_code: Any) ->
     if not resolved["adapter_ok"]:
         emit({"ok": False, "adapter": resolved["adapter"]})
         return 1
+    if getattr(args, "repo", None) is not None:
+        try:
+            resolved = _bind_backend(resolved, args.repo)
+        except RuntimeError as exc:
+            emit({"ok": False, "error": str(exc), "selected_backend": resolved["backend"]})
+            return 2
     try:
         result = call(resolved)
     except RuntimeError as exc:
         emit({"ok": False, "error": str(exc), "selected_backend": resolved["backend"]})
         return 2
     result["selected_backend"] = resolved["backend"]
+    if resolved.get("provider_selection") is not None:
+        result["provider_selection"] = resolved["provider_selection"]
     emit(result)
     return exit_code(result)
 
@@ -130,6 +139,23 @@ def command_resolve_target(args: argparse.Namespace) -> int:
 def command_select(args: argparse.Namespace) -> int:
     repo_root = args.repo_root.resolve()
     resolved = _resolve_backend(repo_root)
+    if not resolved["adapter_ok"]:
+        emit(
+            {
+                "ok": False,
+                "status": "adapter-invalid",
+                "outcome": "refused",
+                "mutation_invoked": False,
+                "adapter": resolved["adapter"],
+                "provider_selection": resolved.get("provider_selection"),
+            }
+        )
+        return 1
+    try:
+        resolved = _bind_backend(resolved, args.repo)
+    except RuntimeError as exc:
+        emit({"ok": False, "error": str(exc), "selected_backend": resolved["backend"]})
+        return 2
     backend = resolved["backend"]
     try:
         numbers = RUNTIME.parse_selector(args.selector)
@@ -150,6 +176,7 @@ def command_select(args: argparse.Namespace) -> int:
             "source": source,
             "issue": issue,
             "selected_backend": backend,
+            "provider_selection": resolved["provider_selection"],
         }
     )
     return 0

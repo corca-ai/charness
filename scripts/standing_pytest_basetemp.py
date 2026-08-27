@@ -38,11 +38,25 @@ def repo_tmp_key(repo_root: Path) -> str:
 
 
 def default_temp_root(repo_root: Path, env: dict[str, str] | None = None) -> Path:
-    env = env or os.environ
+    env = os.environ if env is None else env
     if env.get("PYTEST_DEBUG_TEMPROOT"):
         return Path(env["PYTEST_DEBUG_TEMPROOT"])
+    if env.get("CHARNESS_RUNTIME_ROOT"):
+        return Path(env["CHARNESS_RUNTIME_ROOT"]) / "pytest-tmp" / repo_tmp_key(repo_root)
     cache_root = Path(env.get("XDG_CACHE_HOME") or Path(env.get("HOME", "/tmp")) / ".cache")
     return cache_root / "charness" / "pytest-tmp" / repo_tmp_key(repo_root)
+
+
+def default_pytest_cache_dir(repo_root: Path, env: dict[str, str] | None = None) -> Path:
+    env = os.environ if env is None else env
+    if env.get("CHARNESS_PYTEST_CACHE_DIR"):
+        return Path(env["CHARNESS_PYTEST_CACHE_DIR"])
+    if env.get("CHARNESS_RUNTIME_ROOT"):
+        return Path(env["CHARNESS_RUNTIME_ROOT"]) / "pytest-cache"
+    if env.get("PYTEST_DEBUG_TEMPROOT"):
+        return Path(env["PYTEST_DEBUG_TEMPROOT"]) / "pytest-cache"
+    cache_root = Path(env.get("XDG_CACHE_HOME") or Path(env.get("HOME", "/tmp")) / ".cache")
+    return cache_root / "charness" / "pytest-cache" / repo_tmp_key(repo_root)
 
 
 def ensure_external_temp_root(repo_root: Path, temp_root: Path) -> None:

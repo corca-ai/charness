@@ -311,21 +311,17 @@
       "verdict": "guarded-all-doors",
       "reason": "main() now refuses before `_group_specs(adapter[\"data\"])`. This is the row's own 'a read is not a check' shape at runtime: `adapter[\"valid\"]` was ALREADY in the emitted payload and never branched on. Measured at 724fe8a55: a repo declaring `verification_tools: [mytool]` under `version: 9` emitted `adapter_valid: false` BESIDE `tool_checks: []`, exit 0 -- the survey reporting the repo configured no verification tools in the same breath as reporting it could not read the file that says otherwise. At version 1: `spec: mytool` and `adapter_valid: true`. `impl` routes through `simple_skill_adapter_lib`, so both doors render the same refusal here. Probe record: charness-artifacts/probe/2026-08-19-narrative-impl-version-refusal.md. ROUND-1 REVIEW FOUND A REGRESSION THIS ROW INTRODUCED AND IT IS CLOSED, not filed: `adapter_lib._parse_block` drops an over-indented line into WARNINGS rather than errors, so the guard's `errors`-only predicate answered False and this CLI printed `adapter_valid: true` beside `tool_checks: []` at exit 0 -- worse than the pre-guard base, which printed `false`. `adapter_version_verdict.declarations_dropped` now reads that warning channel and renders its own message; the same input exits 1. LEVEL MIGRATION (#675): `guarded` -> `guarded-all-doors`, measured from this file's own calls rather than asserted."
     },
-    "skills/public/issue/scripts/issue_create.py": {
-      "verdict": "safe-checks-errors",
-      "reason": "_resolve_backend (line 257-262): `if not adapter[\"valid\"]: return {..., \"adapter_ok\": False}`; command_create/command_verify_create (line 265-270, 299-304) check `resolved[\"adapter_ok\"]` and emit `{\"ok\": False, \"adapter\": resolved[\"adapter\"]}` with exit code 1 before touching `adapter[\"data\"]`."
-    },
     "skills/public/issue/scripts/issue_plan.py": {
       "verdict": "safe-checks-errors",
       "reason": "command_plan (line 233-236): `adapter = adapter_module.load_adapter(repo_root); if not adapter[\"valid\"]: emit({...}); return 1` runs before any use of `adapter[\"data\"]` for target resolution or plan building."
     },
+    "skills/public/issue/scripts/issue_provider_selection.py": {
+      "verdict": "safe-checks-errors",
+      "reason": "select_backend() is the single adapter-to-provider boundary: it preserves the resolver's `valid` result as `adapter_ok` and every issue caller refuses before invoking the selected backend when that result is false. The default backend is retained only for a typed refusal payload, never as an executable fallback for an invalid adapter."
+    },
     "skills/public/issue/scripts/issue_tool.py": {
       "verdict": "safe-checks-errors",
       "reason": "`_resolve_backend` (line 39-44) and its callers `_run_backend_command` (line 47-51) / `_run_adapter_payload` (line 62-66) all check `adapter[\"valid\"]`/`adapter_ok` and refuse (exit 1) before using `adapter[\"data\"]`; `command_preflight` (line 76-81) relies on `build_preflight_payload`'s `ok = resolved[\"adapter_ok\"] and backend_ok(selected)` (skills/public/issue/scripts/issue_backend.py line 334) so an invalid adapter still surfaces `ok: false` and exit 1 even though the backend used for the probe silently falls back to the default."
-    },
-    "skills/public/issue/scripts/issue_tracker_cli.py": {
-      "verdict": "safe-checks-errors",
-      "reason": "`_resolve_backend` refuses with `adapter_ok: false` when the issue resolver reports an invalid adapter, and every backend-command path checks that flag before using `adapter['data']` or invoking a provider mutation. A refused version therefore cannot silently select the default issue backend."
     },
     "skills/public/narrative/scripts/map_sources.py": {
       "verdict": "guarded-all-doors",

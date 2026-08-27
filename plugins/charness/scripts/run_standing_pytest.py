@@ -13,14 +13,17 @@ import sys
 from pathlib import Path
 
 try:
-    from runtime_bootstrap import import_repo_module
+    from runtime_bootstrap import configure_runtime_environment, import_repo_module
 except ImportError:  # pragma: no cover - exercised by the coverage-producer test
     # `coverage run <abspath>` puts the CWD on `sys.path`, not the script's own
     # directory, and `check_changed_line_mutation_coverage` invokes this runner
     # exactly that way from a foreign cwd. Direct invocation finds the sibling;
     # that path does not.
     sys.path.insert(0, str(Path(__file__).resolve().parent))
-    from runtime_bootstrap import import_repo_module  # type: ignore[no-redef]
+    from runtime_bootstrap import (  # type: ignore[no-redef]
+        configure_runtime_environment,
+        import_repo_module,
+    )
 
 # The repo's ONE child-process owner. Imported through the bootstrap rather than
 # `from scripts...` because this script is run directly as often as it is
@@ -55,6 +58,7 @@ _basetemp = import_repo_module(__file__, "scripts.standing_pytest_basetemp")
 _FAILED_BASETEMP_MARKER = _basetemp._FAILED_BASETEMP_MARKER
 _KEPT_BASETEMP_MARKER = _basetemp._KEPT_BASETEMP_MARKER
 default_temp_root = _basetemp.default_temp_root
+default_pytest_cache_dir = _basetemp.default_pytest_cache_dir
 ensure_external_temp_root = _basetemp.ensure_external_temp_root
 default_basetemp = _basetemp.default_basetemp
 prune_failed_basetemps = _basetemp.prune_failed_basetemps
@@ -323,6 +327,9 @@ def build_pytest_command(
         # drift into a lane that runs neither.
         command.extend(["-m", "not release_only and not slow_corpus"])
     command.extend(["--basetemp", str(basetemp)])
+    pytest_cache_dir = default_pytest_cache_dir(repo_root, env)
+    ensure_external_temp_root(repo_root, pytest_cache_dir)
+    command.extend(["-o", f"cache_dir={pytest_cache_dir}"])
     if has_xdist(command[:3], env):
         command.extend(["-n", choose_xdist_workers(env)])
         sched_chunk, suppression_reason = choose_sched_chunk(env)
@@ -347,6 +354,7 @@ def build_pytest_command(
 
 def run_standing_pytest(args: argparse.Namespace) -> int:
     repo_root = args.repo_root.resolve()
+    configure_runtime_environment(repo_root)
     runner_owned_basetemp = args.basetemp is None
     basetemp = args.basetemp or default_basetemp(repo_root)
     ensure_external_temp_root(repo_root, basetemp)

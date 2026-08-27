@@ -45,7 +45,7 @@ def _completed(
 def test_tracker_preflight_requires_all_operations_for_non_gh_backend() -> None:
     backend = {"id": "custom", "binary": "custom", "commands": {"update": ["update"]}}
 
-    report = tracker.tracker_capability_report(backend)
+    report = tracker.tracker_capability_report(backend, repo="owner/repo")
 
     assert report["ok"] is False
     assert "create" in report["missing_operations"]
@@ -255,7 +255,7 @@ def test_malformed_declared_template_fails_preflight_rendering() -> None:
     commands = {operation: [operation, "{repo}"] for operation in tracker.BOOTSTRAP_OPERATIONS}
     backend = {"id": "custom", "binary": "custom", "commands": commands}
 
-    report = tracker.tracker_capability_report(backend)
+    report = tracker.tracker_capability_report(backend, repo="owner/repo")
 
     assert report["ok"] is False
     assert "create" in report["template_errors"]
@@ -275,7 +275,7 @@ def test_malformed_format_grammar_is_a_typed_preflight_error() -> None:
     }
     backend = {"id": "custom", "binary": "custom", "commands": commands}
 
-    report = tracker.tracker_capability_report(backend)
+    report = tracker.tracker_capability_report(backend, repo="owner/repo")
 
     assert report["ok"] is False
     assert "malformed format grammar" in report["template_errors"]["update"]

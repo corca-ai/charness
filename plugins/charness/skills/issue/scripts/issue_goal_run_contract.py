@@ -233,20 +233,23 @@ def load_close_proof(path: Path, *, repo: str, parent_number: int) -> dict[str, 
     return {**value, "path": str(path), "sha256": digest}
 
 
-def capability_report(backend: dict[str, Any], operations: list[str] | None = None) -> dict[str, Any]:
+def capability_report(
+    backend: dict[str, Any], operations: list[str] | None = None, *, repo: str
+) -> dict[str, Any]:
     requested = operations or list(OPERATIONS)
     required = sorted({name for operation in requested for name in BACKEND_REQUIREMENTS[operation]})
+    probe_repo = repo
     probes: dict[str, Any] = {
-        "create": lambda: BACKEND.resolve_op(backend, "create", CREATE.GH_CREATE_DEFAULT, CREATE.CREATE_PLACEHOLDERS, required=frozenset({"repo", "title", "body_file"}), repo="owner/repo", title="probe", body_file="/tmp/body"),
-        "view": lambda: BACKEND.resolve_op(backend, "view", READ.GH_READ_DEFAULT, READ.VIEW_PLACEHOLDERS, required=frozenset({"repo", "number", "json_fields"}), repo="owner/repo", number="1", json_fields="number,body,comments,state,url"),
-        "discover_managed_issues": lambda: BACKEND.resolve_op(backend, "discover_managed_issues", TRACKER.GH_DISCOVER_MANAGED_ISSUES_DEFAULT, TRACKER.DISCOVER_MANAGED_ISSUES_PLACEHOLDERS, required=frozenset({"repo"}), repo="owner/repo"),
-        "update": lambda: BACKEND.resolve_op(backend, "update", TRACKER.GH_UPDATE_DEFAULT, TRACKER.UPDATE_PLACEHOLDERS, required=frozenset({"repo", "number", "body_file"}), repo="owner/repo", number="1", body_file="/tmp/body"),
-        "list_sub_issues": lambda: BACKEND.resolve_op(backend, "list_sub_issues", TRACKER.GH_LIST_SUB_ISSUES_DEFAULT, TRACKER.LIST_SUB_ISSUES_PLACEHOLDERS, required=frozenset({"repo", "number"}), repo="owner/repo", number="1"),
-        "resolve_issue_id": lambda: BACKEND.resolve_op(backend, "resolve_issue_id", TRACKER.GH_RESOLVE_ISSUE_ID_DEFAULT, TRACKER.RESOLVE_ISSUE_ID_PLACEHOLDERS, required=frozenset({"repo", "sub_issue_number"}), repo="owner/repo", sub_issue_number="2"),
-        "add_sub_issue": lambda: BACKEND.resolve_op(backend, "add_sub_issue", TRACKER.GH_ADD_SUB_ISSUE_DEFAULT, TRACKER.MUTATE_SUB_ISSUE_PLACEHOLDERS, required=frozenset({"repo", "number", "sub_issue_id"}), repo="owner/repo", number="1", sub_issue_id="2", sub_issue_number="2"),
-        "remove_sub_issue": lambda: BACKEND.resolve_op(backend, "remove_sub_issue", TRACKER.GH_REMOVE_SUB_ISSUE_DEFAULT, TRACKER.MUTATE_SUB_ISSUE_PLACEHOLDERS, required=frozenset({"repo", "number", "sub_issue_id"}), repo="owner/repo", number="1", sub_issue_id="2", sub_issue_number="2"),
-        "comment": lambda: BACKEND.resolve_op(backend, "comment", CLOSE.GH_COMMENT_DEFAULT, CLOSE.COMMENT_PLACEHOLDERS, required=frozenset({"repo", "number", "body_file"}), repo="owner/repo", number="1", body_file="/tmp/body", reason="completed"),
-        "close": lambda: BACKEND.resolve_op(backend, "close", CLOSE.GH_CLOSE_DEFAULT, CLOSE.CLOSE_PLACEHOLDERS, required=frozenset({"repo", "number"}), repo="owner/repo", number="1", reason="completed"),
+        "create": lambda: BACKEND.resolve_op(backend, "create", CREATE.GH_CREATE_DEFAULT, CREATE.CREATE_PLACEHOLDERS, required=frozenset({"repo", "title", "body_file"}), repo=probe_repo, title="probe", body_file="/tmp/body"),
+        "view": lambda: BACKEND.resolve_op(backend, "view", READ.GH_READ_DEFAULT, READ.VIEW_PLACEHOLDERS, required=frozenset({"repo", "number", "json_fields"}), repo=probe_repo, number="1", json_fields="number,body,comments,state,url"),
+        "discover_managed_issues": lambda: BACKEND.resolve_op(backend, "discover_managed_issues", TRACKER.GH_DISCOVER_MANAGED_ISSUES_DEFAULT, TRACKER.DISCOVER_MANAGED_ISSUES_PLACEHOLDERS, required=frozenset({"repo"}), repo=probe_repo),
+        "update": lambda: BACKEND.resolve_op(backend, "update", TRACKER.GH_UPDATE_DEFAULT, TRACKER.UPDATE_PLACEHOLDERS, required=frozenset({"repo", "number", "body_file"}), repo=probe_repo, number="1", body_file="/tmp/body"),
+        "list_sub_issues": lambda: BACKEND.resolve_op(backend, "list_sub_issues", TRACKER.GH_LIST_SUB_ISSUES_DEFAULT, TRACKER.LIST_SUB_ISSUES_PLACEHOLDERS, required=frozenset({"repo", "number"}), repo=probe_repo, number="1"),
+        "resolve_issue_id": lambda: BACKEND.resolve_op(backend, "resolve_issue_id", TRACKER.GH_RESOLVE_ISSUE_ID_DEFAULT, TRACKER.RESOLVE_ISSUE_ID_PLACEHOLDERS, required=frozenset({"repo", "sub_issue_number"}), repo=probe_repo, sub_issue_number="2"),
+        "add_sub_issue": lambda: BACKEND.resolve_op(backend, "add_sub_issue", TRACKER.GH_ADD_SUB_ISSUE_DEFAULT, TRACKER.MUTATE_SUB_ISSUE_PLACEHOLDERS, required=frozenset({"repo", "number", "sub_issue_id"}), repo=probe_repo, number="1", sub_issue_id="2", sub_issue_number="2"),
+        "remove_sub_issue": lambda: BACKEND.resolve_op(backend, "remove_sub_issue", TRACKER.GH_REMOVE_SUB_ISSUE_DEFAULT, TRACKER.MUTATE_SUB_ISSUE_PLACEHOLDERS, required=frozenset({"repo", "number", "sub_issue_id"}), repo=probe_repo, number="1", sub_issue_id="2", sub_issue_number="2"),
+        "comment": lambda: BACKEND.resolve_op(backend, "comment", CLOSE.GH_COMMENT_DEFAULT, CLOSE.COMMENT_PLACEHOLDERS, required=frozenset({"repo", "number", "body_file"}), repo=probe_repo, number="1", body_file="/tmp/body", reason="completed"),
+        "close": lambda: BACKEND.resolve_op(backend, "close", CLOSE.GH_CLOSE_DEFAULT, CLOSE.CLOSE_PLACEHOLDERS, required=frozenset({"repo", "number"}), repo=probe_repo, number="1", reason="completed"),
     }
     declared = {name: BACKEND.op_is_declared(backend, name) for name in required}
     template_errors: dict[str, str] = {}
@@ -268,6 +271,7 @@ def capability_report(backend: dict[str, Any], operations: list[str] | None = No
         "ok": not missing_goal and not template_errors,
         "status": "ready" if not missing_goal and not template_errors else "capability-missing",
         "requested_operations": requested,
+        "probe_repo": probe_repo,
         "operations": goal,
         "required_backend_operations": required,
         "missing_operations": missing_goal,

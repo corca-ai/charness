@@ -27,7 +27,7 @@ def run(
     issue_reader: Any,
 ) -> int:
     resolved = resolve_backend(args.repo_root.resolve())
-    capability = tracker.tracker_capability_report(resolved["backend"])
+    capability = tracker.tracker_capability_report(resolved["backend"], repo=args.repo)
     readiness = backend_owner.build_preflight_payload(resolved)
     selected = readiness.get("selected_backend") or {}
     projected_readiness = {

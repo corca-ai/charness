@@ -103,6 +103,46 @@ case "$RUN_QUALITY_TMP_BASE/" in
 esac
 export TMPDIR="$RUN_QUALITY_TMP_BASE"
 
+# One external runtime root is shared by every child in this quality run. The path
+# key keeps concurrent checkouts separate while preserving warm Python/ruff caches;
+# none of these outputs can enter the worktree population.
+RUN_QUALITY_REPO_KEY="$(printf '%s' "$REPO_ROOT" | sha256sum | cut -c1-16)"
+RUN_QUALITY_RUNTIME_ROOT="$RUN_QUALITY_TMP_BASE/charness-runtime/$RUN_QUALITY_REPO_KEY"
+mkdir -p -- "$RUN_QUALITY_RUNTIME_ROOT"
+export CHARNESS_RUNTIME_ROOT="$RUN_QUALITY_RUNTIME_ROOT"
+
+# Coverage reads its data-file setting before the Python script can configure its
+# own environment. Give the process an external default here; explicit external
+# caller values remain authoritative.
+if [[ -z "${COVERAGE_FILE:-}" ]]; then
+  export COVERAGE_FILE="$RUN_QUALITY_RUNTIME_ROOT/coverage/.coverage"
+elif [[ "$COVERAGE_FILE" != :memory: ]]; then
+  case "$COVERAGE_FILE" in
+    /*)
+      case "$COVERAGE_FILE" in
+        "$REPO_ROOT"|"$REPO_ROOT"/*)
+          export COVERAGE_FILE="$RUN_QUALITY_RUNTIME_ROOT/coverage/.coverage"
+          ;;
+      esac
+      ;;
+    *)
+      export COVERAGE_FILE="$RUN_QUALITY_RUNTIME_ROOT/coverage/.coverage"
+      ;;
+  esac
+fi
+if [[ "$COVERAGE_FILE" != :memory: ]]; then
+  mkdir -p -- "$(dirname "$COVERAGE_FILE")"
+fi
+
+# A direct Python invocation may begin before runtime_bootstrap can update
+# sys.pycache_prefix, so provide the interpreter-level setting at this boundary.
+case "${PYTHONPYCACHEPREFIX:-}" in
+  ""|"$REPO_ROOT"|"$REPO_ROOT"/*|[^/]*)
+    export PYTHONPYCACHEPREFIX="$RUN_QUALITY_RUNTIME_ROOT/pycache"
+    ;;
+esac
+mkdir -p -- "$PYTHONPYCACHEPREFIX"
+
 # Every gate command below writes to a per-phase file so concurrent checks cannot
 # interleave their output. Before this line existed, that useful buffering made a
 # healthy long run indistinguishable from a command that never started: a caller

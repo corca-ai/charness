@@ -154,7 +154,7 @@ def test_dead_code_advisory_gate_runs_when_explicitly_labeled(
     assert "PASS dead-code-advisory" in result.stdout
 
 
-def test_run_quality_uses_repo_local_pytest_temp_root(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
+def test_run_quality_uses_external_pytest_temp_root(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
     real_python = sys.executable
     log_path = repo / "pytest-invocation.json"
@@ -188,7 +188,10 @@ def test_run_quality_uses_repo_local_pytest_temp_root(tmp_path: Path, seeded_qua
 
     assert result.returncode == 0, result.stderr
     payload = json.loads(log_path.read_text(encoding="utf-8"))
-    assert "/charness/pytest-tmp/" in payload["temproot"]
+    temproot = Path(payload["temproot"]).resolve()
+    assert temproot.is_absolute()
+    assert repo.resolve() not in temproot.parents
+    assert temproot.name == "pytest-tmp"
     assert "--basetemp" in payload["args"]
     assert "-n" in payload["args"]
     # core-relative: assert the worker count run_standing_pytest actually computes
@@ -206,7 +209,7 @@ def test_run_quality_uses_repo_local_pytest_temp_root(tmp_path: Path, seeded_qua
     assert not basetemp.endswith("/pytest-0")
 
 
-def test_run_quality_seed_budget_uses_repo_local_pytest_temp_root(
+def test_run_quality_seed_budget_uses_external_pytest_temp_root(
     tmp_path: Path, seeded_quality_runner_repo: Path
 ) -> None:
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
@@ -229,7 +232,10 @@ def test_run_quality_seed_budget_uses_repo_local_pytest_temp_root(
     result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
 
     assert result.returncode == 0, result.stderr
-    assert "/charness/pytest-tmp/" in log_path.read_text(encoding="utf-8")
+    temproot = Path(log_path.read_text(encoding="utf-8").strip()).resolve()
+    assert temproot.is_absolute()
+    assert repo.resolve() not in temproot.parents
+    assert temproot.name == "pytest-tmp"
 
 
 @pytest.mark.parametrize(

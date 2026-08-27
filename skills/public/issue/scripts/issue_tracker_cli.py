@@ -12,8 +12,8 @@ from typing import Any
 _load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_import.py"))[
     "sibling_loader"
 ](__file__)
-ADAPTER = _load_local("resolve_adapter", "issue_tracker_cli_adapter")
 BACKEND = _load_local("issue_backend", "issue_tracker_cli_backend")
+PROVIDER = _load_local("issue_provider_selection", "issue_tracker_cli_provider")
 READ = _load_local("issue_read", "issue_tracker_cli_read")
 TRACKER = _load_local("issue_tracker")
 TRACKER_OBSERVATION = _load_local("issue_tracker_observation")
@@ -29,11 +29,11 @@ def emit(payload: dict[str, Any]) -> None:
 
 
 def _resolve_backend(repo_root: Path) -> dict[str, Any]:
-    adapter = ADAPTER.load_adapter(repo_root)
-    if not adapter["valid"]:
-        return {"adapter": adapter, "backend": ADAPTER.default_backend(), "adapter_ok": False}
-    backend = dict(adapter["data"].get("issue_backend") or ADAPTER.default_backend())
-    return {"adapter": adapter, "backend": backend, "adapter_ok": True}
+    return PROVIDER.select_backend(repo_root)
+
+
+def _bind_backend(resolved: dict[str, Any], target_repo: str) -> dict[str, Any]:
+    return PROVIDER.bind_provider_selection(resolved, target_repo=target_repo)
 
 
 def _tracker_parent_number(args: argparse.Namespace) -> int:
@@ -66,7 +66,7 @@ def _tracker_body_sha256(args: argparse.Namespace) -> str | None:
 def _require_tracker_write_readiness(
     args: argparse.Namespace, resolved: dict[str, Any], parent_number: int
 ) -> None:
-    capability = TRACKER.tracker_capability_report(resolved["backend"])
+    capability = TRACKER.tracker_capability_report(resolved["backend"], repo=args.repo)
     if not capability["ok"]:
         raise RuntimeError(
             "tracker capability closure is not ready: "
@@ -92,6 +92,19 @@ def _run_tracker_backend_command(args: argparse.Namespace, operation: str, call:
             }
         )
         return 1
+    try:
+        resolved = _bind_backend(resolved, args.repo)
+    except RuntimeError as exc:
+        emit(
+            {
+                "ok": False,
+                "status": "refused",
+                "outcome": "refused",
+                "mutation_invoked": False,
+                "error": str(exc),
+            }
+        )
+        return 2
     try:
         parent_number = _tracker_parent_number(args)
         _require_tracker_write_readiness(args, resolved, parent_number)
@@ -132,6 +145,8 @@ def _run_tracker_backend_command(args: argparse.Namespace, operation: str, call:
             "next_action": "repair-input-or-readiness-before-retry",
         }
     result["selected_backend"] = resolved["backend"]
+    if resolved.get("provider_selection") is not None:
+        result["provider_selection"] = resolved["provider_selection"]
     try:
         terminal = TRACKER_OBSERVATION.finish(
             repo_root=args.repo_root.resolve(),
@@ -175,6 +190,19 @@ def _run_tracker_read_command(args: argparse.Namespace, call: Any) -> int:
         )
         return 1
     try:
+        resolved = _bind_backend(resolved, args.repo)
+    except RuntimeError as exc:
+        emit(
+            {
+                "ok": False,
+                "status": "refused",
+                "outcome": "refused",
+                "mutation_invoked": False,
+                "error": str(exc),
+            }
+        )
+        return 2
+    try:
         result = call(resolved)
     except RuntimeError as exc:
         result = {
@@ -185,14 +213,19 @@ def _run_tracker_read_command(args: argparse.Namespace, call: Any) -> int:
             "error": str(exc),
         }
     result["selected_backend"] = resolved["backend"]
+    if resolved.get("provider_selection") is not None:
+        result["provider_selection"] = resolved["provider_selection"]
     emit(result)
     return 0 if result["ok"] else 2
 
 
 def command_tracker_preflight(args: argparse.Namespace) -> int:
+    def resolve_for_target(repo_root: Path) -> dict[str, Any]:
+        return _bind_backend(_resolve_backend(repo_root), args.repo)
+
     return PREFLIGHT.run(
         args,
-        resolve_backend=_resolve_backend,
+        resolve_backend=resolve_for_target,
         emit=emit,
         tracker=TRACKER,
         backend_owner=BACKEND,

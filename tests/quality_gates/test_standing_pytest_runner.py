@@ -9,6 +9,8 @@ import time
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 
 def test_standing_pytest_command_uses_xdist_and_expands_globs(tmp_path: Path, monkeypatch) -> None:
     from scripts import run_standing_pytest as runner
@@ -132,6 +134,62 @@ def test_standing_pytest_env_temp_root_and_inside_repo_rejection(tmp_path: Path)
         assert "is inside the repo" in str(exc)
     else:
         raise AssertionError("expected SystemExit for repo-local pytest temp root")
+
+
+def test_runtime_bootstrap_routes_tool_outputs_outside_repo(tmp_path: Path, monkeypatch) -> None:
+    from scripts.runtime_bootstrap import configure_runtime_environment
+
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    external = tmp_path / "runtime"
+    env = {
+        "CHARNESS_RUNTIME_ROOT": str(external),
+        "PYTHONPYCACHEPREFIX": str(repo / "pycache"),
+        "TMPDIR": str(repo / "tmp"),
+        "PYTEST_DEBUG_TEMPROOT": str(repo / "pytest-tmp"),
+        "CHARNESS_PYTEST_CACHE_DIR": str(repo / "pytest-cache"),
+        "RUFF_CACHE_DIR": str(repo / ".ruff_cache"),
+        "COVERAGE_FILE": str(repo / ".coverage"),
+    }
+
+    configured = configure_runtime_environment(repo, env)
+
+    for key in (
+        "PYTHONPYCACHEPREFIX",
+        "TMPDIR",
+        "PYTEST_DEBUG_TEMPROOT",
+        "CHARNESS_PYTEST_CACHE_DIR",
+        "RUFF_CACHE_DIR",
+        "COVERAGE_FILE",
+    ):
+        path = Path(configured[key])
+        if key == "COVERAGE_FILE":
+            path = path.parent
+        assert repo.resolve() not in path.resolve().parents
+        assert path.exists()
+    assert Path(configured["CHARNESS_RUNTIME_ROOT"]).is_dir()
+
+    monkeypatch.setattr("scripts.run_standing_pytest.has_xdist", lambda *args, **kwargs: False)
+    from scripts import run_standing_pytest as runner
+
+    command = runner.build_pytest_command(
+        repo,
+        basetemp=external / "basetemp",
+        include_release_only=True,
+        pytest_targets=["tests/one.py"],
+        env=env,
+    )
+    assert command[command.index("-o") + 1] == f"cache_dir={external / 'pytest-cache'}"
+
+
+def test_runtime_bootstrap_rejects_explicit_repo_local_runtime_root(tmp_path: Path) -> None:
+    from scripts.runtime_bootstrap import RuntimeEnvironmentError, configure_runtime_environment
+
+    repo = tmp_path / "repo"
+    repo.mkdir()
+
+    with pytest.raises(RuntimeEnvironmentError, match="must be outside the repository"):
+        configure_runtime_environment(repo, {"CHARNESS_RUNTIME_ROOT": str(repo / "runtime")})
 
 
 def test_standing_pytest_default_basetemp_uses_user_and_time(

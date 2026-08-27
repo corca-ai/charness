@@ -22,9 +22,9 @@ def test_coverage_runtime_files_are_namespaced_by_report(tmp_path: Path) -> None
     sample = tmp_path / "reports" / "mutation" / "sample-coverage.json"
     focused = tmp_path / "reports" / "mutation" / "prepush-focused-coverage.json"
 
-    broad_paths = coverage_runtime_paths(broad)
-    sample_paths = coverage_runtime_paths(sample)
-    focused_paths = coverage_runtime_paths(focused)
+    broad_paths = coverage_runtime_paths(broad, repo_root=tmp_path)
+    sample_paths = coverage_runtime_paths(sample, repo_root=tmp_path)
+    focused_paths = coverage_runtime_paths(focused, repo_root=tmp_path)
 
     assert set(broad_paths).isdisjoint(sample_paths)
     assert set(broad_paths).isdisjoint(focused_paths)
@@ -121,7 +121,8 @@ def test_mutation_coverage_drops_stale_parallel_shards(tmp_path: Path) -> None:
     )
     coverage_json = repo / "reports" / "mutation" / "coverage.json"
     coverage_json.parent.mkdir(parents=True)
-    stale_shard = coverage_json.with_name(".coverage.mutation-coverage.stale")
+    data_file, _, _ = coverage_runtime_paths(coverage_json, repo_root=repo)
+    stale_shard = data_file.with_name(data_file.name + ".stale")
     stale_shard.write_text("not a coverage sqlite database", encoding="utf-8")
 
     run_test_coverage(repo, "python3 -m pytest -q tests/test_cli_target.py", coverage_json)

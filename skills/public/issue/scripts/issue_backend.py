@@ -22,9 +22,9 @@ BACKEND_TIMEOUT_SECONDS = 60
 BACKEND_PROBE_TIMEOUT_SECONDS = 60
 PLACEHOLDER_RE = re.compile(r"\{([a-z_]+)\}")
 
-_load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_import.py"))[
-    "sibling_loader"
-](__file__)
+_load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_import.py"))["sibling_loader"](
+    __file__
+)
 IDENTITY = _load_local("issue_identity", "issue_backend_identity")
 answer_repo = IDENTITY.answer_repo
 issue_identity_mismatches = IDENTITY.issue_identity_mismatches
@@ -298,6 +298,7 @@ def build_preflight_payload(resolved: dict[str, Any]) -> dict[str, Any]:
         "ok": ok,
         "selected_backend": selected,
         "adapter": resolved["adapter"],
+        "provider_selection": resolved.get("provider_selection"),
     }
     if selected["id"] == "gh":
         payload.update(

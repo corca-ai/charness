@@ -258,6 +258,7 @@ def test_goal_run_close_capability_reports_missing_close_ingress() -> None:
     report = contract["capability_report"](
         {"id": "custom", "binary": "custom", "commands": {"view": ["view", "{repo}", "{number}"]}},
         ["close-goal-run"],
+        repo=REPO,
     )
 
     assert report["ok"] is False
