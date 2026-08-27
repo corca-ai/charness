@@ -126,16 +126,53 @@ def make_demo_packaging_repo(
     return repo
 
 
+def make_clean_git_repo(tmp_path: Path, seeded_charness_git_repo: Path) -> Path:
+    repo = clone_seeded_charness_repo(tmp_path, seeded_charness_git_repo)
+    sync = run_loaded_script_main(
+        "sync_root_plugin_manifests.py",
+        sync_root_plugin_manifests_module,
+        "--repo-root",
+        str(repo),
+    )
+    assert sync.returncode == 0, sync.stderr
+    subprocess.run(
+        ["git", "add", "."],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    subprocess.run(
+        ["git", "commit", "-m", "Sync temporary plugin export"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return repo
+
+
 @pytest.mark.release_only
-def test_validate_packaging_rejects_checked_in_plugin_tree_drift(tmp_path: Path, seeded_charness_repo: Path) -> None:
-    repo = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
+def test_validate_packaging_default_allows_checked_in_plugin_tree_drift(
+    tmp_path: Path, seeded_charness_git_repo: Path
+) -> None:
+    repo = make_clean_git_repo(tmp_path, seeded_charness_git_repo)
     readme_path = repo / "README.md"
     readme_path.write_text(readme_path.read_text(encoding="utf-8") + "\nDrift.\n", encoding="utf-8")
 
     result = run_loaded_script_main("validate_packaging.py", validate_packaging_module, "--repo-root", str(repo))
-    assert result.returncode == 1
-    assert "checked-in plugin tree does not match the generated install surface" in result.stderr
-    assert "scripts/sync_root_plugin_manifests.py" in result.stderr
+    assert result.returncode == 0, result.stderr
+
+    export_result = run_loaded_script_main(
+        "validate_packaging.py",
+        validate_packaging_module,
+        "--repo-root",
+        str(repo),
+        "--validate-export",
+    )
+    assert export_result.returncode == 1
+    assert "checked-in plugin tree does not match the generated install surface" in export_result.stderr
+    assert "scripts/sync_root_plugin_manifests.py" in export_result.stderr
 
 
 def test_sync_root_plugin_manifests_writes_install_surface(tmp_path: Path) -> None:
@@ -278,8 +315,10 @@ def test_exported_consumer_validator_catalog_uses_installed_package_root(
 
 
 @pytest.mark.release_only
-def test_validate_packaging_committed_accepts_clean_head(tmp_path: Path, seeded_charness_git_repo: Path) -> None:
-    repo = clone_seeded_charness_repo(tmp_path, seeded_charness_git_repo)
+def test_validate_packaging_committed_accepts_clean_head(
+    tmp_path: Path, seeded_charness_git_repo: Path
+) -> None:
+    repo = make_clean_git_repo(tmp_path, seeded_charness_git_repo)
 
     result = run_script("scripts/validate_packaging_committed.py", "--repo-root", str(repo), cwd=repo)
     assert result.returncode == 0, result.stderr
@@ -287,7 +326,7 @@ def test_validate_packaging_committed_accepts_clean_head(tmp_path: Path, seeded_
 
 @pytest.mark.release_only
 def test_validate_packaging_committed_rejects_partial_commit_with_uncommitted_export(tmp_path: Path, seeded_charness_git_repo: Path) -> None:
-    repo = clone_seeded_charness_repo(tmp_path, seeded_charness_git_repo)
+    repo = make_clean_git_repo(tmp_path, seeded_charness_git_repo)
 
     source_skill = repo / "skills" / "public" / "create-cli" / "SKILL.md"
     source_skill.write_text(source_skill.read_text(encoding="utf-8") + "\nPartial commit sentinel.\n", encoding="utf-8")
@@ -548,7 +587,7 @@ def test_export_plugin_allows_version_override(tmp_path: Path) -> None:
     assert shared_manifest["version"] != "1.2.3"
 
 
-def test_install_surface_names_the_parser_adapter_lib_loads_by_path() -> None:
+def test_install_surface_names_the_parser_adapter_lib_loads_by_path(monkeypatch: pytest.MonkeyPatch) -> None:
     """`adapter_lib` loads `adapter_yaml_parse` BY PATH at module scope, so an installed
     plugin missing it fails at IMPORT of `adapter_lib` — earlier than the
     `adapter_yaml_render_lib` case beside it in the floor, which earned its entry for the
@@ -560,17 +599,14 @@ def test_install_surface_names_the_parser_adapter_lib_loads_by_path() -> None:
     below proves the same requirement end-to-end; this one is what the changed-line gate can
     see, and a requirement no standing test covers can be deleted with every gate green.
 
-    NOT CHEAP, despite the contrast above: that call also runs
-    `validate_checked_in_plugin_tree_matches_generated`, which exports the whole plugin tree
-    to a tempdir and byte-compares it. So unrelated mirror drift fails this test with a
-    `RuntimeError` before either assertion, attributing a sync problem to the parser
-    requirement. Kept because the byte comparison is the thing that makes the assertions
-    meaningful; said out loud so the failure mode is not a surprise.
+    The export byte comparison is covered by the release-marked end-to-end tests below.
+    Patch it here so this standing test remains narrowly about the required parser file.
     """
     from scripts import validate_packaging_install_surface as surface
     required: list[str] = []
     root = Path(__file__).resolve().parents[2]
     manifest = json.loads((root / "packaging" / "charness.json").read_text(encoding="utf-8"))
+    monkeypatch.setattr(surface, "validate_checked_in_plugin_tree_matches_generated", lambda *_args: None)
     surface.validate_checked_in_plugin_tree(
         root,
         manifest,
@@ -586,7 +622,7 @@ def test_install_surface_names_the_parser_adapter_lib_loads_by_path() -> None:
 
 @pytest.mark.release_only
 def test_install_surface_requires_the_parser_adapter_lib_loads_by_path(
-    tmp_path: Path, seeded_charness_repo: Path
+    tmp_path: Path, seeded_charness_git_repo: Path
 ) -> None:
     """`adapter_lib` loads `adapter_yaml_parse` BY PATH at module scope, so an installed
     plugin missing it fails at IMPORT of `adapter_lib` — earlier than the
@@ -595,9 +631,15 @@ def test_install_surface_requires_the_parser_adapter_lib_loads_by_path(
     `adapter_lib` (`#673`'s length-cap split); without the entry the floor under-specifies a
     hard import dependency it is the only thing speaking about.
     """
-    repo = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
+    repo = make_clean_git_repo(tmp_path, seeded_charness_git_repo)
     (repo / "plugins" / "charness" / "scripts" / "adapter_yaml_parse.py").unlink()
 
-    result = run_loaded_script_main("validate_packaging.py", validate_packaging_module, "--repo-root", str(repo))
+    result = run_loaded_script_main(
+        "validate_packaging.py",
+        validate_packaging_module,
+        "--repo-root",
+        str(repo),
+        "--validate-export",
+    )
     assert result.returncode == 1
     assert "adapter_yaml_parse" in result.stderr

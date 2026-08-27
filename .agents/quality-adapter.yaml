@@ -136,12 +136,12 @@ runtime_budget_intent:
     - validate-attention-state-visibility
     - validate-inference-interpretation
     - validate-inventory-consumption-declaration
-    - validate-packaging-committed
     - validate-skill-ergonomics
   conditional:
     check-coverage: "CHARNESS_QUALITY_MODE=full or coverage_relevant_changes_present"
     check-markdown: "CHARNESS_QUALITY_LABELS is non-empty and includes check-markdown"
     dead-code-advisory: "CHARNESS_QUALITY_DEAD_CODE=1 or CHARNESS_QUALITY_LABELS includes dead-code-advisory"
+    validate-packaging-committed: "--release or CHARNESS_QUALITY_LABELS includes validate-packaging-committed"
     pytest: "--release is absent"
     pytest-release: "--release is present"
     run-quality-full: "CHARNESS_QUALITY_MODE=full and --release is absent"

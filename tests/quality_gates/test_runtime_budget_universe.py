@@ -435,7 +435,7 @@ def test_this_repo_has_no_orphaned_budget(tmp_path: Path) -> None:
     assert payload["runtime_budget_intent"]["status"] == "configured"
     assert payload["runtime_budget_intent"]["missing_labels"] == []
     assert payload["runtime_budget_intent"]["extra_labels"] == []
-    assert len(payload["conditional_non_claims"]) == 9
+    assert len(payload["conditional_non_claims"]) == 10
     # `> 0` would have stayed green through the regression that matters most here:
     # dropping `runtime_budget_profiles` from `budgeted_labels` leaves the ten
     # top-level budgets and hides every profile block, which is the exact

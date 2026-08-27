@@ -73,9 +73,6 @@ jobs:
       - name: Validate plugin packaging export
         run: python3 scripts/validate_packaging.py --repo-root .
 
-      - name: Validate committed plugin export drift
-        run: python3 scripts/validate_packaging_committed.py --repo-root .
-
       - name: Validate doc links
         run: python3 scripts/check_doc_links.py --repo-root .
 

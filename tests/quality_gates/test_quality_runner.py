@@ -65,6 +65,20 @@ def test_run_quality_full_omits_release_or_explicit_only_advisories(
     assert result.returncode == 0, result.stderr
     assert "PASS check-command-docs" not in result.stdout
     assert "PASS check-test-production-ratio" not in result.stdout
+    assert "PASS validate-packaging-committed" not in result.stdout
+
+
+def test_run_quality_explicitly_selects_packaging_export_validation(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    env["CHARNESS_QUALITY_LABELS"] = "validate-packaging-committed"
+
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
+
+    assert result.returncode == 0, result.stderr
+    assert "PASS validate-packaging-committed" in result.stdout
+    assert not any(line.startswith("PASS validate-packaging ") for line in result.stdout.splitlines())
 
 
 def test_run_quality_summarizes_success_without_replaying_logs(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:

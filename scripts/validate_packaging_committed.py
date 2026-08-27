@@ -50,7 +50,13 @@ def validate_snapshot(snapshot_root: Path) -> subprocess.CompletedProcess[str]:
     if not script_path.is_file():
         raise ValidationError(f"snapshot is missing `{script_path.relative_to(snapshot_root)}`")
     return subprocess.run(
-        ["python3", str(script_path), "--repo-root", str(snapshot_root)],
+        [
+            "python3",
+            str(script_path),
+            "--repo-root",
+            str(snapshot_root),
+            "--validate-export",
+        ],
         cwd=snapshot_root,
         check=False,
         capture_output=True,
