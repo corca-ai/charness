@@ -1,10 +1,15 @@
 from __future__ import annotations
 
+import json
 import os
+import shlex
 import subprocess
 from pathlib import Path
 
+import pytest
+
 from scripts import task_run
+from skills.shared.scripts import reviewer_lifecycle
 
 
 def _git(repo: Path, *args: str) -> subprocess.CompletedProcess[str]:
@@ -430,6 +435,7 @@ def test_task_result_exposes_schema_bearing_delivery_without_interpreting_it(tmp
         "approval_eligible": False,
         "delivery_state": "findings-received",
     }
+    assert payload["reviewer_lifecycle"] == delivery["structured"]
 
 
 def test_task_result_reports_malformed_schema_bearing_delivery(tmp_path: Path) -> None:
@@ -444,6 +450,82 @@ def test_task_result_reports_malformed_schema_bearing_delivery(tmp_path: Path) -
 
     assert payload["result_delivery"]["structured_status"] == "invalid"
     assert "structured" not in payload["result_delivery"]
+
+
+def _reviewer_lifecycle_codex(tmp_path: Path, carrier: dict[str, object]) -> Path:
+    encoded = shlex.quote(json.dumps(carrier, separators=(",", ":")))
+    return _codex(
+        tmp_path,
+        f"printf '%s\\n' {encoded}\nprintf 'VALUE = 2\\n' > module.py",
+        deliver=False,
+    )
+
+
+@pytest.mark.parametrize(
+    ("name", "carrier"),
+    [
+        (
+            "preflight-blocked",
+            reviewer_lifecycle.build_lifecycle(
+                status="runner-invalid",
+                error="reviewer boundary unavailable",
+                reviewer_started=False,
+            ),
+        ),
+        (
+            "started-timed-out",
+            reviewer_lifecycle.build_lifecycle(
+                status="runner-timeout",
+                error="canonical runner timed out",
+                returncode=124,
+                reviewer_started=True,
+            ),
+        ),
+        (
+            "terminal-delivered-block",
+            reviewer_lifecycle.build_lifecycle(
+                status="runner-completed",
+                report={
+                    "schema_version": "charness.reviewer_worker_report.v1",
+                    "delivery_state": "findings-received",
+                    "review_verdict": "block",
+                    "classification": "contract",
+                    "approval_eligible": False,
+                },
+                returncode=0,
+                reviewer_started=True,
+            ),
+        ),
+    ],
+)
+def test_task_result_projects_canonical_reviewer_lifecycle_exactly(
+    tmp_path: Path, name: str, carrier: dict[str, object]
+) -> None:
+    repo = _repo(tmp_path)
+    executable = _reviewer_lifecycle_codex(tmp_path, carrier)
+
+    payload = _run(repo, tmp_path, executable, task_id=name)
+    status = task_run.task_status(repo, name)
+
+    assert payload["result_delivery"]["structured"] == carrier
+    assert payload["reviewer_lifecycle"] is payload["result_delivery"]["structured"]
+    assert payload["reviewer_lifecycle"] == carrier
+    assert status == payload
+
+
+def test_task_result_does_not_project_non_review_schema(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    carrier = {
+        "schema_version": "charness.other_result.v1",
+        "status": "complete",
+        "review_verdict": "block",
+    }
+    executable = _reviewer_lifecycle_codex(tmp_path, carrier)
+
+    payload = _run(repo, tmp_path, executable, task_id="non-review-schema")
+
+    assert payload["result_delivery"]["structured"] == carrier
+    assert "reviewer_lifecycle" not in payload
 
 
 def test_running_result_is_visible_to_the_child(tmp_path: Path) -> None:

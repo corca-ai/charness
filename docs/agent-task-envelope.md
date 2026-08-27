@@ -58,7 +58,15 @@ Status reads exactly the external task-run result store and lists all records
 when no id is supplied.
 
 When delivered text is one complete schema-bearing JSON/YAML mapping,
-`result_delivery.structured` exposes it unchanged. Task status does not
-interpret reviewer fields or infer approval; the mapping's owning schema and
-validator remain authoritative. Malformed schema-bearing text is reported as
-`structured_status: invalid`, while ordinary prose is `not-applicable`.
+`result_delivery.structured` exposes it unchanged. If that mapping's
+`schema_version` is `charness.reviewer_lifecycle.v1`, the sole persisted task
+result also exposes that exact mapping at top-level `reviewer_lifecycle`.
+`task status` returns the persisted record directly; it does not reconstruct
+that projection.
+
+This is only a projection of the canonical reviewer lifecycle carrier owned by
+[reviewer_lifecycle.py](../skills/shared/scripts/reviewer_lifecycle.py). Task runs do not interpret or
+synthesize reviewer fields, validate the lifecycle, infer approval, or claim
+reviewer ownership. Other schemas are not projected to `reviewer_lifecycle`.
+Malformed schema-bearing text is reported as `structured_status: invalid`,
+while ordinary prose is `not-applicable`.
