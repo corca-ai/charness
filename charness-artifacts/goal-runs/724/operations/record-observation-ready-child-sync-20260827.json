@@ -1,0 +1,39 @@
+{
+  "kind": "charness.goal-run-operation/v1",
+  "repo": "corca-ai/charness",
+  "parent_number": 724,
+  "operation": "record-observation",
+  "attempt_id": "ready-child-sync-20260827-1",
+  "draft_sha256": "ced8410bd896844bf6bb75bff807438cb6f40cb6a3c3b8489ddcd05a662212c2",
+  "binding_sha256": "32ead8148ccfbfbbe0b9b6af1ad5ec1038a9c424c0766f45c1fbc9e54f54516d",
+  "observation_dir": "charness-artifacts/goal-runs/724/observations",
+  "target": {
+    "repo": "corca-ai/charness",
+    "number": 724,
+    "work_item_key": "ready-child-sync"
+  },
+  "result": {
+    "ok": true,
+    "status": "verified-read",
+    "outcome": "verified-read",
+    "mutation_invoked": false,
+    "observation": "Five changed issue bodies were updated through provider operations and separately read back byte-identically; four already-current ready bodies were not rewritten.",
+    "updated_targets": [725, 726, 727, 733, 734],
+    "already_current_targets": [708, 710, 722, 723],
+    "states": {
+      "725": "OPEN",
+      "726": "OPEN",
+      "727": "OPEN",
+      "733": "OPEN",
+      "734": "OPEN"
+    },
+    "body_sha256": {
+      "725": "d57210229ceceeb9725474a2e94380ea5297fd61158066db42a6a4391d47a1e3",
+      "726": "80d4e10223da8663603ed06da391c5f7f4694b24b17156e4ec1c9bb41128e4e8",
+      "727": "6067ac359ba8284f13aa48ef2333aa9e998707269cbb044410ac0e1350821c8c",
+      "733": "5c7c858ce027031daa31a97ec1f336032a4944fdc0080344966ebcc7cafca5a1",
+      "734": "8c6a7bcf8dcc0fa9ff724445a894eff2b1b3d1894684f15c3853bc73c0739d4d"
+    },
+    "source_readback": "issue_tool read --repo corca-ai/charness --number <n> --repo-root ."
+  }
+}
