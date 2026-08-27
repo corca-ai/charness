@@ -65,7 +65,16 @@ def test_installed_cli_update_all_without_json_prints_progress_and_summary(tmp_p
     assert payload["response_level"] == "summary"
     assert payload["tool_update"]["response_level"] == "summary"
     assert payload["tool_update"]["summary"]["tool_count"] == 14
-    assert payload["tool_update"]["attention"]["manual_tool_ids"] == ["github-gh"]
+    assert payload["tool_update"]["attention"]["manual_tool_ids"] == [
+        "awiki",
+        "github-gh",
+        "gitleaks",
+        "glow",
+        "lychee",
+        "ruff",
+        "tokei",
+        "vulture",
+    ]
     assert payload["tool_update"]["attention"]["not_ready_tool_ids"]
     assert "results" not in payload["tool_update"]
     assert "STEP: updating tracked external tools" in update_result.stderr
