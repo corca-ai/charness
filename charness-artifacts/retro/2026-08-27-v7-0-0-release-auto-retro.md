@@ -16,7 +16,7 @@ decisions, counterfactuals, or lesson dispositions.
 - Triggered: `True`.
 - Surface hits: `checked-in-plugin-export`, `integrations-and-control-plane`.
 - Path hits: 18.
-- Evaluated changed paths: 2208.
+- Evaluated changed paths: 2210.
 
 ## Waste
 
