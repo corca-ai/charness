@@ -59,8 +59,9 @@ non-claims.
 `achieve` first shapes prose into one complete Goal Draft under
 `charness-artifacts/goals/`, freezes it after approval, and binds it to one
 provider-backed Goal Run. Resume with the exact issue-number objective
-`/goal #N`; provider state and child issue state carry execution progress, while
-the frozen draft remains planning provenance.
+`/goal #N`; the parent issue's managed progress cursor carries the next-child
+decision, while the frozen draft remains planning provenance. Full child-graph
+reconciliation is an explicit sync/closeout operation, not routine pickup.
 
 `achieve` coordinates existing workflows such as `ideation`, `spec`, `impl`,
 `debug`, `quality`, `issue`, `critique`, and `retro`. It does not replace those

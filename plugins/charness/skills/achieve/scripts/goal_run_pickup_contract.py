@@ -2,16 +2,24 @@
 
 from __future__ import annotations
 
-import hashlib
-import json
 import re
 from typing import Any
 
 OBJECTIVE_RE = re.compile(r"^/goal +#([1-9][0-9]*)$")
-KEY_RE = re.compile(r"<!--\s*charness-work-item-key:\s*([^\s]+)\s*-->")
 SHA_RE = re.compile(r"^[0-9a-f]{64}$")
 GOAL_RUN_SCHEMA = "charness.goal-binding/v1"
 VERIFIED_BOOTSTRAP = "verified-target-roundtrip"
+PROGRESS_SCHEMA = "charness.goal-progress/v1"
+PROGRESS_FIELDS = {
+    "schema",
+    "revision",
+    "total",
+    "completed",
+    "open",
+    "membership_sha256",
+    "next",
+}
+NEXT_FIELDS = {"key", "repo", "number", "url", "state"}
 
 
 class PickupError(ValueError):
@@ -81,113 +89,110 @@ def validate_metadata(
     return dict(metadata)
 
 
-def membership_digest(repo: str, parent_number: int, children: list[dict[str, Any]]) -> str:
-    rows: list[dict[str, Any]] = []
-    expected_parent_url = f"https://api.github.com/repos/{repo}/issues/{parent_number}"
-    for index, child in enumerate(children):
-        number = child.get("number")
-        url = child.get("url")
-        parent_url = child.get("parent_issue_url")
-        if type(number) is not int or number <= 0:
-            raise PickupError("graph-invalid", f"child {index} has no positive issue number")
-        if url != f"https://github.com/{repo}/issues/{number}":
-            raise PickupError("graph-identity-mismatch", f"child {repo}#{number} has a foreign issue URL")
-        if parent_url != expected_parent_url:
-            raise PickupError("graph-parent-mismatch", f"child {repo}#{number} is not linked to the requested parent")
-        rows.append({"number": number, "parent_issue_url": parent_url, "repo": repo, "url": url})
-    if len({row["number"] for row in rows}) != len(rows):
-        raise PickupError("graph-invalid", "provider returned duplicate child issue numbers")
-    raw = json.dumps(sorted(rows, key=lambda row: row["number"]), sort_keys=True, separators=(",", ":")).encode()
-    return hashlib.sha256(raw).hexdigest()
+def _validate_progress_next(
+    progress: dict[str, Any], binding_items: list[dict[str, Any]], *, repo: str
+) -> None:
+    next_child = progress["next"]
+    if progress["open"] == 0:
+        if next_child is not None:
+            raise PickupError("progress-invalid", "a completed cursor cannot name a next child")
+        return
+    if not isinstance(next_child, dict) or set(next_child) != NEXT_FIELDS:
+        raise PickupError("progress-invalid", "an open cursor must name exactly one next child")
+    if not isinstance(next_child["key"], str) or not next_child["key"].strip():
+        raise PickupError("progress-invalid", "progress.next.key must be non-empty text")
+    if not isinstance(next_child["repo"], str) or not next_child["repo"].strip():
+        raise PickupError("progress-invalid", "progress.next.repo must be non-empty text")
+    if next_child["repo"].lower() != repo.lower():
+        raise PickupError("child-identity-mismatch", "progress.next repository differs from the Goal Run repository")
+    number = next_child["number"]
+    if type(number) is not int or number <= 0:
+        raise PickupError("progress-invalid", "progress.next.number must be a positive integer")
+    expected_url = f"https://github.com/{repo}/issues/{number}"
+    if next_child["url"] != expected_url:
+        raise PickupError("child-identity-mismatch", "progress.next URL does not match its repository and number")
+    if next_child["state"] != "OPEN":
+        raise PickupError("progress-invalid", "progress.next must point to an OPEN child")
+    keys = {item.get("key") for item in binding_items}
+    if next_child["key"] not in keys:
+        raise PickupError("graph-work-item-mismatch", "progress.next is not an approved Work Item")
+    item = next(item for item in binding_items if item.get("key") == next_child["key"])
+    expected_issue = item.get("issue")
+    if isinstance(expected_issue, dict):
+        if expected_issue.get("repo") != repo or expected_issue.get("number") != number:
+            raise PickupError(
+                "child-identity-mismatch",
+                f"binding identity for {next_child['key']} differs from the parent cursor",
+            )
 
 
-def work_item_key(body: Any) -> str | None:
-    if not isinstance(body, str):
-        return None
-    matches = KEY_RE.findall(body)
-    if len(matches) != 1:
-        return None
-    return matches[0]
-
-
-def _headings(body: str) -> set[str]:
-    return {
-        line[3:].strip().lower()
-        for line in body.splitlines()
-        if line.startswith("## ")
-    }
-
-
-def executable_body_report(body: Any, expected_key: str) -> dict[str, Any]:
-    if not isinstance(body, str):
-        return {"ok": False, "reason": "body is not text"}
-    key = work_item_key(body)
-    if key != expected_key:
-        return {"ok": False, "reason": "managed Work Item key marker is missing or mismatched"}
-    headings = _headings(body)
-    checks = {
-        "purpose": any(value.startswith("purpose") for value in headings),
-        "contract": any(value.startswith(("bounded contract", "owned change", "owned surfaces")) for value in headings),
-        "acceptance": any("acceptance" in value or value.startswith("verification") for value in headings),
-        "evidence": any("evidence boundary" in value or "non-claims" in value for value in headings),
-    }
-    missing = sorted(name for name, present in checks.items() if not present)
-    return {"ok": not missing, "key": key, "missing": missing, "headings": sorted(headings)}
-
-
-def reconcile_and_select(  # noqa: C901 -- selection and membership reconciliation are one atomic contract
-    children: list[dict[str, Any]], binding_items: list[dict[str, Any]], *, repo: str
+def validate_progress(
+    metadata: dict[str, Any],
+    binding_items: list[dict[str, Any]],
+    *,
+    repo: str,
+    parent_number: int,
 ) -> dict[str, Any]:
-    items = {item["key"]: item for item in binding_items}
-    if len(items) != len(binding_items):
-        raise PickupError("binding-invalid", "binding contains duplicate Work Item keys")
-    by_key: dict[str, dict[str, Any]] = {}
-    by_number: dict[int, dict[str, Any]] = {}
-    for item in binding_items:
-        issue = item.get("issue")
-        if isinstance(issue, dict) and type(issue.get("number")) is int:
-            by_number[issue["number"]] = item
-    invalid_open: list[dict[str, Any]] = []
-    for child in children:
-        number = child["number"]
-        item = by_number.get(number)
-        key = work_item_key(child.get("body"))
-        if item is None and child.get("state") == "OPEN":
-            item = items.get(key)
-        if item is None:
-            if child.get("state") == "CLOSED":
-                continue
-            invalid_open.append({"number": number, "reason": "open child is not an approved Work Item"})
-            continue
-        if item.get("issue"):
-            expected = item["issue"]
-            if expected.get("repo") != repo or expected.get("number") != number:
-                raise PickupError("child-identity-mismatch", f"binding identity for {item['key']} differs from live child #{number}")
-        if child.get("state") == "OPEN":
-            body_report = executable_body_report(child.get("body"), item["key"])
-            if not body_report["ok"]:
-                invalid_open.append({"number": number, "key": item["key"], "reason": body_report})
-        by_key[item["key"]] = {**child, "work_item": item}
-    missing = sorted(set(items) - set(by_key))
-    if missing:
-        raise PickupError("graph-work-item-mismatch", "live graph does not expose every approved Work Item", details={"missing_keys": missing})
-    candidates: list[dict[str, Any]] = []
-    blocked: list[dict[str, Any]] = []
-    for key, row in by_key.items():
-        if row.get("state") != "OPEN":
-            continue
-        if any(entry.get("number") == row.get("number") for entry in invalid_open):
-            continue
-        item = row["work_item"]
-        dependencies = item.get("dependencies", [])
-        unmet = [dep for dep in dependencies if dep not in by_key or by_key[dep].get("state") != "CLOSED"]
-        if unmet:
-            blocked.append({"key": key, "number": row["number"], "unmet_dependencies": unmet})
-            continue
-        candidates.append({"key": key, "number": row["number"], "repo": repo, "rank": item["rank"], "dependencies": dependencies, "title": row.get("title")})
-    if not candidates:
-        if invalid_open:
-            raise PickupError("no-executable-child", "open children are incomplete or stale", details={"invalid_open": invalid_open, "blocked": blocked})
-        raise PickupError("dependency-blocked", "every open child has an unmet dependency", details={"blocked": blocked})
-    selected = sorted(candidates, key=lambda row: (row["rank"], row["key"], row["repo"], row["number"]))[0]
-    return {"selected_child": selected, "work_items": by_key, "blocked": blocked, "invalid_open": invalid_open}
+    """Validate the small parent-owned execution cursor.
+
+    The cursor is deliberately separate from the immutable binding.  It is a
+    navigation snapshot maintained by the one Goal Run updater, not a second
+    approval record.  A missing cursor is a typed migration stop; pickup never
+    silently falls back to a full child-graph scan.
+    """
+    progress = metadata.get("progress")
+    if not isinstance(progress, dict):
+        raise PickupError(
+            "progress-sync-required",
+            "Goal Run parent has no managed execution cursor; run explicit Goal Run progress sync",
+        )
+    extras = sorted(set(progress) - PROGRESS_FIELDS)
+    missing = sorted(PROGRESS_FIELDS - set(progress))
+    if extras or missing:
+        detail: dict[str, Any] = {}
+        if extras:
+            detail["unknown_fields"] = extras
+        if missing:
+            detail["missing_fields"] = missing
+        raise PickupError("progress-invalid", "parent execution cursor has the wrong shape", details=detail)
+    if progress["schema"] != PROGRESS_SCHEMA:
+        raise PickupError("progress-invalid", "parent execution cursor names an unsupported schema")
+    if type(progress["revision"]) is not int or progress["revision"] <= 0:
+        raise PickupError("progress-invalid", "parent execution cursor revision must be positive")
+    for field in ("total", "completed", "open"):
+        if type(progress[field]) is not int or progress[field] < 0:
+            raise PickupError("progress-invalid", f"progress.{field} must be a non-negative integer")
+    if progress["total"] <= 0 or progress["completed"] + progress["open"] != progress["total"]:
+        raise PickupError("progress-invalid", "parent execution counts do not reconcile")
+    _sha(progress["membership_sha256"], "progress.membership_sha256")
+    if progress["membership_sha256"] != metadata["current_membership_sha256"]:
+        raise PickupError(
+            "progress-stale",
+            "parent execution cursor does not name the current membership revision",
+        )
+    _validate_progress_next(progress, binding_items, repo=repo)
+    return dict(progress)
+
+
+def select_from_parent_progress(
+    progress: dict[str, Any], binding_items: list[dict[str, Any]], *, repo: str
+) -> dict[str, Any]:
+    """Return the already-selected child without reading any child issue."""
+    next_child = progress.get("next")
+    if next_child is None:
+        raise PickupError("all-children-closed", "the parent cursor has no remaining child")
+    item = next(item for item in binding_items if item.get("key") == next_child["key"])
+    return {
+        "selected_child": {
+            "key": next_child["key"],
+            "number": next_child["number"],
+            "repo": repo,
+            "rank": item["rank"],
+            "dependencies": list(item.get("dependencies", [])),
+            "title": next_child.get("title"),
+            "selection_source": "parent-progress",
+            "cursor_revision": progress["revision"],
+        },
+        "blocked": [],
+        "invalid_open": [],
+    }

@@ -17,10 +17,10 @@ if str(_SCRIPT_DIR) not in sys.path:
 
 from goal_run_pickup_contract import (  # noqa: E402 - the sibling contract is loaded after the portable path bootstrap
     PickupError,
-    membership_digest,
     parse_objective,
-    reconcile_and_select,
+    select_from_parent_progress,
     validate_metadata,
+    validate_progress,
 )
 
 
@@ -91,7 +91,7 @@ def _resolve_repository(repo_root: Path, adapter: dict[str, Any], runtime: Any) 
     raise PickupError("repository-ambiguous", "multiple compatible git remotes resolve to different repositories", details={"repositories": sorted(f"{owner}/{repo}" for owner, repo in urls)})
 
 
-def _read_goal_run(repo_root: Path, repo: str, number: int) -> tuple[dict[str, Any], Any, Any, dict[str, Any]]:
+def _read_goal_parent(repo_root: Path, repo: str, number: int) -> tuple[dict[str, Any], dict[str, Any]]:
     cli = runpy.run_path(str(_issue_script("issue_tracker_cli")))
     resolved = cli["_resolve_backend"](repo_root)
     if not resolved.get("adapter_ok"):
@@ -100,16 +100,19 @@ def _read_goal_run(repo_root: Path, repo: str, number: int) -> tuple[dict[str, A
     preflight = provider["_preflight"](
         repo=repo,
         parent_number=number,
-        operations=["read-body", "read-state", "list-children"],
+        operations=["read-body", "read-state"],
         resolved=resolved,
     )
     if not preflight["ok"]:
         raise PickupError(str(preflight.get("status") or "provider-unavailable"), str(preflight.get("error") or "Goal Run provider is not ready"), details=preflight)
     try:
-        graph = provider["_read_graph"](repo, number, resolved["backend"])
+        issue = provider["READ"].read_issue_with_comments(
+            repo, number, backend=resolved["backend"]
+        )["issue"]
+        parent = provider["_parent_summary"](issue, repo=repo, number=number)
     except RuntimeError as exc:
         raise PickupError("provider-read-failed", str(exc)) from exc
-    return graph, cli, provider, resolved
+    return {"parent": parent}, resolved
 
 
 def pickup(repo_root: Path, objective: str) -> dict[str, Any]:
@@ -121,7 +124,7 @@ def pickup(repo_root: Path, objective: str) -> dict[str, Any]:
     runtime = _load_path(_issue_script("issue_runtime"), "issue_pickup_runtime")
     repository = _resolve_repository(repo_root, adapter, runtime)
     repo = repository["full_name"]
-    graph, cli, provider, resolved = _read_goal_run(repo_root, repo, number)
+    graph, resolved = _read_goal_parent(repo_root, repo, number)
     parent = graph["parent"]
     guard = _load_path(_issue_script("issue_goal_run_guard"), "issue_pickup_guard")
     try:
@@ -147,15 +150,13 @@ def pickup(repo_root: Path, objective: str) -> dict[str, Any]:
         raise PickupError("binding-invalid", str(exc)) from exc
     if metadata["initial_graph_sha256"] != binding["approved_work_items_sha256"]:
         raise PickupError("graph-digest-mismatch", "parent initial graph hash differs from the immutable binding")
-    children = list(graph["children"])
-    if membership_digest(repo, number, children) != metadata["current_membership_sha256"]:
-        raise PickupError("membership-stale", "provider graph differs from the parent current-membership hash")
-    read = provider["READ"]
-    hydrated: list[dict[str, Any]] = []
-    for child in children:
-        issue = read.read_issue_with_comments(repo, child["number"], backend=resolved["backend"])["issue"]
-        hydrated.append({**child, "body": issue.get("body"), "comments": issue.get("comments", [])})
-    selection = reconcile_and_select(hydrated, binding["approved_work_items"], repo=repo)
+    progress = validate_progress(
+        metadata,
+        binding["approved_work_items"],
+        repo=repo,
+        parent_number=number,
+    )
+    selection = select_from_parent_progress(progress, binding["approved_work_items"], repo=repo)
     return {
         "ok": True,
         "kind": "charness.goal-run-pickup/v1",
@@ -167,7 +168,14 @@ def pickup(repo_root: Path, objective: str) -> dict[str, Any]:
         "parent": {"repo": repo, "number": number, "url": parent["url"], "state": parent["state"]},
         "metadata": metadata,
         "binding": {"path": metadata["binding_path"], "sha256": binding["binding_sha256"], "draft_sha256": binding["draft_sha256"]},
-        "graph": {"count": len(children), "membership_sha256": metadata["current_membership_sha256"], "children": [{k: child[k] for k in ("number", "state", "url")} for child in children]},
+        "progress": progress,
+        "graph": {
+            "count": progress["total"],
+            "membership_sha256": progress["membership_sha256"],
+            "source": "parent-progress",
+            "reconciliation": "explicit-sync-only",
+        },
+        "selection": {"source": "parent-progress", "child_reads": 0},
         "selected_child": selection["selected_child"],
         "blocked_children": selection["blocked"],
         "invalid_open_children": selection["invalid_open"],

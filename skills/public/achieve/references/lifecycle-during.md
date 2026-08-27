@@ -4,31 +4,33 @@
 
 ## Pickup
 
-The active run starts from the exact objective `/goal #N`. Run the achieve-owned
-pickup helper in a clean process. It resolves the repository from the adapter
-or one compatible git remote, reads the provider-backed parent and child graph,
-validates the frozen Goal Draft and Goal Binding, checks current membership,
-and selects one executable open child.
+The active run starts from the exact objective `/goal #N`. The achieve-owned
+pickup helper resolves the repository from the adapter or one compatible git
+remote, reads the provider-backed parent, validates the frozen Goal Draft and
+Goal Binding, and returns the parent's managed `charness.goal-progress/v1`
+cursor. The cursor already names the next child; pickup does not read the child
+graph or hydrate child bodies.
 
-The selection predicate is:
+The cursor carries the reconciled membership revision, counts, revision number,
+and one exact `OPEN` child identity. The binding still owns rank and dependency
+provenance, while the parent owns the current next-child decision. A missing or
+stale cursor is a typed `progress-sync-required`/`progress-stale` refusal, not
+an invitation to perform a hidden full scan.
 
-1. child state is `OPEN`;
-2. the body has one approved Work Item key, purpose, owned contract, acceptance
-   and proof, and evidence boundary;
-3. the child identity matches the binding or an approved graph amendment; and
-4. every dependency is closed or explicitly satisfied by the current graph.
-
-Candidates sort by approved rank, Work Item key, exact repository, and issue
-number. No tie is guessed. Provider state is fresh for this pickup; a previous
-receipt or local file cannot substitute for a readback.
+Full graph membership, child-body, dependency, and evidence reconciliation is
+reserved for bootstrap, explicit progress sync/doctor, graph amendment, and
+closeout. Those paths use the provider's graph/evidence readers; routine pickup
+is one parent read.
 
 ## Execution
 
 Delegate the selected child to its owning workflow. `impl` changes the smallest
 meaningful code/config/test surface, `quality` chooses proportionate proof,
 `prove` records the closeout, and `issue` owns any issue-bound close operation.
-The child issue carries routine progress and behavioral evidence. The frozen
-Goal Draft and immutable binding are never used as a scratchpad.
+The parent progress cursor carries the current navigation state; the child
+issue carries behavioral evidence and its provider state. Advance the cursor
+when the child transition is published. The frozen Goal Draft and immutable
+binding are never used as a scratchpad.
 
 For ordinary reversible local work, deterministic proof may close the slice
 with an explicit `Critique: not-required <reason>` disposition. Escalate to

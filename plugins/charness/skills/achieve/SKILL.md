@@ -46,10 +46,13 @@ working-directory name or switch clients silently.
 5. Reconcile the parent and real sub-issue graph through the issue-owned
    Goal Run provider. Persist each typed provider observation and require exact
    identity/body/relationship readback. A partial or uncertain mutation stops
-   retry until a clean read resolves it.
+   retry until a clean read resolves it. This is the explicit bootstrap/sync
+   path, not routine pickup.
 6. Start or resume execution only with the exact objective `/goal #N`. The
-   provider reads the parent, binding, frozen draft, current graph, and every
-   candidate child, then selects one open child whose dependencies are closed.
+   provider reads the parent, binding, frozen draft, and its managed execution
+   cursor, then enters the cursor's next child. Routine pickup does not scan
+   the graph or hydrate every child; the parent cursor is advanced whenever a
+   child transition is published.
 7. Delegate implementation and proof to the selected child. Routine progress is
    provider child state and child-owned evidence; no local progress mirror is
    created and the frozen draft is not edited.
@@ -71,9 +74,10 @@ python3 "$SKILL_DIR/scripts/goal_run_pickup.py" \
 
 Pickup refuses an unresolved or ambiguous repository, a non-Goal-Run issue,
 malformed metadata, a closed parent, missing or mismatched draft/binding,
-unverified establishment, stale membership, incomplete child body, stale
-premise, blocked dependencies, or no executable child. It never falls back to
-local artifact presence or a mutable local status.
+unverified establishment, missing or stale parent progress, or no next child.
+It never falls back to local artifact presence or silently launches a full graph
+reconciliation. Use the issue-owned Goal Run read/sync path when the parent
+cursor needs repair.
 
 The selected result is `verified-read` only. A pending bootstrap marker is an
 honest refusal until the final target roundtrip has re-read the provider,

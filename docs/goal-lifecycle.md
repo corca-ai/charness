@@ -21,16 +21,18 @@ document:
 - execution truth is the GitHub parent/sub-issue graph observed through the
   selected issue backend
 
-The small record between them proves identity and integrity. It does not mirror
-execution state. The default operating assumption is one agent updating a goal;
-routine progress is therefore child issue state, not a parent rewrite protocol.
+The small record between them proves identity and integrity. The parent also
+owns a small mutable execution cursor so a new session can enter the next child
+with one read. The cursor is navigation state, not approval provenance or a
+second event ledger; explicit sync/closeout remains responsible for full graph
+reconciliation.
 
 ## Domain Model
 
 | Concept | Owns | Must not own |
 | --- | --- | --- |
 | Goal Draft | research, decisions, critique dispositions, target architecture, approved child design, briefing | routine progress or current child state |
-| Goal Binding | immutable approval identity, exact draft hash, parent identity, and initial approved work-item manifest/digest | observations, active/blocked/completion verdicts, percentages, parent-body copies |
+| Goal Binding | immutable approval identity, exact draft hash, parent identity, and initial approved work-item manifest/digest | observations, active/blocked/completion verdicts, percentages, mutable progress |
 | Goal Run | shared execution scope, dependency order, completion policy, sparse contract changes | local planning history |
 | Work Item | immediately executable capability contract and routine provider state | umbrella intent or unrelated integration work |
 | Provider Observation | typed evidence of preflight, mutation, readback, partial outcome, or refusal | lifecycle policy or a second durable event ledger |
@@ -122,6 +124,8 @@ with:
 - binding schema, repository-relative binding path, and complete binding SHA-256
 - frozen draft path and SHA-256
 - initial graph SHA-256 and current membership revision/SHA-256
+- mutable `progress` cursor: schema, revision, reconciled counts, membership
+  SHA-256, and one exact next-child identity
 - establishment and optional terminal observation path/SHA-256
 - a planning-reset note when a provisional parent is being reconciled
 
@@ -149,21 +153,22 @@ adapter-resolved `issue` backend to read the exact `(repository, number)` and:
 2. reads and validates the Goal Binding and frozen Goal Draft
 3. verifies parent ↔ binding ↔ draft identity
 4. validates the establishment observation
-5. reads real relationships and validates the parent's current membership hash
-6. selects one open executable child
+5. reads the parent's managed progress cursor
+6. enters the cursor's next executable child
 
 The sidecar path is never entered by the user and no host-specific binding-file
 parser is required.
 
-An executable child is open, has a valid Work Item contract, and has all declared
-dependencies closed or explicitly satisfied. Selection is lowest execution
-rank, then stable key, then exact repository/number.
+The cursor is produced by bootstrap or explicit progress sync from the full
+reconciler. It records an already-validated open child; pickup does not read
+all child bodies or recompute dependency order. The binding retains rank and
+dependency provenance for sync and closeout.
 
 Pickup refuses with an actionable type for malformed objective, unresolved or
 ambiguous repository, non-Goal-Run issue, invalid metadata, missing/mismatched
-draft or binding, unestablished/invalid graph, dependency cycle/block, stale
-child, no executable child, all children closed, or closed parent. It never
-falls through to a local execution-state fallback.
+draft or binding, unestablished/invalid graph, missing/stale parent progress,
+no next child, or closed parent. It never falls through to a local execution-
+state fallback or a hidden full graph scan.
 
 ## Provider Operations
 
@@ -244,15 +249,16 @@ explicit operator approval before the parent contract changes.
 
 ## Execution And Closeout
 
-Routine execution chooses one open Work Item by the deterministic predicate and
-follows its own implementation/proof workflow. Closing a child is provider
-progress, not behavioral proof; the child issue's closeout comment/provider
-receipt names and binds the required evidence. There is no second local
-child-acceptance ledger.
+Routine execution enters the Work Item named by the parent cursor and follows
+its own implementation/proof workflow. Closing a child is provider progress,
+not behavioral proof; the child issue's closeout comment/provider receipt names
+and binds the required evidence. The parent cursor advances with the published
+transition; there is no second local child-acceptance ledger.
 
-Parent body updates are sparse and reserved for changes to shared intent, scope,
-policy, dependencies, or completion semantics. One-agent ownership means no
-optimistic-concurrency protocol is part of the default model.
+Parent body updates are limited to the managed cursor and shared contract. One
+agent owns those updates; optimistic concurrency is not part of the default
+model. Full graph reconciliation remains explicit rather than running on every
+session start.
 
 A deferred child moves to a successor Goal Run with a durable reason and exact
 remove/add readback. Merely unlinking it cannot make the current parent closable.

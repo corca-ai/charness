@@ -18,8 +18,8 @@ and, when selected, exact Work Item issue/key.
 
 Evidence without that identity must say `planning-only` or `not-goal-bound`; a
 local path, filename, or issue number alone is not execution proof. Routine
-progress belongs to provider child state, not a second local ledger or edits to
-the frozen draft.
+progress is carried by the parent Goal Run cursor, not a second local ledger or
+edits to the frozen draft.
 
 ## Durability Classes
 

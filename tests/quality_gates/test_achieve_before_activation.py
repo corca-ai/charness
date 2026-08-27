@@ -21,7 +21,7 @@ def test_public_achieve_exposes_one_issue_native_lifecycle() -> None:
     assert "`/goal #N`" in skill
     assert "goal_run_pickup.py" in skill
     assert "verified-target-roundtrip" in before
-    assert "Provider state is fresh" in during
+    assert "charness.goal-progress/v1" in during
     assert "guarded provider close" in after
 
 
@@ -46,12 +46,12 @@ def test_before_phase_binds_full_draft_and_refuses_unresolved_interview() -> Non
     assert "No provider mutation is authorized" in before
 
 
-def test_during_phase_selects_children_from_fresh_provider_state() -> None:
+def test_during_phase_enters_the_parent_cursor_and_reserves_full_reconciliation() -> None:
     during = _text("references/lifecycle-during.md")
 
-    assert "child state is `OPEN`" in during
-    assert "every dependency is closed" in during
-    assert "No tie is guessed" in during
+    assert "pickup does not read the child" in during
+    assert "explicit progress sync/doctor" in during
+    assert "one parent read" in during
     assert "no second local progress ledger" in during
 
 

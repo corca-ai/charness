@@ -25,7 +25,6 @@ pickup = _load_module()
 REPO = "corca-ai/charness"
 PARENT_NUMBER = 724
 PARENT_URL = f"https://github.com/{REPO}/issues/{PARENT_NUMBER}"
-PARENT_API_URL = f"https://api.github.com/repos/{REPO}/issues/{PARENT_NUMBER}"
 GOAL_RUN_SCHEMA = "charness.goal-binding/v1"
 VERIFIED_BOOTSTRAP = "verified-target-roundtrip"
 
@@ -45,34 +44,21 @@ def _metadata(*, bootstrap: str = VERIFIED_BOOTSTRAP) -> dict[str, object]:
         "current_membership_sha256": _sha("d"),
         "bootstrap_verification": bootstrap,
         "parent_identity": {"repo": REPO, "number": PARENT_NUMBER, "url": PARENT_URL},
-    }
-
-
-def _child(
-    number: int,
-    *,
-    state: str = "OPEN",
-    key: str | None = None,
-    title: str | None = None,
-) -> dict[str, object]:
-    body = None
-    if key is not None:
-        body = (
-            f"<!-- charness-work-item-key: {key} -->\n"
-            f"# {title or key}\n\n"
-            "## Purpose\nDo the bounded work.\n\n"
-            "## Bounded contract\nOwn the change.\n\n"
-            "## Acceptance and verification\nRun the proof.\n\n"
-            "## Evidence boundary\nRecord non-claims.\n"
-        )
-    return {
-        "repo": REPO,
-        "number": number,
-        "state": state,
-        "title": title or f"issue {number}",
-        "url": f"https://github.com/{REPO}/issues/{number}",
-        "parent_issue_url": PARENT_API_URL,
-        "body": body,
+        "progress": {
+            "schema": "charness.goal-progress/v1",
+            "revision": 1,
+            "total": 3,
+            "completed": 1,
+            "open": 2,
+            "membership_sha256": _sha("d"),
+            "next": {
+                "key": "provider",
+                "repo": REPO,
+                "number": 726,
+                "url": f"https://github.com/{REPO}/issues/726",
+                "state": "OPEN",
+            },
+        },
     }
 
 
@@ -114,51 +100,33 @@ def test_pending_bootstrap_is_a_typed_refusal_after_identity_is_complete() -> No
     assert exc_info.value.details == {"bootstrap_verification": "pending-target-roundtrip"}
 
 
-def test_membership_digest_is_order_independent_and_rejects_foreign_identity() -> None:
-    children = [_child(726), _child(734)]
-    expected = pickup.membership_digest(REPO, PARENT_NUMBER, children)
+def test_parent_progress_selects_without_child_state_or_body_reads() -> None:
+    metadata = _metadata()
+    items = [_item("provider", rank=1), _item("other", rank=1)]
 
-    assert pickup.membership_digest(REPO, PARENT_NUMBER, list(reversed(children))) == expected
-
-    foreign = [dict(children[0], url="https://github.com/other/repo/issues/726"), children[1]]
-    with pytest.raises(pickup.PickupError) as exc_info:
-        pickup.membership_digest(REPO, PARENT_NUMBER, foreign)
-    assert exc_info.value.code == "graph-identity-mismatch"
-
-
-def test_reconcile_maps_created_items_by_marker_and_selects_satisfied_rank() -> None:
-    binding_items = [
-        _item("provider", rank=1),
-        _item("binding", rank=2, dependencies=["provider"]),
-        _item(
-            "closed",
-            rank=3,
-            issue={"repo": REPO, "number": 628, "url": f"https://github.com/{REPO}/issues/628"},
-        ),
-    ]
-    children = [
-        _child(726, key="provider"),
-        _child(734, key="binding"),
-        _child(628, state="CLOSED"),
-    ]
-
-    result = pickup.reconcile_and_select(children, binding_items, repo=REPO)
+    progress = pickup.validate_progress(metadata, items, repo=REPO, parent_number=PARENT_NUMBER)
+    result = pickup.select_from_parent_progress(progress, items, repo=REPO)
 
     assert result["selected_child"]["key"] == "provider"
-    assert result["blocked"] == [{"key": "binding", "number": 734, "unmet_dependencies": ["provider"]}]
+    assert result["selected_child"]["number"] == 726
+    assert result["selected_child"]["selection_source"] == "parent-progress"
+    assert result["blocked"] == []
     assert result["invalid_open"] == []
 
 
-def test_reconcile_refuses_open_child_without_executable_body() -> None:
-    items = [_item("provider", rank=1)]
-    child = _child(726, key="provider")
-    child["body"] = "<!-- charness-work-item-key: provider -->\n# Missing contract"
+def test_parent_progress_is_required_instead_of_implicit_full_graph_fallback() -> None:
+    metadata = _metadata()
+    del metadata["progress"]
 
     with pytest.raises(pickup.PickupError) as exc_info:
-        pickup.reconcile_and_select([child], items, repo=REPO)
+        pickup.validate_progress(
+            metadata,
+            [_item("provider", rank=1)],
+            repo=REPO,
+            parent_number=PARENT_NUMBER,
+        )
 
-    assert exc_info.value.code == "no-executable-child"
-    assert exc_info.value.details["invalid_open"][0]["number"] == 726
+    assert exc_info.value.code == "progress-sync-required"
 
 
 def test_pickup_refuses_closed_parent_before_binding_or_mutation(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -184,7 +152,7 @@ def test_pickup_refuses_closed_parent_before_binding_or_mutation(monkeypatch: py
         ),
     )
     monkeypatch.setattr(pickup, "_resolve_repository", lambda *_args: {"full_name": REPO, "source": "fixture"})
-    monkeypatch.setattr(pickup, "_read_goal_run", lambda *_args: (graph, None, None, {"adapter_ok": True, "backend": {}}))
+    monkeypatch.setattr(pickup, "_read_goal_parent", lambda *_args: (graph, {"adapter_ok": True, "backend": {}}))
 
     with pytest.raises(pickup.PickupError) as exc_info:
         pickup.pickup(ROOT, "/goal #724")
@@ -192,7 +160,7 @@ def test_pickup_refuses_closed_parent_before_binding_or_mutation(monkeypatch: py
     assert exc_info.value.code == "parent-closed"
 
 
-def test_pickup_selects_from_fresh_hydrated_provider_state_without_mutation(
+def test_pickup_selects_from_parent_cursor_without_child_reads_or_mutation(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     provider_item = _item("provider", rank=1)
@@ -203,11 +171,25 @@ def test_pickup_selects_from_fresh_hydrated_provider_state_without_mutation(
         issue={"repo": REPO, "number": 628, "url": f"https://github.com/{REPO}/issues/628"},
     )
     items = [provider_item, binding_item, closed_item]
-    children = [_child(726, key="provider"), _child(734, key="binding"), _child(628, state="CLOSED")]
-    membership = pickup.membership_digest(REPO, PARENT_NUMBER, children)
+    membership = _sha("d")
     metadata = _metadata()
     metadata["current_membership_sha256"] = membership
     metadata["initial_graph_sha256"] = _sha("e")
+    metadata["progress"] = {
+        "schema": "charness.goal-progress/v1",
+        "revision": 4,
+        "total": 3,
+        "completed": 1,
+        "open": 2,
+        "membership_sha256": membership,
+        "next": {
+            "key": "provider",
+            "repo": REPO,
+            "number": 726,
+            "url": f"https://github.com/{REPO}/issues/726",
+            "state": "OPEN",
+        },
+    }
     parent = {
         "repo": REPO,
         "number": PARENT_NUMBER,
@@ -215,13 +197,7 @@ def test_pickup_selects_from_fresh_hydrated_provider_state_without_mutation(
         "url": PARENT_URL,
         "body": "goal body",
     }
-    graph = {"parent": parent, "children": children}
-    fake_read = SimpleNamespace(
-        read_issue_with_comments=lambda _repo, number, *, backend: {
-            "issue": next(child for child in children if child["number"] == number) | {"comments": []}
-        }
-    )
-    fake_provider = {"READ": fake_read}
+    graph = {"parent": parent, "children": []}
     fake_binding = SimpleNamespace(
         validate_binding=lambda *_args, **_kwargs: {
             "binding_sha256": metadata["binding_sha256"],
@@ -247,8 +223,8 @@ def test_pickup_selects_from_fresh_hydrated_provider_state_without_mutation(
     monkeypatch.setattr(pickup, "_resolve_repository", lambda *_args: {"full_name": REPO, "source": "fixture"})
     monkeypatch.setattr(
         pickup,
-        "_read_goal_run",
-        lambda *_args: (graph, None, fake_provider, {"adapter_ok": True, "backend": {}}),
+        "_read_goal_parent",
+        lambda *_args: (graph, {"adapter_ok": True, "backend": {}}),
     )
 
     result = pickup.pickup(ROOT, "/goal #724")
@@ -258,3 +234,4 @@ def test_pickup_selects_from_fresh_hydrated_provider_state_without_mutation(
     assert result["mutation_invoked"] is False
     assert result["selected_child"]["key"] == "provider"
     assert result["graph"]["membership_sha256"] == membership
+    assert result["selection"] == {"source": "parent-progress", "child_reads": 0}
