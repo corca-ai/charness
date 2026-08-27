@@ -7,21 +7,15 @@
   "draft_path": "charness-artifacts/goals/2026-08-26-adversarial-priority-backlog-closeout.md",
   "draft_sha256": "ced8410bd896844bf6bb75bff807438cb6f40cb6a3c3b8489ddcd05a662212c2",
   "initial_graph_sha256": "3aeef936962f97fb2ddebc4d93cd37a79f6d684e0565ff3c8ccecd02253ab9b2",
-  "current_membership_sha256": "c5895ca6cf9eaccf739cb444a3a51c24149b9314b1e0f89061eb34041b7e8d6b",
+  "current_membership_sha256": "797b331e3f83cc2bdf0fd3740bc0c67b1a1989ee1adb5a7c07c669a4ed13359e",
   "progress": {
     "completed": 23,
-    "membership_sha256": "c5895ca6cf9eaccf739cb444a3a51c24149b9314b1e0f89061eb34041b7e8d6b",
-    "next": {
-      "key": "backlog-717",
-      "number": 717,
-      "repo": "corca-ai/charness",
-      "state": "OPEN",
-      "url": "https://github.com/corca-ai/charness/issues/717"
-    },
-    "open": 8,
-    "revision": 4,
+    "membership_sha256": "797b331e3f83cc2bdf0fd3740bc0c67b1a1989ee1adb5a7c07c669a4ed13359e",
+    "next": null,
+    "open": 0,
+    "revision": 5,
     "schema": "charness.goal-progress/v1",
-    "total": 31
+    "total": 23
   },
   "parent_identity": {
     "number": 724,
@@ -185,10 +179,10 @@ This parent is the authoritative execution tracker for the approved issue-native
 - Goal Binding: `charness-artifacts/goals/2026-08-26-adversarial-priority-backlog-closeout.binding.json`
 - Initial graph: five system Work Items plus the 26 existing backlog issue identities.
 - Bootstrap status: `verified-target-roundtrip`; the target provider and clean `/goal #724` pickup re-read this graph, the frozen binding/draft identities, and selected `backlog-546` without mutation.
-- Current progress cursor: revision `4`, `23` completed, `8` open, next `backlog-717` (`#717`). The cursor is the routine navigation record; pickup reads this parent block and only the cursor child, not every child.
+- Current progress cursor: revision `5`, `23` completed, `0` open, with no next child. The cursor is the routine navigation record; pickup reads this parent block and only the cursor child while work remains.
 - Full graph reconciliation remains an explicit bootstrap/sync/closeout action. The one updater advances this cursor whenever a child transition is published.
 
-The parent remains open until every still-linked child is closed with issue-owned behavioral evidence or a verified successor deferral. Push, release, tag, remote CI, installed-host mutation, and issue closure remain separately authorized boundaries for this run.
+Every still-linked child is closed. The dedicated Goal Run close ingress owns the final graph/evidence readback and parent close.
 
 ## 2026-08-27 Efficiency-first scope reset
 
@@ -280,21 +274,22 @@ unrelated backlog items.
   residue is reported separately from tracked/untracked cleanliness.
 - The v7.0.0 release is public at
   `https://github.com/corca-ai/charness/releases/tag/v7.0.0`. Tag `v7.0.0`
-  points to `49596b3f18ccda37d730108c07925012e4682e4b`; the release branch's
-  final verification commit is
-  `b0841f3cb87273291b14ccd7dd078e76de34fc78`. Release quality, focused hook
-  tests, export/layout checks, and fresh-checkout probes passed. Claims review
-  remains explicitly `unproven` because the host did not deliver an independent
-  bounded reviewer result; no same-agent substitute is claimed.
-- The default managed host checkout still reports `6.5.0` because it tracks
-  the existing `main` checkout, so installed-host parity with this release is
-  not claimed. Consumer adoption, scheduler/hosted enforcement, conditional
-  trigger execution, main-branch integration, and any future Cautilus
-  reintroduction remain non-claims.
+  remains immutable at `49596b3f18ccda37d730108c07925012e4682e4b`.
+  `charness task run` delivered an independent claims review against that tag.
+  Its stale Specdown, handoff-validator prose, and release-receipt blockers were
+  repaired on `main` by `e3f4f471baafa05a33fbe26fa281a0ffbdddec7b`;
+  the live consolidated-close verifier defect found during this reconciliation
+  was repaired by `ba9f0ec1b247861cf6f864a780762c7e26483103`.
+  A future patch tag containing those post-publication fixes is not claimed.
+- `charness update` was re-run after `main` integration and changed the managed
+  checkout, source, and Codex cache from `6.5.0` to `7.0.0`. `charness update
+  all` separately refreshed tracked external tools; its awiki update command
+  returned nonzero even though awiki doctor confirmed the installed `0.5.0` is
+  healthy and current.
 
-Remote reconciliation at this update is intentionally bounded to this parent
-and cursor child `#717`; the full child graph was not re-read. The parent is
-still OPEN at `23/31`, with the same eight independent backlog items listed
-above. The next action is therefore `#717`, not an implied instruction to
-resume all eight rows. A future parent close requires a separately authorized
-scope amendment and provider readback.
+The eight unstarted backlog issues `#699`, `#700`, `#701`, `#703`, `#704`,
+`#706`, `#715`, and `#717` were removed from the Goal Run relationship graph
+and closed as `not planned`, with no implementation or defect-resolution claim.
+The live provider graph is now `23/23`; all still-linked children are CLOSED,
+the progress cursor has no next child, and the parent can close through the
+dedicated final graph/evidence readback.
