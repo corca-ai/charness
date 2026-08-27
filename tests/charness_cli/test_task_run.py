@@ -206,6 +206,51 @@ def test_task_run_creates_named_lane_and_keeps_runtime_external(tmp_path: Path) 
     assert (tmp_path / "lane" / "module.py").read_text(encoding="utf-8") == "VALUE = 2\n"
 
 
+def test_task_run_grants_codex_both_common_and_linked_worktree_git_dirs(
+    tmp_path: Path,
+) -> None:
+    repo = _repo(tmp_path)
+    captured_args = tmp_path / "codex-args.txt"
+    executable = _codex(
+        tmp_path,
+        f"printf '%s\\n' \"$@\" > {shlex.quote(os.fspath(captured_args))}",
+    )
+
+    payload = _run(
+        repo,
+        tmp_path,
+        executable,
+        require_change=False,
+    )
+
+    git_common_dir = Path(payload["git_common_dir"])
+    git_worktree_dir = Path(payload["git_worktree_dir"])
+    args = captured_args.read_text(encoding="utf-8").splitlines()
+    granted_dirs = [Path(args[index + 1]) for index, arg in enumerate(args) if arg == "--add-dir"]
+    assert git_common_dir == repo / ".git"
+    assert git_worktree_dir.parent == git_common_dir / "worktrees"
+    assert granted_dirs == [git_common_dir, git_worktree_dir]
+    assert payload["codex"]["command"].count("--add-dir") == 2
+
+
+def test_task_run_accepts_a_clean_committed_candidate(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    executable = _codex(
+        tmp_path,
+        "printf 'VALUE = 2\\n' > module.py\n"
+        "git add -- module.py\n"
+        "git -c user.email=test@example.com -c user.name=test commit -m 'update module'",
+    )
+
+    payload = _run(repo, tmp_path, executable)
+
+    worktree = Path(payload["worktree_path"])
+    assert payload["status"] == "completed", payload
+    assert payload["target_sha"] != payload["base_sha"]
+    assert payload["scope"]["changed_paths"] == ["module.py"]
+    assert _git(worktree, "status", "--short").stdout == ""
+
+
 def test_task_run_reports_ignored_output_without_blocking_candidate(tmp_path: Path) -> None:
     repo = _repo(tmp_path, ignored=True)
     executable = _codex(
@@ -289,6 +334,7 @@ def test_task_run_dry_run_has_no_worktree_or_runtime_side_effect(tmp_path: Path)
 
     assert payload["status"] == "pass"
     assert payload["dry_run"] is True
+    assert "git_worktree_dir" not in payload
     assert not (tmp_path / "lane").exists()
     assert not Path(payload["runtime_root"]).exists()
 
