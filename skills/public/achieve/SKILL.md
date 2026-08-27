@@ -75,9 +75,5 @@ those authorities.
 
 ## References
 
-- `references/goal-artifact.md`
-- `references/lifecycle-before.md`
-- `references/lifecycle-during.md`
-- `references/adapter-contract.md`
-- `references/coordination.md`
+- `references/index.md`
 - `../../shared/references/bootstrap-resolution.md`

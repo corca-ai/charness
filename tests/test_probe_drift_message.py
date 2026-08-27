@@ -53,7 +53,6 @@ from tests.probe_drift_support import (
     MIRROR_SYNC_COMMAND,
     NOT_CAUSES,
     RESIDUAL_COMMAND,
-    RESIDUAL_CONTRACT_DOC,
     RESIDUAL_FLOOR_HOME,
     RESIDUAL_FLOOR_MIRROR,
     RESIDUAL_FLOOR_SYMBOL,
@@ -776,14 +775,7 @@ def test_the_residual_site_actually_calls_the_message() -> None:
 
 
 def test_every_residual_surface_exists_and_carries_the_figures_it_is_named_for() -> None:
-    """The `UPDATE_SURFACES` lesson, applied to the residual list rather than re-learned.
-
-    The first draft listed ONE surface. The recorded figures are transcribed in the gate's own
-    floor rationale, in that file's generated mirror, in an operator-facing contract doc, and in
-    a sibling test's comment. Re-recording only the probe leaves the gate defending its floor
-    with a number no probe reports — the sentence the inventory message uses to justify its own
-    list — and the mirror half additionally blocks the commit on a drift gate.
-    """
+    """Every surface that still transcribes the measurement stays listed."""
     probe = json.loads((ROOT / RESIDUAL_PROBE).read_text(encoding="utf-8"))
     figures = {str(kind["min_residual"]) for kind in probe["kinds"].values()}
 
@@ -792,14 +784,13 @@ def test_every_residual_surface_exists_and_carries_the_figures_it_is_named_for()
         RESIDUAL_PROBE,
         RESIDUAL_FLOOR_HOME,
         RESIDUAL_FLOOR_MIRROR,
-        RESIDUAL_CONTRACT_DOC,
     ):
         assert path in listed, f"the residual re-record list dropped {path}"
         assert (ROOT / path).is_file(), f"the residual message names a missing surface: {path}"
 
     # Not just listed — each transcribing surface must actually still carry a recorded figure,
     # or it has stopped being a surface and the list is stale in the other direction.
-    for path in (RESIDUAL_FLOOR_HOME, RESIDUAL_FLOOR_MIRROR, RESIDUAL_CONTRACT_DOC):
+    for path in (RESIDUAL_FLOOR_HOME, RESIDUAL_FLOOR_MIRROR):
         text = (ROOT / path).read_text(encoding="utf-8")
         assert any(figure in text for figure in figures), (
             f"{path} no longer quotes any recorded residual figure; the message still sends a "

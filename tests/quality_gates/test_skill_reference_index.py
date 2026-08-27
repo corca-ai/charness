@@ -115,6 +115,24 @@ def test_validate_skills_accepts_reference_index_listing(tmp_path: Path) -> None
     assert returncode == 0, stderr
 
 
+def test_removed_skill_bytecode_residue_is_not_a_skill_package(tmp_path: Path) -> None:
+    cache = tmp_path / "skills/public/retired/scripts/__pycache__"
+    cache.mkdir(parents=True)
+    (cache / "helper.cpython-310.pyc").write_bytes(b"residue")
+
+    assert validate_skills.iter_skill_dirs(tmp_path) == []
+
+
+def test_manifestless_skill_source_still_reports_as_a_broken_package(tmp_path: Path) -> None:
+    script = tmp_path / "skills/public/broken/scripts/helper.py"
+    script.parent.mkdir(parents=True)
+    script.write_text("VALUE = 1\n", encoding="utf-8")
+
+    assert validate_skills.iter_skill_dirs(tmp_path) == [
+        ("public", tmp_path / "skills/public/broken")
+    ]
+
+
 def test_inventory_skill_ergonomics_accepts_reference_index_for_discoverability(
     tmp_path: Path,
 ) -> None:

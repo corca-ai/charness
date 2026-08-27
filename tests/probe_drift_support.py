@@ -336,14 +336,9 @@ RESIDUAL_MEASURE_SCRIPT = "scripts/measure_evidence_residual.py"
 RESIDUAL_FLOOR_HOME = "scripts/check_prescribed_skill_executed_lib.py"
 RESIDUAL_FLOOR_SYMBOL = "MIN_BOUND_RESIDUAL_CHARS"
 RESIDUAL_FLOOR_MIRROR = "plugins/charness/scripts/check_prescribed_skill_executed_lib.py"
-RESIDUAL_CONTRACT_DOC = "docs/prescribed-skill-closeout-contract.md"
 
-# Every surface transcribing the recorded residual figures. ONE entry was the first draft's
-# answer, and it was the `UPDATE_SURFACES` mistake repeated: the figures (`337`, `530`, `2168`,
-# `83`, the floor `8`) are quoted in the gate's own rationale, in its GENERATED mirror, in an
-# operator-facing contract doc, and in a sibling test's comment. A reader who re-recorded only
-# the probe would leave the gate defending its floor with a number no probe reports — and the
-# mirror half would block their commit on a drift gate nothing warned them about.
+# Surfaces that still transcribe the recorded residual figures. The compact
+# operator contract deliberately does not repeat measurement values.
 RESIDUAL_UPDATE_SURFACES: tuple[tuple[str, str | None], ...] = (
     (
         f"{RESIDUAL_PROBE} — the whole file; it has NO `_provenance`, unlike the marker and floor"
@@ -363,11 +358,6 @@ RESIDUAL_UPDATE_SURFACES: tuple[tuple[str, str | None], ...] = (
         " figures. Do not hand-edit it and do not skip it: regenerate, or a staged-mirror-drift"
         " gate blocks the commit while the mirror still cites the old numbers",
         MIRROR_SYNC_COMMAND,
-    ),
-    (
-        f"{RESIDUAL_CONTRACT_DOC} — operator-facing prose quoting the same per-kind minimums,"
-        " file counts, and the floor in one sentence",
-        None,
     ),
 )
 

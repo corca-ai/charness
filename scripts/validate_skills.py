@@ -399,6 +399,18 @@ def _resolved_skill_root(root: Path, kind: str, rel_root: Path) -> Path:
     return root / rel_root
 
 
+def _contains_skill_source(path: Path) -> bool:
+    """Distinguish a broken package from residue left after package removal."""
+    for candidate in path.rglob("*"):
+        if not candidate.is_file():
+            continue
+        relative = candidate.relative_to(path)
+        if "__pycache__" in relative.parts or candidate.suffix in {".pyc", ".pyo"}:
+            continue
+        return True
+    return False
+
+
 def iter_skill_dirs(root: Path) -> list[tuple[str, Path]]:
     skill_dirs: list[tuple[str, Path]] = []
     for kind, rel_root in SKILL_ROOTS:
@@ -406,7 +418,9 @@ def iter_skill_dirs(root: Path) -> list[tuple[str, Path]]:
         if not skill_root.exists():
             continue
         for path in skill_root.iterdir():
-            if path.is_dir() and path.name != "generated":
+            if not path.is_dir() or path.name == "generated":
+                continue
+            if (path / "SKILL.md").is_file() or _contains_skill_source(path):
                 skill_dirs.append((kind, path))
     if skill_dirs:
         return sorted(skill_dirs, key=lambda item: (item[0], item[1].name))
