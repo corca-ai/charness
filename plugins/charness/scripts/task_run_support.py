@@ -78,6 +78,18 @@ def _git_common_dir(repo_root: Path) -> Path:
     return resolved
 
 
+def _git_dir(repo_root: Path) -> Path:
+    """Return the checkout-specific Git administration directory."""
+    value = _git_output(repo_root, "rev-parse", "--git-dir").strip()
+    git_dir = Path(value)
+    if not git_dir.is_absolute():
+        git_dir = repo_root / git_dir
+    resolved = git_dir.resolve()
+    if not resolved.is_dir():
+        raise TaskRunError(f"Git directory is not a directory: {resolved}")
+    return resolved
+
+
 def _validate_branch(repo_root: Path, branch: str) -> str:
     if not branch or not _BRANCH_RE.fullmatch(branch) or ".." in branch or branch.endswith((".", "/")):
         raise TaskRunError(f"--branch is not a valid named branch: {branch!r}")
@@ -328,6 +340,29 @@ def build_codex_args(
         args.extend(["-c", f"model_reasoning_effort={effort}"])
     args.extend(extra)
     return args
+
+
+def build_codex_command(
+    executable: str,
+    prompt: str,
+    *,
+    model: str | None = None,
+    effort: str | None = None,
+    writable_dirs: Sequence[Path] = (),
+    extra: Sequence[str] = (),
+) -> list[str]:
+    """Build the one Codex command used by previews and real task runs."""
+    return [
+        executable,
+        "exec",
+        *build_codex_args(
+            model=model,
+            effort=effort,
+            writable_dirs=writable_dirs,
+            extra=extra,
+        ),
+        prompt,
+    ]
 
 
 def task_runtime_root(repo_root: Path) -> Path:

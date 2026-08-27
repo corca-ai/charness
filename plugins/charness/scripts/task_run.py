@@ -32,6 +32,7 @@ _execute_codex = _support._execute_codex
 _failure_payload = _support._failure_payload
 _git = _support._git
 _git_common_dir = _support._git_common_dir
+_git_dir = _support._git_dir
 _git_output = _support._git_output
 _population_delta = _support._population_delta
 _resolve_base_sha = _support._resolve_base_sha
@@ -43,6 +44,7 @@ _validate_branch = _support._validate_branch
 _validate_worktree_path = _support._validate_worktree_path
 _validate_lane_id = _support.validate_lane_id
 build_codex_args = _support.build_codex_args
+build_codex_command = _support.build_codex_command
 normalize_scopes = _support.normalize_scopes
 
 
@@ -301,17 +303,14 @@ def _resolve_task_inputs(
     if lane is None:
         resolved_task_id = _task_id(resolved_branch, task_id)
         runtime_path = _runtime_preview(resolved_repo)
-    command = [
+    command = build_codex_command(
         codex_path,
-        "exec",
-        *build_codex_args(
-            model=model,
-            effort=effort,
-            writable_dirs=[git_common_dir],
-            extra=codex_args,
-        ),
         prompt,
-    ]
+        model=model,
+        effort=effort,
+        writable_dirs=[git_common_dir],
+        extra=codex_args,
+    )
     return {
         "lane": resolved_lane,
         "target_path": resolved_target,
@@ -322,6 +321,9 @@ def _resolve_task_inputs(
         "scopes": normalized_scopes,
         "codex_path": codex_path,
         "command": command,
+        "codex_args": list(codex_args),
+        "model": model,
+        "effort": effort,
         "task_id": resolved_task_id,
         "runtime_path": runtime_path,
         "prepare": resolved_prepare,
@@ -477,6 +479,18 @@ def run_task(
             next_step=create_payload.get("next_step")
             or "Fix worktree creation/doctor, then rerun task run.",
         )
+
+    git_worktree_dir = _git_dir(resolved_target)
+    command = build_codex_command(
+        codex_path,
+        prompt,
+        model=resolved["model"],
+        effort=resolved["effort"],
+        writable_dirs=[resolved["git_common_dir"], git_worktree_dir],
+        extra=resolved["codex_args"],
+    )
+    payload["git_worktree_dir"] = str(git_worktree_dir)
+    payload["codex"]["command"] = command[:-1] + ["<prompt>"]
 
     scope_specs = _support.resolve_scope_specs(resolved_target, normalized_scopes)
     payload["scope_specs"] = scope_specs
