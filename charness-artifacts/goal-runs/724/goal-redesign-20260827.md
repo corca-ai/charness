@@ -106,6 +106,58 @@ once through the `gh` provider and its byte-identical readback passed. Current
 navigation state is revision `3`: `15` completed, `16` open, next `#710`.
 This does not claim that #710 or any other open child is complete.
 
+## 2026-08-27 Child reconciliation after cursor readback
+
+The live GitHub `subIssuesSummary` was `15/31` before the pending closeouts.
+Eight children with local implementation, establishment, or synchronized
+repository evidence were then closed through the issue-owned closeout carrier:
+
+`#710`, `#722`, `#723`, `#725`, `#726`, `#727`, `#733`, and `#734`.
+
+The provider summary became `23/31` (`23` completed, `8` open). No child was
+removed from the relationship graph and no successor was created because each
+remaining item already has an owner. The current cursor is revision `4`, next
+`backlog-717` (`#717`). The eight remaining implementation/deferred children
+are `#699`, `#700`, `#701`, `#703`, `#704`, `#706`, `#715`, and `#717`.
+
+This reconciliation does not claim those eight children are implemented or
+that #724 is ready to close. It also does not claim push, release, tag, remote
+CI, hosted enforcement, consumer-repository adoption, or marketplace/export
+migration. Routine pickup may now report the live provider count from the same
+parent read; it does not turn that count into a second progress store or scan
+the full child graph.
+
+## 2026-08-27 Pickup truth-surface correction
+
+The stale `15/31` display exposed a contract gap, not a missing GitHub
+capability: `gh issue view #724 --json subIssuesSummary` can return the live
+child count, but routine pickup previously ignored it and selected a closed
+cursor child without reading that child. The `issue` reader now exposes an
+optional native summary for the default GitHub backend, while custom adapters
+retain the generic field contract. `achieve` pickup now reads the parent once
+and the cursor child once, reports summary/count disagreement without opening a
+new gate, and refuses a cursor child that is no longer OPEN with a typed sync
+stop. No full child graph is hydrated during routine pickup.
+
+## 2026-08-27 Ceal task-run replacement probe
+
+Against the clean `/home/hwidong/codes/ceal` parent at base
+`05a773b765992b35913380bc6f93db328534ddc4`, `charness task run` completed both
+a dry-run and an actual disposable execution using `/usr/bin/true` as the
+Codex-shaped command. It created `/tmp/ceal-charness-task-probe-20260827` on
+named branch `probe/charness-task-replacement-20260827`, kept runtime/log paths
+under the external Charness cache root, reported zero tracked/untracked/ignored
+candidate residue, and proved the ceal parent unchanged. The disposable
+worktree and branch were removed after the probe.
+
+This proves replacement of ceal lane's clean-parent check, named external
+worktree creation, Codex invocation, runtime isolation, and exact path-scope
+receipt. It does not prove that `charness task run` replaces ceal's task
+claim/submit/abort envelope, interrupted-candidate trap, brief/jobs-dir
+convention, or ceal-specific fixed Codex mode defaults. Those remain a thin
+ceal adapter concern or a successor deletion decision; no ceal source was
+changed and no release/install claim is made.
+
 ## Explicit non-claims
 
 This reset does not claim that the eight unstarted issues are fixed, that

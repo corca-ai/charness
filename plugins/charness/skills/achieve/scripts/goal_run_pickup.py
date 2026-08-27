@@ -111,7 +111,10 @@ def _read_goal_parent(
     reader = _load_path(_issue_script("issue_read"), "issue_pickup_read")
     try:
         issue = reader.read_issue_with_comments(
-            repo, number, backend=resolved["backend"]
+            repo,
+            number,
+            backend=resolved["backend"],
+            include_sub_issues_summary=True,
         )["issue"]
         body = issue.get("body")
         parent = {
@@ -129,6 +132,9 @@ def _read_goal_parent(
             if isinstance(issue.get("comments"), list)
             else None,
         }
+        summary = reader.normalise_sub_issues_summary(issue)
+        if summary is not None:
+            parent["sub_issues_summary"] = summary
     except RuntimeError as exc:
         raise PickupError("provider-read-failed", str(exc)) from exc
     return {"parent": parent}, resolved
@@ -176,6 +182,43 @@ def pickup(repo_root: Path, objective: str) -> dict[str, Any]:
         parent_number=number,
     )
     selection = select_from_parent_progress(progress, binding["approved_work_items"], repo=repo)
+    child_reader = _load_path(_issue_script("issue_read"), "issue_pickup_child_read")
+    selected_number = selection["selected_child"]["number"]
+    try:
+        child_issue = child_reader.read_issue_with_comments(
+            repo, selected_number, backend=resolved["backend"]
+        )["issue"]
+    except RuntimeError as exc:
+        raise PickupError("cursor-child-read-failed", str(exc)) from exc
+    child_state = child_issue.get("state")
+    if child_state != "OPEN":
+        raise PickupError(
+            "cursor-child-closed",
+            f"parent cursor points to child #{selected_number} in state {child_state!r}; run explicit Goal Run sync",
+            details={
+                "cursor": selection["selected_child"],
+                "child": {
+                    "repo": repo,
+                    "number": child_issue.get("number", selected_number),
+                    "state": child_state,
+                    "url": child_issue.get("url"),
+                },
+            },
+        )
+    selected_child = dict(selection["selected_child"])
+    selected_child.update(
+        title=child_issue.get("title"),
+        state=child_state,
+        url=child_issue.get("url"),
+    )
+    summary = parent.get("sub_issues_summary")
+    count_status = "unavailable"
+    if isinstance(summary, dict):
+        count_status = (
+            "matched"
+            if all(summary.get(field) == progress[field] for field in ("total", "completed", "open"))
+            else "parent-count-stale"
+        )
     return {
         "ok": True,
         "kind": "charness.goal-run-pickup/v1",
@@ -188,14 +231,30 @@ def pickup(repo_root: Path, objective: str) -> dict[str, Any]:
         "metadata": metadata,
         "binding": {"path": metadata["binding_path"], "sha256": binding["binding_sha256"], "draft_sha256": binding["draft_sha256"]},
         "progress": progress,
+        "sub_issues_summary": summary,
         "graph": {
             "count": progress["total"],
             "membership_sha256": progress["membership_sha256"],
             "source": "parent-progress",
             "reconciliation": "explicit-sync-only",
+            "provider_summary": summary,
+            "count_status": count_status,
         },
-        "selection": {"source": "parent-progress", "child_reads": 0},
-        "selected_child": selection["selected_child"],
+        "selection": {"source": "parent-progress", "child_reads": 1},
+        "selected_child": selected_child,
+        "child_issue": {
+            "repo": repo,
+            "number": child_issue.get("number", selected_number),
+            "title": child_issue.get("title"),
+            "state": child_state,
+            "url": child_issue.get("url"),
+            "body": child_issue.get("body"),
+            "updated_at": child_issue.get("updatedAt"),
+            "comment_count": len(child_issue.get("comments", []))
+            if isinstance(child_issue.get("comments"), list)
+            else None,
+            "comments": child_issue.get("comments", []),
+        },
         "blocked_children": selection["blocked"],
         "invalid_open_children": selection["invalid_open"],
     }

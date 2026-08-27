@@ -37,7 +37,8 @@ def _refusal(code: str, message: str, *, repo: str, parent_number: int) -> dict[
 
 def _parent_summary(issue: dict[str, Any], *, repo: str, number: int) -> dict[str, Any]:
     body = issue.get("body")
-    return {
+    summary = READ.normalise_sub_issues_summary(issue)
+    result = {
         "repo": repo,
         "number": issue.get("number", number),
         "title": issue.get("title"),
@@ -48,10 +49,15 @@ def _parent_summary(issue: dict[str, Any], *, repo: str, number: int) -> dict[st
         "body_sha256": hashlib.sha256(body.encode("utf-8")).hexdigest() if isinstance(body, str) else None,
         "comment_count": len(issue.get("comments", [])) if isinstance(issue.get("comments"), list) else None,
     }
+    if summary is not None:
+        result["sub_issues_summary"] = summary
+    return result
 
 
 def _read_graph(repo: str, parent_number: int, backend: dict[str, Any]) -> dict[str, Any]:
-    parent_read = READ.read_issue_with_comments(repo, parent_number, backend=backend)
+    parent_read = READ.read_issue_with_comments(
+        repo, parent_number, backend=backend, include_sub_issues_summary=True
+    )
     parent = _parent_summary(parent_read["issue"], repo=repo, number=parent_number)
     graph = TRACKER.list_sub_issues(repo, parent_number, backend=backend)
     return {

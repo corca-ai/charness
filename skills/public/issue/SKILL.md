@@ -94,7 +94,12 @@ closing anything.
 8. Render the per-issue behavior verdict or typed disposition from a channel
    distinct from `CLOSED` state and the carrier body.
 
-`issue tracker` operations support an issue-native `achieve` goal.
+`issue tracker` operations support an issue-native `achieve` goal. A routine
+Goal Run pickup reads the parent once and may request GitHub's
+`subIssuesSummary` in that same response; this is a cheap live count, not a
+full child-graph read or a second progress store. It then reads only the
+parent's cursor child. A closed cursor child is reported as a typed sync stop;
+routine pickup does not scan every child to repair the cursor.
 
 For a complete Goal Run, prefer the file-backed provider surface:
 `goal-run-preflight`, `goal-run-read`, and one `goal-run-apply` per operation

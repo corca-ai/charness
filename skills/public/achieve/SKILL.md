@@ -14,7 +14,8 @@ It is an operator, not a second execution engine.
 
 Read the current repository context and adapter before making a lifecycle
 decision. A routine `/goal #N` pickup does not bootstrap the full provider
-preflight; it reads the parent once and follows its current child cursor.
+preflight; it reads the parent once, including the provider's cheap sub-issue
+summary when supported, and follows its current child cursor.
 
 ```bash
 git status --short --branch
@@ -51,9 +52,11 @@ silently.
    path, not routine pickup.
 6. Start or resume execution only with the exact objective `/goal #N`. The
    provider reads the parent, binding, frozen draft, and its managed execution
-   cursor, then enters the cursor's next child. Routine pickup does not scan
-   the graph or hydrate every child; the parent cursor is advanced whenever a
-   child transition is published.
+   cursor, then reads only the cursor's next child. Routine pickup does not scan
+   the graph or hydrate every child. The provider summary is an observational
+   count, not a second cursor; a mismatch is reported, while a closed cursor
+   child is a typed sync stop. The parent cursor is advanced whenever a child
+   transition is published.
 7. Execute the selected child using the lightest matching implementation path.
    A normal code slice may use `charness task run` to create one clean named
    worktree and run Codex without an envelope ceremony. Routine progress is
@@ -78,10 +81,12 @@ python3 "$SKILL_DIR/scripts/goal_run_pickup.py" \
 
 Pickup refuses an unresolved or ambiguous repository, a non-Goal-Run issue,
 malformed metadata, a closed parent, missing or mismatched draft/binding,
-unverified establishment, missing or stale parent progress, or no next child.
-It never falls back to local artifact presence or silently launches a full graph
-reconciliation. Use the issue-owned Goal Run read/sync path when the parent
-cursor needs repair.
+unverified establishment, missing or stale parent progress, no next child, or a
+cursor child that is no longer open. When available, `subIssuesSummary` is
+reported from the same parent read so remote `completed/total` cannot silently
+look like the managed cursor. It never falls back to local artifact presence or
+silently launches a full graph reconciliation. Use the issue-owned Goal Run
+read/sync path when the parent cursor needs repair.
 
 The selected result is `verified-read` only. A pending bootstrap marker is an
 honest refusal until the final target roundtrip has re-read the provider,
@@ -120,7 +125,8 @@ coordination and completion state:
 - `issue` owns provider operations and issue closeout.
 - `retro` records lessons after the work unit.
 - The active Goal Run parent and cursor are the only resume state; do not create
-  or refresh a second progress artifact.
+  or refresh a second progress artifact. A provider sub-issue summary is only a
+  live readback/reporting field, never another progress store.
 - `charness task` is an optional carrier for a cross-context or delegated child;
   use it when a claim/result needs a durable cross-context carrier, not for every local slice.
   Its parent-owned `review` transition records a verdict but does not create an

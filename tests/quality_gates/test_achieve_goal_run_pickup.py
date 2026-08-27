@@ -140,6 +140,7 @@ def test_parent_read_fast_path_does_one_live_read_without_goal_run_preflight(
         "url": PARENT_URL,
         "body": "parent body",
         "comments": [],
+        "subIssuesSummary": {"total": 31, "completed": 23, "percentCompleted": 74},
     }
     resolved = {"adapter_ok": True, "backend": {"id": "gh", "binary": "gh"}}
 
@@ -158,11 +159,20 @@ def test_parent_read_fast_path_does_one_live_read_without_goal_run_preflight(
     class Reader:
         @staticmethod
         def read_issue_with_comments(
-            repo: str, number: int, *, backend: dict[str, object]
+            repo: str,
+            number: int,
+            *,
+            backend: dict[str, object],
+            include_sub_issues_summary: bool = False,
         ) -> dict[str, object]:
             calls.append((repo, number))
             assert backend == resolved["backend"]
+            assert include_sub_issues_summary is True
             return {"issue": issue}
+
+        normalise_sub_issues_summary = staticmethod(
+            lambda _issue: {"total": 31, "completed": 23, "open": 8, "percent_completed": 74}
+        )
 
     def fake_load(_path: Path, name: str):
         if name == "issue_pickup_selection":
@@ -177,6 +187,7 @@ def test_parent_read_fast_path_does_one_live_read_without_goal_run_preflight(
 
     assert calls == [(REPO, PARENT_NUMBER)]
     assert graph["parent"]["body"] == "parent body"
+    assert graph["parent"]["sub_issues_summary"]["completed"] == 23
     assert actual == resolved
 
 
@@ -211,8 +222,10 @@ def test_pickup_refuses_closed_parent_before_binding_or_mutation(monkeypatch: py
     assert exc_info.value.code == "parent-closed"
 
 
-def test_pickup_selects_from_parent_cursor_without_child_reads_or_mutation(
+@pytest.mark.parametrize("child_state", ["OPEN", "CLOSED"])
+def test_pickup_reads_only_cursor_child_and_refuses_closed_cursor(
     monkeypatch: pytest.MonkeyPatch,
+    child_state: str,
 ) -> None:
     provider_item = _item("provider", rank=1)
     binding_item = _item("binding", rank=2, dependencies=["provider"])
@@ -268,6 +281,20 @@ def test_pickup_selects_from_parent_cursor_without_child_reads_or_mutation(
             return fake_guard
         if name == "issue_pickup_binding":
             return fake_binding
+        if name == "issue_pickup_child_read":
+            return SimpleNamespace(
+                read_issue_with_comments=lambda *_args, **_kwargs: {
+                    "issue": {
+                        "number": 726,
+                        "title": "Provider",
+                        "state": child_state,
+                        "url": f"https://github.com/{REPO}/issues/726",
+                        "body": "child body",
+                        "updatedAt": "2026-08-27T00:00:00Z",
+                        "comments": [],
+                    }
+                }
+            )
         raise AssertionError(name)
 
     monkeypatch.setattr(pickup, "_load_path", fake_load)
@@ -278,6 +305,12 @@ def test_pickup_selects_from_parent_cursor_without_child_reads_or_mutation(
         lambda *_args: (graph, {"adapter_ok": True, "backend": {}}),
     )
 
+    if child_state == "CLOSED":
+        with pytest.raises(pickup.PickupError) as exc_info:
+            pickup.pickup(ROOT, "/goal #724")
+        assert exc_info.value.code == "cursor-child-closed"
+        return
+
     result = pickup.pickup(ROOT, "/goal #724")
 
     assert result["ok"] is True
@@ -285,4 +318,6 @@ def test_pickup_selects_from_parent_cursor_without_child_reads_or_mutation(
     assert result["mutation_invoked"] is False
     assert result["selected_child"]["key"] == "provider"
     assert result["graph"]["membership_sha256"] == membership
-    assert result["selection"] == {"source": "parent-progress", "child_reads": 0}
+    assert result["selection"] == {"source": "parent-progress", "child_reads": 1}
+    assert result["child_issue"]["body"] == "child body"
+    assert result["selected_child"]["state"] == "OPEN"

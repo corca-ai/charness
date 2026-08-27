@@ -252,6 +252,13 @@ For adapter backends, `commands.view` must return the same `comments` list when
 passed `{json_fields}` containing `comments`; otherwise `read` fails and the
 resolution is blocked.
 
+Goal Run pickup may request the optional GitHub `subIssuesSummary` field in the
+same parent `view` call. The field is a live count only (`total`, `completed`,
+and the derived open count); it never replaces the parent-owned execution
+cursor and it never hydrates the child graph. Custom backends keep the base
+reader field set unless they provide an equivalent summary, so an unavailable
+summary is reported as unavailable rather than becoming a new provider gate.
+
 ## Milestones
 
 The skill assigns only milestones the repository already has and never creates

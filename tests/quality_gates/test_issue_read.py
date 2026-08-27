@@ -79,6 +79,71 @@ def test_issue_read_reports_backend_failure(monkeypatch: pytest.MonkeyPatch) -> 
         issue_read.read_issue_with_comments("corca-ai/charness", 42)
 
 
+def test_goal_run_read_requests_native_sub_issue_summary_only_for_default_gh(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured: list[list[str]] = []
+
+    def fake_run(argv: list[str]) -> subprocess.CompletedProcess[str]:
+        captured.append(argv)
+        return subprocess.CompletedProcess(
+            argv,
+            0,
+            '{"number":42,"title":"Demo","body":"Body","comments":[],"state":"OPEN",'
+            '"url":"https://github.com/corca-ai/charness/issues/42",'
+            '"subIssuesSummary":{"total":31,"completed":23,"percentCompleted":74}}',
+            "",
+        )
+
+    monkeypatch.setattr(issue_read, "_run_backend", fake_run)
+
+    result = issue_read.read_issue_with_comments(
+        "corca-ai/charness",
+        42,
+        include_sub_issues_summary=True,
+    )
+
+    assert captured[0][-1] == issue_read.GOAL_RUN_READ_FIELDS
+    assert issue_read.normalise_sub_issues_summary(result["issue"]) == {
+        "total": 31,
+        "completed": 23,
+        "open": 8,
+        "percent_completed": 74,
+    }
+
+
+def test_goal_run_summary_request_preserves_custom_backend_read_contract(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured: list[list[str]] = []
+
+    def fake_run(argv: list[str]) -> subprocess.CompletedProcess[str]:
+        captured.append(argv)
+        return subprocess.CompletedProcess(
+            argv,
+            0,
+            '{"number":42,"title":"Demo","body":"Body","comments":[],"state":"OPEN",'
+            '"url":"https://github.com/corca-ai/charness/issues/42"}',
+            "",
+        )
+
+    monkeypatch.setattr(issue_read, "_run_backend", fake_run)
+    custom = {
+        "id": "acme",
+        "binary": "acme",
+        "commands": {"view": ["view", "{repo}", "{number}", "{json_fields}"]},
+    }
+
+    issue_read.read_issue_with_comments(
+        "corca-ai/charness",
+        42,
+        backend=custom,
+        include_sub_issues_summary=True,
+    )
+
+    assert captured[0][-1] == issue_read.READ_FIELDS
+
+
 def test_issue_read_reports_invalid_json(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
         issue_read,

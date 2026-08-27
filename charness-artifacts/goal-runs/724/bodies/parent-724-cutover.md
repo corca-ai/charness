@@ -9,17 +9,17 @@
   "initial_graph_sha256": "3aeef936962f97fb2ddebc4d93cd37a79f6d684e0565ff3c8ccecd02253ab9b2",
   "current_membership_sha256": "c5895ca6cf9eaccf739cb444a3a51c24149b9314b1e0f89061eb34041b7e8d6b",
   "progress": {
-    "completed": 15,
+    "completed": 23,
     "membership_sha256": "c5895ca6cf9eaccf739cb444a3a51c24149b9314b1e0f89061eb34041b7e8d6b",
     "next": {
-      "key": "backlog-710",
-      "number": 710,
+      "key": "backlog-717",
+      "number": 717,
       "repo": "corca-ai/charness",
       "state": "OPEN",
-      "url": "https://github.com/corca-ai/charness/issues/710"
+      "url": "https://github.com/corca-ai/charness/issues/717"
     },
-    "open": 16,
-    "revision": 3,
+    "open": 8,
+    "revision": 4,
     "schema": "charness.goal-progress/v1",
     "total": 31
   },
@@ -185,7 +185,7 @@ This parent is the authoritative execution tracker for the approved issue-native
 - Goal Binding: `charness-artifacts/goals/2026-08-26-adversarial-priority-backlog-closeout.binding.json`
 - Initial graph: five system Work Items plus the 26 existing backlog issue identities.
 - Bootstrap status: `verified-target-roundtrip`; the target provider and clean `/goal #724` pickup re-read this graph, the frozen binding/draft identities, and selected `backlog-546` without mutation.
-- Current progress cursor: revision `3`, `15` completed, `16` open, next `backlog-710` (`#710`). The cursor is the routine navigation record; pickup reads this parent block and does not rescan every child.
+- Current progress cursor: revision `4`, `23` completed, `8` open, next `backlog-717` (`#717`). The cursor is the routine navigation record; pickup reads this parent block and only the cursor child, not every child.
 - Full graph reconciliation remains an explicit bootstrap/sync/closeout action. The one updater advances this cursor whenever a child transition is published.
 
 The parent remains open until every still-linked child is closed with issue-owned behavioral evidence or a verified successor deferral. Push, release, tag, remote CI, installed-host mutation, and issue closure remain separately authorized boundaries for this run.
@@ -235,3 +235,24 @@ A targeted issue readback found `backlog-708` (`#708`) `CLOSED`. The parent
 cursor therefore advances to revision `3`: `15` completed, `16` open, next
 `backlog-710` (`#710`). This is navigation state only; it does not claim that
 #710 or any other open child is complete.
+
+## 2026-08-27 Child reconciliation after cursor readback
+
+The live GitHub `subIssuesSummary` was `15/31` before the pending closeouts.
+Eight children with local implementation, establishment, or synchronized
+repository evidence were then closed through the issue-owned closeout carrier:
+
+`#710`, `#722`, `#723`, `#725`, `#726`, `#727`, `#733`, and `#734`.
+
+The provider summary became `23/31` (`23` completed, `8` open). No child was
+removed from the relationship graph and no successor was created because each
+remaining item already has an owner. The current cursor is revision `4`, next
+`backlog-717` (`#717`). The eight remaining implementation/deferred children
+are `#699`, `#700`, `#701`, `#703`, `#704`, `#706`, `#715`, and `#717`.
+
+This reconciliation does not claim those eight children are implemented or
+that #724 is ready to close. It also does not claim push, release, tag, remote
+CI, hosted enforcement, consumer-repository adoption, or marketplace/export
+migration. Routine pickup may now report the live provider count from the same
+parent read; it does not turn that count into a second progress store or scan
+the full child graph.
