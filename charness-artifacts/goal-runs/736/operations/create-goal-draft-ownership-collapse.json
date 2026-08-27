@@ -1,0 +1,16 @@
+{
+  "kind": "charness.goal-run-operation/v1",
+  "repo": "corca-ai/charness",
+  "parent_number": 736,
+  "operation": "create-or-reuse-child",
+  "attempt_id": "bootstrap-create-goal-draft-ownership-collapse-1",
+  "draft_sha256": "1a9a38f26cb8dd0d5735a543126603bd7cf86e179874757d899ae52093c61ac5",
+  "binding_sha256": "e564d1f1c57cdce7f9efecc9a2416e71add70caf578774aa24f63835f476cedd",
+  "observation_dir": "charness-artifacts/goal-runs/736/observations",
+  "target": {
+    "repo": "corca-ai/charness",
+    "work_item_key": "goal-draft-ownership-collapse",
+    "title": "Collapse Goal Draft ownership to planning only"
+  },
+  "body_file": "charness-artifacts/goal-runs/736/bodies/goal-draft-ownership-collapse.md"
+}
