@@ -1,0 +1,16 @@
+{
+  "schema_version": "charness.release.claims-review.v3",
+  "prepared_commit": "49596b3f18ccda37d730108c07925012e4682e4b",
+  "release_record_path": "charness-artifacts/release/latest.md",
+  "release_record_sha256": "657cb4c3c82be27d29bbdf88942d92ef318564fa4511d703df5eb69048b5fed6",
+  "target_version": "7.0.0",
+  "tag_name": "v7.0.0",
+  "verdict": "unproven",
+  "preparer_context": "Primary release operator prepared the current v7.0.0 record and ran the fail-fast release lane.",
+  "reviewer_context": "The host did not deliver an independent bounded claims-review result for this prepared record.",
+  "observer_distinctness": {
+    "kind": "unproven",
+    "signal": "Prior unnamed bounded release-review spawns remained running without returning a result or artifact; the current sidecars did not review this prepared release record.",
+    "review_artifact": null
+  }
+}
