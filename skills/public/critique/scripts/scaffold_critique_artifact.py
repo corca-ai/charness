@@ -217,8 +217,8 @@ def render_template(*, title: str, date_text: str, evidence_mode: bool = False) 
             # Deliberately NOT a typed value (see the module comment above): the
             # validator requires this line to OPEN with `worker-delivered` /
             # `parent-delegated` / `nested-delegated` / a signal-bearing value / or the explicit
-            # `accepted-unreviewed-under-round-cap` cap disposition once dated
-            # on/after its enforce-from date, and it also rejects a typed value
+            # a signal-bearing value once dated on/after its enforce-from date,
+            # and it also rejects a typed value
             # whose remainder still carries an unedited `todo`. Pre-filling a
             # real typed token here (even with a trailing TODO) would let every
             # unedited scaffold silently claim a review happened; this text
@@ -226,9 +226,7 @@ def render_template(*, title: str, date_text: str, evidence_mode: bool = False) 
             # typed value after the reviewer actually runs. Stays free of the
             # literal "blocked" token for the same reason as the module comment.
             "TODO: replace with `worker-delivered`, `parent-delegated`, `nested-delegated`, "
-            "a citation of the concrete host/tool signal, or "
-            "`accepted-unreviewed-under-round-cap <cap-signal>` after the review or explicit "
-            "two-round cap is recorded.",
+            "a citation of the concrete host/tool signal after the reviewer runs.",
             "",
         ]
     )

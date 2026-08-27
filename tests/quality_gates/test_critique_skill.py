@@ -62,8 +62,9 @@ def test_critique_skill_surfaces_counterweight_and_deliberately_not_doing() -> N
     # The default execution mode is now the Charness-owned file-backed worker;
     # typed subagents remain an optional adapter path.
     assert "file-backed worker" in skill_text
-    assert "at least two independent angle worker runs plus one separate counterweight" in skill_text
-    assert "default to three angles" in skill_text
+    assert "one bounded fresh-eye reviewer" in skill_text
+    assert "genuinely independent evidence axis" in skill_text
+    assert "separate counterweight worker is optional" in skill_text
     assert "For a shared, untyped reviewer" in skill_text
     assert "typed read-only or" in skill_text
     assert "stop-instead-of-local-substitute rule when neither the configured" in skill_text
@@ -73,7 +74,8 @@ def test_critique_skill_surfaces_counterweight_and_deliberately_not_doing() -> N
     assert "stale adapters" in angle_text
     assert "blast-radius" in angle_text
     assert "future maintainer" in angle_text
-    assert "minimum: two contrasting angle worker runs plus one separate counterweight" in angle_text
+    assert "default: one bounded fresh-eye reviewer" in angle_text
+    assert "do not invent a second angle for ceremony" in angle_text
     assert "Before a parent reports that path" in angle_text
     assert "Do not present a local pass as the canonical fresh-eye" in capability_text
     assert "host/runtime contract" in capability_text
@@ -135,6 +137,26 @@ def test_critique_skill_surfaces_counterweight_and_deliberately_not_doing() -> N
         "proof-\n   surface",
     ):
         assert risk_class in cadence_text
+
+
+def test_critique_does_not_require_multi_angle_or_round_artifacts() -> None:
+    surfaces = tuple(
+        (ROOT / relative).read_text(encoding="utf-8")
+        for relative in (
+            "skills/public/critique/SKILL.md",
+            "skills/public/critique/references/angle-selection.md",
+            "skills/public/critique/references/counterweight-triage.md",
+            "skills/public/critique/references/adversarial-evidence-review.md",
+            "skills/public/critique/scripts/scaffold_critique_artifact.py",
+        )
+    )
+    text = "\n".join(surfaces)
+
+    assert "record_round_findings.py" not in text
+    assert "round `n+1`" not in text
+    assert "two-round cap" not in text
+    assert "at least two independent angle worker" not in text
+    assert "minimum: two contrasting angle worker" not in text
 
 
 def test_spec_and_narrative_preserve_rejected_alternatives() -> None:

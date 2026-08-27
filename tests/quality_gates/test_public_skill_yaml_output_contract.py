@@ -381,12 +381,6 @@ def test_no_repo_owned_command_declares_a_json_flag() -> None:
 # stdout that is deliberately NOT this repo's output contract. Each entry is a wire
 # protocol some OTHER program parses, so rendering it as YAML would break that reader.
 JSON_STDOUT_EXEMPT = {
-    "skills/public/critique/scripts/record_round_findings.py": (
-        "portable critique writer uses scripts/yaml_output.py when the packaged helper "
-        "exists and deliberately falls back to JSON-as-YAML when an isolated skill "
-        "copy has no renderer; tests pin that fallback because it is the bootstrap "
-        "contract, not a report-format migration gap."
-    ),
     "skills/critique/scripts/record_round_findings.py": (
         "portable critique writer uses scripts/yaml_output.py when the packaged helper "
         "exists and deliberately falls back to JSON-as-YAML when an isolated skill "
