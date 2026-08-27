@@ -133,10 +133,10 @@ not install tools, register hooks, or migrate gates without approval.
 9. Run bounded fresh-eye review after initial inventory and before broad
    recommendations when the quality contract calls for it; use the
    high-leverage tier in `../../shared/references/fresh-eye-subagent-review.md`
-   and host field `reviewer_tiers.high-leverage` when available. For
-   shared-tree reviewers, run the rail-1 snapshot/verify commands from that
-   reference's Enforcement section: snapshot before spawning, verify after
-   each reviewer returns.
+   and host field `reviewer_tiers.high-leverage` when available. For an
+   untyped reviewer that shares the parent tree, run the rail-1
+   snapshot/verify commands from that reference's Enforcement section. Typed
+   read-only and isolated reviewers do not need this extra fingerprint.
 
 ## Invariants
 

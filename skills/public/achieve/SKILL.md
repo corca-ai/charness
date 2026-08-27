@@ -115,6 +115,10 @@ Keep the standalone workflow owners intact:
 - `retro` records lessons after the work unit.
 - `handoff` prepares the next session only when the user asks or the goal is
   blocked outside the active provider path.
+- `charness task` is an optional carrier for a cross-context or delegated child;
+  use it when a claim/result needs durable handoff, not for every local slice.
+  Its parent-owned `review` transition records a verdict but does not create an
+  observer, worktree, or proof gate.
 
 Adjacent workflows consume exact Goal Run/Work Item lineage when they claim
 execution evidence. They do not create a second goal tracker or rewrite the

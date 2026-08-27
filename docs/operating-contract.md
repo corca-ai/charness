@@ -111,16 +111,14 @@ These expand in [README.md Core Concepts](../README.md#core-concepts):
   compatibility, installed-host, or proof-surface boundary goes to its owning
   review surface, which may inspect the claims as well as the implementation.
   The review unit is the durable or externally visible record, not every diff.
-- **Run the reviewer boundary command**
-  `reviewer_boundary_fingerprint.py verify --before <snapshot-path> --window-id <id>`
-  the moment the reviewer returns, BEFORE any parent write.
-  A verify run after the parent has
-  started folding findings reports `boundary-drift` and can only be resolved by
-  declaring the parent's own paths — which downgrades the attestation from "the
-  tree did not move" to "the parent says it moved these files". Measured
-  2026-08-02: two of three windows were verified late and both needed
-  `--parent-path` declarations. The tool cannot detect this; only the ordering
-  prevents it.
+- Boundary evidence is execution-mode specific. A host-enforced typed read-only
+  reviewer records its envelope binding; an isolated worktree records its
+  isolation. Neither needs a parent-side fingerprint. Only an untyped reviewer
+  sharing the parent worktree needs `reviewer_boundary_fingerprint.py`
+  snapshot/verify, with verify run before the parent applies findings. A
+  fingerprint detects git-state drift; it proves neither fresh-eye independence
+  nor findings delivery. If no mode supplies boundary evidence, keep the opinion
+  as a non-claim rather than silently promoting it to closeout approval.
 - **A slice that changes VERDICT LOGIC on a proof surface runs a SECOND bounded
   review reading the repaired surface** — notwithstanding the once-per-slice
   clause above, which this class overrides on the REVIEW count only: the repairs
@@ -173,8 +171,9 @@ These expand in [README.md Core Concepts](../README.md#core-concepts):
     round-2 repair after the producer invalidates the coverage fingerprint.
   - A docs or ordinary-code edit that does not change verdict logic does not
     enter this proof-surface rule.
-- **A WRITE-CAPABLE subagent gets its own worktree; a read-only one may share the
-  parent's.** Owner ruling 2026-08-15 (S6). The rule this replaces was a sentence
+- **A WRITE-CAPABLE or envelope-unbound subagent gets its own worktree; a
+  host-enforced typed read-only one may share the parent's.** Owner ruling
+  2026-08-15 (S6). The rule this replaces was a sentence
   in the spawn prompt telling write-capable children not to run mutating git ops —
   and on the S4 slice five of them ran concurrently in one shared tree under it,
   which is the exposure, not a hypothetical. Isolation makes the parent's tree and
@@ -224,9 +223,9 @@ These expand in [README.md Core Concepts](../README.md#core-concepts):
     `no host-exposed automated spawn-denial probe surface found`. So spawn
     placement is proven by a RECORDED LIVE PROBE per host, on the same standing as
     envelope binding and result delivery — never by a suite assertion.
-  - The detective control stays as the backstop for anything still sharing the
-    tree: `reviewer_boundary_fingerprint.py` snapshot/verify, and the read-only
-    hygiene rule in
+  - The detective control stays as the fallback for an envelope-unbound reviewer
+    that still shares the tree: `reviewer_boundary_fingerprint.py` snapshot/verify,
+    and the read-only hygiene rule in
     [fresh-eye-subagent-review.md](../skills/shared/references/fresh-eye-subagent-review.md)
     remains canonical for reviewers that share it.
 - A multi-slice goal may use a bounded goal-claims review when its artifact

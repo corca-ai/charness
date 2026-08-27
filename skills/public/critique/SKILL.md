@@ -111,9 +111,9 @@ history.
 4. Run the angle pass.
    - Resolve the adapter's fresh-eye branch, consume its typed carrier, and bind
      packet identity; caller flags cannot cross that branch.
-   - use bounded fresh-eye subagents with one angle each (one worker per angle) and `record_round_findings.py`; the recorder requires `--worker-report <path>`, validates the delivered report/receipt/ledger chain, and carries the typed worker result (`result.json`) as findings. Raw stdin or `--findings-file` same-context substitutions are refused. A delivered `block` or `defer` is recorded as evidence but is not approval. Rail-1 snapshot/verify around each reviewer spawn uses
-     `--window-id <id>` and
-     `--boundary-snapshot <path>`. Mismatched snapshots refuse; round `n+1` reads as prior evidence.
+   - use bounded fresh-eye subagents with one angle each (one worker per angle) and `record_round_findings.py`; the recorder requires `--worker-report <path>`, validates the delivered report/receipt/ledger chain, and carries the typed worker result (`result.json`) as findings. Raw stdin or `--findings-file` same-context substitutions are refused. A delivered `block` or `defer` is recorded as evidence but is not approval. For a shared, untyped reviewer, rail-1 snapshot/verify around that reviewer uses
+     `--window-id <id>` and `--boundary-snapshot <path>`; typed read-only or
+     isolated execution needs no extra fingerprint. Mismatched snapshots refuse; round `n+1` reads as prior evidence.
 5. Collapse the findings into one candidate concern list.
    - deduplicate overlap
    - keep evidence and cited source paths with each concern when available

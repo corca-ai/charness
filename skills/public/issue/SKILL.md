@@ -75,9 +75,10 @@ closing anything.
      adapter-selected runner. The default is the file-backed worker; the typed
      host-subagent branch is optional and must deliver typed findings. If the
      selected branch is blocked, stop and report the concrete host/worker
-     signal. Wrap shared-tree reviewers in the rail-1 snapshot/verify from the
-     Enforcement section of `../../shared/references/fresh-eye-subagent-review.md`
-     (snapshot before launch, verify after return).
+     signal. If the selected reviewer is untyped and shares the parent tree, wrap
+     it in the rail-1 snapshot/verify from the Enforcement section of
+     `../../shared/references/fresh-eye-subagent-review.md`; typed read-only and
+     isolated reviewers do not need that extra fingerprint.
    - `feature` / `deferred-work`: emit the pre-mutation resolution brief and
      name the capability or capability failure before proposing implementation;
      pause when open decisions are non-empty.

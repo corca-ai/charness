@@ -100,9 +100,9 @@ re-running `--sync`, not by editing the block.
 - Do not substitute same-agent review for the release critique gate.
 - Apply `../../shared/references/fresh-eye-subagent-review.md` for reviewer
   tier policy when release critique or closeout review needs a fresh observer.
-- Wrap shared-tree reviewer spawns in the rail-1 snapshot/verify commands from
-  that reference's Enforcement section (snapshot before spawn, verify after
-  each reviewer returns).
+- For an untyped reviewer that shares the parent tree, use the rail-1
+  snapshot/verify commands from that reference's Enforcement section. Typed
+  read-only and isolated reviewers do not need the extra fingerprint.
 - Keep a verified release ledger; if a release target cannot be re-read, record
   the `target_unavailable` disposition from
   `../../shared/references/closeout-discipline.md`.

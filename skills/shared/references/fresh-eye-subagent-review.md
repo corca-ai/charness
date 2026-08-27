@@ -237,14 +237,13 @@ consuming repo that adopts this rule owns its own trigger definition.
 
 ## Shared-Tree Git Hygiene
 
-Bounded fresh-eye reviewers usually run in the *parent session's* working tree,
-not an isolated checkout. In that shared tree a reviewer that mutates git state
-to "see the old behavior" silently corrupts the operator's pending commit: a
-`git checkout <base> -- <path>` to read pre-change code leaves the parent index
-holding a staged reversion, so the operator's closeout `git add -A && git commit`
-re-commits the old code and undoes the very change under review — with every gate
-still green, because the reverted code is internally self-consistent. This
-staged-reversion trap is a hard rule, not a default.
+Prefer an executable boundary. A host-enforced typed read-only reviewer may use
+the parent worktree. An untyped or write-capable reviewer uses an isolated
+checkout; if an untyped reviewer must share the parent, the fingerprint fallback
+below detects git-state drift. In any shared tree, a reviewer that mutates git
+state to "see the old behavior" can silently corrupt the operator's pending
+commit: a `git checkout <base> -- <path>` can leave a staged reversion that a
+later closeout recommits.
 
 When you review in a shared worktree, treat git as read-only:
 
@@ -269,80 +268,31 @@ first place.
 
 ## Enforcement
 
-Prose alone did not prevent recurrence: recorded shared-tree reviewer
-violations include a reviewer that staged and committed content, one that
-spawned an unauthorized child agent, and one that modified docs despite a
-no-write brief. Two enforcement rails now back the rule instead of
-instruction-following alone.
+Boundary evidence follows the execution mode; there is no universal
+snapshot/verify ritual.
 
-1. Parent-side integrity proof. Before spawning shared-tree reviewers, run
-   `python3 "$SKILL_DIR/../../shared/scripts/reviewer_boundary_fingerprint.py" snapshot --repo-root <repo-root> --window-id <id>`.
-   The snapshot receipt returns `verify_before` and `verify_args`; use that
-   exact path with `verify --before <verify_before> --window-id <id>`. The
-   `out:` path is the same file, but `verify_before` is the machine-readable
-   handoff field so a custom output path never requires a guessed verify flag.
-   After EACH reviewer returns, run
-   `python3 "$SKILL_DIR/../../shared/scripts/reviewer_boundary_fingerprint.py" verify --repo-root <repo-root> --window-id <id>`.
-   Verify at the moment the reviewer returns, BEFORE applying anything the
-   reviewer found: git records that the shared tree changed, never who changed
-   it, so a parent that edits first gets drift on its own work shaped exactly
-   like a boundary violation, and an unattributable `ok: false` teaches the
-   parent to discount the one signal that would catch a real violation.
-   A non-zero verify is a concrete, auditable violation signal: quarantine
-   that review's approvals, restore state deliberately, and re-run verify to
-   a full-clean result before re-snapshotting for the next reviewer (the
-   drift list is fail-closed but names at least one drifted surface, not
-   necessarily every one). Closeout evidence should cite the verify result,
-   not reviewer self-report.
-   The window id above is the first binding: verify refuses a snapshot from a
-   different window (exit 2) instead of answering across two intervals.
-   When the ideal order slips anyway, the parent declares what it changed
-   itself rather than discounting the alarm. `--parent-path <path>` covers
-   worktree content, `--parent-staged <path>` covers the index, and
-   `--parent-head-moved` covers a parent commit; all are repeatable and take
-   the exact repo-relative path git prints. Declared drift is reported as
-   `parent_attributed_drift` and does not fail the verify; everything
-   undeclared still does. Index drift needs its own `--parent-staged` —
-   `--parent-path` never excuses it, because staging is the one class an
-   enveloped reviewer cannot legitimately produce and is the staged-reversion
-   trap above.
-   A declaration is recorded parent testimony, not proof. It cannot pass as an
-   undeclared clean run: an attributed pass exits **3**, not 0, and prints
-   `verdict: parent-attributed` with the full `parent_declared` set. Cite
-   `verdict` and that set in closeout evidence whenever anything was declared;
-   a bare `ok: true` / `drift: []` quote is only honest for an exit-0 run.
-   Drift that names no path is never attributable and always fails.
-2. Host envelope. Hosts that expose typed subagent definitions spawn bounded
-   reviewers under a read-only envelope (Claude Code receives the installed
-   plugin's `agents/bounded-reviewer.md` (Read/Grep/Glob only), so
-   that, where the envelope binds, writes, index mutation, and undelegated
-   nested spawning fail with the host's concrete tool-unavailable signal. An
-   enveloped reviewer has no shell, so prior-version content (`git show`) rides
-   the parent's packet instead of a reviewer-run command. Reviewer-tier
-   semantics stay intact because the tier maps to spawn fields, not tools.
-   Envelope binding is a per-host claim that must be proven live, never
-   assumed: a recorded host probe has seen a typed spawn accepted by name
-   while the tool restriction did not bind (the reviewer still held shell
-   and write tools). Until a live denial signal is recorded on the current
-   host, treat rail 2 as unproven, rely on rail 1 plus the shared-tree rules
-   above, and have parents audit reviewer tool-use events rather than trust
-   self-report.
+1. **Typed read-only envelope:** record the host's live envelope binding. No
+   parent fingerprint is needed because the host has removed write and exec
+   capability. If the binding is not proven, use isolation or the shared-tree
+   fallback; do not assume the envelope.
+2. **Isolated worktree:** record the checkout's isolation. No parent fingerprint
+   is needed because the reviewer cannot mutate the parent's index or worktree.
+3. **Untyped reviewer sharing the parent:** run
+   `python3 "$SKILL_DIR/../../shared/scripts/reviewer_boundary_fingerprint.py"
+   snapshot --repo-root <repo-root> --window-id <id>` before launch and verify
+   immediately after return, before applying findings. A failed verify
+   quarantines the review's boundary approval. The helper detects git-state
+   drift only; it does not prove fresh-eye independence or findings delivery.
+   The snapshot receipt returns the exact verify handoff path. Verify before
+   applying findings; an undeclared drift quarantines the boundary approval.
+   The window id binds the two calls. Parent-path declarations are only
+   attribution, not proof, and are unnecessary when the parent has not written.
 
-   Codex does not discover Claude's markdown envelope from a plugin root. On the
-   current Codex host, use its native `explorer` agent with the bounded review
-   packet; pass reviewer-tier spawn fields when the host exposes them. This is
-   not the Claude tool envelope: its binding must be recorded separately, and
-   the Claude envelope rail is `unsupported` on Codex. Keep the parent-side
-   fingerprint rail as enforcement.
-
-Rail 1 covers the git-state class: worktree writes, index mutation, HEAD
-moves, and untracked churn on non-ignored paths. A reviewer action that
-leaves no git trace — an unauthorized child that never writes — is prevented
-only by rail 2. Two limits are by design: gitignored paths are out of
-fingerprint scope (they cannot enter a closeout commit), and on hosts
-without the envelope a writing reviewer could rewrite the default snapshot
-file itself, so pass `--out` to keep the snapshot outside the
-reviewer-reachable tree when that matters.
+If none of these modes is proven, the returned text remains an independent
+opinion/non-claim and cannot be used as boundary-clean closeout approval. A
+missing fingerprint on a typed or isolated review is not a failure. Gitignored
+runtime files remain outside this helper's scope because they cannot enter a
+closeout commit.
 
 ## Result Delivery
 
@@ -364,7 +314,7 @@ final state/hash fields, and binds the packet repository as well as issue number
 For the optional typed-subagent path, **A spawned reviewer is not a received
 review.** The parent holds the review only when the reviewer's findings text is in
 the parent's own context. Spawn
-acceptance, a clean rail-1 fingerprint, and an idle or completion notification
+acceptance, a clean boundary result, and an idle or completion notification
 are each individually compatible with findings that never arrived — the
 reviewer can run correctly, keep its boundary clean, write a complete final
 message, and still deliver nothing the parent can read.
@@ -419,7 +369,7 @@ only the "findings text in your context" test carries. The current Codex
   evidence, as a field distinct from boundary state: `findings-received`, or
   `spawn-accepted-no-delivery <concrete channel or host signal>`. Boundary
   clean and findings received are independent claims; neither implies the
-  other, and rail 1 proves only the first.
+  other, and the selected boundary mode proves only the first.
 
 Where a host persists subagent transcripts on disk, reading a stranded
 reviewer's final message from its transcript is a legitimate **diagnostic** for

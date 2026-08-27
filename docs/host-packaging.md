@@ -75,8 +75,9 @@ The Codex export must map the shared bundle into:
 Codex does not discover Claude-style markdown files from a plugin-root
 `agents/` directory. Bounded fresh-eye reviewers therefore use Codex's native
 `explorer` agent with the bounded review packet. Reviewer-tier spawn fields are
-passed when exposed; this is not the Claude tool envelope. The parent-side
-fingerprint rail remains mandatory.
+passed when exposed; this is not the Claude tool envelope. Use an isolated
+reviewer or, when sharing the parent is unavoidable, the parent-side fingerprint
+fallback.
 
 The current contract fixes the Codex repo-marketplace path because the official
 Codex plugin docs use that location for repo-scoped plugin catalogs.

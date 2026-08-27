@@ -26,7 +26,8 @@ def test_exported_plugin_carries_boundary_helper_and_claude_agent(tmp_path: Path
     )
     assert '"$SKILL_DIR/../../shared/scripts/reviewer_boundary_fingerprint.py"' in reference
     assert "<repo-root>/skills/shared/scripts/reviewer_boundary_fingerprint.py" not in reference
-    assert "plugin's `agents/bounded-reviewer.md`" in reference
+    assert "host-enforced typed read-only reviewer" in reference
+    assert "Untyped reviewer sharing the parent" in reference
 
     # Exercise the command exactly as a consumer invokes it: cwd is the
     # consuming repository while the helper is resolved from the installed
@@ -74,6 +75,6 @@ def test_source_reference_does_not_claim_consumer_repo_claude_agent_path() -> No
         encoding="utf-8"
     )
     assert "<repo-root>/.claude/agents/bounded-reviewer.md" not in reference
-    assert "Codex does not discover Claude's markdown envelope" in reference
-    assert "native `explorer` agent" in reference
-    assert "not the Claude tool envelope" in reference
+    assert "host-enforced typed read-only reviewer" in reference
+    assert "isolated worktree" in reference
+    assert "fingerprint fallback" in reference

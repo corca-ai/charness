@@ -67,7 +67,8 @@ def test_critique_skill_surfaces_counterweight_and_deliberately_not_doing() -> N
     assert "file-backed worker" in skill_text
     assert "at least two independent angle worker runs plus one separate counterweight" in skill_text
     assert "default to three angles" in skill_text
-    assert "rail-1 snapshot/verify around each reviewer spawn" in skill_text
+    assert "For a shared, untyped reviewer" in skill_text
+    assert "typed read-only or" in skill_text
     assert "stop-instead-of-local-substitute rule when neither the configured" in skill_text
     assert "no same-context local standalone `critique` variant" in skill_text
     assert "customer-of-this-capability" in angle_text

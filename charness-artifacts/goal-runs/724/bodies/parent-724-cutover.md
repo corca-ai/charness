@@ -189,3 +189,33 @@ This parent is the authoritative execution tracker for the approved issue-native
 - Full graph reconciliation remains an explicit bootstrap/sync/closeout action. The one updater advances this cursor whenever a child transition is published.
 
 The parent remains open until every still-linked child is closed with issue-owned behavioral evidence or a verified successor deferral. Push, release, tag, remote CI, installed-host mutation, and issue closure remain separately authorized boundaries for this run.
+
+## 2026-08-27 Efficiency-first scope reset
+
+The operator approved a redesign of this run because the original graph mixed
+issue-native `achieve` dogfooding with an unrelated 26-issue backlog closeout.
+The current goal now prioritizes the smallest consumer-speed path: explicit
+provider selection, one parent-cursor pickup, external runtime isolation, one
+representative child proof, and truthful issue/parent progress readback.
+
+Live classification is recorded in
+`charness-artifacts/goal-runs/724/goal-redesign-20260827.md`:
+
+- 13 linked children are already CLOSED and remain historical evidence.
+- #698, #708, #710, #722, #723, #726 have local implementation/proof; their
+  next action is synchronization, not another implementation pass.
+- #725 and #727 have establishment/readback evidence; #733 and #734 have
+  existing repository code but still need issue-specific evidence sync.
+- #699, #700, #701, #703, #704, #706, #715, and #717 have no current
+  implementation receipt and are ordinary independent backlog work, not
+  blockers for this dogfood path.
+
+The original binding and initial graph stay immutable historical inputs. No
+child is silently removed or declared complete by this addendum. Relationship
+amendment, issue close, and parent close still require their own provider
+operation, exact readback, and authorization boundary. Routine pickup continues
+to consume the existing parent cursor; it does not rescan this classification.
+The earlier all-linked-child completion sentence remains historical bootstrap
+policy; it is not an instruction to implement the eight unstarted backlog rows
+in this run. Any future parent close must first amend and read back that policy
+through the provider boundary.

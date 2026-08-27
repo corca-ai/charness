@@ -88,18 +88,13 @@ gates, and commits.
 
 ## Reviewers Stay Read-Only
 
-Bounded fresh-eye reviewers run in the shared parent worktree and treat git as
-read-only, per
-[fresh-eye-subagent-review.md](../skills/shared/references/fresh-eye-subagent-review.md).
-Parallelism does not relax that: a reviewer that mutates the shared tree to "see
-the old behavior" corrupts the operator's pending commit with every gate still
-green.
-
-A parent that must write inside an open review window declares its own paths to
+Typed read-only reviewers may share the parent worktree. An untyped or
+write-capable reviewer uses an isolated worktree; if sharing is unavoidable,
+the parent uses
 [reviewer_boundary_fingerprint.py](../skills/shared/scripts/reviewer_boundary_fingerprint.py)
-`verify`. Undeclared drift is a boundary signal only for a window in which the
-parent made no writes, so declaring is what keeps the signal meaningful — not a
-way around it.
+snapshot/verify before applying findings. The fingerprint is a git-state fallback,
+not proof of fresh-eye delivery. A reviewer that mutates a shared tree still
+corrupts the operator's pending commit with every gate green.
 
 ## The Proof Floor Does Not Move
 
