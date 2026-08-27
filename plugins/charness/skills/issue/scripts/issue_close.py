@@ -183,7 +183,7 @@ def evaluate_close_comment_carrier(
         ),
         fetch=lambda dest: _state_readback.view_issue_state(
             repo_root, repo=repo, number=dest, backend=backend,
-            json_fields="number,state,url",
+            json_fields="number,state,url,body",
         ),
         applies=classification == _consolidated.CLASSIFICATION,
         expected_repo=repo,

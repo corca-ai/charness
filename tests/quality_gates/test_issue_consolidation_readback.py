@@ -314,11 +314,11 @@ def test_the_readback_runs_on_the_carrier_a_consolidated_close_MUST_use(tmp_path
 
     close_mod = runpy.run_path(str(_SCRIPTS / "issue_close.py"))
     readback_mod = close_mod["_state_readback"]
-    monkeypatch.setattr(
-        readback_mod,
-        "view_issue_state",
-        lambda *a, **k: {"number": 600, "state": "CLOSED", "body": "names nobody"},
-    )
+    def fake_view(*_args, **kwargs):
+        assert kwargs["json_fields"] == "number,state,url,body"
+        return {"number": 600, "state": "CLOSED", "body": "names nobody"}
+
+    monkeypatch.setattr(readback_mod, "view_issue_state", fake_view)
     body = tmp_path / "body.md"
     body.write_text("Closes #555\n\nJtbd: fold it\nConsolidated into: #600\n", encoding="utf-8")
 
