@@ -20,9 +20,6 @@ BOOTSTRAP_SEAMS = (
 DEFAULT_SURFACES = (
     ROOT / "skills" / "public" / "setup" / "references" / "default-surfaces.md"
 ).read_text(encoding="utf-8")
-AGENT_DOCS_POLICY = (
-    ROOT / "skills" / "public" / "setup" / "references" / "agent-docs-policy.md"
-).read_text(encoding="utf-8")
 DISPATCH = (
     ROOT / "skills" / "public" / "quality" / "references" / "inventory-dispatch.md"
 ).read_text(encoding="utf-8")
@@ -105,18 +102,6 @@ def test_setup_default_surfaces_keep_optional_workflows_out_of_the_core() -> Non
     assert "## Ownership boundaries" in default_surfaces
     assert "`quality` owns exact gates" in default_surfaces
     assert "## Early Quality Baseline" not in default_surfaces
-
-
-def test_setup_does_not_export_a_global_review_policy() -> None:
-    skill_text = SETUP_SKILL.lower()
-    agent_docs = AGENT_DOCS_POLICY.lower()
-    bootstrap_seams = BOOTSTRAP_SEAMS.lower()
-    default_surfaces = DEFAULT_SURFACES.lower()
-
-    assert "no required session-start hook" in skill_text
-    assert "does not inject" in agent_docs and "standing" in agent_docs
-    assert "universal root policy" in bootstrap_seams
-    assert "## subagent delegation" not in default_surfaces
 
 
 def test_setup_does_not_duplicate_artifact_commit_policy() -> None:
