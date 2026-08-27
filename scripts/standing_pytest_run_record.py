@@ -25,13 +25,13 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from runtime_bootstrap import import_repo_module
+from runtime_bootstrap import import_repo_module, runtime_root
 
 _subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
 heartbeat_interval_from_env = _subprocess_guard.heartbeat_interval_from_env
 
 
-RUN_RECORD_RELPATH = Path(".charness") / "standing-pytest" / "last-run.json"
+RUN_RECORD_RELPATH = Path("standing-pytest") / "last-run.json"
 HEARTBEAT_INTERVAL_ENV = "CHARNESS_STANDING_PYTEST_HEARTBEAT_SECONDS"
 
 
@@ -109,7 +109,10 @@ def _terminate_reaps_the_child():
 
 
 def run_record_path(repo_root: Path) -> Path:
-    return repo_root / RUN_RECORD_RELPATH
+    # The record is runtime telemetry, not repository evidence. Keeping it under
+    # `.charness/` made every canonical run create an ignored worktree artifact,
+    # so a clean checkout became dirty after the very gate meant to protect it.
+    return runtime_root(repo_root) / RUN_RECORD_RELPATH
 
 
 def write_run_record(repo_root: Path, record: dict[str, object]) -> None:

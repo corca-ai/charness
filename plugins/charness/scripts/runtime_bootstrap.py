@@ -10,9 +10,12 @@ from collections.abc import MutableMapping
 from pathlib import Path
 from types import ModuleType
 
-
-class RuntimeEnvironmentError(RuntimeError):
-    """The runtime was explicitly pointed at a repo-local output path."""
+_ORIGINAL_DONT_WRITE_BYTECODE = sys.dont_write_bytecode
+# The import machinery decides this module's cache path before executing its
+# body. Suppress only this early window; configure_runtime_environment restores
+# normal bytecode caching after it has installed the external prefix.
+if not _ORIGINAL_DONT_WRITE_BYTECODE:
+    sys.dont_write_bytecode = True
 
 
 def _is_inside(path: Path, root: Path) -> bool:
@@ -21,6 +24,34 @@ def _is_inside(path: Path, root: Path) -> bool:
     except ValueError:
         return False
     return True
+
+
+def _bootstrap_pycache_prefix() -> None:
+    """Choose a safe bytecode prefix before this module's first local import."""
+    if sys.dont_write_bytecode:
+        return
+    configured = os.environ.get("PYTHONPYCACHEPREFIX", "").strip()
+    repo_root = Path(__file__).resolve().parent.parent
+    if configured and not _is_inside(Path(configured).expanduser().resolve(), repo_root):
+        return
+    base = Path(
+        os.environ.get("XDG_CACHE_HOME", "").strip()
+        or os.environ.get("TMPDIR", "").strip()
+        or tempfile.gettempdir()
+    ).expanduser().resolve()
+    if _is_inside(base, repo_root):
+        base = Path(tempfile.gettempdir()).resolve()
+    if _is_inside(base, repo_root):
+        base = Path("/tmp").resolve()
+    key = hashlib.sha256(str(repo_root).encode("utf-8")).hexdigest()[:16]
+    sys.pycache_prefix = str(base / "charness" / "runtime" / key / "pycache")
+
+
+_bootstrap_pycache_prefix()
+
+
+class RuntimeEnvironmentError(RuntimeError):
+    """The runtime was explicitly pointed at a repo-local output path."""
 
 
 def _repo_runtime_key(repo_root: Path) -> str:
@@ -38,7 +69,11 @@ def _runtime_root(repo_root: Path, env: MutableMapping[str, str]) -> tuple[Path,
                 "CHARNESS_RUNTIME_ROOT must be outside the repository: "
                 f"{root} (repo: {repo_root.resolve()})"
             )
-        return root, False
+        # Preserve the auto-root marker when this is the same repo's second
+        # bootstrap call. Dropping it here made a later fixture/worktree reuse
+        # the first repo's runtime root, so run records and caches crossed
+        # boundaries despite the key-aware branch above.
+        return root, auto_root
 
     base_text = (
         env.get("XDG_CACHE_HOME", "").strip()
@@ -51,6 +86,13 @@ def _runtime_root(repo_root: Path, env: MutableMapping[str, str]) -> tuple[Path,
     if _is_inside(base, repo_root.resolve()):
         base = Path("/tmp").resolve()
     return base / "charness" / "runtime" / runtime_key, True
+
+
+def runtime_root(repo_root: str | Path, env: MutableMapping[str, str] | None = None) -> Path:
+    """Return the external runtime root without creating any directories."""
+    root = Path(repo_root).expanduser().resolve()
+    target = os.environ if env is None else env
+    return _runtime_root(root, target)[0]
 
 
 def _external_setting(
@@ -120,6 +162,8 @@ def configure_runtime_environment(
         if hasattr(sys, "pycache_prefix"):
             sys.pycache_prefix = target["PYTHONPYCACHEPREFIX"]
         tempfile.tempdir = target["TMPDIR"]
+        if not _ORIGINAL_DONT_WRITE_BYTECODE:
+            sys.dont_write_bytecode = False
     return dict(target)
 
 

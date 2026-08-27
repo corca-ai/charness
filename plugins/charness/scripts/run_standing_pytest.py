@@ -12,6 +12,13 @@ import shutil
 import sys
 from pathlib import Path
 
+_EARLY_BYTECODE_GUARD = not sys.dont_write_bytecode
+if _EARLY_BYTECODE_GUARD:
+    # Python chooses a source module's cache path before executing that module.
+    # Hold this guard only across the first bootstrap import; that bootstrap
+    # installs the external prefix, after which normal bytecode caching is safe.
+    sys.dont_write_bytecode = True
+
 try:
     from runtime_bootstrap import configure_runtime_environment, import_repo_module
 except ImportError:  # pragma: no cover - exercised by the coverage-producer test
@@ -29,6 +36,8 @@ except ImportError:  # pragma: no cover - exercised by the coverage-producer tes
 # `from scripts...` because this script is run directly as often as it is
 # imported, and a plain package import fails in the direct-invocation case.
 _subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+if _EARLY_BYTECODE_GUARD:
+    sys.dont_write_bytecode = False
 heartbeat_interval_from_env = _subprocess_guard.heartbeat_interval_from_env
 run_monitored_phase = _subprocess_guard.run_monitored_phase
 

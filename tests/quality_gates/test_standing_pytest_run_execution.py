@@ -132,6 +132,37 @@ def test_standing_pytest_run_record_survives_an_unwritable_state_dir(
     assert not runner.run_record_path(repo).exists()
 
 
+def test_standing_pytest_run_record_is_external_runtime_telemetry(tmp_path: Path) -> None:
+    from scripts import run_standing_pytest as runner
+
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    path = runner.run_record_path(repo)
+
+    assert repo not in path.parents
+    assert path.name == "last-run.json"
+    assert path.parent.name == "standing-pytest"
+
+
+def test_runtime_root_keeps_auto_identity_across_repeated_calls(tmp_path: Path, monkeypatch) -> None:
+    from scripts import runtime_bootstrap
+
+    repo = tmp_path / "repo"
+    other = tmp_path / "other"
+    repo.mkdir()
+    other.mkdir()
+    monkeypatch.delenv("CHARNESS_RUNTIME_ROOT", raising=False)
+    monkeypatch.delenv("CHARNESS_RUNTIME_ROOT_AUTO", raising=False)
+    monkeypatch.delenv("CHARNESS_RUNTIME_REPO_KEY", raising=False)
+
+    first = runtime_bootstrap.configure_runtime_environment(repo)
+    second = runtime_bootstrap.configure_runtime_environment(repo)
+
+    assert second["CHARNESS_RUNTIME_ROOT_AUTO"] == "1"
+    assert second["CHARNESS_RUNTIME_REPO_KEY"] == first["CHARNESS_RUNTIME_REPO_KEY"]
+    assert runtime_bootstrap.runtime_root(other) != runtime_bootstrap.runtime_root(repo)
+
+
 def test_print_last_run_reads_back_a_record_and_refuses_when_absent(
     tmp_path: Path, capsys, monkeypatch
 ) -> None:
