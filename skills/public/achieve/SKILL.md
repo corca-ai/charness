@@ -27,8 +27,15 @@ the draft as execution state.
 ## Interview
 
 Resolve `interview.max_questions` from the adapter, defaulting to 15. Each
-consequential question records alternatives, tradeoffs, a recommendation and
-reason, the operator answer, and rejected alternatives. If the ceiling is
+run treats it as a ceiling, not a quota. First retire ambiguity answered by the
+repository, provider, prior operator answers, or evidence. Then ask only from
+the resolution frontier: unresolved distinctions that could change the goal,
+boundary, acceptance, or execution order. Collapse answered branches, do not
+reopen them without contradictory evidence, and stop when finer resolution
+would not change activation or the next action.
+
+Each consequential question records alternatives, tradeoffs, a recommendation
+and reason, the operator answer, and rejected alternatives. If the ceiling is
 reached with a decision unanswered, return `interview-cap-reached` and wait for
 the ordinary operator answer; do not create a binding or provider parent.
 

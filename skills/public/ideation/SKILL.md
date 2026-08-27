@@ -92,14 +92,15 @@ incrementally instead of leaving the model only in chat.
    - `success criteria lens`: use future-success review to turn a promising
      idea into criteria, checks, tripwires, and the first probe
 3. Ask the smallest set of high-leverage questions.
-   - check the current repo surfaces first and treat existing code, tests, and
-     operator docs as evidence rather than reopening them as chat-only questions
-   - when multiple decisions are open, start with the upstream one that most
-     changes the rest of the design while preserving later paths
-   - ask one question at a time when real tradeoffs remain
-   - prefer precise questions over broad brainstorming prompts
-   - skip questions the repo, docs, or prior answers already resolved
-   - stop once the concept is sharp enough to move forward
+   - state the current model at its justified resolution and distinguish user
+     intent, observation, inference, and external evidence
+   - identify the resolution frontier: only unresolved distinctions that could
+     change the next decision or action
+   - ask the smallest independent probes, starting with the upstream one that
+     changes the most downstream design; use one at a time when tradeoffs remain
+   - incorporate the answer, collapse eliminated branches, and do not reopen
+     facts already resolved by the repo, docs, prior answers, or evidence
+   - stop when finer resolution would not change the next step
 4. Surface weak concepts early.
    - contradictions
    - hidden assumptions
@@ -122,30 +123,10 @@ incrementally instead of leaving the model only in chat.
 
 ## Output Shape
 
-The final synthesis should usually include:
-
-- `Concept`
-- `Capability or Capability Failure`
-- `Product Posture`
-- `Verified Facts`
-- `Assumptions`
-- `Open Questions`
-- `Decision Candidates`
-- `Dependency Order`
-- `Recommended Current Decision`
-- `Alternatives and Tradeoffs`
-- `World Model`
-- `Truth Tests`
-- `Edge and Expansion`
-- `Agent/Human Fit`
-- `Next Step`
-
-If entity/stage separation materially clarifies the idea, also include:
-
-- `Entities`
-- `Stages`
-
-Use that split as a thinking aid, not as mandatory ceremony.
+Return only the sections needed to preserve the concept, its evidence and
+assumptions, consequential decisions, remaining uncertainty, and next step.
+Use entity/stage or world-model views only when they materially clarify the
+decision; the lens list is not an output checklist.
 
 When the open questions are ones a downstream skill (`spec` or `impl`) must act
 on, emit an opt-in `## Structured Questions` section that classifies each item

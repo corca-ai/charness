@@ -30,7 +30,8 @@
         "produces an output that a maintainer could review directly without re-deriving the whole request",
         "saves a complete Goal Draft under `charness-artifacts/goals/<yyyy-mm-dd-slug>.md`, freezes its bytes after approval, and binds it to one provider-backed Goal Run",
         "resumes only from the exact `/goal #N` objective after provider readback; the draft remains planning provenance and never becomes a progress log",
-        "keeps the Before-phase provider-free until explicit approval, then reads the parent and reconciles the real child graph through the issue-owned Goal Run provider"
+        "keeps the Before-phase provider-free until explicit approval, then reads the parent and reconciles the real child graph through the issue-owned Goal Run provider",
+        "treats the interview limit as a ceiling, asks only unresolved decisions that could change activation or execution, and does not reopen branches already resolved by repository evidence or operator answers"
       ]
     },
     {
@@ -123,7 +124,8 @@
       "acceptance_evidence": [
         "routes the prompt to `ideation` instead of an adjacent public skill",
         "does not invent host-specific adapter state when repo inspection alone should be enough",
-        "produces an output that a maintainer could review directly without re-deriving the whole request"
+        "produces an output that a maintainer could review directly without re-deriving the whole request",
+        "asks only from the resolution frontier that could change the next decision or action, collapses answered branches, and stops at purpose-fit resolution"
       ]
     },
     {

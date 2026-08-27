@@ -26,14 +26,15 @@ expose an equivalent this list does not anticipate. Resolve the concrete spellin
 through that host's adapter or preset. Hardcoding one host's vocabulary into a
 portable skill contract goes stale silently.
 
-Inspect the live host tool surface before selecting a channel. Use a host
-spawn/subagent for short, interactive, or judgment-bound work, and use the
-repository's isolated `charness task run` lane for bounded implementation,
-long-running Codex work, explicit branch/worktree/path scope, or a durable
-result carrier. Both are normal parallel lanes; neither is a fallback for the
-other, and neither may be declared absent from memory, a previous session, or a
-product name. If neither channel is available, keep only dependent/tiny work in
-the current context and report the reduced parallelism.
+Inspect the current runtime's exposed tools and any host-provided deferred-tool
+inventory before selecting a channel. Use a host spawn/subagent for short,
+interactive, or judgment-bound work, and use the repository's isolated
+`charness task run` lane for bounded implementation, long-running Codex work,
+explicit branch/worktree/path scope, or a durable result carrier. Only explicit
+inventory absence, invocation rejection, or a host error proves a lane
+unavailable. When inventory cannot be inspected, call the lane unverified and
+use what is visible; repository catalogs and prior-session memory are not host
+capability evidence.
 
 ## Cost-Aware Model Selection
 
@@ -44,12 +45,12 @@ when the spawn or task surface exposes a model field. Reserve the inherited or
 stronger tier for critical-path integration, architecture, ambiguous repair, or
 the high-leverage review classes named by their owning skill.
 
-A repository or user may name the concrete host mapping. This repository maps
-its fast sidecar tier to Codex Luna in [AGENTS.md](../AGENTS.md); portable public
-skills keep the tier name and let the consuming host resolve it. An explicit
-choice remains active across compaction, reload, and routine goal pickup until
-the user or repository changes it. Omitting a model field means "inherit"; it
-does not satisfy an explicit fast-tier choice.
+A repository or user may name the concrete host mapping. This repository keeps
+that mapping in [repo-local host notes](../.agents/codex-host.md); portable
+public skills keep the tier name and let the consuming host resolve it. An
+explicit choice remains active across compaction, reload, and routine goal
+pickup until the user or repository changes it. Omitting a model field means
+"inherit"; it does not satisfy an explicit fast-tier choice.
 
 ## Speculate While Blocked
 

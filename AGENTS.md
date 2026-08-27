@@ -21,17 +21,13 @@ question; it is not a second operating manual.
 - Preserve authored parent-worktree changes. Use a clean named worktree for
   isolated mutation, with runtime caches and temporary output outside it.
 - Make independent investigation, implementation, and review the default
-  parallel shape. Inspect the live host tool surface first, then fan out through
-  whichever available lane fits the work: a host spawn/subagent for short,
-  interactive or judgment-bound work, or `charness task run` for a bounded
-  Codex lane that benefits from a named branch, isolated worktree, explicit
-  path scope, or a durable result. Neither channel is a fallback for the other,
-  and neither may be declared absent from memory. The parent agent owns intent,
-  design, integration, and final verification; keep work sequential only when
-  it is dependent or tiny. Before the first Codex lane, read the
-  [repo-local host notes](./.agents/codex-host.md); they own this repository's
-  model and effort choice without baking host-specific values into portable
-  skills. A reload or compaction does not revoke that choice.
+  parallel shape. Inspect the current runtime's live tool inventory, including
+  any discoverable deferred tools, before selecting a host spawn/subagent or
+  `charness task run`. Only explicit inventory absence, invocation rejection,
+  or a host error proves a lane unavailable; otherwise report it as unverified,
+  not absent. The parent owns intent, integration, and final verification;
+  serialize only dependent or tiny work. Repo-local model, effort, and lane
+  choices live in [host notes](./.agents/codex-host.md).
 - Keep `skills/public/` canonical; exports and generated surfaces are updated
   by their producer. Prefer deleting stale rules, wrappers, gates, mirrors,
   tests, and docs over adding another layer.
