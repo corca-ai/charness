@@ -30,20 +30,18 @@ does the cheaper replacement give the SAME evidence this site needs, or does the
 site genuinely need what the slower command provides — and if so, is that reason
 written where the next reader meets the command?
 
-## Authoring the registry ARMS two blocking surfaces
+## Authoring the registry arms one blocking surface
 
 Read this before you create the file. Installing the plugin changes nothing on
-its own — with no registry, both surfaces below stay inert and neither can fail
-your lane. Writing the registry is what arms them, and it arms both at once:
+its own — with no registry, the check below stays inert and cannot fail your
+lane. Writing the registry is what arms it:
 
 - **`check-command-dominance`** runs in the quality lane and **exits nonzero**
   on any non-exempt dominated command it finds in your standing-gate surfaces or
   your declared config literals. If your pre-push hook runs the quality lane, a
   dominated command there will refuse the push.
-- **The handoff validator** refuses a handoff artifact whose body prescribes a
-  dominated command.
 
-Neither is advisory. To see what a registry would catch BEFORE arming anything,
+The check is not advisory. To see what a registry would catch before arming it,
 draft it somewhere the gates do not read and point the inventory at it:
 
 ```bash
@@ -53,8 +51,8 @@ inventory_command_dominance.py --repo-root . --registry-path .agents/command-dom
 That command is advisory by construction and always exits 0. Running the
 inventory with no registry at the default path previews nothing — it reports
 `registry_state: absent` and finds nothing — so the draft path is what makes the
-preview real. Creating the file at the default path is what arms both surfaces
-above, at that instant.
+preview real. Creating the file at the default path arms the blocking check at
+that instant.
 
 The `exemptions` block below is the escape for a site that genuinely needs the
 slower command, and it requires a reason.

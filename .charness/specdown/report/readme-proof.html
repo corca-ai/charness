@@ -36,7 +36,7 @@
           
           
           <section class="toc-spec">
-            <div class="toc-spec-header"><span class="toc-type-badge" style="--type-hue:187">spec</span><a class="toc-spec-title " href="./on-demand-validation.html">On-Demand Validation Viewer</a></div>
+            <div class="toc-spec-header"><span class="toc-type-badge" style="--type-hue:187">spec</span><a class="toc-spec-title " href="./on-demand-validation.html">On-Demand Review Viewer</a></div>
             
             
           </section>
@@ -82,47 +82,52 @@ from pathlib import Path
 text = Path(&#34;docs/readme-proof.md&#34;).read_text(encoding=&#34;utf-8&#34;)
 required = [
     &#34;# README Proof Ledger&#34;,
-    &#34;cautilus discover claims&#34;,
-    &#34;cautilus.claim_proof_plan.v1&#34;,
     &#34;Claim Ledger&#34;,
     &#34;README-INIT-ROUTE&#34;,
     &#34;README-NORMAL-PROMPTS&#34;,
     &#34;README-QUALITY&#34;,
-    &#34;charness-artifacts/cautilus/latest.md&#34;,
+    &#34;Review Rule&#34;,
 ]
 missing = [item for item in required if item not in text]
 assert not missing, missing
 PY</code></div><p class="exec-block-footer">run:shell</p></section><section class="s2" id="section-specs-readme-proof-spec-md-readme-proof-ledger-proof-owners"><h2>Proof Owners</h2>
 <p>Ledger rows must name explicit proof owners instead of implying that generated
-docs or Cautilus discovery alone prove every claim.</p>
+docs or an unscoped evaluator prove every claim.</p>
 <section class="exec-block passed" id="case-specs-readme-proof-spec-md-readme-proof-ledger-proof-owners-2"><div class="exec-source"><code>python3 - &lt;&lt;&#39;PY&#39;
 from pathlib import Path
+from scripts.readme_proof_ledger_lib import LedgerEvidenceError, claim_ledger_rows, validate_ledger_rows
 
-text = Path(&#34;docs/readme-proof.md&#34;).read_text(encoding=&#34;utf-8&#34;)
-for owner in (&#34;deterministic&#34;, &#34;Cautilus&#34;, &#34;HITL/operator&#34;, &#34;deferred&#34;):
+source = Path(&#34;docs/readme-proof.md&#34;)
+text = source.read_text(encoding=&#34;utf-8&#34;)
+for owner in (&#34;deterministic&#34;, &#34;HITL/operator&#34;, &#34;deferred&#34;):
     assert owner in text, owner
 
-rows = [line for line in text.splitlines() if line.startswith(&#34;| README-&#34;)]
+try:
+    rows = claim_ledger_rows(text)
+except LedgerEvidenceError as exc:
+    raise AssertionError(str(exc)) from exc
 assert rows, &#34;expected ledger rows&#34;
-for row in rows:
-    cells = [cell.strip() for cell in row.strip().strip(&#34;|&#34;).split(&#34;|&#34;)]
-    assert len(cells) == 8, row
+for cells in rows:
     proof_owner = cells[3]
-    assert proof_owner, row
-    assert &#34;claim discover&#34; not in proof_owner.lower(), row
-    assert &#34;proof plan&#34; not in proof_owner.lower(), row
+    assert proof_owner, cells
+    assert &#34;claim discover&#34; not in proof_owner.lower(), cells
+    assert &#34;proof plan&#34; not in proof_owner.lower(), cells
     assert any(
         marker in proof_owner
         for marker in (
             &#34;Deterministic&#34;,
-            &#34;Cautilus&#34;,
             &#34;HITL/operator&#34;,
             &#34;Specdown&#34;,
             &#34;delegated review&#34;,
             &#34;human-auditable&#34;,
         )
-    ), row
-assert &#34;proof plan, not a verdict&#34; in text
+    ), cells
+assert &#34;not a second test runner&#34; in text
+try:
+    evidence_rows = validate_ledger_rows(text, source_path=source, repo_root=Path(&#34;.&#34;))
+except LedgerEvidenceError as exc:
+    raise AssertionError(str(exc)) from exc
+assert len(evidence_rows) == len(rows)
 PY</code></div><p class="exec-block-footer">run:shell</p></section></section></section></section>
           </article>
         </div>
