@@ -36,21 +36,19 @@ shipping the next micro-diff.
 
 ## Review Cadence
 
-- Fresh-eye review runs per meaningful unit and risk boundary, not per
-  commit. Several cheap commits may land inside one slice before one bounded
-  review.
-- A later commit inside the same slice re-triggers review only when it moves
-  the risk boundary (new public surface, validator family, export path,
-  release/closeout carrier, irreversible migration).
-- Per-slice review used as reassurance — when the design did not change — is
-  cadence waste, not rigor.
-- **Premortem is inside this cadence, not an exception to it.** Mandatory
-  premortem fires once per slice-intent boundary (the meaningful unit), and
-  further commits within one unchanged intent re-fire it only when the risk
-  boundary moves. A task-completing *change* is the slice; each commit inside it
-  is not its own premortem. This is the single resolution of the
-  "premortem per task-completing change" vs "critique is slice-level" tension —
-  `critique/references/cadence.md` and the `achieve` lifecycle defer here.
+- Fresh-eye review belongs to explicitly selected `critique` work and to true
+  irreversible or proof boundaries when their owner requires it. A meaningful
+  slice does not create a review obligation for ordinary reversible work.
+- When `critique` is selected, use the meaningful intent and risk boundary as
+  the review unit, not the commit. Several cheap commits may land inside one
+  slice before one bounded review; a later commit needs another pass only when
+  it moves the risk boundary (new public surface, validator family, export
+  path, release/closeout carrier, or irreversible migration).
+- Review used as reassurance when the design did not change is cadence waste,
+  not rigor.
+- A premortem is an explicitly selected `critique` target, not a mandatory
+  per-slice step. When selected, keep it to one coherent risk boundary and
+  revisit it only when that boundary moves.
 
 ## Proof Cadence
 
@@ -74,7 +72,3 @@ shipping the next micro-diff.
   pointer churn never masquerades as progress.
 - A history of frequent artifact-only commits is process churn made visible;
   prefer folding artifact updates into the meaningful unit they support.
-  `run_slice_closeout.py` surfaces a non-blocking advisory when a run of
-  consecutive `charness-artifacts/`-only commits crosses the threshold
-  (`CHARNESS_OVERSLICE_ARTIFACT_RUN`, default 3), so the churn is visible at
-  closeout instead of only in hindsight.

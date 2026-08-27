@@ -39,7 +39,6 @@ from typing import Any
 _load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_import.py"))["sibling_loader"](__file__)
 _BODY = _load_local("issue_verify_closeout_body")
 _FLOORS = _load_local("issue_closeout_rung1_floors")
-_PROBE_FLOOR = _load_local("issue_probe_record_floor")
 _CRITIQUE = _load_local("issue_resolution_critique", "issue_close_comment_floor_critique")
 _CONSOLIDATED_CLASSIFICATION = "consolidated"
 
@@ -113,22 +112,12 @@ def evaluate_close_comment_floor(
         numbers=numbers,
         repository=repo,
     )
-    # THE FOURTH INSTANCE OF THE ASYMMETRY THIS FILE ALREADY NAMES THREE TIMES, and it
-    # was found the same way the others should have been -- by the closeout floor matrix
-    # re-deriving every cell and reading `inert` here while `verify-closeout` read
-    # `fires`. The probe-record floor landed on `verify_closeout` first, which would
-    # again have left the one carrier that mutates GitHub DIRECTLY as the one carrier
-    # where a behavioral claim could reach a real issue with no measurement behind it.
-    probe_record = _PROBE_FLOOR.evaluate_probe_record(
-        body, classification, numbers, repo_root=repo_root
-    )
     ok = (
         source_preservation["ok"]
         and behavioral_verdict["ok"]
         and hotl_dispositions["ok"]
         and ai_provenance["ok"]
         and resolution_critique.get("ok", True)
-        and not _PROBE_FLOOR.probe_record_problem_fields(probe_record)
         and not consolidated_ledger
     )
     return {
@@ -140,7 +129,6 @@ def evaluate_close_comment_floor(
         "hotl_dispositions": hotl_dispositions,
         "ai_provenance": ai_provenance,
         "resolution_critique": resolution_critique,
-        "probe_record": probe_record,
         "missing_ledger_fields": consolidated_ledger,
         "consolidation_readback": readback,
     }
@@ -157,8 +145,6 @@ def format_close_comment_floor_failure(report: dict[str, Any]) -> str:
             "  missing behavioral verdict: add a `Behavior: <distinct evidence channel>` line, "
             "or a typed non-verified disposition (HOTL status or local-only-by-contract)."
         )
-    for line in _PROBE_FLOOR.probe_record_advisory(report.get("probe_record", {})):
-        lines.append(f"  {line}")
     hotl = report["hotl_dispositions"]
     for entry in hotl.get("undispositioned", []):
         target = entry.get("target") or f"#{report['number']}"

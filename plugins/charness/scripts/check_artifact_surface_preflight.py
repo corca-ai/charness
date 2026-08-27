@@ -12,11 +12,9 @@ required shape before the broad gate rather than by failing it
 
 The registry below is the generalization: one place that knows the artifact-
 authoring family. Each surface declares a *shape source* — a ``scaffold`` script
-(stub-by-construction), a ``template`` section (the goal template already seeds
-the closeout block), or a ``template`` preamble (the goal `Activation:` line that
-lives before any `## Heading`) — plus its owning validator. The dispatcher reads
-shape from that source; it adds no new shape requirement and changes no validator
-verdict.
+(stub-by-construction) or a ``template`` section — plus its owning validator. The
+dispatcher reads shape from that source; it adds no new shape requirement and
+changes no validator verdict.
 """
 from __future__ import annotations
 
@@ -38,12 +36,6 @@ _critique_paths = import_repo_module(__file__, "scripts.critique_artifact_paths"
 safe_repo_relative_path = _artifact_run_scope.safe_repo_relative_path
 is_critique_round_record = _critique_paths.is_critique_round_record
 
-# Goal template that already seeds the `## Final Verification` closeout block;
-# the goal-closeout surface has no scaffold script, so this template section IS
-# the single-source shape an author should start from.
-_GOAL_TEMPLATE = "skills/public/achieve/scripts/goal_artifact_template.md"
-
-
 @dataclass(frozen=True)
 class Surface:
     artifact_type: str
@@ -55,8 +47,7 @@ class Surface:
     note: str
     paths_arg: bool = True  # validator accepts --paths; False => validate-all default
     artifact_path_arg: bool = False  # validator accepts --artifact-path: judge THIS draft, not the adapter default
-    template_preamble: str | None = None  # template_path; preamble (pre-first-`## `) shape source
-    owner: str | None = None  # override for the validator=None owner line (default: achieve complete-flip)
+    owner: str | None = None  # override for the validator=None owner line
     shape_command: tuple[str, ...] | None = None  # skill-script argv that prints the enforced shape (run with --stub for a starter); rendered from the owning validator's live constants
 
     def excludes(self, rel: str) -> bool:
@@ -77,14 +68,13 @@ class Surface:
 #  - Prefix-mapped surfaces (critique, ideation, retro, debug) accept `--paths` and
 #    run CHANGED-SCOPED, so they are wired into the blocking fail-fast structural
 #    sweep (`commit_boundary=True`): cheap, changed-scoped, no reordering of the
-#    deeper run_slice_closeout stages.
+#    deeper quality-run stages.
 #  - Adapter-scoped quality siblings validate-ALL (no --paths), so they
 #    are NOT in the fail-fast sweep (`commit_boundary=False`); they get author-time
 #    shape help via `--type`/`--emit-stub`/`--path` and the broad gate remains their
 #    enforcement. (Putting a validate-all gate in the fail-fast sweep would block a
 #    commit on pre-existing siblings the author never touched.) Giving one of these
 #    `--paths` is what moves it into the tier above — that is how debug moved.
-#  - goal-closeout shape is owned at the achieve complete-flip (not a commit gate).
 # See charness-artifacts/spec/authoring-preflight-generalization-and-disposition-delaunder.md
 # and charness-artifacts/spec/artifact-shape-preflight-coverage.md.
 REGISTRY: tuple[Surface, ...] = (
@@ -109,15 +99,6 @@ REGISTRY: tuple[Surface, ...] = (
         None, True,
         "Hand-authored session retro; `## Next Improvements` disposition form enforced.",
     ),
-    Surface(
-        "goal-closeout", None, None, None,
-        f"{_GOAL_TEMPLATE}|## Final Verification", False,
-        "Goal `## Final Verification` closeout-evidence block; the template seeds the "
-        "lines and `describe_goal_closeout_shape.py` surfaces the enforced FORMS "
-        "(allowed skip-reason enum, goal-slug binding, disposition + Routing forms) "
-        "read live from `check_goal_artifact.py`'s constants.",
-        shape_command=("skills/public/achieve/scripts/describe_goal_closeout_shape.py",),
-    ),
     # closeout-draft: the GitHub-issue closeout surface the authoring-preflight class
     # (#284 -> #334) did not cover — discovered by failing `validate-closeout-draft`
     # ~4x this cycle. Author-time-only (validator=None: a verdict needs the full
@@ -125,7 +106,7 @@ REGISTRY: tuple[Surface, ...] = (
     # shape is rendered live from the verifier's constants, never re-declared.
     Surface(
         "closeout-draft", None, None, None, None, False,
-        "GitHub-issue closeout-draft body shape (resolution_critique + `tool signal:`, "
+        "GitHub-issue closeout-draft body shape (bug-only resolution_critique + `tool signal:`, "
         "carrier-body source = commit message for direct-commit, per-classification "
         "ledger fields, close keyword); rendered live from `validate-closeout-draft`'s "
         "verifier constants.",
@@ -136,24 +117,6 @@ REGISTRY: tuple[Surface, ...] = (
             "--carrier <c> ...` (the verdict needs the full command, not just a path; this "
             "surface is author-time shape only)."
         ),
-    ),
-    Surface(
-        "goal-early-close", None, None,
-        "skills/public/achieve/scripts/goal_artifact_early_close_report.py",
-        None, False,
-        "Early-close report shape (Why early closeout / What user decisions / Waste and retro); the scaffold prints the author-time stub, enforced by the achieve early-close-report floor at the complete flip.",
-    ),
-    # goal-activation-preflight-surface follow-up: the `Activation:` line is a
-    # PREAMBLE line (goal_artifact_template.md:5), not a `## Heading`, so it needs
-    # preamble extraction rather than the template-section source. Author-time-only
-    # (the `Activation:` line is enforced by the DEFAULT `check_goal_artifact.py`
-    # check, i.e. `goal_lib.check_goal`; `--pursue-ready` skips it), so
-    # commit_boundary=False and validator=None.
-    Surface(
-        "goal-activation", None, None, None, None, False,
-        "Goal preamble shape: the `Activation:` `/goal @<goal-rel-path>` line (with `Status:`/`Created:`) required in every goal artifact's preamble; a preamble line, not a `## Heading` section.",
-        template_preamble=_GOAL_TEMPLATE,
-        owner="achieve goal validation — the default `check_goal_artifact.py` check (`goal_lib.check_goal`'s `Activation:`-line requirement; e.g. `python3 skills/public/achieve/scripts/check_goal_artifact.py --repo-root . --goal-path <goal>`). NOT `--pursue-ready` (which skips the section/Activation check) and not the complete flip.",
     ),
     # debug moved into the fail-fast sweep (#454 follow-up): the validator gained
     # `--paths`, so the documented objection — a validate-ALL gate blocking a commit
@@ -331,13 +294,6 @@ def _shape_text(repo_root: Path, surface: Surface) -> str:
             if tpl is not None
             else f"(template {tpl_rel} not found: {error})"
         )
-    if surface.template_preamble:
-        tpl, error = _resolve_shape_source(surface.template_preamble)
-        parts.append(
-            _extract_preamble(tpl.read_text(encoding="utf-8"))
-            if tpl is not None
-            else f"(template {surface.template_preamble} not found: {error})"
-        )
     if surface.shape_command:
         parts.append(_run_shape_command(repo_root, surface, stub=False)[0])
     if not parts:
@@ -359,18 +315,6 @@ def _extract_section(text: str, heading: str) -> str:
         if capturing:
             out.append(line)
     return "\n".join(out).rstrip() + "\n" if out else f"(section {heading} not found in template)"
-
-
-def _extract_preamble(text: str) -> str:
-    """The template's preamble — every line from the top up to (excluding) the
-    first `## ` H2. This is the title + `Status:`/`Created:`/`Activation:` block
-    that lives before any section, which `_extract_section` cannot reach."""
-    out: list[str] = []
-    for line in text.splitlines():
-        if line.startswith("## "):
-            break
-        out.append(line)
-    return "\n".join(out).rstrip() + "\n" if out else "(template preamble not found)"
 
 
 # Audit row C6's recorded residual, for BOTH arms below (`describe` and
@@ -431,7 +375,7 @@ def describe(repo_root: Path, surface: Surface, *, target_rel: str | None) -> st
             if proc.returncode != 0:
                 out.append((proc.stderr or proc.stdout).strip())
     else:
-        owner = surface.owner or "achieve closeout (check_goal_artifact.py at the complete flip)"
+        owner = surface.owner or "the owning workflow"
         out.append(f"owning validator: {owner}")
     return "\n".join(out).rstrip() + "\n"
 
@@ -441,12 +385,8 @@ def emit_stub(repo_root: Path, surface: Surface) -> tuple[str, int]:
         return _run_scaffold_template(repo_root, surface.scaffold)
     parts: list[str] = []
     code = 0
-    if surface.template_section or surface.template_preamble:
-        source = (
-            surface.template_section.split("|")[0]
-            if surface.template_section
-            else surface.template_preamble
-        )
+    if surface.template_section:
+        source = surface.template_section.split("|")[0]
         parts.append(
             f"{surface.artifact_type} has no scaffold script; its shape is seeded by "
             f"{source} — author into that block directly."

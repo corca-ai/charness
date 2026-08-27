@@ -274,8 +274,8 @@ def coverage_not_verified_warning(changed_eligible: list[str], reason: str) -> s
         "and the next scheduled mutation run flags them (the #335 recurrence). First run "
         "`python3 scripts/suggest_mutation_coverage_command.py --repo-root . --detail` "
         "to find a focused producer command; if it cannot map the change, run "
-        "`python3 scripts/run_slice_closeout.py --produce-mutation-coverage "
-        "--verification-lock` as the full fallback before the lines land. "
+        "`python3 scripts/release_changed_line_coverage.py --repo-root . "
+        "--base-sha <base>` at the release boundary. "
         f"Files: {files}"
     )
 
@@ -470,7 +470,7 @@ def main() -> int:
         # Deliberately AFTER the changed set is known. Exit 3's own contract scopes
         # it to a NON-EMPTY changed set -- "an empty changed set still exits 0" --
         # and returning 3 before this point made an empty scope refusable, which
-        # `prepush_focused_changed_line_coverage` names by name as an incoherent
+        # `release_changed_line_coverage` names by name as an incoherent
         # blocker on the gate whose credibility is the point.
         sys.stderr.write(
             f"WARNING (changed-line mutation gate): {trust.unestablished_reason}; "

@@ -1,90 +1,11 @@
-# Achieve Lifecycle — During
+# Achieve Goal Run Pickup
 
-## During
+Resume only with the exact objective `/goal #N`. The achieve pickup helper
+resolves the repository, reads the Goal Run parent once, validates its metadata,
+immutable Goal Binding, frozen draft hash, and managed parent cursor, then reads
+only the cursor's next open child.
 
-## Pickup
-
-The active run starts from the exact objective `/goal #N`. The achieve-owned
-pickup helper resolves the repository from the adapter or one compatible git
-remote, reads the provider-backed parent, validates the frozen Goal Draft and
-Goal Binding, and returns the parent's managed `charness.goal-progress/v1`
-cursor. The cursor already names the next child; pickup does not read the child
-graph or hydrate child bodies.
-
-The cursor carries the reconciled membership revision, counts, revision number,
-and one exact `OPEN` child identity. The binding still owns rank and dependency
-provenance, while the parent owns the current next-child decision. A missing or
-stale cursor is a typed `progress-sync-required`/`progress-stale` refusal, not
-an invitation to perform a hidden full scan.
-
-Full graph membership, child-body, dependency, and evidence reconciliation is
-reserved for bootstrap, explicit progress sync/doctor, graph amendment, and
-closeout. Those paths use the provider's graph/evidence readers; routine pickup
-is one parent read. Routine pickup also skips a separate capability/auth probe:
-the live parent read is its backend check, while the stronger preflight remains
-on the explicit lifecycle paths.
-
-## Execution
-
-Delegate the selected child to its owning workflow. `impl` changes the smallest
-meaningful code/config/test surface, `quality` chooses proportionate proof,
-`prove` records the closeout, and `issue` owns any issue-bound close operation.
-Independent questions, investigation, implementation, and review are the
-default parallel shape. Inspect the host's live tool surface first and use its
-actual spawn/subagent channel when present; do not infer that it is absent from
-memory or an earlier session. Use isolated `charness task run` lanes when an
-explicit worktree is useful or no host spawn channel is exposed. The parent
-owns the dependency order, integration, and final verification; direct
-execution is reserved for dependent or tiny work, or a confirmed lack of both
-channels.
-The parent progress cursor carries the current navigation state; the child
-issue carries behavioral evidence and its provider state. Advance the cursor
-when the child transition is published. The frozen Goal Draft and immutable
-binding are never used as a scratchpad.
-
-For ordinary reversible local work, deterministic proof may close the slice
-with an explicit `Critique: not-required <reason>` disposition. Escalate to
-critique when the work crosses authority, durability, external-write, security,
-release, compatibility, deletion, migration, or proof-surface boundaries. A
-required review that is blocked remains blocked; it never becomes approval.
-
-### Lesson memory
-
-The lesson ledger is optional durable memory and selection state. The achieve
-pickup path reads recent-lessons.md once per goal start or resume and falls back
-to the precomputed selection index only when needed. It never rebuilds the
-ledger/index, refreshes retro output, records a shown set, or emits a session
-receipt. Missing or malformed projection is non-blocking context loss, not a
-pickup failure; freshness is not checked on this path. The ledger and its
-projections remain retro-owned; achieve only reads them. The `/goal` path
-returns this read in its pickup payload; the artifact-only path invokes the
-same helper after the goal file is known, and both reuse the result for the
-rest of that entry.
-
-## Provider retry
-
-Each provider mutation is one file-backed operation with a started observation
-and a terminal observation. Treat outcomes distinctly:
-
-- `verified-write`: exact target and readback match;
-- `unverified-write`: stop and re-read before retrying;
-- `partial-graph`: preserve verified identities and reconcile the remainder;
-- `no-write`: provider was not invoked; repair input or readiness; and
-- `refused`: no mutation occurred.
-
-An invoked create with no discoverable identity is unresolved. Never create
-again from memory. Re-read the provider and reuse an exact match.
-
-## Graph amendments
-
-After establishment, a concrete new Work Item or deferral changes provider
-membership with an explicit reason and readback. The immutable initial binding
-does not change. A semantic change to purpose, acceptance, architecture,
-success, or proof policy returns to approval and a new binding.
-
-## Coordination record
-
-Adjacent evidence records carry the shared `goal_lineage` identity: draft
-path/hash, binding path/hash, parent repository/number, and optional selected
-child. Planning-only or not-goal-bound evidence is explicit and cannot satisfy
-implementation or closeout proof. There is no second local progress ledger.
+Pickup returns `verified-read` or a typed refusal. It does not infer execution
+state from a local artifact, scan or reconcile the provider graph, mutate the
+provider, or create a second progress record. Use the issue-owned Goal Run
+bootstrap, sync, apply, and close commands for those operations.

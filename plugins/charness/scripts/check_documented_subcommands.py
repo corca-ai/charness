@@ -245,7 +245,7 @@ def _iter_runtime_strings(tree: ast.Module) -> Iterator[tuple[int, str]]:
 
     An f-string is reassembled from its literal parts with each `{...}` replaced
     by a placeholder, because the span this gate reads is routinely split by one:
-    ``f"Run `charness task submit {task_id} --summary ...`"`` puts the subcommand
+    ``f"Run `charness task status {task_id}`"`` puts the subcommand
     before the placeholder and the closing backtick after it, so a reader that
     only sees the parts separately never closes the span.
     """

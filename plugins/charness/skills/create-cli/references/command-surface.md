@@ -30,10 +30,9 @@ Design rules:
   machine-readable registry such as `commands --detail` or
   `capabilities --detail` for Charness-style CLIs, or the tool's established
   native machine mode, instead of scraping help text
-- if agents are expected to claim bounded repo work, provide a small task
-  envelope such as `task claim`, `task submit`, `task review`, `task abort`, and
-  `task status` before inventing a queue or scheduler; keep one execution
-  reference and one result carrier per logical task
+- if agents run bounded repo work, prefer one direct execution command and one
+  status view over a claim/submit/review state machine; add scheduler lifecycle
+  only when an actual scheduler consumes it
 - when `doctor` reports multiple host or adapter states, emit one primary
   `next_action` plus host-specific detail such as `host_next_steps` so
   automation can continue without guessing which advisory message wins

@@ -173,21 +173,9 @@
       "verdict": "accepted-risk-unguarded",
       "reason": "This module IS the achieve adapter's resolver (load_adapter/validate_adapter_data) and correctly sets `valid: not errors` via `declared_fields_after_version_check` -- that part is a proper resolver. Its downstream helper `resolve_discussion_deploy_vocab` reads the resolved payload directly without checking `errors`/`valid`; invalid or missing adapters deliberately fall back to the portable discussion vocabulary, so the declaration is not silently treated as authoritative."
     },
-    "skills/public/achieve/scripts/goal_artifact_closeout_evidence.py": {
-      "verdict": "safe-not-consequential",
-      "reason": "Calls `achieve_adapter_policy.closeout_policy_report` (L289); the adapter read and its risk belong to that module's row, not this one."
-    },
-    "skills/public/achieve/scripts/goal_artifact_lib.py": {
-      "verdict": "safe-checks-errors",
-      "reason": "upsert_goal() (lines 302-305) calls `_policy.load_adapter(repo_root)` and explicitly checks `if adapter['found'] and not adapter['valid']:` and returns a `refused` result (naming `adapter['errors']`) BEFORE any consequential action (mkdir, template render with adapter['data']['scaffold']..., or path.write_text at lines 306-326) is taken."
-    },
     "skills/public/achieve/scripts/goal_run_pickup.py": {
       "verdict": "safe-checks-errors",
       "reason": "pickup() checks the issue adapter's `valid` field and raises `adapter-invalid` before `_resolve_repository` reads adapter-selected repository data or the provider is called. The issue resolver supplies the version/parse/dropped-line refusal in that payload, so an unhonored declaration cannot steer Goal Run selection."
-    },
-    "skills/public/achieve/scripts/goal_lesson_pickup.py": {
-      "verdict": "safe-checks-errors",
-      "reason": "_projection_paths() loads the retro adapter and checks adapter.get(\"valid\") before reading adapter data; a refused adapter returns retro-adapter-invalid and read_goal_lessons reports unavailable without using declared projection paths."
     },
     "skills/public/announcement/scripts/preflight_sources.py": {
       "verdict": "guarded-all-doors",

@@ -15,6 +15,8 @@ def _load_skill_runtime_bootstrap():
 
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
+_adapter_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_lib")
+normalize_adapter_result = _adapter_lib.normalize_adapter_result
 
 
 def _repo_root() -> Path:
@@ -25,7 +27,7 @@ def load_adapter(repo_root: Path) -> dict[str, object]:
     sys.path.insert(0, str(_repo_root()))
     from scripts.announcement_adapter_lib import load_announcement_adapter
 
-    return load_announcement_adapter(repo_root)
+    return normalize_adapter_result(load_announcement_adapter(repo_root), skill_id="announcement")
 
 
 def main() -> None:

@@ -31,11 +31,12 @@ GATE_ACCEPTS_REPO_ROOT_HATCH=0
 source "$CHARNESS_GATE_DIR/exported-copy-guard.sh"
 
 RUN_QUALITY_REVIEW=0
+RUN_QUALITY_RELEASE=0
 RUN_QUALITY_MODE="${CHARNESS_QUALITY_MODE:-full}"
 RUN_QUALITY_INCLUDE_RELEASE_ONLY="${CHARNESS_QUALITY_INCLUDE_RELEASE_ONLY:-0}"
 RUN_QUALITY_RECEIPT_JSON="${CHARNESS_QUALITY_RECEIPT_JSON:-}"
 # The default developer lane is deliberately small.  `--full` remains the
-# explicit broad battery for pre-push/release work; an implementation should not
+# explicit broad battery; an implementation should not
 # pay every inventory, evaluator, and mutation-proof gate just because it ran the
 # repo's quality command.
 RUN_QUALITY_FULL_QUEUE="${CHARNESS_QUALITY_FULL_QUEUE:-0}"
@@ -53,6 +54,7 @@ for arg in "$@"; do
       RUN_QUALITY_FULL_QUEUE=1
       ;;
     --release)
+      RUN_QUALITY_RELEASE=1
       RUN_QUALITY_INCLUDE_RELEASE_ONLY=1
       RUN_QUALITY_FULL_QUEUE=1
       ;;
@@ -79,6 +81,11 @@ for arg in "$@"; do
       ;;
   esac
 done
+
+if [[ "$RUN_QUALITY_RELEASE" == "1" && -n "${CHARNESS_QUALITY_LABELS:-}" ]]; then
+  echo "run-quality: --release is one indivisible lane; CHARNESS_QUALITY_LABELS cannot narrow it" >&2
+  exit 2
+fi
 
 case "$RUN_QUALITY_MODE" in
   full|read-only) ;;
@@ -265,8 +272,8 @@ RUN_QUALITY_RUNTIME_PROFILE="${CHARNESS_RUNTIME_PROFILE:-}"
 # to invoke the gate rather than of the code (#544). The aggregate label already
 # refuses to record under a filter for exactly this reason; the per-gate samples
 # are re-keyed instead of dropped, so the subset regime stays measurable.
-# A caller that runs a RECURRING subset names it (the docs-only pre-push branch
-# does); an ad hoc filter falls back to one shared `filtered` bucket, which is
+# A caller that runs a RECURRING subset names it; an ad hoc filter falls back to
+# one shared `filtered` bucket, which is
 # honest about being a mixture rather than pretending to be a regime.
 # A gate set can differ from the standard battery in two directions, and both
 # change what every sibling is competing with: a label filter NARROWS it, and an
@@ -919,7 +926,9 @@ PYTEST_FLAGS=(--repo-root "$REPO_ROOT" --mode "$RUN_QUALITY_MODE")
 # Both arms spell the label literally on purpose: the timing-completeness and
 # gate-verbosity inventories parse this file for queued gate labels and cannot
 # resolve a shell variable, so a computed label reads as an untimed gate.
-if [[ "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" == "1" ]]; then
+RUN_QUALITY_PYTEST_RELEASE=0
+if [[ "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" == "1" ]] || label_is_explicitly_selected "pytest-release"; then
+  RUN_QUALITY_PYTEST_RELEASE=1
   PYTEST_FLAGS+=(--include-release-only)
   queue_selected "pytest-release" env CHARNESS_STANDING_PYTEST_PYTHON=python3 python3 scripts/run_standing_pytest.py "${PYTEST_FLAGS[@]}"
 else
@@ -935,7 +944,7 @@ if ((${#PHASE_LABELS[@]} > 0)); then
   else
     pytest_rc=$?
     OVERALL_RC="$pytest_rc"
-    if [[ "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" == "1" ]]; then
+    if [[ "$RUN_QUALITY_PYTEST_RELEASE" == "1" ]]; then
       echo "run-quality: release pytest failed; stopping before later release checks." >&2
     else
       echo "run-quality: standing pytest failed; stopping before later quality checks." >&2
@@ -986,7 +995,11 @@ queue_selected "validate-presets" python3 scripts/validate_presets.py --repo-roo
 queue_selected "validate-adapters" python3 scripts/validate_adapters.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "validate-integrations" python3 scripts/validate_integrations.py --repo-root "$REPO_ROOT"
 queue_selected "validate-packaging" python3 scripts/validate_packaging.py --repo-root "$REPO_ROOT"
-queue_selected "validate-packaging-committed" python3 scripts/validate_packaging_committed.py --repo-root "$REPO_ROOT"
+# Checked-in export drift is a release-boundary concern, but remains available for
+# a focused diagnostic without widening ordinary full runs.
+if [[ "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" == "1" ]] || label_is_explicitly_selected "validate-packaging-committed"; then
+  queue_selected "validate-packaging-committed" python3 scripts/validate_packaging_committed.py --repo-root "$REPO_ROOT"
+fi
 queue_selected "validate-debug-artifact" python3 scripts/validate_debug_artifact.py --repo-root "$REPO_ROOT"
 queue_selected "validate-debug-seam-index" python3 scripts/build_debug_seam_risk_index.py --repo-root "$REPO_ROOT" --check
 queue_selected "validate-retro-lesson-index" python3 scripts/build_retro_lesson_selection_index.py --repo-root "$REPO_ROOT" --check
@@ -1004,11 +1017,9 @@ queue_selected "check-inventory-declaration-coverage" python3 scripts/check_inve
 # the same command stays a read-only inventory.
 queue_selected "inventory-skill-script-references" python3 scripts/inventory_skill_script_references.py --repo-root "$REPO_ROOT" --strict
 queue_selected "validate-quality-closeout-contract" python3 scripts/validate_quality_closeout_contract.py --repo-root "$REPO_ROOT"
-# Base for the changed-path critique probe below — the merge-base with origin/main
-# (the release/change range). It is used only to decide whether the changed
-# implementation crosses a critique boundary; the quality runner no longer
-# auto-produces changed-line coverage for its own broad branch range. Shared by
-# the critique probe (--changed-ref, the
+# Resolve the release/change range once. The release-final changed-line producer
+# receives this explicit SHA, and the critique probe shares the same range. The
+# empty value remains an honest no-verdict input for a checkout without origin/main.
 # #408 5b tooth: a bare `single-surface` verdict is rejected when the release/change
 # range touches a boundary_cross_surface_globs path).
 CHANGED_LINE_BASE_SHA="$(git -C "$REPO_ROOT" merge-base origin/main HEAD 2>/dev/null || true)"
@@ -1063,7 +1074,11 @@ queue_selected "check-export-safe-imports" python3 scripts/check_export_safe_imp
 # cannot answer, because its oracle is the exporter.
 queue_selected "check-export-self-sufficiency" python3 scripts/check_export_self_sufficiency.py --repo-root "$REPO_ROOT"
 queue_selected "check-plugin-import-smoke" python3 scripts/check_plugin_import_smoke.py --repo-root "$REPO_ROOT"
-queue_selected "check-command-docs" python3 scripts/check_command_docs.py --repo-root "$REPO_ROOT"
+# Command-doc drift remains available at the release boundary and for focused
+# diagnostics, but it is not part of the ordinary broad/default battery.
+if [[ "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" == "1" ]] || label_is_explicitly_selected "check-command-docs"; then
+  queue_selected "check-command-docs" python3 scripts/check_command_docs.py --repo-root "$REPO_ROOT"
+fi
 queue_selected "check-docs" ./scripts/check-docs.sh
 # Compatibility entry points remain available for focused diagnostics and older
 # automation. They are never part of the default battery, so the composite does
@@ -1123,12 +1138,15 @@ queue_selected "ruff" ./scripts/check-python-lint.sh
 if [[ "$RUN_QUALITY_MODE" == "full" ]] || coverage_relevant_changes_present; then
   queue_selected "check-coverage" python3 scripts/check_coverage.py --repo-root "$REPO_ROOT"
 fi
-# Changed-line coverage and mutation remain explicit consumer/release capabilities,
-# but are not an automatic Charness gate. The former queue covered the entire
-# origin/main..HEAD branch and reran standing pytest after release pytest; that
-# duplicated a claim whose scope and ownership belong to an opted-in consumer.
+# Changed-line coverage is release-final only. It is deliberately absent from the
+# ordinary implementation and explicit full queues; the release phase below owns
+# the one producer/consumer proof after every other release check has flushed.
 queue_selected "check-test-completeness" python3 scripts/check_test_completeness.py --repo-root "$REPO_ROOT" -- "${STANDING_PYTEST_TARGETS[@]}"
-queue_selected "check-test-production-ratio" python3 scripts/check_test_production_ratio.py --repo-root "$REPO_ROOT" --require-git-file-listing --advisory
+# The advisory ratio is likewise retained for release and focused diagnostics,
+# while ordinary broad/default runs pay only for the core test contract.
+if [[ "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" == "1" ]] || label_is_explicitly_selected "check-test-production-ratio"; then
+  queue_selected "check-test-production-ratio" python3 scripts/check_test_production_ratio.py --repo-root "$REPO_ROOT" --require-git-file-listing --advisory
+fi
 queue_selected "check-boundary-bypass-ratchet" python3 scripts/check_boundary_bypass_ratchet.py --repo-root "$REPO_ROOT"
 # Every file that reads a resolved adapter payload must carry a written verdict about
 # what it does when the version was refused. A census, not a fixer: it prints the
@@ -1186,7 +1204,7 @@ queue_selected "validate-inventory-consumption-declaration" python3 scripts/vali
 flush_phase || OVERALL_RC=$?
 
 # Boy-scout duplicate ratchet (item 5, slice 2). Runs in the broad path only (this
-# phase is not in the pre-push DOCS_ONLY_LABELS subset; C5). Hard-blocks a new
+# phase is not in any narrow documentation-only subset; C5). Hard-blocks a new
 # fixable-eligible clone family (code via the full nose family_id scan vs the gate
 # baseline; doc via signature drift) and escalates the boy-scout nudge when the
 # reviewed fixable ceiling stagnates above the healthy floor. Reuses the
@@ -1255,6 +1273,24 @@ if agent_browser_runtime_gate_enabled "agent-browser-runtime-hygiene"; then
     OVERALL_RC=$?
     env -u CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS python3 scripts/agent_browser_runtime_guard.py --repo-root "$REPO_ROOT" --cleanup-orphans --execute >/dev/null 2>&1 || true
   }
+fi
+
+# The release-final proof is the last release decision and has exactly one owner.
+# Every earlier release phase has flushed by this point; a blocking predecessor
+# leaves OVERALL_RC nonzero, so no changed-line work starts after a failed check.
+if [[ "$RUN_QUALITY_RELEASE" == "1" && "$OVERALL_RC" == "0" ]]; then
+  release_changed_line_coverage_json="$RUN_QUALITY_RUNTIME_ROOT/release-changed-line-coverage/coverage.json"
+  if [[ -n "$CHANGED_LINE_BASE_SHA" ]]; then
+    queue_selected "release-changed-line-coverage" python3 scripts/release_changed_line_coverage.py \
+      --repo-root "$REPO_ROOT" \
+      --base-sha "$CHANGED_LINE_BASE_SHA" \
+      --coverage-json "$release_changed_line_coverage_json" \
+      --refuse-unestablished
+  else
+    queue_selected "release-changed-line-coverage" bash -c \
+      'echo "release changed-line coverage: no resolved origin/main base SHA; proof is unestablished" >&2; exit 2'
+  fi
+  flush_phase || OVERALL_RC=$?
 fi
 
 if [[ -n "$RUN_QUALITY_LABELS" && "$RUN_QUALITY_SELECTED_LABEL_MATCHES" -eq 0 ]]; then

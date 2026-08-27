@@ -96,20 +96,23 @@ Good default angles for a non-trivial change:
   new H1 titles, and is any concept-home page duplicated)
 - `devil's advocate`: strongest argument for keeping the current design
 
-Worker sizing:
+Reviewer sizing:
 
-- minimum: two contrasting angle worker runs plus one separate counterweight
-  worker run
-- default: three angle worker runs plus one counterweight worker run
-- widen to four angle worker runs only when the change spans multiple durable
-  surfaces, a breaking migration, or a release/install/doc cascade
-- if you cannot name four meaningfully different angles, stay at two or three
-  instead of inventing filler
+- default: two bounded fresh-eye reviewers run in parallel, with materially
+  different perspectives or scopes within the named risk boundary
+- a single reviewer is an explicit, explained exception only when the second
+  perspective cannot add independent evidence
+- the orchestrator chooses the perspectives, judges and integrates both
+  results, and must not encode selection or reviewer count using filenames,
+  diff size, labels, keywords, or other mechanical heuristics
+- the parent performs the counterweight while integrating findings; a separate
+  counterweight worker is optional only when it contributes its own independent
+  evidence axis
 
-The parent review coordinator owns the worker run artifacts and delivery
-ledgers for those angle and counterweight runs. A typed-subagent adapter may
-delegate an angle reviewer, but the consumer still reads its own delivery
-evidence and never treats a host notification as a verdict.
+The parent review coordinator owns the typed reviewer result and delivery
+evidence. A typed-subagent adapter may delegate a reviewer, but the consumer
+still reads its own delivery evidence and never treats a host notification as a
+verdict.
 
 Canonical execution uses file-backed workers. Before a parent reports that path
 as unavailable, use `../../../shared/references/fresh-eye-subagent-review.md`:

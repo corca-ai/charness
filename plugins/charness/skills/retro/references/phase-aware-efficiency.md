@@ -62,12 +62,6 @@ Cached input tokens are not a waste conclusion by themselves. Treat them as a
 context-pressure signal only when paired with evidence such as compactions,
 high-token turns, repeated commands, polling, or rerun-heavy validation cadence.
 
-For goal closeouts, prefer a goal-window audit over a full-thread audit when the
-artifact records a `Host metric window:` evidence line with `started_at`,
-`completed_at`, and exactly one host session-file field (`codex_session_file`
-or `claude_session_file`). A full-thread audit remains a pressure signal, not a
-per-goal cost total.
-
 ## Gate-Baseline Runtime
 
 Cadence is not the only runtime-waste axis. A broad gate run at the right time
@@ -82,12 +76,10 @@ its measured seconds sit unflagged in an Evidence line.
   not to absorb. The structural fix belongs to the gate-implementation owner
   (for example coverage or duplicate-detector cost), so pair the finding with a
   `## Sibling Search` / structural-follow-up destination, never memory-only.
-- Honest capture scope: `run_slice_closeout.py` records `elapsed_seconds` only
-  for the gates it runs itself (sync / verify / broad-pytest) and surfaces an
-  over-budget verdict in its JSON `gate_runtime_advisory` field. The host
-  pre-push hook runs as its own process, so its runtime is NOT in that payload —
-  surface it as an explicit non-claim (or capture it from the hook) rather than
-  implying it was measured.
+- Honest capture scope: a runner records elapsed time only for the gates it
+  invokes itself. A host hook runs as its own process, so its runtime is not in
+  a release or quality payload unless the hook explicitly captures it; surface
+  that as a non-claim rather than implying it was measured.
 
 ## Counterfactual Prompts
 

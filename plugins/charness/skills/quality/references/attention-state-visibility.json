@@ -451,33 +451,6 @@
       ],
       "rationale": "refuse_foreign_entrypoint returns a TYPED skipped-read-only status for -h/--help. A read-only invocation is not a mutation boundary, and refusing it removes the operator cheapest way to inspect which copy they are holding at exactly the moment they are confused about it. The skip closes no gate and reaches no closeout: the caller is an entrypoint that has not yet done anything, so a skipped guard simply means the run has not reached a mutation. Every mutating invocation still resolves a real drifted/in-sync/consuming-repo verdict."
     },
-    "scripts/slice_closeout_broad_gate.py": {
-      "states": [
-        "skipped"
-      ],
-      "visibility": [
-        "explicit_skip_summary",
-        "terminal_payload"
-      ],
-      "evidence_terms": [
-        "skipped_broad_pytest_commands",
-        "verification_lock_required"
-      ],
-      "rationale": "Pre-lock slice closeout can explicitly skip broad pytest while preserving deterministic checks; the payload names skipped_broad_pytest_commands and the lock-required state so skipped broad proof cannot read as full closeout proof."
-    },
-    "scripts/slice_closeout_telemetry.py": {
-      "states": [
-        "disabled"
-      ],
-      "visibility": [
-        "terminal_payload"
-      ],
-      "evidence_terms": [
-        "status",
-        "emitted"
-      ],
-      "rationale": "Closeout-telemetry emission (spec achieve-efficiency E1) is on by default but returns a disabled status in the closeout payload's closeout_telemetry field when the operator sets CHARNESS_CLOSEOUT_TELEMETRY=off, so the off state stays visible in the terminal payload instead of being treated as a successful waste-signal capture. This is operational-waste telemetry, never quality or release closeout proof."
-    },
     "scripts/sync_support.py": {
       "states": [
         "skipped"
@@ -556,76 +529,6 @@
         "SKIPPED"
       ],
       "rationale": "The state module defines the canonical skipped value consumed by worktree doctor renderers."
-    },
-    "skills/public/achieve/scripts/goal_artifact_closeout_evidence.py": {
-      "states": [
-        "skipped"
-      ],
-      "visibility": [
-        "artifact_visible"
-      ],
-      "evidence_terms": [
-        "skipped"
-      ],
-      "rationale": "Sibling module split out of goal_artifact_lib; mirrors the same closeout-evidence skip semantics (per-evidence-name skip lines extracted from the goal artifact body and forwarded to the shared closeout helper)."
-    },
-    "skills/public/achieve/scripts/goal_artifact_early_close_report.py": {
-      "states": [
-        "skipped"
-      ],
-      "visibility": [
-        "artifact_visible",
-        "hard_failure_or_blocker"
-      ],
-      "evidence_terms": [
-        "early-close reports cannot be skipped"
-      ],
-      "rationale": "Early-close report evidence is required when the goal records an early-close reason; a skipped report line is converted into an invalid skip so the complete gate blocks instead of silently accepting missing user-facing rationale."
-    },
-    "skills/public/achieve/scripts/goal_artifact_pursue.py": {
-      "states": [
-        "skipped"
-      ],
-      "visibility": [
-        "operator_summary",
-        "terminal_payload"
-      ],
-      "evidence_terms": [
-        "skipped",
-        "not evaluated",
-        "backlog recount"
-      ],
-      "rationale": "The backlog-recount floor is a SHAPING floor, so `pursue_readiness` skips it for a recognised non-shaping status (`active`/`blocked`/`complete`). That skip is never silent. It is a distinct third state in the operator-facing PASS sentence -- `the backlog recount was NOT evaluated (shaping floor; this artifact is not a draft)` -- kept separate from the `Created:`-grandfather skip, which renders its own clause naming the date. Collapsing the two into one boolean is exactly what a bounded round caught: the sentence then asserted `this artifact is not a draft` about pre-rule DRAFTS, which are 7 of the 8 live ones. The state is also carried structurally in the `backlog_recount` payload (`applies`, `evaluated`, `status_skipped`, `reason`), so a machine reader can tell 'checked and clean' from 'not checked' without parsing prose."
-    },
-    "skills/public/achieve/scripts/recount_premise_lib.py": {
-      "states": [
-        "skipped"
-      ],
-      "visibility": [
-        "hard_failure_or_blocker",
-        "terminal_payload"
-      ],
-      "evidence_terms": [
-        "did not RUN",
-        "skipped",
-        "gaps"
-      ],
-      "rationale": "`_channel_gaps` is the surface that turns every SKIPPED residue channel into a refusal rather than a silent pass. It enumerates the channels that did not run -- an unread issue body, an absent durable-record root, a root present but zero files read, an unreadable record, a marker skipped inside a fenced block -- and `classify` returns `premise-refuted-with-live-residue` instead of the close-leaning `premise-refuted-clean` whenever any of them is non-empty. The skip is therefore never exit-zero-clean: it is both a blocking verdict for the caller and a reason string naming each dead channel in the emitted payload. Gaps are computed unconditionally, so a run that DID find residue still reports any channel that failed to run alongside the finding."
-    },
-    "skills/public/achieve/scripts/recount_residue_lib.py": {
-      "states": [
-        "skipped"
-      ],
-      "visibility": [
-        "terminal_payload",
-        "structured_warning"
-      ],
-      "evidence_terms": [
-        "fenced_markers_skipped",
-        "files_unreadable",
-        "provenance"
-      ],
-      "rationale": "The residue scanner has two skip paths and BOTH are reported with locators in the `provenance` block it returns, never dropped: `fenced_markers_skipped` (a typed `Premise-residue:` marker quoted inside a fenced code block, excluded so documentation showing the marker form cannot become a live disposition) and `files_unreadable` (a durable record that would not decode). Neither may read as a clean pass, and neither does: `recount_premise_lib.classify` reads this provenance and REFUSES -- it returns `premise-refuted-with-live-residue` rather than the close-leaning `premise-refuted-clean` whenever a marker was fenced, a file was unreadable, no record root exists, or a root exists but zero files were read. The rule is that a channel which did not RUN is not a channel that came back clean. Locators accompany every count, because a count with no locator is not a report."
     },
     "skills/public/gather/scripts/advise_google_workspace_path.py": {
       "states": [

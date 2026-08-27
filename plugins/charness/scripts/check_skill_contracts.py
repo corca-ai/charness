@@ -93,10 +93,11 @@ CORE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "Do not invent a second coordination channel",
     ),
     "skills/public/prove/SKILL.md": (
-        "re-read `Fixed Decisions` and named acceptance checks",
-        "reflected in the delivered slice or explicitly",
-        "Do not call a same-context review a critique.",
-        "never runs the review itself",
+        "Use Prove only when the user, current contract, or boundary owner explicitly",
+        "Identify the claim.",
+        "Run the narrowest strongest evidence.",
+        "Sync actual truth surfaces.",
+        "Report evidence and non-claims.",
     ),
     "skills/public/debug/SKILL.md": (
         "classify seam risk explicitly",
@@ -196,14 +197,6 @@ PACKAGE_CONTRACTS: dict[str, tuple[str, ...]] = {
     ),
     "skills/public/impl/SKILL.md": (
         "Use `prove` when the user or the boundary explicitly requires its evidence format",
-    ),
-    "skills/public/prove/SKILL.md": (
-        "$SKILL_DIR/../retro/scripts/check_auto_trigger.py",
-        "`Critique: not-required <reason>`",
-        "`Critique: short <scope>`",
-        "`Critique: full <artifact-or-worker-status>`",
-        "`Critique: not-applicable <reason>`",
-        "`Critique: blocked <host-signal>`",
     ),
     "skills/public/release/SKILL.md": (
         "`publish_release.py --execute` refuses unless exactly one",

@@ -120,6 +120,99 @@ def uninterpreted_warnings(uninterpreted: list[dict[str, Any]]) -> list[str]:
 
 UNINTERPRETED_WARNING_MARKER = " was not interpreted ("
 
+ADAPTER_RESULT_STATES = frozenset({"configured", "absent", "invalid", "unestablished"})
+_UNESTABLISHED_ERROR_PREFIXES = (
+    "adapter could not be parsed:",
+    "adapter could not be read:",
+)
+
+
+def normalize_adapter_result(payload: dict[str, Any], *, skill_id: str) -> dict[str, Any]:
+    """Add the common resolver result contract without dropping skill fields.
+
+    Resolver payloads are deliberately flat: skill-specific keys remain alongside the
+    common ``found``/``valid``/``path``/``data``/``errors``/``warnings`` fields.  A missing
+    adapter is an established opt-in default, an ordinary validation failure is invalid,
+    and parser/read uncertainty is unestablished.  ``valid`` keeps its historical schema
+    meaning (including the existing exit-code behavior); callers that need the stronger
+    lifecycle distinction use ``state``.
+    """
+    normalized = dict(payload)
+    found = payload.get("found") is True
+    path_value = payload.get("path")
+    path = str(path_value) if path_value is not None else None
+    data = payload.get("data")
+    if not isinstance(data, dict):
+        data = {}
+    errors = _result_messages(payload.get("errors"))
+    warnings = _result_messages(payload.get("warnings"))
+    searched_paths = _result_paths(payload.get("searched_paths"), path)
+    valid_value = payload.get("valid")
+    valid = valid_value if isinstance(valid_value, bool) else not errors
+
+    if not found:
+        state = "absent"
+    elif _has_unestablished_read(state_errors=errors, warnings=warnings):
+        state = "unestablished"
+    elif valid and not errors:
+        state = "configured"
+    else:
+        state = "invalid"
+
+    next_step = payload.get("next_step")
+    if not isinstance(next_step, str) or not next_step.strip():
+        next_step = _default_adapter_next_step(
+            state,
+            target=path or (searched_paths[0] if searched_paths else f".agents/{skill_id}-adapter.yaml"),
+        )
+    if state == "configured" and "next_step" not in payload:
+        next_step = None
+
+    normalized.update(
+        {
+            "state": state,
+            "found": found,
+            "valid": valid,
+            "path": path,
+            "data": data,
+            "errors": errors,
+            "warnings": warnings,
+            "next_step": next_step,
+            "searched_paths": searched_paths,
+        }
+    )
+    return normalized
+
+
+def _result_messages(value: Any) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return [str(item) for item in value]
+    return [str(value)]
+
+
+def _result_paths(value: Any, path: str | None) -> list[str]:
+    if isinstance(value, (list, tuple)):
+        return [str(item) for item in value]
+    return [path] if path is not None else []
+
+
+def _has_unestablished_read(*, state_errors: list[str], warnings: list[str]) -> bool:
+    return any(
+        error.startswith(_UNESTABLISHED_ERROR_PREFIXES) for error in state_errors
+    ) or any(UNINTERPRETED_WARNING_MARKER in warning for warning in warnings)
+
+
+def _default_adapter_next_step(state: str, *, target: str) -> str | None:
+    if state == "configured":
+        return None
+    if state == "absent":
+        return f"Create `{target}` to configure this adapter, then rerun."
+    if state == "invalid":
+        return f"Repair `{target}` and rerun the adapter resolver."
+    return f"Fix `{target}` so its adapter state can be established, then rerun."
+
 
 def unreadable_reasons(adapter: dict[str, Any]) -> list[str]:
     """The loader's own complaints that make ANY verdict from this adapter unsafe.
@@ -255,6 +348,11 @@ def parse_failure_error(exc: Exception) -> str:
     """The message for a construct the parser refuses outright, as opposed to one it
     silently drops. A refusal is not a drop and must not read like one."""
     return f"adapter could not be parsed: {exc}"
+
+
+def read_failure_error(exc: Exception) -> str:
+    """The message for an adapter whose bytes could not be read."""
+    return f"adapter could not be read: {exc}"
 
 
 # The one adapter schema version every resolver in this repo speaks. It lives here, with

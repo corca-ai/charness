@@ -219,11 +219,11 @@ def validate_dated_seam_risk_enums(lines: list[str]) -> None:
     """Enforce the `risk_interrupt_lib` Risk Class / Generalization Pressure
     taxonomy on dated debug records that carry a `## Seam Risk` section.
 
-    `risk_interrupt_lib.parse_debug_interrupt` — consumed by `plan_risk_interrupt`
-    in `run_slice_closeout.py` via the current-pointer `latest.md` — rejects an
+    `risk_interrupt_lib.parse_debug_interrupt` — consumed by the quality
+    artifact validators via the current-pointer `latest.md` — rejects an
     off-taxonomy `Risk Class` / `Generalization Pressure`. The dated author-time
     path did not run that enum check, so an off-taxonomy value passed at write
-    time and only surfaced repo-wide at closeout, far from the artifact (#366).
+    time and only surfaced repo-wide later, far from the artifact (#366).
     This applies the same enums the consumer uses (imported, not hand-copied) at
     author time.
 

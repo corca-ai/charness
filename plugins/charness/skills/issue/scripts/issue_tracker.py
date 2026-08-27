@@ -164,6 +164,35 @@ def create_or_reuse_child(
     except CREATE.IssueMutationError as exc:
         create_error = exc
 
+    direct_number = create_result.get("number") if create_result is not None else None
+    direct_url = create_result.get("url") if create_result is not None else None
+    direct_verified = bool(
+        create_result
+        and create_result.get("ok") is True
+        and create_result.get("repo", "").casefold() == repo.casefold()
+        and type(direct_number) is int
+        and direct_number > 0
+        and isinstance(direct_url, str)
+        and direct_url
+        and create_result.get("body_verified") is True
+    )
+    if direct_verified:
+        return {
+            "ok": True,
+            "status": "verified-write",
+            "outcome": "verified-write",
+            "mutation_invoked": True,
+            "action": "created",
+            "repo": repo,
+            "parent_number": parent_number,
+            "work_item_key": work_item_key,
+            "number": direct_number,
+            "url": direct_url,
+            "body_verified": True,
+            "before": before,
+            "readback": create_result,
+        }
+
     try:
         after = discover_managed_issues(repo, work_item_key, backend=backend)
     except RuntimeError as exc:
@@ -195,17 +224,12 @@ def create_or_reuse_child(
             provider_return=create_result,
         )
 
-    direct_verified = bool(
-        create_result
-        and create_result.get("number") == created["number"]
-        and create_result.get("body_verified") is True
-    )
     return {
         "ok": True,
         "status": "verified-write",
         "outcome": "verified-write",
         "mutation_invoked": True,
-        "action": "created" if direct_verified else "created-recovered",
+        "action": "created-recovered",
         "repo": repo,
         "parent_number": parent_number,
         "work_item_key": work_item_key,

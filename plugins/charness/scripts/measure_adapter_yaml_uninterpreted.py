@@ -16,8 +16,8 @@ reader might arm on the strength of it would govern a different population: adap
 authored in CONSUMER repos, which this repo has never seen and cannot enumerate. A 0
 here is therefore evidence that arming costs this repo nothing, and no evidence at all
 about the population the refusal would actually judge. That gap is why the uninterpreted
-lines ship as warnings rather than errors; the arming question is
-`docs/deferred-decisions.md` D46.
+lines ship as warnings rather than errors because the consumer adapter population is
+not measurable from this repository.
 
 Exit codes: 0 clean, 1 the corpus carries uninterpreted lines or files this script could
 not read, 2 the roots resolved to no files at all (a clean result over an empty corpus is

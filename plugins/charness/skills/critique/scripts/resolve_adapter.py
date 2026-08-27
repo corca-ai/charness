@@ -18,7 +18,12 @@ SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _critique_adapter_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(
     __file__, "scripts.critique_adapter_lib"
 )
-load_adapter = _critique_adapter_lib.load_adapter
+_adapter_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_lib")
+normalize_adapter_result = _adapter_lib.normalize_adapter_result
+
+
+def load_adapter(repo_root: Path) -> dict[str, object]:
+    return normalize_adapter_result(_critique_adapter_lib.load_adapter(repo_root), skill_id="critique")
 # Command output is unconditionally YAML since the 2026-08-14 --json removal. This main
 # hand-rolled its own `json.dump(..., sys.stdout)` instead of going through
 # `skill_runtime_bootstrap.run_adapter_cli` like its sibling resolvers, so the repo-wide

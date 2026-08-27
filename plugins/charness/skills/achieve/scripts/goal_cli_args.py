@@ -26,9 +26,7 @@ from pathlib import Path
 def add_goal_target_args(parser: argparse.ArgumentParser) -> None:
     """The four flags that name a goal artifact.
 
-    Used by the remaining artifact-targeted planning helpers. The retired
-    closeout normalizer and metric-window writer are deliberately not part of
-    this shared execution surface.
+    Used by the remaining artifact-targeted planning helpers.
     """
     parser.add_argument("--repo-root", type=Path, default=Path.cwd(), help="Repo root that owns charness-artifacts/goals/")
     parser.add_argument("--goal-path", type=Path, help="Explicit path to the goal artifact (overrides --slug/--date)")

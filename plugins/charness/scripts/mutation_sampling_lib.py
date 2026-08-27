@@ -177,8 +177,8 @@ def combine_and_export_coverage(
     include_paths: Sequence[str] | None = None,
 ) -> None:
     # stdout=DEVNULL: coverage's "Combined N files" / "Wrote JSON report" info
-    # lines would otherwise pollute a `run_slice_closeout.py --json` payload when
-    # the producer piggybacks on the broad pytest. Errors still surface on stderr.
+    # lines would otherwise pollute the release producer's YAML payload. Errors
+    # still surface on stderr.
     subprocess.run(
         [sys.executable, "-m", "coverage", "combine", "--rcfile", str(rcfile),
          "--data-file", str(data_file), str(data_file.parent)],
@@ -203,7 +203,7 @@ def prepare_plain_coverage(
 ) -> tuple[Path, Path, dict[str, str]]:
     """Set up a plain (no `dynamic_context`) coverage run and return
     ``(data_file, rcfile, env)`` so a caller can run an arbitrary instrumented
-    command (e.g. the closeout broad pytest) and then call
+    command (for example the release-focused pytest) and then call
     :func:`combine_and_export_coverage` with ``show_contexts=False``."""
     data_file, rcfile, sitecustomize_dir = _write_coverage_config(
         repo_root, coverage_json, dynamic_context=False

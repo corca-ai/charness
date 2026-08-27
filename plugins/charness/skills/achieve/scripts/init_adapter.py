@@ -15,7 +15,6 @@ def _load_skill_runtime_bootstrap():
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _adapter_init = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_init_lib")
-_scaffold = SKILL_RUNTIME.load_local_skill_module(__file__, "goal_artifact_scaffold")
 run_init_adapter = _adapter_init.run_init_adapter
 
 
@@ -30,37 +29,6 @@ def build_items(repo_name: str, _args: object) -> list[tuple[str, object]]:
             {
                 "max_questions": 15,
                 "allow_provisional_local_fallback": False,
-            },
-        ),
-        (
-            "closeout_publication",
-            {
-                "default_mode": "audit-only",
-                "issue_closeout_carrier": "direct-commit",
-                "require_draft_validation": True,
-                "draft_validation_command_template": (
-                    "python3 skills/public/issue/scripts/issue_tool.py validate-closeout-draft "
-                    "--repo-root . --repo {repo} --number {issue_number} "
-                    "--classification {classification} --carrier direct-commit "
-                    "--commit-message-file {commit_message_file}"
-                ),
-                "require_post_publication_verify": True,
-                "publish_requires_user_confirmation": True,
-            },
-        ),
-        (
-            "auto_retro",
-            {
-                "disposition_floor": "deterministic-only",
-                "allow_host_blocked_disposition_review_skip": True,
-                "valid_dispositions": ["applied", "issue"],
-                "allow_none_optout": True,
-            },
-        ),
-        (
-            "scaffold",
-            {
-                "draft_active_frame_lines": list(_scaffold.DEFAULT_DRAFT_ACTIVE_FRAME_LINES),
             },
         ),
     ]

@@ -205,8 +205,8 @@ shorthand. The floor is **presence/form only** — it refuses *silence*, it neve
 declares completion: `status: verified` stays necessary-not-sufficient, a typed
 non-`verified` disposition satisfies it exactly as a confirmation does, and
 whether the named channel is genuinely distinct from `CLOSED`/the carrier (or the
-disposition real) is the fresh-eye reviewer's judgment (**rung-2**), never the
-floor's. This is the third option between judgment-only prose and a terminal-green
+disposition real) remains human or reviewer judgment, never the floor's. This is
+the third option between judgment-only prose and a terminal-green
 gate: a gate may *force the question*; it may not *declare* the behavior proven.
 Alongside it, an `AI-provenance:` marker is required on the agent-authored carrier
 so the irreversible external write is legible to that distinct observer. **That marker
@@ -228,11 +228,11 @@ first *typed* HOTL-status recognizer — the behavioral-verdict floor above acce
 a HOTL status only as an opaque value. It reads the **carrier body** (never a
 fixed ledger path — the ledger schema/path is adapter-owned), and stays
 presence/form-only: it refuses *silence/malformation* on the typed status, never
-whether the disposition is *honest* (that is the resolution critique, **rung-2**).
+whether the disposition is *honest*.
 
 ## Resolution-Critique Carrier Header
 
-For `bug`, `feature`, and `deferred-work` classifications, the carrier body
+For `bug` classifications, the carrier body
 must carry one of the following lines so `verify-closeout` can prove the
 resolution-critique sub-skill ran and is bound to the selected issue(s) (closing
 the self-substitution pattern):
@@ -254,8 +254,10 @@ the self-substitution pattern):
   skip — no fresh-eye review of that resolution exists, and the top-level
   verdict alone does not say so.
 
-`question` and `decision-needed` classifications do not run the critique
-substrate and skip this gate. The gate is additive — it runs before the
+Routine `feature`, `deferred-work`, `question`, and `decision-needed`
+classifications skip this gate. A caller may still request critique when a
+feature or deferred close crosses a material boundary; that judgment does not
+create a mandatory checked-in artifact for every close. The bug gate runs before the
 existing ledger checks (`missing_close_keywords`, `missing_fields`,
 `state_mismatches`, `manual_comment_missing`) and the existing
 `_classification_requirements` field set is **not** extended. The full

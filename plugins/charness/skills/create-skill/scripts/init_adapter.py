@@ -20,6 +20,8 @@ REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 _adapter_init_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_init_lib")
 base_adapter_items = _adapter_init_lib.base_adapter_items
 run_init_adapter = _adapter_init_lib.run_init_adapter
+resolve_existing_adapter_state = _adapter_init_lib.resolve_existing_adapter_state
+load_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter").load_adapter
 
 
 def build_items(repo_name: str, _args: object) -> list[tuple[str, object]]:
@@ -42,7 +44,11 @@ def build_items(repo_name: str, _args: object) -> list[tuple[str, object]]:
 
 
 def main() -> None:
-    run_init_adapter(default_output=Path(".agents/create-skill-adapter.yaml"), build_items=build_items)
+    run_init_adapter(
+        default_output=Path(".agents/create-skill-adapter.yaml"),
+        build_items=build_items,
+        existing_adapter_state=lambda path: resolve_existing_adapter_state(path, load_adapter),
+    )
 
 
 if __name__ == "__main__":

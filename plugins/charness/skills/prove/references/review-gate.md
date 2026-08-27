@@ -1,15 +1,15 @@
 # Review Gate
 
-Every meaningful implementation slice needs a proof decision before stopping.
-A reversible slice may record `Critique: not-required <reason>`; a review pass
-is required only when the slice crosses a named risk boundary. What makes a
-slice meaningful — a reviewable intent unit with a named proof intent and
+Use this reference only when Prove or an owning boundary selects a claims or
+ownership review. Ordinary reversible work can finish with focused evidence;
+crossing a named risk boundary routes review to its owner. What makes a slice
+meaningful — a reviewable intent unit with a named proof intent and
 verification boundary, never merely a small diff — is owned by
 [meaningful-slice-cadence](../../../shared/references/meaningful-slice-cadence.md).
 
 ## Minimum Lenses
 
-- contract closeout honesty
+- claim honesty
 - runtime behavior and branch reachability
 - [boundary honesty and ownership](../../../shared/references/boundary-ownership-brief.md)
   — run its producer/consumer question set when the slice touches shared, generic,
@@ -40,9 +40,9 @@ adds depth there; it is not a default tax on reversible local work.
 
 ## Claims Review
 
-Before a completion flip, one bounded reviewer audits **what the closeout
-artifact asserts**, not whether the code is correct. Hand it the acceptance
-criteria and the closeout sections and ask it to:
+When a selected boundary has a completion or publication record, one bounded
+reviewer audits **what that record asserts**, not whether the code is correct.
+Hand it the acceptance criteria and the record sections and ask it to:
 
 - re-derive every figure it can, and name the ones it cannot verify rather than
   assuming them;
@@ -61,10 +61,10 @@ observer this exists to exclude.
 
 ## Contract Re-read
 
-When a canonical artifact or inline current-slice contract exists:
+When the selected claim has a canonical artifact or inline contract:
 
 - re-read `Fixed Decisions` and named acceptance checks before stopping
 - confirm each item is reflected in the delivered slice or explicitly deferred
   or reclassified in the contract
-- if the review finds drift, update code or contract before closeout instead of
+- if the review finds drift, update code or contract before stopping instead of
   leaving chat-only explanation

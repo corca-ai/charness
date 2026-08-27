@@ -129,7 +129,7 @@ def _iter_spawn_command_strings(node: ast.Call) -> Iterator[str]:
     """Yield string constants only from the command argument of a spawn call.
 
     Tests often pass repo-owned script paths as data, such as
-    ``run_script("scripts/run_slice_closeout.py", "--paths", "skills/...")``.
+    ``run_script("scripts/check_doc_links.py", "--paths", "skills/...")``.
     Only the command position names the process boundary; scanning every arg
     turns ordinary path fixtures into false boundary-bypass targets.
     """

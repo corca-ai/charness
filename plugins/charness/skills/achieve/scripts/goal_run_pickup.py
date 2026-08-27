@@ -36,6 +36,9 @@ from goal_run_pickup_contract import (  # noqa: E402 - the sibling contract is l
     validate_progress,
 )
 
+_LESSON_SECTIONS = ("Current Focus", "Repeat Traps", "Next-Time Checklist")
+_LESSON_MAX_CHARS = 1200
+
 
 def _emit_yaml(payload: dict[str, Any]) -> None:
     """Render command output through the repository's portable YAML helper."""
@@ -81,21 +84,47 @@ def _achieve_script(name: str) -> Path:
     raise PickupError("runtime-unavailable", f"achieve skill file not found: {name}.py")
 
 
-LESSON_PICKUP_KIND = "charness.goal-lesson-pickup/v1"
-
-
-def read_goal_lessons(repo_root: Path, goal_key: str) -> dict[str, Any]:
-    """Read optional lesson context without making the provider path fragile."""
+def _read_lesson_projection(repo_root: Path) -> dict[str, Any]:
+    """Read one bounded, advisory projection without rebuilding lesson state."""
+    relative = Path("charness-artifacts/retro/recent-lessons.md")
+    path = repo_root / relative
+    base: dict[str, Any] = {
+        "source": str(relative),
+        "selection": "first-item-per-section",
+    }
     try:
-        lesson_pickup = _load_path(_achieve_script("goal_lesson_pickup"), "goal_pickup_lessons")
-        return lesson_pickup.read_goal_lessons(repo_root, goal_key)
-    except Exception as exc:  # noqa: BLE001 - optional context cannot block `/goal`
-        return {
-            "kind": LESSON_PICKUP_KIND,
-            "goal_key": goal_key,
-            "status": "unavailable",
-            "reason": f"lesson-reader-unavailable: {exc}",
-        }
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except (OSError, UnicodeError) as exc:
+        return {**base, "status": "unavailable", "reason": type(exc).__name__}
+
+    selected: list[dict[str, str]] = []
+    current: str | None = None
+    item: list[str] = []
+
+    def finish_item() -> None:
+        nonlocal item
+        if current in _LESSON_SECTIONS and item and not any(
+            entry["section"] == current for entry in selected
+        ):
+            lesson = " ".join(part.strip() for part in item if part.strip())
+            if len(lesson) > _LESSON_MAX_CHARS:
+                lesson = lesson[: _LESSON_MAX_CHARS - 1].rstrip() + "…"
+            selected.append({"section": current, "lesson": lesson})
+        item = []
+
+    for line in lines:
+        if line.startswith("## "):
+            finish_item()
+            current = line[3:].strip()
+        elif current in _LESSON_SECTIONS and line.startswith("- "):
+            finish_item()
+            item = [line[2:]]
+        elif item and line.strip():
+            item.append(line)
+    finish_item()
+    if not selected:
+        return {**base, "status": "unavailable", "reason": "projection-empty"}
+    return {**base, "status": "selected", "items": selected, "item_count": len(selected)}
 
 
 def _resolve_repository(repo_root: Path, adapter: dict[str, Any], runtime: Any) -> dict[str, str]:
@@ -241,7 +270,6 @@ def pickup(repo_root: Path, objective: str) -> dict[str, Any]:
         state=child_state,
         url=child_issue.get("url"),
     )
-    lessons = read_goal_lessons(repo_root, f"{repo}#{number}")
     summary = parent.get("sub_issues_summary")
     count_status = "unavailable"
     if isinstance(summary, dict):
@@ -250,6 +278,7 @@ def pickup(repo_root: Path, objective: str) -> dict[str, Any]:
             if all(summary.get(field) == progress[field] for field in ("total", "completed", "open"))
             else "parent-count-stale"
         )
+    lessons = _read_lesson_projection(repo_root)
     return {
         "ok": True,
         "kind": "charness.goal-run-pickup/v1",
@@ -272,8 +301,8 @@ def pickup(repo_root: Path, objective: str) -> dict[str, Any]:
             "count_status": count_status,
         },
         "selection": {"source": "parent-progress", "child_reads": 1},
-        "selected_child": selected_child,
         "lessons": lessons,
+        "selected_child": selected_child,
         "child_issue": {
             "repo": repo,
             "number": child_issue.get("number", selected_number),

@@ -270,7 +270,7 @@ def _render_argv(elements: list[ast.expr]) -> str | None:
     1. The command must be at the head, and the scan STOPS at the first element
        that could not precede it. Only placeholders and interpreter words may,
        because that is what `[sys.executable, "-u", script]` looks like. Without
-       this rule, `run_script("scripts/run_slice_closeout.py", ..., "--paths",
+       this rule, `run_script("scripts/check_doc_links.py", ..., "--paths",
        "charness", ...)` read its `--paths` VALUE as a second command and reported
        five false flag drifts against the CLI. Stopping early is also what keeps
        this affordable: the gate reads every `ast.List`, `ast.Tuple` and

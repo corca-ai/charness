@@ -55,16 +55,13 @@ Adapter policy:
      the optional `$SKILL_DIR/scripts/audit_codex_session.py` when Codex session
      logs are available — both are evidence sources, not portable prerequisites
      or waste conclusions. Pass `--session-id <id>` or
-     `--session-file <path>` to read the full session JSONL directly; pass
-     `probe_host_logs.py --goal-path <artifact> --goal-lineage-file <lineage.json>`
-     (when a Goal Run metric window is being claimed) for a scoped
-     `goal_window_audit`; add
-     `--format markdown` for the provider-safe measured-vs-proxy closeout block.
+     `--session-file <path>` to read the full session JSONL directly. The probe
+     reports generic host metrics; it does not attach Goal Draft windows or
+     execution identity.
      The measured / proxy / unavailable signal distinctions live in
      `references/phase-aware-efficiency.md`.
    - adapter-defined `metrics_commands` only when they sharpen a real claim
-   - recurring gate-runtime and artifact-only-commit waste via
-     `$SKILL_DIR/scripts/mine_closeout_telemetry.py`, per `references/closeout-telemetry.md`
+   - recurring waste signals from adapter-defined evidence sources
    - if the adapter declares `packet_sections`, run
      `$SKILL_DIR/scripts/prepare_packet.py` once and read the markdown packet
      before writing lessons; see `references/prepare-packet.md`
@@ -105,7 +102,7 @@ Adapter policy:
    - the lesson ledger is optional memory and selection state; do not create a
      second lesson-specific artifact beside it
 5. Persist when there is a durable home.
-   - if `output_dir` exists or the adapter defines one, persist the retro artifact with `$SKILL_DIR/scripts/persist_retro_artifact.py` instead of ad hoc file writes; for Goal Run evidence pass `--goal-lineage-file <lineage.json>` and keep the returned `goal_lineage` record with the artifact; a legacy `--goal-path` input is planning provenance only and cannot establish execution identity; the helper stamps the `## Persisted` line with the real durable path it writes, so do not hand-edit that line afterward
+   - if `output_dir` exists or the adapter defines one, persist the retro artifact with `$SKILL_DIR/scripts/persist_retro_artifact.py` instead of ad hoc file writes; for Goal Run evidence use the owning Goal Run identity contract; the helper stamps the `## Persisted` line with the real durable path it writes, so do not hand-edit that line afterward
    - if the adapter defines `summary_path`, `$SKILL_DIR/scripts/persist_retro_artifact.py` should refresh the compact recent-lessons digest automatically from the written durable artifact
    - on the first retro after a legacy hand-curated `recent-lessons.md` (file exists, `output_dir` has no prior `*.md` artifacts), the persistence helper preserves the existing summary instead of replacing it with an empty-stub digest. Pass `--force-empty-summary` only after confirming the legacy content is safe to drop.
    - otherwise still give the user a concise retro in chat
@@ -139,7 +136,7 @@ The result should usually include:
 ## Auto-Retro Trigger
 
 Trigger a short `session` retro automatically when a user correction exposes a
-real miss; a triggered slice-closeout probe also starts one. Consume the planner packet and read `state` before
+real miss. Consume the planner packet and read `state` before
 `triggered`; its basis and the full trigger/skip taxonomy live in
 `references/trigger-and-persistence.md`. Keep the retro bounded and include
 `Persisted`.
@@ -169,7 +166,7 @@ sub-agents, otherwise write the counterfactuals inline.
 - Do not claim persistence implicitly; name the durable path or the reason it
   remained chat-only.
 - Do not invent hidden machine formats or write hidden telemetry; the retro only
-  reads the stream the closeout emitter already wrote.
+  reads explicit evidence sources.
 - If no improvement is proposed, explain why the current workflow should remain
   unchanged.
 
@@ -180,7 +177,6 @@ sub-agents, otherwise write the counterfactuals inline.
 - `references/phase-aware-efficiency.md`
 - `references/expert-lens.md`
 - `references/trigger-and-persistence.md`
-- `references/closeout-telemetry.md`
 - `references/waste-sibling-scan.md`
 - `references/prepare-packet.md`
 - `../../shared/references/retro-issue-destination-split.md`

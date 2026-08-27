@@ -94,9 +94,9 @@ mechanics and the failure messages.
   inspected no-action finding: name any unresolved structural work with a
   proof-backed no-action reason, an intentional boundary, or a `follow-up:` owner.
 
-For cross-skill schema alignment, the critique `action: file-issue` field and the
-prove verification-ladder `ran-fail-deferred` identifier take the same
-`<issue|anchor>` shape.
+For cross-skill schema alignment, the critique `action: file-issue` field keeps
+its own issue/anchor shape; Prove reports any unavailable evidence as a
+non-claim instead of defining a second deferred-verification schema.
 
 ## Trivial-bug short-circuit
 

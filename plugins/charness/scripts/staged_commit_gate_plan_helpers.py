@@ -32,21 +32,10 @@ def _git_stdout(repo_root: Path, args: list[str], failure: str) -> str:
     return result.stdout.decode("utf-8", errors="surrogateescape")
 
 
-def collect_staged_paths(repo_root: Path) -> list[str]:
-    stdout = _git_stdout(
-        repo_root,
-        ["diff", "--cached", "--name-only", "--diff-filter=ACM"],
-        "failed to list staged paths",
-    )
-    return [line.strip() for line in stdout.splitlines() if line.strip()]
-
-
 def collect_staged_scope_paths(repo_root: Path) -> list[str]:
     """Every path this commit TOUCHES, including deletions and both rename sides.
 
-    ``collect_staged_paths`` answers "which staged files exist on disk" — the right
-    list to hand a per-file validator. It is the wrong list for deciding WHICH gates
-    run: a deletion-only or rename-only commit has no A/C/M entry at all, so every
+    A deletion-only or rename-only commit has no A/C/M entry at all, so every
     surface predicate saw an empty list and the hook exited 0 having scheduled
     nothing, while the suppressed mirror-drift gate would have reported that the
     checked-in plugin tree no longer matched its source.

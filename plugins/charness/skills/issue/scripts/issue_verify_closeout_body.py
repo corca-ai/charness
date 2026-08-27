@@ -48,9 +48,8 @@ _CLOSING_KEYWORD_REF_RE = re.compile(
 def iter_close_keyword_refs(text: str) -> list[tuple[str | None, int]]:
     """Every ``(repo_or_None, issue_number)`` a GitHub close keyword references
     in ``text``. This is the canonical close-keyword scanner for every BLOCKING
-    surface -- one advisory reader, ``scripts/slice_closeout_commit_advisories.py``,
-    keeps a narrower private grammar and is named here so "canonical" is not read as
-    "the only one"; the
+    surface. Issue-owned validators may keep narrower private grammars, so
+    "canonical" does not mean "the only one"; the
     commit-msg checker (``scripts/check_issue_closeout_commit_msg.py``) reuses
     it through the loaded ``issue_verify_closeout`` module rather than keeping
     a second copy, so the two surfaces cannot drift.
@@ -242,4 +241,3 @@ def _missing_close_keywords(text: str, numbers: list[int], repo: str) -> list[in
             continue
         found.add(number)
     return [number for number in numbers if number not in found]
-

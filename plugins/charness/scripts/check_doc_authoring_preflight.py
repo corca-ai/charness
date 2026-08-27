@@ -15,9 +15,8 @@ commit gate at a time:
 
 It REUSES each real validator -- it never forks their logic, so the forecast
 cannot drift from what the gate enforces. This mirrors the SKILL.md one-shot
-preflight (``check_skill_surface_preflight.py --run-checks``) and the
-goal-closeout describe-first preflight (``describe_goal_closeout_shape.py``),
-extended to the general-docs surface class those two do not cover.
+preflight (``check_skill_surface_preflight.py --run-checks``), extended to the
+general-docs surface class that it does not cover.
 
 It is an AFFORDANCE, not a gate: a doc still commits without it, and the
 existing gates (``check_doc_links.py``, ``check-markdown.sh``, the artifact

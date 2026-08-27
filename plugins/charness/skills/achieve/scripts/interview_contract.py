@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the bounded decision record that precedes goal tracker creation."""
+"""Validate the bounded decision record that precedes Goal Binding."""
 
 from __future__ import annotations
 
@@ -181,7 +181,7 @@ def validate_record(record: Any, *, max_questions: int) -> dict[str, Any]:
         "next_action": (
             "raise interview.max_questions or narrow the goal before creating a parent"
             if status == "interview-cap-reached"
-            else "create and read back the GitHub parent"
+            else "freeze the draft, create Goal Binding, and read back the provider parent"
             if status == "interview-complete"
             else "continue the interview"
             if status == "interview-in-progress"

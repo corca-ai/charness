@@ -140,10 +140,9 @@ steps call tools outside the baseline shell surface.
    - stale generated-artifact failures must name the exact regeneration command in
      the failure message, not only a "stale" diagnostic
    - run the repo's standing lint gate against the new CLI source before
-     slice-complete and record the result in the `Lint Gate` closeout field; the
-     lint survey and field shape are owned by
-     `../prove/references/verification-ladder.md` "Lint Gate Closeout Shape" and
-     `references/quality-gates.md`
+     slice-complete. If Prove is explicitly selected for this boundary, report
+     the lint command and result; the lint survey is owned by `impl` and the
+     command-specific guidance lives in `references/quality-gates.md`
 
 ## Guardrails
 

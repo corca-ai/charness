@@ -13,7 +13,7 @@ Start by surveying the repo's best available self-verification tools:
 - local binaries and CLIs
 - repo-local scripts, fixtures, and harnesses
 
-When the task is shaped as review, evaluation, closeout, an operator reading
+When the task is shaped as review, evaluation, or an operator reading
 test, `검증`, `평가`, or `리뷰`, choose the installed validation skill from its
 metadata/model judgment before treating same-agent/manual review as the best
 available path. Use `charness catalog list --repo-root .` only when
@@ -47,7 +47,7 @@ When the slice adds or changes calls to a third-party API (Slack, Google,
 Notion, GitHub REST, Linear, Jira, or similar), mocked unit tests prove
 orchestration, not the provider contract. Treat at least one executed
 round-trip — request shape plus response parse — against the live provider as
-the strongest honest proof for that seam, and run it before closeout when the
+the strongest honest proof for that seam, and run it before stopping when the
 host has credentials.
 
 If credentials are not available, say so explicitly and mark the integration as
@@ -63,7 +63,7 @@ trap shapes that mocked tests routinely miss.
 - when the slice adds or changes a third-party API call, run at least one live
   request + response-parse round-trip when credentials exist; otherwise mark
   the seam unverified at the contract level
-- when validation-shaped review or closeout work matters, use the validation
+- when validation-shaped review or proof work is selected, use the validation
   recommendation route before settling for same-agent manual review
 - when user-visible agent or tool invocation matters, run a real invocation if
   the repo exposes one
@@ -75,13 +75,8 @@ trap shapes that mocked tests routinely miss.
   going unproven
 - when the bootstrap survey reports `lint_gate.detected: true`, run the surveyed
   command before commit instead of waiting for the push-time hook to surface
-  the regression; record `Lint Gate` in the closeout per the shape below
-
-## Lint Gate Closeout Shape
-
-The `Lint Gate` status enum lives in prove SKILL.md `## Closeout Vocabulary`;
-record one of those tokens per the bootstrap survey signal (the `<issue|anchor>`
-and `<reason>` placeholders carry the deferred/skipped audit requirement).
+  the regression; report its command and result in the evidence summary when
+  Prove is selected.
 
 Sibling pointers: a filed follow-up should also surface as a
 `follow-up: <url>` entry under the related `## Sibling Search` bullet when the
@@ -90,9 +85,9 @@ debug substrate is the same investigation — see
 field in `../../critique/references/counterweight-triage.md` so
 orchestrators do not invent a third schema.
 
-## Closeout
+## Report
 
-At the end of the slice, state:
+When Prove is selected, state:
 
 - what was verified directly
 - what capability was used to verify it
@@ -100,31 +95,3 @@ At the end of the slice, state:
   not run when relevant
 - what stronger verification was unavailable and why
 - what remains unverified
-
-## Completion Report Categories
-
-Completion reports separate these categories instead of mixing them as one
-"done" claim. The reader needs to distinguish what now lives in the repo from
-what was only test scaffolding or external side effect.
-
-The emittable category labels live in prove SKILL.md `## Closeout Vocabulary`;
-the bolded entries below are the why-these-categories rationale, not the
-emittable tokens.
-
-- **Durable changes**: code, docs, schemas, generated surfaces that landed in
-  the working tree and are committed (or staged for commit).
-- **External writes / registrations**: side effects on systems outside the
-  repo — issues filed, releases published, messages posted, registry rows
-  created, third-party records mutated. Name the target and the verified
-  identifier (URL, number, ARN, message ts).
-- **Test-only artifacts**: fixtures, harnesses, sandbox state, throwaway
-  scripts created during the slice. State explicitly when these are not
-  intended to ship.
-- **Verification**: which executed proof carried the slice — local tests,
-  browser/runtime pass, provider round-trip, evaluator scenario — and at
-  what level (`worker_queued`, `provider_roundtrip`, `agent_choice` per
-  `shared/references/external-capability-proof-ladder.md`).
-- **Unverified future behavior**: behavior that the slice introduces but
-  does not prove — async effects, downstream consumers, manual operator
-  steps, observability that has not been re-checked. Naming this
-  explicitly is the contract; collapsing it into "done" is a regression.

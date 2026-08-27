@@ -57,9 +57,9 @@ validate_adversarial_evidence = partial(
 )
 
 # Single source of truth for the Seam Risk taxonomy: reuse the enums the
-# downstream consumer (`risk_interrupt_lib.parse_debug_interrupt`, run via
-# `run_slice_closeout.py`) enforces instead of hand-copying them here, so the
-# author-time validator can never drift below the closeout consumer (#366).
+# downstream consumer (`risk_interrupt_lib.parse_debug_interrupt`) enforces
+# instead of hand-copying them here, so the author-time validator can never
+# drift below the artifact consumer (#366).
 _scripts_risk_interrupt_lib_module = import_repo_module(__file__, "scripts.risk_interrupt_lib")
 ALLOWED_RISK_CLASSES = _scripts_risk_interrupt_lib_module.ALLOWED_RISK_CLASSES
 FORCED_RISK_CLASSES = _scripts_risk_interrupt_lib_module.FORCED_RISK_CLASSES

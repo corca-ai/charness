@@ -89,9 +89,9 @@ must name that handoff and its next move; a non-reproduced record may use
 `none` for both. Its `Pattern
 Ladder` should connect the concrete failure to interface-shape siblings and a
 testable structural cause. After a repair, run one separate adversarial read of
-the repaired verdict surface. Do not relabel that read as a third fresh-eye
-round when the operating contract's two-round cap has been reached; record
-post-round repairs as accepted-unreviewed under the cap.
+the repaired verdict surface only when the repair materially changes the
+reviewed risk. When it does not, the existing disposition remains sufficient;
+do not require a repeated review or a second durable artifact.
 
 ## Stop Conditions
 

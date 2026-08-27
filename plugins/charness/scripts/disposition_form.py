@@ -1,26 +1,14 @@
 #!/usr/bin/env python3
-"""Presence/enum **form** floor for retro/Auto-Retro dispositions (#329).
+"""Presence/enum **form** floor for retro dispositions (#329).
 
-The achieve contract declares that every surfaced improvement resolves to
-``applied: <committed change>`` / ``issue #N`` / ``none — <reason>`` and that
-prose-only ``memory`` is invalid. The pre-existing achieve gate is
-presence/binding-only ("a review ran") and a standalone session retro had no
-disposition review at all, so an invalid ``Disposition: memory`` could ship and
-only a human reading it would catch it.
-
-This module is the **shared single source** of the disposition-form grammar so
-neither consumer forks disposition parsing (goal Boundary). It is consumed by:
-
-- the achieve closeout gate (``goal_artifact_disposition.apply_disposition_rungs``
-  loads it via parent-walk; scoped to ``## Auto-Retro``), and
-- the session-retro validator (``scripts/validate_retro_artifact.py`` imports it
-  same-root; scoped to ``## Next Improvements``).
+The session-retro validator consumes this module for ``## Next Improvements``.
+Achieve no longer owns Auto-Retro disposition or a local closeout gate.
 
 It ships to ``plugins/charness/scripts/`` exactly like ``runtime_bootstrap`` and
 ``check_prescribed_skill_executed_lib``, so the parent-walk resolves in the
 installed export too.
 
-Cardinal rule (verbatim from the achieve guardrail and #329): it judges only the
+Cardinal rule: it judges only the
 disposition **form/enum value**, never whether the generalization is good — a
 present-but-vague ``applied: tweak`` passes. Mirrors
 ``skills/public/issue/scripts/validate_proposal_fields.py``'s ``Destination``

@@ -2,13 +2,15 @@
 
 Critique should not end as a flat list of fears.
 
-After the angle pass, run one counterweight review that pushes back on
-speculation, YAGNI, and maintenance cost amnesia.
+After the fresh-eye review, run one counterweight pass that pushes back on
+speculation, YAGNI, and maintenance cost amnesia while the parent integrates
+the findings.
 
-In the canonical critique path, the counterweight reviewer is a separate
-subagent spawned by the parent. That reviewer should triage directly and record
-`Fresh-Eye Satisfaction: parent-delegated`; it should not spawn a further
-reviewer unless the parent explicitly requested recursive delegation.
+The parent normally performs this pass. A separate counterweight worker is
+optional only when its named focus has a genuinely independent evidence axis;
+it should triage directly and record `Fresh-Eye Satisfaction:
+parent-delegated`. It should not spawn a further reviewer unless the parent
+explicitly requested recursive delegation.
 
 Use four bins:
 
@@ -50,10 +52,9 @@ backlog.
 ## Structured Findings Emission
 
 When the caller orchestrator needs to act on findings without re-classifying
-each one — for example, a parent skill running three sequential critique
-passes per slice — append a machine-readable `## Structured Findings` section
-to the critique artifact alongside the prose. The schema reuses the existing
-four bins and four evidence tags so this is a serialization, not a parallel
+each one, append a machine-readable `## Structured Findings` section to the
+critique artifact alongside the prose. The schema reuses the existing four
+bins and four evidence tags so this is a serialization, not a parallel
 taxonomy.
 
 Each finding is one bullet with `|`-separated `key: value` fields, matching

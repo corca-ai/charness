@@ -24,6 +24,8 @@ REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 _scripts_adapter_init_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_init_lib")
 base_adapter_items = _scripts_adapter_init_lib_module.base_adapter_items
 run_init_adapter = _scripts_adapter_init_lib_module.run_init_adapter
+resolve_existing_adapter_state = _scripts_adapter_init_lib_module.resolve_existing_adapter_state
+load_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter").load_adapter
 _scripts_quality_policy_defaults_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.quality_policy_defaults")
 DEFAULT_COVERAGE_FLOOR_POLICY = _scripts_quality_policy_defaults_module.DEFAULT_COVERAGE_FLOOR_POLICY
 DEFAULT_MUTATION_TESTING = _scripts_quality_policy_defaults_module.DEFAULT_MUTATION_TESTING
@@ -75,6 +77,7 @@ def main() -> None:
         default_output=Path(".agents/quality-adapter.yaml"),
         build_items=build_items,
         add_arguments=add_arguments,
+        existing_adapter_state=lambda path: resolve_existing_adapter_state(path, load_adapter),
     )
 
 

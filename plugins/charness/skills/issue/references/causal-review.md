@@ -1,8 +1,8 @@
 # Causal Review and Resolution Critique
 
-`issue resolve` runs two reviewer-driven passes that the smallest-fix design
-loop alone keeps missing: a **causal review** before design (step 4) and a
-**resolution critique** before close (step 9). Both use the shared bounded
+For uncertain or recurrence-sensitive bugs, `issue resolve` can run two
+reviewer-driven passes: a **causal review** before design and a **resolution
+critique** before close. Both use the shared bounded
 fresh-eye contract so the analysis is not anchored on the implementer's first
 hypothesis. Select the cheapest available bounded carrier: a live typed host subagent
 for short judgment-bound review, or the Charness-owned file-backed
@@ -17,7 +17,8 @@ lighter pass:
 - `bug`: full three-lens causal review (root cause, detection gap, sibling
   search), plus the invariant-first overlay for workflow-boundary propagation
   bugs, then resolution critique
-- `feature`: skip causal review, run resolution critique on the design only
+- `feature`: skip causal review; add critique only when a material boundary or
+  claim warrants a distinct observer
 - `question`: usually no implementation, no review pass; respond and close
 - `decision-needed`: discuss with the user before either review pass; the
   decision often reshapes what `bug` vs `feature` even means
@@ -189,8 +190,8 @@ states in the close artifact.
 
 ## Resolution critique (step 8)
 
-After the fix verifies, delegate to the `critique` skill with a recurrence
-focus. The critique skill already owns its own bounded subagent contract
+After a bug fix verifies, delegate to the `critique` skill with a recurrence
+focus when the causal-close contract applies. The critique skill already owns its own bounded subagent contract
 (angle reviewers + counterweight). This resolution critique satisfies the
 CLAUDE.md task-completion critique obligation: when `issue resolve` is
 invoked from `impl`, the implementer should declare
@@ -268,8 +269,8 @@ For `feature` or `deferred-work`:
 - what was implemented (capability + entry point)
 - any critique-bundled prevention; "no recurrence prevention applicable" is a
   valid line for greenfield features
-- `Boundary #N: <verdict>` — same emit-only boundary-ownership disposition as the
-  `bug` shape, carried from the delegated `critique`
+- when a material-boundary critique ran, `Boundary #N: <verdict>` carries its
+  boundary-ownership disposition; routine closes do not manufacture this field
 
 For `question` or `decision-needed`:
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Shared semantic receipts for terminal quality and closeout verdicts.
+"""Semantic receipts for the terminal quality verdict.
 
 The producers retain their domain-specific status vocabularies.  This module
 owns the facts that a reader needs to act on a terminal proof: scope, adverse
@@ -15,7 +15,6 @@ from pathlib import Path
 from typing import Iterable
 
 QUALITY_STATUSES = {"pass", "fail", "unestablished"}
-CLOSEOUT_STATUSES = {"completed", "failed", "blocked", "planned", "noop"}
 RECOVERY_STATUSES = {"available", "unavailable", "not-applicable"}
 
 
@@ -125,78 +124,6 @@ def quality_receipt(
     )
 
 
-def _first_text(value: object) -> str | None:
-    if isinstance(value, str) and value.strip():
-        return value.strip()
-    if isinstance(value, list):
-        values = [str(item).strip() for item in value if str(item).strip()]
-        return "; ".join(values) if values else None
-    return None
-
-
-def _closeout_cause(payload: dict[str, object], failed_commands: list[dict[str, object]]) -> str | None:
-    for key in ("error", "blockers", "producer_error"):
-        cause = _first_text(payload.get(key))
-        if cause:
-            return cause
-    for key in ("mutation_coverage_changed_line_proof",):
-        value = payload.get(key)
-        if isinstance(value, dict):
-            cause = _first_text(value.get("error"))
-            if cause:
-                return cause
-            status = _first_text(value.get("status"))
-            if status and status not in {"recorded", "emitted", "not_checked"}:
-                return f"{key} reported {status}"
-    if failed_commands:
-        return str(failed_commands[0].get("command") or "closeout command failed")
-    return None
-
-
-def closeout_receipt(payload: dict[str, object], *, effective_exit_code: int) -> ProofReceipt:
-    status = str(payload.get("status", ""))
-    if status not in CLOSEOUT_STATUSES:
-        raise ReceiptContractError(f"unknown closeout status: {status}")
-    commands = payload.get("executed_commands", [])
-    command_values = [command for command in commands if isinstance(command, dict)] if isinstance(commands, list) else []
-    failed_commands = [command for command in command_values if command.get("returncode") != 0]
-    cause = _closeout_cause(payload, failed_commands)
-    adverse: list[AdverseSubject] = []
-    for command in failed_commands:
-        command_text = str(command.get("command") or "closeout command failed")
-        adverse.append(
-            AdverseSubject(
-                subject=command_text,
-                recovery=_recovery(
-                    "not-applicable",
-                    reason="command output is included in the closeout payload",
-                ),
-            )
-        )
-    if status in {"failed", "blocked"} and not adverse:
-        if not cause:
-            raise ReceiptContractError(
-                "failed or blocked closeout without a failed command requires a recorded cause"
-            )
-        adverse.append(
-            AdverseSubject(
-                subject=cause,
-                recovery=_recovery("not-applicable", reason="inspect the recorded closeout cause"),
-            )
-        )
-    measured = list(payload.get("changed_paths", [])) if isinstance(payload.get("changed_paths"), list) else []
-    return ProofReceipt(
-        surface="closeout",
-        status=status,
-        measured_scope=_scope(measured),
-        adverse_subjects=tuple(adverse),
-        unproven_subjects=_scope(payload.get("unmatched_paths", [])),
-        cause=cause if status in {"failed", "blocked"} else None,
-        effective_exit_code=int(effective_exit_code),
-        details={"executed_command_count": len(command_values)},
-    )
-
-
 def _quality_adverse_text(subject: AdverseSubject) -> str:
     recovery = subject.recovery
     if recovery.status == "available":
@@ -222,18 +149,6 @@ def render_quality_summary(receipt: ProofReceipt) -> str:
             f"(ran; established nothing, or only part of its scope), total {elapsed}"
         )
     return f"Quality summary: {passed} passed, {failed} failed{failed_note}, total {elapsed}"
-
-
-def render_closeout_verdict(receipt: ProofReceipt) -> str:
-    notes: list[str] = []
-    adverse_subjects = [subject.subject for subject in receipt.adverse_subjects]
-    if receipt.cause and receipt.cause not in adverse_subjects:
-        notes.append(f"CAUSE: {receipt.cause}")
-    if adverse_subjects:
-        label = "FAILED" if receipt.status == "failed" else "BLOCKED" if receipt.status == "blocked" else "ADVERSE"
-        notes.append(f"{label}: {'; '.join(adverse_subjects)}")
-    note = f" ({'; '.join(notes)})" if notes else ""
-    return f"Closeout verdict: {receipt.status}{note}"
 
 
 def write_receipt_json(receipt: ProofReceipt, path: str | Path) -> None:

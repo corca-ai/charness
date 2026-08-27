@@ -265,7 +265,9 @@ def validate_codex(
     _validate_codex_interface(manifest.get("interface"), expected_author, homepage)
     _validate_codex_marketplace(data.get("repo_marketplace"), package_id)
 
-def validate_root_install_artifacts(root: Path, data: dict[str, object]) -> None:
+def validate_root_install_artifacts(
+    root: Path, data: dict[str, object], *, validate_export: bool = False
+) -> None:
     codex = data["codex"]
     claude = data["claude"]
     codex_marketplace = codex["repo_marketplace"]
@@ -317,17 +319,18 @@ def validate_root_install_artifacts(root: Path, data: dict[str, object]) -> None
     )
     for rel_path, expected, field in expected_files:
         require_json_matches(root / rel_path, expected, field)
-    try:
-        validate_checked_in_plugin_tree(
-            root,
-            data,
-            require_dir=require_dir,
-            require_file=require_file,
-            require_json_matches=require_json_matches,
-            validate_relative_path=validate_relative_path,
-        )
-    except RuntimeError as exc:
-        raise ValidationError(str(exc)) from exc
+    if validate_export:
+        try:
+            validate_checked_in_plugin_tree(
+                root,
+                data,
+                require_dir=require_dir,
+                require_file=require_file,
+                require_json_matches=require_json_matches,
+                validate_relative_path=validate_relative_path,
+            )
+        except RuntimeError as exc:
+            raise ValidationError(str(exc)) from exc
 
 def validate_claude(
     package_id: str,
@@ -368,7 +371,13 @@ def validate_claude(
             "`claude.marketplace.source_path` must point at the checked-in plugin tree"
         )
 
-def validate_packaging_manifest(path: Path, root: Path, *, validate_root_artifacts: bool = True) -> None:
+def validate_packaging_manifest(
+    path: Path,
+    root: Path,
+    *,
+    validate_root_artifacts: bool = True,
+    validate_export: bool = False,
+) -> None:
     data = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(data, dict):
         raise ValidationError("packaging manifest must be a JSON object")
@@ -403,7 +412,7 @@ def validate_packaging_manifest(path: Path, root: Path, *, validate_root_artifac
     except PackagingPolicyValidationError as exc:
         raise ValidationError(str(exc)) from exc
     if validate_root_artifacts:
-        validate_root_install_artifacts(root, data)
+        validate_root_install_artifacts(root, data, validate_export=validate_export)
 
 
 def iter_packaging_files(root: Path) -> list[Path]:
@@ -419,6 +428,11 @@ def iter_packaging_files(root: Path) -> list[Path]:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=repo_root_from_script(__file__))
+    parser.add_argument(
+        "--validate-export",
+        action="store_true",
+        help="also validate the checked-in plugin export against generated content",
+    )
     args = parser.parse_args()
 
     root = args.repo_root.resolve()
@@ -438,7 +452,7 @@ def main() -> int:
 
     for path in files:
         try:
-            validate_packaging_manifest(path, root)
+            validate_packaging_manifest(path, root, validate_export=args.validate_export)
         except (ValidationError, json.JSONDecodeError) as exc:
             raise ValidationError(f"{path}: {exc}") from exc
 

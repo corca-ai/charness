@@ -3,11 +3,10 @@
 
 Given the repo-owned probe config — surface ids into ``.agents/surfaces.json``
 and/or raw path globs — plus a set of changed paths, decide whether a change
-touches a cross-surface path. Both consumers share this one core:
+touches a cross-surface path. The critique validator uses this shared core:
 
 - the critique validator's severity upgrade (a hit rejects a bare
-  ``single-surface`` verdict), and
-- the impl stop-gate escalation hook (a hit forces a standalone critique).
+  ``single-surface`` verdict).
 
 The taxonomy (which paths are cross-surface) stays repo-owned via the adapter;
 this portable core never names a surface itself. An empty config never hits, so
@@ -43,13 +42,14 @@ BOUNDARY_SURFACES_KEY = "boundary_cross_surface_surfaces"
 # release real-host probe uses for `evaluation_scope` (D7) -- a fourth private spelling
 # of "we could not tell" is how the concept drifts back apart.
 #
-# It lives HERE, under the wrapper, because the wrapper alone could not close the hole:
+# It lives HERE as the shared implementation for the critique validator because
+# the validator alone could not close the hole:
 # `resolve_cross_surface_scope` typed the states it could see from OUTSIDE the probe (no
 # config, no changed scope) and then delegated the rest to `cross_surface_hit`, which
 # returned a bare `False` when `.agents/surfaces.json` was absent. A repo that configured
 # `boundary_cross_surface_surfaces` and had no manifest therefore resolved to
 # `evaluated (no match)` -- a positive claim that the probe ran -- and silently disarmed
-# the #408 5b tooth in `validate-critique-artifacts`, not just in `prove`.
+# the #408 5b tooth in `validate-critique-artifacts`.
 PROBE_EVALUATED = "evaluated"
 PROBE_NOT_CONFIGURED = "not-configured"
 PROBE_NOT_ESTABLISHED = "not-established"
@@ -223,9 +223,9 @@ def resolve_probe_state(
     include_worktree: bool = False,
 ) -> tuple[dict[str, object], list[str], dict[str, list[str]]]:
     """Resolve the changed paths, read the critique adapter's probe config, and return
-    ``(probe_state, changed_paths, probe_config)``. The one home both the critique
-    validator's severity upgrade and the impl stop-gate hook call, so the
-    resolve-and-probe logic lives in a single place."""
+    ``(probe_state, changed_paths, probe_config)``. The critique validator's
+    severity upgrade calls this shared resolver, so the resolve-and-probe logic
+    lives in a single place."""
     changed = resolve_changed_paths(
         repo_root, changed_path, changed_ref, include_worktree=include_worktree
     )
@@ -251,8 +251,7 @@ def resolve_probe_state(
     # not match them lands on `evaluated`/`hit=False`. A state-keyed guard exempts that
     # negative and re-ships the very defect this block exists to remove, narrowed from
     # "no config" to "partially-valid config". A round-2 bounded review caught it here
-    # after round 1 caught the original; the retro sibling keys on the hit for the same
-    # reason (`check_auto_trigger` establishes on `triggered or not undetermined`).
+    # after round 1 caught the original; only a hit is a positive boundary claim.
     #
     # Measured 2026-08-14 and CORRECTED after `#673`, because four of the five sentences
     # the first version carried are now false and a stale comment on a proof surface tells

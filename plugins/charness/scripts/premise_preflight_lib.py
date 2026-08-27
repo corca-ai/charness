@@ -14,10 +14,8 @@ import os
 import re
 import subprocess
 import uuid
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
-
-from scripts.slice_manifest_lib import ManifestError, _safe_repo_path
 
 SCHEMA_VERSION = 1
 PREMISE_KIND = "charness.premise-preflight"
@@ -39,6 +37,23 @@ _SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 _RFC3339_UTC_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$")
 _STATES = frozenset({"OPEN", "CLOSED"})
+
+
+class PremisePathError(ValueError):
+    """A captured premise contains an unsafe repo-relative path."""
+
+
+def _safe_repo_path(value: Any, path: str) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise PremisePathError(f"{path}: expected a non-empty string")
+    if "\\" in value:
+        raise PremisePathError("use a repo-relative POSIX path, not a backslash path")
+    parsed = PurePosixPath(value)
+    if parsed.is_absolute() or ".." in parsed.parts or "." in parsed.parts:
+        raise PremisePathError("path must be relative and must not contain `.` or `..`")
+    if value.endswith("/"):
+        raise PremisePathError("path must not have a trailing slash")
+    return value
 
 
 class PremiseError(ValueError):
@@ -100,7 +115,7 @@ def _timestamp(value: Any, path: str, *, error_code: str = "invalid_premise") ->
 def _relative_path(value: Any, path: str) -> str:
     try:
         return _safe_repo_path(value, path)
-    except ManifestError as exc:
+    except PremisePathError as exc:
         _error("unsafe_path", path, str(exc))
     raise AssertionError("unreachable")
 
@@ -319,7 +334,7 @@ def _history_git_sha(value: Any, path: str) -> str:
 def _history_path(value: Any, path: str) -> str:
     try:
         return _safe_repo_path(value, path)
-    except ManifestError as exc:
+    except PremisePathError as exc:
         _error("invalid_decision_history", path, str(exc))
     raise AssertionError("unreachable")
 

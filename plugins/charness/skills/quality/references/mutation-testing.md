@@ -214,16 +214,17 @@ preset stays stack-neutral.
 
 ## Changed-Line Coverage Gate (portable pattern)
 
-Mutation and changed-line coverage are explicit release/CI concerns in Charness.
-A full mutation run is too slow for routine developer commands, so Charness's
-own quality runner does not auto-queue the changed-line producer. An opted-in
-consumer may invoke the portable gate at its release boundary; direct invocation
-also remains available for focused diagnostics. The optional
+Mutation and changed-line coverage are explicit release-final/CI concerns in
+Charness. A full mutation run is too slow for routine developer commands, so
+ordinary implementation uses focused tests plus the default core lane. The
+release-final owner runs the producer once after its other release checks and
+passes its payload to the portable consumer. Direct invocation also remains
+available for focused diagnostics. The optional
 `check_changed_line_coverage.py` capability reproduces the **blocking** signal
 of a deeper gate: a changed pool file whose changed lines over `base..head` lack
 coverage. It does not run mutants; it **reuses** a coverage.py report produced by
-the caller. Consumers should keep it out of ordinary implementation/full lanes
-unless they explicitly choose that cost.
+the caller. Consumers should keep it out of ordinary, default, and full lanes
+unless they explicitly choose the release-final cost.
 
 Configure it with the `changed_line_mutation_gate` adapter block
 (`coverage_json`, `eligible_globs`, `exclude_globs`). It is stack-neutral — the
@@ -263,9 +264,11 @@ stale and skip non-blocking (never a false fail, but also no teeth).
 
 ### Producer cost: one instrumented run, no second pass
 
-Coverage for the gate should piggyback the run you already pay for (the
-full/closeout test run), instrumented once with plain statement coverage — not a
-separate coverage pass. Drop per-test `dynamic_context` for this report: the gate
+Coverage for the gate belongs to the final release lane. After release pytest and
+the cheaper release checks pass, instrument only the standing tests mapped to the
+changed mutation-pool files, once, with plain statement coverage. Ordinary
+implementation and pre-commit lanes do not run it. Drop per-test `dynamic_context`
+for this report: the gate
 only needs executed-vs-missing lines, and per-test context can balloon the
 coverage JSON by orders of magnitude. Measured on the authoring repo, same
 coverage data with the export flag as the only difference: **8.22 GB vs 12.26 MB
@@ -290,16 +293,13 @@ run so a late failure does not force a re-pay.
 
 ### Name the cheap refresh first, in the payload
 
-When the gate cannot USE the coverage it found — absent report, or a fingerprint
-that no longer matches — its own structured output is what the operator acts on.
-If that output names only the whole-corpus rebuild, that is what gets run, however
-many times the tree moves. Emit the **incremental** refresh (instrument only the
-tests that reference the changed files) as the first move and the full rebuild as
-the fallback, and emit them as **structured fields** rather than folded into a
-prose `reason`: a resumed session reads the payload back, and a route buried in a
-sentence has to be re-parsed to be used. Naming the cheap lane first is safe in
-this direction — coverage from a test subset is a subset of full coverage, so it
-can cost a false stop but can never grant a false pass.
+When the final lane cannot use the coverage it produced — absent report, stale
+fingerprint, or an unmapped changed file — it exits nonzero and names the missing
+scope. Repair the mapping or standing test, then rerun the release lane once. The
+scheduled broad mutation workflow remains an independent diagnostic; it is not a
+second closeout fallback. The incremental direction is safe: coverage from a test
+subset is a subset of full coverage, so it can cost a false stop but cannot grant a
+false pass.
 
 ### The false-green dry-run trap
 

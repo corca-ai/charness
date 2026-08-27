@@ -8,14 +8,20 @@ description: "Use when a non-trivial design decision, code change, release, rena
 Use this when the next risk is not implementation detail alone, but locking the
 wrong change or carrying the wrong fear into the next slice.
 
-`critique` is the structured before-the-fact counterpart to `retro`. The
-substrate is the same across targets — pre-lock-in stress with anchor-
-discriminated multi-angle review followed by one counterweight pass — and the
-target reference shapes the angle distribution and output. Decision pre-mortem (Klein lineage) is one of those targets; code/PR critique, release critique,
-rename critique, and spec critique reuse the same substrate. When a caller
-brings an already-observed failure or a review report, the optional
-evidence-led path verifies that report before debating the repair; it is not a
-replacement for fresh-eye judgment or for `debug`'s causal record.
+`critique` is the structured before-the-fact counterpart to `retro`. Critique
+is selected for consequential decisions, not routine micro-slices. Once
+selected, the default substrate is two bounded fresh-eye reviewers run in
+parallel, with materially different perspectives or scopes, followed by a
+parent-owned counterweight pass. The orchestrator chooses the perspectives,
+judges both delivered results, and integrates the findings; selection and
+reviewer count are not encoded by filenames, diff size, labels, keywords, or
+other mechanical heuristics. A single reviewer is an explicit, explained
+exception only when the second perspective cannot add independent evidence.
+Decision pre-mortem (Klein lineage) is one of those targets; code/PR critique,
+release critique, rename critique, and spec critique reuse the same substrate.
+When a caller brings an already-observed failure or a review report, the
+optional evidence-led path verifies that report before debating the repair; it
+is not a replacement for fresh-eye judgment or for `debug`'s causal record.
 
 Critique is selected by risk, not by the fact that a task completed. When it is selected, scale the pass, not the obligation: use the risk boundary or meaningful slice as the review unit, not every commit. See `references/cadence.md`.
 
@@ -37,7 +43,9 @@ out-of-scope lines, and the scaffold's `Verification Scope Decision` (claim,
 consumer closure, minimum proof, omitted checks, verifier contract, and failure
 classification). Question the verifier itself, consume the four-bin triage
 (`Act Before Ship`, `Bundle Anyway`, `Over-Worry`, `Valid but Defer`), and write
-change-affecting results back into the durable contract; record typed `Fresh-Eye Satisfaction` and use `accepted-unreviewed-under-round-cap` only for round-2 repairs; see `references/cadence.md` for negative controls, retry identity, and the stop rule.
+change-affecting results back into the durable contract. Record typed `Fresh-Eye
+Satisfaction`; see `references/cadence.md` for the bounded follow-up rule,
+negative controls, retry identity, and stop rule.
 
 Autonomous trigger: if no pending artifact or source summary is supplied, do
 not ask first by default; follow `references/autonomous-trigger.md`, infer a
@@ -58,8 +66,8 @@ the substrate (angles + counterweight + four bins) is shared.
 | `rename critique`, deletion, slug churn         | `references/rename-critique.md`    |
 | `spec critique`, pre-impl spec lock-in          | `references/spec-critique.md`      |
 
-If the call is ambiguous, ask which target reference applies before spawning
-angles. Do not silently pick a target that changes the angle distribution.
+If the call is ambiguous, ask which target reference applies before selecting
+the review focus. Do not silently pick a target that changes the output.
 
 ## Evidence-Led Mode
 
@@ -78,7 +86,7 @@ the smallest change surface that makes the next move legible.
 For no-argument slash-command use, run the autonomous trigger scan first.
 
 If `<repo-root>/.agents/critique-adapter.yaml` declares ≥1 `packet_sections`, run the
-prepare runner once before starting angle workers (see `references/prepare-packet.md`).
+prepare runner once before starting the reviewer (see `references/prepare-packet.md`).
 
 ```bash
 # Required Tools: rg
@@ -102,23 +110,30 @@ history.
 2. If evidence-led review is active, normalize each report, run its smallest
    deletion/omission/skip/mutation/stale-input/package stimulus, and record the
    typed disposition plus final-consumer output before counterweight triage.
-3. Pick a bounded set of contrasting angles.
-   - run at least two independent angle worker runs plus one separate counterweight;
-     default to three angles and add a fourth only for a clearly broad change
-   - choose angles that can disagree meaningfully, not five near-duplicates
-   - use the target reference's `Anchor Angle Distribution`; see also `references/angle-selection.md`
-4. Run the angle pass.
+3. Pick one bounded review boundary that matches the named risk, then assign
+   two materially different reviewer perspectives or scopes within it. A
+   single reviewer requires an explicit explanation of why the second
+   perspective cannot add independent evidence.
+   - use the target reference's `Anchor Angle Distribution`; see also
+     `references/angle-selection.md`
+4. Run the angle pass with the two reviewers in parallel.
    - Resolve the adapter's fresh-eye branch, consume its typed carrier, and bind
      packet identity; caller flags cannot cross that branch.
-   - use bounded fresh-eye subagents with one angle each (one worker per angle) and `record_round_findings.py`; the recorder requires `--worker-report <path>`, validates the delivered report/receipt/ledger chain, and carries the typed worker result (`result.json`) as findings. Raw stdin or `--findings-file` same-context substitutions are refused. A delivered `block` or `defer` is recorded as evidence but is not approval. For a shared, untyped reviewer, rail-1 snapshot/verify around that reviewer uses
-     `--window-id <id>` and `--boundary-snapshot <path>`; typed read-only or
-     isolated execution needs no extra fingerprint. Mismatched snapshots refuse; round `n+1` reads as prior evidence.
+   - use two bounded fresh-eye reviewers with materially different perspectives
+     or scopes, and consume both typed delivered results. Raw same-context
+     substitutions are refused. A delivered `block` or `defer` is recorded as
+     evidence but is not approval. For a shared, untyped reviewer, the shared
+     fingerprint helper snapshots and verifies parent git state; typed
+     read-only or isolated execution needs no extra fingerprint. Mismatched
+     snapshots refuse.
 5. Collapse the findings into one candidate concern list.
    - deduplicate overlap
    - keep evidence and cited source paths with each concern when available
    - prefer concerns that would change the next move, not generic worry
-6. Run one counterweight pass as a skeptical senior engineer: triage each
+6. Perform the counterweight pass while integrating the findings: triage each
    concern with `references/counterweight-triage.md` and preserve all four bins.
+   A separate counterweight worker is optional and only justified by its own
+   independent evidence axis.
 7. Persist any change-affecting concern in the spec, plan, diff, or rename
    contract; record rejected recurring concerns in `Deliberately Not Doing`.
 8. End with the next move.
@@ -159,9 +174,9 @@ is approval-eligible and the artifact records its report carrier, packet
 identity, and result identity. Use `parent-delegated` or `nested-delegated` only
 when the adapter explicitly selected a typed-subagent path and the findings text
 reached the parent context. A same-agent short critique is never either claim.
-Use `accepted-unreviewed-under-round-cap <cap-signal>` only for repairs made
-after the second bounded verdict-surface round; it is an honest non-approval
-state, not a substitute for fresh-eye review.
+When a repair materially changes the reviewed risk on a proof or verdict
+surface, one follow-up fresh-eye review may read the repaired surface. Do not
+repeat review when the repair does not materially change that risk.
 
 ## Guardrails
 
@@ -173,8 +188,8 @@ state, not a substitute for fresh-eye review.
 - `unproven` is a typed non-claim, not a softened approval. If the report is a
   repeated seam symptom, hand it to `debug` even when the local reproduction is
   unavailable.
-- Keep the counterweight pass owned, not a paranoia backlog: triage every concern into the four bins, never skip it or treat all concerns as equal, and don't open
-  more angles than you can triage honestly. Persist rejected-but-recurring concerns
+- Keep the counterweight pass owned, not a paranoia backlog: triage every concern into the four bins, never skip it or treat all concerns as equal, and don't add
+  an angle without a genuinely independent evidence axis. Persist rejected-but-recurring concerns
   to `Deliberately Not Doing` (Workflow step 6), not chat. See
   `references/counterweight-triage.md`.
 
@@ -191,8 +206,6 @@ state, not a substitute for fresh-eye review.
 - `references/angle-selection.md`
 - `references/counterweight-triage.md`
 - `references/adversarial-evidence-review.md`
-  optional
-  evidence-led mode remains an additive path.
 - `references/prepare-packet.md`
 - `references/adapter-contract.md`
 - `../../shared/references/agent-assessment-invariant.md`
