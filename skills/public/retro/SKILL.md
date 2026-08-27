@@ -61,8 +61,7 @@ Adapter policy:
      The measured / proxy / unavailable signal distinctions live in
      `references/phase-aware-efficiency.md`.
    - adapter-defined `metrics_commands` only when they sharpen a real claim
-   - recurring gate-runtime and artifact-only-commit waste via
-     `$SKILL_DIR/scripts/mine_closeout_telemetry.py`, per `references/closeout-telemetry.md`
+   - recurring waste signals from adapter-defined evidence sources
    - if the adapter declares `packet_sections`, run
      `$SKILL_DIR/scripts/prepare_packet.py` once and read the markdown packet
      before writing lessons; see `references/prepare-packet.md`
@@ -137,7 +136,7 @@ The result should usually include:
 ## Auto-Retro Trigger
 
 Trigger a short `session` retro automatically when a user correction exposes a
-real miss; a triggered slice-closeout probe also starts one. Consume the planner packet and read `state` before
+real miss. Consume the planner packet and read `state` before
 `triggered`; its basis and the full trigger/skip taxonomy live in
 `references/trigger-and-persistence.md`. Keep the retro bounded and include
 `Persisted`.
@@ -167,7 +166,7 @@ sub-agents, otherwise write the counterfactuals inline.
 - Do not claim persistence implicitly; name the durable path or the reason it
   remained chat-only.
 - Do not invent hidden machine formats or write hidden telemetry; the retro only
-  reads the stream the closeout emitter already wrote.
+  reads explicit evidence sources.
 - If no improvement is proposed, explain why the current workflow should remain
   unchanged.
 
@@ -178,7 +177,6 @@ sub-agents, otherwise write the counterfactuals inline.
 - `references/phase-aware-efficiency.md`
 - `references/expert-lens.md`
 - `references/trigger-and-persistence.md`
-- `references/closeout-telemetry.md`
 - `references/waste-sibling-scan.md`
 - `references/prepare-packet.md`
 - `../../shared/references/retro-issue-destination-split.md`

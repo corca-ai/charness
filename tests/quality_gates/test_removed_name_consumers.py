@@ -92,7 +92,7 @@ def test_a_file_that_never_mentions_the_module_is_not_a_candidate(tmp_path: Path
 def test_import_alias_is_retained_as_a_module_level_binding() -> None:
     baseline = "VALUE = 1\n"
     current = (
-        "from scripts.slice_closeout_repair_parity import added_diff_lines as _added_diff_lines\n"
+        "from scripts.old_module import added_diff_lines as _added_diff_lines\n"
         "\n"
         "def report():\n"
         "    return _added_diff_lines\n"

@@ -595,7 +595,7 @@ def test_commit_and_quality_consumers_refuse_pending_recovery_then_unblock(tmp_p
     (commit_repo / "scripts").mkdir()
     subprocess.run(["git", "init", "-q"], cwd=commit_repo, check=True)
     shutil.copy2(ROOT / ".githooks" / "pre-commit", commit_repo / ".githooks" / "pre-commit")
-    (commit_repo / "scripts" / "run_slice_closeout.py").write_text("raise SystemExit(0)\n", encoding="utf-8")
+    (commit_repo / "scripts" / "check_git_identity.py").write_text("raise SystemExit(0)\n", encoding="utf-8")
     commit_state = commit_repo / ".git" / "charness-mutation-recovery"
     commit_state.mkdir()
 

@@ -20,7 +20,6 @@ _is_catalog_candidate_name = _catalog_check._is_candidate_name
 _plan_helpers = import_repo_module(__file__, "scripts.staged_commit_gate_plan_helpers")
 
 GateCommand = _plan_helpers.GateCommand
-collect_staged_paths = _plan_helpers.collect_staged_paths
 collect_staged_scope_paths = _plan_helpers.collect_staged_scope_paths
 _any_starts = _plan_helpers.any_starts
 _artifact_shape_gates = _plan_helpers.artifact_shape_gates
@@ -35,11 +34,9 @@ _registry_root /= "shared/scripts" if (_registry_root / "shared").is_dir() else 
 sys.path.insert(0, str(_registry_root))
 import provenance_contract as _provenance_contract  # noqa: E402
 
-# Single source of truth (#314) for the fast structural checkers that must run
-# in BOTH the per-slice aggregate (run_slice_closeout) and the literal git
-# pre-commit gate. Both paths draw the subset from surface verify_commands; this
-# allowlist is the reconciliation point so "passes the aggregate" and "passes
-# pre-commit" become one guarantee. Entries MUST be cheap (<1s), deterministic,
+# Single source of truth (#314) for the fast structural checkers that run in the
+# literal git pre-commit gate. The plan draws this subset from surface
+# verify_commands. Entries MUST be cheap (<1s), deterministic,
 # and path-scoped -- never a broad pytest in the pre-commit path.
 FAST_SURFACE_VERIFY_COMMANDS: dict[str, str] = {
     "python3 scripts/validate_skill_ergonomics.py --repo-root .": "validate-skill-ergonomics",
@@ -463,171 +460,6 @@ def staged_commit_gate_plan(
     plan.extend(fast_surface_verify_gates(repo_root, paths))
 
     return plan
-
-
-# #332: the cheap structural sweep -- the presence/structural gates a new
-# skill-package, scripts/*.py, or rolling-pointer edit must NOT be able to defer to the slow broad
-# gate (the recurring #308/#325/#329 class). Selected by label from
-# staged_commit_gate_plan so the plan stays the single source of truth (no
-# parallel gate list): ergonomics (skill packages), attention-state visibility
-# (scripts/**+skills/** *.py), the SKILL.md authoring preflight, and (#368) the
-# inference-interpretation / inventory-declaration registry leak scans plus the
-# bootstrap-shim consistency check -- the cheap, offline, changed-scoped checks that
-# were previously enforced only at the ~4-min broad gate. The full
-# run_slice_closeout path runs this subset FIRST, fail-fast,
-# so the cheap verdict precedes surface-match / broad pytest --
-# reconciling the broad path with the --predict-commit boundary instead of
-# reaching the gates only late.
-STRUCTURAL_SWEEP_LABELS: frozenset[str] = frozenset(
-    {
-        "validate-attention-state-visibility",
-        "validate-skill-ergonomics",
-        "check-skill-core-headroom (staged)",
-        "check-artifact-shape (staged)",
-        "validate-inference-interpretation",
-        "check-bootstrap-shim-consistency",
-        "check-standalone-imports",
-        "check-inventory-declaration-coverage",
-        "check-timing-layer-completeness",
-        "validate-quality-reference-catalog",
-        "validate-current-pointer-freshness",
-    }
-)
-
-
-def structural_sweep_gates(repo_root: Path, paths: list[str] | None = None) -> list[GateCommand]:
-    """The #332 cheap structural-sweep subset of ``staged_commit_gate_plan``.
-
-    Reuses ``staged_commit_gate_plan`` (single source of truth) and filters to
-    the presence/structural gates named in the #332 goal, so the full closeout
-    runs the same cheap verdict first without re-running ruff/lengths/skills/
-    run-evals from the verify phase. Empty for changes that touch no structural
-    file class (e.g. docs-only), so it is a no-op there.
-    """
-    return [
-        command
-        for command in staged_commit_gate_plan(repo_root, paths)
-        if command.label in STRUCTURAL_SWEEP_LABELS
-    ]
-
-
-def structural_sweep_planned_commands(repo_root: Path, paths: list[str]) -> list[dict[str, str]]:
-    """#332: the structural sweep rendered as ``--plan-only`` planned commands,
-    prepended to the full closeout plan so plan output reflects what runs first."""
-    return [
-        {"phase": "structural-sweep", "command": shlex.join(gate.argv)}
-        for gate in structural_sweep_gates(repo_root, paths)
-    ]
-
-
-def run_structural_sweep_preflight(repo_root: Path, paths: list[str], *, run_command) -> dict[str, object]:
-    """Run the #332 cheap structural sweep fail-fast (first non-zero gate stops).
-
-    Returns a payload with ``status`` (``ok``/``failed``), the planned gate
-    labels, executed results, and the first ``failed_label``.
-    """
-    gates = structural_sweep_gates(repo_root, paths)
-    executed: list[dict[str, object]] = []
-    for command in gates:
-        result = run_command(repo_root, shlex.join(command.argv), "structural-sweep")
-        executed.append(result)
-        if result["returncode"] != 0:
-            return {
-                "status": "failed",
-                "planned": [gate.label for gate in gates],
-                "executed": executed,
-                "failed_label": command.label,
-            }
-    return {
-        "status": "ok",
-        "planned": [gate.label for gate in gates],
-        "executed": executed,
-        "failed_label": None,
-    }
-
-
-def block_on_structural_sweep(
-    repo_root: Path,
-    payload: dict[str, object],
-    *,
-    plan_only: bool,
-    run_command,
-    emit_payload,
-    paths: list[str] | None = None,
-) -> int | None:
-    """#332 fail-fast guard for the full ``run_slice_closeout`` path.
-
-    Runs the cheap structural sweep FIRST so its verdict precedes surface-match /
-    broad pytest. Mirrors the ``_maybe_block_on_*`` helpers: returns
-    an exit code when blocking, else ``None``. No-op in ``plan_only`` (the sweep
-    commands are surfaced through the planned output instead).
-    """
-    if plan_only:
-        return None
-    sweep_paths = list(payload["changed_paths"]) if paths is None else paths
-    sweep = run_structural_sweep_preflight(repo_root, sweep_paths, run_command=run_command)
-    payload["structural_sweep"] = sweep
-    if sweep["status"] != "failed":
-        return None
-    payload["status"] = "blocked"
-    payload["error"] = (
-        f"cheap structural sweep failed at `{sweep['failed_label']}` (#332): the "
-        "#329-class commit-boundary gate must not defer to the broad gate; fix and rerun"
-    )
-    # The failing child's streams are NOT echoed here: output is one YAML document
-    # since the 2026-08-14 --json removal, and a raw stdout blob printed alongside it
-    # is not part of that document. `payload["structural_sweep"]["executed"]` already
-    # carries every command's stdout and stderr, so the blocking evidence is in the
-    # payload rather than beside it.
-    return emit_payload(payload, stderr_message=payload["error"])
-
-
-def run_predict_commit(
-    repo_root: Path,
-    *,
-    paths: list[str] | None,
-    plan_only: bool,
-    run_command,
-    emit_payload,
-    advisory_provider=None,
-) -> int:
-    selected_paths = paths if paths is not None else collect_staged_scope_paths(repo_root)
-    command_plan = staged_commit_gate_plan(
-        repo_root,
-        # `--paths` injection stays authoritative for both lists; otherwise the
-        # existing-file list and the touched scope are collected separately, so a
-        # deletion or rename still schedules its surface's gates.
-        paths if paths is not None else collect_staged_paths(repo_root),
-        scope_paths=selected_paths,
-    )
-    # Advisory providers emit exit-0 informational lines (e.g. the RCA-link nudge)
-    # that never block the commit; staged_commit_gate_plan stays surface-agnostic.
-    advisories = list(advisory_provider(repo_root, selected_paths)) if advisory_provider else []
-    payload: dict[str, object] = {
-        "status": "planned" if plan_only else "completed",
-        "changed_paths": selected_paths,
-        "planned_commands": [
-            {"phase": "pre-commit", "label": command.label, "argv": list(command.argv)}
-            for command in command_plan
-        ],
-        "executed_commands": [],
-        "advisories": advisories,
-    }
-    # Every branch below emits the one payload. The progress lines this function used
-    # to print when `--json` was absent (`charness pre-commit: <label>`, the advisory
-    # lines, the trailing `ok`) are gone rather than kept beside the document: output
-    # is unconditionally YAML since the 2026-08-14 --json removal, and each of those
-    # facts already rides in the payload as `advisories`, `planned_commands`,
-    # `executed_commands`, and `status`.
-    if plan_only:
-        return emit_payload(payload)
-    for command in command_plan:
-        result = run_command(repo_root, shlex.join(command.argv), "pre-commit")
-        payload["executed_commands"].append(result)
-        if result["returncode"] != 0:
-            payload["status"] = "failed"
-            return emit_payload(payload)
-    return emit_payload(payload)
 
 
 def main() -> int:

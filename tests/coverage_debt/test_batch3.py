@@ -13,7 +13,6 @@ from __future__ import annotations
 import json
 import runpy
 import stat
-import subprocess
 import sys
 import textwrap
 from pathlib import Path
@@ -730,69 +729,6 @@ def test_boundary_inventory_writes_the_same_document_it_prints(tmp_path: Path) -
     assert out_path.read_text(encoding="utf-8") == result.stdout
     payload = yaml.safe_load(out_path.read_text(encoding="utf-8"))
     assert payload["summary"]["candidate_count"] == 1
-
-
-# ---------------------------------------------------------------------------
-# scripts/run_slice_closeout.py -- the noop payload
-# ---------------------------------------------------------------------------
-
-_slice_closeout = load_script_module(
-    "coverage_debt_run_slice_closeout", ROOT / "scripts" / "run_slice_closeout.py"
-)
-
-
-def test_slice_closeout_on_a_clean_tree_is_a_noop_that_still_emits_a_receipt(tmp_path: Path) -> None:
-    """Nothing changed is `noop` with a receipt, not `completed` and not a failure.
-
-    A clean tree must not report a completed closeout -- that would let a slice
-    claim verification it never ran. It must also not fail, since a no-change run
-    is legitimate; and the proof receipt has to be present so the status is
-    attributable.
-    """
-    repo = tmp_path / "repo"
-    _write(repo / "README.md", "# Demo\n")
-    _write(
-        repo / ".agents" / "surfaces.json",
-        json.dumps(
-            {
-                "version": 1,
-                "surfaces": [
-                    {
-                        "surface_id": "demo-surface",
-                        "description": "demo",
-                        "source_paths": ["README.md"],
-                        "derived_paths": [],
-                        "sync_commands": [],
-                        "verify_commands": ["python3 scripts/verify.py"],
-                        "notes": [],
-                    }
-                ],
-            },
-            indent=2,
-        )
-        + "\n",
-    )
-    subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(
-        ["git", "-c", "user.name=t", "-c", "user.email=t@example.com", "commit", "-m", "seed"],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-
-    result = run_loaded_script_main(
-        "run_slice_closeout.py", _slice_closeout, "--repo-root", str(repo)
-    )
-
-    assert result.returncode == 0, result.stdout + result.stderr
-    payload = yaml.safe_load(result.stdout)
-    assert payload["status"] == "noop"
-    assert payload["changed_paths"] == []
-    assert payload["executed_commands"] == []
-    assert payload["effective_exit_code"] == 0
-    assert payload["proof_receipt"]
 
 
 # ---------------------------------------------------------------------------

@@ -451,33 +451,6 @@
       ],
       "rationale": "refuse_foreign_entrypoint returns a TYPED skipped-read-only status for -h/--help. A read-only invocation is not a mutation boundary, and refusing it removes the operator cheapest way to inspect which copy they are holding at exactly the moment they are confused about it. The skip closes no gate and reaches no closeout: the caller is an entrypoint that has not yet done anything, so a skipped guard simply means the run has not reached a mutation. Every mutating invocation still resolves a real drifted/in-sync/consuming-repo verdict."
     },
-    "scripts/slice_closeout_broad_gate.py": {
-      "states": [
-        "skipped"
-      ],
-      "visibility": [
-        "explicit_skip_summary",
-        "terminal_payload"
-      ],
-      "evidence_terms": [
-        "skipped_broad_pytest_commands",
-        "verification_lock_required"
-      ],
-      "rationale": "Pre-lock slice closeout can explicitly skip broad pytest while preserving deterministic checks; the payload names skipped_broad_pytest_commands and the lock-required state so skipped broad proof cannot read as full closeout proof."
-    },
-    "scripts/slice_closeout_telemetry.py": {
-      "states": [
-        "disabled"
-      ],
-      "visibility": [
-        "terminal_payload"
-      ],
-      "evidence_terms": [
-        "status",
-        "emitted"
-      ],
-      "rationale": "Closeout-telemetry emission (spec achieve-efficiency E1) is on by default but returns a disabled status in the closeout payload's closeout_telemetry field when the operator sets CHARNESS_CLOSEOUT_TELEMETRY=off, so the off state stays visible in the terminal payload instead of being treated as a successful waste-signal capture. This is operational-waste telemetry, never quality or release closeout proof."
-    },
     "scripts/sync_support.py": {
       "states": [
         "skipped"

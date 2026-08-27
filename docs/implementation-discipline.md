@@ -20,9 +20,10 @@ worked, and leave the next change easy to start? It is intentionally short.
    code, wrappers, gates, mirrors, or tests is a valid implementation when
    their consumers have been checked. Do not add a rule to compensate for a
    problem that deletion or derivation removes.
-4. Run focused tests for the changed behavior. Use the default
-   [run-quality.sh](../scripts/run-quality.sh) only when the core repository contract is useful;
-   use `./scripts/run-quality.sh --full` for broad, release, or review work.
+4. Run focused tests for the changed behavior, then the default core lane when
+   the changed surface has cross-module consumers. Use
+   `./scripts/run-quality.sh --release` for the release-final changed-line
+   coverage and mutation proof; it is not part of ordinary implementation.
    A slow or conditional gate is not silently part of ordinary implementation.
 5. If a source surface exports a generated mirror, run its canonical exporter
    once after batching source edits, then validate the result. The source is
@@ -62,9 +63,10 @@ that a clean starting tree guarantees a clean finish.
 
 ## Proof proportionality
 
-Normal local implementation needs focused behavioral evidence. It does not
-automatically owe changed-line mutation proof, a separate closeout ledger, a
-fresh-eye reviewer, or a full-suite run. Those are conditional:
+Normal local implementation needs focused tests and, when the surface is broad,
+the default core lane. It does not run changed-line coverage/mutation proof or
+pay its cost. That proof belongs only to the release-final lane. Other evidence
+remains conditional:
 
 - a verdict/proof-surface change gets the narrow proof of the surface it
   changes;

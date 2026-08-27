@@ -20,7 +20,7 @@ from scripts.mutation_sampling_lib import (
 def test_coverage_runtime_files_are_namespaced_by_report(tmp_path: Path) -> None:
     broad = tmp_path / "reports" / "mutation" / "test-coverage.json"
     sample = tmp_path / "reports" / "mutation" / "sample-coverage.json"
-    focused = tmp_path / "reports" / "mutation" / "prepush-focused-coverage.json"
+    focused = tmp_path / "reports" / "mutation" / "release-changed-line-coverage.json"
 
     broad_paths = coverage_runtime_paths(broad, repo_root=tmp_path)
     sample_paths = coverage_runtime_paths(sample, repo_root=tmp_path)
@@ -31,7 +31,7 @@ def test_coverage_runtime_files_are_namespaced_by_report(tmp_path: Path) -> None
     assert set(sample_paths).isdisjoint(focused_paths)
     assert broad_paths[0].name == ".test-coverage.mutation-coverage"
     assert sample_paths[0].name == ".sample-coverage.mutation-coverage"
-    assert focused_paths[0].name == ".prepush-focused-coverage.mutation-coverage"
+    assert focused_paths[0].name == ".release-changed-line-coverage.mutation-coverage"
 
 
 def test_coverage_run_command_wraps_pytest_module_command(tmp_path: Path) -> None:

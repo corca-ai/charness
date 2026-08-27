@@ -96,7 +96,6 @@ JSON_FLAG_MUST_BE_UNRECOGNIZED = (
     ("scripts/inventory_skill_script_references.py", "--repo-root", ".", "--strict"),
     ("scripts/measure_inventory_consumption_floor.py", "--repo-root", "."),
     ("scripts/render_lesson_selection_preview.py", "--repo-root", ".", "--seed", "contract-probe"),
-    ("scripts/run_slice_closeout.py", "--repo-root", ".", "--paths", "README.md"),
     ("skills/public/setup/scripts/seed_dependencies.py", "--repo-root", ".", "--tool-id", "ruff"),
     ("skills/shared/scripts/reviewer_boundary_fingerprint.py", "snapshot", "--repo-root", "."),
 )

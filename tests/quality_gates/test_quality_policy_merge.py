@@ -2,7 +2,7 @@
 
 The module was extracted from `quality_policy_defaults` and its behaviour was
 reachable only end-to-end through the bootstrap. That left the merges' own accept/
-reject branches proven by inference, and it left the pre-push changed-line lane with
+reject branches proven by inference, and it left the release changed-line proof with
 a new pool file whose standing tests do not exercise it — which is how this file came
 to exist: the lane refused the push and named `return merged_policy` as an uncovered
 changed line, twice.

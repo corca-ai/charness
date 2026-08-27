@@ -16,7 +16,6 @@ from types import SimpleNamespace
 
 import yaml
 
-from runtime_bootstrap import import_repo_module
 from scripts.mutation_changed_files_lib import (
     CHANGED_LINE_COVERAGE_MARKER_SCHEMA,
     CHANGED_LINE_COVERAGE_PRODUCER,
@@ -202,9 +201,8 @@ UNESTABLISHED_EXIT = 3
 
 
 def test_skip_if_no_coverage_is_non_blocking_when_absent(tmp_path: Path) -> None:
-    # Pre-push (read-only) wiring: a changed pool file with NO coverage source must
-    # skip non-blocking rather than fall through to the slow probe. This is what
-    # keeps run-quality.sh --read-only cheap at the pre-push boundary.
+    # A direct diagnostic with NO coverage source must remain honest without
+    # accidentally running the slow producer.
     repo, base, head = _seed_repo_with_changed_pool_file(tmp_path)
     absent = repo / "reports" / "mutation" / "test-coverage.json"  # never written
 
@@ -228,7 +226,7 @@ def test_skip_if_no_coverage_is_non_blocking_when_absent(tmp_path: Path) -> None
     assert "WARNING (changed-line mutation gate)" in result.stderr
     assert "NOT verified for coverage" in result.stderr
     assert "suggest_mutation_coverage_command.py" in result.stderr
-    assert "--produce-mutation-coverage" in result.stderr
+    assert "release_changed_line_coverage.py" in result.stderr
 
 
 def test_coverage_not_verified_warning_names_files_and_fix() -> None:
@@ -242,7 +240,7 @@ def test_coverage_not_verified_warning_names_files_and_fix() -> None:
     assert "NOT verified for coverage" in msg
     assert "#335 recurrence" in msg
     assert "suggest_mutation_coverage_command.py" in msg
-    assert "--produce-mutation-coverage" in msg
+    assert "release_changed_line_coverage.py" in msg
     assert "scripts/foo.py" in msg and "scripts/bar.py" in msg
 
 
@@ -984,29 +982,6 @@ def test_a_scope_mismatch_over_an_empty_scope_still_discloses_itself(tmp_path: P
     assert honest.returncode == 1, honest.stdout + honest.stderr
 
 
-def test_consumer_status_keeps_refused_distinct_from_blocked() -> None:
-    """A refusal must not be narrated to the operator as uncovered changed lines.
-
-    The producer collapsed every nonzero consumer exit to `blocked`, so the new
-    exit-2 path (a git command that would not run) reported "the consumer blocked
-    the produced coverage" — a refusal rendered as a verdict about other code.
-    """
-    producer = import_repo_module(__file__, "scripts.mutation_coverage_producer")
-    teeth = _load_teeth()
-    assert producer.CONSUMER_REFUSED_EXIT == teeth.REFUSED_EXIT
-    assert producer.consumer_status(0) == "passed"
-    assert producer.consumer_status(1) == "blocked"
-    assert producer.consumer_status(teeth.REFUSED_EXIT) == "refused"
-    # PARTIAL maps to `blocked` HERE and to a non-blocking `partial` in the pre-push
-    # lane, deliberately: this producer runs under `--verification-lock` where coverage
-    # was produced over the whole changed set, so a short scope is a real closeout gap
-    # rather than the mapper's blind spot. Asserted rather than left to the fallthrough
-    # -- the branch returns the same value the fallthrough did, so without this the
-    # decision is a comment no test can tell from an accident.
-    assert producer.CONSUMER_PARTIAL_EXIT == teeth.PARTIAL_EXIT
-    assert producer.consumer_status(teeth.PARTIAL_EXIT) == "blocked"
-
-
 def test_the_scope_mismatch_return_carries_the_limit_disclosure_too(tmp_path: Path, monkeypatch) -> None:
     """Two unestablished causes at once must not mask each other.
 
@@ -1060,40 +1035,6 @@ def test_the_scope_mismatch_return_carries_the_limit_disclosure_too(tmp_path: Pa
     # edit that moves the rebind below this check would silently emit the startup
     # not-computed pair here, and nothing else would notice.
     assert payload["changed_pool_file_counts"] == {"analyzed": 1, "changed": 2}
-
-
-def test_a_refusal_is_reported_to_the_operator_as_a_refusal(tmp_path: Path) -> None:
-    """The producer's error text, not just its status.
-
-    A refusal narrated as "the consumer blocked the produced coverage" tells the
-    operator there are uncovered changed lines when the truth is that the gate
-    could not look.
-    """
-    producer = import_repo_module(__file__, "scripts.mutation_coverage_producer")
-    teeth = _load_teeth()
-    payload: dict = {
-        "executed_commands": [
-            {
-                "produced_mutation_coverage": True,
-                "mutation_coverage_consumer_command": "true",
-                "mutation_coverage_base_sha": "abc123",
-            }
-        ],
-        "status": "passed",
-    }
-
-    def fake_run_command(_repo_root, _command, _phase):
-        return {
-            "returncode": teeth.REFUSED_EXIT,
-            "stdout": json.dumps({"ok": False, "refused": True, "reason": "could not inspect the worktree"}),
-        }
-
-    stopped = producer.run_produced_coverage_consumer(tmp_path, payload, fake_run_command)
-
-    assert stopped is True
-    assert payload["status"] == "failed"
-    assert "REFUSED to judge" in payload["error"]
-    assert "not a report of uncovered changed lines" in payload["error"]
 
 
 def test_an_unresolvable_head_sha_is_inspection_failed_not_a_clean_probe(tmp_path: Path) -> None:

@@ -30,18 +30,6 @@ def _assert_help_pairs(output: str, expected_pairs: dict[str, str]) -> None:
         assert fragment in option_block, f"missing help for {option}: {fragment}"
 
 
-def test_mine_closeout_telemetry_help_explains_stream_inputs() -> None:
-    output = _help("mine_closeout_telemetry.py")
-    _assert_help_pairs(
-        output,
-        {
-            "--repo-root": "resolve the closeout-telemetry stream path.",
-            "--stream-path": "JSONL path relative to --repo-root.",
-            "--recur-min": "marks a waste item as recurring.",
-        },
-    )
-
-
 def test_plan_retro_run_help_explains_repo_root_resolution() -> None:
     output = _help("plan_retro_run.py")
     _assert_help_pairs(

@@ -1,4 +1,4 @@
-"""The incremental pre-push changed-line teeth (D40).
+"""The release-final changed-line proof (D40).
 
 The lane this replaces exited 0 by construction, which is how a gate that fired
 eight times still let eight regressions land. Its replacement is only worth having
@@ -22,14 +22,14 @@ import yaml
 
 from .support import ROOT, run_script
 
-SCRIPT = "scripts/prepush_focused_changed_line_coverage.py"
+SCRIPT = "scripts/release_changed_line_coverage.py"
 
 
 @pytest.fixture()
 def gate():
     from tests.script_loader import load_script_module
 
-    return load_script_module("prepush_focused_under_test", ROOT / SCRIPT)
+    return load_script_module("release_changed_line_coverage_under_test", ROOT / SCRIPT)
 
 
 def _recommendation(**overrides) -> dict:
@@ -93,13 +93,14 @@ def test_a_dead_producer_is_a_no_verdict_not_a_pass(gate, monkeypatch, capsys) -
 
 def test_nothing_mapped_warns_loudly_and_does_not_block(gate, monkeypatch, capsys) -> None:
     """Policy (a), chosen 2026-07-29 and PRESERVED: an unmapped file is a MAPPER gap,
-    not a coverage gap, so blocking on it would stop a push over the tool's blind spot.
+    not a coverage gap, so the producer reports it as unproven rather than inventing
+    a coverage failure over the tool's blind spot.
 
     What changed 2026-08-06 (operator decision on #488) is the BYTE, not the policy.
     The lane used to return 0 here — the same verdict as a run that analyzed its whole
     changed set — so `run-quality.sh` printed PASS beside the warning below, and a real
-    push landed on `main` before CI blocked on the file this lane never read. It now
-    returns 4 (`PARTIAL`), which renders UNPROVEN and still does not stop the push."""
+    release proof could have carried an unproven result. It now returns 4 (`PARTIAL`),
+    which cannot be read as a clean release result."""
     monkeypatch.setattr(
         gate._suggest,
         "build_recommendation",
@@ -114,7 +115,7 @@ def test_nothing_mapped_warns_loudly_and_does_not_block(gate, monkeypatch, capsy
     assert payload["status"] == "unproven"
     assert payload["unmapped_changed_pool_files"] == ["scripts/unmapped.py"]
     assert captured.err.startswith("WARNING")
-    assert "nothing could be proven before this push" in captured.err
+    assert "nothing could be proven" in captured.err
 
 
 def test_noop_is_quiet(gate, monkeypatch, capsys) -> None:
@@ -136,7 +137,7 @@ def test_warning_lines_use_the_head_run_quality_actually_surfaces(gate, capsys) 
     previous lane already had."""
     gate._warn("something unproven")
 
-    assert capsys.readouterr().err.startswith("WARNING (incremental changed-line coverage):")
+    assert capsys.readouterr().err.startswith("WARNING (release changed-line coverage):")
 
 
 def test_focused_command_is_instrumentable_and_keeps_broad_marker_policy(gate) -> None:
@@ -222,20 +223,43 @@ def test_focused_producer_exports_only_mapped_changed_files(gate, monkeypatch) -
 
     def fake_produce(*_args, **kwargs):
         captured.update(kwargs)
-        return {"returncode": 0}
+        return {"returncode": 0, "produced_mutation_coverage": True}
 
     monkeypatch.setattr(gate._producer, "produce_command_coverage", fake_produce)
     monkeypatch.setattr(Path, "is_file", lambda _self: True)
-    monkeypatch.setattr(
-        gate.subprocess,
-        "run",
-        lambda *_a, **_k: subprocess.CompletedProcess(
-            [], 0, json.dumps({"ok": True, "blocking": []}), ""
-        ),
-    )
+    def fake_consumer(argv, **_kwargs):
+        captured["consumer_argv"] = argv
+        return subprocess.CompletedProcess(
+            argv, 0, json.dumps({"ok": True, "blocking": []}), ""
+        )
+
+    monkeypatch.setattr(gate.subprocess, "run", fake_consumer)
 
     assert gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40]) == 0
     assert captured["include_paths"] == ["scripts/mapped.py"]
+    assert "--require-fresh-coverage" in captured["consumer_argv"]
+
+
+@pytest.mark.parametrize(
+    "producer_result",
+    [
+        {"returncode": 1, "produced_mutation_coverage": False},
+        {"returncode": 0, "produced_mutation_coverage": False},
+    ],
+)
+def test_unconfirmed_producer_result_is_no_verdict(
+    gate, monkeypatch, capsys, producer_result: dict
+) -> None:
+    monkeypatch.setattr(gate._suggest, "build_recommendation", lambda *_a, **_k: _recommendation())
+    monkeypatch.setattr(
+        gate._producer, "produce_command_coverage", lambda *_a, **_k: producer_result
+    )
+
+    code = gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40])
+
+    assert code == gate.NO_VERDICT_EXIT
+    payload = yaml.safe_load(capsys.readouterr().out)
+    assert payload["reason"] == "focused coverage was not produced"
 
 
 def test_run_command_surfaces_stdout_on_failure(gate, tmp_path, capsys) -> None:
@@ -323,13 +347,13 @@ def test_blocking_is_read_from_the_exit_code_not_the_payload(gate) -> None:
     assert "uncovered changed lines" in reason
 
 
-def test_the_focused_coverage_path_is_not_the_canonical_closeout_artifact(gate) -> None:
+def test_the_focused_coverage_path_is_not_the_canonical_mutation_artifact(gate) -> None:
     """Writing subset coverage to `reports/mutation/test-coverage.json` would leave it
-    at the path the BROAD closeout producer owns, carrying a valid freshness marker, so
+    at the path the broad mutation report owns, carrying a valid freshness marker, so
     every `--require-fresh-coverage` consumer would read freshness as breadth."""
     default = gate.parse_args(["--repo-root", "."]).coverage_json
 
-    assert default.name == "prepush-focused-coverage.json"
+    assert default.name == "release-changed-line-coverage.json"
     assert default.as_posix() != "reports/mutation/test-coverage.json"
 
 
@@ -344,7 +368,11 @@ def _blocking_consumer_stub(gate, monkeypatch, consumer_payload: dict, returncod
     import subprocess
 
     monkeypatch.setattr(gate._suggest, "build_recommendation", lambda *_a, **_k: _recommendation())
-    monkeypatch.setattr(gate._producer, "produce_command_coverage", lambda *_a, **_k: {"returncode": 0})
+    monkeypatch.setattr(
+        gate._producer,
+        "produce_command_coverage",
+        lambda *_a, **_k: {"returncode": 0, "produced_mutation_coverage": True},
+    )
     monkeypatch.setattr(Path, "is_file", lambda _self: True)
     monkeypatch.setattr(
         gate.subprocess,
@@ -384,8 +412,8 @@ def test_a_partial_consumer_result_becomes_partial_and_never_refuses(gate, monke
 
     The measured failure this closes: the consumer printed "this run analyzed only 6 of
     7 changed mutation-pool file(s). A clean verdict says NOTHING about the rest",
-    returned 0, this lane returned 0, `run-quality.sh` printed PASS, the push landed,
-    and remote CI blocked on the 7th file."""
+    returned 0, this lane returned 0, and `run-quality.sh` printed PASS beside an
+    unproven result. The explicit nonzero partial byte prevents that."""
     _blocking_consumer_stub(
         gate,
         monkeypatch,
@@ -406,12 +434,12 @@ def test_a_partial_consumer_result_becomes_partial_and_never_refuses(gate, monke
     assert "analyzed only PART of the changed mutation-pool set" in captured.err
 
 
-def test_a_partial_consumer_result_still_does_not_refuse_at_push_time(gate, monkeypatch, capsys) -> None:
+def test_a_partial_consumer_result_stays_unproven_without_release_refusal(gate, monkeypatch, capsys) -> None:
     """The discriminating control for the test above, and the one that keeps the repair
     from overturning policy (a) sideways. The state now has a non-zero byte, so the
     cheap next step would be to route it through `--refuse-unestablished` — which is
-    precisely the reversal the operator declined on 2026-08-06. Push time must still
-    read 4, not 1."""
+    intentionally reserved for the unestablished release result. This diagnostic
+    still reports 4, not a clean pass."""
     _blocking_consumer_stub(
         gate,
         monkeypatch,
@@ -428,11 +456,11 @@ def test_a_partial_consumer_result_still_does_not_refuse_at_push_time(gate, monk
         ["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--refuse-unestablished"]
     )
 
-    assert code == 4, "the partial state is non-blocking BY DECISION, at push time too"
+    assert code == 4, "the partial state is unproven, not a clean pass"
     assert yaml.safe_load(capsys.readouterr().out)["status"] == gate.PARTIAL_STATUS
 
 
-def test_an_unestablished_result_refuses_at_push_time(gate, monkeypatch, capsys) -> None:
+def test_an_unestablished_result_refuses_at_release_boundary(gate, monkeypatch, capsys) -> None:
     # `returncode=3` is what the consumer ACTUALLY returns for this payload. Stubbing
     # 0 alongside a `dirty_pool_unverified` payload fabricated a combination the
     # consumer cannot produce, so this pair stayed green while the wrapper/consumer
@@ -471,16 +499,15 @@ def test_the_same_result_stays_non_blocking_mid_work(gate, monkeypatch, capsys) 
     assert "established no changed-line verdict" in captured.err
 
 
-def test_policy_a_stays_non_blocking_even_at_push_time(gate, monkeypatch, capsys) -> None:
+def test_policy_a_stays_non_blocking_for_direct_diagnostics(gate, monkeypatch, capsys) -> None:
     """`--refuse-unestablished` must NOT govern policy (a). An unmapped file is a mapper
-    gap, and the repo owner's decision is that a push is never stopped over the tool's
+    gap, and the repo owner's decision is that a direct diagnostic is never stopped over the tool's
     blind spot. Conflating the two would silently overturn that decision.
 
     This is the test that keeps the #488 repair honest. The repair gives the state its
     own non-zero byte; the temptation is then to route it through the existing refusal
-    flag, which would reverse policy (a) under a defect-repair banner. 4 at push time,
-    never 1 — reaffirmed by the operator on 2026-08-06 when they chose the distinct
-    non-blocking exit over refusing."""
+    flag, which would reverse policy (a) under a defect-repair banner. Direct
+    diagnostics still read 4, not 1."""
     monkeypatch.setattr(
         gate._suggest,
         "build_recommendation",
@@ -493,16 +520,20 @@ def test_policy_a_stays_non_blocking_even_at_push_time(gate, monkeypatch, capsys
 
     # Discriminating because the INPUT varies: `--refuse-unestablished` is passed.
     # Asserting `!= 1` right after `== 4` on the same value would restate it.
-    assert code == 4, "policy (a) reports PARTIAL even at push time, not a refusal"
+    assert code == 4, "policy (a) reports PARTIAL for direct diagnostics, not a refusal"
     assert yaml.safe_load(capsys.readouterr().out)["status"] == "unproven"
 
 
 def test_missing_focused_coverage_refuses_instead_of_stalling(gate, monkeypatch, capsys) -> None:
     """The consumer runs with `--reuse-coverage`; a missing file makes it fall through
-    to the BROAD probe, turning a ~24s lane into an 11-15 minute stall with no
+    to a broad probe, turning a ~24s lane into an 11-15 minute stall with no
     explanation. A gate that hangs is a gate that gets disabled."""
     monkeypatch.setattr(gate._suggest, "build_recommendation", lambda *_a, **_k: _recommendation())
-    monkeypatch.setattr(gate._producer, "produce_command_coverage", lambda *_a, **_k: {"returncode": 0})
+    monkeypatch.setattr(
+        gate._producer,
+        "produce_command_coverage",
+        lambda *_a, **_k: {"returncode": 0, "produced_mutation_coverage": True},
+    )
     monkeypatch.setattr(Path, "is_file", lambda _self: False)
 
     code = gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40])
@@ -630,11 +661,11 @@ def test_an_unreadable_consumer_payload_stays_a_no_verdict_even_on_exit_three(
     assert yaml.safe_load(capsys.readouterr().out)["status"] == "no-verdict"
 
 
-def test_the_push_refusal_carries_the_payload_that_names_what_went_unproven(
+def test_the_release_refusal_carries_the_payload_that_names_what_went_unproven(
     gate, monkeypatch, capsys
 ) -> None:
     """The consumer payload is where the unestablished FILES are listed. Emitting it
-    on the non-blocking path and withholding it on the one path that stops a push is
+    on the non-blocking path and withholding it on the release-refusal path is
     a refusal the operator cannot diagnose."""
     _blocking_consumer_stub(
         gate, monkeypatch,
@@ -654,7 +685,7 @@ def test_the_push_refusal_carries_the_payload_that_names_what_went_unproven(
 
 def test_an_empty_changed_set_is_clean_not_refusable(gate, monkeypatch, capsys) -> None:
     """An empty scope is nothing to prove, not something left unproven. Mapping it to
-    `unestablished` made it refusable, so a push could be stopped with the reason
+    `unestablished` made it refusable, so a release could be stopped with the reason
     "no eligible mutation-pool files changed" — an incoherent blocker."""
     _blocking_consumer_stub(
         gate, monkeypatch,

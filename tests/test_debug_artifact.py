@@ -645,8 +645,8 @@ def test_validate_debug_artifact_fail_fast_stops_at_first_violation(tmp_path: Pa
 def test_validate_debug_artifact_rejects_dated_off_taxonomy_risk_class(tmp_path: Path) -> None:
     # #366: a DATED record with an off-taxonomy `Risk Class` (valid heading shape,
     # value the `risk_interrupt_lib` consumer rejects) used to PASS the author-time
-    # validator, then block `run_slice_closeout.py` repo-wide via the current-pointer
-    # `latest.md`. It must now fail at write time, at the offending artifact.
+    # validator while a later consumer rejected it. It must now fail at write time,
+    # at the offending artifact.
     repo = seed_repo(tmp_path, valid_current_artifact())
     dated = valid_current_artifact(risk_class="host-state")
     (repo / "charness-artifacts" / "debug" / "2026-06-14-dated.md").write_text(dated, encoding="utf-8")

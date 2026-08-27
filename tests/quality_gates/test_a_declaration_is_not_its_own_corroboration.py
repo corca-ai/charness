@@ -375,11 +375,10 @@ def test_a_failed_git_status_does_not_read_as_a_clean_tree(monkeypatch, tmp_path
     assert INVENTORY.commit_state(repo, repo / "artifact.md") == ("unavailable", None)
 
 
-# --- lines the armed changed-line gate named as uncovered ----------------------------
-# Each of these was written because `prepush_focused_changed_line_coverage.py
-# --refuse-unestablished` over this goal's own committed range listed the exact
-# `path:line` below. That is the flag earning its cost: a green over an unestablished
-# range would have proved nothing about any of them.
+# --- lines the release-final changed-line gate named as uncovered --------------------
+# Each of these was written because the release proof listed the exact `path:line`
+# below. That is the proof earning its cost: a green over an unestablished range
+# would have proved nothing about any of them.
 
 
 def test_commit_state_reports_unavailable_when_git_cannot_run(monkeypatch, tmp_path):

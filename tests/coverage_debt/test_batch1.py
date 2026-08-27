@@ -34,9 +34,6 @@ CLASSIFY_T_SIGNAL = load_script_module("classify_t_signal_batch1", ROOT / "scrip
 COLLECT_COMMITS = load_script_module(
     "collect_commits_batch1", ROOT / "skills/public/announcement/scripts/collect_commits.py"
 )
-MINE_CLOSEOUT = load_script_module(
-    "mine_closeout_telemetry_batch1", ROOT / "skills/public/retro/scripts/mine_closeout_telemetry.py"
-)
 # --------------------------------------------------------------------------
 # scripts/what_reads_this.py
 # --------------------------------------------------------------------------
@@ -411,7 +408,6 @@ def test_the_scaffold_library_names_the_helper_it_could_not_find(
     "module",
     [
         pytest.param(COLLECT_COMMITS, id="announcement-collect-commits"),
-        pytest.param(MINE_CLOSEOUT, id="retro-mine-closeout-telemetry"),
     ],
 )
 def test_a_skill_script_outside_a_charness_tree_names_the_missing_bootstrap(

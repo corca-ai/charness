@@ -26,7 +26,6 @@ _MUTATION_SOURCES = (
     "scripts/capability_catalog_resolver.py",
     "scripts/critique_packet_lib.py",
     "scripts/reviewed_input_identity.py",
-    "scripts/slice_closeout_telemetry.py",
     "scripts/staged_commit_gate_plan_helpers.py",
     "skills/public/critique/scripts/prepare_packet.py",
     "skills/public/debug/scripts/persist_debug_artifact.py",

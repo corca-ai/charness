@@ -1,24 +1,17 @@
 from __future__ import annotations
 
 import json
-import os
 import subprocess
-from collections.abc import Callable
 from pathlib import Path
 
 import yaml
 
 from scripts.staged_commit_gate_plan import (
     FAST_SURFACE_VERIFY_COMMANDS,
-    STRUCTURAL_SWEEP_LABELS,
     GateCommand,
-    block_on_structural_sweep,
-    collect_staged_paths,
     collect_staged_scope_paths,
     fast_surface_verify_gates,
-    run_predict_commit,
     staged_commit_gate_plan,
-    structural_sweep_gates,
 )
 from scripts.surfaces_lib import load_surfaces, match_surfaces
 
@@ -35,46 +28,6 @@ def _surface_verify_commands_for(paths: list[str]) -> set[str]:
 
 def _labels(paths: list[str]) -> list[str]:
     return [command.label for command in staged_commit_gate_plan(ROOT, paths, ruff_path="")]
-
-
-def _write_executable(path: Path, body: str) -> None:
-    path.write_text(body, encoding="utf-8")
-    path.chmod(0o755)
-
-
-def _git_init_and_stage(repo: Path, path: str, body: str) -> None:
-    target = repo / path
-    target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(body, encoding="utf-8")
-    subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "add", path], cwd=repo, check=True, capture_output=True, text=True)
-
-
-def _write_predict_commit_stubs(repo: Path, *, length_fails: bool = False, attention_fails: bool = False) -> dict[str, str]:
-    scripts = repo / "scripts"
-    scripts.mkdir(parents=True, exist_ok=True)
-    length_exit = "1" if length_fails else "0"
-    attention_exit = "1" if attention_fails else "0"
-    _write_executable(
-        scripts / "check_python_lengths.py",
-        f"#!/usr/bin/env python3\nprint('length gate')\nraise SystemExit({length_exit})\n",
-    )
-    _write_executable(
-        scripts / "check_staged_reversion.py",
-        "#!/usr/bin/env python3\nprint('staged reversion gate')\n",
-    )
-    _write_executable(
-        scripts / "validate_attention_state_visibility.py",
-        f"#!/usr/bin/env python3\nprint('attention gate')\nraise SystemExit({attention_exit})\n",
-    )
-    _write_executable(
-        scripts / "check_staged_mirror_drift.py",
-        "#!/usr/bin/env python3\nprint('mirror gate')\n",
-    )
-    fake_bin = repo / "bin"
-    fake_bin.mkdir()
-    _write_executable(fake_bin / "ruff", "#!/usr/bin/env bash\necho ruff gate\n")
-    return {**os.environ, "PATH": f"{fake_bin}:{os.environ.get('PATH', '')}"}
 
 
 def test_staged_commit_plan_includes_commit_only_python_gates() -> None:
@@ -211,11 +164,6 @@ def test_staged_commit_plan_gates_changed_artifact_shape() -> None:
         "--changed-artifacts",
         existing_artifact,
     )
-    # and it is a blocking structural-sweep member (relocated, not advisory).
-    assert "check-artifact-shape (staged)" in STRUCTURAL_SWEEP_LABELS
-    assert "check-artifact-shape (staged)" in {
-        g.label for g in structural_sweep_gates(ROOT, [existing_artifact])
-    }
 
 
 def test_staged_commit_plan_skips_artifact_shape_for_non_artifact_md(tmp_path: Path) -> None:
@@ -249,23 +197,6 @@ def test_gate_command_serializes_to_dict() -> None:
         "label": "demo",
         "argv": ["python3", "demo.py"],
     }
-
-
-def test_collect_staged_paths_reports_git_error(monkeypatch) -> None:
-    monkeypatch.setattr(
-        subprocess,
-        "run",
-        # bytes, matching the real capture: the helper decodes with
-        # `surrogateescape` so a non-UTF-8 path cannot crash the pre-commit hook.
-        lambda *args, **kwargs: subprocess.CompletedProcess(args=[], returncode=1, stderr=b"no index\n"),
-    )
-
-    try:
-        collect_staged_paths(ROOT)
-    except RuntimeError as exc:
-        assert str(exc) == "no index"
-    else:
-        raise AssertionError("expected RuntimeError")
 
 
 def test_staged_commit_plan_covers_domain_and_markdown_triggers() -> None:
@@ -354,8 +285,6 @@ def test_timing_pull_current_pointer_freshness_fires_for_pointer_surfaces() -> N
         assert "validate-current-pointer-freshness" in labels, path
     assert "validate-current-pointer-freshness" not in _labels(["docs/usage.md"])
     assert "validate-current-pointer-freshness" not in _labels(["tests/new_helper.py"])
-    assert "validate-current-pointer-freshness" in STRUCTURAL_SWEEP_LABELS
-    assert "validate-current-pointer-freshness" in STRUCTURAL_SWEEP_LABELS
 
 
 def test_leak_scan_inference_interpretation_fires_across_full_scan_domain() -> None:
@@ -382,9 +311,6 @@ def test_leak_scan_inference_interpretation_fires_across_full_scan_domain() -> N
     assert "validate-inference-interpretation" not in _labels(["plugins/charness/scripts/x.py"])
     assert "validate-inference-interpretation" not in _labels(["docs/usage.md"])
     assert "validate-inference-interpretation" not in _labels([".agents/surfaces.json"])
-    # blocking structural-sweep member (the #368 shift-left), not advisory
-    assert "validate-inference-interpretation" in STRUCTURAL_SWEEP_LABELS
-    assert "validate-inference-interpretation" in {g.label for g in structural_sweep_gates(ROOT, ["scripts/x.py"])}
 
 
 def test_leak_scan_bootstrap_shim_consistency_fires_for_scripts_or_skills_python_only() -> None:
@@ -395,8 +321,6 @@ def test_leak_scan_bootstrap_shim_consistency_fires_for_scripts_or_skills_python
     assert "check-bootstrap-shim-consistency" in _labels(["skills/public/demo/scripts/lib.py"])
     assert "check-bootstrap-shim-consistency" not in _labels(["docs/usage.md"])
     assert "check-bootstrap-shim-consistency" not in _labels(["runtime_bootstrap.py"])
-    assert "check-bootstrap-shim-consistency" in STRUCTURAL_SWEEP_LABELS
-    assert "check-bootstrap-shim-consistency" in {g.label for g in structural_sweep_gates(ROOT, ["scripts/x.py"])}
 
 
 def test_leak_scan_inventory_declaration_coverage_fires_for_inventory_python_only() -> None:
@@ -406,10 +330,6 @@ def test_leak_scan_inventory_declaration_coverage_fires_for_inventory_python_onl
     assert "check-inventory-declaration-coverage" in _labels(["skills/public/quality/scripts/inventory_new.py"])
     assert "check-inventory-declaration-coverage" not in _labels(["scripts/new_helper.py"])
     assert "check-inventory-declaration-coverage" not in _labels(["skills/public/quality/scripts/render_runtime_summary.py"])
-    assert "check-inventory-declaration-coverage" in STRUCTURAL_SWEEP_LABELS
-    assert "check-inventory-declaration-coverage" in {
-        g.label for g in structural_sweep_gates(ROOT, ["skills/public/quality/scripts/inventory_new.py"])
-    }
 
 
 def test_timing_layer_completeness_fires_for_run_quality_or_timing_doc_edits_only() -> None:
@@ -419,8 +339,6 @@ def test_timing_layer_completeness_fires_for_run_quality_or_timing_doc_edits_onl
     assert "check-timing-layer-completeness" in _labels(["docs/validator-timing-layers.md"])
     assert "check-timing-layer-completeness" not in _labels(["scripts/new_helper.py"])
     assert "check-timing-layer-completeness" not in _labels(["docs/usage.md"])
-    assert "check-timing-layer-completeness" in STRUCTURAL_SWEEP_LABELS
-    assert "check-timing-layer-completeness" in {g.label for g in structural_sweep_gates(ROOT, ["scripts/run-quality.sh"])}
 
 
 def test_consumer_validator_catalog_pull_covers_source_and_exported_paths() -> None:
@@ -456,10 +374,6 @@ def test_quality_reference_catalog_parity_fires_for_quality_reference_surface() 
     assert "validate-quality-reference-catalog" in _labels(["scripts/validate_quality_reference_catalog.py"])
     assert "validate-quality-reference-catalog" not in _labels(["skills/public/debug/references/index.md"])
     assert "validate-quality-reference-catalog" not in _labels(["docs/usage.md"])
-    assert "validate-quality-reference-catalog" in STRUCTURAL_SWEEP_LABELS
-    assert "validate-quality-reference-catalog" in {
-        g.label for g in structural_sweep_gates(ROOT, ["skills/public/quality/references/index.md"])
-    }
 
 
 def test_leak_scan_gates_degrade_when_validator_absent(tmp_path: Path) -> None:
@@ -474,23 +388,6 @@ def test_leak_scan_gates_degrade_when_validator_absent(tmp_path: Path) -> None:
         for c in staged_commit_gate_plan(tmp_path, ["skills/public/quality/scripts/inventory_x.py"], ruff_path="")
     ]
     assert "check-inventory-declaration-coverage" not in inv_labels
-
-
-def test_run_slice_closeout_predict_commit_uses_shared_plan() -> None:
-    result = run_script(
-        "scripts/run_slice_closeout.py",
-        "--repo-root",
-        str(ROOT),
-        "--predict-commit",
-        "--paths",
-        "scripts/new_helper.py",
-        "--plan-only",
-    )
-
-    assert result.returncode == 0, result.stderr
-    payload = yaml.safe_load(result.stdout)
-    planned_labels = [command["label"] for command in payload["planned_commands"]]
-    assert planned_labels == [command.label for command in staged_commit_gate_plan(ROOT, ["scripts/new_helper.py"])]
 
 
 def test_staged_commit_gate_plan_cli_emits_the_planned_labels() -> None:
@@ -550,205 +447,6 @@ def test_staged_commit_gate_plan_plugin_mirror_matches_source() -> None:
     assert yaml.safe_load(plugin_result.stdout) == yaml.safe_load(source_result.stdout)
 
 
-def _payload_sink(payload: dict[str, object]) -> int:
-    assert payload["status"] in {"planned", "failed", "completed"}
-    return 0 if payload["status"] != "failed" else 1
-
-
-def _runner(returncode: int, stdout: str = "", stderr: str = "") -> Callable[[Path, str, str], dict[str, object]]:
-    def run_command(repo_root: Path, command: str, phase: str) -> dict[str, object]:
-        return {"phase": phase, "command": command, "returncode": returncode, "stdout": stdout, "stderr": stderr}
-
-    return run_command
-
-
-def _capturing_payload_sink(captured: list[dict[str, object]]):
-    def sink(payload: dict[str, object]) -> int:
-        captured.append(payload)
-        return _payload_sink(payload)
-
-    return sink
-
-
-def test_run_predict_commit_plan_empty_fail_and_success() -> None:
-    # The four arms this always covered: plan-only (empty and populated), a failing
-    # gate, and a clean run. Each used to be read off the retired `--json`-less text
-    # lines (`charness pre-commit: <label>`, the echoed child streams, the trailing
-    # `ok`); those facts are folded into the single emitted payload as
-    # `planned_commands`, `executed_commands`, and `status`, so they are read there.
-    captured: list[dict[str, object]] = []
-    sink = _capturing_payload_sink(captured)
-
-    assert run_predict_commit(ROOT, paths=[], plan_only=True, run_command=_runner(0), emit_payload=sink) == 0
-    assert captured[-1]["planned_commands"] == []
-    assert run_predict_commit(
-        ROOT,
-        paths=["README.md"],
-        plan_only=True,
-        run_command=_runner(0),
-        emit_payload=sink,
-    ) == 0
-    assert captured[-1]["status"] == "planned"
-    assert "check-doc-links" in [command["label"] for command in captured[-1]["planned_commands"]]
-    # ...and plan-only really is plan-only: nothing ran.
-    assert captured[-1]["executed_commands"] == []
-    assert run_predict_commit(ROOT, paths=[], plan_only=False, run_command=_runner(0), emit_payload=sink) == 0
-    assert captured[-1]["executed_commands"] == []
-
-    failure_rc = run_predict_commit(
-        ROOT,
-        paths=["README.md"],
-        plan_only=False,
-        run_command=_runner(7, "bad stdout\n", "bad stderr\n"),
-        emit_payload=sink,
-    )
-    assert failure_rc == 1
-    assert captured[-1]["status"] == "failed"
-    failing_step = captured[-1]["executed_commands"][-1]
-    assert failing_step["returncode"] == 7
-    assert failing_step["stdout"] == "bad stdout\n"
-    assert failing_step["stderr"] == "bad stderr\n"
-
-    success_rc = run_predict_commit(
-        ROOT,
-        paths=["README.md"],
-        plan_only=False,
-        run_command=_runner(0),
-        emit_payload=sink,
-    )
-    assert success_rc == 0
-    assert captured[-1]["status"] == "completed"
-    # `status: completed` alone would also hold for a loop that ran nothing. The
-    # retired text mode printed a line per gate BEFORE running it and `ok` only after
-    # the loop, so it carried that force; the payload carries it as the executed list.
-    executed_commands = [step["command"] for step in captured[-1]["executed_commands"]]
-    assert len(executed_commands) == len(captured[-1]["planned_commands"])
-    assert any("check_doc_links.py" in command for command in executed_commands)
-
-
-def test_run_predict_commit_surfaces_advisory_provider_lines() -> None:
-    # #2a: advisory providers emit exit-0 informational lines that never change the
-    # return code. The text echo of them is gone with `--json`; the lines themselves
-    # ride the one emitted document under `advisories`, which is what the echo was a
-    # projection of.
-    def provider(repo_root: Path, selected_paths: list[str]) -> list[str]:
-        return ["ADVISORY: example nudge", "- charness-artifacts/debug/x.md"]
-
-    captured: list[dict[str, object]] = []
-
-    rc = run_predict_commit(
-        ROOT,
-        paths=["README.md"],
-        plan_only=False,
-        run_command=_runner(0),
-        emit_payload=_capturing_payload_sink(captured),
-        advisory_provider=provider,
-    )
-    assert rc == 0
-    assert captured[-1]["advisories"] == ["ADVISORY: example nudge", "- charness-artifacts/debug/x.md"]
-
-
-def test_predict_commit_rejects_length_violating_staged_python(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    _git_init_and_stage(repo, "scripts/too_long.py", "print('valid')\n")
-    env = _write_predict_commit_stubs(repo, length_fails=True)
-
-    result = run_script("scripts/run_slice_closeout.py", "--repo-root", str(repo), "--predict-commit", env=env)
-
-    payload = yaml.safe_load(result.stdout)
-    assert result.returncode == 1
-    assert payload["status"] == "failed"
-    assert payload["executed_commands"][-1]["command"].startswith("python3 scripts/check_python_lengths.py")
-
-
-def test_predict_commit_rejects_attention_violating_staged_python(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    _git_init_and_stage(repo, "scripts/bad_attention.py", "print('valid')\n")
-    env = _write_predict_commit_stubs(repo, attention_fails=True)
-
-    result = run_script("scripts/run_slice_closeout.py", "--repo-root", str(repo), "--predict-commit", env=env)
-
-    payload = yaml.safe_load(result.stdout)
-    assert result.returncode == 1
-    assert payload["status"] == "failed"
-    assert payload["executed_commands"][-1]["command"].startswith("python3 scripts/validate_attention_state_visibility.py")
-
-
-def test_predict_commit_accepts_clean_staged_python(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    _git_init_and_stage(repo, "scripts/clean.py", "print('valid')\n")
-    env = _write_predict_commit_stubs(repo)
-
-    result = run_script("scripts/run_slice_closeout.py", "--repo-root", str(repo), "--predict-commit", env=env)
-
-    payload = yaml.safe_load(result.stdout)
-    assert result.returncode == 0, result.stderr
-    assert payload["status"] == "completed"
-    assert [step["returncode"] for step in payload["executed_commands"]] == [0, 0, 0, 0, 0, 0]
-
-
-def _write_skill_surface_stubs(repo: Path) -> None:
-    """The gates a staged `skills/**/SKILL.md` change schedules, stubbed so a tmp repo
-    can execute the plan instead of failing on missing repo scripts."""
-    scripts = repo / "scripts"
-    scripts.mkdir(parents=True, exist_ok=True)
-    for name in ("validate_skills.py", "run_evals.py", "check_doc_links.py"):
-        _write_executable(scripts / name, f"#!/usr/bin/env python3\nprint('{name} stub')\n")
-    _write_executable(scripts / "check-markdown.sh", "#!/usr/bin/env bash\necho markdown stub\n")
-
-
-def _seed_deleted_skill_repo(tmp_path: Path) -> Path:
-    repo = tmp_path / "repo"
-    skill_md = repo / "skills" / "public" / "demo" / "SKILL.md"
-    skill_md.parent.mkdir(parents=True)
-    skill_md.write_text("---\nname: demo\n---\n\n# Demo\n", encoding="utf-8")
-    subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(
-        ["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-m", "seed"],
-        cwd=repo, check=True, capture_output=True, text=True,
-    )
-    subprocess.run(["git", "rm", "-q", "skills/public/demo/SKILL.md"], cwd=repo, check=True, capture_output=True, text=True)
-    return repo
-
-
-def test_predict_commit_forces_review_on_staged_skill_deletion(tmp_path: Path) -> None:
-    # North-star P5 (finding 3): the advisory provider catches a SKILL.md deletion
-    # independently of the gate plan and forces a REVIEW question in `advisories`,
-    # at exit 0 (never a hard block on the deletion).
-    repo = _seed_deleted_skill_repo(tmp_path)
-    env = _write_predict_commit_stubs(repo)
-    _write_skill_surface_stubs(repo)
-
-    result = run_script("scripts/run_slice_closeout.py", "--repo-root", str(repo), "--predict-commit", env=env)
-
-    payload = yaml.safe_load(result.stdout)
-    assert result.returncode == 0, result.stderr
-    assert any(line.startswith("REVIEW:") for line in payload["advisories"])
-    assert any("skills/public/demo/SKILL.md" in line for line in payload["advisories"])
-
-
-def test_a_deletion_only_commit_still_schedules_its_surface_gates(tmp_path: Path) -> None:
-    """A3: `--diff-filter=ACM` hid deletions from the SCHEDULING list, so a
-    deletion-only commit planned zero gates and the hook exited 0 printing nothing
-    — while the suppressed mirror-drift gate had a real verdict to report."""
-
-    repo = _seed_deleted_skill_repo(tmp_path)
-    env = _write_predict_commit_stubs(repo)
-    _write_skill_surface_stubs(repo)
-
-    result = run_script("scripts/run_slice_closeout.py", "--repo-root", str(repo), "--predict-commit", env=env)
-
-    payload = yaml.safe_load(result.stdout)
-    assert payload["changed_paths"] == ["skills/public/demo/SKILL.md"]
-    labels = [command["label"] for command in payload["planned_commands"]]
-    assert "staged-plugin-mirror-drift" in labels
-    assert "validate-skills" in labels
-
-
 def test_a_rename_only_commit_sees_both_sides(tmp_path: Path) -> None:
     """The other half: rename detection turns both sides into one `R` entry, which
     `--diff-filter=ACM` drops entirely."""
@@ -776,7 +474,6 @@ def test_a_rename_only_commit_sees_both_sides(tmp_path: Path) -> None:
     scope = collect_staged_scope_paths(repo)
 
     assert scope == ["skills/public/demo/MOVED.md", "skills/public/demo/SKILL.md"]
-    assert collect_staged_paths(repo) == [], "the control: the existing-file list still excludes a rename"
     # Plan against ROOT: the surface validators are presence-guarded on their own
     # scripts, which a bare tmp repo does not carry.
     labels = [command.label for command in staged_commit_gate_plan(ROOT, [], scope_paths=scope)]
@@ -813,16 +510,6 @@ def test_a_scope_path_never_reaches_a_per_file_validator() -> None:
             assert gone not in command.argv, f"{command.label} was handed a deleted path"
 
 
-def test_the_invariant_holds_for_the_positional_caller_shape() -> None:
-    """The structural sweep and the full closeout pass ONE list, and that list has
-    always carried deletions (`collect_changed_paths` uses no `--diff-filter`). The
-    existing-file rule therefore lives at the argv site, not at the caller."""
-
-    for gone in _GONE_PATHS:
-        for command in structural_sweep_gates(ROOT, [gone]):
-            assert gone not in command.argv, f"{command.label} was handed {gone}"
-
-
 def test_skill_packages_surface_runs_fast_ergonomics_checker() -> None:
     # #314 acceptance (1): the fast skill-ergonomics checker must run in the
     # skill-packages surface verify_commands so portable-package issue anchors,
@@ -842,12 +529,10 @@ def test_repo_python_surface_runs_fast_boundary_bypass_ratchet_before_broad_pyte
     surfaces = json.loads(SURFACES_JSON)
     repo_python = next(s for s in surfaces["surfaces"] if s["surface_id"] == "repo-python")
     verify = repo_python["verify_commands"]
-    from scripts.slice_closeout_broad_gate import is_broad_pytest_command
-
     ratchet_idx = next(
         (i for i, cmd in enumerate(verify) if "check_boundary_bypass_ratchet.py" in cmd), None
     )
-    broad_idx = next((i for i, cmd in enumerate(verify) if is_broad_pytest_command(cmd)), None)
+    broad_idx = next((i for i, cmd in enumerate(verify) if "run_standing_pytest.py" in cmd), None)
     assert ratchet_idx is not None, verify
     assert broad_idx is not None, verify
     assert ratchet_idx < broad_idx, verify
@@ -864,11 +549,10 @@ def test_fast_surface_verify_allowlist_keys_exist_in_some_surface() -> None:
         assert command in all_verify, f"{command!r} not found in any surface verify_commands"
 
 
-def test_precommit_plan_agrees_with_aggregate_fast_subset_for_skill_change() -> None:
+def test_precommit_plan_agrees_with_fast_subset_for_skill_change() -> None:
     # #314 acceptance (2/3): when a touched surface lists a fast checker in its
-    # verify_commands (consumed by the run_slice_closeout aggregate), the literal
-    # git pre-commit plan must run that SAME checker. "Passes the aggregate" and
-    # "passes pre-commit" become one guarantee for the fast subset.
+    # verify_commands and the literal git pre-commit plan must name the SAME
+    # checker, so the fast subset has one commit-boundary contract.
     paths = ["skills/public/critique/SKILL.md"]
     surface_verify = _surface_verify_commands_for(paths)
     expected_fast = {
@@ -882,7 +566,7 @@ def test_precommit_plan_agrees_with_aggregate_fast_subset_for_skill_change() -> 
             assert label in precommit_labels, (label, precommit_labels)
 
 
-def test_precommit_plan_agrees_with_aggregate_fast_subset_for_test_change() -> None:
+def test_precommit_plan_agrees_with_fast_subset_for_test_change() -> None:
     # #314: a changed test file routes to the repo-python surface, whose
     # verify_commands now include the boundary-bypass ratchet; the pre-commit
     # plan must run the same ratchet.
@@ -902,154 +586,6 @@ def test_fast_surface_verify_gates_degrade_without_surfaces_manifest(tmp_path: P
     # reconciliation degrades cleanly so the existing pre-commit fixtures hold.
     assert fast_surface_verify_gates(tmp_path, ["skills/public/critique/SKILL.md"]) == []
     assert fast_surface_verify_gates(ROOT, []) == []
-
-
-# --- #332: the cheap structural sweep must run first in the full closeout ------
-
-
-def _sweep_sink(payload: dict[str, object], *, stderr_message: str | None = None) -> int:
-    return 0 if payload["status"] not in {"blocked", "failed"} else 1
-
-
-def test_structural_sweep_gates_select_only_the_named_subset() -> None:
-    # #332: the sweep is exactly the presence/structural gates, drawn FROM
-    # staged_commit_gate_plan (single source of truth) -- never ruff/lengths/
-    # py_compile/skills/run-evals (those stay in verify, not the cheap sweep).
-    paths = ["scripts/x.py", "skills/public/demo/scripts/y.py", "skills/public/demo/SKILL.md"]
-    sweep_labels = {gate.label for gate in structural_sweep_gates(ROOT, paths)}
-    assert sweep_labels <= STRUCTURAL_SWEEP_LABELS
-    plan_labels = {gate.label for gate in staged_commit_gate_plan(ROOT, paths, ruff_path="")}
-    assert sweep_labels <= plan_labels  # the sweep is a strict subset of the plan
-    for excluded in ("ruff (staged)", "py_compile (staged)", "check-python-lengths (staged)", "run-evals"):
-        assert excluded not in sweep_labels
-
-
-def test_structural_sweep_covers_each_329_class_file_type() -> None:
-    # #332 B2: coverage is per-gate, not uniform. attention-state fires on a
-    # scripts/*.py; ergonomics on a skill-package file; the preflight on SKILL.md.
-    assert "validate-attention-state-visibility" in {g.label for g in structural_sweep_gates(ROOT, ["scripts/x.py"])}
-    assert "validate-skill-ergonomics" in {g.label for g in structural_sweep_gates(ROOT, ["skills/public/demo/scripts/y.py"])}
-    assert "check-skill-core-headroom (staged)" in {g.label for g in structural_sweep_gates(ROOT, ["skills/public/critique/SKILL.md"])}
-    # docs-only change pulls no structural sweep gate (no-op).
-    assert structural_sweep_gates(ROOT, ["docs/x.md"]) == []
-
-
-def test_block_on_structural_sweep_blocks_then_passes() -> None:
-    # #332: a failed sweep gate blocks the full closeout (returns non-zero, status
-    # blocked, records the failing label); a clean sweep returns None and lets the
-    # closeout proceed.
-    failing = {"status": "x", "changed_paths": ["scripts/x.py"]}
-    rc = block_on_structural_sweep(
-        ROOT, failing, plan_only=False, run_command=_runner(1), emit_payload=_sweep_sink
-    )
-    assert rc == 1
-    assert failing["status"] == "blocked"
-    assert failing["structural_sweep"]["failed_label"] == "validate-attention-state-visibility"
-
-    clean = {"status": "x", "changed_paths": ["scripts/x.py"]}
-    assert block_on_structural_sweep(
-        ROOT, clean, plan_only=False, run_command=_runner(0), emit_payload=_sweep_sink
-    ) is None
-    assert clean["structural_sweep"]["status"] == "ok"
-    assert clean["status"] == "x"  # untouched -> closeout continues
-
-
-def test_block_on_structural_sweep_is_noop_in_plan_only() -> None:
-    # plan_only surfaces the sweep through planned_commands, so the blocker no-ops.
-    payload = {"status": "x", "changed_paths": ["scripts/x.py"]}
-    assert block_on_structural_sweep(
-        ROOT, payload, plan_only=True, run_command=_runner(1), emit_payload=_sweep_sink
-    ) is None
-    assert "structural_sweep" not in payload
-
-
-def test_block_on_structural_sweep_carries_failing_streams_in_the_payload() -> None:
-    # #335: a blocked closeout must show WHY it blocked. That used to be an echo of
-    # the failing gate's captured streams beside the output; output is one document
-    # since the `--json` removal, so the same evidence is asserted where it now
-    # lives -- every sweep command's stdout/stderr under `structural_sweep.executed`,
-    # plus the named cause the emitter still routes to stderr.
-    payload = {"status": "x", "changed_paths": ["scripts/x.py"]}
-    emitted: list[str | None] = []
-
-    def sink(sink_payload: dict[str, object], *, stderr_message: str | None = None) -> int:
-        emitted.append(stderr_message)
-        return _sweep_sink(sink_payload, stderr_message=stderr_message)
-
-    rc = block_on_structural_sweep(
-        ROOT,
-        payload,
-        plan_only=False,
-        run_command=_runner(1, "boundary bypass detail\n", "stderr detail"),
-        emit_payload=sink,
-    )
-    assert rc == 1
-    failing_step = payload["structural_sweep"]["executed"][-1]
-    assert failing_step["stdout"] == "boundary bypass detail\n"
-    # No trailing newline: the payload carries the stream verbatim, so the old
-    # end="\n" print arm has no counterpart to preserve.
-    assert failing_step["stderr"] == "stderr detail"
-    assert emitted[-1] is not None
-    assert "validate-attention-state-visibility" in emitted[-1]
-
-
-def _minimal_surfaces(repo: Path) -> Path:
-    (repo / ".agents").mkdir(parents=True, exist_ok=True)
-    manifest = repo / ".agents" / "surfaces.json"
-    manifest.write_text(
-        json.dumps(
-            {
-                "version": 1,
-                "surfaces": [
-                    {
-                        "surface_id": "repo-python",
-                        "description": "repo python",
-                        "source_paths": ["scripts/**"],
-                        "derived_paths": [],
-                        "sync_commands": [],
-                        "verify_commands": [],
-                        "notes": [],
-                    }
-                ],
-            }
-        ),
-        encoding="utf-8",
-    )
-    return manifest
-
-
-def test_full_closeout_blocks_329_class_violation_at_structural_sweep(tmp_path: Path) -> None:
-    # #332 high-confidence: the FULL closeout (not --predict-commit) blocks a
-    # #329-class attention violation at the cheap structural sweep BEFORE reaching
-    # surface-match/broad pytest. Red without the fix: with the sweep
-    # blocker removed the closeout would proceed to status=completed.
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    manifest = _minimal_surfaces(repo)
-    scripts = repo / "scripts"
-    scripts.mkdir()
-    _write_executable(
-        scripts / "validate_attention_state_visibility.py",
-        "#!/usr/bin/env python3\nimport sys\nprint('undeclared skipped', file=sys.stderr)\nraise SystemExit(1)\n",
-    )
-    (scripts / "bad.py").write_text("STATE = 'skipped'\n", encoding="utf-8")
-
-    result = run_script(
-        "scripts/run_slice_closeout.py",
-        "--repo-root",
-        str(repo),
-        "--surfaces-path",
-        str(manifest),
-        "--skip-broad-pytest",
-        "--allow-unmatched",
-        "--paths",
-        "scripts/bad.py",
-    )
-
-    payload = yaml.safe_load(result.stdout)
-    assert result.returncode == 1, result.stderr
-    assert payload["status"] == "blocked"
-    assert payload["structural_sweep"]["failed_label"] == "validate-attention-state-visibility"
 
 
 def test_fast_surface_verify_gates_degrade_on_surface_error() -> None:

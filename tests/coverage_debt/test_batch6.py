@@ -35,15 +35,10 @@ if str(ROOT / "scripts") not in sys.path:
     sys.path.insert(0, str(ROOT / "scripts"))
 ARTIFACT_PREFLIGHT = importlib.import_module("check_artifact_surface_preflight")
 SKILL_PREFLIGHT = importlib.import_module("check_skill_surface_preflight")
-MUTATION_PRODUCER = importlib.import_module("mutation_coverage_producer")
 
 NARRATIVE_GATE = load_script_module(
     "publish_release_narrative_gate_batch6",
     ROOT / "skills/public/release/scripts/publish_release_narrative_gate.py",
-)
-DISPOSITION_AUDIT = load_script_module(
-    "audit_disposition_corpus_batch6",
-    ROOT / "skills/public/achieve/scripts/audit_disposition_corpus.py",
 )
 BYPASS_VALIDATOR = load_script_module(
     "validate_boundary_bypass_payload_batch6",
@@ -254,17 +249,6 @@ def test_blank_and_comment_only_requirement_lines_declare_nothing(tmp_path: Path
     assert EXPORT_LIB.declared_distributions(export_root) == {"pyyaml", "jsonschema"}
 
 
-def test_a_skill_script_without_the_repo_yaml_emitter_says_so(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """Same contract for the audit script's own ancestor walk to
-    `scripts/yaml_output.py`, which it resolves without the bootstrap."""
-    monkeypatch.setattr(DISPOSITION_AUDIT, "__file__", str(tmp_path / "scripts" / "audit.py"))
-
-    with pytest.raises(ImportError, match="scripts/yaml_output.py not found"):
-        DISPOSITION_AUDIT._load_yaml_output()
-
-
 # --- publish_release_narrative_gate --------------------------------------------
 
 
@@ -410,23 +394,6 @@ def test_a_blocked_cut_carries_the_blocked_remedy(tmp_path: Path, monkeypatch) -
     assert payload["remedy"] == csafety._BLOCKED_REMEDY
     assert payload["remedy"].strip(), "a blocked verdict must not carry an empty remedy"
     assert payload["kind_meaning"], "the blocking kinds must be explained, not left as bare ids"
-
-
-# --- mutation_coverage_producer -------------------------------------------------
-
-
-def test_a_consumer_whose_stdout_is_not_a_mapping_yields_no_report() -> None:
-    """The producer reads the consumer's structured verdict, and refuses to
-    invent one when the stdout is not a mapping.
-
-    The producer must not derive a second coverage policy from garbage. Returning
-    `None` is what makes the caller fall back to the consumer's exit code instead
-    of reading a verdict that was never emitted.
-    """
-    assert MUTATION_PRODUCER._consumer_report({"stdout": "status: ok\n"}) == {"status": "ok"}
-    assert MUTATION_PRODUCER._consumer_report({"stdout": "status: [unterminated\n"}) is None
-    assert MUTATION_PRODUCER._consumer_report({"stdout": "- a\n- b\n"}) is None
-    assert MUTATION_PRODUCER._consumer_report({}) is None
 
 
 # --- validate_boundary_bypass_payload -------------------------------------------

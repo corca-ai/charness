@@ -220,7 +220,7 @@ def _scope_mismatch_report(base: dict, changed: list[str], mismatch: str) -> dic
 
     * Placed AFTER the changed set, because refusing before it made an EMPTY scope
       refusable -- a push stoppable with the reason "no eligible files changed",
-      which `prepush_focused_changed_line_coverage` names as an incoherent blocker
+      which the release-owned producer names as an incoherent blocker
       on the gate whose credibility is the point.
     * `ok: True` with its own exit code, because a could-not-judge is not a
       coverage failure. Collapsing them onto the failing exit puts "I could not

@@ -123,8 +123,8 @@ nothing already written changes meaning.
 ## No Hidden Snapshot
 
 Do not invent a hidden machine-readable snapshot format. The retro's durable
-output is the artifact under `output_dir`; the closeout-telemetry stream it may
-read is written by the closeout emitter, never by the retro.
+output is the artifact under `output_dir`; runtime observations belong to the
+explicit evidence sources declared by the adapter.
 
 ## North Star Alignment
 

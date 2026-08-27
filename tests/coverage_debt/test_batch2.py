@@ -19,7 +19,6 @@ import pytest
 import yaml
 
 from scripts.closeout_floor_matrix_lib import ProbeWorld, _commit_msg
-from scripts.slice_closeout_advisories import advise_repair_parity
 from tests.dsl import Repo, run_at
 from tests.script_loader import load_script_module
 from tests.script_main import run_loaded_script_main
@@ -376,47 +375,6 @@ def test_the_closeout_refusal_lib_still_emits_refusals_in_the_flat_layout(
     assert "issue-freeze: REFUSED (stale_freeze) the freeze is stale" in captured.err
 
 
-# --- slice_closeout_advisories: an unreadable parity harness must stay silent --
-
-
-def test_the_repair_parity_advisory_marks_unreadable_harness_output_unproven(
-    tmp_path: Path, capsys: pytest.CaptureFixture[str]
-) -> None:
-    """Harness stdout that is not YAML must produce no advisory and no crash.
-
-    This is a non-blocking advisory printed during closeout. A parse error
-    escaping here would fail a closeout that has nothing wrong with it, while
-    silence would misreport a parity measurement that never happened.
-    """
-    harness = tmp_path / "scripts" / "parity_harness.py"
-    harness.parent.mkdir(parents=True)
-    harness.write_text("print('repair_count: [unclosed')\n", encoding="utf-8")
-
-    advise_repair_parity(tmp_path, ["scripts/thing.py"])
-
-    err = capsys.readouterr().err
-    assert "UNPROVEN" in err
-    assert "invalid YAML" in err
-
-
-def test_the_repair_parity_advisory_reports_repairs_when_the_harness_is_readable(
-    tmp_path: Path, capsys: pytest.CaptureFixture[str]
-) -> None:
-    """The same call path with a readable report must still name the repairs.
-
-    Without this the silence test above would also pass against an advisory that
-    never says anything at all.
-    """
-    harness = tmp_path / "scripts" / "parity_harness.py"
-    harness.parent.mkdir(parents=True)
-    report = {"repair_count": 1, "files": {"scripts/thing.py": ["verify"]}, "uncomparable": {}}
-    harness.write_text(f"print({json.dumps(yaml.safe_dump(report))})\n", encoding="utf-8")
-
-    advise_repair_parity(tmp_path, ["scripts/thing.py"])
-
-    assert "scripts/thing.py: verify" in capsys.readouterr().err
-
-
 # --- closeout_floor_matrix: a carrier verdict that will not parse --------------
 
 
@@ -610,41 +568,3 @@ def test_the_retro_index_preview_emits_the_candidate_payload_without_writing(
     assert "candidates" in payload
     assert "status" not in payload
     assert not index_path.exists()
-
-
-def test_the_prose_pin_advisory_renders_its_findings_instead_of_crashing(
-    tmp_path: Path, capsys: pytest.CaptureFixture[str]
-) -> None:
-    """The advisory's ONE reachable line is the one that used to raise.
-
-    It called the renderer the 2026-08-14 `--json` removal deleted, so it raised
-    `AttributeError` on exactly the runs that had a finding and stayed silent on the
-    runs that had nothing to say -- a check reachable only when it fires is a check
-    that never fires. This drives it to a real finding and reads the rendered payload.
-    """
-    import subprocess
-
-    from scripts.slice_closeout_advisories import advise_prose_pin
-
-    repo = tmp_path / "repo"
-    (repo / "tests").mkdir(parents=True)
-    (repo / "docs").mkdir()
-    doc = repo / "docs" / "pinned.md"
-    doc.write_text("# Pinned\n\nA sentence a test asserts verbatim.\n", encoding="utf-8")
-    (repo / "tests" / "test_pin.py").write_text(
-        'def test_pin():\n    assert "A sentence a test asserts verbatim." in open("docs/pinned.md").read()\n',
-        encoding="utf-8",
-    )
-    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
-    subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True)
-    subprocess.run(
-        ["git", "-c", "user.email=t@e", "-c", "user.name=t", "commit", "-qm", "seed"],
-        cwd=repo, check=True, capture_output=True,
-    )
-    doc.write_text("# Pinned\n\nA sentence a test asserts verbatim, now edited.\n", encoding="utf-8")
-
-    advise_prose_pin(repo, ["docs/pinned.md"])
-
-    rendered = capsys.readouterr().err
-    assert "prose-pin" in rendered, rendered
-    assert "docs/pinned.md" in rendered, rendered

@@ -72,7 +72,3 @@ shipping the next micro-diff.
   pointer churn never masquerades as progress.
 - A history of frequent artifact-only commits is process churn made visible;
   prefer folding artifact updates into the meaningful unit they support.
-  `run_slice_closeout.py` surfaces a non-blocking advisory when a run of
-  consecutive `charness-artifacts/`-only commits crosses the threshold
-  (`CHARNESS_OVERSLICE_ARTIFACT_RUN`, default 3), so the churn is visible at
-  closeout instead of only in hindsight.

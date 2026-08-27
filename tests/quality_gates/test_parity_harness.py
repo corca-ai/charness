@@ -214,59 +214,6 @@ def test_verify_does_not_overwrite_the_captured_baseline(tmp_path: Path) -> None
     assert "return bool(x)" in baseline
 
 
-_advisories = import_repo_module(
-    ROOT / "scripts/slice_closeout_advisories.py", "scripts.slice_closeout_advisories"
-)
-
-
-def _canned_harness(payload: dict):
-    class _Proc:
-        returncode = 0
-        # The harness emits one YAML document unconditionally, so the canned stdout
-        # is rendered the same way the advisory will read it.
-        stdout = yaml.safe_dump(payload)
-
-    return lambda *a, **k: _Proc()
-
-
-def test_the_advisory_names_the_repaired_functions(monkeypatch, capsys) -> None:
-    monkeypatch.setattr(
-        _advisories.subprocess,
-        "run",
-        _canned_harness({"files": {"scripts/gate.py": ["verdict"]}, "repair_count": 1}),
-    )
-
-    _advisories.advise_repair_parity(ROOT, [])
-
-    captured = capsys.readouterr()
-    assert "scripts/gate.py: verdict" in captured.err
-    assert "INTENDED delta" in captured.err
-    # stdout carries the closeout's one YAML document; an advisory there breaks it.
-    assert captured.out == ""
-
-
-def test_the_advisory_is_silent_when_no_function_was_repaired(monkeypatch, capsys) -> None:
-    """It must not fire on every slice, or it becomes ceremony the reader learns to skip."""
-    monkeypatch.setattr(
-        _advisories.subprocess,
-        "run",
-        _canned_harness({"files": {}, "uncomparable": {}, "repair_count": 0}),
-    )
-
-    _advisories.advise_repair_parity(ROOT, [])
-
-    captured = capsys.readouterr()
-    assert captured.out == "" and captured.err == ""
-
-
-def test_the_advisory_degrades_silently_without_the_harness(tmp_path: Path, capsys) -> None:
-    """A consuming repo without the harness gets no gate, not a crash."""
-    _advisories.advise_repair_parity(tmp_path, [])
-
-    captured = capsys.readouterr()
-    assert captured.out == "" and captured.err == ""
-
-
 # --- Round-1 findings, each pinned by the case that produced it -------------------
 
 
@@ -390,44 +337,6 @@ def test_the_snapshot_blobs_are_not_reported_as_reviewer_drift(tmp_path: Path) -
     assert payload["ok"] is True, payload["drift"]
     assert payload["drift"] == []
     assert verify.returncode == 0
-
-
-# --- Round-2 findings: the repairs for round 1 carried the class again ----------
-
-
-def test_the_advisory_speaks_when_everything_is_uncomparable(monkeypatch, capsys) -> None:
-    """Round-2 blocker: the round-1 repair traded a false claim for TOTAL SILENCE.
-
-    Binding the snapshot to HEAD meant a mid-slice commit made every path
-    uncomparable — and the advisory returned before printing anything, so a slice
-    with unverified repairs looked identical to a slice with none.
-    """
-    monkeypatch.setattr(
-        _advisories.subprocess,
-        "run",
-        _canned_harness({"files": {}, "uncomparable": {"scripts/a.py": "no baseline"}, "repair_count": 0}),
-    )
-
-    _advisories.advise_repair_parity(ROOT, [])
-
-    captured = capsys.readouterr()
-    assert "UNEXAMINED, not clean" in captured.err
-    assert "mid-slice commit" in captured.err
-    assert captured.out == ""
-
-
-def test_the_advisory_reports_uncomparable_alongside_repairs(monkeypatch, capsys) -> None:
-    monkeypatch.setattr(
-        _advisories.subprocess,
-        "run",
-        _canned_harness(
-            {"files": {"scripts/a.py": ["f"]}, "uncomparable": {"scripts/b.py": "x"}, "repair_count": 1}
-        ),
-    )
-
-    _advisories.advise_repair_parity(ROOT, [])
-
-    assert "further path(s) could NOT be compared" in capsys.readouterr().err
 
 
 def test_a_snapshot_written_at_the_repo_root_does_not_report_its_own_blobs(tmp_path: Path) -> None:
@@ -667,26 +576,6 @@ def test_the_cli_prints_both_branches_against_a_committed_ref(tmp_path: Path, mo
     assert repairs_payload["files"] == {"scripts/gate.py": ["verdict"]}
     assert repairs_payload["skipped"].startswith("skipped:")
     assert "INTENDED delta" in repairs_payload["next_step"]
-
-
-def test_the_advisory_degrades_on_a_failing_or_unparsable_harness(monkeypatch, capsys) -> None:
-    """Both degrade paths must be SILENT, not a traceback inside the closeout."""
-
-    class _Failing:
-        returncode = 1
-        stdout = ""
-
-    monkeypatch.setattr(_advisories.subprocess, "run", lambda *a, **k: _Failing())
-    _advisories.advise_repair_parity(ROOT, [])
-    assert capsys.readouterr().err == ""
-
-    class _Garbage:
-        returncode = 0
-        stdout = "not json"
-
-    monkeypatch.setattr(_advisories.subprocess, "run", lambda *a, **k: _Garbage())
-    _advisories.advise_repair_parity(ROOT, [])
-    assert capsys.readouterr().err == ""
 
 
 def test_a_snapshot_that_is_not_an_object_is_discarded(tmp_path: Path) -> None:

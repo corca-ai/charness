@@ -141,18 +141,6 @@ def test_ordinary_and_docs_work_classes(tmp_path: Path) -> None:
     assert unknown["trigger_scope_status"] == "not-established"
 
 
-def test_every_retro_routes_closeout_telemetry(tmp_path: Path) -> None:
-    """Gate-runtime waste is invisible to a passing gate and only shows up as
-    recurrence across runs. It used to be reachable only from `weekly` — a mode
-    invoked once in three months — so the stream accumulated records nothing read.
-    Every retro must now route it, whatever wording the user used."""
-    repo = tmp_path / "repo"
-    write_adapter(repo)
-
-    payload = run_plan(repo, changed_paths=["src/app.py"])
-    assert "references/closeout-telemetry.md" in required_paths(payload)
-
-
 def test_clean_valid_adapter_does_not_add_adapter_contract(tmp_path: Path) -> None:
     """A benign warning (e.g. no metrics_commands) must not force the adapter-contract
     read — only a missing/invalid adapter does."""

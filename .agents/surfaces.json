@@ -515,8 +515,6 @@
         "scripts/run_cosmic_ray_mutation.py",
         "scripts/run_js_mutation.py",
         "scripts/sample_mutation_files.py",
-        "scripts/slice_closeout_broad_gate.py",
-        "scripts/slice_closeout_command_executor.py",
         "skills/public/quality/scripts/templates/mutation-tests.yml"
       ],
       "derived_paths": [

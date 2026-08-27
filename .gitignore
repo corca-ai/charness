@@ -30,7 +30,6 @@ plugins/*/.charness/
 # ephemeral worker runtime. Durable findings belong under charness-artifacts/critique/.
 .charness/critique/
 .charness/dup-ratchet*
-.charness/closeout-telemetry/
 .charness/standing-pytest/
 .charness/quality-failure-logs/
 integrations/locks/*.json

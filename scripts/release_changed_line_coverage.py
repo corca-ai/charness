@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
-"""Incremental, blocking changed-line coverage for the release lane (D40).
+"""Incremental, blocking changed-line coverage for the release-final lane (D40).
 
-The filename is retained for compatibility with existing consumer adapters; the
-repository's quality runner invokes it only for release. Direct invocation remains
-available for focused diagnostics.
+The quality runner invokes this producer once, after every other release check.
+Direct invocation remains available for focused diagnostics.
 
 The recurring class (#219 -> #251 -> #260 -> #320 -> #321 -> #335 -> #453 -> #464)
 is not a missing gate and not a quiet warning. Both existed and both fired. The
-old push/PR mirror and pre-push wiring added a multi-minute feedback cost without
+old push/PR mirror and ordinary wiring added a multi-minute feedback cost without
 being a reliable release proof. They are removed from routine lanes; the release
-runner now invokes this helper with its blocking refusal option.
+runner invokes this producer with its blocking refusal option.
 
 The reason routine local enforcement was defused is real and stays respected: producing
 coverage from the BROAD suite costs 11-15 minutes, and a gate that expensive gets
@@ -69,27 +68,28 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from scripts import changed_line_verdict_codes as _verdict_codes  # noqa: E402
 from scripts import mutation_coverage_producer as _producer  # noqa: E402
 from scripts import suggest_mutation_coverage_command as _suggest  # noqa: E402
 from scripts.yaml_output import emit_yaml  # noqa: E402
 
-NO_VERDICT_EXIT = 2
+NO_VERDICT_EXIT = _verdict_codes.REFUSED_EXIT
 # The consumer's exit-0 reason for a range that contained no eligible pool file.
 EMPTY_SCOPE_REASON_PREFIX = "no eligible mutation-pool files changed"
 # What `check_changed_line_mutation_coverage.py` returns when it judged no scope.
 # Non-blocking by design: mid-work it becomes this wrapper's own exit 3, which
 # run-quality renders UNPROVEN; the release lane's `--refuse-unestablished` turns
 # it into a 1.
-CONSUMER_UNESTABLISHED_EXIT = 3
-UNESTABLISHED_EXIT = 3
+CONSUMER_UNESTABLISHED_EXIT = _verdict_codes.UNESTABLISHED_EXIT
+UNESTABLISHED_EXIT = _verdict_codes.UNESTABLISHED_EXIT
 # What the consumer returns when it judged its analyzed set clean but could not
 # analyze part of the changed set. Distinct from 3 because it is NOT refusable:
 # policy (a) below keeps an unmapped changed pool file non-blocking, and the
 # repair for that false green is to stop calling it a PASS, not to start
 # stopping a release on the mapper's blind spot.
-CONSUMER_PARTIAL_EXIT = 4
+CONSUMER_PARTIAL_EXIT = _verdict_codes.PARTIAL_EXIT
 # This lane's own byte for the same state. `run-quality.sh` renders it UNPROVEN.
-PARTIAL_EXIT = 4
+PARTIAL_EXIT = _verdict_codes.PARTIAL_EXIT
 CONSUMER = "scripts/check_changed_line_mutation_coverage.py"
 
 #: The run judged nothing about the files it was asked to judge — a dirty pool whose
@@ -120,15 +120,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--coverage-json",
         type=Path,
-        default=Path("reports/mutation/prepush-focused-coverage.json"),
+        default=Path("reports/mutation/release-changed-line-coverage.json"),
         help=(
             "Where the focused producer writes coverage plus its "
             "`.changed-line.fingerprint` marker. "
-            "Deliberately NOT the canonical `reports/mutation/test-coverage.json`: this "
-            "lane's coverage comes from a test SUBSET, and writing it there would leave "
-            "subset coverage at the path the broad closeout producer owns, carrying a "
-            "VALID freshness marker. Every `--require-fresh-coverage` consumer "
-            "would then read freshness as breadth."
+            "The release-final report stays separate from the canonical broad mutation "
+            "report because this lane's coverage comes from a test SUBSET."
         ),
     )
     parser.add_argument(
@@ -151,7 +148,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 def _warn(message: str) -> None:
     # The `WARNING` head is load-bearing: run-quality.sh's print_phase_output only
     # surfaces a PASSING gate's output when a line matches ^(WARNING|WARN|WEAK|ADVISORY).
-    sys.stderr.write(f"WARNING (incremental changed-line coverage): {message}\n")
+    sys.stderr.write(f"WARNING (release changed-line coverage): {message}\n")
 
 
 def _focused_pytest_command(recommendation: dict) -> str | None:
@@ -307,8 +304,8 @@ def main(argv: list[str] | None = None) -> int:
         # here would be a stop on the mapper's blind spot, not on a coverage gap.
         _warn(
             f"{len(unmapped)} changed mutation-pool file(s) map to NO standing test, so "
-            "nothing could be proven before this push. Name their tests with "
-            "--mutation-coverage-extra-pytest-target at closeout, or run the broad "
+            "nothing could be proven for this release. Add or identify a standing test "
+            "reference the mapper can discover, then rerun the release lane; otherwise run the broad "
             f"producer. Unproven: {', '.join(unmapped)}"
         )
         emit_yaml(
@@ -330,7 +327,7 @@ def main(argv: list[str] | None = None) -> int:
         args.coverage_json if args.coverage_json.is_absolute() else repo_root / args.coverage_json
     )
     try:
-        _producer.produce_command_coverage(
+        producer_result = _producer.produce_command_coverage(
             repo_root,
             command,
             base_sha=base_sha,
@@ -351,6 +348,18 @@ def main(argv: list[str] | None = None) -> int:
         )
         emit_yaml(
             {"status": "no-verdict", "reason": "focused producer failed", "base_sha": base_sha}
+        )
+        return NO_VERDICT_EXIT
+
+    if producer_result.get("returncode") != 0 or not producer_result.get(
+        "produced_mutation_coverage"
+    ):
+        _warn(
+            "the focused coverage producer did not confirm a completed coverage export; "
+            "no changed-line verdict was rendered. This is NOT a pass."
+        )
+        emit_yaml(
+            {"status": "no-verdict", "reason": "focused coverage was not produced", "base_sha": base_sha}
         )
         return NO_VERDICT_EXIT
 
@@ -386,6 +395,7 @@ def main(argv: list[str] | None = None) -> int:
         "--coverage-json",
         str(coverage_json),
         "--reuse-coverage",
+        "--require-fresh-coverage",
         "--allow-dirty",
     ]
     for path in mapped:

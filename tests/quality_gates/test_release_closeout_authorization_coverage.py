@@ -37,7 +37,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 RELEASE_SCRIPTS = REPO_ROOT / "skills" / "public" / "release" / "scripts"
 # The production files this suite measures, written as repo-relative literals.
 #
-# This is not decoration. The pre-push changed-line lane maps tests to files
+# This is not decoration. The release-final changed-line lane maps tests to files
 # TEXTUALLY (`suggest_mutation_coverage_command`), and every path below is otherwise
 # assembled as `RELEASE_SCRIPTS / "..."` — a variable the mapper cannot follow. With no
 # match it instruments no test for these files and blocks them as uncovered, which is a

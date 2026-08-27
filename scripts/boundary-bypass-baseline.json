@@ -304,18 +304,6 @@
       ]
     },
     {
-      "test_file": "tests/quality_gates/test_run_slice_closeout_review_obligations.py",
-      "import_safe_targets": [
-        "scripts/run_slice_closeout.py"
-      ]
-    },
-    {
-      "test_file": "tests/quality_gates/test_run_slice_closeout_surface_obligations.py",
-      "import_safe_targets": [
-        "scripts/run_slice_closeout.py"
-      ]
-    },
-    {
       "test_file": "tests/quality_gates/test_setup_adapter_scaffold_policy.py",
       "import_safe_targets": [
         "skills/public/setup/scripts/init_adapter.py",
@@ -335,21 +323,8 @@
       ]
     },
     {
-      "test_file": "tests/quality_gates/test_slice_closeout_broad_gate.py",
-      "import_safe_targets": [
-        "scripts/run_slice_closeout.py"
-      ]
-    },
-    {
-      "test_file": "tests/quality_gates/test_slice_manifest.py",
-      "import_safe_targets": [
-        "scripts/validate_slice_manifest.py"
-      ]
-    },
-    {
       "test_file": "tests/quality_gates/test_staged_commit_gate_plan.py",
       "import_safe_targets": [
-        "scripts/run_slice_closeout.py",
         "scripts/staged_commit_gate_plan.py"
       ]
     },

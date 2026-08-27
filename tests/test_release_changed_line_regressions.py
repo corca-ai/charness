@@ -26,7 +26,6 @@ from scripts import adversarial_evidence as adversarial
 from scripts import capability_catalog_resolver as catalog_resolver
 from scripts import critique_packet_lib as critique_packet
 from scripts import reviewed_input_identity as reviewed_identity
-from scripts import slice_closeout_telemetry as telemetry
 from scripts import staged_commit_gate_plan_helpers as staged_helpers
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -37,7 +36,6 @@ _MUTATION_SOURCES = (
     "scripts/capability_catalog_resolver.py",
     "scripts/critique_packet_lib.py",
     "scripts/reviewed_input_identity.py",
-    "scripts/slice_closeout_telemetry.py",
     "scripts/staged_commit_gate_plan_helpers.py",
     "skills/public/critique/scripts/prepare_packet.py",
     "skills/public/debug/scripts/persist_debug_artifact.py",
@@ -416,17 +414,6 @@ def test_critique_substrate_refusals_and_cli_refusal(tmp_path: Path) -> None:
         assert critique_runner.main() == 1
     finally:
         monkeypatch.undo()
-
-
-def test_slice_telemetry_rotation_replaces_old_backup(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    records = tmp_path / "records.jsonl"
-    records.write_bytes(b"x")
-    backup = records.with_suffix(".jsonl.1")
-    backup.write_bytes(b"old")
-    monkeypatch.setattr(telemetry, "_resolve_max_mb", lambda: 1)
-    telemetry._rotate(records, 1024 * 1024)
-    assert backup.read_bytes() == b"x"
-    assert not records.exists()
 
 
 def test_staged_helper_absence_is_an_explicit_empty_gate(tmp_path: Path) -> None:

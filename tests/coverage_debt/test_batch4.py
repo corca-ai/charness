@@ -16,7 +16,6 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
-from types import SimpleNamespace
 
 import pytest
 import yaml
@@ -33,7 +32,6 @@ DRIFT = load_script_module("batch4_check_upstream_support_drift", ROOT / "script
 CLASSIFY_PUSH_DIFF = load_script_module("batch4_classify_push_diff", ROOT / "scripts/classify_push_diff.py")
 GATHER = load_script_module("batch4_gather_public_url", ROOT / "skills/public/gather/scripts/gather_public_url.py")
 PRESCRIBED = load_script_module("batch4_check_prescribed_skill_executed", ROOT / "scripts/check_prescribed_skill_executed.py")
-PREPUSH = load_script_module("batch4_prepush_focused", ROOT / "scripts/prepush_focused_changed_line_coverage.py")
 WORKTREE_AUDIT = load_script_module("batch4_worktree_audit", ROOT / "scripts/worktree_audit.py")
 BOOTSTRAP_RUNTIME = load_script_module("batch4_bootstrap_runtime", ROOT / "scripts/bootstrap_runtime.py")
 UPDATE_TOOLS = load_script_module("batch4_update_tools", ROOT / "scripts/update_tools.py")
@@ -411,38 +409,6 @@ def test_prescribed_gate_refuses_a_malformed_evidence_argument(tmp_path: Path) -
     payload = yaml.safe_load(result.stdout)
     assert payload["ok"] is False
     assert payload["error"]
-
-
-# --------------------------------------------------------------------------- #
-# scripts/prepush_focused_changed_line_coverage.py
-# --------------------------------------------------------------------------- #
-
-
-def test_prepush_unparseable_consumer_stdout_is_a_no_verdict() -> None:
-    """A consumer that exits 0 while writing stdout no YAML reader can parse has
-    proven nothing, so its exit code must not be laundered into `clean`. The parse
-    error is caught rather than raised because a crash here would take down the whole
-    pre-push lane over a malformed report."""
-    status, reason = PREPUSH._verdict_from_consumer(
-        SimpleNamespace(returncode=0, stdout="{[unbalanced: yaml\n", stderr="")
-    )
-
-    assert status == "no-verdict"
-    assert "stands for nothing" in reason
-
-
-def test_prepush_a_readable_clean_report_is_still_clean() -> None:
-    """The discriminating control: catching the parse error did not swallow real
-    verdicts."""
-    status, _ = PREPUSH._verdict_from_consumer(
-        SimpleNamespace(
-            returncode=0,
-            stdout=json.dumps({"ok": True, "blocking": [], "changed_pool_files": ["scripts/a.py"]}),
-            stderr="",
-        )
-    )
-
-    assert status == "clean"
 
 
 # --------------------------------------------------------------------------- #

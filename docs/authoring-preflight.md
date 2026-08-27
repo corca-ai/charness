@@ -63,9 +63,7 @@ It prints `limit − current` (tokei Python code lines) per gated file and flags
 near-limit files. If a file is near its limit, start a new module instead of
 appending — that avoids the unplanned mid-slice extraction `acquire_public_url.py`
 forced during #302.
-[run_slice_closeout.py](../scripts/run_slice_closeout.py) also auto-surfaces
-near-limit *changed* files at every slice closeout, so this is workflow signal, not memory
-(#256). The advisory never blocks; the length gate is the hard floor.
+The advisory never blocks; the length gate is the hard floor.
 
 ## SKILL.md core headroom
 
@@ -95,7 +93,7 @@ recomputes it and hard-fails a mismatch.
 [check_skill_surface_preflight.py](../scripts/check_skill_surface_preflight.py)
 gates this buffer at the commit boundary for *changed* SKILL.md files (it runs in
 [staged_commit_gate_plan.py](../scripts/staged_commit_gate_plan.py) and so in
-`run_slice_closeout.py --predict-commit`), instead of only in the broad gate. It
+the pre-commit dispatcher), instead of only in the broad gate. It
 is a ratchet: a change that drops a core below the 4-line buffer is blocked, but a
 skill already under buffer is grandfathered until an edit erodes it further. Check
 headroom before authoring. On a block, separate a concept into its own surface or
@@ -194,10 +192,8 @@ clean: an absent markdownlint engine puts its class in that list and appends a
 warning naming the remedy.
 An empty `unforecast_classes` means no class reported itself unmeasured — which
 is the strongest claim the collectors support, not a guarantee that everything
-was measured. It is an affordance, not a gate: a doc still commits without it,
-the existing gates stay the enforcement, and
-[run_slice_closeout.py](../scripts/run_slice_closeout.py) prints an
-`ADVISORY:` pointer when a slice edits a `docs/*.md` surface.
+was measured. It is an affordance, not a gate: a doc still commits without it;
+the existing gates stay the enforcement.
 
 ## Documented commands
 
@@ -290,8 +286,7 @@ python3 scripts/validate_skill_ergonomics.py --repo-root .
 ### Edit-time issue-anchor scan
 
 The package sweep above runs over the whole skill surface at the commit boundary
-(`run_slice_closeout` / pre-commit). To catch a `#NNN` anchor on the *one file*
-you just edited — before the closeout machinery round-trips — scan that file
+(pre-commit). To catch a `#NNN` anchor on the *one file* you just edited, scan that file
 directly:
 
 ```bash
@@ -343,9 +338,7 @@ python3 scripts/check_skill_surface_preflight.py --path skills/public/<skill>/SK
 `--run-checks` reports `validate_skills`, `validate_skill_ergonomics`,
 `check_skill_ownership_overlap`, `validate_attention_state_visibility`,
 `check_doc_links`, and `check-markdown` together, so the whole portable-package
-set surfaces in one pass. `run_slice_closeout.py` also prints an `ADVISORY:`
-pointer to this command when a slice edits a gated `skills/public/**` or
-`skills/support/**` surface.
+set surfaces in one pass.
 
 ## Doc/SKILL prose and path pins
 
@@ -360,8 +353,7 @@ python3 scripts/check_prose_pin.py --repo-root .
 
 It reads the working-tree diff and reports the likely-broken pins (the test file,
 line, and the pinned phrase or path). It is advisory by default (`--strict` exits
-non-zero), and `run_slice_closeout.py` surfaces the same `WARN:` lines at slice
-closeout before the broad pytest runs.
+non-zero); run it directly when a prose edit needs this diagnostic.
 
 ### Pre-cut lossless + contract-safe check (skill-body cuts)
 

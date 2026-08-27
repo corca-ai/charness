@@ -399,14 +399,13 @@ def test_impl_skill_defaults_to_autonomous_continuation() -> None:
     assert "Use `prove` when the user or the boundary explicitly requires its evidence format" in normalized_skill
 
 
-def test_impl_does_not_make_planners_or_closeout_ceremony_universal() -> None:
+def test_impl_keeps_optional_proof_conditional() -> None:
     skill_text = IMPL_SKILL
     assert "No separate session-start hook" in skill_text
     assert "risk-interrupt planner" in skill_text
     assert "Additional proof is conditional" in skill_text
     assert "does not require a fresh-eye review" in skill_text
     assert "changed-line proof" in skill_text
-    assert "run_slice_closeout" not in skill_text
 
 
 def test_impl_source_and_checked_in_plugin_export_are_byte_identical() -> None:

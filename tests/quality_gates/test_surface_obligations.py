@@ -76,26 +76,17 @@ _SPEC_EVIDENCE = (
 )
 
 
-def test_gitignore_scan_hygiene_runs_at_slice_closeout_for_top_level_scripts() -> None:
-    # #328 gate-phase coverage: a top-level scripts/<file>.py change pulls the
-    # gitignore scan-hygiene gate into slice closeout. The surface uses
-    # scripts/*.py (fnmatch * crosses /, so it covers top-level and nested) rather
-    # than the bare scripts/**/*.py form, which misses top-level scripts (#331).
-    assert _GITIGNORE_SCAN in _verify_commands_for("scripts/rca_link_advisory.py")
-
-
-def test_gitignore_scan_hygiene_runs_at_slice_closeout_for_skill_scripts() -> None:
-    # #325 was a skills/public/quality script using repo_root.glob; it shipped at
-    # #325 closeout and only failed at the v0.27.0 push. It is now caught at slice
-    # closeout.
+def test_gitignore_scan_hygiene_runs_for_skill_scripts() -> None:
+    # #325 was a skills/public/quality script using repo_root.glob; it is caught
+    # by the same focused surface checks as other skill scripts.
     assert _GITIGNORE_SCAN in _verify_commands_for(
         "skills/public/quality/scripts/standing_doc_provenance_lib.py"
     )
 
 
-def test_retro_lesson_index_check_runs_at_slice_closeout() -> None:
-    # The retro lesson-index freshness check is reachable at slice closeout for a
-    # changed retro artifact (the surface also syncs --write first).
+def test_retro_lesson_index_check_runs_for_retro_artifacts() -> None:
+    # The retro lesson-index freshness check is reachable for a changed retro
+    # artifact (the surface also syncs --write first).
     assert _RETRO_INDEX_CHECK in _verify_commands_for(
         "charness-artifacts/retro/2026-06-07-322-advisory-interpretation-rollout.md"
     )
@@ -122,10 +113,9 @@ def test_sloc_inventory_refresh_is_sync_obligation_not_verify() -> None:
     assert command not in payload["verify_commands"]
 
 
-def test_boundary_bypass_ratchet_runs_at_slice_closeout_for_new_test_file() -> None:
+def test_boundary_bypass_ratchet_runs_for_new_test_file() -> None:
     # The boundary-ratchet motivating case (a new tests/ file with subprocess
-    # calls) surfaces at slice closeout via the repo-python surface, not only at
-    # the literal git pre-commit.
+    # calls) is covered by the repo-python surface, not only the git hook.
     assert _BOUNDARY_RATCHET in _verify_commands_for("tests/quality_gates/test_new_thing.py")
 
 
@@ -154,7 +144,7 @@ def test_repo_python_surface_matches_top_level_scripts() -> None:
         "--repo-root",
         str(ROOT),
         "--paths",
-        "scripts/run_slice_closeout.py",
+        "scripts/release_changed_line_coverage.py",
     )
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
@@ -442,21 +432,19 @@ def test_validate_surfaces_allows_bare_recursive_dir_glob(tmp_path: Path) -> Non
     assert result.returncode == 0, result.stderr
 
 
-def test_repo_python_surface_runs_fast_repo_copy_checker_before_broad_pytest() -> None:
+def test_repo_python_surface_runs_fast_repo_copy_checker_before_standing_pytest() -> None:
     # #307: the fast standalone structural checker must run in the repo-python
-    # surface's verify commands (the per-slice / pre-commit aggregate) so test-
+    # surface's verify commands so test-
     # fixture drift (e.g. inline shutil.ignore_patterns instead of REPO_COPY_IGNORE)
-    # fails at the commit boundary in <1s, not 172s into the broad pytest gate.
+    # fails at the commit boundary in <1s, not 172s into standing pytest.
     surfaces = json.loads((ROOT / ".agents" / "surfaces.json").read_text(encoding="utf-8"))
     repo_python = next(s for s in surfaces["surfaces"] if s["surface_id"] == "repo-python")
     verify = repo_python["verify_commands"]
-    from scripts.slice_closeout_broad_gate import is_broad_pytest_command
-
     checker_idx = next(
         (i for i, cmd in enumerate(verify) if "check_test_repo_copy_invariants.py" in cmd), None
     )
-    broad_idx = next((i for i, cmd in enumerate(verify) if is_broad_pytest_command(cmd)), None)
+    pytest_idx = next((i for i, cmd in enumerate(verify) if "run_standing_pytest.py" in cmd), None)
     assert checker_idx is not None, verify
-    assert broad_idx is not None, verify
-    # It must precede the broad pytest so fixture drift fails fast, not 172s deep.
-    assert checker_idx < broad_idx, verify
+    assert pytest_idx is not None, verify
+    # It must precede standing pytest so fixture drift fails fast, not 172s deep.
+    assert checker_idx < pytest_idx, verify

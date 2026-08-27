@@ -3,7 +3,7 @@
 Two builders wrap "run pytest under coverage": `mutation_sampling_lib.
 coverage_run_command` (argv, used by the changed-line mutation gate) and
 `mutation_coverage_producer.instrument_broad_command` (shell string, used by
-closeout). Until 2026-08-15 they held OPPOSITE policies on the standing pytest
+the release producer). Until 2026-08-15 they held OPPOSITE policies on the standing pytest
 runner -- the producer accepted it, the sampling lib refused it with *"use a
 helper script for other runners"* -- and the changed-line gate used the refusing
 one. That is why the repo's longest proof spawned serial bare pytest while the
@@ -28,13 +28,10 @@ from types import SimpleNamespace
 
 import pytest
 
-from runtime_bootstrap import import_repo_module
 from scripts import mutation_coverage_producer as producer
 from scripts import mutation_sampling_lib as sampling
 
 from .support import ROOT
-
-_broad_gate = import_repo_module(str(ROOT / "scripts/x.py"), "scripts.slice_closeout_broad_gate")
 
 
 def _load_teeth():
@@ -199,77 +196,6 @@ def test_an_unterminated_quote_is_refused_with_a_message_not_a_valueerror(tmp_pa
         sampling.coverage_run_command(command, tmp_path / ".coverage")
 
     assert "cannot split" in str(excinfo.value)
-
-
-def test_producer_mode_blocks_on_a_broad_command_it_cannot_instrument(tmp_path: Path) -> None:
-    """The broad gate matches the runner token ANYWHERE, so a wrapper prefix is
-    "broad" while the coverage builders refuse it. Producer mode must then BLOCK.
-
-    The first repair let it fall through to an unmonitored run: coverage was never
-    produced, the payload key was never set, no narration fired, and closeout
-    exited 0 claiming completion — a silent green on a proof surface, traded for
-    the loud crash it replaced. This is the pin for that."""
-    executor = import_repo_module(
-        str(ROOT / "scripts/x.py"), "scripts.slice_closeout_command_executor"
-    )
-    command = "env CHARNESS_STANDING_PYTEST_PYTHON=python3 python3 scripts/run_standing_pytest.py"
-    assert _broad_gate.is_broad_pytest_command(command) is True
-    assert sampling.is_instrumentable_pytest_command(command) is False
-    payload: dict[str, object] = {"executed_commands": []}
-    ran: list[str] = []
-
-    stop = executor.execute_command_plan(
-        tmp_path,
-        [("verify", command)],
-        payload,
-        run_command=lambda repo_root, cmd, phase: ran.append(cmd) or {"returncode": 0},
-        collect_changed_paths=lambda repo_root: [],
-        refresh_broad_pytest_proof=False,
-        broad_pytest_producer=lambda repo_root, cmd, phase: {"returncode": 0},
-    )
-
-    assert stop is True
-    assert payload["status"] == "blocked"
-    assert ran == [], "a command that cannot be instrumented must not run unmonitored instead"
-    assert payload["mutation_coverage_changed_line_proof"]["status"] == "not_checked"
-
-
-def test_an_instrumentable_broad_command_still_reaches_the_producer(tmp_path: Path) -> None:
-    """The negative half of the block above: the guard must not swallow the path
-    it exists to protect."""
-    executor = import_repo_module(
-        str(ROOT / "scripts/x.py"), "scripts.slice_closeout_command_executor"
-    )
-    command = "python3 scripts/run_standing_pytest.py --mode read-only"
-    payload: dict[str, object] = {"executed_commands": []}
-    produced: list[str] = []
-
-    stop = executor.execute_command_plan(
-        tmp_path,
-        [("verify", command)],
-        payload,
-        run_command=lambda repo_root, cmd, phase: {"returncode": 0},
-        collect_changed_paths=lambda repo_root: [],
-        refresh_broad_pytest_proof=True,
-        broad_pytest_producer=lambda repo_root, cmd, phase: (
-            produced.append(cmd) or {"returncode": 0, "produced_mutation_coverage": True}
-        ),
-    )
-
-    assert stop is False
-    assert produced == [command]
-    assert payload.get("status") != "blocked"
-
-
-def test_the_closeout_broad_gate_reads_the_same_helper_flag_policy() -> None:
-    """A THIRD hand-typed copy of the helper-flag set lived here and went stale
-    when `--print-last-run` shipped: this gate called such a command broad and
-    routed it to a producer that refuses it."""
-    runner = "python3 scripts/run_standing_pytest.py"
-
-    assert _broad_gate.is_broad_pytest_command(runner) is True
-    for flag in ("--print-last-run", "--print-last", "--print-temp-root", "--print-command"):
-        assert _broad_gate.is_broad_pytest_command(f"{runner} {flag}") is False, flag
 
 
 # --- the changed-line gate's --test-command override ---------------------------

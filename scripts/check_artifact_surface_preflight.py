@@ -68,7 +68,7 @@ class Surface:
 #  - Prefix-mapped surfaces (critique, ideation, retro, debug) accept `--paths` and
 #    run CHANGED-SCOPED, so they are wired into the blocking fail-fast structural
 #    sweep (`commit_boundary=True`): cheap, changed-scoped, no reordering of the
-#    deeper run_slice_closeout stages.
+#    deeper quality-run stages.
 #  - Adapter-scoped quality siblings validate-ALL (no --paths), so they
 #    are NOT in the fail-fast sweep (`commit_boundary=False`); they get author-time
 #    shape help via `--type`/`--emit-stub`/`--path` and the broad gate remains their

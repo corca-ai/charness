@@ -9,9 +9,8 @@ if [[ -e "$MUTATION_RECOVERY_DIR" || -e "$REPO_ROOT/.charness/mutation-recovery"
   exit 2
 fi
 
-# Commit-time validation is intentionally local and cheap.  Slice closeout is an
-# opt-in proof surface for changes that need it; making every commit build a
-# closeout ledger was the largest source of friction in ordinary implementation.
+# Commit-time validation is intentionally local and cheap; broader release proof
+# belongs to the explicit release quality lane.
 if ! git diff --cached --check; then
   echo "charness pre-commit: staged whitespace errors" >&2
   exit 2

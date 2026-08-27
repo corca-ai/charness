@@ -481,10 +481,6 @@ validators:
     consumer_facing: false
     decision: exclude
     reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
-  - path: scripts/validate_slice_manifest.py
-    consumer_facing: false
-    decision: exclude
-    reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
   - path: scripts/validate_surfaces.py
     consumer_facing: false
     decision: exclude

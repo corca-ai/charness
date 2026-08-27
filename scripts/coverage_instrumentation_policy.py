@@ -4,7 +4,7 @@ THE one owner of that decision (SC18). Two builders wrap "run pytest under
 coverage" -- `mutation_sampling_lib.coverage_run_command` (argv, used by the
 changed-line mutation gate) and
 `mutation_coverage_producer.instrument_broad_command` (shell string, used by
-closeout) -- and until 2026-08-15 they held OPPOSITE policies on the standing
+the release producer) -- and until 2026-08-15 they held OPPOSITE policies on the standing
 pytest runner. The gate used the refusing one, so the repo's longest proof
 spawned serial bare pytest while its fast path was already measured, budgeted,
 and blocking.
@@ -84,7 +84,7 @@ def classify_instrumentable_command(command: str) -> tuple[str, str | None, str]
     Both in-repo coverage builders decide here rather than each carrying its own
     answer: this module's :func:`coverage_run_command` (argv, used by the
     changed-line gate) and `mutation_coverage_producer.instrument_broad_command`
-    (shell string, used by closeout). They held OPPOSITE policies on the standing
+    (shell string, used by the release producer). They held OPPOSITE policies on the standing
     runner until 2026-08-15 — the gate used the refusing one, so the repo's
     longest proof spawned serial bare pytest while its fast path was already
     measured and enforced.
@@ -145,4 +145,3 @@ def coverage_run_command(test_command: str, data_file: Path) -> list[str]:
     # that already measures xdist workers, so the parallel path does not become a
     # coverage blind spot.
     return [*prefix, *rest]
-

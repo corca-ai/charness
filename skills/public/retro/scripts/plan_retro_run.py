@@ -218,11 +218,6 @@ def _required_reads(
     if not adapter.get("found") or not adapter.get("valid") or adapter.get("errors"):
         reads.append(_read("references/adapter-contract.md", "reference", "adapter is missing or invalid; repair before relying on adapter paths", base="skill"))
 
-    # Gate-runtime waste is invisible to a passing gate by construction, and its
-    # signal is recurrence across runs — which no single session can observe. It was
-    # previously reachable only from `weekly`, a mode invoked once in three months,
-    # so the stream accumulated 985 records that nothing read. Routed for every retro.
-    reads.append(_read("references/closeout-telemetry.md", "reference", "recurring gate-runtime and artifact-only-commit waste the closeout stream already recorded", base="skill"))
     already_named = {str(item["path"]) for item in reads}
     for evidence_path in adapter["data"].get("evidence_paths", []):
         path = str(evidence_path)

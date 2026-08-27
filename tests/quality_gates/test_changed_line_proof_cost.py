@@ -184,7 +184,7 @@ def test_the_stale_branch_publishes_a_copyable_resume_command(tmp_path: Path) ->
     payload = _skip_payload(tmp_path, stale=True)
 
     assert "stale" in payload["reason"]
-    assert "prepush_focused_changed_line_coverage.py" in payload["resume_command"]
+    assert "release_changed_line_coverage.py" in payload["resume_command"]
     assert "--base-sha" in payload["resume_command"]
 
 
@@ -193,26 +193,15 @@ def test_the_absent_coverage_branch_publishes_the_same_route(tmp_path: Path) -> 
     They used to answer with two different costs."""
     payload = _skip_payload(tmp_path, stale=False)
 
-    assert "prepush_focused_changed_line_coverage.py" in payload["resume_command"]
-
-
-def test_the_route_names_the_cheap_lane_before_the_rebuild(tmp_path: Path) -> None:
-    """ORDER is the finding, not mere presence. The broad producer was always
-    named; naming it FIRST -- as the only option -- is what cost the rebuilds."""
-    payload = _skip_payload(tmp_path, stale=True)
-    route = payload["resume_route"]
-
-    assert route.index("prepush_focused_changed_line_coverage.py") < route.index(
-        "run_slice_closeout.py"
-    ), route
+    assert "release_changed_line_coverage.py" in payload["resume_command"]
 
 
 def test_the_resume_command_does_not_redirect_the_focused_corpus(tmp_path: Path) -> None:
     """A safety pin, not an ergonomics one.
 
-    The incremental lane's own `--coverage-json` default is deliberately NOT the
+    The release producer's own `--coverage-json` default is deliberately NOT the
     canonical corpus: its coverage comes from a test SUBSET, and parking that at the
-    broad producer's path with a VALID freshness marker would make every
+    broad mutation report's path with a VALID freshness marker would make every
     `--require-fresh-coverage` consumer read freshness as breadth. If this route
     ever grows a `--coverage-json` argument, it hands the operator the command that
     does exactly that.
@@ -273,7 +262,7 @@ def test_a_context_bearing_corpus_is_declined_with_the_route(tmp_path: Path) -> 
     payload = _reuse_payload(tmp_path, show_contexts=True)
 
     assert "per-test `contexts`" in payload["reason"]
-    assert "prepush_focused_changed_line_coverage.py" in payload["resume_command"]
+    assert "release_changed_line_coverage.py" in payload["resume_command"]
 
 
 def test_declining_is_a_skip_and_never_a_blocker(tmp_path: Path) -> None:
@@ -303,20 +292,6 @@ def test_an_unreadable_header_proceeds_exactly_as_before(tmp_path: Path) -> None
 
     assert "per-test `contexts`" not in str(payload.get("reason", ""))
     assert payload["changed_pool_files"] == ["scripts/foo.py"]
-
-
-def test_the_broad_fallback_arm_carries_the_repo_root(tmp_path: Path) -> None:
-    """A round-2 finding: the fallback was a bare constant, and
-    `run_slice_closeout.py` derives its root from its own `__file__`. A gate run
-    with `--repo-root /other/tree` therefore printed a step-two that would produce
-    coverage for a different tree than the one it had just judged. Nothing pinned
-    the fix -- reverting it left the whole suite green -- which is the same
-    test-pins-the-narrow-case shape round 1 found."""
-    payload = _skip_payload(tmp_path, stale=True)
-    route = payload["resume_route"]
-
-    broad = route[route.index("run_slice_closeout.py"):]
-    assert "--repo-root" in broad, route
 
 
 def test_an_unreadable_coverage_header_is_unknown_not_context_bearing() -> None:

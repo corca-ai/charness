@@ -16,7 +16,6 @@ import os
 import re
 import signal
 import subprocess
-import sys
 import time
 from pathlib import Path
 
@@ -192,42 +191,6 @@ def test_a_clean_run_summary_is_unchanged(gate_repo: Path) -> None:
     assert summary, result.stdout[-500:]
     assert "FAILED:" not in summary[-1], summary[-1]
     assert "quality-failure-logs" not in result.stdout.split("Quality summary:")[-1]
-
-
-def test_slice_closeout_repeats_its_verdict_last() -> None:
-    """`Closeout status:` prints at the TOP of a report that runs to a hundred lines,
-    so truncation kept a telemetry footer and lost the verdict. It is repeated
-    last, with the failing command named."""
-    import contextlib
-    import io
-    from importlib import util
-
-    spec = util.spec_from_file_location(
-        "slice_closeout_reporting", ROOT / "scripts" / "slice_closeout_reporting.py"
-    )
-    module = util.module_from_spec(spec)
-    sys.path.insert(0, str(ROOT / "scripts"))
-    try:
-        spec.loader.exec_module(module)
-    finally:
-        sys.path.pop(0)
-
-    payload = {
-        "status": "failed",
-        "changed_paths": [], "matched_surfaces": [], "unmatched_paths": [],
-        "executed_commands": [
-            {"phase": "verify", "returncode": 0, "command": "python3 fine.py"},
-            {"phase": "verify", "returncode": 1, "command": "python3 broken.py"},
-        ],
-    }
-    buffer = io.StringIO()
-    with contextlib.redirect_stdout(buffer):
-        module._print_final_verdict(payload)
-    line = buffer.getvalue().strip()
-
-    assert line.startswith("Closeout verdict: failed"), line
-    assert "python3 broken.py" in line, line
-    assert "python3 fine.py" not in line, "only the FAILING command belongs in the verdict"
 
 
 def test_a_log_copy_that_fails_warns_instead_of_promising_a_stale_file(gate_repo: Path) -> None:

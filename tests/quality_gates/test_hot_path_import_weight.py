@@ -19,8 +19,8 @@ DEFERRED_IMPORTS = {
     # `urllib.request` pulls http.client + ssl + email.parser: 17ms of this CLI's
     # ~114ms startup, for one network path behind a fixture short-circuit.
     "charness": {"urllib"},
-    # `jsonschema` (with `referencing`) was 41ms of run_slice_closeout.py's 133ms
-    # startup; that pre-commit gate imports this module for record types.
+    # `jsonschema` (with `referencing`) was once a measurable startup cost for a
+    # commit-boundary consumer; keep this map available for future measured deferrals.
 }
 
 

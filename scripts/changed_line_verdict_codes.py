@@ -2,9 +2,8 @@
 """The changed-line gate's exit-code vocabulary, and which byte a run earns.
 
 Lives beside the gate rather than inside it because the DIFFERENCES between these
-bytes are a contract other modules read -- `prepush_focused_changed_line_coverage`
-decides whether to refuse from them, `mutation_coverage_producer` maps them to a
-closeout verdict, and `run-quality.sh` renders them. Keeping the values and the
+bytes are a contract other modules read -- `release_changed_line_coverage`
+decides whether to refuse from them, and `run-quality.sh` renders them. Keeping the values and the
 ordering rule in one place is what stops a consumer from transcribing a literal
 that later drifts from the meaning.
 """
@@ -24,14 +23,14 @@ REFUSED_EXIT = 2
 #: no blind spot at all. A warning that carries no signal the pipeline answers for
 #: reads as narration beside a green; measured consequence: a local pass on
 #: `b876abe5` over 6 of 7 files, a push, and a remote block on the 7th, which is the
-#: exact ordering the pre-push lane exists to prevent.
+#: exact ordering the release-final lane exists to enforce.
 #:
 #: NOT 3. Exit 3 is "established nothing"; this run established something about most
 #: of its scope, and 3 is refusable at push time (`--refuse-unestablished`) while
 #: this is deliberately NOT -- the operator's policy (a) keeps an unmapped changed
-#: pool file non-blocking, because a stop there is a stop on the MAPPER's blind spot
-#: rather than on a coverage gap. So `partial` removes the false green without
-#: reversing that: `run-quality.sh` renders it UNPROVEN, and the push still proceeds.
+#: pool file non-blocking for a direct diagnostic, because a stop there is a stop on
+#: the MAPPER's blind spot rather than on a coverage gap. The final release runner
+#: still refuses every nonzero result: an unproven release is not publishable proof.
 #: NOT 1: nothing was proven wrong, and a blocker that names no blocking line is a
 #: refusal nobody can act on.
 PARTIAL_EXIT = 4

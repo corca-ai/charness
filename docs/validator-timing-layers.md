@@ -20,12 +20,11 @@ Timings, ordered by feedback latency (earliest first):
    [authoring-preflight.md](./authoring-preflight.md)).
 3. **Commit-time** — the pre-commit dispatcher
    ([staged_commit_gate_plan.py](../scripts/staged_commit_gate_plan.py)),
-   shared verbatim by `.githooks/pre-commit`, the closeout structural sweep,
-   and `run_slice_closeout --predict-commit`.
+   shared verbatim by `.githooks/pre-commit`.
 4. **Bundle boundary** — the broad gate
    ([run-quality.sh](../scripts/run-quality.sh)) plus the pre-push hook.
-   An opted-in consumer may run changed-line mutation at its release boundary;
-   Charness does not queue that expensive producer for its own branch.
+   Ordinary implementation stops at focused tests plus the default core lane;
+   changed-line coverage and mutation have one owner in the release-final lane.
 5. **CI / scheduled** —
    [quality-core.yml](../.github/workflows/quality-core.yml) (push/tag/PR)
    and [mutation-tests.yml](../.github/workflows/mutation-tests.yml) (cron
@@ -84,7 +83,8 @@ this audit; those rows are listed compressed.
 | py-compile, ruff, check-python-lengths, validate-attention-state-visibility, validate-skills, run-evals, validate-skill-ergonomics, validate-profiles, validate-adapters, validate-presets, validate-integrations, check-boundary-bypass-ratchet, staged mirror drift, skill-core headroom, artifact shape | commit-time + broad | already earlier | pulled by prior work; unchanged |
 | validate-packaging, validate-current-pointer-freshness | pre-push + broad (now also CI) | already earlier | bundle-range semantics; pre-push is their natural earliest timing |
 | validate-packaging-committed | release or explicit export validation | moved to release boundary | Checked-in mirror drift and export layout are not ordinary core claims; use the explicit validator flag or the release queue when that comparison is required. |
-| check-changed-line-mutation-coverage | explicit consumer/release only | **removed from Charness runner** | mutation instrumentation is multi-minute on a broad change range. Charness leaves the portable consumer gate and scheduled mutation workflow available, but does not auto-queue a broad branch-range producer or rerun standing pytest after release pytest |
+| release-changed-line-coverage | release-final only | release-final owner | runs the changed-line coverage/mutation proof once, after every other release check, with an explicit base SHA and external runtime output |
+| check-changed-line-mutation-coverage | release-final consumer | remains unique consumer | consumes the release producer's payload; it is not an ordinary, default, or full-lane gate |
 | check-markdown | commit-time + broad | **narrowed 2026-08-11 -> scoped commit-time + broad** | It was in the row above under "pulled by prior work; unchanged", meaning it had never been classified against the four criteria, and it failed three of them. Unscoped it lints every tracked markdown file (540) on any staged `.md`: validate-all, which the decision frame disqualifies by name; not changed-scoped, so an unrelated file's lint error blocks your commit; and **~5.0s measured**, five times the ~1s budget line, which the budget rule above never counted because it only tallied the `.py` path. It also hard-`exit 1`s without `markdownlint-cli2`/`npm` instead of degrading like its siblings. Now the commit layer passes the STAGED `.md` files (`check-markdown (staged)`, ~1.0s, node start-up rather than file count) and skips the repo-wide inline-code advisory, which is WARN-only and still runs unscoped at the broad gate and in CI. Deliberate exception to "the exact broad-gate command": rules and candidate set are identical, so a scoped run renders a strict SUBSET of the unscoped verdicts. |
 | check-docs | commit-time + broad | **pulled → commit-time + broad** | The composite receipt runs Markdown syntax, source and exported-doc references, awiki reachability, and lychee internal/external link checks together. Component scripts remain directly callable for diagnosis; the aggregate is the only docs label queued by quality and pre-push, so one failure cannot be mistaken for a passing sibling. The broad run is whole-tree because graph reachability and exported links are relationship properties; a staged invocation may pass a narrower Markdown subset only when the caller explicitly requests it. |
 | check-doc-links | focused compatibility only | stays | Retained for explicit diagnostics and older automation; the default core lane does not run this docs sweep, while the explicit `check-docs` lane owns the composed docs receipt. |

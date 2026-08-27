@@ -39,8 +39,8 @@ def resolve_markdownlint_cmd(repo_root: Path | None = None) -> list[str] | None:
     ``npm exec --`` with no ``--no``. #630 is filed against exactly that spelling —
     without ``--no``, npm reaches the registry and pays the network round trip on any
     machine where the binary is not on PATH — and this file is emitted as an operator
-    command by ``slice_closeout_advisories`` and the Goal Run planner, so the
-    unguarded spelling was live, not dead. A docstring
+    command by quality preflight and the Goal Run planner, so the unguarded
+    spelling was live, not dead. A docstring
     asserting a mirror is not one; the tiers are duplicated here in the same order the
     shell gate resolves them.
     """
