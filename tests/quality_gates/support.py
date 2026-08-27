@@ -345,7 +345,6 @@ QUALITY_PYTHON_STUBS = (
     ("validate-critique-artifacts", "validate_critique_artifacts.py"),
     ("validate-ideation-artifact", "validate_ideation_artifact.py"),
     ("validate-retro-artifact", "validate_retro_artifact.py"),
-    ("check-lesson-evaluation-continuity", "check_lesson_evaluation_continuity.py"),
     ("validate-current-pointer-freshness", "validate_current_pointer_freshness.py"),
     ("check-current-pointer-writes", "check_current_pointer_writes.py"),
     ("inventory-skill-script-references", "inventory_skill_script_references.py"),

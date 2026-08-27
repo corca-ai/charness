@@ -59,14 +59,9 @@ def test_retro_consumes_prepare_packets_when_adapter_declares_sections() -> None
     assert "CHARNESS_RETRO_CHANGED_REF" in packet_text
 
 
-def test_retro_lesson_evaluation_requires_contemporaneous_presentation() -> None:
-    reference = (
-        ROOT / "skills" / "public" / "retro" / "references" / "lesson-evaluation.md"
-    ).read_text(encoding="utf-8")
-    normalized = " ".join((RETRO_SKILL + "\n" + reference).split())
-    assert "contemporaneous agent-authored session-start" in normalized
-    assert "A valid bundle proves the issued content, not human readback, lesson use, or positive effect" in normalized
-    assert "record absent or uncertain presentation honestly without appending a score" in normalized
-    assert "affirmative no-effect judgment as distinct from merely having zero score events" in normalized
-    assert "Never backfill scores" in normalized
-    assert "no lesson-scoring duty" in normalized
+def test_retro_keeps_lesson_ledger_optional() -> None:
+    normalized = " ".join(RETRO_SKILL.split())
+    assert "lesson ledger is optional memory and selection state" in normalized
+    assert "session-emission receipts" in normalized
+    assert "disposition-continuity records" in normalized
+    assert "references/lesson-evaluation.md" not in RETRO_SKILL
