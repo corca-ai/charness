@@ -493,15 +493,6 @@ validators:
     consumer_facing: false
     decision: exclude
     reason: "shared packaging support validator, not a consumer-authored artifact contract"
-  - path: skills/achieve/scripts/check_goal_artifact.py
-    id: goal-artifact
-    consumer_facing: true
-    decision: publish
-    artifact_type: goal-artifact
-    adoption_policy: wire-or-opt-out
-    reason: "consumer-facing artifact or closeout contract; the packaged path is the source of truth for consuming repositories"
-    purpose: "validates a consumer-authored goal artifact"
-    invocation: "python3 <plugin-root>/skills/achieve/scripts/check_goal_artifact.py"
   - path: skills/hitl/scripts/check_chunk_contract.py
     consumer_facing: false
     decision: exclude

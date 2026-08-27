@@ -430,8 +430,6 @@ def test_consumer_validator_catalog_pull_covers_source_and_exported_paths() -> N
         "skills/public/quality/references/consumer-validator-catalog.yaml",
         "plugins/charness/skills/quality/references/consumer-validator-catalog.yaml",
         "scripts/check_demo.py",
-        "skills/public/achieve/scripts/check_goal_artifact.py",
-        "plugins/charness/skills/achieve/scripts/check_goal_artifact.py",
         # INFIX-named validators, which this list did not cover. The catalog's
         # discovery predicate became position-independent on 2026-08-23 while this
         # dispatcher kept its own positional copy of the rule -- so the one validator

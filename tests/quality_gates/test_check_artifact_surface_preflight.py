@@ -8,7 +8,6 @@ import subprocess
 import sys
 from dataclasses import replace
 from pathlib import Path
-from string import Template
 
 import pytest
 import yaml
@@ -18,8 +17,6 @@ from scripts import export_plugin as export_plugin_module
 from skills.public.critique.scripts.verification_retry import build_retry_key
 
 from .support import ROOT
-
-FIXTURES = Path(__file__).resolve().parent / "fixtures"
 
 
 def _minimal_repo(tmp_path: Path) -> Path:
@@ -90,11 +87,7 @@ def test_surface_for_path_maps_adapter_scoped_quality() -> None:
     assert preflight.surface_for_type("debug").commit_boundary is True
 
 
-def test_surface_for_type_and_goal_closeout_has_no_scaffold() -> None:
-    goal = preflight.surface_for_type("goal-closeout")
-    assert goal is not None
-    assert goal.scaffold is None  # validator-constants/template row, not a scaffold
-    assert goal.commit_boundary is False  # owned by the achieve complete-flip
+def test_surface_for_type_unknown_is_none() -> None:
     assert preflight.surface_for_type("nope") is None
 
 
@@ -201,15 +194,6 @@ def test_changed_artifacts_noop_for_unrelated_paths(monkeypatch) -> None:
 # end-to-end checks of the shape source + the relocated verdict.
 
 
-def test_describe_goal_closeout_reads_template() -> None:
-    surface = preflight.surface_for_type("goal-closeout")
-    out = preflight.describe(ROOT, surface, target_rel=None)
-    assert "## Final Verification" in out
-    assert "Disposition review:" in out
-    # goal-closeout has no shape validator at the commit boundary; the closeout owns it.
-    assert "achieve closeout" in out
-
-
 def test_emit_stub_critique_carries_required_sections() -> None:
     text, code = preflight.emit_stub(ROOT, preflight.surface_for_type("critique"))
     assert code == 0
@@ -292,12 +276,6 @@ def test_describe_debug_is_changed_scoped_after_gaining_paths() -> None:
     # the target rather than reporting a whole-corpus verdict.
     out = preflight.describe(ROOT, preflight.surface_for_type("debug"), target_rel="charness-artifacts/debug/latest.md")
     assert "--paths charness-artifacts/debug/latest.md" in out
-
-
-def test_emit_stub_goal_closeout_has_no_scaffold_message() -> None:
-    text, code = preflight.emit_stub(ROOT, preflight.surface_for_type("goal-closeout"))
-    assert code == 0
-    assert "no scaffold script" in text
 
 
 def test_changed_artifacts_passes_scaffold_roundtrip(
@@ -410,9 +388,6 @@ def test_shape_text_handles_each_missing_shape_source() -> None:
     # template-section source that points at a missing template -> "(template ... not found)"
     bad_template = replace(critique, scaffold=None, template_section="nope/missing.md|## Heading")
     assert "not found" in preflight._shape_text(ROOT, bad_template)
-    # template-PREAMBLE source that points at a missing template -> "(template ... not found)"
-    bad_preamble = replace(critique, scaffold=None, template_section=None, template_preamble="nope/missing.md")
-    assert "not found" in preflight._shape_text(ROOT, bad_preamble)
     # no shape source at all -> "(no shape source registered)"
     no_source = replace(critique, scaffold=None, template_section=None)
     assert preflight._shape_text(ROOT, no_source) == "(no shape source registered)"
@@ -516,12 +491,6 @@ def test_main_changed_artifacts_ok_returns_zero(monkeypatch, capsys) -> None:
     assert payload["checked"] == []
 
 
-def test_main_type_describes_surface(monkeypatch, capsys) -> None:
-    monkeypatch.setattr(sys, "argv", ["x", "--type", "goal-closeout"])
-    assert preflight.main() == 0
-    assert "## Final Verification" in capsys.readouterr().out
-
-
 def test_main_emit_stub_writes_stub(monkeypatch, capsys) -> None:
     monkeypatch.setattr(sys, "argv", ["x", "--type", "critique", "--emit-stub"])
     assert preflight.main() == 0
@@ -535,80 +504,6 @@ def test_main_requires_one_selector(monkeypatch) -> None:
     assert exc.value.code == 2
 
 
-def test_goal_early_close_surface_renders_required_sections() -> None:
-    surface = preflight.surface_for_type("goal-early-close")
-    assert surface is not None
-    assert surface.commit_boundary is False
-    out = preflight.describe(ROOT, surface, target_rel=None)
-    assert "## Why early closeout was chosen" in out
-    assert "## What user decisions are needed" in out
-    assert "## Waste and retro" in out
-
-
-def test_goal_early_close_emit_stub_round_trips_the_floor_validator(tmp_path: Path) -> None:
-    # Dogfood: the preflight's emit-stub for goal-early-close must produce a report
-    # that PASSES the achieve early-close-report floor's own validator — so an author
-    # starting from the surfaced stub cannot fail the complete flip on shape.
-    text, code = preflight.emit_stub(ROOT, preflight.surface_for_type("goal-early-close"))
-    assert code == 0
-    spec = importlib.util.spec_from_file_location(
-        "goal_artifact_early_close_report",
-        ROOT / "skills/public/achieve/scripts/goal_artifact_early_close_report.py",
-    )
-    ecr = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(ecr)
-    report = tmp_path / "early-close.md"
-    report.write_text(text, encoding="utf-8")
-    assert ecr.validate_report_shape(report) == []
-
-
-# --- goal-activation-preflight-surface: the `Activation:` preamble line ---------
-
-
-def test_extract_preamble_stops_at_first_h2() -> None:
-    text = "# Title\n\nStatus: draft\nActivation: `/goal @x.md`\n\nintro para\n## Section\nbody\n"
-    out = preflight._extract_preamble(text)
-    assert "# Title" in out
-    assert "Activation: `/goal @x.md`" in out
-    assert "intro para" in out
-    assert "## Section" not in out and "body" not in out
-    # a template with no preamble (starts at an H2) reports the miss, never crashes.
-    assert preflight._extract_preamble("## First\nbody\n") == "(template preamble not found)"
-
-
-def test_goal_activation_surface_reads_activation_preamble() -> None:
-    surface = preflight.surface_for_type("goal-activation")
-    assert surface is not None
-    assert surface.validator is None
-    assert surface.scaffold is None
-    assert surface.commit_boundary is False  # checked at activation-readiness, not a commit gate
-    assert surface.template_preamble is not None  # preamble source, not a `## Heading` section
-    out = preflight.describe(ROOT, surface, target_rel=None)
-    # surfaces the preamble shape (the Activation line + Status/Created), not a section.
-    assert "Activation: `/goal @" in out
-    assert "Status:" in out
-    # owner line names the REAL enforcer — the default check_goal_artifact.py check
-    # (goal_lib.check_goal's Activation:-line requirement) — and explicitly rules out
-    # --pursue-ready (which skips it) and the complete-flip default.
-    assert "check_goal_artifact.py" in out
-    assert "NOT `--pursue-ready`" in out
-    assert "achieve closeout (check_goal_artifact.py at the complete flip)" not in out
-
-
-def test_emit_stub_goal_activation_points_at_template_preamble() -> None:
-    text, code = preflight.emit_stub(ROOT, preflight.surface_for_type("goal-activation"))
-    assert code == 0
-    assert "no scaffold script" in text
-    assert "goal_artifact_template.md" in text
-
-
-def test_goal_activation_surface_lives_in_the_real_goal_preamble() -> None:
-    # The surfaced shape must match the live template preamble (single source), so
-    # the author sees exactly what `check_goal_artifact.py` requires.
-    template = (ROOT / "skills/public/achieve/scripts/goal_artifact_template.md").read_text(encoding="utf-8")
-    assert "Activation: `/goal @{goal_rel}`" in template.split("## ", 1)[0]
-
-
 def test_module_main_guard_executes(monkeypatch) -> None:
     # cover `sys.exit(main())` (the __main__ guard) in-process via runpy, not a
     # subprocess, so the dispatcher stays off the boundary-bypass ratchet.
@@ -618,10 +513,7 @@ def test_module_main_guard_executes(monkeypatch) -> None:
     assert exc.value.code == 0
 
 
-# --- closeout-draft + enriched goal-closeout author-time surfaces ---------------
-# The authoring-preflight class extended to the GitHub-issue closeout-draft and the
-# goal-closeout complete gate: the dispatcher surfaces each shape rendered LIVE from
-# the owning validator's constants (the new `shape_command` source), never re-declared.
+# --- closeout-draft author-time surface -----------------------------------------
 
 
 def _load_describe(rel: str, name: str):
@@ -652,7 +544,6 @@ def test_closeout_draft_surface_is_author_time_shape_only() -> None:
     out = preflight.describe(ROOT, s, target_rel=None)
     # the owner line names the real validator command, not the complete-flip default
     assert "validate-closeout-draft" in out
-    assert "achieve closeout (check_goal_artifact.py at the complete flip)" not in out
 
 
 def test_closeout_draft_describe_emits_the_named_required_fields() -> None:
@@ -762,103 +653,6 @@ def test_closeout_draft_emit_stub_renders_a_starter_body() -> None:
     assert template.read_text(encoding="utf-8") == text
 
 
-def test_goal_closeout_describe_now_surfaces_the_enforced_forms() -> None:
-    # Keeps the template block and adds the enforced forms read live from the
-    # closeout validators.
-    out = preflight.describe(ROOT, preflight.surface_for_type("goal-closeout"), target_rel=None)
-    assert "## Final Verification" in out  # template block still present (backward compat)
-    assert all(r in out for r in ("host-blocked-subagent", "host-log-not-exposed", "evaluator-unavailable"))
-    assert "goal slug" in out  # bare-path + goal-slug binding
-    assert "Routing:" not in out  # phase routing was deleted, not relocated
-    assert "applied:" in out  # disposition form
-
-
-def test_goal_closeout_shape_pins_live_skip_enum_and_optout_floors() -> None:
-    desc = _load_describe("skills/public/achieve/scripts/describe_goal_closeout_shape.py", "dgcs")
-    shape = desc.required_shape()
-    for reason in desc._PRESCRIBED.ALLOWED_SKIP_REASONS:
-        assert reason in shape, reason
-    assert str(desc._PRESCRIBED.MIN_SKIP_LENGTH) in shape
-    assert str(desc._DISPOSITION.MIN_OPTOUT_REASON) in shape
-    # drift guard: the disposition-line forms are the LIVE summaries (not prose), so
-    # the surfaced `Retro dispositions:` / `Structural follow-up:` forms cannot drift
-    # from disposition_form.py's enforced sets. This pins that `Retro dispositions:`
-    # uses VALID_FORM_SUMMARY (NOT the `repo-local guard:` destination form, which is
-    # only valid on `Structural follow-up:`) — the form that would otherwise misdirect.
-    assert desc._DISPOSITION_FORM.VALID_FORM_SUMMARY in shape
-    assert desc._DISPOSITION_FORM.DESTINATION_FORM_SUMMARY in shape
-    assert "repo-local guard" not in desc._DISPOSITION_FORM.VALID_FORM_SUMMARY  # the B1 invariant
-
-
-def test_goal_closeout_emit_stub_combines_template_message_and_enforced_stub() -> None:
-    text, code = preflight.emit_stub(ROOT, preflight.surface_for_type("goal-closeout"))
-    assert code == 0
-    assert "no scaffold script" in text  # template-seeded message (backward compat)
-    assert "## Final Verification" in text and "Retro:" in text  # enforced-form starter
-
-
-def test_goal_closeout_stub_round_trips_complete_gate_when_filled(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-    capsys: pytest.CaptureFixture[str],
-) -> None:
-    slug = "closeout-stub-roundtrip"
-    date = "2026-06-12"
-    goal_rel = f"charness-artifacts/goals/{date}-{slug}.md"
-    evidence_paths = {
-        "retro": f"charness-artifacts/retro/{date}-{slug}.md",
-        "host": f"charness-artifacts/retro/{date}-{slug}-host-log.md",
-        "review": f"charness-artifacts/critique/{date}-{slug}-disposition-review.md",
-    }
-    for rel in evidence_paths.values():
-        path = tmp_path / rel
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(f"{slug}\nNo actionable improvements were surfaced.\n", encoding="utf-8")
-
-    emitted_stub, code = preflight.emit_stub(ROOT, preflight.surface_for_type("goal-closeout"))
-    assert code == 0
-    closeout_stub = (
-        emitted_stub[emitted_stub.index("## Final Verification") :]
-        .replace("charness-artifacts/retro/<date>-<goal-slug>.md", evidence_paths["retro"])
-        .replace("charness-artifacts/retro/<date>-<goal-slug>-host-log.md", evidence_paths["host"])
-        .replace(
-            "charness-artifacts/critique/<date>-<goal-slug>-disposition-review.md",
-            evidence_paths["review"],
-        )
-        .replace(
-            "Retro dispositions: none — <>=30-char reason no surfaced improvement needs active disposition>",
-            "Retro dispositions: none — the bound retro fixture records no actionable improvements, so no active disposition is needed",
-        )
-    )
-    goal_path = tmp_path / goal_rel
-    goal_path.parent.mkdir(parents=True, exist_ok=True)
-    fixture = (FIXTURES / "goal_closeout_roundtrip.md").read_text(encoding="utf-8")
-    goal_path.write_text(
-        Template(fixture).safe_substitute(
-            date=date,
-            goal_rel=goal_rel,
-            closeout_stub=closeout_stub,
-        ),
-        encoding="utf-8",
-    )
-
-    monkeypatch.setattr(
-        sys,
-        "argv",
-        [
-            "check_goal_artifact.py",
-            "--repo-root",
-            str(tmp_path),
-            "--goal-path",
-            str(goal_path),
-        ],
-    )
-    with pytest.raises(SystemExit) as exc:
-        runpy.run_path(str(ROOT / "skills/public/achieve/scripts/check_goal_artifact.py"), run_name="__main__")
-
-    assert exc.value.code == 0, capsys.readouterr().out
-
-
 def test_run_shape_command_reports_render_failure() -> None:
     bad = replace(
         preflight.surface_for_type("closeout-draft"),
@@ -874,7 +668,7 @@ def test_emit_stub_no_source_arm() -> None:
     # no-stub-source arm rather than crashing — cover the defensive branch.
     bare = replace(
         preflight.surface_for_type("closeout-draft"),
-        scaffold=None, template_section=None, template_preamble=None, shape_command=None,
+        scaffold=None, template_section=None, shape_command=None,
     )
     text, code = preflight.emit_stub(ROOT, bare)
     assert code == 0
@@ -885,7 +679,6 @@ def test_emit_stub_no_source_arm() -> None:
     "rel",
     [
         "skills/public/issue/scripts/describe_closeout_draft_shape.py",
-        "skills/public/achieve/scripts/describe_goal_closeout_shape.py",
     ],
 )
 def test_describe_script_main_renders_shape_and_stub(rel: str, capsys) -> None:
@@ -902,7 +695,6 @@ def test_describe_script_main_renders_shape_and_stub(rel: str, capsys) -> None:
     "rel",
     [
         "skills/public/issue/scripts/describe_closeout_draft_shape.py",
-        "skills/public/achieve/scripts/describe_goal_closeout_shape.py",
     ],
 )
 def test_describe_script_main_guard_executes(rel: str, monkeypatch) -> None:
@@ -917,7 +709,6 @@ def test_describe_script_main_guard_executes(rel: str, monkeypatch) -> None:
     "rel,loader,sibling",
     [
         ("skills/public/issue/scripts/describe_closeout_draft_shape.py", "_load_local", "issue_verify_closeout_body"),
-        ("skills/public/achieve/scripts/describe_goal_closeout_shape.py", "_load_sibling", "goal_artifact_disposition_grammar"),
     ],
 )
 def test_describe_sibling_loader_fails_closed_when_spec_missing(rel, loader, sibling, monkeypatch) -> None:
@@ -927,15 +718,6 @@ def test_describe_sibling_loader_fails_closed_when_spec_missing(rel, loader, sib
     monkeypatch.setattr(importlib.util, "spec_from_file_location", lambda *a, **k: None)
     with pytest.raises(ImportError):
         getattr(desc, loader)(sibling)
-
-
-def test_goal_closeout_prescribed_lib_loader_fails_closed(monkeypatch) -> None:
-    # covers BOTH the in-loop spec-None `continue` and the final not-found raise of
-    # the ancestor-walk loader for check_prescribed_skill_executed_lib.
-    desc = _load_describe("skills/public/achieve/scripts/describe_goal_closeout_shape.py", "prescribedfail")
-    monkeypatch.setattr(importlib.util, "spec_from_file_location", lambda *a, **k: None)
-    with pytest.raises(ImportError, match="check_prescribed_skill_executed_lib"):
-        desc._load_repo_script("check_prescribed_skill_executed_lib")
 
 
 def test_every_shape_producer_is_reachable_from_its_owning_skill() -> None:

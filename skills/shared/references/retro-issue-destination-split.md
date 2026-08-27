@@ -94,7 +94,7 @@ Three outcomes:
 that `Destination:` is one of `upstream-harness` / `repo-local` / `both`. It is
 presence/value-enum only: a present-but-vague pattern passes; a missing field
 fails. It never judges whether the generalization is good — that is the
-reviewer's job, exactly as the achieve disposition floor stays presence-only.
+reviewer's job.
 
 ## The Structural-Follow-Up Destination (disposition-side, the teeth)
 
@@ -102,11 +102,8 @@ The two axes above shape an issue *once a finding is headed for one*. The prior
 question — for a **transferable** waste item (one a retro's `## Sibling Search`
 names), where does the structural follow-up go *at all*? — is the
 structural-follow-up **destination**. This shared section is the single source of
-that vocabulary: `retro` records it per transferable waste item, `achieve`'s
-disposition review classifies it, and the achieve disposition gate (rung 1e in
-`goal_artifact_disposition.py`) enforces a valid form is present. The inline
-four-form list in achieve `lifecycle-after.md` (rung 1e) is a display copy for the gate
-contract, not a second source — it points here. One vocabulary, four forms:
+that vocabulary: `retro` records it per transferable waste item and the retro
+validator enforces a valid form. One vocabulary, four forms:
 
 - `applied: <gate/hook/validator/test/contract change>` — teeth landed this run.
 - `issue #N (recurs: <lineage> | novel: <reason>)` — filed for later; the issue

@@ -3,11 +3,10 @@
 
 `check_doc_authoring_preflight.py` forecasts the constraints on a document you
 have already written. This module answers the other half of the same question --
-what are the constraints, before a line exists -- which is what its two sibling
-preflights already do (`describe_goal_closeout_shape.py` with no `--goal-path`,
-`check_skill_surface_preflight.py` describing by default). The general-docs
-surface was the only one that could not, so an author met a rule only by
-breaking it first and one rework cycle was structurally guaranteed.
+what are the constraints, before a line exists -- which is what
+`check_skill_surface_preflight.py` already does. The general-docs surface was the
+only one that could not, so an author met a rule only by breaking it first and
+one rework cycle was structurally guaranteed.
 
 Every rule here is RENDERED, never restated. Each row is the owning validator's
 own constant, or the verdict that validator returns when this module PROBES it

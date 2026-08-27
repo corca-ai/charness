@@ -45,25 +45,17 @@ DEFAULT_CHECKOUT_ROOT_MARKERS = frozenset(
     }
 )
 
-EVIDENCE_SECTIONS = frozenset(
-    {
-        "auto-retro",
-        "context sources",
-        "final verification",
-        "off-goal findings",
-        "plan critique findings",
-        "slice log",
-    }
-)
+EVIDENCE_SECTIONS = frozenset({"context sources"})
 
 EXECUTION_SECTIONS = frozenset(
     {
-        "active operating frame",
-        "agent verification plan",
-        "boundaries",
-        "goal",
-        "slice plan",
-        "user acceptance",
+    "agent verification plan",
+    "boundaries",
+    "goal",
+    "slice plan",
+    "user acceptance",
+    "interview decisions",
+    "plan critique findings",
     }
 )
 

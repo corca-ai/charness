@@ -71,18 +71,11 @@ bespoke gates") is provisional. Before consolidating or deleting, back-test it:
 Output: a short validated-diagnosis note. If the back-test contradicts the
 diagnosis, revise this roadmap before Phase 1.
 
-## Phase 1 — #387 as the first concrete pilot (cheap, evidenced)
+## Phase 1 — retired closeout stack
 
-[#387](https://github.com/corca-ai/charness/issues/387) "Report goal closeout
-shape errors in one actionable pass." The achieve closeout gate stack surfaces
-failures serially — directly observed this session: a single commit bounced
-through validate-skills, then headroom, then artifact-shape, then the critique
-gate, one round each. The `describe_goal_closeout_shape.py` preflight should
-aggregate *all* closeout-shape errors in one pass.
-
-Why first: small, scoped, first-hand evidence, and it *demonstrates* less-but-
-better (fewer round-trips, the gate stack made legible) without touching the
-trust model. Good proof the approach pays off before the big structural phase.
+The #387 pilot aggregated errors from the former local Achieve closeout stack.
+That stack has since been deleted: Goal Draft owns planning only and Goal Run
+owns execution state. There is no successor preflight to maintain.
 
 ## Phase 2 — Consolidate the per-unit-disposition cluster (root-cause win)
 

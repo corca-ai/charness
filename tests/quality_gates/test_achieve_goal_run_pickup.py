@@ -191,6 +191,35 @@ def test_parent_read_fast_path_does_one_live_read_without_goal_run_preflight(
     assert actual == resolved
 
 
+def test_lesson_projection_reads_one_item_per_section_without_writing(tmp_path: Path) -> None:
+    path = tmp_path / "charness-artifacts/retro/recent-lessons.md"
+    path.parent.mkdir(parents=True)
+    path.write_text(
+        "# Recent Lessons\n\n"
+        "## Current Focus\n\n- current one\n- current two\n\n"
+        "## Repeat Traps\n\n- trap one\n  continued\n\n"
+        "## Next-Time Checklist\n\n- next one\n",
+        encoding="utf-8",
+    )
+
+    before = path.read_bytes()
+    result = pickup._read_lesson_projection(tmp_path)
+
+    assert result["status"] == "selected"
+    assert result["items"] == [
+        {"section": "Current Focus", "lesson": "current one"},
+        {"section": "Repeat Traps", "lesson": "trap one continued"},
+        {"section": "Next-Time Checklist", "lesson": "next one"},
+    ]
+    assert path.read_bytes() == before
+
+
+def test_missing_lesson_projection_is_advisory(tmp_path: Path) -> None:
+    result = pickup._read_lesson_projection(tmp_path)
+
+    assert result["status"] == "unavailable"
+
+
 def test_pickup_refuses_closed_parent_before_binding_or_mutation(monkeypatch: pytest.MonkeyPatch) -> None:
     metadata = _metadata()
     parent = {
@@ -304,23 +333,10 @@ def test_pickup_reads_only_cursor_child_and_refuses_closed_cursor(
         "_read_goal_parent",
         lambda *_args: (graph, {"adapter_ok": True, "backend": {}}),
     )
-    lesson_calls: list[tuple[Path, str]] = []
-    monkeypatch.setattr(
-        pickup,
-        "read_goal_lessons",
-        lambda repo_root, goal_key: lesson_calls.append((repo_root, goal_key))
-        or {
-            "kind": "charness.goal-lesson-pickup/v1",
-            "status": "selected",
-            "items": [{"section": "repeat_trap", "lesson": "use the returned projection"}],
-        },
-    )
-
     if child_state == "CLOSED":
         with pytest.raises(pickup.PickupError) as exc_info:
             pickup.pickup(ROOT, "/goal #724")
         assert exc_info.value.code == "cursor-child-closed"
-        assert lesson_calls == []
         return
 
     result = pickup.pickup(ROOT, "/goal #724")
@@ -333,5 +349,3 @@ def test_pickup_reads_only_cursor_child_and_refuses_closed_cursor(
     assert result["selection"] == {"source": "parent-progress", "child_reads": 1}
     assert result["child_issue"]["body"] == "child body"
     assert result["selected_child"]["state"] == "OPEN"
-    assert result["lessons"]["items"][0]["lesson"] == "use the returned projection"
-    assert lesson_calls == [(ROOT, f"{REPO}#{PARENT_NUMBER}")]

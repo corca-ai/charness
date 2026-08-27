@@ -7,11 +7,6 @@ ROOT = Path(__file__).resolve().parents[2]
 
 PRODUCER_VALIDATOR_PAIRS = (
     (
-        "achieve",
-        "upsert_goal.py",
-        "check_goal_artifact.py",
-    ),
-    (
         "debug",
         "scaffold_debug_artifact.py",
         "validate_debug_artifact.py",

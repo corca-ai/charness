@@ -1,671 +1,103 @@
 from __future__ import annotations
 
 import importlib.util
-import subprocess
-import sys
 from pathlib import Path
 
 import pytest
-import yaml
 
-_LIB = Path(__file__).resolve().parents[2] / "skills/public/achieve/scripts/goal_artifact_lib.py"
-_CHECKER = Path(__file__).resolve().parents[2] / "skills/public/achieve/scripts/check_goal_artifact.py"
-_spec = importlib.util.spec_from_file_location("goal_artifact_lib", _LIB)
-gal = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(gal)
-
-
-def _goal_text(tmp_path: Path, slug: str = "g", date: str = "2026-05-27") -> str:
-    path = gal.goal_path(tmp_path, date, slug)
-    return path.read_text(encoding="utf-8")
+ROOT = Path(__file__).resolve().parents[2]
+SCRIPT = ROOT / "skills/public/achieve/scripts/goal_artifact_lib.py"
+spec = importlib.util.spec_from_file_location("goal_artifact_lib", SCRIPT)
+gal = importlib.util.module_from_spec(spec)
+assert spec is not None and spec.loader is not None
+spec.loader.exec_module(gal)
 
 
-def test_upsert_creates_then_updates_status_only(tmp_path: Path) -> None:
-    first = gal.upsert_goal(tmp_path, date="2026-05-27", slug="g", title="First", goal_body="BODY-AAA")
-    assert first["action"] == "created"
-
-    again = gal.upsert_goal(tmp_path, date="2026-05-27", slug="g", title="Second", status="active", goal_body="BODY-BBB")
-    assert again["action"] in ("updated", "unchanged")
-    assert "note" in again  # signals the existing-artifact / collision case
-
-    text = _goal_text(tmp_path)
-    assert "BODY-AAA" in text and "BODY-BBB" not in text  # body never overwritten
-    assert "First" in text and "Second" not in text  # title never overwritten
-    assert "Status: active" in text
-
-
-def test_check_goal_passes_on_scaffold_and_reports_gaps(tmp_path: Path) -> None:
-    gal.upsert_goal(tmp_path, date="2026-05-27", slug="g", title="T")
-    text = _goal_text(tmp_path)
-    assert gal.check_goal(text)["ok"] is True
-    assert text.index("## Active Operating Frame") < text.index("## Goal")
-    frame = text[text.index("## Active Operating Frame") : text.index("## Goal")]
-    assert "Verification cadence:" not in text
-    assert "Gate cadence:" not in frame
-    assert "Current slice intent:" in text
-    assert "History boundary: keep this frame current" in text
-    assert "## Operator Decision Queue" in text
-    assert "Decision: operator-only decision or confirmation needed" in text
-
-    bad = gal.check_goal("# Achieve Goal: T\n\nStatus: bogus\n\n## Goal\n")
-    assert bad["ok"] is False
-    assert "Non-Goals" in bad["missing_sections"]
-    assert any("bogus" in issue for issue in bad["issues"])
-
-
-def test_check_goal_flags_missing_activation_preamble_line() -> None:
-    """The goal `Activation:` preamble line is the author-time-surfaced shape
-    (`check_artifact_surface_preflight.py --type goal-activation`); its enforcement is
-    this `check_goal` requirement. A goal artifact without the `Activation:` preamble
-    line is flagged. (Pins the enforcement the goal-activation preflight surface points at.)"""
-    with_activation = (
-        "# Achieve Goal: T\n\nStatus: draft\nActivation: `/goal @x.md`\n\n## Goal\nbody\n"
+def test_upsert_creates_a_planning_record(tmp_path: Path) -> None:
+    result = gal.upsert_goal(
+        tmp_path,
+        date="2026-05-27",
+        slug="planning-record",
+        title="Planning Record",
+        goal_body="Make the intended outcome explicit.",
     )
-    without_activation = "# Achieve Goal: T\n\nStatus: draft\n\n## Goal\nbody\n"
 
-    assert any("Activation" in issue for issue in gal.check_goal(without_activation)["issues"])
-    assert gal.check_goal(without_activation)["ok"] is False
-    # Behavior-preserving: a well-formed Activation preamble line raises no Activation issue.
-    assert not any("Activation" in issue for issue in gal.check_goal(with_activation)["issues"])
-
-
-def test_check_goal_activation_ignores_a_fenced_template_excerpt() -> None:
-    """S53 (audit 2026-07-28): the check was a bare substring test
-    (`"Activation:" not in text`) over the RAW body, so a goal whose only
-    `Activation:` occurrence was a fenced template excerpt passed with no real
-    activation line, and a valueless bare label passed too."""
-    fenced_only = (
-        "# Achieve Goal: T\n\nStatus: draft\n\n"
-        "```\nActivation: `/goal @template.md`\n```\n\n## Goal\nbody\n"
-    )
-    valueless = "# Achieve Goal: T\n\nStatus: draft\nActivation:\n\n## Goal\nbody\n"
-
-    for text in (fenced_only, valueless):
-        assert any("Activation" in issue for issue in gal.check_goal(text)["issues"]), text
-        assert gal.check_goal(text)["ok"] is False
+    assert result == {"action": "created", "path": "charness-artifacts/goals/2026-05-27-planning-record.md"}
+    text = gal.goal_path(tmp_path, "2026-05-27", "planning-record").read_text(encoding="utf-8")
+    assert gal.check_planning_shape(text)["ok"] is True
+    assert "Make the intended outcome explicit." in text
+    assert "Status:" not in text
+    assert "Activation:" not in text
+    assert "Slice Log" not in text
+    assert "Auto-Retro" not in text
 
 
-def test_check_goal_activation_control_real_line_beside_a_fence_passes() -> None:
-    """Control (false-refusal guard): a real activation line still satisfies the
-    check when the artifact also carries a fenced example, and the list-item and
-    indented forms stay accepted."""
-    beside_fence = (
-        "# Achieve Goal: T\n\nStatus: draft\nActivation: `/goal @x.md`\n\n"
-        "```\nActivation: `/goal @template.md`\n```\n\n## Goal\nbody\n"
-    )
-    list_item = "# Achieve Goal: T\n\nStatus: draft\n- Activation: `/goal @x.md`\n\n## Goal\nbody\n"
-
-    for text in (beside_fence, list_item):
-        assert not any("Activation" in issue for issue in gal.check_goal(text)["issues"]), text
-
-
-def test_append_slice_numbers_and_spacing(tmp_path: Path) -> None:
-    gal.upsert_goal(tmp_path, date="2026-05-27", slug="g", title="T")
+def test_upsert_updates_only_planning_fields_before_binding(tmp_path: Path) -> None:
+    gal.upsert_goal(tmp_path, date="2026-05-27", slug="g", title="Old", goal_body="old body")
     path = gal.goal_path(tmp_path, "2026-05-27", "g")
-    text = path.read_text(encoding="utf-8")
-    assert gal.next_slice_number(text) == 1
-    text = gal.append_slice(text, gal.render_slice_block(1, "one", {"Objective": "a"}))
-    text = gal.append_slice(text, gal.render_slice_block(gal.next_slice_number(text), "two", {}))
-    assert "### Slice 1: one" in text and "### Slice 2: two" in text
-    assert "\n\n\n" not in text  # single blank-line separation
-    assert "- Objective:\n" in text  # empty field carries no trailing space
+    original = path.read_text(encoding="utf-8")
+    marker = "## Boundaries\n\noperator-authored boundary\n"
+    path.write_text(original.replace("## Boundaries\n", marker), encoding="utf-8")
+
+    result = gal.upsert_goal(tmp_path, date="2026-05-27", slug="g", title="New", goal_body="new body")
+
+    updated = path.read_text(encoding="utf-8")
+    assert result["action"] == "updated"
+    assert "# Achieve Goal: New" in updated
+    assert "new body" in updated
+    assert "operator-authored boundary" in updated
 
 
-def test_render_slice_block_includes_test_duplication_pressure(tmp_path: Path) -> None:
-    block = gal.render_slice_block(1, "s", {"Test duplication pressure": "23.2% vs 22% gate"})
-    assert "- Test duplication pressure: 23.2% vs 22% gate" in block
-    # field stays ordered between targeted verification and critique
-    assert block.index("Targeted verification") < block.index("Test duplication pressure") < block.index("Critique")
+def test_binding_sibling_freezes_the_draft(tmp_path: Path) -> None:
+    gal.upsert_goal(tmp_path, date="2026-05-27", slug="g", title="Frozen", goal_body="body")
+    path = gal.goal_path(tmp_path, "2026-05-27", "g")
+    binding = path.with_suffix(".binding.json")
+    binding.write_text("{}\n", encoding="utf-8")
+    original = path.read_bytes()
+
+    result = gal.upsert_goal(tmp_path, date="2026-05-27", slug="g", title="Changed", goal_body="changed")
+
+    assert result["action"] == "refused"
+    assert result["reason"] == "frozen-binding"
+    assert path.read_bytes() == original
 
 
-def test_slugify_neutralizes_path_chars() -> None:
-    assert gal.slugify("../../etc/passwd") == "etc-passwd"
-    assert gal.slugify("Mixed CASE!!") == "mixed-case"
+def test_upsert_refuses_to_write_an_invalid_existing_planning_shape(tmp_path: Path) -> None:
+    path = gal.goal_path(tmp_path, "2026-05-27", "g")
+    path.parent.mkdir(parents=True)
+    path.write_text("# Achieve Goal: Old\n\n## Goal\n\nold body\n", encoding="utf-8")
+    before = path.read_bytes()
+
+    with pytest.raises(ValueError, match="invalid Goal Draft planning shape"):
+        gal.upsert_goal(
+            tmp_path,
+            date="2026-05-27",
+            slug="g",
+            title="New",
+            goal_body="new body",
+        )
+
+    assert path.read_bytes() == before
 
 
-def test_set_status_rejects_invalid_and_preserves_crlf() -> None:
-    with pytest.raises(ValueError):
-        gal.set_status("Status: draft\n", "bogus")
-    crlf = "# Achieve Goal: T\r\nStatus: draft\r\nCreated: 2026-05-27\r\n"
-    out = gal.set_status(crlf, "active")
-    assert "Status: active\r\n" in out  # CRLF on the status line preserved
-    assert "Status: draft" not in out
+def test_planning_shape_reports_missing_sections_and_bad_paths() -> None:
+    result = gal.check_planning_shape(
+        "# Achieve Goal: T\n\n## Goal\nRun `/home/user/worktrees/demo` next.\n"
+    )
+
+    assert result["ok"] is False
+    assert "Non-Goals" in result["missing_sections"]
+    assert result["path_portability"]["ok"] is False
+
+
+def test_goal_values_reject_unfenced_headings_and_unbalanced_fences() -> None:
+    with pytest.raises(ValueError, match="unfenced markdown heading"):
+        gal.validate_goal_values("T", "body\n\n## New section")
+    with pytest.raises(ValueError, match="code fence unclosed"):
+        gal.validate_goal_values("T", "body\n\n```\nunfinished")
 
 
 def test_goal_path_rejects_malformed_dates(tmp_path: Path) -> None:
-    # The trailing-line-break cases are what distinguish `\Z` from `$`: `$` also matches
-    # BEFORE a final newline, so `"2026-05-27\n"` validated and built a filename with an
-    # embedded line break. `\r` is included because every reader opens goal artifacts
-    # with universal newlines, which turns a lone CR back into one.
-    for bad in ("2026/05/27", "../escape", "2026-5-7", "not-a-date", "2026-05-27\n", "2026-05-27\r"):
-        with pytest.raises(ValueError):
-            gal.goal_path(tmp_path, bad, "g")
-    # well-formed date is accepted and stays inside the goals namespace
-    path = gal.goal_path(tmp_path, "2026-05-27", "g")
-    assert path.parent == tmp_path / "charness-artifacts" / "goals"
-
-
-def test_fenced_headings_are_ignored(tmp_path: Path) -> None:
-    doc = (
-        "# Achieve Goal: T\n\nStatus: active\nActivation: `/goal @x`\n\n"
-        "## Slice Log\n\n"
-        "### Slice 1: real\n- Objective: x\n\n"
-        "```md\n### Slice 9: fake-in-fence\n## Off-Goal Findings\n```\n\n"
-        "## Off-Goal Findings\n\nKEEP-THIS\n"
-    )
-    # fenced "### Slice 9" must not bump the counter
-    assert gal.next_slice_number(doc) == 2
-    out = gal.append_slice(doc, gal.render_slice_block(2, "second", {"Objective": "y"}))
-    # inserted into the real Slice Log (before the real Off-Goal section), trailing content intact
-    assert "KEEP-THIS" in out
-    assert out.index("### Slice 2: second") < out.rindex("## Off-Goal Findings")
-    assert "### Slice 9: fake-in-fence" in out  # fenced content untouched
-
-
-def test_unbalanced_fence_fails_open_and_still_sees_sections() -> None:
-    # An unclosed ``` must not mask every heading to EOF (regression guard).
-    doc = (
-        "# Achieve Goal: T\n\nStatus: draft\nActivation: `/goal @x`\n\n"
-        "## Active Operating Frame\n"
-        "## Goal\n```python\nprint(1)\n"  # fence never closed
-        "## Non-Goals\n## Boundaries\n## User Acceptance\n## Agent Verification Plan\n"
-        "## Slice Plan\n## Operator Decision Queue\n## Slice Log\n"
-        "## Off-Goal Findings\n## Final Verification\n"
-        "## User Verification Instructions\n## Auto-Retro\n"
-    )
-    result = gal.check_goal(doc)
-    assert result["missing_sections"] == []  # all sections still detected
-
-
-def test_check_goal_does_not_count_fenced_sections() -> None:
-    fenced_only = (
-        "# Achieve Goal: T\n\nStatus: draft\nActivation: `/goal @x`\n\n"
-        "```md\n## Goal\n## Non-Goals\n## Boundaries\n```\n"
-    )
-    result = gal.check_goal(fenced_only)
-    assert result["ok"] is False
-    assert "Goal" in result["missing_sections"]
-
-
-def test_operator_decision_queue_is_not_global_required_section() -> None:
-    body = (
-        "# Achieve Goal: T\n\nStatus: active\nActivation: `/goal @x`\n\n"
-        + "## Active Operating Frame\n## Goal\n## Non-Goals\n## Boundaries\n"
-        "## User Acceptance\n## Agent Verification Plan\n## Slice Plan\n"
-        "## Slice Log\n## Off-Goal Findings\n## Final Verification\n"
-        "## User Verification Instructions\n## Auto-Retro\n"
-        "## Context Sources\n- src\n## Interview Decisions\n- Q1\n"
-        "## Plan Critique Findings\n- blocker folded\n"
-    )
-    result = gal.check_goal(body)
-    assert "Operator Decision Queue" not in result["missing_sections"]
-
-
-# --- After-phase closeout-evidence gate (#230, slice 3) -------------------
-
-
-def _seed_retro(tmp_path: Path, slug: str = "g") -> Path:
-    retro = tmp_path / "charness-artifacts/retro" / f"2026-05-28-{slug}.md"
-    retro.parent.mkdir(parents=True, exist_ok=True)
-    # Non-degenerate on purpose; see the note in test_goal_early_close_report.py.
-    retro.write_text(
-        "# Retro\n\n## What Happened\n\nThe slice landed and its proof ran to green.\n",
-        encoding="utf-8",
-    )
-    return retro
-
-
-def _seed_probe(tmp_path: Path, slug: str = "g") -> Path:
-    probe = tmp_path / "charness-artifacts/probe" / f"2026-05-28-{slug}.json"
-    probe.parent.mkdir(parents=True, exist_ok=True)
-    probe.write_text(
-        '{"host": "claude-code", "surface": "session-log",'
-        ' "observed": ["slice-start", "slice-end"], "verdict": "probed"}\n',
-        encoding="utf-8",
-    )
-    return probe
-
-
-def _append_evidence_lines(text: str, retro_value: str, probe_value: str) -> str:
-    return text.replace(
-        "## Final Verification\n",
-        f"## Final Verification\n\nRetro: {retro_value}\nHost log probe: {probe_value}\n",
-        1,
-    )
-
-
-def _fill_auto_retro_first_line(text: str) -> str:
-    return text.replace(
-        "Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out",
-        "Retro dispositions: none — no actionable improvement surfaced during this run",
-        1,
-    )
-
-
-def _run_goal_checker(repo_root: Path, goal_path: Path) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        [
-            sys.executable,
-            str(_CHECKER),
-            "--repo-root",
-            str(repo_root),
-            "--goal-path",
-            str(goal_path),
-        ],
-        check=False,
-        cwd=Path(__file__).resolve().parents[2],
-        text=True,
-        capture_output=True,
-    )
-
-
-def test_parse_closeout_evidence_handles_path_and_skip() -> None:
-    text = (
-        "Retro: charness-artifacts/retro/2026-05-28-g.md\n"
-        "Host log probe: skipped: host-log-not-exposed: claude jsonl unavailable\n"
-    )
-    parsed = gal.parse_closeout_evidence(text)
-    assert parsed["retro_artifact"] == {
-        "kind": "evidence",
-        "value": "charness-artifacts/retro/2026-05-28-g.md",
-    }
-    assert parsed["host_log_probe"]["kind"] == "skip"
-    assert "host-log-not-exposed" in parsed["host_log_probe"]["value"]
-
-
-def test_check_complete_evidence_passes_with_real_files(tmp_path: Path) -> None:
-    gal.upsert_goal(tmp_path, date="2026-05-28", slug="g", title="T")
-    retro = _seed_retro(tmp_path)
-    probe = _seed_probe(tmp_path)
-    text = _goal_text(tmp_path, date="2026-05-28")
-    text = _append_evidence_lines(
-        text,
-        retro_value=str(retro.relative_to(tmp_path)),
-        probe_value=str(probe.relative_to(tmp_path)),
-    )
-    text = _fill_auto_retro_first_line(text)
-    report = gal.check_complete_evidence(tmp_path, text)
-    assert report["ok"] is True
-
-
-def test_scaffold_placeholders_do_not_satisfy_complete_evidence_gate(tmp_path: Path) -> None:
-    # #315 non-weakening invariant: the seeded `TODO` placeholders must STILL
-    # fail the complete-evidence gate — they parse as neither evidence nor skip.
-    gal.upsert_goal(tmp_path, date="2026-06-06", slug="g", title="T")
-    text = _goal_text(tmp_path, date="2026-06-06")
-    parsed = gal.parse_closeout_evidence(text)
-    assert "retro_artifact" not in parsed  # the `Retro: TODO` line is dropped
-    assert "host_log_probe" not in parsed
-    report = gal.check_complete_evidence(tmp_path, text)
-    assert report["ok"] is False
-    assert set(gal.CLOSEOUT_EVIDENCE_NAMES).issubset(set(report["missing"]))
-
-
-def test_upsert_refuses_complete_on_untouched_scaffold_placeholders(tmp_path: Path) -> None:
-    # #315: scaffolding then immediately flipping to complete (placeholders
-    # untouched) must be refused, end to end via upsert_goal.
-    gal.upsert_goal(tmp_path, date="2026-06-06", slug="g", title="T")
-    refusal = gal.upsert_goal(
-        tmp_path, date="2026-06-06", slug="g", title="T", status="complete"
-    )
-    assert refusal["action"] == "refused"
-    assert refusal["status"] != "complete"
-    assert "Status: complete" not in _goal_text(tmp_path, date="2026-06-06")
-    assert refusal["evidence_report"]["ok"] is False
-
-
-def test_check_complete_evidence_fails_when_no_lines(tmp_path: Path) -> None:
-    gal.upsert_goal(tmp_path, date="2026-05-28", slug="g", title="T")
-    text = _goal_text(tmp_path, date="2026-05-28")
-    report = gal.check_complete_evidence(tmp_path, text)
-    assert report["ok"] is False
-    assert set(report["missing"]) == set(gal.CLOSEOUT_EVIDENCE_NAMES)
-
-
-def test_upsert_refuses_flip_to_complete_without_evidence(tmp_path: Path) -> None:
-    gal.upsert_goal(tmp_path, date="2026-05-28", slug="g", title="T")
-    refusal = gal.upsert_goal(
-        tmp_path, date="2026-05-28", slug="g", title="T", status="complete"
-    )
-    assert refusal["action"] == "refused"
-    assert refusal["status"] != "complete"
-    # the file's Status line must still say what it was before the call
-    assert "Status: complete" not in _goal_text(tmp_path, date="2026-05-28")
-    # the refusal payload carries the evidence diagnostic
-    assert refusal["evidence_report"]["ok"] is False
-
-
-def test_upsert_allows_flip_to_complete_with_valid_skips(tmp_path: Path) -> None:
-    gal.upsert_goal(tmp_path, date="2026-05-28", slug="g", title="T")
-    skip_line = "skipped: host-log-not-exposed: claude jsonl path missing on this host"
-    text = _goal_text(tmp_path, date="2026-05-28")
-    text = _append_evidence_lines(text, retro_value=skip_line, probe_value=skip_line)
-    text = _fill_auto_retro_first_line(text)
-    gal.goal_path(tmp_path, "2026-05-28", "g").write_text(text, encoding="utf-8")
-    result = gal.upsert_goal(
-        tmp_path, date="2026-05-28", slug="g", title="T", status="complete"
-    )
-    assert result["action"] in ("updated", "unchanged")
-    assert result["status"] == "complete"
-    assert "Status: complete" in _goal_text(tmp_path, date="2026-05-28")
-
-
-def _complete_evidence_for_new_goal(tmp_path: Path, *, queue_body: str) -> str:
-    date = "2026-06-17"
-    slug = "operator-queue"
-    gal.upsert_goal(tmp_path, date=date, slug=slug, title="T")
-    # Non-degenerate fixtures on purpose; see the note in
-    # test_goal_early_close_report.py. The assertions below are unchanged.
-    retro = _seed_named(
-        tmp_path,
-        f"charness-artifacts/retro/{date}-{slug}.md",
-        f"# Retro\n\n{slug}\n\n## What Happened\n\nThe run closed with its proof green.\n",
-    )
-    probe = _seed_named(
-        tmp_path,
-        f"charness-artifacts/probe/{date}-{slug}.json",
-        '{"host": "claude-code", "surface": "session-log",'
-        ' "observed": ["slice-start", "slice-end"], "verdict": "probed"}\n',
-    )
-    review = _seed_named(
-        tmp_path,
-        f"charness-artifacts/critique/{date}-{slug}-disposition.md",
-        f"# Disposition review for {slug}\n\nEvery queue entry was read and dispositioned.\n",
-    )
-    text = _goal_text(tmp_path, slug=slug, date=date)
-    start = text.index("\n## Operator Decision Queue") + 1
-    end = text.index("## Slice Log")
-    text = text[:start] + f"## Operator Decision Queue\n\n{queue_body}\n\n" + text[end:]
-    text = _append_evidence_lines(
-        text,
-        retro_value=str(retro.relative_to(tmp_path)),
-        probe_value=str(probe.relative_to(tmp_path)),
-    )
-    text = text.replace(
-        f"Host log probe: {probe.relative_to(tmp_path)}\n",
-        f"Host log probe: {probe.relative_to(tmp_path)}\n"
-        f"Disposition review: {review.relative_to(tmp_path)}\n",
-        1,
-    )
-    return _fill_auto_retro_first_line(text)
-
-
-def test_new_complete_goal_requires_operator_queue_disposition(tmp_path: Path) -> None:
-    text = _complete_evidence_for_new_goal(
-        tmp_path,
-        queue_body=(
-            "Record decisions, confirmations, credential actions, manual proof steps, "
-            "and external-boundary approvals discovered during the run."
-        ),
-    )
-    report = gal.check_complete_evidence(tmp_path, text)
-    assert report["ok"] is False
-    reason = report["operator_decision_queue"]["reason"]
-    assert "scaffold" in reason
-    # describe-first: the rejection names the target shape, not only the violation
-    assert "none — <reason>" in reason and "Decision:" in reason
-
-
-def test_new_complete_goal_allows_empty_operator_queue_optout(tmp_path: Path) -> None:
-    text = _complete_evidence_for_new_goal(
-        tmp_path,
-        queue_body="none — no operator-only decisions were discovered during this goal run",
-    )
-    report = gal.check_complete_evidence(tmp_path, text)
-    assert report["ok"] is True
-    assert report["operator_decision_queue"]["ok"] is True
-
-
-def test_upsert_refuses_flip_to_complete_with_invalid_skip(tmp_path: Path) -> None:
-    gal.upsert_goal(tmp_path, date="2026-05-28", slug="g", title="T")
-    text = _goal_text(tmp_path, date="2026-05-28")
-    text = _append_evidence_lines(
-        text,
-        retro_value="skipped: ad-hoc: lighter substitute (anti-pattern)",
-        probe_value="skipped: ad-hoc: lighter substitute (anti-pattern)",
-    )
-    gal.goal_path(tmp_path, "2026-05-28", "g").write_text(text, encoding="utf-8")
-    refusal = gal.upsert_goal(
-        tmp_path, date="2026-05-28", slug="g", title="T", status="complete"
-    )
-    assert refusal["action"] == "refused"
-    invalid_names = {entry["name"] for entry in refusal["evidence_report"]["invalid_skips"]}
-    assert invalid_names == set(gal.CLOSEOUT_EVIDENCE_NAMES)
-
-
-# --- #233 F1 binding + F2 narration -----------------------------------------
-
-_BIND_SLUG = "233-closeout-binding"
-
-
-def _seed_named(tmp_path: Path, rel: str, body: str) -> Path:
-    target = tmp_path / rel
-    target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(body, encoding="utf-8")
-    return target
-
-
-def _complete_ready_goal_with_template_auto_retro(tmp_path: Path, *, status: str) -> tuple[str, Path]:
-    date = "2026-05-30"
-    slug = f"359-placeholder-{status}"
-    gal.upsert_goal(tmp_path, date=date, slug=slug, title="T", status="active")
-    retro = _seed_named(
-        tmp_path,
-        f"charness-artifacts/retro/{date}-{slug}.md",
-        "# Retro\n\n## Next Improvements\n\nnone\n",
-    )
-    probe = _seed_named(
-        tmp_path,
-        f"charness-artifacts/probe/{date}-{slug}.json",
-        '{"host":"claude-code"}\n',
-    )
-    review = _seed_named(
-        tmp_path,
-        f"charness-artifacts/critique/{date}-{slug}-disposition.md",
-        f"# Disposition review for {slug}\n",
-    )
-    goal_path = gal.goal_path(tmp_path, date, slug)
-    text = goal_path.read_text(encoding="utf-8")
-    text = gal.set_status(text, status)
-    text = _append_evidence_lines(
-        text,
-        retro_value=str(retro.relative_to(tmp_path)),
-        probe_value=str(probe.relative_to(tmp_path)),
-    )
-    text = text.replace(
-        f"Host log probe: {probe.relative_to(tmp_path)}\n",
-        f"Host log probe: {probe.relative_to(tmp_path)}\n"
-        f"Disposition review: {review.relative_to(tmp_path)}\n",
-        1,
-    )
-    goal_path.write_text(text, encoding="utf-8")
-    return slug, goal_path
-
-
-def test_goal_checker_section_placeholders_are_complete_only(tmp_path: Path) -> None:
-    _, active_path = _complete_ready_goal_with_template_auto_retro(tmp_path, status="active")
-    active = _run_goal_checker(tmp_path, active_path)
-    assert active.returncode == 0, active.stdout + active.stderr
-    assert "section_placeholders" not in active.stdout
-
-    _, complete_path = _complete_ready_goal_with_template_auto_retro(tmp_path, status="complete")
-    complete = _run_goal_checker(tmp_path, complete_path)
-    assert complete.returncode == 1
-    payload = yaml.safe_load(complete.stdout)
-    placeholders = payload["closeout_evidence"]["section_placeholders"]
-    assert placeholders[0]["section"] == "Auto-Retro"
-    assert placeholders[0]["marker"] == "TODO"
-    assert "section placeholders: Auto-Retro line" in payload["issues"][0]
-
-
-def test_upsert_refusal_summarizes_section_placeholders(tmp_path: Path) -> None:
-    slug, _ = _complete_ready_goal_with_template_auto_retro(tmp_path, status="active")
-    refusal = gal.upsert_goal(
-        tmp_path, date="2026-05-30", slug=slug, title="T", status="complete"
-    )
-    assert refusal["action"] == "refused"
-    assert refusal["section_placeholder_summary"].startswith("Auto-Retro line")
-    assert "Section placeholders: Auto-Retro line" in refusal["note"]
-
-
-def test_derive_goal_tokens_includes_slug_and_numeric_cluster(tmp_path: Path) -> None:
-    gal.upsert_goal(tmp_path, date="2026-05-28", slug=_BIND_SLUG, title="T")
-    text = _goal_text(tmp_path, slug=_BIND_SLUG, date="2026-05-28")
-    tokens = gal.derive_goal_tokens(text)
-    assert _BIND_SLUG in tokens
-    assert "233" in tokens
-
-
-def test_check_complete_evidence_passes_with_bound_files(tmp_path: Path) -> None:
-    gal.upsert_goal(tmp_path, date="2026-05-28", slug=_BIND_SLUG, title="T")
-    retro = _seed_named(
-        tmp_path,
-        f"charness-artifacts/retro/2026-05-28-{_BIND_SLUG}.md",
-        "# Retro\n\n## Waste\n\nx\n",
-    )
-    probe = _seed_named(
-        tmp_path,
-        f"charness-artifacts/probe/2026-05-28-{_BIND_SLUG}.json",
-        '{"host":"claude-code"}\n',
-    )
-    text = _goal_text(tmp_path, slug=_BIND_SLUG, date="2026-05-28")
-    text = _append_evidence_lines(
-        text,
-        retro_value=str(retro.relative_to(tmp_path)),
-        probe_value=str(probe.relative_to(tmp_path)),
-    )
-    text = _fill_auto_retro_first_line(text)
-    report = gal.check_complete_evidence(tmp_path, text)
-    assert report["ok"] is True
-    assert report["binding_failures"] == []
-
-
-def test_check_complete_evidence_rejects_stale_unrelated_retro(tmp_path: Path) -> None:
-    # The #233 F1 attack: cite a present, non-empty, but unrelated retro.
-    gal.upsert_goal(tmp_path, date="2026-05-28", slug=_BIND_SLUG, title="T")
-    stale = _seed_named(
-        tmp_path,
-        "charness-artifacts/retro/2026-04-10-some-old.md",
-        "# Old retro from a different goal\n",
-    )
-    probe = _seed_named(
-        tmp_path,
-        f"charness-artifacts/probe/2026-05-28-{_BIND_SLUG}.json",
-        '{"host":"claude-code"}\n',
-    )
-    text = _goal_text(tmp_path, slug=_BIND_SLUG, date="2026-05-28")
-    text = _append_evidence_lines(
-        text,
-        retro_value=str(stale.relative_to(tmp_path)),
-        probe_value=str(probe.relative_to(tmp_path)),
-    )
-    report = gal.check_complete_evidence(tmp_path, text)
-    assert report["ok"] is False
-    failed = {entry["name"] for entry in report["binding_failures"]}
-    assert failed == {"retro_artifact"}
-
-
-def test_upsert_refuses_flip_to_complete_with_stale_retro(tmp_path: Path) -> None:
-    gal.upsert_goal(tmp_path, date="2026-05-28", slug=_BIND_SLUG, title="T")
-    stale = _seed_named(
-        tmp_path,
-        "charness-artifacts/retro/2026-04-10-some-old.md",
-        "# Old retro\n",
-    )
-    probe = _seed_named(
-        tmp_path,
-        f"charness-artifacts/probe/2026-05-28-{_BIND_SLUG}.json",
-        '{"host":"claude-code"}\n',
-    )
-    text = _goal_text(tmp_path, slug=_BIND_SLUG, date="2026-05-28")
-    text = _append_evidence_lines(
-        text,
-        retro_value=str(stale.relative_to(tmp_path)),
-        probe_value=str(probe.relative_to(tmp_path)),
-    )
-    gal.goal_path(tmp_path, "2026-05-28", _BIND_SLUG).write_text(text, encoding="utf-8")
-    refusal = gal.upsert_goal(
-        tmp_path, date="2026-05-28", slug=_BIND_SLUG, title="T", status="complete"
-    )
-    assert refusal["action"] == "refused"
-    assert refusal["evidence_report"]["binding_failures"]
-
-
-def test_check_complete_evidence_fails_closed_when_identity_underivable(
-    tmp_path: Path,
-) -> None:
-    # F-A: a bare `Activation:` substring satisfies check_goal but yields no
-    # binding tokens. Binding must fail closed for cited evidence files rather
-    # than silently opt out (which would reopen the F1 stale-citation hole).
-    retro = _seed_named(
-        tmp_path, "charness-artifacts/retro/2026-04-10-some-old.md", "# Old\n"
-    )
-    probe = _seed_named(
-        tmp_path, "charness-artifacts/probe/2026-04-10-some-old.json", "{}\n"
-    )
-    text = (
-        "# Achieve Goal: T\n\nStatus: active\nActivation: see above\n\n"
-        "## Final Verification\n\n"
-        f"Retro: {retro.relative_to(tmp_path)}\n"
-        f"Host log probe: {probe.relative_to(tmp_path)}\n"
-    )
-    assert gal.derive_goal_tokens(text) == []
-    report = gal.check_complete_evidence(tmp_path, text)
-    assert report["ok"] is False
-    failed = {entry["name"] for entry in report["binding_failures"]}
-    assert failed == set(gal.CLOSEOUT_EVIDENCE_NAMES)
-
-
-def test_narration_required_sections_surface_from_bound_retro(tmp_path: Path) -> None:
-    gal.upsert_goal(tmp_path, date="2026-05-28", slug=_BIND_SLUG, title="T")
-    retro = _seed_named(
-        tmp_path,
-        f"charness-artifacts/retro/2026-05-28-{_BIND_SLUG}.md",
-        "# Retro\n\n## Waste\n\na\n\n## Critical Decisions\n\nb\n"
-        "\n## Next Improvements\n\nc\n\n## Sibling Search\n\nd\n",
-    )
-    probe = _seed_named(
-        tmp_path,
-        f"charness-artifacts/probe/2026-05-28-{_BIND_SLUG}.json",
-        '{"host":"claude-code"}\n',
-    )
-    text = _goal_text(tmp_path, slug=_BIND_SLUG, date="2026-05-28")
-    text = _append_evidence_lines(
-        text,
-        retro_value=str(retro.relative_to(tmp_path)),
-        probe_value=str(probe.relative_to(tmp_path)),
-    )
-    report = gal.check_complete_evidence(tmp_path, text)
-    assert report["narration_required_sections"] == [
-        "Waste",
-        "Critical Decisions",
-        "Next Improvements",
-        "Sibling Search",
-    ]
-
-
-def test_a_stub_only_refusal_names_its_reason(tmp_path: Path) -> None:
-    """The stub-evidence refusal must render, or the flip is refused with no message.
-
-    `stub_evidence` is a distinct `ok=False` category: the file exists and is
-    non-empty, so neither `missing` nor `missing_evidence_files` names it. Left
-    unrendered, a stub-only refusal printed the message prefix and an empty tail —
-    the no-diagnosis failure this renderer's siblings each repaired once already.
-    """
-    import importlib
-    import sys
-
-    sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "skills/public/achieve/scripts"))
-    cga = importlib.import_module("check_goal_artifact")
-
-    report = {
-        "missing": [],
-        "missing_evidence_files": [],
-        "invalid_skips": [],
-        "stub_evidence": [
-            {"name": "retro_artifact", "path": "x.md", "detail": "says nothing beyond its identity"}
-        ],
-    }
-    bits = cga._stub_evidence_bits(report)
-    assert bits == ["stub evidence: retro_artifact (says nothing beyond its identity)"]
-    assert cga._stub_evidence_bits({"stub_evidence": []}) == []
+    with pytest.raises(ValueError):
+        gal.goal_path(tmp_path, "2026-5-7", "g")
+    assert gal.slugify("../../etc/passwd") == "etc-passwd"

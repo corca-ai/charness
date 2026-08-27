@@ -111,9 +111,8 @@ python3 scripts/check_skill_surface_preflight.py --path skills/public/<skill>/SK
 ## Artifact-shape preflight (charness-artifacts/**)
 
 The skill-surface preflight above covers `skills/**` edits. The hand-authored
-**artifact** family (`charness-artifacts/critique/*.md`, goal
-`## Final Verification` closeout-evidence, retro, ideation, plus the
-adapter-scoped debug/quality) is covered by
+**artifact** family (`charness-artifacts/critique/*.md`, retro, ideation, plus
+the adapter-scoped debug/quality) is covered by
 [check_artifact_surface_preflight.py](../scripts/check_artifact_surface_preflight.py).
 It generalizes the same author-time idea to the recurring "authoring-preflight
 skip" class (issues 284 → 308 → 325 → 329 → 332 → 334): an author should learn an
@@ -141,15 +140,13 @@ judgment. The adapter-scoped quality surface validates all by default and is
 author-time-only (`--type`/`--emit-stub`/`--path`); the broad gate remains their
 enforcement (see the coverage report for the tier rationale).
 
-### Closeout surfaces (closeout-draft + goal-closeout)
+### Closeout surface (closeout-draft)
 
-The same author-time idea covers the two closeout surfaces whose required shape
-an author otherwise discovers by failing the validator several times:
+The same author-time idea covers the issue closeout surface whose required
+shape an author otherwise discovers by failing the validator several times:
 
 ```bash
 python3 scripts/check_artifact_surface_preflight.py --type closeout-draft   # issue closeout body shape
-python3 scripts/check_artifact_surface_preflight.py --type goal-closeout     # goal complete-gate forms
-python3 scripts/check_artifact_surface_preflight.py --type goal-closeout --emit-stub  # fill-in closeout starter
 ```
 
 - `closeout-draft` surfaces what `issue_tool.py validate-closeout-draft` (which
@@ -157,14 +154,8 @@ python3 scripts/check_artifact_surface_preflight.py --type goal-closeout --emit-
   pass `--commit-message-file`, not `--body-file`), the close keyword, the
   `resolution_critique` evidence (the cited critique must itself pass
   `validate_critique_artifacts`), and the per-classification ledger fields.
-- `goal-closeout` pairs the goal template's `## Final Verification` block with the
-  enforced FORMS `check_goal_artifact.py` applies at the complete flip: the allowed
-  skip-reason enum, the bare-path + goal-slug binding, the disposition form, and the
-  `Routing:` form.
-
-Both are author-time-only (the validators stay the enforcement): a `closeout-draft`
-verdict needs the full `validate-closeout-draft` command, and `goal-closeout` is
-owned at the achieve complete flip. Each shape is rendered live from the owning
+`closeout-draft` is author-time-only: its verdict needs the full
+`validate-closeout-draft` command. The shape is rendered live from the owning
 validator's constants by a `describe_*_shape.py` sibling, so it cannot drift from
 the gate.
 
@@ -186,12 +177,11 @@ one pass — and, before a single line exists, ask it for the rules instead:
 python3 scripts/check_doc_authoring_preflight.py --path docs/index.md # a real target against them
 ```
 
-The rules mode is what makes this surface match its two siblings
-([describe_goal_closeout_shape.py](../skills/public/achieve/scripts/describe_goal_closeout_shape.py)
-with no `--goal-path`, and `check_skill_surface_preflight.py`, which describes by
-default). Every other check here is content-driven, so without it an author got
-the rules only *after* writing the thing that breaks them and one rework cycle
-was structurally guaranteed. The rules are rendered, never restated: each line is
+The rules mode is what makes this surface match its sibling
+(`check_skill_surface_preflight.py`, which describes by default). Every other
+check here is content-driven, so without it an author got the rules only *after*
+writing the thing that breaks them and one rework cycle was structurally
+guaranteed. The rules are rendered, never restated: each line is
 the owning validator's own constant, or the verdict that validator returns when
 the preflight probes it with a sample.
 

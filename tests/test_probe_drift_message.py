@@ -59,7 +59,6 @@ from tests.probe_drift_support import (
     RESIDUAL_FLOOR_SYMBOL,
     RESIDUAL_MEASURE_SCRIPT,
     RESIDUAL_PROBE,
-    RESIDUAL_TIMEBOX_TEST,
     RESIDUAL_UPDATE_SURFACES,
     RULE_CAUSES,
     RULE_ONLY_SURFACES,
@@ -794,7 +793,6 @@ def test_every_residual_surface_exists_and_carries_the_figures_it_is_named_for()
         RESIDUAL_FLOOR_HOME,
         RESIDUAL_FLOOR_MIRROR,
         RESIDUAL_CONTRACT_DOC,
-        RESIDUAL_TIMEBOX_TEST,
     ):
         assert path in listed, f"the residual re-record list dropped {path}"
         assert (ROOT / path).is_file(), f"the residual message names a missing surface: {path}"

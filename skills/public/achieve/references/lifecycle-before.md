@@ -1,73 +1,21 @@
-# Achieve Lifecycle — Before
+# Achieve Planning and Binding
 
-## Before
+Research the repository, adapter, relevant design material, and intended
+provider target before asking the operator. Facts that can be established by
+the repository or provider are not interview questions.
 
-`achieve` shapes planning truth before any Goal Run mutation. The complete Goal
-Draft is the only mutable surface in this phase; it becomes immutable after the
-operator approves the exact briefing and bytes.
+Create and refine one Goal Draft with `upsert_goal.py`. Keep consequential
+alternatives, tradeoffs, recommendation, and critique reasoning in its
+planning sections. Safe checkout paths must be portable or explicitly
+dispositioned. The draft may remain incomplete while the operator is answering
+ordinary planning questions.
 
-## Research
+Resolve `interview.max_questions` from the adapter, defaulting to 15. The
+ceiling applies to the whole bounded interview. If it is reached with an
+unanswered decision, return `interview-cap-reached`, preserve that decision,
+and wait; do not create a Goal Binding or provider parent.
 
-Read repository code, current adapter, issue/provider state, the compact lesson
-projection, relevant specs, and existing evidence before asking questions. For
-an artifact-only start, invoke `goal_lesson_pickup.py` once after the goal file
-is known; for `/goal #N`, consume the `lessons` field returned by
-`goal_run_pickup.py` instead. Facts that the repository or provider can
-establish are not operator questions. Consume lesson memory through the
-projection; do not rebuild or scan the full ledger merely to shape a goal.
-Record source identities and unresolved assumptions in the draft.
-
-## Interview
-
-Resolve `interview.max_questions` from the adapter, defaulting to 15. The limit
-is a ceiling shared by the initial interview and consequential findings from
-planning review. Every question records:
-
-- alternatives and the tradeoff of each;
-- one recommendation and its reason;
-- the operator's answer; and
-- why each non-selected alternative was rejected.
-
-Stop when ambiguity is gone. If the ceiling is reached first, return
-`interview-cap-reached`, preserve the unresolved decision, and do not create or
-mutate a provider parent.
-
-## Approval and binding
-
-Before approval, run the required critique/alignment/briefing work and update
-the draft while it is still mutable. Explicit approval binds the complete draft
-bytes, final briefing digest, parent identity, and initial Work Item manifest.
-
-After approval:
-
-1. read the exact intended parent through the selected issue provider;
-2. freeze and hash the complete draft;
-3. create or read back the immutable Goal Binding; and
-4. run provider preflight before every subsequent mutation.
-
-The provider operation file carries exact repository and parent identity,
-binding/draft hashes, an attempt id, and a repository-local observation path.
-No provider mutation is authorized by a local-only or fake-backend success.
-
-## Bootstrap exception
-
-The first live issue-native Goal Run may reconcile its already-existing history through
-the minimum provider boundary after approval. Its parent marker is
-`verified-target-roundtrip` only after the completed provider, orchestration,
-and evidence capabilities re-read the same graph from a clean process. That
-marker proves the target read path, not child or parent completion.
-
-## Before-phase closeout
-
-End this phase with a concise record of:
-
-- the complete draft path and frozen hash (after approval);
-- the exact parent repository, number, and URL;
-- the binding path/hash and approved graph digest;
-- the selected provider preflight result;
-- the first executable Work Item and its dependencies; and
-- explicit non-claims for live, hosted, installed, publish, push, release, and
-  issue-close behavior not actually read back.
-
-The next action is the exact objective `/goal #N`. A sidecar path is an internal
-identity pointer, never operator input.
+After explicit approval of the exact briefing and draft bytes, read the exact
+parent identity, hash the draft, and create the immutable Goal Binding. The
+binding records the parent and approved Work Item manifest. No provider
+mutation occurs before that identity is established.

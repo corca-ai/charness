@@ -76,7 +76,7 @@ def _section_bodies(text: str) -> dict[str, str]:
 
 
 def _summary_content(text: str) -> str:
-    masked = _mask_fences(text).split("\n## Slice Log", 1)[0]
+    masked = _mask_fences(text)
     line = _SUMMARY_LINE.search(masked)
     if line:
         return line.group(1).strip()

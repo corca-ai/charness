@@ -82,9 +82,7 @@ MIN_SKIP_DETAIL_LENGTH = 20
 # floor-addition-restraint: recorded call. Q1 (closeout-contract weight): YES,
 # partly -- it adds no field or section, but the contract's word is "form", and a
 # refusal an author meets by failing the flip is a form. That raises the bar to
-# add it, and it is why the three consumer renderers
-# (`check_goal_artifact`, `describe_goal_closeout_shape`,
-# `check_issue_closeout_commit_msg`) were taught the category in the same slice:
+# add it, and it is why consuming issue/release renderers expose the category:
 # a form discovered by failing the flip AND with no message is the churn pattern
 # the checklist exists to stop. Standing floors are audited in
 # `charness-artifacts/audit/closeout-floors.md`; this one is a `keep` by Q3. Q2 (is advisory enough?): no. The recurrence is recorded:
@@ -92,7 +90,7 @@ MIN_SKIP_DETAIL_LENGTH = 20
 # accept path. Q3 (preflight absorption): no -- the condition is a property of the
 # cited file at check time, not a static artifact shape, so this is a `keep`.
 # Scope: it runs wherever identity tokens are available -- either the `tokens=`
-# binding path, or `residual_tokens=` for the two wrappers that must bind
+# binding path, or `residual_tokens=` for a wrapper that must bind
 # out-of-band. A caller that can supply no identity at all still sees no change.
 #
 # 8, not 20. The teeth are at residual == 0 (the content IS the token); the number
@@ -458,9 +456,9 @@ def check(
     release version). When supplied, every evidence file must additionally BIND
     to them. Binding lives here, at the shared choke point, rather than only in
     the callers that remembered it: ``evidence_binds_to_context`` existed for
-    two releases and ``check()`` never called it, so binding held exactly where
-    ``achieve`` and ``issue`` wired it by hand and nowhere else. The generic CLI
-    and the release publish gate had none, and a real critique about an
+    two releases and ``check()`` never called it, so binding held only where a
+    caller wired it by hand. The generic CLI and release publish gate had none,
+    and a real critique about an
     unrelated 2026-07-27 topic satisfied an ``issue-resolution`` closeout.
 
     ``tokens`` empty or omitted still means presence-only -- some callers
@@ -469,13 +467,10 @@ def check(
     read as a bound one.
 
     ``residual_tokens`` supplies identity for the STUB floor alone, without
-    changing binding. Two wrappers bind out-of-band for structural reasons --
-    ``issue_resolution_critique`` binds per ISSUE NUMBER because one critique line
-    may carry several, and ``goal_artifact_closeout_evidence`` binds per entry
-    against goal-derived tokens -- and ``tokens=`` here means "bind if ANY of these
-    match", which is strictly weaker than what those two need. Wiring the stub
-    floor through ``tokens`` would therefore have forced them to choose between a
-    weaker binding rule and no stub floor: measured, a four-byte ``#466`` file
+    changing binding. Issue resolution binds out-of-band per ISSUE NUMBER because
+    one critique line may carry several, while ``tokens=`` here means "bind if ANY
+    of these match". Wiring the stub floor through ``tokens`` would therefore
+    weaken that rule: measured, a four-byte ``#466`` file
     closed issue #466 through the resolution-critique gate with the floor already
     in the library, because that gate supplies no ``tokens``. This parameter keeps
     the floor at the one choke point instead of copying it into each wrapper,

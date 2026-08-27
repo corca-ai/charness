@@ -61,7 +61,7 @@ def test_session_jsonl_audit_counts_and_separates(tmp_path: Path) -> None:
     assert payload["warnings"] == ["1 malformed JSONL line(s) dropped"]
 
 
-def test_session_jsonl_audit_filters_goal_window(tmp_path: Path) -> None:
+def test_session_jsonl_audit_filters_time_window(tmp_path: Path) -> None:
     home = tmp_path / "home"
     path = home / ".codex" / "sessions" / "2026" / "05" / "26" / "rollout-2026-05-26T00-00-00-window.jsonl"
     path.parent.mkdir(parents=True, exist_ok=True)

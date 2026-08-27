@@ -647,50 +647,6 @@ mutation workflow remain available when a consumer explicitly owns this cost.
   cover; or the sync command gaining a machine-readable list of what it writes; or S31
   being worked, since moving a declaration out of the audited surface is the same question.
 
-### D49. Should the `## Final Verification` figure-form floor REFUSE, or stay a captured observable?
-
-- Question: [goal_artifact_figure_form.py](../skills/public/achieve/scripts/goal_artifact_figure_form.py)
-  reads every figure stated under a goal artifact's `## Final Verification` and reports
-  which cite no path/command/URL and carry no `— unbacked: <why>`. Should it refuse the
-  flip to `complete`?
-- Current choice: **Defer — the floor ships, unwired.** It answers the form question and
-  publishes `figure_lines` as its denominator; it never touches `report["ok"]`.
-- Why now: opened, withdrawn, and re-opened on 2026-08-01 across two bounded review
-  rounds, and only the third measurement means anything. **The history is the point.**
-  - The first cut deferred on: a `2026-08-01` rule date refuses 2 of 23 in-scope
-    artifacts, both frozen same-day closeouts.
-  - Round 1 refuted that and armed the floor at `2026-08-02`: **20 in scope, 0 refused.**
-  - Round 2 refuted THAT: all 20 of those artifacts have no parseable `Created:` line and
-    are in scope only because the grandfather predicate fails closed. **Zero dated
-    artifacts were in scope.** "0 refused" was a green over an empty denominator — the
-    exact class this floor exists to make visible, produced inside the floor, by the
-    round that was fixing the same class elsewhere.
-- Why deferral is right at the time, on the honest denominator: measured over all **127
-  dated** checked-in goal artifacts, the separator-mandatory form refuses **90**. The form
-  was then relaxed — a source cited anywhere on the line counts, because
-  ``- `bash scripts/run-quality.sh` full: 82 passed, 1 failed`` names the exact command
-  that produced the number and was being refused for lacking a punctuation mark. Relaxed,
-  it still refuses **41 of 127**. A floor that would refuse a third of every closeout this
-  repo has written is not describing a defect; it is describing a house style it disagrees
-  with. Arming it yields mass false refusals or mass artifact edits, and a false refusal
-  is the expensive direction: it teaches padding.
-- Non-claims: nothing refuses an unsourced figure today. The floor checks FORM only —
-  whether a cited source actually says the number is not machine-decidable and stays
-  author judgment plus the fresh-eye round. The 41 refusals are NOT claimed to be 41 real
-  defects; they are 41 artifacts whose prose does not match a form invented after them.
-  Moving the rule date does not "green" the refused artifacts, it removes them from the
-  question — which is what made round 1's arming unearned.
-- Impact surfaces: [goal_artifact_figure_form.py](../skills/public/achieve/scripts/goal_artifact_figure_form.py),
-  [goal_artifact_closeout_evidence.py](../skills/public/achieve/scripts/goal_artifact_closeout_evidence.py),
-  [describe_goal_closeout_shape.py](../skills/public/achieve/scripts/describe_goal_closeout_shape.py),
-  [goal-artifact lifecycle-after.md](../skills/public/achieve/references/lifecycle-after.md),
-  [test_goal_closeout_record_floors.py](../tests/quality_gates/test_goal_closeout_record_floors.py).
-- Reopen trigger: the refusal rate over DATED artifacts reaching zero — pinned by
-  `test_the_corpus_measurement_the_non_arming_rests_on`, which fails both when nothing
-  refuses (arm it) and when the dated denominator collapses (the measurement stopped
-  meaning anything). Any future arming must state its denominator in DATED artifacts;
-  a count that includes undatable ones is the defect this entry records.
-
 ## Next Action Contract
 
 ### D50. Should `<plugin-dir>/` get a real user, or a bootstrap variable, or neither? — RESOLVED (2026-08-04)

@@ -39,7 +39,6 @@ _MUTATION_SOURCES = (
     "scripts/reviewed_input_identity.py",
     "scripts/slice_closeout_telemetry.py",
     "scripts/staged_commit_gate_plan_helpers.py",
-    "skills/public/achieve/scripts/scaffold_goal_specs.py",
     "skills/public/critique/scripts/prepare_packet.py",
     "skills/public/debug/scripts/persist_debug_artifact.py",
     "skills/public/quality/scripts/check_dup_ratchet.py",
@@ -59,10 +58,6 @@ def _load_script(relative: str, name: str):
     return module
 
 
-goal_specs = import_repo_module(
-    ROOT / "skills/public/achieve/scripts/scaffold_goal_specs.py",
-    "skills.public.achieve.scripts.scaffold_goal_specs",
-)
 critique_runner = import_repo_module(
     ROOT / "skills/public/critique/scripts/prepare_packet.py",
     "skills.public.critique.scripts.prepare_packet",

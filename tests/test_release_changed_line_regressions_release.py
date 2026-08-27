@@ -28,7 +28,6 @@ _MUTATION_SOURCES = (
     "scripts/reviewed_input_identity.py",
     "scripts/slice_closeout_telemetry.py",
     "scripts/staged_commit_gate_plan_helpers.py",
-    "skills/public/achieve/scripts/scaffold_goal_specs.py",
     "skills/public/critique/scripts/prepare_packet.py",
     "skills/public/debug/scripts/persist_debug_artifact.py",
     "skills/public/quality/scripts/check_dup_ratchet.py",
@@ -48,10 +47,6 @@ def _load_script(relative: str, name: str):
     return module
 
 
-goal_specs = import_repo_module(
-    ROOT / "skills/public/achieve/scripts/scaffold_goal_specs.py",
-    "skills.public.achieve.scripts.scaffold_goal_specs",
-)
 dup_check = _load_script(
     "skills/public/quality/scripts/check_dup_ratchet.py",
     "release_dup_check_split_under_test",
@@ -76,70 +71,6 @@ debug_persist = import_repo_module(
     ROOT / "skills/public/debug/scripts/persist_debug_artifact.py",
     "skills.public.debug.scripts.persist_debug_artifact",
 )
-
-
-def test_goal_specs_loader_and_missing_goal_edges(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    invalid = tmp_path / "invalid.json"
-    invalid.write_text("not-json", encoding="utf-8")
-    with pytest.raises(SystemExit, match="unreadable or invalid"):
-        goal_specs._load_specs(invalid)
-    for payload, message in (([], "non-empty"), ({}, "non-empty"), ({"phases": [1]}, "phase 1")):
-        path = tmp_path / f"bad-{len(str(payload))}.json"
-        path.write_text(json.dumps(payload), encoding="utf-8")
-        with pytest.raises(SystemExit, match=message):
-            goal_specs._load_specs(path)
-    missing = {"slug": "shape", "title": "Shape", "objective": "o", "completion": ["c"], "verification": ["v"], "non_claims": ["n"]}
-    missing_path = tmp_path / "missing-field.json"
-    missing_path.write_text(json.dumps({"phases": [{**missing, "verification": ""}]}), encoding="utf-8")
-    with pytest.raises(SystemExit, match="missing required fields"):
-        goal_specs._load_specs(missing_path)
-    duplicate_path = tmp_path / "duplicate.json"
-    duplicate_path.write_text(json.dumps({"phases": [missing, {**missing, "slug": "goal"}]}), encoding="utf-8")
-    with pytest.raises(SystemExit, match="duplicate or unusable"):
-        goal_specs._load_specs(duplicate_path)
-    string_fields = {**missing, "scope_in": "one"}
-    string_path = tmp_path / "strings.json"
-    string_path.write_text(json.dumps({"phases": [string_fields]}), encoding="utf-8")
-    assert goal_specs._load_specs(string_path)[0]["scope_in"] == ["one"]
-    bad_list = tmp_path / "bad-list.json"
-    bad_list.write_text(json.dumps({"phases": [{**missing, "scope_in": [""]}]}), encoding="utf-8")
-    with pytest.raises(SystemExit, match="list of strings"):
-        goal_specs._load_specs(bad_list)
-    assert "Phase Specifications" in goal_specs._replace_phase_section("# Goal\n", "## Phase Specifications")
-
-    monkeypatch.setattr(
-        sys,
-        "argv",
-        [
-            "scaffold_goal_specs.py",
-            "--repo-root",
-            str(tmp_path),
-            "--goal-path",
-            str(tmp_path / "missing-goal.md"),
-            "--specs-file",
-            str(string_path),
-        ],
-    )
-    with pytest.raises(SystemExit, match="goal artifact not found"):
-        goal_specs.main()
-    class MissingBootstrapPath:
-        def __init__(self, *_args: object) -> None:
-            pass
-
-        def resolve(self) -> "MissingBootstrapPath":
-            return self
-
-        @property
-        def parents(self) -> list[Path]:
-            return []
-
-    monkeypatch.setattr(goal_specs, "Path", MissingBootstrapPath)
-    with pytest.raises(ImportError, match="not found"):
-        goal_specs._load_skill_runtime_bootstrap()
-    monkeypatch.setattr(goal_specs, "Path", Path)
-    monkeypatch.setattr(sys, "argv", ["scaffold_goal_specs.py", "--repo-root", str(tmp_path), "--goal-path", str(tmp_path / "missing-goal.md"), "--specs-file", str(string_path)])
-    with pytest.raises(SystemExit):
-        runpy.run_path(str(ROOT / "skills/public/achieve/scripts/scaffold_goal_specs.py"), run_name="__main__")
 
 
 def test_dup_baseline_and_lineage_reject_untypeable_rows() -> None:

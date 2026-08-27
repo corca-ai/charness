@@ -62,12 +62,6 @@ Cached input tokens are not a waste conclusion by themselves. Treat them as a
 context-pressure signal only when paired with evidence such as compactions,
 high-token turns, repeated commands, polling, or rerun-heavy validation cadence.
 
-For goal closeouts, prefer a goal-window audit over a full-thread audit when the
-artifact records a `Host metric window:` evidence line with `started_at`,
-`completed_at`, and exactly one host session-file field (`codex_session_file`
-or `claude_session_file`). A full-thread audit remains a pressure signal, not a
-per-goal cost total.
-
 ## Gate-Baseline Runtime
 
 Cadence is not the only runtime-waste axis. A broad gate run at the right time

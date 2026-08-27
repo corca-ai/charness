@@ -337,7 +337,6 @@ RESIDUAL_FLOOR_HOME = "scripts/check_prescribed_skill_executed_lib.py"
 RESIDUAL_FLOOR_SYMBOL = "MIN_BOUND_RESIDUAL_CHARS"
 RESIDUAL_FLOOR_MIRROR = "plugins/charness/scripts/check_prescribed_skill_executed_lib.py"
 RESIDUAL_CONTRACT_DOC = "docs/prescribed-skill-closeout-contract.md"
-RESIDUAL_TIMEBOX_TEST = "tests/quality_gates/test_goal_artifact_timebox.py"
 
 # Every surface transcribing the recorded residual figures. ONE entry was the first draft's
 # answer, and it was the `UPDATE_SURFACES` mistake repeated: the figures (`337`, `530`, `2168`,
@@ -368,11 +367,6 @@ RESIDUAL_UPDATE_SURFACES: tuple[tuple[str, str | None], ...] = (
     (
         f"{RESIDUAL_CONTRACT_DOC} — operator-facing prose quoting the same per-kind minimums,"
         " file counts, and the floor in one sentence",
-        None,
-    ),
-    (
-        f"{RESIDUAL_TIMEBOX_TEST} — a comment quoting the JSON host-log residual; a green test"
-        " with a stale comment is the quietest of these",
         None,
     ),
 )

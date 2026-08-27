@@ -171,20 +171,6 @@ def test_close_verification_accepts_the_issue_it_asked_about(
     _close_with(monkeypatch, tmp_path, answered_repo="owner/repo", payload=_verified())
 
 
-# --- a goal artifact with no Slice Log cannot take a slice --------------------
-
-_goal_lib = _load_skill_module(
-    "skills/public/achieve/scripts/goal_artifact_lib.py", "goal_artifact_lib_under_test"
-)
-
-
-def test_appending_a_slice_to_an_artifact_without_a_slice_log_is_refused() -> None:
-    """Silently appending at the end would put the slice outside the section the
-    closeout floors read, so the record would exist and count for nothing."""
-    with pytest.raises(ValueError, match="no `## Slice Log` section"):
-        _goal_lib.append_slice("# Goal\n\n## Boundaries\n\n- none\n", "- Objective: x\n")
-
-
 def test_a_typed_refusal_from_the_source_capture_op_passes_through() -> None:
     """The same re-raise as `backend_binary`, on the other call path.
 

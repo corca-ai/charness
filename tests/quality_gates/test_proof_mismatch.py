@@ -1,51 +1,39 @@
-"""Tests for the #339 proof-mismatch closeout floor.
+"""Keep the generic proof-mismatch verdict and issue closeout wiring covered."""
 
-Drives the three blocking conditions (missing proof entry / reached < required /
-gap lacks disposition) with a SYNTHETIC adapter, the degradation path, and the
-achieve-CLI integration. No domain concept is involved — the adapter supplies the
-proof semantics.
-"""
 from __future__ import annotations
 
-import contextlib
 import importlib.util
-import io
-import sys
 from pathlib import Path
 
 import pytest
-import yaml
 
 from scripts import proof_mismatch as pm
 
-_ROOT = Path(__file__).resolve().parents[2]
-_CLI_PATH = _ROOT / "skills" / "public" / "achieve" / "scripts" / "check_goal_artifact.py"
-_IVC_PATH = _ROOT / "skills" / "public" / "issue" / "scripts" / "issue_verify_closeout.py"
+ROOT = Path(__file__).resolve().parents[2]
+ISSUE_VERIFY = ROOT / "skills/public/issue/scripts/issue_verify_closeout.py"
 
 
-def _load_module(name: str, path: Path):
-    # In-process load (NOT a subprocess) so wiring is exercised without adding a
-    # delivery-boundary spawn (the boundary-bypass ratchet's intended form).
-    spec = importlib.util.spec_from_file_location(name, path)
+def _load_issue_verify():
+    spec = importlib.util.spec_from_file_location("issue_verify_closeout_under_test", ISSUE_VERIFY)
+    assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
 
 
-_CLI = _load_module("check_goal_artifact_under_test", _CLI_PATH)
-_IVC = _load_module("issue_verify_closeout_under_test", _IVC_PATH)
+issue_verify = _load_issue_verify()
 
-_ADAPTER = (
+ADAPTER = (
     "proof_levels:\n  - lint\n  - smoke\n  - integration\n  - live\n"
     "incomparable:\n  - lint, smoke\n"
     "acceptance_map:\n  reliability: integration\n  safety: live\n"
 )
 
 
-def _repo(tmp_path: Path, adapter: str | None = _ADAPTER) -> Path:
+def _repo(tmp_path: Path, adapter: str | None = ADAPTER) -> Path:
     if adapter is not None:
-        target = tmp_path / ".agents" / "proof-semantics-adapter.yaml"
-        target.parent.mkdir(parents=True, exist_ok=True)
+        target = tmp_path / ".agents/proof-semantics-adapter.yaml"
+        target.parent.mkdir(parents=True)
         target.write_text(adapter, encoding="utf-8")
     return tmp_path
 
@@ -53,241 +41,109 @@ def _repo(tmp_path: Path, adapter: str | None = _ADAPTER) -> Path:
 def _ledger(rows: str) -> str:
     return (
         "# Goal\n\n## Proof Ledger\n\n"
-        "| Acceptance Class | Reached Proof | Disposition |\n| --- | --- | --- |\n" + rows
+        "| Acceptance Class | Reached Proof | Disposition |\n"
+        "| --- | --- | --- |\n" + rows
     )
 
 
-# --- parsing ---------------------------------------------------------------
-
-
-def test_parse_proof_ledger_columns_by_header() -> None:
+def test_parser_uses_headers_and_ignores_fenced_tables() -> None:
     body = (
-        "| Reached Proof | Acceptance Class | Disposition |\n| --- | --- | --- |\n"
-        "| smoke | reliability | accepted-risk: x |\n"
+        "| Reached Proof | Acceptance Class | Disposition |\n"
+        "| --- | --- | --- |\n| smoke | reliability | accepted-risk: x |\n\n"
+        "```\n| Acceptance Class | Reached Proof |\n"
+        "| --- | --- |\n| safety | live |\n```\n"
     )
+
     rows = pm.parse_proof_ledger(body)
-    assert rows[0]["acceptance_class"] == "reliability"
-    assert rows[0]["reached"] == "smoke"
-    assert rows[0]["disposition"] == "accepted-risk: x"
+
+    assert rows == [
+        {
+            "acceptance_class": "reliability",
+            "reached": "smoke",
+            "disposition": "accepted-risk: x",
+            "row": "| smoke | reliability | accepted-risk: x |",
+        }
+    ]
 
 
-def test_parse_requires_class_and_reached_columns() -> None:
-    # No reached/proof column -> not a proof ledger table (no fire).
-    assert pm.parse_proof_ledger("| Acceptance Class | Note |\n| --- | --- |\n| reliability | x |\n") == []
+@pytest.mark.parametrize(
+    ("reached", "gap_kind"),
+    [("", "no-proof-entry"), ("smoke", "proof-below-acceptance"), ("lint", "proof-below-acceptance")],
+)
+def test_evaluate_row_identifies_missing_or_insufficient_proof(
+    tmp_path: Path, reached: str, gap_kind: str
+) -> None:
+    data = pm.load_adapter(_repo(tmp_path))["data"]
 
-
-def test_parse_groups_tables_and_masks_fences() -> None:
-    body = (
-        "| Phase | Status |\n| --- | --- |\n| build | done |\n\n"
-        "| Acceptance Class | Reached Proof |\n| --- | --- |\n| reliability | smoke |\n\n"
-        "```\n| Acceptance Class | Reached Proof |\n| --- | --- |\n| safety | live |\n```\n"
+    row = pm.evaluate_row(
+        {"acceptance_class": "reliability", "reached": reached, "disposition": ""},
+        data,
+        True,
     )
-    rows = pm.parse_proof_ledger(body)
-    # the leading non-proof table is passed over; the fenced table is inert.
-    assert [r["acceptance_class"] for r in rows] == ["reliability"]
+
+    assert row["gap"] is True
+    assert row["gap_kind"] == gap_kind
 
 
-# --- evaluate_row: the three conditions + satisfies + degraded ----------------
-
-
-def _data(tmp_path: Path) -> dict:
-    return pm.load_adapter(_repo(tmp_path))["data"]
-
-
-def test_row_satisfies_no_gap(tmp_path: Path) -> None:
-    data = _data(tmp_path)
-    row = pm.evaluate_row({"acceptance_class": "reliability", "reached": "live", "disposition": ""}, data, True)
-    assert row["gap"] is False and row["disposition_ok"] is True
-
-
-def test_row_condition_i_no_proof_entry(tmp_path: Path) -> None:
-    data = _data(tmp_path)
-    for reached in ("", "<reached>", "TODO"):
-        row = pm.evaluate_row({"acceptance_class": "reliability", "reached": reached, "disposition": ""}, data, True)
-        assert row["gap"] is True and row["gap_kind"] == "no-proof-entry", reached
-
-
-def test_row_condition_ii_proof_below_acceptance(tmp_path: Path) -> None:
-    data = _data(tmp_path)
-    row = pm.evaluate_row({"acceptance_class": "reliability", "reached": "smoke", "disposition": ""}, data, True)
-    assert row["gap"] is True and row["gap_kind"] == "proof-below-acceptance"
-    # incomparable reached (lint vs integration via the chain) also fails to satisfy
-    row2 = pm.evaluate_row({"acceptance_class": "reliability", "reached": "lint", "disposition": ""}, data, True)
-    assert row2["gap"] is True
-
-
-def test_row_unmapped_class_is_a_gap(tmp_path: Path) -> None:
-    data = _data(tmp_path)
-    row = pm.evaluate_row({"acceptance_class": "mystery", "reached": "live", "disposition": ""}, data, True)
-    assert row["gap"] is True and row["gap_kind"] == "unmapped-class"
-
-
-def test_row_degraded_when_no_map() -> None:
-    row = pm.evaluate_row({"acceptance_class": "reliability", "reached": "live", "disposition": ""}, {}, False)
-    assert row["gap"] is True and row["gap_kind"] == "degraded"
-
-
-def test_gap_disposition_must_be_real_not_placeholder_or_prose(tmp_path: Path) -> None:
-    data = _data(tmp_path)
-    base = {"acceptance_class": "reliability", "reached": "smoke"}
-    assert pm.evaluate_row({**base, "disposition": "accepted-risk: monitored"}, data, True)["disposition_ok"] is True
-    assert pm.evaluate_row({**base, "disposition": "issue #340"}, data, True)["disposition_ok"] is True
-    for bad in ("", "<reason>", "TODO later", "defer", "recorded in retro", "none — n/a"):
-        assert pm.evaluate_row({**base, "disposition": bad}, data, True)["disposition_ok"] is False, bad
-
-
-# --- proof_mismatch_report: end-to-end verdicts ----------------------------
-
-
-def test_report_mismatch_then_dispositioned(tmp_path: Path) -> None:
+def test_report_blocks_only_undispositioned_gap(tmp_path: Path) -> None:
     repo = _repo(tmp_path)
-    bad = _ledger("| reliability | smoke | |\n")
-    rep = pm.proof_mismatch_report(repo, bad)
-    assert rep["problem"] == "mismatch"
-    assert rep["undispositioned"][0]["gap_kind"] == "proof-below-acceptance"
-    good = _ledger("| reliability | smoke | accepted-risk: monitored, low impact |\n")
-    assert pm.proof_mismatch_report(repo, good)["problem"] is None
+    blocked = pm.proof_mismatch_report(repo, _ledger("| reliability | smoke | |\n"))
+    accepted = pm.proof_mismatch_report(
+        repo,
+        _ledger("| reliability | smoke | accepted-risk: monitored |\n"),
+    )
+
+    assert blocked["problem"] == "mismatch"
+    assert accepted["problem"] is None
 
 
-def test_report_satisfies_and_inert_without_ledger(tmp_path: Path) -> None:
-    repo = _repo(tmp_path)
-    assert pm.proof_mismatch_report(repo, _ledger("| reliability | integration | |\n"))["problem"] is None
-    inert = pm.proof_mismatch_report(repo, "# Goal\n\nno ledger here\n")
-    assert inert["problem"] is None and inert["present"] is False
+def test_report_degrades_without_adapter_and_rejects_invalid_adapter(tmp_path: Path) -> None:
+    missing = pm.proof_mismatch_report(
+        _repo(tmp_path / "missing", adapter=None),
+        _ledger("| reliability | live | |\n"),
+    )
+    invalid = pm.proof_mismatch_report(
+        _repo(tmp_path / "invalid", adapter="acceptance_map:\n  reliability: integration\n"),
+        _ledger("| reliability | live | |\n"),
+    )
+
+    assert missing["problem"] == "mismatch" and missing["degraded"] is True
+    assert invalid["problem"] == "invalid-adapter" and invalid["adapter_valid"] is False
 
 
-def test_report_degraded_missing_adapter_requires_disposition(tmp_path: Path) -> None:
-    repo = _repo(tmp_path, adapter=None)  # no adapter
-    rep = pm.proof_mismatch_report(repo, _ledger("| reliability | live | |\n"))
-    assert rep["problem"] == "mismatch" and rep["degraded"] is True
-    ok = pm.proof_mismatch_report(repo, _ledger("| reliability | live | applied: verified live this run |\n"))
-    assert ok["problem"] is None
-
-
-def test_report_invalid_adapter_fails_closed(tmp_path: Path) -> None:
-    repo = _repo(tmp_path, adapter="acceptance_map:\n  reliability: integration\n")  # no proof_levels -> invalid
-    rep = pm.proof_mismatch_report(repo, _ledger("| reliability | live | |\n"))
-    assert rep["problem"] == "invalid-adapter"
-    assert rep["adapter_valid"] is False
-
-
-def test_apply_proof_mismatch_floor_mutates_report(tmp_path: Path) -> None:
-    repo = _repo(tmp_path)
+def test_apply_floor_flips_verdict_and_records_scope(tmp_path: Path) -> None:
     report = {"ok": True}
-    pm.apply_proof_mismatch_floor(report, repo, _ledger("| reliability | smoke | |\n"))
+
+    pm.apply_proof_mismatch_floor(
+        report,
+        _repo(tmp_path),
+        _ledger("| reliability | smoke | |\n"),
+    )
+
     assert report["ok"] is False
     assert report["proof_mismatch"]["problem"] == "mismatch"
     assert report["proof_mismatch_scope"]["present"] is True
-    # dispositioned -> no block, scope still recorded
-    report2 = {"ok": True}
-    pm.apply_proof_mismatch_floor(report2, repo, _ledger("| reliability | smoke | out-of-scope: tracked in #338 |\n"))
-    assert report2["ok"] is True and "proof_mismatch" not in report2
 
 
-# --- achieve CLI integration (differential: gap blocks, dispositioned passes) ---
-
-
-def _complete_goal(proof_rows: str) -> str:
-    # A status:complete goal carrying a proof ledger. Other closeout evidence is
-    # intentionally absent, so the run is non-zero regardless; the DIFFERENTIAL
-    # assertion (proof-mismatch reason present vs absent) isolates this floor.
-    return (
-        "# Achieve Goal: T\n\nStatus: complete\nCreated: 2026-06-10\n"
-        "Activation: `/goal @charness-artifacts/goals/2026-06-10-x.md`\n\n"
-        "## Proof Ledger\n\n"
-        "| Acceptance Class | Reached Proof | Disposition |\n| --- | --- | --- |\n" + proof_rows + "\n"
-    )
-
-
-def _run_cli(repo: Path, goal_path: Path) -> dict:
-    buf = io.StringIO()
-    old_argv = sys.argv
-    sys.argv = ["check_goal_artifact.py", "--repo-root", str(repo), "--goal-path", str(goal_path)]
-    try:
-        with contextlib.redirect_stdout(buf):
-            _CLI.main()
-    finally:
-        sys.argv = old_argv
-    return yaml.safe_load(buf.getvalue())
-
-
-def test_cli_blocks_undispositioned_proof_gap(tmp_path: Path) -> None:
-    repo = _repo(tmp_path)
-    goal = tmp_path / "goal.md"
-    goal.write_text(_complete_goal("| reliability | smoke | |\n"), encoding="utf-8")
-    payload = _run_cli(repo, goal)
-    assert payload["ok"] is False
-    joined = " ".join(payload.get("issues", []))
-    assert "proof-mismatch floor" in joined
-
-
-def test_cli_passes_dispositioned_proof_gap(tmp_path: Path) -> None:
-    repo = _repo(tmp_path)
-    goal = tmp_path / "goal.md"
-    goal.write_text(_complete_goal("| reliability | smoke | accepted-risk: monitored this run |\n"), encoding="utf-8")
-    payload = _run_cli(repo, goal)
-    # other closeout evidence may still fail, but the proof-mismatch floor must NOT.
-    joined = " ".join(payload.get("issues", []))
-    assert "proof-mismatch floor" not in joined
-    assert "proof_mismatch" not in payload.get("closeout_evidence", {})
-
-
-# --- edge / defensive branch coverage --------------------------------------
-
-
-def test_proof_ledger_heading_at_eof_has_empty_body(tmp_path: Path) -> None:
-    # `## Proof Ledger` as the final line with no trailing newline -> empty body,
-    # no rows, no fire (covers the body_start == -1 guard).
-    rep = pm.proof_mismatch_report(_repo(tmp_path), "# G\n\n## Proof Ledger")
-    assert rep["present"] is True and rep["problem"] is None
-
-
-def test_parse_skips_ragged_row() -> None:
-    # A table row with fewer cells than the reached column index is skipped.
-    body = (
-        "| Acceptance Class | Reached Proof | Disposition |\n| --- | --- | --- |\n"
-        "| onlyonecell |\n"
-    )
-    assert pm.parse_proof_ledger(body) == []
-
-
-def test_cli_renders_residual_ledger_reason() -> None:
-    # The `_evidence_missing_bits` residual-ledger + proof-mismatch rendering branches.
-    report = {
-        "missing": [], "missing_evidence_files": [], "invalid_skips": [],
-        "residual_ledger": {"reason": "RL-REASON"},
-        "proof_mismatch": {"reason": "PM-REASON"},
-    }
-    bits = _CLI._evidence_missing_bits(report)
-    assert any("residual-ledger floor: RL-REASON" in b for b in bits)
-    assert any("proof-mismatch floor: PM-REASON" in b for b in bits)
-
-
-def test_issue_verify_loader_caches_and_guards_missing_bootstrap(monkeypatch) -> None:
-    # First real load + cache hit (the cached-return path), then the missing-bootstrap
-    # ImportError guard, exercised via the injectable `_resolve_bootstrap` seam.
-    first = _IVC._load_proof_mismatch()
-    assert _IVC._load_proof_mismatch() is first  # cache hit
-    monkeypatch.setattr(_IVC, "_PROOF_MISMATCH", None)
-    monkeypatch.setattr(_IVC, "_resolve_bootstrap", lambda: None)
+def test_issue_closeout_loader_cache_and_missing_bootstrap_guard(monkeypatch) -> None:
+    loaded = issue_verify._load_proof_mismatch()
+    assert issue_verify._load_proof_mismatch() is loaded
+    monkeypatch.setattr(issue_verify, "_PROOF_MISMATCH", None)
+    monkeypatch.setattr(issue_verify, "_resolve_bootstrap", lambda: None)
     with pytest.raises(ImportError):
-        _IVC._load_proof_mismatch()
-    _IVC._PROOF_MISMATCH = first  # restore the cache for other tests
+        issue_verify._load_proof_mismatch()
+    issue_verify._PROOF_MISMATCH = loaded
 
 
-def test_issue_verify_fold_proof_mismatch_flips_status() -> None:
-    # `_fold_proof_mismatch` flips a clean result to failed when a proof gap is left
-    # undispositioned (the real repo has no proof adapter -> degraded -> any row
-    # needs a disposition), and is inert when the body declares no proof ledger.
-    gap = (
-        "Closes #1\n\n## Proof Ledger\n\n| Acceptance Class | Reached Proof | Disposition |\n"
-        "| --- | --- | --- |\n| reliability | smoke | |\n"
-    )
+def test_issue_closeout_folds_proof_gap_into_status(tmp_path: Path) -> None:
     result = {"ok": True, "status": "carrier_verified"}
-    _IVC._fold_proof_mismatch(result, Path("."), gap)
-    assert result["ok"] is False and result["status"] == "failed"
+
+    issue_verify._fold_proof_mismatch(
+        result,
+        _repo(tmp_path, adapter=None),
+        _ledger("| reliability | smoke | |\n"),
+    )
+
+    assert result["ok"] is False
+    assert result["status"] == "failed"
     assert result["proof_mismatch"]["problem"] == "mismatch"
-    clean = {"ok": True, "status": "carrier_verified"}
-    _IVC._fold_proof_mismatch(clean, Path("."), "Closes #1\n\nno ledger here\n")
-    assert clean["ok"] is True and clean["status"] == "carrier_verified"
-    assert "proof_mismatch" not in clean

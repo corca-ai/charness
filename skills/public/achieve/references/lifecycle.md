@@ -1,25 +1,13 @@
-# Achieve Lifecycle
+# Achieve Planning and Pickup
 
-`achieve` runs one goal as three phases: **before** (research, approval, and
-binding), **during** (provider pickup and child execution), and **after**
-(issue-owned proof and guarded close). The complete Goal Draft is immutable
-planning provenance; the provider-backed Goal Run is execution authority.
+Achieve has two durable boundaries: the planning record becomes immutable at
+Goal Binding, and execution resumes through the provider-backed Goal Run. It
+does not maintain a local lifecycle or progress ledger.
 
-Each phase's contract lives in its own file so a run can read only the detail
-needed for the current operation:
+- `goal-artifact.md` — planning-record shape and writer.
+- `adapter-contract.md` — interview ceiling and planning adapter fields.
+- `../SKILL.md` — approval, binding, and exact `/goal #N` pickup.
 
-- `references/lifecycle-before.md` — research, interview, approval, and binding.
-- `references/lifecycle-during.md` — exact pickup, child execution, and retry.
-- `references/lifecycle-after.md` — child proof, guarded close, and non-claims.
-
-Read the phase file that matches the operation when the inline skill contract is
-not enough; use provider readback as the authority for execution.
-
-## Honest Proof Discipline
-
-Borrow W. Edwards Deming's Plan-Do-Study-Act emphasis on the *study* step:
-measure the result against the original prediction before claiming the goal is
-met. A run that skips the comparison has done activity, not achievement.
-
-Never claim provider, live, or release proof when only local deterministic
-checks ran. If a proof level was skipped, the final report must say so.
+The issue skill owns provider bootstrap, graph mutation, child proof, and
+Goal Run closeout. Achieve only supplies the frozen draft identity and pickup
+entry point.

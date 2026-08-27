@@ -387,69 +387,6 @@ def test_a_stale_premise_refusal_lifts_its_reason_codes_onto_the_payload(tmp_pat
 
 
 # ---------------------------------------------------------------------------
-# skills/public/achieve/scripts/record_metric_window.py -- the two refusals
-# ---------------------------------------------------------------------------
-
-RECORD_METRIC_WINDOW = load_script_module(
-    "record_metric_window_batch5",
-    ROOT / "skills" / "public" / "achieve" / "scripts" / "record_metric_window.py",
-)
-
-
-def _record_window(goal: Path) -> SimpleNamespace:
-    return run_loaded_script_main(
-        "record_metric_window.py",
-        RECORD_METRIC_WINDOW,
-        "--goal-path", str(goal),
-        "--started-at", "2026-06-03T00:00:00Z",
-        "--completed-at", "2026-06-03T03:42:00Z",
-        "--codex-session-file", "charness-artifacts/rollout.jsonl",
-    )
-
-
-def test_a_missing_goal_artifact_is_refused_and_names_the_path_it_looked_for(
-    tmp_path: Path,
-) -> None:
-    """A typo'd `--goal-path` must not be reported as a recorded window.
-
-    This helper runs in the achieve After phase to make `probe_host_logs.py` report
-    `parsed` instead of `absent`. If a missing artifact exited 0, the phase would
-    record "window written" while the probe kept reading `absent`, and the goal
-    would close claiming host evidence it never had.
-    """
-    goal = tmp_path / "goals" / "absent.md"
-
-    result = _record_window(goal)
-
-    assert result.returncode == 2
-    payload = yaml.safe_load(result.stdout)
-    assert payload["action"] == "refused"
-    assert str(goal) in payload["note"]
-
-
-def test_a_goal_artifact_without_final_verification_is_refused_not_silently_appended(
-    tmp_path: Path,
-) -> None:
-    """The window belongs under `## Final Verification`, so a goal lacking it is refused.
-
-    Writing the line somewhere else would put host evidence where no reader (and no
-    probe) looks for it. The refusal names the missing section so the author repairs
-    the artifact instead of hunting for a line that landed off-section.
-    """
-    goal = tmp_path / "goal.md"
-    goal.write_text("# Achieve Goal: demo\n\nStatus: active\n\n## Auto-Retro\n\nNothing.\n", encoding="utf-8")
-    before = goal.read_text(encoding="utf-8")
-
-    result = _record_window(goal)
-
-    assert result.returncode == 2
-    payload = yaml.safe_load(result.stdout)
-    assert payload["action"] == "refused"
-    assert "Final Verification" in payload["note"]
-    assert goal.read_text(encoding="utf-8") == before, "a refused run edited the artifact"
-
-
-# ---------------------------------------------------------------------------
 # skills/public/issue/scripts/audit_brief.py -- shape error, verdict, and counts
 # ---------------------------------------------------------------------------
 

@@ -1,15 +1,14 @@
-"""Conservative markdown helpers for achieve goal artifacts.
+"""Planning-only Goal Draft helpers.
 
-A goal artifact lives at ``charness-artifacts/goals/<yyyy-mm-dd-slug>.md`` and is
-the living scratchpad for one autonomous goal run. These helpers scaffold the
-artifact, append slice reports, and check the artifact shape without churning
-manual content.
+The Goal Draft records intent until the operator approves it. After approval
+the exact bytes are frozen by Goal Binding; execution state belongs to the
+provider-backed Goal Run. This module deliberately has no local status,
+progress, closeout, evidence, or metric writer.
 """
 from __future__ import annotations
 
 import importlib.util
 import re
-from functools import partial
 from pathlib import Path
 from typing import Any
 
@@ -26,42 +25,15 @@ def _load_sibling(module_name: str):
     return module
 
 
-_blocked_matrix = _load_sibling("goal_artifact_blocked_matrix")
-_closeout = _load_sibling("goal_artifact_closeout_evidence")
-_discussion = _load_sibling("goal_artifact_discussion")
-_draft_frame = _load_sibling("goal_artifact_draft_frame")
 _markdown = _load_sibling("goal_artifact_markdown")
-_metric_window = _load_sibling("goal_metric_window_lib")
-_policy = _load_sibling("achieve_adapter_policy")
-_portability_gate = _load_sibling("goal_artifact_portability_gate")
-_pursue = _load_sibling("goal_artifact_pursue")
-_hollow = _load_sibling("goal_artifact_hollow_sections")
 _naming = _load_sibling("goal_artifact_naming")
-_superseded = _load_sibling("goal_artifact_superseded")
+_discussion = _load_sibling("goal_artifact_discussion")
+_portability = _load_sibling("goal_path_portability")
 _scaffold = _load_sibling("goal_artifact_scaffold")
-_timebox = _load_sibling("goal_artifact_timebox")
-check_complete_evidence, check_superseded_evidence = _closeout.check_complete_evidence, _superseded.check_superseded_evidence
-CLOSEOUT_EVIDENCE_NAMES = _closeout.CLOSEOUT_EVIDENCE_NAMES
-NARRATION_REQUIRED_SECTIONS = _closeout.NARRATION_REQUIRED_SECTIONS
-parse_closeout_evidence = _closeout.parse_closeout_evidence
-derive_goal_tokens = _closeout.derive_goal_tokens
-narration_sections_present = _closeout.narration_sections_present
-discussion_readiness = _discussion.discussion_readiness
-# Goal-window evidence recording lives in its own module so this file stays under
-# its code-line limit; re-export so callers keep using `goal_artifact_lib`.
-render_metric_window_line = _metric_window.render_metric_window_line
-record_metric_window = _metric_window.record_metric_window
-metric_window_attention = _metric_window.metric_window_attention
-check_timebox_closeout = _timebox.check_timebox_closeout
-check_blocked_matrix = _blocked_matrix.check
 
 _mask_fences = _markdown.mask_fences
 _fences_balanced = _markdown.fences_balanced
-slice_plan_data_row_count = _markdown.slice_plan_data_row_count
 
-
-#: Naming and location moved to `goal_artifact_naming` under the length cap;
-#: re-exported because callers and tests bind them at THIS address.
 GOAL_DIR = _naming.GOAL_DIR
 SLUG_FALLBACK = _naming.SLUG_FALLBACK
 slugify = _naming.slugify
@@ -69,16 +41,16 @@ normalize_goal_text = _naming.normalize_goal_text
 resolve_supplied_slug = _naming.resolve_supplied_slug
 goal_path = _naming.goal_path
 goal_rel = _naming.goal_rel
-validate_goal_values = partial(
-    _naming.validate_goal_values, fences_balanced=_fences_balanced, mask_fences=_mask_fences)
-#: Bound at THIS address because the validator reaches them here.
-SUPERSEDED_RECORD_FIELD = _superseded.SUPERSEDED_RECORD_FIELD
-check_superseded_record = partial(_superseded.check_superseded_record, mask_fences=_mask_fences)
-status_token = _pursue.status_token
-VALID_STATUSES = ("draft", "active", "blocked", "complete", "superseded")
 
-# H2 sections every goal artifact must keep so a compacted run can be audited
-# from one file.
+
+def validate_goal_values(title: str, goal_body: str) -> tuple[str, str]:
+    return _naming.validate_goal_values(
+        title,
+        goal_body,
+        fences_balanced=_fences_balanced,
+        mask_fences=_mask_fences,
+    )
+
 REQUIRED_SECTIONS = (
     "Goal",
     "Non-Goals",
@@ -86,96 +58,46 @@ REQUIRED_SECTIONS = (
     "User Acceptance",
     "Agent Verification Plan",
     "Slice Plan",
-    "Slice Log",
-    "Off-Goal Findings",
-    "Final Verification",
-    "User Verification Instructions",
-    "Auto-Retro",
-)
-
-# H2 sections every goal must carry so a fresh session can reconstruct the
-# originating context (sources, rejected interview alternatives, and critique
-# reasoning) without consulting the saving session's working memory. Required
-# on every goal regardless of size: a goal that genuinely has nothing for a
-# section keeps the heading and states ``N/A — <reason>``. The retired
-# size/marker exemption (a ``Single-slice goal:`` opt-out scanned over the full
-# body) because the full-text scan was poisoned by prose merely describing it.
-PORTABILITY_SECTIONS = (
+    "Discuss Before Activation",
     "Context Sources",
     "Interview Decisions",
     "Plan Critique Findings",
 )
 
-# The Before-phase placeholder marker moved with the readiness concept to
-# `goal_artifact_pursue.UNSHAPED_MARKER` — its only reader. Left as ONE
-# definition rather than a second copy here: a repair that duplicates a rule
-# instead of moving it is the shape that has come back repeatedly.
-
-_SLICE_HEADING = re.compile(r"^### Slice (\d+):", re.MULTILINE)
-_STATUS_LINE = re.compile(r"^Status:[^\n]*$", re.MULTILINE)
+_TITLE = re.compile(r"^# Achieve Goal:.*$", re.MULTILINE)
+_GOAL_HEADING = re.compile(r"^## Goal[ \t]*\r?$", re.MULTILINE)
 _H2 = re.compile(r"^## (.+?)[ \t]*\r?$", re.MULTILINE)
-_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}\Z")  # \Z, not $: `$` also matches before a trailing newline, so a
-# date carrying one passed validation and built a filename with an embedded line break.
-# A real activation line: its own line (optionally a list item) with a non-empty
-# value. The old substring test (`"Activation:" not in text`) passed a goal whose
-# only occurrence was a fenced template excerpt or a bare valueless label.
-# Prefix class matches the sibling `_CREATED_LINE` in goal_artifact_floor_grammar:
-# a bold, bullet or blockquoted `Activation:` line is present, only decorated, and
-# refusing it with "missing `Activation:` line" asserts something the code did not
-# establish. The shape check is that the line stands on its own and carries a
-# non-empty value -- what the old bare `"Activation:" in text` substring never did.
-_ACTIVATION_LINE = re.compile(r"^[ \t>*\-]*\**[ \t]*Activation[ \t]*:[ \t]*\**[ \t]*\S", re.MULTILINE)
 
 
-_TEMPLATE = (Path(__file__).resolve().parent / "goal_artifact_template.md").read_text(encoding="utf-8")
-
-
-def set_status(text: str, status: str) -> str:
-    if status not in VALID_STATUSES:
-        raise ValueError(f"invalid status {status!r}; expected one of {VALID_STATUSES}")
-    match = _STATUS_LINE.search(_mask_fences(text))
+def _replace_goal_heading(text: str, title: str) -> str:
+    match = _TITLE.search(_mask_fences(text))
     if match is None:
-        raise ValueError("artifact has no `Status:` line to update")
-    line = text[match.start():match.end()]
-    trailing = "\r" if line.endswith("\r") else ""
-    return f"{text[:match.start()]}Status: {status}{trailing}{text[match.end():]}"
+        raise ValueError("existing Goal Draft has no `# Achieve Goal:` heading")
+    line_end = "\r" if text[match.start():match.end()].endswith("\r") else ""
+    return f"{text[:match.start()]}# Achieve Goal: {title}{line_end}{text[match.end():]}"
 
 
-def read_status(text: str) -> str | None:
-    match = _STATUS_LINE.search(_mask_fences(text))
-    if match is None:
-        return None
-    return text[match.start():match.end()].split(":", 1)[1].strip()
-
-
-def _section_placeholder_summary(report: dict[str, Any]) -> str:
-    entries = report.get("section_placeholders") or []
-    return ", ".join(
-        f"{entry['section']} line {entry['line']} starts with {entry['marker']!r}"
-        for entry in entries
+def _replace_goal_body(text: str, goal_body: str) -> str:
+    masked = _mask_fences(text)
+    heading = _GOAL_HEADING.search(masked)
+    if heading is None:
+        raise ValueError("existing Goal Draft has no `## Goal` section")
+    headings = list(_H2.finditer(masked))
+    next_heading = next(
+        (candidate for candidate in headings if candidate.start() > heading.start()),
+        None,
     )
+    body_start = masked.find("\n", heading.start())
+    body_start = heading.end() if body_start == -1 else body_start + 1
+    body_end = next_heading.start() if next_heading is not None else len(text)
+    replacement = goal_body.strip()
+    if replacement:
+        replacement += "\n\n"
+    return text[:body_start] + replacement + text[body_end:]
 
 
-def _create_status_refusal(status: str, body: str, rel: str,
-                           repo_root: Path | None = None) -> dict[str, Any] | None:
-    """Re-run a terminal/blocked status floor against a body being CREATED.
-
-    Both flip guards live inside `if path.exists()`, so `--status <terminal>` on a
-    NEW slug wrote the artifact with no record at all. A round-2 reviewer found
-    that hole open for `superseded`; the `blocked` arm below is the pre-existing
-    fix for the identical bypass, and having both in one place is what stops the
-    next terminal status from having to rediscover it.
-    """
-    if status == "superseded":
-        refusal = _superseded.refuse_create_reason(body, mask_fences=_mask_fences, repo_root=repo_root)
-        if refusal:
-            raise ValueError(refusal)
-    if status == "blocked":
-        refusal = _blocked_matrix.flip_refusal(body, rel, None)
-        if refusal is not None:
-            refusal["status"] = "missing"
-            return refusal
-    return None
+def _binding_path(path: Path) -> Path:
+    return path.with_suffix(".binding.json")
 
 
 def upsert_goal(
@@ -184,209 +106,99 @@ def upsert_goal(
     date: str,
     slug: str,
     title: str,
-    status: str = "draft",
     goal_body: str = "",
 ) -> dict[str, Any]:
-    """Create the goal artifact when missing, else update only its status.
+    """Create or update one planning record, refusing a bound draft.
 
-    Returns a structured result. An existing artifact is never overwritten; only
-    the ``Status:`` line is touched, and only when the value actually changes.
+    Existing records are updated only in their title and ``## Goal`` body;
+    authored planning sections remain byte-for-byte intact. A sibling binding
+    is the freeze boundary and makes the record immutable.
     """
-    if status not in VALID_STATUSES:
-        raise ValueError(f"invalid status {status!r}; expected one of {VALID_STATUSES}")
     path = goal_path(repo_root, date, slug)
     rel = goal_rel(repo_root, path)
-    if path.exists():
-        original = path.read_text(encoding="utf-8")
-        refusal = _superseded.refuse_flip_reason(
-            status, original, mask_fences=_mask_fences, read_status=read_status,
-            repo_root=repo_root)
-        if refusal:
-            raise ValueError(refusal)
-        if status == "complete" and read_status(original) != "complete":
-            evidence_report = check_complete_evidence(repo_root, original)
-            timebox_report = check_timebox_closeout(original)
-            if not evidence_report["ok"] or not timebox_report["ok"]:
-                placeholder_summary = _section_placeholder_summary(evidence_report)
-                placeholder_note = (
-                    f" Section placeholders: {placeholder_summary}."
-                    if placeholder_summary
-                    else ""
-                )
-                return {
-                    "action": "refused",
-                    "path": rel,
-                    "status": read_status(original) or "unknown",
-                    "requested_status": status,
-                    "note": (
-                        "refused to flip to complete: After-phase evidence missing, "
-                        "invalid, unbound, or a disposition floor is unmet, or a timeboxed "
-                        "goal is closing before its closeout window. "
-                        "Add bound `Retro:`/`Host log probe:` "
-                        "lines (path or `skipped: <enum>: <detail>`); goals whose adapter "
-                        "selects `review-required` also need a bound `Disposition review:` line, "
-                        "a non-blank `## Auto-Retro` (or a "
-                        "`Retro dispositions: none — <reason>` opt-out). Each section's first "
-                        "body line must be real "
-                        "content, not a pending/TODO/TBD placeholder. For early timebox "
-                        "closeout, record why no safe next slice remains. "
-                        "See the closeout contract."
-                        + placeholder_note
-                    ),
-                    "evidence_report": evidence_report,
-                    "section_placeholder_summary": placeholder_summary,
-                    "timebox_report": timebox_report,
-                }
-        if status == "blocked":
-            blocked_refusal = _blocked_matrix.flip_refusal(original, rel, read_status(original))
-            if blocked_refusal is not None:
-                return blocked_refusal
-        updated = set_status(original, status)
-        changed = updated != original
-        if changed:
-            path.write_text(updated, encoding="utf-8")
-        result = {
-            "action": "updated" if changed else "unchanged",
+    title, goal_body = validate_goal_values(title, goal_body)
+    if _binding_path(path).exists():
+        return {
+            "action": "refused",
             "path": rel,
-            "status": status,
-            "note": "existing artifact: only Status was changed; title and goal body were left as-is",
+            "reason": "frozen-binding",
+            "note": "Goal Binding exists; the frozen Goal Draft cannot be rewritten",
         }
-        return result
-    adapter = _policy.load_adapter(repo_root)
-    if adapter["found"] and not adapter["valid"]:
-        return {"action": "refused", "path": rel, "status": "missing", "requested_status": status,
-                "note": "refused to create goal artifact: achieve adapter is invalid", "adapter_errors": adapter["errors"]}
-    path.parent.mkdir(parents=True, exist_ok=True)
-    body = _scaffold.render_goal_template(
-        _TEMPLATE,
-        title=title,
-        date=date,
-        status=status,
-        goal_rel_path=rel,
-        frame_lines=adapter["data"]["scaffold"]["draft_active_frame_lines"],
-        execution_efficiency_context_path=adapter["data"]["scaffold"]["execution_efficiency_context_path"],
-        goal_body=goal_body,
-    )
-    create_refusal = _create_status_refusal(status, body, rel, repo_root)
-    if create_refusal is not None:
-        return create_refusal
-    path.write_text(body, encoding="utf-8")
-    return {"action": "created", "path": rel, "status": status}
 
-
-def next_slice_number(text: str) -> int:
-    numbers = [int(match.group(1)) for match in _SLICE_HEADING.finditer(_mask_fences(text))]
-    return (max(numbers) + 1) if numbers else 1
-
-
-PURSUE_SCOPE_NOT_CHECKED = _pursue.SCOPE_NOT_CHECKED
-
-
-def pursue_readiness(text: str, *, deploy_vocab: tuple[str, ...] | list[str] | None = None) -> dict[str, Any]:
-    """Whether a goal is shaped enough to *pursue* via ``/goal``.
-
-    The concept lives in ``goal_artifact_pursue``; this wrapper supplies the two
-    facts this module owns -- the artifact's status and the required-heading set
-    ``check_goal`` enforces -- so the readiness module never reaches back here.
-    """
-    report = _pursue.pursue_readiness(
-        text,
-        required_sections=(
-            REQUIRED_SECTIONS
-            + PORTABILITY_SECTIONS
-        ),
-        duplicate_sections=_markdown.required_heading_report(_mask_fences(text), REQUIRED_SECTIONS, PORTABILITY_SECTIONS)[2],
-        status=read_status(text),
-        deploy_vocab=deploy_vocab,
-        mask_fences=_mask_fences,
-        fences_balanced=_fences_balanced,
-        discussion_readiness=discussion_readiness,
-        draft_frame_disposition=_draft_frame.draft_frame_disposition,
-        # Injected: the readiness module is deliberately dependency-free of this
-        # one, and reaching back would rebuild the cycle it says it avoids. The
-        # template comes from `_TEMPLATE`, the module's EXISTING reader -- a
-        # second lazy reader was written here and deleted, because "one owner"
-        # is the rule the duplicate ratchet had just enforced on this same slice.
-        hollow_sections=lambda masked, sections: _hollow.classify(
-            masked, text, _TEMPLATE, sections,
-            section_bounds=_markdown.section_bounds_all,
-        ),
-    )
-    return _portability_gate.apply_pursue_floor(report, text)
-
-
-def render_slice_block(number: int, name: str, fields: dict[str, str]) -> str:
-    lines = [f"### Slice {number}: {name}", ""]
-    for label in (
-        "Objective",
-        "Why this approach",
-        "Commits",
-        "What changed",
-        "Alternatives rejected",
-        "Targeted verification",
-        "Test duplication pressure",
-        "Critique",
-        "Off-goal findings",
-        "Lessons carried forward",
-        "Metrics",
-    ):
-        value = fields.get(label, "").strip()
-        lines.append(f"- {label}: {value}" if value else f"- {label}:")
-    return "\n".join(lines) + "\n"
-
-
-def append_slice(text: str, slice_block: str) -> str:
-    """Insert a slice block at the end of the ``## Slice Log`` section."""
-    bounds = _markdown.section_bounds(_mask_fences(text), "Slice Log")
-    if bounds is None:
-        raise ValueError("artifact has no `## Slice Log` section")
-    heading_line_end, section_end = bounds
-    existing = text[heading_line_end:section_end].strip("\n")
-    block = slice_block.strip("\n")
-    body = f"{existing}\n\n{block}" if existing else block
-    suffix = "\n" if section_end == len(text) else f"\n\n{text[section_end:]}"
-    return f"{text[:heading_line_end]}\n{body}{suffix}"
-
-
-def check_goal(text: str) -> dict[str, Any]:
-    missing, portability_missing, duplicate_sections = _markdown.required_heading_report(
-        _mask_fences(text), REQUIRED_SECTIONS, PORTABILITY_SECTIONS
-    )
-    status = read_status(text)
-    issues: list[str] = ["duplicate sections: " + ", ".join(duplicate_sections)] if duplicate_sections else []
-    if status is None:
-        issues.append("missing `Status:` line")
-    elif status not in VALID_STATUSES:
-        issues.append(f"status {status!r} is not one of {VALID_STATUSES}")
-    if not _fences_balanced(text):
-        # `mask_fences` fails open on odd parity, so every check below just read the
-        # RAW body, fenced template examples included. Say that, rather than render
-        # a verdict over a reading nobody established -- and name the one-character
-        # fix, because the alternative repair (pair fences left-to-right and mask
-        # everything but the tail) was measured to hide real sections behind a
-        # single stray marker.
-        issues.append(
-            "unbalanced code fence: an unclosed ``` leaves fenced examples readable "
-            "as real fields, so fence-masked checks below are unestablished; close it"
+    if not path.exists():
+        if not title.strip():
+            raise ValueError("goal title is empty; a new planning record needs a title")
+        path.parent.mkdir(parents=True, exist_ok=True)
+        rendered = _scaffold.render_goal_template(
+            _scaffold.TEMPLATE,
+            title=title,
+            date=date,
+            goal_rel_path=rel,
+            goal_body=goal_body,
         )
-    if _ACTIVATION_LINE.search(_mask_fences(text)) is None:
-        issues.append("missing `Activation:` line")
+        shape = check_planning_shape(rendered)
+        if not shape["ok"]:
+            raise ValueError("invalid Goal Draft planning shape: " + "; ".join(shape["issues"]))
+        path.write_text(rendered, encoding="utf-8")
+        return {"action": "created", "path": rel}
+
+    original = path.read_text(encoding="utf-8")
+    updated = original
+    if title.strip():
+        updated = _replace_goal_heading(updated, title)
+    if goal_body.strip():
+        updated = _replace_goal_body(updated, goal_body)
+    if updated == original:
+        return {
+            "action": "unchanged",
+            "path": rel,
+            "note": "planning record already matches supplied fields",
+        }
+    shape = check_planning_shape(updated)
+    if not shape["ok"]:
+        raise ValueError("invalid Goal Draft planning shape: " + "; ".join(shape["issues"]))
+    path.write_text(updated, encoding="utf-8")
+    return {"action": "updated", "path": rel, "note": "updated planning fields only"}
+
+
+def check_planning_shape(text: str) -> dict[str, Any]:
+    """Validate record shape without judging execution or completion."""
+    masked = _mask_fences(text)
+    missing, _unused, duplicates = _markdown.required_heading_report(
+        masked, REQUIRED_SECTIONS, ()
+    )
+    issues: list[str] = []
+    if not _fences_balanced(text):
+        issues.append("unbalanced code fence")
+    if not _TITLE.search(masked):
+        issues.append("missing `# Achieve Goal:` heading")
     if missing:
         issues.append("missing sections: " + ", ".join(missing))
-    if portability_missing:
-        issues.append(
-            "missing portability sections: "
-            + ", ".join(portability_missing)
-            + " — every goal keeps these headings (use `N/A — <reason>` if a section is empty)"
-        )
-    path_portability = _portability_gate.check(text)
-    if portability_issue := _portability_gate.check_issue(path_portability):
-        issues.append(portability_issue)
+    if duplicates:
+        issues.append("duplicate sections: " + ", ".join(duplicates))
+    path_portability = _portability.check_goal_path_portability(masked)
+    if not path_portability["ok"]:
+        issues.extend("path portability: " + issue for issue in path_portability["issues"])
+    discussion = _discussion.discussion_readiness(text)
     return {
         "ok": not issues,
-        "status": status,
         "missing_sections": missing,
-        "portability_missing_sections": portability_missing,
+        "duplicate_sections": duplicates,
         "path_portability": path_portability,
+        "discussion": discussion,
         "issues": issues,
     }
+
+
+__all__ = [
+    "GOAL_DIR",
+    "REQUIRED_SECTIONS",
+    "check_planning_shape",
+    "goal_path",
+    "goal_rel",
+    "normalize_goal_text",
+    "resolve_supplied_slug",
+    "slugify",
+    "upsert_goal",
+    "validate_goal_values",
+]
