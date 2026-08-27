@@ -144,28 +144,9 @@ history.
 
 ## Output Shape
 
-The result should usually include:
-
-- `Execution`
-- `Fresh-Eye Satisfaction`
-- `Packet Consumed` — `<path>`, `n/a (no adapter sections)`, or
-  `blocked <reason>` per `references/prepare-packet.md`
-- `Reviewed Input Identity` — packet path, exact packet SHA-256, and input
-  identity SHA-256 when a packet was consumed
-- `Target` — which reference shaped this run
-- `Change`
-- `Capability at Stake`
-- `Evidence Disposition` (when active; identity/count/coverage/digest)
-- `Adversarial Verification` (stimulus, observed output, and proof level)
-- `Angles`
-- `Findings`
-- `Counterweight Triage` (optional `Structured Findings` per `references/counterweight-triage.md`)
-- `Deliberately Not Doing`
-- `Next Move`
-
-The target reference's `Output Shape` section names additional sections
-required for that target (for example, release surface-lock inventory or
-rename title/slug coherence review evidence).
+Lead with findings that change the next move, counterweight disposition, and
+the next move itself. Include packet or evidence identity only when that path
+was actually used; do not emit empty ceremony sections.
 
 If the configured worker path blocks before execution, report
 `Execution: blocked <host-signal>` and the next move; record
@@ -195,18 +176,16 @@ repeat review when the repair does not materially change that risk.
 
 ## References
 
-- `references/premortem-decision.md`
+- `references/adapter-contract.md`
+- `references/adversarial-evidence-review.md`
+- `references/angle-selection.md`
+- `references/autonomous-trigger.md`
+- `references/cadence.md`
 - `references/code-critique.md`
+- `references/confirmed-input-over-anchoring.md`
+- `references/counterweight-triage.md`
+- `references/premortem-decision.md`
+- `references/prepare-packet.md`
 - `references/release-critique.md`
 - `references/rename-critique.md`
 - `references/spec-critique.md`
-- `references/cadence.md`
-- `references/autonomous-trigger.md`
-- `references/confirmed-input-over-anchoring.md`
-- `references/angle-selection.md`
-- `references/counterweight-triage.md`
-- `references/adversarial-evidence-review.md`
-- `references/prepare-packet.md`
-- `references/adapter-contract.md`
-- `../../shared/references/agent-assessment-invariant.md`
-- `../../shared/references/fresh-eye-subagent-review.md`

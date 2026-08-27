@@ -16,9 +16,6 @@ def test_critique_skill_surfaces_counterweight_and_deliberately_not_doing() -> N
     angle_text = (
         ROOT / "skills" / "public" / "critique" / "references" / "angle-selection.md"
     ).read_text(encoding="utf-8")
-    capability_text = (
-        ROOT / "skills" / "shared" / "references" / "fresh-eye-subagent-review.md"
-    ).read_text(encoding="utf-8")
     counterweight_text = (
         ROOT / "skills" / "public" / "critique" / "references" / "counterweight-triage.md"
     ).read_text(encoding="utf-8")
@@ -36,9 +33,6 @@ def test_critique_skill_surfaces_counterweight_and_deliberately_not_doing() -> N
     ).read_text(encoding="utf-8")
     cadence_text = (
         ROOT / "skills" / "public" / "critique" / "references" / "cadence.md"
-    ).read_text(encoding="utf-8")
-    reviewer_brief_text = (
-        ROOT / "skills" / "shared" / "references" / "disposition-reviewer-brief.md"
     ).read_text(encoding="utf-8")
     normalized_skill = " ".join(skill_text.split())
     normalized_angles = " ".join(angle_text.split())
@@ -80,28 +74,11 @@ def test_critique_skill_surfaces_counterweight_and_deliberately_not_doing() -> N
     assert "a single reviewer is an explicit, explained exception" in normalized_angles
     assert "must not encode selection or reviewer count using filenames" in normalized_angles
     assert "Before a parent reports that path" in normalized_angles
-    assert "Do not present a local pass as the canonical fresh-eye" in capability_text
-    assert "host/runtime contract" in capability_text
-    assert "shell-only runner" in capability_text
-    assert "model self-report" in capability_text
-    assert "Availability means an actual host-exposed subagent/spawn tool" in capability_text
-    assert "Subagent Delegation" in capability_text
-    # #475: the grant is a three-rung ladder, not one source. Pinning the old
-    # single-source sentence would re-pin the defect -- a repo without the
-    # `AGENTS.md` block had no reachable authorization at all.
-    assert "## Where The Delegation Request Comes From" in capability_text
-    assert ".agents/subagent-delegation.json" in capability_text
-    assert "A skill invocation is not a rung." in capability_text
-    assert "`host signal:` or `tool signal:`" in capability_text
     assert "likely implementer misread" in SPEC_SKILL
     # The delegated-reviewer fast path body was relocated to the shared
     # reviewer brief (#12); critique's SKILL.md keeps a one-line pointer.
     assert "Delegated reviewer fast path" in normalized_skill
     assert "disposition-reviewer-brief.md" in normalized_skill
-    assert "Do not report blocked for missing nested subagents" in reviewer_brief_text
-    assert "First branch for delegated reviewers" in capability_text
-    assert "do not run this capability check" in capability_text
-    assert "return the requested findings or triage" in capability_text
     assert "Act Before Ship" in counterweight_text
     assert "Over-Worry" in counterweight_text
     assert "Autonomous trigger" in normalized_skill
@@ -140,6 +117,30 @@ def test_critique_skill_surfaces_counterweight_and_deliberately_not_doing() -> N
         "proof-\n   surface",
     ):
         assert risk_class in cadence_text
+
+
+def test_critique_fresh_eye_capability_contract_is_host_observable() -> None:
+    capability_text = (
+        ROOT / "skills" / "shared" / "references" / "fresh-eye-subagent-review.md"
+    ).read_text(encoding="utf-8")
+    reviewer_brief_text = (
+        ROOT / "skills" / "shared" / "references" / "disposition-reviewer-brief.md"
+    ).read_text(encoding="utf-8")
+
+    assert "Do not present a local pass as the canonical fresh-eye" in capability_text
+    assert "host/runtime contract" in capability_text
+    assert "shell-only runner" in capability_text
+    assert "model self-report" in capability_text
+    assert "Availability means an actual host-exposed subagent/spawn tool" in capability_text
+    assert "Subagent Delegation" in capability_text
+    assert "## Where The Delegation Request Comes From" in capability_text
+    assert ".agents/subagent-delegation.json" in capability_text
+    assert "A skill invocation is not a rung." in capability_text
+    assert "`host signal:` or `tool signal:`" in capability_text
+    assert "First branch for delegated reviewers" in capability_text
+    assert "do not run this capability check" in capability_text
+    assert "return the requested findings or triage" in capability_text
+    assert "Do not report blocked for missing nested subagents" in reviewer_brief_text
 
 
 def test_critique_does_not_require_multi_angle_or_round_artifacts() -> None:
