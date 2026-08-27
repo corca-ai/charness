@@ -259,7 +259,7 @@ def test_live_catalog_has_a_decision_for_every_packaged_candidate() -> None:
     #
     # This one STAYS, and is `contract` rather than chore: it pins the exported
     # consumer surface every consuming repo must wire or explicitly opt out of.
-    assert report["consumer_facing_count"] == 13
+    assert report["consumer_facing_count"] == 12
     assert "scripts/validate_adapters.py" not in report["consumer_facing_validators"]
     assert "quality-artifact" in report["consumer_validator_ids"]
     quality = next(

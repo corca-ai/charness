@@ -72,20 +72,16 @@ def _load_module(relpath: str, name: str):
     return module
 
 
-def test_delegation_contract_is_live_against_this_repos_real_agents_md() -> None:
-    """The gate must fire in the repo that wrote it -- read the REAL file (#471).
+def test_live_agents_md_does_not_claim_the_legacy_delegation_contract() -> None:
+    """The current root contract uses live host capability, not a prose grant.
 
-    Every existing test around this contract built a synthetic AGENTS.md, and a
-    synthetic fixture writes the marker the way the CODE spells it. The real file
-    writes `**already delegated**`, so the plain substring test returned False
-    here and `_check_forbidden_blocker_phrases` had never run once against the
-    600+ checked-in critique artifacts. A fixture cannot catch that class by
-    construction: it re-asks whether the matcher matches itself. This test asks
-    the only question that was ever load-bearing -- is the contract live HERE --
-    and it fails if AGENTS.md is later reworded out from under the markers.
+    The critique validator still understands the explicit delegation record for
+    consuming repositories, but this repository's AGENTS.md no longer adopts
+    the retired repo-mandated fresh-eye marker. That keeps the test tied to the
+    live root contract instead of preserving an obsolete ceremony by fixture.
     """
     validator = _load_module("scripts/validate_critique_artifacts.py", "_vca_real")
-    assert validator.has_repo_delegation_contract(ROOT) is True
+    assert validator.has_repo_delegation_contract(ROOT) is False
 
 
 def test_both_readers_of_the_delegation_contract_agree_on_this_repo() -> None:

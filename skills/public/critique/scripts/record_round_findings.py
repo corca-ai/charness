@@ -119,6 +119,31 @@ def _load_worker_support():
     return module
 
 
+def _normalize_worker_report(payload: dict[str, Any]) -> dict[str, Any]:
+    """Normalize reports written before ``boundary_mode`` became explicit.
+
+    The generic delivery proof still requires a concrete boundary mode. Older
+    reports already carry a non-empty boundary fingerprint, which identifies
+    the only compatible mode without inventing new evidence. Keep this
+    compatibility at the critique-recording boundary; reports without either
+    field remain rejected by the generic carrier validator.
+    """
+    if payload.get("boundary_mode") is not None:
+        return payload
+    fingerprint = payload.get("boundary_fingerprint")
+    if not isinstance(fingerprint, str) or not fingerprint.strip():
+        return payload
+    normalized = dict(payload)
+    normalized["boundary_mode"] = "shared-tree-fingerprint"
+    provenance = payload.get("provenance")
+    if isinstance(provenance, dict) and provenance.get("boundary_mode") is None:
+        normalized["provenance"] = {
+            **provenance,
+            "boundary_mode": "shared-tree-fingerprint",
+        }
+    return normalized
+
+
 def _read_worker_report(
     repo_root: Path, report_arg: str
 ) -> tuple[str, str, dict[str, Any]]:
@@ -131,7 +156,11 @@ def _read_worker_report(
         raise RoundFindingsError(f"worker report is unreadable or unsafe: {exc}") from exc
     if not isinstance(payload, dict):
         raise RoundFindingsError("worker report must contain a mapping")
-    return _repo_relative(repo_root, report_path), hashlib.sha256(raw).hexdigest(), payload
+    return (
+        _repo_relative(repo_root, report_path),
+        hashlib.sha256(raw).hexdigest(),
+        _normalize_worker_report(payload),
+    )
 
 
 def _read_typed_findings(

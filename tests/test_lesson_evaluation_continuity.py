@@ -1,9 +1,9 @@
 """The lesson-evaluation READ side: disposition grammar, reconciliation, gate CLI.
 
-What a retro artifact is allowed to CLAIM (the single `Lesson evaluation:` machine
-line and the validator that requires it), what the reconciler concludes when those
-claims are checked against the ledger's sessions, receipts and score events, and
-what the `check_lesson_evaluation_continuity` gate reports and exits with.
+What the optional lesson-continuity checker reports and exits with, and what the
+reconciler concludes when lesson claims are checked against the ledger's sessions,
+receipts and score events. The default and release retro contracts do not require
+this optional section.
 
 The counterpart WRITE side -- `open_lesson_session` emitting preview bytes and the
 receipt/bundle that binds them -- lives in `test_lesson_session_emission.py`, which
@@ -401,7 +401,7 @@ def test_reconciler_names_duplicate_receiptless_score_and_unclaimed_emission() -
     }
 
 
-def test_retro_validator_activates_on_later_filename_or_body_date(tmp_path: Path) -> None:
+def test_retro_validator_does_not_require_optional_lesson_section(tmp_path: Path) -> None:
     path = tmp_path / "2026-08-14-demo.md"
     path.write_text(
         _markdown(
@@ -419,8 +419,7 @@ def test_retro_validator_activates_on_later_filename_or_body_date(tmp_path: Path
         ).replace("## Lesson Evaluation", "## Omitted"),
         encoding="utf-8",
     )
-    with pytest.raises(validate_retro_artifact.ValidationError, match="Lesson Evaluation"):
-        validate_retro_artifact.validate_retro_artifact(missing)
+    validate_retro_artifact.validate_retro_artifact(missing)
 
     body_later = tmp_path / "2026-01-01-body-later.md"
     body_later.write_text(
@@ -430,8 +429,7 @@ def test_retro_validator_activates_on_later_filename_or_body_date(tmp_path: Path
         ).replace("## Lesson Evaluation", "## Omitted"),
         encoding="utf-8",
     )
-    with pytest.raises(validate_retro_artifact.ValidationError, match="Lesson Evaluation"):
-        validate_retro_artifact.validate_retro_artifact(body_later)
+    validate_retro_artifact.validate_retro_artifact(body_later)
 
 
 def test_retro_validator_grandfathers_pre_activation_artifact(tmp_path: Path) -> None:

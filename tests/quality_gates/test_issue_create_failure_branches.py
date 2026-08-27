@@ -35,12 +35,12 @@ def test_verify_create_command_reports_adapter_and_readback_failures(monkeypatch
     emitted: list[dict] = []
     args = SimpleNamespace(repo_root=Path("."), repo="owner/repo", number=17, body_file=None)
     monkeypatch.setitem(CREATE_GLOBALS, "_emit", emitted.append)
-    monkeypatch.setitem(CREATE_GLOBALS, "_resolve_backend", lambda _root: {"adapter_ok": False, "adapter": {"error": "bad"}, "backend": {}})
+    monkeypatch.setitem(CREATE_GLOBALS, "_resolve_backend", lambda _root, _repo: {"adapter_ok": False, "adapter": {"error": "bad"}, "backend": {}})
     assert CREATE["command_verify_create"](args) == 1
     assert emitted[-1] == {"ok": False, "adapter": {"error": "bad"}}
 
     backend = {"id": "fake"}
-    monkeypatch.setitem(CREATE_GLOBALS, "_resolve_backend", lambda _root: {"adapter_ok": True, "adapter": {}, "backend": backend})
+    monkeypatch.setitem(CREATE_GLOBALS, "_resolve_backend", lambda _root, _repo: {"adapter_ok": True, "adapter": {}, "backend": backend})
     monkeypatch.setitem(CREATE_GLOBALS, "verify_created_issue", lambda *_args, **_kwargs: (_ for _ in ()).throw(RuntimeError("readback down")))
     assert CREATE["command_verify_create"](args) == 2
     assert emitted[-1] == {"ok": False, "error": "readback down", "selected_backend": backend}
