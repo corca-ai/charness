@@ -3,7 +3,7 @@
 ## Current Focus
 
 - This compact record closes the receipted lesson session without backfilling a score. (source: `charness-artifacts/retro/2026-08-26-consumer-boundary-release-disposition.md`; sources: 4)
-- This retro covers the four bounded review rounds behind the reduction-first verification change and the first release-preflight attempt. (source: `charness-artifacts/retro/2026-08-26-four-round-reduction-first-release-follow-up.md`)
+- Release publish triggered a configured automatic session retro for `v7.0.0`. (source: `charness-artifacts/retro/2026-08-27-v7-0-0-release-auto-retro.md`)
 
 ## Repeat Traps
 
@@ -51,4 +51,4 @@
 - `charness-artifacts/retro/2026-08-26-715-721-implementation-disposition.md`
 - `charness-artifacts/retro/2026-08-26-adversarial-review-disposition.md`
 - `charness-artifacts/retro/2026-08-26-consumer-boundary-release-disposition.md`
-- `charness-artifacts/retro/2026-08-26-four-round-reduction-first-release-follow-up.md`
+- `charness-artifacts/retro/2026-08-27-v7-0-0-release-auto-retro.md`
