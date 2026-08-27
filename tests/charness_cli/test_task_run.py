@@ -69,12 +69,25 @@ def _run(repo: Path, tmp_path: Path, executable: Path, **kwargs):
     )
 
 
-def test_codex_argument_shorthands_preserve_extra_host_arguments() -> None:
+def test_codex_argument_shorthands_preserve_extra_host_arguments(tmp_path: Path) -> None:
+    git_common_dir = tmp_path / ".git"
+    git_common_dir.mkdir()
     assert task_run.build_codex_args(
         model="example-model",
         effort="high",
+        writable_dirs=[git_common_dir],
         extra=["--approve-for-me"],
-    ) == ["-m", "example-model", "-c", "model_reasoning_effort=high", "--approve-for-me"]
+    ) == [
+        "--sandbox",
+        "workspace-write",
+        "--add-dir",
+        str(git_common_dir),
+        "-m",
+        "example-model",
+        "-c",
+        "model_reasoning_effort=high",
+        "--approve-for-me",
+    ]
 
 
 def test_task_run_lane_shorthand_owns_safe_defaults_and_external_target(tmp_path: Path, monkeypatch) -> None:
@@ -102,9 +115,16 @@ def test_task_run_lane_shorthand_owns_safe_defaults_and_external_target(tmp_path
     assert Path(payload["worktree_path"]) == Path(payload["runtime_root"]) / "task-run" / "short-lane" / "worktree"
     assert payload["prepare"] is True
     assert payload["require_change"] is True
+    command = payload["codex"]["command"]
+    assert command[command.index("--sandbox") + 1] == "workspace-write"
+    assert Path(command[command.index("--add-dir") + 1]) == repo / ".git"
     assert payload["codex"]["command"] == [
         str(executable),
         "exec",
+        "--sandbox",
+        "workspace-write",
+        "--add-dir",
+        str(repo / ".git"),
         "-m",
         "example-model",
         "-c",

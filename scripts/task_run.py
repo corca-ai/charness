@@ -31,6 +31,7 @@ _completion_evidence = _support._completion_evidence
 _execute_codex = _support._execute_codex
 _failure_payload = _support._failure_payload
 _git = _support._git
+_git_common_dir = _support._git_common_dir
 _git_output = _support._git_output
 _population_delta = _support._population_delta
 _resolve_base_sha = _support._resolve_base_sha
@@ -293,6 +294,7 @@ def _resolve_task_inputs(
     if effort is None and lane is not None:
         raise TaskRunError("shorthand task runs require the orchestrator-selected --effort")
     base_sha = _resolve_base_sha(resolved_repo, resolved_base)
+    git_common_dir = _git_common_dir(resolved_repo)
     codex_path = _resolve_codex(codex)
     if not isinstance(timeout_seconds, int) or timeout_seconds < 1:
         raise TaskRunError("--timeout-seconds must be a positive integer")
@@ -302,7 +304,12 @@ def _resolve_task_inputs(
     command = [
         codex_path,
         "exec",
-        *build_codex_args(model=model, effort=effort, extra=codex_args),
+        *build_codex_args(
+            model=model,
+            effort=effort,
+            writable_dirs=[git_common_dir],
+            extra=codex_args,
+        ),
         prompt,
     ]
     return {
@@ -311,6 +318,7 @@ def _resolve_task_inputs(
         "branch": resolved_branch,
         "base": resolved_base,
         "base_sha": base_sha,
+        "git_common_dir": git_common_dir,
         "scopes": normalized_scopes,
         "codex_path": codex_path,
         "command": command,
@@ -406,6 +414,7 @@ def run_task(
         "branch": resolved_branch,
         "base": resolved_base,
         "base_sha": base_sha,
+        "git_common_dir": str(resolved["git_common_dir"]),
         "scopes": normalized_scopes,
         "codex": {"executable": codex_path, "command": command[:-1] + ["<prompt>"]},
         "runtime_root": str(runtime_path),

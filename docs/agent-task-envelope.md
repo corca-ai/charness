@@ -21,7 +21,10 @@ A clean parent is required for tracked and untracked paths. The command creates
 the `task/feature-lane` branch from `HEAD`, derives the task id and linked
 worktree under the external task runtime, routes cache and logs outside the
 repo, and records the resolved base SHA, target identity, and candidate scope
-evidence. The orchestrator supplies the reasoning effort; `--model` is
+evidence. Codex runs in `workspace-write` and receives the parent Git common
+directory as its only additional writable directory, so a linked-worktree
+writer can create its coherent commit without opening the full filesystem.
+The orchestrator supplies the reasoning effort; `--model` is
 available when it also needs to select the Codex model.
 
 The fully explicit `--path/--branch/--base` form remains available for
