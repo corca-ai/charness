@@ -248,11 +248,13 @@ def retro_trigger_evaluation_lines(payload: dict[str, Any] | None) -> list[str]:
     lines.append(f"- Surface hits: {len(surface_hits)}.")
     lines.extend(f"  - `{surface}`" for surface in surface_hits)
     lines.append(f"- Path hits: {len(path_hits)}.")
-    lines.extend(f"  - `{path}`" for path in path_hits)
     lines.append(f"- Evaluated changed paths: {len(changed_paths)}.")
-    lines.extend(f"  - `{path}`" for path in changed_paths[:20])
-    if len(changed_paths) > 20:
-        lines.append(f"  - ... {len(changed_paths) - 20} more")
+    # The full delta is already bound in the structured release payload. Do not
+    # render every historical/deleted path as a Markdown proof citation: an
+    # ignored residue or a deleted path can make the evidence-durability gate
+    # interpret an inventory line as a claim about a checked-in artifact. Counts
+    # preserve the useful signal without turning release bookkeeping into a
+    # second evidence surface.
     return lines
 
 

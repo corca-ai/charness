@@ -84,7 +84,8 @@ def test_publish_release_records_retro_trigger_evaluation_from_release_delta(tmp
     assert "Triggered: `True`." in artifact_text
     assert "Closeout status: `written`." in artifact_text
     assert "`operator-docs`" in artifact_text
-    assert "`README.md`" in artifact_text
+    assert "Path hits: 0." in artifact_text
+    assert "Evaluated changed paths:" in artifact_text
 
 
 def test_publish_release_retro_trigger_includes_helper_generated_release_paths(tmp_path: Path) -> None:
