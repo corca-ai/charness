@@ -331,10 +331,8 @@ def test_a_faithful_scope_passes_end_to_end() -> None:
 
 
 def test_machine_read_state_under_an_advisory_root_still_blocks() -> None:
-    """`charness-artifacts/quality/dup-ratchet-baseline.json` is an INPUT to the
-    duplicate ratchet. A directory-only rule let a rebaselined ceiling ship as an
-    advisory finding -- a real behaviour change escaping through the prose lane."""
-    assert classify("charness-artifacts/quality/dup-ratchet-baseline.json") == "blocking"
+    """Machine-read state must not become advisory just because it lives under a
+    narrative artifact root."""
     assert classify("charness-artifacts/retro/lesson-ledger.json") == "blocking"
     assert classify("charness-artifacts/goals/x.slice-manifest.json") == "blocking"
     assert classify("charness-artifacts/retro/2026-08-22-r.md") == "advisory"

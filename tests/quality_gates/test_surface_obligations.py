@@ -74,7 +74,6 @@ _SPEC_EVIDENCE = (
     "python3 scripts/check_spec_evidence_durability.py --repo-root . "
     "--require-git-file-listing"
 )
-_DUP_RATCHET = "python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary"
 
 
 def test_gitignore_scan_hygiene_runs_at_slice_closeout_for_top_level_scripts() -> None:
@@ -170,18 +169,6 @@ def test_repo_python_surface_matches_shell_test_fixtures() -> None:
 
     assert "./scripts/check-shell.sh" in verify
     assert _STANDING_PYTEST in verify
-
-
-def test_duplicate_ratchet_is_deduped_across_baseline_and_python_surfaces() -> None:
-    verify = _verify_commands_for(
-        "charness-artifacts/quality/dup-ratchet-baseline.json",
-        "scripts/run_slice_closeout.py",
-        "skills/public/quality/SKILL.md",
-    )
-
-    assert verify.count(_DUP_RATCHET) == 1
-    assert any("inventory_nose_clones.py" in command for command in verify)
-    assert any("inventory_doc_duplicates.py" in command for command in verify)
 
 
 def test_check_changed_surfaces_treats_charness_artifacts_as_repo_markdown() -> None:

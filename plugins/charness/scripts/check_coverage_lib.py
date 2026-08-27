@@ -336,6 +336,7 @@ def exercise_support_sync_scenarios() -> None:
 
 
 def exercise_lifecycle_scenarios() -> None:
+    import scripts.control_plane_lifecycle_lib as lifecycle
     import scripts.install_tools as install_tools
     import scripts.sync_support as sync_support
     import scripts.update_tools as update_tools
@@ -355,6 +356,14 @@ def exercise_lifecycle_scenarios() -> None:
     install_failed = [{"command": "demo install", "exit_code": 1, "stdout": "", "stderr": "boom"}]
     with tempfile.TemporaryDirectory(prefix="charness-lifecycle-") as temp_dir:
         repo = Path(temp_dir)
+        readiness_manifest = {
+            **manifest,
+            "readiness_checks": [{"check_id": "demo-ready", "summary": "demo is ready", "command": "demo --ready"}],
+        }
+        with mock.patch.object(lifecycle, "run_check", return_value={"ok": True, "results": []}):
+            lifecycle.evaluate_readiness(readiness_manifest, repo)
+        lifecycle.healthcheck_attention_suffix({})
+        lifecycle.healthcheck_attention_suffix({"healthcheck": {"skipped": False}})
         release = {"status": "ok", "latest_version": "1.0.0"}
         with mock.patch.object(install_tools, "probe_release", return_value=release):
             with mock.patch.object(install_tools, "capture_provenance", return_value=dict(provenance)):
@@ -401,6 +410,34 @@ def exercise_lifecycle_scenarios() -> None:
                         with mock.patch.object(update_tools, "upsert_lock"):
                             with mock.patch.object(update_tools, "run_shell", return_value=CommandResult("demo pm update", 0, "", "")):
                                 update_tools.update_one(repo, manual_manifest, execute=True)
+        advisory = {
+            "status": "behind",
+            "observed_version": "1.0.0",
+            "latest_tag": "v2.0.0",
+            "latest_version": "2.0.0",
+            "html_url": "https://example.com/releases",
+        }
+        lifecycle.update_advisory_line(
+            {"tool_id": "demo", "update_advisory": advisory, "mode": "manual", "docs_url": "https://example.com/docs"}
+        )
+        lifecycle.update_advisory_line({"tool_id": "demo", "update_advisory": advisory, "mode": "manual"})
+        lifecycle.update_advisory_line(
+            {
+                "tool_id": "demo",
+                "update_advisory": advisory,
+                "install_route": {"mode": "manual", "docs_url": "https://example.com/install"},
+            }
+        )
+        lifecycle.update_advisory_line(
+            {"tool_id": "demo", "update_advisory": advisory, "install_route": {"mode": "manual"}}
+        )
+        lifecycle.update_advisory_line({"tool_id": "demo", "update_advisory": advisory, "commands": ["demo update"]})
+        lifecycle.update_advisory_line(
+            {"tool_id": "demo", "update_advisory": advisory, "package_manager": "npm", "package_name": "demo"}
+        )
+        lifecycle.update_advisory_line({"tool_id": "demo", "update_advisory": advisory})
+        lifecycle.update_advisory_line({"tool_id": "", "update_advisory": advisory})
+        lifecycle.print_update_advisories([{"tool_id": "demo", "update_advisory": advisory}], stream=io.StringIO())
         no_support = {"tool_id": "no-support"}
         sync_support.sync_one(repo, no_support, execute=False, upstream_checkouts={})
         with mock.patch.object(sync_support.support_sync, "parse_upstream_checkout", return_value=("example/demo", repo)):

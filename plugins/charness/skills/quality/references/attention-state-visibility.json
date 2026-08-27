@@ -109,7 +109,6 @@
     },
     "scripts/check_coverage_lib.py": {
       "states": [
-        "disabled",
         "not_configured",
         "skipped"
       ],
@@ -117,10 +116,10 @@
         "terminal_payload"
       ],
       "evidence_terms": [
-        "disabled_check_payload",
-        "skipped_healthcheck"
+        "not-configured",
+        "skipped"
       ],
-      "rationale": "Coverage library preserves disabled tool state and skipped healthcheck state through shared lifecycle payloads."
+      "rationale": "Coverage scenarios preserve the explicit absent-healthcheck state and skipped marker in the lifecycle payload."
     },
     "scripts/check_documented_command_flags.py": {
       "states": [
@@ -259,22 +258,6 @@
       ],
       "rationale": "T-signal classifier exposes skipped reasons (no_parent, shallow_clone, diff_unavailable) in its structured result so callers can attach classification_skipped to the durable episode record instead of silently emitting t_status none."
     },
-    "scripts/control_plane_lifecycle_lib.py": {
-      "states": [
-        "disabled",
-        "not_configured",
-        "skipped"
-      ],
-      "visibility": [
-        "terminal_payload"
-      ],
-      "evidence_terms": [
-        "disabled by repo adapter",
-        "not-configured",
-        "skipped"
-      ],
-      "rationale": "Tool lifecycle disabled states and intentionally absent optional healthchecks share explicit payloads for detect and healthcheck output."
-    },
     "scripts/critique_enforcement_scope.py": {
       "states": [
         "disabled",
@@ -294,6 +277,20 @@
       ],
       "rationale": "This module exists to stop exactly this failure on the critique evidence surface: a conditional floor that is off emits nothing by construction, so `Validated N critique artifact(s).` read as coverage it never claimed. Every state it names is printed on stdout in the enforcement-scope record on BOTH passing and failing runs — `binding-currency-check=disabled` when a full sweep deliberately skips re-reading historical bindings, and the typed cross-surface states `not-configured` / `not-established` / `not-resolved`, which the bare boolean previously collapsed into an indistinguishable `False`. None of them is a pass verdict; each names a scope the run did not establish."
     },
+    "scripts/control_plane_lifecycle_lib.py": {
+      "states": [
+        "not_configured",
+        "skipped"
+      ],
+      "visibility": [
+        "terminal_payload"
+      ],
+      "evidence_terms": [
+        "not-configured",
+        "skipped"
+      ],
+      "rationale": "Tool lifecycle payloads distinguish an absent optional healthcheck from a successful healthcheck with explicit status and skipped fields."
+    },
     "scripts/doctor.py": {
       "states": [
         "disabled",
@@ -307,20 +304,6 @@
         "disabled"
       ],
       "rationale": "Doctor output reports disabled tool installs and skipped release probes as structured JSON."
-    },
-    "scripts/doctor_lib.py": {
-      "states": [
-        "disabled"
-      ],
-      "visibility": [
-        "operator_summary",
-        "terminal_payload"
-      ],
-      "evidence_terms": [
-        "doctor_status",
-        "disabled"
-      ],
-      "rationale": "Doctor library exposes disabled and skipped healthcheck states with next steps."
     },
     "scripts/filter_cosmic_ray_mutants.py": {
       "states": [
@@ -374,20 +357,6 @@
         "disabled"
       ],
       "rationale": "Host-hook install/uninstall library exposes per-host intent (enabled/disabled) in reconcile and status payloads so adapter-driven no-op runs cannot read as silent install."
-    },
-    "scripts/install_tools.py": {
-      "states": [
-        "disabled",
-        "skipped"
-      ],
-      "visibility": [
-        "terminal_payload"
-      ],
-      "evidence_terms": [
-        "mode",
-        "disabled"
-      ],
-      "rationale": "Tool installation reports disabled adapter state as structured skipped output."
     },
     "scripts/measure_inventory_marker_rule.py": {
       "states": [
@@ -521,20 +490,6 @@
         "skipped"
       ],
       "rationale": "Support sync returns explicit skipped status for non-materialized or irrelevant sync work."
-    },
-    "scripts/update_tools.py": {
-      "states": [
-        "disabled",
-        "skipped"
-      ],
-      "visibility": [
-        "terminal_payload"
-      ],
-      "evidence_terms": [
-        "mode",
-        "disabled"
-      ],
-      "rationale": "Tool update reports disabled adapter state as structured skipped output."
     },
     "scripts/validate_inventory_consumption.py": {
       "states": [
@@ -1032,20 +987,6 @@
         "skipped"
       ],
       "rationale": "Dependency seeding reports skipped dependency setup as structured payload status."
-    },
-    "skills/public/setup/scripts/seed_retro_memory.py": {
-      "states": [
-        "not_configured"
-      ],
-      "visibility": [
-        "artifact_visible",
-        "operator_summary"
-      ],
-      "evidence_terms": [
-        "not-configured",
-        "unset"
-      ],
-      "rationale": "This script used to seed `auto_session_trigger_surfaces: []` and `auto_session_trigger_path_globs: []` into a fresh adapter, which the probe then read as an INTENTIONAL opt-out the repo had never chosen — two mechanisms agreeing on the wrong default. It now leaves the keys unset so the probe reports `not_configured` and its remediation fires, and the seed report says so rather than implying a configured state."
     },
     "skills/public/shared/scripts/reviewer_result.py": {
       "states": [
