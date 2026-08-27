@@ -129,6 +129,58 @@ def test_parent_progress_is_required_instead_of_implicit_full_graph_fallback() -
     assert exc_info.value.code == "progress-sync-required"
 
 
+def test_parent_read_fast_path_does_one_live_read_without_goal_run_preflight(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[tuple[str, int]] = []
+    issue = {
+        "number": PARENT_NUMBER,
+        "title": "Goal Run",
+        "state": "OPEN",
+        "url": PARENT_URL,
+        "body": "parent body",
+        "comments": [],
+    }
+    resolved = {"adapter_ok": True, "backend": {"id": "gh", "binary": "gh"}}
+
+    class Selection:
+        @staticmethod
+        def select_backend(_root: Path) -> dict[str, object]:
+            return dict(resolved)
+
+        @staticmethod
+        def bind_provider_selection(
+            value: dict[str, object], *, target_repo: str, operations: list[str]
+        ) -> dict[str, object]:
+            assert target_repo == REPO
+            assert operations == ["read-body", "read-state"]
+            return value
+
+    class Reader:
+        @staticmethod
+        def read_issue_with_comments(
+            repo: str, number: int, *, backend: dict[str, object]
+        ) -> dict[str, object]:
+            calls.append((repo, number))
+            assert backend == resolved["backend"]
+            return {"issue": issue}
+
+    def fake_load(_path: Path, name: str):
+        if name == "issue_pickup_selection":
+            return Selection
+        if name == "issue_pickup_read":
+            return Reader
+        raise AssertionError(f"routine pickup loaded unexpected module: {name}")
+
+    monkeypatch.setattr(pickup, "_load_path", fake_load)
+
+    graph, actual = pickup._read_goal_parent(ROOT, REPO, PARENT_NUMBER)
+
+    assert calls == [(REPO, PARENT_NUMBER)]
+    assert graph["parent"]["body"] == "parent body"
+    assert actual == resolved
+
+
 def test_pickup_refuses_closed_parent_before_binding_or_mutation(monkeypatch: pytest.MonkeyPatch) -> None:
     metadata = _metadata()
     parent = {

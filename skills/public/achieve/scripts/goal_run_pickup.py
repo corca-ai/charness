@@ -4,8 +4,8 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import importlib.util
-import runpy
 import subprocess
 import sys
 from pathlib import Path
@@ -92,24 +92,43 @@ def _resolve_repository(repo_root: Path, adapter: dict[str, Any], runtime: Any) 
 
 
 def _read_goal_parent(repo_root: Path, repo: str, number: int) -> tuple[dict[str, Any], dict[str, Any]]:
-    cli = runpy.run_path(str(_issue_script("issue_tracker_cli")))
-    resolved = cli["_resolve_backend"](repo_root)
+    # Routine pickup is deliberately a read path, not a second bootstrap. The
+    # provider read itself is the live backend check; a separate auth/capability
+    # probe followed by another parent read added latency without changing the
+    # answer. Full preflight remains owned by bootstrap/sync/closeout commands.
+    selection = _load_path(_issue_script("issue_provider_selection"), "issue_pickup_selection")
+    resolved = selection.select_backend(repo_root)
     if not resolved.get("adapter_ok"):
         raise PickupError("adapter-invalid", "issue adapter is invalid", details=resolved.get("adapter"))
-    provider = runpy.run_path(str(_issue_script("issue_goal_run")))
-    preflight = provider["_preflight"](
-        repo=repo,
-        parent_number=number,
-        operations=["read-body", "read-state"],
-        resolved=resolved,
-    )
-    if not preflight["ok"]:
-        raise PickupError(str(preflight.get("status") or "provider-unavailable"), str(preflight.get("error") or "Goal Run provider is not ready"), details=preflight)
     try:
-        issue = provider["READ"].read_issue_with_comments(
+        resolved = selection.bind_provider_selection(
+            resolved,
+            target_repo=repo,
+            operations=["read-body", "read-state"],
+        )
+    except RuntimeError as exc:
+        raise PickupError("provider-selection-invalid", str(exc)) from exc
+    reader = _load_path(_issue_script("issue_read"), "issue_pickup_read")
+    try:
+        issue = reader.read_issue_with_comments(
             repo, number, backend=resolved["backend"]
         )["issue"]
-        parent = provider["_parent_summary"](issue, repo=repo, number=number)
+        body = issue.get("body")
+        parent = {
+            "repo": repo,
+            "number": issue.get("number", number),
+            "title": issue.get("title"),
+            "state": issue.get("state"),
+            "url": issue.get("url"),
+            "updated_at": issue.get("updatedAt"),
+            "body": body,
+            "body_sha256": hashlib.sha256(body.encode("utf-8")).hexdigest()
+            if isinstance(body, str)
+            else None,
+            "comment_count": len(issue.get("comments", []))
+            if isinstance(issue.get("comments"), list)
+            else None,
+        }
     except RuntimeError as exc:
         raise PickupError("provider-read-failed", str(exc)) from exc
     return {"parent": parent}, resolved

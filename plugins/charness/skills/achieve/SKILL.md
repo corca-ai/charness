@@ -83,6 +83,11 @@ The selected result is `verified-read` only. A pending bootstrap marker is an
 honest refusal until the final target roundtrip has re-read the provider,
 binding, draft, graph, and observations from a clean process.
 
+Routine pickup does not run the full Goal Run capability/authentication
+preflight and then repeat the parent read. The single provider parent read is
+the live backend check for this path; bootstrap, explicit sync/doctor, graph
+amendment, and closeout retain the stronger full preflight.
+
 ## Provider and evidence boundary
 
 Use the file-backed `issue_tool.py goal-run-*` commands for provider reads and

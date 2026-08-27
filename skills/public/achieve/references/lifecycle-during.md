@@ -20,7 +20,9 @@ an invitation to perform a hidden full scan.
 Full graph membership, child-body, dependency, and evidence reconciliation is
 reserved for bootstrap, explicit progress sync/doctor, graph amendment, and
 closeout. Those paths use the provider's graph/evidence readers; routine pickup
-is one parent read.
+is one parent read. Routine pickup also skips a separate capability/auth probe:
+the live parent read is its backend check, while the stronger preflight remains
+on the explicit lifecycle paths.
 
 ## Execution
 
