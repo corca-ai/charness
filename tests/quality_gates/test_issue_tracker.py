@@ -346,6 +346,45 @@ def test_ambiguous_create_stops_when_work_item_is_not_discoverable(
     assert result["next_action"] == "stop-and-read-current-provider-state"
 
 
+def test_direct_verified_create_does_not_wait_for_search_index(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    body = tmp_path / "body.md"
+    body.write_text("<!-- charness-work-item-key: goal-binding-v1 -->\nbody\n", encoding="utf-8")
+    discovery_calls = 0
+
+    def discover(*_args, **_kwargs):
+        nonlocal discovery_calls
+        discovery_calls += 1
+        if discovery_calls > 1:
+            raise AssertionError("verified provider readback must not depend on search indexing")
+        return {"ok": True, "count": 0, "matches": []}
+
+    monkeypatch.setattr(tracker, "discover_managed_issues", discover)
+    monkeypatch.setattr(
+        tracker.CREATE,
+        "create_issue",
+        lambda *_args, **_kwargs: {
+            "ok": True,
+            "repo": "corca-ai/charness",
+            "number": 800,
+            "url": "https://example/800",
+            "body_verified": True,
+        },
+    )
+
+    result = tracker.create_or_reuse_child(
+        "corca-ai/charness", 724, "goal-binding-v1", "Binding", body, backend=BACKEND
+    )
+
+    assert result["status"] == "verified-write"
+    assert result["outcome"] == "verified-write"
+    assert result["action"] == "created"
+    assert result["number"] == 800
+    assert result["body_verified"] is True
+    assert discovery_calls == 1
+
+
 def test_prior_unresolved_create_blocks_reinvocation_after_empty_discovery(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
