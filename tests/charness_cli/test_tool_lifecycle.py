@@ -24,13 +24,11 @@ from tests.repo_copy import clone_seeded_charness_repo
 from .support import (
     FIXTURES,
     build_test_path,
-    clone_seeded_managed_home,
     make_fake_agent_browser,
     make_fake_go_specdown,
     make_fake_npm_agent_browser,
     make_release_fixture,
     make_support_sync_fixture,
-    run_cli,
     run_cli_in_repo,
 )
 from .tool_fakes import make_fake_nose

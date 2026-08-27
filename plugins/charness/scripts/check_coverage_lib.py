@@ -336,7 +336,6 @@ def exercise_support_sync_scenarios() -> None:
 
 
 def exercise_lifecycle_scenarios() -> None:
-    import scripts.control_plane_lifecycle_lib as lifecycle
     import scripts.install_tools as install_tools
     import scripts.sync_support as sync_support
     import scripts.update_tools as update_tools

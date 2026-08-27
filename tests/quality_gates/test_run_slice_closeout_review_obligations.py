@@ -9,7 +9,7 @@ import yaml
 
 from scripts import run_slice_closeout as closeout
 
-from .support import ROOT, run_script
+from .support import run_script
 
 
 def demo_surface(

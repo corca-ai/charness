@@ -245,7 +245,9 @@ def command_plan(
         if args.intent == "new":
             target = runtime_module.resolve_target(repo_root, args.target, adapter["data"])
             target_repo = target["full_name"]
-            payload_builder = lambda preflight: build_new_plan(repo_root, target, adapter, preflight)
+
+            def payload_builder(preflight):
+                return build_new_plan(repo_root, target, adapter, preflight)
         else:
             invocation = brief_module.build_invocation_payload(
                 repo_root,
@@ -254,7 +256,9 @@ def command_plan(
                 adapter_module.DEFAULT_FEATURE_BRIEF_PAUSE,
             )
             target_repo = invocation["target"]["full_name"]
-            payload_builder = lambda preflight: build_resolve_plan(repo_root, invocation, preflight)
+
+            def payload_builder(preflight):
+                return build_resolve_plan(repo_root, invocation, preflight)
         # The adapter was already loaded above. Pass it through the provider
         # resolver so planning does not read it twice or lose the target that
         # runtime resolution just derived.

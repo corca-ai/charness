@@ -13,7 +13,6 @@ import yaml
 
 from scripts import lesson_ledger_lib as ledger
 from scripts import lesson_ledger_writer_lib as writer
-from scripts import lesson_score_outcome_lib as outcome_lib
 from scripts import record_lesson_score as scorer
 from tests.lesson_ledger_fixtures import blank_lesson, outcome_event
 from tests.lesson_ledger_fixtures import materialize as _materialize
@@ -134,7 +133,7 @@ def test_ledger_rejects_invalid_transition_score_and_projection_shapes(tmp_path:
 def test_score_authoring_requires_one_cited_encounter_and_preserves_refusals(tmp_path: Path) -> None:
     _retro(tmp_path, "source.md", "a")
     path = _ledger(tmp_path)
-    event = scorer.append_score(
+    scorer.append_score(
         repo_root=tmp_path,
         output_dir=path.parent,
         summary_path=path.parent / "recent-lessons.md",

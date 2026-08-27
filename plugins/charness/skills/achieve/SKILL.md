@@ -20,6 +20,8 @@ also returns the bounded lesson projection; do not invoke the lesson reader a
 second time for the same `/goal` entry.
 
 ```bash
+# Required Tools: rg
+rg --files docs skills/public/achieve
 git status --short --branch
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 python3 <issue-skill-dir>/scripts/goal_run_pickup.py --repo-root . --objective "/goal #<parent>"
@@ -32,8 +34,9 @@ For an artifact-only `/achieve @<goal-file>` start, once the goal file is
 known, read the same projection once with the achieve-owned helper:
 
 ```bash
-python3 "$SKILL_DIR/scripts/goal_lesson_pickup.py" \
-  --repo-root . --goal-key "artifact:<relative-goal-file>"
+# Required Tools: rg
+rg --files "$SKILL_DIR"
+python3 "$SKILL_DIR/scripts/goal_lesson_pickup.py" --repo-root . --goal-key "artifact:<relative-goal-file>"
 ```
 
 This is the only automatic lesson pickup path for that entry. It is advisory
@@ -148,8 +151,7 @@ never binds evidence.
 
 ## Coordination
 
-Keep adjacent engines available, but let Achieve own the active run's
-coordination and completion state:
+Keep adjacent engines available, but let Achieve own the active run's coordination and completion state:
 
 - `ideation` and `spec` shape the concept and implementation contract.
 - `critique` is selected for material authority, durability, external-write,
@@ -172,9 +174,7 @@ coordination and completion state:
   parent-owned `review` transition does not create an observer, worktree, or
   proof gate.
 
-Adjacent workflows consume exact Goal Run/Work Item lineage when they claim
-execution evidence. They do not create a second goal tracker or rewrite the
-frozen draft.
+Adjacent workflows consume exact Goal Run/Work Item lineage when they claim execution evidence. They do not create a second goal tracker or rewrite the frozen draft.
 
 ## Output and non-claims
 
@@ -196,3 +196,4 @@ dedicated proof boundary, or claim live/hosted behavior from local tests.
 - `references/lifecycle-after.md`
 - `references/coordination.md`
 - `references/adapter-contract.md`
+- `../../shared/references/binary-preflight.md`

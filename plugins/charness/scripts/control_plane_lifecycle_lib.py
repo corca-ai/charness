@@ -3,6 +3,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 from typing import Any
+
 from scripts.control_plane_lib import command_result_payload, run_check, run_shell
 from scripts.upstream_release_lib import observed_version_from_detect, upgrade_advisory
 

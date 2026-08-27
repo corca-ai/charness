@@ -33,7 +33,6 @@ from scripts.adapter_key_registry import (  # noqa: E402
     find_readers,
     iter_reader_files,
     resolve_key,
-    survey,
 )
 from scripts.adapter_lib import load_yaml_file  # noqa: E402
 from scripts.adapter_warn_tier import (  # noqa: E402

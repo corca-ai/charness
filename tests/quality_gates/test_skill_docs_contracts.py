@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import json
-
 from .support import ROOT
 
 IMPL_SKILL = (ROOT / "skills" / "public" / "impl" / "SKILL.md").read_text(encoding="utf-8")
