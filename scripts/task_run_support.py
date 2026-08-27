@@ -6,6 +6,7 @@ import os
 import re
 import shutil
 import subprocess
+import tempfile
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
@@ -188,9 +189,19 @@ def _changed_paths(repo_root: Path, base_sha: str) -> list[str]:
     return sorted(set(tracked) | set(untracked))
 
 
+def _scope_matches(path: str, scope: str, root: Path) -> bool:
+    """Existing directories are recursive scopes; files and absent paths are exact."""
+    candidate = root / scope
+    return path == scope or (candidate.is_dir() and path.startswith(scope.rstrip("/") + "/"))
+
+
+def _paths_in_scopes(paths: Sequence[str], scopes: Sequence[str], root: Path) -> list[str]:
+    return sorted(path for path in paths if any(_scope_matches(path, scope, root) for scope in scopes))
+
+
 def _scope_result(repo_root: Path, base_sha: str, scopes: Sequence[str], require_change: bool) -> dict[str, Any]:
     changed = _changed_paths(repo_root, base_sha)
-    disallowed = sorted(path for path in changed if path not in set(scopes))
+    disallowed = sorted(set(changed) - set(_paths_in_scopes(changed, scopes, repo_root)))
     if disallowed:
         verdict, reason = FAIL, "candidate changes paths outside the exact declared scope"
     elif require_change and not changed:
@@ -209,12 +220,11 @@ def _path_cause(path: str) -> str:
     return "the child command produced a file outside the tracked task candidate; inspect the captured Codex log"
 
 
-def _generated_files(populations: Mapping[str, Any], scopes: Sequence[str]) -> list[dict[str, str]]:
+def _generated_files(populations: Mapping[str, Any], scopes: Sequence[str], root: Path) -> list[dict[str, str]]:
     generated: list[dict[str, str]] = []
-    allowed = set(scopes)
     for population in ("untracked", "ignored"):
         for path in populations[population].get("added", []):
-            candidate = population == "untracked" and path in allowed
+            candidate = population == "untracked" and any(_scope_matches(path, scope, root) for scope in scopes)
             generated.append({
                 "population": population,
                 "path": path,
@@ -222,6 +232,37 @@ def _generated_files(populations: Mapping[str, Any], scopes: Sequence[str]) -> l
                 "cause": "new candidate path is within the exact declared scope" if candidate else _path_cause(path),
             })
     return generated
+
+
+def write_task_result(runtime_path: Path, result: Mapping[str, Any]) -> Path:
+    """Atomically publish the sole persisted task-run result."""
+    task_dir = runtime_path / "task-run" / str(result["task_id"])
+    task_dir.mkdir(parents=True, exist_ok=True)
+    path = task_dir / "result.json"
+    fd, temp_name = tempfile.mkstemp(prefix=".result.", suffix=".tmp", dir=task_dir)
+    temp_path = Path(temp_name)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as handle:
+            import json
+            json.dump(dict(result), handle, ensure_ascii=False, indent=2)
+            handle.write("\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temp_path, path)
+    finally:
+        temp_path.unlink(missing_ok=True)
+    return path
+
+
+def read_task_results(runtime_path: Path) -> list[dict[str, Any]]:
+    import json
+    root = runtime_path / "task-run"
+    results: list[dict[str, Any]] = []
+    for path in sorted(root.glob("*/result.json")) if root.is_dir() else []:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        if isinstance(payload, dict):
+            results.append(payload)
+    return results
 
 
 def _task_id(branch: str, requested: str | None) -> str:
@@ -265,17 +306,26 @@ def _execute_codex(
 def _completion_evidence(
     *, target_path: Path, parent_root: Path, before_exec: Mapping[str, Sequence[str]],
     base_sha: str, scopes: Sequence[str], require_change: bool,
-    parent_before: Mapping[str, Sequence[str]],
-) -> tuple[dict[str, Any], dict[str, Any], bool]:
+    parent_before: Mapping[str, Sequence[str]], parent_before_head: str,
+) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
     after_exec = _collect_populations(target_path)
     populations = _population_delta(before_exec, after_exec)
     scope = _scope_result(target_path, base_sha, scopes, require_change)
     parent_after = _collect_populations(parent_root)
-    parent_unchanged = parent_after == parent_before
+    parent_after_head = _git_output(parent_root, "rev-parse", "HEAD").strip()
+    committed = _parse_nul_paths(_git_output(parent_root, "diff", "--name-only", "-z", parent_before_head, parent_after_head, "--")) if parent_before_head != parent_after_head else []
+    dirty_before = set(sum((list(paths) for paths in parent_before.values()), []))
+    dirty_after = set(sum((list(paths) for paths in parent_after.values()), []))
+    dirty_delta = sorted(dirty_before ^ dirty_after)
+    parent_delta_paths = sorted(set(committed) | set(dirty_delta))
+    overlap = sorted(path for path in parent_delta_paths if any(_scope_matches(path, declared, target_path) for declared in scopes))
+    classification = "normal" if not parent_delta_paths else ("writer-conflict" if overlap else "concurrent-parent-progress")
+    parent_delta = {"classification": classification, "blocking": classification == "writer-conflict", "committed_paths": committed, "dirty_paths": dirty_delta, "paths": parent_delta_paths, "overlap_paths": overlap, "before_head": parent_before_head, "after_head": parent_after_head}
     evidence = {
         "after_exec": _snapshot_payload(after_exec), "populations": populations,
-        "generated_files": _generated_files(populations, scopes), "scope": scope,
-        "parent": {"unchanged": parent_unchanged, "before": _snapshot_payload(parent_before),
-                    "after": _snapshot_payload(parent_after), "verdict": PASS if parent_unchanged else FAIL},
+        "generated_files": _generated_files(populations, scopes, target_path), "scope": scope,
+        "parent": {"unchanged": not parent_delta_paths, "before": _snapshot_payload(parent_before),
+                    "after": _snapshot_payload(parent_after), "delta": parent_delta,
+                    "verdict": PASS if not parent_delta["blocking"] else FAIL},
     }
-    return evidence, scope, parent_unchanged
+    return evidence, scope, parent_delta

@@ -548,13 +548,6 @@ def test_task_and_uninstall_paths_emit_yaml(tmp_path: Path, monkeypatch, capsys)
     module = load_charness_module("charness_yaml_task_uninstall_under_test")
     repo_root = tmp_path / "repo"
     repo_root.mkdir()
-    task = {"task_id": "slice-1", "status": "claimed", "agent_id": "agent-a"}
-    monkeypatch.setattr(module, "resolve_task_repo_root", lambda _args: repo_root)
-    monkeypatch.setattr(module, "read_task", lambda *_args: task)
-
-    assert module.cmd_task_claim(Namespace(task_id="slice-1", agent="agent-a", summary="")) == 0
-    assert yaml.safe_load(capsys.readouterr().out)["event"] == "claim-existing"
-
     home_root = tmp_path / "home"
     _patch_runtime_dependencies(module, monkeypatch, repo_root, home_root)
     monkeypatch.setattr(module, "has_source_manifest", lambda _path: False)

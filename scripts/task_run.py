@@ -65,6 +65,7 @@ def run_task(
     try:
         resolved_repo = _support._require_git_root(repo_root)
         parent_before = _collect_populations(resolved_repo)
+        parent_before_head = _git_output(resolved_repo, "rev-parse", "HEAD").strip()
         if any(parent_before[population] for population in ("tracked", "untracked")):
             raise TaskRunError(
                 "parent worktree must be clean before launching a task; "
@@ -151,7 +152,9 @@ def run_task(
     child_env = os.environ.copy()
     for key in ("CHARNESS_RUNTIME_ROOT", "CHARNESS_RUNTIME_ROOT_AUTO", "CHARNESS_RUNTIME_REPO_KEY"):
         child_env.pop(key, None)
-    configured_env = _exec.prepare_exec_environment(resolved_target, child_env)
+    # Persist and cache by parent identity so `task status --repo-root PARENT`
+    # reads the same external runtime directory that this run publishes.
+    configured_env = _exec.prepare_exec_environment(resolved_repo, child_env)
     runtime_path = Path(configured_env["CHARNESS_RUNTIME_ROOT"])
     log_dir = runtime_path / "task-run" / resolved_task_id
     log_dir.mkdir(parents=True, exist_ok=True)
@@ -159,6 +162,7 @@ def run_task(
     stderr_log = log_dir / "codex.stderr.log"
     payload["runtime_root"] = str(runtime_path)
     payload["logs"] = {"stdout": str(stdout_log), "stderr": str(stderr_log)}
+    _support.write_task_result(runtime_path, {**payload, "status": "running", "phase": "exec"})
     print(f"task run: executing Codex in {resolved_target}", file=sys.stderr)
     execution = _execute_codex(
         command,
@@ -171,7 +175,7 @@ def run_task(
     if execution.get("exec_error"):
         payload["exec_error"] = execution["exec_error"]
 
-    evidence, scope, parent_unchanged = _completion_evidence(
+    evidence, scope, parent_delta = _completion_evidence(
         target_path=resolved_target,
         parent_root=resolved_repo,
         before_exec=before_exec,
@@ -179,6 +183,7 @@ def run_task(
         scopes=normalized_scopes,
         require_change=require_change,
         parent_before=parent_before,
+        parent_before_head=parent_before_head,
     )
     payload.update(
         {
@@ -193,17 +198,31 @@ def run_task(
         }
     )
     blockers: list[str] = []
-    if execution["exit_code"] != 0 or execution["timed_out"] or execution["exit_code"] is None:
+    if execution["timed_out"]:
+        payload["status"] = "timed-out"
+    elif execution.get("exec_error"):
+        payload["status"] = "non-delivery"
+    elif execution["exit_code"] is None or execution["exit_code"] < 0:
+        payload["status"] = "interrupted"
+    elif execution["exit_code"] != 0:
+        payload["status"] = "failed"
+    elif scope["verdict"] != PASS or parent_delta["blocking"]:
+        payload["status"] = "validated-partial-result" if scope["verdict"] == PASS else "failed"
+    else:
+        payload["status"] = "completed"
+    payload["candidate_usefulness"] = "useful" if scope["verdict"] == PASS and execution.get("exit_code") == 0 else "not-validated"
+    payload["approval_eligibility"] = "eligible" if payload["status"] == "completed" else "ineligible"
+    if payload["status"] not in {"completed", "validated-partial-result"}:
         blockers.append("codex execution did not exit successfully")
     if scope["verdict"] != PASS:
         blockers.append(scope["reason"])
-    if not parent_unchanged:
-        blockers.append("parent worktree changed while the task ran")
+    if parent_delta["blocking"]:
+        blockers.append("parent changed within the candidate scope")
     if blockers:
-        payload["status"] = FAIL
+        if payload["status"] == "completed":
+            payload["status"] = "failed"
         payload["next_step"] = "Inspect the retained worktree and captured logs; " + "; ".join(blockers) + "."
     else:
-        payload["status"] = PASS
         warnings = [
             f"{population}: {data['reason']}"
             for population, data in evidence["populations"].items()
@@ -212,6 +231,7 @@ def run_task(
         if warnings:
             payload["warnings"] = warnings
         payload["next_step"] = f"Review the candidate in {resolved_target}; tracked changes are retained and the parent is unchanged."
+    _support.write_task_result(runtime_path, payload)
     print(f"task run: {payload['status']} ({resolved_task_id})", file=sys.stderr)
     return payload
 
@@ -258,7 +278,7 @@ def main() -> int:
     from yaml_output import emit_yaml
 
     emit_yaml(payload)
-    return 0 if payload.get("status") == PASS else 1
+    return 0 if payload.get("approval_eligibility") == "eligible" or payload.get("status") == PASS else 1
 
 
 if __name__ == "__main__":

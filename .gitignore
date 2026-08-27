@@ -20,7 +20,6 @@ reports/
 plugins/*/.charness/
 .charness/retro/
 .charness/closeout/
-.charness/tasks/
 .charness/hitl/runtime/
 .charness/reviewer-boundary/
 .charness/reviewer-round-2/

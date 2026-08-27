@@ -67,7 +67,7 @@ def test_task_run_creates_named_lane_and_keeps_runtime_external(tmp_path: Path) 
 
     payload = _run(repo, tmp_path, executable)
 
-    assert payload["status"] == "pass", payload
+    assert payload["status"] == "completed", payload
     assert payload["base_sha"] == _git(repo, "rev-parse", "HEAD").stdout.strip()
     assert payload["target_branch"] == "lane/task-run"
     assert payload["scope"]["disallowed_paths"] == []
@@ -87,7 +87,7 @@ def test_task_run_reports_ignored_output_without_blocking_candidate(tmp_path: Pa
 
     payload = _run(repo, tmp_path, executable)
 
-    assert payload["status"] == "pass", payload
+    assert payload["status"] == "completed", payload
     assert payload["populations"]["untracked"]["verdict"] == "pass"
     assert payload["populations"]["ignored"]["verdict"] == "warn"
     assert payload["generated_files"][0]["population"] == "ignored"
@@ -103,7 +103,7 @@ def test_task_run_blocks_new_untracked_output_and_retains_lane(tmp_path: Path) -
 
     payload = _run(repo, tmp_path, executable)
 
-    assert payload["status"] == "fail"
+    assert payload["status"] == "failed"
     assert payload["scope"]["disallowed_paths"] == ["leak.txt"]
     assert "outside the exact declared scope" in payload["next_step"]
     assert (tmp_path / "lane" / "leak.txt").is_file()
@@ -128,7 +128,7 @@ def test_task_run_allows_new_scoped_candidate_file(tmp_path: Path) -> None:
         require_change=True,
     )
 
-    assert payload["status"] == "pass", payload
+    assert payload["status"] == "completed", payload
     assert payload["scope"]["disallowed_paths"] == []
     assert payload["populations"]["untracked"]["verdict"] == "pass"
     assert payload["generated_files"] == [
@@ -196,5 +196,20 @@ def test_task_run_cli_accepts_repo_root_after_subcommand(tmp_path: Path) -> None
     )
 
     assert result.returncode == 0, result.stderr
-    assert "status: pass" in result.stdout
+    assert "status: completed" in result.stdout
     assert (tmp_path / "lane" / "module.py").read_text(encoding="utf-8") == "VALUE = 3\n"
+
+
+def test_task_status_reads_the_external_result_store(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    executable = _codex(tmp_path, "printf 'VALUE = 4\\n' > module.py")
+    payload = _run(repo, tmp_path, executable, task_id="status-check")
+
+    result_path = Path(payload["runtime_root"]) / "task-run" / "status-check" / "result.json"
+    assert result_path.is_file()
+    status = subprocess.run(
+        [os.fspath(Path(__file__).resolve().parents[2] / "charness"), "task", "--repo-root", str(repo), "status", "status-check"],
+        cwd=repo, check=False, capture_output=True, text=True,
+    )
+    assert status.returncode == 0
+    assert "status: completed" in status.stdout

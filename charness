@@ -3751,26 +3751,20 @@ def cmd_task_abort(args: argparse.Namespace) -> int:
 
 def cmd_task_status(args: argparse.Namespace) -> int:
     repo_root = resolve_task_repo_root(args)
+    repo_text = str(repo_root)
+    if repo_text not in sys.path:
+        sys.path.insert(0, repo_text)
+    from scripts.runtime_bootstrap import runtime_root
+    from scripts import task_run_support
+    records = task_run_support.read_task_results(runtime_root(repo_root))
     if args.task_id:
-        task_id = validate_task_id(args.task_id)
-        task = read_task(repo_root, task_id)
-        if task is None:
-            return task_failure(
-                args,
-                repo_root=repo_root,
-                task_id=task_id,
-                status="missing",
-                reason="task state does not exist",
-                next_step=f"Claim it with `charness task claim {task_id} --summary ...`.",
-            )
-        payload = task_payload(repo_root, task, "status")
+        records = [item for item in records if item.get("task_id") == args.task_id]
+        if not records:
+            emit_yaml({"schema_version": 1, "event": "status", "repo_root": str(repo_root), "task_id": args.task_id, "status": "missing"})
+            return 1
+        payload = records[0]
     else:
-        tasks = []
-        for path in sorted(task_dir(repo_root).glob("*.json")) if task_dir(repo_root).is_dir() else []:
-            item = json.loads(path.read_text(encoding="utf-8"))
-            if isinstance(item, dict):
-                tasks.append(item)
-        payload = {"schema_version": 1, "event": "status-list", "repo_root": str(repo_root), "tasks": tasks}
+        payload = {"schema_version": 1, "event": "status-list", "repo_root": str(repo_root), "tasks": records}
     emit_yaml(payload)
     return 0
 
@@ -5879,7 +5873,7 @@ def cmd_task_run(args: argparse.Namespace) -> int:
         dry_run=args.dry_run,
     )
     emit_yaml(payload)
-    return 0 if payload.get("status") == lib.PASS else 1
+    return 0 if payload.get("approval_eligibility") == "eligible" or payload.get("status") == lib.PASS else 1
 
 
 def _resolve_goal_run_helper_repo_root(args: argparse.Namespace) -> Path:
@@ -6154,78 +6148,20 @@ def build_parser() -> argparse.ArgumentParser:
     reset_parser.add_argument("--cli-path", type=Path)
     reset_parser.set_defaults(func=cmd_reset)
 
-    task_parser = subparsers.add_parser(
-        "task",
-        help="Claim, submit, abort, or inspect a repo-local agent task envelope.",
-    )
+    task_parser = subparsers.add_parser("task", help="Run or inspect a bounded task lane.")
     task_parser.add_argument(
         "--repo-root",
         type=Path,
         default=Path.cwd(),
-        help="Repo where .charness/tasks/*.json task state is stored. Defaults to the current working directory.",
+        help="Parent repo whose external task-run runtime is read or written. Defaults to the current working directory.",
     )
     task_subparsers = task_parser.add_subparsers(dest="task_command", required=True)
 
-    def add_task_identity_args(command: argparse.ArgumentParser) -> None:
-        command.add_argument("task_id")
-        command.add_argument(
-            "--agent",
-            help="Agent identity recorded in the task. Defaults to CHARNESS_AGENT_ID, CODEX_SESSION_ID, USER, then `agent`.",
-        )
-
-    task_claim_parser = task_subparsers.add_parser(
-        "claim",
-        help="Create a claimed task envelope unless another agent already owns it.",
-    )
-    add_task_identity_args(task_claim_parser)
-    task_claim_parser.add_argument("--summary", default="")
-    task_claim_parser.add_argument(
-        "--execution-ref",
-        default="",
-        help="Opaque host/lane execution reference; defaults to a local task reference.",
-    )
-    task_claim_parser.set_defaults(func=cmd_task_claim)
-
-    task_submit_parser = task_subparsers.add_parser(
-        "submit",
-        help="Mark a claimed task as submitted with structured result metadata.",
-    )
-    task_submit_parser.add_argument("task_id")
-    task_submit_parser.add_argument("--agent", required=True, help="Claiming agent identity; must match the envelope owner.")
-    task_submit_parser.add_argument("--execution-ref", required=True, help="Opaque execution reference; must match the claimed envelope.")
-    task_submit_parser.add_argument("--summary", default="")
-    task_submit_parser.add_argument(
-        "--result-carrier",
-        default="",
-        help="One opaque reference to the durable result carrier (file, URL, or host receipt).",
-    )
-    task_submit_parser.set_defaults(func=cmd_task_submit)
-
-    task_review_parser = task_subparsers.add_parser(
-        "review",
-        help="Record the parent-owned review verdict; this command never creates a subagent.",
-    )
-    task_review_parser.add_argument("task_id")
-    task_review_parser.add_argument("--agent", required=True, help="Distinct parent reviewer identity.")
-    task_review_parser.add_argument("--execution-ref", required=True, help="Opaque execution reference recorded by the claimant.")
-    task_review_parser.add_argument("--verdict", choices=("approve", "changes", "blocked"), required=True)
-    task_review_parser.add_argument("--summary", required=True)
-    task_review_parser.set_defaults(func=cmd_task_review)
-
-    task_abort_parser = task_subparsers.add_parser(
-        "abort",
-        help="Mark a claimed task as aborted with a required reason.",
-    )
-    task_abort_parser.add_argument("task_id")
-    task_abort_parser.add_argument("--agent", required=True, help="Claiming agent identity; must match the envelope owner.")
-    task_abort_parser.add_argument("--execution-ref", required=True, help="Opaque execution reference; must match the claimed envelope.")
-    task_abort_parser.add_argument("--reason", required=True)
-    task_abort_parser.set_defaults(func=cmd_task_abort)
-
     task_status_parser = task_subparsers.add_parser(
         "status",
-        help="Show one task envelope, or list all repo-local task envelopes.",
+        help="Show one external task-run result, or list all task-run results.",
     )
+    task_status_parser.add_argument("--repo-root", type=Path, default=argparse.SUPPRESS, help="Parent repo whose external task-run runtime is read.")
     task_status_parser.add_argument("task_id", nargs="?")
     task_status_parser.set_defaults(func=cmd_task_status)
 

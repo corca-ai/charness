@@ -116,7 +116,6 @@ Put it in:
 
 Examples:
 
-- `.charness/tasks/*.json`
 - `.charness/quality/runtime-signals.json`
 - `.artifacts/markdown-preview/*.txt`
 - `.artifacts/markdown-preview/manifest.json`
