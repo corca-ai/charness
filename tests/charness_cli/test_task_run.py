@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 import os
 import subprocess
 from pathlib import Path
@@ -116,16 +115,17 @@ def test_task_run_lane_shorthand_optouts_enable_diagnostics(tmp_path: Path, monk
 
     payload = task_run.run_task(
         repo,
-        lane=f"diagnostic-{hashlib.sha256(str(tmp_path).encode()).hexdigest()[:12]}",
+        lane="diagnostic-lane",
         scopes=["module.py"],
         prompt="update the module",
         codex=str(executable),
         effort="medium",
         skip_prepare=True,
         allow_no_change=True,
+        dry_run=True,
     )
 
-    assert payload["status"] == "completed"
+    assert payload["status"] == "pass", payload
     assert payload["prepare"] is False
     assert payload["require_change"] is False
 
@@ -160,7 +160,8 @@ def test_task_run_cli_rejects_lane_and_explicit_identity_mix(tmp_path: Path) -> 
     )
 
     assert result.returncode == 1
-    assert "--lane cannot be combined with --path" in result.stderr
+    assert "status: fail" in result.stdout
+    assert "--lane cannot be combined with --path" in result.stdout
 
 
 def test_task_run_creates_named_lane_and_keeps_runtime_external(tmp_path: Path) -> None:

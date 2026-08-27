@@ -5145,29 +5145,6 @@ def cmd_worktree_exec(args: argparse.Namespace) -> int:
 
 
 def cmd_task_run(args: argparse.Namespace) -> int:
-    explicit_fields = [name for name in ("path", "branch", "base") if getattr(args, name) is not None]
-    if args.lane is not None:
-        if explicit_fields:
-            raise CharnessError(
-                "--lane cannot be combined with "
-                + ", ".join(f"--{name}" for name in explicit_fields)
-                + "; choose shorthand or the fully explicit --path/--branch/--base form"
-            )
-        if args.task_id is not None:
-            raise CharnessError("--task-id is derived from --lane; omit it in shorthand mode")
-        if args.effort is None:
-            raise CharnessError("shorthand task runs require the orchestrator-selected --effort")
-    elif len(explicit_fields) != 3:
-        missing = [name for name in ("path", "branch", "base") if name not in explicit_fields]
-        raise CharnessError(
-            "explicit task runs require "
-            + ", ".join(f"--{name}" for name in missing)
-            + "; otherwise pass --lane <id>"
-        )
-    if args.prepare and args.skip_prepare:
-        raise CharnessError("--prepare and --skip-prepare cannot be used together")
-    if args.require_change and args.allow_no_change:
-        raise CharnessError("--require-change and --allow-no-change cannot be used together")
     lib = _load_task_run_lib(args)
     prompt_text = args.prompt
     if args.prompt_file is not None:

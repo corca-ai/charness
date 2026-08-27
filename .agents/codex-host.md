@@ -43,7 +43,6 @@ The parent must be clean. The ordinary implementation preset is:
 
 ```sh
 charness task run \
-  --repo-root <repo> \
   --lane <lane-name> \
   --scope <path-1> \
   --scope <path-2> \
