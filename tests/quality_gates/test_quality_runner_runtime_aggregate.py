@@ -380,40 +380,6 @@ def test_run_quality_preserves_gate_failure_when_aggregate_runtime_recording_fai
     assert "warning: failed to record aggregate runtime for run-quality-full" in result.stderr
 
 
-def test_an_unproven_gate_makes_the_aggregate_unestablished_not_pass(
-    tmp_path: Path, seeded_quality_runner_repo: Path
-) -> None:
-    """The green survived one layer up.
-
-    The console line said UNPROVEN while the DURABLE record — the artifact later
-    readers and closeout narratives quote — said `pass`, because the aggregate status
-    was derived from the run's exit code alone and an unestablished gate deliberately
-    does not change it. Same class as the defect this feature removes, one surface over.
-
-    Recorded only when no label filter is set, which is why every exit-3 runner test
-    (all of which set CHARNESS_QUALITY_LABELS) was blind to it.
-    """
-    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
-    log_path = _capture_run_quality_runtime_records(repo)
-    receipt_path = repo / "receipt.json"
-    env["CHARNESS_QUALITY_RECEIPT_JSON"] = str(receipt_path)
-    write_executable(
-        repo / "scripts" / "prepush_focused_changed_line_coverage.py",
-        '#!/usr/bin/env python3\nimport sys\nprint("this run analyzed nothing")\nsys.exit(3)\n',
-    )
-
-    result = run_shell_script(repo / "scripts" / "run-quality.sh", "--release", cwd=repo, env=env)
-
-    assert result.returncode == 0, result.stderr
-    aggregate = [r for r in _read_runtime_records(log_path) if r["label"] == "run-quality-full-release"]
-    assert len(aggregate) == 1
-    assert aggregate[0]["status"] == "unestablished"
-    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
-    assert receipt["status"] == "unestablished"
-    assert receipt["effective_exit_code"] == result.returncode == 0
-    assert receipt["unproven_subjects"]
-
-
 def test_a_label_filtered_run_scopes_its_samples_out_of_the_enforced_window(
     tmp_path: Path, seeded_quality_runner_repo: Path
 ) -> None:

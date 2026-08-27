@@ -687,6 +687,11 @@ produced, gated by a content-fingerprint freshness marker. It is stack-neutral:
 the eligible-file set comes from globs, not a tool-specific config. See
 `mutation-testing.md`.
 
+The adapter block is an explicit consumer opt-in. Charness's own broad quality
+runner does not infer or queue this gate, so an adapter declaration alone never
+turns an ordinary implementation or Charness release run into a multi-minute
+coverage producer.
+
 Fields:
 
 - `coverage_json` — path to the reused coverage.py JSON report (default

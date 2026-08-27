@@ -370,7 +370,6 @@ QUALITY_PYTHON_STUBS = (
     ("check-github-actions", "check_github_actions.py"),
     ("check-supply-chain-online", "check_supply_chain_online.py"),
     ("check-coverage", "check_coverage.py"),
-    ("check-changed-line-mutation-coverage", "prepush_focused_changed_line_coverage.py"),
     ("check-test-completeness", "check_test_completeness.py"),
     ("check-test-production-ratio", "check_test_production_ratio.py"),
     ("check-boundary-bypass-ratchet", "check_boundary_bypass_ratchet.py"),

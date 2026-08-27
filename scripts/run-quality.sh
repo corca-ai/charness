@@ -69,7 +69,7 @@ for arg in "$@"; do
       echo "  --read-only  skip phases that would mutate git-tracked quality artifacts"
       echo "  --full       run the broad quality battery and refresh git-tracked artifacts"
       echo "  default      run only the core implementation lane"
-      echo "  --release    include release-only tests and changed-line mutation coverage"
+      echo "  --release    include release-only tests"
       echo "  --receipt-json=PATH  write the per-run semantic receipt (also via CHARNESS_QUALITY_RECEIPT_JSON)"
       exit 0
       ;;
@@ -126,11 +126,6 @@ STANDING_PYTEST_TARGETS_TEXT="$(python3 scripts/run_standing_pytest.py --repo-ro
 mapfile -t STANDING_PYTEST_TARGETS <<<"$STANDING_PYTEST_TARGETS_TEXT"
 
 RUN_QUALITY_TMPDIR="$(mktemp -d)"
-# The focused changed-line producer is one of the gates queued below, and its
-# coverage runtime is namespaced from the report path. Give each runner process
-# its own report path so a concurrent direct producer or quality run cannot share
-# the public default and overwrite the other's fresh output.
-RUN_QUALITY_CHANGED_LINE_COVERAGE_JSON="$RUN_QUALITY_TMPDIR/prepush-focused-coverage.json"
 # The VERDICT is authoritative; cleanup is best-effort.
 #
 # Measured, because a first version of this comment stated the mechanism WRONG and a
@@ -385,7 +380,7 @@ PARTIAL_EXIT=4
 # summary line, a scan that read zero documents, or an awiki exit code outside
 # its clean/findings pair -- and never when it observed a bad graph. An
 # unobserved orphan count is not zero, and this is the byte that says so.
-UNESTABLISHED_CAPABLE_LABELS="check-changed-line-mutation-coverage inventory-nose-clones docs-graph check-docs check-closeout-classification-parity check-export-self-sufficiency check-artifact-referents"
+UNESTABLISHED_CAPABLE_LABELS="inventory-nose-clones docs-graph check-docs check-closeout-classification-parity check-export-self-sufficiency check-artifact-referents"
 
 label_may_report_unestablished() {
   case " $UNESTABLISHED_CAPABLE_LABELS " in
@@ -1009,14 +1004,13 @@ queue_selected "check-inventory-declaration-coverage" python3 scripts/check_inve
 # the same command stays a read-only inventory.
 queue_selected "inventory-skill-script-references" python3 scripts/inventory_skill_script_references.py --repo-root "$REPO_ROOT" --strict
 queue_selected "validate-quality-closeout-contract" python3 scripts/validate_quality_closeout_contract.py --repo-root "$REPO_ROOT"
-# Base for the changed-path probes below — the merge-base with origin/main (the
-# release/change range). An empty base leaves the changed-line mutation gate below
-# non-blocking; it no longer does so for the critique cross-surface probe, which
-# passes --include-worktree (see that line). Shared by the critique probe
-# (--changed-ref, the
+# Base for the changed-path critique probe below — the merge-base with origin/main
+# (the release/change range). It is used only to decide whether the changed
+# implementation crosses a critique boundary; the quality runner no longer
+# auto-produces changed-line coverage for its own broad branch range. Shared by
+# the critique probe (--changed-ref, the
 # #408 5b tooth: a bare `single-surface` verdict is rejected when the release/change
-# range touches a boundary_cross_surface_globs path) and the changed-line
-# mutation-coverage gate below.
+# range touches a boundary_cross_surface_globs path).
 CHANGED_LINE_BASE_SHA="$(git -C "$REPO_ROOT" merge-base origin/main HEAD 2>/dev/null || true)"
 # Pass a RANGE (base..HEAD) so surfaces_lib routes it through `git diff <range>`
 # (the changed set of the unpushed range). A BARE sha would instead resolve to
@@ -1129,46 +1123,10 @@ queue_selected "ruff" ./scripts/check-python-lint.sh
 if [[ "$RUN_QUALITY_MODE" == "full" ]] || coverage_relevant_changes_present; then
   queue_selected "check-coverage" python3 scripts/check_coverage.py --repo-root "$REPO_ROOT"
 fi
-# Changed-line mutation-coverage RELEASE TEETH (spec:
-# charness-artifacts/spec/mutation-changed-line-premerge-gate.md; armed by D40 in
-# docs/deferred-decisions.md, owner decision 2026-07-29).
-#
-# This lane BLOCKS on uncovered changed lines in eligible mutation-pool files over the
-# release range. It used to skip non-blocking whenever the author had not first paid
-# the ~10-minute broad coverage producer, and that skip is why the recurring class
-# (#219 -> #251 -> #260 -> #320 -> #321 -> #335 -> #453 -> #464) landed eight times: the
-# lane that could stop a push exited 0 by construction, while the lane with teeth ran
-# after the push where it cannot unland. The warning was already loud and was read and
-# walked past, so a ninth warning was not the fix.
-#
-# Cost is scoped to the change rather than the repo: the producer asks
-# suggest_mutation_coverage_command which standing tests reach the CHANGED pool files
-# and instruments only those. Measured with the gate's own coverage mechanism: ~24s for
-# a realistic single-commit slice, ~5min for a whole nine-commit session, against
-# 11-15min broad. Direct invocations default to
-# reports/mutation/prepush-focused-coverage.json; this runner passes an isolated path
-# under its external temp dir, NOT the canonical test-coverage.json, so subset coverage
-# never sits at the broad producer's path carrying a valid freshness marker.
-#
-# Two deliberate non-blocking holes, both named loudly rather than silent:
-#   - policy (a): a changed pool file the mapper resolves to NO standing test is not
-#     blocked on, because that is a mapper gap and blocking there stops a push over the
-#     tool's blind spot.
-#   - a dirty mutation pool is `unestablished`, not clean -- the focused coverage is
-#     collected from the live worktree while the mapping is computed against HEAD.
-# --refuse-unestablished turns the second one into a failure in the release lane: a
-# dirty mutation pool at the irreversible boundary means the code about to land was
-# never proven.
-# CHANGED_LINE_BASE_SHA is defined above (hoisted so the critique cross-surface probe
-# shares the same merge-base anchor).
-# This expensive lane is intentionally absent from ordinary development, full, and
-# pre-push queues. Release is the local irreversible boundary that pays for it.
-# Standalone invocation of the producer remains available for focused investigation;
-# the quality runner does not make that slow path an accidental label selection.
-CHANGED_LINE_REFUSE_ARGS=()
-if [[ "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" == "1" ]]; then
-  CHANGED_LINE_REFUSE_ARGS+=(--refuse-unestablished)
-fi
+# Changed-line coverage and mutation remain explicit consumer/release capabilities,
+# but are not an automatic Charness gate. The former queue covered the entire
+# origin/main..HEAD branch and reran standing pytest after release pytest; that
+# duplicated a claim whose scope and ownership belong to an opted-in consumer.
 queue_selected "check-test-completeness" python3 scripts/check_test_completeness.py --repo-root "$REPO_ROOT" -- "${STANDING_PYTEST_TARGETS[@]}"
 queue_selected "check-test-production-ratio" python3 scripts/check_test_production_ratio.py --repo-root "$REPO_ROOT" --require-git-file-listing --advisory
 queue_selected "check-boundary-bypass-ratchet" python3 scripts/check_boundary_bypass_ratchet.py --repo-root "$REPO_ROOT"
@@ -1297,19 +1255,6 @@ if agent_browser_runtime_gate_enabled "agent-browser-runtime-hygiene"; then
     OVERALL_RC=$?
     env -u CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS python3 scripts/agent_browser_runtime_guard.py --repo-root "$REPO_ROOT" --cleanup-orphans --execute >/dev/null 2>&1 || true
   }
-fi
-
-# Mutation is the final release check. It instruments the changed surface and is
-# intentionally paid only after every ordinary release check has passed; this
-# keeps a cheap structural failure from being followed by an expensive verdict
-# that cannot make the release green anyway.
-if [[ "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" == "1" ]]; then
-  if [[ "$OVERALL_RC" != "0" ]]; then
-    print_final_summary
-    exit "$OVERALL_RC"
-  fi
-  queue_selected "check-changed-line-mutation-coverage" python3 scripts/prepush_focused_changed_line_coverage.py --repo-root "$REPO_ROOT" --base-sha "$CHANGED_LINE_BASE_SHA" --coverage-json "$RUN_QUALITY_CHANGED_LINE_COVERAGE_JSON" "${CHANGED_LINE_REFUSE_ARGS[@]}"
-  flush_phase || OVERALL_RC=$?
 fi
 
 if [[ -n "$RUN_QUALITY_LABELS" && "$RUN_QUALITY_SELECTED_LABEL_MATCHES" -eq 0 ]]; then

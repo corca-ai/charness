@@ -215,9 +215,10 @@ preset stays stack-neutral.
 ## Changed-Line Coverage Gate (portable pattern)
 
 Mutation and changed-line coverage are explicit release/CI concerns in Charness.
-A full mutation run is too slow for routine developer commands, so this repo's
-quality runner queues the changed-line lane only for `--release`; direct invocation
-remains available for focused diagnostics. The optional
+A full mutation run is too slow for routine developer commands, so Charness's
+own quality runner does not auto-queue the changed-line producer. An opted-in
+consumer may invoke the portable gate at its release boundary; direct invocation
+also remains available for focused diagnostics. The optional
 `check_changed_line_coverage.py` capability reproduces the **blocking** signal
 of a deeper gate: a changed pool file whose changed lines over `base..head` lack
 coverage. It does not run mutants; it **reuses** a coverage.py report produced by

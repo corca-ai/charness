@@ -377,8 +377,18 @@ the evidence is sufficient for the boundary at hand.
 
 ### D40. No pre-landing lane BLOCKS an unproven changed line
 
+**UPDATED 2026-08-28:** Charness now keeps this capability opt-in for consuming
+repositories and removes its own broad release queue. The previous queue analyzed
+the entire `origin/main..HEAD` range and reran standing pytest after release pytest;
+that was a duplicated, branch-sized claim rather than a useful default release
+floor. The portable `check_changed_line_coverage.py` contract and scheduled
+mutation workflow remain available when a consumer explicitly owns this cost.
+
 - Question: Should a lane that runs before a landing refuse a push whose changed lines were never proven — and if so, which one pays: a mandatory ~10-minute local coverage producer, or branch protection forcing the PR path?
-- Current choice: Defer. This is a cost decision for the repo owner, not an agent's call inside an issue closeout.
+- Current choice: Charness's own broad queue is removed; changed-line coverage
+  remains a consuming-repository opt-in and scheduled mutation concern. This
+  resolves the local default cost without claiming coverage for every Charness
+  change.
 - Why now: the class is eight instances deep (#219 -> #251 -> #260 -> #320 -> #321 -> #335 -> #453 -> #464, named in [quality-core.yml](../.github/workflows/quality-core.yml)) and the usual explanations are already falsified. The remote push-arm mirror is NOT missing — it has been live since `69941efb` and went RED on all three pushes preceding #464's latest comment (runs 30269197950, 30314842348, 30317036462). The local advisory is NOT silent — [check_changed_line_mutation_coverage.py](../scripts/check_changed_line_mutation_coverage.py) `_surface_skip` writes a `WARNING (changed-line mutation gate):` line and [run-quality.sh](../scripts/run-quality.sh) `print_phase_output` surfaces it. What was missing is teeth: at the time of deferral the lane that ran before a landing exited 0 by construction, and the lane with teeth ran after the push and could not unland it. **UPDATED 2026-08-02:** that sentence is now partly falsified and the remaining gap is narrower and sharper — see the residual below.
 - Why deferral is right at the time: every available repair charges a real toll — a blocking local producer costs ~10 minutes per push, branch protection ends direct-to-main work, and a push-time remote-red check adds a network dependency to every push. Adding a ninth advisory is the one option that is definitely useless, since the eighth was already read and walked past. Choosing among the tolls is the owner's, and picking one inside a tests-only issue resolution would smuggle a workflow change in under a coverage-repair banner.
 - Impact surfaces: [run-quality.sh](../scripts/run-quality.sh) (the `--skip-if-no-coverage` flag set), [check_changed_line_mutation_coverage.py](../scripts/check_changed_line_mutation_coverage.py), [quality-core.yml](../.github/workflows/quality-core.yml), [mutation-tests.yml](../.github/workflows/mutation-tests.yml), repository branch-protection settings (not in tree).

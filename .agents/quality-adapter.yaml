@@ -793,17 +793,6 @@ standing_doc_provenance:
     - docs/deferred-decisions.md
     - docs/artifact-policy.md
   inline_allow_marker: provenance-allow
-changed_line_mutation_gate:
-  # Release-only changed-line coverage surface. It is absent from ordinary
-  # implementation, full, pre-push, and push/PR CI queues; the runner pays for it
-  # at release. The scheduled mutation workflow is a separate deeper check.
-  coverage_json: reports/mutation/test-coverage.json
-  eligible_globs:
-    - scripts/**/*.py
-    - skills/public/**/*.py
-    - skills/support/**/*.py
-  exclude_globs:
-    - "**/tests/**"
 # The forward-looking prose surfaces this repo gates against transcribed facts,
 # and the exemptions, each with a reason a reader can judge. Dated append-only
 # records (charness-artifacts/**) are absent by design, not by exemption: a number
