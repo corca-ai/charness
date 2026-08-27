@@ -256,3 +256,45 @@ CI, hosted enforcement, consumer-repository adoption, or marketplace/export
 migration. Routine pickup may now report the live provider count from the same
 parent read; it does not turn that count into a second progress store or scan
 the full child graph.
+
+## 2026-08-28 Current JTBD and release reconciliation
+
+The current JTBD is to make Charness accelerate correct consumer-repository
+development. This goal therefore closes the structural friction cutover rather
+than treating the GitHub child count as a requirement to implement eight
+unrelated backlog items.
+
+- Lesson memory remains a pure ledger/index capability. `achieve` reads the
+  bounded `recent-lessons.md` projection once on goal start/resume, after the
+  parent and cursor read; the payload carries that advisory context. It does
+  not rebuild the ledger, maintain a shown-set, emit a session receipt, or
+  require SessionStart, handoff, or retro-disposition continuity.
+- The owned execution primitive is `.githooks/runtime-env.sh`: Charness-owned
+  quality/task paths place Python, pytest, ruff, coverage, temporary output,
+  and runtime state outside the worktree. It also clears Git repository-
+  discovery variables exported to hooks, so child fixture repositories cannot
+  mutate the hook's repository. Arbitrary direct `python`, `pytest`, or `ruff`
+  invocations are outside this cache-free guarantee.
+- Parent changes remain preserved. Implementation/release work used clean
+  named worktrees with explicit scope and external runtime roots; ignored
+  residue is reported separately from tracked/untracked cleanliness.
+- The v7.0.0 release is public at
+  `https://github.com/corca-ai/charness/releases/tag/v7.0.0`. Tag `v7.0.0`
+  points to `49596b3f18ccda37d730108c07925012e4682e4b`; the release branch's
+  final verification commit is
+  `b0841f3cb87273291b14ccd7dd078e76de34fc78`. Release quality, focused hook
+  tests, export/layout checks, and fresh-checkout probes passed. Claims review
+  remains explicitly `unproven` because the host did not deliver an independent
+  bounded reviewer result; no same-agent substitute is claimed.
+- The default managed host checkout still reports `6.5.0` because it tracks
+  the existing `main` checkout, so installed-host parity with this release is
+  not claimed. Consumer adoption, scheduler/hosted enforcement, conditional
+  trigger execution, main-branch integration, and any future Cautilus
+  reintroduction remain non-claims.
+
+Remote reconciliation at this update is intentionally bounded to this parent
+and cursor child `#717`; the full child graph was not re-read. The parent is
+still OPEN at `23/31`, with the same eight independent backlog items listed
+above. The next action is therefore `#717`, not an implied instruction to
+resume all eight rows. A future parent close requires a separately authorized
+scope amendment and provider readback.
