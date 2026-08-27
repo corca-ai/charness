@@ -112,6 +112,23 @@ def test_close_with_comment_proceeds_with_compliant_body(tmp_path: Path) -> None
     assert ["issue", "close", "--repo", "corca-ai/charness", "42", "--reason", "completed"] in entries
 
 
+def test_manual_feature_close_does_not_require_critique(tmp_path: Path) -> None:
+    floor = _load_close_comment_floor()
+    report = floor.evaluate_close_comment_floor(
+        repo_root=tmp_path,
+        body=(
+            "JTBD: ship the requested feature.\n"
+            "Behavior: provider roundtrip confirmed the new surface.\n"
+            "AI-provenance: agent-authored closeout.\n"
+        ),
+        classification="feature",
+        number=42,
+    )
+
+    assert report["ok"] is True
+    assert report["resolution_critique"]["skipped_classification"] == "feature"
+
+
 def test_close_with_comment_refuses_undispositioned_hotl_entry(tmp_path: Path) -> None:
     """Seeded escape: the HOTL-disposition floor landed after this carrier's floor
     composition and was never wired in, so `close-with-comment` — the one carrier

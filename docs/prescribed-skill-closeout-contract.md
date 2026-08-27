@@ -178,7 +178,7 @@ or `Critique #N #M:` lines.
 | Closeout kind | Required evidence | Skip allowed? |
 | --- | --- | --- |
 | `achieve` After | `retro_artifact` (a checked-in `charness-artifacts/retro/<date>-<slug>.md` newer than goal `active` flip) and `host_log_probe` (`probe_host_logs.py` output recorded in the goal artifact or a sibling JSON); `disposition_review` is conditional on an explicit `review-required` goal adapter | yes, with `skip: <reason>` (e.g., host log not exposed; an opted-in disposition review may skip only with its configured reason) |
-| `issue-resolution` | `resolution_critique` (one carrier-body line per issue, `Critique #N: <artifact-or-blocked>`, or an explicit bundle line such as `Critique #N #M: <artifact-or-blocked>`; the single-issue shorthand `Critique: <artifact-or-blocked>` is still accepted) | yes, with `skip: <reason>` only when host blocks subagents |
+| `issue-resolution` (`bug` only) | `resolution_critique` (one carrier-body line per issue, `Critique #N: <artifact-or-blocked>`, or an explicit bundle line such as `Critique #N #M: <artifact-or-blocked>`; the single-issue shorthand `Critique: <artifact-or-blocked>` is still accepted) | yes, with `skip: <reason>` only when host blocks subagents |
 | `release` closeout | `standalone_critique` (artifact reference or `Critique: blocked <host-signal>`) | yes, with `skip: <reason>` only when host blocks subagents |
 
 The helper validates a `skip` reason on two axes, both in
@@ -266,8 +266,9 @@ literal ask, by design and named, not by quiet scope-narrowing.
   status flip is `complete`. The helper failure returns exit 1 and the status
   flip refuses.
 - `issue`: `issue_tool.py verify-closeout` invokes the helper before its
-  existing ledger verification when the resolved classification is `bug`,
-  `feature`, or `deferred-work`. The existing ledger checks
+  existing ledger verification when the resolved classification is `bug`.
+  Routine `feature` and `deferred-work` closes retain their behavior and probe
+  floors but do not require a critique artifact. The existing ledger checks
   (`missing_close_keywords`, `missing_fields`, `state_mismatches`,
   `manual_comment_missing`) are unchanged, and
   [`_classification_requirements`](../skills/public/issue/scripts/issue_verify_closeout_body.py)

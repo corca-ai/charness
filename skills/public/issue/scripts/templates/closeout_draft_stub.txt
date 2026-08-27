@@ -6,6 +6,5 @@ Boundary: <what is in / out of scope for this resolution>
 Resolution brief: <the chosen approach in a sentence or two>
 Implementation: <what changed — files / commits>
 Prevention: <what stops this class from recurring>
-Critique #N: charness-artifacts/critique/<dated-resolution-critique>.md
 Behavior #N: <the distinct channel the user-facing behavior was confirmed through, or a typed non-verified disposition>
 AI-provenance: <how this close is legible as agent-authored>

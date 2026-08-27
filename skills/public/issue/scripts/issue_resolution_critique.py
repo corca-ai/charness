@@ -12,7 +12,11 @@ _CRITIQUE_LINE = re.compile(
 )
 _ISSUE_REF = re.compile(r"#(\d+)\b")
 _CRITIQUE_BLOCKED = re.compile(r"^blocked\s+(.+)$", re.IGNORECASE)
-CRITIQUE_REQUIRED_CLASSIFICATIONS = ("bug", "feature", "deferred-work")
+# A bug close makes a recurrence claim, so its causal close still owes a distinct
+# resolution critique. Routine feature and deferred-work closes do not: their
+# behavior/probe floors remain, and callers may still add review when the boundary
+# warrants it without manufacturing a universal artifact.
+CRITIQUE_REQUIRED_CLASSIFICATIONS = ("bug",)
 _load_local = runpy.run_path(
     str(Path(__file__).resolve().parent / "issue_local_import.py")
 )["sibling_loader"](__file__)

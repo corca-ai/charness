@@ -1,4 +1,4 @@
-"""The probe-record floor at its two boundaries: an issue close and a release publish.
+"""The reusable probe-record decision surface and its remaining release boundary.
 
 The closeout floor matrix already proves the floor REACHES every carrier -- it breaks the
 floor's input and observes each ingress's own verdict flip. These tests cover what the
@@ -8,7 +8,6 @@ values satisfy it, and what happens when the record exists but did not establish
 from __future__ import annotations
 
 import importlib.util
-import runpy
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -25,7 +24,6 @@ def _load(path: Path):
 _FLOOR_MOD = _load(_ISSUE_SCRIPTS / "issue_probe_record_floor.py")
 evaluate_probe_record = _FLOOR_MOD.evaluate_probe_record
 probe_record_problems = _FLOOR_MOD.probe_record_problems
-probe_record_advisory = _FLOOR_MOD.probe_record_advisory
 _FLOORS_MOD = _load(_RELEASE_SCRIPTS / "release_closeout_floors.py")
 _CLOSEOUT_MOD = _load(_RELEASE_SCRIPTS / "release_issue_closeout.py")
 _RELEASE_FLOORS = {
@@ -40,7 +38,6 @@ _RELEASE_FLOORS = {
 # `test_issue_consolidated_closeout.py`.
 _COVERS = (
     "skills/public/issue/scripts/issue_probe_record_floor.py",
-    "skills/public/issue/scripts/issue_close_comment_floor.py",
     "skills/public/release/scripts/release_closeout_floors.py",
     "skills/public/release/scripts/release_issue_closeout.py",
 )
@@ -216,48 +213,6 @@ def test_the_release_floor_is_not_applicable_with_no_issues() -> None:
 
 
 # --- degraded installs, and the refusal text an operator actually reads --------
-
-
-def _claiming_body() -> str:
-    return _body(
-        "Classification: bug", "JTBD: x", "Root cause: y", "Debug artifact: z",
-        "Siblings: s", "Prevention: p",
-        "Critique: blocked synthetic-test-harness: no reviewer is spawned here",
-        "AI-provenance: agent-drafted",
-        "Behavior #42: confirmed via the CLI (distinct channel from CLOSED)",
-    )
-
-
-def test_the_close_comment_carrier_surfaces_the_probe_finding_without_vetoing(tmp_path: Path) -> None:
-    # At REVIEW severity the carrier must still SAY what the floor found. A floor that is
-    # advisory and silent is not advisory, it is absent.
-    floor = runpy.run_path(str(_ISSUE_SCRIPTS / "issue_close_comment_floor.py"))
-    report = floor["evaluate_close_comment_floor"](
-        repo_root=tmp_path, body=_claiming_body(), classification="bug", number=42
-    )
-    assert report["probe_record"]["ok"] is False
-    assert report["ok"] is True, "REVIEW severity must not veto the close"
-    assert any("probe_record:#42" in line for line in probe_record_advisory(report["probe_record"]))
-
-
-def test_the_severity_switch_is_the_only_thing_that_decides_vetoing(tmp_path: Path, monkeypatch) -> None:
-    """Both severities pinned, so flipping the constant after slice 5 is a proven one-line
-    change rather than a hopeful one.
-
-    Held at `review` by operator ruling: the floor was built blocking as the goal's
-    acceptance specifies, the migration measured the cost, and the operator chose to wait
-    for slice 5's 45-row report before paying it standing.
-    """
-    assert _FLOOR_MOD.PROBE_RECORD_SEVERITY == "review"
-    assert _FLOOR_MOD.probe_record_blocks() is False
-
-    floor = runpy.run_path(str(_ISSUE_SCRIPTS / "issue_close_comment_floor.py"))
-    monkeypatch.setattr(floor["_PROBE_FLOOR"], "PROBE_RECORD_SEVERITY", "block")
-    blocked = floor["evaluate_close_comment_floor"](
-        repo_root=tmp_path, body=_claiming_body(), classification="bug", number=42
-    )
-    assert blocked["ok"] is False, "at `block` severity the same body must be refused"
-    assert "probe_record:#42" in floor["format_close_comment_floor_failure"](blocked)
 
 
 def test_the_release_floors_report_absence_rather_than_passing(monkeypatch) -> None:
@@ -454,16 +409,6 @@ def test_the_second_release_entrypoint_refuses_silence_too(tmp_path: Path) -> No
 def _arm_blocking(monkeypatch, *modules) -> None:
     for module in modules:
         monkeypatch.setattr(module, "PROBE_RECORD_SEVERITY", "block")
-
-
-def test_verify_closeout_refuses_an_unbacked_claim_at_block_severity(monkeypatch) -> None:
-    verify = runpy.run_path(str(_ISSUE_SCRIPTS / "issue_verify_closeout.py"))
-    _arm_blocking(monkeypatch, verify["_PROBE_FLOOR"])
-    result = verify["evaluate_probe_record"](_body(_CLAIM), "bug", [42], repo_root=ROOT)
-    assert result["ok"] is False
-    problems = verify["_PROBE_FLOOR"].probe_record_problems(result)
-    assert problems and problems[0].startswith("probe_record:#42")
-    assert verify["_PROBE_FLOOR"].probe_record_blocks() is True
 
 
 def test_the_release_refusal_names_the_flag_and_the_finding(monkeypatch) -> None:

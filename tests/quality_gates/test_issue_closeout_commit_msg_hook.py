@@ -34,7 +34,6 @@ def _bug_closeout_body(close_line: str = "Close #42.") -> str:
             "Prevention: commit-msg blocks missing closeout carriers.",
             "Critique: blocked synthetic-test-harness: this test does not spawn a real reviewer",
             "Behavior #42: behavior test exercises the fix (distinct channel from CLOSED)",
-            "Probe record #42: local-only-by-contract",
             "AI-provenance: agent-drafted; human-audited per the resolution critique",
         ]
     )
@@ -554,6 +553,7 @@ def test_commit_msg_gate_reads_bold_classification_from_staged_artifact(tmp_path
     report = payload["reports"][0]
     assert "root_cause" not in report["missing_fields"]
     assert "debug_artifact" not in report["missing_fields"]
+    assert report["resolution_critique_check"]["skipped_classification"] == "deferred-work"
 
 
 def test_commit_msg_gate_stays_out_of_scope_for_template_faithful_brief(tmp_path: Path) -> None:

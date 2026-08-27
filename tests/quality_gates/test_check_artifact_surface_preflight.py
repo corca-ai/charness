@@ -748,7 +748,8 @@ def test_closeout_draft_emit_stub_renders_a_starter_body() -> None:
     text, code = preflight.emit_stub(ROOT, preflight.surface_for_type("closeout-draft"))
     assert code == 0
     assert "Closes #N" in text
-    assert "Critique #N:" in text
+    assert "Behavior #N:" in text
+    assert "Critique #N:" not in text
     template = (
         ROOT
         / "skills"
@@ -1013,6 +1014,7 @@ def test_closeout_draft_shape_renders_the_floors_its_validator_blocks_on() -> No
     assert "Behavior #N:" in out and "AI-provenance:" in out
     # Rendered FROM the verifier's live constants, not restated beside them.
     assert "bug, feature, deferred-work" in out
+    assert "resolution_critique (required for classifications: bug)" in out
     # The HOTL vocabulary is expanded from the anchored pattern and checked back
     # against it, so a status the verifier would refuse cannot be advertised here.
     for status in ("blocked-needs-operator", "blocked-needs-capability", "local-only-by-contract"):

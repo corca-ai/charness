@@ -105,9 +105,8 @@ def build_parser(*, modules: dict[str, Any], handlers: dict[str, Any]) -> argpar
         "--classification",
         choices=modules["verify"].CLASSIFICATIONS,
         required=True,
-        help="Fix-unit classification recorded for the closeout; drives the rung-1 presence "
-        "floor (behavioral verdict, resolution critique, source preservation) checked before "
-        "any GitHub mutation",
+        help="Fix-unit classification recorded for the closeout; selects the applicable "
+        "behavior, critique, and source-preservation checks before any GitHub mutation",
     )
     close.add_argument(
         "--reason",

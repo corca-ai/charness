@@ -7,10 +7,10 @@ in the sibling file.
 """
 from __future__ import annotations
 
-import re
 import subprocess
 from pathlib import Path
 
+import pytest
 import yaml
 
 from tests.quality_gates.support import run_script
@@ -41,14 +41,7 @@ def _bug_closeout_body(
     provenance_line: str | None = (
         "AI-provenance: agent-drafted; human-audited per the resolution critique"
     ),
-    # Derived from every issue `close_line` names, for the same reason the shared
-    # `issue_closeout_support.bug_closeout_body` derives it: a behavior line that claims a
-    # verification owes a probe record, and a multi-issue close owes one per issue.
-    probe_line: str | None = None,
 ) -> str:
-    if probe_line is None:
-        targets = " ".join(f"#{number}" for number in re.findall(r"#(\d+)\b", close_line))
-        probe_line = f"Probe record {targets}: local-only-by-contract" if targets else None
     parts = [
         close_line,
         "JTBD: resolve GitHub issues end-to-end.",
@@ -63,8 +56,6 @@ def _bug_closeout_body(
         parts.append(behavior_line)
     if provenance_line is not None:
         parts.append(provenance_line)
-    if probe_line is not None:
-        parts.append(probe_line)
     return "\n\n".join(parts)
 
 
@@ -391,7 +382,10 @@ def test_question_closeout_does_not_require_critique(tmp_path: Path) -> None:
     assert payload["resolution_critique_check"].get("skipped_classification") == "question"
 
 
-def test_feature_closeout_with_blocked_critique_is_accepted(tmp_path: Path) -> None:
+@pytest.mark.parametrize("classification", ("feature", "deferred-work"))
+def test_non_bug_delivery_closeout_without_critique_is_accepted(
+    tmp_path: Path, classification: str
+) -> None:
     body_file = tmp_path / "body.md"
     body_file.write_text(
         "Close #42.\n\n"
@@ -400,10 +394,8 @@ def test_feature_closeout_with_blocked_critique_is_accepted(tmp_path: Path) -> N
         "Resolution brief: see issue body.\n"
         "Implementation: small additive change behind existing seam.\n"
         "Prevention: closeout discipline added.\n"
-        "Critique: blocked claude-code-agent-tool-missing in offline session\n"
         "Behavior #42: behavior test exercises the new surface (distinct channel)\n"
-        "Probe record #42: local-only-by-contract\n"
-        "AI-provenance: agent-drafted; human-audited per the resolution critique\n",
+        "AI-provenance: agent-drafted closeout\n",
         encoding="utf-8",
     )
 
@@ -417,7 +409,7 @@ def test_feature_closeout_with_blocked_critique_is_accepted(tmp_path: Path) -> N
         "--number",
         "42",
         "--classification",
-        "feature",
+        classification,
         "--carrier",
         "pr-body",
         "--body-file",
@@ -426,8 +418,10 @@ def test_feature_closeout_with_blocked_critique_is_accepted(tmp_path: Path) -> N
 
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
-    assert payload["resolution_critique_check"]["ok"] is True
-    assert payload["resolution_critique_check"]["skipped"][0]["name"] == "resolution_critique"
+    assert payload["resolution_critique_check"] == {
+        "ok": True,
+        "skipped_classification": classification,
+    }
 
 
 def test_bug_closeout_rejects_blocked_critique_signal_that_only_the_head_made_long(tmp_path: Path) -> None:

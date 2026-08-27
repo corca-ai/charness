@@ -125,7 +125,7 @@ REGISTRY: tuple[Surface, ...] = (
     # shape is rendered live from the verifier's constants, never re-declared.
     Surface(
         "closeout-draft", None, None, None, None, False,
-        "GitHub-issue closeout-draft body shape (resolution_critique + `tool signal:`, "
+        "GitHub-issue closeout-draft body shape (bug-only resolution_critique + `tool signal:`, "
         "carrier-body source = commit message for direct-commit, per-classification "
         "ledger fields, close keyword); rendered live from `validate-closeout-draft`'s "
         "verifier constants.",

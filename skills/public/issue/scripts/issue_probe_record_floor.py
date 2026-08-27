@@ -49,10 +49,8 @@ _has_substantive_value = _BODY._has_substantive_value
 _FLOORS = _load_local("issue_closeout_rung1_floors")
 
 # The same reason, genuinely: a probe record measures USER-FACING BEHAVIOR, and a
-# classification with no behavior to confirm has nothing to probe. The neighbour warns
-# against reusing its tuple without asking whether its reason transfers -- it was reused
-# twice for floors where it did not, and a behavioral matrix measured the cost. Asked and
-# answered here: this floor's subject IS behavior change, so the tuple is the right gate.
+# classification with no behavior to confirm has nothing to probe. Release closeout is
+# the remaining consumer of this classification gate.
 PROBE_RECORD_CLASSIFICATIONS = _FLOORS.BEHAVIORAL_VERDICT_CLASSIFICATIONS
 
 # ``Probe record #N: <path-or-disposition>``, single-issue shorthand ``Probe record:``.

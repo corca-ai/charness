@@ -301,10 +301,10 @@ python3 "$SKILL_DIR/scripts/issue_tool.py" close-with-comment \
   --repo <full_name> --number <n> --body-file <path> --classification <classification>
 ```
 
-`--classification` drives a rung-1 presence floor (behavioral verdict or a typed
-non-verified disposition, HOTL entry disposition, AI-provenance marker,
-resolution-critique binding, source preservation) that runs against
-`--body-file` before any GitHub mutation; a silent body is refused
+`--classification` selects the applicable rung-1 presence checks (behavioral
+verdict or typed non-verified disposition, HOTL entry disposition,
+AI-provenance marker, source preservation, and bug-only resolution-critique
+binding) that run against `--body-file` before any GitHub mutation; a silent body is refused
 before the comment or close command is invoked. This mirrors `verify-closeout`'s
 existing checks so the manual-fallback carrier cannot mutate the issue on
 evidence-free text.
