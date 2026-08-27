@@ -48,6 +48,7 @@ EVIDENCE_OVERRIDES = {
         "saves a complete Goal Draft under `charness-artifacts/goals/<yyyy-mm-dd-slug>.md`, freezes its bytes after approval, and binds it to one provider-backed Goal Run",
         "resumes only from the exact `/goal #N` objective after provider readback; the draft remains planning provenance and never becomes a progress log",
         "keeps the Before-phase provider-free until explicit approval, then reads the parent and reconciles the real child graph through the issue-owned Goal Run provider",
+        "treats the interview limit as a ceiling, asks only unresolved decisions that could change activation or execution, and does not reopen branches already resolved by repository evidence or operator answers",
     ],
     "create-skill": [
         "treats the public skill frontmatter and core trigger as classifier input, not only documentation",
@@ -66,6 +67,9 @@ EVIDENCE_OVERRIDES = {
         "renders `issue new` closeout from the verified issue ledger plus the created title and a short filed-body summary, warning when body readback was not verified",
         "uses the `github-gh` integration path for GitHub mutations instead of inventing a separate provider",
         "emits a pre-mutation resolution brief for `feature` and `deferred-work` issues and pauses for user discussion when `open decisions` is non-empty",
+    ],
+    "ideation": [
+        "asks only from the resolution frontier that could change the next decision or action, collapses answered branches, and stops at purpose-fit resolution",
     ],
     "critique": [
         "includes a customer-of-this-capability angle when first-use failure is the main risk",
