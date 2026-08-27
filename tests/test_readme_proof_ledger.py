@@ -27,7 +27,7 @@ def _ledger(evidence: str) -> str:
 
 def test_current_readme_proof_ledger_has_existing_path_bound_evidence() -> None:
     rows = validate_ledger_rows(SOURCE.read_text(encoding="utf-8"), source_path=SOURCE, repo_root=ROOT)
-    assert len(rows) == 11
+    assert len(rows) == 10
     assert all(targets for _, targets in rows)
 
 

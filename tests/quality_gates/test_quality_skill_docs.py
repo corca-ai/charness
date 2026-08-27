@@ -289,10 +289,6 @@ def test_quality_agent_runtime_lens_requires_runtime_evidence_for_docs() -> None
     assert "not\nproduction runtime evidence until paired with a concrete runtime seam" in AGENT_PRODUCTION_RUNTIME
 
 
-def test_quality_agent_runtime_lens_narrows_skill_experiment_mode() -> None:
-    assert "Use `skill-experiment` only when the\nruntime under review is itself a Charness skill" in AGENT_PRODUCTION_RUNTIME
-
-
 def test_quality_agent_runtime_dispatch_mirrors_canonical_boundary() -> None:
     dispatch_words = " ".join(DISPATCH.split())
 

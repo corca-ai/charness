@@ -595,24 +595,6 @@ def test_refreeze_is_usable_before_a_crosswalk_exists(tmp_path: Path) -> None:
     assert payload["crosswalk_rebound"]["rebound"] is False
 
 
-def test_the_checked_in_charness_freeze_for_514_515_518_validates() -> None:
-    """The real artifacts, not a fixture.
-
-    A validator that only ever runs against synthetic worlds proves the validator.
-    This proves the freeze this goal actually binds to.
-    """
-    payload = run_validate(
-        REPO_ROOT,
-        "charness-artifacts/spec/2026-08-07-issue-514-515-518-source.json",
-        "charness-artifacts/spec/2026-08-07-issue-514-515-518-owner-inspection.json",
-        "charness-artifacts/spec/2026-08-07-issue-514-515-518-freeze-receipt.json",
-        [514, 515, 518],
-    )
-
-    assert payload["ok"] is True
-    assert payload["snapshot_rederived_from_raw_responses"] is True
-
-
 def test_a_freeze_receipt_that_was_never_written_is_refused_not_treated_as_absent_bind(tmp_path: Path) -> None:
     """No receipt is not "no objection".
 

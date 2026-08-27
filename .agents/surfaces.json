@@ -639,30 +639,6 @@
       ]
     },
     {
-      "surface_id": "issue-source-freeze-bundle",
-      "description": "Frozen GitHub issue source capture, owner inspection, and freeze receipt kept as the historical source record for #514/#515/#518. Paths are pinned per bundle, not globbed: a NEW bundle must be added here and to the verify command together. The closeout-authorization crosswalk instance that once bound to this bundle was retired on 2026-08-10; see charness-artifacts/spec/2026-08-10-evidence-boundary-crosswalk-retirement.md.",
-      "source_paths": [
-        "charness-artifacts/spec/2026-08-07-issue-514-515-518-source.json",
-        "charness-artifacts/spec/2026-08-07-issue-514-515-518-source-capture-receipt.json",
-        "charness-artifacts/spec/2026-08-07-issue-514-515-518-owner-inspection.json",
-        "charness-artifacts/spec/2026-08-07-issue-514-515-518-freeze-receipt.json",
-        "charness-artifacts/spec/2026-08-07-issue-514-515-518-source-raw/**"
-      ],
-      "derived_paths": [],
-      "sync_commands": [],
-      "verify_commands": [
-        "python3 scripts/validate_issue_source_freeze.py validate --repo-root . --snapshot charness-artifacts/spec/2026-08-07-issue-514-515-518-source.json --inspection charness-artifacts/spec/2026-08-07-issue-514-515-518-owner-inspection.json --freeze-receipt charness-artifacts/spec/2026-08-07-issue-514-515-518-freeze-receipt.json --require-issues 514 515 518",
-        "python3 -m pytest -q tests/test_issue_source_freeze.py tests/test_issue_source_owner_inspection.py tests/test_issue_source_capture.py tests/test_evidence_boundary_crosswalk.py"
-      ],
-      "notes": [
-        "`validate` re-derives the snapshot from the captured raw responses, so a hand-edited snapshot fails here rather than passing a schema check.",
-        "The raw capture directory is part of the surface: deleting a page file breaks re-derivation, which is the point.",
-        "Paths are literal ON PURPOSE. A glob like `charness-artifacts/spec/*-source.json` would let a new freeze bundle clear the `unmatched_surface_path` blocker while the verify command re-derived a DIFFERENT bundle -- coverage at the manifest level, nothing at the verifier level. Literal paths make a new bundle trip the blocker until someone extends both lists, which is the obligation stated as a gate instead of as a note.",
-        "This repo checks in NO crosswalk instance, by decision. `tests/test_evidence_boundary_crosswalk.py` asserts that absence and asserts that closeout authorization reports it as `applies=false` rather than as a pass. If a crosswalk is ever checked in again it needs its own validator line here, because the pytest module builds its world in tmp_path and would not otherwise read the checked-in artifact.",
-        "Enforcement boundary, stated because the note above is slightly stronger than the gate: the verifier reads every raw page the capture receipt LISTS, so deleting or editing one refuses. An EXTRA file dropped into the raw directory is matched by `source_paths` and read by nothing. It changes no derivation, which is why it is recorded rather than gated."
-      ]
-    },
-    {
       "surface_id": "retired-closeout-authorization-instance",
       "description": "The retired #514/#515/#518 evidence-boundary crosswalk instance and the record that retired it. The crosswalk path is declared here while ABSENT on purpose: the deletion of a proof-surface instance is itself a change that needs an owning surface, and this one's verify command asserts the absence rather than the file.",
       "source_paths": [

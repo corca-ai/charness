@@ -65,7 +65,7 @@ Examples:
 - [goal-lifecycle.md](./goal-lifecycle.md) — the parent Goal Run cursor and execution identity.
 - [../charness-artifacts/gather/latest.md](../charness-artifacts/gather/latest.md) — the current gathered source, route family, and acquisition trace.
 - [../charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md) — the current quality review's scope, surface contract, and findings.
-- [../charness-artifacts/release/latest.md](../charness-artifacts/release/latest.md) — the current release surface check, versions, and push state.
+- [../charness-artifacts/release/2026-08-27-v7.0.0-notes.md](../charness-artifacts/release/2026-08-27-v7.0.0-notes.md) — the current release notes and operator update path.
 
 Use semi-fixed surfaces when later sessions should see the current best summary
 without re-reading every historical record, but the exact past records still
@@ -211,7 +211,7 @@ Current repo examples:
 - [charness-artifacts/debug/latest.md](../charness-artifacts/debug/latest.md) — a symlink current pointer at the newest dated debug record.
 - [charness-artifacts/debug/debug-2026-04-20-process-boundary-drift.md](../charness-artifacts/debug/debug-2026-04-20-process-boundary-drift.md) — a dated debug record on unbounded subprocess and daemon lifecycles.
 - [`charness-artifacts/gather/latest.md`](../charness-artifacts/gather/latest.md) — a regular-file current pointer holding the latest gather run.
-- [`charness-artifacts/release/latest.md`](../charness-artifacts/release/latest.md) — a regular-file current pointer holding the latest release check.
+- [`charness-artifacts/release/2026-08-27-v7.0.0-notes.md`](../charness-artifacts/release/2026-08-27-v7.0.0-notes.md) — the current dated release notes; release proof is generated at publication time.
 
 ## Current Repo Classification
 

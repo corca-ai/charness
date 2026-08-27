@@ -307,7 +307,6 @@ def test_an_unknown_outcome_word_is_refused_and_the_message_lists_the_vocabulary
         "event_id": "e1",
         "source_retro": "charness-artifacts/retro/x.md",
         "lesson_id": "a",
-        "session_id": "s1",
         "outcome": "helped-a-bit",
         "anchor": "I would have gone elsewhere otherwise",
     }
@@ -337,13 +336,12 @@ def test_a_score_for_a_lesson_no_transition_ever_seeded_is_refused() -> None:
         "event_id": "e1",
         "source_retro": "charness-artifacts/retro/x.md",
         "lesson_id": "ghost",
-        "session_id": "s1",
         "outcome": "read-but-not-applied",
         "anchor": "it was open in the editor at the decision",
     }
 
     with pytest.raises(ValueError) as caught:
-        ledger_lib._replay_scores([event], {}, {}, {"s1": {"ghost"}})
+        ledger_lib._replay_scores([event], {}, {})
 
     assert "unseeded lesson" in str(caught.value)
     assert "e1" in str(caught.value)

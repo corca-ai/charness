@@ -40,6 +40,6 @@ def test_spec_skill_distinguishes_public_executable_contract_from_implementation
 def test_specdown_on_demand_viewer_keeps_artifact_and_critique_policy_visible() -> None:
     spec_text = (ROOT / "specs" / "on-demand-validation.spec.md").read_text(encoding="utf-8")
 
-    assert "viewer for the latest checked on-demand validation" in spec_text
+    assert "viewer over the chosen evidence" in spec_text
     assert "critique" in spec_text
     assert "hitl-recommended" in spec_text

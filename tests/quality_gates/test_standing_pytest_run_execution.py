@@ -123,6 +123,9 @@ def test_standing_pytest_run_record_survives_an_unwritable_state_dir(
 
     repo = tmp_path / "repo"
     repo.mkdir()
+    monkeypatch.setenv("CHARNESS_RUNTIME_ROOT", str(tmp_path / "runtime"))
+    monkeypatch.delenv("CHARNESS_RUNTIME_ROOT_AUTO", raising=False)
+    monkeypatch.delenv("CHARNESS_RUNTIME_REPO_KEY", raising=False)
     monkeypatch.setattr(
         Path, "mkdir", lambda *a, **k: (_ for _ in ()).throw(OSError("read-only"))
     )
@@ -176,6 +179,9 @@ def test_print_last_run_reads_back_a_record_and_refuses_when_absent(
 
     repo = tmp_path / "repo"
     repo.mkdir()
+    monkeypatch.setenv("CHARNESS_RUNTIME_ROOT", str(tmp_path / "runtime"))
+    monkeypatch.delenv("CHARNESS_RUNTIME_ROOT_AUTO", raising=False)
+    monkeypatch.delenv("CHARNESS_RUNTIME_REPO_KEY", raising=False)
 
     # Absent: refuse loudly rather than printing nothing and exiting 0, which
     # would read as "the last run had no result".

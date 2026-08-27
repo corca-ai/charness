@@ -19,6 +19,7 @@ critique:adapter:retro:boundary cite -- adapter-contract.md names .agents/retro-
 achieve:artifact:goals:owns -- achieve owns charness-artifacts/goals/<date-slug>.md as the goal lifecycle artifact namespace; no other skill writes there
 achieve:artifact:specs:owns -- achieve owns the detailed phase contracts under charness-artifacts/specs/<goal-slug>; the goal links them and no other skill writes them
 achieve:artifact:critique:read-only proof -- After-phase fresh-eye disposition review (rung 2, #253) is bound by the Disposition review: line; lifecycle.md cites critique/ as the review-artifact namespace, ownership stays critique
+achieve:artifact:retro:read-only projection -- achieve reads retro-owned recent-lessons.md or lesson-selection-index.json; retro owns generation
 issue:artifact:critique:read-only proof -- issue closeout-discipline requires a critique artifact path or blocked-host signal as resolution-critique evidence; ownership stays critique
 release:artifact:probe:read-write convention -- publication-boundary.md directs independent-observer release evidence into a durable JSON probe artifact; ownership stays probe
 prove:adapter:impl:read-only consumption -- prove reads verification preferences and truth_surfaces from the impl adapter through impl's resolver; impl keeps ownership of the adapter file

@@ -324,7 +324,6 @@ commands:
       - --no-write-locks
       - --detail
       - tool_ids
-    required_doc_contains:
   tool-repair:
     help_command: ./charness tool repair --help
     doc_paths:
@@ -344,7 +343,6 @@ commands:
       - --upstream-checkout
       - --dry-run
       - --detail
-    required_doc_contains:
   tool-install:
     help_command: ./charness tool install --help
     doc_paths:

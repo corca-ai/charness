@@ -2,7 +2,6 @@
 set -euo pipefail
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 cd "$REPO_ROOT"
-source "$REPO_ROOT/.githooks/runtime-env.sh"
 
 MUTATION_RECOVERY_DIR="$(git rev-parse --git-dir)/charness-mutation-recovery"
 if [[ -e "$MUTATION_RECOVERY_DIR" || -e "$REPO_ROOT/.charness/mutation-recovery" ]]; then
