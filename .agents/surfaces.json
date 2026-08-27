@@ -727,14 +727,12 @@
         "scripts/lesson_ledger_lib.py",
         "scripts/lesson_selection_preview_lib.py",
         "scripts/check_lesson_ledger.py",
-        "scripts/record_lesson_lifecycle.py",
         "scripts/record_lesson_score.py"
       ],
       "derived_paths": [
         "plugins/charness/scripts/lesson_ledger_lib.py",
         "plugins/charness/scripts/lesson_selection_preview_lib.py",
         "plugins/charness/scripts/check_lesson_ledger.py",
-        "plugins/charness/scripts/record_lesson_lifecycle.py",
         "plugins/charness/scripts/record_lesson_score.py"
       ],
       "sync_commands": [
@@ -742,7 +740,7 @@
       ],
       "verify_commands": [
         "python3 scripts/check_lesson_ledger.py --repo-root .",
-        "python3 -m pytest -q tests/test_lesson_ledger.py tests/test_lesson_lifecycle.py tests/test_lesson_selection_preview.py"
+        "python3 -m pytest -q tests/test_lesson_ledger.py tests/test_lesson_selection_preview.py"
       ],
       "notes": [
         "The ledger checker remains the focused quality gate because every score and seed reconstructs against the retro corpus.",

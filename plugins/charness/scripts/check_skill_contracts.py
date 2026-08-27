@@ -171,9 +171,6 @@ PACKAGE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "stops with a missing-capability explanation",
     ),
     "skills/public/create-skill/SKILL.md": (
-        "For `evaluator-required` skills, treat maintained scenario coverage and",
-        "metadata rich enough to reveal capability kind and supported access modes",
-        "express them as manifest readiness checks",
         # Home: references/portable-authoring.md "Helper Script Rule", where it is
         # the rule's own blockquote statement. Do not delete it as duplicated prose —
         # the core paraphrases it at the step-6 scripts bullet, and this is the pinned

@@ -71,8 +71,6 @@ canonical adapter when the repo should own topology terms.
    - run success criteria review for public-skill behavior changes; use it
      inline for narrow edits and as a bounded subagent review for non-trivial
      first successful trigger, default, artifact, or proof-path changes
-   - if the skill is `evaluator-required`, inspect scenario coverage and proof
-     planning before editing
    - when the checked-in contract is too vague to freeze, tighten the scenario first
 4. Decide the portability seams.
    - skill body stays generic
@@ -125,7 +123,6 @@ canonical adapter when the repo should own topology terms.
      stopping at producer-side validators; include missing, stale, and thin
      adapter states when adapters or repo-local defaults shape the first run
    - use `python3 "$SKILL_DIR/../quality/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id>` to scaffold prompt, repo shape, expected artifact, and acceptance evidence
-   - decide whether dogfood, evaluator scenarios, or scenario-review artifacts move in the same slice
    - trigger collision check against adjacent skills
    - path check for every file named in the skill
    - schema or example validation for any profile, preset, or manifest touched

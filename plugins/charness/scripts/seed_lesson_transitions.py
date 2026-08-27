@@ -25,9 +25,8 @@ substitute for it.
 
 THE FREEZE RISK, STATED IN THE RECEIPT. `_replay_transitions` re-derives
 `available_sources` LIVE from `charness-artifacts/retro/*.md` on every validation,
-and transitions are append-only with archive as the only withdrawal. So a
-committed transition breaks UNREPAIRABLY if its cited retro is later renamed or
-its tag edited away. This command therefore lands its result in the worktree and
+so a committed transition breaks UNREPAIRABLY if its cited retro is later renamed
+or its tag edited away. This command therefore lands its result in the worktree and
 says so: the human inspects before the commit that freezes it. That is also why
 there is no `--auto-commit` and why `--dry-run` exists.
 """
@@ -140,13 +139,13 @@ def plan_seeds(
     sequence = len(payload.get("transitions") or [])
     for lesson_id in targets:
         transition_id = f"{TRANSITION_ID_PREFIX}{lesson_id}"
-        # transition_ids are globally unique FOREVER, and archive does not free one.
-        # Caught here rather than left to the validator so the refusal names the
-        # collision instead of reporting a generic duplicate after a partial plan.
+        # Transition ids are globally unique forever. Caught here rather than left
+        # to the validator so the refusal names the collision instead of reporting
+        # a generic duplicate after a partial plan.
         if transition_id in existing_ids:
             _fail(
                 f"transition_id `{transition_id}` is already used by a different lesson; "
-                "transition ids are unique forever and archiving does not release one"
+                "transition ids are unique forever"
             )
         existing_ids.add(transition_id)
         sequence += 1
@@ -201,20 +200,10 @@ def seed_transitions(
             payload=payload,
             lesson_ids=lesson_ids,
         )
-        active = sum(lesson["state"] == "active" for lesson in replayed.values())
-        # Pre-checked so an over-budget request names the arithmetic. The validator
-        # refuses this too; it just cannot say how many the caller asked for.
-        if active + len(plan) > _ledger.ACTIVE_LESSON_BUDGET:
-            _fail(
-                f"seeding {len(plan)} would put {active + len(plan)} lessons active, past the fixed "
-                f"budget of {_ledger.ACTIVE_LESSON_BUDGET}; archive lessons with "
-                "`record_lesson_lifecycle.py` or seed a subset with `--lesson-id`"
-            )
         receipt = {
             "seeded": [dict(transition) for transition in plan],
             "seeded_count": len(plan),
             "already_seeded_count": len(replayed),
-            "active_lesson_count": active + len(plan),
             "dry_run": dry_run,
             "path": str(path.relative_to(repo_root)),
         }
@@ -244,8 +233,8 @@ def _replayable_lessons(
 ) -> dict[str, Any]:
     """The materialized view the appended transitions imply, before revalidation.
 
-    A seeded lesson starts at zero scores in `active` state; `_replay_transitions`
-    builds exactly this shape. Constructed here rather than trusted, so the
+    A seeded lesson starts at zero scores; `_replay_transitions` builds exactly
+    this shape. Constructed here rather than trusted, so the
     validator's `lessons != replayed` check still has something independent to
     disagree with -- handing it the replay output directly would make that check
     tautological.
@@ -264,8 +253,6 @@ def _replayable_lessons(
             # the outcome vocabulary changes, and the validator already reads
             # the same constructor for its key check.
             "outcome_counts": _outcome.outcome_counts([]),
-            "state": "active",
-            "last_lifecycle_event_id": None,
         }
     return lessons
 
@@ -298,15 +285,11 @@ def main() -> int:
     # gating the warning on the write made it arrive only after the bytes it was
     # warning about had landed.
     #
-    # `active_lesson_budget` and `recurrence_tag_instruction` used to exist only
-    # inside the prose renderer. The budget is the DENOMINATOR for
-    # `active_lesson_count` -- a count without it says nothing -- and the tag
-    # instruction is the only next step a repo with no unseeded classes can act on,
-    # so both are folded into the payload rather than deleted with the renderer.
+    # The tag instruction is the only next step a repo with no unseeded classes can
+    # act on, so it stays in the command receipt rather than in a second artifact.
     payload = {
         **receipt,
         "freeze_note": FREEZE_NOTE,
-        "active_lesson_budget": _ledger.ACTIVE_LESSON_BUDGET,
     }
     if not receipt["seeded"]:
         payload["recurrence_tag_instruction"] = f"{_ledger.RECURRENCE_TAG_INSTRUCTION}."

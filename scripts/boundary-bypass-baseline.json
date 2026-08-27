@@ -385,12 +385,6 @@
       ]
     },
     {
-      "test_file": "tests/test_lesson_lifecycle.py",
-      "import_safe_targets": [
-        "scripts/record_lesson_lifecycle.py"
-      ]
-    },
-    {
       "test_file": "tests/test_list_external_links.py",
       "import_safe_targets": [
         "scripts/list_external_links.py"
@@ -427,5 +421,5 @@
       ]
     }
   ],
-  "writer_integrity_sha256": "d519d8bcca3c45b7bf451f25dd2c99e845302dd59f3c8688cdf9cddf77a59a1d"
+  "writer_integrity_sha256": "9ee590c2ac4a60af9d3539b8543670d00e9e9493797e426c66e53742dd228a6a"
 }

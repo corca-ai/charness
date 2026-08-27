@@ -24,15 +24,13 @@ from scripts import lesson_score_outcome_lib as outcome_lib
 
 
 def blank_lesson(source_retro: str, transition_id: str) -> dict[str, Any]:
-    """A freshly seeded lesson: active, no encounters."""
+    """A freshly seeded lesson with no encounters."""
     return {
         "source_retro": source_retro,
         "transition_id": transition_id,
         "score_total": 0,
         "score_count": 0,
         "outcome_counts": outcome_lib.outcome_counts([]),
-        "state": "active",
-        "last_lifecycle_event_id": None,
     }
 
 
@@ -44,7 +42,7 @@ def outcome_event(
     outcome: str = "changed-an-action",
     anchor: str | None = None,
 ) -> dict[str, Any]:
-    """One schema-7 encounter record.
+    """One schema-8 encounter record.
 
     The default anchor satisfies the `changed-an-action` counterfactual bar, so a
     test that does not care about anchor shape does not have to know the rule.
@@ -64,8 +62,8 @@ def outcome_event(
 def materialize(payload: dict[str, Any]) -> dict[str, Any]:
     """Recompute `lessons` from the payload's events, in place.
 
-    Stated as the contract states it: lifecycle events move state, every score
-    event is one encounter, and `score_total` is a sum of VALENCES (+1 when the
+    Stated as the contract states it: every score event is one encounter, and
+    `score_total` is a sum of VALENCES (+1 when the
     lesson did its job, -1 otherwise) rather than of magnitudes -- including for
     legacy-scalar events, which contribute the sign of their scalar and never its
     size.
@@ -74,13 +72,6 @@ def materialize(payload: dict[str, Any]) -> dict[str, Any]:
         lesson["score_total"] = 0
         lesson["score_count"] = 0
         lesson["outcome_counts"] = outcome_lib.outcome_counts([])
-        lesson["state"] = "active"
-        lesson["last_lifecycle_event_id"] = None
-    for event in payload["lifecycle_events"]:
-        lesson = payload["lessons"].get(event["lesson_id"])
-        if lesson is not None:
-            lesson["state"] = "archived" if event["action"] == "archive" else "active"
-            lesson["last_lifecycle_event_id"] = event["event_id"]
     scored: dict[str, list[dict[str, Any]]] = {}
     for event in payload["score_events"]:
         lesson = payload["lessons"].get(event["lesson_id"])

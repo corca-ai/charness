@@ -14,12 +14,11 @@ from scripts.recent_lessons_lib import build_lesson_selection_index, check_lesso
 
 KIND = "charness.lesson-selection-preview"
 SCHEMA_VERSION = 1
-# 3 fills the archive-resurrection slot from the uncertainty ordering when the
-# archive is empty. Bumped because the same seed over the same ledger now selects
-# a different set, and a frozen snapshot must not be readable as though this
-# policy produced it.
-SELECTION_POLICY_VERSION = 3
-BUCKETS = ("recent", "value", "uncertainty", "archive", "archive_fallback_uncertainty")
+# 4 removes the archive/resurrection bucket with the retired lesson lifecycle
+# state. The tenth slot remains an ordinary uncertainty pick, so selection is a
+# pure projection over lesson history and ranking data.
+SELECTION_POLICY_VERSION = 4
+BUCKETS = ("recent", "value", "uncertainty")
 
 
 def _fail(message: str) -> None:
@@ -72,7 +71,6 @@ def _candidate_rows(index: dict[str, Any], lessons: dict[str, Any]) -> list[dict
                 "selection_weight": candidate.get("selection_weight"),
                 "score_total": score_total,
                 "score_count": score_count,
-                "state": lesson.get("state"),
             }
         )
     if seen != set(lessons):
@@ -128,46 +126,19 @@ def build_lesson_selection_preview(*, repo_root: Path, output_dir: Path, summary
         ledger["lessons"],
     )
     selected_ids: set[str] = set()
-    if any(row["state"] not in {"active", "archived"} for row in rows):
-        _fail("validated ledger lesson has invalid lifecycle state")
-    active_rows = [row for row in rows if row["state"] == "active"]
-    archived_rows = [row for row in rows if row["state"] == "archived"]
     total_score_count = sum(row["score_count"] for row in rows)
-    recent = _take(sorted(active_rows, key=_recent_key), selected_ids, 3)
+    recent = _take(sorted(rows, key=_recent_key), selected_ids, 3)
     value = _take(
-        sorted(active_rows, key=lambda row: (-_value(row), row["lesson_id"])),
+        sorted(rows, key=lambda row: (-_value(row), row["lesson_id"])),
         selected_ids,
         3,
     )
     uncertainty_rows = sorted(
-        active_rows,
+        rows,
         key=lambda row: (-_uncertainty(row, total_score_count), row["lesson_id"]),
     )
-    uncertainty = _take(uncertainty_rows, selected_ids, 3)
-    archive_rows = sorted(
-        archived_rows,
-        key=lambda row: (-_uncertainty(row, total_score_count), row["lesson_id"]),
-    )
-    archive = _take(archive_rows, selected_ids, 1)
-    # THE TENTH SLOT, restored (#626). MEASURED against the eleven snapshots in
-    # this repo's ledger -- ten committed, one this session's -- not asserted: the four at
-    # `selection_policy_version: 1` each record `archive_fallback_uncertainty: 1`
-    # with ten `lesson_ids`; the seven at v2 record `0` with nine. So the fallback
-    # worked, and policy v2 REGRESSED it by hardcoding this value to 0 -- since
-    # then every session has presented nine while the contract said ten. An
-    # earlier draft of this comment said the slot had "never" been filled; a
-    # bounded reviewer refuted that from these same snapshots. What HAS always
-    # been 0 is the `archive` bucket proper, because nothing ever wrote
-    # `state == "archived"` for it to draw from.
-    #
-    # Filling from the uncertainty ordering rather than leaving the slot empty:
-    # the slot exists to spend one draw on a lesson the ranking is least sure
-    # about, and with no archive that is exactly the next uncertainty row.
-    # Reported under its OWN key rather than folded into `uncertainty`, so "the
-    # archive is empty" stays visible instead of being disguised as a fourth
-    # uncertainty pick.
-    archive_fallback = _take(uncertainty_rows, selected_ids, 1 - len(archive))
-    selected = recent + value + uncertainty + archive + archive_fallback
+    uncertainty = _take(uncertainty_rows, selected_ids, 4)
+    selected = recent + value + uncertainty
     return {
         "kind": KIND,
         "schema_version": SCHEMA_VERSION,
@@ -178,8 +149,6 @@ def build_lesson_selection_preview(*, repo_root: Path, output_dir: Path, summary
             "recent": len(recent),
             "value": len(value),
             "uncertainty": len(uncertainty),
-            "archive": len(archive),
-            "archive_fallback_uncertainty": len(archive_fallback),
         },
         "items": _shuffled_items(seed, selected),
     }

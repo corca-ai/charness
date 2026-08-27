@@ -48,8 +48,6 @@ def _payload() -> dict:
                 "source_retro": "charness-artifacts/retro/source.md",
             }
         ],
-        "active_lesson_budget": ledger.ACTIVE_LESSON_BUDGET,
-        "lifecycle_events": [],
         "score_events": [],
         "lessons": {
             "a": {
@@ -58,8 +56,6 @@ def _payload() -> dict:
                 "score_total": 0,
                 "score_count": 0,
                 "outcome_counts": outcome_lib.outcome_counts([]),
-                "state": "active",
-                "last_lifecycle_event_id": None,
             }
         },
     }
@@ -237,14 +233,13 @@ def test_ledger_validator_exercises_replay_refusal_paths(tmp_path: Path, monkeyp
         "transitions": [],
         "schema_version": ledger.SCHEMA_VERSION,
         "score_events": [],
-        "lifecycle_events": [],
-        "active_lesson_budget": ledger.ACTIVE_LESSON_BUDGET,
+        "lessons": {},
     }
     monkeypatch.setattr(
         ledger.subprocess,
         "run", lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0, json.dumps(current), "")
     )
-    assert ledger._committed_state(tmp_path, path) == ([], [], ledger.ACTIVE_LESSON_BUDGET, [])
+    assert ledger._committed_state(tmp_path, path) == ([], [])
     unsupported = {**current, "schema_version": ledger.SCHEMA_VERSION - 1}
     monkeypatch.setattr(
         ledger.subprocess,
@@ -279,7 +274,7 @@ def test_ledger_validator_exercises_replay_refusal_paths(tmp_path: Path, monkeyp
         ledger.subprocess,
         "run",
         lambda *_args, **_kwargs: subprocess.CompletedProcess(
-            [], 0, json.dumps({k: v for k, v in current.items() if k != "lifecycle_events"}), ""
+            [], 0, json.dumps({k: v for k, v in current.items() if k != "score_events"}), ""
         ),
     )
     with pytest.raises(ValueError, match="missing a required append-only list"):

@@ -11,10 +11,9 @@ What this does NOT do, and why:
 
 - It does not seed transitions from the selection index. `_replay_transitions`
   rebuilds `available_sources` LIVE from `charness-artifacts/retro/*.md` on every
-  validation, so a committed seeded transition breaks UNREPAIRABLY (transitions
-  are append-only; the only withdrawal is an `archive` lifecycle event) the moment
-  its cited retro is renamed or its `recurrence-class:` tag is edited away. The
-  empty ledger has no such coupling to mutable files.
+  validation, so a committed seeded transition breaks UNREPAIRABLY the moment its
+  cited retro is renamed or its `recurrence-class:` tag is edited away. The empty
+  ledger has no such coupling to mutable files.
 - It initializes ledger state only; it does not create a second lesson-memory
   artifact. The ledger remains the memory/selection surface.
 """
@@ -64,8 +63,6 @@ def empty_ledger_payload() -> dict[str, Any]:
         "kind": _ledger.KIND,
         "schema_version": _ledger.SCHEMA_VERSION,
         "transitions": [],
-        "active_lesson_budget": _ledger.ACTIVE_LESSON_BUDGET,
-        "lifecycle_events": [],
         "score_events": [],
         "lessons": {},
     }

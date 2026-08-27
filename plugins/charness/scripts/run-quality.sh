@@ -1267,14 +1267,11 @@ else
 fi
 queue_selected "check-current-pointer-writes" python3 scripts/check_current_pointer_writes.py --repo-root "$REPO_ROOT" --require-empty --require-git-file-listing
 queue_selected "measure-startup-probes" python3 skills/public/quality/scripts/measure_startup_probes.py --repo-root "$REPO_ROOT" --class standing --record-runtime-signals
-# inventory-sloc writes a git-tracked artifact, which the adapter declares via
-# quality_phases. Read-only mode (e.g. the pre-push hook) drops the --output
-# redirect so the working tree stays clean; full mode refreshes the artifact.
-if [[ "$RUN_QUALITY_MODE" == "read-only" ]]; then
-  queue_selected "inventory-sloc" python3 skills/public/quality/scripts/inventory_sloc.py --repo-root "$REPO_ROOT"
-else
-  queue_selected "inventory-sloc" python3 skills/public/quality/scripts/inventory_sloc.py --repo-root "$REPO_ROOT" --output "$REPO_ROOT/charness-artifacts/quality/sloc-inventory/latest.json"
-fi
+# SLOC is advisory measurement, not a quality-run write obligation. Keep its
+# detailed report in the already-isolated run directory in every mode; the
+# checked-in snapshot is refreshed explicitly through the quality-inventory
+# surface command when a maintainer chooses to update it.
+queue_selected "inventory-sloc" python3 skills/public/quality/scripts/inventory_sloc.py --repo-root "$REPO_ROOT" --output "$RUN_QUALITY_TMPDIR/sloc-inventory.json"
 if [[ -f "$REPO_ROOT/skills/public/quality/scripts/inventory_cli_ergonomics.py" ]]; then
   queue_selected "inventory-cli-ergonomics" python3 skills/public/quality/scripts/inventory_cli_ergonomics.py --repo-root "$REPO_ROOT"
 else

@@ -25,9 +25,7 @@ def main() -> int:
     print(
         "Validated lesson ledger: "
         f"{result['lesson_count']} lessons, "
-        f"{result['active_lesson_count']} active, "
-        f"{result['transition_count']} seed transitions, "
-        f"{result['lifecycle_event_count']} lifecycle events."
+        f"{result['transition_count']} seed transitions."
     )
     return 0
 

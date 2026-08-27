@@ -54,8 +54,6 @@ def _payload(
         "transitions": [
             {"sequence": 1, "transition_id": "seed-a", "lesson_id": "a", "source_retro": source}
         ],
-        "active_lesson_budget": ledger.ACTIVE_LESSON_BUDGET,
-        "lifecycle_events": [],
         "score_events": [] if score_events is None else score_events,
         "lessons": {"a": blank_lesson(source, "seed-a")},
     }
@@ -90,16 +88,12 @@ def test_ledger_replays_cited_scores_and_checker_cli(tmp_path: Path, monkeypatch
         "lesson_count": 1,
         "transition_count": 1,
         "score_event_count": 1,
-        "lifecycle_event_count": 0,
-        "active_lesson_count": 1,
         "path": "charness-artifacts/retro/lesson-ledger.json",
     }
     checker = load_script_module("check_lesson_ledger_for_test", ROOT / "scripts/check_lesson_ledger.py")
     monkeypatch.setattr(sys, "argv", ["check_lesson_ledger.py", "--repo-root", str(tmp_path)])
     assert checker.main() == 0
-    assert capsys.readouterr().out == (
-        "Validated lesson ledger: 1 lessons, 1 active, 1 seed transitions, 0 lifecycle events.\n"
-    )
+    assert capsys.readouterr().out == "Validated lesson ledger: 1 lessons, 1 seed transitions.\n"
     assert json.loads(path.read_text(encoding="utf-8"))["lessons"]["a"]["score_total"] == 1
 
 

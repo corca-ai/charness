@@ -25,19 +25,7 @@ def _build(seed: str = "stable-preview-seed") -> dict:
     )
 
 
-def test_preview_is_flat_seeded_and_fills_the_empty_archive_slot_from_uncertainty() -> None:
-    """RETRACTS this test's previous name and assertion, deliberately (#626, S3).
-
-    It used to be `..._leaves_empty_archive_slot_unfilled` and pinned
-    `archive_fallback_uncertainty: 0` with `len(items) == 9`. That was not a
-    considered policy: selection policy v2 hardcoded the fallback to `0` at the
-    call site, and this test pinned the resulting shape. Measured against the
-    eleven committed snapshots, the four policy-v1 sessions DID fill the slot
-    (`archive_fallback_uncertainty: 1`, ten ids) and the seven v2 sessions did
-    not (nine ids) -- so v2 regressed the contract's "ten lessons per session" to
-    nine, and this test pinned the regression rather than a decision. The
-    reversal is recorded here rather than left to a diff.
-    """
+def test_preview_is_flat_seeded_and_uses_only_pure_ranking_buckets() -> None:
     first = _build()
     second = _build()
     assert first == second
@@ -54,9 +42,7 @@ def test_preview_is_flat_seeded_and_fills_the_empty_archive_slot_from_uncertaint
     assert first["bucket_counts"] == {
         "recent": 3,
         "value": 3,
-        "uncertainty": 3,
-        "archive": 0,
-        "archive_fallback_uncertainty": 1,
+        "uncertainty": 4,
     }
     assert len(first["items"]) == 10
     assert len({item["lesson_id"] for item in first["items"]}) == 10
@@ -71,12 +57,11 @@ def test_preview_uses_the_pinned_shrunk_mean_and_ucb_formula() -> None:
     assert preview._uncertainty(row, 2) == pytest.approx(1 + math.sqrt(math.log(2) / 2))
 
 
-def test_preview_uses_only_active_first_nine_and_real_archive_slot(monkeypatch) -> None:
+def test_preview_uses_all_seeded_lessons_without_lifecycle_state(monkeypatch) -> None:
     lessons = {
         f"lesson-{index}": {
             "score_total": index,
             "score_count": 1,
-            "state": "archived" if index == 9 else "active",
         }
         for index in range(10)
     }
@@ -105,8 +90,7 @@ def test_preview_uses_only_active_first_nine_and_real_archive_slot(monkeypatch) 
         seed="archive-proof",
     )
 
-    assert result["bucket_counts"]["archive"] == 1
-    assert result["bucket_counts"]["archive_fallback_uncertainty"] == 0
+    assert result["bucket_counts"] == {"recent": 3, "value": 3, "uncertainty": 4}
     ids = {item["lesson_id"] for item in result["items"]}
     assert ids == set(lessons)
 
@@ -154,7 +138,7 @@ def test_preview_renderer_script_entrypoint_exits_successfully(monkeypatch, caps
     assert yaml.safe_load(capsys.readouterr().out)["kind"] == preview.KIND
 
 
-def test_preview_rejects_closed_ledger_candidate_and_recent_shapes(
+def test_preview_rejects_malformed_ledger_candidate_and_recent_shapes(
     tmp_path: Path, monkeypatch
 ) -> None:
     ledger_path = tmp_path / "lesson-ledger.json"
