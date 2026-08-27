@@ -19,6 +19,7 @@ REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 
 _adapter_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_lib")
 read_declared_adapter = _adapter_lib.read_declared_adapter
+normalize_adapter_result = _adapter_lib.normalize_adapter_result
 list_field_state = _adapter_lib.list_field_state
 optional_string = _adapter_lib.optional_string
 declared_fields_after_version_check = _adapter_lib.declared_fields_after_version_check
@@ -129,7 +130,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
     adapter_path = find_adapter(repo_root)
     if adapter_path is None:
         data = infer_repo_defaults(repo_root)
-        return {
+        payload = {
             "found": False,
             "valid": True,
             "path": None,
@@ -143,6 +144,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
             ],
             "searched_paths": searched_paths,
         }
+        return normalize_adapter_result(payload, skill_id="create-skill")
 
     # `read_declared_adapter`, NOT `load_yaml_file`. The bare loader RAISES on a document
     # the parser refuses and DISCARDS the uninterpreted-line sink, so `parse_refused` and
@@ -158,7 +160,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
     data, validation_errors, extra_warnings = validate_adapter_data(raw_data, repo_root)
     errors.extend(validation_errors)
     warnings.extend(extra_warnings)
-    return {
+    payload = {
         "found": True,
         "valid": not errors,
         "path": str(adapter_path),
@@ -168,6 +170,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
         "warnings": warnings,
         "searched_paths": searched_paths,
     }
+    return normalize_adapter_result(payload, skill_id="create-skill")
 
 
 def main() -> None:

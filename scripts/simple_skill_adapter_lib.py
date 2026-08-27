@@ -7,7 +7,9 @@ from scripts.adapter_field_application import apply_optional_fields
 from scripts.adapter_lib import (
     declared_fields_after_version_check,
     load_yaml_file_report,
+    normalize_adapter_result,
     parse_failure_error,
+    read_failure_error,
     uninterpreted_warnings,
 )
 from scripts.adapter_version_verdict import declarations_unhonored
@@ -95,7 +97,7 @@ def load_adapter_contract(
             # adapter. The containment has to reach BOTH or it reaches neither.
             contained_raw = {} if declarations_unhonored(errors) else (raw_data or {})
             payload.update(extra_payload(data, contained_raw, found))
-        return payload
+        return normalize_adapter_result(payload, skill_id=skill_id)
 
     if adapter_path is None:
         return _payload(
@@ -113,14 +115,15 @@ def load_adapter_contract(
     # reason recorded in `docs/deferred-decisions.md` D46.
     try:
         raw, uninterpreted = load_yaml_file_report(adapter_path)
-    except ValueError as exc:
+    except (OSError, UnicodeError, ValueError) as exc:
         # An unsupported construct (anchor, alias, an unsupported block-scalar header) used
         # to escape here as an uncaught traceback — neither a refusal nor a pass, and
         # invisible to every caller that branches on `valid`. `current_release.build_payload`
         # calls this first thing, so the S35 drift check died instead of reporting drift.
+        error = read_failure_error(exc) if isinstance(exc, (OSError, UnicodeError)) else parse_failure_error(exc)
         return _payload(
             found=True, data=infer_defaults(repo_root),
-            errors=[parse_failure_error(exc)], warnings=[],
+            errors=[error], warnings=[],
         )
     raw_data = raw if isinstance(raw, dict) else {}
     warnings = uninterpreted_warnings(uninterpreted)

@@ -24,6 +24,8 @@ load_yaml_file = _adapter_lib_module.load_yaml_file
 load_yaml_file_report = _adapter_lib_module.load_yaml_file_report
 uninterpreted_warnings = _adapter_lib_module.uninterpreted_warnings
 parse_failure_error = _adapter_lib_module.parse_failure_error
+read_failure_error = _adapter_lib_module.read_failure_error
+normalize_adapter_result = _adapter_lib_module.normalize_adapter_result
 validate_adapter_version = _adapter_lib_module.validate_adapter_version
 
 def _load_capture_capability():
@@ -260,7 +262,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
     adapter_path = find_adapter(repo_root)
     defaults = infer_defaults()
     if adapter_path is None:
-        return {
+        payload = {
             "found": False,
             "valid": True,
             "path": None,
@@ -272,6 +274,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
             ],
             "searched_paths": searched_paths,
         }
+        return normalize_adapter_result(payload, skill_id="issue")
 
     # `load_yaml_file_report` parses exactly as `load_yaml_file` does and additionally
     # returns the lines the parser could not interpret. Reading them is what separates
@@ -293,18 +296,20 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
     warnings: list[str] = []
     try:
         raw, uninterpreted = load_yaml_file_report(adapter_path)
-    except ValueError as exc:
+    except (OSError, UnicodeError, ValueError) as exc:
         # An unsupported construct used to escape as a traceback, which is neither a
         # refusal nor a pass — callers branching on `valid` never saw it at all.
-        return {
+        error = read_failure_error(exc) if isinstance(exc, (OSError, UnicodeError)) else parse_failure_error(exc)
+        payload = {
             "found": True,
             "valid": False,
             "path": str(adapter_path),
             "data": data,
-            "errors": [parse_failure_error(exc)],
+            "errors": [error],
             "warnings": [],
             "searched_paths": searched_paths,
         }
+        return normalize_adapter_result(payload, skill_id="issue")
     raw_data = raw if isinstance(raw, dict) else {}
     warnings.extend(
         f"{line} This is reported, not refused: see docs/deferred-decisions.md D46."
@@ -313,7 +318,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
 
     validate_adapter_version(raw_data, data, errors)
     if errors:
-        return {
+        payload = {
             "found": True,
             "valid": False,
             "path": str(adapter_path),
@@ -322,6 +327,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
             "warnings": warnings,
             "searched_paths": searched_paths,
         }
+        return normalize_adapter_result(payload, skill_id="issue")
 
     for field in ("default_org", "default_repo", "remote_name"):
         value = _string(raw_data.get(field), field, errors)
@@ -337,7 +343,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
     )
     data["harness_upstream"] = _parse_harness_upstream(raw_data.get("harness_upstream"), errors)
 
-    return {
+    payload = {
         "found": True,
         "valid": not errors,
         "path": str(adapter_path),
@@ -346,6 +352,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
         "warnings": warnings,
         "searched_paths": searched_paths,
     }
+    return normalize_adapter_result(payload, skill_id="issue")
 
 
 def main() -> int:

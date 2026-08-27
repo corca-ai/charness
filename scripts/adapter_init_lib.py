@@ -8,7 +8,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-from scripts.adapter_lib import load_yaml_file_report, write_adapter_scaffold
+from scripts.adapter_lib import ADAPTER_RESULT_STATES, load_yaml_file_report, write_adapter_scaffold
 from scripts.adapter_yaml_render_lib import render_yaml_mapping
 
 SCHEMA_VERSION = "charness.adapter-bootstrap/v1"
@@ -67,11 +67,13 @@ def _structural_state(path: Path, rendered: str) -> tuple[str, str | None]:
     if path.is_dir():
         return "invalid", "adapter target is a directory, not a regular file"
     try:
-        raw, _uninterpreted = load_yaml_file_report(path)
+        raw, uninterpreted = load_yaml_file_report(path)
     except (OSError, UnicodeDecodeError, ValueError) as exc:
-        return "invalid", f"adapter could not be read: {exc}"
+        return "unestablished", f"adapter could not be read: {exc}"
     if not isinstance(raw, dict):
         return "invalid", "adapter document is not a mapping"
+    if uninterpreted:
+        return "unestablished", "adapter contains lines the shared reader could not interpret"
     version = raw.get("version")
     if version is not None and (type(version) is not int or version != SUPPORTED_ADAPTER_VERSION):
         return "invalid", f"adapter version must be {SUPPORTED_ADAPTER_VERSION}"
@@ -81,6 +83,18 @@ def _structural_state(path: Path, rendered: str) -> tuple[str, str | None]:
     except (OSError, UnicodeDecodeError) as exc:
         return "unestablished", f"adapter bytes could not be compared: {exc}"
     return "valid", "adapter is readable; skill-specific resolver remains authoritative"
+
+
+def resolve_existing_adapter_state(path: Path, load_adapter: Callable[[Path], dict[str, Any]]) -> str:
+    """Resolve the shared first-use state for an existing target via its public resolver."""
+    repo_root = path.parent.parent
+    payload = load_adapter(repo_root)
+    state = payload.get("state")
+    if state not in ADAPTER_RESULT_STATES or state == "absent":
+        return "unestablished"
+    if state == "configured" and payload.get("path") != str(path):
+        return "unestablished"
+    return state
 
 
 def _emit_receipt(
@@ -129,6 +143,7 @@ def run_init_adapter(
     build_items: Callable[[str, argparse.Namespace], list[tuple[str, object]]],
     add_arguments: Callable[[argparse.ArgumentParser], None] | None = None,
     existing_adapter_is_valid: Callable[[Path], bool] | None = None,
+    existing_adapter_state: Callable[[Path], str] | None = None,
     render_contents: Callable[[Path, argparse.Namespace], str] | None = None,
 ) -> Path:
     parser = argparse.ArgumentParser(description="Initialize one repository-local skill adapter")
@@ -211,7 +226,16 @@ def run_init_adapter(
 
     before_sha256 = _sha256(resolved_output)
     state, reason = _structural_state(resolved_output, contents)
-    if state == "valid" and existing_adapter_is_valid is not None:
+    if state == "valid" and existing_adapter_state is not None:
+        try:
+            resolved_state = existing_adapter_state(resolved_output)
+            if resolved_state != "configured":
+                state = resolved_state if resolved_state in {"invalid", "unestablished"} else "unestablished"
+                reason = "skill-specific resolver rejected the existing adapter"
+        except (Exception, SystemExit) as exc:
+            state = "unestablished"
+            reason = f"skill-specific resolver could not establish adapter state: {exc}"
+    elif state == "valid" and existing_adapter_is_valid is not None:
         try:
             if not existing_adapter_is_valid(resolved_output):
                 state = "invalid"
