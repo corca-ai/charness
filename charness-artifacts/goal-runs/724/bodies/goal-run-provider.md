@@ -45,8 +45,10 @@ The provider boundary is implemented in commit
 - Live `goal-run-preflight` against `corca-ai/charness#724` returned
   `status: ready`, `outcome: verified-read`, `mutation_invoked: false`, with
   all nine Goal Run operations and all ten backend operations available.
-- Live `goal-run-read` returned the exact open parent graph: `31` children,
-  `3` completed, `28` open.
+- Live graph reconciliation later returned `31` direct children, `14` CLOSED,
+  and `17` OPEN after the representative #698 closeout. The earlier
+  `3 completed / 28 open` bootstrap receipt was stale and is superseded by the
+  current parent read and cursor update.
 
 The guarded-close surface was verified narrowly: open-child refusal and the
 generic-close Goal Run carrier refusal both pass without creating an observation

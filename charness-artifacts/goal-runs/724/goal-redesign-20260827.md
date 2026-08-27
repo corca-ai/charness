@@ -74,12 +74,21 @@ observer or a new gate.
    future change has no existing issue owner; do not create an umbrella merely
    to make the parent percentage reach 100%.
 
+## 2026-08-27 representative closeout progress
+
+The cursor-selected representative #698 was closed after the local carrier
+validator, resolution critique, provider close, final state verifier, and
+separate issue readback all passed. The live graph is now 31 direct children,
+14 CLOSED, and 17 OPEN; the parent cursor advances to #708. This is a current
+progress observation, while the fact split above remains the historical
+classification taken before the closeout.
+
 ## Explicit non-claims
 
 This reset does not claim that the eight unstarted issues are fixed, that
-#733/#734 are issue-closed, or that any issue/parent is CLOSED. It does not
-claim push, release, tag, remote CI, installed-host adoption, scheduler
-changes, conditional trigger execution, consumer-repository enforcement, or
+#733/#734 are issue-closed, or that #724 is CLOSED. It does not claim push,
+release, tag, remote CI, installed-host adoption, scheduler changes,
+conditional trigger execution, consumer-repository enforcement, or
 marketplace/export migration. The original binding and initial graph remain
 immutable historical inputs; any provider relationship change requires its own
 readback and operation receipt.
