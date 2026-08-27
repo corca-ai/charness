@@ -271,11 +271,6 @@ def verify_closeout(
     ai_provenance = evaluate_ai_provenance(body, classification)
     probe_record = evaluate_probe_record(body, classification, numbers, repo_root=repo_root)
     missing_fields.extend(_PROBE_FLOOR.probe_record_problem_fields(probe_record))
-    if carrier == "manual-fallback":
-        reason_value = _first_field(_body_fields(body), ("manual close reason", "manual fallback reason"))
-        if not _has_substantive_value(reason_value):
-            missing_fields.append("manual_fallback_reason")
-
     # The four TRACKER facts a consolidated close depends on, run unconditionally for
     # that classification: a previous revision listed them in the disposition's
     # `not_checked_here` and implemented them nowhere, which reads like handled work.

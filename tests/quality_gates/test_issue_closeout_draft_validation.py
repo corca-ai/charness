@@ -249,13 +249,9 @@ def test_validate_closeout_draft_accepts_dispositioned_proof_gap(tmp_path: Path)
     assert "proof_mismatch" not in payload
 
 
-def test_validate_closeout_draft_accepts_manual_fallback_body(tmp_path: Path) -> None:
+def test_validate_closeout_draft_accepts_manual_fallback_reason_from_cli_once(tmp_path: Path) -> None:
     body = tmp_path / "closeout.md"
-    body.write_text(
-        _bug_body("Manual close comment.")
-        + "\n\nManual fallback reason: auto-close unsupported by host backend.\n",
-        encoding="utf-8",
-    )
+    body.write_text(_bug_body("Manual close comment."), encoding="utf-8")
 
     result = run_script(
         SCRIPT,
