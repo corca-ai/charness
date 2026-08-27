@@ -76,6 +76,8 @@ def test_release_runs_pytest_before_later_checks(
         "check-runtime-budget",
     ]
     assert f"PASS {_RELEASE_LABEL}" in result.stdout
+    assert "PASS check-command-docs" in result.stdout
+    assert "PASS check-test-production-ratio" in result.stdout
 
 
 def test_release_pytest_failure_stops_before_later_checks(

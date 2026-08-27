@@ -1063,7 +1063,11 @@ queue_selected "check-export-safe-imports" python3 scripts/check_export_safe_imp
 # cannot answer, because its oracle is the exporter.
 queue_selected "check-export-self-sufficiency" python3 scripts/check_export_self_sufficiency.py --repo-root "$REPO_ROOT"
 queue_selected "check-plugin-import-smoke" python3 scripts/check_plugin_import_smoke.py --repo-root "$REPO_ROOT"
-queue_selected "check-command-docs" python3 scripts/check_command_docs.py --repo-root "$REPO_ROOT"
+# Command-doc drift remains available at the release boundary and for focused
+# diagnostics, but it is not part of the ordinary broad/default battery.
+if [[ "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" == "1" ]] || label_is_explicitly_selected "check-command-docs"; then
+  queue_selected "check-command-docs" python3 scripts/check_command_docs.py --repo-root "$REPO_ROOT"
+fi
 queue_selected "check-docs" ./scripts/check-docs.sh
 # Compatibility entry points remain available for focused diagnostics and older
 # automation. They are never part of the default battery, so the composite does
@@ -1128,7 +1132,11 @@ fi
 # origin/main..HEAD branch and reran standing pytest after release pytest; that
 # duplicated a claim whose scope and ownership belong to an opted-in consumer.
 queue_selected "check-test-completeness" python3 scripts/check_test_completeness.py --repo-root "$REPO_ROOT" -- "${STANDING_PYTEST_TARGETS[@]}"
-queue_selected "check-test-production-ratio" python3 scripts/check_test_production_ratio.py --repo-root "$REPO_ROOT" --require-git-file-listing --advisory
+# The advisory ratio is likewise retained for release and focused diagnostics,
+# while ordinary broad/default runs pay only for the core test contract.
+if [[ "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" == "1" ]] || label_is_explicitly_selected "check-test-production-ratio"; then
+  queue_selected "check-test-production-ratio" python3 scripts/check_test_production_ratio.py --repo-root "$REPO_ROOT" --require-git-file-listing --advisory
+fi
 queue_selected "check-boundary-bypass-ratchet" python3 scripts/check_boundary_bypass_ratchet.py --repo-root "$REPO_ROOT"
 # Every file that reads a resolved adapter payload must carry a written verdict about
 # what it does when the version was refused. A census, not a fixer: it prints the

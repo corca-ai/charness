@@ -50,7 +50,21 @@ def test_run_quality_default_is_the_small_core_lane(
         assert f"PASS {label}" in result.stdout
     assert "PASS pytest" not in result.stdout
     assert "PASS check-changed-line-mutation-coverage" not in result.stdout
+    assert "PASS check-command-docs" not in result.stdout
+    assert "PASS check-test-production-ratio" not in result.stdout
     assert_quality_receipt(repo, result, status="pass", passed=5, failed=0)
+
+
+def test_run_quality_full_omits_release_or_explicit_only_advisories(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", "--full", "--read-only", cwd=repo, env=env)
+
+    assert result.returncode == 0, result.stderr
+    assert "PASS check-command-docs" not in result.stdout
+    assert "PASS check-test-production-ratio" not in result.stdout
 
 
 def test_run_quality_summarizes_success_without_replaying_logs(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
@@ -389,6 +403,18 @@ def test_run_quality_can_select_command_docs_gate(tmp_path: Path, seeded_quality
     assert result.returncode == 0, result.stderr
     assert "PASS check-command-docs" in result.stdout
     assert "quality success output from check-command-docs" not in result.stdout
+    assert_quality_receipt(repo, result, status="pass", passed=1, failed=0)
+
+
+def test_run_quality_can_select_test_production_ratio_gate(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    env["CHARNESS_QUALITY_LABELS"] = "check-test-production-ratio"
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
+    assert result.returncode == 0, result.stderr
+    assert "PASS check-test-production-ratio" in result.stdout
+    assert "quality success output from check-test-production-ratio" not in result.stdout
     assert_quality_receipt(repo, result, status="pass", passed=1, failed=0)
 
 
