@@ -92,7 +92,7 @@ def _issue_adapter(tmp_path: Path, body: str) -> Path:
 def test_s24_a_missing_colon_is_reported_instead_of_silently_defaulted(tmp_path):
     # Pre-repair: valid=true, errors=[], warnings=[], default_org silently "corca-ai".
     # Post-repair it is a WARNING, not a refusal: the file is consumer-authored and the
-    # arming question is deferred (D46). `valid` deliberately stays True.
+    # the consumer-authored arming question is outside this check. `valid` deliberately stays True.
     repo = _issue_adapter(tmp_path, "version: 1\ndefault_org corca-typo\ndefault_repo: charness\n")
 
     payload = ISSUE_RESOLVE_ADAPTER.load_adapter(repo)

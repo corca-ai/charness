@@ -312,7 +312,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
         return normalize_adapter_result(payload, skill_id="issue")
     raw_data = raw if isinstance(raw, dict) else {}
     warnings.extend(
-        f"{line} This is reported, not refused: see docs/deferred-decisions.md D46."
+        f"{line} This is reported, not refused: the consumer adapter population is not measurable here."
         for line in uninterpreted_warnings(uninterpreted)
     )
 

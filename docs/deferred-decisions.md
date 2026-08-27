@@ -185,11 +185,6 @@ the evidence is sufficient for the boundary at hand.
 
 ## Open Deferrals (2026-05-07)
 
-### D18. Workspace-Write Workflow Proof Carrier — retired with the removed evaluator integration
-
-- The original decision depended on a provider-specific evaluator carrier that is no longer part of Charness. The deterministic no-write inventory remains `charness catalog list --repo-root .`.
-- There is no current Charness-owned workspace-write evaluator obligation. Reopen this decision only if a new provider-neutral proof carrier is deliberately adopted.
-
 ### D19. Current-Pointer Write Scanner Generalization
 
 - Question: Should [check_current_pointer_writes.py](../scripts/check_current_pointer_writes.py) detect adapter-resolved current-pointer writes via taint analysis, or rely on per-writer helper adoption?
@@ -272,19 +267,6 @@ the evidence is sufficient for the boundary at hand.
   S4-Defer-1/2/3 entries) and
   [references/dup-ratchet.md](../skills/public/quality/references/dup-ratchet.md).
 
-### D31. Handoff reconciliation — retired with the legacy handoff pipeline
-
-- This decision belonged to the removed handoff chunker and has no current runtime
-  consumer. Reopen it only if the active Goal Run path demonstrates a concrete
-  missed or stale work-item transition.
-
-### D32. Session-tree evaluator metrics — retired with the removed evaluator stack
-
-- The optional session-tree observation and efficiency tooling were removed from
-  Charness. There is no current Charness-owned decision or gate for those metrics.
-- Reopen only if a new local evaluator is deliberately adopted with a smaller,
-  explicit owner and a measured benefit over the existing focused checks.
-
 ### D34. Announcement delivery `confirmed` accepts a same-observer self-attestation
 
 - Question: Should [`record_announcement.py`](../skills/public/announcement/scripts/record_announcement.py) accept `--verification-status confirmed` for an external write (e.g. `human-backend`) on a caller self-attestation, or require an *independent* channel/observer (the north-star P4 distinct-channel test) before a delivery may be recorded `confirmed`?
@@ -329,12 +311,6 @@ the evidence is sufficient for the boundary at hand.
   regression; both were pruned from the gate baseline by the nose 0.18.0→0.19.0
   re-baseline that rode release v1.0.10 (commit `51dfc479`), so they no longer
   exist on disk (verified 2026-07-16).
-
-### D37. Evaluator identity-leak assertion — retired with the removed evaluator stack
-
-- The optional scoring and capture stack that owned this question is no longer
-  shipped. No Charness release or default workflow depends on this assertion.
-- Reopen only with a new evaluator surface and an explicit measured regression.
 
 ### D38. Promotion gate for decaying retro lessons
 
@@ -473,11 +449,6 @@ mutation workflow remain available when a consumer explicitly owns this cost.
   - Downstream decision delta: keep the deferral, but reshape the remedy from a rewire into a new adapter seam with precedence rules.
   - Status: falsified
 - Reopen trigger: a CI/local parity escape that this repo's own green did not catch; or S31 being worked, since moving the exemption to the adapter changes what "evaluated" can mean; or a third charness workflow landing.
-
-### D46. Uninterpreted adapter lines — retired with the legacy handoff pipeline
-
-- This decision belonged to the retired handoff chunker. The current provider
-  contract does not transport this warning through that pipeline.
 
 ### D47. Should inventory-field engagement require a value marker?
 
@@ -819,13 +790,6 @@ provider-specific integrations are not current execution authority.
   and release closeout artifacts.
 - Reopen trigger: the next release-helper change, or a measured quality-gate
   runtime regression that supplies a concrete optimization candidate.
-
-### D52. Aggregate closeout-bundle authoring diagnostics — retired with the removed bundle
-
-- The optional closeout bundle and final preflight were removed from the active
-  command surface because they duplicated owner gates and produced ceremony.
-- Reopen this decision only if a replacement diagnostic has a concrete owner,
-  measurable value, and removes more duplicate machinery than it adds.
 
 ### D53. Should adapter unknown-key reconciliation reach consumer repos, and how?
 

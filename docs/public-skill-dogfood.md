@@ -11,34 +11,10 @@ stays as the short human-readable contract for the same reviewed cases.
 
 - keep a checked-in registry of realistic consumer prompts for load-bearing
   public skills
-- make the expected skill route, durable artifact, and acceptance evidence
-  explicit before a slice is called done
-- distinguish scaffolded expectations from reviewed observations instead of
-  pretending the current repo can fully automate prompt-routing proof
-
-## Current Required Reviewed Skills
-
-Mirrors `review_required_skills` in the canonical json (alphabetical):
-
-- `achieve`
-- `announcement`
-- `create-cli`
-- `create-skill`
-- `critique`
-- `debug`
-- `gather`
-- `hitl`
-- `hotl`
-- `ideation`
-- `impl`
-- `issue`
-- `narrative`
-- `prove`
-- `quality`
-- `release`
-- `retro`
-- `setup`
-- `spec`
+- make the current acceptance evidence for each reviewed case explicit before
+  a slice is called done
+- keep the registry small and current; historical review detail belongs in
+  dated artifacts rather than in the live projection
 
 ## Review Posture
 

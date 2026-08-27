@@ -372,8 +372,8 @@ def report_unreconciled_keys(root: Path, warn_scope: list[Path]) -> Any:
     This is the tier the operator chose, and the distinction is the whole point. Every
     other verdict in this file raises `ValidationError` and fails the gate; this one
     prints and returns 0, because the population that matters is consumer adapters this
-    repo has never seen, and `docs/deferred-decisions.md` D46 refuses to escalate a
-    REFUSAL from a repo-local zero. The zero is literal: `unknown` fires 0 times across
+    repo has never seen; a repo-local zero does not justify escalating a REFUSAL. The
+    zero is literal: `unknown` fires 0 times across
     the 445 declared keys in this repo's 37 adapters, which is why the warned input is
     CONSTRUCTED in the tests rather than observed here.
 

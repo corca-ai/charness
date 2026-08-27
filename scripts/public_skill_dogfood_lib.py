@@ -15,29 +15,6 @@ from scripts.public_skill_validation_lib import (
 )
 
 DOGFOOD_PATH = Path("docs/public-skill-dogfood.json")
-VALID_REVIEW_STATUSES = ("planned", "reviewed")
-
-REPO_SHAPE_HINTS = {
-    "achieve": "repo with a long-running autonomous objective worth shaping into a reviewable goal before activation",
-    "announcement": "repo with recent checked-in changes and one clear delivery context such as release notes or a team update",
-    "create-cli": "tooling repo where ad hoc shell or Python entrypoints already exist and the command surface needs to be normalized",
-    "create-skill": "skills repo with adjacent public/support surfaces, references, and packaging constraints already present",
-    "debug": "active repo slice with a reproducible failure, existing logs or tests, and enough local state to preserve a durable debug artifact",
-    "gather": "repo that already keeps gathered artifacts and a source identity that may need refresh-in-place behavior",
-    "hitl": "repo with a bounded review target and a decision that must stay explicitly human-owned",
-    "hotl": "repo that applies behavior to live, externally visible surfaces and needs evidence-based closeout instead of assertion",
-    "ideation": "minimal or loosely defined repo context where the request is still concept-shaping rather than implementation-ready",
-    "impl": "repo with an active build slice, existing code or config surfaces, and at least one verification path",
-    "setup": "partially initialized mature repo with divergent but valid naming and intentionally missing optional surfaces",
-    "issue": "repo connected to GitHub where issue creation or issue resolution should use `gh` and GitHub state as the source of truth",
-    "narrative": "repo with existing source-of-truth docs that drift from the current product or project story",
-    "prove": "mature repo with a just-built implementation or contract slice awaiting closeout proof (impl adapter optional and read-only when present)",
-    "critique": "repo with a non-trivial pending decision whose main risk is choosing the wrong plan too early",
-    "quality": "mature repo with standing local gates, runtime budgets, possible local-vs-CI machine variance, and at least one final stop-before-finish command",
-    "release": "repo with checked-in version or packaging surfaces and a maintainer-facing release workflow",
-    "retro": "repo that just completed a meaningful slice or exposed a missed issue that should feed repeat-trap memory",
-    "spec": "repo with an under-specified change request and enough current docs or code to refine a build contract",
-}
 
 PROMPT_HINTS = {
     "achieve": "$achieve make the accumulated local commits safe to push and give me a confidence report for what changed, what was verified, and what stays risky.",
@@ -238,21 +215,7 @@ def build_matrix(repo_root: Path, skill_ids: list[str]) -> dict[str, object]:
         matrix.append(
             {
                 "skill_id": skill_id,
-                "description": frontmatter.get("description", ""),
                 "prompt": PROMPT_HINTS.get(skill_id, frontmatter.get("description", "")),
-                # Advisory only: a fallback prompt is the skill's own trigger
-                # description, not a consumer utterance, so a row reviewed on
-                # it records routing evidence against unrealistic input (the
-                # `prove` row shipped that way until 2026-07-17).
-                "prompt_fallback": skill_id not in PROMPT_HINTS,
-                "repo_shape": REPO_SHAPE_HINTS.get(
-                    skill_id,
-                    "repo shape not yet classified; add a concrete mature or cold-start fixture before relying on this row",
-                ),
-                "expected_skill": skill_id,
-                "expected_artifact": expected_artifact,
-                "validation_tier": tier,
-                "adapter_requirement": adapter_requirement,
                 "acceptance_evidence": _acceptance_evidence(
                     skill_id,
                     expected_artifact=expected_artifact,
@@ -278,14 +241,13 @@ def format_human(report: dict[str, object]) -> str:
     for row in report["matrix"]:
         assert isinstance(row, dict)
         lines.append(
-            f"- `{row['skill_id']}`: prompt={row['prompt']} repo_shape={row['repo_shape']}"
+            f"- `{row['skill_id']}`: prompt={row['prompt']}"
         )
-        artifact = row["expected_artifact"] or "none"
-        lines.append(
-            f"  expected_skill=`{row['expected_skill']}` artifact=`{artifact}` "
-            f"tier=`{row['validation_tier']}` adapter=`{row['adapter_requirement']}`"
-        )
-        if row.get("prompt_fallback"):
+        for evidence in row["acceptance_evidence"]:
+            lines.append(
+                f"  acceptance={evidence}"
+            )
+        if row["skill_id"] not in PROMPT_HINTS:
             lines.append(
                 "  WARNING: prompt is the frontmatter-description fallback "
                 f"(PROMPT_HINTS has no `{row['skill_id']}` entry); add a realistic "
@@ -301,5 +263,5 @@ def prompt_fallback_warnings(report: dict[str, object]) -> list[str]:
         f"(PROMPT_HINTS has no entry); add a realistic consumer prompt before "
         f"reviewing this row"
         for row in report["matrix"]
-        if isinstance(row, dict) and row.get("prompt_fallback")
+        if isinstance(row, dict) and row.get("skill_id") not in PROMPT_HINTS
     ]

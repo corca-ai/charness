@@ -108,9 +108,6 @@ def base_registry(repo: Path) -> dict[str, object]:
         "cases": [
             {
                 **scaffold,
-                "review_status": "reviewed",
-                "reviewed_on": "2026-04-16",
-                "observed_evidence": ["Manual review confirmed the demo routing."],
             }
         ],
     }
@@ -138,18 +135,18 @@ def test_validate_public_skill_dogfood_requires_reviewed_case_for_required_skill
     registry["cases"] = []
     write_registry(repo, registry)
 
-    with pytest.raises(ValidationError, match="missing required reviewed dogfood case"):
+    with pytest.raises(ValidationError, match="missing required dogfood case"):
         validate_registry(load_registry(repo), repo)
 
 
-def test_validate_public_skill_dogfood_requires_observed_evidence_for_reviewed_case(tmp_path: Path) -> None:
+def test_validate_public_skill_dogfood_rejects_historical_case_fields(tmp_path: Path) -> None:
     repo = seed_repo(tmp_path)
     seed_skill(repo, "demo", description="Improve the demo skill first.")
     registry = base_registry(repo)
-    registry["cases"][0]["observed_evidence"] = []
+    registry["cases"][0]["observed_evidence"] = ["Historical review detail."]
     write_registry(repo, registry)
 
-    with pytest.raises(ValidationError, match="observed_evidence"):
+    with pytest.raises(ValidationError, match="unexpected field.*observed_evidence"):
         validate_registry(load_registry(repo), repo)
 
 
@@ -168,7 +165,7 @@ def test_suggest_public_skill_dogfood_cli_emits_requested_matrix(tmp_path: Path,
     )
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
-    assert payload["matrix"][0]["skill_id"] == "demo"
+    assert set(payload["matrix"][0]) == {"skill_id", "prompt", "acceptance_evidence"}
 
 
 def test_suggest_public_skill_dogfood_reports_policy_absence_as_not_applicable(
@@ -244,14 +241,14 @@ def test_suggest_cli_warns_on_description_fallback_prompt(tmp_path: Path, monkey
     )
     assert result.returncode == 0, result.stderr
     row = yaml.safe_load(result.stdout)["matrix"][0]
-    assert row["prompt_fallback"] is True
+    assert set(row) == {"skill_id", "prompt", "acceptance_evidence"}
     assert "frontmatter-description fallback" in result.stderr
 
 
 def test_prompt_hinted_row_carries_no_fallback_flag_or_warning() -> None:
     report = build_matrix(ROOT, ["prove"])
     row = report["matrix"][0]
-    assert row["prompt_fallback"] is False
+    assert set(row) == {"skill_id", "prompt", "acceptance_evidence"}
     from scripts.public_skill_dogfood_lib import prompt_fallback_warnings
 
     assert prompt_fallback_warnings(report) == []
@@ -292,5 +289,9 @@ def test_quality_skill_cli_copy_emits_fallback_stderr_warning(tmp_path: Path) ->
         check=False,
     )
     assert result.returncode == 0, result.stderr
-    assert yaml.safe_load(result.stdout)["matrix"][0]["prompt_fallback"] is True
+    assert set(yaml.safe_load(result.stdout)["matrix"][0]) == {
+        "skill_id",
+        "prompt",
+        "acceptance_evidence",
+    }
     assert "frontmatter-description fallback" in result.stderr

@@ -111,8 +111,8 @@ def load_adapter_contract(
     # a malformed adapter as a clean one: a missing colon on `packaging_manifest_path`
     # or on `required_release_surfaces` produced the inferred default with
     # `valid: true, errors: [], warnings: []`, which is how a typo silently disarms a
-    # release surface check. Warnings rather than errors, for the same consumer-authored
-    # reason recorded in `docs/deferred-decisions.md` D46.
+    # release surface check. Warnings rather than errors because the consumer-authored
+    # adapter population is not measurable from this repository.
     try:
         raw, uninterpreted = load_yaml_file_report(adapter_path)
     except (OSError, UnicodeError, ValueError) as exc:

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 import yaml
@@ -15,17 +14,11 @@ def test_public_skill_dogfood_matrix_reports_prompt_artifact_and_evidence() -> N
     matrix = {row["skill_id"]: row for row in payload["matrix"]}
 
     achieve = matrix["achieve"]
-    assert achieve["expected_skill"] == "achieve"
-    assert achieve["expected_artifact"] is None
-    assert achieve["validation_tier"] == "hitl-recommended"
-    assert achieve["adapter_requirement"] == "required"
+    assert set(achieve) == {"skill_id", "prompt", "acceptance_evidence"}
     assert any("Goal Draft" in item for item in achieve["acceptance_evidence"])
 
     quality = matrix["quality"]
-    assert quality["expected_skill"] == "quality"
-    assert quality["expected_artifact"] == "charness-artifacts/quality/latest.md"
-    assert quality["validation_tier"] == "hitl-recommended"
-    assert quality["adapter_requirement"] == "required"
+    assert set(quality) == {"skill_id", "prompt", "acceptance_evidence"}
     assert any("consumer prompt" in item for item in quality["acceptance_evidence"])
 
 
@@ -33,7 +26,6 @@ def test_public_skill_dogfood_wrappers_match_root_script() -> None:
     commands = [
         "scripts/suggest_public_skill_dogfood.py",
         "skills/public/quality/scripts/suggest_public_skill_dogfood.py",
-        "plugins/charness/skills/quality/scripts/suggest_public_skill_dogfood.py",
     ]
     payloads = []
     for command in commands:
@@ -51,7 +43,6 @@ def test_public_skill_dogfood_wrappers_match_root_script() -> None:
         payloads.append(yaml.safe_load(result.stdout))
 
     assert payloads[1] == payloads[0]
-    assert payloads[2] == payloads[0]
 
 
 def test_public_skill_dogfood_wrappers_report_missing_policy_without_a_traceback(tmp_path: Path) -> None:
@@ -90,12 +81,8 @@ def test_build_matrix_reports_missing_policy_directly(tmp_path: Path) -> None:
     assert payload["matrix"] == []
 
 
-def test_dogfood_markdown_required_list_mirrors_json() -> None:
-    # The md "Current Required Reviewed Skills" list has drifted from the json
-    # once already (achieve/hotl silently missing, repaired 2026-07-17); pin
-    # the two surfaces together so the next omission fails loudly.
-    registry = json.loads((ROOT / "docs" / "public-skill-dogfood.json").read_text(encoding="utf-8"))
+def test_dogfood_markdown_keeps_contract_prose_without_case_list() -> None:
     markdown = (ROOT / "docs" / "public-skill-dogfood.md").read_text(encoding="utf-8")
-    section = markdown.split("## Current Required Reviewed Skills", 1)[1].split("##", 1)[0]
-    md_skills = [line.strip()[3:].strip("`") for line in section.splitlines() if line.strip().startswith("- `")]
-    assert md_skills == sorted(registry["review_required_skills"])
+    assert "## Current Required Reviewed Skills" not in markdown
+    assert "Canonical machine-readable consumer-dogfood state" in markdown
+    assert "## Review Posture" in markdown

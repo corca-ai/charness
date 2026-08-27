@@ -251,8 +251,8 @@ def test_an_example_adapter_agrees_with_the_adapter_it_exemplifies() -> None:
 
 
 def test_the_survey_reports_rather_than_refuses() -> None:
-    """The warn-vs-refuse tier is the operator's call (D46: the population that matters
-    is consumer adapters this repo has never seen). The survey must therefore return
+    """The warn-vs-refuse tier is the operator's call: the population that matters
+    is consumer adapters this repo has never seen. The survey must therefore return
     findings, not raise or exit nonzero on them -- it currently has 24 (23
     `reader-elsewhere` plus 1 `text-asserted`).
 

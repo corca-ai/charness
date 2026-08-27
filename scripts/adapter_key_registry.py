@@ -474,9 +474,9 @@ def survey(repo_root: Path) -> dict[str, Any]:
 
     Reports rather than refuses, and still does. What changed is what happens NEXT: the
     operator read this survey's numbers and chose WARN for `unknown`, which
-    `unreconciled_keys` now arms and `scripts/validate_adapters.py` prints. D46 is not
-    violated by that -- it argues against escalating a REFUSAL from a repo-local zero, and
-    no refusal was armed. This function still makes no decision; it produces the
+    `unreconciled_keys` now arms and `scripts/validate_adapters.py` prints. That does not
+    escalate a REFUSAL from a repo-local zero, and no refusal was armed. This function
+    still makes no decision; it produces the
     population count (37 adapters, 445 keys) that one was made from, and it remains the
     only surface reporting `reader-elsewhere` and `text-asserted`, which are deliberately
     NOT armed.

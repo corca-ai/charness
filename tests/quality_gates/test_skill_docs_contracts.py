@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 from .support import ROOT
 
 IMPL_SKILL = (ROOT / "skills" / "public" / "impl" / "SKILL.md").read_text(encoding="utf-8")
@@ -373,7 +375,7 @@ def test_quality_skill_keeps_testability_tool_detail_in_reference() -> None:
     reference_text = (
         ROOT / "skills" / "public" / "quality" / "references" / "testability-and-selection.md"
     ).read_text(encoding="utf-8")
-    dogfood = (ROOT / "docs" / "public-skill-dogfood.json").read_text(encoding="utf-8")
+    dogfood = json.loads((ROOT / "docs" / "public-skill-dogfood.json").read_text(encoding="utf-8"))
 
     assert "references/testability-and-selection.md" in index
     assert "testability, selection, and duplicated proof" in index
@@ -383,7 +385,8 @@ def test_quality_skill_keeps_testability_tool_detail_in_reference() -> None:
     assert "Jest or Vitest" in reference_text
     assert "Pants/Bazel-style" in reference_text
     assert "manually maintained source-to-test dependency map" in reference_text
-    assert "The quality core now treats testability and affected-test selection" in dogfood
+    quality_case = next(case for case in dogfood["cases"] if case["skill_id"] == "quality")
+    assert any("consumer prompt" in item for item in quality_case["acceptance_evidence"])
     for tool_name in ("pytest-testmon", "Jest", "Vitest", "Pants", "Bazel"):
         assert tool_name not in skill_text
 
