@@ -1,6 +1,6 @@
 # #724 Final Graph Readback
 
-Date: 2026-08-26 Asia/Seoul
+Date: 2026-08-27 Asia/Seoul
 Status: verified-read
 
 ## Command
@@ -15,7 +15,7 @@ python3 skills/public/issue/scripts/issue_tool.py list-sub-issues --repo corca-a
 - repository/parent: `corca-ai/charness#724`
 - expected graph file SHA-256: `f9cb68e8026982b81714576a080e9e490e1a48cc85f37e9884df952740a3c8a9`
 - direct children: 31
-- completed: 3; open: 28
+- completed: 13; open: 18
 - missing identities: none
 - unexpected identities: none
 
@@ -26,10 +26,12 @@ Exact children: `546, 628, 634, 637, 667, 668, 669, 692, 693, 694, 695,
 The reconciliation added #733 (`goal-evidence-lineage`) and #734
 (`goal-binding-v1`) after exact create/reuse readback, and removed the
 unexpected #3 relationship. The immutable initial binding and frozen
-`bootstrap-existing-graph.json` were not edited.
+`bootstrap-existing-graph.json` were not edited. The parent progress cursor is
+revision `1` with next child `backlog-698` and is consumed by routine pickup;
+this full graph read remains an explicit sync/closeout surface.
 
 ## Boundary
 
-The parent remains `OPEN`. The parent metadata still says
-`bootstrap_verification: pending-target-roundtrip` because a clean `/goal #724`
-consumer pickup has not been run in this slice. No parent or child was closed.
+The parent remains `OPEN`; its metadata says
+`bootstrap_verification: verified-target-roundtrip` and its progress counts are
+`13/31` completed. No parent or child was closed by this graph read.
