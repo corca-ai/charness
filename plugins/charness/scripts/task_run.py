@@ -12,7 +12,7 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any, Mapping, Sequence
 
 from runtime_bootstrap import import_repo_module
 
@@ -172,6 +172,12 @@ def _complete_task(
             **evidence,
         }
     )
+    structured = delivery.get("structured")
+    if (
+        isinstance(structured, Mapping)
+        and structured.get("schema_version") == "charness.reviewer_lifecycle.v1"
+    ):
+        payload["reviewer_lifecycle"] = structured
 
     execution_status = _execution_state(execution, delivery)
     payload["execution"]["status"] = execution_status
