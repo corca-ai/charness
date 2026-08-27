@@ -30,20 +30,12 @@ commands:
       - docs/agent-task-envelope.md
       - docs/cli-reference.md
     required_help_contains:
-      - claim
-      - submit
-      - abort
-      - review
       - status
       - run
       - --repo-root
     required_doc_contains:
-      - charness task claim slice-1
-      - charness task submit slice-1
-      - charness task review slice-1
-      - charness task abort slice-1
-      - .charness/tasks/
       - charness task run
+      - charness task status
   init:
     help_command: ./charness init --help
     doc_paths:
@@ -164,37 +156,6 @@ commands:
       - /goal #N
       - --charness-checkout
       - no local artifact path
-  task-claim:
-    help_command: ./charness task claim --help
-    doc_paths:
-      - docs/cli-reference.md
-    required_help_contains:
-      - --summary
-      - --agent
-      - --execution-ref
-    required_doc_contains:
-      - charness task claim
-  task-submit:
-    help_command: ./charness task submit --help
-    doc_paths:
-      - docs/cli-reference.md
-    required_help_contains:
-      - --agent
-      - --execution-ref
-      - --summary
-      - --result-carrier
-    required_doc_contains:
-      - charness task submit
-  task-abort:
-    help_command: ./charness task abort --help
-    doc_paths:
-      - docs/cli-reference.md
-    required_help_contains:
-      - --agent
-      - --execution-ref
-      - --reason
-    required_doc_contains:
-      - charness task abort
   task-status:
     help_command: ./charness task status --help
     doc_paths:
@@ -219,18 +180,6 @@ commands:
       - charness task run
       - clean parent
       - external runtime
-  task-review:
-    help_command: ./charness task review --help
-    doc_paths:
-      - docs/cli-reference.md
-      - docs/agent-task-envelope.md
-    required_help_contains:
-      - --agent
-      - --execution-ref
-      - --verdict
-      - --summary
-    required_doc_contains:
-      - charness task review
   catalog:
     help_command: ./charness catalog --help
     doc_paths:

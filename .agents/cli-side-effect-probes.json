@@ -52,42 +52,6 @@
       "side_effect_watch_paths": ["~/.codex/plugins", "~/.claude/plugins", "~/.local/bin/charness"]
     },
     {
-      "command": "./charness task claim",
-      "mutating": true,
-      "positional_args": ["task_id"],
-      "help_probe": "./charness task claim --help",
-      "option_like_positional_probes": ["./charness task claim --not-a-task"],
-      "dry_run_waiver": "Task claims deliberately create a repo-local envelope; seeded task-envelope tests own sandboxed execution.",
-      "side_effect_watch_paths": [".charness/tasks"]
-    },
-    {
-      "command": "./charness task submit",
-      "mutating": true,
-      "positional_args": ["task_id"],
-      "help_probe": "./charness task submit --help",
-      "option_like_positional_probes": ["./charness task submit --not-a-task"],
-      "dry_run_waiver": "Task submission deliberately updates a repo-local envelope; seeded task-envelope tests own sandboxed execution.",
-      "side_effect_watch_paths": [".charness/tasks"]
-    },
-    {
-      "command": "./charness task abort",
-      "mutating": true,
-      "positional_args": ["task_id"],
-      "help_probe": "./charness task abort --help",
-      "option_like_positional_probes": ["./charness task abort --not-a-task --reason fixture"],
-      "dry_run_waiver": "Task abort deliberately updates a repo-local envelope; seeded task-envelope tests own sandboxed execution.",
-      "side_effect_watch_paths": [".charness/tasks"]
-    },
-    {
-      "command": "./charness task review",
-      "mutating": true,
-      "positional_args": ["task_id"],
-      "help_probe": "./charness task review --help",
-      "option_like_positional_probes": ["./charness task review --not-a-task --verdict approve --summary fixture"],
-      "dry_run_waiver": "Task review records the parent-owned verdict in a repo-local envelope; seeded task-envelope tests own sandboxed execution.",
-      "side_effect_watch_paths": [".charness/tasks"]
-    },
-    {
       "command": "./charness task run",
       "mutating": true,
       "help_probe": "./charness task run --help",

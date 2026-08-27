@@ -7,7 +7,7 @@
 
 This file is generated from `./charness --help` and subcommand help output in the current checkout.
 Operational command payloads, including structured command failures, are emitted as a single YAML document on stdout; progress and unstructured fatal errors use stderr. Default operational responses are compact summaries: aggregate tool operations report counts and attention tool ids, not every tool record. This replaces the former aggregate `results` payload: automation that consumes individual tool records must request `--detail`. Commands with aggregated host or tool diagnostics expose the full evidence only through `--detail`, which still emits one YAML document.
-Payloads that can name a follow-up carry it as an in-band affordance instead of relying on out-of-band knowledge: `next_step` is a single human-readable follow-up string on command payloads (task, tool, and worktree surfaces; on `charness task` it appears on success and on structured `rejected` failures alike), `next_steps` is a list of human-readable follow-up strings (tool doctor, `capability init`, gather advise), `host_next_steps` maps host ids to per-host status messages on runtime doctor/update output, and `next_action` is a structured object (`kind` plus context) on runtime doctor payloads and skill plan envelopes. Human-readable summaries print the affordance line with the `NEXT:` prefix. `charness task` also persists `next_step` into `.charness/tasks/<task-id>.json`, so the state file carries the same continuation affordance as the original response.
+Task runs persist one atomic typed result in the external runtime; task status reads exactly that store. Human-readable summaries print the affordance line with the `NEXT:` prefix.
 Regenerate it with `python3 scripts/render_cli_reference.py --repo-root . --output docs/cli-reference.md`.
 
 ## `charness`
@@ -34,8 +34,7 @@ positional arguments:
     uninstall           Remove the managed local install surface.
     reset               Remove host plugin state for Codex and Claude while
                         preserving the managed checkout and CLI.
-    task                Claim, submit, abort, or inspect a repo-local agent
-                        task envelope.
+    task                Run or inspect a bounded task lane.
     catalog             Inspect capability inventory, packaged consumer-
                         validator adoption, or stale skill paths.
     capability          Resolve repo-local logical capabilities through
@@ -230,125 +229,34 @@ options:
 ## `charness task`
 
 ```text
-usage: charness task [-h] [--repo-root REPO_ROOT]
-                     {claim,submit,review,abort,status,run} ...
+usage: charness task [-h] [--repo-root REPO_ROOT] {status,run} ...
 
 positional arguments:
-  {claim,submit,review,abort,status,run}
-    claim               Create a claimed task envelope unless another agent
-                        already owns it.
-    submit              Mark a claimed task as submitted with structured
-                        result metadata.
-    review              Record the parent-owned review verdict; this command
-                        never creates a subagent.
-    abort               Mark a claimed task as aborted with a required reason.
-    status              Show one task envelope, or list all repo-local task
-                        envelopes.
+  {status,run}
+    status              Show one external task-run result, or list all task-
+                        run results.
     run                 Run one independently delegable Codex lane in a clean
                         named worktree and emit a compact receipt.
 
 options:
   -h, --help            show this help message and exit
   --repo-root REPO_ROOT
-                        Repo where .charness/tasks/*.json task state is
-                        stored. Defaults to the current working directory.
-```
-
-## `charness task claim`
-
-```text
-usage: charness task claim [-h] [--agent AGENT] [--summary SUMMARY]
-                           [--execution-ref EXECUTION_REF]
-                           task_id
-
-positional arguments:
-  task_id
-
-options:
-  -h, --help            show this help message and exit
-  --agent AGENT         Agent identity recorded in the task. Defaults to
-                        CHARNESS_AGENT_ID, CODEX_SESSION_ID, USER, then
-                        `agent`.
-  --summary SUMMARY
-  --execution-ref EXECUTION_REF
-                        Opaque host/lane execution reference; defaults to a
-                        local task reference.
-```
-
-## `charness task submit`
-
-```text
-usage: charness task submit [-h] --agent AGENT --execution-ref EXECUTION_REF
-                            [--summary SUMMARY]
-                            [--result-carrier RESULT_CARRIER]
-                            task_id
-
-positional arguments:
-  task_id
-
-options:
-  -h, --help            show this help message and exit
-  --agent AGENT         Claiming agent identity; must match the envelope
-                        owner.
-  --execution-ref EXECUTION_REF
-                        Opaque execution reference; must match the claimed
-                        envelope.
-  --summary SUMMARY
-  --result-carrier RESULT_CARRIER
-                        One opaque reference to the durable result carrier
-                        (file, URL, or host receipt).
-```
-
-## `charness task review`
-
-```text
-usage: charness task review [-h] --agent AGENT --execution-ref EXECUTION_REF
-                            --verdict {approve,changes,blocked} --summary
-                            SUMMARY
-                            task_id
-
-positional arguments:
-  task_id
-
-options:
-  -h, --help            show this help message and exit
-  --agent AGENT         Distinct parent reviewer identity.
-  --execution-ref EXECUTION_REF
-                        Opaque execution reference recorded by the claimant.
-  --verdict {approve,changes,blocked}
-  --summary SUMMARY
-```
-
-## `charness task abort`
-
-```text
-usage: charness task abort [-h] --agent AGENT --execution-ref EXECUTION_REF
-                           --reason REASON
-                           task_id
-
-positional arguments:
-  task_id
-
-options:
-  -h, --help            show this help message and exit
-  --agent AGENT         Claiming agent identity; must match the envelope
-                        owner.
-  --execution-ref EXECUTION_REF
-                        Opaque execution reference; must match the claimed
-                        envelope.
-  --reason REASON
+                        Parent repo whose external task-run runtime is read or
+                        written. Defaults to the current working directory.
 ```
 
 ## `charness task status`
 
 ```text
-usage: charness task status [-h] [task_id]
+usage: charness task status [-h] [--repo-root REPO_ROOT] [task_id]
 
 positional arguments:
   task_id
 
 options:
-  -h, --help  show this help message and exit
+  -h, --help            show this help message and exit
+  --repo-root REPO_ROOT
+                        Parent repo whose external task-run runtime is read.
 ```
 
 ## `charness task run`
@@ -374,8 +282,9 @@ options:
   --path PATH           New linked worktree path outside the parent repo.
   --branch BRANCH       Named local branch for the new worktree.
   --base BASE           Commit/ref from which the named worktree is created.
-  --scope SCOPE         Exact repository-relative candidate path; repeat for
-                        multiple paths.
+  --scope SCOPE         Repository-relative candidate path; existing
+                        directories include descendants, while files and
+                        absent paths are exact.
   --prompt PROMPT       Implementation instructions passed to `codex exec`.
   --prompt-file PROMPT_FILE
                         Read implementation instructions from this file.

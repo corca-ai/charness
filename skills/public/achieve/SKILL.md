@@ -167,10 +167,6 @@ Keep adjacent engines available, but let Achieve own the active run's coordinati
 - The active Goal Run parent and cursor are the only resume state; do not create
   or refresh a second progress artifact. A provider sub-issue summary is only a
   live readback/reporting field, never another progress store.
-  for work that genuinely needs durable cross-context state or an external
-  scheduler. It is not required for an ordinary one-shot lane, and its
-  parent-owned `review` transition does not create an observer, worktree, or
-  proof gate.
 
 Adjacent workflows consume exact Goal Run/Work Item lineage when they claim execution evidence. They do not create a second goal tracker or rewrite the frozen draft.
 

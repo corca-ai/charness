@@ -40,23 +40,26 @@ def _repo(tmp_path: Path, *, ignored: bool = False) -> Path:
     return repo
 
 
-def _codex(tmp_path: Path, body: str) -> Path:
+def _codex(tmp_path: Path, body: str, *, deliver: bool = True) -> Path:
     executable = tmp_path / "fake-codex"
-    executable.write_text(f"#!/bin/sh\n{body}\n", encoding="utf-8")
+    delivery = "printf 'task complete\\n'" if deliver else ""
+    executable.write_text(f"#!/bin/sh\n{body}\n{delivery}\n", encoding="utf-8")
     executable.chmod(0o755)
     return executable
 
 
 def _run(repo: Path, tmp_path: Path, executable: Path, **kwargs):
+    scopes = kwargs.pop("scopes", ["module.py"])
+    require_change = kwargs.pop("require_change", True)
     return task_run.run_task(
         repo,
         target_path=tmp_path / "lane",
         branch="lane/task-run",
         base="HEAD",
-        scopes=["module.py"],
+        scopes=scopes,
         prompt="update the module",
         codex=str(executable),
-        require_change=True,
+        require_change=require_change,
         **kwargs,
     )
 
@@ -105,7 +108,7 @@ def test_task_run_blocks_new_untracked_output_and_retains_lane(tmp_path: Path) -
 
     assert payload["status"] == "failed"
     assert payload["scope"]["disallowed_paths"] == ["leak.txt"]
-    assert "outside the exact declared scope" in payload["next_step"]
+    assert "outside the declared scope" in payload["next_step"]
     assert (tmp_path / "lane" / "leak.txt").is_file()
     assert payload["parent"]["unchanged"] is True
 
@@ -136,7 +139,7 @@ def test_task_run_allows_new_scoped_candidate_file(tmp_path: Path) -> None:
             "population": "untracked",
             "path": "test_module.py",
             "classification": "candidate",
-            "cause": "new candidate path is within the exact declared scope",
+            "cause": "new candidate path is within the declared scope",
         }
     ]
 
@@ -213,3 +216,137 @@ def test_task_status_reads_the_external_result_store(tmp_path: Path) -> None:
     )
     assert status.returncode == 0
     assert "status: completed" in status.stdout
+
+
+def test_directory_scope_includes_descendants(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    (repo / "pkg").mkdir()
+    (repo / "pkg/base.py").write_text("BASE = 1\n", encoding="utf-8")
+    _git(repo, "add", "pkg/base.py")
+    _git(repo, "-c", "user.email=test@example.com", "-c", "user.name=test", "commit", "-m", "add package")
+    executable = _codex(tmp_path, "printf 'CHILD = 1\\n' > pkg/child.py")
+
+    payload = _run(repo, tmp_path, executable, scopes=["pkg"])
+
+    assert payload["status"] == "completed", payload
+    assert payload["scope"]["specs"] == [{"path": "pkg", "kind": "directory"}]
+    assert payload["scope"]["changed_paths"] == ["pkg/child.py"]
+
+
+def test_absent_scope_remains_exact_when_command_creates_a_directory(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    executable = _codex(tmp_path, "mkdir newdir\nprintf 'VALUE = 1\\n' > newdir/item.py")
+
+    payload = _run(repo, tmp_path, executable, scopes=["newdir"])
+
+    assert payload["status"] == "failed"
+    assert payload["scope"]["specs"] == [{"path": "newdir", "kind": "exact"}]
+    assert payload["scope"]["disallowed_paths"] == ["newdir/item.py"]
+
+
+def test_disjoint_parent_progress_is_reported_without_failing_lane(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    executable = _codex(
+        tmp_path,
+        f"printf 'VALUE = 2\\n' > module.py\nprintf 'parent\\n' > {repo / 'notes.txt'}",
+    )
+
+    payload = _run(repo, tmp_path, executable)
+
+    assert payload["status"] == "completed", payload
+    assert payload["parent"]["progress"]["classification"] == "concurrent-parent-progress"
+    assert payload["parent"]["progress"]["paths"] == ["notes.txt"]
+    assert payload["parent"]["progress"]["overlap_paths"] == []
+    assert "parent made disjoint progress" in payload["warnings"][-1]
+
+
+def test_overlapping_parent_progress_is_a_writer_conflict(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    executable = _codex(
+        tmp_path,
+        f"printf 'VALUE = 2\\n' > module.py\nprintf 'parent\\n' > {repo / 'module.py'}",
+    )
+
+    payload = _run(repo, tmp_path, executable)
+
+    assert payload["status"] == "validated-partial-result"
+    assert payload["approval_eligibility"] == "ineligible"
+    assert payload["parent"]["progress"]["classification"] == "writer-conflict"
+    assert payload["parent"]["progress"]["overlap_paths"] == ["module.py"]
+
+
+def test_parent_ignored_residue_is_not_writer_progress(tmp_path: Path) -> None:
+    repo = _repo(tmp_path, ignored=True)
+    executable = _codex(
+        tmp_path,
+        f"printf 'VALUE = 2\\n' > module.py\nprintf 'cache\\n' > {repo / 'ignored-output.txt'}",
+    )
+
+    payload = _run(repo, tmp_path, executable)
+
+    progress = payload["parent"]["progress"]
+    assert payload["status"] == "completed", payload
+    assert progress["classification"] == "normal"
+    assert progress["ignored"]["added"] == ["ignored-output.txt"]
+
+
+def test_timeout_with_scoped_candidate_is_validated_partial_result(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    executable = _codex(tmp_path, "printf 'VALUE = 2\\n' > module.py\nsleep 5")
+
+    payload = _run(repo, tmp_path, executable, timeout_seconds=1)
+
+    assert payload["status"] == "validated-partial-result"
+    assert payload["execution"]["status"] == "timed-out"
+    assert payload["candidate"]["useful"] is True
+    assert payload["approval_eligibility"] == "ineligible"
+
+
+def test_non_delivery_with_scoped_candidate_is_validated_partial_result(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    executable = _codex(tmp_path, "printf 'VALUE = 2\\n' > module.py", deliver=False)
+
+    payload = _run(repo, tmp_path, executable)
+
+    assert payload["status"] == "validated-partial-result"
+    assert payload["execution"]["status"] == "non-delivery"
+    assert payload["result_delivery"]["bytes"] == 0
+
+
+def test_running_result_is_visible_to_the_child(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    executable = _codex(
+        tmp_path,
+        "grep '\"status\": \"running\"' \"$CHARNESS_RUNTIME_ROOT/task-run/running-check/result.json\" > running.txt\nprintf 'VALUE = 2\\n' > module.py",
+    )
+
+    payload = _run(
+        repo,
+        tmp_path,
+        executable,
+        task_id="running-check",
+        scopes=["module.py", "running.txt"],
+    )
+
+    assert payload["status"] == "completed", payload
+    assert (tmp_path / "lane/running.txt").read_text(encoding="utf-8").strip() == '"status": "running",'
+
+
+def test_interruption_is_a_distinct_terminal_state(tmp_path: Path, monkeypatch) -> None:
+    repo = _repo(tmp_path)
+    executable = _codex(tmp_path, "exit 0")
+    monkeypatch.setattr(
+        task_run,
+        "_execute_codex",
+        lambda *_args, **_kwargs: {
+            "exit_code": None,
+            "timed_out": False,
+            "interrupted": True,
+        },
+    )
+
+    payload = _run(repo, tmp_path, executable, require_change=False)
+
+    assert payload["status"] == "interrupted"
+    assert payload["execution"]["status"] == "interrupted"
+    assert payload["phase"] == "terminal"

@@ -24,12 +24,11 @@ surface.
 python3 ./charness tool doctor --detail --repo-root . specdown | python3 -c "import sys,yaml; payload=yaml.safe_load(sys.stdin); doctor=payload['results']['specdown']['doctor']; assert doctor['support_state']=='upstream-consumed'; assert doctor['detect']['results'][0]['command']=='specdown version'; assert doctor['healthcheck']['status']=='not-configured'; assert doctor['healthcheck']['skipped'] is True"
 ```
 
-The repo-local task envelope should provide the sah-inspired claim, submit, and
-abort loop as structured state under `.charness/tasks/` without introducing a
-queue or scheduler.
+Task status should read the external result store without creating repo-local
+state or inventing a scheduler lifecycle.
 
 ```run:shell
-python3 ./charness task --repo-root . status missing-slice | python3 -c "import sys,yaml; payload=yaml.safe_load(sys.stdin); assert payload['event']=='rejected'; assert payload['status']=='missing'; assert payload['task_path']=='.charness/tasks/missing-slice.json'"
+python3 ./charness task --repo-root . status missing-slice | python3 -c "import sys,yaml; payload=yaml.safe_load(sys.stdin); assert payload['event']=='task-status'; assert payload['status']=='missing'; assert payload['result_path'].endswith('/task-run/missing-slice/result.json')"
 ```
 
 The root `doctor` command should emit a single primary `next_action` while

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 import re
 import shutil
@@ -187,28 +188,48 @@ def _changed_paths(repo_root: Path, base_sha: str) -> list[str]:
     tracked = _parse_nul_paths(_git_output(repo_root, "diff", "--no-renames", "--name-only", "-z", base_sha, "--"))
     untracked = _parse_nul_paths(_git_output(repo_root, "ls-files", "--others", "--exclude-standard", "-z", "--"))
     return sorted(set(tracked) | set(untracked))
+def resolve_scope_specs(root: Path, scopes: Sequence[str]) -> list[dict[str, str]]:
+    """Freeze file-versus-directory semantics before the writer starts."""
+    return [
+        {"path": scope, "kind": "directory" if (root / scope).is_dir() else "exact"}
+        for scope in scopes
+    ]
 
 
-def _scope_matches(path: str, scope: str, root: Path) -> bool:
-    """Existing directories are recursive scopes; files and absent paths are exact."""
-    candidate = root / scope
-    return path == scope or (candidate.is_dir() and path.startswith(scope.rstrip("/") + "/"))
+def _scope_matches(path: str, spec: Mapping[str, str]) -> bool:
+    scope = spec["path"]
+    return path == scope or (
+        spec["kind"] == "directory" and path.startswith(scope.rstrip("/") + "/")
+    )
 
 
-def _paths_in_scopes(paths: Sequence[str], scopes: Sequence[str], root: Path) -> list[str]:
-    return sorted(path for path in paths if any(_scope_matches(path, scope, root) for scope in scopes))
+def _paths_in_scopes(paths: Sequence[str], specs: Sequence[Mapping[str, str]]) -> list[str]:
+    return sorted(path for path in paths if any(_scope_matches(path, spec) for spec in specs))
 
 
-def _scope_result(repo_root: Path, base_sha: str, scopes: Sequence[str], require_change: bool) -> dict[str, Any]:
+def _scope_result(
+    repo_root: Path,
+    base_sha: str,
+    specs: Sequence[Mapping[str, str]],
+    require_change: bool,
+) -> dict[str, Any]:
     changed = _changed_paths(repo_root, base_sha)
-    disallowed = sorted(set(changed) - set(_paths_in_scopes(changed, scopes, repo_root)))
+    allowed = _paths_in_scopes(changed, specs)
+    disallowed = sorted(set(changed) - set(allowed))
     if disallowed:
-        verdict, reason = FAIL, "candidate changes paths outside the exact declared scope"
+        verdict, reason = FAIL, "candidate changes paths outside the declared scope"
     elif require_change and not changed:
         verdict, reason = FAIL, "the task required a change but the worktree is unchanged"
     else:
-        verdict, reason = PASS, "all candidate changes are within the exact declared scope"
-    return {"verdict": verdict, "reason": reason, "allowed_paths": list(scopes), "changed_paths": changed, "disallowed_paths": disallowed, "require_change": require_change}
+        verdict, reason = PASS, "all candidate changes are within the declared scope"
+    return {
+        "verdict": verdict,
+        "reason": reason,
+        "specs": [dict(spec) for spec in specs],
+        "changed_paths": changed,
+        "disallowed_paths": disallowed,
+        "require_change": require_change,
+    }
 
 
 def _path_cause(path: str) -> str:
@@ -220,30 +241,69 @@ def _path_cause(path: str) -> str:
     return "the child command produced a file outside the tracked task candidate; inspect the captured Codex log"
 
 
-def _generated_files(populations: Mapping[str, Any], scopes: Sequence[str], root: Path) -> list[dict[str, str]]:
+def _generated_files(
+    populations: Mapping[str, Any],
+    specs: Sequence[Mapping[str, str]],
+) -> list[dict[str, str]]:
     generated: list[dict[str, str]] = []
     for population in ("untracked", "ignored"):
         for path in populations[population].get("added", []):
-            candidate = population == "untracked" and any(_scope_matches(path, scope, root) for scope in scopes)
-            generated.append({
-                "population": population,
-                "path": path,
-                "classification": "candidate" if candidate else "diagnostic",
-                "cause": "new candidate path is within the exact declared scope" if candidate else _path_cause(path),
-            })
+            candidate = population == "untracked" and any(
+                _scope_matches(path, spec) for spec in specs
+            )
+            generated.append(
+                {
+                    "population": population,
+                    "path": path,
+                    "classification": "candidate" if candidate else "diagnostic",
+                    "cause": (
+                        "new candidate path is within the declared scope"
+                        if candidate
+                        else _path_cause(path)
+                    ),
+                }
+            )
     return generated
+
+
+_TASK_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,95}$")
+
+
+def _task_id(branch: str, requested: str | None) -> str:
+    if requested is not None:
+        task_id = requested.strip()
+        if not _TASK_ID_RE.fullmatch(task_id):
+            raise TaskRunError(
+                "--task-id must start with a letter or digit and contain only letters, "
+                "digits, dot, underscore, or dash (maximum 96 characters)"
+            )
+        return task_id
+    generated = re.sub(r"[^A-Za-z0-9._-]+", "-", branch.replace("/", "-")).strip("-")[:96]
+    return generated or "task"
+
+
+def task_runtime_root(repo_root: Path) -> Path:
+    """Resolve the task result store by clean parent identity, ignoring ambient roots."""
+    preview_env = os.environ.copy()
+    for key in ("CHARNESS_RUNTIME_ROOT", "CHARNESS_RUNTIME_ROOT_AUTO", "CHARNESS_RUNTIME_REPO_KEY"):
+        preview_env.pop(key, None)
+    return runtime_root(repo_root, preview_env)
+
+
+def task_result_path(runtime_path: Path, task_id: str) -> Path:
+    if not _TASK_ID_RE.fullmatch(task_id):
+        raise TaskRunError(f"invalid task id: {task_id!r}")
+    return runtime_path / "task-run" / task_id / "result.json"
 
 
 def write_task_result(runtime_path: Path, result: Mapping[str, Any]) -> Path:
     """Atomically publish the sole persisted task-run result."""
-    task_dir = runtime_path / "task-run" / str(result["task_id"])
-    task_dir.mkdir(parents=True, exist_ok=True)
-    path = task_dir / "result.json"
-    fd, temp_name = tempfile.mkstemp(prefix=".result.", suffix=".tmp", dir=task_dir)
+    path = task_result_path(runtime_path, str(result["task_id"]))
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, temp_name = tempfile.mkstemp(prefix=".result.", suffix=".tmp", dir=path.parent)
     temp_path = Path(temp_name)
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as handle:
-            import json
             json.dump(dict(result), handle, ensure_ascii=False, indent=2)
             handle.write("\n")
             handle.flush()
@@ -254,78 +314,204 @@ def write_task_result(runtime_path: Path, result: Mapping[str, Any]) -> Path:
     return path
 
 
+def read_task_result(runtime_path: Path, task_id: str) -> dict[str, Any] | None:
+    path = task_result_path(runtime_path, task_id)
+    if not path.is_file():
+        return None
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise TaskRunError(f"task result must be a JSON object: {path}")
+    return payload
+
+
 def read_task_results(runtime_path: Path) -> list[dict[str, Any]]:
-    import json
     root = runtime_path / "task-run"
     results: list[dict[str, Any]] = []
     for path in sorted(root.glob("*/result.json")) if root.is_dir() else []:
         payload = json.loads(path.read_text(encoding="utf-8"))
-        if isinstance(payload, dict):
-            results.append(payload)
+        if not isinstance(payload, dict):
+            raise TaskRunError(f"task result must be a JSON object: {path}")
+        results.append(payload)
     return results
 
 
-def _task_id(branch: str, requested: str | None) -> str:
-    raw = requested.strip() if requested else branch.replace("/", "-")
-    return re.sub(r"[^A-Za-z0-9._-]+", "-", raw).strip("-")[:96] or "task"
-
-
-def _failure_payload(*, repo_root: Path | None, target_path: Path | None, task_id: str | None, error: str) -> dict[str, Any]:
+def _failure_payload(
+    *,
+    repo_root: Path | None,
+    target_path: Path | None,
+    task_id: str | None,
+    error: str,
+) -> dict[str, Any]:
     return {
-        "schema_version": SCHEMA_VERSION, "event": "task-run", "status": FAIL, "phase": "preflight",
+        "schema_version": SCHEMA_VERSION,
+        "event": "task-run",
+        "status": FAIL,
+        "phase": "preflight",
+        "approval_eligibility": "ineligible",
         "repo_root": str(repo_root) if repo_root is not None else None,
         "worktree_path": str(target_path) if target_path is not None else None,
-        "task_id": task_id, "error": error,
+        "task_id": task_id,
+        "error": error,
         "next_step": "Fix the preflight error, then rerun task run from a clean parent with an unused worktree path.",
     }
 
 
-def _runtime_preview(target_path: Path) -> Path:
-    preview_env = os.environ.copy()
-    for key in ("CHARNESS_RUNTIME_ROOT", "CHARNESS_RUNTIME_ROOT_AUTO", "CHARNESS_RUNTIME_REPO_KEY"):
-        preview_env.pop(key, None)
-    return runtime_root(target_path, preview_env)
+def _runtime_preview(repo_root: Path) -> Path:
+    return task_runtime_root(repo_root)
 
 
 def _execute_codex(
-    command: Sequence[str], *, target_path: Path, configured_env: Mapping[str, str],
-    stdout_log: Path, stderr_log: Path, timeout_seconds: int,
+    command: Sequence[str],
+    *,
+    target_path: Path,
+    configured_env: Mapping[str, str],
+    stdout_log: Path,
+    stderr_log: Path,
+    timeout_seconds: int,
 ) -> dict[str, Any]:
-    result: dict[str, Any] = {"exit_code": None, "timed_out": False}
+    result: dict[str, Any] = {
+        "exit_code": None,
+        "timed_out": False,
+        "interrupted": False,
+    }
     try:
-        with stdout_log.open("w", encoding="utf-8") as stdout_handle, stderr_log.open("w", encoding="utf-8") as stderr_handle:
-            completed = subprocess.run(command, cwd=target_path, env=dict(configured_env), stdout=stdout_handle, stderr=stderr_handle, check=False, timeout=timeout_seconds, text=True)
+        with (
+            stdout_log.open("w", encoding="utf-8") as stdout_handle,
+            stderr_log.open("w", encoding="utf-8") as stderr_handle,
+        ):
+            completed = subprocess.run(
+                command,
+                cwd=target_path,
+                env=dict(configured_env),
+                stdout=stdout_handle,
+                stderr=stderr_handle,
+                check=False,
+                timeout=timeout_seconds,
+                text=True,
+            )
             result["exit_code"] = completed.returncode
     except subprocess.TimeoutExpired:
         result["timed_out"] = True
+    except KeyboardInterrupt:
+        result["interrupted"] = True
     except OSError as exc:
         result["exec_error"] = str(exc)
     return result
 
 
+_MAX_RESULT_TEXT_BYTES = 1024 * 1024
+
+
+def _result_delivery(stdout_log: Path) -> dict[str, Any]:
+    raw = stdout_log.read_bytes() if stdout_log.is_file() else b""
+    delivered = bool(raw.strip())
+    clipped = raw[:_MAX_RESULT_TEXT_BYTES]
+    return {
+        "status": "delivered" if delivered else "non-delivery",
+        "bytes": len(raw),
+        "truncated": len(raw) > len(clipped),
+        "text": clipped.decode("utf-8", errors="replace"),
+        "log": str(stdout_log),
+    }
+
+
+def _parent_progress(
+    *,
+    parent_root: Path,
+    parent_before: Mapping[str, Sequence[str]],
+    parent_before_head: str,
+    specs: Sequence[Mapping[str, str]],
+) -> tuple[dict[str, Any], dict[str, list[str]]]:
+    parent_after = _collect_populations(parent_root)
+    parent_after_head = _git_output(parent_root, "rev-parse", "HEAD").strip()
+    committed = (
+        _parse_nul_paths(
+            _git_output(
+                parent_root,
+                "diff",
+                "--no-renames",
+                "--name-only",
+                "-z",
+                parent_before_head,
+                parent_after_head,
+                "--",
+            )
+        )
+        if parent_before_head != parent_after_head
+        else []
+    )
+    dirty_paths: list[str] = []
+    dirty_delta: dict[str, dict[str, list[str]]] = {}
+    for population in ("tracked", "untracked"):
+        before = set(parent_before.get(population, ()))
+        after = set(parent_after.get(population, ()))
+        added = sorted(after - before)
+        removed = sorted(before - after)
+        dirty_delta[population] = {"added": added, "removed": removed}
+        dirty_paths.extend(added)
+        dirty_paths.extend(removed)
+
+    ignored_before = set(parent_before.get("ignored", ()))
+    ignored_after = set(parent_after.get("ignored", ()))
+    ignored_delta = {
+        "added": sorted(ignored_after - ignored_before),
+        "removed": sorted(ignored_before - ignored_after),
+        "paths": sorted(ignored_after),
+    }
+    changed = sorted(set(committed) | set(dirty_paths))
+    overlap = _paths_in_scopes(changed, specs)
+    classification = (
+        "normal"
+        if not changed
+        else "writer-conflict"
+        if overlap
+        else "concurrent-parent-progress"
+    )
+    progress = {
+        "classification": classification,
+        "blocking": classification == "writer-conflict",
+        "committed_paths": committed,
+        "dirty": dirty_delta,
+        "paths": changed,
+        "overlap_paths": overlap,
+        "ignored": ignored_delta,
+        "before_head": parent_before_head,
+        "after_head": parent_after_head,
+    }
+    return progress, parent_after
+
+
 def _completion_evidence(
-    *, target_path: Path, parent_root: Path, before_exec: Mapping[str, Sequence[str]],
-    base_sha: str, scopes: Sequence[str], require_change: bool,
-    parent_before: Mapping[str, Sequence[str]], parent_before_head: str,
+    *,
+    target_path: Path,
+    parent_root: Path,
+    before_exec: Mapping[str, Sequence[str]],
+    base_sha: str,
+    scope_specs: Sequence[Mapping[str, str]],
+    require_change: bool,
+    parent_before: Mapping[str, Sequence[str]],
+    parent_before_head: str,
 ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
     after_exec = _collect_populations(target_path)
     populations = _population_delta(before_exec, after_exec)
-    scope = _scope_result(target_path, base_sha, scopes, require_change)
-    parent_after = _collect_populations(parent_root)
-    parent_after_head = _git_output(parent_root, "rev-parse", "HEAD").strip()
-    committed = _parse_nul_paths(_git_output(parent_root, "diff", "--name-only", "-z", parent_before_head, parent_after_head, "--")) if parent_before_head != parent_after_head else []
-    dirty_before = set(sum((list(paths) for paths in parent_before.values()), []))
-    dirty_after = set(sum((list(paths) for paths in parent_after.values()), []))
-    dirty_delta = sorted(dirty_before ^ dirty_after)
-    parent_delta_paths = sorted(set(committed) | set(dirty_delta))
-    overlap = sorted(path for path in parent_delta_paths if any(_scope_matches(path, declared, target_path) for declared in scopes))
-    classification = "normal" if not parent_delta_paths else ("writer-conflict" if overlap else "concurrent-parent-progress")
-    parent_delta = {"classification": classification, "blocking": classification == "writer-conflict", "committed_paths": committed, "dirty_paths": dirty_delta, "paths": parent_delta_paths, "overlap_paths": overlap, "before_head": parent_before_head, "after_head": parent_after_head}
+    scope = _scope_result(target_path, base_sha, scope_specs, require_change)
+    parent_progress, parent_after = _parent_progress(
+        parent_root=parent_root,
+        parent_before=parent_before,
+        parent_before_head=parent_before_head,
+        specs=scope_specs,
+    )
     evidence = {
-        "after_exec": _snapshot_payload(after_exec), "populations": populations,
-        "generated_files": _generated_files(populations, scopes, target_path), "scope": scope,
-        "parent": {"unchanged": not parent_delta_paths, "before": _snapshot_payload(parent_before),
-                    "after": _snapshot_payload(parent_after), "delta": parent_delta,
-                    "verdict": PASS if not parent_delta["blocking"] else FAIL},
+        "after_exec": _snapshot_payload(after_exec),
+        "populations": populations,
+        "generated_files": _generated_files(populations, scope_specs),
+        "scope": scope,
+        "parent": {
+            "unchanged": parent_progress["classification"] == "normal",
+            "before": _snapshot_payload(parent_before),
+            "after": _snapshot_payload(parent_after),
+            "progress": parent_progress,
+            "verdict": FAIL if parent_progress["blocking"] else PASS,
+        },
     }
-    return evidence, scope, parent_delta
+    return evidence, scope, parent_progress

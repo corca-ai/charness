@@ -3,9 +3,8 @@
 > Status: current
 > Source of truth: this page and the `charness task run` implementation
 
-`charness task` provides `task run` for one bounded Codex lane and `task
-status` for reading its external result store. It is not a scheduler or a
-claim/submit/review protocol.
+`charness task` provides `task run` for one bounded Codex lane and `task status`
+for reading its external result store. It does not add a scheduler lifecycle.
 
 ## Run
 
@@ -19,7 +18,7 @@ charness task run \
   --prompt "Implement the requested slice and run its focused tests"
 ```
 
-The parent must be clean for tracked and untracked paths. The command creates
+A clean parent is required for tracked and untracked paths. The command creates
 the named branch from the explicit base, retains the linked worktree, routes
 runtime, cache, and logs outside the repo, and records target identity and
 candidate scope evidence.

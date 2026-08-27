@@ -166,8 +166,8 @@ def _charness_subcommands(repo_root: Path, *, require_git: bool) -> tuple[list[s
     Matched on the receiver NAME `subparsers`, which is what makes this the
     TOP-LEVEL set rather than every subcommand at every depth. `task_subparsers`,
     `catalog_subparsers`, and their siblings are nested groups; folding them in
-    would produce a flat list that no invocation matches — `charness claim` is
-    not a command, `charness task claim` is.
+    would produce a flat list that no invocation matches — `charness run` is
+    not a command, `charness task run` is.
     """
     tracked = _tracked(repo_root, (_CLI_ENTRYPOINT,), require_git=require_git)
     if not tracked:
@@ -213,7 +213,7 @@ SURFACES: tuple[Surface, ...] = (
         question="which top-level subcommands the `charness` CLI declares",
         scanned=(_CLI_ENTRYPOINT,),
         unscanned=(
-            "nested subcommand groups such as `charness task claim`, which are declared on their own subparser",
+            "nested subcommand groups such as `charness task run`, which are declared on their own subparser",
             "subcommands a host adapter adds outside this entrypoint",
         ),
         derive=_charness_subcommands,

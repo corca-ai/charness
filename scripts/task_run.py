@@ -43,6 +43,186 @@ _validate_worktree_path = _support._validate_worktree_path
 normalize_scopes = _support.normalize_scopes
 
 
+def _persist(payload: dict[str, Any], runtime_path: Path) -> None:
+    _support.write_task_result(runtime_path, payload)
+
+
+def _terminal(
+    payload: dict[str, Any],
+    runtime_path: Path,
+    *,
+    status: str,
+    next_step: str,
+    error: str | None = None,
+) -> dict[str, Any]:
+    payload.update(
+        {
+            "status": status,
+            "phase": "terminal",
+            "approval_eligibility": "ineligible",
+            "next_step": next_step,
+        }
+    )
+    if error is not None:
+        payload["error"] = error
+    _persist(payload, runtime_path)
+    return payload
+
+
+def _execution_state(execution: dict[str, Any], delivery: dict[str, Any]) -> str:
+    if execution["interrupted"] or (
+        execution["exit_code"] is not None and execution["exit_code"] < 0
+    ):
+        return "interrupted"
+    if execution["timed_out"]:
+        return "timed-out"
+    if execution.get("exec_error") or execution["exit_code"] is None:
+        return "failed"
+    if execution["exit_code"] != 0:
+        return "failed"
+    if delivery["status"] == "non-delivery":
+        return "non-delivery"
+    return "completed"
+
+
+def _candidate_result_state(
+    *,
+    execution_state: str,
+    scope: dict[str, Any],
+    parent_progress: dict[str, Any],
+) -> tuple[dict[str, Any], str]:
+    changed_paths = scope["changed_paths"]
+    candidate_valid = scope["verdict"] == PASS
+    candidate_useful = candidate_valid and bool(changed_paths)
+    candidate = {
+        "status": (
+            "validated"
+            if candidate_useful
+            else "absent"
+            if candidate_valid
+            else "invalid"
+        ),
+        "useful": candidate_useful,
+        "changed_paths": changed_paths,
+    }
+    if candidate_valid and execution_state == "completed" and not parent_progress["blocking"]:
+        return candidate, "completed"
+    if candidate_useful:
+        return candidate, "validated-partial-result"
+    if not candidate_valid or parent_progress["blocking"]:
+        return candidate, "failed"
+    return candidate, execution_state
+
+
+def _complete_task(
+    payload: dict[str, Any],
+    *,
+    runtime_path: Path,
+    resolved_target: Path,
+    resolved_repo: Path,
+    before_exec: dict[str, list[str]],
+    base_sha: str,
+    scope_specs: list[dict[str, str]],
+    require_change: bool,
+    parent_before: dict[str, list[str]],
+    parent_before_head: str,
+    stdout_log: Path,
+    execution: dict[str, Any],
+    started_at: float,
+) -> dict[str, Any]:
+    delivery = _support._result_delivery(stdout_log)
+    evidence, scope, parent_progress = _completion_evidence(
+        target_path=resolved_target,
+        parent_root=resolved_repo,
+        before_exec=before_exec,
+        base_sha=base_sha,
+        scope_specs=scope_specs,
+        require_change=require_change,
+        parent_before=parent_before,
+        parent_before_head=parent_before_head,
+    )
+    target_branch = (
+        _git_output(
+            resolved_target,
+            "symbolic-ref",
+            "--quiet",
+            "--short",
+            "HEAD",
+        ).strip()
+        if _git(
+            resolved_target,
+            "symbolic-ref",
+            "--quiet",
+            "--short",
+            "HEAD",
+        ).returncode
+        == 0
+        else None
+    )
+    payload.update(
+        {
+            "phase": "terminal",
+            "execution": execution,
+            "result_delivery": delivery,
+            "duration_ms": int((time.monotonic() - started_at) * 1000),
+            "target_sha": _git_output(resolved_target, "rev-parse", "HEAD").strip(),
+            "target_branch": target_branch,
+            **evidence,
+        }
+    )
+
+    execution_status = _execution_state(execution, delivery)
+    payload["execution"]["status"] = execution_status
+    candidate, result_state = _candidate_result_state(
+        execution_state=execution_status,
+        scope=scope,
+        parent_progress=parent_progress,
+    )
+    payload["candidate"] = candidate
+    payload["status"] = result_state
+    payload["approval_eligibility"] = (
+        "eligible" if result_state == "completed" else "ineligible"
+    )
+
+    blockers: list[str] = []
+    if execution_status != "completed":
+        blockers.append(f"execution: {execution_status}")
+    if scope["verdict"] != PASS:
+        blockers.append(scope["reason"])
+    if parent_progress["blocking"]:
+        blockers.append("parent changed within the resolved candidate scope")
+
+    warnings = [
+        f"{population}: {data['reason']}"
+        for population, data in evidence["populations"].items()
+        if data.get("verdict") == "warn"
+    ]
+    if parent_progress["classification"] == "concurrent-parent-progress":
+        warnings.append("parent made disjoint progress while the task ran")
+    if warnings:
+        payload["warnings"] = warnings
+
+    if blockers:
+        payload["next_step"] = (
+            "Inspect the retained worktree, typed result, and captured logs; "
+            + "; ".join(blockers)
+            + "."
+        )
+    elif result_state == "validated-partial-result":
+        payload["next_step"] = (
+            f"Review the validated candidate in {resolved_target}; "
+            "it is useful but not approval-eligible."
+        )
+    else:
+        payload["next_step"] = (
+            f"Review the candidate in {resolved_target}; "
+            "the typed result is approval-eligible."
+        )
+    _persist(payload, runtime_path)
+    print(f"task run: {payload['status']} ({payload['task_id']})", file=sys.stderr)
+    return payload
+
+
 def run_task(
     repo_root: Path,
     *,
@@ -81,7 +261,7 @@ def run_task(
         if not isinstance(timeout_seconds, int) or timeout_seconds < 1:
             raise TaskRunError("--timeout-seconds must be a positive integer")
         resolved_task_id = _task_id(resolved_branch, task_id)
-        preview_runtime = _runtime_preview(resolved_target)
+        runtime_path = _runtime_preview(resolved_repo)
         command = [codex_path, "exec", *codex_args, prompt]
     except (OSError, TaskRunError, subprocess.SubprocessError) as exc:
         return _failure_payload(
@@ -95,7 +275,8 @@ def run_task(
         "schema_version": _support.SCHEMA_VERSION,
         "event": "task-run",
         "status": FAIL,
-        "phase": "planned" if dry_run else "create",
+        "phase": "planned" if dry_run else "running",
+        "approval_eligibility": "ineligible",
         "dry_run": dry_run,
         "task_id": resolved_task_id,
         "repo_root": str(resolved_repo),
@@ -105,13 +286,16 @@ def run_task(
         "base_sha": base_sha,
         "scopes": normalized_scopes,
         "codex": {"executable": codex_path, "command": command[:-1] + ["<prompt>"]},
-        "runtime_root": str(preview_runtime),
+        "runtime_root": str(runtime_path),
+        "result_path": str(_support.task_result_path(runtime_path, resolved_task_id)),
         "prepare": prepare,
         "require_change": require_change,
         "keep_worktree": True,
     }
     if dry_run:
         payload["status"] = PASS
+        payload["approval_eligibility"] = "not-applicable"
+        payload["scope_specs"] = _support.resolve_scope_specs(resolved_repo, normalized_scopes)
         payload["next_step"] = "Re-run without --dry-run to create the named worktree and execute Codex."
         payload["actions"] = [
             {"id": "create-worktree", "status": "planned"},
@@ -119,50 +303,73 @@ def run_task(
         ]
         return payload
 
+    payload["status"] = "running"
+    payload["phase"] = "create"
+    _persist(payload, runtime_path)
     started_at = time.monotonic()
-    parent_before = _collect_populations(resolved_repo)
-    resolved_target.parent.mkdir(parents=True, exist_ok=True)
-    create_payload = _worktree.run_create(
-        resolved_repo,
-        target_path=resolved_target,
-        branch=resolved_branch,
-        base=base,
-        prepare=prepare,
-    )
+    try:
+        resolved_target.parent.mkdir(parents=True, exist_ok=True)
+        create_payload = _worktree.run_create(
+            resolved_repo,
+            target_path=resolved_target,
+            branch=resolved_branch,
+            base=base,
+            prepare=prepare,
+        )
+    except KeyboardInterrupt:
+        return _terminal(
+            payload,
+            runtime_path,
+            status="interrupted",
+            next_step="Task creation was interrupted; inspect the target path before retrying with a fresh path.",
+        )
+    except (OSError, RuntimeError, subprocess.SubprocessError) as exc:
+        return _terminal(
+            payload,
+            runtime_path,
+            status="failed",
+            error=str(exc),
+            next_step="Task worktree creation failed; inspect the error and retry with a fresh path.",
+        )
+
     payload["create"] = create_payload
     payload["created"] = bool(create_payload.get("created"))
     if not create_payload.get("created") or (prepare and create_payload.get("status") != PASS):
-        payload["phase"] = "create"
-        payload["status"] = FAIL
-        payload["next_step"] = create_payload.get("next_step") or "Fix worktree creation/doctor, then rerun task run."
-        payload["parent"] = {"unchanged": _collect_populations(resolved_repo) == parent_before}
-        return payload
+        return _terminal(
+            payload,
+            runtime_path,
+            status="failed",
+            next_step=create_payload.get("next_step")
+            or "Fix worktree creation/doctor, then rerun task run.",
+        )
 
+    scope_specs = _support.resolve_scope_specs(resolved_target, normalized_scopes)
+    payload["scope_specs"] = scope_specs
     before_exec = _collect_populations(resolved_target)
     payload["before_exec"] = _snapshot_payload(before_exec)
     preflight_populations = _population_delta({}, before_exec, preflight=True)
     payload["preflight_populations"] = preflight_populations
     if any(preflight_populations[name]["verdict"] == FAIL for name in ("tracked", "untracked")):
-        payload["phase"] = "preflight"
-        payload["status"] = FAIL
-        payload["next_step"] = "The newly-created worktree was not clean before Codex; inspect it and use a fresh path."
-        payload["parent"] = {"unchanged": _collect_populations(resolved_repo) == parent_before}
-        return payload
+        return _terminal(
+            payload,
+            runtime_path,
+            status="failed",
+            next_step="The newly-created worktree was not clean before Codex; inspect it and use a fresh path.",
+        )
 
     child_env = os.environ.copy()
     for key in ("CHARNESS_RUNTIME_ROOT", "CHARNESS_RUNTIME_ROOT_AUTO", "CHARNESS_RUNTIME_REPO_KEY"):
         child_env.pop(key, None)
-    # Persist and cache by parent identity so `task status --repo-root PARENT`
-    # reads the same external runtime directory that this run publishes.
-    configured_env = _exec.prepare_exec_environment(resolved_repo, child_env)
-    runtime_path = Path(configured_env["CHARNESS_RUNTIME_ROOT"])
+    child_env["CHARNESS_RUNTIME_ROOT"] = str(runtime_path)
+    configured_env = _exec.prepare_exec_environment(resolved_target, child_env)
     log_dir = runtime_path / "task-run" / resolved_task_id
     log_dir.mkdir(parents=True, exist_ok=True)
     stdout_log = log_dir / "codex.stdout.log"
     stderr_log = log_dir / "codex.stderr.log"
-    payload["runtime_root"] = str(runtime_path)
     payload["logs"] = {"stdout": str(stdout_log), "stderr": str(stderr_log)}
-    _support.write_task_result(runtime_path, {**payload, "status": "running", "phase": "exec"})
+    payload["phase"] = "exec"
+    _persist(payload, runtime_path)
+
     print(f"task run: executing Codex in {resolved_target}", file=sys.stderr)
     execution = _execute_codex(
         command,
@@ -172,68 +379,46 @@ def run_task(
         stderr_log=stderr_log,
         timeout_seconds=timeout_seconds,
     )
-    if execution.get("exec_error"):
-        payload["exec_error"] = execution["exec_error"]
-
-    evidence, scope, parent_delta = _completion_evidence(
-        target_path=resolved_target,
-        parent_root=resolved_repo,
+    return _complete_task(
+        payload,
+        runtime_path=runtime_path,
+        resolved_target=resolved_target,
+        resolved_repo=resolved_repo,
         before_exec=before_exec,
         base_sha=base_sha,
-        scopes=normalized_scopes,
+        scope_specs=scope_specs,
         require_change=require_change,
         parent_before=parent_before,
         parent_before_head=parent_before_head,
+        stdout_log=stdout_log,
+        execution=execution,
+        started_at=started_at,
     )
-    payload.update(
-        {
-            "phase": "complete",
-            **execution,
-            "duration_ms": int((time.monotonic() - started_at) * 1000),
-            "target_sha": _git_output(resolved_target, "rev-parse", "HEAD").strip(),
-            "target_branch": _git_output(resolved_target, "symbolic-ref", "--quiet", "--short", "HEAD").strip()
-            if _git(resolved_target, "symbolic-ref", "--quiet", "--short", "HEAD").returncode == 0
-            else None,
-            **evidence,
+
+
+def task_status(repo_root: Path, task_id: str | None = None) -> dict[str, Any]:
+    """Read the one external task-run result store without mutation."""
+    resolved_repo = _support._require_git_root(repo_root)
+    runtime_path = _support.task_runtime_root(resolved_repo)
+    if task_id is not None:
+        record = _support.read_task_result(runtime_path, task_id)
+        if record is not None:
+            return record
+        return {
+            "schema_version": _support.SCHEMA_VERSION,
+            "event": "task-status",
+            "repo_root": str(resolved_repo),
+            "task_id": task_id,
+            "status": "missing",
+            "result_path": str(_support.task_result_path(runtime_path, task_id)),
         }
-    )
-    blockers: list[str] = []
-    if execution["timed_out"]:
-        payload["status"] = "timed-out"
-    elif execution.get("exec_error"):
-        payload["status"] = "non-delivery"
-    elif execution["exit_code"] is None or execution["exit_code"] < 0:
-        payload["status"] = "interrupted"
-    elif execution["exit_code"] != 0:
-        payload["status"] = "failed"
-    elif scope["verdict"] != PASS or parent_delta["blocking"]:
-        payload["status"] = "validated-partial-result" if scope["verdict"] == PASS else "failed"
-    else:
-        payload["status"] = "completed"
-    payload["candidate_usefulness"] = "useful" if scope["verdict"] == PASS and execution.get("exit_code") == 0 else "not-validated"
-    payload["approval_eligibility"] = "eligible" if payload["status"] == "completed" else "ineligible"
-    if payload["status"] not in {"completed", "validated-partial-result"}:
-        blockers.append("codex execution did not exit successfully")
-    if scope["verdict"] != PASS:
-        blockers.append(scope["reason"])
-    if parent_delta["blocking"]:
-        blockers.append("parent changed within the candidate scope")
-    if blockers:
-        if payload["status"] == "completed":
-            payload["status"] = "failed"
-        payload["next_step"] = "Inspect the retained worktree and captured logs; " + "; ".join(blockers) + "."
-    else:
-        warnings = [
-            f"{population}: {data['reason']}"
-            for population, data in evidence["populations"].items()
-            if data.get("verdict") == "warn"
-        ]
-        if warnings:
-            payload["warnings"] = warnings
-        payload["next_step"] = f"Review the candidate in {resolved_target}; tracked changes are retained and the parent is unchanged."
-    _support.write_task_result(runtime_path, payload)
-    print(f"task run: {payload['status']} ({resolved_task_id})", file=sys.stderr)
-    return payload
+    return {
+        "schema_version": _support.SCHEMA_VERSION,
+        "event": "task-status-list",
+        "repo_root": str(resolved_repo),
+        "runtime_root": str(runtime_path),
+        "tasks": _support.read_task_results(runtime_path),
+    }
 
 
 def main() -> int:
@@ -245,7 +430,12 @@ def main() -> int:
     parser.add_argument("--path", dest="target_path", type=Path, required=True)
     parser.add_argument("--branch", required=True)
     parser.add_argument("--base", required=True)
-    parser.add_argument("--scope", action="append", required=True)
+    parser.add_argument(
+        "--scope",
+        action="append",
+        required=True,
+        help="Existing directories include descendants; files and absent paths are exact.",
+    )
     prompt = parser.add_mutually_exclusive_group(required=True)
     prompt.add_argument("--prompt")
     prompt.add_argument("--prompt-file", type=Path)
