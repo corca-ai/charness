@@ -8,8 +8,8 @@ from .support import ROOT, run_script
 
 def test_check_skill_contracts_rejects_missing_required_snippet(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    handoff_skill_dir = repo / "skills" / "public" / "handoff"
-    handoff_skill_dir.mkdir(parents=True)
+    quality_skill_dir = repo / "skills" / "public" / "quality"
+    quality_skill_dir.mkdir(parents=True)
 
     module_path = ROOT / "scripts" / "check_skill_contracts.py"
     spec = importlib.util.spec_from_file_location("check_skill_contracts_test_module", module_path)
@@ -17,14 +17,14 @@ def test_check_skill_contracts_rejects_missing_required_snippet(tmp_path: Path) 
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     for rel_path in module.REPRESENTATIVE_CONTRACTS:
-        if rel_path == "skills/public/handoff/SKILL.md":
+        if rel_path == "skills/public/quality/SKILL.md":
             continue
         target = repo / rel_path
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text((ROOT / rel_path).read_text(encoding="utf-8"), encoding="utf-8")
 
-    (handoff_skill_dir / "SKILL.md").write_text(
-        "---\nname: handoff\ndescription: \"demo\"\n---\n\n# Handoff\n",
+    (quality_skill_dir / "SKILL.md").write_text(
+        "---\nname: quality\ndescription: \"demo\"\n---\n\n# Quality\n",
         encoding="utf-8",
     )
 

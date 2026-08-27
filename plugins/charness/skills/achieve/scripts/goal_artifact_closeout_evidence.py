@@ -42,9 +42,6 @@ _load_shared_helper = _loaders._load_shared_helper
 _load_sibling_disposition = _loaders._load_sibling_disposition
 _load_sibling_early_close_report = _loaders._load_sibling_early_close_report
 _load_sibling_metric_window = _loaders._load_sibling_metric_window
-_load_sibling_coordination_floors = _loaders._load_sibling_coordination_floors
-_load_sibling_phase_routing = _loaders._load_sibling_phase_routing
-_load_sibling_closeout_delegation = _loaders._load_sibling_closeout_delegation
 _load_sibling_adapter_policy = _loaders._load_sibling_adapter_policy
 _mask_fences = _load_local_module("goal_artifact_markdown").mask_fences
 
@@ -221,16 +218,6 @@ apply_disposition_rungs = _disposition.apply_disposition_rungs
 _early_close_report = _load_sibling_early_close_report()
 EARLY_CLOSE_REPORT_EVIDENCE = _early_close_report.EARLY_CLOSE_REPORT_EVIDENCE
 
-_coordination = _load_sibling_coordination_floors()
-apply_coordination_floors = _coordination.apply_coordination_floors
-apply_coordination_optout_aggregate = _coordination.apply_coordination_optout_aggregate
-
-_phase_routing = _load_sibling_phase_routing()
-apply_phase_routing_floor = _phase_routing.apply_phase_routing_floor
-
-_closeout_delegation = _load_sibling_closeout_delegation()
-apply_closeout_delegation = _closeout_delegation.apply_closeout_delegation
-
 _section_placeholders = _load_local_module("goal_artifact_section_placeholders")
 _evidence_distinctness = _load_local_module("goal_artifact_evidence_distinctness")
 _figure_form = _load_local_module("goal_artifact_figure_form")
@@ -348,26 +335,6 @@ def check_complete_evidence(repo_root: Path, text: str) -> dict[str, Any]:
     # rung-1b skip on a subagent-blocked host still leaves the blank check active.
     apply_disposition_rungs(report, text, in_scope)
 
-    # Coordination floors: presence-only closeout evidence for owner-skill routing
-    # routing boundaries the prose cue under-serves. Mirrors
-    # the disposition floor — grandfathered by Created, block-the-blank at the
-    # flip, explicit opt-out valve. Independent of the disposition scope (its own
-    # rule date), so it runs unconditionally; the module no-ops when inert.
-    apply_coordination_floors(report, text, repo_root)
-    apply_phase_routing_floor(report, text)
-    # Cross-floor opt-out census. Runs AFTER both floors because it reads the
-    # verdicts they write. Non-blocking: every counted opt-out already satisfied
-    # its own floor; this exists so "declined 4 of 6" stops rendering identically
-    # to "declined none" when the disposition review reads the closeout.
-    apply_coordination_optout_aggregate(report)
-
-    # Orchestrator/sub-goal closeout-proof delegation. Opt-in via a
-    # `## Closeout Delegation` section; an absent section or `Closeout mode:
-    # standalone` is untouched, so the strict standalone default stays the hard
-    # default. Orchestrated sub-goals must name an orchestrator + list delegated
-    # items; orchestrator goals must resolve every delegated checklist item.
-    apply_closeout_delegation(report, text)
-
     # Final-status placeholder floor: a complete goal cannot carry a section
     # whose first real body line still says it is pending/TODO/TBD.
     _section_placeholders.apply_final_status_placeholder_floor(report, text)
@@ -408,8 +375,8 @@ def check_superseded_evidence(repo_root: Path, text: str) -> dict[str, Any]:
     """Check the smaller evidence floor for a non-complete terminal goal.
 
     ``superseded`` still needs a bound retro so surfaced improvements cannot
-    disappear, but it must not inherit complete-only host-log, review, or
-    coordination requirements. The shared disposition rungs are reused because
+    disappear, but it must not inherit complete-only host-log or review
+    requirements. The shared disposition rungs are reused because
     they already own the deterministic improvement-preservation floor.
     """
     helper = _load_shared_helper()

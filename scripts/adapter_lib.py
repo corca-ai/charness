@@ -71,7 +71,7 @@ def _load_yaml_module(path: Path):
 # This module is imported three ways: as `scripts.adapter_lib`, as a bare `adapter_lib` from
 # a seeded test repo, and by absolute PATH from a skill script whose loader puts nothing on
 # `sys.path`. The first cut of this split used `runtime_bootstrap.import_repo_module` and
-# broke the third: every achieve and handoff skill script that reaches `adapter_lib` died
+# broke the third: every skill script that reaches `adapter_lib` died
 # with `No module named 'runtime_bootstrap'`. The pre-split file had no repo imports at all,
 # which is why it worked everywhere.
 _yaml = _load_yaml_module(_YAML_PATH)
@@ -346,7 +346,7 @@ def optional_int(value: Any, field: str, errors: list[str], *, minimum: int = 0)
     """The numeric member of this module's adapter-field vocabulary.
 
     Its absence is why every numeric policy in the artifact-validator family --
-    `MAX_ARTIFACT_WORDS` in debug/quality, `DEFAULT_MAX_CONTENT_WORDS` in handoff --
+    `MAX_ARTIFACT_WORDS` in debug/quality and other artifact families --
     was a module constant a consuming repo could not touch: the vocabulary offered
     `optional_string`, `optional_string_list` and `optional_bool`, so a numeric field
     had nowhere to land and each caller that needed one hand-rolled its own

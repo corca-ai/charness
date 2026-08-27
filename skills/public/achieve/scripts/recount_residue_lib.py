@@ -53,7 +53,7 @@ GIT_TIMEOUT_SECONDS = 10
 # principle that admits `audit/` and excludes `debug/`, `spec/`, or `release/`. The two
 # named docs are durable decision records living outside the artifact tree.
 RECORD_DIRS = ("charness-artifacts",)
-RECORD_FILES = ("docs/deferred-decisions.md", "docs/handoff.md")
+RECORD_FILES = ("docs/deferred-decisions.md",)
 
 # Markdown only. Decision records in this repo are prose documents; JSON and JSONL under the
 # same tree are payloads and captured transcripts, and scanning a captured agent transcript

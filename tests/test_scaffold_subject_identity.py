@@ -12,9 +12,9 @@ new family appears without one. A hand-written list is what lets a seventh famil
 unguarded while the suite still reports green.
 
 The mismatch itself is constructed per family on purpose. Each family's subject key is its
-own -- `quality` adds the record date, `retro` adds the lesson session, `handoff` has exactly
-one subject by construction -- so a single generic fixture would either miss the channel that
-carries the defect or manufacture a mismatch the family cannot actually have.
+own -- `quality` adds the record date and `retro` adds the lesson session -- so a single
+generic fixture would either miss the channel that carries the defect or manufacture a
+mismatch the family cannot actually have.
 """
 
 from __future__ import annotations
@@ -132,22 +132,9 @@ def _seed_debug(repo: Path) -> tuple[str, dict[str, object]]:
     return foreign, {"title": None, "subject": None}
 
 
-def _seed_handoff(repo: Path) -> tuple[None, dict[str, object]]:
-    """`handoff` has ONE subject by construction, so there is no foreign record to seed.
-
-    Recorded as a covered family with `None` for the foreign path rather than skipped: the
-    claim being pinned is that its every invocation resolves to `match` and writes the rolling
-    artifact in place, which is a real property and the reason a slug key would be wrong here.
-    """
-    (repo / "docs").mkdir(parents=True, exist_ok=True)
-    (repo / "docs" / "handoff.md").write_text("# Charness Handoff\n", encoding="utf-8")
-    return None, {"title": None, "subject": None}
-
-
 SUBJECT_FIXTURES = {
     "critique": _seed_critique,
     "debug": _seed_debug,
-    "handoff": _seed_handoff,
     "ideation": _seed_ideation,
     "quality": _seed_quality,
     "retro": _seed_retro,
@@ -159,7 +146,7 @@ def test_every_scaffold_family_declares_a_subject_fixture() -> None:
         "a scaffold family in the tree has no subject-identity fixture; the population is "
         "globbed from skills/public/*/scripts so a new family cannot ship unguarded"
     )
-    assert len(FAMILY_MODULES) >= 6, FAMILY_MODULES
+    assert len(FAMILY_MODULES) >= 5, FAMILY_MODULES
 
 
 @pytest.mark.parametrize("family", sorted(SUBJECT_FIXTURES))
@@ -168,11 +155,6 @@ def test_family_refuses_a_write_onto_another_subjects_record(family: str, tmp_pa
     repo.mkdir()
     foreign, kwargs = SUBJECT_FIXTURES[family](repo)
     payload = FAMILY_MODULES[family].payload_for(repo, **kwargs)
-
-    if foreign is None:
-        assert payload["write_artifact_subject_match"] == "match"
-        assert payload["write_artifact_path"] == "docs/handoff.md"
-        return
 
     assert payload["write_artifact_path"] != foreign, payload
     assert payload["write_artifact_effect"] == "create_new_file"

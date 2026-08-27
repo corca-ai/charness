@@ -11,7 +11,7 @@ reference directly.
 - `references/goal-artifact.md` — historical Goal Draft shape and producer
   details; it is not an execution authority.
 - `references/coordination.md` — boundaries with `impl`, `debug`, `quality`,
-  `issue`, `critique`, `retro`, and `handoff` routing evidence.
+  `issue`, `critique`, and `retro` routing evidence.
 - `references/adapter-contract.md` — adapter lookup, interview ceiling, and
   explicit planning-only fallback; issue closeout and publication belong to
   their owning provider/release workflows.

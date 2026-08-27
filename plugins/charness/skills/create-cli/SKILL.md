@@ -20,7 +20,6 @@ tests commands.
 ```bash
 # Required Tools: rg
 sed -n '1,220p' README.md
-sed -n '1,220p' docs/handoff.md 2>/dev/null || true
 rg -n "argparse|click|typer|cobra|urfave|commander|subcommands|--detail|--help|dry-run|doctor|install|update" .
 find . -maxdepth 3 \\( -name '*.sh' -o -name '*.py' -o -name 'main.go' \\) | sort
 ```

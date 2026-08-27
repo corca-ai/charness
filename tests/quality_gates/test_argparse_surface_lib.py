@@ -306,7 +306,7 @@ def test_a_command_inside_another_commands_flag_value_keeps_its_own_flags() -> N
 
     The outer command lost every flag written after `--test-command`, and the inner one
     was handed `--write-fresh-marker`, which it does not accept — a blocking false red
-    on a correct doc, which is what this repo's own handoff hit.
+    on a correct doc, which is what this repo's own command-surface gate hit.
     """
     carrier = (
         "python3 scripts/check_changed_line_mutation_coverage.py --repo-root . "

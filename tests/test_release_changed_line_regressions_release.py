@@ -34,7 +34,6 @@ _MUTATION_SOURCES = (
     "scripts/reviewed_input_identity.py",
     "scripts/slice_closeout_telemetry.py",
     "scripts/staged_commit_gate_plan_helpers.py",
-    "skills/public/achieve/scripts/goal_artifact_closeout_plan.py",
     "skills/public/achieve/scripts/scaffold_goal_specs.py",
     "skills/public/critique/scripts/prepare_packet.py",
     "skills/public/debug/scripts/persist_debug_artifact.py",
@@ -55,10 +54,6 @@ def _load_script(relative: str, name: str):
     return module
 
 
-closeout_plan = _load_script(
-    "skills/public/achieve/scripts/goal_artifact_closeout_plan.py",
-    "release_closeout_plan_split_under_test",
-)
 goal_specs = import_repo_module(
     ROOT / "skills/public/achieve/scripts/scaffold_goal_specs.py",
     "skills.public.achieve.scripts.scaffold_goal_specs",
@@ -87,25 +82,6 @@ debug_persist = import_repo_module(
     ROOT / "skills/public/debug/scripts/persist_debug_artifact.py",
     "skills.public.debug.scripts.persist_debug_artifact",
 )
-
-
-def test_closeout_plan_reports_typed_issues_and_reasons() -> None:
-    complete = "\n".join(
-        ["## Closeout Binding Plan", *[f"- {field} value" for field in closeout_plan.CLOSEOUT_PLAN_FIELDS]]
-    )
-    parsed = closeout_plan.parse_closeout_plan(complete)
-    assert parsed.validation_issues() == []
-    incomplete = closeout_plan.parse_closeout_plan("## Closeout Binding Plan\n")
-    assert incomplete.validation_issues()
-    assert "incomplete" in closeout_plan.render_reason(incomplete)
-    duplicate = closeout_plan.parse_closeout_plan(complete + "\n" + complete)
-    assert duplicate.duplicate
-    assert duplicate.validation_issues()
-    assert "more than once" in closeout_plan.render_reason(duplicate)
-    unbalanced = closeout_plan.parse_closeout_plan("## Closeout Binding Plan\n```\n")
-    assert not unbalanced.fences_balanced
-    assert "unreadable" in closeout_plan.render_reason(unbalanced)
-    assert closeout_plan.check_closeout_plan(complete)["complete"] is True
 
 
 def test_goal_specs_loader_and_missing_goal_edges(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

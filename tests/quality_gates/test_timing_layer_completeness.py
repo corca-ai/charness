@@ -41,13 +41,11 @@ def test_quality_core_runs_the_timing_completeness_gate_but_docs_pre_push_does_n
         "check-docs",
         "check-references-link-inventory",
         "check-spec-evidence-durability",
-        "validate-handoff-artifact",
         "validate-debug-artifact",
         "validate-quality-artifact",
         "validate-retro-artifact",
         "validate-ideation-artifact",
         "validate-critique-artifacts",
-        "inventory-quality-handoff",
         "validate-current-pointer-freshness",
     ]
 

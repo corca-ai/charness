@@ -24,7 +24,6 @@ REPO_SHAPE_HINTS = {
     "create-skill": "skills repo with adjacent public/support surfaces, references, and packaging constraints already present",
     "debug": "active repo slice with a reproducible failure, existing logs or tests, and enough local state to preserve a durable debug artifact",
     "gather": "repo that already keeps gathered artifacts and a source identity that may need refresh-in-place behavior",
-    "handoff": "mature repo with an existing handoff artifact and enough adjacent state that the next pickup path can be ambiguous",
     "hitl": "repo with a bounded review target and a decision that must stay explicitly human-owned",
     "hotl": "repo that applies behavior to live, externally visible surfaces and needs evidence-based closeout instead of assertion",
     "ideation": "minimal or loosely defined repo context where the request is still concept-shaping rather than implementation-ready",
@@ -47,7 +46,6 @@ PROMPT_HINTS = {
     "create-skill": "Improve this skill package first so the trigger, references, and helper surface stay portable.",
     "debug": "Investigate this regression and leave a durable record of what actually failed before changing code.",
     "gather": "Fetch this external source into a durable local artifact instead of giving me a one-turn summary.",
-    "handoff": "Use docs/handoff.md as the pickup surface and continue the next highest-leverage workflow from there.",
     "hotl": "We shipped the scheduled digest to the live channel yesterday — close the loop on it with actual evidence, and tell me what cannot be proven yet.",
     "hitl": "Set up a bounded human review loop for this target so the agent does not auto-decide the final judgment.",
     "ideation": "The concept is still fuzzy; help shape the workflow before we commit to a spec or implementation.",
@@ -84,9 +82,6 @@ EVIDENCE_OVERRIDES = {
         "runs or follows a gather plan that names the support owner, route order, exact-source policy, and typed stop conditions before acquisition",
         "does not substitute search snippets, adjacent posts, or similar sources for a named exact source",
         "preserves typed public-URL outcomes such as `exact-fetched`, `exact-blocked`, `exact-unavailable`, `feed-fetched`, `direct-page-fetched`, and missing-capability stops",
-    ],
-    "handoff": [
-        "reads the current workflow trigger before broad repo exploration and keeps the baton pass continuation-first",
     ],
     "issue": [
         "uses GitHub as the source of truth for omitted issue selection instead of session memory",

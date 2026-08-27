@@ -13,16 +13,14 @@
       "verdict": "guarded-upstream",
       "reason": "resolve_adapter_line_budget (lines 59-91) calls load_adapter(repo_root) at line 82 and reads data.get(field) to return a numeric line ceiling without ever checking payload['errors']/['valid'] or calling adapter_version_verdict; its own docstring says this is deliberate. CALLER-COVERAGE MEASURED 2026-08-19. This row was `accepted-risk-unguarded` at the time, before a level existed for it, because the property belongs to its CALLERS and not to this file. `resolve_adapter_line_budget`'s production callers are `validate_handoff_artifact`, `validate_quality_artifact` and `scaffold_artifact_lib.size_budget` (itself reached only from the two guarded scaffolds) -- all guarded. A guard here is not merely redundant, it is wrong or impossible: its own docstring argues, correctly, that a ceiling must NOT be dropped because an unrelated field was typo'd; refusing here would key on `valid`, the polarity `adapter_version_verdict` forbids. The census's unit is the DIRECT read site, so a row whose callers are all guarded and a row whose callers are not look identical here -- and the gate's own stated blind class ('a file that reads an adapter through a HELPER in another module is invisible') means 'every caller' is a claim about the callers enumerated, not a completeness proof. MIGRATED to `guarded-upstream` (#675 round 1). This row met the level's stated criterion -- \"cannot guard itself, everything upstream is guarded\" -- and its own reason already enumerated the covering rows, but it sat in `accepted-risk-unguarded` because that was the only token available. The gate's headline `ACCEPTED RISK: N consumer(s) would use a charness default` was therefore FALSE for it by the manifest's own text, which is exactly the measurement distortion #675 reports. The enumerated rows are now in `covering_rows`, where the gate checks each one carries a guarded verdict. COVERING ROWS CORRECTED after a round-2 review: the first list was derived from this row's own PROSE and was wrong in both directions -- it dropped `scaffold_artifact_lib` (which the prose names) and never saw `validate_debug_artifact` or `check_doc_authoring_preflight` (which reaches `resolved_max_content_words` -- `resolved_max_content_lines` until the handoff budget changed unit on 2026-08-19 -- directly, bypassing `validate_handoff_artifact.main()`). Worse, `scaffold_artifact_lib` COULD NOT be listed: it is itself `guarded-upstream`, and the gate only accepted a directly-guarded row, so the enumerated set was being shaped by what the checker accepts rather than by the call graph. The gate follows a chain now, with cycle detection. Derived from grep over every call site, not from this paragraph.",
       "covering_rows": [
-        "scripts/validate_handoff_artifact.py",
         "scripts/validate_quality_artifact.py",
         "scripts/validate_debug_artifact.py",
-        "scripts/scaffold_artifact_lib.py",
-        "scripts/check_doc_authoring_preflight.py"
+        "scripts/scaffold_artifact_lib.py"
       ]
     },
     "scripts/boundary_probe_lib.py": {
       "verdict": "safe-checks-errors",
-      "reason": "resolve_probe_state (lines 218-289) loads the critique adapter at line 232, then at line 270 calls _adapter_lib.unreadable_reasons(adapter), which reads adapter.get('errors') (adapter_lib.py:420) \u2014 this list includes the 'version must be N' refusal string \u2014 and at lines 271-288 downgrades the probe state to PROBE_NOT_ESTABLISHED with an explanatory undetermined_reason whenever the adapter is unreadable and no hit was already found."
+      "reason": "resolve_probe_state (lines 218-289) loads the critique adapter at line 232, then at line 270 calls _adapter_lib.unreadable_reasons(adapter), which reads adapter.get('errors') (adapter_lib.py:420) — this list includes the 'version must be N' refusal string — and at lines 271-288 downgrades the probe state to PROBE_NOT_ESTABLISHED with an explanatory undetermined_reason whenever the adapter is unreadable and no hit was already found."
     },
     "scripts/build_debug_seam_risk_index.py": {
       "verdicts": [
@@ -50,7 +48,7 @@
     },
     "scripts/capability_catalog_sources.py": {
       "verdict": "safe-checks-errors",
-      "reason": "Its own load_adapter (lines 208-233) calls validate_adapter_version(raw, {}, errors) at line 220 and only applies any declared field (repo/language/trusted_skill_roots/prefer_local_first/allow_external_registry) inside the `if not errors:` block at lines 221-232 \u2014 this reimplements the declared_fields_after_version_check pattern inline, so on a refused version `defaults` keeps the file's own built-in defaults dict (line 209) rather than any repo-declared value, and build_inventory (line 238+) consumes that already-correct payload."
+      "reason": "Its own load_adapter (lines 208-233) calls validate_adapter_version(raw, {}, errors) at line 220 and only applies any declared field (repo/language/trusted_skill_roots/prefer_local_first/allow_external_registry) inside the `if not errors:` block at lines 221-232 — this reimplements the declared_fields_after_version_check pattern inline, so on a refused version `defaults` keeps the file's own built-in defaults dict (line 209) rather than any repo-declared value, and build_inventory (line 238+) consumes that already-correct payload."
     },
     "scripts/capture_issue_source.py": {
       "verdict": "safe-checks-errors",
@@ -63,10 +61,6 @@
     "scripts/check_cli_skill_surface.py": {
       "verdict": "safe-checks-errors",
       "reason": "_load_adapter (lines 49-66) calls validate_adapter_version(raw, {}, errors) at line 65 and returns ({}, errors) on any error before any field is read; build_payload (lines 291-320) checks `if adapter_version_errors:` at line 299 and returns a 'blocked' status with the version errors quoted at lines 302-313, before selecting skill paths or probe commands, so nothing downstream reads charness defaults in place of a declared value."
-    },
-    "scripts/check_doc_authoring_preflight.py": {
-      "verdict": "guarded-errors-only",
-      "reason": "adapter_load_failed (lines 110-131) calls _version_verdict.version_refused(payload.get('errors')) at line 131 (using scripts.adapter_version_verdict, imported at line 47), and its docstring explicitly names the exact 'surface_cap forecasts the shipped ceiling' bug this closes; per the task's already-guarded list. LEVEL MIGRATION (#675): this row was `guarded` and is measured `guarded-errors-only` -- it asks `declarations_unhonored`, a predicate over `errors`, so a line the parser silently DROPS walks past it with `errors: []` and `valid: True`. Nothing was upgraded or downgraded by hand; the level is what the file's own calls establish, and the gate now refuses a row that claims a different one. Raising it to `guarded-all-doors` means routing through `unspeakable_version_message` / `refuse_unspeakable_version` or asking `declarations_dropped` explicitly."
     },
     "scripts/check_doc_links.py": {
       "verdict": "safe-checks-errors",
@@ -95,10 +89,6 @@
     "scripts/dup_ratchet_edit_advisory.py": {
       "verdict": "no-version-validation",
       "reason": "Reads `.agents/*-adapter.yaml` with a raw YAML load and never reconciles `version`, so there is no `errors` for any consumer to check. A DIFFERENT defect from the unguarded rows: the fix is wiring this onto the shared resolver, not adding a check."
-    },
-    "scripts/inventory_quality_handoff.py": {
-      "verdict": "guarded-all-doors",
-      "reason": "main() now refuses before `adapter[\"artifact_path\"]` is read, INSIDE the `args.artifact is None` branch so the `--artifact` arm (which asks the adapter nothing) still works -- pinned by a control. Measured flip at 1465689ac: a repo declaring `output_dir: docs/mine-q` under `version: 9` inventoried `artifact: charness-artifacts/quality/latest.md` with `status: advisory` and `findings: []`, exit 0 -- a clean bill of health on a file the repo does not keep its review in, while the one it does keep went uninventoried. Control at version 1 reports the declared path. WAS a residual: quality's resolver called `adapter_lib.load_yaml_file` bare, so the parse-refusal and silently-dropped-line doors were both invisible here. CLOSED by #673: that resolver now routes through `adapter_lib.read_declared_adapter`, so the parse-refusal and dropped-line doors are both live here. Probe record: charness-artifacts/probe/2026-08-19-inventory-gather-version-refusal.md. LEVEL MIGRATION (#675): `guarded` -> `guarded-all-doors`, measured from this file's own calls rather than asserted."
     },
     "scripts/manage_mutation_reports.py": {
       "verdict": "safe-checks-errors",
@@ -167,10 +157,6 @@
         "skills/public/debug/scripts/scaffold_debug_artifact.py"
       ]
     },
-    "scripts/setup_critique_adapter_inspection.py": {
-      "verdict": "safe-not-consequential",
-      "reason": "_detect_critique_adapter_normalization (lines 70-198) calls scripts.critique_adapter_lib.load_adapter and reads only `found`, `path`, and `data.reviewer_tiers` (via `.get('reviewer_tiers', {})`, line 80) without checking `errors`/`valid`, but forwards `valid: bool(adapter.get('valid'))` in its own returned payload (line 186) for the caller to act on."
-    },
     "scripts/setup_inspect_lib.py": {
       "verdict": "safe-checks-errors",
       "reason": "L141 `load_setup_adapter` returns `(data, path, warnings)`; setup's resolver refuses an unsupported version before surface overrides, driven by tests/quality_gates/test_setup_inspect_adapters.py."
@@ -187,10 +173,6 @@
       "verdict": "guarded-all-doors",
       "reason": "Already on the pre-classified guarded list; confirmed by reading: line 405 calls `_adapter_version_verdict.unspeakable_version_message(...)` as a preflight before `resolve_adapter_line_budget` (line 502) is used to enforce the line ceiling. LEVEL MIGRATION (#675): `guarded` -> `guarded-all-doors`, measured from this file's own calls rather than asserted."
     },
-    "scripts/validate_handoff_artifact.py": {
-      "verdict": "guarded-all-doors",
-      "reason": "Already on the pre-classified guarded list; confirmed by reading: line 471 calls `_adapter_version_verdict.refuse_unspeakable_version(...)`. LEVEL MIGRATION (#675): `guarded` -> `guarded-all-doors`, measured from this file's own calls rather than asserted."
-    },
     "scripts/validate_quality_artifact.py": {
       "verdict": "guarded-all-doors",
       "reason": "Already on the pre-classified guarded list; confirmed by reading: line 624 calls `_adapter_version_verdict.refuse_unspeakable_version(...)` before `resolve_adapter_line_budget` is used at line 589. LEVEL MIGRATION (#675): `guarded` -> `guarded-all-doors`, measured from this file's own calls rather than asserted."
@@ -201,7 +183,7 @@
     },
     "skills/public/achieve/scripts/achieve_adapter_policy.py": {
       "verdict": "accepted-risk-unguarded",
-      "reason": "This module IS the achieve adapter's resolver (load_adapter/validate_adapter_data at lines 235-306) and correctly sets `valid: not errors` via `declared_fields_after_version_check` (line 239) -- that part is a proper resolver. But its own downstream helpers `resolve_discussion_deploy_vocab` (309-315) and `resolve_release_surface_tokens` (318-332) call `load_adapter(repo_root).get('data')` and read a field directly with no check of `errors`/`valid`, and their known callers (skills/public/achieve/scripts/goal_artifact_coordination_floors.py:160, skills/public/achieve/scripts/check_goal_artifact.py:165) also call them with no valid/errors check."
+      "reason": "This module IS the achieve adapter's resolver (load_adapter/validate_adapter_data) and correctly sets `valid: not errors` via `declared_fields_after_version_check` -- that part is a proper resolver. Its downstream helper `resolve_discussion_deploy_vocab` reads the resolved payload directly without checking `errors`/`valid`; invalid or missing adapters deliberately fall back to the portable discussion vocabulary, so the declaration is not silently treated as authoritative."
     },
     "skills/public/achieve/scripts/goal_artifact_closeout_evidence.py": {
       "verdict": "safe-not-consequential",
@@ -225,7 +207,7 @@
     },
     "skills/public/critique/scripts/prepare_packet.py": {
       "verdict": "safe-checks-errors",
-      "reason": "Line 78-81: `adapter = load_adapter(repo_root); if not adapter['valid']: yaml_output.emit_yaml({'ok': False, 'error': 'critique adapter invalid', 'adapter': adapter}); return 1` \u2014 refuses before using adapter data further; critique_adapter_lib.load_adapter sets valid = not errors (scripts/critique_adapter_lib.py:182,273) so a version refusal is included."
+      "reason": "Line 78-81: `adapter = load_adapter(repo_root); if not adapter['valid']: yaml_output.emit_yaml({'ok': False, 'error': 'critique adapter invalid', 'adapter': adapter}); return 1` — refuses before using adapter data further; critique_adapter_lib.load_adapter sets valid = not errors (scripts/critique_adapter_lib.py:182,273) so a version refusal is included."
     },
     "skills/public/critique/scripts/scaffold_critique_artifact.py": {
       "verdict": "guarded-all-doors",
@@ -233,7 +215,7 @@
     },
     "skills/public/critique/scripts/run_review.py": {
       "verdict": "safe-checks-errors",
-      "reason": "The semantic review command delegates adapter resolution to `run_review_support.resolve_adapter`, which refuses when the resolver exits nonzero or returns `valid: false` before `select_backend` reads reviewer policy. This row records the delegated refusal explicitly; the command does not start a reviewer over a version-refused adapter."
+      "reason": "The semantic review command delegates adapter resolution to `run_review_support.resolve_adapter`, which refuses when the resolver exits nonzero or returns `valid: false` before the review policy is read. This row records the delegated refusal explicitly; the command does not start a reviewer over a version-refused adapter."
     },
     "skills/public/debug/scripts/plan_debug_run.py": {
       "verdict": "safe-checks-errors",
@@ -258,34 +240,6 @@
     "skills/public/gather/scripts/write_record.py": {
       "verdict": "guarded-errors-only",
       "reason": "Already in the given already-guarded list; confirmed via `_version_verdict.version_refused(payload.get('errors'))` at line 59, imported from scripts.adapter_version_verdict at line 47. LEVEL MIGRATION (#675): this row was `guarded` and is measured `guarded-errors-only` -- it asks `declarations_unhonored`, a predicate over `errors`, so a line the parser silently DROPS walks past it with `errors: []` and `valid: True`. Nothing was upgraded or downgraded by hand; the level is what the file's own calls establish, and the gate now refuses a row that claims a different one. Raising it to `guarded-all-doors` means routing through `unspeakable_version_message` / `refuse_unspeakable_version` or asking `declarations_dropped` explicitly."
-    },
-    "skills/public/handoff/scripts/chunked_routing_agentic_policy.py": {
-      "verdict": "safe-checks-errors",
-      "reason": "load_chunk_policy_config() at lines 84-92: `adapter = resolve.load_adapter(repo_root); if not adapter.get('valid', False): config['_adapter_report'] = {...}; return config` \u2014 degrades to defaults but surfaces the invalid report rather than silently applying declared-looking values; handoff resolve_adapter.load_adapter -> load_simple_adapter runs declared_fields_after_version_check (scripts/simple_skill_adapter_lib.py:169) so version refusal sets valid=False here."
-    },
-    "skills/public/handoff/scripts/chunked_routing_issue_config.py": {
-      "verdict": "safe-checks-errors",
-      "reason": "load_issue_source_config() at lines 72-75: `adapter = _load_sibling('resolve_adapter').load_adapter(repo_root); if adapter.get('valid') is False: config['enabled'] = False; return config, adapter_report(adapter)` \u2014 disables the issue source entirely and returns a report rather than silently using a defaulted config as if declared."
-    },
-    "skills/public/handoff/scripts/chunked_routing_issue_source.py": {
-      "verdict": "safe-checks-errors",
-      "reason": "build_issue_entries() at lines 229-239 loads the issue skill's adapter and checks `if adapter.get('valid') is False:` before using adapter_data, returning [] with a typed InvalidAdapter diagnostic instead of proceeding with defaulted backend/target data; also delegates load_issue_source_config() to the already-checked handoff adapter helper (chunked_routing_issue_config.py)."
-    },
-    "skills/public/handoff/scripts/chunked_routing_staleness.py": {
-      "verdict": "safe-checks-errors",
-      "reason": "resolve_states_for_repo() at lines 210-218 checks `if adapter.get('valid') is False:` immediately after loading the issue adapter and returns an empty states map plus a diagnostic instead of resolving issue states against defaulted backend/target data; callers treat the diagnostic as 'check not run' rather than 'nothing is closed'."
-    },
-    "skills/public/handoff/scripts/parse_handoff_entries.py": {
-      "verdict": "guarded-all-doors",
-      "reason": "_resolve_handoff_path now refuses via `_adapter_version_verdict.unspeakable_version_message(...)` before `adapter[\"artifact_path\"]` is read. The guard sits AFTER the explicit-path arm on purpose: `parse_handoff_entries.py <path>` asks the adapter nothing FOR THE PATH IT PARSES. A round-2 bounded review narrowed that: `<path> --with-issues` DOES reach this adapter via `chunked_routing_issue_source.build_issue_entries`, and is safe only because THAT helper checks `adapter.get(\"valid\") is False` and returns `enabled: False` -- the helper's property, not this exemption's. Now held by `test_the_explicit_path_arm_with_issues_does_not_act_on_a_charness_default`. Measured flip at 97dfc881a: a repo declaring `output_dir: docs/mine` under `version: 9` returned `handoff_path: <repo>/docs/handoff.md` with `ok: true` and a real `entry_count` -- a confident, well-formed answer about a file the repo does not use. Controls: version 1 returns `docs/mine/handoff.md`; no adapter returns the default; the explicit-path arm still works under version 9. Probe record: charness-artifacts/probe/2026-08-19-handoff-hitl-version-refusal.md. LEVEL MIGRATION (#675): `guarded` -> `guarded-all-doors`, measured from this file's own calls rather than asserted."
-    },
-    "skills/public/handoff/scripts/plan_handoff_run.py": {
-      "verdict": "guarded-all-doors",
-      "reason": "build_plan's adapter read now refuses before `artifact_path` and the `max_content_lines` ceiling are resolved. THIS FILE ALREADY READ `errors` AND THAT WAS NOT ENOUGH, which is the row's point: the read added an advisory and echoed errors into the envelope while never gating the `artifact_path` or `next_action` built from the defaulted data -- an echoed error beside an acted-on default. Measured flip at 97dfc881a: a repo declaring `output_dir: docs/mine` under `version: 9` planned against `artifact_path: docs/handoff.md`, exit 0, so every emitted command and gate packet named the wrong file. Control at version 1 returns `docs/mine/handoff.md`. Probe record: charness-artifacts/probe/2026-08-19-handoff-hitl-version-refusal.md. LEVEL MIGRATION (#675): `guarded` -> `guarded-all-doors`, measured from this file's own calls rather than asserted."
-    },
-    "skills/public/handoff/scripts/scaffold_handoff_artifact.py": {
-      "verdict": "guarded-all-doors",
-      "reason": "payload_for() now calls `_adapter_version_verdict.unspeakable_version_message(load_adapter, repo_root, adapter_name=\"handoff-adapter.yaml\")` and raises SystemExit before the write target is read from the payload. Guarded at the READ SITE, not `main()`, so the refusal is a property of this function. A round-1 bounded review over rows 6-13 REFUTED the reason first written here (\"`payload_for` is the imported symbol in this skill\"): this skill's `payload_for` has NO production importer -- only tests. That is true only for retro (`plan_retro_run`) and debug (`plan_debug_run`). Read-site placement buys positional independence, which is the smaller and true claim. Measured flip on the real CLI at 0bcb6b227: a repo declaring `output_dir: docs/mine` under `version: 9` got back `artifact_path: docs/handoff.md`, exit 0 -- an unhonored declaration RELOCATES this family's artifact rather than degrading its answer. Both polarity controls run: version 1 returns the declared path, no adapter returns the default. Probe record: charness-artifacts/probe/2026-08-19-scaffold-family-version-refusal.md. The first cut of this probe declared `artifact_path`, which this resolver ignores (it derives the path from `output_dir` plus a fixed filename), so the speakable-version control could not distinguish honored from fell-back. Re-measured on `output_dir`. LEVEL MIGRATION (#675): `guarded` -> `guarded-all-doors`, measured from this file's own calls rather than asserted."
     },
     "skills/public/hitl/scripts/bootstrap_review.py": {
       "verdict": "guarded-all-doors",
@@ -317,7 +271,7 @@
     },
     "skills/public/issue/scripts/issue_provider_selection.py": {
       "verdict": "safe-checks-errors",
-      "reason": "select_backend() is the single adapter-to-provider boundary: it preserves the resolver's `valid` result as `adapter_ok` and every issue caller refuses before invoking the selected backend when that result is false. The default backend is retained only for a typed refusal payload, never as an executable fallback for an invalid adapter."
+      "reason": "resolve_backend() is the single adapter-to-provider boundary: it binds the explicit target when one is supplied, preserves the resolver's `valid` result as `adapter_ok`, and every issue caller refuses before invoking the selected backend when that result is false. The default backend is retained only for a typed refusal payload, never as an executable fallback for an invalid adapter."
     },
     "skills/public/issue/scripts/issue_tool.py": {
       "verdict": "safe-checks-errors",
@@ -481,7 +435,7 @@
     },
     "skills/public/retro/scripts/check_auto_trigger.py": {
       "verdict": "safe-checks-errors",
-      "reason": "`no_config_payload` (line 112) and `build_payload` (line 318) both call `adapter_unreadable_reasons(adapter)`, which is `scripts.adapter_lib.unreadable_reasons` and starts from `adapter.get(\"errors\")` (adapter_lib.py:420) \u2014 so a version-refusal error forces `unreadable` truthy, `intentional_empty=False`, `configuration_status=\"adapter-unreadable\"` (line 164-165), `state=not-established`, and exit code `UNDETERMINED_EXIT=3` instead of a silent `triggered:false`."
+      "reason": "`no_config_payload` (line 112) and `build_payload` (line 318) both call `adapter_unreadable_reasons(adapter)`, which is `scripts.adapter_lib.unreadable_reasons` and starts from `adapter.get(\"errors\")` (adapter_lib.py:420) — so a version-refusal error forces `unreadable` truthy, `intentional_empty=False`, `configuration_status=\"adapter-unreadable\"` (line 164-165), `state=not-established`, and exit code `UNDETERMINED_EXIT=3` instead of a silent `triggered:false`."
     },
     "skills/public/retro/scripts/persist_retro_artifact.py": {
       "verdict": "guarded-errors-only",
@@ -493,7 +447,7 @@
     },
     "skills/public/retro/scripts/prepare_packet.py": {
       "verdict": "safe-checks-errors",
-      "reason": "Line 85: `if not adapter[\"valid\"]: yaml_output.emit_yaml({...\"error\": \"retro adapter invalid\"...}); return 1` \u2014 this precedes the line-99 `output_dir = repo_root / adapter[\"data\"].get(\"output_dir\", ...)` used to write the packet, so a version-refused adapter never reaches the write."
+      "reason": "Line 85: `if not adapter[\"valid\"]: yaml_output.emit_yaml({...\"error\": \"retro adapter invalid\"...}); return 1` — this precedes the line-99 `output_dir = repo_root / adapter[\"data\"].get(\"output_dir\", ...)` used to write the packet, so a version-refused adapter never reaches the write."
     },
     "skills/public/retro/scripts/refresh_recent_lessons.py": {
       "verdict": "guarded-all-doors",

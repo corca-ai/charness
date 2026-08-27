@@ -110,7 +110,8 @@ class DeliveryLedger:
         scope: str,
         packet_identity: str,
         parent_receipt_identity: str,
-        boundary_fingerprint: str,
+        boundary_fingerprint: str | None = None,
+        boundary_mode: str | None = None,
         reviewed_input_identity: str | None = None,
         execution_mode: str | None = None,
         backend: str | None = None,
@@ -129,6 +130,7 @@ class DeliveryLedger:
             packet_identity=packet_identity,
             parent_receipt_identity=parent_receipt_identity,
             boundary_fingerprint=boundary_fingerprint,
+            boundary_mode=boundary_mode,
             reviewed_input_identity=reviewed_input_identity,
             execution_mode=execution_mode,
             backend=backend,
@@ -178,6 +180,7 @@ class DeliveryLedger:
             packet_identity=old.packet_identity,
             parent_receipt_identity=old.parent_receipt_identity,
             boundary_fingerprint=old.boundary_fingerprint,
+            boundary_mode=old.boundary_mode,
             reviewed_input_identity=old.reviewed_input_identity,
             execution_mode=old.execution_mode,
             backend=old.backend,
@@ -280,7 +283,8 @@ def _parser() -> argparse.ArgumentParser:
     start.add_argument("--scope", required=True)
     start.add_argument("--packet-identity", required=True)
     start.add_argument("--parent-receipt-identity", required=True)
-    start.add_argument("--boundary-fingerprint", required=True)
+    start.add_argument("--boundary-fingerprint")
+    start.add_argument("--boundary-mode", choices=("read-only-worker", "shared-tree-fingerprint"))
     start.add_argument("--reviewed-input-identity")
     start.add_argument("--execution-mode", choices=("file-backed-worker", "typed-subagent"))
     start.add_argument("--backend")
@@ -335,6 +339,7 @@ def main(argv: list[str] | None = None) -> int:
                     packet_identity=args.packet_identity,
                     parent_receipt_identity=args.parent_receipt_identity,
                     boundary_fingerprint=args.boundary_fingerprint,
+                    boundary_mode=args.boundary_mode,
                     reviewed_input_identity=args.reviewed_input_identity,
                     execution_mode=args.execution_mode,
                     backend=args.backend,

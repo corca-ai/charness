@@ -58,9 +58,9 @@ def _render_skill_routing() -> tuple[str, list[str]]:
     lines = [
         "## Skill Routing",
         "",
-        "At session start, a pickup follows docs/handoff.md `## Workflow Trigger`; otherwise choose the durable workflow directly from installed skill metadata and model judgment. If hidden support/integration availability is unclear, run the read-only `charness catalog list --repo-root <repo> --summary` inventory. Treat its facts only as inventory; if the command returns nonzero, report the command failure. When a request names an external URL or source, use `gather` before deciding; validation closeout or operator-reading tests go through `quality`.",
+        "Start an active Goal Run only from the exact `/goal #<parent>` objective; the parent cursor selects the next child. Otherwise choose the matching workflow directly from installed skill metadata and model judgment. If hidden support/integration availability is unclear, run the read-only `charness catalog list --repo-root <repo> --summary` inventory. Treat its facts only as inventory; if the command returns nonzero, report the command failure. When a request names an external URL or source, use `gather` before deciding; validation closeout or operator-reading tests go through `quality`.",
         "",
-        "The SessionStart hook may inject this context when installed; this block is the fallback when it is absent.",
+        "Use AGENTS.md -> docs/index.md -> the owning page for progressive disclosure.",
         "",
     ]
     listed_skill_ids = []

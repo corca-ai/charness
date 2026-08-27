@@ -11,27 +11,37 @@ TOOL_PATH = ROOT / "skills/public/issue/scripts/issue_tool.py"
 CONTRACT_PATH = ROOT / "skills/public/issue/scripts/issue_goal_run_contract.py"
 
 
-def test_provider_selection_is_central_and_binds_target_without_mutating_input(tmp_path: Path) -> None:
+def test_provider_selection_resolves_target_in_one_call_and_reuses_loaded_adapter(tmp_path: Path) -> None:
     backend = runpy.run_path(str(PROVIDER_PATH))
     write_issue_adapter_with_backend(tmp_path, backend_id="acme", binary="acme")
 
-    selected = backend["select_backend"](tmp_path)
-    assert selected["adapter_ok"] is True
-    assert selected["provider_selection"] == {
-        "provider_id": "acme",
-        "binary": "acme",
-        "source": "adapter",
-        "target_repo": None,
-        "operations": None,
-        "status": "unbound",
-    }
+    resolved = backend["resolve_backend"](tmp_path, target_repo="acme/project")
+    assert resolved["adapter_ok"] is True
+    assert resolved["backend"]["id"] == "acme"
+    assert "provider_selection" not in resolved
 
-    bound = backend["bind_provider_selection"](
-        selected, target_repo="acme/project", operations=["read-body"]
+    loaded = resolved["adapter"]
+    backend["ADAPTER"].load_adapter = lambda _root: (_ for _ in ()).throw(
+        AssertionError("an already-loaded adapter must be reusable")
     )
-    assert selected["provider_selection"]["target_repo"] is None
-    assert bound["provider_selection"]["target_repo"] == "acme/project"
-    assert bound["provider_selection"]["operations"] == ["read-body"]
+    reused = backend["resolve_backend"](
+        tmp_path, target_repo="acme/project", adapter=loaded
+    )
+    assert reused["adapter"] is loaded
+    assert reused["backend"] == resolved["backend"]
+
+    scoped_adapter = {
+        "valid": True,
+        "data": {
+            "issue_backend": {"id": "acme", "binary": "acme", "repo_scoped": "acme/project"}
+        },
+    }
+    try:
+        backend["resolve_backend"](tmp_path, target_repo="other/project", adapter=scoped_adapter)
+    except RuntimeError as exc:
+        assert "scoped" in str(exc)
+    else:
+        raise AssertionError("a repo-scoped backend must reject a foreign target")
 
 
 def test_invalid_adapter_refuses_explicit_selection_before_parsing_or_provider_call(
@@ -60,8 +70,7 @@ def test_invalid_adapter_refuses_explicit_selection_before_parsing_or_provider_c
     # Inspect the typed resolver directly for the no-fallback invariant too.
     selected = tool["_resolve_backend"](tmp_path)
     assert selected["adapter_ok"] is False
-    assert selected["provider_selection"]["source"] == "invalid-adapter"
-    assert selected["provider_selection"]["status"] == "adapter-invalid"
+    assert "provider_selection" not in selected
 
 
 def test_goal_run_capability_probe_uses_bound_target_not_placeholder_repo() -> None:

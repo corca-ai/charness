@@ -31,7 +31,7 @@ def test_setup_normalize_host_docs_creates_agents_and_claude_symlink(tmp_path: P
     written_agents = (repo / "AGENTS.md").read_text(encoding="utf-8")
     assert written_agents.startswith("# Agents\n")
     assert "## Skill Routing" in written_agents
-    assert "## Subagent Delegation" in written_agents
+    assert "## Subagent Delegation" not in written_agents
     # #317 seed: the greenfield write path emits the compact commit-discipline
     # block so a long autonomous run does not leave work uncommitted.
     assert "## Commit Discipline" in written_agents

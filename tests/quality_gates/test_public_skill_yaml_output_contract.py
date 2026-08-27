@@ -36,13 +36,6 @@ OWNED_COMMAND_DOCS = (
 ALWAYS_STRUCTURED_COMMANDS = (
     ("skills/public/debug/scripts/plan_debug_run.py", "--repo-root", "."),
     (
-        "skills/public/handoff/scripts/plan_handoff_run.py",
-        "--repo-root",
-        ".",
-        "--intent",
-        "refresh",
-    ),
-    (
         "skills/public/retro/scripts/plan_retro_run.py",
         "--repo-root",
         ".",
@@ -67,7 +60,7 @@ DETAIL_COMMANDS = (
         "--repo-root",
         ".",
         "--skill-id",
-        "handoff",
+        "achieve",
     ),
 )
 
@@ -111,7 +104,6 @@ JSON_FLAG_MUST_BE_UNRECOGNIZED = (
     ("scripts/measure_inventory_consumption_floor.py", "--repo-root", "."),
     ("scripts/render_lesson_selection_preview.py", "--repo-root", ".", "--seed", "contract-probe"),
     ("scripts/run_slice_closeout.py", "--repo-root", ".", "--paths", "README.md"),
-    ("scripts/session_start_lesson_context.py", "--repo-root", "."),
     ("skills/public/setup/scripts/seed_dependencies.py", "--repo-root", ".", "--tool-id", "ruff"),
     ("skills/shared/scripts/reviewer_boundary_fingerprint.py", "snapshot", "--repo-root", "."),
 )
@@ -411,13 +403,6 @@ JSON_STDOUT_EXEMPT = {
         "the Claude PostToolUse hook envelope ({'hookSpecificOutput': ...}), parsed as "
         "JSON by the HOST. Rendering it as YAML silently stops the advisory reaching "
         "the agent -- the host does not report a parse failure."
-    ),
-    "scripts/session_start_routing.py": (
-        "the SessionStart hook envelope, parsed as JSON by BOTH Claude and Codex. Same "
-        "channel as post_edit_skill_anchor_guard, which names this file as its "
-        "precedent. Converting it would silently stop the routing directive and the "
-        "whole lesson block reaching the agent in every session, with no parse error "
-        "anywhere -- the only signal would be the absence of behavior nobody measures."
     ),
     "charness": (
         "the root CLI's own inlined `render_yaml`, whose PyYAML-absent branch returns "

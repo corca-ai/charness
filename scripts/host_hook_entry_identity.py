@@ -20,16 +20,9 @@ needs the state file, the settings path, or any host I/O.
 from __future__ import annotations
 
 import re
+import shlex
 from pathlib import Path
 from typing import Any, Iterator
-
-try:
-    from host_hook_codex_toml_lib import script_basename
-except ImportError:  # pragma: no cover - used when invoked as a module from elsewhere
-    import sys
-
-    sys.path.insert(0, str(Path(__file__).resolve().parent))
-    from host_hook_codex_toml_lib import script_basename  # type: ignore[no-redef]
 
 __all__ = [
     "entry_carries_foreign_command",
@@ -38,6 +31,18 @@ __all__ = [
     "matcher_covers",
     "matcher_events",
 ]
+
+
+def script_basename(command: str) -> str | None:
+    """Return the `.py` basename used as a logical hook identity."""
+    try:
+        parts = shlex.split(command)
+    except ValueError:
+        parts = command.split()
+    for part in parts:
+        if part.endswith(".py"):
+            return Path(part).name
+    return None
 
 
 def event_entry(command: str, matcher: str = "") -> dict[str, Any]:

@@ -16,7 +16,6 @@ upstream stops being printed. There is no second copy of any rule text.
 """
 from __future__ import annotations
 
-import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -25,7 +24,6 @@ from runtime_bootstrap import import_repo_module
 _preflight = import_repo_module(__file__, "scripts.check_doc_authoring_preflight")
 _doc_links = import_repo_module(__file__, "scripts.check_doc_links")
 _inline_code = import_repo_module(__file__, "scripts.check_markdown_inline_code")
-_handoff = import_repo_module(__file__, "scripts.validate_handoff_artifact")
 _markdown_scan = import_repo_module(__file__, "scripts.markdown_doc_scan")
 
 # Re-exported so a caller catches the class THIS module actually raises. Run as
@@ -148,62 +146,6 @@ def collect_inline_code_rules() -> list[dict[str, Any]]:
     ]
 
 
-def collect_length_rule(repo_root: Path, as_surface: str | None) -> dict[str, Any]:
-    surfaces = _preflight._length_surfaces(repo_root)
-    surface = _preflight._resolve_length_surface(repo_root, "", as_surface) if as_surface else None
-    known = [s.name for s in surfaces]
-    if surface is None:
-        return {"surface": None, "cap": None, "counted_by": None, "known_surfaces": known}
-    # The adapter-resolved ceiling, not the shipped default: this is the FIRST cap
-    # number the authoring agent sees, before a draft exists, so a default here sends
-    # a repo that raised its budget to write to a number nothing enforces.
-    cap = _preflight.surface_cap(repo_root, surface)
-    source = (
-        f"{surface.module}.{surface.resolver_attr}"
-        if surface.resolver_attr
-        else f"{surface.module}.{surface.constant}"
-    )
-    return {
-        "surface": surface.name,
-        "cap": cap,
-        "counted_by": surface.count_attr or "raw file lines",
-        "label": surface.label,
-        "source": source,
-        "known_surfaces": known,
-    }
-
-
-def _regenerable_verdict() -> str | None:
-    """The rule sentence the handoff validator itself raises, obtained by giving
-    it a document that breaks the rule. The rationale (`a fact a command can
-    regenerate goes stale in place`) lives only inside that message, so writing a
-    headline here instead would be the one restatement in this module."""
-    with tempfile.NamedTemporaryFile("w", suffix=".md", delete=False, encoding="utf-8") as handle:
-        handle.write("# Probe\n\nShipped in v1.2.3 today.\n")
-        probe = Path(handle.name)
-    try:
-        _handoff.validate_no_regenerable_facts(probe)
-    except _handoff.ValidationError as exc:
-        return str(exc)
-    finally:
-        probe.unlink(missing_ok=True)
-    return None
-
-
-def collect_regenerable_rules(repo_root: Path, as_surface: str | None) -> dict[str, Any]:
-    """The literal classes the handoff validator refuses, rendered from its own
-    `REGENERABLE_PATTERNS` table. Scoped to the surface that enforces them."""
-    if (as_surface or "") != "handoff":
-        return {"verdict": None, "classes": []}
-    return {
-        "verdict": _regenerable_verdict(),
-        "classes": [
-            {"label": label, "replacement": replacement}
-            for _pattern, label, replacement in _handoff.REGENERABLE_PATTERNS
-        ],
-    }
-
-
 def _probe_sample(repo_root: Path) -> str | None:
     """A real repo-relative path to probe the classifiers with.
 
@@ -222,14 +164,11 @@ def _probe_sample(repo_root: Path) -> str | None:
         return tracked[0] if tracked else None
 
 
-def build_rules(repo_root: Path, as_surface: str | None) -> dict[str, Any]:
+def build_rules(repo_root: Path) -> dict[str, Any]:
     sample = _probe_sample(repo_root)
     return {
         "mode": "rules",
-        "surface": as_surface,
         "probe_sample": sample,
-        "length": collect_length_rule(repo_root, as_surface),
-        "regenerable_facts": collect_regenerable_rules(repo_root, as_surface),
         "link_shapes": collect_link_shape_rules(repo_root, sample) if sample else [],
         "backticked_refs": collect_backtick_rules(repo_root, sample) if sample else [],
         "reference_forms": collect_reference_form_rules(),
@@ -244,9 +183,7 @@ def build_rules(repo_root: Path, as_surface: str | None) -> dict[str, Any]:
         # resolves; the preflight lane's `available` means the engine RAN and was parsed.
         # `npm exec --no` resolves whenever npm is on PATH and then refuses, so spelling
         # both `available` reinstated the contradiction the comment above names — and
-        # handoff_authoring_preflight.py emits these two commands adjacently, so an agent
+        # the authoring preflight emits these two commands adjacently, so an agent
         # reads both payloads in one sequence.
         "markdownlint": {"resolves": _preflight._resolve_markdownlint_cmd(repo_root) is not None},
     }
-
-

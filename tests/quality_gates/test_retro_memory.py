@@ -32,7 +32,6 @@ def test_retro_adapter_exposes_recent_lessons_summary_path(monkeypatch, capsys) 
 
 
 def test_retro_memory_surfaces_reference_recent_lessons_digest() -> None:
-    handoff_text = (ROOT / "docs" / "handoff.md").read_text(encoding="utf-8")
     skill_text = (ROOT / "skills" / "public" / "retro" / "SKILL.md").read_text(encoding="utf-8")
     contract_text = (
         ROOT / "skills" / "public" / "retro" / "references" / "adapter-contract.md"
@@ -40,7 +39,6 @@ def test_retro_memory_surfaces_reference_recent_lessons_digest() -> None:
     lessons_text = (ROOT / "charness-artifacts" / "retro" / "recent-lessons.md").read_text(encoding="utf-8")
 
     assert "charness-artifacts/retro/recent-lessons.md" in AGENTS
-    assert "recent-lessons.md" in handoff_text
     assert "summary_path" in skill_text
     assert "summary_path" in contract_text
     assert "Repeat Traps" in lessons_text
@@ -59,9 +57,7 @@ def test_agents_keeps_dogfood_detail_in_development_doc() -> None:
     assert "~/.agents/src/charness/charness update" in development_text
 
 
-def test_agents_carries_bounded_subagent_delegation_rule() -> None:
+def test_agents_does_not_carry_a_global_subagent_delegation_rule() -> None:
     agents_text = AGENTS.lower()
 
-    assert "subagent delegation" in agents_text
-    assert "explicit user delegation request" in agents_text
-    assert "bounded reviewer" in agents_text
+    assert "subagent delegation" not in agents_text

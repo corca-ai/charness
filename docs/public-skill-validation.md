@@ -215,7 +215,6 @@ Current assignment:
 - `create-skill`
 - `debug`
 - `gather`
-- `handoff`
 - `impl`
 - `issue`
 - `spec`
@@ -235,7 +234,7 @@ Current assignment:
   makes it a poor standing evaluator target. Keep repo-owned seam checks for
   the contract and use on-demand proof or reviewed dogfood for the real
   behavioral question.
-- `create-skill`, `gather`, `handoff`, `setup`, `issue`,
+- `create-skill`, `gather`, `setup`, `issue`,
   `spec`, `impl`, and `debug` shape later execution or durable repo state. Those are the highest
   leverage candidates for maintained scenario evaluation now that `cautilus`
   is the tracked evaluator boundary.
@@ -255,7 +254,6 @@ Current assignment:
 - `critique`
 - `debug`
 - `gather`
-- `handoff`
 - `hitl`
 - `hotl`
 - `impl`
@@ -305,7 +303,6 @@ Current assignment:
 
 - `announcement`
 - `create-skill`
-- `handoff`
 - `setup`
 - `quality`
 - `spec`
@@ -327,7 +324,7 @@ Current assignment:
 - `hitl`, `narrative`, and `release` mutate high-leverage review, truth, or
   publication surfaces. Silent fallback here creates convincing but
   ungrounded repo behavior, so the safe default is to stop.
-- `announcement`, `create-skill`, `handoff`, `hotl`, `setup`,
+- `announcement`, `create-skill`, `hotl`, `setup`,
   `quality`, and `spec` still benefit from adapters, but they can continue honestly when the
   skill names the inferred-default boundary instead of pretending the repo
   already declared it.

@@ -385,7 +385,6 @@ _EMPTY_EVIDENCE_REPORT = {
     "unbound_evidence": [],
     "binding_failures": [],
     "stub_evidence": [],
-    "coordination_missing": [],
     "section_placeholders": [],
     "invalid_early_close_reports": [],
 }

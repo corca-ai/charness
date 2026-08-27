@@ -20,6 +20,39 @@ from .support import (
 RUN_QUALITY_SCRIPT_TEXT = (ROOT / "scripts" / "run-quality.sh").read_text(encoding="utf-8")
 
 
+def _assert_external_failure_recovery(repo: Path, label: str) -> None:
+    receipt = json.loads((repo / "receipt.json").read_text(encoding="utf-8"))
+    recovery = receipt["adverse_subjects"][0]["recovery"]
+    assert recovery["status"] == "available"
+    path = Path(recovery["path"])
+    assert path.is_absolute()
+    assert path.name == f"{label}.log"
+    assert path.parent.name == "quality-failure-logs"
+    assert path.is_file()
+    assert not path.is_relative_to(repo)
+
+
+def test_run_quality_default_is_the_small_core_lane(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
+
+    assert result.returncode == 0, result.stderr
+    for label in (
+        "validate-skills",
+        "validate-packaging",
+        "check-shell",
+        "py-compile",
+        "ruff",
+    ):
+        assert f"PASS {label}" in result.stdout
+    assert "PASS pytest" not in result.stdout
+    assert "PASS check-changed-line-mutation-coverage" not in result.stdout
+    assert_quality_receipt(repo, result, status="pass", passed=5, failed=0)
+
+
 def test_run_quality_summarizes_success_without_replaying_logs(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
     env["CHARNESS_QUALITY_LABELS"] = "validate-skills,check-markdown,pytest,check-coverage"
@@ -757,6 +790,7 @@ def test_quality_runner_leaves_no_specdown_state_in_the_worktree(
 
     result = run_shell_script(
         repo / "scripts" / "run-quality.sh",
+        "--full",
         "--read-only",
         cwd=repo,
         env={**env, "SPECDOWN_ARGV_LOG": str(argv_log)},
@@ -902,8 +936,8 @@ def test_exit_three_from_a_gate_that_did_not_opt_in_still_fails(
     # still act.
     assert_quality_receipt(
         repo, result, status="fail", passed=1, failed=1, adverse_subjects=["validate-skills"],
-        adverse_recoveries=[{"status": "available", "path": ".charness/quality-failure-logs/validate-skills.log"}],
     )
+    _assert_external_failure_recovery(repo, "validate-skills")
 
 
 def test_the_unproven_column_is_absent_when_every_gate_established_its_scope(
@@ -939,9 +973,9 @@ def test_a_real_failure_is_still_a_failure_next_to_an_unproven_gate(
         passed=0,
         failed=1,
         adverse_subjects=["check-doc-links"],
-        adverse_recoveries=[{"status": "available", "path": ".charness/quality-failure-logs/check-doc-links.log"}],
         unproven_subjects=[_UNPROVEN_LABEL],
     )
+    _assert_external_failure_recovery(repo, "check-doc-links")
 
 
 def test_the_real_runtime_recorder_accepts_every_status_the_runner_emits() -> None:

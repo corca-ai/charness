@@ -74,9 +74,9 @@ YAML_CALLS = frozenset({"safe_load", "load_yaml", "load_yaml_file", "load_yaml_f
 # itself would be circular, and the version contract they implement is covered by
 # `tests/quality_gates/test_adapter_version_reconciliation.py` instead.
 #
-# `_adapter_policy.py` is deliberately NOT excluded: achieve's defines a resolver AND
-# consumes its own payload in `release_surface_tokens`, and excluding it would have hidden
-# a consumer the census independently found acting on defaults.
+# `_adapter_policy.py` is deliberately NOT excluded: achieve defines a resolver AND
+# consumes its own payload in `resolve_discussion_deploy_vocab`, and excluding it would
+# have hidden a consumer the census independently found acting on defaults.
 EXCLUDED_NAMES = (
     "resolve_adapter.py",
     "adapter_lib.py",

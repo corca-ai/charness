@@ -25,6 +25,7 @@ import yaml
 try:
     from reviewer_capability import load_capability_file
     from reviewer_delivery import _read, _write, ledger_lock
+    from reviewer_delivery_fields import boundary_binding
     from reviewer_output import emit_yaml
     from reviewer_runner_support import (
         append_lesson_args,
@@ -37,6 +38,7 @@ try:
 except ImportError:
     from skills.shared.scripts.reviewer_capability import load_capability_file
     from skills.shared.scripts.reviewer_delivery import _read, _write, ledger_lock
+    from skills.shared.scripts.reviewer_delivery_fields import boundary_binding
     from skills.shared.scripts.reviewer_output import emit_yaml
     from skills.shared.scripts.reviewer_runner_support import (
         append_lesson_args,
@@ -137,7 +139,12 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--reviewed-input-identity", required=True)
     parser.add_argument("--attempt-id", required=True)
     parser.add_argument("--parent-receipt-identity", required=True)
-    parser.add_argument("--boundary-fingerprint", required=True)
+    parser.add_argument("--boundary-fingerprint")
+    parser.add_argument(
+        "--boundary-mode",
+        choices=("read-only-worker", "shared-tree-fingerprint"),
+        default=None,
+    )
     parser.add_argument("--ledger-file", type=Path, required=True)
     parser.add_argument("--output-file", type=Path, required=True)
     parser.add_argument("--receipt-file", type=Path, required=True)
@@ -216,6 +223,10 @@ def main(argv: list[str] | None = None) -> int:
         if backend not in {"codex_exec", "claude_p"}:
             raise ValueError("file-backed runner requires adapter reviewer_runner.backend")
 
+        boundary_mode, boundary_fingerprint = boundary_binding(
+            args.boundary_mode, args.boundary_fingerprint
+        )
+
         prompt = _repo_path(repo_root, args.prompt_file)
         capability_file = _repo_path(repo_root, args.capability_file)
         schema = _repo_path(repo_root, args.schema_file)
@@ -278,7 +289,8 @@ def main(argv: list[str] | None = None) -> int:
                 packet_identity=args.packet_identity,
                 reviewed_input_identity=args.reviewed_input_identity,
                 parent_receipt_identity=args.parent_receipt_identity,
-                boundary_fingerprint=args.boundary_fingerprint,
+                boundary_fingerprint=boundary_fingerprint,
+                boundary_mode=boundary_mode,
                 execution_mode=mode,
                 backend=backend,
                 prompt_sha256=prompt_sha,
@@ -319,9 +331,10 @@ def main(argv: list[str] | None = None) -> int:
             args.reviewed_input_identity,
             "--parent-receipt-identity",
             args.parent_receipt_identity,
-            "--boundary-fingerprint",
-            args.boundary_fingerprint,
         ]
+        worker_command.extend(["--boundary-mode", boundary_mode])
+        if boundary_fingerprint is not None:
+            worker_command.extend(["--boundary-fingerprint", boundary_fingerprint])
         worker_command.extend(["--stdout-file", str(stdout_path), "--stderr-file", str(stderr_path)])
         append_lesson_args(worker_command, args, lesson_bundle, lesson_receipt, repo_root)
         lesson_before = lesson_inventory_snapshot(repo_root) if lesson_binding_data is not None else None

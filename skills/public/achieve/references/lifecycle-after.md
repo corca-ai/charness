@@ -26,13 +26,12 @@ unverified outcomes. Retry begins with a fresh read and never claims completion
 from a missing readback.
 
 Issue-resolution carrier publication and lifecycle-artifact publication are
-separate surfaces. Later goal, retro, or handoff records do not require a
+separate surfaces. Later goal or retro records do not require a
 second docs-only issue-closeout push once the carrier has been verified.
 
-The legacy delegated-closeout vocabulary remains explicit when that optional
-mode is used: `impl-local`, `carrier`, `pushed-ci`, `instance-synced`, `live`,
-and `issue-closed`. A provider-backed Goal Run is authoritative for the current
-parent/child lifecycle and does not infer these states from local prose.
+Cross-context or deferred work stays in the provider-backed parent/child/task
+state. Achieve does not add a second local delegation checklist or infer
+completion from local closeout prose.
 
 ## Evidence
 

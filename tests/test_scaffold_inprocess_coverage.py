@@ -36,11 +36,10 @@ import yaml
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 # retro/critique/ideation pass write_artifact_path to validator_command;
-# debug/handoff/quality take only repo_root.
+# debug/quality take only repo_root.
 SCAFFOLDS = [
     "critique",
     "debug",
-    "handoff",
     "ideation",
     "quality",
     "retro",

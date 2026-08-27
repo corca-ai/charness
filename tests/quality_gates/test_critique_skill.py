@@ -37,9 +37,6 @@ def test_critique_skill_surfaces_counterweight_and_deliberately_not_doing() -> N
     cadence_text = (
         ROOT / "skills" / "public" / "critique" / "references" / "cadence.md"
     ).read_text(encoding="utf-8")
-    handoff_text = (ROOT / "skills" / "public" / "handoff" / "SKILL.md").read_text(
-        encoding="utf-8"
-    )
     reviewer_brief_text = (
         ROOT / "skills" / "shared" / "references" / "disposition-reviewer-brief.md"
     ).read_text(encoding="utf-8")
@@ -91,7 +88,6 @@ def test_critique_skill_surfaces_counterweight_and_deliberately_not_doing() -> N
     assert ".agents/subagent-delegation.json" in capability_text
     assert "A skill invocation is not a rung." in capability_text
     assert "`host signal:` or `tool signal:`" in capability_text
-    assert "wrong next action" in handoff_text
     assert "likely implementer misread" in SPEC_SKILL
     # The delegated-reviewer fast path body was relocated to the shared
     # reviewer brief (#12); critique's SKILL.md keeps a one-line pointer.
@@ -106,7 +102,7 @@ def test_critique_skill_surfaces_counterweight_and_deliberately_not_doing() -> N
     assert "Autonomous trigger" in skill_text
     assert "do\nnot ask first by default" in skill_text
     assert "`references/autonomous-trigger.md`" in skill_text
-    assert "docs/handoff.md" in autonomous_text
+    assert "docs/index.md" in autonomous_text
     assert "git status --short" in autonomous_text
     assert "git log --oneline origin/main..HEAD" in autonomous_text
     assert "otherwise continue from local\n   status and diff evidence" in autonomous_text

@@ -58,12 +58,12 @@ def test_scaffold_rel_returns_none_when_the_registry_import_fails(monkeypatch) -
         raise ImportError("no registry here")
 
     monkeypatch.setattr(artifact_violation_report.importlib, "import_module", boom)
-    assert artifact_violation_report._scaffold_rel("handoff") is None
+    assert artifact_violation_report._scaffold_rel("quality") is None
 
 
 def test_scaffold_hint_is_none_when_the_scaffold_is_unresolvable(monkeypatch) -> None:
     monkeypatch.setattr(artifact_violation_report, "_scaffold_rel", lambda _t: None)
-    assert artifact_violation_report.scaffold_hint("handoff") is None
+    assert artifact_violation_report.scaffold_hint("quality") is None
 
 
 def test_report_validation_failure_still_exits_one_without_a_hint(monkeypatch, capsys) -> None:
@@ -83,8 +83,8 @@ def test_scaffold_rel_puts_the_scripts_dir_on_sys_path(monkeypatch) -> None:
     """
     scripts_dir = str(Path(artifact_violation_report.__file__).resolve().parent)
     monkeypatch.setattr(sys, "path", [p for p in sys.path if p != scripts_dir])
-    # handoff is a registered surface with a real scaffold in this layout.
-    assert artifact_validator._scaffold_rel("handoff") is not None
+    # quality is a registered surface with a real scaffold in this layout.
+    assert artifact_validator._scaffold_rel("quality") is not None
     assert scripts_dir in sys.path
 
 
@@ -207,7 +207,7 @@ def test_preflight_emits_the_unresolved_command_target_row_with_its_own_remedy(t
     (root / "scripts").mkdir()
     doc = root / "doc.md"
     doc.write_text("# D\n\nrun `python3 scripts/absent.py`\n", encoding="utf-8")
-    report = preflight.build_report(root, str(doc), None)
+    report = preflight.build_report(root, str(doc))
     payload = preflight.report_payload(report)
     row = next(r for r in payload["doc_links"] if r["kind"] == "unresolved-command-target")
     assert row["detail"] == "scripts/absent.py"
@@ -288,7 +288,7 @@ def test_preflight_report_json_round_trips(tmp_path) -> None:
     root = tmp_path
     doc = root / "clean.md"
     doc.write_text("# Clean\n\nnothing to report here\n", encoding="utf-8")
-    report = preflight.build_report(root, str(doc), None)
+    report = preflight.build_report(root, str(doc))
     payload = json.loads(json.dumps(report.to_dict()))
     assert payload["target"].endswith("clean.md")
     assert payload["status"] == "ok"
@@ -321,58 +321,6 @@ def test_artifact_label_falls_back_when_the_path_escapes_the_repo(tmp_path) -> N
 
 def test_artifact_label_without_a_repo_root_returns_the_path() -> None:
     assert artifact_validator._artifact_label(Path("a/b.md"), None) == "a/b.md"
-
-
-def test_handoff_artifact_path_accepts_a_repo_relative_value(tmp_path) -> None:
-    """A relative `--artifact-path` resolves against `--repo-root`.
-
-    Covers the `artifact_path = repo_root / artifact_path` branch, which only runs
-    for a non-absolute value and is the ergonomic form an operator would type.
-    """
-    repo = tmp_path / "repo"
-    (repo / "docs").mkdir(parents=True)
-    (repo / ".agents").mkdir(parents=True)
-    (repo / ".agents" / "handoff-adapter.yaml").write_text(
-        "version: 1\nrepo: demo\nlanguage: en\noutput_dir: docs\n", encoding="utf-8"
-    )
-    (repo / "docs" / "handoff.md").write_text("# broken\n", encoding="utf-8")
-    (repo / "docs" / "guide.md").write_text("# Guide\n", encoding="utf-8")
-    good = "\n".join(
-        [
-            "# Candidate Handoff",
-            "",
-            "## Workflow Trigger",
-            "",
-            "- run it",
-            "",
-            "## Current State",
-            "",
-            "- state; recheck with `git status --short`",
-            "",
-            "## Next Session",
-            "",
-            "- next: [guide](docs/guide.md)",
-            "",
-            "## Discuss",
-            "",
-            "- discuss",
-            "",
-            "## References",
-            "",
-            "- [guide](docs/guide.md) — the demo guide.",
-            "",
-        ]
-    )
-    (repo / "docs" / "candidate.md").write_text(good + "\n", encoding="utf-8")
-    result = _run(
-        "scripts/validate_handoff_artifact.py",
-        "--repo-root",
-        str(repo),
-        "--artifact-path",
-        "docs/candidate.md",  # relative on purpose
-    )
-    assert result.returncode == 0, result.stderr
-    assert "candidate.md" in result.stdout
 
 
 def test_lesson_that_is_only_a_class_tag_is_skipped(tmp_path) -> None:

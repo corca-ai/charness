@@ -457,9 +457,8 @@ def lesson_session_routing(repo_root: Path, *, source_retro: str | None = None) 
         payload_out: dict[str, Any] = {
             "state": STATE_NOT_ESTABLISHED,
             "configuration_status": "no-unclaimed-session",
-            # NOT "no list was presented": nothing here can observe presentation,
-            # and since the SessionStart lesson block ships, a list very often WAS
-            # emitted into a session that was never declared. The observable fact
+            # NOT "no list was presented": nothing here can observe presentation.
+            # The observable fact
             # is the absence of an unclaimed RECEIPT, and `missing-start` is the
             # honest disposition for exactly that, so say only that much (08-13
             # contract, Non-Goals: never claim stdout was read, used, or

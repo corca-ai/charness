@@ -127,10 +127,15 @@ def configure_runtime_environment(
         "CHARNESS_RUNTIME_ROOT": runtime_root,
         "PYTHONPYCACHEPREFIX": runtime_root / "pycache",
         "TMPDIR": runtime_root / "tmp",
+        "TMP": runtime_root / "tmp",
+        "TEMP": runtime_root / "tmp",
         "PYTEST_DEBUG_TEMPROOT": runtime_root / "pytest-tmp",
         "CHARNESS_PYTEST_CACHE_DIR": runtime_root / "pytest-cache",
         "RUFF_CACHE_DIR": runtime_root / "ruff",
         "COVERAGE_FILE": runtime_root / "coverage" / ".coverage",
+        "XDG_CACHE_HOME": runtime_root / "xdg-cache",
+        "PIP_CACHE_DIR": runtime_root / "pip",
+        "NPM_CONFIG_CACHE": runtime_root / "npm",
     }
     for key, default in paths.items():
         if key == "CHARNESS_RUNTIME_ROOT":
@@ -149,11 +154,17 @@ def configure_runtime_environment(
         "CHARNESS_RUNTIME_ROOT",
         "PYTHONPYCACHEPREFIX",
         "TMPDIR",
+        "TMP",
+        "TEMP",
         "PYTEST_DEBUG_TEMPROOT",
         "CHARNESS_PYTEST_CACHE_DIR",
         "RUFF_CACHE_DIR",
+        "XDG_CACHE_HOME",
+        "PIP_CACHE_DIR",
+        "NPM_CONFIG_CACHE",
     ):
         Path(target[key]).mkdir(parents=True, exist_ok=True)
+    target["npm_config_cache"] = target["NPM_CONFIG_CACHE"]
     coverage_file = target["COVERAGE_FILE"]
     if coverage_file != ":memory:":
         Path(coverage_file).parent.mkdir(parents=True, exist_ok=True)

@@ -34,7 +34,7 @@ def test_status_token_owns_annotation_boundaries(lifecycle, status: str | None, 
     assert lifecycle.status_token(status) == expected
 
 
-@pytest.mark.parametrize("status", ["complete", "COMPLETE!", "superseded;", "SUPERSEDED (handoff)"])
+@pytest.mark.parametrize("status", ["complete", "COMPLETE!", "superseded;", "SUPERSEDED (successor)"])
 def test_terminal_status_accepts_annotated_terminal_tokens(lifecycle, status: str) -> None:
     assert lifecycle.is_terminal_status(status) is True
 

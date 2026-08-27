@@ -19,7 +19,7 @@ REFERENCE_SUMMARY = {
     "references/resolve-flow.md": "resolve sequencing, GitHub source-of-truth selection, and read-before-design",
     "references/issue-shaping.md": "problem-first issue creation and external-source preservation",
     "references/resolution-brief.md": "feature/deferred-work pre-mutation brief and pause rules",
-    "references/causal-review.md": "bug causal review and recurrence critique handoff",
+    "references/causal-review.md": "bug causal review and recurrence critique record",
     "references/issue-backend.md": "adapter-selected backend, body-file safety, read/create/close operations",
     "references/closeout-discipline.md": "verified ledger, auto-close carrier, behavior verdict, and final state proof",
     "../../shared/references/fresh-eye-subagent-review.md": "bounded reviewer contract for bug causal review and resolution critique",

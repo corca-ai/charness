@@ -44,7 +44,7 @@ RULE_DATE = date(2026, 6, 18)
 SECTION = "Remaining Boundary Matrix"
 
 # A lane that can still make progress under repo policy. Marking the *whole* goal
-# blocked while one of these remains is the false-handoff bug this floor closes.
+# blocked while one of these remains is the false-completion bug this floor closes.
 # `approved` is runnable because external approval was already granted, so the
 # lane can proceed now — blocking the goal would re-strand an approved action.
 RUNNABLE_TOKENS = frozenset({"runnable", "preauthorized-runnable", "approved"})

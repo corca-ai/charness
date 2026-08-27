@@ -27,7 +27,6 @@ Mirrors `review_required_skills` in the canonical json (alphabetical):
 - `critique`
 - `debug`
 - `gather`
-- `handoff`
 - `hitl`
 - `hotl`
 - `ideation`

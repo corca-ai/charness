@@ -1,8 +1,8 @@
 """Sibling/shared-module loaders for the achieve closeout-evidence gate.
 
 The closeout-evidence wrapper (``goal_artifact_closeout_evidence.py``) delegates
-to a fan of sibling floors (disposition, early-close-report, coordination,
-phase-routing, closeout-delegation, metric-window, adapter-policy) plus the
+to a small set of sibling floors (disposition, early-close-report, metric-window,
+adapter-policy) plus the
 repo-owned shared closeout helper. Resolving each of those is near-identical
 filesystem-spec boilerplate; collecting it here keeps the wrapper focused on the
 gate logic and both files comfortably under the single-file line gate.
@@ -90,55 +90,6 @@ def _load_sibling_metric_window():
     )
     if spec is None or spec.loader is None:
         raise ImportError("goal_metric_window_lib.py not found beside goal_artifact_closeout_evidence.py")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
-def _load_sibling_coordination_floors():
-    """Load the sibling gather/release coordination-floor module.
-
-    A leaf like the disposition module (no sibling imports), kept separate so
-    this wrapper stays under the single-file line gate. One-directional: this
-    module depends on it, never the reverse.
-    """
-    spec = importlib.util.spec_from_file_location(
-        "goal_artifact_coordination_floors",
-        Path(__file__).resolve().parent / "goal_artifact_coordination_floors.py",
-    )
-    if spec is None or spec.loader is None:
-        raise ImportError("goal_artifact_coordination_floors.py not found beside goal_artifact_closeout_evidence.py")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
-def _load_sibling_phase_routing():
-    """Load the sibling phase-routing floor module."""
-    spec = importlib.util.spec_from_file_location(
-        "goal_artifact_phase_routing",
-        Path(__file__).resolve().parent / "goal_artifact_phase_routing.py",
-    )
-    if spec is None or spec.loader is None:
-        raise ImportError("goal_artifact_phase_routing.py not found beside goal_artifact_closeout_evidence.py")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
-def _load_sibling_closeout_delegation():
-    """Load the sibling orchestrator/sub-goal closeout-delegation gate.
-
-    A leaf like the disposition/coordination modules (no sibling imports), kept
-    separate so this wrapper stays under the single-file line gate. One-directional:
-    this module depends on it, never the reverse.
-    """
-    spec = importlib.util.spec_from_file_location(
-        "goal_artifact_closeout_delegation",
-        Path(__file__).resolve().parent / "goal_artifact_closeout_delegation.py",
-    )
-    if spec is None or spec.loader is None:
-        raise ImportError("goal_artifact_closeout_delegation.py not found beside goal_artifact_closeout_evidence.py")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module

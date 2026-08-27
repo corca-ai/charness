@@ -403,7 +403,7 @@ def classify_phase(tool: str, command: str) -> str:
         return "triage"
     if any(token in lower for token in ("uvicorn", "vite", "tail -f", "nohup", "server")):
         return "runtime"
-    if any(token in lower for token in (" sed ", " rg ", " find ", " nl ", " cat ", " ls ", "docs/handoff", "skill.md")):
+    if any(token in lower for token in (" sed ", " rg ", " find ", " nl ", " cat ", " ls ", "skill.md")):
         return "exploration"
     return "other"
 

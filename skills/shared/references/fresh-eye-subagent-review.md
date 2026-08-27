@@ -9,7 +9,7 @@ file, exit code, or host prior is the exact failure mode this reference exists
 to stop.
 
 Use this for bounded reviewer scopes owned by another skill, including
-`critique`, `spec`, `quality`, `handoff`, and any skill that names a
+`critique`, `spec`, `quality`, and any skill that names a
 fresh-eye subagent review as its canonical path.
 
 ## Reviewer Tier
@@ -271,10 +271,10 @@ first place.
 Boundary evidence follows the execution mode; there is no universal
 snapshot/verify ritual.
 
-1. **Typed read-only envelope:** record the host's live envelope binding. No
-   parent fingerprint is needed because the host has removed write and exec
-   capability. If the binding is not proven, use isolation or the shared-tree
-   fallback; do not assume the envelope.
+1. **Read-only worker:** record `boundary_mode: read-only-worker`. The
+   Charness-owned file-backed worker launches with write and exec capability
+   removed, so no parent fingerprint is needed. If that envelope cannot be
+   proved, use isolation or the shared-tree fallback; do not assume it.
 2. **Isolated worktree:** record the checkout's isolation. No parent fingerprint
    is needed because the reviewer cannot mutate the parent's index or worktree.
 3. **Untyped reviewer sharing the parent:** run
@@ -283,7 +283,7 @@ snapshot/verify ritual.
    immediately after return, before applying findings. A failed verify
    quarantines the review's boundary approval. The helper detects git-state
    drift only; it does not prove fresh-eye independence or findings delivery.
-   The snapshot receipt returns the exact verify handoff path. Verify before
+   The snapshot receipt returns the exact verification path. Verify before
    applying findings; an undeclared drift quarantines the boundary approval.
    The window id binds the two calls. Parent-path declarations are only
    attribution, not proof, and are unnecessary when the parent has not written.
@@ -408,7 +408,7 @@ python3 "$SKILL_DIR/../../shared/scripts/run_reviewer_worker.py" \
   --packet-identity "$PACKET_SHA256" \
   --reviewed-input-identity "$INPUT_IDENTITY_SHA256" \
   --parent-receipt-identity "$RECEIPT_ID" \
-  --boundary-fingerprint "$BOUNDARY_SHA256" \
+  --boundary-mode read-only-worker \
   --ledger-file "$RUN_DIR/delivery.json" \
   --output-file "$RUN_DIR/result.json" \
   --receipt-file "$RUN_DIR/receipt.json" \

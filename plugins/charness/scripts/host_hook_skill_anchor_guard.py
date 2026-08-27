@@ -6,11 +6,10 @@ by the commit-time validate_skill_ergonomics sweep; the per-file scan
 wires it to fire automatically after an edit: an adapter-gated Claude
 PostToolUse(Edit|Write) hook runs the repo-owned scan on the file just edited
 and surfaces findings immediately, before the commit sweep round-trips. Same
-primitives and opt-in shape as `host_hook_session_routing` (the parallel-hook
-pattern): the host-specific firing stays adapter-declared while the scan stays
+The host-specific firing stays adapter-declared while the scan stays
 the single repo-owned rule source, and the commit-time sweep stays the
-backstop. Codex exposes no equivalent edit-time hook surface in this
-machinery, so the intent section is claude-only and an enabled codex intent
+backstop. Other hosts expose no equivalent edit-time hook surface in this
+machinery, so the intent section is Claude-only and an enabled other-host intent
 reports `unsupported` instead of pretending.
 """
 

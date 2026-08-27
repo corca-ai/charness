@@ -163,7 +163,7 @@ changes.
 is also an agent/operator concept token. `check_doc_links.py` should allow
 plain or backticked mentions of these surfaces without forcing source-repo
 relative markdown links. Defaults include `<repo-root>/AGENTS.md` and `CLAUDE.md`; repos can
-add adapter-owned surfaces such as `<repo-root>/docs/handoff.md`.
+add adapter-owned surfaces such as `<repo-root>/docs/index.md` <!-- not vendored: consumer-repo path -->.
 
 `runtime_profile_default` names the default machine/runner profile for runtime
 signals. Leave it as `default` to let the helper create a fast local machine

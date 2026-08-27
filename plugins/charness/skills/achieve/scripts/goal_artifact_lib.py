@@ -27,7 +27,6 @@ def _load_sibling(module_name: str):
 
 
 _blocked_matrix = _load_sibling("goal_artifact_blocked_matrix")
-_cadence_owner = _load_sibling("goal_artifact_cadence_owner")
 _closeout = _load_sibling("goal_artifact_closeout_evidence")
 _discussion = _load_sibling("goal_artifact_discussion")
 _draft_frame = _load_sibling("goal_artifact_draft_frame")
@@ -59,18 +58,6 @@ check_blocked_matrix = _blocked_matrix.check
 _mask_fences = _markdown.mask_fences
 _fences_balanced = _markdown.fences_balanced
 slice_plan_data_row_count = _markdown.slice_plan_data_row_count
-
-
-def check_cadence_owner(text: str, *, status: str | None) -> dict[str, Any]:
-    """Whether `## User Acceptance` restates a gate cadence the frame defers."""
-    return _cadence_owner.check(
-        text,
-        status=status,
-        masked=_mask_fences(text),
-        markdown=_markdown,
-        is_terminal=_pursue.is_terminal_status,
-        balanced=_fences_balanced(text),
-    )
 
 
 #: Naming and location moved to `goal_artifact_naming` under the length cap;
@@ -118,11 +105,6 @@ PORTABILITY_SECTIONS = (
     "Interview Decisions",
     "Plan Critique Findings",
 )
-
-# Draft activation also carries the closeout binding plan. Historical active or
-# complete artifacts remain readable; new draft pursuit must name the plan.
-CLOSEOUT_PLAN_SECTIONS = ("Closeout Binding Plan",)
-CLOSEOUT_PLAN_FIELDS = _pursue.CLOSEOUT_PLAN_FIELDS
 
 # The Before-phase placeholder marker moved with the readiness concept to
 # `goal_artifact_pursue.UNSHAPED_MARKER` — its only reader. Left as ONE
@@ -214,7 +196,6 @@ def upsert_goal(
         raise ValueError(f"invalid status {status!r}; expected one of {VALID_STATUSES}")
     path = goal_path(repo_root, date, slug)
     rel = goal_rel(repo_root, path)
-    optout_census: dict | None = None
     if path.exists():
         original = path.read_text(encoding="utf-8")
         refusal = _superseded.refuse_flip_reason(
@@ -239,14 +220,13 @@ def upsert_goal(
                     "requested_status": status,
                     "note": (
                         "refused to flip to complete: After-phase evidence missing, "
-                        "invalid, unbound, the disposition gate, or a coordination floor "
-                        "is unmet, or a timeboxed goal is closing before its closeout window. "
+                        "invalid, unbound, or a disposition floor is unmet, or a timeboxed "
+                        "goal is closing before its closeout window. "
                         "Add bound `Retro:`/`Host log probe:` "
                         "lines (path or `skipped: <enum>: <detail>`); in-scope goals also need "
                         "a bound `Disposition review:` line, a non-blank `## Auto-Retro` (or a "
-                        "`Retro dispositions: none — <reason>` opt-out), and any triggered "
-                        "`Routing:`/`Gather:`/`Release:`/`Issue closeout:` step in "
-                        "`## Coordination Cues`. Each section's first body line must be real "
+                        "`Retro dispositions: none — <reason>` opt-out). Each section's first "
+                        "body line must be real "
                         "content, not a pending/TODO/TBD placeholder. For early timebox "
                         "closeout, record why no safe next slice remains. "
                         "See the closeout contract."
@@ -256,14 +236,6 @@ def upsert_goal(
                     "section_placeholder_summary": placeholder_summary,
                     "timebox_report": timebox_report,
                 }
-            # The flip SUCCEEDED. Carry the opt-out census onto the success
-            # return: `evidence_report` is otherwise attached only to the
-            # `refused` branch, so on the canonical write path a goal that
-            # satisfied every floor — each one by an opt-out — reported nothing
-            # at all. That population is exactly the one the census exists for.
-            census = evidence_report.get("coordination_optout_aggregate")
-            if isinstance(census, dict) and census.get("reason"):
-                optout_census = census
         if status == "blocked":
             blocked_refusal = _blocked_matrix.flip_refusal(original, rel, read_status(original))
             if blocked_refusal is not None:
@@ -278,9 +250,6 @@ def upsert_goal(
             "status": status,
             "note": "existing artifact: only Status was changed; title and goal body were left as-is",
         }
-        if optout_census is not None:
-            result["coordination_optout_aggregate"] = optout_census
-            result["advisories"] = ["coordination opt-out census — " + optout_census["reason"]]
         return result
     adapter = _policy.load_adapter(repo_root)
     if adapter["found"] and not adapter["valid"]:
@@ -324,14 +293,6 @@ def pursue_readiness(text: str, *, deploy_vocab: tuple[str, ...] | list[str] | N
         required_sections=(
             REQUIRED_SECTIONS
             + PORTABILITY_SECTIONS
-            # Same fail-closed status test as the backlog floor, NOT `== "draft"`.
-            # Round-2 review found this sibling left behind when the backlog floor was
-            # hardened: dropping this section from `required_sections` disarms BOTH the
-            # heading requirement and the five-field check (which is itself gated on the
-            # section being required), so `Status: Draft`, a deleted `Status:` line, or
-            # `Status: draft — slice 2 in flight` activated a goal with no Closeout
-            # Binding Plan at all. Hardening one of two gates makes the other reachable.
-            + (CLOSEOUT_PLAN_SECTIONS if _pursue.is_shaping_status(read_status(text)) else ())
         ),
         duplicate_sections=_markdown.required_heading_report(_mask_fences(text), REQUIRED_SECTIONS, PORTABILITY_SECTIONS)[2],
         status=read_status(text),
@@ -350,39 +311,6 @@ def pursue_readiness(text: str, *, deploy_vocab: tuple[str, ...] | list[str] | N
             section_bounds=_markdown.section_bounds_all,
         ),
     )
-    # Activation is where this floor is worth the most: the contradiction's whole
-    # cost is paid AFTER the goal goes active, one broad suite per slice.
-    cadence = check_cadence_owner(text, status=read_status(text))
-    report["cadence_owner"] = cadence
-    if cadence.get("decline") == "negated-flag-unreadable":
-        # A DECLINE IS NOT A PASS, and this floor's decline has no backstop --
-        # unlike the unbalanced-fence decline it imitates, which `check_goal` and
-        # `activation_ready` both refuse independently. Without this line the
-        # readiness payload says "safe to pursue" with no clause anywhere saying a
-        # floor rendered no verdict, which is this repo's own narrow-measurement-
-        # in-wide-vocabulary class, inside the sentence written to prevent it.
-        report["cadence_unestablished"] = True
-        report["reason"] += (
-            " | cadence floor rendered NO VERDICT on this artifact (see "
-            "`cadence_owner.reason`); activation is not blocked on it"
-        )
-    if not cadence["ok"]:
-        # JOIN, never replace. `_reason` is deliberately every-reason-not-the-first
-        # (its docstring records that a single-winner chain made a second `/goal`
-        # attempt discover the rest), and clobbering it here would rebuild that
-        # defect along a new dimension. Round-1 review caught this.
-        pass_reason = report["pursue_ready"]
-        # BOTH keys. `pursue_readiness` publishes the same fact twice
-        # (`pursue_ready` and `activation_ready`), and updating one left a payload
-        # asserting `activation_ready: true` about a goal it refused -- one fact
-        # with two owners, which is this slice's own subject. Round-2 review.
-        report["pursue_ready"] = False
-        report["activation_ready"] = False
-        # Not the reserved `unshaped:` vocabulary: that verdict routes a reader to
-        # the achieve Before-phase, and this one's remedy is a one-sentence edit to
-        # `## User Acceptance`.
-        clause = "contradictory: " + cadence["reason"]
-        report["reason"] = clause if pass_reason else report["reason"] + "; " + clause
     return _portability_gate.apply_pursue_floor(report, text)
 
 
@@ -423,13 +351,8 @@ def check_goal(text: str) -> dict[str, Any]:
     missing, portability_missing, duplicate_sections = _markdown.required_heading_report(
         _mask_fences(text), REQUIRED_SECTIONS, PORTABILITY_SECTIONS
     )
-    status, closeout_plan = read_status(text), _pursue._CLOSEOUT_PLAN.parse_closeout_plan(text)
+    status = read_status(text)
     issues: list[str] = ["duplicate sections: " + ", ".join(duplicate_sections)] if duplicate_sections else []
-    # A plan is optional for historical/pre-shaping records, but once an author
-    # writes the heading the broad reader must consume the same typed result as
-    # `/goal`; otherwise a malformed duplicate or field is invisible until the
-    # activation path happens to run.
-    issues.extend(closeout_plan.validation_issues())
     if status is None:
         issues.append("missing `Status:` line")
     elif status not in VALID_STATUSES:
@@ -458,18 +381,9 @@ def check_goal(text: str) -> dict[str, Any]:
     path_portability = _portability_gate.check(text)
     if portability_issue := _portability_gate.check_issue(path_portability):
         issues.append(portability_issue)
-    cadence = check_cadence_owner(text, status=status)
-    if not cadence["ok"]:
-        issues.append("gate-cadence owner floor — " + cadence["reason"])
-    # `advisories` below: a decline is non-blocking, so it is disclosed rather than
-    # raised. The wording is the cadence module's, so both callers say the same
-    # thing -- the first repair gave it only to `pursue_readiness` and left THIS,
-    # the gate-wired caller, silent on a floor that had rendered no verdict.
     return {
         "ok": not issues,
-        "advisories": [a for a in [_cadence_owner.decline_advisory(cadence)] if a],
-        "cadence_owner": cadence,
-        "status": status, "closeout_plan": closeout_plan.as_dict(),
+        "status": status,
         "missing_sections": missing,
         "portability_missing_sections": portability_missing,
         "path_portability": path_portability,

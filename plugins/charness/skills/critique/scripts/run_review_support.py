@@ -68,7 +68,6 @@ def package_paths(script_dir: Path) -> dict[str, Path]:
         raise RunReviewError("runtime-unavailable", "cannot locate canonical reviewer result schema")
     return {
         "runner": shared / "run_reviewer_worker.py",
-        "boundary": shared / "reviewer_boundary_fingerprint.py",
         "capability": shared / "reviewer_capability.py",
         "lifecycle": shared / "reviewer_lifecycle.py",
         "schema": schema,
@@ -347,19 +346,3 @@ def classify_runner_output(
     if isinstance(payload, dict) and payload.get("status") == "runner-invalid":
         return returncode, "runner-invalid", False, str(payload.get("error") or error or "canonical runner refused the run")
     return returncode, status, started, error
-
-
-def boundary(root: Path, path: Path, *, script: Path, window_id: str, verify: bool) -> dict[str, Any]:
-    command = [
-        sys.executable, str(script), "verify" if verify else "snapshot",
-        "--repo-root", str(root),
-    ]
-    if verify:
-        command.extend(["--before", str(path), "--window-id", window_id])
-    else:
-        command.extend(["--out", str(path), "--window-id", window_id])
-    code, stdout, stderr = run_command(command, root=root)
-    payload = yaml_payload(stdout, label="reviewer boundary")
-    if code not in {0, 3}:
-        payload.setdefault("error", stderr.strip() or "reviewer boundary command failed")
-    return payload

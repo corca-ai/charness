@@ -12,9 +12,6 @@ dominant class was a disposition that named a destination it had never reached:
 - `applied: ... publish_release_execute.py renders it` -- naming a mechanism
   that had been deleted, in the disposition for the finding about hardcoded
   claims that had stopped being true.
-- `applied: recorded in the goal's Coordination Cues` -- naming a section that
-  held only unfilled scaffold prose.
-
 The disposition form floor states its own scope out loud: "form/enum only
 (never a content classifier)", deferring substance to a fresh-eye review. That
 is a defensible split and this gate does not touch it. It owns the DECIDABLE

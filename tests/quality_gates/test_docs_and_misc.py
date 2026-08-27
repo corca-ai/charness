@@ -17,7 +17,7 @@ def test_narrative_map_sources_reports_checked_in_docs() -> None:
     payload = yaml.safe_load(result.stdout)
     source_paths = {entry["path"] for entry in payload["source_documents"]}
     assert "README.md" in source_paths
-    assert "docs/handoff.md" in source_paths
+    assert "docs/control-plane.md" in source_paths
     assert payload["artifact_path"] == "charness-artifacts/narrative/latest.md"
     assert payload["freshness"]["status"] in {"ahead", "current", "missing-remote", "not-git", "unavailable"}
 

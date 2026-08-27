@@ -19,7 +19,7 @@ _spec.loader.exec_module(lib)
 def test_docs_artifact_only_classification() -> None:
     result = lib.classify(
         [
-            "docs/handoff.md",
+            "docs/index.md",
             "charness-artifacts/quality/latest.md",
             "README.md",
         ]
@@ -40,7 +40,7 @@ def test_plugins_path_unconditionally_forces_full_gate() -> None:
     # even if every other change is on the docs/artifact allowlist.
     result = lib.classify(
         [
-            "docs/handoff.md",
+            "docs/index.md",
             "plugins/charness/SKILL.md",
             "charness-artifacts/quality/latest.md",
         ]
@@ -50,7 +50,7 @@ def test_plugins_path_unconditionally_forces_full_gate() -> None:
 
 
 def test_claude_plugin_path_unconditionally_forces_full_gate() -> None:
-    result = lib.classify(["docs/handoff.md", ".claude-plugin/marketplace.json"])
+    result = lib.classify(["docs/index.md", ".claude-plugin/marketplace.json"])
     assert result["classification"] == "full-gate-required"
     assert ".claude-plugin/marketplace.json" in result["unconditional_full_gate_hits"]
 
@@ -64,7 +64,7 @@ def test_agents_plugin_path_unconditionally_forces_full_gate() -> None:
 def test_source_path_forces_full_gate_even_with_docs_changes() -> None:
     result = lib.classify(
         [
-            "docs/handoff.md",
+            "docs/index.md",
             "skills/public/issue/SKILL.md",
         ]
     )
@@ -99,8 +99,8 @@ def test_unknown_top_level_path_is_non_allowlist() -> None:
 
 
 def test_duplicate_paths_are_deduped() -> None:
-    result = lib.classify(["docs/handoff.md", "docs/handoff.md", "README.md"])
-    assert result["files"] == ["docs/handoff.md", "README.md"]
+    result = lib.classify(["docs/index.md", "docs/index.md", "README.md"])
+    assert result["files"] == ["docs/index.md", "README.md"]
 
 
 def test_charness_artifacts_subdirectory_is_allowlisted() -> None:
@@ -119,7 +119,7 @@ def test_charness_artifacts_subdirectory_is_allowlisted() -> None:
 def test_cli_emits_classification_for_explicit_path_list() -> None:
     process = subprocess.run(
         [sys.executable, str(CLI_PATH), "--repo-root", str(REPO_ROOT), "--paths-stdin"],
-        input="docs/handoff.md\nREADME.md\n",
+        input="docs/index.md\nREADME.md\n",
         capture_output=True,
         text=True,
         check=True,
@@ -149,7 +149,7 @@ def test_top_level_dotfile_forces_full_gate() -> None:
 def test_cli_emits_full_gate_for_unconditional_path_via_stdin() -> None:
     process = subprocess.run(
         [sys.executable, str(CLI_PATH), "--repo-root", str(REPO_ROOT), "--paths-stdin"],
-        input="docs/handoff.md\nplugins/charness/SKILL.md\n",
+        input="docs/index.md\nplugins/charness/SKILL.md\n",
         capture_output=True,
         text=True,
         check=True,

@@ -298,11 +298,8 @@ def scan(repo_root: Path, allowlist: set[tuple[str, str, str]]) -> dict:
     # boundary stays explicit. Left unreported, the allowlist can only grow: it is
     # reviewed when an entry is added and silent when one stops being needed.
     #
-    # The repo already decided this posture and already built it -- the header of
-    # `scripts/validate_scenario_conditional_reads.allowlist.txt` says a waiver that is no
-    # longer needed is "surfaced as a stale-allowlist advisory, never silently dropped",
-    # and `validate_scenario_conditional_reads.py` implements it. This is that same
-    # sentence applied to the other allowlist, not a new principle.
+    # Keep this advisory because stale ownership waivers otherwise accumulate
+    # silently; it is a report, not another blocking workflow.
     #
     # Advisory, not a violation, matching the sibling. A stale waiver is a documentation
     # defect, not an ownership breach, and the scan is what proves it stale -- so failing

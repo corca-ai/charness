@@ -1,6 +1,15 @@
 #!/usr/bin/env python3
+# ruff: noqa: E402
 
 from __future__ import annotations
+
+import sys
+
+_EARLY_BYTECODE_GUARD = not sys.dont_write_bytecode
+if _EARLY_BYTECODE_GUARD:
+    # `worktree exec` cannot know its target until argparse. Suppress startup
+    # caches until that command has installed the target's external runtime.
+    sys.dont_write_bytecode = True
 
 import argparse
 import hashlib
@@ -11,7 +20,6 @@ import select
 import shlex
 import shutil
 import subprocess
-import sys
 import tempfile
 import time
 from contextlib import contextmanager
@@ -5727,6 +5735,40 @@ def _load_worktree_create_lib(args: argparse.Namespace):
     return worktree_create_lib
 
 
+def _load_worktree_exec_lib(args: argparse.Namespace):
+    repo_root = _resolve_worktree_lib_root(args)
+    repo_text = str(repo_root)
+    if repo_text not in sys.path:
+        sys.path.insert(0, repo_text)
+
+    # The target is not known when this monolithic CLI starts. Install its
+    # external runtime before importing the executor, so the executor itself
+    # cannot create a local bytecode cache in the target checkout.
+    target = _resolve_worktree_target(args)
+    previous_dont_write_bytecode = sys.dont_write_bytecode
+    sys.dont_write_bytecode = True
+    try:
+        from scripts.runtime_bootstrap import configure_runtime_environment
+
+        configure_runtime_environment(target)
+    finally:
+        sys.dont_write_bytecode = previous_dont_write_bytecode
+
+    from scripts import worktree_exec_lib
+
+    return worktree_exec_lib
+
+
+def _load_task_run_lib(args: argparse.Namespace):
+    repo_root = _resolve_worktree_lib_root(args)
+    repo_text = str(repo_root)
+    if repo_text not in sys.path:
+        sys.path.insert(0, repo_text)
+    from scripts import task_run
+
+    return task_run
+
+
 def _resolve_worktree_target(args: argparse.Namespace) -> Path:
     target = args.repo_root if args.repo_root is not None else Path.cwd()
     return Path(target).resolve()
@@ -5807,6 +5849,53 @@ def cmd_worktree_create(args: argparse.Namespace) -> int:
     if payload.get("status") == lib.WARN:
         return 1
     return 2
+
+
+def cmd_worktree_exec(args: argparse.Namespace) -> int:
+    target = _resolve_worktree_target(args)
+    command = list(args.command)
+    if command[:1] == ["--"]:
+        command = command[1:]
+    try:
+        lib = _load_worktree_exec_lib(args)
+        return lib.run_exec(target, command, allow_main=args.allow_main)
+    except (RuntimeError, ImportError, OSError) as exc:
+        emit_yaml(
+            {
+                "status": "fail",
+                "repo_root": str(target),
+                "command": command,
+                "error": str(exc),
+            }
+        )
+        return 2
+
+
+def cmd_task_run(args: argparse.Namespace) -> int:
+    lib = _load_task_run_lib(args)
+    prompt_text = args.prompt
+    if args.prompt_file is not None:
+        try:
+            prompt_text = args.prompt_file.read_text(encoding="utf-8")
+        except OSError as exc:
+            raise CharnessError(f"could not read --prompt-file {args.prompt_file}: {exc}") from exc
+    payload = lib.run_task(
+        resolve_task_repo_root(args),
+        target_path=args.path,
+        branch=args.branch,
+        base=args.base,
+        scopes=args.scope,
+        prompt=prompt_text or "",
+        codex=args.codex,
+        codex_args=args.codex_arg,
+        task_id=args.task_id,
+        prepare=args.prepare,
+        require_change=args.require_change,
+        timeout_seconds=args.timeout_seconds,
+        dry_run=args.dry_run,
+    )
+    emit_yaml(payload)
+    return 0 if payload.get("status") == lib.PASS else 1
 
 
 def _resolve_goal_run_helper_repo_root(args: argparse.Namespace) -> Path:
@@ -6156,6 +6245,45 @@ def build_parser() -> argparse.ArgumentParser:
     task_status_parser.add_argument("task_id", nargs="?")
     task_status_parser.set_defaults(func=cmd_task_status)
 
+    task_run_parser = task_subparsers.add_parser(
+        "run",
+        help="Run one Codex implementation task in a clean named worktree and emit a compact receipt.",
+        description=(
+            "Create a named linked worktree from an explicit base, run Codex with external runtime "
+            "paths, and report the scoped candidate. The parent worktree must be clean."
+        ),
+    )
+    # Keep the parent `task --repo-root ... run` spelling working while also
+    # accepting the more discoverable `task run --repo-root ...` spelling.
+    task_run_parser.add_argument(
+        "--repo-root",
+        type=Path,
+        default=argparse.SUPPRESS,
+        help="Clean parent repo from which the linked worktree is created. Defaults to the current working directory.",
+    )
+    task_run_parser.add_argument("--path", required=True, type=Path, help="New linked worktree path outside the parent repo.")
+    task_run_parser.add_argument("--branch", required=True, help="Named local branch for the new worktree.")
+    task_run_parser.add_argument("--base", required=True, help="Commit/ref from which the named worktree is created.")
+    task_run_parser.add_argument(
+        "--scope",
+        action="append",
+        required=True,
+        help="Exact repository-relative candidate path; repeat for multiple paths.",
+    )
+    task_run_prompt = task_run_parser.add_mutually_exclusive_group(required=True)
+    task_run_prompt.add_argument("--prompt", help="Implementation instructions passed to `codex exec`.")
+    task_run_prompt.add_argument("--prompt-file", type=Path, help="Read implementation instructions from this file.")
+    task_run_parser.add_argument("--codex", default="codex", help="Codex executable (default: codex).")
+    task_run_parser.add_argument("--codex-arg", action="append", default=[], help="Extra argument passed before the prompt; repeatable.")
+    task_run_parser.add_argument("--task-id", help="Optional receipt/log identifier; defaults to the branch name.")
+    task_run_parser.add_argument("--prepare", action="store_true", help="Run the worktree adapter prepare step before Codex.")
+    task_run_parser.add_argument("--require-change", action="store_true", help="Fail unless the candidate changes at least one path.")
+    task_run_parser.add_argument("--timeout-seconds", type=int, default=3600)
+    task_run_parser.add_argument("--dry-run", action="store_true", help="Validate inputs and show the planned lane without creating or running it.")
+    task_run_parser.add_argument("--home-root", type=Path, default=default_home_root(), help=argparse.SUPPRESS)
+    task_run_parser.add_argument("--charness-checkout", type=Path, help=argparse.SUPPRESS)
+    task_run_parser.set_defaults(func=cmd_task_run)
+
     catalog_parser = subparsers.add_parser(
         "catalog",
         help="Inspect capability inventory, packaged consumer-validator adoption, or stale skill paths.",
@@ -6426,6 +6554,25 @@ def build_parser() -> argparse.ArgumentParser:
         help_text="Alias for `create`: wrap `git worktree add` with readiness doctor and optional prepare.",
     )
 
+    worktree_exec_parser = worktree_subparsers.add_parser(
+        "exec",
+        help="Run one command in an isolated worktree with external runtime caches.",
+        description="Run one command in an isolated worktree with external runtime caches.",
+    )
+    worktree_exec_parser.add_argument(
+        "--repo-root",
+        type=Path,
+        help="Worktree in which to run the command. Defaults to the current working directory.",
+    )
+    worktree_exec_parser.add_argument(
+        "--allow-main",
+        action="store_true",
+        help="Allow an intentional command in the primary worktree; parent writes are then possible.",
+    )
+    worktree_exec_parser.add_argument("command", nargs=argparse.REMAINDER, help="Command after `--`.")
+    add_worktree_lib_args(worktree_exec_parser)
+    worktree_exec_parser.set_defaults(func=cmd_worktree_exec)
+
     worktree_doctor_parser = worktree_subparsers.add_parser(
         "doctor",
         help="Probe worktree readiness (isolation, hooksPath, lefthook shim resolution, husky directory, manifest checks).",
@@ -6535,12 +6682,22 @@ def main(argv: list[str] | None = None) -> int:
         raw_argv = ["version"]
     parser = build_parser()
     args = parser.parse_args(raw_argv)
+    is_worktree_exec = (
+        getattr(args, "command", None) == "worktree"
+        and getattr(args, "worktree_command", None) == "exec"
+    )
+    is_task_run = (
+        getattr(args, "command", None) == "task"
+        and getattr(args, "task_command", None) == "run"
+    )
     if not (
         getattr(args, "command", None) == "version"
         and not getattr(args, "verbose", False)
         and not getattr(args, "check", False)
-    ):
+    ) and not (is_worktree_exec or is_task_run):
         maybe_record_self_version_state(args)
+    if _EARLY_BYTECODE_GUARD and not (is_worktree_exec or is_task_run):
+        sys.dont_write_bytecode = False
     try:
         return args.func(args)
     except TaskLockTimeout as exc:
@@ -6558,6 +6715,9 @@ def main(argv: list[str] | None = None) -> int:
                 task=read_task(exc.repo_root, exc.task_id),
             )
         raise
+    finally:
+        if _EARLY_BYTECODE_GUARD:
+            sys.dont_write_bytecode = False
 
 
 if __name__ == "__main__":

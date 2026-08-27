@@ -44,8 +44,8 @@ evaluator-backed scenario review when installed and configured.
    human-facing update, ask for that communication. Routes: `narrative` or
    `announcement`.
 5. When the next session needs context, or when you want to review what the
-   agent did and why, ask for a handoff or review loop. Routes: `handoff` or
-   `hitl`.
+   agent did and why, use the parent Goal Run cursor or a review loop. Routes:
+   `achieve` or `hitl`.
 6. When the repo needs a stronger quality bar, ask for quality review or
    follow-up gates. Route: `quality`, with `retro` when the lesson should
    persist.

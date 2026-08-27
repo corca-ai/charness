@@ -62,7 +62,7 @@ Put it in:
 
 Examples:
 
-- [handoff.md](./handoff.md) — the rolling next-session workflow trigger and current state.
+- [goal-lifecycle.md](./goal-lifecycle.md) — the parent Goal Run cursor and execution identity.
 - [../charness-artifacts/gather/latest.md](../charness-artifacts/gather/latest.md) — the current gathered source, route family, and acquisition trace.
 - [../charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md) — the current quality review's scope, surface contract, and findings.
 - [../charness-artifacts/release/latest.md](../charness-artifacts/release/latest.md) — the current release surface check, versions, and push state.
@@ -218,7 +218,7 @@ Artifact resolver behavior is owned by the adapter's `artifact_class`:
 
 - `history`: dated records are supported, with an optional current pointer
 - `current`: the checked-in artifact is the current surface, not a dated log
-- `rolling`: the artifact is a rolling canonical file such as `docs/handoff.md`
+- `rolling`: a deliberately maintained canonical summary outside the dated-record flow
 
 Do not add skill-id exception lists for artifact behavior. Declare the class in
 the owning adapter resolver or policy document.
@@ -272,8 +272,6 @@ The repo currently intends these families to be `rolling` or outside an
 adapter-managed `latest.md` flow:
 
 - `spec`, because design contracts already live as checked-in named artifacts
-- [`docs/handoff.md`](./handoff.md), because it is the repo entry rolling
-  pointer rather than a skill-local artifact
 - `achieve` and `issue`, because their current artifact helpers are
   workflow-specific rather than `output_dir` adapter-managed `latest.md` flows
 - `create-cli`, because it has no checked-in current artifact family in this
@@ -283,9 +281,6 @@ adapter-managed `latest.md` flow:
 
 These are intentional exceptions to the simple defaults:
 
-- [handoff.md](./handoff.md) is a rolling canonical artifact under `docs/`, not
-  under `charness-artifacts/`, because the next-session pickup path is a repo
-  entry surface.
 - `spec` work can live in checked-in spec artifacts such as
   `charness-artifacts/spec/*.md` without a dedicated adapter-managed `latest.md`
   flow when the repo is keeping a design contract rather than a rolling skill
@@ -364,7 +359,7 @@ Avoid these mistakes:
 ## Related Contracts
 
 - [harness-composition.md](./harness-composition.md) — which repo surface owns which kind of rule.
-- [handoff.md](./handoff.md) — the rolling repo entry pointer for next-session pickup.
+- [goal-lifecycle.md](./goal-lifecycle.md) — provider-backed parent/cursor continuation state.
 - [runtime-capability-contract.md](./runtime-capability-contract.md) — capability grants, access modes, and repo-local capability config.
 - [external-integrations.md](./external-integrations.md) — the integration-over-vendoring principle and upstream ownership model.
 - `skills/public/*/references/adapter-contract.md`

@@ -18,7 +18,7 @@ RUNTIME_SIGNALS = (
 )
 SHARED_START_CANDIDATES = (
     ("git status --short", None),
-    ("sed -n '1,220p' docs/handoff.md", "docs/handoff.md"),
+    ("sed -n '1,220p' docs/index.md", "docs/index.md"),
     ("sed -n '1,260p' docs/roadmap.md 2>/dev/null || true", "docs/roadmap.md"),
     ("./scripts/run-quality.sh", "scripts/run-quality.sh"),
 )
@@ -139,7 +139,7 @@ def _shared_start_commands(repo_root: Path) -> list[str]:
 def _human_judgment_items(repo_root: Path) -> list[dict[str, str]]:
     items: list[dict[str, str]] = []
     for path, summary in (
-        ("docs/handoff.md", "Review current repo state, recent decisions, and open coordination edges."),
+        ("docs/index.md", "Review the documentation entry point and follow the owning page for current context."),
         ("docs/roadmap.md", "Review remaining work ordering and confirm which items are still operator-owned."),
         ("docs/deferred-decisions.md", "Review reopen triggers or unresolved boundary decisions before deeper acceptance work."),
     ):

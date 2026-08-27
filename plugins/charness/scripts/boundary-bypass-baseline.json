@@ -4,11 +4,11 @@
   "inventory_schemaVersion": "charness.quality.boundary_bypass_inventory.v2",
   "call_site_fingerprint_algo_version": "1",
   "summary": {
-    "candidate_count": 52,
+    "candidate_count": 50,
     "convertible_count": 2,
-    "internal_boundary_count": 37,
-    "keep_boundary_count": 26,
-    "candidate_key_count": 52
+    "internal_boundary_count": 35,
+    "keep_boundary_count": 24,
+    "candidate_key_count": 50
   },
   "candidate_keys": [
     "06661433f0e37fc3",
@@ -38,7 +38,6 @@
     "6a34e88fa8ab3d91",
     "6b9aa0ba40ec0667",
     "6dd79547c6d4aa49",
-    "7eb586d6c0fdaa94",
     "8dabe177e3532495",
     "8f4dcccce3e774b4",
     "8fef6017d0b758fc",
@@ -48,7 +47,6 @@
     "b097824f45b38fb7",
     "b11d217e862ac837",
     "b300d515f1f0ee1a",
-    "b6f9c0cc608a652b",
     "b9fda138fdfd80c5",
     "cd452832e6f70615",
     "d0408b287b644b31",
@@ -424,18 +422,6 @@
       ]
     },
     {
-      "test_file": "tests/test_handoff_artifact.py",
-      "import_safe_targets": [
-        "scripts/validate_handoff_artifact.py"
-      ]
-    },
-    {
-      "test_file": "tests/test_handoff_bullet_ownership.py",
-      "import_safe_targets": [
-        "scripts/validate_handoff_artifact.py"
-      ]
-    },
-    {
       "test_file": "tests/test_ideation_artifact.py",
       "import_safe_targets": [
         "scripts/validate_ideation_artifact.py"
@@ -484,5 +470,5 @@
       ]
     }
   ],
-  "writer_integrity_sha256": "7f1a80585022a252681503b87b847e19e306bc0463bf707103fd50ed624e9444"
+  "writer_integrity_sha256": "a0c6d36d95358173dd188eddf783a6dbd2e67e15efc84ebd31c7e7d667c6e67d"
 }

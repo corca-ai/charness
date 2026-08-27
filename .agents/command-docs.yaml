@@ -35,6 +35,7 @@ commands:
       - abort
       - review
       - status
+      - run
       - --repo-root
     required_doc_contains:
       - charness task claim slice-1
@@ -42,6 +43,7 @@ commands:
       - charness task review slice-1
       - charness task abort slice-1
       - .charness/tasks/
+      - charness task run
   init:
     help_command: ./charness init --help
     doc_paths:
@@ -128,7 +130,6 @@ commands:
       - docs/cli-reference.md
       - docs/control-plane.md
       - docs/external-integrations.md
-      - docs/handoff.md
     required_help_contains:
       - doctor
       - repair
@@ -205,6 +206,22 @@ commands:
       - task_id
     required_doc_contains:
       - charness task status
+  task-run:
+    help_command: ./charness task run --help
+    doc_paths:
+      - docs/agent-task-envelope.md
+      - docs/cli-reference.md
+    required_help_contains:
+      - --path
+      - --branch
+      - --base
+      - --scope
+      - --prompt
+      - --prompt-file
+    required_doc_contains:
+      - charness task run
+      - clean parent
+      - external runtime
   task-review:
     help_command: ./charness task review --help
     doc_paths:
@@ -396,6 +413,17 @@ commands:
       - --prepare
     required_doc_contains:
       - charness worktree add --path
+  worktree-exec:
+    help_command: ./charness worktree exec --help
+    doc_paths:
+      - docs/cli-reference.md
+      - docs/worktree-prepare.md
+    required_help_contains:
+      - --repo-root
+      - external runtime caches
+    required_doc_contains:
+      - charness worktree exec
+      - external runtime
   worktree-doctor:
     help_command: ./charness worktree doctor --help
     doc_paths:

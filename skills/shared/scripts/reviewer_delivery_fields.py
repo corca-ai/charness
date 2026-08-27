@@ -7,6 +7,9 @@ from typing import Any, Callable
 
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 PARENT_RECEIPT_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]*$")
+BOUNDARY_MODES = frozenset({"read-only-worker", "shared-tree-fingerprint"})
+DEFAULT_BOUNDARY_MODE = "read-only-worker"
+FINGERPRINT_BOUNDARY_MODE = "shared-tree-fingerprint"
 
 
 def _text(value: object, label: str) -> str:
@@ -37,6 +40,34 @@ def parent_receipt_identity(value: object, label: str = "parent_receipt_identity
             "letters, digits, `.`, `_`, `:`, or `-`"
         )
     return text
+
+
+def boundary_binding(
+    mode_value: object | None, fingerprint_value: object | None
+) -> tuple[str, str | None]:
+    """Normalize the execution boundary without inventing a git snapshot.
+
+    Older ledgers only carried ``boundary_fingerprint``. Preserve that shape by
+    inferring the shared-tree mode when the field is present. New read-only
+    workers carry an explicit mode and no fingerprint because their backend
+    envelope already removes write and exec capability.
+    """
+    if mode_value is None:
+        mode = FINGERPRINT_BOUNDARY_MODE if fingerprint_value is not None else DEFAULT_BOUNDARY_MODE
+    else:
+        mode = _text(mode_value, "boundary_mode")
+    if mode not in BOUNDARY_MODES:
+        raise ValueError(f"unknown boundary_mode: {mode}")
+    fingerprint = (
+        _text(fingerprint_value, "boundary_fingerprint")
+        if fingerprint_value is not None
+        else None
+    )
+    if mode == FINGERPRINT_BOUNDARY_MODE and fingerprint is None:
+        raise ValueError("shared-tree-fingerprint requires boundary_fingerprint")
+    if mode == DEFAULT_BOUNDARY_MODE and fingerprint is not None:
+        raise ValueError("read-only-worker must not carry a boundary_fingerprint")
+    return mode, fingerprint
 
 
 def bound_fields(
@@ -85,6 +116,9 @@ def bound_fields(
         if payload.get("capability_launch_envelope_sha256") is not None
         else None
     )
+    boundary_mode, boundary_fingerprint = boundary_binding(
+        payload.get("boundary_mode"), payload.get("boundary_fingerprint")
+    )
     output_file = _text(payload["output_file"], "output_file") if payload.get("output_file") is not None else None
     receipt_file = _text(payload["receipt_file"], "receipt_file") if payload.get("receipt_file") is not None else None
     producer_run_id = _text(payload["producer_run_id"], "producer_run_id") if payload.get("producer_run_id") is not None else None
@@ -100,6 +134,8 @@ def bound_fields(
         "prompt_sha256": prompt_sha256,
         "schema_sha256": schema_sha256,
         "capability_launch_envelope_sha256": capability_launch_envelope_sha256,
+        "boundary_mode": boundary_mode,
+        "boundary_fingerprint": boundary_fingerprint,
         "output_file": output_file,
         "receipt_file": receipt_file,
         "producer_run_id": producer_run_id,

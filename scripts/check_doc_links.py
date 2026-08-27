@@ -280,8 +280,8 @@ def classify_backtick_token(
     if has_portable_placeholder(bare):
         return None
     # BEFORE the portable branch, deliberately. A canonical markdown surface is an
-    # agreed name that means the same file in every tree (`AGENTS.md`,
-    # `docs/handoff.md`), so it needs no tree marker -- and running the portable
+    # agreed name that means the same file in every tree (`AGENTS.md`),
+    # so it needs no tree marker -- and running the portable
     # rule first made the armed check demand one, which would have been a false
     # positive in a blocking gate on the repo's own agreed vocabulary.
     if normalize_surface_token(candidate) in canonical_markdown_surfaces:

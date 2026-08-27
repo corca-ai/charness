@@ -88,7 +88,6 @@ def test_retro_plan_shape_and_scaffold_when_missing(tmp_path: Path) -> None:
     paths = required_paths(payload)
     assert "references/expert-lens.md" in paths
     assert "scripts/scaffold_retro_artifact.py" in paths
-    assert "docs/handoff.md" in paths
 
     packet_ids = {packet["id"] for packet in payload["gate_packets"]}  # type: ignore[index]
     assert {"adapter-readiness", "retro-artifact-scaffold", "retro-artifact-shape", "auto-session-trigger"} <= packet_ids

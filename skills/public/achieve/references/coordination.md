@@ -6,10 +6,10 @@ the engines owned by adjacent workflows.
 Material cross-surface changes use the [boundary ownership brief](../../../shared/references/boundary-ownership-brief.md)
 through `critique`; structural retro dispositions use the shared
 [`retro-issue-destination-split.md`](../../../shared/references/retro-issue-destination-split.md)
-contract. These links preserve the handoff without making `achieve` a second
+contract. These links preserve owning evidence without making `achieve` a second
 review or issue engine.
 
-| Workflow | Achieve handoff |
+| Workflow | Achieve contribution |
 | --- | --- |
 | `ideation` | clarify demand, status quo, wedge, and product boundaries |
 | `spec` | turn the approved concept into the current implementation contract |
@@ -19,7 +19,7 @@ review or issue engine.
 | `prove` | close the implementation slice with evidence and non-claims |
 | `issue` | own provider operations and issue-owned closeout evidence |
 | `retro` | record lessons and explicit improvement dispositions after the work unit |
-| `handoff` | prepare a next-session baton only when requested or genuinely blocked |
+| active Goal Run parent | carries the next-child cursor and resume state |
 
 ## Shared identity
 

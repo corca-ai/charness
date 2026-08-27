@@ -62,8 +62,8 @@ Behavior:
 ## Issue Identity: `{repo}` And `{number}`
 
 An issue is named by `(repo, number)`. Both halves are **required** by every
-command template that reads back or verifies one issue's state — the handoff
-staleness reader's `view_state`, the closeout verifier's `view`, and the
+command template that reads back or verifies one issue's state — the Goal Run
+pickup reader's `view_state`, the closeout verifier's `view`, and the
 post-close readback inside `close-with-comment`. The requirement is *rendered*
 by the backend owner but *chosen* per call site (`required=`), so a surface that
 does not ask for it does not get it; the three named above ask.
@@ -103,8 +103,8 @@ The waiver covers `{repo}` and **only** `{repo}`. `{number}` is never waivable �
 no binary carries an issue number implicitly, and a template omitting it resolves
 to a listing whose first row gets read as the asked-about issue's state.
 
-It is also **opt-in per call site**, not global. The handoff staleness reader
-accepts it, because a wrong answer there is one stale pickup line. Closeout
+It is also **opt-in per call site**, not global. The Goal Run pickup reader
+accepts it, because a wrong answer there is one stale pickup decision. Closeout
 verification does **not**, because a wrong answer there closes a real issue and
 that boundary is not reversible — so a `repo_scoped` backend still must spell
 `{repo}` in its `view` template.
@@ -312,7 +312,7 @@ command templates do not silently grow undocumented variables.
 ## Verify Closeout
 
 `issue_tool.py verify-closeout` audits an issue-resolution carrier before final
-handoff:
+closeout:
 
 ```bash
 python3 "$SKILL_DIR/scripts/issue_tool.py" verify-closeout \
@@ -334,7 +334,7 @@ Carrier modes:
 
 All carriers require an explicit `--classification` so the verifier can check
 the classification-specific closeout ledger. Without `--expect-state`, success
-means `status: carrier_verified`, not final issue closeout. Final handoff
+means `status: carrier_verified`, not final issue closeout. Final issue closeout
 requires `--expect-state CLOSED`, which uses the selected backend's `view`
 operation and reports `status: verified` only when every issue is closed.
 

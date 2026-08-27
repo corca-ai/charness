@@ -32,11 +32,6 @@ PRODUCER_VALIDATOR_PAIRS = (
         "validate_critique_artifacts.py",
     ),
     (
-        "handoff",
-        "scaffold_handoff_artifact.py",
-        "validate_handoff_artifact.py",
-    ),
-    (
         "retro",
         "scaffold_retro_artifact.py",
         "validate_retro_artifact.py",

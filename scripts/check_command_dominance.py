@@ -20,8 +20,8 @@ So this gate reads two seams, and neither is prose:
    lefthook, make. Command inventory was the half that already shipped; what was
    missing is the policy layer, which is `command_dominance_lib`.
 
-The document seam is NOT here. It lives in `validate_handoff_artifact.py`, where
-it can refuse the artifact being written rather than reporting on it later.
+Document-shape seams are owned by their artifact validators; this gate only
+checks command ownership and dominance.
 
 WHAT THIS GATE DOES NOT DECIDE. The registry's blind class governs everything
 here and is stated in `command_dominance_lib`'s docstring; two consequences are

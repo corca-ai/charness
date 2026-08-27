@@ -132,10 +132,10 @@ def scaffold_hint(artifact_type: str) -> str | None:
     # halves and an author who follows only the scaffold gets only one. The
     # scaffold emits shape; the skill body holds the disciplines an author
     # otherwise meets one refusal at a time -- what the size budget charges for,
-    # why an owner must sit ON its entry, why paraphrasing a second artifact
-    # beside an owner still fills the budget. A session that hand-authored a
-    # handoff hit exactly those three, in a repo whose skill already documented
-    # all of them, because nothing in this refusal pointed at the skill.
+    # why an owner must sit ON its entry, and why paraphrasing a second artifact
+    # beside an owner still fills the budget. A session that hand-authored an
+    # artifact hit exactly those three, because nothing in this refusal pointed
+    # at the owning skill.
     skill = _skill_id(artifact_type)
     invoke = f" Load the `{skill}` skill for the authoring discipline." if skill else ""
     return (

@@ -46,7 +46,6 @@ _MUTATION_SOURCES = (
     "scripts/reviewed_input_identity.py",
     "scripts/slice_closeout_telemetry.py",
     "scripts/staged_commit_gate_plan_helpers.py",
-    "skills/public/achieve/scripts/goal_artifact_closeout_plan.py",
     "skills/public/achieve/scripts/scaffold_goal_specs.py",
     "skills/public/critique/scripts/prepare_packet.py",
     "skills/public/debug/scripts/persist_debug_artifact.py",
@@ -67,10 +66,6 @@ def _load_script(relative: str, name: str):
     return module
 
 
-closeout_plan = _load_script(
-    "skills/public/achieve/scripts/goal_artifact_closeout_plan.py",
-    "release_closeout_plan_under_test",
-)
 goal_specs = import_repo_module(
     ROOT / "skills/public/achieve/scripts/scaffold_goal_specs.py",
     "skills.public.achieve.scripts.scaffold_goal_specs",

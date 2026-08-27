@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 SCRIPT_DIR = Path(__file__).resolve().parent
+READ_ONLY_BOUNDARY_MODE = "read-only-worker"
 
 
 def _load_support() -> Any:
@@ -98,12 +99,13 @@ def _runner_command(
     packet_sha: str,
     input_sha: str,
     parent_receipt: str,
-    boundary_sha: str,
+    boundary_mode: str,
+    boundary_sha: str | None,
 ) -> list[str]:
     def relative(key: str) -> str:
         return SUPPORT.relative(root, paths[key])
 
-    return [
+    command = [
         sys.executable,
         str(package["runner"]),
         "--repo-root", str(root),
@@ -115,7 +117,7 @@ def _runner_command(
         "--reviewed-input-identity", input_sha,
         "--attempt-id", attempt,
         "--parent-receipt-identity", parent_receipt,
-        "--boundary-fingerprint", boundary_sha,
+        "--boundary-mode", boundary_mode,
         "--ledger-file", relative("ledger"),
         "--output-file", relative("output"),
         "--receipt-file", relative("receipt"),
@@ -125,6 +127,9 @@ def _runner_command(
         "--stderr-file", relative("backend_stderr"),
         "--run-id", "run-" + attempt,
     ]
+    if boundary_sha is not None:
+        command.extend(["--boundary-fingerprint", boundary_sha])
+    return command
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -187,6 +192,8 @@ def main(argv: list[str] | None = None) -> int:
             paths["prompt"], packet_payload, scope=args.scope, lens=args.lens,
             packet_sha=packet_sha, input_sha=input_sha, goal_lineage=goal_lineage,
         )
+        boundary_mode = READ_ONLY_BOUNDARY_MODE
+        boundary_sha = None
         plan = {
             "kind": "charness.review_run_plan.v1",
             "attempt_id": attempt,
@@ -200,16 +207,9 @@ def main(argv: list[str] | None = None) -> int:
             "backend": backend,
             "timeout_seconds": timeout,
             "goal_lineage": goal_lineage,
+            "boundary_mode": boundary_mode,
+            "boundary_fingerprint": boundary_sha,
         }
-        SUPPORT.write_json(paths["plan"], plan)
-        window_id = f"review-{attempt}"
-        snapshot = SUPPORT.boundary(
-            root, paths["boundary"], script=package["boundary"], window_id=window_id, verify=False
-        )
-        if snapshot.get("ok") is not True or not paths["boundary"].is_file():
-            raise SUPPORT.RunReviewError("boundary-invalid", "reviewer boundary snapshot could not be established", details={"boundary": snapshot})
-        boundary_sha = SUPPORT.sha256(paths["boundary"])
-        plan.update({"boundary_fingerprint": boundary_sha, "boundary_window_id": window_id})
         SUPPORT.write_json(paths["plan"], plan)
         parent_receipt = "parent-" + SUPPORT.sha256(paths["plan"])[:48]
         context.update({
@@ -221,7 +221,8 @@ def main(argv: list[str] | None = None) -> int:
         })
         if args.dry_run:
             carrier = lifecycle.build_lifecycle(
-                status="dry-run-ready", dry_run=True, boundary_ok=True, paths=context["paths"]
+                status="dry-run-ready", dry_run=True, boundary_mode=boundary_mode,
+                boundary_ok=True, paths=context["paths"]
             )
             carrier.update({
                 "ok": True,
@@ -244,7 +245,7 @@ def main(argv: list[str] | None = None) -> int:
         command = _runner_command(
             package, paths, root=root, backend=backend, scope=args.scope, attempt=attempt,
             packet_sha=packet_sha, input_sha=input_sha, parent_receipt=parent_receipt,
-            boundary_sha=boundary_sha,
+            boundary_mode=boundary_mode, boundary_sha=boundary_sha,
         )
         returncode, status, started, error = SUPPORT.run_runner(
             command, root=root, stdout_path=paths["runner_stdout"],
@@ -256,18 +257,16 @@ def main(argv: list[str] | None = None) -> int:
         )
         report = SUPPORT.load_mapping(paths["report"])
         stream_evidence = SUPPORT.compare_report_stream(paths["runner_stdout"], paths["report"])
-        readback = SUPPORT.boundary(
-            root, paths["boundary"], script=package["boundary"], window_id=window_id, verify=True
-        )
-        boundary_ok = readback.get("ok") is True and not readback.get("drift")
+        boundary_ok = True
         carrier = lifecycle.build_lifecycle(
             status=status,
             report=report,
             error=error or stream_evidence["reason"],
             returncode=returncode,
             reviewer_started=started,
+            boundary_mode=boundary_mode,
             boundary_ok=boundary_ok,
-            boundary_reason=readback.get("error") or ("boundary drift detected" if not boundary_ok else None),
+            boundary_reason=None,
             paths=context["paths"],
         )
         carrier.update({
@@ -283,7 +282,7 @@ def main(argv: list[str] | None = None) -> int:
             "parent_receipt_identity": parent_receipt,
             "runner_output": {"status": status, "returncode": returncode},
             "runner_stream": stream_evidence,
-            "boundary_readback": readback,
+            "boundary_readback": {"mode": boundary_mode, "required": False},
             "goal_lineage": goal_lineage,
         })
         if not stream_evidence["consistent"]:

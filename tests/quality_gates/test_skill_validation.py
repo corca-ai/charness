@@ -360,7 +360,7 @@ def test_validate_skills_allows_authoring_marker_and_operator_surfaces(tmp_path:
     (references_dir / "note.md").write_text(
         "\n".join(
             [
-                "`docs/handoff.md` is a consumer-owned operator surface.",
+                "`docs/index.md` is a consumer-owned operator surface.",
                 "`docs/roadmap.md` is a consumer-owned operator surface.",
                 "`docs/operator-acceptance.md` is a consumer-owned operator surface.",
                 "`docs/release-notes.md` is a consumer-owned operator surface.",

@@ -1,7 +1,8 @@
 # Goal Artifact
 
-The goal artifact is a reviewable activation artifact and the living scratchpad
-for one autonomous goal run.
+The goal artifact is a compact, reviewable activation record for one autonomous
+goal run. After approval it keeps intent and binding; provider state carries
+routine progress.
 
 ## Location
 
@@ -39,17 +40,9 @@ runs the activation command.
   changes, not per commit (meaningful-slice-cadence).
 - Next action: activate with `/goal @charness-artifacts/goals/<file>.md` after
   confirming the draft is still intended.
-- Verification cadence: cheap deterministic checks at commit boundaries;
-  higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
-  closeout.
-- Gate cadence: pre-lock slices use `run_slice_closeout.py --skip-broad-pytest`;
-  final/bundle proof records the verification lock and uses `--verification-lock`.
-- Slice review packet: before fresh-eye slice critique, provide intent, changed
-  files and owning/generated surfaces, expected invariants, tests/proof,
-  non-claims, out-of-scope lines, and reviewer questions.
 - History boundary: keep this frame current; move completed detail to
-  `## Slice Log`, `## Operator Decision Queue`, `## Final Verification`, and
-  `## Auto-Retro`.
+  `## Slice Log`, `## Final Verification`, and `## Auto-Retro`; do not use it as a
+  second progress tracker.
 
 ## Goal
 
@@ -114,8 +107,6 @@ Queue item form:
 - Unblock action: exact action or answer needed
 - Revisit trigger: event, date, or proof boundary that reopens this
 
-## Coordination Cues
-
 ## Slice Log
 
 ## Context Sources
@@ -137,14 +128,6 @@ rejected-alternatives reason.
 
 Blockers folded into Boundaries/Verification/Slice Plan, over-worry raised but
 not folded, and reviewer provenance.
-
-## Closeout Binding Plan
-
-Before activation, name semantic goal/issue/quality inputs, fixed commit target,
-fresh-eye reviewer and distinct evidence channel, verification lock, and the
-terminal-record rule. Retro, packet, reviewer, lock, and status records are
-terminal evidence, not semantic inputs; a later semantic-input edit invalidates
-the lock and requires rebinding.
 
 ## Off-Goal Findings
 
@@ -311,7 +294,7 @@ goal also carries a `Retro:` line (or an explicit allowed skip, which is a
 non-claim) and uses the deterministic `## Auto-Retro` disposition floor when
 that bound retro lists improvements. The complete-evidence floor is deliberately
 NOT applied: this goal says it did not complete, so it does not inherit
-complete-only host-log, disposition-review, or coordination requirements.
+  complete-only host-log or disposition-review requirements.
 
 This record is audit traceability, not activation permission. The public
 `--pursue-ready` report always sets both `pursue_ready` and `activation_ready` to
@@ -322,8 +305,8 @@ terminal refusal separately from hollow shaping-section refusal.
 ## Remaining Boundary Matrix (conditional, before blocked)
 
 A goal adds a `## Remaining Boundary Matrix` section only when it flips to
-`blocked` — it is not seeded in every goal (like `## Closeout Delegation`, it is
-conditional). Each external/live proof lane the goal mentions is one line:
+`blocked` — it is not seeded in every goal. Each external/live proof lane the
+goal mentions is one line:
 
 ```markdown
 ## Remaining Boundary Matrix
@@ -344,63 +327,6 @@ goal should stay `active` and continue it, not block the whole goal. The floor i
 presence + no-runnable-contradiction only (Created-date grandfathered); whether a
 lane is *truly* runnable is the agent's and the operator's call, not the floor's.
 See `references/lifecycle-during.md` *Remaining-boundary matrix before `blocked`*.
-
-## Closeout Delegation (optional, orchestrated mode)
-
-A goal stays **standalone** by default — it owns all closeout proof itself and
-needs no extra section. A goal only adds `## Closeout Delegation` when it runs in
-orchestrated mode (`references/lifecycle-after.md` *Orchestrated closeout*). Absence of
-the SECTION, or an explicit `Closeout mode: standalone`, keeps the strict standalone
-default. A section that is PRESENT with the mode line absent or blank is `undeclared`
-and is refused (sweep row S13): the section itself declares that closeout is delegated,
-so silence about the mode used to grant `standalone` — the strongest claim in the
-taxonomy — to a goal that had just listed the proof it was handing to someone else.
-
-A **sub-goal** that delegates external proof to a named orchestrator:
-
-```markdown
-## Closeout Delegation
-
-- Closeout mode: orchestrated
-- Orchestrator goal: charness-artifacts/goals/<date>-<orchestrator-slug>.md
-- Closeout state: impl-local / carrier complete
-- Delegated proof:
-  - pushed-ci — orchestrator owns the final main push + CI watch
-  - live — orchestrator runs the provider roundtrip
-  - issue-closed — orchestrator verifies #<N> CLOSED after push
-```
-
-An **orchestrator** goal that owns the delegated proof carries a checklist; every
-item must be resolved (`verified`, `skipped: <reason>`, or `issue #N`) before the
-goal can flip to `complete`:
-
-```markdown
-## Closeout Delegation
-
-- Closeout mode: orchestrator
-- Delegated proof checklist:
-  - pushed-ci — verified: CI green on <sha> (<run-url>)
-  - instance-synced — skipped: instance update deferred to next window — operator directed
-  - live — verified: provider roundtrip observed <ts>
-  - issue-closed — issue #<N>
-```
-
-`check_goal_artifact.py` enforces this in
-`goal_artifact_closeout_delegation.py`: an orchestrated sub-goal must name the
-orchestrator and list ≥1 delegated item; an orchestrator must resolve every
-checklist item. The check is presence/resolution-based — it proves the delegated
-proof is recorded and (for the orchestrator) accounted for, not that the prose is
-"good enough". The taxonomy tokens (`impl-local`, `carrier`, `pushed-ci`,
-`instance-synced`, `live`, `issue-closed`) are the shared vocabulary, not a
-required exact match.
-
-The gate does **not** verify that the named orchestrator goal file exists or that
-its checklist actually covers the sub-goal's delegated items — that substantive
-call is the fresh-eye disposition review's job, the same rung-1 (deterministic
-floor proves the wiring) / rung-2 (intelligence judges substance) split the
-disposition gate uses. The deterministic floor stays narrow and ungameable on
-purpose; tightening it into a cross-goal existence/coverage validator would
-re-import the brittleness the floor philosophy avoids.
 
 ## Metrics Honesty
 

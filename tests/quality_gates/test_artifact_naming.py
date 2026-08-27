@@ -31,15 +31,6 @@ INVENTORY = importlib.util.module_from_spec(INVENTORY_SPEC)
 sys.modules[INVENTORY_SPEC.name] = INVENTORY
 INVENTORY_SPEC.loader.exec_module(INVENTORY)
 
-HANDOFF_RESOLVER_SPEC = importlib.util.spec_from_file_location(
-    "resolve_handoff_adapter", ROOT / "skills" / "public" / "handoff" / "scripts" / "resolve_adapter.py"
-)
-assert HANDOFF_RESOLVER_SPEC is not None and HANDOFF_RESOLVER_SPEC.loader is not None
-HANDOFF_RESOLVER = importlib.util.module_from_spec(HANDOFF_RESOLVER_SPEC)
-sys.modules[HANDOFF_RESOLVER_SPEC.name] = HANDOFF_RESOLVER
-HANDOFF_RESOLVER_SPEC.loader.exec_module(HANDOFF_RESOLVER)
-
-
 def _load_quality_resolver():
     spec = importlib.util.spec_from_file_location(
         "resolve_quality_artifact", ROOT / "skills" / "public" / "quality" / "scripts" / "resolve_quality_artifact.py"
@@ -50,9 +41,19 @@ def _load_quality_resolver():
     return module
 
 
+def _load_quality_adapter_resolver():
+    spec = importlib.util.spec_from_file_location(
+        "resolve_quality_adapter", ROOT / "skills" / "public" / "quality" / "scripts" / "resolve_adapter.py"
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def test_artifact_naming_defaults_to_latest_pointer_and_dated_slug_records() -> None:
     assert current_artifact_filename("gather") == "latest.md"
-    assert current_artifact_filename("handoff") == "handoff.md"
+    assert current_artifact_filename("impl") == "latest.md"
     assert record_artifact_supported("history") is True
     assert record_artifact_supported("current") is False
     assert record_artifact_supported("rolling") is False
@@ -85,27 +86,6 @@ def test_resolve_artifact_path_reports_record_and_current_paths() -> None:
     assert payload["write_artifact_role"] == "durable_record"
     assert payload["update_current_pointer_after_write"] is True
     assert payload["frontmatter"]["artifact_kind"] == "record"
-
-
-def test_handoff_current_path_remains_docs_handoff() -> None:
-    payload = resolve_artifact_payload_for(
-        ROOT,
-        "handoff",
-        "handoff refresh",
-        artifact_date=date(2026, 4, 15),
-        adapter={
-            "data": {"output_dir": "docs", "artifact_class": "rolling"},
-            "artifact_class": "rolling",
-        },
-    )
-
-    assert payload["record_artifact_path"] is None
-    assert payload["artifact_class"] == "rolling"
-    assert payload["artifact_path"] == "docs/handoff.md"
-    assert payload["record_artifact_supported"] is False
-    assert payload["current_artifact_path"] == "docs/handoff.md"
-    assert payload["write_artifact_path"] == "docs/handoff.md"
-    assert payload["write_artifact_role"] == "current_pointer"
 
 
 def write_minimal_resolver(
@@ -143,7 +123,6 @@ def write_unmanaged_resolver(repo: Path, skill_id: str) -> None:
 def test_inventory_current_pointer_layouts_reports_adapter_and_disk_shapes(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     write_minimal_resolver(repo, "quality", "charness-artifacts/quality")
-    write_minimal_resolver(repo, "handoff", "docs", artifact_class="rolling")
     write_unmanaged_resolver(repo, "issue")
     (repo / "skills" / "public" / "create-cli").mkdir(parents=True)
 
@@ -155,13 +134,9 @@ def test_inventory_current_pointer_layouts_reports_adapter_and_disk_shapes(tmp_p
     cautilus_dir = repo / "charness-artifacts" / "cautilus"
     cautilus_dir.mkdir(parents=True)
     (cautilus_dir / "latest.md").write_text("# Cautilus\n", encoding="utf-8")
-    docs = repo / "docs"
-    docs.mkdir()
-    (docs / "handoff.md").write_text("# Handoff\n", encoding="utf-8")
-
     items = INVENTORY.inventory(
         repo,
-        selected=["quality", "handoff", "issue", "create-cli", "cautilus"],
+        selected=["quality", "issue", "create-cli", "cautilus"],
         day=date(2026, 6, 16),
     )
 
@@ -171,8 +146,6 @@ def test_inventory_current_pointer_layouts_reports_adapter_and_disk_shapes(tmp_p
     assert by_skill["quality"].write_artifact_path == (
         "charness-artifacts/quality/2026-06-16-current-quality.md"
     )
-    assert by_skill["handoff"].artifact_class == "rolling"
-    assert by_skill["handoff"].on_disk_layout == "rolling_file"
     assert by_skill["issue"].status == "adapter_unmanaged"
     assert by_skill["issue"].on_disk_layout == "adapter_unmanaged"
     assert by_skill["create-cli"].status == "adapter_unmanaged"
@@ -528,17 +501,17 @@ def test_invalid_artifact_class_fails_instead_of_defaulting_to_history(tmp_path:
     assert "artifact_class must be one of" in result.stderr
 
 
-def test_simple_adapter_invalid_artifact_class_returns_invalid_payload(tmp_path: Path) -> None:
+def test_quality_adapter_invalid_artifact_class_returns_invalid_payload(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)
-    (repo / ".agents" / "handoff-adapter.yaml").write_text(
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
         "version: 1\nrepo: repo\noutput_dir: docs\nartifact_class: typo\n",
         encoding="utf-8",
     )
 
     result = run_loaded_script_main(
         "resolve_adapter.py",
-        HANDOFF_RESOLVER,
+        _load_quality_adapter_resolver(),
         "--repo-root",
         str(repo),
     )

@@ -75,7 +75,7 @@ do not need to name a skill.
 - New project: shape the idea with `ideation`, initialize with `setup`, turn
   the direction into a `spec`, then build through `impl`.
 - Existing repo: run `setup` if the repo is not initialized, then ask directly
-  for implementation, debugging, quality review, story work, handoff, or
+  for implementation, debugging, quality review, story work, or
   release help.
 - Long-running objective: use `achieve` to shape an auditable goal artifact,
   then activate it with `/goal` where your host provides it so progress, proof,
@@ -106,7 +106,7 @@ surface, see [Skill Map](#skill-map).
    communication patterns become reusable skills.
 7. The System Should Get Smarter With Use: retros, adapters, validators, and
    artifacts preserve lessons across sessions.
-8. Context Must Keep Flowing: narrative, release notes, handoff, and review
+8. Context Must Keep Flowing: narrative, release notes, and review
    loops move work across human and agent boundaries.
 
 ## Skill Map
@@ -148,7 +148,6 @@ The rest of the public surface groups by intent:
 - communicate across boundaries:
   [`narrative`](./skills/narrative/SKILL.md) durable truth and story alignment,
   [`announcement`](./skills/announcement/SKILL.md) audience/channel adaptation,
-  [`handoff`](./skills/handoff/SKILL.md) agent -> agent,
   [`hitl`](./skills/hitl/SKILL.md) agent -> person,
   [`issue`](./skills/issue/SKILL.md) GitHub issue filing and resolution
 - operate the harness:

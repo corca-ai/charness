@@ -123,10 +123,10 @@ def test_a_public_skill_scaffold_still_names_its_owner(register_surface) -> None
     Registered the same way as the two above, so a guard that started refusing
     everything -- the cheap way to make both refusal tests pass -- fails here.
     """
-    register_surface("probe-public-owned", "skills/public/handoff/scripts/scaffold_handoff_artifact.py")
+    register_surface("probe-public-owned", "skills/public/quality/scripts/scaffold_quality_artifact.py")
 
-    assert _artifact_validator._skill_id("probe-public-owned") == "charness:handoff"
-    assert "`charness:handoff` skill" in _artifact_validator.scaffold_hint("probe-public-owned")
+    assert _artifact_validator._skill_id("probe-public-owned") == "charness:quality"
+    assert "`charness:quality` skill" in _artifact_validator.scaffold_hint("probe-public-owned")
 
 
 def test_the_exported_flattened_layout_still_names_its_owner() -> None:
@@ -138,15 +138,15 @@ def test_the_exported_flattened_layout_still_names_its_owner() -> None:
     Found by an adversarial installed-layout round.
     """
     assert (
-        _artifact_validator._skill_id_from_scaffold("skills/handoff/scripts/scaffold_handoff_artifact.py")
-        == "charness:handoff"
+        _artifact_validator._skill_id_from_scaffold("skills/quality/scripts/scaffold_quality_artifact.py")
+        == "charness:quality"
     )
     # The source spelling keeps working, so this is an addition, not a swap.
     assert (
         _artifact_validator._skill_id_from_scaffold(
-            "skills/public/handoff/scripts/scaffold_handoff_artifact.py"
+            "skills/public/quality/scripts/scaffold_quality_artifact.py"
         )
-        == "charness:handoff"
+        == "charness:quality"
     )
 
 
@@ -172,9 +172,9 @@ def test_an_absolute_installed_scaffold_path_still_names_its_owner() -> None:
     """
     assert (
         _artifact_validator._skill_id_from_scaffold(
-            "/home/someone/.agents/plugins/charness/skills/handoff/scripts/scaffold_handoff_artifact.py"
+            "/home/someone/.agents/plugins/charness/skills/quality/scripts/scaffold_quality_artifact.py"
         )
-        == "charness:handoff"
+        == "charness:quality"
     )
     assert (
         _artifact_validator._skill_id_from_scaffold(
@@ -204,7 +204,7 @@ def test_a_path_with_no_skill_segment_after_skills_yields_no_owner() -> None:
     Without the length arm a positional read would raise, or invent an owner from a
     filename, at the moment the reader is already looking at a refusal.
     """
-    for scaffold in ("skills/scaffold_handoff_artifact.py", "skills", "/opt/x/skills/only.py"):
+    for scaffold in ("skills/scaffold_quality_artifact.py", "skills", "/opt/x/skills/only.py"):
         assert _violation_report._skill_id_from_scaffold(scaffold) is None, scaffold
 
 

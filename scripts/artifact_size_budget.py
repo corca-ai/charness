@@ -38,17 +38,8 @@ BLIND CLASS -- what this measure CANNOT see:
   block, a reference list). `charge the unit you mean` is the rule; `always charge
   words` is not.
 
-  Stated precisely, because the obvious reading of the sentence above is false of
-  this repo TODAY: `skill_core_density.PRESSURE_EXEMPT_BUDGET` is the entry-shaped
-  budget in question, and it charges NON-EMPTY LINES, not entries -- there is no
-  continuation-line merging in `split_pressure_exempt_sections`, so an entry that
-  soft-wraps costs two. A bounded reviewer measured the live case:
-  `skills/public/handoff/SKILL.md`'s `## Closeout Vocabulary` block holds two
-  entries across seven non-empty lines, spending seven of its twelve. So that
-  budget carries the same wrap-sensitivity this module removed elsewhere, in
-  miniature and bounded (overflow only charges density and never blocks). It was
-  NOT migrated with the prose budgets and it was not repaired here; this paragraph
-  records what is, not what ought to be.
+  Entry-shaped pressure budgets are owned by their skill-specific density checks;
+  this module intentionally measures prose artifacts in words.
 """
 from __future__ import annotations
 
@@ -107,12 +98,11 @@ def word_ceiling_enforced(
     same slice -- a repair carrying the class it repairs, which is what this repo
     spends its review rounds on.
 
-    Grandfathering exists here and NOT on the handoff for a reason the handoff
-    validator states: these are dated, append-only records that nobody may now
-    rewrite, while the handoff is one rolling document whose next rewrite is its
-    migration. Measured at the cutover: seven checked-in debug artifacts sat
-    between 1210 and 1487 words under the new 1200 ceiling, and ten of the 160
-    quality artifacts sat above 1100.
+    Grandfathering exists here because these are dated, append-only records that
+    nobody may now rewrite. Current summaries use their owning workflow's shape.
+    Measured at the cutover: seven checked-in debug artifacts sat between 1210 and
+    1487 words under the new 1200 ceiling, and ten of the 160 quality artifacts sat
+    above 1100.
 
     `observed_date` takes the LATER of filename and body date, so an artifact
     cannot date itself out of the ceiling with one author-written line. `None`

@@ -27,7 +27,7 @@ def test_validate_profiles_rejects_missing_skill_reference(tmp_path: Path) -> No
                 "profile_id": "constitutional",
                 "display_name": "Constitutional",
                 "purpose": "Test",
-                "bundles": {"public_skills": ["handoff"]},
+                "bundles": {"public_skills": ["impl"]},
             }
         ),
         encoding="utf-8",
@@ -35,7 +35,7 @@ def test_validate_profiles_rejects_missing_skill_reference(tmp_path: Path) -> No
     try:
         VALIDATE_PROFILES.validate_profile(profiles_dir / "constitutional.json", repo)
     except VALIDATE_PROFILES.ValidationError as exc:
-        assert "missing artifact `handoff`" in str(exc)
+        assert "missing artifact `impl`" in str(exc)
     else:
         raise AssertionError("validate_profile did not reject missing skill reference")
 
@@ -217,7 +217,7 @@ def test_validate_adapters_rejects_charness_quality_coverage_floor_drift(tmp_pat
                 "canonical_markdown_surfaces:",
                 "- AGENTS.md",
                 "- CLAUDE.md",
-                "- docs/handoff.md",
+                "- docs/index.md",
                 "runtime_profile_default: default",
                 "runtime_budget_profiles:",
                 "  local-linux-aarch64-4cpu:",
@@ -253,11 +253,11 @@ def test_validate_adapters_rejects_charness_quality_coverage_floor_drift(tmp_pat
 def test_validate_profiles_rejects_unknown_smoke_scenario(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     profiles_dir = repo / "profiles"
-    public_skill_dir = repo / "skills" / "public" / "handoff"
+    public_skill_dir = repo / "skills" / "public" / "impl"
     profiles_dir.mkdir(parents=True)
     public_skill_dir.mkdir(parents=True)
     (public_skill_dir / "SKILL.md").write_text(
-        "---\nname: handoff\ndescription: \"demo\"\n---\n\n# Handoff\n",
+        "---\nname: impl\ndescription: \"demo\"\n---\n\n# Impl\n",
         encoding="utf-8",
     )
     (profiles_dir / "demo.json").write_text(
@@ -267,7 +267,7 @@ def test_validate_profiles_rejects_unknown_smoke_scenario(tmp_path: Path) -> Non
                 "profile_id": "demo",
                 "display_name": "Demo",
                 "purpose": "Test",
-                "bundles": {"public_skills": ["handoff"]},
+                "bundles": {"public_skills": ["impl"]},
                 "validation": {"smoke_scenarios": ["not-a-real-scenario"]},
             }
         ),
@@ -281,11 +281,11 @@ def test_validate_profiles_rejects_unknown_smoke_scenario(tmp_path: Path) -> Non
 def test_validate_profiles_rejects_missing_extends_reference(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     profiles_dir = repo / "profiles"
-    public_skill_dir = repo / "skills" / "public" / "handoff"
+    public_skill_dir = repo / "skills" / "public" / "impl"
     profiles_dir.mkdir(parents=True)
     public_skill_dir.mkdir(parents=True)
     (public_skill_dir / "SKILL.md").write_text(
-        "---\nname: handoff\ndescription: \"demo\"\n---\n\n# Handoff\n",
+        "---\nname: impl\ndescription: \"demo\"\n---\n\n# Impl\n",
         encoding="utf-8",
     )
     (profiles_dir / "demo.json").write_text(
@@ -296,7 +296,7 @@ def test_validate_profiles_rejects_missing_extends_reference(tmp_path: Path) -> 
                 "display_name": "Demo",
                 "purpose": "Test",
                 "extends": ["missing-base"],
-                "bundles": {"public_skills": ["handoff"]},
+                "bundles": {"public_skills": ["impl"]},
             }
         ),
         encoding="utf-8",
@@ -309,11 +309,11 @@ def test_validate_profiles_rejects_missing_extends_reference(tmp_path: Path) -> 
 def test_validate_profiles_rejects_unknown_top_level_field(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     profiles_dir = repo / "profiles"
-    public_skill_dir = repo / "skills" / "public" / "handoff"
+    public_skill_dir = repo / "skills" / "public" / "impl"
     profiles_dir.mkdir(parents=True)
     public_skill_dir.mkdir(parents=True)
     (public_skill_dir / "SKILL.md").write_text(
-        "---\nname: handoff\ndescription: \"demo\"\n---\n\n# Handoff\n\n## References\n\n- `references/demo.md`\n",
+        "---\nname: impl\ndescription: \"demo\"\n---\n\n# Impl\n\n## References\n\n- `references/demo.md`\n",
         encoding="utf-8",
     )
     (public_skill_dir / "references").mkdir(parents=True)
@@ -325,7 +325,7 @@ def test_validate_profiles_rejects_unknown_top_level_field(tmp_path: Path) -> No
                 "profile_id": "demo",
                 "display_name": "Demo",
                 "purpose": "Test",
-                "bundles": {"public_skills": ["handoff"]},
+                "bundles": {"public_skills": ["impl"]},
                 "unexpected": True,
             }
         ),
@@ -339,12 +339,12 @@ def test_validate_profiles_rejects_unknown_top_level_field(tmp_path: Path) -> No
 def test_validate_profiles_ignores_gitignored_profiles(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     profiles_dir = repo / "profiles"
-    public_skill_dir = repo / "skills" / "public" / "handoff"
+    public_skill_dir = repo / "skills" / "public" / "impl"
     profiles_dir.mkdir(parents=True)
     public_skill_dir.mkdir(parents=True)
     (repo / ".gitignore").write_text("profiles/generated-*.json\n", encoding="utf-8")
     (public_skill_dir / "SKILL.md").write_text(
-        "---\nname: handoff\ndescription: \"demo\"\n---\n\n# Handoff\n\n## References\n\n- `references/demo.md`\n",
+        "---\nname: impl\ndescription: \"demo\"\n---\n\n# Impl\n\n## References\n\n- `references/demo.md`\n",
         encoding="utf-8",
     )
     (public_skill_dir / "references").mkdir(parents=True)
@@ -356,7 +356,7 @@ def test_validate_profiles_ignores_gitignored_profiles(tmp_path: Path) -> None:
                 "profile_id": "kept",
                 "display_name": "Kept",
                 "purpose": "Test",
-                "bundles": {"public_skills": ["handoff"]},
+                "bundles": {"public_skills": ["impl"]},
             }
         ),
         encoding="utf-8",
@@ -366,8 +366,8 @@ def test_validate_profiles_ignores_gitignored_profiles(tmp_path: Path) -> None:
         repo,
         ".gitignore",
         "profiles/kept.json",
-        "skills/public/handoff/SKILL.md",
-        "skills/public/handoff/references/demo.md",
+        "skills/public/impl/SKILL.md",
+        "skills/public/impl/references/demo.md",
     )
 
     result = run_script("scripts/validate_profiles.py", "--repo-root", str(repo))
@@ -476,7 +476,7 @@ def test_validate_adapters_accepts_charness_quality_adapter_mature_fields(tmp_pa
                 "canonical_markdown_surfaces:",
                 "  - AGENTS.md",
                 "  - CLAUDE.md",
-                "  - docs/handoff.md",
+                "  - docs/index.md",
                 "runtime_profile_default: default",
                 "runtime_budget_profiles:",
                 "  local-linux-aarch64-4cpu:",
@@ -634,7 +634,7 @@ def test_validate_adapters_rejects_charness_quality_command_drift(tmp_path: Path
                 "canonical_markdown_surfaces:",
                 "- AGENTS.md",
                 "- CLAUDE.md",
-                "- docs/handoff.md",
+                "- docs/index.md",
                 "runtime_profile_default: default",
                 "runtime_budget_profiles:",
                 "  local-linux-aarch64-4cpu:",
@@ -722,7 +722,7 @@ def test_validate_adapters_rejects_charness_quality_coverage_floor_threshold_dri
                     "canonical_markdown_surfaces:",
                     "- AGENTS.md",
                     "- CLAUDE.md",
-                    "- docs/handoff.md",
+                    "- docs/index.md",
                     "runtime_profile_default: default",
                     "runtime_budget_profiles:",
                     "  local-linux-aarch64-4cpu:",

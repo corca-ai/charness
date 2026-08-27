@@ -87,17 +87,9 @@ repository-relative receipt intended for check-in at
 `--receipt-path`. Behavior channels are recorded rather than run; the result is
 local deterministic evidence only.
 
-To check that retro follow-ups are wired into the next-session handoff, run:
-
-```bash
-python3 scripts/validate_retro_handoff_wiring.py --help
-python3 scripts/validate_retro_handoff_wiring.py --repo-root . \
-  --goal-path <goal.md> --retro-path <retro.md> --handoff-path docs/handoff.md
-```
-
-This validator checks path identity, the handoff's retro citation, and exact
-recurrence markers. It does not judge prose disposition quality or establish
-fresh-eye, provider, installed-consumer, remote-CI, push, or release proof.
+Retro follow-ups are durable only when applied or filed as owned work. The
+lesson ledger is evaluated explicitly by `retro`; it is not injected at session
+start and no separate wiring validator is required.
 
 ## Local Lesson-Ledger Authoring
 

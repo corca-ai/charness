@@ -53,16 +53,6 @@ def test_upsert_uses_adapter_draft_active_frame_lines_for_new_artifacts(tmp_path
     assert "Current slice: before activation." not in frame
 
 
-def test_default_scaffold_seeds_minimum_closeout_binding_fields(tmp_path: Path) -> None:
-    gal.upsert_goal(tmp_path, date="2026-05-27", slug="g", title="T")
-
-    text = gal.goal_path(tmp_path, "2026-05-27", "g").read_text(encoding="utf-8")
-    plan = text[text.index("## Closeout Binding Plan") : text.index("## Off-Goal Findings")]
-
-    for field in gal.CLOSEOUT_PLAN_FIELDS:
-        assert field in plan
-
-
 def test_default_scaffold_names_draft_lifecycle_disposition(tmp_path: Path) -> None:
     gal.upsert_goal(tmp_path, date="2026-05-27", slug="g", title="T")
 

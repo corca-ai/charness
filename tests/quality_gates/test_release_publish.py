@@ -165,9 +165,6 @@ def test_publish_release_bumps_pushes_tags_and_creates_release(tmp_path: Path) -
     assert ["push", "origin", "v0.0.1"] not in git_log
     assert payload["release_url"] == "https://github.com/example/demo/releases/tag/v0.0.1"
     assert payload["public_release_verification"] == "verified"
-    assert payload["baton_reconcile"]["status"] == "not_configured"
-    committed_artifact = (repo / "charness-artifacts" / "release" / "latest.md").read_text(encoding="utf-8")
-    assert "## Baton Reconcile" in committed_artifact
     assert "post_publish_artifact_commit_sha" in payload
     artifact_text = (repo / "charness-artifacts" / "release" / "latest.md").read_text(encoding="utf-8")
     assert "## Release State" in artifact_text

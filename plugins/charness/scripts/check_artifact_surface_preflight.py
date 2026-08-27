@@ -78,7 +78,7 @@ class Surface:
 #    run CHANGED-SCOPED, so they are wired into the blocking fail-fast structural
 #    sweep (`commit_boundary=True`): cheap, changed-scoped, no reordering of the
 #    deeper run_slice_closeout stages.
-#  - Adapter-scoped siblings (quality, handoff) validate-ALL (no --paths), so they
+#  - Adapter-scoped quality siblings validate-ALL (no --paths), so they
 #    are NOT in the fail-fast sweep (`commit_boundary=False`); they get author-time
 #    shape help via `--type`/`--emit-stub`/`--path` and the broad gate remains their
 #    enforcement. (Putting a validate-all gate in the fail-fast sweep would block a
@@ -137,15 +137,6 @@ REGISTRY: tuple[Surface, ...] = (
             "surface is author-time shape only)."
         ),
     ),
-    # #335: the goal-closeout/coordination-floor authoring surfaces the v0.28.0
-    # generalization did not cover — discovered by failing the complete flip ~4x.
-    # Author-time-only (owned by the achieve complete flip, not a commit gate), so
-    # commit_boundary=False and validator=None (the floors run at the flip).
-    Surface(
-        "goal-coordination", None, None, None,
-        f"{_GOAL_TEMPLATE}|## Coordination Cues", False,
-        "Goal `## Coordination Cues` floor shapes (Routing:/Gather:/Release:/Issue closeout:); seeded by the goal template, enforced by the achieve coordination + issue-closeout floors at the complete flip.",
-    ),
     Surface(
         "goal-early-close", None, None,
         "skills/public/achieve/scripts/goal_artifact_early_close_report.py",
@@ -185,15 +176,6 @@ REGISTRY: tuple[Surface, ...] = (
         "Hand-authored quality artifact; required sections + runtime-signal/delegated-review shape.",
         artifact_path_arg=True,
         paths_arg=False,
-    ),
-    Surface(
-        "handoff", "docs/handoff.md",
-        "scripts/validate_handoff_artifact.py",
-        "skills/public/handoff/scripts/scaffold_handoff_artifact.py",
-        None, False,
-        "Hand-authored handoff artifact (default docs/handoff.md); required H2 sections + a References link.",
-        paths_arg=False,
-        artifact_path_arg=True,
     ),
 )
 
@@ -310,7 +292,7 @@ def _parse_structured_stdout(text: str) -> Any:
 def _run_scaffold_template(repo_root: Path, scaffold: str) -> tuple[str, int]:
     """Run a scaffold script and return the rendered artifact text.
 
-    Most scaffolds (critique/ideation/retro/debug/quality/handoff) go through
+    Most scaffolds (critique/ideation/retro/debug/quality) go through
     ``scripts/scaffold_artifact_lib.emit_payload_main``, which emits one JSON
     envelope with a `template` key holding the real markdown; unwrap that key
     rather than treating the raw JSON as the artifact text (the prior behavior
@@ -436,9 +418,7 @@ def describe(repo_root: Path, surface: Surface, *, target_rel: str | None) -> st
         elif surface.artifact_path_arg and target_rel:
             # Without this the adapter-scoped validators run validate-all against the
             # POINTER target, so the verdict was about a different file than the one
-            # the author is holding -- and it printed PASS. A prefix-mapped surface
-            # (quality) makes that gap visible; the exact-file sibling (handoff) hid it
-            # because validate-all happened to equal the target.
+            # the author is holding -- and it printed PASS.
             argv += ["--artifact-path", target_rel]
             cmd += f" --artifact-path {target_rel}"
         out.append(f"owning validator: {cmd}")

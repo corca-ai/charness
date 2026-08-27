@@ -89,7 +89,7 @@ _carriers = _sibling("carriers")
 _registry = _carriers.registry_module
 
 # Re-exported so every existing consumer keeps loading ONE module by path. The split
-# is internal to this family; `check_command_dominance`, `validate_handoff_artifact`,
+# is internal to this family; `check_command_dominance`, the artifact validators,
 # `check_runtime_budget_universe` and the exported inventory are unchanged.
 REGISTRY_VERSION = _registry.REGISTRY_VERSION
 RegistryError = _registry.RegistryError

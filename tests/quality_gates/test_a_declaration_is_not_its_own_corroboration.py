@@ -1,9 +1,7 @@
-"""Sweep rows S9, S10, S12, S13: what the audited content says about itself is not proof.
+"""Sweep rows S9 and S10: what the audited content says about itself is not proof.
 
-Four surfaces, one shape. An artifact's own `Date:` line decided whether its floor ran.
-A field name's presence stood in for engaging with the field. An issue reference stood in
-for the proof it points at. And a missing `Closeout mode:` line granted `standalone` —
-the strongest claim in the taxonomy — by silence.
+Two surfaces, one shape. An artifact's own `Date:` line decided whether its floor ran.
+A field name's presence stood in for engaging with the field.
 
 Each test names the pre-repair verdict it pins against, observed in the parent on
 2026-08-01 before any repair was written.
@@ -25,11 +23,6 @@ INVENTORY = _load_script_module(
     "validate_inventory_consumption_under_test",
     ROOT / "scripts" / "validate_inventory_consumption.py",
 )
-DELEGATION = _load_script_module(
-    "goal_artifact_closeout_delegation_declaration",
-    ROOT / "skills" / "public" / "achieve" / "scripts" / "goal_artifact_closeout_delegation.py",
-)
-
 _CITED = "`python3 skills/public/quality/scripts/inventory_skill_ergonomics.py --repo-root .`"
 
 
@@ -258,91 +251,6 @@ def test_the_validator_reports_a_path_outside_the_repo_instead_of_crashing(tmp_p
     assert result.returncode == 1
 
 
-# --- S12 / S13: a pointer is not proof, and silence is not a declaration -------------
-
-
-def test_s12_an_item_that_says_it_is_not_done_is_not_resolved():
-    # Pre-repair: `_item_resolved` returned True — `#412` matched, and nothing read the
-    # rest of the sentence.
-    item = "push to CI and confirm green for PR #412 — NOT DONE, still pending"
-
-    assert DELEGATION._item_resolved(item) is False
-
-
-def test_s12_a_bare_reference_still_resolves_an_item_that_does_not_deny_itself():
-    # The row's claim that a runbook step number or heading anchor also resolves an item
-    # is FALSE and was corrected in the sweep: `_ISSUE_REF` matches `#\\d+` and
-    # `issue \\d+`, nothing else.
-    assert DELEGATION._item_resolved("provider live proof — tracked in issue #501") is True
-    assert DELEGATION._item_resolved("instance apply/restart — see runbook step 3") is False
-
-
-def test_s12_an_explicitly_verified_item_still_resolves():
-    assert DELEGATION._item_resolved("provider live proof — verified: readback matched") is True
-
-
-def test_s13_a_declared_section_with_no_mode_line_is_refused():
-    # Pre-repair: mode='standalone', report ok never set, two delegated items ignored.
-    body = "## Closeout Delegation\n\nDelegated proof:\n- final push/CI green\n- provider live proof\n"
-
-    parsed = DELEGATION.parse_closeout_delegation(body)
-    report: dict = {}
-    DELEGATION.apply_closeout_delegation(report, body)
-
-    assert parsed["mode"] == "undeclared"
-    assert report["ok"] is False
-    # The channel `check_goal_artifact` and `describe_goal_closeout_shape` actually read.
-    assert any(
-        "absent or blank" in failure
-        for failure in report["closeout_delegation"]["failures"]
-    )
-
-
-def test_s13_a_blank_mode_line_is_refused_too():
-    body = "## Closeout Delegation\n\nCloseout mode:\nDelegated proof:\n- x\n"
-    report: dict = {}
-
-    DELEGATION.apply_closeout_delegation(report, body)
-
-    assert report["ok"] is False
-
-
-def test_s13_a_goal_with_no_section_at_all_is_still_standalone():
-    # The documented default survives: absence of the SECTION means standalone; absence
-    # of the MODE inside a present section does not.
-    body = "# Goal\n\n## Final Verification\n\nEverything local.\n"
-    report: dict = {}
-
-    parsed = DELEGATION.parse_closeout_delegation(body)
-    DELEGATION.apply_closeout_delegation(report, body)
-
-    assert parsed["mode"] == "standalone"
-    assert parsed["declared"] is False
-    assert "ok" not in report
-
-
-def test_s13_an_explicit_standalone_with_a_trailing_clause_still_passes():
-    body = "## Closeout Delegation\n\nCloseout mode: standalone (owns all proof)\n"
-    report: dict = {}
-
-    DELEGATION.apply_closeout_delegation(report, body)
-
-    assert "ok" not in report
-
-
-def test_no_checked_in_goal_artifact_is_refused_by_the_new_delegation_floors():
-    # The measurement behind arming: 0 of the checked-in goal artifacts declare a
-    # `## Closeout Delegation` section at all, so both floors cost this repo nothing.
-    refused = []
-    for path in sorted((ROOT / "charness-artifacts" / "goals").glob("*.md")):
-        report: dict = {}
-        DELEGATION.apply_closeout_delegation(report, path.read_text(encoding="utf-8", errors="replace"))
-        if report.get("ok") is False:
-            refused.append(path.name)
-
-    assert refused == []
-
-
 # --- the measurement itself ----------------------------------------------------------
 # The 2026-08-01 slice-5 critique (F2) recorded an unverified measurement script as
 # "the withdrawn attempts' mistake one level up", and the remedy it set was a test that
@@ -433,18 +341,6 @@ def test_the_measurement_reports_a_corpus_outside_the_repo_without_crashing(tmp_
     )
 
     assert report["artifacts"] == 1
-
-
-def test_s12_a_resolved_item_is_not_refused_for_a_word_in_its_reason():
-    # `skipped:` and `verified:` are resolutions, and their REASONS are exactly where
-    # "blocked" / "pending" / "awaiting" appear. Checking the negation first refused them
-    # — the same token-for-sentence move S12 names, pointed the other way.
-    for item in (
-        "live provider proof — skipped: blocked on an upstream outage, tracked in issue #501",
-        "pushed-ci — verified: the pending-work queue is now empty",
-        "issue-closed — verified: no longer blocked, closed 2026-07-30",
-    ):
-        assert DELEGATION._item_resolved(item) is True, item
 
 
 def test_the_gate_reports_an_unparsable_date_line_instead_of_crashing(tmp_path):

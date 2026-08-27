@@ -19,7 +19,7 @@ Before drafting a contract or asking follow-up questions, inspect the current im
 # 1. current concept and adjacent context
 git status --short
 rg --files . | sed -n '1,200p'
-for f in README.md AGENTS.md docs/handoff.md "$SKILL_DIR/../ideation/references/spec-boundary.md"; do sed -n '1,220p' "$f" 2>/dev/null; done
+for f in README.md AGENTS.md "$SKILL_DIR/../ideation/references/spec-boundary.md"; do sed -n '1,220p' "$f" 2>/dev/null; done
 
 # 2. existing concept/spec/design docs + implementation-side acceptance reality
 rg -n "concept|spec|requirements|success criteria|acceptance|entity|stage|constraint|test|fixture|scenario|operator|takeover|smoke|integration" .

@@ -143,7 +143,7 @@ def scenario_quality_bootstrap_posture(root: Path) -> None:
         (tmp / "docs").mkdir(parents=True)
         (tmp / "scripts").mkdir(parents=True)
         (tmp / "README.md").write_text("# Demo\n", encoding="utf-8")
-        (tmp / "docs" / "handoff.md").write_text("# Handoff\n", encoding="utf-8")
+        (tmp / "docs" / "index.md").write_text("# Documentation index\n", encoding="utf-8")
         (tmp / "pyproject.toml").write_text("[project]\nname='demo'\n", encoding="utf-8")
         (tmp / "scripts" / "run-quality.sh").write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
         (tmp / "scripts" / "check-secrets.sh").write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
@@ -181,8 +181,6 @@ def scenario_narrative_adapter_bootstrap(root: Path) -> None:
 def scenario_release_adapter_bootstrap(root: Path) -> None:
     expect_adapter_bootstrap(root, skill_id="release", adapter_name="release-adapter.yaml", expected_artifact_path="charness-artifacts/release/latest.md")
 
-def scenario_handoff_adapter_bootstrap(root: Path) -> None:
-    expect_adapter_bootstrap(root, skill_id="handoff", adapter_name="handoff-adapter.yaml", expected_artifact_path="docs/handoff.md")
 def scenario_gather_adapter_bootstrap(root: Path) -> None:
     expect_adapter_bootstrap(root, skill_id="gather", adapter_name="gather-adapter.yaml", expected_artifact_path="charness-artifacts/gather/latest.md")
 def scenario_setup_adapter_bootstrap(root: Path) -> None:
@@ -213,24 +211,6 @@ def scenario_setup_compact_skill_routing_discoverability(root: Path) -> None:
         expect_success=expect_success,
         error_type=EvalError,
     )
-def scenario_handoff_relative_links(root: Path) -> None:
-    with tempfile.TemporaryDirectory(prefix="charness-eval-handoff-") as tmpdir:
-        tmp = Path(tmpdir)
-        (tmp / "docs").mkdir(parents=True)
-        (tmp / "README.md").write_text("# Demo\n", encoding="utf-8")
-        (tmp / "docs" / "handoff.md").write_text(
-            "\n".join(
-                [
-                    "# Demo Handoff",
-                    "",
-                    "[root](../README.md)",
-                    "",
-                ]
-            ),
-            encoding="utf-8",
-        )
-        result = run_command(["python3", "scripts/check_doc_links.py", "--repo-root", str(tmp)], cwd=root)
-        expect_success(result, "handoff relative-link portability")
 def scenario_representative_skill_contracts(root: Path) -> None:
     result = run_command(["python3", "scripts/check_skill_contracts.py", "--repo-root", str(root)], cwd=root)
     expect_success(result, "representative skill contracts")
@@ -254,13 +234,11 @@ def run_scenario(root: Path, scenario: Scenario) -> None:
         "quality-bootstrap-posture": scenario_quality_bootstrap_posture,
         "narrative-adapter-bootstrap": scenario_narrative_adapter_bootstrap,
         "release-adapter-bootstrap": scenario_release_adapter_bootstrap,
-        "handoff-adapter-bootstrap": scenario_handoff_adapter_bootstrap,
         "gather-adapter-bootstrap": scenario_gather_adapter_bootstrap,
         "setup-adapter-bootstrap": scenario_setup_adapter_bootstrap,
         "setup-inspect-states": scenario_setup_inspect_states,
         "setup-operator-acceptance-synthesis": scenario_setup_operator_acceptance_synthesis,
         "setup-compact-skill-routing-discoverability": scenario_setup_compact_skill_routing_discoverability,
-        "handoff-relative-links": scenario_handoff_relative_links,
         "support-sync-contracts": scenario_support_sync_contracts,
         "representative-skill-contracts": scenario_representative_skill_contracts,
         "issue-sibling-search-concept-fixtures": scenario_issue_sibling_search_concept_fixtures,

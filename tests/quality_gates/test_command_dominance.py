@@ -33,7 +33,6 @@ DOMINANCE = load_path_module(
     ROOT / "skills" / "public" / "quality" / "scripts" / "command_dominance_lib.py",
 )
 GATE = importlib.import_module("scripts.check_command_dominance")
-HANDOFF = importlib.import_module("scripts.validate_handoff_artifact")
 UNIVERSE = importlib.import_module("scripts.check_runtime_budget_universe")
 
 REPLACEMENT = "python3 scripts/run_standing_pytest.py"
@@ -231,75 +230,6 @@ def test_a_registry_from_a_future_version_is_refused_not_partly_read() -> None:
     data["version"] = 99
     with pytest.raises(DOMINANCE.RegistryError, match="version"):
         DOMINANCE.parse_registry(data)
-
-
-# --------------------------------------------------------------------------
-# 3. SC14 -- the document seam, carried by the handoff validator.
-# --------------------------------------------------------------------------
-
-
-def _handoff_body(command: str) -> str:
-    source = (ROOT / "docs" / "handoff.md").read_text(encoding="utf-8")
-    replaced = source.replace(f"`{REPLACEMENT}`", f"`{command}`", 1)
-    assert replaced != source, "anchor command not found in the real handoff"
-    return replaced
-
-
-def test_sc14_refuses_a_handoff_that_prescribes_the_dominated_command(tmp_path: Path) -> None:
-    """The exact line this repo carried, and the refusal names the replacement."""
-    artifact = tmp_path / "handoff.md"
-    artifact.write_text(_handoff_body("python3 -m pytest tests/ -q --no-header"), encoding="utf-8")
-    with pytest.raises(HANDOFF.ValidationError) as excinfo:
-        HANDOFF.validate_no_dominated_commands(artifact, ROOT)
-    assert REPLACEMENT in str(excinfo.value)
-
-
-def test_sc14_this_repos_own_handoff_passes() -> None:
-    HANDOFF.validate_no_dominated_commands(ROOT / "docs" / "handoff.md", ROOT)
-
-
-def test_sc14_an_unregistered_slow_command_passes(tmp_path: Path) -> None:
-    """The registry is a DENYLIST and its false negatives are real.
-
-    Stated as an executed test rather than as a sentence in a docstring, because
-    a reader who meets only the refusal will assume the rule means "slow commands
-    are refused". It does not. It means "these listed commands are refused".
-    """
-    artifact = tmp_path / "handoff.md"
-    artifact.write_text(_handoff_body("python3 scripts/some_very_slow_unregistered_thing.py"), encoding="utf-8")
-    HANDOFF.validate_no_dominated_commands(artifact, ROOT)
-
-
-def test_sc14_is_absent_rather_than_red_for_a_consumer_without_a_registry(tmp_path: Path) -> None:
-    """This validator ships to consumers. A consumer has no registry.
-
-    Raising on an absent registry would hand every consuming repo a red handoff
-    gate on upgrade, which is the stranded-consumer defect the export slice before
-    this one was built to end.
-    """
-    artifact = tmp_path / "handoff.md"
-    artifact.write_text("# Handoff\n\n`python3 -m pytest tests`\n", encoding="utf-8")
-    consumer_root = tmp_path / "consumer"
-    consumer_root.mkdir()
-    HANDOFF.validate_no_dominated_commands(artifact, consumer_root)
-
-
-def test_sc14_is_wired_into_the_validator_and_not_merely_defined() -> None:
-    """A rule nobody calls is this repo's recorded waste class.
-
-    An earlier detector shipped with `disposition: file-issue` and nobody obliged
-    to file; a Claim Fidelity clause shipped with nobody obliged to run it. The
-    carrier is the point, so the wiring is asserted rather than assumed.
-    """
-    artifact = ROOT / "docs" / "handoff.md"
-    calls: list[tuple] = []
-    original = HANDOFF.validate_no_dominated_commands
-    HANDOFF.validate_no_dominated_commands = lambda *args: calls.append(args)
-    try:
-        HANDOFF.validate_handoff_artifact(artifact, collect_all=True, repo_root=ROOT)
-    finally:
-        HANDOFF.validate_no_dominated_commands = original
-    assert calls, "validate_handoff_artifact must call the dominance rule"
 
 
 # --------------------------------------------------------------------------

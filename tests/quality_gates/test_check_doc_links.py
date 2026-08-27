@@ -31,7 +31,7 @@ def test_check_doc_links_rejects_repo_local_absolute_path(tmp_path: Path, monkey
     docs_dir = repo / "docs"
     docs_dir.mkdir(parents=True)
     (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
-    (docs_dir / "handoff.md").write_text(
+    (docs_dir / "index.md").write_text(
         f"[root]({repo / 'README.md'})\n",
         encoding="utf-8",
     )
@@ -133,7 +133,7 @@ def test_check_doc_links_allows_portable_skill_placeholder_backticks(
     skill_dir = repo / "skills" / "public" / "demo"
     skill_dir.mkdir(parents=True)
     (skill_dir / "SKILL.md").write_text(
-        "Read `<repo-root>/docs/handoff.md` after resolving the adapter.\n",
+        "Read `<repo-root>/docs/index.md` after resolving the adapter.\n",
         encoding="utf-8",
     )
 
@@ -150,9 +150,9 @@ def test_check_doc_links_rejects_portable_skill_link_outside_package(
     skill_dir = repo / "skills" / "public" / "demo"
     docs_dir.mkdir(parents=True)
     skill_dir.mkdir(parents=True)
-    (docs_dir / "handoff.md").write_text("# Handoff\n", encoding="utf-8")
+    (docs_dir / "index.md").write_text("# Index\n", encoding="utf-8")
     (skill_dir / "SKILL.md").write_text(
-        "Read [handoff](../../../docs/handoff.md) after resolving the adapter.\n",
+        "Read [index](../../../docs/index.md) after resolving the adapter.\n",
         encoding="utf-8",
     )
 
@@ -160,7 +160,7 @@ def test_check_doc_links_rejects_portable_skill_link_outside_package(
 
     assert result.returncode == 1
     assert "portable skill link" in result.stderr
-    assert "../../../docs/handoff.md" in result.stderr
+    assert "../../../docs/index.md" in result.stderr
 
 
 def test_check_doc_links_allows_default_canonical_instruction_surfaces(
@@ -207,15 +207,15 @@ def test_check_doc_links_allows_adapter_canonical_surface(tmp_path: Path, monkey
                 "canonical_markdown_surfaces:",
                 "  - AGENTS.md",
                 "  - CLAUDE.md",
-                "  - docs/handoff.md",
+                "  - docs/index.md",
                 "",
             ]
         ),
         encoding="utf-8",
     )
-    (docs_dir / "handoff.md").write_text("# Handoff\n", encoding="utf-8")
+    (docs_dir / "index.md").write_text("# Index\n", encoding="utf-8")
     (repo / "README.md").write_text(
-        "Current pickup lives in `docs/handoff.md`; docs/handoff.md is a canonical surface.\n",
+        "Current docs live in `docs/index.md`; docs/index.md is a canonical surface.\n",
         encoding="utf-8",
     )
     result = run_check_doc_links(monkeypatch, capsys, "--repo-root", str(repo))
@@ -291,7 +291,7 @@ def test_check_doc_links_rejects_relative_link_that_escapes_repo_root(
     sibling_repo.mkdir()
     (sibling_repo / "README.md").write_text("# Other Repo\n", encoding="utf-8")
     (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
-    (docs_dir / "handoff.md").write_text(
+    (docs_dir / "index.md").write_text(
         "[sibling](../../other-repo/README.md)\n",
         encoding="utf-8",
     )
@@ -779,7 +779,7 @@ def test_an_authoring_skill_command_is_rejected_without_plugin_directory(
 
 
 def test_a_canonical_markdown_surface_needs_no_tree_marker(tmp_path: Path) -> None:
-    """`docs/handoff.md` means the same file in EVERY tree, so it needs no marker.
+    """`docs/index.md` means the same file in EVERY tree, so it needs no marker.
 
     Asserted on the classifier with an explicit canonical set, because the ORDER
     is the invariant: the first armed version ran the portable rule ahead of the
@@ -791,11 +791,11 @@ def test_a_canonical_markdown_surface_needs_no_tree_marker(tmp_path: Path) -> No
     package_root.mkdir(parents=True)
 
     verdict = _check_doc_links.classify_backtick_token(
-        "docs/handoff.md",
+        "docs/index.md",
         set(),
         {},
         set(),
-        {"docs/handoff.md"},
+        {"docs/index.md"},
         package_root,
     )
 
@@ -804,7 +804,7 @@ def test_a_canonical_markdown_surface_needs_no_tree_marker(tmp_path: Path) -> No
     # is about the canonical carve-out, not about the token happening to pass.
     assert (
         _check_doc_links.classify_backtick_token(
-            "docs/handoff.md", set(), {}, set(), set(), package_root
+            "docs/index.md", set(), {}, set(), set(), package_root
         )
         == "unmarked-tree"
     )

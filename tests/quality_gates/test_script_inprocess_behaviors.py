@@ -198,7 +198,7 @@ def test_setup_synthesize_operator_acceptance_outputs_tiered_draft(tmp_path: Pat
     assert payload["shared_start_commands"] == [command for command, _path in SHARED_START_CANDIDATES]
     assert payload["acceptance_buckets"]["cheap_first"][0]["commands"] == "./scripts/run-quality.sh"
     assert "gh workflow run release.yml" in payload["acceptance_buckets"]["external_or_costly"][0]["commands"]
-    assert payload["acceptance_buckets"]["human_judgment"][0]["source_path"] == "docs/handoff.md"
+    assert payload["acceptance_buckets"]["human_judgment"][0]["source_path"] == "docs/index.md"
     assert "## Cheap First" in payload["markdown"]
     assert "## External Or Costly Checks" in payload["markdown"]
     assert "## Human Judgment" in payload["markdown"]

@@ -79,8 +79,6 @@ QUALITY_LIVE = (
     "startup_probes:\n  - label: probe-one\n    command:\n      - python3\n"
     '      - "-c"\n      - "pass"\n' + _QUALITY_PROBE_TAIL
 )
-HANDOFF_DEAD = "version: 9\nrepo: demo\nartifact_path: docs/mine/handoff.md\n"
-HANDOFF_LIVE = "version: 9\nrepo: demo\noutput_dir: docs/mine\n"
 ANNOUNCEMENT_DEAD = (
     "version: 9\nrepo: demo\ndelivery_kind: release-notes\n"
     "release_notes_path: docs/mine-notes.md\n"
@@ -115,7 +113,6 @@ DEAD_CONTROLS = [
         "startup_probes:", "- label: probe-one", 'command: [python3, "-c", "pass"]',
         "class: standing", "startup_mode: warm", "surface: direct",
     ], id="quality-flow-sequence-command"),
-    pytest.param("handoff-adapter.yaml", HANDOFF_DEAD, ["artifact_path: docs/mine/handoff.md"], id="handoff-unread-key"),
     pytest.param("announcement-adapter.yaml", ANNOUNCEMENT_DEAD, ["in_progress_sources:", "- docs/pending-migration.md"], id="announcement-bare-string"),
     pytest.param("release-adapter.yaml", RELEASE_DEAD, ["release_record_path: charness-artifacts/release/mine.md"], id="release-derived-key"),
 ]
@@ -123,7 +120,6 @@ LIVE_CONTROLS = [
     pytest.param("narrative-adapter.yaml", NARRATIVE_LIVE, id="narrative"),
     pytest.param("impl-adapter.yaml", IMPL_LIVE, id="impl"),
     pytest.param("quality-adapter.yaml", QUALITY_LIVE, id="quality"),
-    pytest.param("handoff-adapter.yaml", HANDOFF_LIVE, id="handoff"),
     pytest.param("announcement-adapter.yaml", ANNOUNCEMENT_LIVE, id="announcement"),
     pytest.param("release-adapter.yaml", RELEASE_LIVE, id="release"),
 ]

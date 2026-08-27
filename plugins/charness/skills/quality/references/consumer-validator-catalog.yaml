@@ -405,15 +405,6 @@ validators:
     consumer_facing: false
     decision: exclude
     reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
-  - path: scripts/validate_handoff_artifact.py
-    id: handoff-artifact
-    consumer_facing: true
-    decision: publish
-    artifact_type: handoff-artifact
-    adoption_policy: wire-or-opt-out
-    reason: "consumer-facing artifact or closeout contract; the packaged path is the source of truth for consuming repositories"
-    purpose: "validates a consumer-authored handoff artifact"
-    invocation: "python3 <plugin-root>/scripts/validate_handoff_artifact.py"
   - path: scripts/validate_ideation_artifact.py
     id: ideation-artifact
     consumer_facing: true
@@ -514,19 +505,6 @@ validators:
     reason: "consumer-facing artifact or closeout contract; the packaged path is the source of truth for consuming repositories"
     purpose: "validates a consumer-authored retro artifact"
     invocation: "python3 <plugin-root>/scripts/validate_retro_artifact.py"
-  - path: scripts/validate_retro_handoff_wiring.py
-    id: retro-handoff-wiring
-    consumer_facing: true
-    decision: publish
-    artifact_type: retro-handoff-wiring
-    adoption_policy: wire-or-opt-out
-    reason: "consumer-facing artifact or closeout contract; the packaged path is the source of truth for consuming repositories"
-    purpose: "validates consumer-authored retro handoff wiring"
-    invocation: "python3 <plugin-root>/scripts/validate_retro_handoff_wiring.py"
-  - path: scripts/validate_scenario_conditional_reads.py
-    consumer_facing: false
-    decision: exclude
-    reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
   - path: scripts/validate_skill_ergonomics.py
     consumer_facing: false
     decision: exclude

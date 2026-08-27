@@ -671,7 +671,7 @@ def test_a_commit_that_only_edits_a_closeout_artifact_is_not_a_close(repo: Path)
         "second.txt",
         extra={
             "charness-artifacts/issue/2026-08-16-issue-700-closeout.md":
-                QUESTION_ARTIFACT + "\nSee also: docs/handoff.md\n"
+                QUESTION_ARTIFACT + "\nSee also: docs/index.md\n"
         },
     )
 

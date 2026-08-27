@@ -12,7 +12,6 @@ quality_command: ./scripts/run-quality.sh --release
 post_publish_install_refresh: charness update
 post_publish_version_readback: charness version
 post_publish_doctor_readback: charness doctor
-post_publish_baton_path: docs/handoff.md
 required_release_surfaces:
 - claude_plugin
 - codex_plugin
@@ -75,7 +74,6 @@ fresh_checkout_probes:
 - ./charness goal run --help >/dev/null
 - python3 scripts/doctor.py --repo-root . --skip-release-probe >/dev/null
 - python3 scripts/closeout_bundle.py --help >/dev/null
-- python3 scripts/validate_retro_handoff_wiring.py --help >/dev/null
 requested_review_commands: []
 requested_review_policy: advisory-only
 review_unavailable_patterns:

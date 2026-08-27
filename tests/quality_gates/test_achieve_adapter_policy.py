@@ -44,7 +44,7 @@ def test_missing_adapter_uses_audit_only_defaults(tmp_path: Path) -> None:
     assert adapter["data"]["scaffold"]["draft_active_frame_lines"]
 
 
-def test_repo_adapter_can_declare_handoff_only_direct_commit_policy(tmp_path: Path) -> None:
+def test_repo_adapter_can_declare_audit_only_direct_commit_policy(tmp_path: Path) -> None:
     _write(
         tmp_path,
         ".agents/achieve-adapter.yaml",
@@ -53,7 +53,7 @@ def test_repo_adapter_can_declare_handoff_only_direct_commit_policy(tmp_path: Pa
                 "version: 1",
                 "repo: demo",
                 "closeout_publication:",
-                "  default_mode: handoff-only",
+                "  default_mode: audit-only",
                 "  issue_closeout_carrier: direct-commit",
                 "  require_draft_validation: true",
                 '  draft_validation_command_template: "python3 skills/public/issue/scripts/issue_tool.py validate-closeout-draft --repo-root . --repo owner/repo --number {issue_number} --classification {classification} --carrier direct-commit --commit-message-file {commit_message_file}"',
@@ -75,7 +75,7 @@ def test_repo_adapter_can_declare_handoff_only_direct_commit_policy(tmp_path: Pa
 
     assert report["found"] is True
     assert report["valid"] is True
-    assert report["publication_default"] == "handoff-only"
+    assert report["publication_default"] == "audit-only"
     assert report["issue_closeout_carrier"] == "direct-commit"
     assert report["draft_validation_required"] is True
     assert report["auto_retro_valid_dispositions"] == ["applied", "issue"]

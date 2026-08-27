@@ -44,7 +44,7 @@ python3 "$SKILL_DIR/scripts/run_review.py" \
 Remove `--dry-run` only when the derived carrier is ready to start the review.
 The wrapper owns packet verification, packet/input identities, canonical schema
 materialization, the default read-only capability envelope, artifact paths,
-boundary fingerprint, Goal Run lineage, and lifecycle output. An existing packet can be supplied
+boundary mode, Goal Run lineage, and lifecycle output. An existing packet can be supplied
 with `--packet-file <repo-relative-path>`; its current binding is verified
 before a reviewer starts. The low-level `run_reviewer_worker.py` interface
 remains available for compatibility and diagnostics, not as the normal manual
@@ -183,9 +183,10 @@ Rules:
   requires a commit or endpoint-diff range. A committed-ref packet's declared
   `reviewed_paths` must exactly equal the paths changed by that ref/range.
 - `reviewed_input_identity` records what the reviewer was given. Its patch and
-  untracked components are limited to the declared paths; the existing
-  reviewer-boundary fingerprint remains a separate whole-worktree proof that
-  the reviewer did not mutate shared state.
+  untracked components are limited to the declared paths. The
+  reviewer-boundary fingerprint is a separate whole-worktree proof used only by
+  the untyped shared-tree fallback; the default read-only worker does not
+  snapshot and verify the parent tree.
 - A working-tree identity is content-addressed under `sha256-v2`: only the declared
   paths and the bytes at those paths enter `identity_sha256`. `base_head`,
   `staged_patch_sha256`, `unstaged_patch_sha256`, `declared_untracked`, and

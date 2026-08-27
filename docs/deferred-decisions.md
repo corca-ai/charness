@@ -3,8 +3,8 @@
 > Status: current
 > Source of truth: this page and its linked executable surfaces
 
-This document is the canonical closure surface for the deferred product-boundary
-items that were previously listed in [`docs/handoff.md`](./handoff.md) `Discuss`.
+This document is the canonical closure surface for deferred product-boundary
+decisions that were previously carried in session state.
 
 ## Scope
 
@@ -68,7 +68,7 @@ the evidence is sufficient for the boundary at hand.
 - Question: Keep a legacy evaluator alias or standardize on one active product id?
 - Current choice: Standardize on `cautilus` as the active product id for extraction-facing work, with no legacy naming compatibility.
 - Why now: Current handoff and adapter flow already use `cautilus`, and keeping legacy naming would only preserve ambiguity.
-- Impact surfaces: [`docs/handoff.md`](./handoff.md), [`.agents/cautilus-adapter.yaml`](../.agents/cautilus-adapter.yaml), future integration manifest naming
+- Impact surfaces: [`.agents/cautilus-adapter.yaml`](../.agents/cautilus-adapter.yaml), future integration manifest naming
 - Reopen trigger: If upstream evaluator branding or repository identity changes.
 
 ### D3. Packaging Version Ownership
@@ -210,14 +210,6 @@ the evidence is sufficient for the boundary at hand.
 - Impact surfaces: [scripts/check_current_pointer_writes.py](../scripts/check_current_pointer_writes.py), [scripts/current_pointer_writer_lib.py](../scripts/current_pointer_writer_lib.py), future skill writers that resolve their durable artifact path through an adapter dictionary.
 - Reopen trigger: When a second adapter-resolved current-pointer sibling that bypasses the string-literal scanner appears, or when more than one new skill adds a `latest.md` / `latest.json` writer through adapter-resolved paths without the helper.
 
-### D26. Hook Command Python Interpreter Resolution
-
-- Question: Should the installed SessionStart command use `sys.executable` (or a `which python3` snapshot at install time) instead of the bare string `python3`?
-- Current choice: Defer. `build_command` emits `python3 <abs-path>`; if a host session's PATH lacks `python3`, the host surfaces the failure noisily.
-- Why now: The maintainer's machine has `python3` on PATH for every host session; pinning an interpreter would also complicate venv-based dogfood.
-- Impact surfaces: [scripts/host_hook_install_lib.py](../scripts/host_hook_install_lib.py)
-- Reopen trigger: First report of a Claude/Codex session surfacing `python3: command not found` from the installed SessionStart hook.
-
 ### D27. markdownlint-cli2 Verbose Banner Filter
 
 - Question: Should [`check-markdown.sh`](../scripts/check-markdown.sh) keep the local `sed` `Finding:` filter forever, or replace it once markdownlint-cli2 adds a `--quiet` flag or equivalent upstream knob?
@@ -292,29 +284,11 @@ the evidence is sufficient for the boundary at hand.
   S4-Defer-1/2/3 entries) and
   [references/dup-ratchet.md](../skills/public/quality/references/dup-ratchet.md).
 
-### D31. Handoff chunker should reconcile against recent commits
+### D31. Handoff reconciliation — retired with the legacy handoff pipeline
 
-- Question: Should the `handoff` chunked-routing pipeline consume recent commits
-  (`origin/main..HEAD` or last-N) in addition to handoff entries + open issues, so a
-  pickup automatically reconciles the backlog against just-committed work?
-- Current choice: Defer the pipeline change; for now the handoff `Workflow Trigger`
-  carries a "body-read the issues, don't trust the list flat" directive and the
-  refresh commands already include `git log`. The chunker itself does not yet read
-  commits.
-- Why now: A 2026-06-21 session demonstrated the gap — #395's closeout satisfied the
-  overhaul-sweep R2 live proof, and chunk-2's multi-root change altered #391's
-  surface, but both were caught only by manual commit reading, not the chunker. The
-  correct form is NOT a candidate union (commits are *done work*, not *to-do*): it is
-  a **reconcile/enrich pass** that (a) flags candidates a recent commit likely
-  closed/obviated (de-stale), and (b) harvests commit-body `Close #N` / `deferred X`
-  / `follow-up Y` markers as new signals. Designing that pass — and its precision
-  (avoid false "already done" suppression) — is its own slice, not a drive-by.
-- Impact surfaces: [chunked-routing.md](../skills/public/handoff/references/chunked-routing.md),
-  [parse_handoff_entries.py](../skills/public/handoff/scripts/parse_handoff_entries.py)
-  (and the proposer/ranker), [handoff-chunked-routing.md](./handoff-chunked-routing.md)
-  (authoring-repo-internal contract).
-- Reopen trigger: A pickup again misses a backlog item already resolved/obviated by a
-  recent commit, or the chunker's issue-union is extended for another reason.
+- This decision belonged to the removed handoff chunker and has no current runtime
+  consumer. Reopen it only if the active Goal Run path demonstrates a concrete
+  missed or stale work-item transition.
 
 ### D32. Capture observation metrics still trust the session tree (the #409 Gap-2 channel)
 
@@ -479,7 +453,7 @@ the evidence is sufficient for the boundary at hand.
 - What DID land with this decision: the gate's `blocking_detail` string for an untracked file no longer reads "(subprocess-only or untested)" — the wording asserted exactly the cause the measurement narrowed — and now reads "(untested, or exercised only where coverage was never attributed -- see subprocess_coverage_advisory)". Text only; no verdict changes.
 - **Residual this decline does NOT cover, found by the bounded review (STILL OPEN):** the ask's ORIGIN form ([2026-07-30 retro](../charness-artifacts/retro/2026-07-30-session-retro.md) Engelbart counterfactual) named a different surface and a different payload — `suggest_mutation_coverage_command.py` reporting, per blocked file, WHICH test files reference it and how they exercise it. That is **remedy** information ("add the in-process case here"), not verdict-doubt information, so ground 1 does not falsify it, ground 2 has not shipped it, and ground 3's line-granularity limit does not bite. [subprocess_only_coverage_advisory.py](../scripts/subprocess_only_coverage_advisory.py) `_advisory` already computes the candidate NAMES per blocked path and reduces them to a count (`candidate_tests_examined`); "0 lines attributed while N named tests reference this path" is exactly the discriminator the repaired `blocking_detail` disjunction leaves unresolved. Not landed here because surfacing it changes an advisory payload on a blocking gate and owes its own review rounds, which a decision slice should not smuggle. Second, narrower note for the next toucher: a path that reaches the advisory via `blocking` alone gets `blocked_lines: []` even though `_blocking_report` computed those numbers and discarded them, and the two single-key entrypoints (`subprocess_coverage_advisory`, `advisory_scope`) take no `blocking` argument, so a future caller reaching for the obvious entrypoint silently reverts to targets-only keying.
 - Non-claims: declining does NOT claim every BLOCK is a genuinely untested line, and it does not upgrade the advisory. The advisory remains file-granular, non-exhaustive, and explicitly silent on a spawn whose command is a variable, an `env=` passed as a bare name, and a cross-module `copytree` — see its `silence_means`. No new measurement was taken for this decision; the 2026-07-30 control is cited, not re-run.
-- Impact surfaces: [check_changed_line_mutation_coverage.py](../scripts/check_changed_line_mutation_coverage.py), [subprocess_only_coverage_advisory.py](../scripts/subprocess_only_coverage_advisory.py) and their plugin mirrors, [docs/handoff.md](./handoff.md).
+- Impact surfaces: [check_changed_line_mutation_coverage.py](../scripts/check_changed_line_mutation_coverage.py), [subprocess_only_coverage_advisory.py](../scripts/subprocess_only_coverage_advisory.py) and their plugin mirrors.
 - Reopen trigger: a measured case where a blocked line's only exercise is an environment-inheriting, in-repo spawn and coverage still misses it (a THIRD mechanism, not a re-argument of the two known ones); or a BLOCK the advisory stayed silent on that is later diagnosed as an unattributed-child artifact; or a test→line map that makes the per-line claim establishable; or the candidate-NAME residual above is wanted by a session that has just spent a cycle re-deriving it by hand. **Honest weakness of these triggers, named rather than left implicit:** nothing counts advisory silences, and `advisory_scope_line` prints only on a blocking exit, so every trigger here depends on a human noticing and writing it down — the same channel D38 records as the one that let a correct lesson decay. This entry is an instance of that class, not an exception to it.
 
 ### D45. Should `run-quality.sh` arm `--require-evaluated-scope` on the CI/local parity gate?
@@ -514,76 +488,10 @@ the evidence is sufficient for the boundary at hand.
   - Status: falsified
 - Reopen trigger: a CI/local parity escape that this repo's own green did not catch; or S31 being worked, since moving the exemption to the adapter changes what "evaluated" can mean; or a third charness workflow landing.
 
-### D46. Should an uninterpreted adapter-YAML line REFUSE the adapter, or only warn?
+### D46. Uninterpreted adapter lines — retired with the legacy handoff pipeline
 
-- Question: [adapter_lib](../scripts/adapter_lib.py) now reports the lines its mini
-  parser could not interpret, and both [the issue
-  adapter](../skills/public/issue/scripts/resolve_adapter.py) and the shared
-  [load_adapter_contract](../scripts/simple_skill_adapter_lib.py) surface them. They
-  surface as **warnings**. Should they be errors, so `valid: false` and the skill's CLI
-  exits 1?
-- Current choice: **Defer — warn, do not refuse.** The report ships; the refusal does
-  not. **Operator call 2026-08-01: deferral CONFIRMED, and the recorded consumer defect
-  repaired.** The refusal stays unarmed for the reason below (the population it would
-  judge cannot be enumerated), but the "nothing reads the warning" half of the
-  non-claim is now closed: `build_issue_entries` records the issue adapter's `valid`,
-  `errors`, and `warnings` in `LAST_ISSUE_ADAPTER_REPORT`, and the field is forwarded
-  through all three documented pipeline stages —
-  `parse_handoff_entries.py --with-issues` emits `issue_adapter_report`, and
-  `propose_merges.py` and `prepare_chunk_packet.py` forward it, as they already do for
-  `staleness`. It carries `errors`, not only `warnings`: the two lists are disjoint in
-  that loader and the parse-failure branch returns `errors=[...]` with `warnings=[]`, so
-  a `valid: false` with no reason would be worse legibility than the case being repaired.
-  An adapter that was not FOUND is deliberately not reported — its two "create one"
-  warnings are unconditional boilerplate in the ordinary no-adapter case. It is reporting
-  only: nothing branches on `valid`, because refusing the listing would empty the issue
-  backlog from pickup indistinguishably from the documented trackerless fallback.
-  Pinned by eleven tests across
-  [test_handoff_chunker_issue_source.py](../tests/test_handoff_chunker_issue_source.py)
-  (including two that drive the REAL `resolve_adapter.load_adapter` — one over a
-  colon-less `default_org` line, D46's own example) and
-  [test_handoff_chunker_adapter_report.py](../tests/test_handoff_chunker_adapter_report.py)
-  (CLI emission, clean-adapter omission, and survival through both downstream stages).
-- Why now: found while closing sweep row S24 on 2026-08-01. The first cut of that slice
-  DID arm the refusal, and the round-1 bounded review caught that it violates the goal's
-  own stop condition: an adapter YAML is consumer-authored, so refusing it turns a
-  consumer's entire issue lane red — [issue_tool.py](../skills/public/issue/scripts/issue_tool.py)
-  and [issue_create.py](../skills/public/issue/scripts/issue_create.py) both exit 1 on
-  `valid: false` — for a missing colon.
-- Why deferral is right at the time: the measurement that would authorize arming does not
-  and cannot exist. [measure_adapter_yaml_uninterpreted.py](../scripts/measure_adapter_yaml_uninterpreted.py)
-  reports 0 uninterpreted lines over the 44 checked-in YAML files under this repo's
-  top level plus `.agents/`, `skills/`, and `integrations/`
-  ([recorded run](../charness-artifacts/probe/2026-08-01-adapter-yaml-uninterpreted.json)),
-  but the population a refusal would judge is consumer-authored `.agents/*-adapter.yaml`,
-  which this repo has never seen and cannot enumerate. A 0 here proves arming costs this
-  repo nothing and proves nothing about the population that matters. Round 1 also showed
-  the refusal firing on legal YAML the mini parser merely does not support — a document
-  marker was refused before that was fixed, and a 4-space indent step still records
-  `over-indented line` — so "malformed" and "unsupported-by-us" are not yet separable.
-- Non-claims: the warning is legibility, not teeth — that half is unchanged and
-  deliberate. **Superseded 2026-08-01:** "Nothing reads it today" was true when this
-  entry was written and is no longer; the handoff chunker's issue-source path
-  ([chunked_routing_issue_source.py](../skills/public/handoff/scripts/chunked_routing_issue_source.py))
-  consumed `adapter["data"]` without checking `valid` OR `warnings`, so a typo'd
-  `default_org` was never surfaced there. It is now reported. The consequence was
-  always conditional, not certain: `issue_runtime.resolve_target` only reaches
-  `default_org` when the target argument is empty AND the git remote yields nothing AND
-  `default_repo` is unset, so in a repo with an `origin` remote the typo has no effect on
-  that path — the repair makes the typo *visible*, it does not make it *matter* more.
-  Still non-claims: only the handoff chunker's three-stage pipeline reads the report; the
-  other nine skills sharing the contract loader were not audited, and a warning that
-  reaches an agent-facing packet is legibility, not enforcement — nothing obliges the
-  reading agent to act on it.
-- Impact surfaces: [adapter_lib.py](../scripts/adapter_lib.py),
-  [simple_skill_adapter_lib.py](../scripts/simple_skill_adapter_lib.py),
-  [issue resolve_adapter.py](../skills/public/issue/scripts/resolve_adapter.py), and the
-  nine skills sharing the contract loader (release, hotl, hitl, debug, retro, impl,
-  gather, handoff, setup).
-- Reopen trigger: a consumer repo reporting a silently-defaulted adapter field; or a rule
-  that separates "attempted assignment with a missing colon" from "legal YAML this parser
-  does not support", since that is what makes the refusal safe; or the mini parser gaining
-  real YAML coverage.
+- This decision belonged to the retired handoff chunker. The current provider
+  contract does not transport this warning through that pipeline.
 
 ### D47. Should inventory-field engagement require a value marker?
 
@@ -1082,31 +990,6 @@ reopen trigger fires.
   skill, at which point force-applying this floor becomes satisfiable and the omission
   becomes real; or a released light-classification close that should have been reviewed
   and was not. Both are in-repo observable, unlike D53's.
-
-### D57. Should `build_lesson_selection_preview` take a prebuilt selection index?
-
-- Question: one preview costs 0.78 s in-process here (0.85 s as a subprocess), which is
-  ~4 full index rebuilds:
-  [lesson_selection_preview_lib.py](../scripts/lesson_selection_preview_lib.py) calls
-  `check_lesson_selection_index` (which rebuilds and also calls
-  `build_indexed_recent_lessons`), then `_load_validated_ledger` →
-  `validate_lesson_ledger` → `_candidate_sources` (another rebuild), then
-  `build_lesson_selection_index` again. Threading one prebuilt index through would remove
-  three of the four. Cost is linear in retro-artifact count (566 here), not ledger size.
-- Current choice: **Defer.** Correct optimization, wrong slice: it edits the surface that
-  produces the snapshot the ledger digests and the receipt attests, so it belongs with its
-  own proof-surface review rather than inside the wiring change that made the cost visible.
-- Why now: the SessionStart lesson block pays this cost once per session in every opted-in
-  repo, so it is now a user-visible latency rather than a helper's internal cost.
-- Non-claims: the measured 0.85 s is this repo's corpus. A consumer with a small retro
-  corpus pays far less, and a repo that never opted in pays one `is_file()`. This is not a
-  claim that the current cost is unacceptable.
-- Impact surfaces: [lesson_selection_preview_lib.py](../scripts/lesson_selection_preview_lib.py),
-  [recent_lessons_lib.py](../scripts/recent_lessons_lib.py),
-  [session_start_lesson_context.py](../scripts/session_start_lesson_context.py).
-- Reopen trigger: a measured session-start latency complaint, or a repo whose preview
-  exceeds `LESSON_PREVIEW_TIMEOUT_SECONDS` and starts reporting `not-established` on a
-  healthy loop.
 
 ### D58. Should `missing-start` saturation fail the lesson-continuity gate?
 

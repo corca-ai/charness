@@ -240,7 +240,7 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
         "adapter_review_sources": [".agents/quality-adapter.yaml"],
         "acknowledged_recommendations": ["demo.ack"],
         "gate_design_review_globs": ["scripts/*.py"],
-        "canonical_markdown_surfaces": ["AGENTS.md", "CLAUDE.md", "docs/handoff.md"],
+        "canonical_markdown_surfaces": ["AGENTS.md", "CLAUDE.md", "docs/index.md"],
         "prompt_asset_policy": {"source_globs": ["src/**/*.py"], "min_multiline_chars": 256, "exemption_globs": ["tests/**"]},
         "skill_ergonomics_gate_rules": ["mode_option_pressure_terms"],
         "skill_ergonomics_skill_paths": ["packages/official-skills/acme-native/skills"],

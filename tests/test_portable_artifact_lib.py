@@ -32,7 +32,7 @@ def test_sanitize_artifact_json_handles_mixed_path_lists(tmp_path: Path) -> None
 
     assert payload == {
         "source_paths": [
-            "docs/handoff.md",
+            "docs/index.md",
             {"nested_path": "external-path:external.txt"},
         ]
     }
@@ -45,13 +45,13 @@ def test_portable_artifact_helpers_preserve_keyword_call_contract(tmp_path: Path
     inside.parent.mkdir()
     inside.write_text("# handoff\n", encoding="utf-8")
 
-    assert portable_path_value(repo_root=repo, value=inside) == "docs/handoff.md"
+    assert portable_path_value(repo_root=repo, value=inside) == "docs/index.md"
     assert sanitize_artifact_json(value={"path": str(inside)}, repo_root=repo) == {
-        "path": "docs/handoff.md"
+        "path": "docs/index.md"
     }
-    assert _sanitize_mapping_value(key="path", value=str(inside), repo_root=repo) == "docs/handoff.md"
+    assert _sanitize_mapping_value(key="path", value=str(inside), repo_root=repo) == "docs/index.md"
     assert sanitize_diagnostic_text(text=f"failed at {inside}", repo_root=repo) == (
-        "failed at ./docs/handoff.md"
+        "failed at ./docs/index.md"
     )
 
 
@@ -73,10 +73,10 @@ def test_sanitize_artifact_json_distinguishes_path_keys_from_plain_strings(tmp_p
     )
 
     assert payload == {
-        "path": "docs/handoff.md",
+        "path": "docs/index.md",
         "label": str(inside),
-        "path_hint": "docs/handoff.md",
-        "artifact_paths": ["docs/handoff.md"],
+        "path_hint": "docs/index.md",
+        "artifact_paths": ["docs/index.md"],
     }
 
 

@@ -14,7 +14,7 @@ ADAPTER_CANDIDATES = (
     Path(".agents/achieve-adapter.yaml"),
 )
 
-PUBLICATION_MODES = frozenset({"audit-only", "handoff-only", "direct-commit", "pull-request", "release", "manual"})
+PUBLICATION_MODES = frozenset({"audit-only", "direct-commit", "pull-request", "release", "manual"})
 ISSUE_CLOSEOUT_CARRIERS = frozenset({"none", "direct-commit", "pull-request", "release", "manual"})
 DISPOSITION_FLOORS = frozenset({"review-required", "deterministic-only"})
 VALID_DISPOSITIONS = frozenset({"applied", "issue"})
@@ -78,7 +78,6 @@ def _defaults(repo_root: Path) -> dict[str, Any]:
         # (`goal_artifact_discussion._DEFAULT_DEPLOY_VOCAB`); a consumer declares its
         # own deploy verbs so charness does not hardcode one consumer's boundary words.
         "discussion_deploy_vocab": [],
-        "release_surface_tokens": [],
         "interview": {
             "max_questions": 15,
             "allow_provisional_local_fallback": False,
@@ -267,20 +266,11 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
     deploy_vocab = optional_string_list(data.get("discussion_deploy_vocab"), "discussion_deploy_vocab", errors)
     if deploy_vocab is not None:
         validated["discussion_deploy_vocab"] = deploy_vocab
-    # Declared here, not merely read by the resolver: the validator strips keys it
-    # does not know, so a repo could write `release_surface_tokens:` into its
-    # adapter, see no error, and still get an inert release floor -- the exact
-    # silent-inertness this field exists to cure.
-    release_tokens = optional_string_list(
-        data.get("release_surface_tokens"), "release_surface_tokens", errors
-    )
-    if release_tokens is not None:
-        validated["release_surface_tokens"] = release_tokens
     validated["interview"] = _validate_interview(data, validated, errors)
     validated["closeout_publication"] = _validate_closeout_publication(data, validated, errors)
     validated["auto_retro"] = _validate_auto_retro(data, validated, errors)
     validated["scaffold"] = _validate_scaffold(data, validated, errors, repo_root)
-    if validated["closeout_publication"]["default_mode"] in {"audit-only", "handoff-only"}:
+    if validated["closeout_publication"]["default_mode"] == "audit-only":
         warnings.append(
             "Achieve closeout publication default is "
             f"{validated['closeout_publication']['default_mode']}; publication claims must remain explicit."
@@ -312,23 +302,6 @@ def resolve_discussion_deploy_vocab(repo_root: Path) -> list[str]:
     state (the default preserves behavior)."""
     vocab = (load_adapter(repo_root).get("data") or {}).get("discussion_deploy_vocab")
     return list(vocab) if isinstance(vocab, list) else []
-
-
-def resolve_release_surface_tokens(repo_root: Path) -> list[str]:
-    """Extra release-surface tokens this consuming repo declares, or ``[]``.
-
-    The coordination floor's built-in token list is ecosystem-standard (version
-    manifests and publish commands), but a repo whose release surface is named
-    something else — an internal deploy script, a bespoke manifest — would
-    otherwise have the release floor go SILENTLY inert: no token matches, the
-    floor never fires, and the goal closes with zero release coordination and no
-    line saying the check did not apply. Declaring the token here re-arms it.
-
-    Graceful for the same reason as the deploy vocabulary above: a missing or
-    invalid adapter resolves to ``[]`` and preserves the built-in behavior.
-    """
-    tokens = (load_adapter(repo_root).get("data") or {}).get("release_surface_tokens")
-    return [str(token).lower() for token in tokens] if isinstance(tokens, list) else []
 
 
 def closeout_policy_report(repo_root: Path) -> dict[str, Any]:

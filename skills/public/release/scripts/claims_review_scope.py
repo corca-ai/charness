@@ -104,7 +104,7 @@ def classify(path: str) -> str:
     not of the directory. The advisory roots also hold machine-read state that
     controls other gates -- `charness-artifacts/quality/dup-ratchet-baseline.json`
     is an input to the duplicate ratchet, `charness-artifacts/retro/lesson-ledger.json`
-    is read by the SessionStart hook, `charness-artifacts/goals/*.slice-manifest.json`
+    is read by goal validation, `charness-artifacts/goals/*.slice-manifest.json`
     by the slice-manifest validator. A directory-only rule let a rebaselined dup
     ceiling ship as an "advisory finding": a real behaviour change, escaping
     through the lane meant for prose. Only `.md` under an advisory root is

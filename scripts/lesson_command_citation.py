@@ -27,7 +27,7 @@ shell gates refuse outright.
 Split out of ``recent_lessons_lib`` when that file passed its length cap. The grouping
 is the concept, not the spill: every function here answers "what do I tell this
 reader to run", and the sibling copies of that question in
-``session_start_lesson_context._seed_command`` and
+the explicit lesson-ledger seed command and
 ``lesson_evaluation_records_lib.repo_or_installed_command`` resolve it in the same
 order (repo-local first, then the copy beside this module) on purpose.
 """

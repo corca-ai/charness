@@ -86,11 +86,11 @@ def seed_skill(repo: Path, skill_id: str, *, adapter: bool) -> None:
     references_dir.mkdir()
     (references_dir / "demo.md").write_text("# Demo\n", encoding="utf-8")
     if adapter:
-        shutil.copy2(ROOT / "skills" / "public" / "handoff" / "adapter.example.yaml", skill_dir / "adapter.example.yaml")
+        shutil.copy2(ROOT / "skills" / "public" / "quality" / "adapter.example.yaml", skill_dir / "adapter.example.yaml")
         scripts_dir = skill_dir / "scripts"
         scripts_dir.mkdir()
-        shutil.copy2(ROOT / "skills" / "public" / "handoff" / "scripts" / "resolve_adapter.py", scripts_dir / "resolve_adapter.py")
-        shutil.copy2(ROOT / "skills" / "public" / "handoff" / "scripts" / "init_adapter.py", scripts_dir / "init_adapter.py")
+        shutil.copy2(ROOT / "skills" / "public" / "quality" / "scripts" / "resolve_adapter.py", scripts_dir / "resolve_adapter.py")
+        shutil.copy2(ROOT / "skills" / "public" / "quality" / "scripts" / "init_adapter.py", scripts_dir / "init_adapter.py")
 
 
 def assert_validation_error(repo: Path, *fragments: str) -> None:

@@ -535,9 +535,9 @@ def test_installed_cli_update_reports_diverged_managed_checkout(tmp_path: Path, 
         text=True,
     )
 
-    source_handoff = source_repo / "docs" / "handoff.md"
-    source_handoff.write_text(source_handoff.read_text(encoding="utf-8") + "\nupstream divergence note\n", encoding="utf-8")
-    subprocess.run(["git", "add", "docs/handoff.md"], cwd=source_repo, check=True, capture_output=True, text=True)
+    source_index = source_repo / "docs" / "index.md"
+    source_index.write_text(source_index.read_text(encoding="utf-8") + "\nupstream divergence note\n", encoding="utf-8")
+    subprocess.run(["git", "add", "docs/index.md"], cwd=source_repo, check=True, capture_output=True, text=True)
     subprocess.run(
         ["git", "commit", "-m", "upstream divergence"],
         cwd=source_repo,

@@ -1,4 +1,5 @@
 """The delivery-attempt state machine used by the parent-side ledger."""
+# ruff: noqa: I001
 
 from __future__ import annotations
 
@@ -43,10 +44,18 @@ except ImportError:
     )
 
 try:
-    from reviewer_delivery_fields import _sha256, bound_fields
+    from reviewer_delivery_fields import (
+        _sha256,
+        boundary_binding,
+        bound_fields,
+    )
     from reviewer_delivery_history import validate_history
 except ImportError:
-    from skills.shared.scripts.reviewer_delivery_fields import _sha256, bound_fields
+    from skills.shared.scripts.reviewer_delivery_fields import (
+        _sha256,
+        boundary_binding,
+        bound_fields,
+    )
     from skills.shared.scripts.reviewer_delivery_history import validate_history
 
 
@@ -56,7 +65,8 @@ class DeliveryAttempt:
     scope: str
     packet_identity: str
     parent_receipt_identity: str
-    boundary_fingerprint: str
+    boundary_fingerprint: str | None
+    boundary_mode: str
     state: str
     observed_signal: str
     terminal: bool
@@ -84,8 +94,9 @@ class DeliveryAttempt:
         scope: str,
         packet_identity: str,
         parent_receipt_identity: str,
-        boundary_fingerprint: str,
         recorded_at: str,
+        boundary_fingerprint: str | None = None,
+        boundary_mode: str | None = None,
         reviewed_input_identity: str | None = None,
         execution_mode: str | None = None,
         backend: str | None = None,
@@ -103,12 +114,16 @@ class DeliveryAttempt:
         if retry_count > 0 and retry_of is None:
             raise DeliveryError("positive retry_count requires retry_of")
         when = _text(recorded_at, "recorded_at")
+        normalized_boundary_mode, normalized_boundary_fingerprint = boundary_binding(
+            boundary_mode, boundary_fingerprint
+        )
         attempt = cls(
             attempt_id=_attempt_id(attempt_id),
             scope=_text(scope, "scope"),
             packet_identity=_text(packet_identity, "packet_identity"),
             parent_receipt_identity=_validated_parent_receipt_identity(parent_receipt_identity),
-            boundary_fingerprint=_text(boundary_fingerprint, "boundary_fingerprint"),
+            boundary_fingerprint=normalized_boundary_fingerprint,
+            boundary_mode=normalized_boundary_mode,
             state=SPAWN_ACCEPTED,
             observed_signal="spawn accepted; parent delivery not yet proven",
             terminal=False,
@@ -152,7 +167,6 @@ class DeliveryAttempt:
             "scope",
             "packet_identity",
             "parent_receipt_identity",
-            "boundary_fingerprint",
             "state",
             "observed_signal",
             "terminal",
@@ -198,7 +212,8 @@ class DeliveryAttempt:
             scope=_text(payload["scope"], "scope"),
             packet_identity=_text(payload["packet_identity"], "packet_identity"),
             parent_receipt_identity=_validated_parent_receipt_identity(payload["parent_receipt_identity"]),
-            boundary_fingerprint=_text(payload["boundary_fingerprint"], "boundary_fingerprint"),
+            boundary_fingerprint=fields["boundary_fingerprint"],
+            boundary_mode=fields["boundary_mode"],
             state=state,
             observed_signal=_text(payload["observed_signal"], "observed_signal"),
             terminal=terminal,
@@ -223,7 +238,7 @@ class DeliveryAttempt:
             "scope": self.scope,
             "packet_identity": self.packet_identity,
             "parent_receipt_identity": self.parent_receipt_identity,
-            "boundary_fingerprint": self.boundary_fingerprint,
+            "boundary_mode": self.boundary_mode,
             "state": self.state,
             "observed_signal": self.observed_signal,
             "terminal": self.terminal,
@@ -232,6 +247,8 @@ class DeliveryAttempt:
             "observations": self.observations,
             "retry_count": self.retry_count,
         }
+        if self.boundary_fingerprint is not None:
+            payload["boundary_fingerprint"] = self.boundary_fingerprint
         payload.update(
             {
                 key: value

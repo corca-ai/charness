@@ -143,7 +143,7 @@ def test_narrative_review_adapter_flags_volatile_and_missing_paths(tmp_path: Pat
     (repo / "docs" / "guides").mkdir()
     (repo / "docs" / "user-test" / "260422").mkdir(parents=True)
     (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
-    (repo / "docs" / "handoff.md").write_text("# Handoff\n", encoding="utf-8")
+    (repo / "docs" / "index.md").write_text("# Index\n", encoding="utf-8")
     (repo / "docs" / "guides" / "missing-guide.md").write_text("# Guide\n", encoding="utf-8")
     (repo / "docs" / "user-test" / "260422" / "internal-ios-trial.md").write_text(
         "# Internal Trial\n",
@@ -158,11 +158,11 @@ def test_narrative_review_adapter_flags_volatile_and_missing_paths(tmp_path: Pat
                 "output_dir: charness-artifacts/narrative",
                 "source_documents:",
                 "- README.md",
-                "- docs/handoff.md",
+                "- docs/index.md",
                 "- docs/user-test/260422/internal-ios-trial.md",
                 "mutable_documents:",
                 "- README.md",
-                "- docs/handoff.md",
+                "- docs/index.md",
                 "brief_template:",
                 "- One-Line Summary",
                 "special_entrypoints:",
@@ -192,16 +192,14 @@ def test_narrative_review_adapter_flags_volatile_and_missing_paths(tmp_path: Pat
     assert "Closest existing path: `docs/guides/missing-guide.md`" in missing_path_finding["recommended_action"]
 
 
-def test_narrative_init_adapter_does_not_seed_handoff_as_default_source(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_narrative_init_adapter_does_not_seed_docs_index_as_default_source(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     (repo / "docs").mkdir(parents=True)
     (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
     (repo / "docs" / "roadmap.md").write_text("# Roadmap\n", encoding="utf-8")
-    (repo / "docs" / "handoff.md").write_text("# Handoff\n", encoding="utf-8")
 
     result = run_narrative_init_adapter(monkeypatch, capsys, "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     adapter_text = (repo / ".agents" / "narrative-adapter.yaml").read_text(encoding="utf-8")
     assert "README.md" in adapter_text
     assert "docs/roadmap.md" in adapter_text
-    assert "docs/handoff.md" not in adapter_text

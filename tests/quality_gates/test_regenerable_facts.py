@@ -260,7 +260,7 @@ def test_a_current_docs_claim_cannot_hide_behind_a_clean_default_file(tmp_path: 
     repo = tmp_path / "current-docs"
     (repo / "docs").mkdir(parents=True)
     (repo / "README.md").write_text("# Clean entrypoint\n", encoding="utf-8")
-    (repo / "docs" / "handoff.md").write_text(
+    (repo / "docs" / "status.md").write_text(
         "# Operative state\n\nThe current suite has 145 tests.\n", encoding="utf-8"
     )
 
@@ -417,8 +417,8 @@ def test_a_whitespace_only_exemption_reason_is_not_honoured(tmp_path: Path) -> N
 
 
 def test_an_identifier_keeps_its_own_digits() -> None:
-    # `#24 issues` is a reference, not an as-of count. The sibling engine in
-    # validate_handoff_artifact guards this with a lookbehind; this one did not.
+    # `#24 issues` is a reference, not an as-of count. The sibling document
+    # validator guards this with a lookbehind; this one did not.
     assert _hits("Tracked as #24 issues go.") == []
     assert _hits("The backlog holds 24 issues.") == ["24 issues"]
 

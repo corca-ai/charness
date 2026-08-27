@@ -2,122 +2,66 @@
 
 `charness` is a Claude Code / Codex plugin developed by [Corca](https://github.com/corca-ai).
 
-## Start Here
+## Start here
 
-- [docs/design-north-star.md](./docs/design-north-star.md) governs: brief a
-  capable judge and keep teeth only where a wrong answer escapes. At irreversible
-  boundaries, confirm through a different observer and evidence channel.
-- Load matching skills before improvising, and continue active repo work from [docs/handoff.md](./docs/handoff.md).
-- Before changing operating contracts, prompts, skills, exports, or artifacts,
-  read [recent lessons](./charness-artifacts/retro/recent-lessons.md).
-- Cautilus is eval-only and ask-before-run; use the repo planner/wrapper from
-  [cautilus-on-demand.md](./skills/public/quality/references/cautilus-on-demand.md).
-- Keep host behavior in adapters/presets/manifests, and prefer executable
-  validators plus structured state over prose rituals.
+- Read [docs/design-north-star.md](./docs/design-north-star.md) when a decision
+  changes a boundary: brief a capable judge and keep teeth only where a wrong
+  answer can escape.
+- Then read [docs/index.md](./docs/index.md) and only the owner page for the
+  requested surface. Do not reconstruct state from a session hook, handoff file,
+  or a full issue graph.
+- For an active Goal Run, read the parent issue and the cursor-selected child.
+  `Achieve` owns navigation, progress, and continuation.
+- If support or integration availability is genuinely unclear, use the
+  read-only `charness catalog list --repo-root <repo> --summary` inventory and
+  report a nonzero result as a command failure.
 
-## Skill Routing
+## Make changes
 
-At session start, a pickup follows docs/handoff.md `## Workflow Trigger`; ordinary requests use installed skill metadata and model judgment to start the matching workflow directly. When hidden support/integration availability is unclear, run the read-only `charness catalog list --repo-root <repo> --summary` inventory. Treat its facts only as inventory; if the command returns nonzero, report the command failure. If the SessionStart hook is installed it may inject this context; it remains context-only.
+- Preserve the parent worktree. Never reset, restore, stash, clean, or mass-delete
+  it to make a task easier.
+- Create implementation/proof worktrees from explicit base and target commits,
+  on a temporary named branch, with an explicit path scope. Refuse detached or
+  dirty checkouts before running work.
+- Keep Python bytecode, pytest/ruff caches, coverage, temporary output, and
+  generated runtime state outside the worktree. `.gitignore` is not isolation.
+- Prefer deleting obsolete code, wrappers, gates, mirrors, and tests over adding
+  another ceremony. Derive facts from their source of truth.
+- Keep host-specific behavior in adapters, presets, and manifests.
 
-External URLs or source links that should become working context for this repo route through `gather` before summarizing, implementing, or deciding from them.
+## Verify and finish
 
-Validation-shaped closeout or operator reading test requests go through `quality` validation recommendations before HITL or same-agent manual review.
+- Run focused tests first. [`run-quality.sh`](./scripts/run-quality.sh) is the default small core
+  lane; use `./scripts/run-quality.sh --full --read-only` only for broad,
+  release, or review work.
+- Changed-line proof, full-suite proof, fresh-eye review, and closeout ledgers
+  are conditional. Require the narrow evidence that matches a verdict/proof
+  surface, irreversible boundary, release, security, compatibility, or
+  uncertain deletion. Do not turn a reversible implementation into a ceremony.
+- After source changes that have a generated plugin export, batch edits and run
+  `python3 scripts/sync_root_plugin_manifests.py --repo-root .` once. The source
+  under `skills/public/` is canonical; never hand-edit its mirror.
+- Commit meaningful code, test, workflow, and durable-artifact changes after
+  verification. Keep the commit scoped and report the evidence.
+- Never claim an unavailable proof ran. If an independent observer is needed but
+  unavailable, record that as a non-claim; a same-agent reread is not independent.
 
-Keep this block short. Detailed routing belongs in installed skill metadata and model judgment, not in a long checked-in catalog.
+## External boundaries
 
-## Subagent Delegation
+- Issue writes go through the provider and read the exact target back. Closing
+  an issue may record completed, not planned, or superseded; an external-repo
+  confirmation that is outside the goal is not a reason to leave it open.
+- Push, pull request creation, reopening, tagging, version changes, release
+  publication, installation, and evaluator execution require an explicit
+  phase-scoped request.
 
-- Repo-mandated bounded fresh-eye subagent reviews are **already delegated** by this repo contract; this is the repo owner's explicit user delegation request for the named bounded reviewer scopes.
-- When the host permits spawning, do not wait for a second user message. Task-completing `setup`, `quality`, `critique`, `release`, and GitHub `issue` resolution/closeout review runs spawn bounded reviewers immediately when the contract calls for them.
-- A higher-priority system, developer, or host instruction may prohibit a spawn; this repo request cannot override it. If the host blocks subagent spawning at runtime (Agent tool absent, API-level rejection), stop and report the concrete host signal explicitly.
-- Do not substitute a same-agent pass. Fresh-eye review means a different agent context; if that context cannot be obtained, leave the review unproven.
-- **Spawn shape, for EVERY spawn — not only fresh-eye reviews.** Spawn one-shot subagents **without** a host addressing or team `name`. On at least one host a `name` silently routes the spawn onto a teammate protocol: the spawn succeeds, the agent runs correctly, and completion emits an idle notification instead of returning the result — findings the parent can never read, because the matching retrieval tool (`SendMessage`) is often not exposed in that session. Reserve a `name` for an agent you will address repeatedly, and only after confirming the retrieval tool exists in this session. A spawned agent is not a received result: an idle notification reads like success and is not one. If findings do not arrive, that is a delivery failure to report and to retry once unnamed, never a subagent that returned nothing and never grounds for a same-agent substitute. Full rule, upstream lineage, and non-claims: [skills/shared/references/fresh-eye-subagent-review.md](./skills/shared/references/fresh-eye-subagent-review.md).
-- Bounded reviewers are read-only by capability. A host-enforced typed reviewer may share the parent; an untyped or write-capable reviewer gets an isolated worktree wherever the host offers one. If an untyped reviewer must share the parent, use [reviewer_boundary_fingerprint.py](./skills/shared/scripts/reviewer_boundary_fingerprint.py) snapshot/verify as the fallback git-state check. A missing fingerprint on a typed or isolated review is not a failure, and a failed shared-tree verify quarantines that review's approval.
-- **A slice that changes VERDICT LOGIC on a proof surface (a gate, validator, or any code rendering a verdict about other code or artifacts) owes a SECOND bounded review round reading the repaired surface** — one round is not enough for this class: every measured slice shipped a fix carrying the class it fixed, and the round that read the REPAIRS has caught blockers the first round could not see. The trigger is what the surface decides, not that its file was touched, a first round that produced no repairs discharges the obligation, and the cap is two rounds (round-2 repairs are recorded as accepted-unreviewed). Full rule: [docs/operating-contract.md](./docs/operating-contract.md) Critique Discipline.
-- **Subagent model/effort defaults are per-host, not one global value.** Use the
-  host's own subagent controls and its typed agents where they exist
-  (`bounded-reviewer` for read-only review scopes), inheriting the session model
-  by default; choose a different tier only when the task clearly warrants it. A
-  host-specific model or flag request belongs in that host's adapter or preset,
-  not here — naming one in this file bakes a model id into the contract and it
-  goes stale silently. When a higher-priority policy restricts per-subagent
-  controls, proceed and state that limitation.
+## Documentation map
 
-## Dynamic Workflows
-
-- **Parallel execution is the default shape of work here**, not an optimization.
-  Decompose a request into its independent parts and run them concurrently;
-  running independent parts one at a time now needs a reason.
-- Dynamic workflow/orchestration use is standing-approved, subject to
-  higher-priority system/developer/host instructions and host capability, when
-  fan-out, independent confidence, adversarial review, or context scale earns
-  its cost. Do not wait for a second user message solely to repeat the standing
-  request. Report a concrete host block; never claim an unavailable workflow ran.
-- Which channels this covers, why host product names are examples rather than
-  contract, the disjoint-writer rule, and the proof floor a fan-out must still
-  clear: [parallel execution](./docs/parallel-execution.md). The
-  canonical root-doc shape lives in
-  [agent-docs-policy.md](./skills/public/setup/references/agent-docs-policy.md#dynamic-workflow-standing-request).
-
-## External Boundaries
-
-- Filing an issue is standing-approved. Closing one is standing-approved only
-  after the `issue` closeout floor; details live in
-  [External Side-Effect Discipline](./docs/operating-contract.md#external-side-effect-discipline).
-- Push, reopen, PR creation, tag, version bump, release publish, and Cautilus
-  evaluation each require an explicit phase-scoped grant. Never infer one from a
-  green gate.
-- A grant is revoked by `--no-verify`, a weakened floor, or narrowed proof.
-  Push/release still require distinct-channel hosted/public readback.
-
-## Execution Discipline
-
-- Follow [implementation discipline](./docs/implementation-discipline.md)
-  for `mutate -> sync -> verify -> publish`, generated surfaces, and premise
-  checks. Follow the [operating contract](./docs/operating-contract.md)
-  for commits, artifacts, critique, closeout, and session repair.
-- Treat task-completing critique, closeout, and commit as work, not follow-up.
-  Commit after verification before switching to status/installed-machine checks.
-- Do not pipe a gate through `tail`/`head`; redirect to a file and inspect it.
-  This repo's `run-quality.sh` retains per-check failures under
-  `.charness/quality-failure-logs/` and names recovery in its final receipt.
-  Consumer hook configuration follows
-  [hook-failure-visibility.md](./skills/public/setup/references/hook-failure-visibility.md).
-
-## Work Routing
-
-- Slow gates, local-vs-CI cost, evaluator-backed validation, and quality-contract
-  changes route through `quality` before implementation or HITL.
-- Issue/PR close, release, deletion, and proof-surface changes require the
-  irreversible-boundary review named by the north star and operating contract.
-- Before claiming an issue or operator request closable, map requested outcomes
-  to executed proof and run the required fresh-eye critique.
-
-## Documentation Principles
-
-- [docs/index.md](./docs/index.md) is the canonical entry point for the flat
-  documentation wiki; [docs/README.md](./docs/README.md) is only a compatibility
-  pointer.
-- Evergreen `docs/` pages state their status (`current`, `conditional`, or
-  `generated`), own one question, name their source of truth, and describe
-  current behavior. They are written like code: small changes, explicit
-  ownership, relative links, deterministic link/graph checks, and generated
-  pages changed only through their producer.
-- Live session state (`docs/handoff.md`), active plans, and operator acceptance
-  are labeled exceptions. Dated proposals, superseded decisions, raw evidence,
-  and retros belong under `charness-artifacts/`; they explain history but do
-  not silently override current docs.
-- A stale or duplicate page is classified before it is moved or deleted:
-  update inbound links, preserve a compatibility pointer when needed, then run
-  [`scripts/check-docs.sh`](./scripts/check-docs.sh). Its receipt includes Markdown syntax, link
-  resolution, awiki reachability, and exported-doc checks; reachability is not
-  proof that a page is accurate or current.
-
-## Repository Map
-
-- Current state: [handoff](./docs/handoff.md), [quality](./charness-artifacts/quality/latest.md), [recent lessons](./charness-artifacts/retro/recent-lessons.md).
-- Documentation lint: [`check-docs.sh`](./scripts/check-docs.sh) is the one composite docs receipt; component scripts are diagnostic entry points.
-- Documentation entry point: [docs/index.md](./docs/index.md); architecture audit and migration contract: [evergreen documentation spec](./charness-artifacts/spec/2026-08-25-docs-architecture-evergreen.md).
-- Operator path: [acceptance](./docs/operator-acceptance.md), [development](./docs/development.md), [CLI reference](./docs/cli-reference.md), [host packaging](./docs/host-packaging.md).
-- Architecture/control plane: [composition](./docs/harness-composition.md), [control plane](./docs/control-plane.md), [external integrations](./docs/external-integrations.md), [runtime capabilities](./docs/runtime-capability-contract.md), [capability resolution](./docs/capability-resolution.md).
-- Policy/memory: [public skill validation](./docs/public-skill-validation.md), [dogfood](./docs/public-skill-dogfood.md), [artifact policy](./docs/artifact-policy.md), [deferred decisions](./docs/deferred-decisions.md).
+- [docs/index.md](./docs/index.md): documentation entry point
+- [docs/implementation-discipline.md](./docs/implementation-discipline.md):
+  change, cache, and verification loop
+- [docs/operating-contract.md](./docs/operating-contract.md): ownership and
+  boundary rules
+- [docs/host-packaging.md](./docs/host-packaging.md): install/export layout
+- `charness-artifacts/`: dated evidence, retros, proposals, and active Goal Run
+  records; these do not override current docs

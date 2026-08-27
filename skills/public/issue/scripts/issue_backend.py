@@ -53,6 +53,8 @@ def run_backend(argv: list[str]) -> subprocess.CompletedProcess[str]:
             str(exc.stdout or ""),
             f"timed out after {BACKEND_TIMEOUT_SECONDS}s",
         )
+    except OSError as exc:
+        return subprocess.CompletedProcess(argv, 127, "", str(exc))
 
 
 def _scope_waived(
@@ -298,7 +300,6 @@ def build_preflight_payload(resolved: dict[str, Any]) -> dict[str, Any]:
         "ok": ok,
         "selected_backend": selected,
         "adapter": resolved["adapter"],
-        "provider_selection": resolved.get("provider_selection"),
     }
     if selected["id"] == "gh":
         payload.update(

@@ -84,7 +84,6 @@ prepare runner once before starting angle workers (see `references/prepare-packe
 # Required Tools: rg
 # Missing-binary protocol: ../../shared/references/binary-preflight.md
 rg --files docs skills
-sed -n '1,220p' docs/handoff.md 2>/dev/null || true
 rg -n "spec|decision|follow-up|non-goal|out of scope|acceptance|risk|rename|delete|remove|migration" .
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 python3 "$SKILL_DIR/scripts/prepare_packet.py" --repo-root . --prepared-for "<short label>"

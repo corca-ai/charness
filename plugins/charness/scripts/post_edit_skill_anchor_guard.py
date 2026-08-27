@@ -88,7 +88,7 @@ def _emit_dup_ratchet_advisory(repo_root: Path, raw_path: str) -> None:
         # (surface findings), and the advisory is exit 0 by construction — so
         # stderr would compute the message correctly and then throw it away,
         # which is the exact "rule that cannot fire where it was written" class
-        # this advisory was built during. `session_start_routing.py` already uses
+        # this advisory was built during. The retired session-routing path used
         # this channel to put text in front of the agent while exiting 0.
         print(
             json.dumps(

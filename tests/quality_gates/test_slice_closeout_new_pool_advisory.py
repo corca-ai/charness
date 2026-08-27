@@ -63,7 +63,7 @@ def test_advisory_threads_the_campaign_base_into_its_evidence(
 
 
 def test_advisory_silent_without_python_changes(capsys) -> None:
-    advise_new_pool_module(REPO_ROOT, ["docs/handoff.md"])
+    advise_new_pool_module(REPO_ROOT, ["docs/index.md"])
     assert capsys.readouterr().err == ""
 
 

@@ -38,13 +38,6 @@ Run the actual `check_goal_artifact.py` complete-state validator.
 
 none — synthetic closeout fixture has no operator-only decisions.
 
-## Coordination Cues
-
-Routing: n/a — synthetic closeout fixture recorded no implementation, debug, quality, or issue phase work.
-Gather: n/a — synthetic closeout fixture used no external URL or private-source context.
-Release: n/a — synthetic closeout fixture touched no release or install manifest surface.
-Issue closeout: n/a — synthetic closeout fixture resolved no tracked GitHub issue.
-
 ## Slice Log
 
 N/A — synthetic closeout round-trip fixture; no implementation slices.

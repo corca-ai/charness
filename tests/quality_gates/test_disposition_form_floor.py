@@ -60,7 +60,7 @@ def test_bare_memory_and_prose_only_are_rejected() -> None:
         "memory -> recent-lessons digest refreshed this session",
         "memory + ESCALATE-IF-RECUR -> recent-lessons refreshed",
         "memory.",
-        "deferred -> handoff Next Session candidate",
+        "deferred -> successor candidate",
         "fix (folded)",
         "complete — three improvements surfaced",
         "candidate issue OR fold, not filed",
@@ -464,7 +464,7 @@ def _seed_transferable(tmp_path: Path, created: str) -> None:
         f"charness-artifacts/retro/{created}-{_SLUG}.md",
         "# Retro\n\n## Next Improvements\n\n- workflow: do x\n\n## Sibling Search\n\n"
         "- same layer: skills/y.py | decision: valid follow-up outside the slice "
-        "| proof: grep\n  follow-up: deferred docs/handoff.md\n",
+        "| proof: grep\n  follow-up: deferred docs/index.md\n",
     )
     _seed(tmp_path, f"charness-artifacts/probe/{created}-{_SLUG}.json", '{"host":"claude-code"}\n')
 
@@ -564,7 +564,7 @@ def test_rung1e_does_not_leak_into_retro_validator(tmp_path: Path) -> None:
         "# Retro — t\n\nDate: 2026-06-09\n\n## Context\n\nx\n\n## Next Improvements\n\n"
         "- workflow: do x. Disposition: applied: shipped it\n\n## Sibling Search\n\n"
         "- same layer: skills/y.py | decision: valid follow-up outside the slice | proof: grep\n"
-        "  follow-up: deferred docs/handoff.md\n\n## Persisted\n\nyes\n"
+        "  follow-up: deferred docs/index.md\n\n## Persisted\n\nyes\n"
     )
     path = _seed(tmp_path, "2026-06-09-r.md", body)
     vra.validate_retro_artifact(path)  # no raise — retro unchanged by the addition

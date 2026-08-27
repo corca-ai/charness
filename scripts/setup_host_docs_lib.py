@@ -11,7 +11,6 @@ def _read_template(name: str) -> str:
 
 
 COMMIT_DISCIPLINE = _read_template("agents_commit_discipline.txt")
-COMPACT_SUBAGENT_DELEGATION = _read_template("agents_subagent_delegation.txt")
 
 
 def render_agents_template(*, skill_routing_markdown: str) -> str:
@@ -21,8 +20,6 @@ def render_agents_template(*, skill_routing_markdown: str) -> str:
         skill_routing_markdown.strip(),
         "",
         COMMIT_DISCIPLINE.strip(),
-        "",
-        COMPACT_SUBAGENT_DELEGATION.strip(),
         "",
     ]
     return "\n".join(part for part in body if part) + "\n"

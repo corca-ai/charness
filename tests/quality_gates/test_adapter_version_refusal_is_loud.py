@@ -16,7 +16,7 @@ imagined:
   enforced the shipped 180 instead, so a 151-line artifact that the declared ceiling
   refused passed clean.
 
-Blind class: these prove the six guarded surfaces refuse and say why. They prove nothing
+Blind class: these prove the five guarded surfaces refuse and say why. They prove nothing
 about a surface that never calls the guard -- the scaffolds and run planners still
 forecast a default ceiling under a refused version, which is a weaker wrong answer than
 a gate's, but not no answer -- and nothing about any adapter error other than the
@@ -39,10 +39,10 @@ VERDICT = load_script_module("adapter_version_verdict", ROOT / "scripts/adapter_
 class _Raised:
     """A refusal a surface raises out of `main()` rather than printing.
 
-    Two of the six surfaces do that by their own existing contract -- gather's writer
+    Two of the five surfaces do that by their own existing contract -- gather's writer
     routes every `WriteError` through its `__main__` handler, and this harness calls
     `main()` directly. Normalising here rather than special-casing the assertions keeps
-    "refused, with this message, non-zero" one question across all six; the alternative
+    "refused, with this message, non-zero" one question across all five; the alternative
     was a subprocess boundary for two rows and an in-process call for four, which would
     have measured two different things and called them the same test.
     """
@@ -80,7 +80,6 @@ def _seeded_repo(tmp_path: Path, version: str) -> Path:
         ("debug", "docs/debugging"),
         ("retro", "docs/retros"),
         ("quality", "docs/quality"),
-        ("handoff", "docs/handoff-dir"),
         ("gather", "docs/gathered"),
     ):
         _write(
@@ -90,7 +89,6 @@ def _seeded_repo(tmp_path: Path, version: str) -> Path:
     _write(repo / "docs/retros/2026-08-18-probe.md", "# Session Retro\n\nbody\n")
     _write(repo / "docs/debugging/latest.md", "# Debug Review\n\nbody\n")
     _write(repo / "docs/quality/latest.md", "# Quality Review\n\nbody\n")
-    _write(repo / "docs/handoff-dir/handoff.md", "# Demo Handoff\n\nbody\n")
     _write(repo / "body.md", "# Session Retro\n\nbody\n")
     return repo
 
@@ -106,7 +104,6 @@ SURFACES = (
         lambda repo: ("--repo-root", str(repo), "--paths", "docs/retros/2026-08-18-probe.md"),
     ),
     ("quality_gate", "scripts/validate_quality_artifact.py", lambda repo: ("--repo-root", str(repo))),
-    ("handoff_gate", "scripts/validate_handoff_artifact.py", lambda repo: ("--repo-root", str(repo))),
     (
         "gather_writer",
         "skills/public/gather/scripts/write_record.py",

@@ -43,7 +43,6 @@ git status --short
 rg --files . | sed -n '1,200p'
 sed -n '1,220p' README.md 2>/dev/null || true
 sed -n '1,220p' AGENTS.md 2>/dev/null || true
-sed -n '1,220p' docs/handoff.md 2>/dev/null || true
 
 # 2. existing concept, design, and acceptance signals when they exist
 rg -n "idea|concept|design|entity|stage|workflow|user|customer|problem|acceptance|constraint|success criteria" .

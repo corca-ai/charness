@@ -4,9 +4,7 @@ import re
 from datetime import date
 
 CURRENT_POINTER_FILENAME = "latest.md"
-ROLLING_ARTIFACT_FILENAMES = {
-    "handoff": "handoff.md",
-}
+ROLLING_ARTIFACT_FILENAMES: dict[str, str] = {}
 RECORD_PATTERN = "YYYY-MM-DD-<slug>.md"
 SLUG_RE = re.compile(r"[^a-z0-9]+")
 ARTIFACT_CLASS_HISTORY = "history"

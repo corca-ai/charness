@@ -34,22 +34,15 @@ the section exists to satisfy.
 
 ## Where presentation comes from
 
-The hook EMITS; the agent DECLARES; nothing automatic writes to the ledger.
-
-At session start, the charness SessionStart routing hook checks one thing — does
-`<repo-root>/charness-artifacts/retro/lesson-ledger.json` exist under the
-session's repo? If
-it does not, the hook injects nothing and this whole boundary stays inert. If it
-does, the hook renders the same deterministic selection preview a declared session
-would freeze and injects those bytes verbatim, followed by the exact
-`open_lesson_session.py` command (session id and seed are one value, so the list
-is reproducible and citable). When the preview cannot be produced at all — a stale
-selection index, a timeout, an unreadable ledger — the hook says `state:
-not-established` out loud rather than going quiet, because a silently missing
-lesson list is indistinguishable from a repo that owes nothing.
+The agent explicitly declares a lesson-evaluation session when the operator opts
+into retro evaluation; nothing automatic writes to the ledger or injects context.
+The declaration command renders the deterministic selection preview and returns
+the exact `open_lesson_session.py` command. If the preview cannot be produced — a
+stale selection index, timeout, or unreadable ledger — the explicit command says
+`state: not-established` rather than silently presenting an empty list.
 
 Declaring the session is a deliberate act taken before the affected work, by the
-agent, using the id the hook printed. No hook may append to the ledger:
+agent, using the id the command printed. No automatic path may append to the ledger:
 
 - an automatic per-session declaration emits one receipt per session, and every
   session that does not end in a retro then becomes a permanent

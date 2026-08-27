@@ -16,8 +16,11 @@ from the adapter; do not hardcode `gh` when the planner reports a different
 
 ## Bootstrap
 
-Resolve `$SKILL_DIR` per `../../shared/references/bootstrap-resolution.md`, then
-start every run with the planner:
+Resolve `$SKILL_DIR` per `../../shared/references/bootstrap-resolution.md`.
+For a known target, resolve the adapter/backend once and act on that target.
+Use the planner only when the target, operation, or provider is genuinely
+ambiguous, or when an explicit preflight is requested; running it before every
+ordinary read or mutation only repeats the same selection work.
 
 ```bash
 python3 "$SKILL_DIR/scripts/issue_tool.py" plan --repo-root . --intent new --target <optional-org/repo>
@@ -38,7 +41,7 @@ closing anything.
 
 `issue new [repo]` creates an issue from the current context.
 
-1. Run the planner with `--intent new`.
+1. Resolve the target and selected backend once.
 2. Shape the body problem-first: situation, experience, evidence, impact, target
    labels, milestone handling, source identity/preservation when external, and
    only a weak optional solution direction.
@@ -59,7 +62,8 @@ closing anything.
 
 `issue resolve [repo] [number|start-end]` resolves one or more issues.
 
-1. Run the planner with `--intent resolve`.
+1. Read the exact requested issue through the selected backend. If the target is
+   ambiguous, use the planner before selecting it.
 2. If no selector was supplied, select the newest open GitHub issue through the
    backend. Do not use the session's last-created issue.
 3. Read each selected issue with
@@ -71,14 +75,9 @@ closing anything.
    about the defect; it owes a destination floor instead of a resolution one,
    and must close via `close-with-comment --reason "not planned"`).
 5. Follow the planner's `classification_actions`.
-   - `bug`: run the causal-review fresh-eye reviewer before design through the
-     adapter-selected runner. The default is the file-backed worker; the typed
-     host-subagent branch is optional and must deliver typed findings. If the
-     selected branch is blocked, stop and report the concrete host/worker
-     signal. If the selected reviewer is untyped and shares the parent tree, wrap
-     it in the rail-1 snapshot/verify from the Enforcement section of
-     `../../shared/references/fresh-eye-subagent-review.md`; typed read-only and
-     isolated reviewers do not need that extra fingerprint.
+   - `bug`: use causal review when the cause is uncertain or the user asks for
+     it. Do not force a reviewer, fingerprint, or second observer onto a
+     routine, reversible fix; escalate only when the boundary warrants it.
    - `feature` / `deferred-work`: emit the pre-mutation resolution brief and
      name the capability or capability failure before proposing implementation;
      pause when open decisions are non-empty.
@@ -87,14 +86,11 @@ closing anything.
 6. Implement the smallest complete fix, preserving the issue's JTBD as the
    acceptance boundary. For siblings surfaced by review, bundle only cheap
    in-scope prevention; otherwise ask before filing or record a deferred item.
-7. Run the resolution critique, publish the closeout carrier with explicit close
-   keywords when auto-close is available, then verify with
-   `issue_tool.py verify-closeout --expect-state CLOSED`.
-   A `Fresh-eye satisfaction: worker-delivered` line is only a claim until the
-   closeout consumer verifies the shared report/receipt/ledger carrier and its
-   packet/input identity joins. A process exit, non-empty output, or prose-only
-   worker status is not fresh-eye approval. `parent-delegated` and
-   `nested-delegated` remain the explicit optional typed-subagent branch.
+7. Publish the closeout carrier and verify the target state with
+   `issue_tool.py verify-closeout --expect-state CLOSED`. Add critique or a
+   second observer only when the change crosses a material boundary or the
+   requested claim needs it; a process exit or prose-only status is never
+   evidence of a remote write.
 8. Render the per-issue behavior verdict or typed disposition from a channel
    distinct from `CLOSED` state and the carrier body.
 
@@ -111,10 +107,10 @@ requires a separate proof file and exact graph/child/evidence readback. The
 primitive tracker commands below remain useful compatibility and diagnostic
 surfaces.
 
-1. Run `issue_tool.py tracker-preflight --repo <owner/repo> --number <parent>`;
-   backend health, exact parent/repository readback, rendered create/view/
-   discover/update/list/resolve/add/remove templates, and capability closure
-   must all pass before a write.
+1. For bootstrap, graph repair, or an explicitly requested diagnostic, run
+   `issue_tool.py tracker-preflight --repo <owner/repo> --number <parent>`.
+   Ordinary mutations resolve the provider once; their mutation functions own
+   the target read and post-write readback, so they do not run this probe again.
 2. Create a managed child with `create-or-reuse-child`. Its exact body contains
    `<!-- charness-work-item-key: <key> -->`; retry first performs exhaustive
    read-only discovery and refuses duplicate or mismatched keys. A prior
@@ -134,10 +130,9 @@ surfaces.
    no-mutation result; a Markdown link never satisfies readback.
    Any invoked mutation without conclusive readback is `unverified-write` and
    stops for a fresh read; it is never reported as `no-write` or retried blindly.
-5. Every tracker mutation requires binding/draft hashes, a unique attempt id,
-   and a repo-contained observation directory. The command persists immutable
-   `started` bytes before provider invocation and a hash-bound terminal receipt
-   afterward; a surviving started-only receipt is unresolved evidence.
+5. File-backed Goal Run operations carry binding/draft hashes, an attempt id,
+   and an observation directory so an interrupted external write can be
+   recovered. Simple issue operations do not inherit that Goal Run ceremony.
 6. Before closing a parent, require `list-sub-issues --expect-all-closed`.
 
 ## Guardrails
@@ -166,7 +161,7 @@ surfaces.
 - `references/resolution-brief.md` - feature/deferred-work pre-mutation brief,
   pause rules, persistence, and trivial-feature shortcut.
 - `references/causal-review.md` - bug causal review, sibling search, recurrence
-  critique handoff, and classification-specific close comment shape.
+  critique record, and classification-specific close comment shape.
 - `references/issue-backend.md` - adapter-selected backend, body-file safety,
   read/create/close operations, milestones, and closeout verification commands.
 - `references/closeout-discipline.md` - verified ledger, target durability,
@@ -177,7 +172,5 @@ surfaces.
   for host-mediated GitHub capabilities.
 - `../../shared/references/rca-ledger-append.md` - optional RCA event append
   with `--source issue` for bug closeout in repos that maintain the ledger.
-- `../../shared/references/active-goal-coordination.md` - off-goal issue handling
-  while an `achieve` goal is active.
 - `scripts/issue_tool.py` - CLI entrypoint for planner, preflight, read, create,
   parent update/sub-issue operations, brief path, close, and closeout verification.

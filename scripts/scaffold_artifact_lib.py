@@ -15,7 +15,7 @@ def _load_repo_helper(module_filename: str) -> dict[str, object]:
     ``skill_runtime_bootstrap``) are unavailable here and
     ``test_the_owner_stays_importable_with_no_package_context`` forbids them.
     ``runpy`` over an ancestor walk is the same stdlib-only spelling
-    ``chunked_routing_cli.py`` uses for the identical constraint, and it finds
+    the artifact runners use for the identical constraint, and it finds
     ``scripts/<helper>.py`` at the repo root here and at the plugin root once
     exported. Both helpers this module needs ship in that same directory, so the
     walk is parameterized rather than copied per helper.

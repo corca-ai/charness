@@ -19,7 +19,7 @@ from scripts.adapter_version_verdict import declarations_unhonored
 from scripts.artifact_naming_lib import RECORD_PATTERN
 
 KIND_PATTERN = re.compile(r"^[a-z][a-z0-9_]*$")
-BUILTIN_KINDS = frozenset({"handoff", "issues", "path"})
+BUILTIN_KINDS = frozenset({"issues", "path"})
 
 ADAPTER_CANDIDATES = (
     Path(".agents/announcement-adapter.yaml"),

@@ -6,7 +6,7 @@
 Working record for the test-quality effort started 2026-06-03. Tracks the
 original intent, the decisions taken, what shipped, and the remaining
 obligations. Update this doc as slices land; link it from
-[handoff](./handoff.md).
+[docs/index.md](./index.md).
 
 ## Original Intent
 

@@ -1,10 +1,10 @@
 """A declared adapter key resolves to a NAMED reader, or to a typed gap.
 
 The regression fixture that shapes this whole module is
-`test_the_four_multi_reader_setup_keys_stay_clean`. The obvious implementation -- ask
+`test_setup_adapter_keys_stay_clean`. The obvious implementation -- ask
 the shared loader whether it knows the key -- was refuted before it was built, because
-`.agents/setup-adapter.yaml` carries four correct keys the shared loader has never heard
-of. A loader-scoped key set calls those four typos on day one, on the one surface whose
+`.agents/setup-adapter.yaml` carries setup keys the shared loader has never heard
+of. A loader-scoped key set calls those correct declarations typos on day one, on the one surface whose
 job is to stop a false signal. If a future change reintroduces that approach, that test
 is what fails.
 """
@@ -32,9 +32,10 @@ from scripts.adapter_key_registry import (  # noqa: E402
 )
 from scripts.adapter_lib import load_yaml_file  # noqa: E402
 
-# The four keys `#530`'s posted causal review named. They are CORRECT declarations that
-# the shared `simple_skill` loader does not know.
-SETUP_MULTI_READER_KEYS = ("defaults_version", "policy_sources", "recommendation_sets", "surfaces")
+# These are setup declarations owned by the setup adapter reader, not by the shared
+# adapter loader. Keeping the fixture to live fields prevents a retired policy field
+# from becoming a reason to preserve the policy machinery.
+SETUP_MULTI_READER_KEYS = ("surfaces",)
 
 
 def _repo_adapters() -> list[Path]:
@@ -42,11 +43,11 @@ def _repo_adapters() -> list[Path]:
 
 
 @pytest.mark.parametrize("key", SETUP_MULTI_READER_KEYS)
-def test_the_four_multi_reader_setup_keys_stay_clean(key: str) -> None:
+def test_setup_adapter_keys_stay_clean(key: str) -> None:
     """THE regression fixture for the refuted approach.
 
     Each of these resolves to a named reader that is NOT the shared loader --
-    `skills/public/setup/scripts/setup_adapter.py` reads all four. Asserting the state
+    `skills/public/setup/scripts/setup_adapter.py` reads them. Asserting the state
     alone would not be enough: a resolver that classified everything as `reader` would
     pass. So the reader list must be non-empty and must actually contain the module that
     owns them.
@@ -65,7 +66,7 @@ def test_the_four_multi_reader_setup_keys_stay_clean(key: str) -> None:
 
 def test_a_typo_resolves_to_unknown_rather_than_passing_silently() -> None:
     """The defect this exists to catch: today a misspelled key is silently defaulted."""
-    resolution = resolve_key(ROOT, "policy_sourcez")
+    resolution = resolve_key(ROOT, "prose_wrap_policz")
 
     assert resolution.state == "unknown"
     assert resolution.readers == ()
@@ -75,8 +76,8 @@ def test_a_typo_resolves_to_unknown_rather_than_passing_silently() -> None:
 def test_a_real_key_and_its_typo_do_not_resolve_the_same_way() -> None:
     """Direction, not presence. If both resolved to `reader`, or both to `unknown`, the
     resolver would be returning a constant and every other test here would still pass."""
-    assert resolve_key(ROOT, "policy_sources").state == "reader"
-    assert resolve_key(ROOT, "policy_sourcez").state == "unknown"
+    assert resolve_key(ROOT, "prose_wrap_policy").state == "reader"
+    assert resolve_key(ROOT, "prose_wrap_policz").state == "unknown"
 
 
 @pytest.mark.parametrize("key", ["x-vendor-thing", "host_extensions"])
@@ -285,7 +286,7 @@ def test_an_example_adapter_agrees_with_the_adapter_it_exemplifies() -> None:
     same key, same readers, opposite answers -- and the difference silently inflated the
     example-adapter gap count that the operator's warn-vs-refuse decision depends on.
     """
-    shared = ("defaults_version", "policy_sources", "recommendation_sets", "surfaces")
+    shared = SETUP_MULTI_READER_KEYS
     real_rel, example_rel = ".agents/setup-adapter.yaml", "skills/public/setup/adapter.example.yaml"
     real = {r.key: r.state for r in resolve_declared_keys(ROOT, load_yaml_file(ROOT / real_rel), adapter_relative=real_rel)}
     example = {
@@ -303,7 +304,7 @@ def test_the_survey_covers_the_population_the_operator_decision_needs() -> None:
     only `.agents/` would answer a different question than the one asked."""
     result = survey(ROOT)
 
-    assert result["adapters"] >= 33, "the adapter population shrank; a glob is stale"
+    assert result["adapters"] >= 31, "the adapter population shrank unexpectedly"
     assert result["keys"] >= 400
     assert result["registry_problems"] == []
     assert any(gap["adapter"].startswith(".agents/") for gap in result["gaps"]) or not result["gaps"]
@@ -322,7 +323,6 @@ def test_the_survey_covers_the_population_the_operator_decision_needs() -> None:
         ".agents/cautilus-adapters/chatbot-proposals.yaml",
         ".agents/quality-adapter.yaml",
         ".agents/worktree-adapter.yaml",
-        "skills/public/handoff/adapter.example.yaml",
         "skills/public/quality/adapter.example.yaml",
     }, f"a new unreconciled adapter surface appeared and needs a decision: {sorted(covered)}"
 
@@ -487,7 +487,7 @@ def test_the_survey_cli_runs_and_emits_parseable_yaml() -> None:
 
     assert completed.returncode == 0, completed.stderr[-2000:]
     payload = yaml.safe_load(completed.stdout)
-    assert payload["adapters"] >= 33
+    assert payload["adapters"] >= 31
     assert payload["registry_problems"] == []
 
 

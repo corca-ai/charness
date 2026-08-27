@@ -69,10 +69,10 @@ def establish_reader_corpus(tmp_path: Path, *, reads: tuple[str, ...] = ()) -> P
     return tmp_path
 
 
-# The same four keys `#530`'s causal review named, re-asserted against the ARMED tier
+# The same live setup keys used by the resolver tests, re-asserted against the ARMED tier
 # rather than against the resolver. Arming is a separate surface: the resolver could keep
 # classifying them correctly while the warn pass reported them anyway.
-SETUP_MULTI_READER_KEYS = ("defaults_version", "policy_sources", "recommendation_sets", "surfaces")
+SETUP_MULTI_READER_KEYS = ("surfaces",)
 
 
 def test_the_real_command_warns_on_a_constructed_typo(tmp_path: Path) -> None:
@@ -168,7 +168,7 @@ def test_the_real_command_warns_on_a_typo_in_a_shipped_example(tmp_path: Path) -
     establish_reader_corpus(tmp_path, reads=("chunk_policy",))
     (tmp_path / ".agents").mkdir()
     (tmp_path / ".agents/example-adapter.yaml").write_text("version: 1\nrepo: constructed\n", encoding="utf-8")
-    example = tmp_path / "skills/public/handoff/adapter.example.yaml"
+    example = tmp_path / "skills/public/quality/adapter.example.yaml"
     example.parent.mkdir(parents=True)
     example.write_text("version: 1\nrepo: my-repo\nchunk_policy: {}\nchunk_polcy: {}\n", encoding="utf-8")
 
@@ -182,7 +182,7 @@ def test_the_real_command_warns_on_a_typo_in_a_shipped_example(tmp_path: Path) -
     assert completed.returncode == 0, completed.stderr
     warned = [line for line in completed.stderr.splitlines() if line.startswith("WARNING ")]
     assert len(warned) == 1, completed.stderr
-    assert "skills/public/handoff/adapter.example.yaml" in warned[0], warned[0]
+    assert "skills/public/quality/adapter.example.yaml" in warned[0], warned[0]
     assert "`chunk_polcy`" in warned[0], warned[0]
     # 2 files: the `.agents/` adapter AND the shipped example. If the call site narrows,
     # this reads 1 and the test fails on the scope rather than on the warning.
@@ -206,7 +206,7 @@ def test_the_warn_scope_reaches_the_flattened_installed_layout(tmp_path: Path) -
     establish_reader_corpus(tmp_path, reads=("chunk_policy",))
     (tmp_path / ".agents").mkdir()
     (tmp_path / ".agents/example-adapter.yaml").write_text("version: 1\nrepo: constructed\n", encoding="utf-8")
-    example = tmp_path / "skills/handoff/adapter.example.yaml"
+    example = tmp_path / "skills/quality/adapter.example.yaml"
     example.parent.mkdir(parents=True)
     example.write_text("version: 1\nrepo: my-repo\nchunk_policy: {}\nchunk_polcy: {}\n", encoding="utf-8")
 
@@ -220,14 +220,14 @@ def test_the_warn_scope_reaches_the_flattened_installed_layout(tmp_path: Path) -
     assert completed.returncode == 0, completed.stderr
     warned = [line for line in completed.stderr.splitlines() if line.startswith("WARNING ")]
     assert len(warned) == 1, completed.stderr
-    assert "skills/handoff/adapter.example.yaml" in warned[0], warned[0]
+    assert "skills/quality/adapter.example.yaml" in warned[0], warned[0]
     assert "1 unreconciled declared key(s) across 2 declaring file(s); 0 uninterpreted line(s)." in completed.stdout, completed.stdout
 
 
-def test_the_four_multi_reader_setup_keys_survive_arming() -> None:
-    """THE regression fixture for the refuted approach, carried across the arming.
+def test_setup_adapter_keys_survive_arming() -> None:
+    """The live setup declarations stay quiet in the armed warning tier.
 
-    A loader-scoped key set would have called these four correct declarations typos. The
+    A loader-scoped key set would have called these correct declarations typos. The
     resolver already refuses to; this asserts the WARN pass does not reintroduce the same
     verdict one layer up, which is this repo's most reliable failure mode -- a fix that
     carries the class it fixed.
@@ -271,7 +271,7 @@ def test_the_warn_scope_covers_shipped_examples() -> None:
     The first cut armed `iter_adapter_yaml`'s 18 `.agents/` files while reporting the
     37-adapter measurement's zero -- a check claiming a scope it never read, which is this
     goal's own defect class. Reproduced before repair: a typo'd key in
-    `skills/public/handoff/adapter.example.yaml` produced `0 unreconciled declared key(s)`
+    `skills/public/quality/adapter.example.yaml` produced `0 unreconciled declared key(s)`
     with all 40 tests green.
 
     Shipped examples are the ones that matter: a consumer COPIES them, so a typo in one
@@ -280,7 +280,7 @@ def test_the_warn_scope_covers_shipped_examples() -> None:
     SCOPE -- that example adapters are actually in the set of files read.
     """
     scope = {str(path.relative_to(ROOT)) for path in iter_warn_scope_adapters(ROOT)}
-    assert "skills/public/handoff/adapter.example.yaml" in scope, sorted(scope)
+    assert "skills/public/quality/adapter.example.yaml" in scope, sorted(scope)
 
     # BOTH example families, named separately. Round 2 caught the first version asserting
     # `len(examples) >= 15` against 16 `skills/public/` + 3 `integrations/` files: dropping
@@ -289,9 +289,9 @@ def test_the_warn_scope_covers_shipped_examples() -> None:
     # A threshold that survives deleting a whole family is not a scope assertion.
     public_examples = {path for path in scope if path.startswith("skills/public/")}
     integration_examples = {path for path in scope if path.startswith("integrations/")}
-    assert len(public_examples) == 16, sorted(public_examples)
+    assert len(public_examples) == 15, sorted(public_examples)
     assert len(integration_examples) == 1, sorted(integration_examples)
-    assert len(scope) == 33, f"the measured warn population changed: {len(scope)}"
+    assert len(scope) == 31, f"the measured warn population changed: {len(scope)}"
     # And the gate's own narrower validation scope must still be a strict subset, so this
     # widening never silently pulls a template into the REFUSING checks.
     assert {str(path.relative_to(ROOT)) for path in iter_adapter_yaml(ROOT)} < scope
@@ -304,7 +304,7 @@ def test_reader_elsewhere_is_reported_but_never_warned() -> None:
     repo: `survey` types eleven of its keys as gaps (10 `reader-elsewhere` + 1 `text-asserted`), and the warn tier must stay silent about
     every one. Excluding `reader-elsewhere` is not squeamishness -- 3 of its 23 instances
     are association residue where the reader genuinely does read the file through dynamic
-    dispatch, and one of those ships inside `skills/public/handoff/adapter.example.yaml`,
+    dispatch, and one of those ships inside `skills/public/quality/adapter.example.yaml`,
     so arming it would greet every new consumer with a wrong warning.
     """
     benchmark = ROOT / ".agents/cautilus-adapters/chatbot-benchmark.yaml"

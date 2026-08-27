@@ -98,26 +98,6 @@ def test_an_existing_capture_refusal_passes_through_untouched() -> None:
     assert excinfo.value.code == "missing_backend_module"
 
 
-# --- an unavailable backend owner is UNKNOWN, never an answer ----------------
-
-_backend = _load_skill_module(
-    "skills/public/handoff/scripts/chunked_routing_issue_backend.py",
-    "chunked_routing_issue_backend_under_test",
-)
-
-
-def test_an_unavailable_backend_owner_answers_unknown(monkeypatch: pytest.MonkeyPatch) -> None:
-    """A missing or partial install must read as UNKNOWN rather than as a
-    wrong-repo answer -- the caller refuses on a mismatch, so returning anything
-    but None here would turn an install problem into a false mismatch."""
-
-    def _unavailable():
-        raise ImportError("owner module is not installed")
-
-    monkeypatch.setattr(_backend, "_issue_backend_owner", _unavailable)
-    assert _backend.answer_repo({"repository": {"nameWithOwner": "owner/repo"}}) is None
-
-
 # --- close verification refuses an answer about something else ---------------
 
 _issue_close = _load_skill_module(
@@ -203,19 +183,6 @@ def test_appending_a_slice_to_an_artifact_without_a_slice_log_is_refused() -> No
     closeout floors read, so the record would exist and count for nothing."""
     with pytest.raises(ValueError, match="no `## Slice Log` section"):
         _goal_lib.append_slice("# Goal\n\n## Boundaries\n\n- none\n", "- Objective: x\n")
-
-
-# --- a reviewer-tier map that is not a map is not evidence -------------------
-
-_critique_inspection = import_repo_module(__file__, "scripts.setup_critique_adapter_inspection")
-
-
-def test_a_non_mapping_reviewer_tier_block_is_not_adoption_evidence() -> None:
-    """Adoption is evidenced by the model field inside a mapping. A scalar or a
-    list is a malformed adapter, and reading it as adoption would credit a repo
-    with a profile it never declared."""
-    for malformed in (None, "codex", ["codex"], 3):
-        assert _critique_inspection._declares_codex_reviewer_profile(malformed) is False
 
 
 def test_a_typed_refusal_from_the_source_capture_op_passes_through() -> None:

@@ -59,8 +59,8 @@ Use the helper when a quality run needs a structured recommend-only finding:
 
 ```bash
 python3 "$SKILL_DIR/scripts/recommend_behavior_test.py" \
-  --behavior-seam handoff-resumption \
-  --subject-ref skills/public/handoff/SKILL.md \
+  --behavior-seam goal-resumption \
+  --subject-ref skills/public/achieve/SKILL.md \
   --risk-focus "resumption after compacted or interrupted work" \
   --deterministic-gap "static docs cannot prove multi-turn recovery behavior" \
   --source-evidence-ref <gathered-or-local-source-ref> \

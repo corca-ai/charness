@@ -16,7 +16,7 @@ def test_backend_command_runner_reports_runtime_error(tmp_path: Path) -> None:
     module = runpy.run_path(str(ROOT / SCRIPT))
     emitted: list[dict[str, object]] = []
     runner = module["_run_backend_command"]
-    runner.__globals__["_resolve_backend"] = lambda _repo_root: {
+    runner.__globals__["_resolve_backend"] = lambda _repo_root, _target_repo=None: {
         "adapter_ok": True,
         "backend": {"id": "fake-gh"},
     }
@@ -41,7 +41,7 @@ def test_backend_command_runner_reports_invalid_adapter(tmp_path: Path) -> None:
     module = runpy.run_path(str(ROOT / SCRIPT))
     emitted: list[dict[str, object]] = []
     runner = module["_run_backend_command"]
-    runner.__globals__["_resolve_backend"] = lambda _repo_root: {
+    runner.__globals__["_resolve_backend"] = lambda _repo_root, _target_repo=None: {
         "adapter_ok": False,
         "adapter": {"valid": False, "errors": ["missing adapter"]},
     }
@@ -57,7 +57,7 @@ def test_backend_command_runner_attaches_backend_before_exit_code(tmp_path: Path
     module = runpy.run_path(str(ROOT / SCRIPT))
     emitted: list[dict[str, object]] = []
     runner = module["_run_backend_command"]
-    runner.__globals__["_resolve_backend"] = lambda _repo_root: {
+    runner.__globals__["_resolve_backend"] = lambda _repo_root, _target_repo=None: {
         "adapter_ok": True,
         "backend": {"id": "fake-gh"},
     }
@@ -73,43 +73,14 @@ def test_backend_command_runner_attaches_backend_before_exit_code(tmp_path: Path
     assert emitted == [{"ok": False, "selected_backend": {"id": "fake-gh"}}]
 
 
-def test_tracker_runner_types_pre_invocation_failure_as_refused(tmp_path: Path) -> None:
-    module = runpy.run_path(str(ROOT / SCRIPT))
-    emitted: list[dict[str, object]] = []
-    runner = module["_run_tracker_backend_command"]
-    runner.__globals__["_resolve_backend"] = lambda _repo_root: {
-        "adapter_ok": True,
-        "backend": {"id": "gh"},
-    }
-    runner.__globals__["emit"] = emitted.append
-    runner.__globals__["_require_tracker_write_readiness"] = (
-        lambda *_args, **_kwargs: (_ for _ in ()).throw(RuntimeError("parent identity mismatch"))
-    )
-
-    def fail(_resolved: dict[str, object]) -> dict[str, object]:
-        raise RuntimeError("parent identity mismatch")
-
-    rc = runner(
-        Namespace(repo_root=tmp_path, repo="corca-ai/charness", number=724),
-        "update-body",
-        fail,
-    )
-
-    assert rc == 2
-    assert emitted[0]["outcome"] == "refused"
-    assert emitted[0]["mutation_invoked"] is False
-    assert emitted[0]["next_action"] == "repair-input-or-readiness-before-retry"
-
-
 def test_tracker_runner_persists_started_and_terminal_around_mutation(tmp_path: Path) -> None:
     module = runpy.run_path(str(ROOT / SCRIPT))
     emitted: list[dict[str, object]] = []
     runner = module["_run_tracker_backend_command"]
-    runner.__globals__["_resolve_backend"] = lambda _repo_root: {
+    runner.__globals__["_resolve_backend"] = lambda _repo_root, _target_repo=None: {
         "adapter_ok": True,
         "backend": {"id": "gh", "binary": "gh", "commands": None},
     }
-    runner.__globals__["_require_tracker_write_readiness"] = lambda *_args: None
     runner.__globals__["emit"] = emitted.append
     body = tmp_path / "body.md"
     body.write_text("body\n", encoding="utf-8")
@@ -149,13 +120,10 @@ def test_changed_body_cannot_reinvoke_ambiguous_create_for_same_work_item(
     emitted: list[dict[str, object]] = []
     create_calls = 0
     module["command_create_or_reuse_child"].__globals__["_resolve_backend"] = (
-        lambda _repo_root: {
+        lambda _repo_root, _target_repo=None: {
             "adapter_ok": True,
             "backend": {"id": "gh", "binary": "gh", "commands": None},
         }
-    )
-    module["command_create_or_reuse_child"].__globals__["_require_tracker_write_readiness"] = (
-        lambda *_args: None
     )
     module["command_create_or_reuse_child"].__globals__["emit"] = emitted.append
 
@@ -222,7 +190,7 @@ def test_tracker_preflight_combines_backend_capabilities_and_exact_parent(
     module = runpy.run_path(str(ROOT / SCRIPT))
     emitted: list[dict[str, object]] = []
     command = module["command_tracker_preflight"]
-    command.__globals__["_resolve_backend"] = lambda _repo_root: {
+    command.__globals__["_resolve_backend"] = lambda _repo_root, _target_repo=None: {
         "adapter_ok": True,
         "adapter": {"valid": True},
         "backend": {"id": "gh", "binary": "gh", "commands": None},

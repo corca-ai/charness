@@ -256,10 +256,10 @@ def test_the_preflight_keeps_the_unterminated_class_distinguishable(tmp_path):
     (tmp_path / "docs" / "wrapped.md").write_text("A wrapped `inline\ncode` span.\n", encoding="utf-8")
 
     unterminated = preflight.report_payload(
-        preflight.build_report(tmp_path, "docs/unterminated.md", None)
+        preflight.build_report(tmp_path, "docs/unterminated.md")
     )["wrapped_inline_code"]
     wrapped = preflight.report_payload(
-        preflight.build_report(tmp_path, "docs/wrapped.md", None)
+        preflight.build_report(tmp_path, "docs/wrapped.md")
     )["wrapped_inline_code"]
 
     assert [row["reason"] for row in unterminated] == ["unterminated"]

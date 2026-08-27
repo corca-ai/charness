@@ -16,7 +16,7 @@ for diagnosis, and no one of them alone proves factual freshness.
 - [Design north star](./design-north-star.md) — governing design standard.
 - [Harness composition](./harness-composition.md) — boundary map.
 - [Workflow routes](./workflow-routes.md) — intent-to-skill routing.
-- [Live handoff](./handoff.md) — current continuation state.
+- [Goal lifecycle](./goal-lifecycle.md) — active parent/cursor continuation state.
 - [Development](./development.md) — repo-local development paths.
 - [Compatibility index: docs/README.md](./README.md) — legacy pointer.
 
@@ -38,7 +38,7 @@ for diagnosis, and no one of them alone proves factual freshness.
 - [Capability resolution](./capability-resolution.md) — repo-local capability facts.
 - [External integrations](./external-integrations.md) — provider boundary.
 - [Gather provider ownership](./gather-provider-ownership.md) — public/credentialed split.
-- [Agent task envelope](./agent-task-envelope.md) — agent handoff contract.
+- [Agent task envelope](./agent-task-envelope.md) — bounded execution contract.
 - [Host packaging](./host-packaging.md) — exported install surface.
 - [Artifact policy](./artifact-policy.md) — durable state ownership.
 - [Goal lifecycle](./goal-lifecycle.md) — conditional issue-native goal model and authority split.
@@ -73,11 +73,10 @@ move their durable rationale to `charness-artifacts/` and leave a pointer here.
 - [Support tool follow-up](./support-tool-followup.md) — active support workstream.
 - [Testability DSL initiative](./testability-dsl-initiative.md) — quality work record.
 - [Retro self-improvement](./retro-self-improvement-spec.md) — memory design.
-- [Handoff chunked routing](./handoff-chunked-routing.md) — routing contract.
 - [AI/ML engineering patterns](./ai-ml-engineering-patterns.md) — engineering research.
 
 ## Compatibility And Status
 
-The [docs/README.md](./README.md) file is a compatibility pointer, not a second index. `handoff.md`
-is live session state. Historical evidence and superseded plans belong under
-`charness-artifacts/`.
+The [docs/README.md](./README.md) file is a compatibility pointer, not a second index. Active
+Goal Run state lives in the provider-backed parent issue and its managed cursor;
+historical evidence and superseded plans belong under `charness-artifacts/`.

@@ -20,16 +20,9 @@ parallel templates.
 - if the repo wants durable retrospective pickup, is there one stable retro
   memory seam instead of scattered ad hoc notes
 - do `<repo-root>/AGENTS.md` and `CLAUDE.md` express one clear host-facing contract
-- when the repo requires bounded fresh-eye or critique-style subagent review,
-  does `<repo-root>/AGENTS.md` say that this stop gate is already delegated and that
-  host spawn restrictions must stay visible
-- when Charness `setup`, `quality`, `critique`, `release`, or GitHub `issue`
-  resolution/closeout completes a task by running bounded review, does
-  `<repo-root>/AGENTS.md` name those skills as spawn-authorized instead of
-  placing all delegated-review policy under one narrow skill heading
-- when adapter-declared policy sources imply delegated review, does
-  `inspect_repo.py` emit a `recommendations[]` queue item with priority,
-  confidence, evidence, suggested action, and acknowledgement state
+- when a material boundary needs an independent observer, does the owning skill
+  record the decision and any unavailable-observer non-claim without requiring
+  every consumer repo to carry the same root policy
 - when the repo uses Charness durable artifacts, does `<repo-root>/AGENTS.md`
   make meaningful `charness-artifacts/` changes repo state and commit targets,
   and say current-pointer helpers should no-op without canonical content
@@ -52,10 +45,10 @@ parallel templates.
 - stale but useful surface: rewrite it
 - duplicate surface: collapse it into the more honest source of truth
 
-Task-completing normalization should run bounded delegated review after
-deterministic inspection. Use host-instruction policy, operating-surface
-adapter fit, and operator takeover flow as the default lenses. Help, routing,
-and raw-inspection calls do not need that review gate.
+Task-completing normalization should verify the changed operating surface with
+the narrowest relevant checks. An independent review is selected by the owning
+skill when the boundary, deletion, or uncertainty warrants it; setup does not
+make that review or changed-line proof universal.
 
 The plan is a write boundary: the inspector is read-only and emits an
 `approval_plan.identity`; approval must name that digest and a pre-apply

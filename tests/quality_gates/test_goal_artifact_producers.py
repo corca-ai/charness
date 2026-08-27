@@ -15,7 +15,6 @@ def _load(path: Path, name: str):
 
 
 goal_lib = _load(ROOT / "skills/public/achieve/scripts/goal_artifact_lib.py", "goal_artifact_lib")
-handoff_lib = _load(ROOT / "skills/public/handoff/scripts/chunked_routing_lib.py", "chunked_routing_lib")
 backlog = _load(ROOT / "skills/public/achieve/scripts/goal_artifact_backlog.py", "goal_artifact_backlog")
 
 
@@ -29,8 +28,8 @@ def _assert_goal_shape(text: str) -> None:
     assert "Activation: `/goal @" in text
     assert "## Operator Decision Queue" in text
     # Read the floor's own constants, NOT a literal. This assertion exists because the
-    # backlog-recount floor shipped into `achieve`'s template and NOT into handoff's
-    # auto-draft template, so every pickup-generated goal was refused by `--pursue-ready`
+    # backlog-recount floor is shipped into `achieve`'s template, so every
+    # generated goal is refused by `--pursue-ready`
     # with no heading to fill — while this very test reported "producers share current
     # shape". A hardcoded string here would have been the same blind spot one layer up:
     # renaming the section or its fields would leave this passing against dead strings.
@@ -71,41 +70,10 @@ def test_goal_artifact_producers_share_current_shape(tmp_path: Path) -> None:
     ):
         assert placeholder in achieve_text, placeholder
 
-    # Closeout-churn levers (see the achieve closeout floors): the scaffold seeds
-    # the correct authoring shape so a soft-wrapped / mislocated field is not
-    # discovered by serial floor rejection. The `Routing:` stub is one physical
-    # line and names a selected owner skill + a non-satisfying `<skill>` placeholder; the
-    # `Discuss before activation:` summary is seeded in its correct location
+    # The discussion summary is seeded in its correct location
     # (before `## Slice Log`) with a non-satisfying starter.
-    assert "Routing: <skill>" in achieve_text
     assert "Discuss before activation: fill" in achieve_text
     # The summary must precede the real `## Slice Log` heading (not the Active
     # Operating Frame's inline backticked mention) — that placement is what the
     # discussion floor reads via its `\n## Slice Log` split.
     assert achieve_text.index("Discuss before activation:") < achieve_text.index("\n## Slice Log\n")
-
-    entry = handoff_lib.HandoffEntry(
-        index=1,
-        title="Continue a shaped goal",
-        body="Use the handoff entry as source material.",
-        referenced_paths=("docs/handoff.md",),
-        referenced_issues=(),
-        referenced_skills=("achieve",),
-        boundary_tokens=("docs/handoff.md",),
-    )
-    chunk = handoff_lib.ChunkCandidate(
-        entries=(entry,),
-        label="chunk-1",
-        objective_summary="Continue a shaped goal from handoff",
-    )
-    handoff_text = handoff_lib.render_auto_draft_artifact(
-        chunk,
-        date="2026-06-01",
-        goal_rel="charness-artifacts/goals/2026-06-01-producer-contract.md",
-    )
-    _assert_goal_shape(handoff_text)
-    assert "run `/achieve @charness-artifacts/goals/2026-06-01-producer-contract.md`" in handoff_text
-    # The handoff before-phase draft is an unshaped skeleton filled by the
-    # achieve Before-phase; closeout-evidence placeholders are seeded only on the
-    # achieve scaffold (#315), so the pre-shaping draft must not carry them.
-    assert "Retro dispositions: TODO" not in handoff_text

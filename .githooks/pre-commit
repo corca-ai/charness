@@ -10,4 +10,10 @@ if [[ -e "$MUTATION_RECOVERY_DIR" || -e "$REPO_ROOT/.charness/mutation-recovery"
   exit 2
 fi
 
-python3 scripts/run_slice_closeout.py --repo-root "$REPO_ROOT" --predict-commit
+# Commit-time validation is intentionally local and cheap.  Slice closeout is an
+# opt-in proof surface for changes that need it; making every commit build a
+# closeout ledger was the largest source of friction in ordinary implementation.
+if ! git diff --cached --check; then
+  echo "charness pre-commit: staged whitespace errors" >&2
+  exit 2
+fi

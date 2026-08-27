@@ -235,36 +235,14 @@ def evaluate_close_comment_carrier(
     return floor_report
 
 
-def close_with_comment(
+def _resolve_close_commands(
+    backend: dict[str, Any],
+    *,
     repo: str,
     number: int,
     body_file: Path,
-    *,
-    repo_root: Path,
-    classification: str,
-    backend: dict[str, Any] | None = None,
-    reason: str = "completed",
-    manual_target_declaration: str | None = None,
-    goal_run_authorized: bool = False,
-) -> dict[str, Any]:
-    backend = backend or {"id": "gh", "binary": "gh", "commands": None}
-    # Ahead of the body read, where it has always been: a caller that asked for
-    # `completed` on a consolidation gets the contradiction, not a file-not-found.
-    _refuse_completed_consolidation(classification, reason)
-    if not body_file.is_file():
-        raise RuntimeError(f"close-comment body file not found: {body_file}")
-    body = body_file.read_text(encoding="utf-8")
-    if not goal_run_authorized:
-        _goal_run_guard.refuse_generic_close(body, context="close carrier")
-    floor_report = evaluate_close_comment_carrier(
-        repo, number, body,
-        repo_root=repo_root, classification=classification, backend=backend,
-        reason=reason, manual_target_declaration=manual_target_declaration,
-    )
-    authorization = floor_report["closeout_authorization"]
-    if not floor_report["ok"]:
-        # floor-addition-restraint: irreversible-boundary P5 floor, presence/form-only
-        raise RuntimeError(_CLOSE_COMMENT_FLOOR.format_close_comment_floor_failure(floor_report))
+    reason: str,
+) -> tuple[list[str], list[str], list[str] | None]:
     comment_argv = _resolve_op(
         backend,
         "comment",
@@ -285,20 +263,13 @@ def close_with_comment(
         reason=reason,
     )
     commands = backend.get("commands") or {}
-    view_argv = None
     if backend.get("id", "gh") != "gh" and commands.get("view") is None:
         raise RuntimeError(
             "close state verification requires backend commands.view; "
             "comment plus close command success is not issue closeout"
         )
+    view_argv = None
     if backend.get("id", "gh") == "gh" or commands.get("view") is not None:
-        # `required=`, which this call omitted. This view is the POST-CLOSE readback -- the
-        # evidence that the mutation landed -- so it verifies one issue's state and owes the
-        # same identity floor as every other surface that does. `(repo, number)` names an
-        # issue; a template spelling only `{number}` drops the repository silently and a
-        # repo-agnostic binary confirms ITS OWN issue N as CLOSED. No waiver is offered here:
-        # this is the irreversible boundary, and the reader that can afford one is the
-        # staleness path, not this.
         view_argv = _resolve_op(
             backend,
             "view",
@@ -309,29 +280,76 @@ def close_with_comment(
             number=str(number),
             json_fields="number,state,url",
         )
+    return comment_argv, close_argv, view_argv
+
+
+def _read_preflight_state(
+    view_argv: list[str],
+    *,
+    repo: str,
+    number: int,
+    existing: dict[str, Any] | None,
+) -> dict[str, Any]:
+    if existing is None:
+        result = _run_backend(view_argv)
+        if result.returncode != 0:
+            raise RuntimeError(
+                "pre-mutation issue readback failed; no comment or close was attempted: "
+                f"view_exit={result.returncode} view_stderr={result.stderr.strip()!r}"
+            )
+        try:
+            existing = json.loads(result.stdout)
+        except Exception as exc:
+            raise RuntimeError(f"pre-mutation issue readback returned invalid JSON: {exc}") from exc
+    require_exact_issue_identity(
+        existing,
+        expected_repo=repo,
+        expected_number=number,
+        context="pre-mutation issue readback",
+    )
+    return existing
+
+
+def close_with_comment(
+    repo: str,
+    number: int,
+    body_file: Path,
+    *,
+    repo_root: Path,
+    classification: str,
+    backend: dict[str, Any] | None = None,
+    reason: str = "completed",
+    manual_target_declaration: str | None = None,
+    goal_run_authorized: bool = False,
+    preflight_state: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    backend = backend or {"id": "gh", "binary": "gh", "commands": None}
+    # Ahead of the body read, where it has always been: a caller that asked for
+    # `completed` on a consolidation gets the contradiction, not a file-not-found.
+    _refuse_completed_consolidation(classification, reason)
+    if not body_file.is_file():
+        raise RuntimeError(f"close-comment body file not found: {body_file}")
+    body = body_file.read_text(encoding="utf-8")
+    if not goal_run_authorized:
+        _goal_run_guard.refuse_generic_close(body, context="close carrier")
+    floor_report = evaluate_close_comment_carrier(
+        repo, number, body,
+        repo_root=repo_root, classification=classification, backend=backend,
+        reason=reason, manual_target_declaration=manual_target_declaration,
+    )
+    authorization = floor_report["closeout_authorization"]
+    if not floor_report["ok"]:
+        # floor-addition-restraint: irreversible-boundary P5 floor, presence/form-only
+        raise RuntimeError(_CLOSE_COMMENT_FLOOR.format_close_comment_floor_failure(floor_report))
+    comment_argv, close_argv, view_argv = _resolve_close_commands(
+        backend, repo=repo, number=number, body_file=body_file, reason=reason
+    )
     # This readback is deliberately before the first mutation. An argv containing
     # --repo and number is a request, not proof that the backend answered about that
     # target. The same strict helper is used again after close.
-    preflight_state = None
     if view_argv is not None:
-        preflight_result = _run_backend(view_argv)
-        if preflight_result.returncode != 0:
-            raise RuntimeError(
-                "pre-mutation issue readback failed; no comment or close was attempted: "
-                f"view_exit={preflight_result.returncode} "
-                f"view_stderr={preflight_result.stderr.strip()!r}"
-            )
-        try:
-            preflight_state = json.loads(preflight_result.stdout)
-        except Exception as exc:
-            raise RuntimeError(
-                f"pre-mutation issue readback returned invalid JSON: {exc}"
-            ) from exc
-        require_exact_issue_identity(
-            preflight_state,
-            expected_repo=repo,
-            expected_number=number,
-            context="pre-mutation issue readback",
+        preflight_state = _read_preflight_state(
+            view_argv, repo=repo, number=number, existing=preflight_state
         )
     _check_goal_run_target(
         repo=repo,

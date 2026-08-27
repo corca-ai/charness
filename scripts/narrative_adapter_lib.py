@@ -61,7 +61,7 @@ RECOMMENDED_LANDING_FIELDS = (
     "landing_danger_checks",
 )
 VOLATILE_PATH_PARTS = {"internal", "archive", "archived"}
-VOLATILE_FILENAMES = {"handoff.md"}
+VOLATILE_FILENAMES: set[str] = set()
 PATH_SUGGESTION_SKIP_DIRS = {".git", ".venv", "node_modules", "__pycache__"}
 
 
@@ -327,7 +327,7 @@ def _append_volatile_path_findings(
                     "block",
                     "A mutable document looks volatile or maintainer-internal; rewriting it as part of durable narrative alignment can leak session pickup into public truth.",
                     path=path,
-                    recommended_action="Move volatile pickup notes out of mutable_documents unless the task is explicitly a handoff/internal-doc rewrite.",
+                    recommended_action="Move volatile pickup notes out of mutable_documents unless the task explicitly owns that internal document.",
                 )
             )
 

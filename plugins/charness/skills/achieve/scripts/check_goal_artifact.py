@@ -22,15 +22,7 @@ adapter_policy = SKILL_RUNTIME.load_local_skill_module(__file__, "achieve_adapte
 # The proof-mismatch floor is a portable top-level module (reused by issue
 # closeout); loaded via the repo-module path so its `from scripts.` imports resolve.
 proof_mismatch = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.proof_mismatch")
-phase_brief_lib = SKILL_RUNTIME.load_local_skill_module(__file__, "goal_artifact_phase_brief")
 yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
-
-
-def _attach_phase_brief(payload: dict, status: str | None) -> None:
-    """Advisory routing only: names which reference section covers this phase."""
-    brief = phase_brief_lib.phase_brief(status)
-    if brief is not None:
-        payload["phase_brief"] = brief
 
 
 def parse_args() -> argparse.Namespace:
@@ -104,13 +96,6 @@ def _evidence_missing_bits(evidence_report: dict) -> list[str]:
         bits.append("residual-ledger floor: " + evidence_report["residual_ledger"]["reason"])
     if evidence_report.get("proof_mismatch", {}).get("reason"):
         bits.append("proof-mismatch floor: " + evidence_report["proof_mismatch"]["reason"])
-    if evidence_report.get("coordination_missing"):
-        bits.append(
-            "coordination floors: "
-            + "; ".join(f"{entry['floor']} step missing" for entry in evidence_report["coordination_missing"])
-        )
-    if evidence_report.get("closeout_delegation", {}).get("failures"):
-        bits.append("closeout delegation: " + "; ".join(evidence_report["closeout_delegation"]["failures"]))
     if evidence_report.get("section_placeholders"):
         bits.append(
             "section placeholders: "
@@ -165,12 +150,10 @@ def main() -> int:
         deploy_vocab = adapter_policy.resolve_discussion_deploy_vocab(args.repo_root.expanduser().resolve()) or None
         report = goal_lib.pursue_readiness(text, deploy_vocab=deploy_vocab)
         report["path"] = str(path)
-        _attach_phase_brief(report, goal_lib.read_status(text))
         yaml_output.emit_yaml(report)
         return 0 if report["pursue_ready"] else 1
     result = goal_lib.check_goal(text)
     result["path"] = str(path)
-    _attach_phase_brief(result, result.get("status"))
     freshness_report = head_freshness.check_head_freshness(
         text,
         head_sha=head_freshness.current_head(args.repo_root.expanduser().resolve()),
@@ -231,16 +214,6 @@ def main() -> int:
             result["issues"].append(
                 "After-phase prescribed-skill evidence not satisfied — "
                 + "; ".join(_evidence_missing_bits(evidence_report))
-            )
-        # Non-blocking, and deliberately hoisted OUT of the refusal renderer. The
-        # opt-out census matters most on goals that PASS — every floor satisfied,
-        # each by an opt-out — and `_evidence_missing_bits` only runs when the
-        # evidence gate REFUSES. Left there it would have been invisible on exactly
-        # the runs it was built for.
-        aggregate = evidence_report.get("coordination_optout_aggregate")
-        if isinstance(aggregate, dict) and aggregate.get("reason"):
-            result.setdefault("advisories", []).append(
-                "coordination opt-out census — " + aggregate["reason"]
             )
     yaml_output.emit_yaml(result)
     return 0 if result["ok"] else 1

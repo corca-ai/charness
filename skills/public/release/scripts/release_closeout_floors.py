@@ -54,7 +54,7 @@ def _load_issue_skill_module(filename: str, alias: str):
     source-tree/installed candidate ORDER are two answers to "where is the issue skill"
     that can drift apart, which is precisely what having a single owner was for.
 
-    Mirrors `handoff/scripts/draft_goal_from_chunk._load_goal_artifact_lib`, this repo's
+    Mirrors the Goal Draft loader used by the achieve package, this repo's
     established cross-skill import pattern. Returns ``None`` when the module is absent;
     the two callers differ in what they do about that, and that difference is theirs.
     """

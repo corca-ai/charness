@@ -57,8 +57,8 @@ from .support import ADAPTER_LIB, ROOT
 sys.path.insert(0, str(ROOT))
 
 # (label, module path, entrypoint name). The label is the resolver family; the number of
-# rows here is the "how many sites are covered" count. 20 sites driven here, 4 exempt --
-# 24 reconciling sites in total. The exemptions are listed in EXEMPT_SITES with the test
+# rows here is the "how many sites are covered" count. 19 sites driven here, 4 exempt --
+# 23 reconciling sites in total. The exemptions are listed in EXEMPT_SITES with the test
 # that drives each instead; none of them is absent.
 #
 # Both numbers are ASSERTED below rather than left as prose. They were already wrong when
@@ -80,13 +80,6 @@ SITES: tuple[tuple[str, str, str], ...] = (
     ("hotl", "skills/public/hotl/scripts/resolve_adapter.py", "validate_adapter_data"),
     ("impl", "skills/public/impl/scripts/resolve_adapter.py", "validate_adapter_data"),
     ("issue", "skills/public/issue/scripts/resolve_adapter.py", "load_adapter"),
-    # Driven through its OWN `load_adapter`, not through the `simple_skill` row it shares
-    # a loader with: `max_content_lines` is opted in via `int_fields=INT_FIELDS` at this
-    # call site, and `validate_simple_adapter_data`'s default `int_fields=()` discards it.
-    # So the simple_skill row could never reach the handoff half of the two ceilings
-    # #640 made adapter-owned, and handoff appeared in neither list -- the absent-row vs
-    # exempt-row distinction this census exists to keep honest.
-    ("handoff", "skills/public/handoff/scripts/resolve_adapter.py", "load_adapter"),
     ("capability_catalog", "scripts/capability_catalog_sources.py", "load_adapter"),
     ("quality", "scripts/quality_adapter_lib.py", "validate_quality_adapter_data"),
     ("release", "skills/public/release/scripts/resolve_adapter.py", "validate_adapter_data"),
@@ -144,16 +137,6 @@ EXEMPT_SITES: tuple[tuple[str, tuple[str, ...], tuple[str, ...], str], ...] = (
 # left invisible.
 VERDICT_CONSUMERS: tuple[tuple[str, tuple[str, ...], tuple[str, ...]], ...] = (
     (
-        "handoff_chunked_routing",
-        ("skills/public/handoff/scripts/chunked_routing_issue_config.py",
-         "skills/public/handoff/scripts/chunked_routing_agentic_policy.py",
-         "skills/public/handoff/scripts/chunked_routing_staleness.py"),
-        ("tests/test_handoff_chunker_issue_source.py",
-         "tests/test_handoff_chunker_agentic_packages.py",
-         "tests/test_handoff_chunker_adapter_report.py",
-         "tests/test_handoff_chunker_staleness.py"),
-    ),
-    (
         "regenerable_facts_gate",
         ("skills/public/quality/scripts/check_regenerable_facts.py",),
         ("tests/quality_gates/test_regenerable_facts.py",),
@@ -164,7 +147,6 @@ VERDICT_CONSUMERS: tuple[tuple[str, tuple[str, ...], tuple[str, ...]], ...] = (
 _ADAPTER_FILENAMES: dict[str, str] = {
     "issue": "issue-adapter.yaml",
     "capability_catalog": "capability-catalog-adapter.yaml",
-    "handoff": "handoff-adapter.yaml",
 }
 
 _LOADED: dict[str, Any] = {}
@@ -537,7 +519,7 @@ def test_every_repo_local_adapter_declares_the_supported_version() -> None:
 def test_the_stated_census_counts_match_the_lists() -> None:
     """The denominator, pinned. Prose counts beside a list rot silently, and this file's
     entire claim is a census."""
-    assert (len(SITES), len(EXEMPT_SITES)) == (20, 4)
+    assert (len(SITES), len(EXEMPT_SITES)) == (19, 4)
 
 
 def test_exempt_sites_carry_a_reason() -> None:

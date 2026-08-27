@@ -3,28 +3,18 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Callable
 
-from scripts.setup_agent_docs_fresh_eye_lib import (
-    FRESH_EYE_MARKERS,
-    detect_fresh_eye_normalization,
-    fresh_eye_policy_gaps,
-)
 from scripts.setup_artifact_policy_lib import detect_charness_artifact_policy
 from scripts.setup_commit_discipline_lib import detect_commit_discipline_policy
-from scripts.setup_critique_adapter_inspection import (
-    _detect_critique_adapter_normalization,
-)
 from scripts.setup_markdown_section_lib import extract_section
 from scripts.setup_operating_surface_lib import detect_operating_surface_ownership
 from scripts.setup_skill_routing_lib import (
     COMPACT_SKILL_ROUTING_CALL_RE,
     COMPACT_SKILL_ROUTING_NEGATED_CALL_RE,
-    skill_routing_declares_charness_management,
     skill_routing_semantically_complete,
 )
 
 RETRO_ADAPTER_RELATIVE_PATH = Path(".agents/retro-adapter.yaml")
 RETRO_SUMMARY_RELATIVE_PATH = Path("charness-artifacts/retro/recent-lessons.md")
-CRITIQUE_ADAPTER_RELATIVE_PATH = Path(".agents/critique-adapter.yaml")
 RECOMMENDATION_PRIORITY_ORDER = {
     "review_required": 0,
     "high": 1,
@@ -33,15 +23,6 @@ RECOMMENDATION_PRIORITY_ORDER = {
     "advisory": 4,
 }
 FINDING_RECOMMENDATION_PRIORITIES = {
-    "fresh_eye_delegation_rule_drift": "review_required",
-    "fresh_eye_task_review_scope_drift": "review_required",
-    "fresh_eye_task_review_scope_uses_legacy_init_repo": "advisory",
-    "fresh_eye_review_still_requires_consent_or_fallback": "review_required",
-    "fresh_eye_delegation_caveat_weakens_contract": "advisory",
-    "critique_adapter_missing_for_fresh_eye_review": "review_required",
-    "critique_adapter_codex_profile_drift": "review_required",
-    "agents_missing_charness_dynamic_workflow_policy": "review_required",
-    "agents_missing_subagent_model_policy": "review_required",
     "skill_routing_block_custom_or_drifted": "review_required",
     "charness_artifacts_commit_policy_drift": "review_required",
     "commit_discipline_drift": "review_required",
@@ -123,88 +104,6 @@ def _detect_retro_memory_normalization(repo_root: Path, agents_text: str) -> tup
     )
 
 
-def _detect_charness_subagent_policy(agents_text: str) -> tuple[dict[str, object], list[dict[str, str]]]:
-    """Report missing Charness-specific standing policies without rewriting AGENTS.md."""
-
-    charness_managed = skill_routing_declares_charness_management(
-        extract_section(agents_text, "## Skill Routing")
-    )
-    dynamic_section = " ".join(
-        extract_section(agents_text, "## Dynamic Workflows")
-        .lower()
-        .translate(str.maketrans("", "", "`*~"))
-        .split()
-    )
-    dynamic_complete = all(
-        token in dynamic_section
-        for token in ("standing request", "earns its cost", "higher-priority", "host")
-    )
-    # This check used to require the literal tokens `gpt-5.6-terra`, `medium reasoning
-    # effort`, and `fork_turns: "none"` in AGENTS.md. Commit 353fa4a5 deliberately
-    # DELETED that block, because the contract now says a host-specific model id belongs
-    # in that host's adapter or preset -- "naming one in this file bakes a model id into
-    # the contract and it goes stale silently". The validator was not moved with it, so
-    # it demanded the exact tokens the contract had just forbidden, and main went red.
-    #
-    # That is this repo's own recurring defect: a declaration no executable reader was
-    # reconciled against. The tokens below track what the contract actually asserts now
-    # -- that the default is PER-HOST, that a model id lives in an adapter or preset
-    # rather than here, and that the session model is inherited by default -- and
-    # deliberately name no model id, so a model bump cannot stale this gate again.
-    # Scoped to `## Subagent Delegation`, not the whole document, matching
-    # `dynamic_complete` above. Read document-wide, the three phrases could be scattered
-    # across unrelated sections and still satisfy the check.
-    #
-    # KNOWN LIMIT, stated rather than implied: this is substring matching, so it has no
-    # polarity. A section that says "the claim that subagent model/effort defaults are
-    # per-host is wrong -- pin the model here rather than in that host's adapter or
-    # preset, and never rely on inheriting the session model" contains all three tokens
-    # and passes. The tokens are also near-verbatim from the contract they check, so a
-    # rewording reddens this without any behavior changing. What the check DOES buy is
-    # narrow and real: it can no longer be satisfied by the superseded model-id block,
-    # and the negative fixture in the tests proves that direction. Making it semantic is
-    # tracked, not claimed.
-    subagent_section = " ".join(
-        extract_section(agents_text, "## Subagent Delegation")
-        .lower()
-        .translate(str.maketrans("", "", "`*~"))
-        .split()
-    )
-    profile_complete = all(
-        token in subagent_section
-        for token in (
-            "subagent model/effort defaults are per-host",
-            "adapter or preset",
-            "inheriting the session model",
-        )
-    )
-    findings: list[dict[str, str]] = []
-    if charness_managed and not dynamic_complete:
-        findings.append(
-            {
-                "type": "agents_missing_charness_dynamic_workflow_policy",
-                "message": "Charness-managed AGENTS.md is missing the standing, judgment-gated Dynamic Workflows policy.",
-                "recommended_action": "add_charness_dynamic_workflow_standing_policy",
-            }
-        )
-    if charness_managed and not profile_complete:
-        findings.append(
-            {
-                "type": "agents_missing_subagent_model_policy",
-                "message": "Charness-managed AGENTS.md is missing the per-host subagent model/effort default policy.",
-                "recommended_action": "add_subagent_model_default_policy",
-            }
-        )
-    return (
-        {
-            "charness_managed": charness_managed,
-            "dynamic_workflow_complete": dynamic_complete,
-            "subagent_model_policy_complete": profile_complete,
-        },
-        findings,
-    )
-
-
 def _recommendation(
     *,
     rec_id: str,
@@ -232,9 +131,6 @@ def _recommendation(
 def finding_recommendation(finding: dict[str, str], *, priority: str = "advisory") -> dict[str, object]:
     target = "AGENTS.md"
     kind = "policy_sync"
-    if finding["type"].startswith("critique_adapter_"):
-        target = CRITIQUE_ADAPTER_RELATIVE_PATH.as_posix()
-        kind = "adapter_sync"
     return _recommendation(
         rec_id=finding["type"],
         target=target,
@@ -256,54 +152,6 @@ def sort_recommendations(recommendations: list[dict[str, object]]) -> list[dict[
         recommendations,
         key=lambda item: (RECOMMENDATION_PRIORITY_ORDER.get(str(item.get("priority")), 99), str(item.get("id"))),
     )
-
-
-def detect_policy_source_recommendations(
-    repo_root: Path,
-    agents_text: str,
-    policy: dict[str, Any],
-) -> list[dict[str, object]]:
-    missing_required, missing_scopes = fresh_eye_policy_gaps(agents_text)
-    if not missing_required and not missing_scopes:
-        return []
-
-    recommendations_by_id: dict[str, dict[str, object]] = {}
-    enabled = set(policy.get("enabled", []))
-    for source in policy.get("policy_sources", []):
-        raw_path = source.get("path")
-        if not isinstance(raw_path, str):
-            continue
-        source_text = _read_text(repo_root / raw_path)
-        terms = source.get("evidence_terms") or FRESH_EYE_MARKERS
-        source_mentions_review = any(str(term).lower() in source_text.lower() for term in terms)
-        source_requests_recommendation = "agents.delegated_review_policy" in source.get("recommendations", [])
-        enabled_requests_recommendation = "agents.delegated_review_policy" in enabled
-        if not (source_mentions_review or source_requests_recommendation or enabled_requests_recommendation):
-            continue
-        evidence = [f"{raw_path} implies bounded fresh-eye, critique, or subagent review policy"]
-        if missing_required:
-            evidence.append("AGENTS.md lacks delegated-review host restriction wording")
-        if missing_scopes:
-            evidence.append("AGENTS.md does not name all repo-mandated task-completing review scopes")
-        existing = recommendations_by_id.get("agents.delegated_review_policy")
-        if existing is not None:
-            existing_evidence = existing.setdefault("evidence", [])
-            if isinstance(existing_evidence, list):
-                for item in evidence:
-                    if item not in existing_evidence:
-                        existing_evidence.append(item)
-            continue
-        recommendations_by_id["agents.delegated_review_policy"] = _recommendation(
-            rec_id="agents.delegated_review_policy",
-            target="AGENTS.md",
-            kind="policy_sync",
-            priority="review_required",
-            confidence="medium",
-            enforcement_tier="NON_AUTOMATABLE",
-            evidence=evidence,
-            suggested_action="Review whether AGENTS.md should carry the delegated review rule.",
-        )
-    return list(recommendations_by_id.values())
 
 
 def _detect_skill_routing_normalization(
@@ -390,13 +238,6 @@ def detect_agent_docs(
     else:
         action = "inspect_manually"
     retro_memory, retro_findings = _detect_retro_memory_normalization(repo_root, agents_text)
-    fresh_eye_review, fresh_eye_findings = detect_fresh_eye_normalization(agents_text)
-    critique_adapter, critique_adapter_findings = _detect_critique_adapter_normalization(
-        repo_root,
-        agents_text=agents_text,
-        fresh_eye_review=fresh_eye_review,
-    )
-    charness_subagent_policy, charness_subagent_policy_findings = _detect_charness_subagent_policy(agents_text)
     charness_artifacts, charness_artifact_findings = detect_charness_artifact_policy(repo_root, agents_text)
     commit_discipline, commit_discipline_findings = detect_commit_discipline_policy(agents_text)
     skill_routing, skill_routing_findings = _detect_skill_routing_normalization(
@@ -416,9 +257,6 @@ def detect_agent_docs(
     ownership = detect_operating_surface_ownership(repo_root, agents_text=agents_text)
     normalization_findings = [
         *retro_findings,
-        *fresh_eye_findings,
-        *critique_adapter_findings,
-        *charness_subagent_policy_findings,
         *charness_artifact_findings,
         *commit_discipline_findings,
         *skill_routing_findings,
@@ -436,9 +274,6 @@ def detect_agent_docs(
             "findings": normalization_findings,
             "extra_recommendations": extra_recommendations,
             "retro_memory": retro_memory,
-            "fresh_eye_review": fresh_eye_review,
-            "critique_adapter": critique_adapter,
-            "charness_subagent_policy": charness_subagent_policy,
             "charness_artifacts": charness_artifacts,
             "commit_discipline": commit_discipline,
             "skill_routing": skill_routing,

@@ -324,29 +324,3 @@ def test_cli_reports_nonzero_exit_on_fatal_stale_entry(tmp_path: Path, capsys: p
 def test_missing_witness_map_raises() -> None:
     with pytest.raises(lib.WitnessCoverageError):
         lib.compute_coverage(Path("/tmp/does-not-exist-charness"), "nope", "s1", Path("/tmp/no-such-map.json"))
-
-
-# --- real-repo smoke test -----------------------------------------------------
-
-
-def test_real_repo_handoff_refresh_smoke() -> None:
-    real_repo_root = ROOT
-    eval_dir = real_repo_root / "evals" / "cautilus" / "handoff-claim-fidelity"
-    witness_map_path = eval_dir / "witness-map.json"
-    if not witness_map_path.is_file():
-        pytest.skip("evals/cautilus/handoff-claim-fidelity/witness-map.json not present in this checkout")
-
-    report = lib.compute_coverage(real_repo_root, "handoff", "refresh")
-    assert report["ok"] is True
-    witnessed_ids = {w["unit_id"].rsplit("@", 1)[0] for w in report["witnessed"]}
-    assert witnessed_ids == {
-        "plugins/charness/skills/handoff/SKILL.md#handoff/bootstrap",
-        "plugins/charness/skills/handoff/SKILL.md#handoff/workflow",
-        "plugins/charness/skills/handoff/SKILL.md#handoff/closeout-vocabulary",
-    }
-    reference_unit_ids = {
-        u["unit_id"] for u in lib.live_units(real_repo_root, "handoff") if "/references/" in u["unit_id"]
-    }
-    untested_ids = {u["unit_id"] for u in report["untested_debt"]}
-    assert reference_unit_ids  # sanity: there are reference units to check
-    assert reference_unit_ids <= untested_ids  # every references/*.md unit is UNTESTED

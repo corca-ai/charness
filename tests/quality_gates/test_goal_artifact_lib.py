@@ -40,13 +40,9 @@ def test_check_goal_passes_on_scaffold_and_reports_gaps(tmp_path: Path) -> None:
     assert gal.check_goal(text)["ok"] is True
     assert text.index("## Active Operating Frame") < text.index("## Goal")
     frame = text[text.index("## Active Operating Frame") : text.index("## Goal")]
-    assert "Verification cadence: cheap deterministic checks at commit boundaries" in text
-    assert (
-        "Gate cadence: pre-lock slices use `run_slice_closeout.py --skip-broad-pytest`;\n"
-        "  final/bundle proof records the verification lock and uses `--verification-lock`."
-    ) in frame
-    assert "changed\n  files and owning/generated surfaces" in text
-    assert "out-of-scope lines" in text
+    assert "Verification cadence:" not in text
+    assert "Gate cadence:" not in frame
+    assert "Current slice intent:" in text
     assert "History boundary: keep this frame current" in text
     assert "## Operator Decision Queue" in text
     assert "Decision: operator-only decision or confirmation needed" in text
@@ -378,17 +374,8 @@ def _complete_evidence_for_new_goal(tmp_path: Path, *, queue_body: str) -> str:
     )
     text = _goal_text(tmp_path, slug=slug, date=date)
     start = text.index("\n## Operator Decision Queue") + 1
-    end = text.index("## Coordination Cues")
+    end = text.index("## Slice Log")
     text = text[:start] + f"## Operator Decision Queue\n\n{queue_body}\n\n" + text[end:]
-    text = text.replace(
-        "## Coordination Cues\n",
-        (
-            "## Coordination Cues\n\n"
-            "Routing: n/a — synthetic operator queue fixture recorded no implementation, "
-            "debug, quality, or issue phase work.\n"
-        ),
-        1,
-    )
     text = _append_evidence_lines(
         text,
         retro_value=str(retro.relative_to(tmp_path)),

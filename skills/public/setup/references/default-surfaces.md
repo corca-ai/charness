@@ -79,57 +79,18 @@ The repo root `<repo-root>/AGENTS.md` should answer:
   human-visible value, verification, and operator/apply notes when relevant;
   merge commits that close issues should include close keywords and a summary
   body when the implementation branch commits are terse
-- when the repo uses bounded fresh-eye or critique-style subagent review as a
-  stop gate, a dedicated `## Subagent Delegation` section with one short rule
-  that says `explicit user delegation request` for the bounded scope, the review
-  is already delegated by the repo contract, agents should not wait for a
-  second user message asking for delegation, and host spawn restrictions should
-  be reported explicitly instead of replaced with a same-agent pass
-- that section is rung 1 of the authorization ladder; a repo may grant instead
-  in `<repo-root>/.agents/subagent-delegation.json` (rung 2) or be asked once
-  (rung 3). Treat a rung-2 grant as an adopted delegation surface, not a missing
-  one — `../../../shared/references/fresh-eye-subagent-review.md`
-- compact AGENTS profiles may use the shorter standing-request form from
-  `agent-docs-policy.md` instead of the expanded copy-paste wording, as long as
-  they preserve the same host-read-time safety invariant: standing delegation,
-  canonical scopes, concrete host-block reporting, and no same-agent substitute
-- for Charness-managed repos, the same rule should explicitly cover
-  task-completing `setup`, `quality`, `critique`, `release`, and GitHub
-  `issue` resolution/closeout review runs instead of implying that only one
-  named skill may spawn reviewers
-- when the repo uses Charness dynamic workflows / multi-agent orchestration (the
-  Workflow tool), a compact `## Dynamic Workflows` section that standing-approves
-  dynamic-workflow use when it genuinely earns its cost (fan-out coverage,
-  adversarial confidence, or scale one context cannot hold), names canonical fits
-  (handoff chunked-routing, achieve goal design/decomposition, review/quality
-  fan-outs), keeps appropriateness as the agent's judgment, and carries a
-  scale-to-the-task guardrail. This is the orchestration sibling of the
-  delegation standing request: a generic "only orchestrate when explicitly asked"
-  host default is satisfied by the repo contract for appropriate work
-- for Charness-managed Codex spawning, the `## Subagent Delegation` contract
-  should apply the Codex default profile to every coding, review, and
-  dynamic-workflow subagent: `gpt-5.6-terra`, `medium` reasoning effort, and
-  `fork_turns: "none"` when caller-provided model/reasoning overrides are used.
-  A bounded parent-history count is the conscious exception; Codex V2 defaults
-  to `fork_turns: "all"`, which rejects those overrides. This is a Codex host
-  mapping, not portable policy for other hosts.
 - a short `Skill Routing` fallback paragraph. It must name every route, because
   the reader that decides whether a repo is charness-managed requires all of
-  them and answers no if any is missing: a pickup follows the handoff at
-  `docs/handoff.md` `## Workflow Trigger`; ordinary routing starts the matching
+  them and answers no if any is missing: an active Goal Run starts from the
+  exact `/goal #<parent>` objective and its parent cursor; ordinary routing starts the matching
   workflow directly from installed skill metadata and model judgment; unclear
   hidden support/integration availability runs the read-only
   `charness catalog list --repo-root <repo>` inventory, and a nonzero result
   reports a command failure; an external URL or source link goes through
   `gather` before deciding from it; validation closeout and operator reading
-  tests go through `quality` validation; and a SessionStart hook may inject the
-  same context while this block stands without it. Spell that last standing
-  explicitly — `it remains context-only`, or `this block is the fallback when
-  the hook is absent` — and keep the word `hook` or `block` in the same sentence
-  as the standing, so the claim names what it is about. Naming the hook is not
-  the claim: a reader that has to infer the standing cannot recognize the block
-  as charness-managed, and the AGENTS.md policy checks that only run for managed
-  repos then never fire
+  tests go through `quality` validation. Use `AGENTS.md` -> `<repo-root>/docs/index.md` <!-- not vendored: consumer-repo path --> ->
+  the owning page for progressive disclosure. The provider parent/cursor is the
+  live resume state.
 - when the repo keeps repo-owned skills, keep one short policy that semantic
   skill changes should freeze the current intent before broad edits by deciding
   whether reviewed dogfood, maintained evaluator scenarios, or checked-in

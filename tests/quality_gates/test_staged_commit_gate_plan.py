@@ -220,7 +220,7 @@ def test_staged_commit_plan_gates_changed_artifact_shape() -> None:
 
 def test_staged_commit_plan_skips_artifact_shape_for_non_artifact_md(tmp_path: Path) -> None:
     # Only the changed-scoped prefix families (critique/ideation/retro) pull the
-    # blocking shape gate. The validate-all trio (debug/quality/handoff) are
+    # blocking shape gate. The debug/quality validators are
     # author-time-only, so they do NOT pull the fail-fast sweep; nor do non-artifact
     # md or out-of-family dirs.
     for paths in (
@@ -229,7 +229,7 @@ def test_staged_commit_plan_skips_artifact_shape_for_non_artifact_md(tmp_path: P
         ["scripts/x.py"],
         ["charness-artifacts/spec/x.md"],
         ["charness-artifacts/quality/2026-06-08-x.md"],
-        ["docs/handoff.md"],
+        ["docs/index.md"],
     ):
         assert "check-artifact-shape (staged)" not in _labels(paths)
     for paths in (
@@ -328,21 +328,12 @@ def test_timing_pull_ci_parity_fires_for_workflow_edits_only() -> None:
     assert "inventory-ci-local-gate-parity" not in _labels(["docs/usage.md"])
 
 
-def test_timing_pull_handoff_validator_fires_for_handoff_edit_only() -> None:
-    # bc70d76a emptied a required handoff section in a closeout commit made
-    # after the final broad run; the staged-handoff pull closes that window.
-    assert "validate-handoff-artifact" in _labels(["docs/handoff.md"])
-    assert "validate-handoff-artifact" not in _labels(["docs/usage.md"])
-    assert "validate-handoff-artifact" not in _labels(["scripts/new_helper.py"])
-
-
 def test_timing_pull_current_pointer_freshness_fires_for_pointer_surfaces() -> None:
     # #396: rolling-pointer freshness used to wait until pre-push, leaving a
-    # commit->push window for stale handoff SHA/status claims and sibling pointer
+    # commit->push window for stale pointer claims and sibling pointer
     # claims. The exact broad-gate command is cheap enough to pull forward for
     # every surface it cross-checks.
     trigger_paths = [
-        "docs/handoff.md",
         "charness-artifacts/quality/latest.md",
         "charness-artifacts/release/latest.md",
         "charness-artifacts/capability-catalog/latest.json",
@@ -364,19 +355,7 @@ def test_timing_pull_current_pointer_freshness_fires_for_pointer_surfaces() -> N
     assert "validate-current-pointer-freshness" not in _labels(["docs/usage.md"])
     assert "validate-current-pointer-freshness" not in _labels(["tests/new_helper.py"])
     assert "validate-current-pointer-freshness" in STRUCTURAL_SWEEP_LABELS
-    assert "validate-current-pointer-freshness" in {
-        g.label for g in structural_sweep_gates(ROOT, ["docs/handoff.md"])
-    }
-
-
-def test_handoff_trigger_path_matches_validator_resolved_target() -> None:
-    # The trigger is the literal `docs/handoff.md`; the validator resolves its
-    # target from the handoff adapter. If the adapter moves the artifact, the
-    # commit-time pull would silently disarm — this pins the coupling.
-    from scripts import validate_handoff_artifact as vha
-
-    adapter = vha.load_adapter(ROOT)
-    assert Path(adapter["artifact_path"]).as_posix() == "docs/handoff.md"
+    assert "validate-current-pointer-freshness" in STRUCTURAL_SWEEP_LABELS
 
 
 def test_leak_scan_inference_interpretation_fires_across_full_scan_domain() -> None:
@@ -1109,28 +1088,6 @@ def test_a_renamed_and_edited_file_still_gets_its_per_file_gates() -> None:
     plan = staged_commit_gate_plan(ROOT, scope_paths=scope, ruff_path="/bin/true")
     compile_gate = next(c for c in plan if c.label == "py_compile (staged)")
     assert compile_gate.argv == ("python3", "-m", "py_compile", "scripts/helper_provenance_lib.py")
-
-
-def test_a_single_file_validator_is_not_scheduled_for_that_file_s_deletion(tmp_path: Path) -> None:
-    """`validate-handoff-artifact` validates one named file; scheduling it for that
-    file's deletion raised FileNotFoundError and took the hook down with a traceback.
-    Whole-surface validators keep running on a deletion — that is the A3 verdict."""
-
-    repo = tmp_path
-    (repo / "scripts").mkdir(parents=True, exist_ok=True)
-    _write_executable(
-        repo / "scripts" / "validate_handoff_artifact.py", "#!/usr/bin/env python3\nprint('stub')\n"
-    )
-    _write_executable(repo / "scripts" / "check_doc_links.py", "#!/usr/bin/env python3\nprint('stub')\n")
-
-    deleted = [command.label for command in staged_commit_gate_plan(repo, scope_paths=["docs/handoff.md"])]
-    assert "validate-handoff-artifact" not in deleted
-    assert "check-doc-links" in deleted, "the surface gates must still run"
-
-    (repo / "docs").mkdir(parents=True, exist_ok=True)
-    (repo / "docs" / "handoff.md").write_text("# handoff\n", encoding="utf-8")
-    present = [command.label for command in staged_commit_gate_plan(repo, scope_paths=["docs/handoff.md"])]
-    assert "validate-handoff-artifact" in present, "the control: it runs while the file is there"
 
 
 def test_surface_validators_are_presence_guarded_on_their_own_script(tmp_path: Path) -> None:

@@ -174,9 +174,8 @@ def _apply_policy_fields(data: dict[str, Any], validated: dict[str, Any], errors
     if public_spec_implementation_ref_density_floor is not None:
         validated["public_spec_implementation_ref_density_floor"] = public_spec_implementation_ref_density_floor
 
-    # Raw FILE words, matching what `validate_quality_artifact.py` counts -- named for
-    # the artifact rather than for "content" because handoff's neighbouring budget
-    # SELECTS different text (both charge words). Written only when the repo declared
+    # Raw FILE words, matching what `validate_quality_artifact.py` counts. Written only
+    # when the repo declared
     # one, so the DEFAULT number keeps living in the validator that enforces it;
     # `minimum=1` because a ceiling of 0 refuses every possible artifact.
     max_artifact_words = _int_value(data.get("max_artifact_words"), "max_artifact_words", errors, minimum=1)

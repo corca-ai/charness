@@ -277,7 +277,7 @@ def iter_invocation_tails(carrier: str, invocation_re) -> Iterator[tuple[re.Matc
     is one real invocation carrying another, and the flat rule got BOTH commands
     wrong at once: the outer one lost every flag written after `--test-command`, and
     the inner one was handed `--write-fresh-marker`, which it does not accept -- a
-    blocking false red on a correct doc, which is what this repo's own handoff hit.
+    blocking false red on a correct doc, which is what this repo's own command-surface gate hit.
     So a nested invocation's tail stops at its closing quote, and an outer
     invocation's tail skips past nested matches instead of ending at one.
 

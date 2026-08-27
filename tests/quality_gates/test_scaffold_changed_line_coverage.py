@@ -41,7 +41,7 @@ from mutation_sampling_lib import (  # noqa: E402
 # Scaffolds and the shared validator-fallback statement lines that the
 # subprocess-only tests left uncovered and that the in-process test now drives.
 # Re-resolved structurally below so a line shift does not silently pass.
-SCAFFOLDS = ["critique", "debug", "handoff", "ideation", "quality", "retro"]
+SCAFFOLDS = ["critique", "debug", "ideation", "quality", "retro"]
 SCAFFOLD_HELPER_REL = "scripts/scaffold_artifact_lib.py"
 
 

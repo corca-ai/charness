@@ -110,24 +110,3 @@ A mechanical check in `confirm_release_via_distinct_channel`
 release backend's own `release_view` command shape as `same-proxy-flagged`
 rather than `confirmed`; run `plan_release_run.py` first and repoint a flagged
 probe at a genuinely distinct channel.
-
-## Post-Publish Baton Reconcile
-
-A publish is not finished when the release is visible: the repo's
-session-opening baton (the handoff file the next session routes from) must
-stop claiming the previous release. When the adapter declares
-`post_publish_baton_path`, the closeout tail records a `baton_reconcile`
-observation in the payload and the release artifact's `## Baton Reconcile`
-section: which versions the baton's `## Current State` / `## Next Session`
-routing sections claim, and — when the just-published version is absent — a
-`RECONCILE REQUIRED` action. Historical mentions outside those routing
-sections never count as claims, and a baton with no version claim is an ask,
-not a pass. The record is an observation that forces the question; it never
-declares the baton reconciled — refresh the baton (or record an explicit n/a
-disposition) before ending the release session.
-
-Reconciling never requires the baton to assert a decaying fact. A repo whose
-baton discipline forbids transcribing regenerable values (`handoff`'s
-`Regenerable Facts` rule) satisfies both contracts with a quoted version: the
-reconcile scan reads it as a claim, while the prose quotes a string instead of
-asserting current state.

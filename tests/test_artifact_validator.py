@@ -46,15 +46,14 @@ def test_scaffold_hint_names_the_owning_scaffold_command() -> None:
 def test_scaffold_hint_also_names_the_skill_that_holds_the_discipline() -> None:
     """The scaffold and the skill teach different halves.
 
-    A session hand-authored a handoff and hit three refusals in a row -- what the
-    size budget charges for, that an owner must sit ON its entry, that
+    A session hand-authored an artifact and hit three refusals in a row -- what the
+    size budget charges for, that an owner must sit ON its entry, and that
     paraphrasing a second artifact beside an owner still fills the budget. All
     three were already in the skill body. The hint pointed only at the scaffold,
     which emits shape, so following it faithfully still would not have taught
     them.
     """
     for artifact_type, skill in (
-        ("handoff", "charness:handoff"),
         ("retro", "charness:retro"),
         ("quality", "charness:quality"),
     ):
@@ -66,7 +65,7 @@ def test_scaffold_hint_also_names_the_skill_that_holds_the_discipline() -> None:
 def test_the_named_skill_is_derived_from_the_scaffold_path_not_a_second_map() -> None:
     """A parallel artifact-type -> skill mapping would rot against the one it
     duplicates, so the owner is read off the declared scaffold path."""
-    for artifact_type in ("handoff", "retro", "quality"):
+    for artifact_type in ("retro", "quality"):
         scaffold = _artifact_validator._scaffold_rel(artifact_type)
         skill = _artifact_validator._skill_id(artifact_type)
         assert skill == f"charness:{Path(scaffold).parts[2]}"

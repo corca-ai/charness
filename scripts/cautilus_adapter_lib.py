@@ -60,7 +60,6 @@ DEFAULT_TRUTH_SURFACE_PATTERNS = [
     "README.md",
     "docs/roadmap.md",
     "docs/operator-acceptance.md",
-    "docs/handoff.md",
     "docs/public-skill-validation.md",
 ]
 DEFAULT_CROSS_REPO_ISSUE_PATTERNS = [

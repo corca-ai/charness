@@ -390,7 +390,7 @@ def test_skill_cut_safety_unscoped_payload_names_the_paths_and_the_remedy() -> N
         "skills": [],
         "unscoped_paths": [
             "skills/public/release/references/critique-boundary.md",
-            "docs/handoff.md",
+            "docs/index.md",
         ],
     }
 

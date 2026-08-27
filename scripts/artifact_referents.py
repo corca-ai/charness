@@ -11,9 +11,6 @@ straight through it:
   perfectly well-formed disposition. No issue was ever filed.
 - `applied: ... publish_release_execute.py renders it` named a mechanism that
   had been DELETED, in the disposition for the finding about hardcoded claims.
-- `applied: recorded in the goal's Coordination Cues` named a section holding
-  only unfilled scaffold prose.
-
 None of those needs a content classifier to catch. "Is `#N` an issue number?"
 and "does this path exist?" are mechanically decidable, and that is the whole
 scope of this module. It does NOT judge whether the destination is the RIGHT
@@ -50,8 +47,8 @@ ISSUE_REF_RE = re.compile(
 
 
 #: A repo-relative path mentioned in a disposition. Requires a directory
-#: separator and a file extension so ordinary prose ("the goal's Coordination
-#: Cues") is not mistaken for a path; bare filenames are handled below.
+#: separator and a file extension so ordinary prose is not mistaken for a path;
+#: bare filenames are handled below.
 PATH_RE = re.compile(r"\b((?:[\w.-]+/)+[\w.-]+\.[A-Za-z0-9]{1,6})\b")
 
 

@@ -97,12 +97,10 @@ def add_artifact_path_arg(parser, *, surface: str) -> None:
     An adapter-scoped validator resolves its artifact from the adapter (a pointer),
     so without this it can only ever judge the pointer's target. That made the
     author-time preflight print a verdict about a DIFFERENT file than the draft the
-    author was holding — invisible for a surface whose prefix is an exact file
-    (handoff), and a plain wrong PASS for a directory-prefixed one (quality).
+    author was holding — a plain wrong PASS for a directory-prefixed surface.
 
-    Declared here for the same reason `add_one_pass_args` is: the handoff sibling
-    carried this flag alone since June, and the second copy is how a family's flags
-    drift apart in wording and behavior.
+    Declared here for the same reason `add_one_pass_args` is: a shared helper keeps
+    adapter-scoped validators from drifting in wording and behavior.
     """
     parser.add_argument(
         "--artifact-path",

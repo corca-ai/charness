@@ -35,19 +35,27 @@ RUN_QUALITY_REVIEW=0
 RUN_QUALITY_MODE="${CHARNESS_QUALITY_MODE:-full}"
 RUN_QUALITY_INCLUDE_RELEASE_ONLY="${CHARNESS_QUALITY_INCLUDE_RELEASE_ONLY:-0}"
 RUN_QUALITY_RECEIPT_JSON="${CHARNESS_QUALITY_RECEIPT_JSON:-}"
+# The default developer lane is deliberately small.  `--full` remains the
+# explicit broad battery for pre-push/release work; an implementation should not
+# pay every inventory, evaluator, and mutation-proof gate just because it ran the
+# repo's quality command.
+RUN_QUALITY_FULL_QUEUE="${CHARNESS_QUALITY_FULL_QUEUE:-0}"
 for arg in "$@"; do
   case "$arg" in
     --review)
       RUN_QUALITY_REVIEW=1
+      RUN_QUALITY_FULL_QUEUE=1
       ;;
     --read-only)
       RUN_QUALITY_MODE="read-only"
       ;;
     --full)
       RUN_QUALITY_MODE="full"
+      RUN_QUALITY_FULL_QUEUE=1
       ;;
     --release)
       RUN_QUALITY_INCLUDE_RELEASE_ONLY=1
+      RUN_QUALITY_FULL_QUEUE=1
       ;;
     --receipt-json=*)
       RUN_QUALITY_RECEIPT_JSON="${arg#*=}"
@@ -60,7 +68,8 @@ for arg in "$@"; do
       echo "Usage: ./scripts/run-quality.sh [--review] [--read-only|--full] [--release] [--receipt-json=PATH]"
       echo "  --review     replay passing phase logs and validate external links online"
       echo "  --read-only  skip phases that would mutate git-tracked quality artifacts"
-      echo "  --full       refresh git-tracked quality artifacts (default)"
+      echo "  --full       run the broad quality battery and refresh git-tracked artifacts"
+      echo "  default      run only the core implementation lane"
       echo "  --release    include release_only pytest cases (charness update/install lifecycle regression tests)"
       echo "  --receipt-json=PATH  write the per-run semantic receipt (also via CHARNESS_QUALITY_RECEIPT_JSON)"
       exit 0
@@ -102,6 +111,8 @@ case "$RUN_QUALITY_TMP_BASE/" in
     ;;
 esac
 export TMPDIR="$RUN_QUALITY_TMP_BASE"
+export TMP="$RUN_QUALITY_TMP_BASE"
+export TEMP="$RUN_QUALITY_TMP_BASE"
 
 # One external runtime root is shared by every child in this quality run. The path
 # key keeps concurrent checkouts separate while preserving warm Python/ruff caches;
@@ -143,6 +154,17 @@ case "${PYTHONPYCACHEPREFIX:-}" in
 esac
 mkdir -p -- "$PYTHONPYCACHEPREFIX"
 
+# Plain pytest invocations in child gates do not see the standing runner's
+# explicit `-o cache_dir=...` flag. Keep that cache outside the worktree for
+# every inherited child; an explicit later command-line override remains the
+# caller's choice.
+RUN_QUALITY_PYTEST_CACHE_OPTION="-o $(printf '%q' "cache_dir=$RUN_QUALITY_RUNTIME_ROOT/pytest-cache")"
+if [[ -n "${PYTEST_ADDOPTS:-}" ]]; then
+  export PYTEST_ADDOPTS="$PYTEST_ADDOPTS $RUN_QUALITY_PYTEST_CACHE_OPTION"
+else
+  export PYTEST_ADDOPTS="$RUN_QUALITY_PYTEST_CACHE_OPTION"
+fi
+
 # Every gate command below writes to a per-phase file so concurrent checks cannot
 # interleave their output. Before this line existed, that useful buffering made a
 # healthy long run indistinguishable from a command that never started: a caller
@@ -150,7 +172,13 @@ mkdir -p -- "$PYTHONPYCACHEPREFIX"
 # in the first batch (normally pytest) finished. Keep progress on stderr so stdout's
 # verdict/reporting contract stays machine-consumable, and emit it before discovery
 # or queue construction can introduce another silent interval.
-RUN_QUALITY_PROGRESS_SCOPE="${CHARNESS_QUALITY_LABELS:-all}"
+if [[ -n "${CHARNESS_QUALITY_LABELS:-}" ]]; then
+  RUN_QUALITY_PROGRESS_SCOPE="$CHARNESS_QUALITY_LABELS"
+elif [[ "$RUN_QUALITY_FULL_QUEUE" == "1" ]]; then
+  RUN_QUALITY_PROGRESS_SCOPE="full"
+else
+  RUN_QUALITY_PROGRESS_SCOPE="core"
+fi
 printf 'run-quality: START mode=%s release=%s requested_scope=%s outputs=isolated status=streamed\n' \
   "$RUN_QUALITY_MODE" "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" "$RUN_QUALITY_PROGRESS_SCOPE" >&2
 
@@ -379,7 +407,7 @@ declare -a FAILED_RECEIPT_RECOVERY_SPECS=()
 # there was nothing left to re-read: a truncated view of a failure could only be
 # recovered by running the whole gate again. Failing phases' logs are copied here
 # instead, and the path is named in the summary -- the durable half of the same fix.
-RUN_QUALITY_FAILURE_LOG_DIR="$REPO_ROOT/.charness/quality-failure-logs"
+RUN_QUALITY_FAILURE_LOG_DIR="$RUN_QUALITY_RUNTIME_ROOT/quality-failure-logs"
 
 append_label() {
   # $1 = current list, $2 = label. Space-separated, no leading space.
@@ -615,12 +643,23 @@ queue_timed() {
   printf 'run-quality: CHECK_START label=%s\n' "$label" >&2
 }
 
+RUN_QUALITY_CORE_LABELS="validate-skills validate-packaging check-shell py-compile ruff"
+
+label_is_core() {
+  case " $RUN_QUALITY_CORE_LABELS " in
+    *" $1 "*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
 label_is_selected() {
   local label="$1"
   local raw selected_label
 
   if [[ -z "$RUN_QUALITY_LABELS" ]]; then
-    return 0
+    [[ "$RUN_QUALITY_FULL_QUEUE" == "1" ]] && return 0
+    label_is_core "$label"
+    return $?
   fi
 
   IFS=',' read -r -a raw <<< "$RUN_QUALITY_LABELS"
@@ -764,7 +803,7 @@ consume_phase_result() {
     failure_slug="${label//[^A-Za-z0-9_.-]/_}"
     failure_log="$RUN_QUALITY_FAILURE_LOG_DIR/${failure_slug}.log"
     if mkdir -p "$RUN_QUALITY_FAILURE_LOG_DIR" 2>/dev/null && cp "$log_path" "$failure_log" 2>/dev/null; then
-      recovery_spec="available:${failure_log#"$REPO_ROOT"/}"
+      recovery_spec="available:$failure_log"
     else
       printf 'WARN: could not save full output for %s to %s; its log is NOT available.\n' \
         "$label" "$failure_log" >&2
@@ -998,14 +1037,12 @@ queue_selected "validate-cautilus-proof" python3 scripts/validate_cautilus_proof
 queue_selected "validate-cautilus-diagnostics" python3 scripts/validate_cautilus_diagnostics.py --repo-root "$REPO_ROOT" --all
 queue_selected "validate-cautilus-call-provenance" python3 scripts/validate_cautilus_call_provenance.py --repo-root "$REPO_ROOT"
 queue_selected "validate-claim-fidelity-specs" python3 scripts/validate_claim_fidelity_specs.py --repo-root "$REPO_ROOT"
-queue_selected "validate-scenario-conditional-reads" python3 scripts/validate_scenario_conditional_reads.py --repo-root "$REPO_ROOT"
 queue_selected "validate-profiles" python3 scripts/validate_profiles.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "validate-presets" python3 scripts/validate_presets.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "validate-adapters" python3 scripts/validate_adapters.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "validate-integrations" python3 scripts/validate_integrations.py --repo-root "$REPO_ROOT"
 queue_selected "validate-packaging" python3 scripts/validate_packaging.py --repo-root "$REPO_ROOT"
 queue_selected "validate-packaging-committed" python3 scripts/validate_packaging_committed.py --repo-root "$REPO_ROOT"
-queue_selected "validate-handoff-artifact" python3 scripts/validate_handoff_artifact.py --repo-root "$REPO_ROOT"
 queue_selected "validate-debug-artifact" python3 scripts/validate_debug_artifact.py --repo-root "$REPO_ROOT"
 queue_selected "validate-debug-seam-index" python3 scripts/build_debug_seam_risk_index.py --repo-root "$REPO_ROOT" --check
 queue_selected "validate-retro-lesson-index" python3 scripts/build_retro_lesson_selection_index.py --repo-root "$REPO_ROOT" --check
@@ -1053,7 +1090,6 @@ queue_selected "validate-ideation-artifact" python3 scripts/validate_ideation_ar
 queue_selected "validate-retro-artifact" python3 scripts/validate_retro_artifact.py --repo-root "$REPO_ROOT"
 queue_selected "check-lesson-evaluation-continuity" python3 scripts/check_lesson_evaluation_continuity.py --repo-root "$REPO_ROOT"
 queue_selected "validate-current-pointer-freshness" python3 scripts/validate_current_pointer_freshness.py --repo-root "$REPO_ROOT"
-queue_selected "inventory-quality-handoff" python3 scripts/inventory_quality_handoff.py --repo-root "$REPO_ROOT"
 queue_selected "validate-maintainer-setup" python3 scripts/validate_maintainer_setup.py --repo-root "$REPO_ROOT"
 queue_selected "check-python-lengths" python3 scripts/check_python_lengths.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "check-python-filenames" python3 scripts/check_python_filenames.py --repo-root "$REPO_ROOT" --require-git-file-listing

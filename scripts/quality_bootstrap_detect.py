@@ -70,7 +70,6 @@ def detect_concept_paths(repo_root: Path) -> list[str]:
         "docs/control-plane.md",
         "docs/public-skill-validation.md",
         "docs/operator-acceptance.md",
-        "docs/handoff.md",
         "docs/roadmap.md",
         "charness-artifacts/quality/latest.md",
     )

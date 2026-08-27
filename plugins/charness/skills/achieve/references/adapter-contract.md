@@ -36,10 +36,8 @@ interview:
 discussion_deploy_vocab:
   - rollout
   - hotfix
-release_surface_tokens:
-  - ./ops/ship-it.sh
 closeout_publication:
-  default_mode: handoff-only
+  default_mode: audit-only
   issue_closeout_carrier: direct-commit
   require_draft_validation: true
   draft_validation_command_template: "python3 <plugin-dir>/skills/issue/scripts/issue_tool.py validate-closeout-draft --repo-root . --repo corca-ai/charness --number {issue_number} --classification {classification} --carrier direct-commit --commit-message-file {commit_message_file}"
@@ -78,11 +76,10 @@ hosts; it does not create GitHub identity claims and must reconcile into a
 verified parent before authority moves.
 
 `closeout_publication.default_mode` is the default claim boundary. Supported
-values are `audit-only`, `handoff-only`, `direct-commit`, `pull-request`,
-`release`, and `manual`. `audit-only` means the goal can complete with evidence
-but makes no publication claim. `handoff-only` means the closeout may refresh the
-next-session baton but still does not imply push, issue closure, release, or live
-delivery.
+values are `audit-only`, `direct-commit`, `pull-request`, `release`, and `manual`.
+`audit-only` means the goal can complete with evidence but makes no publication
+claim. There is no separate handoff publication mode: active Goal Run state is
+read from the parent issue and cursor-selected child when work resumes.
 
 `closeout_publication.issue_closeout_carrier` chooses the carrier the goal should
 stage when it resolves tracked issues. Supported values are `none`,
@@ -125,21 +122,6 @@ behavior. The charness-neutral concepts (`production`, `live proof`,
 `irreversible`, `external side effect`, ...) always apply regardless. This keeps
 charness from hardcoding one consumer's boundary vocabulary while never silently
 dropping the guard for an unconfigured consumer.
-
-`release_surface_tokens` optionally ADDS release surfaces the built-in list does
-not name. The release coordination floor already recognises ecosystem-standard
-version manifests and publish commands (`pyproject.toml`, `package.json`,
-`Cargo.toml`, `npm publish`, `git tag`, ...), and a repo whose release runs
-through something bespoke — an internal deploy script, a house manifest —
-declares it here so the floor is armed for that repo too. Unlike
-`discussion_deploy_vocab` this field EXTENDS rather than replaces, so declaring it
-can only make the floor fire more often, never less. Omitting it keeps the
-built-in list alone.
-
-Why it exists at all: a floor that recognises only its authoring repo's surface
-names is silently inert everywhere else, which is worse than no floor because it
-reads as coverage. This field is the seam that lets a consumer re-arm it without
-waiting for charness to learn their layout.
 
 ## Closeout Report
 

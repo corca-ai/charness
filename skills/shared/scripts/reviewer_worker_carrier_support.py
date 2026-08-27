@@ -227,6 +227,37 @@ def _validate_receipt_and_result(
     return receipt, result, output_hash
 
 
+def _validate_joined_fields(
+    *, attempt: Any, report: dict[str, Any], receipt: dict[str, Any], provenance: dict[str, Any]
+) -> None:
+    joined_fields = (
+        "attempt_id", "scope", "packet_identity", "reviewed_input_identity",
+        "parent_receipt_identity", "boundary_mode", "boundary_fingerprint", "execution_mode",
+        "backend", "prompt_sha256", "schema_sha256",
+        "capability_launch_envelope_sha256",
+    )
+    if report.get("attempt_id") != provenance.get("attempt_id"):
+        raise WorkerCarrierError("delivery chain attempt_id does not match report provenance")
+    if provenance.get("capability_non_claims_sha256") != report.get("capability_non_claims_sha256"):
+        raise WorkerCarrierError("delivery chain capability non-claim digest does not match report provenance")
+    for field in joined_fields:
+        expected = provenance.get(field) if field == "attempt_id" else report.get(field)
+        actual = getattr(attempt, field, None)
+        if field == "boundary_fingerprint" and expected is None:
+            if actual is not None or receipt.get(field) is not None or provenance.get(field) is not None:
+                raise WorkerCarrierError(
+                    "delivery chain boundary_fingerprint is present for a boundary mode that does not require it"
+                )
+            continue
+        observed_receipt = receipt.get(field)
+        if field == "boundary_mode" and observed_receipt is None and receipt.get("boundary_fingerprint") is not None:
+            observed_receipt = "shared-tree-fingerprint"
+        if expected is None or actual != expected or observed_receipt != expected:
+            raise WorkerCarrierError(f"delivery chain {field} does not match report, receipt, and ledger attempt")
+        if field != "attempt_id" and provenance.get(field) != expected:
+            raise WorkerCarrierError(f"delivery chain {field} does not match report provenance")
+
+
 def _validate_ledger(
     *, repo_root: Path, report: dict[str, Any], receipt: dict[str, Any], output_hash: str
 ) -> None:
@@ -249,23 +280,7 @@ def _validate_ledger(
         attempt = _load_delivery_attempt_parser().from_dict(raw_attempt)
     except (ImportError, ValueError, TypeError, KeyError) as exc:
         raise WorkerCarrierError(f"delivery ledger canonical history is invalid: {exc}") from exc
-    joined_fields = (
-        "attempt_id", "scope", "packet_identity", "reviewed_input_identity",
-        "parent_receipt_identity", "boundary_fingerprint", "execution_mode",
-        "backend", "prompt_sha256", "schema_sha256",
-        "capability_launch_envelope_sha256",
-    )
-    if report.get("attempt_id") != provenance.get("attempt_id"):
-        raise WorkerCarrierError("delivery chain attempt_id does not match report provenance")
-    if provenance.get("capability_non_claims_sha256") != report.get("capability_non_claims_sha256"):
-        raise WorkerCarrierError("delivery chain capability non-claim digest does not match report provenance")
-    for field in joined_fields:
-        expected = provenance.get(field) if field == "attempt_id" else report.get(field)
-        actual = getattr(attempt, field, None)
-        if expected is None or actual != expected or receipt.get(field) != expected:
-            raise WorkerCarrierError(f"delivery chain {field} does not match report, receipt, and ledger attempt")
-        if field != "attempt_id" and provenance.get(field) != expected:
-            raise WorkerCarrierError(f"delivery chain {field} does not match report provenance")
+    _validate_joined_fields(attempt=attempt, report=report, receipt=receipt, provenance=provenance)
     aliases = {
         "attempt_scope": report.get("scope"),
         "attempt_packet_identity": report.get("packet_identity"),
@@ -330,7 +345,7 @@ def validate_delivered_worker_report(
         "packet_identity",
         "reviewed_input_identity",
         "parent_receipt_identity",
-        "boundary_fingerprint",
+        "boundary_mode",
         "findings_identity",
         "receipt_output_sha256",
     ):

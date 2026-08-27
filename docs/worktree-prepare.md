@@ -5,9 +5,10 @@
 
 `charness worktree` is the structural answer to "agent created a git worktree, hooks went silent, and node_modules was never installed" — and to "eval/bench tools created dozens of throwaway worktrees and never cleaned up."
 
-Five subcommands keep mutate-phase work honest:
+Six subcommands keep mutate-phase work honest:
 
 - `charness worktree create` / `charness worktree add` — wraps `git worktree add`, then runs readiness doctor; optional `--prepare` runs the adapter-declared setup immediately.
+- `charness worktree exec` — runs one command in an existing linked worktree with Python, pytest, coverage, and temporary output routed to an external runtime root.
 - `charness worktree doctor` — fast, read-only health probe of a single worktree.
 - `charness worktree prepare` — runs the consumer repo's adapter-declared prepare commands and re-validates.
 - `charness worktree audit` — surveys every worktree registered to the repository and classifies primary/active/prunable/stale. Optional `--doctor` adds readiness summaries for existing worktrees; optional `--prune` drops git metadata for missing worktrees.
@@ -45,6 +46,9 @@ charness worktree doctor          # read-only probe
 charness worktree prepare         # runs adapter prepare, re-validates
 charness worktree prepare --force # run prepare even when doctor already passes
 
+# Run ordinary commands with runtime output kept outside the worktree:
+charness worktree exec --repo-root ../feature-worktree -- pytest -q
+
 # Periodically (or before disk pressure builds):
 charness worktree audit                          # classify primary/active/prunable/stale
 charness worktree audit --doctor                 # also surface readiness failures
@@ -56,7 +60,12 @@ charness worktree cleanup --path ../feature-worktree --delete-merged-branch
 charness worktree cleanup --path ../feature-worktree --delete-merged-branch --yes
 ```
 
-All commands emit a single machine-readable YAML document on stdout. `doctor` and `prepare` exit 0 only when status is `pass`. `create` exits 0 on `pass`, 1 on `warn` (created but readiness still needs preparation), and 2 on `fail`. `audit` exits 0 on `pass`, 1 on `warn` (prunable, stale, or readiness failures present), 2 on `fail`.
+Management commands emit a single machine-readable YAML document on stdout.
+`worktree exec` forwards the child command's output and only emits YAML for its
+own preflight refusal. `doctor` and `prepare` exit 0 only when status is `pass`.
+`create` exits 0 on `pass`, 1 on `warn` (created but readiness still needs
+preparation), and 2 on `fail`. `audit` exits 0 on `pass`, 1 on `warn` (prunable,
+stale, or readiness failures present), 2 on `fail`.
 
 ## When to run `create`
 

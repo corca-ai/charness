@@ -87,13 +87,13 @@ def _resolve_without_adapter(resolver: Path, tmp_path: Path) -> tuple[dict, subp
     return (payload if isinstance(payload, dict) else {}), done
 
 
-# The SET, not a count. A `>= 16` floor does not deliver what a roster assertion must: there
-# are twenty public skills and sixteen resolvers, so a resolver renamed or moved out of
+# The SET, not a count. A `>= 15` floor does not deliver what a roster assertion must: there
+# are twenty public skills and fifteen resolvers, so a resolver renamed or moved out of
 # `skills/public/*/scripts/resolve_adapter.py` at the same time any new skill gains one keeps
-# the count at sixteen and silently drops the regressed row from every sweep below. Naming
+# the count at fifteen and silently drops the regressed row from every sweep below. Naming
 # them turns that into a diff, which is the same argument `NON_ZERO_EXIT_SKILLS` makes.
 EXPECTED_RESOLVER_SKILLS = frozenset({
-    "achieve", "announcement", "create-skill", "critique", "debug", "gather", "handoff",
+    "achieve", "announcement", "create-skill", "critique", "debug", "gather",
     "hitl", "hotl", "impl", "issue", "narrative", "quality", "release", "retro", "setup",
 })
 

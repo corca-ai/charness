@@ -91,23 +91,23 @@ def _resolve_repository(repo_root: Path, adapter: dict[str, Any], runtime: Any) 
     raise PickupError("repository-ambiguous", "multiple compatible git remotes resolve to different repositories", details={"repositories": sorted(f"{owner}/{repo}" for owner, repo in urls)})
 
 
-def _read_goal_parent(repo_root: Path, repo: str, number: int) -> tuple[dict[str, Any], dict[str, Any]]:
+def _read_goal_parent(
+    repo_root: Path,
+    repo: str,
+    number: int,
+    adapter: dict[str, Any] | None = None,
+) -> tuple[dict[str, Any], dict[str, Any]]:
     # Routine pickup is deliberately a read path, not a second bootstrap. The
     # provider read itself is the live backend check; a separate auth/capability
     # probe followed by another parent read added latency without changing the
     # answer. Full preflight remains owned by bootstrap/sync/closeout commands.
     selection = _load_path(_issue_script("issue_provider_selection"), "issue_pickup_selection")
-    resolved = selection.select_backend(repo_root)
-    if not resolved.get("adapter_ok"):
-        raise PickupError("adapter-invalid", "issue adapter is invalid", details=resolved.get("adapter"))
     try:
-        resolved = selection.bind_provider_selection(
-            resolved,
-            target_repo=repo,
-            operations=["read-body", "read-state"],
-        )
+        resolved = selection.resolve_backend(repo_root, target_repo=repo, adapter=adapter)
     except RuntimeError as exc:
         raise PickupError("provider-selection-invalid", str(exc)) from exc
+    if not resolved.get("adapter_ok"):
+        raise PickupError("adapter-invalid", "issue adapter is invalid", details=resolved.get("adapter"))
     reader = _load_path(_issue_script("issue_read"), "issue_pickup_read")
     try:
         issue = reader.read_issue_with_comments(
@@ -143,7 +143,7 @@ def pickup(repo_root: Path, objective: str) -> dict[str, Any]:
     runtime = _load_path(_issue_script("issue_runtime"), "issue_pickup_runtime")
     repository = _resolve_repository(repo_root, adapter, runtime)
     repo = repository["full_name"]
-    graph, resolved = _read_goal_parent(repo_root, repo, number)
+    graph, resolved = _read_goal_parent(repo_root, repo, number, adapter)
     parent = graph["parent"]
     guard = _load_path(_issue_script("issue_goal_run_guard"), "issue_pickup_guard")
     try:

@@ -29,7 +29,6 @@ SCAFFOLD_CASES = [
     ("critique", "critique", "scaffold_critique_artifact.py", "validate_critique_artifacts.py"),
     ("retro", "retro", "scaffold_retro_artifact.py", "validate_retro_artifact.py"),
     ("quality", "quality", "scaffold_quality_artifact.py", "validate_quality_artifact.py"),
-    ("handoff", "handoff", "scaffold_handoff_artifact.py", "validate_handoff_artifact.py"),
     ("ideation", "ideation", "scaffold_ideation_artifact.py", "validate_ideation_artifact.py"),
 ]
 

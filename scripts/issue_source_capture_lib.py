@@ -110,8 +110,8 @@ def _issue_backend_owner():
     `FileNotFoundError` — an untyped exception escaping a lane whose entire contract is typed
     `CaptureRefusal` codes. It also fires before the built-in GraphQL default returns, so every
     installed capture would have died, not only templated ones. This repo already owns the
-    two-layout pattern in `chunked_routing_issue_backend._issue_module_candidates` and in
-    `commit_msg_closeout_authorization`; this is that pattern, not a third rule.
+    two-layout pattern in `commit_msg_closeout_authorization`; this is that pattern,
+    not a third rule.
     """
     global _ISSUE_BACKEND_OWNER
     if _ISSUE_BACKEND_OWNER is None:

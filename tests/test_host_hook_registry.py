@@ -1,6 +1,6 @@
-"""#343: sibling host-hook intent registry + dangling-checkout liveness.
+"""#343: optional host-hook registry + dangling-checkout liveness.
 
-The registry makes a fourth hook intent a table row (not another copied
+The registry makes another hook intent a table row (not another copied
 lazy-import block in `host_hook_install_lib`); `hook_state_liveness` flags
 state-tracked hooks whose embedded script path no longer exists.
 """
@@ -36,16 +36,16 @@ def _seed_state(repo: Path, entries: dict[str, dict[str, str]]) -> None:
     lib.write_state(repo, state)
 
 
-def test_registry_names_the_two_sibling_intents_in_payload_order() -> None:
+def test_registry_names_the_supported_intent() -> None:
     keys = [intent.key for intent in registry.SIBLING_HOOK_INTENTS]
-    assert keys == ["session_routing", "skill_anchor_edit_guard"]
+    assert keys == ["skill_anchor_edit_guard"]
 
 
 def test_reconcile_host_hooks_payload_keys_match_pre_registry_shape(tmp_path: Path) -> None:
     repo = _fake_repo(tmp_path)
     home = _fake_home(tmp_path)
     actions = lib.reconcile_host_hooks(repo, adapter={}, home=home)
-    assert list(actions) == ["session_routing", "skill_anchor_edit_guard"]
+    assert list(actions) == ["skill_anchor_edit_guard"]
 
 
 def test_fourth_intent_is_a_table_row(tmp_path: Path) -> None:
@@ -55,35 +55,15 @@ def test_fourth_intent_is_a_table_row(tmp_path: Path) -> None:
     home = _fake_home(tmp_path)
     fourth = registry.SiblingHookIntent(
         key="hypothetical_fourth",
-        module="host_hook_session_routing",
-        reconcile_function="reconcile_session_routing_hooks",
-        status_function="session_routing_status",
-        script_relative_attr="SESSION_ROUTING_SCRIPT_RELATIVE",
+        module="host_hook_skill_anchor_guard",
+        reconcile_function="reconcile_skill_anchor_guard_hooks",
+        status_function="skill_anchor_guard_status",
+        script_relative_attr="GUARD_SCRIPT_RELATIVE",
     )
     actions = registry.reconcile_sibling_hooks(
         repo, adapter={}, home=home, intents=(*registry.SIBLING_HOOK_INTENTS, fourth)
     )
-    assert list(actions) == ["session_routing", "skill_anchor_edit_guard", "hypothetical_fourth"]
-
-
-def test_sibling_reconcile_isolates_per_host_errors(tmp_path: Path, monkeypatch) -> None:
-    # An enabled host's failure reports per-host and never aborts the chain:
-    # claude's installer raising HostHookError still yields a codex result and
-    # the second sibling intent still reconciles.
-    import host_hook_session_routing as routing
-
-    repo = _fake_repo(tmp_path)
-    home = _fake_home(tmp_path)
-
-    def _boom(repo_root: Path, *, home: Path) -> dict[str, object]:
-        raise lib.HostHookError("boom")
-
-    monkeypatch.setattr(routing, "install_session_routing_claude_hook", _boom)
-    adapter = {"session_routing": {"claude": "enabled"}}
-    actions = registry.reconcile_sibling_hooks(repo, adapter=adapter, home=home)
-    assert actions["session_routing"]["claude"]["error"] == "boom"
-    assert "result" in actions["session_routing"]["codex"]
-    assert "claude" in actions["skill_anchor_edit_guard"]
+    assert list(actions) == ["skill_anchor_edit_guard", "hypothetical_fourth"]
 
 
 def test_import_module_fallback_inserts_scripts_dir(monkeypatch) -> None:
@@ -93,14 +73,14 @@ def test_import_module_fallback_inserts_scripts_dir(monkeypatch) -> None:
     scripts_dir = (REPO_ROOT / "scripts").resolve()
     cleaned = [p for p in sys.path if Path(p or ".").resolve() != scripts_dir]
     monkeypatch.setattr(sys, "path", cleaned)
-    monkeypatch.delitem(sys.modules, "host_hook_session_routing", raising=False)
-    module = registry._import_module("host_hook_session_routing")
-    assert module.__name__ == "host_hook_session_routing"
+    monkeypatch.delitem(sys.modules, "host_hook_skill_anchor_guard", raising=False)
+    module = registry._import_module("host_hook_skill_anchor_guard")
+    assert module.__name__ == "host_hook_skill_anchor_guard"
 
 
 def test_liveness_flags_missing_script(tmp_path: Path) -> None:
     repo = _fake_repo(tmp_path)
-    missing = repo / "scripts" / "session_start_routing.py"
+    missing = repo / "scripts" / "post_edit_skill_anchor_guard.py"
     _seed_state(
         repo,
         {
@@ -120,7 +100,7 @@ def test_liveness_flags_missing_script(tmp_path: Path) -> None:
 
 def test_liveness_passes_existing_script_and_skips_non_hook_keys(tmp_path: Path) -> None:
     repo = _fake_repo(tmp_path)
-    script = repo / "scripts" / "session_start_routing.py"
+    script = repo / "scripts" / "post_edit_skill_anchor_guard.py"
     script.touch()
     _seed_state(
         repo,
@@ -161,18 +141,16 @@ def test_liveness_flags_unparseable_command(tmp_path: Path) -> None:
     assert len(liveness["dangling"]) == 1
 
 
-def _claude_settings_payload(commands: list[str], event: str = "SessionStart") -> dict[str, object]:
+def _claude_settings_payload(commands: list[str], event: str = "PostToolUse") -> dict[str, object]:
     return {"hooks": {event: [{"matcher": "", "hooks": [{"type": "command", "command": cmd} for cmd in commands]}]}}
 
 
 def test_known_basenames_derive_from_owning_module_constants() -> None:
     # Pin the derived set against the live constants; a forked literal list
     # or a renamed script constant fails here, not in a consumer.
-    import host_hook_session_routing as routing
     import host_hook_skill_anchor_guard as guard
 
     assert registry.known_hook_script_basenames() == {
-        routing.SESSION_ROUTING_SCRIPT_RELATIVE.name,
         guard.GUARD_SCRIPT_RELATIVE.name,
     }
 
@@ -181,7 +159,7 @@ def test_settings_scan_flags_deleted_checkout_leftover_in_claude_json(tmp_path: 
     # The deleted-checkout case: NO state file knows this entry; only the
     # settings file does. A foreign hook command is never flagged.
     home = _fake_home(tmp_path)
-    leftover = tmp_path / "deleted-checkout" / "scripts" / "session_start_routing.py"
+    leftover = tmp_path / "deleted-checkout" / "scripts" / "post_edit_skill_anchor_guard.py"
     settings = home / ".claude" / "settings.json"
     settings.parent.mkdir(parents=True)
     settings.write_text(
@@ -212,37 +190,6 @@ def test_settings_scan_passes_live_entry_and_scans_all_events(tmp_path: Path) ->
     assert scan["entries"][0]["script_exists"] is True
 
 
-def test_settings_scan_flags_leftover_in_codex_hooks_json(tmp_path: Path) -> None:
-    home = _fake_home(tmp_path)
-    leftover = tmp_path / "gone" / "scripts" / "session_start_routing.py"
-    hooks_json = home / ".codex" / "hooks.json"
-    hooks_json.parent.mkdir(parents=True)
-    hooks_json.write_text(
-        json.dumps(_claude_settings_payload([f"python3 {leftover} --host codex"])),
-        encoding="utf-8",
-    )
-    scan = registry.settings_file_scan(home)
-    assert [entry["kind"] for entry in scan["entries"]] == ["codex-json"]
-    assert len(scan["dangling"]) == 1
-
-
-def test_settings_scan_flags_leftover_in_codex_config_toml(tmp_path: Path) -> None:
-    import host_hook_codex_toml_lib as toml_lib
-
-    home = _fake_home(tmp_path)
-    leftover = tmp_path / "gone" / "scripts" / "session_start_routing.py"
-    config = home / ".codex" / "config.toml"
-    config.parent.mkdir(parents=True)
-    config.write_text(
-        toml_lib.codex_toml_block(f"python3 {leftover} --host codex"),
-        encoding="utf-8",
-    )
-    scan = registry.settings_file_scan(home)
-    assert [entry["kind"] for entry in scan["entries"]] == ["codex-toml"]
-    assert len(scan["dangling"]) == 1
-    assert str(leftover) in scan["dangling"][0]
-
-
 def test_settings_scan_degrades_to_silence(tmp_path: Path) -> None:
     # No settings files at all, then an unreadable/invalid JSON file: both are
     # silence, never an error — repos and machines without charness hooks
@@ -260,7 +207,7 @@ def test_settings_scan_walks_malformed_json_shapes_tolerantly(tmp_path: Path) ->
     # flags: hooks-not-dict file, non-list event, non-dict entry, non-list
     # inner hooks, command-less item.
     home = _fake_home(tmp_path)
-    leftover = tmp_path / "gone" / "scripts" / "session_start_routing.py"
+    leftover = tmp_path / "gone" / "scripts" / "post_edit_skill_anchor_guard.py"
     claude = home / ".claude" / "settings.json"
     claude.parent.mkdir(parents=True)
     claude.write_text(json.dumps({"hooks": "not-a-dict"}), encoding="utf-8")
@@ -271,7 +218,7 @@ def test_settings_scan_walks_malformed_json_shapes_tolerantly(tmp_path: Path) ->
                 "hooks": {
                     "Stop": "not-a-list",
                     "PreToolUse": ["not-a-dict", {"hooks": "not-a-list"}],
-                    "SessionStart": [
+                    "PostToolUse": [
                         {"hooks": [{"type": "command"}, {"type": "command", "command": f"python3 {leftover}"}]}
                     ],
                 }
@@ -283,22 +230,6 @@ def test_settings_scan_walks_malformed_json_shapes_tolerantly(tmp_path: Path) ->
     assert len(scan["dangling"]) == 1
 
 
-def test_settings_scan_toml_oserror_degrades_to_silence(tmp_path: Path, monkeypatch) -> None:
-    # An existing-but-unreadable config.toml (permission error) degrades to
-    # silence; a directory at that path is silence too (not-a-file short-circuit).
-    import host_hook_codex_toml_lib as toml_lib
-
-    home = _fake_home(tmp_path)
-    (home / ".codex" / "config.toml").mkdir(parents=True)
-    assert registry.settings_file_scan(home) == {"entries": [], "dangling": []}
-
-    def _denied(path: Path) -> str:
-        raise PermissionError(f"denied: {path}")
-
-    monkeypatch.setattr(toml_lib, "read_text_or_empty", _denied)
-    assert registry.settings_file_scan(home) == {"entries": [], "dangling": []}
-
-
 def test_settings_scan_flags_known_basename_without_parseable_path(tmp_path: Path) -> None:
     # shlex fails on the unclosed quote, the basename fallback still matches a
     # known charness script, but no path token is extractable — flagged loudly
@@ -307,7 +238,7 @@ def test_settings_scan_flags_known_basename_without_parseable_path(tmp_path: Pat
     claude = home / ".claude" / "settings.json"
     claude.parent.mkdir(parents=True)
     claude.write_text(
-        json.dumps(_claude_settings_payload(["python3 'unclosed session_start_routing.py"])),
+        json.dumps(_claude_settings_payload(["python3 'unclosed post_edit_skill_anchor_guard.py"])),
         encoding="utf-8",
     )
     scan = registry.settings_file_scan(home)

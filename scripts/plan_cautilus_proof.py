@@ -31,7 +31,7 @@ TRUTH_SURFACE_FALLBACKS = (
     "README.md",
     "docs/roadmap.md",
     "docs/operator-acceptance.md",
-    "docs/handoff.md",
+    "docs/index.md",
 )
 PUBLIC_SKILL_PATH_RE = re.compile(r"^skills/public/([^/]+)/")
 

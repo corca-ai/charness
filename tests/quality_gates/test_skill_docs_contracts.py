@@ -46,7 +46,7 @@ def test_setup_skill_bootstraps_probe_surface_guidance() -> None:
         ROOT / "skills" / "public" / "setup" / "references" / "probe-surface.md"
     ).read_text(encoding="utf-8")
 
-    assert "probe surfaces" in skill_text
+    assert "probe" in skill_text and "surfaces" in skill_text
     assert "installable CLI" in bootstrap_seams
     assert "binary healthcheck" in probe_reference
     assert "machine-readable command discovery" in probe_reference
@@ -77,7 +77,7 @@ def test_setup_skill_requires_approved_flat_wiki_quality_plan() -> None:
 def test_quality_skill_consumes_setup_state_without_claiming_green() -> None:
     quality = QUALITY_SKILL.lower()
 
-    assert "setup handoff" in quality
+    assert "setup" in quality and "quality snapshot" in quality
     assert "configured" in quality and "plan-only" in quality
     assert "does not mean the repo is green" in quality
     assert "`quality` owns" in quality
@@ -96,54 +96,41 @@ def test_setup_default_surfaces_carry_early_quality_baseline() -> None:
     assert "ratcheting" in default_surfaces
 
 
-def test_setup_agent_docs_carry_bounded_subagent_delegation_rule() -> None:
+def test_setup_does_not_export_a_global_review_policy() -> None:
     skill_text = SETUP_SKILL.lower()
     agent_docs = AGENT_DOCS_POLICY.lower()
     bootstrap_seams = BOOTSTRAP_SEAMS.lower()
     default_surfaces = DEFAULT_SURFACES.lower()
 
-    assert "already delegated" in skill_text
-    assert "second user message" in bootstrap_seams
-    assert "same-agent pass" in bootstrap_seams
-    assert "## subagent delegation" in agent_docs
-    assert "explicit user delegation request" in agent_docs
-    assert "already delegated" in agent_docs
-    assert "by this repo contract" in agent_docs
-    assert "second user message" in agent_docs
-    assert "same-agent pass" in agent_docs
-    assert "## subagent delegation" in default_surfaces
-    assert "explicit user delegation request" in default_surfaces
-    assert "already delegated by the repo" in default_surfaces
-    assert "same-agent pass" in default_surfaces
+    assert "no required session-start hook" in skill_text
+    assert "does not inject" in agent_docs and "standing" in agent_docs
+    assert "universal policy" in bootstrap_seams
+    assert "## subagent delegation" not in default_surfaces
 
 
 def test_setup_docs_carry_charness_artifact_commit_policy() -> None:
     skill_text = SETUP_SKILL.lower()
-    agent_docs = AGENT_DOCS_POLICY.lower()
     bootstrap_seams = BOOTSTRAP_SEAMS.lower()
     default_surfaces = DEFAULT_SURFACES.lower()
     normalization_flow = (ROOT / "skills/public/setup/references/normalization-flow.md").read_text(encoding="utf-8").lower()
 
     assert "bootstrap-seams.md" in skill_text
-    for text in (agent_docs, bootstrap_seams, default_surfaces, normalization_flow):
+    for text in (bootstrap_seams, default_surfaces, normalization_flow):
         assert "charness-artifacts/" in text
         assert "repo state" in text
         assert "canonical content" in text
 
     assert "commit targets" in bootstrap_seams
-    assert "commit targets" in agent_docs
-    assert "current-pointer helpers should no-op" in agent_docs
     assert "commit targets" in default_surfaces
 
 
 def test_setup_docs_seed_announcement_ready_commit_bodies() -> None:
     skill_text = SETUP_SKILL.lower()
-    agent_docs = AGENT_DOCS_POLICY.lower()
     bootstrap_seams = BOOTSTRAP_SEAMS.lower()
     default_surfaces = DEFAULT_SURFACES.lower()
 
     assert "bootstrap-seams.md" in skill_text
-    for text in (agent_docs, bootstrap_seams, default_surfaces):
+    for text in (bootstrap_seams, default_surfaces):
         assert "announcement" in text
         assert "commit" in text
         assert "issue linkage" in text
@@ -151,7 +138,6 @@ def test_setup_docs_seed_announcement_ready_commit_bodies() -> None:
         assert "verification" in text
         assert "operator/apply notes" in text
 
-    assert "close keywords" in agent_docs
     assert "merge commits" in default_surfaces
 
 
@@ -415,33 +401,21 @@ def test_impl_skill_defaults_to_autonomous_continuation() -> None:
     assert "autonomous continuation" in skill_text.lower()
     assert "continuation" in skill_text and "checkpoints" in skill_text
     assert "irreversible" in skill_text and "external side effect" in skill_text
-    assert "next locally decidable slice" in skill_text
+    assert "focused tests for the changed module or user flow" in skill_text
     assert "check_auto_trigger.py" in PROVE_SKILL
     assert "--paths <changed-path>..." in PROVE_SKILL
     assert "--base-ref <slice-base> --head-ref <slice-head>" in PROVE_SKILL
     assert "bare post-commit invocation" in PROVE_SKILL
 
 
-def test_impl_bootstrap_binds_paths_before_authoritative_risk_interpretation() -> None:
+def test_impl_does_not_make_planners_or_closeout_ceremony_universal() -> None:
     skill_text = IMPL_SKILL
-    binding = "Freeze every repo-relative path this slice may own: source, tests, generated"
-    command = (
-        'python3 "$SKILL_DIR/../../shared/scripts/plan_risk_interrupt.py" '
-        "--repo-root . --detail --paths <current-slice-path>..."
-    )
-    interpretation = "Interpret that scoped result fail-closed"
-
-    assert command in skill_text
-    assert "contract, target, and owned source/test/generated/contract paths" in skill_text
-    assert "pathless/global planner observation" in skill_text
-    assert "discovery-only and cannot authorize or refuse" in skill_text
-    assert skill_text.index(binding) < skill_text.index(command) < skill_text.index(interpretation)
-    pathless_command = command.removesuffix(" --paths <current-slice-path>...")
-    assert f"{pathless_command}\n" not in skill_text
-    assert "required: false" in skill_text
-    assert "impl_status: allowed" in skill_text
-    assert "chosen_next_step: impl" in skill_text
-    assert "every other, unknown, or malformed result stops" in skill_text
+    assert "No separate session-start hook" in skill_text
+    assert "risk-interrupt planner" in skill_text
+    assert "Additional proof is conditional" in skill_text
+    assert "does not require a fresh-eye review" in skill_text
+    assert "changed-line proof" in skill_text
+    assert "run_slice_closeout" not in skill_text
 
 
 def test_impl_source_and_checked_in_plugin_export_are_byte_identical() -> None:

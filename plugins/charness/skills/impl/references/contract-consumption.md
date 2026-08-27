@@ -8,7 +8,7 @@ conversation drift.
 Use these in order:
 
 1. the repo's canonical spec or design artifact
-2. the most relevant handoff note when it materially changes the next action
+2. the active Goal Run parent and selected child, when a goal is active
 3. the current diff or target files
 
 If none of these give you an honest contract for the current slice, bootstrap a

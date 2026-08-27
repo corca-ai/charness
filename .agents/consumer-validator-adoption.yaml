@@ -19,8 +19,6 @@ validators:
     wired: true
   - id: debug-artifact
     wired: true
-  - id: handoff-artifact
-    wired: true
   - id: ideation-artifact
     wired: true
   - id: quality-artifact
@@ -29,7 +27,5 @@ validators:
     wired: true
   - id: retro-artifact
     wired: true
-  - id: retro-handoff-wiring
-    opt_out_reason: "No Charness-owned quality lane currently consumes retro handoff wiring directly; consumers using that handoff must decide independently."
   - id: goal-artifact
     wired: true

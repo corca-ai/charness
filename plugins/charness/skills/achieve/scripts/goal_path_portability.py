@@ -61,8 +61,6 @@ EXECUTION_SECTIONS = frozenset(
         "active operating frame",
         "agent verification plan",
         "boundaries",
-        "closeout binding plan",
-        "coordination cues",
         "goal",
         "slice plan",
         "user acceptance",

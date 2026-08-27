@@ -807,18 +807,13 @@ def test_closeout_evidence_load_local_module_fails_closed(monkeypatch) -> None:
 
 
 def test_closeout_loaders_fail_closed_for_each_sibling(monkeypatch) -> None:
-    # The 8 sibling/shared loaders moved verbatim into goal_artifact_closeout_loaders.py.
-    # `_load_shared_helper`/`_load_sibling_disposition`/`_load_sibling_coordination_floors`
-    # are already pinned in test_goal_coordination_floors.py; these cover the
-    # remaining 5 fail-CLOSED raise branches so a moved/missing sibling surfaces
+    # The remaining sibling/shared loaders fail closed so a moved/missing sibling surfaces
     # loudly with the right name. The shared importlib.util patch reaches the leaf
     # across the re-bind because the loaders reference `importlib.util.spec_from_file_location`.
     monkeypatch.setattr(importlib.util, "spec_from_file_location", lambda *a, **k: None)
     for loader, missing in (
         (ce._load_sibling_early_close_report, "goal_artifact_early_close_report.py not found"),
         (ce._load_sibling_metric_window, "goal_metric_window_lib.py not found"),
-        (ce._load_sibling_phase_routing, "goal_artifact_phase_routing.py not found"),
-        (ce._load_sibling_closeout_delegation, "goal_artifact_closeout_delegation.py not found"),
         (ce._load_sibling_adapter_policy, "achieve_adapter_policy.py not found"),
     ):
         with pytest.raises(ImportError, match=missing):

@@ -12,7 +12,7 @@ sections:
 audience_tags: []
 omission_lenses: []
 # Optional input candidates for the "in progress" section. Each entry is one of:
-#   {kind: handoff, path: docs/handoff.md}
+#   {kind: path, path: docs/index.md}
 #   {kind: issues, query: "is:issue is:open label:status/in-progress"}
 #   {kind: path, path: docs/roadmap.md}
 in_progress_sources: []

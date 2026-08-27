@@ -4,8 +4,7 @@ The ``--goal-path`` mode reads the in-progress goal and emits only the floors
 *that goal* triggers (and which are still missing), reusing the live
 ``check_complete_evidence`` + ``check_timebox_closeout`` reports — never
 re-deriving floor logic. The static ``required_shape()`` catalog cannot surface
-the runtime-conditional floors (the D-audit ``keep`` set: rungs 1a/1b/1e,
-section-placeholder, closeout-delegation, timebox); these tests prove the
+the runtime-conditional disposition and timebox floors; these tests prove the
 goal-conditional view does, and that grandfathered floors stay omitted.
 """
 from __future__ import annotations
@@ -71,28 +70,24 @@ def _missing_keys(report: dict) -> set[str]:
 
 
 def test_bare_grandfathered_goal_triggers_only_baseline_evidence(tmp_path: Path) -> None:
-    # Old Created date -> every runtime-conditional scope floor is grandfathered;
-    # no gather/release/issue/timebox/delegation content -> nothing else fires.
+    # Old Created date -> the current runtime-conditional floors are out of scope.
     text = _preamble("bare-floor", "2026-05-01") + (
         "## Active Operating Frame\n\n- Current slice: bare fixture.\n\n"
         "## Goal\n\nReal outcome text.\n\n"
         "## Context Sources\n\n- charness-artifacts/spec/x.md (repo-local, no URL)\n\n"
         "## Slice Log\n\nReal slice notes, no release/issue work.\n\n"
-        "## Coordination Cues\n\nReal routing notes.\n\n"
         "## Final Verification\n\nReal verification notes.\n\n"
         "## Auto-Retro\n\nReal retro notes.\n"
     )
     report = desc.goal_conditional_shape(tmp_path, text)
     assert _triggered_keys(report) == {"retro_artifact", "host_log_probe"}
-    # the runtime-conditional floors are correctly omitted (grandfathered / no trigger)
-    for floor in ("disposition_review", "gather", "release", "issue_closeout",
-                  "timebox", "closeout_delegation", "phase_routing", "structural_followup"):
+    for floor in ("disposition_review", "timebox", "structural_followup"):
         assert floor in report["not_triggered"], floor
 
 
-def test_multi_floor_goal_triggers_the_conditional_floors(tmp_path: Path) -> None:
-    # Recent Created (in scope) + content that trips gather/release/issue/timebox/
-    # delegation. Coordination Cues left empty so each is triggered-and-missing.
+def test_recent_goal_triggers_only_live_conditional_floors(tmp_path: Path) -> None:
+    # Recent goals retain only the conditional floors that still protect the
+    # closeout boundary: disposition review and a declared timebox.
     text = _preamble("multi-floor", "2026-06-14") + (
         "## Active Operating Frame\n\n"
         "- Timebox: 2h\n- Activation time: 2026-06-14T00:00:00Z\n"
@@ -100,22 +95,16 @@ def test_multi_floor_goal_triggers_the_conditional_floors(tmp_path: Path) -> Non
         "## Goal\n\nReal outcome text.\n\n"
         "## Context Sources\n\n- https://example.com/external-source\n\n"
         "## Slice Log\n\n- What changed: bump_version in the manifest. Closes #123.\n\n"
-        "## Closeout Delegation\n\nCloseout mode: orchestrated\n\n"
-        "## Coordination Cues\n\n_no step lines yet_\n\n"
         "## Final Verification\n\n_no evidence lines yet_\n\n"
         "## Auto-Retro\n\n_pending_\n"
     )
     report = desc.goal_conditional_shape(tmp_path, text)
     triggered = _triggered_keys(report)
-    # the content-conditional floors a static catalog cannot name are all surfaced
-    for floor in ("gather", "release", "issue_closeout", "timebox",
-                  "closeout_delegation", "disposition_review", "phase_routing"):
-        assert floor in triggered, floor
-        assert floor not in report["not_triggered"], floor
-    # ... and each is in the actionable MISSING set (unsatisfied)
+    assert triggered == {"retro_artifact", "host_log_probe", "disposition_review", "timebox"}
     missing = _missing_keys(report)
-    for floor in ("gather", "release", "issue_closeout", "closeout_delegation"):
+    for floor in ("retro_artifact", "host_log_probe", "disposition_review"):
         assert floor in missing, floor
+    assert "timebox" not in missing
 
 
 def test_structural_followup_keep_floor_surfaced_from_bound_retro(tmp_path: Path) -> None:
@@ -137,7 +126,6 @@ def test_structural_followup_keep_floor_surfaced_from_bound_retro(tmp_path: Path
     text = _preamble(slug, "2026-06-14") + (
         "## Active Operating Frame\n\n- Current slice: 1e fixture.\n\n"
         "## Goal\n\nReal outcome.\n\n"
-        "## Coordination Cues\n\nRouting: n/a — fixture records no phase work needing a route here today.\n\n"
         f"## Final Verification\n\nRetro: {retro_rel}\n"
         "Host log probe: skipped: host-log-not-exposed: this host does not expose per-goal token timings here\n\n"
         "## Auto-Retro\n\n"  # deliberately blank to exercise rung 1a (block-the-blank)
@@ -334,11 +322,6 @@ def test_the_disposition_optout_floor_is_rendered_from_the_live_constant(monkeyp
 def test_the_operator_queue_floor_is_rendered_from_the_live_constant(monkeypatch) -> None:
     monkeypatch.setattr(desc._OPERATOR_QUEUE, "MIN_EMPTY_QUEUE_REASON", 4323)
     assert "4323 chars" in _shape()
-
-
-def test_the_declarable_phases_are_rendered_from_the_live_tuple(monkeypatch) -> None:
-    monkeypatch.setattr(desc._PHASE_ROUTING, "DECLARABLE_PHASES", ("fabricated",))
-    assert "`fabricated`" in _shape()
 
 
 def test_the_queue_floor_number_and_its_own_regex_cannot_disagree() -> None:

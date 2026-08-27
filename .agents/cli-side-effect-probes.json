@@ -88,6 +88,13 @@
       "side_effect_watch_paths": [".charness/tasks"]
     },
     {
+      "command": "./charness task run",
+      "mutating": true,
+      "help_probe": "./charness task run --help",
+      "dry_run_waiver": "Task run deliberately creates a named linked worktree and executes a caller-selected Codex command; focused task-run tests own the sandboxed execution and --dry-run path.",
+      "side_effect_watch_paths": [".git/worktrees"]
+    },
+    {
       "command": "./charness catalog refresh",
       "mutating": true,
       "help_probe": "./charness catalog refresh --help",
@@ -161,6 +168,13 @@
       "option_like_positional_probes": ["./charness worktree add --path --not-a-path"],
       "dry_run_probe": "./charness worktree add --path /tmp/charness-worktree-probe --dry-run",
       "side_effect_watch_paths": [".git/worktrees"]
+    },
+    {
+      "command": "./charness worktree exec",
+      "mutating": true,
+      "help_probe": "./charness worktree exec --help",
+      "dry_run_waiver": "Worktree exec intentionally runs an arbitrary child command in an existing linked worktree; its isolation refusal and external-runtime behavior are covered by focused worktree-exec tests.",
+      "side_effect_watch_paths": [".pytest_cache", "__pycache__", ".coverage"]
     },
     {
       "command": "./charness worktree prepare",

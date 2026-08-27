@@ -1,4 +1,4 @@
-"""Five scaffolds refuse an unhonored adapter declaration instead of RELOCATING the
+"""Four scaffolds refuse an unhonored adapter declaration instead of RELOCATING the
 artifact they are about to write.
 
 This family does not degrade its answer under an unhonored declaration — it moves the
@@ -9,17 +9,10 @@ target. Measured on the real CLIs at `0bcb6b227`, one repo per skill declaring i
     retro     docs/mine-retro     -> charness-artifacts/retro/<date>-probe.md
     debug     docs/mine-debug     -> charness-artifacts/debug/latest.md
     critique  docs/mine-critique  -> charness-artifacts/critique/<date>-probe.md
-    handoff   docs/mine           -> docs/handoff.md
 
 Each row is measured on its own CLI, not asserted from a shared shape. The table below is
 the same five stimuli, run against each surface's own `main()`.
 
-The `handoff` row is a correction worth keeping visible: the first cut of that probe
-declared `artifact_path`, which its resolver ignores — it derives the path from
-`output_dir` plus a fixed filename. So the speakable-version CONTROL also returned the
-default, and could not distinguish "honored the declaration" from "fell back to ours". A
-control that cannot fail proves nothing, and this one was re-measured on the field the
-contract actually reads.
 """
 from __future__ import annotations
 
@@ -37,7 +30,6 @@ SCAFFOLDS = (
     ("retro", "docs/mine-retro", "charness-artifacts/retro"),
     ("debug", "docs/mine-debug", "charness-artifacts/debug"),
     ("critique", "docs/mine-critique", "charness-artifacts/critique"),
-    ("handoff", "docs/mine", "docs/handoff.md"),
 )
 
 
@@ -53,7 +45,6 @@ SCRIPT_PATHS = {
     "retro": "skills/public/retro/scripts/scaffold_retro_artifact.py",
     "debug": "skills/public/debug/scripts/scaffold_debug_artifact.py",
     "critique": "skills/public/critique/scripts/scaffold_critique_artifact.py",
-    "handoff": "skills/public/handoff/scripts/scaffold_handoff_artifact.py",
 }
 
 
@@ -138,9 +129,8 @@ def test_a_parser_refusal_refuses_at_the_same_place(
 def test_a_speakable_version_still_writes_where_the_repo_said(
     tmp_path: Path, skill: str, declared: str, default: str
 ) -> None:
-    """The polarity control, and the one that catches a fixture declaring a field the
-    contract does not read — which is exactly what the `handoff` row did on its first
-    cut. If this assertion cannot fail, the refusal above proves nothing."""
+    """The polarity control. If this assertion cannot fail, the refusal above proves
+    nothing."""
     repo = _repo(tmp_path, skill, f"version: 1\nrepo: demo\noutput_dir: {declared}\n")
     result = _run(skill, repo)
     assert result.returncode == 0, result.stderr
@@ -174,7 +164,7 @@ def test_payload_for_itself_raises_in_process(
 
     This also proves the guard is inside `payload_for` rather than `main()`. That matters
     for retro and debug, whose `payload_for` IS called by `plan_retro_run` and
-    `plan_debug_run`; for quality, critique and handoff the only importers are tests, and
+    `plan_debug_run`; for quality and critique the only importers are tests, and
     a round-1 bounded review over these rows refuted the claim that said otherwise.
     """
     from tests.script_main import load_script_module

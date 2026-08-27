@@ -28,7 +28,7 @@ def test_preflight_blocks_when_draft_missing_and_sources_declared(tmp_path: Path
 def test_preflight_blocks_when_section_absent(tmp_path: Path) -> None:
     draft = tmp_path / "draft.md"
     draft.write_text("# Announcement\n\n## Highlights\n- thing\n", encoding="utf-8")
-    adapter_data = {"in_progress_sources": [{"kind": "handoff", "path": "docs/handoff.md"}]}
+    adapter_data = {"in_progress_sources": [{"kind": "path", "path": "docs/index.md"}]}
     payload = preflight_sources(adapter_data, draft)
     assert payload["section_present"] is False
     assert payload["delivery_blocked"] is True
@@ -43,7 +43,7 @@ def test_preflight_marks_collected_or_unavailable_per_status_keyword(tmp_path: P
             # Announcement
 
             ## Source surfaces
-            - handoff:docs/handoff.md — collected: 12 commits since last record
+            - path:docs/index.md — collected: 12 commits since last record
             - control_repo:/srv/acme — unavailable: stale instance root
 
             ## Highlights
@@ -55,42 +55,42 @@ def test_preflight_marks_collected_or_unavailable_per_status_keyword(tmp_path: P
     )
     adapter_data = {
         "in_progress_sources": [
-            {"kind": "handoff", "path": "docs/handoff.md"},
+            {"kind": "path", "path": "docs/index.md"},
             {"kind": "control_repo", "path": "/srv/acme"},
         ]
     }
     payload = preflight_sources(adapter_data, draft)
     assert payload["ok"] is True
     statuses = {item["kind"]: item["status"] for item in payload["surfaces"]}
-    assert statuses == {"handoff": "collected", "control_repo": "unavailable"}
+    assert statuses == {"path": "collected", "control_repo": "unavailable"}
 
 
 def test_preflight_blocks_when_one_source_unrecorded(tmp_path: Path) -> None:
     draft = tmp_path / "draft.md"
     draft.write_text(
-        "# x\n\n## Source surfaces\n- handoff:docs/handoff.md — collected: 0 commits\n",
+        "# x\n\n## Source surfaces\n- path:docs/index.md — collected: 0 commits\n",
         encoding="utf-8",
     )
     adapter_data = {
         "in_progress_sources": [
-            {"kind": "handoff", "path": "docs/handoff.md"},
+            {"kind": "path", "path": "docs/index.md"},
             {"kind": "control_repo", "path": "/srv/acme"},
         ]
     }
     payload = preflight_sources(adapter_data, draft)
     assert payload["delivery_blocked"] is True
     statuses = {item["kind"]: item["status"] for item in payload["surfaces"]}
-    assert statuses["handoff"] == "collected"
+    assert statuses["path"] == "collected"
     assert statuses["control_repo"] == "unverified"
 
 
 def test_preflight_keyword_match_uses_word_boundary_not_substring(tmp_path: Path) -> None:
     draft = tmp_path / "draft.md"
     draft.write_text(
-        "# x\n\n## Source surfaces\n- handoff:docs/handoff.md uncollected this run\n",
+        "# x\n\n## Source surfaces\n- path:docs/index.md uncollected this run\n",
         encoding="utf-8",
     )
-    adapter_data = {"in_progress_sources": [{"kind": "handoff", "path": "docs/handoff.md"}]}
+    adapter_data = {"in_progress_sources": [{"kind": "path", "path": "docs/index.md"}]}
     payload = preflight_sources(adapter_data, draft)
     assert payload["surfaces"][0]["status"] == "unverified"
     assert payload["delivery_blocked"] is True
@@ -103,7 +103,7 @@ def test_preflight_token_match_requires_kind_and_value_co_occurrence(tmp_path: P
         encoding="utf-8",
     )
     adapter_data = {
-        "in_progress_sources": [{"kind": "handoff", "path": "docs/handoff.md"}]
+        "in_progress_sources": [{"kind": "path", "path": "docs/index.md"}]
     }
     payload = preflight_sources(adapter_data, draft)
     assert payload["surfaces"][0]["status"] == "unverified"

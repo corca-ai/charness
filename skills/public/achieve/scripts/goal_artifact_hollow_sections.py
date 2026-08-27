@@ -124,12 +124,8 @@ def classify(masked_text: str, raw_text: str, template_text: str,
     hollow = sorted(empty + template_identical)
     run_filled = [name for name in hollow if name in RUN_FILLED_SECTIONS]
     # FAIL CLOSED on anything in neither tuple. The two lists are hand-maintained
-    # against a section set this module does not own, and a round-2 reviewer found
-    # the first cut had already drifted: `## Closeout Binding Plan` is passed in on
-    # every evaluating run and was in neither list, so a goal that left it exactly
-    # as the scaffold wrote it was detected, NOT blocked, and then described as a
-    # "run-filled section" -- a false statement on a proof surface, about the one
-    # section where this check had a catch nothing else in the tree could make.
+    # against the section set this module does not own; an unclassified section
+    # must cost a false stop rather than a silent pass when the template grows.
     # Defaulting an unclassified section to "must be written" makes drift cost a
     # false stop instead of a silent pass.
     blocking = [name for name in hollow if name not in RUN_FILLED_SECTIONS]

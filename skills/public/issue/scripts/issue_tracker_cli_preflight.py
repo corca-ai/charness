@@ -26,7 +26,22 @@ def run(
     backend_owner: Any,
     issue_reader: Any,
 ) -> int:
-    resolved = resolve_backend(args.repo_root.resolve())
+    try:
+        resolved = resolve_backend(args.repo_root.resolve())
+    except RuntimeError as exc:
+        emit(
+            {
+                "kind": "charness.goal-run-bootstrap-preflight/v1",
+                "ok": False,
+                "status": "provider-selection-invalid",
+                "outcome": "refused",
+                "mutation_invoked": False,
+                "repo": args.repo,
+                "parent_number": args.number,
+                "error": str(exc),
+            }
+        )
+        return 2
     capability = tracker.tracker_capability_report(resolved["backend"], repo=args.repo)
     readiness = backend_owner.build_preflight_payload(resolved)
     selected = readiness.get("selected_backend") or {}

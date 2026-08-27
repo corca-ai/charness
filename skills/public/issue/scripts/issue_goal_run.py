@@ -12,7 +12,6 @@ _load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_
 )
 CONTRACT = _load_local("issue_goal_run_contract")
 BACKEND = CONTRACT.BACKEND
-PROVIDER = _load_local("issue_provider_selection", "issue_goal_run_provider_selection")
 READ = _load_local("issue_read", "issue_goal_run_read")
 TRACKER = _load_local("issue_tracker", "issue_goal_run_tracker")
 OBSERVATION = _load_local("issue_tracker_observation", "issue_goal_run_observation")
@@ -111,25 +110,16 @@ def _preflight(
     return result
 
 
-def _bind_provider(resolved: dict[str, Any], repo: str, operations: list[str]) -> dict[str, Any]:
-    return PROVIDER.bind_provider_selection(resolved, target_repo=repo, operations=operations)
-
-
 def command_preflight(args: Any, *, resolve_backend: Any, emit: Any) -> int:
     try:
         plan = CONTRACT.load_plan(args.plan_file.resolve(), repo=args.repo, parent_number=args.number)
     except CONTRACT.GoalRunInputError as exc:
         emit(_refusal(exc.code, str(exc), repo=args.repo, parent_number=args.number))
         return 2
-    resolved = resolve_backend(args.repo_root.resolve())
     try:
-        resolved = _bind_provider(resolved, args.repo, plan["operations"])
+        resolved = resolve_backend(args.repo_root.resolve())
     except RuntimeError as exc:
-        emit(
-            _refusal(
-                "provider-selection-invalid", str(exc), repo=args.repo, parent_number=args.number
-            )
-        )
+        emit(_refusal("provider-selection-invalid", str(exc), repo=args.repo, parent_number=args.number))
         return 2
     result = _preflight(
         repo=args.repo,
@@ -146,35 +136,20 @@ def command_preflight(args: Any, *, resolve_backend: Any, emit: Any) -> int:
 
 
 def command_read(args: Any, *, resolve_backend: Any, emit: Any) -> int:
-    resolved = resolve_backend(args.repo_root.resolve())
     try:
-        resolved = _bind_provider(
-            resolved, args.repo, ["read-body", "read-state", "list-children"]
-        )
+        resolved = resolve_backend(args.repo_root.resolve())
     except RuntimeError as exc:
-        result = _refusal(
-            "provider-selection-invalid", str(exc), repo=args.repo, parent_number=args.number
-        )
+        result = _refusal("provider-selection-invalid", str(exc), repo=args.repo, parent_number=args.number)
         emit(result)
         return 2
     if not resolved.get("adapter_ok"):
         result = _refusal("adapter-invalid", "issue adapter is invalid", repo=args.repo, parent_number=args.number)
     else:
-        preflight = _preflight(
-            repo=args.repo,
-            parent_number=args.number,
-            operations=["read-body", "read-state", "list-children"],
-            resolved=resolved,
-        )
-        if not preflight["ok"]:
-            result = {"kind": "charness.goal-run-read/v1", **preflight}
-        else:
-            try:
-                result = _read_graph(args.repo, args.number, resolved["backend"])
-            except RuntimeError as exc:
-                result = _refusal("readback-failed", str(exc), repo=args.repo, parent_number=args.number)
+        try:
+            result = _read_graph(args.repo, args.number, resolved["backend"])
+        except RuntimeError as exc:
+            result = _refusal("readback-failed", str(exc), repo=args.repo, parent_number=args.number)
     result["selected_backend"] = resolved.get("backend")
-    result["provider_selection"] = resolved.get("provider_selection")
     emit(result)
     return 0 if result["ok"] else 2
 
@@ -283,31 +258,24 @@ def command_apply(args: Any, *, resolve_backend: Any, emit: Any) -> int:
     except CONTRACT.GoalRunInputError as exc:
         emit(_refusal(exc.code, str(exc), repo=args.repo, parent_number=args.number))
         return 2
-    resolved = resolve_backend(args.repo_root.resolve())
     name = operation["operation"]
-    try:
-        resolved = _bind_provider(resolved, args.repo, [name])
-    except RuntimeError as exc:
-        emit(
-            _refusal(
-                "provider-selection-invalid", str(exc), repo=args.repo, parent_number=args.number
-            )
-        )
-        return 2
     if name == "record-observation":
-        preflight = {"ok": True, "status": "local-only", "outcome": "verified-read", "mutation_invoked": False}
+        # This operation is deliberately provider-free. It records a local fact and
+        # must not make a remote readiness probe just because it shares the file
+        # envelope with remote operations.
+        backend = {"id": "local"}
     else:
-        preflight = _preflight(
-            repo=args.repo,
-            parent_number=args.number,
-            operations=[name],
-            resolved=resolved,
-        )
-    if not preflight["ok"]:
-        result = {"kind": "charness.goal-run-apply/v1", **preflight}
-        result["selected_backend"] = resolved.get("backend")
-        emit(result)
-        return 2
+        try:
+            resolved = resolve_backend(args.repo_root.resolve())
+        except RuntimeError as exc:
+            emit(_refusal("provider-selection-invalid", str(exc), repo=args.repo, parent_number=args.number))
+            return 2
+        if not resolved.get("adapter_ok"):
+            result = _refusal("adapter-invalid", "issue adapter is invalid", repo=args.repo, parent_number=args.number)
+            result["selected_backend"] = resolved.get("backend")
+            emit(result)
+            return 2
+        backend = resolved["backend"]
     body_path = None
     if isinstance(operation.get("body_file"), str):
         body_path = CONTRACT.repo_file(args.repo_root.resolve(), operation["body_file"], context="body_file")
@@ -323,22 +291,21 @@ def command_apply(args: Any, *, resolve_backend: Any, emit: Any) -> int:
             operation=name,
             target=operation["target"],
             submitted_body_sha256=hashlib.sha256(body_path.read_bytes()).hexdigest() if body_path else None,
-            backend=resolved.get("backend", {}),
+            backend=backend,
         )
     except (RuntimeError, OSError) as exc:
         result = _refusal("observation-refused", str(exc), repo=args.repo, parent_number=args.number)
-        result["selected_backend"] = resolved.get("backend")
+        result["selected_backend"] = backend
         emit(result)
         return 2
     try:
         result = _normalise_result(
-            _execute(operation, repo_root=args.repo_root.resolve(), backend=resolved["backend"], repo=args.repo, parent=args.number),
+            _execute(operation, repo_root=args.repo_root.resolve(), backend=backend, repo=args.repo, parent=args.number),
             name,
         )
-    except RuntimeError as exc:
+    except (RuntimeError, OSError) as exc:
         result = _refusal("provider-refused", str(exc), repo=args.repo, parent_number=args.number)
-    result["selected_backend"] = resolved.get("backend")
-    result["provider_selection"] = resolved.get("provider_selection")
+    result["selected_backend"] = backend
     try:
         terminal = OBSERVATION.finish(
             repo_root=args.repo_root.resolve(),
@@ -358,7 +325,7 @@ def command_apply(args: Any, *, resolve_backend: Any, emit: Any) -> int:
             **_refusal("observation-unverified", str(exc), repo=args.repo, parent_number=args.number),
             "mutation_invoked": bool(result.get("mutation_invoked")),
             "started_observation": started,
-            "selected_backend": resolved.get("backend"),
+            "selected_backend": backend,
         }
     result.update(kind="charness.goal-run-apply/v1", attempt_id=operation["attempt_id"])
     emit(result)

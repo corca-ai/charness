@@ -87,7 +87,7 @@ mechanics and the failure messages.
   from prose — an honesty contract for fresh-eye review, not an anti-gaming gate.
 - **deferred follow-up** — a sibling classified `valid follow-up outside the slice`
   must carry `follow-up: <issue-url>` (filed via the `issue` skill's
-  adapter-resolved backend) or `follow-up: deferred <docs/handoff.md anchor>`;
+  adapter-resolved backend) or `follow-up: deferred <goal or issue anchor>`;
   without it the scan's cost silently exports to the next session. The other three
   decisions resolve inside the slice and need no `follow-up:`. On the
   `abstraction up` axis, `same class, diagnostic-only for this slice` means an

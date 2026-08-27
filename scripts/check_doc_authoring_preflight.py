@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Aggregate author-time preflight for general doc/markdown surfaces.
 
-Given a target ``docs/**/*.md`` (or the handoff artifact), forecast in ONE pass
+Given a target ``docs/**/*.md``, forecast in ONE pass
 the deterministic constraints an author otherwise discovers by failing one
 commit gate at a time:
 
@@ -12,8 +12,6 @@ commit gate at a time:
   - doc-link / pathy-ref form (relative-link form, bare internal markdown refs,
     backticked file references, fenced commands naming a missing script), via
     ``check_doc_links``;
-  - the surface length cap (e.g. the handoff artifact's word cap), read live
-    from the owning validator's constant.
 
 It REUSES each real validator -- it never forks their logic, so the forecast
 cannot drift from what the gate enforces. This mirrors the SKILL.md one-shot
@@ -33,7 +31,7 @@ import shlex
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
 from yaml_output import emit_yaml
@@ -42,10 +40,6 @@ REPO_ROOT = repo_root_from_script(__file__)
 
 _doc_links = import_repo_module(__file__, "scripts.check_doc_links")
 _inline_code = import_repo_module(__file__, "scripts.check_markdown_inline_code")
-_handoff = import_repo_module(__file__, "scripts.validate_handoff_artifact")
-_artifact_validator = import_repo_module(__file__, "scripts.artifact_validator")
-_version_verdict = import_repo_module(__file__, "scripts.adapter_version_verdict")
-_markdown_scan = import_repo_module(__file__, "scripts.markdown_doc_scan")
 _path_portability = import_repo_module(__file__, "scripts.path_portability_lib")
 _markdownlint = import_repo_module(__file__, "scripts.markdownlint_probe")
 
@@ -59,121 +53,6 @@ collect_markdownlint = _markdownlint.collect_markdownlint
 
 class PreflightError(Exception):
     pass
-
-
-@dataclass(frozen=True)
-class LengthSurface:
-    """A doc surface that carries an enforced size cap.
-
-    ``module``/``constant`` name the OWNING validator's live DEFAULT cap, and
-    ``resolver_attr`` names its adapter-aware resolver. Reading the constant alone
-    was correct only while the ceiling was fixed: once a consuming repo could raise
-    it, this forecast kept rendering `blocked` against a number the gate no longer
-    enforced, sending the author to prune content the gate would have accepted. Prefer
-    the resolver; the constant stays the fallback for a surface that has none.
-    ``matches`` resolves the surface from a repo-relative path.
-
-    ``count_attr``/``check_attr`` name the validator's own counting and checking
-    functions for a surface that does not charge for raw file length. Reusing
-    them (rather than reimplementing the rule here) is what keeps the forecast
-    from disagreeing with the gate about WHAT the budget charges, not just how
-    much. ``count_attr`` must return the COUNT as an int, not the counted items:
-    the handoff budget charges words, and a call site that wrapped this in
-    ``len()`` would have raised ``TypeError`` on an int the moment the unit
-    changed. Left None, the surface falls back to a raw word count +
-    ``validate_max_words``.
-    """
-
-    name: str
-    module: str
-    constant: str
-    label: str
-    matches: Callable[[str], bool]
-    count_attr: str | None = None
-    check_attr: str | None = None
-    resolver_attr: str | None = None
-
-
-def surface_cap(repo_root: Path, surface: "LengthSurface") -> int:
-    """The ceiling THIS repo enforces for the surface, not the shipped default."""
-    module = _surface_module(surface)
-    if surface.resolver_attr:
-        return int(getattr(module, surface.resolver_attr)(repo_root))
-    return int(getattr(module, surface.constant))
-
-
-def _handoff_rel(repo_root: Path) -> str | None:
-    try:
-        adapter = _handoff.load_adapter(repo_root)
-    except Exception:  # noqa: BLE001 -- a missing/broken adapter just means "no handoff surface here"
-        return None
-    rel = adapter.get("artifact_path")
-    return Path(rel).as_posix() if rel else None
-
-
-def adapter_load_failed(repo_root: Path) -> bool:
-    """Did the handoff adapter exist but refuse to load?
-
-    `_handoff_rel` swallows the failure and returns None, which is right for its callers
-    -- no adapter means no capped surface -- but it makes a MALFORMED adapter
-    indistinguishable from an absent one. That silence feeds both `_length_surfaces` and
-    `collect_regenerable_facts`, so a YAML typo turns two rule classes into
-    "measured, nothing found" and the command exits 0 with an empty report. `absent` and
-    `broken` are separated here so `unforecast_classes` can name the second.
-
-    A REFUSED VERSION counts as broken, and testing for a raised exception alone missed
-    it: a `version: 9` adapter loads cleanly and returns a payload carrying the refusal in
-    `errors`, so this answered False and `surface_cap` went on to forecast the shipped
-    ceiling to an author whose repo had declared its own. This file already owns the
-    "the adapter is broken, say so" decision for exactly that reason, which is why the
-    version arm belongs here rather than in a fifth caller-side guard.
-    """
-    try:
-        payload = _handoff.load_adapter(repo_root)
-    except Exception:  # noqa: BLE001 -- the point IS that any load failure counts
-        return True
-    # `declarations_unhonored`, not `version_refused`: round 2 of the slice-5 review
-    # found the narrow predicate answering False for a parser refusal, which leaves
-    # the same defaults in `data` and so forecast the shipped ceiling to an author
-    # whose repo had declared its own -- the exact bug this arm exists for, by the
-    # other door.
-    return _version_verdict.declarations_unhonored(payload.get("errors"))
-
-
-def _length_surfaces(repo_root: Path) -> tuple[LengthSurface, ...]:
-    handoff_rel = _handoff_rel(repo_root)
-    surfaces: list[LengthSurface] = []
-    if handoff_rel is not None:
-        surfaces.append(
-            LengthSurface(
-                name="handoff",
-                module="scripts.validate_handoff_artifact",
-                constant="MAX_CONTENT_WORDS",
-                label="handoff artifact",
-                matches=lambda rel, _h=handoff_rel: rel == _h,
-                count_attr="content_words",
-                check_attr="validate_max_content_words",
-                resolver_attr="resolved_max_content_words",
-            )
-        )
-    return tuple(surfaces)
-
-
-def _resolve_length_surface(
-    repo_root: Path, rel: str, as_surface: str | None
-) -> LengthSurface | None:
-    surfaces = _length_surfaces(repo_root)
-    if as_surface is not None:
-        match = next((s for s in surfaces if s.name == as_surface), None)
-        if match is None:
-            known = ", ".join(s.name for s in surfaces) or "(none)"
-            raise PreflightError(f"unknown --as-surface {as_surface!r}; known capped surfaces: {known}")
-        return match
-    return next((s for s in surfaces if s.matches(rel)), None)
-
-
-def _surface_module(surface: LengthSurface):
-    return import_repo_module(__file__, surface.module)
 
 
 def _doc_link_indices(repo_root: Path) -> tuple[Path, set[str], dict[str, str], set[str], set[str]]:
@@ -245,93 +124,7 @@ def collect_doc_links(repo_root: Path, doc: Path) -> list[dict[str, Any]]:
     return findings
 
 
-def collect_length(
-    repo_root: Path, doc: Path, rel: str, as_surface: str | None
-) -> dict[str, Any]:
-    """Forecast the surface size cap by reusing the owning validator's constant
-    and ``validate_max_words`` (the exact gate path), when the target maps to a
-    capped surface. A general doc with no registered cap reports no floor."""
-    surface = _resolve_length_surface(repo_root, rel, as_surface)
-    if surface is None:
-        return {"surface": None, "cap": None, "current": None, "over": False, "detail": None}
-    module = _surface_module(surface)
-    cap = surface_cap(repo_root, surface)
-    lines = doc.read_text(encoding="utf-8").splitlines()
-    current = getattr(module, surface.count_attr)(lines) if surface.count_attr else len(lines)
-    detail: str | None = None
-    try:
-        if surface.check_attr:
-            # The resolved cap is passed IN rather than left to the checker's own
-            # default: the checker ships to consumers with the default baked in, and
-            # a forecast that let it re-derive the number would reintroduce exactly
-            # the disagreement this call site exists to prevent.
-            #
-            # Positional, with a TypeError fallback, because the checker gained its
-            # second parameter in the same release as this call: a mixed-version
-            # install (new preflight, vendored older validator) would otherwise raise
-            # an uncaught TypeError where the surrounding `except` only catches
-            # ValidationError -- a traceback instead of a forecast. The fallback loses
-            # the resolved cap for that install, which is the old behavior, not a new
-            # wrong one.
-            check = getattr(module, surface.check_attr)
-            try:
-                check(lines, cap)
-            except TypeError:
-                check(lines)
-        else:
-            _artifact_validator.validate_max_words(lines, max_words=cap, artifact_label=surface.label)
-    except _artifact_validator.ValidationError as exc:
-        detail = str(exc)
-    return {
-        "surface": surface.name,
-        "cap": cap,
-        "current": current,
-        "over": detail is not None,
-        "detail": detail,
-    }
-
-
 # --- report assembly ---------------------------------------------------------
-
-
-def collect_regenerable_facts(
-    repo_root: Path, doc: Path, rel: str, as_surface: str | None
-) -> list[dict[str, Any]]:
-    """Version/sha literals the handoff validator refuses, forecast per line.
-
-    The rule lived ONLY in `validate_handoff_artifact`'s error string, so it was
-    visible only AFTER writing the thing it forbids -- which is how a version
-    literal reached a handoff draft twice. This is the same class the aggregate
-    preflight exists for: a constraint enforced at commit time and un-briefed at
-    authoring time.
-
-    Reuses `REGENERABLE_PATTERNS` and the validator's own scrubbing regexes rather
-    than restating them, so the forecast cannot drift from the gate. It reports
-    EVERY hit; the gate raises on the first, which is the one difference and the
-    point of a forecast.
-    """
-    handoff_rel = _handoff_rel(repo_root)
-    is_handoff = rel == handoff_rel or (as_surface or "") == "handoff"
-    if not is_handoff:
-        return []
-    findings: list[dict[str, Any]] = []
-    for lineno, raw, in_fence in _markdown_scan.iter_doc_lines(doc):
-        if in_fence:
-            continue
-        scrubbed = _handoff.INLINE_CODE_RE.sub(
-            "", _handoff.URL_RE.sub("", _handoff.LINK_TARGET_RE.sub("", raw))
-        )
-        for pattern, label, replacement in _handoff.REGENERABLE_PATTERNS:
-            match = pattern.search(scrubbed)
-            if match is None:
-                continue
-            findings.append({
-                "line": lineno,
-                "literal": match.group(0).strip(),
-                "label": label,
-                "replacement": replacement,
-            })
-    return findings
 
 
 @dataclass
@@ -340,8 +133,6 @@ class Report:
     markdownlint: dict[str, Any]
     wrapped_inline_code: list[dict[str, Any]]
     doc_links: list[dict[str, Any]]
-    regenerable_facts: list[dict[str, Any]]
-    length: dict[str, Any]
     warnings: list[str] = field(default_factory=list)
     #: Classes whose collector could not measure at all, set by `build_report`. A field
     #: rather than a purely derived value BECAUSE the causes are heterogeneous: an engine
@@ -357,8 +148,6 @@ class Report:
             self.markdownlint["findings"]
             or self.wrapped_inline_code
             or self.doc_links
-            or self.regenerable_facts
-            or self.length["over"]
         )
 
     @property
@@ -393,13 +182,11 @@ class Report:
             "markdownlint": self.markdownlint,
             "wrapped_inline_code": self.wrapped_inline_code,
             "doc_links": self.doc_links,
-            "regenerable_facts": self.regenerable_facts,
-            "length": self.length,
             "warnings": self.warnings,
         }
 
 
-def build_report(repo_root: Path, raw_path: str, as_surface: str | None) -> Report:
+def build_report(repo_root: Path, raw_path: str) -> Report:
     doc = Path(raw_path)
     if not doc.is_absolute():
         doc = repo_root / doc
@@ -436,26 +223,12 @@ def build_report(repo_root: Path, raw_path: str, as_surface: str | None) -> Repo
                 "markdownlint-cli2 on PATH) rather than waiting for the commit gate."
             )
     unforecast: list[str] = []
-    if adapter_load_failed(repo_root):
-        # The length cap and the regenerable-fact classes BOTH resolve their surface
-        # through the handoff adapter, and `_handoff_rel` swallows a load failure. Left
-        # silent, a YAML typo renders both as "measured, nothing found" and the command
-        # exits 0 -- the durable artifact then records a passed closeout for two classes
-        # that never ran.
-        unforecast.extend(("length", "regenerable_facts"))
-        warnings.append(
-            "the handoff adapter exists but did not load, so the length-cap and "
-            "regenerable-fact classes were not forecast (they resolve their surface "
-            "through it); fix the adapter to get those two classes back."
-        )
     return Report(
         target=rel,
         markdownlint=markdownlint,
         wrapped_inline_code=collect_wrapped_inline_code(doc),
         doc_links=collect_doc_links(repo_root, doc),
-        regenerable_facts=collect_regenerable_facts(repo_root, doc, rel, as_surface),
         unforecast=tuple(unforecast),
-        length=collect_length(repo_root, doc, rel, as_surface),
         warnings=warnings,
     )
 
@@ -464,8 +237,8 @@ def build_report(repo_root: Path, raw_path: str, as_surface: str | None) -> Repo
 #: only, and it is the one line that keeps a `status: ok` from reading as a
 #: commit-gate verdict: this is a forecast, and the named gates do the enforcing.
 AFFORDANCE_NOTE = (
-    "affordance only -- the gates `check_doc_links.py`, `check-markdown.sh`, and the "
-    "artifact length validators stay the enforcement."
+    "affordance only -- the gates `check_doc_links.py` and `check-markdown.sh` "
+    "stay the enforcement."
 )
 #: Per-finding-kind remedies the text rendering added from the owning validator's
 #: live constant. The rows themselves carry only `kind`/`detail`/`line`, so
@@ -496,9 +269,6 @@ def rules_payload(rules: dict[str, Any]) -> dict[str, Any]:
     """
     payload = dict(rules)
     payload["note"] = "rules only -- pass --path <draft.md> to check a real target against them."
-    if rules["length"]["surface"] is None:
-        known = ", ".join(rules["length"]["known_surfaces"]) or "(none)"
-        payload["length_hint"] = f"no capped surface selected; pass --as-surface <{known}>"
     if rules["probe_sample"] is None:
         payload["probe_note"] = (
             "link form / backticked file references were NOT probed -- this repo has no "
@@ -514,13 +284,6 @@ def rules_payload(rules: dict[str, Any]) -> dict[str, Any]:
         else "binary unavailable here; `check-markdown.sh` refuses at commit time until it "
         "resolves, so install it (`npm ci`, or markdownlint-cli2 on PATH)"
     )
-    regenerable = rules["regenerable_facts"]
-    if regenerable["classes"] and not regenerable["verdict"]:
-        # A null verdict means the probe stopped tripping the rule (a class narrowed or
-        # dropped upstream), NOT that there is no rule. The retired renderer said so in
-        # words; a bare `verdict: null` above three correct rows reads as a missing
-        # value instead, so the meaning rides in the payload rather than dying with it.
-        payload["regenerable_facts_note"] = "the classes this surface refuses"
     return payload
 
 
@@ -529,11 +292,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument(
         "--path",
-        help="Target docs/**/*.md (or handoff) path; omit it to print the RULES with no target",
-    )
-    parser.add_argument(
-        "--as-surface",
-        help="Forecast a specific capped surface's length floor on a draft/fixture path (e.g. handoff)",
+        help="Target docs/**/*.md path; omit it to print the RULES with no target",
     )
     args = parser.parse_args(argv)
 
@@ -543,14 +302,14 @@ def main(argv: list[str] | None = None) -> int:
         # `doc_authoring_rules` and imported here so one command answers both.
         rules_module = import_repo_module(__file__, "scripts.doc_authoring_rules")
         try:
-            rules = rules_module.build_rules(repo_root, args.as_surface)
+            rules = rules_module.build_rules(repo_root)
         except rules_module.PreflightError as exc:
             print(f"doc-authoring-preflight: {exc}", file=sys.stderr)
             return 2
         emit_yaml(rules_payload(rules))
         return 0
     try:
-        report = build_report(repo_root, args.path, args.as_surface)
+        report = build_report(repo_root, args.path)
     except PreflightError as exc:
         print(f"doc-authoring-preflight: {exc}", file=sys.stderr)
         return 2

@@ -17,21 +17,6 @@ def main() -> None:
             ("operating_surface_profile", "flat-wiki"),
             ("approval_required", True),
             ("prose_wrap_policy", "semantic"),
-            ("defaults_version", "issue-64"),
-            (
-                "policy_sources",
-                [
-                    {
-                        "id": "review-policy",
-                        "path": "AGENTS.md",
-                        "evidence_terms": ["bounded fresh-eye review", "critique"],
-                    }
-                ],
-            ),
-            (
-                "recommendation_sets",
-                {"enabled": [], "acknowledged": []},
-            ),
         ]
 
     run_init_adapter(default_output=Path(".agents/setup-adapter.yaml"), build_items=build_items)

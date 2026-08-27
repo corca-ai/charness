@@ -41,7 +41,7 @@ SKIP_MARKDOWN_DIRS = {
 }
 CORE_DOCS_TOP_LEVEL = {
     "development.md",
-    "handoff.md",
+    "index.md",
     "operator-acceptance.md",
     "roadmap.md",
 }

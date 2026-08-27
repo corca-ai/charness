@@ -197,13 +197,13 @@ def test_retro_auto_trigger_hit_short_circuits_every_doubt(tmp_path: Path) -> No
         "metrics_commands",
     )
 
-    result = _run_main("--repo-root", str(repo), "--paths", "docs/handoff.md")
+    result = _run_main("--repo-root", str(repo), "--paths", "docs/index.md")
 
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
     assert payload["state"] == "evaluated"
     assert payload["triggered"] is True
-    assert payload["path_hits"] == ["docs/handoff.md"]
+    assert payload["path_hits"] == ["docs/index.md"]
     assert payload["advisories"], payload
 
 

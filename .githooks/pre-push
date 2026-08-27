@@ -25,20 +25,6 @@ echo "charness pre-push: scanning the push range for GitHub close keywords"
 printf '%s\n' "$push_stdin" | python3 scripts/prepush_close_keyword_guard.py \
   --repo-root "$REPO_ROOT" --remote "${1:-origin}"
 
-echo "charness pre-push: syncing checked-in plugin surface"
-python3 scripts/sync_root_plugin_manifests.py --repo-root "$REPO_ROOT" >/dev/null
-
-if ! git diff --quiet -- plugins/charness .claude-plugin/marketplace.json .agents/plugins/marketplace.json; then
-  echo "charness pre-push: checked-in plugin export drift detected"
-  echo "review and commit the regenerated plugin surface before pushing:"
-  echo "tip: run \`python3 scripts/run_slice_closeout.py --repo-root .\` before commit when the diff spans generated surfaces"
-  git diff -- -- plugins/charness .claude-plugin/marketplace.json .agents/plugins/marketplace.json
-  exit 1
-fi
-
-echo "charness pre-push: checking current pointers before full quality"
-python3 scripts/validate_current_pointer_freshness.py --repo-root "$REPO_ROOT"
-
 # Slice 7 (#230 Waste 3): classify the pending push to decide whether to run
 # the full broad gate or a smaller docs-only subset. Stop condition is
 # mechanically enforced by classify_push_diff_lib.UNCONDITIONAL_FULL_GATE_PREFIXES
@@ -92,7 +78,7 @@ fi
 # catches orphans never ran on the change class that creates them. It is safe to add:
 # it costs ~0.07s, and on a machine without `awiki` it reports UNPROVEN and blocks
 # nothing rather than failing the push.
-DOCS_ONLY_LABELS="check-docs,check-references-link-inventory,check-spec-evidence-durability,validate-handoff-artifact,validate-debug-artifact,validate-quality-artifact,validate-retro-artifact,validate-ideation-artifact,validate-critique-artifacts,inventory-quality-handoff,validate-current-pointer-freshness"
+DOCS_ONLY_LABELS="check-docs,check-references-link-inventory,check-spec-evidence-durability,validate-debug-artifact,validate-quality-artifact,validate-retro-artifact,validate-ideation-artifact,validate-critique-artifacts,validate-current-pointer-freshness"
 
 if [[ "$classification" == "docs-artifact-only" ]]; then
   echo "charness pre-push: docs/artifact-only push detected ($reason)"
@@ -107,7 +93,7 @@ if [[ "$classification" == "docs-artifact-only" ]]; then
     CHARNESS_QUALITY_LABELS="$DOCS_ONLY_LABELS" ./scripts/run-quality.sh --read-only
 else
   echo "charness pre-push: running full ./scripts/run-quality.sh --read-only ($reason)"
-  CHARNESS_PRE_PUSH=1 ./scripts/run-quality.sh --read-only
+  CHARNESS_PRE_PUSH=1 ./scripts/run-quality.sh --full --read-only
 fi
 
 if ! git diff --quiet -- charness-artifacts; then

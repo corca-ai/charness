@@ -58,8 +58,6 @@ def _complete_shaping_body(goal_lib) -> str:
     for section in sections:
         value = "User runs X and sees Y." if section == "User Acceptance" else f"{section} fixture value."
         rendered.append(f"\n## {section}\n{value}\n")
-    rendered.append("\n## Closeout Binding Plan\n")
-    rendered.extend(f"- {field} fixture value\n" for field in goal_lib.CLOSEOUT_PLAN_FIELDS)
     return "".join(rendered)
 
 
@@ -236,8 +234,8 @@ def test_the_floor_cannot_be_disarmed_by_removing_or_mis_casing_the_status() -> 
     Round-1 review found the draft gate keyed to `status == "draft"`, while `read_status`
     returns None for a missing `Status:` line and the raw string otherwise, and
     `--pursue-ready` explicitly does not validate status. So deleting one line, or writing
-    `Status: Draft`, skipped the floor — and disarmed the closeout-plan floor in the same
-    edit — while two shipped docstrings claimed the floor could not be removed that way.
+    `Status: Draft`, skipped the floor while the shipped docstring claimed the floor could
+    not be removed that way.
     """
     import goal_artifact_lib as gal  # noqa: PLC0415
 
@@ -246,17 +244,6 @@ def test_the_floor_cannot_be_disarmed_by_removing_or_mis_casing_the_status() -> 
                         "Status: draft — slice 2 in flight\n"):
         report = gal.pursue_readiness(base.format(status=status_line))
         assert report["backlog_recount_missing_fields"] == list(backlog.REQUIRED_FIELDS), status_line
-        # The SIBLING gate, which the first repair left on `== "draft"`. Round 2 found it:
-        # dropping `Closeout Binding Plan` from the required set disarms both its heading
-        # requirement and its five-field check, so the same one-line edit that this test
-        # was written about still activated a goal with no closeout plan at all. This
-        # file's own docstring named that hole and asserted nothing about it.
-        # The fixture has no `## Closeout Binding Plan` heading, so the proof that the
-        # sibling gate still APPLIES is the section being required at all. (A missing
-        # heading surfaces in `missing_sections`; `closeout_plan_missing_fields` only
-        # fills once exactly one heading exists, so asserting that here would pass
-        # vacuously on `[]` and prove nothing.)
-        assert "Closeout Binding Plan" in report["missing_sections"], status_line
         assert report["pursue_ready"] is False, status_line
 
     # The recognised non-shaping statuses still skip it — that scoping is deliberate.

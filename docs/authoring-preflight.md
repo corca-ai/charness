@@ -113,7 +113,7 @@ python3 scripts/check_skill_surface_preflight.py --path skills/public/<skill>/SK
 The skill-surface preflight above covers `skills/**` edits. The hand-authored
 **artifact** family (`charness-artifacts/critique/*.md`, goal
 `## Final Verification` closeout-evidence, retro, ideation, plus the
-adapter-scoped debug/quality/handoff) is covered by
+adapter-scoped debug/quality) is covered by
 [check_artifact_surface_preflight.py](../scripts/check_artifact_surface_preflight.py).
 It generalizes the same author-time idea to the recurring "authoring-preflight
 skip" class (issues 284 → 308 → 325 → 329 → 332 → 334): an author should learn an
@@ -137,7 +137,7 @@ exactly like the SKILL.md core-headroom gate. When a commit touches a
 changed-scoped prefix family (critique/ideation/retro), its owning validator runs
 at the commit boundary — the *same* validator with the *same* verdict, only
 relocated earlier. It adds no new shape requirement and changes no validator's
-judgment. The adapter-scoped trio (debug/quality/handoff) validate-all and are
+judgment. The adapter-scoped quality surface validates all by default and is
 author-time-only (`--type`/`--emit-stub`/`--path`); the broad gate remains their
 enforcement (see the coverage report for the tier rationale).
 
@@ -171,21 +171,19 @@ the gate.
 ## General doc surfaces (docs/*.md)
 
 The skill-surface and artifact-shape preflights above cover `skills/**` and
-`charness-artifacts/**`. General docs — the handoff artifact and the rest of
-`docs/*.md` — are the remaining surface class: an author there discovers
+`charness-artifacts/**`. General `docs/*.md` is the remaining surface class: an
+author there discovers
 markdownlint rules (the `MD004` list-marker style, a wrapped inline-code span,
 trailing space), the
 [check_doc_links.py](../scripts/check_doc_links.py) pathy-ref / link form,
-and the surface length cap (the handoff content-WORD cap) one commit-gate failure at a
-time. `check_doc_links` also resolves the repo-owned script a documented command
+one commit-gate failure at a time. `check_doc_links` also resolves the repo-owned script a documented command
 names — in a fenced block or an inline span — so a `python3 scripts/…` example
 cannot outlive the script it names. See
 [Documented commands](#documented-commands) for the escape. Forecast them all in
 one pass — and, before a single line exists, ask it for the rules instead:
 
 ```bash
-python3 scripts/check_doc_authoring_preflight.py --as-surface handoff   # the rules, no target
-python3 scripts/check_doc_authoring_preflight.py --path docs/handoff.md # a real target against them
+python3 scripts/check_doc_authoring_preflight.py --path docs/index.md # a real target against them
 ```
 
 The rules mode is what makes this surface match its two siblings
@@ -199,17 +197,15 @@ the preflight probes it with a sample.
 
 [check_doc_authoring_preflight.py](../scripts/check_doc_authoring_preflight.py)
 reuses the real validators — `check_markdown_inline_code`, `check_doc_links`,
-markdownlint-cli2 with the repo config, and the owning length constant — so the
-forecast cannot drift from what the gate enforces WHEN EACH CLASS RUNS. A class
+and markdownlint-cli2 with the repo config — so the forecast cannot drift from
+what the gate enforces WHEN EACH CLASS RUNS. A class
 that could not run is reported in the payload's `unforecast_classes`, never as
-clean: an absent markdownlint engine, or a handoff adapter that exists but will
-not load, puts its class in that list and appends a warning naming the remedy.
+clean: an absent markdownlint engine puts its class in that list and appends a
+warning naming the remedy.
 An empty `unforecast_classes` means no class reported itself unmeasured — which
 is the strongest claim the collectors support, not a guarantee that everything
-was measured. Pass `--as-surface handoff`
-to forecast a capped surface's length floor on a draft path. It is an affordance,
-not a gate: a doc still commits without it, the existing gates stay the
-enforcement, and
+was measured. It is an affordance, not a gate: a doc still commits without it,
+the existing gates stay the enforcement, and
 [run_slice_closeout.py](../scripts/run_slice_closeout.py) prints an
 `ADVISORY:` pointer when a slice edits a `docs/*.md` surface.
 

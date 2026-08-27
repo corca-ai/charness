@@ -178,9 +178,6 @@ def _draft_with(goal_lib, hollow_section: str) -> str:
         body += f"\n## {section}\n"
         if section != hollow_section:
             body += f"{section} fixture value.\n"
-    body += "\n## Closeout Binding Plan\n" + "".join(
-        f"- {field} fixture value\n" for field in goal_lib.CLOSEOUT_PLAN_FIELDS
-    )
     return body
 
 
@@ -278,22 +275,6 @@ def test_duplicate_required_headings_are_rejected_by_full_validation(goal_lib) -
 # --------------------------------------------------------------------------- #
 # Round-2 repairs.
 # --------------------------------------------------------------------------- #
-
-
-def test_a_section_in_neither_tuple_fails_CLOSED(hollow, bounds) -> None:
-    """The round-2 blocker. The two tuples are hand-maintained against a section
-    set this module does not own, and the first cut had already drifted:
-    `## Closeout Binding Plan` is passed in on every evaluating run, was in
-    neither list, and so was detected, NOT blocked, and then described as
-    run-filled -- a false statement about the one section where this check had a
-    catch nothing else in the tree could make."""
-    report = hollow.classify(
-        "## Closeout Binding Plan\n", "## Closeout Binding Plan\n", _TEMPLATE,
-        ("Closeout Binding Plan",), section_bounds=bounds,
-    )
-
-    assert report["blocking"] == ["Closeout Binding Plan"]
-    assert report["unclassified_blocking"] == ["Closeout Binding Plan"]
 
 
 def test_the_no_block_sentence_only_names_actually_run_filled_sections(hollow, bounds) -> None:

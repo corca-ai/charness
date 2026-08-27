@@ -103,25 +103,6 @@
       ]
     },
     {
-      "surface_id": "handoff-machine-readers",
-      "description": "docs/handoff.md is a rotating human document that is ALSO a machine-read source: the retro-memory gate requires its recent-lessons reference, and the artifact-surface preflight requires its H2 sections and a References link.",
-      "source_paths": [
-        "docs/handoff.md"
-      ],
-      "derived_paths": [],
-      "sync_commands": [],
-      "verify_commands": [
-        "python3 scripts/validate_handoff_artifact.py --repo-root .",
-        "python3 -m pytest -q tests/quality_gates/test_retro_memory.py"
-      ],
-      "notes": [
-        "This exists because `repo-markdown` already matched docs/handoff.md and reported green: its verify commands are link, markdown-lint, and secret checks, none of which read the claim block. A handoff rewrite at `0659d5a0` therefore shipped clean while leaving the publish-state ledger group and the retro-memory gate red for six commits.",
-        "The escape this prevents is measured, not hypothetical: rewriting this file and dropping the `<!-- charness-publish-state-claim:... -->` block, or dropping the `recent-lessons.md` reference, is invisible to every other gate that matches it.",
-        "Rewriting the handoff means carrying its machine-read blocks forward, or changing the ledger and the retro gate deliberately. It does not mean deleting them because a rewrite felt cleaner.",
-        "The inverse obligation, which is the same escape one level up: a NEW machine reader of docs/handoff.md registers its command in this surface's `verify_commands`. `source_paths` already matching docs/handoff.md is NOT coverage -- it clears the unmatched-path blocker while the new reader never runs on a handoff change."
-      ]
-    },
-    {
       "surface_id": "claude-agent-definitions",
       "description": "Host-specific Claude Code subagent definitions (typed read-only spawn envelopes) under .claude/agents/.",
       "source_paths": [

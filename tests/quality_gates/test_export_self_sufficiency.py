@@ -87,7 +87,7 @@ def test_a_third_party_name_that_collides_with_an_exported_entry_is_still_checke
 def test_consumer_owned_roots_are_not_reported_against_the_real_export() -> None:
     """The negative case that decides whether the check is usable at all.
 
-    `.agents/`, `charness-artifacts/`, `docs/handoff.md` and the rest are seeded
+    `.agents/`, `charness-artifacts/`, `docs/index.md` and the rest are seeded
     or scanned at RUNTIME in the consumer's own repo. Shipping filled copies
     would overwrite consumer config, so "not shipped" is correct there and a
     check that reports them would be turned off within a day."""

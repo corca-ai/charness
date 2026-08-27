@@ -68,7 +68,6 @@ def _load_repo_script(module_name: str) -> Any:
 _PRESCRIBED = _load_repo_script("check_prescribed_skill_executed_lib")
 _DISPOSITION_FORM = _load_repo_script("disposition_form")
 _DISPOSITION = _load_sibling("goal_artifact_disposition_grammar")
-_PHASE_ROUTING = _load_sibling("goal_artifact_phase_routing")
 _OPERATOR_QUEUE = _load_sibling("goal_artifact_operator_queue")
 # Attention-state visibility marker: the extracted closeout stub still surfaces
 # the allowed skip form `skipped: <allowed-reason>: <detail>`.
@@ -83,7 +82,6 @@ def required_shape() -> str:
     min_skip_detail = _PRESCRIBED.MIN_SKIP_DETAIL_LENGTH
     min_optout = _DISPOSITION.MIN_OPTOUT_REASON
     valid_form = _DISPOSITION_FORM.VALID_FORM_SUMMARY
-    declarable_phases = ", ".join(f"`{phase}`" for phase in _PHASE_ROUTING.DECLARABLE_PHASES)
     min_queue_reason = _OPERATOR_QUEUE.MIN_EMPTY_QUEUE_REASON
     dest_form = _DISPOSITION_FORM.DESTINATION_FORM_SUMMARY
     lines = [
@@ -101,14 +99,6 @@ def required_shape() -> str:
         f"    (free text is rejected), the whole reason is >= {min_skip} chars, AND the",
         f"    DETAIL after the enum head is >= {min_skip_detail} chars (the head itself does",
         "    not count toward the detail floor).",
-        "",
-        "`## Coordination Cues` — `Phases:` DECLARES which phases the recorded work",
-        f"crossed ({declarable_phases}), or `Phases: n/a — <reason>`; the floor checks the",
-        "declaration's form and never infers the phases from your prose. `Routing:` must then",
-        "NAME the selected owner skill and basis for each declared phase and for the",
-        "implementation/issue work read from your own records (e.g. `Routing: impl — selected",
-        "from installed metadata for the goal lifecycle`), or `Routing: n/a — <reason>`. Gather/Release/Issue",
-        "closeout floors fire the same way — see `--type goal-coordination` for the full shape.",
         "",
         "`## Auto-Retro` — the disposition floor: replace the seeded `Retro dispositions: TODO`.",
         f"  - per-improvement / opt-out (`Retro dispositions:`), one of: {valid_form}",
@@ -234,59 +224,6 @@ def _floor_rows(ev: dict[str, Any], tb: dict[str, Any], early_close_required: bo
                  "satisfied": sf is None,
                  "detail": (sf or {}).get("reason") if sf else
                  "the cited retro names transferable waste; add a `Structural follow-up: <destination>` line"})
-    for key, sub, label in (
-        ("phase_routing", "phase_routing_floor", "`Routing:` names the selected owner skill + basis"),
-        ("gather", "gather_floor", "`Gather:` routes the external source through gather"),
-        ("release", "release_floor", "`Release:` verifies the release surface"),
-        ("issue_closeout", "issue_closeout_floor", "`Issue closeout:` stages the tracked-issue close"),
-        ("successor_goal", "successor_goal_floor", "`Successor goal:` designs the next goal from this run's lessons"),
-    ):
-        floor = ev.get(sub, {})
-        rows.append({"floor": key, "label": label, "triggered": bool(floor.get("triggered")),
-                     "satisfied": bool(floor.get("satisfied", True)),
-                     "detail": floor.get("reason") or "satisfied: a real step line or `n/a — <reason>` opt-out is recorded"})
-    # Non-blocking, and listed for exactly the reason the comment further down
-    # gives about blocking floors: a signal with no row here is invisible to the
-    # describe-first preflight. This one is MORE at risk than a blocking floor,
-    # because it never refuses anything — without a row, its only reader would be
-    # someone hand-scrolling the closeout JSON.
-    agg = ev.get("coordination_optout_aggregate", {})
-    if agg:
-        # The COUNT lives in the label, not in `detail`, because the renderer
-        # prints `label: detail` only for MISSING rows and bare `label` for
-        # satisfied ones. This row is permanently satisfied (it never refuses),
-        # so a detail-carried census would have rendered as a bare title with the
-        # number discarded — round 1's "computed but never surfaced" defect
-        # reappearing one layer up.
-        eligible = agg.get("eligible", 0)
-        if not eligible:
-            summary = (
-                "no triggered coordination obligations"
-                if agg.get("coordination_in_scope")
-                else "grandfathered: coordination floors inert for this goal"
-            )
-        else:
-            summary = (
-                f"{agg.get('opted_out', 0)} declined / {agg.get('routed', 0)} routed / "
-                f"{agg.get('unsatisfied', 0)} unmet of {eligible}"
-            )
-            declined = agg.get("opted_out_obligations") or []
-            if declined:
-                summary += " — declined: " + ", ".join(declined)
-        rows.append({"floor": "coordination_optout_aggregate",
-                     # Appended unconditionally so a zero-obligation goal still
-                     # appears in the "not triggered" tail rather than vanishing.
-                     "label": f"cross-floor opt-out census (advisory; never refuses) — {summary}",
-                     "triggered": bool(eligible),
-                     "satisfied": True,
-                     "detail": agg.get("reason") or summary})
-    deleg = ev.get("closeout_delegation", {})
-    mode = deleg.get("mode", "standalone")
-    failures = deleg.get("failures", [])
-    rows.append({"floor": "closeout_delegation", "label": f"`## Closeout Delegation` ({mode}) checklist",
-                 "triggered": bool(deleg.get("declared")) and mode in {"orchestrated", "orchestrator", "undeclared"},
-                 "satisfied": not failures,
-                 "detail": "; ".join(failures) if failures else "every delegated-proof item resolved (verified/skipped/issue #N)"})
     oq = ev.get("operator_decision_queue", {})
     rows.append(_applies_row(
         oq, "operator_decision_queue", "`## Operator Decision Queue` scaffold cleared",

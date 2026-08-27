@@ -3,8 +3,9 @@
 > Status: current
 > Source of truth: this page and its linked executable surfaces
 
-`charness task` provides a small repo-local contract for work that may pass
-between agents or from an agent back to an operator.
+`charness task` provides two deliberately separate paths. `task run` is the
+normal direct implementation lane. The older envelope commands are an optional
+carrier for work that genuinely crosses an external scheduler or context.
 
 It is intentionally not a scheduler. It records enough structured state for the
 next actor to know who claimed a task, whether it was submitted or aborted, and
@@ -12,7 +13,8 @@ where to inspect the durable result.
 
 ## Source Of Truth
 
-- task state: `.charness/tasks/<task-id>.json`
+- direct lane: `charness task run`
+- optional task state: `.charness/tasks/<task-id>.json`
 - command surface: `charness task`
 - task ids: ASCII letters, digits, dot, underscore, and dash, starting with a
   letter or digit
@@ -21,6 +23,43 @@ where to inspect the durable result.
 task records to become durable project history.
 
 ## Commands
+
+For a normal implementation slice, run Codex directly in a retained named
+worktree:
+
+```bash
+charness task run \
+  --repo-root . \
+  --path ../feature-lane \
+  --branch feature/lane \
+  --base HEAD \
+  --scope src/example.py \
+  --scope tests/test_example.py \
+  --prompt "Implement the requested slice and run its focused tests"
+```
+
+`task run` requires a clean parent, creates the linked named branch from the
+explicit base, routes Python/pytest/coverage/temp output to an external runtime
+root, runs `codex exec`, and reports the exact scoped candidate. It retains the
+worktree and emits enough receipt data to inspect or continue it. It does not
+create `.charness/tasks/`, require claim/submit/review transitions, or create a
+scheduler. A new untracked file may be a normal candidate (such as a new module
+or test), so the exact declared scope is the one blocking check: scoped files
+remain inspectable candidates and out-of-scope files fail the receipt. Newly
+ignored output is reported as a warning so a cache leak is visible without
+discarding a useful candidate.
+
+For a command in an already-created linked worktree, use the lower-level
+runtime wrapper:
+
+```bash
+charness worktree exec --repo-root ../feature-lane -- pytest -q
+```
+
+It refuses the primary worktree by default. `--allow-main` is an explicit local
+escape hatch, not part of `task run`.
+
+When an external carrier is actually needed, use the envelope commands:
 
 ```bash
 charness task claim slice-1 --summary "Implement the first slice" --execution-ref codex-exec:lane-1
@@ -45,6 +84,8 @@ All commands emit a single YAML document on stdout and support `--repo-root`.
 - `abort` requires a claimed task and records a non-empty reason.
 - `status` reads task state without mutation; without a task id it lists all
   repo-local task records.
+- `run` is stateless with respect to the envelope store: its receipt and
+  retained worktree are the handoff surface.
 - every mutating command persists a `next_step` affordance on the task state
   itself, so `.charness/tasks/<task-id>.json` tells the next actor how to
   continue without needing the original stdout.
@@ -58,8 +99,8 @@ callers to parse prose from stderr.
 
 ## Boundary
 
-Use this for one logical bounded task, one opaque execution reference, and one
-result carrier—not as a replacement for specs, handoffs, debug artifacts, issue
+Use the envelope for one logical bounded task, one opaque execution reference,
+and one result carrier—not as a replacement for specs, debug artifacts, issue
 trackers, worktree isolation, or a scheduler. The host decides how execution is
 isolated; the envelope only records the handoff and its parent-owned review.
 

@@ -10,8 +10,6 @@ _load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_
     __file__
 )
 CONTRACT = _load_local("issue_goal_run_contract")
-PROVIDER = _load_local("issue_goal_run", "issue_goal_run_close_provider")
-SELECTION = _load_local("issue_provider_selection", "issue_goal_run_close_selection")
 READ = _load_local("issue_read", "issue_goal_run_close_read")
 TRACKER = _load_local("issue_tracker", "issue_goal_run_close_tracker")
 OBSERVATION = _load_local("issue_tracker_observation", "issue_goal_run_close_observation")
@@ -74,28 +72,22 @@ def command_close(args: Any, *, resolve_backend: Any, emit: Any) -> int:
     except CONTRACT.GoalRunInputError as exc:
         emit(_refusal(exc.code, str(exc), repo=args.repo, parent=args.number))
         return 2
-    resolved = resolve_backend(args.repo_root.resolve())
     try:
-        resolved = SELECTION.bind_provider_selection(
-            resolved, target_repo=args.repo, operations=["close-goal-run"]
-        )
+        resolved = resolve_backend(args.repo_root.resolve())
     except RuntimeError as exc:
         emit(_refusal("provider-selection-invalid", str(exc), repo=args.repo, parent=args.number))
         return 2
     if not resolved.get("adapter_ok"):
         emit(_refusal("adapter-invalid", "issue adapter is invalid", repo=args.repo, parent=args.number))
         return 2
-    preflight = PROVIDER._preflight(
-        repo=args.repo,
-        parent_number=args.number,
-        operations=["close-goal-run"],
-        resolved=resolved,
-    )
-    if not preflight["ok"]:
-        emit({"kind": "charness.goal-run-close/v1", **preflight})
-        return 2
     try:
-        parent = preflight["parent"]
+        # Close is the one place that intentionally reads the full graph. Reuse
+        # this exact parent read for metadata validation and for the carrier's
+        # pre-mutation identity check; a readiness probe plus a second parent read
+        # added latency without adding a distinct observation.
+        parent = READ.read_issue_with_comments(
+            args.repo, args.number, backend=resolved["backend"]
+        )["issue"]
         metadata = GUARD.parse_goal_run_metadata(parent.get("body"), context="Goal Run parent body")
         if metadata is None:
             raise RuntimeError("target parent does not carry Goal Run metadata")
@@ -148,6 +140,7 @@ def command_close(args: Any, *, resolve_backend: Any, emit: Any) -> int:
             reason=proof.get("reason", "completed"),
             manual_target_declaration=proof.get("manual_target_declaration"),
             goal_run_authorized=True,
+            preflight_state=parent,
         )
         result = {
             **result,

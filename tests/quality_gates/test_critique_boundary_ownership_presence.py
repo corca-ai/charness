@@ -387,7 +387,7 @@ def test_charness_dogfoods_its_own_cross_surface_probe() -> None:
     assert probe["globs"], "charness must configure its own boundary_cross_surface_globs (DBD-4 dogfood)"
     # A change to a root shared lib must hit; a doc/test change must not.
     assert boundary_probe_lib.cross_surface_hit(ROOT, ["scripts/surfaces_lib.py"], globs=probe["globs"])
-    assert not boundary_probe_lib.cross_surface_hit(ROOT, ["docs/handoff.md"], globs=probe["globs"])
+    assert not boundary_probe_lib.cross_surface_hit(ROOT, ["docs/index.md"], globs=probe["globs"])
     assert not boundary_probe_lib.cross_surface_hit(ROOT, ["tests/test_x.py"], globs=probe["globs"])
 
 

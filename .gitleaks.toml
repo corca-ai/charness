@@ -16,3 +16,20 @@ paths = [
   # fingerprints (16-hex), not secrets, but trip the generic-api-key rule.
   '''(^|/)charness-artifacts/quality/nose-baseline\.json$''',
 ]
+
+[[rules]]
+id = "generic-api-key"
+
+  [[rules.allowlists]]
+  description = "Goal Run identifiers are metadata, not credentials"
+  condition = "AND"
+  regexTarget = "line"
+  regexes = [
+    '''(?i)charness-work-item-key\s*:\s*[A-Za-z0-9][A-Za-z0-9_-]*''',
+    '''(?i)"work_item_key"\s*:\s*"[A-Za-z0-9][A-Za-z0-9_-]*"''',
+    '''(?i)"key"\s*:\s*"(?:backlog|goal|dogfood|achieve)-[A-Za-z0-9][A-Za-z0-9_-]*"''',
+  ]
+  paths = [
+    '''(^|/)charness-artifacts/goal-runs/''',
+    '''(^|/)charness-artifacts/goals/[^/]+\.binding\.json$''',
+  ]

@@ -55,7 +55,7 @@ def _claims_module():
         "packaging/charness.json",
         ".claude-plugin/marketplace.json",
         "charness",
-        "docs/handoff.md",
+        "docs/index.md",
     ],
 )
 def test_shipped_surfaces_block(path: str) -> None:
@@ -287,12 +287,12 @@ def test_a_shipped_file_cannot_be_waived_by_calling_it_advisory() -> None:
     shipped = "skills/public/release/scripts/publish_release_claims_review.py"
     laundered = _scoped_record(
         prepared, narrative,
-        blocking=["docs/handoff.md"], advisory=[shipped],
+        blocking=["docs/index.md"], advisory=[shipped],
         findings=[{"file": shipped, "summary": "the claims floor no longer refuses an unbound record"}],
     )
 
     with pytest.raises(SystemExit, match="NOT advisory by classification"):
-        _invoke(laundered, ["docs/handoff.md", shipped])
+        _invoke(laundered, ["docs/index.md", shipped])
 
 
 def test_a_scope_that_omits_a_changed_path_is_refused() -> None:

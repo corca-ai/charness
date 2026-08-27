@@ -1,7 +1,7 @@
 # Operator Acceptance
 
 > Status: conditional (operator takeover path)
-> Source of truth: functional checks, [handoff](./handoff.md), and the active plan
+> Source of truth: functional checks, the active Goal Run parent/cursor, and the active plan
 > Last verified: 2026-08-25
 
 This document translates active work into operator-owned acceptance runs. The
@@ -17,7 +17,6 @@ Run these first at the repo root:
 
 ```bash
 git status --short
-sed -n '1,220p' docs/handoff.md
 sed -n '1,260p' docs/north-star-overhaul-roadmap.md
 ./scripts/run-quality.sh
 ```
@@ -41,7 +40,7 @@ Focus: keep deferred product-boundary decisions closed unless a real reopen trig
 
 Read first:
 
-- [docs/handoff.md](./handoff.md) — current session state, next-session trigger, and standing non-claims.
+- [docs/goal-lifecycle.md](./goal-lifecycle.md) — current Goal Run parent/cursor and continuation contract.
 - [docs/deferred-decisions.md](./deferred-decisions.md) — closed product-boundary decisions, record shape, and reopen triggers.
 - [docs/host-packaging.md](./host-packaging.md) — export contract for host plugin layouts and its source-of-truth surfaces.
 - [docs/control-plane.md](./control-plane.md) — external tool manifests, support capability metadata, and lock state rules.
@@ -49,7 +48,7 @@ Read first:
 Acceptance:
 
 - [`docs/deferred-decisions.md`](./deferred-decisions.md) stays in sync with current product-boundary choices.
-- [`docs/handoff.md`](./handoff.md) `Discuss` is either empty or scoped to explicit reopen triggers only.
+- The active Goal Run parent/cursor is current and has no stale next-child claim.
 - Any reopened decision records its new choice and impacted docs.
 - [`./scripts/run-quality.sh`](../scripts/run-quality.sh) passes after the doc updates.
 
@@ -61,7 +60,7 @@ Read first:
 
 - [docs/public-skill-validation.md](./public-skill-validation.md) — narrative layer for the per-skill validation tier policy.
 - [docs/control-plane.md](./control-plane.md) — external tool manifests, support capability metadata, and lock state rules.
-- [docs/handoff.md](./handoff.md) — current session state, next-session trigger, and standing non-claims.
+- [docs/goal-lifecycle.md](./goal-lifecycle.md) — current Goal Run parent/cursor and continuation contract.
 - [.agents/cautilus-adapter.yaml](../.agents/cautilus-adapter.yaml) — the repo's Cautilus run mode, preflight commands, and evaluation surfaces.
 
 Useful local commands:
@@ -204,5 +203,4 @@ For any accepted item:
 1. update the canonical doc(s)
 2. run the strongest honest local validation
 3. commit the work
-4. update [docs/handoff.md](./handoff.md) if the next
-   operator's first move changed
+4. update the active Goal Run parent cursor if the next operator's first move changed

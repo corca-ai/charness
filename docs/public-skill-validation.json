@@ -20,7 +20,6 @@
    "create-skill",
    "debug",
    "gather",
-   "handoff",
    "impl",
    "setup",
    "issue",
@@ -35,7 +34,6 @@
    "critique",
    "debug",
    "gather",
-   "handoff",
    "hitl",
    "hotl",
    "impl",
@@ -69,7 +67,6 @@
   "visible": [
    "announcement",
    "create-skill",
-   "handoff",
    "hotl",
    "quality",
    "setup",

@@ -112,10 +112,9 @@ The operator install path is:
 `charness init` / `charness update` materialize that user plugin directory.
 They do not add a Grok marketplace source.
 
-Grok Build currently ignores `SessionStart` and `PostToolUse` hook stdout, so
-this slice does not install Grok-native session-routing or edit-guard hooks.
-Host-specific routing can still ride Claude-compatible hook settings when Grok
-reads `~/.claude/settings.json`.
+Charness does not install Grok-native hooks or depend on hook stdout. Host
+behavior is explicit and adapter-owned; the exported plugin tree is otherwise
+read-only.
 
 ## Current Export Scope
 
@@ -231,20 +230,12 @@ Current v1 output is intentionally read-only:
 This keeps startup guidance centralized without turning skill execution into a
 networked self-update loop.
 
-## SessionStart Hook Reach
+## Charness host hooks
 
-Charness does not install a default telemetry or SessionStart hook. Host hooks
-are opt-in, adapter-owned capabilities; a consumer that needs one must declare
-the intent and run its host-specific installer. This keeps a plugin install
-read-only and prevents an unrelated product feature from owning every user's
-host settings.
-[plugin.json](../plugins/charness/.claude-plugin/plugin.json) declares no `hooks` key and there is
-no `plugins/charness/hooks/` directory, so for that population the lesson loop is
-not wired. Declaring the hook in the plugin manifest would double-fire for every
-CLI-installed user (nothing dedups a plugin-declared hook against the
-user-settings entry — `settings_file_scan` / `hook_state_liveness` never see it),
-so it needs its own mutual-exclusion design and real-host readback. Filed in
-[deferred-decisions.md](./deferred-decisions.md).
+Charness does not install SessionStart, Codex, or startup-context hooks. It does
+not inject lessons or routing text into every session. The only retained
+optional host hook is the Claude PostToolUse skill-anchor guard when an adapter
+explicitly enables it. Plugin export itself remains read-only.
 
 ## Non-Goals
 

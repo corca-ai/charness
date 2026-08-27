@@ -104,7 +104,7 @@ def load_adapter_contract(
         )
 
     # Report the lines the parser could not interpret (sweep row S24). All NINE skills
-    # sharing this loader — release, hotl, hitl, debug, retro, impl, gather, handoff,
+    # sharing this loader — release, hotl, hitl, debug, retro, impl, gather,
     # setup — used to read
     # a malformed adapter as a clean one: a missing colon on `packaging_manifest_path`
     # or on `required_release_surfaces` produced the inferred default with

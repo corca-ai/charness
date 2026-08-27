@@ -34,7 +34,6 @@ def main() -> int:
         args.repo_root.resolve(),
         load_setup_adapter=_setup_adapter_module.load_setup_adapter,
         prose_wrap_state=_setup_adapter_module.prose_wrap_state,
-        recommendation_policy=_setup_adapter_module.recommendation_policy,
         surface_overrides=_setup_adapter_module.surface_overrides,
         operating_surface_profile=_setup_adapter_module.operating_surface_profile,
         skill_routing_payload=_render_skill_routing_module.build_payload,

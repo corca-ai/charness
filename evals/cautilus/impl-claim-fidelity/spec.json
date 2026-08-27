@@ -1,56 +1,52 @@
 {
- "_comment": "Claim-fidelity spec for the impl skill: does a real `/charness:impl` run emit its honest categorized closeout vocabulary — a `Lint Gate` status plus a completion-report category? reference-compaction Slice 5 moved this claim from the re-read PROXY to the EMITTED-token floor. Before: requiredCommandFragments=['verification-ladder.md'] asserted the run OPENED the doc that uniquely held the Lint Gate status enum (ran-pass / ran-fail-fixed / ran-fail-deferred / not-detected / skipped) and the five completion-report labels (durable / external-writes / test-only / verification / unverified-future). That is a wasteful re-read: the first impl capture (charness-artifacts/cautilus/impl-claim-fidelity-2026-07-01/) reached an honest closeout in PROSE without opening the doc (floor MISS 0/8) — doc-opening was a weak proxy. Fix: the enum + labels were lifted verbatim into SKILL.md `## Closeout Vocabulary` (the headroom-exempt emittable-token home added by Slice 1), and verification-ladder.md's two sections now point-to-core, so an honest closeout emits the canonical tokens from always-loaded core. So requiredCommandFragments is now empty and requiredSummaryFragments asserts an actually-emitted token (`ran-pass`), re-baselined from a FRESH ask-before-run Cautilus capture per the cautilus-on-demand contract (NOT assumed). The deterministic emitted-token floor (form) pairs with the advisory judge `honest-categorized-closeout` (substance, outcome-assertions.json) — the form+substance split covers the hollow-RSF risk (a run could echo a summary token without doing the categorization work; the judge catches that). verification-ladder.md stays declared with classTag DEPTH (per-surface WHY prose: browser output, external-API depth, completion-report rationale). The four skill-inlined refs are tagged INLINE (claimRole skill-inlined-context): contract-consumption.md (step 1-2 + Bootstrap read-first order + carry-forward set), sequence-discipline.md and design-lenses.md (step 3 smallest-slice + ordering gist), review-gate.md (step 6 minimum lenses + critique scaling) — SKILL.md's always-loaded workflow inlines their gist, so a representative run engages each concern from the workflow and opens the doc only for slice-specific depth. adapter-contract.md, external-api-contract.md, and spec-loop.md stay on-demand. The prompt is pinned to a CONCRETE repo-honest slice — add deterministic unit tests that directly call claim_fidelity_lib.py's helper functions (_validate_string_list, _validate_engagement), additive to and non-overlapping with the existing registry-level tests/quality_gates/test_claim_fidelity_specs.py — so a representative run has a real, non-trivial subject that exercises executed verification + the Lint Gate / completion-report closeout vocabulary. Bare /charness:impl has no slice and stalls (lens 2); an abstract 'implement a small slice' is a shape, not an executable subject (lens 8), so the named slice replaces it. The live capture runs in the Cautilus sandbox, so a code-mutating subject is safe. declaredReferences is the full skill-local set (coverage; DEPTH-only denominator scores the DEPTH refs, INLINE/DUP advisory); shared refs (source-bound-records.md, prescribed-path-self-test.md, external-capability-proof-ladder.md, active-goal-coordination.md) are not skill-local so they are not declared. referenceEngagement uses the engage-always/on-demand/gate-sufficient axis + the classTag DUP/INLINE/DEPTH taxonomy from the methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). thresholds omitted until a PASSING baseline capture sets a budget. [2026-07-16 #439 split: the closeout vocabulary home moved from impl SKILL.md to the sibling prove skill's `## Closeout Vocabulary` (impl loads prove at its stop gate); verification-ladder.md and review-gate.md now live under skills/public/prove/references/, so they left this spec's declaredReferences. The run-level claim is unchanged: an honest /charness:impl run still emits the canonical tokens.]",
- "skillId": "impl",
- "skillDisplayName": "impl",
- "evaluationId": "execution-impl-claim-fidelity",
- "targetKind": "public_skill",
- "targetId": "impl",
- "prompt": "/charness:impl tests/ 에 scripts/claim_fidelity_lib.py 의 헬퍼 함수(_validate_string_list 의 빈-리스트·중복 거부, _validate_engagement 의 on-demand trigger 필수 규칙)를 직접 호출해 검증하는 deterministic 단위 테스트를 — 기존 registry 레벨 테스트(tests/quality_gates/test_claim_fidelity_specs.py)와 겹치지 않는 추가 커버리지로 — 작은 슬라이스로 더하고 실제로 실행해서 증명해줘. 가장 강한 정직한 경로로 검증하고, 증명하지 못한 동작은 명시적으로 unverified로 남기고, Lint Gate 상태와 completion-report 카테고리로 closeout 한 뒤 멈추기 전에 stop gate critique까지 돌려줘.",
- "requiredCommandFragments": [],
- "requiredSummaryFragments": [
-  "ran-pass"
- ],
- "declaredReferences": [
-  "adapter-contract.md",
-  "contract-consumption.md",
-  "design-lenses.md",
-  "external-api-contract.md",
-  "sequence-discipline.md",
-  "spec-loop.md"
- ],
- "referenceEngagement": {
-  "adapter-contract.md": {
-   "engagement": "on-demand",
-   "rationale": "Bootstrap section routes to this conditionally; fallback policy is 'continue with inferred defaults' so the representative run may omit it without losing an honest path.",
-   "trigger": "When .agents/impl-adapter.yaml exists or needs creation to record repo-specific verification expectations."
-  },
-  "contract-consumption.md": {
-   "engagement": "engage-always",
-   "rationale": "Every run ingests the current slice contract (step 1), but the doc's read-first order (canonical spec -> handoff -> diff) and carry-forward set (slice, fixed decisions, success criteria, acceptance checks, probe questions) are inlined in SKILL.md steps 1-2 and the Bootstrap commands, so the run engages the contract from the workflow rather than being forced to open this doc: engage-always but not an RCF floor (lens 7, skill-inlined).",
-   "claimRole": "skill-inlined-context",
-   "classTag": "INLINE"
-  },
-  "design-lenses.md": {
-   "engagement": "engage-always",
-   "rationale": "Every run chooses a slice (step 3, routed at line 10), but step 3 inlines the smallest-honest-slice gist; the doc's specific Beck/Ousterhout moves (deeper seam, ownership boundary, copied-coordination signal) are opened only when interface/seam shape is the real risk, so it is engage-always but not an RCF floor (lens 7, skill-inlined).",
-   "claimRole": "skill-inlined-context",
-   "classTag": "INLINE"
-  },
-  "external-api-contract.md": {
-   "engagement": "on-demand",
-   "rationale": "Step 4 routes here specifically to identify the mocked-test trap shapes that cause request/response mismatches; narrower than general verification strategy.",
-   "trigger": "When the slice adds or changes calls to a third-party API (Slack, GitHub, Notion, etc.)."
-  },
-  "sequence-discipline.md": {
-   "engagement": "engage-always",
-   "rationale": "Every run orders its slice (step 3, routed at line 10), but step 3 inlines the highest-leverage-first / avoid-locking-adjacent-detail gist; the doc's recovery-path and interface-freeze-delay moves are opened only when slice-ordering tension is real, so it is engage-always but not an RCF floor (lens 7, skill-inlined).",
-   "claimRole": "skill-inlined-context",
-   "classTag": "INLINE"
-  },
-  "spec-loop.md": {
-   "engagement": "on-demand",
-   "rationale": "Step 2 and closeout reference contract updates; this doc distinguishes normal slice learning (update contract inline) from concept drift (escalate back to spec).",
-   "trigger": "When implementation reveals probe resolution or a fixed decision that turns out false and must be reclassified durably in the contract."
+  "_comment": "Claim-fidelity spec for impl: a representative implementation run must emit the canonical ran-pass closeout token after executing verification. The current workflow keeps the normal contract and slice-ordering gist inline; reference metadata records conditional depth and does not require ceremonial document reads.",
+  "skillId": "impl",
+  "skillDisplayName": "impl",
+  "evaluationId": "execution-impl-claim-fidelity",
+  "targetKind": "public_skill",
+  "targetId": "impl",
+  "prompt": "/charness:impl tests/ 에 scripts/claim_fidelity_lib.py 의 헬퍼 함수(_validate_string_list 의 빈-리스트·중복 거부, _validate_engagement 의 on-demand trigger 필수 규칙)를 직접 호출해 검증하는 deterministic 단위 테스트를 — 기존 registry 레벨 테스트(tests/quality_gates/test_claim_fidelity_specs.py)와 겹치지 않는 추가 커버리지로 — 작은 슬라이스로 더하고 실제로 실행해서 증명해줘. 가장 강한 정직한 경로로 검증하고, 증명하지 못한 동작은 명시적으로 unverified로 남기고, Lint Gate 상태와 completion-report 카테고리로 closeout 한 뒤 멈추기 전에 stop gate critique까지 돌려줘.",
+  "requiredCommandFragments": [],
+  "requiredSummaryFragments": [
+    "ran-pass"
+  ],
+  "declaredReferences": [
+    "adapter-contract.md",
+    "contract-consumption.md",
+    "design-lenses.md",
+    "external-api-contract.md",
+    "sequence-discipline.md"
+  ],
+  "referenceEngagement": {
+    "adapter-contract.md": {
+      "engagement": "on-demand",
+      "rationale": "Repository-specific verification defaults are needed only when the adapter exists or the slice cannot use the ordinary local path.",
+      "trigger": "When .agents/impl-adapter.yaml exists or must be created for repository-specific verification expectations.",
+      "classTag": "DEPTH"
+    },
+    "contract-consumption.md": {
+      "engagement": "engage-always",
+      "rationale": "Every implementation starts from the current slice contract, while the root workflow carries the short ingestion order and normal carry-forward fields inline.",
+      "claimRole": "slice-contract",
+      "classTag": "INLINE"
+    },
+    "design-lenses.md": {
+      "engagement": "engage-always",
+      "rationale": "Every slice gets a small ownership and seam check from the inline workflow; this reference supplies deeper heuristics only when the interface shape is genuinely uncertain.",
+      "claimRole": "design-heuristics",
+      "classTag": "INLINE"
+    },
+    "external-api-contract.md": {
+      "engagement": "on-demand",
+      "rationale": "This reference narrows the verification path for third-party request and response seams and is irrelevant to local-only changes.",
+      "trigger": "When the slice adds or changes calls to a third-party API.",
+      "classTag": "DEPTH"
+    },
+    "sequence-discipline.md": {
+      "engagement": "engage-always",
+      "rationale": "The workflow orders each slice toward the highest-leverage seam; this reference adds recovery and freeze-delay heuristics only when ordering tension is real.",
+      "claimRole": "slice-ordering",
+      "classTag": "INLINE"
+    }
   }
- }
 }

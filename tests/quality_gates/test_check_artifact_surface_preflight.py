@@ -72,19 +72,17 @@ def test_critique_surface_excludes_append_only_round_records() -> None:
     assert preflight.surface_for_path("charness-artifacts/critique/../outside.md") is None
 
 
-def test_surface_for_path_maps_adapter_scoped_trio() -> None:
-    # debug/quality default dirs + handoff's default docs/handoff.md file.
+def test_surface_for_path_maps_adapter_scoped_quality() -> None:
+    # debug/quality are the remaining adapter-scoped artifact families.
     assert preflight.surface_for_path("charness-artifacts/debug/x.md").artifact_type == "debug"
     assert preflight.surface_for_path("charness-artifacts/quality/x.md").artifact_type == "quality"
-    assert preflight.surface_for_path("docs/handoff.md").artifact_type == "handoff"
-    # other docs/*.md are not the handoff artifact.
     assert preflight.surface_for_path("docs/other.md") is None
     # adapter-scoped validators validate-all (no --paths) and are author-time-only
     # (NOT in the fail-fast commit-boundary sweep — a validate-all gate there would
     # block a commit on pre-existing siblings the author never touched).
-    for t in ("quality", "handoff"):
-        assert preflight.surface_for_type(t).paths_arg is False
-        assert preflight.surface_for_type(t).commit_boundary is False
+    quality = preflight.surface_for_type("quality")
+    assert quality.paths_arg is False
+    assert quality.commit_boundary is False
     # debug left that tier once its validator gained `--paths` (#454 follow-up): its
     # shape was previously discoverable only at the RELEASE gate, which cost ~10
     # round trips. Changed-scoped, it is a commit-boundary peer of critique/retro.
@@ -168,7 +166,7 @@ def test_changed_artifacts_blocks_when_owning_validator_fails(monkeypatch) -> No
 
 
 def test_changed_artifacts_skips_author_time_only_surfaces(monkeypatch) -> None:
-    # debug/quality/handoff are author-time-only (commit_boundary=False), so the
+    # debug/quality are author-time-only (commit_boundary=False), so the
     # commit-boundary arm must NOT run them even when their paths change — the broad
     # gate is their enforcement, and the fail-fast sweep stays changed-scoped.
     captured: list[list[str]] = []
@@ -182,7 +180,7 @@ def test_changed_artifacts_skips_author_time_only_surfaces(monkeypatch) -> None:
     monkeypatch.setattr(preflight, "_run", fake_run)
     report = preflight.changed_artifacts(
         ROOT,
-        ["charness-artifacts/quality/b.md", "docs/handoff.md"],
+        ["charness-artifacts/quality/b.md"],
     )
     assert report["status"] == "ok"
     assert report["checked"] == []  # neither adapter-scoped surface runs at the commit boundary
@@ -277,17 +275,16 @@ def test_exported_preflight_resolves_flattened_scaffold_and_refuses_invalid_layo
     assert "canonical=" in ambiguous_output and "flattened-installed=" in ambiguous_output
 
 
-def test_describe_adapter_scoped_binds_artifact_path_never_paths() -> None:
+def test_describe_quality_binds_artifact_path_never_paths() -> None:
     # An adapter-scoped surface (paths_arg=False) must NOT get --paths — its validator
     # has no such flag. It used to fall through to a surface-level validate-all verdict;
-    # that read as honest for handoff only because its prefix is an exact file, and it
-    # was actively misleading for the directory-prefixed sibling. Both bind
-    # --artifact-path now, so the verdict is about the file the author is holding.
-    out = preflight.describe(ROOT, preflight.surface_for_type("handoff"), target_rel="docs/handoff.md")
-    assert "owning validator: python3 scripts/validate_handoff_artifact.py --repo-root ." in out
+    # The verdict is about the file the author is holding.
+    target = "charness-artifacts/quality/2026-07-25-quality-review.md"
+    out = preflight.describe(ROOT, preflight.surface_for_type("quality"), target_rel=target)
+    assert "owning validator: python3 scripts/validate_quality_artifact.py --repo-root ." in out
     assert "--paths" not in out
-    assert "--artifact-path docs/handoff.md" in out
-    assert "current verdict on docs/handoff.md:" in out
+    assert f"--artifact-path {target}" in out
+    assert f"current verdict on {target}:" in out
 
 
 def test_describe_debug_is_changed_scoped_after_gaining_paths() -> None:
@@ -538,19 +535,6 @@ def test_main_requires_one_selector(monkeypatch) -> None:
     assert exc.value.code == 2
 
 
-# --- #335 Slice 4: goal-closeout / coordination-floor authoring surfaces --------
-
-
-def test_goal_coordination_surface_reads_coordination_cues() -> None:
-    surface = preflight.surface_for_type("goal-coordination")
-    assert surface is not None
-    assert surface.commit_boundary is False  # owned by the achieve complete flip
-    out = preflight.describe(ROOT, surface, target_rel=None)
-    assert "## Coordination Cues" in out
-    assert "Routing" in out and "Issue closeout" in out
-    assert "achieve closeout" in out  # validator=None -> owned at the flip
-
-
 def test_goal_early_close_surface_renders_required_sections() -> None:
     surface = preflight.surface_for_type("goal-early-close")
     assert surface is not None
@@ -778,13 +762,13 @@ def test_closeout_draft_emit_stub_renders_a_starter_body() -> None:
 
 
 def test_goal_closeout_describe_now_surfaces_the_enforced_forms() -> None:
-    # enriched: keeps the template block AND adds the enforced forms read live from
-    # check_goal_artifact's constants (the four the goal names).
+    # Keeps the template block and adds the enforced forms read live from the
+    # closeout validators.
     out = preflight.describe(ROOT, preflight.surface_for_type("goal-closeout"), target_rel=None)
     assert "## Final Verification" in out  # template block still present (backward compat)
     assert all(r in out for r in ("host-blocked-subagent", "host-log-not-exposed", "evaluator-unavailable"))
     assert "goal slug" in out  # bare-path + goal-slug binding
-    assert "Routing:" in out and "selected owner skill" in out  # Routing form
+    assert "Routing:" not in out  # phase routing was deleted, not relocated
     assert "applied:" in out  # disposition form
 
 
@@ -991,16 +975,14 @@ def test_every_shape_producer_is_reachable_from_its_owning_skill() -> None:
 def test_adapter_scoped_surfaces_judge_the_authors_file_not_the_pointer_target() -> None:
     """The verdict named a surface and judged a DIFFERENT file.
 
-    `quality` and `handoff` both validate-all, but `quality`'s prefix is a directory
-    while `handoff`'s is an exact file — so validate-all happened to equal the target
-    for handoff and hid the gap, and for quality it printed a PASS about whatever
-    `latest.md` pointed at while the author held a dated draft. The whole point of an
-    author-time preflight is a verdict about the thing being authored.
+    `quality` validates all by default, so without an explicit artifact path it can
+    print a PASS about whatever `latest.md` points at while the author holds a dated
+    draft. The whole point of an author-time preflight is a verdict about the thing
+    being authored.
     """
-    for artifact_type in ("quality", "handoff"):
-        surface = preflight.surface_for_type(artifact_type)
-        assert surface.paths_arg is False, artifact_type
-        assert surface.artifact_path_arg is True, artifact_type
+    surface = preflight.surface_for_type("quality")
+    assert surface.paths_arg is False
+    assert surface.artifact_path_arg is True
 
     target = "charness-artifacts/quality/2026-07-25-quality-review.md"
     out = preflight.describe(ROOT, preflight.surface_for_type("quality"), target_rel=target)

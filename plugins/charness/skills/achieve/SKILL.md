@@ -13,21 +13,22 @@ It is an operator, not a second execution engine.
 ## Bootstrap
 
 Read the current repository context and adapter before making a lifecycle
-decision:
+decision. A routine `/goal #N` pickup does not bootstrap the full provider
+preflight; it reads the parent once and follows its current child cursor.
 
 ```bash
-sed -n '1,200p' docs/handoff.md 2>/dev/null || true
 git status --short --branch
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
-python3 <issue-skill-dir>/scripts/issue_tool.py goal-run-preflight --repo <repo> --number <parent> --plan-file <approved-plan.json> --repo-root .
+python3 <issue-skill-dir>/scripts/goal_run_pickup.py --repo-root . --objective "/goal #<parent>"
 ```
 
 `$SKILL_DIR` resolution for these bootstrap commands follows
 [Bootstrap Resolution](../../shared/references/bootstrap-resolution.md).
 
-The preflight is evidence about the selected provider only. Missing or invalid
-adapter/backend capability is a typed stop; do not guess a repository from the
-working-directory name or switch clients silently.
+Use `goal-run-preflight` only for establishment, graph repair, or an explicit
+diagnostic. Missing or invalid adapter/backend capability is a typed stop; do
+not guess a repository from the working-directory name or switch clients
+silently.
 
 ## Lifecycle
 
@@ -53,9 +54,12 @@ working-directory name or switch clients silently.
    cursor, then enters the cursor's next child. Routine pickup does not scan
    the graph or hydrate every child; the parent cursor is advanced whenever a
    child transition is published.
-7. Delegate implementation and proof to the selected child. Routine progress is
+7. Execute the selected child using the lightest matching implementation path.
+   A normal code slice may use `charness task run` to create one clean named
+   worktree and run Codex without an envelope ceremony. Routine progress is
    provider child state and child-owned evidence; no local progress mirror is
-   created and the frozen draft is not edited.
+   created and the frozen draft is not edited. Focused tests are the normal
+   proof; stronger review or proof is conditional on the claim.
 8. Close children only with their issue-owned behavioral proof. The dedicated
    Goal Run close reads the complete graph, verifies child evidence/deferrals,
    records a terminal observation, closes the parent, and performs distinct
@@ -104,19 +108,21 @@ never binds evidence.
 
 ## Coordination
 
-Keep the standalone workflow owners intact:
+Keep adjacent engines available, but let Achieve own the active run's
+coordination and completion state:
 
 - `ideation` and `spec` shape the concept and implementation contract.
 - `critique` is selected for material authority, durability, external-write,
   security, release, compatibility, deletion, or proof-surface risk.
-- `impl` changes code/config/tests and `prove` closes the implementation slice.
-- `quality` selects and runs the appropriate verification gates.
+- `impl` changes code/config/tests; `prove` is an optional evidence formatter
+  for slices that need its stronger boundary proof.
+- `quality` selects a proportionate verification gate when the change needs one.
 - `issue` owns provider operations and issue closeout.
 - `retro` records lessons after the work unit.
-- `handoff` prepares the next session only when the user asks or the goal is
-  blocked outside the active provider path.
+- The active Goal Run parent and cursor are the only resume state; do not create
+  or refresh a second progress artifact.
 - `charness task` is an optional carrier for a cross-context or delegated child;
-  use it when a claim/result needs durable handoff, not for every local slice.
+  use it when a claim/result needs a durable cross-context carrier, not for every local slice.
   Its parent-owned `review` transition records a verdict but does not create an
   observer, worktree, or proof gate.
 
@@ -126,10 +132,10 @@ frozen draft.
 
 ## Output and non-claims
 
-The durable outputs are the complete frozen Goal Draft, immutable Goal Binding,
-provider observations, exact parent/child graph, child-owned proof, and the
-final guarded close observation. Historical artifacts may remain readable but
-are not current execution authority.
+The durable outputs are the frozen Goal Draft/Binding and the provider-backed
+parent/child state. Add provider observations or stronger proof only when an
+external mutation or the claim needs them. Historical artifacts may remain
+readable but are not current execution authority.
 
 Local tests prove schemas, selection, refusals, and fake-provider behavior. A
 real provider roundtrip is required for live graph claims. This skill does not

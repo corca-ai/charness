@@ -76,7 +76,7 @@ Use the single repo-owned path `<repo-root>/.agents/<skill-id>-adapter.yaml`.
 - Default visible artifacts to `YYYY-MM-DD-<slug>.md`. Add `latest.md` only
   when the repo genuinely benefits from one current pointer over those dated
   records. Rolling canonical artifacts may keep a clearer fixed filename, such
-  as `<repo-root>/docs/handoff.md`.
+  as the repository's canonical documentation index.
 - Declare the artifact behavior in the adapter resolver as `artifact_class`:
   `history` for dated records, `current` for a single maintained surface, or
   `rolling` for a canonical rolling file.

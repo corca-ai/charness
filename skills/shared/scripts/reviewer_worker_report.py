@@ -116,6 +116,37 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _receipt_join_error(receipt: dict[str, Any], attempt: Any) -> str | None:
+    joins = {
+        "attempt_id": attempt.attempt_id,
+        "scope": attempt.scope,
+        "packet_identity": attempt.packet_identity,
+        "reviewed_input_identity": attempt.reviewed_input_identity,
+        "parent_receipt_identity": attempt.parent_receipt_identity,
+        "boundary_mode": attempt.boundary_mode,
+        "boundary_fingerprint": attempt.boundary_fingerprint,
+        "execution_mode": attempt.execution_mode,
+        "backend": attempt.backend,
+        "prompt_sha256": attempt.prompt_sha256,
+        "schema_sha256": attempt.schema_sha256,
+        "capability_launch_envelope_sha256": attempt.capability_launch_envelope_sha256,
+    }
+    for field, expected in joins.items():
+        observed = receipt.get(field)
+        if field == "boundary_mode" and observed is None and receipt.get("boundary_fingerprint") is not None:
+            # Receipts emitted before boundary_mode was introduced remain
+            # readable; their non-empty fingerprint unambiguously identifies
+            # the old shared-tree path.
+            observed = "shared-tree-fingerprint"
+        if expected is None:
+            if field == "boundary_fingerprint" and observed is None:
+                continue
+            return f"delivery attempt has no bound {field}"
+        if observed != expected:
+            return f"worker receipt {field} does not match the delivery attempt"
+    return None
+
+
 def _validate_receipt(
     receipt: dict[str, Any],
     *,
@@ -133,24 +164,9 @@ def _validate_receipt(
         return False, f"worker receipt status is {receipt.get('status')!r}"
     if receipt.get("exit_code") != 0:
         return False, "successful worker receipt must carry exit_code 0"
-    joins = {
-        "attempt_id": attempt.attempt_id,
-        "scope": attempt.scope,
-        "packet_identity": attempt.packet_identity,
-        "reviewed_input_identity": attempt.reviewed_input_identity,
-        "parent_receipt_identity": attempt.parent_receipt_identity,
-        "boundary_fingerprint": attempt.boundary_fingerprint,
-        "execution_mode": attempt.execution_mode,
-        "backend": attempt.backend,
-        "prompt_sha256": attempt.prompt_sha256,
-        "schema_sha256": attempt.schema_sha256,
-        "capability_launch_envelope_sha256": attempt.capability_launch_envelope_sha256,
-    }
-    for field, expected in joins.items():
-        if expected is None:
-            return False, f"delivery attempt has no bound {field}"
-        if receipt.get(field) != expected:
-            return False, f"worker receipt {field} does not match the delivery attempt"
+    join_error = _receipt_join_error(receipt, attempt)
+    if join_error is not None:
+        return False, join_error
     producer_joins = {
         "output_file": attempt.output_file,
         "receipt_file": attempt.receipt_file,
@@ -228,6 +244,7 @@ def build_report(
         "attempt_parent_receipt_identity": attempt.parent_receipt_identity,
         "result_packet_identity": packet_identity,
         "result_reviewed_input_identity": reviewed_input_identity,
+        "boundary_mode": attempt.boundary_mode,
         "boundary_fingerprint": attempt.boundary_fingerprint,
         "execution_mode": attempt.execution_mode,
         "backend": attempt.backend,
@@ -280,6 +297,7 @@ def build_report(
         "capability_non_claims_sha256": receipt.get("capability_non_claims_sha256"),
         "scope": attempt.scope,
         "attempt_id": attempt.attempt_id,
+        "boundary_mode": attempt.boundary_mode,
         "boundary_fingerprint": attempt.boundary_fingerprint,
         "prompt_sha256": attempt.prompt_sha256,
         "schema_sha256": attempt.schema_sha256,

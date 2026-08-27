@@ -104,7 +104,7 @@ def seed_quality_repo(tmp_path: Path) -> Path:
     (repo / "docs").mkdir(parents=True)
     (repo / "scripts").mkdir(parents=True)
     (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
-    (repo / "docs" / "handoff.md").write_text("# Handoff\n", encoding="utf-8")
+    (repo / "docs" / "status.md").write_text("# Status\n", encoding="utf-8")
     (repo / "pyproject.toml").write_text("[project]\nname = 'demo'\n", encoding="utf-8")
     (repo / "tsconfig.json").write_text('{"compilerOptions":{"noEmit":true}}\n', encoding="utf-8")
     (repo / "package.json").write_text('{"name":"demo","workspaces":["packages/*"]}\n', encoding="utf-8")
@@ -152,7 +152,7 @@ def write_explicit_quality_adapter(repo: Path) -> None:
                 "canonical_markdown_surfaces:",
                 "- AGENTS.md",
                 "- CLAUDE.md",
-                "- docs/handoff.md",
+                "- docs/index.md",
                 "prompt_asset_policy:",
                 "  source_globs:",
                 "  - src/**/*.py",

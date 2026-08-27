@@ -40,18 +40,28 @@ from yaml_output import emit_yaml
 ROOT = repo_root_from_script(__file__)
 _ledger = import_repo_module(__file__, "scripts.lesson_ledger_lib")
 _writer = import_repo_module(__file__, "scripts.lesson_ledger_writer_lib")
-# One sentence, one owner. The SessionStart lesson block prints this same next
-# step when a repo has opted in but the preview selects 0 lessons, and that block
-# runs inside a host hook, so the sentence is BUILT by the stdlib-only module and
-# imported HERE rather than the reverse. Two hand-written copies is how a repo
-# ends up being told two different next steps for the identical state.
-_hook_context = import_repo_module(__file__, "scripts.session_start_lesson_context")
 _records = import_repo_module(__file__, "scripts.lesson_evaluation_records_lib")
 
-# A function called per repo root, not a constant bound once at import: the seeder's
-# runnable spelling differs between this source tree and an installed plugin inside a
-# consuming repo, and a consuming repo is exactly who reads this sentence.
-next_step = _hook_context.seed_lesson_next_step
+
+def seed_lesson_next_step(repo_root: Path) -> str:
+    """Explain the explicit next step for an empty, newly-created ledger.
+
+    This used to live in the startup-context module, which made a one-time
+    ledger bootstrap depend on an every-session host hook. Keep the useful
+    command guidance at the explicit opt-in boundary instead.
+    """
+    seed_command = _records.repo_or_installed_command(
+        repo_root, "seed_lesson_transitions.py", "--repo-root", "."
+    )
+    return (
+        "Next: a lesson enters the ledger only from a retro bullet tagged "
+        "`recurrence-class: <slug>`; tag one, then append its seed transition with "
+        f"`{seed_command} --dry-run` to inspect and the same command without "
+        "`--dry-run` to write. Until at least one lesson is seeded, "
+        "`record_lesson_session.py` refuses with `preview selected no eligible "
+        "lessons` and the only honest retro disposition stays `not-evaluated / "
+        "missing-start`."
+    )
 
 
 def empty_ledger_payload() -> dict[str, Any]:
@@ -138,7 +148,7 @@ def main() -> int:
         output_dir=output_dir,
         summary_path=_records.summary_path(root),
     )
-    step = next_step(root)
+    step = seed_lesson_next_step(root)
     # Unconditional YAML. The retired receipt line was a strict projection of
     # `path`, `lesson_count`, and `transition_count`; `next_step` is the sentence
     # that says an empty ledger is not a finished lifecycle, and it has always

@@ -102,7 +102,7 @@ Authoritative detail lives in:
 - [runtime-capability-contract.md](./runtime-capability-contract.md) for access-layer policy
 - [external-integrations.md](./external-integrations.md) for integration ownership
 - [artifact-policy.md](./artifact-policy.md) for durability classes
-- [handoff.md](./handoff.md) for the next-session pickup path
+- [goal-lifecycle.md](./goal-lifecycle.md) for the active goal and parent-cursor pickup path
 
 ### Adapters
 
@@ -187,7 +187,7 @@ Authoritative detail lives in:
 Surface:
 
 - `charness-artifacts/**`
-- [handoff.md](./handoff.md) — the workflow trigger, current state, and next-session pickup
+- [goal-lifecycle.md](./goal-lifecycle.md) — the active goal, current state, and parent-cursor pickup
 
 Owns:
 
@@ -226,7 +226,7 @@ Does not own:
 Authoritative detail lives in:
 
 - [artifact-policy.md](./artifact-policy.md) — the visibility rule and the hidden-knowledge durability class
-- [handoff.md](./handoff.md) when the next maintainer needs a visible summary
+- [goal-lifecycle.md](./goal-lifecycle.md) when the next maintainer needs the active goal state
 
 ## Precedence Inside `charness`
 
@@ -259,7 +259,7 @@ Use this order when building context for a `charness` task:
 1. Start from the user request and route to the likely public skill.
 2. Read the repo-level operating context that can change the move:
    - [AGENTS.md](../AGENTS.md) — repo-wide stance, routing, and external-boundary rules
-   - [handoff.md](./handoff.md) — the active workflow trigger and current repo state
+   - [goal-lifecycle.md](./goal-lifecycle.md) — the active goal and current repo state
    - any obviously relevant repo policy doc
 3. Resolve the repo-local adapter or manifest for the selected surface.
 4. Read the current visible artifact or runtime state only if it is relevant to
@@ -280,7 +280,7 @@ The key split is:
 For a `quality` review:
 
 1. route with [`skills/public/quality/SKILL.md`](../skills/public/quality/SKILL.md)
-2. read [handoff.md](./handoff.md) and current repo policy docs
+2. read [goal-lifecycle.md](./goal-lifecycle.md) and current repo policy docs
 3. resolve [`.agents/quality-adapter.yaml`](../.agents/quality-adapter.yaml)
 4. inspect [../charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md)
    as history and current posture summary

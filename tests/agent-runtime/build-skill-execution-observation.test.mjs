@@ -98,7 +98,7 @@ test("collectReadBasenames excludes Edit and Write paths", () => {
 });
 
 test("parseReadCommandBasenames counts sed/cat/head/tail/less file operands", () => {
-	assert.deepEqual([...parseReadCommandBasenames("sed -n '1,120p' docs/handoff.md")], ["handoff.md"]);
+	assert.deepEqual([...parseReadCommandBasenames("sed -n '1,120p' docs/index.md")], ["handoff.md"]);
 	assert.deepEqual([...parseReadCommandBasenames("cat skills/a/x.md skills/b/y.md")].sort(), ["x.md", "y.md"]);
 	assert.ok(parseReadCommandBasenames("head -n 30 docs/operating-contract.md").has("operating-contract.md"));
 	assert.ok(parseReadCommandBasenames("less plugins/charness/skills/retro/references/expert-lens.md").has("expert-lens.md"));
@@ -138,8 +138,8 @@ test("parseReadCommandBasenames keeps the pattern dropped when an arity flag pre
 test("parseReadCommandBasenames ignores piped-stdin readers and redirect targets", () => {
 	// `head` reads stdin (no file operand); `> out.md` is a write target, not a read.
 	assert.equal(parseReadCommandBasenames("git show 29260c26 --stat | head -30").size, 0);
-	assert.ok(!parseReadCommandBasenames("cat docs/handoff.md > /tmp/out.md").has("out.md"));
-	assert.ok(parseReadCommandBasenames("cat docs/handoff.md > /tmp/out.md").has("handoff.md"));
+	assert.ok(!parseReadCommandBasenames("cat docs/index.md > /tmp/out.md").has("out.md"));
+	assert.ok(parseReadCommandBasenames("cat docs/index.md > /tmp/out.md").has("handoff.md"));
 });
 
 test("parseReadCommandBasenames ignores non-read commands", () => {

@@ -98,6 +98,7 @@ def _failure_receipt(
         "packet_identity": args.packet_identity,
         "reviewed_input_identity": args.reviewed_input_identity,
         "parent_receipt_identity": args.parent_receipt_identity,
+        "boundary_mode": args.boundary_mode,
         "boundary_fingerprint": args.boundary_fingerprint,
         "execution_mode": args.execution_mode,
         "timeout_seconds": args.timeout_seconds,
@@ -143,7 +144,12 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--packet-identity", required=True)
     parser.add_argument("--reviewed-input-identity", required=True)
     parser.add_argument("--parent-receipt-identity", required=True)
-    parser.add_argument("--boundary-fingerprint", required=True)
+    parser.add_argument("--boundary-fingerprint")
+    parser.add_argument(
+        "--boundary-mode",
+        choices=("read-only-worker", "shared-tree-fingerprint"),
+        default="read-only-worker",
+    )
     parser.add_argument(
         "--execution-mode",
         choices=("file-backed-worker", "typed-subagent"),

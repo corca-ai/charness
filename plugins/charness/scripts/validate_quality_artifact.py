@@ -29,7 +29,7 @@ _skill_markdown_lib = import_repo_module(__file__, "scripts.skill_markdown_lib")
 _adapter_version_verdict = import_repo_module(__file__, "scripts.adapter_version_verdict")
 _surface_contract = import_repo_module(__file__, "scripts.quality_surface_contract")
 # Shared with debug through the module that owns the measurement; see its docstring
-# for why dated artifacts are grandfathered and the handoff is not.
+# for why dated artifacts are grandfathered.
 ValidationError = _scripts_artifact_validator_module.ValidationError
 add_one_pass_args = _scripts_artifact_validator_module.add_one_pass_args
 add_artifact_path_arg = _scripts_artifact_validator_module.add_artifact_path_arg

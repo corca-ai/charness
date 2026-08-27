@@ -127,7 +127,7 @@ def test_a_named_debug_path_that_resolves_to_nothing_refuses_instead_of_passing(
     # The two no-ops the refusal must NOT swallow, both load-bearing because `--paths` is
     # fed by tools passing a slice of the changed set.
     unowned = run_script(
-        "scripts/validate_debug_artifact.py", "--repo-root", str(repo), "--paths", "docs/handoff.md"
+        "scripts/validate_debug_artifact.py", "--repo-root", str(repo), "--paths", "docs/index.md"
     )
     assert unowned.returncode == 0, unowned.stdout + unowned.stderr
 

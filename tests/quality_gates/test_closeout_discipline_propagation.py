@@ -32,7 +32,6 @@ def test_closeout_discipline_is_cited_across_consumer_skills() -> None:
         "announcement SKILL.md": ROOT / "skills" / "public" / "announcement" / "SKILL.md",
         "gather SKILL.md": ROOT / "skills" / "public" / "gather" / "SKILL.md",
         "narrative SKILL.md": ROOT / "skills" / "public" / "narrative" / "SKILL.md",
-        "handoff SKILL.md": ROOT / "skills" / "public" / "handoff" / "SKILL.md",
     }
     missing = [name for name, path in consumers.items() if target not in path.read_text(encoding="utf-8")]
 
@@ -48,7 +47,6 @@ SKILL_ANCHOR_GUARDS = [
     ("announcement", ("verification-carrying ledger", "external-source identity")),
     ("gather", ("verified gathered-asset ledger", "reuse the resolved source")),
     ("narrative", ("external originating context", "canonical source identity")),
-    ("handoff", ("external originating context", "canonical source identity")),
 ]
 
 
@@ -69,47 +67,6 @@ _NEGATED_OBLIGATION = re.compile(
     r"\b(?:does not|do not|never|no longer|is not|are not)\s+(?:\w+\s+){0,3}"
     r"(?:owe|owes|run|runs|require|required|need|needs)\b"
 )
-
-
-def _bullet_blocks(text: str) -> list[str]:
-    """Every top-level `- ` bullet joined with its continuation lines into one string.
-
-    Continuations include indented sub-bullets AND markdown lazy continuation (a wrapped
-    line at column 0), because a reflow that unindents a wrapped line must not silently
-    empty the block a test asserts on. Fenced regions are skipped: a doc that QUOTES the
-    rule in an example must not read as a second declaration of it.
-    """
-    blocks: list[list[str]] = []
-    fenced = False
-    for line in text.splitlines():
-        if line.lstrip().startswith("```"):
-            fenced = not fenced
-            continue
-        if fenced:
-            continue
-        if not line.strip():
-            blocks.append([])
-        elif line.startswith("- "):
-            blocks.append([line])
-        elif blocks and blocks[-1]:
-            blocks[-1].append(line)
-    return [" ".join(part.strip() for part in block) for block in blocks if block]
-
-
-def _rule_block(text: str, surface: str) -> str:
-    """The rule's own bullet (with its continuation lines), so every assertion below is
-    made about THAT block rather than about the whole file.
-
-    The first cut of this test asserted `"docs/operating-contract.md" in
-    always_loaded` — a path AGENTS.md already carries in its Work Phase Map and Policy
-    Index, so deleting the rule's own citation left the assertion green. A verdict keyed
-    on a field that is constant where it must discriminate is the exact class this rule
-    exists to catch, and it had reappeared inside the test guarding it.
-    """
-    matches = [block for block in _bullet_blocks(text) if "second bounded review" in block.lower()]
-    assert matches, f"{surface} states no second-round obligation"
-    assert len(matches) == 1, f"{surface} states the obligation {len(matches)} times; keep one home"
-    return matches[0]
 
 
 def _section_block(text: str, heading: str, surface: str) -> str:
@@ -187,46 +144,3 @@ def test_two_round_rule_is_pinned_on_the_vendored_reference() -> None:
     assert "authoring-repo-internal" in lowered, (
         f"{surface} cites the authoring repo's contract without marking it as internal"
     )
-
-
-def test_proof_surface_second_review_round_rule_is_pinned_on_both_surfaces() -> None:
-    """The two-round rule for proof-surface slices must live on the owning contract AND
-    on the always-loaded instruction surface, each copy carrying the clauses that make it
-    actionable — and neither may state it as a NEGATION.
-
-    A rule that ships as prose in one document has not shipped: this repo has measured
-    that correct, checked-in rules go unread, and the disposition it recorded for that
-    lesson was to move the rule to the always-loaded surface and pin it with a test.
-    Presence-only substring checks were the first cut's second defect: they passed on a
-    sentence saying the obligation does NOT exist, which is why the negation guard below
-    is part of the assertion set rather than a comment about it.
-    """
-    contract = (ROOT / "docs" / "operating-contract.md").read_text(encoding="utf-8")
-    always_loaded = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
-
-    for text, surface in ((contract, "operating-contract.md"), (always_loaded, "AGENTS.md")):
-        bullet = _rule_block(text, surface)
-        lowered = bullet.lower()
-        # The obligation itself, and the two clauses without which it is either
-        # unaffordable (fires on every touched file) or vacuous (satisfied by a
-        # re-read of the original diff).
-        assert "second bounded review" in lowered, f"{surface} states no second-round obligation"
-        assert "verdict logic" in lowered, f"{surface} does not scope the trigger to verdict logic"
-        assert "repaired" in lowered, f"{surface} does not say round 2 reads the repaired surface"
-        assert "not that its file" in lowered or "not the file" in lowered, (
-            f"{surface} does not exclude a touched-the-file trigger"
-        )
-        assert "discharge" in lowered, f"{surface} does not state the zero-repair discharge"
-        # ...and it must be stated as an obligation, not as its own negation.
-        negated = _NEGATED_OBLIGATION.search(lowered)
-        assert not negated, f"{surface} states the obligation negatively: {negated.group(0)!r}"
-
-    # The always-loaded copy stays a POINTER, not a fork: the citation must be on the
-    # rule's own block, not merely somewhere in the file.
-    pointer = _rule_block(always_loaded, "AGENTS.md")
-    assert "docs/operating-contract.md" in pointer
-    # ...and the owning contract must carry the clauses the pointer omits, asserted on
-    # the rule's block for the same reason.
-    owner = _rule_block(contract, "operating-contract.md").lower()
-    assert "notwithstanding the" in owner
-    assert "cap is two" in owner

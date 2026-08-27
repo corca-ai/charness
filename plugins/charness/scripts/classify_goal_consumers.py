@@ -25,17 +25,12 @@ TOKEN_RULES: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("at-file-activation", re.compile(r"/goal\s+@")),
     ("running-memory", re.compile(r"running[- ]memory|single durable|living scratchpad")),
     ("goal-template", re.compile(r"\bgoal_artifact_template\b")),
-    ("auto-draft-goal", re.compile(r"\bauto_draft_goal\b")),
-    ("draft-goal-from-chunk", re.compile(r"\bdraft_goal_from_chunk\b")),
-    ("chunked-routing-auto-draft", re.compile(r"\bchunked_routing_auto_draft\b")),
 )
 _HISTORICAL_MARKERS = (
     "test_goal_artifact",
-    "test_handoff_chunker",
     "test_goal_coordination_floors",
     "coverage_debt/",
     "goal-artifact.md",
-    "handoff-chunked-routing.md",
     "docs/deferred-decisions.md",
     "docs/prompt-mutation-policy.md",
     "docs/public-skill-dogfood.json",
@@ -47,7 +42,6 @@ _HISTORICAL_PATH_PREFIXES = (
 _HISTORICAL_PATHS = frozenset(
     {
         "docs/deferred-decisions.md",
-        "docs/handoff-chunked-routing.md",
         "docs/prompt-mutation-policy.md",
         "docs/public-skill-dogfood.json",
         "scripts/generate_prompt_mutants.py",
@@ -72,7 +66,6 @@ _DRAFT_PROVENANCE_PATHS = frozenset(
         "scripts/retro_persistence_lib.py",
         "scripts/setup_commit_discipline_lib.py",
         "scripts/slice_manifest_lib.py",
-        "scripts/validate_retro_handoff_wiring.py",
         "scripts/validate_slice_manifest.py",
         "skills/public/achieve/adapter.example.yaml",
         "skills/public/achieve/scripts/achieve_adapter_policy.py",
@@ -143,8 +136,6 @@ def _owner(relative: str) -> str:
         return "goal-run-provider"
     if relative.startswith(("scripts/", "skills/public/retro/", "skills/public/critique/", "skills/public/prove/", "skills/public/release/", "skills/public/quality/", "skills/shared/")):
         return "goal-evidence-lineage"
-    if relative.startswith("skills/public/handoff/"):
-        return "goal-binding-v1"
     if relative.startswith(("docs/", ".agents/", "README.md")):
         return "achieve-orchestration"
     if relative.startswith("tests/"):

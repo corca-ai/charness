@@ -28,7 +28,6 @@ Use `<repo-root>/.agents/release-adapter.yaml`.
 - `post_publish_version_readback`
 - `post_publish_doctor_readback`
 - `post_publish_distinct_channel_probe`
-- `post_publish_baton_path`
 - `update_instructions`
 - `real_host_required_surfaces`
 - `real_host_required_path_globs`

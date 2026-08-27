@@ -57,20 +57,20 @@ def test_install_adds_post_tool_use_entry_and_records_state(fake_repo: Path, fak
     assert "claude:skill_anchor_edit_guard" in state
 
 
-def test_install_does_not_touch_session_start_entries(fake_repo: Path, fake_home: Path) -> None:
+def test_install_does_not_touch_foreign_post_tool_use_entries(fake_repo: Path, fake_home: Path) -> None:
     settings_path = lib.default_claude_settings_path(fake_home)
     settings_path.parent.mkdir(parents=True)
     settings_path.write_text(
-        json.dumps({"hooks": {"SessionStart": [{"matcher": "", "hooks": [{"type": "command", "command": "foreign"}]}]}}),
+        json.dumps({"hooks": {"PostToolUse": [{"matcher": "Bash", "hooks": [{"type": "command", "command": "foreign"}]}]}}),
         encoding="utf-8",
     )
 
     guard.install_skill_anchor_guard_claude_hook(fake_repo, home=fake_home)
 
     settings = _claude_settings(fake_home)
-    assert len(settings["hooks"]["SessionStart"]) == 1
-    assert settings["hooks"]["SessionStart"][0]["hooks"][0]["command"] == "foreign"
-    assert len(settings["hooks"]["PostToolUse"]) == 1
+    entries = settings["hooks"]["PostToolUse"]
+    assert len(entries) == 2
+    assert entries[0]["hooks"][0]["command"] == "foreign"
 
 
 def test_uninstall_removes_entry_and_state(fake_repo: Path, fake_home: Path) -> None:
@@ -244,39 +244,6 @@ def test_install_refuses_to_rewrite_a_matcher_shared_with_a_foreign_command(
     assert json.loads(settings_path.read_text(encoding="utf-8"))["hooks"][guard.GUARD_EVENT] == [shared]
 
 
-def test_session_routing_status_and_install_agree_on_matcher_identity(
-    fake_repo: Path, fake_home: Path
-) -> None:
-    """Status and install must key on the same identity. Install repairs an entry whose
-    matcher cannot fire; a status that still reports it present would leave the two
-    disagreeing about whether the hook is installed.
-    """
-    import host_hook_session_routing as routing
-
-    settings_path = lib.default_claude_settings_path(fake_home)
-    settings_path.parent.mkdir(parents=True, exist_ok=True)
-    command = routing._command(fake_repo, "claude")
-    settings_path.write_text(
-        json.dumps(
-            {"hooks": {lib.SESSION_START_EVENT: [{"matcher": "compact", "hooks": [{"type": "command", "command": command}]}]}}
-        ),
-        encoding="utf-8",
-    )
-    adapter = {"session_routing": {"claude": "enabled"}}
-
-    status = routing.session_routing_status(fake_repo, adapter=adapter, home=fake_home)
-    assert status["hosts"]["claude"]["actual"]["present"] is False
-
-    result = routing.install_session_routing_claude_hook(fake_repo, home=fake_home)
-    # Repaired in place, not appended alongside the inert one: `present: True`
-    # alone would also hold if install had left the dead entry and added a second.
-    assert result["repaired_matcher"] is True
-    entries = json.loads(settings_path.read_text(encoding="utf-8"))["hooks"][lib.SESSION_START_EVENT]
-    assert len(entries) == 1
-    after = routing.session_routing_status(fake_repo, adapter=adapter, home=fake_home)
-    assert after["hosts"]["claude"]["actual"]["present"] is True
-
-
 def test_an_unreadable_settings_file_is_drift_for_a_disabled_intent(
     fake_repo: Path, fake_home: Path
 ) -> None:
@@ -295,45 +262,6 @@ def test_an_unreadable_settings_file_is_drift_for_a_disabled_intent(
     assert status["hosts"]["claude"]["actual"]["settings_readable"] is False
     assert status["in_sync"] is False
     assert any("unreadable" in line for line in status["drift"])
-
-
-@pytest.mark.parametrize(
-    "block_matcher, expected_present",
-    [("startup|resume|clear", True), ("startup|resume|clear|compact", True), ("compact", False), (None, True)],
-    ids=["exact", "widened", "cannot-fire", "no-matcher-line"],
-)
-def test_codex_toml_presence_reads_the_block_matcher_back(
-    fake_repo: Path, fake_home: Path, block_matcher: str | None, expected_present: bool
-) -> None:
-    """Matcher coverage IS establishable on the TOML path.
-
-    The first cut refused a matcher-keyed verdict here on the premise that the block
-    scan could not read matchers back. It can: `codex_toml_block` writes
-    `matcher = "..."`, so the honest fix is to read it, not to refuse. A block under
-    a matcher that cannot fire must read absent, exactly as on the JSON path.
-    """
-    import host_hook_codex_toml_lib as toml_lib
-    import host_hook_session_routing as routing
-
-    config = lib.default_codex_config_toml_path(fake_home)
-    config.parent.mkdir(parents=True, exist_ok=True)
-    command = routing._command(fake_repo, "codex")
-    config.write_text(
-        toml_lib.codex_toml_block(command, routing.SESSION_ROUTING_MARKER, matcher=block_matcher),
-        encoding="utf-8",
-    )
-
-    actual = lib.detect_host_hook_actual(
-        fake_repo,
-        "codex",
-        home=fake_home,
-        state_key=routing._state_key("codex"),
-        script_relative=routing.SESSION_ROUTING_SCRIPT_RELATIVE,
-        toml_marker=routing.SESSION_ROUTING_MARKER,
-        matcher=routing.SESSION_ROUTING_MATCHER,
-    )
-
-    assert actual["present"] is expected_present
 
 
 def _payload(file_path: str) -> io.StringIO:

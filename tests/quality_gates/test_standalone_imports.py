@@ -206,13 +206,13 @@ def test_an_empty_changed_scope_says_nothing_was_checked(clean_repo: Path) -> No
     resolved against the process CWD rather than `--repo-root`, so they matched by luck
     in the real checkout and matched NOTHING anywhere else.
     """
-    result = _run_check(clean_repo, "--changed", "docs/handoff.md")
+    result = _run_check(clean_repo, "--changed", "docs/index.md")
 
     assert result.returncode == 0
     payload = _report(result)
     assert "NOTHING WAS CHECKED" in payload["scope_note"]
-    assert "unmatched: docs/handoff.md" in payload["scope_note"]
-    assert payload["unmatched_changed"] == ["docs/handoff.md"]
+    assert "unmatched: docs/index.md" in payload["scope_note"]
+    assert payload["unmatched_changed"] == ["docs/index.md"]
 
 
 def test_changed_paths_resolve_against_the_repo_root_not_the_cwd(clean_repo: Path) -> None:
@@ -379,8 +379,8 @@ def test_a_partial_run_names_unmatched_paths_even_when_something_matched() -> No
     this shape routinely: a rename stages one path that resolves and one that does not, and
     the silent-about-the-other behaviour is exactly what B5 removed.
     """
-    result = _run_check(ROOT, "--changed", MERGE_REL, "docs/handoff.md")
+    result = _run_check(ROOT, "--changed", MERGE_REL, "docs/index.md")
 
     payload = _report(result)
     assert "PARTIAL: checked 1 of" in payload["scope_note"]
-    assert "unmatched: docs/handoff.md" in payload["scope_note"]
+    assert "unmatched: docs/index.md" in payload["scope_note"]

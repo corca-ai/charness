@@ -37,7 +37,6 @@ INVENTORY_PATH = ROOT / "skills" / "public" / "quality" / "scripts" / "inventory
 DOMINANCE = load_path_module("command_dominance_lib_gaps", LIB_PATH)
 INVENTORY = load_path_module("inventory_command_dominance_gaps", INVENTORY_PATH)
 GATE = importlib.import_module("scripts.check_command_dominance")
-HANDOFF = importlib.import_module("scripts.validate_handoff_artifact")
 UNIVERSE = importlib.import_module("scripts.check_runtime_budget_universe")
 SAMPLER = importlib.import_module("scripts.sample_mutation_files")
 
@@ -447,24 +446,6 @@ def test_skill_script_names_the_skill_and_the_tree_when_it_cannot_resolve(tmp_pa
         skill_script(tmp_path, "quality", "nope.py")
 
 
-def test_the_handoff_rule_is_inert_when_the_quality_skill_is_not_installed(
-    tmp_path, monkeypatch
-) -> None:
-    """`_dominance_registry` raising FileNotFoundError must not fail the handoff.
-
-    The registry exists but the library beside it does not -- a partial install.
-    Refusing there would block a repo's handoff over a missing sibling skill.
-    """
-    artifact = tmp_path / "handoff.md"
-    artifact.write_text("# Handoff\n\n`python3 -m pytest tests`\n", encoding="utf-8")
-
-    def _absent(*_args, **_kwargs):
-        raise FileNotFoundError("quality script command_dominance_lib.py not found")
-
-    monkeypatch.setattr(HANDOFF, "_dominance_registry", _absent)
-    HANDOFF.validate_no_dominated_commands(artifact, tmp_path)
-
-
 def test_the_sampler_reports_no_eligible_against_the_command_it_actually_probed(
     tmp_path, monkeypatch, capsys
 ) -> None:
@@ -632,24 +613,6 @@ def test_a_focused_run_with_no_path_target_is_not_dominated() -> None:
 # --------------------------------------------------------------------------
 
 
-def test_the_handoff_seam_refuses_a_registry_its_parser_could_not_fully_read(tmp_path) -> None:
-    """The repair's own refusal path.
-
-    The handoff seam used to read the registry with the DROPPING parser while its
-    docstring promised a malformed registry IS refused, so a flow-style registry
-    parsed to zero rules and every handoff prescribing a dominated command passed
-    while the sibling gate refused the same file loudly.
-    """
-    (tmp_path / ".agents").mkdir()
-    (tmp_path / ".agents" / "command-dominance.yaml").write_text(
-        REGISTRY_YAML + "\t- an uninterpretable line\n", encoding="utf-8"
-    )
-    artifact = tmp_path / "handoff.md"
-    artifact.write_text("# Handoff\n\n`python3 -m pytest tests`\n", encoding="utf-8")
-    with pytest.raises(HANDOFF.ValidationError, match="dropped"):
-        HANDOFF.validate_no_dominated_commands(artifact, tmp_path)
-
-
 def test_the_focus_arm_continues_to_the_next_rule_rather_than_abandoning_them() -> None:
     """`continue`, not `return None`, and a TWO-rule registry is what tells them apart.
 
@@ -725,21 +688,6 @@ def test_a_shell_operator_inside_quotes_does_not_split_the_command() -> None:
     assert DOMINANCE.match_command("echo hi && pytest tests", registry) is not None
     # A quoted operator is not an operator.
     assert DOMINANCE.split_chunks('pytest -k "a && b"') == ['pytest -k "a && b"']
-
-
-def test_the_handoff_seam_renders_a_verdict_rather_than_a_traceback(tmp_path) -> None:
-    """A `RegistryError` used to escape as an uncaught traceback.
-
-    The sibling gate has `test_the_entrypoint_renders_a_named_error_rather_than_a_traceback`;
-    this seam had no counterpart, so a registry naming an unknown version killed
-    the validator instead of failing it. Found by a round-2 reviewer.
-    """
-    (tmp_path / ".agents").mkdir()
-    (tmp_path / ".agents" / "command-dominance.yaml").write_text("version: 99\n", encoding="utf-8")
-    artifact = tmp_path / "handoff.md"
-    artifact.write_text("# Handoff\n\n`python3 -m pytest tests`\n", encoding="utf-8")
-    with pytest.raises(HANDOFF.ValidationError, match="cannot be read as a dominance registry"):
-        HANDOFF.validate_no_dominated_commands(artifact, tmp_path)
 
 
 def test_the_manifest_records_the_command_the_probe_actually_ran() -> None:

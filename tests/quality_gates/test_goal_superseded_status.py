@@ -92,7 +92,7 @@ def test_unrelated_leading_words_and_extended_tokens_are_not_terminal(pursue, st
 
 
 def test_superseded_is_not_a_shaping_status(pursue) -> None:
-    """Shaping floors (backlog recount, closeout binding plan) apply to a goal
+    """The shaping backlog floor applies to a goal
     whose scope is still being decided. An ended one is not that."""
     assert pursue.is_shaping_status("superseded") is False
 
@@ -256,7 +256,7 @@ def test_creating_straight_to_superseded_is_refused(goal_lib, tmp_path: Path) ->
     assert not goal_lib.goal_path(repo, "2026-08-22", "fresh").exists()
 
 
-def test_creating_superseded_with_only_the_handoff_record_is_refused(
+def test_creating_superseded_with_only_the_transition_record_is_refused(
     goal_lib, tmp_path: Path
 ) -> None:
     repo = tmp_path / "repo"
@@ -566,7 +566,7 @@ def test_the_validator_actually_fires_the_record_floor(tmp_path: Path) -> None:
 
 def test_an_annotated_superseded_status_reaches_the_record_floor(tmp_path: Path) -> None:
     """`is_terminal_status` normalizes the leading token, so an annotated status
-    skips the cadence floor -- while a bare `== "superseded"` in the validator did
+    reaches the record floor -- while a bare `== "superseded"` in the validator did
     NOT fire the record floor on the same string. One normalizer, both readers,
     proven by RUNNING the validator rather than by grepping it."""
     payload = _run_checker(tmp_path, "SUPERSEDED (2026-08-22) — folded into the successor")

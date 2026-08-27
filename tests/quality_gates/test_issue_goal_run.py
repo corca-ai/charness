@@ -37,16 +37,6 @@ def _operation(tmp_path: Path, operation: str, target: dict[str, object], **extr
     return path
 
 
-def _ready_provider(module: dict[str, object]) -> None:
-    module["command_apply"].__globals__["_preflight"] = lambda **_kwargs: {
-        "ok": True,
-        "status": "ready",
-        "outcome": "verified-read",
-        "mutation_invoked": False,
-        "parent": {"number": 724, "state": "OPEN"},
-    }
-
-
 def test_goal_run_plan_preflight_is_file_bound_and_typed(tmp_path: Path) -> None:
     module = _provider()
     plan = tmp_path / "plan.json"
@@ -84,7 +74,9 @@ def test_goal_run_plan_preflight_is_file_bound_and_typed(tmp_path: Path) -> None
 
 def test_goal_run_read_returns_parent_and_real_graph(tmp_path: Path) -> None:
     module = _provider()
-    _ready_provider(module)
+    module["command_read"].__globals__["_preflight"] = lambda **_kwargs: (_ for _ in ()).throw(
+        AssertionError("ordinary graph reads must not run a duplicate readiness preflight")
+    )
     module["command_read"].__globals__["_read_graph"] = lambda *_args, **_kwargs: {
         "ok": True,
         "kind": "charness.goal-run-read/v1",
@@ -109,7 +101,9 @@ def test_goal_run_read_returns_parent_and_real_graph(tmp_path: Path) -> None:
 
 def test_goal_run_apply_records_started_and_terminal_for_read(tmp_path: Path) -> None:
     module = _provider()
-    _ready_provider(module)
+    module["command_apply"].__globals__["_preflight"] = lambda **_kwargs: (_ for _ in ()).throw(
+        AssertionError("ordinary applies must not run a duplicate readiness preflight")
+    )
     module["command_apply"].__globals__["READ"] = SimpleNamespace(
         read_issue_with_comments=lambda *_args, **_kwargs: {
             "issue": {
@@ -149,13 +143,16 @@ def test_goal_run_apply_uses_record_operation_without_backend_mutation(tmp_path:
 
     rc = module["command_apply"](
         Namespace(repo=REPO, number=724, operation_file=operation, repo_root=tmp_path),
-        resolve_backend=lambda _root: {"adapter_ok": True, "backend": {"id": "unused"}},
+        resolve_backend=lambda _root: (_ for _ in ()).throw(
+            AssertionError("local observation must not select a provider")
+        ),
         emit=emitted.append,
     )
 
     assert rc == 0
     assert emitted[0]["status"] == "local-only"
     assert emitted[0]["outcome"] == "verified-read"
+    assert emitted[0]["selected_backend"]["id"] == "local"
 
 
 def test_goal_run_apply_rejects_missing_operation_identity_before_provider(tmp_path: Path) -> None:
@@ -202,14 +199,15 @@ def test_goal_run_close_refuses_open_child_before_observation_or_close(tmp_path:
         ),
         encoding="utf-8",
     )
-    module["command_close"].__globals__["PROVIDER"]._preflight = lambda **_kwargs: {
-        "ok": True,
-        "parent": {
-            "number": 724,
-            "state": "OPEN",
-            "body": '<!-- charness-goal-run:v1\n{"draft_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","binding_sha256":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}\n-->\n',
-        },
-    }
+    module["command_close"].__globals__["READ"] = SimpleNamespace(
+        read_issue_with_comments=lambda *_args, **_kwargs: {
+            "issue": {
+                "number": 724,
+                "state": "OPEN",
+                "body": '<!-- charness-goal-run:v1\n{"draft_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","binding_sha256":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}\n-->\n',
+            }
+        }
+    )
     module["command_close"].__globals__["TRACKER"] = SimpleNamespace(
         list_sub_issues=lambda *_args, **_kwargs: {
             "children": [{"number": 725, "state": "OPEN"}]
@@ -230,6 +228,80 @@ def test_goal_run_close_refuses_open_child_before_observation_or_close(tmp_path:
     assert emitted[0]["status"] == "close-refused"
     assert "not CLOSED" in emitted[0]["error"]
     assert not (tmp_path / "observations").exists()
+
+
+def test_goal_run_close_reuses_parent_read_for_carrier_preflight(tmp_path: Path) -> None:
+    module = runpy.run_path(str(CLOSE_PATH))
+    comment = tmp_path / "close.md"
+    comment.write_text("Closes the Goal Run.\n", encoding="utf-8")
+    proof = tmp_path / "proof.json"
+    proof.write_text(
+        json.dumps(
+            {
+                "kind": "charness.goal-run-close-proof/v1",
+                "repo": REPO,
+                "parent_number": 724,
+                "attempt_id": "close-2",
+                "draft_sha256": "a" * 64,
+                "binding_sha256": "b" * 64,
+                "observation_dir": "observations",
+                "comment_file": "close.md",
+                "whole_system_proof": True,
+                "children": [
+                    {
+                        "repo": REPO,
+                        "number": 725,
+                        "evidence": {"kind": "issue-owned-closeout/v1", "identity": "comment"},
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    parent = {
+        "number": 724,
+        "state": "OPEN",
+        "body": '<!-- charness-goal-run:v1\n{"draft_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","binding_sha256":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}\n-->\n',
+        "comments": [],
+    }
+    child = {
+        "number": 725,
+        "state": "CLOSED",
+        "comments": [{"url": "comment"}],
+    }
+    reads: list[int] = []
+
+    def read_issue(_repo: str, number: int, **_kwargs: object) -> dict[str, object]:
+        reads.append(number)
+        return {"issue": parent if number == 724 else child}
+
+    module["command_close"].__globals__["READ"] = SimpleNamespace(
+        read_issue_with_comments=read_issue
+    )
+    module["command_close"].__globals__["TRACKER"] = SimpleNamespace(
+        list_sub_issues=lambda *_args, **_kwargs: {"children": [{"number": 725, "state": "CLOSED"}]}
+    )
+    captured: dict[str, object] = {}
+
+    def close_with_comment(*_args: object, **kwargs: object) -> dict[str, object]:
+        captured.update(kwargs)
+        return {"carrier": "test", "preflight_state": kwargs["preflight_state"]}
+
+    module["command_close"].__globals__["CLOSE"] = SimpleNamespace(
+        close_with_comment=close_with_comment
+    )
+    emitted: list[dict[str, object]] = []
+
+    rc = module["command_close"](
+        Namespace(repo=REPO, number=724, proof_file=proof, repo_root=tmp_path),
+        resolve_backend=lambda _root: {"adapter_ok": True, "backend": {"id": "gh"}},
+        emit=emitted.append,
+    )
+
+    assert rc == 0
+    assert reads == [724, 725]
+    assert captured["preflight_state"] == parent
+    assert emitted[0]["status"] == "verified-write"
 
 
 def test_generic_close_refuses_goal_run_carrier_before_backend(tmp_path: Path) -> None:

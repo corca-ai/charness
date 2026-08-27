@@ -17,7 +17,6 @@ FRESHNESS_LABEL = "validate-current-pointer-freshness"
 FRESHNESS_SCRIPT = Path("scripts/validate_current_pointer_freshness.py")
 RUN_QUALITY_SCRIPT = Path("scripts/run-quality.sh")
 CURRENT_POINTERS = (
-    Path("docs/handoff.md"),
     Path("charness-artifacts/quality/latest.md"),
 )
 QUALITY_POINTER = Path("charness-artifacts/quality/latest.md")
@@ -33,10 +32,6 @@ RUNTIME_SIGNALS = Path(".charness/quality/runtime-signals.json")
 CAPABILITY_CATALOG = Path("charness-artifacts/capability-catalog/latest.json")
 INTEGRATIONS_DIR = Path("integrations/tools")
 STALE_POINTER_PHRASES = {
-    Path("docs/handoff.md"): (
-        "freshness validator를 첫 slice로 잡는다",
-        "freshness validator를 첫 slice",
-    ),
     Path("charness-artifacts/quality/latest.md"): (
         "No deterministic freshness check yet",
         "add a narrow freshness check so rolling pointers",

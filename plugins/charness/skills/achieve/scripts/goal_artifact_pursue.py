@@ -23,16 +23,11 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-# Before-phase placeholder marker the handoff auto-draft leaves until shaping
-# fills it; its presence means `/goal` must fail-fast to `/achieve`.
+# Before-phase placeholder marker the achieve draft leaves until shaping fills
+# it; its presence means `/goal` must fail-fast to `/achieve`.
 UNSHAPED_MARKER = re.compile(r"to be filled by the achieve before-phase", re.IGNORECASE)
 
 _H2 = re.compile(r"^## (.+?)[ \t]*\r?$", re.MULTILINE)
-
-# Activation checks only the minimum shape of this plan. It deliberately does
-# not judge SHA values, reviewer quality, or proof truth; those stay with the
-# closeout evidence and fresh-eye workflows. The typed producer owns the
-# vocabulary and field grammar; this module only composes its verdict.
 
 #: What a ``pursue_readiness`` verdict does NOT establish, carried in the payload
 #: so the caller reads the answer's scope from the answer instead of re-deriving
@@ -59,9 +54,6 @@ def _load_backlog_floor():
 
 _BACKLOG = _load_backlog_floor()
 _LIFECYCLE = _load_sibling("goal_artifact_lifecycle")
-_CLOSEOUT_PLAN = _load_sibling("goal_artifact_closeout_plan")
-
-CLOSEOUT_PLAN_FIELDS = _CLOSEOUT_PLAN.CLOSEOUT_PLAN_FIELDS
 
 NON_SHAPING_STATUSES = _LIFECYCLE.NON_SHAPING_STATUSES
 TERMINAL_STATUSES = _LIFECYCLE.TERMINAL_STATUSES
@@ -74,8 +66,7 @@ SCOPE_NOT_CHECKED = (
     "status validity",
     "activation-line shape",
     "closeout evidence",
-    "closeout binding values and final packet identity",
-    "section CONTENT beyond the hollow/template, closeout-plan, and backlog-recount FIELDS this reads",
+    "section CONTENT beyond the hollow/template and backlog-recount fields this reads",
 )
 
 
@@ -86,8 +77,6 @@ def _reason(
     balanced: bool,
     discussion: dict[str, Any],
     discussion_warning: str,
-    closeout_plan_missing_fields: list[str],
-    closeout_plan_duplicate: bool,
     duplicate_sections: list[str],
     backlog_recount_missing_fields: list[str],
     backlog_state: str,
@@ -130,7 +119,6 @@ def _reason(
             )
         return (
             "shaped: no Before-phase placeholders remain, every required/portability heading is present, "
-            "the closeout-plan heading/minimum binding fields are present, and "
             f"{backlog_clause}; safe to pursue via `/goal` -- "
             "field shape only, "
             "section content beyond the hollow/template checks and those fields not checked"
@@ -159,16 +147,6 @@ def _reason(
         clauses.append("non-pursuable: " + terminal_reason)
     if hollow_reason:
         clauses.append("hollow: " + hollow_reason)
-    if closeout_plan_missing_fields:
-        clauses.append(
-            "incomplete: Closeout Binding Plan field(s) absent or empty ("
-            + ", ".join(closeout_plan_missing_fields)
-            + ") -- fill the minimum plan fields before `/goal`"
-        )
-    if closeout_plan_duplicate:
-        clauses.append(
-            "incomplete: Closeout Binding Plan appears more than once -- keep one unambiguous plan before `/goal`"
-        )
     if duplicate_sections:
         clauses.append(
             "duplicate sections: " + ", ".join(duplicate_sections)
@@ -209,8 +187,8 @@ def pursue_readiness(
 ) -> dict[str, Any]:
     """Whether a goal is shaped enough to *pursue* via ``/goal``.
 
-    Unshaped = a Before-phase placeholder marker still present (the handoff
-    auto-draft state); on it ``/goal`` must fail-fast and route to ``/achieve``
+    Unshaped = a Before-phase placeholder marker still present (the achieve
+    draft state); on it ``/goal`` must fail-fast and route to ``/achieve``
     rather than shape. Shaping is the Before-phase's job; pursuing is ``/goal``'s.
 
     ``deploy_vocab`` (an achieve adapter's ``discussion_deploy_vocab``) is passed
@@ -276,13 +254,6 @@ def pursue_readiness(
               )}
     )
     hollow_blocking = list(hollow_report.get("blocking") or [])
-    closeout_plan = _CLOSEOUT_PLAN.parse_closeout_plan(
-        text,
-        mask_fences=mask_fences,
-        fences_balanced=fences_balanced,
-    )
-    closeout_plan_missing_fields = list(closeout_plan.missing_fields)
-    closeout_plan_duplicate = closeout_plan.duplicate
     # `shape_ready` keeps its established meaning (no Before-phase marker) so the
     # placeholder signal stays readable on its own; completeness is a separate
     # dimension that gates activation alongside it.
@@ -319,8 +290,6 @@ def pursue_readiness(
         and balanced
         and not missing_sections
         and not hollow_blocking
-        and not closeout_plan_missing_fields
-        and not closeout_plan_duplicate
         and not duplicate_sections
         and not backlog_recount_missing_fields
         and discussion["discussion_ready"]
@@ -356,9 +325,6 @@ def pursue_readiness(
         "shape_ready": shape_ready,
         "sections_complete": not missing_sections,
         "missing_sections": missing_sections,
-        "closeout_plan_missing_fields": closeout_plan_missing_fields,
-        "closeout_plan_duplicate": closeout_plan_duplicate,
-        "closeout_plan": closeout_plan.as_dict(),
         "duplicate_sections": duplicate_sections,
         "backlog_recount": backlog_report,
         "backlog_recount_missing_fields": backlog_recount_missing_fields,
@@ -388,8 +354,6 @@ def pursue_readiness(
             balanced=balanced,
             discussion=discussion,
             discussion_warning=discussion_warning,
-            closeout_plan_missing_fields=closeout_plan_missing_fields,
-            closeout_plan_duplicate=closeout_plan_duplicate,
             duplicate_sections=duplicate_sections,
             backlog_recount_missing_fields=backlog_recount_missing_fields,
             hollow_reason=hollow_report.get("reason", "") if hollow_blocking else "",

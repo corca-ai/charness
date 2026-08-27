@@ -40,14 +40,13 @@ critique when the work crosses authority, durability, external-write, security,
 release, compatibility, deletion, migration, or proof-surface boundaries. A
 required review that is blocked remains blocked; it never becomes approval.
 
-### Lesson-session citation carrier
+### Explicit lesson evaluation
 
-When SessionStart provides a lesson-session declaration command, run that exact
-command before the affected work. Record the returned `session_id` and frozen
-`bundle_path` in the active goal artifact's `## Context Sources`. retro reads
-that exact bundle after context loss, never a newest-file guess or mutable lesson
-source. Record the reference, not a copy of the bundle contents; the bundle
-proves issued bytes, not human readback, lesson use, or lesson effect.
+Lesson evaluation is an explicit retro operation, not session-start context.
+When the operator opts into it, run the declaration command emitted by the
+lesson-ledger command and record its returned `session_id` and frozen
+`bundle_path` in the active goal artifact. No hook or automatic context
+injection is required for ordinary work.
 
 ## Provider retry
 

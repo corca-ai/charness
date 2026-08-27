@@ -5,7 +5,7 @@ from scripts.adapter_lib import load_yaml_file
 from .support import run_script
 
 
-def test_setup_init_adapter_scaffolds_review_policy_surface(tmp_path) -> None:
+def test_setup_init_adapter_scaffolds_only_operating_surface_config(tmp_path) -> None:
     result = run_script("skills/public/setup/scripts/init_adapter.py", "--repo-root", str(tmp_path))
     assert result.returncode == 0, result.stderr
 
@@ -15,13 +15,9 @@ def test_setup_init_adapter_scaffolds_review_policy_surface(tmp_path) -> None:
     assert raw["approval_required"] is True
     assert raw["prose_wrap_policy"] == "semantic"
     assert "surfaces" not in raw
-    assert raw["defaults_version"] == "issue-64"
-    policy = raw["policy_sources"][0]
-    assert policy["path"] == "AGENTS.md"
-    assert "critique" in policy["evidence_terms"]
-    assert any("fresh-eye" in term and "review" in term for term in policy["evidence_terms"])
-    assert "recommendations" not in policy
-    assert raw["recommendation_sets"]["enabled"] == []
+    assert "defaults_version" not in raw
+    assert "policy_sources" not in raw
+    assert "recommendation_sets" not in raw
 
 
 def test_scaffolded_setup_adapter_does_not_force_review_policy(tmp_path) -> None:

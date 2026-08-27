@@ -54,17 +54,6 @@ CORE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "apply the stop-instead-of-local-substitute rule when neither the configured",
         "- `Execution`",
     ),
-    "skills/public/handoff/SKILL.md": (
-        "mention-only pickup",
-        "Run a bounded misunderstanding critique when the handoff changed materially.",
-        "Assume a competent next operator can follow one good link",
-        "The handoff should usually contain:",
-        "- `Workflow Trigger`",
-        "- `Current State`",
-        "- `Next Session`",
-        "- `Discuss`",
-        "- `References`",
-    ),
     "skills/public/gather/SKILL.md": (
         "Prefer primary sources.",
         "Refresh in place when the source identity matches.",
@@ -97,11 +86,11 @@ CORE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "- `First Implementation Slice`",
     ),
     "skills/public/impl/SKILL.md": (
-        "impl adapter resolution and verification survey",
-        "pathless/global planner observation",
-        "best self-verification path before you code and again before you stop",
-        "authoritative path-scoped planner result",
-        '"code written" is not a stop state',
+        "Read the current implementation contract",
+        "smallest useful change (including deleting obsolete code or tests)",
+        "focused tests for the changed module or user flow",
+        "Additional proof is conditional",
+        "Do not invent a second coordination channel",
     ),
     "skills/public/prove/SKILL.md": (
         "re-read `Fixed Decisions` and named acceptance checks",
@@ -135,11 +124,10 @@ CORE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "normalize",
         "AGENTS.md",
         "CLAUDE.md",
-        "into one explicit host-facing policy",
-        "optional Charness seams",
+        "minimum durable path",
         "bootstrap-seams.md",
-        "runtime ownership",
-        "already delegated",
+        "quality` owns",
+        "not a universal setup stop gate",
     ),
     "skills/public/issue/SKILL.md": (
         "GitHub is the source of truth for issue identity",
@@ -173,10 +161,6 @@ CORE_CONTRACTS: dict[str, tuple[str, ...]] = {
 }
 
 PACKAGE_CONTRACTS: dict[str, tuple[str, ...]] = {
-    "skills/public/handoff/SKILL.md": (
-        "one reference to the owning artifact for metrics, history, or proof detail",
-        "always-loaded host instruction surfaces out of `References` by",
-    ),
     "skills/public/gather/SKILL.md": (
         "official API/export docs before browser automation",
         # gather-provider.md public-only boundary: keep the per-source read-mode
@@ -215,7 +199,7 @@ PACKAGE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "`Interrupt Source`, `Seam Summary`, `Chosen Next Step`, `Impl Status`",
     ),
     "skills/public/impl/SKILL.md": (
-        'python3 "$SKILL_DIR/../../shared/scripts/plan_risk_interrupt.py" --repo-root . --detail --paths <current-slice-path>...',
+        "Use `prove` when the user or the boundary explicitly requires its evidence format",
     ),
     "skills/public/prove/SKILL.md": (
         "$SKILL_DIR/../retro/scripts/check_auto_trigger.py",

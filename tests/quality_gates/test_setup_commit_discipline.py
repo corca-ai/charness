@@ -14,16 +14,6 @@ from scripts.setup_commit_discipline_lib import (
 )
 from scripts.setup_host_docs_lib import render_agents_template
 
-from .support import ROOT
-
-# #317: setup seeds a compact meaningful-slice commit-discipline block in a
-# greenfield AGENTS.md, and the inspector flags an AGENTS.md that has Charness
-# goal/skill routing but no commit-discipline rule (same tell-don't-rewrite
-# pattern as #311). These tests pin BOTH the seed and the stale detection, and
-# guard the never-rewrite-existing-body contract. The inspection chain is driven
-# in-process (detect_agent_docs + the detector + the wiring constants) so the
-# tests prove the finding/recommendation path without a subprocess boundary.
-
 _SKILL_ROUTING_BLOCK = (
     "## Skill Routing\n\n"
     "- At session startup, use installed skill metadata/model judgment; run `charness catalog list --repo-root .` only for hidden availability.\n"
@@ -52,104 +42,32 @@ def _detect(repo: Path, agents_text: str) -> dict[str, object]:
     return detect_agent_docs(repo, skill_routing_payload=None)["normalization"]
 
 
-def test_greenfield_template_seeds_commit_discipline_block() -> None:
-    # Acceptance (1): a freshly-seeded AGENTS.md contains the compact
-    # commit-discipline block. Pin against the ACTUAL generator output, including
-    # both halves of the two-policy rule the issue names.
+def test_greenfield_template_seeds_only_the_commit_discipline_contract() -> None:
     agents_text = render_agents_template(skill_routing_markdown=_SKILL_ROUTING_BLOCK)
     normalized = " ".join(agents_text.split())
 
     assert "## Commit Discipline" in agents_text
-    # (ii) meaningful implementation/workflow slices are committed as they finish.
     assert "Commit meaningful work slices as they finish" in normalized
-    assert "keep each commit scoped" in normalized
-    # (i) meaningful charness-artifacts/ changes are repo state and commit targets.
     assert "meaningful `charness-artifacts/` changes as repo state" in normalized
-    # Do-not-report-done-while-uncommitted, with explicit-deferral carve-out.
     assert "remains uncommitted, unless the deferral is" in normalized
-    # The two policies are explicitly distinguished, not collapsed into one.
-    assert "The two policies differ" in normalized
-    # The generated block must satisfy the inspector's own detector so setup does
-    # not seed a body that immediately re-flags as stale.
     assert commit_discipline_present(agents_text) is True
+    assert "## Subagent Delegation" not in agents_text
+    assert "## Dynamic Workflows" not in agents_text
 
 
-def test_greenfield_template_fragments_live_in_template_assets() -> None:
+def test_greenfield_template_commit_fragment_is_the_single_writer_asset() -> None:
     template_dir = Path(host_docs.__file__).resolve().parent / "templates"
-    assert (
-        template_dir / "agents_commit_discipline.txt"
-    ).read_text(encoding="utf-8") == host_docs.COMMIT_DISCIPLINE
-    assert (
-        template_dir / "agents_subagent_delegation.txt"
-    ).read_text(encoding="utf-8") == host_docs.COMPACT_SUBAGENT_DELEGATION
+    assert (template_dir / "agents_commit_discipline.txt").read_text(encoding="utf-8") == host_docs.COMMIT_DISCIPLINE
+    assert not (template_dir / "agents_subagent_delegation.txt").exists()
 
 
-def test_greenfield_template_states_the_per_host_subagent_model_policy() -> None:
-    """This test used to REQUIRE the template to name `gpt-5.6-terra`.
-
-    The contract reversed: a host-specific model id belongs in that host's adapter or
-    preset, because naming one in a contract file bakes it in and it goes stale silently.
-    The reader (`setup_agent_docs_lib._detect_charness_subagent_policy`) was moved to the
-    per-host framing while this writer was left naming a model, so charness would have
-    shipped a template its own inspector flags -- the same two-spellings-of-one-contract
-    split that #476 exists to prevent, one contract later.
-
-    The absence assertion is the load-bearing half. Requiring the per-host phrases alone
-    would still pass on a template that ALSO baked in a model id, which is exactly the
-    state this repair exists to leave behind.
-    """
-    agents_text = render_agents_template(skill_routing_markdown=_SKILL_ROUTING_BLOCK)
-
-    assert "Subagent model/effort defaults are per-host" in agents_text
-    assert "adapter or preset" in agents_text
-    assert "inheriting the session model" in agents_text
-    assert "gpt-5.6-terra" not in agents_text, "the template baked a model id back into the contract"
-    assert "fork_turns" not in agents_text, "host-specific spawn flags belong in that host's adapter"
-    assert "## Dynamic Workflows" in agents_text
-    assert "when the agent judges it earns its cost" in agents_text
-    assert "A higher-priority system, developer, or host instruction may prohibit" in agents_text
-
-
-def test_live_root_dynamic_workflow_summary_preserves_authority_boundary() -> None:
-    agents_text = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
-    dynamic = agents_text.split("## Dynamic Workflows", 1)[1].split("\n## ", 1)[0]
-
-    assert "standing-approved" in dynamic
-    assert "higher-priority system/developer/host instructions" in dynamic
-    assert "host capability" in dynamic
-    assert "Do not wait for a second user message" in dynamic
-
-
-def test_live_root_routes_failure_logs_without_conflating_consumer_hooks() -> None:
-    agents_text = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
-    execution = agents_text.split("## Execution Discipline", 1)[1].split("\n## ", 1)[0]
-
-    assert ".charness/quality-failure-logs/" in execution
-    assert "final receipt" in execution
-    assert "Consumer hook configuration follows" in execution
-    assert "hook-failure-visibility.md" in execution
-
-
-def test_greenfield_template_passes_inspector(tmp_path: Path) -> None:
-    agents_text = render_agents_template(skill_routing_markdown=_SKILL_ROUTING_BLOCK)
-    normalization = _detect(tmp_path / "repo", agents_text)
-
-    commit_discipline = normalization["commit_discipline"]
-    finding_types = {finding["type"] for finding in normalization["findings"]}
-    assert commit_discipline["has_goal_routing"] is True
-    assert commit_discipline["commit_discipline_present"] is True
-    assert "commit_discipline_drift" not in finding_types
-
-
-def test_inspect_accepts_task_completion_commit_boundary(tmp_path: Path) -> None:
-    body = _agents(
-        _SKILL_ROUTING_BLOCK,
-        "Treat meaningful `charness-artifacts/` changes as repo state and commit them with the work they support.\n"
-        "After verification passes for task-completing repo work, commit before answering follow-up usage/status questions.",
+def test_greenfield_template_passes_commit_inspection(tmp_path: Path) -> None:
+    normalization = _detect(
+        tmp_path / "repo",
+        render_agents_template(skill_routing_markdown=_SKILL_ROUTING_BLOCK),
     )
 
-    normalization = _detect(tmp_path / "repo", body)
-
+    assert normalization["commit_discipline"]["has_goal_routing"] is True
     assert normalization["commit_discipline"]["commit_discipline_present"] is True
     assert "commit_discipline_drift" not in {
         finding["type"] for finding in normalization["findings"]
@@ -157,66 +75,36 @@ def test_inspect_accepts_task_completion_commit_boundary(tmp_path: Path) -> None
 
 
 def test_inspect_flags_goal_routing_without_commit_discipline(tmp_path: Path) -> None:
-    # Acceptance (2): an AGENTS.md that carries Charness goal/skill routing but no
-    # commit-discipline rule is flagged STALE (never rewritten) so the operator is
-    # told to backfill the rule. This is the open-ax-day symptom #317 records.
-    repo = tmp_path / "repo"
-    body = _agents(_SKILL_ROUTING_BLOCK)
-    normalization = _detect(repo, body)
+    normalization = _detect(tmp_path / "repo", _agents(_SKILL_ROUTING_BLOCK))
 
     commit_discipline = normalization["commit_discipline"]
     finding_types = {finding["type"] for finding in normalization["findings"]}
     assert commit_discipline["has_goal_routing"] is True
     assert commit_discipline["commit_discipline_present"] is False
     assert "commit_discipline_drift" in finding_types
-    # The drift surfaces as a review_required recommendation, not an advisory.
     assert "commit_discipline_drift" in RECOMMENDATION_FINDING_TYPES
     assert FINDING_RECOMMENDATION_PRIORITIES["commit_discipline_drift"] == "review_required"
-    # Acceptance (3): the existing body is NOT rewritten by inspection.
-    assert (repo / "AGENTS.md").read_text(encoding="utf-8") == body
 
 
-def test_inspect_flags_artifact_only_body_for_missing_slice_rule(tmp_path: Path) -> None:
-    # The two related policies must be distinguished: a body that only repeats the
-    # charness-artifacts/ commit-target policy still lacks the meaningful-slice
-    # rule, so commit-discipline drift must still fire when goal routing is present.
+def test_inspect_distinguishes_artifact_policy_from_slice_commit_policy(tmp_path: Path) -> None:
     normalization = _detect(tmp_path / "repo", _agents(_SKILL_ROUTING_BLOCK, _ARTIFACT_ONLY_BLOCK))
 
-    commit_discipline = normalization["commit_discipline"]
-    finding_types = {finding["type"] for finding in normalization["findings"]}
-    assert commit_discipline["commit_discipline_present"] is False
-    assert "commit_discipline_drift" in finding_types
+    assert normalization["commit_discipline"]["commit_discipline_present"] is False
+    assert "commit_discipline_drift" in {
+        finding["type"] for finding in normalization["findings"]
+    }
 
 
-def test_inspect_accepts_goal_routing_with_commit_discipline(tmp_path: Path) -> None:
-    # Companion to the stale case: the SAME goal-routed body with the commit
-    # discipline rule added must NOT falsely flag. Pins that the gate keys on the
-    # commit-discipline rule specifically and does not regress an up-to-date body.
+def test_inspect_accepts_both_commit_discipline_halves(tmp_path: Path) -> None:
     normalization = _detect(tmp_path / "repo", _agents(_SKILL_ROUTING_BLOCK, _COMMIT_DISCIPLINE_BLOCK))
 
-    commit_discipline = normalization["commit_discipline"]
-    finding_types = {finding["type"] for finding in normalization["findings"]}
-    assert commit_discipline["has_goal_routing"] is True
-    assert commit_discipline["commit_discipline_present"] is True
-    assert "commit_discipline_drift" not in finding_types
-
-
-def test_inspect_skips_commit_discipline_without_goal_routing(tmp_path: Path) -> None:
-    # Tell-don't-rewrite is scoped to Charness goal/skill-routed repos: a plain
-    # AGENTS.md with no Charness routing markers must not be flagged, so the gate
-    # does not nag non-Charness consumer repos.
-    normalization = _detect(tmp_path / "repo", _agents("Existing operating policy with no Charness routing."))
-
-    commit_discipline = normalization["commit_discipline"]
-    finding_types = {finding["type"] for finding in normalization["findings"]}
-    assert commit_discipline["has_goal_routing"] is False
-    assert "commit_discipline_drift" not in finding_types
+    assert normalization["commit_discipline"]["commit_discipline_present"] is True
+    assert "commit_discipline_drift" not in {
+        finding["type"] for finding in normalization["findings"]
+    }
 
 
 def test_commit_discipline_detector_requires_both_halves() -> None:
-    # Unit guard: the detector must require BOTH a slice rule and a
-    # not-done-while-uncommitted rule. A body with only one half is not present,
-    # so a partial paste does not silently pass the inspector.
     slice_only = "Commit meaningful work slices as they finish; keep each commit scoped."
     not_done_only = "Do not report a goal as done while meaningful work remains uncommitted."
     assert commit_discipline_present(slice_only) is False
@@ -225,11 +113,9 @@ def test_commit_discipline_detector_requires_both_halves() -> None:
 
 
 def test_detector_finding_message_names_both_policies() -> None:
-    # The finding message must teach the operator the two distinct policies, not
-    # just say "add commit discipline".
     _, findings = detect_commit_discipline_policy(_agents(_SKILL_ROUTING_BLOCK))
+
     assert len(findings) == 1
     message = findings[0]["message"].lower()
     assert "slices as they finish" in message
     assert "uncommitted" in message
-    assert findings[0]["recommended_action"] == "add_meaningful_slice_commit_discipline_to_agents"

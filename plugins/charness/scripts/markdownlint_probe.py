@@ -40,7 +40,7 @@ def resolve_markdownlint_cmd(repo_root: Path | None = None) -> list[str] | None:
     without ``--no``, npm reaches the registry and pays the network round trip on any
     machine where the binary is not on PATH — and this file is emitted as an operator
     command by ``closeout_bundle_lib``, ``slice_closeout_advisories``, and
-    ``plan_handoff_run``, so the unguarded spelling was live, not dead. A docstring
+    the Goal Run planner, so the unguarded spelling was live, not dead. A docstring
     asserting a mirror is not one; the tiers are duplicated here in the same order the
     shell gate resolves them.
     """
@@ -148,4 +148,3 @@ def collect_markdownlint(repo_root: Path, rel: str) -> dict[str, Any]:
     if not markdownlint_engine_ran(proc.stdout, proc.stderr, found_violations=bool(findings)):
         return {"available": False, "findings": [], "resolved_command": cmd}
     return {"available": True, "findings": findings}
-

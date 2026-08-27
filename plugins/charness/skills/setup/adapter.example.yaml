@@ -18,16 +18,3 @@ prose_wrap_policy: semantic
 #   - specs
 surfaces:
   roadmap: docs/roadmap.md
-defaults_version: issue-64
-policy_sources:
-  - id: review-policy
-    path: AGENTS.md
-    evidence_terms:
-      - bounded fresh-eye review
-      - critique
-    recommendations:
-      - agents.delegated_review_policy
-recommendation_sets:
-  enabled:
-    - agents.delegated_review_policy
-  acknowledged: []

@@ -133,14 +133,14 @@ state check.
 
 Issue-resolution carrier publication is the commit, PR body, release carrier, or
 manual fallback that closes the issue. Later lifecycle/audit artifacts
-(`achieve` goal updates, retro notes, handoff refreshes) may be valuable, but
+(`achieve` goal updates and retro notes) may be valuable, but
 they are separate publication surfaces and do not require a second issue
 closeout push once the carrier and GitHub state are verified.
 
 `verify-closeout` returns `carrier_verified` when close keywords and the
 classification ledger are present but no `--expect-state` was provided. That
 status is useful before push or merge, but it is not final closeout. Final
-issue-resolution handoff requires `status: verified`, which means every selected
+issue-resolution closeout requires `status: verified`, which means every selected
 issue matched the expected GitHub state.
 
 The status tokens are compatibility vocabulary, not endpoints: each means only
@@ -154,7 +154,7 @@ stronger claim. **`line` is `None` whenever the verdict is not ok** — includin
 when a later fold or a carrier check refuses the payload AFTER the line was
 rendered, which is how a refused verdict once shipped a `carrier-checked:`
 sentence (sweep row S23). When it is `None` there is nothing to quote: render
-the refusal and its reasons, never the bare status token. Final handoffs and
+the refusal and its reasons, never the bare status token. Final closeout records and
 closeout prose should render that line instead of re-claiming a bare
 `verified`, so the claim never sounds stronger than the observation. The line names the verifier's own
 observer and channel; it is not the distinct-observer behavioral confirmation

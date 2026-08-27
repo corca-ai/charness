@@ -211,7 +211,7 @@ def _read_source(repo_root: Path, rel: str, revision: str | None) -> tuple[str |
     """``(body, error)`` for one source, from the worktree or from a pinned revision.
 
     Pinning exists because the most quotable sources here are LIVING documents. A record
-    that quotes `docs/handoff.md` verifies today and reads `absent` the next time anyone
+    that quotes a living document verifies today and reads `absent` the next time anyone
     edits that file -- and the record would then be reporting a provenance failure for a
     repair that was fine, which trains readers to ignore the signal. `Source revision:`
     makes the frozen target explicit and visible in the record instead of implicit in

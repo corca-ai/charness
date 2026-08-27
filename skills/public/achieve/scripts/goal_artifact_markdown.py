@@ -52,7 +52,7 @@ _H2 = re.compile(r"^## (.+?)[ \t]*\r?$", re.MULTILINE)
 
 # A line that *starts* a new block construct, so it is never a soft-wrap
 # continuation of the line above: a list item, a heading, a table row, or a
-# ``Label:`` field. The field label allows interior spaces (``Issue closeout:``,
+# ``Label:`` field. The field label allows interior spaces (for example,
 # ``Host log probe:``) but is length-bounded and must be followed by whitespace,
 # which biases toward NOT joining an ambiguous ``word word:`` tail — a missed
 # join only reverts to the old per-physical-line behavior, whereas an over-join
@@ -73,16 +73,10 @@ def join_soft_wraps(section_body: str) -> str:
     instead), so a step line followed by a blank line or another field is never
     merged.
 
-    The Created-gated coordination/phase-routing floors match their
-    ``Routing:``/``Gather:``/``Release:``/``Issue closeout:`` step lines per
-    *physical* line, so a correct value whose tail (or routed skill name) wrapped
-    onto the next physical line was false-rejected; joining first removes that.
-    Inseparable shadow (accepted, not a no-op): a step value whose required token
-    sits on an immediately-following continuation line is now also accepted —
-    nothing distinguishes a legitimate wrap from prose completion. Acceptable
-    because these are presence-only, self-authored, reversible closeout floors and
-    the content is substantively present across the wrap; it is not a path for a
-    wrong answer to reach an irreversible boundary.
+    Structured artifact fields may be wrapped across physical lines, so a value
+    whose tail sits on the next line is kept together. This is a presentation
+    normalization only; the owning floor still decides whether the resulting
+    field is valid.
     """
     return "\n".join(text for _, text in logical_lines(section_body))
 
@@ -113,11 +107,9 @@ def section_bounds(masked: str, section: str, *, casefold: bool = False) -> tupl
     two numbers — READ the body, or INSERT at its end (``start`` is exactly the
     insertion point after the heading line).
 
-    ONE owner. Six modules across `achieve` and `handoff` had hand-rolled this
-    same nine-line walk, each subtly its own: masked-vs-raw, ``""``-vs-``None``
-    for absent, case-sensitive or not. Adding a seventh copy while shipping a
-    slice about one rule having one owner is what made this a real repair rather
-    than hygiene — and the duplicate-ratchet gate is what refused it.
+    ONE owner. Several goal-artifact helpers had hand-rolled this same walk, each
+    subtly its own: masked-vs-raw, ``""``-vs-``None`` for absent, case-sensitive or
+    not. Keeping the walk here prevents those readers from drifting apart.
     """
     matches = section_bounds_all(masked, section, casefold=casefold)
     return matches[0] if matches else None

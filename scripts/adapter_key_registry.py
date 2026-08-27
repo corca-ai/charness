@@ -8,11 +8,11 @@ correct one -- silently defaulted, never mentioned.
 
 WHY THIS IS NOT A KNOWN-KEY SET. The obvious move -- ask the shared loader whether it
 knows the key -- was refuted before it was built, and the refutation is measured, not
-theoretical. `.agents/setup-adapter.yaml` declares `defaults_version`, `policy_sources`,
-`recommendation_sets`, and `surfaces`. The shared `simple_skill` loader knows none of
-them; its STRING_FIELDS is six unrelated names. All four are CORRECT, and all four are
+theoretical. `.agents/setup-adapter.yaml` declares setup-owned fields such as `surfaces`
+and `prose_wrap_policy`. The shared `simple_skill` loader knows none of them; its
+STRING_FIELDS is six unrelated names. These are CORRECT declarations, and they are
 parsed by `skills/public/setup/scripts/setup_adapter.py`. A loader-scoped key set would
-have called four correct declarations typos on the one surface whose job is to stop a
+have called correct declarations typos on the one surface whose job is to stop a
 false signal.
 
 So the unit is the READER, not the key list. `.agents` files have multiple readers, and
@@ -49,11 +49,10 @@ and not the second, and would warn on file-scoped-correct declarations.
 across this repo's 37 adapters, 20 are genuine (`.agents/cautilus-adapters/chatbot-*.yaml`,
 which `scripts/cautilus_adapter_lib.py` never reads -- it pins `ADAPTER_PATH` to the
 SINGULAR `.agents/cautilus-adapter.yaml`), but 3 are association residue that a warning
-would report as defects: `chunk_policy` in `skills/public/handoff/adapter.example.yaml` is
-genuinely read by `chunked_routing_agentic_policy.py`, and `session_routing` /
-`skill_anchor_edit_guard` in a host-hook adapter are genuinely read through
-`host_hook_registry.py`'s `getattr` dispatch. All three are invisible to a literal
-scan. A 13% false-positive rate is a wolf-crier, and one of the three ships to consumers
+would report as defects: `session_routing` / `skill_anchor_edit_guard` in a host-hook
+adapter are genuinely read through `host_hook_registry.py`'s `getattr` dispatch.
+Those are invisible to a literal scan. A high false-positive rate is a wolf-crier, and
+the host-hook case ships to consumers
 inside a shipped example -- so arming it would greet every new consumer with a wrong
 warning. Widening `associated_modules` to absorb them is refused separately: that is how
 `#553` happened, and how a verdict stops meaning anything. They stay reported by `survey`

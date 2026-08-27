@@ -316,7 +316,7 @@ The cutover must:
 - retain the full Markdown artifact only as Goal Draft and semantic provenance
 - remove local status/slice mutation as execution coordination
 - replace file-addressed activation guidance with `/goal #N`
-- make handoff use the canonical Goal Draft producer instead of a copied template
+- make Goal Run activation use the canonical Goal Draft producer instead of a copied template
 - move active-goal consumers to parent/binding/provider identity
 - keep evidence records linked to frozen draft provenance and Goal Run identity
 - remove or explicitly mark unsupported old activation, progress, and completion

@@ -118,7 +118,7 @@ def stale_docs_only_labels(repo_root: Path) -> list[str]:
     Subset direction ONLY. This is not a late verdict, it is a verdict that never
     arrives: `label_is_selected` compares exact names, so a renamed or retired label
     leaves the hook naming something nothing matches, `queue_selected` quietly queues
-    nothing, and the docs-only push -- the common path for a handoff or artifact
+    nothing, and the docs-only push -- the common path for an artifact
     commit -- reports a clean pass having run one fewer gate than it claims.
 
     The reverse direction (every run-quality label must appear in the docs-only set)

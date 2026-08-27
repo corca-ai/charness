@@ -11,15 +11,15 @@ from .support import ROOT, run_script
 
 
 def test_public_skill_dogfood_matrix_reports_prompt_artifact_and_evidence() -> None:
-    payload = build_matrix(ROOT, ["handoff", "quality"])
+    payload = build_matrix(ROOT, ["achieve", "quality"])
     matrix = {row["skill_id"]: row for row in payload["matrix"]}
 
-    handoff = matrix["handoff"]
-    assert handoff["expected_skill"] == "handoff"
-    assert handoff["expected_artifact"] == "docs/handoff.md"
-    assert handoff["validation_tier"] == "evaluator-required"
-    assert handoff["adapter_requirement"] == "required"
-    assert any("workflow trigger" in item for item in handoff["acceptance_evidence"])
+    achieve = matrix["achieve"]
+    assert achieve["expected_skill"] == "achieve"
+    assert achieve["expected_artifact"] is None
+    assert achieve["validation_tier"] == "hitl-recommended"
+    assert achieve["adapter_requirement"] == "required"
+    assert any("Goal Draft" in item for item in achieve["acceptance_evidence"])
 
     quality = matrix["quality"]
     assert quality["expected_skill"] == "quality"
@@ -42,7 +42,7 @@ def test_public_skill_dogfood_wrappers_match_root_script() -> None:
             "--repo-root",
             str(ROOT),
             "--skill-id",
-            "handoff",
+            "achieve",
             "--skill-id",
             "quality",
             "--detail",

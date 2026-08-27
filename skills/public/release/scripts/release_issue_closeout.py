@@ -61,7 +61,7 @@ def _load_local_release_module(module_name: str):
 # refused with a typed message at the point the floor would actually run (see
 # evaluate_release_behavioral_verdict), never silently skipped and never a bare
 # traceback. Mirrors the try/except degrade in
-# skills/public/handoff/scripts/plan_handoff_run.py:54-60.
+# the release runtime's bounded helper path.
 try:
     _MESSAGE = _load_local_release_module("release_issue_closeout_message")
     _MESSAGE_ERROR: str | None = None

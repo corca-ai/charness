@@ -38,7 +38,7 @@ no-ops, conflicts preserve the existing adapter and emit exact requested
 surfaces plus a next action, and `--migrate` is the explicit rewrite boundary
 that retains existing comments.
 
-### Setup handoff
+### Setup boundary
 
 When `setup` is proposing an operating surface, consume its quality snapshot
 and bootstrap plan rather than inventing parallel gates. `configured` means the

@@ -52,33 +52,25 @@ def emit(payload: dict[str, Any]) -> None:
     sys.stdout.write(_render_yaml(payload))
 
 
-def _resolve_backend(repo_root: Path) -> dict[str, Any]:
-    return PROVIDER.select_backend(repo_root)
-
-
-def _bind_backend(resolved: dict[str, Any], target_repo: str) -> dict[str, Any]:
-    return PROVIDER.bind_provider_selection(resolved, target_repo=target_repo)
+def _resolve_backend(repo_root: Path, target_repo: str | None = None) -> dict[str, Any]:
+    return PROVIDER.resolve_backend(repo_root, target_repo=target_repo)
 
 
 def _run_backend_command(args: argparse.Namespace, call: Any, exit_code: Any) -> int:
-    resolved = _resolve_backend(args.repo_root.resolve())
+    try:
+        resolved = _resolve_backend(args.repo_root.resolve(), getattr(args, "repo", None))
+    except RuntimeError as exc:
+        emit({"ok": False, "error": str(exc)})
+        return 2
     if not resolved["adapter_ok"]:
         emit({"ok": False, "adapter": resolved["adapter"]})
         return 1
-    if getattr(args, "repo", None) is not None:
-        try:
-            resolved = _bind_backend(resolved, args.repo)
-        except RuntimeError as exc:
-            emit({"ok": False, "error": str(exc), "selected_backend": resolved["backend"]})
-            return 2
     try:
         result = call(resolved)
     except RuntimeError as exc:
         emit({"ok": False, "error": str(exc), "selected_backend": resolved["backend"]})
         return 2
     result["selected_backend"] = resolved["backend"]
-    if resolved.get("provider_selection") is not None:
-        result["provider_selection"] = resolved["provider_selection"]
     emit(result)
     return exit_code(result)
 
@@ -138,7 +130,11 @@ def command_resolve_target(args: argparse.Namespace) -> int:
 
 def command_select(args: argparse.Namespace) -> int:
     repo_root = args.repo_root.resolve()
-    resolved = _resolve_backend(repo_root)
+    try:
+        resolved = _resolve_backend(repo_root, args.repo)
+    except RuntimeError as exc:
+        emit({"ok": False, "error": str(exc), "repo": args.repo})
+        return 2
     if not resolved["adapter_ok"]:
         emit(
             {
@@ -147,15 +143,9 @@ def command_select(args: argparse.Namespace) -> int:
                 "outcome": "refused",
                 "mutation_invoked": False,
                 "adapter": resolved["adapter"],
-                "provider_selection": resolved.get("provider_selection"),
             }
         )
         return 1
-    try:
-        resolved = _bind_backend(resolved, args.repo)
-    except RuntimeError as exc:
-        emit({"ok": False, "error": str(exc), "selected_backend": resolved["backend"]})
-        return 2
     backend = resolved["backend"]
     try:
         numbers = RUNTIME.parse_selector(args.selector)
@@ -176,7 +166,6 @@ def command_select(args: argparse.Namespace) -> int:
             "source": source,
             "issue": issue,
             "selected_backend": backend,
-            "provider_selection": resolved["provider_selection"],
         }
     )
     return 0

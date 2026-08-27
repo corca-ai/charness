@@ -60,7 +60,7 @@ def test_check_finding_followup_refuses_a_malformed_value_whatever_the_action() 
 
 def test_check_finding_followup_leaves_an_absent_or_parseable_value_alone() -> None:
     """The discriminating control: the refusal is about malformedness, not presence."""
-    for followup in ({}, {"follow-up": ""}, {"follow-up": "deferred docs/handoff.md#next-session"}):
+    for followup in ({}, {"follow-up": ""}, {"follow-up": "deferred docs/index.md#next-session"}):
         vca._check_finding_followup({"action": "valid-but-defer", **followup}, "F2", Path("demo.md"))
 
 

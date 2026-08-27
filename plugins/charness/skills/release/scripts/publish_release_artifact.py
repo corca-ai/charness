@@ -28,7 +28,6 @@ distinct_channel_verification_lines = _sections.distinct_channel_verification_li
 real_host_lines = _sections.real_host_lines
 fresh_checkout_lines = _sections.fresh_checkout_lines
 release_runtime_lines = _sections.release_runtime_lines
-baton_reconcile_lines = _sections.baton_reconcile_lines
 release_observer_lines = _sections.release_observer_lines
 published_notes_audit_lines = _sections.published_notes_audit_lines
 user_update_lines = _sections.user_update_lines
@@ -60,7 +59,6 @@ def write_release_artifact(
     distinct_channel_verification: dict[str, Any] | None = None,
     published_notes_audit: dict[str, Any] | None = None,
     release_runtime: list[dict[str, Any]] | None = None,
-    baton_reconcile: dict[str, Any] | None = None,
     release_observer: dict[str, Any] | None = None,
     claims_review: dict[str, Any] | None = None,
     release_stage: str | None = None,
@@ -124,7 +122,6 @@ def write_release_artifact(
     lines.extend(post_publish_proof_lines(resolved_tag, public_release_verification))
     lines.extend(install_refresh_lines(install_refresh))
     lines.extend(release_runtime_lines(release_runtime))
-    lines.extend(baton_reconcile_lines(baton_reconcile))
     lines.extend(release_observer_lines(release_observer))
     lines.extend(fresh_checkout_lines(fresh_checkout_payload))
     lines.extend(issue_closeout_lines(issue_closeout))
@@ -191,7 +188,7 @@ def write_current_artifact(
         retro_trigger_evaluation=payload.get("retro_trigger_evaluation"),
         distinct_channel_verification=payload.get("distinct_channel_verification"),
         published_notes_audit=payload.get("published_notes_audit"),
-        release_runtime=payload.get("release_runtime"), baton_reconcile=payload.get("baton_reconcile"),
+        release_runtime=payload.get("release_runtime"),
         release_observer=payload.get("release_observer"), claims_review=payload.get("claims_review"),
         release_stage=release_stage or payload.get("release_stage"),
         bump_rationale=payload.get("bump_rationale"),

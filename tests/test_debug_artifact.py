@@ -255,7 +255,7 @@ def test_validate_debug_artifact_accepts_followup_sibling_with_issue_url(tmp_pat
 def test_validate_debug_artifact_accepts_followup_sibling_with_handoff_anchor(tmp_path: Path) -> None:
     artifact = valid_current_artifact().replace(
         "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
-        "- same layer: tests/repo_copy.py:12 | decision: valid follow-up outside the slice | proof: static scan only | follow-up: deferred docs/handoff.md#cleanup-backlog",
+        "- same layer: tests/repo_copy.py:12 | decision: valid follow-up outside the slice | proof: static scan only | follow-up: deferred docs/index.md#cleanup-backlog",
     )
     repo = seed_repo(tmp_path, artifact)
     result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))

@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Pre-commit gate: a staged file must not also carry unstaged worktree edits.
 
-Many pre-commit gates (validate_handoff_artifact, check-markdown, check_doc_links,
+Many pre-commit gates (check-markdown, check_doc_links,
 ...) validate the WORKING TREE, not the staged index blob. If a file is staged and
 then edited again, those gates validate the on-disk version while git commits the
 stale staged blob -- a gate can pass on content that is not what lands. Observed:
-a 71-line handoff committed past a 70-line cap because the validator read the
-70-line worktree while the index still held the 71-line blob.
+a document once committed past its cap because the validator read the worktree
+while the index still held a different blob.
 
 This gate fails when a staged path also has unstaged worktree modifications, so
 "what the gates validate" == "what is committed". Set CHARNESS_ALLOW_PARTIAL_STAGE=1
@@ -104,7 +104,7 @@ def _on_disk(repo_root: Path, path: str) -> bool:
 # Q2 (is advisory enough?): no, but NOT on a recurrence count -- there is no honest
 # one. This exact shape was adjudicated once, as F8 in
 # charness-artifacts/critique/2026-07-27-a3-staged-scope.md, at
-# `valid-but-defer / action: document`, and carried on the handoff since. This
+# `valid-but-defer / action: document`, and carried on the work item since. This
 # slice promotes that documented deferral to a floor, on the ground that the
 # failure is a commit that removes a file from the tree with every doc gate green
 # -- the #258 class the sibling gate refuses outright -- and an advisory does not

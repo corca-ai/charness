@@ -166,10 +166,10 @@ def validate_charness_quality_adapter_contract(path: Path, data: dict) -> None:
         )
 
     canonical_surfaces = data.get("canonical_markdown_surfaces")
-    required_surfaces = {"AGENTS.md", "CLAUDE.md", "docs/handoff.md"}
+    required_surfaces = {"AGENTS.md", "CLAUDE.md", "docs/index.md"}
     if not isinstance(canonical_surfaces, list) or not required_surfaces.issubset(canonical_surfaces):
         raise ValidationError(
-            f"{path}: canonical_markdown_surfaces must explicitly include AGENTS.md, CLAUDE.md, and docs/handoff.md"
+            f"{path}: canonical_markdown_surfaces must explicitly include AGENTS.md, CLAUDE.md, and docs/index.md"
         )
 
     runtime_profiles = data.get("runtime_budget_profiles")
@@ -343,8 +343,8 @@ def iter_warn_scope_adapters(root: Path, *, require_git: bool = False) -> list[P
     also reaches `skills/public/*/adapter.example.yaml` and `integrations/*/adapter.example.yaml`.
     Arming the narrower set while reporting the wider set's zero is a check claiming a
     scope it never read -- the exact shape this tier exists to warn about. Reproduced
-    before repairing: a typo'd key added to `skills/public/handoff/adapter.example.yaml`
-    produced `0 unreconciled declared key(s)` and left all 40 tests green.
+    before repairing: a typo'd key added to a public adapter example produced
+    `0 unreconciled declared key(s)` and left all tests green.
 
     Shipped examples are the ones that MATTER here: they are what a consumer copies, so a
     typo in one propagates to every repo that adopts it. They are excluded from

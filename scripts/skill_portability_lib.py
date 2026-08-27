@@ -17,7 +17,6 @@ AUTHORING_MARKER_RE = re.compile(
     re.IGNORECASE,
 )
 OPERATOR_DOCS = {
-    "docs/handoff.md",
     "docs/roadmap.md",
     "docs/operator-acceptance.md",
     "docs/release-notes.md",

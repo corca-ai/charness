@@ -1,7 +1,7 @@
 """Sibling host-hook intent registry and state-liveness checks.
 
 `reconcile_host_hooks` fans out to every opt-in sibling hook intent
-(session routing, the skill anchor edit-time guard). Each sibling used to
+(currently the skill anchor edit-time guard). Each sibling used to
 be a copied lazy-import block in `host_hook_install_lib`; this registry makes
 a new hook intent a table row instead. Per-host error isolation stays inside
 each sibling's own reconcile function (an enabled host's failure reports
@@ -44,13 +44,6 @@ class SiblingHookIntent:
 
 
 SIBLING_HOOK_INTENTS: tuple[SiblingHookIntent, ...] = (
-    SiblingHookIntent(
-        key="session_routing",
-        module="host_hook_session_routing",
-        reconcile_function="reconcile_session_routing_hooks",
-        status_function="session_routing_status",
-        script_relative_attr="SESSION_ROUTING_SCRIPT_RELATIVE",
-    ),
     SiblingHookIntent(
         key="skill_anchor_edit_guard",
         module="host_hook_skill_anchor_guard",
@@ -164,9 +157,9 @@ def known_hook_script_basenames(
 
 
 def _json_settings_commands(path: Path) -> list[str]:
-    # Claude settings.json and Codex hooks.json share the shape
+    # Host settings share the common event-entry shape
     # hooks.<event>[] -> {hooks: [{type: "command", command: ...}]}; every
-    # event is scanned (SessionStart, PostToolUse, ...). Absent or unreadable
+    # event is scanned. Absent or unreadable
     # files degrade to silence — this is advisory surfacing, not a gate.
     if not path.is_file():
         return []
@@ -190,20 +183,6 @@ def _json_settings_commands(path: Path) -> list[str]:
     return commands
 
 
-def _toml_settings_commands(path: Path) -> list[str]:
-    toml_lib = _import_module("host_hook_codex_toml_lib")
-    try:
-        text = toml_lib.read_text_or_empty(path)
-    except OSError:
-        return []
-    commands: list[str] = []
-    for line in text.splitlines():
-        value = toml_lib.toml_command_value(line.strip())
-        if value is not None:
-            commands.append(value)
-    return commands
-
-
 def settings_file_scan(
     home: Path,
     *,
@@ -219,18 +198,14 @@ def settings_file_scan(
     dangling entry that IS state-tracked here is also reported by
     hook_state_liveness; both point at the same leftover."""
     install_lib = _import_module("host_hook_install_lib")
-    toml_lib = _import_module("host_hook_codex_toml_lib")
+    identity = _import_module("host_hook_entry_identity")
     known = known_hook_script_basenames(intents)
     entries: list[dict[str, Any]] = []
     dangling: list[str] = []
-    sources = (
-        (install_lib.default_claude_settings_path(home), "claude-json", _json_settings_commands),
-        (install_lib.default_codex_hooks_json_path(home), "codex-json", _json_settings_commands),
-        (install_lib.default_codex_config_toml_path(home), "codex-toml", _toml_settings_commands),
-    )
+    sources = ((install_lib.default_claude_settings_path(home), "claude-json", _json_settings_commands),)
     for path, kind, read_commands in sources:
         for command in read_commands(path):
-            if toml_lib.script_basename(command) not in known:
+            if identity.script_basename(command) not in known:
                 continue
             script = _command_script_path(command)
             exists = script is not None and script.is_file()

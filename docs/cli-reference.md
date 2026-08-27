@@ -231,10 +231,10 @@ options:
 
 ```text
 usage: charness task [-h] [--repo-root REPO_ROOT]
-                     {claim,submit,review,abort,status} ...
+                     {claim,submit,review,abort,status,run} ...
 
 positional arguments:
-  {claim,submit,review,abort,status}
+  {claim,submit,review,abort,status,run}
     claim               Create a claimed task envelope unless another agent
                         already owns it.
     submit              Mark a claimed task as submitted with structured
@@ -244,6 +244,8 @@ positional arguments:
     abort               Mark a claimed task as aborted with a required reason.
     status              Show one task envelope, or list all repo-local task
                         envelopes.
+    run                 Run one Codex implementation task in a clean named
+                        worktree and emit a compact receipt.
 
 options:
   -h, --help            show this help message and exit
@@ -347,6 +349,45 @@ positional arguments:
 
 options:
   -h, --help  show this help message and exit
+```
+
+## `charness task run`
+
+```text
+usage: charness task run [-h] [--repo-root REPO_ROOT] --path PATH --branch
+                         BRANCH --base BASE --scope SCOPE
+                         (--prompt PROMPT | --prompt-file PROMPT_FILE)
+                         [--codex CODEX] [--codex-arg CODEX_ARG]
+                         [--task-id TASK_ID] [--prepare] [--require-change]
+                         [--timeout-seconds TIMEOUT_SECONDS] [--dry-run]
+
+Create a named linked worktree from an explicit base, run Codex with external
+runtime paths, and report the scoped candidate. The parent worktree must be
+clean.
+
+options:
+  -h, --help            show this help message and exit
+  --repo-root REPO_ROOT
+                        Clean parent repo from which the linked worktree is
+                        created. Defaults to the current working directory.
+  --path PATH           New linked worktree path outside the parent repo.
+  --branch BRANCH       Named local branch for the new worktree.
+  --base BASE           Commit/ref from which the named worktree is created.
+  --scope SCOPE         Exact repository-relative candidate path; repeat for
+                        multiple paths.
+  --prompt PROMPT       Implementation instructions passed to `codex exec`.
+  --prompt-file PROMPT_FILE
+                        Read implementation instructions from this file.
+  --codex CODEX         Codex executable (default: codex).
+  --codex-arg CODEX_ARG
+                        Extra argument passed before the prompt; repeatable.
+  --task-id TASK_ID     Optional receipt/log identifier; defaults to the
+                        branch name.
+  --prepare             Run the worktree adapter prepare step before Codex.
+  --require-change      Fail unless the candidate changes at least one path.
+  --timeout-seconds TIMEOUT_SECONDS
+  --dry-run             Validate inputs and show the planned lane without
+                        creating or running it.
 ```
 
 ## `charness catalog`
@@ -769,14 +810,17 @@ options:
 ## `charness worktree`
 
 ```text
-usage: charness worktree [-h] {create,add,doctor,prepare,audit,cleanup} ...
+usage: charness worktree [-h]
+                         {create,add,exec,doctor,prepare,audit,cleanup} ...
 
 positional arguments:
-  {create,add,doctor,prepare,audit,cleanup}
+  {create,add,exec,doctor,prepare,audit,cleanup}
     create              Create a git worktree, then run readiness doctor and
                         optional prepare.
     add                 Alias for `create`: wrap `git worktree add` with
                         readiness doctor and optional prepare.
+    exec                Run one command in an isolated worktree with external
+                        runtime caches.
     doctor              Probe worktree readiness (isolation, hooksPath,
                         lefthook shim resolution, husky directory, manifest
                         checks).
@@ -844,6 +888,35 @@ options:
   --dry-run             Print the planned git command without creating the
                         worktree.
   --force               Pass --force to `git worktree add`.
+  --home-root HOME_ROOT
+                        Home root used to locate the managed charness checkout
+                        when the entrypoint is a PATH shim.
+  --charness-checkout CHARNESS_CHECKOUT
+                        Explicit charness source checkout to load worktree
+                        helpers from. Defaults to the embedded or managed
+                        checkout.
+```
+
+## `charness worktree exec`
+
+```text
+usage: charness worktree exec [-h] [--repo-root REPO_ROOT] [--allow-main]
+                              [--home-root HOME_ROOT]
+                              [--charness-checkout CHARNESS_CHECKOUT]
+                              ...
+
+Run one command in an isolated worktree with external runtime caches.
+
+positional arguments:
+  command               Command after `--`.
+
+options:
+  -h, --help            show this help message and exit
+  --repo-root REPO_ROOT
+                        Worktree in which to run the command. Defaults to the
+                        current working directory.
+  --allow-main          Allow an intentional command in the primary worktree;
+                        parent writes are then possible.
   --home-root HOME_ROOT
                         Home root used to locate the managed charness checkout
                         when the entrypoint is a PATH shim.

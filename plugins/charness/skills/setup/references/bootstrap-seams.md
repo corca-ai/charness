@@ -1,108 +1,56 @@
 # Bootstrap Seams
 
-Use this when `setup` detects optional Charness seams beyond the default repo
-operating surfaces.
-
-Rule: `setup` may seed local adapters, starter artifacts, or AGENTS.md policy
-blocks. Runtime behavior stays with the owning skill, command, or integration.
-Do not expand `setup` into `quality`, `retro`, `handoff`, or product runtime
-work just because the seed path is convenient.
+Use this when setup detects an optional seam beyond the core README, AGENTS/CLAUDE,
+and docs-index surfaces. Setup may seed a small adapter or pointer; runtime behavior
+stays with its owning skill or command. Do not turn a convenient seed into a new
+universal policy.
 
 ## Installable Surface Probe
 
 When the repo ships an installable CLI, plugin, package, or agent-facing
-integration, make the README or bootstrap doc name a small probe surface.
-
-Use `probe-surface.md` for the details. The first probe should be cheap,
-machine-readable when possible, and honest about whether it proves only binary
-healthcheck, machine-readable command discovery, local discoverability, or a
-real workflow.
+integration, give the README or bootstrap doc one cheap, machine-readable probe.
+Use `probe-surface.md` to distinguish binary healthcheck, command discovery, local
+discoverability, and a real workflow. Do not call a healthcheck a workflow proof.
 
 ## Durable Retro Memory
 
-When the repo wants durable retrospective memory, seed:
+When the repo explicitly wants durable retrospective memory, seed one adapter and
+one digest:
 
 - `<repo-root>/.agents/retro-adapter.yaml`
 - `<repo-root>/charness-artifacts/retro/recent-lessons.md`
 
-Use `$SKILL_DIR/scripts/seed_retro_memory.py` instead of hand-writing the seam.
-After seeding, `retro` owns later memory updates and selection policy.
+Use `seed_retro_memory.py`; later selection and updates belong to `retro`.
 
 ## Artifact Commit Policy
 
-When Charness workflows write durable artifacts, make `<repo-root>/AGENTS.md`
-say meaningful `charness-artifacts/` changes are repo state and commit targets.
-Current-pointer helpers should no-op without canonical content changes.
+When a Charness workflow writes durable artifacts, treat meaningful
+`charness-artifacts/` changes as repo state and commit targets. Current-pointer
+helpers should no-op when canonical content has not changed.
 
 ## Announcement And Release Commit Bodies
 
-When the repo uses announcement or release-note workflows, make
-`<repo-root>/AGENTS.md` say meaningful behavior commits should include a short
-body with issue linkage, human-visible value, verification, and operator/apply notes when relevant.
+When announcement or release-note workflows are actually used, meaningful behavior
+commits should carry issue linkage, human-visible value, verification, and relevant
+operator/apply notes. Keep release mechanics in `release`, not in setup.
 
-Keep GitHub close keywords and merge-commit specifics in
-`agent-docs-policy.md` or `default-surfaces.md`, not in the core setup flow.
+## Skill Routing And Proof
 
-## Bounded Review Delegation
+When installed Charness skills are present, add a short discovery-first routing
+block. Active Goal Runs point to the exact `/goal #<parent>` objective and provider
+cursor; ordinary readers follow `AGENTS.md` -> `<repo-root>/docs/index.md` <!-- not vendored: consumer-repo path --> -> the owning page.
 
-When the repo uses bounded fresh-eye or critique-style subagent review as a
-stop gate, make `<repo-root>/AGENTS.md` say that review is already delegated by
-the repo, agents should not wait for a second user message asking for
-delegation, and host spawn restrictions should be reported explicitly instead
-of replaced with a same-agent pass.
+When the repo owns skills under `skills/public/` or `skills/support/`, the owning
+quality/skill-validation workflow decides whether semantic changes need dogfood,
+scenario, or other proof. Setup does not make review or changed-line proof a
+universal requirement.
 
-For compact AGENTS profiles, the root file may say this as one standing
-delegation request that names canonical scopes and forbids same-agent
-substitution. Keep detailed rationale in this reference or repo docs rather
-than requiring a handbook-length root instruction file.
+## Worktree And Hook Visibility
 
-## Skill Routing
+When the repo uses git worktrees plus a hook manager, seed
+`<repo-root>/.agents/worktree-adapter.yaml` so the worktree command can reproduce readiness.
+Keep runtime/cache paths outside the worktree where possible.
 
-When installed Charness skills are present, add a short `Skill Routing` block
-to `<repo-root>/AGENTS.md`.
-
-Keep the block startup-bootstrap-heavy and discovery-first. Use
-`$SKILL_DIR/scripts/render_skill_routing.py` so mature repos get an add-block
-suggestion instead of a silent rewrite.
-
-If a mature repo already has a compact pickup/metadata/catalog rule for session
-start, setup normalization may accept it as compact routing rather than
-rewriting it.
-
-Whichever path writes the block, it must SAY that the SessionStart hook is only
-an injector and this block stands without it — `it remains context-only`, or
-`this block is the fallback when the hook is absent`. Naming the hook is not
-that claim, and the reader that decides whether a repo is charness-managed
-cannot infer it. Keep the standing next to the word `hook` or `block`; a repo
-that omits it reads as unmanaged, which silently disables the AGENTS.md policy
-checks that only run for managed repos.
-
-## Repo-Owned Skill Proof
-
-When the repo keeps repo-owned skills under `skills/public/` or
-`skills/support/`, make `<repo-root>/AGENTS.md` say semantic skill changes
-should freeze current consumer intent before broad edits by deciding whether
-reviewed dogfood, maintained evaluator scenarios, or checked-in scenario review
-proof will carry the change.
-
-## Worktree Adapter
-
-When the repo uses git worktrees plus a Node hook manager such as `lefthook`,
-`husky`, or `simple-git-hooks`, seed:
-
-- `<repo-root>/.agents/worktree-adapter.yaml`
-
-Use `$SKILL_DIR/scripts/seed_worktree_adapter.py` so `charness worktree prepare`
-can install dependencies and re-register hooks per worktree. Worktree runtime
-behavior stays with the worktree command surface.
-
-## Hook Failure Visibility
-
-When a consumer uses lefthook, route hook output guidance through
-`hook-failure-visibility.md`. Every `pre-commit` and `pre-push` command should
-declare an actionable `fail_text`; diagnostic gates should preserve raw
-stdout/stderr in a provisioned stable stage-specific failure log. Do not pipe a
-gate through `tail` or `head`, because the final filter can hide the gate's exit
-status. Husky and simple-git-hooks need their own native guidance. This
-Lefthook contract belongs to the consumer's hook configuration, not to
-Charness's worktree adapter `prepare.commands`.
+For Lefthook, use `hook-failure-visibility.md`: preserve raw output in a stable
+stage-specific log and declare actionable failure text. Do not pipe a gate through
+`tail` or `head`. Consumer hook configuration remains owned by the consumer.

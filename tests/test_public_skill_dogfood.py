@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import shutil
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -76,7 +75,7 @@ def write_registry(repo: Path, registry: dict[str, object]) -> None:
     )
 
 
-def seed_skill(repo: Path, skill_id: str, *, description: str, adapter: bool) -> None:
+def seed_skill(repo: Path, skill_id: str, *, description: str) -> None:
     skill_dir = repo / "skills" / "public" / skill_id
     skill_dir.mkdir(parents=True)
     (skill_dir / "SKILL.md").write_text(
@@ -94,12 +93,6 @@ def seed_skill(repo: Path, skill_id: str, *, description: str, adapter: bool) ->
         + "\n",
         encoding="utf-8",
     )
-    if adapter:
-        shutil.copy2(ROOT / "skills" / "public" / "handoff" / "adapter.example.yaml", skill_dir / "adapter.example.yaml")
-        scripts_dir = skill_dir / "scripts"
-        scripts_dir.mkdir()
-        shutil.copy2(ROOT / "skills" / "public" / "handoff" / "scripts" / "resolve_adapter.py", scripts_dir / "resolve_adapter.py")
-        shutil.copy2(ROOT / "skills" / "public" / "handoff" / "scripts" / "init_adapter.py", scripts_dir / "init_adapter.py")
 
 
 def scaffold_case(repo: Path, skill_id: str) -> dict[str, object]:
@@ -129,7 +122,7 @@ def test_validate_public_skill_dogfood_passes_for_current_real_registry() -> Non
 
 def test_validate_public_skill_dogfood_checks_current_scaffold_drift(tmp_path: Path) -> None:
     repo = seed_repo(tmp_path)
-    seed_skill(repo, "demo", description="Improve the demo skill first.", adapter=False)
+    seed_skill(repo, "demo", description="Improve the demo skill first.")
     registry = base_registry(repo)
     registry["cases"][0]["prompt"] = "Drifted prompt."
     write_registry(repo, registry)
@@ -140,7 +133,7 @@ def test_validate_public_skill_dogfood_checks_current_scaffold_drift(tmp_path: P
 
 def test_validate_public_skill_dogfood_requires_reviewed_case_for_required_skill(tmp_path: Path) -> None:
     repo = seed_repo(tmp_path)
-    seed_skill(repo, "demo", description="Improve the demo skill first.", adapter=False)
+    seed_skill(repo, "demo", description="Improve the demo skill first.")
     registry = base_registry(repo)
     registry["cases"] = []
     write_registry(repo, registry)
@@ -151,7 +144,7 @@ def test_validate_public_skill_dogfood_requires_reviewed_case_for_required_skill
 
 def test_validate_public_skill_dogfood_requires_observed_evidence_for_reviewed_case(tmp_path: Path) -> None:
     repo = seed_repo(tmp_path)
-    seed_skill(repo, "demo", description="Improve the demo skill first.", adapter=False)
+    seed_skill(repo, "demo", description="Improve the demo skill first.")
     registry = base_registry(repo)
     registry["cases"][0]["observed_evidence"] = []
     write_registry(repo, registry)
@@ -162,7 +155,7 @@ def test_validate_public_skill_dogfood_requires_observed_evidence_for_reviewed_c
 
 def test_suggest_public_skill_dogfood_cli_emits_requested_matrix(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = seed_repo(tmp_path)
-    seed_skill(repo, "demo", description="Improve the demo skill first.", adapter=False)
+    seed_skill(repo, "demo", description="Improve the demo skill first.")
 
     result = run_suggest_public_skill_dogfood(
         monkeypatch,
@@ -217,7 +210,7 @@ def test_suggest_public_skill_dogfood_cli_covers_json_human_and_unknown_paths(
 ) -> None:
     """Keep the CLI output branches in-process for changed-line coverage."""
     repo = seed_repo(tmp_path)
-    seed_skill(repo, "demo", description="Improve the demo skill first.", adapter=False)
+    seed_skill(repo, "demo", description="Improve the demo skill first.")
 
     json_result = run_suggest_public_skill_dogfood(
         monkeypatch, capsys, "--repo-root", str(repo), "--skill-id", "demo", "--detail"
@@ -244,7 +237,7 @@ def test_suggest_cli_warns_on_description_fallback_prompt(tmp_path: Path, monkey
     # (advisory only -- exit stays 0). This is the gap that left `prove` with
     # an unrealistic prompt until 2026-07-17.
     repo = seed_repo(tmp_path)
-    seed_skill(repo, "demo", description="Improve the demo skill first.", adapter=False)
+    seed_skill(repo, "demo", description="Improve the demo skill first.")
 
     result = run_suggest_public_skill_dogfood(
         monkeypatch, capsys, "--repo-root", str(repo), "--skill-id", "demo", "--detail"
@@ -268,7 +261,7 @@ def test_format_human_renders_fallback_warning_line(tmp_path: Path) -> None:
     # Covers the format_human WARNING branch the changed-line mutation gate
     # flagged as uncovered (release quality run, 2026-07-17).
     repo = seed_repo(tmp_path)
-    seed_skill(repo, "demo", description="Improve the demo skill first.", adapter=False)
+    seed_skill(repo, "demo", description="Improve the demo skill first.")
     from scripts.public_skill_dogfood_lib import format_human
 
     report = build_matrix(repo, ["demo"])
@@ -283,7 +276,7 @@ def test_quality_skill_cli_copy_emits_fallback_stderr_warning(tmp_path: Path) ->
     import subprocess
 
     repo = seed_repo(tmp_path)
-    seed_skill(repo, "demo", description="Improve the demo skill first.", adapter=False)
+    seed_skill(repo, "demo", description="Improve the demo skill first.")
     result = subprocess.run(
         [
             sys.executable,

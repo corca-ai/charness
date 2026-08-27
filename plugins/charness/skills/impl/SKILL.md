@@ -1,172 +1,87 @@
 ---
 name: impl
-description: "Use when work should move into code, config, tests, or operator-facing artifacts. Consume the current implementation contract when it exists, bootstrap a small honest contract inline when it does not, implement the smallest meaningful slice, then load `prove` to verify it and emit the slice closeout ledger before stopping."
+description: "Use when work should move into code, config, tests, or operator-facing artifacts. Read the current contract, make the smallest useful change (including deleting obsolete code or tests), run proportionate focused verification, and leave a concise evidence record."
 ---
 # Impl
 
-Use this when the work should move from contract into code, config, tests, or operator-facing artifacts.
+Use this when work should move from an agreed intent into code, configuration,
+tests, or an operator-facing artifact. `impl` is an execution skill, not a
+ceremony runner: its job is to make the intended change and establish enough
+evidence that the next decision does not require rework.
 
-`impl` is downstream of `spec`, but direct implementation prompts still get a small honest contract instead of pretending the task is already well-defined.
-`impl` owns building the slice; proving and closing it is the sibling `prove` skill, loaded at the stop gate below. Keep sequence discipline in the loop: see `references/sequence-discipline.md` and `references/design-lenses.md`.
+## Start
 
-## Continuation Default
+1. Read `AGENTS.md`, then `<repo-root>/docs/index.md` <!-- not vendored: consumer-repo path --> and only the pages that own the
+   current surface. If an active `/goal #N` exists, read the parent body and
+   the selected child only; do not rescan the whole issue graph on routine
+   pickup.
+2. Read the current implementation contract. If none exists, write a small
+   working contract in the task context: intended behavior, acceptance check,
+   and explicit non-claims.
+3. Inspect the exact target paths and current diff. Preserve unrelated parent
+   worktree changes. When using an implementation worktree, it must be clean at
+   entry and its runtime/cache paths must be outside the worktree.
 
-- When the user explicitly asks for autonomous continuation, do not pause at
-  slice boundaries just to report completion; treat commits, verification, and
-  contract updates as checkpoints and continue into the next locally decidable slice.
-- Ask only for real product/policy decisions, irreversible external side effect,
-  unavailable stronger proof, or evidence conflicts you cannot resolve locally.
+No separate session-start hook, handoff file, risk-interrupt planner, or
+progress mirror is required for ordinary implementation. Achieve owns active
+goal navigation; the parent issue is the resume state.
 
-## Bootstrap
+## Continuation
 
-Resolve `$SKILL_DIR` per `../../shared/references/bootstrap-resolution.md`. Read the
-current implementation contract before changing code. If no canonical contract
-exists, bootstrap a small current-slice contract first.
+When the user requests autonomous continuation, carry on across local
+checkpoints and take the next locally decidable slice. Pause only for a real
+product/policy decision, an irreversible external side effect, unavailable
+stronger proof, or conflicting evidence.
 
-```bash
-# Required Tools: rg
-# Missing-binary protocol: ../../shared/references/binary-preflight.md
-# 1. current contract and nearby context
-rg --files docs skills
-sed -n '1,220p' docs/handoff.md 2>/dev/null || true
+## Change
 
-# 2. impl adapter resolution and verification survey
-python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
-python3 "$SKILL_DIR/scripts/init_adapter.py" --repo-root .
-python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
-python3 "$SKILL_DIR/scripts/survey_verification.py" --repo-root .
+- Implement the smallest coherent user-visible change. Deleting an obsolete
+  wrapper, gate, mirror, or test is a valid implementation when it removes a
+  real source of friction and its remaining consumers are understood.
+- Keep source-of-truth and generated export changes together. Use the canonical
+  exporter for mirrors; do not hand-edit a generated copy.
+- Keep provider selection explicit and resolve it once per operation. Do not add
+  a second capability probe when the mutation already performs target
+  readback.
+- Do not create a local progress, session, or closeout artifact merely because
+  a goal is active. Update the goal parent only when a child transition or
+  externally visible decision actually changes.
 
-# 3. locate the canonical spec/design artifact and current target
-rg -n "Current Slice|Success Criteria|Acceptance Checks|Fixed Decisions|Probe Questions|Deferred Decisions|requirements|acceptance" .
+## Verify
 
-# 4. bind the planned current-slice paths before the authoritative risk call
-rg -n "test|spec|fixture|eval|smoke|integration" .
-git status --short
+Run the narrowest evidence that answers the changed behavior:
 
-# Freeze every repo-relative path this slice may own: source, tests, generated
-# exports, and contract/validation surfaces. Then run the only authoritative
-# planner call with that complete path set.
-python3 "$SKILL_DIR/../../shared/scripts/plan_risk_interrupt.py" --repo-root . --detail --paths <current-slice-path>...
-```
+- focused tests for the changed module or user flow;
+- the default `<repo-root>/scripts/run-quality.sh` core lane when the change is broad;
+- `<repo-root>/scripts/run-quality.sh --full --read-only` only for an explicit broad,
+  pre-push, release, or review check.
 
-A pathless/global planner observation may be used only to discover whether a
-current interrupt exists; it is discovery-only and cannot authorize or refuse
-this slice. If the current-slice path set is not known, finish binding the
-contract, target, and owned source/test/generated/contract paths before making
-the authoritative call above. Interpret that scoped result fail-closed: only
-`status: not-applicable` with `required: false`, or
-`status: handoff-recorded` with `required: true`, `impl_status: allowed`, and
-`chosen_next_step: impl` permits ordinary implementation. Blocked, unknown, or
-malformed output, any required result without that valid impl handoff, and an
-allowed handoff whose next step is `critique`, `factor-first`, or `hitl` all
-stop ordinary implementation.
+Use external cache and temporary roots supplied by the repo runtime wrapper.
+Never treat an ignored cache as proof that the worktree stayed clean; inspect
+tracked, untracked, and ignored populations separately when worktree hygiene is
+part of the claim.
 
-If the canonical contract artifact is missing, reconstruct the smallest honest
-contract first. Do not stop just because `spec` was not run as a separate
-session. Stop only if the slice is still too ambiguous to define honestly.
+Additional proof is conditional. A change to verdict logic, a proof surface,
+an irreversible external mutation, a release surface, or a deletion with
+uncertain consumers needs that surface's owner and readback. Ordinary
+reversible local work does not require a fresh-eye review, changed-line proof,
+or a separate closeout ledger. Use `prove` when the user or the boundary
+explicitly requires its evidence format, not as a universal stop gate.
 
-Adapter policy:
+## Finish
 
-- if the impl adapter is missing, continue with inferred defaults and manual
-  capability discovery
-- if the adapter is invalid, repair it using `references/adapter-contract.md`
-  before relying on adapter-defined paths or verification preferences
-- if recurring verification expectations matter, create
-  `<repo-root>/.agents/impl-adapter.yaml` early
-- treat the verification survey as onboarding, not a closing nicety: look for
-  the best self-verification path before you code and again before you stop
-- run the worktree readiness probe below; when `charness worktree doctor`
-  reports a non-pass status, surface the recommended next action (usually
-  `charness worktree prepare`) for the operator to run — do not auto-run prepare
-  and do not silently proceed past missing hook-manager state
-
-The shared adapter initializer returns one typed YAML receipt and supports a
-read-only `--dry-run` preview, idempotent valid-state no-ops, and explicit
-`--force` replacement. See [`adapter-bootstrap.md`](../../shared/references/adapter-bootstrap.md).
-
-## Worktree Readiness
-
-Run the non-fatal readiness probe before mutating code; skip silently when
-`charness` is not on PATH so it never blocks a repo that does not consume charness.
-
-```bash
-command -v charness >/dev/null 2>&1 && charness worktree doctor || true
-```
-
-## Workflow
-
-1. Ingest the current slice.
-   - identify the canonical artifact or write an inline current-slice contract
-     before changing code; restate the slice in implementation terms and list
-     the acceptance checks that must pass before stopping
-   - when the contract names a `Capability Contract`, restate it as the
-     user/operator capability and acceptance evidence before coding
-   - when user-corrected behavior starts or redirects the work, classify stable
-     contract vs better case reading before adding repo rules, tests, or gates
-   - interpret only the authoritative path-scoped planner result; a pathless or
-     global result is discovery-only and never controls this slice
-   - do not continue plain implementation unless the result is explicitly
-     `not-applicable`/`required: false` or
-     `handoff-recorded`/`required: true`/`impl_status: allowed`/
-     `chosen_next_step: impl`; every other, unknown, or malformed result stops
-     the slice
-   - before replacing a process, runner, protocol adapter, or compatibility
-     boundary, write the acceptance envelope: preserved inputs and argument
-     boundaries, state/lifecycle, outputs, failure and exit behavior, and the
-     real-boundary smoke that must remain. Retired implementation formatting or
-     diagnostics stay out unless a current consumer actually depends on them.
-2. Keep the contract honest.
-   - treat `Fixed Decisions` as fixed for this slice
-   - treat `Probe Questions` as explicit learning goals, not as hidden scope
-   - keep `Deferred Decisions` visible instead of resolving them accidentally
-   - if implementation changes scope, acceptance, or a fixed decision, update
-     the contract before stopping
-3. Implement the smallest meaningful unit.
-   - prefer a slice that proves one user-visible behavior or one structural seam
-     and opens the next good move most cleanly; when a probe exists, design the
-     slice to answer it cleanly
-   - for judgment-quality corrections, preserve the boundary: a direct answer,
-     smaller guidance, or no repo change yet may be correct
-   - apply `../../shared/references/source-bound-records.md` for multi-source
-     external writes, and the prescribed path from `SKILL.md` (not an
-     author-composed smoke probe) for skill packages, scheduled workflows, or
-     external lookup contracts
-   - when a verified Goal Run is active, consume the selected Work Item and its
-     `goal_lineage` as context; keep slice evidence in the owning child/closeout
-     artifact and do not create a local progress mirror, handoff update, or
-     micro-slice record merely because the goal is active
-4. Prove and close the slice.
-   - when the build work is done, load the sibling `prove` skill and complete
-     its closeout evidence before stopping: the strongest honest verification,
-     truth-surface sync, any explicitly required boundary review, and the
-     emitted closeout vocabulary all live there
-   - "code written" is not a stop state; a slice without its `prove` ledger is
-     unfinished work, not a smaller slice
-
-## Output Shape
-
-The slice closeout ledger — `Implemented`, `Verification`, `Lint Gate`,
-`Truth Surface Sync`, `Boundary Ownership`, `Critique`, and the rest — is owned
-by `prove`; emit it from there rather than improvising a local summary shape.
-
-## Guardrails
-
-- Do not stop at "code written": a slice ends when its `prove` ledger is
-  complete, blocked-with-signal, or the slice is honestly handed back to
-  `spec`/`debug`.
-- Do not stop at code written; `prove` still owns closeout evidence. It may
-  record `Critique: not-required <reason>` for reversible local work, and it
-  must hand named high-risk boundaries to their explicit review owner.
+Report the changed behavior, the focused commands that passed, and the
+remaining non-claims. If the active goal needs a provider transition, Achieve
+or `issue` updates the parent/child state through the existing provider command.
+Do not invent a second coordination channel. Commit only after the relevant
+verification has passed; do not push, release, tag, or mutate an installed host
+without its explicit authorization.
 
 ## References
 
 - `references/adapter-contract.md`
 - `references/contract-consumption.md`
-- `references/external-api-contract.md`
 - `references/design-lenses.md`
 - `references/sequence-discipline.md`
-- `references/spec-loop.md`
-- `../prove/SKILL.md`
-- `../../shared/references/source-bound-records.md`
-- `../../shared/references/prescribed-path-self-test.md`
-- `../../shared/references/active-goal-coordination.md`
+- `references/external-api-contract.md` (only for an external API seam)
+- `../prove/SKILL.md` (only when its evidence format is explicitly needed)

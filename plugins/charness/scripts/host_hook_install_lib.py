@@ -2,12 +2,9 @@
 
 State for what charness installed lives at
 `.charness/host-hooks/state.json`. Reconciliation reads state
-first; foreign hooks are identified by absence from state, not by absence of
-the marker comment. Codex `config.toml` entries carry an inline marker for
-human-visible identification only.
-Claude `settings.json` and Codex `hooks.json` are strict JSON, so the marker
-pattern is not applied there — state-file matching is the sole identification
-path for those formats. Concrete hook intents live in sibling modules.
+first; foreign hooks are identified by absence from state. The only supported
+host hook is the optional Claude edit-time guard; Charness does not install
+startup-context hooks.
 """
 
 from __future__ import annotations
@@ -20,11 +17,6 @@ from pathlib import Path
 from typing import Any
 
 try:
-    from host_hook_codex_toml_lib import (
-        find_charness_toml_block,
-        read_text_or_empty,
-        toml_block_matcher,
-    )
     from host_hook_entry_identity import (
         entries_match_command,
         entry_carries_foreign_command,
@@ -35,11 +27,6 @@ except ImportError:  # pragma: no cover - used when invoked as a module from els
     import sys
 
     sys.path.insert(0, str(Path(__file__).resolve().parent))
-    from host_hook_codex_toml_lib import (  # type: ignore[no-redef]
-        find_charness_toml_block,
-        read_text_or_empty,
-        toml_block_matcher,
-    )
     from host_hook_entry_identity import (  # type: ignore[no-redef]
         entries_match_command,
         entry_carries_foreign_command,
@@ -47,11 +34,9 @@ except ImportError:  # pragma: no cover - used when invoked as a module from els
         matcher_covers,
     )
 
-SESSION_START_EVENT = "SessionStart"
 HOST_HOOKS_STATE_RELATIVE = Path(".charness/host-hooks/state.json")
 HOOK_SCRIPT_RELATIVE = Path("scripts/host-hook.py")
 STATE_SCHEMA_VERSION = 1
-CHARNESS_MARKER = "charness:hook"
 
 
 class HostHookError(Exception):
@@ -64,39 +49,6 @@ def _now_iso() -> str:
 
 def default_claude_settings_path(home: Path) -> Path:
     return home / ".claude" / "settings.json"
-
-
-def default_codex_config_toml_path(home: Path) -> Path:
-    return home / ".codex" / "config.toml"
-
-
-def default_codex_hooks_json_path(home: Path) -> Path:
-    return home / ".codex" / "hooks.json"
-
-
-def _codex_hooks_json_has_entries(path: Path) -> bool:
-    if not path.is_file():
-        return False
-    try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return False
-    if not isinstance(data, dict):
-        return False
-    hooks = data.get("hooks")
-    return isinstance(hooks, dict) and bool(hooks)
-
-
-def resolve_codex_target(home: Path) -> tuple[Path, str]:
-    """Return (path, kind) honoring 'one representation per layer' (gather 2026-05-22).
-
-    Defaults to TOML; falls back to JSON when `~/.codex/hooks.json` already
-    carries any hook entries.
-    """
-    hooks_json = default_codex_hooks_json_path(home)
-    if _codex_hooks_json_has_entries(hooks_json):
-        return hooks_json, "codex-json"
-    return default_codex_config_toml_path(home), "codex-toml"
 
 
 def build_command(repo_root: Path, host: str, *, script_relative: Path = HOOK_SCRIPT_RELATIVE) -> str:
@@ -186,8 +138,8 @@ def _install_json_event(
     settings_path: Path,
     *,
     command: str,
-    matcher: str = "",
-    event: str = SESSION_START_EVENT,
+    matcher: str,
+    event: str,
 ) -> dict[str, Any]:
     settings = _read_json_settings(settings_path)
     entries = _ensure_event_array(settings, event)
@@ -230,7 +182,7 @@ def _uninstall_json_event(
     settings_path: Path,
     *,
     command: str,
-    event: str = SESSION_START_EVENT,
+    event: str,
 ) -> dict[str, Any]:
     if not settings_path.is_file():
         return {"settings_path": str(settings_path), "action": "absent"}
@@ -289,30 +241,25 @@ def detect_host_hook_actual(
     home: Path,
     state_key: str | None = None,
     script_relative: Path = HOOK_SCRIPT_RELATIVE,
-    toml_marker: str = CHARNESS_MARKER,
-    event: str = SESSION_START_EVENT,
-    matcher: str | None = None,
+    event: str,
+    matcher: str,
 ) -> dict[str, Any]:
     """Report the installed-hook actual for `host`.
 
-    `matcher`, when given, is part of the hook's identity: an entry carrying the
-    expected command under a matcher that cannot fire for the events this hook
-    exists to catch is not reported as present. Coverage, not equality — a widened
-    or reordered matcher still fires, so it stays present (`_matcher_covers`).
-    `None` keeps the command-only identity used by callers with no matcher.
+    The matcher is part of the hook's identity: an entry carrying the expected
+    command under a matcher that cannot fire for the events this hook exists to
+    catch is not reported as present. Coverage, not equality — a widened or
+    reordered matcher still fires, so it stays present.
     """
     state = read_state(repo_root)
     key = state_key or host
     state_entry = state.get(key) if isinstance(state.get(key), dict) else None
-    if host == "claude":
-        settings_path = Path(state_entry["settings_path"]) if isinstance(state_entry, dict) and isinstance(state_entry.get("settings_path"), str) else default_claude_settings_path(home)
-        kind = "claude-json"
-    else:
-        if isinstance(state_entry, dict) and isinstance(state_entry.get("settings_path"), str):
-            settings_path = Path(state_entry["settings_path"])
-            kind = state_entry.get("kind", "codex-toml")
-        else:
-            settings_path, kind = resolve_codex_target(home)
+    settings_path = (
+        Path(state_entry["settings_path"])
+        if isinstance(state_entry, dict) and isinstance(state_entry.get("settings_path"), str)
+        else default_claude_settings_path(home)
+    )
+    kind = "claude-json"
     expected_command = state_entry.get("command") if isinstance(state_entry, dict) else None
     if not isinstance(expected_command, str) or not expected_command:
         expected_command = build_command(repo_root, host=host, script_relative=script_relative)
@@ -321,7 +268,7 @@ def detect_host_hook_actual(
     # the GREEN answer for a `disabled` intent, so without this flag a mid-edit
     # settings.json reads as "hook correctly absent" over a file nobody could read.
     settings_readable = True
-    if kind in {"claude-json", "codex-json"} and settings_path.is_file():
+    if settings_path.is_file():
         try:
             data = json.loads(settings_path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
@@ -334,21 +281,9 @@ def detect_host_hook_actual(
                 if isinstance(entries, list):
                     present = any(
                         entries_match_command(entry, expected_command)
-                        and (matcher is None or matcher_covers(entry.get("matcher"), matcher))
+                        and matcher_covers(entry.get("matcher"), matcher)
                         for entry in entries
                     )
-    elif kind == "codex-toml":
-        if settings_path.is_file():
-            text = read_text_or_empty(settings_path)
-            span = find_charness_toml_block(text, expected_command, toml_marker)
-            present = span is not None
-            if present and matcher is not None:
-                # The block writer emits `matcher = "..."`, so coverage IS
-                # establishable here; the first cut refused the verdict because the
-                # scan never read the line back, which made the honest refusal the
-                # only option. Reading it back is the better fix.
-                start, end = span
-                present = matcher_covers(toml_block_matcher(text[start:end]), matcher)
     return {
         "settings_path": str(settings_path),
         "kind": kind,
@@ -368,9 +303,7 @@ def _hook_sync_status(
     drift_prefix: str = "",
     detect_kwargs: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
-    """Shared intent-vs-actual SessionStart-hook drift status (generic hooks
-    and contextual session routing differ only in intent section, detect kwargs, and
-    the drift noun/prefix)."""
+    """Shared intent-vs-actual status for the optional edit-time hook."""
     drift: list[str] = []
     per_host: dict[str, Any] = {}
     for host, intent in intents.items():
@@ -390,12 +323,6 @@ def _hook_sync_status(
             drift.append(f"{host}: {drift_prefix}intent={intent} but {detail} at {actual['settings_path']}")
         per_host[host] = {"intent": intent, "actual": actual, "in_sync": in_sync}
     return {"in_sync": not drift, "drift": drift, "hosts": per_host}
-
-
-def session_routing_status(repo_root: Path, *, adapter: dict[str, Any] | None, home: Path) -> dict[str, Any]:
-    from host_hook_session_routing import session_routing_status as _session_routing_status
-
-    return _session_routing_status(repo_root, adapter=adapter, home=home)
 
 
 def skill_anchor_guard_status(repo_root: Path, *, adapter: dict[str, Any] | None, home: Path) -> dict[str, Any]:

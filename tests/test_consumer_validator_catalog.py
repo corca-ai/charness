@@ -259,16 +259,15 @@ def test_live_catalog_has_a_decision_for_every_packaged_candidate() -> None:
     #
     # This one STAYS, and is `contract` rather than chore: it pins the exported
     # consumer surface every consuming repo must wire or explicitly opt out of.
-    assert report["consumer_facing_count"] == 14
-    assert "scripts/validate_handoff_artifact.py" in report["consumer_facing_validators"]
+    assert report["consumer_facing_count"] == 13
     assert "scripts/validate_adapters.py" not in report["consumer_facing_validators"]
-    assert "handoff-artifact" in report["consumer_validator_ids"]
-    handoff = next(
-        entry for entry in report["consumer_validator_entries"] if entry["id"] == "handoff-artifact"
+    assert "quality-artifact" in report["consumer_validator_ids"]
+    quality = next(
+        entry for entry in report["consumer_validator_entries"] if entry["id"] == "quality-artifact"
     )
-    assert handoff["artifact_type"]
-    assert handoff["purpose"]
-    assert handoff["invocation"].startswith("python3 <plugin-root>/")
+    assert quality["artifact_type"]
+    assert quality["purpose"]
+    assert quality["invocation"].startswith("python3 <plugin-root>/")
 
 
 def test_new_packaged_validator_cannot_stay_silent(tmp_path: Path) -> None:

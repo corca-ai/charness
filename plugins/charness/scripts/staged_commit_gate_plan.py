@@ -60,11 +60,9 @@ def _timing_layer_gates(repo_root: Path, paths: list[str], existing: list[str] |
     docs/validator-timing-layers.md for the classification table
     and the ~1s budget line.
 
-    ``existing`` is the subset of ``paths`` still on disk. A gate that validates ONE
-    NAMED FILE runs only while that file exists — deleting `docs/handoff.md` used to
-    schedule `validate-handoff-artifact`, which then raised `FileNotFoundError` and
-    took the hook down with a traceback. A gate that validates a whole SURFACE keeps
-    running on `paths`, deletion included: that is the verdict A3 exists to restore."""
+    ``existing`` is the subset of ``paths`` still on disk. A gate that validates a
+    named file runs only while that file exists. A gate that validates a whole
+    surface keeps running on ``paths``, deletion included."""
     present = paths if existing is None else existing
     gates: list[GateCommand] = []
     if any(path.endswith(".py") for path in paths):
@@ -166,22 +164,9 @@ def _timing_layer_gates(repo_root: Path, paths: list[str], existing: list[str] |
                 str(repo_root),
             )
         )
-    if _any_exact(present, "docs/handoff.md"):
-        # ~0.1s, validates exactly the staged file. A goal-closeout commit once
-        # emptied a required handoff section AFTER the session's final broad
-        # run and sat unpushed in the commit->push window; pre-push was the
-        # first gate that could have caught it.
-        gates.extend(
-            _timing_pull_gate(
-                repo_root, "validate-handoff-artifact", "scripts/validate_handoff_artifact.py",
-                "--repo-root", str(repo_root),
-            )
-        )
     if _touches_current_pointer_freshness_surface(paths):
-        # #396: stale rolling-pointer claims (notably handoff "next session"
-        # SHA/status claims) used to wait until pre-push. The freshness validator
-        # is cheap and deterministic, so run the exact broad-gate command at the
-        # commit boundary for every surface it cross-checks.
+        # The freshness validator is cheap and deterministic, so run the exact
+        # broad-gate command at the commit boundary for every surface it cross-checks.
         gates.extend(
             _timing_pull_gate(
                 repo_root, "validate-current-pointer-freshness",
@@ -213,7 +198,6 @@ def _timing_layer_gates(repo_root: Path, paths: list[str], existing: list[str] |
 def _touches_current_pointer_freshness_surface(paths: list[str]) -> bool:
     exact = {
         ".gitignore",
-        "docs/handoff.md",
         "charness-artifacts/quality/latest.md",
         "charness-artifacts/release/latest.md",
         "charness-artifacts/capability-catalog/latest.json",

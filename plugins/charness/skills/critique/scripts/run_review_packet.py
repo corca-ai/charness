@@ -166,7 +166,6 @@ def run_paths(run_dir: Path, packet: Path) -> dict[str, Path]:
         "capability": "capability.json",
         "prompt": "review-prompt.md",
         "plan": "run-plan.json",
-        "boundary": "boundary-before.json",
         "ledger": "delivery.json",
         "output": "result.json",
         "receipt": "receipt.json",

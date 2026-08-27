@@ -27,18 +27,15 @@ from tests.script_main import run_loaded_script_main
 ROOT = Path(__file__).resolve().parents[2]
 
 LINT_RELEASE_NARRATIVE_PATH = ROOT / "skills/public/release/scripts/lint_release_narrative.py"
-CHUNKED_ROUTING_CLI_PATH = ROOT / "skills/public/handoff/scripts/chunked_routing_cli.py"
 
 LINT = load_script_module("batch4_lint_release_narrative", LINT_RELEASE_NARRATIVE_PATH)
 DRIFT = load_script_module("batch4_check_upstream_support_drift", ROOT / "scripts/check_upstream_support_drift.py")
-ROUTING_CLI = load_script_module("batch4_chunked_routing_cli", CHUNKED_ROUTING_CLI_PATH)
 CLASSIFY_PUSH_DIFF = load_script_module("batch4_classify_push_diff", ROOT / "scripts/classify_push_diff.py")
 GATHER = load_script_module("batch4_gather_public_url", ROOT / "skills/public/gather/scripts/gather_public_url.py")
 PRESCRIBED = load_script_module("batch4_check_prescribed_skill_executed", ROOT / "scripts/check_prescribed_skill_executed.py")
 PREPUSH = load_script_module("batch4_prepush_focused", ROOT / "scripts/prepush_focused_changed_line_coverage.py")
 WORKTREE_AUDIT = load_script_module("batch4_worktree_audit", ROOT / "scripts/worktree_audit.py")
 BOOTSTRAP_RUNTIME = load_script_module("batch4_bootstrap_runtime", ROOT / "scripts/bootstrap_runtime.py")
-QUALITY_HANDOFF = load_script_module("batch4_inventory_quality_handoff", ROOT / "scripts/inventory_quality_handoff.py")
 UPDATE_TOOLS = load_script_module("batch4_update_tools", ROOT / "scripts/update_tools.py")
 BOOTSTRAP_PREVIEW = load_script_module(
     "batch4_bootstrap_markdown_preview", ROOT / "skills/public/quality/scripts/bootstrap_markdown_preview.py"
@@ -258,123 +255,6 @@ def test_drift_main_fails_when_a_pinned_support_path_is_gone(
     payload = yaml.safe_load(result.stdout)
     assert payload["drift_count"] == 1
     assert payload["checked"][0]["label"] == "DRIFT"
-
-
-# --------------------------------------------------------------------------- #
-# skills/public/handoff/scripts/chunked_routing_cli.py
-# --------------------------------------------------------------------------- #
-
-
-def _read_payload(module, raw: str, tmp_path: Path, name: str = "stage-input.yaml"):
-    source = tmp_path / name
-    source.write_text(raw, encoding="utf-8")
-    return module.read_pipeline_json(str(source), stage="prepare_ranker_packet", expects="a chunk packet")
-
-
-def _refusal_from(excinfo, capsys) -> dict:
-    assert excinfo.value.code == 2
-    return yaml.safe_load(capsys.readouterr().err)
-
-
-def test_routing_cli_refuses_to_load_without_the_repo_yaml_emitter(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """Every pipeline stage loads this module as a plain sibling, so a layout that
-    does not ship `scripts/yaml_output.py` has to fail at import naming that file.
-    Otherwise the first stage to refuse would itself die rendering its refusal.
-
-    Asserted both through a real import of a copy stranded outside the repo and by
-    pointing the shipped module's own anchor at that directory, so the refusal is
-    pinned on THIS file's ancestor walk rather than on the copy's."""
-    with pytest.raises(ImportError, match="scripts/yaml_output.py not found"):
-        _load_copy_of(CHUNKED_ROUTING_CLI_PATH, tmp_path, "batch4_chunked_routing_cli_stranded")
-
-    monkeypatch.setattr(ROUTING_CLI, "__file__", str(tmp_path / "chunked_routing_cli.py"))
-    with pytest.raises(ImportError, match="scripts/yaml_output.py not found"):
-        ROUTING_CLI._load_yaml_output()
-
-
-def test_routing_cli_names_the_interpreter_when_pyyaml_cannot_read_the_fallback(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
-) -> None:
-    """Non-JSON input falls back to YAML, so on an interpreter without PyYAML the
-    stage must say WHICH interpreter is missing it and why JSON was rejected. A bare
-    `ModuleNotFoundError` traceback here sends the reader looking for a bad payload
-    when the real defect is the interpreter running the pipeline."""
-    monkeypatch.setitem(sys.modules, "yaml", None)
-
-    with pytest.raises(SystemExit) as excinfo:
-        _read_payload(ROUTING_CLI, "entries:\n  - id: a\n", tmp_path)
-
-    payload = _refusal_from(excinfo, capsys)
-    assert payload["ok"] is False
-    assert payload["stage"] == "prepare_ranker_packet"
-    assert payload["expects"] == "a chunk packet"
-    assert "PyYAML is not importable" in payload["error"]
-    assert sys.executable in payload["error"]
-
-
-def test_routing_cli_refuses_argparse_usage_text_before_yaml_can_launder_it(
-    tmp_path: Path, capsys: pytest.CaptureFixture[str]
-) -> None:
-    """`usage: prog [-h]` followed by `prog: error: ...` is a valid YAML mapping, so
-    the YAML fallback would otherwise turn a wrong upstream `--flag` into a readable
-    payload and a plausible EMPTY result. The guard reads the raw text, so the
-    refusal fires at the stage that read it and names the upstream invocation."""
-    usage = "usage: prepare_ranker_packet.py [-h] [--input INPUT]\nprepare_ranker_packet.py: error: unrecognized arguments: --nope\n"
-
-    with pytest.raises(SystemExit) as excinfo:
-        _read_payload(ROUTING_CLI, usage, tmp_path)
-
-    payload = _refusal_from(excinfo, capsys)
-    assert payload["error"] == "input is argparse usage text, not a stage payload"
-    assert "check the previous stage's invocation" in payload["hint"]
-
-
-@pytest.mark.parametrize(
-    ("raw", "expected_error"),
-    [
-        ("", "input is empty"),
-        ("just a stray line\n", "input parsed as a bare str, not a payload"),
-    ],
-)
-def test_routing_cli_refuses_a_non_payload_structurally(
-    raw: str, expected_error: str, tmp_path: Path, capsys: pytest.CaptureFixture[str]
-) -> None:
-    """Empty stdout is the normal shape when an upstream stage exits nonzero and
-    writes nothing, and a stray line parses to a scalar. Both used to reach
-    `payload.get(...)` and die with an AttributeError traceback -- the opposite of
-    the named-stage refusal this module promises. The check is structural, not a
-    prefix denylist, so it also covers contaminants nobody has met yet."""
-    with pytest.raises(SystemExit) as excinfo:
-        _read_payload(ROUTING_CLI, raw, tmp_path)
-
-    payload = _refusal_from(excinfo, capsys)
-    assert payload["error"] == expected_error
-    assert "check its" in payload["hint"]
-
-
-def test_routing_cli_refuses_an_upstream_stage_refusal_forwarded_as_input(
-    tmp_path: Path, capsys: pytest.CaptureFixture[str]
-) -> None:
-    """A refusal payload parses perfectly and carries none of the fields the next
-    stage reads, so redirecting a failing stage's stderr onward would produce a
-    plausible empty result instead of an error. The refusal names the upstream stage
-    that actually failed."""
-    refusal = yaml.safe_dump({"ok": False, "stage": "propose_merges", "error": "input file not found"})
-
-    with pytest.raises(SystemExit) as excinfo:
-        _read_payload(ROUTING_CLI, refusal, tmp_path)
-
-    payload = _refusal_from(excinfo, capsys)
-    assert payload["error"] == "input is a refusal payload from stage `propose_merges`, not a stage payload"
-    assert "Fix the upstream failure" in payload["hint"]
-
-
-def test_routing_cli_accepts_a_real_stage_payload(tmp_path: Path) -> None:
-    """The discriminating control: the refusals above narrowed the accepted input,
-    they did not close it. A genuine YAML mapping still parses through unchanged."""
-    assert _read_payload(ROUTING_CLI, "entries:\n  - id: a\n", tmp_path) == {"entries": [{"id": "a"}]}
 
 
 # --------------------------------------------------------------------------- #
@@ -636,51 +516,6 @@ def test_bootstrap_runtime_main_emits_the_runtime_payload_as_yaml(tmp_path: Path
         "--print-python",
     )
     assert printed.stdout.strip() == payload["python"]
-
-
-# --------------------------------------------------------------------------- #
-# scripts/inventory_quality_handoff.py
-# --------------------------------------------------------------------------- #
-
-
-def test_quality_handoff_inventory_main_emits_findings_as_yaml(tmp_path: Path) -> None:
-    """The advisory is consumed as a payload, not as prose: the retired human line
-    was a strict projection of the finding count and each finding's missing fields.
-    An operator-supplied `--artifact` is labelled repo-relative so the report names
-    the file the way the operator does."""
-    artifact = tmp_path / "charness-artifacts" / "quality" / "latest.md"
-    artifact.parent.mkdir(parents=True)
-    artifact.write_text(
-        "\n".join(
-            [
-                "# Quality Review",
-                "Date: 2026-08-16",
-                "",
-                "## Recommended Next Quality Moves",
-                "",
-                "- passive `NON_AUTOMATABLE`: decide whether the review stays manual.",
-                "",
-            ]
-        ),
-        encoding="utf-8",
-    )
-
-    result = run_loaded_script_main(
-        "inventory_quality_handoff.py",
-        QUALITY_HANDOFF,
-        "--repo-root",
-        str(tmp_path),
-        "--artifact",
-        "charness-artifacts/quality/latest.md",
-    )
-
-    assert result.returncode == 0, result.stderr
-    report = yaml.safe_load(result.stdout)
-    assert report["schema_version"] == 1
-    assert report["status"] == "advisory"
-    assert report["artifact"] == "charness-artifacts/quality/latest.md"
-    assert report["findings"][0]["type"] == "missing_hitl_handoff"
-    assert "review_question" in report["findings"][0]["missing_fields"]
 
 
 # --------------------------------------------------------------------------- #

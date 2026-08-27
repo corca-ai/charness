@@ -6,8 +6,8 @@ target without pushing source summarization back to the caller.
 
 ## Scan Order
 
-1. Read `docs/handoff.md` for the named next move, current blockers, and open
-   decisions.
+1. Read `AGENTS.md` and `<repo-root>/docs/index.md` <!-- not vendored: consumer-repo path -->; for an active Goal Run, use the exact
+   parent objective and provider cursor for the named next move.
 2. Inspect `git status --short` and the staged or unstaged diff summary.
 3. Inspect commits ahead of `origin/main` when that ref exists with
    `git log --oneline origin/main..HEAD`; otherwise continue from local
@@ -15,7 +15,7 @@ target without pushing source summarization back to the caller.
 4. Look for the nearest current contract in `charness-artifacts/spec/`,
    `<authoring-repo>/docs/north-star-overhaul-roadmap.md`, and docs sections named Next Session, Open Decisions,
    Deferred, Non-Goals, Acceptance, or Risk.
-5. Prefer a live issue, handoff item, dirty diff, or ahead-of-origin commit
+5. Prefer a live issue, parent-cursor item, dirty diff, or ahead-of-origin commit
    over broad repo archaeology.
 
 ## Proceed Versus Ask

@@ -205,8 +205,6 @@ def _required_reads(
     lens_brief: dict[str, str],
 ) -> list[dict[str, str]]:
     reads: list[dict[str, str]] = []
-    reads.append(_read("docs/handoff.md", "artifact", "current workflow trigger and pickup state", base="repo"))
-
     # The counterfactual is mandatory in every retro and the lens catalog + domain
     # triggers are not inlined in SKILL.md, so expert-lens.md is an unconditional
     # floor. The why carries the work-class-specific lens brief.

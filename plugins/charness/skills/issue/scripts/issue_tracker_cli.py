@@ -28,12 +28,8 @@ def emit(payload: dict[str, Any]) -> None:
     sys.stdout.write(_render_yaml(payload))
 
 
-def _resolve_backend(repo_root: Path) -> dict[str, Any]:
-    return PROVIDER.select_backend(repo_root)
-
-
-def _bind_backend(resolved: dict[str, Any], target_repo: str) -> dict[str, Any]:
-    return PROVIDER.bind_provider_selection(resolved, target_repo=target_repo)
+def _resolve_backend(repo_root: Path, target_repo: str | None = None) -> dict[str, Any]:
+    return PROVIDER.resolve_backend(repo_root, target_repo=target_repo)
 
 
 def _tracker_parent_number(args: argparse.Namespace) -> int:
@@ -63,24 +59,12 @@ def _tracker_body_sha256(args: argparse.Namespace) -> str | None:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def _require_tracker_write_readiness(
-    args: argparse.Namespace, resolved: dict[str, Any], parent_number: int
-) -> None:
-    capability = TRACKER.tracker_capability_report(resolved["backend"], repo=args.repo)
-    if not capability["ok"]:
-        raise RuntimeError(
-            "tracker capability closure is not ready: "
-            f"missing={capability['missing_operations']!r} "
-            f"template_errors={capability.get('template_errors', {})!r}"
-        )
-    readiness = BACKEND.build_preflight_payload(resolved)
-    if not readiness.get("ok"):
-        raise RuntimeError("tracker backend readiness failed before mutation")
-    READ.read_issue_with_comments(args.repo, parent_number, backend=resolved["backend"])
-
-
 def _run_tracker_backend_command(args: argparse.Namespace, operation: str, call: Any) -> int:
-    resolved = _resolve_backend(args.repo_root.resolve())
+    try:
+        resolved = _resolve_backend(args.repo_root.resolve(), args.repo)
+    except RuntimeError as exc:
+        emit({"ok": False, "status": "provider-selection-invalid", "error": str(exc)})
+        return 2
     if not resolved["adapter_ok"]:
         emit(
             {
@@ -93,21 +77,7 @@ def _run_tracker_backend_command(args: argparse.Namespace, operation: str, call:
         )
         return 1
     try:
-        resolved = _bind_backend(resolved, args.repo)
-    except RuntimeError as exc:
-        emit(
-            {
-                "ok": False,
-                "status": "refused",
-                "outcome": "refused",
-                "mutation_invoked": False,
-                "error": str(exc),
-            }
-        )
-        return 2
-    try:
         parent_number = _tracker_parent_number(args)
-        _require_tracker_write_readiness(args, resolved, parent_number)
         started = TRACKER_OBSERVATION.begin(
             repo_root=args.repo_root.resolve(),
             observation_dir=args.observation_dir,
@@ -145,8 +115,6 @@ def _run_tracker_backend_command(args: argparse.Namespace, operation: str, call:
             "next_action": "repair-input-or-readiness-before-retry",
         }
     result["selected_backend"] = resolved["backend"]
-    if resolved.get("provider_selection") is not None:
-        result["provider_selection"] = resolved["provider_selection"]
     try:
         terminal = TRACKER_OBSERVATION.finish(
             repo_root=args.repo_root.resolve(),
@@ -177,7 +145,11 @@ def _run_tracker_backend_command(args: argparse.Namespace, operation: str, call:
 
 
 def _run_tracker_read_command(args: argparse.Namespace, call: Any) -> int:
-    resolved = _resolve_backend(args.repo_root.resolve())
+    try:
+        resolved = _resolve_backend(args.repo_root.resolve(), args.repo)
+    except RuntimeError as exc:
+        emit({"ok": False, "status": "provider-selection-invalid", "error": str(exc)})
+        return 2
     if not resolved["adapter_ok"]:
         emit(
             {
@@ -190,19 +162,6 @@ def _run_tracker_read_command(args: argparse.Namespace, call: Any) -> int:
         )
         return 1
     try:
-        resolved = _bind_backend(resolved, args.repo)
-    except RuntimeError as exc:
-        emit(
-            {
-                "ok": False,
-                "status": "refused",
-                "outcome": "refused",
-                "mutation_invoked": False,
-                "error": str(exc),
-            }
-        )
-        return 2
-    try:
         result = call(resolved)
     except RuntimeError as exc:
         result = {
@@ -213,15 +172,13 @@ def _run_tracker_read_command(args: argparse.Namespace, call: Any) -> int:
             "error": str(exc),
         }
     result["selected_backend"] = resolved["backend"]
-    if resolved.get("provider_selection") is not None:
-        result["provider_selection"] = resolved["provider_selection"]
     emit(result)
     return 0 if result["ok"] else 2
 
 
 def command_tracker_preflight(args: argparse.Namespace) -> int:
     def resolve_for_target(repo_root: Path) -> dict[str, Any]:
-        return _bind_backend(_resolve_backend(repo_root), args.repo)
+        return _resolve_backend(repo_root, args.repo)
 
     return PREFLIGHT.run(
         args,
@@ -325,19 +282,27 @@ def command_remove_sub_issue(args: argparse.Namespace) -> int:
 
 
 def command_goal_run_preflight(args: argparse.Namespace) -> int:
-    return GOAL_RUN.command_preflight(args, resolve_backend=_resolve_backend, emit=emit)
+    return GOAL_RUN.command_preflight(
+        args, resolve_backend=lambda root: _resolve_backend(root, args.repo), emit=emit
+    )
 
 
 def command_goal_run_read(args: argparse.Namespace) -> int:
-    return GOAL_RUN.command_read(args, resolve_backend=_resolve_backend, emit=emit)
+    return GOAL_RUN.command_read(
+        args, resolve_backend=lambda root: _resolve_backend(root, args.repo), emit=emit
+    )
 
 
 def command_goal_run_apply(args: argparse.Namespace) -> int:
-    return GOAL_RUN.command_apply(args, resolve_backend=_resolve_backend, emit=emit)
+    return GOAL_RUN.command_apply(
+        args, resolve_backend=lambda root: _resolve_backend(root, args.repo), emit=emit
+    )
 
 
 def command_goal_run_close(args: argparse.Namespace) -> int:
-    return GOAL_RUN_CLOSE.command_close(args, resolve_backend=_resolve_backend, emit=emit)
+    return GOAL_RUN_CLOSE.command_close(
+        args, resolve_backend=lambda root: _resolve_backend(root, args.repo), emit=emit
+    )
 
 
 def register_subparsers(

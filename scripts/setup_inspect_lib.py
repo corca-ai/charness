@@ -9,9 +9,7 @@ from scripts.setup_agent_docs_lib import (
     FINDING_RECOMMENDATION_PRIORITIES,
     RECOMMENDATION_FINDING_TYPES,
     detect_agent_docs,
-    detect_policy_source_recommendations,
     finding_recommendation,
-    is_acknowledged,
     sort_recommendations,
 )
 from scripts.setup_hook_failure_visibility_lib import inspect_hook_failure_visibility
@@ -22,7 +20,6 @@ DEFAULT_SURFACES = {
     "docs_index": Path("docs/index.md"),
     "roadmap": Path("docs/roadmap.md"),
     "operator_acceptance": Path("docs/operator-acceptance.md"),
-    "handoff": Path("docs/handoff.md"),
 }
 PROFILE_SURFACES = ("readme", "agents", "docs_index")
 # Roadmap and operator acceptance are evidence-triggered additions, not setup
@@ -113,10 +110,6 @@ def _surface_present(spec: SurfaceSpec) -> bool:
     return spec.acknowledged_missing or spec.path.exists() or spec.path.is_symlink()
 
 
-def _read_text(path: Path) -> str:
-    return path.read_text(encoding="utf-8", errors="replace") if path.is_file() else ""
-
-
 def detect_repo_mode(specs: dict[str, SurfaceSpec]) -> str:
     present = sum(1 for surface_id in CORE_SURFACES if _surface_present(specs[surface_id]))
     if present == 0:
@@ -141,7 +134,6 @@ def build_setup_inspection_payload(
     *,
     load_setup_adapter: Callable[[Path], tuple[dict[str, Any], str | None, list[dict[str, str]]]],
     prose_wrap_state: Callable[[Path, dict[str, Any]], dict[str, object]],
-    recommendation_policy: Callable[[dict[str, Any]], dict[str, Any]] | None = None,
     surface_overrides: Callable[[dict[str, Any]], dict[str, Any]],
     operating_surface_profile: Callable[[dict[str, Any]], dict[str, object]] | None = None,
     skill_routing_payload: Callable[[Path], dict[str, Any]] | None = None,
@@ -149,19 +141,17 @@ def build_setup_inspection_payload(
     adapter_data, adapter_path, adapter_warnings = load_setup_adapter(repo_root)
     specs = _surface_specs(repo_root, surface_overrides(adapter_data))
     repo_mode = detect_repo_mode(specs)
-    policy = recommendation_policy(adapter_data) if recommendation_policy is not None else {}
     profile_config = (
         operating_surface_profile(adapter_data)
         if operating_surface_profile is not None
         else {"id": "flat-wiki", "approval_required": True}
     )
-    acknowledged = set(policy.get("acknowledged", []))
     agent_docs = detect_agent_docs(repo_root, skill_routing_payload=skill_routing_payload)
     normalization = agent_docs["normalization"]
     findings = [
         finding
         for finding in normalization["findings"]
-        if isinstance(finding, dict) and not is_acknowledged(str(finding.get("type")), acknowledged)
+        if isinstance(finding, dict)
     ]
     recommendations = [
         finding_recommendation(
@@ -171,29 +161,14 @@ def build_setup_inspection_payload(
         for finding in findings
         if finding.get("type") in RECOMMENDATION_FINDING_TYPES
     ]
-    recommendations.extend(detect_policy_source_recommendations(repo_root, _read_text(repo_root / "AGENTS.md"), policy))
     extra = normalization.get("extra_recommendations") or []
     if isinstance(extra, list):
         recommendations.extend(item for item in extra if isinstance(item, dict))
-    recommendations = [
-        recommendation
-        for recommendation in sort_recommendations(recommendations)
-        if not is_acknowledged(str(recommendation.get("id")), acknowledged)
-    ]
-    for recommendation in recommendations:
-        acknowledgement = recommendation.get("acknowledgement")
-        if isinstance(acknowledgement, dict):
-            acknowledgement["adapter_path"] = adapter_path
+    recommendations = sort_recommendations(recommendations)
     normalization["findings"] = findings
     normalization["recommendations"] = recommendations
     normalization.pop("extra_recommendations", None)
     normalization["status"] = "needs_normalization" if findings or recommendations else "ok"
-    normalization["recommendation_policy"] = {
-        "defaults_version": policy.get("defaults_version"),
-        "policy_source_count": len(policy.get("policy_sources", [])),
-        "enabled": list(policy.get("enabled", [])),
-        "acknowledged": sorted(acknowledged),
-    }
     payload = {
         "repo": repo_root.name,
         "repo_mode": repo_mode,

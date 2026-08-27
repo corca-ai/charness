@@ -153,7 +153,7 @@ def lesson_loop_report(repo_root: Path) -> dict[str, Any]:
     `persist_retro_artifact.py`, because declaring an evaluator turns on a
     per-retro disposition duty -- a repo-level commitment, not something a setup
     run should do to someone. Without this line the state was invisible: the
-    SessionStart lesson block stays silent for an un-opted-in repo (correctly, it
+    explicit lesson evaluation stays silent for an un-opted-in repo (correctly, it
     is a real opt-out), so nothing anywhere told a consuming repo the evaluating
     half of the lesson lifecycle existed and was reachable.
 

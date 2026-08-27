@@ -48,7 +48,7 @@ def test_scan_bundle_flags_git_global_option_history_probe(tmp_path: Path) -> No
     bundle = tmp_path / "preserved" / "baseline__0"
     _write_jsonl(
         bundle / "trace-digest.jsonl",
-        [{"step": 1, "track": "parent", "name": "Bash", "args": "git --no-pager show HEAD:docs/handoff.md"}],
+        [{"step": 1, "track": "parent", "name": "Bash", "args": "git --no-pager show HEAD:docs/index.md"}],
     )
 
     report = blinding.scan_bundle(bundle)
@@ -83,7 +83,7 @@ def test_scan_bundle_uses_stream_fallback_for_full_command_text(tmp_path: Path) 
                             "type": "tool_use",
                             "id": "t1",
                             "name": "Bash",
-                            "input": {"command": "git show HEAD~1:docs/handoff.md"},
+                            "input": {"command": "git show HEAD~1:docs/index.md"},
                         }
                     ],
                 },

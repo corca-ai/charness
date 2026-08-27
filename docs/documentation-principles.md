@@ -38,5 +38,5 @@ bounded context, not a sentence-length or whole-document gate for evergreen
 docs. Keep examples executable and prefer links over copied policy text.
 
 - [Authoring preflight](./authoring-preflight.md) — premise checks before editing.
-- [Handoff](./handoff.md) — the short operational continuation record.
+- [Goal lifecycle](./goal-lifecycle.md) — the provider-backed continuation record.
 - [Quality](../charness-artifacts/quality/latest.md) — current verification receipt.

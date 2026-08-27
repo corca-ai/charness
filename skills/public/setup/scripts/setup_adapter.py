@@ -35,7 +35,7 @@ def load_setup_adapter(repo_root: Path) -> tuple[dict[str, Any], str | None, lis
                     for message in version_errors
                 ],
             )
-        return raw, str(adapter_path), _validate_recommendation_fields(raw)
+        return raw, str(adapter_path), _validate_adapter_fields(raw)
     return (
         {},
         str(adapter_path),
@@ -57,53 +57,7 @@ def _string_list(value: Any, field: str, warnings: list[dict[str, str]]) -> list
     return []
 
 
-def _acknowledged_ids(value: Any, field: str, warnings: list[dict[str, str]]) -> list[str]:
-    if value is None:
-        return []
-    if not isinstance(value, list):
-        warnings.append({"type": "invalid_adapter_field", "message": f"{field} must be a list."})
-        return []
-    ids: list[str] = []
-    for index, item in enumerate(value):
-        if isinstance(item, str) and item:
-            ids.append(item)
-            continue
-        if isinstance(item, dict) and isinstance(item.get("id"), str) and item["id"]:
-            ids.append(item["id"])
-            continue
-        warnings.append(
-            {"type": "invalid_adapter_field", "message": f"{field}[{index}] must be a string or mapping with id."}
-        )
-    return ids
-
-
-def _policy_sources(value: Any, warnings: list[dict[str, str]]) -> list[dict[str, Any]]:
-    if value is None:
-        return []
-    if not isinstance(value, list):
-        warnings.append({"type": "invalid_adapter_field", "message": "policy_sources must be a list."})
-        return []
-    sources: list[dict[str, Any]] = []
-    for index, item in enumerate(value):
-        prefix = f"policy_sources[{index}]"
-        if not isinstance(item, dict):
-            warnings.append({"type": "invalid_adapter_field", "message": f"{prefix} must be a mapping."})
-            continue
-        path = item.get("path")
-        if not isinstance(path, str) or not path:
-            warnings.append({"type": "invalid_adapter_field", "message": f"{prefix}.path must be a non-empty string."})
-            continue
-        source_id = item.get("id", path)
-        if not isinstance(source_id, str) or not source_id:
-            warnings.append({"type": "invalid_adapter_field", "message": f"{prefix}.id must be a non-empty string."})
-            continue
-        terms = _string_list(item.get("evidence_terms"), f"{prefix}.evidence_terms", warnings)
-        recommendations = _string_list(item.get("recommendations"), f"{prefix}.recommendations", warnings)
-        sources.append({"id": source_id, "path": path, "evidence_terms": terms, "recommendations": recommendations})
-    return sources
-
-
-def _validate_recommendation_fields(adapter_data: dict[str, Any]) -> list[dict[str, str]]:
+def _validate_adapter_fields(adapter_data: dict[str, Any]) -> list[dict[str, str]]:
     warnings: list[dict[str, str]] = []
     profile = adapter_data.get("operating_surface_profile", "flat-wiki")
     if profile != "flat-wiki":
@@ -121,20 +75,7 @@ def _validate_recommendation_fields(adapter_data: dict[str, Any]) -> list[dict[s
                 "message": "approval_required must remain true for setup mutations",
             }
         )
-    defaults_version = adapter_data.get("defaults_version", adapter_data.get("recommendation_defaults_version"))
-    if defaults_version is not None and not isinstance(defaults_version, str):
-        warnings.append(
-            {"type": "invalid_adapter_field", "message": "defaults_version must be a string."}
-        )
     _string_list(adapter_data.get("source_guard_scan_roots"), "source_guard_scan_roots", warnings)
-    _policy_sources(adapter_data.get("policy_sources"), warnings)
-    recommendation_sets = adapter_data.get("recommendation_sets")
-    if recommendation_sets is not None and not isinstance(recommendation_sets, dict):
-        warnings.append({"type": "invalid_adapter_field", "message": "recommendation_sets must be a mapping."})
-        return warnings
-    if isinstance(recommendation_sets, dict):
-        _string_list(recommendation_sets.get("enabled"), "recommendation_sets.enabled", warnings)
-        _acknowledged_ids(recommendation_sets.get("acknowledged"), "recommendation_sets.acknowledged", warnings)
     return warnings
 
 
@@ -143,19 +84,6 @@ def operating_surface_profile(adapter_data: dict[str, Any]) -> dict[str, object]
     return {
         "id": profile if profile == "flat-wiki" else "flat-wiki",
         "approval_required": True,
-    }
-
-
-def recommendation_policy(adapter_data: dict[str, Any]) -> dict[str, Any]:
-    warnings: list[dict[str, str]] = []
-    recommendation_sets = adapter_data.get("recommendation_sets")
-    sets = recommendation_sets if isinstance(recommendation_sets, dict) else {}
-    defaults_version = adapter_data.get("defaults_version", adapter_data.get("recommendation_defaults_version"))
-    return {
-        "defaults_version": defaults_version if isinstance(defaults_version, str) else None,
-        "policy_sources": _policy_sources(adapter_data.get("policy_sources"), warnings),
-        "enabled": _string_list(sets.get("enabled"), "recommendation_sets.enabled", warnings),
-        "acknowledged": _acknowledged_ids(sets.get("acknowledged"), "recommendation_sets.acknowledged", warnings),
     }
 
 

@@ -43,7 +43,6 @@ preset_id: portable-defaults
 customized_from: portable-defaults
 summary_path: charness-artifacts/retro/recent-lessons.md
 evidence_paths:
-  - docs/handoff.md
 metrics_commands: []
 artifact_sections: []
 packet_sections:
