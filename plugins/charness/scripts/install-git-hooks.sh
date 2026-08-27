@@ -85,6 +85,7 @@ else
 set -euo pipefail
 
 REPO_ROOT="\$(git rev-parse --show-toplevel)"
+source "$SOURCE_ROOT/.githooks/runtime-env.sh"
 python3 "$checker" --repo-root "\$REPO_ROOT" --commit-msg-file "\$1"
 EOF
   chmod +x "$HOOKS_DIR/commit-msg"

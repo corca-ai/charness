@@ -10,6 +10,7 @@ these exercise whether the hook that invokes the runner exists and is armed.
 
 from __future__ import annotations
 
+import os
 import shutil
 import subprocess
 import sys
@@ -76,6 +77,7 @@ def test_install_git_hooks_materializes_consumer_commit_msg_hook(tmp_path: Path)
     hook = consumer / ".githooks" / "commit-msg"
     assert hook.is_file()
     assert str(checker) in hook.read_text(encoding="utf-8")
+    assert ".githooks/runtime-env.sh" in hook.read_text(encoding="utf-8")
     hookspath = subprocess.run(
         ["git", "config", "--get", "core.hooksPath"],
         cwd=consumer,
@@ -84,6 +86,43 @@ def test_install_git_hooks_materializes_consumer_commit_msg_hook(tmp_path: Path)
         text=True,
     )
     assert hookspath.stdout.strip() == str((consumer / ".githooks").resolve())
+
+
+def test_hook_runtime_bootstrap_confines_initial_python_cache(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".githooks").mkdir(parents=True)
+    (repo / "scripts").mkdir()
+    shutil.copy2(ROOT / ".githooks" / "runtime-env.sh", repo / ".githooks" / "runtime-env.sh")
+    (repo / "scripts" / "subject.py").write_text("value = 1\n", encoding="utf-8")
+
+    result = subprocess.run(
+        [
+            "bash",
+            "-c",
+            "REPO_ROOT=\"$1\"; source \"$REPO_ROOT/.githooks/runtime-env.sh\"; "
+            "printf '%s\\n' \"$PYTHONPYCACHEPREFIX\"; python3 -m py_compile scripts/subject.py",
+            "runtime-env-test",
+            str(repo),
+        ],
+        cwd=repo,
+        env={
+            **os.environ,
+            "TMPDIR": str(repo / "tmp"),
+            "PYTHONPYCACHEPREFIX": str(repo / "pycache"),
+            "PYTEST_DEBUG_TEMPROOT": str(repo / "pytest-tmp"),
+            "CHARNESS_PYTEST_CACHE_DIR": str(repo / "pytest-cache"),
+            "RUFF_CACHE_DIR": str(repo / ".ruff_cache"),
+            "COVERAGE_FILE": str(repo / ".coverage"),
+        },
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    pycache_prefix = Path(result.stdout.splitlines()[0]).resolve()
+    assert repo.resolve() not in pycache_prefix.parents
+    assert not list(repo.rglob("__pycache__"))
 
 
 def test_validate_maintainer_setup_requires_installed_hookspath(tmp_path: Path) -> None:

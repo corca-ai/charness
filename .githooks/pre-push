@@ -3,6 +3,7 @@ set -euo pipefail
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 cd "$REPO_ROOT"
+source "$REPO_ROOT/.githooks/runtime-env.sh"
 
 # stdin is read ONCE, here, and replayed to every consumer below. Two consumers now
 # want it (the close-keyword guard and the diff classifier) and a git hook's stdin is
