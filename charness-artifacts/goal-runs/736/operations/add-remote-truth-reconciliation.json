@@ -1,0 +1,11 @@
+{
+  "kind": "charness.goal-run-operation/v1",
+  "repo": "corca-ai/charness",
+  "parent_number": 736,
+  "operation": "add-child",
+  "attempt_id": "bootstrap-add-remote-truth-reconciliation-1",
+  "draft_sha256": "1a9a38f26cb8dd0d5735a543126603bd7cf86e179874757d899ae52093c61ac5",
+  "binding_sha256": "e564d1f1c57cdce7f9efecc9a2416e71add70caf578774aa24f63835f476cedd",
+  "observation_dir": "charness-artifacts/goal-runs/736/observations",
+  "target": {"repo": "corca-ai/charness", "sub_issue_number": 737, "work_item_key": "remote-truth-reconciliation"}
+}
