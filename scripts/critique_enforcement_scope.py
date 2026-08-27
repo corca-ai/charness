@@ -356,8 +356,8 @@ def resolve_cross_surface_scope(
     An adapter the loader REFUSED is a third thing again. Its keys were dropped, so
     the config reads empty and the opt-out branch below would answer
     `not-configured` -- an opt-out this repo never declared, over a file that failed
-    to parse. This consumer is the sibling of the impl stop-gate probe, and the same
-    discard was repaired there; the two must not disagree about the same adapter.
+    to parse. This is the critique validator's own cross-surface consumer, and it
+    must not disagree with the shared probe about the same adapter.
     """
     adapter = adapter_lib.load_adapter(repo_root)
     probe = probe_lib.probe_config_from_adapter(adapter["data"])

@@ -51,9 +51,8 @@ packet_sections:
 # Repo-owned cross-surface probe for the boundary-ownership checkpoint. When a
 # changed path matches one of these globs (or a source/derived path of one of the
 # named surfaces in .agents/surfaces.json), the critique validator's
-# --changed-ref/--changed-path mode rejects a bare `single-surface` verdict and
-# the impl stop-gate escalation hook (skills/public/impl/scripts/
-# check_boundary_escalation.py) forces a standalone critique.
+# --changed-ref/--changed-path mode rejects a bare `single-surface` verdict.
+# This probe is owned by the explicitly selected critique artifact validation path.
 #
 # Charness dogfoods its own probe (DBD-4). The set is deliberately NARROW — the
 # shared generic-routine surfaces where charness's own #408 failure class

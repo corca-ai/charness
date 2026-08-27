@@ -6,8 +6,7 @@ from .support import ROOT
 
 IMPL_SKILL = (ROOT / "skills" / "public" / "impl" / "SKILL.md").read_text(encoding="utf-8")
 PLUGIN_IMPL_SKILL_PATH = ROOT / "plugins" / "charness" / "skills" / "impl" / "SKILL.md"
-# The slice closeout ledger (verification routing, truth-surface sync, and stop
-# gate) moved from impl to the sibling prove skill (#439 split).
+# Prove is a conditional evidence formatter alongside the implementation workflow.
 PROVE_SKILL = (ROOT / "skills" / "public" / "prove" / "SKILL.md").read_text(encoding="utf-8")
 SETUP_SKILL = (ROOT / "skills" / "public" / "setup" / "SKILL.md").read_text(encoding="utf-8")
 PLUGIN_SETUP_SKILL_PATH = ROOT / "plugins" / "charness" / "skills" / "setup" / "SKILL.md"
@@ -51,16 +50,14 @@ def test_setup_skill_bootstraps_probe_surface_guidance() -> None:
     assert "local discoverability" in probe_reference
 
 
-def test_setup_and_achieve_pin_live_spawn_first_execution_contract() -> None:
-    """A host capability is resolved live; it is not guessed from memory."""
-    achieve = (ROOT / "skills" / "public" / "achieve" / "SKILL.md").read_text(encoding="utf-8").lower()
+def test_setup_pins_live_spawn_first_execution_contract() -> None:
+    """Setup emits the repo-level execution contract; Achieve stays planning-only."""
     setup = SETUP_SKILL.lower()
 
-    for text in (achieve, setup):
-        assert "live host" in text
-        assert "spawn" in text and "api" in text
-        assert "task run" in text
-        assert "isolation" in text
+    assert "live host" in setup
+    assert "spawn" in setup and "api" in setup
+    assert "task run" in setup
+    assert "isolation" in setup
     assert "may route" not in setup
     assert PLUGIN_SETUP_SKILL_PATH.read_bytes() == (ROOT / "skills" / "public" / "setup" / "SKILL.md").read_bytes()
 
@@ -198,21 +195,28 @@ def test_hitl_skill_carries_review_chunk_and_state_recording_rules() -> None:
     assert "applied rewrite is\nstill pending human judgment" in state_model
 
 
-def test_prove_skill_routes_validation_and_browser_proof_explicitly() -> None:
+def test_prove_skill_keeps_claim_proof_and_owner_routing_explicit() -> None:
     skill_text = PROVE_SKILL
+    normalized_skill = " ".join(skill_text.split())
     dispatch = DISPATCH
     verification_ladder = (
         ROOT / "skills" / "public" / "prove" / "references" / "verification-ladder.md"
     ).read_text(encoding="utf-8")
 
-    assert "operator reading" in skill_text
+    assert "Use Prove only when the user, current contract, or boundary owner explicitly selects it." in normalized_skill
+    assert "ordinary reversible implementation" in skill_text
+    assert "Identify the claim." in skill_text
+    assert "narrowest strongest evidence." in skill_text
+    assert "actual truth surfaces." in skill_text
+    assert "evidence and non-claims." in skill_text
+    for owner in ("quality", "hotl", "issue", "release", "critique"):
+        assert f"`{owner}`" in skill_text
     assert "hidden availability" in verification_ladder
-    assert "say explicitly that it did not run" in skill_text
-    assert "code/fixture" in skill_text
     assert "Browser-Facing Output" in verification_ladder
     assert "metadata/model judgment" in verification_ladder
     assert "operator reading test" in dispatch
-    assert "operator reading test" in dispatch
+    assert "automatic" not in skill_text
+    assert "universal" not in skill_text
 
 
 def test_debug_and_quality_carry_async_and_hidden_network_field_lessons() -> None:
@@ -379,22 +383,20 @@ def test_quality_skill_keeps_testability_tool_detail_in_reference() -> None:
 def test_prove_skill_carries_truth_surface_sync_guardrail() -> None:
     skill_text = PROVE_SKILL
     adapter_contract = (ROOT / "skills" / "public" / "impl" / "references" / "adapter-contract.md").read_text(encoding="utf-8")
-    assert "Sync truth surfaces and re-read the contract before closeout." in skill_text
-    assert "Truth Surface Sync" in skill_text
+    assert "Sync actual truth surfaces." in skill_text
+    assert "source-of-truth docs" in skill_text
     assert "truth_surfaces" in adapter_contract
     assert "README.md" in adapter_contract
 
 
 def test_impl_skill_defaults_to_autonomous_continuation() -> None:
     skill_text = IMPL_SKILL
+    normalized_skill = " ".join(skill_text.split())
     assert "autonomous continuation" in skill_text.lower()
     assert "continuation" in skill_text and "checkpoints" in skill_text
     assert "irreversible" in skill_text and "external side effect" in skill_text
     assert "focused tests for the changed module or user flow" in skill_text
-    assert "check_auto_trigger.py" in PROVE_SKILL
-    assert "--paths <changed-path>..." in PROVE_SKILL
-    assert "--base-ref <slice-base> --head-ref <slice-head>" in PROVE_SKILL
-    assert "bare post-commit invocation" in PROVE_SKILL
+    assert "Use `prove` when the user or the boundary explicitly requires its evidence format" in normalized_skill
 
 
 def test_impl_does_not_make_planners_or_closeout_ceremony_universal() -> None:

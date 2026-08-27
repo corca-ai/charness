@@ -509,10 +509,6 @@ validators:
     consumer_facing: false
     decision: exclude
     reason: "skill-internal implementation or maintenance gate, not a consumer-authored artifact contract"
-  - path: skills/prove/scripts/check_boundary_escalation.py
-    consumer_facing: false
-    decision: exclude
-    reason: "skill-internal implementation or maintenance gate, not a consumer-authored artifact contract"
   - path: skills/quality/references/validate_spec_pytest_references.py
     consumer_facing: false
     decision: exclude

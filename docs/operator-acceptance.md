@@ -142,7 +142,7 @@ Focus: classify which public skills must fail closed on missing adapters and tur
 
 Read first:
 
-- [skills/public/impl/SKILL.md](../skills/public/impl/SKILL.md) — the slice implementation workflow and its stop gate into `prove`.
+- [skills/public/impl/SKILL.md](../skills/public/impl/SKILL.md) — the slice implementation workflow and its conditional evidence route to `prove`.
 - [skills/public/quality/SKILL.md](../skills/public/quality/SKILL.md) — the quality posture workflow, adapter bootstrap, and gate planning.
 - [docs/public-skill-validation.md](./public-skill-validation.md) — validation tiers plus per-skill adapter and missing-adapter rules.
 - [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md) — the latest quality review: scope, gates, weak and missing areas.

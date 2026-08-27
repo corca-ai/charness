@@ -167,14 +167,9 @@ def test_include_worktree_does_not_widen_ref_or_explicit_scope(tmp_path: Path, m
     assert boundary_probe_lib.resolve_changed_paths(tmp_path, ["x.py"], None) == ["x.py"]
 
 
-# The impl stop-gate hook's in-process tests (AC7) live in
-# tests/quality_gates/test_critique_boundary_ownership_presence.py so they reuse
-# that file's single critique-adapter fixture writer instead of a second copy.
-
-
 # --- AC8: the portable brief is reachable from the reviewer surfaces ----------
-# First three surfaces are the First Slice (critique + impl); the last four are
-# DBD-2's extension into issue / spec / achieve / quality (#414/#416).
+# The first surfaces are the critique and Prove references; the remaining ones
+# are the boundary-ownership brief's other consumers.
 _BRIEF_SURFACES = (
     "skills/public/prove/references/review-gate.md",
     "skills/public/critique/references/code-critique.md",
@@ -192,29 +187,3 @@ def test_brief_linked_from_reviewer_surfaces() -> None:
     for rel in _BRIEF_SURFACES:
         assert "boundary-ownership-brief.md" in (ROOT / rel).read_text("utf-8"), rel
     assert "Boundary #N:" in (ROOT / "skills/public/issue/references/causal-review.md").read_text("utf-8")
-
-
-# --- AC9: the emit-only Boundary Ownership token is carried at closeout --------
-
-
-def _sections(rel: str) -> dict[str, str]:
-    # Header-keyed split — "## Closeout Vocabulary" also appears inline in Output Shape.
-    out: dict[str, str] = {}
-    for chunk in ("\n" + (ROOT / rel).read_text("utf-8")).split("\n## ")[1:]:
-        out[chunk.split("\n", 1)[0].strip()] = chunk
-    return out
-
-
-def test_prove_carries_boundary_ownership_token_and_spec_defers_to_it() -> None:
-    # prove (the impl-archetype closeout ledger, split out of impl per #439) is
-    # the single token home for the emit-only Boundary Ownership verdict enum.
-    # spec (DBD-2 #414/#416, deduped per #442) keeps the Output Shape field but
-    # its vocabulary section defers to prove instead of duplicating the enum.
-    # issue's emit-only `Boundary #N:` close-comment line is prose (not validator-
-    # enforced), covered by the brief-reachability surface above; no separate test.
-    s = _sections("skills/public/prove/SKILL.md")
-    assert "Boundary Ownership" in s["Output Shape"] and "Boundary Ownership" in s["Closeout Vocabulary"]
-    assert all(v in s["Closeout Vocabulary"] for v in _VERDICTS)
-    spec = _sections("skills/public/spec/SKILL.md")
-    assert "Boundary Ownership" in spec["Output Shape"]
-    assert "`prove`" in spec["Closeout Vocabulary"]

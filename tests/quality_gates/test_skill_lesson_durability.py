@@ -7,8 +7,8 @@ which are free to change.
 The lessons that read a whole doc and assert plain substrings share one shape, so
 they are a declarative `LESSON_GUARDS` table (batch C prose-pin fold). The two
 lessons with distinct scoping logic (section-scoped, raw+normalized) stay their
-own named functions below. Every asserted substring is preserved, so collection
-count is unchanged."""
+own named functions below. Obsolete Prove output vocabulary is intentionally not
+pinned here."""
 
 from __future__ import annotations
 
@@ -62,18 +62,6 @@ LESSON_GUARDS = [
             "canonical source is identifiable",
             "WebSearch",
             "derivative summaries",
-        ),
-    ),
-    (
-        "impl-verification-ladder-completion-report-categories",
-        "public/prove/references/verification-ladder.md",
-        (
-            "Completion Report Categories",
-            "Durable changes",
-            "External writes",
-            "Test-only artifacts",
-            "Verification",
-            "Unverified future behavior",
         ),
     ),
     (

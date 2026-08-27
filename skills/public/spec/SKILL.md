@@ -111,10 +111,12 @@ as a lens, not as a required form.
      executable contract artifacts
    - if implementation discovers a fact that changes scope or acceptance, update
      the spec instead of leaving chat-only drift
-7. Close the contract slice through `prove`.
-   - a task-completing contract slice ends at the sibling `prove` stop gate,
-     which owns the critique binding, the closeout vocabulary, and the emitted
-     slice ledger; do not improvise a local closeout
+7. Use `prove` only when the user, contract, or a named boundary explicitly
+   selects its evidence format.
+   - ordinary reversible implementation may finish with focused evidence in
+     `impl`; `prove` is not a universal stop ceremony
+   - when selected, it reports the claim, evidence, synchronized truth
+     surfaces, and non-claims without taking ownership from the boundary skill
    - keep future re-litigation low by writing the important rejected paths into
      the spec itself instead of leaving them in chat-only memory
 8. End with the next execution state.
@@ -150,7 +152,8 @@ as `Entities` or `Stages` instead of recreating them under new names.
 Emittable-verbatim acceptance-check tokens (a reader/validator substring-matches these); the teaching prose stays in `references/acceptance-checks.md`.
 
 - Verification type is one of `manual` / `unit` / `integration` / `e2e` / `eval` / `specdown`.
-- `Boundary Ownership` verdict tokens and the slice closeout ledger live in the sibling `prove` skill's `## Closeout Vocabulary` (single token home); emit them at the `prove` stop gate this contract closes through.
+- Evidence formats remain with the selected boundary owner; `prove` is a
+  conditional formatter and does not define a universal closeout vocabulary.
 
 ## Guardrails
 

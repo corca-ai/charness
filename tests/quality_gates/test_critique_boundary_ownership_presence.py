@@ -1,12 +1,8 @@
 from __future__ import annotations
 
-import re
-import runpy
-import sys
 from pathlib import Path
 
 import pytest
-import yaml
 
 from .support import ROOT, run_script
 
@@ -191,185 +187,28 @@ def test_boundary_scaffold_default_stub_fails_validation_post_cutoff(tmp_path: P
     assert "single-surface" in result.stderr
 
 
-# --- impl stop-gate escalation hook, in-process (AC7); reuses this file's
-# --- single _write_adapter_with_globs fixture writer.
+def test_critique_validator_refuses_unreadable_cross_surface_adapter(tmp_path: Path) -> None:
+    """The validator must not turn malformed probe config into an opt-out."""
+    from scripts import boundary_probe_lib, critique_adapter_lib, critique_enforcement_scope
 
-
-def _load_hook():
-    hook_dir = ROOT / "skills" / "public" / "prove" / "scripts"
-    if str(hook_dir) not in sys.path:
-        sys.path.insert(0, str(hook_dir))
-    import check_boundary_escalation
-
-    return check_boundary_escalation
-
-
-def _assert_help_pairs(output: str, expected_pairs: dict[str, str]) -> None:
-    """Assert each option's wrapped argparse block contains its own help text."""
-    for option, fragment in expected_pairs.items():
-        match = re.search(rf"^  {re.escape(option)}\b.*$", output, re.MULTILINE)
-        assert match, f"missing help option: {option}"
-        next_option = re.search(r"^  --[a-z][a-z-]*\b", output[match.end() :], re.MULTILINE)
-        end = match.end() + next_option.start() if next_option else len(output)
-        option_block = re.sub(r"\s+", " ", output[match.start() : end])
-        assert fragment in option_block, f"missing help for {option}: {fragment}"
-
-
-def test_hook_help_describes_repo_root() -> None:
-    import subprocess
-
-    result = subprocess.run(
-        [sys.executable, str(ROOT / "skills" / "public" / "prove" / "scripts" / "check_boundary_escalation.py"), "--help"],
-        cwd=ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
+    repo = tmp_path / "repo"
+    adapter = repo / ".agents" / "critique-adapter.yaml"
+    adapter.parent.mkdir(parents=True)
+    adapter.write_text(
+        "version: 1\nrepo: demo\nboundary_cross_surface_globs: \"docs/**\"\n",
+        encoding="utf-8",
     )
 
-    _assert_help_pairs(
-        result.stdout,
-        {"--repo-root": "Repository root used to resolve probe config and changed paths."},
+    scope = critique_enforcement_scope.resolve_cross_surface_scope(
+        repo,
+        None,
+        ["docs/x.md"],
+        probe_lib=boundary_probe_lib,
+        adapter_lib=critique_adapter_lib,
     )
 
-
-def test_hook_triggers_on_cross_surface_change(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    _write_adapter_with_globs(repo, "scripts/*.py")
-
-    payload = _load_hook().build_payload(repo, ["scripts/reducer.py"], None)
-    assert payload["triggered"] is True
-    assert "escalate" in payload["reason"]
-
-
-def test_hook_silent_without_probe_config(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    _write_adapter_with_globs(repo)  # no globs -> empty probe
-
-    payload = _load_hook().build_payload(repo, ["scripts/reducer.py"], None)
-    assert payload["triggered"] is False
-
-
-def test_hook_no_hit_on_unrelated_change(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    _write_adapter_with_globs(repo, "scripts/*.py")
-
-    payload = _load_hook().build_payload(repo, ["docs/readme.md"], None)
-    assert payload["triggered"] is False
-
-
-# --- impl stop-gate escalation hook CLI: bootstrap shim, parse_args, main (#421)
-
-
-def test_hook_shim_not_found_raises_import_error(tmp_path: Path, monkeypatch) -> None:
-    """Cover check_boundary_escalation._load_skill_runtime_bootstrap()'s "not
-    found" raise (mirrors the scaffold family's forcing technique in
-    tests/test_scaffold_inprocess_coverage.py): pointing __file__ at an isolated
-    tree with no ancestor skill_runtime_bootstrap.py forces the ancestor walk to
-    miss, since the real repo always finds one."""
-    hook = _load_hook()
-    isolated = tmp_path / "deep" / "nest" / "check_boundary_escalation.py"
-    isolated.parent.mkdir(parents=True)
-    monkeypatch.setattr(hook, "__file__", str(isolated))
-    with pytest.raises(ImportError, match="skill_runtime_bootstrap.py not found"):
-        hook._load_skill_runtime_bootstrap()
-
-
-def test_hook_parse_args_reads_flags(monkeypatch) -> None:
-    hook = _load_hook()
-    monkeypatch.setattr(
-        sys,
-        "argv",
-        [
-            "check_boundary_escalation.py",
-            "--changed-path",
-            "a.py",
-            "b.py",
-            "--changed-ref",
-            "base..HEAD",
-            "--detail",
-        ],
-    )
-    args = hook.parse_args()
-    assert args.changed_path == ["a.py", "b.py"]
-    assert args.changed_ref == "base..HEAD"
-    assert args.detail is True
-    assert args.repo_root == hook.REPO_ROOT
-
-
-def test_hook_parse_args_defaults_to_no_flags(monkeypatch) -> None:
-    hook = _load_hook()
-    monkeypatch.setattr(sys, "argv", ["check_boundary_escalation.py"])
-    args = hook.parse_args()
-    assert args.changed_path is None
-    assert args.changed_ref is None
-    assert args.detail is False
-
-
-def test_hook_main_yaml_detail_output(monkeypatch, capsys) -> None:
-    hook = _load_hook()
-    # `state` leads and `triggered` follows it, because the probe reports whether it
-    # RAN before it reports what it found (#622). A stub payload without `state` is
-    # not a shape this hook can emit, so pinning one here would pin a fiction.
-    fake_payload = {
-        "state": "evaluated",
-        "triggered": True,
-        "changed_paths": ["scripts/reducer.py"],
-        "probe": {"globs": ["scripts/*.py"], "surfaces": []},
-        "reason": "escalate this slice to a standalone critique",
-    }
-    monkeypatch.setattr(hook, "build_payload", lambda repo_root, changed_path, changed_ref: fake_payload)
-    monkeypatch.setattr(sys, "argv", ["check_boundary_escalation.py", "--detail"])
-    assert hook.main() == 0
-    assert yaml.safe_load(capsys.readouterr().out) == fake_payload
-
-
-def test_hook_main_plain_output(monkeypatch, capsys) -> None:
-    hook = _load_hook()
-    fake_payload = {
-        "state": "evaluated",
-        "triggered": True,
-        "changed_paths": ["scripts/reducer.py"],
-        "probe": {"globs": ["scripts/*.py"], "surfaces": []},
-        "reason": "escalate this slice to a standalone critique",
-    }
-    monkeypatch.setattr(hook, "build_payload", lambda repo_root, changed_path, changed_ref: fake_payload)
-    monkeypatch.setattr(sys, "argv", ["check_boundary_escalation.py"])
-    assert hook.main() == 0
-    out = capsys.readouterr().out
-    # The plain path is the one a shell caller reads, and it is why #622 existed: it
-    # used to print `triggered: false` alone in all three worlds. `state` must be on
-    # it, not only in --detail, or the cheap channel still cannot tell "no" from
-    # "could not tell".
-    assert out == "escalate this slice to a standalone critique\nstate: evaluated\ntriggered: true\n"
-
-
-def test_hook_module_main_guard_executes(monkeypatch, capsys) -> None:
-    """Cover `if __name__ == "__main__": raise SystemExit(main())` in-process via
-    runpy (mirrors check_artifact_surface_preflight's test_module_main_guard_executes),
-    not a subprocess, so the script stays off the boundary-bypass ratchet.
-    `--changed-path docs/x.md` bypasses git and matches none of the real repo's
-    configured boundary_cross_surface_globs (scripts/*_lib.py, skills/shared/**),
-    so `triggered: false` is deterministic regardless of real working-tree state.
-    Dormant coupling (fresh-eye 2026-07-08): this reads the LIVE critique
-    adapter; `boundary_cross_surface_surfaces` is empty today, but the
-    `repo-markdown` surface declares `docs/*.md`, so adding it to the probe
-    surfaces would flip this to `triggered: true` — if that happens, switch
-    this test to an isolated tmp-repo adapter rather than another path."""
-    monkeypatch.setattr(sys, "argv", ["check_boundary_escalation.py", "--changed-path", "docs/x.md"])
-    with pytest.raises(SystemExit) as exc:
-        runpy.run_path(
-            str(ROOT / "skills" / "public" / "prove" / "scripts" / "check_boundary_escalation.py"),
-            run_name="__main__",
-        )
-    assert exc.value.code == 0
-    out = capsys.readouterr().out
-    # A judged miss now says so in words — "evaluated ... none matched" — instead of the
-    # old "no cross-surface probe hit (empty config or no match)", which folded an
-    # unconfigured probe and a judged miss into one sentence (#622).
-    assert "was evaluated over" in out
-    assert "none matched" in out
-    assert "state: evaluated" in out
-    assert "triggered: false" in out
+    assert scope.state == critique_enforcement_scope.CROSS_SURFACE_NOT_ESTABLISHED
+    assert scope.hit is False
 
 
 # --- charness dogfoods its own probe (DBD-4) --------------------------------

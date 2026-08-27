@@ -46,11 +46,8 @@ closeout shape by `prove`:
 
 - survey the gate with `../../impl/scripts/survey_verification.py`
   (`lint_gate.detected` / `lint_gate.command`)
-- record the result in the `Lint Gate` closeout field whose states
-  (`ran-pass`, `ran-fail-fixed`, `ran-fail-deferred`, `not-detected`,
-  `skipped <reason>`) live in `prove` SKILL.md `## Closeout Vocabulary`, to which
-  `../../prove/references/verification-ladder.md` "Lint Gate Closeout Shape"
-  now forwards
+- when Prove is explicitly selected, report the lint command and result in its
+  evidence summary; Prove is conditional and defines no universal lint field
 
 The discipline is disclosure-before-commit, not a new hard gate; the repo's
 own pre-push/pre-commit hook still owns hard-block enforcement.
