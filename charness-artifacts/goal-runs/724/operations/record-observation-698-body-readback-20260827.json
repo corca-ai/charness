@@ -1,0 +1,28 @@
+{
+  "kind": "charness.goal-run-operation/v1",
+  "repo": "corca-ai/charness",
+  "parent_number": 724,
+  "operation": "record-observation",
+  "attempt_id": "readback-698-closeout-20260827-1",
+  "draft_sha256": "ced8410bd896844bf6bb75bff807438cb6f40cb6a3c3b8489ddcd05a662212c2",
+  "binding_sha256": "32ead8148ccfbfbbe0b9b6af1ad5ec1038a9c424c0766f45c1fbc9e54f54516d",
+  "observation_dir": "charness-artifacts/goal-runs/724/observations",
+  "target": {
+    "repo": "corca-ai/charness",
+    "number": 698,
+    "work_item_key": "backlog-698"
+  },
+  "result": {
+    "ok": true,
+    "status": "verified-read",
+    "outcome": "verified-read",
+    "mutation_invoked": false,
+    "observation": "A separate issue_tool read after the provider reported an unverified write found the requested body fully applied.",
+    "provider_state": "OPEN",
+    "provider_updated_at": "2026-08-27T02:21:21Z",
+    "body_verified_against_local": true,
+    "body_sha256": "3ce10c30a99c88363f1a06e4f9ba08a9aedb7d27c80d8dd6c343e90961972432",
+    "body_bytes": 2043,
+    "source_readback": "issue_tool read --repo corca-ai/charness --number 698 --repo-root ."
+  }
+}
