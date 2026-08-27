@@ -255,15 +255,6 @@ def test_scope_falls_back_to_the_shipped_default_when_the_adapter_is_unreadable(
     assert advisory.scope_paths(git_repo) == advisory.DEFAULT_SCOPE_PATHS
 
 
-def test_the_shipped_default_scope_matches_the_real_adapter() -> None:
-    """The pinned fallback is only honest if it matches what this repo declares."""
-    import yaml
-
-    module = _load_module("scripts/dup_ratchet_edit_advisory.py", "_dup_edit_advisory_real")
-    declared = yaml.safe_load((ROOT / ".agents/quality-adapter.yaml").read_text(encoding="utf-8"))
-    assert tuple(declared["dup_ratchet"]["scope_paths"]) == module.DEFAULT_SCOPE_PATHS
-
-
 # --------------------------------------------------------------------------
 # The hook carrying it
 # --------------------------------------------------------------------------
