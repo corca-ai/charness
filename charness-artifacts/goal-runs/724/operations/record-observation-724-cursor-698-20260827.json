@@ -1,0 +1,33 @@
+{
+  "kind": "charness.goal-run-operation/v1",
+  "repo": "corca-ai/charness",
+  "parent_number": 724,
+  "operation": "record-observation",
+  "attempt_id": "readback-724-cursor-698-20260827-1",
+  "draft_sha256": "ced8410bd896844bf6bb75bff807438cb6f40cb6a3c3b8489ddcd05a662212c2",
+  "binding_sha256": "32ead8148ccfbfbbe0b9b6af1ad5ec1038a9c424c0766f45c1fbc9e54f54516d",
+  "observation_dir": "charness-artifacts/goal-runs/724/observations",
+  "target": {
+    "repo": "corca-ai/charness",
+    "number": 724,
+    "work_item_key": "goal-run-parent-progress"
+  },
+  "result": {
+    "ok": true,
+    "status": "verified-read",
+    "outcome": "verified-read",
+    "mutation_invoked": false,
+    "observation": "A separate issue_tool read after the cursor update verified the current Goal Run metadata and progress block.",
+    "provider_state": "OPEN",
+    "progress_schema": "charness.goal-progress/v1",
+    "completed": 14,
+    "open": 17,
+    "total": 31,
+    "revision": 2,
+    "next_key": "backlog-708",
+    "next_number": 708,
+    "next_state": "OPEN",
+    "membership_sha256": "c5895ca6cf9eaccf739cb444a3a51c24149b9314b1e0f89061eb34041b7e8d6b",
+    "source_readback": "issue_tool read --repo corca-ai/charness --number 724 --repo-root ."
+  }
+}
