@@ -2,8 +2,8 @@
 
 ## Current Focus
 
+- Release publish triggered a configured automatic release-delta retro for `v7.0.0`. (source: `charness-artifacts/retro/2026-08-27-v7-0-0-release-auto-retro.md`)
 - This retro covers the four bounded review rounds behind the reduction-first verification change and the first release-preflight attempt. (source: `charness-artifacts/retro/2026-08-26-four-round-reduction-first-release-follow-up.md`)
-- This retro covers the Charness/Ceal consumer-friction work from issue #713 through the #689 requalification, #690/#691 readiness repair, #714 Node TAP window repair, and the external-worker capability envelope. (source: `charness-artifacts/retro/2026-08-25-consumer-friction-session-retro.md`)
 
 ## Repeat Traps
 
@@ -17,7 +17,7 @@
 - **workflow — prefer a structural property over an enumerated refusal.** Slice A's first cut recognised ambiguity with an enumerated four-word negation list (`not|never|without|no`), and round 2 showed it disarmed the floor on genuinely deferring lines. The repair that worked is structural and positional — *decline only when EVERY flag mention on the line is negated* — which is the same shape the lesson names. I committed the enumerated form first. `applied: the current achieve contract in skills/public/achieve/references/goal-artifact.md records the structural property; no standalone cadence-owner file remains.` (source: `charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md`; sources: 3)
 - state a detector's blind class — "what can this mechanism NOT see?" — in its module docstring before writing its first acceptance test. The HTML guard's blind class was "it cannot see any renderer", which was the whole finding, and it took three review rounds to surface. (source: `charness-artifacts/retro/2026-08-18-session-retro.md`; sources: 3)
 - **capability**: classify production PLR2004 findings and trial a no-increase baseline before considering a blocking rule. (source: `charness-artifacts/retro/2026-08-14-session-retro.md`; sources: 3)
-- **capability**: operate the local lesson ledger as a real loop by declaring a preview session and actually presenting its list before work, then recording only sparse, anchored effects at retro; do not infer continuity from the existence of the scripts. (source: `charness-artifacts/retro/2026-08-13-session-retro.md`; sources: 2)
+- the release-trigger artifact covers the release delta only. A broader retro is an explicit operator choice and is not represented by this artifact. (source: `charness-artifacts/retro/2026-08-27-v7-0-0-release-auto-retro.md`)
 
 ## Selection Policy
 
@@ -31,7 +31,6 @@
 - `charness-artifacts/retro/2026-07-27-session-retro.md`
 - `charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md`
 - `charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md`
-- `charness-artifacts/retro/2026-08-12-session-retro.md`
 - `charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md`
 - `charness-artifacts/retro/2026-08-13-proof-surface-repair-retro.md`
 - `charness-artifacts/retro/2026-08-13-session-retro.md`
@@ -49,5 +48,5 @@
 - `charness-artifacts/retro/2026-08-18-session-retro.md`
 - `charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md`
 - `charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md`
-- `charness-artifacts/retro/2026-08-25-consumer-friction-session-retro.md`
 - `charness-artifacts/retro/2026-08-26-four-round-reduction-first-release-follow-up.md`
+- `charness-artifacts/retro/2026-08-27-v7-0-0-release-auto-retro.md`
