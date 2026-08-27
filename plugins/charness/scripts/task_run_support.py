@@ -66,6 +66,18 @@ def _resolve_base_sha(repo_root: Path, base: str) -> str:
     return sha
 
 
+def _git_common_dir(repo_root: Path) -> Path:
+    """Writable Git administration root required for commits from a linked worktree."""
+    value = _git_output(repo_root, "rev-parse", "--git-common-dir").strip()
+    common = Path(value)
+    if not common.is_absolute():
+        common = repo_root / common
+    resolved = common.resolve()
+    if not resolved.is_dir():
+        raise TaskRunError(f"Git common directory is not a directory: {resolved}")
+    return resolved
+
+
 def _validate_branch(repo_root: Path, branch: str) -> str:
     if not branch or not _BRANCH_RE.fullmatch(branch) or ".." in branch or branch.endswith((".", "/")):
         raise TaskRunError(f"--branch is not a valid named branch: {branch!r}")
@@ -296,10 +308,16 @@ def _task_id(branch: str, requested: str | None) -> str:
 
 
 def build_codex_args(
-    *, model: str | None = None, effort: str | None = None, extra: Sequence[str] = ()
+    *,
+    model: str | None = None,
+    effort: str | None = None,
+    writable_dirs: Sequence[Path] = (),
+    extra: Sequence[str] = (),
 ) -> list[str]:
     """Build Codex host arguments from the ergonomic flags and rare extras."""
-    args: list[str] = []
+    args: list[str] = ["--sandbox", "workspace-write"]
+    for writable_dir in writable_dirs:
+        args.extend(["--add-dir", str(writable_dir.resolve())])
     if model is not None:
         if not model.strip():
             raise TaskRunError("--model must be a non-empty model id")
