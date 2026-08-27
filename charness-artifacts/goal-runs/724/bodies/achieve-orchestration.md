@@ -33,3 +33,16 @@ or mutate installed host state. The target `/goal #724` pickup roundtrip is
 verified in a clean Python process; that proves the local/provider read path,
 not child completion, parent completion, installed-host behavior, or issue
 closure.
+
+## 2026-08-27 efficiency-first synchronization
+
+The existing interview, compatibility, binding, and pickup lifecycle passed its
+focused proof: 18 tests covering interview cap/approval, stale and incomplete
+identity refusal, clean pickup, and pre-activation behavior. The current live
+`/goal #724` readback selects `backlog-708` at cursor revision 2 with zero child
+issue reads, so the routine path consumes the parent cursor rather than
+rescanning the graph.
+
+This is a local/provider read-path claim only. Hosted, installed, release, and
+consumer-repository behavior remain explicit non-claims; this synchronization
+does not itself close #727.

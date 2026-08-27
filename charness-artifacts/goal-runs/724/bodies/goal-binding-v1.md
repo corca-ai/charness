@@ -35,3 +35,14 @@ python3 scripts/sync_root_plugin_manifests.py --repo-root .
 This child proves the local schema and freeze/readback surface. It does not
 claim GitHub mutation, installed-host adoption, `/goal` pickup, issue closure,
 release, tag, or push.
+
+## 2026-08-27 efficiency-first synchronization
+
+The existing binding implementation was re-read rather than rebuilt. Its
+focused schema/freeze proof passed 28 tests, including malformed-input,
+identity-mismatch, dependency, clean-process, and source/plugin parity paths.
+The immutable binding and draft hashes remain the same parent-owned identities.
+
+This update claims only local binding behavior and its recorded identity. It
+does not claim GitHub mutation, installed/hosted behavior, release, push, or
+issue closure; it does not itself close #734.

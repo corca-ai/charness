@@ -30,3 +30,15 @@ Unverified or partial results stop and remain retryable.
 
 This bootstrap child does not close any child or parent, push/release/tag, mutate
 the installed host, or substitute local/fake proof for live readback.
+
+## 2026-08-27 efficiency-first synchronization
+
+The establishment evidence is now aligned with the current parent rather than
+the stale bootstrap counts. A separate live readback confirmed #724 OPEN with
+31 direct children, 14 CLOSED, 17 OPEN, and cursor revision 2 selecting
+`backlog-708` (`#708`). The parent-only pickup returned `child_reads: 0`; its
+provider and binding identities matched the frozen run.
+
+This update records establishment/readback only. It does not claim that #725 is
+closed, that the parent is complete, or that installed, hosted, release, or
+consumer-repository behavior has been verified.

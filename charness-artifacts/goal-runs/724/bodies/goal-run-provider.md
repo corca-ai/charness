@@ -62,3 +62,11 @@ This cutover does not invoke `goal-run-close`; #724 and #726 remain OPEN. No
 issue closure, push, release, tag, remote-CI, installed-host, scheduler, or
 consumer-repository enforcement is claimed. Forced fresh-eye, handoff, and
 micro-slice rituals are intentionally omitted by operator direction.
+
+## 2026-08-27 efficiency-first synchronization
+
+The earlier `3 completed / 28 open` graph line was a stale bootstrap receipt.
+After the representative #698 closeout, an explicit live graph read and the
+parent readback agree on 31 direct children, 14 CLOSED, 17 OPEN, with
+`backlog-708` as the next cursor item. The provider implementation remains
+local-proofed and #726 remains OPEN pending its own closeout carrier.

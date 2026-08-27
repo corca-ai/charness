@@ -30,3 +30,14 @@ quality checks.
 This child owns evidence identity and consumer cutover. It does not close #724
 or any backlog issue, publish a release, push a branch, or claim installed or
 hosted behavior without its distinct readback channel.
+
+## 2026-08-27 efficiency-first synchronization
+
+The existing lineage implementation was re-read rather than rebuilt. Its
+focused lineage/consumer proof passed 12 tests, including mismatched draft,
+binding, parent, attempt, terminal-receipt, stale-evidence, and successful
+readback paths. Source and exported plugin implementations remain aligned.
+
+The evidence identity is synchronized as a local Charness contract only. No
+issue closure, hosted/installed behavior, release, push, or consumer-repository
+adoption is claimed by this update; it does not itself close #733.
