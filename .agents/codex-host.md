@@ -12,10 +12,34 @@ durable result. The parent owns design, integration, final verification, and
 provider mutations. Task prompts forbid descendant agents unless the operator
 explicitly asks for nested delegation.
 
+## Model and effort presets
+
+Use `gpt-5.6-luna` for Charness lanes and choose effort from the work, not from
+the fact that a lane exists:
+
+| Work | Effort | Default stop shape |
+| --- | --- | --- |
+| bounded read-only search or a short self-evident edit | `medium` | return the requested top findings or focused patch; stop instead of widening |
+| ordinary isolated implementation | `high` | implement the scoped behavior and run focused checks |
+| proof/verdict logic, complex migration, or another implementation whose wrong shape is expensive to unwind | `xhigh` | resolve the named hard uncertainty; do not broaden into a repo audit |
+| explicitly selected, consequential critique | `max` | two bounded reviewers by default, with deliberately different perspectives or scopes |
+
+The orchestrator chooses the preset by judging the work itself. Do not encode
+that choice as filename, diff-size, label, keyword, or other mechanical
+heuristics. The parent may promote a lane only after naming the concrete
+uncertainty the lower tier could not settle. Do not use `xhigh` or `max` as a
+generic signal that work matters. A prompt still carries the outcome, exact
+scope, non-claims, stop condition, and result shape; effort does not repair a
+vague brief.
+
+The two default critique prompts must seek materially different evidence—for
+example contract/behavior and simplification/operability—not duplicate the same
+review with different wording. The orchestrator integrates their findings and
+decides whether either warrants a change.
+
 ## Isolated implementation lane
 
-The parent must be clean. Charness implementation lanes use
-`gpt-5.6-luna` with `xhigh` reasoning:
+The parent must be clean. The ordinary implementation preset is:
 
 ```sh
 charness task run \
@@ -29,7 +53,7 @@ charness task run \
   --codex-arg=-m \
   --codex-arg=gpt-5.6-luna \
   --codex-arg=-c \
-  --codex-arg=model_reasoning_effort=xhigh \
+  --codex-arg=model_reasoning_effort=high \
   --codex-arg=--approve-for-me \
   --prepare \
   --require-change
