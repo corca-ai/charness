@@ -9,17 +9,17 @@
   "initial_graph_sha256": "3aeef936962f97fb2ddebc4d93cd37a79f6d684e0565ff3c8ccecd02253ab9b2",
   "current_membership_sha256": "c5895ca6cf9eaccf739cb444a3a51c24149b9314b1e0f89061eb34041b7e8d6b",
   "progress": {
-    "completed": 14,
+    "completed": 15,
     "membership_sha256": "c5895ca6cf9eaccf739cb444a3a51c24149b9314b1e0f89061eb34041b7e8d6b",
     "next": {
-      "key": "backlog-708",
-      "number": 708,
+      "key": "backlog-710",
+      "number": 710,
       "repo": "corca-ai/charness",
       "state": "OPEN",
-      "url": "https://github.com/corca-ai/charness/issues/708"
+      "url": "https://github.com/corca-ai/charness/issues/710"
     },
-    "open": 17,
-    "revision": 2,
+    "open": 16,
+    "revision": 3,
     "schema": "charness.goal-progress/v1",
     "total": 31
   },
@@ -185,7 +185,7 @@ This parent is the authoritative execution tracker for the approved issue-native
 - Goal Binding: `charness-artifacts/goals/2026-08-26-adversarial-priority-backlog-closeout.binding.json`
 - Initial graph: five system Work Items plus the 26 existing backlog issue identities.
 - Bootstrap status: `verified-target-roundtrip`; the target provider and clean `/goal #724` pickup re-read this graph, the frozen binding/draft identities, and selected `backlog-546` without mutation.
-- Current progress cursor: revision `2`, `14` completed, `17` open, next `backlog-708` (`#708`). The cursor is the routine navigation record; pickup reads this parent block and does not rescan every child.
+- Current progress cursor: revision `3`, `15` completed, `16` open, next `backlog-710` (`#710`). The cursor is the routine navigation record; pickup reads this parent block and does not rescan every child.
 - Full graph reconciliation remains an explicit bootstrap/sync/closeout action. The one updater advances this cursor whenever a child transition is published.
 
 The parent remains open until every still-linked child is closed with issue-owned behavioral evidence or a verified successor deferral. Push, release, tag, remote CI, installed-host mutation, and issue closure remain separately authorized boundaries for this run.
@@ -226,5 +226,12 @@ The cursor-selected representative child `backlog-698` (`#698`) was closed
 through the validated manual-fallback carrier after its local proof and
 resolution critique passed. The provider comment/close operation, final
 `verify-closeout --expect-state CLOSED`, and a separate issue readback all
-returned `CLOSED`. The next cursor is therefore `backlog-708` (`#708`); no
-claim is made that #708 or any other open child is complete.
+returned `CLOSED`. At that time the next cursor was `backlog-708` (`#708`); no
+claim was made that #708 or any other open child was complete.
+
+## 2026-08-27 Cursor readback — #708
+
+A targeted issue readback found `backlog-708` (`#708`) `CLOSED`. The parent
+cursor therefore advances to revision `3`: `15` completed, `16` open, next
+`backlog-710` (`#710`). This is navigation state only; it does not claim that
+#710 or any other open child is complete.

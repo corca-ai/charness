@@ -94,10 +94,17 @@ observer or a new gate.
 
 The cursor-selected representative #698 was closed after the local carrier
 validator, resolution critique, provider close, final state verifier, and
-separate issue readback all passed. The live graph is now 31 direct children,
-14 CLOSED, and 17 OPEN; the parent cursor advances to #708. This is a current
-progress observation, while the fact split above remains the historical
-classification taken before the closeout.
+separate issue readback all passed. Immediately after that closeout, the live
+graph was 31 direct children, 14 CLOSED, and 17 OPEN; the parent cursor
+advanced to #708. This is a dated progress observation, while the fact split
+above remains the historical classification taken before the closeout.
+
+## 2026-08-27 Cursor advancement after #708
+
+A targeted readback found #708 `CLOSED`. The parent #724 body was then updated
+once through the `gh` provider and its byte-identical readback passed. Current
+navigation state is revision `3`: `15` completed, `16` open, next `#710`.
+This does not claim that #710 or any other open child is complete.
 
 ## Explicit non-claims
 
