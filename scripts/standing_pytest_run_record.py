@@ -19,6 +19,7 @@ same question: is this run still alive right now.
 from __future__ import annotations
 
 import contextlib
+import hashlib
 import json
 import signal
 import sys
@@ -31,7 +32,7 @@ _subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
 heartbeat_interval_from_env = _subprocess_guard.heartbeat_interval_from_env
 
 
-RUN_RECORD_RELPATH = Path("standing-pytest") / "last-run.json"
+RUN_RECORD_DIR = Path("standing-pytest")
 HEARTBEAT_INTERVAL_ENV = "CHARNESS_STANDING_PYTEST_HEARTBEAT_SECONDS"
 
 
@@ -112,7 +113,11 @@ def run_record_path(repo_root: Path) -> Path:
     # The record is runtime telemetry, not repository evidence. Keeping it under
     # `.charness/` made every canonical run create an ignored worktree artifact,
     # so a clean checkout became dirty after the very gate meant to protect it.
-    return runtime_root(repo_root) / RUN_RECORD_RELPATH
+    # An explicitly supplied runtime root can be shared by an outer quality run
+    # and its synthetic repos, so keep each repo's record separate as well. The
+    # record is useful only if concurrent runs cannot overwrite or concatenate it.
+    repo_key = hashlib.sha256(str(repo_root.resolve()).encode("utf-8")).hexdigest()[:16]
+    return runtime_root(repo_root) / RUN_RECORD_DIR / repo_key / "last-run.json"
 
 
 def write_run_record(repo_root: Path, record: dict[str, object]) -> None:

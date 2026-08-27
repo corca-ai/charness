@@ -56,7 +56,7 @@ run_monitored_phase = _subprocess_guard.run_monitored_phase
 # The run-record and signal halves of "outlive your caller" (S6 round 2), same
 # re-export discipline as the basetemp block below: only what this body calls.
 _survival = import_repo_module(__file__, "scripts.standing_pytest_run_record")
-RUN_RECORD_RELPATH = _survival.RUN_RECORD_RELPATH
+RUN_RECORD_DIR = _survival.RUN_RECORD_DIR
 HEARTBEAT_INTERVAL_ENV = _survival.HEARTBEAT_INTERVAL_ENV
 run_record_path = _survival.run_record_path
 write_run_record = _survival.write_run_record

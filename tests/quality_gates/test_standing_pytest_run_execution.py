@@ -144,7 +144,28 @@ def test_standing_pytest_run_record_is_external_runtime_telemetry(tmp_path: Path
 
     assert repo not in path.parents
     assert path.name == "last-run.json"
-    assert path.parent.name == "standing-pytest"
+    assert path.parent.parent.name == "standing-pytest"
+
+
+def test_standing_pytest_records_are_repo_scoped_under_a_shared_runtime_root(
+    tmp_path: Path, monkeypatch
+) -> None:
+    from scripts import run_standing_pytest as runner
+
+    first = tmp_path / "first"
+    second = tmp_path / "second"
+    first.mkdir()
+    second.mkdir()
+    monkeypatch.setenv("CHARNESS_RUNTIME_ROOT", str(tmp_path / "runtime"))
+    monkeypatch.delenv("CHARNESS_RUNTIME_ROOT_AUTO", raising=False)
+    monkeypatch.delenv("CHARNESS_RUNTIME_REPO_KEY", raising=False)
+
+    first_record = runner.run_record_path(first)
+    second_record = runner.run_record_path(second)
+
+    assert first_record != second_record
+    assert first_record.name == second_record.name == "last-run.json"
+    assert first_record.parent.parent.name == second_record.parent.parent.name == "standing-pytest"
 
 
 def test_runtime_root_keeps_auto_identity_across_repeated_calls(tmp_path: Path, monkeypatch) -> None:
