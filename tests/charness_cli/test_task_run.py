@@ -313,6 +313,39 @@ def test_non_delivery_with_scoped_candidate_is_validated_partial_result(tmp_path
     assert payload["result_delivery"]["bytes"] == 0
 
 
+def test_task_result_exposes_schema_bearing_delivery_without_interpreting_it(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    executable = _codex(
+        tmp_path,
+        "printf 'VALUE = 2\\n' > module.py\nprintf 'schema_version: charness.reviewer_lifecycle.v1\\napproval_eligible: false\\ndelivery_state: findings-received\\n'",
+        deliver=False,
+    )
+
+    payload = _run(repo, tmp_path, executable, task_id="structured-review")
+
+    delivery = payload["result_delivery"]
+    assert delivery["structured_status"] == "valid"
+    assert delivery["structured"] == {
+        "schema_version": "charness.reviewer_lifecycle.v1",
+        "approval_eligible": False,
+        "delivery_state": "findings-received",
+    }
+
+
+def test_task_result_reports_malformed_schema_bearing_delivery(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    executable = _codex(
+        tmp_path,
+        "printf 'VALUE = 2\\n' > module.py\nprintf 'schema_version: broken\\nvalue: [\\n'",
+        deliver=False,
+    )
+
+    payload = _run(repo, tmp_path, executable, task_id="structured-invalid")
+
+    assert payload["result_delivery"]["structured_status"] == "invalid"
+    assert "structured" not in payload["result_delivery"]
+
+
 def test_running_result_is_visible_to_the_child(tmp_path: Path) -> None:
     repo = _repo(tmp_path)
     executable = _codex(

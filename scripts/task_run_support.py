@@ -11,6 +11,8 @@ import tempfile
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+import yaml
+
 from runtime_bootstrap import runtime_root
 
 PASS = "pass"
@@ -406,13 +408,26 @@ def _result_delivery(stdout_log: Path) -> dict[str, Any]:
     raw = stdout_log.read_bytes() if stdout_log.is_file() else b""
     delivered = bool(raw.strip())
     clipped = raw[:_MAX_RESULT_TEXT_BYTES]
-    return {
+    text = clipped.decode("utf-8", errors="replace")
+    result: dict[str, Any] = {
         "status": "delivered" if delivered else "non-delivery",
         "bytes": len(raw),
         "truncated": len(raw) > len(clipped),
-        "text": clipped.decode("utf-8", errors="replace"),
+        "text": text,
         "log": str(stdout_log),
     }
+    result["structured_status"] = "not-applicable"
+    if delivered and not result["truncated"]:
+        try:
+            structured = yaml.safe_load(text)
+        except yaml.YAMLError:
+            if "schema_version" in text:
+                result["structured_status"] = "invalid"
+        else:
+            if isinstance(structured, Mapping) and "schema_version" in structured:
+                result["structured_status"] = "valid"
+                result["structured"] = dict(structured)
+    return result
 
 
 def _parent_progress(

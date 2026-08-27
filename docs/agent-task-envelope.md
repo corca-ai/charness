@@ -50,3 +50,9 @@ charness task status --repo-root . <task-id>
 
 Status reads exactly the external task-run result store and lists all records
 when no id is supplied.
+
+When delivered text is one complete schema-bearing JSON/YAML mapping,
+`result_delivery.structured` exposes it unchanged. Task status does not
+interpret reviewer fields or infer approval; the mapping's owning schema and
+validator remain authoritative. Malformed schema-bearing text is reported as
+`structured_status: invalid`, while ordinary prose is `not-applicable`.
