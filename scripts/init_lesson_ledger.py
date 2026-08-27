@@ -1,16 +1,11 @@
 #!/usr/bin/env python3
-"""Create the opt-in empty lesson ledger so the lesson lifecycle is reachable.
+"""Create the opt-in empty lesson ledger for durable lesson memory and selection.
 
-Every lesson-lifecycle entry point — `validate_lesson_ledger`, `declare_session`,
-`record_lesson_score`, `record_lesson_lifecycle`, `render_lesson_selection_preview`
-— requires `charness-artifacts/retro/lesson-ledger.json` to already exist, and
-nothing created it. A repo that adopted charness after the ledger landed had the
-*reporting* half of the lifecycle (`recent-lessons.md`, the selection index,
-regenerated on every retro) and no path at all to the *evaluating* half. This is
-that path, and it is deliberately an explicit opt-in rather than a side effect of
-`seed_retro_memory.py` or `persist_retro_artifact.py`: declaring an evaluator is a
-repo-level commitment that turns on a per-retro disposition duty, so it is a
-command an operator runs, not something a retro does to them.
+The ledger is deliberately explicit rather than a side effect of
+`seed_retro_memory.py` or `persist_retro_artifact.py`: it is durable repo state
+and must never appear because a setup or retro command happened to run. This
+command creates only the empty ledger; later transitions are still derived from
+tagged retro lessons and validated append-only.
 
 What this does NOT do, and why:
 
@@ -20,11 +15,9 @@ What this does NOT do, and why:
   are append-only; the only withdrawal is an `archive` lifecycle event) the moment
   its cited retro is renamed or its `recurrence-class:` tag is edited away. The
   empty ledger has no such coupling to mutable files.
-- It therefore does not pretend the lifecycle is *finished* by being reachable. An
-  empty ledger clears the `FileNotFoundError` and nothing else: `declare_session`
-  still refuses over an empty selection until at least one lesson is seeded. The
-  receipt below says so in as many words, because converting a loud failure into a
-  silent permanent one would be a worse honesty position than the missing file.
+- It does not create session-emission receipts or impose a retro-disposition
+  continuity obligation. Those surfaces are outside the default and release
+  contracts; the ledger remains the memory/selection surface.
 """
 
 from __future__ import annotations
@@ -57,10 +50,7 @@ def seed_lesson_next_step(repo_root: Path) -> str:
         "Next: a lesson enters the ledger only from a retro bullet tagged "
         "`recurrence-class: <slug>`; tag one, then append its seed transition with "
         f"`{seed_command} --dry-run` to inspect and the same command without "
-        "`--dry-run` to write. Until at least one lesson is seeded, "
-        "`record_lesson_session.py` refuses with `preview selected no eligible "
-        "lessons` and the only honest retro disposition stays `not-evaluated / "
-        "missing-start`."
+        "`--dry-run` to write."
     )
 
 
@@ -127,21 +117,8 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, default=ROOT)
     args = parser.parse_args()
     root = args.repo_root.resolve()
-    # The LITERAL, and this was briefly adapter-resolved before being reverted. Moving
-    # the write alone flipped a consumer's floor from inert to ON-and-unsatisfiable: the
-    # probe then saw a ledger and enforced the disposition duty, while `open_lesson_session`,
-    # `record_lesson_score`, `check_lesson_ledger` and ~26 other entry points still opened
-    # the literal path and raised. `check_lesson_ledger.py` is named in this script's own
-    # FileExistsError, so the refusal path pointed at a tool that would report the ledger
-    # missing. One literal across the whole subsystem is the honest state until all 30 sites
-    # move together; `retro_floor_scope_lib.LESSON_LEDGER_PREFIX` records the rule.
-    #
-    # `summary_path` stays a separately declared adapter field, not a derivation of the
-    # output dir -- retro's own adapter contract says so in as many words.
-    # Through the owner, not a raw string. An earlier version of these two lines argued
-    # at length that the subsystem must stay on ONE literal and then spelled a fresh copy
-    # of it -- in a file that already imports `_records`, whose `retro_output_dir` is the
-    # literal's owner. The comment naming the rule and the line breaking it were adjacent.
+    # Keep the ledger path and retro output resolution in the shared records helper;
+    # the summary path remains a separately declared adapter field.
     output_dir = _records.retro_output_dir(root)
     result = init_lesson_ledger(
         repo_root=root,
@@ -149,10 +126,8 @@ def main() -> int:
         summary_path=_records.summary_path(root),
     )
     step = seed_lesson_next_step(root)
-    # Unconditional YAML. The retired receipt line was a strict projection of
-    # `path`, `lesson_count`, and `transition_count`; `next_step` is the sentence
-    # that says an empty ledger is not a finished lifecycle, and it has always
-    # travelled in the payload rather than only in the prose.
+    # Unconditional YAML. `next_step` carries the one useful follow-up for an
+    # empty memory ledger without creating a session or retro-closeout contract.
     emit_yaml({**result, "next_step": step})
     return 0
 

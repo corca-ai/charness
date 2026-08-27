@@ -26,7 +26,6 @@ def test_registry_has_one_complete_row_per_reviewed_boundary() -> None:
     assert contract.validate_registry(ROOT) == []
     assert {item.contract_id for item in contract.CONTRACTS} == {
         "reviewer_delivery",
-        "lesson_finalization",
         "skill_manifest_selection",
         "duplicate_lineage",
     }
@@ -81,15 +80,6 @@ def test_missing_producer_binding_is_typed_and_fail_closed() -> None:
         )
 
 
-@pytest.mark.parametrize("outcome", ["succeeded", "timed-out", "interrupted", "missing"])
-def test_lesson_fence_is_required_for_every_terminal_outcome(outcome: str) -> None:
-    with pytest.raises(contract.BoundaryContractError, match="requires its fence"):
-        contract.require_terminal_fence(
-            "lesson_finalization", outcome=outcome, fence_ran=False
-        )
-    contract.require_terminal_fence("lesson_finalization", outcome=outcome, fence_ran=True)
-
-
 def test_fixture_references_are_exact_repo_relative_nodes() -> None:
     for item in contract.CONTRACTS:
         path, node = item.negative_fixture.split("::", 1)
@@ -116,7 +106,7 @@ def test_contract_checker_executes_source_fixtures_in_process() -> None:
     assert payload["proof_level"] == "executable-fixtures"
     assert [item["status"] for item in payload["fixture_results"]] == [
         "passed"
-    ] * 4
+    ] * 3
 
 
 def test_contract_checker_marks_plugin_layout_shape_only() -> None:

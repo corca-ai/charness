@@ -6,7 +6,6 @@ import json
 import threading
 import time
 
-# provenance-contract fixture: lesson_finalization
 import pytest
 
 from skills.shared.scripts import reviewer_delivery as delivery
@@ -224,112 +223,6 @@ def test_runner_collection_failure_is_typed_and_retryable(tmp_path) -> None:
     assert retry.retry_of == "a1"
     assert retry.retry_count == 1
     assert len(reports) == 2
-
-
-def test_lesson_write_fence_runs_for_failed_worker_outcomes(tmp_path, monkeypatch) -> None:
-    ledger_path = tmp_path / "delivery.json"
-    receipt_path = tmp_path / "receipt.json"
-    delivery._write(ledger_path, _ledger())
-    receipt_path.write_text(
-        json.dumps({"status": "timed-out", "finished_at": "2026-08-21T00:00:10Z"}),
-        encoding="utf-8",
-    )
-    seen: list[list[str]] = []
-
-    class Boundary:
-        def validate_lane_writes(self, _root, changed, **_kwargs):
-            seen.append(list(changed))
-            raise ValueError("foreign parent lesson path")
-
-    monkeypatch.setattr(reviewer_runner_support, "_lesson_boundary_module", lambda _root: Boundary())
-    monkeypatch.setattr(reviewer_runner_support, "lesson_inventory_delta", lambda _before, _after: [
-        "charness-artifacts/retro/lesson-ledger.json"
-    ])
-    monkeypatch.setattr(reviewer_runner_support, "_lesson_inventory", lambda _root: {})
-
-    def build_report(**_kwargs: object) -> dict[str, object]:
-        return {"delivery_state": delivery._read(ledger_path).require("a1").state}
-
-    report = reviewer_runner_support.finalize_attempt(
-        receipt_path=receipt_path,
-        ledger_path=ledger_path,
-        attempt_id="a1",
-        scope="scope-sha",
-        packet_identity="packet-sha",
-        reviewed_input_identity="reviewed-sha",
-        parent_receipt_identity="receipt-a1",
-        execution_mode="file-backed-worker",
-        build_report=build_report,
-        repo_root=tmp_path,
-        lesson_binding_data={
-            "lane_id": "lane-a",
-            "owner_id": "worker-a",
-            "session_id": "session-a",
-            "snapshot_sha256": "a" * 64,
-            "bundle_sha256": "b" * 64,
-            "parent_receipt_sha256": "c" * 64,
-            "lane_receipt": tmp_path / ".charness/lesson-lanes/lane-a/receipt.json",
-        },
-        lesson_before={"charness-artifacts/retro/lesson-ledger.json": "old"},
-    )
-    assert seen == [["charness-artifacts/retro/lesson-ledger.json"]]
-    assert report["delivery_state"] == delivery.COLLECTION_FAILED
-
-
-@pytest.mark.parametrize("status", ["succeeded", "timed-out", "interrupted", "missing"])
-def test_lesson_finalizer_fences_all_terminal_outcomes(tmp_path, monkeypatch, status: str) -> None:
-    """The final consumer must run the lesson fence before every outcome."""
-    ledger_path = tmp_path / "delivery.json"
-    receipt_path = tmp_path / "receipt.json"
-    delivery._write(ledger_path, _ledger())
-    if status != "missing":
-        receipt_path.write_text(
-            json.dumps({"status": status, "finished_at": "2026-08-21T00:00:10Z"}),
-            encoding="utf-8",
-        )
-    seen: list[str] = []
-
-    class Boundary:
-        def validate_lane_writes(self, _root, _changed, **_kwargs):
-            seen.append("writes")
-            return {"ok": True}
-
-        def validate_lane_receipt(self, *_args, **_kwargs):
-            seen.append("receipt")
-
-    monkeypatch.setattr(reviewer_runner_support, "_lesson_boundary_module", lambda _root: Boundary())
-    monkeypatch.setattr(reviewer_runner_support, "lesson_inventory_delta", lambda _before, _after: [])
-    monkeypatch.setattr(reviewer_runner_support, "_lesson_inventory", lambda _root: {})
-
-    def build_report(**_kwargs: object) -> dict[str, object]:
-        return {"collection_ready": False, "delivery_state": delivery._read(ledger_path).require("a1").state}
-
-    report = reviewer_runner_support.finalize_attempt(
-        receipt_path=receipt_path,
-        ledger_path=ledger_path,
-        attempt_id="a1",
-        scope="scope-sha",
-        packet_identity="packet-sha",
-        reviewed_input_identity="reviewed-sha",
-        parent_receipt_identity="receipt-a1",
-        execution_mode="file-backed-worker",
-        build_report=build_report,
-        repo_root=tmp_path,
-        lesson_binding_data={
-            "lane_id": "lane-a", "owner_id": "worker-a", "session_id": "session-a",
-            "snapshot_sha256": "a" * 64, "bundle_sha256": "b" * 64,
-            "parent_receipt_sha256": "c" * 64,
-            "lane_receipt": tmp_path / "receipt.json",
-        },
-        lesson_before={},
-    )
-    assert "writes" in seen
-    if status == "succeeded":
-        assert "receipt" in seen
-    assert report["delivery_state"] in {
-        delivery.COLLECTION_FAILED, delivery.TIMED_OUT,
-        delivery.INTERRUPTED, delivery.NON_DELIVERY_UNKNOWN,
-    }
 
 
 def test_duplicate_canonical_transition_is_rejected() -> None:

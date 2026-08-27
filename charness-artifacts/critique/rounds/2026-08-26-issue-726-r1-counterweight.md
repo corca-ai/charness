@@ -3,7 +3,7 @@
 - Round: 1
 - Recorded date: 2026-08-26
 - Boundary window id: `issue-726-r1-counterweight`
-- Boundary snapshot: `.charness/critique/issue-726-r1-counterweight/boundary.json`
+- Boundary snapshot: `.charness/critique/issue-726-r1-counterweight/boundary.json` <!-- reproduction-source -->
 - Boundary snapshot SHA-256: `bdb6973c1a6d4ea545221a701bbacf2798976e5eb1c749d2642a887c143e78a2`
 - Findings SHA-256: `ec33af55450cb93b582ce1ed651736d264a846293de4d87d873ce518eaa394fa`
 

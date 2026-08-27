@@ -3,7 +3,7 @@
 - Round: 2
 - Recorded date: 2026-08-26
 - Boundary window id: `r2-architecture`
-- Boundary snapshot: `.charness/reviewer-boundary/r2-architecture.json`
+- Boundary snapshot: `.charness/reviewer-boundary/r2-architecture.json` <!-- reproduction-source -->
 - Boundary snapshot SHA-256: `ddb51cfe64d439c09bd757a5f77cd2d9c256232c23f5bcdcc865861d61a74f01`
 - Findings SHA-256: `335f1bc27aa64464a6d64007d75030e92d66b8fa57d45935465678b01697e9a9`
 

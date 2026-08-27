@@ -253,41 +253,11 @@ def _repo_module_payload(module_name: str, build, *, fallback: dict[str, Any]) -
 
 
 def _date_activated_rules(repo_root: Path) -> dict[str, Any]:
-    """Announce the retro floors that switch on by artifact date.
-
-    These dates were reachable only by tripping them, so an author whose previous
-    retro needed no `## Lesson Evaluation` section read the new refusal as
-    breakage rather than as a dated floor that had just activated. The achieve
-    planner family already emits `rule_date` in every report payload; this does
-    the same, reading the validator's own constants so the announcement cannot
-    drift from the rule it announces.
-    """
+    """Announce the generic retro floors that switch on by artifact date."""
     return _repo_module_payload(
         "scripts.validate_retro_artifact",
         lambda validator: {"rules": validator.date_activated_rules(repo_root)},
         fallback={"rules": []},
-    )
-
-
-def _lesson_session(repo_root: Path, artifact: dict[str, Any]) -> dict[str, Any]:
-    """Route this retro to the declared lesson session that still owes it a score.
-
-    The evaluating half of the lesson lifecycle had zero production callers: a
-    session could be declared and receipted and then nothing ever told the retro
-    author it existed, so every disposition in this repo was `not-evaluated /
-    missing-start` while the continuity gate reported `violations=0` over it.
-
-    The three states are the shared `lesson_evaluation_records_lib` verdict, not a
-    second implementation — `unclaimed_receipted_sessions` is the same helper the
-    continuity gate turns into `unclaimed-emission`, so the router cannot route to
-    a session the gate does not see, or skip one it does. When the planner cannot
-    load the module at all the answer is `not-established`, never `not-configured`:
-    an unreadable probe has not established that this repo opted out.
-    """
-    return _repo_module_payload(
-        "scripts.lesson_evaluation_records_lib",
-        lambda records: records.lesson_session_routing(repo_root, source_retro=artifact["path"]),
-        fallback={"state": "not-established", "configuration_status": "planner-cannot-read", "sessions": []},
     )
 
 
@@ -339,11 +309,6 @@ def build_plan(
         if packet.get("required") is True and packet.get("available") is False
     ]
     ready = bool(adapter.get("valid")) and not unavailable_required_packets
-    # Hoisted so a barrier can be conditioned on it. A barrier that names
-    # `lesson_session[].solicitation` in a repo with no evaluator points at keys
-    # that payload does not carry -- the "names a path nothing creates" defect this
-    # planner's own lesson-routing module cites as its motivation.
-    lesson_session = _lesson_session(repo_root, artifact)
     return ENVELOPE.build_envelope(
         schema_version="retro.run_plan.v1",
         required_reads=ENVELOPE.measure_reads(
@@ -372,28 +337,10 @@ def build_plan(
         artifact=artifact,
         on_demand_reads=_on_demand_reads(),
         date_activated_rules=_date_activated_rules(repo_root),
-        lesson_session=lesson_session,
         phase_barriers=[
             "Open required_reads (esp. expert-lens.md for the briefed lens) before writing the retro.",
-            "Read date_activated_rules before concluding a floor is broken: a section your last "
-            "retro did not need may be a dated floor that activated since, and the lesson-evaluation "
-            "floor is inert entirely in a repo that declares no lesson evaluator.",
-            "If repo-owned evidence defines lesson evaluation, score only a list presented contemporaneously before the work; write the exact repo-owned disposition, then run its adapter metric after persistence. A stored snapshot or command receipt alone is not presentation.",
-            "Read `lesson_session` and keep its order: append every score FIRST, then write the "
-            "disposition line, then run the reconciler after persistence. The disposition declares "
-            "the score count, so it is the assertion ABOUT the appends and can never drive them; "
-            "`state: not-established` means the only honest disposition is the `honest_disposition` "
-            "it names, and `state: not-configured` means the floor is inert.",
-            *(
-                [
-                    "When `lesson_session.sessions[]` carries a `solicitation`, answer it against that "
-                    "session's own `lessons` before deciding the disposition, and answer its "
-                    "harmful/negative question first and out loud. The evaluator owns what the "
-                    "answers mean; do not restate its scoring rules from memory."
-                ]
-                if lesson_session.get("sessions")
-                else []
-            ),
+            "Read date_activated_rules before concluding a generic floor is broken: a floor "
+            "your last retro did not need may have activated since.",
             "Treat gate_packets as cheap deterministic evidence: trust them for shape, not for judgment.",
             "Never close without a Persisted: yes/no line.",
         ],

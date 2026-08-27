@@ -12,9 +12,8 @@ new family appears without one. A hand-written list is what lets a seventh famil
 unguarded while the suite still reports green.
 
 The mismatch itself is constructed per family on purpose. Each family's subject key is its
-own -- `quality` adds the record date and `retro` adds the lesson session -- so a single
-generic fixture would either miss the channel that carries the defect or manufacture a
-mismatch the family cannot actually have.
+own, so a single generic fixture would either miss the channel that carries the defect or
+manufacture a mismatch the family cannot actually have.
 """
 
 from __future__ import annotations
@@ -84,22 +83,13 @@ def _seed_ideation(repo: Path) -> tuple[str, dict[str, object]]:
 
 
 def _seed_retro(repo: Path) -> tuple[str, dict[str, object]]:
-    """A retro already written today, carrying the disposition the scaffold itself seeds.
-
-    `"session_id":"none"` is deliberate and is the state this repo actually ships: the
-    template seeds it, and a repo with no lesson evaluator reads `None` on the other side too.
-    A session-keyed comparison called those two the same subject and wrote over the earlier
-    retro — the recorded instance, reproduced by the fixture that was supposed to prove it
-    fixed. The rule that holds here is the one that does not depend on reading a session at
-    all: a scaffold never writes a fresh template over an existing record.
-    """
+    """A retro already written today, which the scaffold must not overwrite."""
     _seed_adapter(repo, "retro")
     foreign = f"charness-artifacts/retro/{TODAY}-session-retro.md"
     _record(
         repo,
         foreign,
-        '# Session Retro\n\n## Lesson Evaluation\n\nLesson evaluation: {"reason":"missing-start",'
-        '"score_event_count":0,"session_id":"none","status":"not-evaluated"}\n',
+        "# Session Retro\n\n## Context\n\nAn earlier retro.\n",
     )
     return foreign, {"title": None, "subject": None}
 
@@ -245,12 +235,10 @@ def test_only_a_confirmed_match_writes_in_place(tmp_path: Path) -> None:
 
 
 def test_two_unreadable_channels_do_not_compose_into_a_match(tmp_path: Path) -> None:
-    """The sentinel bug: `none@none` == `none@none`.
+    """Two unavailable subject channels must not compare as a match.
 
-    A multi-channel key whose unreadable channel spelled itself `none` compared EQUAL to
-    another unreadable one, so the family that needed the extra channel most — two same-day
-    records the filename cannot tell apart — got a silent match in exactly the repo state that
-    ships (no lesson evaluator, and the scaffold's own seeded `"session_id":"none"`).
+    A multi-channel key whose unavailable channels both compare equal must still
+    refuse an in-place write, so two same-day records cannot silently collide.
     """
     lib = import_repo_module(ROOT / "scripts/scaffold_artifact_lib.py", "scripts.scaffold_artifact_lib")
 

@@ -120,7 +120,7 @@ def test_eval_cautilus_scenarios_writes_summary(tmp_path: Path) -> None:
     summary = json.loads((output_dir / "summary.json").read_text(encoding="utf-8"))
     assert summary["mode"] == "held_out"
     assert summary["profile"] == "evaluator-required"
-    assert summary["scenario_count"] >= 8
+    assert summary["scenario_count"] >= 7
     assert summary["run_evals"]["exit_code"] == 0
 
 

@@ -84,6 +84,10 @@ def test_retro_plan_shape_and_scaffold_when_missing(tmp_path: Path) -> None:
     assert payload["ok"] is True
     assert payload["artifact"]["status"] == "missing"
     assert payload["next_action"]["kind"] == "scaffold-retro-artifact"
+    assert "lesson_session" not in payload
+    assert {
+        rule["id"] for rule in payload["date_activated_rules"]["rules"]  # type: ignore[index]
+    } == {"north-star-alignment", "recurrence-lineage", "persisted-form"}
 
     paths = required_paths(payload)
     assert "references/expert-lens.md" in paths
@@ -269,15 +273,15 @@ def test_retro_plan_surfaces_adapter_metrics_after_persistence(tmp_path: Path) -
     adapter_path.write_text(
         adapter_path.read_text(encoding="utf-8")
         + "metrics_commands:\n"
-        + "  - python3 scripts/check_lesson_evaluation_continuity.py --repo-root .\n",
+        + "  - python3 scripts/check_custom_metric.py --repo-root .\n",
         encoding="utf-8",
     )
 
     payload = run_plan(repo, changed_paths=["src/app.py"])
     metric = next(packet for packet in payload["gate_packets"] if packet["id"] == "adapter-metric-1")  # type: ignore[index]
 
-    assert metric["command"] == "python3 scripts/check_lesson_evaluation_continuity.py --repo-root ."
-    assert metric["run_when"] == "after the retro disposition is written and persisted, before closeout"
+    assert metric["command"] == "python3 scripts/check_custom_metric.py --repo-root ."
+    assert metric["run_when"] == "after the retro artifact is written and persisted, before closeout"
 
 
 def test_retro_plan_scaffold_uses_repo_declared_artifact_sections(tmp_path: Path) -> None:

@@ -19,13 +19,7 @@ try:
     from reviewer_delivery import _read, _write, ledger_lock
     from reviewer_delivery_fields import boundary_binding
     from reviewer_output import emit_yaml
-    from reviewer_runner_support import (
-        append_lesson_args,
-        finalize_attempt,
-        lesson_binding,
-        lesson_inventory_snapshot,
-        lesson_paths,
-    )
+    from reviewer_runner_support import finalize_attempt
     from reviewer_worker_report import ReportError, build_report
     from reviewer_worker_runner_support import (
         DEFAULT_SCHEMA,
@@ -51,13 +45,7 @@ except ImportError:
     from skills.shared.scripts.reviewer_delivery import _read, _write, ledger_lock
     from skills.shared.scripts.reviewer_delivery_fields import boundary_binding
     from skills.shared.scripts.reviewer_output import emit_yaml
-    from skills.shared.scripts.reviewer_runner_support import (
-        append_lesson_args,
-        finalize_attempt,
-        lesson_binding,
-        lesson_inventory_snapshot,
-        lesson_paths,
-    )
+    from skills.shared.scripts.reviewer_runner_support import finalize_attempt
     from skills.shared.scripts.reviewer_worker_report import ReportError, build_report
     from skills.shared.scripts.reviewer_worker_runner_support import (
         DEFAULT_SCHEMA,
@@ -115,8 +103,6 @@ def main(argv: list[str] | None = None) -> int:
         report_target = _repo_path(repo_root, args.report_file)
         stdout_path = _repo_path(repo_root, args.stdout_file or Path(f"{output_path}.stdout"))
         stderr_path = _repo_path(repo_root, args.stderr_file or Path(f"{output_path}.stderr"))
-        lesson_bundle, lesson_receipt = lesson_paths(repo_root, args)
-        lesson_binding_data = lesson_binding(repo_root, args, lesson_bundle, lesson_receipt)
         producer_run_id = args.run_id or uuid.uuid4().hex
         if _sha256(schema) != _sha256(DEFAULT_SCHEMA):
             raise ValueError("file-backed reviewer runner requires the canonical bounded-review result schema")
@@ -125,8 +111,6 @@ def main(argv: list[str] | None = None) -> int:
             prompt, capability_file, schema, ledger_path, output_path, receipt_path,
             report_target, stdout_path, stderr_path,
         )
-        if lesson_bundle is not None and lesson_receipt is not None:
-            all_paths = (*all_paths, lesson_bundle, lesson_receipt)
         for path in all_paths:
             try:
                 path.relative_to(repo_root)
@@ -135,7 +119,7 @@ def main(argv: list[str] | None = None) -> int:
         if len({str(path) for path in all_paths}) != len(all_paths):
             raise ValueError("runner input and output paths must resolve to distinct files")
         stale_targets = [
-            path for path in (output_path, receipt_path, report_target, stdout_path, stderr_path, lesson_receipt)
+            path for path in (output_path, receipt_path, report_target, stdout_path, stderr_path)
             if path is not None and path.exists()
         ]
         if stale_targets:
@@ -177,8 +161,6 @@ def main(argv: list[str] | None = None) -> int:
         if boundary_fingerprint is not None:
             worker_command.extend(["--boundary-fingerprint", boundary_fingerprint])
         worker_command.extend(["--stdout-file", str(stdout_path), "--stderr-file", str(stderr_path)])
-        append_lesson_args(worker_command, args, lesson_bundle, lesson_receipt, repo_root)
-        lesson_before = lesson_inventory_snapshot(repo_root) if lesson_binding_data is not None else None
         worker_command.extend(["--timeout-seconds", str(timeout), "--run-id", producer_run_id])
         worker = subprocess.run(worker_command, cwd=repo_root, check=False, capture_output=True, text=True)
         if worker.stderr:
@@ -194,9 +176,6 @@ def main(argv: list[str] | None = None) -> int:
             parent_receipt_identity=args.parent_receipt_identity,
             execution_mode=mode,
             build_report=build_report,
-            repo_root=repo_root,
-            lesson_binding_data=lesson_binding_data,
-            lesson_before=lesson_before,
         )
         _atomic_write_yaml(report_target, report)
         emit_yaml(report)

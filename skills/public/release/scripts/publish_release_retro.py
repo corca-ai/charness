@@ -68,21 +68,18 @@ def _retro_trigger_markdown(
     lines = [
         f"# Retro: Release Auto-Retro Trigger {tag_name}",
         f"Date: {datetime.now(timezone.utc).date().isoformat()}",
-        # NOT `Mode: session`. This artifact only ever inspects the release delta's
-        # surface hits; it cannot see what the session did. Claiming the session mode
-        # made a bounded detector record read as a completed session retro (P5: a gate
-        # may force a question, it may not declare completion).
+        # This is release-delta evidence, not a session-emission receipt: it has no
+        # session id, frozen bundle, or lesson-disposition contract.
         "Mode: release-trigger",
         "",
         "## Context",
         "",
-        f"Release publish triggered a configured automatic session retro for `{tag_name}`.",
-        "The release helper persisted this bounded retro before committing the release artifacts so clean-tree post-publish state cannot erase the trigger evidence.",
+        f"Release publish triggered a configured automatic release-delta retro for `{tag_name}`.",
+        "The release helper persisted this bounded release-delta evidence before committing the release artifacts so clean-tree post-publish state cannot erase the trigger evidence.",
         "",
-        "**Scope: this artifact does not cover the session.** It is derived only from",
-        "the release delta's surface hits, so it records nothing about the session's own",
-        "waste, decisions, or counterfactuals. If the session did substantive work, a",
-        "session retro is still owed and this record is not a substitute for it.",
+        "**Scope: this artifact covers the release delta only.** It is derived from the",
+        "release delta's surface hits and makes no claim about session-level waste,",
+        "decisions, counterfactuals, or lesson dispositions.",
         "",
         "## Evidence Summary",
         "",
@@ -93,12 +90,12 @@ def _retro_trigger_markdown(
         "",
         "## Waste",
         "",
-        "- Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact.",
-        "- NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can.",
+        "- Without the release-helper persistence step, a successful publish can leave a clean tree and make the release trigger evidence disappear after the fact.",
+        "- NOT MEASURED HERE: work outside the release delta. This helper is not a session receipt or a lesson evaluator.",
         "",
         "## Critical Decisions",
         "",
-        "- The release helper treats a configured trigger hit as a bounded session-retro obligation and writes the artifact in the release commit instead of leaving a chat-only reminder.",
+        "- The release helper treats a configured trigger hit as bounded release-delta evidence and writes the artifact in the release commit instead of leaving a chat-only reminder.",
         "",
         "## Expert Counterfactuals",
         "",
@@ -106,12 +103,7 @@ def _retro_trigger_markdown(
         "",
         "## Next Improvements",
         "",
-        # This line is promoted verbatim by `refresh_recent_lessons.py` into the next
-        # session's `## Next-Time Checklist`, which is opening context. It previously
-        # read "no additional follow-up is needed for this trigger instance" -- so the
-        # next operator's first instruction was that nothing was owed, and a real
-        # session's waste went unrecorded behind it. It now forces the question.
-        "- workflow: the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing.",
+        "- workflow: the release-trigger artifact covers the release delta only. A broader retro is an explicit operator choice and is not represented by this artifact.",
         "",
         "## Sibling Search",
         "",
@@ -126,27 +118,7 @@ def _retro_trigger_markdown(
         "## North Star Alignment",
         "",
         "- P4 (an irreversible boundary is confirmed by a different observer AND channel) is the facet this release path is built around: the helper's own exit code is not the release verdict, and tag push, workflow completion and helper green are each explicitly non-terminal per `references/publication-boundary.md`.",
-        "- SCOPE, stated rather than implied: this is a RELEASE-DELTA retro written by a helper. It can see which surfaces the delta touched; it cannot see the session's reasoning, its rework, or which facets that session mis-applied. A north-star reading of the WORK belongs in the session retro this artifact's Next Improvements line asks for -- treating this section as that reading would be the failure signature it is meant to catch.",
-        "",
-        # SECOND section this template lost to a floor it never learned about; the
-        # comment above records the first. The lesson-evaluation floor activated for
-        # retros dated on or after 2026-08-14, this helper kept emitting an artifact
-        # without the section, and the release's own quality gate then refused the
-        # artifact the release had just written -- rolling the publish back.
-        #
-        # `missing-start` is not a placeholder here, it is the TRUE disposition: a
-        # helper-written release-delta artifact opens no lesson session, presents no
-        # lesson list, and can score nothing. Writing anything else would claim an
-        # evaluation nobody performed. The session retro this artifact's Next
-        # Improvements line asks for is where a real disposition belongs.
-        #
-        # `test_the_generated_artifact_passes_the_repo_s_own_retro_validator` is what
-        # makes a third loss impossible to ship silently: it runs the validator over
-        # this template's output instead of grepping for the sections someone
-        # remembered.
-        "## Lesson Evaluation",
-        "",
-        'Lesson evaluation: {"reason":"missing-start","score_event_count":0,"session_id":"none","status":"not-evaluated"}',
+        "- SCOPE, stated rather than implied: this is RELEASE-DELTA evidence written by a helper. It can see which surfaces the delta touched; it cannot see broader reasoning, rework, or lesson dispositions. Treating this bounded record as a complete work review would be the failure signature it is meant to avoid.",
         "",
         "## Persisted",
         "",

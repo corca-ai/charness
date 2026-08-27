@@ -3,7 +3,7 @@
 - Round: 11
 - Recorded date: 2026-08-26
 - Boundary window id: `compact-hook-critique-r11`
-- Boundary snapshot: `.charness/reviewer-round-compact-hook-r11/snapshot.json`
+- Boundary snapshot: `.charness/reviewer-round-compact-hook-r11/snapshot.json` <!-- reproduction-source -->
 - Boundary snapshot SHA-256: `fa67c756307109786b2f576f8ca2938228e76fb697ecbf69b7ab0032856fabc8`
 - Findings SHA-256: `de8def69d7f2a6e3ed199df102e2532946e7505904da0bab1664a17af9212265`
 

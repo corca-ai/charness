@@ -48,13 +48,12 @@ critique when the work crosses authority, durability, external-write, security,
 release, compatibility, deletion, migration, or proof-surface boundaries. A
 required review that is blocked remains blocked; it never becomes approval.
 
-### Explicit lesson evaluation
+### Lesson memory
 
-Lesson evaluation is an explicit retro operation, not session-start context.
-When the operator opts into it, run the declaration command emitted by the
-lesson-ledger command and record its returned `session_id` and frozen
-`bundle_path` in the active goal artifact. No hook or automatic context
-injection is required for ordinary work.
+The lesson ledger is optional durable memory and selection state. Ordinary goal
+execution and retros do not emit session receipts, bind session IDs or bundles,
+or require retro disposition continuity; those surfaces are outside the default
+and release contracts.
 
 ## Provider retry
 

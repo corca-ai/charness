@@ -894,7 +894,6 @@
       "source_paths": [
         "charness-artifacts/retro/lesson-ledger.json",
         "charness-artifacts/retro/contract-register.json",
-        "charness-artifacts/retro/lesson-session-receipts/*.json",
         "scripts/lesson_ledger_lib.py",
         "scripts/lesson_selection_preview_lib.py",
         "scripts/check_lesson_ledger.py",
@@ -938,7 +937,7 @@
       ],
       "notes": [
         "The ledger checker remains a broad quality gate because every score and seed reconstructs against the retro corpus.",
-        "Lesson-session receipts prove local command emission only; they do not prove conversation presentation or usefulness.",
+        "Lesson-session records are optional historical tooling; they are not part of default or release closeout.",
         "The contract-register checker remains explicit rather than always-on; schema v2 records reviewed membership transitions but does not authorize them from scores or retention evidence."
       ]
     },

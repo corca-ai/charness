@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-27",
-  "source_artifact_count": 573,
-  "candidate_count": 2282,
+  "source_artifact_count": 571,
+  "candidate_count": 2280,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -1722,74 +1722,6 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "Evidence identity was frozen after a reviewed ledger change, causing packet regeneration and an extra bookkeeping cycle. The repair preserved safety, but the dependency should have invalidated the packet immediately."
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:abc9426cb14c",
-      "kind": "current_focus",
-      "lesson": "This record disposes the historical lesson-session emission named by the [receipt](lesson-session-receipts/2026-08-26-01a03c37-b39b-7541-9dc2-95459b1d7479.json) and frozen [bundle](lesson-session-receipts/2026-08-26-01a03c37-b39b-7541-9dc2-95459b1d7479.md).",
-      "normalized_key": "this record disposes the historical lesson session emission named by the receipt lesson session",
-      "recurrence_class": null,
-      "source_count": 2,
-      "independent_source_count": 2,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-27-resume-session-disposition.md",
-      "latest_source_date": "2026-08-27",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.24,
-      "selection_weight": 1.24,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-27-01a03c37-session-disposition.md",
-          "date": "2026-08-27",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "This record disposes the historical lesson-session emission named by the [receipt](lesson-session-receipts/2026-08-26-01a03c37-b39b-7541-9dc2-95459b1d7479.json) and frozen [bundle](lesson-session-receipts/2026-08-26-01a03c37-b39b-7541-9dc2-95459b1d7479.md)."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-27-resume-session-disposition.md",
-          "date": "2026-08-27",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "This record disposes the historical lesson-session emission named by the [receipt](lesson-session-receipts/2026-08-26-resume.json) and frozen [bundle](lesson-session-receipts/2026-08-26-resume.md)."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:faf00407391b",
-      "kind": "next_improvement",
-      "lesson": "keep lesson emission, presentation, and effect as separate claims; this record does not add a new gate or session hook.",
-      "normalized_key": "keep lesson emission presentation and effect as separate claims this record does not add",
-      "recurrence_class": null,
-      "source_count": 2,
-      "independent_source_count": 2,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-27-resume-session-disposition.md",
-      "latest_source_date": "2026-08-27",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.24,
-      "selection_weight": 1.24,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-27-01a03c37-session-disposition.md",
-          "date": "2026-08-27",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "keep lesson emission, presentation, and effect as separate claims; this record does not add a new gate or session hook."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-27-resume-session-disposition.md",
-          "date": "2026-08-27",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "keep lesson emission, presentation, and effect as separate claims; this record does not add a new gate or session hook."
         }
       ]
     },

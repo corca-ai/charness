@@ -23,7 +23,6 @@ SCENARIOS = (
     Scenario("gather-adapter-bootstrap", "gather adapter helpers bootstrap the durable gather artifact path"),
     Scenario("setup-adapter-bootstrap", "setup adapter helpers bootstrap the durable normalization artifact path"),
     Scenario("setup-inspect-states", "setup state inspection distinguishes greenfield bootstrap from partial repo normalization"),
-    Scenario("setup-compact-skill-routing-discoverability", "setup compact routing provides a catalog-backed startup fallback without copying a long skill catalog"),
     Scenario("setup-operator-acceptance-synthesis", "setup can synthesize operator acceptance from functional checks and repo signals"),
     Scenario("support-sync-contracts", "shipped support-sync contracts stay discoverable without pretending every integration owns a support skill"),
     Scenario("representative-skill-contracts", "representative public skills retain their required contract markers"),

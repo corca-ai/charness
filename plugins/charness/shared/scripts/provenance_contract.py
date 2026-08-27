@@ -83,26 +83,6 @@ CONTRACTS: tuple[BoundaryContract, ...] = (
         ),
     ),
     BoundaryContract(
-        contract_id="lesson_finalization",
-        producer="worker outcome and parent lesson snapshot",
-        consumer="reviewer attempt finalizer",
-        required_fields=("parent_lesson_snapshot", "lane_write_fence"),
-        terminal_outcomes=("succeeded", "timed-out", "interrupted", "missing"),
-        refusal_code="lesson-write-fence-failed",
-        negative_fixture=(
-            "tests/quality_gates/test_reviewer_delivery_state_machine.py::"
-            "test_lesson_finalizer_fences_all_terminal_outcomes"
-        ),
-        consumer_path="skills/shared/scripts/reviewer_runner_support.py",
-        trigger_paths=(
-            "skills/shared/scripts/reviewer_runner_support.py",
-            "scripts/lesson_session_boundary.py",
-            "plugins/charness/shared/scripts/reviewer_runner_support.py",
-            "plugins/charness/scripts/lesson_session_boundary.py",
-            "tests/quality_gates/test_reviewer_delivery_state_machine.py",
-        ),
-    ),
-    BoundaryContract(
         contract_id="skill_manifest_selection",
         producer="candidate plugin manifest",
         consumer="skill capability resolver",
@@ -194,19 +174,6 @@ def require_bound_fields(contract_id: str, values: Mapping[str, object]) -> None
     if missing:
         raise BoundaryContractError(
             f"{contract.contract_id} missing required producer binding(s): {', '.join(missing)}"
-        )
-
-
-def require_terminal_fence(contract_id: str, *, outcome: str, fence_ran: bool) -> None:
-    """Require the lifecycle fence before classifying any terminal outcome."""
-    contract = contract_for(contract_id)
-    if outcome not in contract.terminal_outcomes:
-        raise BoundaryContractError(
-            f"{contract.contract_id} received unknown terminal outcome: {outcome!r}"
-        )
-    if not fence_ran:
-        raise BoundaryContractError(
-            f"{contract.contract_id} requires its fence before outcome {outcome!r}"
         )
 
 

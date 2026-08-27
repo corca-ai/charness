@@ -71,7 +71,7 @@ host/model behavior remains Valid but Defer and is recorded as a non-claim.
 - Application state: host ran the file-backed worker; no independent provider
   tier-application signal was exposed.
 - Delivery state: findings-received
-- Worker report: `.charness/reviewer-round-compact-hook-r11/recovery-adversarial-report.yaml`
+- Worker report: `.charness/reviewer-round-compact-hook-r11/recovery-adversarial-report.yaml` <!-- reproduction-source -->
 - Worker report identity: 7f1d4f8be7cc6a8c5c04075893d9f5079d9f5e5f85cc199050bcac70a6b068dc
 - Worker report approval: approval_eligible: false
 - Worker report delivery: findings-received

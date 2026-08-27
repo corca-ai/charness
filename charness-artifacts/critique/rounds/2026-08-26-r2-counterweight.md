@@ -3,7 +3,7 @@
 - Round: 2
 - Recorded date: 2026-08-26
 - Boundary window id: `r2-counterweight`
-- Boundary snapshot: `.charness/reviewer-boundary/r2-counterweight.json`
+- Boundary snapshot: `.charness/reviewer-boundary/r2-counterweight.json` <!-- reproduction-source -->
 - Boundary snapshot SHA-256: `b2eef5ad79c9c29de2ae9f63cee8d7a65ad952918eb72b7b4cdc3afa787a49d5`
 - Findings SHA-256: `b8b2e3dd6f053b5b2425d4e1a22f04dc43d154eaabf6ec73a7d6655877ed2317`
 

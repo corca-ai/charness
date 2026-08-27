@@ -78,7 +78,7 @@ the logical identity and retains body hashes only as evidence.
 - Application state: host ran the configured file-backed worker; no independent
   provider tier-application signal was exposed.
 - Delivery state: findings-received
-- Worker report: `.charness/critique/issue-726-r2-retry/report.yaml`
+- Worker report: `.charness/critique/issue-726-r2-retry/report.yaml` <!-- reproduction-source -->
 - Worker report identity: bcf7f2d6a9ff77136fd9842d23de90ac70dbc4c5c15e10e929838a0dae9a3522
 - Worker report approval: approval_eligible: false
 - Worker report delivery: findings-received

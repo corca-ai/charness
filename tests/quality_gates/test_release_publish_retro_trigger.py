@@ -118,7 +118,7 @@ def test_publish_release_retro_trigger_includes_helper_generated_release_paths(t
     artifact_path = repo / retro_payload["closeout"]["artifact_path"]
     assert artifact_path.is_file()
     artifact_text = artifact_path.read_text(encoding="utf-8")
-    assert "Release publish triggered a configured automatic session retro" in artifact_text
+    assert "Release publish triggered a configured automatic release-delta retro" in artifact_text
     assert f"Persisted: yes: {retro_payload['closeout']['artifact_path']}" in artifact_text
 
 
@@ -141,45 +141,27 @@ def _trigger_markdown() -> str:
     )
 
 
-def test_release_auto_retro_does_not_declare_the_session_retro_done() -> None:
-    """A bounded trigger closeout must force the session-retro question, not close it.
-
-    This artifact only ever inspects the release DELTA's surface hits. It never sees
-    what the session did — the rework, the decisions, the counterfactuals. But it was
-    written with `Mode: session` and a `## Next Improvements` line reading "no
-    additional follow-up is needed for this trigger instance", and
-    `refresh_recent_lessons.py` promotes that line verbatim into the next session's
-    `## Next-Time Checklist`. So the next operator opens a session, reads "no
-    additional follow-up is needed", and the session-level retro never happens.
-
-    That is a gate declaring completion, which P5 forbids: teeth may force a
-    question, never declare it answered. Observed for real — the session that added
-    this test found its own waste unrecorded until the operator asked, with this exact
-    line in `recent-lessons.md` at session open.
-    """
+def test_release_auto_retro_is_release_delta_evidence_only() -> None:
+    """A release-trigger artifact is not a session receipt or lesson evaluation."""
     text = _trigger_markdown()
 
-    # It must not claim to BE the session retro.
+    # The release helper must not emit the retired session-emission or disposition
+    # surfaces as a side effect of release publication.
     assert "Mode: session" not in text, "a release-delta closeout is not a session retro"
-    # It must not close the follow-up question.
-    assert "no additional follow-up is needed" not in text
-    # It must name what it cannot see, so the omission is visible rather than implied.
-    assert "does not cover" in text.lower()
-    for owed in ("waste", "decision"):
-        assert owed in text.lower()
+    assert "session_id" not in text
+    assert "lesson-session-receipts" not in text
+    assert "## Lesson Evaluation" not in text
     # The scope it DOES cover stays stated, so the artifact is still evidence.
     assert "checked-in-plugin-export" in text
+    assert "release delta" in text.lower()
 
 
 def test_the_generated_artifact_passes_the_repo_s_own_retro_validator(tmp_path: Path) -> None:
     """Run the VALIDATOR over the template's output, not a grep for remembered sections.
 
-    This template has now lost a required section twice — `## North Star Alignment`
-    once and `## Lesson Evaluation` once — and each time the failure landed the same
-    way: the release helper wrote an artifact, the release's own quality gate refused
-    it, and the publish rolled back. A test that greps for the sections someone
-    thought of cannot catch the third one, because the whole defect is a section
-    nobody thought of. Asking the owning validator can.
+    The release template has lost required sections before. A test that greps for
+    the sections someone thought of cannot catch the next one, because the defect
+    is a section nobody thought of. Asking the owning validator can.
     """
     import subprocess
     import sys

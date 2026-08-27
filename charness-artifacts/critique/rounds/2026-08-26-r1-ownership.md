@@ -3,7 +3,7 @@
 - Round: 1
 - Recorded date: 2026-08-26
 - Boundary window id: `r1-ownership`
-- Boundary snapshot: `.charness/reviewer-boundary/r1-ownership.json`
+- Boundary snapshot: `.charness/reviewer-boundary/r1-ownership.json` <!-- reproduction-source -->
 - Boundary snapshot SHA-256: `bd3cb2408abd3de51582cedb10c81df52b1af3a1d7e487c4a33ea78518610694`
 - Findings SHA-256: `0e241b76d42a54cfc250fc49e2092bacfba8adc628fba600e2713ec074bfc50e`
 

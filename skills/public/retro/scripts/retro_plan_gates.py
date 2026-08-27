@@ -68,7 +68,7 @@ def build_gate_packets(
                 f"adapter-metric-{index}",
                 "adapter-declared read-only metric; trust its structured counts and failures, not causal interpretation",
                 command=str(command),
-                run_when="after the retro disposition is written and persisted, before closeout",
+                run_when="after the retro artifact is written and persisted, before closeout",
             )
         )
     return packets

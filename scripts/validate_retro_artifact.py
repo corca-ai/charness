@@ -20,13 +20,10 @@ _enforcement_scope = import_repo_module(__file__, "scripts.critique_enforcement_
 # ideation validators.
 _sections = import_repo_module(__file__, "scripts.markdown_sections")
 _skill_markdown_lib = import_repo_module(__file__, "scripts.skill_markdown_lib")
-_lesson_evaluation = import_repo_module(__file__, "scripts.lesson_evaluation_continuity_lib")
-_lesson_records = import_repo_module(__file__, "scripts.lesson_evaluation_records_lib")
 # Where this repo keeps its retros, resolved from its own adapter rather than from a
 # literal written here. `retro_artifact_prefix` is used below; `DEFAULT_RETRO_ARTIFACT_PREFIX`
 # is re-exported for tests that assert the fallback identity. An earlier comment claimed
-# `plan_retro_run` and `seed_retro_memory` needed one import site for these -- they take
-# `date_activated_rules` and `lesson_ledger_bootstrap_command`, not either prefix name.
+# `plan_retro_run` and `seed_retro_memory` needed one import site for these.
 _output_dir = import_repo_module(__file__, "scripts.retro_output_dir_lib")
 DEFAULT_RETRO_ARTIFACT_PREFIX = _output_dir.DEFAULT_RETRO_ARTIFACT_PREFIX
 retro_artifact_prefix = _output_dir.retro_artifact_prefix
@@ -41,22 +38,15 @@ def _unspeakable_adapter_version(repo_root: Path) -> str | None:
     return _adapter_version_verdict.unspeakable_version_message(
         _output_dir.load_retro_adapter, repo_root, adapter_name="retro-adapter.yaml"
     )
-# Which dated floors are switched on for this repo, and how a run announces that.
-# Re-exported because `plan_retro_run` and `seed_retro_memory` load THIS module, and
-# because the enforcement below and the announcement there must read one owner: they
-# were split once and disagreed about whether a repo owed a disposition at all.
+# Which dated floors are switched on for this repo. Re-exported because
+# `plan_retro_run` loads this module.
 _floor_scope = import_repo_module(__file__, "scripts.retro_floor_scope_lib")
 NEXT_IMPROVEMENTS_HEADING = _floor_scope.NEXT_IMPROVEMENTS_HEADING
 RECURRENCE_LINEAGE_RULE_DATE = _floor_scope.RECURRENCE_LINEAGE_RULE_DATE
 PERSISTED_FORM_RULE_DATE = _floor_scope.PERSISTED_FORM_RULE_DATE
 NORTH_STAR_RULE_DATE = _floor_scope.NORTH_STAR_RULE_DATE
 NORTH_STAR_HEADING = _floor_scope.NORTH_STAR_HEADING
-LESSON_LEDGER_FILENAME = _floor_scope.LESSON_LEDGER_FILENAME
-LESSON_LEDGER_BOOTSTRAP_SCRIPT = _floor_scope.LESSON_LEDGER_BOOTSTRAP_SCRIPT
-lesson_evaluator_declared = _floor_scope.lesson_evaluator_declared
-lesson_ledger_bootstrap_command = _floor_scope.lesson_ledger_bootstrap_command
 date_activated_rules = _floor_scope.date_activated_rules
-report_enforcement_scope = _floor_scope.report_enforcement_scope
 ValidationError = _scripts_artifact_validator_module.ValidationError
 report_validation_failure = _scripts_artifact_validator_module.report_validation_failure
 git_changed_paths = _scripts_artifact_validator_module.git_changed_paths
@@ -72,7 +62,7 @@ _STRICT_SLUG = re.compile(r"(?i)[a-z0-9][a-z0-9-]*")
 file_is_prepare_packet_markdown_kind = _prepare_packet_markdown_kind.file_is_prepare_packet_markdown_kind
 
 # Shared single source of the disposition-form grammar (#329); imported same-root
-# so the session-retro `## Next Improvements` floor never forks achieve parsing.
+# so the retro `## Next Improvements` floor never forks achieve parsing.
 disposition_form = import_repo_module(__file__, "scripts.disposition_form")
 
 DISPOSITION_FORM_REFERENCE = "skills/public/achieve/references/goal-artifact.md (#329 disposition-form floor)"
@@ -96,7 +86,6 @@ SIBLING_BOUNDARY_HEADINGS = (
     "## Critical Decisions",
     "## Trends vs Last Retro",
     "## Expert Counterfactuals",
-    "## Lesson Evaluation",
     "## Next Improvements",
     "## Persisted",
 )
@@ -364,31 +353,11 @@ def validate_north_star_alignment(
             "Prose in the skill was not enough: two consecutive retros shipped without it."
         )
 
-
-
-def validate_lesson_evaluation_disposition(
-    path: Path, lines: list[str], observed_date: date | None, *, output_dir: Path | None = None
-) -> None:
-    """Require one strict disposition for the activated cohort of an opted-in repo."""
-    if observed_date is None or observed_date < _lesson_evaluation.ACTIVATION_DATE:
-        return
-    if not lesson_evaluator_declared(path, output_dir=output_dir):
-        return
-    try:
-        _lesson_evaluation.parse_disposition("\n".join(lines))
-    except ValueError as exc:
-        raise ValidationError(
-            f"{exc}. See skills/public/retro/references/lesson-evaluation.md."
-        ) from exc
-
-
-
 def validate_retro_artifact(
     path: Path,
     *,
     collect_all: bool = False,
     repo_root: Path | None = None,
-    output_dir: Path | None = None,
 ) -> None:
     """Validate one retro artifact.
 
@@ -419,9 +388,6 @@ def validate_retro_artifact(
         lambda: validate_north_star_alignment(
             lines, observed_date, repo_root if repo_root is not None else _repo_root_for(path)
         ),
-        lambda: validate_lesson_evaluation_disposition(
-            path, lines, observed_date, output_dir=output_dir
-        ),
     )
     # collect_all surfaces every violation in one pass (the CLI default) so a
     # multi-rule retro draft is fixed in one edit instead of one rule per gate
@@ -432,15 +398,13 @@ def validate_retro_artifact(
 def _validate_factory(run):
     """Bind the per-RUN adapter resolution once, not once per artifact.
 
-    Both reasons are recorded elsewhere in this subsystem: the debug sibling measured
-    a per-artifact adapter read at ~150 reloads on a full sweep, and this module's own
-    verdict/announcement split came from two halves resolving the directory
-    independently. One resolution per run makes both problems unrepresentable.
+    The debug sibling measured a per-artifact adapter read at ~150 reloads on a
+    full sweep. One resolution per run keeps the candidate scope stable without
+    adding another per-artifact lookup.
     """
     repo_root = run.repo_root
-    output_dir = repo_root / retro_artifact_prefix(repo_root).rstrip("/")
     return lambda artifact: validate_retro_artifact(
-        artifact, collect_all=run.collect_all, repo_root=repo_root, output_dir=output_dir
+        artifact, collect_all=run.collect_all, repo_root=repo_root
     )
 
 
@@ -450,7 +414,7 @@ def main() -> int:
     # run per problem.
     return run_changed_artifact_validator(
         default_repo_root=REPO_ROOT,
-        all_help="Validate every checked retro session artifact.",
+        all_help="Validate every checked retro artifact.",
         artifact_label="retro artifact",
         changed_paths_fn=changed_paths,
         candidate_paths_fn=candidate_paths,
@@ -462,7 +426,6 @@ def main() -> int:
         # validator owns is the one the repo being validated declares, not the one
         # this file was written in.
         owned_prefix=retro_artifact_prefix,
-        on_complete=report_enforcement_scope,
         preflight=_unspeakable_adapter_version,
     )
 

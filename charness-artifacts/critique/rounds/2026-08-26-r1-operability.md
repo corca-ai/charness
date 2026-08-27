@@ -3,7 +3,7 @@
 - Round: 1
 - Recorded date: 2026-08-26
 - Boundary window id: `r1-operability`
-- Boundary snapshot: `.charness/reviewer-boundary/r1-operability.json`
+- Boundary snapshot: `.charness/reviewer-boundary/r1-operability.json` <!-- reproduction-source -->
 - Boundary snapshot SHA-256: `87e1d5aff6d7ffce5c11975552fa7dcca1629f1add6c29f70045c334cb852b35`
 - Findings SHA-256: `8020828d3d73f6934369683391190488de10a31ba11ff823a13e8b90cde7b59f`
 

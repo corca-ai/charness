@@ -1,8 +1,8 @@
-"""The shipped achieve contract must produce the citation its retro reader consumes.
+"""The shipped achieve contract keeps lesson memory out of default closeout.
 
-This is deliberately a source-contract test. The lesson bundle is already written by
-``open_lesson_session.py``; this test prevents the work workflow from silently dropping
-the producer's ``session_id``/``bundle_path`` handoff again.
+The ledger remains available as durable memory and selection state, while
+session-emission receipts and retro disposition continuity are not part of the
+ordinary goal or release contract.
 """
 
 from __future__ import annotations
@@ -18,13 +18,11 @@ def _normalized(path: Path) -> str:
     return " ".join(path.read_text(encoding="utf-8").split())
 
 
-def test_achieve_records_the_frozen_lesson_bundle_for_retro_recovery() -> None:
+def test_achieve_does_not_require_session_receipts_for_default_closeout() -> None:
     during = _normalized(LIFECYCLE_DURING)
 
-    assert "### Lesson-session citation carrier" in during
-    assert "run that exact command before the affected work" in during
-    assert "`session_id` and frozen `bundle_path`" in during
-    assert "active goal artifact's `## Context Sources`" in during
-    assert "retro reads that exact bundle after context loss" in during
-    assert "never a newest-file guess or mutable lesson source" in during
-    assert "not a copy of the bundle contents" in during
+    assert "The lesson ledger is optional durable memory and selection state" in during
+    assert "do not emit session receipts" in during
+    assert "require retro disposition continuity" in during
+    assert "outside the default and release contracts" in during
+    assert "### Lesson-session citation carrier" not in during

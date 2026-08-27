@@ -10,8 +10,6 @@ review approval.
 from __future__ import annotations
 
 import argparse
-import importlib.util
-import sys
 import uuid
 from pathlib import Path
 from typing import Any
@@ -44,33 +42,6 @@ except ImportError:
     )
 
 DEFAULT_TIMEOUT_SECONDS = 900.0
-
-
-def _lesson_boundary_module() -> Any:
-    """Load the repo/plugin-owned boundary even when this file runs standalone."""
-    here = Path(__file__).resolve()
-    for ancestor in (here.parent, *here.parents):
-        candidate = ancestor / "scripts" / "lesson_session_boundary.py"
-        if candidate.is_file() and candidate != here:
-            spec = importlib.util.spec_from_file_location("charness_lesson_session_boundary", candidate)
-            if spec is not None and spec.loader is not None:
-                module = importlib.util.module_from_spec(spec)
-                previous_path = list(sys.path)
-                previous_module = sys.modules.get(module.__name__)
-                root = candidate.parent.parent
-                if str(root) not in sys.path:
-                    sys.path.insert(0, str(root))
-                sys.modules[module.__name__] = module
-                try:
-                    spec.loader.exec_module(module)
-                finally:
-                    sys.path[:] = previous_path
-                    if previous_module is None:
-                        sys.modules.pop(module.__name__, None)
-                    else:
-                        sys.modules[module.__name__] = previous_module
-                return module
-    raise ValueError("lesson session boundary helper is unavailable")
 
 
 def _failure_receipt(
@@ -156,44 +127,7 @@ def _parser() -> argparse.ArgumentParser:
         default="file-backed-worker",
     )
     parser.add_argument("--run-id", default=None)
-    parser.add_argument("--parent-lesson-bundle")
-    parser.add_argument("--lesson-session-id")
-    parser.add_argument("--lesson-lane-id")
-    parser.add_argument("--lesson-owner-id")
-    parser.add_argument("--lesson-lane-receipt")
-    parser.add_argument("--lesson-repo-root")
     return parser
-
-
-def _inherit_lesson_context(args: argparse.Namespace) -> dict[str, Any]:
-    values = (
-        args.parent_lesson_bundle,
-        args.lesson_lane_id,
-        args.lesson_owner_id,
-    )
-    if not any(value is not None for value in values):
-        return {}
-    if not all(value for value in values):
-        raise ValueError(
-            "worker lesson inheritance requires parent bundle, lane id, and owner id"
-        )
-    boundary = _lesson_boundary_module()
-    repo_root = Path(args.lesson_repo_root or args.workspace).resolve()
-    context, receipt = boundary.inherit_worker_session(
-        repo_root,
-        bundle_path=args.parent_lesson_bundle,
-        lane_id=args.lesson_lane_id,
-        owner_id=args.lesson_owner_id,
-        session_id=args.lesson_session_id,
-        lane_receipt_path_value=args.lesson_lane_receipt,
-    )
-    return {
-        "lesson_session_id": context.session_id,
-        "lesson_bundle_sha256": context.bundle_sha256,
-        "lesson_lane_id": args.lesson_lane_id,
-        "lesson_lane_receipt": str(receipt),
-        "lesson_writes_enabled": False,
-    }
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -201,9 +135,7 @@ def main(argv: list[str] | None = None) -> int:
     run_id = args.run_id or uuid.uuid4().hex
     started_at = now()
     receipt_path: Path | None = _safe_receipt_path(args)
-    lesson_fields: dict[str, Any] = {}
     try:
-        lesson_fields = _inherit_lesson_context(args)
         receipt = run(args, preflight(args), run_id, started_at)
     except WorkerError as exc:
         receipt = _failure_receipt(
@@ -242,7 +174,6 @@ def main(argv: list[str] | None = None) -> int:
             exit_code=None,
             error=f"unexpected worker error: {exc}",
         )
-    receipt.update(lesson_fields)
     if receipt_path is not None:
         try:
             atomic_write_json(receipt_path, receipt)

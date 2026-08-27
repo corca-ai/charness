@@ -25,9 +25,9 @@ _scaffold_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scri
 
 VALIDATOR_SCRIPT_NAMES = ("validate_retro_artifact.py", "validate-retro-artifact.py")
 
-# The scaffold emits every current structural field in a validating state. The
-# author replaces the honest missing-start lesson disposition only when a
-# declared session actually existed.
+# The scaffold emits the generic structural fields in a validating state. The
+# optional lesson ledger is selection memory, so scaffolding a retro does not
+# create or require a session receipt or lesson disposition.
 
 
 def default_title(title: str | None) -> str:
@@ -43,20 +43,12 @@ def _sections_without_owned_headings(artifact_sections: list[str], owned: frozen
     """Drop every adapter-declared block whose H2 the scaffold already emits.
 
     ``artifact_sections`` used to be appended verbatim, so an adapter declaring a
-    heading the scaffold also owns produced that section TWICE. This repo's own
-    ``.agents/retro-adapter.yaml`` declared ``## Lesson Evaluation`` -- the exact
-    heading the lesson-evaluation floor requires to appear EXACTLY once -- so the
-    scaffold emitted an artifact its own validator refused twice over (`expected
-    exactly one ... found 2`, then the duplicated `Lesson evaluation:` line).
-    That is the same "the prescribed path does not produce a valid artifact"
-    defect the seeded disposition block was added to fix -- shipped by that very
-    repair, because it appended without looking at what the adapter declared.
+    heading the scaffold also owns produced that section TWICE. Scaffold-owned
+    headings win because they are the sections the generic floors read; an adapter
+    that wants a different section names a different heading.
 
-    Scaffold-owned headings win because they are the ones the floors read and the
-    scaffold's block is the one seeded in a validating state; an adapter that
-    wants a different section names a different heading. Dropping is per BLOCK,
-    not per line, so the colliding section's body goes with its heading rather
-    than stranding orphan prose under the scaffold's own heading.
+    Dropping is per BLOCK, not per line, so the colliding section's body goes with
+    its heading rather than stranding orphan prose under the scaffold's own heading.
     """
     kept: list[str] = []
     dropping = False
@@ -142,10 +134,6 @@ def render_template(
     # Built before the adapter sections are placed, because the collision check
     # must see the headings the scaffold emits AFTER them too.
     trailer = [
-        "## Lesson Evaluation",
-        "",
-        'Lesson evaluation: {"reason":"missing-start","score_event_count":0,"session_id":"none","status":"not-evaluated"}',
-        "",
         "## Next Improvements",
         "",
         "- workflow: TODO",
@@ -177,34 +165,6 @@ def validator_command(repo_root: Path, write_artifact_path: str) -> str:
     )
 
 
-def _declared_session_id(repo_root: Path) -> str | None:
-    """The declared lesson session THIS retro is being written for, from the router.
-
-    The same routing helper the planner uses, so the scaffold cannot disagree with the plan
-    the author is following about which session is open. Degrades to `None` — unknown, not a
-    refusal — whenever the router cannot establish one, which is every repo with no lesson
-    evaluator configured.
-    """
-    try:
-        records = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.lesson_evaluation_records_lib")
-        sessions = records.lesson_session_routing(repo_root).get("sessions") or []
-    except Exception:
-        return None
-    session_id = sessions[0].get("session_id") if sessions and isinstance(sessions[0], dict) else None
-    return session_id if isinstance(session_id, str) else None
-
-
-def _session_suffix(session_id: str | None) -> str:
-    """A filename-safe distinguisher from the session id, with its leading date dropped.
-
-    The record is already dated, so `2026-08-15-session-retro-2026-08-15-s2.md` would carry
-    that date twice; the session's own tail is what distinguishes it from the sibling retro.
-    """
-    if session_id is None:
-        return "second"
-    return _slug(re.sub(r"^\d{4}-\d{2}-\d{2}-?", "", session_id)) or "second"
-
-
 def payload_for(repo_root: Path, *, title: str | None, subject: str | None = None) -> dict[str, object]:
     # GUARDED AT THE READ SITE. Every scaffold in this family reads its write TARGET out
     # of the adapter, so an unhonored declaration does not degrade the answer -- it
@@ -227,13 +187,6 @@ def payload_for(repo_root: Path, *, title: str | None, subject: str | None = Non
     date_text = dt.date.today().isoformat()
     resolved_title = default_title(title)
     slug = _slug(subject or resolved_title)
-    # The lesson session NAMES the sibling record; it no longer decides whether to write over
-    # one. It cannot: a repo with no evaluator reads `None` on both sides, and the scaffold's
-    # own seeded disposition says `"session_id":"none"`, so a session-keyed comparison called
-    # two different sessions' retros the same subject in exactly the state this repo ships.
-    # The decision is the records-only rule — never write a template over an existing record —
-    # and the session is what makes the second record's filename say which one it is.
-    suffix = _session_suffix(_declared_session_id(repo_root))
     return _scaffold_lib.subject_scoped_record_payload(
         repo_root,
         output_dir=output_dir,
@@ -248,7 +201,6 @@ def payload_for(repo_root: Path, *, title: str | None, subject: str | None = Non
         ),
         validator_command_for=lambda path: validator_command(repo_root, path),
         remedy="Rerun scaffold_retro_artifact.py with --title <specific retro title>.",
-        distinguishers=[suffix, f"{suffix}-2", f"{suffix}-3"],
     )
 
 

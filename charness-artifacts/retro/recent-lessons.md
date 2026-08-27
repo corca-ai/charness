@@ -3,7 +3,7 @@
 ## Current Focus
 
 - This compact record closes the receipted lesson session without backfilling a score. (source: `charness-artifacts/retro/2026-08-26-consumer-boundary-release-disposition.md`; sources: 4)
-- This record disposes the historical lesson-session emission named by the [receipt](lesson-session-receipts/2026-08-26-01a03c37-b39b-7541-9dc2-95459b1d7479.json) and frozen [bundle](lesson-session-receipts/2026-08-26-01a03c37-b39b-7541-9dc2-95459b1d7479.md). (source: `charness-artifacts/retro/2026-08-27-resume-session-disposition.md`; sources: 2)
+- Release publish triggered a configured automatic session retro for `v7.0.0`. (source: `charness-artifacts/retro/2026-08-27-v7-0-0-release-auto-retro.md`)
 
 ## Repeat Traps
 
@@ -17,7 +17,7 @@
 - keep the receipt and presentation boundary distinct so an emission cannot silently become an effect claim. (source: `charness-artifacts/retro/2026-08-26-consumer-boundary-release-disposition.md`; sources: 4)
 - preserve a durable before-work presentation marker before soliciting lesson scores; this is a disposition repair, not a reason to score retroactively. (source: `charness-artifacts/retro/2026-08-26-consumer-boundary-release-disposition.md`; sources: 4)
 - retain the non-claim that score count is not a health measure. (source: `charness-artifacts/retro/2026-08-26-consumer-boundary-release-disposition.md`; sources: 4)
-- **workflow — prefer a structural property over an enumerated refusal.** Slice A's first cut recognised ambiguity with an enumerated four-word negation list (`not|never|without|no`), and round 2 showed it disarmed the floor on genuinely deferring lines. The repair that worked is structural and positional — *decline only when EVERY flag mention on the line is negated* — which is the same shape the lesson names. I committed the enumerated form first. `applied: the current achieve contract records the structural property; no standalone cadence-owner file remains.` (source: `charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md`; sources: 3)
+- **workflow — prefer a structural property over an enumerated refusal.** Slice A's first cut recognised ambiguity with an enumerated four-word negation list (`not|never|without|no`), and round 2 showed it disarmed the floor on genuinely deferring lines. The repair that worked is structural and positional — *decline only when EVERY flag mention on the line is negated* — which is the same shape the lesson names. I committed the enumerated form first. `applied: the current achieve contract in skills/public/achieve/references/goal-artifact.md records the structural property; no standalone cadence-owner file remains.` (source: `charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md`; sources: 3)
 
 ## Selection Policy
 
@@ -51,5 +51,4 @@
 - `charness-artifacts/retro/2026-08-26-715-721-implementation-disposition.md`
 - `charness-artifacts/retro/2026-08-26-adversarial-review-disposition.md`
 - `charness-artifacts/retro/2026-08-26-consumer-boundary-release-disposition.md`
-- `charness-artifacts/retro/2026-08-27-01a03c37-session-disposition.md`
-- `charness-artifacts/retro/2026-08-27-resume-session-disposition.md`
+- `charness-artifacts/retro/2026-08-27-v7-0-0-release-auto-retro.md`
