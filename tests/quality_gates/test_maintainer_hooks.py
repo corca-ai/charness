@@ -14,6 +14,7 @@ from runtime_bootstrap import import_repo_module
 from .support import ROOT
 
 PRE_PUSH_HOOK_TEXT = (ROOT / ".githooks" / "pre-push").read_text(encoding="utf-8")
+PRE_COMMIT_HOOK_TEXT = (ROOT / ".githooks" / "pre-commit").read_text(encoding="utf-8")
 CLOSE_GUARD_INVOCATION = (
     'printf \'%s\\n\' "$push_stdin" | python3 scripts/prepush_close_keyword_guard.py \\\n'
     '  --repo-root "$REPO_ROOT" --remote "${1:-origin}"'
@@ -180,6 +181,12 @@ def test_pre_push_keeps_release_boundary_and_drops_mutation_arm(tmp_path: Path) 
     hook = tmp_path / "pre-push"
     hook.write_text(PRE_PUSH_HOOK_TEXT, encoding="utf-8")
     module.check_close_keyword_guard_arming(hook, ".githooks/pre-push")
+
+
+def test_pre_commit_keeps_the_irreversible_identity_guard() -> None:
+    assert 'python3 -B scripts/check_git_identity.py --repo-root "$REPO_ROOT"' in PRE_COMMIT_HOOK_TEXT
+    assert 'check_git_identity.py --repo-root "$REPO_ROOT" || true' not in PRE_COMMIT_HOOK_TEXT
+    assert "runtime-env.sh" not in PRE_COMMIT_HOOK_TEXT
 
 
 def _guard_hook(tmp_path: Path, invocation: str) -> Path:

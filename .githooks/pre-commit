@@ -16,3 +16,12 @@ if ! git diff --cached --check; then
   echo "charness pre-commit: staged whitespace errors" >&2
   exit 2
 fi
+
+# Commit identity is stamped here and becomes expensive to repair after push.
+# This existing checker caught the historical 62-commit `.invalid` incident;
+# keep it wired directly to the cheap commit boundary instead of hiding it in a
+# broad quality lane.
+# Preserve every identity override Git exposes to the hook. `-B` prevents this
+# small stdlib-only checker from leaving bytecode in the worktree without
+# clearing Git configuration variables first.
+python3 -B scripts/check_git_identity.py --repo-root "$REPO_ROOT"
