@@ -11,7 +11,9 @@ README, `AGENTS.md`, `CLAUDE.md` compatibility, the documentation index, probe
 surfaces, and evidence-triggered optional surfaces. Its compact root template
 tells agents to inspect the live host and fan out independent work through a
 host spawn/subagent API or `charness task run`: use the former for short interactive work and
-the latter for bounded Codex work with explicit isolation or scope. Detailed
+the latter for bounded Codex work with explicit isolation or scope. It also
+defaults bounded sidecars to the host's fast tier while preserving explicit
+repository or user model choices across compaction. Detailed
 orchestration stays in the owning workflow.
 It is not product
 definition,

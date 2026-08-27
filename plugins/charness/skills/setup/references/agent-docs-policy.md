@@ -10,9 +10,11 @@
 
 The generated greenfield file is intentionally small and points at the
 consumer-owned `<repo-root>/docs/index.md` (not vendored with this skill). It may carry one short
-parallel-routing cue for independent work, but does not inject session hooks,
-handoff state, detailed subagent delegation, host spawn settings, standing root
-policies, commit-discipline prose, artifact bookkeeping, or a skill catalog.
+parallel-routing cue for independent work, including the portable fast-tier
+default and continuity of an explicit repository/user model choice. It does not
+inject provider model ids, session hooks, handoff state, detailed subagent
+delegation, standing root policies, commit-discipline prose, artifact
+bookkeeping, or a skill catalog.
 Those are owned by the workflow or adapter that actually needs them.
 
 Use `normalize_host_docs.py --repo-root <repo>` for a plan and

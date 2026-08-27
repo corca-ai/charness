@@ -81,6 +81,9 @@ silently.
 7. Execute the selected child using the lightest matching implementation path.
    Inspect the live host tool surface first and fan out independent
    investigation, implementation, review, or question resolution immediately.
+   Honor the consuming repository's declared delegation tier across resume or
+   compaction; without one, use the host's fast tier for bounded independent
+   sidecars and reserve stronger tiers for critical-path or high-leverage work.
    Use the live host spawn/subagent API for short interactive or judgment-bound work, and
    use `charness task run` for bounded Codex work needing a named branch,
    explicit isolation in an isolated worktree, explicit path scope, external runtime, or durable result.
@@ -164,10 +167,6 @@ Keep adjacent engines available, but let Achieve own the active run's coordinati
 - The active Goal Run parent and cursor are the only resume state; do not create
   or refresh a second progress artifact. A provider sub-issue summary is only a
   live readback/reporting field, never another progress store.
-- `charness task run` is the repository-owned isolated carrier for one
-  independently delegable lane. It runs one lane; the parent orchestrator fans
-  out independent lanes and serializes integration. It is a normal companion
-  to host subagents, not a host-capability fallback.
 - `charness task claim/submit/review/abort/status` is a legacy envelope carrier
   for work that genuinely needs durable cross-context state or an external
   scheduler. It is not required for an ordinary one-shot lane, and its

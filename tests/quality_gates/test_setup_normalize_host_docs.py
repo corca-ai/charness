@@ -29,6 +29,9 @@ def test_setup_creates_a_minimal_agents_file_and_symlink(tmp_path: Path) -> None
     assert len(written_agents.splitlines()) <= 9
     assert "## Skill Routing" not in written_agents
     assert "## Commit Discipline" not in written_agents
+    assert "neither is a fallback" in written_agents
+    assert "host's fast tier" in written_agents
+    assert "keep that choice across compaction" in written_agents
     assert (repo / "CLAUDE.md").is_symlink()
     assert (repo / "CLAUDE.md").readlink() == Path("AGENTS.md")
 

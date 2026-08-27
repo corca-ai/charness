@@ -28,7 +28,10 @@ question; it is not a second operating manual.
   path scope, or a durable result. Neither channel is a fallback for the other,
   and neither may be declared absent from memory. The parent agent owns intent,
   design, integration, and final verification; keep work sequential only when
-  it is dependent or tiny.
+  it is dependent or tiny. For this repository, pass Codex Luna explicitly for
+  bounded independent sidecars; reserve the inherited or stronger model for
+  critical-path integration and high-leverage judgment. A reload or compaction
+  does not revoke an explicit user or repository model choice.
 - Keep `skills/public/` canonical; exports and generated surfaces are updated
   by their producer. Prefer deleting stale rules, wrappers, gates, mirrors,
   tests, and docs over adding another layer.

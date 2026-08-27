@@ -24,8 +24,7 @@ Host products label these differently. "Agent team", "dynamic workflow",
 the contract** — a host may expose only some of them, name them otherwise, or
 expose an equivalent this list does not anticipate. Resolve the concrete spelling
 through that host's adapter or preset. Hardcoding one host's vocabulary into a
-checked-in contract goes stale silently, exactly as a pinned model id would; that
-is the same failure this repo already recorded for subagent model defaults.
+portable skill contract goes stale silently.
 
 Inspect the live host tool surface before selecting a channel. Use a host
 spawn/subagent for short, interactive, or judgment-bound work, and use the
@@ -35,6 +34,22 @@ result carrier. Both are normal parallel lanes; neither is a fallback for the
 other, and neither may be declared absent from memory, a previous session, or a
 product name. If neither channel is available, keep only dependent/tiny work in
 the current context and report the reduced parallelism.
+
+## Cost-Aware Model Selection
+
+Needing a separate context does not by itself require the parent session's most
+expensive model. For bounded, independent, reversible investigation or routine
+implementation, use the host's fast model tier and pass that choice explicitly
+when the spawn or task surface exposes a model field. Reserve the inherited or
+stronger tier for critical-path integration, architecture, ambiguous repair, or
+the high-leverage review classes named by their owning skill.
+
+A repository or user may name the concrete host mapping. This repository maps
+its fast sidecar tier to Codex Luna in [AGENTS.md](../AGENTS.md); portable public
+skills keep the tier name and let the consuming host resolve it. An explicit
+choice remains active across compaction, reload, and routine goal pickup until
+the user or repository changes it. Omitting a model field means "inherit"; it
+does not satisfy an explicit fast-tier choice.
 
 ## Speculate While Blocked
 

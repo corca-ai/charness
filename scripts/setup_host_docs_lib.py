@@ -9,7 +9,7 @@ Start with [docs/index.md](./docs/index.md), then read only the owner page neede
 
 Keep this file short. Put durable procedures and repository-specific decisions in the docs they own.
 
-When work is independent, inspect the live host tools and use a spawn API first; use `charness task run` only for explicit isolation or no spawn channel; keep intent, integration, and final verification in the parent.
+When work is independent, inspect the live host tools and use a host spawn for short interactive work or `charness task run` for bounded isolated Codex work; neither is a fallback. Use the host's fast tier for bounded sidecars unless the repository or user chose otherwise, and keep that choice across compaction.
 
 Preserve authored changes, use the repository's documented commands, and update the owning docs when behavior changes.
 """
