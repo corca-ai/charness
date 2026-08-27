@@ -37,6 +37,7 @@ def _load_adapter_lib():
 
 
 _adapter_lib = _load_adapter_lib()
+normalize_adapter_result = _adapter_lib.normalize_adapter_result
 optional_bool = _adapter_lib.optional_bool
 optional_int = _adapter_lib.optional_int
 optional_string = _adapter_lib.optional_string
@@ -111,7 +112,7 @@ def validate_adapter_data(
 
 
 def load_adapter(repo_root: Path) -> dict[str, Any]:
-    return _adapter_lib.resolve_adapter_payload(
+    payload = _adapter_lib.resolve_adapter_payload(
         repo_root,
         candidates=ADAPTER_CANDIDATES,
         infer_defaults=_defaults,
@@ -120,6 +121,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
             "No achieve adapter found. Using default planning and interview policy."
         ],
     )
+    return normalize_adapter_result(payload, skill_id="achieve")
 
 
 def resolve_discussion_deploy_vocab(repo_root: Path) -> list[str]:
