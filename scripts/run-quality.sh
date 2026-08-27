@@ -919,7 +919,9 @@ PYTEST_FLAGS=(--repo-root "$REPO_ROOT" --mode "$RUN_QUALITY_MODE")
 # Both arms spell the label literally on purpose: the timing-completeness and
 # gate-verbosity inventories parse this file for queued gate labels and cannot
 # resolve a shell variable, so a computed label reads as an untimed gate.
-if [[ "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" == "1" ]]; then
+RUN_QUALITY_PYTEST_RELEASE=0
+if [[ "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" == "1" ]] || label_is_explicitly_selected "pytest-release"; then
+  RUN_QUALITY_PYTEST_RELEASE=1
   PYTEST_FLAGS+=(--include-release-only)
   queue_selected "pytest-release" env CHARNESS_STANDING_PYTEST_PYTHON=python3 python3 scripts/run_standing_pytest.py "${PYTEST_FLAGS[@]}"
 else
@@ -935,7 +937,7 @@ if ((${#PHASE_LABELS[@]} > 0)); then
   else
     pytest_rc=$?
     OVERALL_RC="$pytest_rc"
-    if [[ "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" == "1" ]]; then
+    if [[ "$RUN_QUALITY_PYTEST_RELEASE" == "1" ]]; then
       echo "run-quality: release pytest failed; stopping before later release checks." >&2
     else
       echo "run-quality: standing pytest failed; stopping before later quality checks." >&2

@@ -143,7 +143,7 @@ runtime_budget_intent:
     dead-code-advisory: "CHARNESS_QUALITY_DEAD_CODE=1 or CHARNESS_QUALITY_LABELS includes dead-code-advisory"
     validate-packaging-committed: "--release or CHARNESS_QUALITY_LABELS includes validate-packaging-committed"
     pytest: "--release is absent"
-    pytest-release: "--release is present"
+    pytest-release: "--release or CHARNESS_QUALITY_LABELS includes pytest-release"
     run-quality-full: "CHARNESS_QUALITY_MODE=full and --release is absent"
     run-quality-full-release: "CHARNESS_QUALITY_MODE=full and --release is present"
     run-quality-read-only: "CHARNESS_QUALITY_MODE=read-only and --release is absent"

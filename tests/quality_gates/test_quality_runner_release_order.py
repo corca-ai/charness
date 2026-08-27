@@ -92,3 +92,17 @@ def test_release_pytest_failure_stops_before_later_checks(
     assert result.returncode == 1, result.stderr
     assert event_log.read_text(encoding="utf-8").splitlines() == [_RELEASE_LABEL]
     assert "release pytest failed; stopping before later release checks." in result.stderr
+
+
+def test_explicit_release_pytest_label_runs_only_release_pytest(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
+    repo, env, event_log = _release_fixture(tmp_path, seeded_quality_runner_repo)
+    env["CHARNESS_QUALITY_LABELS"] = _RELEASE_LABEL
+
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
+
+    assert result.returncode == 0, result.stderr
+    assert event_log.read_text(encoding="utf-8").splitlines() == [_RELEASE_LABEL]
+    assert f"PASS {_RELEASE_LABEL}" in result.stdout
+    assert "PASS validate-skills" not in result.stdout
