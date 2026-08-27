@@ -131,7 +131,7 @@ def _declares_option(tree: ast.Module, option: str) -> bool:
     EQUALITY against the option string, never a prefix or a substring. The
     measurement that refuted the prepared notes turned on exactly this: the
     remaining `--json` spellings in this tree are pass-through arguments to
-    external CLIs (`gh`, `cautilus`, `npm`/`pnpm audit`), one `--json-path` in
+    external CLIs (`gh`, package-manager audit commands), one `--json-path` in
     `proof_receipt.py`, and one suppressed `--json-out`. A prefix test reports those as `--json` declarations and
     reproduces the false claim from the other direction — a derivation agreeing
     with prose that is wrong.

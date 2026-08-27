@@ -50,11 +50,6 @@ BYPASS_VALIDATOR = load_script_module(
     "validate_boundary_bypass_payload_batch6",
     ROOT / "skills/public/quality/scripts/validate_boundary_bypass_payload.py",
 )
-CHATBOT_COMPARE = load_script_module(
-    "eval_cautilus_chatbot_compare_batch6",
-    ROOT / "scripts" / "eval_cautilus_chatbot_compare.py",
-)
-
 QUALITY_RESOLVER_SCRIPT = ROOT / "skills/public/quality/scripts/resolve_quality_artifact.py"
 
 
@@ -269,34 +264,6 @@ def test_a_skill_script_without_the_repo_yaml_emitter_says_so(
 
     with pytest.raises(ImportError, match="scripts/yaml_output.py not found"):
         DISPOSITION_AUDIT._load_yaml_output()
-
-
-# --- eval_cautilus_chatbot_compare ---------------------------------------------
-
-
-def test_a_proposal_summary_that_is_not_a_yaml_mapping_is_an_eval_error(
-    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
-) -> None:
-    """The compare eval reads a repo-owned CLI's stdout as YAML, and both
-    non-YAML and non-mapping output are refused as `EvalError`.
-
-    `EvalError` is the type the eval's own entrypoint turns into an operator
-    message. A raw `yaml.YAMLError`, or an `AttributeError` from indexing a list
-    as a mapping, would surface as a traceback and name the wrong cause.
-    """
-
-    def _fake_run(argv, **kwargs):
-        return SimpleNamespace(returncode=0, stdout=stdout, stderr="")
-
-    monkeypatch.setattr(CHATBOT_COMPARE.subprocess, "run", _fake_run)
-
-    stdout = "summary: [unterminated\n"
-    with pytest.raises(CHATBOT_COMPARE.EvalError, match="did not emit valid YAML"):
-        CHATBOT_COMPARE._run_proposal_summary(tmp_path / "repo", tmp_path / "out")
-
-    stdout = "- one\n- two\n"
-    with pytest.raises(CHATBOT_COMPARE.EvalError, match="must be a YAML mapping"):
-        CHATBOT_COMPARE._run_proposal_summary(tmp_path / "repo", tmp_path / "out")
 
 
 # --- publish_release_narrative_gate --------------------------------------------

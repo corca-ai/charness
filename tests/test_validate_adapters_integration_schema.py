@@ -68,15 +68,6 @@ def test_repo_without_schema_inherits_nothing(tmp_path: Path) -> None:
     validate_adapter_integration_schema(adapter_path)
 
 
-def test_cautilus_adapters_subdir_excluded(tmp_path: Path) -> None:
-    nested = tmp_path / ".agents" / "cautilus-adapters"
-    nested.mkdir(parents=True)
-    nested_path = nested / "worktree-adapter.yaml"
-    nested_path.write_text("bogus: true\n", encoding="utf-8")
-    (tmp_path / "integrations" / "worktree").mkdir(parents=True)
-    assert integration_schema_path(nested_path) is None
-
-
 def test_tools_integration_is_not_a_sibling() -> None:
     assert (REPO_ROOT / "integrations" / "tools" / "manifest.schema.json").is_file()
     assert not (REPO_ROOT / ".agents" / "tools-adapter.yaml").exists()

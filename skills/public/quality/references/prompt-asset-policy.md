@@ -34,24 +34,11 @@ keeps the payload small enough for agent review.
 In `charness`, prompt-affecting repo changes should also leave visible
 behavioral proof:
 
-- follow the repo Cautilus adapter before choosing proof execution
-- if the adapter run mode is `disabled`, do not run Cautilus; record the
-  disabled validator result and use deterministic gates until re-enabled
-- let the repo adapter choose whether Cautilus runs in `auto`, `ask`,
-  `adaptive`, or `disabled` mode, but do not treat a prompt-affecting diff alone
-  as a live-evaluator trigger
-- generic review, closeout, or quality-gate wording is not a Cautilus execution
-  trigger; deterministic gates and checked proof-artifact validation come first
+- run the smallest deterministic checks that cover the changed prompt surface
 - for `preserve` claims backed by a real failing input, keep a regression-proof
-  record anchored by
-  `cautilus evaluate fixture --repo-root . --adapter-name <repo-owned-adapter>` or a
-  repo-owned dogfood wrapper when the adapter permits Cautilus execution
+  record anchored by that input and the resulting consumer or reviewer evidence
 - for high-leverage prompt changes, add a short scenario-review note and prefer
-  a log-backed fixture over pretending route-only preservation answered the
+  a real source packet over pretending a route-only check answered the
   behavioral question
-- in `adaptive` mode, do not stop just because scenario review is needed; stop
-  only if you are about to add, remove, or update maintained scenario-registry
-  coverage
 - for `improve` claims, additionally record a baseline compare path with
-  `cautilus evaluate comparison prepare` and
-  `cautilus evaluate observation --input <observed.json>`
+  the baseline input and the reviewer or consumer-owned evaluator result

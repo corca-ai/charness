@@ -73,7 +73,6 @@ fresh_checkout_probes:
 - ./charness --help >/dev/null
 - ./charness goal run --help >/dev/null
 - python3 scripts/doctor.py --repo-root . --skip-release-probe >/dev/null
-- python3 scripts/closeout_bundle.py --help >/dev/null
 requested_review_commands: []
 requested_review_policy: advisory-only
 review_unavailable_patterns:

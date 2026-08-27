@@ -16,7 +16,6 @@ from tests.test_lesson_ledger import (
     _ledger,
     _retro,
     _score_event,
-    _session_event,
     _validate,
 )
 
@@ -29,8 +28,7 @@ def test_archive_and_resurrection_preserve_scores_and_refuse_invalid_transition(
     decision.write_text("# Reviewed Decision\n", encoding="utf-8")
     path = _ledger(
         tmp_path,
-        session_events=[_session_event()],
-        score_events=[_score_event(session_id="session-a", score=2, anchor="evidence")],
+        score_events=[_score_event(score=2, anchor="evidence")],
     )
     command = subprocess.run(
         [

@@ -354,15 +354,6 @@ def exercise_lifecycle_scenarios() -> None:
     provenance = {"status": "detected", "install_method": "path", "package_name": None}
     install_ok = [{"command": "demo install", "exit_code": 0, "stdout": "", "stderr": ""}]
     install_failed = [{"command": "demo install", "exit_code": 1, "stdout": "", "stderr": "boom"}]
-    lifecycle.disabled_by_cautilus_adapter(Path("."), {"tool_id": "demo"})
-    with mock.patch.object(
-        lifecycle,
-        "load_cautilus_adapter",
-        return_value={"valid": True, "data": {"run_mode": "disabled", "disabled_reason": "paused"}, "path": ".agents/cautilus-adapter.yaml"},
-    ):
-        disabled = lifecycle.disabled_by_cautilus_adapter(Path("."), {"tool_id": "cautilus"})
-        if disabled is not None:
-            lifecycle.disabled_check_payload(disabled)
     with tempfile.TemporaryDirectory(prefix="charness-lifecycle-") as temp_dir:
         repo = Path(temp_dir)
         release = {"status": "ok", "latest_version": "1.0.0"}
@@ -411,8 +402,6 @@ def exercise_lifecycle_scenarios() -> None:
                         with mock.patch.object(update_tools, "upsert_lock"):
                             with mock.patch.object(update_tools, "run_shell", return_value=CommandResult("demo pm update", 0, "", "")):
                                 update_tools.update_one(repo, manual_manifest, execute=True)
-        with mock.patch.object(update_tools._scripts_control_plane_lifecycle_lib_module, "disabled_by_cautilus_adapter", return_value={"reason": "paused", "adapter_path": ".agents/cautilus-adapter.yaml"}):
-            update_tools.update_one(repo, manifest, execute=True)
         no_support = {"tool_id": "no-support"}
         sync_support.sync_one(repo, no_support, execute=False, upstream_checkouts={})
         with mock.patch.object(sync_support.support_sync, "parse_upstream_checkout", return_value=("example/demo", repo)):

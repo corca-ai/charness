@@ -142,14 +142,11 @@ def _trigger_markdown() -> str:
 
 
 def test_release_auto_retro_is_release_delta_evidence_only() -> None:
-    """A release-trigger artifact is not a session receipt or lesson evaluation."""
+    """A release-trigger artifact stays scoped to the release delta."""
     text = _trigger_markdown()
 
-    # The release helper must not emit the retired session-emission or disposition
-    # surfaces as a side effect of release publication.
-    assert "Mode: session" not in text, "a release-delta closeout is not a session retro"
+    assert "Mode: session" not in text
     assert "session_id" not in text
-    assert "lesson-session-receipts" not in text
     assert "## Lesson Evaluation" not in text
     # The scope it DOES cover stays stated, so the artifact is still evidence.
     assert "checked-in-plugin-export" in text

@@ -28,7 +28,6 @@ gates.
 - `references/bootstrap-posture.md` — quality adapter setup posture.
 - `references/brittle-source-guards.md` — brittle guard taxonomy and migration order.
 - `references/boundary-bypass-ratchet.md` — boundary-bypass ratchet policy.
-- `references/cautilus-on-demand.md` — evaluator run policy and wrapper requirement.
 - `references/behavior-testing.md` — agent/user behavior proof recommendations.
 - `references/ci-recoverable-gate-triage.md` — slow local gate move-off-local counterweight.
 - `references/cli-ergonomics-smells.md` — CLI ergonomics review questions.

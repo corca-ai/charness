@@ -64,7 +64,6 @@ def test_committed_lesson_budget_rewrite_is_refused(
         lambda *_args: (
             payload["transitions"],
             payload["score_events"],
-            payload["session_events"],
             49,
             payload["lifecycle_events"],
         ),

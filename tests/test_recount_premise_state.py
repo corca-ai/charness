@@ -203,7 +203,7 @@ def test_fenced_marker_is_skipped_and_reported_with_a_locator(tmp_path, residue_
 
 def test_json_and_jsonl_are_not_durable_records(tmp_path, residue_lib):
     """A captured transcript quoting a marker must not become a live disposition."""
-    path = tmp_path / "charness-artifacts" / "cautilus" / "session.jsonl"
+    path = tmp_path / "charness-artifacts" / "quality" / "session.jsonl"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text('{"text": "Premise-residue: #601 — reason"}\n', encoding="utf-8")
     scan = residue_lib.scan_residue(tmp_path, 601)

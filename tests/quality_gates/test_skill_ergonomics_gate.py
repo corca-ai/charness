@@ -478,7 +478,7 @@ def test_skill_ergonomics_gate_fails_when_rules_check_no_skills(tmp_path: Path) 
 def test_skill_ergonomics_gate_discovers_direct_skill_layout(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)
-    skill_dir = repo / "skills" / "cautilus"
+    skill_dir = repo / "skills" / "demo"
     skill_dir.mkdir(parents=True)
     (repo / ".agents" / "quality-adapter.yaml").write_text(
         "\n".join(
@@ -492,12 +492,12 @@ def test_skill_ergonomics_gate_discovers_direct_skill_layout(tmp_path: Path) -> 
         encoding="utf-8",
     )
     (skill_dir / "SKILL.md").write_text(
-        "---\nname: cautilus\n---\n\n# Cautilus\n\nA compact skill body.\n",
+        "---\nname: demo\n---\n\n# Demo\n\nA compact skill body.\n",
         encoding="utf-8",
     )
     payload = _evaluate(repo)
     assert _returncode(payload) == 0
-    assert payload["checked_skills"][0]["skill_path"] == "skills/cautilus/SKILL.md"
+    assert payload["checked_skills"][0]["skill_path"] == "skills/demo/SKILL.md"
     assert payload["discovery_errors"] == []
 
 

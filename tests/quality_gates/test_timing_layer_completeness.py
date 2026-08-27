@@ -88,7 +88,7 @@ def test_a_label_mentioned_only_in_another_rows_prose_is_not_classified() -> Non
     """Substring containment over the whole table region made a label classified AT
     BIRTH if its name appeared inside another row's prose.
 
-    `check-links`, `check-doc`, `validate-cautilus` and `validate-skill` all read as
+    `check-links`, `check-doc`, `validate-surface` and `validate-skill` all read as
     present that way, so `queue_selected "check-links"` would have been waved through
     and the shift-left recurrence class (#314/#319/#332/#366/#368) would pass silently.
     A `\\b` word boundary does not fix it either: `-` is a non-word character, so
@@ -99,7 +99,7 @@ def test_a_label_mentioned_only_in_another_rows_prose_is_not_classified() -> Non
     )
     classified = META.classified_labels(region)
 
-    for prose_only in ("check-links", "check-doc", "validate-cautilus", "validate-skill"):
+    for prose_only in ("check-links", "check-doc", "validate-surface", "validate-skill"):
         assert prose_only not in classified, prose_only
         assert prose_only in region, f"{prose_only} must still be a substring, or this test is vacuous"
 

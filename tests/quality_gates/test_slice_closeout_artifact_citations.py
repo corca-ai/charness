@@ -38,7 +38,6 @@ def test_slice_closeout_reports_only_changed_durable_artifacts(monkeypatch, tmp_
         monkeypatch.setattr(closeout, name, record_base(name))
     monkeypatch.setattr(closeout, "advise_repair_parity", record_base("parity"))
     monkeypatch.setattr(closeout, "_maybe_block_on_unmatched", lambda *args, **kwargs: None)
-    monkeypatch.setattr(closeout, "_maybe_block_on_cautilus", lambda *args, **kwargs: None)
     monkeypatch.setattr(closeout, "_maybe_block_on_risk_interrupt", lambda *args, **kwargs: None)
 
     payload = {"changed_paths": ["charness-artifacts/current.md", "scripts/change.py"]}
@@ -46,7 +45,6 @@ def test_slice_closeout_reports_only_changed_durable_artifacts(monkeypatch, tmp_
         plan_only=False,
         allow_unmatched=False,
         ack_skill_review=True,
-        ack_cautilus_skill_review=True,
     )
 
     assert (

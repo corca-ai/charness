@@ -16,8 +16,6 @@ REPO_ROOT = repo_root_from_script(__file__)
 _scripts_adapter_lib_module = import_repo_module(__file__, "scripts.adapter_lib")
 load_yaml_file = _scripts_adapter_lib_module.load_yaml_file
 validate_adapter_version = _scripts_adapter_lib_module.validate_adapter_version
-_scripts_cautilus_adapter_lib_module = import_repo_module(__file__, "scripts.cautilus_adapter_lib")
-load_cautilus_adapter = _scripts_cautilus_adapter_lib_module.load_cautilus_adapter
 _scripts_critique_adapter_lib_module = import_repo_module(__file__, "scripts.critique_adapter_lib")
 load_critique_adapter = _scripts_critique_adapter_lib_module.load_adapter
 def _load_retro_resolver_module():
@@ -138,7 +136,7 @@ def iter_resolvers(root: Path, *, require_git: bool = False) -> list[Path]:
 def iter_adapter_yaml(root: Path, *, require_git: bool = False) -> list[Path]:
     return iter_matching_repo_files(
         root,
-        (".agents/*-adapter.yaml", ".agents/cautilus-adapters/*.yaml"),
+        (".agents/*-adapter.yaml",),
         require_git=require_git,
     )
 
@@ -231,8 +229,7 @@ def integration_schema_path(path: Path) -> Path | None:
 
     `.agents/<name>-adapter.yaml` pairs with
     `integrations/<name>/manifest.schema.json` (for example, worktree).
-    `.agents/cautilus-adapters/*.yaml` is excluded by the
-    parent-dir guard; a repo without the schema file inherits nothing.
+    A repo without the schema file inherits nothing.
     """
     if path.parent.name != ".agents" or not path.name.endswith("-adapter.yaml"):
         return None
@@ -278,12 +275,8 @@ def validate_adapter_integration_schema(path: Path) -> None:
 def _require_declared_version(path: Path) -> None:
     """The commit-time version floor, hoisted ABOVE the per-adapter early returns.
 
-    Left below them, `cautilus-adapter.yaml` and `critique-adapter.yaml` returned before
-    ever reaching it, so the floor covered 14 of 16 `.agents/*-adapter.yaml` files while
-    reading as if it covered all of them. Their resolvers treat an absent version as
-    legal -- correctly, for a resolver -- so those two files had no required-version
-    verdict anywhere. Running first also means the version answer does not depend on
-    which resolver branch a filename happens to match.
+    Running first keeps the version answer independent of which resolver branch a
+    filename happens to match.
     """
     # No not-a-mapping branch: this repo's loader always returns a mapping (a top-level
     # list parses to `{}`), so the guard was unreachable and read as though a real hazard
@@ -298,11 +291,6 @@ def _require_declared_version(path: Path) -> None:
 
 def validate_adapter_yaml(path: Path) -> None:
     _require_declared_version(path)
-    if path.name == "cautilus-adapter.yaml" and path.parent.name == ".agents":
-        payload = load_cautilus_adapter(path.parent.parent.resolve())
-        if not payload["valid"]:
-            raise ValidationError(f"{path}: {'; '.join(payload['errors'])}")
-        return
     if path.name == "critique-adapter.yaml" and path.parent.name == ".agents":
         payload = load_critique_adapter(path.parent.parent.resolve())
         if not payload["valid"]:
@@ -324,8 +312,8 @@ def validate_adapter_yaml(path: Path) -> None:
     # returns. It was the 18th site and the one that disagreed hardest: the predicate it
     # used to carry accepted every value the resolvers refuse -- `version: 9` (a positive
     # integer) and `version: true` (`isinstance(True, int)` is True and `True < 1` is
-    # False). This gate is also the ONLY version verdict `.agents/cautilus-adapters/*.yaml
-    # ` gets, since those files have no per-skill resolver. A commit-time gate that passes
+    # False). This gate is also the ONLY version verdict an adapter without a
+    # per-skill resolver gets. A commit-time gate that passes
     # what every runtime reader refuses is a false green on the surface whose whole job is
     # to catch a bad adapter BEFORE it ships.
     repo = data.get("repo")

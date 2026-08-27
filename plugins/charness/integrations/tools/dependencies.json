@@ -2,7 +2,6 @@
   "schema_version": 1,
   "tool_dependencies": [
     "awiki",
-    "cautilus",
     "gitleaks",
     "nose",
     "ruff",

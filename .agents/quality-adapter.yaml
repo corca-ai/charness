@@ -134,7 +134,6 @@ runtime_budget_intent:
     - specdown
     - validate-adapters
     - validate-attention-state-visibility
-    - validate-cautilus-call-provenance
     - validate-inference-interpretation
     - validate-inventory-consumption-declaration
     - validate-packaging-committed
@@ -494,7 +493,6 @@ runtime_budget_profiles:
       run-evals: 4250
       # (contended) was 5000; post-change max 6269
       specdown: 9000
-      validate-cautilus-call-provenance: 500
       # (contended) was 6000; post-change max 10906
       # 2026-08-16: 15500 -> 32000, the THIRD bar in one session to trip for the same
       # reason. Recent median 18468ms over n=20 with min 5461 and max 22785 -- a 4.2x
@@ -604,7 +602,6 @@ runtime_budget_profiles:
       check-secrets: 107500
       run-evals: 13500
       specdown: 32000
-      validate-cautilus-call-provenance: 1000
       validate-inventory-consumption-declaration: 55000
       # Cost centers above 13s that sibling-parity scoping missed. Same 1.4x-of-max
       # derivation; `check-export-safe-imports` is the largest unbudgeted gate on this
@@ -718,7 +715,6 @@ runtime_budget_profiles:
       run-evals: 14000
       # 4-core floor 22500ms (was 13000, a false red)
       specdown: 32000
-      validate-cautilus-call-provenance: 1500
       # 4-core floor 39100ms (was 28000, a false red)
       validate-inventory-consumption-declaration: 55000
 startup_probes:
@@ -860,8 +856,6 @@ regenerable_facts:
       quotes the corpus size a contract clause was sized against.
     skills/public/create-cli/references/intent-first-grammar.md: >-
       pins the tool version a documented grammar was observed in.
-    skills/public/quality/references/cautilus-on-demand.md: >-
-      pins the cautilus version the eval-only contract was written against.
     skills/public/quality/references/mutation-testing.md: >-
       pins the mutation-tool version the documented flags belong to.
     skills/public/quality/references/unit-test-quality.md: >-

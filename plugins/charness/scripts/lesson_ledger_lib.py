@@ -1,8 +1,7 @@
-"""Validate append-only lesson seeds, sessions, scores, and lifecycle events."""
+"""Validate the append-only lesson ledger and its deterministic projections."""
 
 from __future__ import annotations
 
-import hashlib
 import json
 import subprocess
 from pathlib import Path
@@ -13,11 +12,14 @@ from scripts.recent_lessons_lib import build_lesson_selection_index
 
 LEDGER_FILENAME = "lesson-ledger.json"
 KIND = "charness.lesson-ledger"
-# 6 retires the signed `-3..3` scalar in favour of the typed outcome vocabulary
+# 7 removes session-emission snapshots and session-bound scoring. The ledger
+# remains durable lesson history; presentation is an advisory projection owned
+# by retro and is never a ledger event.
+# 6 retired the signed `-3..3` scalar in favour of the typed outcome vocabulary
 # in `lesson_score_outcome_lib`. Bumped rather than added additively because
 # `score_total` changed MEANING -- it is now a sum of per-encounter valences, so
 # a v5 consumer reading a v6 ledger would report a magnitude nobody recorded.
-SCHEMA_VERSION = 6
+SCHEMA_VERSION = 7
 ACTIVE_LESSON_BUDGET = 50
 TOP_LEVEL_KEYS = {
     "kind",
@@ -25,7 +27,6 @@ TOP_LEVEL_KEYS = {
     "transitions",
     "active_lesson_budget",
     "lifecycle_events",
-    "session_events",
     "score_events",
     "lessons",
 }
@@ -42,27 +43,6 @@ LIFECYCLE_EVENT_KEYS = {
 # `lesson_score_outcome_lib`: they are ONE concept (what an encounter record
 # means) that this module only replays, and keeping them here is what let the
 # seeding rule and the scoring rule share a line for as long as they did.
-SESSION_EVENT_KEYS = {"session_id", "snapshot", "snapshot_sha256"}
-# The one session id no real session may take (#633). `"none"` is the SENTINEL a
-# `missing-start` disposition writes to say "this repo opened no lesson session",
-# and it also fullmatches the ordinary session-id pattern. While both readings
-# were legal the sentinel was unfalsifiable in two directions at once: a
-# disposition could claim a completed evaluation against it and skip every
-# reconciler check, and a ledger session ACTUALLY named `none` was unclaimable,
-# because no retro could ever cite it without spelling the sentinel. Reserved at
-# the lowest layer that writes a session id so both spellings are refused where
-# they are minted, not where they are read. Lives here rather than in
-# `lesson_evaluation_continuity_lib` because that module imports this one.
-RESERVED_SESSION_ID = "none"
-SNAPSHOT_KEYS = {
-    "kind",
-    "schema_version",
-    "selection_policy_version",
-    "seed",
-    "eligible_count",
-    "bucket_counts",
-    "lesson_ids",
-}
 LESSON_KEYS = {
     "source_retro",
     "transition_id",
@@ -77,9 +57,6 @@ LESSON_KEYS = {
     "state",
     "last_lifecycle_event_id",
 }
-PREVIEW_KIND = "charness.lesson-selection-preview"
-PREVIEW_SCHEMA_VERSION = 1
-SNAPSHOT_BUCKET_KEYS = {"recent", "value", "uncertainty", "archive", "archive_fallback_uncertainty"}
 # The whole lifecycle state machine as data, so the refusal below can ENUMERATE
 # the legal moves instead of restating a rule the reader has to infer from a
 # rejection. Kept as the branch table itself rather than a parallel constant:
@@ -98,14 +75,6 @@ RECURRENCE_TAG_INSTRUCTION = (
 
 def lesson_ledger_path(output_dir: Path) -> Path:
     return output_dir / LEDGER_FILENAME
-
-
-def canonical_json(value: Any) -> str:
-    return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
-
-
-def snapshot_sha256(snapshot: dict[str, Any]) -> str:
-    return hashlib.sha256(canonical_json(snapshot).encode("utf-8")).hexdigest()
 
 
 def _fail(message: str) -> None:
@@ -133,7 +102,7 @@ def candidate_sources(
 
 def _committed_state(
     repo_root: Path, path: Path
-) -> tuple[list[Any], list[Any], list[Any], int, list[Any]] | None:
+) -> tuple[list[Any], list[Any], int, list[Any]] | None:
     result = subprocess.run(
         ["git", "show", f"HEAD:{path.relative_to(repo_root)}"],
         cwd=repo_root,
@@ -153,22 +122,8 @@ def _committed_state(
         or not isinstance(previous.get("transitions"), list)
     ):
         _fail("committed ledger has an unrecognized shape")
-    # MONOTONIC, not equal. Requiring equality made every schema bump
-    # unvalidatable at exactly the commit that performs it, and the only escapes
-    # were a temporary accept-the-previous-version branch (dead code the moment it
-    # lands) or rewriting committed events (the thing this check exists to
-    # refuse). Accepting an OLDER committed version is therefore right; accepting
-    # a NEWER one is not, and an earlier version of this change dropped both.
-    # A bounded reviewer traced the hole: with a v7 ledger committed and a v6 tool
-    # checked out, `record_lesson_score.py` rewrites the derived `lessons` block
-    # under v6 meaning and writes `schema_version: 6` over a committed 7, and
-    # every remaining check passes because the append-only lists are untouched and
-    # `lessons` is deliberately not prefix-protected.
+    # A newer committed schema must never be overwritten by an older writer.
     committed_version = previous.get("schema_version")
-    # Two conditions, two messages. Round 2 caught one message covering both, so a
-    # committed ledger with a MISSING version read as "newer than this tool's 6",
-    # which is the message-drift class this module lectures about at its
-    # `LIFECYCLE_TRANSITIONS` comment.
     if type(committed_version) is not int:
         _fail(
             f"committed ledger has a non-integer schema_version {committed_version!r}; it cannot be "
@@ -179,30 +134,22 @@ def _committed_state(
             f"committed ledger is at schema version {committed_version}, newer than this tool's "
             f"{SCHEMA_VERSION}; upgrade the tool rather than writing an older shape over it"
         )
-    # The same reviewer refuted the rationale an earlier draft gave here -- that an
-    # incompatible older shape "fails loudly one line down as a prefix mismatch".
-    # It does not: a ledger with empty append-only lists prefix-matches trivially.
-    # The property that actually holds is that the WORKING payload is validated in
-    # full at the current schema below, and each committed list must compare
-    # equal (as parsed JSON, not as bytes) to the working list's prefix, so an
-    # incompatible committed event is refused when the working copy is replayed.
+    if committed_version != SCHEMA_VERSION:
+        _fail(
+            f"committed ledger is at unsupported schema version {committed_version}; "
+            f"this writer only accepts v{SCHEMA_VERSION}"
+        )
     if (
         isinstance(previous.get("score_events"), list)
-        and isinstance(previous.get("session_events"), list)
         and isinstance(previous.get("lifecycle_events"), list)
         and type(previous.get("active_lesson_budget")) is int
     ):
         return (
             previous["transitions"],
             previous["score_events"],
-            previous["session_events"],
             previous["active_lesson_budget"],
             previous["lifecycle_events"],
         )
-    # Named for what it actually checks. Three of its four triggers are not
-    # session events, and with the version compare gone this is the only guard
-    # an older committed shape reaches, so the old wording sent an operator to
-    # look at the wrong thing.
     _fail("committed ledger is missing a required append-only list or its budget")
 
 
@@ -252,28 +199,9 @@ def _replay_transitions(
     return replayed
 
 
-# PUBLIC, and single-sourced, because it is ONE governance rule wearing two field
-# names: an append-only ledger that cites a human decision must cite an EXISTING
-# file, at a CANONICAL repo-relative posix path, that is Markdown. This module's
-# `decision_ref` (which lifecycle event authorized archiving a lesson) and
-# `contract_register_lib`'s `approval_ref` (which document approved a contract
-# graduation) are the same rule, and they were verbatim-identical copies until
-# 2026-08-14.
-#
-# Living here rather than in a new third module: `contract_register_lib` ALREADY
-# imports `validate_lesson_ledger` and `lesson_ledger_path` from this module, so
-# the import edge is pre-existing and no new failure surface is created -- if this
-# module fails to import, the register validator was already dead. A new
-# `scripts/` module would have added a mirrored export surface for nine lines.
-#
-# The obvious objection -- "now loosening one rule silently loosens two proof
-# surfaces" -- is answered by the tests, not by copying the code: BOTH
-# `tests/test_lesson_lifecycle_refusals.py` and `tests/test_contract_lifecycle_refusals.py`
-# pin this predicate through their own module, so a loosening still fails each
-# validator's own suite. Independent implementations would have bought
-# independence of the rule at the cost of the two surfaces silently disagreeing
-# about what a canonical reference is, which is the worse failure for governance
-# refs that operators cross-read.
+# An append-only lifecycle event that cites a human decision must cite an existing
+# canonical repo-relative Markdown file. The predicate is kept beside the ledger
+# replay that consumes it so lifecycle writes and validation share one rule.
 def canonical_markdown_ref(repo_root: Path, value: Any) -> bool:
     if not _nonblank(value):
         return False
@@ -332,85 +260,10 @@ def _replay_lifecycle(
         _fail(f"active lesson count {active_count} exceeds fixed budget {budget}")
 
 
-def _replay_sessions(events: list[Any], replayed: dict[str, dict[str, Any]]) -> dict[str, set[str]]:
-    sessions: dict[str, set[str]] = {}
-    for position, event in enumerate(events, start=1):
-        if not isinstance(event, dict) or set(event) != SESSION_EVENT_KEYS:
-            _fail(
-                f"session event {position} has unexpected or missing fields; a session event takes "
-                f"exactly keys {sorted(SESSION_EVENT_KEYS)}"
-            )
-        session_id, snapshot, digest = (
-            event.get("session_id"),
-            event.get("snapshot"),
-            event.get("snapshot_sha256"),
-        )
-        if not _nonblank(session_id) or not isinstance(snapshot, dict) or not _nonblank(digest):
-            _fail(f"session event {position} needs non-empty identity and snapshot")
-        if session_id == RESERVED_SESSION_ID:
-            _fail(
-                f"session event {position} takes the reserved session_id "
-                f"`{RESERVED_SESSION_ID}`, which only a `missing-start` disposition may spell; "
-                "a session recorded under it could never be claimed by a retro"
-            )
-        if session_id in sessions:
-            _fail(f"duplicate session_id `{session_id}`")
-        if set(snapshot) != SNAPSHOT_KEYS or not _nonblank(snapshot.get("seed")):
-            _fail(
-                f"session `{session_id}` has invalid snapshot shape; a snapshot takes exactly keys "
-                f"{sorted(SNAPSHOT_KEYS)} with a non-empty seed"
-            )
-        if (
-            snapshot.get("kind") != PREVIEW_KIND
-            or type(snapshot.get("schema_version")) is not int
-            or snapshot["schema_version"] != PREVIEW_SCHEMA_VERSION
-            or type(snapshot.get("selection_policy_version")) is not int
-            or snapshot["selection_policy_version"] < 1
-            or type(snapshot.get("eligible_count")) is not int
-            or snapshot["eligible_count"] < 0
-            or not isinstance(snapshot.get("bucket_counts"), dict)
-        ):
-            _fail(f"session `{session_id}` has invalid snapshot types")
-        bucket_counts = snapshot["bucket_counts"]
-        if set(bucket_counts) != SNAPSHOT_BUCKET_KEYS or any(
-            type(count) is not int or count < 0 for count in bucket_counts.values()
-        ):
-            _fail(
-                f"session `{session_id}` has invalid bucket_counts; bucket_counts takes exactly keys "
-                f"{sorted(SNAPSHOT_BUCKET_KEYS)}, each a nonnegative integer"
-            )
-        lesson_ids = snapshot.get("lesson_ids")
-        if (
-            not isinstance(lesson_ids, list)
-            or not lesson_ids
-            or not all(_nonblank(item) for item in lesson_ids)
-            or len(lesson_ids) != len(set(lesson_ids))
-        ):
-            _fail(
-                f"session `{session_id}` lesson_ids must be a non-empty ordered unique list; an empty "
-                f"list means the ledger has seeded no lesson yet, and {RECURRENCE_TAG_INSTRUCTION} "
-                "(the ledger file itself is created by the `init_lesson_ledger.py` helper beside "
-                "this module)"
-            )
-        if any(lesson_id not in replayed for lesson_id in lesson_ids):
-            _fail(f"session `{session_id}` names unseeded lesson")
-        if snapshot["eligible_count"] < len(lesson_ids) or sum(bucket_counts.values()) != len(
-            lesson_ids
-        ):
-            _fail(f"session `{session_id}` has inconsistent snapshot counts")
-        if len(digest) != 64 or any(character not in "0123456789abcdef" for character in digest):
-            _fail(f"session `{session_id}` snapshot_sha256 must be a lowercase SHA-256 digest")
-        if digest != snapshot_sha256(snapshot):
-            _fail(f"session `{session_id}` snapshot_sha256 does not match canonical snapshot")
-        sessions[session_id] = set(lesson_ids)
-    return sessions
-
-
 def _replay_scores(
     events: list[Any],
     replayed: dict[str, dict[str, Any]],
     available_sources: dict[str, set[str]],
-    sessions: dict[str, set[str]],
 ) -> None:
     ids: set[str] = set()
     sources: set[tuple[str, str]] = set()
@@ -431,21 +284,13 @@ def _replay_scores(
             _fail(
                 f"score event {position} needs non-empty non-whitespace event_id, source_retro, and lesson_id"
             )
-        session_id = event.get("session_id")
-        if not _nonblank(session_id) or session_id not in sessions:
-            _fail(f"score event `{event_id}` names unknown session")
-        if lesson_id not in sessions[session_id]:
-            _fail(f"score event `{event_id}` lesson is absent from session `{session_id}`")
         if event_id in ids or (source, lesson_id) in sources:
             _fail(f"duplicate score event_id or score source for `{lesson_id}`")
         if lesson_id not in replayed:
             _fail(f"score event `{event_id}` names an unseeded lesson")
-        # THE SPLIT (#627, #631): seeding cites evidence that the class EXISTS,
-        # scoring cites evidence that an ENCOUNTER happened. A legacy event is
-        # held to the rule it was written under; an outcome event names the retro
-        # recording the encounter, whose existence and session ownership the
-        # post-persistence reconciler proves (`canonical_retro_citation` says why
-        # existence cannot be checked here).
+        # Seeding cites evidence that the class exists. Current score events keep
+        # a stable repo-relative citation for the encounter; legacy events retain
+        # their original tagged-source rule.
         if outcome_lib.is_legacy_scalar(event):
             if source not in available_sources.get(lesson_id, set()):
                 _fail(f"score event `{event_id}` names an invalid legacy citation")
@@ -476,12 +321,11 @@ def replay_validated_ledger_payload(
             f"expected kind `{KIND}` at schema version {SCHEMA_VERSION} with exactly the top-level "
             f"keys {sorted(TOP_LEVEL_KEYS)}"
         )
-    transitions, events, sessions, lessons, lifecycle_events, budget = (
+    transitions, events, lessons, lifecycle_events, budget = (
         payload.get(key)
         for key in (
             "transitions",
             "score_events",
-            "session_events",
             "lessons",
             "lifecycle_events",
             "active_lesson_budget",
@@ -493,7 +337,6 @@ def replay_validated_ledger_payload(
             for value, expected in (
                 (transitions, list),
                 (events, list),
-                (sessions, list),
                 (lessons, dict),
                 (lifecycle_events, list),
             )
@@ -503,21 +346,18 @@ def replay_validated_ledger_payload(
     available = candidate_sources(repo_root, output_dir, summary_path)
     replayed = _replay_transitions(transitions, available)
     _replay_lifecycle(lifecycle_events, replayed, budget=budget, repo_root=repo_root)
-    declared = _replay_sessions(sessions, replayed)
     committed = _committed_state(repo_root, path)
     if committed is not None:
-        old_transitions, old_events, old_sessions, old_budget, old_lifecycle = committed
+        old_transitions, old_events, old_budget, old_lifecycle = committed
         if transitions[: len(old_transitions)] != old_transitions:
             _fail("committed transitions were rewritten or removed; append new transitions instead")
         if events[: len(old_events)] != old_events:
             _fail("committed score events were rewritten or removed; append new events instead")
-        if sessions[: len(old_sessions)] != old_sessions:
-            _fail("committed session events were rewritten or removed; append new events instead")
         if budget != old_budget:
             _fail("committed active_lesson_budget was rewritten")
         if lifecycle_events[: len(old_lifecycle)] != old_lifecycle:
             _fail("committed lifecycle events were rewritten or removed; append new events instead")
-    _replay_scores(events, replayed, available, declared)
+    _replay_scores(events, replayed, available)
     if any(
         not isinstance(entry, dict)
         or set(entry) != LESSON_KEYS

@@ -24,7 +24,7 @@ Use nearby repos and tools as comparison points, not as cargo-cult templates.
 - without a built-in self-update surface, consumer repos should avoid guessing
   how the operator originally installed it
 
-`cautilus`
+an internal CLI project
 
 - release-first distribution with one checked-in `install.sh`
 - installer is intentionally scoped to the product itself, not OS dependency
@@ -43,7 +43,7 @@ Design takeaway:
 - when the host package manager stays authoritative, agent-readable provenance
   should survive install and doctor flows so later updates can reuse that route
 
-`cautilus 0.15.4 cleanup`
+an internal CLI cleanup
 
 - public command grammar moved from implementation-shaped (`claim discover`,
   `eval test`, `scenario list`) to intent-first (`discover claims`,
@@ -62,10 +62,10 @@ Design takeaway:
 - name verbs from the user's journey and demote implementation nouns into the
   object slot under those verbs
 
-`cautilus workbench`
+an internal workbench
 
-- workflow surface split into `cautilus workbench prepare-request-batch` and
-  `cautilus workbench run-scenarios` instead of one thick command
+- workflow surface split into separate preparation and scenario commands instead
+  of one thick command
 - the prep command owns deterministic expansion, selection, and filtering of
   the batch; its output is a product-owned machine-readable artifact
 - the execute command stays narrow: it consumes an artifact, runs it, and

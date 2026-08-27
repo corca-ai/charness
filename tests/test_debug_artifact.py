@@ -67,7 +67,7 @@ def valid_current_artifact(*, next_step: str = "impl", handoff_artifact: str = "
                 "",
                 "## Hypothesis",
                 "",
-                "- falsifiable claim: the gate skips volatile roots | disconfirmer: add `.cautilus` to a fixture and assert it is excluded",
+                "- falsifiable claim: the gate skips volatile roots | disconfirmer: add `.runtime-cache` to a fixture and assert it is excluded",
                 "",
                 "## Verification",
                 "",
@@ -87,7 +87,7 @@ def valid_current_artifact(*, next_step: str = "impl", handoff_artifact: str = "
                 "",
                 "## Detection Gap",
                 "",
-                "- test suite | did not assert volatile root exclusion | add `.cautilus` to ignore set",
+                "- test suite | did not assert volatile root exclusion | add `.runtime-cache` to ignore set",
                 "",
                 "## Sibling Search",
                 "",
@@ -543,7 +543,7 @@ def test_validate_debug_artifact_trivial_short_circuit_satisfies_cross_file(tmp_
 
 HYPOTHESIS_LINE = (
     "- falsifiable claim: the gate skips volatile roots | "
-    "disconfirmer: add `.cautilus` to a fixture and assert it is excluded"
+    "disconfirmer: add `.runtime-cache` to a fixture and assert it is excluded"
 )
 
 
@@ -564,7 +564,7 @@ def test_validate_debug_artifact_rejects_latest_hypothesis_without_disconfirmer(
 
 def test_validate_debug_artifact_accepts_disconfirmer_na_escape(tmp_path: Path) -> None:
     # The justified escape `disconfirmer: n/a — <why>` PASSES (some bug classes have
-    # no cheap local repro); the OUTCOME assertion, not this marker, is the real bar.
+    # no cheap local repro); the marker records that bounded non-claim explicitly.
     artifact = valid_current_artifact().replace(
         HYPOTHESIS_LINE,
         "- falsifiable claim: the gate skips volatile roots | "

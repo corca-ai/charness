@@ -79,7 +79,7 @@ def classified_labels(region: str) -> set[str]:
 
     Substring containment over the whole region was the original test, and it made a
     label classified AT BIRTH if its name happened to appear in another row's prose:
-    `check-links`, `check-doc`, `validate-cautilus` and `validate-skill` all read as
+    `check-links`, `check-doc`, and `validate-skill` all read as
     present that way, so adding `queue_selected "check-links"` would have been waved
     through and the shift-left recurrence class (#314/#319/#332/#366/#368) would pass
     silently. A `\b` word boundary does not fix it either -- `-` is a non-word

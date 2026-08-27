@@ -21,8 +21,6 @@ from .support import ROOT
 
 OWNED_COMMAND_DOCS = (
     "AGENTS.md",
-    "evals/cautilus/skill-experiment/README.md",
-    "skills/public/quality/references/cautilus-on-demand.md",
     "skills/public/quality/references/ci-recoverable-gate-triage.md",
     "skills/public/quality/references/inventory-dispatch.md",
     "skills/public/release/references/index.md",
@@ -43,7 +41,6 @@ ALWAYS_STRUCTURED_COMMANDS = (
 )
 
 DETAIL_COMMANDS = (
-    ("scripts/plan_cautilus_proof.py", "--repo-root", "."),
     ("skills/public/quality/scripts/plan_quality_run.py", "--repo-root", "."),
     ("skills/public/quality/scripts/render_runtime_summary.py", "--repo-root", "."),
     (
@@ -96,8 +93,6 @@ JSON_FLAG_MUST_BE_UNRECOGNIZED = (
     ("scripts/check_public_doc_coupling.py", "--repo-root", "."),
     ("scripts/check_skill_ownership_overlap.py", "--repo-root", "."),
     ("scripts/dup_ratchet_edit_advisory.py", "--repo-root", ".", "--path", "README.md"),
-    ("scripts/eval_cautilus_chatbot_compare.py", "--repo-root", "."),
-    ("scripts/eval_cautilus_chatbot_proposals.py", "--repo-root", "."),
     ("scripts/init_lesson_ledger.py", "--repo-root", "."),
     ("scripts/inventory_skill_script_references.py", "--repo-root", ".", "--strict"),
     ("scripts/measure_inventory_consumption_floor.py", "--repo-root", "."),
@@ -416,12 +411,6 @@ JSON_STDOUT_EXEMPT = {
         "(JSON is valid YAML, so every consumer still parses it). Flagging the emitter "
         "for emitting its own documented fallback would make the gate refuse the thing "
         "it exists to enforce."
-    ),
-    "scripts/outcome_judge_cmd.py": (
-        "a judge wire protocol, not a report: its stdout is read with `json.loads` by "
-        "grade_skill_outcome.judge_via_command, and `--judge-cmd` is a pluggable "
-        "third-party contract. A YAML block mapping is not valid JSON, so converting "
-        "this breaks the grader and any external scorer implementing the same shape."
     ),
 }
 

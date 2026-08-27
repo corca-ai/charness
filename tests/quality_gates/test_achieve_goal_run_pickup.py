@@ -304,11 +304,23 @@ def test_pickup_reads_only_cursor_child_and_refuses_closed_cursor(
         "_read_goal_parent",
         lambda *_args: (graph, {"adapter_ok": True, "backend": {}}),
     )
+    lesson_calls: list[tuple[Path, str]] = []
+    monkeypatch.setattr(
+        pickup,
+        "read_goal_lessons",
+        lambda repo_root, goal_key: lesson_calls.append((repo_root, goal_key))
+        or {
+            "kind": "charness.goal-lesson-pickup/v1",
+            "status": "selected",
+            "items": [{"section": "repeat_trap", "lesson": "use the returned projection"}],
+        },
+    )
 
     if child_state == "CLOSED":
         with pytest.raises(pickup.PickupError) as exc_info:
             pickup.pickup(ROOT, "/goal #724")
         assert exc_info.value.code == "cursor-child-closed"
+        assert lesson_calls == []
         return
 
     result = pickup.pickup(ROOT, "/goal #724")
@@ -321,3 +333,5 @@ def test_pickup_reads_only_cursor_child_and_refuses_closed_cursor(
     assert result["selection"] == {"source": "parent-progress", "child_reads": 1}
     assert result["child_issue"]["body"] == "child body"
     assert result["selected_child"]["state"] == "OPEN"
+    assert result["lessons"]["items"][0]["lesson"] == "use the returned projection"
+    assert lesson_calls == [(ROOT, f"{REPO}#{PARENT_NUMBER}")]

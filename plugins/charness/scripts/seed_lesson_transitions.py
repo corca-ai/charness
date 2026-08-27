@@ -2,14 +2,11 @@
 """Append lesson-ledger seed transitions for tagged retro classes not yet seeded.
 
 WHY THIS EXISTS (#625). `init_lesson_ledger.py` creates a valid EMPTY ledger and
-deliberately seeds nothing. Every other lifecycle entry point reads seeded
-lessons: `record_lesson_session.py` refuses over an empty preview,
-`record_lesson_score.py` refuses an unseeded `lesson_id`, and
-`render_lesson_selection_preview.py` reports `0 eligible`. So between "the ledger
-file exists" and "the lifecycle runs" there was exactly one missing step, and no
-command performed it -- the verifier who found this had to HAND-EDIT the
-append-only ledger, which is the one thing a repo must never be asked to do
-(`_committed_state` diffs the committed prefix against `git show HEAD:<path>`).
+deliberately seeds nothing. The selection index therefore reports `0 eligible`
+until a tagged retro class is appended. Before this command existed, the only
+way to bridge those states was to HAND-EDIT the append-only ledger, which is the
+one thing a repo must never be asked to do (`_committed_state` diffs the
+committed prefix against `git show HEAD:<path>`).
 
 Without this, `init_lesson_ledger.py` converts a loud `FileNotFoundError` into a
 silent permanent `0 eligible lessons`, which is the worse honesty position.
@@ -51,7 +48,7 @@ ROOT = repo_root_from_script(__file__)
 _ledger = import_repo_module(__file__, "scripts.lesson_ledger_lib")
 _writer = import_repo_module(__file__, "scripts.lesson_ledger_writer_lib")
 _index = import_repo_module(__file__, "scripts.recent_lessons_lib")
-_records = import_repo_module(__file__, "scripts.lesson_evaluation_records_lib")
+_commands = import_repo_module(__file__, "scripts.lesson_command_citation")
 _outcome = import_repo_module(__file__, "scripts.lesson_score_outcome_lib")
 
 # Same prefix the 16 hand-authored transitions already use, so a reader cannot
@@ -181,7 +178,7 @@ def seed_transitions(
         # certainly bootstrapping.
         raise FileNotFoundError(
             f"missing lesson ledger `{path.relative_to(repo_root)}`; create it with "
-            f"`{_records.repo_or_installed_command(repo_root, 'init_lesson_ledger.py', '--repo-root', '.')}`"
+            f"`{_commands.repo_or_installed_command(repo_root, 'init_lesson_ledger.py', '--repo-root', '.')}`"
             " first"
         )
     with _writer.ledger_lock(path):

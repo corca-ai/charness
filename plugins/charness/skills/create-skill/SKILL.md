@@ -153,15 +153,16 @@ canonical adapter when the repo should own topology terms.
   not only documentation; prove at least one realistic consumer prompt for the
   changed skill before calling the slice done.
 - Do not rewrite an existing public-skill core until you have decided how the
-  current intent is frozen: reviewed dogfood, cautilus scenario coverage, or a
-  checked-in scenario review artifact.
+  current intent is frozen: a focused consumer check or a checked-in scenario
+  review artifact when the behavior claim warrants one.
 - Do not treat a package-valid public skill as customer-valid. For adapter,
   bootstrap, example, or first-touch doc changes, prove the changed skill from
   the customer repo's first prompt before trusting producer-side checks.
 - Do not treat an author's free-form smoke test as proof; the passing path must
   be reproducible from the installed or checked `SKILL.md` alone.
-- For `evaluator-required` skills, treat maintained scenario coverage and
-  `cautilus` proof planning as part of the edit contract.
+- For skills whose behavior cannot be proven deterministically, name the
+  consumer-owned scenario or bounded review that supplies the missing evidence;
+  do not add a provider-specific proof dependency to the package.
 - When adding a high-leverage reasoning or review pattern to one public skill,
   inspect adjacent public skills for obvious propagation opportunities before
   stopping.

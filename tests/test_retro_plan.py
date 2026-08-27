@@ -84,7 +84,6 @@ def test_retro_plan_shape_and_scaffold_when_missing(tmp_path: Path) -> None:
     assert payload["ok"] is True
     assert payload["artifact"]["status"] == "missing"
     assert payload["next_action"]["kind"] == "scaffold-retro-artifact"
-    assert "lesson_session" not in payload
     assert {
         rule["id"] for rule in payload["date_activated_rules"]["rules"]  # type: ignore[index]
     } == {"north-star-alignment", "recurrence-lineage", "persisted-form"}
@@ -113,7 +112,7 @@ def test_system_improving_work_briefs_the_engelbart_lens(tmp_path: Path) -> None
     repo = tmp_path / "repo"
     write_adapter(repo)
 
-    payload = run_plan(repo, changed_paths=["evals/cautilus/spec.json", "scripts/x.py"])
+    payload = run_plan(repo, changed_paths=["evals/fixture.json", "scripts/x.py"])
 
     assert payload["work_class"] == "system-improving"
     assert "Engelbart" in payload["lens_brief"]["fitting_lens"]  # type: ignore[index]

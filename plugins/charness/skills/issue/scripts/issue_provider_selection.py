@@ -43,8 +43,8 @@ def resolve_backend(
     """
     selected_adapter = adapter if adapter is not None else ADAPTER.load_adapter(repo_root)
     backend = dict(selected_adapter["data"].get("issue_backend") or ADAPTER.default_backend())
-    if target_repo is not None and selected_adapter["valid"]:
-        target = _normalise_target(target_repo)
+    target = _normalise_target(target_repo) if target_repo is not None else None
+    if target is not None and selected_adapter["valid"]:
         scoped = backend.get("repo_scoped")
         if isinstance(scoped, str) and scoped.strip() and scoped.strip().lower() != target.lower():
             raise RuntimeError(
@@ -54,4 +54,5 @@ def resolve_backend(
         "adapter": selected_adapter,
         "backend": backend,
         "adapter_ok": bool(selected_adapter["valid"]),
+        "target_repo": target,
     }

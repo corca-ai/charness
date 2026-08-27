@@ -347,7 +347,7 @@ def test_timing_pull_current_pointer_freshness_fires_for_pointer_surfaces() -> N
         "packaging/charness.json",
         "plugins/charness/.codex-plugin/plugin.json",
         "plugins/charness/.claude-plugin/plugin.json",
-        "integrations/tools/cautilus.json",
+        "integrations/tools/demo.json",
     ]
     for path in trigger_paths:
         labels = _labels([path])
@@ -1031,7 +1031,7 @@ def _minimal_surfaces(repo: Path) -> Path:
 def test_full_closeout_blocks_329_class_violation_at_structural_sweep(tmp_path: Path) -> None:
     # #332 high-confidence: the FULL closeout (not --predict-commit) blocks a
     # #329-class attention violation at the cheap structural sweep BEFORE reaching
-    # surface-match/cautilus/broad pytest. Red without the fix: with the sweep
+    # surface-match/broad pytest. Red without the fix: with the sweep
     # blocker removed the closeout would proceed to status=completed.
     repo = tmp_path / "repo"
     repo.mkdir()

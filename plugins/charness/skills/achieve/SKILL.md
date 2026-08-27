@@ -15,7 +15,9 @@ It is an operator, not a second execution engine.
 Read the current repository context and adapter before making a lifecycle
 decision. A routine `/goal #N` pickup does not bootstrap the full provider
 preflight; it reads the parent once, including the provider's cheap sub-issue
-summary when supported, and follows its current child cursor.
+summary when supported, and follows its current child cursor. That command
+also returns the bounded lesson projection; do not invoke the lesson reader a
+second time for the same `/goal` entry.
 
 ```bash
 git status --short --branch
@@ -26,6 +28,19 @@ python3 <issue-skill-dir>/scripts/goal_run_pickup.py --repo-root . --objective "
 `$SKILL_DIR` resolution for these bootstrap commands follows
 [Bootstrap Resolution](../../shared/references/bootstrap-resolution.md).
 
+For an artifact-only `/achieve @<goal-file>` start, once the goal file is
+known, read the same projection once with the achieve-owned helper:
+
+```bash
+python3 "$SKILL_DIR/scripts/goal_lesson_pickup.py" \
+  --repo-root . --goal-key "artifact:<relative-goal-file>"
+```
+
+This is the only automatic lesson pickup path for that entry. It is advisory
+context, so an unavailable projection does not stop shaping the goal. A new
+goal start or resume may read it once again; intermediate steps reuse the
+returned payload.
+
 Use `goal-run-preflight` only for establishment, graph repair, or an explicit
 diagnostic. Missing or invalid adapter/backend capability is a typed stop; do
 not guess a repository from the working-directory name or switch clients
@@ -33,8 +48,11 @@ silently.
 
 ## Lifecycle
 
-1. Research repository code, documentation, adapter, tracker state, and durable
-   lessons. Resolve facts before asking the operator.
+1. Research repository code, documentation, adapter, tracker state, and the
+   compact lesson projection through the entry's one pickup path: consume the
+   `lessons` field from `/goal` pickup, or invoke the helper once for an
+   artifact-only start. Resolve facts before asking the operator. Never scan
+   the ledger again during that goal entry.
 2. Create one complete local Goal Draft. It is mutable only before approval and
    remains the immutable planning record after approval. It is never a progress
    log, current-child pointer, percentage, or completion verdict.
@@ -58,14 +76,15 @@ silently.
    child is a typed sync stop. The parent cursor is advanced whenever a child
    transition is published.
 7. Execute the selected child using the lightest matching implementation path.
-   Inspect the live host tool surface first. Independent investigation,
-   implementation, review, or question resolution is fanned out immediately
-   through a real host spawn/subagent API when one is present; do not infer its
-   absence from memory or an earlier session. Use `charness task run` when a
-   lane needs an explicit isolated worktree or no host spawn channel is
-   actually exposed. The parent agent owns intent, dependency order,
-   integration, and final verification. Direct same-context execution is for
-   dependent or tiny work, or the case where neither channel is available.
+   Inspect the live host tool surface first and fan out independent
+   investigation, implementation, review, or question resolution immediately.
+   Use the live host spawn/subagent API for short interactive or judgment-bound work, and
+   use `charness task run` for bounded Codex work needing a named branch,
+   explicit isolation in an isolated worktree, explicit path scope, external runtime, or durable result.
+   Both are normal parallel channels; do not infer either one is absent from
+   memory or an earlier session. The parent agent owns intent, dependency
+   order, integration, and final verification. Direct same-context execution
+   is for dependent or tiny work, or a confirmed lack of both channels.
    Routine progress is provider child state and child-owned evidence; no local
    progress mirror is created and the frozen draft is not edited. Focused tests
    are the normal proof; stronger review or proof is conditional on the claim.
@@ -103,6 +122,16 @@ preflight and then repeat the parent read. The single provider parent read is
 the live backend check for this path; bootstrap, explicit sync/doctor, graph
 amendment, and closeout retain the stronger full preflight.
 
+The pickup result also carries one bounded lessons projection. It reads the
+retro-owned recent-lessons.md, falling back to the precomputed selection index
+only when that digest is unavailable. This is context, not a gate: missing,
+or malformed lesson memory is reported as non-blocking unavailable; freshness
+is deliberately not checked here. Do not rebuild the ledger, refresh the
+digest, record a shown set, or create a session receipt during pickup. Repeated
+reads within one goal entry are unnecessary; a new goal start or resume may
+read the projection once again.
+The small reader is owned by achieve at scripts/goal_lesson_pickup.py.
+
 ## Provider and evidence boundary
 
 Use the file-backed `issue_tool.py goal-run-*` commands for provider reads and
@@ -134,9 +163,9 @@ coordination and completion state:
   or refresh a second progress artifact. A provider sub-issue summary is only a
   live readback/reporting field, never another progress store.
 - `charness task run` is the repository-owned isolated carrier for one
-  independently delegable lane when explicit worktree isolation is useful or a
-  host spawn channel is unavailable. It runs one lane; the parent orchestrator
-  fans out independent lanes and serializes integration.
+  independently delegable lane. It runs one lane; the parent orchestrator fans
+  out independent lanes and serializes integration. It is a normal companion
+  to host subagents, not a host-capability fallback.
 - `charness task claim/submit/review/abort/status` is a legacy envelope carrier
   for work that genuinely needs durable cross-context state or an external
   scheduler. It is not required for an ordinary one-shot lane, and its

@@ -17,13 +17,11 @@ from pathlib import Path
 text = Path("docs/readme-proof.md").read_text(encoding="utf-8")
 required = [
     "# README Proof Ledger",
-    "cautilus discover claims",
-    "cautilus.claim_proof_plan.v1",
     "Claim Ledger",
     "README-INIT-ROUTE",
     "README-NORMAL-PROMPTS",
     "README-QUALITY",
-    "charness-artifacts/cautilus/latest.md",
+    "Review Rule",
 ]
 missing = [item for item in required if item not in text]
 assert not missing, missing
@@ -33,7 +31,7 @@ PY
 ## Proof Owners
 
 Ledger rows must name explicit proof owners instead of implying that generated
-docs or Cautilus discovery alone prove every claim.
+docs or an unscoped evaluator prove every claim.
 
 ```run:shell
 python3 - <<'PY'
@@ -42,7 +40,7 @@ from scripts.readme_proof_ledger_lib import LedgerEvidenceError, claim_ledger_ro
 
 source = Path("docs/readme-proof.md")
 text = source.read_text(encoding="utf-8")
-for owner in ("deterministic", "Cautilus", "HITL/operator", "deferred"):
+for owner in ("deterministic", "HITL/operator", "deferred"):
     assert owner in text, owner
 
 try:
@@ -59,14 +57,13 @@ for cells in rows:
         marker in proof_owner
         for marker in (
             "Deterministic",
-            "Cautilus",
             "HITL/operator",
             "Specdown",
             "delegated review",
             "human-auditable",
         )
     ), cells
-assert "proof plan, not a verdict" in text
+assert "not a second test runner" in text
 try:
     evidence_rows = validate_ledger_rows(text, source_path=source, repo_root=Path("."))
 except LedgerEvidenceError as exc:

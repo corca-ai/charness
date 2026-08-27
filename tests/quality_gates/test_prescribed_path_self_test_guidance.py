@@ -27,4 +27,4 @@ def test_prescribed_path_self_test_guidance_is_wired_to_authoring_and_impl() -> 
     assert "producer-composed smoke test" in reference
     assert "no-op result" in reference
     assert "author's free-form smoke test" in create_skill
-    assert "author-composed smoke probe" in impl
+    assert "For authoring a prescribed path" in impl

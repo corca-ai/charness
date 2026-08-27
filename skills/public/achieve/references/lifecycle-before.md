@@ -8,10 +8,14 @@ operator approves the exact briefing and bytes.
 
 ## Research
 
-Read repository code, current adapter, issue/provider state, relevant specs,
-recent lessons, and existing evidence before asking questions. Facts that the
-repository or provider can establish are not operator questions. Record source
-identities and unresolved assumptions in the draft.
+Read repository code, current adapter, issue/provider state, the compact lesson
+projection, relevant specs, and existing evidence before asking questions. For
+an artifact-only start, invoke `goal_lesson_pickup.py` once after the goal file
+is known; for `/goal #N`, consume the `lessons` field returned by
+`goal_run_pickup.py` instead. Facts that the repository or provider can
+establish are not operator questions. Consume lesson memory through the
+projection; do not rebuild or scan the full ledger merely to shape a goal.
+Record source identities and unresolved assumptions in the draft.
 
 ## Interview
 

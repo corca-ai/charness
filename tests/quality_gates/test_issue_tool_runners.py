@@ -437,7 +437,7 @@ def test_issue_plan_new_command_builds_new_plan(tmp_path: Path) -> None:
                 },
             }
         ),
-        resolve_backend=lambda _repo_root: {"adapter_ok": True},
+            resolve_backend=lambda _repo_root, **_kwargs: {"adapter_ok": True},
         emit=emitted.append,
     )
 

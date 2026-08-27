@@ -8,7 +8,7 @@ decisions that were previously carried in session state.
 
 ## Scope
 
-- Decision window: pre-`cautilus` integration closure
+- Decision window: pre-integration cleanup closure
 - Closed date: 2026-04-10
 - Owner: current `charness` maintainer session
 
@@ -62,14 +62,6 @@ the evidence is sufficient for the boundary at hand.
 - Why now: This is already how the checked-in plugin install surface and root marketplace files are generated and validated.
 - Impact surfaces: [`docs/host-packaging.md`](./host-packaging.md), [`scripts/sync_root_plugin_manifests.py`](../scripts/sync_root_plugin_manifests.py), [`scripts/validate_packaging.py`](../scripts/validate_packaging.py)
 - Reopen trigger: If host-specific metadata can no longer be represented as generated output from one shared manifest.
-
-### D2. Evaluator Engine ID
-
-- Question: Keep a legacy evaluator alias or standardize on one active product id?
-- Current choice: Standardize on `cautilus` as the active product id for extraction-facing work, with no legacy naming compatibility.
-- Why now: Current handoff and adapter flow already use `cautilus`, and keeping legacy naming would only preserve ambiguity.
-- Impact surfaces: [`.agents/cautilus-adapter.yaml`](../.agents/cautilus-adapter.yaml), future integration manifest naming
-- Reopen trigger: If upstream evaluator branding or repository identity changes.
 
 ### D3. Packaging Version Ownership
 
@@ -162,7 +154,7 @@ the evidence is sufficient for the boundary at hand.
 ### D14. Quality Dogfood Proposal Promotion
 
 - Question: Where should Session 10+ gate proposals be implemented?
-- Current choice: Implement only deterministic, repo-owned gates in `charness`; keep evaluator/HITL-heavy checks in `cautilus` or explicit HITL workflows.
+- Current choice: Implement only deterministic, repo-owned gates in `charness`; keep evaluator/HITL-heavy checks in an explicit consumer-owned workflow.
 - Why now: Keeps `charness` guarantees honest and runnable in isolation.
 - Impact surfaces: [`scripts/run-quality.sh`](../scripts/run-quality.sh), [`scripts/run_evals.py`](../scripts/run_evals.py), [`docs/public-skill-validation.md`](./public-skill-validation.md)
 - Reopen trigger: If current repo-owned gates prove insufficient for regression containment.
@@ -193,14 +185,10 @@ the evidence is sufficient for the boundary at hand.
 
 ## Open Deferrals (2026-05-07)
 
-### D18. Workspace-Write Workflow Proof Carrier
+### D18. Workspace-Write Workflow Proof Carrier — retired with the removed evaluator integration
 
-- Question: Where does the workspace-write half of the read-only versus workspace-write proof split land — a new public-skill dogfood case, an existing dogfood entry, or a separate eval fixture?
-- Current choice: Defer until the next dogfood slice picks the carrier; deterministic no-write inventory is now `charness catalog list --repo-root .` ([scripts/capability_catalog.py](../scripts/capability_catalog.py)).
-- Why now: Designing the workspace-write carrier needs a decision about whether it lives in [docs/public-skill-dogfood.json](./public-skill-dogfood.json) or in a new fixture under `evals/cautilus/`, and that decision is cleaner once the Cautilus adapter is re-enabled and the upstream eval runner is stable.
-- Impact surfaces: [docs/public-skill-dogfood.json](./public-skill-dogfood.json), [evals/cautilus/](../evals/cautilus/), [charness-artifacts/spec/readme-proof-cautilus-eval-migration.md](../charness-artifacts/spec/readme-proof-cautilus-eval-migration.md), [.agents/cautilus-adapter.yaml](../.agents/cautilus-adapter.yaml), [scripts/agent-runtime/run-local-eval-test.mjs](../scripts/agent-runtime/run-local-eval-test.mjs)
-- Reopen trigger: When the Cautilus adapter `run_mode` leaves `disabled` or when an unrelated workspace-write dogfood slice is started, whichever comes first; the next session that re-enables Cautilus must land both the workspace-write carrier and the routing-eval `--read-only` wiring before treating the read-only versus workspace-write split as closed.
-- Status (2026-07-05): reopen-trigger condition 1 has **FIRED** — the adapter is now `run_mode: ask` (eval-only re-enabled per corca-ai/cautilus#32), no longer `disabled`. The attached obligation (land the workspace-write carrier + the routing-eval `--read-only` wiring) was NOT completed at re-enablement and remains unlanded; disposition (land now vs. explicit re-defer) is pending operator decision. D18 stays open until dispositioned.
+- The original decision depended on a provider-specific evaluator carrier that is no longer part of Charness. The deterministic no-write inventory remains `charness catalog list --repo-root .`.
+- There is no current Charness-owned workspace-write evaluator obligation. Reopen this decision only if a new provider-neutral proof carrier is deliberately adopted.
 
 ### D19. Current-Pointer Write Scanner Generalization
 
@@ -290,22 +278,12 @@ the evidence is sufficient for the boundary at hand.
   consumer. Reopen it only if the active Goal Run path demonstrates a concrete
   missed or stale work-item transition.
 
-### D32. Capture observation metrics still trust the session tree (the #409 Gap-2 channel)
+### D32. Session-tree evaluator metrics — retired with the removed evaluator stack
 
-- Question: Should [`build-skill-execution-observation.mjs`](../scripts/agent-runtime/build-skill-execution-observation.mjs) stop deriving per-run METRICS (token/tool counts) from the session-tree `*.jsonl` glob, the same channel #409 Gap 2 proved can drop the final assistant block on a clean natural-completion exit?
-- Current choice: PARTIALLY RESOLVED, remainder deferred. The SHARP facet — the non-advisory `requiredSummaryFragments` floor-match, which reads the run CLOSEOUT — is now CLOSED: `build-skill-execution-observation.mjs` sources the summary from the authoritative `stream.jsonl` (`--stream`, else the sibling auto-detect) instead of the tree, so a dropped closeout block no longer produces a false RSF MISS on a passing run. What REMAINS deferred is only the ADVISORY efficiency METRICS (token/tool counts) that still glob the tree (`build-skill-execution-observation.mjs` `listSessionTreeJsonl`); a truncated tree under-counts them, but those metrics never gate and read the [min–max] range, so a single dropped block is low-impact.
-- Why now: The summary/floor-match reroute shipped as its own slice (the mjs `finalTextEvents` source + `run_one` `--stream` wiring + tests) because that path is gating-relevant. Rerouting the advisory METRICS onto `stream.jsonl` would need the metrics counters to read the stream shape too (a separate parser + self-test) and is not gating, so it stays deferred rather than widening this fix.
-- Impact surfaces: [scripts/agent-runtime/build-skill-execution-observation.mjs](../scripts/agent-runtime/build-skill-execution-observation.mjs) (metrics counters only — the summary path is done), [scripts/run_skill_efficiency_ab.py](../scripts/run_skill_efficiency_ab.py), the advisory `output_lines`/token/tool metrics.
-- Reopen trigger: A capture's ADVISORY metrics are observed to misread because the session tree dropped a block, or the metrics counters are touched for another reason. (The summary-path truncation this D was opened around is resolved.)
-
-### D33. Split run_skill_efficiency_ab.py at the next module-growing change
-
-- Question: [scripts/run_skill_efficiency_ab.py](../scripts/run_skill_efficiency_ab.py) sits at 479 tokei code lines (hard limit 480, **1 left** after the D32 summary-path fix added the `--stream` observe arg). Should it be split now or at the next change?
-- Current choice: Defer the split ONE more time — but the runway is gone. The file is still a single cohesive harness (aggregate/compare → live orchestration → self-test → CLI), an honest cohesive unit near its limit, not a grab-bag to split reactively; splitting mid-bugfix (twice now) would be the reactive churn the length advisory itself warns against. The **next** code-line addition exceeds the hard limit, so the following change MUST extract a module first (candidate seam: the live-capture orchestration `run_one`/`_capture_base`/`preserve_outputs` block into a `skill_capture.py` sibling), not append. RESOLVED 2026-07-09 by the #423 slice: the pure aggregation/report section was extracted to [scripts/skill_efficiency_report.py](../scripts/skill_efficiency_report.py) (384 code lines remain), a different seam than the self-test candidate named below — chosen because it was the cleanest pure boundary and test-compat re-exports kept the harness intact.
-- Why now: Splitting touches the custom `load_script_module` test harness and risks a circular import between the main module and an extracted self-test module (`selftest` imports `ranks_worse`/`_metrics_from_packet`; `main` imports `selftest`) — real risk that does not belong in a correctness bugfix.
-- Extraction candidate: the self-test section (`_event`/`_result`/`_ts`/`_write_lean`/`_write_wasteful`/`_dump`/`_SELFTEST_SPEC`/`SELFTEST_KEYS`/`_observe`/`selftest`, ~100 lines) into a sibling module, importing the shared pure helpers explicitly.
-- Impact surfaces: [scripts/run_skill_efficiency_ab.py](../scripts/run_skill_efficiency_ab.py), [tests/test_skill_efficiency_ab.py](../tests/test_skill_efficiency_ab.py), [scripts/check_python_lengths.py](../scripts/check_python_lengths.py) warn band.
-- Reopen trigger: The next change that adds net code lines to this file (it will hard-fail the 480 gate), or the self-test section is touched for another reason. Fired and satisfied on 2026-07-09: the #423 slice added net code lines and the 480 gate hard-failed, resolved by the extraction above.
+- The optional session-tree observation and efficiency tooling were removed from
+  Charness. There is no current Charness-owned decision or gate for those metrics.
+- Reopen only if a new local evaluator is deliberately adopted with a smaller,
+  explicit owner and a measured benefit over the existing focused checks.
 
 ### D34. Announcement delivery `confirmed` accepts a same-observer self-attestation
 
@@ -352,13 +330,11 @@ the evidence is sufficient for the boundary at hand.
   re-baseline that rode release v1.0.10 (commit `51dfc479`), so they no longer
   exist on disk (verified 2026-07-16).
 
-### D37. Post-capture identity-leak assertion in the scoring path
+### D37. Evaluator identity-leak assertion — retired with the removed evaluator stack
 
-- Question: should the scoring path ([`build-skill-execution-observation.mjs`](../scripts/agent-runtime/build-skill-execution-observation.mjs) / [`run_skill_efficiency_ab.py`](../scripts/run_skill_efficiency_ab.py) outcome grading) hard-assert that the captured transcript contains no eval-identity tokens (out-dir basename, grader filenames), rather than relying on the capture script's advisory stderr canary?
-- Current choice: DEFER. #423 closed the leak structurally (neutral mktemp run base; behavioral pytest executes the script and asserts the invariant from outside) and the in-script canary is advisory by floor-addition restraint (promote only on recorded recurrence). A scoring-path floor would need a token list contract and risks false-fires on legitimate repo content.
-- Why now: bundling a new blocking floor into the leak fix is the validator-post-hoc-churn reflex; the behavioral test covers the regression class the floor would target.
-- Impact surfaces: [capture-skill-run.sh](../scripts/agent-runtime/capture-skill-run.sh) (canary), [build-skill-execution-observation.mjs](../scripts/agent-runtime/build-skill-execution-observation.mjs), [run_skill_efficiency_ab.py](../scripts/run_skill_efficiency_ab.py), [test_skill_efficiency_ab.py](../tests/test_skill_efficiency_ab.py) (behavioral test).
-- Reopen trigger: a capture is observed reasoning from its eval identity DESPITE the neutral run base (canary fires or transcript shows it), or the scoring path is reworked for another reason.
+- The optional scoring and capture stack that owned this question is no longer
+  shipped. No Charness release or default workflow depends on this assertion.
+- Reopen only with a new evaluator surface and an explicit measured regression.
 
 ### D38. Promotion gate for decaying retro lessons
 
@@ -809,9 +785,9 @@ the evidence is sufficient for the boundary at hand.
   `<plugin-dir>/` textually; the placeholder remains agent-resolved**, and that
   original non-claim stands.
 
-After these closures, the next major workstream is `cautilus` integration and
-contract wiring, not further pre-`cautilus` product-boundary debate unless a
-reopen trigger fires.
+After these closures, the next major workstream is reducing the remaining
+consumer friction in the active command and documentation surfaces. Removed
+provider-specific integrations are not current execution authority.
 
 ### D51. Release branch/CI barrier and quality-gate runtime
 
@@ -834,23 +810,12 @@ reopen trigger fires.
 - Reopen trigger: the next release-helper change, or a measured quality-gate
   runtime regression that supplies a concrete optimization candidate.
 
-### D52. Aggregate closeout-bundle authoring diagnostics
+### D52. Aggregate closeout-bundle authoring diagnostics — retired with the removed bundle
 
-- Question: Should the opt-in closeout bundle aggregate all hand-authored
-  authoring-preflight violations during dry-run before any sync or execution?
-- Current choice: Defer as a scoped diagnostic capability; the current bundle
-  remains fail-closed and reports the first owner-gate refusal without changing
-  the authoring-preflight contract.
-- Why now: The first real execute reached pointer freshness and then refused on
-  pre-existing hand-authored critique path violations. An aggregate dry-run
-  report could reduce rework, but it is not required to preserve the current
-  safety boundary and would change diagnostic ownership.
-- Impact surfaces: [closeout_bundle_lib.py](../scripts/closeout_bundle_lib.py),
-  [final_bundle_preflight_lib.py](../scripts/final_bundle_preflight_lib.py),
-  the closeout execution contract, and closeout artifacts.
-- Reopen trigger: the next closeout-bundle diagnostic change, or a second
-  recorded execute refusal where first-error reporting materially obscures the
-  repair set.
+- The optional closeout bundle and final preflight were removed from the active
+  command surface because they duplicated owner gates and produced ceremony.
+- Reopen this decision only if a replacement diagnostic has a concrete owner,
+  measurable value, and removes more duplicate machinery than it adds.
 
 ### D53. Should adapter unknown-key reconciliation reach consumer repos, and how?
 
@@ -990,25 +955,3 @@ reopen trigger fires.
   skill, at which point force-applying this floor becomes satisfiable and the omission
   becomes real; or a released light-classification close that should have been reviewed
   and was not. Both are in-repo observable, unlike D53's.
-
-### D58. Should `missing-start` saturation fail the lesson-continuity gate?
-
-- Question: after this slice, `check_lesson_evaluation_continuity.py` can still report
-  `not-evaluated/missing-start=N; violations=0` on an opted-in repo — a GREEN verdict over
-  a loop nothing is using. That is the exact shape (`#622`) the slice set out to remove
-  everywhere else. Should 100% `missing-start` over the eligible cohort be a gate failure,
-  or an advisory, or neither?
-- Current choice: **Defer, but file it rather than leave it implied by the wiring.** The
-  wiring makes a non-`missing-start` disposition *reachable*; it does not establish what
-  rate is healthy, and a threshold picked without evidence would either fire on every repo
-  in its first week or never fire at all.
-- Why now: the wiring is exactly what makes the question answerable — before it, 100%
-  `missing-start` was the only possible state and failing on it would have been failing on
-  a capability that did not exist.
-- Non-claims: this is NOT a claim that the current green is correct. It is a green verdict
-  over an unused capability, stated as such.
-- Impact surfaces:
-  [check_lesson_evaluation_continuity.py](../scripts/check_lesson_evaluation_continuity.py),
-  [lesson_evaluation_continuity_lib.py](../scripts/lesson_evaluation_continuity_lib.py).
-- Reopen trigger: this repo accumulating a few weeks of dispositions under the wired loop,
-  so a rate is observable rather than guessed.

@@ -300,7 +300,6 @@ def test_select_verifiers_includes_public_skill_policy_for_public_skill_changes(
     assert "python3 scripts/validate_skills.py --repo-root ." in verify_commands
     assert "python3 scripts/validate_public_skill_validation.py --repo-root ." in verify_commands
     assert "python3 scripts/validate_public_skill_dogfood.py --repo-root ." in verify_commands
-    assert "python3 scripts/validate_cautilus_proof.py --repo-root ." in verify_commands
 
 
 def test_select_verifiers_includes_public_skill_policy_for_policy_json_changes() -> None:
@@ -315,58 +314,6 @@ def test_select_verifiers_includes_public_skill_policy_for_policy_json_changes()
     payload = yaml.safe_load(result.stdout)
     verify_commands = {item["command"] for item in payload["recommended_commands"] if item["phase"] == "verify"}
     assert "python3 scripts/validate_public_skill_validation.py --repo-root ." in verify_commands
-
-
-def test_select_verifiers_includes_adapter_and_prompt_proof_for_named_cautilus_adapter_changes() -> None:
-    result = run_script(
-        "scripts/select_verifiers.py",
-        "--repo-root",
-        str(ROOT),
-        "--paths",
-        ".agents/cautilus-adapters/chatbot-proposals.yaml",
-    )
-    assert result.returncode == 0, result.stderr
-    payload = yaml.safe_load(result.stdout)
-    verify_commands = {item["command"] for item in payload["recommended_commands"] if item["phase"] == "verify"}
-    assert "python3 scripts/validate_adapters.py --repo-root ." in verify_commands
-    assert "python3 scripts/validate_cautilus_proof.py --repo-root ." in verify_commands
-
-
-def test_select_verifiers_includes_chatbot_proposal_runner_for_packet_changes() -> None:
-    result = run_script(
-        "scripts/select_verifiers.py",
-        "--repo-root",
-        str(ROOT),
-        "--paths",
-        "evals/cautilus/chatbot-scenario-proposal-inputs.json",
-    )
-    assert result.returncode == 0, result.stderr
-    payload = yaml.safe_load(result.stdout)
-    verify_commands = {item["command"] for item in payload["recommended_commands"] if item["phase"] == "verify"}
-    assert "python3 scripts/validate_cautilus_proof.py --repo-root ." in verify_commands
-    # Cautilus is eval-only and ask-before-run: the proposal RUNNER must never be
-    # selected as an automatic verify obligation. Matched on the script name rather
-    # than one exact argv (the sibling compare-runner test below does the same), so
-    # the guard survives a flag change — it was previously pinned to the retired
-    # `--json` argv and would have gone silently vacuous when that flag was removed.
-    assert not any(
-        "eval_cautilus_chatbot_proposals.py" in command for command in verify_commands
-    )
-
-
-def test_select_verifiers_includes_chatbot_benchmark_smoke_for_compare_runner_changes() -> None:
-    result = run_script(
-        "scripts/select_verifiers.py",
-        "--repo-root",
-        str(ROOT),
-        "--paths",
-        "scripts/eval_cautilus_chatbot_compare.py",
-    )
-    assert result.returncode == 0, result.stderr
-    payload = yaml.safe_load(result.stdout)
-    verify_commands = {item["command"] for item in payload["recommended_commands"] if item["phase"] == "verify"}
-    assert "python3 scripts/validate_cautilus_proof.py --repo-root ." in verify_commands
-    assert not any("eval_cautilus_chatbot_compare.py" in command for command in verify_commands)
 
 
 def test_select_verifiers_includes_public_skill_dogfood_for_registry_changes() -> None:

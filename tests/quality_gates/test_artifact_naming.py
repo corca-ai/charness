@@ -131,12 +131,12 @@ def test_inventory_current_pointer_layouts_reports_adapter_and_disk_shapes(tmp_p
     target = quality_dir / "2026-06-16-current-quality.md"
     target.write_text("# Quality\n", encoding="utf-8")
     (quality_dir / "latest.md").symlink_to(target.name)
-    cautilus_dir = repo / "charness-artifacts" / "cautilus"
-    cautilus_dir.mkdir(parents=True)
-    (cautilus_dir / "latest.md").write_text("# Cautilus\n", encoding="utf-8")
+    demo_dir = repo / "charness-artifacts" / "demo"
+    demo_dir.mkdir(parents=True)
+    (demo_dir / "latest.md").write_text("# Demo\n", encoding="utf-8")
     items = INVENTORY.inventory(
         repo,
-        selected=["quality", "issue", "create-cli", "cautilus"],
+        selected=["quality", "issue", "create-cli", "demo"],
         day=date(2026, 6, 16),
     )
 
@@ -150,10 +150,10 @@ def test_inventory_current_pointer_layouts_reports_adapter_and_disk_shapes(tmp_p
     assert by_skill["issue"].on_disk_layout == "adapter_unmanaged"
     assert by_skill["create-cli"].status == "adapter_unmanaged"
     assert by_skill["create-cli"].on_disk_layout == "adapter_unmanaged"
-    assert by_skill["cautilus"].status == "adapter_unmanaged"
-    assert by_skill["cautilus"].discovery_source == "artifact_family"
-    assert by_skill["cautilus"].artifact_path == "charness-artifacts/cautilus/latest.md"
-    assert by_skill["cautilus"].on_disk_layout == "regular_current_pointer"
+    assert by_skill["demo"].status == "adapter_unmanaged"
+    assert by_skill["demo"].discovery_source == "artifact_family"
+    assert by_skill["demo"].artifact_path == "charness-artifacts/demo/latest.md"
+    assert by_skill["demo"].on_disk_layout == "regular_current_pointer"
 
 
 def test_inventory_current_pointer_layouts_default_discovery_and_path_helpers(tmp_path: Path) -> None:
@@ -162,13 +162,13 @@ def test_inventory_current_pointer_layouts_default_discovery_and_path_helpers(tm
     artifact_dir = repo / "charness-artifacts" / "quality"
     artifact_dir.mkdir(parents=True)
     (artifact_dir / "latest.md").write_text("# Quality\n", encoding="utf-8")
-    (repo / "charness-artifacts" / "cautilus").mkdir(parents=True)
-    (repo / "charness-artifacts" / "cautilus" / "latest.md").write_text("# Cautilus\n", encoding="utf-8")
+    (repo / "charness-artifacts" / "demo").mkdir(parents=True)
+    (repo / "charness-artifacts" / "demo" / "latest.md").write_text("# Demo\n", encoding="utf-8")
 
-    assert INVENTORY._skill_ids(repo, None) == ["cautilus", "quality"]
+    assert INVENTORY._skill_ids(repo, None) == ["demo", "quality"]
     assert INVENTORY._skill_ids(repo, ["zeta", "alpha", "alpha"]) == ["alpha", "zeta"]
     assert INVENTORY._discovery_source(repo, "quality") == "public_skill+artifact_family"
-    assert INVENTORY._discovery_source(repo, "cautilus") == "artifact_family"
+    assert INVENTORY._discovery_source(repo, "demo") == "artifact_family"
     assert INVENTORY._discovery_source(repo, "selected-only") == "selected"
     assert INVENTORY._path_layout(repo, None) == "adapter_unmanaged"
     assert INVENTORY._path_layout(repo, "charness-artifacts/quality/missing.md") == "missing_current_pointer"
@@ -519,7 +519,7 @@ def test_quality_adapter_invalid_artifact_class_returns_invalid_payload(tmp_path
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
     assert payload["valid"] is False
-    assert payload["data"]["artifact_class"] == "rolling"
+    assert payload["data"]["artifact_class"] == "history"
     assert "artifact_class must be one of: current, history, rolling" in payload["errors"]
 
 

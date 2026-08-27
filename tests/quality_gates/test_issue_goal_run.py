@@ -62,7 +62,7 @@ def test_goal_run_plan_preflight_is_file_bound_and_typed(tmp_path: Path) -> None
 
     rc = module["command_preflight"](
         Namespace(repo=REPO, number=724, plan_file=plan, repo_root=tmp_path),
-        resolve_backend=lambda _root: {"adapter_ok": True, "backend": {"id": "gh"}},
+            resolve_backend=lambda _root, **_kwargs: {"adapter_ok": True, "backend": {"id": "gh"}},
         emit=emitted.append,
     )
 
@@ -90,7 +90,7 @@ def test_goal_run_read_returns_parent_and_real_graph(tmp_path: Path) -> None:
 
     rc = module["command_read"](
         Namespace(repo=REPO, number=724, repo_root=tmp_path),
-        resolve_backend=lambda _root: {"adapter_ok": True, "backend": {"id": "gh"}},
+            resolve_backend=lambda _root, **_kwargs: {"adapter_ok": True, "backend": {"id": "gh"}},
         emit=emitted.append,
     )
 
@@ -120,7 +120,7 @@ def test_goal_run_apply_records_started_and_terminal_for_read(tmp_path: Path) ->
 
     rc = module["command_apply"](
         Namespace(repo=REPO, number=724, operation_file=operation, repo_root=tmp_path),
-        resolve_backend=lambda _root: {"adapter_ok": True, "backend": {"id": "gh", "binary": "gh"}},
+            resolve_backend=lambda _root, **_kwargs: {"adapter_ok": True, "backend": {"id": "gh", "binary": "gh"}},
         emit=emitted.append,
     )
 
@@ -143,7 +143,7 @@ def test_goal_run_apply_uses_record_operation_without_backend_mutation(tmp_path:
 
     rc = module["command_apply"](
         Namespace(repo=REPO, number=724, operation_file=operation, repo_root=tmp_path),
-        resolve_backend=lambda _root: (_ for _ in ()).throw(
+            resolve_backend=lambda _root, **_kwargs: (_ for _ in ()).throw(
             AssertionError("local observation must not select a provider")
         ),
         emit=emitted.append,
@@ -162,7 +162,7 @@ def test_goal_run_apply_rejects_missing_operation_identity_before_provider(tmp_p
 
     rc = module["command_apply"](
         Namespace(repo=REPO, number=724, operation_file=operation, repo_root=tmp_path),
-        resolve_backend=lambda _root: (_ for _ in ()).throw(AssertionError("must not resolve backend")),
+            resolve_backend=lambda _root, **_kwargs: (_ for _ in ()).throw(AssertionError("must not resolve backend")),
         emit=emitted.append,
     )
 
@@ -220,7 +220,7 @@ def test_goal_run_close_refuses_open_child_before_observation_or_close(tmp_path:
 
     rc = module["command_close"](
         Namespace(repo=REPO, number=724, proof_file=proof, repo_root=tmp_path),
-        resolve_backend=lambda _root: {"adapter_ok": True, "backend": {"id": "gh"}},
+            resolve_backend=lambda _root, **_kwargs: {"adapter_ok": True, "backend": {"id": "gh"}},
         emit=emitted.append,
     )
 
@@ -294,7 +294,7 @@ def test_goal_run_close_reuses_parent_read_for_carrier_preflight(tmp_path: Path)
 
     rc = module["command_close"](
         Namespace(repo=REPO, number=724, proof_file=proof, repo_root=tmp_path),
-        resolve_backend=lambda _root: {"adapter_ok": True, "backend": {"id": "gh"}},
+            resolve_backend=lambda _root, **_kwargs: {"adapter_ok": True, "backend": {"id": "gh"}},
         emit=emitted.append,
     )
 

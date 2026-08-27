@@ -1,6 +1,6 @@
 {
   "kind": "charness.lesson-ledger",
-  "schema_version": 6,
+  "schema_version": 7,
   "transitions": [
     {
       "sequence": 1,
@@ -261,1535 +261,9 @@
       "source_retro": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md"
     }
   ],
-  "session_events": [
-    {
-      "session_id": "current-goal-session",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 1,
-        "seed": "session-goal-seed",
-        "eligible_count": 16,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "premise-not-checked-against-source",
-          "durable-lesson-ledger-first",
-          "counted-limit-retry-loop",
-          "graduation-is-proposal",
-          "guard-adjacent-to-action",
-          "closeout-diagnostic-visibility",
-          "goal-closeout-evidence-binding",
-          "mutation-producer-selection",
-          "closeout-authoring-rework",
-          "proof-surface-review-binding"
-        ]
-      },
-      "snapshot_sha256": "0668a533e5e50e6b154813a9b7b9948a80dddfa8fe22d9b12c580d264c910f6d"
-    },
-    {
-      "session_id": "2026-08-12-score-observation-1",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 1,
-        "seed": "2026-08-12-score-observation-1",
-        "eligible_count": 16,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "goal-closeout-evidence-binding",
-          "durable-lesson-ledger-first",
-          "premise-not-checked-against-source",
-          "counted-limit-retry-loop",
-          "closeout-authoring-rework",
-          "closeout-diagnostic-visibility",
-          "graduation-is-proposal",
-          "mutation-producer-selection",
-          "proof-surface-review-binding",
-          "guard-adjacent-to-action"
-        ]
-      },
-      "snapshot_sha256": "7be844595a4c44046f1d5b0fbeda8911b10756d3014f2efd9521612e3acc803f"
-    },
-    {
-      "session_id": "2026-08-13-issue-615-retro-handoff-audit",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 1,
-        "seed": "2026-08-13-issue-615-retro",
-        "eligible_count": 16,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "durable-lesson-ledger-first",
-          "graduation-is-proposal",
-          "mutation-producer-selection",
-          "closeout-diagnostic-visibility",
-          "goal-closeout-evidence-binding",
-          "guard-adjacent-to-action",
-          "proof-surface-review-binding",
-          "closeout-authoring-rework",
-          "counted-limit-retry-loop",
-          "premise-not-checked-against-source"
-        ]
-      },
-      "snapshot_sha256": "9acc8de6861926f28a59632d1f36356eab176a59742dae536731f0bcdc98dd7e"
-    },
-    {
-      "session_id": "2026-08-13-issue-614",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 1,
-        "seed": "2026-08-13-issue-614",
-        "eligible_count": 16,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "guard-adjacent-to-action",
-          "durable-lesson-ledger-first",
-          "mutation-producer-selection",
-          "proof-surface-review-binding",
-          "goal-closeout-evidence-binding",
-          "counted-limit-retry-loop",
-          "graduation-is-proposal",
-          "closeout-authoring-rework",
-          "closeout-diagnostic-visibility",
-          "premise-not-checked-against-source"
-        ]
-      },
-      "snapshot_sha256": "4e1234f584ae7f3a1f9ff9e06cdb7b85d8280c738d2aa224c611f018702903a3"
-    },
-    {
-      "session_id": "2026-08-14-lesson-loop-625-627-626",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 2,
-        "seed": "2026-08-14-lesson-loop-625-627-626",
-        "eligible_count": 16,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 0
-        },
-        "lesson_ids": [
-          "goal-closeout-evidence-binding",
-          "premise-not-checked-against-source",
-          "proof-surface-review-binding",
-          "closeout-diagnostic-visibility",
-          "closeout-authoring-rework",
-          "durable-lesson-ledger-first",
-          "counted-limit-retry-loop",
-          "graduation-is-proposal",
-          "guard-adjacent-to-action"
-        ]
-      },
-      "snapshot_sha256": "2a79f6e89017d81a695e5f1479f55ff4467efbe8022bf906a5b72b4a784ad310"
-    },
-    {
-      "session_id": "2026-08-14-closeout-618-628",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 2,
-        "seed": "2026-08-14-closeout-618-628",
-        "eligible_count": 33,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 0
-        },
-        "lesson_ids": [
-          "artifact-contract-late-feedback",
-          "closeout-diagnostic-visibility",
-          "goal-closeout-evidence-binding",
-          "premise-not-checked-against-source",
-          "agent-authored-score-role",
-          "proof-surface-review-binding",
-          "durable-lesson-ledger-first",
-          "bar-recorded-as-prose",
-          "guard-adjacent-to-action"
-        ]
-      },
-      "snapshot_sha256": "50c2dc925d0114efc88880a0007a3580f43035c63188d22f3be86c4aed0d8a2f"
-    },
-    {
-      "session_id": "2026-08-14-json-removal",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 2,
-        "seed": "2026-08-14-json-removal",
-        "eligible_count": 33,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 0
-        },
-        "lesson_ids": [
-          "goal-closeout-evidence-binding",
-          "durable-lesson-ledger-first",
-          "guard-adjacent-to-action",
-          "agent-authored-score-role",
-          "proof-surface-review-binding",
-          "closeout-diagnostic-visibility",
-          "bar-recorded-as-prose",
-          "artifact-contract-late-feedback",
-          "premise-not-checked-against-source"
-        ]
-      },
-      "snapshot_sha256": "f564f9b61a17f444f69fac1fb6e963b0ed4a349adf7bfc94b476b1a3788c38a5"
-    },
-    {
-      "session_id": "2026-08-15-release-design",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 2,
-        "seed": "2026-08-15-release-design",
-        "eligible_count": 33,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 0
-        },
-        "lesson_ids": [
-          "premise-not-checked-against-source",
-          "closeout-diagnostic-visibility",
-          "agent-authored-score-role",
-          "artifact-contract-late-feedback",
-          "bar-recorded-as-prose",
-          "guard-adjacent-to-action",
-          "goal-closeout-evidence-binding",
-          "durable-lesson-ledger-first",
-          "proof-surface-review-binding"
-        ]
-      },
-      "snapshot_sha256": "74c7cf6ac5b6dc15268b40ea68e56f90d34511003f996e58dc58ad0a87062823"
-    },
-    {
-      "session_id": "2026-08-15-s1-release-tooling",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 2,
-        "seed": "2026-08-15-s1-release-tooling",
-        "eligible_count": 33,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 0
-        },
-        "lesson_ids": [
-          "guard-adjacent-to-action",
-          "agent-authored-score-role",
-          "artifact-contract-late-feedback",
-          "goal-closeout-evidence-binding",
-          "closeout-diagnostic-visibility",
-          "durable-lesson-ledger-first",
-          "premise-not-checked-against-source",
-          "proof-surface-review-binding",
-          "bar-recorded-as-prose"
-        ]
-      },
-      "snapshot_sha256": "08d92e6bdcc342a3b47b49a49366f05ceeeefc70fc385be93be49cfe86418e9f"
-    },
-    {
-      "session_id": "2026-08-15-s2",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 2,
-        "seed": "2026-08-15-s2",
-        "eligible_count": 33,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 0
-        },
-        "lesson_ids": [
-          "durable-lesson-ledger-first",
-          "proof-surface-review-binding",
-          "artifact-contract-late-feedback",
-          "goal-closeout-evidence-binding",
-          "closeout-diagnostic-visibility",
-          "guard-adjacent-to-action",
-          "premise-not-checked-against-source",
-          "agent-authored-score-role",
-          "bar-recorded-as-prose"
-        ]
-      },
-      "snapshot_sha256": "e62c6a4737a1f37db0ccec2dd7e1170c4c74b2b3f73532e2c8e00ae5ee71c8f6"
-    },
-    {
-      "session_id": "2026-08-15-s3",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 2,
-        "seed": "2026-08-15-s3",
-        "eligible_count": 33,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 0
-        },
-        "lesson_ids": [
-          "goal-closeout-evidence-binding",
-          "proof-surface-review-binding",
-          "closeout-diagnostic-visibility",
-          "durable-lesson-ledger-first",
-          "artifact-contract-late-feedback",
-          "guard-adjacent-to-action",
-          "premise-not-checked-against-source",
-          "agent-authored-score-role",
-          "bar-recorded-as-prose"
-        ]
-      },
-      "snapshot_sha256": "c6d78ea255788a13ff80cb41f137b7e05dd614cd0bd6a473dee4e16ec64f3ff2"
-    },
-    {
-      "session_id": "2026-08-15-s4",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 3,
-        "seed": "2026-08-15-s4",
-        "eligible_count": 33,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "premise-not-checked-against-source",
-          "closeout-diagnostic-visibility",
-          "artifact-contract-late-feedback",
-          "durable-lesson-ledger-first",
-          "agent-authored-score-role",
-          "changed-line-proof-before-broad-quality",
-          "bar-recorded-as-prose",
-          "goal-closeout-evidence-binding",
-          "cause-named-from-one-observation",
-          "guard-adjacent-to-action"
-        ]
-      },
-      "snapshot_sha256": "c7472a193714486eeec4a4a65b0b85806c95e165d05a9d88167293ed91a03cf4"
-    },
-    {
-      "session_id": "2026-08-15-s5",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 3,
-        "seed": "2026-08-15-s5",
-        "eligible_count": 33,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "guard-adjacent-to-action",
-          "premise-not-checked-against-source",
-          "bar-recorded-as-prose",
-          "closeout-diagnostic-visibility",
-          "changed-line-proof-before-broad-quality",
-          "durable-lesson-ledger-first",
-          "agent-authored-score-role",
-          "artifact-contract-late-feedback",
-          "cause-named-from-one-observation",
-          "goal-closeout-evidence-binding"
-        ]
-      },
-      "snapshot_sha256": "1556a4d594b78edcc5616342fbfd494c531ce8923ac3a56233246c5e67a57a54"
-    },
-    {
-      "session_id": "2026-08-15-s6",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 3,
-        "seed": "2026-08-15-s6",
-        "eligible_count": 33,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "agent-authored-score-role",
-          "artifact-contract-late-feedback",
-          "guard-adjacent-to-action",
-          "changed-line-proof-before-broad-quality",
-          "bar-recorded-as-prose",
-          "premise-not-checked-against-source",
-          "goal-closeout-evidence-binding",
-          "cause-named-from-one-observation",
-          "durable-lesson-ledger-first",
-          "closeout-diagnostic-visibility"
-        ]
-      },
-      "snapshot_sha256": "d610df21c67f6b730758e65cd66b24357251877069a7042483a23c3a89ae7f1e"
-    },
-    {
-      "session_id": "2026-08-15-s6b1",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 3,
-        "seed": "2026-08-15-s6b1",
-        "eligible_count": 33,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "agent-authored-score-role",
-          "changed-line-proof-before-broad-quality",
-          "cause-named-from-one-observation",
-          "bar-recorded-as-prose",
-          "premise-not-checked-against-source",
-          "artifact-contract-late-feedback",
-          "goal-closeout-evidence-binding",
-          "durable-lesson-ledger-first",
-          "guard-adjacent-to-action",
-          "closeout-diagnostic-visibility"
-        ]
-      },
-      "snapshot_sha256": "381f29b0fad2d19d7235e736d1509bfd481b9de2018a765b330a7bf4b4a2e1c3"
-    },
-    {
-      "session_id": "2026-08-16-s6b-2",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 3,
-        "seed": "2026-08-16-s6b-2",
-        "eligible_count": 38,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "detector-blind-class-unstated",
-          "counted-limit-retry-loop",
-          "conservative-static-verdicts",
-          "agent-authored-score-role",
-          "closeout-authoring-rework",
-          "tagged-lesson-never-seeded",
-          "bar-recorded-as-prose",
-          "goal-closeout-evidence-binding",
-          "cause-named-from-one-observation",
-          "changed-line-proof-before-broad-quality"
-        ]
-      },
-      "snapshot_sha256": "9a6f370a4a2523d465954640df79e8a59c1e068c233f562049ad19cb29c6979b"
-    },
-    {
-      "session_id": "2026-08-16-s7-release",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 3,
-        "seed": "2026-08-16-s7-release",
-        "eligible_count": 38,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "goal-closeout-evidence-binding",
-          "changed-line-proof-before-broad-quality",
-          "agent-authored-score-role",
-          "counted-limit-retry-loop",
-          "detector-blind-class-unstated",
-          "conservative-static-verdicts",
-          "cause-named-from-one-observation",
-          "closeout-authoring-rework",
-          "tagged-lesson-never-seeded",
-          "bar-recorded-as-prose"
-        ]
-      },
-      "snapshot_sha256": "f276c678deb414a8c03a2f893d8b354193956ebb3d0aac9247e8c327b58a195d"
-    },
-    {
-      "session_id": "2026-08-16-s8-debt",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 3,
-        "seed": "2026-08-16-s8-debt",
-        "eligible_count": 38,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "tagged-lesson-never-seeded",
-          "changed-line-proof-before-broad-quality",
-          "coverage-claim-exceeds-the-pin",
-          "bar-recorded-as-prose",
-          "agent-authored-score-role",
-          "closeout-authoring-rework",
-          "cause-named-from-one-observation",
-          "detector-blind-class-unstated",
-          "counted-limit-retry-loop",
-          "conservative-static-verdicts"
-        ]
-      },
-      "snapshot_sha256": "86105f5427b17df9a5bf37c90985eadaaf817bc8b4d03455257b421aacc16fb1"
-    },
-    {
-      "session_id": "2026-08-16-s9",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 3,
-        "seed": "2026-08-16-s9",
-        "eligible_count": 43,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "global-probe-for-local-fact",
-          "evidence-channel-identity",
-          "changed-line-proof-before-broad-quality",
-          "executed-vs-read-field",
-          "conservative-static-verdicts",
-          "closeout-authoring-rework",
-          "bar-recorded-as-prose",
-          "goal-closeout-evidence-binding",
-          "detector-blind-class-unstated",
-          "agent-authored-score-role"
-        ]
-      },
-      "snapshot_sha256": "b199a6e2ce21121664da123a73965e0114f86f99e08352e8bc82da67e60c59c2"
-    },
-    {
-      "session_id": "2026-08-16-09ff8e62-ba16-4350-a2aa-72f50e6dd988",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 3,
-        "seed": "2026-08-16-09ff8e62-ba16-4350-a2aa-72f50e6dd988",
-        "eligible_count": 43,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "closeout-authoring-rework",
-          "executed-vs-read-field",
-          "conservative-static-verdicts",
-          "evidence-channel-identity",
-          "agent-authored-score-role",
-          "changed-line-proof-before-broad-quality",
-          "global-probe-for-local-fact",
-          "bar-recorded-as-prose",
-          "detector-blind-class-unstated",
-          "goal-closeout-evidence-binding"
-        ]
-      },
-      "snapshot_sha256": "47bbc2c29cedd1e45c0d4bfec3ae95e2825102e1b5cb0934668339f924d65e05"
-    },
-    {
-      "session_id": "2026-08-16-7f96d281-13a0-42bc-8471-ec0edf00eae0",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 3,
-        "seed": "2026-08-16-7f96d281-13a0-42bc-8471-ec0edf00eae0",
-        "eligible_count": 43,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "closeout-authoring-rework",
-          "evidence-channel-identity",
-          "detector-blind-class-unstated",
-          "bar-recorded-as-prose",
-          "graduation-is-proposal",
-          "global-probe-for-local-fact",
-          "agent-authored-score-role",
-          "conservative-static-verdicts",
-          "executed-vs-read-field",
-          "changed-line-proof-before-broad-quality"
-        ]
-      },
-      "snapshot_sha256": "e2d77814034aa4ac023818a67ed07c185d89d1fb0180e272e994d27a33dfdee3"
-    },
-    {
-      "session_id": "2026-08-17-autonomous-improve",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 3,
-        "seed": "2026-08-17-autonomous-improve",
-        "eligible_count": 43,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "graduation-is-proposal",
-          "conservative-static-verdicts",
-          "green-test-is-not-covered-line",
-          "bar-recorded-as-prose",
-          "closeout-authoring-rework",
-          "detector-blind-class-unstated",
-          "changed-line-proof-before-broad-quality",
-          "global-probe-for-local-fact",
-          "goal-closeout-evidence-binding",
-          "agent-authored-score-role"
-        ]
-      },
-      "snapshot_sha256": "d9c37a655b322e7db793b5b9052c2963ddffe0255c5d8f11df9d2fe50abcf2e5"
-    },
-    {
-      "session_id": "2026-08-17-3bbe7879-6108-421f-87b5-90ec6831e861",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 3,
-        "seed": "2026-08-17-3bbe7879-6108-421f-87b5-90ec6831e861",
-        "eligible_count": 43,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "closeout-authoring-rework",
-          "bar-recorded-as-prose",
-          "conservative-static-verdicts",
-          "agent-authored-score-role",
-          "changed-line-proof-before-broad-quality",
-          "graduation-is-proposal",
-          "goal-closeout-evidence-binding",
-          "global-probe-for-local-fact",
-          "harness-differential-not-test",
-          "detector-blind-class-unstated"
-        ]
-      },
-      "snapshot_sha256": "5163ca922dbb90190038017d100d866ca7336d79b935bf093cd14d389b211404"
-    },
-    {
-      "session_id": "2026-08-17-6f1a9086-91f2-4df9-ba9d-56eeb222459b",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 3,
-        "seed": "2026-08-17-6f1a9086-91f2-4df9-ba9d-56eeb222459b",
-        "eligible_count": 43,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "global-probe-for-local-fact",
-          "detector-blind-class-unstated",
-          "goal-closeout-evidence-binding",
-          "graduation-is-proposal",
-          "conservative-static-verdicts",
-          "changed-line-proof-before-broad-quality",
-          "harness-differential-not-test",
-          "bar-recorded-as-prose",
-          "closeout-authoring-rework",
-          "agent-authored-score-role"
-        ]
-      },
-      "snapshot_sha256": "75c27023103640527bd12517bf0b87e6d9af53222f7140cc6bd5dae27fa0d884"
-    },
-    {
-      "session_id": "2026-08-17-2124d69b-44fb-439a-9963-8f00f7effa35",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 3,
-        "seed": "2026-08-17-2124d69b-44fb-439a-9963-8f00f7effa35",
-        "eligible_count": 43,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "bar-recorded-as-prose",
-          "detector-blind-class-unstated",
-          "global-probe-for-local-fact",
-          "isolated-agent-base-mismatch",
-          "agent-authored-score-role",
-          "green-test-is-not-covered-line",
-          "goal-closeout-evidence-binding",
-          "graduation-is-proposal",
-          "changed-line-proof-before-broad-quality",
-          "conservative-static-verdicts"
-        ]
-      },
-      "snapshot_sha256": "cb05f5dd02f173880b1d41eb14089bf0a03553c776df02be5908143e73a2e75e"
-    },
-    {
-      "session_id": "2026-08-18-9ce16d03-ac24-4658-b9d4-be137caec8e6",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 3,
-        "seed": "2026-08-18-9ce16d03-ac24-4658-b9d4-be137caec8e6",
-        "eligible_count": 43,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "conservative-static-verdicts",
-          "detector-blind-class-unstated",
-          "green-test-is-not-covered-line",
-          "goal-closeout-evidence-binding",
-          "keyword-in-prose-is-a-directive",
-          "bar-recorded-as-prose",
-          "changed-line-proof-before-broad-quality",
-          "isolated-agent-base-mismatch",
-          "agent-authored-score-role",
-          "global-probe-for-local-fact"
-        ]
-      },
-      "snapshot_sha256": "0710b5083668385c6bcece61cd4af105597519e2cedad6888a7e6917802201c1"
-    },
-    {
-      "session_id": "2026-08-18-b5ad3bee-f554-4036-b685-737d3fe5e5da",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 3,
-        "seed": "2026-08-18-b5ad3bee-f554-4036-b685-737d3fe5e5da",
-        "eligible_count": 43,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "goal-closeout-evidence-binding",
-          "isolated-agent-base-mismatch",
-          "bar-recorded-as-prose",
-          "detector-blind-class-unstated",
-          "changed-line-proof-before-broad-quality",
-          "green-test-is-not-covered-line",
-          "conservative-static-verdicts",
-          "agent-authored-score-role",
-          "global-probe-for-local-fact",
-          "line-anchored-ledger-fields"
-        ]
-      },
-      "snapshot_sha256": "277c370ee970a56a73643aff6a20e0443f4d8c21b30a9ba510c280108d090b79"
-    },
-    {
-      "session_id": "2026-08-18-7647b3e5-9327-4d3c-99ba-2e0688df29ac",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 3,
-        "seed": "2026-08-18-7647b3e5-9327-4d3c-99ba-2e0688df29ac",
-        "eligible_count": 43,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "green-test-is-not-covered-line",
-          "conservative-static-verdicts",
-          "bar-recorded-as-prose",
-          "detector-blind-class-unstated",
-          "goal-closeout-evidence-binding",
-          "global-probe-for-local-fact",
-          "changed-line-proof-before-broad-quality",
-          "isolated-agent-base-mismatch",
-          "line-anchored-ledger-fields",
-          "agent-authored-score-role"
-        ]
-      },
-      "snapshot_sha256": "ea758a87b8d516d60e4f22c0bd74aceaf53086ab57608efcf6e0837b181fffde"
-    },
-    {
-      "session_id": "2026-08-19-6de8b471-a44c-4545-b0ce-cfd590da6ee2",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 3,
-        "seed": "2026-08-19-6de8b471-a44c-4545-b0ce-cfd590da6ee2",
-        "eligible_count": 43,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "green-test-is-not-covered-line",
-          "global-probe-for-local-fact",
-          "isolated-agent-base-mismatch",
-          "bar-recorded-as-prose",
-          "goal-closeout-evidence-binding",
-          "detector-blind-class-unstated",
-          "mutation-producer-selection",
-          "conservative-static-verdicts",
-          "agent-authored-score-role",
-          "changed-line-proof-before-broad-quality"
-        ]
-      },
-      "snapshot_sha256": "c94b3f1fef0118fe87048b555f3db95be47680c61928750ae0f53d2cf2509a9e"
-    },
-    {
-      "session_id": "2026-08-19-11053f1e-d8dc-48a4-a043-f0185f595f07",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 3,
-        "seed": "2026-08-19-11053f1e-d8dc-48a4-a043-f0185f595f07",
-        "eligible_count": 43,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "detector-blind-class-unstated",
-          "changed-line-proof-before-broad-quality",
-          "green-test-is-not-covered-line",
-          "isolated-agent-base-mismatch",
-          "conservative-static-verdicts",
-          "global-probe-for-local-fact",
-          "agent-authored-score-role",
-          "one-engine-per-pattern",
-          "goal-closeout-evidence-binding",
-          "bar-recorded-as-prose"
-        ]
-      },
-      "snapshot_sha256": "13442dbfdf30d3ae296551cd2a064ca73f832d5a0919e65d29d338bd6f52bcab"
-    },
-    {
-      "session_id": "2026-08-20-01a01e68-fafb-7fc1-b27c-51a1bc88014b",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 3,
-        "seed": "2026-08-20-01a01e68-fafb-7fc1-b27c-51a1bc88014b",
-        "eligible_count": 43,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "changed-line-proof-before-broad-quality",
-          "bar-recorded-as-prose",
-          "goal-closeout-evidence-binding",
-          "proof-surface-message-drift",
-          "premises-not-debt",
-          "detector-blind-class-unstated",
-          "green-test-is-not-covered-line",
-          "global-probe-for-local-fact",
-          "agent-authored-score-role",
-          "positive-effect-cannot-be-cited"
-        ]
-      },
-      "snapshot_sha256": "1eb57f86f94fc1b383f1a6a6c01b1d2defa9b67c8d1f145325f2a46007d481a5"
-    },
-    {
-      "session_id": "2026-08-20-01a01e8e-3ede-7053-8d51-0f9afd502234",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 3,
-        "seed": "2026-08-20-01a01e8e-3ede-7053-8d51-0f9afd502234",
-        "eligible_count": 43,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "changed-line-proof-before-broad-quality",
-          "positive-effect-cannot-be-cited",
-          "detector-blind-class-unstated",
-          "goal-closeout-evidence-binding",
-          "agent-authored-score-role",
-          "prose-claim-without-a-reader",
-          "bar-recorded-as-prose",
-          "green-test-is-not-covered-line",
-          "global-probe-for-local-fact",
-          "proof-surface-message-drift"
-        ]
-      },
-      "snapshot_sha256": "299b40e23a005cd8f551bc0fa3a9567fbad3afb1b019c5daec6a6d813cd4c01d"
-    },
-    {
-      "session_id": "2026-08-20-goal-continuation",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 3,
-        "seed": "2026-08-20-goal-continuation",
-        "eligible_count": 43,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "bar-recorded-as-prose",
-          "green-test-is-not-covered-line",
-          "changed-line-proof-before-broad-quality",
-          "detector-blind-class-unstated",
-          "prose-claim-without-a-reader",
-          "agent-authored-score-role",
-          "positive-effect-cannot-be-cited",
-          "global-probe-for-local-fact",
-          "goal-closeout-evidence-binding",
-          "proof-surface-message-drift"
-        ]
-      },
-      "snapshot_sha256": "b2ce099946ecded90aa06cf0b16eab96a43c8a88987d6c62db82cf8e163c4428"
-    },
-    {
-      "session_id": "2026-08-21-goal-codex-review",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 3,
-        "seed": "2026-08-21-goal-codex-review",
-        "eligible_count": 43,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "positive-effect-cannot-be-cited",
-          "goal-closeout-evidence-binding",
-          "agent-authored-score-role",
-          "detector-blind-class-unstated",
-          "bar-recorded-as-prose",
-          "green-test-is-not-covered-line",
-          "proof-surface-message-drift",
-          "changed-line-proof-before-broad-quality",
-          "global-probe-for-local-fact",
-          "prose-claim-without-a-reader"
-        ]
-      },
-      "snapshot_sha256": "8d08058ad72e21884c9c7f1bc7b6a2fab056fa812288754158b9a6f60940b306"
-    },
-    {
-      "session_id": "2026-08-21-release-candidate",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 3,
-        "seed": "2026-08-21-release-candidate",
-        "eligible_count": 43,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "proof-surface-message-drift",
-          "detector-blind-class-unstated",
-          "changed-line-proof-before-broad-quality",
-          "goal-closeout-evidence-binding",
-          "agent-authored-score-role",
-          "prose-claim-without-a-reader",
-          "positive-effect-cannot-be-cited",
-          "green-test-is-not-covered-line",
-          "global-probe-for-local-fact",
-          "bar-recorded-as-prose"
-        ]
-      },
-      "snapshot_sha256": "d71ef201bc986439255aeb266b92366225bef025864bd6a986ea10c7e058b5ed"
-    },
-    {
-      "session_id": "2026-08-21-goal-r2-resume",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 3,
-        "seed": "2026-08-21-goal-r2-resume",
-        "eligible_count": 43,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "prose-claim-without-a-reader",
-          "bar-recorded-as-prose",
-          "global-probe-for-local-fact",
-          "changed-line-proof-before-broad-quality",
-          "detector-blind-class-unstated",
-          "proof-surface-message-drift",
-          "goal-closeout-evidence-binding",
-          "positive-effect-cannot-be-cited",
-          "agent-authored-score-role",
-          "green-test-is-not-covered-line"
-        ]
-      },
-      "snapshot_sha256": "2697c9d095d27cd5f7add7e9170aa0392a7676f72e2cc8ae9f4046903e21708b"
-    },
-    {
-      "session_id": "2026-08-21-r2-semantic-packet",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 3,
-        "seed": "2026-08-21-r2-semantic-packet",
-        "eligible_count": 43,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "prose-claim-without-a-reader",
-          "proof-surface-message-drift",
-          "green-test-is-not-covered-line",
-          "bar-recorded-as-prose",
-          "global-probe-for-local-fact",
-          "changed-line-proof-before-broad-quality",
-          "positive-effect-cannot-be-cited",
-          "goal-closeout-evidence-binding",
-          "agent-authored-score-role",
-          "detector-blind-class-unstated"
-        ]
-      },
-      "snapshot_sha256": "2218c90f87819bd858e52a6ba9eb7b3fcf0baca1ef910fd9e131c333fffb624f"
-    },
-    {
-      "session_id": "2026-08-21-r3-delivery-provenance-repair-review",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 3,
-        "seed": "2026-08-21-r3-delivery-provenance-repair-review",
-        "eligible_count": 43,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "prose-claim-without-a-reader",
-          "goal-closeout-evidence-binding",
-          "agent-authored-score-role",
-          "positive-effect-cannot-be-cited",
-          "bar-recorded-as-prose",
-          "detector-blind-class-unstated",
-          "proof-surface-message-drift",
-          "green-test-is-not-covered-line",
-          "changed-line-proof-before-broad-quality",
-          "global-probe-for-local-fact"
-        ]
-      },
-      "snapshot_sha256": "dba183dd74727392bd09208db0cf4d99916b742431624194b856434d5c5c2cd1"
-    },
-    {
-      "session_id": "2026-08-22-a-tracker-closeout",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 3,
-        "seed": "2026-08-22-a-tracker-closeout",
-        "eligible_count": 43,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "release-candidate-preflight-order",
-          "changed-line-proof-before-broad-quality",
-          "proof-surface-message-drift",
-          "global-probe-for-local-fact",
-          "goal-closeout-evidence-binding",
-          "agent-authored-score-role",
-          "detector-blind-class-unstated",
-          "green-test-is-not-covered-line",
-          "release-proof-identity-churn",
-          "positive-effect-cannot-be-cited"
-        ]
-      },
-      "snapshot_sha256": "af0df983afa6494718d0d4835bdad308c91a612b18491fabe35b39886a158c91"
-    },
-    {
-      "session_id": "2026-08-22-b-release",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 3,
-        "seed": "2026-08-22-b-release",
-        "eligible_count": 43,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "global-probe-for-local-fact",
-          "detector-blind-class-unstated",
-          "changed-line-proof-before-broad-quality",
-          "proof-surface-message-drift",
-          "agent-authored-score-role",
-          "positive-effect-cannot-be-cited",
-          "release-proof-identity-churn",
-          "goal-closeout-evidence-binding",
-          "release-candidate-preflight-order",
-          "green-test-is-not-covered-line"
-        ]
-      },
-      "snapshot_sha256": "3e60f19946d634eafe0d483567303563ea33f22b6c1794a056d250ffb9aabed5"
-    },
-    {
-      "session_id": "2026-08-22-proof-cost-portability-cadence",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 3,
-        "seed": "2026-08-22-proof-cost-portability-cadence",
-        "eligible_count": 43,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "removal-consumer-grep-incomplete",
-          "global-probe-for-local-fact",
-          "positive-effect-cannot-be-cited",
-          "proof-surface-message-drift",
-          "rule-exists-but-does-not-bind",
-          "bar-recorded-as-prose",
-          "changed-line-proof-before-broad-quality",
-          "green-test-is-not-covered-line",
-          "agent-authored-score-role",
-          "goal-closeout-evidence-binding"
-        ]
-      },
-      "snapshot_sha256": "92d366236ad1bc27e6234fed125b97cafa9d90ec43588f203ace862772fb763b"
-    },
-    {
-      "session_id": "2026-08-23-gate-by-property",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 3,
-        "seed": "2026-08-23-gate-by-property",
-        "eligible_count": 43,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "positive-effect-cannot-be-cited",
-          "proof-surface-message-drift",
-          "goal-closeout-evidence-binding",
-          "changed-line-proof-before-broad-quality",
-          "bar-recorded-as-prose",
-          "agent-authored-score-role",
-          "runtime-budget-contention",
-          "green-test-is-not-covered-line",
-          "removal-consumer-grep-incomplete",
-          "global-probe-for-local-fact"
-        ]
-      },
-      "snapshot_sha256": "15098dc5ab7166ef7e34cb749aae2231dc4f7553a2376edc4420ccc2da942e03"
-    },
-    {
-      "session_id": "2026-08-24-01a032f5-c64c-7ad2-a838-8eb738d99824",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 3,
-        "seed": "2026-08-24-01a032f5-c64c-7ad2-a838-8eb738d99824",
-        "eligible_count": 43,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "agent-authored-score-role",
-          "global-probe-for-local-fact",
-          "green-test-is-not-covered-line",
-          "positive-effect-cannot-be-cited",
-          "proof-surface-message-drift",
-          "changed-line-proof-before-broad-quality",
-          "goal-closeout-evidence-binding",
-          "bar-recorded-as-prose",
-          "stale-current-pointer-at-closeout",
-          "skipped-is-not-passed"
-        ]
-      },
-      "snapshot_sha256": "b941ea72503b66f41fa2532cf14231f070afc0e2f2338df1f7015de5474f814c"
-    },
-    {
-      "session_id": "27605bc2-5cff-4ca0-a1e9-563dee69e9ba",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 3,
-        "seed": "same",
-        "eligible_count": 43,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "skipped-is-not-passed",
-          "bar-recorded-as-prose",
-          "proof-surface-message-drift",
-          "changed-line-proof-before-broad-quality",
-          "positive-effect-cannot-be-cited",
-          "global-probe-for-local-fact",
-          "stale-current-pointer-at-closeout",
-          "agent-authored-score-role",
-          "green-test-is-not-covered-line",
-          "goal-closeout-evidence-binding"
-        ]
-      },
-      "snapshot_sha256": "e4d7684841611968089e6088d3db937748d5288b32a4a94b393740cb41f6a502"
-    },
-    {
-      "session_id": "2026-08-25-715-721-implementation",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 3,
-        "seed": "2026-08-25-715-721",
-        "eligible_count": 43,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "positive-effect-cannot-be-cited",
-          "stale-current-pointer-at-closeout",
-          "bar-recorded-as-prose",
-          "skipped-is-not-passed",
-          "global-probe-for-local-fact",
-          "changed-line-proof-before-broad-quality",
-          "green-test-is-not-covered-line",
-          "goal-closeout-evidence-binding",
-          "proof-surface-message-drift",
-          "agent-authored-score-role"
-        ]
-      },
-      "snapshot_sha256": "b72d76d673455868a10d689f08b919dcc3ffd15f2818504bdb1b9b49ceac590d"
-    },
-    {
-      "session_id": "2026-08-25-715-721-5whys",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 3,
-        "seed": "2026-08-25-715-721-5whys",
-        "eligible_count": 43,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "stale-current-pointer-at-closeout",
-          "global-probe-for-local-fact",
-          "skipped-is-not-passed",
-          "goal-closeout-evidence-binding",
-          "positive-effect-cannot-be-cited",
-          "bar-recorded-as-prose",
-          "proof-surface-message-drift",
-          "green-test-is-not-covered-line",
-          "agent-authored-score-role",
-          "changed-line-proof-before-broad-quality"
-        ]
-      },
-      "snapshot_sha256": "3a209c6b86d15b6c1097788baf8c0ce6a930622f0532d2bea5ea4c73720e9bf1"
-    },
-    {
-      "session_id": "2026-08-25-adversarial-review",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 3,
-        "seed": "2026-08-25-adversarial-review",
-        "eligible_count": 43,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "skipped-is-not-passed",
-          "global-probe-for-local-fact",
-          "green-test-is-not-covered-line",
-          "positive-effect-cannot-be-cited",
-          "agent-authored-score-role",
-          "changed-line-proof-before-broad-quality",
-          "bar-recorded-as-prose",
-          "goal-closeout-evidence-binding",
-          "stale-current-pointer-at-closeout",
-          "proof-surface-message-drift"
-        ]
-      },
-      "snapshot_sha256": "58b99f318ca9a7519e6713afc5ceacab1548323cd711bc05e0afd8a84e1fb8b4"
-    },
-    {
-      "session_id": "2026-08-25-consumer-boundary-release",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 3,
-        "seed": "2026-08-25-consumer-boundary-release",
-        "eligible_count": 43,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "proof-surface-message-drift",
-          "stale-current-pointer-at-closeout",
-          "positive-effect-cannot-be-cited",
-          "goal-closeout-evidence-binding",
-          "bar-recorded-as-prose",
-          "agent-authored-score-role",
-          "global-probe-for-local-fact",
-          "green-test-is-not-covered-line",
-          "skipped-is-not-passed",
-          "changed-line-proof-before-broad-quality"
-        ]
-      },
-      "snapshot_sha256": "30ac3415fba0f24e6f0a8cabe8232ceb767d9a18a8898b9faef6941aff3cba81"
-    },
-    {
-      "session_id": "2026-08-26-release-review-followup",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 3,
-        "seed": "2026-08-26-release-review-followup",
-        "eligible_count": 43,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "global-probe-for-local-fact",
-          "green-test-is-not-covered-line",
-          "changed-line-proof-before-broad-quality",
-          "agent-authored-score-role",
-          "positive-effect-cannot-be-cited",
-          "skipped-is-not-passed",
-          "stale-current-pointer-at-closeout",
-          "goal-closeout-evidence-binding",
-          "bar-recorded-as-prose",
-          "proof-surface-message-drift"
-        ]
-      },
-      "snapshot_sha256": "d2ab38a5cbaf11649460c5ad0e6836ec371e1ff4be96b4944a826adc4b1a1e31"
-    },
-    {
-      "session_id": "2026-08-26-01a03c37-b39b-7541-9dc2-95459b1d7479",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 3,
-        "seed": "2026-08-26-01a03c37-b39b-7541-9dc2-95459b1d7479",
-        "eligible_count": 43,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "positive-effect-cannot-be-cited",
-          "green-test-is-not-covered-line",
-          "skipped-is-not-passed",
-          "goal-closeout-evidence-binding",
-          "agent-authored-score-role",
-          "changed-line-proof-before-broad-quality",
-          "bar-recorded-as-prose",
-          "stale-current-pointer-at-closeout",
-          "proof-surface-message-drift",
-          "global-probe-for-local-fact"
-        ]
-      },
-      "snapshot_sha256": "5c99c1944b317018af68abbe55c69674ba51b31e8083ba3899245735bab00c3c"
-    },
-    {
-      "session_id": "2026-08-26-resume",
-      "snapshot": {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 3,
-        "seed": "2026-08-26-resume",
-        "eligible_count": 43,
-        "bucket_counts": {
-          "recent": 3,
-          "value": 3,
-          "uncertainty": 3,
-          "archive": 0,
-          "archive_fallback_uncertainty": 1
-        },
-        "lesson_ids": [
-          "global-probe-for-local-fact",
-          "green-test-is-not-covered-line",
-          "changed-line-proof-before-broad-quality",
-          "agent-authored-score-role",
-          "skipped-is-not-passed",
-          "stale-current-pointer-at-closeout",
-          "positive-effect-cannot-be-cited",
-          "proof-surface-message-drift",
-          "bar-recorded-as-prose",
-          "goal-closeout-evidence-binding"
-        ]
-      },
-      "snapshot_sha256": "3ae5ef1f1a2a2c3c6186e4b87af1293c774dd0a7d2d84e9ce15b0620172e5482"
-    }
-  ],
   "score_events": [
     {
       "event_id": "2026-08-12-score-observation-1-durable-ledger",
-      "session_id": "2026-08-12-score-observation-1",
       "source_retro": "charness-artifacts/retro/2026-08-12-session-retro.md",
       "lesson_id": "durable-lesson-ledger-first",
       "score": 2,
@@ -1797,7 +271,6 @@
     },
     {
       "event_id": "2026-08-12-score-observation-1-proof-review",
-      "session_id": "2026-08-12-score-observation-1",
       "source_retro": "charness-artifacts/retro/2026-08-06-session-retro.md",
       "lesson_id": "proof-surface-review-binding",
       "score": 2,
@@ -1805,7 +278,6 @@
     },
     {
       "event_id": "2026-08-12-score-observation-1-goal-binding",
-      "session_id": "2026-08-12-score-observation-1",
       "source_retro": "charness-artifacts/retro/2026-08-08-decide-where-a-recurring-lesson-lives-retro.md",
       "lesson_id": "goal-closeout-evidence-binding",
       "score": 2,
@@ -1813,14 +285,12 @@
     },
     {
       "event_id": "2026-08-13-issue-615-audit-ledger-first",
-      "session_id": "2026-08-13-issue-615-retro-handoff-audit",
       "source_retro": "charness-artifacts/retro/2026-08-13-session-retro.md",
       "lesson_id": "durable-lesson-ledger-first",
       "score": 1
     },
     {
       "event_id": "2026-08-13-issue-615-audit-packet-freeze",
-      "session_id": "2026-08-13-issue-615-retro-handoff-audit",
       "source_retro": "charness-artifacts/retro/2026-08-13-session-retro.md",
       "lesson_id": "proof-surface-review-binding",
       "score": 3,
@@ -1828,7 +298,6 @@
     },
     {
       "event_id": "2026-08-13-issue-615-audit-link-owners",
-      "session_id": "2026-08-13-issue-615-retro-handoff-audit",
       "source_retro": "charness-artifacts/retro/2026-08-13-session-retro.md",
       "lesson_id": "guard-adjacent-to-action",
       "score": 2,
@@ -1836,7 +305,6 @@
     },
     {
       "event_id": "2026-08-14-lesson-loop-premise-not-checked",
-      "session_id": "2026-08-14-lesson-loop-625-627-626",
       "source_retro": "charness-artifacts/retro/2026-08-14-lesson-loop-625-627-626.md",
       "lesson_id": "premise-not-checked-against-source",
       "score": 2,
@@ -1844,7 +312,6 @@
     },
     {
       "event_id": "2026-08-14-closeout-618-628-premise",
-      "session_id": "2026-08-14-closeout-618-628",
       "source_retro": "charness-artifacts/retro/2026-08-14-closeout-618-628-release-prep.md",
       "lesson_id": "premise-not-checked-against-source",
       "score": -2,
@@ -1852,7 +319,6 @@
     },
     {
       "event_id": "score-2026-08-15-review-binding",
-      "session_id": "2026-08-14-json-removal",
       "source_retro": "charness-artifacts/retro/2026-08-15-json-to-yaml-migration-closeout.md",
       "lesson_id": "proof-surface-review-binding",
       "score": -2,
@@ -1860,7 +326,6 @@
     },
     {
       "event_id": "score-2026-08-15-child-visibility",
-      "session_id": "2026-08-14-json-removal",
       "source_retro": "charness-artifacts/retro/2026-08-15-json-to-yaml-migration-closeout.md",
       "lesson_id": "closeout-diagnostic-visibility",
       "score": -2,
@@ -1868,7 +333,6 @@
     },
     {
       "event_id": "score-2026-08-15-premise-608",
-      "session_id": "2026-08-15-release-design",
       "source_retro": "charness-artifacts/retro/2026-08-15-release-scope-design.md",
       "lesson_id": "premise-not-checked-against-source",
       "score": -2,
@@ -1876,7 +340,6 @@
     },
     {
       "event_id": "2026-08-15-s1-release-tooling-premise-not-checked-against-source",
-      "session_id": "2026-08-15-s1-release-tooling",
       "source_retro": "charness-artifacts/retro/2026-08-15-session-retro.md",
       "lesson_id": "premise-not-checked-against-source",
       "score": 2,
@@ -1884,7 +347,6 @@
     },
     {
       "event_id": "2026-08-15-s3-proof-surface-review-binding",
-      "session_id": "2026-08-15-s3",
       "source_retro": "charness-artifacts/retro/2026-08-15-s3-lesson-loop.md",
       "lesson_id": "proof-surface-review-binding",
       "outcome": "changed-an-action",
@@ -1892,7 +354,6 @@
     },
     {
       "event_id": "2026-08-15-s3-bar-recorded-as-prose",
-      "session_id": "2026-08-15-s3",
       "source_retro": "charness-artifacts/retro/2026-08-15-s3-lesson-loop.md",
       "lesson_id": "bar-recorded-as-prose",
       "outcome": "changed-an-action",
@@ -1900,7 +361,6 @@
     },
     {
       "event_id": "2026-08-15-s3-premise-not-checked-against-source",
-      "session_id": "2026-08-15-s3",
       "source_retro": "charness-artifacts/retro/2026-08-15-s3-lesson-loop.md",
       "lesson_id": "premise-not-checked-against-source",
       "outcome": "read-but-not-applied",
@@ -1908,7 +368,6 @@
     },
     {
       "event_id": "2026-08-15-s3-guard-adjacent-to-action",
-      "session_id": "2026-08-15-s3",
       "source_retro": "charness-artifacts/retro/2026-08-15-s3-lesson-loop.md",
       "lesson_id": "guard-adjacent-to-action",
       "outcome": "read-but-not-applied",
@@ -1916,7 +375,6 @@
     },
     {
       "event_id": "2026-08-15-s4-bar-recorded-as-prose",
-      "session_id": "2026-08-15-s4",
       "source_retro": "charness-artifacts/retro/2026-08-15-session-retro-s4.md",
       "lesson_id": "bar-recorded-as-prose",
       "outcome": "changed-an-action",
@@ -1924,7 +382,6 @@
     },
     {
       "event_id": "2026-08-15-s4-premise-not-checked-against-source",
-      "session_id": "2026-08-15-s4",
       "source_retro": "charness-artifacts/retro/2026-08-15-session-retro-s4.md",
       "lesson_id": "premise-not-checked-against-source",
       "outcome": "changed-an-action",
@@ -1932,7 +389,6 @@
     },
     {
       "event_id": "2026-08-15-s4-closeout-diagnostic-visibility",
-      "session_id": "2026-08-15-s4",
       "source_retro": "charness-artifacts/retro/2026-08-15-session-retro-s4.md",
       "lesson_id": "closeout-diagnostic-visibility",
       "outcome": "changed-an-action",
@@ -1940,7 +396,6 @@
     },
     {
       "event_id": "2026-08-15-s4-guard-adjacent-to-action",
-      "session_id": "2026-08-15-s4",
       "source_retro": "charness-artifacts/retro/2026-08-15-session-retro-s4.md",
       "lesson_id": "guard-adjacent-to-action",
       "outcome": "read-but-not-applied",
@@ -1948,7 +403,6 @@
     },
     {
       "event_id": "2026-08-15-s5-closeout-diagnostic-visibility",
-      "session_id": "2026-08-15-s5",
       "source_retro": "charness-artifacts/retro/2026-08-15-session-retro-s5.md",
       "lesson_id": "closeout-diagnostic-visibility",
       "outcome": "changed-an-action",
@@ -1956,7 +410,6 @@
     },
     {
       "event_id": "2026-08-15-s5-premise-not-checked-against-source",
-      "session_id": "2026-08-15-s5",
       "source_retro": "charness-artifacts/retro/2026-08-15-session-retro-s5.md",
       "lesson_id": "premise-not-checked-against-source",
       "outcome": "read-but-not-applied",
@@ -1964,7 +417,6 @@
     },
     {
       "event_id": "2026-08-15-s5-bar-recorded-as-prose",
-      "session_id": "2026-08-15-s5",
       "source_retro": "charness-artifacts/retro/2026-08-15-session-retro-s5.md",
       "lesson_id": "bar-recorded-as-prose",
       "outcome": "changed-an-action",
@@ -1972,7 +424,6 @@
     },
     {
       "event_id": "2026-08-15-s5-guard-adjacent-to-action",
-      "session_id": "2026-08-15-s5",
       "source_retro": "charness-artifacts/retro/2026-08-15-session-retro-s5.md",
       "lesson_id": "guard-adjacent-to-action",
       "outcome": "read-but-not-applied",
@@ -1980,7 +431,6 @@
     },
     {
       "event_id": "s6-premise-check-rescoped-sc11",
-      "session_id": "2026-08-15-s6",
       "source_retro": "charness-artifacts/retro/2026-08-15-session-retro-s6.md",
       "lesson_id": "premise-not-checked-against-source",
       "outcome": "changed-an-action",
@@ -1988,7 +438,6 @@
     },
     {
       "event_id": "2026-08-15-s6b1-premise-not-checked-against-source",
-      "session_id": "2026-08-15-s6b1",
       "source_retro": "charness-artifacts/retro/2026-08-16-session-retro.md",
       "lesson_id": "premise-not-checked-against-source",
       "outcome": "changed-an-action",
@@ -1996,7 +445,6 @@
     },
     {
       "event_id": "2026-08-15-s6b1-cause-named-from-one-observation",
-      "session_id": "2026-08-15-s6b1",
       "source_retro": "charness-artifacts/retro/2026-08-16-session-retro.md",
       "lesson_id": "cause-named-from-one-observation",
       "outcome": "changed-an-action",
@@ -2004,7 +452,6 @@
     },
     {
       "event_id": "2026-08-15-s6b1-changed-line-proof-before-broad-quality",
-      "session_id": "2026-08-15-s6b1",
       "source_retro": "charness-artifacts/retro/2026-08-16-session-retro.md",
       "lesson_id": "changed-line-proof-before-broad-quality",
       "outcome": "not-consulted",
@@ -2012,7 +459,6 @@
     },
     {
       "event_id": "2026-08-15-s6b1-guard-adjacent-to-action",
-      "session_id": "2026-08-15-s6b1",
       "source_retro": "charness-artifacts/retro/2026-08-16-session-retro.md",
       "lesson_id": "guard-adjacent-to-action",
       "outcome": "read-but-not-applied",
@@ -2020,7 +466,6 @@
     },
     {
       "event_id": "2026-08-15-s6b1-artifact-contract-late-feedback",
-      "session_id": "2026-08-15-s6b1",
       "source_retro": "charness-artifacts/retro/2026-08-16-session-retro.md",
       "lesson_id": "artifact-contract-late-feedback",
       "outcome": "read-but-not-applied",
@@ -2028,7 +473,6 @@
     },
     {
       "event_id": "2026-08-15-s6b1-durable-lesson-ledger-first",
-      "session_id": "2026-08-15-s6b1",
       "source_retro": "charness-artifacts/retro/2026-08-16-session-retro.md",
       "lesson_id": "durable-lesson-ledger-first",
       "outcome": "read-but-not-applied",
@@ -2036,7 +480,6 @@
     },
     {
       "event_id": "2026-08-16-s6b2-changed-line-order",
-      "session_id": "2026-08-16-s6b-2",
       "source_retro": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
       "lesson_id": "changed-line-proof-before-broad-quality",
       "outcome": "changed-an-action",
@@ -2044,7 +487,6 @@
     },
     {
       "event_id": "2026-08-16-s6b2-blind-class-first",
-      "session_id": "2026-08-16-s6b-2",
       "source_retro": "charness-artifacts/retro/2026-08-16-s6b-2-cost-as-a-proof-surface.md",
       "lesson_id": "detector-blind-class-unstated",
       "outcome": "changed-an-action",
@@ -2052,7 +494,6 @@
     },
     {
       "event_id": "s7-release-changed-line-order",
-      "session_id": "2026-08-16-s7-release",
       "source_retro": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
       "lesson_id": "changed-line-proof-before-broad-quality",
       "outcome": "read-but-not-applied",
@@ -2060,7 +501,6 @@
     },
     {
       "event_id": "s7-release-blind-class-stated",
-      "session_id": "2026-08-16-s7-release",
       "source_retro": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
       "lesson_id": "detector-blind-class-unstated",
       "outcome": "changed-an-action",
@@ -2068,7 +508,6 @@
     },
     {
       "event_id": "s7-release-agent-authored-scores",
-      "session_id": "2026-08-16-s7-release",
       "source_retro": "charness-artifacts/retro/2026-08-16-s7-6-0-0-release.md",
       "lesson_id": "agent-authored-score-role",
       "outcome": "changed-an-action",
@@ -2076,7 +515,6 @@
     },
     {
       "event_id": "s8-counted-limit",
-      "session_id": "2026-08-16-s8-debt",
       "source_retro": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
       "lesson_id": "counted-limit-retry-loop",
       "outcome": "read-but-not-applied",
@@ -2084,7 +522,6 @@
     },
     {
       "event_id": "s8-changed-line-order",
-      "session_id": "2026-08-16-s8-debt",
       "source_retro": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
       "lesson_id": "changed-line-proof-before-broad-quality",
       "outcome": "read-but-not-applied",
@@ -2092,7 +529,6 @@
     },
     {
       "event_id": "s8-detector-blind",
-      "session_id": "2026-08-16-s8-debt",
       "source_retro": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
       "lesson_id": "detector-blind-class-unstated",
       "outcome": "changed-an-action",
@@ -2100,7 +536,6 @@
     },
     {
       "event_id": "s8-coverage-claim",
-      "session_id": "2026-08-16-s8-debt",
       "source_retro": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
       "lesson_id": "coverage-claim-exceeds-the-pin",
       "outcome": "read-but-not-applied",
@@ -2108,7 +543,6 @@
     },
     {
       "event_id": "s8-one-observation",
-      "session_id": "2026-08-16-s8-debt",
       "source_retro": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
       "lesson_id": "cause-named-from-one-observation",
       "outcome": "pushed-a-wrong-action",
@@ -2116,7 +550,6 @@
     },
     {
       "event_id": "2026-08-16-09ff8e62-ba16-4350-a2aa-72f50e6dd988-changed-line-proof-before-broad-quality",
-      "session_id": "2026-08-16-09ff8e62-ba16-4350-a2aa-72f50e6dd988",
       "source_retro": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
       "lesson_id": "changed-line-proof-before-broad-quality",
       "outcome": "pushed-a-wrong-action",
@@ -2124,7 +557,6 @@
     },
     {
       "event_id": "2026-08-16-09ff8e62-ba16-4350-a2aa-72f50e6dd988-detector-blind-class-unstated",
-      "session_id": "2026-08-16-09ff8e62-ba16-4350-a2aa-72f50e6dd988",
       "source_retro": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
       "lesson_id": "detector-blind-class-unstated",
       "outcome": "read-but-not-applied",
@@ -2132,7 +564,6 @@
     },
     {
       "event_id": "2026-08-16-09ff8e62-ba16-4350-a2aa-72f50e6dd988-executed-vs-read-field",
-      "session_id": "2026-08-16-09ff8e62-ba16-4350-a2aa-72f50e6dd988",
       "source_retro": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
       "lesson_id": "executed-vs-read-field",
       "outcome": "changed-an-action",
@@ -2140,7 +571,6 @@
     },
     {
       "event_id": "2026-08-16-09ff8e62-ba16-4350-a2aa-72f50e6dd988-bar-recorded-as-prose",
-      "session_id": "2026-08-16-09ff8e62-ba16-4350-a2aa-72f50e6dd988",
       "source_retro": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
       "lesson_id": "bar-recorded-as-prose",
       "outcome": "changed-an-action",
@@ -2148,7 +578,6 @@
     },
     {
       "event_id": "2026-08-16-09ff8e62-ba16-4350-a2aa-72f50e6dd988-closeout-authoring-rework",
-      "session_id": "2026-08-16-09ff8e62-ba16-4350-a2aa-72f50e6dd988",
       "source_retro": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
       "lesson_id": "closeout-authoring-rework",
       "outcome": "not-consulted",
@@ -2156,7 +585,6 @@
     },
     {
       "event_id": "2026-08-16-7f96d281-13a0-42bc-8471-ec0edf00eae0-executed-vs-read-field",
-      "session_id": "2026-08-16-7f96d281-13a0-42bc-8471-ec0edf00eae0",
       "source_retro": "charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md",
       "lesson_id": "executed-vs-read-field",
       "outcome": "read-but-not-applied",
@@ -2164,7 +592,6 @@
     },
     {
       "event_id": "2026-08-16-7f96d281-13a0-42bc-8471-ec0edf00eae0-evidence-channel-identity",
-      "session_id": "2026-08-16-7f96d281-13a0-42bc-8471-ec0edf00eae0",
       "source_retro": "charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md",
       "lesson_id": "evidence-channel-identity",
       "outcome": "read-but-not-applied",
@@ -2172,7 +599,6 @@
     },
     {
       "event_id": "2026-08-16-7f96d281-13a0-42bc-8471-ec0edf00eae0-detector-blind-class-unstated",
-      "session_id": "2026-08-16-7f96d281-13a0-42bc-8471-ec0edf00eae0",
       "source_retro": "charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md",
       "lesson_id": "detector-blind-class-unstated",
       "outcome": "changed-an-action",
@@ -2180,7 +606,6 @@
     },
     {
       "event_id": "2026-08-16-7f96d281-13a0-42bc-8471-ec0edf00eae0-bar-recorded-as-prose",
-      "session_id": "2026-08-16-7f96d281-13a0-42bc-8471-ec0edf00eae0",
       "source_retro": "charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md",
       "lesson_id": "bar-recorded-as-prose",
       "outcome": "changed-an-action",
@@ -2188,7 +613,6 @@
     },
     {
       "event_id": "2026-08-16-7f96d281-13a0-42bc-8471-ec0edf00eae0-changed-line-proof-before-broad-quality",
-      "session_id": "2026-08-16-7f96d281-13a0-42bc-8471-ec0edf00eae0",
       "source_retro": "charness-artifacts/retro/2026-08-16-session-retro-7f96d281-13a0-42bc-8471-ec0edf00eae0.md",
       "lesson_id": "changed-line-proof-before-broad-quality",
       "outcome": "changed-an-action",
@@ -2196,7 +620,6 @@
     },
     {
       "event_id": "s17-green-test",
-      "session_id": "2026-08-17-autonomous-improve",
       "source_retro": "charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md",
       "lesson_id": "green-test-is-not-covered-line",
       "outcome": "changed-an-action",
@@ -2204,7 +627,6 @@
     },
     {
       "event_id": "s17-blind-class",
-      "session_id": "2026-08-17-autonomous-improve",
       "source_retro": "charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md",
       "lesson_id": "detector-blind-class-unstated",
       "outcome": "read-but-not-applied",
@@ -2212,7 +634,6 @@
     },
     {
       "event_id": "s17-changed-line-order",
-      "session_id": "2026-08-17-autonomous-improve",
       "source_retro": "charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md",
       "lesson_id": "changed-line-proof-before-broad-quality",
       "outcome": "read-but-not-applied",
@@ -2220,7 +641,6 @@
     },
     {
       "event_id": "s17-closeout-order",
-      "session_id": "2026-08-17-autonomous-improve",
       "source_retro": "charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md",
       "lesson_id": "closeout-authoring-rework",
       "outcome": "read-but-not-applied",
@@ -2228,7 +648,6 @@
     },
     {
       "event_id": "s17-prose-bar",
-      "session_id": "2026-08-17-autonomous-improve",
       "source_retro": "charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md",
       "lesson_id": "bar-recorded-as-prose",
       "outcome": "read-but-not-applied",
@@ -2236,7 +655,6 @@
     },
     {
       "event_id": "2026-08-17-6f1a9086-91f2-4df9-ba9d-56eeb222459b-harness-differential-not-test",
-      "session_id": "2026-08-17-6f1a9086-91f2-4df9-ba9d-56eeb222459b",
       "source_retro": "charness-artifacts/retro/2026-08-18-session-retro.md",
       "lesson_id": "harness-differential-not-test",
       "outcome": "changed-an-action",
@@ -2244,7 +662,6 @@
     },
     {
       "event_id": "2026-08-17-6f1a9086-91f2-4df9-ba9d-56eeb222459b-changed-line-proof-before-broad-quality",
-      "session_id": "2026-08-17-6f1a9086-91f2-4df9-ba9d-56eeb222459b",
       "source_retro": "charness-artifacts/retro/2026-08-18-session-retro.md",
       "lesson_id": "changed-line-proof-before-broad-quality",
       "outcome": "read-but-not-applied",
@@ -2252,7 +669,6 @@
     },
     {
       "event_id": "2026-08-17-6f1a9086-91f2-4df9-ba9d-56eeb222459b-closeout-authoring-rework",
-      "session_id": "2026-08-17-6f1a9086-91f2-4df9-ba9d-56eeb222459b",
       "source_retro": "charness-artifacts/retro/2026-08-18-session-retro.md",
       "lesson_id": "closeout-authoring-rework",
       "outcome": "read-but-not-applied",
@@ -2260,7 +676,6 @@
     },
     {
       "event_id": "2026-08-17-6f1a9086-91f2-4df9-ba9d-56eeb222459b-detector-blind-class-unstated",
-      "session_id": "2026-08-17-6f1a9086-91f2-4df9-ba9d-56eeb222459b",
       "source_retro": "charness-artifacts/retro/2026-08-18-session-retro.md",
       "lesson_id": "detector-blind-class-unstated",
       "outcome": "not-consulted",
@@ -2268,7 +683,6 @@
     },
     {
       "event_id": "2026-08-17-2124d69b-44fb-439a-9963-8f00f7effa35-e1",
-      "session_id": "2026-08-17-2124d69b-44fb-439a-9963-8f00f7effa35",
       "source_retro": "charness-artifacts/retro/2026-08-18-session-retro-second.md",
       "lesson_id": "changed-line-proof-before-broad-quality",
       "outcome": "changed-an-action",
@@ -2276,7 +690,6 @@
     },
     {
       "event_id": "2026-08-17-2124d69b-44fb-439a-9963-8f00f7effa35-e2",
-      "session_id": "2026-08-17-2124d69b-44fb-439a-9963-8f00f7effa35",
       "source_retro": "charness-artifacts/retro/2026-08-18-session-retro-second.md",
       "lesson_id": "green-test-is-not-covered-line",
       "outcome": "changed-an-action",
@@ -2284,7 +697,6 @@
     },
     {
       "event_id": "2026-08-17-2124d69b-44fb-439a-9963-8f00f7effa35-e3",
-      "session_id": "2026-08-17-2124d69b-44fb-439a-9963-8f00f7effa35",
       "source_retro": "charness-artifacts/retro/2026-08-18-session-retro-second.md",
       "lesson_id": "detector-blind-class-unstated",
       "outcome": "changed-an-action",
@@ -2292,7 +704,6 @@
     },
     {
       "event_id": "2026-08-17-2124d69b-44fb-439a-9963-8f00f7effa35-e4",
-      "session_id": "2026-08-17-2124d69b-44fb-439a-9963-8f00f7effa35",
       "source_retro": "charness-artifacts/retro/2026-08-18-session-retro-second.md",
       "lesson_id": "graduation-is-proposal",
       "outcome": "changed-an-action",
@@ -2300,7 +711,6 @@
     },
     {
       "event_id": "2026-08-18-9ce16d03-ac24-4658-b9d4-be137caec8e6-detector-blind-class-unstated",
-      "session_id": "2026-08-18-9ce16d03-ac24-4658-b9d4-be137caec8e6",
       "source_retro": "charness-artifacts/retro/2026-08-18-adapter-version-containment-and-the-consumer-census.md",
       "lesson_id": "detector-blind-class-unstated",
       "outcome": "changed-an-action",
@@ -2308,7 +718,6 @@
     },
     {
       "event_id": "2026-08-18-9ce16d03-ac24-4658-b9d4-be137caec8e6-green-test-is-not-covered-line",
-      "session_id": "2026-08-18-9ce16d03-ac24-4658-b9d4-be137caec8e6",
       "source_retro": "charness-artifacts/retro/2026-08-18-adapter-version-containment-and-the-consumer-census.md",
       "lesson_id": "green-test-is-not-covered-line",
       "outcome": "changed-an-action",
@@ -2316,7 +725,6 @@
     },
     {
       "event_id": "2026-08-18-9ce16d03-ac24-4658-b9d4-be137caec8e6-changed-line-proof-before-broad-quality",
-      "session_id": "2026-08-18-9ce16d03-ac24-4658-b9d4-be137caec8e6",
       "source_retro": "charness-artifacts/retro/2026-08-18-adapter-version-containment-and-the-consumer-census.md",
       "lesson_id": "changed-line-proof-before-broad-quality",
       "outcome": "changed-an-action",
@@ -2324,7 +732,6 @@
     },
     {
       "event_id": "2026-08-18-9ce16d03-ac24-4658-b9d4-be137caec8e6-keyword-in-prose-is-a-directive",
-      "session_id": "2026-08-18-9ce16d03-ac24-4658-b9d4-be137caec8e6",
       "source_retro": "charness-artifacts/retro/2026-08-18-adapter-version-containment-and-the-consumer-census.md",
       "lesson_id": "keyword-in-prose-is-a-directive",
       "outcome": "changed-an-action",
@@ -2332,7 +739,6 @@
     },
     {
       "event_id": "2026-08-18-9ce16d03-ac24-4658-b9d4-be137caec8e6-bar-recorded-as-prose",
-      "session_id": "2026-08-18-9ce16d03-ac24-4658-b9d4-be137caec8e6",
       "source_retro": "charness-artifacts/retro/2026-08-18-adapter-version-containment-and-the-consumer-census.md",
       "lesson_id": "bar-recorded-as-prose",
       "outcome": "changed-an-action",
@@ -2340,7 +746,6 @@
     },
     {
       "event_id": "2026-08-18-7647b3e5-9327-4d3c-99ba-2e0688df29ac-green-test-is-not-covered-line",
-      "session_id": "2026-08-18-7647b3e5-9327-4d3c-99ba-2e0688df29ac",
       "source_retro": "charness-artifacts/retro/2026-08-19-session-retro.md",
       "lesson_id": "green-test-is-not-covered-line",
       "outcome": "changed-an-action",
@@ -2348,7 +753,6 @@
     },
     {
       "event_id": "2026-08-18-7647b3e5-9327-4d3c-99ba-2e0688df29ac-changed-line-proof-before-broad-quality",
-      "session_id": "2026-08-18-7647b3e5-9327-4d3c-99ba-2e0688df29ac",
       "source_retro": "charness-artifacts/retro/2026-08-19-session-retro.md",
       "lesson_id": "changed-line-proof-before-broad-quality",
       "outcome": "changed-an-action",
@@ -2356,7 +760,6 @@
     },
     {
       "event_id": "2026-08-18-7647b3e5-9327-4d3c-99ba-2e0688df29ac-line-anchored-ledger-fields",
-      "session_id": "2026-08-18-7647b3e5-9327-4d3c-99ba-2e0688df29ac",
       "source_retro": "charness-artifacts/retro/2026-08-19-session-retro.md",
       "lesson_id": "line-anchored-ledger-fields",
       "outcome": "changed-an-action",
@@ -2364,7 +767,6 @@
     },
     {
       "event_id": "2026-08-18-7647b3e5-9327-4d3c-99ba-2e0688df29ac-detector-blind-class-unstated",
-      "session_id": "2026-08-18-7647b3e5-9327-4d3c-99ba-2e0688df29ac",
       "source_retro": "charness-artifacts/retro/2026-08-19-session-retro.md",
       "lesson_id": "detector-blind-class-unstated",
       "outcome": "changed-an-action",
@@ -2372,7 +774,6 @@
     },
     {
       "event_id": "adtr-01",
-      "session_id": "2026-08-19-6de8b471-a44c-4545-b0ce-cfd590da6ee2",
       "source_retro": "charness-artifacts/retro/2026-08-19-adapter-debt-tooling-and-remainder.md",
       "lesson_id": "green-test-is-not-covered-line",
       "outcome": "changed-an-action",
@@ -2380,7 +781,6 @@
     },
     {
       "event_id": "adtr-03",
-      "session_id": "2026-08-19-6de8b471-a44c-4545-b0ce-cfd590da6ee2",
       "source_retro": "charness-artifacts/retro/2026-08-19-adapter-debt-tooling-and-remainder.md",
       "lesson_id": "detector-blind-class-unstated",
       "outcome": "changed-an-action",
@@ -2388,7 +788,6 @@
     },
     {
       "event_id": "adtr-04",
-      "session_id": "2026-08-19-6de8b471-a44c-4545-b0ce-cfd590da6ee2",
       "source_retro": "charness-artifacts/retro/2026-08-19-adapter-debt-tooling-and-remainder.md",
       "lesson_id": "mutation-producer-selection",
       "outcome": "changed-an-action",
@@ -2396,7 +795,6 @@
     },
     {
       "event_id": "adtr-05",
-      "session_id": "2026-08-19-6de8b471-a44c-4545-b0ce-cfd590da6ee2",
       "source_retro": "charness-artifacts/retro/2026-08-19-adapter-debt-tooling-and-remainder.md",
       "lesson_id": "bar-recorded-as-prose",
       "outcome": "read-but-not-applied",
@@ -2404,7 +802,6 @@
     },
     {
       "event_id": "adtr-02",
-      "session_id": "2026-08-19-6de8b471-a44c-4545-b0ce-cfd590da6ee2",
       "source_retro": "charness-artifacts/retro/2026-08-19-adapter-debt-tooling-and-remainder.md",
       "lesson_id": "changed-line-proof-before-broad-quality",
       "outcome": "changed-an-action",
@@ -2412,7 +809,6 @@
     },
     {
       "event_id": "2026-08-19-11053f1e-d8dc-48a4-a043-f0185f595f07-detector-blind-class-unstated",
-      "session_id": "2026-08-19-11053f1e-d8dc-48a4-a043-f0185f595f07",
       "source_retro": "charness-artifacts/retro/2026-08-19-session-retro-11053f1e-d8dc-48a4-a043-f0185f595f07.md",
       "lesson_id": "detector-blind-class-unstated",
       "outcome": "changed-an-action",
@@ -2420,7 +816,6 @@
     },
     {
       "event_id": "2026-08-19-11053f1e-d8dc-48a4-a043-f0185f595f07-bar-recorded-as-prose",
-      "session_id": "2026-08-19-11053f1e-d8dc-48a4-a043-f0185f595f07",
       "source_retro": "charness-artifacts/retro/2026-08-19-session-retro-11053f1e-d8dc-48a4-a043-f0185f595f07.md",
       "lesson_id": "bar-recorded-as-prose",
       "outcome": "read-but-not-applied",
@@ -2428,7 +823,6 @@
     },
     {
       "event_id": "2026-08-19-11053f1e-d8dc-48a4-a043-f0185f595f07-goal-closeout-evidence-binding",
-      "session_id": "2026-08-19-11053f1e-d8dc-48a4-a043-f0185f595f07",
       "source_retro": "charness-artifacts/retro/2026-08-19-session-retro-11053f1e-d8dc-48a4-a043-f0185f595f07.md",
       "lesson_id": "goal-closeout-evidence-binding",
       "outcome": "changed-an-action",
@@ -2436,7 +830,6 @@
     },
     {
       "event_id": "2026-08-19-11053f1e-d8dc-48a4-a043-f0185f595f07-one-engine-per-pattern",
-      "session_id": "2026-08-19-11053f1e-d8dc-48a4-a043-f0185f595f07",
       "source_retro": "charness-artifacts/retro/2026-08-19-session-retro-11053f1e-d8dc-48a4-a043-f0185f595f07.md",
       "lesson_id": "one-engine-per-pattern",
       "outcome": "changed-an-action",
@@ -2444,7 +837,6 @@
     },
     {
       "event_id": "2026-08-19-11053f1e-d8dc-48a4-a043-f0185f595f07-conservative-static-verdicts",
-      "session_id": "2026-08-19-11053f1e-d8dc-48a4-a043-f0185f595f07",
       "source_retro": "charness-artifacts/retro/2026-08-19-session-retro-11053f1e-d8dc-48a4-a043-f0185f595f07.md",
       "lesson_id": "conservative-static-verdicts",
       "outcome": "changed-an-action",
@@ -2452,7 +844,6 @@
     },
     {
       "event_id": "2026-08-19-11053f1e-d8dc-48a4-a043-f0185f595f07-isolated-agent-base-mismatch",
-      "session_id": "2026-08-19-11053f1e-d8dc-48a4-a043-f0185f595f07",
       "source_retro": "charness-artifacts/retro/2026-08-19-session-retro-11053f1e-d8dc-48a4-a043-f0185f595f07.md",
       "lesson_id": "isolated-agent-base-mismatch",
       "outcome": "changed-an-action",
@@ -2460,7 +851,6 @@
     },
     {
       "event_id": "2026-08-20-01a01e68-fafb-7fc1-b27c-51a1bc88014b-premises-not-debt",
-      "session_id": "2026-08-20-01a01e68-fafb-7fc1-b27c-51a1bc88014b",
       "source_retro": "charness-artifacts/retro/2026-08-20-release-goal-shaping.md",
       "lesson_id": "premises-not-debt",
       "outcome": "changed-an-action",
@@ -2468,7 +858,6 @@
     },
     {
       "event_id": "2026-08-20-01a01e68-fafb-7fc1-b27c-51a1bc88014b-detector-blind-class-unstated",
-      "session_id": "2026-08-20-01a01e68-fafb-7fc1-b27c-51a1bc88014b",
       "source_retro": "charness-artifacts/retro/2026-08-20-release-goal-shaping.md",
       "lesson_id": "detector-blind-class-unstated",
       "outcome": "changed-an-action",
@@ -2476,7 +865,6 @@
     },
     {
       "event_id": "2026-08-20-01a01e68-fafb-7fc1-b27c-51a1bc88014b-changed-line-proof-before-broad-quality",
-      "session_id": "2026-08-20-01a01e68-fafb-7fc1-b27c-51a1bc88014b",
       "source_retro": "charness-artifacts/retro/2026-08-20-release-goal-shaping.md",
       "lesson_id": "changed-line-proof-before-broad-quality",
       "outcome": "changed-an-action",
@@ -2484,7 +872,6 @@
     },
     {
       "event_id": "2026-08-20-01a01e68-fafb-7fc1-b27c-51a1bc88014b-goal-closeout-evidence-binding",
-      "session_id": "2026-08-20-01a01e68-fafb-7fc1-b27c-51a1bc88014b",
       "source_retro": "charness-artifacts/retro/2026-08-20-release-goal-shaping.md",
       "lesson_id": "goal-closeout-evidence-binding",
       "outcome": "changed-an-action",
@@ -2492,7 +879,6 @@
     },
     {
       "event_id": "2026-08-20-01a01e68-fafb-7fc1-b27c-51a1bc88014b-green-test-is-not-covered-line",
-      "session_id": "2026-08-20-01a01e68-fafb-7fc1-b27c-51a1bc88014b",
       "source_retro": "charness-artifacts/retro/2026-08-20-release-goal-shaping.md",
       "lesson_id": "green-test-is-not-covered-line",
       "outcome": "changed-an-action",
@@ -2500,7 +886,6 @@
     },
     {
       "event_id": "2026-08-20-01a01e68-fafb-7fc1-b27c-51a1bc88014b-agent-authored-score-role",
-      "session_id": "2026-08-20-01a01e68-fafb-7fc1-b27c-51a1bc88014b",
       "source_retro": "charness-artifacts/retro/2026-08-20-release-goal-shaping.md",
       "lesson_id": "agent-authored-score-role",
       "outcome": "changed-an-action",
@@ -2508,7 +893,6 @@
     },
     {
       "event_id": "2026-08-20-01a01e8e-3ede-7053-8d51-0f9afd502234-changed-line-proof-before-broad-quality",
-      "session_id": "2026-08-20-01a01e8e-3ede-7053-8d51-0f9afd502234",
       "source_retro": "charness-artifacts/retro/2026-08-21-session-retro.md",
       "lesson_id": "changed-line-proof-before-broad-quality",
       "outcome": "changed-an-action",
@@ -2516,7 +900,6 @@
     },
     {
       "event_id": "2026-08-20-01a01e8e-3ede-7053-8d51-0f9afd502234-goal-closeout-evidence-binding",
-      "session_id": "2026-08-20-01a01e8e-3ede-7053-8d51-0f9afd502234",
       "source_retro": "charness-artifacts/retro/2026-08-21-session-retro.md",
       "lesson_id": "goal-closeout-evidence-binding",
       "outcome": "changed-an-action",
@@ -2524,7 +907,6 @@
     },
     {
       "event_id": "2026-08-20-01a01e8e-3ede-7053-8d51-0f9afd502234-green-test-is-not-covered-line",
-      "session_id": "2026-08-20-01a01e8e-3ede-7053-8d51-0f9afd502234",
       "source_retro": "charness-artifacts/retro/2026-08-21-session-retro.md",
       "lesson_id": "green-test-is-not-covered-line",
       "outcome": "changed-an-action",
@@ -2532,7 +914,6 @@
     },
     {
       "event_id": "2026-08-20-goal-continuation-changed-line-proof-before-broad-quality",
-      "session_id": "2026-08-20-goal-continuation",
       "source_retro": "charness-artifacts/retro/2026-08-21-goal-continuation-retro.md",
       "lesson_id": "changed-line-proof-before-broad-quality",
       "outcome": "changed-an-action",
@@ -2540,7 +921,6 @@
     },
     {
       "event_id": "2026-08-20-goal-continuation-goal-closeout-evidence-binding",
-      "session_id": "2026-08-20-goal-continuation",
       "source_retro": "charness-artifacts/retro/2026-08-21-goal-continuation-retro.md",
       "lesson_id": "goal-closeout-evidence-binding",
       "outcome": "changed-an-action",
@@ -2548,7 +928,6 @@
     },
     {
       "event_id": "2026-08-20-goal-continuation-green-test-is-not-covered-line",
-      "session_id": "2026-08-20-goal-continuation",
       "source_retro": "charness-artifacts/retro/2026-08-21-goal-continuation-retro.md",
       "lesson_id": "green-test-is-not-covered-line",
       "outcome": "changed-an-action",
@@ -2556,7 +935,6 @@
     },
     {
       "event_id": "2026-08-21-release-candidate-changed-line-proof-before-broad-quality",
-      "session_id": "2026-08-21-release-candidate",
       "source_retro": "charness-artifacts/retro/2026-08-21-release-candidate.md",
       "lesson_id": "changed-line-proof-before-broad-quality",
       "outcome": "changed-an-action",
@@ -2564,7 +942,6 @@
     },
     {
       "event_id": "2026-08-21-release-candidate-goal-closeout-evidence-binding",
-      "session_id": "2026-08-21-release-candidate",
       "source_retro": "charness-artifacts/retro/2026-08-21-release-candidate.md",
       "lesson_id": "goal-closeout-evidence-binding",
       "outcome": "changed-an-action",
@@ -2572,7 +949,6 @@
     },
     {
       "event_id": "2026-08-21-goal-r2-resume-proof-order",
-      "session_id": "2026-08-21-goal-r2-resume",
       "source_retro": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
       "lesson_id": "changed-line-proof-before-broad-quality",
       "outcome": "changed-an-action",
@@ -2580,7 +956,6 @@
     },
     {
       "event_id": "2026-08-21-goal-r2-resume-command-boundary",
-      "session_id": "2026-08-21-goal-r2-resume",
       "source_retro": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
       "lesson_id": "proof-surface-message-drift",
       "outcome": "changed-an-action",
@@ -2588,7 +963,6 @@
     },
     {
       "event_id": "2026-08-21-goal-r2-resume-structural-rationale",
-      "session_id": "2026-08-21-goal-r2-resume",
       "source_retro": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
       "lesson_id": "bar-recorded-as-prose",
       "outcome": "changed-an-action",
@@ -2596,7 +970,6 @@
     },
     {
       "event_id": "2026-08-21-r2-semantic-packet-claims-reader",
-      "session_id": "2026-08-21-r2-semantic-packet",
       "source_retro": "charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md",
       "lesson_id": "prose-claim-without-a-reader",
       "outcome": "changed-an-action",
@@ -2604,7 +977,6 @@
     },
     {
       "event_id": "2026-08-21-r2-semantic-packet-line-verdict",
-      "session_id": "2026-08-21-r2-semantic-packet",
       "source_retro": "charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md",
       "lesson_id": "green-test-is-not-covered-line",
       "outcome": "changed-an-action",
@@ -2612,7 +984,6 @@
     },
     {
       "event_id": "2026-08-21-r3-delivery-review-closeout",
-      "session_id": "2026-08-21-r3-delivery-provenance-repair-review",
       "source_retro": "charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md",
       "lesson_id": "goal-closeout-evidence-binding",
       "outcome": "changed-an-action",
@@ -2620,7 +991,6 @@
     },
     {
       "event_id": "2026-08-21-r3-delivery-review-command",
-      "session_id": "2026-08-21-r3-delivery-provenance-repair-review",
       "source_retro": "charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md",
       "lesson_id": "proof-surface-message-drift",
       "outcome": "changed-an-action",
@@ -2628,7 +998,6 @@
     },
     {
       "event_id": "2026-08-22-a-tracker-closeout-changed-line-order",
-      "session_id": "2026-08-22-a-tracker-closeout",
       "source_retro": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
       "lesson_id": "changed-line-proof-before-broad-quality",
       "outcome": "changed-an-action",
@@ -2636,7 +1005,6 @@
     },
     {
       "event_id": "2026-08-22-a-tracker-closeout-green-not-covered",
-      "session_id": "2026-08-22-a-tracker-closeout",
       "source_retro": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
       "lesson_id": "green-test-is-not-covered-line",
       "outcome": "changed-an-action",
@@ -2644,7 +1012,6 @@
     },
     {
       "event_id": "2026-08-22-a-tracker-closeout-help-before-flags",
-      "session_id": "2026-08-22-a-tracker-closeout",
       "source_retro": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
       "lesson_id": "proof-surface-message-drift",
       "outcome": "changed-an-action",
@@ -2652,7 +1019,6 @@
     },
     {
       "event_id": "2026-08-22-a-tracker-closeout-blind-class",
-      "session_id": "2026-08-22-a-tracker-closeout",
       "source_retro": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
       "lesson_id": "detector-blind-class-unstated",
       "outcome": "read-but-not-applied",
@@ -2660,7 +1026,6 @@
     },
     {
       "event_id": "2026-08-22-a-tracker-closeout-authored-scores",
-      "session_id": "2026-08-22-a-tracker-closeout",
       "source_retro": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
       "lesson_id": "agent-authored-score-role",
       "outcome": "changed-an-action",
@@ -2668,7 +1033,6 @@
     },
     {
       "event_id": "2026-08-22-b-release-preflight-order",
-      "session_id": "2026-08-22-b-release",
       "source_retro": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
       "lesson_id": "release-candidate-preflight-order",
       "outcome": "changed-an-action",
@@ -2676,7 +1040,6 @@
     },
     {
       "event_id": "2026-08-22-b-release-identity-churn",
-      "session_id": "2026-08-22-b-release",
       "source_retro": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
       "lesson_id": "release-proof-identity-churn",
       "outcome": "changed-an-action",
@@ -2684,7 +1047,6 @@
     },
     {
       "event_id": "2026-08-22-b-release-help-before-flags",
-      "session_id": "2026-08-22-b-release",
       "source_retro": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
       "lesson_id": "proof-surface-message-drift",
       "outcome": "changed-an-action",
@@ -2692,7 +1054,6 @@
     },
     {
       "event_id": "2026-08-22-b-release-blind-class",
-      "session_id": "2026-08-22-b-release",
       "source_retro": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
       "lesson_id": "detector-blind-class-unstated",
       "outcome": "read-but-not-applied",
@@ -2700,7 +1061,6 @@
     },
     {
       "event_id": "2026-08-22-b-release-authored-scores",
-      "session_id": "2026-08-22-b-release",
       "source_retro": "charness-artifacts/retro/2026-08-22-release-6-2-2-preparation-retro.md",
       "lesson_id": "agent-authored-score-role",
       "outcome": "changed-an-action",
@@ -2708,7 +1068,6 @@
     },
     {
       "event_id": "2026-08-22-proof-cost-portability-cadence-changed-line-proof-before-broad-quality",
-      "session_id": "2026-08-22-proof-cost-portability-cadence",
       "source_retro": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
       "lesson_id": "changed-line-proof-before-broad-quality",
       "outcome": "changed-an-action",
@@ -2716,7 +1075,6 @@
     },
     {
       "event_id": "2026-08-22-proof-cost-portability-cadence-green-test-is-not-covered-line",
-      "session_id": "2026-08-22-proof-cost-portability-cadence",
       "source_retro": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
       "lesson_id": "green-test-is-not-covered-line",
       "outcome": "changed-an-action",
@@ -2724,7 +1082,6 @@
     },
     {
       "event_id": "2026-08-22-proof-cost-portability-cadence-rule-exists-but-does-not-bind",
-      "session_id": "2026-08-22-proof-cost-portability-cadence",
       "source_retro": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
       "lesson_id": "rule-exists-but-does-not-bind",
       "outcome": "changed-an-action",
@@ -2732,7 +1089,6 @@
     },
     {
       "event_id": "2026-08-22-proof-cost-portability-cadence-bar-recorded-as-prose",
-      "session_id": "2026-08-22-proof-cost-portability-cadence",
       "source_retro": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
       "lesson_id": "bar-recorded-as-prose",
       "outcome": "not-consulted",
@@ -2740,7 +1096,6 @@
     },
     {
       "event_id": "gbp-2026-08-23-01",
-      "session_id": "2026-08-23-gate-by-property",
       "source_retro": "charness-artifacts/retro/2026-08-23-gate-by-property-four-slices-and-the-goal-committing-its-own-defect-twice.md",
       "lesson_id": "bar-recorded-as-prose",
       "outcome": "read-but-not-applied",
@@ -2748,7 +1103,6 @@
     },
     {
       "event_id": "gbp-2026-08-23-04",
-      "session_id": "2026-08-23-gate-by-property",
       "source_retro": "charness-artifacts/retro/2026-08-23-gate-by-property-four-slices-and-the-goal-committing-its-own-defect-twice.md",
       "lesson_id": "runtime-budget-contention",
       "outcome": "changed-an-action",
@@ -2756,7 +1110,6 @@
     },
     {
       "event_id": "gbp-2026-08-23-05",
-      "session_id": "2026-08-23-gate-by-property",
       "source_retro": "charness-artifacts/retro/2026-08-23-gate-by-property-four-slices-and-the-goal-committing-its-own-defect-twice.md",
       "lesson_id": "proof-surface-message-drift",
       "outcome": "changed-an-action",
@@ -2764,7 +1117,6 @@
     },
     {
       "event_id": "gbp-2026-08-23-02",
-      "session_id": "2026-08-23-gate-by-property",
       "source_retro": "charness-artifacts/retro/2026-08-23-gate-by-property-four-slices-and-the-goal-committing-its-own-defect-twice.md",
       "lesson_id": "changed-line-proof-before-broad-quality",
       "outcome": "changed-an-action",
@@ -2772,7 +1124,6 @@
     },
     {
       "event_id": "gbp-2026-08-23-03",
-      "session_id": "2026-08-23-gate-by-property",
       "source_retro": "charness-artifacts/retro/2026-08-23-gate-by-property-four-slices-and-the-goal-committing-its-own-defect-twice.md",
       "lesson_id": "removal-consumer-grep-incomplete",
       "outcome": "changed-an-action",

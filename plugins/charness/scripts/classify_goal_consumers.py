@@ -32,7 +32,6 @@ _HISTORICAL_MARKERS = (
     "coverage_debt/",
     "goal-artifact.md",
     "docs/deferred-decisions.md",
-    "docs/prompt-mutation-policy.md",
     "docs/public-skill-dogfood.json",
 )
 _HISTORICAL_PATH_PREFIXES = (
@@ -42,14 +41,7 @@ _HISTORICAL_PATH_PREFIXES = (
 _HISTORICAL_PATHS = frozenset(
     {
         "docs/deferred-decisions.md",
-        "docs/prompt-mutation-policy.md",
         "docs/public-skill-dogfood.json",
-        "scripts/generate_prompt_mutants.py",
-        "scripts/prompt_mutant_lib.py",
-        "scripts/score_prompt_mutation_survival.py",
-        "scripts/score_prompt_mutation_survival_lib.py",
-        "scripts/witness_coverage.py",
-        "scripts/witness_coverage_lib.py",
         "skills/public/achieve/scripts/audit_disposition_corpus.py",
     }
 )
@@ -59,8 +51,6 @@ _DRAFT_PROVENANCE_PATHS = frozenset(
         "scripts/check_artifact_surface_preflight.py",
         "scripts/check_docs_graph.py",
         "scripts/check_spec_evidence_durability.py",
-        "scripts/closeout_bundle.py",
-        "scripts/final_bundle_preflight_evidence.py",
         "scripts/host_log_probe_lib.py",
         "scripts/premise_preflight_lib.py",
         "scripts/retro_persistence_lib.py",

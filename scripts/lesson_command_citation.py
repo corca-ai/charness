@@ -2,8 +2,8 @@
 
 A refusal that names a path the reader cannot run is worse than one that names
 nothing: the operator follows it, gets a second, unrelated error, and reads the tool
-as broken rather than the instruction as wrong. That happened for real -- a lesson
-session opened from an installed plugin failed with an instruction naming
+as broken rather than the instruction as wrong. That happened for real -- the
+lesson-selection path opened from an installed plugin failed with an instruction naming
 ``scripts/build_retro_lesson_selection_index.py``, which the consuming repo does not
 have, and the recovery from THAT failure named
 ``skills/public/retro/scripts/refresh_recent_lessons.py``, which exists in neither the
@@ -26,15 +26,14 @@ shell gates refuse outright.
 
 Split out of ``recent_lessons_lib`` when that file passed its length cap. The grouping
 is the concept, not the spill: every function here answers "what do I tell this
-reader to run", and the sibling copies of that question in
-the explicit lesson-ledger seed command and
-``lesson_evaluation_records_lib.repo_or_installed_command`` resolve it in the same
-order (repo-local first, then the copy beside this module) on purpose.
+reader to run", including the explicit lesson-ledger seed command.
 """
 
 from __future__ import annotations
 
 from pathlib import Path
+
+from scripts.helper_provenance_lib import is_charness_source_tree
 
 INDEX_SCRIPT_NAME = "build_retro_lesson_selection_index.py"
 INDEX_SCRIPT_RELATIVE = Path("scripts") / INDEX_SCRIPT_NAME
@@ -55,14 +54,26 @@ def script_tree_root() -> Path:
     return Path(__file__).resolve().parent.parent
 
 
+def repo_or_installed_command(repo_root: Path, script_name: str, *args: str) -> str:
+    """Spell a repo-owned script for the tree the reader actually has."""
+    relative = Path("scripts") / script_name
+    candidates: list[Path] = []
+    if is_charness_source_tree(repo_root):
+        candidates.append(repo_root / relative)
+    candidates.append(script_tree_root() / relative)
+    tail = " ".join(args)
+    for candidate in candidates:
+        if candidate.is_file():
+            return f"python3 {spell(candidate, repo_root, relative)} {tail}".rstrip()
+    return f"python3 {PLUGIN_DIR_TOKEN}/{relative.as_posix()} {tail}".rstrip()
+
+
 def repo_carries_index_builder(repo_root: Path) -> bool:
     """True when the target is a charness SOURCE tree that owns its own index builder.
 
     Both conditions, not just the file test. See the module docstring for the export
     case that made the file test alone wrong.
     """
-    from scripts.helper_provenance_lib import is_charness_source_tree
-
     return is_charness_source_tree(repo_root) and (repo_root / INDEX_SCRIPT_RELATIVE).is_file()
 
 

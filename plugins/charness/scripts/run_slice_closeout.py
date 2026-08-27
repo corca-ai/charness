@@ -19,8 +19,6 @@ collect_changed_paths_since_resolved_base = _scripts_surfaces_lib_module.collect
 resolve_explicit_campaign_base = _scripts_surfaces_lib_module.resolve_explicit_campaign_base
 load_surfaces = _scripts_surfaces_lib_module.load_surfaces
 match_surfaces = _scripts_surfaces_lib_module.match_surfaces
-_scripts_plan_cautilus_proof_module = import_repo_module(__file__, "scripts.plan_cautilus_proof")
-plan_cautilus_proof = _scripts_plan_cautilus_proof_module.plan_cautilus_proof
 _scripts_risk_interrupt_lib_module = import_repo_module(__file__, "scripts.risk_interrupt_lib")
 plan_risk_interrupt = _scripts_risk_interrupt_lib_module.plan_risk_interrupt
 _slice_closeout_risk_interrupt = import_repo_module(__file__, "scripts.slice_closeout_risk_interrupt")
@@ -139,26 +137,6 @@ def _maybe_block_on_unmatched(payload: dict[str, object], *, allow_unmatched: bo
         "add the missing coverage or rerun with --allow-unmatched"
     )
     return _emit_payload(payload, stderr_message=payload["error"])
-
-
-def _maybe_block_on_cautilus(
-    repo_root: Path, payload: dict[str, object], *, ack_skill_review: bool
-) -> int | None:
-    cautilus_plan = plan_cautilus_proof(repo_root, payload["changed_paths"])
-    payload["cautilus_plan"] = cautilus_plan
-    # Cautilus is eval-only and ask-before-run, so the planner never declares a
-    # slice's proof mandatory; the public-skill review below is the only arm that
-    # blocks. A `required` flag used to sit here, hardcoded False since 66c7a729,
-    # with a whole blocking branch behind it that could not execute.
-    if cautilus_plan["skill_validation_recommendations"] and not ack_skill_review:
-        payload["status"] = "blocked"
-        payload["error"] = (
-            "public-skill validation review is required for this slice; inspect the dogfood/scenario "
-            "follow-ups in `cautilus_plan` and rerun with --ack-cautilus-skill-review after recording "
-            "the decision"
-        )
-        return _emit_payload(payload, stderr_message=payload["error"])
-    return None
 
 
 def _maybe_block_on_risk_interrupt(
@@ -341,8 +319,8 @@ def _run_preexecution_blocks(
     base: str = "origin/main",
 ) -> int | None:
     """Fail-fast pre-execution gate chain; returns an exit code on the first block.
-    #332: the cheap structural sweep runs FIRST (before surface-match / cautilus /
-    risk interrupt / broad pytest), then advisories, unmatched, cautilus, risk.
+    #332: the cheap structural sweep runs FIRST (before surface-match / risk
+    interrupt / broad pytest), then advisories, unmatched, and risk.
     """
     payload["risk_interrupt_paths"] = list(risk_interrupt_paths or [])
     blocked = block_on_structural_sweep(
@@ -380,12 +358,6 @@ def _run_preexecution_blocks(
     advise_artifact_citations(repo_root, payload["changed_paths"])
 
     blocked = _maybe_block_on_unmatched(payload, allow_unmatched=args.allow_unmatched)
-    if blocked is not None:
-        return blocked
-
-    blocked = _maybe_block_on_cautilus(
-        repo_root, payload, ack_skill_review=args.ack_cautilus_skill_review
-    )
     if blocked is not None:
         return blocked
 

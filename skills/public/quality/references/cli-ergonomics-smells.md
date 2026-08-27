@@ -3,8 +3,8 @@
 When a repo ships a CLI, `quality` should treat some command-surface problems as
 discoverability smells, not only as copy issues.
 
-Two repeatable smells came up sharply while hardening `Cautilus`, and both are
-worth carrying into `charness` quality posture.
+Two repeatable command-surface smells are worth carrying into `charness`
+quality posture.
 
 ## 1. Flat `--help` Lists
 

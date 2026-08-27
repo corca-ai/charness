@@ -102,8 +102,8 @@ Adapter policy:
    - when an improvement is headed for an issue, classify it on two axes — a
      generalized `Structural pattern:`+`Triggering instance(s):` and a
      `Destination:`, owned by `../../shared/references/retro-issue-destination-split.md`
-   - the lesson ledger is optional memory and selection state; a retro does not
-     owe session-emission receipts or disposition-continuity records
+   - the lesson ledger is optional memory and selection state; do not create a
+     second lesson-specific artifact beside it
 5. Persist when there is a durable home.
    - if `output_dir` exists or the adapter defines one, persist the retro artifact with `$SKILL_DIR/scripts/persist_retro_artifact.py` instead of ad hoc file writes; for Goal Run evidence pass `--goal-lineage-file <lineage.json>` and keep the returned `goal_lineage` record with the artifact; a legacy `--goal-path` input is planning provenance only and cannot establish execution identity; the helper stamps the `## Persisted` line with the real durable path it writes, so do not hand-edit that line afterward
    - if the adapter defines `summary_path`, `$SKILL_DIR/scripts/persist_retro_artifact.py` should refresh the compact recent-lessons digest automatically from the written durable artifact

@@ -1,7 +1,7 @@
 """Regression tests for scripts/check_upstream_support_drift.py.
 
-The drift gate is the corca-ai/cautilus#32 root-cause prevention: a maintainer
-who bumps `support_skill_source.ref` to a sibling release where the declared
+The drift gate catches a maintainer who bumps `support_skill_source.ref` to a
+sibling release where the declared
 `path` no longer exists must surface a hard fail, not a silent support-sync
 regression masked by the v0.14.2 pin.
 """
@@ -86,12 +86,12 @@ def test_reports_drift_and_exits_nonzero_when_fixture_says_missing(tmp_path: Pat
     _seed_manifest(
         tmp_path,
         source_type="upstream_repo",
-        path="skills/cautilus-agent",
+        path="skills/demo-agent",
         ref="v0.15.0",
     )
     fixture = tmp_path / "fixtures.json"
     fixture.write_text(
-        json.dumps({"demo/upstream:v0.15.0:skills/cautilus-agent": "missing"}),
+        json.dumps({"demo/upstream:v0.15.0:skills/demo-agent": "missing"}),
         encoding="utf-8",
     )
 

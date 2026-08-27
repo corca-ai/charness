@@ -11,9 +11,7 @@ behaviour breaks, not merely when a line stops executing:
 * The skill scripts' bootstrap loaders must refuse with a NAMED ImportError when
   they run from a tree that owns no charness runtime, instead of dying later on a
   `NameError` that reads as a charness bug.
-* The scaffolds' refusal arms must refuse rather than overwrite, and the retro
-  scaffold's session lookup must degrade to "unknown" rather than take the whole
-  scaffold down with it.
+* The scaffolds' refusal arms must refuse rather than overwrite.
 """
 from __future__ import annotations
 
@@ -24,7 +22,6 @@ from pathlib import Path
 import pytest
 import yaml
 
-from scripts import closeout_bundle_lib as bundle_lib
 from scripts import scaffold_artifact_lib
 from tests.script_loader import load_script_module
 from tests.script_main import run_loaded_script_main
@@ -40,11 +37,6 @@ COLLECT_COMMITS = load_script_module(
 MINE_CLOSEOUT = load_script_module(
     "mine_closeout_telemetry_batch1", ROOT / "skills/public/retro/scripts/mine_closeout_telemetry.py"
 )
-RETRO_SCAFFOLD = load_script_module(
-    "scaffold_retro_artifact_batch1", ROOT / "skills/public/retro/scripts/scaffold_retro_artifact.py"
-)
-
-
 # --------------------------------------------------------------------------
 # scripts/what_reads_this.py
 # --------------------------------------------------------------------------
@@ -338,29 +330,6 @@ def test_the_script_runs_as_a_program_and_exits_zero(tmp_path: Path, monkeypatch
 
 
 # --------------------------------------------------------------------------
-# scripts/closeout_bundle_lib.py
-# --------------------------------------------------------------------------
-
-
-def test_an_unparsable_reviewer_packet_stdout_is_refused_not_crashed(tmp_path: Path) -> None:
-    """The packet generator's stdout is untrusted input to the bundle.
-
-    A generator that emits misindented YAML (or a traceback into stdout) must
-    produce a bundle refusal naming the packet, not a raw `ScannerError` from
-    inside the bundle runner -- the operator's next move depends on knowing WHICH
-    step produced garbage. The cause chain is asserted because the sibling
-    "parsed, but not a mapping" arm raises the same message without one, and only
-    one of the two is being pinned here.
-    """
-    result = {"returncode": 0, "stdout": "ok: true\n  reviewed_input_binding: {}\n", "stderr": ""}
-
-    with pytest.raises(bundle_lib.BundleError, match="did not return JSON-compatible YAML") as excinfo:
-        bundle_lib._packet_payload(tmp_path, result)
-
-    assert isinstance(excinfo.value.__cause__, yaml.YAMLError)
-
-
-# --------------------------------------------------------------------------
 # scripts/scaffold_artifact_lib.py
 # --------------------------------------------------------------------------
 
@@ -459,34 +428,6 @@ def test_a_skill_script_outside_a_charness_tree_names_the_missing_bootstrap(
 
     with pytest.raises(ImportError, match=r"skill_runtime_bootstrap\.py not found"):
         module._load_skill_runtime_bootstrap()
-
-
-# --------------------------------------------------------------------------
-# skills/public/retro/scripts/scaffold_retro_artifact.py
-# --------------------------------------------------------------------------
-
-
-def test_an_unresolvable_lesson_router_leaves_the_session_unknown_not_broken(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """The declared session is a nice-to-have; the scaffold is not.
-
-    Resolving the router raises outright from a tree that is neither the authoring
-    repo nor an installed plugin package (asserted below, so this is a real
-    failure and not a mocked one). The scaffold must answer "unknown session" and
-    keep producing an artifact -- a retro that cannot be STARTED because its
-    session lookup failed is strictly worse than a retro with no session id.
-    """
-    foreign = tmp_path / "elsewhere" / "scaffold_retro_artifact.py"
-    foreign.parent.mkdir(parents=True)
-
-    with pytest.raises(RuntimeError, match="cannot resolve a tree root"):
-        RETRO_SCAFFOLD.SKILL_RUNTIME.load_repo_module_from_skill_script(
-            str(foreign), "scripts.lesson_evaluation_records_lib"
-        )
-
-    monkeypatch.setattr(RETRO_SCAFFOLD, "__file__", str(foreign))
-    assert RETRO_SCAFFOLD._declared_session_id(tmp_path) is None
 
 
 # --------------------------------------------------------------------------

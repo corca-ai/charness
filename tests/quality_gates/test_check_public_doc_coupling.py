@@ -60,7 +60,7 @@ def test_self_version_pin_flagged_but_external_versions_pass(tmp_path: Path, mon
     (repo / "skills" / "public" / "demo" / "references" / "pins.md").write_text(
         "Since v0.41.0 the helper exists.\n"
         "Use runner v2.327.1 or newer.\n"
-        "cautilus 0.15.4 renamed the topic.\n"
+        "demo 0.15.4 renamed the topic.\n"
         "Dated 2026.06.05 in a table.\n"
         "Charness 0.42.0 shipped the change.\n"
         "An external 0.x tool pin like v0.4.0 also matches by design.\n",

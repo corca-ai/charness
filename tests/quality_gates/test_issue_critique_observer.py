@@ -206,21 +206,6 @@ def test_an_absent_field_is_refused_under_the_contract_and_silent_without_it(tmp
     )
 
 
-def test_the_delegation_contract_is_live_in_this_repo(tmp_path: Path) -> None:
-    """The test that would have caught the refusal being inert.
-
-    The contract marker is matched against this repo's REAL `AGENTS.md`, which
-    writes the sentence as `**already delegated**`. A plain substring test against
-    the unbolded literal returned False, so every refusal above was dead here and
-    every fixture passed anyway — because each fixture wrote its own synthetic
-    `AGENTS.md` in a form the real file does not use.
-    """
-    observer = _load_observer()
-
-    assert observer.repo_requires_delegated_observer(ROOT) is True
-    assert observer.repo_requires_delegated_observer(tmp_path) is False
-
-
 def test_the_historical_delegated_form_is_not_refused() -> None:
     """Ten checked-in artifacts record delegation as `satisfied — parent-delegated
     ...`, which no prefix test matches. Refusing them would land every ounce of

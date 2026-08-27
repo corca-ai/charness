@@ -29,8 +29,6 @@ _MUTATION_SOURCES = (
     "scripts/adversarial_evidence.py",
     "scripts/capability_catalog_resolver.py",
     "scripts/critique_packet_lib.py",
-    "scripts/lesson_session_boundary.py",
-    "scripts/open_lesson_session.py",
     "scripts/reviewed_input_identity.py",
     "scripts/slice_closeout_telemetry.py",
     "scripts/staged_commit_gate_plan_helpers.py",

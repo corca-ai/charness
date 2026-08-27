@@ -209,10 +209,10 @@ def test_drift_main_emits_labelled_records_and_counts_only_missing_as_drift(
     """The payload is what a CI nightly reads: every probed record carries its label,
     and `drift_count` counts ONLY `missing`. A probe-blocked target inflating that
     count would turn every tokenless CI run into a false drift alarm."""
-    _seed_drift_manifest(tmp_path, ref="v0.15.0", path="skills/cautilus-agent")
+    _seed_drift_manifest(tmp_path, ref="v0.15.0", path="skills/demo-agent")
     fixtures = tmp_path / "fixtures.json"
     fixtures.write_text(
-        json.dumps({"demo/upstream:v0.15.0:skills/cautilus-agent": "error:github-forbidden"}),
+        json.dumps({"demo/upstream:v0.15.0:skills/demo-agent": "error:github-forbidden"}),
         encoding="utf-8",
     )
     monkeypatch.setenv("CHARNESS_UPSTREAM_SUPPORT_PROBE_FIXTURES", str(fixtures))
@@ -236,13 +236,13 @@ def test_drift_main_emits_labelled_records_and_counts_only_missing_as_drift(
 def test_drift_main_fails_when_a_pinned_support_path_is_gone(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """The corca-ai/cautilus#32 prevention itself: a `ref` bump to a release where the
+    """A `ref` bump to a release where the
     declared path no longer exists must exit nonzero with a DRIFT label, not report a
     green sync. This is the arm the `skipped` test above must not be able to satisfy."""
-    _seed_drift_manifest(tmp_path, ref="v0.15.0", path="skills/cautilus-agent")
+    _seed_drift_manifest(tmp_path, ref="v0.15.0", path="skills/demo-agent")
     fixtures = tmp_path / "fixtures.json"
     fixtures.write_text(
-        json.dumps({"demo/upstream:v0.15.0:skills/cautilus-agent": "missing"}), encoding="utf-8"
+        json.dumps({"demo/upstream:v0.15.0:skills/demo-agent": "missing"}), encoding="utf-8"
     )
     monkeypatch.setenv("CHARNESS_UPSTREAM_SUPPORT_PROBE_FIXTURES", str(fixtures))
     monkeypatch.setenv("CHARNESS_UPSTREAM_SUPPORT_PROBE_NO_GH", "1")

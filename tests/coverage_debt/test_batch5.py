@@ -782,7 +782,7 @@ def test_tool_install_hands_sync_support_the_plugin_root_and_the_selected_tools(
 
     args = parser.parse_args(
         [
-            "tool", "install", "cautilus",
+            "tool", "install", "demo-tool",
             "--repo-root", str(repo),
             "--plugin-root", str(plugin_root),
         ]
@@ -793,7 +793,7 @@ def test_tool_install_hands_sync_support_the_plugin_root_and_the_selected_tools(
     assert calls["scripts/sync_support.py"] == (
         "--repo-root", str(repo),
         "--plugin-root", str(plugin_root),
-        "--tool-id", "cautilus",
+        "--tool-id", "demo-tool",
         "--execute",
     )
 
@@ -802,7 +802,7 @@ def test_tool_install_hands_sync_support_the_plugin_root_and_the_selected_tools(
     calls.clear()
     dry = parser.parse_args(
         [
-            "tool", "install", "cautilus",
+            "tool", "install", "demo-tool",
             "--repo-root", str(repo),
             "--plugin-root", str(plugin_root),
             "--dry-run",
@@ -815,7 +815,7 @@ def test_tool_install_hands_sync_support_the_plugin_root_and_the_selected_tools(
     calls.clear()
     skipped = parser.parse_args(
         [
-            "tool", "install", "cautilus",
+            "tool", "install", "demo-tool",
             "--repo-root", str(repo),
             "--plugin-root", str(plugin_root),
             "--skip-sync-support",

@@ -6,10 +6,30 @@ from __future__ import annotations
 import argparse
 import hashlib
 import importlib.util
+import runpy
 import subprocess
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
+
+
+def _load_skill_runtime_bootstrap() -> SimpleNamespace:
+    bootstrap = next(
+        (
+            ancestor / "skill_runtime_bootstrap.py"
+            for ancestor in Path(__file__).resolve().parents
+            if (ancestor / "skill_runtime_bootstrap.py").is_file()
+        ),
+        None,
+    )
+    if bootstrap is None:
+        raise ImportError("skill_runtime_bootstrap.py not found")
+    return SimpleNamespace(**runpy.run_path(str(bootstrap)))
+
+
+_SKILL_RUNTIME = _load_skill_runtime_bootstrap()
+_SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 
 _SCRIPT_DIR = Path(__file__).resolve().parent
 if str(_SCRIPT_DIR) not in sys.path:
@@ -66,6 +86,23 @@ def _achieve_script(name: str) -> Path:
         if candidate.is_file():
             return candidate
     raise PickupError("runtime-unavailable", f"achieve skill file not found: {name}.py")
+
+
+LESSON_PICKUP_KIND = "charness.goal-lesson-pickup/v1"
+
+
+def read_goal_lessons(repo_root: Path, goal_key: str) -> dict[str, Any]:
+    """Read optional lesson context without making the provider path fragile."""
+    try:
+        lesson_pickup = _load_path(_achieve_script("goal_lesson_pickup"), "goal_pickup_lessons")
+        return lesson_pickup.read_goal_lessons(repo_root, goal_key)
+    except Exception as exc:  # noqa: BLE001 - optional context cannot block `/goal`
+        return {
+            "kind": LESSON_PICKUP_KIND,
+            "goal_key": goal_key,
+            "status": "unavailable",
+            "reason": f"lesson-reader-unavailable: {exc}",
+        }
 
 
 def _resolve_repository(repo_root: Path, adapter: dict[str, Any], runtime: Any) -> dict[str, str]:
@@ -211,6 +248,7 @@ def pickup(repo_root: Path, objective: str) -> dict[str, Any]:
         state=child_state,
         url=child_issue.get("url"),
     )
+    lessons = read_goal_lessons(repo_root, f"{repo}#{number}")
     summary = parent.get("sub_issues_summary")
     count_status = "unavailable"
     if isinstance(summary, dict):
@@ -242,6 +280,7 @@ def pickup(repo_root: Path, objective: str) -> dict[str, Any]:
         },
         "selection": {"source": "parent-progress", "child_reads": 1},
         "selected_child": selected_child,
+        "lessons": lessons,
         "child_issue": {
             "repo": repo,
             "number": child_issue.get("number", selected_number),

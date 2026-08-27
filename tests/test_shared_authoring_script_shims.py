@@ -2,9 +2,9 @@
 
 `<repo>/scripts/X.py` and `<plugin-root>/scripts/X.py` sit at different depths
 from a skill package — three levels up versus two — so no single
-`$SKILL_DIR/../../../` count reaches both. `impl`/`spec` used the three-level
-form, so the risk-interrupt planner resolved in the authoring tree and nowhere
-else, silently, behind `2>/dev/null || true`.
+`$SKILL_DIR/../../../` count reaches both. The spec skill once used the
+three-level form, so the risk-interrupt planner resolved in the authoring tree
+and nowhere else, silently, behind `2>/dev/null || true`.
 
 `$SKILL_DIR/../../shared/scripts/` is the one prefix at equal depth in both.
 These tests pin the shared resolution logic, every shim built on it, and the
@@ -36,7 +36,6 @@ mirror_shim_lib = load_script_module(
 # Every shim, and the call site whose prose must name it.
 SHIMS = {
     "plan_risk_interrupt.py": (
-        REPO_ROOT / "skills" / "public" / "impl" / "SKILL.md",
         REPO_ROOT / "skills" / "public" / "spec" / "SKILL.md",
     ),
     "validate_skills.py": (

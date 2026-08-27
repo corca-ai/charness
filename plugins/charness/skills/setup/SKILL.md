@@ -9,9 +9,10 @@ Use this when a repository needs its basic operating surface created, repaired, 
 normalized. `setup` owns the minimum durable path an agent or maintainer needs:
 README, `AGENTS.md`, `CLAUDE.md` compatibility, the documentation index, probe
 surfaces, and evidence-triggered optional surfaces. Its compact root template
-tells agents to inspect the live host and use its spawn API for independent work
-when exposed; `charness task run` is reserved for explicit isolation or a host
-with no spawn channel, while detailed orchestration stays in the owning workflow.
+tells agents to inspect the live host and fan out independent work through a
+host spawn/subagent API or `charness task run`: use the former for short interactive work and
+the latter for bounded Codex work with explicit isolation or scope. Detailed
+orchestration stays in the owning workflow.
 It is not product
 definition,
 long-range planning, or a repo-wide quality audit.

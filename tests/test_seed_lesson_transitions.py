@@ -26,7 +26,6 @@ def _empty_ledger(repo: Path) -> Path:
                 "transitions": [],
                 "active_lesson_budget": ledger.ACTIVE_LESSON_BUDGET,
                 "lifecycle_events": [],
-                "session_events": [],
                 "score_events": [],
                 "lessons": {},
             }

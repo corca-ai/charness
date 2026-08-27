@@ -210,7 +210,7 @@ def test_instruction_surface_codex_exec_isolates_codex_home_by_default(tmp_path:
     cases_path.write_text(
         json.dumps(
             {
-                "schemaVersion": "cautilus.evaluation_cases.v1",
+                "schemaVersion": "charness.evaluation_cases.v1",
                 "suiteId": "codex-home-isolation",
                 "evaluations": [
                     {

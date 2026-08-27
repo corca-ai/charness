@@ -13,7 +13,7 @@ except ModuleNotFoundError:
     from repo_file_listing import iter_matching_repo_files
 
 VALID_NAME_RE = re.compile(r"^(?:__init__|[a-z][a-z0-9_]*)\.py$")
-SKIP_DIR_NAMES = {".cautilus", ".charness", ".git", ".venv", ".pytest_cache", "__pycache__", "node_modules"}
+SKIP_DIR_NAMES = {".charness", ".git", ".venv", ".pytest_cache", "__pycache__", "node_modules"}
 SKIP_PATH_PARTS = {"vendor"}
 
 

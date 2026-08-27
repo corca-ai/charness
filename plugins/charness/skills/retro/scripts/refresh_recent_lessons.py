@@ -52,9 +52,9 @@ def main() -> int:
     # `version: 9` adapter declaring `output_dir: docs/retros` +
     # `summary_path: docs/retros/lessons.md` wrote a SHADOW digest and selection index
     # into `charness-artifacts/retro/`, left the repo's declared digest untouched, and
-    # reported the shadow path as a success payload at exit 0. This is the entrypoint the
-    # session-start hook names in its remediation line, so the operator is sent here
-    # precisely when the adapter is the thing that is wrong.
+    # reported the shadow path as a success payload at exit 0. This command is the
+    # explicit repair path, so the operator is sent here precisely when the adapter is
+    # the thing that is wrong.
     refused = _version_verdict.refuse_unspeakable_version(
         load_adapter, repo_root, adapter_name="retro-adapter.yaml"
     )

@@ -12,11 +12,8 @@ Charness owns quality review, evidence classification, recommendation wording,
 and durable artifact honesty.
 
 Consumer repos own the product policy, provider SDK integration, runtime
-implementation, telemetry, and provider-specific pricing or limit references.
-
-Cautilus owns evaluator-backed behavior proof when the risk lives in agent
-behavior, model routing judgment, or recovery quality rather than static code
-shape.
+implementation, telemetry, provider-specific pricing or limit references, and
+any evaluator or review path for behavior that static checks cannot prove.
 
 Do not build an Anthropic-specific wrapper, retry library, streaming runtime, or
 behavior-test runner in Charness. Provider-specific numbers can appear only as
@@ -112,10 +109,10 @@ wording changes the agent experience.
   labels, high-risk actions, or known hard cases?
 - Are escalation reasons, final model choice, and quality/cost outcomes logged?
 
-Deterministic proof can pin routing thresholds and telemetry. Cautilus-backed
-`fixture` or `observation` proof may be needed when the claim is that a
-cheap-first route preserves task quality. Use `skill-experiment` only when the
-runtime under review is itself a Charness skill or prompt variant.
+Deterministic proof can pin routing thresholds and telemetry. A consumer-owned
+behavior test or bounded review may be needed when the claim is that a
+cheap-first route preserves task quality. Keep that evidence at the consumer
+boundary rather than adding a Charness evaluator.
 
 ## Recommendation Shape
 
@@ -125,8 +122,8 @@ When this lens finds a gap, record:
 - trigger evidence that made the lens applicable
 - deterministic proof already present
 - missing proof or missing explicit non-applicability decision
-- behavior risk, if any, and likely Cautilus mode (`fixture` or `observation`;
-  `skill-experiment` only for Charness skill or prompt variants)
+- behavior risk, if any, and the chosen proof owner (consumer evaluator or
+  bounded reviewer)
 - external/provider proof level using the shared external capability proof
   ladder
 - current state: `healthy`, `weak`, `missing`, `deferred`, or

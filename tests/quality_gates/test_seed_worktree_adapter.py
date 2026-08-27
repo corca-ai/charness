@@ -100,7 +100,7 @@ def test_detection_pnpm_lefthook(tmp_path: Path) -> None:
 
 
 def test_detection_npm_repo_owned_hooks(tmp_path: Path) -> None:
-    """Cautilus shape: npm lockfile + repo-owned .githooks + hooks:install script."""
+    """Consumer shape: npm lockfile + repo-owned .githooks + hooks:install script."""
     repo = tmp_path / "repo"
     repo.mkdir()
     (repo / "package-lock.json").touch()

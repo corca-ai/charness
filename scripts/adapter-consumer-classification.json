@@ -54,10 +54,6 @@
       "verdict": "safe-checks-errors",
       "reason": "run_capture (lines 73-93) checks `if not adapter['valid']:` at line 78 and raises CaptureRefusal before reading capability/backend fields; the issue skill's resolver (skills/public/issue/scripts/resolve_adapter.py:314-321) calls validate_adapter_version and returns early with valid:False, errors:[...] on any version error, before applying any declared field, so 'valid' correctly reflects a refused version here."
     },
-    "scripts/cautilus_scenarios_lib.py": {
-      "verdict": "safe-checks-errors",
-      "reason": "Line 273-274: `if not adapter_payload['valid']: raise ValidationError(...)`. scripts/cautilus_adapter_lib.py calls declared_fields_after_version_check at line 165 and sets 'valid': not errors at line 214, so a refused version correctly yields valid=False before this file acts on the payload."
-    },
     "scripts/check_cli_skill_surface.py": {
       "verdict": "safe-checks-errors",
       "reason": "_load_adapter (lines 49-66) calls validate_adapter_version(raw, {}, errors) at line 65 and returns ({}, errors) on any error before any field is read; build_payload (lines 291-320) checks `if adapter_version_errors:` at line 299 and returns a 'blocked' status with the version errors quoted at lines 302-313, before selecting skill paths or probe commands, so nothing downstream reads charness defaults in place of a declared value."
@@ -78,10 +74,6 @@
       "verdict": "no-version-validation",
       "reason": "Reads `.agents/*-adapter.yaml` with a raw YAML load and never reconciles `version`, so there is no `errors` for any consumer to check. A DIFFERENT defect from the unguarded rows: the fix is wiring this onto the shared resolver, not adding a check."
     },
-    "scripts/control_plane_lifecycle_lib.py": {
-      "verdict": "safe-checks-errors",
-      "reason": "disabled_by_cautilus_adapter() (lines 12-26) calls load_cautilus_adapter() and returns None (treated as 'not disabled') whenever `not adapter['valid']` (line 16), before ever reading `data.get('run_mode')`; a version-refused adapter (errors non-empty -> valid=False) is therefore never read for run_mode, and the caller falls back to running checks normally rather than acting on inferred defaults for the disable directive."
-    },
     "scripts/critique_enforcement_scope.py": {
       "verdict": "safe-checks-errors",
       "reason": "resolve_cross_surface_scope() (lines 341-411) loads the adapter at line 362 and, at lines 364-365, calls `_adapter_lib_module.unreadable_reasons(adapter)` (which reads `adapter['errors']`/dropped-field warnings) and returns CROSS_SURFACE_NOT_ESTABLISHED before ever reading `probe['globs']`/`probe['surfaces']` from the possibly-defaulted `adapter['data']`; the docstring (lines 355-361) explicitly documents this as the fix for exactly the refused-version discard scenario."
@@ -93,10 +85,6 @@
     "scripts/manage_mutation_reports.py": {
       "verdict": "safe-checks-errors",
       "reason": "managed_paths() (lines 48-66) calls `load_quality_adapter_strict(repo_root)` and at lines 52-54 does `if adapter.get('valid') is not True: raise SystemExit(...)` before reading `mutation_testing`/`changed_line_mutation_gate` fields from `adapter['data']`."
-    },
-    "scripts/plan_cautilus_proof.py": {
-      "verdict": "safe-checks-errors",
-      "reason": "plan_cautilus_proof() (lines 133-227) calls `load_cautilus_adapter(repo_root)` and at lines 135-136 does `if not adapter_payload['valid']: raise SurfaceError(...)` before reading `data['prompt_affecting_patterns']`, `data['run_mode']`, etc."
     },
     "scripts/proof_mismatch.py": {
       "verdict": "safe-checks-errors",
@@ -167,7 +155,7 @@
     },
     "scripts/validate_adapters.py": {
       "verdict": "safe-checks-errors",
-      "reason": "_require_declared_version (lines 278-297) explicitly calls `validate_adapter_version(data, {}, errors, required=True)` and raises ValidationError on any error, run BEFORE the per-adapter early returns in validate_adapter_yaml (line 300); validate_adapter_yaml also checks `payload['valid']` for cautilus/critique/retro/quality adapters (lines 303-318) and raises on invalidity; validate_adapter_integration_schema (lines 244-275) runs jsonschema.validate against each adapter's integration schema and raises ValidationError on rejection."
+      "reason": "_require_declared_version (lines 278-297) explicitly calls `validate_adapter_version(data, {}, errors, required=True)` and raises ValidationError on any error before adapter-specific validation; validate_adapter_integration_schema (lines 244-275) runs jsonschema.validate against each adapter's integration schema and raises ValidationError on rejection."
     },
     "scripts/validate_debug_artifact.py": {
       "verdict": "guarded-all-doors",

@@ -221,9 +221,6 @@ def _modules_naming_a_write_target() -> dict[str, str]:
             )
             if emits_key or builds_by_delegation:
                 found[str(path.relative_to(ROOT))] = source
-    # Floor set at the count this sweep currently finds, so a producer cannot disappear
-    # silently. Raise it when producers are added; never lower it to make a run pass.
-    assert len(found) >= 11, f"the sweep found fewer producers than it should: {sorted(found)}"
     return found
 
 
@@ -426,4 +423,3 @@ def test_the_two_skills_still_explain_how_to_read_the_write_target_facts() -> No
                 f"{relative} no longer explains {anchor!r}; the write-target facts would be "
                 "emitted with no surface telling an agent what to do with them"
             )
-

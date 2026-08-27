@@ -18,7 +18,9 @@ def test_run_quality_read_only_skips_check_coverage_without_control_plane_change
     _commit_quality_runner_repo(repo)
     (repo / "README.md").write_text("# demo\n\nnon coverage change\n", encoding="utf-8")
 
-    result = run_shell_script(repo / "scripts" / "run-quality.sh", "--read-only", cwd=repo, env=env)
+    # Coverage selection is a broad-lane contract; the default implementation
+    # lane intentionally does not discover or run this expensive check.
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", "--full", "--read-only", cwd=repo, env=env)
 
     assert result.returncode == 0, result.stderr
     assert "PASS pytest" in result.stdout
@@ -33,7 +35,7 @@ def test_run_quality_read_only_runs_check_coverage_for_relevant_changes(tmp_path
         encoding="utf-8",
     )
 
-    result = run_shell_script(repo / "scripts" / "run-quality.sh", "--read-only", cwd=repo, env=env)
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", "--full", "--read-only", cwd=repo, env=env)
 
     assert result.returncode == 0, result.stderr
     assert "PASS check-coverage" in result.stdout
@@ -75,7 +77,7 @@ def test_run_quality_read_only_runs_check_coverage_when_changed_path_discovery_f
     )
     env["QUALITY_FAIL_LABEL"] = "check-coverage"
 
-    result = run_shell_script(repo / "scripts" / "run-quality.sh", "--read-only", cwd=repo, env=env)
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", "--full", "--read-only", cwd=repo, env=env)
 
     assert result.returncode == 1
     assert "run-quality: changed-path discovery command failed (unstaged-diff)" in result.stderr

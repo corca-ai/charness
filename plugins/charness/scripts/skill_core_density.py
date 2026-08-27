@@ -25,7 +25,7 @@ CLOSEOUT_VOCAB_SECTION = "Closeout Vocabulary"
 PRESSURE_EXEMPT_H2_SECTIONS = {"Load-Bearing Anchors", "References", CLOSEOUT_VOCAB_SECTION}
 # A `## Closeout Vocabulary` block is token-shaped: at most this many non-empty
 # lines, each a label + one clause, never multi-sentence prose.
-CLOSEOUT_VOCAB_MAX_LINES = 12
+CLOSEOUT_VOCAB_MAX_LINES = 10
 # The exemption is BOUNDED, per heading and summed across every block carrying
 # that heading: a skill gets this many exempt non-empty lines, and every line past
 # the budget pays core density like ordinary prose. An unbounded exemption was a

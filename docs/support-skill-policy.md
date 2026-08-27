@@ -72,7 +72,6 @@ Examples:
 
 - `agent-browser`
 - `specdown`
-- `cautilus`
 
 ## Fork Only When
 

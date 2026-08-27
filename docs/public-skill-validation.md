@@ -4,9 +4,7 @@
 > Source of truth: this page and its linked executable surfaces
 
 This document fixes the deeper-validation policy for current `charness` public
-skills now that the standalone evaluator product boundary is wired into the
-repo, but before maintained evaluator scenarios are part of the normal local
-bar.
+skills without making a standalone evaluator part of the normal local bar.
 
 Canonical machine-readable policy lives in
 [docs/public-skill-validation.json](./public-skill-validation.json). This
@@ -26,8 +24,6 @@ bucket choices before editing the JSON.
   stay adapter-free honestly
 - decide whether missing-adapter behavior is allowed silently, must stay
   visible, or must stop before high-leverage work continues
-- keep `cautilus` integration aligned with a fixed validation matrix instead of
-  re-deriving validation expectations from scratch
 
 ## Baseline Rules
 
@@ -43,18 +39,15 @@ bucket choices before editing the JSON.
 - the tier only describes extra validation beyond that baseline
 - the tier is routing metadata, not a claim that local CI already runs a
   distinct standing evaluator path for that skill today
-- maintained `cautilus` proof is part of the repo story only when the adapter
-  permits it. If [cautilus-adapter.yaml](../.agents/cautilus-adapter.yaml) uses
-  `run_mode: disabled`, do not run Cautilus; deterministic gates and the
-  disabled validator result own closeout until re-enabled
 - a skill can move upward to a stronger tier later, but should not move
   downward without evidence that the deeper gate is wasted effort
 
 ## Prompt-Affecting Changes
 
 When a slice changes repo-owned instruction or prompt surfaces that can steer
-agent behavior, follow the repo Cautilus adapter before closeout. A `disabled`
-adapter is an explicit do-not-run policy.
+agent behavior, use the smallest sufficient deterministic checks before
+requesting semantic review. A prompt-affecting diff alone is not a reason to
+launch a broad evaluator or create a new standing gate.
 
 Default prompt-affecting surfaces in this repo:
 
@@ -70,52 +63,22 @@ Default proof split:
 
 - `deterministic validation`: schema, adapter, fixture syntax, and proof-artifact
   format checks stay in the local quality bar for every relevant slice
-- `legacy routing fixture`: existing route-only fixtures are preserved as
-  archived sentinels, but they are not routine live Cautilus closeout proof
-- `log-backed regression proof`: when a slice records a real behavior failure
-  or operator log, prove the same input now behaves correctly with
-  `cautilus evaluate fixture --repo-root . --adapter-name <repo-owned-adapter>` or a
-  repo-owned dogfood wrapper when the adapter permits Cautilus execution
-- `scenario review`: inspect one or two representative scenarios when the
+- `scenario review`: inspect one or two representative scenarios or use
+  explicit operator review when the
   change is high-leverage enough that "not broken" is weaker than "did the
   intended reader or reasoning behavior actually improve?"
-- `improve`: when the slice claims behavioral improvement rather than only
-  preservation, also record a baseline compare path with
-  `cautilus evaluate comparison prepare` plus
-  `cautilus evaluate observation --input <observed.json>`
 
-The checked-in artifact should say whether the slice claims `preserve` or
-`improve`, list the touched prompt surfaces, record the active intent tags,
-include a `Behavior Source` section with the failing prompt, transcript,
-operator log, issue log, or regression log, and separate regression proof from
-scenario review when both matter. The legacy
-[whole-repo routing fixture](../evals/cautilus/whole-repo-routing.fixture.json)
-must not be cited as behavior proof.
+If a behavior claim needs evidence beyond deterministic checks, keep the source
+input and the reviewer or consumer-owned evaluator result together. Do not
+create a Charness-specific proof artifact merely because a prompt changed.
 
 ## Execution Policy
 
-`cautilus` is on-demand behavior proof, not an always-run closeout side effect.
-Prompt-affecting diffs alone do not require a live Cautilus run or a refreshed
-[Cautilus proof artifact](../charness-artifacts/cautilus/latest.md);
-deterministic local gates own closeout unless the slice intentionally records
-log-backed behavior proof.
-
-Repo policy lives in [`.agents/cautilus-adapter.yaml`](../.agents/cautilus-adapter.yaml):
-
-- `run_mode: auto`: the repo allows cautilus proof to run without an extra
-  confirmation step when the workflow decides it is needed
-- `run_mode: ask`: the repo always asks before cautilus runs
-- `run_mode: adaptive`: low-cost regression proof may proceed automatically,
-  and short scenario review may run automatically too; explicit confirmation is
-  reserved for maintained scenario-registry mutations such as
-  [evals/cautilus/scenarios.json](../evals/cautilus/scenarios.json)
-- `run_mode: disabled`: Cautilus must not run; deterministic gates and disabled
-  validator output own closeout until the adapter is deliberately re-enabled
-
-`run_slice_closeout.py` should act as a gatekeeper, not as the evaluator
-runner: it validates deterministic obligations and any checked proof artifact,
-but it should not silently launch cautilus or require the route-only fixture for
-ordinary prompt-surface edits.
+Deterministic local gates own ordinary closeout. Prompt-affecting diffs do not
+trigger a live evaluator, generated proof artifact, or new scenario registry by
+themselves. When a consumer needs behavioral evidence, use its existing
+evaluator or an explicit bounded human review and record the result at the
+consumer boundary.
 
 ## Intent Classes
 
@@ -129,47 +92,24 @@ Intent is part of the proof contract, not only a chat-side interpretation.
 - `scenario_review_change`: the repo policy says this slice needs semantic
   review in addition to regression proof
 
-## On-Demand Behavioral Proof
+## On-Demand Behavioral Review
 
-Behavioral contract meaning should default to on-demand proof through
-`cautilus` or an explicit HITL workflow, not to ever-widening repo-owned
-standing evals.
+Behavioral questions that deterministic checks cannot answer should stay
+on-demand through an explicit bounded human review or a consumer-owned
+evaluator. Do not turn every prompt-affecting change into a standing Charness
+evaluation suite.
 
 - repo-owned standing checks still own deterministic seams: packaging,
   validators, adapter bootstrap, helper scripts, and thin acceptance smoke
-- `cautilus` or HITL own the deeper question of whether a skill contract still
-  produces the intended routing, artifact, or decision support behavior
-- checked-in latest artifacts such as [`charness-artifacts/cautilus/latest.md`](../charness-artifacts/cautilus/latest.md)
-  are the source of truth for those on-demand runs
-- closeout should block when proof is required but missing; it should not hide
-  that gap behind a passing markdown or packaging bundle
-- `specdown` may project those checked artifacts into a readable report so
-  operators can inspect the latest proof, but that viewer page is not the
-  underlying evaluator state or storage layer
+- consumer repos and reviewers own deeper questions about routing, artifact
+  usefulness, recovery, and decision support
+- when stronger evidence is requested, preserve the source input and the result
+  together at the consumer boundary
+- closeout should state when requested proof is missing; it should not hide that
+  gap behind a passing markdown or packaging bundle
 - public executable spec pages should not fall back to fixed-string source
   guards to simulate semantic proof; those guards belong in lower
   deterministic layers when they are still justified at all
-
-## Claim-Fidelity Floor Channel And Advisory Ref Class
-
-The claim-fidelity registry validation
-([scripts/claim_fidelity_lib.py](../scripts/claim_fidelity_lib.py),
-[tests/quality_gates/test_claim_fidelity_specs.py](../tests/quality_gates/test_claim_fidelity_specs.py))
-is a deterministic seam, not a live evaluator. Two properties of that gate matter
-to authors:
-
-- **Floor channel is RCF-or-RSF.** A claim-fidelity spec proves its floor via the
-  command log (`requiredCommandFragments`) OR the final summary
-  (`requiredSummaryFragments`); either may be empty, but not both. Prefer
-  asserting the emitted closeout **token** via `requiredSummaryFragments` over
-  pinning `requiredCommandFragments` to a reference *filename*, which only forces
-  a wasteful re-open of a doc whose content the run already has.
-- **`classTag` is advisory only.** The optional per-ref `DUP`/`INLINE`/`DEPTH`
-  tag narrows the *reported* reference-coverage denominator to `DEPTH` refs; it
-  never drives a run's pass/fail outcome. Untagged refs default to `DEPTH`, so
-  existing specs are unaffected. See the methodology contract
-  [`charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md`](../charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md)
-  for the full engagement-tag contract.
 
 ## Tier Definitions
 
@@ -234,10 +174,10 @@ Current assignment:
   makes it a poor standing evaluator target. Keep repo-owned seam checks for
   the contract and use on-demand proof or reviewed dogfood for the real
   behavioral question.
-- `create-skill`, `gather`, `setup`, `issue`,
-  `spec`, `impl`, and `debug` shape later execution or durable repo state. Those are the highest
-  leverage candidates for maintained scenario evaluation now that `cautilus`
-  is the tracked evaluator boundary.
+- `create-skill`, `gather`, `setup`, `issue`, `spec`, `impl`, and `debug` shape
+  later execution or durable repo state. They deserve clear deterministic
+  seams and, when a consumer has a real behavioral risk, an explicitly scoped
+  review rather than an automatically widened local gate.
 
 ## Adapter Requirements
 
@@ -336,12 +276,10 @@ Current assignment:
 
 The next integration session should:
 
-1. decide whether any current `HITL recommended` skill now has a cheap,
-   defensible evaluator path
-2. widen `cautilus` proof beyond instruction-surface cases when a public skill
-   claim needs stronger held-out or A/B evidence
-3. revisit any `visible` skill that starts rewriting repo-truth or review
+1. revisit any `HITL recommended` skill that gains a cheap, defensible review
+   path
+2. revisit any `visible` skill that starts rewriting repo-truth or review
    policy surfaces often enough that it should graduate to `block`
-4. keep the JSON policy, adapter gate, maintained scenario registry, and
-   checked-in cautilus proof artifact in sync
-   without creating placeholder manifests or fake adapter requirements
+3. keep the JSON policy and deterministic dogfood evidence in sync without
+   creating placeholder manifests, evaluator artifacts, or fake adapter
+   requirements

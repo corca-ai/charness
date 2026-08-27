@@ -25,29 +25,6 @@ def _retro(repo: Path) -> None:
     )
 
 
-def _session_event() -> dict:
-    snapshot = {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 1,
-        "seed": "seed-a",
-        "eligible_count": 1,
-        "bucket_counts": {
-            "recent": 1,
-            "value": 0,
-            "uncertainty": 0,
-            "archive": 0,
-            "archive_fallback_uncertainty": 0,
-        },
-        "lesson_ids": ["a"],
-    }
-    return {
-        "session_id": "session-a",
-        "snapshot": snapshot,
-        "snapshot_sha256": ledger.snapshot_sha256(snapshot),
-    }
-
-
 def _score_event(**extra: object) -> dict:
     event = {
         "event_id": "score-a",
@@ -73,7 +50,6 @@ def _payload() -> dict:
         ],
         "active_lesson_budget": ledger.ACTIVE_LESSON_BUDGET,
         "lifecycle_events": [],
-        "session_events": [],
         "score_events": [],
         "lessons": {
             "a": {
@@ -109,8 +85,6 @@ def test_ledger_checker_and_writer_scripts_print_refusals(
             [
                 "--event-id",
                 "x",
-                "--session-id",
-                "s",
                 "--lesson-id",
                 "a",
                 "--source-retro",
@@ -121,7 +95,6 @@ def test_ledger_checker_and_writer_scripts_print_refusals(
                 "in view at the decision and still not applied",
             ],
         ),
-        ("record_lesson_session.py", ["--session-id", "s", "--seed", "seed"]),
     ):
         monkeypatch.setenv("CHARNESS_REPO_ROOT", str(tmp_path))
         monkeypatch.setattr(sys, "argv", [script, "--repo-root", str(tmp_path), *args])
@@ -155,41 +128,10 @@ def test_ledger_validator_exercises_replay_refusal_paths(tmp_path: Path, monkeyp
     ):
         with pytest.raises(ValueError, match=message):
             ledger._replay_transitions(invalid, {"a": {"charness-artifacts/retro/source.md"}})
-    valid_session = _session_event()
-    for invalid, message in (
-        ([None], "unexpected"),
-        ([{"session_id": "", "snapshot": {}, "snapshot_sha256": "x"}], "non-empty"),
-        ([{**valid_session, "snapshot": {}}], "snapshot shape"),
-        # #633 corollary: a session actually NAMED `none` was writable and then
-        # permanently unclaimable, because `references` can never hold the
-        # sentinel. Refused where the id is minted.
-        (
-            [{**valid_session, "session_id": ledger.RESERVED_SESSION_ID}],
-            "reserved session_id",
-        ),
-    ):
-        with pytest.raises(ValueError, match=message):
-            ledger._replay_sessions(invalid, replayed)
-    unknown_lesson = _session_event()
-    unknown_lesson["snapshot"]["lesson_ids"] = ["other"]
-    unknown_lesson["snapshot"]["eligible_count"] = 1
-    unknown_lesson["snapshot_sha256"] = ledger.snapshot_sha256(unknown_lesson["snapshot"])
-    with pytest.raises(ValueError, match="unseeded"):
-        ledger._replay_sessions([unknown_lesson], replayed)
-    bad_digest = _session_event()
-    bad_digest["snapshot_sha256"] = "z" * 64
-    with pytest.raises(ValueError, match="lowercase SHA"):
-        ledger._replay_sessions([bad_digest], replayed)
-    bad_buckets = _session_event()
-    bad_buckets["snapshot"]["bucket_counts"] = {}
-    bad_buckets["snapshot_sha256"] = ledger.snapshot_sha256(bad_buckets["snapshot"])
-    with pytest.raises(ValueError, match="bucket_counts"):
-        ledger._replay_sessions([bad_buckets], replayed)
-    score = _score_event(session_id="session-a", score=2, anchor="evidence")
-    sessions = {"session-a": {"a"}}
+    score = _score_event(score=2, anchor="evidence")
     for events, message in (
         ([None], "is not an object"),
-        ([_score_event(event_id=" ", session_id="session-a")], "non-whitespace"),
+        ([_score_event(event_id=" ")], "non-whitespace"),
         # The retired magnitude>=2 anchor rule, replaced by the rule that made it
         # unnecessary: every OUTCOME carries an anchor, so an outcome event missing
         # one fails as a key-set refusal rather than as a magnitude special case.
@@ -199,7 +141,6 @@ def test_ledger_validator_exercises_replay_refusal_paths(tmp_path: Path, monkeyp
                     k: v
                     for k, v in outcome_event(
                         event_id="score-a",
-                        session_id="session-a",
                         lesson_id="a",
                         source_retro="charness-artifacts/retro/source.md",
                     ).items()
@@ -215,7 +156,6 @@ def test_ledger_validator_exercises_replay_refusal_paths(tmp_path: Path, monkeyp
             [
                 outcome_event(
                     event_id="score-a",
-                    session_id="session-a",
                     lesson_id="a",
                     source_retro="notes/elsewhere.md",
                 )
@@ -224,16 +164,15 @@ def test_ledger_validator_exercises_replay_refusal_paths(tmp_path: Path, monkeyp
         ),
         ([score, {**score, "event_id": "score-b"}], "duplicate"),
         (
-            [{**_score_event(session_id="session-a", score=0), "source_retro": "other.md"}],
+            [{**_score_event(score=0), "source_retro": "other.md"}],
             "invalid legacy citation",
         ),
     ):
         with pytest.raises(ValueError, match=message):
-               ledger._replay_scores(
-                   events,
-                   copy.deepcopy(replayed),
+            ledger._replay_scores(
+                events,
+                copy.deepcopy(replayed),
                 {"a": {"charness-artifacts/retro/source.md"}},
-                sessions,
             )
     path = _write_ledger(tmp_path)
     with pytest.raises(ValueError, match="invalid containers"):
@@ -293,26 +232,27 @@ def test_ledger_validator_exercises_replay_refusal_paths(tmp_path: Path, monkeyp
     )
     with pytest.raises(ValueError, match="newer than this tool"):
         ledger._committed_state(tmp_path, path)
-    # OLDER committed version with well-formed lists: ACCEPTED. This is the
-    # property the monotonic rule exists to buy -- without it, the commit that
-    # performs a schema bump cannot validate its own ledger. Asserted positively
-    # rather than left implicit, so a future re-tightening to equality reintroduces
-    # that block against a red test instead of a green suite.
-    older = {
+    current = {
         "kind": ledger.KIND,
         "transitions": [],
-        "schema_version": ledger.SCHEMA_VERSION - 1,
+        "schema_version": ledger.SCHEMA_VERSION,
         "score_events": [],
-        "session_events": [],
         "lifecycle_events": [],
         "active_lesson_budget": ledger.ACTIVE_LESSON_BUDGET,
     }
     monkeypatch.setattr(
         ledger.subprocess,
-        "run",
-        lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0, json.dumps(older), ""),
+        "run", lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0, json.dumps(current), "")
     )
-    assert ledger._committed_state(tmp_path, path) == ([], [], [], ledger.ACTIVE_LESSON_BUDGET, [])
+    assert ledger._committed_state(tmp_path, path) == ([], [], ledger.ACTIVE_LESSON_BUDGET, [])
+    unsupported = {**current, "schema_version": ledger.SCHEMA_VERSION - 1}
+    monkeypatch.setattr(
+        ledger.subprocess,
+        "run",
+        lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0, json.dumps(unsupported), ""),
+    )
+    with pytest.raises(ValueError, match="unsupported schema version"):
+        ledger._committed_state(tmp_path, path)
     # And a version-less or non-integer committed value is refused rather than
     # silently treated as older -- with its OWN message, because "newer than this
     # tool" is false for a missing version and was pinned that way until round 2.
@@ -320,7 +260,7 @@ def test_ledger_validator_exercises_replay_refusal_paths(tmp_path: Path, monkeyp
         ledger.subprocess,
         "run",
         lambda *_args, **_kwargs: subprocess.CompletedProcess(
-            [], 0, json.dumps({**older, "schema_version": "6"}), ""
+            [], 0, json.dumps({**current, "schema_version": "7"}), ""
         ),
     )
     with pytest.raises(ValueError, match="non-integer schema_version"):
@@ -329,7 +269,7 @@ def test_ledger_validator_exercises_replay_refusal_paths(tmp_path: Path, monkeyp
         ledger.subprocess,
         "run",
         lambda *_args, **_kwargs: subprocess.CompletedProcess(
-            [], 0, json.dumps({k: v for k, v in older.items() if k != "schema_version"}), ""
+            [], 0, json.dumps({k: v for k, v in current.items() if k != "schema_version"}), ""
         ),
     )
     with pytest.raises(ValueError, match="non-integer schema_version"):
@@ -339,7 +279,7 @@ def test_ledger_validator_exercises_replay_refusal_paths(tmp_path: Path, monkeyp
         ledger.subprocess,
         "run",
         lambda *_args, **_kwargs: subprocess.CompletedProcess(
-            [], 0, json.dumps({k: v for k, v in older.items() if k != "lifecycle_events"}), ""
+            [], 0, json.dumps({k: v for k, v in current.items() if k != "lifecycle_events"}), ""
         ),
     )
     with pytest.raises(ValueError, match="missing a required append-only list"):

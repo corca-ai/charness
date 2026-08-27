@@ -102,10 +102,6 @@ validators:
     consumer_facing: false
     decision: exclude
     reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
-  - path: scripts/check_contract_register.py
-    consumer_facing: false
-    decision: exclude
-    reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
   - path: scripts/check_coverage.py
     consumer_facing: false
     decision: exclude
@@ -179,10 +175,6 @@ validators:
     consumer_facing: false
     decision: exclude
     reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
-  - path: scripts/check_lesson_evaluation_continuity.py
-    consumer_facing: false
-    decision: exclude
-    reason: "Optional lesson-memory continuity tooling, not a consumer-authored artifact contract"
   - path: scripts/check_markdown_inline_code.py
     consumer_facing: false
     decision: exclude
@@ -232,10 +224,6 @@ validators:
     decision: exclude
     reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
   - path: scripts/check_probe_record.py
-    consumer_facing: false
-    decision: exclude
-    reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
-  - path: scripts/check_prompt_mutation_blinding.py
     consumer_facing: false
     decision: exclude
     reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
@@ -359,26 +347,6 @@ validators:
     consumer_facing: false
     decision: exclude
     reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
-  - path: scripts/validate_cautilus_call_provenance.py
-    consumer_facing: false
-    decision: exclude
-    reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
-  - path: scripts/validate_cautilus_diagnostics.py
-    consumer_facing: false
-    decision: exclude
-    reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
-  - path: scripts/validate_cautilus_proof.py
-    consumer_facing: false
-    decision: exclude
-    reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
-  - path: scripts/validate_cautilus_scenarios.py
-    consumer_facing: false
-    decision: exclude
-    reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
-  - path: scripts/validate_claim_fidelity_specs.py
-    consumer_facing: false
-    decision: exclude
-    reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
   - path: scripts/validate_critique_artifacts.py
     id: critique-artifact
     consumer_facing: true
@@ -435,10 +403,6 @@ validators:
     decision: exclude
     reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
   - path: scripts/validate_maintainer_setup.py
-    consumer_facing: false
-    decision: exclude
-    reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
-  - path: scripts/validate_outcome_assertions.py
     consumer_facing: false
     decision: exclude
     reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"

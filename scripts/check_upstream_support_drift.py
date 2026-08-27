@@ -2,9 +2,8 @@
 
 """Online preflight: confirm every `support_skill_source.path` in
 `integrations/tools/*.json` still exists at its pinned `ref` in the declared
-`upstream_repo`. This is the root-cause prevention for corca-ai/cautilus#32:
-the v0.14.2 pin masks the symptom, but a maintainer who bumps `ref` to a
-sibling release where the path moved would silently regress support sync.
+`upstream_repo`. A pinned path must remain present when a maintainer bumps
+`ref`; otherwise support sync silently regresses.
 
 This is not a standing local gate. Run it from a CI nightly workflow, or from
 any update/doctor-style flow that already requires network access.

@@ -132,7 +132,7 @@ def test_the_unproven_column_is_absent_when_every_gate_established_its_scope(
     assert "UNPROVEN" not in result.stdout
 
 
-def test_a_real_failure_is_still_a_failure_next_to_an_unproven_gate(
+def test_a_real_failure_stops_before_a_later_unproven_release_gate(
     tmp_path: Path, seeded_quality_runner_repo: Path
 ) -> None:
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
@@ -152,7 +152,9 @@ def test_a_real_failure_is_still_a_failure_next_to_an_unproven_gate(
         passed=0,
         failed=1,
         adverse_subjects=["check-doc-links"],
-        unproven_subjects=[_UNPROVEN_LABEL],
+        # Changed-line mutation is intentionally not started after an earlier
+        # release check fails, so it is not an unproven result either.
+        unproven_subjects=[],
     )
     _assert_external_failure_recovery(repo, "check-doc-links")
 

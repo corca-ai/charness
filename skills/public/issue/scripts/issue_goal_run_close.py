@@ -73,7 +73,7 @@ def command_close(args: Any, *, resolve_backend: Any, emit: Any) -> int:
         emit(_refusal(exc.code, str(exc), repo=args.repo, parent=args.number))
         return 2
     try:
-        resolved = resolve_backend(args.repo_root.resolve())
+        resolved = resolve_backend(args.repo_root.resolve(), target_repo=args.repo)
     except RuntimeError as exc:
         emit(_refusal("provider-selection-invalid", str(exc), repo=args.repo, parent=args.number))
         return 2

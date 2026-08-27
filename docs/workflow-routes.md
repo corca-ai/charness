@@ -27,9 +27,9 @@ heavy as a first-touch surface.
 
 Retros can trigger automatically when a correction exposes a real workflow miss
 or when repo adapter rules require one, but asking explicitly gives the agent a
-stronger improvement loop. For prompt- or behavior-affecting changes,
-[`cautilus`](https://github.com/corca-ai/cautilus) can provide
-evaluator-backed scenario review when installed and configured.
+stronger improvement loop. For prompt- or behavior-affecting changes, use
+quality's smallest sufficient deterministic check and add explicit reviewer or
+consumer-owned behavioral evidence only when the claim needs it.
 
 ## Working In An Existing Repo
 

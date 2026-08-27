@@ -116,7 +116,7 @@ def test_preview_requires_a_nonempty_seed() -> None:
         _build("")
 
 
-def test_preview_renderer_cli_emits_payload_carrying_the_flat_text(monkeypatch, capsys) -> None:
+def test_preview_renderer_cli_emits_only_the_selection_projection(monkeypatch, capsys) -> None:
     renderer = load_script_module(
         "render_lesson_selection_preview_for_test",
         ROOT / "scripts" / "render_lesson_selection_preview.py",
@@ -132,13 +132,7 @@ def test_preview_renderer_cli_emits_payload_carrying_the_flat_text(monkeypatch, 
         ["render_lesson_selection_preview.py", "--seed", "stable-preview-seed"],
     )
     assert renderer.main() == 0
-    # One output mode now: the CLI payload is the in-process render plus the flat
-    # text, which stopped being a second mode and rides in `preview_text` -- the
-    # exact bytes `open_lesson_session.py` freezes into a session bundle.
-    assert yaml.safe_load(capsys.readouterr().out) == {
-        **rendered,
-        "preview_text": "Lesson selection preview (1/1 eligible):\n- a — useful lesson\n",
-    }
+    assert yaml.safe_load(capsys.readouterr().out) == rendered
 
 
 def test_preview_renderer_script_entrypoint_exits_successfully(monkeypatch, capsys) -> None:

@@ -114,7 +114,7 @@ def render_template(*, title: str, date_text: str) -> str:
                     " <!-- reproduction-source -->",
                     "- runtime hot spots: TODO top gate timings (latest / median vs budget).",
                     "- coverage gate: TODO run-quality pass/fail.",
-                    "- evaluator depth: TODO live Cautilus run or deterministic-gates-only, and why.",
+                    "- evaluator depth: TODO consumer-owned evaluator or deterministic-gates-only, and why.",
                     "",
                 ]
             )

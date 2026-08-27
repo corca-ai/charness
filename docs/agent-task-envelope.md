@@ -5,11 +5,13 @@
 
 `charness task` provides two deliberately separate paths. `task run` is the
 repository-owned isolated carrier for one independently delegable implementation
-lane; the parent may use it when explicit worktree isolation is useful or the
-host has no spawn channel. When the host exposes a spawn API, that API is the
-normal fan-out channel. The parent may run several lanes in parallel and
-integrates them serially. The older envelope commands are a compatibility
-carrier for work that genuinely crosses an external scheduler or context.
+lane and is a normal fan-out option alongside the host's live spawn/subagent API.
+Use a host spawn for short interactive or judgment-bound work; use `task run` for
+bounded Codex work that benefits from a named branch, explicit path scope,
+external runtime, or a durable result carrier. The parent may run several lanes
+in parallel and integrates them serially. The older envelope commands are a
+compatibility carrier for work that genuinely crosses an external scheduler or
+context.
 
 It is intentionally not a scheduler. It records enough structured state for the
 next actor to know who claimed a task, whether it was submitted or aborted, and

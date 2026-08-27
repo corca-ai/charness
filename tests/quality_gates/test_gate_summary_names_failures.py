@@ -48,7 +48,13 @@ def _run_gate(
     labels: str = "validate-retro-artifact",
     fail_label: str | None = None,
 ) -> subprocess.CompletedProcess:
-    env = {**os.environ, "CHARNESS_QUALITY_LABELS": labels}
+    runtime_root = repo.parent / "quality-runtime"
+    env = {
+        **os.environ,
+        "CHARNESS_QUALITY_LABELS": labels,
+        "CHARNESS_RUNTIME_ROOT": str(runtime_root),
+        "CHARNESS_RUNTIME_ROOT_AUTO": "0",
+    }
     if receipt_path is not None:
         env["CHARNESS_QUALITY_RECEIPT_JSON"] = str(receipt_path)
     if fail_label is not None:
@@ -150,14 +156,12 @@ def test_run_quality_summary_names_its_failing_checks(gate_repo: Path) -> None:
     summary_line = [line for line in result.stdout.splitlines() if line.startswith("Quality summary:")][-1]
 
     assert re.search(r"Quality summary: \d+ passed, [1-9]\d* failed", summary_line), summary_line
-    assert (
-        "(FAILED: validate-retro-artifact "
-        "[log: .charness/quality-failure-logs/validate-retro-artifact.log])"
-    ) in summary_line, (
+    expected_log = gate_repo.parent / "quality-runtime" / "quality-failure-logs" / "validate-retro-artifact.log"
+    assert f"(FAILED: validate-retro-artifact [log: {expected_log}])" in summary_line, (
         "the summary must NAME the failing check, not just count it: the count alone "
         f"is what forced a re-run, and its final line must carry the recovery path. Got:\n{summary_line}"
     )
-    assert ".charness/quality-failure-logs/" in summary_line, (
+    assert str(expected_log.parent) in summary_line, (
         f"a truncated read must still be told where the full output is. Got:\n{summary_line}"
     )
 
@@ -241,7 +245,7 @@ def test_a_log_copy_that_fails_warns_instead_of_promising_a_stale_file(gate_repo
     probe.write_text("# Session Retro\nDate: 2026-08-04\n\n## Context\n\nProbe.\n", encoding="utf-8")
 
     # Occupy the copy target with a read-only file, so the copy cannot land.
-    log_dir = gate_repo / ".charness" / "quality-failure-logs"
+    log_dir = gate_repo.parent / "quality-runtime" / "quality-failure-logs"
     log_dir.mkdir(parents=True, exist_ok=True)
     stale = log_dir / "validate-retro-artifact.log"
     stale.write_text("STALE OUTPUT FROM AN EARLIER RUN\n", encoding="utf-8")

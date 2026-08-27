@@ -21,7 +21,7 @@ sed -n '1,260p' docs/north-star-overhaul-roadmap.md
 ./scripts/run-quality.sh
 ```
 
-If the work touches evaluator, integrations, or packaging, also read:
+If the work touches integrations or packaging, also read:
 
 ```bash
 sed -n '1,220p' docs/control-plane.md
@@ -52,38 +52,7 @@ Acceptance:
 - Any reopened decision records its new choice and impacted docs.
 - [`./scripts/run-quality.sh`](../scripts/run-quality.sh) passes after the doc updates.
 
-### 2. Wire `cautilus` Into `charness`
-
-Focus: take `cautilus` from integration-manifest presence to honest maintained evaluator usage.
-
-Read first:
-
-- [docs/public-skill-validation.md](./public-skill-validation.md) — narrative layer for the per-skill validation tier policy.
-- [docs/control-plane.md](./control-plane.md) — external tool manifests, support capability metadata, and lock state rules.
-- [docs/goal-lifecycle.md](./goal-lifecycle.md) — current Goal Run parent/cursor and continuation contract.
-- [.agents/cautilus-adapter.yaml](../.agents/cautilus-adapter.yaml) — the repo's Cautilus run mode, preflight commands, and evaluation surfaces.
-
-Useful local commands:
-
-```bash
-python3 scripts/doctor.py --repo-root .
-python3 scripts/validate_integrations.py --repo-root .
-python3 scripts/run_evals.py --repo-root .
-```
-
-If `cautilus` is installed on PATH, also inspect its current contract surface
-before editing `charness`.
-
-Acceptance:
-
-- `cautilus` has a real integration surface in `charness`.
-- [`docs/public-skill-validation.md`](./public-skill-validation.md) is confirmed or minimally adjusted against
-  the actual upstream contract.
-- Repo-owned tests/evals/docs reflect the new evaluator path and any added
-  maintained scenario wiring honestly.
-- [`./scripts/run-quality.sh`](../scripts/run-quality.sh) passes.
-
-### 3. Run Managed CLI Install Experiments
+### 2. Run Managed CLI Install Experiments
 
 Focus: confirm that the managed install/update path changes the host-visible payload, not only the source checkout.
 
@@ -100,8 +69,6 @@ python3 scripts/validate_packaging.py --repo-root .
 python3 scripts/sync_root_plugin_manifests.py --repo-root .
 charness doctor
 charness update all
-charness tool doctor cautilus
-charness tool install cautilus
 charness tool update agent-browser
 ```
 
@@ -149,7 +116,7 @@ Acceptance:
   installed Claude or Codex host copy after the required refresh step
 - any required doc or manifest tweaks are committed back here
 
-### 4. Raise `create-skill` / `spec` Workflow Gates
+### 3. Raise `create-skill` / `spec` Workflow Gates
 
 Focus: move `create-skill` and `spec` from marker-level checks to stronger workflow smoke.
 
@@ -169,7 +136,7 @@ Acceptance:
 - docs and tests describe the stronger proof honestly
 - [`./scripts/run-quality.sh`](../scripts/run-quality.sh) passes
 
-### 5. Decide Adapter Requirements Per Public Skill
+### 4. Decide Adapter Requirements Per Public Skill
 
 Focus: classify which public skills must fail closed on missing adapters and turn that into a deterministic rule.
 

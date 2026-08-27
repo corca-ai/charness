@@ -314,7 +314,6 @@ def test_run_slice_closeout_preexecution_blocks_invalid_focused_command(
     ):
         monkeypatch.setattr(closeout, name, lambda *args, **kwargs: None)
     monkeypatch.setattr(closeout, "_maybe_block_on_unmatched", lambda *args, **kwargs: None)
-    monkeypatch.setattr(closeout, "_maybe_block_on_cautilus", lambda *args, **kwargs: None)
     monkeypatch.setattr(closeout, "_maybe_block_on_risk_interrupt", lambda *args, **kwargs: None)
 
     rc = closeout._run_preexecution_blocks(
@@ -323,7 +322,6 @@ def test_run_slice_closeout_preexecution_blocks_invalid_focused_command(
         SimpleNamespace(
             plan_only=False,
             allow_unmatched=False,
-            ack_cautilus_skill_review=False,
             produce_mutation_coverage=True,
             mutation_coverage_command="python3 scripts/not_pytest.py",
         ),

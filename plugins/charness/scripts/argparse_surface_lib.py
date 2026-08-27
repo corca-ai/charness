@@ -387,8 +387,8 @@ def walk_subcommands(tokens, choices_for, values_for=None) -> tuple[tuple[str, .
     them. ``invalid`` is that word, or None when the documented path is clean.
 
     Depth stops at a parser with no choices, which is what keeps a positional
-    argument out of the verdict: `tool install cautilus` walks to `install`, sees
-    no subparsers under it, and never judges `cautilus`.
+    argument out of the verdict: `tool install external-tool` walks to
+    `install`, sees no subparsers under it, and never judges `external-tool`.
     """
     return _descend(tokens, choices_for, values_for, _select_strict)
 

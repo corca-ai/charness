@@ -163,7 +163,7 @@ def test_the_owned_prefix_comes_from_the_adapter_not_a_literal(tmp_path: Path) -
 def _strict_only_violation(body: str) -> str:
     """Remove the falsifiable-hypothesis marker: a CURRENT-schema rule with no legacy analogue."""
     return body.replace(
-        " | disconfirmer: add `.cautilus` to a fixture and assert it is excluded", ""
+        " | disconfirmer: add `.runtime-cache` to a fixture and assert it is excluded", ""
     )
 
 

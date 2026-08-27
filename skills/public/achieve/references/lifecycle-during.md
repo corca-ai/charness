@@ -50,10 +50,16 @@ required review that is blocked remains blocked; it never becomes approval.
 
 ### Lesson memory
 
-The lesson ledger is optional durable memory and selection state. Ordinary goal
-execution and retros do not emit session receipts, bind session IDs or bundles,
-or require retro disposition continuity; those surfaces are outside the default
-and release contracts.
+The lesson ledger is optional durable memory and selection state. The achieve
+pickup path reads recent-lessons.md once per goal start or resume and falls back
+to the precomputed selection index only when needed. It never rebuilds the
+ledger/index, refreshes retro output, records a shown set, or emits a session
+receipt. Missing or malformed projection is non-blocking context loss, not a
+pickup failure; freshness is not checked on this path. The ledger and its
+projections remain retro-owned; achieve only reads them. The `/goal` path
+returns this read in its pickup payload; the artifact-only path invokes the
+same helper after the goal file is known, and both reuse the result for the
+rest of that entry.
 
 ## Provider retry
 

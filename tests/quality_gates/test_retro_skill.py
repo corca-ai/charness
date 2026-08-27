@@ -62,6 +62,4 @@ def test_retro_consumes_prepare_packets_when_adapter_declares_sections() -> None
 def test_retro_keeps_lesson_ledger_optional() -> None:
     normalized = " ".join(RETRO_SKILL.split())
     assert "lesson ledger is optional memory and selection state" in normalized
-    assert "session-emission receipts" in normalized
-    assert "disposition-continuity records" in normalized
-    assert "references/lesson-evaluation.md" not in RETRO_SKILL
+    assert "second lesson-specific artifact" in normalized

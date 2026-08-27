@@ -15,9 +15,8 @@ What this does NOT do, and why:
   are append-only; the only withdrawal is an `archive` lifecycle event) the moment
   its cited retro is renamed or its `recurrence-class:` tag is edited away. The
   empty ledger has no such coupling to mutable files.
-- It does not create session-emission receipts or impose a retro-disposition
-  continuity obligation. Those surfaces are outside the default and release
-  contracts; the ledger remains the memory/selection surface.
+- It initializes ledger state only; it does not create a second lesson-memory
+  artifact. The ledger remains the memory/selection surface.
 """
 
 from __future__ import annotations
@@ -33,17 +32,17 @@ from yaml_output import emit_yaml
 ROOT = repo_root_from_script(__file__)
 _ledger = import_repo_module(__file__, "scripts.lesson_ledger_lib")
 _writer = import_repo_module(__file__, "scripts.lesson_ledger_writer_lib")
-_records = import_repo_module(__file__, "scripts.lesson_evaluation_records_lib")
+_commands = import_repo_module(__file__, "scripts.lesson_command_citation")
+_retro = import_repo_module(__file__, "scripts.retro_output_dir_lib")
 
 
 def seed_lesson_next_step(repo_root: Path) -> str:
     """Explain the explicit next step for an empty, newly-created ledger.
 
-    This used to live in the startup-context module, which made a one-time
-    ledger bootstrap depend on an every-session host hook. Keep the useful
-    command guidance at the explicit opt-in boundary instead.
+    Keep the one-time seed guidance at this explicit opt-in boundary instead of
+    coupling ledger initialization to a host lifecycle event.
     """
-    seed_command = _records.repo_or_installed_command(
+    seed_command = _commands.repo_or_installed_command(
         repo_root, "seed_lesson_transitions.py", "--repo-root", "."
     )
     return (
@@ -67,7 +66,6 @@ def empty_ledger_payload() -> dict[str, Any]:
         "transitions": [],
         "active_lesson_budget": _ledger.ACTIVE_LESSON_BUDGET,
         "lifecycle_events": [],
-        "session_events": [],
         "score_events": [],
         "lessons": {},
     }
@@ -85,7 +83,7 @@ def init_lesson_ledger(*, repo_root: Path, output_dir: Path, summary_path: Path)
         raise FileExistsError(
             f"lesson ledger already exists at `{path.relative_to(repo_root)}`; it is append-only, "
             "so this refuses to overwrite it. Validate it with "
-            f"`{_records.repo_or_installed_command(repo_root, 'check_lesson_ledger.py', '--repo-root', '.')}`"
+            f"`{_commands.repo_or_installed_command(repo_root, 'check_lesson_ledger.py', '--repo-root', '.')}`"
             " instead."
         )
     payload = empty_ledger_payload()
@@ -117,13 +115,11 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, default=ROOT)
     args = parser.parse_args()
     root = args.repo_root.resolve()
-    # Keep the ledger path and retro output resolution in the shared records helper;
-    # the summary path remains a separately declared adapter field.
-    output_dir = _records.retro_output_dir(root)
+    output_dir = _retro.retro_output_dir(root)
     result = init_lesson_ledger(
         repo_root=root,
         output_dir=output_dir,
-        summary_path=_records.summary_path(root),
+        summary_path=_retro.retro_summary_path(root),
     )
     step = seed_lesson_next_step(root)
     # Unconditional YAML. `next_step` carries the one useful follow-up for an

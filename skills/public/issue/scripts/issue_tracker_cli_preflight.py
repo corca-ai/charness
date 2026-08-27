@@ -42,7 +42,8 @@ def run(
             }
         )
         return 2
-    capability = tracker.tracker_capability_report(resolved["backend"], repo=args.repo)
+    target_repo = str(resolved.get("target_repo") or args.repo)
+    capability = tracker.tracker_capability_report(resolved["backend"], repo=target_repo)
     readiness = backend_owner.build_preflight_payload(resolved)
     selected = readiness.get("selected_backend") or {}
     projected_readiness = {
@@ -76,10 +77,10 @@ def run(
     else:
         try:
             issue = issue_reader.read_issue_with_comments(
-                args.repo, args.number, backend=resolved["backend"]
+                target_repo, args.number, backend=resolved["backend"]
             )["issue"]
             parent = {
-                "repo": args.repo,
+                "repo": target_repo,
                 "number": issue["number"],
                 "state": issue.get("state"),
                 "url": issue.get("url"),
@@ -94,7 +95,7 @@ def run(
         "status": status,
         "outcome": "verified-read" if status == "ready" else "refused",
         "mutation_invoked": False,
-        "repo": args.repo,
+        "repo": target_repo,
         "parent_number": args.number,
         "backend_readiness": projected_readiness,
         "operations": capability["operations"],

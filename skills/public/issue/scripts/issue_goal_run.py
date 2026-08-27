@@ -123,7 +123,7 @@ def command_preflight(args: Any, *, resolve_backend: Any, emit: Any) -> int:
         emit(_refusal(exc.code, str(exc), repo=args.repo, parent_number=args.number))
         return 2
     try:
-        resolved = resolve_backend(args.repo_root.resolve())
+        resolved = resolve_backend(args.repo_root.resolve(), target_repo=args.repo)
     except RuntimeError as exc:
         emit(_refusal("provider-selection-invalid", str(exc), repo=args.repo, parent_number=args.number))
         return 2
@@ -143,7 +143,7 @@ def command_preflight(args: Any, *, resolve_backend: Any, emit: Any) -> int:
 
 def command_read(args: Any, *, resolve_backend: Any, emit: Any) -> int:
     try:
-        resolved = resolve_backend(args.repo_root.resolve())
+        resolved = resolve_backend(args.repo_root.resolve(), target_repo=args.repo)
     except RuntimeError as exc:
         result = _refusal("provider-selection-invalid", str(exc), repo=args.repo, parent_number=args.number)
         emit(result)
@@ -272,7 +272,7 @@ def command_apply(args: Any, *, resolve_backend: Any, emit: Any) -> int:
         backend = {"id": "local"}
     else:
         try:
-            resolved = resolve_backend(args.repo_root.resolve())
+            resolved = resolve_backend(args.repo_root.resolve(), target_repo=args.repo)
         except RuntimeError as exc:
             emit(_refusal("provider-selection-invalid", str(exc), repo=args.repo, parent_number=args.number))
             return 2

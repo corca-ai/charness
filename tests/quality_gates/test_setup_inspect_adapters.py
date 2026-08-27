@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import subprocess
 from pathlib import Path
 
@@ -78,66 +77,7 @@ def test_setup_inspect_refuses_unsupported_adapter_before_surface_overrides(tmp_
     assert resolver_payload["data"]["output_dir"] == "charness-artifacts/setup"
 
 
-def test_setup_inspect_recommends_seed_worktree_adapter_for_lefthook(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    _seed_minimal_repo_with_adapter(repo)
-    (repo / "lefthook.yml").write_text("pre-commit:\n  commands: {}\n", encoding="utf-8")
-
-    payload = _run_inspect(repo)
-
-    worktree_state = payload["agent_docs"]["normalization"]["worktree_adapter"]
-    assert worktree_state["hook_manager_detected"] == "lefthook"
-    assert worktree_state["hook_manager_evidence"] == ["lefthook.yml"]
-    assert worktree_state["adapter_exists"] is False
-    assert worktree_state["adapter_path"] == ".agents/worktree-adapter.yaml"
-    assert "seed_worktree_adapter.py" in worktree_state["seed_command"]
-
-    finding_types = {finding["type"] for finding in payload["agent_docs"]["normalization"]["findings"]}
-    assert "worktree_adapter_missing_for_hook_manager" in finding_types
-
-    rec_index = {item["id"]: item for item in payload["recommendations"]}
-    assert "worktree_adapter_missing_for_hook_manager" in rec_index
-    rec = rec_index["worktree_adapter_missing_for_hook_manager"]
-    assert rec["target"] == ".agents/worktree-adapter.yaml"
-    assert rec["kind"] == "seed_artifact"
-    assert rec["priority"] == "medium"
-    assert rec["enforcement_tier"] == "AUTOMATABLE"
-    assert "seed_worktree_adapter.py" in rec["suggested_action"]
-    assert any("hook manager detected: lefthook" in item for item in rec["evidence"])
-
-
-def test_setup_inspect_recommends_seed_worktree_adapter_for_husky(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    _seed_minimal_repo_with_adapter(repo)
-    (repo / ".husky").mkdir(parents=True)
-    (repo / ".husky" / "pre-commit").write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
-
-    payload = _run_inspect(repo)
-
-    worktree_state = payload["agent_docs"]["normalization"]["worktree_adapter"]
-    assert worktree_state["hook_manager_detected"] == "husky"
-    assert worktree_state["hook_manager_evidence"] == [".husky/"]
-    rec_ids = [item["id"] for item in payload["recommendations"]]
-    assert "worktree_adapter_missing_for_hook_manager" in rec_ids
-
-
-def test_setup_inspect_recommends_seed_worktree_adapter_for_simple_git_hooks(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    _seed_minimal_repo_with_adapter(repo)
-    (repo / "package.json").write_text(
-        json.dumps({"name": "demo", "simple-git-hooks": {"pre-commit": "echo demo"}}),
-        encoding="utf-8",
-    )
-
-    payload = _run_inspect(repo)
-
-    worktree_state = payload["agent_docs"]["normalization"]["worktree_adapter"]
-    assert worktree_state["hook_manager_detected"] == "simple-git-hooks"
-    rec_ids = [item["id"] for item in payload["recommendations"]]
-    assert "worktree_adapter_missing_for_hook_manager" in rec_ids
-
-
-def test_setup_inspect_skips_worktree_adapter_recommendation_when_present(tmp_path: Path) -> None:
+def test_setup_inspect_reports_present_worktree_adapter(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     _seed_minimal_repo_with_adapter(repo)
     (repo / "lefthook.yml").write_text("pre-commit:\n  commands: {}\n", encoding="utf-8")
@@ -151,11 +91,9 @@ def test_setup_inspect_skips_worktree_adapter_recommendation_when_present(tmp_pa
 
     finding_types = {finding["type"] for finding in payload["agent_docs"]["normalization"]["findings"]}
     assert "worktree_adapter_missing_for_hook_manager" not in finding_types
-    rec_ids = [item["id"] for item in payload["recommendations"]]
-    assert "worktree_adapter_missing_for_hook_manager" not in rec_ids
 
 
-def test_setup_inspect_skips_worktree_adapter_recommendation_when_no_hook_manager(tmp_path: Path) -> None:
+def test_setup_inspect_reports_no_worktree_finding_without_hook_manager(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     _seed_minimal_repo_with_adapter(repo)
 
@@ -168,13 +106,8 @@ def test_setup_inspect_skips_worktree_adapter_recommendation_when_no_hook_manage
     # Non-git tmp dir: probe must report `not_a_git_repo`, not silently 0.
     assert worktree_state["worktree_probe_status"] == "not_a_git_repo"
 
-    rec_ids = [item["id"] for item in payload["recommendations"]]
-    assert "worktree_adapter_missing_for_hook_manager" not in rec_ids
-    assert "worktree_adapter_missing_for_active_worktrees" not in rec_ids
-
-
-def test_setup_inspect_recommends_seed_worktree_adapter_for_active_worktrees_without_hook_manager(tmp_path: Path) -> None:
-    """#180: cautilus shape — multiple worktrees but no Node hook manager."""
+def test_setup_inspect_reports_active_worktrees_without_hook_manager(tmp_path: Path) -> None:
+    """Multiple worktrees remain a diagnostic finding, not a setup recommendation."""
     repo = tmp_path / "repo"
     _seed_minimal_repo_with_adapter(repo)
     _make_active_worktrees(repo, count=3)
@@ -190,14 +123,6 @@ def test_setup_inspect_recommends_seed_worktree_adapter_for_active_worktrees_wit
     finding_types = {finding["type"] for finding in payload["agent_docs"]["normalization"]["findings"]}
     assert "worktree_adapter_missing_for_active_worktrees" in finding_types
     assert "worktree_adapter_missing_for_hook_manager" not in finding_types
-
-    rec_index = {item["id"]: item for item in payload["recommendations"]}
-    assert "worktree_adapter_missing_for_active_worktrees" in rec_index
-    rec = rec_index["worktree_adapter_missing_for_active_worktrees"]
-    assert rec["priority"] == "advisory"
-    assert rec["target"] == ".agents/worktree-adapter.yaml"
-    assert "seed_worktree_adapter.py" in rec["suggested_action"]
-
 
 def _run_inspect_with_env(repo: Path, env: dict[str, str]) -> dict[str, object]:
     return inspect_setup_repo(repo, env=env)
@@ -224,8 +149,8 @@ def test_setup_inspect_emits_probe_unavailable_finding_when_git_is_missing(tmp_p
     assert "worktree_probe_unavailable" in finding_types
 
 
-def test_setup_inspect_degrades_confidence_when_probe_fails_alongside_hook_manager(tmp_path: Path) -> None:
-    """A1: hook-manager-detected case still fires, but with confidence=medium."""
+def test_setup_inspect_reports_probe_gap_alongside_hook_manager(tmp_path: Path) -> None:
+    """A failed worktree probe and a detected hook manager remain diagnostics."""
     repo = tmp_path / "repo"
     _seed_minimal_repo_with_adapter(repo)
     (repo / "lefthook.yml").write_text("pre-commit:\n  commands: {}\n", encoding="utf-8")
@@ -237,19 +162,13 @@ def test_setup_inspect_degrades_confidence_when_probe_fails_alongside_hook_manag
 
     worktree_state = payload["agent_docs"]["normalization"]["worktree_adapter"]
     assert worktree_state["worktree_probe_status"] == "git_missing"
-    rec_index = {item["id"]: item for item in payload["recommendations"]}
-    rec = rec_index["worktree_adapter_missing_for_hook_manager"]
-    assert rec["confidence"] == "medium"
-    assert any("worktree probe degraded" in line for line in rec["evidence"])
-    # The diagnostic finding must ALSO fire under degraded probe + hook
-    # manager, not just when no hook manager is present. The commit message
-    # promised an unconditional `worktree_probe_unavailable` finding.
     finding_types = {finding["type"] for finding in payload["agent_docs"]["normalization"]["findings"]}
+    assert "worktree_adapter_missing_for_hook_manager" in finding_types
     assert "worktree_probe_unavailable" in finding_types
 
 
-def test_setup_inspect_prefers_hook_manager_recommendation_when_both_signals_fire(tmp_path: Path) -> None:
-    """When hook manager AND active worktrees both apply, emit one medium-priority rec."""
+def test_setup_inspect_reports_both_worktree_signals_without_recommendations(tmp_path: Path) -> None:
+    """Hook and active-worktree signals are retained as diagnostics only."""
     repo = tmp_path / "repo"
     _seed_minimal_repo_with_adapter(repo)
     (repo / "lefthook.yml").write_text("pre-commit:\n  commands: {}\n", encoding="utf-8")
@@ -261,13 +180,14 @@ def test_setup_inspect_prefers_hook_manager_recommendation_when_both_signals_fir
     assert worktree_state["hook_manager_detected"] == "lefthook"
     assert worktree_state["worktree_count"] >= 2
 
-    rec_ids = [item["id"] for item in payload["recommendations"]]
-    assert "worktree_adapter_missing_for_hook_manager" in rec_ids
-    # Only one recommendation, not both.
-    assert "worktree_adapter_missing_for_active_worktrees" not in rec_ids
+    finding_types = {finding["type"] for finding in payload["agent_docs"]["normalization"]["findings"]}
+    assert finding_types >= {
+        "worktree_adapter_missing_for_hook_manager",
+        "worktree_adapter_missing_for_active_worktrees",
+    }
 
 
-def test_setup_inspect_promotes_setup_adapter_absence_to_recommendation(tmp_path: Path) -> None:
+def test_setup_inspect_reports_setup_adapter_absence(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     _seed_normalize_repo(repo, "# Agents\n")
 
@@ -277,16 +197,7 @@ def test_setup_inspect_promotes_setup_adapter_absence_to_recommendation(tmp_path
     assert init_state["adapter_exists"] is False
     assert init_state["adapter_path"] is None
 
-    rec_index = {item["id"]: item for item in payload["recommendations"]}
-    assert "setup_adapter_missing" in rec_index
-    rec = rec_index["setup_adapter_missing"]
-    assert rec["target"] == ".agents/setup-adapter.yaml"
-    assert rec["priority"] == "advisory"
-    assert rec["kind"] == "seed_artifact"
-    assert "preset provenance" in rec["suggested_action"]
-
-
-def test_setup_inspect_omits_setup_adapter_recommendation_when_present(tmp_path: Path) -> None:
+def test_setup_inspect_reports_present_setup_adapter(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     _seed_minimal_repo_with_adapter(repo)
 
@@ -294,5 +205,3 @@ def test_setup_inspect_omits_setup_adapter_recommendation_when_present(tmp_path:
 
     init_state = payload["agent_docs"]["normalization"]["setup_adapter"]
     assert init_state["adapter_exists"] is True
-    rec_ids = [item["id"] for item in payload["recommendations"]]
-    assert "setup_adapter_missing" not in rec_ids

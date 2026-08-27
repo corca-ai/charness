@@ -66,14 +66,6 @@ def build_parser(*, repo_root: Path, surfaces_path: Path) -> argparse.ArgumentPa
         ),
     )
     parser.add_argument(
-        "--ack-cautilus-skill-review",
-        action="store_true",
-        help=(
-            "Acknowledge that public-skill dogfood/scenario review follow-ups from the Cautilus planner "
-            "were inspected and the scenario-registry decision was recorded."
-        ),
-    )
-    parser.add_argument(
         "--allow-unmatched",
         action="store_true",
         help="Proceed even when changed files are not covered by the surfaces manifest.",

@@ -368,7 +368,7 @@ def test_a_wrapped_command_argument_is_not_read_as_a_figure() -> None:
     second line with no backtick pair and its arguments exposed as figures."""
     result = _figure_check(
         IN_SCOPE,
-        "- Ran `python3 scripts/plan_cautilus_proof.py --repo-root .\n  --limit 250` and it passed",
+        "- Ran `python3 scripts/run_standing_pytest.py --repo-root .\n  --mode read-only` and it passed",
     )
 
     assert result["ok"] is True, result.get("offenders")

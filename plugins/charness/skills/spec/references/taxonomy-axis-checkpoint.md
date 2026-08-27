@@ -38,7 +38,7 @@ those values are one axis. A better contract may separate `revisionReason`,
 selection objective instead of a new user-facing mode.
 
 Treat that as a diagnostic example, not a directive to change any existing
-Cautilus optimizer taxonomy. The checkpoint is about testing the axis before a
+optimizer taxonomy. The checkpoint is about testing the axis before a
 contract hardens.
 
 ## When A New Enum Is Honest

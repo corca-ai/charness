@@ -11,7 +11,6 @@ contract.  Keep them next to the imports when a producer is moved.
 
 from __future__ import annotations
 
-import builtins
 import hashlib
 import importlib.machinery
 import importlib.util
@@ -20,7 +19,6 @@ import runpy
 import subprocess
 import sys
 from pathlib import Path
-from types import SimpleNamespace
 
 import pytest
 
@@ -28,8 +26,6 @@ from runtime_bootstrap import import_repo_module
 from scripts import adversarial_evidence as adversarial
 from scripts import capability_catalog_resolver as catalog_resolver
 from scripts import critique_packet_lib as critique_packet
-from scripts import lesson_session_boundary as lesson_boundary
-from scripts import open_lesson_session
 from scripts import reviewed_input_identity as reviewed_identity
 from scripts import slice_closeout_telemetry as telemetry
 from scripts import staged_commit_gate_plan_helpers as staged_helpers
@@ -41,8 +37,6 @@ _MUTATION_SOURCES = (
     "scripts/adversarial_evidence.py",
     "scripts/capability_catalog_resolver.py",
     "scripts/critique_packet_lib.py",
-    "scripts/lesson_session_boundary.py",
-    "scripts/open_lesson_session.py",
     "scripts/reviewed_input_identity.py",
     "scripts/slice_closeout_telemetry.py",
     "scripts/staged_commit_gate_plan_helpers.py",
@@ -443,204 +437,6 @@ def test_slice_telemetry_rotation_replaces_old_backup(tmp_path: Path, monkeypatc
 
 def test_staged_helper_absence_is_an_explicit_empty_gate(tmp_path: Path) -> None:
     assert staged_helpers.provenance_contract_self_test_gate(tmp_path) == []
-
-
-def _lesson_parent_fixture(tmp_path: Path) -> tuple[Path, Path]:
-    output = tmp_path / "charness-artifacts/retro"
-    receipts = output / "lesson-session-receipts"
-    receipts.mkdir(parents=True)
-    bundle = b"Lesson selection preview (1/1 eligible):\n- lesson-a -- use it\n"
-    bundle_path = receipts / "parent.md"
-    bundle_path.write_bytes(bundle)
-    snapshot = {
-        "kind": "charness.lesson-selection-preview",
-        "schema_version": 1,
-        "selection_policy_version": 1,
-        "seed": "parent",
-        "eligible_count": 1,
-        "bucket_counts": {"recent": 1, "value": 0, "uncertainty": 0, "archive": 0, "archive_fallback_uncertainty": 0},
-        "lesson_ids": ["lesson-a"],
-    }
-    snapshot_sha = _sha(json.dumps(snapshot, sort_keys=True, separators=(",", ":")).encode())
-    receipt = lesson_boundary.continuity.build_receipt(
-        session_id="parent",
-        snapshot_sha256=snapshot_sha,
-        stdout_bytes=bundle,
-        emitted_at="2026-08-25T00:00:00Z",
-    )
-    receipt_path = receipts / "parent.json"
-    receipt_path.write_text(json.dumps(receipt), encoding="utf-8")
-    (output / "lesson-ledger.json").write_text(
-        json.dumps({"session_events": [{"session_id": "parent", "snapshot": snapshot, "snapshot_sha256": snapshot_sha}]}),
-        encoding="utf-8",
-    )
-    return tmp_path, receipt_path
-
-
-def test_lesson_boundary_import_and_read_refusals(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    real_import = builtins.__import__
-
-    def reject_package(name: str, *args: object, **kwargs: object):
-        if name == "scripts":
-            raise ImportError("forced standalone import")
-        return real_import(name, *args, **kwargs)
-
-    monkeypatch.setattr(builtins, "__import__", reject_package)
-    sys.path.insert(0, str(ROOT / "scripts"))
-    try:
-        fallback = runpy.run_path(
-            str(ROOT / "scripts/lesson_session_boundary.py"),
-            run_name="lesson_session_boundary_fallback_under_test",
-        )
-    finally:
-        sys.path.pop(0)
-    assert fallback["LANE_RECEIPT_KIND"] == lesson_boundary.LANE_RECEIPT_KIND
-
-    bad_json = tmp_path / "bad.json"
-    bad_json.write_text("not-json", encoding="utf-8")
-    with pytest.raises(lesson_boundary.LessonSessionBoundaryError, match="not readable JSON"):
-        lesson_boundary._read_json(bad_json, "fixture")
-    bad_json.write_text("[]", encoding="utf-8")
-    with pytest.raises(lesson_boundary.LessonSessionBoundaryError, match="must contain an object"):
-        lesson_boundary._read_json(bad_json, "fixture")
-    with pytest.raises(lesson_boundary.LessonSessionBoundaryError, match="outside"):
-        lesson_boundary._repo_relative(tmp_path, "../outside", "fixture")
-
-    class FakeRelative:
-        def is_absolute(self) -> bool:
-            return True
-
-        @property
-        def parts(self) -> tuple[str, ...]:
-            return ("absolute",)
-
-    monkeypatch.setattr(lesson_boundary, "PurePosixPath", lambda *_args: FakeRelative())
-    with pytest.raises(lesson_boundary.LessonSessionBoundaryError, match="canonical"):
-        lesson_boundary._repo_relative(tmp_path, "inside", "fixture")
-
-
-def test_lesson_boundary_parent_and_lane_refusals(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    repo, receipt_path = _lesson_parent_fixture(tmp_path)
-    context = lesson_boundary.load_parent_session(repo, receipt_path=receipt_path)
-    assert context.to_dict()["owner"] == "parent"
-
-    (repo / "charness-artifacts/retro/lesson-ledger.json").write_text("{}", encoding="utf-8")
-    with pytest.raises(lesson_boundary.LessonSessionBoundaryError, match="session_events"):
-        lesson_boundary.load_parent_session(repo, session_id="parent")
-    repo, receipt_path = _lesson_parent_fixture(tmp_path / "receipt-inherit")
-    with pytest.raises(lesson_boundary.LessonSessionBoundaryError, match="requires session_id"):
-        lesson_boundary.load_parent_session(repo)
-    assert lesson_boundary.load_parent_session(repo, receipt_path=receipt_path).session_id == "parent"
-    with pytest.raises(lesson_boundary.LessonSessionBoundaryError, match="session_id"):
-        lesson_boundary.load_parent_session(repo, session_id=5)  # type: ignore[arg-type]
-    with pytest.raises(lesson_boundary.LessonSessionBoundaryError, match="not in the ledger"):
-        lesson_boundary.load_parent_session(repo, session_id="other")
-
-    original_validate = lesson_boundary.continuity.validate_receipt
-    monkeypatch.setattr(lesson_boundary.continuity, "validate_receipt", lambda *_args, **_kwargs: None)
-    payload = json.loads(receipt_path.read_text(encoding="utf-8"))
-    payload["session_id"] = "other"
-    receipt_path.write_text(json.dumps(payload), encoding="utf-8")
-    with pytest.raises(lesson_boundary.LessonSessionBoundaryError, match="does not match"):
-        lesson_boundary.load_parent_session(repo, session_id="parent")
-    monkeypatch.setattr(lesson_boundary.continuity, "validate_receipt", original_validate)
-
-    repo, _receipt_path = _lesson_parent_fixture(tmp_path / "alternate")
-    alternate = repo / "alternate.md"
-    alternate.write_bytes(b"different")
-    monkeypatch.setattr(lesson_boundary.continuity, "validate_receipt", lambda *_args, **_kwargs: None)
-    with pytest.raises(lesson_boundary.LessonSessionBoundaryError, match="receipt-bound"):
-        lesson_boundary.load_parent_session(repo, session_id="parent", bundle_path=alternate)
-    with pytest.raises(lesson_boundary.LessonSessionBoundaryError, match="receipt-bound"):
-        lesson_boundary.load_parent_session(repo, session_id="parent", bundle_path="missing.md")
-    (repo / "charness-artifacts/retro/lesson-session-receipts/parent.md").unlink()
-    with pytest.raises(lesson_boundary.LessonSessionBoundaryError, match="missing"):
-        lesson_boundary.load_parent_session(repo, session_id="parent")
-
-    with pytest.raises(lesson_boundary.LessonSessionBoundaryError, match="lane_id"):
-        lesson_boundary.lane_receipt_path(repo, "../bad")
-    with pytest.raises(lesson_boundary.LessonSessionBoundaryError, match="exactly"):
-        lesson_boundary._lane_relative(repo, "wrong/receipt.json", "lane-a")
-    context = lesson_boundary.load_parent_session(_lesson_parent_fixture(tmp_path / "write")[0], session_id="parent")
-    with pytest.raises(lesson_boundary.LessonSessionBoundaryError, match="owner_id"):
-        lesson_boundary.write_lane_receipt(context, lane_id="lane-a", owner_id=" ")
-
-
-def test_lesson_boundary_write_fence_and_receipt_validation(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    with pytest.raises(lesson_boundary.LessonSessionBoundaryError, match="parent-owned"):
-        lesson_boundary.validate_lane_writes(
-            tmp_path,
-            ["../outside.txt", "charness-artifacts/retro/lesson-ledger.json"],
-            lane_id="lane-a",
-        )
-    with pytest.raises(lesson_boundary.LessonSessionBoundaryError, match="outside"):
-        lesson_boundary.validate_lane_writes(tmp_path, [], assigned_paths=["../outside.txt"])
-    monkeypatch.setattr(lesson_boundary, "LANE_ROOT", lesson_boundary.PurePosixPath("other-lanes"))
-    accepted = lesson_boundary.validate_lane_writes(
-        tmp_path, [".charness/lesson-lanes/lane-a/receipt.json"], lane_id="lane-a"
-    )
-    assert accepted["ok"] is True
-
-    repo, _receipt_path = _lesson_parent_fixture(tmp_path / "valid-receipt")
-    context = lesson_boundary.load_parent_session(repo, session_id="parent")
-    lane = lesson_boundary.write_lane_receipt(context, lane_id="lane-a", owner_id="worker")
-    assert lesson_boundary.validate_lane_receipt(
-        repo,
-        lane,
-        lane_id="lane-a",
-        owner_id="worker",
-        session_id="parent",
-        snapshot_sha256=context.snapshot_sha256,
-        bundle_sha256=context.bundle_sha256,
-        parent_receipt_sha256=context.receipt_sha256,
-    )["ok"] is True
-    with pytest.raises(lesson_boundary.LessonSessionBoundaryError, match="owner_id"):
-        lesson_boundary.validate_lane_receipt(
-            repo,
-            lane,
-            lane_id="lane-a",
-            owner_id="other",
-            session_id="parent",
-            snapshot_sha256=context.snapshot_sha256,
-            bundle_sha256=context.bundle_sha256,
-            parent_receipt_sha256=context.receipt_sha256,
-        )
-    payload = json.loads(lane.read_text(encoding="utf-8"))
-    payload["receipt_sha256"] = "0" * 64
-    lane.write_text(json.dumps(payload), encoding="utf-8")
-    with pytest.raises(lesson_boundary.LessonSessionBoundaryError, match="hash is invalid"):
-        lesson_boundary.validate_lane_receipt(
-            repo,
-            lane,
-            lane_id="lane-a",
-            owner_id="worker",
-            session_id="parent",
-            snapshot_sha256=context.snapshot_sha256,
-            bundle_sha256=context.bundle_sha256,
-            parent_receipt_sha256=context.receipt_sha256,
-        )
-
-
-def test_open_lesson_worker_cli_paths(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
-    monkeypatch.setattr(sys, "argv", ["open_lesson_session.py", "--session-id", "s", "--seed", "x", "--worker-mode"])
-    with pytest.raises(SystemExit):
-        open_lesson_session.main()
-    monkeypatch.setattr(sys, "argv", ["open_lesson_session.py", "--session-id", "s", "--seed", "x", "--parent-bundle", "parent.md"])
-    with pytest.raises(SystemExit):
-        open_lesson_session.main()
-
-    lane = tmp_path / ".charness/lesson-lanes/lane/receipt.json"
-    monkeypatch.setattr(
-        open_lesson_session._boundary,
-        "inherit_worker_session",
-        lambda *_args, **_kwargs: (SimpleNamespace(session_id="parent"), lane),
-    )
-    monkeypatch.setattr(sys, "argv", ["open_lesson_session.py", "--repo-root", str(tmp_path), "--session-id", "parent", "--seed", "x", "--parent-bundle", "parent.md", "--lane-id", "lane", "--owner-id", "worker"])
-    assert open_lesson_session.main() == 0
-    assert "worker inherited" in capsys.readouterr().err
-    monkeypatch.setattr(open_lesson_session._boundary, "inherit_worker_session", lambda *_args, **_kwargs: (_ for _ in ()).throw(ValueError("bad parent")))
-    assert open_lesson_session.main() == 1
-    assert "bad parent" in capsys.readouterr().err
 
 
 def _git(repo: Path, *args: str) -> None:

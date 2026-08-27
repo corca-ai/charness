@@ -54,20 +54,6 @@
       ],
       "rationale": "Skipped debug artifacts are listed in the index payload with reasons and are not treated as clean seam-risk proof."
     },
-    "scripts/cautilus_adapter_lib.py": {
-      "states": [
-        "disabled"
-      ],
-      "visibility": [
-        "structured_warning",
-        "terminal_payload"
-      ],
-      "evidence_terms": [
-        "disabled_reason",
-        "Create .agents/cautilus-adapter.yaml"
-      ],
-      "rationale": "Disabled Cautilus policy is exposed through adapter payloads and operator-facing next-action text."
-    },
     "scripts/check_cli_skill_surface.py": {
       "states": [
         "skipped"
@@ -120,19 +106,6 @@
         "consumer-validator adoption declaration is missing"
       ],
       "rationale": "An inventory target without the consumer-validator adoption declaration is explicit `not_configured` state, not a clean catalog pass; the CLI payload and nonzero result keep the missing adoption contract visible."
-    },
-    "scripts/check_coverage.py": {
-      "states": [
-        "disabled"
-      ],
-      "visibility": [
-        "terminal_payload"
-      ],
-      "evidence_terms": [
-        "doctor_status",
-        "disabled"
-      ],
-      "rationale": "Coverage helper tests and payloads keep disabled Cautilus policy explicit rather than silent."
     },
     "scripts/check_coverage_lib.py": {
       "states": [
@@ -389,20 +362,6 @@
       ],
       "rationale": "Skipped workflow steps are parsed as source facts for downstream gates, not closeout proof."
     },
-    "scripts/grade_skill_outcome.py": {
-      "states": [
-        "skipped"
-      ],
-      "visibility": [
-        "explicit_skip_summary",
-        "terminal_payload"
-      ],
-      "evidence_terms": [
-        "judge not run",
-        "skipped"
-      ],
-      "rationale": "The outcome grader marks a judge-kind assertion `skipped` when no live judge ran (no --judge-cmd; the live LLM judge is an ask-before-run token spend). The skip carries explicit `judge not run` evidence, is excluded from the weighted pass_rate denominator, and is counted separately in the report payload (`skipped N`), so a deferred subjective assertion cannot read as a clean outcome pass; deterministic checks still grade and an invalid grader fails the self-test gate (exit 1)."
-    },
     "scripts/host_hook_install_lib.py": {
       "states": [
         "disabled"
@@ -429,20 +388,6 @@
         "disabled"
       ],
       "rationale": "Tool installation reports disabled adapter state as structured skipped output."
-    },
-    "scripts/lesson_evaluation_records_lib.py": {
-      "states": [
-        "not_configured"
-      ],
-      "visibility": [
-        "structured_warning",
-        "terminal_payload"
-      ],
-      "evidence_terms": [
-        "not-configured",
-        "state"
-      ],
-      "rationale": "Same probe vocabulary. Reports that this repo declares no lesson evaluator, so there is no session to reconcile and no score to solicit. Distinct from a repo that declared one and skipped the read, which is what makes a missing-start disposition a finding rather than a configuration state in an opted-in repo."
     },
     "scripts/measure_inventory_marker_rule.py": {
       "states": [
@@ -486,18 +431,6 @@
       ],
       "rationale": "A path with no recoverable baseline cannot be compared, and that is NOT the same answer as \"this repair changed nothing\". Conflating them would report a reassuring zero for a slice the harness never examined -- the silent-zero shape this tool exists to prevent one level down. So uncomparable paths are counted by path with the reason (no baseline at that ref, or not captured by the reviewer snapshot, which stores Python sources only), printed in the success line, and carried per-path in the YAML payload under `uncomparable` so a consumer can tell an empty result from an unexamined one."
     },
-    "scripts/plan_cautilus_proof.py": {
-      "states": [
-        "disabled"
-      ],
-      "visibility": [
-        "terminal_payload"
-      ],
-      "evidence_terms": [
-        "Repo policy is disabled"
-      ],
-      "rationale": "Cautilus proof planning explicitly tells operators not to run disabled evaluator proof."
-    },
     "scripts/plugin_preamble.py": {
       "states": [
         "disabled"
@@ -536,20 +469,6 @@
         "summary_skipped_reason"
       ],
       "rationale": "Retro persistence records skipped summary refresh reasons in payload state."
-    },
-    "scripts/skill_outcome_wiring.py": {
-      "states": [
-        "skipped"
-      ],
-      "visibility": [
-        "explicit_skip_summary",
-        "terminal_payload"
-      ],
-      "evidence_terms": [
-        "judge skipped",
-        "skipped"
-      ],
-      "rationale": "The A/B harness outcome-grade wiring carries the grader's judge-kind `skipped` verdict into the per-arm report (the `judge skipped` column) and marks an eval with no outcome-assertions.json as `skipped` with an explicit `no outcome-assertions.json — skipped` cell. Both are surfaced in the rendered outcome section and a high `judge skipped` count is flagged in the caveat, so a non-run live judge or a missing assertion set cannot read as a clean outcome pass. Advisory-only (never gates); an untrustworthy grader fails the self-test gate and grading is skipped-with-reason."
     },
     "scripts/skill_runtime_bootstrap.py": {
       "states": [
@@ -616,18 +535,6 @@
         "disabled"
       ],
       "rationale": "Tool update reports disabled adapter state as structured skipped output."
-    },
-    "scripts/validate_cautilus_proof.py": {
-      "states": [
-        "disabled"
-      ],
-      "visibility": [
-        "stdout_attention"
-      ],
-      "evidence_terms": [
-        "cautilus proof disabled by repo adapter"
-      ],
-      "rationale": "Disabled Cautilus proof is printed as the validator outcome."
     },
     "scripts/validate_inventory_consumption.py": {
       "states": [

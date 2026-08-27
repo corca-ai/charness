@@ -39,7 +39,7 @@ SETUP_MULTI_READER_KEYS = ("surfaces",)
 
 
 def _repo_adapters() -> list[Path]:
-    return sorted(ROOT.glob(".agents/*-adapter.yaml")) + sorted(ROOT.glob(".agents/cautilus-adapters/*.yaml"))
+    return sorted(ROOT.glob(".agents/*-adapter.yaml"))
 
 
 @pytest.mark.parametrize("key", SETUP_MULTI_READER_KEYS)
@@ -205,43 +205,6 @@ def test_every_key_declared_in_this_repo_resolves_to_a_reader_or_a_typed_gap() -
     assert unnamed == [], f"resolved to a reader state without naming a reader: {unnamed}"
 
 
-def test_the_three_sibling_keys_now_agree_because_nothing_reads_their_file() -> None:
-    """This replaces the test that pinned the key-scoping gap (`#553`), per its own
-    instruction to replace rather than widen once repaired.
-
-    `.agents/cautilus-adapters/chatbot-benchmark.yaml` has no parsing reader --
-    `cautilus_adapter_lib.py` pins the SINGULAR `.agents/cautilus-adapter.yaml`. Before
-    the repair its three `*_command_templates` siblings, declared together and read by
-    nothing, got two different verdicts purely because two of the names collided with an
-    unrelated module's field list. Now they agree: none is `reader`.
-    """
-    rel = ".agents/cautilus-adapters/chatbot-benchmark.yaml"
-    states = {r.key: r.state for r in resolve_declared_keys(ROOT, load_yaml_file(ROOT / rel), adapter_relative=rel)}
-
-    siblings = ("comparison_command_templates", "held_out_command_templates", "full_gate_command_templates")
-    assert all(states[key] != "reader" for key in siblings), (
-        "a key in a file nothing parses must not read as `reader`; this is the #553 regression"
-    )
-    assert states["held_out_command_templates"] == "reader-elsewhere"
-    assert states["comparison_command_templates"] == "text-asserted"
-
-
-def test_a_glob_literal_does_not_confer_ownership() -> None:
-    """The precise trap `#553` turned on.
-
-    `scripts/cautilus_adapter_lib.py` contains the literal
-    `.agents/cautilus-adapters/*.yaml` inside an unrelated
-    `DEFAULT_PROMPT_AFFECTING_PATTERNS` list, while actually loading the SINGULAR
-    adapter. A glob-based ownership rule would re-admit the exact module this repair
-    exists to exclude, and every assertion above would still pass.
-    """
-    associated = associated_modules(ROOT, ".agents/cautilus-adapters/chatbot-benchmark.yaml")
-
-    assert associated, "the chatbot adapter has owners; an empty set would disable scoping silently"
-    assert "scripts/cautilus_adapter_lib.py" not in associated
-    assert "scripts/cautilus_scenarios_lib.py" in associated
-
-
 def test_a_resolver_that_builds_its_path_still_owns_its_adapter() -> None:
     """The inverted bias, caught by measurement before shipping.
 
@@ -266,17 +229,6 @@ def test_an_injected_reader_is_still_associated() -> None:
     assert "scripts/setup_inspect_lib.py" in associated_modules(ROOT, ".agents/setup-adapter.yaml")
 
 
-def test_reader_elsewhere_is_not_collapsed_into_unknown() -> None:
-    """Telling an operator their correct declaration looks like a typo, on the strength
-    of an import graph, is the mistake this repo has already shipped once. The two states
-    say different things and must not render alike."""
-    rel = ".agents/cautilus-adapters/chatbot-proposals.yaml"
-    states = {r.state for r in resolve_declared_keys(ROOT, load_yaml_file(ROOT / rel), adapter_relative=rel)}
-
-    assert "reader-elsewhere" in states
-    assert "unknown" not in states
-
-
 def test_an_example_adapter_agrees_with_the_adapter_it_exemplifies() -> None:
     """A verdict that contradicts itself on identical evidence is not a verdict.
 
@@ -296,35 +248,6 @@ def test_an_example_adapter_agrees_with_the_adapter_it_exemplifies() -> None:
 
     for key in shared:
         assert real[key] == example[key] == "reader", f"{key}: real={real[key]} example={example.get(key)}"
-
-
-def test_the_survey_covers_the_population_the_operator_decision_needs() -> None:
-    """The Operator Decision Queue's unblock action asks for the measured gap count
-    across this repo PLUS every shipped example adapter. A survey that quietly covered
-    only `.agents/` would answer a different question than the one asked."""
-    result = survey(ROOT)
-
-    assert result["adapters"] >= 31, "the adapter population shrank unexpectedly"
-    assert result["keys"] >= 400
-    assert result["registry_problems"] == []
-    assert any(gap["adapter"].startswith(".agents/") for gap in result["gaps"]) or not result["gaps"]
-    # The two cautilus files have no parsing reader at all -- the repo documents this.
-    # The remaining rows are UNDER-ASSOCIATION residue: a real reader the closure cannot
-    # reach because it receives adapter data from a caller rather than naming the adapter or
-    # its owner. They appeared when association was narrowed to kill the module-basename
-    # collision, and keeping them visible is the deliberate trade: a false `reader-elsewhere`
-    # is a report an operator dismisses in one reading, while a false `reader` is a false
-    # green that hides an unreconciled declaration. The quality rows are the same
-    # cross-module bootstrap pattern as the hook rows, not newly accepted unknowns; the
-    # survey still exposes them for a future association repair.
-    covered = {gap["adapter"] for gap in result["gaps"]}
-    assert covered <= {
-        ".agents/cautilus-adapters/chatbot-benchmark.yaml",
-        ".agents/cautilus-adapters/chatbot-proposals.yaml",
-        ".agents/quality-adapter.yaml",
-        ".agents/worktree-adapter.yaml",
-        "skills/public/quality/adapter.example.yaml",
-    }, f"a new unreconciled adapter surface appeared and needs a decision: {sorted(covered)}"
 
 
 def test_the_survey_reports_rather_than_refuses() -> None:
@@ -403,16 +326,6 @@ def test_a_conventional_path_alone_does_not_fabricate_an_owner(tmp_path: Path, m
     assert adapter_key_registry._convention_owners(tmp_path, ".agents/ghost-adapter.yaml") == set()
 
 
-def test_shared_core_names_its_owner_rather_than_a_scan_result() -> None:
-    """A `shared-core` verdict with an empty reader list is a verdict with no named
-    reader, which is the one thing this module must never emit. Scoping the scan result
-    produced exactly that for adapters nothing loads."""
-    rel = ".agents/cautilus-adapters/chatbot-benchmark.yaml"
-    for resolution in resolve_declared_keys(ROOT, load_yaml_file(ROOT / rel), adapter_relative=rel):
-        if resolution.state == "shared-core":
-            assert resolution.readers == ("scripts/adapter_lib.py",)
-
-
 def test_a_retired_key_says_retired_rather_than_unknown(monkeypatch) -> None:
     """`RETIRED_KEYS` is empty, so this path had no coverage and no live subject.
 
@@ -487,7 +400,7 @@ def test_the_survey_cli_runs_and_emits_parseable_yaml() -> None:
 
     assert completed.returncode == 0, completed.stderr[-2000:]
     payload = yaml.safe_load(completed.stdout)
-    assert payload["adapters"] >= 31
+    assert payload["adapters"] >= 28
     assert payload["registry_problems"] == []
 
 

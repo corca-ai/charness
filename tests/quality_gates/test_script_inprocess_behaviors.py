@@ -158,7 +158,7 @@ def test_setup_synthesize_operator_acceptance_outputs_tiered_draft(tmp_path: Pat
     (repo / "docs" / "specs").mkdir(parents=True)
     (repo / "scripts").mkdir(parents=True)
     (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
-    (repo / "docs" / "handoff.md").write_text("# Handoff\n", encoding="utf-8")
+    (repo / "docs" / "index.md").write_text("# Docs\n", encoding="utf-8")
     (repo / "docs" / "roadmap.md").write_text("# Roadmap\n", encoding="utf-8")
     (repo / "pyproject.toml").write_text("[project]\nname='demo'\n", encoding="utf-8")
     (repo / "scripts" / "run-quality.sh").write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")

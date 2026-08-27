@@ -244,17 +244,16 @@ The first manifest wave should cover:
 
 - `agent-browser`
 - `specdown`
-- `cautilus`
 
-These are now concrete manifest instances. The evaluator boundary is no longer
-deferred: `cautilus` is the tracked standalone evaluation product, while
-consumer-owned adapters remain local repo assets.
+These are concrete manifest instances. Evaluator-specific products and
+consumer-owned behavior evaluators stay outside the Charness control plane;
+they are not required for ordinary tool discovery or lifecycle management.
 
 ## Command Surface
 
 Representative operator path:
-`charness tool doctor cautilus`, `charness tool install cautilus`,
-`charness tool update agent-browser`, `charness tool sync-support cautilus`.
+`charness tool doctor agent-browser`, `charness tool install agent-browser`,
+`charness tool update agent-browser`, `charness tool sync-support specdown`.
 
 When a tool's healthcheck detects recurring runtime drift, the follow-up should
 prefer a repo-owned cleanup command over prose-only guidance.

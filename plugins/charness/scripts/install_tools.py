@@ -94,23 +94,6 @@ def passive_install_status(mode: str, detect_result: Payload, healthcheck_result
 
 
 def install_one(repo_root: Path, manifest: Payload, *, execute: bool) -> Payload:
-    disabled = lifecycle.disabled_by_cautilus_adapter(repo_root, manifest)
-    if disabled is not None:
-        install_action = manifest["lifecycle"]["install"]
-        return base_result(
-            repo_root,
-            manifest,
-            install_action,
-            status="skipped",
-            mode="disabled",
-            commands=[],
-            detect=lifecycle.disabled_check_payload(disabled),
-            healthcheck=lifecycle.disabled_check_payload(disabled),
-        ) | {
-            "reason": disabled["reason"],
-            "adapter_path": disabled["adapter_path"],
-        }
-
     install_action = manifest["lifecycle"]["install"]
     mode = install_action["mode"]
     commands = install_action.get("commands", [])

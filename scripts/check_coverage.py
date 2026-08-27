@@ -61,7 +61,6 @@ MIN_COVERAGE = 0.60
 MIN_FILE_COVERAGE = PER_FILE_MIN_COVERAGE
 COPY_IGNORE_NAMES = (
     ".git",
-    ".cautilus",
     ".pytest_cache",
     ".ruff_cache",
     ".mypy_cache",
@@ -120,12 +119,6 @@ def build_release_fixture(path: Path) -> None:
                     "published_at": "2026-04-12T00:00:00Z",
                     "assets": [{"name": "charness"}],
                 },
-                "corca-ai/cautilus": {
-                    "tag_name": "v1.2.3",
-                    "html_url": "https://github.com/corca-ai/cautilus/releases/tag/v1.2.3",
-                    "published_at": "2026-04-10T00:00:00Z",
-                    "assets": [{"name": "cautilus-linux-amd64.tar.gz"}],
-                },
                 "vercel-labs/agent-browser": {
                     "tag_name": "v0.25.3",
                     "html_url": "https://github.com/vercel-labs/agent-browser/releases/tag/v0.25.3",
@@ -144,7 +137,6 @@ def build_release_fixture(path: Path) -> None:
 def build_support_sync_fixture(path: Path, fixture_root: Path) -> None:
     mappings: dict[str, str] = {}
     for repo, skill_id in {
-        "corca-ai/cautilus": "cautilus",
         "vercel-labs/agent-browser": "agent-browser",
     }.items():
         upstream_root = fixture_root / skill_id
@@ -240,15 +232,7 @@ def run_traced_function(tracer: trace.Trace, function: object) -> None:
 def exercise_doctor_scenarios() -> None:
     import scripts.doctor as doctor
 
-    disabled_state = {
-        "doctor_status": "disabled",
-        "previous_lock_present": False,
-        "support_sync": {"status": "not-tracked", "expected_paths": [], "missing_paths": []},
-    }
-    manifest = {"tool_id": "cautilus", "version_expectation": {"constraint": "local"}}
-    with mock.patch.object(doctor, "inspect_capability_state", return_value=disabled_state):
-        doctor.inspect_manifest(Path("."), manifest, write=False, skip_release_probe=False)
-
+    manifest = {"tool_id": "demo", "version_expectation": {"constraint": "local"}}
     payload = {
         "tool_id": "demo",
         "doctor_status": "missing",
@@ -296,7 +280,6 @@ def collect_counts(repo_root: Path) -> dict[Path, set[int]]:
         entries = (
             (repo_root / "charness", ["tool", "doctor", "--repo-root", str(repo_copy), "agent-browser"]),
             (repo_root / "scripts" / "doctor.py", ["--repo-root", str(repo_copy), "--write-locks", "--tool-id", "agent-browser"]),
-            (repo_root / "scripts" / "doctor.py", ["--repo-root", str(repo_copy), "--write-locks", "--tool-id", "cautilus"]),
             (
                 repo_root / "scripts" / "sync_support.py",
                 ["--repo-root", str(repo_copy), "--plugin-root", str(plugin_root), "--execute", "--tool-id", "agent-browser"],
@@ -306,9 +289,7 @@ def collect_counts(repo_root: Path) -> dict[Path, set[int]]:
                 ["--repo-root", str(repo_copy), "--execute", "--tool-id", "agent-browser"],
             ),
             (repo_root / "scripts" / "update_tools.py", ["--repo-root", str(repo_copy), "--execute", "--tool-id", "agent-browser"]),
-            (repo_root / "scripts" / "update_tools.py", ["--repo-root", str(repo_copy), "--tool-id", "cautilus"]),
             (repo_root / "scripts" / "install_tools.py", ["--repo-root", str(repo_copy), "--execute", "--tool-id", "agent-browser"]),
-            (repo_root / "scripts" / "install_tools.py", ["--repo-root", str(repo_copy), "--execute", "--tool-id", "cautilus"]),
         )
         scenario_functions = (
             exercise_control_plane_scenarios,

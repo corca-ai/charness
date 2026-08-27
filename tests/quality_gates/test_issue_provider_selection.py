@@ -73,6 +73,25 @@ def test_invalid_adapter_refuses_explicit_selection_before_parsing_or_provider_c
     assert "provider_selection" not in selected
 
 
+def test_issue_selection_passes_the_normalized_target_to_the_backend_reader(tmp_path: Path) -> None:
+    tool = runpy.run_path(str(TOOL_PATH))
+    write_issue_adapter_with_backend(tmp_path, backend_id="acme", binary="acme")
+    seen: list[str] = []
+    tool["RUNTIME"].newest_open_issue = lambda repo, _backend: (
+        seen.append(repo) or {"number": 724}
+    )
+    emitted: list[dict[str, object]] = []
+    tool["command_select"].__globals__["emit"] = emitted.append
+
+    rc = tool["command_select"](
+        argparse.Namespace(repo_root=tmp_path, repo=" acme / project ", selector=None)
+    )
+
+    assert rc == 0
+    assert seen == ["acme/project"]
+    assert emitted[0]["repo"] == "acme/project"
+
+
 def test_goal_run_capability_probe_uses_bound_target_not_placeholder_repo() -> None:
     contract = runpy.run_path(str(CONTRACT_PATH))
     backend = {

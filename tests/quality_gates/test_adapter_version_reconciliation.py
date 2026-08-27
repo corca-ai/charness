@@ -57,17 +57,16 @@ from .support import ADAPTER_LIB, ROOT
 sys.path.insert(0, str(ROOT))
 
 # (label, module path, entrypoint name). The label is the resolver family; the number of
-# rows here is the "how many sites are covered" count. 19 sites driven here, 4 exempt --
-# 23 reconciling sites in total. The exemptions are listed in EXEMPT_SITES with the test
+# rows here is the "how many sites are covered" count. 18 sites driven here, 4 exempt --
+# 22 reconciling sites in total. The exemptions are listed in EXEMPT_SITES with the test
 # that drives each instead; none of them is absent.
 #
 # Both numbers are ASSERTED below rather than left as prose. They were already wrong when
-# this was read fresh -- the comment said 19+5 while EXEMPT_SITES held 4, so the stated
+# this was read fresh -- the prose count had drifted from EXEMPT_SITES, so the stated
 # total was never either sum. On the file whose own thesis is "a count is only as honest
 # as its denominator", the denominator had rotted with nothing to catch it.
 SITES: tuple[tuple[str, str, str], ...] = (
     ("announcement", "scripts/announcement_adapter_lib.py", "validate_announcement_adapter_data"),
-    ("cautilus", "scripts/cautilus_adapter_lib.py", "validate_cautilus_adapter_data"),
     ("critique", "scripts/critique_adapter_lib.py", "validate_adapter_data"),
     ("narrative", "scripts/narrative_adapter_lib.py", "validate_narrative_adapter_data"),
     ("proof_semantics", "scripts/proof_semantics_adapter_lib.py", "validate_adapter_data"),
@@ -217,7 +216,7 @@ def _resolve_declared(
     if entry == "validate_adapter_yaml":
         # The commit-time gate RAISES instead of returning a payload, and it reads a real
         # file. It is included here because it renders a version verdict on adapters --
-        # and for `.agents/cautilus-adapters/*.yaml` it is the ONLY one that does.
+        # and for adapter files without a per-skill resolver it is the ONLY one that does.
         module_error = getattr(module, "ValidationError")
         probe = tmp_path / ".agents" / "probe-adapter.yaml"
         probe.parent.mkdir(parents=True, exist_ok=True)
@@ -280,7 +279,7 @@ def test_simple_adapter_does_not_honor_sibling_fields_after_version_refusal(tmp_
 # than merely misdescribe itself.
 #
 # The identity/path block came first and is the weakest half: at three rows it was the
-# ONLY thing live, so `cautilus` proved that `repo` was contained on a resolver whose
+# ONLY thing live, so one resolver proved that `repo` was contained on a resolver whose
 # real surface is command templates this repo shells out to. The command-list and
 # boolean block below exists because of that -- a probe that reaches only identity
 # strings is a probe that cannot see the fields worth containing. Two booleans in
@@ -430,14 +429,14 @@ def test_supported_version_stays_clean(label, path, entry, tmp_path) -> None:
 
 @pytest.mark.parametrize(
     "adapter_name",
-    ["probe-adapter.yaml", "cautilus-adapter.yaml", "critique-adapter.yaml",
+    ["probe-adapter.yaml", "critique-adapter.yaml",
      "retro-adapter.yaml", "quality-adapter.yaml"],
 )
 def test_the_commit_gate_requires_a_declared_version_for_every_adapter_name(adapter_name, tmp_path) -> None:
     """The filename-specific rows are the point.
 
     `validate_adapter_yaml` dispatches on filename, and two of those branches
-    (`cautilus-adapter.yaml`, `critique-adapter.yaml`) RETURN before the rest of the
+    (`critique-adapter.yaml`) RETURN before the rest of the
     function runs. With the version floor below them, those two files skipped it entirely
     while the gate read as though it covered every adapter -- and their resolvers treat an
     absent version as legal, correctly for a resolver, so nothing else refused it either.
@@ -456,7 +455,7 @@ def test_the_commit_gate_requires_a_declared_version_for_every_adapter_name(adap
 def test_the_shared_check_writes_the_accepted_version_itself() -> None:
     """Proves the ACCEPT branch, which the per-site polarity test cannot.
 
-    Every resolver's `infer_defaults` already seeds `version: 1`, so at 18 of the 19
+    Every resolver's `infer_defaults` already seeds `version: 1`, so all 18 of the 18
     sites `resolved["version"] == 1` holds whether or not the shared check writes
     anything -- deleting its `else: validated[field] = value` branch entirely would
     leave those assertions green. Passing an EMPTY dict is the only way to observe the
@@ -495,7 +494,6 @@ def test_every_repo_local_adapter_declares_the_supported_version() -> None:
     # that has nothing to do with adapter resolvers.
     patterns = (
         ".agents/*-adapter.yaml",
-        ".agents/cautilus-adapters/*.yaml",
         "skills/public/*/adapter.example.yaml",
         "integrations/*/adapter.example.yaml",
     )
@@ -519,7 +517,7 @@ def test_every_repo_local_adapter_declares_the_supported_version() -> None:
 def test_the_stated_census_counts_match_the_lists() -> None:
     """The denominator, pinned. Prose counts beside a list rot silently, and this file's
     entire claim is a census."""
-    assert (len(SITES), len(EXEMPT_SITES)) == (19, 4)
+    assert (len(SITES), len(EXEMPT_SITES)) == (18, 4)
 
 
 def test_exempt_sites_carry_a_reason() -> None:

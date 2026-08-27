@@ -17,12 +17,8 @@ ROOT = repo_root_from_script(__file__)
 _ledger = import_repo_module(__file__, "scripts.lesson_ledger_lib")
 lesson_ledger_path = _ledger.lesson_ledger_path
 replay_validated_ledger_payload = _ledger.replay_validated_ledger_payload
-candidate_sources = _ledger.candidate_sources
-# The ONE writer, and the reason the legacy-scalar shape can never come back:
-# `legacy_prefix_error` refuses a scalar appended after any outcome event, and
-# this refuses to author one at all. Neither alone is enough -- the validator
-# cannot stop a hand edit that predates the first outcome event, and a writer
-# rule alone would not survive someone editing the JSON directly.
+# The writer is the only way to append the current typed shape. The validator
+# still preserves the historical scalar prefix and rejects a later scalar.
 _outcome = import_repo_module(__file__, "scripts.lesson_score_outcome_lib")
 _writer = import_repo_module(__file__, "scripts.lesson_ledger_writer_lib")
 ledger_lock = _writer.ledger_lock
@@ -46,7 +42,6 @@ def append_score(
     output_dir: Path,
     summary_path: Path,
     event_id: str,
-    session_id: str,
     lesson_id: str,
     source_retro: str,
     outcome: str,
@@ -55,7 +50,6 @@ def append_score(
     require_repo_local_helper(__file__, repo_root)
     event_id = _nonblank(event_id, "event_id")
     lesson_id = _nonblank(lesson_id, "lesson_id")
-    session_id = _nonblank(session_id, "session_id")
     source_retro = _nonblank(source_retro, "source_retro")
     anchor = _nonblank(anchor, "anchor")
     if outcome not in _outcome.SCORE_OUTCOMES:
@@ -93,44 +87,9 @@ def append_score(
         )
         if lesson_id not in replayed:
             _fail(f"lesson_id `{lesson_id}` is unseeded")
-        # REFUSED HERE, not only at the gate, because the ledger is append-only:
-        # `replay_validated_ledger_payload` refuses to rewrite a committed score
-        # event, so a `not-consulted` encounter that fails the reconciler's
-        # precondition after commit is a permanently red gate whose only escape is
-        # to add the recurrence tag afterwards -- i.e. to assert the recurrence in
-        # order to clear the check that verifies it, which is verbatim the defect
-        # this vocabulary exists to remove. A bounded reviewer found that trap; the
-        # inputs were already on this call path, so refusing costs nothing.
-        # SAME REASON, second check. Round 2 found that `duplicate-encounter` --
-        # added in round 1 to close the legacy double-count hole -- shipped the
-        # very class its neighbour below was written to remove: a post-persistence
-        # refusal with no write-time counterpart, on an append-only ledger. The
-        # reachable case is a legacy event and an outcome event for one lesson in
-        # one session; their `source_retro` values differ, so `(source, lesson)`
-        # uniqueness accepts both, and the gate then goes permanently red.
-        if any(
-            event.get("session_id") == session_id and event.get("lesson_id") == lesson_id
-            for event in payload["score_events"]
-        ):
-            _fail(
-                f"session `{session_id}` already records an encounter for `{lesson_id}`; score what "
-                "actually bit, one cited event each. A second encounter for the same lesson in the "
-                "same session cannot be reconciled against any retro's declared count"
-            )
-        if outcome in _outcome.RECURRENCE_ASSERTING_OUTCOMES:
-            sources = _ledger.candidate_sources(repo_root, output_dir, summary_path)
-            if source_retro not in sources.get(lesson_id, set()):
-                _fail(
-                    f"`{outcome}` asserts that this session COMMITTED the class `{lesson_id}`, so "
-                    f"`{source_retro}` must already carry a `recurrence-class: {lesson_id}` bullet "
-                    "under one of its Context / Waste / Next Improvements sections. Write that "
-                    "bullet first, then record the encounter -- without the precondition this "
-                    "outcome is trivially true of every lesson the session had no occasion to use"
-                )
         candidate = copy.deepcopy(payload)
         event: dict[str, Any] = {
             "event_id": event_id,
-            "session_id": session_id,
             "source_retro": source_retro,
             "lesson_id": lesson_id,
             "outcome": outcome,
@@ -157,7 +116,6 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=ROOT)
     parser.add_argument("--event-id", required=True)
-    parser.add_argument("--session-id", required=True)
     parser.add_argument("--lesson-id", required=True)
     parser.add_argument(
         "--source-retro",
@@ -182,7 +140,6 @@ def main() -> int:
         output_dir=root / "charness-artifacts/retro",
         summary_path=root / "charness-artifacts/retro/recent-lessons.md",
         event_id=args.event_id,
-        session_id=args.session_id,
         lesson_id=args.lesson_id,
         source_retro=args.source_retro,
         outcome=args.outcome,

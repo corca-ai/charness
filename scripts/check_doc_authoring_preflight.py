@@ -156,8 +156,9 @@ class Report:
 
         `blocked` reads FINDINGS, so a class that was never run contributes nothing to
         it and the command exits 0. That is fine as a gate verdict — this command is a
-        forecast, and the owning gates still run at commit time — but `closeout_bundle_lib`
-        records "passed" from that returncode, so an unmeasured class was indistinguishable
+        forecast, and the owning gates still run at commit time — but the former
+        aggregate closeout record stored "passed" from that returncode, so an unmeasured
+        class was indistinguishable
         from a clean one in the durable artifact. The exit code is deliberately NOT changed
         (it would turn every machine without a local markdownlint into a failing closeout);
         what changes is that the payload says so in a field, not only in prose inside a

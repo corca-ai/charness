@@ -4,9 +4,10 @@
 loop alone keeps missing: a **causal review** before design (step 4) and a
 **resolution critique** before close (step 9). Both use the shared bounded
 fresh-eye contract so the analysis is not anchored on the implementer's first
-hypothesis. The adapter's default is a Charness-owned file-backed worker
-(`codex exec` or `claude -p`); a typed host subagent is an explicit alternate
-branch, not a prerequisite or a silent fallback.
+hypothesis. Select the cheapest available bounded carrier: a live typed host subagent
+for short judgment-bound review, or the Charness-owned file-backed
+worker (`codex exec` or `claude -p`) for a longer isolated review. These are
+execution alternatives, not a default-versus-fallback hierarchy.
 
 ## Classification gate
 
@@ -40,9 +41,8 @@ single triage block the caller can act on directly.
 
 The subagent's prompt must:
 
-“Subagent” is the contract term for the distinct reviewer context; the default
-carrier is the file-backed worker runner described above, not an interactive
-host spawn.
+“Subagent” is the contract term for the distinct reviewer context; the carrier
+may be the live host subagent or the file-backed worker selected above.
 
 - restate the issue body and the reporter's JTBD verbatim
 - name the three lenses below and require evidence for each

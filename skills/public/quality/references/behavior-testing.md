@@ -5,23 +5,22 @@ not as a new local runner inside Charness.
 
 ## Boundary
 
-- Charness owns detection, recommendation, adapter-facing configuration, and
-  honest artifact wording.
-- Cautilus owns agent behavior evaluation semantics, execution, comparison, and
-  machine-readable result shape.
+- Charness owns detection, recommendation, and honest evidence wording.
 - Consumer repos own the workflow or product surface under test, the preserved
-  task/log/source packet, and any repo-specific oracle.
+  task/log/source packet, and any repo-specific oracle or evaluator.
+- Reviewers own judgment about behavior that cannot be reduced to a deterministic
+  local assertion.
 
 Do not build a second behavior-test runner in Charness. When a behavior seam
-needs evaluator-backed proof, name the Cautilus robustness contract and record
-whether the proof was executed, unavailable, blocked by policy, or
-recommend-only.
+needs stronger evidence, recommend the consumer's existing evaluator or a
+bounded human review and record whether it was executed, unavailable, blocked,
+or recommend-only.
 
 ## When To Recommend
 
-Recommend a Cautilus-backed behavior test when deterministic gates cannot
-honestly prove the risk because the risk lives in agent behavior, prompt
-routing, multi-turn recovery, source use, or baseline-vs-variant judgment.
+Recommend a behavior test or review when deterministic gates cannot honestly
+prove the risk because it lives in agent behavior, prompt routing, multi-turn
+recovery, source use, or baseline-vs-variant judgment.
 
 Common seams:
 
@@ -35,8 +34,9 @@ Common seams:
   branch but not the quality of fallback, partial-output recovery, cheap-first
   routing, or escalation decisions; see `agent-production-runtime.md`
 
-Do not recommend Cautilus for lint, unit tests, type checks, doc links, or other
-deterministic repo gates. Those stay in CI, hooks, or repo-owned validators.
+Do not recommend a behavior test for lint, unit tests, type checks, doc links,
+or other deterministic repo gates. Those stay in CI, hooks, or repo-owned
+validators.
 
 ## Recommendation Shape
 
@@ -44,38 +44,13 @@ A quality recommendation should include:
 
 - behavior seam under risk
 - why deterministic proof is insufficient
-- likely Cautilus mode: `fixture`, `observation`, or `skill-experiment`
-- source packet or missing source packet
-- Cautilus packet target: `cautilus.robustness_request.v1`,
-  `cautilus.robustness_plan.v1`, or `cautilus.robustness_report.v1`
-- expected relation such as `preserve_behavior`, `surface_failure`, `recover`,
+- source packet or an explicit statement that it is missing
+- expected behavior relation such as `preserve`, `surface_failure`, `recover`,
   `clarify`, or `refuse`
-- expected result artifact fields the repo needs to preserve, including
-  relation status (`satisfied`, `violated`, `blocked`, `invalid`, or
-  `inconclusive`), reason codes, limitations, recommendation, and next actions
+- evidence fields the consumer or reviewer must preserve, including status,
+  reason codes, limitations, recommendation, and next actions
 - current state: `executed`, `recommend_only`, `blocked`, or `unavailable`
 
-Use the helper when a quality run needs a structured recommend-only finding:
-
-```bash
-python3 "$SKILL_DIR/scripts/recommend_behavior_test.py" \
-  --behavior-seam goal-resumption \
-  --subject-ref skills/public/achieve/SKILL.md \
-  --risk-focus "resumption after compacted or interrupted work" \
-  --deterministic-gap "static docs cannot prove multi-turn recovery behavior" \
-  --source-evidence-ref <gathered-or-local-source-ref> \
-  --mutation-kind stimulus \
-  --markdown
-```
-
-For this repo, live execution still follows
-[cautilus-on-demand.md](./cautilus-on-demand.md): consult the planner first and
-use `<plugin-dir>/scripts/run_cautilus_eval.py` only with an explicit log-backed behavior
-source. Routine quality review can recommend a proof without running it.
-
-## Cautilus Contract
-
-The stable consumer result shape is owned by Cautilus. The contract is
-documented in the Cautilus source repo, not vendored here, at
-`<cautilus-repo>/docs/contracts/robustness-evaluation.md` and uses request, plan, and report
-packets instead of a Charness-owned runner.
+Routine quality review can recommend stronger evidence without running it. A
+new local gate is justified only when it proves a distinct deterministic seam;
+otherwise keep the recommendation at the consumer or reviewer boundary.

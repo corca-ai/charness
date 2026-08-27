@@ -296,9 +296,8 @@ tokens a representative run must reproduce VERBATIM to produce a well-formed or
 validator-passing closeout — status enums, exact substring-matched strings,
 required field names — stay in `SKILL.md` core.
 
-Author decision test: "Would a claim-fidelity spec substring-match this string
-(`requiredCommandFragments` / `requiredSummaryFragments`), or would a closeout
-line be malformed without these exact characters?"
+Author decision test: "Would the owning closeout validator match this string, or
+would a closeout line be malformed without these exact characters?"
 
 - Yes -> the token lives in core, under a dedicated `## Closeout Vocabulary` H2.
 - No (it teaches WHEN or WHY) -> it is prose and stays in a `references/` doc.
@@ -328,11 +327,9 @@ single-sentence line under an exempt heading is still exempt and unread, so a
 skill can park a bounded number of such lines there for free — the budget is what
 keeps that number small.
 
-Never strand an emittable token in a `references/` doc and then pin a
-claim-fidelity spec's `requiredCommandFragments` to that doc's filename: that
-forces a representative run to re-open the doc just to reproduce a string it
-already needs — the re-read waste this rule removes. Assert the emitted token via
-`requiredSummaryFragments` instead.
+Never strand an emittable token in a `references/` doc and then make a closeout
+validator reopen that doc just to reproduce a string the run already needs. Keep
+the token in the skill core or assert the emitted token at the owning boundary.
 
 ## Closeout Schema Rule
 

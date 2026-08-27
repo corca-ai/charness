@@ -51,7 +51,7 @@ not introducing a parallel workflow.
 
 ## Rename Examples
 
-These are real renames from the Cautilus 0.15.4 cleanup that moved the public
+These are real renames from an earlier CLI cleanup that moved the public
 grammar from implementation-shaped to intent-first. Use them as templates when
 auditing an existing CLI:
 
@@ -68,7 +68,7 @@ auditing an existing CLI:
 | `commands` | `doctor commands` |
 | `packet inspect` | `doctor packet inspect` |
 
-The reusable shape is not the exact Cautilus names. The shape is: a journey
+The reusable shape is not the exact historical names. The shape is: a journey
 verb at the top, the implementation noun pushed down as the object, and
 lifecycle scopes routed under `init`/`doctor` instead of as their own
 top-level commands.

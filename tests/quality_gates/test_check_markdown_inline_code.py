@@ -17,7 +17,7 @@ def test_check_markdown_inline_code_passes_when_inline_code_is_single_line(tmp_p
     repo = tmp_path / "repo"
     repo.mkdir()
     (repo / "doc.md").write_text(
-        "# Title\n\nUse `cautilus evaluate fixture --repo-root . --adapter-name <repo-owned-adapter>` for proof.\n",
+        "# Title\n\nUse `demo evaluate fixture --repo-root . --adapter-name <repo-owned-adapter>` for proof.\n",
         encoding="utf-8",
     )
     code, stdout, _ = _run(repo, "doc.md")
@@ -29,7 +29,7 @@ def test_check_markdown_inline_code_flags_wrapped_inline_code(tmp_path: Path) ->
     repo = tmp_path / "repo"
     repo.mkdir()
     (repo / "doc.md").write_text(
-        "# Title\n\nUse `cautilus eval test\n--repo-root . --adapter-name <repo-owned-adapter>` for proof.\n",
+        "# Title\n\nUse `demo eval test\n--repo-root . --adapter-name <repo-owned-adapter>` for proof.\n",
         encoding="utf-8",
     )
     code, _, stderr = _run(repo, "doc.md")

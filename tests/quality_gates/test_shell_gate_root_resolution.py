@@ -36,7 +36,6 @@ TRACKED_MARKDOWN_ARGV = [
     "*.md",
     ":(exclude)charness-artifacts/**",
     ":(exclude).charness/**",
-    ":(exclude).cautilus/**",
     ":(exclude).pytest_cache/**",
 ]
 

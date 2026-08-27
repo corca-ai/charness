@@ -121,14 +121,14 @@ def test_nested_subcommand_drift_is_reported_against_its_own_parser(gate, tmp_pa
 
 
 def test_positional_argument_under_a_leaf_subcommand_is_not_judged(gate, tmp_path: Path) -> None:
-    """`charness tool install cautilus` -- three false positives on the real tree.
+    """`charness tool install demo-tool` -- three false positives on the real tree.
 
     An option's `choices=` renders `{runtime,validation}` into the usage line
     exactly like a subparsers action, so a usage-wide read gave `install`
     subcommands it does not have and rejected every documented tool id. The
     authority is the `positional arguments:` block.
     """
-    assert _findings(gate, _repo(tmp_path, _fence("charness tool install cautilus"))) == []
+    assert _findings(gate, _repo(tmp_path, _fence("charness tool install demo-tool"))) == []
 
 
 def test_option_value_that_spells_a_subcommand_does_not_reroute_the_walk(gate, tmp_path: Path) -> None:

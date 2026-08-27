@@ -12,10 +12,6 @@ from scripts.setup_hook_failure_visibility_lib import inspect_hook_failure_visib
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE_REF = ROOT / "skills/public/setup/references/hook-failure-visibility.md"
 PLUGIN_REF = ROOT / "plugins/charness/skills/setup/references/hook-failure-visibility.md"
-SOURCE_SKILL = ROOT / "skills/public/setup/SKILL.md"
-PLUGIN_SKILL = ROOT / "plugins/charness/skills/setup/SKILL.md"
-SOURCE_SEAMS = ROOT / "skills/public/setup/references/bootstrap-seams.md"
-PLUGIN_SEAMS = ROOT / "plugins/charness/skills/setup/references/bootstrap-seams.md"
 SOURCE_INSPECTOR = ROOT / "skills/public/setup/scripts/inspect_repo.py"
 PLUGIN_INSPECTOR = ROOT / "plugins/charness/skills/setup/scripts/inspect_repo.py"
 
@@ -60,16 +56,6 @@ def test_hook_failure_guidance_is_mirrored_and_names_the_contract() -> None:
         "live-verification-required",
     ):
         assert marker in source
-
-
-def test_setup_routes_detected_hook_manager_to_failure_guidance() -> None:
-    setup_skill = SOURCE_SKILL.read_text(encoding="utf-8")
-    bootstrap_seams = SOURCE_SEAMS.read_text(encoding="utf-8")
-    assert PLUGIN_SKILL.read_text(encoding="utf-8") == setup_skill
-    assert PLUGIN_SEAMS.read_text(encoding="utf-8") == bootstrap_seams
-    assert "detected Lefthook configuration" in setup_skill
-    assert "## Hook Failure Visibility" in bootstrap_seams
-    assert "Charness's worktree adapter `prepare.commands`" in bootstrap_seams
 
 
 def test_reader_names_a_missing_fail_text_on_the_exact_consumer_command(tmp_path: Path) -> None:

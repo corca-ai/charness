@@ -7,8 +7,6 @@ from typing import Any
 
 from scripts.control_plane_lib import evaluate_version, read_lock, run_check
 from scripts.control_plane_lifecycle_lib import (
-    disabled_by_cautilus_adapter,
-    disabled_check_payload,
     evaluate_readiness,
     render_repo_followup,
     skipped_healthcheck,
@@ -162,37 +160,6 @@ def inspect_support_state(
 
 
 def inspect_capability_state(repo_root: Path, capability: dict[str, Any], *, plugin_root: Path | None = None) -> dict[str, Any]:
-    disabled = disabled_by_cautilus_adapter(repo_root, capability)
-    if disabled is not None:
-        disabled_payload = disabled_check_payload(disabled)
-        previous_lock, support_state, support_sync, support_discovery, next_steps = inspect_support_state(
-            repo_root,
-            capability,
-            plugin_root=plugin_root,
-        )
-        next_steps.append(f"Cautilus is disabled by repo adapter: {disabled['reason']}")
-        return {
-            "kind": capability["kind"],
-            "access_modes": capability["access_modes"],
-            "capability_requirements": capability.get("capability_requirements", {}),
-            "install_route": install_route_for_manifest(repo_root, capability),
-            "support_state": support_state,
-            "detect": disabled_payload,
-            "healthcheck": disabled_payload,
-            "readiness": {"ok": False, "checks": [], "failed_checks": []},
-            "version": {
-                "status": "unknown",
-                "constraint": capability["version_expectation"]["constraint"],
-                "observed_version": None,
-            },
-            "support_sync": support_sync,
-            "support_discovery": support_discovery,
-            "doctor_status": "disabled",
-            "doctor_disposition": "disabled-by-adapter",
-            "next_steps": next_steps,
-            "previous_lock_present": previous_lock is not None,
-        }
-
     detect_result = run_check(capability["checks"]["detect"], repo_root)
     healthcheck = capability.get("checks", {}).get("healthcheck")
     healthcheck_result = (

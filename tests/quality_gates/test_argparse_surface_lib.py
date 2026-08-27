@@ -81,10 +81,10 @@ def test_walk_subcommands_reports_at_the_depth_that_owns_the_slot() -> None:
 
 
 def test_walk_subcommands_stops_at_a_parser_with_no_subcommands() -> None:
-    """A positional value is not a subcommand claim: `tool install cautilus`
+    """A positional value is not a subcommand claim: `tool install demo-tool`
     walks to `install`, finds no subparsers under it, and never judges the id."""
     tree = {(): {"tool"}, ("tool",): {"install"}}
-    walked = _lib.walk_subcommands(_tokens("tool", "install", "cautilus"), _choices(tree))
+    walked = _lib.walk_subcommands(_tokens("tool", "install", "demo-tool"), _choices(tree))
     assert walked == (("tool", "install"), None)
 
 

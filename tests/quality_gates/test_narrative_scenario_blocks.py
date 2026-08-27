@@ -163,6 +163,7 @@ def test_narrative_review_adapter_flags_volatile_and_missing_paths(tmp_path: Pat
                 "mutable_documents:",
                 "- README.md",
                 "- docs/index.md",
+                "- docs/user-test/260422/internal-ios-trial.md",
                 "brief_template:",
                 "- One-Line Summary",
                 "special_entrypoints:",

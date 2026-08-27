@@ -42,7 +42,7 @@ product that does not expect agent-mediated use.
 When the repo has checked-in fixtures, schemas, or example packets, point at
 them directly instead of paraphrasing the shape in abstract language.
 
-The goal is the same benefit that showed up in `Cautilus`: a reader should not
+The goal is the same benefit that showed up in prior scenario work: a reader should not
 need to guess which file shape matches their situation.
 
 ## Coined Jargon

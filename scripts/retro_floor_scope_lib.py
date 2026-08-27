@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """The dated, generic retro floors and their announcement payload.
 
-The lesson ledger remains an optional memory/selection surface. Session emission
-receipts and per-retro lesson dispositions are deliberately not floors here: this
-module only describes obligations that every retro validator actually enforces.
+The lesson ledger remains an optional memory/selection surface. It is not a
+retro disposition contract: this module only describes obligations that every
+retro validator actually enforces.
 """
 
 from __future__ import annotations

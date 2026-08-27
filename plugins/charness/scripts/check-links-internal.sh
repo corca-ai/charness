@@ -77,7 +77,6 @@ run_git_listing_to_file tracked-markdown "$tracked_markdown_list" \
   git ls-files -- '*.md' \
   ':(exclude)charness-artifacts/**' \
   ':(exclude).charness/**' \
-  ':(exclude).cautilus/**' \
   ':(exclude).pytest_cache/**' \
   ':(exclude)evals/fixtures/**' \
   ':(exclude)tests/fixtures/**' \

@@ -89,6 +89,16 @@ case "$RUN_QUALITY_MODE" in
 esac
 export CHARNESS_QUALITY_MODE="$RUN_QUALITY_MODE"
 
+# Refuse an interrupted mutation run before loading optional runtime helpers.  A
+# minimal consumer copy may expose this runner without the Charness hook helper;
+# recovery is still the first actionable verdict in that state.
+RUN_QUALITY_GIT_DIR="$(git rev-parse --git-dir 2>/dev/null || true)"
+if [[ ( -n "$RUN_QUALITY_GIT_DIR" && -e "$RUN_QUALITY_GIT_DIR/charness-mutation-recovery" ) \
+   || -e "$REPO_ROOT/.charness/mutation-recovery" ]]; then
+  echo "run-quality: FAIL interrupted mutation recovery is REQUIRED; run python3 scripts/mutate_and_restore.py --repo-root . --check-recovery, then --recover" >&2
+  exit 2
+fi
+
 # The shell runtime primitive is shared with hooks and lint. Keeping this boundary
 # in one file prevents a new cache/temp policy from being copied into each entrypoint.
 # shellcheck source=.githooks/runtime-env.sh
@@ -111,13 +121,6 @@ else
 fi
 printf 'run-quality: START mode=%s release=%s requested_scope=%s outputs=isolated status=streamed\n' \
   "$RUN_QUALITY_MODE" "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" "$RUN_QUALITY_PROGRESS_SCOPE" >&2
-
-RUN_QUALITY_GIT_DIR="$(git rev-parse --git-dir 2>/dev/null || true)"
-if [[ ( -n "$RUN_QUALITY_GIT_DIR" && -e "$RUN_QUALITY_GIT_DIR/charness-mutation-recovery" ) \
-   || -e "$REPO_ROOT/.charness/mutation-recovery" ]]; then
-  echo "run-quality: FAIL interrupted mutation recovery is REQUIRED; run python3 scripts/mutate_and_restore.py --repo-root . --check-recovery, then --recover" >&2
-  exit 2
-fi
 
 STANDING_PYTEST_TARGETS_TEXT="$(python3 scripts/run_standing_pytest.py --repo-root "$REPO_ROOT" --print-expanded-targets)"
 mapfile -t STANDING_PYTEST_TARGETS <<<"$STANDING_PYTEST_TARGETS_TEXT"
@@ -908,23 +911,10 @@ print_final_summary() {
   fi
 }
 
-if agent_browser_runtime_gate_enabled "agent-browser-runtime-baseline"; then
-  queue_agent_browser_runtime_gate "agent-browser-runtime-baseline" env -u CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS python3 scripts/agent_browser_runtime_guard.py --repo-root "$REPO_ROOT" --cleanup-orphans
-  if flush_phase; then
-    :
-  else
-    OVERALL_RC=$?
-    echo "run-quality: agent-browser runtime baseline failed; stopping before other gates." >&2
-    print_final_summary
-    exit "$OVERALL_RC"
-  fi
-fi
-
-# `pytest` is the critical path (~44s against ~9s for every other gate combined),
-# so it is queued FIRST and the cheap gates below overlap it instead of the other
-# way round. It has no data dependency on any of them; the only real ordering in
-# this script is `doc-duplicates` -> `dup-ratchet` (a later phase) and the
-# agent-browser baseline above.
+# `pytest` is the first release decision. Release pytest is deliberately isolated
+# from every other gate: it is the cheapest broad prerequisite and a failure must
+# not spend time starting inventories or mutation. Ordinary development still
+# queues its small/core lane as before.
 PYTEST_FLAGS=(--repo-root "$REPO_ROOT" --mode "$RUN_QUALITY_MODE")
 # Standing and release-only pytest are different workloads (the release set adds
 # minutes of subprocess-heavy tests). Recording both under one label made the
@@ -939,6 +929,40 @@ if [[ "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" == "1" ]]; then
   queue_selected "pytest-release" env CHARNESS_STANDING_PYTEST_PYTHON=python3 python3 scripts/run_standing_pytest.py "${PYTEST_FLAGS[@]}"
 else
   queue_selected "pytest" env CHARNESS_STANDING_PYTEST_PYTHON=python3 python3 scripts/run_standing_pytest.py "${PYTEST_FLAGS[@]}"
+fi
+
+# A selected standing/release pytest is always its own first batch. This keeps
+# full standing runs fail-fast too, while an explicit label filter may still
+# request a different narrow diagnostic without implicitly adding pytest.
+if ((${#PHASE_LABELS[@]} > 0)); then
+  if flush_phase; then
+    :
+  else
+    pytest_rc=$?
+    OVERALL_RC="$pytest_rc"
+    if [[ "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" == "1" ]]; then
+      echo "run-quality: release pytest failed; stopping before later release checks." >&2
+    else
+      echo "run-quality: standing pytest failed; stopping before later quality checks." >&2
+    fi
+    print_final_summary
+    exit "$pytest_rc"
+  fi
+fi
+
+# Browser startup is another optional runtime diagnostic, but it must not delay
+# the cheap broad pytest prerequisite in a normal release run. Explicit
+# agent-browser-only labels still retain their narrow diagnostic behavior.
+if agent_browser_runtime_gate_enabled "agent-browser-runtime-baseline"; then
+  queue_agent_browser_runtime_gate "agent-browser-runtime-baseline" env -u CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS python3 scripts/agent_browser_runtime_guard.py --repo-root "$REPO_ROOT" --cleanup-orphans
+  if flush_phase; then
+    :
+  else
+    OVERALL_RC=$?
+    echo "run-quality: agent-browser runtime baseline failed; stopping before other gates." >&2
+    print_final_summary
+    exit "$OVERALL_RC"
+  fi
 fi
 
 queue_selected "validate-skills" python3 scripts/validate_skills.py --repo-root "$REPO_ROOT"
@@ -962,11 +986,6 @@ queue_selected "validate-surfaces" python3 scripts/validate_surfaces.py --repo-r
 queue_selected "validate-inference-interpretation" python3 scripts/validate_inference_interpretation.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "validate-public-skill-validation" python3 scripts/validate_public_skill_validation.py --repo-root "$REPO_ROOT"
 queue_selected "validate-public-skill-dogfood" python3 scripts/validate_public_skill_dogfood.py --repo-root "$REPO_ROOT"
-queue_selected "validate-cautilus-scenarios" python3 scripts/validate_cautilus_scenarios.py --repo-root "$REPO_ROOT"
-queue_selected "validate-cautilus-proof" python3 scripts/validate_cautilus_proof.py --repo-root "$REPO_ROOT"
-queue_selected "validate-cautilus-diagnostics" python3 scripts/validate_cautilus_diagnostics.py --repo-root "$REPO_ROOT" --all
-queue_selected "validate-cautilus-call-provenance" python3 scripts/validate_cautilus_call_provenance.py --repo-root "$REPO_ROOT"
-queue_selected "validate-claim-fidelity-specs" python3 scripts/validate_claim_fidelity_specs.py --repo-root "$REPO_ROOT"
 queue_selected "validate-profiles" python3 scripts/validate_profiles.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "validate-presets" python3 scripts/validate_presets.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "validate-adapters" python3 scripts/validate_adapters.py --repo-root "$REPO_ROOT" --require-git-file-listing
@@ -1150,9 +1169,6 @@ CHANGED_LINE_REFUSE_ARGS=()
 if [[ "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" == "1" ]]; then
   CHANGED_LINE_REFUSE_ARGS+=(--refuse-unestablished)
 fi
-if [[ "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" == "1" ]]; then
-  queue_selected "check-changed-line-mutation-coverage" python3 scripts/prepush_focused_changed_line_coverage.py --repo-root "$REPO_ROOT" --base-sha "$CHANGED_LINE_BASE_SHA" --coverage-json "$RUN_QUALITY_CHANGED_LINE_COVERAGE_JSON" "${CHANGED_LINE_REFUSE_ARGS[@]}"
-fi
 queue_selected "check-test-completeness" python3 scripts/check_test_completeness.py --repo-root "$REPO_ROOT" -- "${STANDING_PYTEST_TARGETS[@]}"
 queue_selected "check-test-production-ratio" python3 scripts/check_test_production_ratio.py --repo-root "$REPO_ROOT" --require-git-file-listing --advisory
 queue_selected "check-boundary-bypass-ratchet" python3 scripts/check_boundary_bypass_ratchet.py --repo-root "$REPO_ROOT"
@@ -1284,6 +1300,19 @@ if agent_browser_runtime_gate_enabled "agent-browser-runtime-hygiene"; then
     OVERALL_RC=$?
     env -u CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS python3 scripts/agent_browser_runtime_guard.py --repo-root "$REPO_ROOT" --cleanup-orphans --execute >/dev/null 2>&1 || true
   }
+fi
+
+# Mutation is the final release check. It instruments the changed surface and is
+# intentionally paid only after every ordinary release check has passed; this
+# keeps a cheap structural failure from being followed by an expensive verdict
+# that cannot make the release green anyway.
+if [[ "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" == "1" ]]; then
+  if [[ "$OVERALL_RC" != "0" ]]; then
+    print_final_summary
+    exit "$OVERALL_RC"
+  fi
+  queue_selected "check-changed-line-mutation-coverage" python3 scripts/prepush_focused_changed_line_coverage.py --repo-root "$REPO_ROOT" --base-sha "$CHANGED_LINE_BASE_SHA" --coverage-json "$RUN_QUALITY_CHANGED_LINE_COVERAGE_JSON" "${CHANGED_LINE_REFUSE_ARGS[@]}"
+  flush_phase || OVERALL_RC=$?
 fi
 
 if [[ -n "$RUN_QUALITY_LABELS" && "$RUN_QUALITY_SELECTED_LABEL_MATCHES" -eq 0 ]]; then

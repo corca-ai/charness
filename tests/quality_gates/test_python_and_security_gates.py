@@ -81,7 +81,7 @@ def test_check_markdown_demotes_wrapped_inline_code_to_warn(
     repo = clone_seeded_charness_repo(tmp_path, seeded_charness_git_repo)
     fixture = repo / "docs" / "_check_markdown_demotion_fixture.md"
     fixture.write_text(
-        "# Fixture\n\nUse `cautilus eval test\n--repo-root .` for proof.\n", encoding="utf-8"
+        "# Fixture\n\nUse `demo evaluate test\n--repo-root .` for proof.\n", encoding="utf-8"
     )
     subprocess.run(
         ["git", "add", "docs/_check_markdown_demotion_fixture.md"],
@@ -137,7 +137,7 @@ def test_check_markdown_reports_advisory_before_blocking_lint_failure(
 ) -> None:
     repo = clone_seeded_charness_repo(tmp_path, seeded_charness_git_repo)
     fixture = repo / "docs" / "_check_markdown_overlap_fixture.md"
-    fixture.write_text("# Fixture\n\nUse `cautilus eval test\n--repo-root .` for proof.\n", encoding="utf-8")
+    fixture.write_text("# Fixture\n\nUse `demo evaluate test\n--repo-root .` for proof.\n", encoding="utf-8")
     subprocess.run(
         ["git", "add", "docs/_check_markdown_overlap_fixture.md"],
         cwd=repo,

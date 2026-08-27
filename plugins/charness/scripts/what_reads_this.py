@@ -9,7 +9,7 @@ proposer had not opened, and one proposed KEEP whose defense the
 source refutes. Settling them cost four bounded-reviewer spawns.
 
 The GROUPING is the contribution, not the search. The same session hit the
-inverse trap twice: `listed_skill_ids` and a Cautilus fixture both look orphaned
+inverse trap twice: `listed_skill_ids` and a generated fixture both look orphaned
 and are consumed — one by an assertion on its value, one by a directory glob. A
 plain `grep <name>` finds neither, and a zero result from a plain grep reads as
 "nobody reads this" when it means "my search cannot see this kind of consumer".
@@ -53,7 +53,7 @@ git_list_repo_files = _repo_file_listing.git_list_repo_files
 #: Directories whose contents are copies, caches, or vendored code. ALWAYS
 #: excluded -- unlike the `plugins/**` mirror below, no flag re-includes them.
 #: A hit in one of them answers a different question than the one being asked.
-_SKIP_DIR_NAMES = {".git", "__pycache__", ".pytest_cache", "node_modules", "mutants", ".cautilus", ".charness"}
+_SKIP_DIR_NAMES = {".git", "__pycache__", ".pytest_cache", "node_modules", "mutants", ".charness"}
 _MIRROR_PREFIXES = ("plugins/",)
 
 _TEXT_SUFFIXES = {

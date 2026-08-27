@@ -4,8 +4,7 @@
 Extracted verbatim from run_slice_closeout.py (behavior-preserving) so the
 orchestrator stays under its length limit. ``print_text`` is the single
 entrypoint the orchestrator calls; the ``_print_*`` helpers and
-``_cautilus_plan_has_visible_work`` are internal to this module. The only
-cross-module dependency is ``print_broad_pytest_policy`` from
+The only cross-module dependency is ``print_broad_pytest_policy`` from
 ``slice_closeout_broad_gate``, imported the same parent-walk way the orchestrator
 does so it resolves in both the source tree and the exported plugin.
 """
@@ -27,37 +26,6 @@ def _print_list(label: str, values: list[str]) -> None:
             print(f"- {value}")
         return
     print(f"{label}: none")
-
-
-def _cautilus_plan_has_visible_work(cautilus_plan: dict[str, object]) -> bool:
-    return bool(
-        cautilus_plan.get("scenario_registry_review_required")
-        or cautilus_plan.get("skill_validation_recommendations")
-        or cautilus_plan.get("recommended_followups")
-    )
-
-
-def _print_cautilus_plan(cautilus_plan: dict[str, object]) -> None:
-    print("Cautilus proof:")
-    print(f"- run_mode: {cautilus_plan['run_mode']}")
-    proof_kinds = cautilus_plan.get("proof_kinds", [])
-    print(f"- proof_kinds: {', '.join(proof_kinds) if proof_kinds else 'none'}")
-    print(f"- next_action: {cautilus_plan['next_action']}")
-    changed_public_skills = cautilus_plan.get("changed_public_skills", [])
-    if changed_public_skills:
-        print(f"- changed_public_skills: {', '.join(changed_public_skills)}")
-    if cautilus_plan.get("scenario_registry_review_required"):
-        print("- scenario_registry_review_required: true")
-    for note in cautilus_plan.get("notes", []):
-        print(f"- note: {note}")
-    for recommendation in cautilus_plan.get("skill_validation_recommendations", []):
-        if isinstance(recommendation, dict):
-            print(
-                "- skill_review: "
-                f"{recommendation.get('skill_id')} ({recommendation.get('validation_tier')})"
-            )
-    for followup in cautilus_plan.get("recommended_followups", []):
-        print(f"- followup: {followup}")
 
 
 def _print_risk_interrupt_plan(risk_interrupt_plan: dict[str, object]) -> None:
@@ -130,10 +98,6 @@ def print_text(payload: dict[str, object]) -> None:
     _print_list("Matched surfaces", matched_surfaces)
     if payload["unmatched_paths"]:
         _print_list("Unmatched paths", payload["unmatched_paths"])
-
-    cautilus_plan = payload.get("cautilus_plan")
-    if isinstance(cautilus_plan, dict) and _cautilus_plan_has_visible_work(cautilus_plan):
-        _print_cautilus_plan(cautilus_plan)
 
     risk_interrupt_plan = payload.get("risk_interrupt_plan")
     if isinstance(risk_interrupt_plan, dict) and risk_interrupt_plan.get("status") != "not-applicable":

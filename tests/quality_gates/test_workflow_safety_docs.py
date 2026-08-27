@@ -30,5 +30,6 @@ def test_implementation_discipline_mentions_symbol_residue_advisory() -> None:
     discipline = _read("docs/implementation-discipline.md")
 
     assert "check_symbol_residue.py" in discipline
-    assert "advisory by design (#259)" in discipline
+    assert "advisory by design" in discipline
+    assert "#259" in discipline
     assert "docs/" in discipline and "skills/" in discipline

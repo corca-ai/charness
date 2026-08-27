@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render a flat, deterministic preview of scored lesson candidates."""
+"""Render a flat, deterministic projection of the lesson selection index."""
 
 from __future__ import annotations
 
@@ -11,7 +11,6 @@ from yaml_output import emit_yaml
 
 ROOT = repo_root_from_script(__file__)
 _preview = import_repo_module(__file__, "scripts.lesson_selection_preview_lib")
-_continuity = import_repo_module(__file__, "scripts.lesson_evaluation_continuity_lib")
 build_lesson_selection_preview = _preview.build_lesson_selection_preview
 
 
@@ -27,14 +26,10 @@ def main() -> int:
         summary_path=root / "charness-artifacts/retro/recent-lessons.md",
         seed=args.seed,
     )
-    # `preview_text` carries the rendered bytes INSIDE the payload rather than as a
-    # second output mode. Those bytes are `charness.lesson-session-preview.text.v1`
-    # -- the exact string `open_lesson_session.py` freezes into a session bundle and
-    # digests into the emission receipt -- so they are data this command owes its
-    # callers, not a display convenience that could be deleted with the human mode.
-    # Rendering them here, from the one renderer, also keeps every consumer off a
-    # second hand-written copy of the item format.
-    emit_yaml({**preview, "preview_text": _continuity.render_preview_bytes(preview).decode("utf-8")})
+    # The payload is deliberately just the projection. It is useful for an agent
+    # choosing context, but it is not a presentation, session, or evaluation
+    # receipt and must not acquire one of those contracts by accident.
+    emit_yaml(preview)
     return 0
 
 

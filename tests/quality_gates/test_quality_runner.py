@@ -448,15 +448,6 @@ def test_run_quality_keeps_passing_non_attention_logs_quiet(tmp_path: Path, seed
     assert_quality_receipt(repo, result, status="pass", passed=1, failed=0)
 
 
-def test_run_quality_can_select_cautilus_proof_gate(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
-    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
-    env["CHARNESS_QUALITY_LABELS"] = "validate-cautilus-proof"
-    result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
-    assert result.returncode == 0, result.stderr
-    assert "PASS validate-cautilus-proof" in result.stdout
-    assert_quality_receipt(repo, result, status="pass", passed=1, failed=0)
-
-
 def test_run_quality_can_select_agent_browser_runtime_hygiene(
     tmp_path: Path, seeded_quality_runner_repo: Path
 ) -> None:

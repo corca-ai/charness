@@ -475,7 +475,7 @@ def staged_commit_gate_plan(
 # bootstrap-shim consistency check -- the cheap, offline, changed-scoped checks that
 # were previously enforced only at the ~4-min broad gate. The full
 # run_slice_closeout path runs this subset FIRST, fail-fast,
-# so the cheap verdict precedes surface-match / cautilus / broad pytest --
+# so the cheap verdict precedes surface-match / broad pytest --
 # reconciling the broad path with the --predict-commit boundary instead of
 # reaching the gates only late.
 STRUCTURAL_SWEEP_LABELS: frozenset[str] = frozenset(
@@ -558,7 +558,7 @@ def block_on_structural_sweep(
     """#332 fail-fast guard for the full ``run_slice_closeout`` path.
 
     Runs the cheap structural sweep FIRST so its verdict precedes surface-match /
-    cautilus / broad pytest. Mirrors the ``_maybe_block_on_*`` helpers: returns
+    broad pytest. Mirrors the ``_maybe_block_on_*`` helpers: returns
     an exit code when blocking, else ``None``. No-op in ``plan_only`` (the sweep
     commands are surfaced through the planned output instead).
     """

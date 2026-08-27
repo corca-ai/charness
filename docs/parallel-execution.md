@@ -27,12 +27,14 @@ through that host's adapter or preset. Hardcoding one host's vocabulary into a
 checked-in contract goes stale silently, exactly as a pinned model id would; that
 is the same failure this repo already recorded for subagent model defaults.
 
-Inspect the live host tool surface before selecting a channel. If it exposes a
-spawn/subagent API, use that API for independent work; do not infer its absence
-from memory, a previous session, or a product name. Use the repository's
-isolated `charness task run` lane when a lane needs an explicit worktree or the
-host exposes no spawn channel. If neither channel is available, keep only
-dependent/tiny work in the current context and report the reduced parallelism.
+Inspect the live host tool surface before selecting a channel. Use a host
+spawn/subagent for short, interactive, or judgment-bound work, and use the
+repository's isolated `charness task run` lane for bounded implementation,
+long-running Codex work, explicit branch/worktree/path scope, or a durable
+result carrier. Both are normal parallel lanes; neither is a fallback for the
+other, and neither may be declared absent from memory, a previous session, or a
+product name. If neither channel is available, keep only dependent/tiny work in
+the current context and report the reduced parallelism.
 
 ## Speculate While Blocked
 

@@ -1,9 +1,4 @@
-"""The shipped achieve contract keeps lesson memory out of default closeout.
-
-The ledger remains available as durable memory and selection state, while
-session-emission receipts and retro disposition continuity are not part of the
-ordinary goal or release contract.
-"""
+"""The shipped achieve contract keeps lesson memory small and optional."""
 
 from __future__ import annotations
 
@@ -18,11 +13,9 @@ def _normalized(path: Path) -> str:
     return " ".join(path.read_text(encoding="utf-8").split())
 
 
-def test_achieve_does_not_require_session_receipts_for_default_closeout() -> None:
+def test_achieve_keeps_one_optional_lesson_memory_surface() -> None:
     during = _normalized(LIFECYCLE_DURING)
 
     assert "The lesson ledger is optional durable memory and selection state" in during
-    assert "do not emit session receipts" in during
-    assert "require retro disposition continuity" in during
-    assert "outside the default and release contracts" in during
-    assert "### Lesson-session citation carrier" not in during
+    assert "pickup path reads recent-lessons.md once per goal start or resume" in during
+    assert "never rebuilds the ledger/index" in during

@@ -83,7 +83,6 @@ CONSUMER_OWNED_ROOTS = {
     ".agents": "adapter config the consumer authors; seeded, never overwritten",
     ".charness": "per-run local state, gitignored by construction",
     ".claude": "host-local settings owned by the consumer's editor/agent host",
-    ".cautilus": "evaluation workspace created on demand",
     ".git": "the consumer's own repository metadata",
     ".githooks": "hooks the consumer installs into their own repo",
     "AGENTS.md": "the consumer's own agent contract; seeded by setup",

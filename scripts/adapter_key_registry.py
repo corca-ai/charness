@@ -45,10 +45,8 @@ scoping cannot change the answer. Every other state depends on it. So the closed
 ARMED path trustworthy. A second state added to `WARN_STATES` inherits the first property
 and not the second, and would warn on file-scoped-correct declarations.
 
-`reader-elsewhere` is NOT armed, and the number is why. Of its 23 instances measured
-across this repo's 37 adapters, 20 are genuine (`.agents/cautilus-adapters/chatbot-*.yaml`,
-which `scripts/cautilus_adapter_lib.py` never reads -- it pins `ADAPTER_PATH` to the
-SINGULAR `.agents/cautilus-adapter.yaml`), but 3 are association residue that a warning
+`reader-elsewhere` is NOT armed, and the number is why. Of its instances measured
+across this repo's adapters, most are genuine, but some are association residue that a warning
 would report as defects: `session_routing` / `skill_anchor_edit_guard` in a host-hook
 adapter are genuinely read through `host_hook_registry.py`'s `getattr` dispatch.
 Those are invisible to a literal scan. A high false-positive rate is a wolf-crier, and
@@ -449,7 +447,6 @@ def audit_registry(repo_root: Path) -> list[str]:
 
 ADAPTER_GLOBS = (
     ".agents/*-adapter.yaml",
-    ".agents/cautilus-adapters/*.yaml",
     "skills/public/*/adapter.example.yaml",
     "integrations/*/adapter.example.yaml",
 )

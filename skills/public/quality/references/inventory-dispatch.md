@@ -143,8 +143,6 @@ Pytest Economics, and bounded test-ratio posture; see `standing-gate-verbosity.m
   `references/agent-production-runtime.md`
 - behavior-proof recommendation:
   `references/behavior-testing.md`
-- structured recommend-only behavior finding:
-  `$SKILL_DIR/scripts/recommend_behavior_test.py --behavior-seam <behavior-seam> --subject-ref <subject-ref> --risk-focus <risk-focus> --deterministic-gap <deterministic-gap> --summary`
 - external provider proof level:
   `../../../shared/references/external-capability-proof-ladder.md`
 
@@ -165,7 +163,9 @@ Classify each gap as deterministic proof, behavior-proof recommendation, or
 product-policy decision before proposing new gates.
 
 For evaluator-backed behavior closeout, prompt regression, baseline compare, or
-operator reading test, use `quality` before downgrading to HITL.
+operator reading test, use `quality` to choose the smallest consumer-owned
+evaluator or bounded HITL review. Charness does not ship a provider-specific
+behavior-test wrapper.
 Generic review, closeout, or "run quality" wording is not enough to run an evaluator.
 For external/runtime capability slices, treat readiness-only proof (`surface`,
 `worker_queued`, healthcheck-style `host_decision`) as `Weak` until at least one

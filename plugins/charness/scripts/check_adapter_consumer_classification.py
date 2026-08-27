@@ -111,12 +111,9 @@ GUARDED_WITNESSES = (
 #
 # The axis is what the CONSUMER asks, not what its resolver reports. `#673` made all
 # sixteen PUBLIC resolvers report all three doors, so that axis is uniform across every
-# guarded row -- traced, not assumed. It is NOT uniform repo-wide: `cautilus_adapter_lib`
-# and `proof_semantics_adapter_lib` still call `load_yaml_file` bare, and four consumers
-# read through them. Those four are `safe-checks-errors`, so no guarded row loses a level
-# here -- but 55 `safe-checks-errors` classifications now carry one token over materially
-# different coverage, which is this same defect standing on the largest class. Recorded in
-# the goal's decision queue rather than silently split here.
+# guarded row -- traced, not assumed. It is NOT uniform repo-wide: a few
+# compatibility readers still call `load_yaml_file` bare, and their consumers
+# are therefore classified separately rather than inheriting a stronger level.
 #
 # Keyed on the consumer the level is real and was measured before this vocabulary was
 # written -- 32 rows cover all three doors, three cover only the ERROR channel and are blind

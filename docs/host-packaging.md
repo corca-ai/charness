@@ -133,8 +133,8 @@ What it materializes today:
 - Claude's typed bounded-reviewer envelope under plugin-native `agents/`
 - an optional Codex repo marketplace file
 
-Upstream-consumed support skills such as `agent-browser`, `specdown`, and
-`cautilus` are intentionally absent from the checked-in plugin tree. Install
+Upstream-consumed support skills such as `agent-browser` and `specdown` are
+intentionally absent from the checked-in plugin tree. Install
 and update commands materialize those skill bodies into the machine-local
 installed plugin from `support_skill_source` metadata.
 

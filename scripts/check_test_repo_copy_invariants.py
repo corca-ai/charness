@@ -53,7 +53,6 @@ STANDING_COPY_HEAVY_TESTS = {
 }
 
 SKIP_DIR_NAMES = {
-    ".cautilus",
     ".charness",
     ".git",
     ".venv",

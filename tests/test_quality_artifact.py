@@ -13,27 +13,6 @@ from scripts.validate_quality_artifact import ValidationError, _skill_ergonomics
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def cautilus_supports(*subcommand: str, timeout: float = 30.0) -> bool:
-    """Whether the installed cautilus exposes the given subcommand surface.
-
-    Eval tests gate on usability rather than binary presence so a drifted or
-    older cautilus skips instead of hard-failing. See issue #225.
-    """
-    if shutil.which("cautilus") is None:
-        return False
-    try:
-        result = subprocess.run(
-            ["cautilus", *subcommand, "--help"],
-            cwd=ROOT,
-            check=False,
-            capture_output=True,
-            timeout=timeout,
-        )
-    except (OSError, subprocess.SubprocessError):
-        return False
-    return result.returncode == 0
-
-
 def run_script(
     *args: str,
     cwd: Path | None = None,

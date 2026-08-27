@@ -188,76 +188,6 @@
       ]
     },
     {
-      "surface_id": "prompt-behavior-proof",
-      "description": "Prompt-affecting instruction surfaces must follow deterministic Cautilus validation and on-demand proof policy.",
-      "source_paths": [
-        "AGENTS.md",
-        "CLAUDE.md",
-        ".agents/*-adapter.yaml",
-        ".agents/cautilus-adapters/*.yaml",
-        "evals/cautilus/instruction-surface-cases.json",
-        "evals/cautilus/*.fixture.json",
-        "evals/cautilus/scenarios.json",
-        "evals/cautilus/skill-experiment/**",
-        "evals/cautilus/quality-claim-fidelity/**",
-        "skills/public/*/SKILL.md",
-        "skills/public/*/references/**",
-        "skills/shared/references/**",
-        "skills/support/*/SKILL.md",
-        "skills/support/*/references/**"
-      ],
-      "derived_paths": [
-        "charness-artifacts/cautilus/latest.md",
-        "charness-artifacts/cautilus/skill-experiment-*/**",
-        "charness-artifacts/cautilus/quality-claim-fidelity-*/**"
-      ],
-      "sync_commands": [],
-      "verify_commands": [
-        "python3 scripts/validate_cautilus_proof.py --repo-root .",
-        "python3 scripts/validate_cautilus_diagnostics.py --repo-root ."
-      ],
-      "notes": [
-        "Prompt-affecting changes must follow `.agents/cautilus-adapter.yaml`; prompt diffs alone do not require a live Cautilus run or refreshed proof artifact.",
-        "Legacy route-only fixtures stay as deterministic schema/runner sentinels, not routine live closeout proof.",
-        "Log-backed behavior or improvement claims must record the Cautilus run and, for improvement claims, a baseline compare path in the cautilus artifact."
-      ]
-    },
-    {
-      "surface_id": "claim-fidelity-capture-bundles",
-      "description": "Ask-before-run claim-fidelity capture bundles under charness-artifacts/cautilus/: per-run observed packets, trace digests, transcripts, probes, and findings that prove a floor move or keep.",
-      "source_paths": [
-        "charness-artifacts/cautilus/*/**"
-      ],
-      "derived_paths": [],
-      "sync_commands": [],
-      "verify_commands": [
-        "for path in charness-artifacts/cautilus/*/*.json; do [ -e \"$path\" ] && { python3 -m json.tool \"$path\" >/dev/null || exit $?; }; done"
-      ],
-      "notes": [
-        "Bundles are evidence artifacts committed with the flip they prove; finding.md carries the analysis and raw captures (worktree/config/stream/credentials) stay scrubbed.",
-        "finding.md/justification.md additionally get repo-markdown lint via the repo-markdown surface; jsonl/transcript files are evidence payloads with no schema gate."
-      ]
-    },
-    {
-      "surface_id": "claim-fidelity-specs",
-      "description": "Per-skill Cautilus claim-fidelity specs and registry: each public skill's reference-engagement classification proving a real /charness:<skill> run honors its own reference routing.",
-      "source_paths": [
-        "evals/cautilus/claim-fidelity-registry.json",
-        "evals/cautilus/*-claim-fidelity/**"
-      ],
-      "derived_paths": [],
-      "sync_commands": [],
-      "verify_commands": [
-        "python3 scripts/validate_claim_fidelity_specs.py --repo-root .",
-        "python3 scripts/validate_outcome_assertions.py --repo-root ."
-      ],
-      "notes": [
-        "declaredReferences mirrors each skill's references/ dir; referenceEngagement classifies each on the engage-always/on-demand/gate-sufficient axis (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md).",
-        "Specs are authored assets; live capture plus cautilus scoring stay eval-only and ask-before-run per skills/public/quality/references/cautilus-on-demand.md.",
-        "outcome-assertions.json sets (the A/B harness's OUTCOME grade data, scored by scripts/grade_skill_outcome.py) are validated by scripts/validate_outcome_assertions.py against the grader's own schema; validate_claim_fidelity_specs.py only indexes the *.spec.json."
-      ]
-    },
-    {
       "surface_id": "skill-packages",
       "description": "Public and support skill packages plus their helper scripts.",
       "source_paths": [
@@ -409,7 +339,6 @@
       "description": "Repo-local adapter contracts and adapter helper libraries.",
       "source_paths": [
         ".agents/*-adapter.yaml",
-        ".agents/cautilus-adapters/*.yaml",
         "scripts/adapter*_lib.py",
         "scripts/adapter_init_lib.py",
         "scripts/simple_skill_adapter_lib.py"
@@ -705,7 +634,7 @@
       "notes": [
         "Added 2026-08-11 after charness-artifacts/audit/2026-08-11-pickup-deletion-experiment.patch landed with no owning surface and blocked both bundle-readiness gates on `unmatched_surface_path` for four commits.",
         "A preserved diff is a READING, not a patch to apply: the verify command parses it as a unified diff (git apply --stat) and never checks it against the current tree, which has moved on by design. An empty or truncated .patch still fails (git apply exits 128 on unrecognized input), so the check is not vacuous.",
-        "check-secrets is listed because a preserved raw worktree diff is the highest secret-carrying artifact class here (compare the scrub concern named on claim-fidelity-capture-bundles). Without it a commit touching ONLY a .patch would select this surface alone and plan no secret scan, which is the question `unmatched_surface_path` used to force.",
+        "check-secrets is listed because a preserved raw worktree diff is the highest secret-carrying artifact class here. Without it a commit touching ONLY a .patch would select this surface alone and plan no secret scan, which is the question `unmatched_surface_path` used to force.",
         "The glob guard uses `|| continue`, not `[ -e ] && {...}`: the latter makes the loop's exit status 1 when the glob matches nothing, so pruning the last .patch would fail the verify with no diagnostic."
       ]
     },
@@ -769,80 +698,6 @@
       ]
     },
     {
-      "surface_id": "efficiency-ab-bundles",
-      "description": "Efficiency A/B harness result bundles: advisory process+output comparison (never gates). config + report + results + per-run observed packets and trace digests.",
-      "source_paths": [
-        "charness-artifacts/efficiency/**"
-      ],
-      "derived_paths": [],
-      "sync_commands": [],
-      "verify_commands": [
-        "for path in charness-artifacts/efficiency/*/*.json charness-artifacts/efficiency/*/preserved/*/*.json; do [ -e \"$path\" ] && { python3 -m json.tool \"$path\" >/dev/null || exit $?; }; done"
-      ],
-      "notes": [
-        "Produced by scripts/run_skill_efficiency_ab.py --run; advisory measurement, not pass/fail. No validator gates these (unlike charness-artifacts/cautilus/ diagnostic bundles); finding.md/report.md get repo-markdown lint and this checks the JSON parses.",
-        "config.ab.json is the run input; report.md/results.json are generated; preserved/*/ holds per-run observed.v1.json + trace-digest.jsonl."
-      ]
-    },
-    {
-      "surface_id": "prompt-mutation-artifacts",
-      "description": "Prompt-mutation experiment manifests, configs, scores, judge packets, and reports.",
-      "source_paths": [
-        "charness-artifacts/prompt-mutation/*.json",
-        "charness-artifacts/prompt-mutation/*.md"
-      ],
-      "derived_paths": [],
-      "sync_commands": [],
-      "verify_commands": [
-        "for path in charness-artifacts/prompt-mutation/*.json; do [ -e \"$path\" ] && { python3 -m json.tool \"$path\" >/dev/null || exit $?; }; done"
-      ],
-      "notes": [
-        "Prompt-mutation artifacts are durable experiment evidence. JSON files must parse; markdown reports and judge packets are covered by repo-markdown checks."
-      ]
-    },
-    {
-      "surface_id": "cautilus-chatbot-proposals",
-      "description": "Checked-in long-context chatbot proposal packets and their current-pointer artifacts.",
-      "source_paths": [
-        "evals/cautilus/chatbot-scenario-proposal-inputs.json",
-        "scripts/eval_cautilus_chatbot_proposals.py",
-        "scripts/cautilus_scenarios_lib.py",
-        "scripts/validate_cautilus_scenarios.py"
-      ],
-      "derived_paths": [
-        "charness-artifacts/cautilus/chatbot-proposals/**"
-      ],
-      "sync_commands": [],
-      "verify_commands": [
-        "python3 scripts/validate_cautilus_proof.py --repo-root ."
-      ],
-      "notes": [
-        "Keep the checked-in proposal packet and the visible current-pointer artifact in sync.",
-        "This surface is proposal-mining evidence, not yet a compare-backed benchmark claim.",
-        "While `.agents/cautilus-adapter.yaml` uses `run_mode: disabled`, do not run proposal eval commands."
-      ]
-    },
-    {
-      "surface_id": "cautilus-chatbot-benchmark",
-      "description": "A/B comparison runner and current-pointer artifacts for long-context chatbot proposal benchmarking.",
-      "source_paths": [
-        ".agents/cautilus-adapters/chatbot-benchmark.yaml",
-        "scripts/eval_cautilus_chatbot_compare.py",
-        "scripts/eval_cautilus_chatbot_proposals.py"
-      ],
-      "derived_paths": [
-        "charness-artifacts/cautilus/chatbot-benchmark/**"
-      ],
-      "sync_commands": [],
-      "verify_commands": [
-        "python3 scripts/validate_cautilus_proof.py --repo-root ."
-      ],
-      "notes": [
-        "Keep compare artifacts explicit about baseline versus candidate and about proposal keys omitted by the product's current ranking cap.",
-        "While `.agents/cautilus-adapter.yaml` uses `run_mode: disabled`, do not run benchmark eval commands."
-      ]
-    },
-    {
       "surface_id": "debug-seam-risk-index",
       "description": "Generated source-linked index over debug artifact seam-risk fields.",
       "source_paths": [
@@ -889,56 +744,33 @@
       ]
     },
     {
-      "surface_id": "lesson-ledger-and-contract-register",
-      "description": "Local cited lesson state and the explicit pre-contract-mutation register probe.",
+      "surface_id": "lesson-ledger-and-selection",
+      "description": "Local cited lesson history and its pure selection projections.",
       "source_paths": [
         "charness-artifacts/retro/lesson-ledger.json",
-        "charness-artifacts/retro/contract-register.json",
         "scripts/lesson_ledger_lib.py",
         "scripts/lesson_selection_preview_lib.py",
         "scripts/check_lesson_ledger.py",
-        "scripts/migrate_lesson_lifecycle.py",
         "scripts/record_lesson_lifecycle.py",
-        "scripts/record_lesson_score.py",
-        "scripts/record_lesson_session.py",
-        "scripts/contract_register_lib.py",
-        "scripts/contract_unit_inventory_lib.py",
-        "scripts/check_contract_register.py",
-        "scripts/migrate_contract_register.py",
-        "scripts/record_contract_citation.py",
-        "scripts/record_contract_graduation_proposal.py",
-        "scripts/apply_contract_transition.py",
-        "scripts/render_contract_retention_review.py"
+        "scripts/record_lesson_score.py"
       ],
       "derived_paths": [
         "plugins/charness/scripts/lesson_ledger_lib.py",
         "plugins/charness/scripts/lesson_selection_preview_lib.py",
         "plugins/charness/scripts/check_lesson_ledger.py",
-        "plugins/charness/scripts/migrate_lesson_lifecycle.py",
         "plugins/charness/scripts/record_lesson_lifecycle.py",
-        "plugins/charness/scripts/record_lesson_score.py",
-        "plugins/charness/scripts/record_lesson_session.py",
-        "plugins/charness/scripts/contract_register_lib.py",
-        "plugins/charness/scripts/contract_unit_inventory_lib.py",
-        "plugins/charness/scripts/check_contract_register.py",
-        "plugins/charness/scripts/migrate_contract_register.py",
-        "plugins/charness/scripts/record_contract_citation.py",
-        "plugins/charness/scripts/record_contract_graduation_proposal.py",
-        "plugins/charness/scripts/apply_contract_transition.py",
-        "plugins/charness/scripts/render_contract_retention_review.py"
+        "plugins/charness/scripts/record_lesson_score.py"
       ],
       "sync_commands": [
         "python3 scripts/sync_root_plugin_manifests.py --repo-root ."
       ],
       "verify_commands": [
         "python3 scripts/check_lesson_ledger.py --repo-root .",
-        "python3 scripts/check_contract_register.py --repo-root .",
-        "python3 -m pytest -q tests/test_lesson_ledger.py tests/test_lesson_lifecycle.py tests/test_contract_register.py"
+        "python3 -m pytest -q tests/test_lesson_ledger.py tests/test_lesson_lifecycle.py tests/test_lesson_selection_preview.py"
       ],
       "notes": [
-        "The ledger checker remains a broad quality gate because every score and seed reconstructs against the retro corpus.",
-        "Lesson-session records are optional historical tooling; they are not part of default or release closeout.",
-        "The contract-register checker remains explicit rather than always-on; schema v2 records reviewed membership transitions but does not authorize them from scores or retention evidence."
+        "The ledger checker remains the focused quality gate because every score and seed reconstructs against the retro corpus.",
+        "Achieve reads the precomputed recent-lessons digest or selection index; no session or contract-register state is part of lesson pickup."
       ]
     },
     {
@@ -1182,9 +1014,9 @@
         "find charness-artifacts/goal-runs -type f -name '*.json' -exec python3 -m json.tool {} \\;"
       ],
       "notes": [
-        "The issue-owned Goal Run provider is authoritative for graph identity, mutation observations, and child evidence; this surface only makes durable files visible to final-bundle planning.",
+        "The issue-owned Goal Run provider is authoritative for graph identity, mutation observations, and child evidence; this surface only makes durable files visible to artifact and release planning.",
         "The JSON parse check is syntax proof, not provider or issue-state proof. Active Goal Run reads and mutations require the issue skill's file-backed commands and exact readback.",
-        "Ephemeral `.charness/` runtime output is excluded by final-bundle path collection and is not a durable Goal Run artifact."
+        "Ephemeral `.charness/` runtime output is not a durable Goal Run artifact."
       ]
     },
     {

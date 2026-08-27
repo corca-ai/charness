@@ -241,12 +241,11 @@ def command_plan(
             "adapter": adapter,
         })
         return 2
-    resolved = resolve_backend(repo_root)
-    preflight = backend_module.build_preflight_payload(resolved)
     try:
         if args.intent == "new":
             target = runtime_module.resolve_target(repo_root, args.target, adapter["data"])
-            payload = build_new_plan(repo_root, target, adapter, preflight)
+            target_repo = target["full_name"]
+            payload_builder = lambda preflight: build_new_plan(repo_root, target, adapter, preflight)
         else:
             invocation = brief_module.build_invocation_payload(
                 repo_root,
@@ -254,8 +253,15 @@ def command_plan(
                 adapter,
                 adapter_module.DEFAULT_FEATURE_BRIEF_PAUSE,
             )
-            payload = build_resolve_plan(repo_root, invocation, preflight)
-    except ValueError as exc:
+            target_repo = invocation["target"]["full_name"]
+            payload_builder = lambda preflight: build_resolve_plan(repo_root, invocation, preflight)
+        # The adapter was already loaded above. Pass it through the provider
+        # resolver so planning does not read it twice or lose the target that
+        # runtime resolution just derived.
+        resolved = resolve_backend(repo_root, target_repo=target_repo, adapter=adapter)
+        preflight = backend_module.build_preflight_payload(resolved)
+        payload = payload_builder(preflight)
+    except (RuntimeError, ValueError) as exc:
         emit({"ok": False, "error": str(exc), "adapter": adapter})
         return 2
     payload["ok"] = bool(payload.get("backend_ready"))

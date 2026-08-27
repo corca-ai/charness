@@ -98,9 +98,9 @@ as a lens, not as a required form.
      paths as reproduction sources only. See `references/evidence-durability.md`
    - if the contract edits repo-owned instruction or prompt surfaces that steer
      agent behavior, define whether the intended claim is `preserve` or
-     `improve`, leave the matching Cautilus proof path visible, and let adapter
-     policy decide whether proof asks first, auto-runs low-cost checks, or adapts
-     by proof kind and cost
+     `improve`, leave the matching consumer-owned proof path visible, and let
+     adapter policy decide whether proof asks first or adapts by proof kind and
+     cost
    - for reader-facing reasoning-shape or reader-fit changes, plan a short
      scenario review instead of equating preserve-proof with semantic success
 6. Keep the contract alive during implementation.

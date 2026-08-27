@@ -3,8 +3,8 @@
 
 Three parsers had converged on the same four lines -- read the file, number the lines
 from 1, strip each, skip blanks and comments -- and the dup ratchet formed a family from
-them the moment the third one grew line numbers. They are `claim_fidelity_lib`'s
-reference waivers, `boundary_bypass_ratchet_lib`'s exemptions, and
+them the moment the third one grew line numbers. They are validator reference
+waivers, `boundary_bypass_ratchet_lib`'s exemptions, and
 `check_skill_ownership_overlap`'s ownership allowlist.
 
 Deliberately does NOT parse or validate. The three callers disagree about what a

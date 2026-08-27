@@ -32,7 +32,7 @@ REFERENCE_CONTRACT_SUFFIXES = {".md", ".txt"}
 #       (another gate/validator, a checked-in reference the gate already pins, or
 #       always-loaded CLAUDE.md) — prove the owner catches the failure before
 #       deleting, never assume it.
-# KEEP otherwise. Keep destructive-boundary guards (cautilus point-of-use,
+# KEEP otherwise. Keep destructive-boundary guards
 # "Do not push, tag, or announce a release without explicit user confirmation")
 # even when owned elsewhere — point-of-use teeth stay. Keep pins that prove a
 # distinct behavioral rule or anchor a required Output Shape.
@@ -115,10 +115,9 @@ CORE_CONTRACTS: dict[str, tuple[str, ...]] = {
     ),
     "skills/public/quality/SKILL.md": (
         "When the next quality move is repo-local, deterministic, and low-risk",
-        "If you stop short of an obvious repo-owned deterministic gate",
-        "Do not stop at producer-side validators alone when the risk is public-skill routing or durable artifact behavior",
-        "Before invoking any `cautilus evaluate ...` subcommand, consult the planner-consult contract",
-        "route the call through the repo-owned wrapper instead of bare `cautilus evaluate`",
+        "When this skill is used in a consuming repository, the primary quality question",
+        "Treat its existing gates, hooks, validators, wrappers, mirrors, and generated reports as suspects",
+        "Do this reduction pass before proposing a new rule",
     ),
     "skills/public/setup/SKILL.md": (
         "normalize",
@@ -208,13 +207,6 @@ PACKAGE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "`Critique: full <artifact-or-worker-status>`",
         "`Critique: not-applicable <reason>`",
         "`Critique: blocked <host-signal>`",
-    ),
-    "skills/public/quality/SKILL.md": (
-        "$SKILL_DIR/scripts/inventory_public_spec_quality.py",
-        "duplicated at the wrong layer",
-        "suggest_public_skill_dogfood.py --repo-root . --skill-id <skill-id>",
-        "then execute its consumer path or record the concrete",
-        "a scaffolded row alone is not consumer proof",
     ),
     "skills/public/release/SKILL.md": (
         "`publish_release.py --execute` refuses unless exactly one",

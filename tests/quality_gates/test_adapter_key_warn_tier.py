@@ -291,30 +291,10 @@ def test_the_warn_scope_covers_shipped_examples() -> None:
     integration_examples = {path for path in scope if path.startswith("integrations/")}
     assert len(public_examples) == 15, sorted(public_examples)
     assert len(integration_examples) == 1, sorted(integration_examples)
-    assert len(scope) == 31, f"the measured warn population changed: {len(scope)}"
+    assert len(scope) == 28, f"the measured warn population changed: {len(scope)}"
     # And the gate's own narrower validation scope must still be a strict subset, so this
     # widening never silently pulls a template into the REFUSING checks.
     assert {str(path.relative_to(ROOT)) for path in iter_adapter_yaml(ROOT)} < scope
-
-
-def test_reader_elsewhere_is_reported_but_never_warned() -> None:
-    """The tier boundary, on real data rather than a constructed case.
-
-    `.agents/cautilus-adapters/chatbot-benchmark.yaml` is the strongest instance in the
-    repo: `survey` types eleven of its keys as gaps (10 `reader-elsewhere` + 1 `text-asserted`), and the warn tier must stay silent about
-    every one. Excluding `reader-elsewhere` is not squeamishness -- 3 of its 23 instances
-    are association residue where the reader genuinely does read the file through dynamic
-    dispatch, and one of those ships inside `skills/public/quality/adapter.example.yaml`,
-    so arming it would greet every new consumer with a wrong warning.
-    """
-    benchmark = ROOT / ".agents/cautilus-adapters/chatbot-benchmark.yaml"
-    reported = [gap for gap in survey(ROOT)["gaps"] if gap["adapter"].endswith("chatbot-benchmark.yaml")]
-    assert len(reported) == 11, f"fixture moved: expected 11 reported gaps, got {len(reported)}"
-    assert {gap["state"] for gap in reported} <= {"reader-elsewhere", "text-asserted"}
-
-    result = unreconciled_keys(ROOT, [benchmark])
-    assert result.scope_established, "silence from an unestablished corpus would prove nothing here"
-    assert result.findings == [], "the warn tier must not reach reported-but-unarmed states"
 
 
 def test_a_consumer_repo_gets_no_key_verdict_at_all(tmp_path: Path) -> None:

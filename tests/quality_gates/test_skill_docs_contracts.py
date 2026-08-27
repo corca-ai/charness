@@ -6,8 +6,8 @@ from .support import ROOT
 
 IMPL_SKILL = (ROOT / "skills" / "public" / "impl" / "SKILL.md").read_text(encoding="utf-8")
 PLUGIN_IMPL_SKILL_PATH = ROOT / "plugins" / "charness" / "skills" / "impl" / "SKILL.md"
-# The slice closeout ledger (verification routing, truth-surface sync, stop gate,
-# cautilus policy line) moved from impl to the sibling prove skill (#439 split).
+# The slice closeout ledger (verification routing, truth-surface sync, and stop
+# gate) moved from impl to the sibling prove skill (#439 split).
 PROVE_SKILL = (ROOT / "skills" / "public" / "prove" / "SKILL.md").read_text(encoding="utf-8")
 SETUP_SKILL = (ROOT / "skills" / "public" / "setup" / "SKILL.md").read_text(encoding="utf-8")
 PLUGIN_SETUP_SKILL_PATH = ROOT / "plugins" / "charness" / "skills" / "setup" / "SKILL.md"
@@ -227,7 +227,7 @@ def test_prove_skill_routes_validation_and_browser_proof_explicitly() -> None:
     assert "Browser-Facing Output" in verification_ladder
     assert "metadata/model judgment" in verification_ladder
     assert "operator reading test" in dispatch
-    assert "before downgrading to HITL" in dispatch
+    assert "operator reading test" in dispatch
 
 
 def test_debug_and_quality_carry_async_and_hidden_network_field_lessons() -> None:
@@ -300,8 +300,8 @@ def test_public_skill_validation_doc_keeps_critique_and_on_demand_boundary_visib
     validation_doc = PUBLIC_SKILL_VALIDATION
 
     assert "`critique`" in validation_doc
-    assert "on-demand proof through" in validation_doc
-    assert "underlying evaluator state or storage layer" in validation_doc
+    assert "on-demand through an explicit bounded human review" in validation_doc
+    assert "consumer-owned\nevaluator" in validation_doc
 
 
 def test_control_plane_documents_authenticated_release_probe_contract() -> None:
@@ -425,59 +425,6 @@ def test_impl_source_and_checked_in_plugin_export_are_byte_identical() -> None:
     assert (ROOT / "skills" / "public" / "impl" / "SKILL.md").read_bytes() == (
         PLUGIN_IMPL_SKILL_PATH.read_bytes()
     )
-
-
-def test_current_cautilus_guidance_uses_eval_surface() -> None:
-    impl_text = PROVE_SKILL
-    public_skill_validation = PUBLIC_SKILL_VALIDATION
-    adapter_text = (ROOT / ".agents" / "cautilus-adapter.yaml").read_text(encoding="utf-8")
-
-    assert "cautilus evaluate fixture --repo-root . --adapter-name <repo-owned-adapter>" in impl_text
-    assert "cautilus evaluate observation --input <observed.json>" in impl_text
-    assert "cautilus evaluate fixture --repo-root . --adapter-name <repo-owned-adapter>" in public_skill_validation
-    assert "eval_test_command_templates:" in adapter_text
-    assert "evaluation_input_default: evals/cautilus/whole-repo-routing.fixture.json" in adapter_text
-    assert "--codex-auth-mode inherit" in adapter_text
-    assert "cautilus instruction-surface test --repo-root ." not in impl_text
-    assert "cautilus instruction-surface test --repo-root ." not in public_skill_validation
-    assert "cautilus eval test --repo-root ." not in impl_text
-    assert "cautilus eval test --repo-root ." not in public_skill_validation
-
-
-def test_cautilus_guidance_does_not_use_generic_review_triggers() -> None:
-    impl_text = PROVE_SKILL
-    dispatch = DISPATCH
-    prompt_policy = PROMPT_ASSET_POLICY
-    manifest = json.loads((ROOT / "integrations" / "tools" / "cautilus.json").read_text(encoding="utf-8"))
-
-    assert "generic" in impl_text
-    assert "review or closeout wording must not silently launch Cautilus" in impl_text
-    assert "Generic review, closeout, or \"run quality\" wording" in dispatch
-    assert "generic review, closeout, or quality-gate wording" in prompt_policy
-    assert "not a Cautilus execution" in prompt_policy
-    assert "prompt behavior regression" in manifest["intent_triggers"]
-    assert "baseline compare" in manifest["intent_triggers"]
-    assert not {"review", "closeout", "검증", "리뷰"}.intersection(manifest["intent_triggers"])
-
-
-def test_validate_integrations_rejects_generic_cautilus_triggers() -> None:
-    from scripts.validate_integrations import (
-        ValidationError,
-        validate_cautilus_trigger_specificity,
-    )
-
-    manifest = {
-        "tool_id": "cautilus",
-        "intent_triggers": ["quality review", "prompt behavior regression", "검토"],
-    }
-    try:
-        validate_cautilus_trigger_specificity(manifest, ROOT / "integrations" / "tools" / "cautilus.json")
-    except ValidationError as exc:
-        assert "generic review/closeout terms" in str(exc)
-        assert "quality review" in str(exc)
-        assert "검토" in str(exc)
-    else:  # pragma: no cover - assertion clarity
-        raise AssertionError("expected generic cautilus trigger rejection")
 
 
 def test_validate_integrations_rejects_unsafe_agent_browser_check_commands() -> None:

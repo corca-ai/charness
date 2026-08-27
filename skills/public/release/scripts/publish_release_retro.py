@@ -68,8 +68,8 @@ def _retro_trigger_markdown(
     lines = [
         f"# Retro: Release Auto-Retro Trigger {tag_name}",
         f"Date: {datetime.now(timezone.utc).date().isoformat()}",
-        # This is release-delta evidence, not a session-emission receipt: it has no
-        # session id, frozen bundle, or lesson-disposition contract.
+        # This is release-delta evidence, not lesson-memory state: it has no
+        # ledger fields to reconcile.
         "Mode: release-trigger",
         "",
         "## Context",

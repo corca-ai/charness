@@ -176,7 +176,9 @@ def test_issue_resolve_prefers_autoclose_carriers_before_manual_close() -> None:
     resolve_flow = _read(RESOLVE_FLOW)
     brief = _read(ROOT / "skills" / "public" / "issue" / "references" / "resolution-brief.md")
 
-    assert "explicit close keywords when auto-close is available" in skill_flat
+    # The compact skill keeps only routing; the detailed auto-close contract lives in
+    # the closeout and resolution references below.
+    assert "auto-close preference" in skill_flat
     assert "Resolve Auto-Close Linkage" in closeout
     assert "PR body" in closeout
     assert "commit body" in closeout

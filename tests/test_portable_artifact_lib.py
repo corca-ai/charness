@@ -14,9 +14,9 @@ from scripts.portable_artifact_lib import (
 def test_sanitize_artifact_json_handles_mixed_path_lists(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
-    inside = repo / "docs" / "handoff.md"
+    inside = repo / "docs" / "index.md"
     inside.parent.mkdir()
-    inside.write_text("# handoff\n", encoding="utf-8")
+    inside.write_text("# index\n", encoding="utf-8")
     outside = tmp_path / "external.txt"
     outside.write_text("external\n", encoding="utf-8")
 
@@ -41,9 +41,9 @@ def test_sanitize_artifact_json_handles_mixed_path_lists(tmp_path: Path) -> None
 def test_portable_artifact_helpers_preserve_keyword_call_contract(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
-    inside = repo / "docs" / "handoff.md"
+    inside = repo / "docs" / "index.md"
     inside.parent.mkdir()
-    inside.write_text("# handoff\n", encoding="utf-8")
+    inside.write_text("# index\n", encoding="utf-8")
 
     assert portable_path_value(repo_root=repo, value=inside) == "docs/index.md"
     assert sanitize_artifact_json(value={"path": str(inside)}, repo_root=repo) == {
@@ -58,9 +58,9 @@ def test_portable_artifact_helpers_preserve_keyword_call_contract(tmp_path: Path
 def test_sanitize_artifact_json_distinguishes_path_keys_from_plain_strings(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
-    inside = repo / "docs" / "handoff.md"
+    inside = repo / "docs" / "index.md"
     inside.parent.mkdir()
-    inside.write_text("# handoff\n", encoding="utf-8")
+    inside.write_text("# index\n", encoding="utf-8")
 
     payload = sanitize_artifact_json(
         {
@@ -90,9 +90,9 @@ def test_path_key_detection_has_no_redundant_exact_path_branch() -> None:
 def test_sanitize_artifact_json_leaves_non_path_lists_as_plain_values(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
-    inside = repo / "docs" / "handoff.md"
+    inside = repo / "docs" / "index.md"
     inside.parent.mkdir()
-    inside.write_text("# handoff\n", encoding="utf-8")
+    inside.write_text("# index\n", encoding="utf-8")
 
     payload = sanitize_artifact_json({"labels": [str(inside)]}, repo_root=repo)
 

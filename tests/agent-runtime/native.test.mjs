@@ -46,11 +46,11 @@ function writeJson(path, payload) {
 }
 
 test("contract version constants are stable", () => {
-	assert.equal(EVALUATION_CASES_SCHEMA, "cautilus.evaluation_cases.v1");
-	assert.equal(EVALUATION_INPUT_SCHEMA, "cautilus.evaluation_input.v1");
-	assert.equal(EVALUATION_OBSERVED_SCHEMA, "cautilus.evaluation_observed.v1");
-	assert.equal(INSTRUCTION_SURFACE_CASES_SCHEMA, "cautilus.instruction_surface_cases.v1");
-	assert.equal(INSTRUCTION_SURFACE_INPUTS_SCHEMA, "cautilus.instruction_surface_inputs.v1");
+	assert.equal(EVALUATION_CASES_SCHEMA, "charness.evaluation_cases.v1");
+	assert.equal(EVALUATION_INPUT_SCHEMA, "charness.evaluation_input.v1");
+	assert.equal(EVALUATION_OBSERVED_SCHEMA, "charness.evaluation_observed.v1");
+	assert.equal(INSTRUCTION_SURFACE_CASES_SCHEMA, "charness.instruction_surface_cases.v1");
+	assert.equal(INSTRUCTION_SURFACE_INPUTS_SCHEMA, "charness.instruction_surface_inputs.v1");
 });
 
 test("normalizes legacy evaluation input into case suite", () => {

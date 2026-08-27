@@ -26,7 +26,7 @@ unproven.
    returns a parsed response or observable side effect. The worker → host →
    provider seam produced a real outcome.
 5. `agent_choice` — given the user's natural-language request, an evaluator,
-   a fresh agent, or a Cautilus-style scenario chooses the intended skill or
+   a fresh agent, or a prompt-routing scenario chooses the intended skill or
    command. This level proves that the surface is reachable through prompt
    routing, not only through the documented invocation.
 

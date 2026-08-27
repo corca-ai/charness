@@ -39,13 +39,12 @@ def blank_lesson(source_retro: str, transition_id: str) -> dict[str, Any]:
 def outcome_event(
     *,
     event_id: str,
-    session_id: str,
     lesson_id: str,
     source_retro: str,
     outcome: str = "changed-an-action",
     anchor: str | None = None,
 ) -> dict[str, Any]:
-    """One schema-6 encounter record.
+    """One schema-7 encounter record.
 
     The default anchor satisfies the `changed-an-action` counterfactual bar, so a
     test that does not care about anchor shape does not have to know the rule.
@@ -55,7 +54,6 @@ def outcome_event(
         anchor = "took the measured path here rather than the assumed one, which would have shipped a false count"
     return {
         "event_id": event_id,
-        "session_id": session_id,
         "source_retro": source_retro,
         "lesson_id": lesson_id,
         "outcome": outcome,

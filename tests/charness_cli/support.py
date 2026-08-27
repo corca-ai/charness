@@ -70,12 +70,6 @@ def make_release_fixture(tmp_path: Path, *, charness_tag: str | None = None) -> 
                     "published_at": "2026-04-12T00:00:00Z",
                     "assets": [{"name": "charness"}],
                 },
-                "corca-ai/cautilus": {
-                    "tag_name": "v1.2.3",
-                    "html_url": "https://github.com/corca-ai/cautilus/releases/tag/v1.2.3",
-                    "published_at": "2026-04-10T00:00:00Z",
-                    "assets": [{"name": "cautilus-linux-amd64.tar.gz"}],
-                },
                 "corca-ai/nose": {
                     "tag_name": "v0.4.0",
                     "html_url": "https://github.com/corca-ai/nose/releases/tag/v0.4.0",
@@ -126,7 +120,6 @@ def make_support_sync_fixture(tmp_path: Path) -> Path:
     fixture_root = tmp_path / "support-fixtures"
     mappings: dict[str, str] = {}
     tool_layouts = {
-        "cautilus": ("corca-ai/cautilus@main", "skills/cautilus-agent"),
         "agent-browser": ("vercel-labs/agent-browser@main", "skills/agent-browser"),
         "specdown": ("corca-ai/specdown@main", "cmd/specdown/skills/specdown"),
     }

@@ -26,7 +26,6 @@ def run_repo_copy_invariants(monkeypatch, capsys, *args: str) -> SimpleNamespace
     return SimpleNamespace(returncode=returncode, stdout=captured.out, stderr=captured.err)
 
 REQUIRED_VOLATILE_COPY_EXCLUDES = {
-    ".cautilus",
     ".charness",
     ".git",
     ".pytest_cache",
@@ -54,20 +53,6 @@ def test_coverage_copy_excludes_volatile_artifact_roots() -> None:
     assert REQUIRED_VOLATILE_COPY_EXCLUDES <= set(check_coverage.COPY_IGNORE_NAMES)
 
 
-def test_repo_copy_ignore_drops_cautilus_runtime_payload(tmp_path: Path) -> None:
-    source = tmp_path / "source"
-    payload = source / ".cautilus" / "runs" / "demo-run" / "codex-home" / "tmp" / "wrapper"
-    payload.mkdir(parents=True)
-    (payload / "payload.txt").write_text("large runtime payload\n", encoding="utf-8")
-    (source / "README.md").write_text("# source\n", encoding="utf-8")
-
-    target = tmp_path / "target"
-    shutil.copytree(source, target, ignore=repo_copy.REPO_COPY_IGNORE)
-
-    assert (target / "README.md").is_file()
-    assert not (target / ".cautilus").exists()
-
-
 def test_repo_copy_ignore_drops_generated_reports(tmp_path: Path) -> None:
     source = tmp_path / "source"
     payload = source / "reports" / "mutation" / "large-run.log"
@@ -80,21 +65,6 @@ def test_repo_copy_ignore_drops_generated_reports(tmp_path: Path) -> None:
 
     assert (target / "README.md").is_file()
     assert not (target / "reports").exists()
-
-
-def test_coverage_copy_ignore_drops_cautilus_runtime_payload(tmp_path: Path) -> None:
-    source = tmp_path / "coverage-source"
-    payload = source / ".cautilus" / "runs" / "demo-run" / "codex-home" / "tmp" / "wrapper"
-    payload.mkdir(parents=True)
-    (payload / "payload.txt").write_text("large runtime payload\n", encoding="utf-8")
-    (source / "scripts").mkdir()
-    (source / "scripts" / "demo.py").write_text("print('ok')\n", encoding="utf-8")
-
-    target = tmp_path / "coverage-target"
-    shutil.copytree(source, target, ignore=check_coverage.COPY_IGNORE)
-
-    assert (target / "scripts" / "demo.py").is_file()
-    assert not (target / ".cautilus").exists()
 
 
 def test_coverage_copy_ignore_drops_generated_reports(tmp_path: Path) -> None:

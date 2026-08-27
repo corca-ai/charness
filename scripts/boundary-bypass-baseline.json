@@ -4,11 +4,11 @@
   "inventory_schemaVersion": "charness.quality.boundary_bypass_inventory.v2",
   "call_site_fingerprint_algo_version": "1",
   "summary": {
-    "candidate_count": 50,
+    "candidate_count": 46,
     "convertible_count": 2,
-    "internal_boundary_count": 35,
-    "keep_boundary_count": 24,
-    "candidate_key_count": 50
+    "internal_boundary_count": 31,
+    "keep_boundary_count": 23,
+    "candidate_key_count": 46
   },
   "candidate_keys": [
     "03317004492f3b03",
@@ -21,38 +21,34 @@
     "14dcc171602e8cc5",
     "16dae8afa91ebfea",
     "22272c782774662a",
+    "23b56dc88d76e9b8",
     "2ab340eddc888fbc",
     "2afa2f7e74cef060",
     "311f0583cede02c5",
     "3282537862e9c0e4",
+    "37eeb31ddefa701d",
     "3972fc454265f2e9",
     "3e86c6cbdd720473",
     "49d95eaeb09e056f",
     "5493ebee5a359cb9",
-    "57b092dbd58617e0",
     "584137bc9502bb52",
     "5aaa8310abddb4cc",
-    "5e4d972e5574129b",
     "5e810e663bf20edd",
+    "64beb6de7c290c6a",
     "68a29d4ac0870e7e",
     "6a34e88fa8ab3d91",
     "6b9aa0ba40ec0667",
-    "6dd79547c6d4aa49",
     "8dabe177e3532495",
     "8f4dcccce3e774b4",
-    "8fef6017d0b758fc",
     "9337a774dfde198e",
-    "a6182bd782738441",
     "b01f54994c12d25d",
     "b097824f45b38fb7",
     "b11d217e862ac837",
     "b300d515f1f0ee1a",
     "b9fda138fdfd80c5",
     "cd452832e6f70615",
-    "d0408b287b644b31",
     "d11a41b4d1b636a0",
     "d133347bba2ede2d",
-    "d7b77efd01488b77",
     "d9fe7357aa354211",
     "db67c2bca79aa4ab",
     "e47a116e9526f3c8",
@@ -124,12 +120,6 @@
       ]
     },
     {
-      "test_file": "tests/quality_gates/test_closeout_bundle.py",
-      "import_safe_targets": [
-        "scripts/closeout_bundle.py"
-      ]
-    },
-    {
       "test_file": "tests/quality_gates/test_closeout_headroom_and_mirror_gate.py",
       "import_safe_targets": [
         "scripts/check_python_lengths.py",
@@ -197,12 +187,6 @@
       "import_safe_targets": [
         "skills/public/gather/scripts/gather_public_url.py",
         "skills/public/quality/scripts/inventory_command_dominance.py"
-      ]
-    },
-    {
-      "test_file": "tests/quality_gates/test_final_bundle_preflight.py",
-      "import_safe_targets": [
-        "scripts/final_bundle_preflight.py"
       ]
     },
     {
@@ -383,33 +367,6 @@
       ]
     },
     {
-      "test_file": "tests/test_cautilus_chatbot_compare.py",
-      "import_safe_targets": [
-        "scripts/eval_cautilus_chatbot_compare.py"
-      ]
-    },
-    {
-      "test_file": "tests/test_cautilus_eval_commands.py",
-      "import_safe_targets": [
-        "scripts/eval_cautilus_chatbot_proposals.py",
-        "scripts/eval_cautilus_scenarios.py"
-      ]
-    },
-    {
-      "test_file": "tests/test_cautilus_proof_artifact.py",
-      "import_safe_targets": [
-        "scripts/plan_cautilus_proof.py",
-        "scripts/validate_cautilus_proof.py"
-      ]
-    },
-    {
-      "test_file": "tests/test_contract_register.py",
-      "import_safe_targets": [
-        "scripts/apply_contract_transition.py",
-        "scripts/record_contract_graduation_proposal.py"
-      ]
-    },
-    {
       "test_file": "tests/test_debug_artifact.py",
       "import_safe_targets": [
         "scripts/validate_debug_artifact.py"
@@ -470,5 +427,5 @@
       ]
     }
   ],
-  "writer_integrity_sha256": "81fce89c0c86a8fade4684764bc49af22d3cc534743587f2f6275dc091056834"
+  "writer_integrity_sha256": "d519d8bcca3c45b7bf451f25dd2c99e845302dd59f3c8688cdf9cddf77a59a1d"
 }

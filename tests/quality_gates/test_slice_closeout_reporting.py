@@ -16,16 +16,6 @@ def _full_payload() -> dict:
         "changed_paths": ["scripts/x.py"],
         "matched_surfaces": [{"surface_id": "repo-python", "description": "repo python"}],
         "unmatched_paths": ["docs/loose.md"],
-        "cautilus_plan": {
-            "run_mode": "evaluate",
-            "next_action": "evaluate skill-experiment",
-            "proof_kinds": ["skill-experiment"],
-            "changed_public_skills": ["quality"],
-            "scenario_registry_review_required": True,
-            "notes": ["a note"],
-            "skill_validation_recommendations": [{"skill_id": "quality", "validation_tier": "tier-2"}],
-            "recommended_followups": ["wire a fixture"],
-        },
         "risk_interrupt_plan": {
             "status": "interrupt",
             "artifact_path": "charness-artifacts/debug/latest.md",
@@ -57,16 +47,6 @@ def test_print_text_drives_every_reporting_helper(monkeypatch, capsys) -> None:
     assert "Changed paths:" in out and "- scripts/x.py" in out
     assert "Matched surfaces:" in out and "repo-python: repo python" in out
     assert "Unmatched paths:" in out and "- docs/loose.md" in out
-    # cautilus plan (visible work)
-    assert "Cautilus proof:" in out
-    assert "- run_mode: evaluate" in out
-    assert "- proof_kinds: skill-experiment" in out
-    assert "- next_action: evaluate skill-experiment" in out
-    assert "- changed_public_skills: quality" in out
-    assert "- scenario_registry_review_required: true" in out
-    assert "- note: a note" in out
-    assert "- skill_review: quality (tier-2)" in out
-    assert "- followup: wire a fixture" in out
     # risk interrupt
     assert "Risk interrupt:" in out
     assert "- status: interrupt" in out
@@ -84,7 +64,7 @@ def test_print_text_drives_every_reporting_helper(monkeypatch, capsys) -> None:
 
 
 def test_print_text_omits_optional_blocks_when_absent(monkeypatch, capsys) -> None:
-    # the not-applicable / empty arms: no cautilus (no visible work), risk
+    # the not-applicable / empty arms: risk
     # interrupt not-applicable, no headroom/usage/executed.
     monkeypatch.setattr(reporting, "print_broad_pytest_policy", lambda payload: None)
     reporting.print_text(
@@ -93,14 +73,12 @@ def test_print_text_omits_optional_blocks_when_absent(monkeypatch, capsys) -> No
             "changed_paths": [],
             "matched_surfaces": [],
             "unmatched_paths": [],
-            "cautilus_plan": {"run_mode": "none", "next_action": "none"},
             "risk_interrupt_plan": {"status": "not-applicable"},
             "headroom": [],
             "executed_commands": [],
         }
     )
     out = capsys.readouterr().out
-    assert "Cautilus proof:" not in out
     assert "Risk interrupt:" not in out
     assert "WARN: changed files near the length limit" not in out
     assert "Product telemetry:" not in out

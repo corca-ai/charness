@@ -5,16 +5,9 @@ One concept, and it renders no verdict on any artifact: this answers "where are 
 repo's retros", which stopped being a literal and became a layout search, an adapter
 read, and a fallback whose two rejected alternatives are the interesting part.
 
-It is a module rather than a function in the validator for a reason that outlived the
-length cap it was first split for: `lesson_evaluation_records_lib` owns a
-`retro_output_dir(repo_root) -> Path` returning the LITERAL directory, and two
-same-named owners with opposite answers is worse than either.
-
-`validate_retro_artifact` re-exports both public names, so its importers keep one
-import site. It deliberately exposes no `retro_output_dir` helper:
-`lesson_evaluation_records_lib` already owns a function of that exact name and
-signature returning the LITERAL directory, and two same-named owners with opposite
-answers is worse than either.
+The directory helper lives here so bootstrap and validation use one adapter-derived
+owner. It returns a path, while `retro_artifact_prefix` remains the validator's
+string-prefix projection.
 """
 
 from __future__ import annotations
@@ -120,3 +113,21 @@ def retro_artifact_prefix(repo_root: Path) -> str:
         return DEFAULT_RETRO_ARTIFACT_PREFIX
     return f"{normalized}/"
 
+
+def retro_output_dir(repo_root: Path) -> Path:
+    """Return the adapter-declared retro directory for a repository."""
+    return repo_root.resolve() / PurePosixPath(retro_artifact_prefix(repo_root).rstrip("/"))
+
+
+def retro_summary_path(repo_root: Path) -> Path:
+    """Return the adapter-declared summary path, with the default as fallback."""
+    try:
+        data = load_retro_adapter(repo_root).get("data", {})
+    except (FileNotFoundError, OSError, ValueError, KeyError, TypeError):
+        data = {}
+    summary = data.get("summary_path")
+    if isinstance(summary, str) and summary.strip():
+        candidate = PurePosixPath(summary.strip())
+        if not candidate.is_absolute() and ".." not in candidate.parts:
+            return repo_root.resolve() / candidate
+    return retro_output_dir(repo_root) / "recent-lessons.md"

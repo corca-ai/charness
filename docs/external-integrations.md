@@ -19,7 +19,6 @@ Examples:
 
 - `agent-browser`
 - `specdown`
-- `cautilus`
 
 ## Ownership Model
 
@@ -216,7 +215,7 @@ The current external-tool command surface is nested under `charness tool`:
   - sync upstream support skills and manifests into the local harness view
 - `charness tool update`
   - update integrated external tools where safe
-  - for a `manual`/`advisory` tool it cannot auto-bump (e.g. `cautilus`), it still
+  - for a `manual`/`advisory` tool it cannot auto-bump, it still
     prints a behind-latest `ADVISORY:` line (and an `update_advisory` field in
     the payload) by comparing the detected version against the probed latest release,
     so a manual tool does not lag unnoticed

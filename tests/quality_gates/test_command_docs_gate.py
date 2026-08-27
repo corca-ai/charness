@@ -313,6 +313,8 @@ def test_root_cli_mutating_modes_have_side_effect_probe_contracts() -> None:
         "./charness worktree create",
         "./charness worktree add",
         "./charness worktree prepare",
+        "./charness task run",
+        "./charness worktree exec",
         "./charness worktree audit --prune",
         "./charness worktree cleanup --yes",
     }

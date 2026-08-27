@@ -10,7 +10,6 @@ ROOT = Path(__file__).resolve().parents[1]
 
 REPO_COPY_EXCLUDE_NAMES = (
     ".git",
-    ".cautilus",
     ".pytest_cache",
     ".ruff_cache",
     ".mypy_cache",

@@ -51,8 +51,8 @@ def test_hitl_report_mode_does_not_turn_suggestions_into_default_approval(
     packet.write_text(
         json.dumps(
             {
-                "session_id": "cautilus-review",
-                "title": "Cautilus Review",
+                "session_id": "demo-review",
+                "title": "Demo Review",
                 "agent_next_step": "Apply only explicit human decisions.",
                 "items": [
                     {

@@ -17,11 +17,11 @@ import pytest
 
 from scripts import lesson_ledger_writer_lib as writer
 from scripts import record_lesson_score as scorer
-from tests.test_lesson_ledger import ANCHOR, _ledger, _retro, _session_event, _validate
+from tests.test_lesson_ledger import ANCHOR, _ledger, _retro, _validate
 
 
 def _append_in_child(
-    repo_text: str, event_id: str, source: str, session_id: str, barrier, queue
+    repo_text: str, event_id: str, source: str, barrier, queue
 ) -> None:
     repo = Path(repo_text)
     try:
@@ -31,7 +31,6 @@ def _append_in_child(
             output_dir=repo / "charness-artifacts/retro",
             summary_path=repo / "charness-artifacts/retro/recent-lessons.md",
             event_id=event_id,
-            session_id=session_id,
             lesson_id="a",
             source_retro=source,
             outcome="changed-an-action",
@@ -46,15 +45,7 @@ def _append_in_child(
 def test_two_concurrent_score_writers_preserve_both_events(tmp_path: Path) -> None:
     _retro(tmp_path, "source.md", "a")
     _retro(tmp_path, "second.md", "a")
-    # ONE SESSION EACH. This test proves the cooperative LOCK -- both writers'
-    # events survive a simultaneous append -- and it used to do that with two
-    # events for one lesson in one session, which `append_score` now refuses as a
-    # duplicate encounter. Two sessions keeps the lock under test without leaning
-    # on a shape the writer no longer allows.
-    path = _ledger(
-        tmp_path,
-        session_events=[_session_event(), _session_event(session_id="session-b")],
-    )
+    path = _ledger(tmp_path)
     context = multiprocessing.get_context("fork")
     barrier, queue = context.Barrier(2), context.Queue()
     processes = [
@@ -64,7 +55,6 @@ def test_two_concurrent_score_writers_preserve_both_events(tmp_path: Path) -> No
                 str(tmp_path),
                 "concurrent-a",
                 "charness-artifacts/retro/source.md",
-                "session-a",
                 barrier,
                 queue,
             ),
@@ -75,7 +65,6 @@ def test_two_concurrent_score_writers_preserve_both_events(tmp_path: Path) -> No
                 str(tmp_path),
                 "concurrent-b",
                 "charness-artifacts/retro/second.md",
-                "session-b",
                 barrier,
                 queue,
             ),

@@ -21,12 +21,14 @@ question; it is not a second operating manual.
 - Preserve authored parent-worktree changes. Use a clean named worktree for
   isolated mutation, with runtime caches and temporary output outside it.
 - Make independent investigation, implementation, and review the default
-  parallel shape. Inspect the live host tool surface first: when a spawn or
-  subagent API is present, use it directly and do not infer its absence from
-  memory or an earlier session. Use `charness task run` for a lane that needs
-  an explicit isolated worktree, or when no host spawn channel is actually
-  exposed. The parent agent owns intent, design, integration, and final verification;
-  keep work sequential only when it is dependent or tiny.
+  parallel shape. Inspect the live host tool surface first, then fan out through
+  whichever available lane fits the work: a host spawn/subagent for short,
+  interactive or judgment-bound work, or `charness task run` for a bounded
+  Codex lane that benefits from a named branch, isolated worktree, explicit
+  path scope, or a durable result. Neither channel is a fallback for the other,
+  and neither may be declared absent from memory. The parent agent owns intent,
+  design, integration, and final verification; keep work sequential only when
+  it is dependent or tiny.
 - Keep `skills/public/` canonical; exports and generated surfaces are updated
   by their producer. Prefer deleting stale rules, wrappers, gates, mirrors,
   tests, and docs over adding another layer.

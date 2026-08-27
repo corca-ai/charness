@@ -33,7 +33,7 @@ from .support import (
     run_cli,
     run_cli_in_repo,
 )
-from .tool_fakes import make_fake_cautilus, make_fake_nose
+from .tool_fakes import make_fake_nose
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -55,27 +55,6 @@ def load_agent_browser_runtime_guard_module(module_name: str = "agent_browser_ru
     sys.modules[module_name] = module
     spec.loader.exec_module(module)
     return module
-
-
-def test_update_advisory_line_without_manifest_route_uses_manual_docs_url() -> None:
-    line = update_advisory_line(
-        {
-            "tool_id": "cautilus",
-            "mode": "manual",
-            "docs_url": "https://github.com/corca-ai/cautilus/releases",
-            "update_advisory": {
-                "status": "behind",
-                "observed_version": "0.15.4",
-                "latest_version": "0.17.1",
-                "latest_tag": "v0.17.1",
-                "html_url": "https://github.com/corca-ai/cautilus/releases/tag/v0.17.1",
-            },
-        }
-    )
-
-    assert line is not None
-    assert "manual update required; see https://github.com/corca-ai/cautilus/releases" in line
-    assert "manifest install/update route" not in line
 
 
 def test_update_advisory_line_without_manifest_route_uses_doctor_install_route_url() -> None:
@@ -152,20 +131,6 @@ def test_print_tool_statuses_renders_version_transition(capsys) -> None:
     assert "nose: updated 0.17.0 -> 0.18.0 healthcheck=not-configured" in output
 
 
-def enable_cautilus_adapter(repo_root: Path) -> None:
-    adapter = repo_root / ".agents" / "cautilus-adapter.yaml"
-    text = adapter.read_text(encoding="utf-8")
-    lines = []
-    for line in text.splitlines():
-        if line.startswith("run_mode:"):
-            lines.append("run_mode: adaptive")
-        elif line.startswith("disabled_reason:"):
-            continue
-        else:
-            lines.append(line)
-    adapter.write_text("\n".join(lines) + "\n", encoding="utf-8")
-
-
 def cleanup_agent_browser_orphans() -> None:
     module = load_agent_browser_runtime_guard_module()
     previous_argv = sys.argv
@@ -227,47 +192,6 @@ def test_fake_go_installers_honor_gobin(tmp_path: Path) -> None:
 
 
 @pytest.mark.release_only
-def test_tool_install_persists_manual_guidance_and_support_state(tmp_path: Path, seeded_charness_repo: Path) -> None:
-    repo_root = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
-    enable_cautilus_adapter(repo_root)
-    home_root = tmp_path / "home"
-    release_fixture = make_release_fixture(tmp_path)
-    support_fixture = make_support_sync_fixture(tmp_path)
-    plugin_root = home_root / ".codex" / "plugins" / "charness"
-    env = os.environ.copy()
-    env["HOME"] = str(home_root)
-    env["PATH"] = build_test_path()
-    env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
-    env["CHARNESS_SUPPORT_SYNC_FIXTURES"] = str(support_fixture)
-
-    result = run_cli_in_repo(repo_root, "tool", "install", "--detail", "--repo-root", str(repo_root), "cautilus", env=env)
-    assert result.returncode == 0, result.stderr
-    payload = yaml.safe_load(result.stdout)
-    cautilus = payload["results"]["cautilus"]
-    assert cautilus["install"]["status"] == "manual"
-    assert cautilus["install"]["docs_url"] == "https://github.com/corca-ai/cautilus"
-    assert cautilus["install"]["install_url"] == "https://github.com/corca-ai/cautilus/blob/main/install.sh"
-    assert cautilus["install"]["release"]["latest_tag"] == "v1.2.3"
-    assert cautilus["support"]["status"] == "synced"
-    assert cautilus["support"]["materialized_paths"] == ["support/cautilus"]
-    assert cautilus["support"]["materialized_base"] == str(plugin_root)
-    assert cautilus["doctor"]["doctor_status"] == "missing"
-    assert cautilus["doctor"]["doctor_disposition"] == "advisory-install-needed"
-    assert cautilus["install"]["repo_followup"]["rendered_command"] == f"cautilus install --repo-root {repo_root}"
-    assert cautilus["doctor"]["install_route"]["repo_followup"]["rendered_command"] == (
-        f"cautilus install --repo-root {repo_root}"
-    )
-    assert cautilus["doctor"]["release"]["latest_version"] == "1.2.3"
-    assert "Follow-up command: `cautilus install --repo-root" in cautilus["next_step"]
-    lock_payload = json.loads((repo_root / "integrations" / "locks" / "cautilus.json").read_text(encoding="utf-8"))
-    assert lock_payload["release"]["latest_tag"] == "v1.2.3"
-    assert lock_payload["install"]["install_status"] == "manual"
-    assert lock_payload["support"]["materialized_paths"] == ["support/cautilus"]
-    assert lock_payload["doctor"]["doctor_status"] == "missing"
-    assert (plugin_root / "support" / "cautilus" / "SKILL.md").is_file()
-
-
-@pytest.mark.release_only
 def test_tool_install_can_select_quality_validation_recommendations(tmp_path: Path, seeded_charness_repo: Path) -> None:
     repo_root = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
     release_fixture = make_release_fixture(tmp_path)
@@ -296,10 +220,10 @@ def test_tool_install_can_select_quality_validation_recommendations(tmp_path: Pa
         "recommend_for_skill": None,
         "recommendation_role": "validation",
         "next_skill_id": "quality",
-        "selected_tool_ids": ["awiki", "cautilus", "gitleaks", "lychee", "nose", "ruff", "tokei", "vulture"],
+        "selected_tool_ids": ["awiki", "gitleaks", "lychee", "nose", "ruff", "tokei", "vulture"],
     }
-    assert payload["tool_ids"] == ["awiki", "cautilus", "gitleaks", "lychee", "nose", "ruff", "tokei", "vulture"]
-    assert payload["summary"]["tool_count"] == 8
+    assert payload["tool_ids"] == ["awiki", "gitleaks", "lychee", "nose", "ruff", "tokei", "vulture"]
+    assert payload["summary"]["tool_count"] == 7
     assert "results" not in payload
 
 
@@ -330,154 +254,34 @@ def test_tool_install_recommendation_filter_no_match_does_not_install_all(tmp_pa
     assert "No tools matched recommendation filters" in result.stderr
 
 
-@pytest.mark.release_only
-def test_installed_cli_tool_install_materializes_cautilus_support(tmp_path: Path, seeded_managed_home: dict[str, Path]) -> None:
-    home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
-    enable_cautilus_adapter(home_root / ".agents" / "src" / "charness")
-    release_fixture = make_release_fixture(tmp_path)
-    support_fixture = make_support_sync_fixture(tmp_path)
-    plugin_root = home_root / ".codex" / "plugins" / "charness"
-    env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
-    env["CHARNESS_SUPPORT_SYNC_FIXTURES"] = str(support_fixture)
-
-    result = run_cli("tool", "install", "--detail", "--home-root", str(home_root), "cautilus", env=env)
-    assert result.returncode == 0, result.stderr
-    payload = yaml.safe_load(result.stdout)
-    cautilus = payload["results"]["cautilus"]
-    managed_repo = home_root / ".agents" / "src" / "charness"
-
-    assert payload["managed_checkout"] is True
-    assert payload["repo_root"] == str(managed_repo)
-    assert cautilus["install"]["status"] == "manual"
-    assert cautilus["install"]["install_url"] == "https://github.com/corca-ai/cautilus/blob/main/install.sh"
-    assert cautilus["install"]["release"]["latest_tag"] == "v1.2.3"
-    assert cautilus["support"]["status"] == "synced"
-    assert cautilus["support"]["materialized_paths"] == ["support/cautilus"]
-    assert cautilus["doctor"]["doctor_status"] == "missing"
-    assert (plugin_root / "support" / "cautilus" / "SKILL.md").is_file()
-
-    lock_payload = json.loads((managed_repo / "integrations" / "locks" / "cautilus.json").read_text(encoding="utf-8"))
-    assert lock_payload["install"]["install_status"] == "manual"
-    assert lock_payload["support"]["materialized_paths"] == ["support/cautilus"]
-    assert lock_payload["doctor"]["doctor_status"] == "missing"
-
-
-@pytest.mark.release_only
-def test_installed_cli_tool_doctor_reports_ok_for_cautilus_with_binary_and_support(
-    tmp_path: Path, seeded_managed_home: dict[str, Path]
+def _pin_prior_observed_version(
+    repo_root: Path, tool_id: str, version: str, *, env: dict[str, str]
 ) -> None:
-    home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
-    enable_cautilus_adapter(home_root / ".agents" / "src" / "charness")
-    release_fixture = make_release_fixture(tmp_path)
-    support_fixture = make_support_sync_fixture(tmp_path)
-    plugin_root = home_root / ".codex" / "plugins" / "charness"
-    fake_cautilus = make_fake_cautilus(tmp_path)
-    env["PATH"] = build_test_path(fake_cautilus.parent)
-    env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
-    env["CHARNESS_SUPPORT_SYNC_FIXTURES"] = str(support_fixture)
+    """Create a current-schema lock, then pin its prior observed version.
 
-    sync_result = run_cli("tool", "sync-support", "--detail", "--home-root", str(home_root), "cautilus", env=env)
-    assert sync_result.returncode == 0, sync_result.stderr
-
-    doctor_result = run_cli("tool", "doctor", "--detail", "--home-root", str(home_root), "cautilus", env=env)
-    assert doctor_result.returncode == 0, doctor_result.stderr
-    payload = yaml.safe_load(doctor_result.stdout)
-    cautilus = payload["results"]["cautilus"]["doctor"]
-
-    assert cautilus["doctor_status"] == "ok"
-    assert cautilus["support_state"] == "upstream-consumed"
-    assert cautilus["support_sync"]["status"] == "ok"
-    assert cautilus["support_discovery"]["status"] == "materialized"
-    assert cautilus["support_discovery"]["intent_triggers"] == [
-        "evaluator-backed behavior review",
-        "behavior evaluation",
-        "behavior review",
-        "prompt behavior regression",
-        "instruction behavior regression",
-        "baseline compare",
-        "cautilus eval",
-        "cautilus scenario",
-        "operator reading test",
-        "프롬프트 회귀",
-        "동작 평가",
-    ]
-    assert cautilus["support_discovery"]["support_skill_path"] == str(plugin_root / "support" / "cautilus" / "SKILL.md")
-    assert cautilus["support_discovery"]["materialized_kind"] == "installed-plugin-copy"
-    assert cautilus["release"]["latest_tag"] == "v1.2.3"
-
-
-@pytest.mark.release_only
-def test_installed_cli_tool_sync_support_reports_materialized_support_and_binary_gap(
-    tmp_path: Path, seeded_managed_home: dict[str, Path]
-) -> None:
-    home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
-    enable_cautilus_adapter(home_root / ".agents" / "src" / "charness")
-    release_fixture = make_release_fixture(tmp_path)
-    support_fixture = make_support_sync_fixture(tmp_path)
-    plugin_root = home_root / ".codex" / "plugins" / "charness"
-    env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
-    env["CHARNESS_SUPPORT_SYNC_FIXTURES"] = str(support_fixture)
-
-    sync_result = run_cli("tool", "sync-support", "--detail", "--home-root", str(home_root), "cautilus", env=env)
-    assert sync_result.returncode == 0, sync_result.stderr
-    payload = yaml.safe_load(sync_result.stdout)
-    cautilus = payload["results"]["cautilus"]
-
-    assert cautilus["support"]["status"] == "synced"
-    assert cautilus["support"]["materialized_paths"] == ["support/cautilus"]
-    assert cautilus["support"]["materialized_base"] == str(plugin_root)
-    assert cautilus["support"]["discovery_stub_path"] is None
-    assert cautilus["support"]["intent_triggers"] == [
-        "evaluator-backed behavior review",
-        "behavior evaluation",
-        "behavior review",
-        "prompt behavior regression",
-        "instruction behavior regression",
-        "baseline compare",
-        "cautilus eval",
-        "cautilus scenario",
-        "operator reading test",
-        "프롬프트 회귀",
-        "동작 평가",
-    ]
-    assert cautilus["doctor"]["doctor_status"] == "missing"
-    assert cautilus["doctor"]["doctor_disposition"] == "advisory-install-needed"
-    assert cautilus["doctor"]["install_route"]["mode"] == "manual"
-    assert cautilus["doctor"]["install_route"]["docs_url"] == "https://github.com/corca-ai/cautilus"
-    assert cautilus["doctor"]["install_route"]["install_url"] == "https://github.com/corca-ai/cautilus/blob/main/install.sh"
-    assert cautilus["doctor"]["install_route"]["repo_followup"]["rendered_command"] == (
-        f"cautilus install --repo-root {home_root / '.agents' / 'src' / 'charness'}"
+    The lock schema intentionally rejects partial hand-written state. Seeded
+    repos may not have a lock for this tool, so obtain the complete shape from
+    the current doctor lifecycle before making the deterministic version pin.
+    """
+    doctor_result = run_cli_in_repo(
+        repo_root,
+        "tool",
+        "doctor",
+        "--repo-root",
+        str(repo_root),
+        tool_id,
+        env=env,
     )
-    assert cautilus["doctor"]["support_discovery"]["status"] == "materialized"
-    assert cautilus["doctor"]["support_discovery"]["support_skill_path"] == str(plugin_root / "support" / "cautilus" / "SKILL.md")
-    assert cautilus["doctor"]["support_discovery"]["materialized_kind"] == "installed-plugin-copy"
-    assert cautilus["doctor"]["install_route"]["commands"] == []
-    assert "Support skill materialization for `cautilus` was refreshed under support/cautilus" in cautilus["next_step"]
-    assert "the standalone binary is still missing" in cautilus["next_step"]
-    assert "Install docs: https://github.com/corca-ai/cautilus/blob/main/install.sh" in cautilus["next_step"]
-    assert "Docs: https://github.com/corca-ai/cautilus" in cautilus["next_step"]
-    assert f"Support skill is available at `{plugin_root / 'support' / 'cautilus' / 'SKILL.md'}`." in cautilus["next_step"]
-    assert "installed Charness plugin support surface" in cautilus["next_step"]
-    assert "Follow-up command: `cautilus install --repo-root" in cautilus["next_step"]
+    assert doctor_result.returncode == 0, doctor_result.stderr
 
-
-def _pin_prior_observed_version(repo_root: Path, tool_id: str, version: str) -> None:
-    """Pin the update flow's 'from' version in the cloned repo's lock file.
-
-    The seed copies this machine's ``integrations/locks/*.json`` verbatim, so a
-    local doctor run between releases would otherwise leak mutable machine
-    state into the version-transition assertion (observed on 2026-07-16 when a
-    live doctor probe moved the local lock from 0.9.2 to 0.31.2)."""
     lock_path = repo_root / "integrations" / "locks" / f"{tool_id}.json"
-    lock: dict[str, object] = {"schema_version": "1", "tool_id": tool_id}
-    if lock_path.is_file():
-        lock = json.loads(lock_path.read_text(encoding="utf-8"))
-    doctor = lock.setdefault("doctor", {})
+    assert lock_path.is_file()
+    lock = json.loads(lock_path.read_text(encoding="utf-8"))
+    doctor = lock.get("doctor")
     assert isinstance(doctor, dict)
-    doctor.setdefault("version", {})
-    assert isinstance(doctor["version"], dict)
-    doctor["version"]["observed_version"] = version
-    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    version_state = doctor.get("version")
+    assert isinstance(version_state, dict)
+    version_state["observed_version"] = version
     lock_path.write_text(json.dumps(lock, indent=2) + "\n", encoding="utf-8")
 
 
@@ -485,7 +289,6 @@ def _pin_prior_observed_version(repo_root: Path, tool_id: str, version: str) -> 
 def test_tool_update_runs_configured_agent_browser_script_for_path_install(tmp_path: Path, seeded_charness_repo: Path) -> None:
     cleanup_agent_browser_orphans()
     repo_root = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
-    _pin_prior_observed_version(repo_root, "agent-browser", "0.9.2")
     home_root = tmp_path / "home"
     fake_agent_browser = make_fake_agent_browser(tmp_path)
     fake_npm, _browser_link = make_fake_npm_agent_browser(tmp_path)
@@ -498,6 +301,7 @@ def test_tool_update_runs_configured_agent_browser_script_for_path_install(tmp_p
     env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
     env["CHARNESS_SUPPORT_SYNC_FIXTURES"] = str(support_fixture)
     env["CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS"] = "1"
+    _pin_prior_observed_version(repo_root, "agent-browser", "0.9.2", env=env)
 
     result = run_cli_in_repo(repo_root, "tool", "update", "--detail", "--repo-root", str(repo_root), "agent-browser", env=env)
     assert result.returncode == 0, result.stderr

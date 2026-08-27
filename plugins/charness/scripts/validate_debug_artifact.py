@@ -212,8 +212,8 @@ def validate_cross_file_sibling_marker(lines: list[str]) -> None:
 def validate_falsifiable_hypothesis_marker(lines: list[str]) -> None:
     """Require the current debug artifact's `## Hypothesis` to record a disconfirmer.
 
-    The proven static-only-RCA gap (debug claim-fidelity 2026-06-30 re-capture, the
-    `falsifiable-hypothesis-before-fix` outcome FAIL) is a run that authored a
+    The proven static-only-RCA gap (debug review re-capture, a
+    `falsifiable-hypothesis-before-fix` failure) is a run that authored a
     conclusion from `static scan only` with no cheapest-refutation check.
     `five-steps.md` step 5 ("verify a FALSIFIABLE hypothesis; don't call intuition a
     diagnosis") and `disconfirmer-first.md` own that rule, but a bare `TODO`
@@ -222,18 +222,17 @@ def validate_falsifiable_hypothesis_marker(lines: list[str]) -> None:
     `disconfirmer: <cheapest refutation>` marker. A justified
     `disconfirmer: n/a — <why no cheap refutation exists>` escape satisfies it
     (some bug classes — e.g. CI-only — have no local repro). Like the cross-file
-    sibling marker, this is an honesty contract surfaced for fresh-eye review, NOT an
-    anti-gaming gate: the `falsifiable-hypothesis-before-fix` OUTCOME assertion
-    (`evals/cautilus/debug-claim-fidelity/outcome-assertions.json`) stays the real
-    substance bar, which a `disconfirmer: n/a` static-only run still fails. The
+    sibling marker, this is an honesty contract surfaced for review, NOT a
+    replacement for the disconfirmer itself; a `disconfirmer: n/a` static-only run
+    still records that no cheap local refutation exists. The
     trivial-fix short-circuit satisfies it, matching `validate_cross_file_sibling_marker`.
     """
     # floor-addition-restraint: keep. Recorded recurrence (static-only RCF FAIL across
-    # two debug claim-fidelity captures, 2026-06-30 + re-capture), modeled on the
+    # two debug review captures, modeled on the
     # accepted cross-file sibling marker, and absorbed by the existing
     # check_artifact_surface_preflight (the debug validator already runs there), so it
-    # is not a new serial end-gate. The OUTCOME assertion remains the real bar; this
-    # marker only surfaces the field for the run and for fresh-eye review.
+    # is not a new serial end-gate. The marker only surfaces the field for the run
+    # and for review.
     section = section_lines(lines, HYPOTHESIS_HEADING, HYPOTHESIS_BOUNDARY_HEADINGS)
     if _section_declares_marker(section, (DISCONFIRMER_MARKER,)):
         return

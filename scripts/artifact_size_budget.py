@@ -4,7 +4,7 @@ Split out of `artifact_validator` on 2026-08-19, when the unit changed and the
 reasoning that had to travel with it did not fit under that module's code-length
 cap. This is a cohesive owner, not a mechanical spill (D33): the measurement and
 the refusal that reads it are one decision, and every prose-artifact family --
-debug, quality, cautilus proof, and the doc-authoring preflight's fallback --
+debug, quality, and the doc-authoring preflight's fallback --
 resolves both from here.
 
 WHY WORDS AND NOT LINES. A line count charged for the author's WRAP WIDTH, not
@@ -111,7 +111,7 @@ def word_ceiling_enforced(
 
     BLIND CLASS: an artifact whose date lives only in a containing DIRECTORY name
     is undatable by this rule, so a family stored that way cannot be grandfathered
-    at all. `validate_cautilus_diagnostics` is exactly that shape and therefore
+    at all. A directory-dated diagnostic corpus is exactly that shape and therefore
     sets a ceiling above its corpus maximum instead of calling this.
     """
     # RESOLVE a pointer before reading the filename channel. `latest.md` carries no

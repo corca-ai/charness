@@ -52,8 +52,17 @@ def emit(payload: dict[str, Any]) -> None:
     sys.stdout.write(_render_yaml(payload))
 
 
-def _resolve_backend(repo_root: Path, target_repo: str | None = None) -> dict[str, Any]:
-    return PROVIDER.resolve_backend(repo_root, target_repo=target_repo)
+def _resolve_backend(
+    repo_root: Path,
+    target_repo: str | None = None,
+    *,
+    adapter: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    return PROVIDER.resolve_backend(repo_root, target_repo=target_repo, adapter=adapter)
+
+
+def _target_repo(resolved: dict[str, Any], args: argparse.Namespace) -> str:
+    return str(resolved.get("target_repo") or args.repo)
 
 
 def _run_backend_command(args: argparse.Namespace, call: Any, exit_code: Any) -> int:
@@ -147,21 +156,22 @@ def command_select(args: argparse.Namespace) -> int:
         )
         return 1
     backend = resolved["backend"]
+    target_repo = _target_repo(resolved, args)
     try:
         numbers = RUNTIME.parse_selector(args.selector)
         issue = None
         source = "selector"
         if numbers is None:
-            issue = RUNTIME.newest_open_issue(args.repo, backend)
+            issue = RUNTIME.newest_open_issue(target_repo, backend)
             numbers = [int(issue["number"])]
             source = "github-newest-open"
     except (RuntimeError, ValueError) as exc:
-        emit({"ok": False, "error": str(exc), "repo": args.repo, "selected_backend": backend})
+        emit({"ok": False, "error": str(exc), "repo": target_repo, "selected_backend": backend})
         return 1
     emit(
         {
             "ok": True,
-            "repo": args.repo,
+            "repo": target_repo,
             "numbers": numbers,
             "source": source,
             "issue": issue,
@@ -175,7 +185,7 @@ def command_read(args: argparse.Namespace) -> int:
     return _run_backend_command(
         args,
         lambda resolved: READ.read_issue_with_comments(
-            args.repo, args.number, backend=resolved["backend"]
+            _target_repo(resolved, args), args.number, backend=resolved["backend"]
         ),
         lambda _result: 0,
     )
@@ -207,7 +217,7 @@ def command_close_with_comment(args: argparse.Namespace) -> int:
     return _run_backend_command(
         args,
         lambda resolved: CLOSE.close_with_comment(
-            args.repo,
+            _target_repo(resolved, args),
             args.number,
             args.body_file.resolve(),
             repo_root=args.repo_root.resolve(),
@@ -225,7 +235,7 @@ def command_verify_closeout(args: argparse.Namespace) -> int:
         args,
         lambda resolved: VERIFY.verify_closeout(
             repo_root=args.repo_root.resolve(),
-            repo=args.repo,
+            repo=_target_repo(resolved, args),
             numbers=args.number,
             classification=args.classification,
             carrier=args.carrier,

@@ -40,8 +40,8 @@ def _tracker_parent_number(args: argparse.Namespace) -> int:
     raise RuntimeError("tracker mutation requires an exact Goal Run parent number")
 
 
-def _tracker_target(args: argparse.Namespace) -> dict[str, Any]:
-    target: dict[str, Any] = {"repo": args.repo}
+def _tracker_target(args: argparse.Namespace, repo: str | None = None) -> dict[str, Any]:
+    target: dict[str, Any] = {"repo": repo or args.repo}
     for field in ("number", "sub_issue_number", "work_item_key"):
         value = getattr(args, field, None)
         if value is not None:
@@ -76,6 +76,7 @@ def _run_tracker_backend_command(args: argparse.Namespace, operation: str, call:
             }
         )
         return 1
+    target_repo = str(resolved.get("target_repo") or args.repo)
     try:
         parent_number = _tracker_parent_number(args)
         started = TRACKER_OBSERVATION.begin(
@@ -84,10 +85,10 @@ def _run_tracker_backend_command(args: argparse.Namespace, operation: str, call:
             attempt_id=args.attempt_id,
             draft_sha256=args.draft_sha256,
             binding_sha256=args.binding_sha256,
-            repo=args.repo,
+            repo=target_repo,
             parent_number=parent_number,
             operation=operation,
-            target=_tracker_target(args),
+            target=_tracker_target(args, target_repo),
             submitted_body_sha256=_tracker_body_sha256(args),
             backend=resolved["backend"],
         )
@@ -195,7 +196,8 @@ def command_update(args: argparse.Namespace) -> int:
         args,
         "update-body",
         lambda resolved: TRACKER.update_issue_body(
-            args.repo, args.number, args.body_file.resolve(), backend=resolved["backend"]
+            str(resolved.get("target_repo") or args.repo), args.number,
+            args.body_file.resolve(), backend=resolved["backend"]
         ),
     )
 
@@ -206,7 +208,7 @@ def command_create_or_reuse_child(args: argparse.Namespace) -> int:
         args,
         "create-child",
         lambda resolved: TRACKER.create_or_reuse_child(
-            args.repo,
+            str(resolved.get("target_repo") or args.repo),
             args.parent_number,
             args.work_item_key,
             args.title,
@@ -215,7 +217,7 @@ def command_create_or_reuse_child(args: argparse.Namespace) -> int:
             prior_unresolved_observation=TRACKER_OBSERVATION.find_unresolved_create(
                 repo_root=args.repo_root.resolve(),
                 observation_dir=args.observation_dir,
-                repo=args.repo,
+                repo=str(resolved.get("target_repo") or args.repo),
                 parent_number=args.parent_number,
                 work_item_key=args.work_item_key,
                 submitted_body_sha256=body_sha256,
@@ -227,11 +229,12 @@ def command_create_or_reuse_child(args: argparse.Namespace) -> int:
 
 def command_list_sub_issues(args: argparse.Namespace) -> int:
     def build(resolved: dict[str, Any]) -> dict[str, Any]:
-        result = TRACKER.list_sub_issues(args.repo, args.number, backend=resolved["backend"])
+        target_repo = str(resolved.get("target_repo") or args.repo)
+        result = TRACKER.list_sub_issues(target_repo, args.number, backend=resolved["backend"])
         expected_source = None
         if args.expect_child_file is not None:
             expected_source = TRACKER.load_expected_child_set(
-                args.expect_child_file.resolve(), repo=args.repo, parent_number=args.number
+                args.expect_child_file.resolve(), repo=target_repo, parent_number=args.number
             )
             expected = expected_source["children"]
         else:
@@ -266,7 +269,8 @@ def command_add_sub_issue(args: argparse.Namespace) -> int:
         args,
         "add-sub-issue",
         lambda resolved: TRACKER.add_sub_issue(
-            args.repo, args.number, args.sub_issue_number, backend=resolved["backend"]
+            str(resolved.get("target_repo") or args.repo), args.number,
+            args.sub_issue_number, backend=resolved["backend"]
         ),
     )
 
@@ -276,32 +280,49 @@ def command_remove_sub_issue(args: argparse.Namespace) -> int:
         args,
         "remove-sub-issue",
         lambda resolved: TRACKER.remove_sub_issue(
-            args.repo, args.number, args.sub_issue_number, backend=resolved["backend"]
+            str(resolved.get("target_repo") or args.repo), args.number,
+            args.sub_issue_number, backend=resolved["backend"]
         ),
     )
 
 
 def command_goal_run_preflight(args: argparse.Namespace) -> int:
     return GOAL_RUN.command_preflight(
-        args, resolve_backend=lambda root: _resolve_backend(root, args.repo), emit=emit
+        args,
+        resolve_backend=lambda root, target_repo=None: _resolve_backend(
+            root, target_repo or args.repo
+        ),
+        emit=emit,
     )
 
 
 def command_goal_run_read(args: argparse.Namespace) -> int:
     return GOAL_RUN.command_read(
-        args, resolve_backend=lambda root: _resolve_backend(root, args.repo), emit=emit
+        args,
+        resolve_backend=lambda root, target_repo=None: _resolve_backend(
+            root, target_repo or args.repo
+        ),
+        emit=emit,
     )
 
 
 def command_goal_run_apply(args: argparse.Namespace) -> int:
     return GOAL_RUN.command_apply(
-        args, resolve_backend=lambda root: _resolve_backend(root, args.repo), emit=emit
+        args,
+        resolve_backend=lambda root, target_repo=None: _resolve_backend(
+            root, target_repo or args.repo
+        ),
+        emit=emit,
     )
 
 
 def command_goal_run_close(args: argparse.Namespace) -> int:
     return GOAL_RUN_CLOSE.command_close(
-        args, resolve_backend=lambda root: _resolve_backend(root, args.repo), emit=emit
+        args,
+        resolve_backend=lambda root, target_repo=None: _resolve_backend(
+            root, target_repo or args.repo
+        ),
+        emit=emit,
     )
 
 

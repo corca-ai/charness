@@ -183,17 +183,6 @@ def test_write_only_subscript_is_not_a_mapping_lookup() -> None:
     assert [hit["kind"] for hit in hits] == ["string-literal"]
 
 
-def test_the_real_eval_setup_consumer_is_value_constraint_not_string_literal() -> None:
-    source = (ROOT / "scripts" / "eval_setup.py").read_text(encoding="utf-8")
-    hits = WRT._symbol_hits(source, "listed_skill_ids", "source")
-    line_220 = next(hit for hit in hits if hit["line"] == 220)
-
-    assert line_220["kind"] == "value-constraint"
-    config_hits = WRT._config_key_hits(source, "listed_skill_ids", "source")
-    config_line_220 = next(hit for hit in config_hits if hit["line"] == 220)
-    assert config_line_220["kind"] == "lookup"
-
-
 def test_ast_assertion_is_a_value_constraint_and_embedded_fixture_text_is_not(tmp_path: Path) -> None:
     source = (
         'FIXTURE = """\n'

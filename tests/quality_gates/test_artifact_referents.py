@@ -132,7 +132,7 @@ def test_uuid_components_are_not_commit_candidates_but_a_sibling_sha_is() -> Non
     from scripts.artifact_referents import sha_candidates
 
     line = (
-        'Lesson evaluation: {"session_id":"2026-08-24-'
+        'Retired evaluation: {"run_id":"2026-08-24-'
         '01a032f5-c64c-7ad2-a838-8eb738d99824"} commit `4dc3fb851`'
     )
 

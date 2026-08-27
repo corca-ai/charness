@@ -201,10 +201,10 @@ def test_current_pointer_freshness_rejects_stale_capability_catalog_integration_
     repo = seed_repo(tmp_path)
     integrations = repo / "integrations" / "tools"
     integrations.mkdir(parents=True)
-    (integrations / "cautilus.json").write_text(
+    (integrations / "demo.json").write_text(
         json.dumps(
             {
-                "tool_id": "cautilus",
+                "tool_id": "demo",
                 "kind": "external_binary_with_skill",
                 "intent_triggers": ["prompt behavior regression"],
                 "supports_public_skills": ["quality"],
@@ -226,7 +226,7 @@ def test_current_pointer_freshness_rejects_stale_capability_catalog_integration_
                 "inventory": {
                     "integrations": [
                         {
-                            "path": "integrations/tools/cautilus.json",
+                            "path": "integrations/tools/demo.json",
                             "intent_triggers": ["review"],
                             "supports_public_skills": ["quality"],
                             "recommendation_role": "validation",
@@ -242,7 +242,7 @@ def test_current_pointer_freshness_rejects_stale_capability_catalog_integration_
     result = run_script("scripts/validate_current_pointer_freshness.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "capability catalog pointer is stale" in result.stderr
-    assert "integrations/tools/cautilus.json" in result.stderr
+    assert "integrations/tools/demo.json" in result.stderr
 
     with pytest.raises(ValidationError, match="capability catalog pointer is stale"):
         validate_capability_catalog_integration_claims(repo)

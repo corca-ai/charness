@@ -19,10 +19,8 @@ DEFAULT_MAX_FILES = 1
 DEFAULT_MAX_MUTANTS = 120
 JS_MUTATION_POOL = ("scripts/agent-runtime/*.mjs",)
 JS_MUTATION_MUTANT_WEIGHTS = {
-    "scripts/agent-runtime/build-skill-execution-observation.mjs": 473,
     "scripts/agent-runtime/codex-eval-runtime.mjs": 142,
     "scripts/agent-runtime/contract-versions.mjs": 5,
-    "scripts/agent-runtime/extract-skill-experiment-input.mjs": 369,
     "scripts/agent-runtime/instruction-surface-case-suite.mjs": 262,
     "scripts/agent-runtime/instruction-surface-support.mjs": 334,
     "scripts/agent-runtime/run-local-eval-test.mjs": 668,

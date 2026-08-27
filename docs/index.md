@@ -52,7 +52,6 @@ is the composite docs receipt.
 - [README proof ledger](./readme-proof.md) — claim evidence.
 - [Duplicate detection](./duplicate-detection-strategy.md) — duplication checks.
 - [Docs graph checks](./docs-graph-checks.md) — reachability evidence and limits.
-- [Prompt mutation policy](./prompt-mutation-policy.md) — prompt pipeline owner.
 
 ## Operator and product surfaces
 

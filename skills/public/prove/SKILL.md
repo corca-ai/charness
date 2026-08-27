@@ -50,9 +50,8 @@ verification preferences or `truth_surfaces`.
    availability), and when
    runtime proof is unavailable say explicitly that it did not run.
    - for validation-shaped review, closeout, or operator reading work, run
-     deterministic gates first; the repo's cautilus adapter and
-     `../quality/references/cautilus-on-demand.md` own when evaluator proof
-     is warranted — generic review or closeout wording must not silently launch Cautilus
+     deterministic gates first; use a consumer-owned evaluator or bounded human
+     review only when deterministic proof cannot answer the claim
    - skill self-tests and delegated workflows follow
      `../../shared/references/prescribed-path-self-test.md`; label a worker →
      host → provider seam at its highest executed proof level per
@@ -61,9 +60,9 @@ verification preferences or `truth_surfaces`.
      a final consumer, execute one representative changed/new input through that
      consumer and record that it was reached. A plan saying the consumer was
      selected is mechanism-only evidence.
-   - when that policy calls for a run, use `cautilus evaluate fixture --repo-root . --adapter-name <repo-owned-adapter>`
-     or `cautilus evaluate observation --input <observed.json>`; treat
-     source/wiring/guidance checks as mechanism-only, not runtime proof
+   - treat source, wiring, and guidance checks as mechanism-only when the claim
+     requires live behavior; record the missing consumer/provider observation
+     instead of implying it from local checks
 2. Sync truth surfaces and re-read the contract before closeout.
    - if the slice changed user-visible capability, operating philosophy,
      supported integrations, install/usage surface, or honest stage claims,
@@ -161,7 +160,6 @@ Emittable-verbatim closeout tokens (validator substring-matches these); WHY-pros
 
 - `references/verification-ladder.md`
 - `references/review-gate.md`
-- `../quality/references/cautilus-on-demand.md`
 - `../../shared/references/boundary-ownership-brief.md`
 - `../../shared/references/prescribed-path-self-test.md`
 - `../../shared/references/external-capability-proof-ladder.md`

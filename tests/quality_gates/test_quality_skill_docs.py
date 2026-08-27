@@ -90,6 +90,17 @@ def test_quality_runner_has_no_retired_usage_episode_gates() -> None:
     assert "when `.agents/usage-episodes-adapter.yaml` exists" not in QUALITY_SKILL
 
 
+def test_quality_skill_makes_consumer_gate_reduction_a_primary_move() -> None:
+    quality = QUALITY_SKILL.lower()
+
+    assert "consuming repository" in quality
+    assert "existing gates, hooks, validators, wrappers, mirrors" in quality
+    assert "delete or merge a duplicate" in quality
+    assert "move an expensive confidence check to ci or an explicit release phase" in quality
+    assert "leave an explicit non-claim" in quality
+    assert "before proposing a new rule" in quality
+
+
 def test_quality_skill_carries_lint_ignore_lens() -> None:
     lint_ignore = (
         ROOT / "skills" / "public" / "quality" / "references" / "lint-ignore-discipline.md"
@@ -296,22 +307,6 @@ def test_quality_agent_runtime_dispatch_mirrors_canonical_boundary() -> None:
     assert "operator runbooks that describe an actual incident or runtime procedure" in DISPATCH
     assert "deterministic proof, behavior-proof recommendation" in DISPATCH
     assert "product-policy decision" in DISPATCH
-
-
-def test_quality_behavior_testing_uses_cautilus_robustness_contract() -> None:
-    proposal = (
-        ROOT / "skills" / "public" / "quality" / "references" / "proposal-flow.md"
-    ).read_text(encoding="utf-8")
-
-    assert "$SKILL_DIR/scripts/recommend_behavior_test.py" in DISPATCH
-    assert "cautilus.robustness_request.v1" in BEHAVIOR_TESTING
-    assert "cautilus.robustness_plan.v1" in BEHAVIOR_TESTING
-    assert "cautilus.robustness_report.v1" in BEHAVIOR_TESTING
-    assert "preserve_behavior" in BEHAVIOR_TESTING
-    assert "relation status (`satisfied`, `violated`, `blocked`, `invalid`, or" in BEHAVIOR_TESTING
-    assert "docs/contracts/robustness-evaluation.md" in BEHAVIOR_TESTING
-    assert "Cautilus source repo" in BEHAVIOR_TESTING
-    assert "They remain recommend-only unless the user supplies an" in proposal
 
 
 def test_quality_skill_routes_spec_markdown_to_specdown_report() -> None:

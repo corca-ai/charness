@@ -4,7 +4,7 @@
 > Source of truth: this page and its linked executable surfaces
 
 This document captures the next `charness` workstream after the support-skill
-materialization redesign and the `cautilus` integration tightening pass.
+materialization redesign and the resulting support-tool cleanup.
 
 The goal is not to reopen the already-closed control-plane decision. The goal
 is to apply the portable lessons from that work to public skills, dogfood those
@@ -13,7 +13,7 @@ skill changes inside `charness`, and keep issue triage explicit.
 ## Scope
 
 - decision window: 2026-04-13 support-tool follow-up planning
-- upstream context: `cautilus` consumer-integration issues were picked up and
+- upstream context: support-tool consumer-integration issues were picked up and
   resolved upstream
 - local prerequisite already landed: cache-backed upstream materialization into
   the installed Charness plugin support surface
@@ -38,10 +38,9 @@ skill changes inside `charness`, and keep issue triage explicit.
 These points came from the full support-tool discussion and should not be lost
 even if the next session only skims this document.
 
-- The recent `cautilus` work was a trigger, not the product-specific center of
+- The recent support-tool work was a trigger, not a product-specific center of
   gravity. The intended output is a portable `charness` pattern for support
-  binaries and agent-facing command surfaces, not a one-off `cautilus`
-  accommodation.
+  binaries and agent-facing command surfaces, not a one-off tool accommodation.
 - The maintainer and the downstream `charness` user should see the same support
   skill surface. If `charness` says a binary is supported-with-skill, the skill
   must be locally readable and usable for both dogfood and downstream use.
@@ -74,11 +73,6 @@ even if the next session only skims this document.
 ## Issue Triage
 
 ### Close Now
-
-- `corca-ai/cautilus#2`
-  Resolved upstream. The `--help` and probe-contract gaps were the real product
-  issue, and the old skill-discoverability concern is no longer a blocker on
-  the `charness` side because support skills are now always materialized.
 
 - `corca-ai/charness#9`
   Landed. `create-cli` now separates no-side-effect help, machine-readable
@@ -144,7 +138,7 @@ even if the next session only skims this document.
 ### 1. `create-cli`: Split Probe Layers Explicitly
 
 Apply `#9`, but tighten it into a portable contract rather than a
-`cautilus`-specific anecdote.
+tool-specific anecdote.
 
 Status:
 
@@ -266,9 +260,6 @@ Current ownership:
     `runtime`
   - `quality` surfaces blocking validation tools directly through the shared
     `recommendation_role` query path
-  - `impl` and `spec` surface `cautilus` as a checked validation route
-- the `quality` dogfood path now surfaces `cautilus` as a blocking validation
-  tool with exact install docs and a repo-owned verify command.
 - What still remains: route this payload through more public-skill flows beyond
   `quality` only when there is a concrete next consumer.
 

@@ -6,14 +6,6 @@ from pathlib import Path
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 
 
-def make_fake_cautilus(tmp_path: Path) -> Path:
-    script = tmp_path / "bin" / "cautilus"
-    script.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(FIXTURES / "fake_cautilus.py", script)
-    script.chmod(0o755)
-    return script
-
-
 def make_fake_nose(tmp_path: Path) -> tuple[Path, Path]:
     bin_dir = tmp_path / "bin"
     nose = bin_dir / "nose"

@@ -45,16 +45,6 @@ CONFIG_LAYER_ORDER = {
     "public-fallback": 4,
 }
 
-CAUTILUS_GENERIC_INTENT_TRIGGER_RE = re.compile(
-    r"(^|\b)(verify|verification|evaluate|evaluation|review|closeout|"
-    r"quality review|run quality|검증|평가|리뷰|검토)(\b|$)",
-    re.IGNORECASE,
-)
-CAUTILUS_SPECIFIC_INTENT_RE = re.compile(
-    r"(evaluator-backed|behavior|prompt|instruction|regression|baseline|"
-    r"compare|operator reading|cautilus|프롬프트|동작)",
-    re.IGNORECASE,
-)
 HELP_COMMAND_RE = re.compile(r"(^|\s)(--help|-help|help)(\s|$)")
 
 
@@ -148,27 +138,6 @@ def detect_missing_intent_triggers_for_external_binary_with_skill(
         "intent_triggers list so the capability catalog can expose support-bearing manifest intent "
         "queries against this support-bearing manifest. Advisory only; will not fail CI."
     )
-
-
-def validate_cautilus_trigger_specificity(manifest: dict[str, object], path: Path) -> None:
-    if manifest.get("tool_id") != "cautilus":
-        return
-    triggers = manifest.get("intent_triggers", [])
-    if not isinstance(triggers, list):
-        return
-    generic = sorted(
-        trigger
-        for trigger in triggers
-        if isinstance(trigger, str)
-        and CAUTILUS_GENERIC_INTENT_TRIGGER_RE.search(trigger)
-        and not CAUTILUS_SPECIFIC_INTENT_RE.search(trigger)
-    )
-    if generic:
-        rendered = ", ".join(f"`{trigger}`" for trigger in generic)
-        raise ValidationError(
-            f"{path}: cautilus intent_triggers must not use generic review/closeout terms "
-            f"({rendered}); use evaluator-backed behavior, prompt regression, or compare-specific triggers."
-        )
 
 
 def validate_agent_browser_check_commands(manifest: dict[str, object], path: Path) -> None:
@@ -272,7 +241,6 @@ def main() -> int:
             manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
             validate_shared_declaration_schema(manifest, manifest_path)
             validate_support_install_entrypoint(manifest, manifest_path)
-            validate_cautilus_trigger_specificity(manifest, manifest_path)
             validate_agent_browser_check_commands(manifest, manifest_path)
             advisory = detect_help_prose_healthcheck(manifest, manifest_path)
             if advisory is not None:

@@ -59,7 +59,7 @@ def _artifact_summary(repo_root: Path, scaffold: dict[str, Any]) -> dict[str, An
     # Default open (missing field) keeps same-investigation resume and legacy
     # behavior; only an explicit `resolved` (set at closeout) makes the planner
     # treat the pointer as a closed prior incident instead of a continuation, so a
-    # closed artifact stops hijacking a fresh bug (#debug claim-fidelity mis-fire).
+    # closed artifact stops hijacking a fresh bug.
     resolution = "resolved" if (exists and (declarations.parse_field(text, "Resolution") or "").strip().lower() == "resolved") else "open"
     if exists and scaffold.get("current_pointer_is_symlink"):
         status = "current_pointer_target_exists"

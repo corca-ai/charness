@@ -85,7 +85,7 @@ DELEGATED_SITES = {
     ),
     "plugins/charness/** (exported mirror copies)": (
         "derivative, not independent: .githooks/pre-push runs sync_root_plugin_manifests.py "
-        "and final_bundle_preflight reports needs_sync. Not re-probed here"
+        "and packaging validation reports source/export drift. Not re-probed here"
     ),
 }
 

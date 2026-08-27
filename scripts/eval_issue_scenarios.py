@@ -65,8 +65,8 @@ def run_issue_sibling_search_concept_fixtures(
             encoding="utf-8",
         )
         for fixture in (
-            root / "evals" / "cautilus" / "issue-146-sibling-search.fixture.json",
-            root / "evals" / "cautilus" / "issue-148-sibling-search.fixture.json",
+            root / "evals" / "fixtures" / "issue-sibling-search" / "issue-146.fixture.json",
+            root / "evals" / "fixtures" / "issue-sibling-search" / "issue-148.fixture.json",
         ):
             result = run_command(
                 [

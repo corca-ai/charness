@@ -8,9 +8,8 @@ does not claim product-success measurement; consuming products own that data.
 
 ## Current state
 
-- Deterministic quality gates, evaluator routing, metadata-rich artifacts, debug
-  RCA, release proof, and lesson-ledger feedback are the core loop.
-- Cautilus remains eval-only and ask-gated. It is not a standing runtime metric.
+- Deterministic quality gates, metadata-rich artifacts, debug RCA, release proof,
+  and lesson-ledger feedback are the core loop.
 - Product outcome telemetry, prompt storage, and model/search experiment grids
   are deliberately outside the harness core.
 
