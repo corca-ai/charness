@@ -8,16 +8,20 @@ description: "Use when a non-trivial design decision, code change, release, rena
 Use this when the next risk is not implementation detail alone, but locking the
 wrong change or carrying the wrong fear into the next slice.
 
-`critique` is the structured before-the-fact counterpart to `retro`. The
-default substrate is one bounded fresh-eye review followed by a parent-owned
-counterweight pass. Add a contrasting angle only when the named risk has a
-genuinely independent evidence axis; the target reference shapes that focus
-and the output. Decision pre-mortem (Klein lineage) is one of those targets;
-code/PR critique, release critique, rename critique, and spec critique reuse
-the same substrate. When a caller brings an already-observed failure or a
-review report, the optional evidence-led path verifies that report before
-debating the repair; it is not a replacement for fresh-eye judgment or for
-`debug`'s causal record.
+`critique` is the structured before-the-fact counterpart to `retro`. Critique
+is selected for consequential decisions, not routine micro-slices. Once
+selected, the default substrate is two bounded fresh-eye reviewers run in
+parallel, with materially different perspectives or scopes, followed by a
+parent-owned counterweight pass. The orchestrator chooses the perspectives,
+judges both delivered results, and integrates the findings; selection and
+reviewer count are not encoded by filenames, diff size, labels, keywords, or
+other mechanical heuristics. A single reviewer is an explicit, explained
+exception only when the second perspective cannot add independent evidence.
+Decision pre-mortem (Klein lineage) is one of those targets; code/PR critique,
+release critique, rename critique, and spec critique reuse the same substrate.
+When a caller brings an already-observed failure or a review report, the
+optional evidence-led path verifies that report before debating the repair; it
+is not a replacement for fresh-eye judgment or for `debug`'s causal record.
 
 Critique is selected by risk, not by the fact that a task completed. When it is selected, scale the pass, not the obligation: use the risk boundary or meaningful slice as the review unit, not every commit. See `references/cadence.md`.
 
@@ -106,20 +110,22 @@ history.
 2. If evidence-led review is active, normalize each report, run its smallest
    deletion/omission/skip/mutation/stale-input/package stimulus, and record the
    typed disposition plus final-consumer output before counterweight triage.
-3. Pick one bounded review focus that matches the named risk.
-   - add one contrasting angle only when the named risk has a genuinely independent
-     evidence axis
+3. Pick one bounded review boundary that matches the named risk, then assign
+   two materially different reviewer perspectives or scopes within it. A
+   single reviewer requires an explicit explanation of why the second
+   perspective cannot add independent evidence.
    - use the target reference's `Anchor Angle Distribution`; see also
      `references/angle-selection.md`
-4. Run the angle pass.
+4. Run the angle pass with the two reviewers in parallel.
    - Resolve the adapter's fresh-eye branch, consume its typed carrier, and bind
      packet identity; caller flags cannot cross that branch.
-   - use one bounded fresh-eye reviewer and consume its typed delivered result.
-     Raw same-context substitutions are refused. A delivered `block` or `defer`
-     is recorded as evidence but is not approval. For a shared, untyped reviewer,
-     the shared fingerprint helper snapshots and verifies parent git state;
-     typed read-only or isolated execution needs no extra fingerprint.
-     Mismatched snapshots refuse.
+   - use two bounded fresh-eye reviewers with materially different perspectives
+     or scopes, and consume both typed delivered results. Raw same-context
+     substitutions are refused. A delivered `block` or `defer` is recorded as
+     evidence but is not approval. For a shared, untyped reviewer, the shared
+     fingerprint helper snapshots and verifies parent git state; typed
+     read-only or isolated execution needs no extra fingerprint. Mismatched
+     snapshots refuse.
 5. Collapse the findings into one candidate concern list.
    - deduplicate overlap
    - keep evidence and cited source paths with each concern when available

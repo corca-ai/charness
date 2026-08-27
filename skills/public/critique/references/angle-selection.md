@@ -98,10 +98,13 @@ Good default angles for a non-trivial change:
 
 Reviewer sizing:
 
-- default: one bounded fresh-eye reviewer with the angle that best matches the
-  named risk
-- add one contrasting angle only when that risk has a genuinely independent
-  evidence axis; do not invent a second angle for ceremony
+- default: two bounded fresh-eye reviewers run in parallel, with materially
+  different perspectives or scopes within the named risk boundary
+- a single reviewer is an explicit, explained exception only when the second
+  perspective cannot add independent evidence
+- the orchestrator chooses the perspectives, judges and integrates both
+  results, and must not encode selection or reviewer count using filenames,
+  diff size, labels, keywords, or other mechanical heuristics
 - the parent performs the counterweight while integrating findings; a separate
   counterweight worker is optional only when it contributes its own independent
   evidence axis

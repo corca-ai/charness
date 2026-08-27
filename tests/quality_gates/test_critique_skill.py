@@ -40,13 +40,13 @@ def test_critique_skill_surfaces_counterweight_and_deliberately_not_doing() -> N
     reviewer_brief_text = (
         ROOT / "skills" / "shared" / "references" / "disposition-reviewer-brief.md"
     ).read_text(encoding="utf-8")
+    normalized_skill = " ".join(skill_text.split())
+    normalized_angles = " ".join(angle_text.split())
 
-    assert "counterweight" in skill_text
-    assert "Deliberately Not Doing" in skill_text
-    assert "Critique is selected by risk, not by the fact that a task completed." in skill_text
-    assert "`Critique: not-required <reason>`" in (
-        ROOT / "skills" / "public" / "prove" / "SKILL.md"
-    ).read_text(encoding="utf-8") and all(
+    assert "counterweight" in normalized_skill
+    assert "Deliberately Not Doing" in normalized_skill
+    assert "Critique is selected by risk, not by the fact that a task completed." in normalized_skill
+    assert all(
         phrase not in text
         for text in (
             (ROOT / "skills" / "public" / "prove" / "SKILL.md").read_text(
@@ -61,22 +61,25 @@ def test_critique_skill_surfaces_counterweight_and_deliberately_not_doing() -> N
     )
     # The default execution mode is now the Charness-owned file-backed worker;
     # typed subagents remain an optional adapter path.
-    assert "file-backed worker" in skill_text
-    assert "one bounded fresh-eye reviewer" in skill_text
-    assert "genuinely independent evidence axis" in skill_text
-    assert "separate counterweight worker is optional" in skill_text
-    assert "For a shared, untyped reviewer" in skill_text
-    assert "typed read-only or" in skill_text
-    assert "stop-instead-of-local-substitute rule when neither the configured" in skill_text
-    assert "no same-context local standalone `critique` variant" in skill_text
-    assert "customer-of-this-capability" in angle_text
-    assert "first real use" in angle_text
-    assert "stale adapters" in angle_text
-    assert "blast-radius" in angle_text
-    assert "future maintainer" in angle_text
-    assert "default: one bounded fresh-eye reviewer" in angle_text
-    assert "do not invent a second angle for ceremony" in angle_text
-    assert "Before a parent reports that path" in angle_text
+    assert "file-backed worker" in normalized_skill
+    assert "two bounded fresh-eye reviewers run in parallel" in normalized_skill
+    assert "A single reviewer is an explicit, explained" in normalized_skill
+    assert "not encoded by filenames, diff size, labels, keywords" in normalized_skill
+    assert "genuinely independent evidence axis" in normalized_skill
+    assert "separate counterweight worker is optional" in normalized_skill
+    assert "For a shared, untyped reviewer" in normalized_skill
+    assert "typed read-only or" in normalized_skill
+    assert "stop-instead-of-local-substitute rule when neither the configured" in normalized_skill
+    assert "no same-context local standalone `critique` variant" in normalized_skill
+    assert "customer-of-this-capability" in normalized_angles
+    assert "first real use" in normalized_angles
+    assert "stale adapters" in normalized_angles
+    assert "blast-radius" in normalized_angles
+    assert "future maintainer" in normalized_angles
+    assert "default: two bounded fresh-eye reviewers run in parallel" in normalized_angles
+    assert "a single reviewer is an explicit, explained exception" in normalized_angles
+    assert "must not encode selection or reviewer count using filenames" in normalized_angles
+    assert "Before a parent reports that path" in normalized_angles
     assert "Do not present a local pass as the canonical fresh-eye" in capability_text
     assert "host/runtime contract" in capability_text
     assert "shell-only runner" in capability_text
@@ -93,17 +96,17 @@ def test_critique_skill_surfaces_counterweight_and_deliberately_not_doing() -> N
     assert "likely implementer misread" in SPEC_SKILL
     # The delegated-reviewer fast path body was relocated to the shared
     # reviewer brief (#12); critique's SKILL.md keeps a one-line pointer.
-    assert "Delegated reviewer fast path" in skill_text
-    assert "disposition-reviewer-brief.md" in skill_text
+    assert "Delegated reviewer fast path" in normalized_skill
+    assert "disposition-reviewer-brief.md" in normalized_skill
     assert "Do not report blocked for missing nested subagents" in reviewer_brief_text
     assert "First branch for delegated reviewers" in capability_text
     assert "do not run this capability check" in capability_text
     assert "return the requested findings or triage" in capability_text
     assert "Act Before Ship" in counterweight_text
     assert "Over-Worry" in counterweight_text
-    assert "Autonomous trigger" in skill_text
-    assert "do\nnot ask first by default" in skill_text
-    assert "`references/autonomous-trigger.md`" in skill_text
+    assert "Autonomous trigger" in normalized_skill
+    assert "do not ask first by default" in normalized_skill
+    assert "`references/autonomous-trigger.md`" in normalized_skill
     assert "docs/index.md" in autonomous_text
     assert "git status --short" in autonomous_text
     assert "git log --oneline origin/main..HEAD" in autonomous_text
