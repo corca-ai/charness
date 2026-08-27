@@ -1,0 +1,3 @@
+<!-- charness-work-item-key: uniform-adapter-first-use -->
+
+Issue #730 Goal Run scope: reuse the existing first-use adapter inconsistency as a P1 Work Item dependent on `task-run-parallel-contract`. Consolidate shared initialization for the actual v7 adapter-owning skills into one small configured, absent, invalid, and unestablished result shape with an actionable next step, while retaining skill-specific fields and high-risk resolver/policy ownership. Prove successful bootstrap plus truthful missing, malformed, unsupported, and repeat behavior across representative and all declared entrypoints with source/export parity. Do not silently invent boundary, review, release, provider, or host policy; do not add handoff state or another receipt owner.

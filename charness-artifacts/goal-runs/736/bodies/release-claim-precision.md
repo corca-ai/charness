@@ -1,0 +1,3 @@
+<!-- charness-work-item-key: release-claim-precision -->
+
+Issue #705 Goal Run scope: reuse the release-record counting defect as a P1 Work Item dependent on `export-self-sufficiency`. Preserve the existing checker split and render versioned surfaces separately from presence-only surfaces, with focused value tests proving that a presence check cannot inflate a version-drift claim. Prove the corrected release rendering and its negative/positive count cases without introducing a new gate, aggregate model, or parallel claim owner. This Work Item does not publish a release, change release policy, or claim broader release/remote behavior beyond the exercised renderer and checker surfaces.

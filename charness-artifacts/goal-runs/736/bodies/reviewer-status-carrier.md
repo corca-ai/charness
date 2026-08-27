@@ -1,0 +1,3 @@
+<!-- charness-work-item-key: reviewer-status-carrier -->
+
+Issue #728 Goal Run scope: reuse the existing reviewer-lifecycle problem as a P1 Work Item dependent on `task-run-parallel-contract`. Project preflight refusal, started execution, timeout/interruption, delivery, verdict, classification, failure identity, next move, and provenance through the canonical task result/status carrier. Prove refused preflight, started timeout, delivered `block`, and approval-ineligible partial delivery without log archaeology. Preserve the reviewer worker/delivery chain as approval owner; do not add a lifecycle store, alter reviewer backend/timeout policy, implement #731, or claim approval from partial output.
