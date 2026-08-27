@@ -131,6 +131,37 @@ def test_hook_runtime_bootstrap_confines_initial_python_cache(tmp_path: Path) ->
     assert not list(repo.rglob("__pycache__"))
 
 
+def test_hook_runtime_clears_git_discovery_for_child_repositories(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".githooks").mkdir(parents=True)
+    shutil.copy2(ROOT / ".githooks" / "runtime-env.sh", repo / ".githooks" / "runtime-env.sh")
+    _git(repo, "init", "-q")
+    child = repo / "child"
+    child.mkdir()
+
+    result = subprocess.run(
+        [
+            "bash",
+            "-c",
+            "set -euo pipefail; "
+            "REPO_ROOT=\"$1\"; source \"$REPO_ROOT/.githooks/runtime-env.sh\"; "
+            "test -z \"${GIT_DIR:-}\"; test -z \"${GIT_WORK_TREE:-}\"; "
+            "cd \"$2\"; git init -q; git config user.name Child; git config user.email child@example.com",
+            "runtime-env-git-test",
+            str(repo),
+            str(child),
+        ],
+        cwd=repo,
+        env={**os.environ, "GIT_DIR": str(repo / ".git"), "GIT_WORK_TREE": str(repo)},
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "Child" in (child / ".git" / "config").read_text(encoding="utf-8")
+    assert "Child" not in (repo / ".git" / "config").read_text(encoding="utf-8")
+
+
 def test_validate_maintainer_setup_requires_installed_hookspath(tmp_path: Path) -> None:
     repo = _seed_source_repo(tmp_path)
     (repo / ".git" / "config").unlink()

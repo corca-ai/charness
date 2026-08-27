@@ -10,6 +10,17 @@ if [[ -z "${REPO_ROOT:-}" ]]; then
   return 2
 fi
 
+# Git exports repository-discovery variables to hooks.  If a hook launches pytest,
+# those variables leak into fixture subprocesses and make their throwaway `git init`
+# or `git config` operate on the hook's repository instead (observed during release:
+# fixture commits moved the release branch and made the source look deleted).  The
+# runtime owner is the one place every Charness shell entrypoint reaches, so clear
+# the hook context before any child command can inherit it.  `REPO_ROOT` survives as
+# the explicit checkout identity; later git commands rediscover it from that root.
+while IFS= read -r git_environment_name; do
+  [[ -z "$git_environment_name" ]] || unset "$git_environment_name"
+done < <(git -C "$REPO_ROOT" rev-parse --local-env-vars 2>/dev/null || true)
+
 RUNTIME_TMP_BASE="${TMPDIR:-/tmp}"
 case "$RUNTIME_TMP_BASE" in
   "$REPO_ROOT"|"$REPO_ROOT"/*|[^/]*) RUNTIME_TMP_BASE="/tmp" ;;
