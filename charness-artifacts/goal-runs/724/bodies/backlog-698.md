@@ -32,6 +32,9 @@ lint gates passed; canonical source/plugin mirror comparisons passed. Local
 changed-line proof evidence is recorded in
 `charness-artifacts/impl/2026-08-27-issue-698-superseded-floor.md`.
 
-This update does not claim fresh-eye approval, hosted/remote CI, installed
-export behavior, release, push, consumer migration, or issue closure. The
-GitHub issue remains OPEN pending the separate closeout boundary.
+This update does not claim hosted/remote CI, installed export behavior, release,
+push, or consumer migration. The separate closeout carrier and resolution
+critique are recorded at
+`charness-artifacts/issues/closeouts/2026-08-27-issue-698.md` and
+`charness-artifacts/critique/2026-08-27-issue-698-resolution-critique.md`;
+provider state is verified independently at the closeout boundary.
