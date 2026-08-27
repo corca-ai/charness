@@ -583,9 +583,11 @@ def seed_agent_browser_runtime_guard_stub(target_dir: Path) -> None:
 def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
     repo = tmp_path / "repo"
     scripts_dir = repo / "scripts"
+    hooks_dir = repo / ".githooks"
     bin_dir = repo / "bin"
     quality_scripts_dir = repo / "skills" / "public" / "quality" / "scripts"
     scripts_dir.mkdir(parents=True)
+    hooks_dir.mkdir()
     bin_dir.mkdir()
     quality_scripts_dir.mkdir(parents=True)
 
@@ -596,6 +598,10 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
     # than stubbed" rule as the Python modules below, for the same reason: a stub
     # would disable the export-copy refusal in every runner test.
     shutil.copy2(ROOT / "scripts" / "exported-copy-guard.sh", scripts_dir / "exported-copy-guard.sh")
+    # The runner shares the shell runtime/cache primitive with installed hooks.
+    # Seed the real file so these tests exercise runner behavior instead of an
+    # incomplete synthetic checkout.
+    shutil.copy2(ROOT / ".githooks" / "runtime-env.sh", hooks_dir / "runtime-env.sh")
     shutil.copy2(ROOT / "scripts" / "proof_receipt.py", scripts_dir / "proof_receipt.py")
     (scripts_dir / "proof_receipt.py").chmod(0o755)
     shutil.copy2(

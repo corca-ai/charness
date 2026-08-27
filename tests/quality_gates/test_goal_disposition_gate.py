@@ -159,6 +159,15 @@ def _seed(tmp_path: Path, rel: str, body: str) -> Path:
     return target
 
 
+def _enable_review_floor(tmp_path: Path) -> None:
+    """Opt a fixture into the non-default disposition-review boundary."""
+    _seed(
+        tmp_path,
+        ".agents/achieve-adapter.yaml",
+        "version: 1\nrepo: fixture\nauto_retro:\n  disposition_floor: review-required\n",
+    )
+
+
 def _build_goal(created: str, auto_retro_body: str, *, slug: str = _SLUG, review_line: str = "") -> str:
     extra = f"{review_line}\n" if review_line else ""
     return (
@@ -355,16 +364,18 @@ def test_narration_sections_present_is_exact_and_case_insensitive() -> None:
     assert ce.narration_sections_present(retro) == ["Waste", "Next Improvements"]
 
 
-def test_in_scope_goal_refused_without_disposition_review_line(tmp_path: Path) -> None:
+def test_default_goal_does_not_require_disposition_review_line(tmp_path: Path) -> None:
     created = "2026-05-30"
     _seed_evidence(tmp_path, created)
     report = ce.check_complete_evidence(tmp_path, _build_goal(created, _FILLED))
-    assert report["ok"] is False
-    assert "disposition_review" in report["missing"]
+    assert report["ok"] is True
+    assert "disposition_review" not in report["missing"]
+    assert report["achieve_adapter_policy"]["auto_retro_disposition_floor"] == "deterministic-only"
 
 
 def test_in_scope_goal_flips_with_bound_disposition_review(tmp_path: Path) -> None:
     created = "2026-05-30"
+    _enable_review_floor(tmp_path)
     _seed_evidence(tmp_path, created)
     review_line = _seed_review(tmp_path, created)
     report = ce.check_complete_evidence(tmp_path, _build_goal(created, _FILLED, review_line=review_line))
@@ -437,6 +448,7 @@ def test_check_complete_evidence_narration_skips_non_retro_evidence_first(
 
 def test_disposition_review_host_blocked_skip_flips(tmp_path: Path) -> None:
     created = "2026-05-30"
+    _enable_review_floor(tmp_path)
     _seed_evidence(tmp_path, created)
     skip = "Disposition review: skipped: host-blocked-subagent: this host rejected the Agent spawn at runtime"
     report = ce.check_complete_evidence(tmp_path, _build_goal(created, _FILLED, review_line=skip))
@@ -455,6 +467,7 @@ def test_disposition_review_must_bind_to_goal(tmp_path: Path) -> None:
     # 1b is presence/binding-only BY DESIGN: a present-but-unrelated review file
     # is refused (cannot satisfy by citing a stranger's artifact).
     created = "2026-05-30"
+    _enable_review_floor(tmp_path)
     _seed_evidence(tmp_path, created)
     unbound = _seed_review(tmp_path, created, bind=False)
     report = ce.check_complete_evidence(tmp_path, _build_goal(created, _FILLED, review_line=unbound))
@@ -465,6 +478,7 @@ def test_disposition_review_must_bind_to_goal(tmp_path: Path) -> None:
 def test_block_the_blank_fires_independently_of_review_skip(tmp_path: Path) -> None:
     # Host portability: a rung-1b skip must NOT disable rung-1a (block-the-blank).
     created = "2026-05-30"
+    _enable_review_floor(tmp_path)
     _seed_evidence(tmp_path, created)
     skip = "Disposition review: skipped: host-blocked-subagent: this host rejected the Agent spawn at runtime"
     report = ce.check_complete_evidence(tmp_path, _build_goal(created, "   ", review_line=skip))
@@ -484,9 +498,9 @@ def test_is_placeholder_value_recognizes_literal_markers() -> None:
 
 
 def test_parse_drops_todo_placeholder_evidence_lines() -> None:
-    # The template seeds visible `Retro: TODO …` / `Host log probe: TODO …` /
-    # `Disposition review: TODO …` lines. An untouched placeholder must NOT be
-    # read as satisfied evidence — it is dropped so the name lands in `missing`.
+    # The template seeds visible `Retro: TODO …` / `Host log probe: TODO …`
+    # lines. An untouched placeholder must NOT be read as satisfied evidence.
+    # An explicitly supplied review placeholder is also ignored unless opted in.
     text = (
         "## Final Verification\n\n"
         "Retro: TODO — create or explicitly skip with an allowed reason before complete\n"
@@ -514,7 +528,7 @@ def test_placeholder_only_artifact_cannot_pass_complete_evidence_gate(tmp_path: 
     )
     report = ce.check_complete_evidence(tmp_path, text)
     assert report["ok"] is False
-    assert set(report["missing"]) == {"retro_artifact", "host_log_probe", "disposition_review"}
+    assert set(report["missing"]) == {"retro_artifact", "host_log_probe"}
 
 
 def test_auto_retro_placeholder_reads_as_blank_keeping_rung_1a_live() -> None:

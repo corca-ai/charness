@@ -10,7 +10,6 @@ GATE_NAME="run-quality"
 GATE_CONSEQUENCE="This runner drives every gate from its own root, so a package root that is not the git
 root would run the whole standing lane against the exported plugin tree instead of the
 repository under test."
-RUN_QUALITY_LAUNCH_CWD="$PWD"
 # Builtin-only, no `dirname`: this is the FIRST thing every gate does, and a run with
 # an empty PATH (a real fixture shape) would otherwise die on a missing external
 # command before the gate could report anything of its own. The existence check is
@@ -70,7 +69,7 @@ for arg in "$@"; do
       echo "  --read-only  skip phases that would mutate git-tracked quality artifacts"
       echo "  --full       run the broad quality battery and refresh git-tracked artifacts"
       echo "  default      run only the core implementation lane"
-      echo "  --release    include release_only pytest cases (charness update/install lifecycle regression tests)"
+      echo "  --release    include release-only tests and changed-line mutation coverage"
       echo "  --receipt-json=PATH  write the per-run semantic receipt (also via CHARNESS_QUALITY_RECEIPT_JSON)"
       exit 0
       ;;
@@ -90,80 +89,11 @@ case "$RUN_QUALITY_MODE" in
 esac
 export CHARNESS_QUALITY_MODE="$RUN_QUALITY_MODE"
 
-# Child gates and xdist workers may change cwd to a temporary checkout. A relative
-# TMPDIR would then resolve to a different path in each worker, producing bare mktemp
-# failures and letting one worker's cleanup race another gate's file scan. Resolve it
-# once at the runner boundary, create the requested parent, and keep quality-run state
-# outside the repository so tracked/untracked population scanners cannot ingest it.
-RUN_QUALITY_TMP_BASE="${TMPDIR:-/tmp}"
-if [[ "$RUN_QUALITY_TMP_BASE" != /* ]]; then
-  RUN_QUALITY_TMP_BASE="$RUN_QUALITY_LAUNCH_CWD/$RUN_QUALITY_TMP_BASE"
-fi
-if ! mkdir -p -- "$RUN_QUALITY_TMP_BASE"; then
-  echo "run-quality: TMPDIR cannot be created: $RUN_QUALITY_TMP_BASE" >&2
-  exit 2
-fi
-RUN_QUALITY_TMP_BASE="$(cd "$RUN_QUALITY_TMP_BASE" && pwd -P)"
-case "$RUN_QUALITY_TMP_BASE/" in
-  "$REPO_ROOT"|"$REPO_ROOT/"*)
-    echo "run-quality: TMPDIR must be outside the repository: $RUN_QUALITY_TMP_BASE" >&2
-    exit 2
-    ;;
-esac
-export TMPDIR="$RUN_QUALITY_TMP_BASE"
-export TMP="$RUN_QUALITY_TMP_BASE"
-export TEMP="$RUN_QUALITY_TMP_BASE"
-
-# One external runtime root is shared by every child in this quality run. The path
-# key keeps concurrent checkouts separate while preserving warm Python/ruff caches;
-# none of these outputs can enter the worktree population.
-RUN_QUALITY_REPO_KEY="$(printf '%s' "$REPO_ROOT" | sha256sum | cut -c1-16)"
-RUN_QUALITY_RUNTIME_ROOT="$RUN_QUALITY_TMP_BASE/charness-runtime/$RUN_QUALITY_REPO_KEY"
-mkdir -p -- "$RUN_QUALITY_RUNTIME_ROOT"
-export CHARNESS_RUNTIME_ROOT="$RUN_QUALITY_RUNTIME_ROOT"
-
-# Coverage reads its data-file setting before the Python script can configure its
-# own environment. Give the process an external default here; explicit external
-# caller values remain authoritative.
-if [[ -z "${COVERAGE_FILE:-}" ]]; then
-  export COVERAGE_FILE="$RUN_QUALITY_RUNTIME_ROOT/coverage/.coverage"
-elif [[ "$COVERAGE_FILE" != :memory: ]]; then
-  case "$COVERAGE_FILE" in
-    /*)
-      case "$COVERAGE_FILE" in
-        "$REPO_ROOT"|"$REPO_ROOT"/*)
-          export COVERAGE_FILE="$RUN_QUALITY_RUNTIME_ROOT/coverage/.coverage"
-          ;;
-      esac
-      ;;
-    *)
-      export COVERAGE_FILE="$RUN_QUALITY_RUNTIME_ROOT/coverage/.coverage"
-      ;;
-  esac
-fi
-if [[ "$COVERAGE_FILE" != :memory: ]]; then
-  mkdir -p -- "$(dirname "$COVERAGE_FILE")"
-fi
-
-# A direct Python invocation may begin before runtime_bootstrap can update
-# sys.pycache_prefix, so provide the interpreter-level setting at this boundary.
-case "${PYTHONPYCACHEPREFIX:-}" in
-  ""|"$REPO_ROOT"|"$REPO_ROOT"/*|[^/]*)
-    export PYTHONPYCACHEPREFIX="$RUN_QUALITY_RUNTIME_ROOT/pycache"
-    ;;
-esac
-mkdir -p -- "$PYTHONPYCACHEPREFIX"
-
-# Plain pytest invocations in child gates do not see the standing runner's
-# explicit `-o cache_dir=...` flag. Keep that cache outside the worktree for
-# every inherited child; an explicit later command-line override remains the
-# caller's choice.
-RUN_QUALITY_PYTEST_CACHE_OPTION="-o $(printf '%q' "cache_dir=$RUN_QUALITY_RUNTIME_ROOT/pytest-cache")"
-if [[ -n "${PYTEST_ADDOPTS:-}" ]]; then
-  export PYTEST_ADDOPTS="$PYTEST_ADDOPTS $RUN_QUALITY_PYTEST_CACHE_OPTION"
-else
-  export PYTEST_ADDOPTS="$RUN_QUALITY_PYTEST_CACHE_OPTION"
-fi
+# The shell runtime primitive is shared with hooks and lint. Keeping this boundary
+# in one file prevents a new cache/temp policy from being copied into each entrypoint.
+# shellcheck source=.githooks/runtime-env.sh
+source "$REPO_ROOT/.githooks/runtime-env.sh"
+RUN_QUALITY_RUNTIME_ROOT="$CHARNESS_RUNTIME_ROOT"
 
 # Every gate command below writes to a per-phase file so concurrent checks cannot
 # interleave their output. Before this line existed, that useful buffering made a
@@ -1061,11 +991,11 @@ queue_selected "check-inventory-declaration-coverage" python3 scripts/check_inve
 queue_selected "inventory-skill-script-references" python3 scripts/inventory_skill_script_references.py --repo-root "$REPO_ROOT" --strict
 queue_selected "validate-quality-closeout-contract" python3 scripts/validate_quality_closeout_contract.py --repo-root "$REPO_ROOT"
 # Base for the changed-path probes below — the merge-base with origin/main (the
-# unpushed range). An empty base leaves the changed-line mutation gate below
+# release/change range). An empty base leaves the changed-line mutation gate below
 # non-blocking; it no longer does so for the critique cross-surface probe, which
 # passes --include-worktree (see that line). Shared by the critique probe
 # (--changed-ref, the
-# #408 5b tooth: a bare `single-surface` verdict is rejected when the unpushed
+# #408 5b tooth: a bare `single-surface` verdict is rejected when the release/change
 # range touches a boundary_cross_surface_globs path) and the changed-line
 # mutation-coverage gate below.
 CHANGED_LINE_BASE_SHA="$(git -C "$REPO_ROOT" merge-base origin/main HEAD 2>/dev/null || true)"
@@ -1181,12 +1111,12 @@ queue_selected "ruff" ./scripts/check-python-lint.sh
 if [[ "$RUN_QUALITY_MODE" == "full" ]] || coverage_relevant_changes_present; then
   queue_selected "check-coverage" python3 scripts/check_coverage.py --repo-root "$REPO_ROOT"
 fi
-# Changed-line mutation-coverage PRE-MERGE TEETH (spec:
+# Changed-line mutation-coverage RELEASE TEETH (spec:
 # charness-artifacts/spec/mutation-changed-line-premerge-gate.md; armed by D40 in
 # docs/deferred-decisions.md, owner decision 2026-07-29).
 #
 # This lane BLOCKS on uncovered changed lines in eligible mutation-pool files over the
-# unpushed range. It used to skip non-blocking whenever the author had not first paid
+# release range. It used to skip non-blocking whenever the author had not first paid
 # the ~10-minute broad coverage producer, and that skip is why the recurring class
 # (#219 -> #251 -> #260 -> #320 -> #321 -> #335 -> #453 -> #464) landed eight times: the
 # lane that could stop a push exited 0 by construction, while the lane with teeth ran
@@ -1208,21 +1138,22 @@ fi
 #     tool's blind spot.
 #   - a dirty mutation pool is `unestablished`, not clean -- the focused coverage is
 #     collected from the live worktree while the mapping is computed against HEAD.
-# --refuse-unestablished turns the second one into a failure in read-only mode, which is
-# the pre-push hook's mode: mid-work a dirty worktree is normal, at push time it means
-# the code about to land was never proven.
+# --refuse-unestablished turns the second one into a failure in the release lane: a
+# dirty mutation pool at the irreversible boundary means the code about to land was
+# never proven.
 # CHANGED_LINE_BASE_SHA is defined above (hoisted so the critique cross-surface probe
 # shares the same merge-base anchor).
-# Keyed on the HOOK, not on `--read-only`. `--read-only` means "skip phases that
-# mutate git-tracked artifacts" and is the published portable command operators run
-# mid-work; overloading it as "a push is imminent" made an ordinary mid-work run over
-# one uncommitted pool file fail the whole battery with "refusing at push time", with
-# no push in flight. That false stop is how a lane gets disabled.
+# This expensive lane is intentionally absent from ordinary development, full, and
+# pre-push queues. Release is the local irreversible boundary that pays for it.
+# Standalone invocation of the producer remains available for focused investigation;
+# the quality runner does not make that slow path an accidental label selection.
 CHANGED_LINE_REFUSE_ARGS=()
-if [[ "${CHARNESS_PRE_PUSH:-0}" == "1" ]]; then
+if [[ "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" == "1" ]]; then
   CHANGED_LINE_REFUSE_ARGS+=(--refuse-unestablished)
 fi
-queue_selected "check-changed-line-mutation-coverage" python3 scripts/prepush_focused_changed_line_coverage.py --repo-root "$REPO_ROOT" --base-sha "$CHANGED_LINE_BASE_SHA" --coverage-json "$RUN_QUALITY_CHANGED_LINE_COVERAGE_JSON" "${CHANGED_LINE_REFUSE_ARGS[@]}"
+if [[ "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" == "1" ]]; then
+  queue_selected "check-changed-line-mutation-coverage" python3 scripts/prepush_focused_changed_line_coverage.py --repo-root "$REPO_ROOT" --base-sha "$CHANGED_LINE_BASE_SHA" --coverage-json "$RUN_QUALITY_CHANGED_LINE_COVERAGE_JSON" "${CHANGED_LINE_REFUSE_ARGS[@]}"
+fi
 queue_selected "check-test-completeness" python3 scripts/check_test_completeness.py --repo-root "$REPO_ROOT" -- "${STANDING_PYTEST_TARGETS[@]}"
 queue_selected "check-test-production-ratio" python3 scripts/check_test_production_ratio.py --repo-root "$REPO_ROOT" --require-git-file-listing --advisory
 queue_selected "check-boundary-bypass-ratchet" python3 scripts/check_boundary_bypass_ratchet.py --repo-root "$REPO_ROOT"
@@ -1248,18 +1179,18 @@ if [[ -n "$PROVENANCE_CONTRACT_CHECKER" ]]; then
   queue_selected "check-provenance-contract" python3 "$PROVENANCE_CONTRACT_CHECKER" --repo-root "$REPO_ROOT"
 else
   # A missing checker is not a clean proof.  Keep ordinary consumer runs
-  # diagnosable, but refuse the irreversible pre-push boundary unless the
-  # adapter explicitly ships the contract checker (or the operator has a
-  # separate proof packet).  This prevents not-packaged -> exit 0 from being
-  # read as executable provenance approval.
+  # diagnosable, but refuse the irreversible release boundary unless the adapter
+  # explicitly ships the contract checker (or the operator has a separate proof
+  # packet). This prevents not-packaged -> exit 0 from being read as executable
+  # provenance approval.
   # The single-quoted payload is intentionally evaluated by the inner bash.
   # shellcheck disable=SC2016
   queue_selected "check-provenance-contract" bash -c '
     echo "status: unestablished"
     echo "proof_level: unavailable"
     echo "non_claims: [provenance contract checker is not packaged in this consumer tree]"
-    if [[ "${CHARNESS_PRE_PUSH:-0}" == "1" ]]; then
-      echo "REFUSAL: pre-push provenance proof is unavailable"
+    if [[ "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" == "1" ]]; then
+      echo "REFUSAL: release provenance proof is unavailable"
       exit 2
     fi
   '

@@ -160,9 +160,9 @@ def test_setup_inspect_reports_source_guard_wrap_conflict(tmp_path: Path) -> Non
     assert payload["prose_wrap"]["source_guard_count"] == 1
 
 
-def test_setup_inspect_reports_retro_memory_drift(tmp_path: Path) -> None:
+def test_setup_inspect_reports_retro_memory_without_enforcing_root_prose(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    _seed_normalize_repo(repo, "# Agents\n\n## Skill Routing\n\nCustom local routing.\n")
+    _seed_normalize_repo(repo, "# Agents\n\nCustom local routing.\n")
     (repo / "charness-artifacts" / "retro").mkdir(parents=True)
     (repo / "charness-artifacts" / "retro" / "recent-lessons.md").write_text(
         "# Recent Lessons\n", encoding="utf-8"
@@ -171,14 +171,15 @@ def test_setup_inspect_reports_retro_memory_drift(tmp_path: Path) -> None:
     normalization = _run_inspect(repo)["agent_docs"]["normalization"]
 
     assert normalization["retro_memory"]["enabled"] is True
+    assert normalization["retro_memory"]["policy_owner"] == "retro"
     finding_types = {finding["type"] for finding in normalization["findings"]}
-    assert "agents_missing_retro_recent_lessons_memory" in finding_types
-    assert "retro_summary_without_adapter" in finding_types
+    assert "agents_missing_retro_recent_lessons_memory" not in finding_types
+    assert "retro_summary_without_adapter" not in finding_types
 
 
-def test_setup_inspect_keeps_artifact_and_skill_routing_diagnostics(tmp_path: Path) -> None:
+def test_setup_inspect_does_not_recreate_removed_root_policies(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    _seed_normalize_repo(repo, "# Agents\n\n## Skill Routing\n\nUse local judgment.\n")
+    _seed_normalize_repo(repo, "# Agents\n\nUse local judgment.\n")
     (repo / "charness-artifacts" / "quality").mkdir(parents=True)
     (repo / "charness-artifacts" / "quality" / "latest.md").write_text(
         "# Quality Review\n", encoding="utf-8"
@@ -187,5 +188,4 @@ def test_setup_inspect_keeps_artifact_and_skill_routing_diagnostics(tmp_path: Pa
     normalization = _run_inspect(repo)["agent_docs"]["normalization"]
     finding_types = {finding["type"] for finding in normalization["findings"]}
 
-    assert "charness_artifacts_commit_policy_drift" in finding_types
-    assert "skill_routing_block_custom_or_drifted" in finding_types
+    assert "charness_artifacts_commit_policy_drift" not in finding_types

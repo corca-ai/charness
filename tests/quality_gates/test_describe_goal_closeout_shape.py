@@ -86,8 +86,8 @@ def test_bare_grandfathered_goal_triggers_only_baseline_evidence(tmp_path: Path)
 
 
 def test_recent_goal_triggers_only_live_conditional_floors(tmp_path: Path) -> None:
-    # Recent goals retain only the conditional floors that still protect the
-    # closeout boundary: disposition review and a declared timebox.
+    # Recent goals retain only the configured conditional floors and a declared
+    # timebox. The default deterministic-only adapter does not add review work.
     text = _preamble("multi-floor", "2026-06-14") + (
         "## Active Operating Frame\n\n"
         "- Timebox: 2h\n- Activation time: 2026-06-14T00:00:00Z\n"
@@ -100,9 +100,9 @@ def test_recent_goal_triggers_only_live_conditional_floors(tmp_path: Path) -> No
     )
     report = desc.goal_conditional_shape(tmp_path, text)
     triggered = _triggered_keys(report)
-    assert triggered == {"retro_artifact", "host_log_probe", "disposition_review", "timebox"}
+    assert triggered == {"retro_artifact", "host_log_probe", "timebox"}
     missing = _missing_keys(report)
-    for floor in ("retro_artifact", "host_log_probe", "disposition_review"):
+    for floor in ("retro_artifact", "host_log_probe"):
         assert floor in missing, floor
     assert "timebox" not in missing
 

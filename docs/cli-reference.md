@@ -244,8 +244,8 @@ positional arguments:
     abort               Mark a claimed task as aborted with a required reason.
     status              Show one task envelope, or list all repo-local task
                         envelopes.
-    run                 Run one Codex implementation task in a clean named
-                        worktree and emit a compact receipt.
+    run                 Run one independently delegable Codex lane in a clean
+                        named worktree and emit a compact receipt.
 
 options:
   -h, --help            show this help message and exit
@@ -361,9 +361,10 @@ usage: charness task run [-h] [--repo-root REPO_ROOT] --path PATH --branch
                          [--task-id TASK_ID] [--prepare] [--require-change]
                          [--timeout-seconds TIMEOUT_SECONDS] [--dry-run]
 
-Create a named linked worktree from an explicit base, run Codex with external
-runtime paths, and report the scoped candidate. The parent worktree must be
-clean.
+Run one independently delegable lane: create a named linked worktree from an
+explicit base, run Codex with external runtime paths, and report the scoped
+candidate. The parent worktree must be clean; the parent orchestrator owns
+parallel fan-out and integration.
 
 options:
   -h, --help            show this help message and exit

@@ -53,7 +53,6 @@ DETAIL_COMMANDS = (
     ),
     ("skills/public/release/scripts/plan_release_run.py", "--repo-root", "."),
     ("scripts/plan_risk_interrupt.py", "--repo-root", "."),
-    ("skills/public/setup/scripts/render_skill_routing.py", "--repo-root", "."),
     ("skills/public/prove/scripts/check_boundary_escalation.py", "--repo-root", "."),
     (
         "skills/public/quality/scripts/suggest_public_skill_dogfood.py",
@@ -168,7 +167,7 @@ def test_public_skills_do_not_teach_json_output_commands(skills_root: Path) -> N
     for skill_path in sorted(skills_root.glob("*/SKILL.md")):
         text = skill_path.read_text(encoding="utf-8")
         if re.search(
-            r"python3[^\n`]*(?:plan_|render_skill_routing|check_boundary_escalation|suggest_public_skill_dogfood)[^\n`]*--json\b",
+            r"python3[^\n`]*(?:plan_|check_boundary_escalation|suggest_public_skill_dogfood)[^\n`]*--json\b",
             text,
         ):
             offenders.append(str(skill_path.relative_to(ROOT)))

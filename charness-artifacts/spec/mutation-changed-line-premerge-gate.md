@@ -1,10 +1,14 @@
-# Spec: Pre-Push Gate for Changed-Line Mutation Coverage
+# Spec: Changed-Line Mutation Coverage
 
 Date: 2026-06-06 (refreshed from draft handoff; forced-interrupt carry-forward)
 Source: debug #320 (`charness-artifacts/debug/2026-06-06-issue-320-mutation-changed-line-coverage.md`),
 recurrence #321 (`Mutation test regression on main`, closed per-file 2026-06-06).
-Status: **impl — slice 1 (consumer) + slice 2 (producer, lever A+B) delivered**;
-gate active pending push-time verification (Slice Status below).
+Status: **historical design record**. The pre-push wiring described below is
+superseded locally as of 2026-08-27: ordinary implementation, full, and pre-push
+quality runs do not pay this lane. `run-quality.sh --release` and explicit
+`check-changed-line-mutation-coverage` selection retain it; the CI mirror remains
+an explicit boundary consumer. The older slice history is preserved below for
+provenance, not as the current invocation contract.
 Update (handoff-4, 2026-06-07): the consumer now emits a non-blocking
 false-green `warning` (report field + stderr) when the analyzed head resolves to
 `HEAD` and an eligible mutation-pool file has uncommitted worktree changes — the

@@ -24,9 +24,6 @@ run_process = _scripts_subprocess_guard_module.run_process
 _scripts_eval_setup_module = import_repo_module(__file__, "scripts.eval_setup")
 run_setup_inspect_states = _scripts_eval_setup_module.run_setup_inspect_states
 run_setup_operator_acceptance_synthesis = _scripts_eval_setup_module.run_setup_operator_acceptance_synthesis
-run_setup_compact_skill_routing_discoverability = (
-    _scripts_eval_setup_module.run_setup_compact_skill_routing_discoverability
-)
 _scripts_eval_issue_scenarios_module = import_repo_module(__file__, "scripts.eval_issue_scenarios")
 run_issue_sibling_search_concept_fixtures = (
     _scripts_eval_issue_scenarios_module.run_issue_sibling_search_concept_fixtures
@@ -189,7 +186,6 @@ def scenario_setup_adapter_bootstrap(root: Path) -> None:
         skill_id="setup",
         adapter_name="setup-adapter.yaml",
         expected_artifact_path="charness-artifacts/setup/latest.md",
-        expected_data={"skill_routing_mode": "compact"},
     )
 def scenario_setup_inspect_states(root: Path) -> None:
     run_setup_inspect_states(root, run_command=run_command, expect_success=expect_success, error_type=EvalError)
@@ -204,13 +200,6 @@ def scenario_setup_operator_acceptance_synthesis(root: Path) -> None:
     )
 
 
-def scenario_setup_compact_skill_routing_discoverability(root: Path) -> None:
-    run_setup_compact_skill_routing_discoverability(
-        root,
-        run_command=run_command,
-        expect_success=expect_success,
-        error_type=EvalError,
-    )
 def scenario_representative_skill_contracts(root: Path) -> None:
     result = run_command(["python3", "scripts/check_skill_contracts.py", "--repo-root", str(root)], cwd=root)
     expect_success(result, "representative skill contracts")
@@ -238,7 +227,6 @@ def run_scenario(root: Path, scenario: Scenario) -> None:
         "setup-adapter-bootstrap": scenario_setup_adapter_bootstrap,
         "setup-inspect-states": scenario_setup_inspect_states,
         "setup-operator-acceptance-synthesis": scenario_setup_operator_acceptance_synthesis,
-        "setup-compact-skill-routing-discoverability": scenario_setup_compact_skill_routing_discoverability,
         "support-sync-contracts": scenario_support_sync_contracts,
         "representative-skill-contracts": scenario_representative_skill_contracts,
         "issue-sibling-search-concept-fixtures": scenario_issue_sibling_search_concept_fixtures,

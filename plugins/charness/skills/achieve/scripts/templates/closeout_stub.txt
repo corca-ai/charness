@@ -3,7 +3,6 @@
 
 Retro: charness-artifacts/retro/<date>-<goal-slug>.md
 Host log probe: charness-artifacts/retro/<date>-<goal-slug>-host-log.md
-Disposition review: charness-artifacts/critique/<date>-<goal-slug>-disposition-review.md
 
 ## Auto-Retro
 

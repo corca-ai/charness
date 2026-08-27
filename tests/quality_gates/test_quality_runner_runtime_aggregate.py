@@ -402,10 +402,10 @@ def test_an_unproven_gate_makes_the_aggregate_unestablished_not_pass(
         '#!/usr/bin/env python3\nimport sys\nprint("this run analyzed nothing")\nsys.exit(3)\n',
     )
 
-    result = run_shell_script(repo / "scripts" / "run-quality.sh", "--full", cwd=repo, env=env)
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", "--release", cwd=repo, env=env)
 
     assert result.returncode == 0, result.stderr
-    aggregate = [r for r in _read_runtime_records(log_path) if r["label"] == "run-quality-full"]
+    aggregate = [r for r in _read_runtime_records(log_path) if r["label"] == "run-quality-full-release"]
     assert len(aggregate) == 1
     assert aggregate[0]["status"] == "unestablished"
     receipt = json.loads(receipt_path.read_text(encoding="utf-8"))

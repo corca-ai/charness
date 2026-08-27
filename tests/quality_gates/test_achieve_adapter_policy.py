@@ -40,7 +40,7 @@ def test_missing_adapter_uses_audit_only_defaults(tmp_path: Path) -> None:
     assert adapter["valid"] is True
     assert adapter["data"]["closeout_publication"]["default_mode"] == "audit-only"
     assert adapter["data"]["closeout_publication"]["issue_closeout_carrier"] == "none"
-    assert adapter["data"]["auto_retro"]["disposition_floor"] == "review-required"
+    assert adapter["data"]["auto_retro"]["disposition_floor"] == "deterministic-only"
     assert adapter["data"]["scaffold"]["draft_active_frame_lines"]
 
 

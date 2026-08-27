@@ -13,7 +13,7 @@ closeout_publication:
   require_post_publication_verify: true
   publish_requires_user_confirmation: true
 auto_retro:
-  disposition_floor: review-required
+  disposition_floor: deterministic-only
   allow_host_blocked_disposition_review_skip: true
   valid_dispositions:
     - applied

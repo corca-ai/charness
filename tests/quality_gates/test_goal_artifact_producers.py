@@ -64,7 +64,6 @@ def test_goal_artifact_producers_share_current_shape(tmp_path: Path) -> None:
     for placeholder in (
         "Retro: TODO",
         "Host log probe: TODO",
-        "Disposition review: TODO",
         "Retro dispositions: TODO",
         "Decision: operator-only decision or confirmation needed",
     ):

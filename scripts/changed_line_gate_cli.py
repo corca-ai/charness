@@ -56,7 +56,7 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help=(
             "When no coverage JSON exists, skip non-blocking (exit 3: ran, established nothing) instead of "
-            "running the slow probe. The pre-push (read-only) wiring uses this so the "
+            "running the slow probe. The release wiring uses this so the "
             "teeth stay cheap; the coverage source is produced by the full/closeout run "
             "and reused here."
         ),
@@ -68,7 +68,7 @@ def parse_args() -> argparse.Namespace:
             "Only trust a coverage JSON whose sibling marker "
             "`<coverage-json>.changed-line.fingerprint` identifies the changed-line "
             "producer and matches the current changed-pool content fingerprint; otherwise skip "
-            "non-blocking. The pre-push wiring sets this so a STALE or foreign coverage source "
+            "non-blocking. The release wiring sets this so a STALE or foreign coverage source "
             "(produced before the changed lines existed) cannot raise false 'uncovered "
             "changed line' positives. The closeout producer writes the marker when it "
             "refreshes coverage."
@@ -92,7 +92,7 @@ def parse_args() -> argparse.Namespace:
         metavar="PATH",
         help=(
             "Repo-relative mutation-pool path to analyze; repeatable. Narrows the "
-            "BLOCKING set to these files only. The incremental pre-push producer sets "
+            "BLOCKING set to these files only. The incremental release producer sets "
             "this because its coverage was collected from a focused test subset: focused "
             "coverage is a SUBSET of full coverage, so an unmapped file's changed lines "
             "would read as uncovered when the full suite covers them. Every changed pool "
@@ -106,7 +106,7 @@ def parse_args() -> argparse.Namespace:
         help=(
             "Producer mode: after coverage exists for the analyzed range, write the "
             "sibling `<coverage-json>.changed-line.fingerprint` marker recording the "
-            "changed-line producer and changed-pool content fingerprint so the pre-push consumer "
+            "changed-line producer and changed-pool content fingerprint so the release consumer "
             "(`--require-fresh-coverage`) "
             "can trust the coverage."
         ),
@@ -137,4 +137,3 @@ def parse_args() -> argparse.Namespace:
             f"{args.test_command!r}; {INSTRUMENTABLE_COMMAND_REFUSAL}"
         )
     return args
-

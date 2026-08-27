@@ -3,9 +3,9 @@
 > Status: current
 > Source of truth: this page and its linked executable surfaces
 
-This document owns the detail behind the `## Dynamic Workflows` block in
-[AGENTS.md](../AGENTS.md). That block states the default; this one states what
-the default covers, where it stops, and what it never buys.
+This document owns the detail behind the parallel-work rule in
+[AGENTS.md](../AGENTS.md). The root file states the default; this one states
+what the default covers, where it stops, and what it never buys.
 
 The rule in one line: **parallel authoring, serialized integration, undiminished
 proof.**
@@ -27,8 +27,12 @@ through that host's adapter or preset. Hardcoding one host's vocabulary into a
 checked-in contract goes stale silently, exactly as a pinned model id would; that
 is the same failure this repo already recorded for subagent model defaults.
 
-A channel the host does not expose is a concrete block to report, never a reason
-to claim the work ran some other way.
+Inspect the live host tool surface before selecting a channel. If it exposes a
+spawn/subagent API, use that API for independent work; do not infer its absence
+from memory, a previous session, or a product name. Use the repository's
+isolated `charness task run` lane when a lane needs an explicit worktree or the
+host exposes no spawn channel. If neither channel is available, keep only
+dependent/tiny work in the current context and report the reduced parallelism.
 
 ## Speculate While Blocked
 
@@ -47,15 +51,12 @@ that fix waits — while every part the review does not gate proceeds.
 
 ## Command Fan-Out Preflight
 
-Before starting a manual or parallel command fan-out, write a small JSON plan
-and run `python3 scripts/command_plan_preflight.py --repo-root . --plan <repo-relative-plan>`.
-The preflight resolves each target through `rg --files`,
-verifies each git ref with `git rev-parse --verify`, and probes only the owning
-command's `--help` surface to confirm planned flags. A missing, ambiguous, or
-wrong path/ref/flag is a refusal that stops the fan-out; it is not a reason to
-guess a sibling path or continue with the remaining commands. The report proves
-resolution and parser ownership only, not the planned commands' runtime,
-installed state, hosted state, or external truth.
+`charness task run` already owns its lane's base, branch, path, scope, and
+worktree preflight. Do not create a second plan for that path. Use
+`command_plan_preflight.py` only for a manually assembled fan-out whose target,
+ref, or flag resolution is otherwise ambiguous, or when an irreversible/review
+boundary explicitly needs that receipt. It proves resolution and parser
+ownership only, not runtime, installed state, hosted state, or external truth.
 
 Each command must declare `owner_target` and use exactly
 `{target:<owner_target>}` in `argv`; an explicit `help_argv` must use the same

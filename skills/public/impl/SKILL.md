@@ -54,12 +54,17 @@ Run the narrowest evidence that answers the changed behavior:
 - focused tests for the changed module or user flow;
 - the default `<repo-root>/scripts/run-quality.sh` core lane when the change is broad;
 - `<repo-root>/scripts/run-quality.sh --full --read-only` only for an explicit broad,
-  pre-push, release, or review check.
+  pre-push, or review check; use `--release` for release-only checks.
 
 Use external cache and temporary roots supplied by the repo runtime wrapper.
 Never treat an ignored cache as proof that the worktree stayed clean; inspect
 tracked, untracked, and ignored populations separately when worktree hygiene is
 part of the claim.
+
+For authoring a prescribed path or a source-bound record, use the focused
+guidance in `../../shared/references/prescribed-path-self-test.md` and
+`../../shared/references/source-bound-records.md`; these are design aids, not
+additional universal gates.
 
 Additional proof is conditional. A change to verdict logic, a proof surface,
 an irreversible external mutation, a release surface, or a deletion with
@@ -84,4 +89,6 @@ without its explicit authorization.
 - `references/design-lenses.md`
 - `references/sequence-discipline.md`
 - `references/external-api-contract.md` (only for an external API seam)
+- `../../shared/references/prescribed-path-self-test.md` (only for a prescribed path)
+- `../../shared/references/source-bound-records.md` (only for a multi-source or durable record)
 - `../prove/SKILL.md` (only when its evidence format is explicitly needed)

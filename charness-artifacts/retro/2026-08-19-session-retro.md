@@ -450,8 +450,9 @@ recorded base observable resolves `not-established`, naming the diff."
 
 ### Retro Dispositions
 
-- `applied: docs/handoff.md` now records the two-door guard, the review pattern and both
-  detectors (`515592403`, `00c50ed3f`).
+- `applied: docs/implementation-discipline.md` and the current root guidance now
+  record the two-door guard, the review pattern and both detectors
+  (`515592403`, `00c50ed3f`).
 - `applied: scripts/adapter_version_verdict.py` — the predicate is the condition, with
   three doors and a pinned marker (`342cce165`, `7ab091dc7`, `1465689ac`).
 - `applied: scripts/check_adapter_consumer_classification.py` — the `guarded` witness is an

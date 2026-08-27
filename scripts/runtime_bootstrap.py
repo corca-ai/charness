@@ -4,6 +4,7 @@ import hashlib
 import importlib
 import importlib.util
 import os
+import shlex
 import sys
 import tempfile
 from collections.abc import MutableMapping
@@ -165,6 +166,16 @@ def configure_runtime_environment(
     ):
         Path(target[key]).mkdir(parents=True, exist_ok=True)
     target["npm_config_cache"] = target["NPM_CONFIG_CACHE"]
+    # pytest has no standard environment variable for its cache directory. Keep
+    # the override at the one Python execution boundary so every Charness-owned
+    # Python entrypoint gives its children the same external cache. A later
+    # explicit command-line option remains the caller's choice.
+    pytest_cache_option = shlex.join(
+        ["-o", f"cache_dir={target['CHARNESS_PYTEST_CACHE_DIR']}"]
+    )
+    existing_addopts = target.get("PYTEST_ADDOPTS", "").strip()
+    if pytest_cache_option not in existing_addopts:
+        target["PYTEST_ADDOPTS"] = f"{existing_addopts} {pytest_cache_option}".strip()
     coverage_file = target["COVERAGE_FILE"]
     if coverage_file != ":memory:":
         Path(coverage_file).parent.mkdir(parents=True, exist_ok=True)

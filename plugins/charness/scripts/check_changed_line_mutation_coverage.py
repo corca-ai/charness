@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Local pre-merge teeth for the #260 changed-line mutation-coverage class.
+"""Release-boundary check for the #260 changed-line mutation-coverage class.
 
 Reproduces ONLY the *blocking* signal of the scheduled mutation gate —
 ``mutation_changed_files_lib.classify_changed_line_scope_gap`` over a base..head
-range — so uncovered changed lines are caught before merge instead of by the
-≤3h cron. This is the recurring class (#219 -> #251 -> #260) and the only one
-cheap to detect locally.
+range — so uncovered changed lines are caught at the local release boundary or
+by the scheduled CI run. This is the recurring class (#219 -> #251 -> #260)
+and the only one cheap to detect locally.
 
 It is deliberately NOT a full local mutation runner and does NOT reproduce the
 score path (survived-mutant ratio); that needs a real Cosmic Ray run and stays
@@ -44,7 +44,7 @@ this is neither. ``_verdict_exit_code`` is the whole rule; this sentence is a
 summary of it and the function is what decides. The gate already printed "A clean
 verdict says NOTHING about the rest" and then returned the byte it returns with
 no blind spot at all; now the scope reaches the verdict. Deliberately non-blocking
-at push time -- see ``PARTIAL_EXIT``.
+for a mapper blind spot -- see ``PARTIAL_EXIT``.
 """
 
 from __future__ import annotations
@@ -147,9 +147,9 @@ def _attach_warning(report: dict, warning: str | None) -> dict:
 
 def _coverage_source_skip(args, repo_root: Path, coverage_json: Path, base_sha: str, head_sha: str) -> dict | None:
     """Return a non-blocking skip report when the coverage source cannot be
-    trusted for a cheap pre-push verdict, else None.
+    trusted for the release-boundary verdict, else None.
 
-    Three guards keep the pre-push (read-only) wiring both cheap and safe:
+    Three guards keep the release wiring both cheap and safe:
     - a context-bearing corpus at the reuse path was written by the mutation
       sampler, not by this lane; skip rather than pay a multi-GB load for columns
       this verdict never reads. Decided from a 4 KB header read, and only on a
@@ -160,8 +160,7 @@ def _coverage_source_skip(args, repo_root: Path, coverage_json: Path, base_sha: 
       predate the changed lines or belong to another producer), so trusting it
       would raise false positives; skip instead. The fingerprint is content-based
       and computed over base→worktree, so it stays valid across the producer's
-      pre-commit run and the consumer's post-commit (pre-push) check of the same
-      code.
+      coverage run and the release consumer's check of the same code.
     - ``--skip-if-no-coverage``: no coverage JSON at all; skip rather than fall
       through to the slow probe.
     """
@@ -221,7 +220,7 @@ def _coverage_source_skip(args, repo_root: Path, coverage_json: Path, base_sha: 
 
 def _ensure_coverage(args, repo_root: Path, coverage_json: Path, base_sha: str) -> None:
     """Produce coverage when needed, and in producer mode stamp the
-    `.changed-line.fingerprint` marker so the pre-push consumer's `--require-fresh-coverage`
+    `.changed-line.fingerprint` marker so the release consumer's `--require-fresh-coverage`
     can trust the coverage was built for this changed-pool content. Skip guards
     run before this, so here a missing/stale reuse target means "run the probe".
 
@@ -260,10 +259,11 @@ def coverage_not_verified_warning(changed_eligible: list[str], reason: str) -> s
 
     The #219 -> #251 -> #260 -> #320 -> #321 -> #335 seam recurs because a silent
     skip (no/stale coverage) reads IDENTICALLY to a clean pass: the author's
-    pre-push attestation goes green, the uncovered changed lines reach ``main``, and
-    only the scheduled cron — which accumulates everything since its last run — flags
-    them post-merge and auto-files. Making the unverified skip LOUD at author time is
-    the structural reduction: the obligation becomes visible before the change lands.
+    release attestation goes green, the uncovered changed lines reach ``main``, and
+    only the scheduled CI run — which accumulates everything since its last run —
+    flags them after merge and auto-files. Making the unverified skip LOUD at the
+    release boundary is the structural reduction: the obligation remains visible
+    before publication.
     Non-blocking by design (it names the fix; it does not change the verdict).
     """
     files = ", ".join(changed_eligible)

@@ -4,7 +4,11 @@
 > Source of truth: this page and its linked executable surfaces
 
 `charness task` provides two deliberately separate paths. `task run` is the
-normal direct implementation lane. The older envelope commands are an optional
+repository-owned isolated carrier for one independently delegable implementation
+lane; the parent may use it when explicit worktree isolation is useful or the
+host has no spawn channel. When the host exposes a spawn API, that API is the
+normal fan-out channel. The parent may run several lanes in parallel and
+integrates them serially. The older envelope commands are a compatibility
 carrier for work that genuinely crosses an external scheduler or context.
 
 It is intentionally not a scheduler. It records enough structured state for the
@@ -38,7 +42,7 @@ charness task run \
   --prompt "Implement the requested slice and run its focused tests"
 ```
 
-`task run` requires a clean parent, creates the linked named branch from the
+`task run` runs one lane, not the fan-out itself. It requires a clean parent, creates the linked named branch from the
 explicit base, routes Python/pytest/coverage/temp output to an external runtime
 root, runs `codex exec`, and reports the exact scoped candidate. It retains the
 worktree and emits enough receipt data to inspect or continue it. It does not

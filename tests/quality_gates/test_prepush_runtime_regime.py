@@ -45,6 +45,7 @@ def _seed_prepush_repo(tmp_path: Path) -> Path:
     (repo / "docs").mkdir(parents=True)
 
     shutil.copy2(ROOT / ".githooks" / "pre-push", repo / ".githooks" / "pre-push")
+    shutil.copy2(ROOT / ".githooks" / "runtime-env.sh", repo / ".githooks" / "runtime-env.sh")
     # `yaml_output.py` joined this set with the unconditional-YAML migration:
     # `classify_push_diff.py` now imports `emit_yaml` at module scope, so a
     # synthetic repo without it fails at import and never reaches classification.
@@ -79,8 +80,7 @@ def _seed_prepush_repo(tmp_path: Path) -> Path:
         "import json,os,sys;"
         "json.dump({'argv':sys.argv[1:],"
         "'labels':os.environ.get('CHARNESS_QUALITY_LABELS',''),"
-        "'regime':os.environ.get('CHARNESS_RUNTIME_REGIME',''),"
-        "'pre_push':os.environ.get('CHARNESS_PRE_PUSH','')},"
+        "'regime':os.environ.get('CHARNESS_RUNTIME_REGIME','')},"
         "open(os.environ['QUALITY_INVOCATION_LOG'],'w'))"
         '" -- "$@"\n',
         encoding="utf-8",

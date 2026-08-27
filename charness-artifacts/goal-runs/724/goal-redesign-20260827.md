@@ -66,11 +66,14 @@ true:
    SessionStart hook.
 
 Ordinary reversible implementation uses focused tests and the relevant
-combined gate. A separate observer, boundary fingerprint, changed-line proof,
-session baton, or micro-slice record is conditional on the actual authority,
-durability, external-write, security, compatibility, release, or proof-surface
-risk. `charness task` is an optional scope/result carrier; it does not create an
-observer or a new gate.
+combined gate. Independent work uses the live host spawn/subagent API when it
+is exposed; `charness task run` is reserved for explicit named-worktree
+isolation or a host without a spawn channel. A separate observer, boundary
+fingerprint, changed-line proof, session baton, or micro-slice record is
+conditional on the actual authority, durability, external-write, security,
+compatibility, release, or proof-surface risk. The legacy `charness task`
+envelope is only a cross-context carrier; it does not create an observer or a
+new gate.
 
 ## Generative sequence
 

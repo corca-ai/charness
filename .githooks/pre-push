@@ -89,11 +89,11 @@ if [[ "$classification" == "docs-artifact-only" ]]; then
   # fourteen also run in the full queue, where they measured 2.1x-4.8x slower;
   # three of them carry budgets, so for those the pooled window moved the
   # enforcement median for reasons unrelated to any change to the checked code.
-  CHARNESS_PRE_PUSH=1 CHARNESS_RUNTIME_REGIME=docs-only \
+  CHARNESS_RUNTIME_REGIME=docs-only \
     CHARNESS_QUALITY_LABELS="$DOCS_ONLY_LABELS" ./scripts/run-quality.sh --read-only
 else
   echo "charness pre-push: running full ./scripts/run-quality.sh --read-only ($reason)"
-  CHARNESS_PRE_PUSH=1 ./scripts/run-quality.sh --full --read-only
+  ./scripts/run-quality.sh --full --read-only
 fi
 
 if ! git diff --quiet -- charness-artifacts; then

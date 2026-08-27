@@ -89,8 +89,7 @@ def required_shape() -> str:
         "complete flip — `Status: complete`). The template above seeds the lines;",
         "these are the FORMS the gate enforces on them:",
         "",
-        "`## Final Verification` — `Retro:`, `Host log probe:`, and (for in-scope goals)",
-        "`Disposition review:` each must be EITHER:",
+        "`## Final Verification` — `Retro:` and `Host log probe:` each must be EITHER:",
         "  - a bound `<path>`: the evidence file EXISTS, is non-empty, and BINDS to this",
         "    goal — its basename or content contains the goal slug (the Activation line's",
         "    `/goal @<...-slug>` minus the date prefix). Citing an unrelated pre-existing",
@@ -99,6 +98,9 @@ def required_shape() -> str:
         f"    (free text is rejected), the whole reason is >= {min_skip} chars, AND the",
         f"    DETAIL after the enum head is >= {min_skip_detail} chars (the head itself does",
         "    not count toward the detail floor).",
+        "A `Disposition review:` line is required only when the repository adapter",
+        "selects `auto_retro.disposition_floor: review-required`; it uses the same",
+        "bound-path or explicit-skip form.",
         "",
         "`## Auto-Retro` — the disposition floor: replace the seeded `Retro dispositions: TODO`.",
         f"  - per-improvement / opt-out (`Retro dispositions:`), one of: {valid_form}",
@@ -196,13 +198,19 @@ def _floor_rows(ev: dict[str, Any], tb: dict[str, Any], early_close_required: bo
     """
     disp = ev.get("disposition_scope", {})
     in_scope = bool(disp.get("in_scope"))
+    policy = ev.get("achieve_adapter_policy", {})
+    review_required = (
+        in_scope
+        and policy.get("valid") is True
+        and policy.get("auto_retro_disposition_floor") == "review-required"
+    )
     rows: list[dict[str, Any]] = [
         _evidence_row("retro_artifact", "`Retro:` closeout evidence", ev,
                       "bound retro `<path>` (basename/content carries the goal slug) or `skipped: <enum>: <detail>`"),
         _evidence_row("host_log_probe", "`Host log probe:` closeout evidence", ev,
                       "bound host-log `<path>` or `skipped: <enum>: <detail>`"),
-        {"floor": "disposition_review", "label": "`Disposition review:` line (rung 1b)",
-         "triggered": in_scope, "satisfied": _evidence_unsatisfied(ev, "disposition_review") is None,
+        {"floor": "disposition_review", "label": "`Disposition review:` line (opt-in)",
+         "triggered": review_required, "satisfied": _evidence_unsatisfied(ev, "disposition_review") is None,
          "detail": _evidence_unsatisfied(ev, "disposition_review")
          or "bound `Disposition review: <path>` or `skipped: host-blocked-subagent: <detail>`"},
         {"floor": "disposition_blank", "label": "`## Auto-Retro` not blank (rung 1a)",

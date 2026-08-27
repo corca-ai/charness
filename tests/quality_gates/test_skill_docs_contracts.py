@@ -10,6 +10,7 @@ PLUGIN_IMPL_SKILL_PATH = ROOT / "plugins" / "charness" / "skills" / "impl" / "SK
 # cautilus policy line) moved from impl to the sibling prove skill (#439 split).
 PROVE_SKILL = (ROOT / "skills" / "public" / "prove" / "SKILL.md").read_text(encoding="utf-8")
 SETUP_SKILL = (ROOT / "skills" / "public" / "setup" / "SKILL.md").read_text(encoding="utf-8")
+PLUGIN_SETUP_SKILL_PATH = ROOT / "plugins" / "charness" / "skills" / "setup" / "SKILL.md"
 QUALITY_SKILL = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
 CRITIQUE_SKILL = (ROOT / "skills" / "public" / "critique" / "SKILL.md").read_text(encoding="utf-8")
 DEBUG_SKILL = (ROOT / "skills" / "public" / "debug" / "SKILL.md").read_text(encoding="utf-8")
@@ -53,25 +54,36 @@ def test_setup_skill_bootstraps_probe_surface_guidance() -> None:
     assert "local discoverability" in probe_reference
 
 
-def test_setup_skill_requires_approved_flat_wiki_quality_plan() -> None:
+def test_setup_and_achieve_pin_live_spawn_first_execution_contract() -> None:
+    """A host capability is resolved live; it is not guessed from memory."""
+    achieve = (ROOT / "skills" / "public" / "achieve" / "SKILL.md").read_text(encoding="utf-8").lower()
+    setup = SETUP_SKILL.lower()
+
+    for text in (achieve, setup):
+        assert "live host" in text
+        assert "spawn" in text and "api" in text
+        assert "task run" in text
+        assert "isolation" in text
+    assert "may route" not in setup
+    assert PLUGIN_SETUP_SKILL_PATH.read_bytes() == (ROOT / "skills" / "public" / "setup" / "SKILL.md").read_bytes()
+
+
+def test_setup_skill_describes_the_minimal_flat_wiki_profile() -> None:
     profile = (ROOT / "skills/public/setup/references/craken-like-profile.md").read_text(encoding="utf-8").lower()
     skill_text = SETUP_SKILL.lower()
     defaults = DEFAULT_SURFACES.lower()
     normalization = (ROOT / "skills/public/setup/references/normalization-flow.md").read_text(encoding="utf-8").lower()
 
-    for text in (profile, defaults, normalization):
+    for text in (defaults, normalization):
         assert "docs/index.md" in text
         assert "flat" in text and "wiki" in text
         assert "explicit" in text and "approval" in text
         assert "quality" in text
+    assert "default" in profile and "flat-wiki" in profile
     assert "documentation index" in skill_text
     assert "approval" in skill_text
-    assert "prefer-lefthook-when-no-hook-manager" in profile
-    assert "preserve-and-integrate" in profile
-    assert "lint-staged" in profile
-    assert "staged/related-file" in profile
-    assert "bootstrap_adapter.py" in profile and "--dry-run" in profile
-    assert "quality owns" in profile
+    assert "compact --execute" in skill_text
+    assert "`quality` owns" in defaults
 
 
 def test_quality_skill_consumes_setup_state_without_claiming_green() -> None:
@@ -86,14 +98,13 @@ def test_quality_skill_consumes_setup_state_without_claiming_green() -> None:
     assert "without approval" in quality
 
 
-def test_setup_default_surfaces_carry_early_quality_baseline() -> None:
+def test_setup_default_surfaces_keep_optional_workflows_out_of_the_core() -> None:
     default_surfaces = DEFAULT_SURFACES
 
-    assert "## Early Quality Baseline" in default_surfaces
-    assert "Python: `ruff check` with `E`, `F`, `I`, and `C90`" in default_surfaces
-    assert "JavaScript/TypeScript: `eslint`, a standing `complexity` rule" in default_surfaces
-    assert "let `quality` own the exact gate wiring" in default_surfaces
-    assert "ratcheting" in default_surfaces
+    assert "## Conditional surfaces" in default_surfaces
+    assert "## Ownership boundaries" in default_surfaces
+    assert "`quality` owns exact gates" in default_surfaces
+    assert "## Early Quality Baseline" not in default_surfaces
 
 
 def test_setup_does_not_export_a_global_review_policy() -> None:
@@ -104,41 +115,33 @@ def test_setup_does_not_export_a_global_review_policy() -> None:
 
     assert "no required session-start hook" in skill_text
     assert "does not inject" in agent_docs and "standing" in agent_docs
-    assert "universal policy" in bootstrap_seams
+    assert "universal root policy" in bootstrap_seams
     assert "## subagent delegation" not in default_surfaces
 
 
-def test_setup_docs_carry_charness_artifact_commit_policy() -> None:
+def test_setup_does_not_duplicate_artifact_commit_policy() -> None:
     skill_text = SETUP_SKILL.lower()
     bootstrap_seams = BOOTSTRAP_SEAMS.lower()
     default_surfaces = DEFAULT_SURFACES.lower()
     normalization_flow = (ROOT / "skills/public/setup/references/normalization-flow.md").read_text(encoding="utf-8").lower()
 
     assert "bootstrap-seams.md" in skill_text
-    for text in (bootstrap_seams, default_surfaces, normalization_flow):
-        assert "charness-artifacts/" in text
-        assert "repo state" in text
-        assert "canonical content" in text
-
-    assert "commit targets" in bootstrap_seams
-    assert "commit targets" in default_surfaces
+    assert "bootstrap-seams.md" in skill_text
+    assert "charness-artifacts/" in default_surfaces
+    assert "repo state" not in bootstrap_seams
+    assert "commit targets" not in bootstrap_seams
+    assert "commit targets" not in normalization_flow
 
 
-def test_setup_docs_seed_announcement_ready_commit_bodies() -> None:
+def test_setup_does_not_duplicate_announcement_or_review_contracts() -> None:
     skill_text = SETUP_SKILL.lower()
     bootstrap_seams = BOOTSTRAP_SEAMS.lower()
     default_surfaces = DEFAULT_SURFACES.lower()
 
     assert "bootstrap-seams.md" in skill_text
-    for text in (bootstrap_seams, default_surfaces):
-        assert "announcement" in text
-        assert "commit" in text
-        assert "issue linkage" in text
-        assert "human-visible value" in text
-        assert "verification" in text
-        assert "operator/apply notes" in text
-
-    assert "merge commits" in default_surfaces
+    assert "announcement" not in bootstrap_seams
+    assert "issue linkage" not in default_surfaces
+    assert "Subagent Delegation" not in default_surfaces
 
 
 def test_hitl_skill_carries_review_chunk_and_state_recording_rules() -> None:
@@ -285,12 +288,12 @@ def test_critique_and_debug_share_the_evidence_led_adversarial_route() -> None:
 def test_development_doc_carries_mutation_phase_barrier_rule() -> None:
     development = (ROOT / "docs" / "development.md").read_text(encoding="utf-8")
 
-    assert "## Mutation Phase Barriers" in development
+    assert "## Mutation phase barriers" in development
     assert "mutate" in development
     assert "sync generated surfaces" in development
     assert "verify" in development
     assert "publish" in development
-    assert "parallelism is only safe for read-only inventory" in development
+    assert "Read-only inventory may run in parallel" in development
 
 
 def test_public_skill_validation_doc_keeps_critique_and_on_demand_boundary_visible() -> None:

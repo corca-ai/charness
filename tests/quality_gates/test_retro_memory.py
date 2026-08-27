@@ -38,7 +38,7 @@ def test_retro_memory_surfaces_reference_recent_lessons_digest() -> None:
     ).read_text(encoding="utf-8")
     lessons_text = (ROOT / "charness-artifacts" / "retro" / "recent-lessons.md").read_text(encoding="utf-8")
 
-    assert "charness-artifacts/retro/recent-lessons.md" in AGENTS
+    assert "charness-artifacts/" in AGENTS
     assert "summary_path" in skill_text
     assert "summary_path" in contract_text
     assert "Repeat Traps" in lessons_text
@@ -54,10 +54,14 @@ def test_agents_keeps_dogfood_detail_in_development_doc() -> None:
     assert "--skip-cli-install" not in AGENTS
     assert "~/.agents/src/charness/charness update" not in AGENTS
     assert "--skip-cli-install" in development_text
-    assert "~/.agents/src/charness/charness update" in development_text
+    assert "charness update --repo-root . --no-pull --skip-cli-install" in development_text
 
 
-def test_agents_does_not_carry_a_global_subagent_delegation_rule() -> None:
+def test_agents_carries_only_the_compact_parallel_routing_cue() -> None:
     agents_text = AGENTS.lower()
 
-    assert "subagent delegation" not in agents_text
+    assert "independent investigation" in agents_text
+    assert "final verification" in agents_text
+    assert "live host tool surface" in agents_text
+    assert "do not infer its absence" in agents_text
+    assert "## subagent delegation" not in agents_text

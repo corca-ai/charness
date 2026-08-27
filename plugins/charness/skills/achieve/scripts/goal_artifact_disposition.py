@@ -2,15 +2,13 @@
 
 Gives the After-phase disposition rule teeth without a prose word-list (round-2
 critique proved a classifier over-fires or passes pure narration). This module
-is the **deterministic floor** (rung 1):
+is the **deterministic floor**:
 
 - **1a block-the-blank** — refuse the ``complete`` flip when the cited retro
   lists actionable improvements but the goal's ``## Auto-Retro`` is blank and no
   opt-out is recorded. Emptiness/structure only; never classifies prose.
-- **1b review-ran evidence** — require a bound ``Disposition review:`` line so a
-  fresh-eye review provably ran (presence/binding-only BY DESIGN — wired in via
-  ``CLOSEOUT_EVIDENCE_NAMES`` by the closeout-evidence wrapper, gated here by
-  scope).
+- A separate ``Disposition review:`` line is an adapter opt-in owned by the
+  closeout-evidence wrapper; this module does not make it a default floor.
 
 The substantive per-improvement judgment (*did the Auto-Retro genuinely dispose
 each improvement?*) is **rung 2** — a fresh-eye subagent that records a verdict a
@@ -147,8 +145,8 @@ def apply_recurrence_lineage_floor(report: dict[str, Any], text: str) -> None:
     Presence/enum only (never a content classifier — the achieve guardrail): the
     floor checks ONLY that an ``issue``-form disposition carries a
     ``recurs:``/``recurrence:``/``lineage:``/``novel:`` marker with content. Whether
-    a ``novel:`` claim is actually a re-file is rung 2's (the fresh-eye disposition
-    review's) substantive call, never the floor's. Its own enforce-from-date
+    a ``novel:`` claim is actually a re-file is the opted-in disposition review's
+    substantive call, never the floor's. Its own enforce-from-date
     grandfathers goals frozen before the floor existed; fail-CLOSED on an undatable
     goal mirrors the sibling rungs. Only ``issue``-form dispositions are checked
     (uniformly) — deciding *which* issues "look recurring" would itself be the
@@ -225,12 +223,9 @@ def apply_structural_followup_floor(report: dict[str, Any], text: str, retro_tex
 def apply_disposition_rungs(report: dict[str, Any], text: str, in_scope: bool) -> None:
     """Attach the disposition-gate verdict to ``report`` (mutates in place).
 
-    Rung 1a (block-the-blank): refuse the flip when the bound retro lists ≥1
-    improvement, the goal's ``## Auto-Retro`` is blank, and no opt-out is
-    recorded. Fires independently of any rung-1b ``disposition_review`` skip
-    (host portability: a subagent-blocked host degrades to rung 1 only, and the
-    blank check must still fire). The substantive per-improvement judgment is
-    rung 2's job — recorded for a human, never scored here.
+    The deterministic rungs refuse the flip when their structural conditions
+    are met. A separate disposition reviewer is opt-in at the adapter/closeout
+    wrapper; these rungs never turn host availability into a completion step.
     """
     # Rung 1c (the disposition-form floor) runs first and on its own
     # enforce-from-date, so it fires even when rungs 1a/1b are grandfathered.

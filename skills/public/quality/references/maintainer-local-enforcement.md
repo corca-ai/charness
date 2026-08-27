@@ -190,8 +190,7 @@ Scope, and what a green here does not say:
 The default canonical-gate patterns cover `npm run verify`,
 `npm run lint && npm run test`, `make verify`, `bash scripts/run-quality.sh`,
 `bash <repo-root>/scripts/run-quality.sh`, and `<repo-root>/scripts/run-quality.sh` invoked
-through its shell-relative form (including an
-environment prefix such as `CHARNESS_PRE_PUSH=1`), plus
+through its shell-relative form (including an environment prefix), plus
 `bash scripts/run-verify.{mjs,sh}` and `node scripts/run-verify.mjs`. Repos with
 custom local-gate names should pass `--canonical-gate-pattern` to surface their
 own shape.

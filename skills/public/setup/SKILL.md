@@ -8,18 +8,23 @@ description: "Use when a repo needs its initial operating surface created or nor
 Use this when a repository needs its basic operating surface created, repaired, or
 normalized. `setup` owns the minimum durable path an agent or maintainer needs:
 README, `AGENTS.md`, `CLAUDE.md` compatibility, the documentation index, probe
-surfaces, and evidence-triggered optional surfaces. It is not product definition, long-range
-planning, or a repo-wide quality audit.
+surfaces, and evidence-triggered optional surfaces. Its compact root template
+tells agents to inspect the live host and use its spawn API for independent work
+when exposed; `charness task run` is reserved for explicit isolation or a host
+with no spawn channel, while detailed orchestration stays in the owning workflow.
+It is not product
+definition,
+long-range planning, or a repo-wide quality audit.
 
 ## Bootstrap
 
-Resolve the adapter and inspect only the current repo surface:
+Resolve `$SKILL_DIR` per `../../shared/references/bootstrap-resolution.md`, then
+resolve the adapter and inspect only the current repo surface:
 
 ```bash
 # Required Tools: rg
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 python3 "$SKILL_DIR/scripts/inspect_repo.py" --repo-root .
-python3 "$SKILL_DIR/scripts/render_skill_routing.py" --repo-root . --detail
 python3 "$SKILL_DIR/scripts/normalize_host_docs.py" --repo-root .
 git status --short
 rg --files .
@@ -34,20 +39,20 @@ By default, setup records its plan under
 it only when a real install, deployment, or takeover path exists.
 
 Read `AGENTS.md`, `<repo-root>/docs/index.md` <!-- not vendored: consumer-repo path -->, and only the owner page needed for the current
-surface. There is no required session-start hook, handoff artifact, or second
-progress channel: active Goal Runs resume from the exact `/goal #<parent>`
-objective and provider cursor, and ordinary work follows installed skill metadata
-through the normal progressive-disclosure path.
-
-## References
+surface. There is no required session-start hook, handoff artifact, routing
+block, or second progress channel: active Goal Runs resume from the provider
+parent and cursor, and ordinary work follows installed skill metadata through
+the normal progressive-disclosure path.
 
 Load references only when their trigger is present:
+
+## References
 
 - `references/greenfield-flow.md` — greenfield or under-shaped repo
 - `references/normalization-flow.md` — partial or drifting docs
 - `references/agent-docs-policy.md` — AGENTS/CLAUDE ambiguity
 - `references/default-surfaces.md` — basic docs and flat wiki
-- `references/craken-like-profile.md` — alternative flat-wiki profile
+- `references/craken-like-profile.md` — compatibility pointer to the default profile
 - `references/github-actions-defaults.md` — GitHub Actions defaults
 - `references/operator-acceptance-synthesis.md` — conditional operator acceptance
 - `references/probe-surface.md` — installable CLI/plugin surface
@@ -60,10 +65,11 @@ Load references only when their trigger is present:
 1. Classify the repo as `GREENFIELD`, `PARTIAL`, or `NORMALIZE` from README,
    AGENTS/CLAUDE, `<repo-root>/docs/index.md` <!-- not vendored: consumer-repo path -->. Treat roadmap and operator acceptance as
    conditional, not missing core surfaces.
-2. Preserve existing authored instructions. For a narrow host-doc request, use
-   `normalize_host_docs.py`; it creates a new `AGENTS.md` and a `CLAUDE.md ->
-   AGENTS.md` symlink, or reports a real-file merge decision. It does not rewrite
-   an existing `AGENTS.md`.
+2. Preserve existing authored instructions by default. For a narrow host-doc
+   request, use `normalize_host_docs.py`; it creates a new `AGENTS.md` and a
+   `CLAUDE.md -> AGENTS.md` symlink, or reports a real-file merge decision. It
+   does not rewrite an existing `AGENTS.md` unless the approved command also
+   supplies `--compact --execute`.
 3. Build the smallest plan that closes the observed surface gap. `quality` owns
    exact quality gates, ratchets, and hook scope; setup may consume its read-only
    snapshot but must not invent a parallel quality regime.
@@ -72,7 +78,9 @@ Load references only when their trigger is present:
    approved mutation.
 5. Apply only the approved surface changes. Prefer consolidation and deletion of
    duplicate or stale docs over adding another parallel page. Keep host behavior
-   in adapters and presets.
+   in adapters and presets. If the root instruction file is bloated, propose the
+   compact replacement and show its before/after digest before using
+   `--compact --execute`.
 6. Verify with the narrowest relevant checks: docs/link checks for docs changes,
    focused probes for an installable surface, and quality's core lane when a
    broader sanity check is useful. Stronger review belongs to the owning skill and
@@ -89,7 +97,7 @@ Load references only when their trigger is present:
 - Do not call an adapter configured or a plan approved a green quality result.
 - Do not add a new policy, gate, reviewer, or artifact when an existing owner can
   answer the question with a focused check.
-- Source-of-truth docs live under `<authoring-repo>/skills/public/`; plugin files are generated
+- Source-of-truth docs live under `skills/public/`; plugin files are generated
   exports. Export once after source changes and validate the host layout.
 
 ## Closeout vocabulary

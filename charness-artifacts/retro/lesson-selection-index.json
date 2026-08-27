@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-27",
-  "source_artifact_count": 571,
-  "candidate_count": 2280,
+  "source_artifact_count": 573,
+  "candidate_count": 2282,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -1476,7 +1476,7 @@
     {
       "candidate_id": "class:e0b7c3ebcc2b",
       "kind": "next_improvement",
-      "lesson": "**workflow — prefer a structural property over an enumerated refusal.** Slice A's first cut recognised ambiguity with an enumerated four-word negation list (`not|never|without|no`), and round 2 showed it disarmed the floor on genuinely deferring lines. The repair that worked is structural and positional — *decline only when EVERY flag mention on the line is negated* — which is the same shape the lesson names. I committed the enumerated form first. `applied: skills/public/achieve/scripts/goal_artifact_cadence_owner.py now decides by the structural property; the token list survives only as the ambiguity detector, not as the rule.`",
+      "lesson": "**workflow — prefer a structural property over an enumerated refusal.** Slice A's first cut recognised ambiguity with an enumerated four-word negation list (`not|never|without|no`), and round 2 showed it disarmed the floor on genuinely deferring lines. The repair that worked is structural and positional — *decline only when EVERY flag mention on the line is negated* — which is the same shape the lesson names. I committed the enumerated form first. `applied: the current achieve contract in skills/public/achieve/references/goal-artifact.md records the structural property; no standalone cadence-owner file remains.`",
       "normalized_key": "workflow novel when a bar guards a proof surface make it a required value",
       "recurrence_class": "bar-recorded-as-prose",
       "source_count": 3,
@@ -1511,7 +1511,7 @@
           "section": "Next Improvements",
           "generator": null,
           "kind": "next_improvement",
-          "lesson": "**workflow — prefer a structural property over an enumerated refusal.** Slice A's first cut recognised ambiguity with an enumerated four-word negation list (`not|never|without|no`), and round 2 showed it disarmed the floor on genuinely deferring lines. The repair that worked is structural and positional — *decline only when EVERY flag mention on the line is negated* — which is the same shape the lesson names. I committed the enumerated form first. `applied: skills/public/achieve/scripts/goal_artifact_cadence_owner.py now decides by the structural property; the token list survives only as the ambiguity detector, not as the rule.`"
+          "lesson": "**workflow — prefer a structural property over an enumerated refusal.** Slice A's first cut recognised ambiguity with an enumerated four-word negation list (`not|never|without|no`), and round 2 showed it disarmed the floor on genuinely deferring lines. The repair that worked is structural and positional — *decline only when EVERY flag mention on the line is negated* — which is the same shape the lesson names. I committed the enumerated form first. `applied: the current achieve contract in skills/public/achieve/references/goal-artifact.md records the structural property; no standalone cadence-owner file remains.`"
         }
       ]
     },
@@ -1722,6 +1722,74 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "Evidence identity was frozen after a reviewed ledger change, causing packet regeneration and an extra bookkeeping cycle. The repair preserved safety, but the dependency should have invalidated the packet immediately."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:abc9426cb14c",
+      "kind": "current_focus",
+      "lesson": "This record disposes the historical lesson-session emission named by the [receipt](lesson-session-receipts/2026-08-26-01a03c37-b39b-7541-9dc2-95459b1d7479.json) and frozen [bundle](lesson-session-receipts/2026-08-26-01a03c37-b39b-7541-9dc2-95459b1d7479.md).",
+      "normalized_key": "this record disposes the historical lesson session emission named by the receipt lesson session",
+      "recurrence_class": null,
+      "source_count": 2,
+      "independent_source_count": 2,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-27-resume-session-disposition.md",
+      "latest_source_date": "2026-08-27",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.24,
+      "selection_weight": 1.24,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-27-01a03c37-session-disposition.md",
+          "date": "2026-08-27",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This record disposes the historical lesson-session emission named by the [receipt](lesson-session-receipts/2026-08-26-01a03c37-b39b-7541-9dc2-95459b1d7479.json) and frozen [bundle](lesson-session-receipts/2026-08-26-01a03c37-b39b-7541-9dc2-95459b1d7479.md)."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-27-resume-session-disposition.md",
+          "date": "2026-08-27",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This record disposes the historical lesson-session emission named by the [receipt](lesson-session-receipts/2026-08-26-resume.json) and frozen [bundle](lesson-session-receipts/2026-08-26-resume.md)."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:faf00407391b",
+      "kind": "next_improvement",
+      "lesson": "keep lesson emission, presentation, and effect as separate claims; this record does not add a new gate or session hook.",
+      "normalized_key": "keep lesson emission presentation and effect as separate claims this record does not add",
+      "recurrence_class": null,
+      "source_count": 2,
+      "independent_source_count": 2,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-27-resume-session-disposition.md",
+      "latest_source_date": "2026-08-27",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.24,
+      "selection_weight": 1.24,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-27-01a03c37-session-disposition.md",
+          "date": "2026-08-27",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "keep lesson emission, presentation, and effect as separate claims; this record does not add a new gate or session hook."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-27-resume-session-disposition.md",
+          "date": "2026-08-27",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "keep lesson emission, presentation, and effect as separate claims; this record does not add a new gate or session hook."
         }
       ]
     },
@@ -4846,7 +4914,7 @@
     {
       "candidate_id": "next_improvement:abb8e4191ed7",
       "kind": "next_improvement",
-      "lesson": "**workflow — reproduce before repairing a review finding.** {{q:class-carrying=12}} of {{q:total-blockers=27}} blockers got a wrong first repair; in two further cases reproduction showed the reviewer's own proposed fix was wrong. Applied this session in the second half; it should be the default, not the recovery. `applied: recorded in this retro AND carried into docs/handoff.md as \"Next Session\" item 3, written at closeout.` A claims round caught an earlier version of this line asserting the handoff bullet already existed when it did not — an `applied:` that names a destination it has not reached is the strongest disposition shape making the weakest claim. It then stayed honest by saying the carry was still unwritten, which it was until this closeout.",
+      "lesson": "**workflow — reproduce before repairing a review finding.** {{q:class-carrying=12}} of {{q:total-blockers=27}} blockers got a wrong first repair; in two further cases reproduction showed the reviewer's own proposed fix was wrong. Applied this session in the second half; it should be the default, not the recovery. `applied: recorded in this retro; the current workflow keeps this lesson in the retro ledger rather than a separate handoff file.` A claims round caught an earlier version of this line asserting a destination that did not exist — an `applied:` that names a destination it has not reached is the strongest disposition shape making the weakest claim. It then stayed honest by saying the carry was still unwritten, which it was until this closeout.",
       "normalized_key": "workflow reproduce before repairing a review finding q class carrying 12 of q total",
       "recurrence_class": null,
       "source_count": 1,
@@ -4865,7 +4933,7 @@
           "section": "Next Improvements",
           "generator": null,
           "kind": "next_improvement",
-          "lesson": "**workflow — reproduce before repairing a review finding.** {{q:class-carrying=12}} of {{q:total-blockers=27}} blockers got a wrong first repair; in two further cases reproduction showed the reviewer's own proposed fix was wrong. Applied this session in the second half; it should be the default, not the recovery. `applied: recorded in this retro AND carried into docs/handoff.md as \"Next Session\" item 3, written at closeout.` A claims round caught an earlier version of this line asserting the handoff bullet already existed when it did not — an `applied:` that names a destination it has not reached is the strongest disposition shape making the weakest claim. It then stayed honest by saying the carry was still unwritten, which it was until this closeout."
+          "lesson": "**workflow — reproduce before repairing a review finding.** {{q:class-carrying=12}} of {{q:total-blockers=27}} blockers got a wrong first repair; in two further cases reproduction showed the reviewer's own proposed fix was wrong. Applied this session in the second half; it should be the default, not the recovery. `applied: recorded in this retro; the current workflow keeps this lesson in the retro ledger rather than a separate handoff file.` A claims round caught an earlier version of this line asserting a destination that did not exist — an `applied:` that names a destination it has not reached is the strongest disposition shape making the weakest claim. It then stayed honest by saying the carry was still unwritten, which it was until this closeout."
         }
       ]
     },

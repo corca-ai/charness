@@ -9,7 +9,6 @@ from typing import Any
 try:
     from reviewer_delivery_schema import (
         _ALLOWED_TRANSITIONS,
-        _EXECUTION_MODES,
         APPROVAL_STATE,
         CANONICAL_STATES,
         FINDINGS_RECEIVED,
@@ -27,7 +26,6 @@ try:
 except ImportError:
     from skills.shared.scripts.reviewer_delivery_schema import (
         _ALLOWED_TRANSITIONS,
-        _EXECUTION_MODES,
         APPROVAL_STATE,
         CANONICAL_STATES,
         FINDINGS_RECEIVED,
@@ -44,19 +42,11 @@ except ImportError:
     )
 
 try:
-    from reviewer_delivery_fields import (
-        _sha256,
-        boundary_binding,
-        bound_fields,
-    )
-    from reviewer_delivery_history import validate_history
+    from reviewer_delivery_attempt_codec import from_dict as _from_dict, to_dict as _to_dict
+    from reviewer_delivery_fields import _sha256, boundary_binding
 except ImportError:
-    from skills.shared.scripts.reviewer_delivery_fields import (
-        _sha256,
-        boundary_binding,
-        bound_fields,
-    )
-    from skills.shared.scripts.reviewer_delivery_history import validate_history
+    from skills.shared.scripts.reviewer_delivery_attempt_codec import from_dict as _from_dict, to_dict as _to_dict
+    from skills.shared.scripts.reviewer_delivery_fields import _sha256, boundary_binding
 
 
 @dataclass
@@ -160,115 +150,10 @@ class DeliveryAttempt:
 
     @classmethod
     def from_dict(cls, payload: dict[str, Any]) -> "DeliveryAttempt":
-        if not isinstance(payload, dict):
-            raise DeliveryError("attempt must be an object")
-        required = (
-            "attempt_id",
-            "scope",
-            "packet_identity",
-            "parent_receipt_identity",
-            "state",
-            "observed_signal",
-            "terminal",
-            "recorded_at",
-        )
-        missing = [key for key in required if key not in payload]
-        if missing:
-            raise DeliveryError(f"attempt missing fields: {', '.join(missing)}")
-        state = _text(payload["state"], "state")
-        if state not in CANONICAL_STATES:
-            raise DeliveryError(f"unknown delivery state: {state}")
-        terminal = payload["terminal"]
-        if not isinstance(terminal, bool) or terminal != (state in TERMINAL_STATES):
-            raise DeliveryError(f"terminal flag does not match state `{state}`")
-        history = payload.get("history", [])
-        observations = payload.get("observations", [])
-        if not isinstance(history, list) or not isinstance(observations, list):
-            raise DeliveryError("history and observations must be lists")
-        try:
-            fields = bound_fields(
-                payload,
-                state,
-                findings_received=FINDINGS_RECEIVED,
-                execution_modes=_EXECUTION_MODES,
-                attempt_id=_attempt_id,
-            )
-            normalized_attempt_id = _attempt_id(payload["attempt_id"])
-            validate_history(
-                history,
-                observations,
-                state,
-                normalized_attempt_id,
-                fields["findings_identity"],
-                spawn_accepted=SPAWN_ACCEPTED,
-                canonical_states=CANONICAL_STATES,
-                terminal_states=TERMINAL_STATES,
-                allowed_transitions=_ALLOWED_TRANSITIONS,
-            )
-        except ValueError as exc:
-            raise DeliveryError(str(exc)) from exc
-        return cls(
-            attempt_id=normalized_attempt_id,
-            scope=_text(payload["scope"], "scope"),
-            packet_identity=_text(payload["packet_identity"], "packet_identity"),
-            parent_receipt_identity=_validated_parent_receipt_identity(payload["parent_receipt_identity"]),
-            boundary_fingerprint=fields["boundary_fingerprint"],
-            boundary_mode=fields["boundary_mode"],
-            state=state,
-            observed_signal=_text(payload["observed_signal"], "observed_signal"),
-            terminal=terminal,
-            recorded_at=_text(payload["recorded_at"], "recorded_at"),
-            reviewed_input_identity=fields["reviewed_input_identity"],
-            execution_mode=fields["execution_mode"],
-            backend=fields["backend"],
-            prompt_sha256=fields["prompt_sha256"],
-            schema_sha256=fields["schema_sha256"],
-            capability_launch_envelope_sha256=fields["capability_launch_envelope_sha256"],
-            output_file=fields["output_file"], receipt_file=fields["receipt_file"], producer_run_id=fields["producer_run_id"],
-            findings_identity=fields["findings_identity"],
-            retry_of=fields["retry_of"],
-            retry_count=fields["retry_count"],
-            history=history,
-            observations=observations,
-        )
+        return _from_dict(cls, payload)
 
     def to_dict(self) -> dict[str, Any]:
-        payload: dict[str, Any] = {
-            "attempt_id": self.attempt_id,
-            "scope": self.scope,
-            "packet_identity": self.packet_identity,
-            "parent_receipt_identity": self.parent_receipt_identity,
-            "boundary_mode": self.boundary_mode,
-            "state": self.state,
-            "observed_signal": self.observed_signal,
-            "terminal": self.terminal,
-            "recorded_at": self.recorded_at,
-            "history": self.history,
-            "observations": self.observations,
-            "retry_count": self.retry_count,
-        }
-        if self.boundary_fingerprint is not None:
-            payload["boundary_fingerprint"] = self.boundary_fingerprint
-        payload.update(
-            {
-                key: value
-                for key in (
-                    "reviewed_input_identity",
-                    "execution_mode",
-                    "backend",
-                    "prompt_sha256",
-                    "schema_sha256",
-                    "capability_launch_envelope_sha256",
-                    "output_file", "receipt_file", "producer_run_id",
-                )
-                if (value := getattr(self, key)) is not None
-            }
-        )
-        if self.findings_identity is not None:
-            payload["findings_identity"] = self.findings_identity
-        if self.retry_of is not None:
-            payload["retry_of"] = self.retry_of
-        return payload
+        return _to_dict(self)
 
     @property
     def delivery_complete(self) -> bool:

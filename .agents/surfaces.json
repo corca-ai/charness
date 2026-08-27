@@ -628,7 +628,7 @@
     },
     {
       "surface_id": "quality-core-workflow",
-      "description": "Repo-local light push/tag CI plus the CI-PR changed-line mutation mirror (consumer-inert; every step invokes a repo-owned validator).",
+      "description": "Repo-local light push/tag CI; expensive mutation coverage remains outside the push/PR workflow.",
       "source_paths": [
         ".github/workflows/quality-core.yml"
       ],
@@ -639,7 +639,7 @@
       ],
       "notes": [
         "Each CI step invokes a repo-owned validator so rules stay single-source; see docs/validator-timing-layers.md.",
-        "The PR mirror job keeps the plain coverage probe (--write-fresh-marker), never the dynamic-context export."
+        "Release-only changed-line coverage is not a push/PR job; scheduled mutation testing is the asynchronous deeper check."
       ]
     },
     {

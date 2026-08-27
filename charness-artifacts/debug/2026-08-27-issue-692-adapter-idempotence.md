@@ -122,8 +122,7 @@ by the classification contract.
 ## Interrupt Decision
 
 - Resolution: resolved locally
-- Critique Required: no — explicit operator direction omitted forced fresh-eye
-  review and this host exposes no Agent/subagent capability.
+- Critique Required: no
 - Next Step: impl
 - Handoff Artifact: none — explicit operator direction omitted handoff update.
 

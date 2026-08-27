@@ -53,6 +53,9 @@ def _install_script(repo: Path, script_name: str) -> tuple[Path, Path]:
     mirror = repo / MIRROR_RELATIVE / "scripts" / script_name
     source.parent.mkdir(parents=True, exist_ok=True)
     mirror.parent.mkdir(parents=True, exist_ok=True)
+    if script_name in {"check-python-lint.sh", "run-quality.sh"}:
+        (repo / ".githooks").mkdir(exist_ok=True)
+        shutil.copy2(ROOT / ".githooks" / "runtime-env.sh", repo / ".githooks" / "runtime-env.sh")
     # The guard travels with every gate that sources it, in BOTH copies. Shipping it to
     # only one side would make these tests measure "the guard file is missing" instead of
     # "the guard refused", which is a different green.

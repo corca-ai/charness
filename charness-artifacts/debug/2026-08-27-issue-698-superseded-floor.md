@@ -137,13 +137,13 @@ improving retro and an explicit no-improvement opt-out.
 
 ## Evidence Disposition
 
-- Report Identity: goal-run:724#sha256:86e34a56246e2c06e886042674fa12e22b139e01819c15c4e59cbc7465118bf8
+- Report Identity: goal-run:724#sha256:3ce10c30a99c88363f1a06e4f9ba08a9aedb7d27c80d8dd6c343e90961972432
 - Reported Findings: 1
 - Dispositioned Findings: DBG-698-F1
 - Missing Findings: none
 - Evidence Digest: sha256:760180f7c4b353da611709783eeafc6ccf8776366bd976d063586eb54a7af5bc
 - Report Source: charness-artifacts/goal-runs/724/bodies/backlog-698.md
-- Report Source SHA256: 86e34a56246e2c06e886042674fa12e22b139e01819c15c4e59cbc7465118bf8
+- Report Source SHA256: 3ce10c30a99c88363f1a06e4f9ba08a9aedb7d27c80d8dd6c343e90961972432
 
 ## Adversarial Verification
 

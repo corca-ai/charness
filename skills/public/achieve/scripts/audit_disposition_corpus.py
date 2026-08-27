@@ -20,9 +20,10 @@ it would do, so a human can confirm:
   forces the mutually-exclusive pair through ``summarize`` and pins that the
   count reaches 1 and the flag's exit path returns 1. That probe is why this is
   an armed guard rather than one nobody has ever seen work;
-- the floor is **not inert** — in-scope goals that lack a bound
-  ``Disposition review:`` line or carry a blank ``## Auto-Retro`` are surfaced
-  (these are the cases a post-rule closeout must now satisfy).
+- the deterministic floor is **not inert** — in-scope goals that carry a blank
+  ``## Auto-Retro`` are surfaced. A missing ``Disposition review:`` line is
+  surfaced only for goals whose adapter explicitly selects ``review-required``;
+  ordinary goals use the deterministic closeout floor.
 
 Exit code is always 0 unless ``--fail-on-pre-rule-refusal`` is passed and a
 *pre-rule* goal is refused (which would mean the grandfather leaked). The runner
@@ -120,6 +121,12 @@ def audit_goal(repo_root: Path, path: Path) -> dict:
     status = status_match.group(1) if status_match else None
     report = _ce.check_complete_evidence(repo_root, text)
     scope = report.get("disposition_scope", {})
+    policy = report.get("achieve_adapter_policy", {})
+    review_required = (
+        scope.get("in_scope") is True
+        and policy.get("valid") is True
+        and policy.get("auto_retro_disposition_floor") == "review-required"
+    )
     return {
         "goal": path.name,
         "status": status,
@@ -130,6 +137,7 @@ def audit_goal(repo_root: Path, path: Path) -> dict:
         "in_scope": scope.get("in_scope"),
         "auto_retro_blank": report.get("auto_retro_blank"),
         "retro_improvements_present": report.get("retro_improvements_present"),
+        "review_required": review_required,
         "has_disposition_review_line": bool(_REVIEW_LINE.search(_disp._mask_fences(text))),
         "rung1a_block_the_blank": "disposition_blank" in report,
         "disposition_optout": report.get("disposition_optout", {}).get("reason"),
@@ -149,7 +157,10 @@ def summarize(rows: list[dict]) -> dict:
     pre_rule = [r for r in completed if r["in_scope"] is False]
     in_scope = [r for r in completed if r["in_scope"] is True]
     pre_rule_refused = [r for r in pre_rule if r["rung1a_block_the_blank"]]
-    in_scope_missing_review = [r for r in in_scope if not r["has_disposition_review_line"]]
+    in_scope_missing_review = [
+        r for r in in_scope
+        if r.get("review_required") is True and not r["has_disposition_review_line"]
+    ]
     in_scope_blank = [r for r in in_scope if r["rung1a_block_the_blank"]]
     # `created` is the PARSED date (ISO string) or None, never the raw line, so
     # `not created` is exactly "the scope verdict could not be taken from a date"
@@ -216,6 +227,7 @@ def summarize(rows: list[dict]) -> dict:
             )
         ),
         "in_scope_blank_refusals": len(in_scope_blank),
+        "in_scope_review_required": sum(1 for r in in_scope if r.get("review_required") is True),
         "in_scope_missing_disposition_review_line": [r["goal"] for r in in_scope_missing_review],
     }
 

@@ -1,17 +1,8 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Callable
 
-from scripts.setup_artifact_policy_lib import detect_charness_artifact_policy
-from scripts.setup_commit_discipline_lib import detect_commit_discipline_policy
-from scripts.setup_markdown_section_lib import extract_section
 from scripts.setup_operating_surface_lib import detect_operating_surface_ownership
-from scripts.setup_skill_routing_lib import (
-    COMPACT_SKILL_ROUTING_CALL_RE,
-    COMPACT_SKILL_ROUTING_NEGATED_CALL_RE,
-    skill_routing_semantically_complete,
-)
 
 RETRO_ADAPTER_RELATIVE_PATH = Path(".agents/retro-adapter.yaml")
 RETRO_SUMMARY_RELATIVE_PATH = Path("charness-artifacts/retro/recent-lessons.md")
@@ -22,12 +13,15 @@ RECOMMENDATION_PRIORITY_ORDER = {
     "low": 3,
     "advisory": 4,
 }
-FINDING_RECOMMENDATION_PRIORITIES = {
-    "skill_routing_block_custom_or_drifted": "review_required",
-    "charness_artifacts_commit_policy_drift": "review_required",
-    "commit_discipline_drift": "review_required",
-}
-RECOMMENDATION_FINDING_TYPES = set(FINDING_RECOMMENDATION_PRIORITIES)
+
+# Setup reports only findings it can own. Artifact commit wording, skill
+# detailed routing prose, session hooks, and review delegation belong to the
+# workflow that uses them; copying those contracts into every consumer AGENTS.md
+# was a source of drift and false setup work. The compact template's one-line
+# parallel cue is intentionally not a host-specific delegation contract.
+FINDING_RECOMMENDATION_PRIORITIES: dict[str, str] = {}
+RECOMMENDATION_FINDING_TYPES: set[str] = set()
+
 
 def _file_state(path: Path) -> dict[str, object]:
     if not path.exists() and not path.is_symlink():
@@ -61,47 +55,18 @@ def _read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="replace") if path.is_file() else ""
 
 
-def _detect_retro_memory_normalization(repo_root: Path, agents_text: str) -> tuple[dict[str, object], list[dict[str, str]]]:
-    adapter = repo_root / RETRO_ADAPTER_RELATIVE_PATH
-    summary = repo_root / RETRO_SUMMARY_RELATIVE_PATH
-    adapter_exists = adapter.is_file()
-    summary_exists = summary.is_file()
-    enabled = adapter_exists or summary_exists
-    agents_mentions_summary = RETRO_SUMMARY_RELATIVE_PATH.as_posix() in agents_text
-    findings: list[dict[str, str]] = []
-    if enabled and not agents_mentions_summary:
-        findings.append(
-            {
-                "type": "agents_missing_retro_recent_lessons_memory",
-                "message": "Retro memory is enabled but AGENTS.md does not list the recent lessons digest.",
-                "recommended_action": "add_recent_lessons_to_agents_memory",
-            }
-        )
-    if summary_exists and not adapter_exists:
-        findings.append(
-            {
-                "type": "retro_summary_without_adapter",
-                "message": "Retro recent-lessons digest exists but .agents/retro-adapter.yaml is missing.",
-                "recommended_action": "seed_or_restore_retro_adapter",
-            }
-        )
-    if adapter_exists and not summary_exists:
-        findings.append(
-            {
-                "type": "retro_adapter_without_summary",
-                "message": "Retro adapter exists but the configured recent-lessons digest is missing.",
-                "recommended_action": "seed_or_restore_recent_lessons_digest",
-            }
-        )
-    return (
-        {
-            "enabled": enabled,
-            "adapter_exists": adapter_exists,
-            "summary_exists": summary_exists,
-            "agents_mentions_summary": agents_mentions_summary,
-        },
-        findings,
-    )
+def _retro_memory_state(repo_root: Path, agents_text: str) -> dict[str, object]:
+    """Expose the opt-in retro seam without making setup its policy owner."""
+
+    adapter_exists = (repo_root / RETRO_ADAPTER_RELATIVE_PATH).is_file()
+    summary_exists = (repo_root / RETRO_SUMMARY_RELATIVE_PATH).is_file()
+    return {
+        "enabled": adapter_exists or summary_exists,
+        "adapter_exists": adapter_exists,
+        "summary_exists": summary_exists,
+        "agents_mentions_summary": RETRO_SUMMARY_RELATIVE_PATH.as_posix() in agents_text,
+        "policy_owner": "retro",
+    }
 
 
 def _recommendation(
@@ -129,12 +94,10 @@ def _recommendation(
 
 
 def finding_recommendation(finding: dict[str, str], *, priority: str = "advisory") -> dict[str, object]:
-    target = "AGENTS.md"
-    kind = "policy_sync"
     return _recommendation(
         rec_id=finding["type"],
-        target=target,
-        kind=kind,
+        target="AGENTS.md",
+        kind="policy_sync",
         priority=priority,
         confidence="medium",
         enforcement_tier="NON_AUTOMATABLE",
@@ -150,78 +113,16 @@ def is_acknowledged(item_id: str, acknowledged: set[str]) -> bool:
 def sort_recommendations(recommendations: list[dict[str, object]]) -> list[dict[str, object]]:
     return sorted(
         recommendations,
-        key=lambda item: (RECOMMENDATION_PRIORITY_ORDER.get(str(item.get("priority")), 99), str(item.get("id"))),
+        key=lambda item: (
+            RECOMMENDATION_PRIORITY_ORDER.get(str(item.get("priority")), 99),
+            str(item.get("id")),
+        ),
     )
 
 
-def _detect_skill_routing_normalization(
-    repo_root: Path,
-    agents_text: str,
-    skill_routing_payload: Callable[[Path], dict[str, Any]] | None,
-) -> tuple[dict[str, object], list[dict[str, str]]]:
-    has_skill_routing = "## Skill Routing" in agents_text
-    payload = skill_routing_payload(repo_root) if skill_routing_payload is not None else {}
-    expected_markdown = str(payload.get("markdown", ""))
-    missing_expected_snippets: list[str] = []
-    matches_compact_block = bool(expected_markdown and expected_markdown in agents_text)
-    section_body = extract_section(agents_text, "## Skill Routing") if has_skill_routing else ""
-    section_lower = section_body.lower()
-    catalog_available = True
-    compact_discovery_first_present = any(
-        COMPACT_SKILL_ROUTING_CALL_RE.search(line)
-        and not COMPACT_SKILL_ROUTING_NEGATED_CALL_RE.search(line)
-        and ("startup" in line or "sessionstart" in line or "session start" in line)
-        and ("once" in line or "before broader exploration" in line)
-        and ("catalog" in line or "capability" in line or "route" in line)
-        for line in section_lower.splitlines()
-    )
-    semantically_complete = skill_routing_semantically_complete(section_body)
-    accepts_compact_discovery_first = (
-        has_skill_routing
-        and not matches_compact_block
-        and catalog_available
-        and (compact_discovery_first_present or semantically_complete)
-    )
-    recommended_action = str(payload.get("recommended_action", "inspect_manually"))
-    decision_needed: str | None = None
-    findings: list[dict[str, str]] = []
+def detect_agent_docs(repo_root: Path) -> dict[str, object]:
+    """Inspect the host-doc boundary without prescribing workflow prose."""
 
-    if matches_compact_block or accepts_compact_discovery_first:
-        recommended_action = "leave_as_is"
-
-    if has_skill_routing and expected_markdown and not matches_compact_block and not accepts_compact_discovery_first:
-        expected_lines = tuple(line for line in expected_markdown.splitlines() if line.strip() and line != "## Skill Routing")
-        missing_expected_snippets = [line for line in expected_lines if line not in agents_text]
-        recommended_action = "review_existing_skill_routing"
-        decision_needed = "leave_as_is_or_replace_with_compact_block"
-        findings.append(
-            {
-                "type": "skill_routing_block_custom_or_drifted",
-                "message": "AGENTS.md has a Skill Routing block that differs from the generated compact discovery-first block.",
-                "recommended_action": "decide_leave_as_is_or_compact_skill_routing",
-            }
-        )
-
-    return (
-        {
-            "has_skill_routing": has_skill_routing,
-            "matches_compact_block": matches_compact_block,
-            "semantically_complete": semantically_complete,
-            "accepts_compact_discovery_first": accepts_compact_discovery_first,
-            "catalog_available": catalog_available,
-            "recommended_action": recommended_action,
-            "decision_needed": decision_needed,
-            "missing_expected_snippets": missing_expected_snippets,
-        },
-        findings,
-    )
-
-
-def detect_agent_docs(
-    repo_root: Path,
-    *,
-    skill_routing_payload: Callable[[Path], dict[str, Any]] | None = None,
-) -> dict[str, object]:
     agents = _case_insensitive_path(repo_root, Path("AGENTS.md"))
     claude = _case_insensitive_path(repo_root, Path("CLAUDE.md"))
     agents_text = _read_text(agents)
@@ -237,32 +138,19 @@ def detect_agent_docs(
         action = "ask_to_merge_and_replace_with_symlink"
     else:
         action = "inspect_manually"
-    retro_memory, retro_findings = _detect_retro_memory_normalization(repo_root, agents_text)
-    charness_artifacts, charness_artifact_findings = detect_charness_artifact_policy(repo_root, agents_text)
-    commit_discipline, commit_discipline_findings = detect_commit_discipline_policy(agents_text)
-    skill_routing, skill_routing_findings = _detect_skill_routing_normalization(
-        repo_root,
-        agents_text,
-        skill_routing_payload,
-    )
+
     from scripts.setup_adapter_inspect_lib import (
         detect_setup_adapter_normalization,
         detect_worktree_adapter_normalization,
     )
 
-    worktree_adapter, worktree_adapter_findings, worktree_adapter_recommendations = (
+    worktree_adapter, worktree_findings, worktree_recommendations = (
         detect_worktree_adapter_normalization(repo_root)
     )
-    setup_adapter, setup_adapter_recommendations = detect_setup_adapter_normalization(repo_root)
+    setup_adapter, setup_recommendations = detect_setup_adapter_normalization(repo_root)
     ownership = detect_operating_surface_ownership(repo_root, agents_text=agents_text)
-    normalization_findings = [
-        *retro_findings,
-        *charness_artifact_findings,
-        *commit_discipline_findings,
-        *skill_routing_findings,
-        *worktree_adapter_findings,
-    ]
-    extra_recommendations = [*worktree_adapter_recommendations, *setup_adapter_recommendations]
+    findings = list(worktree_findings)
+    recommendations = [*worktree_recommendations, *setup_recommendations]
     return {
         "agents": _file_state(agents),
         "claude": _file_state(claude),
@@ -270,13 +158,10 @@ def detect_agent_docs(
         "agents_has_text": _text_present(agents),
         "claude_has_text": _text_present(claude),
         "normalization": {
-            "status": "needs_normalization" if normalization_findings or extra_recommendations else "ok",
-            "findings": normalization_findings,
-            "extra_recommendations": extra_recommendations,
-            "retro_memory": retro_memory,
-            "charness_artifacts": charness_artifacts,
-            "commit_discipline": commit_discipline,
-            "skill_routing": skill_routing,
+            "status": "needs_normalization" if findings or recommendations else "ok",
+            "findings": findings,
+            "recommendations": sort_recommendations(recommendations),
+            "retro_memory": _retro_memory_state(repo_root, agents_text),
             "worktree_adapter": worktree_adapter,
             "setup_adapter": setup_adapter,
             "ownership": ownership,

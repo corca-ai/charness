@@ -413,7 +413,7 @@ def test_default_patterns_anchor_each_shipped_run_quality_invocation(tmp_path: P
     invocations = (
         "bash scripts/run-quality.sh",
         "bash ./scripts/run-quality.sh --read-only",
-        "CHARNESS_PRE_PUSH=1 ./scripts/run-quality.sh --read-only",
+        "CHARNESS_RUNTIME_REGIME=docs-only ./scripts/run-quality.sh --read-only",
     )
     for invocation in invocations:
         repo = _write_workflow(
@@ -829,7 +829,7 @@ def test_default_canonical_gate_patterns_cover_shipped_runner_forms() -> None:
     for invocation in (
         "bash scripts/run-quality.sh",
         "bash ./scripts/run-quality.sh --read-only",
-        "CHARNESS_PRE_PUSH=1 ./scripts/run-quality.sh --read-only",
+        "CHARNESS_RUNTIME_REGIME=docs-only ./scripts/run-quality.sh --read-only",
     ):
         assert any(
             re.search(pattern, invocation)

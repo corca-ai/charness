@@ -22,48 +22,14 @@ _consolidated = _load_local("issue_consolidated_closeout")
 _consolidation_readback = _load_local("issue_consolidation_readback")
 _state_readback = _load_local("issue_state_readback")
 _goal_run_guard = _load_local("issue_goal_run_guard")
-
-GH_COMMENT_DEFAULT = [
-    "issue",
-    "comment",
-    "--repo",
-    "{repo}",
-    "{number}",
-    "--body-file",
-    "{body_file}",
-]
-
-GH_CLOSE_DEFAULT = [
-    "issue",
-    "close",
-    "--repo",
-    "{repo}",
-    "{number}",
-    "--reason",
-    "{reason}",
-]
-GH_VIEW_DEFAULT = [
-    "issue",
-    "view",
-    "--repo",
-    "{repo}",
-    "{number}",
-    "--json",
-    "{json_fields}",
-]
-GH_VIEW_TARGET_DEFAULT = [
-    "issue",
-    "view",
-    "--repo",
-    "{repo}",
-    "{number}",
-    "--json",
-    "number,state,url,body",
-]
-
-COMMENT_PLACEHOLDERS: frozenset[str] = frozenset({"repo", "number", "body_file", "reason"})
-CLOSE_PLACEHOLDERS: frozenset[str] = frozenset({"repo", "number", "reason"})
-VIEW_PLACEHOLDERS: frozenset[str] = frozenset({"repo", "number", "json_fields"})
+_COMMANDS = _load_local("issue_close_commands")
+GH_COMMENT_DEFAULT = _COMMANDS.GH_COMMENT_DEFAULT
+GH_CLOSE_DEFAULT = _COMMANDS.GH_CLOSE_DEFAULT
+GH_VIEW_DEFAULT = _COMMANDS.GH_VIEW_DEFAULT
+GH_VIEW_TARGET_DEFAULT = _COMMANDS.GH_VIEW_TARGET_DEFAULT
+COMMENT_PLACEHOLDERS = _COMMANDS.COMMENT_PLACEHOLDERS
+CLOSE_PLACEHOLDERS = _COMMANDS.CLOSE_PLACEHOLDERS
+VIEW_PLACEHOLDERS = _COMMANDS.VIEW_PLACEHOLDERS
 
 
 def _authorize_direct_close(

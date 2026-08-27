@@ -55,9 +55,9 @@ memory.
 - Implement the host-log probe as a standalone helper first. `retro` may
   consume it later, but this slice should not make host-log collection an
   always-on retro dependency.
-- Extend `setup` so newly scaffolded repos can inherit the same memory seam:
-  a retro adapter with `summary_path`, an AGENTS memory entry, and a lightweight
-  digest file.
+- Extend `setup` so newly scaffolded repos can opt into the same memory seam:
+  a retro adapter with `summary_path` and a lightweight digest file. Do not
+  add a root AGENTS memory rule; the retro workflow owns selection.
 - Let `retro` own digest refresh. Weekly and session retros may both update the
   compact digest when `summary_path` is configured.
 - Treat efficiency metrics in tiers:
@@ -148,7 +148,7 @@ If this work is implemented badly, the likely failure modes are:
 - Do not claim metric availability unless a declared local source proves it.
 - Keep weekly retro narrative-friendly when no metrics exist.
 - Avoid making ordinary `impl` work materially slower by default.
-- Keep handoff concise; use dedicated retro artifacts for accumulated lessons.
+- Keep durable summaries concise; use dedicated retro artifacts for accumulated lessons.
 
 ## Success Criteria
 
@@ -207,7 +207,8 @@ If this work is implemented badly, the likely failure modes are:
    `persist_retro_artifact.py`.
 3. Decide whether `setup` should also wire the recent-lessons seam into
    scaffolded [`AGENTS.md`](../AGENTS.md) memory by default when retro memory is enabled.
-   Landed.
+   Landed in favor of keeping the root file minimal and leaving selection to
+   `retro`.
 
 ## Notes On Existing Signals
 

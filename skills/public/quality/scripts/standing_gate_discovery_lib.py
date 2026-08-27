@@ -49,9 +49,9 @@ def _shell_surface(repo_root: Path, rel_path: str, surface_type: str) -> dict[st
             continue
         # `VAR=1 some-command` is a COMMAND with an env prefix, not an assignment.
         # Matching the prefix and skipping dropped the line entirely, so a runner
-        # invoked as `CHARNESS_PRE_PUSH=1 ./scripts/run-quality.sh` became invisible
-        # and the surface it references was never discovered at all -- a silent loss
-        # of the whole downstream inventory, not a missing snippet.
+        # invoked with an environment prefix became invisible and the surface it
+        # references was never discovered at all -- a silent loss of the whole
+        # downstream inventory, not a missing snippet.
         stripped = ENV_PREFIX_RE.sub("", stripped)
         if not stripped or re.match(r"^[A-Za-z_][A-Za-z0-9_]*=\S*$", stripped):
             continue

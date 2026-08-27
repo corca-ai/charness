@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-import shlex
 import subprocess
 from pathlib import Path
 from typing import MutableMapping
@@ -42,14 +41,6 @@ def prepare_exec_environment(
     child_env = dict(os.environ if env is None else env)
     configured = configure_runtime_environment(repo_root, child_env)
 
-    # pytest has no standard environment variable for its cache directory. Inject
-    # the override at the same process boundary as the other runtime paths so a
-    # plain `pytest` invocation, and pytest started by another child, does not fall
-    # back to `<repo>/.pytest_cache`. A later explicit command-line override remains
-    # an intentional caller choice.
-    cache_option = shlex.join(["-o", f"cache_dir={configured['CHARNESS_PYTEST_CACHE_DIR']}"])
-    existing_addopts = configured.get("PYTEST_ADDOPTS", "").strip()
-    configured["PYTEST_ADDOPTS"] = f"{existing_addopts} {cache_option}".strip()
     configured["CHARNESS_REPO_ROOT"] = str(repo_root.resolve())
     return configured
 

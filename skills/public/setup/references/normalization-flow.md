@@ -23,10 +23,6 @@ parallel templates.
 - when a material boundary needs an independent observer, does the owning skill
   record the decision and any unavailable-observer non-claim without requiring
   every consumer repo to carry the same root policy
-- when the repo uses Charness durable artifacts, does `<repo-root>/AGENTS.md`
-  make meaningful `charness-artifacts/` changes repo state and commit targets,
-  and say current-pointer helpers should no-op without canonical content
-  changes
 - does `<repo-root>/docs/roadmap.md` exist when active ordered planning is evidenced
 - can a human operator tell what to do from `<repo-root>/docs/operator-acceptance.md`
   when the repo actually has an install/deployment/takeover path

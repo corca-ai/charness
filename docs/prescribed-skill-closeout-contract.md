@@ -177,7 +177,7 @@ or `Critique #N #M:` lines.
 
 | Closeout kind | Required evidence | Skip allowed? |
 | --- | --- | --- |
-| `achieve` After | `retro_artifact` (a checked-in `charness-artifacts/retro/<date>-<slug>.md` newer than goal `active` flip), `host_log_probe` (`probe_host_logs.py` output recorded in the goal artifact or a sibling JSON), and — **for goals `Created` ≥ `2026-05-30` only** — `disposition_review` (#253; a bound disposition-review artifact) | yes, with `skip: <reason>` (e.g., host log not exposed; `disposition_review` only when the configured review path is unavailable) |
+| `achieve` After | `retro_artifact` (a checked-in `charness-artifacts/retro/<date>-<slug>.md` newer than goal `active` flip) and `host_log_probe` (`probe_host_logs.py` output recorded in the goal artifact or a sibling JSON); `disposition_review` is conditional on an explicit `review-required` goal adapter | yes, with `skip: <reason>` (e.g., host log not exposed; an opted-in disposition review may skip only with its configured reason) |
 | `issue-resolution` | `resolution_critique` (one carrier-body line per issue, `Critique #N: <artifact-or-blocked>`, or an explicit bundle line such as `Critique #N #M: <artifact-or-blocked>`; the single-issue shorthand `Critique: <artifact-or-blocked>` is still accepted) | yes, with `skip: <reason>` only when host blocks subagents |
 | `release` closeout | `standalone_critique` (artifact reference or `Critique: blocked <host-signal>`) | yes, with `skip: <reason>` only when host blocks subagents |
 
@@ -217,11 +217,11 @@ and wired through the achieve After-phase evidence gate:
     blank and no `Retro dispositions: none — <reason>` opt-out is recorded
     (Auto-Retro-scoped; a full-text scan is poisoned by goal bodies that merely
     *describe* the marker). Emptiness only — it never classifies prose.
-  - *review-ran evidence* — require the bound `disposition_review` line above.
-    Presence/binding-only **by design**: it proves a fresh-eye review *ran* and
-    binds to this goal; it never inspects the review's content. Tightening it
-    into a content classifier re-imports the prose word-list trap one level up
-    and is disallowed.
+  - *review-ran evidence* — when the goal adapter explicitly selects
+    `review-required`, require the bound `disposition_review` line above.
+    Presence/binding-only **by design**: it proves the opted-in review ran and
+    binds to this goal; it never inspects the review's content. The default
+    deterministic-only path does not create or require this artifact.
   - *structural-follow-up destination* (#337) — when the cited retro names a
     transferable waste item (a `## Sibling Search` trigger), `## Auto-Retro` must
     carry a `Structural follow-up:` line whose value is one of four destinations
@@ -229,13 +229,12 @@ and wired through the achieve After-phase evidence gate:
     "recorded in recent-lessons" cannot pass as a structural disposition.
     Presence/form-enum only; inert unless transferable waste is named; same
     grandfather-by-`Created`-date shape (≥ `2026-06-09`).
-- **Rung 2 — fresh-eye disposition review** (the intelligence): the bounded
-  closeout reviewer reads the retro's `## Next Improvements` + the goal's
-  `## Auto-Retro` and records a **per-improvement verdict** (dispositioned vs
-  undispositioned) into the artifact the `Disposition review:` line binds. This
-  is the substantive, polarity-aware call a regex cannot make; it is
-  **agent-backed / non-deterministic** and host-dependent, made auditable for a
-  human, not a hidden pass.
+- **Rung 2 — opted-in disposition review** (the intelligence): when the goal
+  adapter selects `review-required`, the bounded closeout reviewer reads the
+  retro's `## Next Improvements` + the goal's `## Auto-Retro` and records a
+  **per-improvement verdict** into the artifact the `Disposition review:` line
+  binds. This remains agent-backed and host-dependent; it is never a default
+  completion ceremony.
 
 Both rungs are **grandfathered by `Created` date** (≥ `2026-05-30` inclusive —
 the rule landing date; missing/malformed `Created` fails closed). Keying on

@@ -258,7 +258,7 @@ transition; there is no second local child-acceptance ledger.
 Parent body updates are limited to the managed cursor and shared contract. One
 agent owns those updates; optimistic concurrency is not part of the default
 model. Full graph reconciliation remains explicit rather than running on every
-session start.
+ordinary pickup.
 
 A deferred child moves to a successor Goal Run with a durable reason and exact
 remove/add readback. Merely unlinking it cannot make the current parent closable.

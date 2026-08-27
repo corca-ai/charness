@@ -1,10 +1,10 @@
-"""Closeout producer for the changed-line mutation-coverage pre-push gate.
+"""Closeout producer for the changed-line mutation-coverage release gate.
 
 Lever A+B (decided 2026-06-07): instead of a dedicated slow `dynamic_context`
 probe, closeout can either instrument the broad pytest run itself or instrument
 an explicit focused pytest command while broad pytest stays on the normal
 proof/cache path. The producer exports small coverage JSON and stamps a freshness
-fingerprint. The pre-push consumer
+fingerprint. The release consumer
 (`check_changed_line_mutation_coverage.py --require-fresh-coverage`) trusts that
 coverage when its producer-qualified `.changed-line.fingerprint` marker matches
 the current changed-pool content.
@@ -194,7 +194,7 @@ def produce_broad_coverage(
 
 
 def default_mutation_base_sha(repo_root: Path) -> str:
-    """The merge-base with origin/main — the same base the pre-push consumer uses
+    """The merge-base with origin/main — the same base the release consumer uses
     so the producer's freshness fingerprint matches the consumer's recomputation."""
     result = subprocess.run(
         ["git", "-C", str(repo_root), "merge-base", "origin/main", "HEAD"],
@@ -344,10 +344,11 @@ def consumer_status(returncode: object) -> str:
         # `blocked` HERE, deliberately, and for the same reason exit 3 is: this
         # producer runs under `--verification-lock`, where the coverage was just
         # produced over the whole changed set, so a scope that came back short is a
-        # real closeout gap rather than the mapper's blind spot. The pre-push lane
-        # answers the same byte with a non-blocking `partial` because its scope is
-        # limited BY DESIGN. Two contexts, two right answers -- which is exactly why
-        # this needs a branch and not a fallthrough.
+        # real closeout gap rather than the mapper's blind spot. A bounded
+        # diagnostic invocation can answer the same byte with a non-blocking
+        # `partial`, because its scope is limited BY DESIGN. Two contexts, two
+        # right answers -- which is exactly why this needs a branch and not a
+        # fallthrough.
         return "blocked"
     return "blocked"
 

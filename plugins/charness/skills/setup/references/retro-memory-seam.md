@@ -25,8 +25,6 @@ This seeds:
 
 - `summary_path: charness-artifacts/retro/recent-lessons.md`
 - empty `evidence_paths` and `metrics_commands` that the repo can tighten later
-- an expectation that `<repo-root>/AGENTS.md` should list `<repo-root>/charness-artifacts/retro/recent-lessons.md`
-  in repo memory when the seam is enabled
 
 ## Lesson Loop (separate, explicit opt-in)
 
@@ -43,8 +41,8 @@ The explicit loop is:
    `<repo-root>/charness-artifacts/retro/`.
 2. Run the opt-in once: the `lesson_loop.opt_in_command` this script prints
    (`init_lesson_ledger.py`, resolved repo-locally when the repo has its own
-   `scripts/`, otherwise from the installed package). Until then the hook injects
-   no context and the retro disposition floor stays inert.
+   `scripts/`, otherwise from the installed package). Until then no context is
+   injected and the retro disposition floor stays inert.
 3. Tag at least one retro bullet `recurrence-class: <slug>` and append its seed
    transition. Until a lesson is seeded the preview is empty, session declaration
    refuses, and `not-evaluated / missing-start` remains the only honest

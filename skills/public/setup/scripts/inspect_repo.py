@@ -17,7 +17,6 @@ def _load_skill_runtime_bootstrap():
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _setup_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "setup_adapter")
-_render_skill_routing_module = SKILL_RUNTIME.load_local_skill_module(__file__, "render_skill_routing")
 _inspect_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.setup_inspect_lib")
 yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 
@@ -36,7 +35,6 @@ def main() -> int:
         prose_wrap_state=_setup_adapter_module.prose_wrap_state,
         surface_overrides=_setup_adapter_module.surface_overrides,
         operating_surface_profile=_setup_adapter_module.operating_surface_profile,
-        skill_routing_payload=_render_skill_routing_module.build_payload,
     )
     if args.expect_plan_identity and payload["approval_plan"]["identity"] != args.expect_plan_identity:
         yaml_output.emit_yaml(

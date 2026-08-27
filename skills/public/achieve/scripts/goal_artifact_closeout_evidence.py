@@ -51,11 +51,11 @@ _mask_fences = _load_local_module("goal_artifact_markdown").mask_fences
 # enum-valid reason (see ``check_prescribed_skill_executed_lib.ALLOWED_SKIP_REASONS``).
 CLOSEOUT_EVIDENCE_NAMES = ("retro_artifact", "host_log_probe")
 
-# Disposition rung 1b: in-scope goals must also
+# Disposition rung 1b: in-scope goals whose adapter opts into review-required
 # carry a bound ``Disposition review: <path>`` line proving a fresh-eye
 # disposition review *ran* (or a ``skipped: host-blocked-subagent: <detail>``).
-# Grandfathered goals do not require it — the name is appended to the required
-# set only when ``disposition_gate_applies`` (threaded in ``check_complete_evidence``).
+# The name is appended to the required set only when both the disposition scope
+# and the explicit adapter policy apply.
 DISPOSITION_REVIEW_EVIDENCE = "disposition_review"
 
 # Retro H2 sections whose substance must be narrated to the user, not just
@@ -272,8 +272,7 @@ def _retro_narration_for_satisfied(report: dict[str, Any]) -> list[str]:
     return []
 
 
-def _attach_adapter_policy(report: dict[str, Any], repo_root: Path) -> None:
-    policy = _adapter_policy.closeout_policy_report(repo_root)
+def _attach_adapter_policy(report: dict[str, Any], policy: dict[str, Any]) -> None:
     report["achieve_adapter_policy"] = policy
     if not policy["valid"]:
         report["ok"] = False
@@ -282,19 +281,25 @@ def _attach_adapter_policy(report: dict[str, Any], repo_root: Path) -> None:
 def check_complete_evidence(repo_root: Path, text: str) -> dict[str, Any]:
     """Run the shared closeout-evidence helper for an ``achieve`` After-phase.
 
-    The wrapper extracts ``Retro:``, ``Host log probe:``, and (for in-scope
-    goals) ``Disposition review:`` lines from the goal artifact body and feeds
-    them as evidence/skip arguments to the portable ``check`` function. The
-    wrapper supplies the contract; the helper is the gate.
+    The wrapper extracts ``Retro:`` and ``Host log probe:`` lines from the goal
+    artifact body and feeds them as evidence/skip arguments to the portable
+    ``check`` function. A ``Disposition review:`` line is added only when the
+    repository adapter explicitly selects ``review-required``. The wrapper
+    supplies the contract; the helper is the gate.
     """
     helper = _load_shared_helper()
     parsed = parse_closeout_evidence(text)
-    # Disposition rung 1b: require the review-ran evidence line only for in-scope goals
-    # (grandfather-by-Created gates BOTH rungs — else a grandfathered goal would
-    # still be refused for a Disposition review line it never had).
+    # Read the adapter once. It owns whether a separate disposition reviewer is
+    # warranted; the deterministic Auto-Retro rungs below remain goal-scoped.
+    policy = _adapter_policy.closeout_policy_report(repo_root)
     in_scope = disposition_gate_applies(text)
     required = list(CLOSEOUT_EVIDENCE_NAMES)
-    if in_scope:
+    review_required = (
+        in_scope
+        and policy["valid"]
+        and policy.get("auto_retro_disposition_floor") == "review-required"
+    )
+    if review_required:
         required.append(DISPOSITION_REVIEW_EVIDENCE)
     if _early_close_report.report_required(text):
         required.append(EARLY_CLOSE_REPORT_EVIDENCE)
@@ -329,10 +334,9 @@ def check_complete_evidence(repo_root: Path, text: str) -> dict[str, Any]:
     # the user-facing closeout (not just persist to the file). Non-blocking.
     report["narration_required_sections"] = _retro_narration_for_satisfied(report)
 
-    # Disposition rung 1a: deterministic block-the-blank floor (grandfathered by Created
-    # date; substance is rung 2's job). Rung 1b (the disposition_review line) is
-    # already enforced above via the ``required`` set; 1a fires independently so a
-    # rung-1b skip on a subagent-blocked host still leaves the blank check active.
+    # Deterministic Auto-Retro floors are still goal-scoped. If the adapter opted
+    # into a reviewer, its evidence was required above; otherwise no reviewer
+    # artifact is synthesized or inferred.
     apply_disposition_rungs(report, text, in_scope)
 
     # Final-status placeholder floor: a complete goal cannot carry a section
@@ -366,7 +370,7 @@ def check_complete_evidence(repo_root: Path, text: str) -> dict[str, Any]:
     # configuration with safe audit-only fallback when absent. A found but
     # invalid adapter blocks completion so closeout does not silently ignore the
     # repo's declared publication contract.
-    _attach_adapter_policy(report, repo_root)
+    _attach_adapter_policy(report, policy)
 
     return report
 

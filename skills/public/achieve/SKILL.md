@@ -58,11 +58,17 @@ silently.
    child is a typed sync stop. The parent cursor is advanced whenever a child
    transition is published.
 7. Execute the selected child using the lightest matching implementation path.
-   A normal code slice may use `charness task run` to create one clean named
-   worktree and run Codex without an envelope ceremony. Routine progress is
-   provider child state and child-owned evidence; no local progress mirror is
-   created and the frozen draft is not edited. Focused tests are the normal
-   proof; stronger review or proof is conditional on the claim.
+   Inspect the live host tool surface first. Independent investigation,
+   implementation, review, or question resolution is fanned out immediately
+   through a real host spawn/subagent API when one is present; do not infer its
+   absence from memory or an earlier session. Use `charness task run` when a
+   lane needs an explicit isolated worktree or no host spawn channel is
+   actually exposed. The parent agent owns intent, dependency order,
+   integration, and final verification. Direct same-context execution is for
+   dependent or tiny work, or the case where neither channel is available.
+   Routine progress is provider child state and child-owned evidence; no local
+   progress mirror is created and the frozen draft is not edited. Focused tests
+   are the normal proof; stronger review or proof is conditional on the claim.
 8. Close children only with their issue-owned behavioral proof. The dedicated
    Goal Run close reads the complete graph, verifies child evidence/deferrals,
    records a terminal observation, closes the parent, and performs distinct
@@ -127,10 +133,15 @@ coordination and completion state:
 - The active Goal Run parent and cursor are the only resume state; do not create
   or refresh a second progress artifact. A provider sub-issue summary is only a
   live readback/reporting field, never another progress store.
-- `charness task` is an optional carrier for a cross-context or delegated child;
-  use it when a claim/result needs a durable cross-context carrier, not for every local slice.
-  Its parent-owned `review` transition records a verdict but does not create an
-  observer, worktree, or proof gate.
+- `charness task run` is the repository-owned isolated carrier for one
+  independently delegable lane when explicit worktree isolation is useful or a
+  host spawn channel is unavailable. It runs one lane; the parent orchestrator
+  fans out independent lanes and serializes integration.
+- `charness task claim/submit/review/abort/status` is a legacy envelope carrier
+  for work that genuinely needs durable cross-context state or an external
+  scheduler. It is not required for an ordinary one-shot lane, and its
+  parent-owned `review` transition does not create an observer, worktree, or
+  proof gate.
 
 Adjacent workflows consume exact Goal Run/Work Item lineage when they claim
 execution evidence. They do not create a second goal tracker or rewrite the

@@ -61,7 +61,7 @@ jobs:
 
       - name: Install JS mutation runner
         # `node_modules/.bin` on PATH, which `npm ci` alone does not do. This job runs
-        # the same standing suite as quality-core's changed-line job, and the
+        # the same standing suite as the release-only changed-line lane, and the
         # doc-authoring-preflight tests build fixture repos under `tmp_path` where the
         # preflight's `node_modules/.bin` tier resolves against the FIXTURE root and
         # cannot hit. Without PATH those tests SKIP their markdownlint arms; the env

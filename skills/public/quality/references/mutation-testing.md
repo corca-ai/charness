@@ -214,12 +214,15 @@ preset stays stack-neutral.
 
 ## Changed-Line Coverage Gate (portable pattern)
 
-A full mutation run is too slow for every push, but the recurring regression
-class — a changed line that ships with no test covering it — is cheap to catch
-locally. `check_changed_line_coverage.py` (a `quality` capability) reproduces
-just the **blocking** signal of the scheduled gate: a changed pool file whose
-changed lines over `base..head` lack coverage. It does not run mutants; it
-**reuses** a coverage.py report the full/scheduled run already produced.
+Mutation and changed-line coverage are explicit release/CI concerns in Charness.
+A full mutation run is too slow for routine developer commands, so this repo's
+quality runner queues the changed-line lane only for `--release`; direct invocation
+remains available for focused diagnostics. The optional
+`check_changed_line_coverage.py` capability reproduces the **blocking** signal
+of a deeper gate: a changed pool file whose changed lines over `base..head` lack
+coverage. It does not run mutants; it **reuses** a coverage.py report produced by
+the caller. Consumers should keep it out of ordinary implementation/full lanes
+unless they explicitly choose that cost.
 
 Configure it with the `changed_line_mutation_gate` adapter block
 (`coverage_json`, `eligible_globs`, `exclude_globs`). It is stack-neutral — the
@@ -245,12 +248,11 @@ consumer recomputes it and **skips non-blocking** on a mismatch, so a stale
 report can never raise a false "uncovered changed line".
 
 The marker is a **content** hash of the changed eligible files over
-**base → working tree**, not a commit SHA, on purpose: a producer that runs at
-**pre-commit** time (HEAD is still the parent) and a consumer that runs at
-**pre-push** time (post-commit) see the same on-disk content, so the fingerprint
-matches across the commit boundary — a SHA-keyed marker would silently mismatch
-and skip. A content hash also survives a no-op recommit/rebase that does not
-touch the pool, while a base advance correctly re-invalidates.
+**base → working tree**, not a commit SHA, on purpose: a producer and a later
+consumer can see the same on-disk content even when a commit boundary lies
+between them. A SHA-keyed marker would silently mismatch and skip. A content
+hash also survives a no-op recommit/rebase that does not touch the pool, while a
+base advance correctly re-invalidates.
 
 If another flow already stamps `<coverage_json>.fingerprint` for the same
 report (e.g. a tool-specific producer with a different eligible-file source),
@@ -300,22 +302,23 @@ can cost a false stop but can never grant a false pass.
 
 ### The false-green dry-run trap
 
-A pre-commit dry-run with `--head-sha HEAD` is a **false green** when the
+A diagnostic run with `--head-sha HEAD` is a **false green** when the
 mutation-pool change is still uncommitted: HEAD is the parent, so `base..HEAD`
-excludes the change and the gate judges nothing. Either run the producer (which
-stamps the marker over base → worktree) then the consumer, or analyze a head that
-includes the worktree. The capability **warns** (non-blocking) when the analyzed
-head resolves to `HEAD` while eligible files have uncommitted changes, so the
-trap surfaces instead of reading as a clean pass.
+excludes the change and the gate judges nothing. At the release boundary, run
+the producer (which stamps the marker over base → worktree) then the consumer,
+or analyze a head that includes the worktree. The capability **warns**
+(non-blocking) when the analyzed head resolves to `HEAD` while eligible files
+have uncommitted changes, so the trap surfaces instead of reading as a clean
+pass.
 
 ### The unverified-skip trap (an absent gate must not read as a pass)
 
 A cheap consumer that **skips non-blocking** when coverage is absent or stale is
 safe against false positives, but it creates a subtler failure: a skip that
-happens *while eligible files changed* is indistinguishable from a clean pass. The
-author's pre-merge attestation goes green, the uncovered changed lines land, and
+happens *while eligible files changed* is indistinguishable from a clean pass. A
+release attestation could go green, the uncovered changed lines could land, and
 the scheduled run — whose base accumulates everything since its last run — flags
-them post-merge and auto-files. This is the recurrence engine behind the seam.
+them after merge and auto-files. This is the recurrence engine behind the seam.
 
 The fix is **surfacing, not a new hard gate**: when the gate skips while eligible
 pool files changed in the range, emit a loud, non-blocking obligation that names

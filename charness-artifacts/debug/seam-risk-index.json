@@ -3,19 +3,19 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 164,
-  "indexed_artifact_count": 150,
+  "source_artifact_count": 170,
+  "indexed_artifact_count": 156,
   "risk_class_counts": {
-    "contract-freeze-risk": 30,
-    "external-seam": 24,
+    "contract-freeze-risk": 35,
+    "external-seam": 25,
     "host-disproves-local": 7,
     "none": 62,
     "operator-visible-recovery": 23,
-    "repeated-symptom": 16
+    "repeated-symptom": 17
   },
   "generalization_pressure_counts": {
     "factor-now": 23,
-    "monitor": 111,
+    "monitor": 117,
     "none": 16
   },
   "entries": [
@@ -2087,6 +2087,21 @@
       "forced": true
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-08-25-debug-review-followup.md",
+      "is_current_pointer": false,
+      "interrupt_id": "repeated-consumer-boundary-failure-2026-08-25",
+      "risk_classes": [
+        "repeated-symptom",
+        "external-seam"
+      ],
+      "seam": "producer evidence -> task/host transport -> packaged consumer -> verdict",
+      "generalization_pressure": "factor-now",
+      "critique_required": true,
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/2026-08-25-consumer-boundary-invariants.md",
+      "forced": true
+    },
+    {
       "artifact_path": "charness-artifacts/debug/2026-08-25-debug-review.md",
       "is_current_pointer": false,
       "interrupt_id": "consumer-boundary-invariant-2026-08-25",
@@ -2117,19 +2132,89 @@
       "forced": true
     },
     {
-      "artifact_path": "charness-artifacts/debug/latest.md",
-      "is_current_pointer": true,
-      "interrupt_id": "repeated-consumer-boundary-failure-2026-08-25",
+      "artifact_path": "charness-artifacts/debug/2026-08-27-issue-669-sigterm-popen.md",
+      "is_current_pointer": false,
+      "interrupt_id": "constructor-process-ownership-gap-2026-08-27",
       "risk_classes": [
-        "repeated-symptom",
-        "external-seam"
+        "external-seam",
+        "repeated-symptom"
       ],
-      "seam": "producer evidence -> task/host transport -> packaged consumer -> verdict",
-      "generalization_pressure": "factor-now",
+      "seam": "parent signal handler -> Popen construction -> child process-group owner",
+      "generalization_pressure": "monitor",
       "critique_required": true,
       "next_step": "spec",
       "handoff_artifact": "charness-artifacts/spec/2026-08-25-consumer-boundary-invariants.md",
       "forced": true
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-08-27-issue-692-adapter-idempotence.md",
+      "is_current_pointer": false,
+      "interrupt_id": "adapter-bootstrap-unhonored-state-2026-08-27",
+      "risk_classes": [
+        "contract-freeze-risk"
+      ],
+      "seam": "initializer wrapper -> typed receipt -> adapter consumer",
+      "generalization_pressure": "monitor",
+      "critique_required": false,
+      "next_step": "impl",
+      "handoff_artifact": "none — explicit operator direction omitted handoff update.",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-08-27-issue-693-reviewer-provenance.md",
+      "is_current_pointer": false,
+      "interrupt_id": "debug-plan-693",
+      "risk_classes": [
+        "contract-freeze-risk"
+      ],
+      "seam": "the repository can bind files and producer identifiers but cannot",
+      "generalization_pressure": "monitor",
+      "critique_required": false,
+      "next_step": "impl",
+      "handoff_artifact": "none",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-08-27-issue-695-critique-shape.md",
+      "is_current_pointer": false,
+      "interrupt_id": "issue-695-critique-shape-2026-08-27",
+      "risk_classes": [
+        "contract-freeze-risk"
+      ],
+      "seam": "critique producer shape -> typed-subagent closeout observer",
+      "generalization_pressure": "monitor",
+      "critique_required": false,
+      "next_step": "impl",
+      "handoff_artifact": "none",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-08-27-issue-697-distinct-mutation-coverage.md",
+      "is_current_pointer": false,
+      "interrupt_id": "issue-697-distinct-mutation-coverage-2026-08-27",
+      "risk_classes": [
+        "contract-freeze-risk"
+      ],
+      "seam": "coverage producer -> changed-line proof consumer",
+      "generalization_pressure": "monitor",
+      "critique_required": false,
+      "next_step": "impl",
+      "handoff_artifact": "charness-artifacts/impl/2026-08-27-issue-697-distinct-mutation-coverage.md",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/latest.md",
+      "is_current_pointer": true,
+      "interrupt_id": "issue-698-superseded-floor-2026-08-27",
+      "risk_classes": [
+        "contract-freeze-risk"
+      ],
+      "seam": "terminal status writer/checker -> Auto-Retro disposition and handoff identity",
+      "generalization_pressure": "monitor",
+      "critique_required": false,
+      "next_step": "impl",
+      "handoff_artifact": "charness-artifacts/impl/2026-08-27-issue-698-superseded-floor.md",
+      "forced": false
     }
   ],
   "skipped_artifacts": [

@@ -29,6 +29,14 @@ on the explicit lifecycle paths.
 Delegate the selected child to its owning workflow. `impl` changes the smallest
 meaningful code/config/test surface, `quality` chooses proportionate proof,
 `prove` records the closeout, and `issue` owns any issue-bound close operation.
+Independent questions, investigation, implementation, and review are the
+default parallel shape. Inspect the host's live tool surface first and use its
+actual spawn/subagent channel when present; do not infer that it is absent from
+memory or an earlier session. Use isolated `charness task run` lanes when an
+explicit worktree is useful or no host spawn channel is exposed. The parent
+owns the dependency order, integration, and final verification; direct
+execution is reserved for dependent or tiny work, or a confirmed lack of both
+channels.
 The parent progress cursor carries the current navigation state; the child
 issue carries behavioral evidence and its provider state. Advance the cursor
 when the child transition is published. The frozen Goal Draft and immutable

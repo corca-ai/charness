@@ -23,7 +23,7 @@ changed-line proof that cannot be satisfied by a different producer.
 - Prior #695 work showed that proof producers and final consumers can drift when
   a shared report shape has no executable owner.
 - The sampler and changed-line producer both defaulted to
-  `reports/mutation/test-coverage.json`; the marker was only the changed-pool
+  `reports/mutation/test-coverage.json` <!-- reproduction-source -->; the marker was only the changed-pool
   content hash and had no producer identity.
 - The executable fixture reproduced a clean consumer result from a
   sampler-shaped report carrying a matching legacy marker.

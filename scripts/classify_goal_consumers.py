@@ -64,7 +64,6 @@ _DRAFT_PROVENANCE_PATHS = frozenset(
         "scripts/host_log_probe_lib.py",
         "scripts/premise_preflight_lib.py",
         "scripts/retro_persistence_lib.py",
-        "scripts/setup_commit_discipline_lib.py",
         "scripts/slice_manifest_lib.py",
         "scripts/validate_slice_manifest.py",
         "skills/public/achieve/adapter.example.yaml",

@@ -19,7 +19,7 @@ does not claim product-success measurement; consuming products own that data.
 - Treat evaluation as one proof class, not the whole product metric.
 - Keep validation, metadata, rollback pointers, and durable artifacts together.
 - Use several health signals instead of optimizing one proxy.
-- Monitor failures through debug, retro, issue, quality, and handoff loops.
+- Monitor failures through debug, retro, issue, quality, and goal/artifact loops.
 
 ## Quality posture
 

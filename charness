@@ -166,10 +166,8 @@ def parse_repo_script_payload(stdout: str, source: str) -> object:
     reaching this line has already cloned and installed, and a parse traceback
     would read as a broken install rather than a missing dependency.
 
-    This function replaced a `json.loads` of a `--json` flag that
-    `render_skill_routing.py` had stopped declaring, which is why `charness init`
-    was broken at HEAD: a double fault, since the flag exited 2 AND the payload it
-    would have produced was YAML.
+    This function keeps the standalone CLI tolerant of either JSON or YAML
+    emitted by a repo-owned inspection command.
     """
     try:
         return json.loads(stdout)
@@ -630,28 +628,14 @@ def build_repo_onboarding_payload(
         ),
         "skills/public/setup/scripts/inspect_repo.py",
     )
-    skill_routing_payload = parse_repo_script_payload(
-        invoke_repo_script(
-            source_repo_root,
-            "skills/public/setup/scripts/render_skill_routing.py",
-            "--repo-root",
-            str(resolved_target),
-            "--detail",
-        ),
-        "skills/public/setup/scripts/render_skill_routing.py",
-    )
     payload["inspection"] = inspect_payload
-    payload["skill_routing"] = skill_routing_payload
     repo_mode = inspect_payload.get("repo_mode")
     agent_docs = inspect_payload.get("agent_docs") if isinstance(inspect_payload.get("agent_docs"), dict) else {}
-    routing_action = skill_routing_payload.get("recommended_action")
     reasons: list[str] = []
     if repo_mode in {"GREENFIELD", "PARTIAL"}:
         reasons.append("core_operating_surface")
     if agent_docs.get("recommended_action") != "leave_as_is":
         reasons.append("agent_docs")
-    if routing_action != "leave_as_is":
-        reasons.append("skill_routing")
     payload["reasons"] = reasons
     payload["skill_bearing_repo"] = any((resolved_target / candidate).is_dir() for candidate in ("skills/public", "skills/support"))
     if reasons:
@@ -6247,10 +6231,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     task_run_parser = task_subparsers.add_parser(
         "run",
-        help="Run one Codex implementation task in a clean named worktree and emit a compact receipt.",
+        help="Run one independently delegable Codex lane in a clean named worktree and emit a compact receipt.",
         description=(
-            "Create a named linked worktree from an explicit base, run Codex with external runtime "
-            "paths, and report the scoped candidate. The parent worktree must be clean."
+            "Run one independently delegable lane: create a named linked worktree from an explicit "
+            "base, run Codex with external runtime paths, and report the scoped candidate. The "
+            "parent worktree must be clean; the parent orchestrator owns parallel fan-out and integration."
         ),
     )
     # Keep the parent `task --repo-root ... run` spelling working while also

@@ -2,18 +2,14 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from scripts.setup_host_docs_lib import normalize_host_docs
+from scripts.setup_host_docs_lib import normalize_host_docs, render_agents_template
 
 
-def _routing_payload(_: Path) -> dict[str, object]:
-    return {"markdown": "## Skill Routing\n\nUse installed skill metadata; consult `charness catalog list --repo-root .` only for hidden availability.\n"}
+def _normalize(repo: Path, *, execute: bool = False, compact: bool = False) -> dict[str, object]:
+    return normalize_host_docs(repo, execute=execute, compact=compact)
 
 
-def _normalize(repo: Path, *, execute: bool = False) -> dict[str, object]:
-    return normalize_host_docs(repo, skill_routing_payload=_routing_payload, execute=execute)
-
-
-def test_setup_normalize_host_docs_creates_agents_and_claude_symlink(tmp_path: Path) -> None:
+def test_setup_creates_a_minimal_agents_file_and_symlink(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
 
@@ -29,21 +25,19 @@ def test_setup_normalize_host_docs_creates_agents_and_claude_symlink(tmp_path: P
 
     assert completed["status"] == "completed"
     written_agents = (repo / "AGENTS.md").read_text(encoding="utf-8")
-    assert written_agents.startswith("# Agents\n")
-    assert "## Skill Routing" in written_agents
-    assert "## Subagent Delegation" not in written_agents
-    # #317 seed: the greenfield write path emits the compact commit-discipline
-    # block so a long autonomous run does not leave work uncommitted.
-    assert "## Commit Discipline" in written_agents
-    assert "Commit meaningful work slices as they finish" in written_agents
+    assert written_agents == render_agents_template()
+    assert len(written_agents.splitlines()) <= 9
+    assert "## Skill Routing" not in written_agents
+    assert "## Commit Discipline" not in written_agents
     assert (repo / "CLAUDE.md").is_symlink()
     assert (repo / "CLAUDE.md").readlink() == Path("AGENTS.md")
 
 
-def test_setup_normalize_host_docs_existing_agents_creates_symlink_only(tmp_path: Path) -> None:
+def test_existing_agents_is_preserved_without_compact(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
-    (repo / "AGENTS.md").write_text("# Agents\n\nExisting policy.\n", encoding="utf-8")
+    original = "# Agents\n\nLocal policy.\n"
+    (repo / "AGENTS.md").write_text(original, encoding="utf-8")
 
     completed = _normalize(repo, execute=True)
 
@@ -51,14 +45,31 @@ def test_setup_normalize_host_docs_existing_agents_creates_symlink_only(tmp_path
         "keep_agents",
         "create_claude_symlink",
     ]
-    assert (repo / "AGENTS.md").read_text(encoding="utf-8") == "# Agents\n\nExisting policy.\n"
+    assert (repo / "AGENTS.md").read_text(encoding="utf-8") == original
     assert (repo / "CLAUDE.md").is_symlink()
 
 
-def test_setup_normalize_host_docs_keeps_existing_agents_symlink(tmp_path: Path) -> None:
+def test_compact_is_a_digest_bound_explicit_replacement(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
-    (repo / "AGENTS.md").write_text("# Agents\n\nExisting policy.\n", encoding="utf-8")
+    original = "# Agents\n\n" + ("A long local paragraph.\n" * 20)
+    (repo / "AGENTS.md").write_text(original, encoding="utf-8")
+
+    planned = _normalize(repo, compact=True)
+    action = planned["actions"][0]
+    assert action["action"] == "replace_agents_with_compact_template"
+    assert action["before_sha256"] != action["after_sha256"]
+    assert (repo / "AGENTS.md").read_text(encoding="utf-8") == original
+
+    completed = _normalize(repo, execute=True, compact=True)
+    assert completed["status"] == "completed"
+    assert (repo / "AGENTS.md").read_text(encoding="utf-8") == render_agents_template()
+
+
+def test_setup_keeps_existing_agents_symlink(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "AGENTS.md").write_text("# Agents\n", encoding="utf-8")
     (repo / "CLAUDE.md").symlink_to("AGENTS.md")
 
     completed = _normalize(repo, execute=True)
@@ -70,7 +81,7 @@ def test_setup_normalize_host_docs_keeps_existing_agents_symlink(tmp_path: Path)
     assert (repo / "CLAUDE.md").readlink() == Path("AGENTS.md")
 
 
-def test_setup_normalize_host_docs_blocks_real_claude_file(tmp_path: Path) -> None:
+def test_setup_blocks_real_claude_file(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     (repo / "CLAUDE.md").write_text("# Claude\n\nSpecific policy.\n", encoding="utf-8")

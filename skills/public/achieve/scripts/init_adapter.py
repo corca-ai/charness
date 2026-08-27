@@ -51,7 +51,7 @@ def build_items(repo_name: str, _args: object) -> list[tuple[str, object]]:
         (
             "auto_retro",
             {
-                "disposition_floor": "review-required",
+                "disposition_floor": "deterministic-only",
                 "allow_host_blocked_disposition_review_skip": True,
                 "valid_dispositions": ["applied", "issue"],
                 "allow_none_optout": True,

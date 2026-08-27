@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
-"""Incremental, BLOCKING changed-line coverage teeth for the pre-push lane (D40).
+"""Incremental, blocking changed-line coverage for the release lane (D40).
+
+The filename is retained for compatibility with existing consumer adapters; the
+repository's quality runner invokes it only for release. Direct invocation remains
+available for focused diagnostics.
 
 The recurring class (#219 -> #251 -> #260 -> #320 -> #321 -> #335 -> #453 -> #464)
 is not a missing gate and not a quiet warning. Both existed and both fired. The
-push-arm CI mirror went RED on every push preceding #464's last comment, and the
-local lane already writes a loud `WARNING (changed-line mutation gate):` line that
-`run-quality.sh` surfaces. What was missing is TEETH before the landing: the local
-lane exits 0 by construction (`--skip-if-no-coverage`), and the lane that blocks
-runs after the push, where it cannot unland anything.
+old push/PR mirror and pre-push wiring added a multi-minute feedback cost without
+being a reliable release proof. They are removed from routine lanes; the release
+runner now invokes this helper with its blocking refusal option.
 
-The reason the local lane was defused is real and stays respected: producing
+The reason routine local enforcement was defused is real and stays respected: producing
 coverage from the BROAD suite costs 11-15 minutes, and a gate that expensive gets
 skipped, which is how it came to prove nothing. So this producer is INCREMENTAL.
 It asks `suggest_mutation_coverage_command` which standing tests reference the
@@ -43,14 +45,15 @@ Exit codes:
      unusable run is not a pass.
   3  UNESTABLISHED: the lane judged nothing about the files it was asked to judge
      (a dirty pool whose edits `base..HEAD` cannot see, or a limit that
-     intersected to nothing). Non-blocking mid-work; REFUSABLE at push time via
-     `--refuse-unestablished`, which is what makes it distinct from 4.
+     intersected to nothing). Non-blocking without `--refuse-unestablished`;
+     refusable at the release boundary with that flag, which is what makes it
+     distinct from 4.
   4  PARTIAL: some of the changed pool set was analyzed and some was not, and
      what WAS analyzed came back clean. `run-quality.sh` renders it UNPROVEN. It
-     is NOT refusable, at push time or anywhere else -- policy (a) above is the
+     is NOT refusable -- policy (a) above is the
      owner's deliberate non-blocking choice, and the repair for the false green
-     it produced was to stop calling it a PASS, not to start stopping pushes on
-     the mapper's blind spot. 3 was previously undocumented here; documenting it
+     it produced was to stop calling it a PASS, not to stop a release on the
+     mapper's blind spot. 3 was previously undocumented here; documenting it
      alongside 4 is the point, since the difference between them IS the refusal.
 """
 from __future__ import annotations
@@ -75,7 +78,7 @@ NO_VERDICT_EXIT = 2
 EMPTY_SCOPE_REASON_PREFIX = "no eligible mutation-pool files changed"
 # What `check_changed_line_mutation_coverage.py` returns when it judged no scope.
 # Non-blocking by design: mid-work it becomes this wrapper's own exit 3, which
-# run-quality renders UNPROVEN; at push time `--refuse-unestablished` still turns
+# run-quality renders UNPROVEN; the release lane's `--refuse-unestablished` turns
 # it into a 1.
 CONSUMER_UNESTABLISHED_EXIT = 3
 UNESTABLISHED_EXIT = 3
@@ -83,7 +86,7 @@ UNESTABLISHED_EXIT = 3
 # analyze part of the changed set. Distinct from 3 because it is NOT refusable:
 # policy (a) below keeps an unmapped changed pool file non-blocking, and the
 # repair for that false green is to stop calling it a PASS, not to start
-# stopping pushes on the mapper's blind spot.
+# stopping a release on the mapper's blind spot.
 CONSUMER_PARTIAL_EXIT = 4
 # This lane's own byte for the same state. `run-quality.sh` renders it UNPROVEN.
 PARTIAL_EXIT = 4
@@ -93,15 +96,16 @@ CONSUMER = "scripts/check_changed_line_mutation_coverage.py"
 #: edits `base..HEAD` cannot see, or a limit that intersected to nothing. Kept DISTINCT
 #: from `unproven` (policy (a): the mapper resolved no standing test) because only this
 #: one is refusable: policy (a) is the owner's deliberate non-blocking choice, while
-#: this one is the lane failing to do its job and must not read as a pass at push time.
+#: this one is the lane failing to do its job and must not read as a release pass.
 UNESTABLISHED_STATUS = "unestablished"
 
 #: The lane analyzed part of its changed set and says so IN THE VERDICT. Policy (a)
-#: (below) is preserved -- this never refuses a push -- but it stops wearing exit 0.
+#: (below) is preserved -- this never refuses on a mapper blind spot -- but it stops
+#: wearing exit 0.
 #: The measured failure it removes: a local run printed "this run analyzed only 6 of
 #: 7 changed mutation-pool file(s). A clean verdict says NOTHING about the rest",
-#: returned the same byte as a run with no blind spot, the push landed, and remote CI
-#: blocked on the 7th file.
+#: returned the same byte as a run with no blind spot, and a release could have
+#: carried an unproven result.
 PARTIAL_STATUS = "partial"
 
 
@@ -124,7 +128,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
             "lane's coverage comes from a test SUBSET, and writing it there would leave "
             "subset coverage at the path the broad closeout producer owns, carrying a "
             "VALID freshness marker. Every `--require-fresh-coverage` consumer "
-            "(the CI mirror included) would then read freshness as breadth."
+            "would then read freshness as breadth."
         ),
     )
     parser.add_argument(
@@ -133,11 +137,9 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help=(
             "Exit non-zero when the run establishes NOTHING about the files it was asked "
             "to judge (a dirty mutation pool, or a limit that intersected to nothing). "
-            "`run-quality.sh` passes this in read-only mode, which is the pre-push hook's "
-            "mode: at push time an unestablished result is not a pass, because the code "
-            "about to land was never proven. Without it (an ordinary mid-work `full` run, "
-            "where a dirty worktree IS the normal state) the same outcome stays "
-            "non-blocking and merely loud. This flag does NOT govern policy (a): a file "
+            "The release runner supplies this flag because an unestablished result is not "
+            "a release proof. Without it, the same outcome stays non-blocking and merely "
+            "loud. This flag does NOT govern policy (a): a file "
             "the mapper resolves to no standing test is non-blocking in every mode, by "
             "the repo owner's decision, because that is a mapper gap and not a coverage "
             "gap."
@@ -181,13 +183,10 @@ def _dispose_consumer_verdict(payload: dict, result, args) -> int | None:
     exist here are easy to conflate and were:
 
     - exit 3 is "ran, established nothing". Sending it to `no-verdict` reported it
-      as refused-or-errored and returned 2, which `run-quality.sh` scores as FAIL —
-      hard-failing every ordinary mid-work run, since a dirty mutation pool is the
-      NORMAL verify-phase state, and leaving `--refuse-unestablished` dead code
-      because control never reached it.
-    - unestablished mid-work is non-blocking but NOT exit 0. Returning 0 made
-      `run-quality.sh` print PASS beside the warning below, which is the green over
-      an unestablished scope this lane exists to refuse.
+      as refused-or-errored and returned 2, which made the diagnostic path fail
+      before `--refuse-unestablished` could express its intended boundary behavior.
+    - an unestablished result is non-blocking without the release flag but NOT exit 0.
+      Returning 0 made `run-quality.sh` print PASS beside the warning below.
     """
     if result.returncode == CONSUMER_PARTIAL_EXIT:
         # Same readability guard as the unestablished branch below: `no-verdict`
@@ -245,7 +244,7 @@ def _dispose_consumer_verdict(payload: dict, result, args) -> int | None:
             # The predecessor lane was walked past because its worst outcome was exit
             # 0 plus prose. Repeating that here would rebuild the defect this lane
             # exists to fix.
-            _warn("refusing at push time: an unestablished changed-line result is not a pass.")
+            _warn("refusing release: an unestablished changed-line result is not a pass.")
             # The consumer payload names WHICH files went unestablished. Withholding
             # it on the one path that stops a push -- while emitting it on the path
             # that does not -- is a gate whose refusal cannot be diagnosed.

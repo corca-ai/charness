@@ -4,11 +4,11 @@
 # §Local-gate-subset mirror workflows) — adding a step that is NOT in the
 # local gate graph disqualifies the marker.
 # Authored by the 2026-06-10 next-queue goal (slice 3). The local
-# run-quality --release / pre-push gate is the maintainer-machine bundle
-# proof; this workflow adds a remote authoritative LIGHT layer that catches a
-# bypass (a direct push without the local hooks) and mirrors the changed-line
-# mutation gate into a CI-PR check. It is repo-local CI config: installed-
-# plugin consumer repos inherit nothing from it.
+# run-quality / pre-push gate is the maintainer-machine bundle proof; this
+# workflow adds a remote authoritative LIGHT layer that catches a bypass (a
+# direct push without the local hooks). Expensive mutation coverage is a
+# release-boundary or scheduled-deeper check, not a push/PR gate. It is
+# repo-local CI config: installed-plugin consumer repos inherit nothing from it.
 #
 # Deliberately NOT the full run-quality broad gate: specdown, the
 # agent-browser runtime gates, and the full local check queue stay
@@ -100,123 +100,3 @@ jobs:
 
       - name: Validate workflow action majors
         run: python3 scripts/check_github_actions.py --repo-root .
-
-  changed-line-mutation-mirror:
-    # The same blocking signal as the local pre-push teeth
-    # (check_changed_line_mutation_coverage), run with the gate's own coverage
-    # probe — the env recipe matches mutation-tests.yml, which already runs this
-    # suite in CI. Head defaults to HEAD, so the verdict covers the change as it
-    # lands.
-    #
-    # Runs on direct pushes to main as well as PRs, and the push arm is the point.
-    # This file's own header says it exists to "catch a bypass (a direct push
-    # without the local hooks)", but while this job was PR-only it did not: the
-    # local pre-push gate defuses itself on the direct-push path
-    # (--skip-if-no-coverage / --require-fresh-coverage / --allow-dirty all exit 0
-    # when the author has not first paid for the ~10min coverage producer), so a
-    # direct push to main had NO blocking changed-line signal anywhere. The
-    # scheduled cron caught it up to 3 hours later and auto-filed an issue — which
-    # is #219 -> #251 -> #260 -> #320 -> #321 -> #335 -> #453, seven instances of
-    # one class. This closes it at the first remote gate instead of the cron.
-    name: Changed-line mutation coverage (push/PR mirror)
-    # A push with no usable base (branch creation, or a force-push whose `before`
-    # is unreachable) has no range to analyze; the cron still covers those.
-    if: >-
-      github.event_name == 'pull_request' ||
-      (github.event_name == 'push' &&
-       github.event.before != '0000000000000000000000000000000000000000')
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - name: Setup Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.10"
-          cache: pip
-
-      - name: Setup Node
-        uses: actions/setup-node@v6
-        with:
-          node-version: "22"
-          cache: npm
-
-      - name: Install suite dependencies
-        run: pip install -r packaging/mutation-requirements.txt
-
-      - name: Install JS dependencies
-        # `node_modules/.bin` on PATH, which `npm ci` alone does not do. The suite's
-        # doc-authoring fixtures build throwaway repos under `tmp_path`, so the
-        # preflight's `node_modules/.bin` tier resolves against the FIXTURE root and
-        # cannot hit; without PATH the only tier left is `npm exec --no`, which refuses
-        # rather than installing (#630's spelling, deliberately) and lints nothing. That
-        # is why three doc-authoring-preflight tests were red on every run of this job
-        # that reached them. The preflight now reports an unrun engine as unforecast
-        # instead of clean, so the tests would SKIP their markdownlint arms here; this
-        # line is what keeps them measured instead of skipped.
-        run: |
-          npm ci
-          echo "$PWD/node_modules/.bin" >> "$GITHUB_PATH"
-          echo "CHARNESS_REQUIRE_MARKDOWNLINT=1" >> "$GITHUB_ENV"
-
-      - name: Install validation binaries
-        run: |
-          if ! command -v tokei >/dev/null 2>&1; then
-            cargo --version
-            cargo install tokei
-          fi
-          tokei --version
-          # Same reason as mutation-tests.yml (see there for why rg is non-baseline and
-          # why the image supplies it anyway): this job drives the standing suite
-          # through the changed-line gate's --test-command, so it reaches
-          # scripts/command_plan_preflight.py and its `rg --files` inventory.
-          #
-          # This job is NOT a bystander -- it refused correctly. Run 32536921987
-          # (2026-08-21) went red here with the same eight preflight failures. It stays
-          # green on most pushes because the gate is scoped to the push RANGE and exits
-          # early when no pool file changed (run 32544789186 returned clean in 0.5s on
-          # a release-artifact-only range). So this lane catches the class only when a
-          # `scripts/*.py` pool file is in the range -- which is worth knowing before
-          # treating its green as suite-wide coverage.
-          if ! command -v rg >/dev/null 2>&1; then
-            sudo apt-get update
-            sudo apt-get install -y ripgrep
-          fi
-          rg --version
-
-      - name: Changed-line mutation coverage gate
-        # --write-fresh-marker stamps the freshness marker, and nothing else; the
-        # marker is ephemeral in CI. It used to ALSO select the plain (no
-        # dynamic_context) probe, which is why this comment once said so -- but
-        # since #696 the plain probe is the DEFAULT on both arms and contexts are
-        # opt-in via --collect-test-contexts. Do not read the flags as coupled:
-        # dropping --write-fresh-marker here would not re-enable contexts, and
-        # adding --collect-test-contexts would re-enable the measured 8.22 GB
-        # export (671x) that the changed-line verdict never reads.
-        env:
-          # PR: the merge target. Push: the commit main was at before this push,
-          # so the analyzed range is exactly what the push added.
-          CHANGED_LINE_BASE_SHA: >-
-            ${{ github.event_name == 'pull_request'
-                && github.event.pull_request.base.sha
-                || github.event.before }}
-        run: |
-          if ! git cat-file -e "$CHANGED_LINE_BASE_SHA^{commit}" 2>/dev/null; then
-            echo "base $CHANGED_LINE_BASE_SHA is unreachable (force-push or truncated history);" \
-                 "no range to analyze, leaving this to the scheduled mutation run." >&2
-            exit 0
-          fi
-          # --test-command, not the cosmic-ray.toml literal: that literal is bare
-          # serial pytest and this probe is the repo's longest CI child. The
-          # standing runner covers the same scope xdist-parallel. cosmic-ray still
-          # reads the literal for its per-mutant runs, which is deliberate -- a
-          # per-mutant run of the whole parallel suite would be far more expensive,
-          # not less.
-          python3 scripts/check_changed_line_mutation_coverage.py --repo-root . \
-            --base-sha "$CHANGED_LINE_BASE_SHA" \
-            --test-command "python3 scripts/run_standing_pytest.py --repo-root ." \
-            --write-fresh-marker

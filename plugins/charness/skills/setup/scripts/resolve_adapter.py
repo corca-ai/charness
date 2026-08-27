@@ -30,7 +30,6 @@ def load_adapter(repo_root: Path) -> dict[str, object]:
             "Create .agents/setup-adapter.yaml to move the artifact path or record preset provenance.",
         ),
     )
-    payload.setdefault("data", {})["skill_routing_mode"] = "compact"
     return payload
 
 

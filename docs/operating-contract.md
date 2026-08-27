@@ -33,8 +33,9 @@ start is not proof of a clean finish, so the runner reports both.
 
 - Start with focused tests for the changed behavior.
 - The default quality lane is the small core lane: [`run-quality.sh`](../scripts/run-quality.sh).
-- Broad, release, or review checks are explicit:
+- Broad and review checks are explicit:
   [`run-quality.sh`](../scripts/run-quality.sh) `--full --read-only`.
+  Release checks use the separate `--release` lane.
 - Changed-line mutation proof, full-suite proof, and artifact ledgers are not
   universal implementation requirements. Use them when a verdict/proof surface,
   release, or claim actually depends on them.

@@ -138,7 +138,7 @@ Writes:
 Rules:
 
 - manual mode may still write lock state even when no binary install happened
-- manual mode should preserve the operator handoff surface by recording
+- manual mode should preserve the operator guidance surface by recording
   explicit docs and notes
 - executable modes may only run commands declared in the manifest
 - install should prefer reusing doctor output over inventing separate health

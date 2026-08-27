@@ -8,29 +8,14 @@ import subprocess
 import sys
 from pathlib import Path
 
-# The env var `scripts/run-quality.sh` reads to arm the push-time changed-line
-# refusal (`--refuse-unestablished`). The hook is its only setter, so the hook
-# and the runner are two surfaces that must not disagree; the pin below is what
-# stops them drifting apart silently.
-PRE_PUSH_ARMING_VAR = "CHARNESS_PRE_PUSH"
-QUALITY_RUNNER_BASENAME = "run-quality.sh"
 CLOSE_KEYWORD_GUARD_BASENAME = "prepush_close_keyword_guard.py"
-# The guard as a command word, mirroring QUALITY_RUNNER_RE below. The interpreter is
-# required: `scripts/prepush_close_keyword_guard.py` alone would also match the string
-# inside an `echo`, which is the mention-counted-as-invocation hole this replaced.
+# The interpreter is required: `scripts/prepush_close_keyword_guard.py` alone would
+# also match the string inside an `echo`, which is the mention-counted-as-invocation
+# hole this replaced.
 CLOSE_KEYWORD_GUARD_RE = re.compile(
     r"""^(?:python3?|/usr/bin/env\s+python3?)\s+
         (?:"?\$\{?REPO_ROOT\}?"?/|\./)?
         scripts/prepush_close_keyword_guard\.py(?=\s|$)""",
-    re.VERBOSE,
-)
-# The runner as a command word. `$REPO_ROOT/` shapes are accepted because the
-# hook already computes and `cd`s to `REPO_ROOT`, so writing the invocation that
-# way is a refactor a maintainer would plausibly make.
-QUALITY_RUNNER_RE = re.compile(
-    r"""^(?:(?:bash|sh)\s+)?                       # an explicit interpreter
-        (?:"?\$\{?REPO_ROOT\}?"?/|\./)?            # "$REPO_ROOT"/ or ./
-        scripts/run-quality\.sh(?=\s|$)""",        # the runner itself, not .sh.bak
     re.VERBOSE,
 )
 # Shell words that can sit in front of a command without changing which command
@@ -48,10 +33,8 @@ COMMAND_MODIFIER_RE = re.compile(
 ENV_ASSIGNMENT_RE = re.compile(
     r'^([A-Za-z_][A-Za-z0-9_]*)=("[^"]*"|\'[^\']*\'|\S*)\s+'
 )
-# Constructs that MENTION the runner without running it. `[`/`[[` cover the
-# defensive `if [[ ! -x ./scripts/run-quality.sh ]]` guard a maintainer would
-# plausibly add; refusing that was a false stop, and this repo's own runner
-# comment records that a false stop is how a lane stops being enforced.
+# Constructs that mention a command without running it. `[`/`[[` cover defensive
+# shell guards, while `echo`/`printf` cover operator-facing advice in the hook.
 NOT_A_COMMAND_RE = re.compile(r"^(?:echo|printf|test|\[\[?|:(?:\s|$)|command\s+-v)")
 # Separators AFTER an invocation that discard its exit status: `|| fallback`
 # swallows the failure, `&` backgrounds it, and `|` makes the pipeline's last
@@ -67,10 +50,8 @@ class ValidationError(Exception):
 def _logical_lines(hook_text: str) -> list[str]:
     """Hook text as logical lines: continuations joined, heredoc bodies dropped.
 
-    A `CHARNESS_PRE_PUSH=1 \\` + newline + runner invocation is one command that
-    naive per-physical-line scanning reads as an unarmed one, and a heredoc body
-    quoting the runner is data a maintainer may legitimately write (the hook
-    already prints multi-line advice).
+    A continued command is one logical line, and a heredoc body quoting a command
+    is data a maintainer may legitimately write (the hook already prints advice).
     """
     lines: list[str] = []
     pending = ""
@@ -85,10 +66,8 @@ def _logical_lines(hook_text: str) -> list[str]:
             stripped = pending + " " + stripped
             pending = ""
         # A comment ends at the newline: a trailing `\` inside one does NOT
-        # continue it. Joining first let `# CHARNESS_PRE_PUSH=1 \` swallow the
-        # real invocation on the next line into a comment the scan then skipped,
-        # which is a lane disarmed behind a PASS — round 2 found it, and it is
-        # exactly what commenting out the first half of a continued command does.
+        # continue it. Joining first can swallow a real command on the next line
+        # into a comment, so comments are recognized before continuations.
         if stripped.startswith("#"):
             lines.append(stripped)
             continue
@@ -229,124 +208,10 @@ def _strip_modifiers_and_env(chunk: str) -> tuple[str, dict[str, str]]:
         return command, assignments
 
 
-def quality_runner_invocations(
-    hook_text: str,
-) -> tuple[list[str], list[str], list[str], list[str]]:
-    """Classify runner references into (armed, unarmed, unclear, swallowed).
-
-    Buckets three and four are corrections, each found by a bounded review round
-    reading the previous version and each reproduced by execution before being
-    accepted.
-
-    Round 1: the first version recognized ONE invocation spelling and silently
-    skipped everything else. The hook has TWO invocations, so rewriting either as
-    `exec ...`, `"$REPO_ROOT"/scripts/...`, `if ! ...`, `true | ...`, or via a
-    variable left the other armed and the gate green — a lane disarmed behind a
-    PASS, the exact class this gate exists to refuse, one level up. Hence
-    `unclear`: a reference the parser cannot classify is reported, not dropped.
-
-    Round 2, reading that repair, found it carrying the class again in four more
-    places: a comment ending in `\\` swallowed the next line's real invocation, a
-    `<<MSG` inside a comment or string made every following line invisible, an
-    escaped `\\"` desynced the quote state enough to fabricate an ARMED entry out
-    of an `echo`, and a `.sh`-suffixed stub path satisfied a `\\b` boundary. It also found
-    that `... || true` and `... &` keep the var and discard the verdict, which
-    disarms the lane more completely than dropping the prefix does — hence
-    `swallowed`.
-
-    Comments, heredoc bodies, and the known non-commands (`echo`, `printf`,
-    `test`/`[`/`[[`, `:`, `command -v`) are the only ways a mention stays silent.
-    """
-    armed: list[str] = []
-    unarmed: list[str] = []
-    unclear: list[str] = []
-    swallowed: list[str] = []
-    exported: dict[str, str] = {}
-    for line in _logical_lines(hook_text):
-        if not line or line.startswith("#"):
-            continue
-        # `export VAR=1` on an earlier line arms every later invocation for real,
-        # so reading only command-prefix assignments called a working hook broken.
-        for name, value in re.findall(
-            r"\bexport\s+([A-Za-z_][A-Za-z0-9_]*)=(\"[^\"]*\"|'[^']*'|\S*)", line
-        ):
-            exported[name] = value.strip("\"'")
-        if QUALITY_RUNNER_BASENAME not in line:
-            continue
-        for chunk, separator in _split_commands(line):
-            if QUALITY_RUNNER_BASENAME not in chunk:
-                continue
-            command, assignments = _strip_modifiers_and_env(chunk)
-            if NOT_A_COMMAND_RE.match(command):
-                continue
-            if not QUALITY_RUNNER_RE.match(command):
-                unclear.append(chunk)
-                continue
-            if separator in VERDICT_SWALLOWING_SEPARATORS:
-                swallowed.append(f"{chunk} {separator}".strip())
-                continue
-            if {**exported, **assignments}.get(PRE_PUSH_ARMING_VAR) == "1":
-                armed.append(chunk)
-            else:
-                unarmed.append(chunk)
-    return armed, unarmed, unclear, swallowed
-
-
-def check_pre_push_arming(hook_path: Path, rel_path: str) -> None:
-    """Refuse a pre-push hook that no longer arms the changed-line lane.
-
-    Existence was the only thing checked before, so deleting the
-    `CHARNESS_PRE_PUSH=1` prefix left the lane disarmed with this gate green and
-    a green push console — the exact silent-disarm the D40 lane was built to
-    prevent. Reproduced against a copy of this repo's own hook before the fix.
-
-    An invocation count of ZERO is an error, not a vacuous pass: "every
-    invocation is armed" is trivially true for a hook that stopped invoking the
-    runner at all, and that state is a bigger loss than an unarmed one.
-    """
-    armed, unarmed, unclear, swallowed = quality_runner_invocations(
-        hook_path.read_text(encoding="utf-8")
-    )
-    if swallowed:
-        raise ValidationError(
-            f"`{rel_path}` runs the quality runner but discards its verdict: "
-            f"{', '.join(repr(line) for line in swallowed)}. A trailing `|| ...`, "
-            "`&`, or `|` means the push proceeds whatever the gate decided, which "
-            "disarms the lane more completely than dropping the arming variable. "
-            "Let the invocation's exit status reach the hook's exit status."
-        )
-    if unarmed:
-        raise ValidationError(
-            f"`{rel_path}` invokes the quality runner without arming the push-time "
-            f"changed-line refusal: {', '.join(repr(line) for line in unarmed)}. "
-            f"Prefix each invocation with `{PRE_PUSH_ARMING_VAR}=1` — "
-            "`scripts/run-quality.sh` reads it to add `--refuse-unestablished`, and "
-            "without it a push whose changed lines were never proven exits green."
-        )
-    if unclear:
-        raise ValidationError(
-            f"`{rel_path}` references `{QUALITY_RUNNER_BASENAME}` in a form this gate "
-            f"cannot classify: {', '.join(repr(line) for line in unclear)}. That is "
-            "refused rather than skipped, because a reference the gate cannot read is "
-            "a lane it cannot prove is armed. If it is an invocation, write it as "
-            f"`{PRE_PUSH_ARMING_VAR}=1 ./scripts/run-quality.sh ...`; if it is a guard "
-            "or a message that only names the runner, teach this gate that shape in "
-            "the same commit rather than working around it."
-        )
-    if not armed:
-        raise ValidationError(
-            f"`{rel_path}` no longer invokes `scripts/run-quality.sh` at all, so the "
-            "push-time changed-line refusal cannot run. If the runner moved, update "
-            "this gate with it rather than leaving the lane unenforced."
-        )
-    check_close_keyword_guard_arming(hook_path, rel_path)
-
-
 def check_close_keyword_guard_arming(hook_path: Path, rel_path: str) -> None:
     """Refuse a pre-push hook that no longer runs the close-keyword guard.
 
-    Same reasoning as the arming check above, one lane over: deleting the guard's
-    line leaves this gate green and the push console green, and the loss is an
+    Deleting the guard's line leaves this gate green and the push console green, and the loss is an
     irreversible GitHub close rather than an unproven line. It is checked HERE
     rather than left to the hook's own tests because those exercise the guard
     through a stub -- they prove the wiring carries stdin, not that the wiring is
@@ -356,15 +221,15 @@ def check_close_keyword_guard_arming(hook_path: Path, rel_path: str) -> None:
     `tests/quality_gates/test_prepush_close_keyword_guard.py`'s job; what cannot
     be delegated there is that the hook still calls it.
 
-    It runs through the SAME `_logical_lines`/`_split_commands`/`NOT_A_COMMAND_RE`
-    machinery the runner check uses, and that is the whole content of this
+    It runs through the shared `_logical_lines`/`_split_commands`/`NOT_A_COMMAND_RE`
+    machinery, and that is the whole content of this
     function's round-2 repair. The first version matched raw physical lines for
     the basename, which passed on `echo "run prepush_close_keyword_guard.py
     yourself"`, on a heredoc advice block naming it, and on a trailing comment --
     and its `|| true` detection tested the suffix of the basename's line, which is
     the FIRST of the invocation's two continued lines, so appending `|| true` to
     the second one disarmed the guard behind a green check. Both are the class the
-    runner check's own round 2 already removed one lane over; re-deriving the
+    the earlier round-2 review already removed one lane over; re-deriving the
     judgment instead of calling it re-created them.
     """
     invocations, unclear, swallowed = close_keyword_guard_invocations(
@@ -482,11 +347,10 @@ def main() -> int:
             "run `./scripts/install-git-hooks.sh`"
         )
 
-    # Content, not just existence. Scoped to the source repo for the same reason
-    # `pre-push` itself is: `install-git-hooks.sh` writes only a `commit-msg`
-    # wrapper downstream, and no consumer repo runs this repo's quality runner.
+    # Content, not just existence. Scoped to the source repo because
+    # `install-git-hooks.sh` writes only a `commit-msg` wrapper downstream.
     if "pre-push" in hook_names:
-        check_pre_push_arming(repo_root / ".githooks" / "pre-push", ".githooks/pre-push")
+        check_close_keyword_guard_arming(repo_root / ".githooks" / "pre-push", ".githooks/pre-push")
 
     print(f"Validated maintainer hook setup via {expected_dir}.")
     return 0

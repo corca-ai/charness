@@ -1,6 +1,6 @@
 """Portable changed-line coverage gate (handoff-3).
 
-Promotes the charness changed-line mutation pre-merge gate to a stack-neutral
+Promotes the charness changed-line mutation release-boundary gate to a stack-neutral
 `quality` capability. The blocking signal is the same as the scheduled mutation
 gate's: a changed pool file whose changed lines over `base..head` lack test
 coverage. This portable version sources the eligible-file set from adapter globs

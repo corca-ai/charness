@@ -91,7 +91,10 @@ def _defaults(repo_root: Path) -> dict[str, Any]:
             "publish_requires_user_confirmation": True,
         },
         "auto_retro": {
-            "disposition_floor": "review-required",
+            # Ordinary goals keep the deterministic Auto-Retro form checks. A
+            # separate disposition reviewer is an explicit opt-in for a goal
+            # whose own boundary warrants it, not a default completion ceremony.
+            "disposition_floor": "deterministic-only",
             "allow_host_blocked_disposition_review_skip": True,
             "valid_dispositions": ["applied", "issue"],
             "allow_none_optout": True,

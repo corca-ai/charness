@@ -191,10 +191,10 @@ release flow prompts you to go back and find it.
   repair; in two further cases
   reproduction showed the reviewer's own proposed fix was wrong. Applied this
   session in the second half; it should be the default, not the recovery.
-  `applied: recorded in this retro AND carried into docs/handoff.md as
-  "Next Session" item 3, written at closeout.` A claims round caught an earlier
-  version of this line asserting the handoff bullet already existed when it did
-  not — an `applied:` that names a destination it has not reached is the
+  `applied: recorded in this retro; the current workflow keeps this lesson in
+  the retro ledger rather than a separate handoff file.` A claims round caught
+  an earlier version of this line asserting a destination that did not exist — an
+  `applied:` that names a destination it has not reached is the
   strongest disposition shape making the weakest claim. It then stayed honest by
   saying the carry was still unwritten, which it was until this closeout.
 - **capability — the release record's quality sentence was a hardcoded literal.**
@@ -228,9 +228,9 @@ release flow prompts you to go back and find it.
   repair that worked is structural and positional — *decline only when EVERY flag
   mention on the line is negated* — which is the same shape the lesson names. I
   committed the enumerated form first.
-  `applied: skills/public/achieve/scripts/goal_artifact_cadence_owner.py now
-  decides by the structural property; the token list survives only as the
-  ambiguity detector, not as the rule.`
+  `applied: the current achieve contract in
+  skills/public/achieve/references/goal-artifact.md records the structural
+  property; no standalone cadence-owner file remains.`
 - **workflow — issue closure deferred rather than faked.** #689/#690/#691/#696
   stay open. `applied: recorded in the goal's Coordination Cues as a deferral with
   its reason, not as an n/a.`
@@ -247,12 +247,12 @@ Four-axis scan:
   artifact's `Next action` and `Slice Plan` statuses go stale the moment a slice
   lands, and this session hit it twice. The `head_freshness` module guards a SHA
   but not prose.
-- **Other skills:** `release` has `baton_reconcile` for `docs/handoff.md`, which
-  is exactly this mechanism for one file — evidence the pattern is known and
-  solved narrowly. `issue` has no equivalent for a closeout draft written before
-  a verdict.
-- **Docs/contracts:** `docs/handoff.md` was stale in the same way this session
-  and was disclosed by the release critique's F8, not caught by a gate.
+- **Other skills:** `release` has a release-record reconciliation path for the
+  current release artifact. The former handoff-specific mechanism is removed;
+  `issue` still has no equivalent for a closeout draft written before a verdict.
+- **Docs/contracts:** the former handoff document was stale in the same way this
+  session and was disclosed by the release critique's F8, not caught by a gate;
+  current pickup follows `AGENTS.md` and `docs/index.md`.
 - **Tests:** none assert prose-vs-state consistency.
 
 Decision: `issue #700 (recurs: the release flow already solves this for one file

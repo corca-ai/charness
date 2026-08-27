@@ -31,6 +31,13 @@ worked, and leave the next change easy to start? It is intentionally short.
 6. Commit after verification. Do not push, release, tag, install, or mutate an
    external issue unless that phase was explicitly requested.
 
+When a documentation change is unusually broad,
+[check_doc_authoring_preflight.py](../scripts/check_doc_authoring_preflight.py)
+is an authoring affordance that forecasts the relevant checks. When deleting a
+wrapper or symbol, [check_symbol_residue.py](../scripts/check_symbol_residue.py)
+remains advisory by design
+(#259): use it to find consumers, then let the owning focused test decide.
+
 ## Worktree and runtime hygiene
 
 The parent worktree is user state. Never reset, restore, stash, clean, or

@@ -135,13 +135,12 @@ Issues or deferred findings discovered during the run.
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
-retro / host-log probe / disposition-review artifact) or an explicit
-`skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
-`TODO` / `<path>` / `TBD` until you do.
+retro / host-log probe) or an explicit `skipped: <allowed-reason>: <detail>`.
+If the adapter selects `review-required`, add a bound `Disposition review:`
+line as well. The complete gate rejects a literal `TODO` / `<path>` / `TBD`.
 
 Retro: TODO — create or explicitly skip with an allowed reason before complete
 Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
 
 ## User Verification Instructions
 

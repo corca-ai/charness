@@ -11,7 +11,6 @@ from __future__ import annotations
 import importlib.util
 import json
 import os
-import re
 import shutil
 import subprocess
 import sys
@@ -497,79 +496,19 @@ def test_checked_in_workflows_install_ripgrep_before_running_the_standing_suite(
     codes they never reach, the sampler's coverage baseline goes red, and the mutation
     lane produces no verdict.
 
-    Scope, because the first draft of this docstring over-claimed it: this explains
-    the runs that REACHED the standing suite -- mutation `32573073322` (2026-08-22)
-    and quality-core `32536921987` (2026-08-21, same eight failures). It does NOT
-    explain the 08-19/08-20 runs, which were cancelled at the sampler before
-    `command_plan_preflight.py` existed (it landed 2026-08-21 in `365aa4b21`).
-
-    Without this pin the install is invisible to the suite: rg is present on every
-    dev box, so a later edit trimming the `Install validation binaries` step stays
-    green locally and takes the scheduled lane dark again. Both workflows are pinned
-    because both drive the standing suite -- mutation-tests.yml through the sampler,
-    quality-core.yml through the changed-line gate's --test-command.
-
-    Anchored on the STEP DECLARATION (`- name: <step>`), not the bare step phrase.
-    The first cut of this test compared against `body.index("Select mutation sample")`
-    and broke immediately, because the comment justifying the install mentions that
-    step by name -- so `index` returned the comment's offset and the ordering claim
-    became a claim about prose. The sibling tokei pin above still uses the bare
-    phrase and would silently start comparing against the same comment, so it was
-    hardened in place as well (see its own docstring note).
+    The mutation workflow receives its sample command through the adapter rather
+    than spelling that command in YAML. Keep the binary install next to the actual
+    scheduled consumer and assert the adapter still points at the standing runner.
     """
-    # POPULATION DERIVED FROM THE TREE, not a hand-listed pair of paths. The first cut
-    # named mutation-tests.yml and quality-core.yml explicitly -- a two-entry
-    # enumeration inside the goal that exists to stop those, and one that would stay
-    # green while a third workflow drove the suite uncovered. The counter-example was
-    # fifteen lines below in this file (`_mutation_workflow_copies`). This globs every
-    # workflow and requires each one that runs the standing suite to install rg, so a
-    # new workflow is covered the day it lands.
     suite_marker = "scripts/run_standing_pytest.py"
-    workflows = sorted((ROOT / ".github" / "workflows").glob("*.yml"))
-    assert workflows, "no workflows found; the derivation would be vacuously satisfied"
-    drivers = [path for path in workflows if suite_marker in path.read_text(encoding="utf-8")]
-    assert drivers, f"no workflow references {suite_marker}; derivation is not measuring anything"
-
-    for path in drivers:
-        body = path.read_text(encoding="utf-8")
-        # PER JOB, not per file. A whole-file `index` comparison passes just as happily
-        # with the install in one job and the consumer in another -- and GitHub gives
-        # each job a fresh runner, so that arrangement ships the binary nowhere useful.
-        # quality-core.yml really does have two jobs, so this is reachable, not
-        # hypothetical. Round 2 caught it.
-        for job_body in _job_bodies(body):
-            if suite_marker not in job_body:
-                continue
-            assert "apt-get install -y ripgrep" in job_body, (
-                f"{path.name}: a job runs the standing suite without installing ripgrep"
-            )
-            assert "rg --version" in job_body, f"{path.name}: install is unverified in-job"
-            consumer = job_body.index(suite_marker)
-            assert job_body.index("apt-get install -y ripgrep") < consumer, path.name
-            assert job_body.index("rg --version") < consumer, path.name
-
-    # And the specific step ordering for the scheduled lane, anchored on the step
-    # declaration rather than the phrase (which now also appears in a comment).
     mutation_body = MUTATION_WORKFLOW
+    adapter = yaml.safe_load((ROOT / ".agents" / "quality-adapter.yaml").read_text(encoding="utf-8"))
+    sample_command = adapter["mutation_testing"]["commands"]["sample"]
+    assert suite_marker in sample_command
     sample_step = "- name: Select mutation sample"
     assert sample_step in mutation_body
     assert mutation_body.index("apt-get install -y ripgrep") < mutation_body.index(sample_step)
     assert mutation_body.index("cargo install tokei") < mutation_body.index(sample_step)
-
-
-def _job_bodies(workflow_text: str) -> list[str]:
-    """Split a workflow into per-job text blocks, keyed off two-space job keys."""
-    lines = workflow_text.splitlines(keepends=True)
-    try:
-        start = next(i for i, line in enumerate(lines) if line.rstrip("\n") == "jobs:")
-    except StopIteration:
-        return []
-    starts = [
-        i
-        for i in range(start + 1, len(lines))
-        if re.match(r"^  [A-Za-z0-9_-]+:\s*$", lines[i])
-    ]
-    return ["".join(lines[s:e]) for s, e in zip(starts, starts[1:] + [len(lines)])]
 
 
 def test_mutation_workflows_pass_workload_budget_envs() -> None:

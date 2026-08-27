@@ -1,67 +1,42 @@
-# Charness - Corca Harness
+# Charness
 
-`charness` is a Claude Code / Codex plugin developed by [Corca](https://github.com/corca-ai).
+`charness` is Corca's Claude Code/Codex plugin for efficient, auditable
+software work. Keep this file short: it routes to the document that owns the
+question; it is not a second operating manual.
 
 ## Start here
 
-- Read [docs/design-north-star.md](./docs/design-north-star.md) when a decision
-  changes a boundary: brief a capable judge and keep teeth only where a wrong
-  answer can escape.
-- Then read [docs/index.md](./docs/index.md) and only the owner page for the
-  requested surface. Do not reconstruct state from a session hook, handoff file,
-  or a full issue graph.
-- For an active Goal Run, read the parent issue and the cursor-selected child.
-  `Achieve` owns navigation, progress, and continuation.
-- If support or integration availability is genuinely unclear, use the
-  read-only `charness catalog list --repo-root <repo> --summary` inventory and
-  report a nonzero result as a command failure.
+- Read [docs/index.md](./docs/index.md), then only the owner page needed for
+  the current request.
+- Read [docs/development.md](./docs/development.md) for local work and
+  [docs/operating-contract.md](./docs/operating-contract.md) before an
+  irreversible boundary.
+- When support or integration availability is unclear, run
+  `charness catalog list --repo-root <repo>` as read-only inventory.
+- `CLAUDE.md` is a compatibility symlink to this file. Do not create a second
+  source of truth.
 
 ## Make changes
 
-- Preserve the parent worktree. Never reset, restore, stash, clean, or mass-delete
-  it to make a task easier.
-- Create implementation/proof worktrees from explicit base and target commits,
-  on a temporary named branch, with an explicit path scope. Refuse detached or
-  dirty checkouts before running work.
-- Keep Python bytecode, pytest/ruff caches, coverage, temporary output, and
-  generated runtime state outside the worktree. `.gitignore` is not isolation.
-- Prefer deleting obsolete code, wrappers, gates, mirrors, and tests over adding
-  another ceremony. Derive facts from their source of truth.
-- Keep host-specific behavior in adapters, presets, and manifests.
+- Preserve authored parent-worktree changes. Use a clean named worktree for
+  isolated mutation, with runtime caches and temporary output outside it.
+- Make independent investigation, implementation, and review the default
+  parallel shape. Inspect the live host tool surface first: when a spawn or
+  subagent API is present, use it directly and do not infer its absence from
+  memory or an earlier session. Use `charness task run` for a lane that needs
+  an explicit isolated worktree, or when no host spawn channel is actually
+  exposed. The parent agent owns intent, design, integration, and final verification;
+  keep work sequential only when it is dependent or tiny.
+- Keep `skills/public/` canonical; exports and generated surfaces are updated
+  by their producer. Prefer deleting stale rules, wrappers, gates, mirrors,
+  tests, and docs over adding another layer.
+- Use focused checks for ordinary changes. The owning quality or release
+  contract decides when broader proof is warranted.
 
-## Verify and finish
+## Repository map
 
-- Run focused tests first. [`run-quality.sh`](./scripts/run-quality.sh) is the default small core
-  lane; use `./scripts/run-quality.sh --full --read-only` only for broad,
-  release, or review work.
-- Changed-line proof, full-suite proof, fresh-eye review, and closeout ledgers
-  are conditional. Require the narrow evidence that matches a verdict/proof
-  surface, irreversible boundary, release, security, compatibility, or
-  uncertain deletion. Do not turn a reversible implementation into a ceremony.
-- After source changes that have a generated plugin export, batch edits and run
-  `python3 scripts/sync_root_plugin_manifests.py --repo-root .` once. The source
-  under `skills/public/` is canonical; never hand-edit its mirror.
-- Commit meaningful code, test, workflow, and durable-artifact changes after
-  verification. Keep the commit scoped and report the evidence.
-- Never claim an unavailable proof ran. If an independent observer is needed but
-  unavailable, record that as a non-claim; a same-agent reread is not independent.
-
-## External boundaries
-
-- Issue writes go through the provider and read the exact target back. Closing
-  an issue may record completed, not planned, or superseded; an external-repo
-  confirmation that is outside the goal is not a reason to leave it open.
-- Push, pull request creation, reopening, tagging, version changes, release
-  publication, installation, and evaluator execution require an explicit
-  phase-scoped request.
-
-## Documentation map
-
-- [docs/index.md](./docs/index.md): documentation entry point
-- [docs/implementation-discipline.md](./docs/implementation-discipline.md):
-  change, cache, and verification loop
-- [docs/operating-contract.md](./docs/operating-contract.md): ownership and
-  boundary rules
-- [docs/host-packaging.md](./docs/host-packaging.md): install/export layout
-- `charness-artifacts/`: dated evidence, retros, proposals, and active Goal Run
-  records; these do not override current docs
+- [Documentation index](./docs/index.md) — current docs and owner map.
+- [Workflow routes](./docs/workflow-routes.md) — intent-to-skill entry points.
+- [CLI reference](./docs/cli-reference.md) — generated command surface.
+- [charness-artifacts/](./charness-artifacts/) — dated evidence, plans, and
+  retrospective memory; it does not silently override current docs.

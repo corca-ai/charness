@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-OPERATING_SURFACE_LINE_BUDGET = 140
+OPERATING_SURFACE_LINE_BUDGET = 48
 _MARKDOWN_LINK = re.compile(r"\]\(([^)#\s]+)")
 _CONSUMERS = ["quality.quality_setup_snapshot", "setup.inspect_repo"]
 
@@ -12,24 +12,36 @@ def _read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="replace") if path.is_file() else ""
 
 
-def _linked_docs(text: str) -> list[str]:
-    """Return documentation targets named by an operating surface."""
+def _linked_doc_targets(text: str) -> list[str]:
+    """Return documentation targets in source order."""
 
-    found: set[str] = set()
+    found: list[str] = []
     for raw in _MARKDOWN_LINK.findall(text):
         candidate = raw.split("#", 1)[0]
         if candidate.startswith("./docs/"):
-            found.add(candidate.removeprefix("./"))
+            found.append(candidate.removeprefix("./"))
         elif candidate.startswith("../docs/"):
-            found.add(candidate.removeprefix("../"))
+            found.append(candidate.removeprefix("../"))
         elif candidate.startswith("docs/"):
-            found.add(candidate)
-    return sorted(found)
+            found.append(candidate)
+    return found
+
+
+def _linked_docs(text: str) -> list[str]:
+    """Return unique documentation targets named by an operating surface."""
+
+    return sorted(set(_linked_doc_targets(text)))
+
+
+def _duplicate_doc_links(text: str) -> list[str]:
+    targets = _linked_doc_targets(text)
+    return sorted({target for target in targets if targets.count(target) > 1})
 
 
 def _surface_shape(path: Path, text: str, *, role: str) -> dict[str, object]:
     lines = [line for line in text.splitlines() if line.strip()]
     links = _linked_docs(text)
+    duplicate_links = _duplicate_doc_links(text) if role == "documentation-index" else []
     headings = sum(1 for line in lines if line.lstrip().startswith("#"))
     index_entries = sum(1 for line in lines if re.match(r"^\s*[-*+]\s+\[", line))
     substantive = sum(
@@ -41,6 +53,9 @@ def _surface_shape(path: Path, text: str, *, role: str) -> dict[str, object]:
         shape, action = "missing-or-empty", "refuse ownership assignment until readable structure exists"
         owner, confidence = None, "none"
         refusal_reason = "readable structure is required; path existence alone is insufficient"
+    elif duplicate_links:
+        shape, action = "duplicate-index-entry", "list each current documentation page once"
+        owner, confidence, refusal_reason = "documentation", "high", None
     elif role == "first-touch-contract" and len(lines) > OPERATING_SURFACE_LINE_BUDGET:
         shape, action = "overloaded", "thin the entrypoint after assigning procedures to deeper owners"
         owner, confidence, refusal_reason = "setup", "medium", None
@@ -67,6 +82,7 @@ def _surface_shape(path: Path, text: str, *, role: str) -> dict[str, object]:
         "line_budget": OPERATING_SURFACE_LINE_BUDGET,
         "heading_count": headings,
         "internal_doc_links": links,
+        "duplicate_doc_links": duplicate_links,
         "shape": shape,
         "action": action,
     }
@@ -85,7 +101,12 @@ def detect_operating_surface_ownership(
     flagged = [
         surface
         for surface in surfaces
-        if surface["shape"] in {"overloaded", "substantive-index", "missing-or-empty"}
+        if surface["shape"] in {
+            "overloaded",
+            "substantive-index",
+            "duplicate-index-entry",
+            "missing-or-empty",
+        }
     ]
     moves = [
         {

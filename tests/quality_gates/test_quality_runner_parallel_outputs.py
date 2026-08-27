@@ -30,7 +30,7 @@ def test_quality_runner_isolates_focused_coverage_report_per_run(
     env["CHARNESS_QUALITY_LABELS"] = "check-changed-line-mutation-coverage"
     env["RUNNER_ARG_CAPTURE"] = str(capture)
 
-    result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", "--release", cwd=repo, env=env)
 
     assert result.returncode == 0, result.stderr
     args = capture.read_text(encoding="utf-8").splitlines()

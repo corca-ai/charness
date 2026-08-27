@@ -64,6 +64,7 @@ def _load_delivery_attempt_parser():
         "reviewer_delivery_fields": package_dir / "reviewer_delivery_fields.py",
         "reviewer_delivery_history": package_dir / "reviewer_delivery_history.py",
         "reviewer_delivery_schema": package_dir / "reviewer_delivery_schema.py",
+        "reviewer_delivery_attempt_codec": package_dir / "reviewer_delivery_attempt_codec.py",
         "reviewer_delivery_attempt": package_dir / "reviewer_delivery_attempt.py",
     }
     saved: dict[str, object] = {}

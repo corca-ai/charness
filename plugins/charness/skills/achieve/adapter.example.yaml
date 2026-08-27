@@ -13,7 +13,9 @@ closeout_publication:
   require_post_publication_verify: true
   publish_requires_user_confirmation: true
 auto_retro:
-  disposition_floor: review-required
+  # Ordinary goals use the deterministic form checks. Opt into review-required
+  # only when this goal's own boundary warrants a separate disposition reviewer.
+  disposition_floor: deterministic-only
   allow_host_blocked_disposition_review_skip: true
   valid_dispositions:
     - applied

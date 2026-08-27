@@ -44,7 +44,7 @@ closeout_publication:
   require_post_publication_verify: true
   publish_requires_user_confirmation: true
 auto_retro:
-  disposition_floor: review-required
+  disposition_floor: deterministic-only
   allow_host_blocked_disposition_review_skip: true
   valid_dispositions:
     - applied
@@ -90,12 +90,11 @@ include `validate-closeout-draft`, `--carrier direct-commit`, and
 skill's direct-commit rehearsal contract rather than hand-written memory.
 
 `auto_retro.disposition_floor` controls the local floor before completion.
-`review-required` is the normal setting: deterministic gates require evidence
-that the disposition review ran or was host-blocked, and `## Auto-Retro` must
-disposition surfaced improvements with `applied: <what>` or `issue #N`, unless a
-valid `Retro dispositions: none — <reason>` line applies. `deterministic-only`
-is for hosts that cannot support fresh-eye review, but it should be explicit in
-the adapter because it weakens the normal floor.
+`deterministic-only` is the default: `## Auto-Retro` must disposition surfaced
+improvements with `applied: <what>` or `issue #N`, unless a valid
+`Retro dispositions: none — <reason>` line applies. `review-required` is an
+explicit opt-in for a goal whose own boundary warrants a separate disposition
+review; it is not a host-availability workaround or a normal completion step.
 
 `scaffold.draft_active_frame_lines` optionally replaces the default draft
 `## Active Operating Frame` lines in newly scaffolded goal artifacts. The field

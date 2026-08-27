@@ -70,6 +70,7 @@ cli_skill_surface_change_globs:
 canonical_markdown_surfaces:
   - AGENTS.md
   - CLAUDE.md
+  - docs/index.md
 prompt_asset_policy:
   source_globs:
     - scripts/**/*.py
@@ -115,7 +116,6 @@ runtime_budget_intent:
   always:
     - charness-version
     - check-boundary-bypass-ratchet
-    - check-changed-line-mutation-coverage
     - check-cli-skill-surface
     - check-documented-command-flags
     - check-export-safe-imports
@@ -165,29 +165,6 @@ runtime_budget_profiles:
     # pre-change window would draw a bar the layout can no longer honor.
     budgets:
       charness-version: 500
-      # (contended) was 5000; post-change max 5933
-      # The lane's cost scales with base..HEAD distance, so this bar is a RANGE
-      # ceiling, not a per-run expectation: ~24s for one commit is the common case and
-      # 300000 is the documented nine-commit figure. It had no bar at all while being
-      # the most expensive gate in the bundle, which is how the aggregate above went
-      # stale unnoticed.
-      #
-      # 2026-07-30: 300000 -> 400000 (operator-directed). The recent median crossed by
-      # 0.8% (302429 vs 300000) while closing #465, which fails the gate by the
-      # documented median rule. Two things were checked before raising rather than
-      # after: (1) the slice under review added a test-reference-map call to this
-      # gate's BLOCKING path, and it was MEASURED at 2.4-2.5s of a ~352s run, so it is
-      # not the cause; (2) the same window holds runs at 103000-223000ms, which is the
-      # range-ceiling property above, not variance.
-      #
-      # 400000, NOT the 500000 that 1.4x-worst-observed (356859ms, n=1069) would give.
-      # The first cut used 500000 and `test_the_pre_push_aggregate_bar_covers_the_armed
-      # _lane_it_now_contains` refused it: both aggregate bars must CLEAR this one,
-      # because the aggregate wall is lane-dominated. Raising this to 500000 would have
-      # forced both aggregates up with it. 400000 still clears the worst observed run,
-      # keeps the aggregates at 420000, and is the smaller move — so the relationship
-      # that test pins decided the number, and it decided it tighter.
-      check-changed-line-mutation-coverage: 400000
       check-cli-skill-surface: 8500
       check-inventory-declaration-coverage: 500
       check-references-link-inventory: 800
@@ -261,43 +238,9 @@ runtime_budget_profiles:
       # aggregate EXITS EARLY — a truncated wall, not a measurement — but the max this
       # is drawn from is a passing run and those samples have since aged out.
       #
-      # 2026-07-30: RAISED 58500 -> 305000. At the time this was the bar that stopped
-      # a push (`.githooks/pre-push` runs `--read-only`; `check-runtime-budget` runs
-      # in both modes). The basis above is entirely PRE-D40: the armed changed-line
-      # lane is queued unconditionally, so it is now inside every read-only run, and
-      # the window shows it — latest 90618ms against a 58500 bar, already reporting
-      # `latest-spike`, with two 551.7s range runs in the same 20. Enforcement is
-      # median-of-20, so the current median 40051 has not crossed it yet; that is a
-      # countdown, not a margin, and the failure was a hard pre-push stop with
-      # nothing regressed.
-      #
-      # Sized from the lane's documented ceiling plus the MEASURED aggregation
-      # overhead, not from the window's max (551780 is a transient six-commit range
-      # and baking it in would leave a guard nothing can trip). Six paired samples in
-      # `.charness/quality/history` put the aggregate wall at lane + 2565..2848ms
-      # (81582/84272, 87738/90403, 87661/90264, 88246/90811, 88498/91140,
-      # 87770/90618 read-only): the gates run CONCURRENTLY, so the aggregate is
-      # lane-dominated rather than lane-plus-the-rest. 300000 (the lane's own bar
-      # above) + ~3000 + rounding = 305000.
-      #
-      # Correcting the record while here: the `run-quality-full: 420000` derivation
-      # below states "+ the ~120000 the rest of the full bundle costs". Those same
-      # paired samples falsify the additive model. 420000 still holds as "a lane of
-      # ~417000", with slack over this bar for the full mode's extra gates, but the
-      # stated reasoning was wrong and is not load-bearing for either number.
-      #
-      # 2026-07-30: 305000 -> 420000 (operator-directed). Recent median crossed by
-      # 0.14% (305424 vs 305000) — the thinnest possible failure, on the same #465
-      # window as the lane above and from the same cause (a wide changed-test surface,
-      # not a code regression).
-      #
-      # 420000 matched `run-quality-full` and cleared the lane's new 400000, which
-      # `test_the_pre_push_aggregate_bar_covers_the_armed_lane_it_now_contains` requires
-      # of both aggregates. A first cut here reasoned that this bar could sit BELOW the
-      # lane's because it is "the wall an operator actually feels"; that test refuted it
-      # in one line, and correctly — the aggregate was lane-dominated, so a bar under
-      # the lane's failed on the gate's own documented cost with nothing regressed.
-      # Recorded because the wrong version of this reasoning is the tempting one.
+      # The ordinary quality aggregate excludes the optional release-only mutation
+      # lane. Keep this budget tied to the ordinary queue; release has its own
+      # aggregate label and pays the mutation cost explicitly.
       #
       # 2026-08-27 (#668): timing is now telemetry in the normal quality runner. The
       # runner passes `--advisory` to `check_runtime_budget.py`; this recorded bar and
@@ -460,19 +403,8 @@ runtime_budget_profiles:
       # paths are involuntary (xdist < 3.2, an unrelated PYTEST_ADDOPTS tuning), so
       # `choose_sched_chunk` returns a reason and the runner prints it to stderr
       # rather than leaving that red pointing nowhere.
-      # The armed changed-line lane (D40, 2026-07-29) is the dominant term now and
-      # was never accounted for here: its documented cost is ~24s for a one-commit
-      # slice and ~5min for a nine-commit range, so a 62000 aggregate contradicted an
-      # accepted design decision from the session before this one. 420000 = the lane's
-      # documented 300000 nine-commit ceiling plus the ~120000 the rest of the full
-      # bundle costs (median 182640 observed; the 'small changed pool' reading was wrong -- that run's lane alone was 180557ms).
-      #
-      # Sized from the DOCUMENTED range cost, NOT from this session's worst run. The
-      # observed 549239ms came from a six-commit UNPUSHED range: `--suggest-budgets`
-      # proposed 769000 from it, which would bake a transient base..HEAD distance in
-      # as the permanent bar and leave a guard nothing could trip. That is the
-      # transcribe-a-bar-below-what-you-measured class inverted, and it is why this
-      # number is not the suggester's.
+      # The ordinary full aggregate also excludes the optional release-only mutation
+      # lane, so this budget remains an ordinary-queue measurement.
       run-quality-full: 420000
       # `pytest` now records standing-mode runs only (release-only pytest moved to
       # its own `pytest-release` label). This 90000 was sized from the CONFLATED
@@ -697,21 +629,8 @@ runtime_budget_profiles:
       # rather than retuned from a window this run did not turn over. 1.4x the 99828ms
       # max, n=2 and stated as such.
       #
-      # 2026-07-30: NOT RETUNED, and here is why rather than a silent number. Both
-      # samples behind this bar are dated 2026-07-26, which PREDATES the armed
-      # changed-line lane (D40, 2026-07-29). The 36cpu block above accounts for that
-      # lane at 420000 using its documented cost; this profile does not account for it
-      # at all. Arithmetic on the same documented figures: 99828 + ~24000 (one-commit)
-      # = ~124000, still under; 99828 + 300000 (the nine-commit ceiling) = ~400000,
-      # nearly 3x this bar. So a multi-commit range on a 4-core box goes RED with
-      # nothing regressed -- a false red, the direction that gets a lane disabled.
-      # It is left at 140000 deliberately: this repo's rule is that a bar comes from a
-      # documented cost or a real window, never from one transcribed run, and NO
-      # post-lane 4-core run has been observed. Widening it by the 36cpu block's
-      # reasoning would be inventing a measurement for a machine nobody measured.
-      # Reopen: the first `taskset -c 0-3` full run taken after the armed lane landed,
-      # or the first operator report of a 4-core `run-quality-full` red with nothing
-      # regressed.
+      # No release-only mutation sample exists for this profile; keep its aggregate
+      # budget tied to the ordinary full queue until that profile is measured.
       check-coverage: 39500
       run-quality-full: 140000
   local-linux-aarch64-4cpu:
@@ -725,7 +644,7 @@ runtime_budget_profiles:
     # in `--read-only`) under genuine 4-core contention. EIGHT of the eighteen bars
     # were already exceeded — including five never marked `(contended, derived)` at
     # all, and `check-secrets` at 76.6s against a 20s bar. The failure rule is
-    # median-based and wired into the pre-push path, so each of those was a
+    # median-based and wired into the local quality path, so each of those was a
     # BLOCKING false red waiting for a maintainer on a small box where nothing had
     # regressed. Those samples live under the `local-linux-x86_64-4cpu` profile in
     # `.charness/quality/runtime-signals.json`, which is where the floors below can
@@ -757,7 +676,7 @@ runtime_budget_profiles:
     # profile's samples. Worse, the two failure directions here are mutually exclusive:
     # if the block's slowdown assumption is wrong the bar cannot fail, and if it holds
     # strongly (2x slower -> ~260000 median) the bar cannot pass, which is a guaranteed
-    # blocking pre-push false red. No single number is honest for a profile with zero
+    # blocking local-quality false red. No single number is honest for a profile with zero
     # recorded samples, and nothing would have surfaced the mistake -- every label here
     # reports `no-sample` until this box runs, and `BUDGET_SLACK_FACTOR` is 3.0, so a
     # 2.0x bar is invisible to the one advisory built to catch bars that cannot fail.
@@ -879,14 +798,9 @@ standing_doc_provenance:
     - docs/artifact-policy.md
   inline_allow_marker: provenance-allow
 changed_line_mutation_gate:
-  # Portable changed-line coverage gate (handoff-3). Dogfood config: the eligible
-  # globs mirror the mutation pool; coverage_json is the report the closeout
-  # producer emits. charness's active pre-push gate is the incremental producer
-  # scripts/prepush_focused_changed_line_coverage.py (D40), which orchestrates the
-  # cosmic-ray-coupled scripts/check_changed_line_mutation_coverage.py as its
-  # consumer; this block proves the portable quality capability resolves the same
-  # surface. See
-  # skills/public/quality/references/mutation-testing.md.
+  # Release-only changed-line coverage surface. It is absent from ordinary
+  # implementation, full, pre-push, and push/PR CI queues; the runner pays for it
+  # at release. The scheduled mutation workflow is a separate deeper check.
   coverage_json: reports/mutation/test-coverage.json
   eligible_globs:
     - scripts/**/*.py

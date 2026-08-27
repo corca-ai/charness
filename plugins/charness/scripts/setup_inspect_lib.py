@@ -136,7 +136,6 @@ def build_setup_inspection_payload(
     prose_wrap_state: Callable[[Path, dict[str, Any]], dict[str, object]],
     surface_overrides: Callable[[dict[str, Any]], dict[str, Any]],
     operating_surface_profile: Callable[[dict[str, Any]], dict[str, object]] | None = None,
-    skill_routing_payload: Callable[[Path], dict[str, Any]] | None = None,
 ) -> dict[str, object]:
     adapter_data, adapter_path, adapter_warnings = load_setup_adapter(repo_root)
     specs = _surface_specs(repo_root, surface_overrides(adapter_data))
@@ -146,7 +145,7 @@ def build_setup_inspection_payload(
         if operating_surface_profile is not None
         else {"id": "flat-wiki", "approval_required": True}
     )
-    agent_docs = detect_agent_docs(repo_root, skill_routing_payload=skill_routing_payload)
+    agent_docs = detect_agent_docs(repo_root)
     normalization = agent_docs["normalization"]
     findings = [
         finding

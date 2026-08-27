@@ -307,10 +307,10 @@ def test_an_env_prefixed_command_is_a_command_not_an_assignment(tmp_path: Path) 
     """`VAR=1 ./scripts/run-x.sh` is a command with an env prefix.
 
     Matching the leading `VAR=` and skipping dropped the whole line, so a runner
-    invoked that way became invisible and the surface it references was never
-    discovered — a silent loss of the entire downstream inventory, not one missing
-    snippet. Reproduced by adding `CHARNESS_PRE_PUSH=1` to this repo's own pre-push
-    hook, which took `scripts/run-quality.sh` out of the surface list.
+    invoked with an environment prefix became invisible and the surface it references
+    was never discovered — a silent loss of the entire downstream inventory, not one
+    missing snippet. Reproduced by adding an environment prefix to this repo's own
+    pre-push hook, which took `scripts/run-quality.sh` out of the surface list.
     """
     from tests.script_loader import load_script_module
 

@@ -15,7 +15,6 @@ def _load_skill_runtime_bootstrap():
 
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
-_render_skill_routing = SKILL_RUNTIME.load_local_skill_module(__file__, "render_skill_routing")
 _host_docs = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.setup_host_docs_lib")
 yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 
@@ -25,12 +24,17 @@ def main() -> int:
         description="Normalize only AGENTS.md and CLAUDE.md according to setup host-doc policy."
     )
     parser.add_argument("--repo-root", type=Path, required=True, help="Repo root to normalize")
-    parser.add_argument("--execute", action="store_true", help="Write AGENTS.md and/or CLAUDE.md symlink")
+    parser.add_argument("--execute", action="store_true", help="Write the planned AGENTS.md and/or CLAUDE.md change")
+    parser.add_argument(
+        "--compact",
+        action="store_true",
+        help="Replace an existing AGENTS.md with setup's minimal template; without this flag it is preserved",
+    )
     args = parser.parse_args()
     payload = _host_docs.normalize_host_docs(
         args.repo_root.resolve(),
-        skill_routing_payload=_render_skill_routing.build_payload,
         execute=args.execute,
+        compact=args.compact,
     )
     yaml_output.emit_yaml(payload)
     return 1 if payload["status"] == "blocked" else 0
