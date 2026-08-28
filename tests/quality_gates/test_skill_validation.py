@@ -5,6 +5,29 @@ from pathlib import Path
 from .support import make_minimal_skill_repo, run_script
 
 
+def make_adapter_skill_repo(
+    tmp_path: Path, *, with_resolver: bool = True, with_init: bool = False
+) -> Path:
+    repo = make_minimal_skill_repo(tmp_path, '"Demo skill."')
+    skill_dir = repo / "skills" / "public" / "demo"
+    references_dir = skill_dir / "references"
+    references_dir.mkdir()
+    (references_dir / "note.md").write_text("# Note\n", encoding="utf-8")
+    (skill_dir / "SKILL.md").write_text(
+        (skill_dir / "SKILL.md").read_text(encoding="utf-8")
+        + "\n## References\n\n- `references/note.md`\n",
+        encoding="utf-8",
+    )
+    (skill_dir / "adapter.example.yaml").write_text("version: 1\n", encoding="utf-8")
+    scripts_dir = skill_dir / "scripts"
+    scripts_dir.mkdir()
+    if with_resolver:
+        (scripts_dir / "resolve_adapter.py").write_text("# resolver\n", encoding="utf-8")
+    if with_init:
+        (scripts_dir / "init_adapter.py").write_text("# skill-owned initializer\n", encoding="utf-8")
+    return repo
+
+
 def test_validate_skills_rejects_unquoted_description(tmp_path: Path) -> None:
     repo = make_minimal_skill_repo(
         tmp_path,
@@ -95,6 +118,19 @@ def test_validate_skills_accepts_support_skill_package(tmp_path: Path) -> None:
     )
     result = run_script("scripts/validate_skills.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
+
+
+def test_validate_skills_accepts_adapter_example_without_init_adapter(tmp_path: Path) -> None:
+    repo = make_adapter_skill_repo(tmp_path, with_init=False)
+    result = run_script("scripts/validate_skills.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+
+
+def test_validate_skills_requires_adapter_resolver(tmp_path: Path) -> None:
+    repo = make_adapter_skill_repo(tmp_path, with_resolver=False, with_init=True)
+    result = run_script("scripts/validate_skills.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "scripts/resolve_adapter.py is missing" in result.stderr
 
 
 def test_validate_skills_rejects_missing_shared_reference_from_reference_file(tmp_path: Path) -> None:

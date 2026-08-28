@@ -60,7 +60,14 @@ def seed_repo(tmp_path: Path, *, policy: dict[str, object]) -> Path:
     return repo
 
 
-def seed_skill(repo: Path, skill_id: str, *, adapter: bool) -> None:
+def seed_skill(
+    repo: Path,
+    skill_id: str,
+    *,
+    adapter: bool,
+    resolver: bool = True,
+    init: bool = True,
+) -> None:
     skill_dir = repo / "skills" / "public" / skill_id
     skill_dir.mkdir(parents=True)
     (skill_dir / "SKILL.md").write_text(
@@ -89,8 +96,16 @@ def seed_skill(repo: Path, skill_id: str, *, adapter: bool) -> None:
         shutil.copy2(ROOT / "skills" / "public" / "quality" / "adapter.example.yaml", skill_dir / "adapter.example.yaml")
         scripts_dir = skill_dir / "scripts"
         scripts_dir.mkdir()
-        shutil.copy2(ROOT / "skills" / "public" / "quality" / "scripts" / "resolve_adapter.py", scripts_dir / "resolve_adapter.py")
-        shutil.copy2(ROOT / "skills" / "public" / "quality" / "scripts" / "init_adapter.py", scripts_dir / "init_adapter.py")
+        if resolver:
+            shutil.copy2(
+                ROOT / "skills" / "public" / "quality" / "scripts" / "resolve_adapter.py",
+                scripts_dir / "resolve_adapter.py",
+            )
+        if init:
+            shutil.copy2(
+                ROOT / "skills" / "public" / "quality" / "scripts" / "init_adapter.py",
+                scripts_dir / "init_adapter.py",
+            )
 
 
 def assert_validation_error(repo: Path, *fragments: str) -> None:
@@ -168,7 +183,7 @@ def test_validate_public_skill_validation_reports_missing_adapter_requirement_bu
     )
 
 
-def test_validate_public_skill_validation_requires_adapter_contract_for_required_skill(tmp_path: Path) -> None:
+def test_validate_public_skill_validation_accepts_initless_adapter_and_requires_its_contract(tmp_path: Path) -> None:
     repo = seed_repo(
         tmp_path,
         policy={
@@ -189,15 +204,27 @@ def test_validate_public_skill_validation_requires_adapter_contract_for_required
             },
         },
     )
-    seed_skill(repo, "demo-a", adapter=False)
+    seed_skill(repo, "demo-a", adapter=True, init=False)
 
     policy = validate_policy(load_policy(repo), repo)
+    for skill_id in policy["adapter_requirements"]["required"]:
+        validate_adapter_requirement(repo, skill_id, required=True)
+
+    resolver = repo / "skills" / "public" / "demo-a" / "scripts" / "resolve_adapter.py"
+    resolver.unlink()
+    with pytest.raises(ValidationError, match="adapter-required skill is missing `scripts/resolve_adapter.py`"):
+        for skill_id in policy["adapter_requirements"]["required"]:
+            validate_adapter_requirement(repo, skill_id, required=True)
+
+    (repo / "skills" / "public" / "demo-a" / "adapter.example.yaml").unlink()
     with pytest.raises(ValidationError, match="adapter-required skill is missing `adapter.example.yaml`"):
         for skill_id in policy["adapter_requirements"]["required"]:
             validate_adapter_requirement(repo, skill_id, required=True)
 
 
-def test_validate_public_skill_validation_rejects_adapter_helpers_for_adapter_free_skill(tmp_path: Path) -> None:
+def test_validate_public_skill_validation_allows_skill_owned_init_but_rejects_adapter_example_for_adapter_free_skill(
+    tmp_path: Path,
+) -> None:
     repo = seed_repo(
         tmp_path,
         policy={
@@ -218,9 +245,22 @@ def test_validate_public_skill_validation_rejects_adapter_helpers_for_adapter_fr
             },
         },
     )
-    seed_skill(repo, "demo-a", adapter=True)
+    seed_skill(repo, "demo-a", adapter=False)
+    scripts_dir = repo / "skills" / "public" / "demo-a" / "scripts"
+    scripts_dir.mkdir()
+    shutil.copy2(
+        ROOT / "skills" / "public" / "quality" / "scripts" / "init_adapter.py",
+        scripts_dir / "init_adapter.py",
+    )
 
     policy = validate_policy(load_policy(repo), repo)
+    for skill_id in policy["adapter_requirements"]["adapter-free"]:
+        validate_adapter_requirement(repo, skill_id, required=False)
+
+    shutil.copy2(
+        ROOT / "skills" / "public" / "quality" / "adapter.example.yaml",
+        repo / "skills" / "public" / "demo-a" / "adapter.example.yaml",
+    )
     with pytest.raises(ValidationError, match="adapter-free skill should not ship `adapter.example.yaml`"):
         for skill_id in policy["adapter_requirements"]["adapter-free"]:
             validate_adapter_requirement(repo, skill_id, required=False)

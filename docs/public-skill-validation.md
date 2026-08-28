@@ -187,6 +187,11 @@ Use this when the skill owns durable artifacts, repo-local normalization
 preferences, or bootstrap/runtime seams that would otherwise drift into hidden
 host assumptions.
 
+An adapter-owned skill ships `adapter.example.yaml` and a real resolver such as
+[quality's resolver](../skills/public/quality/scripts/resolve_adapter.py). An
+explicit initializer such as [quality's initializer](../skills/public/quality/scripts/init_adapter.py)
+is optional and remains skill-owned; it is not part of the shared adapter requirement.
+
 Current assignment:
 
 - `announcement`
