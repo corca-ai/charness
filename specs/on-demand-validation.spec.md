@@ -22,5 +22,5 @@ adapter bucket alongside other adapter-shipping public skills; the gate
 still fires only when the adapter declares `packet_sections`.
 
 ```run:shell
-python3 -c "import json; from pathlib import Path; policy = json.loads(Path('docs/public-skill-validation.json').read_text(encoding='utf-8')); assert 'critique' in policy['tiers']['hitl-recommended']; assert 'critique' in policy['adapter_requirements']['required']; skill = Path('skills/public/critique/SKILL.md').read_text(encoding='utf-8'); assert 'use bounded fresh-eye subagents with one angle each' in skill"
+python3 -c "import json; from pathlib import Path; policy = json.loads(Path('docs/public-skill-validation.json').read_text(encoding='utf-8')); assert 'critique' in policy['tiers']['hitl-recommended']; assert 'critique' in policy['adapter_requirements']['required']; skill = ' '.join(Path('skills/public/critique/SKILL.md').read_text(encoding='utf-8').split()); assert 'two bounded fresh-eye reviewers run in parallel' in skill; assert 'parent-owned counterweight pass' in skill"
 ```

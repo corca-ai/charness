@@ -55,7 +55,6 @@ Load references only when their trigger is present:
 - `references/normalization-flow.md` — partial or drifting docs
 - `references/agent-docs-policy.md` — AGENTS/CLAUDE ambiguity
 - `references/default-surfaces.md` — basic docs and flat wiki
-- `references/craken-like-profile.md` — compatibility pointer to the default profile
 - `references/github-actions-defaults.md` — GitHub Actions defaults
 - `references/operator-acceptance-synthesis.md` — conditional operator acceptance
 - `references/probe-surface.md` — installable CLI/plugin surface

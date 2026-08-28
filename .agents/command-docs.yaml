@@ -27,7 +27,7 @@ commands:
   task:
     help_command: ./charness task --help
     doc_paths:
-      - docs/agent-task-envelope.md
+      - docs/agent-task-runs.md
       - docs/cli-reference.md
     required_help_contains:
       - status
@@ -166,7 +166,7 @@ commands:
   task-run:
     help_command: ./charness task run --help
     doc_paths:
-      - docs/agent-task-envelope.md
+      - docs/agent-task-runs.md
       - docs/cli-reference.md
     required_help_contains:
       - --lane

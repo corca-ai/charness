@@ -12,7 +12,7 @@ This spec keeps proof at the operator-facing command boundary. Fixture-heavy
 branch coverage still belongs in pytest, but the current shipped CLI contract
 should remain readable and executable here.
 
-## `specdown` Binary Contract, Task Envelope, And Doctor Next Action
+## `specdown` Binary Contract, Task Runs, And Doctor Next Action
 
 The `specdown` integration consumes an upstream support skill and remains an
 external binary managed through the tool control plane. Doctor checks the
@@ -28,7 +28,7 @@ Task status should read the external result store without creating repo-local
 state or inventing a scheduler lifecycle.
 
 ```run:shell
-python3 ./charness task --repo-root . status missing-slice | python3 -c "import sys,yaml; payload=yaml.safe_load(sys.stdin); assert payload['event']=='task-status'; assert payload['status']=='missing'; assert payload['result_path'].endswith('/task-run/missing-slice/result.json')"
+python3 ./charness task status --repo-root . missing-slice | python3 -c "import sys,yaml; payload=yaml.safe_load(sys.stdin); assert payload['event']=='task-status'; assert payload['status']=='missing'; assert payload['result_path'].endswith('/task-run/missing-slice/result.json')"
 ```
 
 The root `doctor` command should emit a single primary `next_action` while

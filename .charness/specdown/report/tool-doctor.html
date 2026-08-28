@@ -31,8 +31,8 @@
             
             <ul class="toc-list">
               
-              <li class="toc-item" data-anchor="section-specs-tool-doctor-spec-md-cli-operator-contracts-specdown-binary-contract-task-envelope-and-doctor-next-action">
-                <a class="toc-link toc-level-2 " href="#section-specs-tool-doctor-spec-md-cli-operator-contracts-specdown-binary-contract-task-envelope-and-doctor-next-action">`specdown` Binary Contract, Task Envelope, And Doctor Next Action</a>
+              <li class="toc-item" data-anchor="section-specs-tool-doctor-spec-md-cli-operator-contracts-specdown-binary-contract-task-runs-and-doctor-next-action">
+                <a class="toc-link toc-level-2 " href="#section-specs-tool-doctor-spec-md-cli-operator-contracts-specdown-binary-contract-task-runs-and-doctor-next-action">`specdown` Binary Contract, Task Runs, And Doctor Next Action</a>
                 
               </li>
               
@@ -77,19 +77,18 @@ without confusing health, readiness, ownership, or the next operator action.</p>
 <p>This spec keeps proof at the operator-facing command boundary. Fixture-heavy
 branch coverage still belongs in pytest, but the current shipped CLI contract
 should remain readable and executable here.</p>
-<section class="s2" id="section-specs-tool-doctor-spec-md-cli-operator-contracts-specdown-binary-contract-task-envelope-and-doctor-next-action"><h2><code>specdown</code> Binary Contract, Task Envelope, And Doctor Next Action</h2>
+<section class="s2" id="section-specs-tool-doctor-spec-md-cli-operator-contracts-specdown-binary-contract-task-runs-and-doctor-next-action"><h2><code>specdown</code> Binary Contract, Task Runs, And Doctor Next Action</h2>
 <p>The <code>specdown</code> integration consumes an upstream support skill and remains an
 external binary managed through the tool control plane. Doctor checks the
 installed command and release metadata, and it should report the support source
 as upstream-consumed until sync materializes the installed plugin support
 surface.</p>
-<section class="exec-block passed" id="case-specs-tool-doctor-spec-md-cli-operator-contracts-specdown-binary-contract-task-envelope-and-doctor-next-action-1"><div class="exec-source"><code>python3 ./charness tool doctor --detail --repo-root . specdown | python3 -c &#34;import sys,yaml; payload=yaml.safe_load(sys.stdin); doctor=payload[&#39;results&#39;][&#39;specdown&#39;][&#39;doctor&#39;]; assert doctor[&#39;support_state&#39;]==&#39;upstream-consumed&#39;; assert doctor[&#39;detect&#39;][&#39;results&#39;][0][&#39;command&#39;]==&#39;specdown version&#39;; assert doctor[&#39;healthcheck&#39;][&#39;status&#39;]==&#39;not-configured&#39;; assert doctor[&#39;healthcheck&#39;][&#39;skipped&#39;] is True&#34;</code></div><p class="exec-block-footer">run:shell</p></section><p>The repo-local task envelope should provide the sah-inspired claim, submit, and
-abort loop as structured state under <code>.charness/tasks/</code> without introducing a
-queue or scheduler.</p>
-<section class="exec-block passed" id="case-specs-tool-doctor-spec-md-cli-operator-contracts-specdown-binary-contract-task-envelope-and-doctor-next-action-2"><div class="exec-source"><code>python3 ./charness task --repo-root . status missing-slice | python3 -c &#34;import sys,yaml; payload=yaml.safe_load(sys.stdin); assert payload[&#39;event&#39;]==&#39;rejected&#39;; assert payload[&#39;status&#39;]==&#39;missing&#39;; assert payload[&#39;task_path&#39;]==&#39;.charness/tasks/missing-slice.json&#39;&#34;</code></div><p class="exec-block-footer">run:shell</p></section><p>The root <code>doctor</code> command should emit a single primary <code>next_action</code> while
+<section class="exec-block passed" id="case-specs-tool-doctor-spec-md-cli-operator-contracts-specdown-binary-contract-task-runs-and-doctor-next-action-1"><div class="exec-source"><code>python3 ./charness tool doctor --detail --repo-root . specdown | python3 -c &#34;import sys,yaml; payload=yaml.safe_load(sys.stdin); doctor=payload[&#39;results&#39;][&#39;specdown&#39;][&#39;doctor&#39;]; assert doctor[&#39;support_state&#39;]==&#39;upstream-consumed&#39;; assert doctor[&#39;detect&#39;][&#39;results&#39;][0][&#39;command&#39;]==&#39;specdown version&#39;; assert doctor[&#39;healthcheck&#39;][&#39;status&#39;]==&#39;not-configured&#39;; assert doctor[&#39;healthcheck&#39;][&#39;skipped&#39;] is True&#34;</code></div><p class="exec-block-footer">run:shell</p></section><p>Task status should read the external result store without creating repo-local
+state or inventing a scheduler lifecycle.</p>
+<section class="exec-block passed" id="case-specs-tool-doctor-spec-md-cli-operator-contracts-specdown-binary-contract-task-runs-and-doctor-next-action-2"><div class="exec-source"><code>python3 ./charness task status --repo-root . missing-slice | python3 -c &#34;import sys,yaml; payload=yaml.safe_load(sys.stdin); assert payload[&#39;event&#39;]==&#39;task-status&#39;; assert payload[&#39;status&#39;]==&#39;missing&#39;; assert payload[&#39;result_path&#39;].endswith(&#39;/task-run/missing-slice/result.json&#39;)&#34;</code></div><p class="exec-block-footer">run:shell</p></section><p>The root <code>doctor</code> command should emit a single primary <code>next_action</code> while
 retaining host-specific <code>host_next_steps</code>, so operator automation can act on
 the first meaningful host move without losing Codex/Claude detail.</p>
-<section class="exec-block passed" id="case-specs-tool-doctor-spec-md-cli-operator-contracts-specdown-binary-contract-task-envelope-and-doctor-next-action-3"><div class="exec-source"><code>python3 ./charness doctor --repo-root . | python3 -c &#34;import sys,yaml; payload=yaml.safe_load(sys.stdin); action=payload[&#39;next_action&#39;]; assert isinstance(action, dict) and action[&#39;kind&#39;]; assert action[&#39;message&#39;]; assert isinstance(payload[&#39;host_next_steps&#39;], dict) and payload[&#39;host_next_steps&#39;]&#34;</code></div><p class="exec-block-footer">run:shell</p></section></section></section></section>
+<section class="exec-block passed" id="case-specs-tool-doctor-spec-md-cli-operator-contracts-specdown-binary-contract-task-runs-and-doctor-next-action-3"><div class="exec-source"><code>python3 ./charness doctor --repo-root . | python3 -c &#34;import sys,yaml; payload=yaml.safe_load(sys.stdin); action=payload[&#39;next_action&#39;]; assert isinstance(action, dict) and action[&#39;kind&#39;]; assert action[&#39;message&#39;]; assert isinstance(payload[&#39;host_next_steps&#39;], dict) and payload[&#39;host_next_steps&#39;]&#34;</code></div><p class="exec-block-footer">run:shell</p></section></section></section></section>
           </article>
         </div>
       </div>

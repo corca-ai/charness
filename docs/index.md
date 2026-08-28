@@ -16,14 +16,13 @@ is the composite docs receipt.
 - [Workflow routes](./workflow-routes.md) — map intent to a public skill.
 - [Goal lifecycle](./goal-lifecycle.md) — active goal ownership and continuation.
 - [Development](./development.md) — local development and dogfood paths.
-- [docs/README.md](./README.md) — compatibility pointer for old links.
 
 ## Operating contracts
 
 - [Operating contract](./operating-contract.md) — boundaries, artifacts, and closeout.
 - [Implementation discipline](./implementation-discipline.md) — mutate, sync, verify, publish.
 - [Worktree prepare](./worktree-prepare.md) — isolated mutation setup.
-- [Agent task envelope](./agent-task-envelope.md) — bounded task execution.
+- [Agent task runs](./agent-task-runs.md) — bounded task execution.
 - [Parallel execution](./parallel-execution.md) — fan-out and shared-state rules.
 - [Authoring preflight](./authoring-preflight.md) — checks before editing contracts.
 - [Validator timing layers](./validator-timing-layers.md) — where checks belong.

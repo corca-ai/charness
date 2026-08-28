@@ -644,6 +644,32 @@ def test_bare_double_star_scope_includes_top_level_files(tmp_path: Path) -> None
     assert payload["scope"]["disallowed_paths"] == []
 
 
+def test_glob_scope_does_not_mix_ignored_external_symlink_into_candidate_verdict(
+    tmp_path: Path,
+) -> None:
+    repo = _repo(tmp_path)
+    (repo / ".gitignore").write_text(".venv/\n", encoding="utf-8")
+    _commit(repo, "ignore local runtime", ".gitignore")
+    executable = _codex(
+        tmp_path,
+        "mkdir -p .venv/bin\nln -s /usr/bin/python3 .venv/bin/python3",
+    )
+
+    payload = _run(
+        repo,
+        tmp_path,
+        executable,
+        scopes=["**"],
+        require_change=False,
+    )
+
+    assert payload["status"] == "completed", payload
+    assert payload["scope"]["verdict"] == "pass"
+    assert payload["scope"]["changed_paths"] == []
+    assert payload["populations"]["ignored"]["verdict"] == "warn"
+    assert payload["populations"]["ignored"]["added"] == [".venv/"]
+
+
 def test_completion_scope_refresh_failure_persists_terminal_failed_result(
     tmp_path: Path, monkeypatch
 ) -> None:
@@ -667,28 +693,6 @@ def test_completion_scope_refresh_failure_persists_terminal_failed_result(
     assert payload["approval_eligibility"] == "ineligible"
     assert payload["error"] == "task lifecycle failed: scope refresh failed"
     assert task_run.task_status(repo, "completion-failure") == payload
-
-
-def test_completion_symlink_loop_persists_terminal_failed_result(tmp_path: Path) -> None:
-    repo = _repo(tmp_path)
-    executable = _codex(
-        tmp_path,
-        "printf 'VALUE = 2\\n' > module.py\nln -s loop.py loop.py",
-    )
-
-    payload = _run(
-        repo,
-        tmp_path,
-        executable,
-        task_id="symlink-loop",
-        scopes=["*.py"],
-    )
-
-    assert payload["status"] == "failed"
-    assert payload["phase"] == "terminal"
-    assert payload["approval_eligibility"] == "ineligible"
-    assert "task lifecycle failed" in payload["error"]
-    assert task_run.task_status(repo, "symlink-loop") == payload
 
 
 def test_post_create_setup_failure_persists_terminal_result(tmp_path: Path, monkeypatch) -> None:

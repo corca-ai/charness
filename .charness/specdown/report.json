@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "title": "Charness Executable Specs",
-  "generatedAt": "2026-08-28T03:48:04.99420635+09:00",
+  "generatedAt": "2026-08-28T13:02:54.692195972+09:00",
   "results": [
     {
       "document": {
@@ -63,7 +63,7 @@
           "kind": "code",
           "status": "passed",
           "label": "run:shell @ Charness Executable Specs",
-          "durationMs": 121,
+          "durationMs": 108,
           "events": [
             {
               "type": "caseStarted",
@@ -102,7 +102,7 @@
       "document": {
         "relativeTo": "specs/tool-doctor.spec.md",
         "title": "CLI Operator Contracts",
-        "markdown": "---\ntype: spec\nworkdir: .\n---\n\n# CLI Operator Contracts\n\n`charness` operator-facing commands must leave structured continuation state\nwithout confusing health, readiness, ownership, or the next operator action.\n\nThis spec keeps proof at the operator-facing command boundary. Fixture-heavy\nbranch coverage still belongs in pytest, but the current shipped CLI contract\nshould remain readable and executable here.\n\n## `specdown` Binary Contract, Task Envelope, And Doctor Next Action\n\nThe `specdown` integration consumes an upstream support skill and remains an\nexternal binary managed through the tool control plane. Doctor checks the\ninstalled command and release metadata, and it should report the support source\nas upstream-consumed until sync materializes the installed plugin support\nsurface.\n\n```run:shell\npython3 ./charness tool doctor --detail --repo-root . specdown | python3 -c \"import sys,yaml; payload=yaml.safe_load(sys.stdin); doctor=payload['results']['specdown']['doctor']; assert doctor['support_state']=='upstream-consumed'; assert doctor['detect']['results'][0]['command']=='specdown version'; assert doctor['healthcheck']['status']=='not-configured'; assert doctor['healthcheck']['skipped'] is True\"\n```\n\nThe repo-local task envelope should provide the sah-inspired claim, submit, and\nabort loop as structured state under `.charness/tasks/` without introducing a\nqueue or scheduler.\n\n```run:shell\npython3 ./charness task --repo-root . status missing-slice | python3 -c \"import sys,yaml; payload=yaml.safe_load(sys.stdin); assert payload['event']=='rejected'; assert payload['status']=='missing'; assert payload['task_path']=='.charness/tasks/missing-slice.json'\"\n```\n\nThe root `doctor` command should emit a single primary `next_action` while\nretaining host-specific `host_next_steps`, so operator automation can act on\nthe first meaningful host move without losing Codex/Claude detail.\n\n```run:shell\npython3 ./charness doctor --repo-root . | python3 -c \"import sys,yaml; payload=yaml.safe_load(sys.stdin); action=payload['next_action']; assert isinstance(action, dict) and action['kind']; assert action['message']; assert isinstance(payload['host_next_steps'], dict) and payload['host_next_steps']\"\n```\n",
+        "markdown": "---\ntype: spec\nworkdir: .\n---\n\n# CLI Operator Contracts\n\n`charness` operator-facing commands must leave structured continuation state\nwithout confusing health, readiness, ownership, or the next operator action.\n\nThis spec keeps proof at the operator-facing command boundary. Fixture-heavy\nbranch coverage still belongs in pytest, but the current shipped CLI contract\nshould remain readable and executable here.\n\n## `specdown` Binary Contract, Task Runs, And Doctor Next Action\n\nThe `specdown` integration consumes an upstream support skill and remains an\nexternal binary managed through the tool control plane. Doctor checks the\ninstalled command and release metadata, and it should report the support source\nas upstream-consumed until sync materializes the installed plugin support\nsurface.\n\n```run:shell\npython3 ./charness tool doctor --detail --repo-root . specdown | python3 -c \"import sys,yaml; payload=yaml.safe_load(sys.stdin); doctor=payload['results']['specdown']['doctor']; assert doctor['support_state']=='upstream-consumed'; assert doctor['detect']['results'][0]['command']=='specdown version'; assert doctor['healthcheck']['status']=='not-configured'; assert doctor['healthcheck']['skipped'] is True\"\n```\n\nTask status should read the external result store without creating repo-local\nstate or inventing a scheduler lifecycle.\n\n```run:shell\npython3 ./charness task status --repo-root . missing-slice | python3 -c \"import sys,yaml; payload=yaml.safe_load(sys.stdin); assert payload['event']=='task-status'; assert payload['status']=='missing'; assert payload['result_path'].endswith('/task-run/missing-slice/result.json')\"\n```\n\nThe root `doctor` command should emit a single primary `next_action` while\nretaining host-specific `host_next_steps`, so operator automation can act on\nthe first meaningful host move without losing Codex/Claude detail.\n\n```run:shell\npython3 ./charness doctor --repo-root . | python3 -c \"import sys,yaml; payload=yaml.safe_load(sys.stdin); action=payload['next_action']; assert isinstance(action, dict) and action['kind']; assert action['message']; assert isinstance(payload['host_next_steps'], dict) and payload['host_next_steps']\"\n```\n",
         "nodes": [
           {
             "level": 1,
@@ -120,18 +120,18 @@
           },
           {
             "level": 2,
-            "text": "`specdown` Binary Contract, Task Envelope, And Doctor Next Action",
-            "raw": "## `specdown` Binary Contract, Task Envelope, And Doctor Next Action\n",
+            "text": "`specdown` Binary Contract, Task Runs, And Doctor Next Action",
+            "raw": "## `specdown` Binary Contract, Task Runs, And Doctor Next Action\n",
             "headingPath": [
               "CLI Operator Contracts",
-              "`specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+              "`specdown` Binary Contract, Task Runs, And Doctor Next Action"
             ]
           },
           {
             "raw": "\nThe `specdown` integration consumes an upstream support skill and remains an\nexternal binary managed through the tool control plane. Doctor checks the\ninstalled command and release metadata, and it should report the support source\nas upstream-consumed until sync materializes the installed plugin support\nsurface.\n\n",
             "headingPath": [
               "CLI Operator Contracts",
-              "`specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+              "`specdown` Binary Contract, Task Runs, And Doctor Next Action"
             ]
           },
           {
@@ -146,17 +146,17 @@
               "file": "specs/tool-doctor.spec.md",
               "headingPath": [
                 "CLI Operator Contracts",
-                "`specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+                "`specdown` Binary Contract, Task Runs, And Doctor Next Action"
               ],
               "ordinal": 1,
               "line": 23
             }
           },
           {
-            "raw": "\nThe repo-local task envelope should provide the sah-inspired claim, submit, and\nabort loop as structured state under `.charness/tasks/` without introducing a\nqueue or scheduler.\n\n",
+            "raw": "\nTask status should read the external result store without creating repo-local\nstate or inventing a scheduler lifecycle.\n\n",
             "headingPath": [
               "CLI Operator Contracts",
-              "`specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+              "`specdown` Binary Contract, Task Runs, And Doctor Next Action"
             ]
           },
           {
@@ -165,23 +165,23 @@
               "kind": "run",
               "target": "shell"
             },
-            "source": "python3 ./charness task --repo-root . status missing-slice | python3 -c \"import sys,yaml; payload=yaml.safe_load(sys.stdin); assert payload['event']=='rejected'; assert payload['status']=='missing'; assert payload['task_path']=='.charness/tasks/missing-slice.json'\"",
-            "raw": "```run:shell\npython3 ./charness task --repo-root . status missing-slice | python3 -c \"import sys,yaml; payload=yaml.safe_load(sys.stdin); assert payload['event']=='rejected'; assert payload['status']=='missing'; assert payload['task_path']=='.charness/tasks/missing-slice.json'\"\n```\n",
+            "source": "python3 ./charness task status --repo-root . missing-slice | python3 -c \"import sys,yaml; payload=yaml.safe_load(sys.stdin); assert payload['event']=='task-status'; assert payload['status']=='missing'; assert payload['result_path'].endswith('/task-run/missing-slice/result.json')\"",
+            "raw": "```run:shell\npython3 ./charness task status --repo-root . missing-slice | python3 -c \"import sys,yaml; payload=yaml.safe_load(sys.stdin); assert payload['event']=='task-status'; assert payload['status']=='missing'; assert payload['result_path'].endswith('/task-run/missing-slice/result.json')\"\n```\n",
             "id": {
               "file": "specs/tool-doctor.spec.md",
               "headingPath": [
                 "CLI Operator Contracts",
-                "`specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+                "`specdown` Binary Contract, Task Runs, And Doctor Next Action"
               ],
               "ordinal": 2,
-              "line": 31
+              "line": 30
             }
           },
           {
             "raw": "\nThe root `doctor` command should emit a single primary `next_action` while\nretaining host-specific `host_next_steps`, so operator automation can act on\nthe first meaningful host move without losing Codex/Claude detail.\n\n",
             "headingPath": [
               "CLI Operator Contracts",
-              "`specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+              "`specdown` Binary Contract, Task Runs, And Doctor Next Action"
             ]
           },
           {
@@ -196,10 +196,10 @@
               "file": "specs/tool-doctor.spec.md",
               "headingPath": [
                 "CLI Operator Contracts",
-                "`specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+                "`specdown` Binary Contract, Task Runs, And Doctor Next Action"
               ],
               "ordinal": 3,
-              "line": 39
+              "line": 38
             }
           }
         ],
@@ -215,15 +215,15 @@
             "file": "specs/tool-doctor.spec.md",
             "headingPath": [
               "CLI Operator Contracts",
-              "`specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+              "`specdown` Binary Contract, Task Runs, And Doctor Next Action"
             ],
             "ordinal": 1,
             "line": 23
           },
           "kind": "code",
           "status": "passed",
-          "label": "run:shell @ `specdown` Binary Contract, Task Envelope, And Doctor Next Action",
-          "durationMs": 1421,
+          "label": "run:shell @ `specdown` Binary Contract, Task Runs, And Doctor Next Action",
+          "durationMs": 1040,
           "events": [
             {
               "type": "caseStarted",
@@ -231,12 +231,12 @@
                 "file": "specs/tool-doctor.spec.md",
                 "headingPath": [
                   "CLI Operator Contracts",
-                  "`specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+                  "`specdown` Binary Contract, Task Runs, And Doctor Next Action"
                 ],
                 "ordinal": 1,
                 "line": 23
               },
-              "label": "run:shell @ `specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+              "label": "run:shell @ `specdown` Binary Contract, Task Runs, And Doctor Next Action"
             },
             {
               "type": "casePassed",
@@ -244,12 +244,12 @@
                 "file": "specs/tool-doctor.spec.md",
                 "headingPath": [
                   "CLI Operator Contracts",
-                  "`specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+                  "`specdown` Binary Contract, Task Runs, And Doctor Next Action"
                 ],
                 "ordinal": 1,
                 "line": 23
               },
-              "label": "run:shell @ `specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+              "label": "run:shell @ `specdown` Binary Contract, Task Runs, And Doctor Next Action"
             }
           ],
           "code": {
@@ -263,15 +263,15 @@
             "file": "specs/tool-doctor.spec.md",
             "headingPath": [
               "CLI Operator Contracts",
-              "`specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+              "`specdown` Binary Contract, Task Runs, And Doctor Next Action"
             ],
             "ordinal": 2,
-            "line": 31
+            "line": 30
           },
           "kind": "code",
           "status": "passed",
-          "label": "run:shell @ `specdown` Binary Contract, Task Envelope, And Doctor Next Action",
-          "durationMs": 136,
+          "label": "run:shell @ `specdown` Binary Contract, Task Runs, And Doctor Next Action",
+          "durationMs": 144,
           "events": [
             {
               "type": "caseStarted",
@@ -279,12 +279,12 @@
                 "file": "specs/tool-doctor.spec.md",
                 "headingPath": [
                   "CLI Operator Contracts",
-                  "`specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+                  "`specdown` Binary Contract, Task Runs, And Doctor Next Action"
                 ],
                 "ordinal": 2,
-                "line": 31
+                "line": 30
               },
-              "label": "run:shell @ `specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+              "label": "run:shell @ `specdown` Binary Contract, Task Runs, And Doctor Next Action"
             },
             {
               "type": "casePassed",
@@ -292,18 +292,18 @@
                 "file": "specs/tool-doctor.spec.md",
                 "headingPath": [
                   "CLI Operator Contracts",
-                  "`specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+                  "`specdown` Binary Contract, Task Runs, And Doctor Next Action"
                 ],
                 "ordinal": 2,
-                "line": 31
+                "line": 30
               },
-              "label": "run:shell @ `specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+              "label": "run:shell @ `specdown` Binary Contract, Task Runs, And Doctor Next Action"
             }
           ],
           "code": {
             "block": "run:shell",
-            "template": "python3 ./charness task --repo-root . status missing-slice | python3 -c \"import sys,yaml; payload=yaml.safe_load(sys.stdin); assert payload['event']=='rejected'; assert payload['status']=='missing'; assert payload['task_path']=='.charness/tasks/missing-slice.json'\"",
-            "renderedSource": "python3 ./charness task --repo-root . status missing-slice | python3 -c \"import sys,yaml; payload=yaml.safe_load(sys.stdin); assert payload['event']=='rejected'; assert payload['status']=='missing'; assert payload['task_path']=='.charness/tasks/missing-slice.json'\""
+            "template": "python3 ./charness task status --repo-root . missing-slice | python3 -c \"import sys,yaml; payload=yaml.safe_load(sys.stdin); assert payload['event']=='task-status'; assert payload['status']=='missing'; assert payload['result_path'].endswith('/task-run/missing-slice/result.json')\"",
+            "renderedSource": "python3 ./charness task status --repo-root . missing-slice | python3 -c \"import sys,yaml; payload=yaml.safe_load(sys.stdin); assert payload['event']=='task-status'; assert payload['status']=='missing'; assert payload['result_path'].endswith('/task-run/missing-slice/result.json')\""
           }
         },
         {
@@ -311,15 +311,15 @@
             "file": "specs/tool-doctor.spec.md",
             "headingPath": [
               "CLI Operator Contracts",
-              "`specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+              "`specdown` Binary Contract, Task Runs, And Doctor Next Action"
             ],
             "ordinal": 3,
-            "line": 39
+            "line": 38
           },
           "kind": "code",
           "status": "passed",
-          "label": "run:shell @ `specdown` Binary Contract, Task Envelope, And Doctor Next Action",
-          "durationMs": 1066,
+          "label": "run:shell @ `specdown` Binary Contract, Task Runs, And Doctor Next Action",
+          "durationMs": 948,
           "events": [
             {
               "type": "caseStarted",
@@ -327,12 +327,12 @@
                 "file": "specs/tool-doctor.spec.md",
                 "headingPath": [
                   "CLI Operator Contracts",
-                  "`specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+                  "`specdown` Binary Contract, Task Runs, And Doctor Next Action"
                 ],
                 "ordinal": 3,
-                "line": 39
+                "line": 38
               },
-              "label": "run:shell @ `specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+              "label": "run:shell @ `specdown` Binary Contract, Task Runs, And Doctor Next Action"
             },
             {
               "type": "casePassed",
@@ -340,12 +340,12 @@
                 "file": "specs/tool-doctor.spec.md",
                 "headingPath": [
                   "CLI Operator Contracts",
-                  "`specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+                  "`specdown` Binary Contract, Task Runs, And Doctor Next Action"
                 ],
                 "ordinal": 3,
-                "line": 39
+                "line": 38
               },
-              "label": "run:shell @ `specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+              "label": "run:shell @ `specdown` Binary Contract, Task Runs, And Doctor Next Action"
             }
           ],
           "code": {
@@ -360,7 +360,7 @@
       "document": {
         "relativeTo": "specs/on-demand-validation.spec.md",
         "title": "On-Demand Review Viewer",
-        "markdown": "---\ntype: spec\nworkdir: .\n---\n\n# On-Demand Review Viewer\n\nThis page makes optional reviewer or consumer-owned behavioral evidence visible\nin the same report a product reader uses to understand the current contract.\nIt is a viewer over the chosen evidence, not another evaluator or standing\ngate. Local deterministic checks remain the default proof layer.\n\n## `critique` Stays On-Demand\n\n`critique` is a judgment-heavy, canonical-subagent workflow. The standing repo\nbar should keep seam checks for the contract itself, while the real behavioral\nquestion stays on-demand through explicit reviewed HITL proof or a\nconsumer-owned evaluator.\nPer #161, `critique` now ships an opt-in `.agents/critique-adapter.yaml`\ncontract for the prepare-packet runner, so it lives in the `required`\nadapter bucket alongside other adapter-shipping public skills; the gate\nstill fires only when the adapter declares `packet_sections`.\n\n```run:shell\npython3 -c \"import json; from pathlib import Path; policy = json.loads(Path('docs/public-skill-validation.json').read_text(encoding='utf-8')); assert 'critique' in policy['tiers']['hitl-recommended']; assert 'critique' in policy['adapter_requirements']['required']; skill = Path('skills/public/critique/SKILL.md').read_text(encoding='utf-8'); assert 'use bounded fresh-eye subagents with one angle each' in skill\"\n```\n",
+        "markdown": "---\ntype: spec\nworkdir: .\n---\n\n# On-Demand Review Viewer\n\nThis page makes optional reviewer or consumer-owned behavioral evidence visible\nin the same report a product reader uses to understand the current contract.\nIt is a viewer over the chosen evidence, not another evaluator or standing\ngate. Local deterministic checks remain the default proof layer.\n\n## `critique` Stays On-Demand\n\n`critique` is a judgment-heavy, canonical-subagent workflow. The standing repo\nbar should keep seam checks for the contract itself, while the real behavioral\nquestion stays on-demand through explicit reviewed HITL proof or a\nconsumer-owned evaluator.\nPer #161, `critique` now ships an opt-in `.agents/critique-adapter.yaml`\ncontract for the prepare-packet runner, so it lives in the `required`\nadapter bucket alongside other adapter-shipping public skills; the gate\nstill fires only when the adapter declares `packet_sections`.\n\n```run:shell\npython3 -c \"import json; from pathlib import Path; policy = json.loads(Path('docs/public-skill-validation.json').read_text(encoding='utf-8')); assert 'critique' in policy['tiers']['hitl-recommended']; assert 'critique' in policy['adapter_requirements']['required']; skill = ' '.join(Path('skills/public/critique/SKILL.md').read_text(encoding='utf-8').split()); assert 'two bounded fresh-eye reviewers run in parallel' in skill; assert 'parent-owned counterweight pass' in skill\"\n```\n",
         "nodes": [
           {
             "level": 1,
@@ -398,8 +398,8 @@
               "kind": "run",
               "target": "shell"
             },
-            "source": "python3 -c \"import json; from pathlib import Path; policy = json.loads(Path('docs/public-skill-validation.json').read_text(encoding='utf-8')); assert 'critique' in policy['tiers']['hitl-recommended']; assert 'critique' in policy['adapter_requirements']['required']; skill = Path('skills/public/critique/SKILL.md').read_text(encoding='utf-8'); assert 'use bounded fresh-eye subagents with one angle each' in skill\"",
-            "raw": "```run:shell\npython3 -c \"import json; from pathlib import Path; policy = json.loads(Path('docs/public-skill-validation.json').read_text(encoding='utf-8')); assert 'critique' in policy['tiers']['hitl-recommended']; assert 'critique' in policy['adapter_requirements']['required']; skill = Path('skills/public/critique/SKILL.md').read_text(encoding='utf-8'); assert 'use bounded fresh-eye subagents with one angle each' in skill\"\n```\n",
+            "source": "python3 -c \"import json; from pathlib import Path; policy = json.loads(Path('docs/public-skill-validation.json').read_text(encoding='utf-8')); assert 'critique' in policy['tiers']['hitl-recommended']; assert 'critique' in policy['adapter_requirements']['required']; skill = ' '.join(Path('skills/public/critique/SKILL.md').read_text(encoding='utf-8').split()); assert 'two bounded fresh-eye reviewers run in parallel' in skill; assert 'parent-owned counterweight pass' in skill\"",
+            "raw": "```run:shell\npython3 -c \"import json; from pathlib import Path; policy = json.loads(Path('docs/public-skill-validation.json').read_text(encoding='utf-8')); assert 'critique' in policy['tiers']['hitl-recommended']; assert 'critique' in policy['adapter_requirements']['required']; skill = ' '.join(Path('skills/public/critique/SKILL.md').read_text(encoding='utf-8').split()); assert 'two bounded fresh-eye reviewers run in parallel' in skill; assert 'parent-owned counterweight pass' in skill\"\n```\n",
             "id": {
               "file": "specs/on-demand-validation.spec.md",
               "headingPath": [
@@ -431,7 +431,7 @@
           "kind": "code",
           "status": "passed",
           "label": "run:shell @ `critique` Stays On-Demand",
-          "durationMs": 41,
+          "durationMs": 57,
           "events": [
             {
               "type": "caseStarted",
@@ -462,8 +462,8 @@
           ],
           "code": {
             "block": "run:shell",
-            "template": "python3 -c \"import json; from pathlib import Path; policy = json.loads(Path('docs/public-skill-validation.json').read_text(encoding='utf-8')); assert 'critique' in policy['tiers']['hitl-recommended']; assert 'critique' in policy['adapter_requirements']['required']; skill = Path('skills/public/critique/SKILL.md').read_text(encoding='utf-8'); assert 'use bounded fresh-eye subagents with one angle each' in skill\"",
-            "renderedSource": "python3 -c \"import json; from pathlib import Path; policy = json.loads(Path('docs/public-skill-validation.json').read_text(encoding='utf-8')); assert 'critique' in policy['tiers']['hitl-recommended']; assert 'critique' in policy['adapter_requirements']['required']; skill = Path('skills/public/critique/SKILL.md').read_text(encoding='utf-8'); assert 'use bounded fresh-eye subagents with one angle each' in skill\""
+            "template": "python3 -c \"import json; from pathlib import Path; policy = json.loads(Path('docs/public-skill-validation.json').read_text(encoding='utf-8')); assert 'critique' in policy['tiers']['hitl-recommended']; assert 'critique' in policy['adapter_requirements']['required']; skill = ' '.join(Path('skills/public/critique/SKILL.md').read_text(encoding='utf-8').split()); assert 'two bounded fresh-eye reviewers run in parallel' in skill; assert 'parent-owned counterweight pass' in skill\"",
+            "renderedSource": "python3 -c \"import json; from pathlib import Path; policy = json.loads(Path('docs/public-skill-validation.json').read_text(encoding='utf-8')); assert 'critique' in policy['tiers']['hitl-recommended']; assert 'critique' in policy['adapter_requirements']['required']; skill = ' '.join(Path('skills/public/critique/SKILL.md').read_text(encoding='utf-8').split()); assert 'two bounded fresh-eye reviewers run in parallel' in skill; assert 'parent-owned counterweight pass' in skill\""
           }
         }
       ]
@@ -559,7 +559,7 @@
           "kind": "code",
           "status": "passed",
           "label": "run:shell @ README Proof Ledger",
-          "durationMs": 40,
+          "durationMs": 42,
           "events": [
             {
               "type": "caseStarted",

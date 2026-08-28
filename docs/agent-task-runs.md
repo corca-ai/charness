@@ -1,7 +1,7 @@
 # Agent task runs
 
 > Status: current
-> Source of truth: this page and the `charness task run` implementation
+> Source of truth: this page and the `charness task run/status` implementation
 
 `charness task` provides `task run` for one bounded Codex lane and `task status`
 for reading its external result store. It does not add a scheduler lifecycle.

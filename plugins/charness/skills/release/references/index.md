@@ -20,8 +20,3 @@ python3 "$SKILL_DIR/scripts/plan_release_run.py" --repo-root . --detail
   post-publish maintainer install refresh.
 - `references/real-host-proof.md` — release-time host proof triggers and
   checklists.
-
-## Compatibility Pointer
-
-- `references/install-surface.md` — compatibility index for older references;
-  new guidance lives in the concept-specific files above.

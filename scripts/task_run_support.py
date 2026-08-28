@@ -265,6 +265,10 @@ def _git_tree_paths(root: Path, base_sha: str) -> tuple[set[str], set[str]]:
     files = _parse_nul_paths(
         _git_output(root, "ls-tree", "-r", "--name-only", "-z", base_sha, "--")
     )
+    return _paths_with_directories(files)
+
+
+def _paths_with_directories(files: Sequence[str]) -> tuple[set[str], set[str]]:
     paths = set(files)
     directories: set[str] = set()
     for path in files:
@@ -278,22 +282,22 @@ def _git_tree_paths(root: Path, base_sha: str) -> tuple[set[str], set[str]]:
 
 
 def _glob_matches(root: Path, pattern: str) -> tuple[list[str], list[str]]:
-    root = root.resolve()
-    matches: list[str] = []
-    directories: list[str] = []
-    for candidate in root.rglob("*"):
-        relative = candidate.relative_to(root).as_posix()
-        if not _glob_path_matches(relative, pattern):
-            continue
-        resolved = candidate.resolve()
-        if not _is_inside(resolved, root):
-            raise TaskRunError(
-                f"scope glob resolved outside the repository: {pattern!r} -> {candidate}"
-            )
-        matches.append(relative)
-        if candidate.is_dir():
-            directories.append(relative)
-    return sorted(set(matches)), sorted(set(directories))
+    """Match the Git candidate universe, leaving ignored residue to its own verdict."""
+    files = _parse_nul_paths(
+        _git_output(
+            root,
+            "ls-files",
+            "--cached",
+            "--others",
+            "--exclude-standard",
+            "-z",
+            "--",
+        )
+    )
+    paths, directories = _paths_with_directories(files)
+    matches = sorted(path for path in paths if _glob_path_matches(path, pattern))
+    directory_matches = sorted(path for path in matches if path in directories)
+    return matches, directory_matches
 
 
 def resolve_scope_specs(

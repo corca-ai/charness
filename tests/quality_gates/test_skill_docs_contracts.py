@@ -63,7 +63,6 @@ def test_setup_pins_live_spawn_first_execution_contract() -> None:
 
 
 def test_setup_skill_describes_the_minimal_flat_wiki_profile() -> None:
-    profile = (ROOT / "skills/public/setup/references/craken-like-profile.md").read_text(encoding="utf-8").lower()
     skill_text = SETUP_SKILL.lower()
     defaults = DEFAULT_SURFACES.lower()
     normalization = (ROOT / "skills/public/setup/references/normalization-flow.md").read_text(encoding="utf-8").lower()
@@ -73,7 +72,7 @@ def test_setup_skill_describes_the_minimal_flat_wiki_profile() -> None:
         assert "flat" in text and "wiki" in text
         assert "explicit" in text and "approval" in text
         assert "quality" in text
-    assert "default" in profile and "flat-wiki" in profile
+    assert "default" in defaults
     assert "documentation index" in skill_text
     assert "approval" in skill_text
     assert "compact --execute" in skill_text

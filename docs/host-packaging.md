@@ -191,7 +191,7 @@ Operationally this means:
   the installed plugin surface stays `== repo`. This closes the installed-vs-repo
   version-skew class (a scaffold or check that cites the installed plugin can
   otherwise diverge from the repo gate). The `release` skill owns the contract;
-  see [install-surface](../skills/public/release/references/install-surface.md)
+  see [install refresh](../skills/public/release/references/install-refresh.md)
 - operators do not need to clone `charness` manually before first install when
   they already have a usable `charness` binary; `charness init` may materialize
   that managed checkout internally from its configured repo URL
