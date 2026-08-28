@@ -106,13 +106,13 @@ def version_drift_lines(version_drift_check: dict[str, Any] | None) -> list[str]
             "- Version drift check: NOT recorded by this helper invocation, so this record "
             "makes no no-drift claim about packaging and generated install surfaces."
         ]
-    # `list`, not truthiness: `surfaces` reaching here as an int raised TypeError inside
-    # the record writer -- a traceback between the mutation and the record -- and as a
-    # STRING it rendered `len("abc")` as "across 3 read surface(s)", a wrong count stated
-    # as a measurement. A count is a claim; it is made only over something countable.
-    raw_surfaces = version_drift_check.get("surfaces")
-    surfaces = raw_surfaces if isinstance(raw_surfaces, (list, tuple)) else []
-    scope = f" across {len(surfaces)} read surface(s)" if surfaces else ""
+    raw_versioned = version_drift_check.get("versioned_surfaces")
+    versioned = raw_versioned if isinstance(raw_versioned, (list, tuple)) else []
+    raw_presence = version_drift_check.get("presence_surfaces")
+    presence = raw_presence if isinstance(raw_presence, (list, tuple)) else []
+    scope = f" across {len(versioned)} versioned surface(s)" if versioned else ""
+    if presence:
+        scope += f", with {len(presence)} presence-only surface(s) not version-checked"
     stage = version_drift_check.get("stage") or "unrecorded stage"
     return [
         f"- `current_release.py` reported no version drift{scope} against target "
