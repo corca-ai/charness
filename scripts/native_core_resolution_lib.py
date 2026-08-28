@@ -147,8 +147,14 @@ def _checkout_head(repo_root: Path) -> str | None:
 
 def _no_pointer_result(repo_root: Path, native_root: Path, version: str) -> NativeCoreResult:
     last = read_json(native_root / "last-status.json")
-    if isinstance(last, dict) and last.get("version") == version and last.get("status") in {"awaiting-artifact", "offline"}:
-        return NativeCoreUnavailable(last["status"], version=version, reason=last.get("reason"))
+    if isinstance(last, dict) and last.get("version") == version:
+        status = last.get("status")
+        if status in {"awaiting-artifact", "offline"}:
+            return NativeCoreUnavailable(status, version=version, reason=last.get("reason"))
+        if status in {"checksum-failure", "verification-failure", "activation-failed", "state-write-skipped"}:
+            reason = last.get("reason")
+            detail = reason if isinstance(reason, str) and reason else "no reason recorded"
+            return NativeCoreUnavailable("corrupt", version=version, reason=f"{status}: {detail}")
     if os.environ.get("CHARNESS_ALLOW_DEV_NATIVE_CORE") == "1":
         dev = repo_root / "native" / "repograph" / "target" / "release" / "repograph"
         if dev.is_file():
@@ -289,6 +295,11 @@ def native_core_doctor_payload(
         "healthy": "The managed native core is verified and active.",
     }
     payload["message"] = messages.get(payload["status"], "Inspect the native core state and retry the managed update.")
+    if payload["status"] == "corrupt" and isinstance(result, NativeCoreUnavailable):
+        reason = result.reason or ""
+        recorded = ("checksum-failure", "verification-failure", "activation-failed", "state-write-skipped")
+        if any(reason.startswith(f"{status}:") for status in recorded):
+            payload["message"] = "The managed native core update failed; inspect the recorded phase status before retrying."
     return payload
 
 

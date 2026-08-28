@@ -5,12 +5,13 @@ import json
 import os
 import shutil
 import subprocess
-import tarfile
+from collections.abc import Callable
 from pathlib import Path
 
 import pytest
 
-from scripts import native_core_lib
+from scripts import build_native_artifact as build_module
+from scripts import native_core_lib, native_core_resolution_lib
 from scripts.native_core_resolution_lib import native_core_doctor_payload, native_core_path
 from tests.repo_copy import REPO_COPY_IGNORE
 
@@ -38,24 +39,82 @@ def _set_env(monkeypatch: pytest.MonkeyPatch, env: dict[str, str]) -> None:
             monkeypatch.setenv(key, value)
 
 
-def _write_artifact(store: Path, version: str, *, content: str = "ok") -> str:
+def _write_artifact(
+    store: Path, version: str, *, content: str = "ok", with_sidecar: bool = False
+) -> str:
     store.mkdir(parents=True, exist_ok=True)
     name = f"repograph-v{version}-{TUPLE}.tar.gz"
     binary = store / f"{name}.binary"
     binary.write_text(f"#!/bin/sh\n[ \"$1\" = parse-corpus ] && exit 0\nexit 1\n{content}\n", encoding="utf-8")
     binary.chmod(0o755)
-    archive = store / name
-    with tarfile.open(archive, "w:gz") as bundle:
-        bundle.add(binary, arcname="repograph")
-        metadata = store / f"{name}.artifact.json"
+    archive = build_module._write_archive(binary, store, name)
+    if with_sidecar:
+        metadata = store / "artifact.json"
         metadata.write_text(json.dumps({"version": version, "tuple": TUPLE, "git_commit": "fixture"}) + "\n", encoding="utf-8")
-        bundle.add(metadata, arcname="artifact.json")
     binary.unlink()
-    metadata.unlink()
     return hashlib.sha256(archive.read_bytes()).hexdigest()
 
 
-def _repo(tmp_path: Path, version: str, declaration: dict[str, object] | None = None) -> Path:
+def _build_producer_artifact(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, *, version: str = "1.0.0"
+) -> tuple[Path, Path, dict[str, object]]:
+    repo = _repo(tmp_path, version, with_source=True)
+    binary = tmp_path / "built" / "repograph"
+    binary.parent.mkdir()
+    binary.write_text("#!/bin/sh\n[ \"$1\" = parse-corpus ] && exit 0\nexit 1\n", encoding="utf-8")
+    binary.chmod(0o755)
+    monkeypatch.setattr(build_module, "_build", lambda *_args: binary)
+    monkeypatch.setattr(build_module, "_rustc_version", lambda *_args: "rustc fixture")
+    output = tmp_path / "producer-output"
+    metadata = build_module.build_native_artifact(repo, out_dir=output)
+    manifest = json.loads((repo / "packaging/charness.json").read_text(encoding="utf-8"))
+    manifest["native_core"] = _declaration(version, str(metadata["artifact_sha256"]))
+    (repo / "packaging/charness.json").write_text(json.dumps(manifest) + "\n", encoding="utf-8")
+    return repo, output / str(metadata["artifact"]), metadata
+
+
+def _release_harness(
+    monkeypatch: pytest.MonkeyPatch, archives: dict[str, Path]
+) -> tuple[dict[str, str], Callable[..., dict[str, object]], list[str]]:
+    selected = {"name": next(iter(archives))}
+    requests: list[str] = []
+
+    def probe(*_args: object) -> dict[str, object]:
+        name = selected["name"]
+        return {"status": "ok", "latest_tag": "v1.0.0", "asset_names": [name]}
+
+    def download(release: dict[str, object], name: str, destination: Path) -> tuple[Path | None, str | None]:
+        assert release["asset_names"] == [selected["name"]]
+        requests.append(name)
+        source = archives.get(name)
+        if source is None:
+            return None, f"asset {name} is not in the attached release"
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, destination)
+        return destination, None
+
+    monkeypatch.setattr(native_core_lib, "_download_artifact", download)
+    return selected, probe, requests
+
+
+def _phase_and_doctor(
+    repo: Path, home: Path, probe: Callable[..., dict[str, object]]
+) -> tuple[dict[str, object], dict[str, object]]:
+    state = home / ".local/state/charness"
+    phase = native_core_lib.run_native_core_phase(
+        repo, home_root=home, state_root=state, release_probe=probe
+    )
+    assert phase["status"] in native_core_lib.PHASE_STATUSES
+    return phase, native_core_doctor_payload(home, repo, state_root=state)
+
+
+def _repo(
+    tmp_path: Path,
+    version: str,
+    declaration: dict[str, object] | None = None,
+    *,
+    with_source: bool = False,
+) -> Path:
     repo = tmp_path / "repo"
     (repo / "packaging").mkdir(parents=True)
     manifest: dict[str, object] = {
@@ -65,6 +124,11 @@ def _repo(tmp_path: Path, version: str, declaration: dict[str, object] | None = 
     if declaration is not None:
         manifest["native_core"] = declaration
     (repo / "packaging" / "charness.json").write_text(json.dumps(manifest) + "\n", encoding="utf-8")
+    if with_source:
+        crate = repo / "native" / "repograph"
+        crate.mkdir(parents=True)
+        (crate / "Cargo.lock").write_text("fixture lock\n", encoding="utf-8")
+        (crate / "rust-toolchain.toml").write_text('[toolchain]\nchannel = "fixture"\n', encoding="utf-8")
     subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True, text=True)
     subprocess.run(["git", "add", "."], cwd=repo, check=True, capture_output=True, text=True)
     subprocess.run(["git", "commit", "-m", "fixture"], cwd=repo, check=True, capture_output=True, text=True)
@@ -78,6 +142,192 @@ def _declaration(version: str, digest: str, *, source: str = "fixture/source") -
         "supported_tuples": [TUPLE],
         "artifacts": {version: {TUPLE: {"name": name, "sha256": digest}}},
     }
+
+
+def test_producer_release_roundtrip_activates_without_sidecar(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo, archive, metadata = _build_producer_artifact(tmp_path, monkeypatch)
+    home = tmp_path / "home"
+    _set_env(monkeypatch, _native_env(home))
+    selected, probe, requests = _release_harness(monkeypatch, {archive.name: archive})
+
+    phase, doctor = _phase_and_doctor(repo, home, probe)
+
+    assert selected["name"] == archive.name
+    assert requests == [archive.name]
+    assert metadata["artifact"] == archive.name
+    assert phase["status"] == "activated"
+    assert doctor["status"] == "healthy"
+    assert doctor["message"] == "The managed native core is verified and active."
+
+
+def test_producer_release_roundtrip_gate_fails_on_consumer_shape_mutation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo, archive, _ = _build_producer_artifact(tmp_path, monkeypatch)
+    home = tmp_path / "home"
+    _set_env(monkeypatch, _native_env(home))
+    _, probe, _ = _release_harness(monkeypatch, {archive.name: archive})
+    monkeypatch.setattr(native_core_lib, "_find_binary", lambda _root: None)
+
+    phase, doctor = _phase_and_doctor(repo, home, probe)
+
+    assert phase["status"] == "verification-failure"
+    assert "repograph binary" in str(phase["reason"])
+    assert doctor["status"] == "corrupt"
+    assert str(doctor["reason"]).startswith("verification-failure:")
+    assert "charness update" not in str(doctor["message"])
+
+
+def _assert_healthy(phase: dict[str, object], doctor: dict[str, object], status: str) -> None:
+    assert phase["status"] == status
+    assert doctor["status"] == "healthy"
+    assert doctor["message"] == "The managed native core is verified and active."
+
+
+def _scenario_clean_install(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    store, home = tmp_path / "producer-archives", tmp_path / "home"
+    archive = store / "repograph-v1.0.0-x86_64-unknown-linux-gnu.tar.gz"
+    digest = _write_artifact(store, "1.0.0")
+    repo = _repo(tmp_path, "1.0.0", _declaration("1.0.0", digest))
+    _, probe, requests = _release_harness(monkeypatch, {archive.name: archive})
+    phase, doctor = _phase_and_doctor(repo, home, probe)
+    _assert_healthy(phase, doctor, "activated")
+    assert requests == [archive.name]
+
+
+def _scenario_noop(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    store, home = tmp_path / "producer-archives", tmp_path / "home"
+    archive = store / "repograph-v1.0.0-x86_64-unknown-linux-gnu.tar.gz"
+    digest = _write_artifact(store, "1.0.0")
+    repo = _repo(tmp_path, "1.0.0", _declaration("1.0.0", digest))
+    _, probe, _ = _release_harness(monkeypatch, {archive.name: archive})
+    first, _ = _phase_and_doctor(repo, home, probe)
+    phase, doctor = _phase_and_doctor(repo, home, probe)
+    assert first["status"] == "activated"
+    _assert_healthy(phase, doctor, "no-op")
+
+
+def _scenario_transition(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    store, home = tmp_path / "producer-archives", tmp_path / "home"
+    archive1 = store / "repograph-v1.0.0-x86_64-unknown-linux-gnu.tar.gz"
+    archive2 = store / "repograph-v2.0.0-x86_64-unknown-linux-gnu.tar.gz"
+    digest1, digest2 = _write_artifact(store, "1.0.0"), _write_artifact(store, "2.0.0")
+    repo = _repo(tmp_path, "1.0.0", _declaration("1.0.0", digest1))
+    selected, probe, _ = _release_harness(monkeypatch, {archive1.name: archive1, archive2.name: archive2})
+    first, _ = _phase_and_doctor(repo, home, probe)
+    manifest = json.loads((repo / "packaging/charness.json").read_text(encoding="utf-8"))
+    manifest.update({"version": "2.0.0", "native_core": _declaration("2.0.0", digest2)})
+    (repo / "packaging/charness.json").write_text(json.dumps(manifest), encoding="utf-8")
+    selected["name"] = archive2.name
+    phase, doctor = _phase_and_doctor(repo, home, probe)
+    assert first["status"] == "activated"
+    _assert_healthy(phase, doctor, "activated")
+
+
+def _scenario_target_mismatch(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    store, home = tmp_path / "producer-archives", tmp_path / "home"
+    archive = store / "repograph-v1.0.0-x86_64-unknown-linux-gnu.tar.gz"
+    digest = _write_artifact(store, "1.0.0")
+    repo = _repo(tmp_path, "1.0.0", _declaration("1.0.0", digest))
+    _release_harness(monkeypatch, {archive.name: archive})
+    target = "aarch64-unknown-linux-gnu"
+    monkeypatch.setattr(native_core_lib, "host_tuple", lambda: target)
+    monkeypatch.setattr(native_core_resolution_lib, "host_tuple", lambda: target)
+    phase, doctor = _phase_and_doctor(repo, home, lambda: {"status": "ok", "asset_names": [archive.name]})
+    assert phase["status"] == "unsupported-tuple"
+    assert doctor["status"] == "unsupported-tuple"
+    assert doctor["message"] == "This host tuple is unsupported; continue with the Python surface."
+
+
+def _scenario_checksum_failure(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    store, home = tmp_path / "producer-archives", tmp_path / "home"
+    archive = store / "repograph-v1.0.0-x86_64-unknown-linux-gnu.tar.gz"
+    _write_artifact(store, "1.0.0")
+    repo = _repo(tmp_path, "1.0.0", _declaration("1.0.0", "0" * 64))
+    _release_harness(monkeypatch, {archive.name: archive})
+    phase, doctor = _phase_and_doctor(repo, home, lambda: {"status": "ok", "asset_names": [archive.name]})
+    assert phase["status"] == "checksum-failure"
+    assert doctor["status"] == "corrupt"
+    assert doctor["message"] == "The managed native core update failed; inspect the recorded phase status before retrying."
+    assert str(doctor["reason"]).startswith("checksum-failure:")
+
+
+def _scenario_interrupted(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    store, home = tmp_path / "producer-archives", tmp_path / "home"
+    archive1 = store / "repograph-v1.0.0-x86_64-unknown-linux-gnu.tar.gz"
+    archive2 = store / "repograph-v2.0.0-x86_64-unknown-linux-gnu.tar.gz"
+    digest1, digest2 = _write_artifact(store, "1.0.0"), _write_artifact(store, "2.0.0")
+    repo = _repo(tmp_path, "1.0.0", _declaration("1.0.0", digest1))
+    selected, probe, _ = _release_harness(monkeypatch, {archive1.name: archive1, archive2.name: archive2})
+    _phase_and_doctor(repo, home, probe)
+    manifest = json.loads((repo / "packaging/charness.json").read_text(encoding="utf-8"))
+    manifest.update({"version": "2.0.0", "native_core": _declaration("2.0.0", digest2)})
+    (repo / "packaging/charness.json").write_text(json.dumps(manifest), encoding="utf-8")
+    selected["name"] = archive2.name
+    monkeypatch.setattr(native_core_lib, "write_current_pointer_json", lambda *_args, **_kwargs: (_ for _ in ()).throw(OSError("interrupted")))
+    phase, doctor = _phase_and_doctor(repo, home, probe)
+    assert phase["status"] == "activation-failed"
+    assert doctor["status"] == "stale"
+    assert doctor["message"] == "The active native core belongs to another checkout version; run `charness update` to activate the matching version."
+
+
+def _scenario_rollback(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    store, home = tmp_path / "producer-archives", tmp_path / "home"
+    archive1 = store / "repograph-v1.0.0-x86_64-unknown-linux-gnu.tar.gz"
+    archive2 = store / "repograph-v2.0.0-x86_64-unknown-linux-gnu.tar.gz"
+    digest1, digest2 = _write_artifact(store, "1.0.0"), _write_artifact(store, "2.0.0")
+    repo = _repo(tmp_path, "1.0.0", _declaration("1.0.0", digest1))
+    selected, probe, requests = _release_harness(monkeypatch, {archive1.name: archive1, archive2.name: archive2})
+    _phase_and_doctor(repo, home, probe)
+    manifest = json.loads((repo / "packaging/charness.json").read_text(encoding="utf-8"))
+    manifest.update({"version": "2.0.0", "native_core": _declaration("2.0.0", digest2)})
+    (repo / "packaging/charness.json").write_text(json.dumps(manifest), encoding="utf-8")
+    selected["name"] = archive2.name
+    _phase_and_doctor(repo, home, probe)
+    manifest.update({"version": "1.0.0", "native_core": _declaration("1.0.0", digest1)})
+    (repo / "packaging/charness.json").write_text(json.dumps(manifest), encoding="utf-8")
+    selected["name"] = archive1.name
+    phase, doctor = _phase_and_doctor(repo, home, probe)
+    _assert_healthy(phase, doctor, "reactivated")
+    assert requests == [archive1.name, archive2.name]
+
+
+def _scenario_skew(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    store, home = tmp_path / "producer-archives", tmp_path / "home"
+    archive = store / "repograph-v1.0.0-x86_64-unknown-linux-gnu.tar.gz"
+    digest = _write_artifact(store, "1.0.0")
+    repo = _repo(tmp_path, "1.0.0", _declaration("1.0.0", digest))
+    _, probe, _ = _release_harness(monkeypatch, {archive.name: archive})
+    phase, _ = _phase_and_doctor(repo, home, probe)
+    manifest = json.loads((repo / "packaging/charness.json").read_text(encoding="utf-8"))
+    manifest.update({"version": "2.0.0", "native_core": _declaration("2.0.0", "1" * 64)})
+    (repo / "packaging/charness.json").write_text(json.dumps(manifest), encoding="utf-8")
+    doctor = native_core_doctor_payload(home, repo, state_root=home / ".local/state/charness")
+    assert phase["status"] == "activated"
+    assert doctor["status"] == "stale"
+    assert doctor["message"] == "The active native core belongs to another checkout version; run `charness update` to activate the matching version."
+
+
+SCENARIOS = {
+    "clean first install": _scenario_clean_install,
+    "already-current no-op": _scenario_noop,
+    "version transition": _scenario_transition,
+    "target mismatch": _scenario_target_mismatch,
+    "checksum failure": _scenario_checksum_failure,
+    "interrupted activation": _scenario_interrupted,
+    "rollback": _scenario_rollback,
+    "source/plugin/core skew": _scenario_skew,
+}
+
+
+@pytest.mark.parametrize("scenario", SCENARIOS)
+def test_producer_derived_release_lifecycle_scenarios(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, scenario: str
+) -> None:
+    _set_env(monkeypatch, _native_env(tmp_path / "home"))
+    SCENARIOS[scenario](tmp_path, monkeypatch)
 
 
 def test_clean_first_install_and_already_current_noop(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -95,7 +345,7 @@ def test_clean_first_install_and_already_current_noop(tmp_path: Path, monkeypatc
 
 def test_clean_first_install(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     home, store = tmp_path / "home", tmp_path / "store"
-    digest = _write_artifact(store, "1.0.0")
+    digest = _write_artifact(store, "1.0.0", with_sidecar=True)
     repo = _repo(tmp_path, "1.0.0", _declaration("1.0.0", digest))
     _set_env(monkeypatch, _native_env(home, store))
     result = native_core_lib.run_native_core_phase(repo, home_root=home, state_root=home / ".local/state/charness")
@@ -267,6 +517,10 @@ def test_main_state_behavior_is_inert_when_declaration_is_absent(
         symlinks=True,
         ignore=REPO_COPY_IGNORE,
     )
+    manifest_path = repo / "packaging/charness.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest.pop("native_core", None)
+    manifest_path.write_text(json.dumps(manifest) + "\n", encoding="utf-8")
     home = tmp_path / "home"
     env = _native_env(home)
     env["PATH"] = build_test_path(make_fake_claude(tmp_path).parent)

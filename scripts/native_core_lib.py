@@ -281,8 +281,6 @@ def _prepare_activation(
     if not metadata:
         adjacent = read_json(archive.parent / "artifact.json")
         metadata = adjacent or {}
-    if not metadata:
-        return None, "artifact metadata sidecar is missing"
     if metadata and (metadata.get("version") != version or metadata.get("tuple") != tuple_name):
         return None, "artifact metadata does not match declaration"
     metadata = {
@@ -291,8 +289,6 @@ def _prepare_activation(
         "tuple": tuple_name,
         "artifact_sha256": expected["sha256"],
     }
-    if metadata.get("version") != version or metadata.get("tuple") != tuple_name:
-        return None, "artifact metadata does not match declaration"
     target = stage / "repograph"
     shutil.copy2(binary, target)
     target.chmod(target.stat().st_mode | 0o111)

@@ -93,6 +93,20 @@ An undeclared checkout version is a typed `not-applicable` result. A
 bit-for-bit reproducibility claim and Cargo.lock supply-chain coverage are
 outside this contract.
 
+The native lifecycle owns a producer-to-consumer roundtrip: the archive emitted
+by [`build_native_artifact.py`](../scripts/build_native_artifact.py) must activate
+unchanged through `native_core_lib.run_native_core_phase`. The release attach step publishes only
+that archive; `artifact.json` is adjacent build metadata, not a required archive
+member. The standing release-path test uses the producer's archive writer and a
+download seam whose asset list contains only the uploaded archive, then checks
+both activation and `native_core_doctor_payload`.
+
+A missing adjacent sidecar is therefore not an installation refusal: declaration
+and extracted-binary fields are reconstructed during activation. If an update
+records a checksum or verification failure, doctor reports the existing
+`corrupt` status and preserves the phase status and reason instead of presenting
+the failure as `missing` with the same update command as remediation.
+
 Generated host layouts are not authoritative. If an exported manifest drifts
 from the shared packaging manifest, regenerate the export instead of editing the
 host file by hand.
