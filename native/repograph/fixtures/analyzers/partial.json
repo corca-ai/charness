@@ -1,0 +1,48 @@
+{
+  "schema": "repograph.analyzer_result.v1",
+  "analyzer": {
+    "name": "rev-dep",
+    "version": "0.4.0"
+  },
+  "source": {
+    "digest": "sha256:fixture-partial-746"
+  },
+  "scope": {
+    "paths": [
+      "scripts/helper.py"
+    ]
+  },
+  "modules": [
+    {
+      "id": "partial-library"
+    }
+  ],
+  "imports": [
+    {
+      "source": {
+        "kind": "file",
+        "path": "scripts/helper.py"
+      },
+      "target": {
+        "kind": "external-module",
+        "id": "partial-library"
+      },
+      "module": "partial.library",
+      "line": 1
+    }
+  ],
+  "exclusions": [
+    {
+      "path": "scripts/helper.py",
+      "reason": "provider skipped dynamic loading"
+    }
+  ],
+  "parse_conditions": [
+    {
+      "path": "scripts/helper.py",
+      "kind": "dynamic-import",
+      "detail": "module name is computed"
+    }
+  ],
+  "completeness": "partial"
+}

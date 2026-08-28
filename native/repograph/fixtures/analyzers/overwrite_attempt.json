@@ -1,0 +1,37 @@
+{
+  "schema": "repograph.analyzer_result.v1",
+  "analyzer": {
+    "name": "rev-dep",
+    "version": "0.4.0"
+  },
+  "source": {
+    "commit": "fixture-overwrite-746"
+  },
+  "scope": {
+    "paths": [
+      "plugins/charness/README.md"
+    ]
+  },
+  "modules": [
+    {
+      "id": "overwrite-library"
+    }
+  ],
+  "imports": [
+    {
+      "source": {
+        "kind": "external-module",
+        "id": "overwrite-library"
+      },
+      "target": {
+        "kind": "file",
+        "path": "plugins/charness/README.md"
+      },
+      "module": "overwrite.library",
+      "line": 1
+    }
+  ],
+  "exclusions": [],
+  "parse_conditions": [],
+  "completeness": "complete"
+}

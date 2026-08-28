@@ -1,0 +1,50 @@
+{
+  "schema": "repograph.analyzer_result.v1",
+  "analyzer": {
+    "name": "rev-dep",
+    "version": "0.4.0"
+  },
+  "source": {
+    "commit": "fixture-commit-746"
+  },
+  "scope": {
+    "paths": [
+      "pkg/cycle_a.py",
+      "pkg/cycle_b.py"
+    ]
+  },
+  "modules": [
+    {
+      "id": "runtime-library"
+    }
+  ],
+  "imports": [
+    {
+      "source": {
+        "kind": "file",
+        "path": "pkg/cycle_a.py"
+      },
+      "target": {
+        "kind": "external-module",
+        "id": "runtime-library"
+      },
+      "module": "runtime.library",
+      "line": 1
+    },
+    {
+      "source": {
+        "kind": "external-module",
+        "id": "runtime-library"
+      },
+      "target": {
+        "kind": "file",
+        "path": "pkg/cycle_b.py"
+      },
+      "module": "runtime.library",
+      "line": 2
+    }
+  ],
+  "exclusions": [],
+  "parse_conditions": [],
+  "completeness": "complete"
+}

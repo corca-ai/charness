@@ -60,9 +60,9 @@ carriers, and run-quality label observations:
 target/release/repograph carriers --repo-root ../..
 ```
 
-Use repeatable `--analyzer-result FILE` options to record identity-only
-provider inputs; this lane marks their scope `unestablished` until a later
-lane supplies provider parsing.
+Use repeatable `--analyzer-result FILE` options to ingest strict provider
+results. The input schema, scope rules, completeness semantics, and rev-dep
+mapping are documented in [ANALYZERS.md](./ANALYZERS.md).
 
 The query commands classify changed paths with the same role resolver and
 surface matcher, including deleted paths supplied by `--path`:

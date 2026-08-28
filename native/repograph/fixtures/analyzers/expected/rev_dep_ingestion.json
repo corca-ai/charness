@@ -1,0 +1,21 @@
+{
+  "analyzer_inputs": [],
+  "nodes": [
+    {
+      "class": "external-module",
+      "id": "external-module:rev-dep:browser-library",
+      "provider": "rev-dep"
+    }
+  ],
+  "edges": [
+    {
+      "kind": "imports",
+      "source": "pkg/cycle_a.py",
+      "target": "external-module:rev-dep:browser-library",
+      "rule_id": "analyzer:rev-dep@0.4.0",
+      "module": "browser.library",
+      "line": 1
+    }
+  ],
+  "unestablished": []
+}

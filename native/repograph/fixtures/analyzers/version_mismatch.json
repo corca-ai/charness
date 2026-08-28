@@ -1,0 +1,37 @@
+{
+  "schema": "repograph.analyzer_result.v2",
+  "analyzer": {
+    "name": "rev-dep",
+    "version": "0.4.0"
+  },
+  "source": {
+    "commit": "fixture-version-746"
+  },
+  "scope": {
+    "paths": [
+      "scripts/helper.py"
+    ]
+  },
+  "modules": [
+    {
+      "id": "incompatible-library"
+    }
+  ],
+  "imports": [
+    {
+      "source": {
+        "kind": "file",
+        "path": "scripts/helper.py"
+      },
+      "target": {
+        "kind": "external-module",
+        "id": "incompatible-library"
+      },
+      "module": "incompatible.library",
+      "line": 1
+    }
+  ],
+  "exclusions": [],
+  "parse_conditions": [],
+  "completeness": "complete"
+}

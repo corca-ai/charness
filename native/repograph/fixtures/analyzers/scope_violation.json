@@ -1,0 +1,37 @@
+{
+  "schema": "repograph.analyzer_result.v1",
+  "analyzer": {
+    "name": "rev-dep",
+    "version": "0.4.0"
+  },
+  "source": {
+    "commit": "fixture-scope-violation-746"
+  },
+  "scope": {
+    "paths": [
+      "scripts/helper.py"
+    ]
+  },
+  "modules": [
+    {
+      "id": "outside-library"
+    }
+  ],
+  "imports": [
+    {
+      "source": {
+        "kind": "file",
+        "path": "scripts/first.py"
+      },
+      "target": {
+        "kind": "external-module",
+        "id": "outside-library"
+      },
+      "module": "outside.library",
+      "line": 1
+    }
+  ],
+  "exclusions": [],
+  "parse_conditions": [],
+  "completeness": "complete"
+}

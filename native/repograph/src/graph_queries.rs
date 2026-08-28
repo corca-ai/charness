@@ -465,7 +465,18 @@ fn analyzer_conditions(report: &GraphReport) -> Vec<Unestablished> {
     report
         .unestablished
         .iter()
-        .filter(|condition| condition.kind == ConditionKind::AnalyzerNotParsed)
+        .filter(|condition| {
+            matches!(
+                condition.kind,
+                ConditionKind::AnalyzerNotParsed
+                    | ConditionKind::AnalyzerParseFailure
+                    | ConditionKind::AnalyzerVersionMismatch
+                    | ConditionKind::AnalyzerIncomplete
+                    | ConditionKind::AnalyzerZeroModules
+                    | ConditionKind::ScopeViolation
+                    | ConditionKind::AnalyzerExcluded
+            )
+        })
         .cloned()
         .collect()
 }

@@ -1,0 +1,27 @@
+{
+  "tool": "rev-dep",
+  "tool_version": "0.4.0",
+  "source": {
+    "commit": "fixture-rev-dep-746"
+  },
+  "scope": {
+    "files": [
+      "pkg/cycle_a.py"
+    ]
+  },
+  "modules": [
+    {
+      "name": "browser-library",
+      "imports": [
+        {
+          "file": "pkg/cycle_a.py",
+          "specifier": "browser.library",
+          "line": 1
+        }
+      ]
+    }
+  ],
+  "excluded": [],
+  "conditions": [],
+  "status": "complete"
+}

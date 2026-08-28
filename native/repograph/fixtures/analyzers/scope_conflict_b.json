@@ -1,0 +1,24 @@
+{
+  "schema": "repograph.analyzer_result.v1",
+  "analyzer": {
+    "name": "rev-dep-b",
+    "version": "0.4.0"
+  },
+  "source": {
+    "commit": "fixture-scope-b-746"
+  },
+  "scope": {
+    "paths": [
+      "scripts/helper.py"
+    ]
+  },
+  "modules": [
+    {
+      "id": "scope-b-library"
+    }
+  ],
+  "imports": [],
+  "exclusions": [],
+  "parse_conditions": [],
+  "completeness": "complete"
+}

@@ -445,9 +445,10 @@ repograph graph [--repo-root PATH] [--file-list PATH] [--exclude-prefix PREFIX].
 The graph command establishes one inventory and emits `repograph.graph.v1`.
 `--exclude-prefix` is repeatable; when omitted its defaults are `plugins/` and
 `native/repograph/fixtures/`. Supplying one prefix replaces both defaults.
-`--analyzer-result` is repeatable identity-only plumbing in this lane. Each
-input is recorded and its repository scope is marked with an
-`analyzer-not-parsed` condition; analyzer contents are not parsed.
+`--analyzer-result` is repeatable provider input. Each document follows the
+strict `repograph.analyzer_result.v1` contract in [ANALYZERS.md](./ANALYZERS.md);
+bounded external-module imports are merged, and invalid or incomplete claims
+are emitted as typed `unestablished` conditions.
 
 The report contains typed `nodes`, `edges`, and `roots`, derived mirror
 destinations, a role census, analyzer inputs, carrier path references, quality
@@ -477,8 +478,9 @@ values are normalized with the same path routine as `match-surfaces` and are
 deduplicated by first occurrence. When no `--path` is supplied, all inventory
 paths outside the exclusion prefixes are classified. The exclusion default is
 `plugins/` and `native/repograph/fixtures/`; supplying one prefix replaces
-both defaults. `--analyzer-result` is repeatable identity-only plumbing and
-marks the query unestablished until provider parsing is supplied by its owner.
+both defaults. `--analyzer-result` is repeatable provider input using the same
+strict contract and graph ingestion as `graph`; invalid or incomplete claims
+mark the query unestablished.
 
 ### `classify` output schema
 

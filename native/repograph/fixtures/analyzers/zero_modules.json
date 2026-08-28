@@ -1,0 +1,20 @@
+{
+  "schema": "repograph.analyzer_result.v1",
+  "analyzer": {
+    "name": "rev-dep",
+    "version": "0.4.0"
+  },
+  "source": {
+    "commit": "fixture-zero-modules-746"
+  },
+  "scope": {
+    "paths": [
+      "scripts/helper.py"
+    ]
+  },
+  "modules": [],
+  "imports": [],
+  "exclusions": [],
+  "parse_conditions": [],
+  "completeness": "complete"
+}

@@ -2,6 +2,7 @@ pub mod ast_utils;
 pub mod edges;
 pub mod export_safe;
 pub mod graph;
+pub mod graph_analyzer;
 pub mod graph_carriers;
 pub mod graph_components;
 pub mod graph_imports;

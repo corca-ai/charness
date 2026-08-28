@@ -108,6 +108,12 @@ pub enum EdgeKind {
 #[serde(rename_all = "kebab-case")]
 pub enum ConditionKind {
     AnalyzerNotParsed,
+    AnalyzerParseFailure,
+    AnalyzerVersionMismatch,
+    AnalyzerIncomplete,
+    AnalyzerZeroModules,
+    ScopeViolation,
+    AnalyzerExcluded,
     Inventory,
     MalformedSkill,
     ParseFailure,

@@ -3,13 +3,14 @@ use std::path::{Path, PathBuf};
 
 use serde_json::Value;
 
+use crate::graph_analyzer::ingest as ingest_analyzer_results;
 use crate::graph_carriers::scan as scan_carriers;
 use crate::graph_imports::{extract_import_references, resolve_imports};
 use crate::graph_mirrors::{derive_mirrors, MirrorDerivation, MirrorManifest};
 use crate::graph_model::{
-    AdapterNode, AdapterStatus, AnalyzerInput, ConditionKind, Edge, EdgeKind, FileNode,
-    GraphReport, MirrorPairNode, Node, PackageKind, PackageNode, Role, Root, RootKind, SkillNode,
-    SkillStatus, TestNode, TopologyConfig, TopologyDocument, Unestablished,
+    AdapterNode, AdapterStatus, ConditionKind, Edge, EdgeKind, FileNode, GraphReport,
+    MirrorPairNode, Node, PackageKind, PackageNode, Role, Root, RootKind, SkillNode, SkillStatus,
+    TestNode, TopologyConfig, TopologyDocument, Unestablished,
 };
 use crate::graph_roles::{classify_role, skill_frontmatter_name};
 use crate::inventory::{FileInventory, InventoryError};
@@ -181,7 +182,11 @@ pub fn build(
     nodes.extend(carrier_report.nodes);
     edges.extend(carrier_report.edges);
     roots.extend(carrier_report.roots);
-    let analyzer_inputs = add_analyzer_conditions(repo_root, analyzer_results, &mut unestablished);
+    let analyzer_ingestion =
+        ingest_analyzer_results(repo_root, &selected_paths, &nodes, &edges, analyzer_results);
+    nodes.extend(analyzer_ingestion.nodes);
+    edges.extend(analyzer_ingestion.edges);
+    unestablished.extend(analyzer_ingestion.unestablished);
 
     nodes.sort_by(|left, right| {
         left.class_name()
@@ -213,7 +218,7 @@ pub fn build(
         roots,
         mirror_destination_count: mirror_derivation.destinations.len(),
         mirror_destinations: mirror_derivation.destinations,
-        analyzer_inputs,
+        analyzer_inputs: analyzer_ingestion.analyzer_inputs,
         role_census,
         unresolved_carriers: carrier_report.unresolved_carriers,
         carrier_path_references: carrier_report.carrier_path_references,
@@ -938,54 +943,6 @@ fn add_static_roots(
     let _ = derivation;
 }
 
-fn add_analyzer_conditions(
-    repo_root: &Path,
-    analyzer_results: &[PathBuf],
-    unestablished: &mut Vec<Unestablished>,
-) -> Vec<AnalyzerInput> {
-    analyzer_results
-        .iter()
-        .map(|path| {
-            let display = display_input_path(repo_root, path);
-            let identity = match std::fs::read(path) {
-                Ok(bytes) => format!("{display}:bytes-{}", bytes.len()),
-                Err(_) => format!("{display}:unreadable"),
-            };
-            unestablished.push(Unestablished {
-                kind: ConditionKind::AnalyzerNotParsed,
-                subject: display.clone(),
-                detail: "analyzer result identity recorded; parsing is deferred to lane D"
-                    .to_string(),
-                rules: vec!["analyzer-not-parsed".to_string()],
-            });
-            AnalyzerInput {
-                path: display,
-                identity,
-                scope: "repository".to_string(),
-            }
-        })
-        .collect()
-}
-
-fn display_input_path(repo_root: &Path, path: &Path) -> String {
-    let absolute = if path.is_absolute() {
-        path.to_path_buf()
-    } else {
-        std::env::current_dir()
-            .unwrap_or_else(|_| PathBuf::from("."))
-            .join(path)
-    };
-    if let Ok(relative) = absolute.strip_prefix(repo_root) {
-        let text = relative.to_string_lossy().replace('\\', "/");
-        if !text.is_empty() {
-            return text;
-        }
-    }
-    path.file_name()
-        .and_then(|name| name.to_str())
-        .map_or_else(|| "<analyzer-result>".to_string(), str::to_string)
-}
-
 fn dedupe_sorted(mut paths: Vec<String>) -> Vec<String> {
     paths.sort();
     paths.dedup();
@@ -1034,6 +991,12 @@ fn root_kind_name(kind: RootKind) -> &'static str {
 fn condition_kind_name(kind: ConditionKind) -> &'static str {
     match kind {
         ConditionKind::AnalyzerNotParsed => "analyzer-not-parsed",
+        ConditionKind::AnalyzerParseFailure => "analyzer-parse-failure",
+        ConditionKind::AnalyzerVersionMismatch => "analyzer-version-mismatch",
+        ConditionKind::AnalyzerIncomplete => "analyzer-incomplete",
+        ConditionKind::AnalyzerZeroModules => "analyzer-zero-modules",
+        ConditionKind::ScopeViolation => "scope-violation",
+        ConditionKind::AnalyzerExcluded => "analyzer-excluded",
         ConditionKind::Inventory => "inventory",
         ConditionKind::MalformedSkill => "malformed-skill",
         ConditionKind::ParseFailure => "parse-failure",
@@ -1113,7 +1076,7 @@ mod tests {
     }
 
     #[test]
-    fn analyzer_input_is_identity_only_and_marks_repository_scope() {
+    fn analyzer_input_parse_failure_is_typed() {
         let inventory = FileInventory::from_file_list_bytes(b"scripts/helper.py\0").unwrap();
         let report = build(
             &fixture_root(),
@@ -1121,10 +1084,44 @@ mod tests {
             &["never/".to_string()],
             &[PathBuf::from("missing-analyzer.json")],
         );
-        assert_eq!(report.analyzer_inputs[0].scope, "repository");
+        assert_eq!(report.analyzer_inputs[0].scope, "unestablished");
         assert!(report
             .unestablished
             .iter()
-            .any(|entry| entry.kind == ConditionKind::AnalyzerNotParsed));
+            .any(|entry| entry.kind == ConditionKind::AnalyzerParseFailure));
+    }
+
+    #[test]
+    fn complete_analyzer_result_is_merged_into_graph() {
+        let inventory =
+            FileInventory::from_file_list_bytes(b"pkg/cycle_a.py\0pkg/cycle_b.py\0").unwrap();
+        let result_path =
+            Path::new(env!("CARGO_MANIFEST_DIR")).join("fixtures/analyzers/complete.json");
+        let report = build(
+            &fixture_root(),
+            &inventory,
+            &["never/".to_string()],
+            &[result_path],
+        );
+        assert_eq!(report.analyzer_inputs.len(), 1);
+        assert_eq!(
+            report.analyzer_inputs[0].identity,
+            "rev-dep@0.4.0:commit:fixture-commit-746"
+        );
+        assert!(report.nodes.iter().any(|node| {
+            matches!(
+                node,
+                Node::ExternalModule(module)
+                    if module.id == "external-module:rev-dep:runtime-library"
+            )
+        }));
+        assert_eq!(
+            report
+                .edges
+                .iter()
+                .filter(|edge| edge.rule_id.as_deref() == Some("analyzer:rev-dep@0.4.0"))
+                .count(),
+            2
+        );
     }
 }
