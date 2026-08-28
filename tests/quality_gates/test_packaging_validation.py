@@ -511,6 +511,7 @@ def test_export_plugin_materializes_codex_and_claude_layouts(tmp_path: Path) -> 
     exported_agent_browser = claude_root / "plugins" / "charness" / "support" / "agent-browser" / "SKILL.md"
     exported_specdown = claude_root / "plugins" / "charness" / "support" / "specdown" / "SKILL.md"
     exported_helper_script = claude_root / "plugins" / "charness" / "scripts" / "adapter_lib.py"
+    exported_scripts = claude_root / "plugins" / "charness" / "scripts"
     assert claude_manifest.is_file()
     assert exported_readme.is_file()
     assert exported_profiles.is_dir()
@@ -520,6 +521,20 @@ def test_export_plugin_materializes_codex_and_claude_layouts(tmp_path: Path) -> 
     assert not exported_agent_browser.exists()
     assert not exported_specdown.exists()
     assert exported_helper_script.is_file()
+    assert all(
+        not (exported_scripts / name).exists()
+        for name in packaging_lib.SOURCE_ONLY_PLUGIN_SCRIPTS
+    )
+    assert (exported_scripts / "public_skill_dogfood_lib.py").is_file()
+    assert (
+        claude_root
+        / "plugins"
+        / "charness"
+        / "skills"
+        / "quality"
+        / "scripts"
+        / "suggest_public_skill_dogfood.py"
+    ).is_file()
     assert not (claude_root / "plugins" / "charness" / "skills" / "public").exists()
     assert not (claude_root / "plugins" / "charness" / "support" / "generated").exists()
     assert json.loads(claude_manifest.read_text(encoding="utf-8"))["repository"] == "https://github.com/corca-ai/charness"
