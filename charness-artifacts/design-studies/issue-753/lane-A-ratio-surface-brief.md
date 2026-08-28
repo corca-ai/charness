@@ -36,12 +36,25 @@ agents.
    rust-tests, tests-python) so the definition is auditable from the
    output. Threshold stays `1.0` and the gate stays ADVISORY — do not
    change enforcement posture (that is a later #753 decision).
-4. The `tokei` engine either gains the same surface (tokei supports
-   Sh/Rust types) or, if fidelity is not achievable cheaply, is updated
-   to report a typed
-   `engine_note: "tokei engine measures Python only"` so the two
-   engines cannot silently disagree about what they measure — pick one,
-   document it in the module docstring.
+4. The `tokei` engine is REQUIRED to measure the SAME full surface
+   (operator directive 2026-08-28: tokei must be used when measuring
+   the ratio — a Python-only tokei arm is not acceptable):
+   - extend the tokei invocation to `--types Python,Shell,Rust` (verify
+     the exact tokei 14.x type names) over the same
+     inclusion/exclusion sets as splitlines, taking tokei's `code`
+     counts (comments and blanks excluded);
+   - verify how tokei treats the extensionless shebang `charness` file
+     (tokei detects shebangs); if tokei misses it, count that file
+     explicitly and record the adjustment in `surface_breakdown` —
+     never silently drop it;
+   - the DEFAULT engine becomes `auto`: resolve to `tokei` when the
+     binary is on PATH, else fall back to `splitlines`, and record the
+     RESOLVED engine in the payload (`engine: tokei|splitlines`,
+     additive `engine_selection: auto|explicit`). Explicit
+     `--engine tokei` with no binary stays the current typed error.
+   - both engines measure the same FILE SET; only the line-counting
+     rule differs — pin this with a fixture test comparing the two
+     engines' `surface_breakdown` file buckets on the same tree.
 5. `tests/quality_gates/test_test_production_ratio.py` updated:
    behavioral fixtures for the new buckets (a fixture tree with a
    shebang script, a `.sh`, rust `src/` + `tests/` + `fixtures/`
@@ -49,8 +62,9 @@ agents.
    the schema-additivity of `surface_breakdown` pinned
    additive-key-tolerantly (do not pin the exact whole payload — that
    is the change-detector-pin class #753 is retiring).
-6. Run the gate on the real repo and report the new measured ratio and
-   the full breakdown verbatim in your final message.
+6. Run the gate on the real repo with BOTH engines (`--engine tokei`
+   and `--engine splitlines`, plus one default-`auto` run) and report
+   all measured ratios and breakdowns verbatim in your final message.
 
 ## Boundaries
 
