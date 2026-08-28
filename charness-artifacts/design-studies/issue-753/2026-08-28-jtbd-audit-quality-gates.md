@@ -103,6 +103,41 @@ concentrated in the 13 files below plus payload-pin conversion work.
   - subject: skills/shared/references/source-bound-records.md, and its links from create-skill/create-cli/spec/impl SKILL.md docs (documentation content, no production code); subject needed: yes for the shared doc itself (linked from 4 public skills); the exhaustive vocabulary pinned within it is not separately load-bearing
   - evidence: tests/quality_gates/test_source_bound_records_guidance.py:26-38 (11 literal substring pins on prose) vs :39-41 (real cross-file link contract)
 
+## Why the ratio reads 1.18: measurement decomposition (2026-08-28)
+
+The operator asked whether the 1.18 test-production ratio is a
+measurement artifact (comments/blanks) or structural (duplication,
+bootstrap). Measured answers, whole corpus:
+
+| basis | ratio |
+| --- | --- |
+| gate default (`splitlines`, raw lines, Python-only denominator) | 1.177 |
+| tokei engine (drops `#` comments and blanks; docstrings still count) | 1.088 |
+| logical lines (blanks, comments, AND docstrings stripped, both sides) | 1.185 |
+| logical minus multi-line fixture string literals | 1.185 |
+| denominator + root `charness` CLI (6,081-line extensionless Python) | 1.133 |
+| denominator + CLI + shell (2,522) | 1.115 |
+| denominator + CLI + shell + Rust core (11,890) | 1.040 |
+| denominator + CLI + shell + Rust + yaml/workflows (4,679) | 1.013 |
+
+- Prose is NOT the cause: comment/blank/docstring share is nearly equal
+  on both sides (production 28.7%, tests 28.2%), so stripping it moves
+  the ratio from 1.177 to 1.185.
+- Duplication is a REAL but secondary factor: cross-file 6-line clone
+  coverage is 7.2% in tests vs 4.4% in production (~10.4k duplicated
+  test lines, mostly per-file seeding boilerplate); pricing 80% of it
+  removable yields ~1.11.
+- The DOMINANT factor is the denominator: the gate counts `**/*.py`
+  only, so the 6,081-line extensionless root CLI, 2.5k of shell
+  (run-quality.sh among it), the 11.9k-line Rust core, and
+  yaml/workflow surfaces are all tested-but-uncounted production.
+  Against the full executable surface the ratio is ~1.01-1.04.
+- Consistent with the JTBD verdict above: the test mass is mostly
+  legitimate behavioral contract; the honest #753 move on the ratio
+  gate is to fix its denominator definition (and target the 7.2%
+  seeding duplication), not to prune healthy tests to fit a
+  Python-only metric.
+
 ## Parent verification of top candidates (2026-08-28)
 
 - `test_issue_audit_brief.py` (delete-code-and-test): REFUTED as stated.
