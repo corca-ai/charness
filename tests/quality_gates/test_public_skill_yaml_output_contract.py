@@ -85,7 +85,6 @@ _OWNED_SOURCE_ROOTS = ("scripts", "skills", "hooks", "plugins")
 # closeout runner and a release-adjacent tool are safe to probe here.
 JSON_FLAG_MUST_BE_UNRECOGNIZED = (
     ("scripts/check_cli_skill_surface.py", "--repo-root", "."),
-    ("scripts/check_closeout_floor_matrix.py", "--repo-root", "."),
     ("scripts/check_command_docs.py", "--repo-root", "."),
     ("scripts/check_github_actions.py", "--repo-root", "."),
     ("scripts/check_issue_closeout_commit_msg.py", "--repo-root", ".", "--commit-msg-file", "README.md"),

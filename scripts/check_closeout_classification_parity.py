@@ -10,10 +10,8 @@ added to ONE enumeration and not its siblings. `consolidated` reached
 commit-message regex all still refused it, and the commit hook's fallthrough then
 demanded exactly the repair claims that disposition exists to forbid.
 
-`scripts/check_closeout_floor_matrix.py` already holds ONE of those copies: it
-reads classifications live from the canonical tuple and refuses an undeclared
-`(carrier, classification)` cell, so `.agents/closeout-floor-matrix.json` cannot
-drift. This gate holds the six sites listed in `SITES` below.
+This gate compares the canonical tuple with the six real consumers listed in
+`SITES` below. It does not duplicate every closeout floor across every carrier.
 
 Three deliberate properties, because this is a proof surface:
 
@@ -79,10 +77,6 @@ NON_CLASSIFICATION = NON_CLASSIFICATIONS[0]
 # Sites already held elsewhere, named so a reader does not mistake this gate's
 # scope for the whole vocabulary surface.
 DELEGATED_SITES = {
-    ".agents/closeout-floor-matrix.json": (
-        "scripts/check_closeout_floor_matrix.py re-derives every declared "
-        "(carrier, classification) cell against the canonical tuple"
-    ),
     "plugins/charness/** (exported mirror copies)": (
         "derivative, not independent: .githooks/pre-push runs sync_root_plugin_manifests.py "
         "and packaging validation reports source/export drift. Not re-probed here"
@@ -99,7 +93,6 @@ UNPROBED_RELATED = {
     "skills/public/issue/scripts/issue_closeout_rung1_floors.py:BEHAVIORAL_VERDICT_CLASSIFICATIONS": "policy subset",
     "skills/public/issue/scripts/issue_closeout_rung1_floors.py:FLOOR_EXEMPT_CLASSIFICATIONS": "policy subset",
     "skills/public/issue/scripts/issue_resolution_critique.py:CRITIQUE_REQUIRED_CLASSIFICATIONS": "policy subset",
-    "tests/test_closeout_floor_matrix.py:CLASSIFICATIONS": "a literal seventh copy, in a test",
     "skills/public/issue/SKILL.md and closeout reference prose": "prose, not behaviorally probeable",
 }
 

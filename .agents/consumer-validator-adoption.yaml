@@ -11,8 +11,6 @@ validators:
     wired: true
   - id: closeout-classification-parity
     wired: true
-  - id: closeout-floor-matrix
-    wired: true
   - id: issue-closeout-commit-message
     wired: true
   - id: critique-artifact

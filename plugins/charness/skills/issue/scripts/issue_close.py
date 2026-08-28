@@ -145,12 +145,9 @@ def evaluate_close_comment_carrier(
 ) -> dict[str, Any]:
     """Everything the BODY AND TARGET decide before `close_with_comment` mutates.
 
-    Extracted so the carrier's verdict can be OBSERVED without mutating GitHub.
-    The closeout floor matrix probes this function; probing
-    ``evaluate_close_comment_floor`` directly would have measured the floor rather
-    than what this carrier's caller gets, and the readback wiring below -- which
-    lives here and not in the floor -- is precisely the part that decides whether
-    the consolidation facts reach the verdict at all.
+    Extracted so the carrier's verdict can be tested without mutating GitHub.
+    The readback wiring below lives here rather than in the floor, so tests call
+    this carrier boundary when they need the complete pre-mutation verdict.
 
     NOT everything `close_with_comment` decides before its first irreversible act.
     These refusals deliberately stay with the caller, because they are about the

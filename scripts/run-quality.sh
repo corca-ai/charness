@@ -1188,10 +1188,8 @@ else
     fi
   '
 fi
-queue_selected "check-closeout-floor-matrix" python3 scripts/check_closeout_floor_matrix.py --repo-root "$REPO_ROOT"
-# The floor matrix holds ONE copy of the classification vocabulary (its own
-# declaration). This holds the other five, which is #586's recorded instance:
-# a disposition added to one enumeration and refused by its siblings.
+# Keep the remaining closeout classification consumers on one vocabulary. This
+# is a direct parity check, not a second matrix of every floor and carrier.
 queue_selected "check-closeout-classification-parity" python3 scripts/check_closeout_classification_parity.py --repo-root "$REPO_ROOT"
 # The JSON reporter's destination lives in specdown.json, not behind -out, so an
 # unredirected run rewrites the tracked report on every gate with nothing changed

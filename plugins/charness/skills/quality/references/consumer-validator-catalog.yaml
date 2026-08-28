@@ -81,15 +81,6 @@ validators:
     reason: "consumer-facing artifact or closeout contract; the packaged path is the source of truth for consuming repositories"
     purpose: "checks the issue-closeout classification vocabulary consumed by a repo"
     invocation: "python3 <plugin-root>/scripts/check_closeout_classification_parity.py"
-  - path: scripts/check_closeout_floor_matrix.py
-    id: closeout-floor-matrix
-    consumer_facing: true
-    decision: publish
-    artifact_type: issue-closeout-floor-matrix
-    adoption_policy: wire-or-opt-out
-    reason: "consumer-facing artifact or closeout contract; the packaged path is the source of truth for consuming repositories"
-    purpose: "checks the declared issue-closeout floor matrix"
-    invocation: "python3 <plugin-root>/scripts/check_closeout_floor_matrix.py"
   - path: scripts/check_command_docs.py
     consumer_facing: false
     decision: exclude

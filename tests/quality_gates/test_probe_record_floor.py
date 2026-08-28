@@ -1,9 +1,7 @@
-"""The reusable probe-record decision surface and its remaining release boundary.
+"""The reusable probe-record decision surface and its release boundary.
 
-The closeout floor matrix already proves the floor REACHES every carrier -- it breaks the
-floor's input and observes each ingress's own verdict flip. These tests cover what the
-matrix deliberately does not: the floor's decisions. Which claims owe a record, which
-values satisfy it, and what happens when the record exists but did not establish anything.
+These tests pin which claims owe a record, which values satisfy it, and what
+happens when the record exists but did not establish anything.
 """
 from __future__ import annotations
 

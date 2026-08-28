@@ -311,7 +311,6 @@ QUALITY_PYTHON_STUBS = (
     ("validate-skill-ergonomics", "validate_skill_ergonomics.py"),
     ("quality-tool-fixtures", "check_quality_tool_fixtures.py"),
     ("check-cli-skill-surface", "check_cli_skill_surface.py"),
-    ("check-closeout-floor-matrix", "check_closeout_floor_matrix.py"),
     ("check-closeout-classification-parity", "check_closeout_classification_parity.py"),
     ("validate-surfaces", "validate_surfaces.py"),
     ("validate-inference-interpretation", "validate_inference_interpretation.py"),

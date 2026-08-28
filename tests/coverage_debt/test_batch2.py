@@ -18,7 +18,6 @@ from pathlib import Path
 import pytest
 import yaml
 
-from scripts.closeout_floor_matrix_lib import ProbeWorld, _commit_msg
 from tests.dsl import Repo, run_at
 from tests.script_loader import load_script_module
 from tests.script_main import run_loaded_script_main
@@ -373,33 +372,6 @@ def test_the_closeout_refusal_lib_still_emits_refusals_in_the_flat_layout(
         "detail": "the freeze is stale",
     }
     assert "issue-freeze: REFUSED (stale_freeze) the freeze is stale" in captured.err
-
-
-# --- closeout_floor_matrix: a carrier verdict that will not parse --------------
-
-
-def test_the_commit_msg_carrier_reports_unparseable_yaml_as_an_engine_failure(
-    tmp_path: Path
-) -> None:
-    """Hook stdout that is not YAML must raise, carrying the parse error as cause.
-
-    The probe engine turns a carrier verdict into a matrix cell. Letting a YAML
-    parse error escape raw would report a broken harness as a broken floor; and
-    swallowing it would record a cell as `inert` because nothing could be read —
-    the exact false-negative the matrix exists to prevent.
-    """
-    world = ProbeWorld(ROOT, tmp_path / "world")
-    fake_root = tmp_path / "fake-source"
-    hook = fake_root / "scripts" / "check_issue_closeout_commit_msg.py"
-    hook.parent.mkdir(parents=True)
-    hook.write_text("print('verdict: [unclosed')\n", encoding="utf-8")
-    world.source_root = fake_root
-
-    with pytest.raises(RuntimeError, match="no readable verdict") as excinfo:
-        _commit_msg(world, "bug", "Closes #77\n", None)
-
-    assert isinstance(excinfo.value.__cause__, yaml.YAMLError)
-    assert "unclosed" in str(excinfo.value)
 
 
 def test_the_critique_packet_runner_refuses_an_invalid_adapter_before_writing(

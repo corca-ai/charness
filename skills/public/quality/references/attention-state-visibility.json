@@ -67,20 +67,6 @@
       ],
       "rationale": "The release/quality CLI surface check returns an explicit skipped status and reason when no relevant surface changed."
     },
-    "scripts/check_closeout_floor_matrix.py": {
-      "states": [
-        "skipped"
-      ],
-      "visibility": [
-        "hard_failure_or_blocker",
-        "operator_summary"
-      ],
-      "evidence_terms": [
-        "skipped-by-design",
-        "skipped"
-      ],
-      "rationale": "`skipped` here is not a runtime state of this gate -- it is a DECLARED CELL VALUE in the closeout floor matrix vocabulary (`skipped-by-design`, one of five states a cell may take). The gate itself has no skip path: it refuses on a missing declaration, an unknown state, a state whose single allowed observation does not match, a cell that is not an object, a non-string justification, a `finding` that is not an issue URL, and an unattributable refusal. A `skipped-by-design` cell is never silent either -- it must carry a non-empty reason, it is rendered in the artifact, and a floor that stops being skipped flips the cell and fails this gate. The value that WOULD otherwise read as a clean pass, an inert floor nobody justified, is the separate `undispositioned` state, which cannot exist without a filed issue URL."
-    },
     "scripts/check_command_docs.py": {
       "states": [
         "skipped"

@@ -929,44 +929,6 @@
       ]
     },
     {
-      "surface_id": "closeout-floor-matrix",
-      "description": "Declared floor x classification x carrier matrix for issue closeout, and the behavioral probe that re-derives it from the real carriers.",
-      "source_paths": [
-        ".agents/closeout-floor-matrix.json",
-        "scripts/check_closeout_floor_matrix.py",
-        "scripts/check_issue_closeout_commit_msg.py",
-        "scripts/check_prescribed_skill_executed_lib.py",
-        "scripts/closeout_floor_matrix_lib.py",
-        "scripts/closeout_floor_matrix_world.py",
-        "skills/public/issue/scripts/issue_close.py",
-        "skills/public/issue/scripts/issue_close_comment_floor.py",
-        "skills/public/issue/scripts/issue_closeout_classification_ledger.py",
-        "skills/public/issue/scripts/issue_closeout_rung1_floors.py",
-        "skills/public/issue/scripts/issue_consolidated_closeout.py",
-        "skills/public/issue/scripts/issue_consolidation_readback.py",
-        "skills/public/issue/scripts/issue_critique_observer.py",
-        "skills/public/issue/scripts/issue_resolution_critique.py",
-        "skills/public/issue/scripts/issue_state_readback.py",
-        "skills/public/issue/scripts/issue_validate_closeout_draft.py",
-        "skills/public/issue/scripts/issue_verify_closeout.py",
-        "skills/public/issue/scripts/issue_verify_closeout_body.py",
-        "skills/public/release/scripts/release_issue_closeout.py",
-        "skills/public/release/scripts/release_issue_closeout_message.py"
-      ],
-      "derived_paths": [],
-      "sync_commands": [],
-      "verify_commands": [
-        "python3 scripts/check_closeout_floor_matrix.py --repo-root ."
-      ],
-      "notes": [
-        "The declaration is re-derived by RUNNING each carrier, never by reading it; keep the probe behavioral.",
-        "Changing a floor's applicability -- including the vocabularies it is gated on, such as `issue_consolidated_closeout._TARGETED_CLAIM_NAMES` -- means re-measuring and re-declaring the affected cells in the same slice.",
-        "`issue_consolidated_closeout.py` owns all four refused pairs and the six `input-refused` cells; `release_issue_closeout.py` owns the release lane's own behavioral-verdict floor, which is what every `release-draft` behavioral cell measures.",
-        "Not every path here can move a cell: `issue_critique_observer.py` is listed because the critique floor routes through it, but the matrix's `not_measured` records that its refusal arm is unexercised. Read the artifact before assuming a green gate covered an edit.",
-        "An inert cell must carry a reason that makes it deliberate, or a filed finding. Neither is a refusal."
-      ]
-    },
-    {
       "surface_id": "goal-run-evidence",
       "description": "Durable Goal Run provider plans, operations, observations, graph snapshots, and evidence-lineage records.",
       "source_paths": [
