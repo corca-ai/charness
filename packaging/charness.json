@@ -79,5 +79,19 @@
       "name": "corca-charness",
       "source_path": "./plugins/charness"
     }
+  },
+  "native_core": {
+    "source": "corca-ai/charness",
+    "supported_tuples": [
+      "x86_64-unknown-linux-gnu"
+    ],
+    "artifacts": {
+      "8.0.0": {
+        "x86_64-unknown-linux-gnu": {
+          "name": "repograph-v8.0.0-x86_64-unknown-linux-gnu.tar.gz",
+          "sha256": "19f6be7f913fccaf07c4ffe4ce3eb7be342505b4e6e9a69d4b5100873842f70e"
+        }
+      }
+    }
   }
 }
