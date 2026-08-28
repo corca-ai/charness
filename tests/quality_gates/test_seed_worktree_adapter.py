@@ -11,11 +11,11 @@ from __future__ import annotations
 
 import json
 import subprocess
-import sys
 from pathlib import Path
 from string import Template
 
 import pytest
+
 from tests.quality_gates.seeding_support import load_module
 
 ROOT = Path(__file__).resolve().parents[2]

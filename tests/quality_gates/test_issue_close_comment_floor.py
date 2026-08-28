@@ -7,12 +7,12 @@ import yaml
 
 from runtime_bootstrap import import_repo_module
 from tests.quality_gates.issue_closeout_support import bug_closeout_body
-from tests.quality_gates.support import ROOT, run_script
 from tests.quality_gates.seeding_support import (
     close_comment_args,
     environment_with_path,
     write_issue_close_fake,
 )
+from tests.quality_gates.support import ROOT, run_script
 
 SCRIPT = "skills/public/issue/scripts/issue_tool.py"
 FLOOR_MODULE = ROOT / "skills/public/issue/scripts/issue_close_comment_floor.py"

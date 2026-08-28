@@ -10,8 +10,10 @@ from scripts.check_mutation_score import (
     mutation_metrics,
     summarize_cosmic_ray,
 )
+
+from .seeding_support import write_mutation_score_adapter
 from .support import run_script
-from .seeding_support import write_json, write_mutation_score_adapter
+
 
 def test_cosmic_ray_dump_summary_counts_reachable_denominator(tmp_path: Path) -> None:
     dump = tmp_path / "dump.jsonl"

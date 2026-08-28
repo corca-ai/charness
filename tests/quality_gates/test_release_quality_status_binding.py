@@ -29,8 +29,8 @@ from pathlib import Path
 
 import pytest
 
-from .support import ROOT
 from .seeding_support import load_module
+from .support import ROOT
 
 _RELEASE = ROOT / "skills" / "public" / "release" / "scripts"
 

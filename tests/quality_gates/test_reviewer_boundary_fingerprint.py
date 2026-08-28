@@ -15,8 +15,8 @@ from pathlib import Path
 
 import yaml
 
-from .support import run_script
 from .seeding_support import git, init_git_repo
+from .support import run_script
 
 SCRIPT = "skills/shared/scripts/reviewer_boundary_fingerprint.py"
 ROOT = Path(__file__).resolve().parents[2]

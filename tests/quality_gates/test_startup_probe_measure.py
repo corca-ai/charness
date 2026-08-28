@@ -5,8 +5,8 @@ from pathlib import Path
 
 import yaml
 
-from .support import ROOT, run_script, write_executable
 from .seeding_support import load_module
+from .support import ROOT, run_script, write_executable
 
 SCRIPT = "skills/public/quality/scripts/measure_startup_probes.py"
 MEASURE_STARTUP_PROBES = load_module("measure_startup_probes_under_test", ROOT / SCRIPT)

@@ -9,8 +9,8 @@ stamps) as its own concern from the two-arm policy and the CLI. See
 
 from __future__ import annotations
 
-from .support import ROOT
 from .seeding_support import load_module
+from .support import ROOT
 
 SCRIPTS = ROOT / "skills" / "public" / "quality" / "scripts"
 

@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from .support import ROOT
 from .seeding_support import load_module
+from .support import ROOT
 
 
 def _load_release_module(name: str):

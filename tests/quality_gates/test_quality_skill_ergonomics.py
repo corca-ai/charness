@@ -34,7 +34,7 @@ def test_inventory_skill_ergonomics_reports_advisory_flags(tmp_path: Path) -> No
         "",
     ]
     lines.extend(f"- filler line {index}" for index in range(90))
-    skill_dir = write_skill(repo, lines).parent
+    write_skill(repo, lines).parent
 
     result = _run(
         "--repo-root",

@@ -12,7 +12,12 @@ from tests.quality_gates.release_publish_fixtures import (
     _install_fake_git,
     _seed_publish_release_repo,
 )
-from tests.quality_gates.seeding_support import append_text, git, load_module, write_release_surfaces
+from tests.quality_gates.seeding_support import (
+    append_text,
+    git,
+    load_module,
+    write_release_surfaces,
+)
 
 ROOT = Path(__file__).resolve().parents[2]
 

@@ -19,8 +19,8 @@ import yaml
 
 from scripts.runtime_bootstrap import import_repo_module
 
-from .support import ROOT, run_script
 from .seeding_support import seed_two_changed_pool_files
+from .support import ROOT, run_script
 
 _TEETH = str(ROOT / "scripts" / "check_changed_line_mutation_coverage.py")
 

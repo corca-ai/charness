@@ -5,8 +5,8 @@ from pathlib import Path
 
 import yaml
 
-from .support import run_script
 from .seeding_support import git, init_git_repo
+from .support import run_script
 
 csr = importlib.import_module("scripts.check_symbol_residue")
 

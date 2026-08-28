@@ -18,8 +18,8 @@ from pathlib import Path
 
 import yaml
 
-from tests.quality_gates.support import run_script
 from tests.quality_gates.seeding_support import load_module
+from tests.quality_gates.support import run_script
 
 SCRIPT = "skills/public/issue/scripts/issue_tool.py"
 _ROOT = Path(__file__).resolve().parents[2]

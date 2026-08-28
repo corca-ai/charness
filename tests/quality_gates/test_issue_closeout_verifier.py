@@ -12,15 +12,15 @@ from tests.quality_gates.issue_closeout_support import (
     load_verify_module,
     seed_commit,
 )
-from tests.quality_gates.support import (
-    run_script,
-    write_argv_logging_fake,
-    write_issue_adapter_with_backend,
-)
 from tests.quality_gates.seeding_support import (
     environment_with_path,
     verify_closeout_args,
     write_json_executable,
+)
+from tests.quality_gates.support import (
+    run_script,
+    write_argv_logging_fake,
+    write_issue_adapter_with_backend,
 )
 
 
@@ -332,7 +332,7 @@ def test_issue_verify_closeout_uses_default_gh_comments_for_manual_fallback(tmp_
 
 def test_issue_verify_closeout_rejects_wrong_issue_number_from_backend(tmp_path: Path) -> None:
     bin_dir = tmp_path / "bin"
-    fake = write_json_executable(
+    write_json_executable(
         bin_dir / "gh",
         {"number": 99, "state": "CLOSED", "url": "https://github.com/corca-ai/charness/issues/99"},
     )
@@ -351,7 +351,7 @@ def test_issue_verify_closeout_rejects_wrong_issue_number_from_backend(tmp_path:
 
 def test_issue_verify_closeout_rejects_open_final_state(tmp_path: Path) -> None:
     bin_dir = tmp_path / "bin"
-    fake = write_json_executable(
+    write_json_executable(
         bin_dir / "gh",
         {"number": 42, "state": "OPEN", "url": "https://github.com/corca-ai/charness/issues/42"},
     )
@@ -384,7 +384,7 @@ def test_issue_verify_closeout_rejects_open_final_state(tmp_path: Path) -> None:
 
 def test_issue_verify_closeout_rejects_unposted_manual_fallback_comment(tmp_path: Path) -> None:
     bin_dir = tmp_path / "bin"
-    fake = write_json_executable(
+    write_json_executable(
         bin_dir / "gh",
         {
             "number": 42,
@@ -469,7 +469,7 @@ def test_issue_verify_closeout_rejects_a_right_number_from_the_wrong_repository(
     state, and differs from a correct answer only in the repository its URL names.
     """
     bin_dir = tmp_path / "bin"
-    fake = write_json_executable(
+    write_json_executable(
         bin_dir / "gh",
         {"number": 42, "state": "CLOSED", "url": "https://github.com/someone-else/charness/issues/42"},
     )
@@ -493,7 +493,7 @@ def test_issue_verify_closeout_rejects_a_right_number_from_the_wrong_repository(
 def test_issue_verify_closeout_rejects_a_payload_that_names_no_repository(tmp_path: Path) -> None:
     """A missing repository is an unknown target, never a successful readback."""
     bin_dir = tmp_path / "bin"
-    fake = write_json_executable(
+    write_json_executable(
         bin_dir / "gh",
         {"number": 42, "state": "CLOSED"},
     )

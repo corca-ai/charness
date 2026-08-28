@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .support import make_minimal_skill_repo, run_script
 from .seeding_support import write_skill, write_text
+from .support import make_minimal_skill_repo, run_script
 
 
 def make_adapter_skill_repo(

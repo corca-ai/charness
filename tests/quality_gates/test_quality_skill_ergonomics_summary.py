@@ -6,9 +6,9 @@ from pathlib import Path
 
 import yaml
 
+from .seeding_support import write_skill
 from .skill_ergonomics_support import _MODULE
 from .skill_ergonomics_support import run_inventory_skill_ergonomics as _run
-from .seeding_support import write_skill
 
 
 def test_inventory_skill_ergonomics_summary_keeps_review_payload_compact(tmp_path: Path) -> None:

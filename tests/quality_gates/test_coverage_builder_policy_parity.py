@@ -30,8 +30,8 @@ import pytest
 from scripts import mutation_coverage_producer as producer
 from scripts import mutation_sampling_lib as sampling
 
-from .support import ROOT
 from .seeding_support import load_module
+from .support import ROOT
 
 
 def _load_teeth():

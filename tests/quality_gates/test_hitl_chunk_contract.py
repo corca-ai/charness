@@ -6,8 +6,8 @@ from pathlib import Path
 
 import yaml
 
-from .support import ROOT, run_script
 from .seeding_support import load_module
+from .support import ROOT, run_script
 
 HITL_SKILL = (ROOT / "skills" / "public" / "hitl" / "SKILL.md").read_text(encoding="utf-8")
 CHUNK_CONTRACT = (ROOT / "skills" / "public" / "hitl" / "references" / "chunk-contract.md").read_text(

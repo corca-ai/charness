@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .support import ROOT
 from .seeding_support import load_module
+from .support import ROOT
 
 
 def _load_plan():

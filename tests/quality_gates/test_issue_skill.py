@@ -1,25 +1,24 @@
 from __future__ import annotations
 
 import json
-import os
 import runpy
 import subprocess
 from pathlib import Path
 
 import yaml
 
+from tests.quality_gates.seeding_support import (
+    close_comment_args,
+    environment_with_path,
+    write_issue_close_fake,
+    write_json_executable,
+)
 from tests.quality_gates.support import (
     ROOT,
     fake_gh_env,
     run_script,
     write_argv_logging_fake,
     write_issue_adapter_with_backend,
-)
-from tests.quality_gates.seeding_support import (
-    close_comment_args,
-    environment_with_path,
-    write_issue_close_fake,
-    write_json_executable,
 )
 
 ISSUE_SKILL = (ROOT / "skills" / "public" / "issue" / "SKILL.md").read_text(encoding="utf-8")

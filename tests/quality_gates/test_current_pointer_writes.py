@@ -12,8 +12,8 @@ import yaml
 
 from tests.script_loader import load_script_module
 
-from .support import ROOT, init_git_repo, run_script
 from .seeding_support import load_module
+from .support import ROOT, init_git_repo, run_script
 
 WRITER = load_module("current_pointer_writer_lib", ROOT / "scripts" / "current_pointer_writer_lib.py")
 RELEASE_ARTIFACT = load_module(

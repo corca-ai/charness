@@ -116,7 +116,7 @@ def test_persist_retro_artifact_skips_self_refresh_for_summary_target(
     tmp_path: Path, monkeypatch, capsys
 ) -> None:
     repo = tmp_path / "repo"
-    output_dir = repo / "charness-artifacts" / "retro"
+    repo / "charness-artifacts" / "retro"
     write_retro_adapter(repo)
     markdown_file = repo / "summary.md"
     markdown_file.write_text("# Recent Retro Lessons\n", encoding="utf-8")

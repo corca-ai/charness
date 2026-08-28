@@ -22,8 +22,8 @@ from scripts.mutation_changed_files_lib import (
     changed_line_coverage_marker_path,
 )
 
-from .support import ROOT, run_script
 from .seeding_support import seed_two_changed_pool_files
+from .support import ROOT, run_script
 
 _TEETH = "scripts/check_changed_line_mutation_coverage.py"
 

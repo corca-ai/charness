@@ -3,8 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from .support import ROOT
 from .seeding_support import load_module
+from .support import ROOT
 
 SCRIPTS = ROOT / "skills" / "public" / "quality" / "scripts"
 

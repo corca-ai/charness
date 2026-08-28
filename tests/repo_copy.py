@@ -37,7 +37,10 @@ def _clone_tree(source: Path, destination: Path) -> None:
         return
     except (OSError, subprocess.SubprocessError):
         pass
-    shutil.copytree(source, destination)
+    # symlinks=True to mirror `cp -a`: the tree contains a deliberately
+    # dangling symlink fixture (native/repograph/fixtures/links), and a
+    # following copy raises ENOENT the moment the cp fast path fails.
+    shutil.copytree(source, destination, symlinks=True)
 
 
 def _git_init_and_commit(repo: Path) -> None:

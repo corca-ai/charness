@@ -26,8 +26,8 @@ import runpy
 
 import pytest
 
-from tests.quality_gates.support import ROOT
 from tests.quality_gates.seeding_support import load_module
+from tests.quality_gates.support import ROOT
 
 HELPERS = runpy.run_path(str(ROOT / "skills/public/release/scripts/publish_release_helpers.py"))
 backend_command = HELPERS["backend_command"]

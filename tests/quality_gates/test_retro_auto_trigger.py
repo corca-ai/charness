@@ -8,8 +8,8 @@ import yaml
 
 from tests.script_main import load_script_module, run_loaded_script_main
 
-from .support import ROOT, run_script
 from .seeding_support import write_surface
+from .support import ROOT, run_script
 
 # `triggered` is a VERDICT KEY: present only when the probe reached a real answer, and
 # `state` is key #1 of every payload. These cases pin the exit contract as much as the

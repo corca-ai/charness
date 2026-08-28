@@ -27,8 +27,8 @@ from types import SimpleNamespace
 
 import yaml
 
-from .support import ROOT, run_script
 from .seeding_support import load_module
+from .support import ROOT, run_script
 
 _TEETH = "scripts/check_changed_line_mutation_coverage.py"
 

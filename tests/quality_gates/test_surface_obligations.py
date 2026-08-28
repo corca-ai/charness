@@ -12,8 +12,8 @@ import yaml
 from scripts import validate_surfaces
 from scripts.surfaces_lib import SurfaceError, load_surfaces
 
-from .support import ROOT, run_script
 from .seeding_support import write_json, write_surface
+from .support import ROOT, run_script
 
 
 def run_validate_surfaces(*args: str) -> SimpleNamespace:

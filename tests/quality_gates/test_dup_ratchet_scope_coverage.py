@@ -23,8 +23,8 @@ from pathlib import Path
 import pytest
 import yaml
 
-from .support import ROOT, run_script
 from .seeding_support import load_module
+from .support import ROOT, run_script
 
 SCRIPTS = ROOT / "skills" / "public" / "quality" / "scripts"
 CHECK_SCRIPT = SCRIPTS / "check_dup_ratchet.py"

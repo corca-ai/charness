@@ -17,6 +17,7 @@ import yaml
 
 from tests.script_loader import load_script_module
 
+from .seeding_support import seed_two_changed_pool_files
 from .support import ROOT, run_script
 from .test_changed_line_mutation_coverage import (
     _TEETH,
@@ -27,7 +28,6 @@ from .test_changed_line_mutation_coverage import (
     _write_coverage,
     _write_two_file_coverage,
 )
-from .seeding_support import seed_two_changed_pool_files
 
 COUNTS_KEY = "changed_pool_file_counts"
 

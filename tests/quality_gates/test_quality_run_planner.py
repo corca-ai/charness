@@ -14,8 +14,8 @@ from scripts.validate_quality_reference_catalog import (
     validate_quality_reference_catalog,
 )
 
-from .support import ROOT, run_script
 from .seeding_support import load_module
+from .support import ROOT, run_script
 
 SCRIPT = "skills/public/quality/scripts/plan_quality_run.py"
 SCRIPT_PATH = ROOT / SCRIPT

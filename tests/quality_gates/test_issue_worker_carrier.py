@@ -23,8 +23,8 @@ from tests.quality_gates.reviewer_capability_support import (
     target_non_claim,
     unavailable_optional_capability,
 )
-from tests.quality_gates.support import ROOT, run_script
 from tests.quality_gates.seeding_support import load_module, verify_closeout_args
+from tests.quality_gates.support import ROOT, run_script
 
 SCRIPT = "skills/public/issue/scripts/issue_tool.py"
 CRITIQUE_REL = "charness-artifacts/critique/res-42.md"

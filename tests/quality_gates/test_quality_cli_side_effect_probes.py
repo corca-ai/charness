@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-import json
 import subprocess
 import sys
 from pathlib import Path
 
 import yaml
 
-from .support import ROOT, write_executable
 from .seeding_support import load_module, run_main, write_json, write_quality_adapter
+from .support import ROOT, write_executable
 
 # In-process boundary conversion (testability-dsl-initiative goal 1): load the
 # inventory entrypoint by file and drive its `main()` with captured stdout/stderr

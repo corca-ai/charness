@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 import re
-import sys
 from pathlib import Path
 from types import ModuleType
 
 import yaml
 
-from .support import ROOT, run_script
 from .seeding_support import load_module
+from .support import ROOT, run_script
 
 SCRIPT = "skills/public/quality/scripts/check_standing_doc_provenance.py"
 

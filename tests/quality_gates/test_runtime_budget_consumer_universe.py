@@ -9,8 +9,8 @@ from pathlib import Path
 import pytest
 import yaml
 
-from .support import ROOT, run_script, seed_runtime_budget_repo
 from .seeding_support import load_module
+from .support import ROOT, run_script, seed_runtime_budget_repo
 
 SCRIPT = "skills/public/quality/scripts/check_runtime_budget.py"
 UNIVERSE_LIB = ROOT / "skills" / "public" / "quality" / "scripts" / "runtime_budget_universe_lib.py"

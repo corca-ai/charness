@@ -6,8 +6,8 @@ from pathlib import Path
 
 import yaml
 
-from .support import ROOT
 from .seeding_support import load_module, write_quality_adapter
+from .support import ROOT
 
 # In-process boundary conversion (testability-dsl-initiative goal 1): load the
 # inventory entrypoint by file and drive its `main()` with a captured stdout

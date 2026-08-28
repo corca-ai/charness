@@ -6,8 +6,8 @@ from pathlib import Path
 
 import yaml
 
-from tests.quality_gates.support import ROOT, run_script, write_issue_adapter_with_backend
 from tests.quality_gates.seeding_support import load_module
+from tests.quality_gates.support import ROOT, run_script, write_issue_adapter_with_backend
 
 SCRIPT = "skills/public/issue/scripts/issue_tool.py"
 ISSUE_TOOL_PATH = ROOT / SCRIPT

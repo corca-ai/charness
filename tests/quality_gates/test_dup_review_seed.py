@@ -16,8 +16,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from .support import ROOT, run_script
 from .seeding_support import load_module
+from .support import ROOT, run_script
 
 SCRIPTS = ROOT / "skills" / "public" / "quality" / "scripts"
 SEED_SCRIPT = SCRIPTS / "seed_dup_review.py"

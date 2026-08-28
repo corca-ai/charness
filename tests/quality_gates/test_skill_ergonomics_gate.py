@@ -7,8 +7,8 @@ from types import ModuleType
 
 import yaml
 
-from .support import ROOT, run_loaded_script_main
 from .seeding_support import write_quality_adapter, write_skill, write_text
+from .support import ROOT, run_loaded_script_main
 
 SCRIPT = "skills/public/quality/scripts/validate_skill_ergonomics.py"
 

@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from scripts import proof_mismatch as pm
+
 from .seeding_support import load_module
 
 ROOT = Path(__file__).resolve().parents[2]

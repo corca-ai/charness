@@ -4,8 +4,6 @@ import importlib.util
 import re
 from pathlib import Path
 
-from .seeding_support import seed_commit
-
 SCRIPT = "skills/public/issue/scripts/issue_tool.py"
 VERIFY_MODULE_PATH = Path(__file__).resolve().parents[2] / "skills" / "public" / "issue" / "scripts" / "issue_verify_closeout.py"
 

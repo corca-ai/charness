@@ -11,8 +11,8 @@ coverage that builds on this pure policy.
 
 from __future__ import annotations
 
-from .support import ROOT
 from .seeding_support import load_module
+from .support import ROOT
 
 SCRIPTS = ROOT / "skills" / "public" / "quality" / "scripts"
 

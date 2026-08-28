@@ -20,8 +20,9 @@ from pathlib import Path
 
 import pytest
 
-cswc = importlib.import_module("scripts.check_staged_worktree_consistency")
 from .seeding_support import git, init_git_repo
+
+cswc = importlib.import_module("scripts.check_staged_worktree_consistency")
 
 
 def _repo(tmp_path: Path) -> Path:

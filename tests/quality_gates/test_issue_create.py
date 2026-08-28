@@ -9,7 +9,6 @@ Markdown / fenced-code / quote / dollar-sign / URL content.
 from __future__ import annotations
 
 import json
-import os
 import runpy
 import subprocess
 from pathlib import Path
@@ -17,8 +16,8 @@ from pathlib import Path
 import pytest
 import yaml
 
-from tests.quality_gates.support import run_script
 from tests.quality_gates.seeding_support import environment_with_path
+from tests.quality_gates.support import run_script
 
 SCRIPT = "skills/public/issue/scripts/issue_tool.py"
 CREATE = runpy.run_path(str(Path(__file__).resolve().parents[2] / "skills/public/issue/scripts/issue_create.py"))

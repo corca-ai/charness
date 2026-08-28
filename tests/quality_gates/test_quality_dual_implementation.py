@@ -6,8 +6,8 @@ from pathlib import Path
 
 import yaml
 
-from .support import ROOT
 from .seeding_support import load_module
+from .support import ROOT
 
 SCRIPT = ROOT / "skills/public/quality/scripts/inventory_dual_implementation.py"
 inventory_dual = load_module("inventory_dual_implementation", SCRIPT)

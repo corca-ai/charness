@@ -14,8 +14,8 @@ import yaml
 
 from tests.script_main import load_script_module, run_loaded_script_main
 
-from .support import ROOT
 from .seeding_support import load_module
+from .support import ROOT
 
 SCAN_LIB = ROOT / "skills" / "public" / "quality" / "scripts" / "discovery_filter_scan_lib.py"
 INVENTORY = ROOT / "skills" / "public" / "quality" / "scripts" / "inventory_hardcoded_discovery.py"

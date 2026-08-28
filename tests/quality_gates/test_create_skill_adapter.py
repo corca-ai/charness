@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
 import yaml
 
-from .support import ROOT, run_script
 from .seeding_support import load_module
+from .support import ROOT, run_script
 
 RESOLVE = "skills/public/create-skill/scripts/resolve_adapter.py"
 INIT = "skills/public/create-skill/scripts/init_adapter.py"

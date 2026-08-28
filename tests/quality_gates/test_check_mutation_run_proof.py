@@ -13,8 +13,8 @@ from pathlib import Path
 
 import yaml
 
-from .support import ROOT, run_script
 from .seeding_support import load_module
+from .support import ROOT, run_script
 
 _GATE = "scripts/check_mutation_run_proof.py"
 

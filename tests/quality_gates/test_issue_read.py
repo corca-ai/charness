@@ -8,8 +8,8 @@ from pathlib import Path
 import pytest
 import yaml
 
-from tests.quality_gates.support import ROOT, run_script
 from tests.quality_gates.seeding_support import environment_with_path, write_json_executable
+from tests.quality_gates.support import ROOT, run_script
 
 SCRIPT = "skills/public/issue/scripts/issue_tool.py"
 sys.path.insert(0, str(ROOT / "skills" / "public" / "issue" / "scripts"))

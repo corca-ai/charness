@@ -13,8 +13,8 @@ from pathlib import Path
 
 import yaml
 
-from .support import ROOT, run_script, seed_runtime_budget_repo
 from .seeding_support import load_module
+from .support import ROOT, run_script, seed_runtime_budget_repo
 
 RENDER_SCRIPT = "skills/public/quality/scripts/render_runtime_summary.py"
 QUALITY_SCRIPTS_DIR = ROOT / "skills" / "public" / "quality" / "scripts"

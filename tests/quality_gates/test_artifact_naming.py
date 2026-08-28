@@ -20,8 +20,8 @@ from scripts.artifact_naming_lib import (
 from scripts.resolve_artifact_path import payload_for as resolve_artifact_payload_for
 from tests.script_main import run_loaded_script_main
 
-from .support import ROOT, run_script
 from .seeding_support import load_module
+from .support import ROOT, run_script
 
 INVENTORY = load_module(
     "inventory_current_pointer_layouts",

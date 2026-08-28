@@ -2,17 +2,16 @@
 
 from __future__ import annotations
 
-import os
 from pathlib import Path
 
 import yaml
 
-from tests.quality_gates.support import run_script
 from tests.quality_gates.seeding_support import (
     close_comment_args,
     environment_with_path,
     write_view_executable,
 )
+from tests.quality_gates.support import run_script
 
 SCRIPT = "skills/public/issue/scripts/issue_tool.py"
 BODY = "closeout body.\n\nAI-provenance: authored by an agent session.\n"

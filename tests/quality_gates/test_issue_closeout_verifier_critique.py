@@ -12,8 +12,8 @@ from pathlib import Path
 import pytest
 import yaml
 
-from tests.quality_gates.support import run_script
 from tests.quality_gates.seeding_support import seed_commit, verify_closeout_args
+from tests.quality_gates.support import run_script
 
 SCRIPT = "skills/public/issue/scripts/issue_tool.py"
 

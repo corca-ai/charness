@@ -11,8 +11,8 @@ from pathlib import Path
 
 import pytest
 
-from .support import ROOT
 from .seeding_support import load_module
+from .support import ROOT
 
 SCRIPT_PATH = ROOT / "skills" / "public" / "issue" / "scripts" / "audit_brief.py"
 FIXTURE_DIR = SCRIPT_PATH.parent / "fixtures"

@@ -3,8 +3,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
 from .seeding_support import load_module
+
+ROOT = Path(__file__).resolve().parents[2]
 
 EXAMPLE = ROOT / "skills/public/quality/references/boundary-bypass-payload.example.json"
 VALIDATOR = ROOT / "skills/public/quality/scripts/validate_boundary_bypass_payload.py"

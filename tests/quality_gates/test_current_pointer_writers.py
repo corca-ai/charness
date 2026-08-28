@@ -26,8 +26,8 @@ from scripts.capability_catalog_artifact import persist_catalog
 from tests.script_loader import load_script_module
 from tests.script_main import run_loaded_script_main
 
-from .support import ROOT, run_script
 from .seeding_support import load_module
+from .support import ROOT, run_script
 
 WRITER = load_module("current_pointer_writer_lib", ROOT / "scripts" / "current_pointer_writer_lib.py")
 RELEASE_ARTIFACT = load_module(
