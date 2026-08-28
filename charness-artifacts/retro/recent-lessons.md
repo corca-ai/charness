@@ -2,8 +2,8 @@
 
 ## Current Focus
 
+- The 2026-08-28~29 session executed umbrella #744's step 4 and the parallel test-corpus track: #748 slice 1 (seven Codex lanes; four Python repository-boundary owners deleted and replaced by native `repograph` commands behind one gate-side resolver), #743 resolved and CLOSED through topology-derived test-role exclusion, #753 driven from inventory to a blocking ratio gate (operator redirected the recorded mutation pass to a JTBD audit mid-session), #672 retired, and the next session designed with the operator (release-first keystone). (source: `charness-artifacts/retro/2026-08-29-session-retro.md`)
 - One session drove umbrella #744 from a standing start through three closed children: #745 (spike, ratified go), #746 (typed topology core), #747 (native distribution, typed-disposition close), plus #753 filed (test-corpus pruning, next session) and the standing gate battery brought from 32-failures-then-8 to 78/0. (source: `charness-artifacts/retro/2026-08-28-umbrella-744-rust-core-session-retro.md`)
-- This retro covers the four bounded review rounds behind the reduction-first verification change and the first release-preflight attempt. (source: `charness-artifacts/retro/2026-08-26-four-round-reduction-first-release-follow-up.md`)
 
 ## Repeat Traps
 
@@ -17,7 +17,7 @@
 - **workflow — prefer a structural property over an enumerated refusal.** Slice A's first cut recognised ambiguity with an enumerated four-word negation list (`not|never|without|no`), and round 2 showed it disarmed the floor on genuinely deferring lines. The repair that worked is structural and positional — *decline only when EVERY flag mention on the line is negated* — which is the same shape the lesson names. I committed the enumerated form first. `applied: the current achieve contract in skills/public/achieve/references/goal-artifact.md records the structural property; no standalone cadence-owner file remains.` (source: `charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md`; sources: 3)
 - state a detector's blind class — "what can this mechanism NOT see?" — in its module docstring before writing its first acceptance test. The HTML guard's blind class was "it cannot see any renderer", which was the whole finding, and it took three review rounds to surface. (source: `charness-artifacts/retro/2026-08-18-session-retro.md`; sources: 3)
 - **capability**: classify production PLR2004 findings and trial a no-increase baseline before considering a blocking rule. (source: `charness-artifacts/retro/2026-08-14-session-retro.md`; sources: 3)
-- a lane-brief template (checked in beside the host notes) carrying the standing constraints: scope covers every instructed path, single-line adapter entries, canonical runners, no-descendant-agents, result shape. (Candidate for #748 prep.) (source: `charness-artifacts/retro/2026-08-28-umbrella-744-rust-core-session-retro.md`)
+- capability — **seam fakes must reject malformed argv** (strict parsers, not payload-only). Applied in-session to both D9 fakes (classify, export-safe); the lane-brief template edit above carries the rule forward. (source: `charness-artifacts/retro/2026-08-29-session-retro.md`)
 
 ## Selection Policy
 
@@ -48,5 +48,5 @@
 - `charness-artifacts/retro/2026-08-18-session-retro.md`
 - `charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md`
 - `charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md`
-- `charness-artifacts/retro/2026-08-26-four-round-reduction-first-release-follow-up.md`
 - `charness-artifacts/retro/2026-08-28-umbrella-744-rust-core-session-retro.md`
+- `charness-artifacts/retro/2026-08-29-session-retro.md`
