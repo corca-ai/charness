@@ -1,0 +1,23 @@
+{
+  "version": 1.0,
+  "surfaces": [
+    {
+      "surface_id": "first",
+      "description": "first declaration",
+      "source_paths": ["dir/*.py", "dir/**/*.py"],
+      "derived_paths": ["out/*.md", "out/**/*.md"],
+      "sync_commands": ["shared-sync", "first-sync"],
+      "verify_commands": ["shared-verify", "first-verify"],
+      "notes": ["first note"]
+    },
+    {
+      "surface_id": "second",
+      "description": "second declaration",
+      "source_paths": ["Case/*.py"],
+      "derived_paths": ["case/*.py"],
+      "sync_commands": ["shared-sync", "second-sync"],
+      "verify_commands": ["shared-verify", "second-verify"],
+      "notes": ["second note"]
+    }
+  ]
+}

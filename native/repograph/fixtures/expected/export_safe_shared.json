@@ -1,0 +1,10 @@
+{
+  "fixture": "export_safe/skills/shared/scripts/shared_violation.py",
+  "violations": [
+    {
+      "line": 1,
+      "kind": "forbidden-import",
+      "source": "import skills.public.demo"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "targets": [
+    {"module": "root_module", "path": "root_module.py", "shapes": ["direct"]},
+    {"module": "package_module", "path": "scripts/package_module.py", "shapes": ["package", "direct"]},
+    {"module": "shared_module", "path": "shared/scripts/shared_module.py", "shapes": ["direct"]},
+    {"module": "reference_module", "path": "skills/public/quality/references/reference_module.py", "shapes": ["direct"]},
+    {"module": "skill_module", "path": "skills/public/quality/scripts/skill_module.py", "shapes": ["direct"]},
+    {"module": "hoisted_module", "path": "skills/public/scripts/hoisted_module.py", "shapes": ["direct"]},
+    {"module": "support_module", "path": "support/demo/scripts/support_module.py", "shapes": ["direct"]}
+  ],
+  "excluded": [
+    "scripts/__init__.py",
+    "skills/public/quality/references/__init__.py",
+    "scripts/nested/not_a_target.py",
+    "skills/public/quality/scripts/nested/not_a_target.py",
+    "shared/scripts/nested/not_a_target.py"
+  ],
+  "changed_order": ["skills/public/quality/scripts/skill_module.py", "root_module.py"]
+}

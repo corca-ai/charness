@@ -1,0 +1,10 @@
+{
+  "fixture": "export_safe/scripts/forbidden_from.py",
+  "violations": [
+    {
+      "line": 1,
+      "kind": "forbidden-from-import",
+      "source": "from skills.public.demo.scripts.asset_loader import load_asset"
+    }
+  ]
+}

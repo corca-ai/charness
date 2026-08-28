@@ -1,0 +1,15 @@
+{
+  "fixture": "export_safe/scripts/forbidden_path_joined.py",
+  "violations": [
+    {
+      "line": 1,
+      "kind": "forbidden-asset-path",
+      "source": "joined = REPO_ROOT.resolve() / \"skills/public/joined\""
+    },
+    {
+      "line": 2,
+      "kind": "forbidden-asset-path",
+      "source": "backslash = REPO_ROOT / \"skills\\\\public\\\\backslash\""
+    }
+  ]
+}

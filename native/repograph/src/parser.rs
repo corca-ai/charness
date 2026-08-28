@@ -63,6 +63,55 @@ pub fn parse_file(repo_root: &Path, path: &str) -> FileParseResult {
     parse_source(path, &source)
 }
 
+/// Read and parse one repository-relative file, retaining its AST for analysis.
+pub fn parse_module_file(
+    repo_root: &Path,
+    path: &str,
+) -> Result<ruff_python_ast::ModModule, FileParseResult> {
+    let on_disk = repo_root.join(path);
+    let bytes = match std::fs::read(&on_disk) {
+        Ok(bytes) => bytes,
+        Err(error) => {
+            return Err(FileParseResult {
+                path: path.to_string(),
+                status: ParseStatus::Unreadable,
+                detail: format!("unreadable: read-error: {error}"),
+            });
+        }
+    };
+    let source = match String::from_utf8(bytes) {
+        Ok(source) => source,
+        Err(error) => {
+            return Err(FileParseResult {
+                path: path.to_string(),
+                status: ParseStatus::Unreadable,
+                detail: format!(
+                    "unreadable: invalid-utf8 at byte {}",
+                    error.utf8_error().valid_up_to()
+                ),
+            });
+        }
+    };
+    parse_module_source(path, &source)
+}
+
+/// Parse UTF-8 Python source and retain its AST only when parsing is established.
+pub fn parse_module_source(
+    path: &str,
+    source: &str,
+) -> Result<ruff_python_ast::ModModule, FileParseResult> {
+    let result = catch_unwind(AssertUnwindSafe(|| parse_module_with_ruff(source)));
+    match result {
+        Ok(Ok(module)) => Ok(module),
+        Ok(Err(observation)) => Err(observation_to_result(path, observation)),
+        Err(payload) => Err(FileParseResult {
+            path: path.to_string(),
+            status: ParseStatus::Panicked,
+            detail: format!("panicked: {}", panic_payload(&payload)),
+        }),
+    }
+}
+
 /// Parse UTF-8 Python source with a panic boundary around the Ruff parser.
 pub fn parse_source(path: &str, source: &str) -> FileParseResult {
     parse_source_with(path, source, parse_with_ruff)
@@ -98,6 +147,13 @@ where
 }
 
 fn parse_with_ruff(source: &str) -> ParseObservation {
+    match parse_module_with_ruff(source) {
+        Ok(_) => ParseObservation::Parsed,
+        Err(observation) => observation,
+    }
+}
+
+fn parse_module_with_ruff(source: &str) -> Result<ruff_python_ast::ModModule, ParseObservation> {
     let options =
         ParseOptions::from(PySourceType::Python).with_target_version(PythonVersion::PY310);
     let parsed = ruff_python_parser::parse_unchecked(source, options)
@@ -105,16 +161,36 @@ fn parse_with_ruff(source: &str) -> ParseObservation {
         .expect("Python source options must produce a module");
 
     if let Some(error) = parsed.errors().first() {
-        return ParseObservation::ParseError {
+        return Err(ParseObservation::ParseError {
             detail: parse_error_detail(error, source),
-        };
+        });
     }
     if let Some(error) = parsed.unsupported_syntax_errors().first() {
-        return ParseObservation::UnsupportedSyntax {
+        return Err(ParseObservation::UnsupportedSyntax {
             detail: unsupported_syntax_detail(error, source),
-        };
+        });
     }
-    ParseObservation::Parsed
+    Ok(parsed.into_syntax())
+}
+
+fn observation_to_result(path: &str, observation: ParseObservation) -> FileParseResult {
+    match observation {
+        ParseObservation::Parsed => FileParseResult {
+            path: path.to_string(),
+            status: ParseStatus::Parsed,
+            detail: "ok".to_string(),
+        },
+        ParseObservation::ParseError { detail } => FileParseResult {
+            path: path.to_string(),
+            status: ParseStatus::ParseError,
+            detail,
+        },
+        ParseObservation::UnsupportedSyntax { detail } => FileParseResult {
+            path: path.to_string(),
+            status: ParseStatus::UnsupportedSyntax,
+            detail,
+        },
+    }
 }
 
 fn parse_error_detail(error: &ParseError, source: &str) -> String {

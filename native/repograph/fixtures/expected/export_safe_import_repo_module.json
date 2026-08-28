@@ -1,0 +1,20 @@
+{
+  "fixture": "export_safe/scripts/forbidden_import_repo_module.py",
+  "violations": [
+    {
+      "line": 1,
+      "kind": "forbidden-import-repo-module",
+      "source": "first = import_repo_module(__file__, \"skills.public.first\")"
+    },
+    {
+      "line": 2,
+      "kind": "forbidden-import-repo-module",
+      "source": "second = import_repo_module(script_file=Path(__file__), module_name=\"skills.public.second\")"
+    },
+    {
+      "line": 3,
+      "kind": "forbidden-import-repo-module",
+      "source": "third = import_repo_module(Path(__file__), \"skills.public.third\")"
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+first = import_repo_module(__file__, "skills.public.first")
+second = import_repo_module(script_file=Path(__file__), module_name="skills.public.second")
+third = import_repo_module(Path(__file__), "skills.public.third")
+not_supported = import_repo_module(other_file, "skills.public.not_supported")
+not_supported_again = import_repo_module(*args, module_name="skills.public.starred")

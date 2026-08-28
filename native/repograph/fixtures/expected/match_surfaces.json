@@ -1,0 +1,23 @@
+{
+  "paths": [
+    "dir/sub/nested.py",
+    "dir/file.py",
+    "dir/file.py",
+    "Case/File.py",
+    "case/file.py",
+    "CASE/File.py",
+    "out/generated.md"
+  ],
+  "changed_paths": [
+    "dir/sub/nested.py",
+    "dir/file.py",
+    "Case/File.py",
+    "case/file.py",
+    "CASE/File.py",
+    "out/generated.md"
+  ],
+  "matched_surface_ids": ["first", "second"],
+  "sync_commands": ["shared-sync", "first-sync", "second-sync"],
+  "verify_commands": ["shared-verify", "first-verify", "second-verify"],
+  "unmatched_paths": ["CASE/File.py"]
+}

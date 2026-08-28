@@ -36,6 +36,22 @@ target/release/repograph parse-corpus --repo-root ../.. \
   --exclude-prefix native/repograph/fixtures/
 ```
 
+The validator spike commands emit one versioned JSON document each:
+
+```bash
+target/release/repograph export-safe --repo-root ../..
+target/release/repograph match-surfaces --repo-root ../.. --path README.md
+target/release/repograph standalone-targets --repo-root ../..
+```
+
+The parity and benchmark harnesses are investigative only and are not wired
+into repository gates:
+
+```bash
+python3 parity/run_parity.py --repo-root ../..
+python3 parity/run_bench.py --repo-root ../..
+```
+
 ## Test
 
 Run the unit and fixture tests with:

@@ -1,0 +1,10 @@
+{
+  "fixture": "export_safe/skills/support/demo/scripts/support_violation.py",
+  "violations": [
+    {
+      "line": 1,
+      "kind": "forbidden-from-import",
+      "source": "from skills.public.demo import helper"
+    }
+  ]
+}

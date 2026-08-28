@@ -1,0 +1,10 @@
+{
+  "fixture": "export_safe/scripts/forbidden_path_segments.py",
+  "violations": [
+    {
+      "line": 1,
+      "kind": "forbidden-asset-path",
+      "source": "asset = REPO_ROOT / \"skills\" / \"public\" / \"demo\""
+    }
+  ]
+}

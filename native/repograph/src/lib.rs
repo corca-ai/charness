@@ -1,5 +1,11 @@
+pub mod ast_utils;
+pub mod edges;
+pub mod export_safe;
 pub mod inventory;
 pub mod parser;
+pub mod selection;
+pub mod standalone;
+pub mod surfaces;
 
 use std::ffi::OsStr;
 use std::io::Write;
@@ -45,20 +51,31 @@ where
         println!("{}", usage());
         return 0;
     }
-    if command != "parse-corpus" {
-        eprintln!("usage error: unknown subcommand {command:?}\n{}", usage());
-        return 2;
+    let remaining = args.collect::<Vec<_>>();
+    match command.as_str() {
+        "parse-corpus" => run_parse_corpus(remaining, git_program),
+        "export-safe" => export_safe::run(remaining),
+        "match-surfaces" => surfaces::run(remaining),
+        "standalone-targets" => standalone::run(remaining),
+        _ => {
+            eprintln!("usage error: unknown subcommand {command:?}\n{}", usage());
+            2
+        }
     }
+}
+
+fn run_parse_corpus(args: Vec<String>, git_program: &OsStr) -> i32 {
+    let args = args.into_iter();
 
     let options = match parse_corpus_options(args) {
         Ok(options) => options,
         Err(message) => {
-            eprintln!("usage error: {message}\n{}", usage());
+            eprintln!("usage error: {message}\n{}", parse_usage());
             return 2;
         }
     };
     if options.help {
-        println!("{}", usage());
+        println!("{}", parse_usage());
         return 0;
     }
 
@@ -189,8 +206,11 @@ fn build_parse_corpus_report(
 }
 
 fn usage() -> &'static str {
-    "repograph parse-corpus [--repo-root PATH] [--file-list PATH] \
-     [--exclude-prefix PREFIX]..."
+    "repograph <parse-corpus|export-safe|match-surfaces|standalone-targets> [options]"
+}
+
+fn parse_usage() -> &'static str {
+    "repograph parse-corpus [--repo-root PATH] [--file-list PATH] [--exclude-prefix PREFIX]..."
 }
 
 #[cfg(test)]

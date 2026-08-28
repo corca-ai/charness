@@ -1,0 +1,10 @@
+{
+  "fixture": "export_safe/scripts/escape_hatch_import.py",
+  "violations": [
+    {
+      "line": 1,
+      "kind": "forbidden-from-import",
+      "source": "from skills.public.demo import helper"
+    }
+  ]
+}

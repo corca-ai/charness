@@ -1,0 +1,10 @@
+{
+  "fixture": "export_safe/skills/public/demo/scripts/nested_violation.py",
+  "violations": [
+    {
+      "line": 1,
+      "kind": "forbidden-import",
+      "source": "import skills.public.demo"
+    }
+  ]
+}
