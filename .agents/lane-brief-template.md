@@ -48,6 +48,16 @@ into a repo audit.>
 
 Format rules that have burned lanes before:
 
+- State scan/skip/match sets by CITING the owning source (file and
+  symbol or line), never by paraphrase. A brief that describes a rule in
+  its own words invites a lane to implement a second, subtly different
+  rule: "scans outside fences and inline code, matching `iter_doc_lines`"
+  read as two contradictory clauses and sent a real-repo subject set to
+  zero. Write "the scan set is exactly what `<file>:<symbol>` yields"
+  and let the lane read it.
+- Seam fakes must reject malformed argv, not only emit the right
+  payload. Pin the argv SHAPE — a fake that tolerates `--path a b c`
+  lets a real usage-error (exit 2) regression ship past every lane test.
 - `.agents/*-adapter.yaml` checklist entries are single-line quoted
   strings; adapter readers refuse multi-line continuations.
 - Markdown artifacts must pass the repo markdownlint gate.

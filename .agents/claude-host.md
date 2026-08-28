@@ -32,3 +32,14 @@ orchestrating session. The common operating contract stays in
 - `.agents/*-adapter.yaml` checklist entries must be single-line quoted
   strings; the adapter readers are line-based and refuse multi-line
   continuations.
+- Integrate candidate-first: a lane's commit is inspectable in its
+  worktree as soon as the lane commits, so review and integrate from
+  there instead of idling on the wrapper process. When a lane times out,
+  salvage its worktree commit (and any uncommitted work in it) rather
+  than re-running the lane; a timeout destroys the wrapper, not the
+  work. Background-waiting on a finished candidate is the antipattern
+  this repo has already paid for twice.
+- Run the disconfirming probe FIRST at integration — compare the
+  candidate's behavior against the real repository before running its
+  confirming test suite. Both defects that escaped lane tests in the
+  #748 slice-1 session were caught this way, and only this way.
