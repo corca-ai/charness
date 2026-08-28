@@ -396,7 +396,7 @@
         "reason",
         "corrupt"
       ],
-      "rationale": "`state-write-skipped` appears only as a RECORDED phase status this module reads back out of `last-status.json` and maps to the non-benign `corrupt` doctor status, preserving the true status in `reason` and replacing the message so it never prescribes the `charness update` that just failed (_no_pointer_result, native_core_doctor_payload). It is never an exit-zero clean state: the 2026-08-29 sidecar incident is precisely the case where a recorded failure read as a benign `missing`."
+      "rationale": "`state-write-skipped` appears only as a RECORDED phase status this module reads back out of `last-status.json` and maps to the non-benign `corrupt` doctor status, preserving the true status in `reason` and replacing the message so it never prescribes the update that just failed (_no_pointer_result, native_core_doctor_payload). Invariant: a recorded native-phase failure must never resolve to a benign status, and must never carry remediation that repeats the failing command."
     },
     "scripts/parity_harness.py": {
       "states": [
