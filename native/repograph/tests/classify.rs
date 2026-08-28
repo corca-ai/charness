@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 use std::fs;
 use std::path::PathBuf;
-use std::process::Command;
+use std::process::{Command, Output};
 
 use serde_json::Value;
 
@@ -35,7 +35,13 @@ fn file_list(name: &str, extra: &[&str]) -> FileList {
     FileList(path)
 }
 
-fn command(command: &str, list: &FileList, paths: &[&str]) -> (i32, Value) {
+fn run_command(
+    command: &str,
+    list: &FileList,
+    surfaces: &str,
+    surfaces_optional: bool,
+    paths: &[&str],
+) -> Output {
     let mut args = vec![
         command,
         "--repo-root",
@@ -43,18 +49,44 @@ fn command(command: &str, list: &FileList, paths: &[&str]) -> (i32, Value) {
         "--file-list",
         list.0.to_str().unwrap(),
         "--surfaces",
-        ".agents/surfaces.json",
+        surfaces,
     ];
+    if surfaces_optional {
+        args.push("--surfaces-optional");
+    }
     for path in paths {
         args.extend(["--path", path]);
     }
-    let output = Command::new(env!("CARGO_BIN_EXE_repograph"))
+    Command::new(env!("CARGO_BIN_EXE_repograph"))
         .args(args)
         .output()
-        .unwrap();
+        .unwrap()
+}
+
+fn command(command: &str, list: &FileList, paths: &[&str]) -> (i32, Value) {
+    let output = run_command(command, list, ".agents/surfaces.json", false, paths);
     let status = output.status.code().unwrap();
     let report = serde_json::from_slice(&output.stdout).unwrap();
     (status, report)
+}
+
+struct TemporaryFile(PathBuf);
+
+impl Drop for TemporaryFile {
+    fn drop(&mut self) {
+        let _ = fs::remove_file(&self.0);
+    }
+}
+
+fn temporary_file(name: &str, contents: &str) -> TemporaryFile {
+    let path =
+        std::env::temp_dir().join(format!("repograph-748-{name}-{}.json", std::process::id()));
+    fs::write(&path, contents).unwrap();
+    TemporaryFile(path)
+}
+
+fn temporary_path(name: &str) -> PathBuf {
+    std::env::temp_dir().join(format!("repograph-748-{name}-{}.json", std::process::id()))
 }
 
 fn surface_ids(path: &Value) -> Vec<String> {
@@ -222,6 +254,119 @@ fn classify_surface_membership_matches_match_surfaces_v1() {
         let name = path["path"].as_str().unwrap();
         assert_eq!(surface_ids(path), expected[name]);
     }
+}
+
+#[test]
+fn classify_optional_absent_surfaces_emits_report_and_preserves_role_rules() {
+    let list = file_list("optional-absent", &[]);
+    let missing = temporary_path("optional-absent-surfaces");
+    assert!(!missing.exists());
+    let output = run_command(
+        "classify",
+        &list,
+        missing.to_str().unwrap(),
+        true,
+        &[
+            "scripts/x.go",
+            "scripts/x_test.go",
+            "README.md",
+            "unknown.data",
+        ],
+    );
+    assert_eq!(output.status.code(), Some(3));
+    let report: Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(report["surfaces"], "absent");
+    assert_eq!(report["role_census"]["production"], 1);
+    assert_eq!(report["role_census"]["test"], 1);
+    assert_eq!(report["role_census"]["doc"], 1);
+    assert_eq!(report["role_census"]["unestablished"], 1);
+    let paths = report["paths"].as_array().unwrap();
+    assert!(paths
+        .iter()
+        .all(|path| path["surfaces"].as_array().unwrap().is_empty()));
+    let by_path = paths
+        .iter()
+        .map(|path| (path["path"].as_str().unwrap(), path))
+        .collect::<BTreeMap<_, _>>();
+    assert_eq!(by_path["scripts/x.go"]["role"], "production");
+    assert_eq!(by_path["scripts/x_test.go"]["role"], "test");
+    assert_eq!(by_path["README.md"]["role"], "doc");
+    assert_eq!(by_path["unknown.data"]["role"], "unestablished-absent");
+}
+
+#[test]
+fn classify_absent_surfaces_without_flag_remains_a_hard_failure() {
+    let list = file_list("optional-required", &[]);
+    let missing = temporary_path("optional-required-surfaces");
+    assert!(!missing.exists());
+    let output = run_command(
+        "classify",
+        &list,
+        missing.to_str().unwrap(),
+        false,
+        &["scripts/x.go"],
+    );
+    assert_eq!(output.status.code(), Some(3));
+    assert!(output.stdout.is_empty());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("could not read surfaces manifest"));
+}
+
+#[test]
+fn classify_optional_existing_invalid_surfaces_remains_a_hard_failure() {
+    let list = file_list("optional-invalid", &[]);
+    let invalid = temporary_file(
+        "optional-invalid-surfaces",
+        r#"{"version":1,"surfaces":[]}"#,
+    );
+    let output = run_command(
+        "classify",
+        &list,
+        invalid.0.to_str().unwrap(),
+        true,
+        &["scripts/x.go"],
+    );
+    assert_eq!(output.status.code(), Some(3));
+    assert!(output.stdout.is_empty());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("must be a non-empty list"));
+}
+
+#[test]
+fn classify_optional_loaded_surfaces_is_byte_identical_to_required_run() {
+    let list = file_list("optional-loaded", &[]);
+    let without_flag = run_command(
+        "classify",
+        &list,
+        ".agents/surfaces.json",
+        false,
+        &["scripts/x.go", "scripts/x_test.go", "README.md"],
+    );
+    let with_flag = run_command(
+        "classify",
+        &list,
+        ".agents/surfaces.json",
+        true,
+        &["scripts/x.go", "scripts/x_test.go", "README.md"],
+    );
+    assert_eq!(without_flag.status, with_flag.status);
+    assert_eq!(without_flag.stdout, with_flag.stdout);
+    assert_eq!(without_flag.stderr, with_flag.stderr);
+    let report: Value = serde_json::from_slice(&with_flag.stdout).unwrap();
+    assert!(report.get("surfaces").is_none());
+}
+
+#[test]
+fn changed_does_not_accept_classify_surfaces_optional_flag() {
+    let list = file_list("optional-changed", &[]);
+    let output = run_command(
+        "changed",
+        &list,
+        ".agents/surfaces.json",
+        true,
+        &["scripts/x.go"],
+    );
+    assert_eq!(output.status.code(), Some(2));
+    assert!(output.stdout.is_empty());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("unknown option"));
 }
 
 #[test]

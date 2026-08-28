@@ -17,6 +17,7 @@ pub struct QueryOptions {
     pub repo_root: PathBuf,
     pub file_list: Option<PathBuf>,
     pub surfaces: PathBuf,
+    pub surfaces_optional: bool,
     pub paths: Vec<String>,
     pub excludes: Vec<String>,
     pub analyzer_results: Vec<PathBuf>,
@@ -47,6 +48,12 @@ pub struct ClassifiedPath {
     pub surfaces: Vec<SurfaceMembership>,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum SurfacesStatus {
+    Absent,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct ClassifyReport {
     pub schema: &'static str,
@@ -57,6 +64,8 @@ pub struct ClassifyReport {
     pub role_census: BTreeMap<String, usize>,
     pub unestablished_by_top_level: BTreeMap<String, usize>,
     pub unestablished: Vec<Unestablished>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub surfaces: Option<SurfacesStatus>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -103,7 +112,8 @@ pub fn classify(
     inventory: &FileInventory,
     options: &QueryOptions,
 ) -> Result<ClassifyReport, QueryError> {
-    let manifest = load_surface_manifest(repo_root, &options.surfaces)?;
+    let (manifest, surfaces_status) =
+        load_surface_manifest(repo_root, &options.surfaces, options.surfaces_optional)?;
     let paths = requested_paths(inventory, &options.paths, &options.excludes)?;
     let snapshot_paths = inventory
         .paths()
@@ -137,7 +147,9 @@ pub fn classify(
             role: role.as_output_role().to_string(),
             presence,
             package,
-            surfaces: surface_memberships(&manifest, &path, presence, role),
+            surfaces: manifest.as_ref().map_or_else(Vec::new, |manifest| {
+                surface_memberships(manifest, &path, presence, role)
+            }),
         });
     }
 
@@ -150,6 +162,7 @@ pub fn classify(
         role_census,
         unestablished_by_top_level,
         unestablished: dedupe_conditions(unestablished),
+        surfaces: surfaces_status,
     })
 }
 
@@ -219,8 +232,25 @@ pub fn changed(
 fn load_surface_manifest(
     repo_root: &Path,
     surfaces_path: &Path,
-) -> Result<SurfaceManifest, QueryError> {
-    surfaces::load_surfaces(repo_root, surfaces_path).map_err(|error| QueryError(error.to_string()))
+    optional: bool,
+) -> Result<(Option<SurfaceManifest>, Option<SurfacesStatus>), QueryError> {
+    if optional {
+        let manifest_path = if surfaces_path.is_absolute() {
+            surfaces_path.to_path_buf()
+        } else {
+            repo_root.join(surfaces_path)
+        };
+        match std::fs::metadata(&manifest_path) {
+            Ok(_) => {}
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                return Ok((None, Some(SurfacesStatus::Absent)));
+            }
+            Err(_) => {}
+        }
+    }
+    surfaces::load_surfaces(repo_root, surfaces_path)
+        .map(|manifest| (Some(manifest), None))
+        .map_err(|error| QueryError(error.to_string()))
 }
 
 fn requested_paths(
@@ -531,7 +561,7 @@ fn run_query<I>(args: I, changed_command: bool) -> i32
 where
     I: IntoIterator<Item = String>,
 {
-    let options = match parse_options(args.into_iter()) {
+    let options = match parse_options(args.into_iter(), !changed_command) {
         Ok(options) => options,
         Err(message) => return cli_error(&message, changed_command),
     };
@@ -583,7 +613,7 @@ where
     }
 }
 
-fn parse_options<I>(args: I) -> Result<QueryOptions, String>
+fn parse_options<I>(args: I, allow_surfaces_optional: bool) -> Result<QueryOptions, String>
 where
     I: Iterator<Item = String>,
 {
@@ -591,6 +621,7 @@ where
         .map_err(|error| format!("could not determine current directory: {error}"))?;
     let mut file_list = None;
     let mut surfaces = PathBuf::from(DEFAULT_SURFACES_PATH);
+    let mut surfaces_optional = false;
     let mut paths = Vec::new();
     let mut excludes = Vec::new();
     let mut analyzer_results = Vec::new();
@@ -603,6 +634,7 @@ where
                 file_list = Some(PathBuf::from(required_value(&mut args, "--file-list")?))
             }
             "--surfaces" => surfaces = PathBuf::from(required_value(&mut args, "--surfaces")?),
+            "--surfaces-optional" if allow_surfaces_optional => surfaces_optional = true,
             "--path" => paths.push(required_value(&mut args, "--path")?),
             "--exclude-prefix" => excludes.push(required_value(&mut args, "--exclude-prefix")?),
             "--analyzer-result" => analyzer_results.push(PathBuf::from(required_value(
@@ -626,6 +658,7 @@ where
         repo_root,
         file_list,
         surfaces,
+        surfaces_optional,
         paths,
         excludes,
         analyzer_results,
@@ -697,6 +730,7 @@ fn emit_inventory_error(
             role_census: role_census(),
             unestablished_by_top_level: BTreeMap::new(),
             unestablished: vec![condition],
+            surfaces: None,
         };
         if let Ok(json) = serde_json::to_string(&report) {
             println!("{json}");
@@ -719,6 +753,7 @@ mod tests {
             repo_root: fixture_root.clone(),
             file_list: None,
             surfaces: fixture_root.join(".agents/surfaces.json"),
+            surfaces_optional: false,
             paths: vec!["unknown.data".to_string()],
             excludes: graph::DEFAULT_EXCLUDE_PREFIXES
                 .iter()

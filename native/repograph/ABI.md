@@ -469,18 +469,21 @@ when the report contains an unestablished condition, 2 for usage errors, and
 Usage:
 
 ```text
-repograph classify [--repo-root PATH] [--file-list PATH] [--surfaces PATH] [--path PATH]... [--exclude-prefix PREFIX]... [--analyzer-result FILE]...
+repograph classify [--repo-root PATH] [--file-list PATH] [--surfaces PATH] [--surfaces-optional] [--path PATH]... [--exclude-prefix PREFIX]... [--analyzer-result FILE]...
 ```
 
-`--repo-root` and `--file-list` have the common inventory meanings. The
-`--surfaces` default is `.agents/surfaces.json`. `--path` is repeatable; its
-values are normalized with the same path routine as `match-surfaces` and are
-deduplicated by first occurrence. When no `--path` is supplied, all inventory
-paths outside the exclusion prefixes are classified. The exclusion default is
-`plugins/` and `native/repograph/fixtures/`; supplying one prefix replaces
-both defaults. `--analyzer-result` is repeatable provider input using the same
-strict contract and graph ingestion as `graph`; invalid or incomplete claims
-mark the query unestablished.
+| Argument or flag | Contract |
+| --- | --- |
+| command | Required literal `classify`. |
+| `--repo-root PATH` | Repository root, with the common inventory meaning. Default: the process current directory. |
+| `--file-list PATH` | Optional NUL-separated inventory file, with the common inventory meaning. |
+| `--surfaces PATH` | Surfaces manifest. Default: `.agents/surfaces.json`. If repeated, the last value wins. |
+| `--surfaces-optional` | Classify with an empty surface set when the selected manifest path is absent. This flag is accepted only by `classify`; an existing unreadable or invalid manifest remains an error. |
+| `--path PATH` | Repeatable requested repository path. Values use the `match-surfaces` v1 normalization and first-occurrence deduplication. If omitted, all inventory paths outside the exclusion prefixes are classified. |
+| `--exclude-prefix PREFIX` | Repeatable path prefix filter. Default when omitted: `plugins/` and `native/repograph/fixtures/`. Supplying it at least once replaces both defaults, in supplied order. |
+| `--analyzer-result FILE` | Repeatable provider input using the same strict contract and graph ingestion as `graph`; invalid or incomplete claims mark the query unestablished. |
+| `--help`, `-h` | Print usage and exit 0. |
+| positional arguments | Not accepted. |
 
 ### `classify` output schema
 
@@ -496,6 +499,7 @@ Schema id: `repograph.classify.v1`.
 | `role_census` | object | Counts for `production`, `test`, `generated`, `doc`, and `unestablished`; `unestablished-absent` contributes to `unestablished`. |
 | `unestablished_by_top_level` | object | Counts of unestablished requested paths keyed by top-level directory; repository-root files use `<root>`. |
 | `unestablished` | array of objects | Typed role or analyzer conditions; empty means the requested classification is established. |
+| `surfaces` | string, optional | Present only as `"absent"` when `--surfaces-optional` tolerated an absent manifest. Omitted when the manifest loaded. |
 
 Each `paths` object has `path`, `role`, `presence`, nullable `package`, and
 `surfaces`. `role` is one of `production`, `test`, `generated`, `doc`,
@@ -513,6 +517,11 @@ test/generated/doc path, and `null` for an absent or unestablished path. Thus a
 doc-role raw trigger remains a surface match without being mislabeled as a
 production source.
 
+When `--surfaces-optional` is supplied and the selected manifest path does not
+exist, the top-level `surfaces` marker is `"absent"` and every per-path
+`surfaces` array is empty. A present manifest produces the same report with or
+without the flag and has no top-level `surfaces` marker.
+
 ### `classify` exit semantics
 
 | Exit | Meaning for `classify` |
@@ -520,7 +529,7 @@ production source.
 | 0 | The report was emitted and every requested path was classified, including an empty selected inventory. |
 | 1 | Unused; this is a pure report. |
 | 2 | CLI usage error. |
-| 3 | Inventory, surfaces manifest, path normalization, analyzer establishment, or requested role classification failed. |
+| 3 | Inventory, surfaces manifest, path normalization, analyzer establishment, or requested role classification failed. With `--surfaces-optional`, an absent surfaces manifest is not a failure and the report instead follows the requested role census: exit 0 when established, or exit 3 when roles remain unestablished. An existing unreadable, invalid, or failed-validation manifest remains exit 3. |
 | 70 | Internal `repograph` failure, including a top-level panic or an output failure. |
 
 ## `changed`
