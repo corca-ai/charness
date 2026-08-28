@@ -48,6 +48,63 @@ Use `<repo-root>/.agents/release-adapter.yaml`.
 - `release_backend`
 - `specialized_release_lanes`
 
+## Real-host trigger role ownership
+
+`real_host_required_surfaces`, `real_host_required_path_globs`, and
+`real_host_checklist` say which changes require host proof. They do not own
+negative path rules. The raw-glob arm delegates candidate role classification
+to `repograph classify --surfaces-optional`; only role `test` is excluded.
+`production`, `doc`, `generated`, `unestablished`, and
+`unestablished-absent` remain release-proof hits. In particular, `generated`
+is derived from surfaces-manifest `derived_paths`, so it is manifest-configured
+and must not be dropped: a manifest edit must not silently remove a
+release-relevant generated-mirror hit.
+
+Role ownership and precedence are defined by the topology layer:
+
+| precedence | owner | role rule |
+| --- | --- | --- |
+| 1 | consumer `<repo-root>/.agents/topology.json` | `test_globs`, `production_globs`, and `generated_globs` |
+| 2 | consumer `<repo-root>/.agents/surfaces.json` | `derived_paths` membership is `generated` |
+| 3 | native language conventions | `tests/**`, Python test names, Go `_test.go`/`testdata/**`, JS/TS test names, and `__tests__/**` |
+| 4 | native built-ins | Markdown is `doc`; package members are `production` |
+| 5 | native typed fallback | no matching rule is `unestablished`; a deleted path may be `unestablished-absent` |
+
+The consumer declaration is optional and does not change the release adapter:
+
+```json
+{
+  "topology": {
+    "test_globs": ["specimens/**"],
+    "production_globs": ["cmd/**"],
+    "generated_globs": ["build/**"]
+  }
+}
+```
+
+If the native resolver is unavailable, or the classify report is missing or
+unparseable, the fold is positive-only and records
+`test_exclusion.status: unavailable` with a typed `native_core` object carrying
+`status: unavailable` and a `reason`. A valid classify report at either exit 0
+or exit 3 is consumed. When there are no raw-glob candidates, no native
+invocation or degradation occurs; an evaluated payload uses
+`test_exclusion: {status: applied, native_core: not-needed}`. That sentinel
+means the exclusion operation was vacuously established, not that a binary was
+resolved.
+
+### Real-host payload keys by evaluation scope
+
+| `evaluation_scope` | keys owned by this derived-exclusion contract |
+| --- | --- |
+| `evaluated` | `path_hits` is the post-exclusion list; `required` remains `bool(surface_hits or path_hits)`; `excluded_path_hits` lists `{path, role}` entries; `test_exclusion` is always present. |
+| `not-configured` | No derived-exclusion keys; the existing `required: false` payload is unchanged. |
+| `empty` | No derived-exclusion keys; the existing absent-`required` payload and exit 3 are unchanged. |
+| `not-established` | No derived-exclusion keys; broken-config and surface-error payloads and exit 1 are unchanged. |
+
+This contract adds no release-adapter field. The adapter remains the positive
+statement of which changes require real-host proof; topology owns the derived
+role decision.
+
 ## Executed fields
 
 `sync_command` and `quality_command` are RUN by a subprocess; every other field in
