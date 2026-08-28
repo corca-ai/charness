@@ -265,9 +265,8 @@ options:
 usage: charness task run [-h] [--repo-root REPO_ROOT] [--lane LANE]
                          [--path PATH] [--branch BRANCH] [--base BASE] --scope
                          SCOPE (--prompt PROMPT | --prompt-file PROMPT_FILE)
-                         [--codex CODEX] [--effort EFFORT]
-                         [--codex-arg CODEX_ARG] [--task-id TASK_ID]
-                         [--prepare] [--require-change] [--skip-prepare]
+                         --effort EFFORT [--task-id TASK_ID] [--prepare]
+                         [--require-change] [--skip-prepare]
                          [--allow-no-change]
                          [--timeout-seconds TIMEOUT_SECONDS] [--dry-run]
 
@@ -295,11 +294,8 @@ options:
   --prompt PROMPT       Implementation instructions passed to `codex exec`.
   --prompt-file PROMPT_FILE
                         Read implementation instructions from this file.
-  --codex CODEX         Codex executable (default: codex).
   --effort EFFORT       Orchestrator-selected Codex reasoning effort: medium,
                         xhigh, or max.
-  --codex-arg CODEX_ARG
-                        Extra argument passed before the prompt; repeatable.
   --task-id TASK_ID     Optional receipt/log identifier for explicit runs;
                         shorthand derives it from --lane.
   --prepare             Run the worktree adapter prepare step before Codex.

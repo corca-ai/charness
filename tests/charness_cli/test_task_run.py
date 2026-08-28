@@ -61,7 +61,7 @@ def _commit(repo: Path, message: str, *paths: str) -> str:
 
 
 def _codex(tmp_path: Path, body: str, *, deliver: bool = True) -> Path:
-    executable = tmp_path / "fake-codex"
+    executable = tmp_path / "codex"
     delivery = "printf 'task complete\\n'" if deliver else ""
     executable.write_text(f"#!/bin/sh\n{body}\n{delivery}\n", encoding="utf-8")
     executable.chmod(0o755)
@@ -71,6 +71,7 @@ def _codex(tmp_path: Path, body: str, *, deliver: bool = True) -> Path:
 def _run(repo: Path, tmp_path: Path, executable: Path, **kwargs):
     scopes = kwargs.pop("scopes", ["module.py"])
     require_change = kwargs.pop("require_change", True)
+    effort = kwargs.pop("effort", "medium")
     return task_run.run_task(
         repo,
         target_path=tmp_path / "lane",
@@ -79,65 +80,28 @@ def _run(repo: Path, tmp_path: Path, executable: Path, **kwargs):
         scopes=scopes,
         prompt="update the module",
         codex=str(executable),
+        effort=effort,
         require_change=require_change,
         **kwargs,
     )
 
 
-def test_codex_argument_shorthands_fix_luna_and_preserve_extra_host_arguments(tmp_path: Path) -> None:
+def test_codex_arguments_fix_luna_sandbox_and_effort(tmp_path: Path) -> None:
     git_common_dir = tmp_path / ".git"
     git_common_dir.mkdir()
     assert task_run.build_codex_args(
         effort="xhigh",
         writable_dirs=[git_common_dir],
-        extra=["--approve-for-me"],
     ) == [
         "--sandbox",
         "workspace-write",
         "--add-dir",
         str(git_common_dir),
-        "--approve-for-me",
         "-m",
         "gpt-5.6-luna",
         "-c",
         "model_reasoning_effort=xhigh",
     ]
-
-
-@pytest.mark.parametrize(
-    "extra",
-    [
-        ["--model", "gpt-5.6-sol"],
-        ["--model=gpt-5.6-sol"],
-        ["-m", "gpt-5.6-sol"],
-        ["-c", "model=gpt-5.6-sol"],
-        ["-c", "model = gpt-5.6-sol"],
-        ["-cmodel=gpt-5.6-sol"],
-        ["--config=model=gpt-5.6-sol"],
-    ],
-)
-def test_codex_extra_arguments_cannot_override_luna(extra: list[str]) -> None:
-    with pytest.raises(task_run.TaskRunError, match="fixes the Codex model"):
-        task_run.build_codex_args(extra=extra)
-
-
-@pytest.mark.parametrize(
-    ("extra", "message"),
-    [
-        (["--"], "option parsing"),
-        (["-c", "model_reasoning_effort=high"], "reasoning effort"),
-        (["--config", "model_reasoning_effort=high"], "reasoning effort"),
-        (["-cmodel_reasoning_effort=high"], "reasoning effort"),
-        (["-c=model_reasoning_effort=high"], "reasoning effort"),
-        (["--config=model_reasoning_effort=high"], "reasoning effort"),
-        (["--config model_reasoning_effort = high"], "reasoning effort"),
-    ],
-)
-def test_codex_extra_arguments_cannot_escape_or_override_fixed_effort(
-    extra: list[str], message: str
-) -> None:
-    with pytest.raises(task_run.TaskRunError, match=message):
-        task_run.build_codex_args(effort="xhigh", extra=extra)
 
 
 def test_codex_effort_is_limited_to_orchestrator_presets() -> None:
@@ -211,7 +175,6 @@ def test_task_run_lane_shorthand_optouts_enable_diagnostics(tmp_path: Path, monk
 
 def test_task_run_cli_rejects_lane_and_explicit_identity_mix(tmp_path: Path) -> None:
     repo = _repo(tmp_path)
-    executable = _codex(tmp_path, "exit 0")
     result = subprocess.run(
         [
             os.fspath(Path(__file__).resolve().parents[2] / "charness"),
@@ -228,9 +191,7 @@ def test_task_run_cli_rejects_lane_and_explicit_identity_mix(tmp_path: Path) -> 
             "--prompt",
             "noop",
             "--effort",
-            "high",
-            "--codex",
-            str(executable),
+            "xhigh",
         ],
         cwd=repo,
         check=False,
@@ -243,7 +204,7 @@ def test_task_run_cli_rejects_lane_and_explicit_identity_mix(tmp_path: Path) -> 
     assert "--lane cannot be combined with --path" in result.stdout
 
 
-def test_task_run_cli_does_not_expose_model_override() -> None:
+def test_task_run_cli_does_not_expose_host_override() -> None:
     cli = os.fspath(Path(__file__).resolve().parents[2] / "charness")
     help_result = subprocess.run(
         [cli, "task", "run", "--help"],
@@ -253,6 +214,8 @@ def test_task_run_cli_does_not_expose_model_override() -> None:
     )
     assert help_result.returncode == 0
     assert "--model" not in help_result.stdout
+    assert "--codex" not in help_result.stdout
+    assert "--codex-arg" not in help_result.stdout
 
 
 def test_task_run_creates_named_lane_and_keeps_runtime_external(tmp_path: Path) -> None:
@@ -364,6 +327,7 @@ def test_task_run_allows_new_scoped_candidate_file(tmp_path: Path) -> None:
         scopes=["module.py", "test_module.py"],
         prompt="add the focused test",
         codex=str(executable),
+        effort="medium",
         require_change=True,
     )
 
@@ -407,7 +371,7 @@ def test_task_run_dry_run_has_no_worktree_or_runtime_side_effect(tmp_path: Path)
 
 def test_task_run_cli_accepts_repo_root_after_subcommand(tmp_path: Path) -> None:
     repo = _repo(tmp_path)
-    executable = _codex(tmp_path, "printf 'VALUE = 3\\n' > module.py")
+    _codex(tmp_path, "printf 'VALUE = 3\\n' > module.py")
     result = subprocess.run(
         [
             os.fspath(Path(__file__).resolve().parents[2] / "charness"),
@@ -425,11 +389,15 @@ def test_task_run_cli_accepts_repo_root_after_subcommand(tmp_path: Path) -> None
             "module.py",
             "--prompt",
             "noop",
-            "--codex",
-            str(executable),
+            "--effort",
+            "medium",
         ],
         cwd=repo,
-        env={**os.environ, "PYTHONPYCACHEPREFIX": str(tmp_path / "launcher-pycache")},
+        env={
+            **os.environ,
+            "PATH": f"{tmp_path}{os.pathsep}{os.environ['PATH']}",
+            "PYTHONPYCACHEPREFIX": str(tmp_path / "launcher-pycache"),
+        },
         check=False,
         capture_output=True,
         text=True,
@@ -488,6 +456,7 @@ def test_explicit_base_scope_resolution_uses_selected_tree_for_dry_run(tmp_path:
         scopes=["pkg", "literal[1].py", "current-only", "*.py"],
         prompt="inspect the selected base",
         codex=str(executable),
+        effort="medium",
         dry_run=True,
     )
 
@@ -516,6 +485,7 @@ def test_explicit_base_glob_does_not_use_current_parent_head(tmp_path: Path) -> 
         scopes=["current-*.py"],
         prompt="inspect the selected base",
         codex=str(executable),
+        effort="medium",
         dry_run=True,
     )
 
@@ -651,6 +621,22 @@ def test_glob_scope_that_matches_a_directory_includes_descendants(tmp_path: Path
     assert payload["status"] == "completed", payload
     assert payload["scope_specs"][0]["directory_matches"] == ["pkg"]
     assert payload["scope"]["changed_paths"] == ["pkg/child.txt"]
+
+
+def test_new_glob_matching_directory_does_not_widen_to_descendants(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    (repo / "base.py").write_text("BASE = 1\n", encoding="utf-8")
+    _commit(repo, "add base match", "base.py")
+    executable = _codex(
+        tmp_path,
+        "mkdir escape.py\nprintf 'not python\n' > escape.py/secret.txt",
+    )
+
+    payload = _run(repo, tmp_path, executable, scopes=["*.py"])
+
+    assert payload["status"] == "failed"
+    assert payload["scope"]["disallowed_paths"] == ["escape.py/secret.txt"]
+    assert payload["scope"]["specs"][0]["directory_matches"] == []
 
 
 def test_zero_match_glob_fails_before_worktree_creation(tmp_path: Path) -> None:

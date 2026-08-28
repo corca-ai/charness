@@ -84,6 +84,36 @@ def test_record_quality_runtime_writes_summary_and_archive(tmp_path: Path, monke
     assert json.loads(archive_lines[-1])["runtime_profile"] == "default"
 
 
+def test_record_quality_runtime_can_keep_task_state_outside_repo(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    state_root = tmp_path / "external-runtime" / "quality"
+
+    assert (
+        _record(
+            monkeypatch,
+            repo,
+            "--state-root",
+            str(state_root),
+            "--label",
+            "pytest",
+            "--elapsed-ms",
+            "10",
+            "--status",
+            "pass",
+        )
+        == 0
+    )
+
+    summary_path = state_root / record_quality_runtime.SUMMARY_FILENAME
+    assert summary_path.is_file()
+    assert not (repo / record_quality_runtime.STATE_DIR).exists()
+    payload = yaml.safe_load(capsys.readouterr().out)
+    assert payload["summary_path"] == str(summary_path)
+
+
 def test_record_quality_runtime_batch_matches_one_call_per_record(
     tmp_path: Path, monkeypatch, capsys
 ) -> None:

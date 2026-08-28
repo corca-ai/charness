@@ -244,7 +244,6 @@ def _resolve_task_inputs(
     scopes: Sequence[str],
     prompt: str,
     codex: str,
-    codex_args: Sequence[str],
     effort: str | None,
     task_id: str | None,
     prepare: bool | None,
@@ -289,13 +288,13 @@ def _resolve_task_inputs(
         resolved_base = base
         resolved_prepare = bool(prepare) and not skip_prepare
         resolved_require_change = bool(require_change) and not allow_no_change
-    normalized_scopes = normalize_scopes(scopes)
-    scope_specs = _support.resolve_scope_specs(resolved_repo, normalized_scopes)
     if not prompt.strip():
         raise TaskRunError("--prompt or --prompt-file must contain non-empty instructions")
-    if effort is None and lane is not None:
-        raise TaskRunError("shorthand task runs require the orchestrator-selected --effort")
+    if effort is None:
+        raise TaskRunError("task runs require the orchestrator-selected --effort")
     base_sha = _resolve_base_sha(resolved_repo, resolved_base)
+    normalized_scopes = normalize_scopes(scopes)
+    scope_specs = _support.resolve_scope_specs(resolved_repo, normalized_scopes, base_sha)
     git_common_dir = _git_common_dir(resolved_repo)
     codex_path = _resolve_codex(codex)
     if not isinstance(timeout_seconds, int) or timeout_seconds < 1:
@@ -308,7 +307,6 @@ def _resolve_task_inputs(
         prompt,
         effort=effort,
         writable_dirs=[git_common_dir],
-        extra=codex_args,
     )
     return {
         "lane": resolved_lane,
@@ -321,7 +319,6 @@ def _resolve_task_inputs(
         "scope_specs": scope_specs,
         "codex_path": codex_path,
         "command": command,
-        "codex_args": list(codex_args),
         "effort": effort,
         "task_id": resolved_task_id,
         "runtime_path": runtime_path,
@@ -340,7 +337,6 @@ def run_task(
     scopes: Sequence[str],
     prompt: str,
     codex: str = "codex",
-    codex_args: Sequence[str] = (),
     effort: str | None = None,
     task_id: str | None = None,
     prepare: bool | None = None,
@@ -371,7 +367,6 @@ def run_task(
             scopes=scopes,
             prompt=prompt,
             codex=codex,
-            codex_args=codex_args,
             effort=effort,
             task_id=task_id,
             prepare=prepare,
@@ -483,7 +478,6 @@ def run_task(
         prompt,
         effort=resolved["effort"],
         writable_dirs=[resolved["git_common_dir"], git_worktree_dir],
-        extra=resolved["codex_args"],
     )
     payload["git_worktree_dir"] = str(git_worktree_dir)
     payload["codex"]["command"] = command[:-1] + ["<prompt>"]
@@ -523,21 +517,30 @@ def run_task(
         stderr_log=stderr_log,
         timeout_seconds=timeout_seconds,
     )
-    return _complete_task(
-        payload,
-        runtime_path=runtime_path,
-        resolved_target=resolved_target,
-        resolved_repo=resolved_repo,
-        before_exec=before_exec,
-        base_sha=base_sha,
-        scope_specs=scope_specs,
-        require_change=resolved_require_change,
-        parent_before=parent_before,
-        parent_before_head=parent_before_head,
-        stdout_log=stdout_log,
-        execution=execution,
-        started_at=started_at,
-    )
+    try:
+        return _complete_task(
+            payload,
+            runtime_path=runtime_path,
+            resolved_target=resolved_target,
+            resolved_repo=resolved_repo,
+            before_exec=before_exec,
+            base_sha=base_sha,
+            scope_specs=scope_specs,
+            require_change=resolved_require_change,
+            parent_before=parent_before,
+            parent_before_head=parent_before_head,
+            stdout_log=stdout_log,
+            execution=execution,
+            started_at=started_at,
+        )
+    except (OSError, TaskRunError, subprocess.SubprocessError) as exc:
+        return _terminal(
+            payload,
+            runtime_path,
+            status="failed",
+            error=f"completion evidence failed: {exc}",
+            next_step="Inspect the retained worktree and completion error, then rerun task run with a fresh path.",
+        )
 
 
 def task_status(repo_root: Path, task_id: str | None = None) -> dict[str, Any]:
@@ -584,9 +587,7 @@ def main() -> int:
     prompt = parser.add_mutually_exclusive_group(required=True)
     prompt.add_argument("--prompt")
     prompt.add_argument("--prompt-file", type=Path)
-    parser.add_argument("--codex", default="codex")
-    parser.add_argument("--effort", help="Orchestrator-selected effort: medium, xhigh, or max.")
-    parser.add_argument("--codex-arg", action="append", default=[])
+    parser.add_argument("--effort", required=True, help="Orchestrator-selected effort: medium, xhigh, or max.")
     parser.add_argument("--task-id", help="Optional receipt/log identifier for explicit runs; shorthand derives it from --lane.")
     parser.add_argument("--prepare", action="store_true", default=None)
     parser.add_argument("--require-change", action="store_true", default=None)
@@ -606,8 +607,6 @@ def main() -> int:
         lane=args.lane,
         scopes=args.scope,
         prompt=prompt_text or "",
-        codex=args.codex,
-        codex_args=args.codex_arg,
         effort=args.effort,
         task_id=args.task_id,
         prepare=args.prepare,

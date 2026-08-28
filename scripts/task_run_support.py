@@ -333,15 +333,11 @@ def _refresh_scope_specs(
     for source in specs:
         spec = dict(source)
         if spec["kind"] == "glob":
-            current, current_directories = _glob_matches(root, str(spec["path"]))
+            current, _ = _glob_matches(root, str(spec["path"]))
             matches = sorted(set(spec.get("matches", ())) | set(current))
-            directories = sorted(
-                set(spec.get("directory_matches", ())) | set(current_directories)
-            )
             spec.update(
                 matches=matches,
                 match_count=len(matches),
-                directory_matches=directories,
             )
         refreshed.append(spec)
     return refreshed
@@ -451,46 +447,18 @@ def _task_id(branch: str, requested: str | None) -> str:
 
 def build_codex_args(
     *,
-    effort: str | None = None,
+    effort: str,
     writable_dirs: Sequence[Path] = (),
-    extra: Sequence[str] = (),
 ) -> list[str]:
     """Build Codex host arguments with the task runner's fixed Luna model."""
-    for index, value in enumerate(extra):
-        if value == "--":
-            raise TaskRunError("--codex-arg cannot terminate Codex option parsing")
-        if value in {"-m", "--model"} or value.startswith("--model=") or (
-            value.startswith("-m") and not value.startswith("--")
-        ):
-            raise TaskRunError("charness task fixes the Codex model to gpt-5.6-luna")
-        if value in {"-c", "--config"}:
-            if index + 1 == len(extra):
-                raise TaskRunError("--codex-arg config options require a value")
-            continue
-        config_value = re.match(
-            r"^(?:-c|--config)(?:=|\s*)?\s*(model|model_reasoning_effort)\s*=",
-            value,
-        )
-        if index > 0 and extra[index - 1] in {"-c", "--config"}:
-            config_value = re.match(
-                r"^\s*(model|model_reasoning_effort)\s*=", value
-            )
-        if config_value:
-            if config_value.group(1) == "model":
-                raise TaskRunError("charness task fixes the Codex model to gpt-5.6-luna")
-            raise TaskRunError(
-                "charness task fixes reasoning effort to medium, xhigh, or max"
-            )
     args: list[str] = ["--sandbox", "workspace-write"]
     for writable_dir in writable_dirs:
         args.extend(["--add-dir", str(writable_dir.resolve())])
-    args.extend(extra)
     args.extend(["-m", TASK_MODEL])
-    if effort is not None:
-        if effort not in TASK_EFFORTS:
-            allowed = ", ".join(TASK_EFFORTS)
-            raise TaskRunError(f"--effort must be one of: {allowed}")
-        args.extend(["-c", f"model_reasoning_effort={effort}"])
+    if effort not in TASK_EFFORTS:
+        allowed = ", ".join(TASK_EFFORTS)
+        raise TaskRunError(f"--effort must be one of: {allowed}")
+    args.extend(["-c", f"model_reasoning_effort={effort}"])
     return args
 
 
@@ -498,9 +466,8 @@ def build_codex_command(
     executable: str,
     prompt: str,
     *,
-    effort: str | None = None,
+    effort: str,
     writable_dirs: Sequence[Path] = (),
-    extra: Sequence[str] = (),
 ) -> list[str]:
     """Build the one Codex command used by previews and real task runs."""
     return [
@@ -509,7 +476,6 @@ def build_codex_command(
         *build_codex_args(
             effort=effort,
             writable_dirs=writable_dirs,
-            extra=extra,
         ),
         prompt,
     ]

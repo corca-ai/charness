@@ -111,6 +111,10 @@ fi
 # shellcheck source=.githooks/runtime-env.sh
 source "$REPO_ROOT/.githooks/runtime-env.sh"
 RUN_QUALITY_RUNTIME_ROOT="$CHARNESS_RUNTIME_ROOT"
+RUN_QUALITY_RUNTIME_RECORD_ARGS=(--repo-root "$REPO_ROOT")
+if [[ "${CHARNESS_RUNTIME_ROOT_AUTO:-}" != "1" ]]; then
+  RUN_QUALITY_RUNTIME_RECORD_ARGS+=(--state-root "$RUN_QUALITY_RUNTIME_ROOT/quality")
+fi
 
 # Every gate command below writes to a per-phase file so concurrent checks cannot
 # interleave their output. Before this line existed, that useful buffering made a
@@ -515,7 +519,7 @@ flush_runtime_batch() {
   # unregimed `run-quality-full` sample from a dead-code run would land against
   # the real bar while all its per-gate siblings went to the regime bucket.
   if ! python3 scripts/record_quality_runtime.py \
-    --repo-root "$REPO_ROOT" \
+    "${RUN_QUALITY_RUNTIME_RECORD_ARGS[@]}" \
     --runtime-regime "$RUN_QUALITY_RUNTIME_REGIME" \
     --batch "$RUN_QUALITY_RUNTIME_BATCH" >/dev/null; then
     echo "run-quality: warning: failed to record phase runtimes." >&2
@@ -529,7 +533,7 @@ record_runtime() {
   local status="$3"
   local timestamp="$4"
   python3 scripts/record_quality_runtime.py \
-    --repo-root "$REPO_ROOT" \
+    "${RUN_QUALITY_RUNTIME_RECORD_ARGS[@]}" \
     --label "$label" \
     --elapsed-ms "$elapsed_ms" \
     --status "$status" \

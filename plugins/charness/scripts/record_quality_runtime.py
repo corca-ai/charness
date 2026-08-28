@@ -68,6 +68,11 @@ RUNTIME_PROFILE_ID_RE = re.compile(r"[^A-Za-z0-9_.-]+")
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True)
+    parser.add_argument(
+        "--state-root",
+        type=Path,
+        help="External runtime-state directory; defaults to <repo>/.charness/quality.",
+    )
     parser.add_argument("--label")
     parser.add_argument("--elapsed-ms", type=int)
     parser.add_argument("--status", choices=VALID_STATUSES)
@@ -338,7 +343,9 @@ def main() -> int:
     args = parse_args()
     repo_root = args.repo_root.resolve()
     load_adapter(repo_root)
-    state_dir = repo_root / STATE_DIR
+    state_dir = args.state_root.resolve() if args.state_root else repo_root / STATE_DIR
+    if args.state_root and (state_dir == repo_root or repo_root in state_dir.parents):
+        raise SystemExit("--state-root must be outside --repo-root")
     state_dir.mkdir(parents=True, exist_ok=True)
 
     try:
@@ -377,19 +384,25 @@ def main() -> int:
     archive_paths = [append_archive(state_dir / "history", record) for record in records]
     update_summary(summary_path, records)
     update_smoothing(smoothing_path, records)
+    def rendered_path(path: Path) -> str:
+        try:
+            return str(path.relative_to(repo_root))
+        except ValueError:
+            return str(path)
+
     payload: dict[str, Any] = {
-        "summary_path": str(summary_path.relative_to(repo_root)),
-        "smoothing_path": str(smoothing_path.relative_to(repo_root)),
+        "summary_path": rendered_path(summary_path),
+        "smoothing_path": rendered_path(smoothing_path),
     }
     if args.batch is not None:
-        payload["archive_paths"] = sorted({str(path.relative_to(repo_root)) for path in archive_paths})
+        payload["archive_paths"] = sorted({rendered_path(path) for path in archive_paths})
         payload["recorded_count"] = len(records)
         payload["malformed_lines"] = batch_errors
     else:
-        payload["archive_path"] = str(archive_paths[0].relative_to(repo_root))
+        payload["archive_path"] = rendered_path(archive_paths[0])
         payload["recorded"] = records[0]
-    # Receipt only. The runtime signals themselves are persisted as JSON under
-    # `.charness/quality/` by `update_summary` / `update_smoothing` / `append_archive`.
+    # Receipt only. The runtime signals themselves live under the selected state
+    # directory, which task-owned runs place outside the checkout.
     emit_yaml(payload)
     if batch_errors:
         # The good records above are already applied; this exit only reports the

@@ -46,8 +46,7 @@ charness task run \
   --scope <path-1> \
   --scope <path-2> \
   --prompt-file <brief-file> \
-  --effort xhigh \
-  --codex-arg=--approve-for-me
+  --effort xhigh
 ```
 
 The task result is the only lane result carrier. Review the retained worktree
