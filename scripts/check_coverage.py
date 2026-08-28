@@ -66,6 +66,10 @@ COPY_IGNORE_NAMES = (
     ".mypy_cache",
     "__pycache__",
     ".coverage",
+    # Rust-crate corpus: contains deliberately malformed sources and dangling
+    # symlinks that shutil.copytree cannot materialize; coverage never
+    # measures it.
+    "native",
     ".charness",
     "charness-artifacts",
     ".venv",

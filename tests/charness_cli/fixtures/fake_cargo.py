@@ -7,7 +7,6 @@ import os
 import sys
 from pathlib import Path
 
-
 if sys.argv[1:] != ["build", "--release", "--locked"]:
     raise SystemExit(2)
 

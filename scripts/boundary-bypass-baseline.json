@@ -4,16 +4,15 @@
   "inventory_schemaVersion": "charness.quality.boundary_bypass_inventory.v2",
   "call_site_fingerprint_algo_version": "1",
   "summary": {
-    "candidate_count": 46,
-    "convertible_count": 2,
-    "internal_boundary_count": 31,
+    "candidate_count": 42,
+    "convertible_count": 1,
+    "internal_boundary_count": 28,
     "keep_boundary_count": 23,
-    "candidate_key_count": 46
+    "candidate_key_count": 42
   },
   "candidate_keys": [
     "03317004492f3b03",
     "06661433f0e37fc3",
-    "069f6590273114c5",
     "06c92f0b1714374a",
     "0a780c9ed9f43ebe",
     "0aff74e586453c01",
@@ -21,16 +20,13 @@
     "14dcc171602e8cc5",
     "16dae8afa91ebfea",
     "22272c782774662a",
-    "23b56dc88d76e9b8",
     "2ab340eddc888fbc",
     "2afa2f7e74cef060",
     "311f0583cede02c5",
+    "31d6a126367940a2",
     "3282537862e9c0e4",
-    "37eeb31ddefa701d",
     "3972fc454265f2e9",
     "3e86c6cbdd720473",
-    "49d95eaeb09e056f",
-    "5493ebee5a359cb9",
     "584137bc9502bb52",
     "5aaa8310abddb4cc",
     "5e810e663bf20edd",
@@ -38,19 +34,19 @@
     "68a29d4ac0870e7e",
     "6a34e88fa8ab3d91",
     "6b9aa0ba40ec0667",
+    "70eb62ded1eae63a",
     "8dabe177e3532495",
     "8f4dcccce3e774b4",
     "9337a774dfde198e",
+    "af1449c8f8565019",
     "b01f54994c12d25d",
-    "b097824f45b38fb7",
     "b11d217e862ac837",
     "b300d515f1f0ee1a",
     "b9fda138fdfd80c5",
+    "cae44bf1c9db4d14",
     "cd452832e6f70615",
     "d11a41b4d1b636a0",
-    "d133347bba2ede2d",
-    "d9fe7357aa354211",
-    "db67c2bca79aa4ab",
+    "d45e00f2707dc717",
     "e47a116e9526f3c8",
     "ea1b0c89af5cdea5",
     "ed9d50431430820f",
@@ -63,12 +59,6 @@
       "test_file": "tests/control_plane/test_lock_schema_resilience.py",
       "import_safe_targets": [
         "scripts/doctor.py"
-      ]
-    },
-    {
-      "test_file": "tests/quality_gates/test_adapter_key_warn_tier.py",
-      "import_safe_targets": [
-        "scripts/validate_adapters.py"
       ]
     },
     {
@@ -396,5 +386,5 @@
       ]
     }
   ],
-  "writer_integrity_sha256": "9ee590c2ac4a60af9d3539b8543670d00e9e9493797e426c66e53742dd228a6a"
+  "writer_integrity_sha256": "0ac6f9dc6bc9978185b542c0a4f3b85b32d25399a205afdf24dd685ebbcde49d"
 }
