@@ -10,7 +10,7 @@ import yaml
 
 from tests.repo_copy import clone_seeded_charness_repo
 
-from .support import make_fake_claude
+from .support import make_fake_claude, pin_state_home
 from .test_managed_install import sync_root_plugin_manifests_inprocess
 
 PROBE_SKILL_ID = "update-probe-extra"
@@ -30,6 +30,7 @@ def test_installed_cli_update_propagates_new_skill_into_exported_plugin_root(tmp
 
     env = os.environ.copy()
     env["HOME"] = str(home_root)
+    pin_state_home(env, home_root)
     env["PATH"] = f"{fake_claude.parent}:{standalone_cli.parent}:{env.get('PATH', '')}"
 
     init_result = subprocess.run(

@@ -29,6 +29,7 @@ from .support import (
     make_fake_npm_agent_browser,
     make_release_fixture,
     make_support_sync_fixture,
+    pin_state_home,
     run_cli_in_repo,
 )
 from .tool_fakes import make_fake_nose
@@ -166,6 +167,7 @@ def test_fake_go_installers_honor_gobin(tmp_path: Path) -> None:
     glow_go, gopath = make_fake_go_glow(tmp_path / "glow")
     gobin = tmp_path / "custom-gobin"
     env = {**os.environ, "GOBIN": str(gobin)}
+    pin_state_home(env, tmp_path / "home")
 
     gitleaks_result = subprocess.run(
         [str(specdown_go), "install", "github.com/zricethezav/gitleaks/v8@latest"],
@@ -194,6 +196,7 @@ def test_tool_install_can_select_quality_validation_recommendations(tmp_path: Pa
     repo_root = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
     release_fixture = make_release_fixture(tmp_path)
     env = os.environ.copy()
+    pin_state_home(env, tmp_path / "home")
     env["PATH"] = build_test_path()
     env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
 
@@ -230,6 +233,7 @@ def test_tool_install_recommendation_filter_no_match_does_not_install_all(tmp_pa
     repo_root = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
     release_fixture = make_release_fixture(tmp_path)
     env = os.environ.copy()
+    pin_state_home(env, tmp_path / "home")
     env["PATH"] = build_test_path()
     env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
 
@@ -295,6 +299,7 @@ def test_tool_update_runs_configured_agent_browser_script_for_path_install(tmp_p
     plugin_root = home_root / ".codex" / "plugins" / "charness"
     env = os.environ.copy()
     env["HOME"] = str(home_root)
+    pin_state_home(env, home_root)
     env["PATH"] = build_test_path(fake_agent_browser.parent, fake_npm.parent)
     env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
     env["CHARNESS_SUPPORT_SYNC_FIXTURES"] = str(support_fixture)
@@ -334,6 +339,7 @@ def test_tool_update_routes_npm_provenance_for_agent_browser(tmp_path: Path, see
     plugin_root = home_root / ".codex" / "plugins" / "charness"
     env = os.environ.copy()
     env["HOME"] = str(home_root)
+    pin_state_home(env, home_root)
     env["PATH"] = f"{npm_script.parent}:{browser_link.parent}:{env.get('PATH', '')}"
     env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
     env["CHARNESS_SUPPORT_SYNC_FIXTURES"] = str(support_fixture)
@@ -364,6 +370,7 @@ def test_tool_doctor_reports_specdown_binary_contract_without_support_sync(tmp_p
     release_fixture = make_release_fixture(tmp_path)
     env = os.environ.copy()
     env["HOME"] = str(home_root)
+    pin_state_home(env, home_root)
     env["PATH"] = build_test_path(fake_curl.parent, go_script.parent, specdown_script.parent)
     env["GOPATH"] = str(specdown_script.parent.parent)
     env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
@@ -394,6 +401,7 @@ def test_tool_repair_agent_browser_previews_and_executes_cleanup(tmp_path: Path,
     release_fixture = make_release_fixture(tmp_path)
     env = os.environ.copy()
     env["HOME"] = str(home_root)
+    pin_state_home(env, home_root)
     env["PATH"] = build_test_path(fake_agent_browser.parent)
     env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
 
@@ -437,6 +445,7 @@ def test_tool_repair_agent_browser_previews_and_executes_cleanup(tmp_path: Path,
 def test_tool_repair_reports_unsupported_tools(tmp_path: Path, seeded_charness_repo: Path) -> None:
     repo_root = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
     env = os.environ.copy()
+    pin_state_home(env, tmp_path / "home")
     env["PATH"] = build_test_path()
 
     result = run_cli_in_repo(repo_root, "tool", "repair", "--repo-root", str(repo_root), "specdown", env=env)
@@ -479,6 +488,7 @@ def test_tool_install_executes_glow_install_script_and_refreshes_doctor(tmp_path
     release_fixture = make_release_fixture(tmp_path)
     env = os.environ.copy()
     env["HOME"] = str(home_root)
+    pin_state_home(env, home_root)
     env["PATH"] = build_test_path(fake_go.parent, home_root / ".local" / "bin")
     env["GOPATH"] = str(gopath)
     env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
@@ -507,6 +517,7 @@ def test_tool_update_routes_go_provenance_for_specdown(tmp_path: Path, seeded_ch
     release_fixture = make_release_fixture(tmp_path)
     env = os.environ.copy()
     env["HOME"] = str(home_root)
+    pin_state_home(env, home_root)
     env["PATH"] = build_test_path(fake_curl.parent, go_script.parent, specdown_script.parent)
     env["GOPATH"] = str(specdown_script.parent.parent)
     env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)

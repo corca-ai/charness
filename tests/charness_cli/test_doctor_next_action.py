@@ -14,6 +14,7 @@ from .support import (
     build_test_path,
     clone_seeded_managed_home,
     make_fake_claude,
+    pin_state_home,
     run_cli,
 )
 
@@ -66,6 +67,7 @@ def test_charness_doctor_next_action_without_source_uses_manual_guidance(tmp_pat
     fake_claude = make_fake_claude(tmp_path)
     env = os.environ.copy()
     env["HOME"] = str(home_root)
+    pin_state_home(env, home_root)
     env["PATH"] = build_test_path(fake_claude.parent)
     installed_cli = home_root / ".local" / "bin" / "charness"
     installed_cli.parent.mkdir(parents=True, exist_ok=True)

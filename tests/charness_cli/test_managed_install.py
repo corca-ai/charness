@@ -21,6 +21,7 @@ from .support import (
     clone_seeded_managed_home,
     make_fake_claude,
     make_release_fixture,
+    pin_state_home,
     run_cli,
 )
 
@@ -70,6 +71,7 @@ def init_managed_home_from_repo(
     standalone_cli.chmod(0o755)
     env = os.environ.copy()
     env["HOME"] = str(home_root)
+    pin_state_home(env, home_root)
     env["PATH"] = build_test_path(fake_claude.parent, standalone_cli.parent)
     init_result = subprocess.run(
         [sys.executable, str(standalone_cli), "init", "--home-root", str(home_root), "--repo-url", str(source_repo)],
@@ -139,6 +141,7 @@ def test_charness_init_exports_managed_surface(tmp_path: Path, seeded_charness_g
     fake_claude = make_fake_claude(tmp_path)
     env = os.environ.copy()
     env["HOME"] = str(home_root)
+    pin_state_home(env, home_root)
     env["PATH"] = build_test_path(fake_claude.parent)
     result = run_cli("init", "--detail", "--home-root", str(home_root), "--repo-url", str(source_repo), env=env)
     assert result.returncode == 0, result.stderr
@@ -175,6 +178,7 @@ def test_charness_init_binds_claude_mutations_to_custom_home(
     fake_claude = make_fake_claude(tmp_path)
     env = os.environ.copy()
     env["HOME"] = str(process_home)
+    pin_state_home(env, home_root)
     env["PATH"] = build_test_path(fake_claude.parent)
 
     result = run_cli("init", "--home-root", str(home_root), "--repo-url", str(source_repo), env=env)
@@ -205,6 +209,7 @@ def test_standalone_cli_bootstraps_managed_checkout_without_explicit_clone(tmp_p
 
     env = os.environ.copy()
     env["HOME"] = str(home_root)
+    pin_state_home(env, home_root)
     env["PATH"] = build_test_path(fake_claude.parent, standalone_cli.parent)
     result = subprocess.run(
         [sys.executable, str(standalone_cli), "init", "--detail", "--home-root", str(home_root), "--repo-url", str(source_repo)],
@@ -272,6 +277,7 @@ def test_embedded_cli_bootstraps_managed_checkout_from_configured_repo_url(tmp_p
     fake_claude = make_fake_claude(tmp_path)
     env = os.environ.copy()
     env["HOME"] = str(home_root)
+    pin_state_home(env, home_root)
     env["PATH"] = build_test_path(fake_claude.parent)
     result = subprocess.run(
         [sys.executable, str(embedded_cli), "init", "--detail", "--home-root", str(home_root)],
@@ -353,6 +359,7 @@ def test_charness_doctor_binds_claude_to_custom_home(tmp_path: Path, seeded_mana
     process_home = tmp_path / "unrelated-process-home"
     env = os.environ.copy()
     env["HOME"] = str(process_home)
+    pin_state_home(env, home_root)
     env["PATH"] = build_test_path(fake_claude.parent)
 
     result = run_cli("doctor", "--detail", "--home-root", str(home_root), env=env)

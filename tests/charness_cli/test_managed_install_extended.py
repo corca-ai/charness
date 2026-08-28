@@ -20,6 +20,7 @@ from .support import (
     make_fake_npm_agent_browser,
     make_release_fixture,
     make_support_sync_fixture,
+    pin_state_home,
     run_cli,
 )
 from .test_managed_install import init_managed_home_from_repo
@@ -132,6 +133,7 @@ def test_non_managed_repo_root_requires_skip_cli_install(tmp_path: Path) -> None
     fake_claude = make_fake_claude(tmp_path)
     env = os.environ.copy()
     env["HOME"] = str(home_root)
+    pin_state_home(env, home_root)
     env["PATH"] = build_test_path(fake_claude.parent)
     init_result = run_cli("init", "--home-root", str(home_root), "--repo-root", str(CLI.parents[0]), env=env)
     assert init_result.returncode != 0
@@ -143,6 +145,7 @@ def test_doctor_handles_missing_source_checkout_without_traceback(tmp_path: Path
     fake_claude = make_fake_claude(tmp_path)
     env = os.environ.copy()
     env["HOME"] = str(home_root)
+    pin_state_home(env, home_root)
     env["PATH"] = build_test_path(fake_claude.parent)
     installed_cli = home_root / ".local" / "bin" / "charness"
     installed_cli.parent.mkdir(parents=True, exist_ok=True)

@@ -57,7 +57,7 @@ def seeded_charness_repo(tmp_path_factory: pytest.TempPathFactory) -> Path:
     from tests.seed_cache import get_or_build
 
     def build(staging: Path) -> None:
-        shutil.copytree(ROOT, staging / "repo", ignore=REPO_COPY_IGNORE)
+        shutil.copytree(ROOT, staging / "repo", ignore=REPO_COPY_IGNORE, symlinks=True)
 
     return get_or_build("charness-repo-seed", build) / "repo"
 
@@ -70,7 +70,7 @@ def seeded_charness_git_repo(
 
     def build(staging: Path) -> None:
         seed = staging / "repo"
-        shutil.copytree(seeded_charness_repo, seed)
+        shutil.copytree(seeded_charness_repo, seed, symlinks=True)
         _git_init_and_commit(seed)
 
     return get_or_build("charness-git-repo-seed", build) / "repo"

@@ -187,6 +187,46 @@ def default_state_root(home_root: Path) -> Path:
     return resolve_state_home(home_root) / PACKAGE_ID
 
 
+def run_native_core_phase(repo_root: Path, *, home_root: Path) -> dict[str, object]:
+    """Run the declared native phase through its lazy lifecycle owner."""
+    import importlib
+
+    root_text = str(repo_root.resolve())
+    if root_text not in sys.path:
+        sys.path.insert(0, root_text)
+    native_core = importlib.import_module("scripts.native_core_lib")
+    return native_core.run_native_core_phase(
+        repo_root.resolve(),
+        home_root=home_root,
+        state_root=default_state_root(home_root),
+        release_probe=probe_self_release,
+    )
+
+
+def native_core_doctor_payload(home_root: Path, repo_root: Path) -> dict[str, object]:
+    """Project the single native locator into the doctor payload."""
+    if not (repo_root / "packaging" / "charness.json").is_file():
+        return {
+            "status": "not-distributed",
+            "provenance": None,
+            "version": None,
+            "reason": "source checkout is unavailable",
+            "source_drift": None,
+            "message": "The source checkout is unavailable; the Python surface remains active.",
+        }
+    import importlib
+
+    root_text = str(repo_root.resolve())
+    if root_text not in sys.path:
+        sys.path.insert(0, root_text)
+    native_core = importlib.import_module("scripts.native_core_resolution_lib")
+    return native_core.native_core_doctor_payload(
+        home_root,
+        repo_root.resolve(),
+        state_root=default_state_root(home_root),
+    )
+
+
 def managed_checkout_root(home_root: Path) -> Path:
     return home_root / ".agents" / "src" / PACKAGE_ID
 
@@ -983,7 +1023,7 @@ def normalize_release_payload(repo: str, payload: dict[str, object]) -> dict[str
     return release
 
 
-def probe_self_release() -> dict[str, object]:
+def probe_self_release(repo: str | None = None) -> dict[str, object]:
     # Imported here, not at module scope: `urllib.request` pulls in `http.client`,
     # `ssl`, and `email.parser`, which measured 17ms of this CLI's ~114ms startup —
     # paid by every `charness` invocation, while the one network path that needs it
@@ -991,7 +1031,7 @@ def probe_self_release() -> dict[str, object]:
     import urllib.error
     import urllib.request
 
-    repo = self_release_repo()
+    repo = repo or self_release_repo()
     fixture = fixture_release(repo)
     if fixture is not None:
         return normalize_release_payload(repo, fixture)
@@ -2395,6 +2435,11 @@ def build_host_next_steps(doctor_payload: dict[str, object]) -> dict[str, str]:
         message = repo_onboarding.get("message")
         if isinstance(message, str) and message:
             host_next_steps["repo"] = message
+    native_core = doctor_payload.get("native_core")
+    if isinstance(native_core, dict) and native_core.get("status") not in {"healthy", "not-distributed", "unsupported-tuple"}:
+        message = native_core.get("message")
+        if isinstance(message, str) and message:
+            host_next_steps["native_core"] = message
     return host_next_steps
 
 
@@ -2454,6 +2499,27 @@ def build_doctor_next_action(doctor_payload: dict[str, object]) -> dict[str, obj
                         "manual_action_required": True,
                         "message": message,
                         "source": "repo_onboarding",
+                    },
+                )
+            )
+    native_core = doctor_payload.get("native_core")
+    if isinstance(native_core, dict):
+        status = native_core.get("status")
+        message = native_core.get("message")
+        if isinstance(status, str) and isinstance(message, str) and message and status not in {
+            "healthy", "not-distributed", "unsupported-tuple"
+        }:
+            candidates.append(
+                (
+                    10,
+                    -20,
+                    {
+                        "kind": "native-core",
+                        "host": None,
+                        "status": status,
+                        "manual_action_required": True,
+                        "message": message,
+                        "source": "native_core",
                     },
                 )
             )
@@ -2750,6 +2816,7 @@ def build_doctor_payload(
         "checkout_git_head": git_head(repo_root) if source_manifest_present else None,
         "checkout_version": packaging_version(repo_root) if source_manifest_present else None,
         "version_provenance": version_provenance,
+        "native_core": native_core_doctor_payload(home_root, repo_root),
         "latest_release_check": version_state.get("latest_release"),
         "plugin_root": str(plugin_root),
         "plugin_root_present": plugin_root.is_dir(),
@@ -3998,6 +4065,13 @@ def _compact_host_refresh(payload: object) -> dict[str, object] | None:
     )
 
 
+def _compact_native_core(payload: object) -> dict[str, object] | None:
+    return _compact_mapping(
+        payload,
+        ("status", "provenance", "version", "tuple", "source_drift", "reason", "message"),
+    )
+
+
 def _compact_session_staleness(payload: object) -> dict[str, object] | None:
     compact = _compact_mapping(payload, ("status", "message"))
     if compact is None:
@@ -4040,6 +4114,9 @@ def project_runtime_response(payload: dict[str, object], *, event: str) -> dict[
     latest_release_check = _compact_release_check(payload.get("latest_release_check"))
     if latest_release_check is not None:
         response["latest_release_check"] = latest_release_check
+    native_core = _compact_native_core(payload.get("native_core"))
+    if native_core is not None:
+        response["native_core"] = native_core
     for source, target in (
         ("codex_cache_refresh", "codex_cache_refresh"),
         ("codex_host_install", "codex_host_install"),
@@ -4128,6 +4205,9 @@ def cmd_init(args: argparse.Namespace) -> int:
         and cli_path.read_bytes() != SCRIPT_PATH.read_bytes()
     ):
         os.execv(str(cli_path), [str(cli_path)] + sys.argv[1:])
+    payload["native_core_phase"] = run_native_core_phase(
+        Path(checkout["repo_root"]), home_root=home_root
+    )
     initial_doctor_payload = build_doctor_payload(
         home_root=home_root,
         repo_root=Path(checkout["repo_root"]),
@@ -4183,6 +4263,7 @@ def cmd_init(args: argparse.Namespace) -> int:
     payload["claude_host_guidance"] = doctor_payload["claude_host_guidance"]
     payload["grok_host_guidance"] = doctor_payload.get("grok_host_guidance") or {}
     payload["repo_onboarding"] = doctor_payload["repo_onboarding"]
+    payload["native_core"] = doctor_payload["native_core"]
     payload["host_next_steps"] = {**payload.get("host_next_steps", {}), **doctor_payload["host_next_steps"]}
     payload["next_action"] = doctor_payload["next_action"]
     payload["checkout_version"] = doctor_payload["checkout_version"]
@@ -4267,6 +4348,9 @@ def cmd_update(args: argparse.Namespace) -> int:
     if cli_reexec_state is not None:
         payload["cli_reexec"] = cli_reexec_state
     payload["previous_checkout_version"] = previous_checkout_version
+    payload["native_core_phase"] = run_native_core_phase(
+        Path(checkout["repo_root"]), home_root=home_root
+    )
     initial_doctor_payload = build_doctor_payload(
         home_root=home_root,
         repo_root=Path(checkout["repo_root"]),
@@ -4342,6 +4426,7 @@ def cmd_update(args: argparse.Namespace) -> int:
     payload["claude_host_guidance"] = doctor_payload["claude_host_guidance"]
     payload["grok_host_guidance"] = doctor_payload.get("grok_host_guidance") or {}
     payload["repo_onboarding"] = doctor_payload["repo_onboarding"]
+    payload["native_core"] = doctor_payload["native_core"]
     payload["host_next_steps"] = {**payload.get("host_next_steps", {}), **doctor_payload["host_next_steps"]}
     payload["next_action"] = doctor_payload["next_action"]
     payload["checkout_version"] = doctor_payload["checkout_version"]
@@ -4493,6 +4578,7 @@ def cmd_uninstall(args: argparse.Namespace) -> int:
     removed_wrapper = False
     removed_cli = False
     removed_host_state = False
+    removed_native_core = False
     if plugin_root.exists():
         shutil.rmtree(plugin_root)
         removed_plugin_root = True
@@ -4516,6 +4602,15 @@ def cmd_uninstall(args: argparse.Namespace) -> int:
     if host_state_path.exists():
         host_state_path.unlink()
         removed_host_state = True
+    native_root = default_state_root(home_root) / "native"
+    native_root_is_safe = True
+    try:
+        native_root.relative_to(home_root)
+    except ValueError:
+        native_root_is_safe = False
+    if native_root_is_safe and native_root.exists():
+        shutil.rmtree(native_root)
+        removed_native_core = True
     if getattr(args, "delete_checkout", False):
         if repo_root.exists():
             shutil.rmtree(repo_root)
@@ -4533,6 +4628,7 @@ def cmd_uninstall(args: argparse.Namespace) -> int:
         "removed_cli": removed_cli,
         "removed_checkout": removed_checkout,
         "removed_host_state": removed_host_state,
+        "removed_native_core": removed_native_core,
     }
     emit_yaml(payload)
     return 0

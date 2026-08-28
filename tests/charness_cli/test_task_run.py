@@ -469,6 +469,7 @@ def test_task_run_cli_accepts_repo_root_after_subcommand(tmp_path: Path) -> None
         env={
             **os.environ,
             "PATH": f"{tmp_path}{os.pathsep}{os.environ['PATH']}",
+            "CHARNESS_STATE_HOME": str(tmp_path / "home" / ".local" / "state"),
             "PYTHONPYCACHEPREFIX": str(tmp_path / "launcher-pycache"),
         },
         check=False,

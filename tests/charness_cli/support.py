@@ -5,6 +5,7 @@ import os
 import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -15,6 +16,23 @@ CLI = ROOT / "charness"
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 
 
+def pin_state_home(env: dict[str, str], home_root: Path) -> dict[str, str]:
+    env["CHARNESS_STATE_HOME"] = str(home_root / ".local" / "state")
+    return env
+
+
+def _isolated_cli_env(args: tuple[str, ...], env: dict[str, str] | None) -> dict[str, str]:
+    result = dict(os.environ if env is None else env)
+    home_root: Path | None = None
+    for index, value in enumerate(args):
+        if value == "--home-root" and index + 1 < len(args):
+            home_root = Path(args[index + 1])
+            break
+    if home_root is None:
+        home_root = Path(tempfile.gettempdir()) / f"charness-cli-state-{os.getpid()}"
+    return pin_state_home(result, home_root)
+
+
 def run_cli(*args: str, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         [sys.executable, str(CLI), *args],
@@ -22,7 +40,7 @@ def run_cli(*args: str, env: dict[str, str] | None = None) -> subprocess.Complet
         check=False,
         capture_output=True,
         text=True,
-        env=env,
+        env=_isolated_cli_env(args, env),
     )
 
 
@@ -33,7 +51,7 @@ def run_cli_in_repo(repo_root: Path, *args: str, env: dict[str, str] | None = No
         check=False,
         capture_output=True,
         text=True,
-        env=env,
+        env=_isolated_cli_env(args, env),
     )
 
 
@@ -181,6 +199,7 @@ def seeded_managed_home(
         fake_claude = make_fake_claude(staging)
         env = os.environ.copy()
         env["HOME"] = str(home_root)
+        pin_state_home(env, home_root)
         env["PATH"] = build_test_path(fake_claude.parent)
         env["CHARNESS_SUPPORT_SYNC_FIXTURES"] = str(make_support_sync_fixture(staging))
         init_result = run_cli(
@@ -209,7 +228,7 @@ def clone_seeded_managed_home(
             return set()
 
         ignore = ignore_source_checkout
-    shutil.copytree(seeded_home_root, home_root, ignore=ignore)
+    shutil.copytree(seeded_home_root, home_root, ignore=ignore, symlinks=True)
     if share_source_checkout:
         source_link = home_root / source_rel
         source_link.parent.mkdir(parents=True, exist_ok=True)
@@ -221,6 +240,7 @@ def clone_seeded_managed_home(
     fake_claude = make_fake_claude(tmp_path)
     env = os.environ.copy()
     env["HOME"] = str(home_root)
+    pin_state_home(env, home_root)
     env["PATH"] = build_test_path(fake_claude.parent)
     return home_root, env
 def make_fake_agent_browser(tmp_path: Path) -> Path:

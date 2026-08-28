@@ -135,6 +135,7 @@ def test_cli_exec_in_linked_worktree_keeps_python_outputs_external(tmp_path: Pat
         cwd=ROOT,
         env={
             **os.environ,
+            "CHARNESS_STATE_HOME": str(tmp_path / "home" / ".local" / "state"),
             "PYTHONPYCACHEPREFIX": str(tmp_path / "launcher-pycache"),
             "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
         },

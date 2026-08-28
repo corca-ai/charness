@@ -11,6 +11,8 @@ from pathlib import Path
 
 import pytest
 
+from .support import pin_state_home
+
 ROOT = Path(__file__).resolve().parents[2]
 BOOTSTRAP_RUNTIME_PATH = ROOT / "scripts" / "bootstrap_runtime.py"
 CHARNESS_PATH = ROOT / "charness"
@@ -418,6 +420,7 @@ def test_init_sh_falls_back_to_python_when_python3_is_missing(tmp_path: Path) ->
 
     env = os.environ.copy()
     env["HOME"] = str(tmp_path / "home")
+    pin_state_home(env, Path(env["HOME"]))
     env["PATH"] = str(fake_bin)
     result = subprocess.run(
         ["/bin/bash", str(init_copy)],

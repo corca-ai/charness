@@ -32,6 +32,31 @@ The shared packaging manifest is authoritative for:
 - which host exports exist
 - which manifest paths and marketplace paths generators must produce
 
+When a release has a consumer-ready `repograph` binary, the optional
+`native_core` declaration is the lifecycle switch. It is intentionally absent
+from this checkout while the artifact is not published. Its shape is:
+
+```json
+"native_core": {
+  "source": "corca-ai/charness",
+  "supported_tuples": ["x86_64-unknown-linux-gnu"],
+  "artifacts": {
+    "8.0.0": {
+      "x86_64-unknown-linux-gnu": {
+        "name": "repograph-v8.0.0-x86_64-unknown-linux-gnu.tar.gz",
+        "sha256": "<64 hexadecimal characters>"
+      }
+    }
+  }
+}
+```
+
+`source` binds release lookup to the checkout's `git remote get-url origin`.
+Each version/tuple entry binds the expected asset name and archive digest;
+`artifact.json` additionally records the artifact version, tuple, binary
+digest, and build commit. The declaration is schema-supported but remains
+absent until a release has supplied a matching artifact.
+
 Generated host layouts are not authoritative. If an exported manifest drifts
 from the shared packaging manifest, regenerate the export instead of editing the
 host file by hand.

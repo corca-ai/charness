@@ -7,7 +7,7 @@ from pathlib import Path
 
 import yaml
 
-from .support import ROOT, run_cli
+from .support import ROOT, pin_state_home, run_cli
 
 
 def write_repo_capability_config(target_repo_root: Path, *, bindings: dict[str, str], profiles: dict[str, object]) -> None:
@@ -78,6 +78,7 @@ def test_capability_env_emits_alias_exports_without_printing_secret_values(tmp_p
         },
     )
     env = os.environ.copy()
+    pin_state_home(env, tmp_path / "home")
     env["GH_TOKEN_ACME_DEV"] = "super-secret-token"
     result = run_cli(
         "capability",

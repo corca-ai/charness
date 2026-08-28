@@ -17,6 +17,7 @@ from .support import (
     clone_seeded_managed_home,
     make_fake_claude,
     make_fake_codex,
+    pin_state_home,
     run_cli,
 )
 from .test_managed_install import load_charness_module
@@ -39,6 +40,7 @@ def test_charness_init_installs_codex_via_official_app_server(tmp_path: Path, se
 
     env = os.environ.copy()
     env["HOME"] = str(home_root)
+    pin_state_home(env, home_root)
     env["PATH"] = build_test_path(fake_claude.parent, fake_codex.parent, standalone_cli.parent)
 
     result = subprocess.run(

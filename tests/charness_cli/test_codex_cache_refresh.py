@@ -14,7 +14,14 @@ import yaml
 
 from tests.repo_copy import REPO_COPY_IGNORE
 
-from .support import CLI, build_test_path, clone_seeded_managed_home, make_fake_codex, run_cli
+from .support import (
+    CLI,
+    build_test_path,
+    clone_seeded_managed_home,
+    make_fake_codex,
+    pin_state_home,
+    run_cli,
+)
 from .test_managed_install import load_charness_module
 
 CURRENT_VERSION = json.loads((CLI.parent / "packaging" / "charness.json").read_text(encoding="utf-8"))["version"]
@@ -528,6 +535,7 @@ def test_installed_cli_catalog_list_loads_backend_from_managed_checkout(tmp_path
         CLI.parent,
         managed_checkout,
         ignore=REPO_COPY_IGNORE,
+        symlinks=True,
     )
     installed_cli = home_root / ".local" / "bin" / "charness"
     installed_cli.parent.mkdir(parents=True)
@@ -543,6 +551,7 @@ def test_installed_cli_catalog_list_loads_backend_from_managed_checkout(tmp_path
     )
     env = os.environ.copy()
     env["HOME"] = str(home_root)
+    pin_state_home(env, home_root)
     result = subprocess.run(
         [
             sys.executable,
