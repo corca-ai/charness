@@ -64,3 +64,4 @@ cargo clippy --offline --all-targets -- -D warnings
 
 Plan and evidence:
 [spike plan](../../charness-artifacts/design-studies/2026-08-28-issue-745-rust-core-spike-plan.md).
+The frozen command contract is [ABI.md](./ABI.md).
