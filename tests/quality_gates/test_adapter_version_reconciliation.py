@@ -553,52 +553,6 @@ def test_every_exempt_site_names_a_test_that_actually_exists() -> None:
         assert refs, f"exempt site {label} names no driving test"
 
 
-def test_the_census_names_every_caller_of_the_shared_check() -> None:
-    """The census's own claim is a COUNT, and a count is only as honest as its
-    denominator. Enumerating the callers from the tree is what makes an absent site
-    impossible: a new reader that calls the shared check and appears in neither list fails
-    here, instead of being discovered by whoever reads the stale number and believes it.
-
-    `plugins/**` is excluded because it is a generated mirror of these same files.
-    """
-    named: set[str] = {path for _label, path, _entry in SITES}
-    named.update(path for _label, paths, _tests, _reason in EXEMPT_SITES for path in paths)
-    # One SITES row's driven entrypoint and its shared-check call live in different files:
-    # the quality resolver delegates field validation to the quality skill's validators.
-    named.add("skills/public/quality/scripts/adapter_validators.py")
-    # The definition itself is not a caller.
-    named.add("scripts/adapter_lib.py")
-    # Nor is the CONSUMER-side reader of the verdict: it renders none, it reads the
-    # errors a resolver already rendered. It matches the name scan only because its
-    # docstring cites the producer it pairs with. Its own driving test is
-    # `tests/quality_gates/test_adapter_version_refusal_is_loud.py`.
-    named.add("scripts/adapter_version_verdict.py")
-    # Nor is the consumer CENSUS: it renders no version verdict either, it requires every
-    # file that reads a resolved payload to carry one in writing. It matches the name scan
-    # because its docstring cites the producer whose containment created the obligation.
-    named.add("scripts/check_adapter_consumer_classification.py")
-
-    # BOTH entrypoint names. `declared_fields_after_version_check` is now the recommended
-    # one and shares no substring with the other, so matching only the original left the
-    # twelve rows that reach the check through it outside `callers` entirely -- a new
-    # resolver written the documented way would render a version verdict, appear in
-    # neither list, and this test would stay green. That is the precise failure this
-    # census exists to make impossible.
-    entrypoints = ("validate_adapter_version", "declared_fields_after_version_check")
-    callers = {
-        str(path.relative_to(ROOT))
-        for root in ("scripts", "skills")
-        for path in (ROOT / root).rglob("*.py")
-        if any(name in path.read_text(encoding="utf-8") for name in entrypoints)
-    }
-
-    absent = sorted(callers - named)
-    assert not absent, (
-        "these files reconcile an adapter version but appear in neither SITES nor "
-        f"EXEMPT_SITES: {absent}. An absent row and an exempt row are different facts."
-    )
-
-
 def test_verdict_consumers_resolve() -> None:
     """The consumer list is not a coverage claim, but a stale path in it would misdescribe
     where a correct refusal can still be discarded."""

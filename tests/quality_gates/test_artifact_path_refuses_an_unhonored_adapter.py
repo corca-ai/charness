@@ -1,8 +1,7 @@
 """`resolve_artifact_path` refuses when the reader honored nothing the repo declared.
 
 THE REGRESSION THIS PINS WAS INTRODUCED BY `#673` AND FOUND BY A BOUNDED REVIEW, not by the
-batch that caused it. That is the second time this exact collateral has arrived that way;
-`scripts/adapter-consumer-classification.json` records the first, for `announcement`.
+batch that caused it. That is the second time this exact collateral has arrived that way.
 
 Before `#673`, five resolvers let a parser refusal out as a traceback, so the subprocess
 return code was non-zero and `load_adapter`'s `if completed.returncode != 0` stopped this

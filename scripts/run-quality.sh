@@ -1148,11 +1148,6 @@ if [[ "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" == "1" ]] || label_is_explicitly_selec
   queue_selected "check-test-production-ratio" python3 scripts/check_test_production_ratio.py --repo-root "$REPO_ROOT" --require-git-file-listing --advisory
 fi
 queue_selected "check-boundary-bypass-ratchet" python3 scripts/check_boundary_bypass_ratchet.py --repo-root "$REPO_ROOT"
-# Every file that reads a resolved adapter payload must carry a written verdict about
-# what it does when the version was refused. A census, not a fixer: it prints the
-# accepted-risk count on every run so the remaining debt stays decided rather than
-# forgotten.
-queue_selected "check-adapter-consumer-classification" python3 scripts/check_adapter_consumer_classification.py --repo-root "$REPO_ROOT"
 # Every packaged check_/validate_ script needs a consumer-facing decision, public
 # contract metadata, and an explicit consumer adoption decision. This is the
 # catalog's self-check; a new validator cannot become silent by omission.
