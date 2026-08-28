@@ -229,20 +229,17 @@ options:
 ## `charness task`
 
 ```text
-usage: charness task [-h] [--repo-root REPO_ROOT] {status,run} ...
+usage: charness task [-h] {status,run} ...
 
 positional arguments:
   {status,run}
-    status              Show one external task-run result, or list all task-
-                        run results.
-    run                 Run one independently delegable Codex lane in a clean
-                        named worktree and emit a compact receipt.
+    status      Show one external task-run result, or list all task-run
+                results.
+    run         Run one independently delegable Codex lane in a clean named
+                worktree and emit a compact receipt.
 
 options:
-  -h, --help            show this help message and exit
-  --repo-root REPO_ROOT
-                        Parent repo whose external task-run runtime is read or
-                        written. Defaults to the current working directory.
+  -h, --help    show this help message and exit
 ```
 
 ## `charness task status`

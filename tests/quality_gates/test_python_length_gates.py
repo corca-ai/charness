@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -116,7 +117,7 @@ def test_check_python_lengths_fails_when_tokei_missing_instead_of_falling_back(t
         "scripts/check_python_lengths.py",
         "--repo-root",
         str(repo),
-        env={"PATH": str(bin_dir)},
+        env={**os.environ, "PATH": str(bin_dir)},
     )
 
     assert result.returncode == 1

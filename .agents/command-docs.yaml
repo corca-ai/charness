@@ -32,7 +32,6 @@ commands:
     required_help_contains:
       - status
       - run
-      - --repo-root
     required_doc_contains:
       - charness task run
       - charness task status
