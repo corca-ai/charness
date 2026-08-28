@@ -33,6 +33,18 @@ def test_check_skill_contracts_rejects_missing_required_snippet(tmp_path: Path) 
     assert "missing required core contract snippet" in result.stderr
 
 
+def test_check_skill_contracts_pins_current_critique_contract() -> None:
+    module_path = ROOT / "scripts" / "check_skill_contracts.py"
+    spec = importlib.util.spec_from_file_location("check_skill_contracts_critique_pin_test", module_path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    critique_path = "skills/public/critique/SKILL.md"
+    snippets = module.CORE_CONTRACTS[critique_path]
+    module.validate_core_contract(ROOT / critique_path, snippets)
+
+
 def test_check_skill_contracts_allows_reference_level_package_contract(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     skill_dir = repo / "skills" / "public" / "demo"
