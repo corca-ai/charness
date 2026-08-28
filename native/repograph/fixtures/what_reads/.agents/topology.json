@@ -1,0 +1,13 @@
+{
+  "topology": {
+    "test_globs": [],
+    "production_globs": [
+      ".agents/**",
+      ".githooks/**",
+      "config.*",
+      "data/**",
+      "plugins/**"
+    ],
+    "generated_globs": []
+  }
+}

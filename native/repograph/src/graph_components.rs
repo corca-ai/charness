@@ -18,7 +18,16 @@ use crate::graph_model::{
 use crate::inventory::{FileInventory, InventoryError};
 use crate::surfaces;
 
-const MAX_EXPLAIN_PATHS: usize = 3;
+pub const MAX_EXPLAIN_PATHS: usize = 3;
+
+/// The reusable typed graph portion of an explanation.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct ExplainProjection {
+    pub root_paths: Vec<RootPath>,
+    pub path_limit: usize,
+    pub paths_bounded: bool,
+    pub dependents: Vec<Edge>,
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct TopologyComponent {
@@ -157,9 +166,8 @@ pub fn explain(
 ) -> ExplainReport {
     let graph_inventory = augment_inventory(inventory, path);
     let graph = graph::build(repo_root, &graph_inventory, excludes, analyzer_results);
-    let root_projection = root_paths(&graph, path);
-    let dependents = reverse_edges(&graph.edges, path);
-    let nearest = if root_projection.paths.is_empty() {
+    let projection = explain_projection(&graph, path);
+    let nearest = if projection.root_paths.is_empty() {
         nearest_classified_ancestors(&graph, path)
     } else {
         Vec::new()
@@ -180,13 +188,27 @@ pub fn explain(
         excludes: excludes.to_vec(),
         analyzer_inputs: graph.analyzer_inputs,
         path: path.to_string(),
-        root_paths: root_projection.paths,
-        path_limit: MAX_EXPLAIN_PATHS,
-        paths_bounded: root_projection.bounded,
-        dependents,
+        root_paths: projection.root_paths,
+        path_limit: projection.path_limit,
+        paths_bounded: projection.paths_bounded,
+        dependents: projection.dependents,
         nearest_classified_ancestors: nearest,
         unresolved_carriers: graph.unresolved_carriers,
         unestablished: dedupe_unestablished(unestablished),
+    }
+}
+
+/// Project the bounded reverse/root explanation from an already-built graph.
+///
+/// Commands that need graph context should consume this projection rather than
+/// reimplementing traversal or inventing a second root-path ordering.
+pub fn explain_projection(report: &GraphReport, path: &str) -> ExplainProjection {
+    let root_projection = root_paths(report, path);
+    ExplainProjection {
+        root_paths: root_projection.paths,
+        path_limit: MAX_EXPLAIN_PATHS,
+        paths_bounded: root_projection.bounded,
+        dependents: reverse_edges(&report.edges, path),
     }
 }
 

@@ -1,0 +1,1 @@
+fn quiet_fixture() {}

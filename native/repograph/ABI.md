@@ -4,9 +4,9 @@
 > Source: the `repograph` release binary built from this crate.
 
 This document freezes the machine-facing CLI contract for `parse-corpus`,
-`export-safe`, `match-surfaces`, `standalone-targets`, and `plugin-refs`, and records the
-additive topology commands (`graph`, `classify`, `changed`, `carriers`,
-`components`, `explain`). A reportable run
+`export-safe`, `match-surfaces`, and `standalone-targets`, and records the
+additive commands (`graph`, `classify`, `changed`, `carriers`,
+`components`, `explain`, `plugin-refs`, `what-reads`). A reportable run
 emits one UTF-8 JSON document on stdout and diagnostics on stderr. The
 command-specific inventory, manifest, and path errors below identify the
 failure cases that emit diagnostics without a report. JSON member order is not
@@ -28,7 +28,7 @@ their respective captures, with whitespace formatted for readability.
 The executable accepts one required command name:
 
 ```text
-repograph <parse-corpus|export-safe|match-surfaces|standalone-targets|graph|classify|changed|carriers|components|explain|plugin-refs> [options]
+repograph <parse-corpus|export-safe|match-surfaces|standalone-targets|graph|classify|changed|carriers|components|explain|plugin-refs|what-reads> [options]
 ```
 
 `--help` and `-h` print the command usage and exit 0. An unknown command,
@@ -686,6 +686,91 @@ presence remains distinguishable from an inventory path.
 | 2 | CLI usage error. |
 | 3 | Inventory, analyzer, parsing, carrier, normalization, or excluded-path scope was unestablished. |
 | 70 | Internal `repograph` failure, including a top-level panic or an output failure. |
+
+## `what-reads`
+
+### `what-reads` input
+
+Usage:
+
+```text
+repograph what-reads --path PATH [--repo-root PATH] [--file-list PATH] [--include-mirrors] [--detail]
+```
+
+| Argument or flag | Contract |
+| --- | --- |
+| command | Required literal `what-reads`. |
+| `--path PATH` | Required exactly once. The repo-relative path target is normalized with the `match-surfaces` v1 path normalizer. |
+| `--repo-root PATH` | Repository root. Default: the process current directory. |
+| `--file-list PATH` | Optional NUL-separated inventory file. Without it, one Git snapshot is acquired with `git ls-files -z --cached --others --exclude-standard`. |
+| `--include-mirrors` | Include `plugins/**`; without it, that mirror is excluded and named in `unscanned_surfaces`. |
+| `--detail` | Include per-file `references` and each hit's line, source, and applicable `glob` or `carrier_id`. Without it, the report contains the per-file summary only. |
+| positional arguments | Not accepted. `--symbol` and `--config-key` are deliberately retired and are not accepted. |
+
+The scan universe is the established inventory filtered to the Python owner's
+text suffix allowlist (`.py`, `.sh`, `.bash`, `.zsh`, `.md`, `.yaml`, `.yml`,
+`.json`, `.jsonc`, `.toml`, `.cfg`, `.ini`, `.txt`, `.mjs`, `.js`, `.ts`, and
+extensionless files), existing regular files, and the fixed exclusion
+directories `.git`, `__pycache__`, `.pytest_cache`, `node_modules`, `mutants`,
+and `.charness`. The Git inventory is not replaced by a filesystem walk when
+Git is unavailable; use `--file-list` to provide an established snapshot.
+
+### `what-reads` output schema
+
+Schema id: `repograph.what_reads.v1`.
+
+| Field | JSON type | Meaning |
+| --- | --- | --- |
+| `schema` | string | Always `repograph.what_reads.v1`. |
+| `repo_root` | string | `.` for an absolute root, otherwise the supplied root in POSIX form. |
+| `listing` | string | `git`, `file-list`, or `unestablished`. |
+| `target_kind` | string | Always `path`; the retired symbol/config-key modes have no output variant. |
+| `target` | string | Normalized repo-relative path target. |
+| `include_mirrors` | boolean | Whether the exported `plugins/**` mirror was in the scan universe. |
+| `files_scanned` | integer | Existing files in the filtered scan universe, including files that could not be decoded. |
+| `reference_count` | integer | Total lexical/path evidence hits after command-carrier classification. |
+| `reference_kinds` | object | Deterministic counts by evidence kind. |
+| `files_with_references` | array of strings | Sorted files with at least one evidence hit. |
+| `references` | array of objects, optional | Present only with `--detail`; each object has `file`, `surface`, and `hits`. |
+| `unscanned_surfaces` | array of strings | Caveats carried on every report, including the mirror note when mirrors are excluded, git-history/external/runtime-composed/binary-extension caveats, and the extension-only and prose-glob caveats. |
+| `zero_result_caveat` | nullable string | The preserved warning when `reference_count` is zero; otherwise `null`. |
+| `graph` | object | Typed `explain` projection with `root_paths`, `path_limit` (`3`), `paths_bounded`, and direct reverse `dependents`. It traverses only `imports` and `invokes` edges. |
+| `unresolved_carriers` | array of objects | Typed carrier opacity inherited from the graph builder. |
+| `unestablished` | array of objects | Inventory, parsing, role, carrier, or other graph conditions that prevent an established report. |
+
+Each detailed `hits` entry has `kind`, `line`, and trimmed `source`. The
+evidence kinds are:
+
+| Kind | Additional field | Semantics |
+| --- | --- | --- |
+| `literal-path` | — | The target path occurs as a literal substring on the line. |
+| `glob-consumption` | `glob` | A quoted glob containing `/` matches the complete target path. It uses PATH semantics: `*` and `?` do not cross `/`; `**` retains its recursive behavior. Globs are scanned only in source, config, and test surfaces. |
+| `basename-glob` | `glob` | An unanchored quoted glob matches the target basename. Extension-only and otherwise too-generic globs are filtered out. Globs are scanned only in source, config, and test surfaces. |
+| `basename-reference` | — | A weaker basename-only reference with path boundaries; it is emitted only when the line has no stronger literal or matching-glob evidence. |
+| `command-carrier` | `carrier_id` | A literal path hit whose file and line correspond to a `carrier-path-reference`, or to a resolved `invokes` edge targeting the requested path. This upgrades the bare lexical hit without claiming execution. |
+
+The `surface` values are `source`, `config`, `test`, `doc`, or `mirror`.
+`graph.root_paths` and `graph.dependents` retain the `explain` v1 typed `Root`
+and `Edge` objects, including edge kind, source, target, `rule_id`, `module`, and
+line fields. At most three shortest root paths are emitted, with
+`paths_bounded: true` when more shortest paths were found.
+
+### `what-reads` exit semantics
+
+| Exit | Meaning for `what-reads` |
+| --- | --- |
+| 0 | A report was emitted with an established inventory and graph scope. Zero lexical hits are still exit 0 and carry `zero_result_caveat`. |
+| 1 | Unused; this is a pure evidence report. |
+| 2 | CLI usage error, including a missing/duplicate `--path`, an unknown flag, a positional argument, or a retired `--symbol`/`--config-key` mode. |
+| 3 | Inventory or graph scope was unestablished, including parsing, carrier, role, or normalization conditions. The report is still emitted. |
+| 70 | Internal `repograph` failure, including a panic or output failure. |
+
+NON-CLAIM: `what-reads` is lexical/graph evidence, not proof of runtime
+consumption. It does not evaluate runtime-composed paths, execute carriers,
+or establish that a matched command actually ran. The Python owner's
+`--symbol` and `--config-key` modes, including the AST-context symbol
+classifier and lexical fallback module, are deliberately retired and are not
+ported.
 
 ## `standalone-targets`
 

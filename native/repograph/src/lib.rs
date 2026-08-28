@@ -16,6 +16,7 @@ pub mod plugin_refs;
 pub mod selection;
 pub mod standalone;
 pub mod surfaces;
+pub mod what_reads;
 
 use std::ffi::OsStr;
 use std::io::Write;
@@ -74,6 +75,7 @@ where
         "components" => graph_components::run_components(remaining),
         "explain" => graph_components::run_explain(remaining),
         "plugin-refs" => plugin_refs::run(remaining),
+        "what-reads" => what_reads::run(remaining),
         _ => {
             eprintln!("usage error: unknown subcommand {command:?}\n{}", usage());
             2
@@ -223,7 +225,7 @@ fn build_parse_corpus_report(
 }
 
 fn usage() -> &'static str {
-    "repograph <parse-corpus|export-safe|match-surfaces|standalone-targets|graph|classify|changed|carriers|components|explain|plugin-refs> [options]"
+    "repograph <parse-corpus|export-safe|match-surfaces|standalone-targets|graph|classify|changed|carriers|components|explain|plugin-refs|what-reads> [options]"
 }
 
 fn parse_usage() -> &'static str {

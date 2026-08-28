@@ -87,6 +87,15 @@ classified ancestors for an unreachable path:
 target/release/repograph explain --repo-root ../.. --path scripts/example.py
 ```
 
+Find literal, glob, basename, and command-carrier evidence for a path. Add
+`--include-mirrors` to include the exported `plugins/**` mirror and `--detail`
+to include each hit:
+
+```bash
+target/release/repograph what-reads --repo-root ../.. \
+  --path scripts/example.py --detail
+```
+
 The parity and benchmark harnesses are investigative only and are not wired
 into repository gates:
 

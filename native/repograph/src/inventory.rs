@@ -51,6 +51,42 @@ impl FileInventory {
         &self.paths
     }
 
+    /// Retain one established inventory while narrowing its analysis scope.
+    pub fn filtered<F>(&self, mut keep: F) -> Self
+    where
+        F: FnMut(&str) -> bool,
+    {
+        let mut seen = std::collections::HashSet::new();
+        let paths = self
+            .paths
+            .iter()
+            .filter(|path| keep(path.as_str()) && seen.insert(path.as_str()))
+            .cloned()
+            .collect();
+        Self {
+            source: self.source,
+            paths,
+        }
+    }
+
+    /// Add a normalized query path to the in-process graph projection.
+    pub fn with_path(&self, path: &str) -> Result<Self, InventoryError> {
+        validate_repo_path(path, "query path")?;
+        if self
+            .paths
+            .iter()
+            .any(|candidate| candidate.as_str() == path)
+        {
+            return Ok(self.clone());
+        }
+        let mut paths = self.paths.clone();
+        paths.push(RepoPath(path.to_string()));
+        Ok(Self {
+            source: self.source,
+            paths,
+        })
+    }
+
     pub fn from_file_list_bytes(bytes: &[u8]) -> Result<Self, InventoryError> {
         Ok(Self {
             source: ListingSource::FileList,
