@@ -19,7 +19,7 @@ default exclusion is the `plugins/` prefix; pass `--exclude-prefix` to replace
 it. A NUL-separated repository-relative file list can be injected instead:
 
 ```bash
-target/release/repograph parse-corpus --repo-root ../.. \
+target/release/repograph parse-corpus --repo-root fixtures \
   --file-list fixtures/file-list.nul
 ```
 
