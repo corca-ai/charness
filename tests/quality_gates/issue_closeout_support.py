@@ -4,6 +4,11 @@ import importlib.util
 import re
 from pathlib import Path
 
+# Re-export: four closeout test modules import `seed_commit` from this
+# support module. The `as` alias marks it as an intentional re-export so
+# an unused-import auto-fix cannot strip it again.
+from .seeding_support import seed_commit as seed_commit
+
 SCRIPT = "skills/public/issue/scripts/issue_tool.py"
 VERIFY_MODULE_PATH = Path(__file__).resolve().parents[2] / "skills" / "public" / "issue" / "scripts" / "issue_verify_closeout.py"
 
