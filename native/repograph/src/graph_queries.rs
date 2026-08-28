@@ -732,6 +732,9 @@ mod tests {
             listing: "file-list".to_string(),
             excludes: Vec::new(),
             nodes: Vec::new(),
+            unresolved_carriers: Vec::new(),
+            carrier_path_references: Vec::new(),
+            quality_labels: Vec::new(),
             edges: vec![
                 Edge {
                     kind: crate::graph_model::EdgeKind::Imports,
