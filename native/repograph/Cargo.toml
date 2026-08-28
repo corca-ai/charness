@@ -1,0 +1,20 @@
+[package]
+name = "repograph"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.96"
+description = "Non-production Rust repository-analysis spike for Charness issue #745"
+
+[lib]
+name = "repograph"
+path = "src/lib.rs"
+
+[[bin]]
+name = "repograph"
+path = "src/main.rs"
+
+[dependencies]
+ruff_python_ast = "=0.0.11"
+ruff_python_parser = "=0.0.11"
+serde = { version = "=1.0.219", features = ["derive"] }
+serde_json = "=1.0.140"
