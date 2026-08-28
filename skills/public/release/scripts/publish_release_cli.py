@@ -205,12 +205,18 @@ def ensure_release_surface(repo_root: Path, expected_version: str, *, stage: str
     blocker = release_surface_blocker(release_payload, expected_version)
     if blocker:
         raise SystemExit(blocker)
-    surface_versions = release_payload.get("surface_versions")
+    versioned_surfaces = release_payload.get("versioned_surfaces")
+    presence_surfaces = release_payload.get("presence_surfaces")
     return {
         "status": "passed",
         "stage": stage,
         "checked_version": expected_version,
-        "surfaces": sorted(surface_versions) if isinstance(surface_versions, dict) else [],
+        "versioned_surfaces": sorted(versioned_surfaces)
+        if isinstance(versioned_surfaces, (list, tuple))
+        else [],
+        "presence_surfaces": sorted(presence_surfaces)
+        if isinstance(presence_surfaces, (list, tuple))
+        else [],
         # Always empty on this path -- a non-empty `drift` raised above. Recorded so the
         # disposition reads as the output of a check rather than as a constant.
         "drift": list(release_payload.get("drift") or []),

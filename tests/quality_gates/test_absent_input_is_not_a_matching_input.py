@@ -957,7 +957,12 @@ def test_d48_ensure_release_surface_returns_the_disposition_when_there_is_no_blo
     monkeypatch.setattr(
         cli,
         "build_release_payload",
-        lambda root: {"surface_versions": {"packaging_manifest": "9.9.9"}, "drift": []},
+        lambda root: {
+            "surface_versions": {"packaging_manifest": "9.9.9"},
+            "versioned_surfaces": ["packaging_manifest"],
+            "presence_surfaces": [],
+            "drift": [],
+        },
     )
     monkeypatch.setattr(cli, "release_surface_blocker", lambda payload, version: None)
 
@@ -966,17 +971,19 @@ def test_d48_ensure_release_surface_returns_the_disposition_when_there_is_no_blo
     assert disposition["status"] == "passed"
     assert disposition["checked_version"] == "9.9.9"
     assert disposition["stage"] == "unit"
-    assert disposition["surfaces"] == ["packaging_manifest"]
+    assert disposition["versioned_surfaces"] == ["packaging_manifest"]
+    assert disposition["presence_surfaces"] == []
     assert disposition["drift"] == []
 
     # The coverage the old `assert ... is None` form carried and this one would have
     # dropped: a payload with NEITHER key still returns a disposition rather than raising.
-    # `surfaces` is derived from `build_release_payload`, so a payload shaped unlike the
+    # The surface lists are derived from `build_release_payload`, so a payload shaped unlike the
     # real one is exactly where a derivation crashes -- and this call sits after the bump,
     # where a traceback lands between the mutation and the record.
     monkeypatch.setattr(cli, "build_release_payload", lambda root: {"stub": True})
 
     minimal = cli.ensure_release_surface(tmp_path, "9.9.9", stage="unit")
 
-    assert minimal["surfaces"] == []
+    assert minimal["versioned_surfaces"] == []
+    assert minimal["presence_surfaces"] == []
     assert minimal["drift"] == []

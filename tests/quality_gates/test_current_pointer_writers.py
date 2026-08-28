@@ -282,12 +282,16 @@ def test_release_record_binds_the_no_drift_claim_to_the_check_that_ran(tmp_path:
             "status": "passed",
             "stage": "post-bump, pre-commit",
             "checked_version": "0.2.0",
-            "surfaces": ["claude_plugin", "packaging_manifest"],
+            "versioned_surfaces": ["claude_plugin", "packaging_manifest"],
+            "presence_surfaces": ["codex_marketplace_source_path"],
             "drift": [],
         },
     )
 
-    assert "reported no version drift across 2 read surface(s) against target `0.2.0`" in text
+    assert (
+        "reported no version drift across 2 versioned surface(s), with 1 presence-only "
+        "surface(s) not version-checked against target `0.2.0`"
+    ) in text
     assert "checked at `post-bump, pre-commit`" in text
 
 

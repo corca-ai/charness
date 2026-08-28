@@ -16,6 +16,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import yaml
+
 from .support import ROOT
 
 SCRIPT = ROOT / "skills" / "public" / "release" / "scripts" / "current_release.py"
@@ -58,6 +60,11 @@ def test_a_speakable_version_reports_what_the_repo_declared(tmp_path: Path) -> N
     assert result.returncode == 0, result.stderr
     assert "package_id: acme-harness" in result.stdout
     assert "vendor/mypkg" in result.stdout
+    payload = yaml.safe_load(result.stdout)
+    assert payload["versioned_surfaces"] == [
+        "packaging_manifest", "claude_plugin", "codex_plugin", "claude_marketplace_version"
+    ]
+    assert payload["presence_surfaces"] == ["codex_marketplace_source_path"]
 
 
 def test_no_adapter_at_all_is_not_a_refusal(tmp_path: Path) -> None:

@@ -225,6 +225,8 @@ def build_payload(repo_root: Path) -> dict[str, object]:
     # reportable on the same axis. Leaving it out is how "deleted by a failed sync" stayed
     # invisible for it.
     presence_surfaces = ("codex_marketplace_source_path",)
+    payload["versioned_surfaces"] = ["packaging_manifest", *versioned_surfaces]
+    payload["presence_surfaces"] = list(presence_surfaces)
     # `packaging_manifest` is deliberately NOT declarable: its absence is drift whether or
     # not anyone declares it, so accepting the declaration would be a silent no-op that
     # reads like it was honored.
