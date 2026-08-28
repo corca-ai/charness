@@ -1,0 +1,23 @@
+{
+  "version": 1.0,
+  "surfaces": [
+    {
+      "surface_id": "go-runtime",
+      "description": "Go runtime source surface",
+      "source_paths": ["scripts/*.go"],
+      "derived_paths": ["generated/*.go"],
+      "sync_commands": [],
+      "verify_commands": [],
+      "notes": []
+    },
+    {
+      "surface_id": "host-trigger",
+      "description": "Host-proof trigger surface",
+      "source_paths": ["README.md", "scripts/*.go"],
+      "derived_paths": [],
+      "sync_commands": [],
+      "verify_commands": [],
+      "notes": []
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "production": ["scripts/x.go"],
+  "test": ["scripts/testdata/sample.txt", "scripts/x_test.go"],
+  "doc": ["README.md"],
+  "unestablished": ["unknown.data"],
+  "go_runtime_surfaces": ["go-runtime", "host-trigger"],
+  "test_surfaces": ["go-runtime", "host-trigger"],
+  "doc_surfaces": ["host-trigger"]
+}

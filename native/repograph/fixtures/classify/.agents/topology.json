@@ -1,0 +1,7 @@
+{
+  "topology": {
+    "test_globs": [],
+    "production_globs": [],
+    "generated_globs": []
+  }
+}

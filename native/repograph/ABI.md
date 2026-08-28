@@ -4,7 +4,8 @@
 > Source: the `repograph` release binary built from this crate.
 
 This document freezes the machine-facing CLI contract for `parse-corpus`,
-`export-safe`, `match-surfaces`, and `standalone-targets`. A reportable run
+`export-safe`, `match-surfaces`, and `standalone-targets`, and records the
+additive topology commands. A reportable run
 emits one UTF-8 JSON document on stdout and diagnostics on stderr. The
 command-specific inventory, manifest, and path errors below identify the
 failure cases that emit diagnostics without a report. JSON member order is not
@@ -26,7 +27,7 @@ their respective captures, with whitespace formatted for readability.
 The executable accepts one required command name:
 
 ```text
-repograph <parse-corpus|export-safe|match-surfaces|standalone-targets|graph> [options]
+repograph <parse-corpus|export-safe|match-surfaces|standalone-targets|graph|classify|changed> [options]
 ```
 
 `--help` and `-h` print the command usage and exit 0. An unknown command,
@@ -453,6 +454,104 @@ Node and edge arrays are sorted by class/kind and identifier/source/target;
 inventory paths are deduplicated. Graph reports exit 0 when established, 3
 when the report contains an unestablished condition, 2 for usage errors, and
 70 for an internal output or panic failure.
+
+## `classify`
+
+### `classify` input
+
+Usage:
+
+```text
+repograph classify [--repo-root PATH] [--file-list PATH] [--surfaces PATH] [--path PATH]... [--exclude-prefix PREFIX]... [--analyzer-result FILE]...
+```
+
+`--repo-root` and `--file-list` have the common inventory meanings. The
+`--surfaces` default is `.agents/surfaces.json`. `--path` is repeatable; its
+values are normalized with the same path routine as `match-surfaces` and are
+deduplicated by first occurrence. When no `--path` is supplied, all inventory
+paths outside the exclusion prefixes are classified. The exclusion default is
+`plugins/` and `native/repograph/fixtures/`; supplying one prefix replaces
+both defaults. `--analyzer-result` is repeatable identity-only plumbing and
+marks the query unestablished until provider parsing is supplied by its owner.
+
+### `classify` output schema
+
+Schema id: `repograph.classify.v1`.
+
+| Field | JSON type | Meaning |
+| --- | --- | --- |
+| `schema` | string | Always `repograph.classify.v1`. |
+| `repo_root` | string | `.` for the canonical absolute root, otherwise the supplied relative root. |
+| `listing` | string | `git`, `file-list`, or `unestablished` for an inventory-error report. |
+| `excludes` | array of strings | Effective exclusion prefixes in command order. |
+| `paths` | array of objects | One result per normalized requested path, in first-occurrence order. |
+| `role_census` | object | Counts for `production`, `test`, `generated`, `doc`, and `unestablished`; `unestablished-absent` contributes to `unestablished`. |
+| `unestablished_by_top_level` | object | Counts of unestablished requested paths keyed by top-level directory; repository-root files use `<root>`. |
+| `unestablished` | array of objects | Typed role or analyzer conditions; empty means the requested classification is established. |
+
+Each `paths` object has `path`, `role`, `presence`, nullable `package`, and
+`surfaces`. `role` is one of `production`, `test`, `generated`, `doc`,
+`unestablished`, or `unestablished-absent`; `presence` is `present` or
+`absent-from-snapshot`. An absent path is added only to the in-process query
+projection, so path-shape role rules and surface patterns still apply while
+presence remains absent. An absent or unestablished path never receives a
+false production verdict.
+
+Each `surfaces` entry is emitted only when the path matches a source or derived
+pattern and has `surface_id`, `matched_source`, `matched_derived`, and nullable
+`production`. Pattern matching is the `match-surfaces` v1 matcher. `production`
+is `true` only for a present production-role path, `false` for a present
+test/generated/doc path, and `null` for an absent or unestablished path. Thus a
+doc-role raw trigger remains a surface match without being mislabeled as a
+production source.
+
+### `classify` exit semantics
+
+| Exit | Meaning for `classify` |
+| --- | --- |
+| 0 | The report was emitted and every requested path was classified, including an empty selected inventory. |
+| 1 | Unused; this is a pure report. |
+| 2 | CLI usage error. |
+| 3 | Inventory, surfaces manifest, path normalization, analyzer establishment, or requested role classification failed. |
+| 70 | Internal `repograph` failure, including a top-level panic or an output failure. |
+
+## `changed`
+
+### `changed` input
+
+Usage:
+
+```text
+repograph changed [--repo-root PATH] [--file-list PATH] [--surfaces PATH] [--path PATH]... [--exclude-prefix PREFIX]... [--analyzer-result FILE]...
+```
+
+`changed` accepts the same path, inventory, surface, exclusion, and analyzer
+options as `classify`. It emits the same per-path classification plus roots
+reached through the typed graph. With no `--path`, it reports all non-excluded
+inventory paths.
+
+### `changed` output schema
+
+Schema id: `repograph.changed.v1`.
+
+The report has `schema`, `repo_root`, `listing`, `excludes`, `paths`,
+`affected_surfaces`, `affected_packages`, `affected_roots`, and
+`unestablished`. Aggregate surface and package IDs are sorted and deduplicated.
+Aggregate roots are objects with `kind`, `id`, and `target`, sorted by `id`.
+Each path flattens the `classify` path fields and adds `affected_roots` and
+`explanations`; explanations name the matching surface pattern, package
+ownership, and graph roots, including when production membership is
+unestablished.
+
+### `changed` exit semantics
+
+| Exit | Meaning for `changed` |
+| --- | --- |
+| 0 | The report was emitted and every requested path was classified. |
+| 1 | Unused; this is a pure report. |
+| 2 | CLI usage error. |
+| 3 | Inventory, surfaces manifest, path normalization, analyzer establishment, or requested role classification failed. |
+| 70 | Internal `repograph` failure, including a top-level panic or an output failure. |
 
 ## `standalone-targets`
 

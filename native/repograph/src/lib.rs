@@ -5,6 +5,7 @@ pub mod graph;
 pub mod graph_imports;
 pub mod graph_mirrors;
 pub mod graph_model;
+pub mod graph_queries;
 pub mod graph_roles;
 pub mod inventory;
 pub mod parser;
@@ -63,6 +64,8 @@ where
         "match-surfaces" => surfaces::run(remaining),
         "standalone-targets" => standalone::run(remaining),
         "graph" => graph::run(remaining),
+        "classify" => graph_queries::run_classify(remaining),
+        "changed" => graph_queries::run_changed(remaining),
         _ => {
             eprintln!("usage error: unknown subcommand {command:?}\n{}", usage());
             2
@@ -212,7 +215,7 @@ fn build_parse_corpus_report(
 }
 
 fn usage() -> &'static str {
-    "repograph <parse-corpus|export-safe|match-surfaces|standalone-targets|graph> [options]"
+    "repograph <parse-corpus|export-safe|match-surfaces|standalone-targets|graph|classify|changed> [options]"
 }
 
 fn parse_usage() -> &'static str {

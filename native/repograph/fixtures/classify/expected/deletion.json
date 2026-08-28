@@ -1,0 +1,7 @@
+{
+  "path": "scripts/removed.go",
+  "presence": "absent-from-snapshot",
+  "role": "production",
+  "package": "scripts",
+  "surface_ids": ["go-runtime", "host-trigger"]
+}

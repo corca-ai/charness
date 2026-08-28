@@ -56,6 +56,14 @@ Use repeatable `--analyzer-result FILE` options to record identity-only
 provider inputs; this lane marks their scope `unestablished` until a later
 lane supplies provider parsing.
 
+The query commands classify changed paths with the same role resolver and
+surface matcher, including deleted paths supplied by `--path`:
+
+```bash
+target/release/repograph classify --repo-root ../.. --path scripts/example.py
+target/release/repograph changed --repo-root ../.. --path scripts/example.py
+```
+
 The parity and benchmark harnesses are investigative only and are not wired
 into repository gates:
 
