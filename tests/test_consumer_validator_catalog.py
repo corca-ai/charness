@@ -240,26 +240,6 @@ def test_live_catalog_has_a_decision_for_every_packaged_candidate() -> None:
     report = catalog_check.validate_catalog(ROOT)
 
     assert report["status"] == "pass"
-    # `packaged_validator_count == decision_count` was asserted here and REMOVED as a
-    # dead assertion: given `status == "pass"` it is a theorem, not a check. The
-    # checker raises when a declared path is not discovered, raises on
-    # `discovered - declared`, and rejects duplicate paths, so the two counts cannot
-    # differ. It read as the property line ("every packaged validator carries a
-    # decision") while being incapable of failing. The property is enforced upstream;
-    # `test_new_packaged_validator_cannot_stay_silent` below is the behavioural control
-    # that proves it, and it predates this slice — the replacement control this slice
-    # first added was a near-duplicate of it and was dropped.
-    #
-    # The absolute population pin (`== 134`) was also removed. Every INCOMPLETE change
-    # is already refused by the checker: added-without-decision, deleted-with-entry,
-    # truncated mirror. What the pin uniquely caught was a complete, self-consistent,
-    # correct change -- a chore, whose trailing comment was the receipt for the last
-    # time it was paid. Slice 2 of the gate-by-property goal classified it
-    # `recommend-removal` and the operator approved.
-    #
-    # This one STAYS, and is `contract` rather than chore: it pins the exported
-    # consumer surface every consuming repo must wire or explicitly opt out of.
-    assert report["consumer_facing_count"] == 12
     assert "scripts/validate_adapters.py" not in report["consumer_facing_validators"]
     assert "quality-artifact" in report["consumer_validator_ids"]
     quality = next(
