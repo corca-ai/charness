@@ -2,7 +2,7 @@
 
 Regression pin for the scope gap where skills/shared/scripts/*.py (exported,
 consuming-repo-facing Python) escaped the ruff, py-compile, length,
-export-safe-import, and runtime-inheritance gate scopes that already covered
+and runtime-inheritance gate scopes that already covered
 public and support skill scripts.
 """
 from __future__ import annotations
@@ -12,7 +12,6 @@ import importlib
 from .support import ROOT
 
 CHECK_PYTHON_LENGTHS = importlib.import_module("scripts.check_python_lengths")
-CHECK_EXPORT_SAFE_IMPORTS = importlib.import_module("scripts.check_export_safe_imports")
 CHECK_PYTHON_RUNTIME_INHERITANCE = importlib.import_module("scripts.check_python_runtime_inheritance")
 
 REPO_ROOT = ROOT
@@ -22,11 +21,6 @@ SENTINEL = REPO_ROOT / "skills" / "shared" / "scripts" / "reviewer_boundary_fing
 
 def test_shared_scripts_in_length_gate_scope() -> None:
     targets = CHECK_PYTHON_LENGTHS.iter_python_targets(REPO_ROOT)
-    assert SENTINEL in targets
-
-
-def test_shared_scripts_in_export_safe_import_scope() -> None:
-    targets = CHECK_EXPORT_SAFE_IMPORTS.iter_python_targets(REPO_ROOT)
     assert SENTINEL in targets
 
 
@@ -89,4 +83,3 @@ def test_no_surface_or_integration_note_restates_the_lint_path_list() -> None:
 
 def test_shared_scripts_in_scope_under_git_file_listing() -> None:
     assert SENTINEL in CHECK_PYTHON_LENGTHS.iter_python_targets(REPO_ROOT, require_git=True)
-    assert SENTINEL in CHECK_EXPORT_SAFE_IMPORTS.iter_python_targets(REPO_ROOT, require_git=True)

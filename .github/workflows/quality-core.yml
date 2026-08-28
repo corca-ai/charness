@@ -41,6 +41,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Cache native repograph
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.cargo
+            native/repograph/target
+          key: ${{ runner.os }}-native-repograph-${{ hashFiles('native/repograph/Cargo.lock', 'native/repograph/rust-toolchain.toml') }}
+
+      - name: Provision native repograph
+        working-directory: native/repograph
+        run: cargo build --release --locked
+
       - name: Setup Python
         uses: actions/setup-python@v6
         with:

@@ -13,8 +13,8 @@ and not a stricter setting on an old one. `validate_packaging_install_surface.py
 re-runs the exporter into a tmpdir and diffs it against the checked-in tree, so
 its ORACLE IS THE EXPORTER: anything the exporter omits is absent from both sides
 and the diff is empty. It is a fixed-point check on the generator, not a
-self-sufficiency check on the artifact. `check_export_safe_imports.py` asks the
-adjacent question -- does a path literal survive the `skills/public/` collapse --
+self-sufficiency check on the artifact. The native-backed `check-export-safe-imports`
+gate asks the adjacent question -- does a path literal survive the `skills/public/` collapse --
 and reasons about the SOURCE tree. This module reads the CHECKED-IN EXPORT, which
 is the thing a consumer actually installs.
 
@@ -54,7 +54,7 @@ build of the path arm and showed it wrong in BOTH directions at once: it excused
 files into `packaging/`, and it reported `root / "evals" / ...` in maintainer
 tools where `root` is the repo the OPERATOR named -- code that is correct. Both
 follow from one gap the arm cannot close as written: it cannot tell "reads its
-own tree" from "scans whatever tree the caller passed". `check_export_safe_imports`
+own tree" from "scans whatever tree the caller passed". The export-safe gate
 closes it by requiring the chain to be rooted at the module's own `REPO_ROOT`
 name, and that discrimination is what this arm still owes.
 
@@ -100,7 +100,7 @@ CONSUMER_OWNED_ROOTS = {
 
 #: Literal prefixes this check does NOT own, with the owner named. The plugin
 #: export collapses `skills/public/<skill>/` to `skills/<skill>/`, and
-#: `check_export_safe_imports.py` already renders a verdict on exactly that --
+#: The native-backed `check-export-safe-imports` gate already renders a verdict on exactly that --
 #: including a deliberate exemption for a chain rooted at an operator-supplied
 #: `repo_root`, because a maintainer tool legitimately walks `skills/public/` in
 #: whatever repo the caller named. Re-reporting those here would be the same

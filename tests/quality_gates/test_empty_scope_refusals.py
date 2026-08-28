@@ -32,7 +32,6 @@ _MODULES = {
     name: load_script_module(name.removesuffix(".py").replace("/", "_"), ROOT / name)
     for name in (
         "scripts/validate_packaging.py",
-        "scripts/check_export_safe_imports.py",
         "scripts/check_bootstrap_shim_consistency.py",
         "scripts/validate_critique_artifacts.py",
         "scripts/validate_retro_artifact.py",
@@ -80,7 +79,6 @@ def _empty_root(tmp_path: Path) -> Path:
     ("script", "args", "expected_fragment"),
     [
         ("scripts/validate_packaging.py", [], "no packaging manifests found"),
-        ("scripts/check_export_safe_imports.py", [], "no export-surface Python files found"),
         # The `no bootstrap shim copies found under <root>` sentence was deleted with
         # `--json` on 2026-08-14; the same refusal now rides on `status: empty-scope`,
         # `checked_files: 0`, `scanned_repo_root` and this remedy line.
@@ -97,12 +95,6 @@ def test_zero_scope_scan_refuses(tmp_path: Path, script: str, args: list[str], e
     result = run_gate(script, "--repo-root", str(_empty_root(tmp_path)), *args)
     assert result.returncode != 0, result.stdout + result.stderr
     assert expected_fragment.lower() in (result.stdout + result.stderr).lower()
-
-
-def test_export_safe_zero_scope_refusal_is_not_an_unconditional_failure() -> None:
-    """Keep the only whole-entrypoint positive control for export-safe imports."""
-    result = run_gate("scripts/check_export_safe_imports.py", "--repo-root", str(ROOT))
-    assert result.returncode == 0, result.stdout + result.stderr
 
 
 def test_bootstrap_shim_payload_names_the_empty_scope(tmp_path: Path) -> None:
