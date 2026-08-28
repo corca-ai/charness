@@ -10,12 +10,18 @@ decisions D1, D2, D3, D5.1, and D7. Do not spawn descendant agents.
 A building, tested, non-production Rust crate at `native/repograph/` with:
 
 1. `Cargo.toml` — package `repograph`, one library plus one binary target
-   named `repograph`. Dependencies exact-pinned (`=x.y.z`):
-   `ruff_python_parser`, `ruff_python_ast` (plus `ruff_text_size` /
-   `ruff_source_file` if needed), `serde`/`serde_json`, and a minimal arg
-   parser (hand-rolled or a small crate; no heavy framework). Commit
-   `Cargo.lock`. Rust edition 2021 or 2024, whatever the installed
-   toolchain (rustc 1.93) supports cleanly.
+   named `repograph`. Dependencies exact-pinned: `ruff_python_parser`,
+   `ruff_python_ast`, and (if needed) `ruff_text_size` / `ruff_source_file`
+   all `=0.0.11`; `serde = { version = "=1.0.219", features = ["derive"] }`;
+   `serde_json = "=1.0.140"`; optionally `tempfile = "3"` for tests. No
+   other dependencies — the sandbox has NO network; exactly these crates
+   (and their transitive deps) are pre-cached in the `CARGO_HOME` already
+   exported in your environment. Arg parsing is hand-rolled. Set
+   `CARGO_NET_OFFLINE=true` is already exported; add `--offline` to cargo
+   invocations if any command still tries the network. Commit `Cargo.lock`.
+   Add `rust-toolchain.toml` pinning `channel = "1.96.0"` (installed on
+   this host; the ruff 0.0.11 crates require rustc >= 1.96). Rust edition
+   2021 or 2024.
 2. Inventory module (plan D3): builds a `FileInventory` from exactly one
    `git ls-files -z --cached --others --exclude-standard` execution per
    process, or from `--file-list <path>` (NUL-separated repo-relative
