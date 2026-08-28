@@ -177,7 +177,6 @@ commands:
       - --scope
       - --prompt
       - --prompt-file
-      - --model
       - --effort
     required_doc_contains:
       - charness task run

@@ -245,7 +245,6 @@ def _resolve_task_inputs(
     prompt: str,
     codex: str,
     codex_args: Sequence[str],
-    model: str | None,
     effort: str | None,
     task_id: str | None,
     prepare: bool | None,
@@ -307,7 +306,6 @@ def _resolve_task_inputs(
     command = build_codex_command(
         codex_path,
         prompt,
-        model=model,
         effort=effort,
         writable_dirs=[git_common_dir],
         extra=codex_args,
@@ -324,7 +322,6 @@ def _resolve_task_inputs(
         "codex_path": codex_path,
         "command": command,
         "codex_args": list(codex_args),
-        "model": model,
         "effort": effort,
         "task_id": resolved_task_id,
         "runtime_path": runtime_path,
@@ -344,7 +341,6 @@ def run_task(
     prompt: str,
     codex: str = "codex",
     codex_args: Sequence[str] = (),
-    model: str | None = None,
     effort: str | None = None,
     task_id: str | None = None,
     prepare: bool | None = None,
@@ -376,7 +372,6 @@ def run_task(
             prompt=prompt,
             codex=codex,
             codex_args=codex_args,
-            model=model,
             effort=effort,
             task_id=task_id,
             prepare=prepare,
@@ -486,7 +481,6 @@ def run_task(
     command = build_codex_command(
         codex_path,
         prompt,
-        model=resolved["model"],
         effort=resolved["effort"],
         writable_dirs=[resolved["git_common_dir"], git_worktree_dir],
         extra=resolved["codex_args"],
@@ -591,8 +585,7 @@ def main() -> int:
     prompt.add_argument("--prompt")
     prompt.add_argument("--prompt-file", type=Path)
     parser.add_argument("--codex", default="codex")
-    parser.add_argument("--model")
-    parser.add_argument("--effort")
+    parser.add_argument("--effort", help="Orchestrator-selected effort: medium, xhigh, or max.")
     parser.add_argument("--codex-arg", action="append", default=[])
     parser.add_argument("--task-id", help="Optional receipt/log identifier for explicit runs; shorthand derives it from --lane.")
     parser.add_argument("--prepare", action="store_true", default=None)
@@ -615,7 +608,6 @@ def main() -> int:
         prompt=prompt_text or "",
         codex=args.codex,
         codex_args=args.codex_arg,
-        model=args.model,
         effort=args.effort,
         task_id=args.task_id,
         prepare=args.prepare,

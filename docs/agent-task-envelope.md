@@ -14,7 +14,7 @@ charness task run \
   --lane feature-lane \
   --scope src/example.py \
   --prompt "Implement the requested slice and run its focused tests" \
-  --effort high
+  --effort xhigh
 ```
 
 A clean parent is required for tracked and untracked paths. The command creates
@@ -25,8 +25,8 @@ evidence. Codex runs in `workspace-write` and receives only the Git common
 directory plus that checkout's linked-worktree Git directory as additional
 writable directories. The writer can therefore create its coherent commit
 without opening the full filesystem.
-The orchestrator supplies the reasoning effort; `--model` is
-available when it also needs to select the Codex model.
+The task runner always uses `gpt-5.6-luna`; there is no model-selection option.
+The orchestrator supplies only `medium`, `xhigh`, or `max` reasoning effort.
 
 The fully explicit `--path/--branch/--base` form remains available for
 diagnostics and exceptional host setup. In shorthand, preparation and requiring

@@ -1,7 +1,7 @@
 # Codex Host Notes
 
-This file owns Charness-repository Codex choices only. Portable skills and the
-`charness task` CLI must not hardcode this model or reasoning tier.
+This file owns Charness-repository Codex effort choices. `charness task` fixes
+its model to `gpt-5.6-luna`; callers choose only the reasoning effort.
 
 ## Parallel routing
 
@@ -20,8 +20,7 @@ the fact that a lane exists:
 | Work | Effort | Default stop shape |
 | --- | --- | --- |
 | bounded read-only search or a short self-evident edit | `medium` | return the requested top findings or focused patch; stop instead of widening |
-| ordinary isolated implementation | `high` | implement the scoped behavior and run focused checks |
-| proof/verdict logic, complex migration, or another implementation whose wrong shape is expensive to unwind | `xhigh` | resolve the named hard uncertainty; do not broaden into a repo audit |
+| careful implementation, proof/verdict logic, or a migration whose wrong shape is expensive to unwind | `xhigh` | resolve the named hard uncertainty; do not broaden into a repo audit |
 | explicitly selected, consequential critique | `max` | two bounded reviewers by default, with deliberately different perspectives or scopes |
 
 The orchestrator chooses the preset by judging the work itself. Do not encode
@@ -47,8 +46,7 @@ charness task run \
   --scope <path-1> \
   --scope <path-2> \
   --prompt-file <brief-file> \
-  --model gpt-5.6-luna \
-  --effort high \
+  --effort xhigh \
   --codex-arg=--approve-for-me
 ```
 

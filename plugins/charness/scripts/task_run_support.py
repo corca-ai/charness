@@ -18,6 +18,8 @@ from runtime_bootstrap import runtime_root
 PASS = "pass"
 FAIL = "fail"
 SCHEMA_VERSION = 1
+TASK_MODEL = "gpt-5.6-luna"
+TASK_EFFORTS = ("medium", "xhigh", "max")
 _GIT_DISCOVERY_ENV = ("GIT_DIR", "GIT_COMMON_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE")
 _BRANCH_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._/-]*$")
 _SUSPICIOUS_RUNTIME_PARTS = frozenset(
@@ -401,24 +403,30 @@ def _task_id(branch: str, requested: str | None) -> str:
 
 def build_codex_args(
     *,
-    model: str | None = None,
     effort: str | None = None,
     writable_dirs: Sequence[Path] = (),
     extra: Sequence[str] = (),
 ) -> list[str]:
-    """Build Codex host arguments from the ergonomic flags and rare extras."""
+    """Build Codex host arguments with the task runner's fixed Luna model."""
+    for index, value in enumerate(extra):
+        if value in {"-m", "--model"} or value.startswith(("-m=", "--model=")):
+            raise TaskRunError("charness task fixes the Codex model to gpt-5.6-luna")
+        if re.match(r"^(?:-c|--config)=?\s*model\s*=", value) or (
+            index > 0
+            and extra[index - 1] in {"-c", "--config"}
+            and re.match(r"^\s*model\s*=", value)
+        ):
+            raise TaskRunError("charness task fixes the Codex model to gpt-5.6-luna")
     args: list[str] = ["--sandbox", "workspace-write"]
     for writable_dir in writable_dirs:
         args.extend(["--add-dir", str(writable_dir.resolve())])
-    if model is not None:
-        if not model.strip():
-            raise TaskRunError("--model must be a non-empty model id")
-        args.extend(["-m", model])
-    if effort is not None:
-        if not effort.strip():
-            raise TaskRunError("--effort must be a non-empty reasoning effort")
-        args.extend(["-c", f"model_reasoning_effort={effort}"])
     args.extend(extra)
+    args.extend(["-m", TASK_MODEL])
+    if effort is not None:
+        if effort not in TASK_EFFORTS:
+            allowed = ", ".join(TASK_EFFORTS)
+            raise TaskRunError(f"--effort must be one of: {allowed}")
+        args.extend(["-c", f"model_reasoning_effort={effort}"])
     return args
 
 
@@ -426,7 +434,6 @@ def build_codex_command(
     executable: str,
     prompt: str,
     *,
-    model: str | None = None,
     effort: str | None = None,
     writable_dirs: Sequence[Path] = (),
     extra: Sequence[str] = (),
@@ -436,7 +443,6 @@ def build_codex_command(
         executable,
         "exec",
         *build_codex_args(
-            model=model,
             effort=effort,
             writable_dirs=writable_dirs,
             extra=extra,

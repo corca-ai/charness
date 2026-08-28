@@ -265,7 +265,7 @@ options:
 usage: charness task run [-h] [--repo-root REPO_ROOT] [--lane LANE]
                          [--path PATH] [--branch BRANCH] [--base BASE] --scope
                          SCOPE (--prompt PROMPT | --prompt-file PROMPT_FILE)
-                         [--codex CODEX] [--model MODEL] [--effort EFFORT]
+                         [--codex CODEX] [--effort EFFORT]
                          [--codex-arg CODEX_ARG] [--task-id TASK_ID]
                          [--prepare] [--require-change] [--skip-prepare]
                          [--allow-no-change]
@@ -296,8 +296,8 @@ options:
   --prompt-file PROMPT_FILE
                         Read implementation instructions from this file.
   --codex CODEX         Codex executable (default: codex).
-  --model MODEL         Codex model id; translated to the host's model option.
-  --effort EFFORT       Orchestrator-selected Codex reasoning effort.
+  --effort EFFORT       Orchestrator-selected Codex reasoning effort: medium,
+                        xhigh, or max.
   --codex-arg CODEX_ARG
                         Extra argument passed before the prompt; repeatable.
   --task-id TASK_ID     Optional receipt/log identifier for explicit runs;

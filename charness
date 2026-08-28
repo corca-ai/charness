@@ -5216,7 +5216,6 @@ def cmd_task_run(args: argparse.Namespace) -> int:
         prompt=prompt_text or "",
         codex=args.codex,
         codex_args=args.codex_arg,
-        model=args.model,
         effort=args.effort,
         task_id=args.task_id,
         prepare=args.prepare,
@@ -5550,8 +5549,7 @@ def build_parser() -> argparse.ArgumentParser:
     task_run_prompt.add_argument("--prompt", help="Implementation instructions passed to `codex exec`.")
     task_run_prompt.add_argument("--prompt-file", type=Path, help="Read implementation instructions from this file.")
     task_run_parser.add_argument("--codex", default="codex", help="Codex executable (default: codex).")
-    task_run_parser.add_argument("--model", help="Codex model id; translated to the host's model option.")
-    task_run_parser.add_argument("--effort", help="Orchestrator-selected Codex reasoning effort.")
+    task_run_parser.add_argument("--effort", help="Orchestrator-selected Codex reasoning effort: medium, xhigh, or max.")
     task_run_parser.add_argument("--codex-arg", action="append", default=[], help="Extra argument passed before the prompt; repeatable.")
     task_run_parser.add_argument("--task-id", help="Optional receipt/log identifier for explicit runs; shorthand derives it from --lane.")
     task_run_parser.add_argument("--prepare", action="store_true", default=None, help="Run the worktree adapter prepare step before Codex.")

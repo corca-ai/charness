@@ -69,12 +69,11 @@ def _run(repo: Path, tmp_path: Path, executable: Path, **kwargs):
     )
 
 
-def test_codex_argument_shorthands_preserve_extra_host_arguments(tmp_path: Path) -> None:
+def test_codex_argument_shorthands_fix_luna_and_preserve_extra_host_arguments(tmp_path: Path) -> None:
     git_common_dir = tmp_path / ".git"
     git_common_dir.mkdir()
     assert task_run.build_codex_args(
-        model="example-model",
-        effort="high",
+        effort="xhigh",
         writable_dirs=[git_common_dir],
         extra=["--approve-for-me"],
     ) == [
@@ -82,12 +81,34 @@ def test_codex_argument_shorthands_preserve_extra_host_arguments(tmp_path: Path)
         "workspace-write",
         "--add-dir",
         str(git_common_dir),
-        "-m",
-        "example-model",
-        "-c",
-        "model_reasoning_effort=high",
         "--approve-for-me",
+        "-m",
+        "gpt-5.6-luna",
+        "-c",
+        "model_reasoning_effort=xhigh",
     ]
+
+
+@pytest.mark.parametrize(
+    "extra",
+    [
+        ["--model", "gpt-5.6-sol"],
+        ["--model=gpt-5.6-sol"],
+        ["-m", "gpt-5.6-sol"],
+        ["-c", "model=gpt-5.6-sol"],
+        ["-c", "model = gpt-5.6-sol"],
+        ["-cmodel=gpt-5.6-sol"],
+        ["--config=model=gpt-5.6-sol"],
+    ],
+)
+def test_codex_extra_arguments_cannot_override_luna(extra: list[str]) -> None:
+    with pytest.raises(task_run.TaskRunError, match="fixes the Codex model"):
+        task_run.build_codex_args(extra=extra)
+
+
+def test_codex_effort_is_limited_to_orchestrator_presets() -> None:
+    with pytest.raises(task_run.TaskRunError, match="medium, xhigh, max"):
+        task_run.build_codex_args(effort="high")
 
 
 def test_task_run_lane_shorthand_owns_safe_defaults_and_external_target(tmp_path: Path, monkeypatch) -> None:
@@ -101,8 +122,7 @@ def test_task_run_lane_shorthand_owns_safe_defaults_and_external_target(tmp_path
         scopes=["module.py"],
         prompt="update the module",
         codex=str(executable),
-        model="example-model",
-        effort="high",
+        effort="xhigh",
         dry_run=True,
     )
 
@@ -126,9 +146,9 @@ def test_task_run_lane_shorthand_owns_safe_defaults_and_external_target(tmp_path
         "--add-dir",
         str(repo / ".git"),
         "-m",
-        "example-model",
+        "gpt-5.6-luna",
         "-c",
-        "model_reasoning_effort=high",
+        "model_reasoning_effort=xhigh",
         "<prompt>",
     ]
 
@@ -187,6 +207,18 @@ def test_task_run_cli_rejects_lane_and_explicit_identity_mix(tmp_path: Path) -> 
     assert result.returncode == 1
     assert "status: fail" in result.stdout
     assert "--lane cannot be combined with --path" in result.stdout
+
+
+def test_task_run_cli_does_not_expose_model_override() -> None:
+    cli = os.fspath(Path(__file__).resolve().parents[2] / "charness")
+    help_result = subprocess.run(
+        [cli, "task", "run", "--help"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert help_result.returncode == 0
+    assert "--model" not in help_result.stdout
 
 
 def test_task_run_creates_named_lane_and_keeps_runtime_external(tmp_path: Path) -> None:
