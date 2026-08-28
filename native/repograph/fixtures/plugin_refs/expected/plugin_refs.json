@@ -2,7 +2,9 @@
   "schema": "repograph.plugin_refs.v1",
   "repo_root": "fixtures/plugin_refs",
   "listing": "file-list",
-  "packages": ["demo"],
+  "packages": [
+    "demo"
+  ],
   "scope_note": "validated package set: demo",
   "scanned_files": 6,
   "references": [
@@ -53,6 +55,12 @@
       "line": 11,
       "reference": "<plugin-dir>/skills/not-shipped/SKILL.md",
       "classification": "missing"
+    },
+    {
+      "path": "README.md",
+      "line": 13,
+      "reference": "<plugin-dir>/skills/demo/SKILL.md",
+      "classification": "resolved"
     },
     {
       "path": "README.md",
@@ -109,7 +117,7 @@
     "authoring-only": 1,
     "escapes-package-root": 2,
     "missing": 1,
-    "resolved": 5,
+    "resolved": 6,
     "shipped-but-marked-authoring-only": 1,
     "templated": 2
   },

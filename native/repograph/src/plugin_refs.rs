@@ -365,7 +365,10 @@ fn is_finding(classification: &str) -> bool {
 }
 
 fn references_in_line(line: &str, prefix: &str, line_number: usize) -> Vec<CandidateReference> {
-    let masked = mask_inline_code(line);
+    // Inline backtick code is scanned on purpose: the Python owner matched
+    // references inside inline code, and most doc references are backticked;
+    // only fenced blocks and HTML comments are skipped (iter_doc_lines).
+    let masked = line;
     let mut references = Vec::new();
     let mut search_from = 0;
     while search_from < masked.len() {
@@ -406,7 +409,6 @@ fn references_in_line(line: &str, prefix: &str, line_number: usize) -> Vec<Candi
 }
 
 /// Transcribe `markdown_doc_scan.iter_doc_lines`'s fence and comment walk.
-/// Inline code is masked by the D6 command boundary before references are read.
 fn iter_doc_lines(contents: &str) -> Vec<ScannedLine> {
     let mut fence = None;
     let mut in_html_comment = false;
@@ -480,58 +482,6 @@ fn remove_html_comment_spans(line: &str) -> String {
     }
     result.push_str(remaining);
     result
-}
-
-fn mask_inline_code(line: &str) -> String {
-    let bytes = line.as_bytes();
-    let mut masked = vec![false; bytes.len()];
-    let mut cursor = 0;
-    while cursor < bytes.len() {
-        if bytes[cursor] == b'\\' && cursor + 1 < bytes.len() {
-            cursor += 2;
-            continue;
-        }
-        if bytes[cursor] != b'`' {
-            cursor += 1;
-            continue;
-        }
-        let start = cursor;
-        let length = bytes[cursor..]
-            .iter()
-            .take_while(|byte| **byte == b'`')
-            .count();
-        cursor += length;
-        let mut closing = None;
-        while cursor < bytes.len() {
-            if bytes[cursor] != b'`' {
-                cursor += 1;
-                continue;
-            }
-            let run_start = cursor;
-            let run_length = bytes[cursor..]
-                .iter()
-                .take_while(|byte| **byte == b'`')
-                .count();
-            if run_length == length {
-                closing = Some((run_start, run_start + run_length));
-                break;
-            }
-            cursor += run_length;
-        }
-        if let Some((_close_start, close_end)) = closing {
-            masked[start..close_end].fill(true);
-            cursor = close_end;
-        } else {
-            cursor = start + length;
-        }
-    }
-    let output = bytes
-        .iter()
-        .enumerate()
-        .map(|(index, byte)| if masked[index] { b' ' } else { *byte })
-        .collect::<Vec<_>>();
-    // All replaced bytes are ASCII spaces, so UTF-8 remains valid.
-    String::from_utf8(output).unwrap_or_else(|_| line.to_string())
 }
 
 pub fn run<I>(args: I) -> i32
@@ -691,14 +641,15 @@ mod tests {
     }
 
     #[test]
-    fn inline_code_is_not_a_reference() {
+    fn inline_code_is_scanned_like_the_python_owner() {
         let references = references_in_line(
-            "live <plugin-dir>/ok.md and `<plugin-dir>/ignored.md`",
+            "live <plugin-dir>/ok.md and `<plugin-dir>/backticked.md`",
             PLUGIN_REFERENCE_PREFIX,
             1,
         );
-        assert_eq!(references.len(), 1);
+        assert_eq!(references.len(), 2);
         assert_eq!(references[0].target, "ok.md");
+        assert_eq!(references[1].target, "backticked.md");
     }
 
     #[test]

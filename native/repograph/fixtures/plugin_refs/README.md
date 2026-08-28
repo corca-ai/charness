@@ -10,7 +10,7 @@ This escapes <plugin-dir>/../README.md.
 This is absolute <plugin-dir>//etc/hosts.
 This is missing <plugin-dir>/skills/not-shipped/SKILL.md.
 
-Inline code is ignored: `<plugin-dir>/skills/not-inline.md`.
+Inline code is scanned: `<plugin-dir>/skills/demo/SKILL.md`.
 
 <!-- <plugin-dir>/skills/not-commented.md> -->
 <!--

@@ -883,9 +883,10 @@ long closes it. Fence delimiters are consumed, mismatched marker characters do
 not close a fence, and `<!--` is literal while inside a fence. A fully
 commented line is consumed; a multiline comment suppresses lines through its
 closing `-->`, while content after a mid-line close is scanned. A comment span
-beside live content leaves the line verbatim for the caller. D6 additionally
-masks complete inline backtick-code spans, so references inside inline code are
-not inspected.
+beside live content leaves the line verbatim for the caller. Inline
+backtick-code spans ARE scanned, matching the Python owner: most documentation
+references are backticked, and excluding them would empty the gate's subject
+set. Only fenced blocks and HTML comments are skipped.
 
 On a live line, a reference target ends at whitespace, a backtick, or `)` and
 trailing `.`, `,`, `;`, `:`, and `)` characters are removed, matching the

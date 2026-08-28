@@ -66,7 +66,7 @@ fn fixture_report_pins_all_reference_classes_and_skipping_rules() {
     ))
     .unwrap();
     assert_eq!(report, expected);
-    assert_eq!(report["references"].as_array().unwrap().len(), 12);
+    assert_eq!(report["references"].as_array().unwrap().len(), 13);
     assert_eq!(report["findings"].as_array().unwrap().len(), 4);
 }
 
