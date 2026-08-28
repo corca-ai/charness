@@ -95,19 +95,18 @@ def seed_skill(repo: Path, skill_id: str, *, description: str) -> None:
     )
 
 
-def scaffold_case(repo: Path, skill_id: str) -> dict[str, object]:
-    payload = build_matrix(repo, [skill_id])
-    return payload["matrix"][0]
-
-
 def base_registry(repo: Path) -> dict[str, object]:
-    scaffold = scaffold_case(repo, "demo")
     return {
         "schema_version": 1,
         "review_required_skills": ["demo"],
         "cases": [
             {
-                **scaffold,
+                "skill_id": "demo",
+                "prompt": "Review the demo skill as a consumer.",
+                "acceptance_evidence": [
+                    "routes the prompt to `demo`",
+                    "returns a reviewable result",
+                ],
             }
         ],
     }
@@ -117,15 +116,15 @@ def test_validate_public_skill_dogfood_passes_for_current_real_registry() -> Non
     validate_registry(load_registry(ROOT), ROOT)
 
 
-def test_validate_public_skill_dogfood_checks_current_scaffold_drift(tmp_path: Path) -> None:
+def test_validate_public_skill_dogfood_accepts_registry_owned_prompt_and_evidence(tmp_path: Path) -> None:
     repo = seed_repo(tmp_path)
     seed_skill(repo, "demo", description="Improve the demo skill first.")
     registry = base_registry(repo)
-    registry["cases"][0]["prompt"] = "Drifted prompt."
+    registry["cases"][0]["prompt"] = "A reviewed consumer prompt chosen for this repo."
+    registry["cases"][0]["acceptance_evidence"] = ["The consumer result is directly reviewable."]
     write_registry(repo, registry)
 
-    with pytest.raises(ValidationError, match="drifted from current scaffold"):
-        validate_registry(load_registry(repo), repo)
+    assert validate_registry(load_registry(repo), repo)["cases"] == registry["cases"]
 
 
 def test_validate_public_skill_dogfood_requires_reviewed_case_for_required_skill(tmp_path: Path) -> None:
@@ -153,6 +152,7 @@ def test_validate_public_skill_dogfood_rejects_historical_case_fields(tmp_path: 
 def test_suggest_public_skill_dogfood_cli_emits_requested_matrix(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = seed_repo(tmp_path)
     seed_skill(repo, "demo", description="Improve the demo skill first.")
+    write_registry(repo, base_registry(repo))
 
     result = run_suggest_public_skill_dogfood(
         monkeypatch,
@@ -208,6 +208,7 @@ def test_suggest_public_skill_dogfood_cli_covers_json_human_and_unknown_paths(
     """Keep the CLI output branches in-process for changed-line coverage."""
     repo = seed_repo(tmp_path)
     seed_skill(repo, "demo", description="Improve the demo skill first.")
+    write_registry(repo, base_registry(repo))
 
     json_result = run_suggest_public_skill_dogfood(
         monkeypatch, capsys, "--repo-root", str(repo), "--skill-id", "demo", "--detail"
@@ -228,13 +229,12 @@ def test_suggest_public_skill_dogfood_cli_covers_json_human_and_unknown_paths(
     assert "Unknown public skill id(s): `missing`" in unknown_result.stderr
 
 
-def test_suggest_cli_warns_on_description_fallback_prompt(tmp_path: Path, monkeypatch, capsys) -> None:
-    # The seeded `demo` skill has no PROMPT_HINTS entry, so its scaffold prompt
-    # is the frontmatter description; the row must say so and the CLI must warn
-    # (advisory only -- exit stays 0). This is the gap that left `prove` with
-    # an unrealistic prompt until 2026-07-17.
+def test_suggest_cli_uses_registry_owned_prompt_without_warning(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = seed_repo(tmp_path)
     seed_skill(repo, "demo", description="Improve the demo skill first.")
+    registry = base_registry(repo)
+    registry["cases"][0]["prompt"] = "Use the reviewed prompt from the registry."
+    write_registry(repo, registry)
 
     result = run_suggest_public_skill_dogfood(
         monkeypatch, capsys, "--repo-root", str(repo), "--skill-id", "demo", "--detail"
@@ -242,38 +242,35 @@ def test_suggest_cli_warns_on_description_fallback_prompt(tmp_path: Path, monkey
     assert result.returncode == 0, result.stderr
     row = yaml.safe_load(result.stdout)["matrix"][0]
     assert set(row) == {"skill_id", "prompt", "acceptance_evidence"}
-    assert "frontmatter-description fallback" in result.stderr
+    assert row["prompt"] == "Use the reviewed prompt from the registry."
+    assert result.stderr == ""
 
 
-def test_prompt_hinted_row_carries_no_fallback_flag_or_warning() -> None:
+def test_registry_owned_row_carries_no_fallback_flag_or_warning() -> None:
     report = build_matrix(ROOT, ["prove"])
     row = report["matrix"][0]
     assert set(row) == {"skill_id", "prompt", "acceptance_evidence"}
-    from scripts.public_skill_dogfood_lib import prompt_fallback_warnings
-
-    assert prompt_fallback_warnings(report) == []
+    assert "frontmatter" not in row["prompt"]
 
 
-def test_format_human_renders_fallback_warning_line(tmp_path: Path) -> None:
-    # Covers the format_human WARNING branch the changed-line mutation gate
-    # flagged as uncovered (release quality run, 2026-07-17).
+def test_format_human_renders_registry_owned_case_without_warning(tmp_path: Path) -> None:
     repo = seed_repo(tmp_path)
     seed_skill(repo, "demo", description="Improve the demo skill first.")
+    write_registry(repo, base_registry(repo))
     from scripts.public_skill_dogfood_lib import format_human
 
     report = build_matrix(repo, ["demo"])
     rendered = format_human(report)
-    assert "WARNING: prompt is the frontmatter-description fallback" in rendered
-    assert "add a realistic consumer prompt" in rendered
+    assert "Review the demo skill as a consumer." in rendered
+    assert "WARNING" not in rendered
 
 
-def test_quality_skill_cli_copy_emits_fallback_stderr_warning(tmp_path: Path) -> None:
-    # The quality-skill wrapper is a portable copy of the root CLI; its stderr
-    # advisory line must fire the same way (uncovered-line gate, 2026-07-17).
+def test_quality_skill_cli_copy_uses_registry_without_warning(tmp_path: Path) -> None:
     import subprocess
 
     repo = seed_repo(tmp_path)
     seed_skill(repo, "demo", description="Improve the demo skill first.")
+    write_registry(repo, base_registry(repo))
     result = subprocess.run(
         [
             sys.executable,
@@ -294,4 +291,4 @@ def test_quality_skill_cli_copy_emits_fallback_stderr_warning(tmp_path: Path) ->
         "prompt",
         "acceptance_evidence",
     }
-    assert "frontmatter-description fallback" in result.stderr
+    assert result.stderr == ""

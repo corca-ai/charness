@@ -2,12 +2,9 @@
 
 from __future__ import annotations
 
-import subprocess
+import json
 from pathlib import Path
 
-import yaml
-
-from runtime_bootstrap import load_path_module
 from scripts.public_skill_validation_lib import (
     POLICY_PATH,
     load_policy,
@@ -15,175 +12,6 @@ from scripts.public_skill_validation_lib import (
 )
 
 DOGFOOD_PATH = Path("docs/public-skill-dogfood.json")
-
-PROMPT_HINTS = {
-    "achieve": "$achieve make the accumulated local commits safe to push and give me a confidence report for what changed, what was verified, and what stays risky.",
-    "announcement": "Summarize the latest repo changes into a chat-ready update and keep the draft scoped to what changed.",
-    "create-cli": "We keep adding ad hoc scripts here; normalize this into one repo-owned CLI before the command surface sprawls further.",
-    "create-skill": "Improve this skill package first so the trigger, references, and helper surface stay portable.",
-    "debug": "Investigate this regression and leave a durable record of what actually failed before changing code.",
-    "gather": "Fetch this external source into a durable local artifact instead of giving me a one-turn summary.",
-    "hotl": "We shipped the scheduled digest to the live channel yesterday — close the loop on it with actual evidence, and tell me what cannot be proven yet.",
-    "hitl": "Set up a bounded human review loop for this target so the agent does not auto-decide the final judgment.",
-    "ideation": "The concept is still fuzzy; help shape the workflow before we commit to a spec or implementation.",
-    "impl": "Implement the smallest meaningful slice now and verify it against the current repo contract.",
-    "setup": "Normalize this partially initialized repo without pretending it needs a greenfield rewrite.",
-    "issue": "File or resolve this GitHub issue through `gh`, keeping issue identity and freshness grounded in GitHub state.",
-    "narrative": "Tighten the repo's durable story first, then derive one concise brief from that source of truth.",
-    "prove": "This slice is built and locally green; prove the closeout before we stop instead of taking the passing tests' word for it.",
-    "critique": "Stress this pending decision before we lock it in and separate real blockers from over-worry.",
-    "quality": "Review why the standing test gate feels slow, including local vs CI runtime differences, and install the next deterministic gate if the move is obvious.",
-    "release": "Verify and advance the checked-in release surface without hand-editing generated packaging artifacts.",
-    "retro": "Run a short retro on this slice and persist the repeat trap if the workflow should have caught it.",
-    "spec": "Turn this vague request into a living implementation contract before code changes spread.",
-}
-
-EVIDENCE_OVERRIDES = {
-    "hotl": [
-        "writes a proof packet (success criteria, pre-roundtrip failure checks, feasibility, human intervention, non-claims) before any live execution",
-        "ends every loop entry `verified` (with `verified_against` refs) or explicitly dispositioned from the seven-status vocabulary, never silently closed",
-        "routes provider execution through adapter-declared repo-owned commands and records an undeclared-capability need as `blocked-needs-capability` instead of improvising",
-    ],
-    "achieve": [
-        "saves a complete Goal Draft under `charness-artifacts/goals/<yyyy-mm-dd-slug>.md`, freezes its bytes after approval, and binds it to one provider-backed Goal Run",
-        "resumes only from the exact `/goal #N` objective after provider readback; the draft remains planning provenance and never becomes a progress log",
-        "keeps the Before-phase provider-free until explicit approval, then reads the parent and reconciles the real child graph through the issue-owned Goal Run provider",
-        "treats the interview limit as a ceiling, asks only unresolved decisions that could change activation or execution, and does not reopen branches already resolved by repository evidence or operator answers",
-    ],
-    "create-skill": [
-        "treats the public skill frontmatter and core trigger as classifier input, not only documentation",
-        "keeps `SKILL.md` as selection/sequence core and pushes bulky nuance into references or scripts",
-        "starts public-skill adapter/bootstrap/example changes from the changed skill's customer journey",
-        "when a retro supplies a portable candidate, carries its abstract pattern, consumer repo shape, and first-prompt acceptance claim into the capability brief and reviewed dogfood case",
-    ],
-    "gather": [
-        "runs or follows a gather plan that names the support owner, route order, exact-source policy, and typed stop conditions before acquisition",
-        "does not substitute search snippets, adjacent posts, or similar sources for a named exact source",
-        "preserves typed public-URL outcomes such as `exact-fetched`, `exact-blocked`, `exact-unavailable`, `feed-fetched`, `direct-page-fetched`, and missing-capability stops",
-    ],
-    "issue": [
-        "uses GitHub as the source of truth for omitted issue selection instead of session memory",
-        "keeps `issue new` problem-first and solution direction weak unless the user already fixed the implementation contract",
-        "renders `issue new` closeout from the verified issue ledger plus the created title and a short filed-body summary, warning when body readback was not verified",
-        "uses the `github-gh` integration path for GitHub mutations instead of inventing a separate provider",
-        "emits a pre-mutation resolution brief for `feature` and `deferred-work` issues and pauses for user discussion when `open decisions` is non-empty",
-    ],
-    "ideation": [
-        "asks only from the resolution frontier that could change the next decision or action, collapses answered branches, and stops at purpose-fit resolution",
-    ],
-    "critique": [
-        "includes a customer-of-this-capability angle when first-use failure is the main risk",
-        "binds a consumed prepare packet to exact packet bytes and path-scoped reviewed inputs so stale verdicts are visible",
-    ],
-    "quality": [
-        "runs or names the existing repo-owned quality gates before proposing new ones",
-        "runs `plan_quality_run.py`, reads its `required_reads` before broad gates, and treats `gate_packets` as report-first evidence with cost/trust/parallel metadata before fixing",
-        "attempts bounded subagent review or records a concrete blocked host/tool signal before broad slow-gate recommendations",
-        "checks fixture economics, parallel critical path, duplicated proof, and runtime profile policy instead of only widening budgets",
-        "when the goal is local gate speed, cross-references costly local gates against CI proof (the CI-recoverability triage) and ranks by wall-clock, recommending only gates CI fully re-runs be moved off the local hot path while keeping the rest local, rather than only widening budgets or leaving every gate local",
-        "can ingest a repo-declared command-timing log as the wall-clock source when one exists, instead of reporting no samples until a hand-rolled bridge is built",
-        "treats affected-test selection as structural testability before recommending caches, observation tools, or broader runtime budgets",
-        "for runner, wrapper, process, fixture, or validator speedups, compares the same workload, separates selector ownership from executor policy, preserves the current-consumer envelope, and proves representative input consumption",
-        "uses one realistic consumer prompt when the risk is public-skill routing or artifact behavior",
-        "when reviewing a target skill, answers the planner's structural review packet, separates target-skill findings from ambient repo failures, and records structural-review/prose-review judgment before broad recommendations",
-    ],
-    "prove": [
-        "when correctness depends on routing, discovery, selection, a validator, or a final consumer, executes one representative changed/new input through that consumer instead of treating selection as proof",
-        "reports compact evidence as exact command/input identity, outcome, measured time only for cost claims, and the remaining gap",
-    ],
-    "retro": [
-        "classifies a transferable lesson as repo-local or a portable candidate with abstract pattern, evidence, consumer shape, destination, and one first-prompt acceptance claim",
-    ],
-}
-
-
-def _load_frontmatter(skill_path: Path) -> dict[str, str]:
-    lines = skill_path.read_text(encoding="utf-8").splitlines()
-    if len(lines) < 3 or lines[0].strip() != "---":
-        return {}
-    fields: dict[str, str] = {}
-    for line in lines[1:]:
-        if line.strip() == "---":
-            break
-        if ":" not in line:
-            continue
-        key, value = line.split(":", 1)
-        fields[key.strip()] = value.strip().strip('"').strip("'")
-    return fields
-
-
-def _resolve_artifact(repo_root: Path, skill_id: str) -> str | None:
-    resolve_script = repo_root / "skills" / "public" / skill_id / "scripts" / "resolve_adapter.py"
-    if not resolve_script.is_file():
-        return None
-    module = load_path_module(f"public_skill_dogfood_{skill_id.replace('-', '_')}_resolve_adapter", resolve_script)
-    load_adapter = getattr(module, "load_adapter", None)
-    if callable(load_adapter):
-        payload = load_adapter(repo_root)
-        return _artifact_path_from_payload(payload)
-    result = subprocess.run(
-        ["python3", str(resolve_script), "--repo-root", str(repo_root)],
-        cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    if result.returncode != 0:
-        return None
-    payload = yaml.safe_load(result.stdout)
-    return _artifact_path_from_payload(payload)
-
-
-def _artifact_path_from_payload(payload: object) -> str | None:
-    if not isinstance(payload, dict):
-        return None
-    artifact_path = payload.get("artifact_path")
-    if isinstance(artifact_path, str) and artifact_path:
-        return artifact_path
-    data = payload.get("data") if isinstance(payload.get("data"), dict) else {}
-    for key in ("summary_path", "output_dir", "state_dir"):
-        value = data.get(key)
-        if isinstance(value, str) and value:
-            return value
-    return None
-
-
-def _index_partition(partition: dict[str, list[str]]) -> dict[str, str]:
-    indexed: dict[str, str] = {}
-    for label, skill_ids in partition.items():
-        for skill_id in skill_ids:
-            indexed[skill_id] = label
-    return indexed
-
-
-def _acceptance_evidence(
-    skill_id: str,
-    *,
-    expected_artifact: str | None,
-    tier: str,
-    adapter_requirement: str,
-) -> list[str]:
-    evidence = [
-        f"routes the prompt to `{skill_id}` instead of an adjacent public skill",
-    ]
-    if expected_artifact is not None:
-        evidence.append(
-            f"names or refreshes `{expected_artifact}` when the skill persists durable state"
-        )
-    elif adapter_requirement == "adapter-free":
-        evidence.append(
-            "does not invent host-specific adapter state when repo inspection alone should be enough"
-        )
-    if tier == "evaluator-required":
-        evidence.append(
-            "handles the skill's load-bearing contract without needing the user to restate obvious repo context"
-        )
-    else:
-        evidence.append(
-            "produces an output that a maintainer could review directly without re-deriving the whole request"
-        )
-    evidence.extend(EVIDENCE_OVERRIDES.get(skill_id, []))
-    return evidence
 
 
 def policy_applicability_report(repo_root: Path) -> dict[str, object] | None:
@@ -205,29 +33,15 @@ def policy_applicability_report(repo_root: Path) -> dict[str, object] | None:
 def build_matrix(repo_root: Path, skill_ids: list[str]) -> dict[str, object]:
     if report := policy_applicability_report(repo_root):
         return report
-    policy = validate_policy(load_policy(repo_root), repo_root)
-    tier_by_skill = _index_partition(policy["tiers"])
-    adapter_by_skill = _index_partition(policy["adapter_requirements"])
-
-    matrix: list[dict[str, object]] = []
-    for skill_id in skill_ids:
-        skill_path = repo_root / "skills" / "public" / skill_id / "SKILL.md"
-        frontmatter = _load_frontmatter(skill_path)
-        expected_artifact = _resolve_artifact(repo_root, skill_id)
-        tier = tier_by_skill[skill_id]
-        adapter_requirement = adapter_by_skill[skill_id]
-        matrix.append(
-            {
-                "skill_id": skill_id,
-                "prompt": PROMPT_HINTS.get(skill_id, frontmatter.get("description", "")),
-                "acceptance_evidence": _acceptance_evidence(
-                    skill_id,
-                    expected_artifact=expected_artifact,
-                    tier=tier,
-                    adapter_requirement=adapter_requirement,
-                ),
-            }
-        )
+    validate_policy(load_policy(repo_root), repo_root)
+    registry_path = repo_root / DOGFOOD_PATH
+    registry = json.loads(registry_path.read_text(encoding="utf-8"))
+    canonical_cases = {
+        case["skill_id"]: case
+        for case in registry.get("cases", [])
+        if isinstance(case, dict) and isinstance(case.get("skill_id"), str)
+    }
+    matrix = [canonical_cases[skill_id] for skill_id in skill_ids if skill_id in canonical_cases]
     return {
         "schema_version": 1,
         "repo_root": str(repo_root),
@@ -244,28 +58,7 @@ def format_human(report: dict[str, object]) -> str:
     lines = ["Public skill consumer dogfood matrix:"]
     for row in report["matrix"]:
         assert isinstance(row, dict)
-        lines.append(
-            f"- `{row['skill_id']}`: prompt={row['prompt']}"
-        )
+        lines.append(f"- `{row['skill_id']}`: prompt={row['prompt']}")
         for evidence in row["acceptance_evidence"]:
-            lines.append(
-                f"  acceptance={evidence}"
-            )
-        if row["skill_id"] not in PROMPT_HINTS:
-            lines.append(
-                "  WARNING: prompt is the frontmatter-description fallback "
-                f"(PROMPT_HINTS has no `{row['skill_id']}` entry); add a realistic "
-                "consumer prompt before reviewing this row"
-            )
+            lines.append(f"  acceptance={evidence}")
     return "\n".join(lines)
-
-
-def prompt_fallback_warnings(report: dict[str, object]) -> list[str]:
-    """Advisory lines for rows whose prompt is the description fallback."""
-    return [
-        f"`{row['skill_id']}`: prompt is the frontmatter-description fallback "
-        f"(PROMPT_HINTS has no entry); add a realistic consumer prompt before "
-        f"reviewing this row"
-        for row in report["matrix"]
-        if isinstance(row, dict) and row.get("skill_id") not in PROMPT_HINTS
-    ]

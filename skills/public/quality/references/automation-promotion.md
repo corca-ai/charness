@@ -145,9 +145,9 @@ in ~1s, not after a ~4-min broad-pytest run.
 - **An exit-zero / advisory / skipped attention state?** Make it visible in
   [`attention-state-visibility.json`](./attention-state-visibility.json)
   (`validate-attention-state-visibility`, commit-boundary).
-- **A public-skill behavior worth dogfooding?** Update the dogfood
-  `EVIDENCE_OVERRIDES` scaffold per the authoring-repo-internal
-  `<authoring-repo>/docs/public-skill-dogfood.md`.
+- **A public-skill behavior worth dogfooding?** Add or revise the reviewed
+  consumer prompt and acceptance evidence in the authoring repo's canonical
+  `<authoring-repo>/docs/public-skill-dogfood.json` registry.
 - **Touching a `SKILL.md`?** Check its headroom first
   (the `<plugin-dir>/scripts/check_skill_surface_preflight.py`, shipped
   to consumers at `<plugin>/scripts/`, with `--path <SKILL.md>`; the
