@@ -395,6 +395,7 @@ PARTIAL_EXIT=4
 # its clean/findings pair -- and never when it observed a bad graph. An
 # unobserved orphan count is not zero, and this is the byte that says so.
 UNESTABLISHED_CAPABLE_LABELS="inventory-nose-clones docs-graph check-docs check-closeout-classification-parity check-export-self-sufficiency check-artifact-referents"
+NATIVE_GATE_LABELS="check-export-safe-imports"
 
 label_may_report_unestablished() {
   case " $UNESTABLISHED_CAPABLE_LABELS " in
@@ -673,6 +674,21 @@ queue_agent_browser_runtime_gate() {
   fi
   queue_timed "$label" "$@"
 }
+
+native_gate_preflight() {
+  local label
+  for label in $NATIVE_GATE_LABELS; do
+    if label_is_selected "$label"; then
+      if ! python3 scripts/native_gate_lib.py --repo-root "$REPO_ROOT" --probe export-safe; then
+        echo "run-quality: native gate preflight failed for $label" >&2
+        exit 1
+      fi
+      return 0
+    fi
+  done
+}
+
+native_gate_preflight
 
 print_phase_output() {
   local label="$1"
@@ -1073,7 +1089,7 @@ queue_selected "check-runtime-budget-universe" python3 scripts/check_runtime_bud
 # produced this gate cost 25 minutes inside the session that wrote the retro
 # about it.
 queue_selected "check-command-dominance" python3 scripts/check_command_dominance.py --repo-root "$REPO_ROOT"
-queue_selected "check-export-safe-imports" python3 scripts/check_export_safe_imports.py --repo-root "$REPO_ROOT" --require-git-file-listing
+queue_selected "check-export-safe-imports" python3 scripts/native_gate_lib.py --repo-root "$REPO_ROOT" export-safe --repo-root "$REPO_ROOT"
 # Adjacent to the line above and NOT the same question. That gate asks whether a
 # path literal survives the `skills/public/` collapse, reading the SOURCE tree.
 # This one reads the CHECKED-IN EXPORT and asks whether it can run on a machine
