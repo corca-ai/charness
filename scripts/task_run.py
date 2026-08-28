@@ -1,9 +1,4 @@
-"""Run one bounded Codex task in a clean, disposable Git worktree.
-
-This is the execution half of the ``charness task`` surface.  ``run_task`` keeps
-the orchestration small; Git, scope, runtime, and receipt calculations live in
-``task_run_support`` so the public wrapper remains easy to audit.
-"""
+"""Run one bounded Codex task in a clean, disposable Git worktree."""
 
 from __future__ import annotations
 
@@ -12,10 +7,12 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-from typing import Any, Mapping, Sequence
+from typing import Any, Sequence
 
 from runtime_bootstrap import import_repo_module
+from scripts import task_run_completion as _completion
 from scripts import task_run_support as _support
+from scripts.task_run_plan import resolve_task_inputs as _resolve_task_inputs
 
 _worktree = import_repo_module(__file__, "scripts.worktree_create_lib")
 _exec = import_repo_module(__file__, "scripts.worktree_exec_lib")
@@ -98,13 +95,7 @@ def _candidate_result_state(
     candidate_valid = scope["verdict"] == PASS
     candidate_useful = candidate_valid and bool(changed_paths)
     candidate = {
-        "status": (
-            "validated"
-            if candidate_useful
-            else "absent"
-            if candidate_valid
-            else "invalid"
-        ),
+        "status": "validated" if candidate_useful else "absent" if candidate_valid else "invalid",
         "useful": candidate_useful,
         "changed_paths": changed_paths,
     }
@@ -133,190 +124,29 @@ def _complete_task(
     execution: dict[str, Any],
     started_at: float,
 ) -> dict[str, Any]:
-    delivery = _support._result_delivery(stdout_log)
-    evidence, scope, parent_progress = _completion_evidence(
-        target_path=resolved_target,
-        parent_root=resolved_repo,
+    return _completion.complete_task(
+        payload,
+        runtime_path=runtime_path,
+        resolved_target=resolved_target,
+        resolved_repo=resolved_repo,
         before_exec=before_exec,
         base_sha=base_sha,
         scope_specs=scope_specs,
         require_change=require_change,
         parent_before=parent_before,
         parent_before_head=parent_before_head,
+        stdout_log=stdout_log,
+        execution=execution,
+        started_at=started_at,
+        persist=_persist,
+        result_delivery=_support._result_delivery,
+        completion_evidence=_completion_evidence,
+        execution_state=_execution_state,
+        candidate_result_state=_candidate_result_state,
+        git=_git,
+        git_output=_git_output,
+        pass_value=PASS,
     )
-    target_branch = (
-        _git_output(
-            resolved_target,
-            "symbolic-ref",
-            "--quiet",
-            "--short",
-            "HEAD",
-        ).strip()
-        if _git(
-            resolved_target,
-            "symbolic-ref",
-            "--quiet",
-            "--short",
-            "HEAD",
-        ).returncode
-        == 0
-        else None
-    )
-    payload.update(
-        {
-            "phase": "terminal",
-            "execution": execution,
-            "result_delivery": delivery,
-            "duration_ms": int((time.monotonic() - started_at) * 1000),
-            "target_sha": _git_output(resolved_target, "rev-parse", "HEAD").strip(),
-            "target_branch": target_branch,
-            **evidence,
-        }
-    )
-    structured = delivery.get("structured")
-    if (
-        isinstance(structured, Mapping)
-        and structured.get("schema_version") == "charness.reviewer_lifecycle.v1"
-    ):
-        payload["reviewer_lifecycle"] = structured
-
-    execution_status = _execution_state(execution, delivery)
-    payload["execution"]["status"] = execution_status
-    candidate, result_state = _candidate_result_state(
-        execution_state=execution_status,
-        scope=scope,
-        parent_progress=parent_progress,
-    )
-    payload["candidate"] = candidate
-    payload["status"] = result_state
-    payload["approval_eligibility"] = (
-        "eligible" if result_state == "completed" else "ineligible"
-    )
-
-    blockers: list[str] = []
-    if execution_status != "completed":
-        blockers.append(f"execution: {execution_status}")
-    if scope["verdict"] != PASS:
-        blockers.append(scope["reason"])
-    if parent_progress["blocking"]:
-        blockers.append("parent changed within the resolved candidate scope")
-
-    warnings = [
-        f"{population}: {data['reason']}"
-        for population, data in evidence["populations"].items()
-        if data.get("verdict") == "warn"
-    ]
-    if parent_progress["classification"] == "concurrent-parent-progress":
-        warnings.append("parent made disjoint progress while the task ran")
-    if warnings:
-        payload["warnings"] = warnings
-
-    if blockers:
-        payload["next_step"] = (
-            "Inspect the retained worktree, typed result, and captured logs; "
-            + "; ".join(blockers)
-            + "."
-        )
-    elif result_state == "validated-partial-result":
-        payload["next_step"] = (
-            f"Review the validated candidate in {resolved_target}; "
-            "it is useful but not approval-eligible."
-        )
-    else:
-        payload["next_step"] = (
-            f"Review the candidate in {resolved_target}; "
-            "the typed result is approval-eligible."
-        )
-    _persist(payload, runtime_path)
-    print(f"task run: {payload['status']} ({payload['task_id']})", file=sys.stderr)
-    return payload
-
-
-def _resolve_task_inputs(
-    resolved_repo: Path,
-    *,
-    target_path: Path | None,
-    branch: str | None,
-    base: str | None,
-    lane: str | None,
-    scopes: Sequence[str],
-    prompt: str,
-    codex: str,
-    effort: str | None,
-    task_id: str | None,
-    prepare: bool | None,
-    require_change: bool | None,
-    skip_prepare: bool,
-    allow_no_change: bool,
-    timeout_seconds: int,
-) -> dict[str, Any]:
-    if prepare and skip_prepare:
-        raise TaskRunError("--prepare and --skip-prepare cannot be used together")
-    if require_change and allow_no_change:
-        raise TaskRunError("--require-change and --allow-no-change cannot be used together")
-    if lane is not None:
-        if any(value is not None for value in (target_path, branch, base)):
-            raise TaskRunError(
-                "--lane cannot be combined with --path, --branch, or --base; "
-                "choose shorthand or the fully explicit form"
-            )
-        if task_id is not None:
-            raise TaskRunError("--task-id is derived from --lane; omit it in shorthand mode")
-        resolved_lane = _validate_lane_id(lane)
-        runtime_path = _runtime_preview(resolved_repo)
-        resolved_task_id = resolved_lane
-        resolved_branch = _validate_branch(resolved_repo, f"task/{resolved_lane}")
-        resolved_target = _validate_worktree_path(
-            resolved_repo, runtime_path / "task-run" / resolved_task_id / "worktree"
-        )
-        resolved_base = "HEAD"
-        resolved_prepare = not skip_prepare if prepare is None else prepare
-        resolved_require_change = (
-            not allow_no_change if require_change is None else require_change
-        )
-    else:
-        if any(value is None for value in (target_path, branch, base)):
-            raise TaskRunError(
-                "explicit task runs require --path, --branch, and --base; "
-                "otherwise pass --lane <id>"
-            )
-        resolved_lane = None
-        resolved_target = _validate_worktree_path(resolved_repo, target_path)
-        resolved_branch = _validate_branch(resolved_repo, branch)
-        resolved_base = base
-        resolved_prepare = bool(prepare) and not skip_prepare
-        resolved_require_change = bool(require_change) and not allow_no_change
-    if not prompt.strip():
-        raise TaskRunError("--prompt or --prompt-file must contain non-empty instructions")
-    if effort is None:
-        raise TaskRunError("task runs require the orchestrator-selected --effort")
-    base_sha = _resolve_base_sha(resolved_repo, resolved_base)
-    normalized_scopes = normalize_scopes(scopes)
-    scope_specs = _support.resolve_scope_specs(resolved_repo, normalized_scopes, base_sha)
-    git_common_dir = _git_common_dir(resolved_repo)
-    codex_path = _resolve_codex(codex)
-    if not isinstance(timeout_seconds, int) or timeout_seconds < 1:
-        raise TaskRunError("--timeout-seconds must be a positive integer")
-    if lane is None:
-        resolved_task_id = _task_id(resolved_branch, task_id)
-        runtime_path = _runtime_preview(resolved_repo)
-    build_codex_args(effort=effort)
-    return {
-        "lane": resolved_lane,
-        "target_path": resolved_target,
-        "branch": resolved_branch,
-        "base": resolved_base,
-        "base_sha": base_sha,
-        "git_common_dir": git_common_dir,
-        "scopes": normalized_scopes,
-        "scope_specs": scope_specs,
-        "codex_path": codex_path,
-        "effort": effort,
-        "task_id": resolved_task_id,
-        "runtime_path": runtime_path,
-        "prepare": resolved_prepare,
-        "require_change": resolved_require_change,
-    }
 
 
 def run_task(
