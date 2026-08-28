@@ -178,9 +178,12 @@ def _classify_raw_glob_hits(
         "--surfaces-optional",
         "--repo-root",
         str(repo_root),
-        "--path",
-        *dict.fromkeys(candidate_hits),
     ]
+    # `--path` is a repeatable single-value flag: one flag PER path. A single
+    # `--path` followed by bare paths makes the rest positionals, which classify
+    # rejects as a usage error (exit 2) -- caught live on the first multi-path run.
+    for path in dict.fromkeys(candidate_hits):
+        command.extend(["--path", path])
     try:
         completed = subprocess.run(
             command,

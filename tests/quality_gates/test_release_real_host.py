@@ -46,8 +46,24 @@ import os
 import sys
 
 args = sys.argv[1:]
-path_index = args.index("--path")
-paths = args[path_index + 1:]
+# Strict repeatable-flag parse: classify takes ONE value per `--path` flag and
+# rejects positionals (exit 2). A bare path not preceded by its own `--path`
+# reproduces the live multi-path usage-error regression, so fail loudly here.
+paths = []
+index = 1 if args and not args[0].startswith("--") else 0
+while index < len(args):
+    if args[index] == "--path":
+        paths.append(args[index + 1])
+        index += 2
+        continue
+    if args[index] in ("--repo-root", "--surfaces", "--file-list"):
+        index += 2
+        continue
+    if args[index].startswith("--"):
+        index += 1
+        continue
+    print(f"usage error: unexpected positional argument {args[index]!r}", file=sys.stderr)
+    sys.exit(2)
 roles = json.loads(os.environ["FAKE_CLASSIFY_ROLES"])
 records = [
     {
@@ -200,8 +216,9 @@ def test_release_real_host_proof_excludes_only_native_test_roles(tmp_path: Path)
         "--surfaces-optional",
         "--repo-root",
         str(repo),
-        "--path",
-        *roles,
+        # one `--path` flag PER path: a single flag followed by bare paths is a
+        # classify usage error (exit 2), caught live on the first multi-path run
+        *[part for path in roles for part in ("--path", path)],
     ]
 
 
