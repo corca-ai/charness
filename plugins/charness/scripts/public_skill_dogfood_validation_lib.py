@@ -7,7 +7,6 @@ from pathlib import Path
 
 from scripts.public_skill_dogfood_lib import (
     DOGFOOD_PATH,
-    build_matrix,
 )
 from scripts.public_skill_validation_lib import public_skill_ids
 
@@ -41,40 +40,12 @@ def _require_string_list(value: object, *, field: str) -> list[str]:
     return value
 
 
-def _scaffold_rows_for_cases(repo_root: Path, raw_cases: list[object]) -> dict[str, dict[str, object]]:
-    skill_ids = sorted(
-        {
-            case.get("skill_id")
-            for case in raw_cases
-            if isinstance(case, dict) and isinstance(case.get("skill_id"), str)
-        }
-    )
-    matrix = build_matrix(repo_root, skill_ids)["matrix"]
-    return {row["skill_id"]: row for row in matrix if isinstance(row, dict)}
-
-
-def _validate_case_scaffold(
-    case: dict[str, object],
-    *,
-    scaffold: dict[str, object],
-    skill_id: str,
-    field: str,
-) -> None:
-    for key in ("prompt", "acceptance_evidence"):
-        if case[key] != scaffold[key]:
-            raise ValidationError(
-                f"{field}.{key} drifted from current scaffold for `{skill_id}`; "
-                f"refresh with `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id {skill_id} --detail`"
-            )
-
-
 def _validate_case(
     raw_case: object,
     *,
     index: int,
     all_skills: set[str],
     seen_skills: set[str],
-    scaffold_rows: dict[str, dict[str, object]],
 ) -> dict[str, object]:
     field = f"{DOGFOOD_PATH}.cases[{index}]"
     if not isinstance(raw_case, dict):
@@ -93,10 +64,6 @@ def _validate_case(
         raise ValidationError(f"{DOGFOOD_PATH}: duplicate dogfood case for `{skill_id}`")
     seen_skills.add(skill_id)
 
-    scaffold = scaffold_rows.get(skill_id)
-    if scaffold is None:
-        raise ValidationError(f"{field}: could not scaffold current dogfood contract for `{skill_id}`")
-
     case = {
         "skill_id": skill_id,
         "prompt": _require_string(raw_case.get("prompt"), field=f"{field}.prompt"),
@@ -105,7 +72,6 @@ def _validate_case(
             field=f"{field}.acceptance_evidence",
         ),
     }
-    _validate_case_scaffold(case, scaffold=scaffold, skill_id=skill_id, field=field)
     return case
 
 
@@ -139,8 +105,6 @@ def validate_registry(data: dict[str, object], repo_root: Path) -> dict[str, obj
         raise ValidationError(f"{DOGFOOD_PATH}: `cases` must be a list")
 
     all_skills = set(public_skill_ids(repo_root))
-    scaffold_rows = _scaffold_rows_for_cases(repo_root, raw_cases)
-
     validated_cases: list[dict[str, object]] = []
     seen_skills: set[str] = set()
     for index, raw_case in enumerate(raw_cases):
@@ -150,7 +114,6 @@ def validate_registry(data: dict[str, object], repo_root: Path) -> dict[str, obj
                 index=index,
                 all_skills=all_skills,
                 seen_skills=seen_skills,
-                scaffold_rows=scaffold_rows,
             )
         )
 

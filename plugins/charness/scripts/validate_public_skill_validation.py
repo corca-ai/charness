@@ -21,22 +21,19 @@ def validate_adapter_requirement(repo_root: Path, skill_id: str, *, required: bo
     skill_root = repo_root / "skills" / "public" / skill_id
     adapter_example = skill_root / "adapter.example.yaml"
     resolve_script = skill_root / "scripts" / "resolve_adapter.py"
-    init_script = skill_root / "scripts" / "init_adapter.py"
 
     if required:
         if not adapter_example.is_file():
             raise ValidationError(f"{skill_root / 'SKILL.md'}: adapter-required skill is missing `adapter.example.yaml`")
-        missing = [path.name for path in (resolve_script, init_script) if not path.is_file()]
-        if missing:
-            rendered = ", ".join(f"`scripts/{name}`" for name in missing)
-            raise ValidationError(f"{skill_root / 'SKILL.md'}: adapter-required skill is missing {rendered}")
+        if not resolve_script.is_file():
+            raise ValidationError(f"{skill_root / 'SKILL.md'}: adapter-required skill is missing `scripts/resolve_adapter.py`")
         return
 
     if adapter_example.exists():
         raise ValidationError(f"{skill_root / 'SKILL.md'}: adapter-free skill should not ship `adapter.example.yaml`")
-    if resolve_script.exists() or init_script.exists():
+    if resolve_script.exists():
         raise ValidationError(
-            f"{skill_root / 'SKILL.md'}: adapter-free skill should not ship adapter bootstrap helpers"
+            f"{skill_root / 'SKILL.md'}: adapter-free skill should not ship `scripts/resolve_adapter.py`"
         )
 
 

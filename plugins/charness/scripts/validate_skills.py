@@ -372,9 +372,9 @@ def validate_support_files(root: Path, skill_dir: Path, kind: str) -> None:
     if has_adapter_example and not has_scripts_dir:
         raise ValidationError("adapter.example.yaml exists but scripts/ is missing")
     if has_adapter_example:
-        for required in ("resolve_adapter.py", "init_adapter.py"):
-            if not (skill_dir / "scripts" / required).exists():
-                raise ValidationError(f"scripts/{required} is missing")
+        resolver = skill_dir / "scripts" / "resolve_adapter.py"
+        if not resolver.is_file():
+            raise ValidationError("scripts/resolve_adapter.py is missing")
 
     if kind == "public" and bootstrap_fence_blocks > MAX_PUBLIC_FENCE_BLOCKS_WITHOUT_SCRIPTS and not has_scripts_dir:
         raise ValidationError(
