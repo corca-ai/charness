@@ -66,6 +66,12 @@ def _declared_archive(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, content: 
     _write_manifest(repo, version, native_core=_native_core(version, digest=digest))
     runtime = tmp_path / "runtime"
     monkeypatch.setenv("CHARNESS_RUNTIME_ROOT", str(runtime))
+    # Required, not incidental: runtime_bootstrap.py:83 IGNORES a configured
+    # CHARNESS_RUNTIME_ROOT when CHARNESS_RUNTIME_ROOT_AUTO=1 and
+    # CHARNESS_RUNTIME_REPO_KEY belongs to a different repo -- which is exactly this
+    # fixture's shape under the standing pytest runner. Without this the archive is
+    # staged where the preflight will never look.
+    monkeypatch.delenv("CHARNESS_RUNTIME_ROOT_AUTO", raising=False)
     archive = runtime / "native-artifacts" / asset
     archive.parent.mkdir(parents=True)
     archive.write_bytes(content)
@@ -150,6 +156,7 @@ def test_preflight_names_the_resolved_archive_and_build_command_when_missing(
     _write_manifest(repo, native_core=_native_core(version))
     runtime = tmp_path / "runtime"
     monkeypatch.setenv("CHARNESS_RUNTIME_ROOT", str(runtime))
+    monkeypatch.delenv("CHARNESS_RUNTIME_ROOT_AUTO", raising=False)
     expected = runtime / "native-artifacts" / canonical_artifact_name(version, host_tuple())
 
     with pytest.raises(SystemExit) as error:
@@ -293,6 +300,7 @@ def test_resume_uploads_native_asset_after_create(tmp_path: Path) -> None:
     runtime = tmp_path / "runtime"
     env = _release_env(tmp_path, bin_dir)
     env["CHARNESS_RUNTIME_ROOT"] = str(runtime)
+    env.pop("CHARNESS_RUNTIME_ROOT_AUTO", None)  # see _declared_archive
     archive, asset = _add_native_archive(repo, runtime)
     _simulate_partial_publish(repo)
 
@@ -316,6 +324,7 @@ def test_resume_repairs_existing_release_without_recreating_it(tmp_path: Path) -
     runtime = tmp_path / "runtime"
     env = _release_env(tmp_path, bin_dir)
     env["CHARNESS_RUNTIME_ROOT"] = str(runtime)
+    env.pop("CHARNESS_RUNTIME_ROOT_AUTO", None)  # see _declared_archive
     archive, asset = _add_native_archive(repo, runtime)
     _simulate_partial_publish(repo)
     Path(env["FAKE_GH_RELEASE_STATE"]).write_text(json.dumps(["v0.0.0"]) + "\n", encoding="utf-8")
