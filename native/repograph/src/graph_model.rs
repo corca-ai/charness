@@ -75,6 +75,26 @@ pub enum RootKind {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "kebab-case")]
+pub enum CarrierTier {
+    StructuredUnparsed,
+    Tokenizable,
+    Opaque,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum CarrierSourceKind {
+    StructuredPlan,
+    GitHook,
+    CiWorkflow,
+    PackageScript,
+    SurfaceCommand,
+    IntegrationCheck,
+    QualityGate,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "kebab-case")]
 pub enum EdgeKind {
     Imports,
     Invokes,
@@ -110,6 +130,8 @@ pub enum Node {
     Test(TestNode),
     RuntimeProbe(RuntimeProbeNode),
     ExternalModule(ExternalModuleNode),
+    CommandCarrier(CommandCarrierNode),
+    ValidationCommand(ValidationCommandNode),
 }
 
 impl Node {
@@ -123,6 +145,8 @@ impl Node {
             Self::Test(_) => "test",
             Self::RuntimeProbe(_) => "runtime-probe",
             Self::ExternalModule(_) => "external-module",
+            Self::CommandCarrier(_) => "command-carrier",
+            Self::ValidationCommand(_) => "validation-command",
         }
     }
 
@@ -136,6 +160,8 @@ impl Node {
             Self::Test(node) => &node.id,
             Self::RuntimeProbe(node) => &node.id,
             Self::ExternalModule(node) => &node.id,
+            Self::CommandCarrier(node) => &node.id,
+            Self::ValidationCommand(node) => &node.id,
         }
     }
 }
@@ -202,6 +228,25 @@ pub struct ExternalModuleNode {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct CommandCarrierNode {
+    pub id: String,
+    pub path: String,
+    pub source_kind: CarrierSourceKind,
+    pub tier: CarrierTier,
+    pub name: String,
+    pub line: Option<usize>,
+    pub raw: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct ValidationCommandNode {
+    pub id: String,
+    pub carrier_id: String,
+    pub label: Option<String>,
+    pub command: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct Edge {
     pub kind: EdgeKind,
     pub source: String,
@@ -231,6 +276,32 @@ pub struct AnalyzerInput {
     pub path: String,
     pub identity: String,
     pub scope: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct UnresolvedCarrier {
+    pub kind: &'static str,
+    pub carrier_id: String,
+    pub tier: CarrierTier,
+    pub reason: String,
+    pub raw: String,
+    pub line: Option<usize>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct CarrierPathReference {
+    pub kind: &'static str,
+    pub carrier_id: String,
+    pub path: String,
+    pub raw: String,
+    pub line: Option<usize>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct QualityLabel {
+    pub label: String,
+    pub source: String,
+    pub line: Option<usize>,
 }
 
 /// Optional role declarations. This is deliberately a small JSON boundary;
@@ -265,5 +336,8 @@ pub struct GraphReport {
     pub mirror_destination_count: usize,
     pub analyzer_inputs: Vec<AnalyzerInput>,
     pub role_census: BTreeMap<String, usize>,
+    pub unresolved_carriers: Vec<UnresolvedCarrier>,
+    pub carrier_path_references: Vec<CarrierPathReference>,
+    pub quality_labels: Vec<QualityLabel>,
     pub unestablished: Vec<Unestablished>,
 }

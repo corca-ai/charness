@@ -1,0 +1,4 @@
+version: 1
+startup_probes:
+  - class: standing
+    label: fixture-yaml-label

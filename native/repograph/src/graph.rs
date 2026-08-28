@@ -3,6 +3,7 @@ use std::path::{Path, PathBuf};
 
 use serde_json::Value;
 
+use crate::graph_carriers::scan as scan_carriers;
 use crate::graph_imports::{extract_import_references, resolve_imports};
 use crate::graph_mirrors::{derive_mirrors, MirrorDerivation, MirrorManifest};
 use crate::graph_model::{
@@ -176,6 +177,10 @@ pub fn build(
         &mut roots,
     );
     add_static_roots(&selected_paths, &roles, &mirror_derivation, &mut roots);
+    let carrier_report = scan_carriers(repo_root, inventory, excludes);
+    nodes.extend(carrier_report.nodes);
+    edges.extend(carrier_report.edges);
+    roots.extend(carrier_report.roots);
     let analyzer_inputs = add_analyzer_conditions(repo_root, analyzer_results, &mut unestablished);
 
     nodes.sort_by(|left, right| {
@@ -210,6 +215,9 @@ pub fn build(
         mirror_destinations: mirror_derivation.destinations,
         analyzer_inputs,
         role_census,
+        unresolved_carriers: carrier_report.unresolved_carriers,
+        carrier_path_references: carrier_report.carrier_path_references,
+        quality_labels: carrier_report.quality_labels,
         unestablished,
     }
 }
@@ -242,7 +250,8 @@ where
         &options.excludes,
         &options.analyzer_results,
     );
-    let has_unestablished = !report.unestablished.is_empty();
+    let has_unestablished =
+        !report.unestablished.is_empty() || !report.unresolved_carriers.is_empty();
     match serde_json::to_string(&report) {
         Ok(json) => {
             println!("{json}");
@@ -341,6 +350,9 @@ fn emit_inventory_error(repo_root: &Path, options: &GraphOptions, error: Invento
             .into_iter()
             .map(|role| (role.to_string(), 0))
             .collect(),
+        unresolved_carriers: Vec::new(),
+        carrier_path_references: Vec::new(),
+        quality_labels: Vec::new(),
         unestablished: vec![Unestablished {
             kind: ConditionKind::Inventory,
             subject: "<inventory>".to_string(),
@@ -980,7 +992,7 @@ fn dedupe_sorted(mut paths: Vec<String>) -> Vec<String> {
     paths
 }
 
-fn display_repo_root(repo_root: &Path) -> String {
+pub(crate) fn display_repo_root(repo_root: &Path) -> String {
     if repo_root.is_absolute() {
         ".".to_string()
     } else {

@@ -1,0 +1,20 @@
+{
+  "version": 1.0,
+  "surfaces": [
+    {
+      "surface_id": "carrier-fixture",
+      "description": "carrier fixture",
+      "source_paths": ["scripts/*.py"],
+      "derived_paths": ["out/*.json"],
+      "sync_commands": [
+        "python3 scripts/surface_sync.py --repo-root .",
+        "bash -c 'python3 scripts/nested_surface.py'"
+      ],
+      "verify_commands": [
+        "./scripts/surface_verify.sh --input scripts/shared_input.py",
+        "python3 scripts/surface_verify.py --path scripts/shared_input.py"
+      ],
+      "notes": []
+    }
+  ]
+}

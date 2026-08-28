@@ -5,7 +5,7 @@
 
 This document freezes the machine-facing CLI contract for `parse-corpus`,
 `export-safe`, `match-surfaces`, and `standalone-targets`, and records the
-additive topology commands. A reportable run
+additive topology commands (`graph`, `classify`, `changed`, `carriers`). A reportable run
 emits one UTF-8 JSON document on stdout and diagnostics on stderr. The
 command-specific inventory, manifest, and path errors below identify the
 failure cases that emit diagnostics without a report. JSON member order is not
@@ -27,7 +27,7 @@ their respective captures, with whitespace formatted for readability.
 The executable accepts one required command name:
 
 ```text
-repograph <parse-corpus|export-safe|match-surfaces|standalone-targets|graph|classify|changed> [options]
+repograph <parse-corpus|export-safe|match-surfaces|standalone-targets|graph|classify|changed|carriers> [options]
 ```
 
 `--help` and `-h` print the command usage and exit 0. An unknown command,
@@ -449,7 +449,12 @@ input is recorded and its repository scope is marked with an
 `analyzer-not-parsed` condition; analyzer contents are not parsed.
 
 The report contains typed `nodes`, `edges`, and `roots`, derived mirror
-destinations, a role census, analyzer inputs, and `unestablished` conditions.
+destinations, a role census, analyzer inputs, carrier path references, quality
+labels, unresolved carriers, and `unestablished` conditions. Carrier opacity is
+typed by `structured-unparsed`, `tokenizable`, or `opaque`; an unresolved
+carrier retains its carrier identity and raw text. `invokes` edges point only
+at a resolved repository program position, while path-valued arguments are
+reported separately.
 Node and edge arrays are sorted by class/kind and identifier/source/target;
 inventory paths are deduplicated. Graph reports exit 0 when established, 3
 when the report contains an unestablished condition, 2 for usage errors, and
@@ -552,6 +557,23 @@ unestablished.
 | 2 | CLI usage error. |
 | 3 | Inventory, surfaces manifest, path normalization, analyzer establishment, or requested role classification failed. |
 | 70 | Internal `repograph` failure, including a top-level panic or an output failure. |
+
+## `carriers`
+
+Usage:
+
+```text
+repograph carriers [--repo-root PATH] [--file-list PATH] [--exclude-prefix PREFIX]...
+```
+
+`carriers` uses the same one-inventory acquisition and default exclusions as
+`graph`, and emits `repograph.carriers.v1`. It is a diagnostic projection of
+the carrier nodes, validation-command roots, program-position `invokes` edges,
+`carrier-path-reference` records, unresolved carrier records, and the
+run-quality label observations. It does not evaluate shell, YAML, workflow
+expressions, or structured command-plan target bindings. Its exits are 0 for
+an established projection, 3 when typed carrier opacity is present, 2 for a
+usage error, and 70 for an internal output failure.
 
 ## `standalone-targets`
 

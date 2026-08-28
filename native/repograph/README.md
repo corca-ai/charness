@@ -52,6 +52,14 @@ and `native/repograph/fixtures/`:
 target/release/repograph graph --repo-root ../..
 ```
 
+The additive carrier diagnostic emits command-carrier nodes, validation
+commands, program-position `invokes` edges, path references, unresolved
+carriers, and run-quality label observations:
+
+```bash
+target/release/repograph carriers --repo-root ../..
+```
+
 Use repeatable `--analyzer-result FILE` options to record identity-only
 provider inputs; this lane marks their scope `unestablished` until a later
 lane supplies provider parsing.

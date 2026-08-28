@@ -1,0 +1,11 @@
+{
+  "tool_id": "fixture-tool",
+  "checks": {
+    "detect": {
+      "commands": ["fixture-tool --version"]
+    },
+    "healthcheck": {
+      "commands": ["python3 scripts/integration_health.py --repo-root ."]
+    }
+  }
+}

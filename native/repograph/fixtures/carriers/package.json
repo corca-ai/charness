@@ -1,0 +1,9 @@
+{
+  "private": true,
+  "scripts": {
+    "package-check": "python3 scripts/package_validator.py --repo-root .",
+    "package-shell": "./scripts/package_shell_validator.sh",
+    "package-echo": "echo \"run python3 scripts/echo_advice.py\"",
+    "package-multi": "python3 scripts/first_validator.py && python3 scripts/second_validator.py"
+  }
+}

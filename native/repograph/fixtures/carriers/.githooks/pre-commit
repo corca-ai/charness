@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+echo "advice: run python3 scripts/echo_advice.py --repo-root ."
+MODE=fixture env -u OLD python3 -B scripts/hook_validator.py --path scripts/shared_input.py
+./scripts/hook_shell_validator.sh --repo-root .
+python3 "$VAR" --repo-root .

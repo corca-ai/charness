@@ -1,0 +1,10 @@
+name: Fixture quality
+jobs:
+  check:
+    steps:
+      - run: python3 scripts/ci_validator.py --repo-root .
+      - run: ./scripts/ci_shell_validator.sh
+      - run: |
+          python3 scripts/multiline_validator.py
+          echo done
+      - run: ${{ steps.adapter.outputs.command }}

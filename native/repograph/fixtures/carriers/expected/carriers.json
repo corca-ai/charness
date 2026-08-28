@@ -1,0 +1,176 @@
+{
+  "invokes": [
+    {
+      "source": "command-carrier:package.json:script:package-check",
+      "target": "scripts/package_validator.py",
+      "line": null
+    },
+    {
+      "source": "command-carrier:package.json:script:package-shell",
+      "target": "scripts/package_shell_validator.sh",
+      "line": null
+    },
+    {
+      "source": "validation-command:command-carrier:.agents/surfaces.json:surface:0:sync_commands:0",
+      "target": "scripts/surface_sync.py",
+      "line": null
+    },
+    {
+      "source": "validation-command:command-carrier:.agents/surfaces.json:surface:0:verify_commands:0",
+      "target": "scripts/surface_verify.sh",
+      "line": null
+    },
+    {
+      "source": "validation-command:command-carrier:.agents/surfaces.json:surface:0:verify_commands:1",
+      "target": "scripts/surface_verify.py",
+      "line": null
+    },
+    {
+      "source": "validation-command:command-carrier:.githooks/pre-commit:line:3",
+      "target": "scripts/hook_validator.py",
+      "line": 3
+    },
+    {
+      "source": "validation-command:command-carrier:.githooks/pre-commit:line:4",
+      "target": "scripts/hook_shell_validator.sh",
+      "line": 4
+    },
+    {
+      "source": "validation-command:command-carrier:integrations/tools/fixture.json:check:healthcheck:0",
+      "target": "scripts/integration_health.py",
+      "line": null
+    },
+    {
+      "source": "validation-command:command-carrier:scripts/run-quality.sh:gate:fixture-label:line:2",
+      "target": "scripts/quality_validator.py",
+      "line": 2
+    },
+    {
+      "source": "validation-command:command-carrier:scripts/run-quality.sh:gate:fixture-path:line:5",
+      "target": "scripts/quality_validator.py",
+      "line": 5
+    },
+    {
+      "source": "validation-command:command-carrier:scripts/run-quality.sh:gate:fixture-shell:line:4",
+      "target": "scripts/quality_shell_validator.sh",
+      "line": 4
+    }
+  ],
+  "carrier_path_references": [
+    {
+      "kind": "carrier-path-reference",
+      "carrier_id": "command-carrier:.agents/surfaces.json:surface:0:verify_commands:0",
+      "path": "scripts/shared_input.py",
+      "line": null
+    },
+    {
+      "kind": "carrier-path-reference",
+      "carrier_id": "command-carrier:.agents/surfaces.json:surface:0:verify_commands:1",
+      "path": "scripts/shared_input.py",
+      "line": null
+    },
+    {
+      "kind": "carrier-path-reference",
+      "carrier_id": "command-carrier:.githooks/pre-commit:line:3",
+      "path": "scripts/shared_input.py",
+      "line": 3
+    },
+    {
+      "kind": "carrier-path-reference",
+      "carrier_id": "command-carrier:scripts/run-quality.sh:gate:fixture-path:line:5",
+      "path": "scripts/shared_input.py",
+      "line": 5
+    }
+  ],
+  "unresolved_carriers": [
+    {
+      "kind": "unresolved-carrier",
+      "carrier_id": "command-carrier:.agents/command_plan_preflight.json:document",
+      "tier": "structured-unparsed",
+      "reason": "structured command plan is unparsed in v1",
+      "line": null
+    },
+    {
+      "kind": "unresolved-carrier",
+      "carrier_id": "command-carrier:.agents/quality-adapter.yaml:startup_probes",
+      "tier": "opaque",
+      "reason": "unresolved (yaml): startup_probes labels are identity-only in v1",
+      "line": null
+    },
+    {
+      "kind": "unresolved-carrier",
+      "carrier_id": "command-carrier:.agents/surfaces.json:surface:0:sync_commands:1",
+      "tier": "tokenizable",
+      "reason": "command payload is nested under -c",
+      "line": null
+    },
+    {
+      "kind": "unresolved-carrier",
+      "carrier_id": "command-carrier:.githooks/pre-commit:line:2",
+      "tier": "tokenizable",
+      "reason": "command-shaped text is an echo/printf argument",
+      "line": 2
+    },
+    {
+      "kind": "unresolved-carrier",
+      "carrier_id": "command-carrier:.githooks/pre-commit:line:5",
+      "tier": "tokenizable",
+      "reason": "interpreter target is computed",
+      "line": 5
+    },
+    {
+      "kind": "unresolved-carrier",
+      "carrier_id": "command-carrier:package.json:script:package-echo",
+      "tier": "tokenizable",
+      "reason": "command-shaped text is an echo/printf argument",
+      "line": null
+    },
+    {
+      "kind": "unresolved-carrier",
+      "carrier_id": "command-carrier:package.json:script:package-multi",
+      "tier": "tokenizable",
+      "reason": "multi-statement or shell control flow is unresolved",
+      "line": null
+    },
+    {
+      "kind": "unresolved-carrier",
+      "carrier_id": "command-carrier:scripts/run-quality.sh:gate:fixture-command-payload:line:7",
+      "tier": "tokenizable",
+      "reason": "command payload is nested under -c",
+      "line": 7
+    },
+    {
+      "kind": "unresolved-carrier",
+      "carrier_id": "command-carrier:scripts/run-quality.sh:gate:fixture-echo:line:6",
+      "tier": "tokenizable",
+      "reason": "command-shaped text is an echo/printf argument",
+      "line": 6
+    },
+    {
+      "kind": "unresolved-carrier",
+      "carrier_id": "command-carrier:scripts/run-quality.sh:gate:variable-target:line:3",
+      "tier": "tokenizable",
+      "reason": "interpreter target is computed",
+      "line": 3
+    },
+    {
+      "kind": "unresolved-carrier",
+      "carrier_id": "command-carrier:scripts/run-quality.sh:queue_selected:line:8",
+      "tier": "tokenizable",
+      "reason": "quality queue label is not a literal runtime label",
+      "line": 8
+    }
+  ],
+  "quality_labels": [
+    "fixture-label",
+    "variable-target",
+    "fixture-shell",
+    "fixture-path",
+    "fixture-echo",
+    "fixture-command-payload",
+    "run-quality-read-only",
+    "run-quality-read-only-release",
+    "run-quality-full",
+    "run-quality-full-release"
+  ]
+}

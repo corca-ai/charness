@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "targets": [
+    {"id": "fixture", "query": "scripts/quality_validator.py", "expected_path": "scripts/quality_validator.py"}
+  ],
+  "commands": [
+    {"id": "fixture-command", "owner_target": "fixture", "argv": ["python3", "{target:fixture}"]}
+  ]
+}
