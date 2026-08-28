@@ -55,7 +55,7 @@ command-specific exceptions are documented below.
 
 ## `parse-corpus`
 
-### Input
+### `parse-corpus` input
 
 Usage:
 
@@ -82,7 +82,7 @@ panic-safe per file, so one failure does not prevent the other selected files
 from appearing in the report. The first parser error takes precedence over an
 unsupported-syntax result if both are present.
 
-### Output schema
+### `parse-corpus` output schema
 
 Schema id: `repograph.parse_corpus.v1`.
 
@@ -158,7 +158,7 @@ target/release/repograph parse-corpus --repo-root fixtures \
 Omitted from this abridged capture: … 13 additional `files` entries, including
 the remaining parsed files, a dangling-link read error, and two parse errors.
 
-### Exit semantics
+### `parse-corpus` exit semantics
 
 | Exit | Meaning for `parse-corpus` |
 | --- | --- |
@@ -170,7 +170,7 @@ the remaining parsed files, a dangling-link read error, and two parse errors.
 
 ## `export-safe`
 
-### Input
+### `export-safe` input
 
 Usage:
 
@@ -215,7 +215,7 @@ export-rooted `... / "skills" / <non-public> ...` expression, asset-path
 violations are suppressed for that file. Import violations are never
 suppressed by this escape hatch.
 
-### Output schema
+### `export-safe` output schema
 
 Schema id: `repograph.export_safe.v1`.
 
@@ -285,7 +285,7 @@ This captured command exited 1 because violations were found. An inventory
 failure still emits this schema with `listing: "unestablished"` and an
 `<inventory>` entry before exiting 3.
 
-### Exit semantics
+### `export-safe` exit semantics
 
 | Exit | Meaning for `export-safe` |
 | --- | --- |
@@ -297,7 +297,7 @@ failure still emits this schema with `listing: "unestablished"` and an
 
 ## `match-surfaces`
 
-### Input
+### `match-surfaces` input
 
 Usage:
 
@@ -337,7 +337,7 @@ Matching uses case-sensitive POSIX `fnmatch` semantics. `*` crosses `/` for
 this command; `?` and bracket character classes are also supported. A path
 matches a surface when it matches any source or derived pattern.
 
-### Output schema
+### `match-surfaces` output schema
 
 Schema id: `repograph.match_surfaces.v1`.
 
@@ -422,7 +422,7 @@ also exit 0 with all five output arrays empty. Invalid or unreadable manifest
 JSON, invalid manifest structure, duplicate IDs, or a rejected path emits
 diagnostics on stderr and exits 3 without a report document.
 
-### Exit semantics
+### `match-surfaces` exit semantics
 
 | Exit | Meaning for `match-surfaces` |
 | --- | --- |
@@ -434,7 +434,7 @@ diagnostics on stderr and exits 3 without a report document.
 
 ## `standalone-targets`
 
-### Input
+### `standalone-targets` input
 
 Usage:
 
@@ -490,7 +490,7 @@ The directory literal uses a Python single-quoted representation unless the
 path contains a single quote, in which case it uses a double-quoted escaped
 representation.
 
-### Output schema
+### `standalone-targets` output schema
 
 Schema id: `repograph.standalone_targets.v1`.
 
@@ -576,7 +576,7 @@ target set, and an inventory entry before exiting 3. Source parse failures are
 not applicable: this command performs static selection only and does not
 parse its targets.
 
-### Exit semantics
+### `standalone-targets` exit semantics
 
 | Exit | Meaning for `standalone-targets` |
 | --- | --- |
