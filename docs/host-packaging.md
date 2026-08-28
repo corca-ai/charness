@@ -57,6 +57,40 @@ Each version/tuple entry binds the expected asset name and archive digest;
 digest, and build commit. The declaration is schema-supported but remains
 absent until a release has supplied a matching artifact.
 
+## Native Artifact Production
+
+Build the release asset from a clean checkout with the pinned toolchain:
+
+```bash
+python3 scripts/build_native_artifact.py --repo-root . --out-dir /tmp/charness-native-artifacts
+```
+
+If `--out-dir` is omitted, output goes under the external Charness runtime
+root, never under the repository. The producer reads the product version from
+`packaging/charness.json`, runs `cargo build --release --locked` in
+`native/repograph` with the crate's `rust-toolchain.toml`, and deliberately
+does not synchronize `native/repograph/Cargo.toml`; the crate version is not a
+release-version owner. The build may create the crate's ignored `target/`
+directory, which is excluded from the clean-tree check through Git's standard
+ignore rules.
+
+The external output directory contains:
+
+- `repograph-v<version>-<tuple>.tar.gz`, with the executable stored as
+  `repograph` at the archive root;
+- `SHA256SUMS`, with the archive digest in standard `sha256sum` format; and
+- `artifact.json`, recording `version`, `tuple`, `git_tag`, `git_commit`,
+  `toolchain`, `rustc_version`, `cargo_lock_sha256`, and binary/archive
+  digests.
+
+The archive is uploaded to the matching GitHub release with the existing
+release tooling. Configure the adapter's post-publish asset probe as
+`python3 scripts/check_native_release_asset.py --repo-root .`; it reuses the
+self-release probe and `CHARNESS_RELEASE_PROBE_FIXTURES` for offline tests.
+An undeclared checkout version is a typed `not-applicable` result. A
+bit-for-bit reproducibility claim and Cargo.lock supply-chain coverage are
+outside this contract.
+
 Generated host layouts are not authoritative. If an exported manifest drifts
 from the shared packaging manifest, regenerate the export instead of editing the
 host file by hand.
