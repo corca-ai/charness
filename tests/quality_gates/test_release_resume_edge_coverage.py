@@ -92,10 +92,6 @@ class _ClaimsResumeCli:
     def build_real_host_payload():
         return {"required": False}
 
-    @staticmethod
-    def build_retro_trigger_evaluation(*_args, **_kwargs):
-        return {"required": False}
-
     def ensure_release_surface(self, _repo_root, expected_version, *, stage):
         self.version_surface_checks.append({"version": expected_version, "stage": stage})
         if self.version_surface_error:

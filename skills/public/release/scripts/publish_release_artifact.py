@@ -20,7 +20,6 @@ release_push_lines = _sections.release_push_lines
 review_proof_lines = _sections.review_proof_lines
 requested_review_lines = _sections.requested_review_lines
 release_adapter_preflight_lines = _sections.release_adapter_preflight_lines
-retro_trigger_evaluation_lines = _sections.retro_trigger_evaluation_lines
 post_publish_proof_lines = _sections.post_publish_proof_lines
 install_refresh_lines = _sections.install_refresh_lines
 public_release_verification_lines = _sections.public_release_verification_lines
@@ -55,7 +54,6 @@ def write_release_artifact(
     public_release_verification: str = "not checked by this helper",
     review_proof: str | None = None,
     requested_review_gate: dict[str, Any] | None = None,
-    retro_trigger_evaluation: dict[str, Any] | None = None,
     distinct_channel_verification: dict[str, Any] | None = None,
     published_notes_audit: dict[str, Any] | None = None,
     release_runtime: list[dict[str, Any]] | None = None,
@@ -109,7 +107,6 @@ def write_release_artifact(
     lines.extend(distinct_channel_verification_lines(distinct_channel_verification))
     lines.extend(published_notes_audit_lines(published_notes_audit))
     lines.extend(release_adapter_preflight_lines(release_adapter_preflight_payload))
-    lines.extend(retro_trigger_evaluation_lines(retro_trigger_evaluation))
     lines.extend(real_host_lines(real_host_payload, install_refresh=install_refresh))
     lines.extend(review_proof_lines(review_proof))
     # Beside the critique floor it is the stronger sibling of, and deliberately BELOW the
@@ -185,7 +182,6 @@ def write_current_artifact(
         install_refresh=install_refresh or payload.get("install_refresh"), tag_name=payload["tag_name"],
         public_release_verification=payload.get("public_release_verification", "not checked by this helper"),
         review_proof=payload.get("critique_artifact"), requested_review_gate=payload.get("requested_review_gate"),
-        retro_trigger_evaluation=payload.get("retro_trigger_evaluation"),
         distinct_channel_verification=payload.get("distinct_channel_verification"),
         published_notes_audit=payload.get("published_notes_audit"),
         release_runtime=payload.get("release_runtime"),

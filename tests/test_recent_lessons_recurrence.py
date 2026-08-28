@@ -3,7 +3,7 @@
 The defect these pin: `_normalize_lesson_key` keys lesson identity on the first 14
 words of the bullet's surface text, so re-wording a lesson reset its recurrence count
 to 1. Measured on the live corpus, 1594 of 1596 candidates sat at
-`independent_source_count == 1`, making the recurrence multiplier exactly 1.0 and
+`source_count == 1`, making the recurrence multiplier exactly 1.0 and
 selection pure recency -- while one concept held 7+ rows across 6 dates and never won
 a digest slot.
 
@@ -70,7 +70,6 @@ def test_reworded_lessons_sharing_a_class_group_into_one_candidate(tmp_path: Pat
     entry = _by_class(_index(repo), "derived-surface-batching")
     assert entry is not None
     # Three differently-worded bullets, one concept, three independent observations.
-    assert entry["independent_source_count"] == 3
     assert entry["source_count"] == 3
 
 
@@ -83,7 +82,7 @@ def test_untagged_reworded_lessons_stay_separate(tmp_path: Path) -> None:
     _seed_retro(repo, name="2026-05-01-a.md", date="2026-05-01", waste=["batch edits first"])
     _seed_retro(repo, name="2026-05-20-b.md", date="2026-05-20", waste=["regenerate once only"])
     candidates = _index(repo)
-    assert all(c["independent_source_count"] == 1 for c in candidates)
+    assert all(c["source_count"] == 1 for c in candidates)
     assert all(c["recurrence_class"] is None for c in candidates)
 
 
@@ -110,7 +109,7 @@ def test_class_groups_across_sections_not_just_within_one(tmp_path: Path) -> Non
     )
     entry = _by_class(_index(repo), "derived-surface-batching")
     assert entry is not None
-    assert entry["independent_source_count"] == 2
+    assert entry["source_count"] == 2
     # The class renders in the section of its NEWEST observation (the Next
     # Improvements bullet dated 2026-05-20), not of whichever filename sorted
     # first. Artifact order is lexicographic, so "first seen" was never
@@ -206,7 +205,7 @@ def test_recurring_class_outranks_a_same_day_one_off(tmp_path: Path) -> None:
     one_off = next(c for c in candidates if c["lesson"] == "a brand new one-off")
 
     assert recurring is not None
-    assert recurring["independent_source_count"] == 5
+    assert recurring["source_count"] == 5
     assert recurring["age_days"] == 50
     assert one_off["age_days"] == 0
     assert recurring["selection_weight"] > one_off["selection_weight"], (

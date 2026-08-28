@@ -152,8 +152,6 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
     expected_url = cli.expected_github_release_url(repo_root, backend, tag_name)
     payload["expected_release_url"] = expected_url
     host = cli.safe_real_host_payload(repo_root, plan["release_content_paths"], build_payload=cli.build_real_host_payload)
-    payload["retro_trigger_evaluation"] = cli.build_retro_trigger_evaluation(
-        repo_root, plan["release_content_paths"], evaluated_at="final_release_paths", tag_name=tag_name, execute=True)
     # Adapter-derived, not a literal: on the claims lane the writer below is SKIPPED, so
     # this value is what reaches `finalize_release_payload`, the post-publish artifact
     # commit, and `state["artifact_relpath"]`. A literal there pointed a consumer's

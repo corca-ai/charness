@@ -214,50 +214,6 @@ def requested_review_lines(payload: dict[str, Any] | None) -> list[str]:
     return lines
 
 
-def retro_trigger_evaluation_lines(payload: dict[str, Any] | None) -> list[str]:
-    lines = ["", "## Retro Trigger Evaluation", ""]
-    if payload is None:
-        return lines + ["- Retro trigger evaluation: not recorded by this helper invocation."]
-    triggered = payload.get("triggered")
-    lines.append(f"- Triggered: `{triggered}`.")
-    if evaluated_at := payload.get("evaluated_at"):
-        lines.append(f"- Evaluated at: `{evaluated_at}`.")
-    input_payload = payload.get("input")
-    if isinstance(input_payload, dict):
-        lines.append(f"- Input mode: `{input_payload.get('mode')}`.")
-        if base_ref := input_payload.get("base_ref"):
-            lines.append(f"- Base ref: `{base_ref}`.")
-        if head_ref := input_payload.get("head_ref"):
-            lines.append(f"- Head ref: `{head_ref}`.")
-    if reason := payload.get("reason"):
-        lines.append(f"- Reason: {reason}")
-    closeout = payload.get("closeout")
-    if isinstance(closeout, dict):
-        lines.append(f"- Closeout status: `{closeout.get('status')}`.")
-        if closeout_reason := closeout.get("reason"):
-            lines.append(f"- Closeout reason: {closeout_reason}")
-        if artifact_path := closeout.get("artifact_path"):
-            lines.append(f"- Retro artifact: `{artifact_path}`.")
-        if summary_path := closeout.get("summary_path"):
-            lines.append(f"- Recent lessons: `{summary_path}`.")
-    if configuration_status := payload.get("configuration_status"):
-        lines.append(f"- Configuration status: `{configuration_status}`.")
-    surface_hits = payload.get("surface_hits", [])
-    path_hits = payload.get("path_hits", [])
-    changed_paths = payload.get("changed_paths", [])
-    lines.append(f"- Surface hits: {len(surface_hits)}.")
-    lines.extend(f"  - `{surface}`" for surface in surface_hits)
-    lines.append(f"- Path hits: {len(path_hits)}.")
-    lines.append(f"- Evaluated changed paths: {len(changed_paths)}.")
-    # The full delta is already bound in the structured release payload. Do not
-    # render every historical/deleted path as a Markdown proof citation: an
-    # ignored residue or a deleted path can make the evidence-durability gate
-    # interpret an inventory line as a claim about a checked-in artifact. Counts
-    # preserve the useful signal without turning release bookkeeping into a
-    # second evidence surface.
-    return lines
-
-
 def post_publish_proof_lines(resolved_tag: str, public_release_verification: str) -> list[str]:
     if public_release_verification != "verified":
         return []

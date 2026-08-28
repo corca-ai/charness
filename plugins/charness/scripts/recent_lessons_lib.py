@@ -165,7 +165,7 @@ def _parse_date(value: str | None) -> date | None:
 # Concept identity for a lesson, authored explicitly. `_normalize_lesson_key` keys on
 # the first 14 words of the bullet's SURFACE TEXT, so re-wording a lesson resets its
 # recurrence count to 1 -- measured, 1594 of 1596 candidates sat at
-# `independent_source_count == 1` while one concept held 7+ rows across 6 dates and
+# `source_count == 1` while one concept held 7+ rows across 6 dates and
 # never won a digest slot. A tag is the only identity a re-wording cannot break,
 # because a content classifier would rot exactly like the surface text it replaces.
 RECURRENCE_CLASS_RE = re.compile(r"(?i)\brecurrence-class[ \t]*:[ \t]*([a-z0-9][a-z0-9-]*)")
@@ -198,49 +198,6 @@ def _normalize_lesson_key(text: str) -> str:
 def _candidate_id(kind: str, normalized_key: str) -> str:
     digest = hashlib.sha1(f"{kind}:{normalized_key}".encode("utf-8")).hexdigest()[:12]
     return f"{kind}:{digest}"
-
-
-# A machine-emitted retro repeats one authored body every time its trigger fires.
-# The recurrence boost is meant to measure INDEPENDENT observation, so counting those
-# emissions measures release frequency instead: this repo accumulated 121 copies of one
-# release-helper boilerplate line, which then outranked hand-authored lessons for a slot
-# in the next session's opening checklist -- boosted precisely because it was
-# boilerplate. Each signature below collapses to a single observation.
-#
-# Keyed on the generator's own title/mode signature rather than on the text it emits: a
-# content blacklist would rot the moment the template's wording changed, which is the
-# same class of miss it is here to prevent.
-_GENERATED_RETRO_SIGNATURES = (
-    ("release-trigger", re.compile(r"^Mode:\s*release-trigger\s*$")),
-    ("release-trigger", re.compile(r"^#\s*Retro:\s*Release Auto-Retro Trigger\b")),
-)
-# Both signatures are HEADER fields, so only the header is scanned. Matching anywhere
-# in the body would misfire on the retro that documents this mechanism: quote the
-# generated title inside a fenced block and the whole hand-authored artifact gets
-# tagged as a template emission -- every one of its lessons then merges into the
-# generator bucket and contributes zero independent observations. One quoted line
-# would silently mute a real retro.
-_GENERATED_SIGNATURE_HEADER_LINES = 6
-
-
-def generated_retro_signature(text: str) -> str | None:
-    """Name the generator that emitted this retro, or None when a human authored it."""
-    header = text.lstrip().splitlines()[:_GENERATED_SIGNATURE_HEADER_LINES]
-    for signature, pattern in _GENERATED_RETRO_SIGNATURES:
-        if any(pattern.search(line) for line in header):
-            return signature
-    return None
-
-
-def independent_source_count(sources: list[dict[str, Any]]) -> int:
-    """How many independent observations a lesson actually has.
-
-    Human-authored sources each count once. All emissions sharing one generator count
-    once in total, because they are one authored statement repeated by a template.
-    """
-    human = sum(1 for source in sources if not source.get("generator"))
-    generators = {source["generator"] for source in sources if source.get("generator")}
-    return human + len(generators)
 
 
 def adaptive_lesson_alpha(sample_count: int) -> float:
@@ -280,7 +237,6 @@ def _parse_retro_artifacts(artifacts: list[Path]) -> tuple[list[dict[str, Any]],
                 "text": text,
                 "source_date_text": source_date_text,
                 "source_date": source_date,
-                "generator": generated_retro_signature(text),
             }
         )
     return parsed_artifacts, max(dated_values) if dated_values else None
@@ -327,7 +283,6 @@ def _collect_lesson_candidates(repo_root: Path, parsed_artifacts: list[dict[str,
                         "artifact_path": str(artifact_path.relative_to(repo_root)),
                         "date": source_date_text,
                         "section": section_name,
-                        "generator": artifact.get("generator"),
                         # Per-source kind and wording, so a class spanning several
                         # sections resolves its display from the NEWEST observation
                         # rather than from whichever filename sorted first.
@@ -344,12 +299,8 @@ def _candidate_entry(kind: str, normalized_key: str, entry: dict[str, Any], as_o
     latest_date_text = latest_date.isoformat() if latest_date else None
     age_days, recency_weight = _recency_weight(latest_date, as_of)
     source_count = len(entry["sources"])
-    # `source_count` stays the honest raw tally for auditing; the boost runs off
-    # independent observations so one template's emissions cannot manufacture
-    # recurrence.
-    independent_count = independent_source_count(entry["sources"])
-    alpha = adaptive_lesson_alpha(independent_count)
-    recurrence_multiplier = 1 + alpha * max(0, independent_count - 1)
+    alpha = adaptive_lesson_alpha(source_count)
+    recurrence_multiplier = 1 + alpha * max(0, source_count - 1)
     selection_weight = recency_weight * recurrence_multiplier
     newest_source = max(
         entry["sources"],
@@ -385,10 +336,6 @@ def _candidate_entry(kind: str, normalized_key: str, entry: dict[str, Any], as_o
         # merged without re-deriving the grouping.
         "recurrence_class": entry.get("recurrence_class"),
         "source_count": source_count,
-        "independent_source_count": independent_count,
-        # 1 when every source is a template emission, so ordering can prefer a human
-        # observation at equal weight. Int rather than bool: it is a sort key.
-        "generator_authored": int(all(source.get("generator") for source in entry["sources"])),
         "latest_source_path": latest_source_path,
         "latest_source_date": latest_date_text,
         "age_days": age_days,
@@ -410,16 +357,6 @@ def _ranked_candidate_entries(candidates: dict[tuple[str, str], dict[str, Any]],
     entries.sort(
         key=lambda entry: (
             -entry["selection_weight"],
-            # Independent observations, NOT the raw tally. Collapsing the recurrence
-            # MULTIPLIER was not enough: every same-day candidate ties at weight 1.0,
-            # so the decision fell entirely to this key, and 120-vs-1 put generator
-            # boilerplate back at rank 1 -- displacing a hand-authored lesson out of
-            # the digest by the very mechanism the multiplier fix was written to stop.
-            -(entry["independent_source_count"]),
-            # Still tied means equally weighted and equally corroborated. Spend the
-            # scarce opening-context slot on the lesson a human wrote: a template can
-            # restate itself every release, an operator observation happens once.
-            entry["generator_authored"],
             -(entry["source_count"]),
             entry["kind"],
             entry["normalized_key"],
@@ -447,9 +384,8 @@ def build_lesson_selection_index(
             "recency_half_life_days": LESSON_SELECTION_HALF_LIFE_DAYS,
             "alpha_base": LESSON_SELECTION_ALPHA_BASE,
             "warmup_n": LESSON_SELECTION_WARMUP_N,
-            "recurrence_multiplier": "1 + alpha_t * max(0, independent_source_count - 1)",
-            "alpha_t": "alpha_base * min(1, independent_source_count / warmup_n)",
-            "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once",
+            "recurrence_multiplier": "1 + alpha_t * max(0, source_count - 1)",
+            "alpha_t": "alpha_base * min(1, source_count / warmup_n)",
         },
         "as_of_source_date": as_of.isoformat() if as_of else None,
         "source_artifact_count": len(artifacts),
@@ -469,9 +405,9 @@ def lesson_selection_index_text(payload: dict[str, Any]) -> str:
 
 def write_lesson_selection_index(repo_root: Path, output_dir: Path, summary_path: Path) -> Path:
     # The write boundary of the index the four failed publishes corrupted: an
-    # installed-plugin copy of this module emitted the pre-`independent_source_count`
-    # schema into a source tree whose own gate then rejected it. Guarding the writer
-    # rather than each CLI above it covers every caller, including the release helper.
+    # An installed-plugin copy of this module once emitted an older schema into a
+    # source tree whose own gate then rejected it. Guarding the writer rather than
+    # each CLI above it covers every caller.
     # See scripts/helper_provenance_lib.py.
     from scripts.helper_provenance_lib import require_repo_local_helper
 

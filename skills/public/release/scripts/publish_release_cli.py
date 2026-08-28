@@ -26,7 +26,6 @@ _preflight = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_pr
 _narrative_gate = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_narrative_gate")
 _issue_closeout = SKILL_RUNTIME.load_local_skill_module(__file__, "release_issue_closeout")
 _post_create = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_post_create")
-_release_retro = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_retro")
 _release_plan = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_plan")
 _release_runtime = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_runtime")
 _resume = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_resume")
@@ -84,7 +83,6 @@ run_post_publish_install_refresh = _post_create.run_post_publish_install_refresh
 collect_installed_readback = _post_create.collect_installed_readback
 safe_write_release_observer = _post_create.safe_write_release_observer
 validate_release_observer_record = _post_create.validate_release_observer_record
-build_retro_trigger_evaluation = _release_retro.build_retro_trigger_evaluation
 build_publish_plan = _release_plan.build_publish_plan
 release_plan_target_version = _release_plan.target_version
 gate_target_version = _release_plan.gate_target_version
@@ -113,7 +111,6 @@ def _execution_context() -> SimpleNamespace:
         "safe_real_host_payload",
         "build_real_host_payload",
         "record_real_host_verdict",
-        "build_retro_trigger_evaluation",
         "build_fresh_checkout_payload",
         "write_current_artifact",
         "run_requested_review_gate",

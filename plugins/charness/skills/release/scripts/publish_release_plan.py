@@ -21,7 +21,6 @@ _check_real_host = SKILL_RUNTIME.load_local_skill_module(__file__, "check_real_h
 _helpers = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_helpers")
 _preflight = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_preflight")
 _issue_closeout = SKILL_RUNTIME.load_local_skill_module(__file__, "release_issue_closeout")
-_release_retro = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_retro")
 
 build_release_payload = _current_release.build_payload
 bump_part = _bump_version.bump_part
@@ -35,7 +34,6 @@ release_adapter_preflight_payload = _preflight.release_adapter_preflight_payload
 update_instructions_version_blocker = _preflight.update_instructions_version_blocker
 invalid_git_identity_blocker = _preflight.invalid_git_identity_blocker
 github_repo_slug = _issue_closeout.github_repo_slug
-build_retro_trigger_evaluation = _release_retro.build_retro_trigger_evaluation
 
 
 def target_version(args: argparse.Namespace, current_version: str) -> str:
@@ -141,10 +139,6 @@ def build_publish_plan(
         critique_artifact=critique_artifact,
     )
     payload["release_adapter_preflight"] = adapter_preflight_payload
-    payload["retro_trigger_evaluation"] = build_retro_trigger_evaluation(
-        repo_root, release_content_paths, evaluated_at="release_content_paths",
-        tag_name=tag_name, execute=False,
-    )
     payload["close_issue_numbers"] = args.close_issue
     payload["close_issue_repo"] = issue_repo
     return {

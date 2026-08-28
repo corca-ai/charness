@@ -110,13 +110,6 @@ def _prepare_release_attempt(
 
     final_release_paths = sorted(set(release_content_paths + cli.changed_paths(repo_root)))
     host_payload = cli.safe_real_host_payload(repo_root, final_release_paths, build_payload=cli.build_real_host_payload)
-    payload["retro_trigger_evaluation"] = cli.build_retro_trigger_evaluation(
-        repo_root,
-        final_release_paths,
-        evaluated_at="final_release_paths",
-        tag_name=tag_name,
-        execute=True,
-    )
     fresh_checkout_plan = cli.build_fresh_checkout_payload(repo_root, run_probes=False)
     cli.write_current_artifact(
         repo_root,

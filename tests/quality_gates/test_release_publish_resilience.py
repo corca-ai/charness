@@ -965,12 +965,10 @@ def test_resume_refuses_missing_local_tag_when_remote_tag_exists(tmp_path: Path)
     assert "refusing to reconstruct an ambiguous tag" in result.stderr
 
 
-def test_resume_commits_artifact_before_push_with_executed_retro_payload(tmp_path: Path) -> None:
+def test_resume_commits_artifact_before_push(tmp_path: Path) -> None:
     # #312-B1: resume must commit the refreshed charness-artifacts/release/latest.md
     # BEFORE the push (so .githooks/pre-push's `git diff --quiet -- charness-artifacts`
-    # does not falsely block), and must not regress the retro-trigger payload to the
-    # plan's dry-run (would_write / release_content_paths) version on the resumed
-    # artifact — it must carry the executed (written / final_release_paths) shape.
+    # does not falsely block).
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     _simulate_partial_publish(repo)
     env = _release_env(tmp_path, bin_dir)
@@ -990,10 +988,7 @@ def test_resume_commits_artifact_before_push_with_executed_retro_payload(tmp_pat
     assert min(commit_indices) < min(push_indices), git_log
 
     payload = yaml.safe_load(result.stdout)
-    retro = payload["retro_trigger_evaluation"]
-    assert retro["evaluated_at"] == "final_release_paths", retro
-    # No dry-run regression: would_write is the dry-run-only closeout status.
-    assert retro["closeout"]["status"] != "would_write", retro
+    assert "retro_trigger_evaluation" not in payload
     # WS-1: the resumed publish also records the rung-2 distinct-channel verdict
     # before its issue-close boundary (the resume path was a parallel escape).
     assert payload["distinct_channel_verification"]["status"] == "confirmed", payload.get("distinct_channel_verification")
