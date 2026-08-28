@@ -1,11 +1,11 @@
-"""The shipped achieve contract keeps lesson memory small and optional."""
+"""The shipped Achieve pickup keeps lesson memory small and optional."""
 
 from __future__ import annotations
 
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-LIFECYCLE_DURING = ROOT / "skills/public/achieve/references/lifecycle-during.md"
+ACHIEVE = ROOT / "skills/public/achieve/SKILL.md"
 
 
 def _normalized(path: Path) -> str:
@@ -14,8 +14,9 @@ def _normalized(path: Path) -> str:
 
 
 def test_achieve_keeps_one_optional_lesson_memory_surface() -> None:
-    during = _normalized(LIFECYCLE_DURING)
+    achieve = _normalized(ACHIEVE)
 
-    assert "The lesson ledger is optional durable memory and selection state" in during
-    assert "pickup path reads recent-lessons.md once per goal start or resume" in during
-    assert "never rebuilds the ledger/index" in during
+    assert "one bounded advisory projection" in achieve
+    assert "recent-lessons.md" in achieve
+    assert "Missing lesson context never blocks pickup" in achieve
+    assert "neither rebuilds the ledger nor records session continuity" in achieve

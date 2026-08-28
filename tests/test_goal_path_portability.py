@@ -47,7 +47,7 @@ def test_historical_evidence_is_reported_without_failing_the_goal() -> None:
 
 def test_evidence_section_is_intentional_without_evidence_keywords() -> None:
     report = portability.check_goal_path_portability(
-        "## Final Verification\n/home/hwidong/codes/demo-repo\n"
+        "## Context Sources\n/home/hwidong/codes/demo-repo\n"
     )
 
     assert report["ok"] is True

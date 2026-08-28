@@ -239,12 +239,7 @@ def test_issue_closeout_covers_release_helper_issue_verification() -> None:
 
 def test_issue_closeout_separates_carrier_from_lifecycle_publication() -> None:
     closeout = _read(CLOSEOUT)
-    # Issue-resolution carrier vs. lifecycle-artifact publication lives in the
-    # After-phase file (lifecycle.md was split by phase).
-    achieve_lifecycle = _read(
-        ROOT / "skills" / "public" / "achieve" / "references" / "lifecycle-after.md"
-    )
 
     assert "Issue-resolution carrier publication" in closeout
     assert "separate publication surfaces" in closeout
-    assert "second docs-only issue-closeout push" in achieve_lifecycle
+    assert "do not require a second issue" in closeout

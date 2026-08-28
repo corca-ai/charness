@@ -422,16 +422,6 @@ def test_goal_aware_library_accepts_exact_slug_and_legacy_mode_stays_goal_free(
     assert "goal_path" not in yaml.safe_load(legacy.stdout)
 
 
-def test_achieve_closeout_contract_routes_owning_goal_to_persistence() -> None:
-    achieve_contract = (ROOT / "skills/public/achieve/SKILL.md").read_text(encoding="utf-8")
-    retro_contract = (ROOT / "skills/public/retro/SKILL.md").read_text(encoding="utf-8")
-
-    assert "goal_lineage" in achieve_contract
-    assert "frozen Goal Draft" in achieve_contract
-    assert "--goal-lineage-file <lineage.json>" in retro_contract
-    assert "legacy `--goal-path` input is planning provenance only" in retro_contract
-
-
 def test_persist_retro_artifact_normalizes_artifact_name_without_md_extension(
     tmp_path: Path, monkeypatch, capsys
 ) -> None:

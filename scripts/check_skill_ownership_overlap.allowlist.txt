@@ -17,12 +17,9 @@ critique:artifact:retro:read-only cite -- code-critique reference cross-links ch
 critique:artifact:spec:read-only scan -- autonomous trigger scans spec artifacts only to identify the current pending critique target
 critique:adapter:retro:boundary cite -- adapter-contract.md names .agents/retro-adapter.yaml as the seam where a future retro-prepare slot would live; ownership stays retro-side
 achieve:artifact:goals:owns -- achieve owns charness-artifacts/goals/<date-slug>.md as the goal lifecycle artifact namespace; no other skill writes there
-achieve:artifact:specs:owns -- achieve owns the detailed phase contracts under charness-artifacts/specs/<goal-slug>; the goal links them and no other skill writes them
-achieve:artifact:critique:read-only proof -- After-phase fresh-eye disposition review (rung 2, #253) is bound by the Disposition review: line; lifecycle.md cites critique/ as the review-artifact namespace, ownership stays critique
 achieve:artifact:retro:read-only projection -- achieve reads retro-owned recent-lessons.md or lesson-selection-index.json; retro owns generation
 issue:artifact:critique:read-only proof -- issue closeout-discipline requires a critique artifact path or blocked-host signal as resolution-critique evidence; ownership stays critique
 release:artifact:probe:read-write convention -- publication-boundary.md directs independent-observer release evidence into a durable JSON probe artifact; ownership stays probe
-prove:adapter:impl:read-only consumption -- prove reads verification preferences and truth_surfaces from the impl adapter through impl's resolver; impl keeps ownership of the adapter file
 release:artifact:goals:classification only -- the claims-review scope splitter names charness-artifacts/goals/ so it can classify a goal artifact appearing in the release delta as advisory (session narrative) rather than tag-gating. It reads no goal, writes no goal, and knows nothing of the goal lifecycle; achieve keeps ownership
 release:artifact:retro:classification only -- same splitter, same reason: a retro in the release delta is session narrative and must not gate a tag. Read-free, write-free classification by path prefix; retro keeps ownership
 release:artifact:issues:classification only -- the claims-review scope splitter names charness-artifacts/issues/ to classify an issue artifact in the release delta; markdown there is session narrative, JSON there is machine state and stays blocking. No read, no write; issue keeps ownership

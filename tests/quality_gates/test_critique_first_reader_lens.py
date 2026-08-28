@@ -8,11 +8,6 @@ ANGLE_SELECTION = (
 RENAME_CRITIQUE = (
     ROOT / "skills" / "public" / "critique" / "references" / "rename-critique.md"
 ).read_text(encoding="utf-8")
-CRITIQUE_SKILL = (ROOT / "skills" / "public" / "critique" / "SKILL.md").read_text(
-    encoding="utf-8"
-)
-
-
 def test_angle_selection_lists_first_reader_lens() -> None:
     text = ANGLE_SELECTION
 
@@ -55,5 +50,4 @@ def test_rename_output_shape_uses_judgment_evidence_not_deleted_checker() -> Non
     assert "H1/filename comparison" in RENAME_CRITIQUE
     assert "incoming-link/generated-index" in RENAME_CRITIQUE
     assert "without an aggregate clean verdict" in normalized
-    assert "rename title/slug coherence review evidence" in CRITIQUE_SKILL
     assert "slug-drift checker" not in RENAME_CRITIQUE

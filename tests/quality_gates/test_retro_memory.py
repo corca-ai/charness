@@ -62,6 +62,8 @@ def test_agents_carries_only_the_compact_parallel_routing_cue() -> None:
 
     assert "independent investigation" in agents_text
     assert "final verification" in agents_text
-    assert "live host tool surface" in agents_text
-    assert "neither may be declared absent from memory" in agents_text
+    assert "live tool inventory" in agents_text
+    assert "explicit inventory absence" in agents_text
+    assert "invocation rejection" in agents_text
+    assert "host error" in agents_text
     assert "## subagent delegation" not in agents_text

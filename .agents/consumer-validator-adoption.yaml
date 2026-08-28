@@ -27,5 +27,3 @@ validators:
     wired: true
   - id: retro-artifact
     wired: true
-  - id: goal-artifact
-    wired: true

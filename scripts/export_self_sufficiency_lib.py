@@ -321,10 +321,6 @@ INSTRUCTION_EXEMPT_PATHS = {
         "THEIR fast runner. Residual, tracked not banked: a consumer copying the schema "
         "example verbatim reproduces the #634 shape, and the example carries no warning"
     ),
-    "integrations/tools/README.md": (
-        "MAINTAINER-FACING: authoring rules for charness's own integration manifests, "
-        "which a consumer does not write; the named probe runs in this repo"
-    ),
 }
 
 

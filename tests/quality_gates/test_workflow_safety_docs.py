@@ -8,12 +8,10 @@ def _read(path: str) -> str:
 
 
 def test_achieve_lifecycle_names_the_provider_closeout_boundary() -> None:
-    # Goal Run provider closeout replaced the old local post-checkpoint prose
-    # contract. Keep the current irreversible-boundary guarantees executable.
-    lifecycle = _read("skills/public/achieve/references/lifecycle-after.md")
-    assert "provider close" in lifecycle
-    assert "post-close readback" in lifecycle
-    assert "second docs-only issue-closeout push" in lifecycle
+    lifecycle = " ".join(_read("docs/goal-lifecycle.md").split())
+    assert "dedicated close operation" in lifecycle
+    assert "post-close provider readback" in lifecycle
+    assert "never re-closes an already-closed parent" in lifecycle
 
 
 def test_quality_reference_carries_ci_only_recovery_protocol() -> None:

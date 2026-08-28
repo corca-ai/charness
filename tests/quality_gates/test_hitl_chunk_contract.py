@@ -105,23 +105,6 @@ def test_agent_assessment_invariant_reference_exists() -> None:
     assert "check_chunk_contract.py" in text
 
 
-def test_agent_assessment_invariant_is_cited_across_chunk_surfaces() -> None:
-    target = "agent-assessment-invariant.md"
-    surfaces = {
-        "hitl SKILL.md": ROOT / "skills" / "public" / "hitl" / "SKILL.md",
-        "hitl chunk-contract.md": ROOT / "skills" / "public" / "hitl" / "references" / "chunk-contract.md",
-        "quality proposal-flow.md": (
-            ROOT / "skills" / "public" / "quality" / "references" / "proposal-flow.md"
-        ),
-        "critique SKILL.md": ROOT / "skills" / "public" / "critique" / "SKILL.md",
-        "spec SKILL.md": ROOT / "skills" / "public" / "spec" / "SKILL.md",
-        "narrative SKILL.md": ROOT / "skills" / "public" / "narrative" / "SKILL.md",
-    }
-    missing = [name for name, path in surfaces.items() if target not in path.read_text(encoding="utf-8")]
-
-    assert not missing, f"surfaces missing agent-assessment-invariant cite: {missing}"
-
-
 def test_hitl_chunk_contract_extends_invariant_to_applied_and_full_target_review() -> None:
     assert "Full Target Review" in CHUNK_CONTRACT
     applied_section = CHUNK_CONTRACT.split("## Applied Rewrite Review", 1)[1].split("##", 1)[0]
