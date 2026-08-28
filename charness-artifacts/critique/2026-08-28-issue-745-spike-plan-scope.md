@@ -7,6 +7,30 @@
 > Disposition: all should-fixes adopted in plan rev 2; what-reads cut adopted with
 > library/fixture-level glob-consumer modeling retained
 
+Fresh-eye satisfaction: parent-delegated
+
+## Reviewer Tier Evidence
+
+- Requested tier: bounded read-only fresh-eye critique (repo
+  bounded-reviewer envelope, one assigned lens)
+- Requested spawn fields: host `bounded-reviewer` subagent type
+  (Read/Grep/Glob only), shared parent worktree, lens-scoped prompt;
+  no model override field was sent
+- Host exposure state: host-defaulted
+- Application state: no model field was sent, so the host applied its
+  default (the parent model); recorded as the session policy correction
+  to explicit sonnet/opus-only Claude subagents.
+- Execution mode: typed-subagent
+- Delivery state: findings-received
+
+## Boundary Ownership
+
+- Verdict: single-surface
+- Producer: the reviewed design document (one plan file in this repo).
+- Consumer: the parent orchestrating session revising that plan.
+- Owning surface: charness-artifacts design study; findings were
+  dispositioned in the plan revision, no state moved across surfaces.
+
 Fresh-eye context: parent-delegated. Envelope check: my live tool inventory is Read/Grep/Glob only — no Bash, Edit, Write, or Agent — so the bounded-reviewer envelope bound for this spawn. Findings below; lens was simplification/operability/containment, not parity-semantics correctness.
 
 ## Findings

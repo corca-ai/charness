@@ -7,6 +7,30 @@
 > Disposition: all should-fixes adopted in plan rev 2; what-reads cut adopted with
 > library/fixture-level glob-consumer modeling retained
 
+Fresh-eye satisfaction: parent-delegated
+
+## Reviewer Tier Evidence
+
+- Requested tier: bounded read-only fresh-eye critique (repo
+  bounded-reviewer envelope, one assigned lens)
+- Requested spawn fields: host `bounded-reviewer` subagent type
+  (Read/Grep/Glob only), shared parent worktree, lens-scoped prompt;
+  no model override field was sent
+- Host exposure state: host-defaulted
+- Application state: no model field was sent, so the host applied its
+  default (the parent model); recorded as the session policy correction
+  to explicit sonnet/opus-only Claude subagents.
+- Execution mode: typed-subagent
+- Delivery state: findings-received
+
+## Boundary Ownership
+
+- Verdict: single-surface
+- Producer: the reviewed design document (one plan file in this repo).
+- Consumer: the parent orchestrating session revising that plan.
+- Owning surface: charness-artifacts design study; findings were
+  dispositioned in the plan revision, no state moved across surfaces.
+
 Fresh-eye adversarial review complete (context: parent-delegated; envelope bound — no Bash/Edit/Write/Agent tools visible). I read the plan and all four Python owners plus the shared listing helper (`scripts/repo_file_listing.py`, `scripts/repo_layout.py`), the exit-code consumers (`scripts/run-quality.sh`, `scripts/staged_commit_gate_plan.py`), and `scripts/check_changed_surfaces.py`. Findings, ordered by severity.
 
 ## Should-fix findings

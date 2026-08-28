@@ -4,6 +4,29 @@
 > Reviewer: bounded-reviewer subagent (opus, explicit model override)
 > Target: the rev 1 plan; all blockers and should-fixes dispositioned in rev 2
 
+Fresh-eye satisfaction: parent-delegated
+
+## Reviewer Tier Evidence
+
+- Requested tier: bounded read-only fresh-eye critique (repo
+  bounded-reviewer envelope, one assigned lens)
+- Requested spawn fields: host `bounded-reviewer` subagent type
+  (Read/Grep/Glob only), shared parent worktree, lens-scoped prompt;
+  explicit model override `opus`
+- Host exposure state: applied
+- Application state: host-confirmed: the subagent transcript metadata
+  records model=opus for this spawn.
+- Execution mode: typed-subagent
+- Delivery state: findings-received
+
+## Boundary Ownership
+
+- Verdict: single-surface
+- Producer: the reviewed design document (one plan file in this repo).
+- Consumer: the parent orchestrating session revising that plan.
+- Owning surface: charness-artifacts design study; findings were
+  dispositioned in the plan revision, no state moved across surfaces.
+
 ## Fresh-eye review — issue #746 topology core plan (scope/sequencing/containment angle)
 
 Fresh-eye context: `parent-delegated`. Envelope bound (Read/Grep/Glob only; no Bash, Edit, Write, or Agent tools were offered).
