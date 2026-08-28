@@ -127,7 +127,7 @@ def _complete_task(
     resolved_repo: Path,
     before_exec: dict[str, list[str]],
     base_sha: str,
-    scope_specs: list[dict[str, str]],
+    scope_specs: list[dict[str, Any]],
     require_change: bool,
     parent_before: dict[str, list[str]],
     parent_before_head: str,
@@ -291,6 +291,7 @@ def _resolve_task_inputs(
         resolved_prepare = bool(prepare) and not skip_prepare
         resolved_require_change = bool(require_change) and not allow_no_change
     normalized_scopes = normalize_scopes(scopes)
+    scope_specs = _support.resolve_scope_specs(resolved_repo, normalized_scopes)
     if not prompt.strip():
         raise TaskRunError("--prompt or --prompt-file must contain non-empty instructions")
     if effort is None and lane is not None:
@@ -319,6 +320,7 @@ def _resolve_task_inputs(
         "base_sha": base_sha,
         "git_common_dir": git_common_dir,
         "scopes": normalized_scopes,
+        "scope_specs": scope_specs,
         "codex_path": codex_path,
         "command": command,
         "codex_args": list(codex_args),
@@ -418,6 +420,7 @@ def run_task(
         "base_sha": base_sha,
         "git_common_dir": str(resolved["git_common_dir"]),
         "scopes": normalized_scopes,
+        "scope_specs": resolved["scope_specs"],
         "codex": {"executable": codex_path, "command": command[:-1] + ["<prompt>"]},
         "runtime_root": str(runtime_path),
         "result_path": str(_support.task_result_path(runtime_path, resolved_task_id)),
@@ -430,7 +433,6 @@ def run_task(
     if dry_run:
         payload["status"] = PASS
         payload["approval_eligibility"] = "not-applicable"
-        payload["scope_specs"] = _support.resolve_scope_specs(resolved_repo, normalized_scopes)
         payload["next_step"] = "Re-run without --dry-run to create the named worktree and execute Codex."
         payload["actions"] = [
             {"id": "create-worktree", "status": "planned"},
@@ -492,8 +494,7 @@ def run_task(
     payload["git_worktree_dir"] = str(git_worktree_dir)
     payload["codex"]["command"] = command[:-1] + ["<prompt>"]
 
-    scope_specs = _support.resolve_scope_specs(resolved_target, normalized_scopes)
-    payload["scope_specs"] = scope_specs
+    scope_specs = resolved["scope_specs"]
     before_exec = _collect_populations(resolved_target)
     payload["before_exec"] = _snapshot_payload(before_exec)
     preflight_populations = _population_delta({}, before_exec, preflight=True)
@@ -584,7 +585,7 @@ def main() -> int:
         "--scope",
         action="append",
         required=True,
-        help="Existing directories include descendants; files and absent paths are exact.",
+        help="Repository-relative path or quoted glob; globs must match before launch.",
     )
     prompt = parser.add_mutually_exclusive_group(required=True)
     prompt.add_argument("--prompt")

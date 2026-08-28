@@ -111,7 +111,7 @@ def _normalize_scope(value: str) -> str:
 
 
 def normalize_scopes(scopes: Sequence[str]) -> list[str]:
-    """Return one deterministic exact-path scope list."""
+    """Return one deterministic repository-relative scope list."""
     if not scopes:
         raise TaskRunError("at least one --scope is required")
     return sorted({_normalize_scope(value) for value in scopes})
@@ -214,29 +214,109 @@ def _changed_paths(repo_root: Path, base_sha: str) -> list[str]:
     tracked = _parse_nul_paths(_git_output(repo_root, "diff", "--no-renames", "--name-only", "-z", base_sha, "--"))
     untracked = _parse_nul_paths(_git_output(repo_root, "ls-files", "--others", "--exclude-standard", "-z", "--"))
     return sorted(set(tracked) | set(untracked))
-def resolve_scope_specs(root: Path, scopes: Sequence[str]) -> list[dict[str, str]]:
-    """Freeze file-versus-directory semantics before the writer starts."""
-    return [
-        {"path": scope, "kind": "directory" if (root / scope).is_dir() else "exact"}
-        for scope in scopes
-    ]
+def _is_glob_scope(scope: str) -> bool:
+    return any(marker in scope for marker in ("*", "?", "[", "]"))
 
 
-def _scope_matches(path: str, spec: Mapping[str, str]) -> bool:
+def _validate_glob_scope(scope: str) -> None:
+    index = 0
+    while index < len(scope):
+        marker = scope[index]
+        if marker == "]":
+            raise TaskRunError(f"scope glob has an unmatched ']': {scope!r}")
+        if marker != "[":
+            index += 1
+            continue
+        close = scope.find("]", index + 1)
+        minimum = index + 2 if scope[index + 1:index + 2] not in {"!", "^"} else index + 3
+        if close < minimum:
+            raise TaskRunError(f"scope glob has an invalid character class: {scope!r}")
+        index = close + 1
+
+
+def _glob_matches(root: Path, pattern: str) -> tuple[list[str], list[str]]:
+    root = root.resolve()
+    matches: list[str] = []
+    directories: list[str] = []
+    for candidate in root.glob(pattern):
+        resolved = candidate.resolve()
+        if not _is_inside(resolved, root):
+            raise TaskRunError(
+                f"scope glob resolved outside the repository: {pattern!r} -> {candidate}"
+            )
+        relative = candidate.relative_to(root).as_posix()
+        matches.append(relative)
+        if candidate.is_dir():
+            directories.append(relative)
+    return sorted(set(matches)), sorted(set(directories))
+
+
+def resolve_scope_specs(root: Path, scopes: Sequence[str]) -> list[dict[str, Any]]:
+    """Freeze literal semantics and expand each glob before worktree creation."""
+    specs: list[dict[str, Any]] = []
+    for scope in scopes:
+        if not _is_glob_scope(scope):
+            specs.append(
+                {"path": scope, "kind": "directory" if (root / scope).is_dir() else "exact"}
+            )
+            continue
+        _validate_glob_scope(scope)
+        matches, directories = _glob_matches(root, scope)
+        if not matches:
+            raise TaskRunError(f"scope glob matched no paths: {scope!r}")
+        specs.append(
+            {
+                "path": scope,
+                "kind": "glob",
+                "matches": matches,
+                "match_count": len(matches),
+                "directory_matches": directories,
+            }
+        )
+    return specs
+
+
+def _refresh_scope_specs(
+    root: Path, specs: Sequence[Mapping[str, Any]]
+) -> list[dict[str, Any]]:
+    refreshed: list[dict[str, Any]] = []
+    for source in specs:
+        spec = dict(source)
+        if spec["kind"] == "glob":
+            current, current_directories = _glob_matches(root, str(spec["path"]))
+            matches = sorted(set(spec.get("matches", ())) | set(current))
+            directories = sorted(
+                set(spec.get("directory_matches", ())) | set(current_directories)
+            )
+            spec.update(
+                matches=matches,
+                match_count=len(matches),
+                directory_matches=directories,
+            )
+        refreshed.append(spec)
+    return refreshed
+
+
+def _scope_matches(path: str, spec: Mapping[str, Any]) -> bool:
     scope = spec["path"]
+    if spec["kind"] == "glob":
+        return path in spec.get("matches", ()) or any(
+            path.startswith(directory.rstrip("/") + "/")
+            for directory in spec.get("directory_matches", ())
+        )
     return path == scope or (
         spec["kind"] == "directory" and path.startswith(scope.rstrip("/") + "/")
     )
 
 
-def _paths_in_scopes(paths: Sequence[str], specs: Sequence[Mapping[str, str]]) -> list[str]:
+def _paths_in_scopes(paths: Sequence[str], specs: Sequence[Mapping[str, Any]]) -> list[str]:
     return sorted(path for path in paths if any(_scope_matches(path, spec) for spec in specs))
 
 
 def _scope_result(
     repo_root: Path,
     base_sha: str,
-    specs: Sequence[Mapping[str, str]],
+    specs: Sequence[Mapping[str, Any]],
     require_change: bool,
 ) -> dict[str, Any]:
     changed = _changed_paths(repo_root, base_sha)
@@ -269,7 +349,7 @@ def _path_cause(path: str) -> str:
 
 def _generated_files(
     populations: Mapping[str, Any],
-    specs: Sequence[Mapping[str, str]],
+    specs: Sequence[Mapping[str, Any]],
 ) -> list[dict[str, str]]:
     generated: list[dict[str, str]] = []
     for population in ("untracked", "ignored"):
@@ -516,7 +596,7 @@ def _parent_progress(
     parent_root: Path,
     parent_before: Mapping[str, Sequence[str]],
     parent_before_head: str,
-    specs: Sequence[Mapping[str, str]],
+    specs: Sequence[Mapping[str, Any]],
 ) -> tuple[dict[str, Any], dict[str, list[str]]]:
     parent_after = _collect_populations(parent_root)
     parent_after_head = _git_output(parent_root, "rev-parse", "HEAD").strip()
@@ -555,7 +635,7 @@ def _parent_progress(
         "paths": sorted(ignored_after),
     }
     changed = sorted(set(committed) | set(dirty_paths))
-    overlap = _paths_in_scopes(changed, specs)
+    overlap = _paths_in_scopes(changed, _refresh_scope_specs(parent_root, specs))
     classification = (
         "normal"
         if not changed
@@ -583,14 +663,15 @@ def _completion_evidence(
     parent_root: Path,
     before_exec: Mapping[str, Sequence[str]],
     base_sha: str,
-    scope_specs: Sequence[Mapping[str, str]],
+    scope_specs: Sequence[Mapping[str, Any]],
     require_change: bool,
     parent_before: Mapping[str, Sequence[str]],
     parent_before_head: str,
 ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
     after_exec = _collect_populations(target_path)
     populations = _population_delta(before_exec, after_exec)
-    scope = _scope_result(target_path, base_sha, scope_specs, require_change)
+    target_scope_specs = _refresh_scope_specs(target_path, scope_specs)
+    scope = _scope_result(target_path, base_sha, target_scope_specs, require_change)
     parent_progress, parent_after = _parent_progress(
         parent_root=parent_root,
         parent_before=parent_before,
@@ -600,7 +681,7 @@ def _completion_evidence(
     evidence = {
         "after_exec": _snapshot_payload(after_exec),
         "populations": populations,
-        "generated_files": _generated_files(populations, scope_specs),
+        "generated_files": _generated_files(populations, target_scope_specs),
         "scope": scope,
         "parent": {
             "unchanged": parent_progress["classification"] == "normal",

@@ -404,6 +404,81 @@ def test_directory_scope_includes_descendants(tmp_path: Path) -> None:
     assert payload["scope"]["changed_paths"] == ["pkg/child.py"]
 
 
+def test_glob_scope_freezes_matches_and_allows_new_matching_files(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    (repo / "pkg").mkdir()
+    (repo / "pkg/base.py").write_text("BASE = 1\n", encoding="utf-8")
+    _git(repo, "add", "pkg/base.py")
+    _git(
+        repo,
+        "-c",
+        "user.email=test@example.com",
+        "-c",
+        "user.name=test",
+        "commit",
+        "-m",
+        "add package",
+    )
+    executable = _codex(
+        tmp_path,
+        "mkdir -p pkg/sub\nprintf 'CHILD = 1\\n' > pkg/sub/child.py",
+    )
+
+    payload = _run(repo, tmp_path, executable, scopes=["pkg/**/*.py"])
+
+    assert payload["status"] == "completed", payload
+    assert payload["scope_specs"] == [
+        {
+            "path": "pkg/**/*.py",
+            "kind": "glob",
+            "matches": ["pkg/base.py"],
+            "match_count": 1,
+            "directory_matches": [],
+        }
+    ]
+    assert payload["scope"]["specs"][0]["matches"] == [
+        "pkg/base.py",
+        "pkg/sub/child.py",
+    ]
+    assert payload["scope"]["changed_paths"] == ["pkg/sub/child.py"]
+
+
+def test_glob_scope_that_matches_a_directory_includes_descendants(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    (repo / "pkg").mkdir()
+    (repo / "pkg/base.txt").write_text("base\n", encoding="utf-8")
+    _git(repo, "add", "pkg/base.txt")
+    _git(
+        repo,
+        "-c",
+        "user.email=test@example.com",
+        "-c",
+        "user.name=test",
+        "commit",
+        "-m",
+        "add package",
+    )
+    executable = _codex(tmp_path, "printf 'child\\n' > pkg/child.txt")
+
+    payload = _run(repo, tmp_path, executable, scopes=["pkg*"])
+
+    assert payload["status"] == "completed", payload
+    assert payload["scope_specs"][0]["directory_matches"] == ["pkg"]
+    assert payload["scope"]["changed_paths"] == ["pkg/child.txt"]
+
+
+def test_zero_match_glob_fails_before_worktree_creation(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    executable = _codex(tmp_path, "exit 0")
+
+    payload = _run(repo, tmp_path, executable, scopes=["missing/**/*.py"])
+
+    assert payload["status"] == "fail"
+    assert payload["phase"] == "preflight"
+    assert "scope glob matched no paths" in payload["error"]
+    assert not (tmp_path / "lane").exists()
+
+
 def test_absent_scope_remains_exact_when_command_creates_a_directory(tmp_path: Path) -> None:
     repo = _repo(tmp_path)
     executable = _codex(tmp_path, "mkdir newdir\nprintf 'VALUE = 1\\n' > newdir/item.py")
@@ -442,6 +517,20 @@ def test_overlapping_parent_progress_is_a_writer_conflict(tmp_path: Path) -> Non
 
     assert payload["status"] == "validated-partial-result"
     assert payload["approval_eligibility"] == "ineligible"
+    assert payload["parent"]["progress"]["classification"] == "writer-conflict"
+    assert payload["parent"]["progress"]["overlap_paths"] == ["module.py"]
+
+
+def test_glob_scope_blocks_overlapping_parent_progress(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    executable = _codex(
+        tmp_path,
+        f"printf 'VALUE = 2\\n' > child.py\nprintf 'PARENT = 1\\n' > {repo / 'module.py'}",
+    )
+
+    payload = _run(repo, tmp_path, executable, scopes=["*.py"])
+
+    assert payload["status"] == "validated-partial-result"
     assert payload["parent"]["progress"]["classification"] == "writer-conflict"
     assert payload["parent"]["progress"]["overlap_paths"] == ["module.py"]
 

@@ -34,7 +34,10 @@ a changed candidate are on by default; `--skip-prepare` and `--allow-no-change`
 are diagnostic opt-outs.
 
 Scopes resolve existing directories as descendant scopes. Existing files and
-absent paths are exact scopes. Candidate and parent overlap use the same rule.
+absent paths are exact scopes. A quoted repository-relative glob is expanded
+before worktree creation and refuses zero matches; its receipt keeps the pattern
+and matched paths, while newly-created matching paths remain in scope. Candidate
+and parent overlap use the same resolved rule.
 Tracked, untracked, and ignored paths are reported separately; ignored output
 is a warning and does not become a candidate.
 
