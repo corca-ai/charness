@@ -1,1 +1,1 @@
-2026-08-27-issue-698-superseded-floor.md
+2026-08-29-native-artifact-sidecar.md
