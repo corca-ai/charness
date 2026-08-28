@@ -15,6 +15,8 @@ into host-specific plugin surfaces.
 
 - `charness.json` is the shared source of truth for package identity, bundle
   inputs, and host export targets
+- `bootstrap-python.json` names a runtime directory under the external
+  `CHARNESS_RUNTIME_ROOT`; install/update must not create it in a checkout
 - generated Claude and Codex manifests should derive from this metadata instead
   of becoming manually curated policy copies
 - checked-in install-surface artifacts also derive from this metadata:

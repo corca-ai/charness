@@ -44,6 +44,64 @@ class CharnessError(Exception):
     pass
 
 
+def _runtime_bootstrap_module(repo_root: Path):
+    """Load the single runtime-environment owner without writing startup bytecode."""
+    candidates = [repo_root.resolve()]
+    if EMBEDDED_REPO_ROOT is not None:
+        candidates.append(EMBEDDED_REPO_ROOT)
+    candidates.append(managed_checkout_root(default_home_root()))
+    source_root = next(
+        (
+            candidate
+            for candidate in candidates
+            if (candidate / "scripts" / "runtime_bootstrap.py").is_file()
+        ),
+        None,
+    )
+    if source_root is None:
+        return None
+    source_text = str(source_root)
+    if source_text not in sys.path:
+        sys.path.insert(0, source_text)
+    previous = sys.dont_write_bytecode
+    sys.dont_write_bytecode = True
+    try:
+        from scripts import runtime_bootstrap
+    finally:
+        sys.dont_write_bytecode = previous
+    return runtime_bootstrap
+
+
+def _configure_runtime_for_repo(repo_root: Path, *, required: bool = True) -> bool:
+    runtime_bootstrap = _runtime_bootstrap_module(repo_root)
+    if runtime_bootstrap is None:
+        if required:
+            raise CharnessError(
+                "Charness runtime owner is unavailable; initialize the managed checkout first"
+            )
+        return False
+    runtime_bootstrap.configure_runtime_environment(repo_root)
+    return True
+
+
+def _runtime_root_for_repo(repo_root: Path) -> Path:
+    runtime_bootstrap = _runtime_bootstrap_module(repo_root)
+    if runtime_bootstrap is None:
+        raise CharnessError(
+            "Charness runtime owner is unavailable; initialize the managed checkout first"
+        )
+    return runtime_bootstrap.runtime_root(repo_root)
+
+
+def _runtime_repo_for_args(args: argparse.Namespace) -> Path:
+    explicit = getattr(args, "repo_root", None)
+    if explicit is not None:
+        return Path(explicit).resolve()
+    if EMBEDDED_REPO_ROOT is not None:
+        return EMBEDDED_REPO_ROOT
+    return Path.cwd().resolve()
+
+
 def render_yaml(payload: object) -> str:
     """Render one portable YAML document for the public CLI boundary."""
     normalized = json.loads(json.dumps(payload, ensure_ascii=False, allow_nan=False))
@@ -1189,6 +1247,7 @@ def invoke_repo_script(repo_root: Path, relative_script: str, *script_args: str)
 
 
 def resolve_repo_python(repo_root: Path) -> str:
+    _configure_runtime_for_repo(repo_root)
     resolved_root = str(repo_root.resolve())
     cached = _BOOTSTRAP_PYTHON_CACHE.get(resolved_root)
     if cached:
@@ -1265,7 +1324,9 @@ def bootstrap_runtime_fast_path(repo_root: Path) -> tuple[Path, list[str], tuple
     ):
         return None
     launcher_name = "python.cmd" if os.name == "nt" else "python"
-    launcher = repo_root / runtime_dir / ("Scripts" if os.name == "nt" else "bin") / launcher_name
+    launcher = _runtime_root_for_repo(repo_root) / runtime_dir / (
+        "Scripts" if os.name == "nt" else "bin"
+    ) / launcher_name
     return launcher, required_modules, minimum
 
 
@@ -5018,14 +5079,7 @@ def _load_worktree_exec_lib(args: argparse.Namespace):
     # external runtime before importing the executor, so the executor itself
     # cannot create a local bytecode cache in the target checkout.
     target = _resolve_worktree_target(args)
-    previous_dont_write_bytecode = sys.dont_write_bytecode
-    sys.dont_write_bytecode = True
-    try:
-        from scripts.runtime_bootstrap import configure_runtime_environment
-
-        configure_runtime_environment(target)
-    finally:
-        sys.dont_write_bytecode = previous_dont_write_bytecode
+    _configure_runtime_for_repo(target)
 
     from scripts import worktree_exec_lib
 
@@ -5916,13 +5970,18 @@ def main(argv: list[str] | None = None) -> int:
         getattr(args, "command", None) == "task"
         and getattr(args, "task_command", None) == "run"
     )
+    runtime_configured = False
+    if not (is_worktree_exec or is_task_run):
+        runtime_configured = _configure_runtime_for_repo(
+            _runtime_repo_for_args(args), required=False
+        )
     if not (
         getattr(args, "command", None) == "version"
         and not getattr(args, "verbose", False)
         and not getattr(args, "check", False)
     ) and not (is_worktree_exec or is_task_run):
         maybe_record_self_version_state(args)
-    if _EARLY_BYTECODE_GUARD and not (is_worktree_exec or is_task_run):
+    if _EARLY_BYTECODE_GUARD and runtime_configured:
         sys.dont_write_bytecode = False
     try:
         return args.func(args)

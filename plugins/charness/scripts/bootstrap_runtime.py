@@ -11,6 +11,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+from runtime_bootstrap import runtime_root
 from yaml_output import emit_yaml
 
 
@@ -26,7 +27,7 @@ def run_command(command: list[str], *, cwd: Path | None = None) -> subprocess.Co
     env = os.environ.copy()
     # Bootstrap probes must not inherit another repo/session's injected packages.
     # Otherwise a copied repo can appear healthy because PYTHONPATH points back
-    # to the source checkout's .charness/bootstrap-python directory.
+    # to another checkout's external bootstrap runtime.
     env.pop("PYTHONPATH", None)
     env.pop("PYTHONHOME", None)
     return subprocess.run(
@@ -239,7 +240,7 @@ def ensure_bootstrap_runtime(
     minimum = parse_min_version(contract["min_version"])
     ensure_min_version(info, minimum)
 
-    runtime_dir = repo_root / str(contract["runtime_dir"])
+    runtime_dir = runtime_root(repo_root) / str(contract["runtime_dir"])
     python_path = python_in_runtime(runtime_dir)
     packages_dir = site_packages_dir(runtime_dir)
     requirements_path = repo_root / str(contract["requirements_file"])

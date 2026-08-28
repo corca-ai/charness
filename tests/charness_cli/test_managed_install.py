@@ -85,7 +85,15 @@ def init_managed_home_from_repo(
 
 def assert_managed_checkout_has_no_tracked_runtime_dirt(managed_checkout: Path) -> None:
     status = subprocess.run(
-        ["git", "status", "--short", "--untracked-files=no", "--", ".charness"],
+        [
+            "git",
+            "status",
+            "--short",
+            "--ignored",
+            "--untracked-files=all",
+            "--",
+            ".charness/bootstrap-python",
+        ],
         cwd=managed_checkout,
         check=False,
         capture_output=True,
@@ -95,14 +103,13 @@ def assert_managed_checkout_has_no_tracked_runtime_dirt(managed_checkout: Path) 
     assert status.stdout == ""
 
     ignored = subprocess.run(
-        ["git", "check-ignore", ".charness/bootstrap-python/bin/python", ".charness/standing-pytest/run.json"],
+        ["git", "check-ignore", ".charness/standing-pytest/run.json"],
         cwd=managed_checkout,
         check=False,
         capture_output=True,
         text=True,
     )
     assert ignored.returncode == 0, ignored.stderr
-    assert ".charness/bootstrap-python/bin/python" in ignored.stdout
     assert ".charness/standing-pytest/run.json" in ignored.stdout
 
 
