@@ -12,6 +12,23 @@ from pathlib import Path
 from types import ModuleType
 
 _ORIGINAL_DONT_WRITE_BYTECODE = sys.dont_write_bytecode
+MANAGED_RUNTIME_PATH_KEYS = (
+    "CHARNESS_RUNTIME_ROOT",
+    "CHARNESS_RUNTIME_ROOT_AUTO",
+    "CHARNESS_RUNTIME_REPO_KEY",
+    "PYTHONPYCACHEPREFIX",
+    "TMPDIR",
+    "TMP",
+    "TEMP",
+    "PYTEST_DEBUG_TEMPROOT",
+    "CHARNESS_PYTEST_CACHE_DIR",
+    "RUFF_CACHE_DIR",
+    "COVERAGE_FILE",
+    "XDG_CACHE_HOME",
+    "PIP_CACHE_DIR",
+    "NPM_CONFIG_CACHE",
+    "npm_config_cache",
+)
 # The import machinery decides this module's cache path before executing its
 # body. Suppress only this early window; configure_runtime_environment restores
 # normal bytecode caching after it has installed the external prefix.

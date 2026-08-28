@@ -68,6 +68,35 @@ def test_exec_environment_routes_runtime_outputs_outside_repo(tmp_path: Path) ->
     assert "CHARNESS_REPO_ROOT" not in configured
 
 
+def test_explicit_runtime_root_replaces_all_inherited_managed_paths(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    inherited = tmp_path / "shared-runtime"
+    lane_runtime = tmp_path / "lane-runtime"
+    configured = lib.prepare_exec_environment(
+        repo,
+        {
+            "CHARNESS_RUNTIME_ROOT": str(inherited),
+            "PYTHONPYCACHEPREFIX": str(inherited / "pycache"),
+            "TMPDIR": str(inherited / "tmp"),
+            "RUFF_CACHE_DIR": str(inherited / "ruff"),
+            "COVERAGE_FILE": str(inherited / "coverage" / ".coverage"),
+            "XDG_CACHE_HOME": str(inherited / "xdg-cache"),
+        },
+        runtime_root=lane_runtime,
+    )
+
+    for key in (
+        "CHARNESS_RUNTIME_ROOT",
+        "PYTHONPYCACHEPREFIX",
+        "TMPDIR",
+        "RUFF_CACHE_DIR",
+        "COVERAGE_FILE",
+        "XDG_CACHE_HOME",
+    ):
+        assert Path(configured[key]).is_relative_to(lane_runtime)
+
+
 def test_exec_refuses_primary_worktree_by_default(tmp_path: Path) -> None:
     repo = _make_primary(tmp_path)
     with pytest.raises(lib.WorktreeExecError, match="primary worktree"):

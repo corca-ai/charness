@@ -4,6 +4,7 @@ import json
 import os
 import shlex
 import subprocess
+import time
 from pathlib import Path
 
 import pytest
@@ -133,22 +134,11 @@ def test_task_run_lane_shorthand_owns_safe_defaults_and_external_target(tmp_path
     assert Path(payload["worktree_path"]) == Path(payload["runtime_root"]) / "task-run" / "short-lane" / "worktree"
     assert payload["prepare"] is True
     assert payload["require_change"] is True
-    command = payload["codex"]["command"]
-    assert command[command.index("--sandbox") + 1] == "workspace-write"
-    assert Path(command[command.index("--add-dir") + 1]) == repo / ".git"
-    assert payload["codex"]["command"] == [
-        str(executable),
-        "exec",
-        "--sandbox",
-        "workspace-write",
-        "--add-dir",
-        str(repo / ".git"),
-        "-m",
-        "gpt-5.6-luna",
-        "-c",
-        "model_reasoning_effort=xhigh",
-        "-",
-    ]
+    assert payload["codex"] == {
+        "executable": str(executable),
+        "model": "gpt-5.6-luna",
+        "effort": "xhigh",
+    }
 
 
 def test_task_prompt_is_stdin_not_an_option_bearing_argv_value(tmp_path: Path) -> None:
@@ -274,6 +264,7 @@ def test_task_run_assigns_distinct_lane_runtime_roots_and_leaves_worktrees_clean
         tmp_path,
         "mkdir -p \"$CHARNESS_RUNTIME_ROOT\"\n"
         "printf '%s\\n' \"$CHARNESS_RUNTIME_ROOT\" > \"$CHARNESS_RUNTIME_ROOT/observed-root\"\n"
+        "printf '%s\\n' \"$PYTHONPYCACHEPREFIX\" \"$TMPDIR\" \"$RUFF_CACHE_DIR\" \"$COVERAGE_FILE\" \"$XDG_CACHE_HOME\" > \"$CHARNESS_RUNTIME_ROOT/observed-paths\"\n"
         "printf 'VALUE = 2\\n' > module.py\n"
         "git add -- module.py\n"
         "git -c user.email=test@example.com -c user.name=test commit -m 'update module'",
@@ -301,6 +292,8 @@ def test_task_run_assigns_distinct_lane_runtime_roots_and_leaves_worktrees_clean
         assert execution_root == result_dir / "runtime"
         assert execution_root.is_dir()
         assert (execution_root / "observed-root").read_text(encoding="utf-8").strip() == str(execution_root)
+        observed_paths = (execution_root / "observed-paths").read_text(encoding="utf-8").splitlines()
+        assert all(Path(path).is_relative_to(execution_root) for path in observed_paths)
         assert task_run.task_status(repo, payload["task_id"]) == payload
         worktree = Path(payload["worktree_path"])
         assert _git(worktree, "status", "--porcelain=v1", "--ignored", "--untracked-files=all").stdout == ""
@@ -308,7 +301,7 @@ def test_task_run_assigns_distinct_lane_runtime_roots_and_leaves_worktrees_clean
     assert _git(repo, "status", "--porcelain=v1", "--ignored", "--untracked-files=all").stdout == ""
 
 
-def test_task_run_grants_codex_both_common_and_linked_worktree_git_dirs(
+def test_task_run_grants_codex_git_and_lane_runtime_dirs(
     tmp_path: Path,
 ) -> None:
     repo = _repo(tmp_path)
@@ -327,12 +320,19 @@ def test_task_run_grants_codex_both_common_and_linked_worktree_git_dirs(
 
     git_common_dir = Path(payload["git_common_dir"])
     git_worktree_dir = Path(payload["git_worktree_dir"])
+    execution_runtime_root = Path(payload["execution_runtime_root"])
     args = captured_args.read_text(encoding="utf-8").splitlines()
     granted_dirs = [Path(args[index + 1]) for index, arg in enumerate(args) if arg == "--add-dir"]
     assert git_common_dir == repo / ".git"
     assert git_worktree_dir.parent == git_common_dir / "worktrees"
-    assert granted_dirs == [git_common_dir, git_worktree_dir]
-    assert payload["codex"]["command"].count("--add-dir") == 2
+    assert granted_dirs == [git_common_dir, git_worktree_dir, execution_runtime_root]
+    assert payload["codex"]["command"].count("--add-dir") == 3
+
+
+def test_derived_task_ids_do_not_collide_after_slugging_or_truncation() -> None:
+    assert task_run._task_id("lane-a", None) != task_run._task_id("lane/a", None)
+    assert task_run._task_id("x" * 100 + "a", None) != task_run._task_id("x" * 100 + "b", None)
+    assert len(task_run._task_id("x" * 200, None)) <= 96
 
 
 def test_task_run_accepts_a_clean_committed_candidate(tmp_path: Path) -> None:
@@ -489,7 +489,7 @@ def test_task_status_reads_the_external_result_store(tmp_path: Path) -> None:
     result_path = Path(payload["runtime_root"]) / "task-run" / "status-check" / "result.json"
     assert result_path.is_file()
     status = subprocess.run(
-        [os.fspath(Path(__file__).resolve().parents[2] / "charness"), "task", "--repo-root", str(repo), "status", "status-check"],
+        [os.fspath(Path(__file__).resolve().parents[2] / "charness"), "task", "status", "--repo-root", str(repo), "status-check"],
         cwd=repo, check=False, capture_output=True, text=True,
     )
     assert status.returncode == 0
@@ -665,7 +665,7 @@ def test_completion_scope_refresh_failure_persists_terminal_failed_result(
     assert payload["status"] == "failed"
     assert payload["phase"] == "terminal"
     assert payload["approval_eligibility"] == "ineligible"
-    assert payload["error"] == "completion evidence failed: scope refresh failed"
+    assert payload["error"] == "task lifecycle failed: scope refresh failed"
     assert task_run.task_status(repo, "completion-failure") == payload
 
 
@@ -687,8 +687,45 @@ def test_completion_symlink_loop_persists_terminal_failed_result(tmp_path: Path)
     assert payload["status"] == "failed"
     assert payload["phase"] == "terminal"
     assert payload["approval_eligibility"] == "ineligible"
-    assert "completion evidence failed" in payload["error"]
+    assert "task lifecycle failed" in payload["error"]
     assert task_run.task_status(repo, "symlink-loop") == payload
+
+
+def test_post_create_setup_failure_persists_terminal_result(tmp_path: Path, monkeypatch) -> None:
+    repo = _repo(tmp_path)
+    executable = _codex(tmp_path, "exit 0")
+
+    def fail_git_dir(_target: Path) -> Path:
+        raise RuntimeError("git-dir setup failed")
+
+    monkeypatch.setattr(task_run, "_git_dir", fail_git_dir)
+    payload = _run(
+        repo,
+        tmp_path,
+        executable,
+        task_id="setup-failure",
+        require_change=False,
+    )
+
+    assert payload["status"] == "failed"
+    assert payload["phase"] == "terminal"
+    assert payload["error"] == "task lifecycle failed: git-dir setup failed"
+    assert task_run.task_status(repo, "setup-failure") == payload
+
+
+def test_completion_interrupt_persists_terminal_result(tmp_path: Path, monkeypatch) -> None:
+    repo = _repo(tmp_path)
+    executable = _codex(tmp_path, "printf 'VALUE = 2\\n' > module.py")
+
+    def interrupt_completion(**_kwargs):
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr(task_run, "_completion_evidence", interrupt_completion)
+    payload = _run(repo, tmp_path, executable, task_id="completion-interrupt")
+
+    assert payload["status"] == "interrupted"
+    assert payload["phase"] == "terminal"
+    assert task_run.task_status(repo, "completion-interrupt") == payload
 
 
 def test_glob_scope_freezes_matches_and_allows_new_matching_files(tmp_path: Path) -> None:
@@ -865,6 +902,22 @@ def test_timeout_with_scoped_candidate_is_validated_partial_result(tmp_path: Pat
     assert payload["approval_eligibility"] == "ineligible"
 
 
+def test_task_kills_same_group_background_descendants_before_evidence(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    late_write = tmp_path / "late-write.txt"
+    executable = _codex(
+        tmp_path,
+        f"(sleep 1; printf late > {shlex.quote(os.fspath(late_write))}) &\n"
+        "printf 'VALUE = 2\\n' > module.py",
+    )
+
+    payload = _run(repo, tmp_path, executable)
+    time.sleep(1.2)
+
+    assert payload["status"] == "completed", payload
+    assert not late_write.exists()
+
+
 def test_non_delivery_with_scoped_candidate_is_validated_partial_result(tmp_path: Path) -> None:
     repo = _repo(tmp_path)
     executable = _codex(tmp_path, "printf 'VALUE = 2\\n' > module.py", deliver=False)
@@ -908,6 +961,24 @@ def test_task_result_reports_malformed_schema_bearing_delivery(tmp_path: Path) -
 
     assert payload["result_delivery"]["structured_status"] == "invalid"
     assert "structured" not in payload["result_delivery"]
+
+
+def test_task_result_rejects_non_json_yaml_without_breaking_terminal_receipt(
+    tmp_path: Path,
+) -> None:
+    repo = _repo(tmp_path)
+    executable = _codex(
+        tmp_path,
+        "printf 'VALUE = 2\\n' > module.py\n"
+        "printf 'schema_version: example.v1\\nwhen: 2026-08-28\\n'",
+        deliver=False,
+    )
+
+    payload = _run(repo, tmp_path, executable, task_id="non-json-yaml")
+
+    assert payload["status"] == "completed", payload
+    assert payload["result_delivery"]["structured_status"] == "invalid"
+    assert task_run.task_status(repo, "non-json-yaml") == payload
 
 
 def _reviewer_lifecycle_codex(tmp_path: Path, carrier: dict[str, object]) -> Path:

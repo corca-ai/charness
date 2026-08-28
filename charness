@@ -3210,12 +3210,8 @@ def resolve_tool_repo_root(args: argparse.Namespace) -> tuple[Path, bool]:
     return repo_root, managed_checkout
 
 
-def resolve_task_repo_root(args: argparse.Namespace) -> Path:
-    return (args.repo_root or Path.cwd()).resolve()
-
-
 def cmd_task_status(args: argparse.Namespace) -> int:
-    repo_root = resolve_task_repo_root(args)
+    repo_root = args.repo_root.resolve()
     payload = _load_task_run_lib(args).task_status(repo_root, args.task_id)
     emit_yaml(payload)
     return 1 if payload.get("status") == "missing" else 0
@@ -5207,7 +5203,7 @@ def cmd_task_run(args: argparse.Namespace) -> int:
         except OSError as exc:
             raise CharnessError(f"could not read --prompt-file {args.prompt_file}: {exc}") from exc
     payload = lib.run_task(
-        resolve_task_repo_root(args),
+        args.repo_root.resolve(),
         target_path=args.path,
         branch=args.branch,
         base=args.base,
@@ -5500,19 +5496,18 @@ def build_parser() -> argparse.ArgumentParser:
     reset_parser.set_defaults(func=cmd_reset)
 
     task_parser = subparsers.add_parser("task", help="Run or inspect a bounded task lane.")
-    task_parser.add_argument(
-        "--repo-root",
-        type=Path,
-        default=Path.cwd(),
-        help="Parent repo whose external task-run runtime is read or written. Defaults to the current working directory.",
-    )
     task_subparsers = task_parser.add_subparsers(dest="task_command", required=True)
 
     task_status_parser = task_subparsers.add_parser(
         "status",
         help="Show one external task-run result, or list all task-run results.",
     )
-    task_status_parser.add_argument("--repo-root", type=Path, default=argparse.SUPPRESS, help="Parent repo whose external task-run runtime is read.")
+    task_status_parser.add_argument(
+        "--repo-root",
+        type=Path,
+        default=Path.cwd(),
+        help="Parent repo whose external task-run runtime is read.",
+    )
     task_status_parser.add_argument("task_id", nargs="?")
     task_status_parser.set_defaults(func=cmd_task_status)
 
@@ -5525,12 +5520,10 @@ def build_parser() -> argparse.ArgumentParser:
             "The parent worktree must be clean; the parent orchestrator owns parallel fan-out and integration."
         ),
     )
-    # Keep the parent `task --repo-root ... run` spelling working while also
-    # accepting the more discoverable `task run --repo-root ...` spelling.
     task_run_parser.add_argument(
         "--repo-root",
         type=Path,
-        default=argparse.SUPPRESS,
+        default=Path.cwd(),
         help="Clean parent repo from which the linked worktree is created. Defaults to the current working directory.",
     )
     task_run_parser.add_argument("--lane", help="Safe lane id; derives the task id, task/<id> branch, external worktree, and HEAD base.")

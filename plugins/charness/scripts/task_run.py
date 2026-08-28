@@ -15,13 +15,10 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from runtime_bootstrap import import_repo_module
+from scripts import task_run_support as _support
 
 _worktree = import_repo_module(__file__, "scripts.worktree_create_lib")
 _exec = import_repo_module(__file__, "scripts.worktree_exec_lib")
-try:
-    from scripts import task_run_support as _support
-except ModuleNotFoundError:
-    import task_run_support as _support
 
 PASS = _support.PASS
 FAIL = _support.FAIL
@@ -303,11 +300,7 @@ def _resolve_task_inputs(
     if lane is None:
         resolved_task_id = _task_id(resolved_branch, task_id)
         runtime_path = _runtime_preview(resolved_repo)
-    command = build_codex_command(
-        codex_path,
-        effort=effort,
-        writable_dirs=[git_common_dir],
-    )
+    build_codex_args(effort=effort)
     return {
         "lane": resolved_lane,
         "target_path": resolved_target,
@@ -318,7 +311,6 @@ def _resolve_task_inputs(
         "scopes": normalized_scopes,
         "scope_specs": scope_specs,
         "codex_path": codex_path,
-        "command": command,
         "effort": effort,
         "task_id": resolved_task_id,
         "runtime_path": runtime_path,
@@ -390,7 +382,6 @@ def run_task(
     base_sha = resolved["base_sha"]
     normalized_scopes = resolved["scopes"]
     codex_path = resolved["codex_path"]
-    command = resolved["command"]
     resolved_task_id = resolved["task_id"]
     runtime_path = resolved["runtime_path"]
     execution_runtime_path = _task_execution_runtime_root(runtime_path, resolved_task_id)
@@ -412,7 +403,11 @@ def run_task(
         "git_common_dir": str(resolved["git_common_dir"]),
         "scopes": normalized_scopes,
         "scope_specs": resolved["scope_specs"],
-        "codex": {"executable": codex_path, "command": command},
+        "codex": {
+            "executable": codex_path,
+            "model": _support.TASK_MODEL,
+            "effort": resolved["effort"],
+        },
         "runtime_root": str(runtime_path),
         "execution_runtime_root": str(execution_runtime_path),
         "result_path": str(_support.task_result_path(runtime_path, resolved_task_id)),
@@ -474,52 +469,59 @@ def run_task(
             or "Fix worktree creation/doctor, then rerun task run.",
         )
 
-    git_worktree_dir = _git_dir(resolved_target)
-    command = build_codex_command(
-        codex_path,
-        effort=resolved["effort"],
-        writable_dirs=[resolved["git_common_dir"], git_worktree_dir],
-    )
-    payload["git_worktree_dir"] = str(git_worktree_dir)
-    payload["codex"]["command"] = command
-
-    scope_specs = resolved["scope_specs"]
-    before_exec = _collect_populations(resolved_target)
-    payload["before_exec"] = _snapshot_payload(before_exec)
-    preflight_populations = _population_delta({}, before_exec, preflight=True)
-    payload["preflight_populations"] = preflight_populations
-    if any(preflight_populations[name]["verdict"] == FAIL for name in ("tracked", "untracked")):
-        return _terminal(
-            payload,
-            runtime_path,
-            status="failed",
-            next_step="The newly-created worktree was not clean before Codex; inspect it and use a fresh path.",
-        )
-
-    child_env = os.environ.copy()
-    for key in ("CHARNESS_RUNTIME_ROOT", "CHARNESS_RUNTIME_ROOT_AUTO", "CHARNESS_RUNTIME_REPO_KEY"):
-        child_env.pop(key, None)
-    child_env["CHARNESS_RUNTIME_ROOT"] = str(execution_runtime_path)
-    configured_env = _exec.prepare_exec_environment(resolved_target, child_env)
-    log_dir = runtime_path / "task-run" / resolved_task_id
-    log_dir.mkdir(parents=True, exist_ok=True)
-    stdout_log = log_dir / "codex.stdout.log"
-    stderr_log = log_dir / "codex.stderr.log"
-    payload["logs"] = {"stdout": str(stdout_log), "stderr": str(stderr_log)}
-    payload["phase"] = "exec"
-    _persist(payload, runtime_path)
-
-    print(f"task run: executing Codex in {resolved_target}", file=sys.stderr)
-    execution = _execute_codex(
-        command,
-        prompt=prompt,
-        target_path=resolved_target,
-        configured_env=configured_env,
-        stdout_log=stdout_log,
-        stderr_log=stderr_log,
-        timeout_seconds=timeout_seconds,
-    )
     try:
+        configured_env = _exec.prepare_exec_environment(
+            resolved_target,
+            os.environ.copy(),
+            runtime_root=execution_runtime_path,
+        )
+        git_worktree_dir = _git_dir(resolved_target)
+        command = build_codex_command(
+            codex_path,
+            effort=resolved["effort"],
+            writable_dirs=[
+                resolved["git_common_dir"],
+                git_worktree_dir,
+                execution_runtime_path,
+            ],
+        )
+        payload["git_worktree_dir"] = str(git_worktree_dir)
+        payload["codex"]["command"] = command
+
+        scope_specs = resolved["scope_specs"]
+        before_exec = _collect_populations(resolved_target)
+        payload["before_exec"] = _snapshot_payload(before_exec)
+        preflight_populations = _population_delta({}, before_exec, preflight=True)
+        payload["preflight_populations"] = preflight_populations
+        if any(
+            preflight_populations[name]["verdict"] == FAIL
+            for name in ("tracked", "untracked")
+        ):
+            return _terminal(
+                payload,
+                runtime_path,
+                status="failed",
+                next_step="The newly-created worktree was not clean before Codex; inspect it and use a fresh path.",
+            )
+
+        log_dir = runtime_path / "task-run" / resolved_task_id
+        log_dir.mkdir(parents=True, exist_ok=True)
+        stdout_log = log_dir / "codex.stdout.log"
+        stderr_log = log_dir / "codex.stderr.log"
+        payload["logs"] = {"stdout": str(stdout_log), "stderr": str(stderr_log)}
+        payload["phase"] = "exec"
+        _persist(payload, runtime_path)
+
+        print(f"task run: executing Codex in {resolved_target}", file=sys.stderr)
+        execution = _execute_codex(
+            command,
+            prompt=prompt,
+            target_path=resolved_target,
+            configured_env=configured_env,
+            stdout_log=stdout_log,
+            stderr_log=stderr_log,
+            timeout_seconds=timeout_seconds,
+        )
         return _complete_task(
             payload,
             runtime_path=runtime_path,
@@ -535,13 +537,20 @@ def run_task(
             execution=execution,
             started_at=started_at,
         )
-    except (OSError, RuntimeError, TaskRunError, subprocess.SubprocessError) as exc:
+    except KeyboardInterrupt:
+        return _terminal(
+            payload,
+            runtime_path,
+            status="interrupted",
+            next_step="Task lifecycle was interrupted; inspect the retained worktree before retrying.",
+        )
+    except (OSError, RuntimeError, TypeError, TaskRunError, subprocess.SubprocessError) as exc:
         return _terminal(
             payload,
             runtime_path,
             status="failed",
-            error=f"completion evidence failed: {exc}",
-            next_step="Inspect the retained worktree and completion error, then rerun task run with a fresh path.",
+            error=f"task lifecycle failed: {exc}",
+            next_step="Inspect the retained worktree and lifecycle error, then retry with a fresh lane.",
         )
 
 
@@ -568,61 +577,3 @@ def task_status(repo_root: Path, task_id: str | None = None) -> dict[str, Any]:
         "runtime_root": str(runtime_path),
         "tasks": _support.read_task_results(runtime_path),
     }
-
-
-def main() -> int:
-    """Standalone diagnostic entrypoint; the canonical surface is ``charness task run``."""
-    import argparse
-
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--repo-root", type=Path, required=True)
-    parser.add_argument("--lane")
-    parser.add_argument("--path", dest="target_path", type=Path)
-    parser.add_argument("--branch")
-    parser.add_argument("--base")
-    parser.add_argument(
-        "--scope",
-        action="append",
-        required=True,
-        help="Repository-relative path or quoted glob; globs must match before launch.",
-    )
-    prompt = parser.add_mutually_exclusive_group(required=True)
-    prompt.add_argument("--prompt")
-    prompt.add_argument("--prompt-file", type=Path)
-    parser.add_argument("--effort", required=True, help="Orchestrator-selected effort: medium, xhigh, or max.")
-    parser.add_argument("--task-id", help="Optional receipt/log identifier for explicit runs; shorthand derives it from --lane.")
-    parser.add_argument("--prepare", action="store_true", default=None)
-    parser.add_argument("--require-change", action="store_true", default=None)
-    parser.add_argument("--skip-prepare", action="store_true")
-    parser.add_argument("--allow-no-change", action="store_true")
-    parser.add_argument("--timeout-seconds", type=int, default=3600)
-    parser.add_argument("--dry-run", action="store_true")
-    args = parser.parse_args()
-    prompt_text = args.prompt
-    if args.prompt_file is not None:
-        prompt_text = args.prompt_file.read_text(encoding="utf-8")
-    payload = run_task(
-        args.repo_root,
-        target_path=args.target_path,
-        branch=args.branch,
-        base=args.base,
-        lane=args.lane,
-        scopes=args.scope,
-        prompt=prompt_text or "",
-        effort=args.effort,
-        task_id=args.task_id,
-        prepare=args.prepare,
-        require_change=args.require_change,
-        skip_prepare=args.skip_prepare,
-        allow_no_change=args.allow_no_change,
-        timeout_seconds=args.timeout_seconds,
-        dry_run=args.dry_run,
-    )
-    from yaml_output import emit_yaml
-
-    emit_yaml(payload)
-    return 0 if payload.get("approval_eligibility") == "eligible" or payload.get("status") == PASS else 1
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())

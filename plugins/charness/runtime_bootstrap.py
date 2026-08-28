@@ -15,6 +15,7 @@ def _load_runtime_bootstrap_module():
 
 
 _RUNTIME_BOOTSTRAP = _load_runtime_bootstrap_module()
+MANAGED_RUNTIME_PATH_KEYS = _RUNTIME_BOOTSTRAP.MANAGED_RUNTIME_PATH_KEYS
 arm_cli_timeout = _RUNTIME_BOOTSTRAP.arm_cli_timeout
 configure_runtime_environment = _RUNTIME_BOOTSTRAP.configure_runtime_environment
 runtime_root = _RUNTIME_BOOTSTRAP.runtime_root
@@ -26,6 +27,7 @@ skill_script = _RUNTIME_BOOTSTRAP.skill_script
 require_repo_local_helper = _RUNTIME_BOOTSTRAP.require_repo_local_helper
 
 __all__ = [
+    "MANAGED_RUNTIME_PATH_KEYS",
     "arm_cli_timeout",
     "configure_runtime_environment",
     "runtime_root",

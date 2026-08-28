@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import fnmatch
+import hashlib
 import json
 import os
 import re
 import shutil
+import signal
 import subprocess
 import tempfile
 from pathlib import Path
@@ -441,8 +443,9 @@ def _task_id(branch: str, requested: str | None) -> str:
                 "digits, dot, underscore, or dash (maximum 96 characters)"
             )
         return task_id
-    generated = re.sub(r"[^A-Za-z0-9._-]+", "-", branch.replace("/", "-")).strip("-")[:96]
-    return generated or "task"
+    slug = re.sub(r"[^A-Za-z0-9._-]+", "-", branch.replace("/", "-")).strip("-")
+    digest = hashlib.sha256(branch.encode("utf-8")).hexdigest()[:8]
+    return f"{slug[:87] or 'task'}-{digest}"
 
 
 def build_codex_args(
@@ -578,27 +581,44 @@ def _execute_codex(
         "timed_out": False,
         "interrupted": False,
     }
+    process: subprocess.Popen[str] | None = None
+
+    def stop_process_group() -> None:
+        if process is None:
+            return
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+
     try:
         with (
             stdout_log.open("w", encoding="utf-8") as stdout_handle,
             stderr_log.open("w", encoding="utf-8") as stderr_handle,
         ):
-            completed = subprocess.run(
+            process = subprocess.Popen(
                 command,
-                input=prompt,
+                stdin=subprocess.PIPE,
                 cwd=target_path,
                 env=dict(configured_env),
                 stdout=stdout_handle,
                 stderr=stderr_handle,
-                check=False,
-                timeout=timeout_seconds,
                 text=True,
+                start_new_session=True,
             )
-            result["exit_code"] = completed.returncode
-    except subprocess.TimeoutExpired:
-        result["timed_out"] = True
-    except KeyboardInterrupt:
-        result["interrupted"] = True
+            try:
+                process.communicate(input=prompt, timeout=timeout_seconds)
+                result["exit_code"] = process.returncode
+            except subprocess.TimeoutExpired:
+                result["timed_out"] = True
+                stop_process_group()
+                process.communicate()
+            except KeyboardInterrupt:
+                result["interrupted"] = True
+                stop_process_group()
+                process.communicate()
+            else:
+                stop_process_group()
     except OSError as exc:
         result["exec_error"] = str(exc)
     return result
@@ -628,8 +648,13 @@ def _result_delivery(stdout_log: Path) -> dict[str, Any]:
                 result["structured_status"] = "invalid"
         else:
             if isinstance(structured, Mapping) and "schema_version" in structured:
-                result["structured_status"] = "valid"
-                result["structured"] = dict(structured)
+                try:
+                    json.dumps(structured)
+                except (TypeError, ValueError):
+                    result["structured_status"] = "invalid"
+                else:
+                    result["structured_status"] = "valid"
+                    result["structured"] = dict(structured)
     return result
 
 

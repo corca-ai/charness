@@ -5,7 +5,11 @@ import subprocess
 from pathlib import Path
 from typing import MutableMapping
 
-from runtime_bootstrap import configure_runtime_environment, import_repo_module
+from runtime_bootstrap import (
+    MANAGED_RUNTIME_PATH_KEYS,
+    configure_runtime_environment,
+    import_repo_module,
+)
 
 _doctor_checks = import_repo_module(__file__, "scripts.worktree_doctor_checks")
 git_common_dir = _doctor_checks.git_common_dir
@@ -36,9 +40,15 @@ def _require_isolated_checkout(repo_root: Path) -> None:
 def prepare_exec_environment(
     repo_root: Path,
     env: MutableMapping[str, str] | None = None,
+    *,
+    runtime_root: Path | None = None,
 ) -> dict[str, str]:
     """Build the child environment whose runtime outputs cannot land in ``repo_root``."""
     child_env = dict(os.environ if env is None else env)
+    if runtime_root is not None:
+        for key in MANAGED_RUNTIME_PATH_KEYS:
+            child_env.pop(key, None)
+        child_env["CHARNESS_RUNTIME_ROOT"] = str(runtime_root.resolve())
     configured = configure_runtime_environment(repo_root, child_env)
 
     configured.pop("CHARNESS_REPO_ROOT", None)
