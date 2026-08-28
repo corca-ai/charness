@@ -101,22 +101,41 @@ def version_drift_lines(version_drift_check: dict[str, Any] | None) -> list[str]
     that publishes wrote that sentence while calling no such check -- so the unchecked
     state gets its own sentence instead of inheriting the claim.
     """
-    if not isinstance(version_drift_check, dict) or not version_drift_check.get("checked_version"):
+    checked_version = (
+        version_drift_check.get("checked_version")
+        if isinstance(version_drift_check, dict)
+        else None
+    )
+    raw_versioned = (
+        version_drift_check.get("versioned_surfaces")
+        if isinstance(version_drift_check, dict)
+        else None
+    )
+    raw_presence = (
+        version_drift_check.get("presence_surfaces")
+        if isinstance(version_drift_check, dict)
+        else None
+    )
+    if (
+        not isinstance(checked_version, str)
+        or not checked_version.strip()
+        or not isinstance(raw_versioned, (list, tuple))
+        or not raw_versioned
+        or not isinstance(raw_presence, (list, tuple))
+    ):
         return [
             "- Version drift check: NOT recorded by this helper invocation, so this record "
             "makes no no-drift claim about packaging and generated install surfaces."
         ]
-    raw_versioned = version_drift_check.get("versioned_surfaces")
-    versioned = raw_versioned if isinstance(raw_versioned, (list, tuple)) else []
-    raw_presence = version_drift_check.get("presence_surfaces")
-    presence = raw_presence if isinstance(raw_presence, (list, tuple)) else []
+    versioned = raw_versioned
+    presence = raw_presence
     scope = f" across {len(versioned)} versioned surface(s)" if versioned else ""
     if presence:
         scope += f", with {len(presence)} presence-only surface(s) not version-checked"
     stage = version_drift_check.get("stage") or "unrecorded stage"
     return [
         f"- `current_release.py` reported no version drift{scope} against target "
-        f"`{version_drift_check['checked_version']}`, checked at `{stage}`."
+        f"`{checked_version}`, checked at `{stage}`."
     ]
 
 

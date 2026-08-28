@@ -268,8 +268,22 @@ def test_the_record_carries_the_operators_words_unaltered(tmp_path: Path) -> Non
     assert [line for line in body.splitlines() if line.startswith("#")] == []
 
 
-def test_release_record_refuses_to_claim_no_drift_when_no_check_was_recorded(tmp_path: Path) -> None:
-    text = _release_record(tmp_path / "repo")
+@pytest.mark.parametrize(
+    "version_drift_check",
+    [
+        None,
+        {"checked_version": "0.2.0"},
+        {
+            "checked_version": 200,
+            "versioned_surfaces": ["packaging_manifest"],
+            "presence_surfaces": [],
+        },
+    ],
+)
+def test_release_record_refuses_to_claim_no_drift_when_check_evidence_is_invalid(
+    tmp_path: Path, version_drift_check: dict | None
+) -> None:
+    text = _release_record(tmp_path / "repo", version_drift_check=version_drift_check)
 
     assert "Version drift check: NOT recorded by this helper invocation" in text
     assert "reported no version drift" not in text
