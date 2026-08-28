@@ -392,9 +392,23 @@ def staged_commit_gate_plan(
         for label, script in (
             ("check-doc-links", "check_doc_links.py"),
             ("check-plugin-doc-links", "check_plugin_doc_links.py"),
-            ("check-plugin-dir-references", "check_plugin_dir_references.py"),
         ):
             plan.extend(_plan_helpers.present_gate(repo_root, label, script, "--repo-root", str(repo_root)))
+        # The plugin-dir-references owner moved to the native core (#748); the
+        # commit-time plan invokes the same canonical command as run-quality's
+        # label, routed through the gate-side resolver shim.
+        plan.extend(
+            _plan_helpers.present_gate(
+                repo_root,
+                "check-plugin-dir-references",
+                "native_gate_lib.py",
+                "--repo-root",
+                str(repo_root),
+                "plugin-refs",
+                "--repo-root",
+                str(repo_root),
+            )
+        )
         # SCOPED to the staged `.md` files, unlike the broad-gate and CI invocations which lint
         # every tracked markdown file. Unscoped here failed three of the four criteria in
         # docs/validator-timing-layers.md: it is validate-all (a sweep over standing
