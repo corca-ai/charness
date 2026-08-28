@@ -99,7 +99,7 @@ jobs:
         run: python3 scripts/check_plugin_doc_links.py --repo-root .
 
       - name: Validate plugin-dir references
-        run: python3 scripts/check_plugin_dir_references.py --repo-root .
+        run: python3 scripts/native_gate_lib.py --repo-root . plugin-refs --repo-root .
 
       - name: Validate timing-layer completeness
         run: python3 scripts/check_timing_layer_completeness.py --repo-root .

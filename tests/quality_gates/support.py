@@ -357,7 +357,7 @@ QUALITY_PYTHON_STUBS = (
     ("check-doc-links", "check_doc_links.py"),
     ("docs-graph", "check_docs_graph.py"),
     ("check-plugin-doc-links", "check_plugin_doc_links.py"),
-    ("check-plugin-dir-references", "check_plugin_dir_references.py"),
+    ("check-plugin-dir-references", "native_gate_lib.py"),
     ("check-plugin-asset-command-carriers", "check_plugin_asset_command_carriers.py"),
     ("check-documented-command-flags", "check_documented_command_flags.py"),
     ("check-documented-subcommands", "check_documented_subcommands.py"),

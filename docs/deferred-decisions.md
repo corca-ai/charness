@@ -701,7 +701,7 @@ check.
   "avoid writing one shim per script".
 - **The sharper objection is answered by resolution, not by a variable.** This
   entry's strongest argument was "the ambiguity of a placeholder without the
-  resolution of a variable". `<authoring-repo>/scripts/check_plugin_dir_references.py`
+  resolution of a variable". `<authoring-repo>/scripts/native_gate_lib.py ... plugin-refs`
   now resolves every `<plugin-dir>/...` reference against the generated
   `plugins/<pkg>/` package and refuses a dangling one — including the
   kind-flattened `skills/public/...` spelling that is the #479 defect. That is a

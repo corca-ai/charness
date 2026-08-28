@@ -395,7 +395,7 @@ PARTIAL_EXIT=4
 # its clean/findings pair -- and never when it observed a bad graph. An
 # unobserved orphan count is not zero, and this is the byte that says so.
 UNESTABLISHED_CAPABLE_LABELS="inventory-nose-clones docs-graph check-docs check-closeout-classification-parity check-export-self-sufficiency check-artifact-referents"
-NATIVE_GATE_LABELS="check-export-safe-imports"
+NATIVE_GATE_LABELS="check-export-safe-imports check-plugin-dir-references"
 
 label_may_report_unestablished() {
   case " $UNESTABLISHED_CAPABLE_LABELS " in
@@ -1118,7 +1118,7 @@ fi
 # which means the reader's tree and is unverifiable from here, this placeholder
 # names a tree this repo builds -- so it can be checked, which is the whole
 # reason it was worth adopting (D50).
-queue_selected "check-plugin-dir-references" python3 scripts/check_plugin_dir_references.py --repo-root "$REPO_ROOT"
+queue_selected "check-plugin-dir-references" python3 scripts/native_gate_lib.py --repo-root "$REPO_ROOT" plugin-refs --repo-root "$REPO_ROOT"
 queue_selected "check-plugin-asset-command-carriers" python3 scripts/check_plugin_asset_command_carriers.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "check-documented-command-flags" python3 scripts/check_documented_command_flags.py --repo-root "$REPO_ROOT" --require-git-file-listing
 # position: the rung above the flags gate. That one proves a documented flag against

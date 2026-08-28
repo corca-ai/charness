@@ -129,8 +129,8 @@ That gives a rule with no judgement in it:
 
 Unlike `<repo-root>/`, this placeholder is **checkable**: each reference is
 resolved against the matching path under the generated `plugins/<pkg>/` package,
-and a dangling target is refused
-(`<plugin-dir>/scripts/check_plugin_dir_references.py`). `<repo-root>/` means
+and a dangling target is refused by the native `plugin-refs` gate
+(`<plugin-dir>/scripts/native_gate_lib.py ... plugin-refs`). `<repo-root>/` means
 the reader's own tree and is unverifiable from here by construction, which is what
 let a class of unreachable references accumulate.
 

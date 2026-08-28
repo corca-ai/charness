@@ -159,20 +159,6 @@
    ],
    "rationale": "Mutation skipped workers are rendered in the printed score summary."
   },
-  "scripts/check_plugin_dir_references.py": {
-   "states": [
-    "skipped"
-   ],
-   "visibility": [
-    "explicit_skip_summary",
-    "operator_summary"
-   ],
-   "evidence_terms": [
-    "nothing was resolved",
-    "skipped"
-   ],
-   "rationale": "This gate resolves references against a GENERATED plugin package. A consumer or temp repo has no such package, and there is nothing to resolve there -- but a bare exit 0 would read as \"every reference checks out\" when in fact none was examined. So the no-package case prints an explicit `nothing was resolved` notice naming the missing package directory. Fenced and HTML-commented lines are also deliberately not resolved, because a doc teaching the placeholder must be able to show a shape that does not resolve; that skip is bounded by the same live-prose walk every other doc gate here uses."
-  },
   "scripts/check_plugin_doc_links.py": {
    "states": [
     "skipped"
