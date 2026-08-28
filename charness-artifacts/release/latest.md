@@ -5,6 +5,8 @@ Date: 2026-08-29
 
 ## Scope
 
+- target version: `8.0.0`
+
 This record ABANDONS the `8.0.0` prepare attempt of 2026-08-28
 (`533f24dad release: prepare charness v8.0.0 locally`). It is not a
 release record. The next release run rewrites this file.

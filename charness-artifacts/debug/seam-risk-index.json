@@ -3,11 +3,11 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 170,
-  "indexed_artifact_count": 156,
+  "source_artifact_count": 171,
+  "indexed_artifact_count": 157,
   "risk_class_counts": {
     "contract-freeze-risk": 35,
-    "external-seam": 25,
+    "external-seam": 26,
     "host-disproves-local": 7,
     "none": 62,
     "operator-visible-recovery": 23,
@@ -15,7 +15,7 @@
   },
   "generalization_pressure_counts": {
     "factor-now": 23,
-    "monitor": 117,
+    "monitor": 118,
     "none": 16
   },
   "entries": [
@@ -2203,8 +2203,8 @@
       "forced": false
     },
     {
-      "artifact_path": "charness-artifacts/debug/latest.md",
-      "is_current_pointer": true,
+      "artifact_path": "charness-artifacts/debug/2026-08-27-issue-698-superseded-floor.md",
+      "is_current_pointer": false,
       "interrupt_id": "issue-698-superseded-floor-2026-08-27",
       "risk_classes": [
         "contract-freeze-risk"
@@ -2215,6 +2215,20 @@
       "next_step": "impl",
       "handoff_artifact": "charness-artifacts/impl/2026-08-27-issue-698-superseded-floor.md",
       "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/latest.md",
+      "is_current_pointer": true,
+      "interrupt_id": "native-artifact-sidecar-2026-08-29",
+      "risk_classes": [
+        "external-seam"
+      ],
+      "seam": "a locally-built artifact meeting a download path no local test traverses",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/native-artifact-roundtrip.md",
+      "forced": true
     }
   ],
   "skipped_artifacts": [
