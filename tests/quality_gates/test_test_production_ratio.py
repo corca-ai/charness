@@ -24,10 +24,11 @@ def test_test_production_ratio_counts_source_truth_without_plugin_exports() -> N
     assert summary["scope"] == "executable-surface"
     assert summary["engine"] == "splitlines"
     assert summary["engine_selection"] == "explicit"
-    # The live hard bound (test LOC < source LOC) was removed deliberately: the
-    # gate posture is advisory (run-quality.sh runs this script with --advisory;
-    # its help text owns the rationale); a hard live pin pressured against
-    # writing tests.
+    # The live hard bound (test LOC < source LOC) stays out of this unit test:
+    # run-quality.sh runs the gate BLOCKING (promoted 2026-08-29 after the #753
+    # JTBD audit and the executable-surface denominator fix brought the real
+    # ratio under 1.0); the release-lane label owns the live verdict, and a
+    # duplicate hard pin here would just re-block the same byte.
     assert summary["source_lines"] > 0
     assert summary["test_lines"] > 0
     assert summary["ratio"] > 0

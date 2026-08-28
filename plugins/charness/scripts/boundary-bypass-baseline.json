@@ -13,7 +13,6 @@
   "candidate_keys": [
     "03317004492f3b03",
     "06661433f0e37fc3",
-    "06c92f0b1714374a",
     "0a780c9ed9f43ebe",
     "0aff74e586453c01",
     "135a554f836f6a4a",
@@ -27,6 +26,7 @@
     "3282537862e9c0e4",
     "3972fc454265f2e9",
     "3e86c6cbdd720473",
+    "3fa411270d9911ac",
     "584137bc9502bb52",
     "5aaa8310abddb4cc",
     "5e810e663bf20edd",
@@ -197,12 +197,6 @@
       "import_safe_targets": [
         "scripts/parity_harness.py",
         "skills/shared/scripts/reviewer_boundary_fingerprint.py"
-      ]
-    },
-    {
-      "test_file": "tests/quality_gates/test_plugin_dir_references.py",
-      "import_safe_targets": [
-        "scripts/check_plugin_dir_references.py"
       ]
     },
     {
@@ -386,5 +380,5 @@
       ]
     }
   ],
-  "writer_integrity_sha256": "0ac6f9dc6bc9978185b542c0a4f3b85b32d25399a205afdf24dd685ebbcde49d"
+  "writer_integrity_sha256": "68b60c72462448065ac1d7e666bb990b01ea203c64c168cfdcc3fdbb34f8b432"
 }

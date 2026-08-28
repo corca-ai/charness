@@ -1168,7 +1168,7 @@ queue_selected "check-test-completeness" python3 scripts/check_test_completeness
 # The advisory ratio is likewise retained for release and focused diagnostics,
 # while ordinary broad/default runs pay only for the core test contract.
 if [[ "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" == "1" ]] || label_is_explicitly_selected "check-test-production-ratio"; then
-  queue_selected "check-test-production-ratio" python3 scripts/check_test_production_ratio.py --repo-root "$REPO_ROOT" --require-git-file-listing --advisory
+  queue_selected "check-test-production-ratio" python3 scripts/check_test_production_ratio.py --repo-root "$REPO_ROOT" --require-git-file-listing
 fi
 queue_selected "check-boundary-bypass-ratchet" python3 scripts/check_boundary_bypass_ratchet.py --repo-root "$REPO_ROOT"
 # Every packaged check_/validate_ script needs a consumer-facing decision, public
