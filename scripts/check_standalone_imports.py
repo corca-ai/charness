@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Every module in this repo must import FIRST, in a fresh interpreter.
+"""Every selected module in this repo must import FIRST, in a fresh interpreter.
 
 A package whose modules import each other resolves correctly under whatever order the
 test suite happens to use, and the suite cannot observe any other order. That is not a
@@ -23,10 +23,9 @@ module graph, which is precisely the masking being guarded against.
 
 ## What this check can and cannot establish
 
-It establishes that each module it ENUMERATED can be imported first. A module the
-enumeration misses is unchecked, not proven clean, and `--changed` runs are a strict
-subset -- so the scope is printed with every verdict rather than left for the reader to
-assume. A partial run must never read as a whole-package verdict.
+It establishes that each module selected by the native topology owner can be imported
+first. Static selection is not runtime proof, so a partial run must never read as a
+whole-package verdict.
 
 It does not prove the absence of import cycles in general. Four known blind spots,
 each measured rather than assumed:
@@ -55,6 +54,7 @@ from __future__ import annotations
 
 import argparse
 import concurrent.futures
+import json
 import re
 import subprocess
 import sys
@@ -65,38 +65,8 @@ from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-_scripts_repo_file_listing_module = import_repo_module(__file__, "scripts.repo_file_listing")
-iter_matching_repo_files = _scripts_repo_file_listing_module.iter_matching_repo_files
-
-# Both skill layouts, deliberately. The AUTHORING tree nests `skills/public/<skill>/`
-# and `skills/support/<skill>/`, but `skills/shared/scripts/` sits one level shallower --
-# and the EXPORTED plugin mirror flattens every skill to `skills/<skill>/`. A pattern
-# written for the deep layout alone missed all 10 `skills/shared/scripts/` modules (the
-# `<thing>.py` + `<thing>_state.py` extraction pairs, i.e. the highest-risk family) and
-# matched literally NOTHING in the mirror while still printing `checked all N`.
-SCAN_PATTERNS = (
-    # The two repo-root portability shims, imported by 135 scripts. They were missed by
-    # every directory-shaped pattern, and found by the inversion test rather than by
-    # anyone listing families -- which is the argument for the inversion test.
-    "*.py",
-    "scripts/*.py",
-    "skills/*/*/scripts/*.py",
-    "skills/*/scripts/*.py",
-    "skills/*/*/references/*.py",
-    # The export flattens TWICE and the first repair only covered one flattening:
-    # `skills/public/quality/references/` -> `skills/quality/references/` (3 components),
-    # and support is hoisted OUT of `skills/` entirely to `support/<skill>/scripts/`.
-    # 27 modules -- including the acquire_public_url and route_public_fetch extraction
-    # PAIRS -- were enumerated as zero by the MIRRORED gate, the copy a consuming repo
-    # actually runs, while it printed `checked all N`.
-    "skills/*/references/*.py",
-    # Support AND shared are both hoisted out of `skills/` by the export. `shared/` was
-    # found by the mirror inversion test, not by anyone listing layouts -- which is the
-    # third time on this slice that the enumeration was wrong in a way only an inversion
-    # could see, and the argument for having one per tree that ships.
-    "support/*/scripts/*.py",
-    "shared/scripts/*.py",
-)
+native_gate_lib = import_repo_module(__file__, "scripts.native_gate_lib")
+NativeGateError = native_gate_lib.NativeGateError
 
 # floor-addition-restraint: BLOCKING, deliberately, against this repo's default of
 # preferring an advisory on first sight.
@@ -149,42 +119,103 @@ def _is_wrong_shape(stderr: str, path: Path) -> bool:
     return (path.parent / f"{root}.py").is_file() or (path.parent / root).is_dir()
 
 
-def discover_modules(repo_root: Path, *, require_git: bool = False) -> list[Path]:
-    """Every gated Python module, gitignore-aware via the repo's own listing helper."""
-    return sorted(
-        path
-        for path in iter_matching_repo_files(repo_root, SCAN_PATTERNS, require_git=require_git)
-        if path.name != "__init__.py"
-    )
+class NativeSelectionError(RuntimeError):
+    """The native selection command did not emit an established v1 document."""
 
 
-def _probe_commands(repo_root: Path, path: Path) -> list[tuple[str, str]]:
-    """The import shapes a module may legitimately be loaded through, in order.
-
-    Two shapes exist in this repo and both are correct for their own files. A module
-    under `scripts/` that other code imports as `scripts.<name>` is loaded as a package
-    member. A module carrying the sibling-import preamble (`sys.path.insert(parent)`) is
-    designed to run as `python3 scripts/x.py` from a consuming checkout, and importing it
-    as a package member raises `ModuleNotFoundError` for its siblings -- a wrong-shape
-    error, not a defect in the module.
-
-    So a module is failing only when EVERY shape it could be loaded through fails.
-    Probing one shape would have reported 35 healthy `scripts/` modules as broken.
-    """
-    relative = path.relative_to(repo_root)
-    shapes = []
-    if relative.parts[0] == "scripts" and len(relative.parts) == 2:
-        shapes.append(("package", f"import scripts.{path.stem}"))
-    shapes.append(
-        ("direct", f"import sys; sys.path.insert(0, {str(path.parent)!r}); import {path.stem}")
-    )
-    return shapes
+def _native_report_detail(document: object, stderr: str) -> str:
+    if isinstance(document, dict):
+        unestablished = document.get("unestablished")
+        if isinstance(unestablished, list):
+            details = [
+                item.get("detail")
+                for item in unestablished
+                if isinstance(item, dict) and isinstance(item.get("detail"), str)
+            ]
+            if details:
+                return "; ".join(details)
+    return stderr.strip() or "(no native diagnostic)"
 
 
-def probe_module(repo_root: Path, path: Path, *, timeout: int = 60) -> dict:
+def _validate_selection_document(document: object) -> dict:
+    if not isinstance(document, dict):
+        raise NativeSelectionError("native standalone-targets did not emit a JSON object")
+    if document.get("schema") != "repograph.standalone_targets.v1":
+        raise NativeSelectionError(
+            "native standalone-targets emitted an unexpected schema: "
+            f"{document.get('schema')!r}"
+        )
+    targets = document.get("targets")
+    if not isinstance(targets, list):
+        raise NativeSelectionError("native standalone-targets document has no target list")
+    for index, target in enumerate(targets):
+        if not isinstance(target, dict) or not isinstance(target.get("path"), str):
+            raise NativeSelectionError(
+                f"native standalone-targets target {index} has no inventory-relative path"
+            )
+        shapes = target.get("shapes")
+        if not isinstance(shapes, list):
+            raise NativeSelectionError(
+                f"native standalone-targets target {target['path']!r} has no shape list"
+            )
+        for shape_index, shape in enumerate(shapes):
+            if not isinstance(shape, dict) or not isinstance(shape.get("command"), str):
+                raise NativeSelectionError(
+                    f"native standalone-targets target {target['path']!r} shape "
+                    f"{shape_index} has no command"
+                )
+    if document.get("scope") == "unestablished" or document.get("unestablished"):
+        raise NativeSelectionError(
+            "native standalone-targets reported an unestablished condition: "
+            + _native_report_detail(document, "")
+        )
+    return document
+
+
+def select_standalone_targets(repo_root: Path, *, changed: list[Path] | None) -> dict:
+    """Ask the D1-resolved native owner for the static probe plan."""
+    resolved = native_gate_lib.resolve_native_core(repo_root)
+    command = [str(resolved.path), "standalone-targets", "--repo-root", str(repo_root)]
+    if changed is not None:
+        command.extend(["--changed", *(str(path) for path in changed)])
+    try:
+        result = subprocess.run(
+            command,
+            cwd=repo_root,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+    except OSError as exc:
+        raise NativeSelectionError(
+            f"native standalone-targets could not execute {resolved.path}: {exc}"
+        ) from exc
+
+    document = None
+    if result.stdout.strip():
+        try:
+            document = json.loads(result.stdout)
+        except json.JSONDecodeError as exc:
+            if result.returncode == 0:
+                raise NativeSelectionError(
+                    f"native standalone-targets emitted invalid JSON: {exc}"
+                ) from exc
+    if result.returncode != 0:
+        detail = _native_report_detail(document, result.stderr)
+        raise NativeSelectionError(
+            f"native standalone-targets exited {result.returncode} (native condition): {detail}"
+        )
+    return _validate_selection_document(document)
+
+
+def probe_module(repo_root: Path, target: dict, *, timeout: int = 60) -> dict:
+    relative_path = Path(target["path"])
+    path = relative_path if relative_path.is_absolute() else repo_root / relative_path
     stderr = ""
     timed_out = False
-    for shape, code in _probe_commands(repo_root, path):
+    for shape_data in target["shapes"]:
+        shape = shape_data["shape"]
+        code = shape_data["command"]
         try:
             result = subprocess.run(
                 [sys.executable, "-c", code],
@@ -201,7 +232,7 @@ def probe_module(repo_root: Path, path: Path, *, timeout: int = 60) -> dict:
             timed_out = True
             continue
         if result.returncode == 0:
-            return {"path": str(path.relative_to(repo_root)), "ok": True, "shape": shape}
+            return {"path": target["path"], "ok": True, "shape": shape}
         stderr = result.stderr
         # BOTH conditions. A sibling `ModuleNotFoundError` is the wrong-shape signal AND
         # what a swallowed cycle looks like from outside: `try: from scripts.x import A /
@@ -221,13 +252,13 @@ def probe_module(repo_root: Path, path: Path, *, timeout: int = 60) -> dict:
     lowered = stderr.lower()
     if timed_out and not _is_cycle(lowered):
         return {
-            "path": str(path.relative_to(repo_root)),
+            "path": target["path"],
             "ok": False,
             "kind": "timeout",
             "detail": stderr,
         }
     return {
-        "path": str(path.relative_to(repo_root)),
+        "path": target["path"],
         "ok": False,
         # A cycle is the class this check exists for and blocks. Anything else is
         # reported separately rather than folded in, because calling an unrelated
@@ -237,24 +268,11 @@ def probe_module(repo_root: Path, path: Path, *, timeout: int = 60) -> dict:
     }
 
 
-def run(repo_root: Path, *, changed: list[Path] | None, workers: int, require_git: bool) -> dict:
-    discovered = discover_modules(repo_root, require_git=require_git)
-    unmatched: list[str] = []
-    if changed is None:
-        modules, scope = discovered, "full"
-    else:
-        # Resolved against REPO_ROOT, not the process CWD. `Path("scripts/x.py").resolve()`
-        # silently means "relative to wherever this happens to be running", which matched
-        # by luck when CWD was the repo and matched NOTHING against any other root.
-        wanted = {
-            (path if path.is_absolute() else repo_root / path).resolve(): path for path in changed
-        }
-        by_resolved = {path.resolve(): path for path in discovered}
-        modules = [by_resolved[key] for key in wanted if key in by_resolved]
-        unmatched = sorted(str(orig) for key, orig in wanted.items() if key not in by_resolved)
-        scope = "partial"
+def run(repo_root: Path, *, changed: list[Path] | None, workers: int) -> dict:
+    selection = select_standalone_targets(repo_root, changed=changed)
+    targets = selection["targets"]
     with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as pool:
-        results = list(pool.map(lambda path: probe_module(repo_root, path), modules))
+        results = list(pool.map(lambda target: probe_module(repo_root, target), targets))
     cycles = [item for item in results if item.get("kind") == "cycle"]
     others = [item for item in results if not item["ok"] and item.get("kind") != "cycle"]
     # A module that imports in NO shape blocks too. Splitting cycle from import-error is
@@ -262,31 +280,15 @@ def run(repo_root: Path, *, changed: list[Path] | None, workers: int, require_gi
     # only one half blocking left the other as a hole: the gate would hold the evidence
     # that a changed module cannot be imported at all, print it as a note, and exit 0.
     return {
-        "scope": scope,
-        "checked": len(modules),
-        "discovered": len(discovered),
+        "scope": selection["scope"],
+        "checked": selection["checked"],
+        "discovered": selection["discovered"],
         "cycles": cycles,
         "other_failures": others,
         "ok": not cycles and not others,
-        # The scope note travels WITH the verdict. A partial run that renders a bare
-        # `ok: true` reads as a whole-package clean bill, which is this repo's own
-        # measured `partial` lesson: a verdict must state what it measured.
-        "unmatched_changed": unmatched,
-        "scope_note": (
-            f"checked all {len(modules)} discovered module(s)"
-            if scope == "full"
-            else f"PARTIAL: checked {len(modules)} of {len(discovered)} discovered module(s); "
-            "the rest are UNCHECKED, not proven clean"
-            # An empty scope that prints `ok` is a green nobody earned. It does not BLOCK
-            # -- a commit touching only non-module Python legitimately matches nothing --
-            # but it says so, and it names the paths that matched nothing so a caller
-            # passing paths in the wrong shape finds out here instead of trusting a pass.
-            + (" -- NOTHING WAS CHECKED: no --changed path matched a discovered module" if not modules else "")
-            # Named whenever there ARE unmatched paths, not only when the scope collapsed
-            # to zero. A run that checked 1 of 2 given paths and stayed silent about the
-            # other is strictly more misleading than one that checked none and said so.
-            + (f"; unmatched: {', '.join(unmatched)}" if unmatched else "")
-        ),
+        "unmatched_changed": selection["unmatched_changed"],
+        "scope_note": selection["scope_note"],
+        "selection": "repograph standalone-targets v1",
     }
 
 
@@ -302,15 +304,25 @@ def main() -> int:
         help="Restrict to these modules (pre-push lane). The result is explicitly marked PARTIAL.",
     )
     parser.add_argument("--workers", type=int, default=16, help="Concurrent import probes (1-64)")
-    parser.add_argument("--require-git-file-listing", action="store_true")
+    parser.add_argument(
+        "--require-git-file-listing",
+        action="store_true",
+        help="Compatibility option; native selection always uses the repository inventory.",
+    )
     args = parser.parse_args()
 
-    report = run(
-        args.repo_root.expanduser().resolve(),
-        changed=args.changed,
-        workers=min(64, max(1, args.workers)),
-        require_git=args.require_git_file_listing,
-    )
+    try:
+        report = run(
+            args.repo_root.expanduser().resolve(),
+            changed=args.changed,
+            workers=min(64, max(1, args.workers)),
+        )
+    except NativeGateError as exc:
+        print(f"native gate unavailable: {exc}", file=sys.stderr)
+        return 1
+    except NativeSelectionError as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
     # `verdict` and `failure_meaning` are folded in from the deleted human
     # renderer: the report carries `ok`, `cycles` and `other_failures`, but the
     # BLOCKED framing and the difference between the two failure classes (a cycle

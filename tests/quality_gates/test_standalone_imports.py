@@ -23,6 +23,7 @@ from pathlib import Path
 import pytest
 import yaml
 
+from scripts import native_gate_lib
 from tests.repo_copy import clone_seeded_charness_repo
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -43,7 +44,18 @@ def _reconstruct_the_cycle(source: str) -> str:
 
 
 @pytest.fixture
-def clean_repo(tmp_path: Path, seeded_charness_repo: Path) -> Path:
+def real_native_core(monkeypatch: pytest.MonkeyPatch) -> Path:
+    """Use the real D1-resolved binary for runtime and inventory claims."""
+    try:
+        resolved = native_gate_lib.resolve_native_core(ROOT)
+    except native_gate_lib.NativeGateError as exc:
+        pytest.fail(f"native core unavailable through the D1 shim: {exc}")
+    monkeypatch.setenv("CHARNESS_NATIVE_CORE", str(resolved.path))
+    return resolved.path
+
+
+@pytest.fixture
+def clean_repo(tmp_path: Path, seeded_charness_git_repo: Path, real_native_core: Path) -> Path:
     """An isolated copy of this repo. The whole package is copied, not just the module:
     the cycle exists only in relation to `quality_policy_defaults`'s re-export, so a
     module copied on its own would not reproduce it and a check that passed on that copy
@@ -53,7 +65,7 @@ def clean_repo(tmp_path: Path, seeded_charness_repo: Path) -> Path:
     observe a transiently broken module — `check_test_repo_copy_invariants` refuses it,
     and it was right to: the first cut of this file did exactly that.
     """
-    return clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
+    return clone_seeded_charness_repo(tmp_path, seeded_charness_git_repo)
 
 
 @pytest.fixture
@@ -105,6 +117,28 @@ def _report(result: subprocess.CompletedProcess) -> dict:
     payload = yaml.safe_load(result.stdout)
     assert isinstance(payload, dict), f"stdout was not a YAML mapping: {result.stdout[:400]!r}"
     return payload
+
+
+def _native_standalone_report(repo: Path) -> dict:
+    module = _load_check_module()
+    try:
+        return module.select_standalone_targets(repo, changed=None)
+    except module.NativeGateError as exc:
+        pytest.fail(f"native core unavailable through the D1 shim: {exc}")
+
+
+def _tracked_python_paths(repo: Path) -> set[str]:
+    result = subprocess.run(
+        ["git", "-C", str(repo), "ls-files", "-z", "--cached"],
+        capture_output=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr.decode(errors="replace")
+    return {
+        raw.decode()
+        for raw in result.stdout.split(b"\0")
+        if raw.endswith(b".py") and not raw.endswith(b"/__init__.py")
+    }
 
 
 def test_the_reconstruction_really_is_the_issues_cycle(repo_with_the_real_cycle: Path) -> None:
@@ -167,6 +201,7 @@ def test_a_partial_run_says_so_in_its_own_output(clean_repo: Path) -> None:
     assert partial.returncode == 0, partial.stdout
     payload = _report(partial)
     assert payload["scope"] == "partial"
+    assert payload["selection"] == "repograph standalone-targets v1"
     assert "PARTIAL: checked 1 of" in payload["scope_note"]
     assert "UNCHECKED, not proven clean" in payload["scope_note"]
 
@@ -180,20 +215,8 @@ def test_the_clean_tree_passes_and_says_what_it_covered(clean_repo: Path) -> Non
     assert result.returncode == 0, result.stdout
     payload = _report(result)
     assert payload["verdict"] == "ok"
+    assert payload["selection"] == "repograph standalone-targets v1"
     assert re.search(r"checked all \d+ discovered module\(s\)", payload["scope_note"]), payload
-
-
-def test_the_enumeration_reaches_both_module_families() -> None:
-    """The check can only establish what it enumerated, so the enumeration is itself
-    load-bearing: a family it misses is unchecked, not clean. Both families are named
-    here so a pattern change that silently drops one fails."""
-    module = _load_check_module()
-
-    discovered = {path.relative_to(ROOT).as_posix() for path in module.discover_modules(ROOT)}
-
-    assert "scripts/quality_policy_merge.py" in discovered
-    assert "skills/public/achieve/scripts/upsert_goal.py" in discovered
-    assert not [name for name in discovered if name.endswith("__init__.py")]
 
 
 def test_an_empty_changed_scope_says_nothing_was_checked(clean_repo: Path) -> None:
@@ -211,7 +234,6 @@ def test_an_empty_changed_scope_says_nothing_was_checked(clean_repo: Path) -> No
     assert result.returncode == 0
     payload = _report(result)
     assert "NOTHING WAS CHECKED" in payload["scope_note"]
-    assert "unmatched: docs/index.md" in payload["scope_note"]
     assert payload["unmatched_changed"] == ["docs/index.md"]
 
 
@@ -229,15 +251,20 @@ def test_changed_paths_resolve_against_the_repo_root_not_the_cwd(clean_repo: Pat
 
 
 def _mini_repo(root: Path, files: dict[str, str]) -> Path:
-    """A throwaway package, for cycle shapes that do not exist in this repo."""
+    """A Git-backed throwaway package for cycle shapes outside this repo."""
     (root / "scripts").mkdir(parents=True)
     (root / "scripts" / "__init__.py").write_text("", encoding="utf-8")
     for name, body in files.items():
         (root / "scripts" / name).write_text(body, encoding="utf-8")
+    subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+    subprocess.run(["git", "add", "."], cwd=root, check=True)
+    subprocess.run(["git", "commit", "-qm", "seed"], cwd=root, check=True)
     return root
 
 
-def test_a_cycle_a_module_turns_into_a_missing_sibling_is_still_caught(tmp_path: Path) -> None:
+def test_a_cycle_a_module_turns_into_a_missing_sibling_is_still_caught(
+    tmp_path: Path, real_native_core: Path
+) -> None:
     """The shape fallback must not become a mask, and this is the input that made it one.
 
     This repo's dominant preamble is `try: from scripts import x / except ImportError:
@@ -261,7 +288,7 @@ def test_a_cycle_a_module_turns_into_a_missing_sibling_is_still_caught(tmp_path:
     assert [item["path"] for item in _report(result)["cycles"]], result.stdout
 
 
-def test_a_module_that_imports_in_no_shape_blocks(tmp_path: Path) -> None:
+def test_a_module_that_imports_in_no_shape_blocks(tmp_path: Path, real_native_core: Path) -> None:
     """Splitting cycle from import-error is worth doing in the OUTPUT — a missing
     dependency has a different fix — but making only one half blocking left the other as
     a hole: the gate held the evidence that a changed module could not be imported at
@@ -281,7 +308,9 @@ def test_a_module_that_imports_in_no_shape_blocks(tmp_path: Path) -> None:
     assert "not a cycle" in payload["other_failure_meaning"]
 
 
-def test_a_wrong_shape_sibling_error_still_falls_through(tmp_path: Path) -> None:
+def test_a_wrong_shape_sibling_error_still_falls_through(
+    tmp_path: Path, real_native_core: Path
+) -> None:
     """The false-positive control for the two tests above. Narrowing the fallback must
     not break the case it exists for: 35 healthy modules in this repo use the
     sibling-import preamble and fail the package shape by design."""
@@ -295,85 +324,48 @@ def test_a_wrong_shape_sibling_error_still_falls_through(tmp_path: Path) -> None
     assert result.returncode == 0, result.stdout
 
 
-def test_every_tracked_module_is_either_discovered_or_deliberately_excluded() -> None:
-    """The inversion. A test naming the families the pattern already matches is a pin
-    against removal, not a completeness check — it cannot fail for a family nobody thought
-    of, which is exactly how `skills/shared/scripts/` (10 modules, including the
-    extraction PAIRS this gate exists for) went unenumerated in the first cut.
-
-    This fails when a new Python family appears anywhere the gate does not reach, and the
-    exclusions are listed here so each is a decision on the record rather than an
-    accident.
-    """
-    module = _load_check_module()
-    root = ROOT
-    tracked = {
-        path.relative_to(root).as_posix()
-        # TRACKED only. With the default `include_untracked=True` an untracked scratch
-        # file turns this red, and — worse — an untracked `scripts/scratch.py` gets swept
-        # and can BLOCK an unrelated commit.
-        for path in module.iter_matching_repo_files(root, ("**/*.py",), include_untracked=False)
-        if path.name != "__init__.py"
+def test_every_tracked_module_is_either_discovered_or_deliberately_excluded(
+    real_native_core: Path,
+) -> None:
+    """The real native selection must cover every authoring-tree module."""
+    tracked = _tracked_python_paths(ROOT)
+    discovered = {
+        target["path"] for target in _native_standalone_report(ROOT)["targets"]
     }
-    discovered = {path.relative_to(root).as_posix() for path in module.discover_modules(root)}
-
     excluded_prefixes = (
-        "tests/",          # the suite imports its own helpers every run; a cycle there fails loudly
-        # The mirror has its OWN inversion test below. Excluding it here without that
-        # would re-hide the exact tree whose enumeration was found broken: the export
-        # flattens paths, so a pattern that covers the source can match nothing in the
-        # mirror while still printing `checked all N`.
+        "tests/",
         "plugins/",
-        "docs/",           # illustrative snippets, not importable repo modules
-        # Rust-crate fixture/parity corpus; not standalone-importable repo modules; owned by the repograph test suite.
+        "docs/",
         "native/",
-        # Evaluator OUTPUT fixtures: files a delegated run produced as its artifact, not
-        # repo modules anything imports. They are checked-in evidence, not code.
         "charness-artifacts/",
     )
     unreachable = sorted(
-        name for name in tracked - discovered
-        if not name.startswith(excluded_prefixes)
+        name for name in tracked - discovered if not name.startswith(excluded_prefixes)
     )
 
     assert not unreachable, (
-        "these Python modules are reached by no SCAN_PATTERN and by no recorded exclusion; "
-        f"extend one or the other: {unreachable}"
+        "these tracked Python modules are not in the real native standalone-targets output "
+        f"and have no recorded exclusion: {unreachable}"
     )
 
 
-def test_the_exported_mirror_enumerates_its_own_modules() -> None:
-    """The mirror is what a CONSUMING repo runs, and its layout is not the source layout.
-
-    The export flattens `skills/public/<skill>/` to `skills/<skill>/` AND hoists support
-    out of `skills/` entirely to `support/<skill>/scripts/`. A pattern set written for the
-    authoring tree matched ZERO skill modules in the mirror while printing
-    `checked all N` — a full-scope verdict over a silently collapsed denominator, which is
-    the one thing this gate's own docstring forbids. The first repair covered one
-    flattening and left 27 modules, including the `acquire_public_url` and
-    `route_public_fetch` extraction PAIRS this gate exists for.
-
-    This inverts against the mirror so the `plugins/` exclusion above is a delegation
-    rather than a hole. It checks ENUMERATION only: the mirror currently carries a real
-    import failure (tracked separately) that is a defect of the exported package, not of
-    this gate's coverage.
-    """
-    module = _load_check_module()
+def test_the_exported_mirror_enumerates_its_own_modules(real_native_core: Path) -> None:
+    """The real native selection must cover the shipped mirror layout too."""
     mirror = ROOT / "plugins" / "charness"
-    tracked = {
-        path.relative_to(mirror).as_posix()
-        for path in module.iter_matching_repo_files(mirror, ("**/*.py",), include_untracked=False)
-        if path.name != "__init__.py"
+    tracked = _tracked_python_paths(mirror)
+    discovered = {
+        target["path"] for target in _native_standalone_report(mirror)["targets"]
     }
-    discovered = {path.relative_to(mirror).as_posix() for path in module.discover_modules(mirror)}
 
     assert not sorted(tracked - discovered), (
-        "these modules ship in the plugin and are reached by no SCAN_PATTERN; the mirrored "
-        f"gate would report `checked all N` over them: {sorted(tracked - discovered)}"
+        "these tracked mirror modules are not in the real native standalone-targets output: "
+        f"{sorted(tracked - discovered)}"
     )
 
 
-def test_a_partial_run_names_unmatched_paths_even_when_something_matched() -> None:
+def test_a_partial_run_names_unmatched_paths_even_when_something_matched(
+    real_native_core: Path,
+) -> None:
     """The case B5 actually repaired, and the one its first test could not reach.
 
     Both existing scope tests have zero unmatched or zero matched, so reverting the fix to
@@ -385,4 +377,4 @@ def test_a_partial_run_names_unmatched_paths_even_when_something_matched() -> No
 
     payload = _report(result)
     assert "PARTIAL: checked 1 of" in payload["scope_note"]
-    assert "unmatched: docs/index.md" in payload["scope_note"]
+    assert payload["unmatched_changed"] == ["docs/index.md"]
