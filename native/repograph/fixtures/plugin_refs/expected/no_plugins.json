@@ -1,0 +1,19 @@
+{
+  "schema": "repograph.plugin_refs.v1",
+  "repo_root": "fixtures/plugin_refs/no_plugins",
+  "listing": "file-list",
+  "packages": [],
+  "scope_note": "no plugins package; nothing was validated",
+  "scanned_files": 0,
+  "references": [],
+  "findings": [],
+  "counts": {
+    "authoring-only": 0,
+    "escapes-package-root": 0,
+    "missing": 0,
+    "resolved": 0,
+    "shipped-but-marked-authoring-only": 0,
+    "templated": 0
+  },
+  "unestablished": []
+}

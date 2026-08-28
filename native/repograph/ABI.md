@@ -4,7 +4,7 @@
 > Source: the `repograph` release binary built from this crate.
 
 This document freezes the machine-facing CLI contract for `parse-corpus`,
-`export-safe`, `match-surfaces`, and `standalone-targets`, and records the
+`export-safe`, `match-surfaces`, `standalone-targets`, and `plugin-refs`, and records the
 additive topology commands (`graph`, `classify`, `changed`, `carriers`,
 `components`, `explain`). A reportable run
 emits one UTF-8 JSON document on stdout and diagnostics on stderr. The
@@ -28,7 +28,7 @@ their respective captures, with whitespace formatted for readability.
 The executable accepts one required command name:
 
 ```text
-repograph <parse-corpus|export-safe|match-surfaces|standalone-targets|graph|classify|changed|carriers|components|explain> [options]
+repograph <parse-corpus|export-safe|match-surfaces|standalone-targets|graph|classify|changed|carriers|components|explain|plugin-refs> [options]
 ```
 
 `--help` and `-h` print the command usage and exit 0. An unknown command,
@@ -839,6 +839,112 @@ parse its targets.
 | 1 | Unused; this is a pure-report command and does not run the runtime probe. |
 | 2 | CLI usage error. |
 | 3 | Inventory could not be established. There is no source parse-failure path because source files are not parsed. |
+| 70 | Internal `repograph` failure, including a top-level panic or an output failure. |
+
+## `plugin-refs`
+
+### `plugin-refs` input
+
+Usage:
+
+```text
+repograph plugin-refs [--repo-root PATH] [--file-list PATH]
+```
+
+| Argument or flag | Contract |
+| --- | --- |
+| command | Required literal `plugin-refs`. |
+| `--repo-root PATH` | Root from which inventory paths are read. Default: the process current directory. The supplied spelling is retained in `repo_root`. |
+| `--file-list PATH` | Optional NUL-separated inventory file. Default: acquire one Git snapshot. The file-list path is read relative to the process current directory. |
+| `--help`, `-h` | Print the command usage and exit 0. |
+| positional arguments | Not accepted. |
+
+The inventory is established once. Package roots are inferred from inventory
+paths with the shape `plugins/<pkg>/<member>`; the package name is never
+hardcoded. Package names are sorted lexically. A package target resolves only
+when the corresponding `plugins/<pkg>/<target>` path occurs in that inventory.
+
+The command selects distinct inventory paths matching this exact document-glob
+set, then reads those paths from `repo_root`:
+
+```text
+README.md
+AGENTS.md
+docs/**/*.md
+presets/**/*.md
+profiles/**/*.md
+skills/**/*.md
+```
+
+The Markdown walk follows `scripts.markdown_doc_scan.iter_doc_lines`: leading
+whitespace does not matter for a fence; an opening run has at least three
+backticks or tildes, and only the same marker character with a run at least as
+long closes it. Fence delimiters are consumed, mismatched marker characters do
+not close a fence, and `<!--` is literal while inside a fence. A fully
+commented line is consumed; a multiline comment suppresses lines through its
+closing `-->`, while content after a mid-line close is scanned. A comment span
+beside live content leaves the line verbatim for the caller. D6 additionally
+masks complete inline backtick-code spans, so references inside inline code are
+not inspected.
+
+On a live line, a reference target ends at whitespace, a backtick, or `)` and
+trailing `.`, `,`, `;`, `:`, and `)` characters are removed, matching the
+Python owner's extraction. `<plugin-dir>/TARGET` references are classified as
+follows:
+
+| Classification | Meaning |
+| --- | --- |
+| `resolved` | The normalized target exists under at least one discovered package root in the inventory. |
+| `templated` | TARGET contains `<`, `>`, ASCII or Unicode ellipsis. It is counted but is not a finding. |
+| `escapes-package-root` | TARGET is absolute or has a `..` path component. |
+| `missing` | TARGET is not present under any discovered package root. |
+
+The same live-line walk checks `<authoring-repo>/TARGET` only in
+`skills/**/*.md`. The authoring spelling itself is always retained in the
+report. In addition to the literal target, public and support skill paths use
+the installed `skills/<skill>/...` spelling derived from the existing
+`MIRROR_RULES` flatten rule. A target found under a shipped package is
+classified `shipped-but-marked-authoring-only` and is a finding; otherwise it
+is classified `authoring-only` and is not a finding.
+
+### `plugin-refs` output schema
+
+Schema id: `repograph.plugin_refs.v1`.
+
+| Field | JSON type | Meaning |
+| --- | --- | --- |
+| `schema` | string | Always `repograph.plugin_refs.v1`. |
+| `repo_root` | string | The supplied or default root spelling. |
+| `listing` | string | `git`, `file-list`, or `unestablished` for an inventory-error report. |
+| `packages` | array of strings | Sorted discovered package names validated by the report. Empty means no package was discovered. |
+| `scope_note` | string | `validated package set: <comma-separated packages>` for an established package scope, or `no plugins package; nothing was validated` for the typed zero-scope case. |
+| `scanned_files` | integer | Number of inventory-selected Markdown paths read for scanning. It is zero when no package exists or inventory is unestablished. |
+| `references` | array of objects | Every extracted plugin or authoring reference, sorted by path, line, then reference text. |
+| `findings` | array of objects | The subset with `missing`, `escapes-package-root`, or `shipped-but-marked-authoring-only` classification, in the same deterministic order. |
+| `counts` | object of integer values | Counts for `resolved`, `templated`, `escapes-package-root`, `missing`, `authoring-only`, and `shipped-but-marked-authoring-only`. Zero-valued classes remain present. |
+| `unestablished` | array of objects | Inventory or document-read failures. Empty for an established scan. |
+
+Each `references` and `findings` object has `path` (inventory-relative
+document path), `line` (one-based source line), `reference` (the extracted
+placeholder reference without sentence punctuation), and `classification`.
+Each `unestablished` object has `path`, `status`, and `detail`. An inventory
+failure uses path `<inventory>` and status `inventory`; a document read failure
+uses status `unreadable`.
+
+The no-package report is an exit-0 success with an empty reference set and the
+typed `scope_note` above. This is deliberately unlike `export-safe`'s
+zero-scope exit 3: a tree without a `plugins/<pkg>` package is a legitimate
+consumer-tree shape, so there is no package universe to validate; a collapsed
+export-safe selection universe is instead a defect in an authoring tree.
+
+### `plugin-refs` exit semantics
+
+| Exit | Meaning for `plugin-refs` |
+| --- | --- |
+| 0 | The inventory and scanned documents were established, no finding was emitted, and the package set was validated. This includes the typed no-package zero-scope report. |
+| 1 | The report was emitted with one or more missing, escaping, or shipped-but-marked-authoring-only findings and no unestablished entries. |
+| 2 | CLI usage error. |
+| 3 | Inventory could not be established, or an inventory-selected document could not be read. The report contains typed `unestablished` entries. |
 | 70 | Internal `repograph` failure, including a top-level panic or an output failure. |
 
 ## Wrapper and compatibility rule

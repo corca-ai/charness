@@ -1,0 +1,117 @@
+{
+  "schema": "repograph.plugin_refs.v1",
+  "repo_root": "fixtures/plugin_refs",
+  "listing": "file-list",
+  "packages": ["demo"],
+  "scope_note": "validated package set: demo",
+  "scanned_files": 6,
+  "references": [
+    {
+      "path": "AGENTS.md",
+      "line": 5,
+      "reference": "<plugin-dir>/skills/demo/SKILL.md",
+      "classification": "resolved"
+    },
+    {
+      "path": "README.md",
+      "line": 5,
+      "reference": "<plugin-dir>/skills/demo/SKILL.md",
+      "classification": "resolved"
+    },
+    {
+      "path": "README.md",
+      "line": 6,
+      "reference": "<plugin-dir>/README.md",
+      "classification": "resolved"
+    },
+    {
+      "path": "README.md",
+      "line": 7,
+      "reference": "<plugin-dir>/skills/<skill>/SKILL.md",
+      "classification": "templated"
+    },
+    {
+      "path": "README.md",
+      "line": 8,
+      "reference": "<plugin-dir>/skills/.../SKILL.md",
+      "classification": "templated"
+    },
+    {
+      "path": "README.md",
+      "line": 9,
+      "reference": "<plugin-dir>/../README.md",
+      "classification": "escapes-package-root"
+    },
+    {
+      "path": "README.md",
+      "line": 10,
+      "reference": "<plugin-dir>//etc/hosts",
+      "classification": "escapes-package-root"
+    },
+    {
+      "path": "README.md",
+      "line": 11,
+      "reference": "<plugin-dir>/skills/not-shipped/SKILL.md",
+      "classification": "missing"
+    },
+    {
+      "path": "README.md",
+      "line": 32,
+      "reference": "<plugin-dir>/skills/demo/SKILL.md",
+      "classification": "resolved"
+    },
+    {
+      "path": "docs/guide.md",
+      "line": 5,
+      "reference": "<plugin-dir>/skills/demo/SKILL.md",
+      "classification": "resolved"
+    },
+    {
+      "path": "skills/public/demo/SKILL.md",
+      "line": 7,
+      "reference": "<authoring-repo>/skills/public/demo/SKILL.md",
+      "classification": "shipped-but-marked-authoring-only"
+    },
+    {
+      "path": "skills/public/demo/SKILL.md",
+      "line": 8,
+      "reference": "<authoring-repo>/skills/public/not-shipped/SKILL.md",
+      "classification": "authoring-only"
+    }
+  ],
+  "findings": [
+    {
+      "path": "README.md",
+      "line": 9,
+      "reference": "<plugin-dir>/../README.md",
+      "classification": "escapes-package-root"
+    },
+    {
+      "path": "README.md",
+      "line": 10,
+      "reference": "<plugin-dir>//etc/hosts",
+      "classification": "escapes-package-root"
+    },
+    {
+      "path": "README.md",
+      "line": 11,
+      "reference": "<plugin-dir>/skills/not-shipped/SKILL.md",
+      "classification": "missing"
+    },
+    {
+      "path": "skills/public/demo/SKILL.md",
+      "line": 7,
+      "reference": "<authoring-repo>/skills/public/demo/SKILL.md",
+      "classification": "shipped-but-marked-authoring-only"
+    }
+  ],
+  "counts": {
+    "authoring-only": 1,
+    "escapes-package-root": 2,
+    "missing": 1,
+    "resolved": 5,
+    "shipped-but-marked-authoring-only": 1,
+    "templated": 2
+  },
+  "unestablished": []
+}
