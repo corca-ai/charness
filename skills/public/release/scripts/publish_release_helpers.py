@@ -10,7 +10,6 @@ from scripts.subprocess_guard import heartbeat_interval_from_env, run_monitored_
 
 RELEASE_VIEW_PLACEHOLDERS: frozenset[str] = frozenset({"tag"})
 RELEASE_CREATE_PLACEHOLDERS: frozenset[str] = frozenset({"tag", "title"})
-AUTH_CHECK_PLACEHOLDERS: frozenset[str] = frozenset()
 
 _PLACEHOLDER_RE = re.compile(r"\{([a-z_]+)\}")
 SEMVER_TAG_RE = re.compile(r"^v(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)$")
@@ -22,7 +21,9 @@ OP_PLACEHOLDERS: dict[str, frozenset[str]] = {
     # it at a backend whose body readback is not a `--json` flag.
     "release_view_body": RELEASE_VIEW_PLACEHOLDERS,
     "release_create": RELEASE_CREATE_PLACEHOLDERS,
-    "auth_check": AUTH_CHECK_PLACEHOLDERS,
+    "auth_check": frozenset(),
+    "release_upload": frozenset({"tag", "asset"}),
+    "release_assets": frozenset({"tag"}),
 }
 COMMAND_TIMEOUT_SECONDS = 1800
 PROGRESS_INTERVAL_ENV = "CHARNESS_RELEASE_PROGRESS_INTERVAL_SECONDS"

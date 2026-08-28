@@ -72,9 +72,11 @@ def _require_clean_tree(repo_root: Path) -> None:
 
     # `--exclude-standard` is intentional: Cargo writes target/ during this
     # operation, and that ignored tree must not turn a clean source checkout
-    # into a false dirty-build refusal.
+    # into a false dirty-build refusal. `--no-empty-directory` also prevents
+    # an otherwise-untracked directory from being reported when its contents
+    # are all ignored (or it is empty).
     untracked = _run(
-        ["git", "ls-files", "--others", "--exclude-standard", "--directory", "-z"],
+        ["git", "ls-files", "--others", "--exclude-standard", "--directory", "--no-empty-directory", "-z"],
         cwd=repo_root,
     )
     if untracked.returncode != 0:
@@ -144,8 +146,8 @@ def _git_tag(repo_root: Path) -> str | None:
     return None
 
 
-def _write_archive(binary: Path, output_dir: Path, version: str, tuple_name: str) -> Path:
-    archive = output_dir / f"repograph-v{version}-{tuple_name}.tar.gz"
+def _write_archive(binary: Path, output_dir: Path, artifact_name: str) -> Path:
+    archive = output_dir / artifact_name
     try:
         with tarfile.open(archive, "w:gz") as bundle:
             bundle.add(binary, arcname="repograph", recursive=False)
@@ -166,13 +168,14 @@ def build_native_artifact(repo_root: Path, *, out_dir: Path | None = None) -> di
     output_dir.mkdir(parents=True, exist_ok=True)
     native_resolution = import_repo_module(__file__, "scripts.native_core_resolution_lib")
     tuple_name = native_resolution.host_tuple()
+    artifact_name = native_resolution.canonical_artifact_name(version, tuple_name)
     toolchain = _pinned_toolchain(crate_root)
     binary = _build(crate_root, toolchain)
     rustc_version = _rustc_version(crate_root, toolchain)
     lockfile = crate_root / "Cargo.lock"
     if not lockfile.is_file():
         raise BuildError(f"Cargo.lock is missing: {lockfile}")
-    archive = _write_archive(binary, output_dir, version, tuple_name)
+    archive = _write_archive(binary, output_dir, artifact_name)
     archive_digest = _digest(archive)
     binary_digest = _digest(binary)
     commit = _git_output(repo_root, ("rev-parse", "HEAD"))

@@ -21,6 +21,26 @@ if args == ["repo", "view", "--json", "url", "--jq", ".url"]:
 if args == ["repo", "view", "--json", "nameWithOwner", "--jq", ".nameWithOwner"]:
     print("example/demo")
     raise SystemExit(0)
+if args[:2] == ["release", "upload"]:
+    if len(args) != 4 or args[2].startswith("-") or args[3].startswith("-"):
+        raise SystemExit(2)
+    asset_state_path = Path(os.environ["FAKE_GH_RELEASE_ASSET_STATE"])
+    asset_state = json.loads(asset_state_path.read_text(encoding="utf-8")) if asset_state_path.exists() else {}
+    asset_state.setdefault(args[2], []).append(Path(args[3]).name)
+    asset_state_path.write_text(json.dumps(asset_state, indent=2) + "\n", encoding="utf-8")
+    raise SystemExit(0)
+if args[:2] == ["release", "view"] and len(args) > 3:
+    if (
+        len(args) != 7
+        or args[2].startswith("-")
+        or args[3:6] != ["--json", "assets", "--jq"]
+        or not args[6]
+    ):
+        raise SystemExit(2)
+    asset_state_path = Path(os.environ["FAKE_GH_RELEASE_ASSET_STATE"])
+    asset_state = json.loads(asset_state_path.read_text(encoding="utf-8")) if asset_state_path.exists() else {}
+    print("\n".join(asset_state.get(args[2], [])))
+    raise SystemExit(0)
 if args[:2] == ["release", "view"]:
     state_path = Path(os.environ["FAKE_GH_RELEASE_STATE"])
     state = json.loads(state_path.read_text(encoding="utf-8")) if state_path.exists() else []

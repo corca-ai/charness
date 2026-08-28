@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import tempfile
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -26,17 +27,21 @@ RESUME_PUBLISH = _load("publish_release_resume_publish")
 RESUME = _load("publish_release_resume")
 CLAIMS = _load("publish_release_claims_review")
 RESUME_STATE = _load("publish_release_resume_state")
+_ISOLATED_RESUME_REPO = Path(tempfile.mkdtemp(prefix="charness-resume-repo-"))
+_NATIVE_NOT_APPLICABLE = {"status": "not-applicable", "asset": None, "reason": "native_core declaration is absent"}
 
 
 class _ClaimsResumeCli:
     def __init__(self, commands: list[list[str]], *, notes_preflights: list[dict] | None = None,
                  allow_create: bool = False, verify_returncode: int = 0,
-                 version_surface_error: str | None = None):
+                 version_surface_error: str | None = None,
+                 upload_failure: BaseException | None = None):
         self.commands = commands
         self.notes_preflights = notes_preflights if notes_preflights is not None else []
         self.allow_create = allow_create
         self.verify_returncode = verify_returncode
         self.version_surface_error = version_surface_error
+        self.upload_failure = upload_failure
         self.version_surface_checks: list[dict] = []
         self.final_artifact_commits: list[dict] = []
         self.finalized_payloads: list[dict] = []
@@ -49,7 +54,7 @@ class _ClaimsResumeCli:
         self, repo_root, *, target_tag, notes_file, on_resume=False, previous_version=None
     ):
         # Recorded, never executed against the real filesystem: the stub passes
-        # `repo_root=Path(".")`, so a real preflight here would read the AUTHORING repo's
+        # an isolated temporary repo root, so a real preflight here would read the AUTHORING repo's
         # adapter and its drafted-notes directory against a fixture tag.
         # `previous_version` is recorded because the resume lane is the reason it exists:
         # the manifest is ALREADY bumped there, so without it the outgoing version is
@@ -127,6 +132,18 @@ class _ClaimsResumeCli:
             raise AssertionError("existing release should not be created again")
         return SimpleNamespace(returncode=0, stdout="https://example.test/v1.2.3")
 
+    @staticmethod
+    def native_artifact_preflight(_repo_root):
+        return _NATIVE_NOT_APPLICABLE
+
+    def attempt_native_artifact_upload(self, *_args, **_kwargs):
+        if self.upload_failure is not None:
+            return None, self.upload_failure
+        return _NATIVE_NOT_APPLICABLE, None
+
+    def record_native_artifact_upload(self, payload, result, failure):
+        payload["native_artifact_upload"] = result if failure is None else _NATIVE_NOT_APPLICABLE
+
 
 class _ClaimsResumeCommon:
     @staticmethod
@@ -154,6 +171,7 @@ def _resume_claims_publication_leg(
     *, remote_branch_sha: str, tag_remote: bool, release_exists: bool = True,
     notes_file=None, notes_preflights: list[dict] | None = None,
     verify_returncode: int = 0, cli_out: list | None = None,
+    upload_failure: BaseException | None = None,
 ) -> tuple[list[list[str]], list[str]]:
     commands: list[list[str]] = []
     committed: list[str] = []
@@ -183,11 +201,11 @@ def _resume_claims_publication_leg(
     }
     args = SimpleNamespace(execute=True, remote="origin", notes_file=notes_file, close_issue=[])
     cli = _ClaimsResumeCli(commands, notes_preflights=notes_preflights, allow_create=not release_exists,
-                           verify_returncode=verify_returncode)
+                           verify_returncode=verify_returncode, upload_failure=upload_failure)
     if cli_out is not None:
         cli_out.append(cli)
     RESUME_PUBLISH.resume_publish(
-        Path("."), args=args, plan=plan, adapter_data=_ADAPTER,
+        _ISOLATED_RESUME_REPO, args=args, plan=plan, adapter_data=_ADAPTER,
         cli=cli,
         state=state,
         resumable_state=lambda *_args, **_kwargs: state, assert_resumable=lambda *_args, **_kwargs: None,
@@ -227,6 +245,19 @@ def test_a_failed_post_create_verification_commits_the_artifact_before_it_refuse
         "the failure arm must persist the release artifact before refusing; the tag and "
         "the release already exist by the time verification runs"
     )
+    assert clis[0].final_artifact_commits[0]["has_issue_closeout"] is False
+
+
+def test_a_failed_native_upload_commits_the_artifact_before_it_refuses() -> None:
+    clis: list = []
+
+    with pytest.raises(SystemExit, match="native upload failed"):
+        _resume_claims_publication_leg(
+            remote_branch_sha="claims-evidence", tag_remote=True,
+            upload_failure=SystemExit("native upload failed"), cli_out=clis,
+        )
+
+    assert len(clis[0].final_artifact_commits) == 1
     assert clis[0].final_artifact_commits[0]["has_issue_closeout"] is False
 
 
@@ -712,7 +743,7 @@ def test_a_state_classified_against_another_record_path_cannot_publish() -> None
 
     with pytest.raises(SystemExit, match="refusing to publish across two record paths"):
         RESUME_PUBLISH.resume_publish(
-            Path("."), args=args, plan=plan, adapter_data=_ADAPTER, cli=_ClaimsResumeCli(commands),
+            _ISOLATED_RESUME_REPO, args=args, plan=plan, adapter_data=_ADAPTER, cli=_ClaimsResumeCli(commands),
             state=state, resumable_state=lambda *_a, **_k: state,
             assert_resumable=lambda *_a, **_k: None, common=_ClaimsResumeCommon(),
             resume_closeout=SimpleNamespace(),
@@ -880,7 +911,7 @@ def test_a_claims_phase_without_a_validated_review_cannot_publish() -> None:
 
     with pytest.raises(SystemExit, match="requires a validated claims review"):
         RESUME_PUBLISH.resume_publish(
-            Path("."), args=args, plan=plan, adapter_data=_ADAPTER, cli=_ClaimsResumeCli(commands),
+            _ISOLATED_RESUME_REPO, args=args, plan=plan, adapter_data=_ADAPTER, cli=_ClaimsResumeCli(commands),
             state=state, resumable_state=lambda *_a, **_k: state,
             assert_resumable=lambda *_a, **_k: None, common=_ClaimsResumeCommon(),
             resume_closeout=SimpleNamespace(),

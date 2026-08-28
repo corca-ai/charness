@@ -1,7 +1,6 @@
 """Final-consumer tests for release-surface revalidation on resume."""
 from __future__ import annotations
 
-from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -55,7 +54,7 @@ def test_claims_resume_refuses_deleted_required_surface_before_publication() -> 
 
     with pytest.raises(SystemExit, match="required plugin manifest is missing"):
         edge.RESUME_PUBLISH.resume_publish(
-            Path("."), args=args, plan=plan, adapter_data=edge._ADAPTER, cli=cli,
+            edge._ISOLATED_RESUME_REPO, args=args, plan=plan, adapter_data=edge._ADAPTER, cli=cli,
             state=state, resumable_state=lambda *_a, **_k: state,
             assert_resumable=lambda *_a, **_k: None, common=edge._ClaimsResumeCommon(),
             resume_closeout=SimpleNamespace(),

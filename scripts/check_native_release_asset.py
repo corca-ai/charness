@@ -17,6 +17,7 @@ if str(SCRIPT_REPO_ROOT) not in sys.path:
 
 from scripts.native_core_resolution_lib import (  # noqa: E402
     artifact_declaration,
+    canonical_artifact_name,
     checkout_version,
     host_tuple,
     read_native_declaration,
@@ -83,7 +84,7 @@ def check_native_release_asset(
             "tuple": tuple_name,
             "reason": "checkout version has no native artifact declaration",
         }
-    canonical_name = f"repograph-v{version}-{tuple_name}.tar.gz"
+    canonical_name = canonical_artifact_name(version, tuple_name)
     if expected["name"] != canonical_name:
         return {
             "status": "fail",

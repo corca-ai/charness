@@ -44,6 +44,10 @@ def host_tuple() -> str:
     return f"{machine or 'unknown'}-unknown-{platform.system().lower() or 'unknown'}"
 
 
+def canonical_artifact_name(version: str, tuple_name: str) -> str:
+    return f"repograph-v{version}-{tuple_name}.tar.gz"
+
+
 def _manifest(repo_root: Path) -> dict[str, Any]:
     try:
         data = json.loads((repo_root / "packaging" / "charness.json").read_text(encoding="utf-8"))
@@ -290,7 +294,7 @@ def native_core_doctor_payload(
 
 __all__ = [
     "NativeCoreHealthy", "NativeCoreResult", "NativeCoreUnavailable",
-    "artifact_declaration", "checkout_version", "host_tuple", "metadata", "repository_url",
+    "artifact_declaration", "canonical_artifact_name", "checkout_version", "host_tuple", "metadata", "repository_url",
     "native_core_doctor_payload", "native_core_path", "pointer",
     "read_json", "read_native_declaration", "sha256", "validate_state_root",
 ]

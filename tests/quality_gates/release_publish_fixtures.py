@@ -194,6 +194,7 @@ def _release_env(tmp_path: Path, bin_dir: Path) -> dict[str, str]:
     env["FAKE_GH_LOG"] = str(tmp_path / "gh-log.json")
     env["FAKE_GIT_LOG"] = str(tmp_path / "git-log.json")
     env["FAKE_GH_RELEASE_STATE"] = str(tmp_path / "release-state.json")
+    env["FAKE_GH_RELEASE_ASSET_STATE"] = str(tmp_path / "release-assets.json")
     env["FAKE_DISTINCT_CHANNEL_LOG"] = str(tmp_path / "distinct-channel-log.json")
     return env
 

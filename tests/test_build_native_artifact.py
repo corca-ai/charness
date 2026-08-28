@@ -8,10 +8,13 @@ import subprocess
 import sys
 import tarfile
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 import yaml
 
+from scripts import build_native_artifact as build_module
+from scripts.build_native_artifact import BuildError, _require_clean_tree
 from scripts.native_core_resolution_lib import host_tuple
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -38,7 +41,9 @@ def _seed_repo(tmp_path: Path, *, version: object = "1.2.3") -> Path:
         '[toolchain]\nchannel = "1.96.0"\n', encoding="utf-8"
     )
     (repo / "README.md").write_text("fixture\n", encoding="utf-8")
-    (repo / ".gitignore").write_text("target/\n", encoding="utf-8")
+    (repo / ".gitignore").write_text(
+        "target/\nignored-only/*\nmixed/ignored.txt\n", encoding="utf-8"
+    )
     _git(repo, "init", "-q")
     _git(repo, "config", "user.email", "test@example.com")
     _git(repo, "config", "user.name", "Test")
@@ -162,6 +167,45 @@ def test_build_refuses_dirty_tree_before_invoking_cargo(tmp_path: Path) -> None:
     assert "git tree is dirty" in result.stderr
     assert not (tmp_path / "cargo.log").exists()
     assert not output.exists()
+
+
+def test_clean_tree_ignores_directories_with_only_ignored_contents(tmp_path: Path) -> None:
+    repo = _seed_repo(tmp_path)
+    ignored_directory = repo / "ignored-only"
+    ignored_directory.mkdir()
+    (ignored_directory / "cargo-output").write_text("ignored\n", encoding="utf-8")
+
+    _require_clean_tree(repo)
+
+
+@pytest.mark.parametrize("relative", ["untracked.txt", "mixed/untracked.txt"])
+def test_clean_tree_still_refuses_genuinely_untracked_files(tmp_path: Path, relative: str) -> None:
+    repo = _seed_repo(tmp_path)
+    path = repo / relative
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("untracked\n", encoding="utf-8")
+
+    with pytest.raises(BuildError, match="untracked files present"):
+        _require_clean_tree(repo)
+
+
+def test_builder_uses_the_shared_canonical_name_owner(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    repo = _seed_repo(tmp_path)
+    binary = repo / "native" / "repograph" / "target" / "release" / "repograph"
+    binary.parent.mkdir(parents=True)
+    binary.write_bytes(b"fake binary\n")
+    resolution = SimpleNamespace(
+        host_tuple=lambda: "fixture-tuple",
+        canonical_artifact_name=lambda _version, _tuple: "owned-by-resolution.tar.gz",
+    )
+    monkeypatch.setattr(build_module, "import_repo_module", lambda *_args: resolution)
+    monkeypatch.setattr(build_module, "_build", lambda *_args: binary)
+    monkeypatch.setattr(build_module, "_rustc_version", lambda *_args: "rustc fixture")
+
+    metadata = build_module.build_native_artifact(repo, out_dir=tmp_path / "artifacts")
+
+    assert metadata["artifact"] == "owned-by-resolution.tar.gz"
+    assert (tmp_path / "artifacts" / "owned-by-resolution.tar.gz").is_file()
 
 
 @pytest.mark.parametrize("bad_manifest", [{}, {"version": "not-a-version"}, "not an object"])
