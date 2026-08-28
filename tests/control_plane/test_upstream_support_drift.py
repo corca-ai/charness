@@ -9,6 +9,7 @@ regression masked by the v0.14.2 pin.
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -21,6 +22,7 @@ SCRIPT = ROOT / "scripts" / "check_upstream_support_drift.py"
 
 def _run(repo_root: Path, fixture_path: Path, *extra: str) -> subprocess.CompletedProcess[str]:
     env = {
+        **os.environ,
         "PATH": "/usr/bin:/bin",
         "CHARNESS_UPSTREAM_SUPPORT_PROBE_FIXTURES": str(fixture_path),
         "CHARNESS_UPSTREAM_SUPPORT_PROBE_NO_GH": "1",
