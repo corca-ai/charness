@@ -72,6 +72,21 @@ target/release/repograph classify --repo-root ../.. --path scripts/example.py
 target/release/repograph changed --repo-root ../.. --path scripts/example.py
 ```
 
+The component report derives SCCs, rootless components, validator/test-only
+islands, and boundary findings from that same graph. Boundary findings are
+re-reported from `export-safe`; that command remains the verdict owner:
+
+```bash
+target/release/repograph components --repo-root ../..
+```
+
+Explain a path with bounded typed root paths, direct dependents, and nearest
+classified ancestors for an unreachable path:
+
+```bash
+target/release/repograph explain --repo-root ../.. --path scripts/example.py
+```
+
 The parity and benchmark harnesses are investigative only and are not wired
 into repository gates:
 

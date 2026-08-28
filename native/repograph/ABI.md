@@ -5,7 +5,8 @@
 
 This document freezes the machine-facing CLI contract for `parse-corpus`,
 `export-safe`, `match-surfaces`, and `standalone-targets`, and records the
-additive topology commands (`graph`, `classify`, `changed`, `carriers`). A reportable run
+additive topology commands (`graph`, `classify`, `changed`, `carriers`,
+`components`, `explain`). A reportable run
 emits one UTF-8 JSON document on stdout and diagnostics on stderr. The
 command-specific inventory, manifest, and path errors below identify the
 failure cases that emit diagnostics without a report. JSON member order is not
@@ -27,7 +28,7 @@ their respective captures, with whitespace formatted for readability.
 The executable accepts one required command name:
 
 ```text
-repograph <parse-corpus|export-safe|match-surfaces|standalone-targets|graph|classify|changed|carriers> [options]
+repograph <parse-corpus|export-safe|match-surfaces|standalone-targets|graph|classify|changed|carriers|components|explain> [options]
 ```
 
 `--help` and `-h` print the command usage and exit 0. An unknown command,
@@ -574,6 +575,106 @@ run-quality label observations. It does not evaluate shell, YAML, workflow
 expressions, or structured command-plan target bindings. Its exits are 0 for
 an established projection, 3 when typed carrier opacity is present, 2 for a
 usage error, and 70 for an internal output failure.
+
+## `components`
+
+### `components` input
+
+Usage:
+
+```text
+repograph components [--repo-root PATH] [--file-list PATH] [--exclude-prefix PREFIX]... [--analyzer-result FILE]...
+```
+
+`components` uses the common inventory options. Its exclusion default is
+`plugins/` and `native/repograph/fixtures/`; supplying one or more
+`--exclude-prefix` values replaces both defaults. `--analyzer-result` is
+repeatable identity-only plumbing and marks the affected scope
+unestablished. Positional arguments are not accepted.
+
+### `components` output schema
+
+Schema id: `repograph.components.v1`.
+
+The component graph contains every selected file and every endpoint of an
+`imports` or `invokes` edge. Other edge kinds, including the `tests` view, are
+not traversed. The report contains these fields:
+
+| Field | JSON type | Meaning |
+| --- | --- | --- |
+| `components` | array of objects | Strongly connected components, sorted by their stable `component:<first-member>` id. |
+| `component_count`, `scc_count` | integer | Number of emitted SCCs. |
+| `scc_sizes_gt_one` | array of integers | Sizes of cyclic SCCs with more than one member, in component order. |
+| `rootless_components` | array of strings | Stable component ids reached by no product, validation, test, generated, or host root. |
+| `rootless_component_count` | integer | Number of rootless components. |
+| `validator_test_only_islands` | array of strings | Components reached by at least one root and only by validation and/or test roots. |
+| `validator_test_only_island_count`, `test_only_island_count` | integer | Count of validator/test-only islands. The latter is the short census name. |
+| `import_boundary_violations` | array of objects | The `export-safe.v1` violation records re-reported for this graph scope. `export-safe` remains the verdict owner. |
+| `analyzer_inputs` | array of objects | Analyzer identity records inherited from the graph builder. |
+| `unresolved_carriers` | array of objects | Typed carrier opacity inherited from the graph builder. |
+| `unestablished` | array of objects | Conditions that prevent an established topology scope. |
+
+Each component has `id`, `members`, `size`, `cyclic`, `root_ids`,
+`root_kinds`, `rootless`, and `validator_test_only`. Root membership is
+transitive over the same `imports`/`invokes` projection used for SCCs. The
+`import_boundary_violations` set is byte-for-byte the `violations` set from
+`export-safe` run over the same effective inventory and exclusions.
+
+### `components` exit semantics
+
+| Exit | Meaning for `components` |
+| --- | --- |
+| 0 | The topology scope was established and the pure report was emitted. Boundary findings do not change this exit. |
+| 1 | Unused; this is a pure report and does not own the `export-safe` verdict. |
+| 2 | CLI usage error. |
+| 3 | Inventory, analyzer, parsing, carrier, or other topology scope was unestablished. |
+| 70 | Internal `repograph` failure, including a top-level panic or an output failure. |
+
+## `explain`
+
+### `explain` input
+
+Usage:
+
+```text
+repograph explain --path PATH [--repo-root PATH] [--file-list PATH] [--exclude-prefix PREFIX]... [--analyzer-result FILE]...
+```
+
+`explain` uses the common inventory options and requires exactly one
+`--path`. The path is normalized with the repository path normalizer. Its
+exclusion and analyzer defaults are the same as `components`; positional
+arguments are not accepted.
+
+### `explain` output schema
+
+Schema id: `repograph.explain.v1`.
+
+| Field | JSON type | Meaning |
+| --- | --- | --- |
+| `path` | string | Normalized path being explained. |
+| `root_paths` | array of objects | Up to three shortest root-to-path paths. Each object has the complete `root` and an `edges` array of the traversed typed `imports`/`invokes` edges. |
+| `path_limit` | integer | Fixed maximum number of emitted root paths: `3`. |
+| `paths_bounded` | boolean | `true` when more than `path_limit` shortest paths exist and the report was bounded; `false` means all discovered shortest paths fit. |
+| `dependents` | array of objects | Direct reverse `imports`/`invokes` edges whose target is `path`, sorted deterministically. |
+| `nearest_classified_ancestors` | array of objects | When no root reaches `path`, nearest reverse-graph file ancestors with an established role; each has `path`, `role`, and edge `distance`. |
+| `analyzer_inputs` | array of objects | Analyzer identity records inherited from the graph builder. |
+| `unresolved_carriers` | array of objects | Typed carrier opacity inherited from the graph builder. |
+| `unestablished` | array of objects | Conditions that prevent an established topology scope. |
+
+The command traverses exactly the edges named in each emitted path; it does
+not silently replace a typed edge with a string-only explanation. A missing
+query path is added only to the in-process snapshot projection so its
+presence remains distinguishable from an inventory path.
+
+### `explain` exit semantics
+
+| Exit | Meaning for `explain` |
+| --- | --- |
+| 0 | The topology scope was established and the pure explanation was emitted. |
+| 1 | Unused; this is a pure report. |
+| 2 | CLI usage error. |
+| 3 | Inventory, analyzer, parsing, carrier, normalization, or excluded-path scope was unestablished. |
+| 70 | Internal `repograph` failure, including a top-level panic or an output failure. |
 
 ## `standalone-targets`
 

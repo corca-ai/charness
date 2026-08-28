@@ -1,0 +1,64 @@
+{
+  "cyclic_component_members": [
+    [
+      "scripts/cross_a.py",
+      "skills/shared/scripts/cross_b.py"
+    ],
+    [
+      "scripts/rootless_a.py",
+      "scripts/rootless_b.py"
+    ],
+    [
+      "tests/test_island.py",
+      "tests/test_island_helper.py"
+    ]
+  ],
+  "rootless_component_members": [
+    [
+      "scripts/boundary_violation.py"
+    ],
+    [
+      "scripts/cross_a.py",
+      "skills/shared/scripts/cross_b.py"
+    ],
+    [
+      "scripts/explain_dependent.py"
+    ],
+    [
+      "scripts/rootless_a.py",
+      "scripts/rootless_b.py"
+    ]
+  ],
+  "validator_test_only_component_members": [
+    [
+      "tests/test_island.py",
+      "tests/test_island_helper.py"
+    ]
+  ],
+  "explain_path": {
+    "path": "scripts/explain_target.py",
+    "root": "runtime:runtime_bootstrap.py",
+    "edges": [
+      {
+        "kind": "imports",
+        "source": "runtime_bootstrap.py",
+        "target": "scripts/explain_middle.py"
+      },
+      {
+        "kind": "imports",
+        "source": "scripts/explain_middle.py",
+        "target": "scripts/explain_target.py"
+      }
+    ],
+    "dependents": [
+      "scripts/explain_dependent.py",
+      "scripts/explain_middle.py"
+    ]
+  },
+  "boundary_violation_set": [
+    {
+      "path": "scripts/boundary_violation.py",
+      "kind": "forbidden-import"
+    }
+  ]
+}
