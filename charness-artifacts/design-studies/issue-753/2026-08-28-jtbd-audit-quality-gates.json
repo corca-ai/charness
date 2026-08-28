@@ -2993,7 +2993,7 @@
   "path": "tests/quality_gates/test_reviewer_capability.py",
   "lines": 335,
   "subject": "skills/shared/scripts/reviewer_capability.py",
-  "jtbd": "Catches fail-open bugs in the external-worker capability envelope validator (transport failure read as credential-invalid, missing/contradictory filesystem or effect denial, ambiguous duplicate/foreign preflight records) that would let an untrusted reviewer worker's write/effect capability go unverified.",
+  "jtbd": "Catches fail-open bugs in the external-worker capability envelope validator (transport failure misread as an invalid credential, filesystem or effect denial that is missing or contradictory, ambiguous duplicate/foreign preflight records) that would let an untrusted reviewer worker's write/effect capability go unverified.",
   "klass": "behavioral-contract",
   "subject_needed": "yes",
   "disposition": "keep",
