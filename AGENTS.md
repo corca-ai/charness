@@ -27,7 +27,10 @@ question; it is not a second operating manual.
   or a host error proves a lane unavailable; otherwise report it as unverified,
   not absent. The parent owns intent, integration, and final verification;
   serialize only dependent or tiny work. The task model is fixed to Luna;
-  repo-local effort and lane choices live in [host notes](./.agents/codex-host.md).
+  repo-local effort and lane choices live in
+  [Codex host notes](./.agents/codex-host.md), and Claude-session
+  delegation/model policy lives in
+  [Claude host notes](./.agents/claude-host.md).
 - Keep `skills/public/` canonical; exports and generated surfaces are updated
   by their producer. Prefer deleting stale rules, wrappers, gates, mirrors,
   tests, and docs over adding another layer.
