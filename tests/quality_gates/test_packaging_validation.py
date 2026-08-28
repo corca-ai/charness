@@ -142,13 +142,21 @@ def make_clean_git_repo(tmp_path: Path, seeded_charness_git_repo: Path) -> Path:
         capture_output=True,
         text=True,
     )
-    subprocess.run(
-        ["git", "commit", "-m", "Sync temporary plugin export"],
+    staged = subprocess.run(
+        ["git", "diff", "--cached", "--quiet"],
         cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
+        check=False,
     )
+    if staged.returncode == 1:
+        subprocess.run(
+            ["git", "commit", "-m", "Sync temporary plugin export"],
+            cwd=repo,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    elif staged.returncode != 0:
+        raise subprocess.CalledProcessError(staged.returncode, staged.args)
     return repo
 
 
