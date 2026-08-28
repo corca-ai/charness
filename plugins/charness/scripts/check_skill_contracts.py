@@ -44,15 +44,14 @@ REFERENCE_CONTRACT_SUFFIXES = {".md", ".txt"}
 CORE_CONTRACTS: dict[str, tuple[str, ...]] = {
     "skills/public/critique/SKILL.md": (
         "Critique is selected by risk, not by the fact that a task completed.",
-        "optional\nevidence-led mode",
+        "optional evidence-led path verifies that report",
         "Do not treat the counterweight pass as adversarial evidence",
-        "- `Evidence Disposition` (when active; identity/count/coverage/digest)",
         "--evidence-led` so its template and emitted validator",
         "receipt bound to",
         "When this standalone `critique` skill runs, its default fresh-eye execution is a Charness-owned\nfile-backed worker",
         "There is no same-context local standalone `critique` variant.",
         "apply the stop-instead-of-local-substitute rule when neither the configured",
-        "- `Execution`",
+        "Execution: blocked <host-signal>",
     ),
     "skills/public/gather/SKILL.md": (
         "Prefer primary sources.",
