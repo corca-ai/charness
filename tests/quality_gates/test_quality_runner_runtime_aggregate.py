@@ -36,6 +36,7 @@ def _capture_run_quality_runtime_records(repo: Path) -> Path:
     log_path = repo / "quality-runtime-records.jsonl"
     regime_path = repo / "quality-runtime-regime.json"
     aggregate_regime_path = repo / "quality-runtime-aggregate-regime.jsonl"
+    state_root_path = repo / "quality-runtime-state-roots.jsonl"
     real_python = sys.executable
     write_executable(
         repo / "scripts" / "record_quality_runtime.py",
@@ -84,7 +85,7 @@ def _capture_run_quality_runtime_records(repo: Path) -> Path:
                 "# Call spy keeps this aggregate test fast; direct-recorder tests cover real behavior elsewhere.",
                 'if [[ "${1:-}" == "scripts/record_quality_runtime.py" ]]; then',
                 "  shift",
-                '  label="" elapsed_ms="" status="" timestamp="" batch="" regime="" saw_regime=0',
+                '  label="" elapsed_ms="" status="" timestamp="" batch="" regime="" state_root="" saw_regime=0',
                 "  while [[ \"$#\" -gt 0 ]]; do",
                 "    case \"$1\" in",
                 "      --batch)",
@@ -99,6 +100,11 @@ def _capture_run_quality_runtime_records(repo: Path) -> Path:
                 '        [[ "$#" -ge 2 ]] || exit 2',
                 '        regime="$2"',
                 "        saw_regime=1",
+                "        shift 2",
+                "        ;;",
+                "      --state-root)",
+                '        [[ "$#" -ge 2 ]] || exit 2',
+                '        state_root="$2"',
                 "        shift 2",
                 "        ;;",
                 "      --label|--elapsed-ms|--status|--timestamp)",
@@ -119,6 +125,7 @@ def _capture_run_quality_runtime_records(repo: Path) -> Path:
                 # replays them line for line so per-label assertions keep working.
                 '    [[ -r "$batch" ]] || exit 2',
                 '    cat "$batch" >> ' + repr(str(log_path)),
+                '    printf \'%s\\n\' "$state_root" >> ' + repr(str(state_root_path)),
                 '    if [[ "$saw_regime" == "1" ]]; then',
                 '      printf \'"%s"\' "$regime" > ' + repr(str(regime_path)),
                 "    else",
@@ -134,6 +141,7 @@ def _capture_run_quality_runtime_records(repo: Path) -> Path:
                 # against the real bar while its per-gate siblings went elsewhere.
                 '  printf \'{"label":"%s","regime":"%s"}\\n\' "$label" "${CHARNESS_RUNTIME_REGIME-<unset>}" >> '
                 + repr(str(aggregate_regime_path)),
+                '  printf \'%s\\n\' "$state_root" >> ' + repr(str(state_root_path)),
                 '  [[ "$elapsed_ms" =~ ^-?[0-9]+$ ]] || exit 2',
                 '  if [[ "${QUALITY_RUNTIME_FAIL_AGGREGATE:-}" == "1" && "$label" == run-quality-* ]]; then',
                 "    exit 73",
@@ -505,6 +513,49 @@ def test_the_regime_reaches_gates_that_record_their_own_samples(
 
     assert result.returncode == 0, result.stderr
     assert observed.read_text(encoding="utf-8") == "filtered"
+
+
+def test_explicit_runtime_root_is_threaded_to_all_quality_state_consumers(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    _capture_run_quality_runtime_records(repo)
+    execution_root = tmp_path / "task-result" / "runtime"
+    quality_root = execution_root / "quality"
+    startup_args = repo / "startup-probe-args.txt"
+    budget_args = repo / "runtime-budget-args.txt"
+    write_executable(
+        repo / "skills" / "public" / "quality" / "scripts" / "measure_startup_probes.py",
+        "#!/usr/bin/env python3\n"
+        "import sys\n"
+        f"from pathlib import Path\nPath({str(startup_args)!r}).write_text(' '.join(sys.argv[1:]), encoding='utf-8')\n",
+    )
+    write_executable(
+        repo / "skills" / "public" / "quality" / "scripts" / "check_runtime_budget.py",
+        "#!/usr/bin/env python3\n"
+        "import sys\n"
+        f"from pathlib import Path\nPath({str(budget_args)!r}).write_text(' '.join(sys.argv[1:]), encoding='utf-8')\n",
+    )
+    env["CHARNESS_RUNTIME_ROOT"] = str(execution_root)
+
+    result = run_shell_script(
+        repo / "scripts" / "run-quality.sh", "--full", "--read-only", cwd=repo, env=env
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert startup_args.read_text(encoding="utf-8").split()[-2:] == [
+        "--state-root",
+        str(quality_root),
+    ]
+    budget_argv = budget_args.read_text(encoding="utf-8").split()
+    assert budget_argv[budget_argv.index("--state-root") + 1] == str(quality_root)
+    state_roots = {
+        line
+        for line in (repo / "quality-runtime-state-roots.jsonl").read_text(encoding="utf-8").splitlines()
+        if line
+    }
+    assert state_roots == {str(quality_root)}
+    assert not (repo / ".charness" / "quality" / "runtime-signals.json").exists()
 
 
 def test_an_opt_in_extra_gate_also_leaves_the_enforced_window(

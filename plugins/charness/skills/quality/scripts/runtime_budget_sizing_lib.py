@@ -137,6 +137,7 @@ def suggest_budgets(
     load_signals: Callable[[Path], dict[str, Any]],
     *,
     runtime_profile: str | None = None,
+    state_root: Path | None = None,
 ) -> tuple[str, dict[str, dict[str, int]], str]:
     """Resolve the profile the gate would enforce, derive a block, and name the source.
 
@@ -152,7 +153,10 @@ def suggest_budgets(
     """
     adapter_data = load_adapter(repo_root)["data"]
     selected_profile = selected_runtime_profile(adapter_data, runtime_profile)
-    signals = load_signals(repo_root)
+    if state_root is None:
+        signals = load_signals(repo_root)
+    else:
+        signals = load_signals(repo_root, state_root=state_root)
     commands = profile_commands(signals, selected_profile) if isinstance(signals, dict) else {}
     commands_source = "runtime_signals" if commands else "none"
     if not commands:

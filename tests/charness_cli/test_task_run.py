@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts import task_run
+from scripts import task_run, task_run_support
 from skills.shared.scripts import reviewer_lifecycle
 
 
@@ -233,6 +233,48 @@ def test_task_run_creates_named_lane_and_keeps_runtime_external(tmp_path: Path) 
     assert not Path(payload["runtime_root"]).is_relative_to(repo)
     assert not Path(payload["runtime_root"]).is_relative_to(payload["worktree_path"])
     assert (tmp_path / "lane" / "module.py").read_text(encoding="utf-8") == "VALUE = 2\n"
+
+
+def test_task_run_assigns_distinct_lane_runtime_roots_and_leaves_worktrees_clean(
+    tmp_path: Path,
+) -> None:
+    repo = _repo(tmp_path)
+    executable = _codex(
+        tmp_path,
+        "mkdir -p \"$CHARNESS_RUNTIME_ROOT\"\n"
+        "printf '%s\\n' \"$CHARNESS_RUNTIME_ROOT\" > \"$CHARNESS_RUNTIME_ROOT/observed-root\"\n"
+        "printf 'VALUE = 2\\n' > module.py\n"
+        "git add -- module.py\n"
+        "git -c user.email=test@example.com -c user.name=test commit -m 'update module'",
+    )
+
+    payloads = [
+        task_run.run_task(
+            repo,
+            target_path=tmp_path / f"lane-{task_id}",
+            branch=f"lane/{task_id}",
+            base="HEAD",
+            scopes=["module.py"],
+            prompt="update the module",
+            codex=str(executable),
+            effort="medium",
+            task_id=task_id,
+        )
+        for task_id in ("runtime-one", "runtime-two")
+    ]
+
+    execution_roots = [Path(payload["execution_runtime_root"]) for payload in payloads]
+    assert len({root.resolve() for root in execution_roots}) == 2
+    for payload, execution_root in zip(payloads, execution_roots):
+        result_dir = Path(payload["result_path"]).parent
+        assert execution_root == result_dir / "runtime"
+        assert execution_root.is_dir()
+        assert (execution_root / "observed-root").read_text(encoding="utf-8").strip() == str(execution_root)
+        assert task_run.task_status(repo, payload["task_id"]) == payload
+        worktree = Path(payload["worktree_path"])
+        assert _git(worktree, "status", "--porcelain=v1", "--ignored", "--untracked-files=all").stdout == ""
+
+    assert _git(repo, "status", "--porcelain=v1", "--ignored", "--untracked-files=all").stdout == ""
 
 
 def test_task_run_grants_codex_both_common_and_linked_worktree_git_dirs(
@@ -857,9 +899,10 @@ def test_task_result_does_not_project_non_review_schema(tmp_path: Path) -> None:
 
 def test_running_result_is_visible_to_the_child(tmp_path: Path) -> None:
     repo = _repo(tmp_path)
+    result_path = task_run_support.task_runtime_root(repo) / "task-run" / "running-check" / "result.json"
     executable = _codex(
         tmp_path,
-        "grep '\"status\": \"running\"' \"$CHARNESS_RUNTIME_ROOT/task-run/running-check/result.json\" > running.txt\nprintf 'VALUE = 2\\n' > module.py",
+        f"grep '\"status\": \"running\"' {shlex.quote(str(result_path))} > running.txt\nprintf 'VALUE = 2\\n' > module.py",
     )
 
     payload = _run(

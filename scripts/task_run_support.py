@@ -495,6 +495,11 @@ def task_result_path(runtime_path: Path, task_id: str) -> Path:
     return runtime_path / "task-run" / task_id / "result.json"
 
 
+def task_execution_runtime_root(runtime_path: Path, task_id: str) -> Path:
+    """Return the lane-private runtime root beneath one task result directory."""
+    return task_result_path(runtime_path, task_id).parent / "runtime"
+
+
 def write_task_result(runtime_path: Path, result: Mapping[str, Any]) -> Path:
     """Atomically publish the sole persisted task-run result."""
     path = task_result_path(runtime_path, str(result["task_id"]))

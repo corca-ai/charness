@@ -102,6 +102,11 @@ def main() -> int:
         help="Named machine/runner profile to enforce. Defaults to CHARNESS_RUNTIME_PROFILE or adapter default.",
     )
     parser.add_argument(
+        "--state-root",
+        type=Path,
+        help="External quality runtime-state directory; defaults to <repo>/.charness/quality.",
+    )
+    parser.add_argument(
         "--advisory",
         action="store_true",
         help="Report median budget violations without failing; configuration errors still fail.",
@@ -118,6 +123,11 @@ def main() -> int:
         help="Number of recent runtime hot spots to include in the report.",
     )
     args = parser.parse_args()
+    state_root = args.state_root.resolve() if args.state_root else None
+    if state_root is not None:
+        repo_root = args.repo_root.resolve()
+        if state_root == repo_root or repo_root in state_root.parents:
+            parser.error("--state-root must be outside --repo-root")
 
     if args.suggest_budgets:
         # The output is a YAML fragment with comments carrying the evidence depth.
@@ -131,6 +141,7 @@ def main() -> int:
             load_adapter,
             runtime_budget_lib.load_signals,
             runtime_profile=args.runtime_profile,
+            state_root=state_root,
         )
         if not suggestions:
             print(
@@ -150,6 +161,7 @@ def main() -> int:
         load_adapter,
         runtime_profile=args.runtime_profile,
         top_runtime_count=max(args.top_runtime_count, 0),
+        state_root=state_root,
     )
     if not emit_selected(report, args, summarize=summarize):
         print(runtime_budget_lib.format_human(report))

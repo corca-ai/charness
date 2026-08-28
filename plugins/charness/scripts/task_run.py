@@ -38,6 +38,7 @@ _population_delta = _support._population_delta
 _resolve_base_sha = _support._resolve_base_sha
 _resolve_codex = _support._resolve_codex
 _runtime_preview = _support._runtime_preview
+_task_execution_runtime_root = _support.task_execution_runtime_root
 _snapshot_payload = _support._snapshot_payload
 _task_id = _support._task_id
 _validate_branch = _support._validate_branch
@@ -393,6 +394,7 @@ def run_task(
     command = resolved["command"]
     resolved_task_id = resolved["task_id"]
     runtime_path = resolved["runtime_path"]
+    execution_runtime_path = _task_execution_runtime_root(runtime_path, resolved_task_id)
     resolved_prepare = resolved["prepare"]
     resolved_require_change = resolved["require_change"]
     payload: dict[str, Any] = {
@@ -413,6 +415,7 @@ def run_task(
         "scope_specs": resolved["scope_specs"],
         "codex": {"executable": codex_path, "command": command[:-1] + ["<prompt>"]},
         "runtime_root": str(runtime_path),
+        "execution_runtime_root": str(execution_runtime_path),
         "result_path": str(_support.task_result_path(runtime_path, resolved_task_id)),
         "prepare": resolved_prepare,
         "require_change": resolved_require_change,
@@ -498,7 +501,7 @@ def run_task(
     child_env = os.environ.copy()
     for key in ("CHARNESS_RUNTIME_ROOT", "CHARNESS_RUNTIME_ROOT_AUTO", "CHARNESS_RUNTIME_REPO_KEY"):
         child_env.pop(key, None)
-    child_env["CHARNESS_RUNTIME_ROOT"] = str(runtime_path)
+    child_env["CHARNESS_RUNTIME_ROOT"] = str(execution_runtime_path)
     configured_env = _exec.prepare_exec_environment(resolved_target, child_env)
     log_dir = runtime_path / "task-run" / resolved_task_id
     log_dir.mkdir(parents=True, exist_ok=True)

@@ -130,6 +130,27 @@ def test_measure_startup_probes_can_record_runtime_signals(tmp_path: Path) -> No
     assert any("demo-version" in profile["commands"] for profile in summary["profiles"].values())
 
 
+def test_measure_startup_probes_records_to_explicit_external_state_root(tmp_path: Path) -> None:
+    repo = _seed_repo(tmp_path)
+    state_root = tmp_path / "task-result" / "runtime" / "quality"
+
+    result = run_script(
+        SCRIPT,
+        "--repo-root",
+        str(repo),
+        "--class",
+        "standing",
+        "--record-runtime-signals",
+        "--state-root",
+        str(state_root),
+    )
+
+    assert result.returncode == 0, result.stderr
+    summary = json.loads((state_root / "runtime-signals.json").read_text(encoding="utf-8"))
+    assert any("demo-version" in profile["commands"] for profile in summary["profiles"].values())
+    assert not (repo / ".charness" / "quality" / "runtime-signals.json").exists()
+
+
 def test_measure_startup_probes_fails_when_command_fails(tmp_path: Path) -> None:
     repo = _seed_repo(tmp_path, failing=True)
     result = run_script(SCRIPT, "--repo-root", str(repo), "--class", "standing", "--detail")

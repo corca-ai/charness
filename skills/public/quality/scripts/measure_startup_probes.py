@@ -58,6 +58,11 @@ def _parse_args() -> argparse.Namespace:
         action="store_true",
         help="Persist the latest elapsed time for each measured probe through scripts/record_quality_runtime.py.",
     )
+    parser.add_argument(
+        "--state-root",
+        type=Path,
+        help="External quality runtime-state directory for recorded samples; defaults to <repo>/.charness/quality.",
+    )
     return parser.parse_args()
 
 
@@ -67,11 +72,17 @@ def _selected_probes(probes: list[dict[str, Any]], probe_class: str) -> list[dic
     return [probe for probe in probes if probe.get("class") == probe_class]
 
 
-def _record_runtime_signal(repo_root: Path, label: str, elapsed_ms: int, status: str) -> None:
+def _record_runtime_signal(
+    repo_root: Path,
+    label: str,
+    elapsed_ms: int,
+    status: str,
+    *,
+    state_root: Path | None = None,
+) -> None:
     timestamp = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     script_path = _record_runtime_script_path(repo_root)
-    subprocess.run(
-        [
+    command = [
             "python3",
             str(script_path),
             "--repo-root",
@@ -84,7 +95,11 @@ def _record_runtime_signal(repo_root: Path, label: str, elapsed_ms: int, status:
             status,
             "--timestamp",
             timestamp,
-        ],
+        ]
+    if state_root is not None:
+        command.extend(("--state-root", str(state_root)))
+    subprocess.run(
+        command,
         cwd=repo_root,
         check=True,
         capture_output=True,
@@ -100,7 +115,13 @@ def _timeout_seconds(probe: dict[str, Any]) -> float:
     return value if value > 0 else float(DEFAULT_PROBE_TIMEOUT_SECONDS)
 
 
-def _measure_probe(repo_root: Path, probe: dict[str, Any], *, record_runtime_signals: bool) -> dict[str, Any]:
+def _measure_probe(
+    repo_root: Path,
+    probe: dict[str, Any],
+    *,
+    record_runtime_signals: bool,
+    state_root: Path | None = None,
+) -> dict[str, Any]:
     elapsed_samples: list[int] = []
     last_result: subprocess.CompletedProcess[str] | None = None
     timeout_error: subprocess.TimeoutExpired[str] | None = None
@@ -133,6 +154,7 @@ def _measure_probe(repo_root: Path, probe: dict[str, Any], *, record_runtime_sig
             str(probe["label"]),
             latest_elapsed_ms,
             "pass" if status == "ok" else "fail",
+            state_root=state_root,
         )
     payload = {
         "label": probe["label"],
@@ -159,7 +181,13 @@ def _measure_probe(repo_root: Path, probe: dict[str, Any], *, record_runtime_sig
     return payload
 
 
-def evaluate(repo_root: Path, *, probe_class: str, record_runtime_signals: bool) -> dict[str, Any]:
+def evaluate(
+    repo_root: Path,
+    *,
+    probe_class: str,
+    record_runtime_signals: bool,
+    state_root: Path | None = None,
+) -> dict[str, Any]:
     # GUARDED AT THE READ SITE. Measured on the real CLI at `00c50ed3f`: a repo declaring
     # one `startup_probes` entry under `version: 9` printed
     # `No startup probes matched the selected class.`, exit 0 -- the reader reporting the
@@ -173,7 +201,12 @@ def evaluate(repo_root: Path, *, probe_class: str, record_runtime_signals: bool)
     probes = adapter["data"].get("startup_probes", []) or []
     selected = _selected_probes(probes, probe_class)
     measured = [
-        _measure_probe(repo_root, probe, record_runtime_signals=record_runtime_signals)
+        _measure_probe(
+            repo_root,
+            probe,
+            record_runtime_signals=record_runtime_signals,
+            state_root=state_root,
+        )
         for probe in selected
     ]
     failures = [probe for probe in measured if probe["status"] != "ok"]
@@ -227,6 +260,7 @@ def main() -> int:
         args.repo_root.resolve(),
         probe_class=args.probe_class,
         record_runtime_signals=args.record_runtime_signals,
+        state_root=args.state_root.resolve() if args.state_root else None,
     )
     if not emit_selected(report, args, summarize=summarize):
         print(_format_human(report))

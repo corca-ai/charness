@@ -258,6 +258,55 @@ def test_runtime_budget_gate_fails_when_over_budget(tmp_path: Path) -> None:
     assert "exceeded" in plain_result.stderr.lower()
 
 
+def test_runtime_budget_gate_consumes_samples_from_explicit_external_state_root(
+    tmp_path: Path,
+) -> None:
+    repo = seed_runtime_budget_repo(tmp_path, budgets={"pytest": 22000}, signals=None)
+    state_root = tmp_path / "task-result" / "runtime" / "quality"
+    state_root.mkdir(parents=True)
+    (state_root / "runtime-signals.json").write_text(
+        '{"commands":{"pytest":{"latest":{"elapsed_ms":999999,"status":"pass"},'
+        '"median_recent_elapsed_ms":999999}}}\n',
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        SCRIPT,
+        "--repo-root",
+        str(repo),
+        "--detail",
+        "--runtime-profile",
+        "default",
+        "--state-root",
+        str(state_root),
+    )
+
+    assert result.returncode == 1
+    payload = yaml.safe_load(result.stdout)
+    assert payload["signals_path"] == str(state_root / "runtime-signals.json")
+    assert payload["violations"] == [
+        {
+            "label": "pytest",
+            "budget_ms": 22000,
+            "median_recent_elapsed_ms": 999999,
+            "latest_elapsed_ms": 999999,
+        }
+    ]
+    assert not (repo / ".charness" / "quality" / "runtime-signals.json").exists()
+    sized = run_script(
+        SCRIPT,
+        "--repo-root",
+        str(repo),
+        "--runtime-profile",
+        "default",
+        "--suggest-budgets",
+        "--state-root",
+        str(state_root),
+    )
+    assert sized.returncode == 0, sized.stderr
+    assert "pytest: 1400000  # n=1, worst 999999ms" in sized.stdout
+
+
 def test_runtime_budget_gate_can_report_over_budget_as_advisory(tmp_path: Path) -> None:
     signals = {"commands": {"pytest": {"latest": {"elapsed_ms": 30000, "status": "pass"}}}}
     repo = seed_runtime_budget_repo(tmp_path, budgets={"pytest": 22000}, signals=signals)

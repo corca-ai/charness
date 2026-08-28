@@ -52,13 +52,17 @@ def _load_json(path: Path) -> dict[str, Any]:
         return {}
 
 
-def load_signals(repo_root: Path) -> dict[str, Any]:
+def _quality_state_root(repo_root: Path, state_root: Path | None) -> Path:
+    return state_root.expanduser().resolve() if state_root is not None else repo_root.resolve() / SIGNALS_PATH.parent
+
+
+def load_signals(repo_root: Path, *, state_root: Path | None = None) -> dict[str, Any]:
     """Read the recorded runtime samples for a repo.
 
     Public because the sizing half of the seam needs the same samples enforcement
     reads, and a second path constant there could point at a different file.
     """
-    return _load_json(repo_root / SIGNALS_PATH)
+    return _load_json(_quality_state_root(repo_root, state_root) / SIGNALS_PATH.name)
 
 
 def _advisory_ewma(entry: dict[str, Any]) -> tuple[float | None, float | None, int | None]:
@@ -232,6 +236,7 @@ def evaluate(
     *,
     runtime_profile: str | None = None,
     top_runtime_count: int = DEFAULT_TOP_RUNTIME_COUNT,
+    state_root: Path | None = None,
 ) -> dict[str, Any]:
     adapter = load_adapter(repo_root)
     adapter_data = adapter["data"]
@@ -239,9 +244,8 @@ def evaluate(
     budgets, profile_config_errors = profile_budgets(adapter_data, selected_profile)
     runtime_budget_universe = read_budget_universe(repo_root, adapter_data)
     profile_config_errors = list(profile_config_errors) + runtime_budget_universe["errors"]
-    signals_path = repo_root / SIGNALS_PATH
-    smoothing_path = repo_root / SMOOTHING_PATH
-    signals = load_signals(repo_root)
+    signals_path, smoothing_path = [_quality_state_root(repo_root, state_root) / path.name for path in (SIGNALS_PATH, SMOOTHING_PATH)]
+    signals = load_signals(repo_root, state_root=state_root)
     smoothing = _load_json(smoothing_path)
     commands = profile_commands(signals, selected_profile) if isinstance(signals, dict) else {}
     smoothing_commands = profile_commands(smoothing, selected_profile) if isinstance(smoothing, dict) else {}

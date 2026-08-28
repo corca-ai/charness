@@ -112,8 +112,11 @@ fi
 source "$REPO_ROOT/.githooks/runtime-env.sh"
 RUN_QUALITY_RUNTIME_ROOT="$CHARNESS_RUNTIME_ROOT"
 RUN_QUALITY_RUNTIME_RECORD_ARGS=(--repo-root "$REPO_ROOT")
+RUN_QUALITY_STATE_ROOT_ARGS=()
 if [[ "${CHARNESS_RUNTIME_ROOT_AUTO:-}" != "1" ]]; then
-  RUN_QUALITY_RUNTIME_RECORD_ARGS+=(--state-root "$RUN_QUALITY_RUNTIME_ROOT/quality")
+  RUN_QUALITY_STATE_ROOT="$RUN_QUALITY_RUNTIME_ROOT/quality"
+  RUN_QUALITY_STATE_ROOT_ARGS+=(--state-root "$RUN_QUALITY_STATE_ROOT")
+  RUN_QUALITY_RUNTIME_RECORD_ARGS+=("${RUN_QUALITY_STATE_ROOT_ARGS[@]}")
 fi
 
 # Every gate command below writes to a per-phase file so concurrent checks cannot
@@ -1241,7 +1244,7 @@ else
   queue_selected "inventory-gitignore-scan-hygiene" bash -c 'echo "inventory_gitignore_scan_hygiene.py unavailable; skipping optional advisory inventory."'
 fi
 queue_selected "check-current-pointer-writes" python3 scripts/check_current_pointer_writes.py --repo-root "$REPO_ROOT" --require-empty --require-git-file-listing
-queue_selected "measure-startup-probes" python3 skills/public/quality/scripts/measure_startup_probes.py --repo-root "$REPO_ROOT" --class standing --record-runtime-signals
+queue_selected "measure-startup-probes" python3 skills/public/quality/scripts/measure_startup_probes.py --repo-root "$REPO_ROOT" --class standing --record-runtime-signals "${RUN_QUALITY_STATE_ROOT_ARGS[@]}"
 # SLOC is advisory measurement, not a quality-run write obligation. Keep its
 # detailed report in the already-isolated run directory in every mode; the
 # checked-in snapshot is refreshed explicitly through the quality-inventory
@@ -1260,9 +1263,9 @@ fi
 flush_phase || OVERALL_RC=$?
 
 if [[ -n "$RUN_QUALITY_RUNTIME_PROFILE" ]]; then
-  queue_selected "check-runtime-budget" python3 skills/public/quality/scripts/check_runtime_budget.py --repo-root "$REPO_ROOT" --runtime-profile "$RUN_QUALITY_RUNTIME_PROFILE" --advisory
+  queue_selected "check-runtime-budget" python3 skills/public/quality/scripts/check_runtime_budget.py --repo-root "$REPO_ROOT" --runtime-profile "$RUN_QUALITY_RUNTIME_PROFILE" "${RUN_QUALITY_STATE_ROOT_ARGS[@]}" --advisory
 else
-  queue_selected "check-runtime-budget" python3 skills/public/quality/scripts/check_runtime_budget.py --repo-root "$REPO_ROOT" --advisory
+  queue_selected "check-runtime-budget" python3 skills/public/quality/scripts/check_runtime_budget.py --repo-root "$REPO_ROOT" "${RUN_QUALITY_STATE_ROOT_ARGS[@]}" --advisory
 fi
 flush_phase || OVERALL_RC=$?
 
