@@ -31,6 +31,50 @@ def test_test_production_ratio_counts_source_truth_without_plugin_exports() -> N
     assert summary["test_lines"] > 0
     assert summary["ratio"] > 0
     assert "plugins" in summary["excluded_source_dirs"]
+    assert summary["skipped"]["status"] == "skipped"
+    assert summary["skipped"]["count"] == 2
+    assert summary["skipped"]["paths"] == [
+        "native/repograph/fixtures/non_utf8.py",
+        "native/repograph/fixtures/null_byte.py",
+    ]
+
+
+def test_test_production_ratio_typed_skips_unreadable_python(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    (repo / "tests").mkdir()
+    (repo / "scripts" / "app.py").write_text("print('line')\n", encoding="utf-8")
+    (repo / "scripts" / "bad.py").write_bytes(b"\xff\n")
+    (repo / "scripts" / "null_byte.py").write_bytes(b'print("before")\x00\n')
+    (repo / "tests" / "test_app.py").write_text(
+        "def test_app():\n    assert True\n", encoding="utf-8"
+    )
+    init_git_repo(
+        repo,
+        "scripts/app.py",
+        "scripts/bad.py",
+        "scripts/null_byte.py",
+        "tests/test_app.py",
+    )
+
+    summary = RATIO.summarize(repo)
+
+    assert summary["source_lines"] == 1
+    assert summary["skipped"] == {
+        "status": "skipped",
+        "reason": "unreadable-python-source",
+        "count": 2,
+        "paths": ["scripts/bad.py", "scripts/null_byte.py"],
+    }
+    result = run_script(
+        "scripts/check_test_production_ratio.py",
+        "--repo-root",
+        str(repo),
+        "--max-ratio",
+        "3",
+    )
+    assert result.returncode == 0
+    assert yaml.safe_load(result.stdout)["skipped"] == summary["skipped"]
 
 
 def test_test_production_ratio_fails_above_max() -> None:

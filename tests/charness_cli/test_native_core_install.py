@@ -12,6 +12,7 @@ import pytest
 
 from scripts import native_core_lib
 from scripts.native_core_resolution_lib import native_core_doctor_payload, native_core_path
+from tests.repo_copy import REPO_COPY_IGNORE
 
 from .support import CLI, build_test_path, make_fake_claude, make_support_sync_fixture, run_cli
 
@@ -264,7 +265,7 @@ def test_main_state_behavior_is_inert_when_declaration_is_absent(
         CLI.parent,
         repo,
         symlinks=True,
-        ignore=shutil.ignore_patterns(".git", "charness-artifacts", ".pytest_cache", "__pycache__", ".ruff_cache"),
+        ignore=REPO_COPY_IGNORE,
     )
     home = tmp_path / "home"
     env = _native_env(home)

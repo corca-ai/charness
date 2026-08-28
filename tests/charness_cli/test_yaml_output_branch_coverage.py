@@ -24,6 +24,14 @@ def _doctor_payload() -> dict[str, object]:
         "codex_source_version": "1.0.9",
         "codex_cache_manifest_version": "1.0.9",
         "codex_source_cache_drift": False,
+        "native_core": {
+            "status": "not-distributed",
+            "provenance": None,
+            "version": "1.0.9",
+            "tuple": "x86_64-unknown-linux-gnu",
+            "reason": "native_core declaration is absent",
+            "message": "This checkout does not declare a native core; the Python surface remains active.",
+        },
         "raw_probe_dump": "full host probe evidence",
     }
 
@@ -79,6 +87,7 @@ def test_init_update_and_doctor_emit_yaml_on_all_public_paths(tmp_path: Path, mo
     assert init_output["response_level"] == "summary"
     assert init_output["checkout"]["repo_root"] == str(repo_root)
     assert init_output["cli_reexec"]["status"] == "reexecuted"
+    assert init_output["native_core"]["status"] == "not-distributed"
     assert "raw_install_trace" not in init_output
 
     args.detail = True

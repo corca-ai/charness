@@ -10,6 +10,7 @@ import tarfile
 from pathlib import Path
 
 import pytest
+import yaml
 
 from scripts.native_core_resolution_lib import host_tuple
 
@@ -82,6 +83,7 @@ def test_build_packages_binary_checksums_and_metadata_with_fake_cargo(tmp_path: 
     result = _run_build(repo, output, tmp_path)
 
     assert result.returncode == 0, result.stderr
+    assert yaml.safe_load(result.stdout)["version"] == "1.2.3"
     tuple_name = host_tuple()
     archive = output / f"repograph-v1.2.3-{tuple_name}.tar.gz"
     assert archive.is_file()
@@ -119,6 +121,8 @@ def test_build_allows_ignored_cargo_target_and_default_output_is_external(
     repo = _seed_repo(tmp_path)
     runtime = tmp_path / "runtime"
     monkeypatch.setenv("CHARNESS_RUNTIME_ROOT", str(runtime))
+    monkeypatch.delenv("CHARNESS_RUNTIME_ROOT_AUTO", raising=False)
+    monkeypatch.delenv("CHARNESS_RUNTIME_REPO_KEY", raising=False)
     cargo_bin = _fake_tool_path(tmp_path, "cargo")
     rustc_bin = _fake_tool_path(tmp_path, "rustc")
     environment = {

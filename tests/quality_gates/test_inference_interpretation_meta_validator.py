@@ -120,6 +120,22 @@ def test_valid_repo_passes(tmp_path: Path) -> None:
     assert any("Validated advisory-interpretation contract" in m for m in messages)
 
 
+def test_unreadable_python_source_is_a_typed_skip(tmp_path: Path) -> None:
+    repo, registry = _make_repo(tmp_path)
+    (repo / "scripts/non_utf8.py").write_bytes(b"\xff\n")
+    (repo / "scripts/null_byte.py").write_bytes(b'print("before")\x00\n')
+
+    code, messages = _evaluate(repo, registry)
+
+    assert code == 0, messages
+    assert any(
+        "status=skipped reason=unreadable-python-source count=2" in message
+        and "scripts/non_utf8.py" in message
+        and "scripts/null_byte.py" in message
+        for message in messages
+    )
+
+
 # --- negative guards (the cardinal value of #330) --------------------------------
 
 
@@ -261,6 +277,7 @@ def test_live_repo_contract_holds() -> None:
     code, stdout, stderr = _run_main("--repo-root", str(ROOT), "--require-git-file-listing")
     assert code == 0, stderr
     assert "Validated advisory-interpretation contract across 12 inference-layer surface(s)" in stdout
+    assert "status=skipped reason=unreadable-python-source count=2" in stdout
 
 
 def test_live_registry_is_structurally_valid() -> None:

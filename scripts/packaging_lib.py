@@ -41,6 +41,7 @@ PLUGIN_README_SOURCE_ONLY_PREFIXES = (
 
 SOURCE_ONLY_PLUGIN_SCRIPTS = (
     "build_native_artifact.py",
+    "check_native_release_asset.py",
     "suggest_public_skill_validation.py",
     "validate_public_skill_dogfood.py",
     "validate_public_skill_validation.py",

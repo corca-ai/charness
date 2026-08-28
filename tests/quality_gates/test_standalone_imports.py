@@ -325,6 +325,8 @@ def test_every_tracked_module_is_either_discovered_or_deliberately_excluded() ->
         # mirror while still printing `checked all N`.
         "plugins/",
         "docs/",           # illustrative snippets, not importable repo modules
+        # Rust-crate fixture/parity corpus; not standalone-importable repo modules; owned by the repograph test suite.
+        "native/",
         # Evaluator OUTPUT fixtures: files a delegated run produced as its artifact, not
         # repo modules anything imports. They are checked-in evidence, not code.
         "charness-artifacts/",

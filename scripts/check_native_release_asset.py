@@ -6,7 +6,6 @@ from __future__ import annotations
 import argparse
 import importlib.machinery
 import importlib.util
-import json
 import sys
 from pathlib import Path
 from types import ModuleType
@@ -23,6 +22,7 @@ from scripts.native_core_resolution_lib import (  # noqa: E402
     read_native_declaration,
     repository_url,
 )
+from scripts.yaml_output import emit_yaml  # noqa: E402
 
 
 class ReleaseAssetCheckError(RuntimeError):
@@ -141,7 +141,7 @@ def main() -> int:
         result = check_native_release_asset(args.repo_root)
     except ReleaseAssetCheckError as exc:
         result = {"status": "fail", "reason": str(exc)}
-    print(json.dumps(result, ensure_ascii=False, indent=2))
+    emit_yaml(result)
     return 0 if result["status"] in {"pass", "not-applicable"} else 1
 
 

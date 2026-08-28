@@ -31,6 +31,7 @@ IGNORED_DIRS = {
 }
 DEFAULT_MAX_RATIO = 1.0
 SUPPORTED_ENGINES = ("splitlines", "tokei")
+SKIPPED_PYTHON_REASON = "unreadable-python-source"
 
 
 class RatioError(Exception):
@@ -53,8 +54,18 @@ def python_files(root: Path, *, exclude_dirs: set[str], require_git: bool = Fals
     return sorted(files)
 
 
-def count_lines(paths: list[Path]) -> int:
-    return sum(len(path.read_text(encoding="utf-8").splitlines()) for path in paths)
+def count_lines(paths: list[Path], *, skipped_paths: list[Path] | None = None) -> int:
+    lines = 0
+    for path in paths:
+        try:
+            contents = path.read_text(encoding="utf-8")
+            if "\x00" in contents:
+                raise ValueError("Python source contains a null byte")
+            lines += len(contents.splitlines())
+        except (OSError, UnicodeDecodeError, ValueError):
+            if skipped_paths is not None:
+                skipped_paths.append(path)
+    return lines
 
 
 def _splitlines_summary(repo_root: Path, *, require_git: bool = False) -> dict[str, object]:
@@ -65,13 +76,17 @@ def _splitlines_summary(repo_root: Path, *, require_git: bool = False) -> dict[s
         if tests_root.is_dir()
         else []
     )
-    source_lines = count_lines(source_files)
-    test_lines = count_lines(test_files)
+    skipped_paths: list[Path] = []
+    source_lines = count_lines(source_files, skipped_paths=skipped_paths)
+    test_lines = count_lines(test_files, skipped_paths=skipped_paths)
     return {
         "source_lines": source_lines,
         "test_lines": test_lines,
         "source_file_count": len(source_files),
         "test_file_count": len(test_files),
+        "skipped_paths": sorted(
+            path.relative_to(repo_root).as_posix() for path in skipped_paths
+        ),
     }
 
 
@@ -134,6 +149,12 @@ def summarize(repo_root: Path, *, engine: str = "splitlines", require_git: bool 
         "source_file_count": counts["source_file_count"],
         "test_file_count": counts["test_file_count"],
         "excluded_source_dirs": sorted(IGNORED_DIRS),
+        "skipped": {
+            "status": "skipped",
+            "reason": SKIPPED_PYTHON_REASON,
+            "count": len(counts.get("skipped_paths", [])),
+            "paths": counts.get("skipped_paths", []),
+        },
     }
 
 

@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Sequence
 
 from runtime_bootstrap import import_repo_module, runtime_root
+from yaml_output import emit_yaml
 
 VERSION_RE = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?$")
 CRATE_RELATIVE_PATH = Path("native") / "repograph"
@@ -208,7 +209,7 @@ def main() -> int:
         metadata = build_native_artifact(args.repo_root, out_dir=args.out_dir)
     except BuildError as exc:
         parser.error(str(exc))
-    print(json.dumps(metadata, ensure_ascii=False, indent=2))
+    emit_yaml(metadata)
     return 0
 
 
