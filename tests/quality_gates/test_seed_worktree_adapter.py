@@ -9,7 +9,6 @@ Covers:
 
 from __future__ import annotations
 
-import importlib.util
 import json
 import subprocess
 import sys
@@ -17,17 +16,14 @@ from pathlib import Path
 from string import Template
 
 import pytest
+from tests.quality_gates.seeding_support import load_module
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "skills" / "public" / "setup" / "scripts" / "seed_worktree_adapter.py"
 LIB_PATH = ROOT / "skills" / "public" / "setup" / "scripts" / "seed_worktree_adapter_lib.py"
 TEMPLATE_DIR = ROOT / "skills" / "public" / "setup" / "scripts" / "templates"
 
-_spec = importlib.util.spec_from_file_location("seed_worktree_adapter_lib", LIB_PATH)
-assert _spec is not None and _spec.loader is not None
-LIB = importlib.util.module_from_spec(_spec)
-sys.modules[_spec.name] = LIB
-_spec.loader.exec_module(LIB)
+LIB = load_module("seed_worktree_adapter_lib", LIB_PATH, register=True)
 
 
 def _run(cwd: Path, *args: str) -> subprocess.CompletedProcess[str]:

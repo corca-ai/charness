@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import subprocess
 from pathlib import Path
 
@@ -10,6 +9,7 @@ import yaml
 from tests.script_main import load_script_module, run_loaded_script_main
 
 from .support import ROOT, run_script
+from .seeding_support import write_surface
 
 # `triggered` is a VERDICT KEY: present only when the probe reached a real answer, and
 # `state` is key #1 of every payload. These cases pin the exit contract as much as the
@@ -211,24 +211,11 @@ def test_retro_auto_trigger_commit_range_survives_clean_tree(tmp_path: Path) -> 
     repo = tmp_path / "repo"
     repo.mkdir()
     _write_adapter(repo, "auto_session_trigger_surfaces:", "  - release-helper")
-    (repo / ".agents" / "surfaces.json").write_text(
-        json.dumps(
-            {
-                "version": 1,
-                "surfaces": [
-                    {
-                        "surface_id": "release-helper",
-                        "description": "release helper scripts",
-                        "source_paths": ["skills/public/release/**"],
-                        "derived_paths": [],
-                        "sync_commands": [],
-                        "verify_commands": [],
-                        "notes": [],
-                    }
-                ],
-            }
-        ),
-        encoding="utf-8",
+    write_surface(
+        repo,
+        "release-helper",
+        "release helper scripts",
+        ["skills/public/release/**"],
     )
     helper_path = repo / "skills" / "public" / "release" / "scripts" / "publish_release.py"
     helper_path.parent.mkdir(parents=True)
@@ -275,24 +262,12 @@ def test_retro_auto_trigger_commit_range_survives_clean_tree(tmp_path: Path) -> 
 def test_retro_auto_trigger_fails_loud_on_unresolved_surface_id(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     _write_adapter(repo, "auto_session_trigger_surfaces:", "  - release-packagng")
-    (repo / ".agents" / "surfaces.json").write_text(
-        json.dumps(
-            {
-                "version": 1,
-                "surfaces": [
-                    {
-                        "surface_id": "release-packaging",
-                        "description": "release packaging surface",
-                        "source_paths": ["scripts/release/**"],
-                        "derived_paths": ["dist/**"],
-                        "sync_commands": [],
-                        "verify_commands": [],
-                        "notes": [],
-                    }
-                ],
-            }
-        ),
-        encoding="utf-8",
+    write_surface(
+        repo,
+        "release-packaging",
+        "release packaging surface",
+        ["scripts/release/**"],
+        derived_paths=["dist/**"],
     )
 
     result = run_script(

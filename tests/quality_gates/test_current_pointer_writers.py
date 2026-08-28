@@ -13,7 +13,6 @@ a subject noun.
 from __future__ import annotations
 
 import hashlib
-import importlib.util
 import os
 import sys
 from datetime import datetime
@@ -28,21 +27,13 @@ from tests.script_loader import load_script_module
 from tests.script_main import run_loaded_script_main
 
 from .support import ROOT, run_script
+from .seeding_support import load_module
 
-WRITER_SPEC = importlib.util.spec_from_file_location(
-    "current_pointer_writer_lib", ROOT / "scripts" / "current_pointer_writer_lib.py"
-)
-assert WRITER_SPEC is not None and WRITER_SPEC.loader is not None
-WRITER = importlib.util.module_from_spec(WRITER_SPEC)
-WRITER_SPEC.loader.exec_module(WRITER)
-
-RELEASE_SPEC = importlib.util.spec_from_file_location(
+WRITER = load_module("current_pointer_writer_lib", ROOT / "scripts" / "current_pointer_writer_lib.py")
+RELEASE_ARTIFACT = load_module(
     "publish_release_artifact",
     ROOT / "skills" / "public" / "release" / "scripts" / "publish_release_artifact.py",
 )
-assert RELEASE_SPEC is not None and RELEASE_SPEC.loader is not None
-RELEASE_ARTIFACT = importlib.util.module_from_spec(RELEASE_SPEC)
-RELEASE_SPEC.loader.exec_module(RELEASE_ARTIFACT)
 
 HITL_SYNC_REVIEW_ARTIFACT = load_script_module(
     "tests.quality_gates.current_pointer_hitl_sync_review_artifact",

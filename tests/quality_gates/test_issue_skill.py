@@ -15,6 +15,12 @@ from tests.quality_gates.support import (
     write_argv_logging_fake,
     write_issue_adapter_with_backend,
 )
+from tests.quality_gates.seeding_support import (
+    close_comment_args,
+    environment_with_path,
+    write_issue_close_fake,
+    write_json_executable,
+)
 
 ISSUE_SKILL = (ROOT / "skills" / "public" / "issue" / "SKILL.md").read_text(encoding="utf-8")
 
@@ -200,7 +206,7 @@ def test_issue_read_uses_comments_in_default_gh_view(tmp_path: Path) -> None:
         "42",
         "--repo-root",
         str(tmp_path),
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_LOG": str(log)},
+        env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin", GH_LOG=str(log)),
     )
 
     assert result.returncode == 0, result.stderr
@@ -283,33 +289,14 @@ def test_issue_close_with_comment_runs_adapter_comment_then_close(tmp_path: Path
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     log = tmp_path / "gh-log.json"
-    write_argv_logging_fake(
-        bin_dir,
-        "gh",
-        "GH_LOG",
-        [
-            "if 'comment' in sys.argv: print('commented')",
-            "if 'close' in sys.argv: print('closed')",
-            "if 'view' in sys.argv: print(json.dumps({'number': 42, 'state': 'CLOSED', 'url': 'https://github.com/corca-ai/charness/issues/42'}))",
-        ],
-    )
+    write_issue_close_fake(bin_dir)
     body = tmp_path / "body.md"
     body.write_text(_CLOSE_BODY.format(text="Multi-line\nclose comment."), encoding="utf-8")
 
     result = run_script(
         SCRIPT,
-        "close-with-comment",
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "42",
-        "--body-file",
-        str(body),
-        "--classification",
-        "question",
-        "--repo-root",
-        str(tmp_path),
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_LOG": str(log)},
+        *close_comment_args(tmp_path, body),
+        env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin", GH_LOG=str(log)),
     )
 
     assert result.returncode == 0, result.stderr
@@ -327,38 +314,17 @@ def test_issue_close_with_comment_runs_adapter_comment_then_close(tmp_path: Path
 def test_issue_close_with_comment_fails_when_final_state_remains_open(tmp_path: Path) -> None:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
-    fake = bin_dir / "gh"
-    fake.write_text(
-        "\n".join(
-            [
-                "#!/usr/bin/env python3",
-                "import json, sys",
-                "if 'comment' in sys.argv: print('commented')",
-                "if 'close' in sys.argv: print('closed')",
-                "if 'view' in sys.argv: print(json.dumps({'number': 42, 'state': 'OPEN', 'url': 'https://github.com/corca-ai/charness/issues/42'}))",
-                "",
-            ]
-        ),
-        encoding="utf-8",
+    write_json_executable(
+        bin_dir / "gh",
+        {"number": 42, "state": "OPEN", "url": "https://github.com/corca-ai/charness/issues/42"},
     )
-    fake.chmod(0o755)
     body = tmp_path / "body.md"
     body.write_text(_CLOSE_BODY.format(text="Body."), encoding="utf-8")
 
     result = run_script(
         SCRIPT,
-        "close-with-comment",
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "42",
-        "--body-file",
-        str(body),
-        "--classification",
-        "question",
-        "--repo-root",
-        str(tmp_path),
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin"},
+        *close_comment_args(tmp_path, body),
+        env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin"),
     )
 
     assert result.returncode == 2, result.stderr
@@ -395,18 +361,8 @@ def test_issue_close_with_comment_surfaces_partial_state_when_close_fails(tmp_pa
 
     result = run_script(
         SCRIPT,
-        "close-with-comment",
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "5",
-        "--body-file",
-        str(body),
-        "--classification",
-        "question",
-        "--repo-root",
-        str(tmp_path),
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin"},
+        *close_comment_args(tmp_path, body, number=5),
+        env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin"),
     )
 
     assert result.returncode == 2, result.stderr
@@ -471,18 +427,8 @@ def test_issue_close_with_comment_uses_adapter_template(tmp_path: Path) -> None:
 
     result = run_script(
         SCRIPT,
-        "close-with-comment",
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "7",
-        "--body-file",
-        str(body),
-        "--classification",
-        "question",
-        "--repo-root",
-        str(tmp_path),
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "ACME_LOG": str(log)},
+        *close_comment_args(tmp_path, body, number=7),
+        env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin", ACME_LOG=str(log)),
     )
 
     assert result.returncode == 0, result.stderr
@@ -524,18 +470,8 @@ def test_issue_close_with_comment_requires_adapter_view_template(tmp_path: Path)
 
     result = run_script(
         SCRIPT,
-        "close-with-comment",
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "7",
-        "--body-file",
-        str(body),
-        "--classification",
-        "question",
-        "--repo-root",
-        str(tmp_path),
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin"},
+        *close_comment_args(tmp_path, body, number=7),
+        env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin"),
     )
 
     assert result.returncode == 2, result.stderr
@@ -603,18 +539,8 @@ def test_issue_close_with_comment_substitutes_reason_when_adapter_comment_uses_i
 
     result = run_script(
         SCRIPT,
-        "close-with-comment",
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "11",
-        "--body-file",
-        str(body),
-        "--classification",
-        "question",
-        "--repo-root",
-        str(tmp_path),
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "ACME_LOG": str(log)},
+        *close_comment_args(tmp_path, body, number=11),
+        env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin", ACME_LOG=str(log)),
     )
 
     assert result.returncode == 0, result.stderr
@@ -677,18 +603,8 @@ def test_issue_close_with_comment_rejects_adapter_template_with_unknown_placehol
 
     result = run_script(
         SCRIPT,
-        "close-with-comment",
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "13",
-        "--body-file",
-        str(body),
-        "--classification",
-        "question",
-        "--repo-root",
-        str(tmp_path),
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin"},
+        *close_comment_args(tmp_path, body, number=13),
+        env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin"),
     )
 
     assert result.returncode != 0, result.stdout

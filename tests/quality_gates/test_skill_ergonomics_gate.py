@@ -8,6 +8,7 @@ from types import ModuleType
 import yaml
 
 from .support import ROOT, run_loaded_script_main
+from .seeding_support import write_quality_adapter, write_skill, write_text
 
 SCRIPT = "skills/public/quality/scripts/validate_skill_ergonomics.py"
 
@@ -57,65 +58,41 @@ def _emitted(result) -> dict[str, object]:
 
 def _seed_repo(tmp_path: Path, *, rules: list[str]) -> Path:
     repo = tmp_path / "repo"
-    (repo / ".agents").mkdir(parents=True)
-    (repo / "skills" / "public" / "demo" / "references").mkdir(parents=True)
-    (repo / "skills" / "public" / "steady" / "references").mkdir(parents=True)
-    adapter_lines = [
-        "version: 1",
-        "repo: testrepo",
-        "output_dir: charness-artifacts/quality",
-    ]
+    adapter_lines = []
     if rules:
         adapter_lines.append("skill_ergonomics_gate_rules:")
         for rule in rules:
             adapter_lines.append(f"  - {rule}")
     else:
         adapter_lines.append("skill_ergonomics_gate_rules: []")
-    (repo / ".agents" / "quality-adapter.yaml").write_text("\n".join(adapter_lines) + "\n", encoding="utf-8")
-    (repo / "skills" / "public" / "demo" / "references" / "note.md").write_text("# Note\n", encoding="utf-8")
-    (repo / "skills" / "public" / "steady" / "references" / "note.md").write_text("# Note\n", encoding="utf-8")
-    (repo / "skills" / "public" / "demo" / "SKILL.md").write_text(
-        "\n".join(
-            [
-                "---",
-                "name: demo",
-                'description: "Demo skill."',
-                "---",
-                "",
-                "# Demo",
-                "",
-                "Mode choice matters in this mode-heavy workflow.",
-                "Another mode note keeps the mode pressure explicit.",
-                "This option should probably be inference instead of an option.",
-                "A second option mention keeps option pressure visible.",
-                "",
-                "## References",
-                "",
-                "- `references/note.md`",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
+    write_quality_adapter(repo, adapter_lines, repo_name="testrepo")
+    write_text(repo / "skills" / "public" / "demo" / "references" / "note.md", "# Note\n")
+    write_text(repo / "skills" / "public" / "steady" / "references" / "note.md", "# Note\n")
+    write_skill(
+        repo,
+        [
+            "Mode choice matters in this mode-heavy workflow.",
+            "Another mode note keeps the mode pressure explicit.",
+            "This option should probably be inference instead of an option.",
+            "A second option mention keeps option pressure visible.",
+            "",
+            "## References",
+            "",
+            "- `references/note.md`",
+        ],
     )
-    (repo / "skills" / "public" / "steady" / "SKILL.md").write_text(
-        "\n".join(
-            [
-                "---",
-                "name: steady",
-                'description: "Steady skill."',
-                "---",
-                "",
-                "# Steady",
-                "",
-                "Use this when the repo needs a stable skill.",
-                "",
-                "## References",
-                "",
-                "- `references/note.md`",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
+    write_skill(
+        repo,
+        [
+            "Use this when the repo needs a stable skill.",
+            "",
+            "## References",
+            "",
+            "- `references/note.md`",
+        ],
+        skill_id="steady",
+        description="Steady skill.",
+        title="Steady",
     )
     return repo
 
@@ -191,39 +168,21 @@ def test_skill_ergonomics_gate_fails_when_opted_in_rule_matches(tmp_path: Path) 
 
 def test_skill_ergonomics_gate_fails_on_issue_and_dated_incident_rules(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    (repo / ".agents").mkdir(parents=True)
-    skill_dir = repo / "skills" / "public" / "demo"
-    skill_dir.mkdir(parents=True)
-    (repo / ".agents" / "quality-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: testrepo",
-                "output_dir: charness-artifacts/quality",
-                "skill_ergonomics_gate_rules:",
-                "  - issue_anchor_in_core",
-                "  - dated_incident_in_core",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
+    write_quality_adapter(
+        repo,
+        [
+            "skill_ergonomics_gate_rules:",
+            "  - issue_anchor_in_core",
+            "  - dated_incident_in_core",
+        ],
+        repo_name="testrepo",
     )
-    (skill_dir / "SKILL.md").write_text(
-        "\n".join(
-            [
-                "---",
-                "name: demo",
-                'description: "Demo skill."',
-                "---",
-                "",
-                "# Demo",
-                "",
-                "The 2026-05-28 routing miss is the reason this workflow owns next-step routing.",
-                "Preserve the active guard from #123.",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
+    write_skill(
+        repo,
+        [
+            "The 2026-05-28 routing miss is the reason this workflow owns next-step routing.",
+            "Preserve the active guard from #123.",
+        ],
     )
 
     payload = _evaluate(repo)
@@ -239,29 +198,18 @@ def test_skill_ergonomics_gate_fails_on_package_issue_anchor_rule_for_support_sk
     tmp_path: Path,
 ) -> None:
     repo = tmp_path / "repo"
-    (repo / ".agents").mkdir(parents=True)
-    skill_dir = repo / "skills" / "support" / "demo" / "references"
-    skill_dir.mkdir(parents=True)
-    (repo / ".agents" / "quality-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: testrepo",
-                "output_dir: charness-artifacts/quality",
-                "skill_ergonomics_gate_rules:",
-                "  - portable_package_issue_anchor",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
+    write_quality_adapter(
+        repo,
+        [
+            "skill_ergonomics_gate_rules:",
+            "  - portable_package_issue_anchor",
+        ],
+        repo_name="testrepo",
     )
-    (repo / "skills" / "support" / "demo" / "SKILL.md").write_text(
-        "---\nname: demo\ndescription: \"Demo.\"\n---\n\n# Demo\n",
-        encoding="utf-8",
-    )
-    (skill_dir / "history.md").write_text(
+    skill_path = write_skill(repo, [], package="support", description="Demo.")
+    write_text(
+        skill_path.parent / "references" / "history.md",
         "# History\n\nThis support package still names corca-ai/charness#123.\n",
-        encoding="utf-8",
     )
 
     payload = _evaluate(repo)
@@ -275,32 +223,20 @@ def test_skill_ergonomics_gate_fails_on_package_text_quality_rules(
     tmp_path: Path,
 ) -> None:
     repo = tmp_path / "repo"
-    (repo / ".agents").mkdir(parents=True)
-    skill_dir = repo / "skills" / "public" / "demo"
-    references_dir = skill_dir / "references"
-    references_dir.mkdir(parents=True)
-    (repo / ".agents" / "quality-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: testrepo",
-                "output_dir: charness-artifacts/quality",
-                "skill_ergonomics_gate_rules:",
-                "  - portable_package_dated_incident",
-                "  - portable_package_host_surface_reference",
-                "  - reference_discoverability_gap",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
+    write_quality_adapter(
+        repo,
+        [
+            "skill_ergonomics_gate_rules:",
+            "  - portable_package_dated_incident",
+            "  - portable_package_host_surface_reference",
+            "  - reference_discoverability_gap",
+        ],
+        repo_name="testrepo",
     )
-    (references_dir / "hidden.md").write_text(
+    skill_path = write_skill(repo, ["Codex settings.json owns this host behavior."], description="Demo.")
+    write_text(
+        skill_path.parent / "references" / "hidden.md",
         "# Hidden\n\nA 2026-05-28 incident note belongs outside portable prose.\n",
-        encoding="utf-8",
-    )
-    (skill_dir / "SKILL.md").write_text(
-        "---\nname: demo\ndescription: \"Demo.\"\n---\n\n# Demo\n\nCodex settings.json owns this host behavior.\n",
-        encoding="utf-8",
     )
 
     payload = _evaluate(repo)
@@ -317,40 +253,23 @@ def test_skill_ergonomics_gate_keeps_existing_rules_public_only_for_support_skil
     tmp_path: Path,
 ) -> None:
     repo = tmp_path / "repo"
-    (repo / ".agents").mkdir(parents=True)
-    skill_dir = repo / "skills" / "support" / "demo"
-    skill_dir.mkdir(parents=True)
-    (repo / ".agents" / "quality-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: testrepo",
-                "output_dir: charness-artifacts/quality",
-                "skill_ergonomics_gate_rules:",
-                "  - mode_option_pressure_terms",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
+    write_quality_adapter(
+        repo,
+        [
+            "skill_ergonomics_gate_rules:",
+            "  - mode_option_pressure_terms",
+        ],
+        repo_name="testrepo",
     )
-    (skill_dir / "SKILL.md").write_text(
-        "\n".join(
-            [
-                "---",
-                "name: demo",
-                'description: "Demo skill."',
-                "---",
-                "",
-                "# Demo",
-                "",
-                "Mode choice matters in this mode-heavy workflow.",
-                "Another mode note keeps the mode pressure explicit.",
-                "This option should probably be inference instead of an option.",
-                "A second option mention keeps option pressure visible.",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
+    write_skill(
+        repo,
+        [
+            "Mode choice matters in this mode-heavy workflow.",
+            "Another mode note keeps the mode pressure explicit.",
+            "This option should probably be inference instead of an option.",
+            "A second option mention keeps option pressure visible.",
+        ],
+        package="support",
     )
 
     payload = _evaluate(repo)
@@ -388,48 +307,29 @@ def test_skill_ergonomics_gate_fails_on_invalid_rule_adapter_error(tmp_path: Pat
 
 def test_skill_ergonomics_gate_ignores_mode_option_terms_inside_fences(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    (repo / ".agents").mkdir(parents=True)
-    skill_dir = repo / "skills" / "public" / "demo"
-    references_dir = skill_dir / "references"
-    references_dir.mkdir(parents=True)
-    (repo / ".agents" / "quality-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: testrepo",
-                "output_dir: charness-artifacts/quality",
-                "skill_ergonomics_gate_rules:",
-                "  - mode_option_pressure_terms",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
+    write_quality_adapter(
+        repo,
+        [
+            "skill_ergonomics_gate_rules:",
+            "  - mode_option_pressure_terms",
+        ],
+        repo_name="testrepo",
     )
-    (references_dir / "note.md").write_text("# Note\n", encoding="utf-8")
-    (skill_dir / "SKILL.md").write_text(
-        "\n".join(
-            [
-                "---",
-                "name: demo",
-                'description: "Demo skill."',
-                "---",
-                "",
-                "# Demo",
-                "",
-                "## Bootstrap",
-                "",
-                "```bash",
-                "echo mode option mode option",
-                "```",
-                "",
-                "## References",
-                "",
-                "- `references/note.md`",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
+    skill_path = write_skill(
+        repo,
+        [
+            "## Bootstrap",
+            "",
+            "```bash",
+            "echo mode option mode option",
+            "```",
+            "",
+            "## References",
+            "",
+            "- `references/note.md`",
+        ],
     )
+    write_text(skill_path.parent / "references" / "note.md", "# Note\n")
     payload = _evaluate(repo)
     assert _returncode(payload) == 0
     assert payload["violations"] == []
@@ -605,41 +505,18 @@ def test_skill_ergonomics_gate_skips_vendored_skills(tmp_path: Path) -> None:
 
 def test_skill_ergonomics_gate_fails_when_opted_in_progressive_disclosure_risk_matches(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    (repo / ".agents").mkdir(parents=True)
-    skill_dir = repo / "skills" / "public" / "demo"
-    skill_dir.mkdir(parents=True)
-    (repo / ".agents" / "quality-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: testrepo",
-                "output_dir: charness-artifacts/quality",
-                "skill_ergonomics_gate_rules:",
-                "  - progressive_disclosure_risk",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
+    write_quality_adapter(
+        repo,
+        [
+            "skill_ergonomics_gate_rules:",
+            "  - progressive_disclosure_risk",
+        ],
+        repo_name="testrepo",
     )
     filler = [f"filler line {index}" for index in range(90)]
-    (skill_dir / "SKILL.md").write_text(
-        "\n".join(
-            [
-                "---",
-                "name: demo",
-                'description: "Demo skill."',
-                "---",
-                "",
-                "# Demo",
-                "",
-                *filler,
-                "",
-                "## References",
-                "",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
+    write_skill(
+        repo,
+        [*filler, "", "## References", ""],
     )
     payload = _evaluate(repo)
     assert _returncode(payload) == 1
@@ -649,44 +526,20 @@ def test_skill_ergonomics_gate_fails_when_opted_in_progressive_disclosure_risk_m
 
 def test_skill_ergonomics_gate_fails_when_opted_in_long_core_matches(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    (repo / ".agents").mkdir(parents=True)
-    skill_dir = repo / "skills" / "public" / "demo" / "references"
-    skill_dir.mkdir(parents=True)
-    (skill_dir / "note.md").write_text("# Note\n", encoding="utf-8")
-    (repo / ".agents" / "quality-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: testrepo",
-                "output_dir: charness-artifacts/quality",
-                "skill_ergonomics_gate_rules:",
-                "  - long_core",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
+    write_quality_adapter(
+        repo,
+        [
+            "skill_ergonomics_gate_rules:",
+            "  - long_core",
+        ],
+        repo_name="testrepo",
     )
     filler = [f"filler line {index}" for index in range(170)]
-    (repo / "skills" / "public" / "demo" / "SKILL.md").write_text(
-        "\n".join(
-            [
-                "---",
-                "name: demo",
-                'description: "Demo skill."',
-                "---",
-                "",
-                "# Demo",
-                "",
-                *filler,
-                "",
-                "## References",
-                "",
-                "- `references/note.md`",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
+    skill_path = write_skill(
+        repo,
+        [*filler, "", "## References", "", "- `references/note.md`"],
     )
+    write_text(skill_path.parent / "references" / "note.md", "# Note\n")
 
     payload = _evaluate(repo)
     assert _returncode(payload) == 1
@@ -695,49 +548,31 @@ def test_skill_ergonomics_gate_fails_when_opted_in_long_core_matches(tmp_path: P
 
 def test_skill_ergonomics_gate_fails_when_opted_in_code_fence_rule_matches(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    (repo / ".agents").mkdir(parents=True)
-    skill_dir = repo / "skills" / "public" / "demo"
-    skill_dir.mkdir(parents=True)
-    (repo / ".agents" / "quality-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: testrepo",
-                "output_dir: charness-artifacts/quality",
-                "skill_ergonomics_gate_rules:",
-                "  - code_fence_without_helper_script",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
+    write_quality_adapter(
+        repo,
+        [
+            "skill_ergonomics_gate_rules:",
+            "  - code_fence_without_helper_script",
+        ],
+        repo_name="testrepo",
     )
-    (skill_dir / "SKILL.md").write_text(
-        "\n".join(
-            [
-                "---",
-                "name: demo",
-                'description: "Demo skill."',
-                "---",
-                "",
-                "# Demo",
-                "",
-                "## Bootstrap",
-                "",
-                "```bash",
-                "echo first",
-                "```",
-                "",
-                "```bash",
-                "echo second",
-                "```",
-                "",
-                "```bash",
-                "echo third",
-                "```",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
+    write_skill(
+        repo,
+        [
+            "## Bootstrap",
+            "",
+            "```bash",
+            "echo first",
+            "```",
+            "",
+            "```bash",
+            "echo second",
+            "```",
+            "",
+            "```bash",
+            "echo third",
+            "```",
+        ],
     )
 
     payload = _evaluate(repo)
@@ -747,43 +582,25 @@ def test_skill_ergonomics_gate_fails_when_opted_in_code_fence_rule_matches(tmp_p
 
 def test_skill_ergonomics_gate_fails_when_opted_in_portable_helper_rule_matches(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    (repo / ".agents").mkdir(parents=True)
-    skill_dir = repo / "skills" / "public" / "demo" / "references"
-    skill_dir.mkdir(parents=True)
-    (skill_dir / "note.md").write_text("# Note\n", encoding="utf-8")
-    (repo / ".agents" / "quality-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: testrepo",
-                "output_dir: charness-artifacts/quality",
-                "skill_ergonomics_gate_rules:",
-                "  - portable_helper_path_ambiguity",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
+    write_quality_adapter(
+        repo,
+        [
+            "skill_ergonomics_gate_rules:",
+            "  - portable_helper_path_ambiguity",
+        ],
+        repo_name="testrepo",
     )
-    (repo / "skills" / "public" / "demo" / "SKILL.md").write_text(
-        "\n".join(
-            [
-                "---",
-                "name: demo",
-                'description: "Demo skill."',
-                "---",
-                "",
-                "# Demo",
-                "",
-                "Use `scripts/helper.py` before stopping.",
-                "",
-                "## References",
-                "",
-                "- `references/note.md`",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
+    skill_path = write_skill(
+        repo,
+        [
+            "Use `scripts/helper.py` before stopping.",
+            "",
+            "## References",
+            "",
+            "- `references/note.md`",
+        ],
     )
+    write_text(skill_path.parent / "references" / "note.md", "# Note\n")
 
     payload = _evaluate(repo)
     assert _returncode(payload) == 1
@@ -792,26 +609,17 @@ def test_skill_ergonomics_gate_fails_when_opted_in_portable_helper_rule_matches(
 
 def test_skill_ergonomics_gate_fails_when_opted_in_argparse_missing_help_rule_matches(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    (repo / ".agents").mkdir(parents=True)
-    scripts_dir = repo / "skills" / "public" / "demo" / "scripts"
-    scripts_dir.mkdir(parents=True)
-    (repo / ".agents" / "quality-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: testrepo",
-                "output_dir: charness-artifacts/quality",
-                "skill_ergonomics_gate_rules:",
-                "  - argparse_missing_help",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
+    write_quality_adapter(
+        repo,
+        [
+            "skill_ergonomics_gate_rules:",
+            "  - argparse_missing_help",
+        ],
+        repo_name="testrepo",
     )
-    (repo / "skills" / "public" / "demo" / "SKILL.md").write_text(
-        "---\nname: demo\ndescription: \"Demo.\"\n---\n\n# Demo\n",
-        encoding="utf-8",
-    )
+    skill_path = write_skill(repo, [], description="Demo.")
+    scripts_dir = skill_path.parent / "scripts"
+    scripts_dir.mkdir()
     (scripts_dir / "run_demo.py").write_text(
         "\n".join(
             [
@@ -835,26 +643,17 @@ def test_skill_ergonomics_gate_fails_when_opted_in_argparse_missing_help_rule_ma
 
 def test_skill_ergonomics_gate_passes_argparse_missing_help_rule_when_all_args_documented(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    (repo / ".agents").mkdir(parents=True)
-    scripts_dir = repo / "skills" / "public" / "demo" / "scripts"
-    scripts_dir.mkdir(parents=True)
-    (repo / ".agents" / "quality-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: testrepo",
-                "output_dir: charness-artifacts/quality",
-                "skill_ergonomics_gate_rules:",
-                "  - argparse_missing_help",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
+    write_quality_adapter(
+        repo,
+        [
+            "skill_ergonomics_gate_rules:",
+            "  - argparse_missing_help",
+        ],
+        repo_name="testrepo",
     )
-    (repo / "skills" / "public" / "demo" / "SKILL.md").write_text(
-        "---\nname: demo\ndescription: \"Demo.\"\n---\n\n# Demo\n",
-        encoding="utf-8",
-    )
+    skill_path = write_skill(repo, [], description="Demo.")
+    scripts_dir = skill_path.parent / "scripts"
+    scripts_dir.mkdir()
     (scripts_dir / "run_demo.py").write_text(
         "\n".join(
             [

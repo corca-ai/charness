@@ -1,26 +1,23 @@
 from __future__ import annotations
 
 import contextlib
-import importlib.util
 import io
 from pathlib import Path
 
 import yaml
 
 from .support import ROOT
+from .seeding_support import load_module, write_quality_adapter
 
 # In-process boundary conversion (testability-dsl-initiative goal 1): load the
 # inventory entrypoint by file and drive its `main()` with a captured stdout
 # buffer instead of spawning a subprocess. This entrypoint wraps its lib output
 # with adapter-derived fields inside main(), so calling main() (not the bare lib
 # function) preserves that contract; `--detail` mode serializes the same payload.
-_SPEC = importlib.util.spec_from_file_location(
+_MODULE = load_module(
     "inventory_lint_ignores",
     ROOT / "skills" / "public" / "quality" / "scripts" / "inventory_lint_ignores.py",
 )
-assert _SPEC is not None and _SPEC.loader is not None
-_MODULE = importlib.util.module_from_spec(_SPEC)
-_SPEC.loader.exec_module(_MODULE)
 
 
 def _inventory_json(repo: Path) -> dict:
@@ -144,19 +141,12 @@ def test_inventory_lint_ignores_skips_vendored_paths(tmp_path: Path) -> None:
     (vendored_dir / "vendored.py").write_text(
         "# ruff: noqa: E402\nimport sys\n", encoding="utf-8"
     )
-    (repo / ".agents").mkdir()
-    (repo / ".agents" / "quality-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: repo",
-                "output_dir: charness-artifacts/quality",
-                "vendored_paths:",
-                "  - packages/official-skills/charness-public",
-                "",
-            ]
-        ),
-        encoding="utf-8",
+    write_quality_adapter(
+        repo,
+        [
+            "vendored_paths:",
+            "  - packages/official-skills/charness-public",
+        ],
     )
 
     payload = _inventory_json(repo)

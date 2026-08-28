@@ -2,23 +2,20 @@
 
 from __future__ import annotations
 
-import importlib.util
 import sys
 from pathlib import Path
 
 import yaml
 
 from .support import ROOT, run_script, seed_runtime_budget_repo
+from .seeding_support import load_module
 
 SCRIPT = "skills/public/quality/scripts/check_runtime_budget.py"
 QUALITY_SCRIPTS_DIR = ROOT / "skills" / "public" / "quality" / "scripts"
 if str(QUALITY_SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(QUALITY_SCRIPTS_DIR))
 RUNTIME_PROFILE_LIB = QUALITY_SCRIPTS_DIR / "runtime_profile_lib.py"
-_spec = importlib.util.spec_from_file_location("runtime_profile_lib_profiles", RUNTIME_PROFILE_LIB)
-assert _spec is not None and _spec.loader is not None
-runtime_profile_lib = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(runtime_profile_lib)
+runtime_profile_lib = load_module("runtime_profile_lib_profiles", RUNTIME_PROFILE_LIB)
 
 
 def test_runtime_profile_lib_default_profile_uses_top_level_commands_and_budgets() -> None:

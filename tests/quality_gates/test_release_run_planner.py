@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import importlib.util
 import re
 import subprocess
 import sys
@@ -17,16 +16,13 @@ from .release_publish_fixtures import (
     _seed_publish_release_repo,
     commit_claims_review,
 )
+from .seeding_support import load_module
 
 PLANNER = "skills/public/release/scripts/plan_release_run.py"
 
 
 def _load_script_module(name: str, rel_path: str):
-    spec = importlib.util.spec_from_file_location(name, REPO_ROOT / rel_path)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_module(name, REPO_ROOT / rel_path)
 
 
 _PLANNER = _load_script_module("plan_release_run_test_module", PLANNER)

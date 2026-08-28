@@ -9,6 +9,7 @@ import pytest
 import yaml
 
 from tests.quality_gates.support import ROOT, run_script
+from tests.quality_gates.seeding_support import environment_with_path, write_json_executable
 
 SCRIPT = "skills/public/issue/scripts/issue_tool.py"
 sys.path.insert(0, str(ROOT / "skills" / "public" / "issue" / "scripts"))
@@ -26,7 +27,7 @@ def test_run_script_uses_current_python_when_path_shadows_python(tmp_path: Path)
 
     result = run_script(
         str(script),
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin"},
+        env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin"),
     )
 
     assert result.returncode == 0
@@ -36,19 +37,11 @@ def test_run_script_uses_current_python_when_path_shadows_python(tmp_path: Path)
 def test_issue_read_fails_when_backend_omits_comments(tmp_path: Path) -> None:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
-    fake = bin_dir / "gh"
-    fake.write_text(
-        "\n".join(
-            [
-                "#!/usr/bin/env python3",
-                "import json",
-                "print(json.dumps({'number': 42, 'title': 'Demo', 'body': 'Body', 'state': 'OPEN'}))",
-                "",
-            ]
-        ),
-        encoding="utf-8",
+    write_json_executable(
+        bin_dir / "gh",
+        {"number": 42, "title": "Demo", "body": "Body", "state": "OPEN"},
+        trigger="view",
     )
-    fake.chmod(0o755)
 
     result = run_script(
         SCRIPT,
@@ -59,7 +52,7 @@ def test_issue_read_fails_when_backend_omits_comments(tmp_path: Path) -> None:
         "42",
         "--repo-root",
         str(tmp_path),
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin"},
+        env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin"),
     )
 
     assert result.returncode == 2

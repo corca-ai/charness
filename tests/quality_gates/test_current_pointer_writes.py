@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import ast
 import hashlib
-import importlib.util
 import subprocess
 import sys
 from pathlib import Path
@@ -14,30 +13,18 @@ import yaml
 from tests.script_loader import load_script_module
 
 from .support import ROOT, init_git_repo, run_script
+from .seeding_support import load_module
 
-WRITER_SPEC = importlib.util.spec_from_file_location(
-    "current_pointer_writer_lib", ROOT / "scripts" / "current_pointer_writer_lib.py"
-)
-assert WRITER_SPEC is not None and WRITER_SPEC.loader is not None
-WRITER = importlib.util.module_from_spec(WRITER_SPEC)
-WRITER_SPEC.loader.exec_module(WRITER)
-
-RELEASE_SPEC = importlib.util.spec_from_file_location(
+WRITER = load_module("current_pointer_writer_lib", ROOT / "scripts" / "current_pointer_writer_lib.py")
+RELEASE_ARTIFACT = load_module(
     "publish_release_artifact",
     ROOT / "skills" / "public" / "release" / "scripts" / "publish_release_artifact.py",
 )
-assert RELEASE_SPEC is not None and RELEASE_SPEC.loader is not None
-RELEASE_ARTIFACT = importlib.util.module_from_spec(RELEASE_SPEC)
-RELEASE_SPEC.loader.exec_module(RELEASE_ARTIFACT)
-
-SCANNER_SPEC = importlib.util.spec_from_file_location(
+SCANNER = load_module(
     "check_current_pointer_writes",
     ROOT / "scripts" / "check_current_pointer_writes.py",
+    register=True,
 )
-assert SCANNER_SPEC is not None and SCANNER_SPEC.loader is not None
-SCANNER = importlib.util.module_from_spec(SCANNER_SPEC)
-sys.modules[SCANNER_SPEC.name] = SCANNER
-SCANNER_SPEC.loader.exec_module(SCANNER)
 
 HITL_SYNC_REVIEW_ARTIFACT = load_script_module(
     "tests.quality_gates.current_pointer_hitl_sync_review_artifact",
@@ -780,7 +767,6 @@ def test_computed_detector_catches_a_bare_stem_head_and_ignores_a_read_open() ->
 
     write_open = SCANNER.ast.parse('path.open("w")\n').body[0].value
     assert SCANNER._write_target_node(write_open) is not None
-
 
 
 

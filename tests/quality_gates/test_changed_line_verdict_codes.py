@@ -13,15 +13,13 @@ module no test names is a changed pool file the pre-push lane reports as unanaly
 """
 from __future__ import annotations
 
-import importlib.util
 from pathlib import Path
 
+from .seeding_support import load_module
+
 ROOT = Path(__file__).resolve().parents[2]
-_spec = importlib.util.spec_from_file_location(
-    "changed_line_verdict_codes", ROOT / "scripts" / "changed_line_verdict_codes.py"
-)
-codes = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(codes)
+
+codes = load_module("changed_line_verdict_codes", ROOT / "scripts" / "changed_line_verdict_codes.py")
 
 
 def test_the_four_bytes_are_distinct() -> None:

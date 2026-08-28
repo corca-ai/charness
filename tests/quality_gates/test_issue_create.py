@@ -18,6 +18,7 @@ import pytest
 import yaml
 
 from tests.quality_gates.support import run_script
+from tests.quality_gates.seeding_support import environment_with_path
 
 SCRIPT = "skills/public/issue/scripts/issue_tool.py"
 CREATE = runpy.run_path(str(Path(__file__).resolve().parents[2] / "skills/public/issue/scripts/issue_create.py"))
@@ -129,7 +130,7 @@ def test_create_round_trips_hostile_body_byte_identical(tmp_path: Path) -> None:
         str(body_file),
         "--repo-root",
         str(tmp_path),
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_BODY_STORE": str(store)},
+        env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin", GH_BODY_STORE=str(store)),
     )
 
     assert result.returncode == 0, result.stderr
@@ -165,7 +166,7 @@ def test_create_bare_number_uses_validated_readback_url_or_null_when_skipped(tmp
 
     verified = run_script(
         SCRIPT, "create", "--repo", "acme/demo", "--title", "bare backend", "--body-file", str(body_file),
-        "--repo-root", str(tmp_path), env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_BODY_STORE": str(store)},
+        "--repo-root", str(tmp_path), env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin", GH_BODY_STORE=str(store)),
     )
     assert verified.returncode == 0, verified.stderr
     verified_payload = yaml.safe_load(verified.stdout)
@@ -181,7 +182,7 @@ def test_create_bare_number_uses_validated_readback_url_or_null_when_skipped(tmp
     skipped = run_script(
         SCRIPT, "create", "--repo", "acme/demo", "--title", "bare skipped", "--body-file", str(body_file),
         "--skip-readback", "--repo-root", str(tmp_path),
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_BODY_STORE": str(store)},
+        env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin", GH_BODY_STORE=str(store)),
     )
     assert skipped.returncode == 0, skipped.stderr
     skipped_payload = yaml.safe_load(skipped.stdout)
@@ -208,7 +209,7 @@ def test_create_with_an_unparseable_backend_result_does_not_advertise_verify_cre
         str(body_file),
         "--repo-root",
         str(tmp_path),
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_BODY_STORE": str(store)},
+        env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin", GH_BODY_STORE=str(store)),
     )
 
     assert result.returncode == 0, result.stderr
@@ -239,7 +240,7 @@ def test_create_with_a_nonpositive_backend_number_does_not_advertise_verify_crea
         str(body_file),
         "--repo-root",
         str(tmp_path),
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_BODY_STORE": str(store)},
+        env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin", GH_BODY_STORE=str(store)),
     )
 
     assert result.returncode == 0, result.stderr
@@ -298,12 +299,12 @@ def test_create_applies_labels_and_milestone_as_flags(tmp_path: Path) -> None:
         "v0.13.0",
         "--repo-root",
         str(tmp_path),
-        env={
-            **os.environ,
-            "PATH": f"{bin_dir}:/usr/bin:/bin",
-            "GH_BODY_STORE": str(store),
-            "GH_ARGV_STORE": str(argv_store),
-        },
+        env=environment_with_path(
+            bin_dir,
+            path_tail="/usr/bin:/bin",
+            GH_BODY_STORE=str(store),
+            GH_ARGV_STORE=str(argv_store),
+        ),
     )
 
     assert result.returncode == 0, result.stderr
@@ -335,7 +336,7 @@ def test_create_reports_unverified_when_readback_differs(tmp_path: Path) -> None
         str(body_file),
         "--repo-root",
         str(tmp_path),
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_BODY_STORE": str(store)},
+        env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin", GH_BODY_STORE=str(store)),
     )
 
     assert result.returncode == 0, result.stderr
@@ -364,7 +365,7 @@ def test_create_body_preview_is_bounded_to_closeout_excerpt(tmp_path: Path) -> N
         str(body_file),
         "--repo-root",
         str(tmp_path),
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_BODY_STORE": str(store)},
+        env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin", GH_BODY_STORE=str(store)),
     )
 
     assert result.returncode == 0, result.stderr
@@ -388,7 +389,7 @@ def test_create_fails_when_body_file_missing(tmp_path: Path) -> None:
         str(tmp_path / "does-not-exist.md"),
         "--repo-root",
         str(tmp_path),
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_BODY_STORE": str(store)},
+        env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin", GH_BODY_STORE=str(store)),
     )
 
     assert result.returncode == 2
@@ -428,7 +429,7 @@ def test_create_refuses_private_provider_image_before_backend_mutation(
         str(body_file),
         "--repo-root",
         str(tmp_path),
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_CALL_COUNT": str(count_file)},
+        env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin", GH_CALL_COUNT=str(count_file)),
     )
 
     assert result.returncode == 2
@@ -461,7 +462,7 @@ def test_create_allows_private_source_identity_with_explicit_media_disposition(t
         "--skip-readback",
         "--repo-root",
         str(tmp_path),
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_CALL_COUNT": str(count_file)},
+        env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin", GH_CALL_COUNT=str(count_file)),
     )
 
     assert result.returncode == 0, result.stderr
@@ -499,7 +500,7 @@ def test_create_ignores_private_image_example_in_nonrendering_context(
         "--skip-readback",
         "--repo-root",
         str(tmp_path),
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_CALL_COUNT": str(count_file)},
+        env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin", GH_CALL_COUNT=str(count_file)),
     )
 
     assert result.returncode == 0, result.stderr
@@ -528,7 +529,7 @@ def test_create_allows_plain_private_file_url_as_provenance(tmp_path: Path) -> N
         "--skip-readback",
         "--repo-root",
         str(tmp_path),
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_CALL_COUNT": str(count_file)},
+        env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin", GH_CALL_COUNT=str(count_file)),
     )
 
     assert result.returncode == 0, result.stderr
@@ -554,7 +555,7 @@ def test_create_rejects_placeholder_title_before_backend_mutation(tmp_path: Path
         str(body_file),
         "--repo-root",
         str(tmp_path),
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_CALL_COUNT": str(count_file)},
+        env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin", GH_CALL_COUNT=str(count_file)),
     )
 
     assert result.returncode == 2
@@ -582,7 +583,7 @@ def test_normal_verified_create_runs_create_then_view_once(tmp_path: Path) -> No
         str(body_file),
         "--repo-root",
         str(tmp_path),
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_CALL_COUNT": str(count_file)},
+        env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin", GH_CALL_COUNT=str(count_file)),
     )
 
     assert result.returncode == 0, result.stderr
@@ -611,7 +612,7 @@ def test_create_allows_intentional_placeholder_title(tmp_path: Path) -> None:
         "--skip-readback",
         "--repo-root",
         str(tmp_path),
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_CALL_COUNT": str(count_file)},
+        env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin", GH_CALL_COUNT=str(count_file)),
     )
 
     assert result.returncode == 0, result.stderr
@@ -656,7 +657,7 @@ def test_no_verify_is_rejected_and_skip_readback_still_creates(tmp_path: Path) -
         "--skip-readback",
         "--repo-root",
         str(tmp_path),
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_CALL_COUNT": str(count_file)},
+        env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin", GH_CALL_COUNT=str(count_file)),
     )
     assert created.returncode == 0, created.stderr
     payload = yaml.safe_load(created.stdout)
@@ -685,7 +686,7 @@ def test_verify_create_keeps_deferred_readback_inside_the_issue_tool_grammar(tmp
         str(body_file),
         "--repo-root",
         str(tmp_path),
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_CALL_COUNT": str(count_file)},
+        env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin", GH_CALL_COUNT=str(count_file)),
     )
 
     assert result.returncode == 0, result.stderr
@@ -710,7 +711,7 @@ def test_verify_create_without_a_body_file_does_not_claim_body_fidelity(tmp_path
         "778",
         "--repo-root",
         str(tmp_path),
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_CALL_COUNT": str(count_file)},
+        env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin", GH_CALL_COUNT=str(count_file)),
     )
 
     assert result.returncode == 0, result.stderr

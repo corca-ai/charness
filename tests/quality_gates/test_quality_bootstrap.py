@@ -16,6 +16,7 @@ from .quality_bootstrap_support import (
     seed_quality_repo,
     write_explicit_quality_adapter,
 )
+from .seeding_support import write_quality_adapter
 
 
 def test_simple_adapter_data_rejects_non_string_scalar_fields(tmp_path: Path) -> None:
@@ -306,23 +307,17 @@ def test_quality_bootstrap_rewrite_preserves_explicit_falsy_fields(tmp_path: Pat
     repo = seed_quality_repo(tmp_path)
     adapter_path = repo / ".agents" / "quality-adapter.yaml"
     adapter_path.parent.mkdir(exist_ok=True)
-    adapter_path.write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: demo",
-                "language: en",
-                "output_dir: charness-artifacts/quality",
-                "preset_id: custom",
-                "customized_from: custom",
-                "preset_version: null",
-                'spec_pytest_reference_format: ""',
-                "gate_commands:",
-                "  - python3 -m pytest -q",
-                "",
-            ]
-        ),
-        encoding="utf-8",
+    write_quality_adapter(
+        repo,
+        [
+            "preset_id: custom",
+            "customized_from: custom",
+            "preset_version: null",
+            'spec_pytest_reference_format: ""',
+            "gate_commands:",
+            "  - python3 -m pytest -q",
+        ],
+        language="en",
     )
 
     result = _run_quality_bootstrap_adapter("--repo-root", str(repo), "--migrate")
@@ -359,20 +354,14 @@ def test_quality_bootstrap_does_not_materialize_pytest_defaults_for_node_go_repo
 
 def test_quality_bootstrap_rejects_invalid_explicit_skill_ergonomics_rules(tmp_path: Path) -> None:
     repo = seed_quality_repo(tmp_path)
-    (repo / ".agents" / "quality-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: demo",
-                "language: en",
-                "output_dir: charness-artifacts/quality",
-                "preset_id: python-quality",
-                "customized_from: python-quality",
-                "skill_ergonomics_gate_rules: invalid",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
+    write_quality_adapter(
+        repo,
+        [
+            "preset_id: python-quality",
+            "customized_from: python-quality",
+            "skill_ergonomics_gate_rules: invalid",
+        ],
+        language="en",
     )
 
     result = _run_quality_bootstrap_adapter("--repo-root", str(repo))
@@ -396,19 +385,10 @@ def test_quality_bootstrap_refuses_unsupported_adapter_without_rewriting_it(tmp_
 
 def test_quality_adapter_load_modes_name_strict_and_permissive_contracts(tmp_path: Path) -> None:
     repo = seed_quality_repo(tmp_path)
-    (repo / ".agents" / "quality-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: demo",
-                "language: en",
-                "output_dir: charness-artifacts/quality",
-                "skill_ergonomics_gate_rules:",
-                "  - typo_rule",
-                "",
-            ]
-        ),
-        encoding="utf-8",
+    write_quality_adapter(
+        repo,
+        ["skill_ergonomics_gate_rules:", "  - typo_rule"],
+        language="en",
     )
 
     strict = load_quality_adapter_strict(repo)
@@ -423,26 +403,20 @@ def test_quality_adapter_load_modes_name_strict_and_permissive_contracts(tmp_pat
 
 def test_quality_resolve_rejects_invalid_review_fields(tmp_path: Path) -> None:
     repo = seed_quality_repo(tmp_path)
-    (repo / ".agents" / "quality-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: demo",
-                "language: en",
-                "output_dir: charness-artifacts/quality",
-                "recommendation_defaults_version: 7",
-                "adapter_review_sources: invalid",
-                "acknowledged_recommendations: invalid",
-                "gate_design_review_globs: invalid",
-                "canonical_markdown_surfaces: invalid",
-                "runtime_budget_profiles:",
-                "  bad profile:",
-                "    budgets:",
-                "      pytest: 0",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
+    write_quality_adapter(
+        repo,
+        [
+            "recommendation_defaults_version: 7",
+            "adapter_review_sources: invalid",
+            "acknowledged_recommendations: invalid",
+            "gate_design_review_globs: invalid",
+            "canonical_markdown_surfaces: invalid",
+            "runtime_budget_profiles:",
+            "  bad profile:",
+            "    budgets:",
+            "      pytest: 0",
+        ],
+        language="en",
     )
 
     result = _run_quality_resolve_adapter("--repo-root", str(repo))

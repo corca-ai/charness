@@ -7,7 +7,6 @@ the inline `# discovery-boundary:` silencing marker.
 """
 from __future__ import annotations
 
-import importlib.util
 from pathlib import Path
 from types import ModuleType
 
@@ -16,17 +15,14 @@ import yaml
 from tests.script_main import load_script_module, run_loaded_script_main
 
 from .support import ROOT
+from .seeding_support import load_module
 
 SCAN_LIB = ROOT / "skills" / "public" / "quality" / "scripts" / "discovery_filter_scan_lib.py"
 INVENTORY = ROOT / "skills" / "public" / "quality" / "scripts" / "inventory_hardcoded_discovery.py"
 
 
 def _load_scan_lib() -> ModuleType:
-    spec = importlib.util.spec_from_file_location("discovery_filter_scan_lib_for_test", SCAN_LIB)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_module("discovery_filter_scan_lib_for_test", SCAN_LIB)
 
 
 def _repo_with(script_body: str, tmp_path: Path) -> Path:

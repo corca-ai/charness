@@ -4,21 +4,13 @@ from pathlib import Path
 
 import yaml
 
+from .seeding_support import write_quality_adapter, write_skill, write_text
 from .skill_ergonomics_support import run_inventory_skill_ergonomics as _run
 
 
 def test_inventory_skill_ergonomics_reports_advisory_flags(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    skill_dir = repo / "skills" / "public" / "demo"
-    skill_dir.mkdir(parents=True)
     lines = [
-        "---",
-        "name: demo",
-        'description: "Demo skill."',
-        "---",
-        "",
-        "# Demo",
-        "",
         "Use this when the repo needs a demo skill.",
         "",
         "Mode choice matters in this mode-heavy workflow.",
@@ -42,7 +34,7 @@ def test_inventory_skill_ergonomics_reports_advisory_flags(tmp_path: Path) -> No
         "",
     ]
     lines.extend(f"- filler line {index}" for index in range(90))
-    (skill_dir / "SKILL.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    skill_dir = write_skill(repo, lines).parent
 
     result = _run(
         "--repo-root",
@@ -76,31 +68,19 @@ def test_inventory_skill_ergonomics_reports_advisory_flags(tmp_path: Path) -> No
 
 def test_inventory_skill_ergonomics_flags_portable_helper_path_ambiguity(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    skill_dir = repo / "skills" / "public" / "demo" / "references"
-    skill_dir.mkdir(parents=True)
-    (skill_dir / "note.md").write_text("# Note\n", encoding="utf-8")
-    (repo / "skills" / "public" / "demo" / "SKILL.md").write_text(
-        "\n".join(
-            [
-                "---",
-                "name: demo",
-                'description: "Demo skill."',
-                "---",
-                "",
-                "# Demo",
-                "",
-                "Use `scripts/helper.py` before stopping.",
-                "Cross-check `skills/public/other/SKILL.md` if the seam is ambiguous.",
-                "",
-                "## References",
-                "",
-                "- `references/note.md`",
-                "- `scripts/helper.py`",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
+    skill_dir = write_skill(
+        repo,
+        [
+            "Use `scripts/helper.py` before stopping.",
+            "Cross-check `skills/public/other/SKILL.md` if the seam is ambiguous.",
+            "",
+            "## References",
+            "",
+            "- `references/note.md`",
+            "- `scripts/helper.py`",
+        ],
     )
+    write_text(skill_dir.parent / "references" / "note.md", "# Note\n")
 
     result = _run(
         "--repo-root",
@@ -116,29 +96,17 @@ def test_inventory_skill_ergonomics_flags_portable_helper_path_ambiguity(tmp_pat
 
 def test_inventory_skill_ergonomics_ignores_inline_code_for_pressure_terms(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    skill_dir = repo / "skills" / "public" / "demo" / "references"
-    skill_dir.mkdir(parents=True)
-    (skill_dir / "note.md").write_text("# Note\n", encoding="utf-8")
-    (repo / "skills" / "public" / "demo" / "SKILL.md").write_text(
-        "\n".join(
-            [
-                "---",
-                "name: demo",
-                'description: "Demo skill."',
-                "---",
-                "",
-                "# Demo",
-                "",
-                "Read `gather_provider.<source>.mode` and preserve `Access Mode`.",
-                "",
-                "## References",
-                "",
-                "- `references/note.md`",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
+    skill_dir = write_skill(
+        repo,
+        [
+            "Read `gather_provider.<source>.mode` and preserve `Access Mode`.",
+            "",
+            "## References",
+            "",
+            "- `references/note.md`",
+        ],
     )
+    write_text(skill_dir.parent / "references" / "note.md", "# Note\n")
 
     result = _run(
         "--repo-root",
@@ -153,31 +121,21 @@ def test_inventory_skill_ergonomics_ignores_inline_code_for_pressure_terms(tmp_p
 
 def test_inventory_skill_ergonomics_flags_issue_and_dated_incident_anchors(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    skill_dir = repo / "skills" / "public" / "demo" / "references"
-    skill_dir.mkdir(parents=True)
-    (skill_dir / "history.md").write_text("# Source History\n\n- #999 belongs here.\n", encoding="utf-8")
-    (repo / "skills" / "public" / "demo" / "SKILL.md").write_text(
-        "\n".join(
-            [
-                "---",
-                "name: demo",
-                'description: "Demo skill."',
-                "---",
-                "",
-                "# Demo",
-                "",
-                "Use the 2026-05-28 routing miss as the reason this workflow owns next-step routing.",
-                "Keep the guard from #123 in the active workflow.",
-                "Inline code like `#456` is inert.",
-                "",
-                "## References",
-                "",
-                "- `references/history.md`",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
-    )
+    skill_dir = write_skill(
+        repo,
+        [
+            "Use the 2026-05-28 routing miss as the reason this workflow owns next-step routing.",
+            "Keep the guard from #123 in the active workflow.",
+            "Inline code like `#456` is inert.",
+            "",
+            "## References",
+            "",
+            "- `references/history.md`",
+        ],
+    ).parent
+    history_path = skill_dir / "references" / "history.md"
+    history_path.parent.mkdir(parents=True, exist_ok=True)
+    history_path.write_text("# Source History\n\n- #999 belongs here.\n", encoding="utf-8")
 
     result = _run(
         "--repo-root",
@@ -202,30 +160,18 @@ def test_inventory_skill_ergonomics_reports_package_host_and_reference_subchecks
     tmp_path: Path,
 ) -> None:
     repo = tmp_path / "repo"
-    skill_dir = repo / "skills" / "public" / "demo"
+    skill_dir = write_skill(
+        repo,
+        [
+            "This assumes Claude Code settings.json behavior instead of an adapter.",
+            "",
+            "## References",
+            "",
+            "- `references/visible.md`",
+        ],
+    ).parent
     references_dir = skill_dir / "references"
-    references_dir.mkdir(parents=True)
-    (references_dir / "hidden.md").write_text("# Hidden\n", encoding="utf-8")
-    (skill_dir / "SKILL.md").write_text(
-        "\n".join(
-            [
-                "---",
-                "name: demo",
-                'description: "Demo skill."',
-                "---",
-                "",
-                "# Demo",
-                "",
-                "This assumes Claude Code settings.json behavior instead of an adapter.",
-                "",
-                "## References",
-                "",
-                "- `references/visible.md`",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
-    )
+    write_text(references_dir / "hidden.md", "# Hidden\n")
 
     result = _run(
         "--repo-root",
@@ -253,10 +199,7 @@ def test_inventory_skill_ergonomics_ignores_cache_files_for_reference_discoverab
     cache_dir = skill_dir / "references" / "__pycache__"
     cache_dir.mkdir(parents=True)
     (cache_dir / "generated.cpython-310.pyc").write_bytes(b"\0\0\0\0")
-    (skill_dir / "SKILL.md").write_text(
-        "---\nname: demo\ndescription: \"Demo.\"\n---\n\n# Demo\n",
-        encoding="utf-8",
-    )
+    write_skill(repo, [], description="Demo.")
 
     result = _run(
         "--repo-root",
@@ -281,10 +224,7 @@ def test_inventory_skill_ergonomics_scans_whole_portable_package_for_issue_ancho
     scripts_dir = skill_dir / "scripts"
     references_dir.mkdir(parents=True)
     scripts_dir.mkdir()
-    (skill_dir / "SKILL.md").write_text(
-        "---\nname: demo\ndescription: \"Demo.\"\n---\n\n# Demo\n",
-        encoding="utf-8",
-    )
+    write_skill(repo, [], package="support", description="Demo.")
     (references_dir / "history.md").write_text(
         "# History\n\nThis used to cite corca-ai/charness#123.\n",
         encoding="utf-8",
@@ -320,10 +260,7 @@ def test_inventory_skill_ergonomics_allows_version_fields_and_portable_placehold
     skill_dir = repo / "skills" / "public" / "demo"
     scripts_dir = skill_dir / "scripts"
     scripts_dir.mkdir(parents=True)
-    (skill_dir / "SKILL.md").write_text(
-        "---\nname: demo\ndescription: \"Demo.\"\n---\n\n# Demo\n",
-        encoding="utf-8",
-    )
+    write_skill(repo, [], description="Demo.")
     (skill_dir / "adapter.example.yaml").write_text(
         "defaults_version: issue-64\nrecommendation_defaults_version: issue-65\n",
         encoding="utf-8",
@@ -350,23 +287,9 @@ def test_inventory_skill_ergonomics_allows_short_number_labels_but_flags_explici
     tmp_path: Path,
 ) -> None:
     repo = tmp_path / "repo"
-    skill_dir = repo / "skills" / "public" / "demo"
-    skill_dir.mkdir(parents=True)
-    (skill_dir / "SKILL.md").write_text(
-        "\n".join(
-            [
-                "---",
-                "name: demo",
-                'description: "Demo skill."',
-                "---",
-                "",
-                "# Demo",
-                "",
-                "Use option #1 before attempt #2 when ordering local choices.",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
+    write_skill(
+        repo,
+        ["Use option #1 before attempt #2 when ordering local choices."],
     )
 
     result = _run(
@@ -379,21 +302,9 @@ def test_inventory_skill_ergonomics_allows_short_number_labels_but_flags_explici
     payload = yaml.safe_load(result.stdout)
     assert "issue_anchor_in_core" not in payload["skills"][0]["heuristics"]
 
-    (skill_dir / "SKILL.md").write_text(
-        "\n".join(
-            [
-                "---",
-                "name: demo",
-                'description: "Demo skill."',
-                "---",
-                "",
-                "# Demo",
-                "",
-                "Carry forward issue #7 as the reason this workflow owns the guard.",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
+    write_skill(
+        repo,
+        ["Carry forward issue #7 as the reason this workflow owns the guard."],
     )
 
     result = _run(
@@ -413,19 +324,12 @@ def test_inventory_skill_ergonomics_uses_adapter_skill_paths(tmp_path: Path) -> 
     skill_root = repo / "packages" / "official-skills" / "acme-native" / "skills"
     skill_dir = skill_root / "anniversary-roster-sync"
     skill_dir.mkdir(parents=True)
-    (repo / ".agents").mkdir()
-    (repo / ".agents" / "quality-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: repo",
-                "output_dir: charness-artifacts/quality",
-                "skill_ergonomics_skill_paths:",
-                "  - packages/official-skills/acme-native/skills",
-                "",
-            ]
-        ),
-        encoding="utf-8",
+    write_quality_adapter(
+        repo,
+        [
+            "skill_ergonomics_skill_paths:",
+            "  - packages/official-skills/acme-native/skills",
+        ],
     )
     (skill_dir / "SKILL.md").write_text(
         "\n".join(
@@ -477,12 +381,7 @@ def test_inventory_skill_ergonomics_reports_unconfigured_when_no_skills(tmp_path
 
 def test_inventory_skill_ergonomics_reports_clean_when_skills_present(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    skill_dir = repo / "skills" / "public" / "demo"
-    skill_dir.mkdir(parents=True)
-    (skill_dir / "SKILL.md").write_text(
-        "---\nname: demo\ndescription: \"Demo.\"\n---\n\n# Demo\n",
-        encoding="utf-8",
-    )
+    write_skill(repo, [], description="Demo.")
     result = _run(
         "--repo-root",
         str(repo),
@@ -511,25 +410,13 @@ def test_inventory_skill_ergonomics_reports_clean_when_skills_present(tmp_path: 
 
 def test_inventory_skill_ergonomics_reports_configured_scope_empty(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    fallback_skill = repo / "skills" / "public" / "fallback"
-    fallback_skill.mkdir(parents=True)
-    (fallback_skill / "SKILL.md").write_text(
-        "---\nname: fallback\ndescription: \"Fallback.\"\n---\n\n# Fallback\n",
-        encoding="utf-8",
-    )
-    (repo / ".agents").mkdir()
-    (repo / ".agents" / "quality-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: repo",
-                "output_dir: charness-artifacts/quality",
-                "skill_ergonomics_skill_paths:",
-                "  - missing-skills",
-                "",
-            ]
-        ),
-        encoding="utf-8",
+    write_skill(repo, [], skill_id="fallback", description="Fallback.", title="Fallback")
+    write_quality_adapter(
+        repo,
+        [
+            "skill_ergonomics_skill_paths:",
+            "  - missing-skills",
+        ],
     )
 
     result = _run(
@@ -570,12 +457,7 @@ def test_inventory_skill_ergonomics_reports_requested_scope_empty(tmp_path: Path
 
 def test_inventory_skill_ergonomics_marks_heuristic_findings_and_prose_review(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    skill_dir = repo / "skills" / "public" / "demo"
-    skill_dir.mkdir(parents=True)
-    (skill_dir / "SKILL.md").write_text(
-        "---\nname: demo\ndescription: \"Demo.\"\n---\n\n# Demo\n\nMode mode option option.\n",
-        encoding="utf-8",
-    )
+    write_skill(repo, ["Mode mode option option."], description="Demo.")
 
     result = _run(
         "--repo-root",
@@ -603,26 +485,14 @@ def test_inventory_skill_ergonomics_marks_heuristic_findings_and_prose_review(tm
 
 def test_inventory_skill_ergonomics_surfaces_invalid_adapter_as_best_effort(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    (repo / ".agents").mkdir(parents=True)
-    skill_dir = repo / "skills" / "public" / "demo"
-    skill_dir.mkdir(parents=True)
-    (repo / ".agents" / "quality-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: repo",
-                "output_dir: charness-artifacts/quality",
-                "skill_ergonomics_gate_rules:",
-                "  - typo_rule",
-                "",
-            ]
-        ),
-        encoding="utf-8",
+    write_quality_adapter(
+        repo,
+        [
+            "skill_ergonomics_gate_rules:",
+            "  - typo_rule",
+        ],
     )
-    (skill_dir / "SKILL.md").write_text(
-        "---\nname: demo\ndescription: \"Demo.\"\n---\n\n# Demo\n",
-        encoding="utf-8",
-    )
+    write_skill(repo, [], description="Demo.")
 
     result = _run(
         "--repo-root",
@@ -648,22 +518,15 @@ def test_inventory_skill_ergonomics_skips_vendored_paths(tmp_path: Path) -> None
     body = "---\nname: x\ndescription: \"x.\"\n---\n\n# X\n"
     (own_skill / "SKILL.md").write_text(body, encoding="utf-8")
     (vendored_skill / "SKILL.md").write_text(body, encoding="utf-8")
-    (repo / ".agents").mkdir()
-    (repo / ".agents" / "quality-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: repo",
-                "output_dir: charness-artifacts/quality",
-                "skill_ergonomics_skill_paths:",
-                "  - skills/public",
-                "  - packages/official-skills/charness-public/skills",
-                "vendored_paths:",
-                "  - packages/official-skills/charness-public",
-                "",
-            ]
-        ),
-        encoding="utf-8",
+    write_quality_adapter(
+        repo,
+        [
+            "skill_ergonomics_skill_paths:",
+            "  - skills/public",
+            "  - packages/official-skills/charness-public/skills",
+            "vendored_paths:",
+            "  - packages/official-skills/charness-public",
+        ],
     )
 
     result = _run(

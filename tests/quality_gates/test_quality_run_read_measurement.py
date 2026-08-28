@@ -1,17 +1,13 @@
 from __future__ import annotations
 
-import importlib.util
 from pathlib import Path
 
 from .support import ROOT
+from .seeding_support import load_module
 
 
 def _load_plan(path: Path, name: str):
-    spec = importlib.util.spec_from_file_location(name, path)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_module(name, path)
 
 
 def test_quality_required_read_measurement_is_source_plugin_parity_and_never_zero_for_missing(tmp_path: Path, monkeypatch) -> None:

@@ -16,32 +16,20 @@ unstaged-only deletion.
 from __future__ import annotations
 
 import importlib
-import subprocess
 from pathlib import Path
 
 import pytest
 
 cswc = importlib.import_module("scripts.check_staged_worktree_consistency")
-
-
-def _git(repo: Path, *args: str) -> None:
-    subprocess.run(
-        ["git", "-c", "user.email=t@t", "-c", "user.name=t", *args],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
+from .seeding_support import git, init_git_repo
 
 
 def _repo(tmp_path: Path) -> Path:
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    _git(repo, "init", "-q")
+    repo = init_git_repo(tmp_path)
     (repo / "f.txt").write_text("v1\n", encoding="utf-8")
     (repo / "g.txt").write_text("g1\n", encoding="utf-8")
-    _git(repo, "add", "f.txt", "g.txt")
-    _git(repo, "commit", "-qm", "init")
+    git(repo, "add", "f.txt", "g.txt")
+    git(repo, "commit", "-qm", "init")
     return repo
 
 
@@ -49,7 +37,7 @@ def test_staged_then_deleted_on_disk_is_flagged(tmp_path: Path, monkeypatch) -> 
     monkeypatch.delenv(cswc.ALLOW_ENV, raising=False)
     repo = _repo(tmp_path)
     (repo / "f.txt").write_text("v2\n", encoding="utf-8")
-    _git(repo, "add", "f.txt")
+    git(repo, "add", "f.txt")
     (repo / "f.txt").unlink()  # index holds v2; worktree holds nothing
     assert cswc.find_stale_staged(repo) == ["f.txt"]
     assert cswc.main(["--repo-root", str(repo)]) == 1
@@ -59,7 +47,7 @@ def test_staged_then_edited_is_flagged(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.delenv(cswc.ALLOW_ENV, raising=False)
     repo = _repo(tmp_path)
     (repo / "f.txt").write_text("v2\n", encoding="utf-8")
-    _git(repo, "add", "f.txt")
+    git(repo, "add", "f.txt")
     (repo / "f.txt").write_text("v3\n", encoding="utf-8")
     assert cswc.find_stale_staged(repo) == ["f.txt"]
     assert cswc.main(["--repo-root", str(repo)]) == 1
@@ -71,7 +59,7 @@ def test_falsy_env_values_do_not_enable_the_bypass(
 ) -> None:
     repo = _repo(tmp_path)
     (repo / "f.txt").write_text("v2\n", encoding="utf-8")
-    _git(repo, "add", "f.txt")
+    git(repo, "add", "f.txt")
     (repo / "f.txt").unlink()
     monkeypatch.setenv(cswc.ALLOW_ENV, value)
     assert cswc.allow_partial_stage() is False
@@ -84,7 +72,7 @@ def test_truthy_env_values_enable_the_bypass(
 ) -> None:
     repo = _repo(tmp_path)
     (repo / "f.txt").write_text("v2\n", encoding="utf-8")
-    _git(repo, "add", "f.txt")
+    git(repo, "add", "f.txt")
     (repo / "f.txt").write_text("v3\n", encoding="utf-8")
     monkeypatch.setenv(cswc.ALLOW_ENV, value)
     assert cswc.allow_partial_stage() is True
@@ -95,7 +83,7 @@ def test_clean_full_stage_passes(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.delenv(cswc.ALLOW_ENV, raising=False)
     repo = _repo(tmp_path)
     (repo / "f.txt").write_text("v2\n", encoding="utf-8")
-    _git(repo, "add", "f.txt")  # index == worktree
+    git(repo, "add", "f.txt")  # index == worktree
     assert cswc.find_stale_staged(repo) == []
     assert cswc.main(["--repo-root", str(repo)]) == 0
 
@@ -103,7 +91,7 @@ def test_clean_full_stage_passes(tmp_path: Path, monkeypatch) -> None:
 def test_fully_staged_deletion_passes(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.delenv(cswc.ALLOW_ENV, raising=False)
     repo = _repo(tmp_path)
-    _git(repo, "rm", "-q", "f.txt")  # deletion staged AND applied on disk
+    git(repo, "rm", "-q", "f.txt")  # deletion staged AND applied on disk
     assert cswc.find_stale_staged(repo) == []
     assert cswc.main(["--repo-root", str(repo)]) == 0
 
@@ -128,7 +116,7 @@ def test_staged_then_typechanged_on_disk_is_flagged(tmp_path: Path, monkeypatch)
     monkeypatch.delenv(cswc.ALLOW_ENV, raising=False)
     repo = _repo(tmp_path)
     (repo / "f.txt").write_text("v2\n", encoding="utf-8")
-    _git(repo, "add", "f.txt")
+    git(repo, "add", "f.txt")
     (repo / "f.txt").unlink()
     (repo / "f.txt").symlink_to("/etc/hostname")
 
@@ -188,7 +176,7 @@ def test_untracked_but_still_on_disk_is_flagged(tmp_path: Path, monkeypatch, cap
     """
     monkeypatch.delenv(cswc.ALLOW_ENV, raising=False)
     repo = _repo(tmp_path)
-    _git(repo, "rm", "-q", "--cached", "f.txt")  # index: deleted; disk: still there
+    git(repo, "rm", "-q", "--cached", "f.txt")  # index: deleted; disk: still there
     assert (repo / "f.txt").exists()
     assert cswc.find_stale_staged(repo) == ["f.txt"]
     assert cswc.main(["--repo-root", str(repo)]) == 1
@@ -198,7 +186,7 @@ def test_untracked_but_still_on_disk_is_flagged_even_when_edited(tmp_path: Path,
     """The full escape: editing the on-disk copy is what cleared check_staged_reversion."""
     monkeypatch.delenv(cswc.ALLOW_ENV, raising=False)
     repo = _repo(tmp_path)
-    _git(repo, "rm", "-q", "--cached", "f.txt")
+    git(repo, "rm", "-q", "--cached", "f.txt")
     (repo / "f.txt").write_text("edited after untracking\n", encoding="utf-8")
     assert cswc.find_stale_staged(repo) == ["f.txt"]
     assert cswc.main(["--repo-root", str(repo)]) == 1
@@ -216,9 +204,9 @@ def test_untrack_remedy_is_not_git_add_and_actually_runs(tmp_path: Path, monkeyp
     """
     monkeypatch.delenv(cswc.ALLOW_ENV, raising=False)
     repo = _repo(tmp_path)
-    _git(repo, "rm", "-q", "--cached", "f.txt")          # orphaned
+    git(repo, "rm", "-q", "--cached", "f.txt")          # orphaned
     (repo / "g.txt").write_text("g2\n", encoding="utf-8")
-    _git(repo, "add", "g.txt")
+    git(repo, "add", "g.txt")
     (repo / "g.txt").write_text("g3\n", encoding="utf-8")  # staged then edited
 
     assert cswc.find_stale_staged(repo) == ["f.txt", "g.txt"]
@@ -229,8 +217,8 @@ def test_untrack_remedy_is_not_git_add_and_actually_runs(tmp_path: Path, monkeyp
     assert "git rm f.txt" not in err, "git rm cannot run on a path with no index entry"
 
     # Execute the offered remedies and prove they clear the gate.
-    _git(repo, "add", "g.txt")
-    _git(repo, "reset", "--", "f.txt")
+    git(repo, "add", "g.txt")
+    git(repo, "reset", "--", "f.txt")
     assert cswc.find_stale_staged(repo) == []
     assert cswc.main(["--repo-root", str(repo)]) == 0
 
@@ -244,7 +232,7 @@ def test_rename_source_orphan_remedies_are_executed_too(tmp_path: Path, monkeypa
     """
     monkeypatch.delenv(cswc.ALLOW_ENV, raising=False)
     repo = _repo(tmp_path)
-    _git(repo, "mv", "f.txt", "renamed.txt")
+    git(repo, "mv", "f.txt", "renamed.txt")
     (repo / "f.txt").write_text("recreated\n", encoding="utf-8")
     assert cswc.find_stale_staged(repo) == ["f.txt"]
 
@@ -257,7 +245,7 @@ def test_rm_remedy_clears_the_orphan(tmp_path: Path, monkeypatch) -> None:
     """The other offered exit: remove it on disk too, matching what commits."""
     monkeypatch.delenv(cswc.ALLOW_ENV, raising=False)
     repo = _repo(tmp_path)
-    _git(repo, "rm", "-q", "--cached", "f.txt")
+    git(repo, "rm", "-q", "--cached", "f.txt")
     assert cswc.find_stale_staged(repo) == ["f.txt"]
     (repo / "f.txt").unlink()  # the offered `rm <path>`
     assert cswc.find_stale_staged(repo) == []
@@ -277,7 +265,7 @@ def test_a_rename_whose_source_is_recreated_is_flagged(tmp_path: Path, monkeypat
     """
     monkeypatch.delenv(cswc.ALLOW_ENV, raising=False)
     repo = _repo(tmp_path)
-    _git(repo, "mv", "f.txt", "renamed.txt")
+    git(repo, "mv", "f.txt", "renamed.txt")
     (repo / "f.txt").write_text("recreated on disk\n", encoding="utf-8")
 
     # The letter-based query the first cut used sees nothing here.
@@ -297,7 +285,7 @@ def test_a_plain_rename_still_passes(tmp_path: Path, monkeypatch) -> None:
     """Control for the test above: an ordinary rename must NOT be refused."""
     monkeypatch.delenv(cswc.ALLOW_ENV, raising=False)
     repo = _repo(tmp_path)
-    _git(repo, "mv", "f.txt", "renamed.txt")  # source gone from disk, as normal
+    git(repo, "mv", "f.txt", "renamed.txt")  # source gone from disk, as normal
     assert cswc.find_stale_staged(repo) == []
     assert cswc.main(["--repo-root", str(repo)]) == 0
 
@@ -310,7 +298,7 @@ def test_a_dangling_symlink_at_an_orphaned_path_is_flagged(tmp_path: Path, monke
     """
     monkeypatch.delenv(cswc.ALLOW_ENV, raising=False)
     repo = _repo(tmp_path)
-    _git(repo, "rm", "-q", "--cached", "f.txt")
+    git(repo, "rm", "-q", "--cached", "f.txt")
     (repo / "f.txt").unlink()
     (repo / "f.txt").symlink_to(repo / "nonexistent-target")
     assert not (repo / "f.txt").exists()      # the old predicate said "gone"
@@ -330,10 +318,10 @@ def test_a_non_ascii_orphaned_path_is_flagged(tmp_path: Path, monkeypatch) -> No
     repo = _repo(tmp_path)
     name = "é.md"
     (repo / name).write_text("x\n", encoding="utf-8")
-    _git(repo, "add", name)
-    _git(repo, "commit", "-qm", "non-ascii")
-    _git(repo, "config", "core.quotePath", "true")
-    _git(repo, "rm", "-q", "--cached", name)
+    git(repo, "add", name)
+    git(repo, "commit", "-qm", "non-ascii")
+    git(repo, "config", "core.quotePath", "true")
+    git(repo, "rm", "-q", "--cached", name)
     assert cswc.find_stale_staged(repo) == [name]
     assert cswc.main(["--repo-root", str(repo)]) == 1
 
@@ -347,9 +335,9 @@ def test_orphan_remedy_enumeration_is_capped(tmp_path: Path, monkeypatch, capsys
     vendored.mkdir()
     for index in range(25):
         (vendored / f"f{index}.txt").write_text("x\n", encoding="utf-8")
-    _git(repo, "add", "vendored")
-    _git(repo, "commit", "-qm", "vendored")
-    _git(repo, "rm", "-rq", "--cached", "vendored")
+    git(repo, "add", "vendored")
+    git(repo, "commit", "-qm", "vendored")
+    git(repo, "rm", "-rq", "--cached", "vendored")
 
     assert len(cswc.find_stale_staged(repo)) == 25
     assert cswc.main(["--repo-root", str(repo)]) == 1
@@ -375,9 +363,9 @@ def test_a_case_only_respelling_is_not_an_orphan(tmp_path: Path, monkeypatch) ->
     monkeypatch.delenv(cswc.ALLOW_ENV, raising=False)
     repo = _repo(tmp_path)
     (repo / "Foo.md").write_text("v1\n", encoding="utf-8")
-    _git(repo, "add", "Foo.md")
-    _git(repo, "commit", "-qm", "add Foo.md")
-    _git(repo, "mv", "Foo.md", "foo.md")
+    git(repo, "add", "Foo.md")
+    git(repo, "commit", "-qm", "add Foo.md")
+    git(repo, "mv", "Foo.md", "foo.md")
     (repo / "Foo.md").write_text("v1\n", encoding="utf-8")  # what a case-insensitive FS shows
 
     assert "foo.md" in cswc._git_names(repo, "ls-files")
@@ -400,9 +388,9 @@ def test_case_folded_exemption_does_not_fire_on_an_unrelated_tracked_path(
     repo = _repo(tmp_path)
     (repo / "Foo.md").write_text("upper\n", encoding="utf-8")
     (repo / "foo.md").write_text("lower\n", encoding="utf-8")
-    _git(repo, "add", "Foo.md", "foo.md")
-    _git(repo, "commit", "-qm", "both spellings tracked")
-    _git(repo, "rm", "-q", "--cached", "Foo.md")  # untrack ONE of them
+    git(repo, "add", "Foo.md", "foo.md")
+    git(repo, "commit", "-qm", "both spellings tracked")
+    git(repo, "rm", "-q", "--cached", "Foo.md")  # untrack ONE of them
 
     assert (repo / "Foo.md").exists()
     assert cswc.find_stale_staged(repo) == ["Foo.md"]
@@ -423,9 +411,9 @@ def test_intent_to_add_rename_does_not_hide_a_staged_then_deleted_path(
     monkeypatch.delenv(cswc.ALLOW_ENV, raising=False)
     repo = _repo(tmp_path)
     (repo / "f.txt").write_text("v2 staged\n", encoding="utf-8")
-    _git(repo, "add", "f.txt")
+    git(repo, "add", "f.txt")
     (repo / "moved.txt").write_text("v2 staged\n", encoding="utf-8")
-    _git(repo, "add", "-N", "moved.txt")
+    git(repo, "add", "-N", "moved.txt")
     (repo / "f.txt").unlink()
 
     import subprocess as _sp
@@ -465,9 +453,9 @@ def test_a_non_utf8_filename_does_not_take_the_gate_down(tmp_path: Path, monkeyp
     raw = b"latin\xff.md"
     name = raw.decode("utf-8", errors="surrogateescape")
     (repo / name).write_bytes(b"x\n")
-    _git(repo, "add", "--", name)
-    _git(repo, "commit", "-qm", "non-utf8 name")
-    _git(repo, "rm", "-q", "--cached", "--", name)
+    git(repo, "add", "--", name)
+    git(repo, "commit", "-qm", "non-utf8 name")
+    git(repo, "rm", "-q", "--cached", "--", name)
 
     assert cswc.find_stale_staged(repo) == [name]
     assert cswc.main(["--repo-root", str(repo)]) == 1
@@ -481,7 +469,7 @@ def test_an_unreadable_path_is_treated_as_present(tmp_path: Path, monkeypatch) -
     """
     monkeypatch.delenv(cswc.ALLOW_ENV, raising=False)
     repo = _repo(tmp_path)
-    _git(repo, "rm", "-q", "--cached", "f.txt")
+    git(repo, "rm", "-q", "--cached", "f.txt")
     (repo / "f.txt").unlink()
 
     def _raise(_self):

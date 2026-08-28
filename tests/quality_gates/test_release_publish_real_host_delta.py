@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 import os
 import subprocess
@@ -13,17 +12,14 @@ from tests.quality_gates.release_publish_fixtures import (
     _install_fake_git,
     _seed_publish_release_repo,
 )
+from tests.quality_gates.seeding_support import append_text, git, load_module, write_release_surfaces
 
 ROOT = Path(__file__).resolve().parents[2]
 
 
 def _load_release_module(name: str):
     path = ROOT / f"skills/public/release/scripts/{name}.py"
-    spec = importlib.util.spec_from_file_location(name, path)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_module(name, path)
 
 
 _helpers = _load_release_module("publish_release_helpers")
@@ -32,71 +28,19 @@ _preflight = _load_release_module("publish_release_preflight")
 
 def _write_real_host_release_config(repo: Path) -> None:
     adapter_path = repo / ".agents" / "release-adapter.yaml"
-    adapter_path.write_text(
-        adapter_path.read_text(encoding="utf-8")
-        + "\nreal_host_required_path_globs:\n- README.md\nreal_host_checklist:\n- Verify on a clean host.\n",
-        encoding="utf-8",
-    )
-    (repo / ".agents" / "surfaces.json").write_text(
-        json.dumps(
-            {
-                "version": 1,
-                "surfaces": [
-                    {
-                        "surface_id": "operator-docs",
-                        "description": "Operator docs.",
-                        "source_paths": ["README.md"],
-                        "derived_paths": [],
-                        "sync_commands": [],
-                        "verify_commands": [],
-                        "notes": [],
-                    }
-                ],
-            },
-            indent=2,
-        )
-        + "\n",
-        encoding="utf-8",
-    )
+    append_text(adapter_path, "\nreal_host_required_path_globs:\n- README.md\nreal_host_checklist:\n- Verify on a clean host.\n")
+    write_release_surfaces(repo)
 
 
 def _write_broken_real_host_release_config(repo: Path) -> None:
     adapter_path = repo / ".agents" / "release-adapter.yaml"
-    adapter_path.write_text(
-        adapter_path.read_text(encoding="utf-8")
-        + "\nreal_host_required_surfaces:\n- missing-release-surface\nreal_host_checklist:\n- Verify on a clean host.\n",
-        encoding="utf-8",
-    )
-    (repo / ".agents" / "surfaces.json").write_text(
-        json.dumps(
-            {
-                "version": 1,
-                "surfaces": [
-                    {
-                        "surface_id": "operator-docs",
-                        "description": "Operator docs.",
-                        "source_paths": ["README.md"],
-                        "derived_paths": [],
-                        "sync_commands": [],
-                        "verify_commands": [],
-                        "notes": [],
-                    }
-                ],
-            },
-            indent=2,
-        )
-        + "\n",
-        encoding="utf-8",
-    )
+    append_text(adapter_path, "\nreal_host_required_surfaces:\n- missing-release-surface\nreal_host_checklist:\n- Verify on a clean host.\n")
+    write_release_surfaces(repo)
 
 
 def _write_missing_surfaces_real_host_release_config(repo: Path) -> None:
     adapter_path = repo / ".agents" / "release-adapter.yaml"
-    adapter_path.write_text(
-        adapter_path.read_text(encoding="utf-8")
-        + "\nreal_host_required_surfaces:\n- operator-docs\nreal_host_checklist:\n- Verify on a clean host.\n",
-        encoding="utf-8",
-    )
+    append_text(adapter_path, "\nreal_host_required_surfaces:\n- operator-docs\nreal_host_checklist:\n- Verify on a clean host.\n")
 
 
 def _publish_env(tmp_path: Path, bin_dir: Path) -> dict[str, str]:
@@ -126,39 +70,27 @@ def _assert_real_host_required(repo: Path, result: subprocess.CompletedProcess[s
 
 def _seed_missing_local_previous_tag_delta(tmp_path: Path) -> tuple[Path, Path]:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
-    subprocess.run(["git", "tag", "v0.0.0"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "push", "origin", "v0.0.0"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "tag", "-d", "v0.0.0"], cwd=repo, check=True, capture_output=True, text=True)
+    git(repo, "tag", "v0.0.0")
+    git(repo, "push", "origin", "v0.0.0")
+    git(repo, "tag", "-d", "v0.0.0")
     _write_real_host_release_config(repo)
     (repo / "README.md").write_text("# Demo\n\nChanged after the previous release.\n", encoding="utf-8")
-    subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(
-        ["git", "commit", "-m", "Change release surface"],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    subprocess.run(["git", "push", "origin", "main"], cwd=repo, check=True, capture_output=True, text=True)
+    git(repo, "add", "-A")
+    git(repo, "commit", "-m", "Change release surface")
+    git(repo, "push", "origin", "main")
     return repo, bin_dir
 
 
 @pytest.mark.release_only
 def test_publish_release_records_real_host_proof_for_already_pushed_tag_delta(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
-    subprocess.run(["git", "tag", "v0.0.0"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "push", "origin", "v0.0.0"], cwd=repo, check=True, capture_output=True, text=True)
+    git(repo, "tag", "v0.0.0")
+    git(repo, "push", "origin", "v0.0.0")
     _write_real_host_release_config(repo)
     (repo / "README.md").write_text("# Demo\n\nChanged after the previous release.\n", encoding="utf-8")
-    subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(
-        ["git", "commit", "-m", "Change release surface"],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    subprocess.run(["git", "push", "origin", "main"], cwd=repo, check=True, capture_output=True, text=True)
+    git(repo, "add", "-A")
+    git(repo, "commit", "-m", "Change release surface")
+    git(repo, "push", "origin", "main")
 
     result = subprocess.run(
         [
@@ -214,13 +146,7 @@ def test_publish_release_fetches_missing_previous_tag_for_real_host_proof(tmp_pa
 def test_publish_release_fails_closed_when_previous_tag_fetch_fails(tmp_path: Path) -> None:
     repo, bin_dir = _seed_missing_local_previous_tag_delta(tmp_path)
     _write_base_ref_failing_git(bin_dir)
-    before_head = subprocess.run(
-        ["git", "rev-parse", "HEAD"],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout.strip()
+    before_head = git(repo, "rev-parse", "HEAD")
     env = _publish_env(tmp_path, bin_dir)
     env["FAKE_GIT_FETCH_TAG_FAIL"] = "1"
 
@@ -252,18 +178,8 @@ def test_publish_release_fails_closed_when_previous_tag_fetch_fails(tmp_path: Pa
     assert json.loads((repo / "packaging" / "demo.json").read_text(encoding="utf-8"))["version"] == "0.0.0"
     assert not (repo / ".quality-ran").exists()
     assert not (repo / "charness-artifacts" / "release" / "latest.md").exists()
-    assert (
-        subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True)
-        .stdout.strip()
-        == before_head
-    )
-    assert subprocess.run(
-        ["git", "tag", "--list", "v0.0.1"],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout.strip() == ""
+    assert git(repo, "rev-parse", "HEAD") == before_head
+    assert git(repo, "tag", "--list", "v0.0.1") == ""
     git_log = json.loads((tmp_path / "git-log.json").read_text(encoding="utf-8"))
     gh_log_path = tmp_path / "gh-log.json"
     gh_log = json.loads(gh_log_path.read_text(encoding="utf-8")) if gh_log_path.exists() else []
@@ -311,13 +227,7 @@ def test_publish_release_dry_run_fails_closed_when_previous_tag_fetch_fails(tmp_
 def test_publish_release_fails_closed_when_previous_tag_lookup_fails(tmp_path: Path) -> None:
     repo, bin_dir = _seed_missing_local_previous_tag_delta(tmp_path)
     _write_base_ref_failing_git(bin_dir)
-    before_head = subprocess.run(
-        ["git", "rev-parse", "HEAD"],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout.strip()
+    before_head = git(repo, "rev-parse", "HEAD")
     env = _publish_env(tmp_path, bin_dir)
     env["FAKE_GIT_LS_REMOTE_PREVIOUS_TAG_FAIL"] = "1"
 
@@ -349,18 +259,8 @@ def test_publish_release_fails_closed_when_previous_tag_lookup_fails(tmp_path: P
     assert json.loads((repo / "packaging" / "demo.json").read_text(encoding="utf-8"))["version"] == "0.0.0"
     assert not (repo / ".quality-ran").exists()
     assert not (repo / "charness-artifacts" / "release" / "latest.md").exists()
-    assert (
-        subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True)
-        .stdout.strip()
-        == before_head
-    )
-    assert subprocess.run(
-        ["git", "tag", "--list", "v0.0.1"],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout.strip() == ""
+    assert git(repo, "rev-parse", "HEAD") == before_head
+    assert git(repo, "tag", "--list", "v0.0.1") == ""
     git_log = json.loads((tmp_path / "git-log.json").read_text(encoding="utf-8"))
     gh_log_path = tmp_path / "gh-log.json"
     gh_log = json.loads(gh_log_path.read_text(encoding="utf-8")) if gh_log_path.exists() else []
@@ -404,8 +304,8 @@ def test_publish_release_dry_run_fails_closed_when_previous_tag_lookup_fails(tmp
 
 def _seed_publish_current_previous_tag_delta(tmp_path: Path) -> tuple[Path, Path]:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
-    subprocess.run(["git", "tag", "v0.0.0"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "push", "origin", "v0.0.0"], cwd=repo, check=True, capture_output=True, text=True)
+    git(repo, "tag", "v0.0.0")
+    git(repo, "push", "origin", "v0.0.0")
     _write_real_host_release_config(repo)
     (repo / "README.md").write_text("# Demo\n\nChanged before publish-current.\n", encoding="utf-8")
     subprocess.run(
@@ -422,15 +322,9 @@ def _seed_publish_current_previous_tag_delta(tmp_path: Path) -> tuple[Path, Path
         capture_output=True,
         text=True,
     )
-    subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(
-        ["git", "commit", "-m", "Prepare current release"],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    subprocess.run(["git", "push", "origin", "main"], cwd=repo, check=True, capture_output=True, text=True)
+    git(repo, "add", "-A")
+    git(repo, "commit", "-m", "Prepare current release")
+    git(repo, "push", "origin", "main")
     return repo, bin_dir
 
 
@@ -438,21 +332,9 @@ def _seed_publish_current_previous_tag_delta(tmp_path: Path) -> tuple[Path, Path
 def test_publish_release_fails_closed_when_release_diff_fails(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     _write_real_host_release_config(repo)
-    subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(
-        ["git", "commit", "-m", "Configure release host proof"],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    before_head = subprocess.run(
-        ["git", "rev-parse", "HEAD"],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout.strip()
+    git(repo, "add", "-A")
+    git(repo, "commit", "-m", "Configure release host proof")
+    before_head = git(repo, "rev-parse", "HEAD")
     env = _publish_env(tmp_path, bin_dir)
     env["FAKE_GIT_DIFF_NAME_ONLY_FAIL"] = "1"
 
@@ -483,18 +365,8 @@ def test_publish_release_fails_closed_when_release_diff_fails(tmp_path: Path) ->
     assert json.loads((repo / "packaging" / "demo.json").read_text(encoding="utf-8"))["version"] == "0.0.0"
     assert not (repo / ".quality-ran").exists()
     assert not (repo / "charness-artifacts" / "release" / "latest.md").exists()
-    assert (
-        subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True)
-        .stdout.strip()
-        == before_head
-    )
-    assert subprocess.run(
-        ["git", "tag", "--list", "v0.0.1"],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout.strip() == ""
+    assert git(repo, "rev-parse", "HEAD") == before_head
+    assert git(repo, "tag", "--list", "v0.0.1") == ""
     git_log = json.loads((tmp_path / "git-log.json").read_text(encoding="utf-8"))
     gh_log = json.loads((tmp_path / "gh-log.json").read_text(encoding="utf-8"))
     assert any(entry[:2] == ["diff", "--name-only"] for entry in git_log)
@@ -528,21 +400,9 @@ def test_publish_release_dry_run_fails_closed_when_release_diff_fails(tmp_path: 
 def test_publish_release_fails_closed_when_real_host_config_is_broken(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     _write_broken_real_host_release_config(repo)
-    subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(
-        ["git", "commit", "-m", "Configure broken release host proof"],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    before_head = subprocess.run(
-        ["git", "rev-parse", "HEAD"],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout.strip()
+    git(repo, "add", "-A")
+    git(repo, "commit", "-m", "Configure broken release host proof")
+    before_head = git(repo, "rev-parse", "HEAD")
 
     result = subprocess.run(
         [
@@ -570,18 +430,8 @@ def test_publish_release_fails_closed_when_real_host_config_is_broken(tmp_path: 
     assert json.loads((repo / "packaging" / "demo.json").read_text(encoding="utf-8"))["version"] == "0.0.0"
     assert not (repo / ".quality-ran").exists()
     assert not (repo / "charness-artifacts" / "release" / "latest.md").exists()
-    assert (
-        subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True)
-        .stdout.strip()
-        == before_head
-    )
-    assert subprocess.run(
-        ["git", "tag", "--list", "v0.0.1"],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout.strip() == ""
+    assert git(repo, "rev-parse", "HEAD") == before_head
+    assert git(repo, "tag", "--list", "v0.0.1") == ""
     git_log = json.loads((tmp_path / "git-log.json").read_text(encoding="utf-8"))
     gh_log = json.loads((tmp_path / "gh-log.json").read_text(encoding="utf-8"))
     assert ["commit", "-m", "Release v0.0.1"] not in git_log
@@ -611,21 +461,9 @@ def test_publish_release_dry_run_fails_closed_when_real_host_config_is_broken(tm
 def test_publish_release_fails_closed_when_real_host_builder_cannot_run(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     _write_missing_surfaces_real_host_release_config(repo)
-    subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(
-        ["git", "commit", "-m", "Configure release host proof without surfaces"],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    before_head = subprocess.run(
-        ["git", "rev-parse", "HEAD"],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout.strip()
+    git(repo, "add", "-A")
+    git(repo, "commit", "-m", "Configure release host proof without surfaces")
+    before_head = git(repo, "rev-parse", "HEAD")
 
     result = subprocess.run(
         [
@@ -653,18 +491,8 @@ def test_publish_release_fails_closed_when_real_host_builder_cannot_run(tmp_path
     assert json.loads((repo / "packaging" / "demo.json").read_text(encoding="utf-8"))["version"] == "0.0.0"
     assert not (repo / ".quality-ran").exists()
     assert not (repo / "charness-artifacts" / "release" / "latest.md").exists()
-    assert (
-        subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True)
-        .stdout.strip()
-        == before_head
-    )
-    assert subprocess.run(
-        ["git", "tag", "--list", "v0.0.1"],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout.strip() == ""
+    assert git(repo, "rev-parse", "HEAD") == before_head
+    assert git(repo, "tag", "--list", "v0.0.1") == ""
     gh_log = json.loads((tmp_path / "gh-log.json").read_text(encoding="utf-8"))
     assert not any(entry[:2] == ["release", "create"] for entry in gh_log)
 

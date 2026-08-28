@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-import importlib.util
 import os
 import re
 import subprocess
 from pathlib import Path
+
+from .seeding_support import load_module
 
 RUNTIME_PATH = (
     Path(__file__).resolve().parents[2]
@@ -17,11 +18,7 @@ RUNTIME_PATH = (
 
 
 def _load_runtime():
-    spec = importlib.util.spec_from_file_location("publish_release_failure_record_under_test", RUNTIME_PATH)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_module("publish_release_failure_record_under_test", RUNTIME_PATH)
 
 
 def _seed_repo(tmp_path: Path) -> Path:

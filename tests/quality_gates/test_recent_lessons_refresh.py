@@ -7,6 +7,7 @@ from types import SimpleNamespace
 import yaml
 
 from runtime_bootstrap import import_repo_module
+from tests.quality_gates.seeding_support import write_retro_adapter
 
 ROOT = Path(__file__).resolve().parents[2]
 _refresh_recent_lessons = import_repo_module(
@@ -25,23 +26,7 @@ def run_refresh(monkeypatch, capsys, *args: str) -> SimpleNamespace:
 def test_refresh_recent_lessons_from_latest_retro_artifact(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     output_dir = repo / "charness-artifacts" / "retro"
-    output_dir.mkdir(parents=True)
-    (repo / ".agents").mkdir()
-    (repo / ".agents" / "retro-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: demo",
-                "language: en",
-                "output_dir: charness-artifacts/retro",
-                "summary_path: charness-artifacts/retro/recent-lessons.md",
-                "evidence_paths: []",
-                "metrics_commands: []",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
-    )
+    write_retro_adapter(repo)
     older = output_dir / "session-2026-04-10.md"
     older.write_text("## Context\n- old\n", encoding="utf-8")
     latest = output_dir / "weekly-2026-04-14.md"
@@ -90,23 +75,7 @@ def test_refresh_recent_lessons_from_latest_retro_artifact(tmp_path: Path, monke
 def test_refresh_recent_lessons_accepts_explicit_source(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     output_dir = repo / "charness-artifacts" / "retro"
-    output_dir.mkdir(parents=True)
-    (repo / ".agents").mkdir()
-    (repo / ".agents" / "retro-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: demo",
-                "language: en",
-                "output_dir: charness-artifacts/retro",
-                "summary_path: charness-artifacts/retro/recent-lessons.md",
-                "evidence_paths: []",
-                "metrics_commands: []",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
-    )
+    write_retro_adapter(repo)
     source = output_dir / "session-2026-04-15.md"
     source.write_text(
         "\n".join(

@@ -5,7 +5,6 @@ These cases verify that process/media success cannot be consumed as reviewer app
 from __future__ import annotations
 
 import hashlib
-import importlib.util
 import json
 import os
 import subprocess
@@ -25,6 +24,7 @@ from tests.quality_gates.reviewer_capability_support import (
     unavailable_optional_capability,
 )
 from tests.quality_gates.support import ROOT, run_script
+from tests.quality_gates.seeding_support import load_module, verify_closeout_args
 
 SCRIPT = "skills/public/issue/scripts/issue_tool.py"
 CRITIQUE_REL = "charness-artifacts/critique/res-42.md"
@@ -36,28 +36,16 @@ CONTRACT_AGENTS_MD = (
 
 def _load_observer():
     path = ROOT / "skills" / "public" / "issue" / "scripts" / "issue_critique_observer.py"
-    spec = importlib.util.spec_from_file_location("issue_critique_observer_worker_tests", path)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_module("issue_critique_observer_worker_tests", path)
 
 
 def _load_resolution_critique():
     path = ROOT / "skills" / "public" / "issue" / "scripts" / "issue_resolution_critique.py"
-    spec = importlib.util.spec_from_file_location("issue_resolution_critique_worker_tests", path)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_module("issue_resolution_critique_worker_tests", path)
 
 
 def _verify(repo: Path):
-    return run_script(
-        SCRIPT, "verify-closeout", "--repo-root", str(repo),
-        "--repo", "corca-ai/charness", "--number", "42",
-        "--classification", "bug", "--carrier", "direct-commit", "--commit-ref", "HEAD",
-    )
+    return run_script(SCRIPT, *verify_closeout_args(repo, commit_ref="HEAD"))
 
 
 def _seed(repo: Path, *, satisfaction: str | None, contract: bool) -> None:

@@ -3,27 +3,15 @@
 from __future__ import annotations
 
 import json
-import subprocess
 from pathlib import Path
-from textwrap import dedent
 
 from scripts.check_mutation_score import (
     iter_dump_records,
     mutation_metrics,
     summarize_cosmic_ray,
 )
-
-ROOT = Path(__file__).resolve().parents[2]
-
-_ADAPTER_HEADER = dedent(
-    """\
-    version: 1
-    repo: testrepo
-    language: en
-    output_dir: charness-artifacts/quality
-    """
-)
-
+from .support import run_script
+from .seeding_support import write_json, write_mutation_score_adapter
 
 def test_cosmic_ray_dump_summary_counts_reachable_denominator(tmp_path: Path) -> None:
     dump = tmp_path / "dump.jsonl"
@@ -95,36 +83,11 @@ def test_mutation_metrics_fail_when_no_tests_mutants_exist() -> None:
 
 
 def test_check_mutation_score_fails_zero_reachable_dump(tmp_path: Path) -> None:
-    (tmp_path / ".agents").mkdir()
-    (tmp_path / ".agents" / "quality-adapter.yaml").write_text(
-        _ADAPTER_HEADER
-        + dedent(
-            """\
-            mutation_testing:
-              score_break: 50
-              report_paths:
-                summary_md: reports/mutation/summary.md
-            """
-        ),
-        encoding="utf-8",
-    )
+    write_mutation_score_adapter(tmp_path)
     dump = tmp_path / "dump.jsonl"
     dump.write_text(json.dumps([{"job_id": "a"}, None]) + "\n", encoding="utf-8")
 
-    result = subprocess.run(
-        [
-            "python3",
-            "scripts/check_mutation_score.py",
-            "--repo-root",
-            str(tmp_path),
-            "--stats",
-            str(dump),
-        ],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    result = run_script("scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump))
 
     assert result.returncode == 1
     summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
@@ -144,19 +107,7 @@ def test_check_mutation_score_fails_zero_reachable_dump(tmp_path: Path) -> None:
 
 
 def test_check_mutation_score_fails_no_tests_dump(tmp_path: Path) -> None:
-    (tmp_path / ".agents").mkdir()
-    (tmp_path / ".agents" / "quality-adapter.yaml").write_text(
-        _ADAPTER_HEADER
-        + dedent(
-            """\
-            mutation_testing:
-              score_break: 50
-              report_paths:
-                summary_md: reports/mutation/summary.md
-            """
-        ),
-        encoding="utf-8",
-    )
+    write_mutation_score_adapter(tmp_path)
     dump = tmp_path / "dump.jsonl"
     dump.write_text(
         "\n".join(
@@ -169,20 +120,7 @@ def test_check_mutation_score_fails_no_tests_dump(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    result = subprocess.run(
-        [
-            "python3",
-            "scripts/check_mutation_score.py",
-            "--repo-root",
-            str(tmp_path),
-            "--stats",
-            str(dump),
-        ],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    result = run_script("scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump))
 
     assert result.returncode == 1
     summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
@@ -196,19 +134,7 @@ def test_check_mutation_score_fails_no_tests_dump(tmp_path: Path) -> None:
 
 
 def test_check_mutation_score_fails_scope_gap_skips(tmp_path: Path) -> None:
-    (tmp_path / ".agents").mkdir()
-    (tmp_path / ".agents" / "quality-adapter.yaml").write_text(
-        _ADAPTER_HEADER
-        + dedent(
-            """\
-            mutation_testing:
-              score_break: 50
-              report_paths:
-                summary_md: reports/mutation/summary.md
-            """
-        ),
-        encoding="utf-8",
-    )
+    write_mutation_score_adapter(tmp_path)
     dump = tmp_path / "dump.jsonl"
     dump.write_text(
         "\n".join(
@@ -230,20 +156,7 @@ def test_check_mutation_score_fails_scope_gap_skips(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    result = subprocess.run(
-        [
-            "python3",
-            "scripts/check_mutation_score.py",
-            "--repo-root",
-            str(tmp_path),
-            "--stats",
-            str(dump),
-        ],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    result = run_script("scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump))
 
     assert result.returncode == 1
     summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
@@ -252,19 +165,7 @@ def test_check_mutation_score_fails_scope_gap_skips(tmp_path: Path) -> None:
 
 
 def _write_score_fixture(tmp_path: Path, sample_payload: dict | str | None) -> Path:
-    (tmp_path / ".agents").mkdir()
-    (tmp_path / ".agents" / "quality-adapter.yaml").write_text(
-        _ADAPTER_HEADER
-        + dedent(
-            """\
-            mutation_testing:
-              score_break: 50
-              report_paths:
-                summary_md: reports/mutation/summary.md
-            """
-        ),
-        encoding="utf-8",
-    )
+    write_mutation_score_adapter(tmp_path)
     reports = tmp_path / "reports" / "mutation"
     reports.mkdir(parents=True)
     if isinstance(sample_payload, dict):
@@ -283,13 +184,7 @@ def _write_score_fixture(tmp_path: Path, sample_payload: dict | str | None) -> P
 def test_check_mutation_score_fails_missing_sample_manifest(tmp_path: Path) -> None:
     dump = _write_score_fixture(tmp_path, sample_payload=None)
 
-    result = subprocess.run(
-        ["python3", "scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump)],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    result = run_script("scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump))
 
     assert result.returncode == 1
     summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
@@ -299,13 +194,7 @@ def test_check_mutation_score_fails_missing_sample_manifest(tmp_path: Path) -> N
 def test_check_mutation_score_fails_malformed_sample_manifest(tmp_path: Path) -> None:
     dump = _write_score_fixture(tmp_path, sample_payload="{not-json\n")
 
-    result = subprocess.run(
-        ["python3", "scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump)],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    result = run_script("scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump))
 
     assert result.returncode == 1
     summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
@@ -315,13 +204,7 @@ def test_check_mutation_score_fails_malformed_sample_manifest(tmp_path: Path) ->
 def test_check_mutation_score_fails_non_object_sample_manifest(tmp_path: Path) -> None:
     dump = _write_score_fixture(tmp_path, sample_payload="[]\n")
 
-    result = subprocess.run(
-        ["python3", "scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump)],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    result = run_script("scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump))
 
     assert result.returncode == 1
     summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
@@ -331,13 +214,7 @@ def test_check_mutation_score_fails_non_object_sample_manifest(tmp_path: Path) -
 def test_check_mutation_score_fails_missing_base_sha_sample_manifest(tmp_path: Path) -> None:
     dump = _write_score_fixture(tmp_path, sample_payload={})
 
-    result = subprocess.run(
-        ["python3", "scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump)],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    result = run_script("scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump))
 
     assert result.returncode == 1
     summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
@@ -347,13 +224,7 @@ def test_check_mutation_score_fails_missing_base_sha_sample_manifest(tmp_path: P
 def test_check_mutation_score_fails_empty_base_sha_sample_manifest(tmp_path: Path) -> None:
     dump = _write_score_fixture(tmp_path, sample_payload={"base_sha": ""})
 
-    result = subprocess.run(
-        ["python3", "scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump)],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    result = run_script("scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump))
 
     assert result.returncode == 1
     summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
@@ -366,13 +237,7 @@ def test_check_mutation_score_fails_wrong_typed_scope_gap_section(tmp_path: Path
         sample_payload={"base_sha": None, "uncovered_changed_files": "scripts/changed.py"},
     )
 
-    result = subprocess.run(
-        ["python3", "scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump)],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    result = run_script("scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump))
 
     assert result.returncode == 1
     summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
@@ -388,13 +253,7 @@ def test_check_mutation_score_fails_non_string_scope_gap_entry(tmp_path: Path) -
         sample_payload={"base_sha": None, "uncovered_changed_files": ["scripts/changed.py", 3]},
     )
 
-    result = subprocess.run(
-        ["python3", "scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump)],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    result = run_script("scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump))
 
     assert result.returncode == 1
     summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
@@ -409,13 +268,7 @@ def test_check_mutation_score_allows_manifest_with_changed_file_proof_disabled(
 ) -> None:
     dump = _write_score_fixture(tmp_path, sample_payload={"base_sha": None})
 
-    result = subprocess.run(
-        ["python3", "scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump)],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    result = run_script("scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump))
 
     assert result.returncode == 0, result.stderr
     summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
@@ -424,19 +277,7 @@ def test_check_mutation_score_allows_manifest_with_changed_file_proof_disabled(
 
 
 def test_check_mutation_score_fails_when_changed_lines_uncovered(tmp_path: Path) -> None:
-    (tmp_path / ".agents").mkdir()
-    (tmp_path / ".agents" / "quality-adapter.yaml").write_text(
-        _ADAPTER_HEADER
-        + dedent(
-            """\
-            mutation_testing:
-              score_break: 50
-              report_paths:
-                summary_md: reports/mutation/summary.md
-            """
-        ),
-        encoding="utf-8",
-    )
+    write_mutation_score_adapter(tmp_path)
     reports = tmp_path / "reports" / "mutation"
     reports.mkdir(parents=True)
     (reports / "sample.json").write_text(
@@ -459,20 +300,7 @@ def test_check_mutation_score_fails_when_changed_lines_uncovered(tmp_path: Path)
         encoding="utf-8",
     )
 
-    result = subprocess.run(
-        [
-            "python3",
-            "scripts/check_mutation_score.py",
-            "--repo-root",
-            str(tmp_path),
-            "--stats",
-            str(dump),
-        ],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    result = run_script("scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump))
 
     assert result.returncode == 1
     summary = (reports / "summary.md").read_text(encoding="utf-8")
@@ -494,19 +322,7 @@ def test_check_mutation_score_fails_when_changed_lines_uncovered(tmp_path: Path)
 def test_check_mutation_score_fails_changed_line_blocker_without_exact_targets(
     tmp_path: Path,
 ) -> None:
-    (tmp_path / ".agents").mkdir()
-    (tmp_path / ".agents" / "quality-adapter.yaml").write_text(
-        _ADAPTER_HEADER
-        + dedent(
-            """\
-            mutation_testing:
-              score_break: 50
-              report_paths:
-                summary_md: reports/mutation/summary.md
-            """
-        ),
-        encoding="utf-8",
-    )
+    write_mutation_score_adapter(tmp_path)
     reports = tmp_path / "reports" / "mutation"
     reports.mkdir(parents=True)
     (reports / "sample.json").write_text(
@@ -526,20 +342,7 @@ def test_check_mutation_score_fails_changed_line_blocker_without_exact_targets(
         encoding="utf-8",
     )
 
-    result = subprocess.run(
-        [
-            "python3",
-            "scripts/check_mutation_score.py",
-            "--repo-root",
-            str(tmp_path),
-            "--stats",
-            str(dump),
-        ],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    result = run_script("scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump))
 
     assert result.returncode == 1
     summary = (reports / "summary.md").read_text(encoding="utf-8")
@@ -552,19 +355,7 @@ def test_check_mutation_score_passes_when_budgets_drop_covered_changed_files(tmp
     # arm, which scans ALL eligible changed files independent of sampling.
     # Before this, any push changing more files than `max_files` guaranteed a
     # red scheduled run (run 27279937136: score PASS, red purely on 10-vs-5).
-    (tmp_path / ".agents").mkdir()
-    (tmp_path / ".agents" / "quality-adapter.yaml").write_text(
-        _ADAPTER_HEADER
-        + dedent(
-            """\
-            mutation_testing:
-              score_break: 50
-              report_paths:
-                summary_md: reports/mutation/summary.md
-            """
-        ),
-        encoding="utf-8",
-    )
+    write_mutation_score_adapter(tmp_path)
     reports = tmp_path / "reports" / "mutation"
     reports.mkdir(parents=True)
     (reports / "sample.json").write_text(
@@ -585,20 +376,7 @@ def test_check_mutation_score_passes_when_budgets_drop_covered_changed_files(tmp
         encoding="utf-8",
     )
 
-    result = subprocess.run(
-        [
-            "python3",
-            "scripts/check_mutation_score.py",
-            "--repo-root",
-            str(tmp_path),
-            "--stats",
-            str(dump),
-        ],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    result = run_script("scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump))
 
     assert result.returncode == 0, result.stdout + result.stderr
     summary = (reports / "summary.md").read_text(encoding="utf-8")
@@ -616,19 +394,7 @@ def test_check_mutation_score_passes_when_only_whole_file_coverage_excludes_chan
     # Whole-file coverage-floor / mutation-line exclusions are advisory: a
     # well-tested change must not fail because unrelated pre-existing lines in a
     # touched file are uncovered. Only the changed-line blocker fails closed.
-    (tmp_path / ".agents").mkdir()
-    (tmp_path / ".agents" / "quality-adapter.yaml").write_text(
-        _ADAPTER_HEADER
-        + dedent(
-            """\
-            mutation_testing:
-              score_break: 50
-              report_paths:
-                summary_md: reports/mutation/summary.md
-            """
-        ),
-        encoding="utf-8",
-    )
+    write_mutation_score_adapter(tmp_path)
     reports = tmp_path / "reports" / "mutation"
     reports.mkdir(parents=True)
     (reports / "sample.json").write_text(
@@ -656,20 +422,7 @@ def test_check_mutation_score_passes_when_only_whole_file_coverage_excludes_chan
         encoding="utf-8",
     )
 
-    result = subprocess.run(
-        [
-            "python3",
-            "scripts/check_mutation_score.py",
-            "--repo-root",
-            str(tmp_path),
-            "--stats",
-            str(dump),
-        ],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    result = run_script("scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump))
 
     assert result.returncode == 0, result.stderr
     summary = (reports / "summary.md").read_text(encoding="utf-8")

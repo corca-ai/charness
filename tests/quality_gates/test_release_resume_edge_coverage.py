@@ -1,7 +1,6 @@
 """Focused edge coverage for release closeout recovery helpers."""
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
 from types import SimpleNamespace
@@ -9,17 +8,14 @@ from types import SimpleNamespace
 import pytest
 import yaml
 
+from .seeding_support import load_module
+
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPTS = ROOT / "skills" / "public" / "release" / "scripts"
 
 
 def _load(name: str):
-    path = SCRIPTS / f"{name}.py"
-    spec = importlib.util.spec_from_file_location(f"{name}_edge_coverage", path)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_module(f"{name}_edge_coverage", SCRIPTS / f"{name}.py")
 
 
 RESUME_CLOSEOUT = _load("publish_release_resume_closeout")

@@ -8,6 +8,7 @@ import pytest
 import yaml
 
 from runtime_bootstrap import import_repo_module
+from tests.quality_gates.seeding_support import write_retro_adapter
 
 ROOT = Path(__file__).resolve().parents[2]
 _persist_retro_artifact = import_repo_module(
@@ -32,23 +33,7 @@ def test_persist_retro_artifact_writes_artifact_snapshot_and_recent_lessons(
 ) -> None:
     repo = tmp_path / "repo"
     output_dir = repo / "charness-artifacts" / "retro"
-    output_dir.mkdir(parents=True)
-    (repo / ".agents").mkdir()
-    (repo / ".agents" / "retro-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: demo",
-                "language: en",
-                "output_dir: charness-artifacts/retro",
-                "summary_path: charness-artifacts/retro/recent-lessons.md",
-                "evidence_paths: []",
-                "metrics_commands: []",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
-    )
+    write_retro_adapter(repo)
     markdown_file = repo / "weekly.md"
     markdown_file.write_text(
         "\n".join(
@@ -102,22 +87,7 @@ def test_persist_retro_artifact_stamps_persisted_path(tmp_path: Path, monkeypatc
     # the retro H0 fresh-eye caught: two byte-identical edits + a verifying read).
     repo = tmp_path / "repo"
     output_dir = repo / "charness-artifacts" / "retro"
-    output_dir.mkdir(parents=True)
-    (repo / ".agents").mkdir()
-    (repo / ".agents" / "retro-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: demo",
-                "language: en",
-                "output_dir: charness-artifacts/retro",
-                "evidence_paths: []",
-                "metrics_commands: []",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
-    )
+    write_retro_adapter(repo, include_summary_path=False)
     markdown_file = repo / "session.md"
     markdown_file.write_text(
         "\n".join(["# Session Retro", "", "## Persisted", "", "Persisted: yes: TODO path", ""]) + "\n",
@@ -147,23 +117,7 @@ def test_persist_retro_artifact_skips_self_refresh_for_summary_target(
 ) -> None:
     repo = tmp_path / "repo"
     output_dir = repo / "charness-artifacts" / "retro"
-    output_dir.mkdir(parents=True)
-    (repo / ".agents").mkdir()
-    (repo / ".agents" / "retro-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: demo",
-                "language: en",
-                "output_dir: charness-artifacts/retro",
-                "summary_path: charness-artifacts/retro/recent-lessons.md",
-                "evidence_paths: []",
-                "metrics_commands: []",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
-    )
+    write_retro_adapter(repo)
     markdown_file = repo / "summary.md"
     markdown_file.write_text("# Recent Retro Lessons\n", encoding="utf-8")
 
@@ -181,25 +135,6 @@ def test_persist_retro_artifact_skips_self_refresh_for_summary_target(
     payload = yaml.safe_load(result.stdout)
     assert payload["artifact_path"] == "charness-artifacts/retro/recent-lessons.md"
     assert payload["summary_refreshed"] is False
-
-
-def _write_default_adapter(repo: Path) -> None:
-    (repo / ".agents").mkdir(parents=True, exist_ok=True)
-    (repo / ".agents" / "retro-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: demo",
-                "language: en",
-                "output_dir: charness-artifacts/retro",
-                "summary_path: charness-artifacts/retro/recent-lessons.md",
-                "evidence_paths: []",
-                "metrics_commands: []",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
-    )
 
 
 def _write_goal(repo: Path, slug: str = "owner") -> Path:
@@ -279,7 +214,7 @@ def test_goal_aware_persistence_accepts_matching_path_at_cli_boundary(
     tmp_path: Path, monkeypatch, capsys
 ) -> None:
     repo = tmp_path / "repo"
-    _write_default_adapter(repo)
+    write_retro_adapter(repo)
     goal = _write_goal(repo)
     outside = tmp_path / "outside"
     outside.mkdir()
@@ -348,7 +283,7 @@ def test_goal_aware_mismatch_or_malformed_identity_writes_nothing(
     tmp_path: Path, markdown_text: str
 ) -> None:
     repo = tmp_path / "repo"
-    _write_default_adapter(repo)
+    write_retro_adapter(repo)
     goal = _write_goal(repo)
     markdown_file = repo / "goal-retro.md"
     markdown_file.write_text(markdown_text, encoding="utf-8")
@@ -369,7 +304,7 @@ def test_goal_aware_mismatch_or_malformed_identity_writes_nothing(
 
 def test_goal_aware_missing_goal_path_writes_nothing(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    _write_default_adapter(repo)
+    write_retro_adapter(repo)
     markdown_text = _goal_retro("owner")
     before = _tree_snapshot(repo)
 
@@ -390,7 +325,7 @@ def test_goal_aware_library_accepts_exact_slug_and_legacy_mode_stays_goal_free(
     tmp_path: Path, monkeypatch, capsys
 ) -> None:
     repo = tmp_path / "repo"
-    _write_default_adapter(repo)
+    write_retro_adapter(repo)
     goal = _write_goal(repo)
     goal_retro = _goal_retro("owner")
     result = _persistence_lib.persist_retro_artifact(
@@ -428,7 +363,7 @@ def test_persist_retro_artifact_normalizes_artifact_name_without_md_extension(
     repo = tmp_path / "repo"
     output_dir = repo / "charness-artifacts" / "retro"
     output_dir.mkdir(parents=True)
-    _write_default_adapter(repo)
+    write_retro_adapter(repo)
     markdown_file = repo / "session.md"
     markdown_file.write_text(
         "\n".join(
@@ -478,7 +413,7 @@ def test_persist_retro_artifact_preserves_legacy_summary_when_no_candidates(
     repo = tmp_path / "repo"
     output_dir = repo / "charness-artifacts" / "retro"
     output_dir.mkdir(parents=True)
-    _write_default_adapter(repo)
+    write_retro_adapter(repo)
     legacy_summary = output_dir / "recent-lessons.md"
     legacy_text = (
         "# Recent Retro Lessons\n\n"
@@ -519,7 +454,7 @@ def test_persist_retro_artifact_force_empty_summary_opts_in(
     repo = tmp_path / "repo"
     output_dir = repo / "charness-artifacts" / "retro"
     output_dir.mkdir(parents=True)
-    _write_default_adapter(repo)
+    write_retro_adapter(repo)
     legacy_summary = output_dir / "recent-lessons.md"
     legacy_text = (
         "# Recent Retro Lessons\n\n"

@@ -1,0 +1,379 @@
+"""Small, behavior-neutral primitives for synthetic quality-gate fixtures."""
+
+from __future__ import annotations
+
+import contextlib
+import importlib.util
+import io
+import json
+import os
+import subprocess
+import sys
+from pathlib import Path
+from types import ModuleType, SimpleNamespace
+from typing import Callable, Mapping, Sequence
+
+
+def make_repo(tmp_path: Path, name: str = "repo", *, parents: bool = False) -> Path:
+    """Create and return a fresh temporary repository directory."""
+    repo = tmp_path / name
+    repo.mkdir(parents=parents)
+    return repo
+
+
+def write_text(path: Path, contents: str) -> Path:
+    """Write a fixture file, creating its parent directory when needed."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(contents, encoding="utf-8")
+    return path
+
+
+def write_lines(path: Path, lines: Sequence[str]) -> Path:
+    """Write a newline-terminated line fixture with its parent directory."""
+    return write_text(path, "\n".join(lines) + "\n")
+
+
+def write_json(path: Path, payload: object, *, indent: int | None = 2) -> Path:
+    """Write a newline-terminated JSON fixture."""
+    return write_text(path, json.dumps(payload, indent=indent) + "\n")
+
+
+def append_text(path: Path, contents: str) -> Path:
+    """Append UTF-8 fixture text while retaining the file's existing contents."""
+    return write_text(path, path.read_text(encoding="utf-8") + contents)
+
+
+def write_files(root: Path, files: Mapping[str, str]) -> None:
+    """Write a small named fixture set relative to ``root``."""
+    for relative, contents in files.items():
+        write_text(root / relative, contents)
+
+
+def write_skill(
+    repo: Path,
+    body: Sequence[str],
+    *,
+    skill_id: str = "demo",
+    description: str = "Demo skill.",
+    package: str = "public",
+    title: str | None = None,
+) -> Path:
+    """Write a small skill with the shared package front matter."""
+    skill_dir = repo / "skills" / package / skill_id
+    title = title or skill_id.replace("-", " ").title()
+    lines = [
+        "---",
+        f"name: {skill_id}",
+        f'description: "{description}"',
+        "---",
+        "",
+        f"# {title}",
+        "",
+        *body,
+    ]
+    return write_text(skill_dir / "SKILL.md", "\n".join(lines) + "\n")
+
+
+def write_quality_adapter(
+    repo: Path,
+    lines: Sequence[str],
+    *,
+    repo_name: str = "repo",
+    language: str | None = None,
+) -> Path:
+    """Write a quality adapter with the shared fixture defaults."""
+    adapter_lines = [
+        "version: 1",
+        f"repo: {repo_name}",
+        *([f"language: {language}"] if language is not None else []),
+        "output_dir: charness-artifacts/quality",
+        *lines,
+    ]
+    return write_text(
+        repo / ".agents" / "quality-adapter.yaml",
+        "\n".join(adapter_lines) + "\n",
+    )
+
+
+def write_surface(
+    repo: Path,
+    surface_id: str,
+    description: str,
+    source_paths: Sequence[str],
+    *,
+    derived_paths: Sequence[str] = (),
+) -> Path:
+    """Write one small surface declaration for repository fixture tests."""
+    surface = {
+        "surface_id": surface_id,
+        "description": description,
+        "source_paths": list(source_paths),
+        "derived_paths": list(derived_paths),
+        "sync_commands": [],
+        "verify_commands": [],
+        "notes": [],
+    }
+    return write_json(repo / ".agents" / "surfaces.json", {"version": 1, "surfaces": [surface]})
+
+
+def write_release_adapter(
+    repo: Path,
+    lines: Sequence[str] = (),
+    *,
+    repo_name: str = "demo",
+    language: str | None = "en",
+    output_dir: str = "charness-artifacts/release",
+) -> Path:
+    """Write the compact release adapter shared by publish fixtures."""
+    adapter_lines = ["version: 1", f"repo: {repo_name}"]
+    if language is not None:
+        adapter_lines.append(f"language: {language}")
+    adapter_lines.extend([f"output_dir: {output_dir}", *lines])
+    return write_lines(repo / ".agents" / "release-adapter.yaml", adapter_lines)
+
+
+def write_mutation_score_adapter(repo: Path, *, score_break: int = 50) -> Path:
+    """Write the compact mutation-score adapter shared by score fixtures."""
+    return write_quality_adapter(
+        repo,
+        [
+            "mutation_testing:",
+            f"  score_break: {score_break}",
+            "  report_paths:",
+            "    summary_md: reports/mutation/summary.md",
+        ],
+        repo_name="testrepo",
+        language="en",
+    )
+
+
+def write_retro_adapter(repo: Path, *, include_summary_path: bool = True) -> Path:
+    """Create the standard retro output directory and adapter fixture."""
+    (repo / "charness-artifacts" / "retro").mkdir(parents=True, exist_ok=True)
+    lines = [
+        "version: 1",
+        "repo: demo",
+        "language: en",
+        "output_dir: charness-artifacts/retro",
+    ]
+    if include_summary_path:
+        lines.append("summary_path: charness-artifacts/retro/recent-lessons.md")
+    lines.extend(["evidence_paths: []", "metrics_commands: []"])
+    return write_text(repo / ".agents" / "retro-adapter.yaml", "\n".join(lines) + "\n")
+
+
+def write_release_surfaces(repo: Path) -> Path:
+    """Write the operator-docs surface used by release fixture repositories."""
+    return write_surface(
+        repo, "operator-docs", "Operator docs.", ["README.md"]
+    )
+
+
+def write_executable(path: Path, contents: str) -> Path:
+    """Write an executable fixture script and return its path."""
+    write_text(path, contents)
+    path.chmod(0o755)
+    return path
+
+
+def write_python_executable(path: Path, body: Sequence[str]) -> Path:
+    """Write a Python fixture executable with its standard interpreter line."""
+    return write_executable(
+        path,
+        "\n".join(["#!/usr/bin/env python3", *body, ""]),
+    )
+
+
+def write_json_executable(path: Path, payload: Mapping[str, object], *, trigger: str = "view") -> Path:
+    """Write a fake command that emits a fixed JSON payload for one operation."""
+    payload_text = json.dumps(payload)
+    return write_python_executable(
+        path,
+        ["import sys", f"if {trigger!r} in sys.argv: print({payload_text!r})"],
+    )
+
+
+def write_view_executable(path: Path, output: str, *, exit_code: int = 0) -> Path:
+    """Write a fake command that returns a fixed preflight view result."""
+    return write_python_executable(
+        path,
+        [
+            "import sys",
+            "if 'view' in sys.argv:",
+            f"    print({output!r})",
+            f"    raise SystemExit({exit_code})",
+            "print('unexpected mutation')",
+        ],
+    )
+
+
+def write_issue_close_fake(
+    bin_dir: Path,
+    *,
+    name: str = "gh",
+    log_env: str = "GH_LOG",
+    number: int = 42,
+    state: str = "CLOSED",
+    repo: str = "corca-ai/charness",
+) -> Path:
+    """Write the argv-logging close/comment/view fake shared by issue tests."""
+    fake = bin_dir / name
+    body = [
+        "import json, os, sys",
+        "from pathlib import Path",
+        f"log = Path(os.environ[{log_env!r}])",
+        "entries = json.loads(log.read_text()) if log.exists() else []",
+        "entries.append(sys.argv[1:])",
+        "log.write_text(json.dumps(entries))",
+        "if 'comment' in sys.argv: print('commented')",
+        "if 'close' in sys.argv: print('closed')",
+        (
+            f"if 'view' in sys.argv: print(json.dumps({{'number': {number}, "
+            f"'state': {state!r}, 'url': 'https://github.com/{repo}/issues/{number}'}}))"
+        ),
+    ]
+    return write_python_executable(fake, body)
+
+
+def load_module(module_name: str, module_path: Path, *, register: bool = False) -> ModuleType:
+    """Load a script from a path, preserving the caller's registration choice."""
+    spec = importlib.util.spec_from_file_location(module_name, module_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Unable to load {module_path}")
+    module = importlib.util.module_from_spec(spec)
+    if register:
+        sys.modules[module_name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def run_main(main: Callable[[], int], argv0: str, *args: str) -> SimpleNamespace:
+    """Run a loaded CLI main with captured streams, without a child process."""
+    out, err = io.StringIO(), io.StringIO()
+    saved_argv = sys.argv
+    sys.argv = [argv0, *args]
+    try:
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            code = main()
+    finally:
+        sys.argv = saved_argv
+    return SimpleNamespace(returncode=code, stdout=out.getvalue(), stderr=err.getvalue())
+
+
+def git(repo: Path, *args: str) -> str:
+    """Run a fixture-repository git command and return trimmed stdout."""
+    return subprocess.run(
+        ["git", "-c", "user.email=t@t", "-c", "user.name=t", *args],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+
+
+def init_git_repo(tmp_path: Path, name: str = "repo") -> Path:
+    """Create a temporary repository and initialize its git metadata."""
+    repo = make_repo(tmp_path, name)
+    git(repo, "init", "-q")
+    return repo
+
+
+def seed_two_changed_pool_files(tmp_path: Path) -> tuple[Path, str, str]:
+    """Create the shared two-file git history used by changed-line tests."""
+    repo = make_repo(tmp_path)
+    scripts = repo / "scripts"
+    scripts.mkdir(parents=True)
+    git(repo, "init", "-q")
+    for name in ("foo.py", "bar.py"):
+        write_text(scripts / name, "def a():\n    return 1\n")
+    git(repo, "add", "-A")
+    git(repo, "commit", "-q", "-m", "base")
+    base = git(repo, "rev-parse", "HEAD")
+    for name in ("foo.py", "bar.py"):
+        write_text(scripts / name, "def a():\n    return 1\n\n\ndef b():\n    return 2\n")
+    git(repo, "add", "-A")
+    git(repo, "commit", "-q", "-m", "head")
+    return repo, base, git(repo, "rev-parse", "HEAD")
+
+
+def seed_commit(repo: Path, body: str) -> None:
+    """Create the small main-branch commit used by closeout fixtures."""
+    git(repo, "init", "-q", "-b", "main")
+    write_text(repo / "README.md", "# Test\n")
+    git(repo, "add", "README.md")
+    command = ["commit", "-m", "Resolve issue"]
+    for paragraph in body.split("\n\n"):
+        command.extend(["-m", paragraph])
+    git(repo, *command)
+
+
+def environment_with_path(
+    path: Path,
+    *,
+    base: Mapping[str, str] | None = None,
+    path_tail: str | None = None,
+    **updates: str,
+) -> dict[str, str]:
+    """Copy an environment, control its fixture PATH, and add fixture variables."""
+    environment = dict(os.environ if base is None else base)
+    tail = path_tail if path_tail is not None else environment.get("PATH", "")
+    environment["PATH"] = f"{path}:{tail}"
+    environment.update(updates)
+    return environment
+
+
+def close_comment_args(
+    repo_root: Path,
+    body_file: Path,
+    *,
+    number: int = 42,
+    classification: str = "question",
+    repo: str = "corca-ai/charness",
+) -> list[str]:
+    """Build the stable issue close-with-comment argv used by fixture tests."""
+    return [
+        "close-with-comment",
+        "--repo",
+        repo,
+        "--number",
+        str(number),
+        "--body-file",
+        str(body_file),
+        "--classification",
+        classification,
+        "--repo-root",
+        str(repo_root),
+    ]
+
+
+def verify_closeout_args(
+    repo_root: Path,
+    *,
+    numbers: Sequence[int] = (42,),
+    classification: str = "bug",
+    carrier: str = "direct-commit",
+    commit_ref: str | None = None,
+    body_file: Path | None = None,
+    manual_fallback_reason: str | None = None,
+    expect_state: str | None = None,
+) -> list[str]:
+    """Build the stable issue verify-closeout argv used by fixture tests."""
+    args = [
+        "verify-closeout",
+        "--repo-root",
+        str(repo_root),
+        "--repo",
+        "corca-ai/charness",
+    ]
+    for number in numbers:
+        args.extend(["--number", str(number)])
+    args.extend(["--classification", classification, "--carrier", carrier])
+    if commit_ref is not None:
+        args.extend(["--commit-ref", commit_ref])
+    if body_file is not None:
+        args.extend(["--body-file", str(body_file)])
+    if manual_fallback_reason is not None:
+        args.extend(["--manual-fallback-reason", manual_fallback_reason])
+    if expect_state is not None:
+        args.extend(["--expect-state", expect_state])
+    return args

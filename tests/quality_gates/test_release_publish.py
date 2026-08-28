@@ -19,6 +19,7 @@ from .release_publish_fixtures import (
     commit_claims_review,
 )
 from .release_script_loading import load_release_script
+from .seeding_support import git, write_release_adapter, write_release_surfaces
 
 CLAIMS_REVIEW = load_release_script("publish_release_claims_review", suffix="direct_parent")
 
@@ -97,11 +98,11 @@ def test_exported_plugin_executes_claims_review_topology(tmp_path: Path) -> None
         repo, prepared_commit=prepared_commit, prepared_record=record,
         target_version=payload["target_version"], tag_name=payload["tag_name"], stem="plugin-claims",
     )
-    evidence_commit = subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True).stdout.strip()
+    evidence_commit = git(repo, "rev-parse", "HEAD")
     # Simulate response loss after P's tag reaches the remote but before R's
     # branch push. Resume must push the evidence branch without retagging P.
-    subprocess.run(["git", "tag", "v0.0.1", prepared_commit], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "push", "origin", "v0.0.1"], cwd=repo, check=True, capture_output=True, text=True)
+    git(repo, "tag", "v0.0.1", prepared_commit)
+    git(repo, "push", "origin", "v0.0.1")
 
     resumed = subprocess.run(
         ["python3", str(plugin_publish), "--repo-root", str(repo), "--resume", "--publish-current", "--execute",
@@ -110,8 +111,8 @@ def test_exported_plugin_executes_claims_review_topology(tmp_path: Path) -> None
         cwd=REPO_ROOT, check=False, capture_output=True, text=True, env=env,
     )
     assert resumed.returncode == 0, resumed.stderr
-    tag_commit = subprocess.run(["git", "rev-list", "-n", "1", "v0.0.1"], cwd=repo, check=True, capture_output=True, text=True).stdout.strip()
-    remote_head = subprocess.run(["git", "ls-remote", "origin", "refs/heads/main"], cwd=repo, check=True, capture_output=True, text=True).stdout.split()[0]
+    tag_commit = git(repo, "rev-list", "-n", "1", "v0.0.1")
+    remote_head = git(repo, "ls-remote", "origin", "refs/heads/main").split()[0]
     assert tag_commit == prepared_commit
     assert subprocess.run(
         ["git", "merge-base", "--is-ancestor", evidence_commit, remote_head],
@@ -129,8 +130,8 @@ def test_publish_release_bumps_pushes_tags_and_creates_release(tmp_path: Path) -
     # release no longer satisfies it -- which is the point, and means this fixture
     # has to look like a real release critique rather than a placeholder.
     critique_artifact.write_text("# Demo critique\n\nRelease: 0.0.1\n", encoding="utf-8")
-    subprocess.run(["git", "add", str(critique_artifact)], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "commit", "-m", "Add critique proof"], cwd=repo, check=True, capture_output=True, text=True)
+    git(repo, "add", str(critique_artifact))
+    git(repo, "commit", "-m", "Add critique proof")
 
     env = _release_env(tmp_path, bin_dir)
     result = _run_publish_patch(repo, env, "--critique-artifact", "charness-artifacts/critique/demo.md")
@@ -143,7 +144,7 @@ def test_publish_release_bumps_pushes_tags_and_creates_release(tmp_path: Path) -
     assert manifest["version"] == "0.0.1"
     assert (repo / ".quality-ran").read_text(encoding="utf-8").strip() == "quality ok"
     assert (repo / "charness-artifacts" / "release" / "latest.md").is_file()
-    assert subprocess.run(["git", "tag", "--list", "v0.0.1"], cwd=repo, check=True, capture_output=True, text=True).stdout.strip() == "v0.0.1"
+    assert git(repo, "tag", "--list", "v0.0.1") == "v0.0.1"
     remote_tags = subprocess.run(
         ["git", "ls-remote", "--tags", "origin", "refs/tags/v0.0.1"],
         cwd=repo,
@@ -429,27 +430,7 @@ def test_publish_release_records_real_host_proof_for_unreleased_content(tmp_path
         + "\nreal_host_required_path_globs:\n- README.md\nreal_host_checklist:\n- Verify on a clean host.\n",
         encoding="utf-8",
     )
-    (repo / ".agents" / "surfaces.json").write_text(
-        json.dumps(
-            {
-                "version": 1,
-                "surfaces": [
-                    {
-                        "surface_id": "operator-docs",
-                        "description": "Operator docs.",
-                        "source_paths": ["README.md"],
-                        "derived_paths": [],
-                        "sync_commands": [],
-                        "verify_commands": [],
-                        "notes": [],
-                    }
-                ],
-            },
-            indent=2,
-        )
-        + "\n",
-        encoding="utf-8",
-    )
+    write_release_surfaces(repo)
     readme_path = repo / "README.md"
     readme_path.write_text("# Demo\n\nChanged operator surface.\n", encoding="utf-8")
     subprocess.run(
@@ -485,17 +466,7 @@ def test_requested_review_gate_blocks_unavailable_release_record(tmp_path: Path)
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)
     (repo / "charness-artifacts" / "release").mkdir(parents=True)
-    (repo / ".agents" / "release-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: demo",
-                "output_dir: charness-artifacts/release",
-                "",
-            ]
-        ),
-        encoding="utf-8",
-    )
+    write_release_adapter(repo, language=None)
     (repo / "charness-artifacts" / "release" / "latest.md").write_text(
         "# Release Surface Check\n\n- requested review unavailable: missing executor_variants\n",
         encoding="utf-8",
@@ -511,17 +482,7 @@ def test_requested_review_gate_allows_explicit_waiver(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)
     (repo / "charness-artifacts" / "release").mkdir(parents=True)
-    (repo / ".agents" / "release-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: demo",
-                "output_dir: charness-artifacts/release",
-                "",
-            ]
-        ),
-        encoding="utf-8",
-    )
+    write_release_adapter(repo, language=None)
     (repo / "charness-artifacts" / "release" / "latest.md").write_text(
         "\n".join(
             [
@@ -548,18 +509,7 @@ def test_requested_review_gate_warns_when_commands_are_empty(tmp_path: Path) -> 
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)
     (repo / "charness-artifacts" / "release").mkdir(parents=True)
-    (repo / ".agents" / "release-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: demo",
-                "output_dir: charness-artifacts/release",
-                "requested_review_commands: []",
-                "",
-            ]
-        ),
-        encoding="utf-8",
-    )
+    write_release_adapter(repo, ["requested_review_commands: []"], language=None)
     (repo / "charness-artifacts" / "release" / "latest.md").write_text(
         "# Release Surface Check\n\n- Release proof complete.\n",
         encoding="utf-8",
@@ -583,18 +533,10 @@ def test_requested_review_gate_honors_advisory_only_policy(tmp_path: Path) -> No
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)
     (repo / "charness-artifacts" / "release").mkdir(parents=True)
-    (repo / ".agents" / "release-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: demo",
-                "output_dir: charness-artifacts/release",
-                "requested_review_commands: []",
-                "requested_review_policy: advisory-only",
-                "",
-            ]
-        ),
-        encoding="utf-8",
+    write_release_adapter(
+        repo,
+        ["requested_review_commands: []", "requested_review_policy: advisory-only"],
+        language=None,
     )
     (repo / "charness-artifacts" / "release" / "latest.md").write_text(
         "# Release Surface Check\n\n- Release proof complete.\n",
@@ -617,19 +559,14 @@ def test_requested_review_gate_blocks_failed_command_under_advisory_only_policy(
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)
     (repo / "charness-artifacts" / "release").mkdir(parents=True)
-    (repo / ".agents" / "release-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: demo",
-                "output_dir: charness-artifacts/release",
-                "requested_review_policy: advisory-only",
-                "requested_review_commands:",
-                "- \"bash -c 'echo review failed >&2; exit 1'\"",
-                "",
-            ]
-        ),
-        encoding="utf-8",
+    write_release_adapter(
+        repo,
+        [
+            "requested_review_policy: advisory-only",
+            "requested_review_commands:",
+            "- \"bash -c 'echo review failed >&2; exit 1'\"",
+        ],
+        language=None,
     )
     (repo / "charness-artifacts" / "release" / "latest.md").write_text(
         "# Release Surface Check\n\n- Release proof complete.\n",

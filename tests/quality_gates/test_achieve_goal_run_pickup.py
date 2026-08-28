@@ -1,22 +1,19 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
 
+from .seeding_support import load_module
+
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "skills/public/achieve/scripts/goal_run_pickup.py"
 
 
 def _load_module():
-    spec = importlib.util.spec_from_file_location("goal_run_pickup_under_test", SCRIPT)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_module("goal_run_pickup_under_test", SCRIPT)
 
 
 pickup = _load_module()

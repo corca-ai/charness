@@ -20,35 +20,9 @@ import yaml
 from scripts.runtime_bootstrap import import_repo_module
 
 from .support import ROOT, run_script
+from .seeding_support import seed_two_changed_pool_files
 
 _TEETH = str(ROOT / "scripts" / "check_changed_line_mutation_coverage.py")
-
-
-def _git(repo: Path, *args: str) -> str:
-    import subprocess
-
-    return subprocess.run(
-        ["git", "-c", "user.email=t@t", "-c", "user.name=t", *args],
-        cwd=repo, check=True, capture_output=True, text=True,
-    ).stdout.strip()
-
-
-def _seed_two_changed_pool_files(tmp_path: Path) -> tuple[Path, str, str]:
-    repo = tmp_path / "repo"
-    (repo / "scripts").mkdir(parents=True)
-    _git(repo, "init", "-q")
-    for name in ("foo.py", "bar.py"):
-        (repo / "scripts" / name).write_text("def a():\n    return 1\n", encoding="utf-8")
-    _git(repo, "add", "-A")
-    _git(repo, "commit", "-q", "-m", "base")
-    base = _git(repo, "rev-parse", "HEAD")
-    for name in ("foo.py", "bar.py"):
-        (repo / "scripts" / name).write_text(
-            "def a():\n    return 1\n\n\ndef b():\n    return 2\n", encoding="utf-8"
-        )
-    _git(repo, "add", "-A")
-    _git(repo, "commit", "-q", "-m", "head")
-    return repo, base, _git(repo, "rev-parse", "HEAD")
 
 
 def _write_boundary_baseline(repo: Path, keys: list[object]) -> None:
@@ -114,7 +88,7 @@ def test_blocked_file_with_recorded_subprocess_pairs_gets_an_advisory(tmp_path: 
     would be false reassurance printed onto a blocking gate — the class the gate
     itself exists to catch.
     """
-    repo, base, head = _seed_two_changed_pool_files(tmp_path)
+    repo, base, head = seed_two_changed_pool_files(tmp_path)
     cov = repo / "coverage.json"
     cov.write_text(
         json.dumps({"files": {
@@ -159,7 +133,7 @@ def test_advisory_does_not_add_or_remove_a_blocking_condition(tmp_path: Path) ->
     that would pass must still pass with exit 0 and an empty advisory — otherwise
     the feature could have degenerated into "a recorded pair blocks".
     """
-    repo, base, head = _seed_two_changed_pool_files(tmp_path)
+    repo, base, head = seed_two_changed_pool_files(tmp_path)
     cov = repo / "coverage.json"
     cov.write_text(
         json.dumps({"files": {

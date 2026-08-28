@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import contextlib
-import importlib.util
 import io
 import json
 import sys
@@ -9,12 +8,11 @@ from pathlib import Path
 
 import yaml
 
+from .seeding_support import load_module, write_quality_adapter
+
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "skills/public/quality/scripts/inventory_cli_ergonomics.py"
-SPEC = importlib.util.spec_from_file_location("inventory_cli_ergonomics", SCRIPT)
-assert SPEC is not None and SPEC.loader is not None
-inventory_cli = importlib.util.module_from_spec(SPEC)
-SPEC.loader.exec_module(inventory_cli)
+inventory_cli = load_module("inventory_cli_ergonomics", SCRIPT)
 
 
 def run_inventory(*args: str) -> dict[str, object]:
@@ -74,19 +72,12 @@ def test_inventory_cli_ergonomics_skips_vendored_registries(tmp_path: Path) -> N
         json.dumps({"commands": [{"path": [f"command-{i}"]} for i in range(20)]}) + "\n",
         encoding="utf-8",
     )
-    (repo / ".agents").mkdir()
-    (repo / ".agents" / "quality-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: repo",
-                "output_dir: charness-artifacts/quality",
-                "vendored_paths:",
-                "  - packages/official-skills/charness-public",
-                "",
-            ]
-        ),
-        encoding="utf-8",
+    write_quality_adapter(
+        repo,
+        [
+            "vendored_paths:",
+            "  - packages/official-skills/charness-public",
+        ],
     )
 
     payload = run_inventory(

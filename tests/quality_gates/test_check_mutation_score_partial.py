@@ -2,19 +2,14 @@
 
 from __future__ import annotations
 
-import importlib.util
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
+from .seeding_support import load_module
 
-_spec = importlib.util.spec_from_file_location(
-    "check_mutation_score", ROOT / "scripts" / "check_mutation_score.py"
-)
-assert _spec is not None and _spec.loader is not None
-CMS = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(CMS)
+CMS = load_module("check_mutation_score", ROOT / "scripts" / "check_mutation_score.py")
 
 
 def _stats(

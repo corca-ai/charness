@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import importlib.util
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -8,15 +7,12 @@ from pathlib import Path
 import pytest
 
 from .support import ROOT
+from .seeding_support import load_module
 
 
 def _load_release_module(name: str):
     module_path = ROOT / "skills" / "public" / "release" / "scripts" / f"{name}.py"
-    spec = importlib.util.spec_from_file_location(f"release_{name}", module_path)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_module(f"release_{name}", module_path)
 
 
 def test_release_adapter_defaults_to_gh_backend(tmp_path: Path) -> None:

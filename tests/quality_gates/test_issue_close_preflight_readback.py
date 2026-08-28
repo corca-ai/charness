@@ -8,6 +8,11 @@ from pathlib import Path
 import yaml
 
 from tests.quality_gates.support import run_script
+from tests.quality_gates.seeding_support import (
+    close_comment_args,
+    environment_with_path,
+    write_view_executable,
+)
 
 SCRIPT = "skills/public/issue/scripts/issue_tool.py"
 BODY = "closeout body.\n\nAI-provenance: authored by an agent session.\n"
@@ -16,38 +21,13 @@ BODY = "closeout body.\n\nAI-provenance: authored by an agent session.\n"
 def _run_with_view_fixture(tmp_path: Path, view_body: str, exit_code: int) -> object:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
-    fake = bin_dir / "gh"
-    fake.write_text(
-        "\n".join(
-            [
-                "#!/usr/bin/env python3",
-                "import sys",
-                "if 'view' in sys.argv:",
-                f"    print({view_body!r})",
-                f"    raise SystemExit({exit_code})",
-                "print('unexpected mutation')",
-                "",
-            ]
-        ),
-        encoding="utf-8",
-    )
-    fake.chmod(0o755)
+    write_view_executable(bin_dir / "gh", view_body, exit_code=exit_code)
     body = tmp_path / "body.md"
     body.write_text(BODY, encoding="utf-8")
     return run_script(
         SCRIPT,
-        "close-with-comment",
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "42",
-        "--body-file",
-        str(body),
-        "--classification",
-        "question",
-        "--repo-root",
-        str(tmp_path),
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin"},
+        *close_comment_args(tmp_path, body),
+        env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin"),
     )
 
 

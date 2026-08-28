@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-import importlib.util
 import sys
 from pathlib import Path
 
 import yaml
 
 from .support import ROOT, run_script
+from .seeding_support import load_module
 
 RESOLVE = "skills/public/create-skill/scripts/resolve_adapter.py"
 INIT = "skills/public/create-skill/scripts/init_adapter.py"
@@ -14,13 +14,7 @@ INIT = "skills/public/create-skill/scripts/init_adapter.py"
 
 def _load_resolver():
     module_path = ROOT / RESOLVE
-    spec = importlib.util.spec_from_file_location("tests.quality_gates.create_skill_resolve_adapter", module_path)
-    if spec is None or spec.loader is None:
-        raise ImportError(f"Unable to load {module_path}")
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    return load_module("tests.quality_gates.create_skill_resolve_adapter", module_path, register=True)
 
 
 RESOLVER = _load_resolver()

@@ -9,7 +9,6 @@ avoidance rather than the habit.
 
 from __future__ import annotations
 
-import importlib.util
 import re
 import runpy
 import sys
@@ -18,6 +17,8 @@ from types import SimpleNamespace
 
 import pytest
 import yaml
+
+from .seeding_support import load_module
 
 ROOT = Path(__file__).resolve().parents[2]
 SKILL_SCRIPTS = ROOT / "skills" / "public" / "quality" / "scripts"
@@ -28,11 +29,7 @@ lib = _bootstrap.load_local_skill_module(str(SKILL_SCRIPTS / "check_regenerable_
 def _load_gate():
     """Import the CLI in-process so coverage observes its refusal branches."""
     path = SKILL_SCRIPTS / "check_regenerable_facts.py"
-    spec = importlib.util.spec_from_file_location("check_regenerable_facts_under_test", path)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_module("check_regenerable_facts_under_test", path)
 
 
 gate = _load_gate()

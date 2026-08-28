@@ -1,24 +1,20 @@
 from __future__ import annotations
 
 import argparse
-import importlib.util
 import os
 from pathlib import Path
 
 import yaml
 
 from tests.quality_gates.support import ROOT, run_script, write_issue_adapter_with_backend
+from tests.quality_gates.seeding_support import load_module
 
 SCRIPT = "skills/public/issue/scripts/issue_tool.py"
 ISSUE_TOOL_PATH = ROOT / SCRIPT
 
 
 def _load_issue_tool():
-    spec = importlib.util.spec_from_file_location("issue_tool_under_test", ISSUE_TOOL_PATH)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_module("issue_tool_under_test", ISSUE_TOOL_PATH)
 
 
 def test_issue_preflight_fails_when_gh_auth_fails(tmp_path: Path) -> None:

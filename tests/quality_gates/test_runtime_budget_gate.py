@@ -1,19 +1,14 @@
 from __future__ import annotations
 
-import importlib.util
 from pathlib import Path
 
 import yaml
 
 from .support import ROOT, run_script, seed_runtime_budget_repo
+from .seeding_support import load_module
 
 SCRIPT = "skills/public/quality/scripts/check_runtime_budget.py"
-_budget_spec = importlib.util.spec_from_file_location(
-    "check_runtime_budget_under_test", ROOT / SCRIPT
-)
-assert _budget_spec is not None and _budget_spec.loader is not None
-check_runtime_budget = importlib.util.module_from_spec(_budget_spec)
-_budget_spec.loader.exec_module(check_runtime_budget)
+check_runtime_budget = load_module("check_runtime_budget_under_test", ROOT / SCRIPT)
 
 
 def test_runtime_budget_gate_no_budgets_passes(tmp_path: Path) -> None:

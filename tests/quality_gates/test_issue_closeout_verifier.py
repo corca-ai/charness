@@ -17,27 +17,17 @@ from tests.quality_gates.support import (
     write_argv_logging_fake,
     write_issue_adapter_with_backend,
 )
+from tests.quality_gates.seeding_support import (
+    environment_with_path,
+    verify_closeout_args,
+    write_json_executable,
+)
 
 
 def test_issue_verify_closeout_rejects_missing_direct_commit_close_keyword(tmp_path: Path) -> None:
     seed_commit(tmp_path, bug_closeout_body(close_line="Resolved work without an auto-close carrier."))
 
-    result = run_script(
-        SCRIPT,
-        "verify-closeout",
-        "--repo-root",
-        str(tmp_path),
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "42",
-        "--classification",
-        "bug",
-        "--carrier",
-        "direct-commit",
-        "--commit-ref",
-        "HEAD",
-    )
+    result = run_script(SCRIPT, *verify_closeout_args(tmp_path, commit_ref="HEAD"))
 
     assert result.returncode == 2, result.stdout
     payload = yaml.safe_load(result.stdout)
@@ -50,22 +40,7 @@ def test_issue_verify_closeout_rejects_missing_direct_commit_close_keyword(tmp_p
 def test_issue_verify_closeout_accepts_direct_commit_carrier_without_final_state(tmp_path: Path) -> None:
     seed_commit(tmp_path, bug_closeout_body(close_line="Close #42."))
 
-    result = run_script(
-        SCRIPT,
-        "verify-closeout",
-        "--repo-root",
-        str(tmp_path),
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "42",
-        "--classification",
-        "bug",
-        "--carrier",
-        "direct-commit",
-        "--commit-ref",
-        "HEAD",
-    )
+    result = run_script(SCRIPT, *verify_closeout_args(tmp_path, commit_ref="HEAD"))
 
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
@@ -83,22 +58,7 @@ def test_issue_verify_closeout_accepts_direct_commit_carrier_without_final_state
 def test_issue_verify_closeout_uses_github_keyword_boundaries(tmp_path: Path) -> None:
     seed_commit(tmp_path, bug_closeout_body(close_line="Close #420."))
 
-    result = run_script(
-        SCRIPT,
-        "verify-closeout",
-        "--repo-root",
-        str(tmp_path),
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "42",
-        "--classification",
-        "bug",
-        "--carrier",
-        "direct-commit",
-        "--commit-ref",
-        "HEAD",
-    )
+    result = run_script(SCRIPT, *verify_closeout_args(tmp_path, commit_ref="HEAD"))
 
     assert result.returncode == 2, result.stdout
     payload = yaml.safe_load(result.stdout)
@@ -108,22 +68,7 @@ def test_issue_verify_closeout_uses_github_keyword_boundaries(tmp_path: Path) ->
 def test_issue_verify_closeout_rejects_wrong_repo_qualified_keyword(tmp_path: Path) -> None:
     seed_commit(tmp_path, bug_closeout_body(close_line="Close corca-ai/other#42."))
 
-    result = run_script(
-        SCRIPT,
-        "verify-closeout",
-        "--repo-root",
-        str(tmp_path),
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "42",
-        "--classification",
-        "bug",
-        "--carrier",
-        "direct-commit",
-        "--commit-ref",
-        "HEAD",
-    )
+    result = run_script(SCRIPT, *verify_closeout_args(tmp_path, commit_ref="HEAD"))
 
     assert result.returncode == 2, result.stdout
     payload = yaml.safe_load(result.stdout)
@@ -133,22 +78,7 @@ def test_issue_verify_closeout_rejects_wrong_repo_qualified_keyword(tmp_path: Pa
 def test_issue_verify_closeout_accepts_matching_repo_qualified_keyword(tmp_path: Path) -> None:
     seed_commit(tmp_path, bug_closeout_body(close_line="Close corca-ai/charness#42."))
 
-    result = run_script(
-        SCRIPT,
-        "verify-closeout",
-        "--repo-root",
-        str(tmp_path),
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "42",
-        "--classification",
-        "bug",
-        "--carrier",
-        "direct-commit",
-        "--commit-ref",
-        "HEAD",
-    )
+    result = run_script(SCRIPT, *verify_closeout_args(tmp_path, commit_ref="HEAD"))
 
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
@@ -161,19 +91,7 @@ def test_issue_verify_closeout_accepts_pr_body_carrier(tmp_path: Path) -> None:
 
     result = run_script(
         SCRIPT,
-        "verify-closeout",
-        "--repo-root",
-        str(tmp_path),
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "42",
-        "--classification",
-        "bug",
-        "--carrier",
-        "pr-body",
-        "--body-file",
-        str(body),
+        *verify_closeout_args(tmp_path, carrier="pr-body", body_file=body),
     )
 
     assert result.returncode == 0, result.stderr
@@ -198,22 +116,7 @@ def test_issue_verify_closeout_rejects_empty_bug_sibling_proof(tmp_path: Path) -
         ),
     )
 
-    result = run_script(
-        SCRIPT,
-        "verify-closeout",
-        "--repo-root",
-        str(tmp_path),
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "42",
-        "--classification",
-        "bug",
-        "--carrier",
-        "direct-commit",
-        "--commit-ref",
-        "HEAD",
-    )
+    result = run_script(SCRIPT, *verify_closeout_args(tmp_path, commit_ref="HEAD"))
 
     assert result.returncode == 2, result.stdout
     payload = yaml.safe_load(result.stdout)
@@ -226,19 +129,7 @@ def test_issue_verify_closeout_requires_manual_fallback_reason(tmp_path: Path) -
 
     result = run_script(
         SCRIPT,
-        "verify-closeout",
-        "--repo-root",
-        str(tmp_path),
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "42",
-        "--classification",
-        "bug",
-        "--carrier",
-        "manual-fallback",
-        "--body-file",
-        str(body),
+        *verify_closeout_args(tmp_path, carrier="manual-fallback", body_file=body),
     )
 
     assert result.returncode == 2, result.stdout
@@ -332,29 +223,19 @@ def test_issue_verify_closeout_uses_adapter_view_for_final_state(tmp_path: Path)
 
     result = run_script(
         SCRIPT,
-        "verify-closeout",
-        "--repo-root",
-        str(tmp_path),
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "42",
-        "--classification",
-        "bug",
-        "--carrier",
-        "manual-fallback",
-        "--body-file",
-        str(body),
-        "--manual-fallback-reason",
-        "auto-close-failed-after-remote-verification",
-        "--expect-state",
-        "CLOSED",
-        env={
-            **os.environ,
-            "PATH": f"{bin_dir}:/usr/bin:/bin",
-            "ACME_LOG": str(log),
-            "COMMENT_BODY": body_text,
-        },
+        *verify_closeout_args(
+            tmp_path,
+            carrier="manual-fallback",
+            body_file=body,
+            manual_fallback_reason="auto-close-failed-after-remote-verification",
+            expect_state="CLOSED",
+        ),
+        env=environment_with_path(
+            bin_dir,
+            path_tail="/usr/bin:/bin",
+            ACME_LOG=str(log),
+            COMMENT_BODY=body_text,
+        ),
     )
 
     assert result.returncode == 0, result.stderr
@@ -396,22 +277,8 @@ def test_issue_verify_closeout_rejects_adapter_view_without_target_placeholders(
 
     result = run_script(
         SCRIPT,
-        "verify-closeout",
-        "--repo-root",
-        str(tmp_path),
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "42",
-        "--classification",
-        "bug",
-        "--carrier",
-        "direct-commit",
-        "--commit-ref",
-        "HEAD",
-        "--expect-state",
-        "CLOSED",
-        env={**os.environ, "PATH": "/usr/bin:/bin"},
+        *verify_closeout_args(tmp_path, commit_ref="HEAD", expect_state="CLOSED"),
+        env=environment_with_path(Path("/usr/bin"), base=os.environ, path_tail="/bin"),
     )
 
     assert result.returncode == 2, result.stdout
@@ -443,29 +310,19 @@ def test_issue_verify_closeout_uses_default_gh_comments_for_manual_fallback(tmp_
 
     result = run_script(
         SCRIPT,
-        "verify-closeout",
-        "--repo-root",
-        str(tmp_path),
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "42",
-        "--classification",
-        "bug",
-        "--carrier",
-        "manual-fallback",
-        "--body-file",
-        str(body),
-        "--manual-fallback-reason",
-        "auto-close-failed-after-remote-verification",
-        "--expect-state",
-        "CLOSED",
-        env={
-            **os.environ,
-            "PATH": f"{bin_dir}:/usr/bin:/bin",
-            "GH_LOG": str(log),
-            "COMMENT_BODY": body_text,
-        },
+        *verify_closeout_args(
+            tmp_path,
+            carrier="manual-fallback",
+            body_file=body,
+            manual_fallback_reason="auto-close-failed-after-remote-verification",
+            expect_state="CLOSED",
+        ),
+        env=environment_with_path(
+            bin_dir,
+            path_tail="/usr/bin:/bin",
+            GH_LOG=str(log),
+            COMMENT_BODY=body_text,
+        ),
     )
 
     assert result.returncode == 0, result.stderr
@@ -475,41 +332,16 @@ def test_issue_verify_closeout_uses_default_gh_comments_for_manual_fallback(tmp_
 
 def test_issue_verify_closeout_rejects_wrong_issue_number_from_backend(tmp_path: Path) -> None:
     bin_dir = tmp_path / "bin"
-    bin_dir.mkdir()
-    fake = bin_dir / "gh"
-    fake.write_text(
-        "\n".join(
-            [
-                "#!/usr/bin/env python3",
-                "import json, sys",
-                "if 'view' in sys.argv:",
-                "    print(json.dumps({'number': 99, 'state': 'CLOSED', 'url': 'https://github.com/corca-ai/charness/issues/99'}))",
-                "",
-            ]
-        ),
-        encoding="utf-8",
+    fake = write_json_executable(
+        bin_dir / "gh",
+        {"number": 99, "state": "CLOSED", "url": "https://github.com/corca-ai/charness/issues/99"},
     )
-    fake.chmod(0o755)
     seed_commit(tmp_path, bug_closeout_body(close_line="Close #42."))
 
     result = run_script(
         SCRIPT,
-        "verify-closeout",
-        "--repo-root",
-        str(tmp_path),
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "42",
-        "--classification",
-        "bug",
-        "--carrier",
-        "direct-commit",
-        "--commit-ref",
-        "HEAD",
-        "--expect-state",
-        "CLOSED",
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin"},
+        *verify_closeout_args(tmp_path, commit_ref="HEAD", expect_state="CLOSED"),
+        env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin"),
     )
 
     assert result.returncode == 2, result.stdout
@@ -519,21 +351,10 @@ def test_issue_verify_closeout_rejects_wrong_issue_number_from_backend(tmp_path:
 
 def test_issue_verify_closeout_rejects_open_final_state(tmp_path: Path) -> None:
     bin_dir = tmp_path / "bin"
-    bin_dir.mkdir()
-    fake = bin_dir / "gh"
-    fake.write_text(
-        "\n".join(
-            [
-                "#!/usr/bin/env python3",
-                "import json, sys",
-                "if 'view' in sys.argv:",
-                "    print(json.dumps({'number': 42, 'state': 'OPEN', 'url': 'https://github.com/corca-ai/charness/issues/42'}))",
-                "",
-            ]
-        ),
-        encoding="utf-8",
+    fake = write_json_executable(
+        bin_dir / "gh",
+        {"number": 42, "state": "OPEN", "url": "https://github.com/corca-ai/charness/issues/42"},
     )
-    fake.chmod(0o755)
     seed_commit(tmp_path, bug_closeout_body(close_line="Close #42."))
 
     result = run_script(
@@ -553,7 +374,7 @@ def test_issue_verify_closeout_rejects_open_final_state(tmp_path: Path) -> None:
         "HEAD",
         "--expect-state",
         "CLOSED",
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin"},
+        env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin"),
     )
 
     assert result.returncode == 2, result.stdout
@@ -563,21 +384,15 @@ def test_issue_verify_closeout_rejects_open_final_state(tmp_path: Path) -> None:
 
 def test_issue_verify_closeout_rejects_unposted_manual_fallback_comment(tmp_path: Path) -> None:
     bin_dir = tmp_path / "bin"
-    bin_dir.mkdir()
-    fake = bin_dir / "gh"
-    fake.write_text(
-        "\n".join(
-            [
-                "#!/usr/bin/env python3",
-                "import json, sys",
-                "if 'view' in sys.argv:",
-                "    print(json.dumps({'number': 42, 'state': 'CLOSED', 'url': 'https://github.com/corca-ai/charness/issues/42', 'comments': [{'body': 'different comment'}]}))",
-                "",
-            ]
-        ),
-        encoding="utf-8",
+    fake = write_json_executable(
+        bin_dir / "gh",
+        {
+            "number": 42,
+            "state": "CLOSED",
+            "url": "https://github.com/corca-ai/charness/issues/42",
+            "comments": [{"body": "different comment"}],
+        },
     )
-    fake.chmod(0o755)
     body = tmp_path / "closeout.md"
     body.write_text(
         bug_closeout_body(close_line="Manual close comment.")
@@ -587,24 +402,14 @@ def test_issue_verify_closeout_rejects_unposted_manual_fallback_comment(tmp_path
 
     result = run_script(
         SCRIPT,
-        "verify-closeout",
-        "--repo-root",
-        str(tmp_path),
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "42",
-        "--classification",
-        "bug",
-        "--carrier",
-        "manual-fallback",
-        "--body-file",
-        str(body),
-        "--manual-fallback-reason",
-        "auto-close-failed-after-remote-verification",
-        "--expect-state",
-        "CLOSED",
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin"},
+        *verify_closeout_args(
+            tmp_path,
+            carrier="manual-fallback",
+            body_file=body,
+            manual_fallback_reason="auto-close-failed-after-remote-verification",
+            expect_state="CLOSED",
+        ),
+        env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin"),
     )
 
     assert result.returncode == 2, result.stdout
@@ -617,22 +422,7 @@ def test_issue_verify_closeout_accepts_colon_close_keyword_form(tmp_path: Path) 
     keyword exactly like the plain space form."""
     seed_commit(tmp_path, bug_closeout_body(close_line="Closes: #42."))
 
-    result = run_script(
-        SCRIPT,
-        "verify-closeout",
-        "--repo-root",
-        str(tmp_path),
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "42",
-        "--classification",
-        "bug",
-        "--carrier",
-        "direct-commit",
-        "--commit-ref",
-        "HEAD",
-    )
+    result = run_script(SCRIPT, *verify_closeout_args(tmp_path, commit_ref="HEAD"))
 
     assert result.returncode == 0, result.stdout
     payload = yaml.safe_load(result.stdout)
@@ -659,21 +449,7 @@ def test_issue_verify_closeout_accepts_single_keyword_comma_list(tmp_path: Path)
 
     result = run_script(
         SCRIPT,
-        "verify-closeout",
-        "--repo-root",
-        str(tmp_path),
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "42",
-        "--number",
-        "43",
-        "--classification",
-        "bug",
-        "--carrier",
-        "direct-commit",
-        "--commit-ref",
-        "HEAD",
+        *verify_closeout_args(tmp_path, numbers=(42, 43), commit_ref="HEAD"),
     )
 
     assert result.returncode == 0, result.stdout
@@ -693,42 +469,16 @@ def test_issue_verify_closeout_rejects_a_right_number_from_the_wrong_repository(
     state, and differs from a correct answer only in the repository its URL names.
     """
     bin_dir = tmp_path / "bin"
-    bin_dir.mkdir()
-    fake = bin_dir / "gh"
-    fake.write_text(
-        "\n".join(
-            [
-                "#!/usr/bin/env python3",
-                "import json, sys",
-                "if 'view' in sys.argv:",
-                "    print(json.dumps({'number': 42, 'state': 'CLOSED',",
-                "        'url': 'https://github.com/someone-else/charness/issues/42'}))",
-                "",
-            ]
-        ),
-        encoding="utf-8",
+    fake = write_json_executable(
+        bin_dir / "gh",
+        {"number": 42, "state": "CLOSED", "url": "https://github.com/someone-else/charness/issues/42"},
     )
-    fake.chmod(0o755)
     seed_commit(tmp_path, bug_closeout_body(close_line="Close #42."))
 
     result = run_script(
         SCRIPT,
-        "verify-closeout",
-        "--repo-root",
-        str(tmp_path),
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "42",
-        "--classification",
-        "bug",
-        "--carrier",
-        "direct-commit",
-        "--commit-ref",
-        "HEAD",
-        "--expect-state",
-        "CLOSED",
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin"},
+        *verify_closeout_args(tmp_path, commit_ref="HEAD", expect_state="CLOSED"),
+        env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin"),
     )
 
     assert result.returncode == 2, result.stdout
@@ -743,41 +493,16 @@ def test_issue_verify_closeout_rejects_a_right_number_from_the_wrong_repository(
 def test_issue_verify_closeout_rejects_a_payload_that_names_no_repository(tmp_path: Path) -> None:
     """A missing repository is an unknown target, never a successful readback."""
     bin_dir = tmp_path / "bin"
-    bin_dir.mkdir()
-    fake = bin_dir / "gh"
-    fake.write_text(
-        "\n".join(
-            [
-                "#!/usr/bin/env python3",
-                "import json, sys",
-                "if 'view' in sys.argv:",
-                "    print(json.dumps({'number': 42, 'state': 'CLOSED'}))",
-                "",
-            ]
-        ),
-        encoding="utf-8",
+    fake = write_json_executable(
+        bin_dir / "gh",
+        {"number": 42, "state": "CLOSED"},
     )
-    fake.chmod(0o755)
     seed_commit(tmp_path, bug_closeout_body(close_line="Close #42."))
 
     result = run_script(
         SCRIPT,
-        "verify-closeout",
-        "--repo-root",
-        str(tmp_path),
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "42",
-        "--classification",
-        "bug",
-        "--carrier",
-        "direct-commit",
-        "--commit-ref",
-        "HEAD",
-        "--expect-state",
-        "CLOSED",
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin"},
+        *verify_closeout_args(tmp_path, commit_ref="HEAD", expect_state="CLOSED"),
+        env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin"),
     )
 
     assert result.returncode == 2, result.stdout

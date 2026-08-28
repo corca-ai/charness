@@ -12,7 +12,6 @@ stable/changes under SC1/SC2 but fails a hand-computed known-good hash).
 from __future__ import annotations
 
 import hashlib
-import importlib.util
 import io
 import textwrap
 import tokenize
@@ -21,17 +20,13 @@ from pathlib import Path
 import pytest
 
 from .support import ROOT
+from .seeding_support import load_module
 
 SCRIPTS = ROOT / "skills" / "public" / "quality" / "scripts"
 
 
 def _load(name: str):
-    path = SCRIPTS / f"{name}.py"
-    spec = importlib.util.spec_from_file_location(f"{name}_inproc", path)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_module(f"{name}_inproc", SCRIPTS / f"{name}.py")
 
 
 fp = _load("nose_fingerprint_lib")

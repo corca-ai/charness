@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 import subprocess
 from pathlib import Path
@@ -9,6 +8,7 @@ import pytest
 import yaml
 
 from tests.quality_gates.release_publish_fixtures import _seed_publish_release_repo
+from tests.quality_gates.seeding_support import git, load_module
 from tests.quality_gates.test_release_publish_real_host_delta import (
     _publish_env,
     _seed_publish_current_previous_tag_delta,
@@ -20,11 +20,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 def _load_release_module(name: str):
     path = REPO_ROOT / f"skills/public/release/scripts/{name}.py"
-    spec = importlib.util.spec_from_file_location(name, path)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_module(name, path)
 
 
 _helpers = _load_release_module("publish_release_helpers")
@@ -67,13 +63,7 @@ def _assert_tag_discovery_failure(
 def test_publish_current_fails_closed_when_local_release_tag_discovery_fails(tmp_path: Path) -> None:
     repo, bin_dir = _seed_publish_current_previous_tag_delta(tmp_path)
     _write_base_ref_failing_git(bin_dir)
-    before_head = subprocess.run(
-        ["git", "rev-parse", "HEAD"],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout.strip()
+    before_head = git(repo, "rev-parse", "HEAD")
     env = _publish_env(tmp_path, bin_dir)
     env["FAKE_GIT_TAG_LIST_FAIL"] = "1"
 
@@ -105,18 +95,8 @@ def test_publish_current_fails_closed_when_local_release_tag_discovery_fails(tmp
     assert json.loads((repo / "packaging" / "demo.json").read_text(encoding="utf-8"))["version"] == "0.0.1"
     assert not (repo / ".quality-ran").exists()
     assert not (repo / "charness-artifacts" / "release" / "latest.md").exists()
-    assert (
-        subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True)
-        .stdout.strip()
-        == before_head
-    )
-    assert subprocess.run(
-        ["git", "tag", "--list", "v0.0.1"],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout.strip() == ""
+    assert git(repo, "rev-parse", "HEAD") == before_head
+    assert git(repo, "tag", "--list", "v0.0.1") == ""
     git_log = json.loads((tmp_path / "git-log.json").read_text(encoding="utf-8"))
     gh_log_path = tmp_path / "gh-log.json"
     gh_log = json.loads(gh_log_path.read_text(encoding="utf-8")) if gh_log_path.exists() else []

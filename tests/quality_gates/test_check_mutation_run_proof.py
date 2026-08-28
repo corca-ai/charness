@@ -8,22 +8,19 @@ without network or git state; the CLI is exercised over facts and manifests.
 """
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
 
 import yaml
 
 from .support import ROOT, run_script
+from .seeding_support import load_module
 
 _GATE = "scripts/check_mutation_run_proof.py"
 
 
 def _load_gate():
-    spec = importlib.util.spec_from_file_location("check_mutation_run_proof", ROOT / _GATE)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_module("check_mutation_run_proof", ROOT / _GATE)
 
 
 GATE = _load_gate()
@@ -440,4 +437,3 @@ def test_same_commit_is_abbreviation_tolerant_but_not_credulous() -> None:
     assert not same("a" * 6, "a" * 40)       # too short to identify a commit
     assert not same("origin/main", "a" * 40)  # a ref NAME is not a prefix
     assert not same("main", "a" * 40)
-

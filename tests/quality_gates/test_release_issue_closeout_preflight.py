@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 import os
 import subprocess
@@ -11,44 +10,29 @@ import pytest
 
 from .issue_closeout_support import bug_closeout_body, load_verify_module
 from .release_publish_fixtures import _seed_publish_release_repo, _write_exec
+from .seeding_support import load_module
 
 ROOT = Path(__file__).resolve().parents[2]
 
 
 def _load_issue_validate_closeout_draft():
     path = ROOT / "skills" / "public" / "issue" / "scripts" / "issue_validate_closeout_draft.py"
-    spec = importlib.util.spec_from_file_location("issue_validate_closeout_draft_test", path)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_module("issue_validate_closeout_draft_test", path)
 
 
 def _load_release_closeout_module():
     path = ROOT / "skills" / "public" / "release" / "scripts" / "release_issue_closeout.py"
-    spec = importlib.util.spec_from_file_location("release_issue_closeout_test", path)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_module("release_issue_closeout_test", path)
 
 
 def _load_release_closeout_message_module():
     path = ROOT / "skills" / "public" / "release" / "scripts" / "release_issue_closeout_message.py"
-    spec = importlib.util.spec_from_file_location("release_issue_closeout_message_test", path)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_module("release_issue_closeout_message_test", path)
 
 
 def _load_commit_msg_checker():
     path = ROOT / "scripts" / "check_issue_closeout_commit_msg.py"
-    spec = importlib.util.spec_from_file_location("check_issue_closeout_commit_msg_test", path)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_module("check_issue_closeout_commit_msg_test", path)
 
 
 def _release_payload(

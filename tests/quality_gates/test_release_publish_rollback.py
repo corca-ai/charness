@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 import stat
 import subprocess
@@ -14,6 +13,7 @@ from .release_publish_fixtures import (
     _run_publish_patch,
     _seed_publish_release_repo,
 )
+from .seeding_support import load_module
 
 ROLLBACK_PATH = (
     REPO_ROOT
@@ -26,11 +26,7 @@ ROLLBACK_PATH = (
 
 
 def _load_rollback():
-    spec = importlib.util.spec_from_file_location("publish_release_rollback_under_test", ROLLBACK_PATH)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_module("publish_release_rollback_under_test", ROLLBACK_PATH)
 
 
 def _git(repo: Path, *args: str) -> str:

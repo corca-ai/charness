@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import importlib.util
 import subprocess
 import sys
 from pathlib import Path
@@ -11,16 +10,14 @@ import pytest
 import yaml
 
 from .support import ROOT, run_script, seed_runtime_budget_repo
+from .seeding_support import load_module
 
 SCRIPT = "skills/public/quality/scripts/check_runtime_budget.py"
 UNIVERSE_LIB = ROOT / "skills" / "public" / "quality" / "scripts" / "runtime_budget_universe_lib.py"
 QUALITY_SCRIPTS_DIR = str(UNIVERSE_LIB.parent)
 if QUALITY_SCRIPTS_DIR not in sys.path:
     sys.path.insert(0, QUALITY_SCRIPTS_DIR)
-_SPEC = importlib.util.spec_from_file_location("runtime_budget_universe_under_test", UNIVERSE_LIB)
-assert _SPEC is not None and _SPEC.loader is not None
-runtime_budget_universe = importlib.util.module_from_spec(_SPEC)
-_SPEC.loader.exec_module(runtime_budget_universe)
+runtime_budget_universe = load_module("runtime_budget_universe_under_test", UNIVERSE_LIB)
 from skills.public.quality.scripts.runtime_visibility_lib import (  # noqa: E402
     UNENFORCEABLE_BUDGET_ADVISORY_REASON,
 )

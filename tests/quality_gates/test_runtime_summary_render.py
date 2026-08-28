@@ -8,25 +8,20 @@ summary. Two scripts, two contracts — they share only the seeded repo helper.
 
 from __future__ import annotations
 
-import importlib.util
 import sys
 from pathlib import Path
 
 import yaml
 
 from .support import ROOT, run_script, seed_runtime_budget_repo
+from .seeding_support import load_module
 
 RENDER_SCRIPT = "skills/public/quality/scripts/render_runtime_summary.py"
 QUALITY_SCRIPTS_DIR = ROOT / "skills" / "public" / "quality" / "scripts"
 if str(QUALITY_SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(QUALITY_SCRIPTS_DIR))
 RENDER_RUNTIME_SUMMARY = QUALITY_SCRIPTS_DIR / "render_runtime_summary.py"
-_render_spec = importlib.util.spec_from_file_location(
-    "render_runtime_summary_under_test", RENDER_RUNTIME_SUMMARY
-)
-assert _render_spec is not None and _render_spec.loader is not None
-render_runtime_summary = importlib.util.module_from_spec(_render_spec)
-_render_spec.loader.exec_module(render_runtime_summary)
+render_runtime_summary = load_module("render_runtime_summary_under_test", RENDER_RUNTIME_SUMMARY)
 
 
 def test_render_runtime_summary_uses_structured_runtime_signals(tmp_path: Path) -> None:

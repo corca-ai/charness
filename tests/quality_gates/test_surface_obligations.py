@@ -13,6 +13,7 @@ from scripts import validate_surfaces
 from scripts.surfaces_lib import SurfaceError, load_surfaces
 
 from .support import ROOT, run_script
+from .seeding_support import write_json, write_surface
 
 
 def run_validate_surfaces(*args: str) -> SimpleNamespace:
@@ -326,35 +327,31 @@ def test_select_verifiers_reports_missing_bundle_for_unmatched_paths() -> None:
 def test_validate_surfaces_rejects_duplicate_ids(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)
-    (repo / ".agents" / "surfaces.json").write_text(
-        json.dumps(
-            {
-                "version": 1,
-                "surfaces": [
-                    {
-                        "surface_id": "dup",
-                        "description": "first",
-                        "source_paths": ["README.md"],
-                        "derived_paths": [],
-                        "sync_commands": [],
-                        "verify_commands": [],
-                        "notes": [],
-                    },
-                    {
-                        "surface_id": "dup",
-                        "description": "second",
-                        "source_paths": ["docs/**"],
-                        "derived_paths": [],
-                        "sync_commands": [],
-                        "verify_commands": [],
-                        "notes": [],
-                    },
-                ],
-            },
-            indent=2,
-        )
-        + "\n",
-        encoding="utf-8",
+    write_json(
+        repo / ".agents" / "surfaces.json",
+        {
+            "version": 1,
+            "surfaces": [
+                {
+                    "surface_id": "dup",
+                    "description": "first",
+                    "source_paths": ["README.md"],
+                    "derived_paths": [],
+                    "sync_commands": [],
+                    "verify_commands": [],
+                    "notes": [],
+                },
+                {
+                    "surface_id": "dup",
+                    "description": "second",
+                    "source_paths": ["docs/**"],
+                    "derived_paths": [],
+                    "sync_commands": [],
+                    "verify_commands": [],
+                    "notes": [],
+                },
+            ],
+        },
     )
 
     result = run_validate_surfaces("--repo-root", str(repo))
@@ -363,27 +360,11 @@ def test_validate_surfaces_rejects_duplicate_ids(tmp_path: Path) -> None:
 
 
 def _write_surfaces(repo: Path, source_paths: list[str]) -> None:
-    (repo / ".agents").mkdir(parents=True, exist_ok=True)
-    (repo / ".agents" / "surfaces.json").write_text(
-        json.dumps(
-            {
-                "version": 1,
-                "surfaces": [
-                    {
-                        "surface_id": "idiom",
-                        "description": "idiom lint fixture",
-                        "source_paths": source_paths,
-                        "derived_paths": [],
-                        "sync_commands": [],
-                        "verify_commands": [],
-                        "notes": [],
-                    }
-                ],
-            },
-            indent=2,
-        )
-        + "\n",
-        encoding="utf-8",
+    write_surface(
+        repo,
+        "idiom",
+        "idiom lint fixture",
+        source_paths,
     )
 
 

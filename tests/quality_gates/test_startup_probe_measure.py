@@ -1,20 +1,15 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
 
 import yaml
 
 from .support import ROOT, run_script, write_executable
+from .seeding_support import load_module
 
 SCRIPT = "skills/public/quality/scripts/measure_startup_probes.py"
-SPEC = importlib.util.spec_from_file_location(
-    "measure_startup_probes_under_test", ROOT / SCRIPT
-)
-assert SPEC is not None and SPEC.loader is not None
-MEASURE_STARTUP_PROBES = importlib.util.module_from_spec(SPEC)
-SPEC.loader.exec_module(MEASURE_STARTUP_PROBES)
+MEASURE_STARTUP_PROBES = load_module("measure_startup_probes_under_test", ROOT / SCRIPT)
 
 
 def _seed_repo(

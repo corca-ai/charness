@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import importlib.util
 import subprocess
 import sys
 from pathlib import Path
@@ -8,6 +7,7 @@ from pathlib import Path
 import yaml
 
 from .support import ROOT, run_script
+from .seeding_support import load_module
 
 HITL_SKILL = (ROOT / "skills" / "public" / "hitl" / "SKILL.md").read_text(encoding="utf-8")
 CHUNK_CONTRACT = (ROOT / "skills" / "public" / "hitl" / "references" / "chunk-contract.md").read_text(
@@ -19,11 +19,7 @@ CHECK_SCRIPT = "skills/public/hitl/scripts/check_chunk_contract.py"
 
 def _load_hitl_lib():
     module_path = ROOT / "scripts" / "hitl_review_artifact_lib.py"
-    spec = importlib.util.spec_from_file_location("hitl_review_artifact_lib", module_path)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_module("hitl_review_artifact_lib", module_path)
 
 
 def test_hitl_skill_requires_agent_assessment_before_decision() -> None:

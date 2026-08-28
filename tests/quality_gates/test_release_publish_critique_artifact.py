@@ -1,30 +1,23 @@
 from __future__ import annotations
 
-import importlib.util
 from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+
+from .seeding_support import load_module
 
 ROOT = Path(__file__).resolve().parents[2]
 
 
 def _load_preflight_module():
     path = ROOT / "skills/public/release/scripts/publish_release_preflight.py"
-    spec = importlib.util.spec_from_file_location("publish_release_preflight", path)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_module("publish_release_preflight", path)
 
 
 def _load_plan_module():
     path = ROOT / "skills/public/release/scripts/publish_release_plan.py"
-    spec = importlib.util.spec_from_file_location("publish_release_plan", path)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_module("publish_release_plan", path)
 
 
 _preflight = _load_preflight_module()

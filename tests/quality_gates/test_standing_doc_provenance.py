@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import importlib.util
 import re
 import sys
 from pathlib import Path
@@ -9,19 +8,14 @@ from types import ModuleType
 import yaml
 
 from .support import ROOT, run_script
+from .seeding_support import load_module
 
 SCRIPT = "skills/public/quality/scripts/check_standing_doc_provenance.py"
 
 
 def _load_checker() -> ModuleType:
     module_path = ROOT / SCRIPT
-    spec = importlib.util.spec_from_file_location("tests.quality_gates.check_standing_doc_provenance", module_path)
-    if spec is None or spec.loader is None:
-        raise ImportError(f"Unable to load {module_path}")
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    return load_module("tests.quality_gates.check_standing_doc_provenance", module_path, register=True)
 
 
 CHECKER = _load_checker()

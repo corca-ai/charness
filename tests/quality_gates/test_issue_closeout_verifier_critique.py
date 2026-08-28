@@ -7,25 +7,15 @@ in the sibling file.
 """
 from __future__ import annotations
 
-import subprocess
 from pathlib import Path
 
 import pytest
 import yaml
 
 from tests.quality_gates.support import run_script
+from tests.quality_gates.seeding_support import seed_commit, verify_closeout_args
 
 SCRIPT = "skills/public/issue/scripts/issue_tool.py"
-
-
-def _seed_commit(repo: Path, body: str) -> None:
-    subprocess.run(["git", "init", "-b", "main"], cwd=repo, check=True, capture_output=True, text=True)
-    (repo / "README.md").write_text("# Test\n", encoding="utf-8")
-    subprocess.run(["git", "add", "README.md"], cwd=repo, check=True, capture_output=True, text=True)
-    command = ["git", "commit", "-m", "Resolve issue"]
-    for paragraph in body.split("\n\n"):
-        command.extend(["-m", paragraph])
-    subprocess.run(command, cwd=repo, check=True, capture_output=True, text=True)
 
 
 def _bug_closeout_body(
@@ -60,24 +50,9 @@ def _bug_closeout_body(
 
 
 def test_bug_closeout_without_critique_line_is_rejected(tmp_path: Path) -> None:
-    _seed_commit(tmp_path, _bug_closeout_body(close_line="Close #42.", critique_line=None))
+    seed_commit(tmp_path, _bug_closeout_body(close_line="Close #42.", critique_line=None))
 
-    result = run_script(
-        SCRIPT,
-        "verify-closeout",
-        "--repo-root",
-        str(tmp_path),
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "42",
-        "--classification",
-        "bug",
-        "--carrier",
-        "direct-commit",
-        "--commit-ref",
-        "HEAD",
-    )
+    result = run_script(SCRIPT, *verify_closeout_args(tmp_path, commit_ref="HEAD"))
 
     assert result.returncode == 2, result.stdout
     payload = yaml.safe_load(result.stdout)
@@ -89,7 +64,7 @@ def test_bug_closeout_with_critique_artifact_path_is_accepted(tmp_path: Path) ->
     critique_path = tmp_path / "charness-artifacts/critique/2026-05-28-42.md"
     critique_path.parent.mkdir(parents=True, exist_ok=True)
     critique_path.write_text("# Critique\n\nbody\n", encoding="utf-8")
-    _seed_commit(
+    seed_commit(
         tmp_path,
         _bug_closeout_body(
             close_line="Close #42.",
@@ -97,22 +72,7 @@ def test_bug_closeout_with_critique_artifact_path_is_accepted(tmp_path: Path) ->
         ),
     )
 
-    result = run_script(
-        SCRIPT,
-        "verify-closeout",
-        "--repo-root",
-        str(tmp_path),
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "42",
-        "--classification",
-        "bug",
-        "--carrier",
-        "direct-commit",
-        "--commit-ref",
-        "HEAD",
-    )
+    result = run_script(SCRIPT, *verify_closeout_args(tmp_path, commit_ref="HEAD"))
 
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
@@ -126,7 +86,7 @@ def test_bug_bundle_requires_issue_bound_critique_for_each_number(tmp_path: Path
     critique_path = tmp_path / "charness-artifacts/critique/2026-06-02-issue-221.md"
     critique_path.parent.mkdir(parents=True, exist_ok=True)
     critique_path.write_text("# Critique\n\nIssue 221 only.\n", encoding="utf-8")
-    _seed_commit(
+    seed_commit(
         tmp_path,
         _bug_closeout_body(
             close_line="Close #184.\nClose #221.",
@@ -134,24 +94,7 @@ def test_bug_bundle_requires_issue_bound_critique_for_each_number(tmp_path: Path
         ),
     )
 
-    result = run_script(
-        SCRIPT,
-        "verify-closeout",
-        "--repo-root",
-        str(tmp_path),
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "184",
-        "--number",
-        "221",
-        "--classification",
-        "bug",
-        "--carrier",
-        "direct-commit",
-        "--commit-ref",
-        "HEAD",
-    )
+    result = run_script(SCRIPT, *verify_closeout_args(tmp_path, numbers=(184, 221), commit_ref="HEAD"))
 
     assert result.returncode == 2, result.stdout
     payload = yaml.safe_load(result.stdout)
@@ -163,7 +106,7 @@ def test_bug_bundle_rejects_unqualified_single_issue_critique(tmp_path: Path) ->
     critique_path = tmp_path / "charness-artifacts/critique/2026-06-02-issue-221.md"
     critique_path.parent.mkdir(parents=True, exist_ok=True)
     critique_path.write_text("# Critique\n\nIssue 221 only.\n", encoding="utf-8")
-    _seed_commit(
+    seed_commit(
         tmp_path,
         _bug_closeout_body(
             close_line="Close #184.\nClose #221.",
@@ -171,24 +114,7 @@ def test_bug_bundle_rejects_unqualified_single_issue_critique(tmp_path: Path) ->
         ),
     )
 
-    result = run_script(
-        SCRIPT,
-        "verify-closeout",
-        "--repo-root",
-        str(tmp_path),
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "184",
-        "--number",
-        "221",
-        "--classification",
-        "bug",
-        "--carrier",
-        "direct-commit",
-        "--commit-ref",
-        "HEAD",
-    )
+    result = run_script(SCRIPT, *verify_closeout_args(tmp_path, numbers=(184, 221), commit_ref="HEAD"))
 
     assert result.returncode == 2, result.stdout
     payload = yaml.safe_load(result.stdout)
@@ -201,7 +127,7 @@ def test_bug_bundle_accepts_explicit_multi_issue_critique_binding(tmp_path: Path
     critique_path = tmp_path / "charness-artifacts/critique/2026-06-02-184-221.md"
     critique_path.parent.mkdir(parents=True, exist_ok=True)
     critique_path.write_text("# Critique\n\nBundle for #184 and #221.\n", encoding="utf-8")
-    _seed_commit(
+    seed_commit(
         tmp_path,
         _bug_closeout_body(
             close_line="Close #184.\nClose #221.",
@@ -213,24 +139,7 @@ def test_bug_bundle_accepts_explicit_multi_issue_critique_binding(tmp_path: Path
         ),
     )
 
-    result = run_script(
-        SCRIPT,
-        "verify-closeout",
-        "--repo-root",
-        str(tmp_path),
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "184",
-        "--number",
-        "221",
-        "--classification",
-        "bug",
-        "--carrier",
-        "direct-commit",
-        "--commit-ref",
-        "HEAD",
-    )
+    result = run_script(SCRIPT, *verify_closeout_args(tmp_path, numbers=(184, 221), commit_ref="HEAD"))
 
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
@@ -242,7 +151,7 @@ def test_bug_bundle_rejects_multi_issue_critique_artifact_missing_one_binding(tm
     critique_path = tmp_path / "charness-artifacts/critique/2026-06-02-issue-184.md"
     critique_path.parent.mkdir(parents=True, exist_ok=True)
     critique_path.write_text("# Critique\n\nIssue 184 only.\n", encoding="utf-8")
-    _seed_commit(
+    seed_commit(
         tmp_path,
         _bug_closeout_body(
             close_line="Close #184.\nClose #221.",
@@ -250,24 +159,7 @@ def test_bug_bundle_rejects_multi_issue_critique_artifact_missing_one_binding(tm
         ),
     )
 
-    result = run_script(
-        SCRIPT,
-        "verify-closeout",
-        "--repo-root",
-        str(tmp_path),
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "184",
-        "--number",
-        "221",
-        "--classification",
-        "bug",
-        "--carrier",
-        "direct-commit",
-        "--commit-ref",
-        "HEAD",
-    )
+    result = run_script(SCRIPT, *verify_closeout_args(tmp_path, numbers=(184, 221), commit_ref="HEAD"))
 
     assert result.returncode == 2, result.stdout
     payload = yaml.safe_load(result.stdout)
@@ -279,7 +171,7 @@ def test_bug_bundle_rejects_multi_issue_critique_artifact_missing_one_binding(tm
 
 
 def test_bug_closeout_ignores_fenced_critique_line(tmp_path: Path) -> None:
-    _seed_commit(
+    seed_commit(
         tmp_path,
         _bug_closeout_body(
             close_line="Close #42.",
@@ -292,22 +184,7 @@ def test_bug_closeout_ignores_fenced_critique_line(tmp_path: Path) -> None:
         ),
     )
 
-    result = run_script(
-        SCRIPT,
-        "verify-closeout",
-        "--repo-root",
-        str(tmp_path),
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "42",
-        "--classification",
-        "bug",
-        "--carrier",
-        "direct-commit",
-        "--commit-ref",
-        "HEAD",
-    )
+    result = run_script(SCRIPT, *verify_closeout_args(tmp_path, commit_ref="HEAD"))
 
     assert result.returncode == 2, result.stdout
     payload = yaml.safe_load(result.stdout)
@@ -316,7 +193,7 @@ def test_bug_closeout_ignores_fenced_critique_line(tmp_path: Path) -> None:
 
 
 def test_bug_closeout_with_blocked_critique_too_terse_is_rejected(tmp_path: Path) -> None:
-    _seed_commit(
+    seed_commit(
         tmp_path,
         _bug_closeout_body(
             close_line="Close #42.",
@@ -324,22 +201,7 @@ def test_bug_closeout_with_blocked_critique_too_terse_is_rejected(tmp_path: Path
         ),
     )
 
-    result = run_script(
-        SCRIPT,
-        "verify-closeout",
-        "--repo-root",
-        str(tmp_path),
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "42",
-        "--classification",
-        "bug",
-        "--carrier",
-        "direct-commit",
-        "--commit-ref",
-        "HEAD",
-    )
+    result = run_script(SCRIPT, *verify_closeout_args(tmp_path, commit_ref="HEAD"))
 
     assert result.returncode == 2, result.stdout
     payload = yaml.safe_load(result.stdout)
@@ -359,22 +221,7 @@ def test_question_closeout_does_not_require_critique(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    result = run_script(
-        SCRIPT,
-        "verify-closeout",
-        "--repo-root",
-        str(tmp_path),
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "42",
-        "--classification",
-        "question",
-        "--carrier",
-        "pr-body",
-        "--body-file",
-        str(body_file),
-    )
+    result = run_script(SCRIPT, *verify_closeout_args(tmp_path, classification="question", carrier="pr-body", body_file=body_file))
 
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
@@ -399,22 +246,7 @@ def test_non_bug_delivery_closeout_without_critique_is_accepted(
         encoding="utf-8",
     )
 
-    result = run_script(
-        SCRIPT,
-        "verify-closeout",
-        "--repo-root",
-        str(tmp_path),
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "42",
-        "--classification",
-        classification,
-        "--carrier",
-        "pr-body",
-        "--body-file",
-        str(body_file),
-    )
+    result = run_script(SCRIPT, *verify_closeout_args(tmp_path, classification=classification, carrier="pr-body", body_file=body_file))
 
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
@@ -433,7 +265,7 @@ def test_bug_closeout_rejects_blocked_critique_signal_that_only_the_head_made_lo
     paid down the 40-char floor — leaving 17 characters of author-written signal
     enough to skip the fresh-eye critique entirely. The floor now measures only
     what the author wrote; the accepted control below is unchanged."""
-    _seed_commit(
+    seed_commit(
         tmp_path,
         _bug_closeout_body(
             close_line="Close #42.",
@@ -441,11 +273,7 @@ def test_bug_closeout_rejects_blocked_critique_signal_that_only_the_head_made_lo
         ),
     )
 
-    result = run_script(
-        SCRIPT, "verify-closeout", "--repo-root", str(tmp_path),
-        "--repo", "corca-ai/charness", "--number", "42",
-        "--classification", "bug", "--carrier", "direct-commit", "--commit-ref", "HEAD",
-    )
+    result = run_script(SCRIPT, *verify_closeout_args(tmp_path, commit_ref="HEAD"))
 
     assert result.returncode == 2, result.stdout
     payload = yaml.safe_load(result.stdout)
@@ -459,13 +287,9 @@ def test_accepted_blocked_critique_is_reported_as_skipped_not_executed(tmp_path:
     """A host skip that clears the floor still must not read like an executed
     critique: the verdict is `ok: True` either way, so the check carries a
     `REVIEW:` advisory naming the skip as the only distinguishing signal."""
-    _seed_commit(tmp_path, _bug_closeout_body(close_line="Close #42."))
+    seed_commit(tmp_path, _bug_closeout_body(close_line="Close #42."))
 
-    result = run_script(
-        SCRIPT, "verify-closeout", "--repo-root", str(tmp_path),
-        "--repo", "corca-ai/charness", "--number", "42",
-        "--classification", "bug", "--carrier", "direct-commit", "--commit-ref", "HEAD",
-    )
+    result = run_script(SCRIPT, *verify_closeout_args(tmp_path, commit_ref="HEAD"))
 
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
@@ -483,13 +307,9 @@ def test_verify_closeout_surfaces_the_skip_advisory_at_the_top_level(tmp_path: P
     `resolution_critique_check` beside a top-level `"ok": true` is the quiet path
     that B2 is about. `close-with-comment` and the commit-msg carrier both carry
     a top-level `review_advisory`; this carrier now does too."""
-    _seed_commit(tmp_path, _bug_closeout_body(close_line="Close #42."))
+    seed_commit(tmp_path, _bug_closeout_body(close_line="Close #42."))
 
-    result = run_script(
-        SCRIPT, "verify-closeout", "--repo-root", str(tmp_path),
-        "--repo", "corca-ai/charness", "--number", "42",
-        "--classification", "bug", "--carrier", "direct-commit", "--commit-ref", "HEAD",
-    )
+    result = run_script(SCRIPT, *verify_closeout_args(tmp_path, commit_ref="HEAD"))
 
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
@@ -504,7 +324,7 @@ def test_verify_closeout_top_level_advisory_is_empty_for_an_executed_critique(tm
     critique = tmp_path / "charness-artifacts" / "critique" / "res-42.md"
     critique.parent.mkdir(parents=True, exist_ok=True)
     critique.write_text("Critique of the #42 resolution.\n", encoding="utf-8")
-    _seed_commit(
+    seed_commit(
         tmp_path,
         _bug_closeout_body(
             close_line="Close #42.",
@@ -512,11 +332,7 @@ def test_verify_closeout_top_level_advisory_is_empty_for_an_executed_critique(tm
         ),
     )
 
-    result = run_script(
-        SCRIPT, "verify-closeout", "--repo-root", str(tmp_path),
-        "--repo", "corca-ai/charness", "--number", "42",
-        "--classification", "bug", "--carrier", "direct-commit", "--commit-ref", "HEAD",
-    )
+    result = run_script(SCRIPT, *verify_closeout_args(tmp_path, commit_ref="HEAD"))
 
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)

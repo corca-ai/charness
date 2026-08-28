@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import importlib.util
 import re
 import runpy
 import sys
@@ -16,15 +15,13 @@ from scripts.validate_quality_reference_catalog import (
 )
 
 from .support import ROOT, run_script
+from .seeding_support import load_module
 
 SCRIPT = "skills/public/quality/scripts/plan_quality_run.py"
 SCRIPT_PATH = ROOT / SCRIPT
 CATALOG = ROOT / "skills" / "public" / "quality" / "references" / "catalog.yaml"
 
-PLAN_SPEC = importlib.util.spec_from_file_location("quality_run_plan_under_test", SCRIPT_PATH)
-assert PLAN_SPEC is not None and PLAN_SPEC.loader is not None
-PLAN = importlib.util.module_from_spec(PLAN_SPEC)
-PLAN_SPEC.loader.exec_module(PLAN)
+PLAN = load_module("quality_run_plan_under_test", SCRIPT_PATH)
 
 
 def _assert_help_pairs(output: str, expected_pairs: dict[str, str]) -> None:

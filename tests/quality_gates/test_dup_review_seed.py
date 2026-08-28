@@ -8,7 +8,6 @@ charness-artifacts/spec/boy-scout-dup-ratchet.md.
 
 from __future__ import annotations
 
-import importlib.util
 import json
 import re
 import sys
@@ -18,18 +17,14 @@ from types import SimpleNamespace
 import pytest
 
 from .support import ROOT, run_script
+from .seeding_support import load_module
 
 SCRIPTS = ROOT / "skills" / "public" / "quality" / "scripts"
 SEED_SCRIPT = SCRIPTS / "seed_dup_review.py"
 
 
 def _load(name: str):
-    path = SCRIPTS / f"{name}.py"
-    spec = importlib.util.spec_from_file_location(f"{name}_inproc", path)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_module(f"{name}_inproc", SCRIPTS / f"{name}.py")
 
 
 lib = _load("dup_review_lib")

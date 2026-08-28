@@ -1,16 +1,14 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+from .seeding_support import load_module
+
 EXAMPLE = ROOT / "skills/public/quality/references/boundary-bypass-payload.example.json"
 VALIDATOR = ROOT / "skills/public/quality/scripts/validate_boundary_bypass_payload.py"
-SPEC = importlib.util.spec_from_file_location("validate_boundary_bypass_payload", VALIDATOR)
-assert SPEC is not None and SPEC.loader is not None
-validator = importlib.util.module_from_spec(SPEC)
-SPEC.loader.exec_module(validator)
+validator = load_module("validate_boundary_bypass_payload", VALIDATOR)
 
 
 def test_validates_stack_neutral_boundary_bypass_example() -> None:

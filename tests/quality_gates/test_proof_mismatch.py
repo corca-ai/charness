@@ -2,23 +2,19 @@
 
 from __future__ import annotations
 
-import importlib.util
 from pathlib import Path
 
 import pytest
 
 from scripts import proof_mismatch as pm
+from .seeding_support import load_module
 
 ROOT = Path(__file__).resolve().parents[2]
 ISSUE_VERIFY = ROOT / "skills/public/issue/scripts/issue_verify_closeout.py"
 
 
 def _load_issue_verify():
-    spec = importlib.util.spec_from_file_location("issue_verify_closeout_under_test", ISSUE_VERIFY)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_module("issue_verify_closeout_under_test", ISSUE_VERIFY)
 
 
 issue_verify = _load_issue_verify()

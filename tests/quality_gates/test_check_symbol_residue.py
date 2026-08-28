@@ -1,31 +1,18 @@
 from __future__ import annotations
 
 import importlib
-import subprocess
 from pathlib import Path
 
 import yaml
 
 from .support import run_script
+from .seeding_support import git, init_git_repo
 
 csr = importlib.import_module("scripts.check_symbol_residue")
 
 
-def _git(repo: Path, *args: str) -> None:
-    subprocess.run(
-        ["git", "-c", "user.email=t@t", "-c", "user.name=t", *args],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-
-
 def _repo(tmp_path: Path) -> Path:
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    _git(repo, "init", "-q")
-    return repo
+    return init_git_repo(tmp_path)
 
 
 def test_symbol_residue_warns_on_deleted_symbol_phrase(tmp_path: Path) -> None:
@@ -38,8 +25,8 @@ def test_symbol_residue_warns_on_deleted_symbol_phrase(tmp_path: Path) -> None:
     (repo / "docs" / "contract.md").write_text(
         "The Non-Trivial Goal exemption still exists.\n", encoding="utf-8"
     )
-    _git(repo, "add", ".")
-    _git(repo, "commit", "-qm", "seed")
+    git(repo, "add", ".")
+    git(repo, "commit", "-qm", "seed")
 
     (repo / "scripts" / "goal.py").write_text("", encoding="utf-8")
 
@@ -59,8 +46,8 @@ def test_symbol_residue_cli_is_advisory_exit_zero(tmp_path: Path) -> None:
     (repo / "skills" / "note.md").write_text(
         "The trivial-goal-marker path remains documented.\n", encoding="utf-8"
     )
-    _git(repo, "add", ".")
-    _git(repo, "commit", "-qm", "seed")
+    git(repo, "add", ".")
+    git(repo, "commit", "-qm", "seed")
 
     (repo / "scripts" / "rules.py").write_text("", encoding="utf-8")
 
@@ -81,8 +68,8 @@ def test_symbol_residue_accepts_explicit_concept(tmp_path: Path) -> None:
     (repo / "docs" / "contract.md").write_text(
         "The Trivial Goal Exemption section is stale.\n", encoding="utf-8"
     )
-    _git(repo, "add", ".")
-    _git(repo, "commit", "-qm", "seed")
+    git(repo, "add", ".")
+    git(repo, "commit", "-qm", "seed")
 
     findings = csr.find_residue(repo, concepts=["trivial goal exemption"])
     assert [(f.symbol, f.variant, f.path) for f in findings] == [

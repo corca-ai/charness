@@ -16,29 +16,18 @@ from pathlib import Path
 import yaml
 
 from .support import run_script
+from .seeding_support import git, init_git_repo
 
 SCRIPT = "skills/shared/scripts/reviewer_boundary_fingerprint.py"
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def _git(repo: Path, *args: str) -> None:
-    subprocess.run(
-        ["git", "-c", "user.email=t@t", "-c", "user.name=t", *args],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-
-
 def _repo(tmp_path: Path) -> Path:
     """A seeded repo with one tracked file and one pre-existing untracked file."""
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    _git(repo, "init", "-q")
+    repo = init_git_repo(tmp_path)
     (repo / "f.py").write_text("v1\n", encoding="utf-8")
-    _git(repo, "add", "f.py")
-    _git(repo, "commit", "-qm", "seed")
+    git(repo, "add", "f.py")
+    git(repo, "commit", "-qm", "seed")
     (repo / "pre.txt").write_text("pre-existing untracked\n", encoding="utf-8")
     return repo
 
@@ -175,7 +164,7 @@ def test_index_mutation_with_same_worktree_content_is_flagged(tmp_path: Path) ->
     repo = _repo(tmp_path)
     _snapshot(repo)
     (repo / "f.py").write_text("v2\n", encoding="utf-8")
-    _git(repo, "add", "f.py")
+    git(repo, "add", "f.py")
 
     code, payload = _verify(repo)
     assert code == 1
@@ -186,8 +175,8 @@ def test_head_moved_is_flagged(tmp_path: Path) -> None:
     repo = _repo(tmp_path)
     _snapshot(repo)
     (repo / "f.py").write_text("v2\n", encoding="utf-8")
-    _git(repo, "add", "f.py")
-    _git(repo, "commit", "-qm", "move head")
+    git(repo, "add", "f.py")
+    git(repo, "commit", "-qm", "move head")
 
     code, payload = _verify(repo)
     assert code == 1
@@ -245,7 +234,7 @@ def test_staged_rename_is_flagged_without_crash(tmp_path: Path) -> None:
     parsing must stay sound and the rename must still drift."""
     repo = _repo(tmp_path)
     _snapshot(repo)
-    _git(repo, "mv", "f.py", "g.py")
+    git(repo, "mv", "f.py", "g.py")
 
     code, payload = _verify(repo)
     assert code == 1
@@ -289,8 +278,8 @@ def test_head_move_needs_its_own_declaration(tmp_path: Path) -> None:
     repo = _repo(tmp_path)
     _snapshot(repo)
     (repo / "f.py").write_text("v2\n", encoding="utf-8")
-    _git(repo, "add", "f.py")
-    _git(repo, "commit", "-qm", "parent commit")
+    git(repo, "add", "f.py")
+    git(repo, "commit", "-qm", "parent commit")
 
     code, payload = _verify(repo, "--parent-path", "f.py")
     assert code == 1, payload
@@ -308,7 +297,7 @@ def test_index_drift_needs_its_own_declaration(tmp_path: Path) -> None:
     repo = _repo(tmp_path)
     _snapshot(repo)
     (repo / "f.py").write_text("parent applied a fix\n", encoding="utf-8")
-    _git(repo, "add", "f.py")
+    git(repo, "add", "f.py")
 
     code, payload = _verify(repo, "--parent-path", "f.py")
     assert code == 1, payload

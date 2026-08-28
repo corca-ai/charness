@@ -20,7 +20,6 @@ They do NOT assert the builders emit the same STRING -- they deliberately do not
 
 from __future__ import annotations
 
-import importlib.util
 import shlex
 import sys
 from pathlib import Path
@@ -32,16 +31,14 @@ from scripts import mutation_coverage_producer as producer
 from scripts import mutation_sampling_lib as sampling
 
 from .support import ROOT
+from .seeding_support import load_module
 
 
 def _load_teeth():
-    spec = importlib.util.spec_from_file_location(
+    return load_module(
         "check_changed_line_mutation_coverage",
         ROOT / "scripts/check_changed_line_mutation_coverage.py",
     )
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
 
 
 #: (command, accepted). Every row was chosen because SOME reading of the two

@@ -1,14 +1,18 @@
 from __future__ import annotations
 
 import json
-import os
 from pathlib import Path
 
 import yaml
 
 from runtime_bootstrap import import_repo_module
 from tests.quality_gates.issue_closeout_support import bug_closeout_body
-from tests.quality_gates.support import ROOT, run_script, write_argv_logging_fake
+from tests.quality_gates.support import ROOT, run_script
+from tests.quality_gates.seeding_support import (
+    close_comment_args,
+    environment_with_path,
+    write_issue_close_fake,
+)
 
 SCRIPT = "skills/public/issue/scripts/issue_tool.py"
 FLOOR_MODULE = ROOT / "skills/public/issue/scripts/issue_close_comment_floor.py"
@@ -25,33 +29,14 @@ def test_close_with_comment_refuses_silent_body_before_any_gh_call(tmp_path: Pat
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     log = tmp_path / "gh-log.json"
-    write_argv_logging_fake(
-        bin_dir,
-        "gh",
-        "GH_LOG",
-        [
-            "if 'comment' in sys.argv: print('commented')",
-            "if 'close' in sys.argv: print('closed')",
-            "if 'view' in sys.argv: print(json.dumps({'number': 42, 'state': 'CLOSED', 'url': 'https://github.com/corca-ai/charness/issues/42'}))",
-        ],
-    )
+    write_issue_close_fake(bin_dir)
     body = tmp_path / "body.md"
     body.write_text("Body.\n", encoding="utf-8")
 
     result = run_script(
         SCRIPT,
-        "close-with-comment",
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "42",
-        "--body-file",
-        str(body),
-        "--classification",
-        "bug",
-        "--repo-root",
-        str(tmp_path),
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_LOG": str(log)},
+        *close_comment_args(tmp_path, body, classification="bug"),
+        env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin", GH_LOG=str(log)),
     )
 
     assert result.returncode == 2, result.stdout
@@ -69,33 +54,14 @@ def test_close_with_comment_proceeds_with_compliant_body(tmp_path: Path) -> None
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     log = tmp_path / "gh-log.json"
-    write_argv_logging_fake(
-        bin_dir,
-        "gh",
-        "GH_LOG",
-        [
-            "if 'comment' in sys.argv: print('commented')",
-            "if 'close' in sys.argv: print('closed')",
-            "if 'view' in sys.argv: print(json.dumps({'number': 42, 'state': 'CLOSED', 'url': 'https://github.com/corca-ai/charness/issues/42'}))",
-        ],
-    )
+    write_issue_close_fake(bin_dir)
     body = tmp_path / "body.md"
     body.write_text(bug_closeout_body(), encoding="utf-8")
 
     result = run_script(
         SCRIPT,
-        "close-with-comment",
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "42",
-        "--body-file",
-        str(body),
-        "--classification",
-        "bug",
-        "--repo-root",
-        str(tmp_path),
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_LOG": str(log)},
+        *close_comment_args(tmp_path, body, classification="bug"),
+        env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin", GH_LOG=str(log)),
     )
 
     assert result.returncode == 0, result.stderr
@@ -138,16 +104,7 @@ def test_close_with_comment_refuses_undispositioned_hotl_entry(tmp_path: Path) -
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     log = tmp_path / "gh-log.json"
-    write_argv_logging_fake(
-        bin_dir,
-        "gh",
-        "GH_LOG",
-        [
-            "if 'comment' in sys.argv: print('commented')",
-            "if 'close' in sys.argv: print('closed')",
-            "if 'view' in sys.argv: print(json.dumps({'number': 42, 'state': 'CLOSED', 'url': 'https://github.com/corca-ai/charness/issues/42'}))",
-        ],
-    )
+    write_issue_close_fake(bin_dir)
     body = tmp_path / "body.md"
     body.write_text(
         bug_closeout_body(hotl_line="HOTL #42: could not be verified; no readback available"),
@@ -156,18 +113,8 @@ def test_close_with_comment_refuses_undispositioned_hotl_entry(tmp_path: Path) -
 
     result = run_script(
         SCRIPT,
-        "close-with-comment",
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "42",
-        "--body-file",
-        str(body),
-        "--classification",
-        "bug",
-        "--repo-root",
-        str(tmp_path),
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_LOG": str(log)},
+        *close_comment_args(tmp_path, body, classification="bug"),
+        env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin", GH_LOG=str(log)),
     )
 
     assert result.returncode == 2, result.stdout
@@ -225,16 +172,7 @@ def test_close_with_comment_accepts_typed_hotl_entry(tmp_path: Path) -> None:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     log = tmp_path / "gh-log.json"
-    write_argv_logging_fake(
-        bin_dir,
-        "gh",
-        "GH_LOG",
-        [
-            "if 'comment' in sys.argv: print('commented')",
-            "if 'close' in sys.argv: print('closed')",
-            "if 'view' in sys.argv: print(json.dumps({'number': 42, 'state': 'CLOSED', 'url': 'https://github.com/corca-ai/charness/issues/42'}))",
-        ],
-    )
+    write_issue_close_fake(bin_dir)
     body = tmp_path / "body.md"
     body.write_text(
         bug_closeout_body(
@@ -245,18 +183,8 @@ def test_close_with_comment_accepts_typed_hotl_entry(tmp_path: Path) -> None:
 
     result = run_script(
         SCRIPT,
-        "close-with-comment",
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "42",
-        "--body-file",
-        str(body),
-        "--classification",
-        "bug",
-        "--repo-root",
-        str(tmp_path),
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_LOG": str(log)},
+        *close_comment_args(tmp_path, body, classification="bug"),
+        env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin", GH_LOG=str(log)),
     )
 
     assert result.returncode == 0, result.stderr
@@ -276,16 +204,7 @@ def test_close_with_comment_question_classification_emits_review_advisory(tmp_pa
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     log = tmp_path / "gh-log.json"
-    write_argv_logging_fake(
-        bin_dir,
-        "gh",
-        "GH_LOG",
-        [
-            "if 'comment' in sys.argv: print('commented')",
-            "if 'close' in sys.argv: print('closed')",
-            "if 'view' in sys.argv: print(json.dumps({'number': 42, 'state': 'CLOSED', 'url': 'https://github.com/corca-ai/charness/issues/42'}))",
-        ],
-    )
+    write_issue_close_fake(bin_dir)
     body = tmp_path / "body.md"
     body.write_text(
         "Answer: yes, proceed as discussed.\n\nAI-provenance: authored by an agent session.\n",
@@ -294,18 +213,8 @@ def test_close_with_comment_question_classification_emits_review_advisory(tmp_pa
 
     result = run_script(
         SCRIPT,
-        "close-with-comment",
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "42",
-        "--body-file",
-        str(body),
-        "--classification",
-        "question",
-        "--repo-root",
-        str(tmp_path),
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_LOG": str(log)},
+        *close_comment_args(tmp_path, body),
+        env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin", GH_LOG=str(log)),
     )
 
     assert result.returncode == 0, result.stderr
@@ -326,24 +235,14 @@ def test_close_with_comment_refuses_on_missing_source_preservation_for_external_
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     log = tmp_path / "gh-log.json"
-    write_argv_logging_fake(bin_dir, "gh", "GH_LOG", [])
+    write_issue_close_fake(bin_dir)
     body = tmp_path / "body.md"
     body.write_text(bug_closeout_body() + "\n\nSource origin: slack\n", encoding="utf-8")
 
     result = run_script(
         SCRIPT,
-        "close-with-comment",
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "42",
-        "--body-file",
-        str(body),
-        "--classification",
-        "bug",
-        "--repo-root",
-        str(tmp_path),
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_LOG": str(log)},
+        *close_comment_args(tmp_path, body, classification="bug"),
+        env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin", GH_LOG=str(log)),
     )
 
     assert result.returncode == 2, result.stdout
@@ -364,33 +263,14 @@ def test_close_with_comment_refuses_body_without_ai_provenance(tmp_path: Path) -
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     log = tmp_path / "gh-log.json"
-    write_argv_logging_fake(
-        bin_dir,
-        "gh",
-        "GH_LOG",
-        [
-            "if 'comment' in sys.argv: print('commented')",
-            "if 'close' in sys.argv: print('closed')",
-            "if 'view' in sys.argv: print(json.dumps({'number': 42, 'state': 'CLOSED', 'url': 'https://github.com/corca-ai/charness/issues/42'}))",
-        ],
-    )
+    write_issue_close_fake(bin_dir)
     body = tmp_path / "body.md"
     body.write_text(bug_closeout_body(provenance_line=None), encoding="utf-8")
 
     result = run_script(
         SCRIPT,
-        "close-with-comment",
-        "--repo",
-        "corca-ai/charness",
-        "--number",
-        "42",
-        "--body-file",
-        str(body),
-        "--classification",
-        "bug",
-        "--repo-root",
-        str(tmp_path),
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_LOG": str(log)},
+        *close_comment_args(tmp_path, body, classification="bug"),
+        env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin", GH_LOG=str(log)),
     )
 
     assert result.returncode == 2, result.stdout

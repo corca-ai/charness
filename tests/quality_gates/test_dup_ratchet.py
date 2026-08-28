@@ -18,7 +18,6 @@ See charness-artifacts/spec/boy-scout-dup-ratchet.md (Slice 2).
 
 from __future__ import annotations
 
-import importlib.util
 import json
 import os
 import re
@@ -30,18 +29,14 @@ import pytest
 import yaml
 
 from .support import ROOT, run_script
+from .seeding_support import load_module
 
 SCRIPTS = ROOT / "skills" / "public" / "quality" / "scripts"
 CHECK_SCRIPT = SCRIPTS / "check_dup_ratchet.py"
 
 
 def _load(name: str):
-    path = SCRIPTS / f"{name}.py"
-    spec = importlib.util.spec_from_file_location(f"{name}_inproc", path)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_module(f"{name}_inproc", SCRIPTS / f"{name}.py")
 
 
 lib = _load("dup_ratchet_lib")

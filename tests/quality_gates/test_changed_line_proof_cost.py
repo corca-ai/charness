@@ -20,7 +20,6 @@ concept rather than append to a file near its cap.
 """
 from __future__ import annotations
 
-import importlib.util
 import json
 import sys
 from pathlib import Path
@@ -29,17 +28,13 @@ from types import SimpleNamespace
 import yaml
 
 from .support import ROOT, run_script
+from .seeding_support import load_module
 
 _TEETH = "scripts/check_changed_line_mutation_coverage.py"
 
 
 def _load_teeth():
-    spec = importlib.util.spec_from_file_location(
-        "check_changed_line_mutation_coverage", ROOT / _TEETH
-    )
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_module("check_changed_line_mutation_coverage", ROOT / _TEETH)
 
 
 def _probe_args(**overrides):

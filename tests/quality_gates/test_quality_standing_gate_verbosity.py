@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 import sys
 from pathlib import Path
@@ -8,6 +7,7 @@ from pathlib import Path
 import yaml
 
 from .support import ROOT
+from .seeding_support import load_module
 
 # In-process boundary conversion (testability-dsl-initiative goal 1): load the
 # inventory entrypoint by file and call its `inventory()` lib function directly
@@ -15,13 +15,10 @@ from .support import ROOT
 # resolves its sibling `standing_gate_verbosity_lib` regardless of sys.path, so no
 # path setup is needed. `inventory()` returns the same payload the CLI `--json`
 # mode serializes.
-_SPEC = importlib.util.spec_from_file_location(
+_MODULE = load_module(
     "inventory_standing_gate_verbosity",
     ROOT / "skills" / "public" / "quality" / "scripts" / "inventory_standing_gate_verbosity.py",
 )
-assert _SPEC is not None and _SPEC.loader is not None
-_MODULE = importlib.util.module_from_spec(_SPEC)
-_SPEC.loader.exec_module(_MODULE)
 INVENTORY = _MODULE.inventory
 
 

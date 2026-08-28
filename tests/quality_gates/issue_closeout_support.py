@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import importlib.util
 import re
-import subprocess
 from pathlib import Path
+
+from .seeding_support import seed_commit
 
 SCRIPT = "skills/public/issue/scripts/issue_tool.py"
 VERIFY_MODULE_PATH = Path(__file__).resolve().parents[2] / "skills" / "public" / "issue" / "scripts" / "issue_verify_closeout.py"
@@ -15,16 +16,6 @@ def load_verify_module():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
-
-
-def seed_commit(repo: Path, body: str) -> None:
-    subprocess.run(["git", "init", "-b", "main"], cwd=repo, check=True, capture_output=True, text=True)
-    (repo / "README.md").write_text("# Test\n", encoding="utf-8")
-    subprocess.run(["git", "add", "README.md"], cwd=repo, check=True, capture_output=True, text=True)
-    command = ["git", "commit", "-m", "Resolve issue"]
-    for paragraph in body.split("\n\n"):
-        command.extend(["-m", paragraph])
-    subprocess.run(command, cwd=repo, check=True, capture_output=True, text=True)
 
 
 # Sentinel: `None` already means "omit the line", so the derive-from-close-line default

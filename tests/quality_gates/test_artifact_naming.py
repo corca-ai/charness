@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import importlib.util
 import os
 import runpy
 import subprocess
@@ -22,33 +21,26 @@ from scripts.resolve_artifact_path import payload_for as resolve_artifact_payloa
 from tests.script_main import run_loaded_script_main
 
 from .support import ROOT, run_script
+from .seeding_support import load_module
 
-INVENTORY_SPEC = importlib.util.spec_from_file_location(
-    "inventory_current_pointer_layouts", ROOT / "scripts" / "inventory_current_pointer_layouts.py"
+INVENTORY = load_module(
+    "inventory_current_pointer_layouts",
+    ROOT / "scripts" / "inventory_current_pointer_layouts.py",
+    register=True,
 )
-assert INVENTORY_SPEC is not None and INVENTORY_SPEC.loader is not None
-INVENTORY = importlib.util.module_from_spec(INVENTORY_SPEC)
-sys.modules[INVENTORY_SPEC.name] = INVENTORY
-INVENTORY_SPEC.loader.exec_module(INVENTORY)
 
 def _load_quality_resolver():
-    spec = importlib.util.spec_from_file_location(
-        "resolve_quality_artifact", ROOT / "skills" / "public" / "quality" / "scripts" / "resolve_quality_artifact.py"
+    return load_module(
+        "resolve_quality_artifact",
+        ROOT / "skills" / "public" / "quality" / "scripts" / "resolve_quality_artifact.py",
     )
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
 
 
 def _load_quality_adapter_resolver():
-    spec = importlib.util.spec_from_file_location(
-        "resolve_quality_adapter", ROOT / "skills" / "public" / "quality" / "scripts" / "resolve_adapter.py"
+    return load_module(
+        "resolve_quality_adapter",
+        ROOT / "skills" / "public" / "quality" / "scripts" / "resolve_adapter.py",
     )
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
 
 
 def test_artifact_naming_defaults_to_latest_pointer_and_dated_slug_records() -> None:

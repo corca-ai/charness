@@ -30,6 +30,7 @@ import pytest
 from scripts.quality_adapter_lib import load_quality_adapter_permissive
 
 from .quality_bootstrap_support import seed_quality_repo
+from .seeding_support import write_quality_adapter
 from .support import ROOT
 
 REFERENCE = ROOT / "skills" / "public" / "quality" / "references" / "coverage_floor_inventory.py"
@@ -211,26 +212,20 @@ def test_the_reported_consumer_shape_resolves_with_the_deleted_sub_keys_still_go
     inventory now discovers it.
     """
     repo = seed_quality_repo(tmp_path)
-    (repo / ".agents" / "quality-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: demo",
-                "output_dir: charness-artifacts/quality",
-                "deliberately_absent:",
-                "  coverage_floor_policy.lefthook_path: this repo has no lefthook",
-                "  coverage_floor_policy.ci_workflow_glob: this repo runs no CI workflows",
-                "  coverage_floor_policy.exemption_list_path: no exemption list exists here",
-                "coverage_floor_policy:",
-                "  min_statements_threshold: 30",
-                "  fail_below_pct: 80.0",
-                "  warn_ceiling_pct: 95.0",
-                "  floor_drift_lock_pp: 1.0",
-                "  gate_script_pattern: .githooks/pre-commit",
-                "",
-            ]
-        ),
-        encoding="utf-8",
+    write_quality_adapter(
+        repo,
+        [
+            "deliberately_absent:",
+            "  coverage_floor_policy.lefthook_path: this repo has no lefthook",
+            "  coverage_floor_policy.ci_workflow_glob: this repo runs no CI workflows",
+            "  coverage_floor_policy.exemption_list_path: no exemption list exists here",
+            "coverage_floor_policy:",
+            "  min_statements_threshold: 30",
+            "  fail_below_pct: 80.0",
+            "  warn_ceiling_pct: 95.0",
+            "  floor_drift_lock_pp: 1.0",
+            "  gate_script_pattern: .githooks/pre-commit",
+        ],
     )
 
     resolved = load_quality_adapter_permissive(repo)

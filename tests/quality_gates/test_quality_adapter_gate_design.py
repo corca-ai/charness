@@ -5,24 +5,12 @@ from pathlib import Path
 import yaml
 
 from .quality_bootstrap_support import _run_adapter_gate_design, seed_quality_repo
+from .seeding_support import write_quality_adapter
 
 
 def test_quality_inventory_adapter_gate_design_emits_required_classes(tmp_path: Path) -> None:
     repo = seed_quality_repo(tmp_path)
-    (repo / ".agents" / "quality-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: demo",
-                "language: en",
-                "output_dir: charness-artifacts/quality",
-                "acknowledged_recommendations:",
-                "- demo.ack",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
-    )
+    write_quality_adapter(repo, ["acknowledged_recommendations:", "- demo.ack"], language="en")
     (repo / "scripts" / "review_policy.py").write_text(
         "FRESH_EYE_MARKERS = ('critique',)\nrecommendations = [{'enforcement_tier': 'NON_AUTOMATABLE'}]\n",
         encoding="utf-8",
@@ -57,21 +45,15 @@ def test_quality_inventory_adapter_gate_design_uses_configured_review_scope(tmp_
         "FRESH_EYE_MARKERS = ('critique',)\n",
         encoding="utf-8",
     )
-    (repo / ".agents" / "quality-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: demo",
-                "language: en",
-                "output_dir: charness-artifacts/quality",
-                "adapter_review_sources:",
-                "- .agents/quality-adapter.yaml",
-                "gate_design_review_globs:",
-                "- custom/*.py",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
+    write_quality_adapter(
+        repo,
+        [
+            "adapter_review_sources:",
+            "- .agents/quality-adapter.yaml",
+            "gate_design_review_globs:",
+            "- custom/*.py",
+        ],
+        language="en",
     )
 
     result = _run_adapter_gate_design("--repo-root", str(repo), "--detail")

@@ -6,24 +6,20 @@ never invokes it), so these tests pin the checker's verdict, not an enforced
 repo boundary."""
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
 
 import pytest
 
 from .support import ROOT
+from .seeding_support import load_module
 
 SCRIPT_PATH = ROOT / "skills" / "public" / "issue" / "scripts" / "audit_brief.py"
 FIXTURE_DIR = SCRIPT_PATH.parent / "fixtures"
 
 
 def _load_audit_brief():
-    spec = importlib.util.spec_from_file_location("audit_brief", SCRIPT_PATH)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_module("audit_brief", SCRIPT_PATH)
 
 
 def _audit(events: list[dict[str, object]]) -> dict[str, object]:

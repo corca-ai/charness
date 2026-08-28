@@ -5,10 +5,8 @@ these tests pin that EVERY verdict-emitting path of
 `scripts/check_changed_line_mutation_coverage.py` states how many of how many
 pool files it actually read, and that stating it changed no verdict.
 
-The seeding helpers are imported from the gate's own test module rather than
-re-declared: a second copy of `_seed_two_changed_pool_files` would be a
-clone-family the dup ratchet is right to flag, and a fixture that drifts from
-the one the sibling tests use is worse than an import.
+The shared history fixture lives in `seeding_support` so the sibling changed-line
+tests all exercise the same synthetic repository.
 """
 from __future__ import annotations
 
@@ -26,10 +24,10 @@ from .test_changed_line_mutation_coverage import (
     _dirty_pool_file,
     _git,
     _seed_repo_with_changed_pool_file,
-    _seed_two_changed_pool_files,
     _write_coverage,
     _write_two_file_coverage,
 )
+from .seeding_support import seed_two_changed_pool_files
 
 COUNTS_KEY = "changed_pool_file_counts"
 
@@ -62,7 +60,7 @@ def test_a_partial_denominator_states_both_numbers_on_a_passing_run(tmp_path: Pa
     here by any amount of `len()`-ing. A reader who saw `blocking: []` saw a green
     whose scope they could not recover.
     """
-    repo, base, head = _seed_two_changed_pool_files(tmp_path)
+    repo, base, head = seed_two_changed_pool_files(tmp_path)
     cov = _write_two_file_coverage(repo)
 
     result = _run_two_file(repo, base, head, cov, "scripts/foo.py")
@@ -91,7 +89,7 @@ def test_a_partial_denominator_is_not_a_pass_and_is_not_a_refusal(tmp_path: Path
     two of them: a partial CLEAN scope is 4, a real uncovered changed line is still
     1, and neither is 0.
     """
-    repo, base, head = _seed_two_changed_pool_files(tmp_path)
+    repo, base, head = seed_two_changed_pool_files(tmp_path)
     cov = _write_two_file_coverage(repo)
 
     partial = _run_two_file(repo, base, head, cov, "scripts/foo.py")
@@ -127,7 +125,7 @@ def test_a_limit_that_analyzes_nothing_states_zero_of_the_real_denominator(tmp_p
     "Analyzed nothing" and "nothing changed" are different facts that used to
     render as the same shape of payload.
     """
-    repo, base, head = _seed_two_changed_pool_files(tmp_path)
+    repo, base, head = seed_two_changed_pool_files(tmp_path)
     cov = _write_two_file_coverage(repo)
 
     result = _run_two_file(repo, base, head, cov, "scripts/absent.py")

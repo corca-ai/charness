@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from .support import make_minimal_skill_repo, run_script
+from .seeding_support import write_skill, write_text
 
 
 def make_adapter_skill_repo(
@@ -40,21 +41,7 @@ def test_validate_skills_rejects_unquoted_description(tmp_path: Path) -> None:
 
 def test_validate_skills_rejects_missing_references_section(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    skill_dir = repo / "skills" / "public" / "demo"
-    skill_dir.mkdir(parents=True)
-    (skill_dir / "SKILL.md").write_text(
-        "\n".join(
-            [
-                "---",
-                "name: demo",
-                'description: "Demo skill."',
-                "---",
-                "",
-                "# Demo",
-            ]
-        ),
-        encoding="utf-8",
-    )
+    write_skill(repo, [])
     result = run_script("scripts/validate_skills.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "missing `## References` section" in result.stderr
@@ -62,28 +49,12 @@ def test_validate_skills_rejects_missing_references_section(tmp_path: Path) -> N
 
 def test_validate_skills_rejects_unlisted_reference_file(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    skill_dir = repo / "skills" / "public" / "demo"
-    references_dir = skill_dir / "references"
-    references_dir.mkdir(parents=True)
-    (references_dir / "note.md").write_text("# Note\n", encoding="utf-8")
-    (skill_dir / "SKILL.md").write_text(
-        "\n".join(
-            [
-                "---",
-                "name: demo",
-                'description: "Demo skill."',
-                "---",
-                "",
-                "# Demo",
-                "",
-                "## References",
-                "",
-                "- `references/other.md`",
-            ]
-        ),
-        encoding="utf-8",
+    skill_path = write_skill(
+        repo,
+        ["## References", "", "- `references/other.md`"],
     )
-    (references_dir / "other.md").write_text("# Other\n", encoding="utf-8")
+    write_text(skill_path.parent / "references" / "note.md", "# Note\n")
+    write_text(skill_path.parent / "references" / "other.md", "# Other\n")
     result = run_script("scripts/validate_skills.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "unlisted reference file(s): `references/note.md`" in result.stderr
@@ -91,31 +62,21 @@ def test_validate_skills_rejects_unlisted_reference_file(tmp_path: Path) -> None
 
 def test_validate_skills_accepts_support_skill_package(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    skill_dir = repo / "skills" / "support" / "demo-support"
-    references_dir = skill_dir / "references"
-    scripts_dir = skill_dir / "scripts"
-    references_dir.mkdir(parents=True)
-    scripts_dir.mkdir()
-    (references_dir / "runtime.md").write_text("# Runtime\n", encoding="utf-8")
-    (scripts_dir / "helper.py").write_text("print('ok')\n", encoding="utf-8")
-    (skill_dir / "SKILL.md").write_text(
-        "\n".join(
-            [
-                "---",
-                "name: demo-support",
-                'description: "Demo support skill."',
-                "---",
-                "",
-                "# Demo Support",
-                "",
-                "## References",
-                "",
-                "- `references/runtime.md`",
-                "- `scripts/helper.py`",
-            ]
-        ),
-        encoding="utf-8",
+    skill_path = write_skill(
+        repo,
+        [
+            "## References",
+            "",
+            "- `references/runtime.md`",
+            "- `scripts/helper.py`",
+        ],
+        package="support",
+        skill_id="demo-support",
+        description="Demo support skill.",
+        title="Demo Support",
     )
+    write_text(skill_path.parent / "references" / "runtime.md", "# Runtime\n")
+    write_text(skill_path.parent / "scripts" / "helper.py", "print('ok')\n")
     result = run_script("scripts/validate_skills.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 
@@ -135,29 +96,13 @@ def test_validate_skills_requires_adapter_resolver(tmp_path: Path) -> None:
 
 def test_validate_skills_rejects_missing_shared_reference_from_reference_file(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    skill_dir = repo / "skills" / "public" / "demo"
-    references_dir = skill_dir / "references"
-    references_dir.mkdir(parents=True)
-    (skill_dir / "SKILL.md").write_text(
-        "\n".join(
-            [
-                "---",
-                "name: demo",
-                'description: "Demo skill."',
-                "---",
-                "",
-                "# Demo",
-                "",
-                "## References",
-                "",
-                "- `references/note.md`",
-            ]
-        ),
-        encoding="utf-8",
+    skill_path = write_skill(
+        repo,
+        ["## References", "", "- `references/note.md`"],
     )
-    (references_dir / "note.md").write_text(
+    write_text(
+        skill_path.parent / "references" / "note.md",
         "Apply `../../../shared/references/does-not-exist.md`.\n",
-        encoding="utf-8",
     )
     result = run_script("scripts/validate_skills.py", "--repo-root", str(repo))
     assert result.returncode == 1
@@ -204,42 +149,29 @@ def test_validate_skills_accepts_flat_exported_plugin_layout(tmp_path: Path) -> 
 
 def test_validate_skills_rejects_public_skill_with_many_fenced_examples_and_no_scripts(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    skill_dir = repo / "skills" / "public" / "demo"
-    references_dir = skill_dir / "references"
-    references_dir.mkdir(parents=True)
-    (references_dir / "note.md").write_text("# Note\n", encoding="utf-8")
-    (skill_dir / "SKILL.md").write_text(
-        "\n".join(
-            [
-                "---",
-                "name: demo",
-                'description: "Demo skill."',
-                "---",
-                "",
-                "# Demo",
-                "",
-                "## Bootstrap",
-                "",
-                "```bash",
-                "echo one",
-                "```",
-                "",
-                "```bash",
-                "echo two",
-                "```",
-                "",
-                "```bash",
-                "echo three",
-                "```",
-                "",
-                "## References",
-                "",
-                "- `references/note.md`",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
+    skill_path = write_skill(
+        repo,
+        [
+            "## Bootstrap",
+            "",
+            "```bash",
+            "echo one",
+            "```",
+            "",
+            "```bash",
+            "echo two",
+            "```",
+            "",
+            "```bash",
+            "echo three",
+            "```",
+            "",
+            "## References",
+            "",
+            "- `references/note.md`",
+        ],
     )
+    write_text(skill_path.parent / "references" / "note.md", "# Note\n")
     result = run_script("scripts/validate_skills.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "Bootstrap with 3+ fenced examples" in result.stderr
@@ -248,75 +180,44 @@ def test_validate_skills_rejects_public_skill_with_many_fenced_examples_and_no_s
 
 def test_validate_skills_accepts_public_skill_with_many_fenced_examples_when_scripts_exist(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    skill_dir = repo / "skills" / "public" / "demo"
-    references_dir = skill_dir / "references"
-    scripts_dir = skill_dir / "scripts"
-    references_dir.mkdir(parents=True)
-    scripts_dir.mkdir()
-    (references_dir / "note.md").write_text("# Note\n", encoding="utf-8")
-    (scripts_dir / "helper.py").write_text("print('ok')\n", encoding="utf-8")
-    (skill_dir / "SKILL.md").write_text(
-        "\n".join(
-            [
-                "---",
-                "name: demo",
-                'description: "Demo skill."',
-                "---",
-                "",
-                "# Demo",
-                "",
-                "## Bootstrap",
-                "",
-                "```bash",
-                "echo one",
-                "```",
-                "",
-                "```bash",
-                "echo two",
-                "```",
-                "",
-                "```bash",
-                'python3 "$SKILL_DIR/scripts/helper.py"',
-                "```",
-                "",
-                "## References",
-                "",
-                "- `references/note.md`",
-                "- `scripts/helper.py`",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
+    skill_path = write_skill(
+        repo,
+        [
+            "## Bootstrap",
+            "",
+            "```bash",
+            "echo one",
+            "```",
+            "",
+            "```bash",
+            "echo two",
+            "```",
+            "",
+            "```bash",
+            'python3 "$SKILL_DIR/scripts/helper.py"',
+            "```",
+            "",
+            "## References",
+            "",
+            "- `references/note.md`",
+            "- `scripts/helper.py`",
+        ],
     )
+    write_text(skill_path.parent / "references" / "note.md", "# Note\n")
+    write_text(skill_path.parent / "scripts" / "helper.py", "print('ok')\n")
     result = run_script("scripts/validate_skills.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 
 
 def test_validate_skills_rejects_author_repo_internal_doc_cite(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    skill_dir = repo / "skills" / "public" / "demo"
-    references_dir = skill_dir / "references"
-    references_dir.mkdir(parents=True)
-    (references_dir / "note.md").write_text(
-        "Read `docs/implementation-discipline.md` before editing.\n",
-        encoding="utf-8",
+    skill_path = write_skill(
+        repo,
+        ["## References", "", "- `references/note.md`"],
     )
-    (skill_dir / "SKILL.md").write_text(
-        "\n".join(
-            [
-                "---",
-                "name: demo",
-                'description: "Demo skill."',
-                "---",
-                "",
-                "# Demo",
-                "",
-                "## References",
-                "",
-                "- `references/note.md`",
-            ]
-        ),
-        encoding="utf-8",
+    write_text(
+        skill_path.parent / "references" / "note.md",
+        "Read `docs/implementation-discipline.md` before editing.\n",
     )
 
     result = run_script("scripts/validate_skills.py", "--repo-root", str(repo))
@@ -328,10 +229,12 @@ def test_validate_skills_rejects_author_repo_internal_doc_cite(tmp_path: Path) -
 
 def test_validate_skills_rejects_author_repo_internal_test_and_skill_cites(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    skill_dir = repo / "skills" / "public" / "demo"
-    references_dir = skill_dir / "references"
-    references_dir.mkdir(parents=True)
-    (references_dir / "note.md").write_text(
+    skill_path = write_skill(
+        repo,
+        ["## References", "", "- `references/note.md`"],
+    )
+    write_text(
+        skill_path.parent / "references" / "note.md",
         "\n".join(
             [
                 "Regression lives at `tests/test_demo.py::test_case`.",
@@ -340,24 +243,6 @@ def test_validate_skills_rejects_author_repo_internal_test_and_skill_cites(tmp_p
             ]
         )
         + "\n",
-        encoding="utf-8",
-    )
-    (skill_dir / "SKILL.md").write_text(
-        "\n".join(
-            [
-                "---",
-                "name: demo",
-                'description: "Demo skill."',
-                "---",
-                "",
-                "# Demo",
-                "",
-                "## References",
-                "",
-                "- `references/note.md`",
-            ]
-        ),
-        encoding="utf-8",
     )
 
     result = run_script("scripts/validate_skills.py", "--repo-root", str(repo))
@@ -370,64 +255,32 @@ def test_validate_skills_rejects_author_repo_internal_test_and_skill_cites(tmp_p
 
 def test_validate_skills_allows_authoring_marker_and_operator_surfaces(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    skill_dir = repo / "skills" / "public" / "demo"
-    references_dir = skill_dir / "references"
-    references_dir.mkdir(parents=True)
-    sibling_ref = repo / "skills" / "public" / "prove" / "references"
-    sibling_ref.mkdir(parents=True)
-    (sibling_ref / "verification-ladder.md").write_text("# Ladder\n", encoding="utf-8")
-    (repo / "skills" / "public" / "prove" / "SKILL.md").write_text(
-        "\n".join(
-            [
-                "---",
-                "name: prove",
-                'description: "Impl skill."',
-                "---",
-                "",
-                "# Impl",
-                "",
-                "## References",
-                "",
-                "- `references/verification-ladder.md`",
-            ]
-        ),
-        encoding="utf-8",
+    skill_path = write_skill(
+        repo,
+        ["## References", "", "- `references/note.md`"],
     )
-    (references_dir / "note.md").write_text(
-        "\n".join(
-            [
-                "`docs/index.md` is a consumer-owned operator surface (authoring-repo-internal).",
-                "`docs/roadmap.md` is a consumer-owned operator surface.",
-                "`docs/operator-acceptance.md` is a consumer-owned operator surface.",
-                "`docs/release-notes.md` is a consumer-owned operator surface.",
-                "`charness-artifacts/quality/latest.md` is repo-owned state.",
-                "`docs/release-adapter.yaml` is adapter configuration.",
-                "`.agents/release-adapter.yaml` is adapter configuration.",
-                "`../../prove/references/verification-ladder.md` ships in the same plugin.",
-                "The next cite is authoring-repo-internal, not vendored.",
-                "`tests/test_demo.py` documents the source repo regression (authoring-repo-internal).",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
+    prove_path = write_skill(
+        repo,
+        ["## References", "", "- `references/verification-ladder.md`"],
+        skill_id="prove",
+        description="Impl skill.",
+        title="Impl",
     )
-    (skill_dir / "SKILL.md").write_text(
-        "\n".join(
-            [
-                "---",
-                "name: demo",
-                'description: "Demo skill."',
-                "---",
-                "",
-                "# Demo",
-                "",
-                "## References",
-                "",
-                "- `references/note.md`",
-            ]
-        ),
-        encoding="utf-8",
-    )
+    write_text(skill_path.parent / "references" / "note.md", "\n".join(
+        [
+            "`docs/index.md` is a consumer-owned operator surface (authoring-repo-internal).",
+            "`docs/roadmap.md` is a consumer-owned operator surface.",
+            "`docs/operator-acceptance.md` is a consumer-owned operator surface.",
+            "`docs/release-notes.md` is a consumer-owned operator surface.",
+            "`charness-artifacts/quality/latest.md` is repo-owned state.",
+            "`docs/release-adapter.yaml` is adapter configuration.",
+            "`.agents/release-adapter.yaml` is adapter configuration.",
+            "`../../prove/references/verification-ladder.md` ships in the same plugin.",
+            "The next cite is authoring-repo-internal, not vendored.",
+            "`tests/test_demo.py` documents the source repo regression (authoring-repo-internal).",
+        ]
+    ) + "\n")
+    write_text(prove_path.parent / "references" / "verification-ladder.md", "# Ladder\n")
 
     result = run_script("scripts/validate_skills.py", "--repo-root", str(repo))
 

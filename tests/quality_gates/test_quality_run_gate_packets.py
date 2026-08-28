@@ -1,18 +1,14 @@
 from __future__ import annotations
 
-import importlib.util
 from pathlib import Path
 
 from .support import ROOT
+from .seeding_support import load_module
 
 
 def _load_plan():
     path = ROOT / "skills/public/quality/scripts/plan_quality_run.py"
-    spec = importlib.util.spec_from_file_location("quality_plan_gate_packets", path)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_module("quality_plan_gate_packets", path)
 
 
 def test_quality_run_plan_reports_gate_packet_cost_and_trust(tmp_path: Path) -> None:

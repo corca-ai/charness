@@ -22,13 +22,12 @@ the owner. On a release surface that means running against a literal `{tag}`.
 
 from __future__ import annotations
 
-import importlib.util
 import runpy
-import sys
 
 import pytest
 
 from tests.quality_gates.support import ROOT
+from tests.quality_gates.seeding_support import load_module
 
 HELPERS = runpy.run_path(str(ROOT / "skills/public/release/scripts/publish_release_helpers.py"))
 backend_command = HELPERS["backend_command"]
@@ -36,12 +35,7 @@ backend_command = HELPERS["backend_command"]
 
 def _owner():
     source = ROOT / "skills/public/issue/scripts/issue_backend.py"
-    spec = importlib.util.spec_from_file_location("_owner_for_release_parity", source)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules["_owner_for_release_parity"] = module
-    spec.loader.exec_module(module)
-    return module
+    return load_module("_owner_for_release_parity", source, register=True)
 
 
 OWNER = _owner()

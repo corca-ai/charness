@@ -8,30 +8,19 @@ import yaml
 
 from .skill_ergonomics_support import _MODULE
 from .skill_ergonomics_support import run_inventory_skill_ergonomics as _run
+from .seeding_support import write_skill
 
 
 def test_inventory_skill_ergonomics_summary_keeps_review_payload_compact(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    skill_dir = repo / "skills" / "public" / "demo"
-    skill_dir.mkdir(parents=True)
-    (skill_dir / "SKILL.md").write_text(
-        "\n".join(
-            [
-                "---",
-                "name: demo",
-                'description: "Demo skill."',
-                "---",
-                "",
-                "# Demo",
-                "",
-                "Use this when the repo needs a demo skill.",
-                "Mode choice matters in this mode-heavy workflow.",
-                "Another mode note keeps the mode pressure explicit.",
-                "",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
+    write_skill(
+        repo,
+        [
+            "Use this when the repo needs a demo skill.",
+            "Mode choice matters in this mode-heavy workflow.",
+            "Another mode note keeps the mode pressure explicit.",
+            "",
+        ],
     )
 
     result = _run("--repo-root", str(repo), "--summary")
@@ -85,26 +74,14 @@ def test_inventory_skill_ergonomics_summary_bounds_skill_rows() -> None:
 
 def test_inventory_skill_ergonomics_summary_yaml_is_compact_and_parseable(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    skill_dir = repo / "skills" / "public" / "demo"
-    skill_dir.mkdir(parents=True)
-    (skill_dir / "SKILL.md").write_text(
-        "\n".join(
-            [
-                "---",
-                "name: demo",
-                'description: "Demo skill."',
-                "---",
-                "",
-                "# Demo",
-                "",
-                "Use this when the repo needs a demo skill.",
-                "Mode choice matters in this mode-heavy workflow.",
-                "Another mode note keeps the mode pressure explicit.",
-                "",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
+    write_skill(
+        repo,
+        [
+            "Use this when the repo needs a demo skill.",
+            "Mode choice matters in this mode-heavy workflow.",
+            "Another mode note keeps the mode pressure explicit.",
+            "",
+        ],
     )
 
     detail_result = _run("--repo-root", str(repo), "--detail")

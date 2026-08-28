@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import importlib.util
 import subprocess
 import sys
 from pathlib import Path
@@ -8,12 +7,10 @@ from pathlib import Path
 import yaml
 
 from .support import ROOT
+from .seeding_support import load_module
 
 SCRIPT = ROOT / "skills/public/quality/scripts/inventory_dual_implementation.py"
-SPEC = importlib.util.spec_from_file_location("inventory_dual_implementation", SCRIPT)
-assert SPEC is not None and SPEC.loader is not None
-inventory_dual = importlib.util.module_from_spec(SPEC)
-SPEC.loader.exec_module(inventory_dual)
+inventory_dual = load_module("inventory_dual_implementation", SCRIPT)
 
 
 def test_inventory_dual_implementation_reports_shared_schema_id(tmp_path: Path) -> None:

@@ -2,23 +2,19 @@
 
 from __future__ import annotations
 
-import importlib.util
 from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+
+from .seeding_support import load_module
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT_DIR = ROOT / "skills" / "public" / "quality" / "scripts"
 
 
 def _load(name: str):
-    path = SCRIPT_DIR / f"{name}.py"
-    spec = importlib.util.spec_from_file_location(f"{name}_scope_inproc", path)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_module(f"{name}_scope_inproc", SCRIPT_DIR / f"{name}.py")
 
 
 inv = _load("inventory_nose_clones")

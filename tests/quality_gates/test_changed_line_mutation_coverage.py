@@ -23,6 +23,7 @@ from scripts.mutation_changed_files_lib import (
 )
 
 from .support import ROOT, run_script
+from .seeding_support import seed_two_changed_pool_files
 
 _TEETH = "scripts/check_changed_line_mutation_coverage.py"
 
@@ -485,7 +486,7 @@ def test_a_dirty_pool_still_reports_unestablished_when_the_scope_was_also_partia
     and a plain limited-and-clean run is exit 4 elsewhere in this file — so this
     asserts the ORDER, not merely that 3 exists.
     """
-    repo, base, head = _seed_two_changed_pool_files(tmp_path)
+    repo, base, head = seed_two_changed_pool_files(tmp_path)
     _dirty_pool_file(repo)
     cov = _write_two_file_coverage(repo)
 
@@ -731,24 +732,6 @@ def test_runs_coverage_probe_when_not_reusing(tmp_path: Path, monkeypatch) -> No
 # a subset of full coverage, so an unlimited run over it would report files the full
 # suite covers as uncovered — a false block, which is how a gate gets bypassed.
 # --------------------------------------------------------------------------- #
-def _seed_two_changed_pool_files(tmp_path: Path) -> tuple[Path, str, str]:
-    repo = tmp_path / "repo"
-    (repo / "scripts").mkdir(parents=True)
-    _git(repo, "init", "-q")
-    for name in ("foo.py", "bar.py"):
-        (repo / "scripts" / name).write_text("def a():\n    return 1\n", encoding="utf-8")
-    _git(repo, "add", "-A")
-    _git(repo, "commit", "-q", "-m", "base")
-    base = _git(repo, "rev-parse", "HEAD")
-    for name in ("foo.py", "bar.py"):
-        (repo / "scripts" / name).write_text(
-            "def a():\n    return 1\n\n\ndef b():\n    return 2\n", encoding="utf-8"
-        )
-    _git(repo, "add", "-A")
-    _git(repo, "commit", "-q", "-m", "head")
-    return repo, base, _git(repo, "rev-parse", "HEAD")
-
-
 def _write_two_file_coverage(repo: Path) -> Path:
     """foo's new lines covered, bar's not — bar stands in for the file whose tests
     were outside the focused subset."""
@@ -764,7 +747,7 @@ def _write_two_file_coverage(repo: Path) -> Path:
 
 
 def test_limit_to_file_narrows_the_blocking_set_and_names_the_rest(tmp_path: Path) -> None:
-    repo, base, head = _seed_two_changed_pool_files(tmp_path)
+    repo, base, head = seed_two_changed_pool_files(tmp_path)
     cov = _write_two_file_coverage(repo)
 
     result = run_script(
@@ -788,7 +771,7 @@ def test_limit_to_file_narrows_the_blocking_set_and_names_the_rest(tmp_path: Pat
 def test_without_the_limit_the_same_coverage_still_blocks(tmp_path: Path) -> None:
     """The discriminating control. If this passed too, the test above would prove
     only that the coverage fixture was clean, not that the limit did anything."""
-    repo, base, head = _seed_two_changed_pool_files(tmp_path)
+    repo, base, head = seed_two_changed_pool_files(tmp_path)
     cov = _write_two_file_coverage(repo)
 
     result = run_script(
@@ -809,7 +792,7 @@ def test_a_limit_that_matches_nothing_refuses_to_report_an_empty_range(tmp_path:
     vacuous-green class verbatim: a verdict rendered over a scope that was never read,
     on the very gate whose recurring failure is exactly that.
     """
-    repo, base, head = _seed_two_changed_pool_files(tmp_path)
+    repo, base, head = seed_two_changed_pool_files(tmp_path)
     cov = _write_two_file_coverage(repo)
 
     result = run_script(

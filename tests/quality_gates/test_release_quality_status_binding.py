@@ -25,21 +25,18 @@ to lose that race, and these tests pin the owner rather than the callers.
 """
 from __future__ import annotations
 
-import importlib.util
 from pathlib import Path
 
 import pytest
 
 from .support import ROOT
+from .seeding_support import load_module
 
 _RELEASE = ROOT / "skills" / "public" / "release" / "scripts"
 
 
 def _load(name: str):
-    spec = importlib.util.spec_from_file_location(name, _RELEASE / f"{name}.py")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_module(name, _RELEASE / f"{name}.py")
 
 
 @pytest.fixture(scope="module")

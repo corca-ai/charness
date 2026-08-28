@@ -13,13 +13,13 @@ schema; the check keys on a provider-neutral ``Source origin:`` marker.
 """
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
 
 import yaml
 
 from tests.quality_gates.support import run_script
+from tests.quality_gates.seeding_support import load_module
 
 SCRIPT = "skills/public/issue/scripts/issue_tool.py"
 _ROOT = Path(__file__).resolve().parents[2]
@@ -28,11 +28,7 @@ BODY_MODULE_PATH = _ROOT / "skills" / "public" / "issue" / "scripts" / "issue_cl
 
 
 def _load_body_module():
-    spec = importlib.util.spec_from_file_location("issue_source_pres_body", BODY_MODULE_PATH)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_module("issue_source_pres_body", BODY_MODULE_PATH)
 
 
 def _fixture() -> dict:
