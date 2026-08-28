@@ -422,14 +422,6 @@ validators:
     consumer_facing: false
     decision: exclude
     reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
-  - path: scripts/validate_public_skill_dogfood.py
-    consumer_facing: false
-    decision: exclude
-    reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
-  - path: scripts/validate_public_skill_validation.py
-    consumer_facing: false
-    decision: exclude
-    reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
   - path: scripts/validate_quality_artifact.py
     id: quality-artifact
     consumer_facing: true
