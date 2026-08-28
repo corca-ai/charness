@@ -14,7 +14,7 @@ import yaml
 from tests.script_main import load_script_module, run_loaded_script_main
 
 from .release_publish_fixtures import _seed_publish_release_repo
-from .support import ROOT
+from .support import ROOT, write_executable
 
 _PLANNER = load_script_module(
     "plan_release_run_for_release_real_host_test",
@@ -32,8 +32,57 @@ _RELEASE_DELTA = load_script_module(
 )
 
 
-def _run_real_host_proof(*args: str):
-    return run_loaded_script_main("check_real_host_proof.py", _REAL_HOST, "--detail", *args)
+def _run_real_host_proof(*args: str, env: dict[str, str] | None = None):
+    return run_loaded_script_main("check_real_host_proof.py", _REAL_HOST, "--detail", *args, env=env)
+
+
+def _write_fake_classify_binary(path: Path) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    write_executable(
+        path,
+        """#!/usr/bin/env python3
+import json
+import os
+import sys
+
+args = sys.argv[1:]
+path_index = args.index("--path")
+paths = args[path_index + 1:]
+roles = json.loads(os.environ["FAKE_CLASSIFY_ROLES"])
+records = [
+    {
+        "path": item,
+        "role": roles[item],
+        "presence": "absent-from-snapshot" if roles[item] == "unestablished-absent" else "present",
+        "package": None,
+        "surfaces": [],
+    }
+    for item in paths
+]
+role_census = {role: 0 for role in ("production", "test", "generated", "doc", "unestablished")}
+for record in records:
+    role = record["role"]
+    role_census["unestablished" if role == "unestablished-absent" else role] += 1
+report = {
+    "schema": "repograph.classify.v1",
+    "repo_root": "fixture",
+    "listing": "git",
+    "excludes": ["plugins/", "native/repograph/fixtures/"],
+    "paths": records,
+    "role_census": role_census,
+    "unestablished_by_top_level": {},
+    "unestablished": [],
+    "surfaces": "absent",
+}
+log_path = os.environ.get("FAKE_CLASSIFY_LOG")
+if log_path:
+    with open(log_path, "w", encoding="utf-8") as log:
+        json.dump(sys.argv, log)
+print(json.dumps(report))
+sys.exit(int(os.environ.get("FAKE_CLASSIFY_EXIT", "3")))
+""",
+    )
+    return path
 
 
 def test_release_real_host_proof_triggers_for_support_tool_surfaces() -> None:
@@ -81,6 +130,125 @@ def test_release_real_host_proof_stays_off_for_unrelated_paths() -> None:
     assert payload["checklist"] == []
 
 
+def test_release_real_host_proof_excludes_only_native_test_roles(tmp_path: Path) -> None:
+    """A consumer-shaped Go tree exercises the real fold through a fake v1 binary.
+
+    The fake exits 3 because the deleted path is unestablished, proving that the
+    fold still consumes the report on classify's report-bearing failure exit.
+    No surfaces manifest exists: the optional native surfaces mode is the
+    consumer path, and generated is retained as a positive hit even in that
+    manifest-free fixture.
+    """
+    repo = _seed_adapter(
+        tmp_path / "consumer",
+        'real_host_required_path_globs:\n  - "**"\nreal_host_checklist:\n  - "probe the host"\n',
+    )
+    present_paths = [
+        "cmd/app/main.go",
+        "cmd/app/main_test.go",
+        "pkg/testdata/sample.go",
+        "README.md",
+        "generated/mirror.go",
+    ]
+    for relative in present_paths:
+        target = repo / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text("fixture\n", encoding="utf-8")
+    assert not (repo / ".agents" / "surfaces.json").exists()
+
+    roles = {
+        "cmd/app/main.go": "production",
+        "cmd/app/main_test.go": "test",
+        "pkg/testdata/sample.go": "test",
+        "README.md": "doc",
+        "cmd/app/deleted.go": "unestablished-absent",
+        "generated/mirror.go": "generated",
+    }
+    fake = _write_fake_classify_binary(tmp_path / "bin" / "repograph")
+    log_path = tmp_path / "classify-argv.json"
+    result = _run_real_host_proof(
+        "--repo-root",
+        str(repo),
+        "--paths",
+        *roles,
+        env={
+            **os.environ,
+            "CHARNESS_NATIVE_CORE": str(fake),
+            "FAKE_CLASSIFY_ROLES": json.dumps(roles),
+            "FAKE_CLASSIFY_LOG": str(log_path),
+            "FAKE_CLASSIFY_EXIT": "3",
+        },
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    payload = yaml.safe_load(result.stdout)
+    assert payload["evaluation_scope"] == "evaluated"
+    assert payload["required"] is True
+    assert payload["path_hits"] == [
+        "cmd/app/main.go",
+        "README.md",
+        "cmd/app/deleted.go",
+        "generated/mirror.go",
+    ]
+    assert payload["excluded_path_hits"] == [
+        {"path": "cmd/app/main_test.go", "role": "test"},
+        {"path": "pkg/testdata/sample.go", "role": "test"},
+    ]
+    assert payload["test_exclusion"] == {"status": "applied", "native_core": "override"}
+    assert json.loads(log_path.read_text(encoding="utf-8"))[1:] == [
+        "classify",
+        "--surfaces-optional",
+        "--repo-root",
+        str(repo),
+        "--path",
+        *roles,
+    ]
+
+
+def test_release_real_host_proof_degrades_to_positive_only_when_native_is_unavailable(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = _seed_adapter(
+        tmp_path / "consumer",
+        'real_host_required_path_globs:\n  - "**"\nreal_host_checklist:\n  - "probe the host"\n',
+    )
+
+    def unavailable(_repo_root: Path):
+        raise _REAL_HOST.NativeGateError("native core unavailable for test")
+
+    monkeypatch.setattr(_REAL_HOST, "resolve_native_core", unavailable)
+    payload = _REAL_HOST.build_payload(repo, ["cmd/app/main.go", "cmd/app/main_test.go"])
+
+    assert payload["required"] is True
+    assert payload["path_hits"] == ["cmd/app/main.go", "cmd/app/main_test.go"]
+    assert payload["excluded_path_hits"] == []
+    assert payload["test_exclusion"] == {
+        "status": "unavailable",
+        "native_core": {"status": "unavailable", "reason": "native core unavailable for test"},
+    }
+
+
+def test_release_real_host_proof_does_not_resolve_native_for_zero_raw_glob_hits(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = _seed_adapter(
+        tmp_path / "consumer",
+        'real_host_required_path_globs:\n  - "src/**"\nreal_host_checklist:\n  - "probe the host"\n',
+    )
+    monkeypatch.setattr(
+        _REAL_HOST,
+        "resolve_native_core",
+        lambda _repo_root: pytest.fail("zero raw-glob candidates must not resolve native"),
+    )
+
+    payload = _REAL_HOST.build_payload(repo, ["docs/README.md"])
+
+    assert payload["required"] is False
+    assert payload["path_hits"] == []
+    assert payload["excluded_path_hits"] == []
+    assert payload["test_exclusion"] == {"status": "applied", "native_core": "not-needed"}
+
+
 def test_release_real_host_proof_empty_changeset_establishes_no_verdict() -> None:
     """An EMPTY changed scope is not evidence of "not required".
 
@@ -105,6 +273,7 @@ def test_release_real_host_proof_empty_changeset_establishes_no_verdict() -> Non
     assert payload["surface_hits"] == []
     assert payload["path_hits"] == []
     assert payload["checklist"] == []
+    assert "test_exclusion" not in payload
 
     summary = run_loaded_script_main(
         "check_real_host_proof.py", _REAL_HOST, "--repo-root", str(ROOT), "--paths"
@@ -131,6 +300,7 @@ def test_release_real_host_proof_unconfigured_repo_never_starts_refusing(tmp_pat
         payload = yaml.safe_load(result.stdout)
         assert payload["evaluation_scope"] == "not-configured"
         assert payload["required"] is False
+        assert "test_exclusion" not in payload
 
 
 def test_release_plan_summary_names_an_unestablished_real_host_verdict(
@@ -224,6 +394,7 @@ def test_release_real_host_proof_renders_surface_errors_as_yaml(
     payload = yaml.safe_load(result.stderr)
     assert payload["error"] == "invalid test surfaces manifest"
     assert payload["checklist"] == []
+    assert "test_exclusion" not in payload
 
 
 @pytest.mark.parametrize(
@@ -393,6 +564,7 @@ def test_release_real_host_proof_fails_loud_on_unresolved_surface_id(tmp_path: P
     assert payload["configuration_status"] == "broken"
     assert payload["unresolved_trigger_surfaces"] == ["release-packagng"]
     assert payload["checklist"] == []
+    assert "test_exclusion" not in payload
     assert "real_host_required_surfaces" in payload["reason"]
     assert "Fix the typo" in payload["remediation"]
 

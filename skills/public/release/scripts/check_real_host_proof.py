@@ -31,7 +31,9 @@ from __future__ import annotations
 
 import argparse
 import fnmatch
+import json
 import runpy
+import subprocess
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -67,6 +69,9 @@ SurfaceError = _scripts_surfaces_lib_module.SurfaceError
 yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 _release_delta_module = SKILL_RUNTIME.load_local_skill_module(__file__, "release_delta")
 collect_immutable_range = _release_delta_module.collect_immutable_range
+_native_gate_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.native_gate_lib")
+resolve_native_core = _native_gate_lib_module.resolve_native_core
+NativeGateError = _native_gate_lib_module.NativeGateError
 
 #: "Ran, established nothing" -- the same byte `run-quality.sh` reads as
 #: UNESTABLISHED and renders UNPROVEN. Deliberately distinct from 1, which this
@@ -99,6 +104,116 @@ def collect_range_paths(repo_root: Path, changed_range: str) -> tuple[list[str],
 
 def matches_any(path: str, patterns: list[str]) -> bool:
     return any(fnmatch.fnmatch(path, pattern) for pattern in patterns)
+
+
+_CLASSIFY_SCHEMA = "repograph.classify.v1"
+_CLASSIFY_EXIT_CODES = {0, UNESTABLISHED_EXIT}
+_CLASSIFY_ROLES = {
+    "production",
+    "test",
+    "generated",
+    "doc",
+    "unestablished",
+    "unestablished-absent",
+}
+
+
+def _unavailable_test_exclusion(reason: str) -> dict[str, object]:
+    return {
+        "status": "unavailable",
+        "native_core": {"status": "unavailable", "reason": reason},
+    }
+
+
+def _classify_report_roles(output: str, candidate_hits: list[str]) -> dict[str, str]:
+    try:
+        report = json.loads(output)
+    except (json.JSONDecodeError, TypeError) as exc:
+        raise ValueError(f"native classify report is missing or unparseable: {exc}") from exc
+    if not isinstance(report, dict) or report.get("schema") != _CLASSIFY_SCHEMA:
+        raise ValueError(f"native classify report is missing or unparseable: expected schema {_CLASSIFY_SCHEMA}")
+    records = report.get("paths")
+    if not isinstance(records, list):
+        raise ValueError("native classify report is missing or unparseable: no paths array")
+
+    roles: dict[str, str] = {}
+    requested = set(candidate_hits)
+    for record in records:
+        if not isinstance(record, dict):
+            raise ValueError("native classify report is missing or unparseable: non-object path record")
+        path = record.get("path")
+        role = record.get("role")
+        if not isinstance(path, str) or not isinstance(role, str):
+            raise ValueError("native classify report is missing or unparseable: path and role must be strings")
+        if path not in requested or path in roles:
+            raise ValueError(f"native classify report is missing or unparseable: unexpected path {path!r}")
+        if role not in _CLASSIFY_ROLES:
+            raise ValueError(f"native classify report is missing or unparseable: unknown role {role!r}")
+        roles[path] = role
+    if set(roles) != requested:
+        missing = sorted(requested - set(roles))
+        raise ValueError(f"native classify report is missing or unparseable: omitted path(s) {missing}")
+    return roles
+
+
+def _classify_raw_glob_hits(
+    repo_root: Path, candidate_hits: list[str]
+) -> tuple[list[str], list[dict[str, str]], dict[str, object]]:
+    """Apply the fail-safe native ``test``-only exclusion to raw-glob hits."""
+    if not candidate_hits:
+        # An evaluated payload still names the exclusion decision, but resolving
+        # or invoking native for zero candidates would turn an irrelevant
+        # unavailable binary into a degradation. ``not-needed`` is a provenance
+        # sentinel, not a native-core resolution result.
+        return [], [], {"status": "applied", "native_core": "not-needed"}
+
+    try:
+        native_core = resolve_native_core(repo_root)
+    except NativeGateError as exc:
+        return candidate_hits, [], _unavailable_test_exclusion(str(exc))
+
+    command = [
+        str(native_core.path),
+        "classify",
+        "--surfaces-optional",
+        "--repo-root",
+        str(repo_root),
+        "--path",
+        *dict.fromkeys(candidate_hits),
+    ]
+    try:
+        completed = subprocess.run(
+            command,
+            check=False,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
+    except OSError as exc:
+        return candidate_hits, [], _unavailable_test_exclusion(
+            f"native classify could not be executed: {exc}"
+        )
+    if completed.returncode not in _CLASSIFY_EXIT_CODES:
+        return candidate_hits, [], _unavailable_test_exclusion(
+            f"native classify exited with status {completed.returncode}"
+        )
+    try:
+        roles = _classify_report_roles(completed.stdout, candidate_hits)
+    except ValueError as exc:
+        return candidate_hits, [], _unavailable_test_exclusion(
+            str(exc)
+        )
+
+    path_hits: list[str] = []
+    excluded: list[dict[str, str]] = []
+    for path in candidate_hits:
+        role = roles[path]
+        if role == "test":
+            excluded.append({"path": path, "role": role})
+        else:
+            path_hits.append(path)
+    return path_hits, excluded, {"status": "applied", "native_core": native_core.provenance}
 
 
 def broken_trigger_config_payload(
@@ -186,8 +301,7 @@ def build_payload(repo_root: Path, changed_paths: list[str]) -> dict[str, object
             for surface in matched["matched_surfaces"]
             if surface["surface_id"] in declared_trigger_surfaces
         ]
-    path_hits = [path for path in changed_paths if matches_any(path, trigger_globs)]
-    required = bool(surface_hits or path_hits)
+    candidate_path_hits = [path for path in changed_paths if matches_any(path, trigger_globs)]
     # `required: False` was returned identically for four different worlds: a repo
     # that declares no triggers at all, a configured repo handed an EMPTY changed
     # scope, a configured repo whose triggers genuinely did not match, and a
@@ -225,14 +339,25 @@ def build_payload(repo_root: Path, changed_paths: list[str]) -> dict[str, object
             "This repo declares no release-time real-host proof triggers "
             "(`real_host_required_surfaces` / `real_host_required_path_globs`), so no check ran."
         )
-    elif required:
-        scope, reason = "evaluated", "Changed surfaces hit configured release-time real-host proof seams."
+        path_hits = candidate_path_hits
+        excluded_path_hits = []
+        test_exclusion = None
+        required = bool(surface_hits or path_hits)
     else:
-        scope, reason = "evaluated", (
-            "Configured release-time real-host proof triggers were evaluated against "
-            f"{len(changed_paths)} changed path(s) and none matched."
+        scope = "evaluated"
+        path_hits, excluded_path_hits, test_exclusion = _classify_raw_glob_hits(
+            repo_root, candidate_path_hits
         )
-    return {
+        required = bool(surface_hits or path_hits)
+        reason = (
+            "Changed surfaces hit configured release-time real-host proof seams."
+            if required
+            else (
+                "Configured release-time real-host proof triggers were evaluated against "
+                f"{len(changed_paths)} changed path(s) and none matched."
+            )
+        )
+    payload = {
         "required": required,
         "evaluation_scope": scope,
         "changed_paths": changed_paths,
@@ -241,6 +366,10 @@ def build_payload(repo_root: Path, changed_paths: list[str]) -> dict[str, object
         "checklist": checklist if required else [],
         "reason": reason,
     }
+    if scope == "evaluated":
+        payload["excluded_path_hits"] = excluded_path_hits
+        payload["test_exclusion"] = test_exclusion
+    return payload
 
 
 def main() -> int:
