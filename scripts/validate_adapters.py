@@ -7,7 +7,6 @@ import json
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any
 
 from runtime_bootstrap import import_repo_module, load_path_module, repo_root_from_script
 
@@ -37,10 +36,6 @@ _scripts_artifact_naming_lib_module = import_repo_module(__file__, "scripts.arti
 current_artifact_filename = _scripts_artifact_naming_lib_module.current_artifact_filename
 _scripts_repo_file_listing_module = import_repo_module(__file__, "scripts.repo_file_listing")
 iter_matching_repo_files = _scripts_repo_file_listing_module.iter_matching_repo_files
-_scripts_adapter_key_registry_module = import_repo_module(__file__, "scripts.adapter_key_registry")
-_scripts_adapter_warn_tier_module = import_repo_module(__file__, "scripts.adapter_warn_tier")
-unreconciled_keys = _scripts_adapter_warn_tier_module.unreconciled_keys
-unestablished_corpus_reason = _scripts_adapter_warn_tier_module.unestablished_corpus_reason
 _scripts_check_coverage_lib_module = import_repo_module(__file__, "scripts.check_coverage_lib")
 PER_FILE_MIN_COVERAGE = _scripts_check_coverage_lib_module.PER_FILE_MIN_COVERAGE
 PER_FILE_MIN_STATEMENTS = _scripts_check_coverage_lib_module.PER_FILE_MIN_STATEMENTS
@@ -322,91 +317,6 @@ def validate_adapter_yaml(path: Path) -> None:
     validate_charness_quality_adapter_contract(path, data)
 
 
-def iter_warn_scope_adapters(root: Path, *, require_git: bool = False) -> list[Path]:
-    """Every adapter the WARN tier reads -- DELIBERATELY WIDER than `iter_adapter_yaml`.
-
-    Round-1 bounded review caught this as a blocker, and it was the slice's own defect
-    class turned on itself. `iter_adapter_yaml` globs 18 files (`.agents/`); the fire-rate
-    measurement that justified arming covered 37, because `adapter_key_registry.ADAPTER_GLOBS`
-    also reaches `skills/public/*/adapter.example.yaml` and `integrations/*/adapter.example.yaml`.
-    Arming the narrower set while reporting the wider set's zero is a check claiming a
-    scope it never read -- the exact shape this tier exists to warn about. Reproduced
-    before repairing: a typo'd key added to a public adapter example produced
-    `0 unreconciled declared key(s)` and left all tests green.
-
-    Shipped examples are the ones that MATTER here: they are what a consumer copies, so a
-    typo in one propagates to every repo that adopts it. They are excluded from
-    `iter_adapter_yaml` for a good reason that does not apply to this pass -- they are
-    templates, so `validate_adapter_yaml`'s `repo` and version floors would refuse them --
-    but a warn-only read has no such objection.
-
-    Widening ships with its measured upper bound in the same commit, per this repo's most
-    transferable lesson: over the 19 added shipped-example files (218 declared keys), the
-    tier fires 0 times. That zero is PINNED by `test_this_repo_warns_about_nothing`, which
-    reads this function's own output; the 19 and 218 are prose and are not.
-
-    Listed through `iter_matching_repo_files`, like every other surface in this file, and
-    NOT through a bare `root.glob`. Round-2 review caught the bare glob: it silently
-    abandoned the `git ls-files` filter that `--require-git-file-listing` exists to
-    enforce, so a generated or gitignored example could produce a WARNING naming a file
-    that is not part of the repo -- an unactionable warning, which is the wolf-crier the
-    whole tier decision was made to avoid. One scope difference from `iter_adapter_yaml`
-    (the glob set) was intended; a second, undisclosed one (the listing mechanism) was the
-    fixed class riding along in the fix.
-
-    The `skills/*/adapter.example.yaml` pattern is the INSTALLED layout, and it is here for
-    the same reason `iter_resolvers` carries it. The export flattens `skills/public/<id>/`
-    to `skills/<id>/`, so without it the warn scope finds zero shipped examples in exactly
-    the layout consumers receive -- the summary would report a confident file count that is
-    accurate about what it read and useless for the population the widening names. It adds
-    nothing in this repo (`skills/` here holds `public/`, `shared/`, `support/`), so the
-    measured bound above is unchanged.
-    """
-    globs = (*_scripts_adapter_key_registry_module.ADAPTER_GLOBS, "skills/*/adapter.example.yaml")
-    return iter_matching_repo_files(root, globs, require_git=require_git)
-
-
-def report_unreconciled_keys(root: Path, warn_scope: list[Path]) -> Any:
-    """WARN -- never refuse -- on a declared key no module reads (#530).
-
-    This is the tier the operator chose, and the distinction is the whole point. Every
-    other verdict in this file raises `ValidationError` and fails the gate; this one
-    prints and returns 0, because the population that matters is consumer adapters this
-    repo has never seen; a repo-local zero does not justify escalating a REFUSAL. The
-    zero is literal: `unknown` fires 0 times across
-    the 445 declared keys in this repo's 37 adapters, which is why the warned input is
-    CONSTRUCTED in the tests rather than observed here.
-
-    The count goes in the SUMMARY line, not only in the warnings, and the line names the
-    number of files read. A gate that prints nothing when it finds nothing leaves an
-    operator unable to tell "checked, clean" from "never ran", and one that prints a count
-    without its scope cannot distinguish "clean across 37" from "clean across 18" -- which
-    is precisely how this function shipped its first round. `0 unreconciled declared
-    key(s) across 37 declaring file(s)` is a claim; silence is not, and a bare zero is
-    only half of one.
-    """
-    result = unreconciled_keys(root, warn_scope)
-    for dropped in result.uninterpreted:
-        print(f"WARNING {dropped['adapter']}: {dropped['detail']}", file=sys.stderr)
-    for warning in result.findings:
-        print(
-            f"WARNING {warning['adapter']}: `{warning['key']}` is {warning['state']} -- {warning['detail']}",
-            file=sys.stderr,
-        )
-    if not result.scope_established:
-        # Said out loud, because the alternative is the exact confusion the paragraph
-        # above refuses: with the key pass skipped, `0 unreconciled` would be a clean bill
-        # of health for a pass that never ran. This line is what the summary's count means
-        # when it says `not established`.
-        print(
-            f"WARNING adapter key reconciliation did not run: {unestablished_corpus_reason(root)}. "
-            "This tier cannot tell an unread key from a reader it cannot see, so declared keys "
-            "were left unclassified; uninterpreted lines were still reported.",
-            file=sys.stderr,
-        )
-    return result
-
-
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
@@ -416,13 +326,7 @@ def main() -> int:
     root = args.repo_root.resolve()
     resolvers = iter_resolvers(root, require_git=args.require_git_file_listing)
     adapter_yaml = iter_adapter_yaml(root, require_git=args.require_git_file_listing)
-    warned_files = iter_warn_scope_adapters(root, require_git=args.require_git_file_listing)
-    # `warned_files` joins the emptiness test because the warn scope is WIDER than
-    # `adapter_yaml`. A repo holding only shipped examples -- no `.agents/` and no
-    # resolvers -- used to take the early return and print `No adapter surfaces found.`
-    # over a tree full of declared keys, which is the "never ran" reading this whole tier
-    # exists to make impossible.
-    if not resolvers and not adapter_yaml and not warned_files:
+    if not resolvers and not adapter_yaml:
         print("No adapter surfaces found.")
         return 0
 
@@ -432,21 +336,7 @@ def main() -> int:
         validate_adapter_yaml(path)
         validate_adapter_integration_schema(path)
 
-    result = report_unreconciled_keys(root, warned_files)
-    # The count and the SCOPE of the count travel together, per this function's own
-    # standing rule that a bare zero is only half a claim. `not established` is the third
-    # reading the old two-state line could not express: not "clean across 37" and not
-    # "clean across 18", but "no key verdict was rendered at all".
-    reconciled = (
-        f"{len(result.findings)} unreconciled declared key(s)"
-        if result.scope_established
-        else "declared keys not reconciled (reader corpus not established)"
-    )
-    print(
-        f"Validated {len(resolvers)} adapter resolvers and {len(adapter_yaml)} adapter YAML file(s); "
-        f"{reconciled} across {len(warned_files)} declaring file(s); "
-        f"{len(result.uninterpreted)} uninterpreted line(s)."
-    )
+    print(f"Validated {len(resolvers)} adapter resolvers and {len(adapter_yaml)} adapter YAML file(s).")
     return 0
 
 

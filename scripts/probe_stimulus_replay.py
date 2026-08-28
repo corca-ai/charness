@@ -73,10 +73,9 @@ could not see any renderer. Round 1 rewrote this list after defeating three of i
   `command_timing_log` returns `dict(value)`, and `host_extensions` exists to carry keys
   charness does not read -- makes an unread key CHANGE the payload when ablated, so it
   reads live and the record passes. Reproduced: `command_timing_log` with an extra
-  `probe_one: x` resolves `evaluated`. `scripts/adapter_key_registry.py` already answers
-  "which readers read this key" without a subprocess; wiring it in is the repair this
-  module has not made. The converse (a key the resolver drops being called inert when a
-  direct file reader uses it) is the same gap from the other side and equally unclosed.
+  `probe_one: x` resolves `evaluated`. The converse (a key the resolver drops being
+  called inert when a direct file reader uses it) is the same gap from the other side and
+  equally unclosed.
 - The ablation compares the resolver's `data:` block only, so it also drops `valid:`,
   `found:`, `errors:`, `warnings:` and every derived top-level key a resolver renders beside
   the payload. A declaration whose only honest effect is one of those -- the broken
