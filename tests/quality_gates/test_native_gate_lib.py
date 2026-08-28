@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import os
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -9,7 +8,7 @@ import pytest
 
 from scripts import native_gate_lib
 
-from .support import ROOT, run_script, write_executable
+from .support import write_executable
 
 
 def _repo(tmp_path: Path, *, with_source: bool = False) -> Path:
@@ -158,28 +157,30 @@ def _fake_repograph(path: Path) -> Path:
 
 @pytest.mark.parametrize("exit_code", [0, 1, 3, 70])
 def test_child_exit_code_and_export_safe_document_pass_through(
-    tmp_path: Path, exit_code: int
+    tmp_path: Path,
+    exit_code: int,
+    monkeypatch: pytest.MonkeyPatch,
+    capfd: pytest.CaptureFixture[str],
 ) -> None:
     repo = _repo(tmp_path)
     fake = _fake_repograph(tmp_path / "bin" / "repograph")
-    env = {**os.environ, "CHARNESS_NATIVE_CORE": str(fake), "FAKE_EXIT": str(exit_code)}
+    monkeypatch.setenv("CHARNESS_NATIVE_CORE", str(fake))
+    monkeypatch.setenv("FAKE_EXIT", str(exit_code))
 
-    result = run_script(
-        "scripts/native_gate_lib.py",
-        "--repo-root",
-        str(repo),
-        "export-safe",
-        "--repo-root",
-        str(repo),
-        cwd=ROOT,
-        env=env,
+    returned = native_gate_lib.main(
+        ["--repo-root", str(repo), "export-safe", "--repo-root", str(repo)]
     )
 
-    assert result.returncode == exit_code
-    assert json.loads(result.stdout)["schema"] == "repograph.export_safe.v1"
+    captured = capfd.readouterr()
+    assert returned == exit_code
+    assert json.loads(captured.out)["schema"] == "repograph.export_safe.v1"
 
 
-def test_probe_reports_resolution_without_running_child(tmp_path: Path) -> None:
+def test_probe_reports_resolution_without_running_child(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capfd: pytest.CaptureFixture[str],
+) -> None:
     repo = _repo(tmp_path)
     fake = _fake_repograph(tmp_path / "bin" / "repograph")
     marker = tmp_path / "ran"
@@ -190,18 +191,12 @@ def test_probe_reports_resolution_without_running_child(tmp_path: Path) -> None:
         encoding="utf-8",
     )
     fake.chmod(0o755)
-    env = {**os.environ, "CHARNESS_NATIVE_CORE": str(fake), "FAKE_EXIT": "0"}
+    monkeypatch.setenv("CHARNESS_NATIVE_CORE", str(fake))
+    monkeypatch.setenv("FAKE_EXIT", "0")
 
-    result = run_script(
-        "scripts/native_gate_lib.py",
-        "--repo-root",
-        str(repo),
-        "--probe",
-        "export-safe",
-        cwd=ROOT,
-        env=env,
-    )
+    returned = native_gate_lib.main(["--repo-root", str(repo), "--probe", "export-safe"])
 
-    assert result.returncode == 0
-    assert "provenance: override" in result.stdout
+    captured = capfd.readouterr()
+    assert returned == 0
+    assert "provenance: override" in captured.out
     assert not marker.exists()

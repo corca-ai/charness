@@ -18,12 +18,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
 
-if __package__:
-    from . import runtime_bootstrap
-else:
-    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-    import runtime_bootstrap
-
+import runtime_bootstrap
 
 Provenance = Literal["override", "managed", "dev-tree"]
 
@@ -40,6 +35,10 @@ class NativeGateError(RuntimeError):
 
 def _managed_result(repo_root: Path):
     """Ask the product resolver for a managed result without reusing the override."""
+    # native_core_path lazily imports `scripts.native_core_resolution_lib`;
+    # route that import through the repo-module loader so the repo root is on
+    # sys.path regardless of how this script was invoked.
+    runtime_bootstrap.import_repo_module(__file__, "scripts.native_core_resolution_lib")
     override = os.environ.pop("CHARNESS_NATIVE_CORE", None)
     try:
         return runtime_bootstrap.native_core_path(repo_root=repo_root)
