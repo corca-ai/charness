@@ -259,6 +259,37 @@ def arm_cli_timeout(
     return module.arm_cli_timeout(label=label, default_seconds=default_seconds)
 
 
+def native_core_path(
+    home_root: str | Path | None = None,
+    repo_root: str | Path | None = None,
+    *,
+    state_root: str | Path | None = None,
+    verify_digest: bool = False,
+):
+    """Lazily resolve the managed native core through its typed locator."""
+    import importlib
+
+    home = Path(home_root).expanduser().resolve() if home_root is not None else Path.home().resolve()
+    if state_root is None:
+        state_home = os.environ.get("CHARNESS_STATE_HOME", "").strip()
+        if not state_home:
+            state_home = os.environ.get("XDG_STATE_HOME", "").strip()
+        state_root_path = (
+            Path(state_home).expanduser().resolve() / "charness"
+            if state_home
+            else home / ".local" / "state" / "charness"
+        )
+    else:
+        state_root_path = Path(state_root).expanduser().resolve()
+    module = importlib.import_module("scripts.native_core_resolution_lib")
+    return module.native_core_path(
+        home,
+        Path(repo_root).expanduser().resolve() if repo_root is not None else None,
+        state_root=state_root_path,
+        verify_digest=verify_digest,
+    )
+
+
 def require_repo_local_helper(script_file: str | Path, repo_root: str | Path, **kwargs) -> dict:
     """Refuse a write helper that belongs to a different, drifted charness tree.
 
