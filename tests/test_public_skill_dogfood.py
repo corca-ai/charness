@@ -137,6 +137,9 @@ def test_validate_public_skill_dogfood_requires_reviewed_case_for_required_skill
     with pytest.raises(ValidationError, match="missing required dogfood case"):
         validate_registry(load_registry(repo), repo)
 
+    with pytest.raises(ValueError, match="registry is missing case.*demo"):
+        build_matrix(repo, ["demo"])
+
 
 def test_validate_public_skill_dogfood_rejects_historical_case_fields(tmp_path: Path) -> None:
     repo = seed_repo(tmp_path)

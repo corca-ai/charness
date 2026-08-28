@@ -41,7 +41,12 @@ def build_matrix(repo_root: Path, skill_ids: list[str]) -> dict[str, object]:
         for case in registry.get("cases", [])
         if isinstance(case, dict) and isinstance(case.get("skill_id"), str)
     }
-    matrix = [canonical_cases[skill_id] for skill_id in skill_ids if skill_id in canonical_cases]
+    missing = sorted(set(skill_ids) - set(canonical_cases))
+    if missing:
+        raise ValueError(
+            "public skill dogfood registry is missing case(s): " + ", ".join(missing)
+        )
+    matrix = [canonical_cases[skill_id] for skill_id in skill_ids]
     return {
         "schema_version": 1,
         "repo_root": str(repo_root),
