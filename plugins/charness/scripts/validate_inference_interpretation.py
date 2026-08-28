@@ -41,6 +41,7 @@ iter_repo_files = _repo_file_listing.iter_repo_files
 DEFAULT_REGISTRY_PATH = Path(".agents/inference-interpretation-surfaces.json")
 CONTRACT_FIELDS = ("measures", "proxy_for", "blind_spots", "interpretation_question")
 VALID_KINDS = ("python", "prose")
+SKIPPED_PYTHON_REASON = "unreadable-python-source"
 
 
 class InterpretationContractError(Exception):
@@ -158,7 +159,11 @@ def find_declaration_dicts(source: str) -> list[tuple[str | None, dict[str, str 
 
 
 def scan_repo_declarations(
-    repo_root: Path, exclude_prefixes: list[str], *, require_git: bool
+    repo_root: Path,
+    exclude_prefixes: list[str],
+    *,
+    require_git: bool,
+    skipped_paths: list[str] | None = None,
 ) -> dict[str, list[tuple[str | None, dict[str, str | None]]]]:
     """rel_path -> declaration dicts found in it, across git-visible *.py files."""
     found: dict[str, list[tuple[str | None, dict[str, str | None]]]] = {}
@@ -168,7 +173,11 @@ def scan_repo_declarations(
             continue
         try:
             declarations = find_declaration_dicts(path.read_text(encoding="utf-8"))
-        except (SyntaxError, UnicodeDecodeError):
+        except SyntaxError:
+            continue
+        except (OSError, UnicodeDecodeError, ValueError):
+            if skipped_paths is not None:
+                skipped_paths.append(rel)
             continue
         if declarations:
             found[rel] = declarations
@@ -241,15 +250,31 @@ def _check_prose_surface(repo_root: Path, surface: dict) -> list[str]:
 
 def evaluate(repo_root: Path, registry: dict | None, registry_path: Path, *, require_git: bool) -> tuple[int, list[str]]:
     exclude_prefixes = registry["leak_scan"]["exclude_prefixes"] if registry else ["plugins/", "mutants/", "tests/"]
-    found = scan_repo_declarations(repo_root, exclude_prefixes, require_git=require_git)
+    skipped_paths: list[str] = []
+    found = scan_repo_declarations(
+        repo_root,
+        exclude_prefixes,
+        require_git=require_git,
+        skipped_paths=skipped_paths,
+    )
+    skipped_message = (
+        "Skipped Python source entries: "
+        f"status=skipped reason={SKIPPED_PYTHON_REASON} "
+        f"count={len(skipped_paths)} paths={sorted(skipped_paths)}"
+        if skipped_paths
+        else None
+    )
 
     if registry is None:
         if found:
-            return 1, [
+            messages = [
                 f"{len(found)} interpretation declaration(s) found but no registry at "
                 f"`{registry_path}`: {sorted(found)}"
             ]
-        return 0, []
+            if skipped_message:
+                messages.append(skipped_message)
+            return 1, messages
+        return 0, [skipped_message] if skipped_message else []
 
     surfaces = registry["surfaces"]
     python_surfaces = [s for s in surfaces if s["kind"] == "python"]
@@ -271,12 +296,17 @@ def evaluate(repo_root: Path, registry: dict | None, registry_path: Path, *, req
         errors.extend(_check_prose_surface(repo_root, surface))
 
     if errors:
+        if skipped_message:
+            errors.append(skipped_message)
         return 1, errors
-    return 0, [
+    messages = [
         f"Validated advisory-interpretation contract across {len(surfaces)} inference-layer "
         f"surface(s) ({len(python_surfaces)} python, {len(prose_surfaces)} prose); "
         f"{len(found)} declaration(s) scanned, all registered and consumer-paired."
     ]
+    if skipped_message:
+        messages.append(skipped_message)
+    return 0, messages
 
 
 def main() -> int:
