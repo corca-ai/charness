@@ -45,6 +45,21 @@ def _repo(tmp_path: Path, *, ignored: bool = False) -> Path:
     return repo
 
 
+def _commit(repo: Path, message: str, *paths: str) -> str:
+    _git(repo, "add", "--", *paths)
+    _git(
+        repo,
+        "-c",
+        "user.email=test@example.com",
+        "-c",
+        "user.name=test",
+        "commit",
+        "-m",
+        message,
+    )
+    return _git(repo, "rev-parse", "HEAD").stdout.strip()
+
+
 def _codex(tmp_path: Path, body: str, *, deliver: bool = True) -> Path:
     executable = tmp_path / "fake-codex"
     delivery = "printf 'task complete\\n'" if deliver else ""
@@ -104,6 +119,25 @@ def test_codex_argument_shorthands_fix_luna_and_preserve_extra_host_arguments(tm
 def test_codex_extra_arguments_cannot_override_luna(extra: list[str]) -> None:
     with pytest.raises(task_run.TaskRunError, match="fixes the Codex model"):
         task_run.build_codex_args(extra=extra)
+
+
+@pytest.mark.parametrize(
+    ("extra", "message"),
+    [
+        (["--"], "option parsing"),
+        (["-c", "model_reasoning_effort=high"], "reasoning effort"),
+        (["--config", "model_reasoning_effort=high"], "reasoning effort"),
+        (["-cmodel_reasoning_effort=high"], "reasoning effort"),
+        (["-c=model_reasoning_effort=high"], "reasoning effort"),
+        (["--config=model_reasoning_effort=high"], "reasoning effort"),
+        (["--config model_reasoning_effort = high"], "reasoning effort"),
+    ],
+)
+def test_codex_extra_arguments_cannot_escape_or_override_fixed_effort(
+    extra: list[str], message: str
+) -> None:
+    with pytest.raises(task_run.TaskRunError, match=message):
+        task_run.build_codex_args(effort="xhigh", extra=extra)
 
 
 def test_codex_effort_is_limited_to_orchestrator_presets() -> None:
@@ -434,6 +468,126 @@ def test_directory_scope_includes_descendants(tmp_path: Path) -> None:
     assert payload["status"] == "completed", payload
     assert payload["scope"]["specs"] == [{"path": "pkg", "kind": "directory"}]
     assert payload["scope"]["changed_paths"] == ["pkg/child.py"]
+
+
+def test_explicit_base_scope_resolution_uses_selected_tree_for_dry_run(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    (repo / "pkg").mkdir()
+    (repo / "pkg/base.py").write_text("BASE = 1\n", encoding="utf-8")
+    (repo / "literal[1].py").write_text("VALUE = 1\n", encoding="utf-8")
+    selected_base = _commit(repo, "add selected base paths", "pkg", "literal[1].py")
+    (repo / "current-only.py").write_text("CURRENT = 1\n", encoding="utf-8")
+    _commit(repo, "add current-only path", "current-only.py")
+    executable = _codex(tmp_path, "exit 99")
+
+    payload = task_run.run_task(
+        repo,
+        target_path=tmp_path / "lane",
+        branch="lane/base-dry-run",
+        base=selected_base,
+        scopes=["pkg", "literal[1].py", "current-only", "*.py"],
+        prompt="inspect the selected base",
+        codex=str(executable),
+        dry_run=True,
+    )
+
+    specs = {spec["path"]: spec for spec in payload["scope_specs"]}
+    assert specs["pkg"] == {"path": "pkg", "kind": "directory"}
+    assert specs["literal[1].py"] == {"path": "literal[1].py", "kind": "exact"}
+    assert specs["current-only"] == {"path": "current-only", "kind": "exact"}
+    assert specs["*.py"]["kind"] == "glob"
+    assert "current-only.py" not in specs["*.py"]["matches"]
+    assert payload["status"] == "pass"
+    assert not (tmp_path / "lane").exists()
+
+
+def test_explicit_base_glob_does_not_use_current_parent_head(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    selected_base = _git(repo, "rev-parse", "HEAD").stdout.strip()
+    (repo / "current-only.py").write_text("CURRENT = 1\n", encoding="utf-8")
+    _commit(repo, "add current-only path", "current-only.py")
+    executable = _codex(tmp_path, "exit 0")
+
+    payload = task_run.run_task(
+        repo,
+        target_path=tmp_path / "lane",
+        branch="lane/base-glob-refusal",
+        base=selected_base,
+        scopes=["current-*.py"],
+        prompt="inspect the selected base",
+        codex=str(executable),
+        dry_run=True,
+    )
+
+    assert payload["status"] == "fail"
+    assert payload["phase"] == "preflight"
+    assert "scope glob matched no paths" in payload["error"]
+    assert not (tmp_path / "lane").exists()
+
+
+def test_literal_metacharacter_file_takes_exact_precedence(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    (repo / "literal[1].py").write_text("VALUE = 1\n", encoding="utf-8")
+    (repo / "literal1.py").write_text("OTHER = 1\n", encoding="utf-8")
+    _commit(repo, "add literal metacharacter paths", "literal[1].py", "literal1.py")
+    executable = _codex(tmp_path, "printf 'VALUE = 2\\n' > 'literal[1].py'")
+
+    payload = _run(repo, tmp_path, executable, scopes=["literal[1].py"])
+
+    assert payload["status"] == "completed", payload
+    assert payload["scope_specs"] == [{"path": "literal[1].py", "kind": "exact"}]
+    assert payload["scope"]["changed_paths"] == ["literal[1].py"]
+
+
+def test_literal_metacharacter_directory_takes_directory_precedence(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    (repo / "pkg*").mkdir()
+    (repo / "pkg*/base.py").write_text("BASE = 1\n", encoding="utf-8")
+    _commit(repo, "add literal metacharacter directory", "pkg*")
+    executable = _codex(tmp_path, "printf 'CHILD = 1\\n' > 'pkg*/child.py'")
+
+    payload = _run(repo, tmp_path, executable, scopes=["pkg*"])
+
+    assert payload["status"] == "completed", payload
+    assert payload["scope_specs"] == [{"path": "pkg*", "kind": "directory"}]
+    assert payload["scope"]["changed_paths"] == ["pkg*/child.py"]
+
+
+def test_bare_double_star_scope_includes_top_level_files(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    executable = _codex(tmp_path, "printf 'VALUE = 2\\n' > module.py")
+
+    payload = _run(repo, tmp_path, executable, scopes=["**"])
+
+    assert payload["status"] == "completed", payload
+    assert payload["scope_specs"][0]["kind"] == "glob"
+    assert "module.py" in payload["scope_specs"][0]["matches"]
+    assert payload["scope"]["disallowed_paths"] == []
+
+
+def test_completion_scope_refresh_failure_persists_terminal_failed_result(
+    tmp_path: Path, monkeypatch
+) -> None:
+    repo = _repo(tmp_path)
+    executable = _codex(tmp_path, "printf 'VALUE = 2\\n' > module.py")
+
+    def fail_refresh(*_args, **_kwargs):
+        raise task_run.TaskRunError("scope refresh failed")
+
+    monkeypatch.setattr(task_run._support, "_glob_matches", fail_refresh)
+    payload = _run(
+        repo,
+        tmp_path,
+        executable,
+        task_id="completion-failure",
+        scopes=["*.py"],
+    )
+
+    assert payload["status"] == "failed"
+    assert payload["phase"] == "terminal"
+    assert payload["approval_eligibility"] == "ineligible"
+    assert payload["error"] == "completion evidence failed: scope refresh failed"
+    assert task_run.task_status(repo, "completion-failure") == payload
 
 
 def test_glob_scope_freezes_matches_and_allows_new_matching_files(tmp_path: Path) -> None:

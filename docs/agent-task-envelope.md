@@ -33,11 +33,14 @@ diagnostics and exceptional host setup. In shorthand, preparation and requiring
 a changed candidate are on by default; `--skip-prepare` and `--allow-no-change`
 are diagnostic opt-outs.
 
-Scopes resolve existing directories as descendant scopes. Existing files and
-absent paths are exact scopes. A quoted repository-relative glob is expanded
-before worktree creation and refuses zero matches; its receipt keeps the pattern
-and matched paths, while newly-created matching paths remain in scope. Candidate
-and parent overlap use the same resolved rule.
+Scopes are classified against the selected base commit's Git tree (or `HEAD` in
+shorthand), including during dry-run. Existing literal files and directories
+take precedence even when their names contain glob metacharacters; otherwise a
+quoted repository-relative glob is expanded before worktree creation and
+refuses zero matches. Its receipt keeps the pattern and matched paths, while
+newly-created matching paths remain in scope. `**` includes files at every
+depth, including top-level files. Candidate and parent overlap use the same
+resolved rule.
 Tracked, untracked, and ignored paths are reported separately; ignored output
 is a warning and does not become a candidate.
 

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import fnmatch
 import json
 import os
 import re
@@ -216,6 +217,8 @@ def _changed_paths(repo_root: Path, base_sha: str) -> list[str]:
     tracked = _parse_nul_paths(_git_output(repo_root, "diff", "--no-renames", "--name-only", "-z", base_sha, "--"))
     untracked = _parse_nul_paths(_git_output(repo_root, "ls-files", "--others", "--exclude-standard", "-z", "--"))
     return sorted(set(tracked) | set(untracked))
+
+
 def _is_glob_scope(scope: str) -> bool:
     return any(marker in scope for marker in ("*", "?", "[", "]"))
 
@@ -236,34 +239,79 @@ def _validate_glob_scope(scope: str) -> None:
         index = close + 1
 
 
+def _glob_path_matches(path: str, pattern: str) -> bool:
+    """Match repository path components with inclusive ``**`` semantics."""
+    path_parts = path.split("/")
+    pattern_parts = pattern.split("/")
+
+    def match(path_index: int, pattern_index: int) -> bool:
+        if pattern_index == len(pattern_parts):
+            return path_index == len(path_parts)
+        component = pattern_parts[pattern_index]
+        if component == "**":
+            return match(path_index, pattern_index + 1) or (
+                path_index < len(path_parts) and match(path_index + 1, pattern_index)
+            )
+        return path_index < len(path_parts) and fnmatch.fnmatchcase(
+            path_parts[path_index], component
+        ) and match(path_index + 1, pattern_index + 1)
+
+    return match(0, 0)
+
+
+def _git_tree_paths(root: Path, base_sha: str) -> tuple[set[str], set[str]]:
+    files = _parse_nul_paths(
+        _git_output(root, "ls-tree", "-r", "--name-only", "-z", base_sha, "--")
+    )
+    paths = set(files)
+    directories: set[str] = set()
+    for path in files:
+        for parent in Path(path).parents:
+            if parent.as_posix() == ".":
+                break
+            directory = parent.as_posix()
+            paths.add(directory)
+            directories.add(directory)
+    return paths, directories
+
+
 def _glob_matches(root: Path, pattern: str) -> tuple[list[str], list[str]]:
     root = root.resolve()
     matches: list[str] = []
     directories: list[str] = []
-    for candidate in root.glob(pattern):
+    for candidate in root.rglob("*"):
+        relative = candidate.relative_to(root).as_posix()
+        if not _glob_path_matches(relative, pattern):
+            continue
         resolved = candidate.resolve()
         if not _is_inside(resolved, root):
             raise TaskRunError(
                 f"scope glob resolved outside the repository: {pattern!r} -> {candidate}"
             )
-        relative = candidate.relative_to(root).as_posix()
         matches.append(relative)
         if candidate.is_dir():
             directories.append(relative)
     return sorted(set(matches)), sorted(set(directories))
 
 
-def resolve_scope_specs(root: Path, scopes: Sequence[str]) -> list[dict[str, Any]]:
-    """Freeze literal semantics and expand each glob before worktree creation."""
+def resolve_scope_specs(
+    root: Path, scopes: Sequence[str], base_sha: str
+) -> list[dict[str, Any]]:
+    """Freeze scope semantics and expand globs from the selected Git tree."""
+    tree_paths, tree_directories = _git_tree_paths(root, base_sha)
     specs: list[dict[str, Any]] = []
     for scope in scopes:
-        if not _is_glob_scope(scope):
+        if scope in tree_paths:
             specs.append(
-                {"path": scope, "kind": "directory" if (root / scope).is_dir() else "exact"}
+                {"path": scope, "kind": "directory" if scope in tree_directories else "exact"}
             )
             continue
+        if not _is_glob_scope(scope):
+            specs.append({"path": scope, "kind": "exact"})
+            continue
         _validate_glob_scope(scope)
-        matches, directories = _glob_matches(root, scope)
+        matches = sorted(path for path in tree_paths if _glob_path_matches(path, scope))
+        directories = sorted(path for path in matches if path in tree_directories)
         if not matches:
             raise TaskRunError(f"scope glob matched no paths: {scope!r}")
         specs.append(
@@ -409,14 +457,30 @@ def build_codex_args(
 ) -> list[str]:
     """Build Codex host arguments with the task runner's fixed Luna model."""
     for index, value in enumerate(extra):
-        if value in {"-m", "--model"} or value.startswith(("-m=", "--model=")):
-            raise TaskRunError("charness task fixes the Codex model to gpt-5.6-luna")
-        if re.match(r"^(?:-c|--config)=?\s*model\s*=", value) or (
-            index > 0
-            and extra[index - 1] in {"-c", "--config"}
-            and re.match(r"^\s*model\s*=", value)
+        if value == "--":
+            raise TaskRunError("--codex-arg cannot terminate Codex option parsing")
+        if value in {"-m", "--model"} or value.startswith("--model=") or (
+            value.startswith("-m") and not value.startswith("--")
         ):
             raise TaskRunError("charness task fixes the Codex model to gpt-5.6-luna")
+        if value in {"-c", "--config"}:
+            if index + 1 == len(extra):
+                raise TaskRunError("--codex-arg config options require a value")
+            continue
+        config_value = re.match(
+            r"^(?:-c|--config)(?:=|\s*)?\s*(model|model_reasoning_effort)\s*=",
+            value,
+        )
+        if index > 0 and extra[index - 1] in {"-c", "--config"}:
+            config_value = re.match(
+                r"^\s*(model|model_reasoning_effort)\s*=", value
+            )
+        if config_value:
+            if config_value.group(1) == "model":
+                raise TaskRunError("charness task fixes the Codex model to gpt-5.6-luna")
+            raise TaskRunError(
+                "charness task fixes reasoning effort to medium, xhigh, or max"
+            )
     args: list[str] = ["--sandbox", "workspace-write"]
     for writable_dir in writable_dirs:
         args.extend(["--add-dir", str(writable_dir.resolve())])

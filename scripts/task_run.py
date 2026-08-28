@@ -289,13 +289,13 @@ def _resolve_task_inputs(
         resolved_base = base
         resolved_prepare = bool(prepare) and not skip_prepare
         resolved_require_change = bool(require_change) and not allow_no_change
-    normalized_scopes = normalize_scopes(scopes)
-    scope_specs = _support.resolve_scope_specs(resolved_repo, normalized_scopes)
     if not prompt.strip():
         raise TaskRunError("--prompt or --prompt-file must contain non-empty instructions")
     if effort is None and lane is not None:
         raise TaskRunError("shorthand task runs require the orchestrator-selected --effort")
     base_sha = _resolve_base_sha(resolved_repo, resolved_base)
+    normalized_scopes = normalize_scopes(scopes)
+    scope_specs = _support.resolve_scope_specs(resolved_repo, normalized_scopes, base_sha)
     git_common_dir = _git_common_dir(resolved_repo)
     codex_path = _resolve_codex(codex)
     if not isinstance(timeout_seconds, int) or timeout_seconds < 1:
@@ -523,21 +523,30 @@ def run_task(
         stderr_log=stderr_log,
         timeout_seconds=timeout_seconds,
     )
-    return _complete_task(
-        payload,
-        runtime_path=runtime_path,
-        resolved_target=resolved_target,
-        resolved_repo=resolved_repo,
-        before_exec=before_exec,
-        base_sha=base_sha,
-        scope_specs=scope_specs,
-        require_change=resolved_require_change,
-        parent_before=parent_before,
-        parent_before_head=parent_before_head,
-        stdout_log=stdout_log,
-        execution=execution,
-        started_at=started_at,
-    )
+    try:
+        return _complete_task(
+            payload,
+            runtime_path=runtime_path,
+            resolved_target=resolved_target,
+            resolved_repo=resolved_repo,
+            before_exec=before_exec,
+            base_sha=base_sha,
+            scope_specs=scope_specs,
+            require_change=resolved_require_change,
+            parent_before=parent_before,
+            parent_before_head=parent_before_head,
+            stdout_log=stdout_log,
+            execution=execution,
+            started_at=started_at,
+        )
+    except (OSError, TaskRunError, subprocess.SubprocessError) as exc:
+        return _terminal(
+            payload,
+            runtime_path,
+            status="failed",
+            error=f"completion evidence failed: {exc}",
+            next_step="Inspect the retained worktree and completion error, then rerun task run with a fresh path.",
+        )
 
 
 def task_status(repo_root: Path, task_id: str | None = None) -> dict[str, Any]:
