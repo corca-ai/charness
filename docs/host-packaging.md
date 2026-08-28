@@ -67,10 +67,12 @@ python3 scripts/build_native_artifact.py --repo-root . --out-dir /tmp/charness-n
 
 If `--out-dir` is omitted, output goes under the external Charness runtime
 root, never under the repository. The producer reads the product version from
-`packaging/charness.json`, runs `cargo build --release --locked` in
-`native/repograph` with the crate's `rust-toolchain.toml`, and deliberately
-does not synchronize `native/repograph/Cargo.toml`; the crate version is not a
-release-version owner. The build may create the crate's ignored `target/`
+[the packaging manifest](../packaging/charness.json), runs
+`cargo build --release --locked` in `native/repograph` with
+[the crate's pinned toolchain](../native/repograph/rust-toolchain.toml), and
+deliberately does not synchronize
+[the crate manifest](../native/repograph/Cargo.toml); the crate version is
+not a release-version owner. The build may create the crate's ignored `target/`
 directory, which is excluded from the clean-tree check through Git's standard
 ignore rules.
 
