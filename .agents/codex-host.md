@@ -52,3 +52,8 @@ charness task run \
 The task result is the only lane result carrier. Review the retained worktree
 and receipt, then integrate serially. A successful process or commit is not by
 itself integration proof.
+
+On this host, Codex lanes run `--sandbox workspace-write` with
+`network_access = true` set in `~/.codex/config.toml` (operator-approved
+2026-08-28), so lanes may fetch dependencies directly; no parent-side
+prefetch is needed.
