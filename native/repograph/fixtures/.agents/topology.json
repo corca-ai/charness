@@ -1,0 +1,6 @@
+{
+  "topology": {
+    "test_globs": ["scripts/conflict.py"],
+    "production_globs": ["scripts/conflict.py"]
+  }
+}

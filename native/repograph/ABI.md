@@ -26,7 +26,7 @@ their respective captures, with whitespace formatted for readability.
 The executable accepts one required command name:
 
 ```text
-repograph <parse-corpus|export-safe|match-surfaces|standalone-targets> [options]
+repograph <parse-corpus|export-safe|match-surfaces|standalone-targets|graph> [options]
 ```
 
 `--help` and `-h` print the command usage and exit 0. An unknown command,
@@ -431,6 +431,28 @@ diagnostics on stderr and exits 3 without a report document.
 | 2 | CLI usage error. |
 | 3 | The manifest could not be read or validated, or a changed path could not be normalized within the repository. |
 | 70 | Internal `repograph` failure, including a top-level panic or an output failure. |
+
+## `graph`
+
+Usage:
+
+```text
+repograph graph [--repo-root PATH] [--file-list PATH] [--exclude-prefix PREFIX]... [--analyzer-result FILE]...
+```
+
+The graph command establishes one inventory and emits `repograph.graph.v1`.
+`--exclude-prefix` is repeatable; when omitted its defaults are `plugins/` and
+`native/repograph/fixtures/`. Supplying one prefix replaces both defaults.
+`--analyzer-result` is repeatable identity-only plumbing in this lane. Each
+input is recorded and its repository scope is marked with an
+`analyzer-not-parsed` condition; analyzer contents are not parsed.
+
+The report contains typed `nodes`, `edges`, and `roots`, derived mirror
+destinations, a role census, analyzer inputs, and `unestablished` conditions.
+Node and edge arrays are sorted by class/kind and identifier/source/target;
+inventory paths are deduplicated. Graph reports exit 0 when established, 3
+when the report contains an unestablished condition, 2 for usage errors, and
+70 for an internal output or panic failure.
 
 ## `standalone-targets`
 

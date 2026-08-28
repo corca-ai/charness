@@ -1,0 +1,20 @@
+{
+  "source": {
+    "public_skills_dir": "skills/public",
+    "support_skills_dir": "skills/support",
+    "profiles_dir": "profiles",
+    "presets_dir": "presets",
+    "integrations_dir": "integrations/tools"
+  },
+  "codex": {
+    "repo_marketplace": {
+      "path": ".agents/plugins/marketplace.json",
+      "default_source_path": "./plugins/charness"
+    }
+  },
+  "claude": {
+    "marketplace": {
+      "path": ".claude-plugin/marketplace.json"
+    }
+  }
+}

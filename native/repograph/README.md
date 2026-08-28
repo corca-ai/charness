@@ -44,6 +44,18 @@ target/release/repograph match-surfaces --repo-root ../.. --path README.md
 target/release/repograph standalone-targets --repo-root ../..
 ```
 
+The topology command emits typed nodes, edges, roots, mirror destinations, and
+role conditions from the same inventory. Its default excludes are `plugins/`
+and `native/repograph/fixtures/`:
+
+```bash
+target/release/repograph graph --repo-root ../..
+```
+
+Use repeatable `--analyzer-result FILE` options to record identity-only
+provider inputs; this lane marks their scope `unestablished` until a later
+lane supplies provider parsing.
+
 The parity and benchmark harnesses are investigative only and are not wired
 into repository gates:
 

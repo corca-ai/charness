@@ -1,0 +1,3 @@
+package graphfixtures
+
+func TestShape() {}
