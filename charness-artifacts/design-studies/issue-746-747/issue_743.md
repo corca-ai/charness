@@ -1,0 +1,35 @@
+I have everything needed for the report.
+
+## Findings
+
+**Issue #743** (`corca-ai/charness`), "Release host-proof triggers cannot exclude test-only paths without a duplicate production file catalog": a consuming repo needs release-time real-host proof whenever *production* Go runtime sources change, but not when only adjacent `_test.go` files change. The release adapter's `real_host_required_path_globs` field is inclusion-only, with no exclusion or negative-path contract. This forces a choice between two bad options — a broad glob (`cli/internal/client/**/*.go`) that over-triggers on test-only edits, or an exact enumerated file list (`client.go`, `transport.go`) that becomes a second, manually maintained ownership catalog that silently misses future production files unless someone remembers to update it. The issue frames this as a single-owner-policy conflict: package/source topology should determine what's a production source; the release adapter should only own the distinct claim that those sources require host proof.
+
+**Trigger code as it works today**:
+- `native/repograph/src/surfaces.rs` (631 lines) is a Rust parity port of `scripts/surfaces_lib.py` — matching surface source/derived globs against changed paths, purely path-shape driven, no file-content/AST classification.
+- `.agents/release-adapter.yaml:31-45` — `real_host_required_surfaces` (e.g. `external-tool-control-plane`) and `real_host_required_path_globs`, both inclusion-only lists of fnmatch patterns.
+- `skills/public/release/scripts/check_real_host_proof.py:186-224` (`build_payload`) — resolves configured surface ids via `resolve_trigger_surfaces`, matches them against changed paths via `match_surfaces`, and separately does `matches_any(path, trigger_globs)` with `fnmatch.fnmatch` (line ~110: `matches_any`). `required = bool(surface_hits or path_hits)` — pure OR of positive matches, no exclusion fold anywhere in the function.
+- `scripts/surfaces_lib.py:path_matches_patterns` / `match_surfaces` — same fnmatch-only positive matching; `.agents/surfaces.json` surfaces declare only `source_paths` / `derived_paths`, no test/production distinction or negative patterns.
+- `docs/surface-driven-adapter-triggers.md` documents the surface-id-over-raw-globs convention and the fail-loud `resolve_trigger_surfaces` contract, but says nothing about exclusion — confirming the gap is structural, not a doc oversight.
+
+**Issue #746** (parent #744) proposes a typed Rust topology core at `native/repograph` (crate already exists, currently only implements inventory/parser/export_safe/standalone/surfaces — no node/edge graph model yet) whose acceptance criteria explicitly names #743: *"Package-native production/test classification can answer the source-set question in #743 without enumerating every current production file."* Confirmed by `grep` that no production/test node classification exists in the current crate.
+
+## DESIGN CONSTRAINTS
+
+The typed graph must answer this query contract to resolve #743: **given a changed path P, is P a current production source belonging to package/surface S (i.e. matched by S's declared source membership) and NOT classified as a test node** — without the release adapter (or any consumer) ever enumerating individual production filenames.
+
+That requires, minimally:
+- **Node classes**: `file` nodes carrying a derived (not manually declared) `production | test | generated | doc | config` classification per #746's "package-native production/test classification" language — likely derived from package-manifest-declared test roots/patterns (e.g. `_test.go`, `test/`, `**/*_test.py`) rather than from the surface author hand-listing files.
+- **Package/entrypoint nodes**: a `package` node whose membership set is the changed path's containing package, so "production source of surface S" can be phrased as "P ∈ package.production_files ∧ package ∈ surface S's declared source scope" rather than a flat glob-only test.
+- **Edge classes**: `tests` (test node → tested production node) and `packages` (package → member file), per #746's core edge list, so the classification is structural (this file is under test-glob T of package M) not just filename-suffix pattern matching baked into each adapter.
+- **A changed-path query** (#746 acceptance: "core offers changed-path queries without creating a second cached truth store") that a script like `check_real_host_proof.py` can call with `changed_paths` and get back, per surface/trigger id, which hits are production and which are excluded as test-only — replacing the current flat `matches_any(path, trigger_globs)` fold with a call into the graph.
+- **Determinism and fail-loud on unresolved classification**: consistent with the existing `resolve_trigger_surfaces` broken-config pattern (`surfaces_lib.py`), an unclassifiable file (no package owner, ambiguous test/production membership) must surface as `not-established`, never silently fold to "not production."
+- The human-owned-policy boundary in #746 still applies: *which surfaces require host proof* stays an explicit adapter declaration (`real_host_required_surfaces`); only *which files currently count as that surface's production sources* becomes graph-derived.
+
+Sketch of the consuming change in `check_real_host_proof.py`: today's `path_hits = [path for path in changed_paths if matches_any(path, trigger_globs)]` (roughly build_payload's positive-only fold) would become something like `path_hits = [path for path in changed_paths if repograph.classify(path).role == "production" and repograph.matches_surface(path, trigger_surfaces)]`, sourcing test-exclusion from the graph's derived classification instead of a second `real_host_excluded_path_globs` field the issue's "weak direction" section floats as one option.
+
+## OPEN QUESTIONS
+
+1. How does the graph derive test-vs-production membership for languages/frameworks without a uniform naming convention (not everything is `_test.go` or `test_*.py`) — from package manifest declarations, from directory convention, or must it require an explicit per-package test-glob declaration (which reintroduces some manual ownership, just at the package level instead of the file level)?
+2. Does `real_host_required_surfaces` map onto graph `package` nodes 1:1, or can a surface span multiple packages/languages, requiring the query to aggregate across package boundaries?
+3. Since #746 depends on #744's Rust feasibility spike output (parser/graph model/machine ABI), is the query interface exposed as a CLI subcommand (JSON stdout, matching the pattern of `check_real_host_proof.py`'s other machine contracts) or as a library the Python script FFI-calls into — this affects whether `check_real_host_proof.py` shells out or links natively.
+4. For the TypeScript/rev-dep external-analyzer path #746 describes, does test/production classification differ by analyzer, and if a consuming repo's declared analyzer doesn't emit that classification, does the query degrade to `not-established` per file or fail closed entirely for that surface?
