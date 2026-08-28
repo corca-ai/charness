@@ -305,7 +305,6 @@ def _resolve_task_inputs(
         runtime_path = _runtime_preview(resolved_repo)
     command = build_codex_command(
         codex_path,
-        prompt,
         effort=effort,
         writable_dirs=[git_common_dir],
     )
@@ -413,7 +412,7 @@ def run_task(
         "git_common_dir": str(resolved["git_common_dir"]),
         "scopes": normalized_scopes,
         "scope_specs": resolved["scope_specs"],
-        "codex": {"executable": codex_path, "command": command[:-1] + ["<prompt>"]},
+        "codex": {"executable": codex_path, "command": command},
         "runtime_root": str(runtime_path),
         "execution_runtime_root": str(execution_runtime_path),
         "result_path": str(_support.task_result_path(runtime_path, resolved_task_id)),
@@ -443,7 +442,7 @@ def run_task(
             resolved_repo,
             target_path=resolved_target,
             branch=resolved_branch,
-            base=resolved_base,
+            base=base_sha,
             prepare=resolved_prepare,
         )
     except KeyboardInterrupt:
@@ -478,12 +477,11 @@ def run_task(
     git_worktree_dir = _git_dir(resolved_target)
     command = build_codex_command(
         codex_path,
-        prompt,
         effort=resolved["effort"],
         writable_dirs=[resolved["git_common_dir"], git_worktree_dir],
     )
     payload["git_worktree_dir"] = str(git_worktree_dir)
-    payload["codex"]["command"] = command[:-1] + ["<prompt>"]
+    payload["codex"]["command"] = command
 
     scope_specs = resolved["scope_specs"]
     before_exec = _collect_populations(resolved_target)
@@ -514,6 +512,7 @@ def run_task(
     print(f"task run: executing Codex in {resolved_target}", file=sys.stderr)
     execution = _execute_codex(
         command,
+        prompt=prompt,
         target_path=resolved_target,
         configured_env=configured_env,
         stdout_log=stdout_log,
@@ -536,7 +535,7 @@ def run_task(
             execution=execution,
             started_at=started_at,
         )
-    except (OSError, TaskRunError, subprocess.SubprocessError) as exc:
+    except (OSError, RuntimeError, TaskRunError, subprocess.SubprocessError) as exc:
         return _terminal(
             payload,
             runtime_path,

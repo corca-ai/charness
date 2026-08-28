@@ -464,12 +464,11 @@ def build_codex_args(
 
 def build_codex_command(
     executable: str,
-    prompt: str,
     *,
     effort: str,
     writable_dirs: Sequence[Path] = (),
 ) -> list[str]:
-    """Build the one Codex command used by previews and real task runs."""
+    """Build the one Codex command; the task prompt is supplied on stdin."""
     return [
         executable,
         "exec",
@@ -477,7 +476,7 @@ def build_codex_command(
             effort=effort,
             writable_dirs=writable_dirs,
         ),
-        prompt,
+        "-",
     ]
 
 
@@ -567,6 +566,7 @@ def _runtime_preview(repo_root: Path) -> Path:
 def _execute_codex(
     command: Sequence[str],
     *,
+    prompt: str,
     target_path: Path,
     configured_env: Mapping[str, str],
     stdout_log: Path,
@@ -585,6 +585,7 @@ def _execute_codex(
         ):
             completed = subprocess.run(
                 command,
+                input=prompt,
                 cwd=target_path,
                 env=dict(configured_env),
                 stdout=stdout_handle,

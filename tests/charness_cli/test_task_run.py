@@ -147,8 +147,39 @@ def test_task_run_lane_shorthand_owns_safe_defaults_and_external_target(tmp_path
         "gpt-5.6-luna",
         "-c",
         "model_reasoning_effort=xhigh",
-        "<prompt>",
+        "-",
     ]
+
+
+def test_task_prompt_is_stdin_not_an_option_bearing_argv_value(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    captured_args = tmp_path / "codex-args.txt"
+    captured_stdin = tmp_path / "codex-stdin.txt"
+    prompt = "--dangerously-bypass-approvals-and-sandbox --model hostile\nkeep the fixed lane"
+    executable = _codex(
+        tmp_path,
+        f"printf '%s\\n' \"$@\" > {shlex.quote(os.fspath(captured_args))}\n"
+        f"cat > {shlex.quote(os.fspath(captured_stdin))}",
+    )
+
+    payload = task_run.run_task(
+        repo,
+        target_path=tmp_path / "lane",
+        branch="lane/stdin-prompt",
+        base="HEAD",
+        scopes=["module.py"],
+        prompt=prompt,
+        codex=str(executable),
+        effort="max",
+        require_change=False,
+    )
+
+    args = captured_args.read_text(encoding="utf-8").splitlines()
+    assert payload["status"] == "completed", payload
+    assert args[-1] == "-"
+    assert prompt not in args
+    assert args[args.index("-m") + 1] == "gpt-5.6-luna"
+    assert captured_stdin.read_text(encoding="utf-8") == prompt
 
 
 def test_task_run_lane_shorthand_optouts_enable_diagnostics(tmp_path: Path, monkeypatch) -> None:
@@ -512,6 +543,42 @@ def test_explicit_base_scope_resolution_uses_selected_tree_for_dry_run(tmp_path:
     assert not (tmp_path / "lane").exists()
 
 
+def test_task_creation_uses_the_preflight_resolved_base_sha(
+    tmp_path: Path, monkeypatch
+) -> None:
+    repo = _repo(tmp_path)
+    frozen_sha = _git(repo, "rev-parse", "HEAD").stdout.strip()
+    _git(repo, "branch", "moving-base", frozen_sha)
+    (repo / "later.py").write_text("LATER = 1\n", encoding="utf-8")
+    later_sha = _commit(repo, "advance main", "later.py")
+    executable = _codex(tmp_path, "printf 'VALUE = 2\\n' > module.py")
+    original_run_create = task_run._worktree.run_create
+    observed: dict[str, str | None] = {}
+
+    def move_ref_then_create(*args, **kwargs):
+        observed["base"] = kwargs.get("base")
+        _git(repo, "update-ref", "refs/heads/moving-base", later_sha)
+        return original_run_create(*args, **kwargs)
+
+    monkeypatch.setattr(task_run._worktree, "run_create", move_ref_then_create)
+    payload = task_run.run_task(
+        repo,
+        target_path=tmp_path / "lane",
+        branch="lane/frozen-base",
+        base="moving-base",
+        scopes=["module.py"],
+        prompt="update the module",
+        codex=str(executable),
+        effort="medium",
+    )
+
+    assert payload["status"] == "completed", payload
+    assert payload["base"] == "moving-base"
+    assert payload["base_sha"] == frozen_sha
+    assert observed["base"] == frozen_sha
+    assert _git(Path(payload["worktree_path"]), "rev-parse", "HEAD").stdout.strip() == frozen_sha
+
+
 def test_explicit_base_glob_does_not_use_current_parent_head(tmp_path: Path) -> None:
     repo = _repo(tmp_path)
     selected_base = _git(repo, "rev-parse", "HEAD").stdout.strip()
@@ -600,6 +667,28 @@ def test_completion_scope_refresh_failure_persists_terminal_failed_result(
     assert payload["approval_eligibility"] == "ineligible"
     assert payload["error"] == "completion evidence failed: scope refresh failed"
     assert task_run.task_status(repo, "completion-failure") == payload
+
+
+def test_completion_symlink_loop_persists_terminal_failed_result(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    executable = _codex(
+        tmp_path,
+        "printf 'VALUE = 2\\n' > module.py\nln -s loop.py loop.py",
+    )
+
+    payload = _run(
+        repo,
+        tmp_path,
+        executable,
+        task_id="symlink-loop",
+        scopes=["*.py"],
+    )
+
+    assert payload["status"] == "failed"
+    assert payload["phase"] == "terminal"
+    assert payload["approval_eligibility"] == "ineligible"
+    assert "completion evidence failed" in payload["error"]
+    assert task_run.task_status(repo, "symlink-loop") == payload
 
 
 def test_glob_scope_freezes_matches_and_allows_new_matching_files(tmp_path: Path) -> None:
