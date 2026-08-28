@@ -38,6 +38,7 @@ def test_exec_environment_routes_runtime_outputs_outside_repo(tmp_path: Path) ->
         repo,
         {
             "CHARNESS_RUNTIME_ROOT": str(runtime),
+            "CHARNESS_REPO_ROOT": str(tmp_path / "outer-worktree"),
             "PYTHONPYCACHEPREFIX": str(repo / "local-pycache"),
             "TMPDIR": str(repo / "local-tmp"),
             "TMP": str(repo / "local-tmp"),
@@ -64,6 +65,7 @@ def test_exec_environment_routes_runtime_outputs_outside_repo(tmp_path: Path) ->
         assert repo.resolve() not in value.resolve().parents
         assert value.exists()
     assert f"cache_dir={runtime / 'pytest-cache'}" in configured["PYTEST_ADDOPTS"]
+    assert "CHARNESS_REPO_ROOT" not in configured
 
 
 def test_exec_refuses_primary_worktree_by_default(tmp_path: Path) -> None:

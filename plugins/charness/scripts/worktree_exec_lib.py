@@ -41,7 +41,7 @@ def prepare_exec_environment(
     child_env = dict(os.environ if env is None else env)
     configured = configure_runtime_environment(repo_root, child_env)
 
-    configured["CHARNESS_REPO_ROOT"] = str(repo_root.resolve())
+    configured.pop("CHARNESS_REPO_ROOT", None)
     return configured
 
 

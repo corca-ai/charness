@@ -109,7 +109,7 @@ def _run(
             "test-run",
         ],
         cwd=tmp_path,
-        env={"PATH": os.environ["PATH"], "PYTHONPATH": str(ROOT)},
+        env={**os.environ, "PATH": os.environ["PATH"], "PYTHONPATH": str(ROOT)},
         capture_output=True,
         text=True,
         check=False,
