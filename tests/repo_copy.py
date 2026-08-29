@@ -24,6 +24,40 @@ REPO_COPY_EXCLUDE_NAMES = (
 )
 REPO_COPY_IGNORE = shutil.ignore_patterns(*REPO_COPY_EXCLUDE_NAMES)
 
+#: The Cargo target directory is 1.4 GB on a built checkout -- 87% of everything the
+#: seed carries -- and all but 3.8 MB of it is build intermediates (`target/debug` at
+#: 1.1 GB, `target/release/deps` at 230 MB) that no test reads.
+#:
+#: The binary itself CANNOT be dropped with them. `native_gate_lib.resolve_native_core`
+#: prefers the dev tree, and a copy that has `native/repograph/Cargo.toml` but no built
+#: binary makes it run `cargo build` INSIDE the test copy, which is far worse than the
+#: copy it saved. So the rule keeps exactly `target/release/repograph` and drops the
+#: rest, path-anchored rather than by basename: `deps`, `build`, and `debug` are ordinary
+#: directory names elsewhere in a tree, and an `ignore_patterns` on those names would
+#: silently delete unrelated directories from the fixture.
+_NATIVE_TARGET = "native/repograph/target"
+_NATIVE_BINARY_NAME = "repograph"
+
+
+def repo_copy_ignore_for(source_root: Path):
+    """Build the copytree `ignore` callable for a copy rooted at `source_root`."""
+
+    resolved_root = source_root.resolve()
+
+    def ignore(directory: str, names: list[str]) -> set[str]:
+        ignored = set(REPO_COPY_IGNORE(directory, names))
+        try:
+            relative = Path(directory).resolve().relative_to(resolved_root).as_posix()
+        except ValueError:
+            return ignored
+        if relative == _NATIVE_TARGET:
+            ignored.update(name for name in names if name != "release")
+        elif relative == f"{_NATIVE_TARGET}/release":
+            ignored.update(name for name in names if name != _NATIVE_BINARY_NAME)
+        return ignored
+
+    return ignore
+
 
 def _clone_tree(source: Path, destination: Path) -> None:
     try:
@@ -60,7 +94,7 @@ def seeded_charness_repo(tmp_path_factory: pytest.TempPathFactory) -> Path:
     from tests.seed_cache import get_or_build
 
     def build(staging: Path) -> None:
-        shutil.copytree(ROOT, staging / "repo", ignore=REPO_COPY_IGNORE, symlinks=True)
+        shutil.copytree(ROOT, staging / "repo", ignore=repo_copy_ignore_for(ROOT), symlinks=True)
 
     return get_or_build("charness-repo-seed", build) / "repo"
 
