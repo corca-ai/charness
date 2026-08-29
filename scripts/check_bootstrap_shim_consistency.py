@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import builtins
 from pathlib import Path
 
 try:
@@ -68,6 +69,75 @@ def drifted_copies(source: str, nodes: list[ast.FunctionDef]) -> list[ast.Functi
     ]
 
 
+def _shim_required_names() -> set[str]:
+    """Module-level names the canonical shim's body loads and does not bind itself.
+
+    DERIVED from `CANONICAL_SHIM`, never listed: the fixer has to guarantee
+    whatever the canonical block references *today*, and a hand-kept list goes
+    stale the moment someone takes this gate's own documented "edit CANONICAL_SHIM
+    first, then --fix to propagate" path.
+    """
+    function = ast.parse(CANONICAL_SHIM).body[0]
+    stored = {
+        node.id
+        for node in ast.walk(function)
+        if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store)
+    }
+    loaded = {
+        node.id
+        for node in ast.walk(function)
+        if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Load)
+    }
+    # `__file__` and friends are module globals the interpreter always provides;
+    # builtins need no import. What remains is what the module must supply.
+    return {
+        name
+        for name in loaded - stored
+        if not name.startswith("__") and not hasattr(builtins, name)
+    }
+
+
+def _module_level_names(source: str) -> set[str]:
+    """Names bound where a module-level `def` can see them.
+
+    Descends into module-level `try`/`if`/`with` because the conditional-import
+    idiom (`try: from scripts.x import y / except ModuleNotFoundError: from x
+    import y`) is this repo's normal shape. It deliberately does NOT descend into
+    a `def` or `class`: an import nested in another function is invisible to the
+    shim, which is the whole failure this predicate exists to catch.
+    """
+    names: set[str] = set()
+
+    def visit(body: list[ast.stmt]) -> None:
+        for node in body:
+            if isinstance(node, (ast.Import, ast.ImportFrom)):
+                for alias in node.names:
+                    names.add(alias.asname or alias.name.split(".")[0])
+            elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                names.add(node.name)
+            elif isinstance(node, ast.Assign):
+                names.update(t.id for t in node.targets if isinstance(t, ast.Name))
+            elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+                names.add(node.target.id)
+            elif isinstance(node, ast.Try):
+                visit(node.body)
+                for handler in node.handlers:
+                    visit(handler.body)
+                visit(node.orelse)
+                visit(node.finalbody)
+            elif isinstance(node, (ast.If, ast.With)):
+                visit(node.body)
+                visit(getattr(node, "orelse", []))
+
+    visit(ast.parse(source).body)
+    return names
+
+
+def missing_shim_dependencies(source: str) -> list[str]:
+    """Canonical-shim names `source` never binds, so the spliced block would crash."""
+    return sorted(_shim_required_names() - _module_level_names(source))
+
+
 def fix_file(path: Path, source: str, nodes: list[ast.FunctionDef]) -> bool:
     fixable = [node for node in drifted_copies(source, nodes) if node.col_offset == 0]
     if not fixable:
@@ -79,7 +149,16 @@ def fix_file(path: Path, source: str, nodes: list[ast.FunctionDef]) -> bool:
     for node in sorted(fixable, key=lambda n: n.lineno, reverse=True):
         end = node.end_lineno if node.end_lineno is not None else node.lineno
         lines[node.lineno - 1 : end] = CANONICAL_SHIM.split("\n")
-    path.write_text("\n".join(lines), encoding="utf-8")
+    fixed_source = "\n".join(lines)
+    # A drifted copy is often drifted BECAUSE it works around a missing import --
+    # `__import__("runpy").run_path(...)` in a module that never imports runpy.
+    # Splicing the canonical block over it produced a file that raised NameError on
+    # import, and the post-fix check saw a syntactically perfect canonical shim and
+    # called it fixed. Writing a broken file is strictly worse than declining, so
+    # this refuses and leaves the drift for a human to resolve.
+    if missing_shim_dependencies(fixed_source):
+        return False
+    path.write_text(fixed_source, encoding="utf-8")
     return True
 
 
@@ -95,6 +174,7 @@ def main() -> int:
     drifted: list[str] = []
     fixed: list[str] = []
     unfixable: list[str] = []
+    unfixable_reasons: dict[str, str] = {}
     for path, nodes in sorted(shim_files.items()):
         source = path.read_text(encoding="utf-8")
         rel = path.relative_to(repo_root).as_posix()
@@ -111,6 +191,15 @@ def main() -> int:
                 unfixable.append(rel)
                 if rel in fixed:
                     fixed.remove(rel)
+                # An `unfixable` path with no stated cause is a problem nobody can
+                # act on -- the same shape the empty-scope remedy below exists to
+                # avoid. The missing-import case is the one this gate can name.
+                if missing := missing_shim_dependencies(new_source):
+                    unfixable_reasons[rel] = (
+                        f"the canonical shim needs {', '.join(missing)} at module level, and "
+                        f"{rel} does not import {'them' if len(missing) > 1 else 'it'}; add the "
+                        "import, then re-run --fix"
+                    )
         else:
             drifted.append(rel)
 
@@ -125,6 +214,7 @@ def main() -> int:
         "drifted": drifted,
         "fixed": fixed,
         "unfixable": unfixable,
+        "unfixable_reasons": unfixable_reasons,
     }
     # Output is unconditionally YAML, so the remedies have to live in the payload.
     # Each of these existed only inside the human branches, and a non-ok status

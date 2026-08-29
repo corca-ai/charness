@@ -55,6 +55,7 @@ from __future__ import annotations
 
 import argparse
 import glob as globlib
+import runpy
 import subprocess
 import sys
 import tempfile
@@ -67,7 +68,7 @@ def _load_skill_runtime_bootstrap():
     bootstrap = next((ancestor / "skill_runtime_bootstrap.py" for ancestor in Path(__file__).resolve().parents if (ancestor / "skill_runtime_bootstrap.py").is_file()), None)
     if bootstrap is None:
         raise ImportError("skill_runtime_bootstrap.py not found")
-    return SimpleNamespace(**__import__("runpy").run_path(str(bootstrap)))
+    return SimpleNamespace(**runpy.run_path(str(bootstrap)))
 
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()

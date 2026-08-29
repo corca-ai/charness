@@ -17,7 +17,6 @@
     "0aff74e586453c01",
     "135a554f836f6a4a",
     "14dcc171602e8cc5",
-    "16dae8afa91ebfea",
     "22272c782774662a",
     "2ab340eddc888fbc",
     "2afa2f7e74cef060",
@@ -35,16 +34,17 @@
     "6a34e88fa8ab3d91",
     "6b9aa0ba40ec0667",
     "70eb62ded1eae63a",
+    "783e9c64272e4fde",
     "8dabe177e3532495",
     "8f4dcccce3e774b4",
     "9337a774dfde198e",
+    "976f01f79765f264",
+    "ae5a91735ed1dfd2",
     "af1449c8f8565019",
     "b01f54994c12d25d",
     "b11d217e862ac837",
     "b300d515f1f0ee1a",
     "b9fda138fdfd80c5",
-    "cae44bf1c9db4d14",
-    "cd452832e6f70615",
     "d11a41b4d1b636a0",
     "d45e00f2707dc717",
     "e47a116e9526f3c8",
@@ -112,8 +112,14 @@
     {
       "test_file": "tests/quality_gates/test_closeout_headroom_and_mirror_gate.py",
       "import_safe_targets": [
+        "scripts/check_code_lengths.py"
+      ]
+    },
+    {
+      "test_file": "tests/quality_gates/test_code_length_gates.py",
+      "import_safe_targets": [
         "scripts/check_code_lengths.py",
-        "scripts/check_staged_mirror_drift.py"
+        "scripts/check_python_runtime_inheritance.py"
       ]
     },
     {
@@ -224,13 +230,6 @@
       "test_file": "tests/quality_gates/test_python_filename_convention.py",
       "import_safe_targets": [
         "scripts/check_python_filenames.py"
-      ]
-    },
-    {
-      "test_file": "tests/quality_gates/test_code_length_gates.py",
-      "import_safe_targets": [
-        "scripts/check_code_lengths.py",
-        "scripts/check_python_runtime_inheritance.py"
       ]
     },
     {
@@ -380,5 +379,5 @@
       ]
     }
   ],
-  "writer_integrity_sha256": "68b60c72462448065ac1d7e666bb990b01ea203c64c168cfdcc3fdbb34f8b432"
+  "writer_integrity_sha256": "8b7d97fb45d537184d31a1ac720eefd3e9f7e48846c9a613e8e416abbb56b0d4"
 }

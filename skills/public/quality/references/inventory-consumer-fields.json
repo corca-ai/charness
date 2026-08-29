@@ -161,6 +161,16 @@
         "exempt_findings"
       ],
       "opt_out_reason": ""
+    },
+    "inventory_empty_scope_honesty.py": {
+      "non_headline_fields": [
+        "status",
+        "bucket",
+        "evidence",
+        "first_line",
+        "exit_code"
+      ],
+      "opt_out_reason": ""
     }
   }
 }

@@ -165,3 +165,83 @@ def test_normalized_setup_helper_still_bootstraps() -> None:
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     assert callable(module.main)
+
+
+# The header a module needs for the canonical shim, minus the `import runpy` that
+# `__import__("runpy")` was the workaround for. This is the real shape found in
+# `skills/public/quality/scripts/inventory_empty_scope_honesty.py`.
+HEADER_WITHOUT_RUNPY = "from pathlib import Path\nfrom types import SimpleNamespace\n\n\n"
+SHIM_WORKING_AROUND_MISSING_IMPORT = (
+    'def _load_skill_runtime_bootstrap():\n'
+    '    bootstrap = next((ancestor / "skill_runtime_bootstrap.py" for ancestor in Path(__file__).resolve().parents if (ancestor / "skill_runtime_bootstrap.py").is_file()), None)\n'
+    '    if bootstrap is None:\n'
+    '        raise ImportError("skill_runtime_bootstrap.py not found")\n'
+    '    return SimpleNamespace(**__import__("runpy").run_path(str(bootstrap)))\n'
+)
+
+
+def _seed_repo_missing_runpy(tmp_path: Path) -> Path:
+    repo = tmp_path / "repo"
+    scripts_dir = repo / "skills" / "public" / "demo" / "scripts"
+    scripts_dir.mkdir(parents=True)
+    (scripts_dir / "no_runpy_helper.py").write_text(
+        HEADER_WITHOUT_RUNPY + SHIM_WORKING_AROUND_MISSING_IMPORT, encoding="utf-8"
+    )
+    return repo
+
+
+def test_fix_refuses_a_file_whose_module_never_imports_runpy(tmp_path: Path) -> None:
+    """Splicing the canonical block here produced a file that raised NameError.
+
+    The post-fix check only re-parsed the shim, so a syntactically perfect
+    canonical block over a module missing `import runpy` was reported as `fixed`.
+    Following the gate's own printed remedy broke the file it was fixing.
+    """
+    repo = _seed_repo_missing_runpy(tmp_path)
+    target = repo / "skills/public/demo/scripts/no_runpy_helper.py"
+    before = target.read_text(encoding="utf-8")
+
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--fix")
+    assert result.returncode == 1
+    payload = yaml.safe_load(result.stdout)
+    assert payload["fixed"] == []
+    assert payload["unfixable"] == ["skills/public/demo/scripts/no_runpy_helper.py"]
+    # The file is left exactly as it was: declining beats writing a broken file.
+    assert target.read_text(encoding="utf-8") == before
+    # ...and the refusal names the missing import, or it is a verdict nobody can act on.
+    reason = payload["unfixable_reasons"]["skills/public/demo/scripts/no_runpy_helper.py"]
+    assert "runpy" in reason
+
+
+def test_required_names_are_derived_from_the_canonical_shim() -> None:
+    """A hand-kept list would go stale the moment CANONICAL_SHIM is edited."""
+    assert shim_gate._shim_required_names() == {"Path", "SimpleNamespace", "runpy"}
+
+
+def test_conditional_and_aliased_imports_count_as_bound(tmp_path: Path) -> None:
+    """The repo's real import shapes must not read as missing dependencies."""
+    source = textwrap.dedent(
+        """
+        from types import SimpleNamespace
+
+        try:
+            from scripts.helper import Path
+        except ModuleNotFoundError:
+            from helper import Path
+
+        import runpy as runpy
+        """
+    )
+    assert shim_gate.missing_shim_dependencies(source) == []
+
+    nested = textwrap.dedent(
+        """
+        from pathlib import Path
+        from types import SimpleNamespace
+
+        def _elsewhere():
+            import runpy
+        """
+    )
+    # An import inside another function is invisible to the module-level shim.
+    assert shim_gate.missing_shim_dependencies(nested) == ["runpy"]
