@@ -14,6 +14,21 @@ orchestrating session. The common operating contract stays in
 - The repo `bounded-reviewer` agent definition declares no model, so an
   omitted override silently inherits the parent model. Always pass the
   model field when spawning it.
+- **A spawned review that returned no report is an UNRUN review.** In-process
+  `bounded-reviewer` subagents have gone idle without delivering five times
+  across two sessions (2026-08-29 ×2; 2026-08-30 ×3, one of them WITH the
+  explicit `opus` override this section requires, so the override is not the
+  cause). The host reports the agent as `idle`/`available`, which reads like
+  completion; nothing distinguishes it from a review that ran and found
+  nothing. Treat an absent report exactly as `test_empty_scope_refusals.py`
+  treats an unestablished scope — it is not a pass, and integration must not
+  proceed as if the angle was covered.
+- Because of that, do not budget a bounded-reviewer spawn as the proof for a
+  design or deletion boundary. Either verify the angle in the parent with a
+  disconfirming probe against the real repository, or say plainly in the
+  session output that the review did not happen. This repo's own lesson holds
+  here: the defects that escaped lane tests were caught by running the
+  candidate against the real tree, not by a second opinion.
 - Implementation, deep review, and any independently writable work go
   through `charness task run` Codex lanes per
   [codex-host.md](./codex-host.md). The parent session owns design,

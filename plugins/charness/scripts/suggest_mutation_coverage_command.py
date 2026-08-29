@@ -56,13 +56,27 @@ def _reference_patterns(path: str) -> list[re.Pattern[str]]:
     escaped_module = re.escape(module)
     patterns = [
         re.compile(rf"['\"]{escaped_path}['\"]"),
-        re.compile(rf"\b{escaped_module}\b"),
         re.compile(
             r"\s*/\s*".join(
                 rf"['\"]{re.escape(segment)}['\"]" for segment in path.split("/")
             )
         ),
     ]
+    if path.endswith(".py"):
+        # The bare dotted-module pattern belongs ONLY to importable modules. For an
+        # extensionless root script there is no `import <name>` to find, so this
+        # pattern matches coincidences instead of references -- and for the script
+        # literally named `charness` the coincidence is the repository's own name.
+        # Measured: `['"]charness['"]` selects 85 of 529 test files; `\bcharness\b`
+        # selects 328. All 243 files in the difference were read, and NONE drives the
+        # root CLI -- they carry `corca-ai/charness` (a repo slug), `.charness/` (a
+        # config directory), or `charness-checkout`. That over-match is what made the
+        # "focused" changed-line lane select most of the suite and run for minutes.
+        #
+        # The over-matching-is-safe note below still holds where a referent exists;
+        # it stops holding when the pattern has no referent at all, because then the
+        # only thing it can add is noise.
+        patterns.append(re.compile(rf"\b{escaped_module}\b"))
     if parent and name:
         patterns.extend(
             [

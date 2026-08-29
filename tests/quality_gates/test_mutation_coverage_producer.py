@@ -314,3 +314,39 @@ def test_explicit_campaign_base_marker_mismatch_is_detectable(tmp_path: Path, mo
     stale = consumer._coverage_source_skip(consumer_args, repo, cov, base, "HEAD")
     assert stale is not None
     assert "coverage source is stale" in stale["reason"]
+
+
+def test_every_key_the_subprocess_env_sets_is_exported_to_the_child() -> None:
+    """The producer re-exports `_COVERAGE_ENV_KEYS` and ONLY those.
+
+    A key that `coverage_subprocess_env` assigns but the export list omits never
+    reaches the pytest subprocess, so that subprocess writes its coverage
+    somewhere `combine` does not look. `COVERAGE_FILE` was omitted exactly this
+    way: every file in `release-changed-line-coverage`'s output read 0.0% except
+    the one process `coverage run` wrapped directly, and a BLOCKING release gate
+    was rendering verdicts on coverage data containing no test-suite execution.
+
+    Asserted as containment over what the env owner actually assigns, not as the
+    current tuple's literal contents -- pinning the literal would restate today's
+    list and let the next added key fail the same silent way.
+    """
+    import os
+
+    from scripts import mutation_coverage_producer as prod
+    from scripts import mutation_sampling_lib as sampling
+
+    baseline = dict(os.environ)
+    produced = sampling.coverage_subprocess_env(
+        Path("/tmp/rcfile"), Path("/tmp/sitecustomize"), data_file=Path("/tmp/data")
+    )
+    assigned = {
+        key
+        for key, value in produced.items()
+        if baseline.get(key) != value
+    }
+
+    missing = sorted(assigned - set(prod._COVERAGE_ENV_KEYS))
+    assert not missing, (
+        f"coverage_subprocess_env assigns {missing} but _COVERAGE_ENV_KEYS does not "
+        "export them, so the pytest subprocess never receives them."
+    )

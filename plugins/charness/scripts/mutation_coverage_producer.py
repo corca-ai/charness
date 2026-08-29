@@ -23,7 +23,26 @@ from runtime_bootstrap import import_repo_module
 _sampling = import_repo_module(__file__, "scripts.mutation_sampling_lib")
 _changed_files = import_repo_module(__file__, "scripts.mutation_changed_files_lib")
 
-_COVERAGE_ENV_KEYS = ("COVERAGE_PROCESS_START", "COVERAGE_RCFILE", "PYTHONPATH")
+#: Every key `mutation_sampling_lib.coverage_subprocess_env` assigns must appear
+#: here, because `_with_coverage_env` re-exports these and ONLY these into the
+#: instrumented shell command. `COVERAGE_FILE` was missing, and its own owner
+#: states the consequence: an ambient value "sends its data to the parent file
+#: instead of this report's namespaced database, so the child disappears from the
+#: combined JSON" (mutation_sampling_lib.py:153-157). Measured before the repair:
+#: every file in `release-changed-line-coverage`'s output read 0.0% except
+#: `run_standing_pytest.py` (69.7%) -- the one process `coverage run` wrapped
+#: directly. Nothing executed inside pytest or its xdist workers was measured at
+#: all, so a BLOCKING release gate was rendering verdicts on coverage data that
+#: contained no test-suite execution. `scripts/native_gate_lib.py` read 0.0% here
+#: and 89.3% once this key was exported. `test_mutation_coverage_producer.py`
+#: pins the containment rather than this literal tuple, so a key added to the
+#: producer env cannot silently fail to reach the child again.
+_COVERAGE_ENV_KEYS = (
+    "COVERAGE_PROCESS_START",
+    "COVERAGE_RCFILE",
+    "PYTHONPATH",
+    "COVERAGE_FILE",
+)
 #: Re-export, NOT a second definition (SC18). The instrumentation policy is owned
 #: by `mutation_sampling_lib.classify_instrumentable_command` so this module and
 #: the changed-line gate cannot drift back into opposite answers. Only names this
