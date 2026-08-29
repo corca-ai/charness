@@ -24,17 +24,27 @@ from pathlib import Path
 
 
 def _git_bytes_optional(repo_root: Path, *args: str) -> bytes | None:
-    """None on any failure, INCLUDING a missing working directory.
+    """None for a git that ran and failed, or for a genuinely ABSENT working directory.
 
     `subprocess.run(cwd=...)` raises `FileNotFoundError` when the directory is
     gone, which a function named `_optional` must not do to its caller: a
     submodule deleted from disk while its gitlink stays in the index crashed
-    identity construction outright instead of falling through to the pre-image
-    that the removed-submodule support exists to bind.
+    identity construction instead of falling through to the pre-image the
+    removed-submodule support exists to bind.
+
+    But the catch is narrow on purpose. Swallowing every `OSError` would let a
+    `PermissionError` over a PRESENT submodule -- whose checked-out HEAD differs
+    from the index -- read as "no checkout to consult" and bind the stale index
+    value, and verification would repeat the same fallback and agree. A failure
+    silently converted into a passing verdict is the defect class this module
+    exists to close, so anything that is not an absent directory propagates.
     """
     try:
         result = subprocess.run(["git", *args], cwd=repo_root, check=False, capture_output=True)
-    except OSError:
+    except FileNotFoundError:
+        if repo_root.exists():
+            # The directory is there, so the missing thing is `git` itself.
+            raise
         return None
     return result.stdout if result.returncode == 0 else None
 

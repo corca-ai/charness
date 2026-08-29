@@ -1,0 +1,8 @@
+charness-artifacts/critique/review-20260830T082954Z-3258490-packet.json
+charness-artifacts/critique/review-20260830T082954Z-3258490-packet.md
+charness-artifacts/retro/2026-08-30-session-retro.md
+charness-artifacts/retro/lesson-selection-index.json
+charness-artifacts/retro/recent-lessons.md
+charness-artifacts/reviewed-paths-759.txt
+scripts/reviewed_input_nonblob.py
+tests/test_reviewed_input_identity_binding.py

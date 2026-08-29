@@ -889,3 +889,31 @@ def test_a_submodule_removed_from_disk_does_not_crash_identity_construction(
     entry = next(e for e in identity["reviewed_content"] if e["path"] == "sub")
     assert entry["content_sha256"] == hashlib.sha256(b"gitlink\0" + index_entry.encode()).hexdigest()
     assert verify_reviewed_input_identity(clone, identity) == (True, "current")
+
+
+def test_a_non_absence_oserror_is_not_treated_as_a_missing_checkout(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """The axis-varying control the absent-directory test did not supply.
+
+    A blanket `except OSError` let a `PermissionError` over a PRESENT submodule —
+    one whose checked-out HEAD differs from the index — read as "no checkout to
+    consult", bind the stale index value, and report `current`, with verification
+    repeating the same fallback and agreeing. A failure silently converted into a
+    passing verdict is the class this module exists to close.
+    """
+    from scripts import reviewed_input_nonblob as nonblob
+
+    repo = _submodule_repo(tmp_path)
+    real_run = subprocess.run
+
+    def deny_inside_submodule(*args, **kwargs):
+        cwd = str(kwargs.get("cwd", ""))
+        if cwd.endswith("sub"):
+            raise PermissionError(13, "permission denied")
+        return real_run(*args, **kwargs)
+
+    monkeypatch.setattr(nonblob.subprocess, "run", deny_inside_submodule)
+
+    with pytest.raises(PermissionError):
+        nonblob._gitlink_commit(repo, "sub", None)
