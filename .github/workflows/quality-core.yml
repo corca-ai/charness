@@ -75,6 +75,22 @@ jobs:
         # not on new upstream lint rules.
         run: pip install -r packaging/bootstrap-requirements.txt "ruff==0.15.10"
 
+      - name: Materialize the generated plugin export
+        # PROVISIONING, not a gate step -- the `local-gate-subset-mirror` marker
+        # above governs the quality steps below, and this adds no rule. It is the
+        # sibling of "Provision native repograph": both build an input the gates
+        # read rather than checking one.
+        #
+        # `plugins/` was untracked in 6e05e026e because it is derived and the
+        # producer regenerates it byte-identically. What that commit did not carry
+        # is that gates and tests READ the mirror, so a checkout without it is a
+        # different tree than any maintainer machine, where `charness init/update`
+        # has always materialized it. That divergence is what made main red for
+        # anyone who clones: measured on a fresh clone of 030aa8262, the standing
+        # suite is 94 failed / 16 errors without this step and clean with it, and
+        # `check_doc_links.py` fails on `docs/host-packaging.md` before pytest runs.
+        run: python3 scripts/sync_root_plugin_manifests.py --repo-root .
+
       - name: Lint (ruff)
         # Invokes the repo-owned entrypoint rather than retyping its path list, which is
         # what this workflow's `local-gate-subset-mirror` marker claims of every step.

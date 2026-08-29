@@ -82,12 +82,20 @@ The first contract keeps these repo directories host-neutral:
 That means the export script can materialize a host plugin layout without
 needing a second skill taxonomy or a second profile catalog.
 
-The repo also carries a checked-in generated plugin tree so the GitHub
-repository exposes one stable install surface:
+The repo also materializes a generated plugin tree on demand so hosts get one
+stable install path. That tree is NOT in git:
+[`scripts/sync_root_plugin_manifests.py`](../scripts/sync_root_plugin_manifests.py)
+writes it, `charness init` and `charness update` run that producer, and a bare
+clone has no `plugins/` at all until something does. Run the producer before the
+next two links resolve:
 
 - [`plugins/charness/.claude-plugin/plugin.json`](../plugins/charness/.claude-plugin/plugin.json) — Claude plugin identity: name, version, author, repository
 - [`plugins/charness/.codex-plugin/plugin.json`](../plugins/charness/.codex-plugin/plugin.json) — Codex plugin identity plus skills path and interface metadata
-- [`.claude-plugin/marketplace.json`](../.claude-plugin/marketplace.json) — Claude marketplace entry pointing at the checked-in plugin root
+
+The two marketplace files that point AT that tree are tracked, so they resolve
+in a bare clone:
+
+- [`.claude-plugin/marketplace.json`](../.claude-plugin/marketplace.json) — Claude marketplace entry pointing at the generated plugin root
 - [`.agents/plugins/marketplace.json`](../.agents/plugins/marketplace.json) — Codex repo marketplace with the local plugin source and install policy
 
 These files are generated from the shared packaging manifest and validated
@@ -151,8 +159,9 @@ read-only.
 
 ## Current Export Scope
 
-The export flow writes host layouts into an operator-chosen output root and the
-repo also keeps a generated checked-in install tree under `plugins/charness/`.
+The export flow writes host layouts into an operator-chosen output root, and the
+same producer materializes a generated (untracked) install tree under
+`plugins/charness/`.
 
 What it materializes today:
 
@@ -162,12 +171,12 @@ What it materializes today:
 - `profiles/`
 - `presets/`
 - `integrations/tools/`
-- both host plugin manifests inside one checked-in plugin root
+- both host plugin manifests inside one generated plugin root
 - Claude's typed bounded-reviewer envelope under plugin-native `agents/`
 - an optional Codex repo marketplace file
 
 Upstream-consumed support skills such as `agent-browser` and `specdown` are
-intentionally absent from the checked-in plugin tree. Install
+intentionally absent from the generated plugin tree. Install
 and update commands materialize those skill bodies into the machine-local
 installed plugin from `support_skill_source` metadata.
 
@@ -202,15 +211,15 @@ Guardrails:
 - it must not change shared bundle membership or other policy fields
 - the checked-in shared manifest remains the canonical default version
 
-## Checked-In Install Surface
+## Repo-Root Install Surface
 
-The checked-in install surface exists for a different reason than temporary
+The repo-root install surface exists for a different reason than temporary
 export trees.
 
 - temporary export trees prove that shared source artifacts can be materialized
   into a host layout under another root
-- the checked-in plugin tree gives hosts one stable install path with the
-  correct flat skill layout
+- the repo-root plugin tree gives hosts one stable install PATH with the correct
+  flat skill layout — the path is stable, the tree is regenerated, not stored
 
 This means the source repo taxonomy and the host-facing plugin taxonomy are now
 explicitly different on purpose.
@@ -236,9 +245,9 @@ Operationally this means:
 - Codex personal installs may point `~/.agents/plugins/marketplace.json` at
   `./.codex/plugins/charness` while keeping the marketplace file itself under
   `~/.agents`
-- Codex local development should load [`./plugins/charness`](../plugins/charness/) through the
-  checked-in repo marketplace file
-- checked-in marketplace files remain generated compatibility artifacts rather
+- Codex local development should load [`./plugins/charness`](../plugins/charness/)
+  through the tracked repo marketplace file, after the producer has written it
+- tracked marketplace files remain generated compatibility artifacts rather
   than the primary operator-facing install contract
 - public GitHub install remains a testable hypothesis, not an already-proven
   guarantee, until a pushed-repo experiment confirms it on both hosts

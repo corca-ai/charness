@@ -1,1 +1,1 @@
-2026-08-25-quality-review.md
+2026-08-29-plugins-mirror-absent-in-ci.md
