@@ -11,9 +11,11 @@ registry guard, and the missing middle tier — a repo that has run `npm install
 already has the binary in `node_modules/.bin/`, and asking npm to find a file
 already sitting in the tree pays the whole cost for none of the benefit.
 
-The fixture helpers are imported from `test_shell_gate_root_resolution` rather
-than copied. That module owns the charness-shaped git repo these gates need, and
-a second copy would be a fixture that drifts from the gate it fixtures.
+The charness-shaped git repo these gates need comes from `support`, not from a
+second copy that would drift from the gate it fixtures. It previously came from a
+private helper in `test_shell_gate_root_resolution`; a cross-module private import
+made the fixture's owner a sibling test file, so promoting the helper broke this
+module. `support` is the owner.
 """
 from __future__ import annotations
 
@@ -22,8 +24,7 @@ import os
 import re
 from pathlib import Path
 
-from .support import run_shell_script, write_executable
-from .test_shell_gate_root_resolution import _charness_shaped_repo
+from .support import charness_shaped_repo, run_shell_script, write_executable
 
 _ARGV_LOGGER = '#!/usr/bin/env bash\nprintf \'%s\\n\' "$@" > "$TEST_OUTPUT"\n'
 
@@ -62,7 +63,7 @@ def _path_without_markdownlint(bin_dir: Path) -> str:
 
 
 def _fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
-    repo, source, _mirror = _charness_shaped_repo(tmp_path, "check-markdown.sh")
+    repo, source, _mirror = charness_shaped_repo(tmp_path, "check-markdown.sh")
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir(exist_ok=True)
     return repo, source, bin_dir

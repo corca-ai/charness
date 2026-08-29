@@ -25,10 +25,14 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from .support import ROOT, run_shell_script, write_executable
-
-MIRROR_RELATIVE = Path("plugins") / "charness"
-GUARD_SCRIPT = "exported-copy-guard.sh"
+from .support import (
+    GUARD_SCRIPT,
+    MIRROR_RELATIVE,
+    ROOT,
+    charness_shaped_repo,
+    run_shell_script,
+    write_executable,
+)
 
 TRACKED_MARKDOWN_ARGV = [
     "ls-files",
@@ -40,45 +44,6 @@ TRACKED_MARKDOWN_ARGV = [
 ]
 
 
-def _install_script(repo: Path, script_name: str) -> tuple[Path, Path]:
-    """Place `script_name` at the repo root AND in the generated mirror, byte-identical.
-
-    `scripts/check_staged_mirror_drift.py` and `.githooks/pre-push` enforce that byte identity,
-    so the mirrored copy is never a different program: whatever the source copy does, right or
-    wrong, the mirror does too. Both copies are therefore under test here.
-    """
-
-    source = repo / "scripts" / script_name
-    mirror = repo / MIRROR_RELATIVE / "scripts" / script_name
-    source.parent.mkdir(parents=True, exist_ok=True)
-    mirror.parent.mkdir(parents=True, exist_ok=True)
-    if script_name in {"check-python-lint.sh", "run-quality.sh"}:
-        (repo / ".githooks").mkdir(exist_ok=True)
-        shutil.copy2(ROOT / ".githooks" / "runtime-env.sh", repo / ".githooks" / "runtime-env.sh")
-    # The guard travels with every gate that sources it, in BOTH copies. Shipping it to
-    # only one side would make these tests measure "the guard file is missing" instead of
-    # "the guard refused", which is a different green.
-    for name in (script_name, GUARD_SCRIPT):
-        shutil.copy2(ROOT / "scripts" / name, source.parent / name)
-        shutil.copy2(ROOT / "scripts" / name, mirror.parent / name)
-    return source, mirror
-
-
-def _charness_shaped_repo(tmp_path: Path, script_name: str) -> tuple[Path, Path, Path]:
-    """A git repo shaped like this one: root-level docs, plus a `plugins/charness` mirror."""
-
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    (repo / "AGENTS.md").write_text("# Agents\n", encoding="utf-8")
-    (repo / "README.md").write_text("# Readme\n", encoding="utf-8")
-    (repo / "docs").mkdir()
-    (repo / "docs" / "nested.md").write_text("# Nested\n", encoding="utf-8")
-    (repo / MIRROR_RELATIVE / "docs").mkdir(parents=True)
-    (repo / MIRROR_RELATIVE / "docs" / "mirrored.md").write_text("# Mirrored\n", encoding="utf-8")
-    source, mirror = _install_script(repo, script_name)
-    subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True, text=True)
-    return repo, source, mirror
 
 
 def _argv_logging_bin(tmp_path: Path, name: str) -> tuple[Path, Path]:
@@ -127,7 +92,7 @@ def test_repo_root_markdown_listing_contains_root_level_files() -> None:
 
 
 def test_check_markdown_lints_root_level_files_from_the_repo_root(tmp_path: Path) -> None:
-    repo, source, _mirror = _charness_shaped_repo(tmp_path, "check-markdown.sh")
+    repo, source, _mirror = charness_shaped_repo(tmp_path, "check-markdown.sh")
     bin_dir, log = _argv_logging_bin(tmp_path, "markdownlint-cli2")
 
     result = run_shell_script(source, cwd=repo, env=_env(bin_dir, log))
@@ -140,7 +105,7 @@ def test_check_markdown_lints_root_level_files_from_the_repo_root(tmp_path: Path
 
 
 def test_check_markdown_refuses_from_the_generated_mirror(tmp_path: Path) -> None:
-    repo, _source, mirror = _charness_shaped_repo(tmp_path, "check-markdown.sh")
+    repo, _source, mirror = charness_shaped_repo(tmp_path, "check-markdown.sh")
     bin_dir, log = _argv_logging_bin(tmp_path, "markdownlint-cli2")
 
     result = run_shell_script(mirror, cwd=repo, env=_env(bin_dir, log))
@@ -155,7 +120,7 @@ def test_check_markdown_refuses_from_the_generated_mirror(tmp_path: Path) -> Non
 
 
 def test_check_markdown_honors_charness_repo_root_from_the_mirror(tmp_path: Path) -> None:
-    repo, _source, mirror = _charness_shaped_repo(tmp_path, "check-markdown.sh")
+    repo, _source, mirror = charness_shaped_repo(tmp_path, "check-markdown.sh")
     bin_dir, log = _argv_logging_bin(tmp_path, "markdownlint-cli2")
 
     result = run_shell_script(mirror, cwd=repo, env=_env(bin_dir, log, CHARNESS_REPO_ROOT=str(repo)))
@@ -165,7 +130,7 @@ def test_check_markdown_honors_charness_repo_root_from_the_mirror(tmp_path: Path
 
 
 def _shell_gate_repo(tmp_path: Path) -> tuple[Path, Path, Path]:
-    repo, source, mirror = _charness_shaped_repo(tmp_path, "check-shell.sh")
+    repo, source, mirror = charness_shaped_repo(tmp_path, "check-shell.sh")
     (repo / "init.sh").write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
     (repo / "tests" / "fixtures").mkdir(parents=True)
     (repo / "tests" / "fixtures" / "fake-tool.sh").write_text(
@@ -229,7 +194,7 @@ def test_check_shell_fails_when_a_verified_root_discovers_nothing(tmp_path: Path
 
 
 def test_check_links_external_refuses_from_the_generated_mirror(tmp_path: Path) -> None:
-    repo, _source, mirror = _charness_shaped_repo(tmp_path, "check-links-external.sh")
+    repo, _source, mirror = charness_shaped_repo(tmp_path, "check-links-external.sh")
 
     result = run_shell_script(mirror, cwd=repo, env={**os.environ})
 
@@ -261,7 +226,7 @@ def test_install_git_hooks_refuses_from_the_mirror_without_touching_hookspath(tm
     therefore land before any mutation: no config write, and no `.githooks/` left behind.
     """
 
-    repo, _source, mirror = _charness_shaped_repo(tmp_path, "install-git-hooks.sh")
+    repo, _source, mirror = charness_shaped_repo(tmp_path, "install-git-hooks.sh")
     (repo / ".githooks").mkdir()
     (repo / ".githooks" / "pre-commit").write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
     subprocess.run(
@@ -285,7 +250,7 @@ def test_install_git_hooks_refuses_a_repo_root_argument_inside_a_repository(tmp_
     """The flag is not a way around the rule: `--repo-root <subdir>` is the same destructive
     write with an explicit argument, so both branches are validated, not just the default one."""
 
-    repo, source, _mirror = _charness_shaped_repo(tmp_path, "install-git-hooks.sh")
+    repo, source, _mirror = charness_shaped_repo(tmp_path, "install-git-hooks.sh")
     subdir = repo / "docs"
 
     result = run_shell_script(source, "--repo-root", str(subdir), cwd=repo, env={**os.environ})
@@ -380,7 +345,7 @@ def test_the_three_newly_guarded_gates_refuse_from_the_generated_mirror(tmp_path
     ):
         case_root = tmp_path / name
         case_root.mkdir()
-        repo, _source, mirror = _charness_shaped_repo(case_root, name)
+        repo, _source, mirror = charness_shaped_repo(case_root, name)
 
         result = run_shell_script(mirror, cwd=repo, env={**os.environ})
 
@@ -424,7 +389,7 @@ def test_the_repo_root_hatch_refuses_a_driver_only_on_DISAGREEMENT(tmp_path: Pat
     """
     (tmp_path / "driver").mkdir()
     (tmp_path / "agree").mkdir()
-    repo, source, mirror = _charness_shaped_repo(tmp_path / "driver", "run-quality.sh")
+    repo, source, mirror = charness_shaped_repo(tmp_path / "driver", "run-quality.sh")
 
     retargeted = run_shell_script(
         mirror, cwd=repo, env={**os.environ, "CHARNESS_REPO_ROOT": str(repo)}
@@ -433,7 +398,7 @@ def test_the_repo_root_hatch_refuses_a_driver_only_on_DISAGREEMENT(tmp_path: Pat
     assert "does not accept one" in retargeted.stderr
 
     # Same tree: not misuse, so the guard steps aside and the gate runs its own course.
-    agreeing, agree_source, _ = _charness_shaped_repo(tmp_path / "agree", "run-quality.sh")
+    agreeing, agree_source, _ = charness_shaped_repo(tmp_path / "agree", "run-quality.sh")
     proceeded = run_shell_script(
         agree_source, cwd=agreeing, env={**os.environ, "CHARNESS_REPO_ROOT": str(agreeing)}
     )
@@ -447,7 +412,7 @@ def test_an_absent_repo_root_hatch_refuses_by_name(tmp_path: Path) -> None:
     It is the one input path the operator typed by hand, and it was missing the
     refuse-by-name property the prelude exists to protect.
     """
-    repo, source, _mirror = _charness_shaped_repo(tmp_path, "check-markdown.sh")
+    repo, source, _mirror = charness_shaped_repo(tmp_path, "check-markdown.sh")
 
     result = run_shell_script(
         source, cwd=repo, env={**os.environ, "CHARNESS_REPO_ROOT": str(tmp_path / "nope")}
@@ -465,7 +430,7 @@ def test_an_asserted_root_is_compared_the_same_way_a_derived_one_is(tmp_path: Pa
     asserting the opposite. Agreement is the rule; it does not stop applying because a
     human typed the root instead of the script deriving it.
     """
-    repo, source, _mirror = _charness_shaped_repo(tmp_path, "check-markdown.sh")
+    repo, source, _mirror = charness_shaped_repo(tmp_path, "check-markdown.sh")
     bin_dir, log = _argv_logging_bin(tmp_path, "markdownlint-cli2")
 
     result = run_shell_script(

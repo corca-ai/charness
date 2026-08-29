@@ -5,15 +5,18 @@ import importlib.util
 import json
 import os
 import shutil
-import subprocess
 from pathlib import Path
 
-import pytest
 import yaml
 
-from tests.repo_copy import clone_seeded_charness_repo
-
-from .support import ROOT, init_git_repo, run_script, run_shell_script, write_executable
+from .support import (
+    ROOT,
+    charness_shaped_repo,
+    init_git_repo,
+    run_script,
+    run_shell_script,
+    write_executable,
+)
 
 PYTHON_LENGTHS = importlib.import_module("scripts.check_python_lengths")
 
@@ -72,88 +75,83 @@ def test_check_markdown_fails_when_git_listing_fails(tmp_path: Path) -> None:
     assert "No tracked markdown files to lint." not in result.stdout
 
 
-@pytest.mark.release_only
-def test_check_markdown_demotes_wrapped_inline_code_to_warn(
-    tmp_path: Path, seeded_charness_git_repo: Path
-) -> None:
-    # North-star P1: a wrapped inline-code span's rendered output is admittedly
-    # correct, so the commit boundary must WARN (exit 0), not block, on it.
-    repo = clone_seeded_charness_repo(tmp_path, seeded_charness_git_repo)
-    fixture = repo / "docs" / "_check_markdown_demotion_fixture.md"
-    fixture.write_text(
-        "# Fixture\n\nUse `demo evaluate test\n--repo-root .` for proof.\n", encoding="utf-8"
-    )
-    subprocess.run(
-        ["git", "add", "docs/_check_markdown_demotion_fixture.md"],
-        cwd=repo, check=True, capture_output=True, text=True,
+_STUB_ADVISORY_DETAIL = "docs/stub.md:3 stub inline-code advisory detail"
+
+
+def _markdown_gate_repo(tmp_path: Path, *, advisory: bool) -> tuple[Path, Path, Path]:
+    """A repo SHAPE for `check-markdown.sh`, not a copy of this checkout.
+
+    These three cases used to clone the whole repository. What they own is the gate's
+    COMPOSITION -- an advisory is non-blocking, markdownlint's exit code survives, and
+    the two are emitted advisory-then-blocking -- so both sub-tools are stubbed. The
+    inline-code detector's own message is owned by
+    `test_check_markdown_inline_code.py`, which already asserts "wraps across line";
+    re-asserting it here bought a duplicate at the price of a whole-repo clone.
+
+    `check-markdown.sh` decides WARN from the helper's EXIT CODE (non-zero -> advisory
+    banner + its output), so `advisory` is expressed exactly that way.
+    """
+
+    repo, source, _mirror = charness_shaped_repo(tmp_path, "check-markdown.sh")
+    body = f'import sys\nsys.stdout.write("{_STUB_ADVISORY_DETAIL}\\n")\nraise SystemExit(1)\n'
+    (source.parent / "check_markdown_inline_code.py").write_text(
+        body if advisory else "raise SystemExit(0)\n", encoding="utf-8"
     )
     bin_dir = repo / "bin"
     bin_dir.mkdir(exist_ok=True)
-    write_executable(bin_dir / "markdownlint-cli2", "#!/usr/bin/env bash\nexit 0\n")
-    env = {**os.environ, "PATH": f"{bin_dir}:{os.environ.get('PATH', '')}"}
+    return repo, source, bin_dir
 
-    result = run_shell_script(repo / "scripts" / "check-markdown.sh", cwd=repo, env=env)
+
+def _fake_markdownlint(bin_dir: Path, body: str) -> dict[str, str]:
+    write_executable(bin_dir / "markdownlint-cli2", body)
+    return {**os.environ, "PATH": f"{bin_dir}:{os.environ.get('PATH', '')}"}
+
+
+def test_check_markdown_demotes_wrapped_inline_code_to_warn(tmp_path: Path) -> None:
+    # North-star P1: a wrapped inline-code span's rendered output is admittedly
+    # correct, so the commit boundary must WARN (exit 0), not block, on it.
+    _repo, source, bin_dir = _markdown_gate_repo(tmp_path, advisory=True)
+    env = _fake_markdownlint(bin_dir, "#!/usr/bin/env bash\nexit 0\n")
+
+    result = run_shell_script(source, cwd=_repo, env=env)
 
     assert result.returncode == 0, result.stdout + result.stderr
     combined = result.stdout + result.stderr
     assert "WARN:" in combined
-    assert "wraps across line" in combined
-    assert "_check_markdown_demotion_fixture.md:3" in combined
+    assert _STUB_ADVISORY_DETAIL in combined
 
 
-@pytest.mark.release_only
-def test_check_markdown_keeps_markdownlint_failure_blocking(
-    tmp_path: Path, seeded_charness_git_repo: Path
-) -> None:
-    repo = clone_seeded_charness_repo(tmp_path, seeded_charness_git_repo)
-    bin_dir = repo / "bin"
-    bin_dir.mkdir(exist_ok=True)
-    write_executable(
-        bin_dir / "markdownlint-cli2",
+def test_check_markdown_keeps_markdownlint_failure_blocking(tmp_path: Path) -> None:
+    repo, source, bin_dir = _markdown_gate_repo(tmp_path, advisory=False)
+    env = _fake_markdownlint(
+        bin_dir,
         "#!/usr/bin/env bash\necho 'docs/bad.md:4:1 error MD999/test lint failure'\necho 'lint stderr detail' >&2\nexit 7\n",
     )
-    env = {**os.environ, "PATH": f"{bin_dir}:{os.environ.get('PATH', '')}"}
 
-    result = run_shell_script(repo / "scripts" / "check-markdown.sh", cwd=repo, env=env)
+    result = run_shell_script(source, cwd=repo, env=env)
 
     assert result.returncode == 7
     assert "docs/bad.md:4:1 error MD999/test lint failure" in result.stdout
     assert "lint stderr detail" in result.stderr
     assert "lint stderr detail" not in result.stdout
-    # This case deliberately does NOT assert `"WARN:" not in stdout+stderr`.
-    # The seeded repo is a clone of this one, so that assertion held only while
-    # every checked-in Markdown file happened to be advisory-clean: one wrapped
-    # inline code span in docs/index.md failed a test about whether
-    # markdownlint's exit code stays blocking, at release time, because this case
-    # is release_only. It also contradicted its own sibling below, which asserts a
-    # WARN advisory MAY precede a blocking lint failure -- so the blanket carried
-    # no invariant of its own, only a coupling to repo-wide doc cleanliness.
-    # Advisory-versus-blocking ordering is owned by that sibling.
+    # Restored with the fixture. This assertion was DELETED while the fixture was a
+    # clone of this checkout: it then meant "every checked-in Markdown file happens to
+    # be advisory-clean", and one wrapped inline code span in docs/index.md broke it.
+    # With the advisory sub-tool stubbed clean, it means what it always should have --
+    # a blocking lint failure is reported WITHOUT a spurious advisory -- which is this
+    # case's own invariant rather than a coupling to repo-wide doc cleanliness. The
+    # sibling below owns the ordering when an advisory genuinely is present.
+    assert "WARN:" not in result.stdout + result.stderr
 
 
-@pytest.mark.release_only
-def test_check_markdown_reports_advisory_before_blocking_lint_failure(
-    tmp_path: Path, seeded_charness_git_repo: Path
-) -> None:
-    repo = clone_seeded_charness_repo(tmp_path, seeded_charness_git_repo)
-    fixture = repo / "docs" / "_check_markdown_overlap_fixture.md"
-    fixture.write_text("# Fixture\n\nUse `demo evaluate test\n--repo-root .` for proof.\n", encoding="utf-8")
-    subprocess.run(
-        ["git", "add", "docs/_check_markdown_overlap_fixture.md"],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    bin_dir = repo / "bin"
-    bin_dir.mkdir(exist_ok=True)
-    write_executable(
-        bin_dir / "markdownlint-cli2",
+def test_check_markdown_reports_advisory_before_blocking_lint_failure(tmp_path: Path) -> None:
+    repo, source, bin_dir = _markdown_gate_repo(tmp_path, advisory=True)
+    env = _fake_markdownlint(
+        bin_dir,
         "#!/usr/bin/env bash\necho 'docs/bad.md:4:1 error MD999/test lint failure'\nexit 9\n",
     )
-    env = {**os.environ, "PATH": f"{bin_dir}:{os.environ.get('PATH', '')}"}
 
-    result = run_shell_script(repo / "scripts" / "check-markdown.sh", cwd=repo, env=env)
+    result = run_shell_script(source, cwd=repo, env=env)
 
     combined = result.stdout + result.stderr
     assert result.returncode == 9
