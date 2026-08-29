@@ -78,6 +78,7 @@ def append_score(
         raise FileNotFoundError(f"missing lesson ledger `{path.relative_to(repo_root)}`")
     with ledger_lock(path):
         payload = json.loads(path.read_text(encoding="utf-8"))
+        payload, _ = _ledger.migrate_ledger_payload(payload)
         replayed = replay_validated_ledger_payload(
             repo_root=repo_root,
             output_dir=output_dir,

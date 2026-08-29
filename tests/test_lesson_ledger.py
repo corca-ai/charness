@@ -3,6 +3,7 @@ from __future__ import annotations
 import contextlib
 import json
 import runpy
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -14,7 +15,7 @@ import yaml
 from scripts import lesson_ledger_lib as ledger
 from scripts import lesson_ledger_writer_lib as writer
 from scripts import record_lesson_score as scorer
-from tests.lesson_ledger_fixtures import blank_lesson, outcome_event
+from tests.lesson_ledger_fixtures import blank_lesson, legacy_v8_payload, outcome_event
 from tests.lesson_ledger_fixtures import materialize as _materialize
 from tests.script_loader import load_script_module
 
@@ -54,6 +55,8 @@ def _payload(
         "transitions": [
             {"sequence": 1, "transition_id": "seed-a", "lesson_id": "a", "source_retro": source}
         ],
+        "active_lesson_budget": ledger.ACTIVE_LESSON_BUDGET,
+        "lifecycle_events": [],
         "score_events": [] if score_events is None else score_events,
         "lessons": {"a": blank_lesson(source, "seed-a")},
     }
@@ -88,13 +91,48 @@ def test_ledger_replays_cited_scores_and_checker_cli(tmp_path: Path, monkeypatch
         "lesson_count": 1,
         "transition_count": 1,
         "score_event_count": 1,
+        "lifecycle_event_count": 0,
+        "active_lesson_count": 1,
         "path": "charness-artifacts/retro/lesson-ledger.json",
     }
     checker = load_script_module("check_lesson_ledger_for_test", ROOT / "scripts/check_lesson_ledger.py")
     monkeypatch.setattr(sys, "argv", ["check_lesson_ledger.py", "--repo-root", str(tmp_path)])
     assert checker.main() == 0
-    assert capsys.readouterr().out == "Validated lesson ledger: 1 lessons, 1 seed transitions.\n"
+    assert capsys.readouterr().out == (
+        "Validated lesson ledger: 1 lessons, 1 active, 1 seed transitions, 0 lifecycle events.\n"
+    )
     assert json.loads(path.read_text(encoding="utf-8"))["lessons"]["a"]["score_total"] == 1
+
+
+def test_v8_ledger_migration_preserves_the_live_lesson_corpus(tmp_path: Path) -> None:
+    source_dir = ROOT / "charness-artifacts/retro"
+    output_dir = tmp_path / "charness-artifacts/retro"
+    shutil.copytree(source_dir, output_dir)
+    path = output_dir / "lesson-ledger.json"
+    current = json.loads(path.read_text(encoding="utf-8"))
+    legacy = legacy_v8_payload(current)
+    path.write_text(json.dumps(legacy), encoding="utf-8")
+    before_transitions = legacy["transitions"]
+    before_scores = legacy["score_events"]
+
+    result = ledger.validate_lesson_ledger(
+        repo_root=tmp_path,
+        output_dir=output_dir,
+        summary_path=output_dir / "recent-lessons.md",
+    )
+    migrated = json.loads(path.read_text(encoding="utf-8"))
+
+    assert result["lesson_count"] == 43
+    assert len(migrated["lessons"]) == 43
+    assert migrated["schema_version"] == 9
+    assert migrated["transitions"] == before_transitions
+    assert migrated["score_events"] == before_scores
+    assert migrated["lifecycle_events"] == []
+    assert migrated["active_lesson_budget"] == ledger.ACTIVE_LESSON_BUDGET
+    assert all(
+        lesson["state"] == "active" and lesson["last_lifecycle_event_id"] is None
+        for lesson in migrated["lessons"].values()
+    )
 
 
 def test_ledger_rejects_invalid_transition_score_and_projection_shapes(tmp_path: Path) -> None:

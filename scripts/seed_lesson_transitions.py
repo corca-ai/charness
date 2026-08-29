@@ -145,7 +145,7 @@ def plan_seeds(
         if transition_id in existing_ids:
             _fail(
                 f"transition_id `{transition_id}` is already used by a different lesson; "
-                "transition ids are unique forever"
+                "transition ids are unique forever and archiving does not release one"
             )
         existing_ids.add(transition_id)
         sequence += 1
@@ -182,6 +182,7 @@ def seed_transitions(
         )
     with _writer.ledger_lock(path):
         payload = json.loads(path.read_text(encoding="utf-8"))
+        payload, _ = _ledger.migrate_ledger_payload(payload)
         # Validate the CURRENT ledger before planning against it: planning over a
         # ledger that is already invalid would append onto a state no later run can
         # replay, and the refusal would then name this command's transition rather
@@ -200,10 +201,20 @@ def seed_transitions(
             payload=payload,
             lesson_ids=lesson_ids,
         )
+        active = sum(lesson["state"] == "active" for lesson in replayed.values())
+        # Pre-checked so an over-budget request names the arithmetic. The validator
+        # refuses this too; it just cannot say how many the caller asked for.
+        if active + len(plan) > _ledger.ACTIVE_LESSON_BUDGET:
+            _fail(
+                f"seeding {len(plan)} would put {active + len(plan)} lessons active, past the fixed "
+                f"budget of {_ledger.ACTIVE_LESSON_BUDGET}; archive lessons with "
+                "`record_lesson_lifecycle.py` or seed a subset with `--lesson-id`"
+            )
         receipt = {
             "seeded": [dict(transition) for transition in plan],
             "seeded_count": len(plan),
             "already_seeded_count": len(replayed),
+            "active_lesson_count": active + len(plan),
             "dry_run": dry_run,
             "path": str(path.relative_to(repo_root)),
         }
@@ -253,6 +264,8 @@ def _replayable_lessons(
             # the outcome vocabulary changes, and the validator already reads
             # the same constructor for its key check.
             "outcome_counts": _outcome.outcome_counts([]),
+            "state": "active",
+            "last_lifecycle_event_id": None,
         }
     return lessons
 
@@ -285,11 +298,15 @@ def main() -> int:
     # gating the warning on the write made it arrive only after the bytes it was
     # warning about had landed.
     #
-    # The tag instruction is the only next step a repo with no unseeded classes can
-    # act on, so it stays in the command receipt rather than in a second artifact.
+    # `active_lesson_budget` and `recurrence_tag_instruction` used to exist only
+    # inside the prose renderer. The budget is the DENOMINATOR for
+    # `active_lesson_count` -- a count without it says nothing -- and the tag
+    # instruction is the only next step a repo with no unseeded classes can act on,
+    # so both are folded into the payload rather than deleted with the renderer.
     payload = {
         **receipt,
         "freeze_note": FREEZE_NOTE,
+        "active_lesson_budget": _ledger.ACTIVE_LESSON_BUDGET,
     }
     if not receipt["seeded"]:
         payload["recurrence_tag_instruction"] = f"{_ledger.RECURRENCE_TAG_INSTRUCTION}."

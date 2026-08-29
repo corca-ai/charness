@@ -25,7 +25,7 @@ def _build(seed: str = "stable-preview-seed") -> dict:
     )
 
 
-def test_preview_is_flat_seeded_and_uses_only_pure_ranking_buckets() -> None:
+def test_preview_is_flat_seeded_and_fills_the_empty_archive_slot_from_uncertainty() -> None:
     first = _build()
     second = _build()
     assert first == second
@@ -42,7 +42,9 @@ def test_preview_is_flat_seeded_and_uses_only_pure_ranking_buckets() -> None:
     assert first["bucket_counts"] == {
         "recent": 3,
         "value": 3,
-        "uncertainty": 4,
+        "uncertainty": 3,
+        "archive": 0,
+        "archive_fallback_uncertainty": 1,
     }
     assert len(first["items"]) == 10
     assert len({item["lesson_id"] for item in first["items"]}) == 10
@@ -57,11 +59,12 @@ def test_preview_uses_the_pinned_shrunk_mean_and_ucb_formula() -> None:
     assert preview._uncertainty(row, 2) == pytest.approx(1 + math.sqrt(math.log(2) / 2))
 
 
-def test_preview_uses_all_seeded_lessons_without_lifecycle_state(monkeypatch) -> None:
+def test_preview_uses_only_active_first_nine_and_real_archive_slot(monkeypatch) -> None:
     lessons = {
         f"lesson-{index}": {
             "score_total": index,
             "score_count": 1,
+            "state": "archived" if index == 9 else "active",
         }
         for index in range(10)
     }
@@ -90,7 +93,13 @@ def test_preview_uses_all_seeded_lessons_without_lifecycle_state(monkeypatch) ->
         seed="archive-proof",
     )
 
-    assert result["bucket_counts"] == {"recent": 3, "value": 3, "uncertainty": 4}
+    assert result["bucket_counts"] == {
+        "recent": 3,
+        "value": 3,
+        "uncertainty": 3,
+        "archive": 1,
+        "archive_fallback_uncertainty": 0,
+    }
     ids = {item["lesson_id"] for item in result["items"]}
     assert ids == set(lessons)
 

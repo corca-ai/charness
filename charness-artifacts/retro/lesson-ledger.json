@@ -1,6 +1,6 @@
 {
   "kind": "charness.lesson-ledger",
-  "schema_version": 8,
+  "schema_version": 9,
   "transitions": [
     {
       "sequence": 1,
@@ -1142,7 +1142,9 @@
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 4,
         "legacy-scalar": 1
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "premise-not-checked-against-source": {
       "source_retro": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
@@ -1155,7 +1157,9 @@
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 2,
         "legacy-scalar": 4
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "release-proof-identity-churn": {
       "source_retro": "charness-artifacts/retro/2026-08-07-session-retro.md",
@@ -1168,7 +1172,9 @@
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
         "legacy-scalar": 0
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "runtime-budget-contention": {
       "source_retro": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
@@ -1181,7 +1187,9 @@
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
         "legacy-scalar": 0
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "stale-current-pointer-at-closeout": {
       "source_retro": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
@@ -1194,7 +1202,9 @@
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
         "legacy-scalar": 0
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "removal-consumer-grep-incomplete": {
       "source_retro": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
@@ -1207,7 +1217,9 @@
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
         "legacy-scalar": 0
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "graduation-is-proposal": {
       "source_retro": "charness-artifacts/retro/2026-08-12-session-retro.md",
@@ -1220,7 +1232,9 @@
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
         "legacy-scalar": 0
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "durable-lesson-ledger-first": {
       "source_retro": "charness-artifacts/retro/2026-08-12-session-retro.md",
@@ -1233,7 +1247,9 @@
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 1,
         "legacy-scalar": 2
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "goal-closeout-evidence-binding": {
       "source_retro": "charness-artifacts/retro/2026-08-08-decide-where-a-recurring-lesson-lives-retro.md",
@@ -1246,7 +1262,9 @@
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
         "legacy-scalar": 1
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "closeout-diagnostic-visibility": {
       "source_retro": "charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md",
@@ -1259,7 +1277,9 @@
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
         "legacy-scalar": 1
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "closeout-authoring-rework": {
       "source_retro": "charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md",
@@ -1272,7 +1292,9 @@
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 2,
         "legacy-scalar": 0
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "mutation-producer-selection": {
       "source_retro": "charness-artifacts/retro/2026-08-06-session-retro.md",
@@ -1285,7 +1307,9 @@
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
         "legacy-scalar": 0
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "proof-surface-review-binding": {
       "source_retro": "charness-artifacts/retro/2026-08-06-session-retro.md",
@@ -1298,7 +1322,9 @@
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
         "legacy-scalar": 3
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "rule-exists-but-does-not-bind": {
       "source_retro": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
@@ -1311,7 +1337,9 @@
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
         "legacy-scalar": 0
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "counted-limit-retry-loop": {
       "source_retro": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
@@ -1324,7 +1352,9 @@
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 1,
         "legacy-scalar": 0
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "structured-edit-by-line-pattern": {
       "source_retro": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
@@ -1337,7 +1367,9 @@
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
         "legacy-scalar": 0
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "agent-authored-score-role": {
       "source_retro": "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md",
@@ -1350,7 +1382,9 @@
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
         "legacy-scalar": 0
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "artifact-contract-late-feedback": {
       "source_retro": "charness-artifacts/retro/2026-08-14-monitored-execution-retro.md",
@@ -1363,7 +1397,9 @@
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 1,
         "legacy-scalar": 0
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "cause-named-from-one-observation": {
       "source_retro": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
@@ -1376,7 +1412,9 @@
         "pushed-a-wrong-action": 1,
         "read-but-not-applied": 0,
         "legacy-scalar": 0
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "changed-line-proof-before-broad-quality": {
       "source_retro": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
@@ -1389,7 +1427,9 @@
         "pushed-a-wrong-action": 1,
         "read-but-not-applied": 4,
         "legacy-scalar": 0
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "conservative-static-verdicts": {
       "source_retro": "charness-artifacts/retro/2026-08-14-session-retro.md",
@@ -1402,7 +1442,9 @@
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
         "legacy-scalar": 0
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "evidence-channel-identity": {
       "source_retro": "charness-artifacts/retro/2026-08-13-session-retro.md",
@@ -1415,7 +1457,9 @@
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 1,
         "legacy-scalar": 0
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "green-test-is-not-covered-line": {
       "source_retro": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
@@ -1428,7 +1472,9 @@
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
         "legacy-scalar": 0
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "harness-differential-not-test": {
       "source_retro": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
@@ -1441,7 +1487,9 @@
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
         "legacy-scalar": 0
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "line-anchored-ledger-fields": {
       "source_retro": "charness-artifacts/retro/2026-08-13-proof-surface-repair-retro.md",
@@ -1454,7 +1502,9 @@
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
         "legacy-scalar": 0
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "premises-not-debt": {
       "source_retro": "charness-artifacts/retro/2026-08-13-session-retro.md",
@@ -1467,7 +1517,9 @@
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
         "legacy-scalar": 0
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "proof-surface-message-drift": {
       "source_retro": "charness-artifacts/retro/2026-08-14-monitored-execution-retro.md",
@@ -1480,7 +1532,9 @@
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
         "legacy-scalar": 0
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "release-candidate-preflight-order": {
       "source_retro": "charness-artifacts/retro/2026-08-12-session-retro.md",
@@ -1493,7 +1547,9 @@
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
         "legacy-scalar": 0
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "skipped-is-not-passed": {
       "source_retro": "charness-artifacts/retro/2026-08-13-proof-surface-repair-retro.md",
@@ -1506,7 +1562,9 @@
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
         "legacy-scalar": 0
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "unbounded-cache": {
       "source_retro": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
@@ -1519,7 +1577,9 @@
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
         "legacy-scalar": 0
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "unchecked-redundant-flag": {
       "source_retro": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
@@ -1532,7 +1592,9 @@
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
         "legacy-scalar": 0
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "bar-recorded-as-prose": {
       "source_retro": "charness-artifacts/retro/2026-08-14-lesson-loop-625-627-626.md",
@@ -1545,7 +1607,9 @@
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 4,
         "legacy-scalar": 0
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "coverage-claim-exceeds-the-pin": {
       "source_retro": "charness-artifacts/retro/2026-08-14-lesson-loop-625-627-626.md",
@@ -1558,7 +1622,9 @@
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 1,
         "legacy-scalar": 0
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "detector-blind-class-unstated": {
       "source_retro": "charness-artifacts/retro/2026-08-16-session-retro.md",
@@ -1571,7 +1637,9 @@
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 4,
         "legacy-scalar": 0
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "isolated-agent-base-mismatch": {
       "source_retro": "charness-artifacts/retro/2026-08-14-closeout-618-628-release-prep.md",
@@ -1584,7 +1652,9 @@
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
         "legacy-scalar": 0
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "positive-effect-cannot-be-cited": {
       "source_retro": "charness-artifacts/retro/2026-08-14-closeout-618-628-release-prep.md",
@@ -1597,7 +1667,9 @@
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
         "legacy-scalar": 0
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "superseded-line-stays-quotable": {
       "source_retro": "charness-artifacts/retro/2026-08-14-closeout-618-628-release-prep.md",
@@ -1610,7 +1682,9 @@
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
         "legacy-scalar": 0
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "tagged-lesson-never-seeded": {
       "source_retro": "charness-artifacts/retro/2026-08-16-session-retro.md",
@@ -1623,7 +1697,9 @@
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
         "legacy-scalar": 0
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "executed-vs-read-field": {
       "source_retro": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
@@ -1636,7 +1712,9 @@
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 1,
         "legacy-scalar": 0
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "global-probe-for-local-fact": {
       "source_retro": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
@@ -1649,7 +1727,9 @@
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
         "legacy-scalar": 0
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "one-engine-per-pattern": {
       "source_retro": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
@@ -1662,7 +1742,9 @@
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
         "legacy-scalar": 0
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "keyword-in-prose-is-a-directive": {
       "source_retro": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
@@ -1675,7 +1757,9 @@
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
         "legacy-scalar": 0
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     },
     "prose-claim-without-a-reader": {
       "source_retro": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
@@ -1688,7 +1772,11 @@
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
         "legacy-scalar": 0
-      }
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     }
-  }
+  },
+  "active_lesson_budget": 50,
+  "lifecycle_events": []
 }

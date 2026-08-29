@@ -63,6 +63,8 @@ def empty_ledger_payload() -> dict[str, Any]:
         "kind": _ledger.KIND,
         "schema_version": _ledger.SCHEMA_VERSION,
         "transitions": [],
+        "active_lesson_budget": _ledger.ACTIVE_LESSON_BUDGET,
+        "lifecycle_events": [],
         "score_events": [],
         "lessons": {},
     }

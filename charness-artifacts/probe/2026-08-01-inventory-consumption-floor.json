@@ -1,1756 +1,1765 @@
 {
- "corpus": "charness-artifacts/quality",
- "artifacts": 155,
- "floor": 5,
- "label_value_residuals": {
-  "count": 419,
-  "min": 7,
-  "median": 46,
-  "below_floor": 0
- },
- "exemption_counts": {
-  "not-claimed": 155,
-  "corroborated": 0,
-  "not-corroborated": 0,
-  "REFUSED-uncorroborated": 0
- },
- "citations_lowered_below_requirement": [],
- "field_mention_residuals": {
-  "count": 205,
-  "min": 0,
-  "p5": 5,
-  "median": 30
- },
- "rows": [
-  {
-   "path": "charness-artifacts/quality/2026-06-02-public-skill-anchor-and-worktree-adapter-review.md",
-   "declared_date": "2026-06-02",
-   "last_commit_date": "2026-06-02",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
+  "corpus": "charness-artifacts/quality",
+  "artifacts": 156,
+  "floor": 5,
+  "label_value_residuals": {
+    "count": 419,
+    "min": 7,
+    "median": 46,
+    "below_floor": 0
   },
-  {
-   "path": "charness-artifacts/quality/2026-06-02-workflow-review-sibling-pattern-audit.md",
-   "declared_date": "2026-06-02",
-   "last_commit_date": "2026-06-02",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {
-    "inventory_public_spec_quality.py": {
-     "required": 2,
-     "engaged_presence_only": 1,
-     "engaged_with_a_value": 1,
-     "lost_to_the_floor": []
+  "exemption_counts": {
+    "not-claimed": 156,
+    "corroborated": 0,
+    "not-corroborated": 0,
+    "REFUSED-uncorroborated": 0
+  },
+  "citations_lowered_below_requirement": [],
+  "field_mention_residuals": {
+    "count": 217,
+    "min": 0,
+    "p5": 5,
+    "median": 34
+  },
+  "rows": [
+    {
+      "path": "charness-artifacts/quality/2026-06-02-public-skill-anchor-and-worktree-adapter-review.md",
+      "declared_date": "2026-06-02",
+      "last_commit_date": "2026-06-02",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
     },
-    "inventory_skill_ergonomics.py": {
-     "required": 2,
-     "engaged_presence_only": 0,
-     "engaged_with_a_value": 0,
-     "lost_to_the_floor": []
-    }
-   }
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-06-nose-clone-interpretation.md",
-   "declared_date": "2026-06-06",
-   "last_commit_date": "2026-06-06",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-07-324-source-preservation-gap.md",
-   "declared_date": null,
-   "last_commit_date": "2026-06-07",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-19-390-code-layer-quality-pass.md",
-   "declared_date": null,
-   "last_commit_date": "2026-06-19",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-21-quality-reference-disposition-proposal.md",
-   "declared_date": null,
-   "last_commit_date": "2026-06-22",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-21-skill-structure-raskin-audit.md",
-   "declared_date": null,
-   "last_commit_date": "2026-06-21",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-23-gate-health-cost-review.md",
-   "declared_date": null,
-   "last_commit_date": "2026-06-23",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-25-nested-cli-release-only-yaml-quality-review.md",
-   "declared_date": "2026-06-25",
-   "last_commit_date": "2026-06-25",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {
-    "inventory_standing_test_economics.py": {
-     "required": 2,
-     "engaged_presence_only": 5,
-     "engaged_with_a_value": 3,
-     "lost_to_the_floor": [
-      "nested_cli_standing_or_mixed_file_count",
-      "runner_snippets"
-     ]
-    }
-   }
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-25-skill-ergonomics-yaml-summary-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {
-    "inventory_nose_clones.py": {
-     "required": 2,
-     "engaged_presence_only": 3,
-     "engaged_with_a_value": 3,
-     "lost_to_the_floor": []
-    }
-   }
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-25-spec-impl-skill-quality-review.md",
-   "declared_date": "2026-06-25",
-   "last_commit_date": "2026-06-25",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {
-    "inventory_skill_ergonomics.py": {
-     "required": 2,
-     "engaged_presence_only": 4,
-     "engaged_with_a_value": 4,
-     "lost_to_the_floor": []
-    }
-   }
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-25-test-economics-summary-quality-review.md",
-   "declared_date": "2026-06-25",
-   "last_commit_date": "2026-06-25",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {
-    "inventory_standing_test_economics.py": {
-     "required": 2,
-     "engaged_presence_only": 4,
-     "engaged_with_a_value": 4,
-     "lost_to_the_floor": []
-    }
-   }
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-25-test-speed-token-efficiency-quality-review.md",
-   "declared_date": "2026-06-25",
-   "last_commit_date": "2026-06-25",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {
-    "inventory_nose_clones.py": {
-     "required": 2,
-     "engaged_presence_only": 1,
-     "engaged_with_a_value": 1,
-     "lost_to_the_floor": []
+    {
+      "path": "charness-artifacts/quality/2026-06-02-workflow-review-sibling-pattern-audit.md",
+      "declared_date": "2026-06-02",
+      "last_commit_date": "2026-06-02",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {
+        "inventory_public_spec_quality.py": {
+          "required": 2,
+          "engaged_presence_only": 1,
+          "engaged_with_a_value": 1,
+          "lost_to_the_floor": []
+        },
+        "inventory_skill_ergonomics.py": {
+          "required": 2,
+          "engaged_presence_only": 0,
+          "engaged_with_a_value": 0,
+          "lost_to_the_floor": []
+        }
+      }
     },
-    "inventory_skill_ergonomics.py": {
-     "required": 2,
-     "engaged_presence_only": 2,
-     "engaged_with_a_value": 2,
-     "lost_to_the_floor": []
-    }
-   }
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-artifact-path-payload-runtime-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-behavior-recommendation-runtime-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-bootstrap-visibility-runtime-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-boundary-bypass-test-speed-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {
-    "inventory_standing_test_economics.py": {
-     "required": 2,
-     "engaged_presence_only": 2,
-     "engaged_with_a_value": 2,
-     "lost_to_the_floor": []
-    }
-   }
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-boundary-inventory-cache-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-cli-skill-surface-runtime-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-command-docs-parallel-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-create-skill-adapter-runtime-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-current-pointer-scanner-runtime-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-debug-scaffold-runtime-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-debug-seam-index-runtime-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-dependencies-seed-runtime-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-doc-links-runtime-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-five-pass-boundary-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {
-    "inventory_doc_duplicates.py": {
-     "required": 2,
-     "engaged_presence_only": 4,
-     "engaged_with_a_value": 4,
-     "lost_to_the_floor": []
+    {
+      "path": "charness-artifacts/quality/2026-06-06-nose-clone-interpretation.md",
+      "declared_date": "2026-06-06",
+      "last_commit_date": "2026-06-06",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
     },
-    "inventory_nose_clones.py": {
-     "required": 2,
-     "engaged_presence_only": 2,
-     "engaged_with_a_value": 2,
-     "lost_to_the_floor": []
+    {
+      "path": "charness-artifacts/quality/2026-06-07-324-source-preservation-gap.md",
+      "declared_date": null,
+      "last_commit_date": "2026-06-07",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
     },
-    "inventory_standing_test_economics.py": {
-     "required": 2,
-     "engaged_presence_only": 3,
-     "engaged_with_a_value": 3,
-     "lost_to_the_floor": []
-    }
-   }
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-gather-slack-boundary-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {
-    "inventory_standing_test_economics.py": {
-     "required": 2,
-     "engaged_presence_only": 3,
-     "engaged_with_a_value": 3,
-     "lost_to_the_floor": []
-    }
-   }
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-goal-head-freshness-runtime-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-goal-pursue-ready-runtime-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-hitl-report-runtime-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-issue-57-renderer-runtime-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-markdown-preview-backend-check-runtime-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-markdown-preview-bootstrap-runtime-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-markdown-preview-support-runtime-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-narrative-scenario-runtime-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-output-schema-test-speed-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {
-    "inventory_standing_test_economics.py": {
-     "required": 2,
-     "engaged_presence_only": 3,
-     "engaged_with_a_value": 3,
-     "lost_to_the_floor": []
-    }
-   }
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-parallel-helper-dup-ratchet-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-profile-preset-validator-runtime-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-proof-artifact-durability-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-public-doc-coupling-runtime-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-public-skill-dogfood-resolver-speed-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-public-skill-dogfood-runtime-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-public-skill-validation-boundary-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {
-    "inventory_standing_test_economics.py": {
-     "required": 2,
-     "engaged_presence_only": 3,
-     "engaged_with_a_value": 3,
-     "lost_to_the_floor": []
-    }
-   }
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-quality-bootstrap-resolve-runtime-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-quality-closeout-contract-runtime-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-record-metric-window-runtime-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-repo-copy-invariant-runtime-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-retro-handoff-boundary-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {
-    "inventory_skill_ergonomics.py": {
-     "required": 2,
-     "engaged_presence_only": 0,
-     "engaged_with_a_value": 0,
-     "lost_to_the_floor": []
-    }
-   }
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-retro-host-log-probe-runtime-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-setup-routing-runtime-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-setup-skill-routing-runtime-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-skill-ergonomics-gate-runtime-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-skill-ownership-runtime-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-skill-surface-preflight-parallel-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-standing-doc-provenance-runtime-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-surface-validation-runtime-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-tool-recommendation-runtime-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-ubiquitous-language-runtime-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-usage-episode-validator-runtime-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-26-usage-episodes-seed-runtime-quality-review.md",
-   "declared_date": "2026-06-26",
-   "last_commit_date": "2026-06-26",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-27-create-cli-capability-move-pilot.md",
-   "declared_date": "2026-06-27",
-   "last_commit_date": "2026-06-27",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {
-    "inventory_skill_ergonomics.py": {
-     "required": 2,
-     "engaged_presence_only": 0,
-     "engaged_with_a_value": 0,
-     "lost_to_the_floor": []
-    }
-   }
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-27-public-skill-capability-rollout.md",
-   "declared_date": "2026-06-27",
-   "last_commit_date": "2026-06-27",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {
-    "inventory_skill_ergonomics.py": {
-     "required": 2,
-     "engaged_presence_only": 1,
-     "engaged_with_a_value": 1,
-     "lost_to_the_floor": []
-    }
-   }
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-27-round-four-quality-speed-token-review.md",
-   "declared_date": "2026-06-27",
-   "last_commit_date": "2026-06-27",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {
-    "inventory_standing_test_economics.py": {
-     "required": 2,
-     "engaged_presence_only": 3,
-     "engaged_with_a_value": 3,
-     "lost_to_the_floor": []
-    }
-   }
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-28-round-five-quality-speed-token-review.md",
-   "declared_date": "2026-06-28",
-   "last_commit_date": "2026-06-28",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {
-    "inventory_skill_ergonomics.py": {
-     "required": 2,
-     "engaged_presence_only": 5,
-     "engaged_with_a_value": 5,
-     "lost_to_the_floor": []
+    {
+      "path": "charness-artifacts/quality/2026-06-19-390-code-layer-quality-pass.md",
+      "declared_date": null,
+      "last_commit_date": "2026-06-19",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
     },
-    "inventory_standing_test_economics.py": {
-     "required": 2,
-     "engaged_presence_only": 3,
-     "engaged_with_a_value": 3,
-     "lost_to_the_floor": []
-    }
-   }
-  },
-  {
-   "path": "charness-artifacts/quality/2026-06-30-dup-portability-falsification-audit.md",
-   "declared_date": "2026-06-30",
-   "last_commit_date": "2026-06-30",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-07-03-release-0-59-0-quality-review.md",
-   "declared_date": "2026-07-03",
-   "last_commit_date": "2026-07-04",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-07-08-test-debt-rotation-delta-sweep.md",
-   "declared_date": null,
-   "last_commit_date": "2026-07-09",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-07-09-ab-schema-test-economics-followup.md",
-   "declared_date": "2026-07-09",
-   "last_commit_date": "2026-07-09",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-07-09-autonomous-quality-repair.md",
-   "declared_date": "2026-07-09",
-   "last_commit_date": "2026-07-09",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-07-09-debug-planner-help-quality.md",
-   "declared_date": "2026-07-09",
-   "last_commit_date": "2026-07-09",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {
-    "inventory_skill_ergonomics.py": {
-     "required": 2,
-     "engaged_presence_only": 4,
-     "engaged_with_a_value": 4,
-     "lost_to_the_floor": []
-    }
-   }
-  },
-  {
-   "path": "charness-artifacts/quality/2026-07-09-markdown-preview-help-quality.md",
-   "declared_date": "2026-07-09",
-   "last_commit_date": "2026-07-09",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {
-    "inventory_skill_ergonomics.py": {
-     "required": 2,
-     "engaged_presence_only": 4,
-     "engaged_with_a_value": 4,
-     "lost_to_the_floor": []
-    }
-   }
-  },
-  {
-   "path": "charness-artifacts/quality/2026-07-09-standing-test-economics-bucket-repair.md",
-   "declared_date": "2026-07-09",
-   "last_commit_date": "2026-07-09",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-07-10-outcome-driven-feedback.md",
-   "declared_date": "2026-07-10",
-   "last_commit_date": "2026-07-10",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-07-10-repo-wide-quality-speed-release.md",
-   "declared_date": "2026-07-10",
-   "last_commit_date": "2026-07-10",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-07-11-0662-full-carrier-release-readiness.md",
-   "declared_date": "2026-07-11",
-   "last_commit_date": "2026-07-11",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-07-11-final-quality-argparse-help.md",
-   "declared_date": "2026-07-11",
-   "last_commit_date": "2026-07-11",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-07-11-five-package-argparse-help.md",
-   "declared_date": "2026-07-11",
-   "last_commit_date": "2026-07-11",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-07-11-host-reference-north-star.md",
-   "declared_date": "2026-07-11",
-   "last_commit_date": "2026-07-11",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-07-11-issue-create-safety-quality-speed-sweep.md",
-   "declared_date": "2026-07-11",
-   "last_commit_date": "2026-07-11",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-07-11-quality-review.md",
-   "declared_date": "2026-07-11",
-   "last_commit_date": "2026-07-11",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {
-    "inventory_skill_ergonomics.py": {
-     "required": 2,
-     "engaged_presence_only": 7,
-     "engaged_with_a_value": 7,
-     "lost_to_the_floor": []
-    }
-   }
-  },
-  {
-   "path": "charness-artifacts/quality/2026-07-11-release-argparse-help.md",
-   "declared_date": "2026-07-11",
-   "last_commit_date": "2026-07-11",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-07-11-retro-argparse-help.md",
-   "declared_date": "2026-07-11",
-   "last_commit_date": "2026-07-11",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-07-11-truthful-standing-delegation.md",
-   "declared_date": "2026-07-11",
-   "last_commit_date": "2026-07-11",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-07-11-web-fetch-argparse-help.md",
-   "declared_date": "2026-07-11",
-   "last_commit_date": "2026-07-11",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-07-12-round3-v0664-release-readiness.md",
-   "declared_date": "2026-07-12",
-   "last_commit_date": "2026-07-12",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {
-    "inventory_skill_ergonomics.py": {
-     "required": 2,
-     "engaged_presence_only": 6,
-     "engaged_with_a_value": 6,
-     "lost_to_the_floor": []
-    }
-   }
-  },
-  {
-   "path": "charness-artifacts/quality/2026-07-13-quality-review.md",
-   "declared_date": "2026-07-13",
-   "last_commit_date": "2026-07-13",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {
-    "inventory_nose_clones.py": {
-     "required": 2,
-     "engaged_presence_only": 2,
-     "engaged_with_a_value": 2,
-     "lost_to_the_floor": []
-    }
-   }
-  },
-  {
-   "path": "charness-artifacts/quality/2026-07-13-round4-v1-0-2-release-readiness.md",
-   "declared_date": "2026-07-13",
-   "last_commit_date": "2026-07-13",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {
-    "inventory_skill_ergonomics.py": {
-     "required": 2,
-     "engaged_presence_only": 6,
-     "engaged_with_a_value": 6,
-     "lost_to_the_floor": []
+    {
+      "path": "charness-artifacts/quality/2026-06-21-quality-reference-disposition-proposal.md",
+      "declared_date": null,
+      "last_commit_date": "2026-06-22",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
     },
-    "inventory_standing_test_economics.py": {
-     "required": 2,
-     "engaged_presence_only": 3,
-     "engaged_with_a_value": 3,
-     "lost_to_the_floor": []
+    {
+      "path": "charness-artifacts/quality/2026-06-21-skill-structure-raskin-audit.md",
+      "declared_date": null,
+      "last_commit_date": "2026-06-21",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
     },
-    "inventory_structural_waste.py": {
-     "required": 2,
-     "engaged_presence_only": 4,
-     "engaged_with_a_value": 4,
-     "lost_to_the_floor": []
-    }
-   }
-  },
-  {
-   "path": "charness-artifacts/quality/2026-07-13-round5-v1-0-4-release-readiness.md",
-   "declared_date": "2026-07-13",
-   "last_commit_date": "2026-07-13",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-07-14-quality-review.md",
-   "declared_date": "2026-07-14",
-   "last_commit_date": "2026-07-14",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {
-    "inventory_skill_ergonomics.py": {
-     "required": 2,
-     "engaged_presence_only": 5,
-     "engaged_with_a_value": 5,
-     "lost_to_the_floor": []
-    }
-   }
-  },
-  {
-   "path": "charness-artifacts/quality/2026-07-15-compact-yaml-response-release.md",
-   "declared_date": "2026-07-15",
-   "last_commit_date": "2026-07-15",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {
-    "inventory_nose_clones.py": {
-     "required": 2,
-     "engaged_presence_only": 2,
-     "engaged_with_a_value": 2,
-     "lost_to_the_floor": []
-    }
-   }
-  },
-  {
-   "path": "charness-artifacts/quality/2026-07-15-quality-review.md",
-   "declared_date": "2026-07-15",
-   "last_commit_date": "2026-07-15",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-07-18-autonomous-quality-efficiency.md",
-   "declared_date": "2026-07-18",
-   "last_commit_date": "2026-07-18",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-07-18-autonomous-release-readiness.md",
-   "declared_date": "2026-07-18",
-   "last_commit_date": "2026-07-18",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-07-18-dynamic-entrypoint-structural-quality.md",
-   "declared_date": "2026-07-18",
-   "last_commit_date": "2026-07-19",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-07-18-focused-coverage-selection.md",
-   "declared_date": "2026-07-18",
-   "last_commit_date": "2026-07-18",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-07-18-inventory-yaml-quality.md",
-   "declared_date": "2026-07-18",
-   "last_commit_date": "2026-07-18",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {
-    "inventory_skill_ergonomics.py": {
-     "required": 2,
-     "engaged_presence_only": 3,
-     "engaged_with_a_value": 3,
-     "lost_to_the_floor": []
+    {
+      "path": "charness-artifacts/quality/2026-06-23-gate-health-cost-review.md",
+      "declared_date": null,
+      "last_commit_date": "2026-06-23",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
     },
-    "inventory_standing_test_economics.py": {
-     "required": 2,
-     "engaged_presence_only": 2,
-     "engaged_with_a_value": 2,
-     "lost_to_the_floor": []
-    }
-   }
-  },
-  {
-   "path": "charness-artifacts/quality/2026-07-18-lint-inventory-trust-review.md",
-   "declared_date": "2026-07-18",
-   "last_commit_date": "2026-07-18",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-07-18-quality-infrastructure-review.md",
-   "declared_date": "2026-07-18",
-   "last_commit_date": "2026-07-18",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-07-18-release-local-failure-recovery-review.md",
-   "declared_date": "2026-07-18",
-   "last_commit_date": "2026-07-18",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-07-18-test-isolation-quality.md",
-   "declared_date": "2026-07-18",
-   "last_commit_date": "2026-07-18",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-07-19-quality-review.md",
-   "declared_date": "2026-07-19",
-   "last_commit_date": "2026-07-19",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-07-22-quality-review.md",
-   "declared_date": "2026-07-22",
-   "last_commit_date": "2026-07-22",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {
-    "inventory_standing_test_economics.py": {
-     "required": 2,
-     "engaged_presence_only": 3,
-     "engaged_with_a_value": 3,
-     "lost_to_the_floor": []
-    }
-   }
-  },
-  {
-   "path": "charness-artifacts/quality/2026-07-25-quality-review.md",
-   "declared_date": "2026-07-25",
-   "last_commit_date": "2026-07-25",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {
-    "inventory_standing_test_economics.py": {
-     "required": 2,
-     "engaged_presence_only": 4,
-     "engaged_with_a_value": 4,
-     "lost_to_the_floor": []
+    {
+      "path": "charness-artifacts/quality/2026-06-25-nested-cli-release-only-yaml-quality-review.md",
+      "declared_date": "2026-06-25",
+      "last_commit_date": "2026-06-25",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {
+        "inventory_standing_test_economics.py": {
+          "required": 2,
+          "engaged_presence_only": 5,
+          "engaged_with_a_value": 3,
+          "lost_to_the_floor": [
+            "nested_cli_standing_or_mixed_file_count",
+            "runner_snippets"
+          ]
+        }
+      }
     },
-    "inventory_structural_waste.py": {
-     "required": 2,
-     "engaged_presence_only": 5,
-     "engaged_with_a_value": 5,
-     "lost_to_the_floor": []
+    {
+      "path": "charness-artifacts/quality/2026-06-25-skill-ergonomics-yaml-summary-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {
+        "inventory_nose_clones.py": {
+          "required": 2,
+          "engaged_presence_only": 3,
+          "engaged_with_a_value": 3,
+          "lost_to_the_floor": []
+        }
+      }
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-25-spec-impl-skill-quality-review.md",
+      "declared_date": "2026-06-25",
+      "last_commit_date": "2026-06-25",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {
+        "inventory_skill_ergonomics.py": {
+          "required": 2,
+          "engaged_presence_only": 4,
+          "engaged_with_a_value": 4,
+          "lost_to_the_floor": []
+        }
+      }
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-25-test-economics-summary-quality-review.md",
+      "declared_date": "2026-06-25",
+      "last_commit_date": "2026-06-25",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {
+        "inventory_standing_test_economics.py": {
+          "required": 2,
+          "engaged_presence_only": 4,
+          "engaged_with_a_value": 4,
+          "lost_to_the_floor": []
+        }
+      }
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-25-test-speed-token-efficiency-quality-review.md",
+      "declared_date": "2026-06-25",
+      "last_commit_date": "2026-06-25",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {
+        "inventory_nose_clones.py": {
+          "required": 2,
+          "engaged_presence_only": 1,
+          "engaged_with_a_value": 1,
+          "lost_to_the_floor": []
+        },
+        "inventory_skill_ergonomics.py": {
+          "required": 2,
+          "engaged_presence_only": 2,
+          "engaged_with_a_value": 2,
+          "lost_to_the_floor": []
+        }
+      }
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-artifact-path-payload-runtime-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-behavior-recommendation-runtime-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-bootstrap-visibility-runtime-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-boundary-bypass-test-speed-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {
+        "inventory_standing_test_economics.py": {
+          "required": 2,
+          "engaged_presence_only": 2,
+          "engaged_with_a_value": 2,
+          "lost_to_the_floor": []
+        }
+      }
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-boundary-inventory-cache-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-cli-skill-surface-runtime-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-command-docs-parallel-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-create-skill-adapter-runtime-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-current-pointer-scanner-runtime-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-debug-scaffold-runtime-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-debug-seam-index-runtime-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-dependencies-seed-runtime-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-doc-links-runtime-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-five-pass-boundary-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {
+        "inventory_doc_duplicates.py": {
+          "required": 2,
+          "engaged_presence_only": 4,
+          "engaged_with_a_value": 4,
+          "lost_to_the_floor": []
+        },
+        "inventory_nose_clones.py": {
+          "required": 2,
+          "engaged_presence_only": 2,
+          "engaged_with_a_value": 2,
+          "lost_to_the_floor": []
+        },
+        "inventory_standing_test_economics.py": {
+          "required": 2,
+          "engaged_presence_only": 3,
+          "engaged_with_a_value": 3,
+          "lost_to_the_floor": []
+        }
+      }
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-gather-slack-boundary-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {
+        "inventory_standing_test_economics.py": {
+          "required": 2,
+          "engaged_presence_only": 3,
+          "engaged_with_a_value": 3,
+          "lost_to_the_floor": []
+        }
+      }
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-goal-head-freshness-runtime-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-goal-pursue-ready-runtime-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-hitl-report-runtime-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-issue-57-renderer-runtime-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-markdown-preview-backend-check-runtime-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-markdown-preview-bootstrap-runtime-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-markdown-preview-support-runtime-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-narrative-scenario-runtime-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-output-schema-test-speed-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {
+        "inventory_standing_test_economics.py": {
+          "required": 2,
+          "engaged_presence_only": 3,
+          "engaged_with_a_value": 3,
+          "lost_to_the_floor": []
+        }
+      }
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-parallel-helper-dup-ratchet-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-profile-preset-validator-runtime-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-proof-artifact-durability-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-public-doc-coupling-runtime-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-public-skill-dogfood-resolver-speed-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-public-skill-dogfood-runtime-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-public-skill-validation-boundary-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {
+        "inventory_standing_test_economics.py": {
+          "required": 2,
+          "engaged_presence_only": 3,
+          "engaged_with_a_value": 3,
+          "lost_to_the_floor": []
+        }
+      }
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-quality-bootstrap-resolve-runtime-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-quality-closeout-contract-runtime-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-record-metric-window-runtime-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-repo-copy-invariant-runtime-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-retro-handoff-boundary-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {
+        "inventory_skill_ergonomics.py": {
+          "required": 2,
+          "engaged_presence_only": 0,
+          "engaged_with_a_value": 0,
+          "lost_to_the_floor": []
+        }
+      }
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-retro-host-log-probe-runtime-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-setup-routing-runtime-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-setup-skill-routing-runtime-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-skill-ergonomics-gate-runtime-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-skill-ownership-runtime-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-skill-surface-preflight-parallel-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-standing-doc-provenance-runtime-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-surface-validation-runtime-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-tool-recommendation-runtime-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-ubiquitous-language-runtime-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-usage-episode-validator-runtime-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-26-usage-episodes-seed-runtime-quality-review.md",
+      "declared_date": "2026-06-26",
+      "last_commit_date": "2026-06-26",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-27-create-cli-capability-move-pilot.md",
+      "declared_date": "2026-06-27",
+      "last_commit_date": "2026-06-27",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {
+        "inventory_skill_ergonomics.py": {
+          "required": 2,
+          "engaged_presence_only": 0,
+          "engaged_with_a_value": 0,
+          "lost_to_the_floor": []
+        }
+      }
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-27-public-skill-capability-rollout.md",
+      "declared_date": "2026-06-27",
+      "last_commit_date": "2026-06-27",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {
+        "inventory_skill_ergonomics.py": {
+          "required": 2,
+          "engaged_presence_only": 1,
+          "engaged_with_a_value": 1,
+          "lost_to_the_floor": []
+        }
+      }
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-27-round-four-quality-speed-token-review.md",
+      "declared_date": "2026-06-27",
+      "last_commit_date": "2026-06-27",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {
+        "inventory_standing_test_economics.py": {
+          "required": 2,
+          "engaged_presence_only": 3,
+          "engaged_with_a_value": 3,
+          "lost_to_the_floor": []
+        }
+      }
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-28-round-five-quality-speed-token-review.md",
+      "declared_date": "2026-06-28",
+      "last_commit_date": "2026-06-28",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {
+        "inventory_skill_ergonomics.py": {
+          "required": 2,
+          "engaged_presence_only": 5,
+          "engaged_with_a_value": 5,
+          "lost_to_the_floor": []
+        },
+        "inventory_standing_test_economics.py": {
+          "required": 2,
+          "engaged_presence_only": 3,
+          "engaged_with_a_value": 3,
+          "lost_to_the_floor": []
+        }
+      }
+    },
+    {
+      "path": "charness-artifacts/quality/2026-06-30-dup-portability-falsification-audit.md",
+      "declared_date": "2026-06-30",
+      "last_commit_date": "2026-06-30",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-07-03-release-0-59-0-quality-review.md",
+      "declared_date": "2026-07-03",
+      "last_commit_date": "2026-07-04",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-07-08-test-debt-rotation-delta-sweep.md",
+      "declared_date": null,
+      "last_commit_date": "2026-07-09",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-07-09-ab-schema-test-economics-followup.md",
+      "declared_date": "2026-07-09",
+      "last_commit_date": "2026-07-09",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-07-09-autonomous-quality-repair.md",
+      "declared_date": "2026-07-09",
+      "last_commit_date": "2026-07-09",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-07-09-debug-planner-help-quality.md",
+      "declared_date": "2026-07-09",
+      "last_commit_date": "2026-07-09",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {
+        "inventory_skill_ergonomics.py": {
+          "required": 2,
+          "engaged_presence_only": 4,
+          "engaged_with_a_value": 4,
+          "lost_to_the_floor": []
+        }
+      }
+    },
+    {
+      "path": "charness-artifacts/quality/2026-07-09-markdown-preview-help-quality.md",
+      "declared_date": "2026-07-09",
+      "last_commit_date": "2026-07-09",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {
+        "inventory_skill_ergonomics.py": {
+          "required": 2,
+          "engaged_presence_only": 4,
+          "engaged_with_a_value": 4,
+          "lost_to_the_floor": []
+        }
+      }
+    },
+    {
+      "path": "charness-artifacts/quality/2026-07-09-standing-test-economics-bucket-repair.md",
+      "declared_date": "2026-07-09",
+      "last_commit_date": "2026-07-09",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-07-10-outcome-driven-feedback.md",
+      "declared_date": "2026-07-10",
+      "last_commit_date": "2026-07-10",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-07-10-repo-wide-quality-speed-release.md",
+      "declared_date": "2026-07-10",
+      "last_commit_date": "2026-07-10",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-07-11-0662-full-carrier-release-readiness.md",
+      "declared_date": "2026-07-11",
+      "last_commit_date": "2026-07-11",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-07-11-final-quality-argparse-help.md",
+      "declared_date": "2026-07-11",
+      "last_commit_date": "2026-07-11",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-07-11-five-package-argparse-help.md",
+      "declared_date": "2026-07-11",
+      "last_commit_date": "2026-07-11",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-07-11-host-reference-north-star.md",
+      "declared_date": "2026-07-11",
+      "last_commit_date": "2026-07-11",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-07-11-issue-create-safety-quality-speed-sweep.md",
+      "declared_date": "2026-07-11",
+      "last_commit_date": "2026-07-11",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-07-11-quality-review.md",
+      "declared_date": "2026-07-11",
+      "last_commit_date": "2026-07-11",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {
+        "inventory_skill_ergonomics.py": {
+          "required": 2,
+          "engaged_presence_only": 7,
+          "engaged_with_a_value": 7,
+          "lost_to_the_floor": []
+        }
+      }
+    },
+    {
+      "path": "charness-artifacts/quality/2026-07-11-release-argparse-help.md",
+      "declared_date": "2026-07-11",
+      "last_commit_date": "2026-07-11",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-07-11-retro-argparse-help.md",
+      "declared_date": "2026-07-11",
+      "last_commit_date": "2026-07-11",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-07-11-truthful-standing-delegation.md",
+      "declared_date": "2026-07-11",
+      "last_commit_date": "2026-07-11",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-07-11-web-fetch-argparse-help.md",
+      "declared_date": "2026-07-11",
+      "last_commit_date": "2026-07-11",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-07-12-round3-v0664-release-readiness.md",
+      "declared_date": "2026-07-12",
+      "last_commit_date": "2026-07-12",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {
+        "inventory_skill_ergonomics.py": {
+          "required": 2,
+          "engaged_presence_only": 6,
+          "engaged_with_a_value": 6,
+          "lost_to_the_floor": []
+        }
+      }
+    },
+    {
+      "path": "charness-artifacts/quality/2026-07-13-quality-review.md",
+      "declared_date": "2026-07-13",
+      "last_commit_date": "2026-07-13",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {
+        "inventory_nose_clones.py": {
+          "required": 2,
+          "engaged_presence_only": 2,
+          "engaged_with_a_value": 2,
+          "lost_to_the_floor": []
+        }
+      }
+    },
+    {
+      "path": "charness-artifacts/quality/2026-07-13-round4-v1-0-2-release-readiness.md",
+      "declared_date": "2026-07-13",
+      "last_commit_date": "2026-07-13",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {
+        "inventory_skill_ergonomics.py": {
+          "required": 2,
+          "engaged_presence_only": 6,
+          "engaged_with_a_value": 6,
+          "lost_to_the_floor": []
+        },
+        "inventory_standing_test_economics.py": {
+          "required": 2,
+          "engaged_presence_only": 3,
+          "engaged_with_a_value": 3,
+          "lost_to_the_floor": []
+        },
+        "inventory_structural_waste.py": {
+          "required": 2,
+          "engaged_presence_only": 4,
+          "engaged_with_a_value": 4,
+          "lost_to_the_floor": []
+        }
+      }
+    },
+    {
+      "path": "charness-artifacts/quality/2026-07-13-round5-v1-0-4-release-readiness.md",
+      "declared_date": "2026-07-13",
+      "last_commit_date": "2026-07-13",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-07-14-quality-review.md",
+      "declared_date": "2026-07-14",
+      "last_commit_date": "2026-07-14",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {
+        "inventory_skill_ergonomics.py": {
+          "required": 2,
+          "engaged_presence_only": 5,
+          "engaged_with_a_value": 5,
+          "lost_to_the_floor": []
+        }
+      }
+    },
+    {
+      "path": "charness-artifacts/quality/2026-07-15-compact-yaml-response-release.md",
+      "declared_date": "2026-07-15",
+      "last_commit_date": "2026-07-15",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {
+        "inventory_nose_clones.py": {
+          "required": 2,
+          "engaged_presence_only": 2,
+          "engaged_with_a_value": 2,
+          "lost_to_the_floor": []
+        }
+      }
+    },
+    {
+      "path": "charness-artifacts/quality/2026-07-15-quality-review.md",
+      "declared_date": "2026-07-15",
+      "last_commit_date": "2026-07-15",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-07-18-autonomous-quality-efficiency.md",
+      "declared_date": "2026-07-18",
+      "last_commit_date": "2026-07-18",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-07-18-autonomous-release-readiness.md",
+      "declared_date": "2026-07-18",
+      "last_commit_date": "2026-07-18",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-07-18-dynamic-entrypoint-structural-quality.md",
+      "declared_date": "2026-07-18",
+      "last_commit_date": "2026-07-19",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-07-18-focused-coverage-selection.md",
+      "declared_date": "2026-07-18",
+      "last_commit_date": "2026-07-18",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-07-18-inventory-yaml-quality.md",
+      "declared_date": "2026-07-18",
+      "last_commit_date": "2026-07-18",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {
+        "inventory_skill_ergonomics.py": {
+          "required": 2,
+          "engaged_presence_only": 3,
+          "engaged_with_a_value": 3,
+          "lost_to_the_floor": []
+        },
+        "inventory_standing_test_economics.py": {
+          "required": 2,
+          "engaged_presence_only": 2,
+          "engaged_with_a_value": 2,
+          "lost_to_the_floor": []
+        }
+      }
+    },
+    {
+      "path": "charness-artifacts/quality/2026-07-18-lint-inventory-trust-review.md",
+      "declared_date": "2026-07-18",
+      "last_commit_date": "2026-07-18",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-07-18-quality-infrastructure-review.md",
+      "declared_date": "2026-07-18",
+      "last_commit_date": "2026-07-18",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-07-18-release-local-failure-recovery-review.md",
+      "declared_date": "2026-07-18",
+      "last_commit_date": "2026-07-18",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-07-18-test-isolation-quality.md",
+      "declared_date": "2026-07-18",
+      "last_commit_date": "2026-07-18",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-07-19-quality-review.md",
+      "declared_date": "2026-07-19",
+      "last_commit_date": "2026-07-19",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-07-22-quality-review.md",
+      "declared_date": "2026-07-22",
+      "last_commit_date": "2026-07-22",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {
+        "inventory_standing_test_economics.py": {
+          "required": 2,
+          "engaged_presence_only": 3,
+          "engaged_with_a_value": 3,
+          "lost_to_the_floor": []
+        }
+      }
+    },
+    {
+      "path": "charness-artifacts/quality/2026-07-25-quality-review.md",
+      "declared_date": "2026-07-25",
+      "last_commit_date": "2026-07-25",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {
+        "inventory_standing_test_economics.py": {
+          "required": 2,
+          "engaged_presence_only": 4,
+          "engaged_with_a_value": 4,
+          "lost_to_the_floor": []
+        },
+        "inventory_structural_waste.py": {
+          "required": 2,
+          "engaged_presence_only": 5,
+          "engaged_with_a_value": 5,
+          "lost_to_the_floor": []
+        }
+      }
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-04-quality-review.md",
+      "declared_date": "2026-08-04",
+      "last_commit_date": "2026-08-04",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {
+        "inventory_skill_ergonomics.py": {
+          "required": 2,
+          "engaged_presence_only": 7,
+          "engaged_with_a_value": 7,
+          "lost_to_the_floor": []
+        }
+      }
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-04-reduce-closeout-runtime-structural-waste-cli-manifest.md",
+      "declared_date": null,
+      "last_commit_date": "2026-08-04",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-04-retro-goal-binding-quality-review.md",
+      "declared_date": "2026-08-04",
+      "last_commit_date": "2026-08-04",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-05-issue-491-semantic-reference.md",
+      "declared_date": "2026-08-05",
+      "last_commit_date": "2026-08-05",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {
+        "inventory_skill_ergonomics.py": {
+          "required": 2,
+          "engaged_presence_only": 6,
+          "engaged_with_a_value": 6,
+          "lost_to_the_floor": []
+        }
+      }
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-05-issue-496-hollow-refill.md",
+      "declared_date": "2026-08-05",
+      "last_commit_date": "2026-08-05",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-05-issue-502-quality-summary-owner.md",
+      "declared_date": "2026-08-05",
+      "last_commit_date": "2026-08-05",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-05-issue-503-runtime-budget.md",
+      "declared_date": "2026-08-05",
+      "last_commit_date": "2026-08-05",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-05-issue-504-retro-persistence.md",
+      "declared_date": "2026-08-05",
+      "last_commit_date": "2026-08-05",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-05-issue-507-quality-adapter-lifecycle.md",
+      "declared_date": "2026-08-05",
+      "last_commit_date": "2026-08-05",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-05-issue-508-gather-classifier.md",
+      "declared_date": "2026-08-05",
+      "last_commit_date": "2026-08-06",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {
+        "inventory_skill_ergonomics.py": {
+          "required": 2,
+          "engaged_presence_only": 6,
+          "engaged_with_a_value": 6,
+          "lost_to_the_floor": []
+        }
+      }
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-05-issue-511-nose-inventory.md",
+      "declared_date": "2026-08-05",
+      "last_commit_date": "2026-08-05",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {
+        "inventory_nose_clones.py": {
+          "required": 2,
+          "engaged_presence_only": 7,
+          "engaged_with_a_value": 7,
+          "lost_to_the_floor": []
+        }
+      }
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-05-proof-claims.md",
+      "declared_date": "2026-08-05",
+      "last_commit_date": "2026-08-05",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {
+        "inventory_skill_ergonomics.py": {
+          "required": 2,
+          "engaged_presence_only": 6,
+          "engaged_with_a_value": 6,
+          "lost_to_the_floor": []
+        }
+      }
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-05-quality-review.md",
+      "declared_date": "2026-08-05",
+      "last_commit_date": "2026-08-05",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-06-issue-480-authoring-path-resolver.md",
+      "declared_date": "2026-08-06",
+      "last_commit_date": "2026-08-06",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-06-issue-482-command-carrier.md",
+      "declared_date": "2026-08-06",
+      "last_commit_date": "2026-08-06",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-06-issue-483-non-markdown-command-carrier.md",
+      "declared_date": "2026-08-06",
+      "last_commit_date": "2026-08-06",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-06-issue-484-shared-portable-package.md",
+      "declared_date": "2026-08-06",
+      "last_commit_date": "2026-08-06",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-06-issue-505-focused-mutation-export.md",
+      "declared_date": "2026-08-06",
+      "last_commit_date": "2026-08-06",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {
+        "inventory_skill_ergonomics.py": {
+          "required": 2,
+          "engaged_presence_only": 0,
+          "engaged_with_a_value": 0,
+          "lost_to_the_floor": []
+        }
+      }
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-06-mutation-producer-discovery.md",
+      "declared_date": "2026-08-06",
+      "last_commit_date": "2026-08-06",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-06-quality-review.md",
+      "declared_date": "2026-08-06",
+      "last_commit_date": "2026-08-06",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-06-runtime-ab-evidence.md",
+      "declared_date": "2026-08-06",
+      "last_commit_date": "2026-08-06",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-06-runtime-evidence-and-nose.md",
+      "declared_date": "2026-08-06",
+      "last_commit_date": "2026-08-07",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {
+        "inventory_nose_clones.py": {
+          "required": 2,
+          "engaged_presence_only": 2,
+          "engaged_with_a_value": 2,
+          "lost_to_the_floor": []
+        }
+      }
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-06-runtime-phase-isolation.md",
+      "declared_date": "2026-08-06",
+      "last_commit_date": "2026-08-06",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-06-slice-2-prelock-closeout.md",
+      "declared_date": "2026-08-06",
+      "last_commit_date": "2026-08-06",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-06-slice-3-final-bundle-preflight.md",
+      "declared_date": null,
+      "last_commit_date": "2026-08-06",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-07-quality-review.md",
+      "declared_date": "2026-08-07",
+      "last_commit_date": "2026-08-09",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-09-quality-review.md",
+      "declared_date": "2026-08-09",
+      "last_commit_date": "2026-08-09",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-09-test-runtime-waste-repair.md",
+      "declared_date": "2026-08-09",
+      "last_commit_date": "2026-08-09",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-12-issue-593-hotl-target-binding.md",
+      "declared_date": "2026-08-12",
+      "last_commit_date": "2026-08-12",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-12-issue-594-closeout-draft-scope.md",
+      "declared_date": "2026-08-12",
+      "last_commit_date": "2026-08-12",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-12-issue-603-quality-packet-routing.md",
+      "declared_date": "2026-08-12",
+      "last_commit_date": "2026-08-12",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-12-issue-604-canonical-gate-recognition.md",
+      "declared_date": "2026-08-12",
+      "last_commit_date": "2026-08-12",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-12-quality-review.md",
+      "declared_date": "2026-08-12",
+      "last_commit_date": "2026-08-12",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {
+        "inventory_skill_ergonomics.py": {
+          "required": 2,
+          "engaged_presence_only": 5,
+          "engaged_with_a_value": 5,
+          "lost_to_the_floor": []
+        }
+      }
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-13-dup-ratchet-backlog-triage.md",
+      "declared_date": null,
+      "last_commit_date": "2026-08-13",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-13-issue-616-applied-lifecycle.md",
+      "declared_date": "2026-08-13",
+      "last_commit_date": "2026-08-14",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-14-current-contract-cleanup.md",
+      "declared_date": "2026-08-14",
+      "last_commit_date": "2026-08-14",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-14-quality-review.md",
+      "declared_date": "2026-08-14",
+      "last_commit_date": "2026-08-14",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-18-quality-review.md",
+      "declared_date": "2026-08-18",
+      "last_commit_date": "2026-08-18",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {
+        "inventory_skill_ergonomics.py": {
+          "required": 2,
+          "engaged_presence_only": 4,
+          "engaged_with_a_value": 4,
+          "lost_to_the_floor": []
+        }
+      }
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-21-command-plan-broad-quality-proof.md",
+      "declared_date": "2026-08-21",
+      "last_commit_date": "2026-08-21",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-21-command-plan-changed-line-proof.md",
+      "declared_date": "2026-08-21",
+      "last_commit_date": "2026-08-21",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-21-command-plan-focused-proof.md",
+      "declared_date": "2026-08-21",
+      "last_commit_date": "2026-08-21",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-21-command-plan-targeted-mutant-proof.md",
+      "declared_date": "2026-08-21",
+      "last_commit_date": "2026-08-21",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-21-fresh-eye-retro-basis-changed-line.md",
+      "declared_date": "2026-08-21",
+      "last_commit_date": "2026-08-21",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-21-r2-changed-line-proof.md",
+      "declared_date": "2026-08-21",
+      "last_commit_date": "2026-08-21",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-21-r2-semantic-repair-changed-line-proof-final.md",
+      "declared_date": "2026-08-21",
+      "last_commit_date": "2026-08-21",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-21-r2-semantic-repair-provider-schema-proof.md",
+      "declared_date": "2026-08-21",
+      "last_commit_date": "2026-08-21",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-21-semantic-candidate-verification-lock.md",
+      "declared_date": "2026-08-21",
+      "last_commit_date": "2026-08-21",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-25-critique-debug-evidence-review.md",
+      "declared_date": "2026-08-25",
+      "last_commit_date": "2026-08-25",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-25-quality-review.md",
+      "declared_date": "2026-08-25",
+      "last_commit_date": "2026-08-25",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-25-setup-flat-wiki-quality-bootstrap.md",
+      "declared_date": "2026-08-25",
+      "last_commit_date": "2026-08-25",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {
+        "inventory_skill_ergonomics.py": {
+          "required": 2,
+          "engaged_presence_only": 0,
+          "engaged_with_a_value": 0,
+          "lost_to_the_floor": []
+        }
+      }
+    },
+    {
+      "path": "charness-artifacts/quality/2026-08-29-empty-scope-disposition.md",
+      "declared_date": "2026-08-29",
+      "last_commit_date": "2026-08-29",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {
+        "inventory_empty_scope_honesty.py": {
+          "required": 2,
+          "engaged_presence_only": 3,
+          "engaged_with_a_value": 3,
+          "lost_to_the_floor": []
+        }
+      }
+    },
+    {
+      "path": "charness-artifacts/quality/latest.md",
+      "declared_date": "2026-08-25",
+      "last_commit_date": "2026-08-25",
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "exemption": "not-claimed",
+      "citations": {}
     }
-   }
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-04-quality-review.md",
-   "declared_date": "2026-08-04",
-   "last_commit_date": "2026-08-04",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {
-    "inventory_skill_ergonomics.py": {
-     "required": 2,
-     "engaged_presence_only": 7,
-     "engaged_with_a_value": 7,
-     "lost_to_the_floor": []
-    }
-   }
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-04-reduce-closeout-runtime-structural-waste-cli-manifest.md",
-   "declared_date": null,
-   "last_commit_date": "2026-08-04",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-04-retro-goal-binding-quality-review.md",
-   "declared_date": "2026-08-04",
-   "last_commit_date": "2026-08-04",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-05-issue-491-semantic-reference.md",
-   "declared_date": "2026-08-05",
-   "last_commit_date": "2026-08-05",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {
-    "inventory_skill_ergonomics.py": {
-     "required": 2,
-     "engaged_presence_only": 6,
-     "engaged_with_a_value": 6,
-     "lost_to_the_floor": []
-    }
-   }
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-05-issue-496-hollow-refill.md",
-   "declared_date": "2026-08-05",
-   "last_commit_date": "2026-08-05",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-05-issue-502-quality-summary-owner.md",
-   "declared_date": "2026-08-05",
-   "last_commit_date": "2026-08-05",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-05-issue-503-runtime-budget.md",
-   "declared_date": "2026-08-05",
-   "last_commit_date": "2026-08-05",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-05-issue-504-retro-persistence.md",
-   "declared_date": "2026-08-05",
-   "last_commit_date": "2026-08-05",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-05-issue-507-quality-adapter-lifecycle.md",
-   "declared_date": "2026-08-05",
-   "last_commit_date": "2026-08-05",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-05-issue-508-gather-classifier.md",
-   "declared_date": "2026-08-05",
-   "last_commit_date": "2026-08-06",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {
-    "inventory_skill_ergonomics.py": {
-     "required": 2,
-     "engaged_presence_only": 6,
-     "engaged_with_a_value": 6,
-     "lost_to_the_floor": []
-    }
-   }
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-05-issue-511-nose-inventory.md",
-   "declared_date": "2026-08-05",
-   "last_commit_date": "2026-08-05",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {
-    "inventory_nose_clones.py": {
-     "required": 2,
-     "engaged_presence_only": 7,
-     "engaged_with_a_value": 7,
-     "lost_to_the_floor": []
-    }
-   }
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-05-proof-claims.md",
-   "declared_date": "2026-08-05",
-   "last_commit_date": "2026-08-05",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {
-    "inventory_skill_ergonomics.py": {
-     "required": 2,
-     "engaged_presence_only": 6,
-     "engaged_with_a_value": 6,
-     "lost_to_the_floor": []
-    }
-   }
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-05-quality-review.md",
-   "declared_date": "2026-08-05",
-   "last_commit_date": "2026-08-05",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-06-issue-480-authoring-path-resolver.md",
-   "declared_date": "2026-08-06",
-   "last_commit_date": "2026-08-06",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-06-issue-482-command-carrier.md",
-   "declared_date": "2026-08-06",
-   "last_commit_date": "2026-08-06",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-06-issue-483-non-markdown-command-carrier.md",
-   "declared_date": "2026-08-06",
-   "last_commit_date": "2026-08-06",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-06-issue-484-shared-portable-package.md",
-   "declared_date": "2026-08-06",
-   "last_commit_date": "2026-08-06",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-06-issue-505-focused-mutation-export.md",
-   "declared_date": "2026-08-06",
-   "last_commit_date": "2026-08-06",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {
-    "inventory_skill_ergonomics.py": {
-     "required": 2,
-     "engaged_presence_only": 0,
-     "engaged_with_a_value": 0,
-     "lost_to_the_floor": []
-    }
-   }
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-06-mutation-producer-discovery.md",
-   "declared_date": "2026-08-06",
-   "last_commit_date": "2026-08-06",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-06-quality-review.md",
-   "declared_date": "2026-08-06",
-   "last_commit_date": "2026-08-06",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-06-runtime-ab-evidence.md",
-   "declared_date": "2026-08-06",
-   "last_commit_date": "2026-08-06",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-06-runtime-evidence-and-nose.md",
-   "declared_date": "2026-08-06",
-   "last_commit_date": "2026-08-07",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {
-    "inventory_nose_clones.py": {
-     "required": 2,
-     "engaged_presence_only": 2,
-     "engaged_with_a_value": 2,
-     "lost_to_the_floor": []
-    }
-   }
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-06-runtime-phase-isolation.md",
-   "declared_date": "2026-08-06",
-   "last_commit_date": "2026-08-06",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-06-slice-2-prelock-closeout.md",
-   "declared_date": "2026-08-06",
-   "last_commit_date": "2026-08-06",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-06-slice-3-final-bundle-preflight.md",
-   "declared_date": null,
-   "last_commit_date": "2026-08-06",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-07-quality-review.md",
-   "declared_date": "2026-08-07",
-   "last_commit_date": "2026-08-09",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-09-quality-review.md",
-   "declared_date": "2026-08-09",
-   "last_commit_date": "2026-08-09",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-09-test-runtime-waste-repair.md",
-   "declared_date": "2026-08-09",
-   "last_commit_date": "2026-08-09",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-12-issue-593-hotl-target-binding.md",
-   "declared_date": "2026-08-12",
-   "last_commit_date": "2026-08-12",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-12-issue-594-closeout-draft-scope.md",
-   "declared_date": "2026-08-12",
-   "last_commit_date": "2026-08-12",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-12-issue-603-quality-packet-routing.md",
-   "declared_date": "2026-08-12",
-   "last_commit_date": "2026-08-12",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-12-issue-604-canonical-gate-recognition.md",
-   "declared_date": "2026-08-12",
-   "last_commit_date": "2026-08-12",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-12-quality-review.md",
-   "declared_date": "2026-08-12",
-   "last_commit_date": "2026-08-12",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {
-    "inventory_skill_ergonomics.py": {
-     "required": 2,
-     "engaged_presence_only": 5,
-     "engaged_with_a_value": 5,
-     "lost_to_the_floor": []
-    }
-   }
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-13-dup-ratchet-backlog-triage.md",
-   "declared_date": null,
-   "last_commit_date": "2026-08-13",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-13-issue-616-applied-lifecycle.md",
-   "declared_date": "2026-08-13",
-   "last_commit_date": "2026-08-14",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-14-current-contract-cleanup.md",
-   "declared_date": "2026-08-14",
-   "last_commit_date": "2026-08-14",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-14-quality-review.md",
-   "declared_date": "2026-08-14",
-   "last_commit_date": "2026-08-14",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-18-quality-review.md",
-   "declared_date": "2026-08-18",
-   "last_commit_date": "2026-08-18",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {
-    "inventory_skill_ergonomics.py": {
-     "required": 2,
-     "engaged_presence_only": 4,
-     "engaged_with_a_value": 4,
-     "lost_to_the_floor": []
-    }
-   }
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-21-command-plan-broad-quality-proof.md",
-   "declared_date": "2026-08-21",
-   "last_commit_date": "2026-08-21",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-21-command-plan-changed-line-proof.md",
-   "declared_date": "2026-08-21",
-   "last_commit_date": "2026-08-21",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-21-command-plan-focused-proof.md",
-   "declared_date": "2026-08-21",
-   "last_commit_date": "2026-08-21",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-21-command-plan-targeted-mutant-proof.md",
-   "declared_date": "2026-08-21",
-   "last_commit_date": "2026-08-21",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-21-semantic-candidate-verification-lock.md",
-   "declared_date": "2026-08-21",
-   "last_commit_date": "2026-08-21",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-21-fresh-eye-retro-basis-changed-line.md",
-   "declared_date": "2026-08-21",
-   "last_commit_date": "2026-08-21",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-21-r2-changed-line-proof.md",
-   "declared_date": "2026-08-21",
-   "last_commit_date": "2026-08-21",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-21-r2-semantic-repair-changed-line-proof-final.md",
-   "declared_date": "2026-08-21",
-   "last_commit_date": "2026-08-21",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-21-r2-semantic-repair-provider-schema-proof.md",
-   "declared_date": "2026-08-21",
-   "last_commit_date": "2026-08-21",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-25-critique-debug-evidence-review.md",
-   "declared_date": "2026-08-25",
-   "last_commit_date": "2026-08-25",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-25-quality-review.md",
-   "declared_date": "2026-08-25",
-   "last_commit_date": "2026-08-25",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {}
-  },
-  {
-   "path": "charness-artifacts/quality/2026-08-25-setup-flat-wiki-quality-bootstrap.md",
-   "declared_date": "2026-08-25",
-   "last_commit_date": "2026-08-25",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {
-    "inventory_skill_ergonomics.py": {
-     "required": 2,
-     "engaged_presence_only": 0,
-     "engaged_with_a_value": 0,
-     "lost_to_the_floor": []
-    }
-   }
-  },
-  {
-   "path": "charness-artifacts/quality/latest.md",
-   "declared_date": "2026-08-18",
-   "last_commit_date": "2026-08-18",
-   "claims_pre_contract_exemption": false,
-   "commit_state": "dated",
-   "exemption": "not-claimed",
-   "citations": {
-    "inventory_skill_ergonomics.py": {
-     "required": 2,
-     "engaged_presence_only": 4,
-     "engaged_with_a_value": 4,
-     "lost_to_the_floor": []
-    }
-   }
+  ],
+  "_provenance": {
+    "baseline_check": "Refreshed over the checked-in quality artifacts under charness-artifacts/quality. The artifact count and every residual figure live in this file's measured fields, which tests/quality_gates/test_a_declaration_is_not_its_own_corroboration.py pins against today's tree. Re-derive with: python3 scripts/measure_inventory_consumption_floor.py --repo-root .",
+    "command": "python3 scripts/measure_inventory_consumption_floor.py --repo-root .",
+    "counterfactual_floor_20": "Re-runnable with --floor 20: 11 citations drop below their requirement and 46 label values fall under the floor. That is why the floor is 5, not a round number.",
+    "date": "2026-08-29",
+    "does_not_license": "This probe measures the residual floor only. It does NOT measure the value-marker rule, which is a separate question (D47) with its own immutable snapshot at charness-artifacts/probe/2026-08-12-inventory-marker-rule-snapshot.json; read the marker counts there. This file measures no marker fields at all, so it can carry no copy of them. It measures this repo's corpus and licenses no claim about a consumer repo's.",
+    "repo_head_at_run": "143801359d2097d8f0d1c175061c8374b9e83ccf",
+    "synchronized_after": "Refreshed after 9c6b1d359 added ONE checked-in top-level quality artifact under charness-artifacts/quality (the empty-scope detector disposition). The exact counts are this file's measured fields and are deliberately not transcribed here.",
+    "synchronized_reason": "Corpus drift, not a rule change, and the measurement says so rather than the commit message asserting it: `floor` and `citations_lowered_below_requirement` are both UNCHANGED, which are the two rule-sensitive fields; `artifacts` and `exemption_counts.not-claimed` each moved by exactly one, and `field_mention_residuals` moved because the new artifact cites inventory fields. The --floor 20 counterfactual is unchanged at 11 citations and 46 label values, and the corpus label minimum is still 7, so scripts/validate_inventory_consumption.py's transcribed figures and docs/deferred-decisions.md D47 are deliberately NOT touched.",
+    "why": "The floor is measured rather than argued: it is set so that no checked-in citation drops below its requirement and no label value falls under it, which the measured `citations_lowered_below_requirement` and `label_value_residuals.below_floor` fields report directly. The headline corpus figures are the measured `artifacts` and `field_mention_residuals.count` in this file; they are deliberately NOT transcribed here, because earlier refresh prose went stale while the executable probe correctly followed the corpus.",
+    "worktree": "dirty: the lesson-lifecycle restore is present alongside this refresh; neither the residual rule nor the floor changed"
   }
- ],
- "_provenance": {
-  "baseline_check": "Refreshed over the checked-in quality artifacts under charness-artifacts/quality. The artifact count and every residual figure live in this file's measured fields, which tests/quality_gates/test_a_declaration_is_not_its_own_corroboration.py pins against today's tree. Re-derive with: python3 scripts/measure_inventory_consumption_floor.py --repo-root .",
-  "command": "python3 scripts/measure_inventory_consumption_floor.py --repo-root .",
-  "counterfactual_floor_20": "Re-runnable with --floor 20: 11 citations drop below their requirement and 46 label values fall under the floor. That is why the floor is 5, not a round number.",
-  "date": "2026-08-25",
-  "does_not_license": "This probe measures the residual floor only. It does NOT measure the value-marker rule, which is a separate question (D47) with its own immutable snapshot at charness-artifacts/probe/2026-08-12-inventory-marker-rule-snapshot.json; read the marker counts there. This file measures no marker fields at all, so it can carry no copy of them. It measures this repo's corpus and licenses no claim about a consumer repo's.",
-  "repo_head_at_run": "289103a2cc89fc238a26acd99079815e8a18d4ef",
-  "synchronized_after": "Refreshed after 611f58d49 through 289103a2c added three top-level quality artifacts under charness-artifacts/quality. The exact counts are this file's measured fields and are deliberately not transcribed here; the residual field mentions, the floor, the floor-20 citation counterfactual, and the label-value counterfactual are unchanged.",
-  "synchronized_reason": "Refresh the pinned residual-floor measurement because the consumer-boundary release work added three checked-in top-level quality artifacts. The rule and floor are unchanged. The drift message also names charness-artifacts/probe/2026-08-01-inventory-marker-rule.json and docs/deferred-decisions.md D47; neither was touched, because #596 replaced the mutable marker pin with the immutable 2026-08-12 snapshot and D47 states in its own text that unrelated quality-corpus growth does not rewrite it.",
-  "why": "The floor is measured rather than argued: it is set so that no checked-in citation drops below its requirement and no label value falls under it, which the measured `citations_lowered_below_requirement` and `label_value_residuals.below_floor` fields report directly. The headline corpus figures are the measured `artifacts` and `field_mention_residuals.count` in this file; they are deliberately NOT transcribed here, because earlier refresh prose went stale while the executable probe correctly followed the corpus.",
-  "worktree": "dirty: the delivery-boundary release slice and this synchronized residual-floor probe are present; the residual rule and floor are unchanged"
- }
 }

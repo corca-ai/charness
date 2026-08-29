@@ -18,19 +18,22 @@ the validator rejects for a reason unrelated to what the test is about.
 
 from __future__ import annotations
 
+import copy
 from typing import Any
 
 from scripts import lesson_score_outcome_lib as outcome_lib
 
 
 def blank_lesson(source_retro: str, transition_id: str) -> dict[str, Any]:
-    """A freshly seeded lesson with no encounters."""
+    """A freshly seeded lesson: active, no encounters."""
     return {
         "source_retro": source_retro,
         "transition_id": transition_id,
         "score_total": 0,
         "score_count": 0,
         "outcome_counts": outcome_lib.outcome_counts([]),
+        "state": "active",
+        "last_lifecycle_event_id": None,
     }
 
 
@@ -42,7 +45,7 @@ def outcome_event(
     outcome: str = "changed-an-action",
     anchor: str | None = None,
 ) -> dict[str, Any]:
-    """One schema-8 encounter record.
+    """One schema-9 encounter record.
 
     The default anchor satisfies the `changed-an-action` counterfactual bar, so a
     test that does not care about anchor shape does not have to know the rule.
@@ -72,6 +75,13 @@ def materialize(payload: dict[str, Any]) -> dict[str, Any]:
         lesson["score_total"] = 0
         lesson["score_count"] = 0
         lesson["outcome_counts"] = outcome_lib.outcome_counts([])
+        lesson["state"] = "active"
+        lesson["last_lifecycle_event_id"] = None
+    for event in payload["lifecycle_events"]:
+        lesson = payload["lessons"].get(event["lesson_id"])
+        if lesson is not None:
+            lesson["state"] = "archived" if event["action"] == "archive" else "active"
+            lesson["last_lifecycle_event_id"] = event["event_id"]
     scored: dict[str, list[dict[str, Any]]] = {}
     for event in payload["score_events"]:
         lesson = payload["lessons"].get(event["lesson_id"])
@@ -87,3 +97,15 @@ def materialize(payload: dict[str, Any]) -> dict[str, Any]:
     for lesson_id, events in scored.items():
         payload["lessons"][lesson_id]["outcome_counts"] = outcome_lib.outcome_counts(events)
     return payload
+
+
+def legacy_v8_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    """Return the pre-lifecycle v8 shape without changing append-only history."""
+    legacy = copy.deepcopy(payload)
+    legacy["schema_version"] = 8
+    legacy.pop("active_lesson_budget", None)
+    legacy.pop("lifecycle_events", None)
+    for lesson in legacy.get("lessons", {}).values():
+        lesson.pop("state", None)
+        lesson.pop("last_lifecycle_event_id", None)
+    return legacy

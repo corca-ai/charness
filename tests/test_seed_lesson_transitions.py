@@ -24,6 +24,8 @@ def _empty_ledger(repo: Path) -> Path:
                 "kind": ledger.KIND,
                 "schema_version": ledger.SCHEMA_VERSION,
                 "transitions": [],
+                "active_lesson_budget": ledger.ACTIVE_LESSON_BUDGET,
+                "lifecycle_events": [],
                 "score_events": [],
                 "lessons": {},
             }
@@ -71,6 +73,8 @@ def test_seeding_an_empty_ledger_makes_a_tagged_class_validate(tmp_path: Path) -
         "score_total": 0,
         "score_count": 0,
         "outcome_counts": outcome_lib.outcome_counts([]),
+        "state": "active",
+        "last_lifecycle_event_id": None,
     }
 
 
@@ -200,6 +204,7 @@ def test_a_transition_id_burned_by_another_lesson_is_refused_by_name(tmp_path: P
     # up who holds `seed-a`, and the permanence is what rules out renaming it back.
     assert "`seed-a`" in message
     assert "already used by a different lesson" in message
+    assert "archiving does not release one" in message
     # And `b` alone -- the only lesson whose id is spent -- still plans cleanly, so
     # the refusal is about the collision rather than about the fixture.
     assert seeder.plan_seeds(
@@ -229,6 +234,27 @@ def test_selected_subset_leaves_other_classes_unseeded(tmp_path: Path) -> None:
     assert set(_validate(tmp_path) and json.loads(
         (tmp_path / "charness-artifacts/retro/lesson-ledger.json").read_text()
     )["lessons"]) == {"b"}
+
+
+def test_over_budget_seeding_is_refused_with_its_arithmetic(tmp_path: Path, monkeypatch) -> None:
+    _retro(tmp_path, "a.md", "a")
+    _retro(tmp_path, "b.md", "b")
+    # Both module objects: the seeder imports the library through
+    # `import_repo_module`, which can hand back a distinct instance, and the ledger
+    # file itself must carry the same budget or its own fixed-budget check fires
+    # first and the seeder's arithmetic is never reached.
+    for module in {id(ledger): ledger, id(seeder._ledger): seeder._ledger}.values():
+        monkeypatch.setattr(module, "ACTIVE_LESSON_BUDGET", 1)
+    path = _empty_ledger(tmp_path)
+    before = path.read_bytes()
+
+    with pytest.raises(ValueError, match="past the fixed budget of 1"):
+        _seed(tmp_path)
+
+    assert path.read_bytes() == before
+    # And the one-lesson subset still fits, so the refusal is about the arithmetic
+    # rather than the command being broken at a small budget.
+    assert _seed(tmp_path, lesson_ids=["a"])["seeded_count"] == 1
 
 
 def test_committed_transition_prefix_is_preserved_across_a_seed(tmp_path: Path) -> None:
@@ -304,6 +330,8 @@ def test_receipt_carries_the_freeze_warning_and_its_context_on_every_path(tmp_pa
     assert "unrepairably" in planned["freeze_note"]
     assert planned["seeded"][0]["lesson_id"] == "a"
     assert planned["seeded"][0]["source_retro"] == "charness-artifacts/retro/source.md"
+    assert planned["active_lesson_count"] == 1
+    assert planned["active_lesson_budget"] == ledger.ACTIVE_LESSON_BUDGET
 
     applied = subprocess.run(command, check=False, capture_output=True, text=True)
     assert applied.returncode == 0, applied.stderr

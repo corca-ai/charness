@@ -14,11 +14,12 @@ from scripts.recent_lessons_lib import build_lesson_selection_index, check_lesso
 
 KIND = "charness.lesson-selection-preview"
 SCHEMA_VERSION = 1
-# 4 removes the archive/resurrection bucket with the retired lesson lifecycle
-# state. The tenth slot remains an ordinary uncertainty pick, so selection is a
-# pure projection over lesson history and ranking data.
-SELECTION_POLICY_VERSION = 4
-BUCKETS = ("recent", "value", "uncertainty")
+# 3 fills the archive-resurrection slot from the uncertainty ordering when the
+# archive is empty. Bumped because the same seed over the same ledger now selects
+# a different set, and a frozen snapshot must not be readable as though this
+# policy produced it.
+SELECTION_POLICY_VERSION = 3
+BUCKETS = ("recent", "value", "uncertainty", "archive", "archive_fallback_uncertainty")
 
 
 def _fail(message: str) -> None:
@@ -71,6 +72,7 @@ def _candidate_rows(index: dict[str, Any], lessons: dict[str, Any]) -> list[dict
                 "selection_weight": candidate.get("selection_weight"),
                 "score_total": score_total,
                 "score_count": score_count,
+                "state": lesson.get("state"),
             }
         )
     if seen != set(lessons):
@@ -126,19 +128,32 @@ def build_lesson_selection_preview(*, repo_root: Path, output_dir: Path, summary
         ledger["lessons"],
     )
     selected_ids: set[str] = set()
+    if any(row["state"] not in {"active", "archived"} for row in rows):
+        _fail("validated ledger lesson has invalid lifecycle state")
+    active_rows = [row for row in rows if row["state"] == "active"]
+    archived_rows = [row for row in rows if row["state"] == "archived"]
     total_score_count = sum(row["score_count"] for row in rows)
-    recent = _take(sorted(rows, key=_recent_key), selected_ids, 3)
+    recent = _take(sorted(active_rows, key=_recent_key), selected_ids, 3)
     value = _take(
-        sorted(rows, key=lambda row: (-_value(row), row["lesson_id"])),
+        sorted(active_rows, key=lambda row: (-_value(row), row["lesson_id"])),
         selected_ids,
         3,
     )
     uncertainty_rows = sorted(
-        rows,
+        active_rows,
         key=lambda row: (-_uncertainty(row, total_score_count), row["lesson_id"]),
     )
-    uncertainty = _take(uncertainty_rows, selected_ids, 4)
-    selected = recent + value + uncertainty
+    uncertainty = _take(uncertainty_rows, selected_ids, 3)
+    archive_rows = sorted(
+        archived_rows,
+        key=lambda row: (-_uncertainty(row, total_score_count), row["lesson_id"]),
+    )
+    archive = _take(archive_rows, selected_ids, 1)
+    # THE TENTH SLOT, restored (#626). Filling from the uncertainty ordering
+    # rather than leaving the slot empty keeps the preview at ten items when the
+    # archive is empty, while the separate count keeps that fact visible.
+    archive_fallback = _take(uncertainty_rows, selected_ids, 1 - len(archive))
+    selected = recent + value + uncertainty + archive + archive_fallback
     return {
         "kind": KIND,
         "schema_version": SCHEMA_VERSION,
@@ -149,6 +164,8 @@ def build_lesson_selection_preview(*, repo_root: Path, output_dir: Path, summary
             "recent": len(recent),
             "value": len(value),
             "uncertainty": len(uncertainty),
+            "archive": len(archive),
+            "archive_fallback_uncertainty": len(archive_fallback),
         },
         "items": _shuffled_items(seed, selected),
     }

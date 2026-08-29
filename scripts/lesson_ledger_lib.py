@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import json
 import subprocess
 from pathlib import Path
@@ -12,7 +13,10 @@ from scripts.recent_lessons_lib import build_lesson_selection_index
 
 LEDGER_FILENAME = "lesson-ledger.json"
 KIND = "charness.lesson-ledger"
-# 8 removes lesson archive/resurrection lifecycle state alongside the retired
+# 9 restores explicit archive/resurrection lifecycle decisions. The v8 ledger
+# remains readable and is upgraded by adding the lifecycle fields with every
+# existing lesson active and no prior lifecycle event.
+# 8 removed lesson archive/resurrection lifecycle state alongside the retired
 # session-emission snapshots and session-bound scoring. The ledger is durable
 # lesson history; presentation is an advisory projection owned by retro and is
 # never a ledger event.
@@ -20,15 +24,27 @@ KIND = "charness.lesson-ledger"
 # in `lesson_score_outcome_lib`. Bumped rather than added additively because
 # `score_total` changed MEANING -- it is now a sum of per-encounter valences, so
 # a v5 consumer reading a v6 ledger would report a magnitude nobody recorded.
-SCHEMA_VERSION = 8
+SCHEMA_VERSION = 9
+PREVIOUS_SCHEMA_VERSION = 8
+ACTIVE_LESSON_BUDGET = 50
 TOP_LEVEL_KEYS = {
     "kind",
     "schema_version",
     "transitions",
+    "active_lesson_budget",
+    "lifecycle_events",
     "score_events",
     "lessons",
 }
 TRANSITION_KEYS = {"sequence", "transition_id", "lesson_id", "source_retro"}
+LIFECYCLE_EVENT_KEYS = {
+    "sequence",
+    "event_id",
+    "lesson_id",
+    "action",
+    "decision_ref",
+    "rationale",
+}
 # Score-event shape, vocabulary, and citation now live in
 # `lesson_score_outcome_lib`: they are ONE concept (what an encounter record
 # means) that this module only replays, and keeping them here is what let the
@@ -44,6 +60,23 @@ LESSON_KEYS = {
     "score_total",
     "score_count",
     "outcome_counts",
+    "state",
+    "last_lifecycle_event_id",
+}
+# The whole lifecycle state machine as data, so the refusal can enumerate the
+# legal moves instead of restating a rule the reader has to infer from a
+# rejection. Kept as the branch table itself rather than a parallel constant:
+# a message listing actions that the code no longer accepts is worse than no
+# message, and this shape makes that drift impossible.
+LIFECYCLE_TRANSITIONS = {("archive", "active"): "archived", ("resurrect", "archived"): "active"}
+# The exact v8 shape accepted for migration. Keeping this separate from the v9
+# shape makes the one-way compatibility boundary explicit.
+V8_TOP_LEVEL_KEYS = {
+    "kind",
+    "schema_version",
+    "transitions",
+    "score_events",
+    "lessons",
 }
 # How a lesson becomes seedable at all. Named once because it is the answer to
 # every "nothing is eligible" dead end downstream (#621): a bullet with no
@@ -57,6 +90,33 @@ RECURRENCE_TAG_INSTRUCTION = (
 
 def lesson_ledger_path(output_dir: Path) -> Path:
     return output_dir / LEDGER_FILENAME
+
+
+def migrate_ledger_payload(payload: Any) -> tuple[Any, bool]:
+    """Add the restored lifecycle shape to an on-disk v8 payload.
+
+    The append-only transition and score histories are copied unchanged. A v8
+    lesson had no lifecycle state, so migration gives every lesson the exact
+    defaults used by a freshly seeded v9 lesson.
+    """
+    if (
+        isinstance(payload, dict)
+        and payload.get("kind") == KIND
+        and payload.get("schema_version") == PREVIOUS_SCHEMA_VERSION
+        and set(payload) == V8_TOP_LEVEL_KEYS
+    ):
+        migrated = copy.deepcopy(payload)
+        migrated["schema_version"] = SCHEMA_VERSION
+        migrated["active_lesson_budget"] = ACTIVE_LESSON_BUDGET
+        migrated["lifecycle_events"] = []
+        lessons = migrated.get("lessons")
+        if isinstance(lessons, dict):
+            for lesson in lessons.values():
+                if isinstance(lesson, dict):
+                    lesson["state"] = "active"
+                    lesson["last_lifecycle_event_id"] = None
+        return migrated, True
+    return payload, False
 
 
 def _fail(message: str) -> None:
@@ -84,7 +144,7 @@ def candidate_sources(
 
 def _committed_state(
     repo_root: Path, path: Path
-) -> tuple[list[Any], list[Any]] | None:
+) -> tuple[list[Any], list[Any], int, list[Any]] | None:
     result = subprocess.run(
         ["git", "show", f"HEAD:{path.relative_to(repo_root)}"],
         cwd=repo_root,
@@ -116,14 +176,35 @@ def _committed_state(
             f"committed ledger is at schema version {committed_version}, newer than this tool's "
             f"{SCHEMA_VERSION}; upgrade the tool rather than writing an older shape over it"
         )
-    if committed_version != SCHEMA_VERSION:
+    if committed_version not in {PREVIOUS_SCHEMA_VERSION, SCHEMA_VERSION}:
         _fail(
             f"committed ledger is at unsupported schema version {committed_version}; "
             f"this writer only accepts v{SCHEMA_VERSION}"
         )
-    if isinstance(previous.get("score_events"), list):
-        return previous["transitions"], previous["score_events"]
-    _fail("committed ledger is missing a required append-only list")
+    if committed_version == PREVIOUS_SCHEMA_VERSION:
+        if (
+            set(previous) == V8_TOP_LEVEL_KEYS
+            and isinstance(previous.get("score_events"), list)
+        ):
+            return (
+                previous["transitions"],
+                previous["score_events"],
+                ACTIVE_LESSON_BUDGET,
+                [],
+            )
+        _fail("committed ledger is missing a required append-only list")
+    if (
+        isinstance(previous.get("score_events"), list)
+        and isinstance(previous.get("lifecycle_events"), list)
+        and type(previous.get("active_lesson_budget")) is int
+    ):
+        return (
+            previous["transitions"],
+            previous["score_events"],
+            previous["active_lesson_budget"],
+            previous["lifecycle_events"],
+        )
+    _fail("committed ledger is missing a required append-only list or its budget")
 
 
 def _replay_transitions(
@@ -166,8 +247,71 @@ def _replay_transitions(
             # unscored lesson renders as "no encounters yet" rather than as a
             # missing field a consumer has to guess the meaning of.
             "outcome_counts": outcome_lib.outcome_counts([]),
+            "state": "active",
+            "last_lifecycle_event_id": None,
         }
     return replayed
+
+
+# An append-only lifecycle event that cites a human decision must cite an existing
+# canonical repo-relative Markdown file. The predicate is kept beside the ledger
+# replay that consumes it so lifecycle writes and validation share one rule.
+def canonical_markdown_ref(repo_root: Path, value: Any) -> bool:
+    if not _nonblank(value):
+        return False
+    path = repo_root / value
+    try:
+        canonical = path.resolve().relative_to(repo_root.resolve()).as_posix()
+    except ValueError:
+        return False
+    return value == canonical and path.suffix == ".md" and path.is_file()
+
+
+def _replay_lifecycle(
+    events: list[Any],
+    replayed: dict[str, dict[str, Any]],
+    *,
+    budget: int,
+    repo_root: Path,
+) -> None:
+    if type(budget) is not int or budget != ACTIVE_LESSON_BUDGET:
+        _fail(f"active_lesson_budget must remain fixed at {ACTIVE_LESSON_BUDGET}")
+    event_ids: set[str] = set()
+    for sequence, event in enumerate(events, start=1):
+        if not isinstance(event, dict) or set(event) != LIFECYCLE_EVENT_KEYS:
+            _fail(
+                f"lifecycle event {sequence} has unexpected or missing fields; a lifecycle event "
+                f"takes exactly keys {sorted(LIFECYCLE_EVENT_KEYS)}"
+            )
+        if type(event.get("sequence")) is not int or event["sequence"] != sequence:
+            _fail("lifecycle event sequences must start at 1 and be contiguous")
+        event_id, lesson_id, action = (
+            event.get("event_id"),
+            event.get("lesson_id"),
+            event.get("action"),
+        )
+        if not all(_nonblank(value) for value in (event_id, lesson_id, event.get("rationale"))):
+            _fail(f"lifecycle event {sequence} needs non-empty identity and rationale")
+        if event_id in event_ids:
+            _fail(f"duplicate lifecycle event_id `{event_id}`")
+        if lesson_id not in replayed:
+            _fail(f"lifecycle event `{event_id}` names unseeded lesson")
+        if not canonical_markdown_ref(repo_root, event.get("decision_ref")):
+            _fail(f"lifecycle event `{event_id}` decision_ref is not existing canonical Markdown")
+        current = replayed[lesson_id]["state"]
+        next_state = LIFECYCLE_TRANSITIONS.get((action, current))
+        if next_state is None:
+            legal = sorted(f"{move} a lesson in state `{state}`" for move, state in LIFECYCLE_TRANSITIONS)
+            _fail(
+                f"lifecycle event `{event_id}` cannot {action} lesson in state `{current}`; the only "
+                f"legal moves are {legal}"
+            )
+        replayed[lesson_id]["state"] = next_state
+        replayed[lesson_id]["last_lifecycle_event_id"] = event_id
+        event_ids.add(event_id)
+    active_count = sum(lesson["state"] == "active" for lesson in replayed.values())
+    if active_count > budget:
+        _fail(f"active lesson count {active_count} exceeds fixed budget {budget}")
 
 
 def _replay_scores(
@@ -221,6 +365,7 @@ def _replay_scores(
 def replay_validated_ledger_payload(
     *, repo_root: Path, output_dir: Path, summary_path: Path, path: Path, payload: Any
 ) -> dict[str, dict[str, Any]]:
+    payload, _ = migrate_ledger_payload(payload)
     if (
         not isinstance(payload, dict)
         or payload.get("kind") != KIND
@@ -231,12 +376,14 @@ def replay_validated_ledger_payload(
             f"expected kind `{KIND}` at schema version {SCHEMA_VERSION} with exactly the top-level "
             f"keys {sorted(TOP_LEVEL_KEYS)}"
         )
-    transitions, events, lessons = (
+    transitions, events, lessons, lifecycle_events, budget = (
         payload.get(key)
         for key in (
             "transitions",
             "score_events",
             "lessons",
+            "lifecycle_events",
+            "active_lesson_budget",
         )
     )
     if (
@@ -246,19 +393,25 @@ def replay_validated_ledger_payload(
                 (transitions, list),
                 (events, list),
                 (lessons, dict),
+                (lifecycle_events, list),
             )
         )
     ):
         _fail("ledger has invalid containers")
     available = candidate_sources(repo_root, output_dir, summary_path)
     replayed = _replay_transitions(transitions, available)
+    _replay_lifecycle(lifecycle_events, replayed, budget=budget, repo_root=repo_root)
     committed = _committed_state(repo_root, path)
     if committed is not None:
-        old_transitions, old_events = committed
+        old_transitions, old_events, old_budget, old_lifecycle = committed
         if transitions[: len(old_transitions)] != old_transitions:
             _fail("committed transitions were rewritten or removed; append new transitions instead")
         if events[: len(old_events)] != old_events:
             _fail("committed score events were rewritten or removed; append new events instead")
+        if budget != old_budget:
+            _fail("committed active_lesson_budget was rewritten")
+        if lifecycle_events[: len(old_lifecycle)] != old_lifecycle:
+            _fail("committed lifecycle events were rewritten or removed; append new events instead")
     _replay_scores(events, replayed, available)
     if any(
         not isinstance(entry, dict)
@@ -290,6 +443,7 @@ def validate_lesson_ledger(
         payload = json.loads(path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         _fail(f"invalid JSON: {exc.msg}")
+    payload, migrated = migrate_ledger_payload(payload)
     replayed = replay_validated_ledger_payload(
         repo_root=repo_root,
         output_dir=output_dir,
@@ -297,9 +451,31 @@ def validate_lesson_ledger(
         path=path,
         payload=payload,
     )
+    if migrated:
+        # Migration is a durable schema change, so use the same atomic writer as
+        # score, seed, and lifecycle append operations. Re-read inside the lock
+        # in case another process upgraded the file while validation was running.
+        from scripts import lesson_ledger_writer_lib as writer
+
+        with writer.ledger_lock(path):
+            current = json.loads(path.read_text(encoding="utf-8"))
+            current, _ = migrate_ledger_payload(current)
+            replayed = replay_validated_ledger_payload(
+                repo_root=repo_root,
+                output_dir=output_dir,
+                summary_path=summary_path,
+                path=path,
+                payload=current,
+            )
+            writer.replace_payload(path, current)
+            payload = current
     return {
         "lesson_count": len(replayed),
         "transition_count": len(payload["transitions"]),
         "score_event_count": len(payload["score_events"]),
+        "lifecycle_event_count": len(payload["lifecycle_events"]),
+        "active_lesson_count": sum(
+            lesson["state"] == "active" for lesson in replayed.values()
+        ),
         "path": str(path.relative_to(repo_root)),
     }
