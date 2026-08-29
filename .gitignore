@@ -13,11 +13,13 @@ reports/
 .charness/quality/runtime-smoothing.json
 .charness/quality/history/runtime-signals-*.jsonl
 .charness/bootstrap-python/
-# Path-anchored, so the line above does not cover a bootstrap run made INSIDE the
-# checked-in export -- which the gather guard's own message now tells a reader to
-# do. Untracked files there are listed by the packaging install-surface check and
-# would fail it as `extra:`.
-plugins/*/.charness/
+# The plugin export is GENERATED, not authored. `charness init`/`update` and
+# `.githooks/pre-push` both run `scripts/sync_root_plugin_manifests.py`, and the
+# Claude marketplace reads `./plugins/charness` from the checkout ON DISK -- it
+# never needed to be in history. Tracking it cost 1,042 files, 11 MB, and 934 of
+# the last 2,498 commits (37%) as pure regenerated churn, and it put a byte-identical
+# second copy of every script into every corpus scan and every test fixture copy.
+plugins/
 .charness/retro/
 .charness/closeout/
 .charness/hitl/runtime/
@@ -35,9 +37,6 @@ plugins/*/.charness/
 integrations/locks/*.json
 !integrations/locks/.gitkeep
 !integrations/locks/lock.schema.json
-plugins/*/integrations/locks/*.json
-!plugins/*/integrations/locks/.gitkeep
-!plugins/*/integrations/locks/lock.schema.json
 skills/support/generated/*
 !skills/support/generated/.gitkeep
 pytest-tmp/

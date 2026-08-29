@@ -14,7 +14,7 @@ this table.
 
 ## The one-sentence split
 
-`check_doc_links.py` asks **"does this reference resolve?"**, per link, and
+[`check_doc_links.py`](../scripts/check_doc_links.py) asks **"does this reference resolve?"**, per link, and
 refuses the ones that do not. `awiki lint` asks **"is this page reachable?"**,
 per graph, and cannot see a broken link at all.
 
@@ -24,7 +24,7 @@ question, honestly, and nobody was asking this one.
 
 ## Command-level matrix
 
-| Question | `check_doc_links.py` | `awiki lint -root docs -recursive` |
+| Question | [`check_doc_links.py`](../scripts/check_doc_links.py) | `awiki lint -root docs -recursive` |
 | --- | --- | --- |
 | Does a markdown link resolve to a real file? | **YES — hard fail.** `broken relative link` | **NO.** Reports `ok` with a link to a page that does not exist. Surfaced only by the separate `awiki wanted`, and framed as a page you might want to create rather than as an error. |
 | Is the link form right (`./` prefix, no absolute paths)? | **YES — hard fail.** | No opinion. |
@@ -42,7 +42,7 @@ The repo gates on NAMED METRICS against declared bars, and never on awiki's exit
 code. Three points, all measured:
 
 1. **Nothing else answers the connectivity question.** Before the docs index hub
-   existed, seven pages were unreachable while `check_doc_links.py` was green —
+   existed, seven pages were unreachable while [`check_doc_links.py`](../scripts/check_doc_links.py) was green —
    correctly green, because every link in the repo resolved. That is the exact
    shape of a gate reporting a verdict it never observed, and it is why awiki is
    worth a lane of its own rather than being folded into the existing one.

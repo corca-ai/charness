@@ -204,7 +204,7 @@ the evidence is sufficient for the boundary at hand.
 ### D28. Template-First Fill Guards And Report-All For Sibling Artifact Validators — POLARITY RESOLVED, FILL GUARDS STILL DEFERRED (2026-07-27)
 
 - Question: Should the fill-time guard comments added to the quality scaffold be generalized to the other scaffold families (debug, critique, retro, handoff, ideation), should the sibling artifact validators share ONE one-pass control instead of per-family flag polarity, and should `emit_payload_main` in [scaffold_artifact_lib.py](../scripts/scaffold_artifact_lib.py) grow a `--write` mode so scaffold-first becomes the path of least resistance?
-- Current choice (operator-decided, A+B+C): **the one-pass half is fully resolved and the polarity split is closed.** (A) `validate_debug_artifact.py` and `validate_critique_artifacts.py` default to one-pass, matching handoff/retro/ideation/quality. (B) `--fail-fast` is the only control across the family; the obsolete `--report-all` no-op has been removed. (C) The control is declared once in `add_one_pass_args`, and the four changed-path validators (critique, debug, retro, ideation) route their whole `main()` through `run_changed_artifact_validator` in [artifact_validator.py](../scripts/artifact_validator.py) — the two that previously justified a private `main()` now fit through hooks that model the real work: `extra_args` for critique's `--changed-ref` / `--changed-path` cross-surface probe, a `ChangedArtifactRun` context for its per-path `require_tier_evidence`, and `artifacts_fn` for debug's adapter-resolved output directory. The fill-guard and `--write` halves stay deferred on their original reasoning.
+- Current choice (operator-decided, A+B+C): **the one-pass half is fully resolved and the polarity split is closed.** (A) [`validate_debug_artifact.py`](../scripts/validate_debug_artifact.py) and [`validate_critique_artifacts.py`](../scripts/validate_critique_artifacts.py) default to one-pass, matching handoff/retro/ideation/quality. (B) `--fail-fast` is the only control across the family; the obsolete `--report-all` no-op has been removed. (C) The control is declared once in `add_one_pass_args`, and the four changed-path validators (critique, debug, retro, ideation) route their whole `main()` through `run_changed_artifact_validator` in [artifact_validator.py](../scripts/artifact_validator.py) — the two that previously justified a private `main()` now fit through hooks that model the real work: `extra_args` for critique's `--changed-ref` / `--changed-path` cross-surface probe, a `ChangedArtifactRun` context for its per-path `require_tier_evidence`, and `artifacts_fn` for debug's adapter-resolved output directory. The fill-guard and `--write` halves stay deferred on their original reasoning.
 - Why now: **The original "report-all there is ceremony" premise was refuted by measurement, which is exactly this entry's reopen trigger.** The [lesson-recurrence retro](../charness-artifacts/retro/2026-07-26-lesson-recurrence-mechanism.md) measured ~8 validator rounds on a single handoff artifact — the one-rule-per-run report manufactured the retry loop that a separate checked-in lesson ("a counted limit is a planning input, not a retry loop") blames on the reader. Cost is not the rule count; it is that each round is a full gate run and the author re-reads the artifact each time. The flip reverses the explicit operator narrowing recorded in `a930cc5f`; that reversal is the operator's own call, made on this measurement. C is what stops the split re-forming: while each validator owned its own `main()`, matching defaults were a convention that the next artifact family could silently break.
 - Impact surfaces: [scripts/artifact_validator.py](../scripts/artifact_validator.py), the debug/critique/retro/ideation/handoff/quality validators, [scripts/run-quality.sh](../scripts/run-quality.sh), [scripts/scaffold_artifact_lib.py](../scripts/scaffold_artifact_lib.py) and the five sibling scaffolds.
 - Non-claims: `--fail-fast` on debug and critique stops at the first failing artifact, not only the first rule; previously those two always collected across artifacts. That is the shared runner's semantics, adopted deliberately.
@@ -253,7 +253,7 @@ the evidence is sufficient for the boundary at hand.
   span that fails to tokenize standalone falls back per-member to v1 rstrip-only);
   `FINGERPRINT_ALGO_VERSION` bumped to `"2"`. **S4-Defer-3 RESOLVED** — the gate
   baseline moved to schema v3 (`code_families`: `{fingerprint, member_hashes}`) and
-  `check_dup_ratchet.py` runs a `classify_reductions` pre-pass: a candidate-new
+  [`check_dup_ratchet.py`](../skills/public/quality/scripts/check_dup_ratchet.py) runs a `classify_reductions` pre-pass: a candidate-new
   family whose member multiset is a PROPER sub-multiset of a vanished baseline
   family's is an advisory membership REDUCTION (never silent — one
   `--accept-rotation`-naming line per reduction), not a hard block; a membership
@@ -286,10 +286,10 @@ the evidence is sufficient for the boundary at hand.
 - Question: Should [`check_issue_closeout_commit_msg.py`](../scripts/check_issue_closeout_commit_msg.py) surface a non-blocking REVIEW advisory when a close self-classifies `question`/`decision-needed` (mirroring [`issue_close_comment_floor.review_advisory_for_classification`](../skills/public/issue/scripts/issue_close_comment_floor.py)), so the floor exemption is not the silent path on the commit-message carrier the way it already is not on `close-with-comment`?
 - Resolution: RESOLVED (2026-07-04, this session) exactly as the deferral named.
   `review_advisory_for_classification` now has a single carrier-neutral owner in
-  `issue_closeout_rung1_floors.py` (`FLOOR_EXEMPT_CLASSIFICATIONS` + a unified
+  [`issue_closeout_rung1_floors.py`](../skills/public/issue/scripts/issue_closeout_rung1_floors.py) (`FLOOR_EXEMPT_CLASSIFICATIONS` + a unified
   `(classification, *, numbers=None, source=None)` signature), re-exported through
-  `issue_verify_closeout.py`, with `issue_close_comment_floor.py` reduced to a
-  re-export (no duplicated body). `check_issue_closeout_commit_msg.py` surfaces the
+  [`issue_verify_closeout.py`](../skills/public/issue/scripts/issue_verify_closeout.py), with [`issue_close_comment_floor.py`](../skills/public/issue/scripts/issue_close_comment_floor.py) reduced to a
+  re-export (no duplicated body). [`check_issue_closeout_commit_msg.py`](../scripts/check_issue_closeout_commit_msg.py) surfaces the
   advisory via `_exemption_advisories` + `_emit_human_output` and a `review_advisory`
   JSON field — non-blocking, exit stays 0. The classification-only close-with-comment
   call is byte-identical to before (scope suffix empty when `numbers` is None). No new
@@ -411,7 +411,7 @@ check.
   2. **The honest residue is already in the payload.** #465 shipped [subprocess_only_coverage_advisory.py](../scripts/subprocess_only_coverage_advisory.py), which names the two mechanisms that DO lose the measurement (`env-replaces`, `copies-this-script`), bound to the spawn call whose command names the script. It is emitted from `_blocking_report` beside `blocking_targets`, keyed on the union of `blocking_targets` and `blocking`, carries the blocked line numbers, and states its own scope so silence is a statement rather than an absence. Verified by execution 2026-08-01, on a **synthetic** `blocking_targets` input (no live gate BLOCK was available on this range): `subprocess_coverage_advisory_report` on [validate_maintainer_setup.py](../scripts/validate_maintainer_setup.py) names [test_maintainer_hooks.py](../tests/quality_gates/test_maintainer_hooks.py) via `copies-this-script` with `blocked_lines: [42]`, examining 7 candidate tests. Disclosed weakness of that demo, per the bounded review: the named test ALSO loads the module in-process at nine sites, so it is the least informative firing the advisory can produce — the `established` field says so, but the demo proves the payload is wired, not that it discriminates well.
   3. **Line granularity is not available to buy.** Neither candidate source (the boundary-bypass ratchet, the test-reference map) records which LINE a test reaches, so the per-line form the ask names cannot be established at all without a new producer.
 - What DID land with this decision: the gate's `blocking_detail` string for an untracked file no longer reads "(subprocess-only or untested)" — the wording asserted exactly the cause the measurement narrowed — and now reads "(untested, or exercised only where coverage was never attributed -- see subprocess_coverage_advisory)". Text only; no verdict changes.
-- **Residual this decline does NOT cover, found by the bounded review (STILL OPEN):** the ask's ORIGIN form ([2026-07-30 retro](../charness-artifacts/retro/2026-07-30-session-retro.md) Engelbart counterfactual) named a different surface and a different payload — `suggest_mutation_coverage_command.py` reporting, per blocked file, WHICH test files reference it and how they exercise it. That is **remedy** information ("add the in-process case here"), not verdict-doubt information, so ground 1 does not falsify it, ground 2 has not shipped it, and ground 3's line-granularity limit does not bite. [subprocess_only_coverage_advisory.py](../scripts/subprocess_only_coverage_advisory.py) `_advisory` already computes the candidate NAMES per blocked path and reduces them to a count (`candidate_tests_examined`); "0 lines attributed while N named tests reference this path" is exactly the discriminator the repaired `blocking_detail` disjunction leaves unresolved. Not landed here because surfacing it changes an advisory payload on a blocking gate and owes its own review rounds, which a decision slice should not smuggle. Second, narrower note for the next toucher: a path that reaches the advisory via `blocking` alone gets `blocked_lines: []` even though `_blocking_report` computed those numbers and discarded them, and the two single-key entrypoints (`subprocess_coverage_advisory`, `advisory_scope`) take no `blocking` argument, so a future caller reaching for the obvious entrypoint silently reverts to targets-only keying.
+- **Residual this decline does NOT cover, found by the bounded review (STILL OPEN):** the ask's ORIGIN form ([2026-07-30 retro](../charness-artifacts/retro/2026-07-30-session-retro.md) Engelbart counterfactual) named a different surface and a different payload — [`suggest_mutation_coverage_command.py`](../scripts/suggest_mutation_coverage_command.py) reporting, per blocked file, WHICH test files reference it and how they exercise it. That is **remedy** information ("add the in-process case here"), not verdict-doubt information, so ground 1 does not falsify it, ground 2 has not shipped it, and ground 3's line-granularity limit does not bite. [subprocess_only_coverage_advisory.py](../scripts/subprocess_only_coverage_advisory.py) `_advisory` already computes the candidate NAMES per blocked path and reduces them to a count (`candidate_tests_examined`); "0 lines attributed while N named tests reference this path" is exactly the discriminator the repaired `blocking_detail` disjunction leaves unresolved. Not landed here because surfacing it changes an advisory payload on a blocking gate and owes its own review rounds, which a decision slice should not smuggle. Second, narrower note for the next toucher: a path that reaches the advisory via `blocking` alone gets `blocked_lines: []` even though `_blocking_report` computed those numbers and discarded them, and the two single-key entrypoints (`subprocess_coverage_advisory`, `advisory_scope`) take no `blocking` argument, so a future caller reaching for the obvious entrypoint silently reverts to targets-only keying.
 - Non-claims: declining does NOT claim every BLOCK is a genuinely untested line, and it does not upgrade the advisory. The advisory remains file-granular, non-exhaustive, and explicitly silent on a spawn whose command is a variable, an `env=` passed as a bare name, and a cross-module `copytree` — see its `silence_means`. No new measurement was taken for this decision; the 2026-07-30 control is cited, not re-run.
 - Impact surfaces: [check_changed_line_mutation_coverage.py](../scripts/check_changed_line_mutation_coverage.py), [subprocess_only_coverage_advisory.py](../scripts/subprocess_only_coverage_advisory.py) and their plugin mirrors.
 - Reopen trigger: a measured case where a blocked line's only exercise is an environment-inheriting, in-repo spawn and coverage still misses it (a THIRD mechanism, not a re-argument of the two known ones); or a BLOCK the advisory stayed silent on that is later diagnosed as an unattributed-child artifact; or a test→line map that makes the per-line claim establishable; or the candidate-NAME residual above is wanted by a session that has just spent a cycle re-deriving it by hand. **Honest weakness of these triggers, named rather than left implicit:** nothing counts advisory silences, and `advisory_scope_line` prints only on a blocking exit, so every trigger here depends on a human noticing and writing it down — the same channel D38 records as the one that let a correct lesson decay. This entry is an instance of that class, not an exception to it.
@@ -442,7 +442,7 @@ check.
 - Named remedy premise:
   - Remedy: move the exemption declaration from the workflow into the adapter.
   - Premise: an adapter-declared exemption channel already exists for this reader.
-  - Evidence channel: read `ci_local_gate_parity_lib.py` and the quality adapter contract.
+  - Evidence channel: read [`ci_local_gate_parity_lib.py`](../skills/public/quality/scripts/ci_local_gate_parity_lib.py) and the quality adapter contract.
   - Observation: the reader accepts workflow text only; the adapter has related fields but no exemption input.
   - Downstream decision delta: keep the deferral, but reshape the remedy from a rewire into a new adapter seam with precedence rules.
   - Status: falsified
@@ -478,7 +478,7 @@ check.
   "Qualify the generic tokens in inventory-consumer-fields.json so a field declares
   whether its name is distinctive" cannot both impose a real marker rule and spare the
   cited reviews, because the fields the corpus actually engages ARE the ordinary-English
-  ones: `inventory_nose_clones.py` declares these fields: `status`, `advisory`,
+  ones: [`inventory_nose_clones.py`](../skills/public/quality/scripts/inventory_nose_clones.py) declares these fields: `status`, `advisory`,
   `family_count`, `families`, `excludes`, `ignore_file`, `paths`, `ranking`, `scope`,
   and `notes`. The citing reviews engage the ordinary ones on incidental prose.
   Declaring them non-distinctive refuses those
@@ -488,7 +488,7 @@ check.
   objects to: it would decide whether the gate may fire on a field at all, from inside
   the audited repo. Found by the 2026-08-01 bounded plan critique before it was built.
 - Named remedy premise:
-  - Remedy: qualify generic inventory tokens with a distinctiveness field in `inventory-consumer-fields.json`.
+  - Remedy: qualify generic inventory tokens with a distinctiveness field in [`inventory-consumer-fields.json`](../skills/public/quality/references/inventory-consumer-fields.json).
   - Premise: the declaration can distinguish the fields whose incidental prose caused the false engagement.
   - Evidence channel: read the inventory declaration and the cited consumer citations (5 across 4 artifacts when this remedy was assessed on the 2026-08-01 corpus; the dated snapshot below is the later evidence).
   - Observation: every cited engagement uses ordinary-English field names; declaring them non-distinctive spares the reviews, while declaring them distinctive makes the rule a measured-zero no-op.
@@ -538,7 +538,7 @@ check.
   handed `latest.md` only — so "would refuse 4 citations" is not "would redden the next
   quality run". Known and unrepaired, raised by the round-2 review and recorded because
   round 2 is the review cap: a field name inside a backticked PATH or flag
-  (`advisory-interpretation-contract.md`, `--paths`) scores as marked — the same one-way
+  ([`advisory-interpretation-contract.md`](../skills/shared/references/advisory-interpretation-contract.md), `--paths`) scores as marked — the same one-way
   bias as the bug that was fixed, verified inert in the 2026-08-12 snapshot but able to flip a
   refusal silently on a later artifact; lines with an odd number of backticks and fenced
   code blocks are unmodelled; and marker attribution is per LINE, not per occurrence.
@@ -567,7 +567,7 @@ check.
   as posed ("should absence be drift by default?") is answered no. But the defect this
   entry actually recorded — *deleting those four adapter lines disarms it with nothing
   corroborating them* — is closed, in two parts:
-  - `current_release.py` reports `absence_corroboration` (`not-applicable` / `declared` /
+  - [`current_release.py`](../skills/public/release/scripts/current_release.py) reports `absence_corroboration` (`not-applicable` / `declared` /
     `uncorroborated`) plus `undeclared_absent_surfaces`, and
     `publish_release_preflight.release_surface_blocker` REFUSES a publish while it reads
     `uncorroborated`. `drift` is deliberately unchanged, so the read-only status call
@@ -600,7 +600,7 @@ check.
   (four planner tests). The gate therefore sits immediately after sync, where an absent
   surface means the sync did not write it. Accepted cost: the refusal lands after the
   version bump has already rewritten the worktree.
-- **Known gap, not closed:** `publish_release_resume.py` reaches `create_release` without
+- **Known gap, not closed:** [`publish_release_resume.py`](../skills/public/release/scripts/publish_release_resume.py) reaches `create_release` without
   the release-surface check, so a surface deleted or corrupted between a failed attempt
   and the resume still reaches publish unchecked. Pre-existing for `drift` too. Adding
   the gate there was attempted and reverted: every resume fixture exercises a repo with
@@ -608,17 +608,17 @@ check.
   line this slice was entitled to add.
 - **Withdrawn, do not retry:** the "derive the expected set from the repo's own sync
   command output" repair named below is NOT buildable as described.
-  `sync_root_plugin_manifests.py` reports `written_paths` carrying the plugin root as a
+  [`sync_root_plugin_manifests.py`](../scripts/sync_root_plugin_manifests.py) reports `written_paths` carrying the plugin root as a
   *directory* (`plugins/charness`), so two of the four surfaces — `claude_plugin` and
-  `codex_plugin` — never appear in it; `current_release.py`'s vocabulary is symbolic keys
+  `codex_plugin` — never appear in it; [`current_release.py`](../skills/public/release/scripts/current_release.py)'s vocabulary is symbolic keys
   rather than paths, so a derivation would additionally need a path→key map with nowhere
   portable to live; and the listing-mode variant puts the channel behind a NEW
   self-declared adapter field, so it could not have broken the class it claimed to break.
   Found by the 2026-08-01 bounded plan critique before any of it was built.
 - Named remedy premise:
   - Remedy: derive the expected release-surface set from sync command output.
-  - Premise: the sync output names every generated surface in the vocabulary consumed by `current_release.py`.
-  - Evidence channel: read `sync_root_plugin_manifests.py` output fields and `current_release.py` surface vocabulary.
+  - Premise: the sync output names every generated surface in the vocabulary consumed by [`current_release.py`](../skills/public/release/scripts/current_release.py).
+  - Evidence channel: read [`sync_root_plugin_manifests.py`](../scripts/sync_root_plugin_manifests.py) output fields and [`current_release.py`](../skills/public/release/scripts/current_release.py) surface vocabulary.
   - Observation: sync reports the plugin root as a directory, omits two surfaces, and uses no path-to-key mapping for the release vocabulary.
   - Downstream decision delta: withdraw the derivation repair; retain declared-only status with explicit uncorroborated publish refusal.
   - Status: withdrawn
@@ -756,7 +756,7 @@ provider-specific integrations are not current execution authority.
   startup plus scheduling contention against the other ~90 gates. Should the sample
   measure the gate's own work instead?
 - Current choice: **Keep wall-clock samples as telemetry, but do not block local push or
-  release on a timing violation.** `check_runtime_budget.py` remains blocking by
+  release on a timing violation.** [`check_runtime_budget.py`](../skills/public/quality/scripts/check_runtime_budget.py) remains blocking by
   default for an explicit owner invocation; `run-quality.sh` passes `--advisory` so a
   recent-median overrun stays visible without rejecting an otherwise correct change.
   Adapter, profile, and label-universe configuration errors remain blocking.

@@ -27,10 +27,10 @@ explicitly ask for it or when a maintainer manually persists the lesson.
 
 The first implementation batch has landed:
 
-- `probe_host_logs.py` reports honest Claude/Codex metric availability
-- `refresh_recent_lessons.py` refreshes [`recent-lessons.md`](../charness-artifacts/retro/recent-lessons.md) from the latest
+- [`probe_host_logs.py`](../skills/public/retro/scripts/probe_host_logs.py) reports honest Claude/Codex metric availability
+- [`refresh_recent_lessons.py`](../skills/public/retro/scripts/refresh_recent_lessons.py) refreshes [`recent-lessons.md`](../charness-artifacts/retro/recent-lessons.md) from the latest
   durable retro artifact
-- `persist_retro_artifact.py` now auto-refreshes the digest when a durable
+- [`persist_retro_artifact.py`](../skills/public/retro/scripts/persist_retro_artifact.py) now auto-refreshes the digest when a durable
   retro artifact is written
 - `setup` can seed [`.agents/retro-adapter.yaml`](../.agents/retro-adapter.yaml) and
   [`charness-artifacts/retro/recent-lessons.md`](../charness-artifacts/retro/recent-lessons.md) for repos that opt into durable retro
@@ -201,10 +201,10 @@ If this work is implemented badly, the likely failure modes are:
    scope, using existing `skill-quality` and `public-skill-validation`
    posture as the base. Landed.
 2. Decide whether a thin retro orchestration helper should call
-   `refresh_recent_lessons.py` automatically when durable retro artifacts are
+   [`refresh_recent_lessons.py`](../skills/public/retro/scripts/refresh_recent_lessons.py) automatically when durable retro artifacts are
    updated, or whether the current explicit script boundary is the intended
    product posture. Landed in favor of auto-refresh through
-   `persist_retro_artifact.py`.
+   [`persist_retro_artifact.py`](../skills/public/retro/scripts/persist_retro_artifact.py).
 3. Decide whether `setup` should also wire the recent-lessons seam into
    scaffolded [`AGENTS.md`](../AGENTS.md) memory by default when retro memory is enabled.
    Landed in favor of keeping the root file minimal and leaving selection to

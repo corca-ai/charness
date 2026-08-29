@@ -7,18 +7,11 @@ exists to surface.
 """
 from __future__ import annotations
 
-import ast
-import importlib
-import subprocess
-import tarfile
 from pathlib import Path
 
-import pytest
 import yaml
 
-from tests.repo_copy import clone_seeded_charness_repo
-
-from .support import ROOT, init_git_repo, run_script
+from .support import run_script
 
 # --- #256 length headroom (advisory) ---------------------------------------
 
@@ -99,93 +92,3 @@ def test_headroom_ignores_non_gated_paths(tmp_path: Path) -> None:
 
 
 # --- #257 staged plugin-mirror drift (hard gate) ---------------------------
-
-mirror_gate = importlib.import_module("scripts.check_staged_mirror_drift")
-
-
-def test_staged_index_tree_reflects_staged_not_head(tmp_path: Path) -> None:
-    """The gate validates the *staged* state, so write-tree must capture the
-    index (not HEAD) — this is what lets it catch a source staged without its
-    mirror, which a HEAD-based check cannot see until after the commit."""
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    (repo / "f.txt").write_text("committed\n", encoding="utf-8")
-    init_git_repo(repo, "f.txt")
-    subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-m", "init"],
-                   cwd=repo, check=True, capture_output=True, text=True)
-    # stage a modification (do NOT commit)
-    (repo / "f.txt").write_text("staged-change\n", encoding="utf-8")
-    subprocess.run(["git", "add", "f.txt"], cwd=repo, check=True, capture_output=True, text=True)
-
-    tree = mirror_gate.staged_index_tree(repo)
-    assert len(tree) == 40  # a real tree sha
-    archive = subprocess.run(["git", "archive", "--format=tar", tree], cwd=repo,
-                             check=True, capture_output=True)
-    import io
-
-    with tarfile.open(fileobj=io.BytesIO(archive.stdout), mode="r:") as tar:
-        member = tar.extractfile("f.txt")
-        assert member is not None
-        assert member.read().decode() == "staged-change\n"  # staged, not the committed content
-
-
-def test_main_blocks_on_drift_and_passes_when_clean(tmp_path: Path, monkeypatch, capsys) -> None:
-    """The wrapper returns 1 + prints actionable guidance on drift, 0 when clean —
-    independent of the (already-tested) validate_packaging machinery it reuses."""
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    (repo / "f.txt").write_text("x\n", encoding="utf-8")
-    init_git_repo(repo, "f.txt")
-    monkeypatch.setattr(mirror_gate, "staged_index_tree", lambda _root: "0" * 40)
-    monkeypatch.setattr(mirror_gate._vpc, "extract_snapshot", lambda *a, **k: None)
-    monkeypatch.setattr(
-        mirror_gate._vpc, "validate_snapshot",
-        lambda _snap: subprocess.CompletedProcess([], 1, "drift at plugins/x", ""),
-    )
-    monkeypatch.setattr("sys.argv", ["check_staged_mirror_drift.py", "--repo-root", str(repo)])
-    assert mirror_gate.main() == 1
-    err = capsys.readouterr().err
-    assert "STAGED plugin mirror is out of sync" in err
-    assert "sync_root_plugin_manifests.py" in err
-
-    monkeypatch.setattr(
-        mirror_gate._vpc, "validate_snapshot",
-        lambda _snap: subprocess.CompletedProcess([], 0, "ok", ""),
-    )
-    assert mirror_gate.main() == 0
-
-
-@pytest.mark.release_only
-def test_gate_passes_on_isolated_repo_copy_in_sync(
-    tmp_path: Path, seeded_charness_git_repo: Path
-) -> None:
-    """End-to-end happy path against an isolated repo copy.
-
-    This still exercises git write-tree + archive + the real validate_packaging,
-    but it avoids touching the shared parent repo index during parallel pytest or
-    pre-push hooks.
-    """
-    repo = clone_seeded_charness_repo(tmp_path, seeded_charness_git_repo)
-    assert repo != ROOT
-
-    result = run_script("scripts/check_staged_mirror_drift.py", "--repo-root", str(repo))
-    assert result.returncode == 0, result.stderr
-    assert "matches staged sources" in result.stdout
-
-
-def test_staged_mirror_drift_e2e_does_not_target_shared_parent_repo() -> None:
-    """Regression guard for #292: standing pytest must not run this staged-index
-    gate against the shared parent worktree, because `git write-tree` touches the
-    live index and can race with git hooks."""
-    source_path = Path(__file__)
-    source = source_path.read_text(encoding="utf-8")
-    tree = ast.parse(source)
-    offenders: list[int] = []
-    for node in ast.walk(tree):
-        if not isinstance(node, ast.Call):
-            continue
-        segment = ast.get_source_segment(source, node) or ""
-        if "check_staged_mirror_drift.py" in segment and "str(ROOT)" in segment:
-            offenders.append(node.lineno)
-
-    assert offenders == []

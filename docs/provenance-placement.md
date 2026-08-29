@@ -6,7 +6,7 @@
 Standing/contract docs state the **timeless rule**. Provenance — *why* a rule
 exists, *when* it was added, *which* incident drove it — lives in the **record
 layer**, not the rule body. This doc owns where provenance goes; the portable
-check `check_standing_doc_provenance.py` (a `quality` capability) enforces it so
+check [`check_standing_doc_provenance.py`](../skills/public/quality/scripts/check_standing_doc_provenance.py) (a `quality` capability) enforces it so
 consuming repos inherit the hygiene, not just charness.
 
 ## The Rule
@@ -54,11 +54,11 @@ The policy does **not** blanket-strip refs. The doc classes, strictest first:
   Provenance for exported guidance lives in the commit message and the
   goal/critique/retro record, never in the package. Skill packages are
   enforced blocking by `validate_skill_ergonomics`; the remaining exported
-  surfaces are scanned by the advisory `check_public_doc_coupling.py`
+  surfaces are scanned by the advisory [`check_public_doc_coupling.py`](../scripts/check_public_doc_coupling.py)
   (`check-public-doc-coupling` in the quality gate). External tool versions
   are not self-version pins and stay legitimate.
 - **Standing-rule docs** — their job is to state timeless rules/contracts (the
-  docs linked from `AGENTS.md`/`CLAUDE.md` as the rule layer, e.g.
+  docs linked from `AGENTS.md`/[`CLAUDE.md`](../CLAUDE.md) as the rule layer, e.g.
   [operating-contract.md](./operating-contract.md),
   [implementation-discipline.md](./implementation-discipline.md),
   [authoring-preflight.md](./authoring-preflight.md),
@@ -91,5 +91,5 @@ python3 skills/public/quality/scripts/check_standing_doc_provenance.py --repo-ro
 ```
 
 It generalizes the skill-package anchor gate
-(`skill_text_quality_lib.py`: `ISSUE_ANCHOR_RE`, `DATED_INCIDENT_RE`) to standing
+([`skill_text_quality_lib.py`](../skills/public/quality/scripts/skill_text_quality_lib.py): `ISSUE_ANCHOR_RE`, `DATED_INCIDENT_RE`) to standing
 docs; see [the quality reference](../skills/public/quality/references/standing-doc-provenance.md).

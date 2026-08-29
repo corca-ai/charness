@@ -77,7 +77,12 @@ INVENTORY_DISPATCH = (
 
 # Where repo-owned commands live. `mutants/` and `.claude/worktrees/` are scratch
 # copies of this tree, not surfaces anyone runs.
-_OWNED_SOURCE_ROOTS = ("scripts", "skills", "hooks", "plugins")
+# `plugins` is gone from this list: it is the GENERATED export, byte-identical to
+# `scripts` + `skills`, and it was 717 of the 1,434 files this contract parsed --
+# exactly half the corpus spent re-parsing copies of files already parsed. The
+# export transform copies bytes; it cannot introduce a `json.dump` to stdout that
+# the source does not already have.
+_OWNED_SOURCE_ROOTS = ("scripts", "skills", "hooks")
 
 # One command per migrated family, with the minimum argv each needs, so a failure
 # names WHICH surface regressed rather than "something somewhere takes --json".

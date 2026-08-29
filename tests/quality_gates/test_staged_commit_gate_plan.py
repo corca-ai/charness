@@ -40,7 +40,6 @@ def test_staged_commit_plan_includes_commit_only_python_gates() -> None:
     assert "py_compile (staged)" in labels
     assert "check-python-lengths (staged)" in labels
     assert "validate-attention-state-visibility" in labels
-    assert "staged-plugin-mirror-drift" in labels
 
 
 def test_staged_commit_plan_gates_git_identity_when_script_present() -> None:
@@ -222,7 +221,6 @@ def test_staged_commit_plan_covers_domain_and_markdown_triggers() -> None:
     assert "validate-adapters" in labels
     assert "validate-presets" in labels
     assert "validate-integrations" in labels
-    assert "staged-plugin-mirror-drift" in labels
     assert "check-doc-links" in labels
     # Scoped: the commit layer lints only the staged `.md` files, unlike the broad gate.
     assert "check-markdown (staged)" in labels
@@ -407,7 +405,6 @@ def test_staged_commit_gate_plan_cli_emits_the_planned_labels() -> None:
         "check-staged-reversion",
         "check-git-identity",
         "staged-worktree-consistency",
-        "staged-plugin-mirror-drift",
         "check-doc-links",
         "check-plugin-doc-links",
         "check-plugin-dir-references",

@@ -49,13 +49,21 @@ def validate_snapshot(snapshot_root: Path) -> subprocess.CompletedProcess[str]:
     script_path = snapshot_root / "scripts" / "validate_packaging.py"
     if not script_path.is_file():
         raise ValidationError(f"snapshot is missing `{script_path.relative_to(snapshot_root)}`")
+    # No `--validate-export`. That flag requires the checked-in plugin tree to exist in
+    # the snapshot, and `plugins/` stopped being tracked on 2026-08-29: it is generated
+    # by `sync_root_plugin_manifests.py` on init/update and on pre-push, so a committed
+    # tree legitimately has none. Asking a commit to carry generated output was the
+    # premise this flag encoded, and it is the premise that changed.
+    #
+    # What survives is the part that was never about the export: the committed manifests
+    # and marketplace records still have to be well-formed and agree with each other,
+    # and a malformed one reaches consumers exactly the way it always did.
     return subprocess.run(
         [
             "python3",
             str(script_path),
             "--repo-root",
             str(snapshot_root),
-            "--validate-export",
         ],
         cwd=snapshot_root,
         check=False,

@@ -136,7 +136,7 @@ structure — hence pairing it with a testability sensor.
    `_public_spec_quality`, `_skill_ergonomics` — all via the captured-`main()`
    pattern, skipping the internally-spawning `_entrypoint_docs_ergonomics` and
    `_ubiquitous_language` per the boundary rule.
-   `inventory_public_spec_quality.py` and `inventory_cli_side_effect_probes.py`
+   [`inventory_public_spec_quality.py`](../skills/public/quality/scripts/inventory_public_spec_quality.py) and [`inventory_cli_side_effect_probes.py`](../skills/public/quality/scripts/inventory_cli_side_effect_probes.py)
    gained the sibling-`*_lib` `__file__` `sys.path` bootstrap their peers already
    carried, so they are now genuinely in-process importable (goal A). Baseline:
    convertible 55→51, candidate 94→90, keys 157→152 — five real conversions, no

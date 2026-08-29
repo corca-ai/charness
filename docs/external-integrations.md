@@ -199,7 +199,7 @@ Schema (validated by [`validate_integrations.py`](../scripts/validate_integratio
 Effects:
 
 - `tool_recommendation` payloads gain `staged: true|false`. `null` when no
-  `dependencies.json` is declared.
+  [`dependencies.json`](../integrations/tools/dependencies.json) is declared.
 - `validate_integrations` rejects unknown `tool_id`s in the list so the
   declaration cannot drift away from the available manifest set.
 - Discovery and recommendation behavior is otherwise unchanged.

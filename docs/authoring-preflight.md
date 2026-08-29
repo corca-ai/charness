@@ -61,7 +61,8 @@ python3 scripts/check_python_lengths.py --repo-root . --headroom --paths <file>
 
 It prints `limit − current` (tokei Python code lines) per gated file and flags
 near-limit files. If a file is near its limit, start a new module instead of
-appending — that avoids the unplanned mid-slice extraction `acquire_public_url.py`
+appending — that avoids the unplanned mid-slice extraction
+[`acquire_public_url.py`](../skills/support/web-fetch/scripts/acquire_public_url.py)
 forced during #302.
 The advisory never blocks; the length gate is the hard floor.
 
@@ -176,7 +177,8 @@ python3 scripts/check_doc_authoring_preflight.py --path docs/index.md # a real t
 ```
 
 The rules mode is what makes this surface match its sibling
-(`check_skill_surface_preflight.py`, which describes by default). Every other
+([`check_skill_surface_preflight.py`](../scripts/check_skill_surface_preflight.py),
+which describes by default). Every other
 check here is content-driven, so without it an author got the rules only *after*
 writing the thing that breaks them and one rework cycle was structurally
 guaranteed. The rules are rendered, never restated: each line is

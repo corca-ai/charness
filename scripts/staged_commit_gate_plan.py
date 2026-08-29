@@ -23,7 +23,6 @@ GateCommand = _plan_helpers.GateCommand
 collect_staged_scope_paths = _plan_helpers.collect_staged_scope_paths
 _any_starts = _plan_helpers.any_starts
 _artifact_shape_gates = _plan_helpers.artifact_shape_gates
-_mirror_drift_gates = _plan_helpers.mirror_drift_gates
 _skill_core_headroom_gates = _plan_helpers.skill_core_headroom_gates
 _timing_pull_gate = _plan_helpers.timing_pull_gate
 _provenance_self_test_gate = _plan_helpers.provenance_contract_self_test_gate
@@ -373,7 +372,6 @@ def staged_commit_gate_plan(
     if _any_starts(paths, "integrations/"):
         plan.extend(_plan_helpers.present_gate(repo_root, "validate-integrations", "validate_integrations.py", "--repo-root", str(repo_root)))
 
-    plan.extend(_mirror_drift_gates(repo_root, paths))
 
     if any(path.endswith(".md") for path in paths):
         # `check-plugin-doc-links` takes the same `.md` trigger as `check-doc-links`

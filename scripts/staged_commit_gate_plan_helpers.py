@@ -90,24 +90,6 @@ def provenance_contract_self_test_gate(repo_root: Path) -> list[GateCommand]:
     ]
 
 
-_MIRROR_PREFIXES = (
-    "scripts/",
-    "skills/",
-    # The bootstrap dependency contract became a mirror SOURCE when the export
-    # started shipping it beside the installer that reads it. Without this
-    # prefix, a commit that only bumps a pin in `packaging/bootstrap-*` schedules
-    # no mirror-drift gate, and the export ships stale pins until a broad run.
-    "packaging/bootstrap-",
-    "profiles/",
-    "presets/",
-    "integrations/",
-    "plugins/",
-    ".claude-plugin/",
-    ".codex-plugin/",
-    ".agents/plugins/",
-)
-
-
 def present_gate(repo_root: Path, label: str, script: str, *args: str) -> list[GateCommand]:
     """A `scripts/<script>` gate, scheduled only while that script is on disk."""
     if not (repo_root / "scripts" / script).exists():
@@ -133,26 +115,6 @@ def index_hygiene_gates(repo_root: Path) -> list[GateCommand]:
         GateCommand(label, ("python3", f"scripts/{script}", "--repo-root", str(repo_root)))
         for label, script in _INDEX_HYGIENE_GATES
         if (repo_root / "scripts" / script).exists()
-    ]
-
-
-def mirror_drift_gates(repo_root: Path, paths: list[str]) -> list[GateCommand]:
-    touches_mirror = any(
-        path.startswith(_MIRROR_PREFIXES)
-        or path == "README.md"
-        or path in {"runtime_bootstrap.py", "skill_runtime_bootstrap.py"}
-        for path in paths
-    )
-    # The script guard matters now that a deletion schedules this gate: removing
-    # `check_staged_mirror_drift.py` itself is a `scripts/` change, and an unguarded
-    # gate would refuse the commit that deletes it.
-    if not touches_mirror or not (repo_root / "scripts" / "check_staged_mirror_drift.py").exists():
-        return []
-    return [
-        GateCommand(
-            "staged-plugin-mirror-drift",
-            ("python3", "scripts/check_staged_mirror_drift.py", "--repo-root", str(repo_root)),
-        )
     ]
 
 

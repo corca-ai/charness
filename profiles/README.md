@@ -4,14 +4,14 @@ Profiles define default bundles. They are not separate skills.
 
 ## Files
 
-- `profile.schema.json`: canonical schema for profile metadata
+- [`profile.schema.json`](../profiles/profile.schema.json): canonical schema for profile metadata
 - `<profile-id>.json`: profile instances
 
 ## Status
 
 **No profile instances are checked in.** The schema and this contract are kept;
 the instances are not, because nothing consumes them. No runtime reads a profile
-to activate a bundle — `validate_profiles.py` only checks that referenced files
+to activate a bundle — [`validate_profiles.py`](../scripts/validate_profiles.py) only checks that referenced files
 exist, so four instances (`constitutional`, `collaboration`,
 `engineering-quality`, `meta-builder`) shipped a declarative promise no code
 kept, while six public skills belonged to no profile and nothing noticed.
