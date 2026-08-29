@@ -3,16 +3,174 @@ from __future__ import annotations
 import json
 import os
 import shlex
+import signal
 import subprocess
 import time
 from pathlib import Path
 
 import pytest
 
-from scripts import task_run, task_run_support
+from scripts import (
+    task_run,
+    task_run_execution,
+    task_run_git,
+    task_run_plan,
+    task_run_runtime,
+    task_run_support,
+)
 from skills.shared.scripts import reviewer_lifecycle
 
 from .test_task_run_fixtures import _codex, _git, _repo, _run
+
+
+
+def test_invalid_task_run_inputs_are_typed_and_actionable(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+
+    def resolve(**overrides):
+        options = {
+            "target_path": tmp_path / "lane",
+            "branch": "lane/validation",
+            "base": "HEAD",
+            "lane": None,
+            "scopes": ["module.py"],
+            "prompt": "instructions",
+            "codex": "python3",
+            "effort": "medium",
+            "task_id": None,
+            "prepare": None,
+            "require_change": None,
+            "skip_prepare": False,
+            "allow_no_change": False,
+            "timeout_seconds": 1,
+        }
+        options.update(overrides)
+        return task_run_plan.resolve_task_inputs(repo, **options)
+
+    with pytest.raises(task_run.TaskRunError, match="--prepare and --skip-prepare"):
+        resolve(prepare=True, skip_prepare=True)
+    with pytest.raises(task_run.TaskRunError, match="--require-change and --allow-no-change"):
+        resolve(require_change=True, allow_no_change=True)
+    with pytest.raises(task_run.TaskRunError, match="--task-id is derived from --lane"):
+        resolve(target_path=None, branch=None, base=None, lane="safe-lane", task_id="explicit")
+    with pytest.raises(task_run.TaskRunError, match="explicit task runs require"):
+        resolve(target_path=None, branch=None, base=None)
+    with pytest.raises(task_run.TaskRunError, match="--prompt or --prompt-file"):
+        resolve(prompt=" ")
+    with pytest.raises(task_run.TaskRunError, match="orchestrator-selected --effort"):
+        resolve(effort=None)
+    with pytest.raises(task_run.TaskRunError, match="--timeout-seconds must be a positive integer"):
+        resolve(timeout_seconds=0)
+
+
+def test_runtime_input_refusals_explain_the_required_shape(tmp_path: Path) -> None:
+    non_executable = tmp_path / "not-executable"
+    non_executable.write_text("#!/bin/sh\n", encoding="utf-8")
+
+    with pytest.raises(task_run.TaskRunError, match="--codex must name an executable"):
+        task_run_runtime._resolve_codex(" ")
+    with pytest.raises(task_run.TaskRunError, match="Codex executable is not runnable"):
+        task_run_runtime._resolve_codex(str(non_executable))
+    with pytest.raises(task_run.TaskRunError, match="Codex executable is not on PATH"):
+        task_run_runtime._resolve_codex("definitely-missing-codex")
+    with pytest.raises(task_run.TaskRunError, match="--lane must be a non-empty id"):
+        task_run_runtime.validate_lane_id("-invalid")
+    with pytest.raises(task_run.TaskRunError, match="--task-id must start with a letter"):
+        task_run_runtime._task_id("lane/name", "bad/id")
+    with pytest.raises(task_run.TaskRunError, match="invalid task id"):
+        task_run_runtime.task_result_path(tmp_path, "bad/id")
+
+
+def test_read_task_result_returns_none_when_the_record_is_absent(tmp_path: Path) -> None:
+    assert task_run_runtime.read_task_result(tmp_path, "missing") is None
+
+
+def test_read_task_result_refuses_non_object_json(tmp_path: Path) -> None:
+    result_path = tmp_path / "task-run" / "broken" / "result.json"
+    result_path.parent.mkdir(parents=True)
+    result_path.write_text("[]\n", encoding="utf-8")
+
+    with pytest.raises(task_run.TaskRunError, match="task result must be a JSON object"):
+        task_run_runtime.read_task_result(tmp_path, "broken")
+
+
+def test_read_task_results_reads_json_objects_from_the_result_store(tmp_path: Path) -> None:
+    result_path = tmp_path / "task-run" / "one" / "result.json"
+    result_path.parent.mkdir(parents=True)
+    result_path.write_text('{"task_id": "one", "status": "completed"}\n', encoding="utf-8")
+
+    assert task_run_runtime.read_task_results(tmp_path) == [
+        {"task_id": "one", "status": "completed"}
+    ]
+
+
+def test_read_task_results_refuses_non_object_json(tmp_path: Path) -> None:
+    result_path = tmp_path / "task-run" / "broken" / "result.json"
+    result_path.parent.mkdir(parents=True)
+    result_path.write_text("[]\n", encoding="utf-8")
+
+    with pytest.raises(task_run.TaskRunError, match="task result must be a JSON object"):
+        task_run_runtime.read_task_results(tmp_path)
+
+
+def test_execute_codex_records_keyboard_interrupt_and_stops_the_group(
+    tmp_path: Path, monkeypatch
+) -> None:
+    class InterruptingProcess:
+        pid = 31415
+        returncode = None
+
+        def __init__(self) -> None:
+            self.communicate_calls = 0
+
+        def communicate(self, **_kwargs) -> None:
+            self.communicate_calls += 1
+            if self.communicate_calls == 1:
+                raise KeyboardInterrupt
+            self.returncode = 0
+
+    process = InterruptingProcess()
+    killed: list[tuple[int, signal.Signals]] = []
+    monkeypatch.setattr(task_run_execution.subprocess, "Popen", lambda *_args, **_kwargs: process)
+    monkeypatch.setattr(
+        task_run_execution.os,
+        "killpg",
+        lambda pid, sig: killed.append((pid, sig)),
+    )
+
+    result = task_run_execution._execute_codex(
+        ["codex"],
+        prompt="stop",
+        target_path=tmp_path,
+        configured_env={},
+        stdout_log=tmp_path / "stdout.log",
+        stderr_log=tmp_path / "stderr.log",
+        timeout_seconds=1,
+    )
+
+    assert result == {"exit_code": None, "timed_out": False, "interrupted": True}
+    assert process.communicate_calls == 2
+    assert killed == [(31415, signal.SIGKILL)]
+
+
+def test_execute_codex_reports_process_start_oserror(tmp_path: Path, monkeypatch) -> None:
+    def fail_start(*_args, **_kwargs):
+        raise OSError("cannot execute codex")
+
+    monkeypatch.setattr(task_run_execution.subprocess, "Popen", fail_start)
+    result = task_run_execution._execute_codex(
+        ["codex"],
+        prompt="start",
+        target_path=tmp_path,
+        configured_env={},
+        stdout_log=tmp_path / "stdout.log",
+        stderr_log=tmp_path / "stderr.log",
+        timeout_seconds=1,
+    )
+
+    assert result["exec_error"] == "cannot execute codex"
+
+
 
 
 def test_codex_arguments_fix_luna_sandbox_and_effort(tmp_path: Path) -> None:

@@ -4,9 +4,57 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from scripts import task_run
+import pytest
+
+from scripts import task_run, task_run_scope
 
 from .test_task_run_fixtures import _codex, _commit, _git, _repo, _run
+
+
+def test_scope_normalization_strips_repository_relative_dot_prefix() -> None:
+    assert task_run_scope._normalize_scope(" ./pkg/module.py ") == "pkg/module.py"
+
+
+@pytest.mark.parametrize("value", ["", "/absolute/path", "../parent", "pkg\\module.py"])
+def test_scope_normalization_refuses_non_repository_relative_paths(value: str) -> None:
+    with pytest.raises(task_run.TaskRunError, match="scope must be a repository-relative path"):
+        task_run_scope._normalize_scope(value)
+
+
+def test_normalize_scopes_requires_at_least_one_scope() -> None:
+    with pytest.raises(task_run.TaskRunError, match="at least one --scope is required"):
+        task_run_scope.normalize_scopes([])
+
+
+def test_glob_validation_refuses_unmatched_and_invalid_character_classes() -> None:
+    with pytest.raises(task_run.TaskRunError, match=r"unmatched '\]'"):
+        task_run_scope._validate_glob_scope("pkg]/module.py")
+
+    task_run_scope._validate_glob_scope("pkg/[a-z]/module.py")
+    with pytest.raises(task_run.TaskRunError, match="invalid character class"):
+        task_run_scope._validate_glob_scope("pkg/[]/module.py")
+
+
+def test_unchanged_required_scope_is_a_failure_with_human_reason(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    base_sha = _git(repo, "rev-parse", "HEAD").stdout.strip()
+
+    result = task_run_scope._scope_result(
+        repo,
+        base_sha,
+        [{"path": "module.py", "kind": "exact"}],
+        require_change=True,
+    )
+
+    assert result["verdict"] == task_run.FAIL
+    assert result["reason"] == "the task required a change but the worktree is unchanged"
+
+
+def test_generated_path_causes_identify_runtime_and_dependency_output() -> None:
+    assert "runtime/cache output appeared" in task_run_scope._path_cause("__pycache__/module.pyc")
+    assert "dependency/install output appeared" in task_run_scope._path_cause(
+        "node_modules/package/index.js"
+    )
 
 
 def test_directory_scope_includes_descendants(tmp_path: Path) -> None:
