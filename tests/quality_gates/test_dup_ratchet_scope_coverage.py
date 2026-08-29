@@ -575,6 +575,41 @@ def test_summary_reports_the_new_family_count_by_value_on_a_blocking_run(tmp_pat
     assert payload["new_doc_family_count"] == 0
 
 
+def test_summary_publishes_a_nonzero_doc_family_count(tmp_path: Path) -> None:
+    """#709: the doc projection was pinned ONLY on the arm that returns zero.
+
+    `summarize()` is the only place the doc family list becomes a count for
+    `--summary` consumers, and the sibling above is the repo's only assertion on
+    it -- at the value 0. A projection that returned zero for every input, or read
+    a mistyped key, published "no new doc families" on a run that hard-blocks on
+    doc drift, with the suite green. The summary is what an operator reads first,
+    so it would disagree with the exit code and win.
+
+    The code arm is already pinned nonzero above; this is the doc arm, which the
+    shared projection loop does NOT get for free -- a wrong key in its `new_doc`
+    tuple entry drops these fields entirely while every code assertion still passes.
+    """
+
+    repo = _consumer_repo(tmp_path, scope_paths=("src",))
+    _git(repo, "init")
+    _git(repo, "add", "-A")
+    _git(repo, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-m", "seed")
+    code_json = _code_inventory(tmp_path / "code.json", ["known1"])
+    doc_json = _doc_inventory(tmp_path / "doc.json", ["docs/a.md#one", "docs/b.md#two"])
+    result = run_script(
+        str(CHECK_SCRIPT), "--repo-root", str(repo),
+        "--code-inventory", str(code_json), "--doc-inventory", str(doc_json),
+        "--summary", cwd=ROOT,
+    )
+    payload = yaml.safe_load(result.stdout)
+
+    assert payload["new_doc_family_count"] == 2, payload
+    assert sorted(payload["new_doc_families_sample"]) == ["docs/a.md#one", "docs/b.md#two"], payload
+    # The count is a projection OF the sample's source list, so a count that
+    # ignored its input would still have to disagree with the names here.
+    assert payload["new_doc_family_count"] == len(payload["new_doc_families_sample"])
+
+
 def test_summary_withholds_unobserved_verdict_fields_on_non_scan_paths() -> None:
     """Inert, invalid, and maintenance responses must not manufacture clean zeros."""
     check = _load("check_dup_ratchet")
