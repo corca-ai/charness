@@ -10,6 +10,72 @@
 > `charness-artifacts/retro/2026-08-30-a-class-discharged-as-a-list.md`,
 > `issue-753/2026-08-28-jtbd-audit-quality-gates.md`.
 
+## Operator decisions and execution order (recorded 2026-08-29)
+
+Taken with the operator at plan review, after measuring the tree. These settle
+the open decisions below; where a decision contradicts the prose further down,
+this section wins and the prose is the reasoning that led to it.
+
+Measured state at review, which differs from what the prose below assumes:
+
+- `origin/main` is `533f24dad`, the abandoned v8.0.0 prepare commit, and local
+  `main` is **99** commits ahead (not ~96). Latest tag is `v7.0.0`.
+- The ratio gate has **no headroom, not "exactly at the cap"**:
+  `source_lines: 144799`, `test_lines: 144800`, `ratio: 1.0`,
+  `status: within-max`. Test code is already one line ahead and passes only on
+  rounding. A handful of added test lines trips it.
+- `release-changed-line-coverage` takes its base from
+  `merge-base(origin/main, HEAD)` (`scripts/release_changed_line_coverage.py:118,272`),
+  which is `533f24dad`. So the 11-file block IS the unpushed 99 commits, and
+  pushing would empty the range and clear the gate without paying anything. It
+  is a blocking gate in release order (`tests/quality_gates/support.py:376`).
+
+Decisions:
+
+1. **Version stays 8.0.0**, deliberately and not by inheritance. The retirement
+   is a large removal with no consumer-visible artifact loss.
+2. **Pay all 11 changed-line-coverage files BEFORE the release.** The push-empties-
+   the-range shortcut is refused: the range would clear by erasing the
+   measurement, not by covering the lines.
+3. **Ratio relief comes from the production side, starting with the release
+   machinery** (52 scripts / 12,599 lines; `_publish_and_finalize` at
+   `publish_release_execute.py:225` is unreachable in production with three
+   test-only callers). Not from the `#753` trim list, and NOT by raising the cap.
+   **The reduction is not limited to dead code.** The operator explicitly
+   accepted that this may shake the keystone: live release paths may be
+   restructured before the release runs, not only after. Deleting a reachable
+   path is in scope when the path does not earn its lines. The release run then
+   doubles as the proof — a wrong cut shows up as a failed release gate in the
+   same session, which is why the reduction goes first rather than last.
+4. **Session scope is Step 1 + Step 2.** Steps 3–5 only if they fit.
+5. **Push the 99 commits** — the remote is idle on the abandoned prepare and
+   nobody is building on it. Fast-forward.
+6. **Codex lanes carry both review and separable implementation**
+   (`charness task run`, `--effort xhigh`; review as two lanes with materially
+   different perspectives). Serial execution is fine when the work only yields
+   one lane — do not manufacture a second lane for the shape of it. The parent
+   keeps design, integration, final verification, and the release body itself.
+7. **A blocked release gets its gate fixed and pushed through**, not abandoned.
+   No second abandonment record.
+8. **Step 2 builds no new gate registry.** Reuse the existing gate list at
+   `tests/quality_gates/support.py:376` and the quality-runner manifest as the
+   single source. The prose below suggests "the honest first move may be to
+   build one"; that is now conditional — a registry may be authored ONLY after
+   demonstrating, concretely, that the existing sources cannot enumerate the
+   gates the property must range over. Deleting a stale surface beats adding a
+   parallel one.
+
+Resulting order, which is NOT the section order below — decisions 2 and 3 chain:
+release-machinery reduction (relief, live paths included) → cover the 11 files →
+release 8.0.0 → Step 2. Step 2 is the first thing to drop if the reduction
+yields less than the coverage work consumes.
+
+The reduction going first is deliberate and load-bearing three ways: it is the
+only sanctioned source of ratio headroom, the release run is what proves the
+cuts, and a cut made after the release would ship unverified. The cost of the
+ordering is that a bad cut surfaces as a failed release gate — which decision 7
+says to fix and push through, not to retreat from.
+
 ## Read this first
 
 Read `charness-artifacts/retro/recent-lessons.md` BEFORE planning. `AGENTS.md`
