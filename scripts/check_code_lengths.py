@@ -99,9 +99,10 @@ def _collect_tokei_reports(payload: object) -> list[dict[str, object]]:
     if not isinstance(payload, dict):
         return []
     reports: list[dict[str, object]] = []
-    # Both languages, because this gate stopped being Python-only on 2026-08-29. The
-    # module name still says otherwise; renaming it touches 73 sites and is its own
-    # change. Reading one language here while requesting two from tokei is exactly how
+    # Both languages, because this gate stopped being Python-only on 2026-08-29 -- the
+    # module was renamed from `check_python_lengths` to match, since a gate whose name
+    # narrows its scope is read wrong by everyone who has not opened it.
+    # Reading one language here while requesting two from tokei is exactly how
     # the caller would get "tokei did not return counts" for every Rust file it asked
     # about -- measured, not hypothetical.
     for language in ("Python", "Rust"):
@@ -166,24 +167,50 @@ def tokei_code_counts(paths: list[Path]) -> dict[Path, int]:
     return counts
 
 
+#: The one place the gated universe is spelled. `gated_globs_summary` renders it for
+#: the operator, so a glob added here cannot leave the "nothing was validated" message
+#: describing a narrower gate than the one that ran -- which is what it did while it
+#: said "Python" and "scripts/, tests/, and skill package scripts/" over a set that
+#: had included `native/**/*.rs` since the Rust core landed.
+#: Spans two code families on purpose: Python and Rust are measured by the SAME tokei
+#: code-line rule with per-class limits, so splitting the set per language would give
+#: one file-length policy two owners that could drift apart.
+# discovery-boundary: one tokei code-line policy owns both Python and Rust here
+GATED_GLOBS = (
+    "scripts/*.py",
+    "skills/public/*/scripts/*.py",
+    "skills/support/*/scripts/*.py",
+    "skills/shared/scripts/*.py",
+    "tests/*.py",
+    "tests/**/*.py",
+    "native/*/src/*.rs",
+    "native/*/src/**/*.rs",
+    "native/*/tests/*.rs",
+    "native/*/tests/**/*.rs",
+    "native/*/build.rs",
+)
+
+#: The validated verdict, as ONE source. The tests that pin it format this rather
+#: than re-spelling the sentence: renaming the message used to mean chasing string
+#: literals across test files serially, while the COUNT -- the part that carries the
+#: invariant -- is still asserted by the caller.
+VALIDATED_VERDICT_TEMPLATE = "Validated code length limits for {count} file(s)."
+
+
+def validated_verdict(count: int) -> str:
+    return VALIDATED_VERDICT_TEMPLATE.format(count=count)
+
+
+def gated_globs_summary() -> str:
+    """Operator-facing rendering of the gated universe, derived from GATED_GLOBS."""
+
+    roots = sorted({glob.split("/", 1)[0] + "/" for glob in GATED_GLOBS})
+    suffixes = sorted({"." + glob.rsplit(".", 1)[1] for glob in GATED_GLOBS})
+    return f"{', '.join(roots)} for {', '.join(suffixes)}"
+
+
 def iter_python_targets(root: Path, *, require_git: bool = False) -> list[Path]:
-    return iter_matching_repo_files(
-        root,
-        (
-            "scripts/*.py",
-            "skills/public/*/scripts/*.py",
-            "skills/support/*/scripts/*.py",
-            "skills/shared/scripts/*.py",
-            "tests/*.py",
-            "tests/**/*.py",
-            "native/*/src/*.rs",
-            "native/*/src/**/*.rs",
-            "native/*/tests/*.rs",
-            "native/*/tests/**/*.rs",
-            "native/*/build.rs",
-        ),
-        require_git=require_git,
-    )
+    return iter_matching_repo_files(root, GATED_GLOBS, require_git=require_git)
 
 
 def _is_native_test(relative: Path) -> bool:
@@ -368,9 +395,8 @@ def main() -> int:
                 "gate the whole repo."
             )
         print(
-            f"No gated Python files among the {len(args.paths)} named path(s); "
-            "nothing was validated (the gated globs are scripts/, tests/, and skill "
-            "package scripts/)."
+            f"No gated files among the {len(args.paths)} named path(s); "
+            f"nothing was validated (the gated globs are {gated_globs_summary()})."
         )
         return 0
     counts = tokei_code_counts(targets)
@@ -397,7 +423,7 @@ def main() -> int:
 
     for warning in warnings:
         print(warning)
-    print(f"Validated code length limits for {len(targets)} file(s).")
+    print(validated_verdict(len(targets)))
     if warnings:
         print(
             f"WARN: {len(warnings)} file(s) within the advisory file-length warn band "

@@ -49,6 +49,9 @@ _MODULES = {
 }
 
 
+_CODE_LENGTHS = _MODULES["scripts/check_code_lengths.py"]
+
+
 def run_gate(script: str, *args: str):
     return run_loaded_script_main(Path(script).name, _MODULES[script], *args)
 
@@ -349,7 +352,10 @@ def test_code_lengths_named_ungated_paths_pass_without_a_validated_verdict() -> 
         "scripts/check_code_lengths.py", "--repo-root", str(ROOT), "--paths", "runtime_bootstrap.py"
     )
     assert result.returncode == 0, result.stdout + result.stderr
-    assert "Validated code length limits for 0 file(s)." not in result.stdout
+    # Formatted from the gate's own template, not re-spelled: renaming this message
+    # used to mean chasing string literals across test files serially. The COUNT is
+    # still the assertion -- a run that validated nothing may not claim a verdict.
+    assert _CODE_LENGTHS.validated_verdict(0) not in result.stdout
     assert "nothing was validated" in result.stdout
 
 
@@ -360,7 +366,7 @@ def test_code_lengths_named_gated_path_still_validates() -> None:
         "--repo-root", str(ROOT), "--paths", "scripts/check_code_lengths.py",
     )
     assert result.returncode == 0, result.stdout + result.stderr
-    assert "Validated code length limits for 1 file(s)." in result.stdout
+    assert _CODE_LENGTHS.validated_verdict(1) in result.stdout
 
 
 def test_skill_cut_safety_unscoped_payload_names_the_paths_and_the_remedy() -> None:
