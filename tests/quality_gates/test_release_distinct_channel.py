@@ -369,6 +369,35 @@ def _fake_state() -> dict:
     }
 
 
+def _run_closeout_tail(args, cli, state: dict | None = None) -> None:
+    """Drive the LIVE tail: the one `resume_publish` actually calls.
+
+    These cases used to reach it through `publish_release_execute._publish_and_finalize`,
+    whose own docstring says it is "UNREACHABLE in production ... its only live callers
+    are tests" -- `execute_publish_plan` stops at the prepared record and publication
+    happens in `resume_publish`. So the only execution coverage of the
+    carrier -> issue-state-readback -> final-artifact ordering and the rung-1 floor
+    reached them through a driver no release ever runs.
+
+    `run_release_closeout_tail` is the owner both production callers invoke
+    identically (`publish_release_resume_publish.py:218`, and the deleted wrapper),
+    so driving it directly covers the live path rather than a dead copy of it.
+    `carrier_source` is spelled as the live resume caller spells it.
+    """
+
+    state = state if state is not None else _fake_state()
+    _COMMON.run_release_closeout_tail(
+        Path("."),
+        args=args,
+        adapter_data={},
+        state=state,
+        issue_repo=state["issue_repo"],
+        payload=state["payload"],
+        cli=cli,
+        carrier_source="release-resume",
+    )
+
+
 def _base_cli(observer, recorder: dict) -> SimpleNamespace:
     events = recorder.setdefault("events", [])
 
@@ -416,7 +445,7 @@ def test_wiring_refuses_issue_close_on_silent_observer() -> None:
     args = SimpleNamespace(remote="origin", close_issue=[], close_issue_behavior=[], close_issue_probe_record=[])
     cli = _base_cli(silent_observer, recorder)
     with pytest.raises(SystemExit, match="rung-1 floor refused issue closeout"):
-        _EXECUTE._publish_and_finalize(args, Path("."), _fake_state(), {}, cli=cli)
+        _run_closeout_tail(args, cli)
     assert recorder.get("issues_closed") is None  # issue close NEVER reached
     assert recorder.get("committed") is False  # recovery artifact committed (no issue closeout)
 
@@ -430,7 +459,7 @@ def test_wiring_proceeds_to_issue_close_on_recorded_disposition() -> None:
     args = SimpleNamespace(remote="origin", close_issue=[44], close_issue_behavior=["Behavior #44: x"],
         close_issue_probe_record=["Probe record #44: local-only-by-contract"])
     cli = _base_cli(disposing_observer, recorder)
-    _EXECUTE._publish_and_finalize(args, Path("."), _fake_state(), {}, cli=cli)
+    _run_closeout_tail(args, cli)
     # F2a: a typed disposition (not a confirmation) still advances the close.
     assert recorder.get("issues_closed") is True
     assert recorder["events"] == [
@@ -460,7 +489,7 @@ def test_carrier_commit_failure_prevents_issue_state_mutation() -> None:
         close_issue_probe_record=["Probe record #44: local-only-by-contract"])
 
     with pytest.raises(RuntimeError, match="carrier push failed"):
-        _EXECUTE._publish_and_finalize(args, Path("."), _fake_state(), {}, cli=cli)
+        _run_closeout_tail(args, cli)
 
     assert recorder.get("issues_closed") is None
     assert recorder.get("committed") is None
