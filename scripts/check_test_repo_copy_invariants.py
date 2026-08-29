@@ -137,16 +137,23 @@ def _function_is_release_only(node: ast.FunctionDef | ast.AsyncFunctionDef) -> b
     return any(_is_release_only_marker(decorator) for decorator in node.decorator_list)
 
 
-def _copy_heavy_reason(node: ast.FunctionDef | ast.AsyncFunctionDef) -> str | None:
+def _copy_heavy_reason(
+    node: ast.FunctionDef | ast.AsyncFunctionDef,
+    *,
+    local_fixtures: frozenset[str] = frozenset(),
+    local_helpers: frozenset[str] = frozenset(),
+) -> str | None:
     fixture_hits = sorted(
-        arg.arg for arg in node.args.args if arg.arg in COPY_HEAVY_FIXTURES
+        arg.arg
+        for arg in node.args.args
+        if arg.arg in COPY_HEAVY_FIXTURES or arg.arg in local_fixtures
     )
     helper_hits: set[str] = set()
     for child in ast.walk(node):
         if not isinstance(child, ast.Call):
             continue
         parts = _name_parts(child.func)
-        if parts and parts[-1] in COPY_HEAVY_HELPERS:
+        if parts and (parts[-1] in COPY_HEAVY_HELPERS or parts[-1] in local_helpers):
             helper_hits.add(parts[-1])
     reasons: list[str] = []
     if fixture_hits:
@@ -156,6 +163,44 @@ def _copy_heavy_reason(node: ast.FunctionDef | ast.AsyncFunctionDef) -> str | No
     return "; ".join(reasons) if reasons else None
 
 
+def _module_local_copy_heavy(tree: ast.Module) -> tuple[frozenset[str], frozenset[str]]:
+    """Module-local functions that REACH a copy-heavy source, to any depth.
+
+    The enumerated form of this check saw only the names in `COPY_HEAVY_FIXTURES` and
+    `COPY_HEAVY_HELPERS`, and only when they appeared inside a `test_` function. One hop
+    defeated it: `tests/quality_gates/test_gate_summary_names_failures.py` wrapped
+    `clone_seeded_charness_repo` in a module-local `gate_repo` fixture, so no test named a
+    listed identifier and no listed call sat in a test body. It was the most expensive
+    copy-heavy test in the standing lane -- 7.3s of SETUP per test, five tests -- and this
+    gate, which exists for exactly that, reported clean over it.
+
+    So the question is not "does this test mention a known name" but "can this test reach
+    a copy-heavy source". Fixed point over module-local functions, because a wrapper can
+    wrap a wrapper.
+    """
+
+    functions = {
+        node.name: node
+        for node in ast.walk(tree)
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+    }
+    reached: set[str] = set()
+    changed = True
+    while changed:
+        changed = False
+        for name, node in functions.items():
+            if name in reached or name.startswith("test_"):
+                continue
+            frozen = frozenset(reached)
+            if _copy_heavy_reason(node, local_fixtures=frozen, local_helpers=frozen) is not None:
+                reached.add(name)
+                changed = True
+    # A module-local function is reachable from a test BOTH ways: as a fixture parameter
+    # (pytest resolves it by name) and as a direct call. Neither form is more honest than
+    # the other, so both carry the same verdict.
+    return frozenset(reached), frozenset(reached)
+
+
 def _copy_heavy_marker_violations(source: str, rel_path: Path) -> list[str]:
     try:
         tree = ast.parse(source, filename=rel_path.as_posix())
@@ -163,13 +208,16 @@ def _copy_heavy_marker_violations(source: str, rel_path: Path) -> list[str]:
         return []
     if _module_is_release_only(tree):
         return []
+    local_fixtures, local_helpers = _module_local_copy_heavy(tree)
     violations: list[str] = []
     for node in ast.walk(tree):
         if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             continue
         if not node.name.startswith("test_"):
             continue
-        reason = _copy_heavy_reason(node)
+        reason = _copy_heavy_reason(
+            node, local_fixtures=local_fixtures, local_helpers=local_helpers
+        )
         if reason is None or _function_is_release_only(node):
             continue
         if f"{rel_path.as_posix()}::{node.name}" in STANDING_COPY_HEAVY_TESTS:

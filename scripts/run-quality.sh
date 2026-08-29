@@ -1147,6 +1147,11 @@ if [[ "${CHARNESS_SUPPLY_CHAIN_ONLINE:-0}" == "1" ]]; then
   queue_selected "check-supply-chain-online" python3 scripts/check_supply_chain_online.py --repo-root "$REPO_ROOT" --triage-owner "repo-maintainers"
 fi
 queue_selected "check-shell" ./scripts/check-shell.sh
+# Rust is counted as PRODUCTION by check_test_production_ratio (native/*/src/**.rs is in
+# its source denominator) and was read by no gate at all: 11,891 lines, files up to 1,399
+# against a 480-line Python cap. This closes the lint half. The length half is still open
+# and check-rust.sh names that blind class in its own header.
+queue_selected "check-rust" ./scripts/check-rust.sh
 shopt -s nullglob
 python_files=(
   scripts/*.py

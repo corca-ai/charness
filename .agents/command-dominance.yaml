@@ -63,10 +63,16 @@ dominated_commands:
 # queues resolves to `queue_selected` and the standing-gate arm reads clean
 # while a dominated command sits one token inside it.
 #
-# RE-MEASURED 2026-08-16 by running the discovery: 14 snippets, 8 wrapped and 6
-# unwrapped. An earlier revision of this comment said "13 are wrapped", which was
-# inferred rather than counted and was refuted by a bounded reviewer. The ratio
-# is now pinned by a test, so it cannot drift silently again.
+# RE-MEASURED 2026-08-29 by running the discovery: 16 snippets, 10 wrapped and 6
+# unwrapped. Moved 15/9 -> 16/10 when `scripts/check-rust.sh` was queued; its
+# `(cd "$crate_dir" && cargo ...)` subshells are wrapped snippets.
+#
+# This comment said 14/8 while the pinning test asserted 15/9, so the comment had
+# already drifted a full measurement behind the thing that pins it. A number in
+# prose beside a number in a test is two sources for one fact; the test is the one
+# that fails, so treat this line as a note and re-read the test for the truth.
+# An earlier revision said "13 are wrapped", inferred rather than counted and
+# refuted by a bounded reviewer.
 wrapper_programs:
   - program: queue_selected
     skip_args: 1

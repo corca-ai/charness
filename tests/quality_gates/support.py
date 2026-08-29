@@ -393,6 +393,7 @@ QUALITY_SHELL_STUBS = (
     ("check-markdown", "check-markdown.sh"),
     ("check-secrets", "check-secrets.sh"),
     ("check-shell", "check-shell.sh"),
+    ("check-rust", "check-rust.sh"),
     ("check-links-internal", "check-links-internal.sh"),
     ("check-links-external", "check-links-external.sh"),
     ("ruff", "check-python-lint.sh"),

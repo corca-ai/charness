@@ -1147,6 +1147,11 @@ if [[ "${CHARNESS_SUPPLY_CHAIN_ONLINE:-0}" == "1" ]]; then
   queue_selected "check-supply-chain-online" python3 scripts/check_supply_chain_online.py --repo-root "$REPO_ROOT" --triage-owner "repo-maintainers"
 fi
 queue_selected "check-shell" ./scripts/check-shell.sh
+# Rust is counted as PRODUCTION by check_test_production_ratio (native/*/src/**.rs is in
+# its source denominator) and was read by no gate at all: 11,891 lines, files up to 1,399
+# against a 480-line Python cap. This closes the lint half. The length half is still open
+# and check-rust.sh names that blind class in its own header.
+queue_selected "check-rust" ./scripts/check-rust.sh
 shopt -s nullglob
 python_files=(
   scripts/*.py
@@ -1167,8 +1172,18 @@ fi
 queue_selected "check-test-completeness" python3 scripts/check_test_completeness.py --repo-root "$REPO_ROOT" -- "${STANDING_PYTEST_TARGETS[@]}"
 # The advisory ratio is likewise retained for release and focused diagnostics,
 # while ordinary broad/default runs pay only for the core test contract.
+# ADVISORY, and the posture is pinned by test_ratio_gate_stays_advisory_in_the_runner.
+# `4122f6cd0` promoted this to blocking on 2026-08-29 at ratio 0.993, one day after
+# `issue-753/lane-A-ratio-surface-brief.md:37` said the posture was a LATER #753
+# decision. At 144800/144799 the cap then had only 4-decimal rounding left, and it
+# pulled directly against `release-changed-line-coverage`: covering a changed line
+# tripped the cap, and the cheapest relief was deleting release safety machinery.
+# A JTBD audit of all ten release subsystems found no defensible cut. The gate's own
+# `--advisory` docstring names this hazard, `2026-06-19-gate-buy-vs-build-triage.md:36-38`
+# ranked the hard cap the repo's strongest DROP candidate, and the #420 critique
+# predicted exactly this recurrence. The measurement stays; the hard block does not.
 if [[ "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" == "1" ]] || label_is_explicitly_selected "check-test-production-ratio"; then
-  queue_selected "check-test-production-ratio" python3 scripts/check_test_production_ratio.py --repo-root "$REPO_ROOT" --require-git-file-listing
+  queue_selected "check-test-production-ratio" python3 scripts/check_test_production_ratio.py --repo-root "$REPO_ROOT" --require-git-file-listing --advisory
 fi
 queue_selected "check-boundary-bypass-ratchet" python3 scripts/check_boundary_bypass_ratchet.py --repo-root "$REPO_ROOT"
 # Every packaged check_/validate_ script needs a consumer-facing decision, public

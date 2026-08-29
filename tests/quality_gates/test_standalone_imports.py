@@ -142,6 +142,7 @@ def _tracked_python_paths(repo: Path) -> set[str]:
     }
 
 
+@pytest.mark.release_only
 def test_the_reconstruction_really_is_the_issues_cycle(repo_with_the_real_cycle: Path) -> None:
     """Before asking whether the check catches it, prove the fixture reproduces the
     defect and not something that merely fails to import."""
@@ -155,6 +156,7 @@ def test_the_reconstruction_really_is_the_issues_cycle(repo_with_the_real_cycle:
     assert "circular import" in result.stderr
 
 
+@pytest.mark.release_only
 def test_the_check_catches_the_real_cycle(repo_with_the_real_cycle: Path) -> None:
     """The acceptance criterion: it FAILS on the pre-fix module, not merely passes on a
     clean tree."""
@@ -171,6 +173,7 @@ def test_the_check_catches_the_real_cycle(repo_with_the_real_cycle: Path) -> Non
     assert "partially initialized" in cycles["scripts/quality_policy_merge.py"]
 
 
+@pytest.mark.release_only
 def test_a_changed_scope_run_catches_the_cycle_in_the_module_it_was_given(
     repo_with_the_real_cycle: Path,
 ) -> None:
@@ -193,6 +196,7 @@ def test_a_changed_scope_run_catches_the_cycle_in_the_module_it_was_given(
     ]
 
 
+@pytest.mark.release_only
 def test_a_partial_run_says_so_in_its_own_output(clean_repo: Path) -> None:
     """A partial run must never read as a whole-package verdict — this repo's own
     `partial` lesson, applied to the gate it produced. The scope travels WITH the
@@ -208,6 +212,7 @@ def test_a_partial_run_says_so_in_its_own_output(clean_repo: Path) -> None:
 
 
 @pytest.mark.slow_corpus
+@pytest.mark.release_only
 def test_the_clean_tree_passes_and_says_what_it_covered(clean_repo: Path) -> None:
     """The other half of the same rule: a FULL run states its denominator too, so `ok`
     is a claim about a number rather than an unqualified all-clear."""
@@ -220,6 +225,7 @@ def test_the_clean_tree_passes_and_says_what_it_covered(clean_repo: Path) -> Non
     assert re.search(r"checked all \d+ discovered module\(s\)", payload["scope_note"]), payload
 
 
+@pytest.mark.release_only
 def test_an_empty_changed_scope_says_nothing_was_checked(clean_repo: Path) -> None:
     """An empty scope that prints a bare `ok` is a green nobody earned.
 
@@ -238,6 +244,7 @@ def test_an_empty_changed_scope_says_nothing_was_checked(clean_repo: Path) -> No
     assert payload["unmatched_changed"] == ["docs/index.md"]
 
 
+@pytest.mark.release_only
 def test_changed_paths_resolve_against_the_repo_root_not_the_cwd(clean_repo: Path) -> None:
     """The same bug from the other side: a relative `--changed` path must name a module
     in the repo being CHECKED, whatever directory the process happens to start in."""

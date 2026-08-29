@@ -121,6 +121,73 @@ def test_check_test_repo_copy_invariants_flags_inline_copytree_root(
     assert "clone_seeded_charness_repo" in result.stderr or "shutil.copytree" in result.stderr
 
 
+def test_a_copy_heavy_fixture_wrapper_does_not_hide_the_cost(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    """One hop used to defeat this gate entirely.
+
+    The check enumerated `COPY_HEAVY_FIXTURES` and `COPY_HEAVY_HELPERS` and looked for
+    them only inside `test_` bodies. A module-local fixture that wrapped the helper named
+    neither, so the test named nothing listed and the call sat outside a test body.
+    `tests/quality_gates/test_gate_summary_names_failures.py` did exactly that and was the
+    most expensive copy-heavy test in the standing lane -- 7.3s of SETUP, five tests --
+    while this gate reported clean over it. The wrapper is two hops deep here because a
+    wrapper can wrap a wrapper.
+    """
+
+    repo = tmp_path / "fake-charness"
+    (repo / "tests").mkdir(parents=True)
+    (repo / "tests" / "__init__.py").write_text("", encoding="utf-8")
+    (repo / "tests" / "repo_copy.py").write_text("", encoding="utf-8")
+    (repo / "tests" / "test_wrapped.py").write_text(
+        "import pytest\n"
+        "@pytest.fixture\n"
+        "def base(tmp_path, seeded_charness_git_repo):\n"
+        "    return clone_seeded_charness_repo(tmp_path, seeded_charness_git_repo)\n"
+        "@pytest.fixture\n"
+        "def wrapped(base):\n"
+        "    return base\n"
+        "def test_wrapped(wrapped):\n"
+        "    assert wrapped\n",
+        encoding="utf-8",
+    )
+
+    result = run_repo_copy_invariants(monkeypatch, capsys, "--repo-root", str(repo))
+
+    assert result.returncode == 1
+    assert "tests/test_wrapped.py::test_wrapped" in result.stderr
+    assert "wrapped" in result.stderr
+
+
+def test_a_test_that_reaches_nothing_copy_heavy_stays_clean(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    """The negative control for the transitive rule: reachability, not name-similarity.
+
+    Without this, widening the check to module-local functions could flag every fixture
+    in a file that happens to contain one copy-heavy test, and the suite would still be
+    green.
+    """
+
+    repo = tmp_path / "fake-charness"
+    (repo / "tests").mkdir(parents=True)
+    (repo / "tests" / "__init__.py").write_text("", encoding="utf-8")
+    (repo / "tests" / "repo_copy.py").write_text("", encoding="utf-8")
+    (repo / "tests" / "test_cheap.py").write_text(
+        "import pytest\n"
+        "@pytest.fixture\n"
+        "def cheap(tmp_path):\n"
+        "    return tmp_path\n"
+        "def test_cheap(cheap):\n"
+        "    assert cheap\n",
+        encoding="utf-8",
+    )
+
+    result = run_repo_copy_invariants(monkeypatch, capsys, "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stderr
+
+
 def test_check_test_repo_copy_invariants_flags_unmarked_copy_heavy_test(
     tmp_path: Path, monkeypatch, capsys
 ) -> None:

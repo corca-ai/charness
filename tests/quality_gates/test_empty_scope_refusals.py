@@ -349,7 +349,7 @@ def test_python_lengths_named_ungated_paths_pass_without_a_validated_verdict() -
         "scripts/check_python_lengths.py", "--repo-root", str(ROOT), "--paths", "runtime_bootstrap.py"
     )
     assert result.returncode == 0, result.stdout + result.stderr
-    assert "Validated Python length limits for 0 file(s)." not in result.stdout
+    assert "Validated code length limits for 0 file(s)." not in result.stdout
     assert "nothing was validated" in result.stdout
 
 
@@ -360,7 +360,7 @@ def test_python_lengths_named_gated_path_still_validates() -> None:
         "--repo-root", str(ROOT), "--paths", "scripts/check_python_lengths.py",
     )
     assert result.returncode == 0, result.stdout + result.stderr
-    assert "Validated Python length limits for 1 file(s)." in result.stdout
+    assert "Validated code length limits for 1 file(s)." in result.stdout
 
 
 def test_skill_cut_safety_unscoped_payload_names_the_paths_and_the_remedy() -> None:

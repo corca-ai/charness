@@ -581,7 +581,7 @@ def test_the_wrapped_snippet_ratio_this_repo_documents_is_the_measured_one() -> 
         return without != with_wrappers
 
     wrapped = sum(1 for s in snippets if _is_wrapped(s["snippet"]))
-    assert (len(snippets), wrapped) == (15, 9), (
+    assert (len(snippets), wrapped) == (16, 10), (
         "the wrapped/total ratio documented in command_dominance_lib.Wrapper and in "
         ".agents/command-dominance.yaml has drifted; re-measure BOTH files and this "
         "assertion together"

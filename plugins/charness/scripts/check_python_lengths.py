@@ -20,8 +20,22 @@ iter_matching_repo_files = _scripts_repo_file_listing_module.iter_matching_repo_
 REPO_SCRIPT_FILE_MAX = 480
 SKILL_HELPER_FILE_MAX = 360
 TEST_FILE_MAX = 800
+# Rust joined this gate on 2026-08-29. It had NO length gate at all while the ratio
+# gate counted `native/*/src/**.rs` in its production denominator, so 11,891 lines
+# grew unmeasured to a 1,340-code-line file against a 480 Python cap.
+#
+# The source limit is a RATCHET set from measurement, not a judgement that 1,340 is
+# acceptable: it is exactly today's maximum, so nothing may grow past where it
+# already stands, and the warn band is set at the PYTHON cap so every file above it
+# reports as debt on every run. Five files sit in that band today. Lowering the hard
+# limit toward 480 is the work this makes visible; raising it is the treadmill
+# `2026-05-20-quality-treadmill-vs-root-cause.md` names.
+NATIVE_SOURCE_FILE_MAX = 1340
+# Rust tests share the Python test budget; the largest is 406 today, so this is a
+# real ceiling rather than a ratchet.
+NATIVE_TEST_FILE_MAX = 800
 
-# Advisory file-length warn band (tokei Python code lines only — function length
+# Advisory file-length warn band (tokei code lines, Python and Rust — function length
 # is gated separately by ruff PLR0915, a statement-count rule, since tokei does
 # not report function-level counts). A file in ``[warn, limit]`` keeps exit 0 but
 # emits a ``WARN:`` line so
@@ -33,6 +47,8 @@ TEST_FILE_MAX = 800
 REPO_SCRIPT_FILE_WARN = 432
 SKILL_HELPER_FILE_WARN = 330
 TEST_FILE_WARN = 720
+NATIVE_SOURCE_FILE_WARN = REPO_SCRIPT_FILE_MAX
+NATIVE_TEST_FILE_WARN = 720
 
 # Advisory interpretation contract (see skills/shared/references/
 # advisory-interpretation-contract.md). This attaches ONLY to the advisory
@@ -83,18 +99,25 @@ def _collect_tokei_reports(payload: object) -> list[dict[str, object]]:
     if not isinstance(payload, dict):
         return []
     reports: list[dict[str, object]] = []
-    python = payload.get("Python")
-    if isinstance(python, dict):
-        raw_reports = python.get("reports")
-        if isinstance(raw_reports, list):
-            reports.extend(report for report in raw_reports if isinstance(report, dict))
+    # Both languages, because this gate stopped being Python-only on 2026-08-29. The
+    # module name still says otherwise; renaming it touches 73 sites and is its own
+    # change. Reading one language here while requesting two from tokei is exactly how
+    # the caller would get "tokei did not return counts" for every Rust file it asked
+    # about -- measured, not hypothetical.
+    for language in ("Python", "Rust"):
+        section = payload.get(language)
+        if isinstance(section, dict):
+            raw_reports = section.get("reports")
+            if isinstance(raw_reports, list):
+                reports.extend(report for report in raw_reports if isinstance(report, dict))
     total = payload.get("Total")
     if isinstance(total, dict):
         children = total.get("children")
         if isinstance(children, dict):
-            raw_reports = children.get("Python")
-            if isinstance(raw_reports, list):
-                reports.extend(report for report in raw_reports if isinstance(report, dict))
+            for language in ("Python", "Rust"):
+                raw_reports = children.get(language)
+                if isinstance(raw_reports, list):
+                    reports.extend(report for report in raw_reports if isinstance(report, dict))
     return reports
 
 
@@ -104,12 +127,12 @@ def tokei_code_counts(paths: list[Path]) -> dict[Path, int]:
     if shutil.which("tokei") is None:
         raise TokeiError(
             "tokei binary not found on PATH; install per integrations/tools/tokei.json. "
-            "check_python_lengths uses tokei Python code-line counts and does not "
+            "check_python_lengths uses tokei Python and Rust code-line counts and does not "
             "fall back to physical splitlines totals."
         )
     requested = {path.resolve(): path for path in paths}
     completed = subprocess.run(
-        ["tokei", "--output", "json", "--types", "Python", *[str(path) for path in paths]],
+        ["tokei", "--output", "json", "--types", "Python,Rust", *[str(path) for path in paths]],
         check=False,
         capture_output=True,
         text=True,
@@ -153,13 +176,24 @@ def iter_python_targets(root: Path, *, require_git: bool = False) -> list[Path]:
             "skills/shared/scripts/*.py",
             "tests/*.py",
             "tests/**/*.py",
+            "native/*/src/*.rs",
+            "native/*/src/**/*.rs",
+            "native/*/tests/*.rs",
+            "native/*/tests/**/*.rs",
+            "native/*/build.rs",
         ),
         require_git=require_git,
     )
 
 
+def _is_native_test(relative: Path) -> bool:
+    return "tests" in relative.parts[1:-1]
+
+
 def file_limit_for(path: Path, root: Path) -> int:
     relative = path.relative_to(root)
+    if relative.parts[:1] == ("native",):
+        return NATIVE_TEST_FILE_MAX if _is_native_test(relative) else NATIVE_SOURCE_FILE_MAX
     if relative.parts[:1] == ("scripts",):
         return REPO_SCRIPT_FILE_MAX
     if relative.parts[:1] == ("tests",):
@@ -169,6 +203,8 @@ def file_limit_for(path: Path, root: Path) -> int:
 
 def file_warn_for(path: Path, root: Path) -> int:
     relative = path.relative_to(root)
+    if relative.parts[:1] == ("native",):
+        return NATIVE_TEST_FILE_WARN if _is_native_test(relative) else NATIVE_SOURCE_FILE_WARN
     if relative.parts[:1] == ("scripts",):
         return REPO_SCRIPT_FILE_WARN
     if relative.parts[:1] == ("tests",):
@@ -189,7 +225,7 @@ def validate_file_length(path: Path, root: Path, *, code_lines: int) -> str | No
         # a cohesion-scoped module or delete dead code -- do NOT mechanically spill
         # into an _extra_lib/_lib companion just to dodge the cap.
         raise ValidationError(
-            f"{path}: Python code lines {code_lines} exceed limit {limit}. Split the file "
+            f"{path}: tokei code lines {code_lines} exceed limit {limit}. Split the file "
             "into a cohesive new module or delete code; do not mechanically spill into an "
             "_extra_lib/_lib companion to dodge the cap (docs/deferred-decisions.md D33)."
         )
@@ -197,7 +233,7 @@ def validate_file_length(path: Path, root: Path, *, code_lines: int) -> str | No
     if code_lines >= warn:
         relative = path.relative_to(root)
         return (
-            f"WARN: {relative}: Python code lines {code_lines} are within the advisory warn "
+            f"WARN: {relative}: tokei code lines {code_lines} are within the advisory warn "
             f"band [{warn}, {limit}]; separate a concept or delete before it reaches the hard "
             f"limit {limit} — do not shave lines to stay under the bar."
         )
@@ -277,7 +313,7 @@ def main() -> int:
         help=(
             "Advisory mode (#256): print `limit - current` headroom per gated file "
             "instead of gating, so a slice can choose new-module-vs-append before "
-            "writing. File current is tokei Python code lines. Function length is "
+            "writing. File current is tokei code lines (Python and Rust). Function length is "
             "gated separately by ruff PLR0915 (statement count)."
         ),
     )
@@ -361,7 +397,7 @@ def main() -> int:
 
     for warning in warnings:
         print(warning)
-    print(f"Validated Python length limits for {len(targets)} file(s).")
+    print(f"Validated code length limits for {len(targets)} file(s).")
     if warnings:
         print(
             f"WARN: {len(warnings)} file(s) within the advisory file-length warn band "
