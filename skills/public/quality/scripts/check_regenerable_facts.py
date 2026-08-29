@@ -141,6 +141,50 @@ def _diagnostics(report: dict, status: str) -> list[str]:
     return lines
 
 
+def _load_adapter_for_scan(repo_root: Path) -> tuple[dict | None, str | None]:
+    try:
+        adapter = load_adapter(repo_root)
+    except Exception as exc:  # noqa: BLE001 - report it; do NOT quietly fall back to defaults
+        detail = f"{type(exc).__name__}: {exc}" if str(exc) else type(exc).__name__
+        return None, f"quality adapter could not be loaded ({detail}); declared surfaces are unknown"
+    if isinstance(adapter, dict) and adapter.get("found") and not adapter.get("valid", True):
+        return None, "quality adapter is invalid (" + "; ".join(adapter.get("errors") or []) + ")"
+    return (adapter if isinstance(adapter, dict) else None), None
+
+
+def _staged_advisory(repo_root: Path) -> int:
+    try:
+        paths = lib.staged_surface_paths(lib.staged_paths(repo_root))
+    except Exception as exc:  # noqa: BLE001 - an advisory must name unavailable tooling
+        print(f"ADVISORY: regenerable-facts unavailable: {type(exc).__name__}: {exc}")
+        return 0
+    if not paths:
+        return 0
+
+    adapter, refusal = _load_adapter_for_scan(repo_root)
+    if refusal:
+        print(f"ADVISORY: regenerable-facts unavailable: {refusal}")
+        return 0
+    try:
+        report = lib.scan_paths(repo_root, paths, adapter)
+    except Exception as exc:  # noqa: BLE001 - keep the commit boundary advisory
+        print(f"ADVISORY: regenerable-facts unavailable: {type(exc).__name__}: {exc}")
+        return 0
+
+    for unavailable in report["unavailable"]:
+        print(
+            f"ADVISORY: regenerable-facts unavailable for {unavailable['path']}: "
+            f"{unavailable['reason']}"
+        )
+    for finding in report["findings"]:
+        print(
+            f"ADVISORY: regenerable-facts {finding['path']}:{finding['line']}: "
+            f"flagged `{finding['literal']}` ({finding['label']}); rule: {lib.RULE_TEXT} "
+            f"Remedy: {finding['remedy']}."
+        )
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Refuse transcribed versions, shas, and as-of counts on forward-looking prose surfaces."
@@ -148,22 +192,17 @@ def main() -> int:
     parser.add_argument(
         "--repo-root", type=Path, default=None, help="Repository root to scan (default: the repo owning this script)."
     )
+    parser.add_argument(
+        "--staged-paths",
+        action="store_true",
+        help="Emit non-blocking advisories for staged AGENTS.md, README.md, and docs/**/*.md files.",
+    )
     args = parser.parse_args()
     repo_root = (args.repo_root or REPO_ROOT).resolve()
-    refusal = None
-    try:
-        adapter = load_adapter(repo_root)
-    except Exception as exc:  # noqa: BLE001 - report it; do NOT quietly fall back to defaults
-        # `str(StopIteration())` is empty, and the portable adapter shim raises
-        # exactly that when the package is installed without its scripts sibling.
-        # A blank reason is a permanently red gate nobody can diagnose.
-        detail = f"{type(exc).__name__}: {exc}" if str(exc) else type(exc).__name__
-        adapter, refusal = None, f"quality adapter could not be loaded ({detail}); declared surfaces are unknown"
-    if isinstance(adapter, dict) and adapter.get("found") and not adapter.get("valid", True):
-        # Falling back to defaults here would silently DISCARD the surfaces and
-        # exemptions the repo declared, and report clean over a scope nobody chose.
-        refusal = "quality adapter is invalid (" + "; ".join(adapter.get("errors") or []) + ")"
-        adapter = None
+    if args.staged_paths:
+        return _staged_advisory(repo_root)
+
+    adapter, refusal = _load_adapter_for_scan(repo_root)
     if refusal:
         # Do NOT scan on a refusal: findings from the default scope, emitted beside
         # "declared surfaces are unknown", invite a machine consumer to act on a

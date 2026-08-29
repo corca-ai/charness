@@ -16,6 +16,12 @@ if ! git diff --cached --check; then
   exit 2
 fi
 
+# This is an advisory boundary: the conditional consumes the checker's failure
+# status while preserving its finding or unavailable-check output.
+if ! python3 -B skills/public/quality/scripts/check_regenerable_facts.py --repo-root "$REPO_ROOT" --staged-paths; then
+  echo "ADVISORY: regenerable-facts checker unavailable; commit was not blocked." >&2
+fi
+
 # Commit identity is stamped here and becomes expensive to repair after push.
 # This existing checker caught the historical 62-commit `.invalid` incident;
 # keep it wired directly to the cheap commit boundary instead of hiding it in a

@@ -1,16 +1,18 @@
 """The forward-looking-prose rule, each refusal observed FAILING.
 
-The rule already existed and was armed on exactly one file. These tests pin the
-repo-wide arming, the record-versus-forward-looking seam, and the two escape
-hatches the rule deliberately keeps open (a command in inline code, and a linked
-artifact) -- because a gate that refuses the replacement it recommends trains
-avoidance rather than the habit.
+The rule already existed and was broad-armed on the repository's configured
+surfaces. These tests pin that arming, the staged commit-boundary advisory, the
+record-versus-forward-looking seam, and the two escape hatches the rule
+deliberately keeps open (a command in inline code, and a linked artifact) --
+because a gate that refuses the replacement it recommends trains avoidance
+rather than the habit.
 """
 
 from __future__ import annotations
 
 import re
 import runpy
+import subprocess
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -318,6 +320,85 @@ def _run(repo: Path, *extra: str) -> tuple[int, dict]:
     payload = yaml.safe_load(completed.stdout)
     assert isinstance(payload, dict), f"stdout was not a YAML mapping: {completed.stdout!r} {completed.stderr!r}"
     return completed.returncode, payload
+
+
+def _staged_repo(tmp_path: Path, rel: str, text: str) -> Path:
+    repo = tmp_path / "staged"
+    path = repo / rel
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
+    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
+    subprocess.run(["git", "add", "--", rel], cwd=repo, check=True)
+    return repo
+
+
+def _run_staged(repo: Path) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [sys.executable, str(SKILL_SCRIPTS / "check_regenerable_facts.py"), "--repo-root", str(repo), "--staged-paths"],
+        capture_output=True,
+        text=True,
+    )
+
+
+def test_staged_finding_is_an_advisory_with_the_rule_and_exit_zero(tmp_path: Path) -> None:
+    repo = _staged_repo(tmp_path, "docs/current.md", "The suite carries 12 tests.\n")
+
+    result = _run_staged(repo)
+
+    assert result.returncode == 0, result.stderr
+    assert "ADVISORY:" in result.stdout
+    assert "12 tests" in result.stdout
+    assert "rule:" in result.stdout
+    assert lib.RULE_TEXT in result.stdout
+
+
+def test_staged_file_outside_the_three_advisory_surfaces_is_silent(tmp_path: Path) -> None:
+    repo = _staged_repo(tmp_path, "notes.md", "The suite carries 12 tests.\n")
+
+    result = _run_staged(repo)
+
+    assert result.returncode == 0
+    assert result.stdout == ""
+    assert result.stderr == ""
+
+
+def test_no_staged_advisory_surface_produces_no_verdict(tmp_path: Path) -> None:
+    repo = tmp_path / "unstaged"
+    repo.mkdir()
+    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
+    (repo / "docs").mkdir()
+    (repo / "docs" / "current.md").write_text("The suite carries 12 tests.\n", encoding="utf-8")
+
+    result = _run_staged(repo)
+
+    assert result.returncode == 0
+    assert result.stdout == ""
+    assert result.stderr == ""
+
+
+def test_unreadable_staged_advisory_surface_is_reported_without_blocking(tmp_path: Path) -> None:
+    repo = _staged_repo(tmp_path, "README.md", "The suite carries 12 tests.\n")
+    (repo / "README.md").unlink()
+
+    result = _run_staged(repo)
+
+    assert result.returncode == 0
+    assert "ADVISORY:" in result.stdout
+    assert "unavailable" in result.stdout
+
+
+def test_pre_commit_arms_the_advisory_without_a_silent_drop() -> None:
+    hook = (ROOT / ".githooks" / "pre-commit").read_text(encoding="utf-8")
+    invocation = (
+        'if ! python3 -B skills/public/quality/scripts/check_regenerable_facts.py '
+        '--repo-root "$REPO_ROOT" --staged-paths; then'
+    )
+
+    assert invocation in hook
+    assert hook.index(invocation) < hook.index("python3 -B scripts/check_git_identity.py")
+    assert "|| true" not in hook
+    assert "|| :" not in hook
+    assert "2>/dev/null" not in hook
 
 
 def test_an_unconfigured_repo_reports_NO_GATE_rather_than_clean_or_red(tmp_path: Path) -> None:

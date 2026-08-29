@@ -36,11 +36,24 @@ from __future__ import annotations
 
 import fnmatch
 import re
+import subprocess
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from git_inventory_lib import visible_repo_files  # noqa: E402
+
+RULE_TEXT = (
+    "A number in prose is read as current. When a command can regenerate it, the prose "
+    "should carry the COMMAND, not the command's output."
+)
+
+STAGED_SURFACES = (
+    "AGENTS.md",
+    "README.md",
+    "docs/**/*.md",
+)
+STAGED_DOCS_PREFIX = STAGED_SURFACES[2].split("**", 1)[0]
 
 # Conservative surfaces a reader can treat as current without knowing the repo's
 # documentation taxonomy. An arbitrary docs tree is deliberately NOT a default:
@@ -114,6 +127,42 @@ def scan_text(text: str) -> list[tuple[int, str, str, str]]:
                 hits.append((lineno, match.group(0).strip(), label, remedy))
                 break
     return hits
+
+
+def staged_paths(repo_root: Path) -> list[str]:
+    """Return paths present in the staged diff, or raise an actionable error."""
+    try:
+        completed = subprocess.run(
+            [
+                "git",
+                "-C",
+                str(repo_root),
+                "diff",
+                "--cached",
+                "--name-only",
+                "--diff-filter=ACMRTUXBD",
+                "-z",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+    except OSError as exc:
+        raise RuntimeError(f"could not inspect staged paths: {type(exc).__name__}: {exc}") from exc
+    if completed.returncode:
+        detail = completed.stderr.strip() or f"git exited {completed.returncode}"
+        raise RuntimeError(f"could not inspect staged paths: {detail}")
+    return [path for path in completed.stdout.split("\0") if path]
+
+
+def staged_surface_paths(paths: list[str]) -> list[str]:
+    """Keep only the three fixed commit-boundary prose surfaces."""
+    return [
+        path
+        for path in paths
+        if path in STAGED_SURFACES[:2]
+        or (path.startswith(STAGED_DOCS_PREFIX) and path.endswith(".md"))
+    ]
 
 
 def _config(adapter: dict | None) -> dict:
@@ -239,4 +288,35 @@ def scan_repo(repo_root: Path, adapter: dict | None = None) -> dict:
         # An exemption without a stated reason is the same unfalsifiable claim the
         # rule exists to remove, so it is reported rather than honoured silently.
         "unreasoned_exemptions": sorted(p for p, r in exemptions.items() if not _reason_text(r)),
+    }
+
+
+def scan_paths(repo_root: Path, paths: list[str], adapter: dict | None = None) -> dict:
+    """Scan an explicit path list with the same detector used by ``scan_repo``."""
+    _surfaces, exemptions = resolve_config(adapter)
+    findings: list[dict[str, object]] = []
+    exempted: list[dict[str, str]] = []
+    unavailable: list[dict[str, str]] = []
+    checked = 0
+    for rel in paths:
+        path = repo_root / rel
+        reason = exemption_for(rel, exemptions)
+        if reason is not None:
+            exempted.append({"path": rel, "reason": reason})
+            continue
+        try:
+            text = path.read_text(encoding="utf-8", errors="ignore")
+        except OSError as exc:
+            unavailable.append({"path": rel, "reason": f"{type(exc).__name__}: {exc}"})
+            continue
+        checked += 1
+        for lineno, literal, label, remedy in scan_text(text):
+            findings.append(
+                {"path": rel, "line": lineno, "literal": literal, "label": label, "remedy": remedy}
+            )
+    return {
+        "checked": checked,
+        "exempted": exempted,
+        "findings": findings,
+        "unavailable": unavailable,
     }
