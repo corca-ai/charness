@@ -2,8 +2,8 @@
 
 ## Current Focus
 
+- Picked up the 2026-08-29 next-session plan. (source: `charness-artifacts/retro/2026-08-30-session-retro.md`)
 - The operator, watching a session accumulate small failures, asked for patterns and patterns-of-patterns rather than incident response, and for structural repair regardless of who authored the defect. (source: `charness-artifacts/retro/2026-08-30-a-class-discharged-as-a-list.md`)
-- The 2026-08-28~29 session executed umbrella #744's step 4 and the parallel test-corpus track: #748 slice 1 (seven Codex lanes; four Python repository-boundary owners deleted and replaced by native `repograph` commands behind one gate-side resolver), #743 resolved and CLOSED through topology-derived test-role exclusion, #753 driven from inventory to a blocking ratio gate (operator redirected the recorded mutation pass to a JTBD audit mid-session), #672 retired, and the next session designed with the operator (release-first keystone). (source: `charness-artifacts/retro/2026-08-29-session-retro.md`)
 
 ## Repeat Traps
 
@@ -17,7 +17,7 @@
 - **workflow — prefer a structural property over an enumerated refusal.** Slice A's first cut recognised ambiguity with an enumerated four-word negation list (`not|never|without|no`), and round 2 showed it disarmed the floor on genuinely deferring lines. The repair that worked is structural and positional — *decline only when EVERY flag mention on the line is negated* — which is the same shape the lesson names. I committed the enumerated form first. `applied: the current achieve contract in skills/public/achieve/references/goal-artifact.md records the structural property; no standalone cadence-owner file remains.` (source: `charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md`; sources: 3)
 - state a detector's blind class — "what can this mechanism NOT see?" — in its module docstring before writing its first acceptance test. The HTML guard's blind class was "it cannot see any renderer", which was the whole finding, and it took three review rounds to surface. (source: `charness-artifacts/retro/2026-08-18-session-retro.md`; sources: 3)
 - **capability**: classify production PLR2004 findings and trial a no-increase baseline before considering a blocking rule. (source: `charness-artifacts/retro/2026-08-14-session-retro.md`; sources: 3)
-- **a number in prose beside a number in a test is two sources for one fact, and only the test goes red.** `.agents/command-dominance.yaml` said 14/8 while the test pinning it asserted 15/9 — the comment had drifted a full measurement behind the thing that pins it. Where both must exist, the prose must say "read the test for the truth". (source: `charness-artifacts/retro/2026-08-29-detector-blind-class.md`)
+- capability — **an enumerator-agreement gate.** The only durable fix for the drift; hand-alignment is what decayed. Destination: `#760`. (source: `charness-artifacts/retro/2026-08-30-session-retro.md`)
 
 ## Selection Policy
 
@@ -48,6 +48,5 @@
 - `charness-artifacts/retro/2026-08-18-session-retro.md`
 - `charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md`
 - `charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md`
-- `charness-artifacts/retro/2026-08-29-detector-blind-class.md`
-- `charness-artifacts/retro/2026-08-29-session-retro.md`
 - `charness-artifacts/retro/2026-08-30-a-class-discharged-as-a-list.md`
+- `charness-artifacts/retro/2026-08-30-session-retro.md`

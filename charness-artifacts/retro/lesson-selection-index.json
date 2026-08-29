@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-08-30",
-  "source_artifact_count": 418,
-  "candidate_count": 2167,
+  "source_artifact_count": 419,
+  "candidate_count": 2176,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -1354,6 +1354,29 @@
       ]
     },
     {
+      "candidate_id": "current_focus:cd53105e7be3",
+      "kind": "current_focus",
+      "lesson": "Picked up the 2026-08-29 next-session plan.",
+      "normalized_key": "picked up the 2026 08 29 next session plan",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-08-30-session-retro.md",
+      "latest_source_date": "2026-08-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-30-session-retro.md",
+          "date": "2026-08-30",
+          "section": "Context",
+          "kind": "current_focus",
+          "lesson": "Picked up the 2026-08-29 next-session plan."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:21bf92a5b98a",
       "kind": "current_focus",
       "lesson": "The operator, watching a session accumulate small failures, asked for patterns and patterns-of-patterns rather than incident response, and for structural repair regardless of who authored the defect.",
@@ -1373,6 +1396,190 @@
           "section": "Context",
           "kind": "current_focus",
           "lesson": "The operator, watching a session accumulate small failures, asked for patterns and patterns-of-patterns rather than incident response, and for structural repair regardless of who authored the defect."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:9aa1492847f1",
+      "kind": "next_improvement",
+      "lesson": "capability — **an enumerator-agreement gate.** The only durable fix for the drift; hand-alignment is what decayed. Destination: `#760`.",
+      "normalized_key": "capability an enumerator agreement gate the only durable fix for the drift hand alignment",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-08-30-session-retro.md",
+      "latest_source_date": "2026-08-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-30-session-retro.md",
+          "date": "2026-08-30",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "capability — **an enumerator-agreement gate.** The only durable fix for the drift; hand-alignment is what decayed. Destination: `#760`."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:72cba2ebfeb0",
+      "kind": "next_improvement",
+      "lesson": "memory — reviewer rounds are NOT optional on this path. Seven rounds, seven blocks, seven reproduced defects, zero self-caught.",
+      "normalized_key": "memory reviewer rounds are not optional on this path seven rounds seven blocks seven",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-08-30-session-retro.md",
+      "latest_source_date": "2026-08-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-30-session-retro.md",
+          "date": "2026-08-30",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "memory — reviewer rounds are NOT optional on this path. Seven rounds, seven blocks, seven reproduced defects, zero self-caught."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:64b49607125b",
+      "kind": "next_improvement",
+      "lesson": "workflow — **a test must fail against the wrong answer, not pass against the implementation.** Three tests here shared a premise with their defect. Destination: this artifact; assert the negative explicitly, as the gitlink test now does with `!= sha256(\"gitlink\\0\" + \"0\")`.",
+      "normalized_key": "workflow a test must fail against the wrong answer not pass against the implementation",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-08-30-session-retro.md",
+      "latest_source_date": "2026-08-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-30-session-retro.md",
+          "date": "2026-08-30",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "workflow — **a test must fail against the wrong answer, not pass against the implementation.** Three tests here shared a premise with their defect. Destination: this artifact; assert the negative explicitly, as the gitlink test now does with `!= sha256(\"gitlink\\0\" + \"0\")`."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:cc411356b60e",
+      "kind": "next_improvement",
+      "lesson": "workflow — **name the OWNER SET before repairing.** \"Who else answers this question?\" is the discriminator that would have prevented most of the ten self-inflicted defects. Destination: this artifact; the triggering instances are the four symlink owners and the two merge halves.",
+      "normalized_key": "workflow name the owner set before repairing who else answers this question is the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-08-30-session-retro.md",
+      "latest_source_date": "2026-08-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-30-session-retro.md",
+          "date": "2026-08-30",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "workflow — **name the OWNER SET before repairing.** \"Who else answers this question?\" is the discriminator that would have prevented most of the ten self-inflicted defects. Destination: this artifact; the triggering instances are the four symlink owners and the two merge halves."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:74ed2f576ea9",
+      "kind": "repeat_trap",
+      "lesson": "NOT waste: the seven review rounds. Every round produced a reproduced defect. Rounds 5–7 were narrower but still real, and round 7 found a superproject HEAD being bound as a submodule's.",
+      "normalized_key": "not waste the seven review rounds every round produced a reproduced defect rounds 5",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-08-30-session-retro.md",
+      "latest_source_date": "2026-08-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-30-session-retro.md",
+          "date": "2026-08-30",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "NOT waste: the seven review rounds. Every round produced a reproduced defect. Rounds 5–7 were narrower but still real, and round 7 found a superproject HEAD being bound as a submodule's."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:6b83c4f50b02",
+      "kind": "repeat_trap",
+      "lesson": "**Symptom repair instead of class repair.** I fixed `#759` as \"deletions in committed-ref mode\" without characterizing the class. Naming it first makes the opening move obvious — diff the git invocations of every path-enumerating function — and that one move would have produced three of the eight findings immediately. The repo's Sibling Search discipline exists for exactly this and I skipped it. Cost: the entire sweep was rework that a five-minute discipline would have front-loaded.",
+      "normalized_key": "symptom repair instead of class repair i fixed 759 as deletions in committed ref",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-08-30-session-retro.md",
+      "latest_source_date": "2026-08-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-30-session-retro.md",
+          "date": "2026-08-30",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "**Symptom repair instead of class repair.** I fixed `#759` as \"deletions in committed-ref mode\" without characterizing the class. Naming it first makes the opening move obvious — diff the git invocations of every path-enumerating function — and that one move would have produced three of the eight findings immediately. The repo's Sibling Search discipline exists for exactly this and I skipped it. Cost: the entire sweep was rework that a five-minute discipline would have front-loaded."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:61a3c099016d",
+      "kind": "repeat_trap",
+      "lesson": "**Ten defects of the repaired class, introduced by the repairs.** Too-broad symlink exclusion; an unqualified contract claim; an import-time alias; two of four symlink-policy owners reconciled; `.resolve()` renaming a declared pointer; gitlink field-order; index-vs-checkout; superproject walk-up; consumer module substitution; import-order dependence. Each cost a review round.",
+      "normalized_key": "ten defects of the repaired class introduced by the repairs too broad symlink exclusion",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-08-30-session-retro.md",
+      "latest_source_date": "2026-08-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-30-session-retro.md",
+          "date": "2026-08-30",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "**Ten defects of the repaired class, introduced by the repairs.** Too-broad symlink exclusion; an unqualified contract claim; an import-time alias; two of four symlink-policy owners reconciled; `.resolve()` renaming a declared pointer; gitlink field-order; index-vs-checkout; superproject walk-up; consumer module substitution; import-order dependence. Each cost a review round."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:cccc5634849e",
+      "kind": "repeat_trap",
+      "lesson": "**Three tests that shared a premise with the defect they guarded.** The submodule test asserted `captured` and never that the digest tracked the commit, so it passed over the constant `0`. The next one asserted the digest matched the INDEX entry — the very thing that was wrong. The symlink test asserted the exclusion that was itself the defect. Writing a test is not evidence; writing one that fails against the wrong answer is.",
+      "normalized_key": "three tests that shared a premise with the defect they guarded the submodule test",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-08-30-session-retro.md",
+      "latest_source_date": "2026-08-30",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-30-session-retro.md",
+          "date": "2026-08-30",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "**Three tests that shared a premise with the defect they guarded.** The submodule test asserted `captured` and never that the digest tracked the commit, so it passed over the constant `0`. The next one asserted the digest matched the INDEX entry — the very thing that was wrong. The symlink test asserted the exclusion that was itself the defect. Writing a test is not evidence; writing one that fails against the wrong answer is."
         }
       ]
     },
