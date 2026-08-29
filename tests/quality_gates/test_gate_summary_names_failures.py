@@ -21,23 +21,48 @@ from pathlib import Path
 
 import pytest
 
-from tests.repo_copy import clone_seeded_charness_repo
-
-from .support import assert_quality_receipt
+from .support import assert_quality_receipt, clone_quality_runner_repo
 
 ROOT = Path(__file__).resolve().parents[2]
 
+#: The label these tests drive. Nothing here is about the retro validator; it is the
+#: label whose queue line already exists in the real runner, so driving it exercises the
+#: runner's own reporting path rather than a synthetic one.
+_LABEL = "validate-retro-artifact"
+
 
 @pytest.fixture
-def gate_repo(tmp_path: Path, seeded_charness_git_repo: Path) -> Path:
-    """An isolated copy to drive the real gate in.
+def gate_repo(tmp_path: Path, seeded_quality_runner_repo: Path) -> Path:
+    """A minimal runner repo, not a copy of this one.
 
-    The first cut wrote its probe artifact into the live checkout, and
-    `check_test_repo_copy_invariants` refused it — rightly: an xdist worker or a
-    snapshot-based test could observe the transient state. Same refusal this session
-    already earned once, on a different test.
+    This file used to clone the whole checkout (`clone_seeded_charness_repo`) and
+    git-commit inside it, costing ~7.3s of SETUP per test. Nothing here needs a
+    repository: the contract under test is what `run-quality.sh` PRINTS, and the only
+    other moving part is one gate that must pass or fail on demand. `make_quality_runner_repo`
+    already builds exactly that fixture -- the real runner, the real exported-copy guard,
+    the real label-universe reader, and stub gates -- and the sibling
+    `test_quality_runner_release_order.py` has been using it all along.
+
+    The full clone was never load-bearing: the very first test already overwrote the
+    real validator with a two-line sleep stub.
     """
-    return clone_seeded_charness_repo(tmp_path, seeded_charness_git_repo)
+
+    repo, _env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    return repo
+
+
+def _seed_gate(repo: Path, body: str) -> None:
+    """Install the one gate this run queues. Stubbed BECAUSE it is not what is proven.
+
+    The runner, its export-copy guard, and its label-universe reader are all real in
+    this fixture; only the gate's verdict is under the test's control, which is the
+    whole point -- a reporting contract needs a pass and a fail on demand, not a
+    validator with opinions of its own about artifacts.
+    """
+
+    validator = repo / "scripts" / "validate_retro_artifact.py"
+    validator.parent.mkdir(parents=True, exist_ok=True)
+    validator.write_text(body, encoding="utf-8")
 
 
 def _run_gate(
@@ -73,14 +98,10 @@ def test_run_quality_emits_progress_before_a_slow_phase_finishes(gate_repo: Path
     it only after ``flush_phase`` returns would recreate the zero-byte transcript that
     prompted this regression test.
     """
-    slow_validator = gate_repo / "scripts" / "validate_retro_artifact.py"
-    slow_validator.write_text(
-        "import time\ntime.sleep(30)\n",
-        encoding="utf-8",
-    )
+    _seed_gate(gate_repo, "import time\ntime.sleep(30)\n")
     env = {
         **os.environ,
-        "CHARNESS_QUALITY_LABELS": "validate-retro-artifact",
+        "CHARNESS_QUALITY_LABELS": _LABEL,
         "CHARNESS_QUALITY_HEARTBEAT_SECONDS": "1",
     }
     transcript = gate_repo / "run-quality-progress.log"
@@ -126,9 +147,7 @@ def test_run_quality_emits_progress_before_a_slow_phase_finishes(gate_repo: Path
 
 
 def test_run_quality_preserves_gate_exit_when_receipt_write_fails(gate_repo: Path) -> None:
-    probe = gate_repo / "charness-artifacts" / "retro" / "2026-08-04-receipt-write-probe-retro.md"
-    probe.parent.mkdir(parents=True, exist_ok=True)
-    probe.write_text("# Session Retro\nDate: 2026-08-04\n\n## Context\n\nProbe.\n", encoding="utf-8")
+    _seed_gate(gate_repo, "raise SystemExit(1)\n")
     blocked = gate_repo / "receipt-target"
     blocked.mkdir()
     result = _run_gate(gate_repo, receipt_path=blocked)
@@ -139,16 +158,8 @@ def test_run_quality_preserves_gate_exit_when_receipt_write_fails(gate_repo: Pat
 
 
 def test_run_quality_summary_names_its_failing_checks(gate_repo: Path) -> None:
-    """Drive a REAL failure and read only the tail, exactly as a truncating reader
-    would. The retro validator is used because it fails on a well-formed but
-    incomplete artifact, needing no repo damage to trigger."""
-    probe = gate_repo / "charness-artifacts" / "retro" / "2026-08-04-summary-contract-probe-retro.md"
-    probe.parent.mkdir(parents=True, exist_ok=True)
-    probe.write_text(
-        "# Session Retro\nDate: 2026-08-04\n\n## Context\n\nProbe artifact for the "
-        "gate-summary contract test; deliberately missing required sections.\n",
-        encoding="utf-8",
-    )
+    """Drive a failing gate and read only the tail, exactly as a truncating reader would."""
+    _seed_gate(gate_repo, "raise SystemExit(1)\n")
 
     result = _run_gate(gate_repo)
 
@@ -169,19 +180,12 @@ def test_a_clean_run_summary_is_unchanged(gate_repo: Path) -> None:
     """The false-positive control: naming failures must not add noise to a green run.
     A summary that grows a `(FAILED: )` on success would be a new thing to read past.
 
-    A VALID retro artifact is placed first. The seeded clone excludes
-    `charness-artifacts/`, and this repo refuses an empty-scope green — so without one
-    the validator fails for a reason that has nothing to do with the contract under
-    test, and the control would pass for the wrong reason.
+    The passing arm used to need a VALID retro artifact copied out of this checkout and
+    then git-committed, because the real validator discovers artifacts through git. With
+    the verdict under the test's control, the control proves the same thing without a
+    repository, an artifact, or a commit.
     """
-    valid = ROOT / "charness-artifacts" / "retro" / "2026-08-07-finish-the-sweeps-this-run-left-retro.md"
-    target = gate_repo / "charness-artifacts" / "retro" / valid.name
-    target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(valid.read_text(encoding="utf-8"), encoding="utf-8")
-    # Committed, because the validator discovers artifacts through git.
-    subprocess.run(["git", "add", "-A"], cwd=gate_repo, check=True, capture_output=True)
-    subprocess.run(["git", "commit", "-qm", "seed a valid retro"], cwd=gate_repo,
-                   check=True, capture_output=True)
+    _seed_gate(gate_repo, "raise SystemExit(0)\n")
 
     result = _run_gate(gate_repo)
 
@@ -203,9 +207,7 @@ def test_a_log_copy_that_fails_warns_instead_of_promising_a_stale_file(gate_repo
     same silent-loss shape this whole change exists to remove, reintroduced inside the
     repair.
     """
-    probe = gate_repo / "charness-artifacts" / "retro" / "2026-08-04-copy-failure-probe-retro.md"
-    probe.parent.mkdir(parents=True, exist_ok=True)
-    probe.write_text("# Session Retro\nDate: 2026-08-04\n\n## Context\n\nProbe.\n", encoding="utf-8")
+    _seed_gate(gate_repo, "raise SystemExit(1)\n")
 
     # Occupy the copy target with a read-only file, so the copy cannot land.
     log_dir = gate_repo.parent / "quality-runtime" / "quality-failure-logs"
