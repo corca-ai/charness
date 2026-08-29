@@ -58,12 +58,31 @@ def test_agents_keeps_dogfood_detail_in_development_doc() -> None:
 
 
 def test_agents_carries_only_the_compact_parallel_routing_cue() -> None:
-    agents_text = AGENTS.lower()
+    """The cue and the route stay in the router; the mechanics stay with the owner.
+
+    This used to pin the lane-availability rule's own wording inside `AGENTS.md`,
+    which made the router the second place that rule lived -- the exact "second
+    operating manual" its own second sentence forbids. The escape being guarded is
+    the rule going MISSING, not the rule being in `AGENTS.md`, so each phrase is
+    asserted against `docs/parallel-execution.md` (which declares itself the owner)
+    and refused in the router.
+    """
+    # Both pages hard-wrap prose, so a phrase straddles a newline in whichever
+    # page happens to break there. Matching the raw text made the assertion a
+    # test of the wrap column rather than of where the rule lives.
+    def _flat(text: str) -> str:
+        return " ".join(text.lower().split())
+
+    agents_text = _flat(AGENTS)
+    owner_text = _flat((ROOT / "docs" / "parallel-execution.md").read_text(encoding="utf-8"))
 
     assert "independent investigation" in agents_text
     assert "final verification" in agents_text
+    assert "docs/parallel-execution.md" in agents_text
     assert "live tool inventory" in agents_text
-    assert "explicit inventory absence" in agents_text
-    assert "invocation rejection" in agents_text
-    assert "host error" in agents_text
+
+    for mechanic in ("explicit inventory absence", "invocation rejection", "host error"):
+        assert mechanic in owner_text
+        assert mechanic not in agents_text
+
     assert "## subagent delegation" not in agents_text

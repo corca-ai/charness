@@ -196,7 +196,9 @@ commands:
   catalog-list:
     help_command: ./charness catalog list --help
     doc_paths:
-      - AGENTS.md
+      # Was AGENTS.md: the router is not the owner of a CLI usage example, and
+      # pinning one there is what regrows it into a second operating manual.
+      - docs/external-integrations.md
       - docs/cli-reference.md
     required_help_contains:
       - --repo-root

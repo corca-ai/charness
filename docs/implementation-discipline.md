@@ -17,9 +17,9 @@ worked, and leave the next change easy to start? It is intentionally short.
    separate named branch. Runtime caches and temporary output live outside the
    worktree.
 3. Make the smallest change that improves the user's path. Removing obsolete
-   code, wrappers, gates, mirrors, or tests is a valid implementation when
-   their consumers have been checked. Do not add a rule to compensate for a
-   problem that deletion or derivation removes.
+   code, wrappers, gates, mirrors, docs, or tests is a valid implementation
+   when their consumers have been checked. Do not add a rule to compensate for
+   a problem that deletion or derivation removes.
 4. Run focused tests for the changed behavior, then the default core lane when
    the changed surface has cross-module consumers. Use
    `./scripts/run-quality.sh --release` for the release-final changed-line

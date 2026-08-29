@@ -165,6 +165,10 @@ Expected fields:
 
 ## User-Repo Discovery
 
+When support or integration availability is unclear, run
+`charness catalog list --repo-root <repo>` as read-only inventory before
+assuming a tool is absent.
+
 User repos that consume `charness` as a plugin do not need to copy every
 manifest. Discovery surfaces (quality `list_tool_recommendations`, narrative
 `list_tool_recommendations`, and `charness catalog list`) merge plugin-
