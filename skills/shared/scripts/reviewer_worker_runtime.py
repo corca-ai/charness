@@ -23,21 +23,25 @@ except ImportError:
     from skills.shared.scripts.reviewer_process import ReviewerProcessError, run_bounded_process
 
 try:
+    from reviewer_result_contract import write_model_authored_schema
     from reviewer_worker_capability import (
         CapabilityLifecycleError,
         WorkerCapability,
         adapt_failure,
         collect,
+        join_result_non_claims,
         launch,
         receipt_fields,
         validate_result_non_claims,
     )
 except ImportError:
+    from skills.shared.scripts.reviewer_result_contract import write_model_authored_schema
     from skills.shared.scripts.reviewer_worker_capability import (
         CapabilityLifecycleError,
         WorkerCapability,
         adapt_failure,
         collect,
+        join_result_non_claims,
         launch,
         receipt_fields,
         validate_result_non_claims,
@@ -147,6 +151,7 @@ def _validate_result(
     *,
     packet_identity: str,
     reviewed_input_identity: str,
+    join: Any,
 ) -> dict[str, Any]:
     if not path.exists():
         raise WorkerError("result-missing", f"backend did not write a result: {path}")
@@ -156,12 +161,20 @@ def _validate_result(
         payload = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise WorkerError("result-invalid-json", f"backend result is not valid JSON: {exc}") from exc
+    # The object check precedes both the join and schema validation: `join` reads
+    # the payload as a mapping, and a bare list here would raise TypeError inside
+    # the joiner instead of this module's typed refusal.
+    if not isinstance(payload, dict):
+        raise WorkerError("schema-invalid", "review result must be a JSON object")
+    # Runner-owned provenance lands BEFORE schema validation because the canonical
+    # schema requires those fields; validating first would fail every model-authored
+    # result on the very fields the model must not author.
+    payload = join(payload)
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     try:
         validator.validate(payload)
     except Exception as exc:
         raise WorkerError("schema-invalid", f"backend result failed JSON Schema validation: {exc}") from exc
-    if not isinstance(payload, dict):
-        raise WorkerError("schema-invalid", "review result must be a JSON object")
     if payload.get("packet_sha256") != packet_identity:
         raise WorkerError(
             "schema-invalid",
@@ -287,7 +300,7 @@ def run(args: Any, paths: dict[str, Any], run_id: str, started_at: str) -> dict[
     stderr = paths["stderr"]
     capability_file = paths["capability_file"]
     capability: WorkerCapability = paths["capability"]
-    validator, _ = _schema_validator(schema)
+    validator, canonical_schema = _schema_validator(schema)
     for path in (output, stdout, stderr):
         path.parent.mkdir(parents=True, exist_ok=True)
     temp_fd, temp_name = tempfile.mkstemp(prefix=f".{output.name}.{run_id}.", suffix=".pending", dir=output.parent)
@@ -295,6 +308,9 @@ def run(args: Any, paths: dict[str, Any], run_id: str, started_at: str) -> dict[
     temp_output = Path(temp_name)
     temp_output.unlink()
     raw_output = temp_output.with_suffix(".raw.pending")
+    # #755: the backend generates against the model-authored projection.
+    pending_schema = temp_output.with_suffix(".model-schema.pending")
+    model_schema = write_model_authored_schema(canonical_schema, pending_schema)
     exit_code: int | None = None
     status = SUCCESS
     error: str | None = None
@@ -304,7 +320,7 @@ def run(args: Any, paths: dict[str, Any], run_id: str, started_at: str) -> dict[
             paths,
             workspace=workspace,
             prompt=prompt,
-            schema=schema,
+            schema=model_schema,
             stdout=stdout,
             stderr=stderr,
             temp_output=temp_output,
@@ -320,7 +336,11 @@ def run(args: Any, paths: dict[str, Any], run_id: str, started_at: str) -> dict[
             validator,
             packet_identity=args.packet_identity,
             reviewed_input_identity=args.reviewed_input_identity,
+            join=lambda payload: join_result_non_claims(payload, capability),
         )
+        # Retained as the invariant, not as the thing that catches model error: after
+        # the join this can only fail if the joiner and the validator disagree about
+        # the envelope, which is a Charness defect rather than a reviewer one.
         validate_result_non_claims(result, capability)
         os.replace(temp_output, output)
     except CapabilityLifecycleError as exc:
@@ -334,7 +354,7 @@ def run(args: Any, paths: dict[str, Any], run_id: str, started_at: str) -> dict[
         if exc.exit_code is not None:
             exit_code = exc.exit_code
     finally:
-        for path in (temp_output, raw_output):
+        for path in (temp_output, raw_output, model_schema):
             try:
                 path.unlink()
             except OSError:
@@ -367,6 +387,9 @@ def run(args: Any, paths: dict[str, Any], run_id: str, started_at: str) -> dict[
         "execution_mode": args.execution_mode,
         "prompt_sha256": sha256(prompt),
         "schema_sha256": sha256(schema),
+        # An auditor reading the result cannot otherwise tell that these two fields
+        # were joined by the runner rather than authored by the reviewer.
+        "capability_non_claims_provenance": "runner-joined-from-launch-envelope",
         **receipt_fields(capability),
     }
     if output.exists():

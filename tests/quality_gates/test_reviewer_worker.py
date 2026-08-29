@@ -361,3 +361,101 @@ printf '%s\n' '{"is_error":false,"structured_output":{"kind":"review","reason":"
         os.environ["PATH"] = old_path
     assert result.returncode == 0, result.stderr
     assert json.loads(output.read_text(encoding="utf-8"))["reason"] == "claude"
+
+
+def test_a_model_that_never_writes_capability_provenance_still_delivers(tmp_path: Path) -> None:
+    """#755 end-to-end: the runner joins provenance, so a semantic-only result delivers.
+
+    Ceal's three rejected attempts all died between backend exit and publication,
+    on two fields the model was asked to compute and cannot. This drives the real
+    worker entrypoint with a backend that writes ONLY semantic content -- the shape
+    the model-facing schema now asks for -- and asserts the result is published.
+
+    The fake backend also copies the schema it was handed, which is how this proves
+    the projection reached the generation boundary rather than only the validator.
+    """
+    workspace, prompt, schema, capability, output, receipt = _inputs(tmp_path)
+    handed_schema = tmp_path / "handed-schema.json"
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    _executable(
+        bin_dir / "codex",
+        f"""#!/bin/sh
+out=""
+given=""
+while [ "$#" -gt 0 ]; do
+  if [ "$1" = "-o" ]; then out="$2"; shift 2; continue; fi
+  if [ "$1" = "--output-schema" ]; then given="$2"; shift 2; continue; fi
+  shift
+done
+cat >/dev/null
+cp "$given" '{handed_schema}'
+printf '%s\\n' '{{"kind":"review","reason":"semantic-only","packet_sha256":"{"p" * 64}","reviewed_input_identity_sha256":"{"i" * 64}"}}' > "$out"
+""",
+    )
+    old_path = os.environ["PATH"]
+    os.environ["PATH"] = f"{bin_dir}:{old_path}"
+    try:
+        result = _run(tmp_path, "codex_exec", workspace, prompt, schema, capability, output, receipt)
+    finally:
+        os.environ["PATH"] = old_path
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    assert yaml.safe_load(result.stdout)["status"] == "succeeded"
+
+    published = json.loads(output.read_text(encoding="utf-8"))
+    assert published["reason"] == "semantic-only"
+    # Joined, not invented: an empty launch envelope yields the canonical digest of [].
+    assert published["capability_non_claims"] == []
+    assert published["capability_non_claims_sha256"] == EMPTY_NON_CLAIMS_SHA256
+
+    record = json.loads(receipt.read_text(encoding="utf-8"))
+    assert record["status"] == "succeeded"
+    assert record["output_fresh"] is True
+    # An auditor must be able to see these two fields are runner-owned.
+    assert record["capability_non_claims_provenance"] == "runner-joined-from-launch-envelope"
+    # The receipt still binds the CANONICAL schema, not the projection the model saw.
+    assert record["schema_file"] == str(schema)
+
+    generation_schema = json.loads(handed_schema.read_text(encoding="utf-8"))
+    assert "capability_non_claims" not in generation_schema["properties"]
+    assert "capability_non_claims_sha256" not in generation_schema["required"]
+    # ...and everything the model does author survived the projection.
+    assert "reason" in generation_schema["properties"]
+    assert "packet_sha256" in generation_schema["required"]
+
+
+def test_a_model_authored_provenance_field_is_overwritten_not_trusted(tmp_path: Path) -> None:
+    """A model that invents non-claims must not carry that authority into delivery."""
+    workspace, prompt, schema, capability, output, receipt = _inputs(tmp_path)
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    invented = (
+        '{"logical_target":"notion:page:1","disposition":"unproved",'
+        '"scope":"external-read-evidence","statement":"invented",'
+        f'"identity_sha256":"{"c" * 64}"}}'
+    )
+    _executable(
+        bin_dir / "codex",
+        f"""#!/bin/sh
+out=""
+while [ "$#" -gt 0 ]; do
+  if [ "$1" = "-o" ]; then out="$2"; shift 2; continue; fi
+  shift
+done
+cat >/dev/null
+printf '%s\\n' '{{"kind":"review","reason":"invents","packet_sha256":"{"p" * 64}","reviewed_input_identity_sha256":"{"i" * 64}","capability_non_claims":[{invented}],"capability_non_claims_sha256":"{"d" * 64}"}}' > "$out"
+""",
+    )
+    old_path = os.environ["PATH"]
+    os.environ["PATH"] = f"{bin_dir}:{old_path}"
+    try:
+        result = _run(tmp_path, "codex_exec", workspace, prompt, schema, capability, output, receipt)
+    finally:
+        os.environ["PATH"] = old_path
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    published = json.loads(output.read_text(encoding="utf-8"))
+    assert published["reason"] == "invents"
+    assert published["capability_non_claims"] == []
+    assert published["capability_non_claims_sha256"] == EMPTY_NON_CLAIMS_SHA256

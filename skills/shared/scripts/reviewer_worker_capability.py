@@ -19,6 +19,7 @@ try:
         CapabilityError,
         collect_capability_file,
         envelope_sha256,
+        join_result_capability_non_claims,
         load_capability_file,
         receipt_capability_fields,
         validate_result_capability_non_claims,
@@ -28,6 +29,7 @@ except ImportError:
         CapabilityError,
         collect_capability_file,
         envelope_sha256,
+        join_result_capability_non_claims,
         load_capability_file,
         receipt_capability_fields,
         validate_result_capability_non_claims,
@@ -110,6 +112,11 @@ def collect(
         launch_envelope_sha256=state.launch_envelope_sha256,
         collection_envelope_sha256=decision.envelope_sha256,
     )
+
+
+def join_result_non_claims(result: dict[str, Any], state: WorkerCapability) -> dict[str, Any]:
+    """Join launch-bound capability provenance into a model-authored result (#755)."""
+    return join_result_capability_non_claims(result, state.payload)
 
 
 def validate_result_non_claims(result: dict[str, Any], state: WorkerCapability) -> None:

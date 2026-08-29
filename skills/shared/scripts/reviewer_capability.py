@@ -216,6 +216,33 @@ def validate_receipt_capabilities(receipt: dict[str, Any], *, attempt_id: str) -
     return decision
 
 
+def join_result_capability_non_claims(
+    result: dict[str, Any], capability_payload: dict[str, Any]
+) -> dict[str, Any]:
+    """Return ``result`` with capability provenance taken from the envelope (#755).
+
+    Capability non-claims are an authority statement about what the HOST granted
+    this run. The reviewer model has no standing to assert them and no way to
+    compute their canonical digest, so requiring it to reproduce both made a
+    deterministic value the model's job. Three consecutive Ceal reviews returned
+    substantive findings and were rejected on this field alone: a digest of `[]`
+    computed the wrong way, then two invented external-read non-claims, then the
+    SHA-256 of empty bytes.
+
+    Whatever the model wrote here is REPLACED, not merged. A model-authored
+    non-claim is not evidence of anything the host observed, so preserving it
+    would carry an unfounded authority claim into the delivered artifact; the
+    caller records that provenance was joined so an auditor can see these two
+    fields are runner-owned. The fail-closed equality check remains after this
+    join as the invariant, not as the thing that catches model error.
+    """
+    joined = dict(result)
+    claims = normalized_non_claims(capability_payload.get("capability_non_claims", []))
+    joined["capability_non_claims"] = claims
+    joined["capability_non_claims_sha256"] = non_claims_sha256(claims)
+    return joined
+
+
 def validate_result_capability_non_claims(
     result: dict[str, Any], capability_payload: dict[str, Any]
 ) -> None:
