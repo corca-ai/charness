@@ -13,30 +13,58 @@ The `_load_identity` fallback below is that resolution, not decoration.
 
 from __future__ import annotations
 
+import importlib
 import importlib.util
 import json
+import sys
 from datetime import date
 from pathlib import Path
 from typing import Any
 
 
 def _load_identity():
-    try:
-        from scripts import reviewed_input_identity as module  # noqa: PLC0415
+    """The identity module ADJACENT to this file, never one that merely shares its name.
 
-        return module
-    except ImportError:
-        for ancestor in list(Path(__file__).resolve().parents)[:6]:
-            candidate = ancestor / "scripts" / "reviewed_input_identity.py"
-            if candidate.is_file():
-                spec = importlib.util.spec_from_file_location(
-                    "charness_reviewed_input_identity", candidate
-                )
-                if spec is not None and spec.loader is not None:
-                    module = importlib.util.module_from_spec(spec)
-                    spec.loader.exec_module(module)
-                    return module
-        raise
+    Order matters and it used to be backwards. Trying `from scripts import
+    reviewed_input_identity` first let any already-importable module of that name
+    win -- including a consumer repo's own `scripts/reviewed_input_identity.py` --
+    even though this verifier had itself been loaded by file path precisely
+    because there is no trustworthy package context there. A fresh-eye review
+    proved the substitution by preloading a synthetic module and watching the
+    verifier report the consumer's constants.
+
+    An already-imported module is reused ONLY when it is byte-identically this
+    same file. That is not an optimisation: re-executing the file would create a
+    second module object, and the owner would stop being authoritative under
+    monkeypatch exactly the way an import-time alias did.
+    """
+    sibling = Path(__file__).resolve().with_name("reviewed_input_identity.py")
+    canonical = "scripts.reviewed_input_identity"
+    loaded = sys.modules.get(canonical)
+    loaded_file = getattr(loaded, "__file__", None)
+    if loaded_file is not None and Path(loaded_file).resolve() == sibling:
+        return loaded
+    if sibling.is_file():
+        # Import through the canonical name when — and only when — that name
+        # already resolves to THIS file. Loading it by path instead would build a
+        # second module object, so a later `from scripts import
+        # reviewed_input_identity` would hold a different one and patching either
+        # would leave the other stale. Which object you get must not depend on
+        # who imported first.
+        try:
+            spec = importlib.util.find_spec(canonical)
+        except (ImportError, ValueError):
+            spec = None
+        if spec is not None and spec.origin and Path(spec.origin).resolve() == sibling:
+            return importlib.import_module(canonical)
+        spec = importlib.util.spec_from_file_location("charness_reviewed_input_identity", sibling)
+        if spec is not None and spec.loader is not None:
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module
+    from scripts import reviewed_input_identity as module  # noqa: PLC0415
+
+    return module
 
 
 _identity = _load_identity()
