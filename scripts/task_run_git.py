@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import hashlib
 import os
 import re
+import stat
 import subprocess
 from pathlib import Path
 from typing import Any, Mapping, Sequence
@@ -240,10 +242,80 @@ def _population_delta(
 
 
 def _changed_paths(repo_root: Path, base_sha: str) -> list[str]:
-    tracked = _parse_nul_paths(
-        _git_output(repo_root, "diff", "--no-renames", "--name-only", "-z", base_sha, "--")
+    return sorted(set(_diff_paths(repo_root, base_sha)) | set(_untracked_paths(repo_root)))
+
+
+def _diff_paths(repo_root: Path, *revisions: str) -> list[str]:
+    return _parse_nul_paths(
+        _git_output(
+            repo_root,
+            "diff",
+            "--no-renames",
+            "--name-only",
+            "-z",
+            *revisions,
+            "--",
+        )
     )
-    untracked = _parse_nul_paths(
+
+
+def _untracked_paths(repo_root: Path) -> list[str]:
+    return _parse_nul_paths(
         _git_output(repo_root, "ls-files", "--others", "--exclude-standard", "-z", "--")
     )
-    return sorted(set(tracked) | set(untracked))
+
+
+def _digest_frame(digest: Any, value: bytes) -> None:
+    digest.update(len(value).to_bytes(8, "big"))
+    digest.update(value)
+
+
+def _candidate_content_digest(
+    repo_root: Path, base_sha: str, changed_paths: Sequence[str]
+) -> str:
+    digest = hashlib.sha256()
+    _digest_frame(digest, b"charness.task-run.candidate.v1")
+    _digest_frame(digest, base_sha.encode("ascii"))
+    for path in changed_paths:
+        _digest_frame(digest, os.fsencode(path))
+        candidate_path = repo_root / path
+        try:
+            metadata = candidate_path.lstat()
+        except FileNotFoundError:
+            _digest_frame(digest, b"missing")
+            continue
+        _digest_frame(digest, str(stat.S_IMODE(metadata.st_mode)).encode("ascii"))
+        if stat.S_ISLNK(metadata.st_mode):
+            _digest_frame(digest, b"symlink")
+            _digest_frame(digest, os.fsencode(os.readlink(candidate_path)))
+        elif stat.S_ISREG(metadata.st_mode):
+            _digest_frame(digest, b"file")
+            _digest_frame(digest, candidate_path.read_bytes())
+        else:
+            _digest_frame(digest, b"special")
+            _digest_frame(digest, str(metadata.st_size).encode("ascii"))
+    return digest.hexdigest()
+
+
+def _candidate_carrier(repo_root: Path, base_sha: str) -> dict[str, Any]:
+    """Describe which lane tree carries the complete validated candidate."""
+    head = _git_output(repo_root, "rev-parse", "HEAD").strip()
+    has_commit = head != base_sha
+    committed_paths = _diff_paths(repo_root, base_sha, head) if has_commit else []
+    dirty_paths = sorted(set(_diff_paths(repo_root, head)) | set(_untracked_paths(repo_root)))
+    changed_paths = _changed_paths(repo_root, base_sha)
+    if not has_commit:
+        carrier_kind = "worktree-only"
+    elif dirty_paths:
+        carrier_kind = "commit-plus-dirty"
+    else:
+        carrier_kind = "commit-only"
+    return {
+        "changed_paths": changed_paths,
+        "carrier_kind": carrier_kind,
+        "committed_paths": committed_paths,
+        "dirty_paths": dirty_paths,
+        "head_sha": head if has_commit else None,
+        "head_is_complete": has_commit and not dirty_paths,
+        "content_digest": _candidate_content_digest(repo_root, base_sha, changed_paths),
+    }

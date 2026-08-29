@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts import task_run, task_run_scope
+from scripts import task_run, task_run_git, task_run_scope
 
 from .test_task_run_fixtures import _codex, _commit, _git, _repo, _run
 
@@ -70,6 +70,96 @@ def test_directory_scope_includes_descendants(tmp_path: Path) -> None:
     assert payload["status"] == "completed", payload
     assert payload["scope"]["specs"] == [{"path": "pkg", "kind": "directory"}]
     assert payload["scope"]["changed_paths"] == ["pkg/child.py"]
+
+
+def test_task_run_accepts_a_clean_committed_candidate(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    executable = _codex(
+        tmp_path,
+        "printf 'VALUE = 2\\n' > module.py\n"
+        "git add -- module.py\n"
+        "git -c user.email=test@example.com -c user.name=test commit -m 'update module'",
+    )
+
+    payload = _run(repo, tmp_path, executable)
+
+    worktree = Path(payload["worktree_path"])
+    assert payload["status"] == "completed", payload
+    assert payload["target_sha"] != payload["base_sha"]
+    assert payload["scope"]["changed_paths"] == ["module.py"]
+    assert payload["candidate"]["status"] == "validated"
+    assert payload["candidate"]["useful"] is True
+    assert payload["candidate"]["changed_paths"] == ["module.py"]
+    assert payload["candidate"]["carrier_kind"] == "commit-only"
+    assert payload["candidate"]["committed_paths"] == ["module.py"]
+    assert payload["candidate"]["dirty_paths"] == []
+    assert payload["candidate"]["head_sha"] == payload["target_sha"]
+    assert payload["candidate"]["head_is_complete"] is True
+    assert payload["candidate"]["content_digest"]
+    assert payload["approval_eligibility"] == "eligible"
+    assert "the typed result is approval-eligible" in payload["next_step"]
+    assert _git(worktree, "status", "--short").stdout == ""
+
+
+def test_worktree_only_receipt_names_untracked_bytes_as_the_complete_candidate(
+    tmp_path: Path,
+) -> None:
+    repo = _repo(tmp_path)
+    executable = _codex(tmp_path, "printf 'NEW = 1\\n' > new_module.py")
+
+    payload = _run(repo, tmp_path, executable, scopes=["new_module.py"])
+
+    candidate = payload["candidate"]
+    assert payload["status"] == "completed", payload
+    assert candidate["changed_paths"] == ["new_module.py"]
+    assert candidate["carrier_kind"] == "worktree-only"
+    assert candidate["committed_paths"] == []
+    assert candidate["dirty_paths"] == ["new_module.py"]
+    assert candidate["head_sha"] is None
+    assert candidate["head_is_complete"] is False
+    assert candidate["content_digest"]
+    assert "no lane commit exists" in payload["next_step"]
+    assert "not the complete candidate" in payload["next_step"]
+
+
+def test_mixed_receipt_says_lane_head_is_only_a_proper_subset(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    executable = _codex(
+        tmp_path,
+        "printf 'VALUE = 2\\n' > module.py\n"
+        "git add -- module.py\n"
+        "git -c user.email=test@example.com -c user.name=test commit -m 'update module'\n"
+        "printf 'EXTRA = 1\\n' > extra.py",
+    )
+
+    payload = _run(repo, tmp_path, executable, scopes=["module.py", "extra.py"])
+
+    candidate = payload["candidate"]
+    assert payload["status"] == "completed", payload
+    assert candidate["changed_paths"] == ["extra.py", "module.py"]
+    assert candidate["carrier_kind"] == "commit-plus-dirty"
+    assert candidate["committed_paths"] == ["module.py"]
+    assert candidate["dirty_paths"] == ["extra.py"]
+    assert candidate["head_sha"] == payload["target_sha"]
+    assert candidate["head_is_complete"] is False
+    assert candidate["content_digest"]
+    assert "lane HEAD commit is a proper subset" in payload["next_step"]
+    assert "approval-eligible" not in payload["next_step"]
+
+
+def test_candidate_digest_detects_retained_worktree_byte_drift(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    executable = _codex(tmp_path, "printf 'NEW = 1\\n' > new_module.py")
+
+    payload = _run(repo, tmp_path, executable, scopes=["new_module.py"])
+    worktree = Path(payload["worktree_path"])
+    original_digest = payload["candidate"]["content_digest"]
+    (worktree / "new_module.py").write_bytes(b"NEW = 2\n")
+
+    moved = task_run_git._candidate_carrier(worktree, payload["base_sha"])
+
+    assert moved["changed_paths"] == ["new_module.py"]
+    assert moved["content_digest"] != original_digest
 
 
 def test_explicit_base_scope_resolution_uses_selected_tree_for_dry_run(tmp_path: Path) -> None:

@@ -51,6 +51,29 @@ Codex starts and as a terminal result afterward. Terminal statuses distinguish
 `validated-partial-result`. Candidate usefulness and approval eligibility are
 separate fields.
 
+For a validated candidate, `candidate` binds the receipt to its carrier:
+
+- `carrier_kind` is `commit-only`, `commit-plus-dirty`, or `worktree-only`.
+  The first means lane `HEAD` is clean and carries the candidate; the second
+  means `HEAD` carries only part of it; the third means there is no lane commit.
+- `committed_paths` are the paths in `base_sha..head_sha` and
+  `dirty_paths` are the paths changed from lane `HEAD`, including non-ignored
+  untracked paths. These populations are separate from `changed_paths`, which
+  remains the complete base-to-worktree path union. A path may occur in both
+  populations when a committed path is edited again.
+- `head_sha` is the lane branch `HEAD` when a commit exists and is `null` when
+  it does not. `head_is_complete` is the direct integration check: a parent may
+  integrate lane `HEAD` and stop only when it is `true`.
+- `content_digest` is a SHA-256 identity for the complete candidate. It binds
+  the base SHA, sorted changed paths, and each final path's type, mode, and
+  bytes (or its deletion marker). Recompute it from the retained worktree and
+  the receipt's `base_sha` to detect movement after validation.
+
+When `head_is_complete` is false, `next_step` says that lane `HEAD` is not the
+complete candidate (and, for a committed lane, that the commit is a proper
+subset). The parent must carry the committed and dirty populations together;
+`task run` does not cherry-pick or otherwise integrate them automatically.
+
 Parent changes are classified by path delta: `normal` for no delta,
 `concurrent-parent-progress` for disjoint progress (nonblocking), and
 `writer-conflict` for overlapping progress (blocking). The delta includes

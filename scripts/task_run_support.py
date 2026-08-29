@@ -27,6 +27,7 @@ _BRANCH_RE = _contract._BRANCH_RE
 _TASK_ID_RE = _contract._TASK_ID_RE
 
 _changed_paths = _git_owner._changed_paths
+_candidate_carrier = _git_owner._candidate_carrier
 _collect_populations = _git_owner._collect_populations
 _git = _git_owner._git
 _git_common_dir = _git_owner._git_common_dir

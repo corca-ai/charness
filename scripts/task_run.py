@@ -47,6 +47,28 @@ def _persist(payload: dict[str, Any], runtime_path: Path) -> None:
     _support.write_task_result(runtime_path, payload)
 
 
+def _persist_completion(payload: dict[str, Any], runtime_path: Path) -> None:
+    candidate = payload.get("candidate")
+    if (
+        payload.get("status") == "completed"
+        and isinstance(candidate, dict)
+        and candidate.get("status") == "validated"
+        and not candidate.get("head_is_complete", True)
+    ):
+        if candidate.get("carrier_kind") == "worktree-only":
+            payload["next_step"] = (
+                f"Review the complete validated candidate in {payload['worktree_path']}; "
+                "no lane commit exists, so lane HEAD is not the complete candidate."
+            )
+        else:
+            payload["next_step"] = (
+                f"Review the complete validated candidate in {payload['worktree_path']}; "
+                "the lane HEAD commit is a proper subset of the complete candidate. "
+                "Carry the committed_paths and dirty_paths before treating it as integrated."
+            )
+    _persist(payload, runtime_path)
+
+
 def _terminal(
     payload: dict[str, Any],
     runtime_path: Path,
@@ -99,6 +121,7 @@ def _candidate_result_state(
         "status": "validated" if candidate_useful else "absent" if candidate_valid else "invalid",
         "useful": candidate_useful,
         "changed_paths": changed_paths,
+        **scope["candidate_carrier"],
     }
     if execution_state == "timed-out":
         if candidate_commit is None:
@@ -153,7 +176,7 @@ def _complete_task(
         execution=execution,
         started_at=started_at,
         candidate_commit=candidate_commit,
-        persist=_persist,
+        persist=_persist_completion,
         result_delivery=_support._result_delivery,
         completion_evidence=_completion_evidence,
         execution_state=_execution_state,

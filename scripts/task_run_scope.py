@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
 
 from scripts.task_run_contract import FAIL, PASS, TaskRunError
-from scripts.task_run_git import _changed_paths, _git_output, _parse_nul_paths
+from scripts.task_run_git import _candidate_carrier, _git_output, _parse_nul_paths
 
 _SUSPICIOUS_RUNTIME_PARTS = frozenset(
     {".pytest_cache", ".ruff_cache", "__pycache__", ".coverage", "coverage", "pytest-tmp", "tmp"}
@@ -183,7 +183,8 @@ def _scope_result(
     specs: Sequence[Mapping[str, Any]],
     require_change: bool,
 ) -> dict[str, Any]:
-    changed = _changed_paths(repo_root, base_sha)
+    carrier = _candidate_carrier(repo_root, base_sha)
+    changed = carrier.pop("changed_paths")
     allowed = _paths_in_scopes(changed, specs)
     disallowed = sorted(set(changed) - set(allowed))
     if disallowed:
@@ -199,6 +200,7 @@ def _scope_result(
         "changed_paths": changed,
         "disallowed_paths": disallowed,
         "require_change": require_change,
+        "candidate_carrier": carrier,
     }
 
 

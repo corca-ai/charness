@@ -419,29 +419,6 @@ def test_derived_task_ids_do_not_collide_after_slugging_or_truncation() -> None:
     assert len(task_run._task_id("x" * 200, None)) <= 96
 
 
-def test_task_run_accepts_a_clean_committed_candidate(tmp_path: Path) -> None:
-    repo = _repo(tmp_path)
-    executable = _codex(
-        tmp_path,
-        "printf 'VALUE = 2\\n' > module.py\n"
-        "git add -- module.py\n"
-        "git -c user.email=test@example.com -c user.name=test commit -m 'update module'",
-    )
-
-    payload = _run(repo, tmp_path, executable)
-
-    worktree = Path(payload["worktree_path"])
-    assert payload["status"] == "completed", payload
-    assert payload["target_sha"] != payload["base_sha"]
-    assert payload["scope"]["changed_paths"] == ["module.py"]
-    assert payload["candidate"] == {
-        "status": "validated",
-        "useful": True,
-        "changed_paths": ["module.py"],
-    }
-    assert _git(worktree, "status", "--short").stdout == ""
-
-
 def test_task_run_reports_ignored_output_without_blocking_candidate(tmp_path: Path) -> None:
     repo = _repo(tmp_path, ignored=True)
     executable = _codex(
