@@ -85,7 +85,7 @@ def test_accepts_the_repaired_form_of_the_kind_flattened_link(tmp_path: Path, mo
     result = run_check(monkeypatch, capsys, "--repo-root", str(repo))
 
     assert result.returncode == 0
-    assert "Validated plugin-mirror relative links." in result.stdout
+    assert "Validated relative links in 1 plugin-mirror doc(s)." in result.stdout
 
 
 def test_accepts_an_authoring_repo_placeholder_replacing_an_escape(tmp_path: Path, monkeypatch, capsys) -> None:
@@ -338,9 +338,43 @@ def test_the_script_entrypoint_reports_both_outcomes_as_a_subprocess(tmp_path: P
     write_doc(repo, "plugins/charness/shared/references/ok.md", "no links here\n")
     clean = run_script("scripts/check_plugin_doc_links.py", "--repo-root", str(repo))
     assert clean.returncode == 0, clean.stderr
-    assert "Validated plugin-mirror relative links." in clean.stdout
+    assert "Validated relative links in 1 plugin-mirror doc(s)." in clean.stdout
 
     write_doc(repo, "plugins/charness/shared/references/bad.md", "[x](../../../scripts/a.py)\n")
     refused = run_script("scripts/check_plugin_doc_links.py", "--repo-root", str(repo))
     assert refused.returncode == 1
     assert "escape" in refused.stderr
+
+
+def test_an_absent_mirror_is_unestablished_scope_not_a_clean_verdict(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    """No mirror is not the same as a mirror with nothing wrong in it.
+
+    `/plugins/` is gitignored, and this gate used to scope through
+    `git ls-files --others --exclude-standard`, which honors that. So it printed
+    the SAME line -- byte for byte -- over a complete 229-doc mirror and over no
+    mirror at all. This test is the discriminator that state could not survive.
+    """
+    bare = tmp_path / "bare"
+    bare.mkdir()
+
+    result = run_check(monkeypatch, capsys, "--repo-root", str(bare))
+
+    assert result.returncode == 1
+    assert "status: unestablished" in result.stderr
+    assert "sync_root_plugin_manifests.py" in result.stderr
+    assert "Validated" not in result.stdout
+
+
+def test_an_empty_mirror_still_passes_because_its_scope_was_established(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    """The other half of the asymmetry: present-and-empty is a real answer."""
+    repo = tmp_path / "repo"
+    (repo / "plugins").mkdir(parents=True)
+
+    result = run_check(monkeypatch, capsys, "--repo-root", str(repo))
+
+    assert result.returncode == 0
+    assert "Validated relative links in 0 plugin-mirror doc(s)." in result.stdout

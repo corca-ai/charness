@@ -15,6 +15,46 @@ class RepoFileListingError(SystemExit):
     pass
 
 
+class GeneratedMirrorAbsentError(Exception):
+    """The generated plugin mirror is not on disk, so its scope is unestablished."""
+
+
+# `/plugins/` is gitignored on purpose (6e05e026e): it is derived, and
+# `sync_root_plugin_manifests.py` rewrites it byte-identically. That makes the git
+# listing the WRONG RULER for it -- `git ls-files --others --exclude-standard`
+# honors .gitignore, so every detector scoping through `iter_matching_repo_files`
+# saw zero mirror files while 1,045 sat on disk, and still printed "Validated".
+GENERATED_MIRROR_DIRNAME = "plugins"
+
+
+def iter_generated_mirror_files(repo_root: Path, patterns: tuple[str, ...]) -> list[Path]:
+    """Scope over the generated plugin mirror, which git deliberately cannot see.
+
+    Raises ``GeneratedMirrorAbsentError`` when the mirror is not on disk rather
+    than returning ``[]``. An empty list here would be indistinguishable from a
+    mirror that legitimately contains no matching file, and that collapse is the
+    whole defect: a caller cannot tell "I examined the mirror and found nothing"
+    from "there was no mirror to examine." The producer is unconditional, so
+    absence is never a legitimate discovered-empty family -- it means nobody ran
+    `scripts/sync_root_plugin_manifests.py`.
+    """
+    mirror_root = repo_root / GENERATED_MIRROR_DIRNAME
+    if not mirror_root.is_dir():
+        raise GeneratedMirrorAbsentError(
+            f"generated plugin mirror is absent at {mirror_root}; "
+            "run `python3 scripts/sync_root_plugin_manifests.py --repo-root .` first"
+        )
+    matches: list[Path] = []
+    seen: set[Path] = set()
+    for pattern in patterns:
+        for path in repo_root.glob(pattern):
+            if not path.is_file() or path in seen:
+                continue
+            seen.add(path)
+            matches.append(path)
+    return sorted(matches)
+
+
 def _decode_output(value: bytes) -> str:
     return value.decode("utf-8", errors="replace")
 

@@ -17,7 +17,8 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
 _repo_file_listing = import_repo_module(__file__, "scripts.repo_file_listing")
-iter_matching_repo_files = _repo_file_listing.iter_matching_repo_files
+iter_generated_mirror_files = _repo_file_listing.iter_generated_mirror_files
+GeneratedMirrorAbsentError = _repo_file_listing.GeneratedMirrorAbsentError
 
 ASSET_GLOBS = ("plugins/**/*.json", "plugins/**/*.yaml", "plugins/**/*.yml")
 COMMAND_RE = re.compile(
@@ -92,9 +93,12 @@ def scan_asset(root: Path, asset: Path) -> list[str]:
     return findings
 
 
-def scan_assets(root: Path, *, require_git: bool = False) -> tuple[int, list[str]]:
+def scan_assets(root: Path) -> tuple[int, list[str]]:
     findings: list[str] = []
-    assets = iter_matching_repo_files(root, ASSET_GLOBS, require_git=require_git)
+    # NOT `iter_matching_repo_files`: `/plugins/` is gitignored, so that scope was
+    # 0 of 58 shipped assets on a complete mirror. Raises rather than returning an
+    # empty list when the mirror is absent -- see `iter_generated_mirror_files`.
+    assets = iter_generated_mirror_files(root, ASSET_GLOBS)
     for asset in assets:
         try:
             findings.extend(scan_asset(root, asset))
@@ -106,11 +110,12 @@ def scan_assets(root: Path, *, require_git: bool = False) -> tuple[int, list[str
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
-    parser.add_argument("--require-git-file-listing", action="store_true")
     args = parser.parse_args()
-    asset_count, findings = scan_assets(
-        args.repo_root.resolve(), require_git=args.require_git_file_listing
-    )
+    try:
+        asset_count, findings = scan_assets(args.repo_root.resolve())
+    except GeneratedMirrorAbsentError as exc:
+        print(f"status: unestablished\n{exc}", file=sys.stderr)
+        return 1
     if findings:
         print("Unreachable command carriers in shipped structured assets:", file=sys.stderr)
         print("\n".join(f"- {finding}" for finding in sorted(set(findings))), file=sys.stderr)

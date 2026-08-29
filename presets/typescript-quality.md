@@ -31,8 +31,9 @@ adapter needs a sane starting vocabulary.
   `gitleaks`, dependency review, supply-chain audit
 - size advisory when honest code-line measurement matters: `tokei` for SLOC
   inventory across TypeScript, JavaScript, and any sibling languages; keep
-  advisory and surface it through the `quality` skill's [`inventory_sloc.py`](../skills/public/quality/scripts/inventory_sloc.py)
-  before considering a hard size gate
+  advisory and surface it through the `quality` skill's
+  `<plugin-dir>/skills/quality/scripts/inventory_sloc.py` before considering a
+  hard size gate
 
 ## Suggested ESLint Baseline
 

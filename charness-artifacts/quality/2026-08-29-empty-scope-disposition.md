@@ -28,8 +28,8 @@ The probe reproduced 130 detectors and 13 bucket findings. The disposition follo
 | `scripts/check_current_pointer_writes.py` | SANCTIONED | Scope is `iter_matching_repo_files(... require_git=require_git)` (95-96), consumed by `scan_repo` (390-400). The CLI forwards strict listing (412-416), so that failure is not clean; an empty returned set means no Python family. | — |
 | `scripts/check_doc_links.py` | SANCTIONED | `main` establishes `docs` and `late_docs` with `iter_matching_repo_files` (510-515), then reads each doc directly (516-518); strict listing is available (506-510), and read failure is uncaught. Zero Markdown docs is a real no-link family. | — |
 | `scripts/check_markdown_inline_code.py` | DEFECT | Discovery calls `iter_matching_repo_files` (107-109), but named `--path` targets skip existence validation (127-135); nonexistent targets are continued, then `Validated ... len(targets)` prints (155-159). | In `main` or a named-target helper, reject nonexistent/unreadable named paths with `unestablished` and exit 1. Test: missing `--path` is nonzero, names the path, and emits no validated verdict. |
-| `scripts/check_plugin_asset_command_carriers.py` | SANCTIONED | `scan_assets` returns `(len(assets), findings)` (95-103); parse errors become findings (99-102), and strict listing is forwarded (106-118). Zero shipped assets is a legitimate discovered-empty family. | — |
-| `scripts/check_plugin_doc_links.py` | SANCTIONED | The scope loop is `iter_matching_repo_files` (143-144); skipped cases are counted (145-155), and strict listing is forwarded (177-185). Read failures are not collapsed. No plugin Markdown docs is an absent family. | — |
+| `scripts/check_plugin_asset_command_carriers.py` | ~~SANCTIONED~~ → **DEFECT** (corrected 2026-08-30, see below) | `scan_assets` returns `(len(assets), findings)` (95-103); parse errors become findings (99-102), and strict listing is forwarded (106-118). ~~Zero shipped assets is a legitimate discovered-empty family.~~ Measured: 0 in scope against 58 assets on disk. | Scope the generated mirror from disk, not the git listing; refuse `unestablished` when it is absent. |
+| `scripts/check_plugin_doc_links.py` | ~~SANCTIONED~~ → **DEFECT** (corrected 2026-08-30, see below) | The scope loop is `iter_matching_repo_files` (143-144); skipped cases are counted (145-155), and strict listing is forwarded (177-185). Read failures are not collapsed. ~~No plugin Markdown docs is an absent family.~~ Measured: 0 in scope against 229 docs on disk, with byte-identical output either way. | Scope the generated mirror from disk, not the git listing; refuse `unestablished` when it is absent; report the EXAMINED count. |
 | `scripts/check_prose_pin.py` | DEFECT | `_git` returns `None` for failed git (43-51); `changed_status` turns that into `[]` (67-73), and `build_report` calls empty findings clean (194-206). No `HEAD` or failed diff is therefore green like no change. | Make `_git`/`changed_status` raise or return `unestablished`; `main` reports it and exits nonzero. Test: failed `git diff ... HEAD` yields nonzero `status: unestablished`, not `clean`. |
 | `scripts/check_public_doc_coupling.py` | DEFECT | `_line_findings` calls `iter_matching_repo_files` (62-72), but catches read `OSError`/`UnicodeDecodeError` and continues (72-75). An unreadable file therefore yields the clean payload (123-138). | In `_line_findings`, raise/report `unestablished` for read failures; CLI exits nonzero with file and cause. Test: unreadable matched file gives `status: unestablished` and nonzero. |
 | `scripts/check_python_runtime_inheritance.py` | SANCTIONED | `_iter_scan_paths` gets Python files from `iter_matching_repo_files` (73-79). `check_file` turns syntax failure into a failure row (89-113); strict listing is forwarded (116-132). Empty Python population is a discovered-empty pass. | — |
@@ -38,9 +38,23 @@ The probe reproduced 130 detectors and 13 bucket findings. The disposition follo
 | `scripts/check_spec_evidence_durability.py` | SANCTIONED | `main` explicitly skips “no git work tree” (368-378); otherwise it establishes both populations with `iter_matching_repo_files` (379-382). `git check-ignore` failures raise (139-150), while an empty artifact family reaches the counted validated line (407-412). | — |
 | `scripts/check_staged_reversion.py` | SANCTIONED | `_staged_paths` is the whole scope: successful git enumeration returns paths, including `[]` (84-106), but OSError or nonzero git raises `RuntimeError` (95-105). `main` emits `state: unestablished` and exits nonzero on that exception (284-309); only an established empty staged set reaches `state: clean` (311-332). | — |
 
+### Correction, 2026-08-30
+
+Two rows above were wrong and are struck through rather than rewritten, because the reasoning that produced them is the finding.
+
+Both plugin detectors were ruled SANCTIONED on the premise that zero plugin docs or assets is "a legitimate discovered-empty family". That premise was already false when this record was written. `6e05e026e` had gitignored `/plugins/`, and `iter_matching_repo_files` scopes through `git ls-files --others --exclude-standard`, which honors `.gitignore` — so both detectors saw ZERO of a complete on-disk mirror (229 docs, 58 assets) and still printed `Validated`. `check_plugin_doc_links.py`'s output was byte-identical over the full mirror and over nothing at all.
+
+The mirror is a REQUIRED generated surface with an unconditional producer, so its absence is never a discovered-empty family; it means nobody ran the producer.
+
+What this row's method missed: every verdict here was reached by READING the detector against its scope helper, and the defect lived in the helper's interaction with `.gitignore` — invisible at that layer. One with/without run refutes both rows in seconds. Source reading cannot establish that a scope is non-empty; only running it against a known-populated subject can.
+
+Re-armed in the same change: both now scope the mirror from disk, refuse with `status: unestablished` and exit 1 when it is absent, and report what they EXAMINED. The doc-links gate found two real consumer-facing defects on its first armed run — `presets/{python,typescript}-quality.md` linked into the pre-flattening export layout — which it had been blind to for the whole period it reported success. Evidence: [plugins-mirror record](2026-08-29-plugins-mirror-absent-in-ci.md).
+
 ### Decision closure
 
 Undecided: none. Every row has source evidence sufficient to distinguish a sanctioned discovered-empty answer from a green result over failed or silently dropped scope.
+
+That closure statement did not hold for the two corrected rows, and the correction above says why.
 
 ## Runtime Signals
 

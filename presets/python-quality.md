@@ -33,8 +33,8 @@ adapter needs a sane starting vocabulary.
 - size advisory when honest code-line measurement matters: `tokei` for SLOC
   inventory that separates code, comments, and blanks instead of treating raw
   line counts as code size; keep advisory and use the `quality` skill's
-  [`inventory_sloc.py`](../skills/public/quality/scripts/inventory_sloc.py) rather than promoting a hard ratio gate without
-  measurement
+  `<plugin-dir>/skills/quality/scripts/inventory_sloc.py` rather than promoting a
+  hard ratio gate without measurement
 
 ## Suggested Ruff Baseline
 

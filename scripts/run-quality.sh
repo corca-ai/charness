@@ -1109,7 +1109,10 @@ queue_selected "check-docs" ./scripts/check-docs.sh
 if [[ -n "$RUN_QUALITY_LABELS" ]]; then
   queue_selected "check-doc-links" python3 scripts/check_doc_links.py --repo-root "$REPO_ROOT" --require-git-file-listing
   queue_selected "docs-graph" python3 scripts/check_docs_graph.py --repo-root "$REPO_ROOT"
-  queue_selected "check-plugin-doc-links" python3 scripts/check_plugin_doc_links.py --repo-root "$REPO_ROOT" --require-git-file-listing
+  # No --require-git-file-listing: this gate's subject is the GENERATED mirror,
+  # which is gitignored, so the git listing is the wrong ruler and the flag named
+  # a strictness it could not deliver.
+  queue_selected "check-plugin-doc-links" python3 scripts/check_plugin_doc_links.py --repo-root "$REPO_ROOT"
   queue_selected "check-markdown" ./scripts/check-markdown.sh
   queue_selected "check-links-internal" ./scripts/check-links-internal.sh
   queue_selected "check-links-external" ./scripts/check-links-external.sh
@@ -1119,7 +1122,7 @@ fi
 # names a tree this repo builds -- so it can be checked, which is the whole
 # reason it was worth adopting (D50).
 queue_selected "check-plugin-dir-references" python3 scripts/native_gate_lib.py --repo-root "$REPO_ROOT" plugin-refs --repo-root "$REPO_ROOT"
-queue_selected "check-plugin-asset-command-carriers" python3 scripts/check_plugin_asset_command_carriers.py --repo-root "$REPO_ROOT" --require-git-file-listing
+queue_selected "check-plugin-asset-command-carriers" python3 scripts/check_plugin_asset_command_carriers.py --repo-root "$REPO_ROOT"
 queue_selected "check-documented-command-flags" python3 scripts/check_documented_command_flags.py --repo-root "$REPO_ROOT" --require-git-file-listing
 # position: the rung above the flags gate. That one proves a documented flag against
 # the named script's argparse; this one proves a documented `charness <subcommand>`

@@ -164,16 +164,39 @@ def test_main_emits_success_and_finding_verdicts(tmp_path: Path, monkeypatch, ca
     assert "Unreachable command carriers" in captured.err
     assert "authoring-only kind-bearing layout" in captured.err
 
+    # An empty mirror is a real discovered-empty answer: the tree was there and
+    # held no structured asset. It still passes, and it still says "0".
     clean_repo = tmp_path / "clean"
-    clean_repo.mkdir()
+    (clean_repo / "plugins").mkdir(parents=True)
     monkeypatch.setattr(sys, "argv", ["check_plugin_asset_command_carriers.py", "--repo-root", str(clean_repo)])
     assert _gate.main() == 0
     assert "Validated 0 shipped JSON/YAML asset(s)" in capsys.readouterr().out
 
 
+def test_an_absent_mirror_is_unestablished_scope_not_a_clean_verdict(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    """The asymmetry the gate lacked: no mirror is not the same as an empty one.
+
+    While `/plugins/` was gitignored and this gate scoped through the git listing,
+    it reported "Validated 0 shipped JSON/YAML asset(s)" and exit 0 against a
+    complete 58-asset mirror. A verdict that cannot tell a full subject from an
+    absent one is not a verdict, so absence must refuse.
+    """
+    bare = tmp_path / "bare"
+    bare.mkdir()
+    monkeypatch.setattr(sys, "argv", ["check_plugin_asset_command_carriers.py", "--repo-root", str(bare)])
+
+    assert _gate.main() == 1
+    captured = capsys.readouterr()
+    assert "status: unestablished" in captured.err
+    assert "sync_root_plugin_manifests.py" in captured.err
+    assert "Validated" not in captured.out
+
+
 def test_script_entrypoint_exits_with_main_status(tmp_path: Path, monkeypatch) -> None:
     clean_repo = tmp_path / "clean"
-    clean_repo.mkdir()
+    (clean_repo / "plugins").mkdir(parents=True)
     monkeypatch.setattr(sys, "argv", ["check_plugin_asset_command_carriers.py", "--repo-root", str(clean_repo)])
     with pytest.raises(SystemExit) as raised:
         runpy.run_path(str(ROOT / "scripts" / "check_plugin_asset_command_carriers.py"), run_name="__main__")

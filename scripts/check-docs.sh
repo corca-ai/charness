@@ -23,7 +23,7 @@ run_component() {
   case "$1" in
     check-markdown) "$CHARNESS_GATE_DIR/check-markdown.sh" ;;
     check-doc-links) python3 "$REPO_ROOT/scripts/check_doc_links.py" --repo-root "$REPO_ROOT" --require-git-file-listing ;;
-    check-plugin-doc-links) python3 "$REPO_ROOT/scripts/check_plugin_doc_links.py" --repo-root "$REPO_ROOT" --require-git-file-listing ;;
+    check-plugin-doc-links) python3 "$REPO_ROOT/scripts/check_plugin_doc_links.py" --repo-root "$REPO_ROOT" ;;
     check-command-docs) python3 "$REPO_ROOT/scripts/check_command_docs.py" --repo-root "$REPO_ROOT" ;;
     docs-graph)
       # Exit 3 is soft only when awiki is genuinely unavailable. Once awiki is

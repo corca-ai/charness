@@ -59,7 +59,8 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 REPO_ROOT = repo_root_from_script(__file__)
 
 _scripts_repo_file_listing_module = import_repo_module(__file__, "scripts.repo_file_listing")
-iter_matching_repo_files = _scripts_repo_file_listing_module.iter_matching_repo_files
+iter_generated_mirror_files = _scripts_repo_file_listing_module.iter_generated_mirror_files
+GeneratedMirrorAbsentError = _scripts_repo_file_listing_module.GeneratedMirrorAbsentError
 
 _markdown_doc_scan = import_repo_module(__file__, "scripts.markdown_doc_scan")
 classify_link_shape = _markdown_doc_scan.classify_link_shape
@@ -111,7 +112,7 @@ def classify_link(doc: Path, plugin_root: Path, raw_target: str) -> str | None:
 
 
 def iter_unfollowable_links(
-    root: Path, *, require_git: bool = False, skipped: Counter | None = None
+    root: Path, *, skipped: Counter | None = None, docs: list[Path] | None = None
 ) -> list[tuple[Path, str, str]]:
     """Scan live prose only -- fenced and commented lines blanked, not dropped.
 
@@ -140,7 +141,15 @@ def iter_unfollowable_links(
     """
     skipped = Counter() if skipped is None else skipped
     findings: list[tuple[Path, str, str]] = []
-    for doc in iter_matching_repo_files(root, PLUGIN_DOC_GLOBS, require_git=require_git):
+    # NOT `iter_matching_repo_files`: it filters through `git ls-files
+    # --exclude-standard`, and `/plugins/` is gitignored, so this loop ran zero
+    # times over a complete 229-doc mirror and still reported "Validated".
+    # `docs` lets `main` establish the scope ONCE and still report its size --
+    # recounting it separately would let the reported count drift from the
+    # examined set, which is the same class of lie this repair exists to end.
+    if docs is None:
+        docs = iter_generated_mirror_files(root, PLUGIN_DOC_GLOBS)
+    for doc in docs:
         plugin_root = plugin_root_for(root, doc)
         if plugin_root is None:
             skipped["no-plugin-root"] += 1
@@ -177,12 +186,16 @@ REASON_HELP = {
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
-    parser.add_argument("--require-git-file-listing", action="store_true")
     args = parser.parse_args()
 
     root = args.repo_root.resolve()
     skipped: Counter = Counter()
-    findings = iter_unfollowable_links(root, require_git=args.require_git_file_listing, skipped=skipped)
+    try:
+        docs = iter_generated_mirror_files(root, PLUGIN_DOC_GLOBS)
+    except GeneratedMirrorAbsentError as exc:
+        print(f"status: unestablished\n{exc}", file=sys.stderr)
+        return 1
+    findings = iter_unfollowable_links(root, skipped=skipped, docs=docs)
     skipped_note = (
         " skipped: " + ", ".join(f"{count} {reason}" for reason, count in sorted(skipped.items()) if count)
         if any(skipped.values())
@@ -195,7 +208,10 @@ def main() -> int:
             for doc, target, reason in findings
         ]
         raise ValidationError("\n".join(lines) + f"\n({len(findings)} unfollowable link(s);{skipped_note})")
-    print(f"Validated plugin-mirror relative links.{skipped_note}")
+    # The EXAMINED count leads, because "skipped: none" over an empty scope reads
+    # exactly like "skipped: none" over a complete one -- which is how this gate
+    # spent a session reporting success while scanning nothing.
+    print(f"Validated relative links in {len(docs)} plugin-mirror doc(s).{skipped_note}")
     return 0
 
 
