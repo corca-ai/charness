@@ -182,7 +182,11 @@ def seed_transitions(
         )
     with _writer.ledger_lock(path):
         payload = json.loads(path.read_text(encoding="utf-8"))
-        payload, _ = _ledger.migrate_ledger_payload(payload)
+        payload, _migrated = _ledger.migrate_ledger_payload(payload)
+        if _migrated:
+            # One-way upgrade: keep the pre-upgrade bytes so the documented
+            # rollback to the previous release stays true.
+            _writer.preserve_pre_migration_copy(path)
         # Validate the CURRENT ledger before planning against it: planning over a
         # ledger that is already invalid would append onto a state no later run can
         # replay, and the refusal would then name this command's transition rather

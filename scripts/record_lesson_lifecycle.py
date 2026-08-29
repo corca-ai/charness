@@ -47,7 +47,11 @@ def append_lifecycle_event(
         raise ValueError("record lesson lifecycle: action must be archive or resurrect")
     with _writer.ledger_lock(path):
         payload = json.loads(path.read_text(encoding="utf-8"))
-        payload, _ = _ledger.migrate_ledger_payload(payload)
+        payload, _migrated = _ledger.migrate_ledger_payload(payload)
+        if _migrated:
+            # One-way upgrade: keep the pre-upgrade bytes so the documented
+            # rollback to the previous release stays true.
+            _writer.preserve_pre_migration_copy(path)
         _ledger.replay_validated_ledger_payload(
             repo_root=repo_root,
             output_dir=output_dir,

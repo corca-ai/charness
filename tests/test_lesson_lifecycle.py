@@ -140,3 +140,50 @@ def test_lifecycle_budget_and_committed_prefix_are_enforced(tmp_path: Path) -> N
     path.write_text(json.dumps(payload), encoding="utf-8")
     with pytest.raises(ValueError, match="committed lifecycle events"):
         _validate(tmp_path)
+
+
+def test_the_first_authorized_write_preserves_a_rollback_copy(tmp_path: Path) -> None:
+    """The schema upgrade is one-way, so the documented rollback needs the old bytes.
+
+    Reads no longer migrate, so installing this version and rolling back is free --
+    until the first authorized score, lifecycle, or seed write, which is exactly when
+    the ledger becomes unreadable to the previous release. Without this copy the
+    release notes' "reinstall the previous version" instruction is false.
+    """
+    _retro(tmp_path, "source.md", "a")
+    (tmp_path / "decision.md").write_text("# Reviewed Decision\n", encoding="utf-8")
+    path = _ledger(tmp_path, score_events=[_score_event(score=2, anchor="evidence")])
+
+    from tests.lesson_ledger_fixtures import legacy_v8_payload
+
+    legacy = legacy_v8_payload(json.loads(path.read_text(encoding="utf-8")))
+    path.write_text(json.dumps(legacy, indent=2) + "\n", encoding="utf-8")
+    pre_upgrade = path.read_bytes()
+
+    backup = path.with_name(path.name + ".pre-schema-9.bak")
+    assert not backup.exists()
+
+    lifecycle_recorder.append_lifecycle_event(
+        repo_root=tmp_path,
+        event_id="archive-a",
+        lesson_id="a",
+        action="archive",
+        decision_ref="decision.md",
+        rationale="Reviewed low-value slot decision.",
+    )
+
+    # The ledger upgraded...
+    assert json.loads(path.read_text(encoding="utf-8"))["schema_version"] == 9
+    # ...and the exact bytes the previous release could read are still on disk.
+    assert backup.read_bytes() == pre_upgrade
+
+    # A second write must not overwrite the rollback copy with migrated content.
+    lifecycle_recorder.append_lifecycle_event(
+        repo_root=tmp_path,
+        event_id="resurrect-a",
+        lesson_id="a",
+        action="resurrect",
+        decision_ref="decision.md",
+        rationale="Reviewed resurrection decision.",
+    )
+    assert backup.read_bytes() == pre_upgrade

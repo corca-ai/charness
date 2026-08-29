@@ -82,3 +82,31 @@ def replace_payload(path: Path, payload: dict[str, Any]) -> None:
     finally:
         if temporary_path is not None:
             temporary_path.unlink(missing_ok=True)
+
+
+#: Where the pre-upgrade copy lands. A sibling of the ledger, so a rollback is a
+#: single `mv` in the directory the operator is already looking at.
+PRE_MIGRATION_SUFFIX = ".pre-schema-9.bak"
+
+
+def preserve_pre_migration_copy(path: Path) -> Path | None:
+    """Copy the ledger's CURRENT bytes aside before a write upgrades its schema.
+
+    The schema upgrade is one-way: a previously released charness reads only the
+    older shape and refuses the newer one. Reads no longer migrate, so a consumer
+    can install v8 and roll back freely -- until their first authorized score,
+    lifecycle, or seed write, which is exactly when this runs.
+
+    Call it INSIDE the writer's lock and BEFORE `replace_payload`, so `path` still
+    holds the pre-migration bytes. Returns the backup path, or None when a backup
+    already exists: the first upgrade is the one worth preserving, and later writes
+    must not overwrite it with already-migrated content.
+    """
+    backup = path.with_name(path.name + PRE_MIGRATION_SUFFIX)
+    if backup.exists():
+        return None
+    try:
+        backup.write_bytes(path.read_bytes())
+    except OSError as exc:
+        _fail(f"unable to preserve the pre-migration lesson ledger: {exc}")
+    return backup

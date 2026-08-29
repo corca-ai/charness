@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -421,3 +422,62 @@ def test_absent_scope_remains_exact_when_command_creates_a_directory(tmp_path: P
     assert payload["status"] == "failed"
     assert payload["scope"]["specs"] == [{"path": "newdir", "kind": "exact"}]
     assert payload["scope"]["disallowed_paths"] == ["newdir/item.py"]
+
+
+def _lane_tree(tmp_path, kind: str):
+    """A lane worktree in one of the histories a receipt must tell apart."""
+
+    def git(*args: str) -> None:
+        subprocess.run(
+            ["git", "-c", "user.email=t@t", "-c", "user.name=t", "-C", str(tmp_path), *args],
+            check=True, capture_output=True,
+        )
+
+    git("init", "-q")
+    (tmp_path / "seed.txt").write_text("s\n", encoding="utf-8")
+    git("add", "-A")
+    git("commit", "-qm", "base")
+    base = subprocess.run(
+        ["git", "-C", str(tmp_path), "rev-parse", "HEAD"], capture_output=True, text=True
+    ).stdout.strip()
+    if kind == "amended-base":
+        (tmp_path / "seed.txt").write_text("s2\n", encoding="utf-8")
+        git("add", "-A")
+        git("commit", "-q", "--amend", "-m", "amended base")
+    elif kind == "descendant":
+        (tmp_path / "work.py").write_text("x = 1\n", encoding="utf-8")
+        git("add", "-A")
+        git("commit", "-qm", "lane work")
+    return base
+
+
+def test_a_non_descendant_head_is_not_a_commit_carrier(tmp_path) -> None:
+    """`head != base` answers "did HEAD move", not "does HEAD carry the candidate".
+
+    A lane that amends its own base leaves a CLEAN tree at a sibling commit. The
+    inequality test called that `commit-only` with `head_is_complete: true`, which
+    invites the parent to cherry-pick a commit that replays against the wrong parent
+    instead of carrying the validated base-to-worktree candidate.
+    """
+    base = _lane_tree(tmp_path, "amended-base")
+
+    carrier = task_run_git._candidate_carrier(tmp_path, base)
+
+    assert carrier["base_is_ancestor_of_head"] is False
+    assert carrier["head_is_complete"] is False
+    assert carrier["head_sha"] is None
+    # ...and the sibling commit is still REPORTED, so the receipt does not read like a
+    # lane that never committed at all.
+    assert carrier["observed_head_sha"] != base
+
+
+def test_a_descendant_head_with_a_clean_tree_is_still_the_whole_candidate(tmp_path) -> None:
+    """The control: the ancestry check must not disqualify an ordinary lane commit."""
+    base = _lane_tree(tmp_path, "descendant")
+
+    carrier = task_run_git._candidate_carrier(tmp_path, base)
+
+    assert carrier["base_is_ancestor_of_head"] is True
+    assert carrier["carrier_kind"] == "commit-only"
+    assert carrier["head_is_complete"] is True
+    assert carrier["head_sha"] == carrier["observed_head_sha"]

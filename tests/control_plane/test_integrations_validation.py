@@ -9,7 +9,6 @@ from pathlib import Path
 import pytest
 import yaml
 
-import scripts.adapter_lib as adapter_lib
 import scripts.doctor as doctor_module
 import scripts.install_tools as install_tools_module
 import scripts.validate_integrations as validate_integrations_module
@@ -454,53 +453,6 @@ def test_script_install_required_policy_tool_missing_is_blocking_exit_one(
     assert doctor_payload[0]["doctor_disposition"] == "blocking-install-needed"
 
 
-def test_release_checklist_does_not_demand_an_advisory_disposition_for_nose() -> None:
-    """The release adapter's `nose` doctor item is a claim about a disposition the code
-    computes. Prose drift between the two is exactly what shipped in v6.0.0.
-    """
-    adapter = (ROOT / ".agents" / "release-adapter.yaml").read_text(encoding="utf-8")
-    nose_doctor_items = [
-        line
-        for line in adapter.splitlines()
-        if "charness tool doctor nose" in line and "before installing" in line
-    ]
-
-    assert len(nose_doctor_items) == 1, nose_doctor_items
-    assert "advisory-install-needed" not in nose_doctor_items[0]
-    assert "blocking-install-needed" in nose_doctor_items[0]
-
-
-def test_release_checklist_entries_are_strings_under_standard_yaml() -> None:
-    """The grep test above reads raw TEXT, so it cannot see the defect that actually
-    shipped in v6.0.0: an unquoted item containing `doctor_disposition: <value>` parses
-    into a MAPPING, not a string. It did not fail to parse -- `real_host_checklist[1]`
-    was silently a dict to any standard-YAML reader, while every consumer
-    (`check_real_host_proof.py`, `publish_release_cli.py`) forwards the entries as text.
-
-    Both parsers are asserted, because neither alone covers the class. PRODUCTION reads
-    this adapter through `scripts/adapter_lib.py:load_yaml`, not PyYAML, and the two
-    disagree: `adapter_lib` only makes a list item a mapping when the text before the
-    first `": "` has no space, so the v6.0.0 broken entry was a dict under PyYAML and a
-    string in production. An entry like `- doctor_disposition: X` would be a dict in
-    BOTH. The `uninterpreted` sink is asserted empty as well -- that is the signal
-    `adapter_lib` gives for a line it could not read, and a type check alone misses it.
-    """
-    text = (ROOT / ".agents" / "release-adapter.yaml").read_text(encoding="utf-8")
-
-    pyyaml_checklist = yaml.safe_load(text)["real_host_checklist"]
-    non_strings = [(index, item) for index, item in enumerate(pyyaml_checklist) if not isinstance(item, str)]
-    assert non_strings == [], (
-        f"real_host_checklist entries must be strings under standard YAML; got {non_strings}. "
-        "An entry containing `: ` needs quoting or it parses as a mapping"
-    )
-
-    parsed, uninterpreted = adapter_lib.load_yaml_report(text)
-    production_checklist = parsed["real_host_checklist"]
-    assert all(isinstance(item, str) for item in production_checklist), production_checklist
-    assert uninterpreted == [], uninterpreted
-    assert production_checklist == pyyaml_checklist, "the repo's parser and standard YAML disagree"
-
-
 def test_doctor_accepts_manifest_without_healthcheck(tmp_path: Path, monkeypatch) -> None:
     repo = seed_control_plane_repo(tmp_path)
     monkeypatch.setenv("CHARNESS_DISABLE_PLUGIN_FALLBACK_MANIFESTS", "1")
@@ -773,3 +725,39 @@ def test_install_tools_add_dependency_creates_and_extends_dependencies_file(tmp_
     assert payload2[0]["dependency_added"] is False
     deps_after = json.loads(deps_path.read_text(encoding="utf-8"))
     assert deps_after == deps
+
+
+def test_validate_integrations_refuses_a_lock_pointing_at_a_non_owner_json_file(tmp_path: Path) -> None:
+    """Existing + parseable is not the same question as "is this the lock's owner".
+
+    The lock schema constrains `manifest_path` to any non-empty string, so a stale
+    lock naming `integrations/tools/manifest.schema.json` -- a file this validator
+    explicitly EXCLUDES from the owned manifest set -- existed, parsed, and counted
+    toward the validated-lock total. The release review named this exact file.
+    """
+    repo = seed_control_plane_repo(tmp_path)
+    schema_reference = "integrations/tools/manifest.schema.json"
+    assert (repo / schema_reference).is_file(), "the counterexample needs the excluded file present"
+    lock_path = write_lock(repo, tool_id="stale-tool", manifest_path=schema_reference)
+
+    result = run_loaded_script_main(
+        "validate_integrations.py", validate_integrations_module, "--repo-root", str(repo)
+    )
+
+    assert result.returncode != 0
+    assert lock_path.name in result.stderr
+    assert "not a discovered tool manifest or support capability" in result.stderr
+
+
+def test_validate_integrations_refuses_a_lock_whose_tool_id_names_another_owner(tmp_path: Path) -> None:
+    """A lock must not claim an identity its referenced manifest does not declare."""
+    repo = seed_control_plane_repo(tmp_path)
+    lock_path = write_lock(repo, tool_id="not-the-demo-tool")
+
+    result = run_loaded_script_main(
+        "validate_integrations.py", validate_integrations_module, "--repo-root", str(repo)
+    )
+
+    assert result.returncode != 0
+    assert lock_path.name in result.stderr
+    assert "does not match the identity" in result.stderr

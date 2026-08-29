@@ -2,7 +2,7 @@
   "kind": "charness.critique_prepare_packet",
   "version": 1,
   "repo": "charness",
-  "generated_at": "2026-08-29T12:05:48Z",
+  "generated_at": "2026-08-29T12:23:05Z",
   "prepared_for": "030aa826242d9e077592a1aee70815f8d25a07ec..HEAD",
   "changed_ref": "030aa826242d9e077592a1aee70815f8d25a07ec..HEAD",
   "substrate_mode": "committed-ref",
@@ -13,7 +13,7 @@
       "title": "Changed Files And Owning Surfaces",
       "content_kind": "script",
       "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
-      "content": "Changed paths for ref `030aa826242d9e077592a1aee70815f8d25a07ec..HEAD`:\n- .githooks/pre-commit\n- charness-artifacts/probe/2026-08-01-inventory-consumption-floor.json\n- charness-artifacts/quality/2026-08-29-empty-scope-disposition.md\n- charness-artifacts/retro/lesson-ledger.json\n- docs/agent-task-runs.md\n- scripts/build_retro_lesson_selection_index.py\n- scripts/check_lesson_ledger.py\n- scripts/init_lesson_ledger.py\n- scripts/lesson_ledger_lib.py\n- scripts/lesson_selection_preview_lib.py\n- scripts/recent_lessons_lib.py\n- scripts/record_lesson_lifecycle.py\n- scripts/record_lesson_score.py\n- scripts/retro_persistence_lib.py\n- scripts/seed_lesson_transitions.py\n- scripts/task_run.py\n- scripts/task_run_git.py\n- scripts/task_run_scope.py\n- scripts/task_run_support.py\n- scripts/validate_integrations.py\n- skills/public/quality/references/attention-state-visibility.json\n- skills/public/quality/scripts/check_regenerable_facts.py\n- skills/public/quality/scripts/regenerable_facts_lib.py\n- skills/public/retro/scripts/persist_retro_artifact.py\n- skills/public/retro/scripts/scaffold_retro_artifact.py\n- tests/charness_cli/test_task_run.py\n- tests/charness_cli/test_task_run_scope.py\n- tests/control_plane/test_integrations_validation.py\n- tests/lesson_ledger_fixtures.py\n- tests/quality_gates/test_empty_scope_refusals.py\n- tests/quality_gates/test_regenerable_facts.py\n- tests/quality_gates/test_retro_lesson_selection_index.py\n- tests/quality_gates/test_retro_persistence.py\n- tests/test_lesson_ledger.py\n- tests/test_lesson_ledger_refusals.py\n- tests/test_lesson_lifecycle.py\n- tests/test_lesson_lifecycle_refusals.py\n- tests/test_lesson_selection_preview.py\n- tests/test_seed_lesson_transitions.py\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/build_retro_lesson_selection_index.py, scripts/check_lesson_ledger.py, scripts/init_lesson_ledger.py, scripts/lesson_ledger_lib.py, scripts/lesson_selection_preview_lib.py, scripts/recent_lessons_lib.py, scripts/record_lesson_lifecycle.py, scripts/record_lesson_score.py, scripts/retro_persistence_lib.py, scripts/seed_lesson_transitions.py, scripts/task_run.py, scripts/task_run_git.py, scripts/task_run_scope.py, scripts/task_run_support.py, scripts/validate_integrations.py, skills/public/quality/references/attention-state-visibility.json, skills/public/quality/scripts/check_regenerable_facts.py, skills/public/quality/scripts/regenerable_facts_lib.py, skills/public/retro/scripts/persist_retro_artifact.py, skills/public/retro/scripts/scaffold_retro_artifact.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/quality/2026-08-29-empty-scope-disposition.md, docs/agent-task-runs.md\n  verify: ./scripts/check-docs.sh, ./scripts/check-secrets.sh\n- operational-evidence-records: Durable issue, quality, and release evidence attachments produced by local planning and closeout workflows.\n  source matches: charness-artifacts/quality/2026-08-29-empty-scope-disposition.md\n  verify: python3 scripts/check_release_issue_ledger.py --repo-root . --ledger charness-artifacts/issues/2026-08-20-next-release-ledger.json, python3 scripts/validate_quality_artifact.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/quality/references/attention-state-visibility.json, skills/public/quality/scripts/check_regenerable_facts.py, skills/public/quality/scripts/regenerable_facts_lib.py, skills/public/retro/scripts/persist_retro_artifact.py, skills/public/retro/scripts/scaffold_retro_artifact.py\n  verify: python3 scripts/validate_skills.py --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py, python3 scripts/check_skill_ownership_overlap.py --repo-root ., python3 scripts/validate_skill_ergonomics.py --repo-root .\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/quality/references/attention-state-visibility.json, skills/public/quality/scripts/check_regenerable_facts.py, skills/public/quality/scripts/regenerable_facts_lib.py, skills/public/retro/scripts/persist_retro_artifact.py, skills/public/retro/scripts/scaffold_retro_artifact.py\n  verify: python3 scripts/validate_public_skill_validation.py --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/quality/references/attention-state-visibility.json, skills/public/quality/scripts/check_regenerable_facts.py, skills/public/quality/scripts/regenerable_facts_lib.py, skills/public/retro/scripts/persist_retro_artifact.py, skills/public/retro/scripts/scaffold_retro_artifact.py\n  verify: python3 scripts/validate_public_skill_dogfood.py --repo-root .\n- probe-artifacts: Checked-in host/runtime probe JSON artifacts used as closeout evidence.\n  source matches: charness-artifacts/probe/2026-08-01-inventory-consumption-floor.json\n  verify: for path in charness-artifacts/probe/*.json; do python3 -m json.tool \"$path\" >/dev/null || exit $?; done\n- retro-lesson-selection-index: Durable retro prepare packets and generated advisory index for source-linked retro lesson digest selection.\n  source matches: scripts/build_retro_lesson_selection_index.py, scripts/recent_lessons_lib.py, scripts/retro_persistence_lib.py\n  sync: python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write\n  verify: for retro_packet_json in charness-artifacts/retro/*-packet.json; do if [ -e \"$retro_packet_json\" ]; then python3 -m json.tool \"$retro_packet_json\" >/dev/null || exit $?; fi; done, python3 scripts/build_retro_lesson_selection_index.py --repo-root . --check\n- lesson-ledger-and-selection: Local cited lesson history and its pure selection projections.\n  source matches: charness-artifacts/retro/lesson-ledger.json, scripts/check_lesson_ledger.py, scripts/lesson_ledger_lib.py, scripts/lesson_selection_preview_lib.py, scripts/record_lesson_score.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/check_lesson_ledger.py --repo-root ., python3 -m pytest -q tests/test_lesson_ledger.py tests/test_lesson_selection_preview.py\n- maintainer-hooks: Repo-owned maintainer hook and hook bootstrap validation.\n  source matches: .githooks/pre-commit\n  verify: python3 scripts/validate_maintainer_setup.py --repo-root .\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/build_retro_lesson_selection_index.py, scripts/check_lesson_ledger.py, scripts/init_lesson_ledger.py, scripts/lesson_ledger_lib.py, scripts/lesson_selection_preview_lib.py, scripts/recent_lessons_lib.py, scripts/record_lesson_lifecycle.py, scripts/record_lesson_score.py, scripts/retro_persistence_lib.py, scripts/seed_lesson_transitions.py, scripts/task_run.py, scripts/task_run_git.py, scripts/task_run_scope.py, scripts/task_run_support.py, scripts/validate_integrations.py, tests/charness_cli/test_task_run.py, tests/charness_cli/test_task_run_scope.py, tests/control_plane/test_integrations_validation.py, tests/lesson_ledger_fixtures.py, tests/quality_gates/test_empty_scope_refusals.py, tests/quality_gates/test_regenerable_facts.py, tests/quality_gates/test_retro_lesson_selection_index.py, tests/quality_gates/test_retro_persistence.py, tests/test_lesson_ledger.py, tests/test_lesson_ledger_refusals.py, tests/test_lesson_lifecycle.py, tests/test_lesson_lifecycle_refusals.py, tests/test_lesson_selection_preview.py, tests/test_seed_lesson_transitions.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/check_code_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/build_retro_lesson_selection_index.py, scripts/check_lesson_ledger.py, scripts/init_lesson_ledger.py, scripts/lesson_ledger_lib.py, scripts/lesson_selection_preview_lib.py, scripts/recent_lessons_lib.py, scripts/record_lesson_lifecycle.py, scripts/record_lesson_score.py, scripts/retro_persistence_lib.py, scripts/seed_lesson_transitions.py, scripts/task_run.py, scripts/task_run_git.py, scripts/task_run_scope.py, scripts/task_run_support.py, scripts/validate_integrations.py, skills/public/quality/scripts/check_regenerable_facts.py, skills/public/quality/scripts/regenerable_facts_lib.py, skills/public/retro/scripts/persist_retro_artifact.py, skills/public/retro/scripts/scaffold_retro_artifact.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n- python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write\n",
+      "content": "Changed paths for ref `030aa826242d9e077592a1aee70815f8d25a07ec..HEAD`:\n- .githooks/pre-commit\n- charness-artifacts/critique/review-20260829T210548Z-3614207-packet.json\n- charness-artifacts/critique/review-20260829T210548Z-3614207-packet.md\n- charness-artifacts/critique/review-20260829T210557Z-3614457-packet.json\n- charness-artifacts/critique/review-20260829T210557Z-3614457-packet.md\n- charness-artifacts/probe/2026-08-01-inventory-consumption-floor.json\n- charness-artifacts/quality/2026-08-29-empty-scope-disposition.md\n- charness-artifacts/retro/lesson-ledger.json\n- docs/agent-task-runs.md\n- scripts/build_retro_lesson_selection_index.py\n- scripts/check_lesson_ledger.py\n- scripts/init_lesson_ledger.py\n- scripts/lesson_ledger_lib.py\n- scripts/lesson_selection_preview_lib.py\n- scripts/recent_lessons_lib.py\n- scripts/record_lesson_lifecycle.py\n- scripts/record_lesson_score.py\n- scripts/retro_persistence_lib.py\n- scripts/seed_lesson_transitions.py\n- scripts/task_run.py\n- scripts/task_run_git.py\n- scripts/task_run_scope.py\n- scripts/task_run_support.py\n- scripts/validate_integrations.py\n- skills/public/quality/references/attention-state-visibility.json\n- skills/public/quality/scripts/check_regenerable_facts.py\n- skills/public/quality/scripts/regenerable_facts_lib.py\n- skills/public/retro/scripts/persist_retro_artifact.py\n- skills/public/retro/scripts/scaffold_retro_artifact.py\n- tests/charness_cli/test_task_run.py\n- tests/charness_cli/test_task_run_scope.py\n- tests/control_plane/test_integrations_validation.py\n- tests/lesson_ledger_fixtures.py\n- tests/quality_gates/test_empty_scope_refusals.py\n- tests/quality_gates/test_regenerable_facts.py\n- tests/quality_gates/test_retro_lesson_selection_index.py\n- tests/quality_gates/test_retro_persistence.py\n- tests/test_lesson_ledger.py\n- tests/test_lesson_ledger_refusals.py\n- tests/test_lesson_lifecycle.py\n- tests/test_lesson_lifecycle_refusals.py\n- tests/test_lesson_selection_preview.py\n- tests/test_seed_lesson_transitions.py\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/build_retro_lesson_selection_index.py, scripts/check_lesson_ledger.py, scripts/init_lesson_ledger.py, scripts/lesson_ledger_lib.py, scripts/lesson_selection_preview_lib.py, scripts/recent_lessons_lib.py, scripts/record_lesson_lifecycle.py, scripts/record_lesson_score.py, scripts/retro_persistence_lib.py, scripts/seed_lesson_transitions.py, scripts/task_run.py, scripts/task_run_git.py, scripts/task_run_scope.py, scripts/task_run_support.py, scripts/validate_integrations.py, skills/public/quality/references/attention-state-visibility.json, skills/public/quality/scripts/check_regenerable_facts.py, skills/public/quality/scripts/regenerable_facts_lib.py, skills/public/retro/scripts/persist_retro_artifact.py, skills/public/retro/scripts/scaffold_retro_artifact.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/review-20260829T210548Z-3614207-packet.md, charness-artifacts/critique/review-20260829T210557Z-3614457-packet.md, charness-artifacts/quality/2026-08-29-empty-scope-disposition.md, docs/agent-task-runs.md\n  verify: ./scripts/check-docs.sh, ./scripts/check-secrets.sh\n- operational-evidence-records: Durable issue, quality, and release evidence attachments produced by local planning and closeout workflows.\n  source matches: charness-artifacts/quality/2026-08-29-empty-scope-disposition.md\n  verify: python3 scripts/check_release_issue_ledger.py --repo-root . --ledger charness-artifacts/issues/2026-08-20-next-release-ledger.json, python3 scripts/validate_quality_artifact.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/quality/references/attention-state-visibility.json, skills/public/quality/scripts/check_regenerable_facts.py, skills/public/quality/scripts/regenerable_facts_lib.py, skills/public/retro/scripts/persist_retro_artifact.py, skills/public/retro/scripts/scaffold_retro_artifact.py\n  verify: python3 scripts/validate_skills.py --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py, python3 scripts/check_skill_ownership_overlap.py --repo-root ., python3 scripts/validate_skill_ergonomics.py --repo-root .\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/quality/references/attention-state-visibility.json, skills/public/quality/scripts/check_regenerable_facts.py, skills/public/quality/scripts/regenerable_facts_lib.py, skills/public/retro/scripts/persist_retro_artifact.py, skills/public/retro/scripts/scaffold_retro_artifact.py\n  verify: python3 scripts/validate_public_skill_validation.py --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/quality/references/attention-state-visibility.json, skills/public/quality/scripts/check_regenerable_facts.py, skills/public/quality/scripts/regenerable_facts_lib.py, skills/public/retro/scripts/persist_retro_artifact.py, skills/public/retro/scripts/scaffold_retro_artifact.py\n  verify: python3 scripts/validate_public_skill_dogfood.py --repo-root .\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/review-20260829T210548Z-3614207-packet.json, charness-artifacts/critique/review-20260829T210548Z-3614207-packet.md, charness-artifacts/critique/review-20260829T210557Z-3614457-packet.json, charness-artifacts/critique/review-20260829T210557Z-3614457-packet.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- probe-artifacts: Checked-in host/runtime probe JSON artifacts used as closeout evidence.\n  source matches: charness-artifacts/probe/2026-08-01-inventory-consumption-floor.json\n  verify: for path in charness-artifacts/probe/*.json; do python3 -m json.tool \"$path\" >/dev/null || exit $?; done\n- retro-lesson-selection-index: Durable retro prepare packets and generated advisory index for source-linked retro lesson digest selection.\n  source matches: scripts/build_retro_lesson_selection_index.py, scripts/recent_lessons_lib.py, scripts/retro_persistence_lib.py\n  sync: python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write\n  verify: for retro_packet_json in charness-artifacts/retro/*-packet.json; do if [ -e \"$retro_packet_json\" ]; then python3 -m json.tool \"$retro_packet_json\" >/dev/null || exit $?; fi; done, python3 scripts/build_retro_lesson_selection_index.py --repo-root . --check\n- lesson-ledger-and-selection: Local cited lesson history and its pure selection projections.\n  source matches: charness-artifacts/retro/lesson-ledger.json, scripts/check_lesson_ledger.py, scripts/lesson_ledger_lib.py, scripts/lesson_selection_preview_lib.py, scripts/record_lesson_score.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/check_lesson_ledger.py --repo-root ., python3 -m pytest -q tests/test_lesson_ledger.py tests/test_lesson_selection_preview.py\n- maintainer-hooks: Repo-owned maintainer hook and hook bootstrap validation.\n  source matches: .githooks/pre-commit\n  verify: python3 scripts/validate_maintainer_setup.py --repo-root .\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/build_retro_lesson_selection_index.py, scripts/check_lesson_ledger.py, scripts/init_lesson_ledger.py, scripts/lesson_ledger_lib.py, scripts/lesson_selection_preview_lib.py, scripts/recent_lessons_lib.py, scripts/record_lesson_lifecycle.py, scripts/record_lesson_score.py, scripts/retro_persistence_lib.py, scripts/seed_lesson_transitions.py, scripts/task_run.py, scripts/task_run_git.py, scripts/task_run_scope.py, scripts/task_run_support.py, scripts/validate_integrations.py, tests/charness_cli/test_task_run.py, tests/charness_cli/test_task_run_scope.py, tests/control_plane/test_integrations_validation.py, tests/lesson_ledger_fixtures.py, tests/quality_gates/test_empty_scope_refusals.py, tests/quality_gates/test_regenerable_facts.py, tests/quality_gates/test_retro_lesson_selection_index.py, tests/quality_gates/test_retro_persistence.py, tests/test_lesson_ledger.py, tests/test_lesson_ledger_refusals.py, tests/test_lesson_lifecycle.py, tests/test_lesson_lifecycle_refusals.py, tests/test_lesson_selection_preview.py, tests/test_seed_lesson_transitions.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/check_code_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/build_retro_lesson_selection_index.py, scripts/check_lesson_ledger.py, scripts/init_lesson_ledger.py, scripts/lesson_ledger_lib.py, scripts/lesson_selection_preview_lib.py, scripts/recent_lessons_lib.py, scripts/record_lesson_lifecycle.py, scripts/record_lesson_score.py, scripts/retro_persistence_lib.py, scripts/seed_lesson_transitions.py, scripts/task_run.py, scripts/task_run_git.py, scripts/task_run_scope.py, scripts/task_run_support.py, scripts/validate_integrations.py, skills/public/quality/scripts/check_regenerable_facts.py, skills/public/quality/scripts/regenerable_facts_lib.py, skills/public/retro/scripts/persist_retro_artifact.py, skills/public/retro/scripts/scaffold_retro_artifact.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n- python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write\n",
       "ok": true,
       "errors": []
     },
@@ -65,12 +65,16 @@
     "changed_ref": "030aa826242d9e077592a1aee70815f8d25a07ec..HEAD",
     "resolved_changed_ref": [
       "030aa826242d9e077592a1aee70815f8d25a07ec",
-      "c7dcdcbff63c1b44818bf1e8cddfb500311e5c37"
+      "89f4896a8f6ab42384d4126ade2094a98a400e44"
     ],
-    "base_head": "c7dcdcbff63c1b44818bf1e8cddfb500311e5c37",
+    "base_head": "89f4896a8f6ab42384d4126ade2094a98a400e44",
     "base_head_role": "target",
     "reviewed_paths": [
       ".githooks/pre-commit",
+      "charness-artifacts/critique/review-20260829T210548Z-3614207-packet.json",
+      "charness-artifacts/critique/review-20260829T210548Z-3614207-packet.md",
+      "charness-artifacts/critique/review-20260829T210557Z-3614457-packet.json",
+      "charness-artifacts/critique/review-20260829T210557Z-3614457-packet.md",
       "charness-artifacts/probe/2026-08-01-inventory-consumption-floor.json",
       "charness-artifacts/quality/2026-08-29-empty-scope-disposition.md",
       "charness-artifacts/retro/lesson-ledger.json",
@@ -116,6 +120,22 @@
         "content_sha256": "2a7502f576edc5292c717371170d6c0760b2492fb80b7a7ca5aad72617619746"
       },
       {
+        "path": "charness-artifacts/critique/review-20260829T210548Z-3614207-packet.json",
+        "content_sha256": "1e63232bf9b656393407e8bdb412f2a4ab6287f1a697b267466f6f6ab19396aa"
+      },
+      {
+        "path": "charness-artifacts/critique/review-20260829T210548Z-3614207-packet.md",
+        "content_sha256": "ead0b5d24728a6249e4fe9143541e26682c38fe41804ef7878daad05e900a26b"
+      },
+      {
+        "path": "charness-artifacts/critique/review-20260829T210557Z-3614457-packet.json",
+        "content_sha256": "e0178d93d257352edc6ee3125dc737e00146a98fa52d01951b76b0fac4eb7005"
+      },
+      {
+        "path": "charness-artifacts/critique/review-20260829T210557Z-3614457-packet.md",
+        "content_sha256": "d5af51009bb844a71688b2e01745658c0ecf25f1b4840bdacd69d41d54f42c23"
+      },
+      {
         "path": "charness-artifacts/probe/2026-08-01-inventory-consumption-floor.json",
         "content_sha256": "9fb3c042db8960ad09a4c0660b082adbdf76703a2dc2f751cb1d936876e8fbcb"
       },
@@ -145,11 +165,11 @@
       },
       {
         "path": "scripts/lesson_ledger_lib.py",
-        "content_sha256": "2db2ca147cb80a825740490f2e50f6be90b8e2886e20e354a462a0908f0d3aa0"
+        "content_sha256": "b7bfafb285ff3f81679f64dfb1987d4fe3f8c9f67261538bc2b0afabdc487bcf"
       },
       {
         "path": "scripts/lesson_selection_preview_lib.py",
-        "content_sha256": "9b4f9c187579d9c10309095bac09ba73e63f1960effd3c59e64af280e00f0cea"
+        "content_sha256": "36fb1e10add4452d77970571e107515691ab0680a0b71913cdb69c3d8831eee2"
       },
       {
         "path": "scripts/recent_lessons_lib.py",
@@ -165,7 +185,7 @@
       },
       {
         "path": "scripts/retro_persistence_lib.py",
-        "content_sha256": "c628d168fd780bf9f30f148aea5ec291f514abd79f900584ecffe064fc136761"
+        "content_sha256": "c974008b0cb389386e4a8c6da84b0c0bcaa759f1d61db8e9c3641778f78e355f"
       },
       {
         "path": "scripts/seed_lesson_transitions.py",
@@ -197,11 +217,11 @@
       },
       {
         "path": "skills/public/quality/scripts/check_regenerable_facts.py",
-        "content_sha256": "88dac186db1e624942709cfff09ff159868e6a29ff184420038607e68f0ecb8b"
+        "content_sha256": "cb7b606beec97dfab2ebcf9f9d7dc5a92d9d12542d7df053ff873a68ede0208e"
       },
       {
         "path": "skills/public/quality/scripts/regenerable_facts_lib.py",
-        "content_sha256": "47c2bd6c4b11ac8f6c08468e9a74749abb90843013975c1a4b07b60bbe71f060"
+        "content_sha256": "52bf621a8ad162cdfef40e22ccdd7bb2716662560b25b3503af927a226d2252a"
       },
       {
         "path": "skills/public/retro/scripts/persist_retro_artifact.py",
@@ -233,7 +253,7 @@
       },
       {
         "path": "tests/quality_gates/test_regenerable_facts.py",
-        "content_sha256": "77f32106e9dde3fcb835d08e6d380f2cfbd5135a2942a7eff3d25bb15dada66e"
+        "content_sha256": "2fed47a18b99d48bea244635ea8eb6ef5444e6371c7881295a22442a57c28708"
       },
       {
         "path": "tests/quality_gates/test_retro_lesson_selection_index.py",
@@ -241,11 +261,11 @@
       },
       {
         "path": "tests/quality_gates/test_retro_persistence.py",
-        "content_sha256": "d517f1c58881a7750759aa0a1bcb1c02abecda6d2aafb2b702b69df2489ce5b8"
+        "content_sha256": "2add849bbbde1991b7bd962f68e5b3dcdb6a4b96493948ef65ae5bfa4e2711fd"
       },
       {
         "path": "tests/test_lesson_ledger.py",
-        "content_sha256": "20e5528fe6132ba29fbb8427af39b534c74af2771d50c672920ebb362eeefa17"
+        "content_sha256": "a39252d3894cbf0dc81278e45fa84c3126f4ca59b3ace3feaae076c4ef7decd1"
       },
       {
         "path": "tests/test_lesson_ledger_refusals.py",
@@ -261,18 +281,18 @@
       },
       {
         "path": "tests/test_lesson_selection_preview.py",
-        "content_sha256": "85e28ec45dbe9dd165a696b0cbf75585625e7aad9c7d35ccc1cfc28bfd446a45"
+        "content_sha256": "a9c7636fab303028b163e5411776fdeac6fa880f671bb3538d1349ad4a6db080"
       },
       {
         "path": "tests/test_seed_lesson_transitions.py",
         "content_sha256": "9afa1c9714780f44e12e5a41eb52216e91369c14ec71e2c66d40f0bc30140280"
       }
     ],
-    "reviewed_patch_sha256": "4a8457f950714cde556fe5ba8810baf77d791a535e28b42c3cf4ddce518ca7f3",
+    "reviewed_patch_sha256": "e8f8f46eeef8f74a694559560a33ffbd3f0bc4d067a0591073408332c0d75bb9",
     "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "declared_untracked": [],
     "auto_excluded_paths": [],
-    "identity_sha256": "b8d37d31021f16c5579a2bb05296fc52388e85ac45eba467dd86dcabfecfc03e"
+    "identity_sha256": "6808e8f97145e1c245bfd5ca00ceab346f54fe2877a071c4c0862467a758289b"
   }
 }

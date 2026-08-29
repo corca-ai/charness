@@ -262,17 +262,45 @@ def main() -> int:
         # what keeps the empty case honest: it says `0 lock files`, not `validated`.
         lock_schema = load_lock_schema()
         validated_lock_count = 0
+        # The lock's reference must resolve to a DISCOVERED owner and carry that
+        # owner's identity. `is_file()` plus a successful JSON parse is neither: the
+        # lock schema constrains `manifest_path` to any non-empty string, so a stale
+        # lock naming `integrations/tools/manifest.schema.json` -- a file this
+        # validator explicitly EXCLUDES from the owned set -- existed, parsed, and
+        # counted as validated. Nothing bound `tool_id` to anything either.
+        owned_by_path: dict[Path, str] = {
+            manifest_path: json.loads(manifest_path.read_text(encoding="utf-8"))["tool_id"]
+            for manifest_path in owned_manifest_paths
+        }
+        owned_by_path.update(
+            {
+                (repo_root / capability["_manifest_path"]).resolve(): capability["tool_id"]
+                for capability in support_capabilities
+                if capability.get("_manifest_path")
+            }
+        )
         for path in lock_files:
             lock_data = json.loads(path.read_text(encoding="utf-8"))
             validate_lock_data(lock_data, lock_schema)
             manifest_reference = lock_data["manifest_path"]
-            manifest_path = repo_root / manifest_reference
+            manifest_path = (repo_root / manifest_reference).resolve()
             if not manifest_path.is_file():
                 raise ValidationError(
                     f"{path}: referenced manifest {manifest_reference} is missing; "
                     "remove the stale lock or restore the manifest."
                 )
-            json.loads(manifest_path.read_text(encoding="utf-8"))
+            owner_id = owned_by_path.get(manifest_path)
+            if owner_id is None:
+                raise ValidationError(
+                    f"{path}: referenced manifest {manifest_reference} exists but is not a "
+                    "discovered tool manifest or support capability; remove the stale lock "
+                    "or point it at a declared owner."
+                )
+            if owner_id != lock_data["tool_id"]:
+                raise ValidationError(
+                    f"{path}: lock tool_id `{lock_data['tool_id']}` does not match the identity "
+                    f"`{owner_id}` declared by {manifest_reference}; the lock names a different owner."
+                )
             validated_lock_count += 1
         dependencies = load_dependencies(repo_root)
         if dependencies is not None:

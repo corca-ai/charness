@@ -297,10 +297,27 @@ def _candidate_content_digest(
     return digest.hexdigest()
 
 
+def _is_ancestor(repo_root: Path, base_sha: str, head: str) -> bool:
+    """True when `base_sha` is reachable from `head`, so HEAD can carry base-to-HEAD."""
+    completed = subprocess.run(
+        ["git", "-C", str(repo_root), "merge-base", "--is-ancestor", base_sha, head],
+        capture_output=True,
+        check=False,
+    )
+    return completed.returncode == 0
+
+
 def _candidate_carrier(repo_root: Path, base_sha: str) -> dict[str, Any]:
     """Describe which lane tree carries the complete validated candidate."""
     head = _git_output(repo_root, "rev-parse", "HEAD").strip()
-    has_commit = head != base_sha
+    # ANCESTRY, not inequality. `head != base_sha` answers "did HEAD move", which is a
+    # different question from "does HEAD carry the base-to-worktree candidate". A lane
+    # that amends its own base, or resets to an ancestor, leaves a clean tree at a
+    # SIBLING commit -- and the inequality test called that `commit-only` with
+    # `head_is_complete: true`, which invites the parent to cherry-pick a commit that
+    # replays against the wrong parent instead of carrying the validated candidate.
+    base_is_ancestor = _is_ancestor(repo_root, base_sha, head)
+    has_commit = head != base_sha and base_is_ancestor
     committed_paths = _diff_paths(repo_root, base_sha, head) if has_commit else []
     dirty_paths = sorted(set(_diff_paths(repo_root, head)) | set(_untracked_paths(repo_root)))
     changed_paths = _changed_paths(repo_root, base_sha)
@@ -316,6 +333,13 @@ def _candidate_carrier(repo_root: Path, base_sha: str) -> dict[str, Any]:
         "committed_paths": committed_paths,
         "dirty_paths": dirty_paths,
         "head_sha": head if has_commit else None,
+        # Published even when it is True, because its FALSE case is otherwise
+        # invisible: a lane that amended its base has a clean tree at a sibling
+        # commit, and without this the receipt reads exactly like a lane that never
+        # committed at all. A parent that sees `observed_head` differ from the base
+        # while this is False knows a commit exists and does not carry the candidate.
+        "base_is_ancestor_of_head": base_is_ancestor,
+        "observed_head_sha": head,
         "head_is_complete": has_commit and not dirty_paths,
         "content_digest": _candidate_content_digest(repo_root, base_sha, changed_paths),
     }
