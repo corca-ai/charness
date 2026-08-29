@@ -47,6 +47,64 @@ def read_manifest(path: Path) -> dict[str, object]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def write_lock(
+    repo: Path,
+    *,
+    tool_id: str = "demo-tool",
+    manifest_path: str = "integrations/tools/demo-tool.json",
+) -> Path:
+    lock_path = repo / "integrations" / "locks" / f"{tool_id}.json"
+    lock_path.write_text(
+        json.dumps(
+            {
+                "schema_version": "1",
+                "tool_id": tool_id,
+                "manifest_path": manifest_path,
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    return lock_path
+
+
+def test_validate_integrations_refuses_lock_with_missing_manifest(tmp_path: Path) -> None:
+    repo = seed_control_plane_repo(tmp_path)
+    lock_path = write_lock(
+        repo,
+        tool_id="stale-tool",
+        manifest_path="integrations/tools/deleted-tool.json",
+    )
+
+    result = run_loaded_script_main(
+        "validate_integrations.py",
+        validate_integrations_module,
+        "--repo-root",
+        str(repo),
+    )
+
+    assert result.returncode != 0
+    assert lock_path.name in result.stderr
+    assert "integrations/tools/deleted-tool.json" in result.stderr
+    assert "remove the stale lock or restore the manifest" in result.stderr
+
+
+def test_validate_integrations_accepts_lock_with_existing_manifest(tmp_path: Path) -> None:
+    repo = seed_control_plane_repo(tmp_path)
+    write_lock(repo)
+
+    result = run_loaded_script_main(
+        "validate_integrations.py",
+        validate_integrations_module,
+        "--repo-root",
+        str(repo),
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "1 lock files" in result.stdout
+
+
 def test_validate_integrations_rejects_invalid_local_wrapper(tmp_path: Path) -> None:
     repo = (
         Repo()
@@ -446,6 +504,7 @@ def test_release_checklist_entries_are_strings_under_standard_yaml() -> None:
 def test_doctor_accepts_manifest_without_healthcheck(tmp_path: Path, monkeypatch) -> None:
     repo = seed_control_plane_repo(tmp_path)
     monkeypatch.setenv("CHARNESS_DISABLE_PLUGIN_FALLBACK_MANIFESTS", "1")
+    write_lock(repo)
     manifest_path = repo / "integrations" / "tools" / "demo-tool.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     manifest["checks"].pop("healthcheck")
@@ -623,6 +682,7 @@ def test_doctor_reads_support_owned_capability_metadata(tmp_path: Path, monkeypa
 
 def test_validate_integrations_accepts_dependencies_referencing_known_tool(tmp_path: Path) -> None:
     repo = seed_control_plane_repo(tmp_path)
+    write_lock(repo)
     deps = {"schema_version": 1, "tool_dependencies": ["demo-tool"]}
     (repo / "integrations" / "tools" / "dependencies.json").write_text(
         json.dumps(deps, indent=2) + "\n", encoding="utf-8"
@@ -645,6 +705,7 @@ def test_validate_integrations_accepts_dependencies_referencing_known_tool(tmp_p
 
 def test_validate_integrations_rejects_dependencies_with_unknown_tool(tmp_path: Path) -> None:
     repo = seed_control_plane_repo(tmp_path)
+    write_lock(repo)
     deps = {"schema_version": 1, "tool_dependencies": ["demo-tool", "ghost-tool"]}
     (repo / "integrations" / "tools" / "dependencies.json").write_text(
         json.dumps(deps, indent=2) + "\n", encoding="utf-8"

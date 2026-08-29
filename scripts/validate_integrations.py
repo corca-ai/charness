@@ -252,10 +252,28 @@ def main() -> int:
             capability = json.loads(capability_path.read_text(encoding="utf-8"))
             validate_shared_declaration_schema(capability, capability_path)
             validate_agent_browser_readiness_commands(capability, capability_path)
-        lock_schema = load_lock_schema()
         lock_files = lock_paths(repo_root)
+        # Zero locks is the SANCTIONED discovered-empty answer, not an unestablished
+        # scope: `integrations/locks/*.json` is gitignored, so every fresh clone and
+        # every consumer repo that has installed no tool yet has none. Refusing here
+        # measured green in this checkout and exited 1 on a fresh clone, and this
+        # validator runs in both `run-quality.sh` and the staged commit gate -- so the
+        # refusal would have broken every consumer's commit. The count line below is
+        # what keeps the empty case honest: it says `0 lock files`, not `validated`.
+        lock_schema = load_lock_schema()
+        validated_lock_count = 0
         for path in lock_files:
-            validate_lock_data(json.loads(path.read_text(encoding="utf-8")), lock_schema)
+            lock_data = json.loads(path.read_text(encoding="utf-8"))
+            validate_lock_data(lock_data, lock_schema)
+            manifest_reference = lock_data["manifest_path"]
+            manifest_path = repo_root / manifest_reference
+            if not manifest_path.is_file():
+                raise ValidationError(
+                    f"{path}: referenced manifest {manifest_reference} is missing; "
+                    "remove the stale lock or restore the manifest."
+                )
+            json.loads(manifest_path.read_text(encoding="utf-8"))
+            validated_lock_count += 1
         dependencies = load_dependencies(repo_root)
         if dependencies is not None:
             known_ids = {manifest["tool_id"] for manifest in load_manifests_for_discovery(repo_root)}
@@ -273,7 +291,7 @@ def main() -> int:
     print(
         f"Validated {len(manifests)} integration manifests, "
         f"{len(support_capabilities)} support capabilities, "
-        f"{len(lock_files)} lock files, "
+        f"{validated_lock_count} lock files, "
         f"{dep_count} declared tool dependencies."
         + (f" {len(advisories)} advisory note(s)." if advisories else "")
     )

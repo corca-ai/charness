@@ -21,6 +21,7 @@ from pathlib import Path
 import pytest
 import yaml
 
+from tests.control_plane.support import seed_control_plane_repo
 from tests.script_main import load_script_module, run_loaded_script_main
 
 from .support import ROOT
@@ -98,6 +99,27 @@ def test_zero_scope_scan_refuses(tmp_path: Path, script: str, args: list[str], e
     result = run_gate(script, "--repo-root", str(_empty_root(tmp_path)), *args)
     assert result.returncode != 0, result.stdout + result.stderr
     assert expected_fragment.lower() in (result.stdout + result.stderr).lower()
+
+
+def test_validate_integrations_zero_locks_is_the_sanctioned_discovered_empty_pass(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """A repo that has installed no tool has no locks, and that is a real answer.
+
+    This is the asymmetry the module docstring names. `integrations/locks/*.json` is
+    gitignored, so EVERY fresh clone has zero locks, and this validator runs in both
+    `run-quality.sh` and the staged commit gate -- refusing here exits 1 on a clean
+    consumer checkout while measuring green in a maintainer tree that happens to have
+    installed tools. The honesty this case owes is in the COUNT, not in a refusal:
+    the line must say zero rather than implying locks were checked.
+    """
+    monkeypatch.setenv("CHARNESS_DISABLE_PLUGIN_FALLBACK_MANIFESTS", "1")
+    repo = seed_control_plane_repo(tmp_path)
+
+    result = run_gate("scripts/validate_integrations.py", "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "0 lock files" in result.stdout
 
 
 def test_bootstrap_shim_payload_names_the_empty_scope(tmp_path: Path) -> None:
