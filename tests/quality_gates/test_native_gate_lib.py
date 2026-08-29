@@ -339,3 +339,97 @@ def test_probe_reports_resolution_without_running_child(
     assert returned == 0
     assert "provenance: override" in captured.err
     assert not marker.exists()
+
+
+# --- error paths -------------------------------------------------------------
+#
+# Every branch below was reported as an uncovered CHANGED line by
+# `release-changed-line-coverage` once its instrumentation was repaired. They are
+# the paths that decide what an operator sees when something is wrong, so leaving
+# them unexercised means the failure messages are unproven.
+
+
+def test_an_unreadable_source_file_does_not_abort_the_staleness_walk(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A source file that cannot be stat'ed is skipped, not fatal.
+
+    The walk exists to answer "is the binary older than the crate". One
+    unreadable file must not turn that question into a crash, because the
+    binary may still be perfectly fresh with respect to everything readable.
+    """
+    repo = _repo(tmp_path, with_source=True)
+    crate = repo / "native" / "repograph"
+    (crate / "src").mkdir(parents=True)
+    (crate / "src" / "main.rs").write_text("fn main() {}\n", encoding="utf-8")
+    binary = _binary(crate / "target" / "release" / "repograph")
+
+    real_stat = Path.stat
+
+    def refusing_stat(self, *args, **kwargs):
+        if self.name == "main.rs":
+            raise OSError("unreadable")
+        return real_stat(self, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "stat", refusing_stat)
+
+    assert native_gate_lib.dev_tree_staleness(crate, binary) is None
+
+
+def test_an_unstattable_binary_is_treated_as_stale(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Unknown freshness resolves toward rebuilding, never toward trusting.
+
+    The alternative -- treating an unreadable binary as fresh -- is the silent
+    pass this module exists to avoid.
+    """
+    repo = _repo(tmp_path, with_source=True)
+    crate = repo / "native" / "repograph"
+    binary = crate / "target" / "release" / "repograph"
+
+    def refusing_stat(self, *args, **kwargs):
+        raise OSError("unreadable")
+
+    monkeypatch.setattr(Path, "stat", refusing_stat)
+
+    assert native_gate_lib.dev_tree_staleness(crate, binary) == crate / "Cargo.toml"
+
+
+def test_main_requires_a_repograph_command(tmp_path: Path) -> None:
+    with pytest.raises(SystemExit) as raised:
+        native_gate_lib.main(["--repo-root", str(tmp_path)])
+
+    assert raised.value.code == 2
+
+
+def test_main_reports_an_unresolvable_binary_on_stderr(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capfd: pytest.CaptureFixture[str]
+) -> None:
+    repo = _repo(tmp_path)
+    monkeypatch.delenv("CHARNESS_NATIVE_CORE", raising=False)
+    _no_cargo_no_installed(monkeypatch, tmp_path)
+
+    returned = native_gate_lib.main(["--repo-root", str(repo), "export-safe"])
+
+    captured = capfd.readouterr()
+    assert returned == 1
+    assert "charness tool install repograph" in captured.err
+    # stdout stays empty: a consumer parsing this stream must not receive prose.
+    assert captured.out == ""
+
+
+def test_main_reports_a_binary_it_cannot_execute(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capfd: pytest.CaptureFixture[str]
+) -> None:
+    """A resolved-but-unexecutable binary is a distinct failure from an absent one."""
+    repo = _repo(tmp_path)
+    unexecutable = tmp_path / "bin" / "repograph"
+    unexecutable.parent.mkdir(parents=True)
+    unexecutable.write_text("not executable\n", encoding="utf-8")
+    unexecutable.chmod(0o644)
+    monkeypatch.setenv("CHARNESS_NATIVE_CORE", str(unexecutable))
+
+    returned = native_gate_lib.main(["--repo-root", str(repo), "export-safe"])
+
+    captured = capfd.readouterr()
+    assert returned == 1
+    assert "could not execute" in captured.err

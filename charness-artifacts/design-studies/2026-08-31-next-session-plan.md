@@ -1,0 +1,209 @@
+# Next-session plan: close the release, then convert the remaining lists to properties
+
+> Written at the end of the 2026-08-30 session, after Step 1 of
+> `2026-08-30-next-session-plan.md` landed in full and four unplanned structural
+> repairs landed with it.
+> Supersedes `2026-08-30-next-session-plan.md`. Its Step 1 is DONE; Steps 2–5
+> survive and are re-scoped below.
+> Inputs: `charness-artifacts/spec/repograph-tool-control-plane.md`,
+> `charness-artifacts/retro/session-retro-2.md`,
+> `charness-artifacts/retro/2026-08-30-a-class-discharged-as-a-list.md`,
+> `issue-753/2026-08-28-jtbd-audit-quality-gates.md`.
+
+## Read this first
+
+Read `charness-artifacts/retro/recent-lessons.md` BEFORE planning. `AGENTS.md`
+now routes to it as the first "Start here" item, because until 2026-08-30
+nothing did: eight modules produced, validated, ranked, deduped, and scored that
+digest and it reached no session. The 2026-08-30 session spent a day
+rediscovering a lesson that was already sitting in it with three sources.
+
+Then the two operating lessons that session paid for:
+
+> **A verification failure is investigated by suspecting the verifier first.**
+> Carried over from the 2026-08-30 plan, and it paid again: "21 files need
+> changed-line coverage" was really "the instrument measured nothing", a
+> one-line fix instead of 21 files of work.
+
+> **Discharging a class by repairing its known instances leaves the class
+> intact.** Ask what property the instances violate and check that instead, over
+> the whole corpus, with a negative control proving the check can fire. This is
+> `docs/design-north-star.md` P3 stated operationally; the repo was on the wrong
+> side of it in at least four places.
+
+And the mechanical one, because it cost 30 minutes:
+
+> Run tests through `python3 scripts/run_standing_pytest.py --repo-root .`
+> (add `--pytest-target <path>` for focused runs). A bare `python3 -m pytest` is
+> now REFUSED for a broad selection by `tests/conftest.py`; that guard exists
+> because nothing else made the cost visible.
+
+## What landed on 2026-08-30
+
+Five commits, `a21bba5a1`..`5d71f3380`:
+
+1. **The native-core distribution layer is retired.** 4,200 lines out, 1,163 in.
+   `repograph` is `integrations/tools/repograph.json` (`doctor_policy: required`,
+   built with `cargo install --path .` from the crate in the checkout).
+   `scripts/native_gate_lib.py` is the single resolver: override → dev-tree →
+   installed, building and announcing when the crate is unbuilt or stale.
+2. **`tests/conftest.py` refuses a broad serial pytest run** that bypasses the
+   canonical runner.
+3. **`tests/quality_gates/test_a_manifest_field_is_not_what_the_control_plane_derives.py`**
+   checks what the control plane DERIVES from every manifest, with negative
+   controls.
+4. **`AGENTS.md` routes to the lessons digest.**
+5. **The changed-line coverage gate actually measures pytest now.**
+   `_COVERAGE_ENV_KEYS` was missing `COVERAGE_FILE`, so nothing inside pytest or
+   its xdist workers was measured at all. Blocked set 21 → 12.
+
+## Step 1 — Ship the release (the keystone, and it is now unblocked)
+
+Everything that blocked it is gone. `packaging/charness.json` carries no
+`native_core` declaration, `plugin.schema.json` carries no `nativeCore`
+definitions, and the release adapter's `real_host_checklist` item 1 is a
+`repograph` tool-doctor item instead of a native-artifact readback.
+
+State to confirm before starting: `origin/main` is ~96 commits behind local
+`main`, there is no `v8.0.0` tag and no GitHub release, and
+`charness-artifacts/release/latest.md` is an ABANDONMENT record carrying
+`- target version: 8.0.0` with no prepared marker, so a fresh run is unblocked.
+
+Open decisions for the operator, early:
+
+1. Does 8.0.0 remain the version, given the release it was prepared for was
+   halted and its headline feature was then deleted? The retirement is a large
+   removal with no consumer-visible artifact loss (nothing was ever published),
+   so 8.0.0 is defensible; say so deliberately rather than by inheritance.
+2. `origin/main` is ~96 commits behind. Confirm that pushing that range is
+   intended and that no one else is building on the remote.
+
+## Step 2 — Convert the remaining enumerated refusals to properties
+
+The highest-value carry-over from the 2026-08-30 pattern analysis, and the
+`Sibling Search` follow-up `deferred sweep-rows-to-properties`.
+
+Three gates pin the rows a 2026-08-01 sweep contained rather than the property
+those rows violate:
+
+- `tests/quality_gates/test_empty_scope_refusals.py` — states the rule outright
+  (*"a gate that compared nothing must say so, and must not exit 0"*) and pins
+  four observed gates.
+- `tests/quality_gates/test_a_declaration_is_not_its_own_corroboration.py` —
+  sweep rows S9, S10.
+- `tests/quality_gates/test_a_refused_verdict_states_its_refusal.py` — sweep
+  rows S23, S2.
+
+The 2026-08-30 defects were all new instances of this class, authored after the
+sweep. Convert at least the first: a property over every gate script that can
+report a scope, not over the four that were caught. Expect this to be harder
+than the manifest case — "every gate" has no single registry, and the honest
+first move may be to build one. Do not over-tighten: the sweep artifact records
+a deliberate asymmetry (a *discovered* empty set is a real answer and stays a
+cheap no-op), and a property that erases that asymmetry makes every commit pay
+for every artifact family.
+
+Also carry `deferred env-subset-reexport-audit`: `_with_coverage_env` builds a
+full env and forwards a hand-listed subset. That shape is not gated anywhere and
+it is what silenced a blocking gate.
+
+## Step 3 — #748 slice 2: `match_surfaces` → native projection
+
+Unchanged in substance from the 2026-08-30 plan; the release gate it was waiting
+on is Step 1 here. The three deferred audit obligations were verified at line
+level on 2026-08-29 and still hold:
+
+- `staged_commit_gate_plan.py:230-235` catches `SurfaceError` and returns `[]`,
+  a silent pre-commit disarm. Binary-unavailability must raise a type **not**
+  derived from `SurfaceError`.
+- `boundary_probe_lib.py:132` calls `match_surfaces` with no handler and
+  deliberately propagates.
+- `path_matches_patterns` survives at `surfaces_lib.py:105,109` inside
+  `_validate_surface`'s generated-markdown validation — manifest
+  self-consistency, a different job. Slice 2 cannot claim single-matcher
+  ownership; record it.
+
+## Step 4 — `repo_file_listing.py` decision
+
+Unchanged; the investigation is complete and the answer is evidence-backed.
+`CHARNESS_SUPPORT_DIR` has one production read site (`scripts/repo_layout.py:17`)
+and one live operator-facing doc; no adapter, hook, CI step, skill script, or
+`run-quality.sh` path ever sets it. When set, `skills/support/` patterns are
+globbed against the external tree with no git filter
+(`repo_file_listing.py:123-128`). Choose: absorb the splice into the native
+owner, keep Python with the reason recorded, or deprecate it.
+
+## Step 5 — #753 closeout, with a correction to the audit
+
+The JTBD artifact's candidate list is **partially executed and does not say so**:
+`test_prescribed_path_self_test_guidance.py` and `test_retro_skill.py` were
+already deleted by an earlier session, and `test_issue_audit_brief.py` was
+deleted on 2026-08-30 to restore the test-production ratio. Remaining:
+
+- convert-pin (2): `test_narrative_adapter.py`,
+  `test_quality_tool_recommendations.py`
+- trim-partial (8): `test_critique_skill.py`,
+  `test_issue_closeout_discipline.py`, `test_narrative_scenario_blocks.py`,
+  `test_quality_bootstrap.py`, `test_quality_skill_docs.py`,
+  `test_retro_memory.py`, `test_skill_docs_contracts.py`,
+  `test_source_bound_records_guidance.py`
+
+Cite the artifact's per-file line ranges; do not paraphrase them. **And record
+execution state in the artifact as rows are done** — a list whose done-ness is
+untracked is the same defect one level up, and it cost a wrong assumption on
+2026-08-30.
+
+Watch the ratio: `check-test-production-ratio` is BLOCKING and sat at 0.9996
+after the retirement removed more production than test code. Trimming tests
+moves it down, which is safe; adding tests moves it up.
+
+## Accumulated follow-ups
+
+- **`charness` is 6,081 lines and `build_recommendation` maps it to 123 test
+  files even after the 2026-08-30 narrowing** (it was ~400). Any "focused" or
+  "changed-line" claim that touches the CLI still degrades toward "most of the
+  suite". This is a topology problem, not a gate problem, and it is the largest
+  remaining structural item. `check-changed-line-mutation-coverage` is a 289s
+  unbudgeted hotspot because of it.
+- **12 files still have genuinely uncovered changed lines** against base
+  `533f24dad` (the v8.0.0 prepare), now that the coverage instrument works.
+  Mostly `task_run_*.py`. This is real debt from ~93 commits, not an artifact.
+- **In-process bounded-reviewer delegation has failed five times across two
+  sessions**, once with the explicit `opus` override. `.agents/claude-host.md`
+  now records that an unreturned review is an unrun review. Either find a
+  channel that delivers (the dynamic workflow channel is untested for this in
+  the last two sessions) or stop budgeting reviewer spawns as proof.
+- `follow-up: release-machinery-jtbd-audit` — `_publish_and_finalize`
+  (`publish_release_execute.py:225`) is unreachable in production with three
+  test-only callers; 52 release scripts / 12,599 lines plus 36 test files /
+  15,336 lines to bump a version, tag, push, create a release.
+- `follow-up: seam-fake-real-argv-audit` — every repo fake standing in for an
+  external binary (`gh`, `repograph`, `nose`).
+- **`charness task run` receipts do not carry the lane's final message** (#754
+  family).
+- `publish_release_helpers.py` sits near its hard cap;
+  `test_release_resume_edge_coverage.py` at 798/800.
+- The retro persistence helper names artifacts without the date prefix the
+  scaffold suggests (`session-retro-2.md`, not `2026-08-29-session-retro-2.md`).
+  The validator accepts it; the two surfaces disagree about naming.
+
+## Working shape
+
+The 2026-08-30 session ran parent-only with design-critique subagents, and the
+subagents delivered nothing three times. What actually found every defect was
+the parent running a disconfirming probe against the real repository:
+`json.load` on the gate's own output, `coverage report` on one file, an
+instrumented hook, `cargo --version` in two directories. Budget for that, not
+for a second opinion.
+
+Commit before running the battery. Two full cycles on 2026-08-30 were spent on
+the parent's own uncommitted state: `tests/repo_copy.py:63` copies the WORKING
+TREE, and `git ls-files` still lists worktree-deleted files, so a dirty tree
+fails ~16 tests for reasons that have nothing to do with the change.
+
+Regenerate derived surfaces AFTER the last source edit, not before:
+`python3 scripts/sync_root_plugin_manifests.py --repo-root .` and
+`./charness catalog refresh --repo-root .`. Adding a retro artifact also
+requires `python3 scripts/build_retro_lesson_selection_index.py --repo-root .
+--write` followed by `python3 skills/public/retro/scripts/refresh_recent_lessons.py
+--repo-root .` — a two-step chain whose first refusal names only the first step.

@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-08-30",
-  "source_artifact_count": 415,
-  "candidate_count": 2141,
+  "source_artifact_count": 416,
+  "candidate_count": 2145,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -1430,6 +1430,29 @@
       ]
     },
     {
+      "candidate_id": "current_focus:d7690dd44523",
+      "kind": "current_focus",
+      "lesson": "The operator handed over `charness-artifacts/design-studies/2026-08-30-next-session-plan.md` and asked for design-then-execute.",
+      "normalized_key": "the operator handed over charness artifacts design studies 2026 08 30 next session plan",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/session-retro-2.md",
+      "latest_source_date": "2026-08-29",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/session-retro-2.md",
+          "date": "2026-08-29",
+          "section": "Context",
+          "kind": "current_focus",
+          "lesson": "The operator handed over `charness-artifacts/design-studies/2026-08-30-next-session-plan.md` and asked for design-then-execute."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:5f32a622929b",
       "kind": "next_improvement",
       "lesson": "capability — **seam fakes must reject malformed argv** (strict parsers, not payload-only). Applied in-session to both D9 fakes (classify, export-safe); the lane-brief template edit above carries the rule forward.",
@@ -1476,6 +1499,29 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:7d128459e0af",
+      "kind": "next_improvement",
+      "lesson": "`charness-artifacts/retro/2026-08-30-a-class-discharged-as-a-list.md` carries the pattern analysis and the three named unfixed items; this artifact carries the session. The rule to keep: *discharging a class by repairing its known instances leaves the class intact — ask what property the instances violate, and check that instead, with a negative control proving the check can fire.*",
+      "normalized_key": "charness artifacts retro 2026 08 30 a class discharged as a list md carries",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/session-retro-2.md",
+      "latest_source_date": "2026-08-29",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/session-retro-2.md",
+          "date": "2026-08-29",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "`charness-artifacts/retro/2026-08-30-a-class-discharged-as-a-list.md` carries the pattern analysis and the three named unfixed items; this artifact carries the session. The rule to keep: *discharging a class by repairing its known instances leaves the class intact — ask what property the instances violate, and check that instead, with a negative control proving the check can fire.*"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:fd9db7d95f0e",
       "kind": "next_improvement",
       "lesson": "memory — the `ruff --fix` re-export hazard and the `as`-alias convention persist via this artifact and the refreshed digest; the sibling scan below shows the corpus is otherwise clean today.",
@@ -1495,6 +1541,52 @@
           "section": "Next Improvements",
           "kind": "next_improvement",
           "lesson": "memory — the `ruff --fix` re-export hazard and the `as`-alias convention persist via this artifact and the refreshed digest; the sibling scan below shows the corpus is otherwise clean today."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:596a0d19e360",
+      "kind": "next_improvement",
+      "lesson": "read `charness-artifacts/retro/recent-lessons.md` before planning, and when a gate reports a number, open the artifact that number came from before reasoning about it. Both are now routed — the first from `AGENTS.md`, the second as this retro's second counterfactual.",
+      "normalized_key": "read charness artifacts retro recent lessons md before planning and when a gate reports",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/session-retro-2.md",
+      "latest_source_date": "2026-08-29",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/session-retro-2.md",
+          "date": "2026-08-29",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "read `charness-artifacts/retro/recent-lessons.md` before planning, and when a gate reports a number, open the artifact that number came from before reasoning about it. Both are now routed — the first from `AGENTS.md`, the second as this retro's second counterfactual."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:091486989943",
+      "kind": "next_improvement",
+      "lesson": "`tests/conftest.py` refuses a broad serial pytest run; `tests/quality_gates/test_a_manifest_field_is_not_what_the_control_plane_derives.py` checks derived manifest values over the whole directory with negative controls; `_COVERAGE_ENV_KEYS` is pinned by containment rather than by its literal contents.",
+      "normalized_key": "tests conftest py refuses a broad serial pytest run tests quality gates test a",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/session-retro-2.md",
+      "latest_source_date": "2026-08-29",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/session-retro-2.md",
+          "date": "2026-08-29",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "`tests/conftest.py` refuses a broad serial pytest run; `tests/quality_gates/test_a_manifest_field_is_not_what_the_control_plane_derives.py` checks derived manifest values over the whole directory with negative controls; `_COVERAGE_ENV_KEYS` is pinned by containment rather than by its literal contents."
         }
       ]
     },
