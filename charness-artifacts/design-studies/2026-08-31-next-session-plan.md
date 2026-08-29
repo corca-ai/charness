@@ -337,3 +337,79 @@ Regenerate derived surfaces AFTER the last source edit, not before:
 requires `python3 scripts/build_retro_lesson_selection_index.py --repo-root .
 --write` followed by `python3 skills/public/retro/scripts/refresh_recent_lessons.py
 --repo-root .` — a two-step chain whose first refusal names only the first step.
+
+## What this session actually did (recorded at close)
+
+The operator redirected mid-session, twice. The plan above was release-first; the
+session ended having shipped no release and instead closed a class of gate blind
+spots. That was the right trade and the evidence is below, but the plan's Step 1
+is still OPEN.
+
+Landed, in order:
+
+1. `9b996240f` — the test/production ratio cap returned to `--advisory` and the
+   posture is pinned. `4122f6cd0` had promoted it to blocking at 0.993 one day
+   after `issue-753/lane-A-ratio-surface-brief.md:37` said the posture was a later
+   #753 decision; the tree then reached 1.0000 and the cap pulled directly against
+   `release-changed-line-coverage`.
+2. `ff93a7fb5`, `f86e5e690`, `dc379df3b` — all 115 changed lines across the 11
+   blocked files are covered. The gate moved `blocked` -> `partial`. One line was
+   closed by DELETING an unreachable type-narrowing guard rather than contorting a
+   test to reach it (`task_run_execution.stop_process_group`).
+3. `5eefd1ec5` — #748's parity harness could not run at all: slice 1 deleted a
+   module it imported. Repaired to the one arm with two live implementations;
+   `match-surfaces` parity is now measured at `difference_count: 0`. Slice 2's
+   ownership switch was then NOT taken: measurement showed native is 1.4x SLOWER
+   for this in-memory operation and the matcher stays duplicated either way
+   (`path_matches_patterns` has a live consumer at `boundary_probe_lib.py:112`
+   that the plan did not record).
+4. `fd4770af7` — the test seed carried `native/repograph/target` whole, 1.4 GB of
+   a 1.6 GB fixture. Seed 1.7 G -> 114 M; per-test clone 1.23s -> 0.28s.
+5. `426534a96` — `test_gate_summary_names_failures.py` cloned the whole checkout
+   and git-committed inside it to prove what a bash script PRINTS. Converted to
+   the minimal `make_quality_runner_repo` fixture the sibling file already used:
+   setup 7.3s -> 0.04s.
+6. `37b7ac379`, `54ada3be0`, `a0b13d548` — Rust had no gate of any kind while the
+   ratio gate counted it as production. `check-rust.sh` now runs fmt, clippy
+   `-D warnings`, and `cargo test`; `check_python_lengths.py` measures `.rs`
+   through the same tokei path with a ratchet at today's maximum. First coverage
+   measurement of the crate: 78.46% of 8,010 lines.
+7. `6e05e026e` — `plugins/` is untracked. Verified rather than assumed: moving the
+   tree away entirely and re-running the sync regenerates all 1,042 files
+   byte-identically.
+
+### The finding that outlived the session
+
+Six instances of one shape, all measured:
+
+- the coverage gate that measured nothing inside pytest (carried in from 2026-08-30)
+- the parity harness that could not execute
+- per-unit JTBD audits that structurally cannot see cross-unit duplication
+- length gates that glob `*.py`, leaving 1,331 shell lines and 11,891 Rust lines unmeasured
+- a YAML comment one full measurement behind the test that pins it
+- `check_test_repo_copy_invariants` enumerating names, so ONE local fixture hop hid
+  the most expensive copy-heavy test in the standing lane from the gate built for it
+
+And `plugins/` was not merely wasted space: it made every script basename
+non-unique, which silently disarmed `check_doc_links`'s uniqueness rule. Untracking
+it surfaced 34 real findings across 10 documents.
+
+The repo already requires each detector to state its own blind class. Nothing asks
+that question of the detector SET. That is the next structural item, and it is
+larger than any single gate.
+
+### Still open
+
+- **The release.** 8.0.0, `--publish-current` (packaging already carries 8.0.0),
+  99 commits unpushed, operator-approved. Real-host proof is `required` and its
+  checklist is discharge-able on this host; `nose` is already installed at 0.20.0
+  and the checklist's own text is stale about it (`v0.4.0 or newer`).
+- **`_publish_and_finalize`.** Unchanged from the amendment above: the irreversible
+  issue-close ordering invariant is covered only through a dead driver.
+- **Rust changed-line coverage.** `cargo-llvm-cov` is installed and the baseline is
+  recorded. A whole-repo percentage gate is deliberately NOT the answer; the parity
+  with Python is a changed-line floor.
+- **Rust function length / complexity.** No stable clippy equivalent of ruff
+  PLR0915. Named as the blind class in `check-rust.sh`'s own header.
+- **`scripts/check_python_lengths.py` is misnamed** now that it measures Rust. 73
+  references; a rename is its own change.
