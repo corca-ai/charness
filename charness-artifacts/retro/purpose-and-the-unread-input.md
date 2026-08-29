@@ -166,8 +166,39 @@ was built unarmed rather than promoted to blocking the day it was written.
   It reports 13 detectors asserting success over an unestablished scope and 48
   whose honesty is prose only. Next session reads it and dispositions the 13.
   Leaving it unread makes it exactly the cost the Purpose clause names. `novel:`
+- capability — **the session entry point routes to an advisory projection, not to
+  the durable lesson owner.** Structural pattern: a generated summary is placed
+  where the source of truth belongs, so a reader who follows the entry point gets
+  a ranked SAMPLE and believes they have the corpus. Triggering instance:
+  `CLAUDE.md`'s first bullet sends a session to `recent-lessons.md`, which sources
+  24 of 419 retro files and did not carry the one this session needed;
+  `lesson_ledger_lib` states plainly that the ledger is durable history and
+  "presentation is an advisory projection owned by retro". The ledger is not
+  mentioned at the entry point at all. Destination: issue — it is the mechanism
+  behind this session's largest waste, and #750 shows a consumer already banning
+  the projection while charness still routes to it. `recurs:` — the same
+  entry-point-reads-a-summary shape as the plan-inputs trap above.
+- capability — **the retro scaffold and the persist helper resolve the same
+  subject key to different paths.** Structural pattern: two tools own one
+  artifact identity, one checks for collision and the other writes, and they
+  disagree about where. Triggering instance: the scaffold checked
+  `2026-08-29-session-retro-2.md` (absent) and routed there; `persist_retro_artifact.py`
+  normalised to `session-retro-2.md` (present, tracked, another session's retro)
+  and overwrote it, 185+/142−. Caught by reading `git status`, not by any gate;
+  restored from HEAD. Destination: issue. `novel:`
 - memory — the four deferred handoffs from the prior retro are now closed;
   this artifact and the next-session prompt carry what replaced them.
+
+### Correction to an earlier reading in this session
+
+I first recorded "a retro persisted minutes ago does not appear in
+`recent-lessons.md`" as a defect of the digest. That framing was wrong twice, and
+the correction is the finding. The digest is an ADVISORY PROJECTION by its own
+contract, so omitting a same-day artifact is not a defect in it; and the durable
+owner is the ledger, which retro does not write at all — a lesson enters it
+through `record_lesson_score.py`, deliberately, per encounter. The defect is not
+that the projection missed something. It is that the entry point points at the
+projection.
 
 ## Sibling Search
 

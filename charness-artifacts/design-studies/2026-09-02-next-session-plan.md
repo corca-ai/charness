@@ -94,11 +94,19 @@ work when they fire.
   scaffold reported the target empty, the helper overwrote a tracked retro from
   another session, and only a `git status` read caught it. One subject key, two
   paths.
-- **`recent-lessons.md` did not pick up a retro persisted minutes earlier** — not
-  in a slot, not even in `Sources` (419 corpus files, 24 sourced). This is the one
-  surface routed to a session start. Whether the selection policy is wrong or the
-  harvest is, a same-day retro whose subject is "the last session's output went
-  unread" not reaching the digest is the failure mode stated twice over.
+- **The session entry point routes to an advisory projection instead of the
+  durable lesson owner.** `CLAUDE.md`'s first bullet sends every session to
+  `recent-lessons.md`. That file is a generated projection — `lesson_ledger_lib`
+  says so directly: the ledger is durable history and *"presentation is an
+  advisory projection owned by retro"* — and it sources 24 of 419 retro files.
+  The durable owner, `lesson-ledger.json` (43 lessons, 124 score events, fed per
+  encounter by `record_lesson_score.py`), is not named at the entry point at all.
+  So a session that follows its own instructions reads a ranked sample and
+  believes it has the corpus; last session's largest waste is exactly that.
+  #750 is the consumer-facing half of the same thing: Ceal makes its ledger the
+  sole lesson surface and cannot switch the Markdown projection off. Design the
+  entry point and #750 together — the question is which surface a reader is owed,
+  not how to make the projection rank better.
 
 ## Step 5 — The release, if the above leaves room
 
