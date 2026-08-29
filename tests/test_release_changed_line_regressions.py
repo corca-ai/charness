@@ -26,6 +26,7 @@ from scripts import adversarial_evidence as adversarial
 from scripts import capability_catalog_resolver as catalog_resolver
 from scripts import critique_packet_lib as critique_packet
 from scripts import reviewed_input_identity as reviewed_identity
+from scripts import reviewed_input_verification as reviewed_verification
 from scripts import staged_commit_gate_plan_helpers as staged_helpers
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -482,10 +483,10 @@ def test_reviewed_identity_reconstruction_and_packet_binding_edges(tmp_path: Pat
         "changed_ref": None,
         "identity_sha256": "a" * 64,
     }
-    assert reviewed_identity.verify_reviewed_input_identity(
+    assert reviewed_verification.verify_reviewed_input_identity(
         tmp_path, {**base, "mode": "bad", "substrate_mode": "bad"}
     )[0] is False
-    assert reviewed_identity.verify_reviewed_input_identity(
+    assert reviewed_verification.verify_reviewed_input_identity(
         tmp_path, {**base, "mode": reviewed_identity.SUBSTRATE_COMMITTED_REF, "substrate_mode": reviewed_identity.SUBSTRATE_COMMITTED_REF}
     )[1].startswith("reviewed input identity substrate mode")
 
@@ -494,7 +495,7 @@ def test_reviewed_identity_reconstruction_and_packet_binding_edges(tmp_path: Pat
         "build_reviewed_input_identity",
         lambda **_kwargs: (_ for _ in ()).throw(reviewed_identity.ReviewedInputError("fixture", "fixture error")),
     )
-    assert reviewed_identity.verify_reviewed_input_identity(tmp_path, base) == (False, "fixture: fixture error")
+    assert reviewed_verification.verify_reviewed_input_identity(tmp_path, base) == (False, "fixture: fixture error")
     monkeypatch.setattr(
         reviewed_identity,
         "build_reviewed_input_identity",
@@ -506,7 +507,7 @@ def test_reviewed_identity_reconstruction_and_packet_binding_edges(tmp_path: Pat
             "identity_sha256": "a" * 64,
         },
     )
-    assert reviewed_identity.verify_reviewed_input_identity(tmp_path, base)[1].endswith("invalid content hash")
+    assert reviewed_verification.verify_reviewed_input_identity(tmp_path, base)[1].endswith("invalid content hash")
     monkeypatch.setattr(
         reviewed_identity,
         "build_reviewed_input_identity",
@@ -518,7 +519,7 @@ def test_reviewed_identity_reconstruction_and_packet_binding_edges(tmp_path: Pat
             "identity_sha256": "a" * 64,
         },
     )
-    assert reviewed_identity.verify_reviewed_input_identity(tmp_path, base)[1].endswith("reviewed_patch_sha256")
+    assert reviewed_verification.verify_reviewed_input_identity(tmp_path, base)[1].endswith("reviewed_patch_sha256")
     monkeypatch.undo()
 
     packet = tmp_path / "packet.json"
@@ -536,7 +537,7 @@ def test_reviewed_identity_reconstruction_and_packet_binding_edges(tmp_path: Pat
     packet_sha = _sha(packet.read_bytes())
     symlink = tmp_path / "packet-link.json"
     symlink.symlink_to(packet)
-    assert reviewed_identity.verify_packet_binding(
+    assert reviewed_verification.verify_packet_binding(
         repo_root=tmp_path,
         packet_path="packet-link.json",
         packet_sha256=packet_sha,
@@ -548,7 +549,7 @@ def test_reviewed_identity_reconstruction_and_packet_binding_edges(tmp_path: Pat
     outside.mkdir()
     (outside / "packet.json").write_bytes(packet.read_bytes())
     (tmp_path / "packet-dir").symlink_to(outside, target_is_directory=True)
-    assert reviewed_identity.verify_packet_binding(
+    assert reviewed_verification.verify_packet_binding(
         repo_root=tmp_path,
         packet_path="packet-dir/packet.json",
         packet_sha256=packet_sha,
@@ -556,7 +557,7 @@ def test_reviewed_identity_reconstruction_and_packet_binding_edges(tmp_path: Pat
         expected_kind="fixture",
         check_current=False,
     )[1] == "reviewed packet path resolves outside repo root"
-    assert reviewed_identity.verify_packet_binding(
+    assert reviewed_verification.verify_packet_binding(
         repo_root=tmp_path,
         packet_path="packet.json",
         packet_sha256=packet_sha,
@@ -569,7 +570,7 @@ def test_reviewed_identity_reconstruction_and_packet_binding_edges(tmp_path: Pat
     committed_packet["reviewed_input_identity"] = dict(packet_payload["reviewed_input_identity"], substrate_mode=reviewed_identity.SUBSTRATE_COMMITTED_REF, changed_ref="HEAD", identity_sha256="a" * 64)
     packet.write_text(json.dumps(committed_packet), encoding="utf-8")
     committed_sha = _sha(packet.read_bytes())
-    mismatch = reviewed_identity.verify_packet_binding(
+    mismatch = reviewed_verification.verify_packet_binding(
         repo_root=tmp_path,
         packet_path="packet.json",
         packet_sha256=committed_sha,
@@ -580,7 +581,7 @@ def test_reviewed_identity_reconstruction_and_packet_binding_edges(tmp_path: Pat
     assert mismatch[1] != "packet and reviewed input identity substrate modes do not match"
     committed_packet["substrate_mode"] = reviewed_identity.SUBSTRATE_WORKING_TREE
     packet.write_text(json.dumps(committed_packet), encoding="utf-8")
-    assert reviewed_identity.verify_packet_binding(
+    assert reviewed_verification.verify_packet_binding(
         repo_root=tmp_path,
         packet_path="packet.json",
         packet_sha256=_sha(packet.read_bytes()),
@@ -591,7 +592,7 @@ def test_reviewed_identity_reconstruction_and_packet_binding_edges(tmp_path: Pat
     committed_packet["substrate_mode"] = reviewed_identity.SUBSTRATE_COMMITTED_REF
     committed_packet["reviewed_input_identity"]["changed_ref"] = "OTHER"
     packet.write_text(json.dumps(committed_packet), encoding="utf-8")
-    assert reviewed_identity.verify_packet_binding(
+    assert reviewed_verification.verify_packet_binding(
         repo_root=tmp_path,
         packet_path="packet.json",
         packet_sha256=_sha(packet.read_bytes()),

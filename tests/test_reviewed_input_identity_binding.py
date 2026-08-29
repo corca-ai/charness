@@ -8,6 +8,7 @@ rejected outright.
 from __future__ import annotations
 
 import hashlib
+import json
 import subprocess
 from datetime import date
 from pathlib import Path
@@ -21,7 +22,7 @@ from scripts.critique_packet_lib import (
     build_reviewed_input_identity,
     write_packet,
 )
-from scripts.reviewed_input_identity import verify_reviewed_input_identity
+from scripts.reviewed_input_verification import verify_reviewed_input_identity
 from scripts.validate_critique_artifacts import (
     ValidationError as CritiqueValidationError,
 )
@@ -399,31 +400,57 @@ def test_a_single_commit_that_deletes_resolves_its_preimage_from_the_parent(
     assert (ok, reason) == (True, "current")
 
 
-def test_a_refreshed_current_pointer_does_not_make_the_sweep_refuse(tmp_path: Path) -> None:
+def test_a_refreshed_current_pointer_is_bound_by_its_link_payload(tmp_path: Path) -> None:
     """Filing a record and refreshing its `latest.md` pointer must stay reviewable.
 
     The documented flow after writing any dated record is
     `refresh_current_pointer.py --execute`, which repoints a `latest.md` SYMLINK.
-    That left a modified symlink in the working-tree change set, and the auto
-    sweep fed it to `_checked_path`, which refuses symlinks by design. So
-    `build_packet` raised outright and every session that filed a record was
-    unreviewable until it committed -- precisely the window in which a reviewer
-    would be asked to read that record.
+    That left a modified symlink in the change set, and the sweep fed it to
+    `_checked_path`, which refuses symlinks by design — so every session that
+    filed a record was unreviewable until it committed.
+
+    The pointer is BOUND rather than excluded. An earlier cut dropped it from the
+    sweep, and a fresh-eye review blocked on that: `auto_excluded_paths` sits in
+    `PROVENANCE_FIELDS` and is never digested, so retargeting the pointer left the
+    identity unchanged and an approved verdict silently followed the move.
     """
     _init_identity_repo(tmp_path)
     records = tmp_path / "charness-artifacts" / "quality"
     records.mkdir(parents=True)
     (records / "2026-08-30-record.md").write_text("# Record\n", encoding="utf-8")
+    (records / "2026-08-29-older.md").write_text("# Older\n", encoding="utf-8")
     (records / "latest.md").symlink_to("2026-08-30-record.md")
 
     identity = build_reviewed_input_identity(repo_root=tmp_path)
 
     assert identity["status"] == "captured"
-    # Dropped from the sweep, but REPORTED -- an excluded input that no field
-    # mentions is the same silent-scope failure this repo spends itself on.
-    assert "charness-artifacts/quality/latest.md" in identity["auto_excluded_paths"]
-    assert "charness-artifacts/quality/latest.md" not in identity["reviewed_paths"]
-    assert "charness-artifacts/quality/2026-08-30-record.md" in identity["reviewed_paths"]
+    pointer = "charness-artifacts/quality/latest.md"
+    assert pointer in identity["reviewed_paths"]
+    assert pointer not in identity["auto_excluded_paths"]
+    assert verify_reviewed_input_identity(tmp_path, identity) == (True, "current")
+
+
+def test_retargeting_the_current_pointer_stales_the_verdict(tmp_path: Path) -> None:
+    """The discriminator the fresh-eye review demanded.
+
+    Binding the link payload is only worth more than excluding it if a retarget
+    actually moves the digest. It is the selection that carries meaning here, so
+    pointing at a different record must not read as an unchanged input.
+    """
+    _init_identity_repo(tmp_path)
+    records = tmp_path / "charness-artifacts" / "quality"
+    records.mkdir(parents=True)
+    (records / "a.md").write_text("# A\n", encoding="utf-8")
+    (records / "b.md").write_text("# B\n", encoding="utf-8")
+    (records / "latest.md").symlink_to("a.md")
+    identity = build_reviewed_input_identity(repo_root=tmp_path)
+    assert verify_reviewed_input_identity(tmp_path, identity) == (True, "current")
+
+    (records / "latest.md").unlink()
+    (records / "latest.md").symlink_to("b.md")
+
+    ok, reason = verify_reviewed_input_identity(tmp_path, identity)
+    assert (ok, reason) == (False, "declared reviewed inputs are stale")
 
 
 def test_an_ordinary_symlink_in_the_sweep_is_not_silently_dropped(tmp_path: Path) -> None:
@@ -487,3 +514,153 @@ def test_the_sweep_exclusion_does_not_weaken_the_declared_symlink_refusal(
 
     with pytest.raises(ValueError, match="is a symlink; declare the target file explicitly"):
         build_reviewed_input_identity(repo_root=tmp_path, reviewed_paths=["link.txt"])
+
+
+def test_a_symmetric_range_resolves_its_start_to_the_merge_base(tmp_path: Path) -> None:
+    """`a...b` crashed with a raw traceback instead of refusing or working.
+
+    `_auto_paths` handed the string to git untouched, so it enumerated correctly,
+    while `_patch_components` did `split("..", 1)` and turned `main...feature`
+    into `("main", ".feature")`. Two functions in ONE module disagreeing about
+    their own input — the same shape as the cross-module disagreements this class
+    keeps producing.
+    """
+    _init_identity_repo(tmp_path)
+    _run_git(tmp_path, "checkout", "-q", "-b", "feature")
+    (tmp_path / "on-feature.txt").write_text("f\n", encoding="utf-8")
+    _run_git(tmp_path, "add", "-A")
+    _run_git(tmp_path, "commit", "-m", "feature work")
+    _run_git(tmp_path, "checkout", "-q", "-")
+
+    two_dot = build_reviewed_input_identity(repo_root=tmp_path, changed_ref="HEAD..feature")
+    three_dot = build_reviewed_input_identity(repo_root=tmp_path, changed_ref="HEAD...feature")
+
+    assert two_dot["reviewed_paths"] == ["on-feature.txt"]
+    assert three_dot["reviewed_paths"] == ["on-feature.txt"]
+    # git diffs `a...b` from the MERGE BASE, so the recorded start endpoint must
+    # be that base rather than the literal left side.
+    base = subprocess.run(
+        ["git", "merge-base", "HEAD", "feature"], cwd=tmp_path, capture_output=True, text=True
+    ).stdout.strip()
+    assert three_dot["resolved_changed_ref"][0] == base
+
+
+def test_a_merge_commit_binds_the_paths_its_packet_section_lists(tmp_path: Path) -> None:
+    """`diff-tree` without `-m` reports NOTHING for a merge.
+
+    The identity bound zero paths while the changed-files section — which already
+    passed `-m` — listed the real ones. A reviewer read a file list and the
+    verdict covered none of it.
+    """
+    _init_identity_repo(tmp_path)
+    _run_git(tmp_path, "checkout", "-q", "-b", "side")
+    (tmp_path / "side.txt").write_text("s\n", encoding="utf-8")
+    _run_git(tmp_path, "add", "-A")
+    _run_git(tmp_path, "commit", "-m", "side")
+    _run_git(tmp_path, "checkout", "-q", "-")
+    (tmp_path / "trunk.txt").write_text("m\n", encoding="utf-8")
+    _run_git(tmp_path, "add", "-A")
+    _run_git(tmp_path, "commit", "-m", "trunk")
+    _run_git(tmp_path, "merge", "--no-ff", "-m", "merge side", "side")
+
+    identity = build_reviewed_input_identity(repo_root=tmp_path, changed_ref="HEAD")
+
+    assert identity["reviewed_paths"] == ["side.txt", "trunk.txt"]
+
+
+def test_a_staged_then_deleted_path_binds_its_index_blob(tmp_path: Path) -> None:
+    """Staged, then removed from disk: absent from the worktree AND from HEAD.
+
+    It was rendered and surface-matched while binding nothing. The staged blob is
+    the reviewed input in that state.
+    """
+    _init_identity_repo(tmp_path)
+    (tmp_path / "staged.txt").write_text("hello\n", encoding="utf-8")
+    _run_git(tmp_path, "add", "staged.txt")
+    (tmp_path / "staged.txt").unlink()
+
+    identity = build_reviewed_input_identity(repo_root=tmp_path)
+
+    assert "staged.txt" in identity["reviewed_paths"]
+    blob = subprocess.run(
+        ["git", "show", ":staged.txt"], cwd=tmp_path, capture_output=True
+    ).stdout
+    entry = next(e for e in identity["reviewed_content"] if e["path"] == "staged.txt")
+    assert entry["content_sha256"] == hashlib.sha256(blob).hexdigest()
+
+
+def test_a_zero_path_binding_is_refused_even_when_currency_is_disabled(
+    tmp_path: Path,
+) -> None:
+    """`--all` disables the currency check for a real reason, but took this with it.
+
+    A corpus sweep re-reads historical bindings that are stale BY DESIGN, so
+    turning currency off there is correct. "Covers zero paths" is not a currency
+    question — an empty path set digests to the same constant in every repo
+    forever — so the registered `critique-artifacts` surface command could never
+    catch a vacuous binding, while the same artifact checked with `--paths`
+    failed. One correctly-disabled check was silently disabling a second,
+    independent one.
+    """
+    _init_identity_repo(tmp_path)
+    packet_dir = tmp_path / "charness-artifacts" / "critique"
+    packet_dir.mkdir(parents=True)
+    identity = build_reviewed_input_identity(
+        repo_root=tmp_path, reviewed_paths=[], substrate_mode="working-tree"
+    )
+    packet = {
+        "kind": "charness.critique_prepare_packet",
+        "substrate_mode": "working-tree",
+        "changed_ref": None,
+        "reviewed_input_identity": identity,
+    }
+    packet_path = packet_dir / "zero.json"
+    packet_bytes = json.dumps(packet).encode("utf-8")
+    packet_path.write_bytes(packet_bytes)
+
+    from scripts.reviewed_input_verification import verify_packet_binding
+
+    for check_current in (True, False):
+        ok, reason = verify_packet_binding(
+            repo_root=tmp_path,
+            packet_path="charness-artifacts/critique/zero.json",
+            packet_sha256=hashlib.sha256(packet_bytes).hexdigest(),
+            identity_sha256=identity["identity_sha256"],
+            expected_kind="charness.critique_prepare_packet",
+            check_current=check_current,
+        )
+        assert (ok, reason) == (False, "declared reviewed inputs cover zero paths"), check_current
+
+
+def test_a_populated_binding_still_passes_integrity_only_mode(tmp_path: Path) -> None:
+    """The discriminator: the tightened rule must not refuse an ordinary sweep.
+
+    940 checked-in critique artifacts pass `--all`; a rule that refused them
+    would be a corpus-wide false alarm rather than a repair.
+    """
+    _init_identity_repo(tmp_path)
+    packet_dir = tmp_path / "charness-artifacts" / "critique"
+    packet_dir.mkdir(parents=True)
+    identity = build_reviewed_input_identity(
+        repo_root=tmp_path, reviewed_paths=["reviewed.txt"], substrate_mode="working-tree"
+    )
+    packet = {
+        "kind": "charness.critique_prepare_packet",
+        "substrate_mode": "working-tree",
+        "changed_ref": None,
+        "reviewed_input_identity": identity,
+    }
+    packet_bytes = json.dumps(packet).encode("utf-8")
+    (packet_dir / "ok.json").write_bytes(packet_bytes)
+
+    from scripts.reviewed_input_verification import verify_packet_binding
+
+    ok, reason = verify_packet_binding(
+        repo_root=tmp_path,
+        packet_path="charness-artifacts/critique/ok.json",
+        packet_sha256=hashlib.sha256(packet_bytes).hexdigest(),
+        identity_sha256=identity["identity_sha256"],
+        expected_kind="charness.critique_prepare_packet",
+        check_current=False,
+    )
+    assert (ok, reason) == (True, "packet-integrity-only")

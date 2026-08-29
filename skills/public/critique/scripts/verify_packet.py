@@ -19,7 +19,7 @@ def _load_skill_runtime_bootstrap():
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _identity = SKILL_RUNTIME.load_repo_module_from_skill_script(
-    __file__, "scripts.reviewed_input_identity"
+    __file__, "scripts.reviewed_input_verification"
 )
 emit_yaml = SKILL_RUNTIME.load_repo_module_from_skill_script(
     __file__, "scripts.yaml_output"

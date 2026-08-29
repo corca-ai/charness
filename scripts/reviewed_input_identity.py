@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
 import subprocess
-from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -20,10 +20,10 @@ _LEGACY_SUBSTRATE_MODE_ALIASES = {
     "worktree": SUBSTRATE_WORKING_TREE,
 }
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
-# Owned by `scripts/artifact_naming_lib.py`, restated rather than imported: this
-# module is imported by the SHIPPED reviewer runtime under `skills/shared/scripts`
-# and is deliberately stdlib-only, which `test_standalone_imports.py` enforces.
-# `validate_quality_artifact.py` restates it the same way. A test asserts the two
+# Owned by `scripts/artifact_naming_lib.py`, restated rather than imported. The
+# shipped reviewer runtime loads this file BY PATH (`spec_from_file_location`),
+# with no package context, so a sibling import would not resolve there.
+# `validate_quality_artifact.py` restates it the same way; a test asserts the two
 # agree, so the copy cannot drift silently.
 CURRENT_POINTER_FILENAME = "latest.md"
 # The identity ignores the index/worktree split and untracked-set membership,
@@ -40,13 +40,6 @@ WORKING_TREE_PROVENANCE_FIELDS = (
 # Never digested: what the auto sweep dropped is a report about the selection,
 # not an input, and `reviewed_paths` is the binding record of what was selected.
 PROVENANCE_FIELDS = ("auto_excluded_paths",)
-ARTIFACT_HEADING = "## Reviewed Input Identity"
-# floor-addition-restraint: keep — this typed form is consumed at release/closeout,
-# where silently reusing a stale verdict can escape an irreversible boundary;
-# enforcement is limited to packet-bound critiques and grandfathered by date.
-ARTIFACT_REQUIRED_FIELDS = ("packet path", "packet sha256", "identity sha256")
-ARTIFACT_BINDING_RULE_DATE = date(2026, 7, 20)
-LEGACY_UNDATED_ARTIFACTS = frozenset({"release-0-55-1-critique.md"})
 
 
 class ReviewedInputError(ValueError):
@@ -76,12 +69,6 @@ def _substrate_mode(changed_ref: str | None, substrate_mode: str | None) -> str:
     return mode
 
 
-def artifact_binding_required(path_name: str, observed_date: date | None, packet_consumed: bool) -> bool:
-    if not packet_consumed:
-        return False
-    if observed_date is not None:
-        return observed_date >= ARTIFACT_BINDING_RULE_DATE
-    return path_name not in LEGACY_UNDATED_ARTIFACTS
 
 
 def _git_bytes(repo_root: Path, *args: str) -> bytes:
@@ -103,13 +90,31 @@ def _sha256(payload: bytes) -> str:
 
 
 def _auto_paths(repo_root: Path, changed_ref: str | None) -> list[str]:
-    if changed_ref and ".." in changed_ref:
+    """What changed, enumerated the same way `surfaces_lib` enumerates it.
+
+    The flags are load-bearing and were not aligned:
+
+    - `-m` on `diff-tree`. Without it git reports NOTHING for a merge commit, so
+      `--commit <merge-sha>` bound zero paths while the packet's changed-files
+      section (which already passed `-m`) listed the real ones. A reviewer read a
+      file list and the verdict bound none of it.
+    - `--cached` in the working-tree arm. `diff HEAD` compares the WORKTREE to
+      HEAD, so a path staged and then removed from disk appears in neither side
+      and vanished from the binding while still being rendered and
+      surface-matched.
+
+    `-z` was already right here; it is `surfaces_lib` that had to be brought up to
+    it. Both now name a path the way it exists on disk rather than however
+    `core.quotepath` would spell it.
+    """
+    if changed_ref and _is_range(changed_ref):
         raw = _git_bytes(repo_root, "diff", "--name-only", "-z", changed_ref)
     elif changed_ref:
         raw = _git_bytes(
             repo_root,
             "diff-tree",
             "--root",
+            "-m",
             "--no-commit-id",
             "--name-only",
             "-r",
@@ -118,6 +123,7 @@ def _auto_paths(repo_root: Path, changed_ref: str | None) -> list[str]:
         )
     else:
         raw = _git_bytes(repo_root, "diff", "--name-only", "-z", "HEAD")
+        raw += _git_bytes(repo_root, "diff", "--name-only", "--cached", "-z")
         raw += _git_bytes(repo_root, "ls-files", "--others", "--exclude-standard", "-z")
     return sorted({path.decode("utf-8", errors="surrogateescape") for path in raw.split(b"\0") if path})
 
@@ -188,25 +194,54 @@ def _with_identity_digest(components: dict[str, Any]) -> dict[str, Any]:
     return {**components, "identity_sha256": _sha256(canonical.encode("utf-8"))}
 
 
-def _is_excluded_current_pointer(repo_root: Path, path: str) -> bool:
-    """True only for a CURRENT-POINTER symlink, which the sweep may drop.
+def _current_pointer_payload(repo_root: Path, path: str) -> str | None:
+    """Digest of a current-pointer symlink's TARGET NAME, or None if not one.
 
-    A DECLARED symlink still refuses -- `_checked_path` owns that approval
-    boundary (f7a09d672) and its test names the remedy. The sweep is not a
-    declaration, and refreshing a current pointer is the documented step after
-    filing any record, so an unmodified rule made every record-filing session
-    unreviewable until it committed.
+    Binding the payload rather than dropping the path. An earlier cut excluded
+    the pointer from the sweep, which the fresh-eye review blocked on and was
+    right to: `auto_excluded_paths` sits in `PROVENANCE_FIELDS` and is never
+    digested, so retargeting `latest.md` at a DIFFERENT record left the identity
+    unchanged and an approved verdict silently followed the move. The pointer is
+    also the path consumers read, so reporting its exclusion is not the same as
+    binding what it selects.
 
-    Narrow on purpose. An earlier cut of this dropped EVERY symlink from the
-    sweep, which is a hole rather than a fix: `CLAUDE.md` in this repo is a
-    tracked compatibility symlink whose retarget needs the operator's explicit
-    approval, and `auto_excluded_paths` is in `PROVENANCE_FIELDS` and never
-    digested -- so retargeting it could not have staled any verdict. Anything
-    that is not a current pointer keeps the loud old behavior.
+    The link is read, never followed: the meaning of a current pointer IS which
+    record it names, so `readlink` output is the content. That also makes the
+    `latest.md` basename proxy safe to be imprecise -- misclassifying some other
+    `latest.md` now BINDS it instead of dropping it, so the failure mode is a
+    slightly odd digest rather than an unbound consumer-visible input.
     """
     if Path(path).name != CURRENT_POINTER_FILENAME:
-        return False
-    return (repo_root / _lexical_path(path)).is_symlink()
+        return None
+    candidate = repo_root / _lexical_path(path)
+    if not candidate.is_symlink():
+        return None
+    return _sha256(b"current-pointer\0" + os.fsencode(os.readlink(candidate)))
+
+
+def _gitlink_sha256(repo_root: Path, path: str, base_head: str | None) -> str | None:
+    """Digest of a SUBMODULE pointer (gitlink), or None when the path is not one.
+
+    A submodule bump had no valid declaration in either substrate: committed-ref
+    refused with `null-content-hash` because `git show <ref>:<path>` cannot read a
+    gitlink, and working-tree refused it as "a directory; declare the individual
+    files" -- with no individual files to declare, because a gitlink is a commit
+    id, not a tree. Both refusals correct alone, and their intersection made a
+    dependency bump unreviewable.
+
+    The commit id IS the content here: bumping a submodule changes exactly that
+    one value, and it is what a reviewer judges.
+    """
+    if base_head is not None:
+        raw = _git_bytes_optional(repo_root, "ls-tree", base_head, "--", path)
+    else:
+        raw = _git_bytes_optional(repo_root, "ls-files", "-s", "--", path)
+    if not raw:
+        return None
+    fields = raw.decode("utf-8", errors="surrogateescape").split()
+    if len(fields) < 3 or fields[0] != "160000":
+        return None
+    return _sha256(b"gitlink\0" + fields[2].encode("ascii"))
 
 
 def _review_paths(
@@ -224,8 +259,6 @@ def _review_paths(
         swept = set(_auto_paths(repo_root, changed_ref))
         prefixes = tuple(excluded_prefixes or ())
         kept = swept - set(excluded_paths or [])
-        if not changed_ref:
-            kept = {path for path in kept if not _is_excluded_current_pointer(repo_root, path)}
         auto_excluded = sorted(swept - {path for path in kept if not path.startswith(prefixes)})
         paths = sorted(path for path in kept if not path.startswith(prefixes))
     else:
@@ -245,6 +278,14 @@ def _review_paths(
         if changed_ref:
             _lexical_path(path)
             continue
+        if _current_pointer_payload(repo_root, path) is not None:
+            # Bound by link payload below; `_checked_path` would refuse it as a
+            # symlink and the round-trip through `verify` would never close.
+            continue
+        if _gitlink_sha256(repo_root, path, None) is not None:
+            # A gitlink LOOKS like a directory on disk but binds a commit id, so
+            # "declare the individual files" names files that do not exist.
+            continue
         candidate = _checked_path(repo_root, path)
         if candidate.is_dir() and not candidate.is_symlink():
             raise ValueError(
@@ -254,25 +295,60 @@ def _review_paths(
     return paths, auto_excluded
 
 
+def _is_range(changed_ref: str) -> bool:
+    return ".." in changed_ref
+
+
+def _range_endpoints(repo_root: Path, changed_ref: str) -> tuple[str | None, str]:
+    """(start, target) for a range, or (None, commit) for a single commit.
+
+    ONE owner for what a range means. There used to be two readings of the same
+    string in this file: `_auto_paths` handed it to git untouched, so `a...b`
+    worked, while `_patch_components` did `changed_ref.split("..", 1)` and turned
+    `main...feature` into `("main", ".feature")` -- then `rev-parse .feature`
+    raised a bare ValueError and the CLI died with a traceback instead of a typed
+    refusal. Two functions in one module disagreeing about their own input is the
+    same shape as the cross-module disagreements this class keeps producing.
+
+    `a...b` is git's SYMMETRIC form: `git diff a...b` reports b against the
+    merge-base, not against a. Resolving the start to that merge-base is what
+    makes the recorded endpoints describe the diff that was actually taken.
+    """
+    if "..." in changed_ref:
+        left_raw, right_raw = changed_ref.split("...", 1)
+        left = left_raw or "HEAD"
+        right = right_raw or "HEAD"
+        merge_base = _git_bytes_optional(repo_root, "merge-base", left, right)
+        if merge_base is None:
+            _fail(
+                "unresolvable-range",
+                f"changed ref `{changed_ref}` has no merge base for `{left}` and `{right}`",
+            )
+        return merge_base.decode().strip(), right
+    if ".." in changed_ref:
+        left, right = changed_ref.split("..", 1)
+        return (left or "HEAD"), (right or "HEAD")
+    return None, changed_ref
+
+
 def _patch_components(
     repo_root: Path, paths: list[str], changed_ref: str | None, mode: str
 ) -> tuple[list[str], str, bytes, bytes, bytes]:
     path_args = ["--", *paths]
     if mode == SUBSTRATE_COMMITTED_REF:
-        if ".." in changed_ref:
-            start_ref, target_ref = changed_ref.split("..", 1)
-            start_head = _git_bytes(repo_root, "rev-parse", start_ref).decode().strip()
-            target_head = _git_bytes(repo_root, "rev-parse", target_ref).decode().strip()
-            resolved_ref = [start_head, target_head]
-        else:
-            target_head = _git_bytes(repo_root, "rev-parse", changed_ref).decode().strip()
+        start_ref, target_ref = _range_endpoints(repo_root, changed_ref)
+        target_head = _git_bytes(repo_root, "rev-parse", target_ref).decode().strip()
+        if start_ref is None:
             resolved_ref = [target_head]
+        else:
+            start_head = _git_bytes(repo_root, "rev-parse", start_ref).decode().strip()
+            resolved_ref = [start_head, target_head]
         base_head = target_head
         reviewed_patch = (
             b""
             if not paths
             else _git_bytes(repo_root, "diff", "--binary", changed_ref, *path_args)
-            if ".." in changed_ref
+            if _is_range(changed_ref)
             else _git_bytes(repo_root, "show", "--format=", "--binary", changed_ref, *path_args)
         )
         return resolved_ref, base_head, reviewed_patch, b"", b""
@@ -282,18 +358,20 @@ def _patch_components(
     return [], base_head, b"", staged_patch, unstaged_patch
 
 
-def _preimage_ref(changed_ref: str | None) -> str | None:
+def _preimage_ref(repo_root: Path, changed_ref: str | None) -> str | None:
     """The ref a path existed at BEFORE the reviewed range, or None outside ref mode.
 
-    A range `a..b` has its pre-image at `a`. A single commit `c` has it at `c^`;
-    a root commit has no parent, but a root commit deletes nothing, so the
-    lookup that follows simply finds no pre-image and the refusal stands.
+    Resolved through `_range_endpoints` rather than by splitting the string here.
+    An earlier cut split on `".."` locally, which read `a...b` as starting at `a`
+    when git diffs it from the merge-base -- so a deleted path's pre-image could
+    have been fetched from the wrong side of a divergent branch. A single commit
+    `c` has its pre-image at `c^`; a root commit has no parent, but a root commit
+    deletes nothing, so the lookup simply finds none and the refusal stands.
     """
     if not changed_ref:
         return None
-    if ".." in changed_ref:
-        return changed_ref.split("..", 1)[0]
-    return f"{changed_ref}^"
+    start_ref, target_ref = _range_endpoints(repo_root, changed_ref)
+    return start_ref if start_ref is not None else f"{target_ref}^"
 
 
 def _content_components(
@@ -313,6 +391,8 @@ def _content_components(
         if mode == SUBSTRATE_COMMITTED_REF:
             content = _git_bytes_optional(repo_root, "show", f"{base_head}:{path}")
             digest = _sha256(content) if content is not None else None
+            if digest is None:
+                digest = _gitlink_sha256(repo_root, path, base_head)
             # A path absent at the range's target was DELETED by the range. The
             # working-tree substrate below has always bound such a path to its
             # pre-change bytes; ref mode did not, so `git diff --name-only`
@@ -326,11 +406,26 @@ def _content_components(
                     digest = _sha256(previous)
                     deleted = True
         else:
-            digest = _worktree_content_sha256(repo_root, path)
+            digest = _current_pointer_payload(repo_root, path)
+            if digest is None:
+                digest = _worktree_content_sha256(repo_root, path)
+            if digest is None:
+                digest = _gitlink_sha256(repo_root, path, None)
             # A deletion is still a reviewed input: bind its pre-change bytes
-            # from the working-tree base instead of treating the missing path
-            # as an unreviewable null. This keeps destructive migrations
-            # auditable without resurrecting the file in the worktree.
+            # instead of treating the missing path as an unreviewable null. This
+            # keeps destructive migrations auditable without resurrecting the
+            # file in the worktree.
+            #
+            # The INDEX is consulted before HEAD, because a path can be staged
+            # and then removed from disk: absent from the worktree, absent from
+            # HEAD because it is new, and present only as a staged blob. That
+            # state used to bind nothing at all, and once the sweep started
+            # seeing the path it refused instead -- the same "correct rules,
+            # empty intersection" shape as a deleted path in ref mode. The
+            # staged blob IS the reviewed input there.
+            if digest is None:
+                staged = _git_bytes_optional(repo_root, "show", f":{path}")
+                digest = _sha256(staged) if staged is not None else None
             if digest is None:
                 previous = _git_bytes_optional(repo_root, "show", f"{base_head}:{path}")
                 digest = _sha256(previous) if previous is not None else None
@@ -383,7 +478,7 @@ def build_reviewed_input_identity(
         repo_root, paths, changed_ref, mode
     )
     reviewed_content, declared_untracked = _content_components(
-        repo_root, paths, base_head, mode, _preimage_ref(changed_ref)
+        repo_root, paths, base_head, mode, _preimage_ref(repo_root, changed_ref)
     )
 
     captured: dict[str, Any] = {
@@ -404,186 +499,3 @@ def build_reviewed_input_identity(
     }
     captured["auto_excluded_paths"] = auto_excluded
     return _with_identity_digest(captured)
-
-
-def verify_reviewed_input_identity(repo_root: Path, identity: dict[str, Any]) -> tuple[bool, str]:
-    if identity.get("status") != "captured":
-        return False, "reviewed input identity was unavailable when the packet was produced"
-    if identity.get("algorithm") != ALGORITHM:
-        return False, f"reviewed input identity must use `{ALGORITHM}`"
-    if "reviewed_paths" not in identity or identity.get("reviewed_paths") is None:
-        return False, "declared reviewed inputs cover zero paths"
-    if not isinstance(identity.get("reviewed_paths"), list):
-        return False, "cannot reconstruct reviewed input identity: reviewed_paths must be a list"
-    if not identity.get("reviewed_paths"):
-        # An empty path set digests to the same constant in every repo forever, so
-        # it would verify as `current` while proving nothing. Reject it as a
-        # binding rather than let a zero-input verdict read as a checked one.
-        return False, "declared reviewed inputs cover zero paths"
-    mode = identity.get("substrate_mode") or identity.get("mode")
-    mode = _LEGACY_SUBSTRATE_MODE_ALIASES.get(mode, mode)
-    if mode not in SUBSTRATE_MODES or identity.get("mode") != mode:
-        return False, "reviewed input identity has an invalid or missing substrate mode"
-    if (mode == SUBSTRATE_COMMITTED_REF) != bool(identity.get("changed_ref")):
-        return False, "reviewed input identity substrate mode does not match changed_ref"
-    try:
-        current = build_reviewed_input_identity(
-            repo_root=repo_root,
-            reviewed_paths=list(identity["reviewed_paths"]),
-            changed_ref=identity.get("changed_ref"),
-            substrate_mode=mode,
-        )
-    except ReviewedInputError as exc:
-        return False, f"{exc.code}: {exc}"
-    except (KeyError, TypeError, ValueError) as exc:
-        return False, f"cannot reconstruct reviewed input identity: {exc}"
-    for item in current.get("reviewed_content", []):
-        if not isinstance(item, dict) or not _SHA256_RE.fullmatch(str(item.get("content_sha256", ""))):
-            return False, "reviewed input identity contains a null or invalid content hash"
-    for field in ("reviewed_patch_sha256", "staged_patch_sha256", "unstaged_patch_sha256"):
-        if not _SHA256_RE.fullmatch(str(current.get(field, ""))):
-            return False, f"reviewed input identity contains a null or invalid {field}"
-    if current["identity_sha256"] != identity.get("identity_sha256"):
-        return False, "declared reviewed inputs are stale"
-    return True, "current"
-
-
-def packet_file_sha256(path: Path) -> str:
-    return _sha256(path.read_bytes())
-
-
-def _canonical_packet_path(repo_root: Path, packet_path: str) -> tuple[Path | None, str | None]:
-    raw = Path(packet_path)
-    if raw.is_absolute() or ".." in raw.parts:
-        return None, "reviewed packet path resolves outside repo root"
-    lexical = repo_root / raw
-    if lexical.is_symlink():
-        return None, "reviewed packet path must not be a symlink"
-    candidate = lexical.resolve()
-    try:
-        candidate.relative_to(repo_root.resolve())
-    except ValueError:
-        return None, "reviewed packet path resolves outside repo root"
-    return candidate, None
-
-
-def verify_packet_binding(
-    *,
-    repo_root: Path,
-    packet_path: str,
-    packet_sha256: str,
-    identity_sha256: str,
-    expected_kind: str,
-    check_current: bool = True,
-) -> tuple[bool, str]:
-    candidate, path_error = _canonical_packet_path(repo_root, packet_path)
-    if path_error is not None or candidate is None:
-        return False, path_error or "reviewed packet path is invalid"
-    if not candidate.is_file():
-        return False, f"reviewed packet does not exist: {packet_path}"
-    packet_bytes = candidate.read_bytes()
-    if not _SHA256_RE.fullmatch(str(packet_sha256)):
-        return False, "packet sha256 is null or invalid"
-    if _sha256(packet_bytes) != packet_sha256:
-        return False, "reviewed packet bytes are stale or tampered"
-    try:
-        packet = json.loads(packet_bytes)
-    except json.JSONDecodeError:
-        return False, "reviewed packet is not valid JSON"
-    if packet.get("kind") != expected_kind:
-        return False, "reviewed packet has the wrong kind"
-    identity = packet.get("reviewed_input_identity")
-    if not isinstance(identity, dict):
-        return False, "reviewed packet has no reviewed input identity"
-    if identity.get("identity_sha256") != identity_sha256:
-        return False, "artifact identity does not match the reviewed packet"
-    if not _SHA256_RE.fullmatch(str(identity_sha256)):
-        return False, "identity sha256 is null or invalid"
-    packet_mode = packet.get("substrate_mode")
-    packet_mode = _LEGACY_SUBSTRATE_MODE_ALIASES.get(packet_mode, packet_mode)
-    identity_mode = identity.get("substrate_mode") or identity.get("mode")
-    identity_has_mode = identity_mode is not None
-    identity_mode = _LEGACY_SUBSTRATE_MODE_ALIASES.get(identity_mode, identity_mode)
-    legacy_packet = packet_mode is None
-    if identity_mode is None:
-        identity_mode = SUBSTRATE_COMMITTED_REF if packet.get("changed_ref") else SUBSTRATE_WORKING_TREE
-    # Historical v1 packets carried the mode only inside the reviewed-input
-    # identity.  Preserve that immutable evidence while requiring all newly
-    # produced packets to emit the top-level field.
-    if packet_mode is None:
-        packet_mode = identity_mode
-    if packet_mode not in SUBSTRATE_MODES or identity_mode != packet_mode:
-        return False, "packet and reviewed input identity substrate modes do not match"
-    if packet.get("changed_ref") != identity.get("changed_ref"):
-        return False, "packet and reviewed input identity changed_ref values do not match"
-    if check_current and identity_has_mode:
-        return verify_reviewed_input_identity(repo_root, identity)
-    return True, "legacy-packet-integrity-only" if legacy_packet else "packet-integrity-only"
-
-
-def verify_artifact_binding(
-    artifact_path: Path,
-    fields: dict[str, str],
-    *,
-    expected_kind: str,
-    check_current: bool = True,
-    repo_root: Path | None = None,
-) -> tuple[bool, str]:
-    resolved_root = repo_root.resolve() if repo_root is not None else None
-    if resolved_root is None:
-        # Prefer the known artifact layout before scanning ancestors. A nested
-        # test checkout can live below an unrelated `.git` directory (for
-        # example a shared temp root); selecting that first makes a valid
-        # packet look like a wrong-path/missing-file failure.
-        if len(artifact_path.resolve().parents) >= 3:
-            layout_root = artifact_path.resolve().parents[2]
-            if (layout_root / fields.get("packet path", "")).is_file():
-                resolved_root = layout_root
-        if resolved_root is None:
-            resolved_root = next(
-                (parent for parent in artifact_path.resolve().parents if (parent / ".git").exists()),
-                None,
-            )
-        # Artifacts produced under the canonical `charness-artifacts/<kind>/`
-        # layout still need a deterministic root when a fixture has no `.git`
-        # directory. Keep the layout fallback even when the packet is missing:
-        # the caller should receive the typed missing-packet refusal, not a
-        # misleading repository-root discovery failure.
-        if resolved_root is None and len(artifact_path.resolve().parents) >= 3:
-            resolved_root = artifact_path.resolve().parents[2]
-    if resolved_root is None:
-        return False, "cannot resolve repository root for reviewed input binding"
-    return verify_packet_binding(
-        repo_root=resolved_root,
-        packet_path=fields["packet path"],
-        packet_sha256=fields["packet sha256"],
-        identity_sha256=fields["identity sha256"],
-        expected_kind=expected_kind,
-        check_current=check_current,
-    )
-
-
-def verify_declared_binding(
-    artifact_path: Path,
-    fields: dict[str, str],
-    *,
-    required: bool,
-    required_fields: tuple[str, ...],
-    expected_kind: str,
-    check_current: bool = True,
-    repo_root: Path | None = None,
-) -> tuple[bool, str]:
-    if not fields:
-        if required:
-            return False, f"packet-bound critique must declare fields {list(required_fields)}"
-        return True, "not-declared"
-    missing = [field for field in required_fields if not fields.get(field)]
-    if missing:
-        return False, f"reviewed input identity missing fields: {missing}"
-    return verify_artifact_binding(
-        artifact_path,
-        fields,
-        expected_kind=expected_kind,
-        check_current=check_current,
-        repo_root=repo_root,
-    )

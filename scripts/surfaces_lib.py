@@ -257,16 +257,29 @@ def apply_generated_markdown_header(body: str, entry: dict[str, str] | None) -> 
 
 
 def _run_git(repo_root: Path, *args: str) -> list[str]:
+    """Enumerate paths NUL-separated, so the name git prints is the name on disk.
+
+    `-z` is appended rather than optional. Without it git applies `core.quotepath`,
+    whose DEFAULT is true, and any path with a non-ASCII or special byte comes back
+    C-quoted -- `"\\355\\225\\234\\352\\270\\200.md"` instead of the real name. The
+    identity builder already passes `-z`, so the two components disagreed about the
+    same file: the identity bound the real path while this narrative carried the
+    escaped spelling, which then matched no surface glob and reported a clean
+    "no surfaces matched". Invisible on a maintainer machine whose gitconfig sets
+    `core.quotepath=false`, and live on a fresh clone or CI runner that does not.
+    """
     result = subprocess.run(
-        ["git", *args],
+        ["git", *args, "-z"],
         cwd=repo_root,
         check=False,
         capture_output=True,
-        text=True,
     )
     if result.returncode != 0:
-        raise SurfaceError(result.stderr.strip() or result.stdout.strip() or "git command failed")
-    return [line.strip() for line in result.stdout.splitlines() if line.strip()]
+        stderr = result.stderr.decode("utf-8", errors="replace").strip()
+        stdout = result.stdout.decode("utf-8", errors="replace").strip()
+        raise SurfaceError(stderr or stdout or "git command failed")
+    decoded = result.stdout.decode("utf-8", errors="surrogateescape")
+    return [entry for entry in decoded.split("\0") if entry]
 
 
 def collect_changed_paths(repo_root: Path) -> list[str]:

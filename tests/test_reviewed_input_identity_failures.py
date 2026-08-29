@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 from scripts import reviewed_input_identity as identity_lib
+from scripts import reviewed_input_verification as verification_lib
 
 
 def _git(repo: Path, *args: str) -> None:
@@ -44,15 +45,15 @@ def test_worktree_content_os_error_is_unavailable(tmp_path: Path, monkeypatch: p
 
 
 def test_identity_reconstruction_failures(tmp_path: Path) -> None:
-    assert identity_lib.verify_reviewed_input_identity(tmp_path, {"status": "unavailable"}) == (
+    assert verification_lib.verify_reviewed_input_identity(tmp_path, {"status": "unavailable"}) == (
         False,
         "reviewed input identity was unavailable when the packet was produced",
     )
-    assert identity_lib.verify_reviewed_input_identity(
+    assert verification_lib.verify_reviewed_input_identity(
         tmp_path,
         {"status": "captured", "algorithm": "sha256-v2", "identity_sha256": "missing"},
     ) == (False, "declared reviewed inputs cover zero paths")
-    ok, reason = identity_lib.verify_reviewed_input_identity(
+    ok, reason = verification_lib.verify_reviewed_input_identity(
         tmp_path,
         {
             "status": "captured",
@@ -94,7 +95,7 @@ def test_packet_binding_rejects_malformed_payloads(
     tmp_path: Path, payload: bytes, identity_sha: str, reason: str
 ) -> None:
     packet_path, digest = _write_packet(tmp_path, "packets/input.json", payload)
-    assert identity_lib.verify_packet_binding(
+    assert verification_lib.verify_packet_binding(
         repo_root=tmp_path,
         packet_path=packet_path,
         packet_sha256=digest,
@@ -104,14 +105,14 @@ def test_packet_binding_rejects_malformed_payloads(
 
 
 def test_packet_binding_rejects_outside_and_missing_paths(tmp_path: Path) -> None:
-    assert identity_lib.verify_packet_binding(
+    assert verification_lib.verify_packet_binding(
         repo_root=tmp_path,
         packet_path="../outside.json",
         packet_sha256="x",
         identity_sha256="x",
         expected_kind="critique-prepare-packet",
     ) == (False, "reviewed packet path resolves outside repo root")
-    assert identity_lib.verify_packet_binding(
+    assert verification_lib.verify_packet_binding(
         repo_root=tmp_path,
         packet_path="missing.json",
         packet_sha256="x",
@@ -126,19 +127,19 @@ def test_artifact_binding_repo_fallbacks(tmp_path: Path) -> None:
     nested.write_text("artifact", encoding="utf-8")
     fields = {"packet path": "missing.json", "packet sha256": "x", "identity sha256": "x"}
 
-    assert identity_lib.verify_artifact_binding(
+    assert verification_lib.verify_artifact_binding(
         nested, fields, expected_kind="critique-prepare-packet"
     )[1].startswith("reviewed packet does not exist")
-    assert identity_lib.verify_artifact_binding(
+    assert verification_lib.verify_artifact_binding(
         Path("/standalone.md"), fields, expected_kind="critique-prepare-packet"
     ) == (False, "cannot resolve repository root for reviewed input binding")
 
 
 def test_declared_binding_reports_missing_fields(tmp_path: Path) -> None:
-    assert identity_lib.verify_declared_binding(
+    assert verification_lib.verify_declared_binding(
         tmp_path / "artifact.md",
         {"packet path": "packet.json"},
         required=True,
-        required_fields=identity_lib.ARTIFACT_REQUIRED_FIELDS,
+        required_fields=verification_lib.ARTIFACT_REQUIRED_FIELDS,
         expected_kind="critique-prepare-packet",
     )[1].startswith("reviewed input identity missing fields:")

@@ -59,7 +59,15 @@ def _packet_binding(repo: Path, *, identity: str = "c" * 64) -> str:
         json.dumps(
             {
                 "kind": "charness.critique_prepare_packet",
-                "reviewed_input_identity": {"identity_sha256": identity},
+                # `reviewed_paths` is present because a binding that declares NO
+                # paths is refused in integrity-only mode too, not just under the
+                # currency check. These tests exercise worker-report and tier
+                # axes; the stub has to clear the vacuous-binding floor to reach
+                # them, the same way a real packet does.
+                "reviewed_input_identity": {
+                    "identity_sha256": identity,
+                    "reviewed_paths": ["charness-artifacts/critique/reports/packet.json"],
+                },
             },
             separators=(",", ":"),
         ),

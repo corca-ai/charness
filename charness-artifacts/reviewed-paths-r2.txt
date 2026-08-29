@@ -1,0 +1,9 @@
+charness-artifacts/critique/review-20260830T063108Z-1965424-packet.json
+charness-artifacts/critique/review-20260830T063108Z-1965424-packet.md
+charness-artifacts/release-review/2026-08-30-8.0.0-real-host-removal-surface-lock.md
+scripts/render_critique_section_changed_surfaces.py
+scripts/reviewed_input_identity.py
+scripts/surfaces_lib.py
+skills/public/critique/references/prepare-packet.md
+tests/test_critique_section_changed_surfaces.py
+tests/test_reviewed_input_identity_binding.py

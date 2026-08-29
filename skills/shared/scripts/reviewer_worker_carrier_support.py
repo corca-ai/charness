@@ -91,9 +91,9 @@ def _load_delivery_attempt_parser():
 
 def _load_identity_verifier():
     for ancestor in list(Path(__file__).resolve().parents)[:6]:
-        candidate = ancestor / "scripts" / "reviewed_input_identity.py"
+        candidate = ancestor / "scripts" / "reviewed_input_verification.py"
         if candidate.is_file():
-            spec = importlib.util.spec_from_file_location("charness_reviewed_input_identity", candidate)
+            spec = importlib.util.spec_from_file_location("charness_reviewed_input_verification", candidate)
             if spec is not None and spec.loader is not None:
                 module = importlib.util.module_from_spec(spec)
                 spec.loader.exec_module(module)

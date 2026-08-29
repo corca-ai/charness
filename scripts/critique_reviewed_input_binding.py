@@ -7,7 +7,7 @@ from pathlib import Path
 
 from runtime_bootstrap import import_repo_module
 
-_identity = import_repo_module(__file__, "scripts.reviewed_input_identity")
+_identity = import_repo_module(__file__, "scripts.reviewed_input_verification")
 _artifact_validator = import_repo_module(__file__, "scripts.artifact_validator")
 ValidationError = _artifact_validator.ValidationError
 # One definition, shared with the validator. Two copies of this regex existed and
