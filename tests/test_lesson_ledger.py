@@ -120,7 +120,9 @@ def test_v8_ledger_migration_preserves_the_live_lesson_corpus(tmp_path: Path) ->
         output_dir=output_dir,
         summary_path=output_dir / "recent-lessons.md",
     )
-    migrated = json.loads(path.read_text(encoding="utf-8"))
+    # Read back through the VALIDATOR, not off disk: validation migrates in memory
+    # and no longer writes, so the on-disk copy is deliberately still legacy here.
+    migrated = ledger.migrate_ledger_payload(json.loads(path.read_text(encoding="utf-8")))[0]
 
     assert result["lesson_count"] == 43
     assert len(migrated["lessons"]) == 43
@@ -415,3 +417,38 @@ def test_empty_ledger_bootstrap_entrypoint_reports_refusal_without_traceback(
     assert "it is append-only" in captured.err
     assert "check_lesson_ledger.py" in captured.err
     assert "Traceback" not in captured.err
+
+
+
+def test_validation_migrates_in_memory_and_never_writes_the_ledger(tmp_path: Path) -> None:
+    """A read must not perform a durable schema upgrade.
+
+    `lesson_selection_preview_lib` calls `validate_lesson_ledger`, and AGENTS.md makes
+    that preview the FIRST command a session runs. While validation persisted the
+    migration, merely OPENING a session upgraded a consumer's ledger to a schema the
+    previously released version cannot read -- and the release notes prescribe
+    rollback by reinstalling that version. Measured before the repair: a schema-8
+    ledger came back schema 9 after nothing but `render_lesson_selection_preview.py`.
+
+    Nothing is lost. Score, lifecycle and seed each migrate inside their own lock, so
+    the upgrade still lands on the first authorized WRITE.
+    """
+    source_dir = ROOT / "charness-artifacts/retro"
+    output_dir = tmp_path / "charness-artifacts/retro"
+    shutil.copytree(source_dir, output_dir)
+    path = output_dir / "lesson-ledger.json"
+    legacy = legacy_v8_payload(json.loads(path.read_text(encoding="utf-8")))
+    path.write_text(json.dumps(legacy), encoding="utf-8")
+    before = path.read_bytes()
+
+    result = ledger.validate_lesson_ledger(
+        repo_root=tmp_path,
+        output_dir=output_dir,
+        summary_path=output_dir / "recent-lessons.md",
+    )
+
+    # The verdict is complete...
+    assert result["lesson_count"] == 43
+    # ...and the consumer's file is byte-for-byte what it was.
+    assert path.read_bytes() == before
+    assert json.loads(path.read_text(encoding="utf-8"))["schema_version"] == 8

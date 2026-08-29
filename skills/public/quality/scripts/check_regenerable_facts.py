@@ -166,7 +166,7 @@ def _staged_advisory(repo_root: Path) -> int:
         print(f"ADVISORY: regenerable-facts unavailable: {refusal}")
         return 0
     try:
-        report = lib.scan_paths(repo_root, paths, adapter)
+        report = lib.scan_paths(repo_root, paths, adapter, from_index=True)
     except Exception as exc:  # noqa: BLE001 - keep the commit boundary advisory
         print(f"ADVISORY: regenerable-facts unavailable: {type(exc).__name__}: {exc}")
         return 0

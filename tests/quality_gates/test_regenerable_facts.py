@@ -376,9 +376,18 @@ def test_no_staged_advisory_surface_produces_no_verdict(tmp_path: Path) -> None:
     assert result.stderr == ""
 
 
-def test_unreadable_staged_advisory_surface_is_reported_without_blocking(tmp_path: Path) -> None:
+def test_a_staged_surface_with_no_index_blob_is_reported_without_blocking(tmp_path: Path) -> None:
+    """An unavailable check is announced, never converted into a silent pass.
+
+    The case is a staged DELETION: `git diff --cached --name-only` still names the
+    path, and `git show :<path>` has nothing to return. This test used to delete the
+    file from the WORKTREE, which stopped being an obstacle once the advisory started
+    reading the index -- the right repair for the surface, and it made the old
+    premise unreachable rather than the guard unnecessary.
+    """
     repo = _staged_repo(tmp_path, "README.md", "The suite carries 12 tests.\n")
-    (repo / "README.md").unlink()
+    subprocess.run(["git", "commit", "-qm", "seed"], cwd=repo, check=True)
+    subprocess.run(["git", "rm", "-q", "README.md"], cwd=repo, check=True)
 
     result = _run_staged(repo)
 
@@ -641,3 +650,40 @@ def test_an_all_exempted_repo_is_not_reported_as_matching_nothing(tmp_path: Path
     # Exit code deliberately unchanged: every exemption already carries a
     # required reason, so this is a documented opt-out, not a silent green.
     assert code == 0, payload
+
+
+def test_the_advisory_reads_the_staged_blob_not_the_worktree(tmp_path: Path) -> None:
+    """A partially staged file makes the index and the worktree different documents.
+
+    The advisory is about the COMMIT, so it must read what git will commit. Reading
+    the worktree instead let an unstaged repair hide a staged finding, and let a
+    finding be reported at a line number that exists in no commit.
+    """
+    repo = _staged_repo(tmp_path, "docs/current.md", "The suite carries 12 tests.\n")
+    # Stage a finding, then repair it ONLY in the worktree.
+    (repo / "docs" / "current.md").write_text(
+        "The suite size is reported by the test runner.\n", encoding="utf-8"
+    )
+
+    result = _run_staged(repo)
+
+    assert result.returncode == 0, result.stderr
+    # The staged bytes still carry the number, so the advisory must still fire.
+    assert "12 tests" in result.stdout, (
+        "an unstaged repair hid a finding that is still in the commit"
+    )
+
+
+def test_a_worktree_only_number_is_not_reported_as_committed(tmp_path: Path) -> None:
+    """The inverse: an UNSTAGED number must not be reported as if it were committed."""
+    repo = _staged_repo(tmp_path, "docs/current.md", "The suite size is measured.\n")
+    (repo / "docs" / "current.md").write_text(
+        "The suite size is measured.\nThe suite carries 12 tests.\n", encoding="utf-8"
+    )
+
+    result = _run_staged(repo)
+
+    assert result.returncode == 0, result.stderr
+    assert "12 tests" not in result.stdout, (
+        "reported a finding that exists only in the worktree, not in the commit"
+    )

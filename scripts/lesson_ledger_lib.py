@@ -443,7 +443,21 @@ def validate_lesson_ledger(
         payload = json.loads(path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         _fail(f"invalid JSON: {exc.msg}")
-    payload, migrated = migrate_ledger_payload(payload)
+    # Migrate IN MEMORY only. This function validates; it must not write.
+    #
+    # It used to persist the upgrade through the atomic writer, and the read paths
+    # are what made that unsafe: `lesson_selection_preview_lib` calls this, and
+    # `AGENTS.md` makes the preview the FIRST command a session runs. So merely
+    # OPENING a session silently upgraded a consumer's ledger to a schema the
+    # previously released version cannot read, while the release notes prescribe
+    # rollback by reinstalling that version. Measured, not reasoned: a schema-8
+    # ledger seeded into a probe repo came back schema 9 after nothing but
+    # `render_lesson_selection_preview.py`.
+    #
+    # Nothing is lost by dropping the write. Every durable writer -- score,
+    # lifecycle, and seed -- already migrates inside its own lock before writing,
+    # so the upgrade still lands on the first authorized write and lands there once.
+    payload, _migrated = migrate_ledger_payload(payload)
     replayed = replay_validated_ledger_payload(
         repo_root=repo_root,
         output_dir=output_dir,
@@ -451,24 +465,6 @@ def validate_lesson_ledger(
         path=path,
         payload=payload,
     )
-    if migrated:
-        # Migration is a durable schema change, so use the same atomic writer as
-        # score, seed, and lifecycle append operations. Re-read inside the lock
-        # in case another process upgraded the file while validation was running.
-        from scripts import lesson_ledger_writer_lib as writer
-
-        with writer.ledger_lock(path):
-            current = json.loads(path.read_text(encoding="utf-8"))
-            current, _ = migrate_ledger_payload(current)
-            replayed = replay_validated_ledger_payload(
-                repo_root=repo_root,
-                output_dir=output_dir,
-                summary_path=summary_path,
-                path=path,
-                payload=current,
-            )
-            writer.replace_payload(path, current)
-            payload = current
     return {
         "lesson_count": len(replayed),
         "transition_count": len(payload["transitions"]),

@@ -751,3 +751,58 @@ def test_persist_writes_no_digest_when_the_projection_is_disabled(
     # The declined surfaces: no digest, and no selection index derived from one.
     assert not (output_dir / "recent-lessons.md").exists()
     assert payload.get("summary_refreshed") is not True
+
+
+def test_a_date_bearing_subject_key_resolves_to_one_path(tmp_path: Path, monkeypatch, capsys) -> None:
+    """The scaffold and persistence must not split a subject that CONTAINS a date.
+
+    The dated-artifact predicate matched a date anywhere in the name, so the subject
+    key `session-2026-08-29` was read here as an explicitly named artifact
+    (`session-2026-08-29.md`) while the scaffold resolved the same subject to
+    `2026-08-29-session-2026-08-29.md`. Two paths for one subject key is the incident
+    this module exists to close, and `derived=False` also disabled the collision guard,
+    so the overwrite came back for exactly the subjects that carry a date.
+    """
+    resolve = _persistence_lib.resolve_retro_artifact_path
+    output_dir = tmp_path / "charness-artifacts" / "retro"
+
+    scaffold_path, _ = resolve(output_dir, "session-2026-08-29", subject_key=True)
+    persist_path, derived = resolve(output_dir, "session-2026-08-29")
+    assert persist_path == scaffold_path
+    assert derived is True, "a subject key must stay derived, or the collision guard is off"
+
+    # An explicitly named dated artifact is still left alone: the date is its PREFIX.
+    explicit, explicit_derived = resolve(output_dir, "2026-08-29-session-retro-2.md")
+    assert explicit.name == "2026-08-29-session-retro-2.md"
+    assert explicit_derived is False
+
+
+def test_a_date_bearing_subject_key_cannot_overwrite_an_undated_sibling(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    """The counterexample the release review asked for, with the sibling's bytes asserted."""
+    repo = tmp_path / "repo"
+    output_dir = repo / "charness-artifacts" / "retro"
+    (repo / ".agents").mkdir(parents=True)
+    output_dir.mkdir(parents=True)
+    (repo / ".agents" / "retro-adapter.yaml").write_text(
+        "version: 1\nrepo: consumer\nsummary_path: null\n", encoding="utf-8"
+    )
+    sibling = output_dir / "session-2026-08-29.md"
+    sibling.write_text("# ANOTHER SESSION\n\n## Context\n\n- do not lose me\n", encoding="utf-8")
+    before = sibling.read_bytes()
+
+    markdown_file = repo / "new.md"
+    markdown_file.write_text(
+        "# Retro\n\n## Context\n\n- new work\n\n## Next Improvements\n\n- `capability`: x\n",
+        encoding="utf-8",
+    )
+    result = run_persist(
+        monkeypatch, capsys, "--repo-root", str(repo),
+        "--artifact-name", "session-2026-08-29",
+        "--markdown-file", str(markdown_file),
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert sibling.read_bytes() == before
+    assert (output_dir / "2026-08-29-session-2026-08-29.md").is_file()

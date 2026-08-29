@@ -66,7 +66,11 @@ def normalize_artifact_name(artifact_name: str) -> tuple[str, bool]:
     return artifact_name + ".md", True
 
 
-_DATED_ARTIFACT_TOKEN = re.compile(r"\d{4}-\d{2}-\d{2}")
+# ANCHORED. `dated_artifact_filename` emits `YYYY-MM-DD-<slug>.md`, so a name that
+# already OPENS with that prefix is a dated record whatever else it contains. An
+# unanchored search asked a different question -- "does this name contain a date"
+# -- and answered yes for the subject key `session-2026-08-29`.
+_DATED_RECORD_PREFIX = re.compile(r"\d{4}-\d{2}-\d{2}-")
 
 
 def resolve_retro_artifact_path(
@@ -85,10 +89,20 @@ def resolve_retro_artifact_path(
     the path was derived lets persistence refuse a collision the caller did not
     name.
     """
-    normalized_name, _was_normalized = normalize_artifact_name(artifact_name)
-    if not subject_key and (
-        normalized_name == "recent-lessons.md" or _DATED_ARTIFACT_TOKEN.search(normalized_name)
-    ):
+    # The role signal is whether the CALLER wrote a filename or a subject, and
+    # `normalize_artifact_name` already computes it: it returns True exactly when it
+    # had to append `.md`, i.e. when the caller did NOT name a file.
+    #
+    # This used to key on "the name contains a date", which is not the same question.
+    # The subject key `session-2026-08-29` was read as an explicitly named artifact
+    # (`session-2026-08-29.md`) while the scaffold resolved the same subject to
+    # `2026-08-29-session-2026-08-29.md` -- two paths for one subject key, which is
+    # the incident this module exists to close. Worse, the explicit reading also
+    # returns derived=False, which disables the collision guard below, so the
+    # overwrite came back for exactly the subjects that carry a date.
+    normalized_name, was_bare_subject = normalize_artifact_name(artifact_name)
+    already_dated = _DATED_RECORD_PREFIX.match(normalized_name) is not None
+    if not subject_key and (not was_bare_subject or already_dated):
         return output_dir / normalized_name, False
     return (
         output_dir

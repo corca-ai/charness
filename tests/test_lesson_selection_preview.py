@@ -185,3 +185,46 @@ def test_preview_rejects_malformed_ledger_candidate_and_recent_shapes(
         preview._recent_key(
             {**base, "lesson_id": "a", "latest_source_date": None, "selection_weight": True}
         )
+
+
+def test_a_legacy_schema_consumer_can_preview_without_its_ledger_changing(tmp_path) -> None:
+    """Both halves of the release-review finding, asserted together.
+
+    A consumer still on the previously released schema must be able to run the
+    session-start preview -- AGENTS.md makes it the FIRST command of every session --
+    and that read must leave their ledger byte-for-byte alone, because the release
+    notes prescribe rollback by reinstalling the version that wrote it.
+    """
+    import json
+    import shutil
+    import subprocess
+
+    output_dir = tmp_path / "charness-artifacts" / "retro"
+    (tmp_path / ".agents").mkdir(parents=True)
+    (tmp_path / ".agents" / "retro-adapter.yaml").write_text(
+        "version: 1\nrepo: consumer\n", encoding="utf-8"
+    )
+    shutil.copytree(RETRO_DIR, output_dir)
+    subprocess.run(
+        ["python3", str(ROOT / "scripts" / "build_retro_lesson_selection_index.py"),
+         "--repo-root", str(tmp_path), "--write"],
+        check=True, capture_output=True,
+    )
+    ledger_path = output_dir / "lesson-ledger.json"
+    current = json.loads(ledger_path.read_text(encoding="utf-8"))
+    from tests.lesson_ledger_fixtures import legacy_v8_payload
+
+    legacy = legacy_v8_payload(current)
+    ledger_path.write_text(json.dumps(legacy), encoding="utf-8")
+    before = ledger_path.read_bytes()
+
+    rendered = preview.build_lesson_selection_preview(
+        repo_root=tmp_path,
+        output_dir=output_dir,
+        summary_path=output_dir / "recent-lessons.md",
+        seed="probe",
+    )
+
+    assert rendered["eligible_count"] >= 1
+    assert ledger_path.read_bytes() == before
+    assert json.loads(ledger_path.read_text(encoding="utf-8"))["schema_version"] == 8

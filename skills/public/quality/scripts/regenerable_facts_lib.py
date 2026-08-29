@@ -291,7 +291,28 @@ def scan_repo(repo_root: Path, adapter: dict | None = None) -> dict:
     }
 
 
-def scan_paths(repo_root: Path, paths: list[str], adapter: dict | None = None) -> dict:
+def staged_blob_text(repo_root: Path, rel: str) -> str:
+    """The bytes GIT WILL COMMIT for `rel`, read from the index rather than disk.
+
+    A partially staged file makes the two differ, and the commit-boundary advisory
+    is about the commit: reading the worktree could hide a staged finding behind an
+    unstaged repair, or report a line number that exists in no commit. `git show
+    :<path>` is the index copy by definition.
+    """
+    completed = subprocess.run(
+        ["git", "-C", str(repo_root), "show", f":{rel}"],
+        capture_output=True,
+        check=False,
+    )
+    if completed.returncode:
+        detail = completed.stderr.decode("utf-8", "replace").strip() or f"git exited {completed.returncode}"
+        raise RuntimeError(f"could not read the staged copy of {rel}: {detail}")
+    return completed.stdout.decode("utf-8", "ignore")
+
+
+def scan_paths(
+    repo_root: Path, paths: list[str], adapter: dict | None = None, *, from_index: bool = False
+) -> dict:
     """Scan an explicit path list with the same detector used by ``scan_repo``."""
     _surfaces, exemptions = resolve_config(adapter)
     findings: list[dict[str, object]] = []
@@ -305,8 +326,12 @@ def scan_paths(repo_root: Path, paths: list[str], adapter: dict | None = None) -
             exempted.append({"path": rel, "reason": reason})
             continue
         try:
-            text = path.read_text(encoding="utf-8", errors="ignore")
-        except OSError as exc:
+            text = (
+                staged_blob_text(repo_root, rel)
+                if from_index
+                else path.read_text(encoding="utf-8", errors="ignore")
+            )
+        except (OSError, RuntimeError) as exc:
             unavailable.append({"path": rel, "reason": f"{type(exc).__name__}: {exc}"})
             continue
         checked += 1

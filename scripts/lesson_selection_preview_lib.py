@@ -9,7 +9,11 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
-from scripts.lesson_ledger_lib import lesson_ledger_path, validate_lesson_ledger
+from scripts.lesson_ledger_lib import (
+    lesson_ledger_path,
+    migrate_ledger_payload,
+    validate_lesson_ledger,
+)
 from scripts.recent_lessons_lib import build_lesson_selection_index, check_lesson_selection_index
 
 KIND = "charness.lesson-selection-preview"
@@ -31,6 +35,11 @@ def _load_validated_ledger(repo_root: Path, output_dir: Path, summary_path: Path
     payload = json.loads(lesson_ledger_path(output_dir).read_text(encoding="utf-8"))
     if not isinstance(payload, dict) or not isinstance(payload.get("lessons"), dict):
         _fail("validated ledger could not be loaded")
+    # Normalize IN MEMORY, exactly as validation just did. Validation deliberately
+    # does not write -- a session-start READ must not upgrade a consumer's ledger to
+    # a schema the previously released version cannot read -- so the bytes on disk may
+    # still be the older schema and lack fields this preview reads.
+    payload, _migrated = migrate_ledger_payload(payload)
     return payload
 
 
