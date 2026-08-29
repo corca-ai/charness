@@ -1,0 +1,56 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "review-20260829T210557Z-3614457",
+      "scope": "charness 8.0.0 release slice: the six commits added after the prepared release commit",
+      "packet_identity": "e0178d93d257352edc6ee3125dc737e00146a98fa52d01951b76b0fac4eb7005",
+      "parent_receipt_identity": "parent-9150a84041ed3d090d4f26b673787d897c00957179c723e2",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-08-29T12:10:36Z",
+      "history": [
+        {
+          "event_id": "f2bd5e2aec274edd8245fa06883686e6",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-08-29T12:05:58Z",
+          "attempt_id": "review-20260829T210557Z-3614457",
+          "scope": "charness 8.0.0 release slice: the six commits added after the prepared release commit",
+          "packet_identity": "e0178d93d257352edc6ee3125dc737e00146a98fa52d01951b76b0fac4eb7005",
+          "parent_receipt_identity": "parent-9150a84041ed3d090d4f26b673787d897c00957179c723e2",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "ab4f104b0a964be1ba8290634c14d084",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-08-29T12:10:36Z",
+          "attempt_id": "review-20260829T210557Z-3614457",
+          "scope": "charness 8.0.0 release slice: the six commits added after the prepared release commit",
+          "packet_identity": "e0178d93d257352edc6ee3125dc737e00146a98fa52d01951b76b0fac4eb7005",
+          "parent_receipt_identity": "parent-9150a84041ed3d090d4f26b673787d897c00957179c723e2",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "1f8f55bbdda39686d12178c73baab53eec450540e9a192d71ca2b7cfec53c453"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "b8d37d31021f16c5579a2bb05296fc52388e85ac45eba467dd86dcabfecfc03e",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "47da81535b8dec9d52e16742c0c0d631db5dbd5dacfe218697e2be3abe8f659a",
+      "schema_sha256": "a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "/home/hwidong/codes/charness/.charness/reviewer-round-review-20260829T210557Z-3614457/result.json",
+      "receipt_file": "/home/hwidong/codes/charness/.charness/reviewer-round-review-20260829T210557Z-3614457/receipt.json",
+      "producer_run_id": "run-review-20260829T210557Z-3614457",
+      "findings_identity": "1f8f55bbdda39686d12178c73baab53eec450540e9a192d71ca2b7cfec53c453"
+    }
+  ]
+}

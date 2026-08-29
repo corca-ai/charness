@@ -1,0 +1,76 @@
+schema_version: charness.reviewer_lifecycle.v1
+status: runner-completed
+execution_state: terminal
+reviewer_started: true
+delivery_state: findings-received
+verdict_state: not-applicable
+review_verdict: defer
+classification: null
+approval_eligible: false
+failure_identity: d4902e566b1fd3594c5298c36cf6641840572220a70b27238e7dfd8b19261887
+next_move: inspect the typed carrier before treating the run as approval
+runner_returncode: 1
+runner_status: runner-completed
+boundary_mode: read-only-worker
+boundary_ok: true
+boundary_reason: null
+paths:
+  packet: charness-artifacts/critique/review-20260829T225231Z-764596-packet.json
+  schema: .charness/reviewer-round-review-20260829T225231Z-764596/bounded-review-result.schema.json
+  capability: .charness/reviewer-round-review-20260829T225231Z-764596/capability.json
+  prompt: .charness/reviewer-round-review-20260829T225231Z-764596/review-prompt.md
+  plan: .charness/reviewer-round-review-20260829T225231Z-764596/run-plan.json
+  ledger: .charness/reviewer-round-review-20260829T225231Z-764596/delivery.json
+  output: .charness/reviewer-round-review-20260829T225231Z-764596/result.json
+  receipt: .charness/reviewer-round-review-20260829T225231Z-764596/receipt.json
+  report: .charness/reviewer-round-review-20260829T225231Z-764596/worker-report.yaml
+  runner_stdout: .charness/reviewer-round-review-20260829T225231Z-764596/runner.stdout
+  runner_stderr: .charness/reviewer-round-review-20260829T225231Z-764596/runner.stderr
+  backend_stdout: .charness/reviewer-round-review-20260829T225231Z-764596/backend.stdout
+  backend_stderr: .charness/reviewer-round-review-20260829T225231Z-764596/backend.stderr
+  summary: .charness/reviewer-round-review-20260829T225231Z-764596/lifecycle.yaml
+identities:
+  attempt_id: review-20260829T225231Z-764596
+  scope: charness release slice, round 3
+  packet_identity: 778de2a389e2639f510999d8d88bd4c23e2d11cb7fa466102298deb2814f1c56
+  reviewed_input_identity: a9e4bc4699b50133c1c4de7cb4ae652252a40f3bb8905cd1c1a6d61745d0d2d2
+  parent_receipt_identity: parent-5fa39b3c64475d3f4dc0ad9496cc86912c3f9032c3ccd635
+  findings_identity: e52f13288dafd3345438d043bf899542d520b846e3d4b5a4fc593d7bb86c4185
+ok: true
+carrier_ok: true
+packet_verification:
+  ok: true
+  status: current
+  reason: current
+  reason_code: current
+  expected_kind: charness.critique_prepare_packet
+  packet_path: charness-artifacts/critique/review-20260829T225231Z-764596-packet.json
+  packet_sha256: 778de2a389e2639f510999d8d88bd4c23e2d11cb7fa466102298deb2814f1c56
+  identity_sha256: a9e4bc4699b50133c1c4de7cb4ae652252a40f3bb8905cd1c1a6d61745d0d2d2
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+schema_sha256: a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3
+backend: codex_exec
+timeout_seconds: 900
+scope: charness release slice, round 3
+lens: release-safety
+parent_receipt_identity: parent-5fa39b3c64475d3f4dc0ad9496cc86912c3f9032c3ccd635
+runner_output:
+  status: runner-completed
+  returncode: 1
+runner_stream:
+  consistent: true
+  reason: null
+  runner_stdout_sha256: d54c1a5892637549fc0b50eb2bac21cbcd4c85e64903d611f067df54652141fb
+  canonical_report_sha256: d54c1a5892637549fc0b50eb2bac21cbcd4c85e64903d611f067df54652141fb
+boundary_readback:
+  mode: read-only-worker
+  required: false
+goal_lineage:
+  kind: charness.goal-lineage
+  schema_version: 1
+  disposition: not-goal-bound
+  draft: null
+  binding: null
+  goal_run: null
+  work_item: null
+  reason: critique review was run without a Goal Run Work Item identity

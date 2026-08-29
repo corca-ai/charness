@@ -1,0 +1,90 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release-safety",
+  "packet_sha256": "c1dec955d69df0539d2bdcf6474c6070e97c20f8646326d8a8f7d3be3eb735c2",
+  "reviewed_input_identity_sha256": "6808e8f97145e1c245bfd5ca00ceab346f54fe2877a071c4c0862467a758289b",
+  "verdict": "block",
+  "findings": [
+    {
+      "id": "RS-R2-001",
+      "severity": "critical",
+      "summary": "The task-run receipt can declare a clean, non-descendant HEAD to be the complete commit carrier.",
+      "evidence": [
+        "scripts/task_run_git.py:302-320 defines `has_commit` only as `head != base_sha`; it never establishes that base_sha is an ancestor of HEAD.",
+        "Any different clean HEAD therefore becomes `carrier_kind: commit-only` with `head_is_complete: true`, including an amended base commit, a reset to an ancestor, or an unrelated commit.",
+        "docs/agent-task-runs.md:64-70 describes `head_is_complete` as the direct integration check, while scripts/task_run_completion.py:78-80 makes a completed result approval-eligible.",
+        "Counterexample: `git commit --amend` on the lane's initial base creates a sibling commit. The receipt calls it complete, but cherry-picking it onto the recorded base replays the amended commit relative to the base's parent rather than carrying only the validated base-to-worktree candidate."
+      ],
+      "action": "Before release, require `git merge-base --is-ancestor <base_sha> HEAD` before emitting any commit carrier. Mark non-descendant histories ineligible or provide an explicit tree/patch carrier, and add amend/reset negative controls."
+    },
+    {
+      "id": "RS-R2-002",
+      "severity": "high",
+      "summary": "The integration-lock repair still validates an existing arbitrary JSON file as the lock's manifest.",
+      "evidence": [
+        "integrations/locks/lock.schema.json constrains `manifest_path` only to a non-empty string.",
+        "scripts/validate_integrations.py:268-276 checks only `is_file()` and successful JSON parsing before incrementing the validated-lock count.",
+        "The same validator explicitly excludes `integrations/tools/manifest.schema.json` from `owned_manifest_paths`, yet a stale lock can name that existing JSON file and pass despite having no tool manifest.",
+        "No check binds the lock's `tool_id` to a referenced tool manifest's `tool_id` or support capability's `capability_id`."
+      ],
+      "action": "Validate that the normalized reference is one of the discovered tool/support manifest paths and that its declared identity matches the lock tool_id. Add a negative control using `integrations/tools/manifest.schema.json` or another unrelated valid JSON file."
+    },
+    {
+      "id": "RS-R2-003",
+      "severity": "high",
+      "summary": "Rollback to v7.0.0 remains incompatible after any authorized lesson-ledger write, but the release guidance describes reinstalling v7 without that condition.",
+      "evidence": [
+        "scripts/lesson_ledger_lib.py:14-38 restores schema 9 fields that are absent from schema 8.",
+        "scripts/record_lesson_score.py:79-112, scripts/record_lesson_lifecycle.py:48-80, and scripts/seed_lesson_transitions.py:183-238 migrate and persist schema 9 on normal writes.",
+        "The immutable v7.0.0 implementation accepts only schema 8 and its exact top-level and lesson field sets; it refuses the resulting schema-9 ledger.",
+        "The round-1 repair makes preview and validation read-only, but it deliberately leaves the first authorized write as the durable one-way upgrade.",
+        "charness-artifacts/release/2026-08-28-v8.0.0-notes.md prescribes reinstalling or pinning v7.0.0 and does not tell operators to preserve or restore the schema-8 ledger."
+      ],
+      "action": "Before publication, make the rollback contract honest: require a pre-upgrade ledger backup or supply a tested downgrade path, and state that v7 cannot read a ledger after any v8 score, lifecycle, or seed write."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "A non-descendant lane HEAD can receive `head_is_complete: true`.",
+      "bin": "Act Before Ship",
+      "disposition": "Strong source evidence contradicts the approval-bearing carrier contract and can cause incorrect integration."
+    },
+    {
+      "concern": "An unrelated valid JSON file satisfies the new integration-manifest predicate.",
+      "bin": "Act Before Ship",
+      "disposition": "This is a concrete axis-varying counterexample to the exact false-green class the commit claims to close."
+    },
+    {
+      "concern": "The documented v7 rollback omits the normal-write schema-9 boundary.",
+      "bin": "Act Before Ship",
+      "disposition": "Release-specific rollback guidance would mislead an operator after an ordinary ledger write; update it before publication."
+    },
+    {
+      "concern": "The four pre-existing detector defects recorded in the empty-scope disposition remain unfixed.",
+      "bin": "Valid but Defer",
+      "disposition": "The artifact explicitly avoids arming or repairing them, and none is required to establish the three release blockers above; retain their separately scoped follow-up."
+    },
+    {
+      "concern": "The regenerable-facts advisory deliberately misses some prose forms.",
+      "bin": "Over-Worry",
+      "disposition": "False negatives are an explicit accepted property of this non-blocking heuristic; widening its enumeration is not required for this release."
+    },
+    {
+      "concern": "Every one of the seven commits needs a release-note paragraph.",
+      "bin": "Over-Worry",
+      "disposition": "Reader-oriented notes need the schema migration and rollback consequence, not a file-by-file development narrative."
+    }
+  ],
+  "next_move": "Hold the release. Repair the task-carrier ancestry check and integration-manifest identity predicate, update and verify the lesson-ledger rollback guidance, add the named negative controls, rerun focused plus release packaging/quality gates, then prepare a fresh bounded-review packet with a new reviewed-input identity.",
+  "non_claims": [
+    "The supplied Goal evidence lineage is not goal-bound.",
+    "No workspace files were edited.",
+    "No tag, push, publication, install refresh, or hosted/real-host readback was performed.",
+    "Author-reported standing-lane results and prepare-packet success were not treated as approval.",
+    "Temporary-file-dependent pytest and committed-packaging verification could not run in the read-only reviewer environment; read-only integration, lesson-ledger, lesson-index, maintainer-setup, packaging-shape, and critique-artifact validators passed.",
+    "Untracked packets and reviewed-path manifests outside the supplied reviewed input were not treated as review evidence.",
+    "This review does not claim universal submodule, platform, provider, or installed-host behavior."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

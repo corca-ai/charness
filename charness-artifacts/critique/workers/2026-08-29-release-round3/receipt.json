@@ -1,0 +1,74 @@
+{
+  "attempt_id": "review-20260829T225231Z-764596",
+  "backend": "codex_exec",
+  "boundary_fingerprint": null,
+  "boundary_mode": "read-only-worker",
+  "capability_collection_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_file": "/home/hwidong/codes/charness/.charness/reviewer-round-review-20260829T225231Z-764596/capability.json",
+  "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_non_claims": [],
+  "capability_non_claims_provenance": "runner-joined-from-launch-envelope",
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "capability_status": "ready",
+  "effective_capabilities": {
+    "configuration_identity": "charness-run-review-v1",
+    "external_effects": {
+      "observation": "host",
+      "state": "denied"
+    },
+    "external_reads": {
+      "entries": [],
+      "observation": "host",
+      "state": "unproved"
+    },
+    "filesystem": {
+      "observation": "host",
+      "write": "denied"
+    },
+    "host_selection_source": "charness-derived-read-only-default",
+    "sandbox": {
+      "label": "read-only",
+      "source": "charness-derived"
+    }
+  },
+  "execution_mode": "file-backed-worker",
+  "exit_code": 0,
+  "finished_at": "2026-08-29T13:58:04Z",
+  "output_file": "/home/hwidong/codes/charness/.charness/reviewer-round-review-20260829T225231Z-764596/result.json",
+  "output_fresh": true,
+  "output_sha256": "e52f13288dafd3345438d043bf899542d520b846e3d4b5a4fc593d7bb86c4185",
+  "output_size": 4156,
+  "packet_identity": "778de2a389e2639f510999d8d88bd4c23e2d11cb7fa466102298deb2814f1c56",
+  "parent_receipt_identity": "parent-5fa39b3c64475d3f4dc0ad9496cc86912c3f9032c3ccd635",
+  "preflight": [],
+  "prompt_file": "/home/hwidong/codes/charness/.charness/reviewer-round-review-20260829T225231Z-764596/review-prompt.md",
+  "prompt_sha256": "60a3e77500838386efbdc9d8c83bcc4b8d07d2385e03d69426428bb9dda8ce13",
+  "requested_capabilities": {
+    "external_effects": {
+      "entries": [],
+      "policy": "deny-all"
+    },
+    "external_reads": [],
+    "filesystem": {
+      "read_roots": [
+        "/home/hwidong/codes/charness"
+      ],
+      "write_policy": "deny-all",
+      "write_roots": []
+    }
+  },
+  "reviewed_input_identity": "a9e4bc4699b50133c1c4de7cb4ae652252a40f3bb8905cd1c1a6d61745d0d2d2",
+  "run_id": "run-review-20260829T225231Z-764596",
+  "schema_file": "/home/hwidong/codes/charness/.charness/reviewer-round-review-20260829T225231Z-764596/bounded-review-result.schema.json",
+  "schema_sha256": "a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3",
+  "schema_version": "charness.reviewer_worker.v1",
+  "scope": "charness release slice, round 3",
+  "started_at": "2026-08-29T13:52:32Z",
+  "status": "succeeded",
+  "stderr_file": "/home/hwidong/codes/charness/.charness/reviewer-round-review-20260829T225231Z-764596/backend.stderr",
+  "stdout_file": "/home/hwidong/codes/charness/.charness/reviewer-round-review-20260829T225231Z-764596/backend.stdout",
+  "terminal": true,
+  "timeout_seconds": 900.0,
+  "workspace": "/home/hwidong/codes/charness"
+}

@@ -1,0 +1,61 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'charness 8.0.0 release slice, round 2: the seven commits after the prepared
+  release commit, including the repairs for the round-1 block'
+attempt_id: review-20260829T212304Z-3777459
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 0aaa0d332a22d9e73a7df7171c57acf9325b7a531552806810eaf76167f4d74f
+schema_sha256: a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/reviewer-round-review-20260829T212304Z-3777459/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/reviewer-round-review-20260829T212304Z-3777459/delivery.json
+producer_run_id: run-review-20260829T212304Z-3777459
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/reviewer-round-review-20260829T212304Z-3777459/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/reviewer-round-review-20260829T212304Z-3777459/receipt.json
+  producer_run_id: run-review-20260829T212304Z-3777459
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+review_verdict: block
+receipt_provenance_ok: true
+findings_identity: 435d9c6b4e40a07c47f44a7c811b8f2440801a71fe41323296efd7dc8c023c4e
+receipt_output_sha256: 435d9c6b4e40a07c47f44a7c811b8f2440801a71fe41323296efd7dc8c023c4e
+packet_identity: c1dec955d69df0539d2bdcf6474c6070e97c20f8646326d8a8f7d3be3eb735c2
+reviewed_input_identity: 6808e8f97145e1c245bfd5ca00ceab346f54fe2877a071c4c0862467a758289b
+parent_receipt_identity: parent-3c3da8cfa413604ac2fb275faa23dd3803752e3579c2bc29
+provenance:
+  scope: 'charness 8.0.0 release slice, round 2: the seven commits after the prepared
+    release commit, including the repairs for the round-1 block'
+  packet_identity: c1dec955d69df0539d2bdcf6474c6070e97c20f8646326d8a8f7d3be3eb735c2
+  reviewed_input_identity: 6808e8f97145e1c245bfd5ca00ceab346f54fe2877a071c4c0862467a758289b
+  parent_receipt_identity: parent-3c3da8cfa413604ac2fb275faa23dd3803752e3579c2bc29
+  attempt_id: review-20260829T212304Z-3777459
+  attempt_scope: 'charness 8.0.0 release slice, round 2: the seven commits after the
+    prepared release commit, including the repairs for the round-1 block'
+  attempt_packet_identity: c1dec955d69df0539d2bdcf6474c6070e97c20f8646326d8a8f7d3be3eb735c2
+  attempt_parent_receipt_identity: parent-3c3da8cfa413604ac2fb275faa23dd3803752e3579c2bc29
+  result_packet_identity: c1dec955d69df0539d2bdcf6474c6070e97c20f8646326d8a8f7d3be3eb735c2
+  result_reviewed_input_identity: 6808e8f97145e1c245bfd5ca00ceab346f54fe2877a071c4c0862467a758289b
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 0aaa0d332a22d9e73a7df7171c57acf9325b7a531552806810eaf76167f4d74f
+  schema_sha256: a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''block'''

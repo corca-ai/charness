@@ -1,0 +1,60 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release-safety",
+  "packet_sha256": "778de2a389e2639f510999d8d88bd4c23e2d11cb7fa466102298deb2814f1c56",
+  "reviewed_input_identity_sha256": "a9e4bc4699b50133c1c4de7cb4ae652252a40f3bb8905cd1c1a6d61745d0d2d2",
+  "verdict": "defer",
+  "findings": [
+    {
+      "id": "RS-R3-001",
+      "severity": "critical",
+      "summary": "The reviewed identity does not bind the ten-commit release delta or its deletions, so the real-host-proof removal cannot be approved from this packet.",
+      "evidence": [
+        "The packet describes a ten-commit release slice, but `changed_ref` is null, `resolved_changed_ref` is empty, and `base_head_role` is `provenance-only`.",
+        "`reviewed_patch_sha256`, `staged_patch_sha256`, and `unstaged_patch_sha256` are all the SHA-256 of an empty payload.",
+        "The changed-files section lists only two generated critique packets and `charness-artifacts/reviewed-paths-round3.txt`, not the release slice.",
+        "Although `prepared_for` explicitly names real-host-proof removal, `reviewed_paths` and `reviewed_content` contain no deletion entry or absence marker for a removed real-host-proof component."
+      ],
+      "action": "Regenerate the packet in committed-ref mode over the exact pre-slice commit through release HEAD, with the complete changed-path set—including deletions—and rerun fresh-eye review against the new packet and identity."
+    },
+    {
+      "id": "RS-R3-002",
+      "severity": "high",
+      "summary": "The packet lacks the release-safety inventory and evidence needed to judge the removal of an operator-facing proof boundary.",
+      "evidence": [
+        "No target version or tag is identified.",
+        "The three packet sections provide only current-worktree routing, contract non-goals, and a generic semantic-review question.",
+        "There is no surface-lock inventory describing which consumer-visible checks, artifact sections, adapter fields, or operator instructions were removed or retained.",
+        "There are no bound focused-gate receipts, replacement-control evidence, upgrade instructions, or rollback disposition in the authoritative packet."
+      ],
+      "action": "Add a bounded release scope, surface-lock inventory, retained/replacement control mapping, operator impact, and bound focused verification receipts before requesting approval."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "The packet does not bind the release delta or deleted control surface.",
+      "bin": "Act Before Ship",
+      "disposition": "Strong evidence from the packet structure; this prevents approval rather than merely requesting more polish."
+    },
+    {
+      "concern": "The release-safety inventory and replacement-control evidence are absent.",
+      "bin": "Act Before Ship",
+      "disposition": "The removal changes a release-proof boundary, so its retained coverage and operator consequences must be explicit before publication."
+    },
+    {
+      "concern": "The deleted real-host mechanism must automatically be restored.",
+      "bin": "Over-Worry",
+      "disposition": "The present evidence does not establish that restoration is the correct repair; first provide a reviewable delta and compare the removed obligations with retained controls."
+    }
+  ],
+  "next_move": "Do not publish from this review. Prepare a committed-ref packet for the exact ten-commit range, include deletions and the release surface/control inventory with focused receipts, then run a new bounded review under a new packet and reviewed-input identity.",
+  "non_claims": [
+    "This defer is not evidence that the implementation is defective.",
+    "No test, quality-gate, real-host, install, or release-readiness pass is inferred from packet shape or repository state.",
+    "The requested reviewer model and service-tier application remain unverified by the packet.",
+    "No Goal Run completion or goal-bound approval is claimed.",
+    "Partial progress is not approval."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

@@ -1,0 +1,70 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release-safety",
+  "packet_sha256": "e0178d93d257352edc6ee3125dc737e00146a98fa52d01951b76b0fac4eb7005",
+  "reviewed_input_identity_sha256": "b8d37d31021f16c5579a2bb05296fc52388e85ac45eba467dd86dcabfecfc03e",
+  "verdict": "block",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "critical",
+      "summary": "The advertised read and rollback paths can silently migrate a consumer ledger to a schema v7 cannot read.",
+      "evidence": [
+        "The v7.0.0 tag declares lesson-ledger schema 8; this slice changes the current schema to 9.",
+        "scripts/lesson_ledger_lib.py:446-470 migrates a v8 payload and writes it back during validate_lesson_ledger.",
+        "scripts/lesson_selection_preview_lib.py:29-31 invokes that mutating validator, while AGENTS.md:9-10 makes the preview the first planning read.",
+        "The release notes prescribe rollback by reinstalling v7.0.0, but after this implicit v8-to-v9 write the v7 validator cannot consume the ledger."
+      ],
+      "action": "Keep preview/check validation read-only and move durable migration behind an explicit authorized write path. Add an upgrade-and-rollback test starting from the v7 schema-8 ledger and document any required operator action."
+    },
+    {
+      "id": "F2",
+      "severity": "high",
+      "summary": "Scaffold and persistence still resolve the same date-bearing subject key to different files, reopening the overwrite incident this slice claims to close.",
+      "evidence": [
+        "skills/public/retro/scripts/scaffold_retro_artifact.py:175-180 resolves scaffold subjects with subject_key=True.",
+        "scripts/retro_persistence_lib.py:275 resolves the persistence argument without carrying that subject-key role.",
+        "scripts/retro_persistence_lib.py:89-96 treats any name containing YYYY-MM-DD as an explicitly named artifact; this disables the derived-path collision guard at lines 277-282 before _write_text overwrites the target.",
+        "A pure evaluation for subject session-2026-08-29 produced scaffold path charness-artifacts/retro/2026-08-29-session-2026-08-29.md but persistence path charness-artifacts/retro/session-2026-08-29.md with derived=False."
+      ],
+      "action": "Carry an explicit subject-key versus artifact-path role through the persistence CLI, or persist the scaffold's exact resolved target. Add a date-token counterexample with an existing undated sibling and assert its bytes survive."
+    },
+    {
+      "id": "F3",
+      "severity": "medium",
+      "summary": "The staged prose advisory scans working-tree bytes rather than the bytes being committed.",
+      "evidence": [
+        "skills/public/quality/scripts/regenerable_facts_lib.py:132-155 obtains only staged path names from git diff --cached.",
+        "skills/public/quality/scripts/regenerable_facts_lib.py:294-315 then reads each path directly from the working tree.",
+        "With a partially staged Markdown file, an unstaged edit can hide a staged finding or emit a finding and line number absent from the commit."
+      ],
+      "action": "Read each staged blob from the index and add a partial-staging test covering divergent index and worktree content."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "Implicit schema migration breaks read-only first contact and the documented v7 rollback.",
+      "bin": "Act Before Ship",
+      "disposition": "Strong current-source and tagged-version evidence; release cannot safely lock this upgrade path."
+    },
+    {
+      "concern": "Date-bearing retro subjects bypass the single path owner and collision refusal.",
+      "bin": "Act Before Ship",
+      "disposition": "Strong axis-varying counterexample directly recreates the overwrite class addressed by the commit."
+    },
+    {
+      "concern": "The staged advisory reads worktree content.",
+      "bin": "Bundle Anyway",
+      "disposition": "Real and cheap to repair on the touched surface, but the checker is explicitly advisory and non-blocking."
+    }
+  ],
+  "next_move": "Hold 8.0.0. Repair F1 and F2, bundle F3, add their negative controls, then regenerate install surfaces and run the release/package/install/doctor gates against a new reviewed-input identity before requesting approval.",
+  "non_claims": [
+    "The packet lists planned sync and validation commands but contains no executed new-HEAD release receipts; no release, packaging, clean-install, or doctor pass is claimed.",
+    "The review is bounded to 030aa826242d9e077592a1aee70815f8d25a07ec..c7dcdcbff63c1b44818bf1e8cddfb500311e5c37 and the packet's reviewed paths.",
+    "The review is not goal-bound; no Goal Run Work Item identity or binding is claimed.",
+    "The workspace was not edited."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}
