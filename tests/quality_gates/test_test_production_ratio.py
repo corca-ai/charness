@@ -24,11 +24,10 @@ def test_test_production_ratio_counts_source_truth_without_plugin_exports() -> N
     assert summary["scope"] == "executable-surface"
     assert summary["engine"] == "splitlines"
     assert summary["engine_selection"] == "explicit"
-    # The live hard bound (test LOC < source LOC) stays out of this unit test:
-    # run-quality.sh runs the gate BLOCKING (promoted 2026-08-29 after the #753
-    # JTBD audit and the executable-surface denominator fix brought the real
-    # ratio under 1.0); the release-lane label owns the live verdict, and a
-    # duplicate hard pin here would just re-block the same byte.
+    # The live hard bound (test LOC < source LOC) stays out of this unit test, and
+    # there is no longer a live hard bound to duplicate: run-quality.sh runs the gate
+    # ADVISORY again (see test_ratio_gate_stays_advisory_in_the_runner). This measures
+    # the surface; it does not gate on it.
     assert summary["source_lines"] > 0
     assert summary["test_lines"] > 0
     assert summary["ratio"] > 0
@@ -41,6 +40,38 @@ def test_test_production_ratio_counts_source_truth_without_plugin_exports() -> N
     assert summary["skipped"]["status"] == "skipped"
     assert summary["skipped"]["count"] == 0
     assert summary["skipped"]["paths"] == []
+
+
+def _ratio_invocation(runner_text: str) -> str:
+    for line in runner_text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith('queue_selected "check-test-production-ratio"'):
+            return stripped
+    raise AssertionError("run-quality.sh no longer queues check-test-production-ratio")
+
+
+def test_ratio_gate_stays_advisory_in_the_runner() -> None:
+    """Pin the posture the #420 resolution critique said nothing pinned.
+
+    `2026-07-08-issue-420-resolution-critique.md:28` — "No gate pins the
+    `--advisory` flag itself; silently dropping it restores the hard-block posture
+    with no test failing." It was then dropped (`4122f6cd0`), and the hard block
+    came back at a ratio with only 4-decimal rounding left, pulling against
+    `release-changed-line-coverage`. This is that missing pin.
+    """
+
+    invocation = _ratio_invocation((ROOT / "scripts" / "run-quality.sh").read_text(encoding="utf-8"))
+    assert "--advisory" in invocation, (
+        "check-test-production-ratio must stay advisory in run-quality.sh: a whole-repo "
+        "LOC ratio is a smell sensor, not a release contract, and as a hard block it "
+        "makes covering a changed line cost the deletion of production safety code"
+    )
+    # Negative control: the reader must FAIL a blocking invocation, or it pins nothing.
+    blocking = (
+        'queue_selected "check-test-production-ratio" python3 '
+        'scripts/check_test_production_ratio.py --repo-root "$REPO_ROOT" --require-git-file-listing'
+    )
+    assert "--advisory" not in _ratio_invocation(blocking)
 
 
 def test_surface_buckets_include_executable_languages_and_exclude_fixtures(tmp_path: Path) -> None:

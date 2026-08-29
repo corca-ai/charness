@@ -65,7 +65,41 @@ Decisions:
    gates the property must range over. Deleting a stale surface beats adding a
    parallel one.
 
-Resulting order, which is NOT the section order below — decisions 2 and 3 chain:
+**Amendment (same session, after measurement).** Decisions 3 and 4 above did not
+survive their own evidence, and the operator replaced them:
+
+- Removing production lines alone RAISES `test/source`. Headroom is
+  `(deleted test lines) - (deleted production lines) - 1`, so dead-code removal
+  costs headroom. Deleting `_publish_and_finalize` (82 lines) would have put the
+  ratio at 1.00057 and broken the gate it was meant to relieve.
+- Its three tests cannot be deleted either. `_publish_and_finalize` and the live
+  `resume_publish` both call `common.run_release_closeout_tail`
+  (`publish_release_execute.py:295`, `publish_release_resume_publish.py:218`), and
+  the resume tests STUB that tail (`test_release_resume_edge_coverage.py:147`). So
+  `test_release_distinct_channel.py:410-467` is the only execution coverage of the
+  irreversible issue-close ordering, reached through a dead driver. Repoint, do not
+  delete. STILL OPEN.
+- A ten-subsystem JTBD audit of the release machinery found no defensible cut:
+  nine verdicts of `earns-its-lines`, and the single `oversized` verdict
+  (adapter/backend) was refuted with live consumers the assessor missed. Caveat on
+  method: the refutation pass ran only against cut proposals, so the `keep`
+  verdicts are NOT adversarially verified.
+- The real defect was the cap's enforcement posture, not the code it measures.
+  `2026-06-19-gate-buy-vs-build-triage.md:36-38` ranked the hard cap the repo's
+  strongest DROP candidate; #420 demoted it to advisory on 2026-07-08 and its
+  critique warned at `:28` that nothing pinned the flag;
+  `issue-753/lane-A-ratio-surface-brief.md:37` said the posture was a LATER #753
+  decision; `4122f6cd0` promoted it to blocking the next day at ratio 0.993.
+- **Resolution: `--advisory` restored at `run-quality.sh:1171`, and the posture is
+  now pinned by `test_ratio_gate_stays_advisory_in_the_runner` with a negative
+  control.** The tree is now measurably OVER the cap (144826/144799 = 1.0002) and
+  says so as a visible WARN. Adding that pin test is itself what tipped it, which
+  is the hazard the gate's own `--advisory` docstring names.
+
+Revised order: cap posture (DONE) → cover the 11 files → release 8.0.0 → Step 2.
+No release-machinery reduction is required or justified.
+
+Original order, which is NOT the section order below — decisions 2 and 3 chain:
 release-machinery reduction (relief, live paths included) → cover the 11 files →
 release 8.0.0 → Step 2. Step 2 is the first thing to drop if the reduction
 yields less than the coverage work consumes.
