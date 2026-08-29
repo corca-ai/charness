@@ -1,0 +1,5 @@
+charness-artifacts/critique/review-20260830T083804Z-3390404-packet.json
+charness-artifacts/critique/review-20260830T083804Z-3390404-packet.md
+charness-artifacts/reviewed-paths-crash.txt
+scripts/reviewed_input_nonblob.py
+tests/test_reviewed_input_identity_binding.py

@@ -894,17 +894,33 @@ def test_a_submodule_removed_from_disk_does_not_crash_identity_construction(
 def test_a_non_absence_oserror_is_not_treated_as_a_missing_checkout(
     tmp_path: Path, monkeypatch
 ) -> None:
-    """The axis-varying control the absent-directory test did not supply.
+    """The axis-varying control the absent-directory test could not supply.
 
-    A blanket `except OSError` let a `PermissionError` over a PRESENT submodule —
-    one whose checked-out HEAD differs from the index — read as "no checkout to
-    consult", bind the stale index value, and report `current`, with verification
-    repeating the same fallback and agreeing. A failure silently converted into a
-    passing verdict is the class this module exists to close.
+    A blanket `except OSError` let a `PermissionError` over a PRESENT submodule
+    read as "no checkout to consult" and bind the stale index value. The
+    submodule's HEAD is genuinely moved off the index here and the PUBLIC
+    consumer is invoked, so this exercises the false-`current` scenario itself
+    rather than only proving that an exception escapes a private helper.
     """
     from scripts import reviewed_input_nonblob as nonblob
 
     repo = _submodule_repo(tmp_path)
+    upstream = tmp_path / "upstream"
+    (upstream / "f.txt").write_text("v2\n", encoding="utf-8")
+    _run_git(upstream, "commit", "-am", "v2")
+    _run_git(repo / "sub", "fetch", "-q", "origin")
+    _run_git(repo / "sub", "checkout", "-q", "FETCH_HEAD")
+    # The checkout now differs from the index, so falling back to the index
+    # would bind a value no longer checked out -- the false `current`.
+    assert (
+        subprocess.run(
+            ["git", "-C", "sub", "rev-parse", "HEAD"], cwd=repo, capture_output=True, text=True
+        ).stdout.strip()
+        != subprocess.run(
+            ["git", "ls-files", "-s", "--", "sub"], cwd=repo, capture_output=True, text=True
+        ).stdout.split()[1]
+    )
+
     real_run = subprocess.run
 
     def deny_inside_submodule(*args, **kwargs):
@@ -916,4 +932,4 @@ def test_a_non_absence_oserror_is_not_treated_as_a_missing_checkout(
     monkeypatch.setattr(nonblob.subprocess, "run", deny_inside_submodule)
 
     with pytest.raises(PermissionError):
-        nonblob._gitlink_commit(repo, "sub", None)
+        build_reviewed_input_identity(repo_root=repo, reviewed_paths=[".gitmodules", "sub"])
