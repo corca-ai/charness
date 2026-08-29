@@ -17,7 +17,6 @@ def _load_runtime_bootstrap_module() -> ModuleType:
 
 _RUNTIME_BOOTSTRAP = _load_runtime_bootstrap_module()
 arm_cli_timeout = _RUNTIME_BOOTSTRAP.arm_cli_timeout
-native_core_path = _RUNTIME_BOOTSTRAP.native_core_path
 load_path_module = _RUNTIME_BOOTSTRAP.load_path_module
 require_repo_local_helper = _RUNTIME_BOOTSTRAP.require_repo_local_helper
 

@@ -22,7 +22,6 @@ refuse_foreign_entrypoint = _SKILL_RUNTIME_BOOTSTRAP.refuse_foreign_entrypoint
 repo_root_from_skill_script = _SKILL_RUNTIME_BOOTSTRAP.repo_root_from_skill_script
 require_repo_local_helper = _SKILL_RUNTIME_BOOTSTRAP.require_repo_local_helper
 run_adapter_cli = _SKILL_RUNTIME_BOOTSTRAP.run_adapter_cli
-native_core_path = _SKILL_RUNTIME_BOOTSTRAP.native_core_path
 
 __all__ = [
     "arm_cli_timeout",
@@ -32,5 +31,4 @@ __all__ = [
     "repo_root_from_skill_script",
     "require_repo_local_helper",
     "run_adapter_cli",
-    "native_core_path",
 ]

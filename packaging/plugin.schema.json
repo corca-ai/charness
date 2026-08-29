@@ -100,9 +100,6 @@
         }
       }
     },
-    "native_core": {
-      "$ref": "#/definitions/nativeCore"
-    },
     "codex": {
       "$ref": "#/definitions/codexExport"
     },
@@ -122,60 +119,6 @@
     "relativePath": {
       "type": "string",
       "pattern": "^(?!/)(?!\\.\\./).+"
-    },
-    "nativeCore": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "supported_tuples",
-        "artifacts"
-      ],
-      "properties": {
-        "source": {
-          "type": "string",
-          "minLength": 1
-        },
-        "supported_tuples": {
-          "type": "array",
-          "minItems": 1,
-          "items": {
-            "type": "string",
-            "minLength": 1
-          }
-        },
-        "artifacts": {
-          "type": "object",
-          "minProperties": 1,
-          "additionalProperties": {
-            "$ref": "#/definitions/nativeCoreVersion"
-          }
-        }
-      }
-    },
-    "nativeCoreVersion": {
-      "type": "object",
-      "minProperties": 1,
-      "additionalProperties": {
-        "$ref": "#/definitions/nativeCoreArtifact"
-      }
-    },
-    "nativeCoreArtifact": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "name",
-        "sha256"
-      ],
-      "properties": {
-        "name": {
-          "type": "string",
-          "minLength": 1
-        },
-        "sha256": {
-          "type": "string",
-          "pattern": "^[A-Fa-f0-9]{64}$"
-        }
-      }
     },
     "codexManifest": {
       "type": "object",

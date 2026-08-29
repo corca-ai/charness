@@ -370,34 +370,6 @@
       ],
       "rationale": "`skipped` is a verdict-critical count read from one structurally complete Node TAP summary, not an internal clean-pass branch. The reporter validates pass/fail/cancelled/skipped/todo arithmetic against the selected run's tests total and retains the complete summary as RunCounts evidence; mutation classification therefore cannot silently zero-fill or drop a skipped count while calling a malformed run a kill."
     },
-    "scripts/native_core_lib.py": {
-      "states": [
-        "skipped"
-      ],
-      "visibility": [
-        "structured_warning"
-      ],
-      "evidence_terms": [
-        "state-write-skipped",
-        "reason"
-      ],
-      "rationale": "The native-core lifecycle returns a TYPED `state-write-skipped` result when the durable state root is read-only (mirroring write_version_state's deliberate degradation). It is carried in the operational response's native_core block with a reason and is never a standing quality or release closeout pass; doctor re-reports the underlying state on the next run."
-    },
-    "scripts/native_core_resolution_lib.py": {
-      "states": [
-        "skipped"
-      ],
-      "visibility": [
-        "hard_failure_or_blocker",
-        "operator_summary"
-      ],
-      "evidence_terms": [
-        "state-write-skipped",
-        "reason",
-        "corrupt"
-      ],
-      "rationale": "`state-write-skipped` appears only as a RECORDED phase status this module reads back out of `last-status.json` and maps to the non-benign `corrupt` doctor status, preserving the true status in `reason` and replacing the message so it never prescribes the update that just failed (_no_pointer_result, native_core_doctor_payload). Invariant: a recorded native-phase failure must never resolve to a benign status, and must never carry remediation that repeats the failing command."
-    },
     "scripts/parity_harness.py": {
       "states": [
         "skipped"

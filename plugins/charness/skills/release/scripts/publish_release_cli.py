@@ -30,7 +30,6 @@ _release_plan = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release
 _release_runtime = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_runtime")
 _resume = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_resume")
 _execute = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_execute")
-_native_artifact = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_native_artifact")
 # The argument contract lives in its own module (one concept, and this file reached
 # its length cap). Re-exported so `cli.parse_args` stays the one import site.
 _args_module = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_args")
@@ -54,10 +53,6 @@ changed_paths = _helpers.changed_paths
 write_current_artifact = _artifact.write_current_artifact
 backend_command = _helpers.backend_command
 create_release = _helpers.create_release
-native_artifact_preflight = _native_artifact.native_artifact_preflight
-upload_native_artifact = _native_artifact.upload_native_artifact
-attempt_native_artifact_upload = _native_artifact.attempt_native_artifact_upload
-record_native_artifact_upload = _native_artifact.record_native_artifact_upload
 expected_github_release_url = _helpers.expected_github_release_url
 amend_fresh_checkout_artifact = _helpers.amend_fresh_checkout_artifact
 commit_post_publish_artifact = _helpers.commit_post_publish_artifact
@@ -127,10 +122,6 @@ def _execution_context() -> SimpleNamespace:
         "run_fresh_checkout_probes",
         "amend_fresh_checkout_artifact",
         "create_release",
-        "native_artifact_preflight",
-        "upload_native_artifact",
-        "attempt_native_artifact_upload",
-        "record_native_artifact_upload",
         "verify_release_visible",
         "confirm_release_via_distinct_channel",
         "reconcile_public_release_verification",

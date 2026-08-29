@@ -32,80 +32,38 @@ The shared packaging manifest is authoritative for:
 - which host exports exist
 - which manifest paths and marketplace paths generators must produce
 
-When a release has a consumer-ready `repograph` binary, the optional
-`native_core` declaration is the lifecycle switch. It is intentionally absent
-from this checkout while the artifact is not published. Its shape is:
+## The `repograph` binary is built, not distributed
 
-```json
-"native_core": {
-  "source": "corca-ai/charness",
-  "supported_tuples": ["x86_64-unknown-linux-gnu"],
-  "artifacts": {
-    "8.0.0": {
-      "x86_64-unknown-linux-gnu": {
-        "name": "repograph-v8.0.0-x86_64-unknown-linux-gnu.tar.gz",
-        "sha256": "<64 hexadecimal characters>"
-      }
-    }
-  }
-}
-```
-
-`source` binds release lookup to the checkout's `git remote get-url origin`.
-Each version/tuple entry binds the expected asset name and archive digest;
-`artifact.json` additionally records the artifact version, tuple, binary
-digest, and build commit. The declaration is schema-supported but remains
-absent until a release has supplied a matching artifact.
-
-## Native Artifact Production
-
-Build the release asset from a clean checkout with the pinned toolchain:
+This packaging contract deliberately declares NO native artifact. `repograph`
+is built from the [`native/repograph`](../native/repograph) crate that ships in
+this checkout, and installed through the external-tool control plane:
 
 ```bash
-python3 scripts/build_native_artifact.py --repo-root . --out-dir /tmp/charness-native-artifacts
+charness tool doctor repograph      # required tool; blocking when missing
+charness tool install repograph     # cargo install --path native/repograph
 ```
 
-If `--out-dir` is omitted, output goes under the external Charness runtime
-root, never under the repository. The producer reads the product version from
-[the packaging manifest](../packaging/charness.json), runs
-`cargo build --release --locked` in `native/repograph` with
-[the crate's pinned toolchain](../native/repograph/rust-toolchain.toml), and
-deliberately does not synchronize
-[the crate manifest](../native/repograph/Cargo.toml); the crate version is
-not a release-version owner. The build may create the crate's ignored `target/`
-directory, which is excluded from the clean-tree check through Git's standard
-ignore rules.
+The manifest is [integrations/tools/repograph.json](../integrations/tools/repograph.json)
+and the gate-side resolver is
+[scripts/native_gate_lib.py](../scripts/native_gate_lib.py), which prefers, in
+order, a `CHARNESS_NATIVE_CORE` override, this checkout's own
+`native/repograph/target/release/repograph` (rebuilding it, with an announcement
+on stderr, when the crate source is newer), then the installed binary.
 
-The external output directory contains:
+A prebuilt-artifact distribution layer used to live here: a `native_core`
+declaration in the packaging manifest bound a per-version, per-tuple archive
+name and sha256, and a lifecycle downloaded, checksummed, staged, extracted,
+atomically activated, pruned, and rolled it back, projecting twelve phase
+statuses into `charness doctor`. It was retired on 2026-08-30 because the crate
+source ships in the same repository that consumes it: building from the checkout
+you are running makes `stale`, `incompatible`, and `source_drift` structurally
+impossible rather than detectable after the fact, and `charness` already owned a
+control plane that installs missing binaries — three of its tools (`awiki`,
+`lychee`, `tokei`) already install through `cargo`. See
+[the spec](../charness-artifacts/spec/repograph-tool-control-plane.md).
 
-- `repograph-v<version>-<tuple>.tar.gz`, with the executable stored as
-  `repograph` at the archive root;
-- `SHA256SUMS`, with the archive digest in standard `sha256sum` format; and
-- `artifact.json`, recording `version`, `tuple`, `git_tag`, `git_commit`,
-  `toolchain`, `rustc_version`, `cargo_lock_sha256`, and binary/archive
-  digests.
-
-The archive is uploaded to the matching GitHub release with the existing
-release tooling. Configure the adapter's post-publish asset probe as
-`python3 scripts/check_native_release_asset.py --repo-root .`; it reuses the
-self-release probe and `CHARNESS_RELEASE_PROBE_FIXTURES` for offline tests.
-An undeclared checkout version is a typed `not-applicable` result. A
-bit-for-bit reproducibility claim and Cargo.lock supply-chain coverage are
-outside this contract.
-
-The native lifecycle owns a producer-to-consumer roundtrip: the archive emitted
-by [`build_native_artifact.py`](../scripts/build_native_artifact.py) must activate
-unchanged through `native_core_lib.run_native_core_phase`. The release attach step publishes only
-that archive; `artifact.json` is adjacent build metadata, not a required archive
-member. The standing release-path test uses the producer's archive writer and a
-download seam whose asset list contains only the uploaded archive, then checks
-both activation and `native_core_doctor_payload`.
-
-A missing adjacent sidecar is therefore not an installation refusal: declaration
-and extracted-binary fields are reconstructed during activation. If an update
-records a checksum or verification failure, doctor reports the existing
-`corrupt` status and preserves the phase status and reason instead of presenting
-the failure as `missing` with the same update command as remediation.
+Consequently a charness release publishes no native asset, and the released
+version does not determine which `repograph` a consumer has; the checkout does.
 
 Generated host layouts are not authoritative. If an exported manifest drifts
 from the shared packaging manifest, regenerate the export instead of editing the

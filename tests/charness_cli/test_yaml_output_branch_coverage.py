@@ -24,6 +24,10 @@ def _doctor_payload() -> dict[str, object]:
         "codex_source_version": "1.0.9",
         "codex_cache_manifest_version": "1.0.9",
         "codex_source_cache_drift": False,
+        # The native-core distribution layer is retired and nothing produces this
+        # key any more. It stays in the fixture as a STALE payload: the compact
+        # projection must drop an unknown key rather than forward it, and that is
+        # only provable by feeding it one.
         "native_core": {
             "status": "not-distributed",
             "provenance": None,
@@ -87,7 +91,7 @@ def test_init_update_and_doctor_emit_yaml_on_all_public_paths(tmp_path: Path, mo
     assert init_output["response_level"] == "summary"
     assert init_output["checkout"]["repo_root"] == str(repo_root)
     assert init_output["cli_reexec"]["status"] == "reexecuted"
-    assert init_output["native_core"]["status"] == "not-distributed"
+    assert "native_core" not in init_output
     assert "raw_install_trace" not in init_output
 
     args.detail = True

@@ -22,8 +22,6 @@ OP_PLACEHOLDERS: dict[str, frozenset[str]] = {
     "release_view_body": RELEASE_VIEW_PLACEHOLDERS,
     "release_create": RELEASE_CREATE_PLACEHOLDERS,
     "auth_check": frozenset(),
-    "release_upload": frozenset({"tag", "asset"}),
-    "release_assets": frozenset({"tag"}),
 }
 COMMAND_TIMEOUT_SECONDS = 1800
 PROGRESS_INTERVAL_ENV = "CHARNESS_RELEASE_PROGRESS_INTERVAL_SECONDS"

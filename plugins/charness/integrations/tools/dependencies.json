@@ -4,6 +4,7 @@
     "awiki",
     "gitleaks",
     "nose",
+    "repograph",
     "ruff",
     "specdown",
     "tokei"

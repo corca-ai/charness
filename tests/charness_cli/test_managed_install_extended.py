@@ -91,6 +91,7 @@ def test_installed_cli_update_all_refreshes_external_tools_and_support_state(tmp
         "gitleaks",
         "glow",
         "markdown-preview",
+        "repograph",
         "ruff",
         "tokei",
         "vulture",

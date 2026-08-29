@@ -1,26 +1,41 @@
 #!/usr/bin/env python3
-"""Resolve and execute repograph for authoring-repository quality gates.
+"""Resolve and execute repograph for quality gates.
 
-This is a GATE-EXECUTION policy layered on top of the product resolver.
-``runtime_bootstrap.native_core_path()`` and the
-``CHARNESS_ALLOW_DEV_NATIVE_CORE`` semantics are deliberately not modified.
-The gate needs an authoring-checkout dev-tree fallback even while the product
-resolver correctly reports that no distributed artifact exists yet.
+The binary is BUILT from the ``native/repograph`` crate that ships in the
+charness checkout and installed by ``charness tool install repograph``
+(``integrations/tools/repograph.json``). Nothing is downloaded: building from
+the checkout that runs the gate makes binary/source skew structurally
+impossible instead of merely detectable, which is why the prebuilt-artifact
+distribution layer this module used to consult was retired.
+
+Every action this module takes on the operator's behalf -- picking one of three
+possible binaries, or spending minutes on a build -- is announced on stderr
+before its effect, never inferred from it.
 """
 
 from __future__ import annotations
 
 import argparse
 import os
+import shutil
 import subprocess
 import sys
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
 
-import runtime_bootstrap
+Provenance = Literal["override", "dev-tree", "installed"]
 
-Provenance = Literal["override", "managed", "dev-tree"]
+CRATE_RELATIVE_PATH = Path("native") / "repograph"
+INSTALL_HINT = "Install it with `charness tool install repograph`."
+RUSTUP_HINT = "Install Rust from https://rustup.rs."
+
+# Files whose mtime decides whether the dev-tree binary still represents the
+# crate. This is the whole of the staleness vocabulary now: source that is
+# present is compared against the binary built from it. There is no version
+# table, no tuple key space, and no digest-bound declaration to drift from.
+_SOURCE_GLOBS = ("src/**/*.rs", "Cargo.toml", "Cargo.lock", "rust-toolchain.toml")
 
 
 @dataclass(frozen=True, slots=True)
@@ -33,61 +48,147 @@ class NativeGateError(RuntimeError):
     """A repograph binary cannot be resolved for gate execution."""
 
 
-def _managed_result(repo_root: Path):
-    """Ask the product resolver for a managed result without reusing the override."""
-    # native_core_path lazily imports `scripts.native_core_resolution_lib`;
-    # route that import through the repo-module loader so the repo root is on
-    # sys.path regardless of how this script was invoked.
-    runtime_bootstrap.import_repo_module(__file__, "scripts.native_core_resolution_lib")
-    override = os.environ.pop("CHARNESS_NATIVE_CORE", None)
+def announce(message: str) -> None:
+    """State an action before taking it.
+
+    stderr, not stdout: ``export-safe``, ``plugin-refs``, and ``classify`` emit
+    JSON on stdout that the calling gates parse.
+    """
+    print(f"native gate: {message}", file=sys.stderr, flush=True)
+
+
+def cargo_bin_dir() -> Path:
+    cargo_home = os.environ.get("CARGO_HOME", "").strip()
+    root = Path(cargo_home).expanduser() if cargo_home else Path.home() / ".cargo"
+    return root / "bin"
+
+
+def installed_binary() -> Path | None:
+    """Find an installed repograph the same way its manifest's doctor does."""
+    found = shutil.which("repograph")
+    if found:
+        return Path(found)
+    # `integrations/tools/repograph.json` prepends this exact directory to PATH
+    # in its detect and healthcheck commands, because `cargo install` writes
+    # here and the invoking process's PATH may predate that write. Both sides
+    # look in the same two places so `charness tool doctor repograph` and this
+    # resolver can never disagree about whether the binary is reachable.
+    candidate = cargo_bin_dir() / "repograph"
+    return candidate if candidate.is_file() else None
+
+
+def _newest_source_mtime(crate_root: Path) -> tuple[float, Path | None]:
+    newest = 0.0
+    newest_path: Path | None = None
+    for pattern in _SOURCE_GLOBS:
+        for path in crate_root.glob(pattern):
+            try:
+                mtime = path.stat().st_mtime
+            except OSError:
+                continue
+            if mtime > newest:
+                newest, newest_path = mtime, path
+    return newest, newest_path
+
+
+def dev_tree_staleness(crate_root: Path, binary: Path) -> Path | None:
+    """Return the crate file that outdates ``binary``, or ``None`` if fresh."""
     try:
-        return runtime_bootstrap.native_core_path(repo_root=repo_root)
-    finally:
-        if override is not None:
-            os.environ["CHARNESS_NATIVE_CORE"] = override
+        binary_mtime = binary.stat().st_mtime
+    except OSError:
+        return crate_root / "Cargo.toml"
+    newest, newest_path = _newest_source_mtime(crate_root)
+    return newest_path if newest > binary_mtime else None
+
+
+def build_dev_tree(crate_root: Path, binary: Path, *, reason: str) -> None:
+    """Build the crate in place, saying what is happening before it happens."""
+    if shutil.which("cargo") is None:
+        raise NativeGateError(
+            f"native gate binary is unavailable: {reason}, and `cargo` is not on "
+            f"PATH to build it from {crate_root}. {RUSTUP_HINT} {INSTALL_HINT}"
+        )
+    announce(reason)
+    announce(f"building from source: `cargo build --release --locked` in {crate_root}")
+    announce("this is a build cost paid once per crate change; later runs reuse the binary")
+    started = time.monotonic()
+    # Both cargo streams go straight to file descriptor 2 so a multi-minute
+    # build is visible while it runs, and so cargo's progress output can never
+    # land on the JSON stdout a calling gate parses. `cwd` is the crate root
+    # because rustup selects the toolchain from the working directory, and the
+    # crate pins one in rust-toolchain.toml.
+    completed = subprocess.run(
+        ["cargo", "build", "--release", "--locked"],
+        cwd=crate_root,
+        check=False,
+        stdout=2,
+        stderr=2,
+    )
+    elapsed = time.monotonic() - started
+    if completed.returncode != 0:
+        # Deliberately NOT a fallthrough to an installed binary. Substituting a
+        # binary built from other source for the source that just failed to
+        # build is the silent swap this announcement exists to prevent.
+        raise NativeGateError(
+            f"native gate binary is unavailable: `cargo build --release --locked` "
+            f"failed in {crate_root} with exit code {completed.returncode} after "
+            f"{elapsed:.1f}s. Fix the crate build; the gate will not fall back to "
+            "an installed binary built from different source."
+        )
+    if not binary.is_file():
+        raise NativeGateError(
+            f"native gate binary is unavailable: cargo reported success in "
+            f"{crate_root} but produced no binary at {binary}."
+        )
+    announce(f"built {binary} in {elapsed:.1f}s")
 
 
 def resolve_native_core(repo_root: str | Path) -> NativeGateBinary:
-    """Resolve the binary according to the gate-only D1 resolution order."""
+    """Resolve the binary: override, then dev-tree build, then installed.
+
+    Dev-tree precedes the installed binary so that editing the crate in the
+    charness authoring checkout is reflected in the gate verdict. The inverse
+    order would let a binary built from other source render a verdict on the
+    source you just changed.
+    """
     root = Path(repo_root).expanduser().resolve()
+
     override = os.environ.get("CHARNESS_NATIVE_CORE", "").strip()
     if override:
         path = Path(override).expanduser().resolve()
         if not path.is_file():
+            # An explicit override that silently degrades is worse than none.
             raise NativeGateError(
-                "CHARNESS_NATIVE_CORE points to a missing native core file: "
-                f"{path}"
+                f"CHARNESS_NATIVE_CORE points to a missing native core file: {path}"
             )
         return NativeGateBinary(path, "override")
 
-    try:
-        managed = _managed_result(root)
-    except (OSError, RuntimeError, ValueError):
-        managed = None
-    if (
-        managed is not None
-        and getattr(managed, "status", None) == "healthy"
-        and getattr(managed, "provenance", None) == "managed"
-    ):
-        path = Path(managed.path)
-        if path.is_file():
-            return NativeGateBinary(path, "managed")
-
-    crate_root = root / "native" / "repograph"
-    binary = crate_root / "target" / "release" / "repograph"
+    crate_root = root / CRATE_RELATIVE_PATH
     if (crate_root / "Cargo.toml").is_file():
-        if binary.is_file():
-            return NativeGateBinary(binary, "dev-tree")
-        raise NativeGateError(
-            "native gate binary is unavailable: the repograph crate source is "
-            f"present at {crate_root}, but the release binary is missing at {binary}. "
-            f"Run `cargo build --release` in `{crate_root}`."
-        )
+        binary = crate_root / "target" / "release" / "repograph"
+        if not binary.is_file():
+            build_dev_tree(crate_root, binary, reason=f"repograph is not built at {binary}")
+        else:
+            stale_source = dev_tree_staleness(crate_root, binary)
+            if stale_source is not None:
+                build_dev_tree(
+                    crate_root,
+                    binary,
+                    reason=(
+                        f"{binary} is older than the crate source "
+                        f"({stale_source.relative_to(crate_root)} changed)"
+                    ),
+                )
+        return NativeGateBinary(binary, "dev-tree")
+
+    installed = installed_binary()
+    if installed is not None:
+        return NativeGateBinary(installed, "installed")
 
     raise NativeGateError(
-        "native gate binary is unavailable: this checkout has no native core "
-        "and no source to build one; the native artifact is not yet distributed. "
-        "Run `charness update` once the native artifact is distributed."
+        "native gate binary is unavailable: `repograph` is not installed, and "
+        f"this repo has no {CRATE_RELATIVE_PATH.as_posix()} crate to build one "
+        f"from. {INSTALL_HINT}"
     )
 
 
@@ -112,8 +213,11 @@ def main(argv: list[str] | None = None) -> int:
         print(str(exc), file=sys.stderr)
         return 1
 
+    # Always, not only under --probe: resolution now picks between three
+    # sources whose verdicts can differ, so which one answered is part of the
+    # gate's result rather than a debugging aid.
+    announce(f"repograph {resolved.path} (provenance: {resolved.provenance})")
     if args.probe:
-        print(f"native core: {resolved.path} (provenance: {resolved.provenance})")
         return 0
 
     try:

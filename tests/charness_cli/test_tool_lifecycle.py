@@ -221,10 +221,10 @@ def test_tool_install_can_select_quality_validation_recommendations(tmp_path: Pa
         "recommend_for_skill": None,
         "recommendation_role": "validation",
         "next_skill_id": "quality",
-        "selected_tool_ids": ["awiki", "gitleaks", "lychee", "nose", "ruff", "tokei", "vulture"],
+        "selected_tool_ids": ["awiki", "gitleaks", "lychee", "nose", "repograph", "ruff", "tokei", "vulture"],
     }
-    assert payload["tool_ids"] == ["awiki", "gitleaks", "lychee", "nose", "ruff", "tokei", "vulture"]
-    assert payload["summary"]["tool_count"] == 7
+    assert payload["tool_ids"] == ["awiki", "gitleaks", "lychee", "nose", "repograph", "ruff", "tokei", "vulture"]
+    assert payload["summary"]["tool_count"] == 8
     assert "results" not in payload
 
 

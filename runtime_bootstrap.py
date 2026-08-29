@@ -25,7 +25,6 @@ repo_root_from_script = _RUNTIME_BOOTSTRAP.repo_root_from_script
 RuntimeEnvironmentError = _RUNTIME_BOOTSTRAP.RuntimeEnvironmentError
 skill_script = _RUNTIME_BOOTSTRAP.skill_script
 require_repo_local_helper = _RUNTIME_BOOTSTRAP.require_repo_local_helper
-native_core_path = _RUNTIME_BOOTSTRAP.native_core_path
 
 __all__ = [
     "MANAGED_RUNTIME_PATH_KEYS",
@@ -38,5 +37,4 @@ __all__ = [
     "RuntimeEnvironmentError",
     "require_repo_local_helper",
     "skill_script",
-    "native_core_path",
 ]

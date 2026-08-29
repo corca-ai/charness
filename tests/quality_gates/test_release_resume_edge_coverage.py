@@ -28,20 +28,17 @@ RESUME = _load("publish_release_resume")
 CLAIMS = _load("publish_release_claims_review")
 RESUME_STATE = _load("publish_release_resume_state")
 _ISOLATED_RESUME_REPO = Path(tempfile.mkdtemp(prefix="charness-resume-repo-"))
-_NATIVE_NOT_APPLICABLE = {"status": "not-applicable", "asset": None, "reason": "native_core declaration is absent"}
 
 
 class _ClaimsResumeCli:
     def __init__(self, commands: list[list[str]], *, notes_preflights: list[dict] | None = None,
                  allow_create: bool = False, verify_returncode: int = 0,
-                 version_surface_error: str | None = None,
-                 upload_failure: BaseException | None = None):
+                 version_surface_error: str | None = None):
         self.commands = commands
         self.notes_preflights = notes_preflights if notes_preflights is not None else []
         self.allow_create = allow_create
         self.verify_returncode = verify_returncode
         self.version_surface_error = version_surface_error
-        self.upload_failure = upload_failure
         self.version_surface_checks: list[dict] = []
         self.final_artifact_commits: list[dict] = []
         self.finalized_payloads: list[dict] = []
@@ -132,18 +129,6 @@ class _ClaimsResumeCli:
             raise AssertionError("existing release should not be created again")
         return SimpleNamespace(returncode=0, stdout="https://example.test/v1.2.3")
 
-    @staticmethod
-    def native_artifact_preflight(_repo_root):
-        return _NATIVE_NOT_APPLICABLE
-
-    def attempt_native_artifact_upload(self, *_args, **_kwargs):
-        if self.upload_failure is not None:
-            return None, self.upload_failure
-        return _NATIVE_NOT_APPLICABLE, None
-
-    def record_native_artifact_upload(self, payload, result, failure):
-        payload["native_artifact_upload"] = result if failure is None else _NATIVE_NOT_APPLICABLE
-
 
 class _ClaimsResumeCommon:
     @staticmethod
@@ -171,7 +156,6 @@ def _resume_claims_publication_leg(
     *, remote_branch_sha: str, tag_remote: bool, release_exists: bool = True,
     notes_file=None, notes_preflights: list[dict] | None = None,
     verify_returncode: int = 0, cli_out: list | None = None,
-    upload_failure: BaseException | None = None,
 ) -> tuple[list[list[str]], list[str]]:
     commands: list[list[str]] = []
     committed: list[str] = []
@@ -201,7 +185,7 @@ def _resume_claims_publication_leg(
     }
     args = SimpleNamespace(execute=True, remote="origin", notes_file=notes_file, close_issue=[])
     cli = _ClaimsResumeCli(commands, notes_preflights=notes_preflights, allow_create=not release_exists,
-                           verify_returncode=verify_returncode, upload_failure=upload_failure)
+                           verify_returncode=verify_returncode)
     if cli_out is not None:
         cli_out.append(cli)
     RESUME_PUBLISH.resume_publish(
@@ -245,19 +229,6 @@ def test_a_failed_post_create_verification_commits_the_artifact_before_it_refuse
         "the failure arm must persist the release artifact before refusing; the tag and "
         "the release already exist by the time verification runs"
     )
-    assert clis[0].final_artifact_commits[0]["has_issue_closeout"] is False
-
-
-def test_a_failed_native_upload_commits_the_artifact_before_it_refuses() -> None:
-    clis: list = []
-
-    with pytest.raises(SystemExit, match="native upload failed"):
-        _resume_claims_publication_leg(
-            remote_branch_sha="claims-evidence", tag_remote=True,
-            upload_failure=SystemExit("native upload failed"), cli_out=clis,
-        )
-
-    assert len(clis[0].final_artifact_commits) == 1
     assert clis[0].final_artifact_commits[0]["has_issue_closeout"] is False
 
 
