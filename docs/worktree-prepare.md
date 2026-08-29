@@ -115,8 +115,9 @@ prepare:
 Notes:
 
 - `argv` lists must use **block-style YAML**. The repo-local YAML loader does not parse inline `[a, b]` arrays.
-- `prepare.skip_if_doctor_passes` defaults to `true`; pass `--force` to bypass.
-- `doctor.checks` extends the canonical baseline. Each check is an `argv` invocation with optional `expect_exit_code` (default 0) and `next_action_hint` surfaced on failure.
+- `prepare.skip_if_doctor_passes` defaults to `false`. Set it to `true` only when passing manifest doctor checks explicitly cover every declared prepare command; pass `--force` to bypass an established skip.
+- `doctor.checks` extends the canonical baseline. Each check is an `argv` invocation with optional `expect_exit_code` (default 0), `next_action_hint` surfaced on failure, and `covers`, a list of prepare command ids whose readiness the passing check establishes.
+- Prepare skipping is licensed by the exact intersection of `doctor.checks[].covers` and `prepare.commands[].id`, using only declarations in the manifest. Every prepare command must have a unique id and appear in a passing check's `covers` list; canonical checks, missing coverage, and failed checks do not license a skip. The prepare payload reports this intersection under `coverage` and names the covering checks in its exit-zero `skipped` marker.
 - `doctor.disable_canonical_checks` opts out of a canonical check by id (`git_common_dir`, `hooks_path`, `lefthook_shim`, `husky_dir`). Use only when you genuinely do not use that hook surface.
 - `prepare.commands` are worktree setup commands, not lefthook hook commands. For consumer lefthook `pre-commit`/`pre-push` entries, apply the [hook failure visibility contract](../skills/public/setup/references/hook-failure-visibility.md): declare `fail_text`, retain a stable failure log for long gates, and avoid output-filter pipelines.
 

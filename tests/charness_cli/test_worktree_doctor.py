@@ -314,13 +314,14 @@ def test_prepare_runs_commands_when_doctor_was_passing_with_force(tmp_path: Path
     assert marker.read_text(encoding="utf-8").strip() == "ok"
 
 
-def test_prepare_skipped_when_doctor_passes_without_force(tmp_path: Path) -> None:
+def test_prepare_runs_when_doctor_passes_without_declared_coverage(tmp_path: Path) -> None:
     repo = _make_git_worktree(tmp_path)
     _write_manifest(
         repo,
         (
             "version: 1\n"
             "prepare:\n"
+            "  skip_if_doctor_passes: true\n"
             "  commands:\n"
             "    - id: should-not-run\n"
             "      argv:\n"
@@ -328,9 +329,54 @@ def test_prepare_skipped_when_doctor_passes_without_force(tmp_path: Path) -> Non
         ),
     )
     payload = lib.run_prepare(repo, force=False)
+    assert payload["status"] == "fail"
+    assert payload["executed"][0]["id"] == "should-not-run"
+    assert payload["executed"][0]["exit_code"] == 1
+    assert payload["coverage"] == {
+        "established": False,
+        "prepare_command_ids": ["should-not-run"],
+        "doctor_check_ids": [],
+        "intersection": [],
+        "uncovered_prepare_command_ids": ["should-not-run"],
+    }
+    assert "skipped" not in payload
+
+
+def test_prepare_skips_when_passing_doctor_declares_coverage(tmp_path: Path) -> None:
+    repo = _make_git_worktree(tmp_path)
+    _write_manifest(
+        repo,
+        (
+            "version: 1\n"
+            "prepare:\n"
+            "  skip_if_doctor_passes: true\n"
+            "  commands:\n"
+            "    - id: install-deps\n"
+            "      argv:\n"
+            "        - '/bin/false'\n"
+            "doctor:\n"
+            "  checks:\n"
+            "    - id: dependencies-ready\n"
+            "      covers:\n"
+            "        - install-deps\n"
+            "      argv:\n"
+            "        - '/bin/true'\n"
+        ),
+    )
+
+    payload = lib.run_prepare(repo, force=False)
+
     assert payload["status"] == "pass"
     assert payload["executed"] == []
-    assert payload.get("skipped")
+    assert payload["coverage"] == {
+        "established": True,
+        "prepare_command_ids": ["install-deps"],
+        "doctor_check_ids": ["dependencies-ready"],
+        "intersection": ["install-deps"],
+        "uncovered_prepare_command_ids": [],
+    }
+    assert "install-deps" in payload["skipped"]
+    assert "dependencies-ready" in payload["skipped"]
 
 
 def test_prepare_command_failure_surfaces_fail(tmp_path: Path) -> None:

@@ -36,7 +36,9 @@ prepare:
         - exec
         - lefthook
         - install
-  skip_if_doctor_passes: true
+  # Skipping is opt-in and requires passing doctor checks to declare coverage
+  # for every prepare command id via `covers`.
+  skip_if_doctor_passes: false
 
 doctor:
   # Optional extra probes layered on top of the canonical checks. Each command

@@ -13,6 +13,8 @@ prepare:
   commands:
 $install_deps
 $install_hooks
-  skip_if_doctor_passes: true
+  # Skipping is opt-in and requires passing doctor checks to declare coverage
+  # for every prepare command id via `covers`.
+  skip_if_doctor_passes: false
 
 $doctor_block

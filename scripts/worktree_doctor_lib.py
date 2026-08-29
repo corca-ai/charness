@@ -80,7 +80,7 @@ def _validate_prepare_section(prepare: Any, errors: list[str]) -> None:
     else:
         for index, entry in enumerate(commands):
             _validate_command_entry(entry, f"manifest.prepare.commands[{index}]", errors)
-    skip = prepare.get("skip_if_doctor_passes", True)
+    skip = prepare.get("skip_if_doctor_passes", False)
     if not isinstance(skip, bool):
         errors.append("manifest.prepare.skip_if_doctor_passes must be a boolean")
 
@@ -154,6 +154,12 @@ def _validate_doctor_check_entry(entry: Any, label: str, errors: list[str], seen
     else:
         seen_ids.add(check_id)
     _validate_argv(entry.get("argv"), f"{label}.argv", errors)
+    covers = entry.get("covers")
+    if covers is not None:
+        if not isinstance(covers, list):
+            errors.append(f"{label}.covers must be a list of prepare command ids")
+        elif any(not isinstance(command_id, str) or not command_id for command_id in covers):
+            errors.append(f"{label}.covers must contain only non-empty strings")
     expect = entry.get("expect_exit_code", 0)
     if not isinstance(expect, int):
         errors.append(f"{label}.expect_exit_code must be an integer")
@@ -282,6 +288,68 @@ def _execute_prepare_command(entry: dict[str, Any], repo_root: Path) -> tuple[Co
     )
 
 
+def _prepare_coverage(manifest: dict[str, Any], doctor: dict[str, Any]) -> dict[str, Any]:
+    """Derive the skip licence from the manifest's explicit coverage relation.
+
+    The relation is ``doctor.checks[].covers`` -> ``prepare.commands[].id``.
+    Neither command argv nor check names are interpreted. A relation is
+    established only when every prepare command has a unique id and each id is
+    covered by a doctor check that actually passed in this doctor run.
+    """
+    commands = (manifest.get("prepare") or {}).get("commands") or []
+    prepare_ids: list[str | None] = [
+        entry.get("id") if isinstance(entry, dict) and isinstance(entry.get("id"), str) else None
+        for entry in commands
+    ]
+    doctor_checks = (manifest.get("doctor") or {}).get("checks") or []
+    declared_by_check: dict[str, set[str]] = {}
+    for entry in doctor_checks:
+        if not isinstance(entry, dict) or not isinstance(entry.get("id"), str):
+            continue
+        covers = entry.get("covers")
+        if not isinstance(covers, list):
+            continue
+        declared_by_check[entry["id"]] = {
+            command_id for command_id in covers if isinstance(command_id, str) and command_id
+        }
+
+    passing_ids = {
+        check.get("id")
+        for check in doctor.get("checks") or []
+        if isinstance(check, dict) and check.get("status") == PASS and isinstance(check.get("id"), str)
+    }
+    passing_coverage = {
+        check_id: declared_by_check[check_id]
+        for check_id in sorted(passing_ids)
+        if check_id in declared_by_check
+    }
+    declared_intersection = {
+        command_id
+        for covered_ids in passing_coverage.values()
+        for command_id in covered_ids
+    }
+    intersection = sorted(
+        command_id for command_id in set(prepare_ids) - {None} if command_id in declared_intersection
+    )
+    uncovered = [
+        command_id for command_id in prepare_ids if command_id is None or command_id not in declared_intersection
+    ]
+    unique_prepare_ids = len(prepare_ids) == len(set(prepare_ids)) and None not in prepare_ids
+    established = bool(prepare_ids) and unique_prepare_ids and not uncovered
+    covering_check_ids = sorted(
+        check_id
+        for check_id, covered_ids in passing_coverage.items()
+        if covered_ids.intersection(set(intersection))
+    )
+    return {
+        "established": established,
+        "prepare_command_ids": prepare_ids,
+        "doctor_check_ids": covering_check_ids,
+        "intersection": intersection,
+        "uncovered_prepare_command_ids": uncovered,
+    }
+
+
 def run_prepare(
     repo_root: Path, *, force: bool = False, require_isolation: bool = False
 ) -> dict[str, Any]:
@@ -301,20 +369,27 @@ def run_prepare(
         return _missing_manifest_payload(manifest_state)
 
     pre_doctor = run_doctor(repo_root, require_isolation=require_isolation)
-    skip_when_clean = bool(manifest_state.data.get("prepare", {}).get("skip_if_doctor_passes", True))
-    if pre_doctor["status"] == PASS and skip_when_clean and not force:
+    coverage = _prepare_coverage(manifest_state.data, pre_doctor)
+    skip_when_clean = bool(manifest_state.data.get("prepare", {}).get("skip_if_doctor_passes", False))
+    if pre_doctor["status"] == PASS and skip_when_clean and coverage["established"] and not force:
+        prepare_ids = ", ".join(coverage["prepare_command_ids"])
+        doctor_ids = ", ".join(coverage["doctor_check_ids"])
         return {
             "checked_at": now_iso(),
             "manifest": manifest_state.to_dict(),
             "executed": [],
             "doctor": pre_doctor,
+            "coverage": coverage,
             "status": PASS,
             "next_step": None,
             # Exit-ZERO attention state: prepare ran NOTHING. YAML renders this key
             # verbatim as `skipped: <reason>`, which is the visible marker that a
             # passing prepare here did no work -- and the evidence term declared in
             # skills/public/quality/references/attention-state-visibility.json.
-            "skipped": "doctor already reports pass; pass --force to run prepare anyway.",
+            "skipped": (
+                "doctor passed and declared coverage justifies skipping prepare command(s) "
+                f"[{prepare_ids}] via doctor check(s) [{doctor_ids}]; pass --force to run prepare anyway."
+            ),
         }
 
     commands = manifest_state.data.get("prepare", {}).get("commands") or []
@@ -343,6 +418,7 @@ def run_prepare(
         "manifest": manifest_state.to_dict(),
         "executed": [item.to_dict() for item in executed],
         "doctor": post_doctor,
+        "coverage": coverage,
         "status": status,
         "next_step": next_step,
     }

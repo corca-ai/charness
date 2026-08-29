@@ -61,8 +61,8 @@
         },
         "skip_if_doctor_passes": {
           "type": "boolean",
-          "default": true,
-          "description": "When true, `charness worktree prepare` is a no-op if `doctor` already reports pass. Override with --force."
+          "default": false,
+          "description": "When true, `charness worktree prepare` may skip only when passing doctor checks explicitly cover every declared prepare command. Override with --force."
         }
       }
     },
@@ -102,6 +102,15 @@
               "next_action_hint": {
                 "type": "string",
                 "description": "Human-readable next action surfaced when this check fails."
+              },
+              "covers": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "description": "Prepare command ids whose readiness this check establishes when it passes."
               },
               "timeout_seconds": {
                 "type": "integer",

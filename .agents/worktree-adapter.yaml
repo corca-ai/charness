@@ -29,10 +29,28 @@ prepare:
     #     - exec
     #     - <your-hook-tool>
     #     - install
+  # Licensed by the `covers` declaration below, not by a doctor verdict about
+  # something else (#752). Without that declaration this reverts to running
+  # `npm ci` on every prepare, which is the correct answer for a doctor that
+  # cannot see dependency readiness.
   skip_if_doctor_passes: true
 
 # Optional manifest-defined doctor checks layered on top of the canonical suite.
-# Add entries here when you have a repo-specific readiness probe; otherwise the
-# canonical suite (git_common_dir, hooks_path, lefthook_shim, husky_dir) is enough.
-# doctor:
-#   checks: []
+# The canonical suite (git_common_dir, hooks_path, lefthook_shim, husky_dir) sees
+# nothing about installed dependencies, so it cannot license skipping install-deps.
+doctor:
+  checks:
+    - id: npm_dependencies_installed
+      description: "Installed npm tree satisfies package.json."
+      # `npm ls --depth=0` is what makes this coverage claim honest rather than a
+      # presence test: it exits 1 when node_modules is absent OR when the
+      # installed tree does not satisfy package.json. Verified both arms on
+      # 2026-08-29 -- exit 0 in this checkout, exit 1 against a copy of
+      # package.json with no node_modules -- in 0.32s.
+      timeout_seconds: 120
+      argv:
+        - npm
+        - ls
+        - --depth=0
+      covers:
+        - install-deps
