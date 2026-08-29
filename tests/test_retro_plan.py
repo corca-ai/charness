@@ -471,3 +471,85 @@ def test_the_retro_shape_packet_is_scoped_to_the_artifact_this_run_writes(
     # The path the packet names is the one the validator would own for THIS repo.
     prefix = RETRO_OUTPUT_DIR_LIB.retro_artifact_prefix(repo)
     assert scaffold["write_artifact_path"].startswith(prefix)
+
+
+# --- summary_path opt-out: unset / configured / explicit-null ------------------
+#
+# A consumer whose lesson ledger is the sole lesson surface could not decline the
+# Markdown projection: the contract called the field optional, but omitting it and
+# nulling it both resolved to the same default, so the next retro silently
+# recreated a second lesson owner the repo had deliberately removed.
+
+
+def _retro_repo(tmp_path, adapter_body: str):
+    from pathlib import Path
+
+    repo = tmp_path / "consumer"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / "charness-artifacts" / "retro").mkdir(parents=True)
+    (repo / ".agents" / "retro-adapter.yaml").write_text(adapter_body, encoding="utf-8")
+    return Path(repo)
+
+
+def _resolved(repo):
+    import importlib
+
+    module = importlib.import_module("skills.public.retro.scripts.resolve_adapter")
+    return module.load_adapter(repo)
+
+
+def test_omitting_summary_path_keeps_the_default_projection(tmp_path) -> None:
+    repo = _retro_repo(tmp_path, "version: 1\nrepo: consumer\n")
+    resolved = _resolved(repo)
+    assert resolved["data"]["summary_path"] == "charness-artifacts/retro/recent-lessons.md"
+    assert resolved["field_state"]["summary_path"] == "unset"
+
+
+def test_declaring_summary_path_null_disables_the_projection(tmp_path) -> None:
+    repo = _retro_repo(tmp_path, "version: 1\nrepo: consumer\nsummary_path: null\n")
+    resolved = _resolved(repo)
+    # The two states a `.get`-based validator could not tell apart.
+    assert resolved["data"]["summary_path"] is None
+    assert resolved["field_state"]["summary_path"] == "explicit-null"
+
+
+def test_a_declared_summary_path_still_wins(tmp_path) -> None:
+    repo = _retro_repo(tmp_path, "version: 1\nrepo: consumer\nsummary_path: docs/lessons.md\n")
+    resolved = _resolved(repo)
+    assert resolved["data"]["summary_path"] == "docs/lessons.md"
+    assert resolved["field_state"]["summary_path"] == "configured"
+
+
+def test_an_empty_string_is_not_the_opt_out_spelling(tmp_path) -> None:
+    """It stays a string and resolves to the repository root, which is why null is the spelling."""
+    repo = _retro_repo(tmp_path, "version: 1\nrepo: consumer\nsummary_path: ''\n")
+    resolved = _resolved(repo)
+    assert resolved["data"]["summary_path"] == ""
+    assert resolved["field_state"]["summary_path"] == "configured"
+
+
+def _planned_read_paths(repo, resolved) -> list[str]:
+    import importlib
+
+    plan = importlib.import_module("skills.public.retro.scripts.plan_retro_run")
+    reads = plan._required_reads(
+        repo_root=repo,
+        adapter=resolved,
+        artifact={"exists": False},
+        lens_brief={"why": "test lens brief"},
+    )
+    return [str(item["path"]) for item in reads]
+
+
+def test_the_planner_reads_no_digest_when_the_projection_is_disabled(tmp_path) -> None:
+    """A digest ON DISK must still not be read once the repo declared it is not the owner."""
+    disabled = _retro_repo(tmp_path, "version: 1\nrepo: consumer\nsummary_path: null\n")
+    digest = disabled / "charness-artifacts" / "retro" / "recent-lessons.md"
+    digest.write_text("# stale projection\n", encoding="utf-8")
+    assert all("recent-lessons.md" not in path for path in _planned_read_paths(disabled, _resolved(disabled)))
+
+    # Control: the SAME on-disk digest is read when the projection is not disabled,
+    # so the assertion above is about the opt-out and not about the fixture.
+    enabled = _retro_repo(tmp_path / "other", "version: 1\nrepo: consumer\n")
+    (enabled / "charness-artifacts" / "retro" / "recent-lessons.md").write_text("# live\n", encoding="utf-8")
+    assert any("recent-lessons.md" in path for path in _planned_read_paths(enabled, _resolved(enabled)))

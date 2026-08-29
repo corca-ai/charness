@@ -109,3 +109,26 @@ def test_refresh_recent_lessons_accepts_explicit_source(tmp_path: Path, monkeypa
     summary_text = (output_dir / "recent-lessons.md").read_text(encoding="utf-8")
     assert "Explicit source should win." in summary_text
     assert "## Selection Policy" in summary_text
+
+
+def test_refresh_refuses_when_the_projection_is_disabled(tmp_path: Path, monkeypatch, capsys) -> None:
+    """`summary_path: null` is an opt-out, and this command exists to WRITE the digest.
+
+    Reporting a no-op success would name a path the repository asked not to have,
+    and the pre-repair behaviour was worse still: `repo_root / None` raised
+    TypeError, so the consumer's declared opt-out surfaced as a crash.
+    """
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / "charness-artifacts" / "retro").mkdir(parents=True)
+    (repo / ".agents" / "retro-adapter.yaml").write_text(
+        "version: 1\nrepo: consumer\nsummary_path: null\n", encoding="utf-8"
+    )
+
+    result = run_refresh(monkeypatch, capsys, "--repo-root", str(repo))
+
+    assert result.returncode == 2
+    assert "summary_path: null" in result.stderr
+    assert "disabled" in result.stderr
+    # Refusal, not a silent write: nothing was created at the default location.
+    assert not (repo / "charness-artifacts" / "retro" / "recent-lessons.md").exists()

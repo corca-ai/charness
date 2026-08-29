@@ -486,3 +486,58 @@ def test_persist_retro_artifact_force_empty_summary_opts_in(
     refreshed = legacy_summary.read_text(encoding="utf-8")
     assert "Hand-curated trap line that the operator has chosen to drop." not in refreshed
     assert "No current focus bullets found in retro lesson index." in refreshed
+
+
+def test_persist_writes_no_digest_when_the_projection_is_disabled(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    """The retro artifact is still persisted; only the Markdown projection is declined.
+
+    This is the case a consumer whose ledger is the sole lesson surface needs: the
+    durable retro must still land, and the next retro must not silently recreate the
+    second lesson owner the repository removed.
+    """
+    repo = tmp_path / "repo"
+    output_dir = repo / "charness-artifacts" / "retro"
+    (repo / ".agents").mkdir(parents=True)
+    output_dir.mkdir(parents=True)
+    (repo / ".agents" / "retro-adapter.yaml").write_text(
+        "version: 1\nrepo: consumer\nsummary_path: null\n", encoding="utf-8"
+    )
+    markdown_file = repo / "session.md"
+    markdown_file.write_text(
+        "\n".join(
+            [
+                "# Session Retro",
+                "",
+                "## Context",
+                "",
+                "- The ledger is this repository's only lesson surface.",
+                "",
+                "## Next Improvements",
+                "",
+                "- `capability`: Let the adapter decline the Markdown projection.",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = run_persist(
+        monkeypatch,
+        capsys,
+        "--repo-root",
+        str(repo),
+        "--artifact-name",
+        "session-2026-04-14.md",
+        "--markdown-file",
+        str(markdown_file),
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = yaml.safe_load(result.stdout)
+    assert payload["artifact_path"] == "charness-artifacts/retro/session-2026-04-14.md"
+    assert (output_dir / "session-2026-04-14.md").is_file()
+    # The declined surfaces: no digest, and no selection index derived from one.
+    assert not (output_dir / "recent-lessons.md").exists()
+    assert payload.get("summary_refreshed") is not True

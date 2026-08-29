@@ -68,6 +68,19 @@ auto_session_trigger_path_globs: []
 - `summary_path` is optional and points at a compact human-readable digest of
   recent retro lessons for future session pickup. It is NOT derived from
   `output_dir`, so a repo that moves one should move both.
+- Optional here means three states, not two, and the resolver reports which one
+  an adapter declared in `field_state.summary_path`:
+  - the key is ABSENT (`unset`) — the default digest path applies;
+  - the key carries a path (`configured`) — that path applies;
+  - the key is declared `null` (`explicit-null`) — the Markdown projection is
+    DISABLED. `persist` writes no digest, `plan` reads none, and
+    `refresh-recent-lessons` refuses rather than reporting a no-op success over a
+    path the repo asked not to have.
+
+  Declare `null` when the repository's own lesson ledger is the sole lesson
+  surface. An empty string is not the spelling: it stays a string and resolves to
+  the repository root. Omission is not the spelling either — that is `unset`, and
+  it is what makes the default apply.
 - `evidence_paths` are additional repo-relative file or directory locators worth
   reading for retros. The planner preserves their declared order and reports
   missing optional locators without turning them into a blocking prerequisite.

@@ -488,6 +488,26 @@ def list_field_state(data: dict[str, Any], field: str) -> str:
     return "configured"
 
 
+def string_field_state(data: dict[str, Any], field: str) -> str:
+    """`unset` / `explicit-null` / `configured` for one optional string field.
+
+    The string-typed sibling of `list_field_state`, and it exists for the same
+    reason: `data.get(field)` returns `None` for a key that is ABSENT and for a key
+    declared as YAML `null`, so a validator built on `.get` cannot tell "I said
+    nothing" from "I said no". For a list the second case spells itself
+    `[]`; a string has no such spelling, which is why an optional string field's
+    documented optionality was false in practice (#750) -- omitting it and nulling
+    it both fell back to the same default.
+
+    `explicit-null` is the DECLARATION, not the policy. What a disabled field means
+    belongs to the skill that owns it; this only reports which of the three things
+    the adapter author actually wrote.
+    """
+    if field not in data:
+        return "unset"
+    return "explicit-null" if data.get(field) is None else "configured"
+
+
 def plan_generated_write(
     existing_text: str | None, rendered_text: str, *, also_unchanged_when: bool = False
 ) -> str:

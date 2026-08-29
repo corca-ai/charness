@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import runpy
+import sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -61,6 +62,18 @@ def main() -> int:
     if refused is not None:
         return refused
     summary_rel = adapter["data"]["summary_path"]
+    if summary_rel is None:
+        # The adapter declared `summary_path: null` -- this repo's lesson owner is not
+        # a Markdown projection. Refusing beats writing: this command exists to
+        # WRITE the digest, so a no-op success would report a path the repo asked not
+        # to have. `repo_root / None` is a TypeError, which is what this replaces.
+        print(
+            "retro adapter declares `summary_path: null`; the recent-lessons projection "
+            "is disabled for this repository and there is nothing to refresh. Remove the "
+            "declaration to re-enable it.",
+            file=sys.stderr,
+        )
+        return 2
     output_dir = repo_root / adapter["data"]["output_dir"]
     summary_path = repo_root / summary_rel
     source_path = (repo_root / args.source).resolve() if args.source else None

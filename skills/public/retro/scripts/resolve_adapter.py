@@ -29,6 +29,7 @@ load_adapter_contract = _scripts_simple_skill_adapter_lib_module.load_adapter_co
 _scripts_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_lib")
 list_field_state = _scripts_adapter_lib_module.list_field_state
 optional_string = _scripts_adapter_lib_module.optional_string
+string_field_state = _scripts_adapter_lib_module.string_field_state
 declared_fields_after_version_check = _scripts_adapter_lib_module.declared_fields_after_version_check
 optional_string_list = _scripts_adapter_lib_module.optional_string_list
 _scripts_critique_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(
@@ -108,6 +109,15 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
         if value is not None:
             validated[field] = value
 
+    # `summary_path: null` is an OPT-OUT, not an omission. A consumer whose
+    # lesson ledger is the sole surface could not decline the Markdown projection:
+    # the contract called the field optional, but omitting it and nulling it both
+    # resolved to the same default, so the next retro silently recreated a second
+    # lesson owner the repo had deliberately removed. An empty string is not the
+    # spelling -- it stays a string and resolves to the repository root.
+    if string_field_state(data, "summary_path") == "explicit-null":
+        validated["summary_path"] = None
+
     canonicalize_output_dir(validated, errors)
 
     for field in STRING_LIST_FIELDS:
@@ -154,6 +164,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
         ),
         extra_payload=lambda _data, raw_data, _found: {
             "field_state": {
+                "summary_path": string_field_state(raw_data, "summary_path"),
                 "evidence_paths": list_field_state(raw_data, "evidence_paths"),
                 "metrics_commands": list_field_state(raw_data, "metrics_commands"),
                 "artifact_sections": list_field_state(raw_data, "artifact_sections"),
