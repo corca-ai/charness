@@ -805,4 +805,8 @@ def test_a_date_bearing_subject_key_cannot_overwrite_an_undated_sibling(
 
     assert result.returncode == 0, result.stderr
     assert sibling.read_bytes() == before
-    assert (output_dir / "2026-08-29-session-2026-08-29.md").is_file()
+    # The prefix is TODAY, not the date inside the subject key -- those are two
+    # different dates and the whole point of the guard is that it prefixes rather
+    # than reuses. Hardcoding the prefix as `2026-08-29` made this test pass only
+    # on the day it was written, and it went red at that midnight.
+    assert (output_dir / f"{date.today().isoformat()}-session-2026-08-29.md").is_file()
