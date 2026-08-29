@@ -110,7 +110,7 @@ inference-layer surface, not a banner repeated per invocation):
 - `inventory_lint_ignores.py` (suppression pressure): which suppressions are
   justified, provenance-bearing deferrals versus normalized debt THIS repo should
   structurally fix?
-- `check_python_lengths.py` warn band / `--headroom` near-limit (length smell —
+- `check_code_lengths.py` warn band / `--headroom` near-limit (length smell —
   the hard over-limit file gate stays a verified fact, never re-litigated;
   function length is gated separately by ruff PLR0915):
   is a warn-band file an honest cohesive unit near its limit,

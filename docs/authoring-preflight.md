@@ -56,7 +56,7 @@ Before a large addition to a `scripts/*.py` or skill-helper file, check how much
 room is left:
 
 ```bash
-python3 scripts/check_python_lengths.py --repo-root . --headroom --paths <file>
+python3 scripts/check_code_lengths.py --repo-root . --headroom --paths <file>
 ```
 
 It prints `limit − current` (tokei Python code lines) per gated file and flags

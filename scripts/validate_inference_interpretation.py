@@ -16,7 +16,7 @@ inference-layer surface added without registering its consumer pairing.
 
 It is a STRUCTURAL presence/pairing check, not a content classifier (#330
 Non-Goal). It is file-granular: it cannot judge whether, inside a file that has
-both an inference variant and a verified-fact variant (e.g. check_python_lengths'
+both an inference variant and a verified-fact variant (e.g. check_code_lengths'
 warn band vs over-limit gate), the declaration rides only the inference path —
 that intra-file boundary stays owned by the per-surface #322 tests and the
 fresh-eye review. As a deterministic gate, its OWN output is a verified fact and

@@ -3,7 +3,7 @@
 
 SPLIT FROM `run_standing_pytest` (S6, 2026-08-15) when that file crossed its
 length cap. Extracted as a CONCEPT rather than spilled to dodge the cap, which
-`check_python_lengths` names as the wrong move: this module answers one question
+`check_code_lengths` names as the wrong move: this module answers one question
 the runner merely consumes the answer to -- where the basetemp goes, whether one
 is still live, and which failed roots are kept for diagnosis. It has its own
 dedicated tests in `tests/quality_gates/test_retention_refusal_coverage.py`,

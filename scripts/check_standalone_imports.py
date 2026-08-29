@@ -11,7 +11,7 @@ The measured instance: `scripts/quality_policy_merge.py` was extracted from
 cycle resolved in exactly ONE order, every existing importer reached `defaults` first,
 and **4979 tests passed with a module that could not be imported on its own**. It was
 found by a person reading two import statements, not by any tool. `ruff` does not check
-import cycles and `check_python_lengths` cannot.
+import cycles and `check_code_lengths` cannot.
 
 That matters more here than in most repos, because this one forces length-cap
 extractions routinely -- three in one goal, two of which introduced a defect the suite

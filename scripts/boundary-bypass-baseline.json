@@ -112,7 +112,7 @@
     {
       "test_file": "tests/quality_gates/test_closeout_headroom_and_mirror_gate.py",
       "import_safe_targets": [
-        "scripts/check_python_lengths.py",
+        "scripts/check_code_lengths.py",
         "scripts/check_staged_mirror_drift.py"
       ]
     },
@@ -227,9 +227,9 @@
       ]
     },
     {
-      "test_file": "tests/quality_gates/test_python_length_gates.py",
+      "test_file": "tests/quality_gates/test_code_length_gates.py",
       "import_safe_targets": [
-        "scripts/check_python_lengths.py",
+        "scripts/check_code_lengths.py",
         "scripts/check_python_runtime_inheritance.py"
       ]
     },

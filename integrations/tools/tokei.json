@@ -96,6 +96,6 @@
   },
   "host_notes": [
     "Tokei is a quality validation support binary: it is discovered and installed through the external integration manifest, then consumed by quality SLOC inventory, Python length gates, and test-ratio probes when that evidence is needed.",
-    "`check_python_lengths.py` uses `tokei` Python code-line counts for file/headroom limits and fails closed when the binary or output schema is unavailable. `check_test_production_ratio.py` still defaults to its splitlines engine unless `--engine tokei` is requested."
+    "`check_code_lengths.py` uses `tokei` Python code-line counts for file/headroom limits and fails closed when the binary or output schema is unavailable. `check_test_production_ratio.py` still defaults to its splitlines engine unless `--engine tokei` is requested."
   ]
 }

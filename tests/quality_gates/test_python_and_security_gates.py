@@ -18,7 +18,7 @@ from .support import (
     write_executable,
 )
 
-PYTHON_LENGTHS = importlib.import_module("scripts.check_python_lengths")
+PYTHON_LENGTHS = importlib.import_module("scripts.check_code_lengths")
 
 
 def _copy_script(repo: Path, script_name: str) -> Path:

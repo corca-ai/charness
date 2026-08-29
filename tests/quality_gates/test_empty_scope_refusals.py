@@ -37,7 +37,7 @@ _MODULES = {
         "scripts/validate_retro_artifact.py",
         "scripts/validate_ideation_artifact.py",
         "scripts/check_mutation_run_proof.py",
-        "scripts/check_python_lengths.py",
+        "scripts/check_code_lengths.py",
         "scripts/check_skill_bootstrap_vars.py",
         "scripts/check_skill_cut_safety.py",
         "scripts/check_skill_surface_preflight.py",
@@ -318,46 +318,46 @@ def test_skill_core_headroom_relative_path_still_passes() -> None:
     assert [row["path"] for row in payload["checked"]] == ["skills/public/impl/SKILL.md"]
 
 
-def test_python_lengths_headroom_without_paths_reports_every_gated_file() -> None:
+def test_code_lengths_headroom_without_paths_reports_every_gated_file() -> None:
     """S39: `args.paths or []` turned an OMITTED --paths into an explicit EMPTY
     selection, so the advisory whose --help promises per-gated-file headroom
     printed `{"headroom": []}`."""
-    result = run_gate("scripts/check_python_lengths.py", "--repo-root", str(ROOT), "--headroom")
+    result = run_gate("scripts/check_code_lengths.py", "--repo-root", str(ROOT), "--headroom")
     assert result.returncode == 0, result.stdout + result.stderr
     rows = yaml.safe_load(result.stdout)["headroom"]
     assert len(rows) > 1
-    assert "scripts/check_python_lengths.py" in {row["path"] for row in rows}
+    assert "scripts/check_code_lengths.py" in {row["path"] for row in rows}
 
 
-def test_python_lengths_unresolvable_named_path_refuses() -> None:
+def test_code_lengths_unresolvable_named_path_refuses() -> None:
     """S40: a named path that resolves to nothing (a typo, or paths expressed
     relative to a subdirectory) measured zero files and printed `Validated ... 0
     file(s).` -- a hard length gate passing over nothing."""
     result = run_gate(
-        "scripts/check_python_lengths.py", "--repo-root", str(ROOT), "--paths", "scripts/no_such_file.py"
+        "scripts/check_code_lengths.py", "--repo-root", str(ROOT), "--paths", "scripts/no_such_file.py"
     )
     assert result.returncode != 0, result.stdout + result.stderr
     assert "resolve to nothing" in (result.stdout + result.stderr)
 
 
-def test_python_lengths_named_ungated_paths_pass_without_a_validated_verdict() -> None:
+def test_code_lengths_named_ungated_paths_pass_without_a_validated_verdict() -> None:
     """The false-refusal boundary, and why this half is NOT a refusal: the staged
     pre-commit caller hands over staged .py files, and real ones sit outside the
     gated globs (`runtime_bootstrap.py`, the generated `plugins/` mirror). Failing
     those would block a legitimate commit -- but the run may not claim it validated."""
     result = run_gate(
-        "scripts/check_python_lengths.py", "--repo-root", str(ROOT), "--paths", "runtime_bootstrap.py"
+        "scripts/check_code_lengths.py", "--repo-root", str(ROOT), "--paths", "runtime_bootstrap.py"
     )
     assert result.returncode == 0, result.stdout + result.stderr
     assert "Validated code length limits for 0 file(s)." not in result.stdout
     assert "nothing was validated" in result.stdout
 
 
-def test_python_lengths_named_gated_path_still_validates() -> None:
+def test_code_lengths_named_gated_path_still_validates() -> None:
     """Control: the ordinary staged-file invocation still measures and passes."""
     result = run_gate(
-        "scripts/check_python_lengths.py",
-        "--repo-root", str(ROOT), "--paths", "scripts/check_python_lengths.py",
+        "scripts/check_code_lengths.py",
+        "--repo-root", str(ROOT), "--paths", "scripts/check_code_lengths.py",
     )
     assert result.returncode == 0, result.stdout + result.stderr
     assert "Validated code length limits for 1 file(s)." in result.stdout

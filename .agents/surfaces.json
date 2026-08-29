@@ -866,7 +866,7 @@
       "sync_commands": [],
       "verify_commands": [
         "./scripts/check-python-lint.sh",
-        "python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing",
+        "python3 scripts/check_code_lengths.py --repo-root . --require-git-file-listing",
         "python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support",
         "python3 scripts/check_test_repo_copy_invariants.py --repo-root .",
         "python3 scripts/check_boundary_bypass_ratchet.py --repo-root .",
@@ -894,7 +894,7 @@
         "skills/public/quality/scripts/inventory_standing_test_economics.py",
         "skills/public/quality/scripts/render_runtime_summary.py",
         "scripts/lint_ignore_inventory_lib.py",
-        "scripts/check_python_lengths.py",
+        "scripts/check_code_lengths.py",
         "scripts/capability_catalog_sources.py",
         "skills/public/quality/references/automation-promotion.md",
         "scripts/capability_catalog_artifact.py",

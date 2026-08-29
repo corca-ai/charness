@@ -343,7 +343,7 @@ QUALITY_PYTHON_STUBS = (
     ("check-current-pointer-writes", "check_current_pointer_writes.py"),
     ("inventory-skill-script-references", "inventory_skill_script_references.py"),
     ("validate-maintainer-setup", "validate_maintainer_setup.py"),
-    ("check-python-lengths", "check_python_lengths.py"),
+    ("check-python-lengths", "check_code_lengths.py"),
     ("check-python-filenames", "check_python_filenames.py"),
     ("check-python-runtime-inheritance", "check_python_runtime_inheritance.py"),
     ("check-skill-contracts", "check_skill_contracts.py"),

@@ -127,7 +127,7 @@ def tokei_code_counts(paths: list[Path]) -> dict[Path, int]:
     if shutil.which("tokei") is None:
         raise TokeiError(
             "tokei binary not found on PATH; install per integrations/tools/tokei.json. "
-            "check_python_lengths uses tokei Python and Rust code-line counts and does not "
+            "check_code_lengths uses tokei Python and Rust code-line counts and does not "
             "fall back to physical splitlines totals."
         )
     requested = {path.resolve(): path for path in paths}

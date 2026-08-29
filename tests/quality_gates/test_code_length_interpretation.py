@@ -17,7 +17,7 @@ from .support import ROOT
 # must NEVER carry the declaration — these tests guard that cardinal-error
 # boundary in both directions. Driven in-process via main() (not a
 # subprocess) to stay on the testability-dsl-initiative in-process convention.
-PYTHON_LENGTHS = importlib.import_module("scripts.check_python_lengths")
+PYTHON_LENGTHS = importlib.import_module("scripts.check_code_lengths")
 
 
 class _Result(NamedTuple):
@@ -28,7 +28,7 @@ class _Result(NamedTuple):
 def _run(*args: str) -> _Result:
     out = io.StringIO()
     saved_argv = sys.argv
-    sys.argv = ["check_python_lengths.py", *args]
+    sys.argv = ["check_code_lengths.py", *args]
     try:
         with contextlib.redirect_stdout(out):
             code = PYTHON_LENGTHS.main()
@@ -84,7 +84,7 @@ def test_hard_over_limit_failure_never_attaches_interpretation(tmp_path: Path) -
 
     out = io.StringIO()
     saved_argv = sys.argv
-    sys.argv = ["check_python_lengths.py", "--repo-root", str(repo)]
+    sys.argv = ["check_code_lengths.py", "--repo-root", str(repo)]
     try:
         with contextlib.redirect_stdout(out), contextlib.redirect_stderr(io.StringIO()) as err:
             code = PYTHON_LENGTHS.main()
@@ -121,5 +121,5 @@ def test_length_interpretation_has_paired_consumer_requirement() -> None:
     reference = (
         ROOT / "skills" / "public" / "quality" / "references" / "automation-promotion.md"
     ).read_text(encoding="utf-8")
-    assert "check_python_lengths.py" in reference
+    assert "check_code_lengths.py" in reference
     assert "length smell" in reference

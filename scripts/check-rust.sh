@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Rust was production code with no lint gate at all. `check_python_lengths.py` globs
+# Rust was production code with no lint gate at all. `check_code_lengths.py` globs
 # `*.py` only, `check-shell.sh` walks `*.sh`, and the ratio gate counts `native/*/src/**.rs`
 # in its PRODUCTION denominator -- so 11,891 lines of Rust were accounted as production
 # while no gate read them. Files reached 1,399 lines against a 480-line Python cap.
@@ -10,7 +10,7 @@ set -euo pipefail
 # `cargo clippy -- -D warnings`, and `cargo test`. It therefore sees formatting, the lints
 # clippy ships, and test failures. It does NOT see FUNCTION length or cyclomatic
 # complexity -- clippy has no stable equivalent of ruff's PLR0915. File length is covered,
-# but by `check_python_lengths.py`, not here. It also does not measure coverage: nothing
+# but by `check_code_lengths.py`, not here. It also does not measure coverage: nothing
 # in this repo yet asks which Rust lines a test executed.
 GATE_NAME="check-rust"
 GATE_CONSEQUENCE="This gate resolves crates by walking its own root, so a package root that is not the

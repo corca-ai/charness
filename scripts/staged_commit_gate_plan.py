@@ -331,7 +331,7 @@ def staged_commit_gate_plan(
                 "check-python-lengths (staged)",
                 (
                     "python3",
-                    "scripts/check_python_lengths.py",
+                    "scripts/check_code_lengths.py",
                     "--repo-root",
                     str(repo_root),
                     "--paths",
