@@ -38,6 +38,7 @@ _critique_packet_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(
 )
 yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 load_adapter = _critique_adapter_lib.load_adapter
+adapter_has_sections = _critique_adapter_lib.adapter_has_sections
 build_packet = _critique_packet_lib.build_packet
 parse_changed_ref = _critique_packet_lib.parse_changed_ref
 substrate_refusal = _critique_packet_lib.substrate_refusal
@@ -119,6 +120,37 @@ def main() -> int:
     adapter = load_adapter(repo_root)
     if not adapter["valid"]:
         yaml_output.emit_yaml({"ok": False, "error": "critique adapter invalid", "adapter": adapter})
+        return 1
+    if not adapter_has_sections(adapter):
+        adapter_path = adapter.get("path")
+        if isinstance(adapter_path, str) and adapter_path:
+            try:
+                adapter_name = Path(adapter_path).resolve().relative_to(repo_root).as_posix()
+            except ValueError:
+                adapter_name = adapter_path
+        else:
+            adapter_name = ".agents/critique-adapter.yaml"
+        warning = (
+            f"critique adapter `{adapter_name}` declares no packet_sections; "
+            "the packet carries no semantic review input"
+        )
+        yaml_output.emit_yaml(
+            {
+                "ok": False,
+                "status": "refused",
+                "reason_code": "adapter-no-sections",
+                "scope_status": "adapter-no-sections",
+                "adapter_path": adapter_name,
+                "section_count": 0,
+                "usable": False,
+                "warning": warning,
+                "error": warning,
+                "remedy": (
+                    f"Declare at least one packet_sections entry in `{adapter_name}` "
+                    "and rerun; no packet was written."
+                ),
+            }
+        )
         return 1
     output_dir = repo_root / adapter["data"].get("output_dir", "charness-artifacts/critique")
     slug = args.slug or _default_slug()

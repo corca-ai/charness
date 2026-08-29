@@ -85,6 +85,9 @@ def _failure_carrier(
         "scope": scope,
         "lens": lens,
     })
+    for field in ("adapter_path", "scope_status", "section_count", "usable", "remedy", "warning"):
+        if field in details:
+            carrier[field] = details[field]
     return carrier
 
 
@@ -132,6 +135,16 @@ def _runner_command(
     return command
 
 
+def _adapter_name(root: Path, adapter: dict[str, Any]) -> str:
+    value = adapter.get("path")
+    if isinstance(value, str) and value:
+        try:
+            return SUPPORT.relative(root, Path(value))
+        except (ValueError, OSError):
+            return value
+    return ".agents/critique-adapter.yaml"
+
+
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     root = args.repo_root.expanduser().resolve()
@@ -155,6 +168,26 @@ def main(argv: list[str] | None = None) -> int:
         package = SUPPORT.package_paths(SCRIPT_DIR)
         lifecycle, capability_lib = SUPPORT.load_runtime(package)
         adapter = SUPPORT.resolve_adapter(root, package["resolve_adapter"])
+        data = adapter.get("data")
+        sections = data.get("packet_sections", []) if isinstance(data, dict) else []
+        if not isinstance(sections, list) or not sections:
+            adapter_name = _adapter_name(root, adapter)
+            remedy = (
+                f"Declare at least one packet_sections entry in `{adapter_name}` "
+                "and rerun; no reviewer was started."
+            )
+            raise SUPPORT.RunReviewError(
+                "adapter-no-sections",
+                f"critique adapter `{adapter_name}` declares no packet_sections; "
+                "run_review cannot start without semantic review input",
+                details={
+                    "adapter_path": adapter_name,
+                    "scope_status": "adapter-no-sections",
+                    "section_count": 0,
+                    "usable": False,
+                    "remedy": remedy,
+                },
+            )
         backend, timeout = SUPPORT.select_backend(adapter, args.backend, dry_run=args.dry_run)
         reviewed_paths = PACKET.manifest_paths(SUPPORT, root, args.reviewed_paths_file, args.reviewed_path)
         if args.packet_file is not None:

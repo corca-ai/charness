@@ -28,6 +28,12 @@ def _prepare(tmp_path: Path) -> tuple[Path, dict, dict]:
     _git(tmp_path, "init")
     reviewed = tmp_path / "reviewed.txt"
     reviewed.write_text("reviewed bytes\n", encoding="utf-8")
+    (tmp_path / ".agents").mkdir()
+    (tmp_path / ".agents" / "critique-adapter.yaml").write_text(
+        "version: 1\nrepo: test\npacket_sections:\n"
+        "  - id: smoke\n    title: Smoke\n    content_kind: static\n    content: smoke\n",
+        encoding="utf-8",
+    )
     _git(tmp_path, "add", "reviewed.txt")
     _git(tmp_path, "commit", "-m", "initial")
     result = subprocess.run(
@@ -59,7 +65,9 @@ def _committed_ref_repo(tmp_path: Path) -> Path:
     reviewed.write_text("before\n", encoding="utf-8")
     (tmp_path / ".agents").mkdir()
     (tmp_path / ".agents/critique-adapter.yaml").write_text(
-        "version: 1\nrepo: test\npacket_sections: []\n", encoding="utf-8"
+        "version: 1\nrepo: test\npacket_sections:\n"
+        "  - id: smoke\n    title: Smoke\n    content_kind: static\n    content: smoke\n",
+        encoding="utf-8",
     )
     _git(tmp_path, "add", "reviewed.txt", ".agents/critique-adapter.yaml")
     _git(tmp_path, "commit", "-m", "initial")

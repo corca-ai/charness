@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Any
 
 from runtime_bootstrap import import_repo_module
+from scripts.critique_adapter_lib import adapter_has_sections
 
 PACKET_KIND = "charness.critique_prepare_packet"
 PACKET_VERSION = 1
@@ -80,7 +81,7 @@ def packet_result_payload(
 ) -> dict[str, object]:
     """Build the stable CLI result shared by critique and retro packet runners."""
 
-    return {
+    result: dict[str, object] = {
         "ok": packet["ok"],
         "section_count": packet["section_count"],
         "json_path": str(json_path.relative_to(repo_root)),
@@ -88,6 +89,10 @@ def packet_result_payload(
         "changed_ref": packet["changed_ref"],
         "adapter_path": packet["adapter_path"],
     }
+    for field in ("scope_status", "reason_code", "usable", "warning", "remedy"):
+        if field in packet:
+            result[field] = packet[field]
+    return result
 
 
 def _now_iso() -> str:
@@ -181,6 +186,51 @@ def execute_section(
     }
 
 
+def _section_has_content(section: dict[str, Any]) -> bool:
+    content = section.get("content")
+    return isinstance(content, str) and bool(content.strip())
+
+
+def _scope_metadata(
+    *, adapter: dict[str, Any], repo_root: Path, sections: list[dict[str, Any]]
+) -> dict[str, object]:
+    """Classify whether the packet has a declared and populated review scope."""
+
+    if not adapter_has_sections(adapter):
+        adapter_path = _relative_adapter_path(adapter.get("path"), repo_root)
+        adapter_name = adapter_path or ".agents/critique-adapter.yaml"
+        return {
+            "scope_status": "adapter-no-sections",
+            "reason_code": "adapter-no-sections",
+            "usable": False,
+            "warning": (
+                f"critique adapter `{adapter_name}` declares no packet_sections; "
+                "the packet carries no semantic review input"
+            ),
+            "remedy": (
+                f"Declare at least one packet_sections entry in `{adapter_name}` "
+                "and rerun"
+            ),
+        }
+
+    if not any(_section_has_content(section) for section in sections):
+        return {
+            "scope_status": "producer-empty",
+            "reason_code": "producer-empty",
+            "usable": False,
+            "warning": (
+                "declared packet sections produced no content; this is a producer "
+                "failure, not a passing empty review"
+            ),
+            "remedy": (
+                "Repair the declared packet producer(s) so at least one section "
+                "emits semantic review content, then rerun"
+            ),
+        }
+
+    return {"scope_status": "populated"}
+
+
 def build_packet(
     *,
     adapter: dict[str, Any],
@@ -207,7 +257,20 @@ def build_packet(
         )
         for section in sections_decl
     ]
-    all_ok = all(section["ok"] for section in sections)
+    if packet_kind == PACKET_KIND:
+        scope_metadata = _scope_metadata(
+            adapter=adapter, repo_root=repo_root, sections=sections
+        )
+        all_ok = (
+            scope_metadata.get("scope_status") == "populated"
+            and all(section["ok"] for section in sections)
+        )
+    else:
+        # The shared builder also serves retro packets, whose adapter has a
+        # separate opt-in contract and must retain its historical empty-list
+        # behavior.
+        scope_metadata = {}
+        all_ok = all(section["ok"] for section in sections)
     packet: dict[str, Any] = {
         "kind": packet_kind,
         "version": PACKET_VERSION,
@@ -221,6 +284,7 @@ def build_packet(
         "sections": sections,
         "section_count": len(sections),
         "ok": all_ok,
+        **scope_metadata,
     }
     if include_reviewer_tier:
         packet["reviewer_tier_evidence"] = reviewer_tier_evidence(data)

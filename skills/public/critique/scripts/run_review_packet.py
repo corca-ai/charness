@@ -63,10 +63,17 @@ def prepare_packet(
         )
     packet = support.repo_path(root, packet_name, label="prepared packet")
     if code != 0 or payload.get("ok") is not True or usable is False:
-        raise support.RunReviewError(
-            "packet-invalid", "prepared packet is not usable",
-            details={"prepare": payload, "stderr": stderr},
-        )
+        reason_code = payload.get("reason_code")
+        if not isinstance(reason_code, str) or not reason_code:
+            reason_code = "packet-invalid"
+        error = payload.get("error")
+        if not isinstance(error, str) or not error:
+            error = "prepared packet is not usable"
+        details = {"prepare": payload, "stderr": stderr}
+        for field in ("adapter_path", "scope_status", "section_count", "usable", "remedy", "warning"):
+            if field in payload:
+                details[field] = payload[field]
+        raise support.RunReviewError(reason_code, error, details=details)
     return packet
 
 
@@ -81,6 +88,53 @@ def read_packet(
         raise support.RunReviewError("packet-invalid", f"packet-file is not valid JSON: {packet}") from exc
     if not isinstance(payload, dict) or payload.get("kind") != "charness.critique_prepare_packet":
         raise support.RunReviewError("packet-invalid", "packet-file is not a critique prepare packet")
+    sections = payload.get("sections")
+    section_count = payload.get("section_count")
+    if (
+        section_count == 0
+        or payload.get("scope_status") == "adapter-no-sections"
+        or not isinstance(sections, list)
+        or not sections
+    ):
+        raise support.RunReviewError(
+            "adapter-no-sections",
+            "packet-file declares no packet sections and carries no semantic review input",
+            details={
+                "packet_path": support.relative(root, packet),
+                "scope_status": "adapter-no-sections",
+                "section_count": 0,
+                "usable": False,
+                "remedy": "Provide a packet with at least one declared packet_sections entry and rerun",
+            },
+        )
+    has_content = any(
+        isinstance(section, dict)
+        and isinstance(section.get("content"), str)
+        and bool(section["content"].strip())
+        for section in sections
+    )
+    if not has_content or payload.get("scope_status") == "producer-empty" or payload.get("ok") is not True:
+        reason_code = payload.get("reason_code")
+        if not isinstance(reason_code, str) or not reason_code:
+            reason_code = "producer-empty" if not has_content else "packet-invalid"
+        error = payload.get("error")
+        if not isinstance(error, str) or not error:
+            error = (
+                "packet-file sections produced no content"
+                if not has_content
+                else "packet-file is not usable"
+            )
+        details = {
+            "packet_path": support.relative(root, packet),
+            "packet": payload,
+            "scope_status": "producer-empty" if not has_content else payload.get("scope_status"),
+            "usable": False,
+        }
+        if isinstance(payload.get("remedy"), str):
+            details["remedy"] = payload["remedy"]
+        elif not has_content:
+            details["remedy"] = "Repair the declared packet producer(s) so at least one section emits semantic review content, then rerun"
+        raise support.RunReviewError(reason_code, error, details=details)
     identity = payload.get("reviewed_input_identity")
     identity_sha = identity.get("identity_sha256") if isinstance(identity, dict) else None
     if not isinstance(identity_sha, str) or not re.fullmatch(r"[0-9a-f]{64}", identity_sha):

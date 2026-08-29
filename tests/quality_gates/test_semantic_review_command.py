@@ -27,24 +27,31 @@ def _git(repo: Path, *args: str) -> None:
     subprocess.run(["git", *args], cwd=repo, check=True, capture_output=True, text=True)
 
 
-def _repo(tmp_path: Path, *, timeout: int = 5) -> None:
+def _repo(tmp_path: Path, *, timeout: int = 5, with_packet_sections: bool = True) -> None:
     _git(tmp_path, "init")
     (tmp_path / "reviewed.txt").write_text("base\n", encoding="utf-8")
     (tmp_path / ".gitignore").write_text(".charness/\n", encoding="utf-8")
     (tmp_path / ".agents").mkdir()
+    adapter_lines = [
+        "version: 1",
+        "repo: semantic-review-fixture",
+        "reviewer_runner:",
+        "  mode: file-backed-worker",
+        "  backend: codex_exec",
+        f"  timeout_seconds: {timeout}",
+    ]
+    if with_packet_sections:
+        adapter_lines.extend(
+            [
+                "packet_sections:",
+                "  - id: smoke",
+                "    title: Smoke",
+                "    content_kind: static",
+                "    content: smoke-body",
+            ]
+        )
     (tmp_path / ".agents" / "critique-adapter.yaml").write_text(
-        "\n".join(
-            (
-                "version: 1",
-                "repo: semantic-review-fixture",
-                "reviewer_runner:",
-                "  mode: file-backed-worker",
-                "  backend: codex_exec",
-                f"  timeout_seconds: {timeout}",
-                "",
-            )
-        ),
-        encoding="utf-8",
+        "\n".join(adapter_lines) + "\n", encoding="utf-8"
     )
     _git(tmp_path, "add", ".")
     _git(tmp_path, "commit", "-m", "fixture")
@@ -189,6 +196,59 @@ def test_dry_run_derives_one_typed_carrier_without_starting_backend(tmp_path: Pa
         ROOT / "skills/shared/references/bounded-review-result.schema.json"
     ).read_bytes()
     assert not (tmp_path / "bin" / "review-called").exists()
+
+
+def test_sectionless_adapter_refuses_before_reviewer_run_is_created(tmp_path: Path) -> None:
+    _repo(tmp_path, with_packet_sections=False)
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    _fake_codex(bin_dir / "codex")
+
+    result = _run(tmp_path, bin_dir, "sectionless", dry_run=True)
+    payload = _payload(result)
+
+    assert result.returncode != 0
+    assert payload["reason_code"] == "adapter-no-sections"
+    assert payload["scope_status"] == "adapter-no-sections"
+    assert payload["section_count"] == 0
+    assert payload["adapter_path"] == ".agents/critique-adapter.yaml"
+    assert "Declare at least one packet_sections entry" in payload["remedy"]
+    assert not (tmp_path / ".charness").exists()
+
+
+def test_empty_declared_producer_refuses_before_reviewer_start_with_its_own_cause(
+    tmp_path: Path,
+) -> None:
+    _repo(tmp_path)
+    (tmp_path / ".agents" / "critique-adapter.yaml").write_text(
+        "version: 1\nrepo: semantic-review-fixture\n"
+        "reviewer_runner:\n  mode: file-backed-worker\n  backend: codex_exec\n"
+        "  timeout_seconds: 5\npacket_sections:\n"
+        "  - id: empty\n    title: Empty\n    content_kind: script\n    command: \"printf ''\"\n",
+        encoding="utf-8",
+    )
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    _fake_codex(bin_dir / "codex")
+
+    result = _run(tmp_path, bin_dir, "empty-producer", dry_run=True)
+    payload = _payload(result)
+
+    assert result.returncode != 0
+    assert payload["reason_code"] == "producer-empty"
+    assert payload["scope_status"] == "producer-empty"
+    assert payload["section_count"] == 1
+    assert payload["usable"] is False
+    assert "producer failure" in payload["warning"]
+    assert "Repair the declared packet producer" in payload["remedy"]
+    assert not (tmp_path / ".charness").exists()
+    packet = json.loads(
+        (tmp_path / "charness-artifacts/critique/empty-producer-packet.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert packet["ok"] is False
+    assert packet["reason_code"] == "producer-empty"
 
 
 def test_goal_run_lineage_is_carried_into_plan_prompt_and_carrier(tmp_path: Path) -> None:

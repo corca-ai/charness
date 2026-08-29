@@ -192,6 +192,42 @@ packet_sections:
     assert [s["id"] for s in packet["sections"]] == ["a", "b"]
 
 
+def test_build_packet_with_no_declared_sections_is_not_ok(tmp_path: Path) -> None:
+    adapter = load_adapter(tmp_path)
+
+    packet = build_packet(adapter=adapter, repo_root=tmp_path, prepared_for="empty")
+
+    assert packet["section_count"] == 0
+    assert packet["ok"] is False
+    assert packet["scope_status"] == "adapter-no-sections"
+    assert packet["reason_code"] == "adapter-no-sections"
+    assert packet["usable"] is False
+
+
+def test_build_packet_with_declared_empty_producer_is_not_ok(tmp_path: Path) -> None:
+    _write_yaml(tmp_path / ".agents/critique-adapter.yaml", """\
+version: 1
+repo: rt
+packet_sections:
+  - id: empty
+    title: Empty
+    content_kind: script
+    command: "printf ''"
+""")
+
+    packet = build_packet(
+        adapter=load_adapter(tmp_path), repo_root=tmp_path, prepared_for="empty producer"
+    )
+
+    assert packet["section_count"] == 1
+    assert packet["sections"][0]["ok"] is True
+    assert packet["sections"][0]["content"] == ""
+    assert packet["ok"] is False
+    assert packet["scope_status"] == "producer-empty"
+    assert packet["reason_code"] == "producer-empty"
+    assert packet["usable"] is False
+
+
 def test_build_packet_passes_changed_ref_to_script_sections(tmp_path: Path) -> None:
     helper = tmp_path / "emit_ref.py"
     helper.write_text(
@@ -446,7 +482,15 @@ packet_sections:
 
 def test_runner_rerun_excludes_its_own_packet_outputs_from_identity(tmp_path: Path) -> None:
     _init_identity_repo(tmp_path)
-    _write_yaml(tmp_path / ".agents/critique-adapter.yaml", "version: 1\nrepo: rt\n")
+    _write_yaml(tmp_path / ".agents/critique-adapter.yaml", """\
+version: 1
+repo: rt
+packet_sections:
+  - id: smoke
+    title: Smoke
+    content_kind: static
+    content: smoke-body
+""")
     runner = REPO_ROOT / "skills/public/critique/scripts/prepare_packet.py"
     command = ["python3", str(runner), "--repo-root", str(tmp_path), "--slug", "repeat"]
 
@@ -462,9 +506,104 @@ def test_runner_rerun_excludes_its_own_packet_outputs_from_identity(tmp_path: Pa
     assert verify_reviewed_input_identity(tmp_path, identity) == (True, "current")
 
 
+def test_prepare_packet_refuses_adapter_without_sections_with_typed_payload(tmp_path: Path) -> None:
+    _write_yaml(tmp_path / ".agents/critique-adapter.yaml", "version: 1\nrepo: rt\n")
+    runner = REPO_ROOT / "skills/public/critique/scripts/prepare_packet.py"
+
+    result = subprocess.run(
+        ["python3", str(runner), "--repo-root", str(tmp_path), "--slug", "empty-adapter"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    payload = yaml.safe_load(result.stdout)
+    assert result.returncode != 0
+    assert payload["ok"] is False
+    assert payload["status"] == "refused"
+    assert payload["reason_code"] == "adapter-no-sections"
+    assert payload["scope_status"] == "adapter-no-sections"
+    assert payload["section_count"] == 0
+    assert payload["usable"] is False
+    assert payload["adapter_path"] == ".agents/critique-adapter.yaml"
+    assert "no packet_sections" in payload["warning"]
+    assert "Declare at least one packet_sections entry" in payload["remedy"]
+    assert not (tmp_path / "charness-artifacts/critique").exists()
+
+
+def test_prepare_packet_refuses_declared_empty_producer_and_keeps_diagnostic_packet(
+    tmp_path: Path,
+) -> None:
+    _write_yaml(tmp_path / ".agents/critique-adapter.yaml", """\
+version: 1
+repo: rt
+packet_sections:
+  - id: empty
+    title: Empty
+    content_kind: script
+    command: "printf ''"
+""")
+    runner = REPO_ROOT / "skills/public/critique/scripts/prepare_packet.py"
+
+    result = subprocess.run(
+        ["python3", str(runner), "--repo-root", str(tmp_path), "--slug", "empty-producer"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    payload = yaml.safe_load(result.stdout)
+    assert result.returncode != 0
+    assert payload["ok"] is False
+    assert payload["scope_status"] == "producer-empty"
+    assert payload["reason_code"] == "producer-empty"
+    assert payload["section_count"] == 1
+    assert payload["usable"] is False
+    assert "producer failure" in payload["warning"]
+    assert "Repair the declared packet producer" in payload["remedy"]
+    packet = json.loads((tmp_path / payload["json_path"]).read_text(encoding="utf-8"))
+    assert packet["ok"] is False
+    assert packet["reason_code"] == "producer-empty"
+
+
+def test_prepare_packet_with_declared_content_still_passes(tmp_path: Path) -> None:
+    _write_yaml(tmp_path / ".agents/critique-adapter.yaml", """\
+version: 1
+repo: rt
+packet_sections:
+  - id: real
+    title: Real
+    content_kind: static
+    content: semantic review input
+""")
+    runner = REPO_ROOT / "skills/public/critique/scripts/prepare_packet.py"
+
+    result = subprocess.run(
+        ["python3", str(runner), "--repo-root", str(tmp_path), "--slug", "real"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    payload = yaml.safe_load(result.stdout)
+    assert result.returncode == 0, result.stderr
+    assert payload["ok"] is True
+    assert payload["scope_status"] == "populated"
+    assert payload["section_count"] == 1
+    assert payload["reviewed_input_binding"]["usable"] is False
+
+
 def test_runner_rejects_explicit_path_that_collides_with_packet_output(tmp_path: Path) -> None:
     _init_identity_repo(tmp_path)
-    _write_yaml(tmp_path / ".agents/critique-adapter.yaml", "version: 1\nrepo: rt\n")
+    _write_yaml(tmp_path / ".agents/critique-adapter.yaml", """\
+version: 1
+repo: rt
+packet_sections:
+  - id: smoke
+    title: Smoke
+    content_kind: static
+    content: smoke-body
+""")
     runner = REPO_ROOT / "skills/public/critique/scripts/prepare_packet.py"
     result = subprocess.run(
         [
