@@ -13,7 +13,6 @@ import pytest
 from scripts import (
     task_run,
     task_run_execution,
-    task_run_git,
     task_run_plan,
     task_run_runtime,
     task_run_support,
@@ -21,7 +20,6 @@ from scripts import (
 from skills.shared.scripts import reviewer_lifecycle
 
 from .test_task_run_fixtures import _codex, _git, _repo, _run
-
 
 
 def test_invalid_task_run_inputs_are_typed_and_actionable(tmp_path: Path) -> None:
@@ -436,6 +434,11 @@ def test_task_run_accepts_a_clean_committed_candidate(tmp_path: Path) -> None:
     assert payload["status"] == "completed", payload
     assert payload["target_sha"] != payload["base_sha"]
     assert payload["scope"]["changed_paths"] == ["module.py"]
+    assert payload["candidate"] == {
+        "status": "validated",
+        "useful": True,
+        "changed_paths": ["module.py"],
+    }
     assert _git(worktree, "status", "--short").stdout == ""
 
 
@@ -705,16 +708,38 @@ def test_parent_ignored_residue_is_not_writer_progress(tmp_path: Path) -> None:
     assert progress["ignored"]["added"] == ["ignored-output.txt"]
 
 
-def test_timeout_with_scoped_candidate_is_validated_partial_result(tmp_path: Path) -> None:
+def test_timeout_commits_a_typed_wip_candidate_without_satisfying_completion(
+    tmp_path: Path,
+) -> None:
     repo = _repo(tmp_path)
     executable = _codex(tmp_path, "printf 'VALUE = 2\\n' > module.py\nsleep 5")
 
     payload = _run(repo, tmp_path, executable, timeout_seconds=1)
 
-    assert payload["status"] == "validated-partial-result"
+    worktree = Path(payload["worktree_path"])
+    commit = payload["candidate"]["commit"]
+
+    assert payload["status"] == "timed-out"
     assert payload["execution"]["status"] == "timed-out"
+    assert payload["candidate"]["status"] == "wip"
+    assert payload["candidate"]["state"] == "interrupted-mid-edit"
+    assert payload["candidate"]["state_known"] is False
     assert payload["candidate"]["useful"] is True
+    assert payload["candidate"]["changed_paths"] == ["module.py"]
+    assert commit["status"] == "committed"
+    assert commit["sha"] == payload["target_sha"]
+    assert commit["message"] == (
+        "task-run: WIP candidate — interrupted mid-edit — state unknown"
+    )
+    assert commit["correctness_verified"] is False
+    assert payload["scope"]["require_change"] is True
+    assert payload["scope"]["verdict"] == "pass"
     assert payload["approval_eligibility"] == "ineligible"
+    assert "interrupted mid-edit — state unknown" in payload["next_step"]
+    assert "not a correctness claim" in payload["next_step"]
+    assert _git(worktree, "status", "--porcelain=v1").stdout == ""
+    assert _git(worktree, "show", "-s", "--format=%s", commit["sha"]).stdout.strip() == commit["message"]
+    assert _git(repo, "rev-parse", "HEAD").stdout.strip() == payload["base_sha"]
 
 
 def test_task_kills_same_group_background_descendants_before_evidence(tmp_path: Path) -> None:

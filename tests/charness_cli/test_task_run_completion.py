@@ -43,6 +43,7 @@ def _complete(tmp_path: Path, *, result_state: str, scope_verdict: str = "pass")
         completion_evidence=lambda **_kwargs: (evidence, scope, parent_progress),
         execution_state=lambda _execution, _delivery: "completed",
         candidate_result_state=lambda **_kwargs: ({"status": result_state}, result_state),
+        candidate_commit=None,
         git=lambda *_args, **_kwargs: SimpleNamespace(returncode=1),
         git_output=lambda *_args, **_kwargs: "abc123\n",
         pass_value="pass",

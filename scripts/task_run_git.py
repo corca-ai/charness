@@ -16,6 +16,10 @@ from scripts.task_run_contract import (
     TaskRunError,
 )
 
+WIP_CANDIDATE_COMMIT_MESSAGE = (
+    "task-run: WIP candidate — interrupted mid-edit — state unknown"
+)
+
 
 def _git_env() -> dict[str, str]:
     return {key: value for key, value in os.environ.items() if key not in _GIT_DISCOVERY_ENV}
@@ -38,6 +42,37 @@ def _git_output(repo_root: Path, *args: str) -> str:
         detail = result.stderr.strip() or result.stdout.strip() or "git command failed"
         raise TaskRunError(f"git {' '.join(args)} failed: {detail}")
     return result.stdout
+
+
+def _commit_wip_candidate(repo_root: Path) -> dict[str, Any]:
+    """Checkpoint all non-ignored lane output as an explicitly unverified WIP."""
+    staged = _git(repo_root, "add", "--all", "--", ".")
+    if staged.returncode != 0:
+        detail = staged.stderr.strip() or staged.stdout.strip() or "git add failed"
+        raise TaskRunError(f"git add failed: {detail}")
+
+    committed = _git(
+        repo_root,
+        "-c",
+        "user.email=charness-task-run@localhost",
+        "-c",
+        "user.name=charness task run",
+        "commit",
+        "--allow-empty",
+        "--no-verify",
+        "--message",
+        WIP_CANDIDATE_COMMIT_MESSAGE,
+    )
+    if committed.returncode != 0:
+        detail = committed.stderr.strip() or committed.stdout.strip() or "git commit failed"
+        raise TaskRunError(f"git commit failed: {detail}")
+
+    return {
+        "status": "committed",
+        "sha": _git_output(repo_root, "rev-parse", "HEAD").strip(),
+        "message": WIP_CANDIDATE_COMMIT_MESSAGE,
+        "correctness_verified": False,
+    }
 
 
 def _require_git_root(repo_root: Path) -> Path:

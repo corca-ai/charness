@@ -33,6 +33,7 @@ _git_common_dir = _git_owner._git_common_dir
 _git_dir = _git_owner._git_dir
 _git_env = _git_owner._git_env
 _git_output = _git_owner._git_output
+_commit_wip_candidate = _git_owner._commit_wip_candidate
 _is_inside = _git_owner._is_inside
 _parse_nul_paths = _git_owner._parse_nul_paths
 _population_delta = _git_owner._population_delta

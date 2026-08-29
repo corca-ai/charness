@@ -90,6 +90,7 @@ def _candidate_result_state(
     execution_state: str,
     scope: dict[str, Any],
     parent_progress: dict[str, Any],
+    candidate_commit: dict[str, Any] | None = None,
 ) -> tuple[dict[str, Any], str]:
     changed_paths = scope["changed_paths"]
     candidate_valid = scope["verdict"] == PASS
@@ -99,6 +100,18 @@ def _candidate_result_state(
         "useful": candidate_useful,
         "changed_paths": changed_paths,
     }
+    if execution_state == "timed-out":
+        if candidate_commit is None:
+            raise TaskRunError("timed-out task is missing its WIP candidate commit")
+        candidate.update(
+            {
+                "status": "wip",
+                "state": "interrupted-mid-edit",
+                "state_known": False,
+                "commit": candidate_commit,
+            }
+        )
+        return candidate, "timed-out"
     if candidate_valid and execution_state == "completed" and not parent_progress["blocking"]:
         return candidate, "completed"
     if candidate_useful:
@@ -123,6 +136,7 @@ def _complete_task(
     stdout_log: Path,
     execution: dict[str, Any],
     started_at: float,
+    candidate_commit: dict[str, Any] | None,
 ) -> dict[str, Any]:
     return _completion.complete_task(
         payload,
@@ -138,6 +152,7 @@ def _complete_task(
         stdout_log=stdout_log,
         execution=execution,
         started_at=started_at,
+        candidate_commit=candidate_commit,
         persist=_persist,
         result_delivery=_support._result_delivery,
         completion_evidence=_completion_evidence,
@@ -352,6 +367,34 @@ def run_task(
             stderr_log=stderr_log,
             timeout_seconds=timeout_seconds,
         )
+        candidate_commit = None
+        if execution["timed_out"]:
+            try:
+                candidate_commit = _support._commit_wip_candidate(resolved_target)
+            except (OSError, RuntimeError, TypeError, TaskRunError, subprocess.SubprocessError) as exc:
+                payload["execution"] = {**execution, "status": "timed-out"}
+                payload["candidate"] = {
+                    "status": "wip",
+                    "useful": False,
+                    "changed_paths": [],
+                    "state": "interrupted-mid-edit",
+                    "state_known": False,
+                    "commit": {
+                        "status": "failed",
+                        "error": str(exc),
+                        "correctness_verified": False,
+                    },
+                }
+                return _terminal(
+                    payload,
+                    runtime_path,
+                    status="timed-out",
+                    error=f"timed-out WIP candidate commit failed: {exc}",
+                    next_step=(
+                        "The timeout WIP checkpoint could not be committed; inspect and "
+                        "recover the retained worktree manually."
+                    ),
+                )
         return _complete_task(
             payload,
             runtime_path=runtime_path,
@@ -366,6 +409,7 @@ def run_task(
             stdout_log=stdout_log,
             execution=execution,
             started_at=started_at,
+            candidate_commit=candidate_commit,
         )
     except KeyboardInterrupt:
         return _terminal(

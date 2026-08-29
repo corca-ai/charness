@@ -28,6 +28,7 @@ def complete_task(
     completion_evidence: Callable[..., tuple[dict[str, Any], dict[str, Any], dict[str, Any]]],
     execution_state: Callable[[dict[str, Any], dict[str, Any]], str],
     candidate_result_state: Callable[..., tuple[dict[str, Any], str]],
+    candidate_commit: dict[str, Any] | None,
     git: Callable[..., Any],
     git_output: Callable[..., str],
     pass_value: str,
@@ -72,6 +73,7 @@ def complete_task(
         execution_state=execution_status,
         scope=scope,
         parent_progress=parent_progress,
+        candidate_commit=candidate_commit,
     )
     payload["candidate"] = candidate
     payload["status"] = result_state
@@ -95,7 +97,13 @@ def complete_task(
     if warnings:
         payload["warnings"] = warnings
 
-    if blockers:
+    if execution_status == "timed-out":
+        payload["next_step"] = (
+            f"Review the committed WIP candidate in {resolved_target}; "
+            "interrupted mid-edit — state unknown; the commit is not a correctness claim"
+            + (f"; {'; '.join(blockers)}." if blockers else ".")
+        )
+    elif blockers:
         payload["next_step"] = (
             "Inspect the retained worktree, typed result, and captured logs; "
             + "; ".join(blockers)
