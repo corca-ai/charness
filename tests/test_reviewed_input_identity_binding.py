@@ -702,3 +702,97 @@ def test_a_path_deleted_against_a_non_first_parent_still_binds(tmp_path: Path) -
     ).stdout
     assert entries["only-on-side.txt"]["content_sha256"] == hashlib.sha256(side_blob).hexdigest()
     assert verify_reviewed_input_identity(tmp_path, identity) == (True, "current")
+
+
+def _submodule_repo(tmp_path: Path) -> Path:
+    upstream = tmp_path / "upstream"
+    upstream.mkdir()
+    _run_git(upstream, "init")
+    (upstream / "f.txt").write_text("v1\n", encoding="utf-8")
+    _run_git(upstream, "add", "-A")
+    _run_git(upstream, "commit", "-m", "v1")
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _run_git(repo, "init")
+    (repo / "root.txt").write_text("r\n", encoding="utf-8")
+    _run_git(repo, "add", "-A")
+    _run_git(repo, "commit", "-m", "init")
+    subprocess.run(
+        ["git", "-c", "protocol.file.allow=always", "-c", "user.email=t@t", "-c", "user.name=t",
+         "submodule", "add", "-q", str(upstream), "sub"],
+        cwd=repo, check=True, capture_output=True,
+    )
+    _run_git(repo, "commit", "-m", "add submodule")
+    return repo
+
+
+def test_a_working_tree_submodule_binds_its_commit_not_the_index_stage(tmp_path: Path) -> None:
+    """`ls-files -s` prints `<mode> <object> <stage>`; `ls-tree` prints `<mode> <type> <object>`.
+
+    Reading field 2 from both bound the STAGE NUMBER — the constant `0` — for
+    every working-tree submodule, so no submodule change could stale an identity.
+    The earlier test asserted only `captured` and never that the digest tracked
+    the commit, which is why it passed over a constant.
+    """
+    repo = _submodule_repo(tmp_path)
+    recorded = subprocess.run(
+        ["git", "ls-files", "-s", "--", "sub"], cwd=repo, capture_output=True, text=True
+    ).stdout.split()[1]
+
+    identity = build_reviewed_input_identity(repo_root=repo, reviewed_paths=[".gitmodules", "sub"])
+
+    entry = next(e for e in identity["reviewed_content"] if e["path"] == "sub")
+    assert entry["content_sha256"] == hashlib.sha256(b"gitlink\0" + recorded.encode()).hexdigest()
+    assert entry["content_sha256"] != hashlib.sha256(b"gitlink\0" + b"0").hexdigest()
+
+
+def test_a_removed_submodule_binds_its_preimage_commit(tmp_path: Path) -> None:
+    """`git show <ref>:<path>` cannot read a gitlink, so a REMOVED submodule fell
+    through both the deletion fallback and the gitlink binder and refused."""
+    repo = _submodule_repo(tmp_path)
+    before = subprocess.run(
+        ["git", "ls-tree", "HEAD", "--", "sub"], cwd=repo, capture_output=True, text=True
+    ).stdout.split()[2]
+    _run_git(repo, "rm", "-q", "-f", "sub")
+    _run_git(repo, "commit", "-m", "drop the submodule")
+
+    identity = build_reviewed_input_identity(repo_root=repo, changed_ref="HEAD")
+
+    entry = next(e for e in identity["reviewed_content"] if e["path"] == "sub")
+    assert entry["disposition"] == "deleted"
+    assert entry["content_sha256"] == hashlib.sha256(b"gitlink\0" + before.encode()).hexdigest()
+
+
+def test_editing_the_record_a_pointer_selects_stales_the_verdict(tmp_path: Path) -> None:
+    """Binding only `readlink` caught a retarget but not a rewrite in place.
+
+    A pointer whose selected record is edited selects different bytes for every
+    consumer while reading as unchanged, so the target's content is bound too.
+    """
+    _init_identity_repo(tmp_path)
+    records = tmp_path / "charness-artifacts" / "quality"
+    records.mkdir(parents=True)
+    (records / "a.md").write_text("# A\n", encoding="utf-8")
+    (records / "b.md").write_text("# B\n", encoding="utf-8")
+    (records / "latest.md").symlink_to("a.md")
+    identity = build_reviewed_input_identity(repo_root=tmp_path)
+    assert verify_reviewed_input_identity(tmp_path, identity) == (True, "current")
+
+    (records / "a.md").write_text("# A, rewritten\n", encoding="utf-8")
+
+    ok, reason = verify_reviewed_input_identity(tmp_path, identity)
+    assert (ok, reason) == (False, "declared reviewed inputs are stale")
+
+
+def test_a_current_pointer_escaping_the_repo_root_is_refused(tmp_path: Path) -> None:
+    """Skipping `_checked_path` for pointers also skipped its boundary check."""
+    _init_identity_repo(tmp_path)
+    outside = tmp_path.parent / f"{tmp_path.name}-outside"
+    outside.mkdir()
+    (outside / "secret.md").write_text("secret\n", encoding="utf-8")
+    records = tmp_path / "charness-artifacts" / "quality"
+    records.mkdir(parents=True)
+    (records / "latest.md").symlink_to(outside / "secret.md")
+
+    with pytest.raises(ValueError, match="resolving outside repo root"):
+        build_reviewed_input_identity(repo_root=tmp_path)

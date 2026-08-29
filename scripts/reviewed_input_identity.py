@@ -195,28 +195,66 @@ def _with_identity_digest(components: dict[str, Any]) -> dict[str, Any]:
 
 
 def _current_pointer_payload(repo_root: Path, path: str) -> str | None:
-    """Digest of a current-pointer symlink's TARGET NAME, or None if not one.
+    """Digest of a current-pointer symlink: its TARGET NAME and that target's bytes.
 
-    Binding the payload rather than dropping the path. An earlier cut excluded
-    the pointer from the sweep, which the fresh-eye review blocked on and was
-    right to: `auto_excluded_paths` sits in `PROVENANCE_FIELDS` and is never
-    digested, so retargeting `latest.md` at a DIFFERENT record left the identity
-    unchanged and an approved verdict silently followed the move. The pointer is
-    also the path consumers read, so reporting its exclusion is not the same as
-    binding what it selects.
+    Binding the payload rather than dropping the path. An earlier cut excluded the
+    pointer from the sweep, which a fresh-eye review blocked on and was right to:
+    `auto_excluded_paths` sits in `PROVENANCE_FIELDS` and is never digested, so
+    retargeting `latest.md` at a DIFFERENT record left the identity unchanged and
+    an approved verdict silently followed the move.
 
-    The link is read, never followed: the meaning of a current pointer IS which
-    record it names, so `readlink` output is the content. That also makes the
-    `latest.md` basename proxy safe to be imprecise -- misclassifying some other
-    `latest.md` now BINDS it instead of dropping it, so the failure mode is a
-    slightly odd digest rather than an unbound consumer-visible input.
+    The TARGET CONTENT is folded in too. Binding only `readlink` caught a
+    retarget but not an edit to the record the pointer names -- and a pointer
+    whose selected record is rewritten in place selects different bytes for every
+    consumer while reading as unchanged. The link is still never followed for
+    traversal: the target is resolved lexically inside the repo, and a pointer
+    escaping the root refuses rather than binding something outside it.
     """
     if Path(path).name != CURRENT_POINTER_FILENAME:
         return None
     candidate = repo_root / _lexical_path(path)
     if not candidate.is_symlink():
         return None
-    return _sha256(b"current-pointer\0" + os.fsencode(os.readlink(candidate)))
+    target = os.readlink(candidate)
+    resolved = candidate.resolve()
+    try:
+        resolved.relative_to(repo_root.resolve())
+    except ValueError as exc:
+        raise ValueError(
+            f"reviewed path `{path}` is a current pointer resolving outside repo root"
+        ) from exc
+    try:
+        selected = _sha256(resolved.read_bytes()) if resolved.is_file() else "absent"
+    except OSError:
+        selected = "unreadable"
+    return _sha256(
+        b"current-pointer\0" + os.fsencode(target) + b"\0" + selected.encode("ascii")
+    )
+
+
+def _gitlink_commit(repo_root: Path, path: str, base_head: str | None) -> str | None:
+    """The submodule commit id recorded for `path`, or None when it is not a gitlink.
+
+    The object-id column differs per command and reading the wrong one is silent:
+    `ls-tree` prints `<mode> <type> <object>` while `ls-files -s` prints
+    `<mode> <object> <stage>`. Taking field 2 from both bound the STAGE NUMBER --
+    the constant `0` -- for every working-tree submodule, so no submodule change
+    could ever stale an identity. Caught by a fresh-eye review; the test that
+    should have caught it asserted only `captured` and never that the digest
+    tracked the commit.
+    """
+    if base_head is not None:
+        raw = _git_bytes_optional(repo_root, "ls-tree", base_head, "--", path)
+        object_field = 2
+    else:
+        raw = _git_bytes_optional(repo_root, "ls-files", "-s", "--", path)
+        object_field = 1
+    if not raw:
+        return None
+    fields = raw.decode("utf-8", errors="surrogateescape").split()
+    if len(fields) <= object_field or fields[0] != "160000":
+        return None
+    return fields[object_field]
 
 
 def _gitlink_sha256(repo_root: Path, path: str, base_head: str | None) -> str | None:
@@ -232,16 +270,10 @@ def _gitlink_sha256(repo_root: Path, path: str, base_head: str | None) -> str | 
     The commit id IS the content here: bumping a submodule changes exactly that
     one value, and it is what a reviewer judges.
     """
-    if base_head is not None:
-        raw = _git_bytes_optional(repo_root, "ls-tree", base_head, "--", path)
-    else:
-        raw = _git_bytes_optional(repo_root, "ls-files", "-s", "--", path)
-    if not raw:
+    commit = _gitlink_commit(repo_root, path, base_head)
+    if commit is None:
         return None
-    fields = raw.decode("utf-8", errors="surrogateescape").split()
-    if len(fields) < 3 or fields[0] != "160000":
-        return None
-    return _sha256(b"gitlink\0" + fields[2].encode("ascii"))
+    return _sha256(b"gitlink\0" + commit.encode("ascii"))
 
 
 def _review_paths(
@@ -385,6 +417,64 @@ def _preimage_refs(repo_root: Path, changed_ref: str | None) -> list[str]:
     return raw.decode("utf-8", errors="surrogateescape").split()[1:]
 
 
+def _committed_ref_digest(
+    repo_root: Path, path: str, base_head: str, preimage_refs: list[str] | None
+) -> tuple[str | None, bool]:
+    """(digest, was_deleted) for one path at a committed ref.
+
+    A path absent at the range's target was DELETED by the range. Ref mode used
+    to have no pre-image fallback at all, so `git diff --name-only` (which lists
+    deletions) produced a manifest that always refused, while `--diff-filter=d`
+    produced one that no longer matched the range -- between them a removal slice
+    had no valid declaration.
+    """
+    content = _git_bytes_optional(repo_root, "show", f"{base_head}:{path}")
+    if content is not None:
+        return _sha256(content), False
+    gitlink = _gitlink_sha256(repo_root, path, base_head)
+    if gitlink is not None:
+        return gitlink, False
+    for preimage_ref in preimage_refs or ():
+        previous = _git_bytes_optional(repo_root, "show", f"{preimage_ref}:{path}")
+        if previous is not None:
+            return _sha256(previous), True
+        # `git show <ref>:<path>` cannot read a gitlink, so a REMOVED submodule
+        # fell through both the deletion fallback and the gitlink binder.
+        removed_gitlink = _gitlink_sha256(repo_root, path, preimage_ref)
+        if removed_gitlink is not None:
+            return removed_gitlink, True
+    return None, False
+
+
+def _working_tree_digest(repo_root: Path, path: str, base_head: str) -> tuple[str | None, bool]:
+    """(digest, was_deleted) for one path in the working tree.
+
+    A deletion is still a reviewed input: bind its pre-change bytes rather than
+    treating the missing path as an unreviewable null. The INDEX is consulted
+    before HEAD, because a path can be staged and then removed from disk --
+    absent from the worktree, absent from HEAD because it is new, present only as
+    a staged blob, which IS the reviewed input there.
+    """
+    digest = _current_pointer_payload(repo_root, path)
+    if digest is not None:
+        return digest, False
+    digest = _worktree_content_sha256(repo_root, path)
+    if digest is not None:
+        return digest, False
+    gitlink = _gitlink_sha256(repo_root, path, None)
+    if gitlink is not None:
+        return gitlink, False
+    staged = _git_bytes_optional(repo_root, "show", f":{path}")
+    if staged is not None:
+        return _sha256(staged), True
+    previous = _git_bytes_optional(repo_root, "show", f"{base_head}:{path}")
+    if previous is not None:
+        return _sha256(previous), True
+    # Same gitlink gap on this side: a submodule removed from index and disk is
+    # unreadable by `git show`.
+    return _gitlink_sha256(repo_root, path, base_head), True
+
+
 def _content_components(
     repo_root: Path, paths: list[str], base_head: str, mode: str, preimage_refs: list[str] | None = None
 ) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
@@ -398,50 +488,10 @@ def _content_components(
     reviewed_content: list[dict[str, str]] = []
     declared_untracked: list[dict[str, str]] = []
     for path in paths:
-        deleted = False
         if mode == SUBSTRATE_COMMITTED_REF:
-            content = _git_bytes_optional(repo_root, "show", f"{base_head}:{path}")
-            digest = _sha256(content) if content is not None else None
-            if digest is None:
-                digest = _gitlink_sha256(repo_root, path, base_head)
-            # A path absent at the range's target was DELETED by the range. The
-            # working-tree substrate below has always bound such a path to its
-            # pre-change bytes; ref mode did not, so `git diff --name-only`
-            # (which lists deletions) produced a manifest that always refused,
-            # while `--diff-filter=d` produced one that no longer matched the
-            # range. Between them a removal slice had no valid declaration at
-            # all -- exactly the change class a fresh-eye review is worth most.
-            for preimage_ref in preimage_refs or ():
-                if digest is not None:
-                    break
-                previous = _git_bytes_optional(repo_root, "show", f"{preimage_ref}:{path}")
-                if previous is not None:
-                    digest = _sha256(previous)
-                    deleted = True
+            digest, deleted = _committed_ref_digest(repo_root, path, base_head, preimage_refs)
         else:
-            digest = _current_pointer_payload(repo_root, path)
-            if digest is None:
-                digest = _worktree_content_sha256(repo_root, path)
-            if digest is None:
-                digest = _gitlink_sha256(repo_root, path, None)
-            # A deletion is still a reviewed input: bind its pre-change bytes
-            # instead of treating the missing path as an unreviewable null. This
-            # keeps destructive migrations auditable without resurrecting the
-            # file in the worktree.
-            #
-            # The INDEX is consulted before HEAD, because a path can be staged
-            # and then removed from disk: absent from the worktree, absent from
-            # HEAD because it is new, and present only as a staged blob. That
-            # state used to bind nothing at all, and once the sweep started
-            # seeing the path it refused instead -- the same "correct rules,
-            # empty intersection" shape as a deleted path in ref mode. The
-            # staged blob IS the reviewed input there.
-            if digest is None:
-                staged = _git_bytes_optional(repo_root, "show", f":{path}")
-                digest = _sha256(staged) if staged is not None else None
-            if digest is None:
-                previous = _git_bytes_optional(repo_root, "show", f"{base_head}:{path}")
-                digest = _sha256(previous) if previous is not None else None
+            digest, deleted = _working_tree_digest(repo_root, path, base_head)
         if digest is None:
             _fail(
                 "null-content-hash",

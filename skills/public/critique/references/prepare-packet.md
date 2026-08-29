@@ -202,15 +202,18 @@ Rules:
   rule: the contract previously claimed link-payload hashing that had been
   unreachable since the working-tree refusal landed, and then claimed a blanket
   refusal that committed-ref mode does not perform.
-- **Current pointers are BOUND, not skipped.** A `latest.md` symlink is bound by
-  its link payload — the record it names — in both the auto sweep and an explicit
-  declaration. Refreshing that pointer is the documented step after filing any
+- **Current pointers are BOUND, not skipped.** A `latest.md` symlink binds its
+  link payload AND the bytes of the record it names, in both the auto sweep and
+  an explicit declaration, so a retarget and a rewrite-in-place both stale the
+  verdict. A pointer resolving outside the repo root is refused. Refreshing that pointer is the documented step after filing any
   record, so refusing it made every record-filing session unreviewable until it
   committed; excluding it was worse, because `auto_excluded_paths` is provenance
   and never digested, so a retarget could not stale an approved verdict. Binding
   the payload means retargeting the pointer at a different record DOES stale it.
-- **Submodules** bind their gitlink commit id. A bump changes exactly that value,
-  and it is what a reviewer judges; neither substrate could declare one before.
+- **Submodules** bind their gitlink commit id, including a removed one, whose
+  pre-image comes from the parent tree because `git show <ref>:<path>` cannot
+  read a gitlink. A bump changes exactly that value and it is what a reviewer
+  judges; neither substrate could declare one before.
 - **Deleted paths.** A path the ref removed binds its PRE-IMAGE bytes — from the
   range start for `a..b`, from `c^` for a single commit `c` — and carries
   `disposition: deleted`. The hash answers "what was removed"; the marker is what
