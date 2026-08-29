@@ -71,7 +71,7 @@ depends on, and gate resolution prefers the source you are actually editing.
   and why, on stderr before starting. A failed build is an error, never a
   fallthrough to a binary compiled from different source.
 
-## Two traps worth recording
+## Three traps worth recording
 
 1. `cargo install --path <crate>` run from elsewhere ignores the crate's
    `rust-toolchain.toml`, because rustup selects the toolchain from the working
@@ -83,6 +83,14 @@ depends on, and gate resolution prefers the source you are actually editing.
    prefix in `detect` made `charness tool doctor` report
    `binary_name: PATH=${CARGO_HOME:-$HOME/.cargo}/bin:$PATH`. Found by running
    the doctor, not by reading the manifest.
+3. Declaring `package_managers.cargo.package_name: "repograph"` looked right and
+   was dangerous: `install_provenance_lib.package_manager_update_action` turns it
+   into `cargo install repograph --force`, which resolves against **crates.io**.
+   This crate is not published there, so the derived update could reach an
+   unrelated package of the same name. The block carried a note saying it must
+   not be installed by name; nothing reads the note, and the derivation reads the
+   block. The block is gone and `lifecycle.update.mode` is `manual` --
+   `charness tool install repograph` is the rebuild path.
 
 ## Links
 
