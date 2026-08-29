@@ -107,6 +107,34 @@ def _execution_state(execution: dict[str, Any], delivery: dict[str, Any]) -> str
     return "completed"
 
 
+#: Post-execution states whose worktree holds work no one has typed yet. A timeout
+#: was the only one preserved, but the issue that asked for it named "timeout AND
+#: any abnormal child exit": a signal and a non-zero exit leave the same untyped
+#: pile, and the parent then triages it by hand or re-runs the whole lane.
+_ABNORMAL_EXIT_STATES = ("timed-out", "interrupted", "failed")
+
+
+def _abnormal_exit_state(execution: dict[str, Any]) -> str | None:
+    """The abnormal post-execution state, or None when the child exited normally.
+
+    Deliberately the same predicate order as `_execution_state`, minus the delivery
+    question, which is not yet answered where this is called. Keeping the order
+    identical is what stops the WIP checkpoint and the reported status from naming
+    two different things about one run.
+    """
+    if execution["timed_out"]:
+        return "timed-out"
+    if execution["interrupted"] or (
+        execution["exit_code"] is not None and execution["exit_code"] < 0
+    ):
+        return "interrupted"
+    if execution.get("exec_error") or execution["exit_code"] is None:
+        return "failed"
+    if execution["exit_code"] != 0:
+        return "failed"
+    return None
+
+
 def _candidate_result_state(
     *,
     execution_state: str,
@@ -123,9 +151,9 @@ def _candidate_result_state(
         "changed_paths": changed_paths,
         **scope["candidate_carrier"],
     }
-    if execution_state == "timed-out":
+    if execution_state in _ABNORMAL_EXIT_STATES:
         if candidate_commit is None:
-            raise TaskRunError("timed-out task is missing its WIP candidate commit")
+            raise TaskRunError(f"{execution_state} task is missing its WIP candidate commit")
         candidate.update(
             {
                 "status": "wip",
@@ -134,7 +162,7 @@ def _candidate_result_state(
                 "commit": candidate_commit,
             }
         )
-        return candidate, "timed-out"
+        return candidate, execution_state
     if candidate_valid and execution_state == "completed" and not parent_progress["blocking"]:
         return candidate, "completed"
     if candidate_useful:
@@ -391,11 +419,12 @@ def run_task(
             timeout_seconds=timeout_seconds,
         )
         candidate_commit = None
-        if execution["timed_out"]:
+        abnormal = _abnormal_exit_state(execution)
+        if abnormal is not None:
             try:
                 candidate_commit = _support._commit_wip_candidate(resolved_target)
             except (OSError, RuntimeError, TypeError, TaskRunError, subprocess.SubprocessError) as exc:
-                payload["execution"] = {**execution, "status": "timed-out"}
+                payload["execution"] = {**execution, "status": abnormal}
                 payload["candidate"] = {
                     "status": "wip",
                     "useful": False,
@@ -411,10 +440,10 @@ def run_task(
                 return _terminal(
                     payload,
                     runtime_path,
-                    status="timed-out",
-                    error=f"timed-out WIP candidate commit failed: {exc}",
+                    status=abnormal,
+                    error=f"{abnormal} WIP candidate commit failed: {exc}",
                     next_step=(
-                        "The timeout WIP checkpoint could not be committed; inspect and "
+                        f"The {abnormal} WIP checkpoint could not be committed; inspect and "
                         "recover the retained worktree manually."
                     ),
                 )

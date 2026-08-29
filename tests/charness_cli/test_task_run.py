@@ -912,3 +912,56 @@ def test_interruption_is_a_distinct_terminal_state(tmp_path: Path, monkeypatch) 
     assert payload["status"] == "interrupted"
     assert payload["execution"]["status"] == "interrupted"
     assert payload["phase"] == "terminal"
+
+
+def test_a_nonzero_child_exit_commits_a_typed_wip_candidate(tmp_path: Path) -> None:
+    """A failed child leaves the same untyped pile a timeout does.
+
+    Timeout was preserved; a non-zero exit was not, so nearly-done work from a lane
+    whose child died became an untyped worktree the parent had to triage by hand or
+    pay to re-run. The checkpoint is explicitly UNVERIFIED -- it is durability, not
+    approval.
+    """
+    repo = _repo(tmp_path)
+    executable = _codex(tmp_path, "printf 'VALUE = 2\\n' > module.py\nexit 3", deliver=False)
+
+    payload = _run(repo, tmp_path, executable)
+
+    assert payload["status"] == "failed"
+    assert payload["candidate"]["status"] == "wip"
+    assert payload["candidate"]["state"] == "interrupted-mid-edit"
+    assert payload["candidate"]["state_known"] is False
+    assert payload["candidate"]["changed_paths"] == ["module.py"]
+    commit = payload["candidate"]["commit"]
+    assert commit["status"] == "committed"
+    assert commit["correctness_verified"] is False
+    # The work is durable, and it is still not approvable.
+    assert payload["approval_eligibility"] == "ineligible"
+
+
+def test_an_interrupted_child_commits_a_typed_wip_candidate(tmp_path: Path) -> None:
+    """A signalled child is the shape the issue names beside the timeout."""
+    repo = _repo(tmp_path)
+    executable = _codex(
+        tmp_path, "printf 'VALUE = 3\\n' > module.py\nkill -TERM $$", deliver=False
+    )
+
+    payload = _run(repo, tmp_path, executable)
+
+    assert payload["candidate"]["status"] == "wip"
+    assert payload["candidate"]["state_known"] is False
+    assert payload["candidate"]["changed_paths"] == ["module.py"]
+    assert payload["candidate"]["commit"]["status"] == "committed"
+    assert payload["approval_eligibility"] == "ineligible"
+
+
+def test_a_clean_normal_exit_still_produces_no_wip_commit(tmp_path: Path) -> None:
+    """The control: widening the checkpoint must not mint WIP on an ordinary run."""
+    repo = _repo(tmp_path)
+    executable = _codex(tmp_path, "printf 'VALUE = 4\\n' > module.py")
+
+    payload = _run(repo, tmp_path, executable)
+
+    assert payload["status"] == "completed"
+    assert payload["candidate"]["status"] == "validated"
+    assert "commit" not in payload["candidate"] or payload["candidate"].get("commit") is None
