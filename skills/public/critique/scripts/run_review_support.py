@@ -116,12 +116,33 @@ def yaml_payload(raw: str, *, label: str) -> dict[str, Any]:
     return payload
 
 
-def repo_path(root: Path, value: str, *, label: str, require_file: bool = False) -> Path:
+def repo_path(
+    root: Path,
+    value: str,
+    *,
+    label: str,
+    require_file: bool = False,
+    allow_symlink: bool = False,
+) -> Path:
+    """Resolve a repo-relative path this runner will OPEN, or (with
+    `allow_symlink`) one it merely declares.
+
+    The symlink refusal is right for files the runner reads or writes — a packet
+    or manifest behind a link could be swapped underneath it. It is wrong for a
+    DECLARED reviewed path, whose symlink policy belongs to
+    `scripts/reviewed_input_identity.py`: that owner binds a current pointer by
+    link payload and refuses every other symlink. Applying this rule there made
+    the runner refuse inputs the identity had just been taught to bind, which is
+    the same two-owners-one-question shape the identity repairs were about.
+
+    The repo-root boundary below still applies either way, and `.resolve()`
+    follows the link, so a symlink escaping the root is still refused.
+    """
     raw = Path(value).expanduser()
     if raw.is_absolute() or ".." in raw.parts:
         raise RunReviewError("path-invalid", f"{label} must be repository-relative: {value}")
     lexical = root / raw
-    if lexical.is_symlink():
+    if lexical.is_symlink() and not allow_symlink:
         raise RunReviewError("path-invalid", f"{label} must not be a symlink: {value}")
     candidate = lexical.resolve(strict=False)
     try:
@@ -130,11 +151,28 @@ def repo_path(root: Path, value: str, *, label: str, require_file: bool = False)
         raise RunReviewError("path-invalid", f"{label} resolves outside --repo-root: {value}") from exc
     if require_file and not candidate.is_file():
         raise RunReviewError("path-missing", f"{label} does not point to a file: {value}")
-    return candidate
+    # An allowed symlink is returned UNRESOLVED. `.resolve()` follows the link, so
+    # returning `candidate` renamed a declared `latest.md` to whatever record it
+    # points at -- and a declared set carrying the target instead of the pointer
+    # no longer matches the range that listed the pointer. The resolved form is
+    # still what the boundary check above ran against.
+    return lexical if lexical.is_symlink() else candidate
 
 
 def relative(root: Path, path: Path) -> str:
-    return path.resolve().relative_to(root.resolve()).as_posix()
+    """Repo-relative spelling of a path, WITHOUT following a symlink.
+
+    `.resolve()` here renamed a declared `latest.md` to whatever record it points
+    at, so the declared set carried the target while the range carried the
+    pointer and the two could never match. `repo_path` has already proven the
+    path lies inside the root, so resolving again buys nothing and costs the
+    caller's own name for it.
+    """
+    absolute = path if path.is_absolute() else root / path
+    try:
+        return absolute.relative_to(root.resolve()).as_posix()
+    except ValueError:
+        return absolute.resolve().relative_to(root.resolve()).as_posix()
 
 
 def load_goal_lineage(root: Path, path_value: str | None, *, reason: str) -> dict[str, Any]:

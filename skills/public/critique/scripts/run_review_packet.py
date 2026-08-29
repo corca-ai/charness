@@ -20,7 +20,16 @@ def manifest_paths(support: Any, root: Path, manifest: str | None, explicit: lis
         except (OSError, UnicodeDecodeError) as exc:
             raise support.RunReviewError("path-invalid", f"reviewed-paths-file is unreadable: {path}") from exc
         values.extend(line.strip() for line in lines if line.strip() and not line.lstrip().startswith("#"))
-    return sorted({support.relative(root, support.repo_path(root, value, label="reviewed path")) for value in values})
+    # `allow_symlink`: the symlink policy for a DECLARED path is owned by
+    # `reviewed_input_identity`, which binds a current pointer by link payload and
+    # refuses every other symlink. Re-deciding it here refused inputs that owner
+    # accepts.
+    return sorted(
+        {
+            support.relative(root, support.repo_path(root, value, label="reviewed path", allow_symlink=True))
+            for value in values
+        }
+    )
 
 
 def prepare_packet(
