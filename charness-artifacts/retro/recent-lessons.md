@@ -2,8 +2,8 @@
 
 ## Current Focus
 
+- The operator, watching a session accumulate small failures, asked for patterns and patterns-of-patterns rather than incident response, and for structural repair regardless of who authored the defect. (source: `charness-artifacts/retro/2026-08-30-a-class-discharged-as-a-list.md`)
 - The 2026-08-28~29 session executed umbrella #744's step 4 and the parallel test-corpus track: #748 slice 1 (seven Codex lanes; four Python repository-boundary owners deleted and replaced by native `repograph` commands behind one gate-side resolver), #743 resolved and CLOSED through topology-derived test-role exclusion, #753 driven from inventory to a blocking ratio gate (operator redirected the recorded mutation pass to a JTBD audit mid-session), #672 retired, and the next session designed with the operator (release-first keystone). (source: `charness-artifacts/retro/2026-08-29-session-retro.md`)
-- One session drove umbrella #744 from a standing start through three closed children: #745 (spike, ratified go), #746 (typed topology core), #747 (native distribution, typed-disposition close), plus #753 filed (test-corpus pruning, next session) and the standing gate battery brought from 32-failures-then-8 to 78/0. (source: `charness-artifacts/retro/2026-08-28-umbrella-744-rust-core-session-retro.md`)
 
 ## Repeat Traps
 
@@ -48,5 +48,5 @@
 - `charness-artifacts/retro/2026-08-18-session-retro.md`
 - `charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md`
 - `charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md`
-- `charness-artifacts/retro/2026-08-28-umbrella-744-rust-core-session-retro.md`
 - `charness-artifacts/retro/2026-08-29-session-retro.md`
+- `charness-artifacts/retro/2026-08-30-a-class-discharged-as-a-list.md`

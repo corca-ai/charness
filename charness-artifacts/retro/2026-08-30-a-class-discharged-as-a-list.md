@@ -114,6 +114,42 @@ Two earlier repairs in this session were the same move at smaller scale:
 channel that acts) and its regression file, which pins both the ambient-marker
 defect (#5) and the absorbed-exception defect (#6).
 
+## The finding that arrived while writing this
+
+Regenerating `recent-lessons.md` to accommodate this artifact surfaced the
+following, already in the active digest's Next-Time Checklist, sourced from
+`2026-08-22-proof-cost-portability-cadence-retro.md` with **3 independent
+sources**:
+
+> **workflow — prefer a structural property over an enumerated refusal.** […]
+> The repair that worked is structural and positional […] **I committed the
+> enumerated form first.**
+
+The lesson above was already written down, already ranked, already carrying
+three sources. This artifact is its fourth or fifth independent observation. Per
+`2026-07-26-lesson-recurrence-mechanism.md`, dedup keys on normalized surface
+text, so this re-wording will open a NEW row at multiplier 1.0 instead of
+incrementing that one — the class fragmenting across its spellings, which is the
+same defect one level up.
+
+And the reason it did not reach this session is mechanical, not attitudinal:
+
+**`charness-artifacts/retro/recent-lessons.md` was referenced by no operating
+document.** Not `AGENTS.md`, not `CLAUDE.md` (its symlink), not `.agents/*.md`,
+not `docs/index.md`. Eight modules produce, validate, gate, rank, dedup, and
+score it (`recent_lessons_lib.py`, `record_lesson_score.py`,
+`retro_persistence_lib.py`, `validate_retro_artifact.py`,
+`check_skill_cut_safety.py`, `check_artifact_surface_preflight.py`,
+`retro_output_dir_lib.py`, `.agents/surfaces.json`) and **nothing put it in
+front of a session.** The `SessionStart` routing trigger that could have was
+retired.
+
+`2026-07-26` concluded that "the prose channel does not change behavior at the
+moment of action" — and the channel it kept writing to was one no session read.
+`AGENTS.md` now routes to the digest as the first item under "Start here",
+because a digest read after the work is a description of the mistake already
+made.
+
 ## What is NOT fixed, and should be named rather than implied
 
 - **Incident #10 is unresolved.** The changed-line coverage gate reported
