@@ -29,9 +29,6 @@ Use `<repo-root>/.agents/release-adapter.yaml`.
 - `post_publish_doctor_readback`
 - `post_publish_distinct_channel_probe`
 - `update_instructions`
-- `real_host_required_surfaces`
-- `real_host_required_path_globs`
-- `real_host_checklist`
 - `requested_review_commands`
 - `requested_review_policy`
 - `review_unavailable_patterns`
@@ -47,63 +44,6 @@ Use `<repo-root>/.agents/release-adapter.yaml`.
 - `require_derived_release_claims`
 - `release_backend`
 - `specialized_release_lanes`
-
-## Real-host trigger role ownership
-
-`real_host_required_surfaces`, `real_host_required_path_globs`, and
-`real_host_checklist` say which changes require host proof. They do not own
-negative path rules. The raw-glob arm delegates candidate role classification
-to `repograph classify --surfaces-optional`; only role `test` is excluded.
-`production`, `doc`, `generated`, `unestablished`, and
-`unestablished-absent` remain release-proof hits. In particular, `generated`
-is derived from surfaces-manifest `derived_paths`, so it is manifest-configured
-and must not be dropped: a manifest edit must not silently remove a
-release-relevant generated-mirror hit.
-
-Role ownership and precedence are defined by the topology layer:
-
-| precedence | owner | role rule |
-| --- | --- | --- |
-| 1 | consumer `<repo-root>/.agents/topology.json` | `test_globs`, `production_globs`, and `generated_globs` |
-| 2 | consumer `<repo-root>/.agents/surfaces.json` | `derived_paths` membership is `generated` |
-| 3 | native language conventions | `tests/**`, Python test names, Go `_test.go`/`testdata/**`, JS/TS test names, and `__tests__/**` |
-| 4 | native built-ins | Markdown is `doc`; package members are `production` |
-| 5 | native typed fallback | no matching rule is `unestablished`; a deleted path may be `unestablished-absent` |
-
-The consumer declaration is optional and does not change the release adapter:
-
-```json
-{
-  "topology": {
-    "test_globs": ["specimens/**"],
-    "production_globs": ["cmd/**"],
-    "generated_globs": ["build/**"]
-  }
-}
-```
-
-If the native resolver is unavailable, or the classify report is missing or
-unparseable, the fold is positive-only and records
-`test_exclusion.status: unavailable` with a typed `native_core` object carrying
-`status: unavailable` and a `reason`. A valid classify report at either exit 0
-or exit 3 is consumed. When there are no raw-glob candidates, no native
-invocation or degradation occurs; an evaluated payload uses
-`test_exclusion: {status: applied, native_core: not-needed}`. That sentinel
-means the exclusion operation was vacuously established, not that a binary was
-resolved.
-
-### Real-host payload keys by evaluation scope
-
-| `evaluation_scope` | keys owned by this derived-exclusion contract |
-| --- | --- |
-| `evaluated` | `path_hits` is the post-exclusion list; `required` remains `bool(surface_hits or path_hits)`; `excluded_path_hits` lists `{path, role}` entries; `test_exclusion` is always present. |
-| `not-configured` | No derived-exclusion keys; the existing `required: false` payload is unchanged. |
-| `empty` | No derived-exclusion keys; the existing absent-`required` payload and exit 3 are unchanged. |
-| `not-established` | No derived-exclusion keys; broken-config and surface-error payloads and exit 1 are unchanged. |
-
-This contract adds no release-adapter field. The adapter remains the positive
-statement of which changes require real-host proof; topology owns the derived
-role decision.
 
 ## Executed fields
 
@@ -141,9 +81,6 @@ both fields to commands YOUR repo can run.
   `./scripts/run-quality.sh --release` — so publish covers update/install
   flow checks that standing pre-push intentionally skips.
 - `update_instructions`: empty list
-- `real_host_required_surfaces`: empty list
-- `real_host_required_path_globs`: empty list
-- `real_host_checklist`: empty list
 - `requested_review_commands`: empty list
 - `requested_review_policy`: `warn-if-unconfigured`
 - `review_unavailable_patterns`: common release-record phrases such as
@@ -242,11 +179,6 @@ latest published release, not what changed in one release. Put release-specific
 behavior changes, migration notes, rollback advice, and rationale in release
 notes or the generated release artifact. Avoid host-internal compatibility detail
 unless operators truly need it to complete the update.
-
-`real_host_checklist` is optional and exists for proofs that should stay
-release-time and human-run rather than standing CI. Use it for support-tool or
-install/update smokes on a second machine or clean temp-home, not for generic
-repo validation already covered by `quality_command`.
 
 `requested_review_commands` is optional and exists for release workflows where
 the maintainer asks for a concrete review gate before publish. If any command

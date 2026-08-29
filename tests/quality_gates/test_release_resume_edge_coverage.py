@@ -82,14 +82,6 @@ class _ClaimsResumeCli:
     def expected_github_release_url(_root, _backend, _tag):
         return "https://example.test/v1.2.3"
 
-    @staticmethod
-    def safe_real_host_payload(_root, _paths, *, build_payload):
-        return build_payload()
-
-    @staticmethod
-    def build_real_host_payload():
-        return {"required": False}
-
     def ensure_release_surface(self, _repo_root, expected_version, *, stage):
         self.version_surface_checks.append({"version": expected_version, "stage": stage})
         if self.version_surface_error:

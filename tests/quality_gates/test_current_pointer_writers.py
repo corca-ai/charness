@@ -95,7 +95,6 @@ def test_release_artifact_does_not_follow_symlinked_latest(tmp_path: Path) -> No
         quality_command="./scripts/run-quality.sh",
         release_url=None,
         update_instructions=[],
-        real_host_payload={"required": False},
     )
 
     assert relpath == "charness-artifacts/release/latest.md"
@@ -120,7 +119,6 @@ def test_release_artifact_records_adapter_preflight_non_claim(tmp_path: Path) ->
         quality_command="./scripts/run-quality.sh",
         release_url=None,
         update_instructions=[],
-        real_host_payload={"required": False},
         release_adapter_preflight_payload={
             "status": "not_evaluable",
             "reason": "release adapter changed, but no previous release tag is available for field diff",
@@ -150,7 +148,6 @@ def _release_record(repo: Path, **kwargs) -> str:
         quality_command="./scripts/run-quality.sh",
         release_url=None,
         update_instructions=[],
-        real_host_payload={"required": False},
         **kwargs,
     )
     return (repo / relpath).read_text(encoding="utf-8")
@@ -306,7 +303,7 @@ def test_release_record_states_that_a_required_preflight_was_not_executed(tmp_pa
         tmp_path / "repo",
         release_adapter_preflight_payload={
             "status": "required",
-            "commands": [["pytest", "tests/quality_gates/test_release_real_host.py", "-q"]],
+            "commands": [["pytest", "tests/quality_gates/test_release_backend.py", "-q"]],
         },
     )
 
@@ -318,16 +315,16 @@ def test_release_record_reports_the_executed_preflight_commands(tmp_path: Path) 
         tmp_path / "repo",
         release_adapter_preflight_payload={
             "status": "required",
-            "commands": [["pytest", "tests/quality_gates/test_release_real_host.py", "-q"]],
+            "commands": [["pytest", "tests/quality_gates/test_release_backend.py", "-q"]],
             "execution": {
                 "status": "passed",
-                "executed_commands": ["pytest tests/quality_gates/test_release_real_host.py -q"],
+                "executed_commands": ["pytest tests/quality_gates/test_release_backend.py -q"],
             },
         },
     )
 
     assert "Focused preflight execution: `passed`." in text
-    assert "  - executed: `pytest tests/quality_gates/test_release_real_host.py -q`" in text
+    assert "  - executed: `pytest tests/quality_gates/test_release_backend.py -q`" in text
 
 
 def test_release_record_names_the_preflight_command_that_failed(tmp_path: Path) -> None:
@@ -340,7 +337,7 @@ def test_release_record_names_the_preflight_command_that_failed(tmp_path: Path) 
             "status": "required",
             "previous_ref": "refs/tags/v0.1.0",
             "adapter_paths": [".agents/release-adapter.yaml"],
-            "changed_fields": ["real_host_checklist"],
+            "changed_fields": ["fresh_checkout_probes"],
             "commands": [["pytest", "a", "-q"], ["pytest", "b", "-q"]],
             "execution": {
                 "status": "failed",
@@ -354,7 +351,7 @@ def test_release_record_names_the_preflight_command_that_failed(tmp_path: Path) 
     assert "- Adapter paths in release delta:" in text
     assert "  - `.agents/release-adapter.yaml`" in text
     assert "- Changed adapter fields:" in text
-    assert "  - `real_host_checklist`" in text
+    assert "  - `fresh_checkout_probes`" in text
     assert "Focused preflight execution: `failed`." in text
     assert "  - executed: `pytest a -q`" in text
     assert "  - failed: `pytest b -q`" in text

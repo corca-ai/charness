@@ -26,9 +26,9 @@
     "3972fc454265f2e9",
     "3e86c6cbdd720473",
     "3fa411270d9911ac",
+    "46fc4a405e3dbe33",
     "584137bc9502bb52",
     "5aaa8310abddb4cc",
-    "5e810e663bf20edd",
     "64beb6de7c290c6a",
     "68a29d4ac0870e7e",
     "6a34e88fa8ab3d91",
@@ -257,15 +257,9 @@
       ]
     },
     {
-      "test_file": "tests/quality_gates/test_release_publish_real_host_delta.py",
+      "test_file": "tests/quality_gates/test_release_publish_tag_history.py",
       "import_safe_targets": [
         "skills/public/release/scripts/bump_version.py"
-      ]
-    },
-    {
-      "test_file": "tests/quality_gates/test_release_real_host.py",
-      "import_safe_targets": [
-        "skills/public/release/scripts/check_real_host_proof.py"
       ]
     },
     {
@@ -379,5 +373,5 @@
       ]
     }
   ],
-  "writer_integrity_sha256": "8b7d97fb45d537184d31a1ac720eefd3e9f7e48846c9a613e8e416abbb56b0d4"
+  "writer_integrity_sha256": "7b47c36dd28476f96d7e842ea5bac84713e3389887d3921395077d06b20d6f47"
 }

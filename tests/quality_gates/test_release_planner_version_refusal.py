@@ -10,11 +10,8 @@ that do not exist, and `blockers: []`.
 
 The row for `current_release` ALONE already made this exit 1, by inheritance:
 `build_release_payload` runs before the three unconditional `data` reads and its
-`SystemExit` escapes the `except Exception` around it. The `check_real_host_proof` row
-cannot have contributed — its call here is behind `if adapter.get("valid")` and inside
-`except SystemExit`, which demotes a refusal to a payload field — and a round-1 bounded
-review caught three surfaces crediting it. That inheritance is real and
-was measured — and it is POSITIONAL. `test_the_refusal_is_this_file_s_own_not_inherited_from_a_callee` is the test
+`SystemExit` escapes the `except Exception` around it. The refusal is positional:
+`test_the_refusal_is_this_file_s_own_not_inherited_from_a_callee` is the test
 that separates the two, by proving the refusal survives a callee that does not refuse.
 """
 from __future__ import annotations
@@ -35,7 +32,7 @@ PLANNER = ROOT / "skills" / "public" / "release" / "scripts" / "plan_release_run
 # copy of the constant cannot drift. `check_probe_record --replay-stimulus` refused the
 # record for it; this fixture carried the same dead key one commit longer, which is the
 # record-and-test-disagree shape this family has now produced in both directions.
-DECLARED = 'output_dir: charness-artifacts/release-mine\nreal_host_required_path_globs:\n  - "src/**"\n'
+DECLARED = 'output_dir: charness-artifacts/release-mine\n'
 
 
 def _repo(tmp_path: Path, adapter: str) -> Path:
@@ -107,7 +104,6 @@ def test_the_refusal_is_this_file_s_own_not_inherited_from_a_callee(
         module, "build_release_payload",
         lambda repo_root: {"surface_versions": {"packaging_manifest": "1.2.3"}},
     )
-    monkeypatch.setattr(module, "build_real_host_payload", lambda repo_root, paths: {})
     monkeypatch.setattr(
         module, "build_review_gate_payload", lambda repo_root, run_commands=True: {}
     )

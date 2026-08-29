@@ -17,7 +17,6 @@ def _load_skill_runtime_bootstrap():
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 _current_release = SKILL_RUNTIME.load_local_skill_module(__file__, "current_release")
-_check_real_host = SKILL_RUNTIME.load_local_skill_module(__file__, "check_real_host_proof")
 _check_review_gate = SKILL_RUNTIME.load_local_skill_module(__file__, "check_requested_review_gate")
 _fresh_checkout = SKILL_RUNTIME.load_local_skill_module(__file__, "check_fresh_checkout_probes")
 _helpers = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_helpers")
@@ -38,7 +37,6 @@ _yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scrip
 emit_yaml = _yaml_output.emit_yaml
 load_adapter = _resolve_adapter.load_adapter
 build_release_payload = _current_release.build_payload
-build_real_host_payload = _check_real_host.build_payload
 build_review_gate_payload = _check_review_gate.build_payload
 build_fresh_checkout_payload = _fresh_checkout.build_payload
 build_narrative_audit_payload = _narrative_gate.build_narrative_audit_payload
@@ -68,7 +66,6 @@ validate_critique_artifact_arg = _preflight.validate_critique_artifact_arg
 validate_bump_rationale_arg = _preflight.validate_bump_rationale_arg
 enforce_release_critique_gate = _preflight.enforce_release_critique_gate
 build_update_instructions_prep_payload = _preflight.build_update_instructions_prep_payload
-safe_real_host_payload = _preflight.safe_real_host_payload
 release_adapter_preflight_payload = _preflight.release_adapter_preflight_payload
 run_release_adapter_preflight = _preflight.run_release_adapter_preflight
 release_surface_blocker = _preflight.release_surface_blocker
@@ -108,9 +105,6 @@ def _execution_context() -> SimpleNamespace:
         "ensure_release_surface",
         "release_surface_blocker",
         "changed_paths",
-        "safe_real_host_payload",
-        "build_real_host_payload",
-        "record_real_host_verdict",
         "build_fresh_checkout_payload",
         "write_current_artifact",
         "run_requested_review_gate",
@@ -164,23 +158,6 @@ def run_fresh_checkout_probes(repo_root: Path) -> dict[str, Any]:
         raise SystemExit("fresh checkout release probes blocked publish:\n" + "\n".join(payload.get("blockers", [])))
     return payload
 
-def record_real_host_verdict(payload: dict[str, Any], host_payload: dict[str, Any]) -> None:
-    """Copy the real-host verdict into a release payload, or record that none exists.
-
-    `check_real_host_proof` emits `required` ONLY when it evaluated the configured
-    triggers against a non-empty changed scope. Subscripting it unconditionally
-    would raise for the empty-scope state; writing `real_host_required: null`
-    instead would put a key shaped like a verdict where no verdict was produced,
-    which is the conflation that state exists to end. So the verdict key is
-    written only when there is one, and its absence is recorded by name.
-    """
-    if "required" in host_payload:
-        payload["real_host_required"] = host_payload["required"]
-    else:
-        payload["real_host_verdict_unestablished_scope"] = host_payload.get("evaluation_scope")
-    payload["real_host_checklist"] = host_payload["checklist"]
-
-
 def run_bump(args: argparse.Namespace, repo_root: Path) -> None:
     if args.publish_current:
         return
@@ -226,7 +203,6 @@ def finalize_release_payload(
     payload: dict[str, Any],
     *,
     artifact_relpath: str,
-    host_payload: dict[str, Any],
     release_stdout: str,
     expected_release_url: str | None,
     release_verified: bool,
@@ -242,7 +218,6 @@ def finalize_release_payload(
     # irreversible boundary, which is the class this lane exists to hold.
     payload["commit_sha"] = commit_sha or run(["git", "rev-parse", "HEAD"], cwd=repo_root).stdout.strip()
     payload["artifact_path"] = artifact_relpath
-    record_real_host_verdict(payload, host_payload)
     payload["public_release_verification"] = "verified" if release_verified else "failed"
     payload["release_url"] = next((line.strip() for line in reversed(release_stdout.splitlines()) if line.strip()), None)
     if payload["release_url"] and expected_release_url and payload["release_url"] != expected_release_url:
@@ -256,7 +231,6 @@ def commit_final_release_artifact(
     *,
     adapter_data: dict[str, Any],
     payload: dict[str, Any],
-    host_payload: dict[str, Any],
     fresh_checkout_payload: dict[str, Any],
     artifact_relpath: str,
     expected_release_url: str | None,
@@ -265,7 +239,7 @@ def commit_final_release_artifact(
     has_issue_closeout: bool,
 ) -> None:
     def writer(**kwargs):
-        return write_current_artifact(repo_root, adapter_data, payload, host_payload, **kwargs)
+        return write_current_artifact(repo_root, adapter_data, payload, **kwargs)
 
     kwargs = {
         "repo_root": repo_root, "write_artifact": writer, "payload": payload,

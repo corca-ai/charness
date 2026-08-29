@@ -294,22 +294,6 @@ def enforce_release_critique_gate(
     return result
 
 
-def safe_real_host_payload(repo_root: Path, repo_paths: list[str], *, build_payload: Callable) -> dict:
-    try:
-        payload = build_payload(repo_root, repo_paths)
-    except Exception as exc:  # pragma: no cover - defensive fail-closed path
-        raise SystemExit(
-            "release real-host proof probe failed\n"
-            f"{type(exc).__name__}: {exc}"
-        ) from exc
-    if payload.get("configuration_status") == "broken" or payload.get("error"):
-        raise SystemExit(
-            "release real-host proof probe failed\n"
-            + json.dumps(payload, ensure_ascii=False, indent=2)
-        )
-    return payload
-
-
 def release_adapter_preflight_payload(
     repo_root: Path,
     *,

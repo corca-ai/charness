@@ -397,8 +397,9 @@ def test_nose_stays_blocking_because_it_has_no_degraded_path() -> None:
     `test_script_install_required_policy_tool_missing_is_blocking_exit_one` below, and
     the two only together cover what this one's name suggests alone.
 
-    The v6.0.0 `real_host_checklist` asserted `advisory-install-needed` for this case;
-    that expectation was unreachable at the tag and is corrected in the release adapter.
+    The release adapter previously carried a prose expectation for this case;
+    that expectation was unreachable at the tag and is now covered by the executable
+    doctor assertions below.
     """
     manifest = json.loads((ROOT / "integrations" / "tools" / "nose.json").read_text(encoding="utf-8"))
 

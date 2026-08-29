@@ -138,7 +138,9 @@ def _tracked_python_paths(repo: Path) -> set[str]:
     return {
         raw.decode()
         for raw in result.stdout.split(b"\0")
-        if raw.endswith(b".py") and not raw.endswith(b"/__init__.py")
+        if raw.endswith(b".py")
+        and not raw.endswith(b"/__init__.py")
+        and (repo / raw.decode()).is_file()
     }
 
 

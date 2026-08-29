@@ -12,9 +12,6 @@ quality_command: ./scripts/run-quality.sh
 update_instructions:
 - Run the repo-owned update command to install the latest published release.
 - Read the release notes for release-specific behavior changes, migrations, or rollback notes.
-real_host_required_surfaces: []
-real_host_required_path_globs: []
-real_host_checklist: []
 requested_review_commands: []
 requested_review_policy: warn-if-unconfigured
 fresh_checkout_probes: []

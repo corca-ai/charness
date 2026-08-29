@@ -152,7 +152,6 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
     payload["fresh_checkout_probe_status"] = fresh["status"]
     expected_url = cli.expected_github_release_url(repo_root, backend, tag_name)
     payload["expected_release_url"] = expected_url
-    host = cli.safe_real_host_payload(repo_root, plan["release_content_paths"], build_payload=cli.build_real_host_payload)
     # Adapter-derived, not a literal: on the claims lane the writer below is SKIPPED, so
     # this value is what reaches `finalize_release_payload`, the post-publish artifact
     # commit, and `state["artifact_relpath"]`. A literal there pointed a consumer's
@@ -160,7 +159,7 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
     # pathspec that matches nothing exits 0, so that commit was skipped silently.
     artifact = record_path
     if not claims_lane:
-        artifact = cli.write_current_artifact(repo_root, adapter_data, payload, host, fresh_checkout_payload=fresh, release_url=expected_url)
+        artifact = cli.write_current_artifact(repo_root, adapter_data, payload, fresh_checkout_payload=fresh, release_url=expected_url)
         cli.run_narrative_audit(repo_root, target_tag=tag_name, notes_file=notes_file)
     # The claims record stays the exact P -> R direct child.  Revalidation can
     # still refresh generated quality inventory beneath charness-artifacts;
@@ -205,16 +204,16 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
     # `state["prepared"]["commit"]`, while HEAD here is the follow-on evidence commit
     # `commit_artifact_before_push` may have just made. The non-claims lane has no such
     # commit, so `prepared` is HEAD there and the value is unchanged.
-    cli.finalize_release_payload(repo_root, payload, artifact_relpath=artifact, host_payload=host, release_stdout=release_stdout,
+    cli.finalize_release_payload(repo_root, payload, artifact_relpath=artifact, release_stdout=release_stdout,
                                  expected_release_url=expected_url, release_verified=verified.returncode == 0,
                                  commit_sha=(state.get("prepared") or {}).get("commit") if claims_lane else None)
     if verified.returncode != 0:
-        cli.commit_final_release_artifact(repo_root, adapter_data=adapter_data, payload=payload, host_payload=host,
+        cli.commit_final_release_artifact(repo_root, adapter_data=adapter_data, payload=payload,
                                           fresh_checkout_payload=fresh, artifact_relpath=artifact, expected_release_url=expected_url,
                                           remote=args.remote, branch=branch, has_issue_closeout=False)
         cli.fail_after_post_create_verification(payload, verification_result=verified)
     state.update({"artifact_relpath": artifact, "backend": backend, "branch": branch, "expected_release_url": expected_url,
-                  "fresh_checkout_payload": fresh, "host_payload": host, "tag_name": tag_name})
+                  "fresh_checkout_payload": fresh, "tag_name": tag_name})
     common.run_release_closeout_tail(repo_root, args=args, adapter_data=adapter_data, state=state, issue_repo=plan["issue_repo"],
                                      payload=payload, cli=cli, carrier_source="release-resume")
     emit_yaml(payload)

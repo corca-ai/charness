@@ -33,7 +33,7 @@ STRING_FIELDS = (
     "post_publish_version_readback", "post_publish_doctor_readback", "requested_review_policy",
 )
 LIST_FIELDS = (
-    "update_instructions", "real_host_required_surfaces", "real_host_required_path_globs", "real_host_checklist",
+    "update_instructions",
     "requested_review_commands", "review_unavailable_patterns", "review_waiver_phrases", "product_surfaces",
     "cli_skill_surface_probe_commands", "cli_skill_surface_command_docs", "cli_skill_surface_skill_paths",
     "cli_skill_surface_change_globs", "fresh_checkout_probes", "required_release_surfaces",
@@ -188,9 +188,6 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "post_publish_doctor_readback": "",
         "post_publish_distinct_channel_probe": "",
         "update_instructions": [],
-        "real_host_required_surfaces": [],
-        "real_host_required_path_globs": [],
-        "real_host_checklist": [],
         "requested_review_commands": [],
         "requested_review_policy": "warn-if-unconfigured",
         "review_unavailable_patterns": [

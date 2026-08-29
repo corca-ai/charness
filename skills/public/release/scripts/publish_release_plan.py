@@ -17,19 +17,16 @@ def _load_skill_runtime_bootstrap():
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _current_release = SKILL_RUNTIME.load_local_skill_module(__file__, "current_release")
 _bump_version = SKILL_RUNTIME.load_local_skill_module(__file__, "bump_version")
-_check_real_host = SKILL_RUNTIME.load_local_skill_module(__file__, "check_real_host_proof")
 _helpers = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_helpers")
 _preflight = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_preflight")
 _issue_closeout = SKILL_RUNTIME.load_local_skill_module(__file__, "release_issue_closeout")
 
 build_release_payload = _current_release.build_payload
 bump_part = _bump_version.bump_part
-build_real_host_payload = _check_real_host.build_payload
 current_branch = _helpers.current_branch
 unreleased_paths = _helpers.unreleased_paths
 release_previous_version = _helpers.release_previous_version
 ensure_release_target_available = _helpers.ensure_release_target_available
-safe_real_host_payload = _preflight.safe_real_host_payload
 release_adapter_preflight_payload = _preflight.release_adapter_preflight_payload
 update_instructions_version_blocker = _preflight.update_instructions_version_blocker
 invalid_git_identity_blocker = _preflight.invalid_git_identity_blocker
@@ -128,7 +125,6 @@ def build_publish_plan(
     if not resume:
         ensure_release_target_available(repo_root, tag_name=tag_name, remote=args.remote, backend=backend)
     release_content_paths = unreleased_paths(repo_root, remote=args.remote, branch=branch, previous_version=previous_version)
-    safe_real_host_payload(repo_root, release_content_paths, build_payload=build_real_host_payload)
     adapter_preflight_payload = release_adapter_preflight_payload(
         repo_root, release_content_paths=release_content_paths, previous_version=previous_version
     )

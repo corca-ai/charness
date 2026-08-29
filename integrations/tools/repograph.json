@@ -89,7 +89,6 @@
     "when_missing": [
       "`check-export-safe-imports` and `check-plugin-dir-references` are BLOCKING quality gates with no fallback engine; a missing `repograph` makes them fail closed rather than pass silently.",
       "`check_standalone_imports.py` cannot enumerate standalone targets, so the consumer-repo standalone-import contract is unproven, not satisfied.",
-      "The release real-host proof degrades its native `test`-only path exclusion to the typed `test_exclusion.status: unavailable` state and keeps every raw-glob candidate; do not read that as a clean exclusion.",
       "Do not substitute a regex or `splitlines()` approximation for any of the above. The gates exist because AST-derived facts and text approximations disagree."
     ],
     "when_version_mismatch": [

@@ -18,5 +18,3 @@ python3 "$SKILL_DIR/scripts/plan_release_run.py" --repo-root . --detail
   issue-close boundaries.
 - `references/install-refresh.md` — operator update instructions and
   post-publish maintainer install refresh.
-- `references/real-host-proof.md` — release-time host proof triggers and
-  checklists.

@@ -42,8 +42,7 @@ The first implementation batch has landed:
 
 The next slice should only deepen this seam where it changes behavior rather
 than prose volume: for example making ergonomics stronger than advisory in some
-repos, or deciding how release-time real-host proof should feed back into retro
-memory.
+repos, or deepening the ergonomics and trigger seams already described.
 
 ## Fixed Decisions
 

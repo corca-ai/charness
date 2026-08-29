@@ -36,9 +36,6 @@ def build_items(repo_name: str, _args: object) -> list[tuple[str, object]]:
         ("sync_command", "python3 scripts/sync_root_plugin_manifests.py --repo-root ."),
         ("quality_command", "./scripts/run-quality.sh"),
         ("update_instructions", []),
-        ("real_host_required_surfaces", []),
-        ("real_host_required_path_globs", []),
-        ("real_host_checklist", []),
         ("requested_review_commands", []),
         (
             "review_unavailable_patterns",

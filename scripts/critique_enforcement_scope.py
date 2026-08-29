@@ -9,7 +9,7 @@ closeout leans on could report a clean verdict having evaluated almost nothing.
 This module owns the one concept behind all of that: the **enforcement scope** —
 which condition resolved which way, and what the run therefore did NOT establish.
 It is the `scope: evaluated | empty | not-configured` vocabulary already landed
-for the release real-host probe (D7), applied to the critique surface.
+for a shared boundary probe (D7), applied to the critique surface.
 
 Three inputs used to decide a floor's fate from a channel that could not say "I
 did not establish this", and each is repaired here rather than at its use site:

@@ -64,7 +64,7 @@ def _rendered(artifact, monkeypatch, payload_extra: dict, **kwargs) -> dict:
         "quality_command": "./scripts/run-quality.sh --release",
         "update_instructions": [],
     }
-    artifact.write_current_artifact(Path("."), adapter, payload, {}, **kwargs)
+    artifact.write_current_artifact(Path("."), adapter, payload, **kwargs)
     return seen
 
 

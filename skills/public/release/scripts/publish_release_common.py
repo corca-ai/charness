@@ -169,7 +169,6 @@ def _commit_final_release_artifact(
         repo_root,
         adapter_data=adapter_data,
         payload=payload,
-        host_payload=state["host_payload"],
         fresh_checkout_payload=state["fresh_checkout_payload"],
         artifact_relpath=state["artifact_relpath"],
         expected_release_url=state["expected_release_url"],
@@ -229,7 +228,7 @@ def close_issues_install_refresh_and_commit(
             lambda: cli.commit_issue_closeout_carrier_artifact(
                 repo_root,
                 write_artifact=lambda **kwargs: cli.write_current_artifact(
-                    repo_root, adapter_data, payload, state["host_payload"], **kwargs
+                    repo_root, adapter_data, payload, **kwargs
                 ),
                 payload=payload,
                 fresh_checkout_payload=state["fresh_checkout_payload"],

@@ -18,7 +18,7 @@ ANY nonzero exit means "not a no". The four undetermined worlds above all used t
 ``triggered: false`` as key #1 -- the value that means "do nothing" -- so every failure
 mode of this probe failed toward silence and a skipped retro looked identical to a
 correctly skipped one. `state` / `evaluated` / `not-configured` / `not-established` is
-the same vocabulary the release real-host probe (D7) and the critique cross-surface scope
+the same vocabulary as the critique cross-surface scope
 already speak; 3 matches `scripts/run-quality.sh`'s ``UNESTABLISHED_EXIT``.
 
 Undetermined is deliberately NOT reported as ``triggered: true``: this repo cannot know a
@@ -76,7 +76,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-# The typed-state vocabulary, spelled the same way the release real-host probe spells its
+# The typed-state vocabulary used by the cross-surface probes is deliberately consistent:
 # `evaluation_scope` and the critique cross-surface scope spells its `state`. Literal
 # strings rather than a shared constant module, matching that precedent: three words are
 # not worth a dependency, and the critique/release ADAPTER stack in particular stays

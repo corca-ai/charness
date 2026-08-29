@@ -24,7 +24,6 @@ post_publish_proof_lines = _sections.post_publish_proof_lines
 install_refresh_lines = _sections.install_refresh_lines
 public_release_verification_lines = _sections.public_release_verification_lines
 distinct_channel_verification_lines = _sections.distinct_channel_verification_lines
-real_host_lines = _sections.real_host_lines
 fresh_checkout_lines = _sections.fresh_checkout_lines
 release_runtime_lines = _sections.release_runtime_lines
 release_observer_lines = _sections.release_observer_lines
@@ -44,7 +43,6 @@ def write_release_artifact(
     quality_command: str,
     release_url: str | None,
     update_instructions: list[str],
-    real_host_payload: dict[str, Any],
     release_adapter_preflight_payload: dict[str, Any] | None = None,
     fresh_checkout_payload: dict[str, Any] | None = None,
     issue_closeout: dict[str, Any] | None = None,
@@ -107,7 +105,6 @@ def write_release_artifact(
     lines.extend(distinct_channel_verification_lines(distinct_channel_verification))
     lines.extend(published_notes_audit_lines(published_notes_audit))
     lines.extend(release_adapter_preflight_lines(release_adapter_preflight_payload))
-    lines.extend(real_host_lines(real_host_payload, install_refresh=install_refresh))
     lines.extend(review_proof_lines(review_proof))
     # Beside the critique floor it is the stronger sibling of, and deliberately BELOW the
     # `## Release State` ledger: the narrative audit terminates that ledger at the first
@@ -148,7 +145,6 @@ def write_current_artifact(
     repo_root: Path,
     adapter_data: dict[str, Any],
     payload: dict[str, Any],
-    host_payload: dict[str, Any],
     *,
     quality_status: str | None = None,
     fresh_checkout_payload: dict[str, Any] | None = None,
@@ -176,7 +172,7 @@ def write_current_artifact(
         repo_root, output_dir=adapter_data["output_dir"], package_id=adapter_data["package_id"],
         previous_version=payload["previous_version"], target_version=payload["target_version"], remote=payload["remote"],
         branch=payload["branch"], quality_command=adapter_data["quality_command"], release_url=release_url,
-        update_instructions=adapter_data["update_instructions"], real_host_payload=host_payload,
+        update_instructions=adapter_data["update_instructions"],
         release_adapter_preflight_payload=payload.get("release_adapter_preflight"),
         fresh_checkout_payload=fresh_checkout_payload, issue_closeout=issue_closeout, quality_status=quality_status,
         install_refresh=install_refresh or payload.get("install_refresh"), tag_name=payload["tag_name"],

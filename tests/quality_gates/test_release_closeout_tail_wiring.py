@@ -38,7 +38,7 @@ def _fake_state() -> dict:
         "payload": {"tag_name": "v0.0.1"}, "branch": "main", "tag_name": "v0.0.1",
         "title": "v0.0.1", "backend": {"id": "gh"}, "issue_repo": "example/demo",
         "notes_file": None, "expected_release_url": "https://x/releases/tag/v0.0.1",
-        "host_payload": {}, "fresh_checkout_payload": {}, "artifact_relpath": "rel.md",
+        "fresh_checkout_payload": {}, "artifact_relpath": "rel.md",
     }
 
 

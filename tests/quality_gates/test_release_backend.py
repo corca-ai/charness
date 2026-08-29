@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -119,66 +118,6 @@ def test_release_adapter_rejects_invalid_fresh_checkout_probes(tmp_path: Path) -
     assert "fresh_checkout_probes must be a list of strings" in payload["errors"]
 
 
-def test_release_adapter_preflight_maps_real_host_changes_to_focused_test(
-    tmp_path: Path,
-) -> None:
-    adapter_relpath = ".agents/release-adapter.yaml"
-    repo = tmp_path / "repo"
-    adapter_path = repo / adapter_relpath
-    adapter_path.parent.mkdir(parents=True)
-    (repo / "skills" / "public" / "release" / "scripts").mkdir(parents=True)
-    (repo / "tests" / "quality_gates").mkdir(parents=True)
-    (repo / "skills" / "public" / "release" / "scripts" / "resolve_adapter.py").write_text(
-        "print('ok')\n",
-        encoding="utf-8",
-    )
-    (repo / "tests" / "quality_gates" / "test_release_real_host.py").write_text(
-        "def test_ok(): pass\n",
-        encoding="utf-8",
-    )
-    adapter_path.write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: demo",
-                "real_host_checklist:",
-                "- Verify old tool.",
-                "",
-            ]
-        ),
-        encoding="utf-8",
-    )
-    subprocess.run(["git", "init", "-b", "main"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "add", "."], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "commit", "-m", "seed"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "tag", "v0.1.0"], cwd=repo, check=True, capture_output=True, text=True)
-    adapter_path.write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: demo",
-                "real_host_checklist:",
-                "- Verify tokei.",
-                "",
-            ]
-        ),
-        encoding="utf-8",
-    )
-
-    preflight = _load_release_module("publish_release_preflight")
-    payload = preflight.release_adapter_preflight_payload(
-        repo,
-        release_content_paths=[adapter_relpath],
-        previous_version="0.1.0",
-    )
-
-    assert payload["status"] == "required"
-    assert payload["adapter_paths"] == [adapter_relpath]
-    assert "real_host_checklist" in payload["changed_fields"]
-    assert ["python3", "skills/public/release/scripts/resolve_adapter.py", "--repo-root", "."] in payload["commands"]
-    assert ["pytest", "tests/quality_gates/test_release_real_host.py", "-q"] in payload["commands"]
-
-
 @dataclass
 class _FakeCompleted:
     returncode: int
@@ -196,16 +135,16 @@ def test_release_adapter_preflight_blocks_on_focused_failure(tmp_path: Path) -> 
 
     payload = {
         "status": "required",
-        "commands": [["pytest", "tests/quality_gates/test_release_real_host.py", "-q"]],
+        "commands": [["pytest", "tests/quality_gates/test_release_backend.py", "-q"]],
     }
 
     with pytest.raises(SystemExit) as exc:
         preflight.run_release_adapter_preflight(tmp_path, payload, run_command=fake_run)
 
-    assert calls == [["pytest", "tests/quality_gates/test_release_real_host.py", "-q"]]
+    assert calls == [["pytest", "tests/quality_gates/test_release_backend.py", "-q"]]
     assert "release adapter focused preflight blocked publish before mutation" in str(exc.value)
     assert payload["execution"]["status"] == "failed"
-    assert payload["execution"]["failed_command"] == "pytest tests/quality_gates/test_release_real_host.py -q"
+    assert payload["execution"]["failed_command"] == "pytest tests/quality_gates/test_release_backend.py -q"
     assert payload["execution"]["executed_commands"] == []
 
 
@@ -217,7 +156,7 @@ def test_release_adapter_preflight_records_what_it_executed(tmp_path: Path) -> N
         "status": "required",
         "commands": [
             ["python3", "skills/public/release/scripts/resolve_adapter.py", "--repo-root", "."],
-            ["pytest", "tests/quality_gates/test_release_real_host.py", "-q"],
+            ["pytest", "tests/quality_gates/test_release_backend.py", "-q"],
         ],
     }
 
@@ -228,7 +167,7 @@ def test_release_adapter_preflight_records_what_it_executed(tmp_path: Path) -> N
     assert payload["execution"]["status"] == "passed"
     assert payload["execution"]["executed_commands"] == [
         "python3 skills/public/release/scripts/resolve_adapter.py --repo-root .",
-        "pytest tests/quality_gates/test_release_real_host.py -q",
+        "pytest tests/quality_gates/test_release_backend.py -q",
     ]
 
 

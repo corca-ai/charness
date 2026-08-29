@@ -96,11 +96,9 @@ ANNOUNCEMENT_LIVE = (
 # reads the key. The detector found it on its first sweep of the corpus.
 RELEASE_DEAD = (
     "version: 9\nrelease_record_path: charness-artifacts/release/mine.md\n"
-    'real_host_required_path_globs:\n  - "src/**"\n'
 )
 RELEASE_LIVE = (
     "version: 9\noutput_dir: charness-artifacts/release-mine\n"
-    'real_host_required_path_globs:\n  - "src/**"\n'
 )
 
 DEAD_CONTROLS = [

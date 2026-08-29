@@ -839,15 +839,14 @@ def test_a_command_stored_in_an_agents_config_is_checked(gate, tmp_path: Path) -
 
 
 def test_a_config_line_that_quotes_its_command_in_prose_is_read_as_a_span(gate, tmp_path: Path) -> None:
-    """`real_host_checklist` items are sentences, so the whole line ends the last
+    """Instruction items are sentences, so the whole line ends the last
     flag with a fused closing backtick (``--gone` `` is not a flag token) and the
-    invocation is silently judged flagless. The RELEASE-phase residue was exactly
-    this shape."""
+    invocation is silently judged flagless. This shape must remain covered."""
     root = _repo(tmp_path, scripts={"scripts/log.py": PLAIN_SCRIPT}, doc="no commands here\n")
     _write(
         root,
         ".agents/release-adapter.yaml",
-        "real_host_checklist:\n- Run `python3 scripts/log.py --path . --gone` once and confirm findings.\n",
+        "update_instructions:\n- Run `python3 scripts/log.py --path . --gone` once and confirm findings.\n",
     )
     findings = _findings(gate, root)
     assert len(findings) == 1

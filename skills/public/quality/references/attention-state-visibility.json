@@ -749,20 +749,6 @@
       ],
       "rationale": "Release fresh-checkout absence is written into the release artifact and plain output."
     },
-    "skills/public/release/scripts/check_real_host_proof.py": {
-      "states": [
-        "not_configured"
-      ],
-      "visibility": [
-        "metric_or_trace"
-      ],
-      "evidence_terms": [
-        "not-configured",
-        "scope",
-        "reason"
-      ],
-      "rationale": "NEWLY DETECTED for the same reason: `not-configured` is the hyphen spelling of `not_configured`, invisible to a substring scan. It is the `scope` value set when a repo declares no real-host proof triggers, and the module's own comment records why the distinction exists (D7): `scope` separates 'we checked and it is fine' from 'we never checked'. It travels with a `reason` naming the missing adapter keys, so the unchecked state is disclosed rather than reported as a pass."
-    },
     "skills/public/release/scripts/check_requested_review_gate.py": {
       "states": [
         "advisory-only",
@@ -824,7 +810,6 @@
     },
     "skills/public/release/scripts/publish_release_verification_sections.py": {
       "states": [
-        "not_configured",
         "skipped"
       ],
       "visibility": [

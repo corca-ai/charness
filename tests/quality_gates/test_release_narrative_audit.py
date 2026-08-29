@@ -466,9 +466,9 @@ def test_drafted_notes_discovery_matches_the_naming_shapes_in_this_repos_release
     # `2.11.0`/`2.11.2`/`2.11.3`, so it would refuse a v2.1 publish over three
     # notes files belonging to other releases.
     assert found("v2.1") == ["2026-07-26-v2.1-notes.md"]
-    # A dash-separated real-host-proof artifact carries the version but not the
+    # A dash-separated release-check artifact carries the version but not the
     # `notes` role word, so the role filter -- not the version token -- excludes it.
-    assert "2026-07-22-v2-4-2-real-host-proof.md" not in found("v2.4.2")
+    assert "2026-07-22-v2-4-2-release-check.md" not in found("v2.4.2")
     assert found("v3.2.1") == ["v3-2-1-notes.md"]
     # ...and it must not answer for a version it merely CONTAINS. The
     # bounded-substring search that first fixed the dash shape matched
@@ -720,7 +720,7 @@ def test_the_role_word_stays_narrow_and_says_what_it_still_misses(tmp_path: Path
         "2026-07-30-v2.13.0-notes.md",
         "2026-07-30-v2.13.0-public-notes.md",
         "2026-07-30-v2.13.0-release-record.md",
-        "2026-07-30-v2.13.0-real-host-proof.md",
+        "2026-07-30-v2.13.0-release-check.md",
         "v2.13.0-blockers.md",
         "2026-07-30-v2.13.0.md",
         "2026-07-30-v2.12.0-notes.md",
@@ -824,4 +824,3 @@ def test_an_undecodable_notes_file_blocks_instead_of_raising(tmp_path: Path) -> 
         "could not read the public release notes file" in b
         for b in audit.audit_notes_file(notes, target_tag="v0.1.0")
     )
-

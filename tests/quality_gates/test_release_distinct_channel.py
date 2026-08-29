@@ -65,7 +65,6 @@ def _release_commit_artifact_state() -> dict:
         "tag_name": "v1.0.0",
         "notes_file": None,
         "expected_release_url": "https://x/v1.0.0",
-        "host_payload": {},
         "fresh_checkout_plan": {},
     }
 

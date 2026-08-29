@@ -40,7 +40,6 @@ channels include:
 - adapter-declared distinct-channel probe
 - fresh-checkout or startup probes
 - install-refresh readback
-- real-host checklist result
 
 If no repo-owned public verifier exists, record an explicit non-verified
 disposition instead of calling the release complete.

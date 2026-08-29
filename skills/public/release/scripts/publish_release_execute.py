@@ -83,7 +83,6 @@ def _prepare_release_attempt(
     next_version = plan["next_version"]
     tag_name = plan["tag_name"]
     backend = plan["backend"]
-    release_content_paths = plan["release_content_paths"]
     adapter_preflight_payload = plan["adapter_preflight_payload"]
     issue_repo = plan["issue_repo"]
 
@@ -108,14 +107,11 @@ def _prepare_release_attempt(
         repo_root, next_version, stage="post-bump, pre-commit"
     )
 
-    final_release_paths = sorted(set(release_content_paths + cli.changed_paths(repo_root)))
-    host_payload = cli.safe_real_host_payload(repo_root, final_release_paths, build_payload=cli.build_real_host_payload)
     fresh_checkout_plan = cli.build_fresh_checkout_payload(repo_root, run_probes=False)
     cli.write_current_artifact(
         repo_root,
         adapter_data,
         payload,
-        host_payload=host_payload,
         release_url=expected_release_url,
         quality_status="is queued for this publish attempt",
         fresh_checkout_payload=fresh_checkout_plan,
@@ -133,7 +129,6 @@ def _prepare_release_attempt(
         "issue_repo": issue_repo,
         "notes_file": notes_file,
         "expected_release_url": expected_release_url,
-        "host_payload": host_payload,
         "fresh_checkout_plan": fresh_checkout_plan,
     }
 
@@ -150,14 +145,12 @@ def _commit_release_artifact(
     tag_name = state["tag_name"]
     notes_file = state["notes_file"]
     expected_release_url = state["expected_release_url"]
-    host_payload = state["host_payload"]
     fresh_checkout_plan = state["fresh_checkout_plan"]
 
     artifact_relpath = cli.write_current_artifact(
         repo_root,
         adapter_data,
         payload,
-        host_payload,
         fresh_checkout_payload=fresh_checkout_plan,
         release_url=expected_release_url,
         release_stage="charness-release-state:prepared-awaiting-claims-review",
@@ -179,12 +172,11 @@ def _commit_release_artifact(
                 repo_root,
                 adapter_data,
                 payload,
-                host_payload,
                 release_stage="charness-release-state:prepared-awaiting-claims-review",
                 **kwargs,
             ),
-                fresh_checkout_payload=fresh_checkout_payload,
-                release_url=expected_release_url,
+            fresh_checkout_payload=fresh_checkout_payload,
+            release_url=expected_release_url,
             artifact_relpath=artifact_relpath,
             tag_name=tag_name,
             notes_file=notes_file,
@@ -233,12 +225,7 @@ def execute_publish_plan(
 ) -> None:
     state = _create_release_commit(args, repo_root, plan, adapter_data, cli=cli)
     payload = state["payload"]
-    host_payload = state["host_payload"]
     payload["release_stage"] = "prepared-awaiting-claims-review"
     payload["prepared_release_commit"] = cli.run(["git", "rev-parse", "HEAD"], cwd=repo_root).stdout.strip()
-    # A prepared release deliberately stops before publication, but its caller still
-    # needs the release-time host-proof obligation that the committed record carries.
-    # Do not make an execute-stage payload look like the adapter had no host gate.
-    cli.record_real_host_verdict(payload, host_payload)
     payload["next_action"] = "commit a bound claims-review artifact, then resume publication"
     emit_yaml(payload)

@@ -8,12 +8,11 @@ Claim: `plan_release_run.build_plan` refuses an unspeakable adapter version at i
   read site, rather than inheriting a callee's refusal
 Claim kind: change
 Observable: the planner's `next_action=` summary line and its process exit code, under a
-  repo that DID declare an `output_dir` (the key `release_record_path` is derived from) and
-  a real-host trigger glob
+  repo that DID declare an `output_dir` (the key `release_record_path` is derived from)
 Source ref: scripts/adapter-consumer-classification.json
 Source revision: dd5b6dee9
 Source conditions: the adapter's declared version is one this reader does not speak, so
-  `data` is the reader's inferred defaults; two consumers are gated on `adapter["valid"]`
+  `data` is the reader's inferred defaults; one consumer is gated on `adapter["valid"]`
   and three are not
 Base ref: dd5b6dee9
 Head ref: working tree at f7d3fb70e
@@ -22,8 +21,7 @@ Call sites unproven: none — `build_plan` has no production importer under `scr
   `skills/`, so the read site and the entrypoint coincide here; the guard is still placed
   at the read site so the row's verdict does not depend on `main()` staying the only
   caller. A round-1 bounded review corrected this line's parenthetical, which said "one
-  test module": there are THREE (`test_release_run_planner.py`,
-  `test_release_real_host.py`, and this row's own), which changes nothing about the
+  test module": there are TWO (`test_release_run_planner.py` and this row's own), which changes nothing about the
   load-bearing half and is fixed because a miscount published as a count is this goal's
   own class
 
@@ -34,7 +32,7 @@ Verbatim from the manifest at the pinned revision.
 ```
     "skills/public/release/scripts/plan_release_run.py": {
       "verdict": "accepted-risk-unguarded",
-      "reason": "build_plan() (line 179-236) does `adapter = load_adapter(repo_root); data = adapter.get(\"data\")` and gates only two consumers on validity -- `real_host_payload` (line 213) and `review_payload` (line 234) are each behind `if adapter.get(\"valid\"):` -- but `record_path = _prepared_stop.release_record_path(data)` (line 236), `update_blocker = update_instructions_version_blocker(data.get(\"update_instructions\"), ...)` (line 205-209), and `drafted_notes_candidates(repo_root, data, ...)` (line 251-254) all read `data` unconditionally, and `release_payload = build_release_payload(repo_root)` (line 186, i.e. current_release.build_payload) is called unconditionally and is itself unguarded (see current_release.py finding)."
+      "reason": "build_plan() does `adapter = load_adapter(repo_root); data = adapter.get(\"data\")` and gates the review payload on validity, but `record_path = _prepared_stop.release_record_path(data)`, `update_blocker = update_instructions_version_blocker(data.get(\"update_instructions\"), ...)`, and `drafted_notes_candidates(repo_root, data, ...)` all read `data` unconditionally, and `release_payload = build_release_payload(repo_root)` is called unconditionally and is itself unguarded (see current_release.py finding)."
     },
 ```
 
@@ -48,7 +46,7 @@ inheritance, so the CLI reading alone could not establish the claim.
 
 A temp repo with a git repository (the planner asks git for the current branch on the arm
 that reaches a plan) and an adapter declaring a version this reader refuses beside a real
-`output_dir` and a real trigger glob. The real CLI is run against it.
+`output_dir`. The real CLI is run against it.
 
 **CORRECTED after `check_probe_record.py --replay-stimulus`, the detector built for `#674`,
 refused this record on its first sweep of the corpus — the FIFTH RECORD in this family
@@ -78,8 +76,6 @@ mkdir -p $D/.agents
 cat > $D/.agents/release-adapter.yaml <<'YAML'
 version: 9
 output_dir: charness-artifacts/release-mine
-real_host_required_path_globs:
-  - "src/**"
 YAML
 python3 skills/public/release/scripts/plan_release_run.py --repo-root $D
 python3 skills/public/release/scripts/plan_release_run.py --repo-root $D --detail
@@ -129,7 +125,7 @@ exit 1
   the two CLI tests still pass and only
   `test_the_refusal_is_this_file_s_own_not_inherited_from_a_callee` fails, with
   `DID NOT RAISE <class 'SystemExit'>`. That test stubs `build_release_payload`,
-  `build_real_host_payload` and `build_review_gate_payload` with callees that do not
+  `build_review_gate_payload` with a callee that does not
   refuse, and builds its Namespace from the planner's own `parse_args`.
 
 ## Non-claims

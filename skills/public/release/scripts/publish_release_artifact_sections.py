@@ -12,7 +12,6 @@ _verification = runpy.run_path(
 )
 distinct_channel_verification_lines = _verification["distinct_channel_verification_lines"]
 published_notes_audit_lines = _verification["published_notes_audit_lines"]
-real_host_lines = _verification["real_host_lines"]
 release_observer_lines = _verification["release_observer_lines"]
 
 # The other end of the same timeline: what the helper established BEFORE the release

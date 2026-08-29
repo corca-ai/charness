@@ -72,15 +72,6 @@ def _git(repo: Path, *args: str) -> None:
     subprocess.run(["git", *args], cwd=repo, check=True, capture_output=True, text=True)
 
 
-def _write_real_host_release_config(repo: Path) -> None:
-    adapter_path = repo / ".agents" / "release-adapter.yaml"
-    adapter_path.write_text(
-        adapter_path.read_text(encoding="utf-8")
-        + "\nreal_host_required_path_globs:\n- README.md\nreal_host_checklist:\n- Verify on a clean host.\n",
-        encoding="utf-8",
-    )
-
-
 def test_release_run_planner_reports_inspect_packet_without_mutation(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     env = _release_env(tmp_path, bin_dir)
@@ -92,14 +83,11 @@ def test_release_run_planner_reports_inspect_packet_without_mutation(tmp_path: P
     assert payload["schema_version"] == "release.run_plan.v1"
     assert payload["next_action"]["kind"] == "inspect_only"
     assert payload["release_state"]["drift"] == []
-    assert payload["evidence_packets"]["real_host"]["evidence_scope"] == "worktree"
-    real_host_gate = next(packet for packet in payload["gate_packets"] if packet["id"] == "real-host-proof")
-    assert "--paths" not in real_host_gate["command"]
     assert payload["gate_packets"]
     structured_gate_commands = {
         packet["id"]: packet["command"]
         for packet in payload["gate_packets"]
-        if packet["id"] in {"fresh-checkout-probes", "real-host-proof", "requested-review-gate"}
+        if packet["id"] in {"fresh-checkout-probes", "requested-review-gate"}
     }
     assert all("--detail" in command for command in structured_gate_commands.values())
     assert all("--json" not in command for command in structured_gate_commands.values())
@@ -153,75 +141,6 @@ def test_release_run_planner_routes_declared_specialized_lane_without_mutation(t
     assert "references/adapter-contract.md" in {item["path"] for item in payload["required_reads"]}
     assert manifest.read_bytes() == before_manifest
     assert not (repo / ".quality-ran").exists()
-
-
-def test_release_run_planner_uses_release_delta_for_real_host_evidence(tmp_path: Path) -> None:
-    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
-    _git(repo, "tag", "v0.0.0")
-    _git(repo, "push", "origin", "v0.0.0")
-    _write_real_host_release_config(repo)
-    (repo / "README.md").write_text("# Demo\n\nChanged after the previous release.\n", encoding="utf-8")
-    _git(repo, "add", "-A")
-    _git(repo, "commit", "-m", "Change release surface")
-    (repo / "WIP.txt").write_text("dirty worktree should not define release proof scope", encoding="utf-8")
-    env = _release_env(tmp_path, bin_dir)
-
-    result = _run_plan(repo, env, "--part", "patch")
-
-    assert result.returncode == 0, result.stderr
-    payload = yaml.safe_load(result.stdout)
-    real_host = payload["evidence_packets"]["real_host"]
-    assert real_host["evidence_scope"] == "release_delta"
-    assert real_host["evidence_previous_version"] == "0.0.0"
-    assert real_host["required"] is True
-    assert "changed_paths" not in real_host
-    assert "README.md" in real_host["path_hits"]
-    assert real_host["checklist"] == ["Verify on a clean host."]
-    provenance = real_host["evidence_provenance"]
-    assert provenance["path_count"] == 2
-    assert len(provenance["paths_sha256"]) == 64
-    assert len(provenance["base_sha"]) == 40
-    assert len(provenance["head_sha"]) == 40
-    real_host_gate = next(packet for packet in payload["gate_packets"] if packet["id"] == "real-host-proof")
-    assert "--changed-range" in real_host_gate["command"]
-    assert "--paths" not in real_host_gate["command"]
-    assert "README.md" not in real_host_gate["command"]
-    assert "WIP.txt" not in real_host_gate["command"]
-    assert len(real_host_gate["command"]) < 240
-
-    set_version_result = _run_plan(repo, env, "--set-version", "0.0.1")
-
-    assert set_version_result.returncode == 0, set_version_result.stderr
-    set_version_real_host = yaml.safe_load(set_version_result.stdout)["evidence_packets"]["real_host"]
-    assert set_version_real_host["evidence_scope"] == "release_delta"
-    assert set_version_real_host["evidence_previous_version"] == "0.0.0"
-    assert set_version_real_host["required"] is True
-
-
-def test_release_run_planner_publish_current_uses_previous_release_delta_for_real_host_evidence(
-    tmp_path: Path,
-) -> None:
-    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
-    _git(repo, "tag", "v0.0.0")
-    _git(repo, "push", "origin", "v0.0.0")
-    _write_real_host_release_config(repo)
-    (repo / "README.md").write_text("# Demo\n\nChanged before publish-current.\n", encoding="utf-8")
-    adapter = _BUMP.load_adapter(repo)
-    manifest_path = repo / adapter["data"]["packaging_manifest_path"]
-    _BUMP.write_packaging_version(manifest_path, _BUMP.bump_part("0.0.0", "patch"))
-    _BUMP.run_sync(repo, adapter["data"]["sync_command"])
-    _git(repo, "add", "-A")
-    _git(repo, "commit", "-m", "Prepare current release")
-    env = _release_env(tmp_path, bin_dir)
-
-    result = _run_plan(repo, env, "--publish-current")
-
-    assert result.returncode == 0, result.stderr
-    real_host = yaml.safe_load(result.stdout)["evidence_packets"]["real_host"]
-    assert real_host["evidence_scope"] == "release_delta"
-    assert real_host["evidence_previous_version"] == "0.0.0"
-    assert real_host["required"] is True
-    assert "README.md" in real_host["path_hits"]
 
 
 def test_release_run_planner_requires_critique_before_publish(tmp_path: Path) -> None:
@@ -351,35 +270,6 @@ def test_release_run_planner_main_emits_yaml_detail_in_process(
     assert yaml.safe_load(capsys.readouterr().out) == plan
 
 
-def test_release_run_planner_plain_output_names_required_real_host_scope(
-    capsys, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    monkeypatch.setattr(_PLANNER, "parse_args", lambda: _args(detail=False))
-    monkeypatch.setattr(
-        _PLANNER,
-        "build_plan",
-        lambda _args: {
-            "next_action": {"kind": "needs_critique", "reason": "critique required"},
-            "evidence_packets": {
-                "real_host": {
-                    "required": True,
-                    "evidence_scope": "release_delta",
-                },
-            },
-        },
-    )
-    monkeypatch.setattr(
-        _PLANNER.SKILL_RUNTIME,
-        "arm_cli_timeout",
-        lambda **_kwargs: (lambda: None),
-    )
-
-    assert _PLANNER.main() == 0
-    out = capsys.readouterr().out
-    assert "next_action=needs_critique: critique required" in out
-    assert "real_host=required scope=release_delta" in out
-
-
 def test_release_run_planner_help_points_to_detail_evidence_packets(
     capsys, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -446,32 +336,6 @@ def test_release_run_planner_target_helpers_cover_selectors() -> None:
     assert _PLANNER._target_version(_args(set_version="2.0.0"), "1.2.3") == "2.0.0"
     assert _PLANNER._target_selector(_args(publish_current=True)) == "publish-current"
     assert _PLANNER._target_selector(_args(set_version="2.0.0")) == "set-version"
-
-
-def test_release_run_planner_records_real_host_probe_failure(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(
-        _PLANNER,
-        "load_adapter",
-        lambda _repo: {"found": True, "valid": True, "path": None, "warnings": [], "errors": [], "data": {}},
-    )
-    monkeypatch.setattr(
-        _PLANNER,
-        "build_release_payload",
-        lambda _repo: {"surface_versions": {"packaging_manifest": "1.2.3"}, "drift": [], "git_status": []},
-    )
-    monkeypatch.setattr(_PLANNER, "collect_changed_paths", lambda _repo: ["skills/public/release/SKILL.md"])
-    monkeypatch.setattr(
-        _PLANNER,
-        "safe_real_host_payload",
-        lambda *_args, **_kwargs: (_ for _ in ()).throw(SystemExit("probe failed")),
-    )
-    monkeypatch.setattr(_PLANNER, "build_review_gate_payload", lambda _repo, run_commands: {"status": "ok"})
-    monkeypatch.setattr(_PLANNER, "build_fresh_checkout_payload", lambda _repo, run_probes: {"status": "configured"})
-    monkeypatch.setattr(_PLANNER, "current_branch", lambda _repo: "main")
-
-    payload = _PLANNER.build_plan(_args(repo_root=REPO_ROOT))
-
-    assert payload["evidence_packets"]["real_host"] == {"status": "blocked", "error": "probe failed"}
 
 
 def test_release_run_packets_add_adapter_read_when_adapter_unhealthy() -> None:

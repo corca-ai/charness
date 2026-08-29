@@ -57,8 +57,8 @@ python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
    input, or stable failure identity changed. A new receipt label is evidence
    to record, not permission to retry. A release helper's existence does not
    justify repeating every release check.
-8. End with operator update steps, maintainer install-refresh status, real-host
-   proof status when required, and explicit non-claims.
+8. End with operator update steps, maintainer install-refresh status, and
+   explicit non-claims.
 
 ### Release notes are derived, not authored
 
@@ -119,7 +119,6 @@ final answer should summarize:
 - critique proof
 - verification and public release state
 - operator update steps and maintainer install refresh
-- real-host proof when required
 - open risks and non-claims
 
 ## References

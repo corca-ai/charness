@@ -19,7 +19,7 @@ from .release_publish_fixtures import (
     commit_claims_review,
 )
 from .release_script_loading import load_release_script
-from .seeding_support import git, write_release_adapter, write_release_surfaces
+from .seeding_support import git, write_release_adapter
 
 CLAIMS_REVIEW = load_release_script("publish_release_claims_review", suffix="direct_parent")
 
@@ -175,7 +175,6 @@ def test_publish_release_bumps_pushes_tags_and_creates_release(tmp_path: Path) -
     assert "GitHub release publication: verified by the release backend." in artifact_text
     assert "initial release push carried the release branch update and tag" in artifact_text
     assert "post-publish artifact push recorded the verified public release state" in artifact_text
-    assert "No configured public/real-host verification trigger matched" not in artifact_text
     assert "## Review Proof" in artifact_text
     assert "Review proof: `charness-artifacts/critique/demo.md`." in artifact_text
     assert "## Requested Review Gate" in artifact_text
@@ -419,49 +418,6 @@ def test_publish_release_accepts_full_bug_closeout_carrier(tmp_path: Path) -> No
     assert "Behavior #44: confirmed via fresh checkout install" in commit_body
 
 
-@pytest.mark.release_only
-def test_publish_release_records_real_host_proof_for_unreleased_content(tmp_path: Path) -> None:
-    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
-    _write_exec(bin_dir / "demo-refresh", "#!/usr/bin/env bash\nprintf 'refresh ok\\n'\n")
-    adapter_path = repo / ".agents" / "release-adapter.yaml"
-    adapter_path.write_text(
-        adapter_path.read_text(encoding="utf-8")
-        + "\npost_publish_install_refresh: demo-refresh\n"
-        + "\nreal_host_required_path_globs:\n- README.md\nreal_host_checklist:\n- Verify on a clean host.\n",
-        encoding="utf-8",
-    )
-    write_release_surfaces(repo)
-    readme_path = repo / "README.md"
-    readme_path.write_text("# Demo\n\nChanged operator surface.\n", encoding="utf-8")
-    subprocess.run(
-        ["git", "add", "README.md", ".agents/release-adapter.yaml", ".agents/surfaces.json"],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    subprocess.run(
-        ["git", "commit", "-m", "Change operator surface"],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-
-    env = _release_env(tmp_path, bin_dir)
-    result = _run_publish_patch(repo, env)
-
-    assert result.returncode == 0, result.stderr
-    payload = yaml.safe_load(result.stdout)
-    artifact_text = (repo / "charness-artifacts" / "release" / "latest.md").read_text(encoding="utf-8")
-    assert payload["real_host_required"] is True
-    assert payload["install_refresh"]["status"] == "refreshed"
-    assert "Release-time real-host proof is required for this slice." in artifact_text
-    assert "Executed maintainer install refresh: `demo-refresh`" in artifact_text
-    assert "Elapsed seconds:" in artifact_text
-    assert "Verify on a clean host." in artifact_text
-
-
 def test_requested_review_gate_blocks_unavailable_release_record(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)
@@ -690,7 +646,7 @@ def test_publish_release_runs_adapter_preflight_before_bump(tmp_path: Path) -> N
     resolver_path = repo / "skills" / "public" / "release" / "scripts" / "resolve_adapter.py"
     resolver_path.parent.mkdir(parents=True)
     _write_exec(resolver_path, "#!/usr/bin/env python3\nprint('adapter ok')\n")
-    test_path = repo / "tests" / "quality_gates" / "test_release_real_host.py"
+    test_path = repo / "tests" / "quality_gates" / "test_release_backend.py"
     test_path.parent.mkdir(parents=True)
     test_path.write_text("def test_ok(): pass\n", encoding="utf-8")
     _write_exec(
@@ -702,7 +658,7 @@ def test_publish_release_runs_adapter_preflight_before_bump(tmp_path: Path) -> N
     adapter_path = repo / ".agents" / "release-adapter.yaml"
     adapter_path.write_text(
         adapter_path.read_text(encoding="utf-8")
-        + "\nreal_host_checklist:\n- Verify tokei on a clean temp-home.\n",
+        + "\nfresh_checkout_probes:\n- test ok\n",
         encoding="utf-8",
     )
     subprocess.run(
@@ -744,14 +700,14 @@ def test_publish_release_records_adapter_preflight_in_release_artifact(tmp_path:
     resolver_path = repo / "skills" / "public" / "release" / "scripts" / "resolve_adapter.py"
     resolver_path.parent.mkdir(parents=True)
     _write_exec(resolver_path, "#!/usr/bin/env python3\nprint('adapter ok')\n")
-    test_path = repo / "tests" / "quality_gates" / "test_release_real_host.py"
+    test_path = repo / "tests" / "quality_gates" / "test_release_backend.py"
     test_path.parent.mkdir(parents=True)
     test_path.write_text("def test_ok(): pass\n", encoding="utf-8")
     _write_exec(bin_dir / "pytest", "#!/usr/bin/env bash\nexit 0\n")
     adapter_path = repo / ".agents" / "release-adapter.yaml"
     adapter_path.write_text(
         adapter_path.read_text(encoding="utf-8")
-        + "\nreal_host_checklist:\n- Verify tokei on a clean temp-home.\n",
+        + "\nfresh_checkout_probes:\n- test ok\n",
         encoding="utf-8",
     )
     subprocess.run(
@@ -776,5 +732,5 @@ def test_publish_release_records_adapter_preflight_in_release_artifact(tmp_path:
     artifact_text = (repo / "charness-artifacts" / "release" / "latest.md").read_text(encoding="utf-8")
     assert "## Release Adapter Preflight" in artifact_text
     assert "Release adapter focused preflight status: `required`." in artifact_text
-    assert "`real_host_checklist`" in artifact_text
-    assert "`pytest tests/quality_gates/test_release_real_host.py -q`" in artifact_text
+    assert "`fresh_checkout_probes`" in artifact_text
+    assert "`pytest tests/quality_gates/test_release_backend.py::test_release_adapter_preserves_fresh_checkout_probes" in artifact_text

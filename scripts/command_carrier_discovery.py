@@ -203,7 +203,7 @@ def iter_config_carriers(path: Path) -> Iterator[tuple[int, str]]:
     that merely lists a script path carries no flags and never reaches a verdict.
 
     A line that carries backticks is prose, not a command entry -- these adapters
-    write `real_host_checklist` items as sentences quoting the command -- so its
+    write adapter instruction items as sentences quoting the command -- so its
     backtick spans are the carriers instead of the whole line. Reading the whole
     line there drops the finding on a technicality: the closing backtick fuses
     onto the last flag (``--json` `` is not a flag token), so the RELEASE-phase

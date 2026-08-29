@@ -15,9 +15,6 @@ Today this convention applies to:
 - `retro` — `auto_session_trigger_surfaces` in
   [.agents/retro-adapter.yaml](../.agents/retro-adapter.yaml), consumed by
   [skills/public/retro/scripts/check_auto_trigger.py](../skills/public/retro/scripts/check_auto_trigger.py)
-- `release` — `real_host_required_surfaces` in
-  [.agents/release-adapter.yaml](../.agents/release-adapter.yaml), consumed by
-  [skills/public/release/scripts/check_real_host_proof.py](../skills/public/release/scripts/check_real_host_proof.py)
 
 New trigger consumers (`setup`, future skills) should adopt the same shape
 when they need to gate on changed seams.
@@ -31,8 +28,7 @@ skills can subscribe to the same surface and stay in sync as the path
 shape underneath the surface evolves. Raw globs duplicated across adapters
 drift independently.
 
-Use raw globs (`auto_session_trigger_path_globs`,
-`real_host_required_path_globs`) only when:
+Use raw globs (`auto_session_trigger_path_globs`) only when:
 
 - the path is a narrow repo-local exception that does not warrant a
   full-surface declaration; or
@@ -104,6 +100,4 @@ When you add or change a trigger consumer:
 
 - [scripts/surfaces_lib.py](../scripts/surfaces_lib.py) — `resolve_trigger_surfaces` and `match_surfaces`
 - [skills/public/retro/scripts/check_auto_trigger.py](../skills/public/retro/scripts/check_auto_trigger.py) — the auto-retro trigger probe and its `state`/exit contract
-- [skills/public/release/scripts/check_real_host_proof.py](../skills/public/release/scripts/check_real_host_proof.py) — the real-host trigger detector and its `evaluation_scope` states
 - [tests/quality_gates/test_retro_auto_trigger.py](../tests/quality_gates/test_retro_auto_trigger.py) — retro probe fixtures: hits, non-matches, undetermined, unresolved id
-- [tests/quality_gates/test_release_real_host.py](../tests/quality_gates/test_release_real_host.py) — release probe fixtures for states, commit ranges, and artifact claims

@@ -6,10 +6,8 @@ publishing, and — the part these defects were all about — what it did not.
 
 Every renderer here refuses to assert more than its record supports:
 `distinct_channel_verification_lines` keys distinctness on the same-proxy guard
-rather than the status (D8), `published_notes_audit_lines` exists so a
-post-create advisory reaches a reader at all (D2), and the not-required branch of
-`real_host_lines` names the evaluation scope instead of claiming a match that was
-never attempted (D7).
+rather than the status (D8), and `published_notes_audit_lines` exists so a
+post-create advisory reaches a reader at all (D2).
 """
 from __future__ import annotations
 
@@ -165,53 +163,4 @@ def release_observer_lines(observer: dict[str, Any] | None) -> list[str]:
         "- Verdict ownership: this record embeds `distinct_channel_verification`; "
         "it does not declare a second release-success verdict."
     )
-    return lines
-
-def real_host_lines(real_host_payload: dict[str, Any], install_refresh: dict[str, Any] | None = None) -> list[str]:
-    lines = ["", "## Real-Host Verification", ""]
-    if real_host_payload.get("required"):
-        lines.append("- Release-time real-host verification was triggered for this slice.")
-        if install_refresh and install_refresh.get("status") == "refreshed":
-            lines.append(
-                "- Adapter-declared maintainer install-refresh proof was executed by the release helper "
-                "for installed-vs-repo skew."
-            )
-        else:
-            lines.append("- Real-host checklist items remain open until their executed proof is recorded.")
-        lines.extend(["", "## Real-Host Proof", "", "- Release-time real-host proof is required for this slice."])
-        if install_refresh and install_refresh.get("status") == "refreshed":
-            lines.append(
-                f"- Executed maintainer install refresh: `{install_refresh.get('command')}` "
-                f"(status `{install_refresh.get('status')}`, return code `{install_refresh.get('returncode')}`)."
-            )
-            lines.append(
-                "- Remaining real-host checklist items, if any, still require explicit proof before full closeout."
-            )
-        lines.extend(f"- {item}" for item in real_host_payload.get("checklist", []))
-        return lines
-    # "No trigger matched this slice" asserts that triggers WERE evaluated. The
-    # payload distinguishes three not-required worlds and this renderer collapsed
-    # them into that one sentence — which is FALSE for an empty scope, where
-    # nothing was evaluated at all. The artifact is what the rung-2 human audit
-    # reads, so a sentence it cannot support is the same defect as D8, one
-    # surface over.
-    scope = str(real_host_payload.get("evaluation_scope") or "")
-    if scope == "empty":
-        sentence = (
-            "Real-host proof triggers are configured, but the changed-path scope handed to the "
-            "check was EMPTY — nothing was evaluated against them, so this is not a non-match."
-        )
-    elif scope == "not-configured":
-        sentence = "This repo declares no release-time real-host proof triggers, so no check ran."
-    elif scope == "not-established":
-        sentence = (
-            "Real-host proof triggers are configured but could not be resolved, so no verdict "
-            "was established."
-        )
-    else:
-        sentence = "No configured release-time real-host proof trigger matched this slice."
-    lines.append(f"- {sentence}")
-    if scope:
-        lines.append(f"- Evaluation scope: `{scope}`")
-    lines.extend(["", "## Real-Host Proof", "", f"- {sentence}"])
     return lines

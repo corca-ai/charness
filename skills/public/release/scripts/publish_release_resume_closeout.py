@@ -228,9 +228,6 @@ def resume_post_publication_closeout(
     expected_url = cli.expected_github_release_url(
         repo_root, plan["backend"], plan["tag_name"]
     )
-    host_payload = cli.safe_real_host_payload(
-        repo_root, plan["release_content_paths"], build_payload=cli.build_real_host_payload
-    )
     fresh_checkout_payload = cli.run_fresh_checkout_probes(repo_root)
     verify = cli.verify_release_visible(
         repo_root,
@@ -253,7 +250,6 @@ def resume_post_publication_closeout(
         repo_root,
         payload,
         artifact_relpath=artifact_relpath,
-        host_payload=host_payload,
         release_stdout=expected_url or "",
         expected_release_url=expected_url,
         release_verified=verify.returncode == 0,
@@ -266,7 +262,6 @@ def resume_post_publication_closeout(
         "branch": plan["branch"],
         "expected_release_url": expected_url,
         "fresh_checkout_payload": fresh_checkout_payload,
-        "host_payload": host_payload,
         "tag_name": plan["tag_name"],
     }
     common.run_release_closeout_tail(

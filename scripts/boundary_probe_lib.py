@@ -39,7 +39,7 @@ BOUNDARY_SURFACES_KEY = "boundary_cross_surface_surfaces"
 
 # The probe's typed outcome vocabulary (#622). Deliberately the SAME three words
 # `scripts/critique_enforcement_scope.py` already uses for `CrossSurfaceScope` and the
-# release real-host probe uses for `evaluation_scope` (D7) -- a fourth private spelling
+# boundary probes use for typed evaluation scope -- a fourth private spelling
 # of "we could not tell" is how the concept drifts back apart.
 #
 # It lives HERE as the shared implementation for the critique validator because

@@ -516,10 +516,6 @@ validators:
     consumer_facing: false
     decision: exclude
     reason: "skill-internal implementation or maintenance gate, not a consumer-authored artifact contract"
-  - path: skills/release/scripts/check_real_host_proof.py
-    consumer_facing: false
-    decision: exclude
-    reason: "skill-internal implementation or maintenance gate, not a consumer-authored artifact contract"
   - path: skills/release/scripts/check_requested_review_gate.py
     consumer_facing: false
     decision: exclude

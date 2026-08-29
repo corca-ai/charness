@@ -8,11 +8,6 @@ from typing import Any, Callable
 RELEASE_ADAPTER_CANDIDATES = (
     ".agents/release-adapter.yaml",
 )
-REAL_HOST_FIELDS = {
-    "real_host_required_surfaces",
-    "real_host_required_path_globs",
-    "real_host_checklist",
-}
 FRESH_CHECKOUT_FIELDS = {"fresh_checkout_probes"}
 BACKEND_FIELDS = {"release_backend"}
 UPDATE_TEXT_FIELDS = {"update_instructions"}
@@ -94,8 +89,6 @@ def release_adapter_preflight_payload(
     if (repo_root / "skills/public/release/scripts/resolve_adapter.py").is_file():
         commands.append(["python3", "skills/public/release/scripts/resolve_adapter.py", "--repo-root", "."])
     field_set = set(changed_fields)
-    if field_set & REAL_HOST_FIELDS and (repo_root / "tests/quality_gates/test_release_real_host.py").is_file():
-        commands.append(["pytest", "tests/quality_gates/test_release_real_host.py", "-q"])
     if field_set & FRESH_CHECKOUT_FIELDS and (repo_root / "tests/quality_gates/test_release_backend.py").is_file():
         commands.append(
             [
@@ -118,19 +111,6 @@ def release_adapter_preflight_payload(
             "changed_fields": sorted(changed_fields),
             "commands": [],
         }
-    if (
-        len(commands) == 1
-        and (repo_root / "tests/quality_gates/test_release_real_host.py").is_file()
-        and (repo_root / "tests/quality_gates/test_release_backend.py").is_file()
-    ):
-        commands.append(
-            [
-                "pytest",
-                "tests/quality_gates/test_release_real_host.py",
-                "tests/quality_gates/test_release_backend.py",
-                "-q",
-            ]
-        )
     return {
         "status": "required",
         "reason": "release adapter changed in the release delta; focused adapter preflight is required before release mutation",

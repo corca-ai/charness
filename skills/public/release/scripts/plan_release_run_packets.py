@@ -212,13 +212,6 @@ def required_reads(args: Any, adapter: dict[str, Any]) -> list[dict[str, str]]:
                 "Adapter declares a post-publish install refresh command.",
             )
         )
-    if data.get("real_host_required_surfaces") or data.get("real_host_required_path_globs"):
-        reads.append(
-            read_packet(
-                "references/real-host-proof.md",
-                "Adapter declares release-time real-host proof triggers.",
-            )
-        )
     return reads
 
 
@@ -243,17 +236,7 @@ def command_text(parts: list[str]) -> str:
     return " ".join([parts[0], *(shlex.quote(part) for part in parts[1:])])
 
 
-def _real_host_command(real_host_scope: dict[str, Any] | None) -> str:
-    command = ['python3 "$SKILL_DIR/scripts/check_real_host_proof.py"', "--repo-root", ".", "--detail"]
-    if real_host_scope and real_host_scope.get("scope") == "release_delta":
-        provenance = real_host_scope.get("provenance", {})
-        command.extend(
-            ["--changed-range", f"{provenance.get('base_sha')}..{provenance.get('head_sha')}"]
-        )
-    return command_text(command)
-
-
-def gate_packets(real_host_scope: dict[str, Any] | None = None) -> list[dict[str, str]]:
+def gate_packets() -> list[dict[str, str]]:
     return [
         gate_packet(
             "current-release",
@@ -274,13 +257,6 @@ def gate_packets(real_host_scope: dict[str, Any] | None = None) -> list[dict[str
             "execute the repo-declared fresh-checkout probes in a temp clone of this branch",
             "executed probe verdict; exit 1 on a failing probe, exit 3 if invoked without --run-probes",
             "always; the publish helper re-runs them after the version bump, before tag push",
-        ),
-        gate_packet(
-            "real-host-proof",
-            _real_host_command(real_host_scope),
-            "determine whether release-time human/host proof is required",
-            "trigger detector, not the proof itself; exit 3 and no `required` key when the changed scope is empty",
-            "always before closeout claims",
         ),
         gate_packet(
             "requested-review-gate",

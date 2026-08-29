@@ -300,7 +300,7 @@ def test_skill_cut_safety_named_skill_md_still_passes() -> None:
     """Control: a named SKILL.md with no broken pin is a real clean verdict."""
     result = run_gate(
         "scripts/check_skill_cut_safety.py",
-        "--repo-root", str(ROOT), "--path", "skills/public/release/SKILL.md",
+        "--repo-root", str(ROOT), "--path", "skills/public/achieve/SKILL.md",
     )
     assert result.returncode == 0, result.stdout + result.stderr
     assert yaml.safe_load(result.stdout)["status"] == "clean"

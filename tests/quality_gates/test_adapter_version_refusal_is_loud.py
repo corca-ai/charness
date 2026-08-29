@@ -296,7 +296,7 @@ def test_a_parser_refusal_is_the_second_door_into_the_same_state(tmp_path: Path)
     "nothing declared is honored" state a refused version leaves, reached by a different
     door. Before this, `version: !!int 9` (one token added to the very input the version
     guard refuses) walked past every consumer guard, and the pre-repair harm was
-    reproduced at exit 0 on `check_requested_review_gate`, `check_real_host_proof` and
+    reproduced at exit 0 on `check_requested_review_gate` and
     `bootstrap_review`.
 
     The messages must stay DISTINCT: the remediation for one is an adapter line and for
