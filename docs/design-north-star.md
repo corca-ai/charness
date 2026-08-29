@@ -6,6 +6,19 @@
 **One idea: the harness briefs a capable judge, and keeps teeth only where a
 wrong answer escapes.** Equip judgment; fence only cliffs.
 
+## Purpose (what the one idea serves)
+
+**Charness exists to reduce rework in the repositories that consume it, and to
+make agentic development there fast.** The one idea above is the method; this is
+the goal it serves, and what *Operating stance* means by "serve the goal first."
+
+- **The consumer is the subject.** A change that improves this checkout while
+  breaking or slowing a consuming repo is a regression however green it measures
+  here.
+- **Rework is the unit, not gate count.** Machinery earns its place by preventing
+  work that would otherwise be done twice. Machinery that does not is cost — and
+  so are an unread artifact and an unarmed detector.
+
 This is the standard the rest of the harness is measured against. When a skill,
 gate, doc, or contract is added or changed, it earns its place against this idea
 or it does not belong.
