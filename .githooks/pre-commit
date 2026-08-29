@@ -24,3 +24,9 @@ fi
 # small stdlib-only checker from leaving bytecode in the worktree without
 # clearing Git configuration variables first.
 python3 -B scripts/check_git_identity.py --repo-root "$REPO_ROOT"
+
+# The first-read instruction router is shared state for every future session, and
+# the prose rule asking an agent to stop before editing it did not hold on its
+# own. This refusal makes stopping the default; CHARNESS_ALLOW_ROUTER_CHANGE=1 is
+# how the operator's approval takes effect.
+python3 -B scripts/check_staged_router_change.py --repo-root "$REPO_ROOT"
