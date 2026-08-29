@@ -23,26 +23,22 @@ This is the standard the rest of the harness is measured against. When a skill,
 gate, doc, or contract is added or changed, it earns its place against this idea
 or it does not belong.
 
-## Diagnosis (back-tested 2026-06-20 — partially confirmed)
+## Diagnosis
 
 The repeated harness failure is not "too many gates." It is **terminal trust at
 irreversible boundaries**: a single context — a gate's green, a `CLOSED` state,
-a deployment readback, a reviewer's "looks good" — was treated as proof that an
-irreversible action was done right. The recurrence cluster
-(#359/#363/#376/#381/#382/#385/#386) is one mental model wearing seven masks.
+a deployment readback, a reviewer's "looks good" — treated as proof that an
+irreversible action was done right.
 
-The bloat (≈17.6K lines of reference prose, ≈34.7K lines of gate scripts, skill
-bodies pinned at the length cap) is the *cost of meeting that failure with ever
-more bespoke gates*. The fix is neither more gates nor blind trust. It is
-**non-terminality at the few boundaries that matter, and terse,
-concept-separated judgment everywhere else.**
+Bloat is the *cost of meeting that failure with ever more bespoke gates*. The fix
+is neither more gates nor blind trust. It is **non-terminality at the few
+boundaries that matter, and terse, concept-separated judgment everywhere else.**
 
-The [#359–#386 back-test](../charness-artifacts/audit/2026-06-20-north-star-phase0-diagnosis-backtest.md)
-(2026-06-20) confirmed this on the irreversible-boundary cases (0/7 contradict)
-and sharpened it: the failure is terminal trust on a *single evidence channel*,
-not gates as such — the remediations that worked were gates that force a check on
-a **distinct** channel (P5), and a distinct *observer* that re-reads the same
-proxy still rubber-stamps (#359, #386). The operative variable is the channel.
+The operative variable is the **channel**, not the gate. What works is a check on
+a *distinct* evidence channel; a distinct observer re-reading the same proxy still
+rubber-stamps. The
+[back-test](../charness-artifacts/audit/2026-06-20-north-star-phase0-diagnosis-backtest.md)
+holds the cases.
 
 ## The five facets of the one idea
 
@@ -67,8 +63,7 @@ contract — see P5.)
 conclusion. Confirm it by re-examination that uses a **different evidence
 channel and a different observer** than the claim under review; never by
 re-reading the same proxy. *Because form-passed ≠ content-correct, and at a
-cliff the wrong form has already escaped.* (#386's reviewer re-read the same
-proxy and rubber-stamped; this is the facet that stops that.)
+cliff the wrong form has already escaped.*
 
 **P5 — Teeth only for irreversibility and form.** A gate may *force a question*;
 it may not *declare completion*. There is no terminal green. At an irreversible
@@ -99,19 +94,13 @@ proof surface that fails open satisfies all three clauses at once: other agents
 act on its green, it ships to every consuming repo, and every future session
 builds on the history it certified. And a wrong pass here is *silent by
 construction* — a fail-open gate emits no failure, no log line, no ticket — so
-the elapsed time before anyone notices is unbounded. The 2026-07 evidence-surface
-hunt measured that: thirty defects across the repo's proof surfaces, none of them
-regressions, most written once and never revised, the oldest sitting green for
-three months in a repo with a 5.8K-test suite. One arrived on the very commit
-implementing P4 — *applying the principle produced a violation of it*.
+the elapsed time before anyone notices is unbounded.
 
-So P4 applies here in full: a proof surface's own author and its own tests are
-one observer, and a large suite is not many independent observations along this
-axis — the author writes the gate and the gate's tests in the same sitting, from
-the same mental model, so the blind spot in the code and the blind spot in its
-test are the same blind spot. The distinct observer is a fresh-eye review at the
-authoring boundary, which in that hunt found defects inside the fix on 6 of 6
-slices, several of them the exact class under repair.
+So P4 applies here in full. A proof surface's own author and its own tests are
+**one** observer: the gate and the gate's tests are written in the same sitting
+from the same mental model, so the blind spot in the code and the blind spot in
+its test are the same blind spot, and suite size does not add observations along
+this axis. The distinct observer is a fresh-eye review at the authoring boundary.
 
 What this does **not** license is a gate that checks gates. That is the
 anti-pattern named in the diagnosis above — meeting a gate-quality problem with
@@ -135,7 +124,7 @@ something is correct — only which of several correct things we would rather
 ship. Asking it for an observable predicate is a category error; that demand
 belongs to gates.
 
-Adopted 2026-08-11 from [Tasteful software](https://wiki.g15e.com/pages/Tasteful%20software.md)
+Adopted from [Tasteful software](https://wiki.g15e.com/pages/Tasteful%20software.md)
 ([gathered copy](../charness-artifacts/gather/2026-08-10-wiki-g15e-com-pages-tasteful-software-md-536ebc23.md)),
 where taste is explicitly not innate, not finished, and kept useful only by
 continual unlearning — and where its whole job is stated as choosing among many
@@ -150,14 +139,11 @@ possibilities, "which also means discarding most of them."
 > 4. At equal code, declarative beats procedural.
 
 **The precondition is the rule.** Every rung opens with *at equal —*. The rung
-fires only once that equality is established, and establishing it is work, not
-an assumption. On 2026-08-11 a disposition plan asserted equal capability four
-times and was wrong four times: it proposed deleting a ratchet arm that was the
-only detector of one-for-one substitution, a probe pin that an open operator
-decision publishes its figures from, an eval spec that was the only forcer of a
-gated reference, and a marker seam whose absent writer was its specification.
-Each deletion *reduced* capability while reading as a tie. Taste applied before
-the equality check is not taste; it is a license.
+fires only once that equality is established, and establishing it is work, not an
+assumption. The failure shape is a deletion that reads as a tie while removing
+the only detector of something: what looks redundant is often the sole observer
+of a case nothing else watches. Taste applied before the equality check is not
+taste; it is a license.
 
 This does not contradict the count line below. Count still justifies nothing on
 its own — capability does. Count only breaks ties among equals.
@@ -180,7 +166,7 @@ its own — capability does. Count only breaks ties among equals.
 
 ## Deliberately not in this document
 
-Per-surface migration checklists, rollback refs, the diagnosis back-test against
-the #359–#386 cluster, and the per-transition observable checklists are the
+Per-surface migration checklists, rollback refs, the diagnosis back-test, and
+the per-transition observable checklists are the
 overhaul *plan's* job; they ship with the surfaces. This document is the
 briefing, not the plan.
