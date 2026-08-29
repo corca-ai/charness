@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import os
 import re
 import subprocess
 from datetime import date
@@ -21,6 +20,12 @@ _LEGACY_SUBSTRATE_MODE_ALIASES = {
     "worktree": SUBSTRATE_WORKING_TREE,
 }
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+# Owned by `scripts/artifact_naming_lib.py`, restated rather than imported: this
+# module is imported by the SHIPPED reviewer runtime under `skills/shared/scripts`
+# and is deliberately stdlib-only, which `test_standalone_imports.py` enforces.
+# `validate_quality_artifact.py` restates it the same way. A test asserts the two
+# agree, so the copy cannot drift silently.
+CURRENT_POINTER_FILENAME = "latest.md"
 # The identity ignores the index/worktree split and untracked-set membership,
 # so a plain `git add` of an unchanged reviewed path does not stale-flag a
 # binding that was current a second earlier. In working-tree mode the bytes the
@@ -141,9 +146,11 @@ def _checked_path(repo_root: Path, path: str) -> Path:
 
 def _worktree_content_sha256(repo_root: Path, path: str) -> str | None:
     try:
+        # No symlink arm: `_checked_path` above refuses symlinks (f7a09d672), so
+        # the link-payload branch that used to sit here was unreachable from the
+        # moment that approval boundary landed, and the public contract went on
+        # describing it. Removed rather than left as decoration.
         candidate = _checked_path(repo_root, path)
-        if candidate.is_symlink():
-            return _sha256(b"symlink\0" + os.fsencode(os.readlink(candidate)))
         if not candidate.is_file():
             return None
         # The exec bit belongs in the content digest: otherwise `chmod +x` on a
@@ -181,6 +188,27 @@ def _with_identity_digest(components: dict[str, Any]) -> dict[str, Any]:
     return {**components, "identity_sha256": _sha256(canonical.encode("utf-8"))}
 
 
+def _is_excluded_current_pointer(repo_root: Path, path: str) -> bool:
+    """True only for a CURRENT-POINTER symlink, which the sweep may drop.
+
+    A DECLARED symlink still refuses -- `_checked_path` owns that approval
+    boundary (f7a09d672) and its test names the remedy. The sweep is not a
+    declaration, and refreshing a current pointer is the documented step after
+    filing any record, so an unmodified rule made every record-filing session
+    unreviewable until it committed.
+
+    Narrow on purpose. An earlier cut of this dropped EVERY symlink from the
+    sweep, which is a hole rather than a fix: `CLAUDE.md` in this repo is a
+    tracked compatibility symlink whose retarget needs the operator's explicit
+    approval, and `auto_excluded_paths` is in `PROVENANCE_FIELDS` and never
+    digested -- so retargeting it could not have staled any verdict. Anything
+    that is not a current pointer keeps the loud old behavior.
+    """
+    if Path(path).name != CURRENT_POINTER_FILENAME:
+        return False
+    return (repo_root / _lexical_path(path)).is_symlink()
+
+
 def _review_paths(
     repo_root: Path,
     reviewed_paths: list[str] | None,
@@ -197,17 +225,7 @@ def _review_paths(
         prefixes = tuple(excluded_prefixes or ())
         kept = swept - set(excluded_paths or [])
         if not changed_ref:
-            # A DECLARED symlink still refuses, deliberately -- `_checked_path`
-            # owns that boundary and its test names the remedy. But the auto
-            # sweep is not a declaration, and this repo's own artifact
-            # convention puts a `latest.md` symlink in every family. Refreshing
-            # one -- the documented step after filing any record -- put a
-            # modified symlink in the change set and made `build_packet` refuse
-            # outright, so every session that filed a record could not be
-            # reviewed until it committed. Dropping it from the SWEEP keeps the
-            # boundary and removes the self-inflicted refusal; the path is
-            # reported in `auto_excluded_paths`, so it is never silent.
-            kept = {path for path in kept if not (repo_root / _lexical_path(path)).is_symlink()}
+            kept = {path for path in kept if not _is_excluded_current_pointer(repo_root, path)}
         auto_excluded = sorted(swept - {path for path in kept if not path.startswith(prefixes)})
         paths = sorted(path for path in kept if not path.startswith(prefixes))
     else:

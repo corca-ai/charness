@@ -124,7 +124,7 @@ JSON envelope shape (`charness.critique_prepare_packet.v1`):
     "base_head": "<commit sha>",
     "base_head_role": "provenance-only | target",
     "reviewed_paths": ["<ordered repo-relative path>"],
-    "reviewed_content": [{"path": "<path>", "content_sha256": "<non-null sha256>"}],
+    "reviewed_content": [{"path": "<path>", "content_sha256": "<non-null sha256>", "disposition": "deleted (present only on paths the ref removed)"}],
     "reviewed_patch_sha256": "<changed-ref patch sha256 or empty-payload sha256>",
     "staged_patch_sha256": "<scope-limited sha256>",
     "unstaged_patch_sha256": "<scope-limited sha256>",
@@ -193,11 +193,21 @@ Rules:
   `auto_excluded_paths` are recorded as provenance and excluded from the digest, so
   an unrelated commit, or a plain `git add` of a reviewed path whose bytes did not
   change, does not stale a path-scoped verdict — only an actual edit does. A
-  changed-ref identity treats its resolved target and patch as inputs. Symlinks are
-  hashed by their link payload without following them.
-- Every declared path and patch component must carry a lowercase SHA-256 digest;
-  missing (`null`) hashes are a typed refusal, including deleted or missing
-  review paths.
+  changed-ref identity treats its resolved target and patch as inputs.
+- **Symlinks.** A DECLARED symlink is refused — `declare the target file
+  explicitly` — so a reviewed path always binds bytes rather than a pointer whose
+  target could move underneath the verdict. The auto sweep drops exactly one
+  class, a current-pointer (`latest.md`) symlink, and reports it in
+  `auto_excluded_paths`; refreshing that pointer is the documented step after
+  filing any record, and refusing it made every record-filing session
+  unreviewable until it committed. Any other symlink in the sweep still refuses.
+- **Deleted paths.** A path the ref removed binds its PRE-IMAGE bytes — from the
+  range start for `a..b`, from `c^` for a single commit `c` — and carries
+  `disposition: deleted`. The hash answers "what was removed"; the marker is what
+  stops it from reading as "this file is present with these bytes". The
+  disposition appears ONLY on deletions, so identities captured before this
+  contract do not move. Every other declared path and patch component must carry
+  a lowercase SHA-256 digest; a missing (`null`) hash is still a typed refusal.
 - `verify` accepts only the current `sha256-v2` identity contract. Historical
   packets remain byte-addressed evidence, but are not accepted as current review
   proof under a retired digest rule.

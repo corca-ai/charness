@@ -276,6 +276,19 @@ def collect_changed_paths(repo_root: Path) -> list[str]:
     return dedupe_preserve_order(tracked + staged + untracked)
 
 
+def collect_deleted_paths(repo_root: Path) -> set[str]:
+    """Working-tree deletions, staged and unstaged both.
+
+    Mirrors `collect_changed_paths`'s two-arm shape, and for the same reason: a
+    deletion staged with `git rm` and one made by removing the file on disk are
+    the same fact to a reviewer. Untracked files are not consulted -- an
+    untracked path cannot have been deleted by this change set.
+    """
+    tracked = _run_git(repo_root, "diff", "--name-only", "--diff-filter=D")
+    staged = _run_git(repo_root, "diff", "--name-only", "--cached", "--diff-filter=D")
+    return set(dedupe_preserve_order(tracked + staged))
+
+
 def collect_changed_paths_for_ref(repo_root: Path, ref: str) -> list[str]:
     ref = ref.strip()
     if not ref:

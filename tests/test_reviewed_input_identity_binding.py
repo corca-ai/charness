@@ -426,6 +426,54 @@ def test_a_refreshed_current_pointer_does_not_make_the_sweep_refuse(tmp_path: Pa
     assert "charness-artifacts/quality/2026-08-30-record.md" in identity["reviewed_paths"]
 
 
+def test_an_ordinary_symlink_in_the_sweep_is_not_silently_dropped(tmp_path: Path) -> None:
+    """The exception is current-pointer-only; anything else stays loud.
+
+    An earlier cut dropped EVERY symlink from the sweep, which is a hole, not a
+    fix. `CLAUDE.md` in this repo is a tracked compatibility symlink whose
+    retarget needs the operator's explicit approval, and `auto_excluded_paths`
+    sits in `PROVENANCE_FIELDS` and is never digested — so a silently excluded
+    symlink could not have staled any verdict either.
+    """
+    _init_identity_repo(tmp_path)
+    (tmp_path / "COMPAT.md").symlink_to("reviewed.txt")
+
+    with pytest.raises(ValueError, match="is a symlink; declare the target file explicitly"):
+        build_reviewed_input_identity(repo_root=tmp_path)
+
+
+def test_retargeting_an_ordinary_symlink_cannot_pass_as_an_unchanged_input(
+    tmp_path: Path,
+) -> None:
+    """The staleness negative control: a retarget must not read as `current`."""
+    _init_identity_repo(tmp_path)
+    (tmp_path / "other.txt").write_text("other\n", encoding="utf-8")
+    (tmp_path / "COMPAT.md").symlink_to("reviewed.txt")
+    _run_git(tmp_path, "add", "-A")
+    _run_git(tmp_path, "commit", "-m", "add compat symlink")
+
+    identity = build_reviewed_input_identity(
+        repo_root=tmp_path, reviewed_paths=["reviewed.txt"]
+    )
+    assert verify_reviewed_input_identity(tmp_path, identity) == (True, "current")
+
+    # Retarget the compatibility symlink: a substantive change the sweep must not
+    # swallow. It is not a current pointer, so the sweep refuses outright rather
+    # than quietly continuing without it.
+    (tmp_path / "COMPAT.md").unlink()
+    (tmp_path / "COMPAT.md").symlink_to("other.txt")
+    with pytest.raises(ValueError, match="is a symlink; declare the target file explicitly"):
+        build_reviewed_input_identity(repo_root=tmp_path)
+
+
+def test_the_current_pointer_filename_matches_its_owning_module(tmp_path: Path) -> None:
+    """The restated constant must not drift from `artifact_naming_lib`."""
+    from scripts.artifact_naming_lib import CURRENT_POINTER_FILENAME as OWNED
+    from scripts.reviewed_input_identity import CURRENT_POINTER_FILENAME as RESTATED
+
+    assert RESTATED == OWNED
+
+
 def test_the_sweep_exclusion_does_not_weaken_the_declared_symlink_refusal(
     tmp_path: Path,
 ) -> None:

@@ -73,7 +73,7 @@ def test_the_changed_files_section_marks_deletions_instead_of_listing_them_as_ed
     # The discriminator: an edited path in the SAME listing must stay unmarked, or
     # the marker means nothing.
     assert "DELETED" not in lines["kept.md"]
-    assert "1 of 2 changed path(s) were DELETED" in result.stdout
+    assert "1 of 2 changed path(s) were DELETED in the ref `HEAD^..HEAD`" in result.stdout
 
 
 def test_a_ref_with_no_deletions_gains_no_deletion_prose(tmp_path: Path) -> None:
@@ -117,3 +117,83 @@ def test_a_ref_with_no_deletions_gains_no_deletion_prose(tmp_path: Path) -> None
 
     assert result.returncode == 0, result.stderr
     assert "DELETED" not in result.stdout
+
+
+def _repo_with_surfaces(tmp_path: Path) -> Path:
+    _run_git(tmp_path, "init")
+    agents_dir = tmp_path / ".agents"
+    agents_dir.mkdir()
+    (agents_dir / "surfaces.json").write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "surfaces": [
+                    {
+                        "surface_id": "docs",
+                        "description": "Markdown",
+                        "source_paths": ["*.md"],
+                        "derived_paths": [],
+                        "sync_commands": [],
+                        "verify_commands": ["check docs"],
+                        "notes": [],
+                        "generated_markdown": [],
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    return tmp_path
+
+
+def test_a_working_tree_deletion_is_marked_too(tmp_path: Path) -> None:
+    """The DEFAULT packet is the working-tree one, and it hid removals entirely.
+
+    Scoping the marker to `--changed-ref` fixed the rarer substrate and left the
+    common one rendering a removal exactly like an edit.
+    """
+    repo = _repo_with_surfaces(tmp_path)
+    (repo / "kept.md").write_text("one\n", encoding="utf-8")
+    (repo / "removed.md").write_text("doomed\n", encoding="utf-8")
+    _run_git(repo, "add", "-A")
+    _run_git(repo, "commit", "-m", "initial")
+    (repo / "kept.md").write_text("two\n", encoding="utf-8")
+    (repo / "removed.md").unlink()
+
+    producer = REPO_ROOT / "scripts/render_critique_section_changed_surfaces.py"
+    result = subprocess.run(
+        ["python3", str(producer), "--repo-root", str(repo)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    lines = {line.split()[1]: line for line in result.stdout.splitlines() if line.startswith("- ")}
+    assert "DELETED" in lines["removed.md"]
+    assert "DELETED" not in lines["kept.md"]
+    assert "1 of 2 changed path(s) were DELETED in the working tree" in result.stdout
+
+
+def test_a_staged_deletion_counts_the_same_as_an_unstaged_one(tmp_path: Path) -> None:
+    """`git rm` and removing the file on disk are the same fact to a reviewer."""
+    repo = _repo_with_surfaces(tmp_path)
+    (repo / "kept.md").write_text("one\n", encoding="utf-8")
+    (repo / "staged-removal.md").write_text("doomed\n", encoding="utf-8")
+    _run_git(repo, "add", "-A")
+    _run_git(repo, "commit", "-m", "initial")
+    (repo / "kept.md").write_text("two\n", encoding="utf-8")
+    _run_git(repo, "rm", "-q", "staged-removal.md")
+
+    producer = REPO_ROOT / "scripts/render_critique_section_changed_surfaces.py"
+    result = subprocess.run(
+        ["python3", str(producer), "--repo-root", str(repo)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    lines = {line.split()[1]: line for line in result.stdout.splitlines() if line.startswith("- ")}
+    assert "DELETED" in lines["staged-removal.md"]
+    assert "DELETED" not in lines["kept.md"]
