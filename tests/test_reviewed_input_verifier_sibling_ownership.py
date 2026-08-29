@@ -82,3 +82,41 @@ def test_the_owner_is_the_same_object_whichever_module_loads_first(monkeypatch) 
     from scripts import reviewed_input_identity as owner
 
     assert verifier_first._identity is owner
+
+
+IDENTITY = ROOT / "scripts" / "reviewed_input_identity.py"
+
+
+def _load_identity_by_path():
+    spec = importlib.util.spec_from_file_location("identity_under_test", IDENTITY)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_a_consumer_module_cannot_substitute_the_nonblob_binder(monkeypatch) -> None:
+    """The non-blob split re-opened the same surface, so it gets the same guard.
+
+    Two defects came out of this pattern already — a consumer module winning the
+    name, and an import-order-dependent second object — so the third application
+    is written against both from the start rather than after a review finds them.
+    """
+    fake = types.ModuleType("scripts.reviewed_input_nonblob")
+    fake.CURRENT_POINTER_FILENAME = "consumer-owned.md"
+    fake._current_pointer_payload = lambda *_a, **_k: None
+    fake._gitlink_sha256 = lambda *_a, **_k: None
+    fake.__file__ = "/tmp/definitely-not-charness/scripts/reviewed_input_nonblob.py"
+    monkeypatch.setitem(sys.modules, "scripts.reviewed_input_nonblob", fake)
+
+    module = _load_identity_by_path()
+
+    assert module._nonblob.CURRENT_POINTER_FILENAME == "latest.md"
+
+
+def test_the_nonblob_owner_is_the_same_object_whichever_loads_first(monkeypatch) -> None:
+    monkeypatch.delitem(sys.modules, "scripts.reviewed_input_nonblob", raising=False)
+
+    identity_first = _load_identity_by_path()
+    from scripts import reviewed_input_nonblob as owner
+
+    assert identity_first._nonblob is owner

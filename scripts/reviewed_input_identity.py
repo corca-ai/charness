@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import hashlib
+import importlib
+import importlib.util
 import json
-import os
 import re
 import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -167,6 +169,44 @@ def _worktree_content_sha256(repo_root: Path, path: str) -> str | None:
         return None
 
 
+def _load_nonblob():
+    """The adjacent non-blob binder, resolved the same deterministic way the
+    verification module resolves this file.
+
+    Order is load-bearing: preferring the package import would let any
+    already-importable module of that name win, and falling back to a by-path
+    load whenever the canonical name is unbound would make the object depend on
+    who imported first. Both were real defects here, one found by a fresh-eye
+    review and one by the full suite.
+    """
+    sibling = Path(__file__).resolve().with_name("reviewed_input_nonblob.py")
+    canonical = "scripts.reviewed_input_nonblob"
+    loaded = sys.modules.get(canonical)
+    loaded_file = getattr(loaded, "__file__", None)
+    if loaded_file is not None and Path(loaded_file).resolve() == sibling:
+        return loaded
+    if sibling.is_file():
+        try:
+            spec = importlib.util.find_spec(canonical)
+        except (ImportError, ValueError):
+            spec = None
+        if spec is not None and spec.origin and Path(spec.origin).resolve() == sibling:
+            return importlib.import_module(canonical)
+        spec = importlib.util.spec_from_file_location("charness_reviewed_input_nonblob", sibling)
+        if spec is not None and spec.loader is not None:
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module
+    from scripts import reviewed_input_nonblob as module  # noqa: PLC0415
+
+    return module
+
+
+_nonblob = _load_nonblob()
+_current_pointer_payload = _nonblob._current_pointer_payload
+_gitlink_sha256 = _nonblob._gitlink_sha256
+
+
 def _unavailable(
     reviewed_paths: list[str] | None,
     changed_ref: str | None,
@@ -194,97 +234,10 @@ def _with_identity_digest(components: dict[str, Any]) -> dict[str, Any]:
     return {**components, "identity_sha256": _sha256(canonical.encode("utf-8"))}
 
 
-def _current_pointer_payload(repo_root: Path, path: str) -> str | None:
-    """Digest of a current-pointer symlink: its TARGET NAME and that target's bytes.
-
-    Binding the payload rather than dropping the path. An earlier cut excluded the
-    pointer from the sweep, which a fresh-eye review blocked on and was right to:
-    `auto_excluded_paths` sits in `PROVENANCE_FIELDS` and is never digested, so
-    retargeting `latest.md` at a DIFFERENT record left the identity unchanged and
-    an approved verdict silently followed the move.
-
-    The TARGET CONTENT is folded in too. Binding only `readlink` caught a
-    retarget but not an edit to the record the pointer names -- and a pointer
-    whose selected record is rewritten in place selects different bytes for every
-    consumer while reading as unchanged. The link is still never followed for
-    traversal: the target is resolved lexically inside the repo, and a pointer
-    escaping the root refuses rather than binding something outside it.
-    """
-    if Path(path).name != CURRENT_POINTER_FILENAME:
-        return None
-    candidate = repo_root / _lexical_path(path)
-    if not candidate.is_symlink():
-        return None
-    target = os.readlink(candidate)
-    resolved = candidate.resolve()
-    try:
-        resolved.relative_to(repo_root.resolve())
-    except ValueError as exc:
-        raise ValueError(
-            f"reviewed path `{path}` is a current pointer resolving outside repo root"
-        ) from exc
-    try:
-        selected = _sha256(resolved.read_bytes()) if resolved.is_file() else "absent"
-    except OSError:
-        selected = "unreadable"
-    return _sha256(
-        b"current-pointer\0" + os.fsencode(target) + b"\0" + selected.encode("ascii")
-    )
 
 
-def _gitlink_commit(repo_root: Path, path: str, base_head: str | None) -> str | None:
-    """The submodule commit id recorded for `path`, or None when it is not a gitlink.
-
-    The object-id column differs per command and reading the wrong one is silent:
-    `ls-tree` prints `<mode> <type> <object>` while `ls-files -s` prints
-    `<mode> <object> <stage>`. Taking field 2 from both bound the STAGE NUMBER --
-    the constant `0` -- for every working-tree submodule, so no submodule change
-    could ever stale an identity. Caught by a fresh-eye review; the test that
-    should have caught it asserted only `captured` and never that the digest
-    tracked the commit.
-    """
-    if base_head is not None:
-        raw = _git_bytes_optional(repo_root, "ls-tree", base_head, "--", path)
-        object_field = 2
-    else:
-        raw = _git_bytes_optional(repo_root, "ls-files", "-s", "--", path)
-        object_field = 1
-    if not raw:
-        return None
-    fields = raw.decode("utf-8", errors="surrogateescape").split()
-    if len(fields) <= object_field or fields[0] != "160000":
-        return None
-    if base_head is not None:
-        return fields[object_field]
-    # Working-tree substrate: bind the commit the submodule is CHECKED OUT at,
-    # not the one the index records. A reviewer reads the working tree, and
-    # moving the submodule's HEAD without staging it left the index entry --
-    # and therefore the identity -- unchanged, so a changed reviewed input
-    # verified as current. Falls back to the index entry when the submodule is
-    # not initialised, which is the only state with nothing checked out to read.
-    checked_out = _git_bytes_optional(repo_root / _lexical_path(path), "rev-parse", "HEAD")
-    if checked_out is not None:
-        return checked_out.decode("utf-8", errors="surrogateescape").strip()
-    return fields[object_field]
 
 
-def _gitlink_sha256(repo_root: Path, path: str, base_head: str | None) -> str | None:
-    """Digest of a SUBMODULE pointer (gitlink), or None when the path is not one.
-
-    A submodule bump had no valid declaration in either substrate: committed-ref
-    refused with `null-content-hash` because `git show <ref>:<path>` cannot read a
-    gitlink, and working-tree refused it as "a directory; declare the individual
-    files" -- with no individual files to declare, because a gitlink is a commit
-    id, not a tree. Both refusals correct alone, and their intersection made a
-    dependency bump unreviewable.
-
-    The commit id IS the content here: bumping a submodule changes exactly that
-    one value, and it is what a reviewer judges.
-    """
-    commit = _gitlink_commit(repo_root, path, base_head)
-    if commit is None:
-        return None
-    return _sha256(b"gitlink\0" + commit.encode("ascii"))
 
 
 def _review_paths(

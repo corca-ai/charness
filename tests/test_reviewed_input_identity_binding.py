@@ -818,3 +818,34 @@ def test_moving_a_submodule_head_without_staging_stales_the_verdict(tmp_path: Pa
 
     ok, reason = verify_reviewed_input_identity(repo, identity)
     assert (ok, reason) == (False, "declared reviewed inputs are stale")
+
+
+def test_an_uninitialised_submodule_does_not_bind_the_superproject_head(tmp_path: Path) -> None:
+    """Git repository discovery walks UPWARD.
+
+    `git -C <uninitialised-submodule> rev-parse HEAD` returns the SUPERPROJECT's
+    HEAD, so the previous round's checked-out-HEAD repair bound an unrelated
+    commit as if it were the submodule's. An uninitialised submodule has nothing
+    checked out to read, which is exactly when the index entry is honest.
+    """
+    origin = _submodule_repo(tmp_path)
+    clone = tmp_path / "clone"
+    subprocess.run(
+        ["git", "-c", "protocol.file.allow=always", "clone", "-q", str(origin), str(clone)],
+        check=True, capture_output=True,
+    )
+    assert not (clone / "sub" / ".git").exists(), "fixture must leave the submodule uninitialised"
+    index_entry = subprocess.run(
+        ["git", "ls-files", "-s", "--", "sub"], cwd=clone, capture_output=True, text=True
+    ).stdout.split()[1]
+    superproject = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=clone, capture_output=True, text=True
+    ).stdout.strip()
+
+    identity = build_reviewed_input_identity(
+        repo_root=clone, reviewed_paths=[".gitmodules", "sub"]
+    )
+
+    entry = next(e for e in identity["reviewed_content"] if e["path"] == "sub")
+    assert entry["content_sha256"] == hashlib.sha256(b"gitlink\0" + index_entry.encode()).hexdigest()
+    assert entry["content_sha256"] != hashlib.sha256(b"gitlink\0" + superproject.encode()).hexdigest()
