@@ -165,7 +165,7 @@ work when they fire.
   `build_retro_lesson_selection_index.py --write` added 49 lines. Two writers, one
   artifact — the same shape as the scaffold/persist path mismatch above.
 - **`validate_integrations.py` does not refuse a lock whose manifest is gone.**
-  `integrations/locks/cautilus.json` survived the cautilus removal pointing at a
+  `integrations/locks/cautilus.json` survived the cautilus removal pointing at a <!-- reproduction-source -->
   deleted `integrations/tools/cautilus.json`; the validator reported 14 lock files
   validated and exited 0. Locks are gitignored local state, so this is not shipped
   drift — but it is a detector passing over a question it never asked, which is
