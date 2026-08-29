@@ -51,8 +51,11 @@ def validate_snapshot(snapshot_root: Path) -> subprocess.CompletedProcess[str]:
         raise ValidationError(f"snapshot is missing `{script_path.relative_to(snapshot_root)}`")
     # No `--validate-export`. That flag requires the checked-in plugin tree to exist in
     # the snapshot, and `plugins/` stopped being tracked on 2026-08-29: it is generated
-    # by `sync_root_plugin_manifests.py` on init/update and on pre-push, so a committed
-    # tree legitimately has none. Asking a commit to carry generated output was the
+    # by `sync_root_plugin_manifests.py` on `charness init`/`update` and at the release
+    # version bump, so a committed tree legitimately has none. (An earlier spelling of
+    # this comment also claimed `.githooks/pre-push` runs the sync; it does not -- the
+    # hook runs the close-keyword guard, the push classifier, and `run-quality.sh`, and
+    # none of them regenerate the mirror.) Asking a commit to carry generated output was the
     # premise this flag encoded, and it is the premise that changed.
     #
     # What survives is the part that was never about the export: the committed manifests

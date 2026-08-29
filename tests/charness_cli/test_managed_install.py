@@ -249,7 +249,10 @@ def test_embedded_cli_bootstraps_managed_checkout_from_configured_repo_url(tmp_p
     sync_payload = sync_root_plugin_manifests_inprocess(upstream_repo)
     assert sync_payload["package_id"] == "charness"
     subprocess.run(
-        ["git", "add", "packaging/charness.json", "plugins/charness", ".agents/plugins/marketplace.json", ".claude-plugin/marketplace.json"],
+        # No `plugins/charness`: the export is generated and untracked since
+        # 2026-08-29, so naming it explicitly makes `git add` exit 1 on an ignored
+        # path. The consumer regenerates it on init/update; a commit never carries it.
+        ["git", "add", "packaging/charness.json", ".agents/plugins/marketplace.json", ".claude-plugin/marketplace.json"],
         cwd=upstream_repo,
         check=True,
         capture_output=True,

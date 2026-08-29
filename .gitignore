@@ -13,13 +13,21 @@ reports/
 .charness/quality/runtime-smoothing.json
 .charness/quality/history/runtime-signals-*.jsonl
 .charness/bootstrap-python/
-# The plugin export is GENERATED, not authored. `charness init`/`update` and
-# `.githooks/pre-push` both run `scripts/sync_root_plugin_manifests.py`, and the
+# The plugin export is GENERATED, not authored. `charness init`/`update`
+# (charness:2589) and the release version bump (`bump_version.py` runs the release
+# adapter's `sync_command`) run `scripts/sync_root_plugin_manifests.py`, and the
 # Claude marketplace reads `./plugins/charness` from the checkout ON DISK -- it
 # never needed to be in history. Tracking it cost 1,042 files, 11 MB, and 934 of
 # the last 2,498 commits (37%) as pure regenerated churn, and it put a byte-identical
 # second copy of every script into every corpus scan and every test fixture copy.
-plugins/
+#
+# ANCHORED. Unanchored `plugins/` matches a directory of that name at ANY depth, so
+# it also ignored `.agents/plugins/marketplace.json`. This checkout kept that file
+# only because it was tracked BEFORE the rule existed; any fresh `git init` +
+# `git add .` -- the test seed, and `charness init` bootstrapping a managed
+# checkout -- dropped it, and `packaging/charness.json` then pointed at a missing
+# file.
+/plugins/
 .charness/retro/
 .charness/closeout/
 .charness/hitl/runtime/

@@ -332,43 +332,15 @@ def test_validate_packaging_committed_accepts_clean_head(
     assert result.returncode == 0, result.stderr
 
 
-@pytest.mark.release_only
-def test_validate_packaging_committed_rejects_partial_commit_with_uncommitted_export(tmp_path: Path, seeded_charness_git_repo: Path) -> None:
-    repo = make_clean_git_repo(tmp_path, seeded_charness_git_repo)
-
-    source_skill = repo / "skills" / "public" / "create-cli" / "SKILL.md"
-    source_skill.write_text(source_skill.read_text(encoding="utf-8") + "\nPartial commit sentinel.\n", encoding="utf-8")
-
-    sync = run_loaded_script_main(
-        "sync_root_plugin_manifests.py",
-        sync_root_plugin_manifests_module,
-        "--repo-root",
-        str(repo),
-    )
-    assert sync.returncode == 0, sync.stderr
-
-    subprocess.run(["git", "add", "skills/public/create-cli/SKILL.md"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(
-        ["git", "commit", "-m", "Commit source without synced plugin export"],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-
-    worktree_validate = run_loaded_script_main(
-        "validate_packaging.py",
-        validate_packaging_module,
-        "--repo-root",
-        str(repo),
-    )
-    assert worktree_validate.returncode == 0, worktree_validate.stderr
-
-    committed_validate = run_script("scripts/validate_packaging_committed.py", "--repo-root", str(repo), cwd=repo)
-    assert committed_validate.returncode == 1
-    assert "checked-in plugin tree does not match the generated install surface" in committed_validate.stderr
-    assert "plugins/charness/skills/create-cli/SKILL.md" in committed_validate.stderr
-    assert "scripts/sync_root_plugin_manifests.py" in committed_validate.stderr
+# DELETED 2026-08-29: `test_validate_packaging_committed_rejects_partial_commit_with_uncommitted_export`.
+# It asserted that `validate_packaging_committed` refuses when "the checked-in plugin
+# tree does not match the generated install surface". `--validate-export` was dropped
+# when `plugins/` stopped being tracked, so there is no checked-in plugin tree and the
+# scenario it drove cannot occur. It had been RED since that change. Kept as a comment
+# rather than a skipped test or a renamed tombstone: this repo does not add "must not
+# exist" tests for retired behaviour, and a red test nobody can make green is worse
+# than an absent one. The surviving half -- committed manifests must be well-formed and
+# agree -- is `test_validate_packaging_committed_accepts_clean_head` above.
 
 
 def test_eval_registry_omits_redundant_current_repo_smokes() -> None:

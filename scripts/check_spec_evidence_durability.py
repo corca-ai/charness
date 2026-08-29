@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import subprocess
 import sys
@@ -207,6 +208,9 @@ def violations_for_doc(root: Path, doc: Path) -> list[str]:
     ignored = git_check_ignore(root, list(candidates_by_path.keys()))
     if ignored is None or not ignored:
         return []
+    ignored = {path for path in ignored if not under_generated_export(root, path)}
+    if not ignored:
+        return []
     rel_doc = doc.relative_to(root).as_posix() if doc.is_absolute() else str(doc)
     messages: list[str] = []
     for resolved_path, hits in candidates_by_path.items():
@@ -221,6 +225,75 @@ def violations_for_doc(root: Path, doc: Path) -> list[str]:
                 "See skills/public/spec/references/evidence-durability.md."
             )
     return messages
+
+
+def generated_export_roots(root: Path) -> set[Path]:
+    """Repo-relative roots the packaging manifests DECLARE as generated exports.
+
+    Read from `packaging/*.json` rather than spelled here, so this gate cannot come
+    to disagree with the manifests about where the export lives.
+    """
+
+    roots: set[Path] = set()
+    for manifest in sorted((root / "packaging").glob("*.json")):
+        try:
+            data = json.loads(manifest.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        stack = [data]
+        while stack:
+            node = stack.pop()
+            if isinstance(node, dict):
+                stack.extend(node.values())
+            elif isinstance(node, list):
+                stack.extend(node)
+            elif isinstance(node, str) and node.startswith("./") and "/" in node[2:]:
+                roots.add(root / node[2:])
+    return roots
+
+
+def under_generated_export(root: Path, path: Path) -> bool:
+    """Whether a gitignored citation still names durable evidence.
+
+    A path is UNDURABLE when nothing can bring it back. The plugin export is
+    gitignored, but it is regenerated from tracked source by a repo-owned producer
+    (`scripts/sync_root_plugin_manifests.py`, run by `charness init`/`update` and by
+    the release version bump), and that regeneration was proven byte-identical for
+    all 1,042 files when the tree was untracked on 2026-08-29. A citation into it is
+    therefore reproducible, which is exactly what this gate asks for -- the gitignore
+    bit alone was standing in for the question.
+
+    Without this, untracking a generated tree retroactively invalidates every
+    historical artifact that ever cited it: this fired on 20+ debug artifacts dating
+    to 2026-04, none of which changed.
+
+    Matched on the TOP-LEVEL directory a declared export root sits in, not on the
+    root itself, because artifacts cite the generated tree at every depth: the export
+    root (`plugins/charness/skills/...`), the tree root (`plugins/`), and glob spans
+    across it (`plugins/*/skills`). Only the first is under the declared root, and all
+    three name the same regenerated tree.
+
+    Blind class: this trusts the DECLARATION, not the producer, and it exempts the
+    WHOLE top-level directory. If a declared export root stops being regenerable, or
+    if a non-generated sibling is ever added beside it under the same top-level
+    directory, citations there keep passing. This gate does not run the exporter and
+    cannot see either.
+    """
+
+    generated_tops = {
+        relative.parts[0]
+        for export_root in generated_export_roots(root)
+        if (relative := _relative_or_none(root, export_root)) is not None and relative.parts
+    }
+    relative_path = _relative_or_none(root, path)
+    return relative_path is not None and bool(relative_path.parts) and relative_path.parts[0] in generated_tops
+
+
+def _relative_or_none(root: Path, path: Path) -> Path | None:
+    try:
+        return path.relative_to(root)
+    except ValueError:
+        return None
 
 
 def is_enforced_late_doc(doc: Path, text: str) -> bool:

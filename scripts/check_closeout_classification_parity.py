@@ -78,8 +78,9 @@ NON_CLASSIFICATION = NON_CLASSIFICATIONS[0]
 # scope for the whole vocabulary surface.
 DELEGATED_SITES = {
     "plugins/charness/** (exported mirror copies)": (
-        "derivative, not independent: .githooks/pre-push runs sync_root_plugin_manifests.py "
-        "and packaging validation reports source/export drift. Not re-probed here"
+        "derivative, not independent: the mirror is regenerated from its source by "
+        "sync_root_plugin_manifests.py on charness init/update and at the release "
+        "version bump, and it is untracked, so no commit carries it. Not re-probed here"
     ),
 }
 

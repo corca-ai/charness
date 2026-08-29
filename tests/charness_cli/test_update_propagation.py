@@ -97,7 +97,10 @@ Use this only to confirm that a newly added public skill became visible after
             f"skills/public/{PROBE_SKILL_ID}/references/note.md",
             "docs/public-skill-validation.json",
             "packaging/charness.json",
-            "plugins/charness",
+            # No `plugins/charness`: generated and untracked since 2026-08-29, so
+            # naming it makes `git add` exit 1 on an ignored path. This test proves
+            # `update` PROPAGATES a new skill into the exported root, which is
+            # regeneration from the tracked source -- the export was never the input.
             ".agents/plugins/marketplace.json",
             ".claude-plugin/marketplace.json",
         ],
