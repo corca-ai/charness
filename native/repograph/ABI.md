@@ -5,7 +5,7 @@
 
 This document freezes the machine-facing CLI contract for `parse-corpus`,
 `export-safe`, `match-surfaces`, and `standalone-targets`, and records the
-additive commands (`graph`, `classify`, `changed`, `carriers`,
+additive commands (`inventory`, `graph`, `classify`, `changed`, `carriers`,
 `components`, `explain`, `plugin-refs`, `what-reads`). A reportable run
 emits one UTF-8 JSON document on stdout and diagnostics on stderr. The
 command-specific inventory, manifest, and path errors below identify the
@@ -28,7 +28,7 @@ their respective captures, with whitespace formatted for readability.
 The executable accepts one required command name:
 
 ```text
-repograph <parse-corpus|export-safe|match-surfaces|standalone-targets|graph|classify|changed|carriers|components|explain|plugin-refs|what-reads> [options]
+repograph <inventory|parse-corpus|export-safe|match-surfaces|standalone-targets|graph|classify|changed|carriers|components|explain|plugin-refs|what-reads> [options]
 ```
 
 `--help` and `-h` print the command usage and exit 0. An unknown command,
@@ -54,6 +54,43 @@ inventory-error reports.
 The `--repo-root` and `--file-list` options are not repeatable in the semantic
 sense: if supplied more than once, the last value wins. Their defaults and
 command-specific exceptions are documented below.
+
+## `inventory`
+
+Usage:
+
+```text
+repograph inventory [--repo-root PATH] [--file-list PATH] [--regular-files-only]
+```
+
+`inventory` emits `repograph.inventory.v1`: the established file universe
+itself, as repository-relative POSIX path strings. It exists so a consumer can
+take the inventory without rebuilding the file set, which is issue #748's first
+acceptance bullet.
+
+Two parts of the contract are not free choices, because this command exists to
+be substitutable for `scripts/repo_file_listing.iter_repo_files`:
+
+- **`paths` is ordered by `/`-separated component, not bytewise.** This is
+  Python `pathlib.PurePath` ordering: `a/b.py` sorts before `a-b/c.py`, where a
+  byte-string sort reverses them. Measured on the charness repo on 2026-08-29,
+  the two orders disagree at 222 of 6,701 positions.
+- **`--regular-files-only` reproduces `pathlib.Path.is_file()`**: follow
+  symlinks and keep only regular files, so dangling symlinks and directory
+  symlinks are dropped. `dropped_by_stat` reports how many the filter removed,
+  so the exclusion is a number in the report rather than an invisible semantic.
+  Without the flag no `stat` is performed and `dropped_by_stat` is 0.
+
+`status` is `"established"` when the listing named at least one path,
+`"empty-scope"` when the listing succeeded and named none, and
+`"unestablished"` when the inventory could not be acquired. The `empty-scope`
+value exists so that a listing that inspected nothing is never reported in the
+same shape as one that inspected files; it is a real answer to a real question
+and therefore still exits 0.
+
+Exits are 0 for an established or empty listing, 3 for an inventory error
+(reported with `listing: "unestablished"` and the typed message in
+`unestablished`), 2 for a usage error, and 70 for an internal output failure.
 
 ## `parse-corpus`
 

@@ -65,6 +65,7 @@ where
     let remaining = args.collect::<Vec<_>>();
     match command.as_str() {
         "parse-corpus" => run_parse_corpus(remaining, git_program),
+        "inventory" => inventory::run(remaining),
         "export-safe" => export_safe::run(remaining),
         "match-surfaces" => surfaces::run(remaining),
         "standalone-targets" => standalone::run(remaining),
@@ -225,7 +226,7 @@ fn build_parse_corpus_report(
 }
 
 fn usage() -> &'static str {
-    "repograph <parse-corpus|export-safe|match-surfaces|standalone-targets|graph|classify|changed|carriers|components|explain|plugin-refs|what-reads> [options]"
+    "repograph <inventory|parse-corpus|export-safe|match-surfaces|standalone-targets|graph|classify|changed|carriers|components|explain|plugin-refs|what-reads> [options]"
 }
 
 fn parse_usage() -> &'static str {
