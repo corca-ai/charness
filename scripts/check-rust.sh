@@ -6,12 +6,12 @@ set -euo pipefail
 # in its PRODUCTION denominator -- so 11,891 lines of Rust were accounted as production
 # while no gate read them. Files reached 1,399 lines against a 480-line Python cap.
 #
-# BLIND CLASS, stated before the first acceptance test: this gate runs `cargo fmt --check`
-# and `cargo clippy -- -D warnings`. It therefore sees formatting and the lints clippy
-# ships. It does NOT see file length, function length, or cyclomatic complexity -- clippy
-# has no stable equivalent of the per-file caps the Python gate enforces. A 1,399-line
-# Rust file passes this gate. Naming that here so the next reader does not mistake a
-# green `check-rust` for the length discipline `check_python_lengths.py` provides.
+# BLIND CLASS, stated before the first acceptance test: this gate runs `cargo fmt --check`,
+# `cargo clippy -- -D warnings`, and `cargo test`. It therefore sees formatting, the lints
+# clippy ships, and test failures. It does NOT see FUNCTION length or cyclomatic
+# complexity -- clippy has no stable equivalent of ruff's PLR0915. File length is covered,
+# but by `check_python_lengths.py`, not here. It also does not measure coverage: nothing
+# in this repo yet asks which Rust lines a test executed.
 GATE_NAME="check-rust"
 GATE_CONSEQUENCE="This gate resolves crates by walking its own root, so a package root that is not the
 git root would lint a narrower tree -- or no crate at all -- and still exit 0."
@@ -67,9 +67,19 @@ for manifest in "${manifests[@]}"; do
     echo "check-rust: $crate_dir has clippy findings; run: (cd $crate_dir && cargo clippy --release --all-targets)" >&2
     status=1
   fi
+  # The standing battery ran NO Rust test. Measured the day this line was added: adding
+  # `check-rust` to run-quality.sh changed the gate-label universe, which broke a captured
+  # Rust fixture -- and 8,414 passing Python tests said nothing, because the only thing
+  # that ran `cargo test` was a CI workflow. A Python-side edit could break the native
+  # core and reach a push green. Debug profile on purpose: 0.47s warm, against 5.1s for
+  # `--release`, which the clippy step above already type-checks.
+  if ! (cd "$crate_dir" && cargo test --quiet); then
+    echo "check-rust: $crate_dir has failing tests; run: (cd $crate_dir && cargo test)" >&2
+    status=1
+  fi
 done
 
 if [[ $status -ne 0 ]]; then
   exit 1
 fi
-echo "check-rust: ${#manifests[@]} crate(s) are rustfmt-clean and clippy-clean."
+echo "check-rust: ${#manifests[@]} crate(s) are rustfmt-clean, clippy-clean, and tests pass."

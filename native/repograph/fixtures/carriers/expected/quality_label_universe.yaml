@@ -69,6 +69,7 @@ labels:
 - check-github-actions
 - check-supply-chain-online
 - check-shell
+- check-rust
 - py-compile
 - ruff
 - check-coverage
@@ -169,6 +170,7 @@ sources:
   - check-github-actions
   - check-supply-chain-online
   - check-shell
+  - check-rust
   - py-compile
   - ruff
   - check-coverage
