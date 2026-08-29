@@ -664,3 +664,41 @@ def test_a_populated_binding_still_passes_integrity_only_mode(tmp_path: Path) ->
         check_current=False,
     )
     assert (ok, reason) == (True, "packet-integrity-only")
+
+
+def test_a_path_deleted_against_a_non_first_parent_still_binds(tmp_path: Path) -> None:
+    """`-m` enumerates ALL parents; the pre-image must be resolved the same way.
+
+    Widening enumeration to `-m` without widening the pre-image left a path
+    deleted relative to the SECOND parent — absent from the merge result and from
+    the first parent both — refusing with `null-content-hash`. Enumerating across
+    every parent while resolving against one is two halves of one question
+    disagreeing, which is the shape these repairs exist to close. A fresh-eye
+    review reproduced it on this repo's own history at `225d4b152`.
+    """
+    _init_identity_repo(tmp_path)
+    _run_git(tmp_path, "checkout", "-q", "-b", "side")
+    (tmp_path / "only-on-side.txt").write_text("side\n", encoding="utf-8")
+    _run_git(tmp_path, "add", "-A")
+    _run_git(tmp_path, "commit", "-m", "add a file only this branch has")
+    _run_git(tmp_path, "checkout", "-q", "-")
+    (tmp_path / "trunk.txt").write_text("t\n", encoding="utf-8")
+    _run_git(tmp_path, "add", "-A")
+    _run_git(tmp_path, "commit", "-m", "trunk")
+    # Merge, then drop the side-only file in the merge result: it is DELETED
+    # relative to the second parent and never existed on the first.
+    _run_git(tmp_path, "merge", "--no-commit", "--no-ff", "side")
+    (tmp_path / "only-on-side.txt").unlink()
+    _run_git(tmp_path, "add", "-A")
+    _run_git(tmp_path, "commit", "-m", "merge side, dropping its file")
+
+    identity = build_reviewed_input_identity(repo_root=tmp_path, changed_ref="HEAD")
+
+    entries = {entry["path"]: entry for entry in identity["reviewed_content"]}
+    assert "only-on-side.txt" in entries, identity["reviewed_paths"]
+    assert entries["only-on-side.txt"]["disposition"] == "deleted"
+    side_blob = subprocess.run(
+        ["git", "show", "side:only-on-side.txt"], cwd=tmp_path, capture_output=True
+    ).stdout
+    assert entries["only-on-side.txt"]["content_sha256"] == hashlib.sha256(side_blob).hexdigest()
+    assert verify_reviewed_input_identity(tmp_path, identity) == (True, "current")

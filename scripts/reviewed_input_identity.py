@@ -358,24 +358,35 @@ def _patch_components(
     return [], base_head, b"", staged_patch, unstaged_patch
 
 
-def _preimage_ref(repo_root: Path, changed_ref: str | None) -> str | None:
-    """The ref a path existed at BEFORE the reviewed range, or None outside ref mode.
+def _preimage_refs(repo_root: Path, changed_ref: str | None) -> list[str]:
+    """Every ref a path could have existed at BEFORE the reviewed change.
 
-    Resolved through `_range_endpoints` rather than by splitting the string here.
-    An earlier cut split on `".."` locally, which read `a...b` as starting at `a`
-    when git diffs it from the merge-base -- so a deleted path's pre-image could
-    have been fetched from the wrong side of a divergent branch. A single commit
-    `c` has its pre-image at `c^`; a root commit has no parent, but a root commit
-    deletes nothing, so the lookup simply finds none and the refusal stands.
+    A LIST, matching how the paths were enumerated. `_auto_paths` passes `-m` to
+    `diff-tree`, so a merge contributes the union of its parent-relative changes;
+    resolving the pre-image at `<merge>^` alone then covered only the FIRST
+    parent, and a path deleted relative to the second — absent from the merge
+    result and from the first parent both — refused with `null-content-hash`.
+    Reproduced on this repo's own history at 225d4b152. Enumerating across all
+    parents while resolving against one is the same two-halves-disagreeing shape
+    these repairs keep closing.
+
+    A range resolves to its single start (the merge base for `a...b`). A root
+    commit has no parent, but a root commit deletes nothing, so an empty list
+    simply finds no pre-image and the refusal stands.
     """
     if not changed_ref:
-        return None
+        return []
     start_ref, target_ref = _range_endpoints(repo_root, changed_ref)
-    return start_ref if start_ref is not None else f"{target_ref}^"
+    if start_ref is not None:
+        return [start_ref]
+    raw = _git_bytes_optional(repo_root, "rev-list", "--parents", "-n", "1", target_ref)
+    if not raw:
+        return []
+    return raw.decode("utf-8", errors="surrogateescape").split()[1:]
 
 
 def _content_components(
-    repo_root: Path, paths: list[str], base_head: str, mode: str, preimage_ref: str | None = None
+    repo_root: Path, paths: list[str], base_head: str, mode: str, preimage_refs: list[str] | None = None
 ) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
     untracked: set[str] = set()
     path_args = ["--", *paths]
@@ -400,7 +411,9 @@ def _content_components(
             # while `--diff-filter=d` produced one that no longer matched the
             # range. Between them a removal slice had no valid declaration at
             # all -- exactly the change class a fresh-eye review is worth most.
-            if digest is None and preimage_ref is not None:
+            for preimage_ref in preimage_refs or ():
+                if digest is not None:
+                    break
                 previous = _git_bytes_optional(repo_root, "show", f"{preimage_ref}:{path}")
                 if previous is not None:
                     digest = _sha256(previous)
@@ -478,7 +491,7 @@ def build_reviewed_input_identity(
         repo_root, paths, changed_ref, mode
     )
     reviewed_content, declared_untracked = _content_components(
-        repo_root, paths, base_head, mode, _preimage_ref(repo_root, changed_ref)
+        repo_root, paths, base_head, mode, _preimage_refs(repo_root, changed_ref)
     )
 
     captured: dict[str, Any] = {
