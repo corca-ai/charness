@@ -29,6 +29,43 @@ The ranking rule, from the north star's Purpose: **charness exists to reduce
 rework in the repositories that CONSUME it.** A defect a consumer hits outranks a
 defect this checkout hits, however green this checkout measures.
 
+## Step 0 — FIRST: compress `AGENTS.md` to ceal level, then gate it
+
+Highest priority in this session. Do it before the issues below.
+
+`AGENTS.md` is 48 lines / ~2.6 KB. `../ceal/AGENTS.md` is 23 lines / 1.3 KB and
+`../craken-agents/AGENTS.md` is 20 lines / 1.1 KB. The file's own second sentence
+says *"Keep this file short: it routes to the document that owns the question; it
+is not a second operating manual"*, and its `## Make changes` section is exactly
+that second manual — worktree policy, lane selection, parallel shape, and
+canonical-surface rules, ~20 lines of it, in the file that forbids them. ceal
+states the same principle as a rule: *"`AGENTS.md` is the first-read router; host
+mechanics belong in the linked host adapter."*
+
+Two parts, both required:
+
+1. **Compress to ceal level.** Target 20–23 lines. `## Make changes` moves to the
+   owner pages it already links (`.agents/codex-host.md`, `.agents/claude-host.md`,
+   `docs/development.md`, `docs/operating-contract.md`) — MOVE the content, do not
+   delete it, and check each destination already covers it before dropping a line.
+   `## Repository map` largely duplicates `docs/index.md`; keep only what the
+   index cannot carry.
+2. **Wire a pre-commit gate.** A staged change to `AGENTS.md` (and its `CLAUDE.md`
+   symlink) is REFUSED and requires the operator's explicit approval to proceed.
+   ceal has the rule in `docs/agent-operating-rules.md` and never mechanized it —
+   *"this is a workflow boundary, not a size ratchet or approval-receipt gate"* —
+   and the rule alone did not hold: this file was edited twice without approval in
+   the session that wrote this plan, and only the operator caught it.
+   `.githooks/pre-commit` is the home; the repo's existing escape idiom is an
+   env-var bypass (`CHARNESS_ALLOW_STAGED_REVERSION`,
+   `CHARNESS_ALLOW_PARTIAL_STAGE`, `CHARNESS_ALLOW_FOREIGN_HELPER`), so follow it
+   rather than inventing a receipt format. The point of the refusal is that an
+   agent must STOP and ask; make the message say that.
+
+Nothing today enforces either half: no gate bounds this file's size, and none
+guards its modification. A search of current `scripts/`, `.githooks/`, and the
+four recent "simplification" commits found no such guard present or deleted.
+
 ## Step 1 — The consumer-facing open issues
 
 These are ranked above everything else because a consumer meets them. Check each
@@ -94,19 +131,45 @@ work when they fire.
   scaffold reported the target empty, the helper overwrote a tracked retro from
   another session, and only a `git status` read caught it. One subject key, two
   paths.
-- **The session entry point routes to an advisory projection instead of the
-  durable lesson owner.** `CLAUDE.md`'s first bullet sends every session to
-  `recent-lessons.md`. That file is a generated projection — `lesson_ledger_lib`
-  says so directly: the ledger is durable history and *"presentation is an
-  advisory projection owned by retro"* — and it sources 24 of 419 retro files.
-  The durable owner, `lesson-ledger.json` (43 lessons, 124 score events, fed per
-  encounter by `record_lesson_score.py`), is not named at the entry point at all.
-  So a session that follows its own instructions reads a ranked sample and
-  believes it has the corpus; last session's largest waste is exactly that.
-  #750 is the consumer-facing half of the same thing: Ceal makes its ledger the
-  sole lesson surface and cannot switch the Markdown projection off. Design the
-  entry point and #750 together — the question is which surface a reader is owed,
-  not how to make the projection rank better.
+- **The lesson memory loop is built in three parts and only one is wired.** The
+  operator's design: a session START reads the ledger, every RETRO evaluates and
+  updates it, and a QUALITY run promotes/retires. The spec is
+  `charness-artifacts/spec/2026-08-13-lesson-evaluation-observability-contract.md`
+  (Status: completed), whose entities are `lesson session`, `emission receipt`,
+  `retro disposition`, and `continuity report`. Measured state:
+  - **(1) session start — command EXISTS and works, wiring was missing.**
+    `render_lesson_selection_preview.py --seed <id>` reads the *validated* ledger
+    and selects 43 eligible lessons into recency / value / uncertainty buckets
+    with each lesson's source artifact named. `AGENTS.md` pointed at
+    `recent-lessons.md` instead. Wired in the session that wrote this plan; the
+    remaining two are open.
+  - **(2) retro evaluates and updates — MISSING.** The retro skill never writes
+    the ledger and never records the spec's `retro disposition` line, and nothing
+    asks it to. Ledger holds 43 lessons against a 419-artifact corpus.
+  - **(3) quality promotes/retires — MISSING, and partly deleted.** No
+    promote/retire concept exists in the quality skill, and ledger schema v8
+    (`5a8b6baca`, *"Remove lesson lifecycle state and quality-run writes"*,
+    2026-08-27) removed the lifecycle state together with the spec's
+    session-emission snapshots and session-bound scoring. **The operator's
+    reading is that this removal was a misread of an instruction to delete
+    `recent-lessons.md`, not the lifecycle.** Read `5a8b6baca` before designing;
+    restore from it if that reading holds.
+  - **The Markdown projection was supposed to be migrated INTO the ledger and was
+    not.** Both surfaces are live. #750 is the consumer-facing half: Ceal makes
+    its ledger the sole lesson surface and cannot switch the projection off.
+    Design #750 and this together — the question is which surface a reader is
+    owed, not how to make the projection rank better.
+- **`persist_retro_artifact.py` writes a lesson selection index that the repo's
+  own checker then rejects.** After persisting a retro, the ledger preview refused
+  with *"does not match what this repo's own code produces"*; rebuilding with
+  `build_retro_lesson_selection_index.py --write` added 49 lines. Two writers, one
+  artifact — the same shape as the scaffold/persist path mismatch above.
+- **`validate_integrations.py` does not refuse a lock whose manifest is gone.**
+  `integrations/locks/cautilus.json` survived the cautilus removal pointing at a
+  deleted `integrations/tools/cautilus.json`; the validator reported 14 lock files
+  validated and exited 0. Locks are gitignored local state, so this is not shipped
+  drift — but it is a detector passing over a question it never asked, which is
+  the class Step 2 dispositions.
 
 ## Step 5 — The release, if the above leaves room
 

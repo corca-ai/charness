@@ -6,11 +6,8 @@ question; it is not a second operating manual.
 
 ## Start here
 
-- Read [recent lessons](./charness-artifacts/retro/recent-lessons.md) BEFORE
-  planning, not after failing. It is regenerated from the retro corpus and its
-  whole value is front-loaded; read late it is a description of the mistake you
-  just made. Nothing else routed to it, so it was produced, validated, ranked,
-  deduped, and scored by eight modules while reaching no session.
+- Before planning, not after failing, read the lesson ledger:
+  `python3 scripts/render_lesson_selection_preview.py --repo-root . --seed <session-id>`.
 - Read [docs/index.md](./docs/index.md), then only the owner page needed for
   the current request.
 - Read [docs/development.md](./docs/development.md) for local work and
