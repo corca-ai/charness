@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-08-30",
-  "source_artifact_count": 416,
-  "candidate_count": 2145,
+  "source_artifact_count": 417,
+  "candidate_count": 2154,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -1453,6 +1453,75 @@
       ]
     },
     {
+      "candidate_id": "current_focus:3b289cd9dff0",
+      "kind": "current_focus",
+      "lesson": "The session opened on `2026-08-31-next-session-plan.md`: release 8.0.0 first, then convert enumerated refusals to properties.",
+      "normalized_key": "the session opened on 2026 08 31 next session plan md release 8 0",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-08-29-detector-blind-class.md",
+      "latest_source_date": "2026-08-29",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-29-detector-blind-class.md",
+          "date": "2026-08-29",
+          "section": "Context",
+          "kind": "current_focus",
+          "lesson": "The session opened on `2026-08-31-next-session-plan.md`: release 8.0.0 first, then convert enumerated refusals to properties."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:2ae36ecd3bed",
+      "kind": "next_improvement",
+      "lesson": "**a number in prose beside a number in a test is two sources for one fact, and only the test goes red.** `.agents/command-dominance.yaml` said 14/8 while the test pinning it asserted 15/9 — the comment had drifted a full measurement behind the thing that pins it. Where both must exist, the prose must say \"read the test for the truth\".",
+      "normalized_key": "a number in prose beside a number in a test is two sources for",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-08-29-detector-blind-class.md",
+      "latest_source_date": "2026-08-29",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-29-detector-blind-class.md",
+          "date": "2026-08-29",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "**a number in prose beside a number in a test is two sources for one fact, and only the test goes red.** `.agents/command-dominance.yaml` said 14/8 while the test pinning it asserted 15/9 — the comment had drifted a full measurement behind the thing that pins it. Where both must exist, the prose must say \"read the test for the truth\"."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:25d8eb7c8634",
+      "kind": "next_improvement",
+      "lesson": "**audit the detector SET, not each detector.** Produce a standing inventory recording, per gate, what it cannot see — enumerations it stands on, file types it globs, indirection that defeats it. Six blind spots were found by accident this session; the repo already demands each detector state its blind class individually, which is exactly why the gap is at the set level.",
+      "normalized_key": "audit the detector set not each detector produce a standing inventory recording per gate",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-08-29-detector-blind-class.md",
+      "latest_source_date": "2026-08-29",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-29-detector-blind-class.md",
+          "date": "2026-08-29",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "**audit the detector SET, not each detector.** Produce a standing inventory recording, per gate, what it cannot see — enumerations it stands on, file types it globs, indirection that defeats it. Six blind spots were found by accident this session; the repo already demands each detector state its blind class individually, which is exactly why the gap is at the set level."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:5f32a622929b",
       "kind": "next_improvement",
       "lesson": "capability — **seam fakes must reject malformed argv** (strict parsers, not payload-only). Applied in-session to both D9 fakes (classify, export-safe); the lane-brief template edit above carries the rule forward.",
@@ -1587,6 +1656,29 @@
           "section": "Next Improvements",
           "kind": "next_improvement",
           "lesson": "`tests/conftest.py` refuses a broad serial pytest run; `tests/quality_gates/test_a_manifest_field_is_not_what_the_control_plane_derives.py` checks derived manifest values over the whole directory with negative controls; `_COVERAGE_ENV_KEYS` is pinned by containment rather than by its literal contents."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:2d9fe234a445",
+      "kind": "next_improvement",
+      "lesson": "**when a plan's value rests on a quantity, measure the quantity before writing the plan.** Both wasted stretches this session were one command from being avoided. Concretely: any proposal containing \"this will be faster / smaller / cheaper\" must carry the measurement in the same message that proposes it, not in the message after the operator asks.",
+      "normalized_key": "when a plan s value rests on a quantity measure the quantity before writing",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-08-29-detector-blind-class.md",
+      "latest_source_date": "2026-08-29",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-29-detector-blind-class.md",
+          "date": "2026-08-29",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "**when a plan's value rests on a quantity, measure the quantity before writing the plan.** Both wasted stretches this session were one command from being avoided. Concretely: any proposal containing \"this will be faster / smaller / cheaper\" must carry the measurement in the same message that proposes it, not in the message after the operator asks."
         }
       ]
     },
@@ -1729,6 +1821,75 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:ea72968635ee",
+      "kind": "repeat_trap",
+      "lesson": "**I optimised the fixture before asking whether the test needed it.** I found the 1.4 GB seed and made the copy 15x cheaper; the operator had to ask \"이 테스트 자체 jtbd가 뭐지? 너무 과한데?\" before I questioned the clone at all. Then the answer was a 180x setup win and no repository. This is `2026-05-20-quality-treadmill-vs-root-cause.md` exactly — bounding a cost before asking the root-cause question — and that retro is in the served digest.",
+      "normalized_key": "i optimised the fixture before asking whether the test needed it i found the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-08-29-detector-blind-class.md",
+      "latest_source_date": "2026-08-29",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-29-detector-blind-class.md",
+          "date": "2026-08-29",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "**I optimised the fixture before asking whether the test needed it.** I found the 1.4 GB seed and made the copy 15x cheaper; the operator had to ask \"이 테스트 자체 jtbd가 뭐지? 너무 과한데?\" before I questioned the clone at all. Then the answer was a 180x setup win and no repository. This is `2026-05-20-quality-treadmill-vs-root-cause.md` exactly — bounding a cost before asking the root-cause question — and that retro is in the served digest."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:eca3386e4e5d",
+      "kind": "repeat_trap",
+      "lesson": "**I proposed installing `nose` without checking whether it was installed.** It was, at 0.20.0, `doctor_status: ok`. I read a static checklist as a work item and asked the operator for consent to a step that was already discharged.",
+      "normalized_key": "i proposed installing nose without checking whether it was installed it was at 0",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-08-29-detector-blind-class.md",
+      "latest_source_date": "2026-08-29",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-29-detector-blind-class.md",
+          "date": "2026-08-29",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "**I proposed installing `nose` without checking whether it was installed.** It was, at 0.20.0, `doctor_status: ok`. I read a static checklist as a work item and asked the operator for consent to a step that was already discharged."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:6fba560f4158",
+      "kind": "repeat_trap",
+      "lesson": "**Message changes chased across pinning tests one file at a time.** Renaming the length gate's output to stop lying about `.rs` files broke pins in `test_empty_scope_refusals.py` and `test_python_length_gates.py`, found serially by re-running. A grep for the literal before editing would have made it one step.",
+      "normalized_key": "message changes chased across pinning tests one file at a time renaming the length",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-08-29-detector-blind-class.md",
+      "latest_source_date": "2026-08-29",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-29-detector-blind-class.md",
+          "date": "2026-08-29",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "**Message changes chased across pinning tests one file at a time.** Renaming the length gate's output to stop lying about `.rs` files broke pins in `test_empty_scope_refusals.py` and `test_python_length_gates.py`, found serially by re-running. A grep for the literal before editing would have made it one step."
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:b7344a899e3d",
       "kind": "repeat_trap",
       "lesson": "NOT waste: lane B's timeout salvage (96% of a 90-file refactor recovered from the worktree) and the five full batteries — each battery caught a real defect class the focused checks missed.",
@@ -1752,6 +1913,29 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:a40e3a5bbb0e",
+      "kind": "repeat_trap",
+      "lesson": "**Repeated `sleep`-and-poll background jobs** after the harness had already said a completing job notifies. Several turns bought nothing.",
+      "normalized_key": "repeated sleep and poll background jobs after the harness had already said a completing",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-08-29-detector-blind-class.md",
+      "latest_source_date": "2026-08-29",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-29-detector-blind-class.md",
+          "date": "2026-08-29",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "**Repeated `sleep`-and-poll background jobs** after the harness had already said a completing job notifies. Several turns bought nothing."
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:c580e47c2ea4",
       "kind": "repeat_trap",
       "lesson": "**Small unforced errors, each recovered:** popping a foreign stash on a clean tree (restored, stash preserved); launching a workflow with a placeholder string as `args` (restarted); re-running `close-with-comment` to read its output, double-posting the #743 carrier (duplicate deleted); once misreading a task receipt's `after_head` (parent-tree movement) as the candidate sha (cherry-pick aborted cleanly).",
@@ -1771,6 +1955,29 @@
           "section": "Waste",
           "kind": "repeat_trap",
           "lesson": "**Small unforced errors, each recovered:** popping a foreign stash on a clean tree (restored, stash preserved); launching a workflow with a placeholder string as `args` (restarted); re-running `close-with-comment` to read its output, double-posting the #743 carrier (duplicate deleted); once misreading a task receipt's `after_head` (parent-tree movement) as the candidate sha (cherry-pick aborted cleanly)."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:747be697c5e7",
+      "kind": "repeat_trap",
+      "lesson": "**Two long stretches built on an unmeasured quantity.** First: the plan's \"reduce the release machinery for ratio headroom\" rests on arithmetic that runs the other way — removing production lines RAISES `test/source`. Second: after the operator asked for Rust, I framed \"Rust transition is the test-speed fix\" and had to retract it, because native `match-surfaces` is 1.4x SLOWER and `repo_file_listing`'s dominant cost is `Path` construction, not Python. Both premises were one measurement away. I wrote plans first and measured second.",
+      "normalized_key": "two long stretches built on an unmeasured quantity first the plan s reduce the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-08-29-detector-blind-class.md",
+      "latest_source_date": "2026-08-29",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-29-detector-blind-class.md",
+          "date": "2026-08-29",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "**Two long stretches built on an unmeasured quantity.** First: the plan's \"reduce the release machinery for ratio headroom\" rests on arithmetic that runs the other way — removing production lines RAISES `test/source`. Second: after the operator asked for Rust, I framed \"Rust transition is the test-speed fix\" and had to retract it, because native `match-surfaces` is 1.4x SLOWER and `repo_file_listing`'s dominant cost is `Path` construction, not Python. Both premises were one measurement away. I wrote plans first and measured second."
         }
       ]
     },
