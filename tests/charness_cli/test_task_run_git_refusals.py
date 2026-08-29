@@ -15,7 +15,8 @@ import pytest
 
 from scripts import task_run, task_run_git
 
-from .test_task_run_fixtures import _git, _repo
+from .test_task_run_fixtures import _repo
+
 
 def test_git_output_refusal_preserves_the_human_actionable_detail(
     monkeypatch, tmp_path: Path
