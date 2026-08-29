@@ -153,9 +153,23 @@ execution state in the artifact as rows are done** — a list whose done-ness is
 untracked is the same defect one level up, and it cost a wrong assumption on
 2026-08-30.
 
-Watch the ratio: `check-test-production-ratio` is BLOCKING and sat at 0.9996
-after the retirement removed more production than test code. Trimming tests
-moves it down, which is safe; adding tests moves it up.
+**Two blocking gates now pull in opposite directions, and the tree sits exactly
+on the boundary.** `release-changed-line-coverage` demands tests for changed
+lines; `check-test-production-ratio` caps total test code at 1.00× production.
+Observed on 2026-08-30, in this order: retirement removed more production than
+test code → 1.0002 over-max → deleted a self-disclaiming test → 0.9996 → covered
+this session's own changed lines (five tests, `native_gate_lib.py` 89% → 100%)
+→ 1.0002 over-max again → executed two documented #753 rows → **1.0000, exactly
+at the cap**.
+
+That is not a comfortable place to start a session. The next test file added
+tips a blocking gate, and the only currently-sanctioned relief is the #753
+trim list, which is finite. Before adding tests, either trim a documented row
+first or raise the question with the operator — but do NOT raise the cap to make
+room, which is the treadmill `2026-05-20-quality-treadmill-vs-root-cause.md`
+already named. The real relief is production-side: `charness` is 6,081 lines and
+the release machinery is 12,599, so the denominator has more slack in it than
+the numerator does.
 
 ## Accumulated follow-ups
 

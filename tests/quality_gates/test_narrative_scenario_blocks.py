@@ -8,12 +8,7 @@ import yaml
 
 from runtime_bootstrap import import_repo_module
 
-from .support import ROOT, run_script, skill_package_text
-
-NARRATIVE_SKILL = (ROOT / "skills" / "public" / "narrative" / "SKILL.md").read_text(encoding="utf-8")
-ADAPTER_CONTRACT = (
-    ROOT / "skills" / "public" / "narrative" / "references" / "adapter-contract.md"
-).read_text(encoding="utf-8")
+from .support import ROOT, run_script
 
 RESOLVE_SCRIPT = "skills/public/narrative/scripts/resolve_adapter.py"
 REVIEW_SCRIPT = "skills/public/narrative/scripts/review_adapter.py"
@@ -42,42 +37,6 @@ def run_narrative_init_adapter(monkeypatch, capsys, *args: str) -> SimpleNamespa
     code = _init_adapter.main() or 0
     captured = capsys.readouterr()
     return SimpleNamespace(returncode=code, stdout=captured.out, stderr=captured.err)
-
-
-def test_narrative_skill_carries_scenario_block_guidance() -> None:
-    scenario_blocks = (
-        ROOT / "skills" / "public" / "narrative" / "references" / "scenario-blocks.md"
-    ).read_text(encoding="utf-8")
-    package_text = skill_package_text("narrative")
-
-    assert "scenario_surfaces" in NARRATIVE_SKILL
-    assert "checked-in fixtures" in package_text
-    assert "define it inline at first use" in NARRATIVE_SKILL
-    assert "What you bring" in scenario_blocks
-    assert "Input (CLI)" in scenario_blocks
-    assert "Input (For Agent)" in scenario_blocks
-    assert "What comes back" in scenario_blocks
-    assert "Next action" in scenario_blocks
-    assert "Do not fabricate a CLI slot" in scenario_blocks
-    assert "scenario_block_template" in ADAPTER_CONTRACT
-
-
-def test_narrative_skill_carries_landing_rewrite_contract() -> None:
-    landing_loop = (
-        ROOT / "skills" / "public" / "narrative" / "references" / "landing-rewrite-loop.md"
-    ).read_text(encoding="utf-8")
-
-    assert "primary reader context" in NARRATIVE_SKILL
-    assert "claim-to-acceptance/spec matrix" in NARRATIVE_SKILL
-    assert "Compression" in NARRATIVE_SKILL
-    assert "review_adapter.py" in NARRATIVE_SKILL
-    assert "comparables" in landing_loop
-    assert "Tension And Decision Logs" in landing_loop
-    assert "narrative -> operator acceptance -> executable spec -> implementation" in landing_loop
-    assert "Do any two sections assert contradictory requirements?" in landing_loop
-    assert "Adapter Fitness Review" in ADAPTER_CONTRACT
-    assert "present adapter" in ADAPTER_CONTRACT
-    assert "not automatically a good adapter" in ADAPTER_CONTRACT
 
 
 def test_narrative_resolve_adapter_preserves_scenario_surface_fields(tmp_path: Path, monkeypatch, capsys) -> None:

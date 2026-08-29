@@ -20,26 +20,32 @@ def run_narrative_resolve_adapter(monkeypatch, capsys, *args: str) -> SimpleName
     return SimpleNamespace(returncode=code, stdout=captured.out, stderr=captured.err)
 
 
-def test_narrative_resolve_adapter_reports_brief_template_for_current_repo(monkeypatch, capsys) -> None:
+def test_narrative_resolve_adapter_answers_the_live_repo_with_a_well_shaped_payload(
+    monkeypatch, capsys
+) -> None:
+    """A smoke check against this repo's real adapter, not a pin on its wording.
+
+    This used to assert the exact contents of `brief_template`,
+    `scenario_block_template`, and `source_documents` as read from the live
+    `.agents/narrative-adapter.yaml`. That made an intentional wording edit to
+    the repo's own config a test failure with no code-defect signal behind it,
+    which is why the #753 JTBD audit classified the file `convert-pin` and named
+    this conversion.
+
+    What survives is the part that can actually fail for a code reason: the
+    resolver runs against a real adapter, exits clean, and produces every key
+    its consumers read. The parsing behaviour underneath is covered against
+    synthetic fixtures in
+    `test_narrative_scenario_blocks.py::test_narrative_resolve_adapter_preserves_scenario_surface_fields`,
+    where a changed expectation means a changed contract rather than changed prose.
+    """
     result = run_narrative_resolve_adapter(monkeypatch, capsys, "--repo-root", str(ROOT))
+
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
     assert payload["valid"] is True
-    assert payload["data"]["brief_template"] == [
-        "One-Line Summary",
-        "Current Contract",
-        "What Changed",
-        "Open Questions",
-    ]
-    assert payload["data"]["scenario_surfaces"] == []
-    assert payload["data"]["scenario_block_template"] == [
-        "What You Bring",
-        "Input (CLI)",
-        "Input (For Agent)",
-        "What Happens",
-        "What Comes Back",
-        "Next Action",
-    ]
-    assert "docs/control-plane.md" in payload["data"]["source_documents"]
-    assert payload["bootstrap_expectations"]["artifact_path"] == "charness-artifacts/narrative/latest.md"
-    assert "narrative alignment output" in payload["bootstrap_expectations"]["artifact_meaning"]
+    data = payload["data"]
+    for key in ("brief_template", "scenario_block_template", "source_documents", "scenario_surfaces"):
+        assert key in data, f"resolved adapter payload is missing `{key}`"
+    assert data["source_documents"], "source_documents resolved empty for the live repo"
+    assert payload["bootstrap_expectations"]["artifact_path"]
