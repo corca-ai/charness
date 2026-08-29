@@ -736,8 +736,8 @@ def test_a_working_tree_submodule_binds_its_commit_not_the_index_stage(tmp_path:
     """
     repo = _submodule_repo(tmp_path)
     recorded = subprocess.run(
-        ["git", "ls-files", "-s", "--", "sub"], cwd=repo, capture_output=True, text=True
-    ).stdout.split()[1]
+        ["git", "-C", "sub", "rev-parse", "HEAD"], cwd=repo, capture_output=True, text=True
+    ).stdout.strip()
 
     identity = build_reviewed_input_identity(repo_root=repo, reviewed_paths=[".gitmodules", "sub"])
 
@@ -796,3 +796,25 @@ def test_a_current_pointer_escaping_the_repo_root_is_refused(tmp_path: Path) -> 
 
     with pytest.raises(ValueError, match="resolving outside repo root"):
         build_reviewed_input_identity(repo_root=tmp_path)
+
+
+def test_moving_a_submodule_head_without_staging_stales_the_verdict(tmp_path: Path) -> None:
+    """A reviewer reads the working tree, so bind what is CHECKED OUT.
+
+    Binding the index entry meant moving the submodule's HEAD without staging it
+    left the identity unchanged, and a changed reviewed input verified as
+    current. The working-tree substrate drops staged/unstaged patch hashes from
+    its digest, so no other field could compensate.
+    """
+    repo = _submodule_repo(tmp_path)
+    identity = build_reviewed_input_identity(repo_root=repo, reviewed_paths=[".gitmodules", "sub"])
+    assert verify_reviewed_input_identity(repo, identity) == (True, "current")
+
+    upstream = tmp_path / "upstream"
+    (upstream / "f.txt").write_text("v2\n", encoding="utf-8")
+    _run_git(upstream, "commit", "-am", "v2")
+    _run_git(repo / "sub", "fetch", "-q", "origin")
+    _run_git(repo / "sub", "checkout", "-q", "FETCH_HEAD")
+
+    ok, reason = verify_reviewed_input_identity(repo, identity)
+    assert (ok, reason) == (False, "declared reviewed inputs are stale")

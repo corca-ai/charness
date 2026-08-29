@@ -254,6 +254,17 @@ def _gitlink_commit(repo_root: Path, path: str, base_head: str | None) -> str | 
     fields = raw.decode("utf-8", errors="surrogateescape").split()
     if len(fields) <= object_field or fields[0] != "160000":
         return None
+    if base_head is not None:
+        return fields[object_field]
+    # Working-tree substrate: bind the commit the submodule is CHECKED OUT at,
+    # not the one the index records. A reviewer reads the working tree, and
+    # moving the submodule's HEAD without staging it left the index entry --
+    # and therefore the identity -- unchanged, so a changed reviewed input
+    # verified as current. Falls back to the index entry when the submodule is
+    # not initialised, which is the only state with nothing checked out to read.
+    checked_out = _git_bytes_optional(repo_root / _lexical_path(path), "rev-parse", "HEAD")
+    if checked_out is not None:
+        return checked_out.decode("utf-8", errors="surrogateescape").strip()
     return fields[object_field]
 
 
