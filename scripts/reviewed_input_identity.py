@@ -196,6 +196,18 @@ def _review_paths(
         swept = set(_auto_paths(repo_root, changed_ref))
         prefixes = tuple(excluded_prefixes or ())
         kept = swept - set(excluded_paths or [])
+        if not changed_ref:
+            # A DECLARED symlink still refuses, deliberately -- `_checked_path`
+            # owns that boundary and its test names the remedy. But the auto
+            # sweep is not a declaration, and this repo's own artifact
+            # convention puts a `latest.md` symlink in every family. Refreshing
+            # one -- the documented step after filing any record -- put a
+            # modified symlink in the change set and made `build_packet` refuse
+            # outright, so every session that filed a record could not be
+            # reviewed until it committed. Dropping it from the SWEEP keeps the
+            # boundary and removes the self-inflicted refusal; the path is
+            # reported in `auto_excluded_paths`, so it is never silent.
+            kept = {path for path in kept if not (repo_root / _lexical_path(path)).is_symlink()}
         auto_excluded = sorted(swept - {path for path in kept if not path.startswith(prefixes)})
         paths = sorted(path for path in kept if not path.startswith(prefixes))
     else:
@@ -252,8 +264,22 @@ def _patch_components(
     return [], base_head, b"", staged_patch, unstaged_patch
 
 
+def _preimage_ref(changed_ref: str | None) -> str | None:
+    """The ref a path existed at BEFORE the reviewed range, or None outside ref mode.
+
+    A range `a..b` has its pre-image at `a`. A single commit `c` has it at `c^`;
+    a root commit has no parent, but a root commit deletes nothing, so the
+    lookup that follows simply finds no pre-image and the refusal stands.
+    """
+    if not changed_ref:
+        return None
+    if ".." in changed_ref:
+        return changed_ref.split("..", 1)[0]
+    return f"{changed_ref}^"
+
+
 def _content_components(
-    repo_root: Path, paths: list[str], base_head: str, mode: str
+    repo_root: Path, paths: list[str], base_head: str, mode: str, preimage_ref: str | None = None
 ) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
     untracked: set[str] = set()
     path_args = ["--", *paths]
@@ -265,9 +291,22 @@ def _content_components(
     reviewed_content: list[dict[str, str]] = []
     declared_untracked: list[dict[str, str]] = []
     for path in paths:
+        deleted = False
         if mode == SUBSTRATE_COMMITTED_REF:
             content = _git_bytes_optional(repo_root, "show", f"{base_head}:{path}")
             digest = _sha256(content) if content is not None else None
+            # A path absent at the range's target was DELETED by the range. The
+            # working-tree substrate below has always bound such a path to its
+            # pre-change bytes; ref mode did not, so `git diff --name-only`
+            # (which lists deletions) produced a manifest that always refused,
+            # while `--diff-filter=d` produced one that no longer matched the
+            # range. Between them a removal slice had no valid declaration at
+            # all -- exactly the change class a fresh-eye review is worth most.
+            if digest is None and preimage_ref is not None:
+                previous = _git_bytes_optional(repo_root, "show", f"{preimage_ref}:{path}")
+                if previous is not None:
+                    digest = _sha256(previous)
+                    deleted = True
         else:
             digest = _worktree_content_sha256(repo_root, path)
             # A deletion is still a reviewed input: bind its pre-change bytes
@@ -283,6 +322,16 @@ def _content_components(
                 f"reviewed path `{path}` has no content hash in the {mode} substrate",
             )
         entry: dict[str, str] = {"path": path, "content_sha256": digest}
+        if deleted:
+            # Marked ONLY on deletions, deliberately. Stamping every entry with a
+            # disposition would change the digest of every identity ever captured
+            # and read as "stale" across the whole corpus; a deleted entry could
+            # not exist before this change, so no prior identity moves.
+            #
+            # The hash is the PRE-IMAGE, so it answers "what was removed", and the
+            # marker is what stops that from reading as "this file is present with
+            # these bytes" -- the two facts a reviewer needs to judge a removal.
+            entry["disposition"] = "deleted"
         reviewed_content.append(entry)
         if path in untracked:
             declared_untracked.append(entry)
@@ -316,7 +365,7 @@ def build_reviewed_input_identity(
         repo_root, paths, changed_ref, mode
     )
     reviewed_content, declared_untracked = _content_components(
-        repo_root, paths, base_head, mode
+        repo_root, paths, base_head, mode, _preimage_ref(changed_ref)
     )
 
     captured: dict[str, Any] = {

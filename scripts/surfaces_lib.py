@@ -285,3 +285,25 @@ def collect_changed_paths_for_ref(repo_root: Path, ref: str) -> list[str]:
     return dedupe_preserve_order(
         _run_git(repo_root, "diff-tree", "--root", "-m", "--no-commit-id", "--name-only", "-r", ref)
     )
+
+
+def collect_deleted_paths_for_ref(repo_root: Path, ref: str) -> set[str]:
+    """The subset of a ref's changed paths that the ref REMOVED.
+
+    Kept separate from `collect_changed_paths_for_ref` rather than folded into it:
+    surface matching must keep treating a removed file as belonging to its
+    surface, because "which owning surface just lost a file" is the question a
+    reviewer judging a removal is actually asking. This only supplies the marker
+    that distinguishes a deletion from an edit in the rendered listing.
+    """
+    ref = ref.strip()
+    if not ref:
+        raise SurfaceError("changed ref must be non-empty")
+    if ".." in ref:
+        args = ("diff", "--name-only", "--diff-filter=D", ref)
+    else:
+        args = (
+            "diff-tree", "--root", "-m", "--no-commit-id", "--name-only",
+            "--diff-filter=D", "-r", ref,
+        )
+    return set(dedupe_preserve_order(_run_git(repo_root, *args)))

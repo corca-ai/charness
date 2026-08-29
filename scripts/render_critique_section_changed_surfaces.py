@@ -23,6 +23,7 @@ _scripts_surfaces_lib_module = import_repo_module(__file__, "scripts.surfaces_li
 SurfaceError = _scripts_surfaces_lib_module.SurfaceError
 collect_changed_paths = _scripts_surfaces_lib_module.collect_changed_paths
 collect_changed_paths_for_ref = _scripts_surfaces_lib_module.collect_changed_paths_for_ref
+collect_deleted_paths_for_ref = _scripts_surfaces_lib_module.collect_deleted_paths_for_ref
 load_surfaces = _scripts_surfaces_lib_module.load_surfaces
 match_surfaces = _scripts_surfaces_lib_module.match_surfaces
 
@@ -35,9 +36,22 @@ def _render(payload: dict[str, object]) -> str:
         lines.append(f"Changed paths for ref `{changed_ref}`:")
     else:
         lines.append("Changed paths for working tree:")
+    deleted_paths = set(payload.get("deleted_paths") or ())
     if changed_paths:
         for path in changed_paths:
-            lines.append(f"- {path}")
+            # A removal rendered exactly like an edit is what let a release
+            # review report "no deletion entry or absence marker for any removed
+            # component" while the range removed six files. The reviewer cannot
+            # ask what a deletion cost if the listing never says one happened.
+            suffix = "  (DELETED — judge what depended on it)" if path in deleted_paths else ""
+            lines.append(f"- {path}{suffix}")
+        if deleted_paths:
+            lines.append("")
+            lines.append(
+                f"{len(deleted_paths)} of {len(changed_paths)} changed path(s) were DELETED by this "
+                "ref. Their pre-image bytes are bound in the reviewed-input identity, so what was "
+                "removed is recoverable from the range."
+            )
     elif changed_ref:
         lines.append("- (none — changed ref produced no changed paths)")
     else:
@@ -91,6 +105,9 @@ def main() -> int:
             if args.changed_ref
             else collect_changed_paths(repo_root)
         )
+        deleted_paths = (
+            collect_deleted_paths_for_ref(repo_root, args.changed_ref) if args.changed_ref else set()
+        )
         match = match_surfaces(surfaces, changed_paths)
     except SurfaceError as exc:
         print(f"surfaces lookup failed: {exc}")
@@ -98,6 +115,7 @@ def main() -> int:
     payload = {
         "changed_ref": args.changed_ref,
         "changed_paths": match["changed_paths"],
+        "deleted_paths": sorted(deleted_paths),
         "matched_surfaces": match["matched_surfaces"],
         "sync_commands": match["sync_commands"],
     }

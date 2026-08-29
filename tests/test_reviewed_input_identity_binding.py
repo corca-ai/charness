@@ -328,3 +328,114 @@ packet_sections:
     assert len(binding["identity_sha256"]) == 64
     artifact = tmp_path / "charness-artifacts/critique/smoke-packet.json"
     assert artifact.is_file()
+
+
+def _commit_with_deletion(repo: Path) -> str:
+    """A committed range that removes a file, which is what #759 could not declare."""
+    _init_identity_repo(repo)
+    (repo / "kept.txt").write_text("edited\n", encoding="utf-8")
+    (repo / "unrelated.txt").unlink()
+    _run_git(repo, "add", "-A")
+    _run_git(repo, "commit", "-m", "remove unrelated, edit kept")
+    return "HEAD^..HEAD"
+
+
+def test_a_committed_range_with_a_deletion_binds_the_preimage_instead_of_refusing(
+    tmp_path: Path,
+) -> None:
+    """#759: both declarations of a removal slice refused, and they refused each other.
+
+    `git diff --name-only` lists deletions, so the natural manifest hit
+    `null-content-hash`; `--diff-filter=d` dropped them, so the manifest no longer
+    matched the range and hit `changed-ref-path-mismatch`. A removal slice — the
+    change class where a fresh-eye review is worth most — had no valid input.
+    """
+    changed_ref = _commit_with_deletion(tmp_path)
+    preimage = subprocess.run(
+        ["git", "show", "HEAD^:unrelated.txt"], cwd=tmp_path, capture_output=True, check=True
+    ).stdout
+
+    identity = build_reviewed_input_identity(repo_root=tmp_path, changed_ref=changed_ref)
+
+    assert identity["status"] == "captured"
+    assert identity["reviewed_paths"] == ["kept.txt", "unrelated.txt"]
+    entries = {entry["path"]: entry for entry in identity["reviewed_content"]}
+    assert entries["unrelated.txt"]["disposition"] == "deleted"
+    # The bound hash is the PRE-image, so the identity answers "what was removed".
+    assert entries["unrelated.txt"]["content_sha256"] == hashlib.sha256(preimage).hexdigest()
+    ok, reason = verify_reviewed_input_identity(tmp_path, identity)
+    assert (ok, reason) == (True, "current")
+
+
+def test_a_surviving_path_carries_no_disposition_so_older_identities_do_not_move(
+    tmp_path: Path,
+) -> None:
+    """The marker is deletion-only on purpose.
+
+    Stamping every entry with a disposition would change the digest of every
+    identity ever captured, and each one would then read as `stale` — a corpus-wide
+    false alarm. A deleted entry could not exist before this repair, so nothing
+    already recorded moves.
+    """
+    changed_ref = _commit_with_deletion(tmp_path)
+
+    identity = build_reviewed_input_identity(repo_root=tmp_path, changed_ref=changed_ref)
+
+    entries = {entry["path"]: entry for entry in identity["reviewed_content"]}
+    assert "disposition" not in entries["kept.txt"]
+
+
+def test_a_single_commit_that_deletes_resolves_its_preimage_from_the_parent(
+    tmp_path: Path,
+) -> None:
+    """The `--commit <sha>` form refused identically, and its pre-image is `sha^`."""
+    _commit_with_deletion(tmp_path)
+
+    identity = build_reviewed_input_identity(repo_root=tmp_path, changed_ref="HEAD")
+
+    entries = {entry["path"]: entry for entry in identity["reviewed_content"]}
+    assert entries["unrelated.txt"]["disposition"] == "deleted"
+    ok, reason = verify_reviewed_input_identity(tmp_path, identity)
+    assert (ok, reason) == (True, "current")
+
+
+def test_a_refreshed_current_pointer_does_not_make_the_sweep_refuse(tmp_path: Path) -> None:
+    """Filing a record and refreshing its `latest.md` pointer must stay reviewable.
+
+    The documented flow after writing any dated record is
+    `refresh_current_pointer.py --execute`, which repoints a `latest.md` SYMLINK.
+    That left a modified symlink in the working-tree change set, and the auto
+    sweep fed it to `_checked_path`, which refuses symlinks by design. So
+    `build_packet` raised outright and every session that filed a record was
+    unreviewable until it committed -- precisely the window in which a reviewer
+    would be asked to read that record.
+    """
+    _init_identity_repo(tmp_path)
+    records = tmp_path / "charness-artifacts" / "quality"
+    records.mkdir(parents=True)
+    (records / "2026-08-30-record.md").write_text("# Record\n", encoding="utf-8")
+    (records / "latest.md").symlink_to("2026-08-30-record.md")
+
+    identity = build_reviewed_input_identity(repo_root=tmp_path)
+
+    assert identity["status"] == "captured"
+    # Dropped from the sweep, but REPORTED -- an excluded input that no field
+    # mentions is the same silent-scope failure this repo spends itself on.
+    assert "charness-artifacts/quality/latest.md" in identity["auto_excluded_paths"]
+    assert "charness-artifacts/quality/latest.md" not in identity["reviewed_paths"]
+    assert "charness-artifacts/quality/2026-08-30-record.md" in identity["reviewed_paths"]
+
+
+def test_the_sweep_exclusion_does_not_weaken_the_declared_symlink_refusal(
+    tmp_path: Path,
+) -> None:
+    """The discriminator: sweeping is not declaring.
+
+    `f7a09d672` added the symlink refusal as an approval-boundary repair. Relaxing
+    the sweep must not relax that, or this change would have quietly undone it.
+    """
+    _init_identity_repo(tmp_path)
+    (tmp_path / "link.txt").symlink_to("reviewed.txt")
+
+    with pytest.raises(ValueError, match="is a symlink; declare the target file explicitly"):
+        build_reviewed_input_identity(repo_root=tmp_path, reviewed_paths=["link.txt"])
