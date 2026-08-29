@@ -65,11 +65,12 @@ class RecentLessonsDigest:
     section_counts: dict[str, int]
 
 
-def pick_latest_retro_markdown(output_dir: Path, summary_path: Path) -> Path:
+def pick_latest_retro_markdown(output_dir: Path, summary_path: Path | None) -> Path:
     candidates = [
         path
         for path in output_dir.glob("*.md")
-        if path.resolve() != summary_path.resolve() and path.name != "recent-lessons.md"
+        if (summary_path is None or path.resolve() != summary_path.resolve())
+        and path.name != "recent-lessons.md"
     ]
     if not candidates:
         raise FileNotFoundError(f"No retro markdown artifacts found under {output_dir}")
@@ -205,11 +206,11 @@ def adaptive_lesson_alpha(sample_count: int) -> float:
     return LESSON_SELECTION_ALPHA_BASE * warmup_ratio
 
 
-def retro_artifact_paths(output_dir: Path, summary_path: Path) -> list[Path]:
+def retro_artifact_paths(output_dir: Path, summary_path: Path | None) -> list[Path]:
     return sorted(
         path
         for path in output_dir.glob("*.md")
-        if path.resolve() != summary_path.resolve()
+        if (summary_path is None or path.resolve() != summary_path.resolve())
         and path.name not in {"recent-lessons.md"}
     )
 
@@ -369,7 +370,7 @@ def build_lesson_selection_index(
     *,
     repo_root: Path,
     output_dir: Path,
-    summary_path: Path,
+    summary_path: Path | None,
 ) -> dict[str, Any]:
     artifacts = retro_artifact_paths(output_dir, summary_path)
     parsed_artifacts, as_of = _parse_retro_artifacts(artifacts)
@@ -403,7 +404,12 @@ def lesson_selection_index_text(payload: dict[str, Any]) -> str:
     return json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
 
 
-def write_lesson_selection_index(repo_root: Path, output_dir: Path, summary_path: Path) -> Path:
+def write_lesson_selection_index(repo_root: Path, output_dir: Path, summary_path: Path | None) -> Path:
+    if summary_path is None:
+        raise ValueError(
+            "cannot write the retro lesson selection index when the retro adapter "
+            "declares `summary_path: null`; the lesson projection is disabled"
+        )
     # The write boundary of the index the four failed publishes corrupted: an
     # An installed-plugin copy of this module once emitted an older schema into a
     # source tree whose own gate then rejected it. Guarding the writer rather than
@@ -418,7 +424,9 @@ def write_lesson_selection_index(repo_root: Path, output_dir: Path, summary_path
     return index_path
 
 
-def check_lesson_selection_index(repo_root: Path, output_dir: Path, summary_path: Path) -> None:
+def check_lesson_selection_index(repo_root: Path, output_dir: Path, summary_path: Path | None) -> None:
+    if summary_path is None:
+        return
     payload = build_lesson_selection_index(repo_root=repo_root, output_dir=output_dir, summary_path=summary_path)
     index_path = lesson_selection_index_path(output_dir)
     expected = lesson_selection_index_text(payload)
@@ -443,10 +451,12 @@ def check_lesson_selection_index(repo_root: Path, output_dir: Path, summary_path
         )
 
 
-def _fallback_source_path(output_dir: Path, summary_path: Path) -> Path:
+def _fallback_source_path(output_dir: Path, summary_path: Path | None) -> Path:
     try:
         return pick_latest_retro_markdown(output_dir, summary_path)
     except FileNotFoundError:
+        if summary_path is None:
+            raise
         return summary_path
 
 
@@ -473,8 +483,13 @@ def build_indexed_recent_lessons(
     *,
     repo_root: Path,
     output_dir: Path,
-    summary_path: Path,
+    summary_path: Path | None,
 ) -> RecentLessonsDigest:
+    if summary_path is None:
+        raise ValueError(
+            "cannot build recent retro lessons when the retro adapter declares "
+            "`summary_path: null`; the lesson projection is disabled"
+        )
     index_payload = build_lesson_selection_index(repo_root=repo_root, output_dir=output_dir, summary_path=summary_path)
     current_focus = _select_digest_candidates(index_payload, "current_focus")
     repeat_traps = _select_digest_candidates(index_payload, "repeat_trap")

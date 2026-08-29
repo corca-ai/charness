@@ -115,6 +115,30 @@ def test_build_retro_lesson_selection_index_check_rejects_stale_index(tmp_path: 
     )
 
 
+def test_build_retro_lesson_selection_index_preserves_a_disabled_projection(tmp_path: Path) -> None:
+    repo = (
+        Repo()
+        .file(
+            ".agents/retro-adapter.yaml",
+            "version: 1\nrepo: demo\noutput_dir: charness-artifacts/retro\nsummary_path: null\n",
+        )
+        .build(tmp_path)
+    )
+
+    write_result = run_at(repo, BUILD_INDEX, "--write").ok()
+    assert yaml.safe_load(write_result.proc.stdout) == {
+        "status": "disabled",
+        "projection": "disabled",
+    }
+    assert not (repo / "charness-artifacts" / "retro" / "lesson-selection-index.json").exists()
+
+    check_result = run_at(repo, BUILD_INDEX, "--check").ok()
+    assert yaml.safe_load(check_result.proc.stdout) == {
+        "status": "disabled",
+        "projection": "disabled",
+    }
+
+
 def test_build_retro_lesson_selection_index_check_rejects_stale_digest(tmp_path: Path) -> None:
     repo = RETRO.file(
         *artifact(
@@ -258,8 +282,8 @@ def test_digest_refusal_resolves_the_refresh_script_against_a_tree_that_has_it(t
     assert cited and Path(cited[0]).is_file(), command
 
 
-def test_the_checked_in_export_is_not_treated_as_a_competing_source_tree() -> None:
-    """`plugins/charness/` owns the builder and is NOT a source tree.
+def test_the_generated_export_is_not_treated_as_a_competing_source_tree() -> None:
+    """If present, `plugins/charness/` owns the builder and is NOT a source tree.
 
     Keying the foreign-copy warning on the builder's presence alone made this target
     take the source-tree branch, whose remedy is "run this repo's own copy" -- i.e.
@@ -268,7 +292,11 @@ def test_the_checked_in_export_is_not_treated_as_a_competing_source_tree() -> No
     discriminator has to agree with it.
     """
     export = Path(__file__).resolve().parents[2] / "plugins" / "charness"
-    assert (export / "scripts" / lesson_command_citation.INDEX_SCRIPT_NAME).is_file()
+    if not (export / "scripts" / lesson_command_citation.INDEX_SCRIPT_NAME).is_file():
+        # The generated export is intentionally absent from some source checkouts;
+        # absence must still not turn an arbitrary directory into a competing tree.
+        assert not lesson_command_citation.repo_carries_index_builder(export)
+        return
     assert not lesson_command_citation.repo_carries_index_builder(export)
 
 

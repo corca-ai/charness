@@ -29,7 +29,7 @@ def _resolver_path(repo_root: Path) -> Path:
     raise FileNotFoundError("retro resolve_adapter.py not found")
 
 
-def _load_yamlish_retro_paths(repo_root: Path) -> tuple[Path, Path]:
+def _load_yamlish_retro_paths(repo_root: Path) -> tuple[Path, Path | None]:
     adapter_path = repo_root / ".agents" / "retro-adapter.yaml"
     if not adapter_path.is_file():
         raise FileNotFoundError("retro resolve_adapter.py not found")
@@ -39,14 +39,16 @@ def _load_yamlish_retro_paths(repo_root: Path) -> tuple[Path, Path]:
             continue
         key, value = raw_line.split(":", 1)
         data[key.strip()] = value.strip()
-    output_dir = data.get("output_dir")
-    summary_path = data.get("summary_path")
-    if not output_dir or not summary_path:
+    output_dir = data.get("output_dir") or "charness-artifacts/retro"
+    summary_path = data.get("summary_path", "charness-artifacts/retro/recent-lessons.md")
+    if summary_path == "null":
+        summary_path = None
+    if not output_dir:
         raise FileNotFoundError("retro adapter must define `output_dir` and `summary_path`")
-    return repo_root / output_dir, repo_root / summary_path
+    return repo_root / output_dir, None if summary_path is None else repo_root / summary_path
 
 
-def _load_retro_paths(repo_root: Path) -> tuple[Path, Path]:
+def _load_retro_paths(repo_root: Path) -> tuple[Path, Path | None]:
     try:
         resolver_path = _resolver_path(repo_root)
     except FileNotFoundError:
@@ -54,7 +56,8 @@ def _load_retro_paths(repo_root: Path) -> tuple[Path, Path]:
     module = load_path_module("retro_lesson_index_resolve_adapter", resolver_path)
     adapter = module.load_adapter(repo_root)
     data = adapter["data"]
-    return repo_root / data["output_dir"], repo_root / data["summary_path"]
+    summary_rel = data.get("summary_path")
+    return repo_root / data["output_dir"], repo_root / summary_rel if isinstance(summary_rel, str) else None
 
 
 def _relative(repo_root: Path, path: Path) -> str:
@@ -70,8 +73,13 @@ def main() -> int:
 
     repo_root = args.repo_root.resolve()
     output_dir, summary_path = _load_retro_paths(repo_root)
-    payload = build_lesson_selection_index(repo_root=repo_root, output_dir=output_dir, summary_path=summary_path)
     index_path = lesson_selection_index_path(output_dir)
+    if summary_path is None:
+        if args.check:
+            check_lesson_selection_index(repo_root, output_dir, None)
+        emit_yaml({"status": "disabled", "projection": "disabled"})
+        return 0
+    payload = build_lesson_selection_index(repo_root=repo_root, output_dir=output_dir, summary_path=summary_path)
 
     def _index_result(status: str) -> dict:
         """One shape for both verdicts of one command.

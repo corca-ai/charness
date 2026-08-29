@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import shutil
+import subprocess
 import sys
+from datetime import date
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -18,6 +21,10 @@ _persist_retro_artifact = import_repo_module(
 _persistence_lib = import_repo_module(
     ROOT / "scripts" / "retro_persistence_lib.py",
     "scripts.retro_persistence_lib",
+)
+_scaffold_retro_artifact = import_repo_module(
+    ROOT / "skills" / "public" / "retro" / "scripts" / "scaffold_retro_artifact.py",
+    "skills.public.retro.scripts.scaffold_retro_artifact",
 )
 
 
@@ -135,6 +142,209 @@ def test_persist_retro_artifact_skips_self_refresh_for_summary_target(
     payload = yaml.safe_load(result.stdout)
     assert payload["artifact_path"] == "charness-artifacts/retro/recent-lessons.md"
     assert payload["summary_refreshed"] is False
+
+
+def test_persist_does_not_overwrite_undated_sibling_when_scaffold_resolves_dated_subject(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    """Incident 1: one subject key must not name two files.
+
+    The scaffold's dated target is absent, while the old undated spelling exists
+    with another session's content. The persist call receives the same subject
+    key; it must land on the scaffold target and leave the undated file intact.
+    """
+    repo = tmp_path / "repo"
+    write_retro_adapter(repo, include_summary_path=False)
+    (repo / ".agents" / "retro-adapter.yaml").write_text(
+        (repo / ".agents" / "retro-adapter.yaml").read_text(encoding="utf-8")
+        + "summary_path: null\n",
+        encoding="utf-8",
+    )
+    output_dir = repo / "charness-artifacts" / "retro"
+    undated = output_dir / "session-retro-2.md"
+    other_session = "# Other session\n\nThis content must survive.\n"
+    undated.write_text(other_session, encoding="utf-8")
+    subprocess.run(["git", "init", "--quiet", str(repo)], check=True)
+    subprocess.run(["git", "-C", str(repo), "add", str(undated.relative_to(repo))], check=True)
+    tracked = subprocess.run(
+        ["git", "-C", str(repo), "ls-files", "--error-unmatch", str(undated.relative_to(repo))],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    assert tracked.stdout.strip() == str(undated.relative_to(repo))
+    markdown_file = repo / "new-session.md"
+    markdown_file.write_text(
+        "# Session Retro 2\n\n"
+        "## Context\n\n- The new session must land at its canonical path.\n\n"
+        "## Waste\n\n- Two path owners allowed a collision.\n\n"
+        "## Next Improvements\n\n- capability: Keep one path owner.\n",
+        encoding="utf-8",
+    )
+
+    scaffold = _scaffold_retro_artifact.payload_for(repo, title="Session Retro 2")
+    assert scaffold["write_artifact_path"].endswith("-session-retro-2.md")
+    assert not (repo / scaffold["write_artifact_path"]).exists()
+
+    result = run_persist(
+        monkeypatch,
+        capsys,
+        "--repo-root",
+        str(repo),
+        "--artifact-name",
+        "session-retro-2",
+        "--markdown-file",
+        str(markdown_file),
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = yaml.safe_load(result.stdout)
+    assert undated.read_text(encoding="utf-8") == other_session
+    assert payload["artifact_path"] == scaffold["write_artifact_path"]
+
+
+def test_persist_refuses_subject_collision_and_names_deliberate_next_action(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    repo = tmp_path / "repo"
+    write_retro_adapter(repo, include_summary_path=False)
+    (repo / ".agents" / "retro-adapter.yaml").write_text(
+        (repo / ".agents" / "retro-adapter.yaml").read_text(encoding="utf-8")
+        + "summary_path: null\n",
+        encoding="utf-8",
+    )
+    target = repo / "charness-artifacts" / "retro" / f"{date.today().isoformat()}-session-retro-2.md"
+    existing = "# Existing retro\n\nThis must not be replaced.\n"
+    target.write_text(existing, encoding="utf-8")
+    markdown_file = repo / "new-session.md"
+    markdown_file.write_text("# New retro\n", encoding="utf-8")
+
+    result = run_persist(
+        monkeypatch,
+        capsys,
+        "--repo-root",
+        str(repo),
+        "--artifact-name",
+        "session-retro-2",
+        "--markdown-file",
+        str(markdown_file),
+    )
+
+    assert result.returncode != 0
+    assert target.name in result.stderr
+    assert "different subject key" in result.stderr
+    assert "explicitly name the existing dated path" in result.stderr
+    assert target.read_text(encoding="utf-8") == existing
+
+
+def test_persist_then_index_checker_accepts_persisted_index(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    """Incident 2: persist and the repository builder must produce one index."""
+    repo = tmp_path / "repo"
+    write_retro_adapter(repo)
+    markdown_file = repo / "session.md"
+    markdown_file.write_text(
+        "# Session Retro\n\n"
+        "## Context\n\n- Persist should use the repository index producer.\n\n"
+        "## Waste\n\n- A second index writer drifted from the checker.\n\n"
+        "## Next Improvements\n\n- capability: Keep index bytes canonical.\n",
+        encoding="utf-8",
+    )
+
+    result = run_persist(
+        monkeypatch,
+        capsys,
+        "--repo-root",
+        str(repo),
+        "--artifact-name",
+        "2026-08-29-index-producer.md",
+        "--markdown-file",
+        str(markdown_file),
+    )
+    assert result.returncode == 0, result.stderr
+
+    checker = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "scripts" / "build_retro_lesson_selection_index.py"),
+            "--repo-root",
+            str(repo),
+            "--check",
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert checker.returncode == 0, checker.stderr
+
+
+def test_persist_then_repo_checker_accepts_the_repo_producer_index(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    """Incident 2 stimulus: an installed writer emits a schema the repo rejects.
+
+    The target is a source-like checkout whose own lesson producer has one extra
+    field. The current persist helper writes through this checkout's foreign copy
+    instead, so the target checker rejects the resulting index. The repaired
+    helper must call the target's builder rather than remain a second writer.
+    """
+    repo = tmp_path / "repo with spaces"
+    write_retro_adapter(repo)
+    (repo / "packaging").mkdir(parents=True)
+    (repo / "packaging" / "charness.json").write_text('{"package_id": "charness"}\n', encoding="utf-8")
+    for name in (
+        "runtime_bootstrap.py",
+        "yaml_output.py",
+        "adapter_lib.py",
+        "helper_provenance_lib.py",
+        "lesson_command_citation.py",
+        "recent_lessons_lib.py",
+        "build_retro_lesson_selection_index.py",
+    ):
+        target = repo / "scripts" / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(ROOT / "scripts" / name, target)
+    target_recent = repo / "scripts" / "recent_lessons_lib.py"
+    target_recent.write_text(
+        target_recent.read_text(encoding="utf-8").replace(
+            '        "schema_version": 1,\n',
+            '        "schema_version": 1,\n        "target_writer_marker": True,\n',
+            1,
+        ),
+        encoding="utf-8",
+    )
+    markdown_file = repo / "session.md"
+    markdown_file.write_text(
+        "# Session Retro\n\n"
+        "## Context\n\n- The repo's producer owns the index bytes.\n\n"
+        "## Waste\n\n- A foreign helper wrote a different index.\n\n"
+        "## Next Improvements\n\n- capability: Call the repo's producer.\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("CHARNESS_ALLOW_FOREIGN_HELPER", "1")
+
+    result = run_persist(
+        monkeypatch,
+        capsys,
+        "--repo-root",
+        str(repo),
+        "--artifact-name",
+        "2026-08-29-foreign-writer.md",
+        "--markdown-file",
+        str(markdown_file),
+    )
+    assert result.returncode == 0, result.stderr
+
+    checker = subprocess.run(
+        [sys.executable, str(repo / "scripts" / "build_retro_lesson_selection_index.py"), "--repo-root", str(repo), "--check"],
+        cwd=repo,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert checker.returncode == 0, checker.stderr
 
 
 def _write_goal(repo: Path, slug: str = "owner") -> Path:

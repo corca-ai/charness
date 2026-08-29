@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import datetime as dt
 import re
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any
 
+from scripts.artifact_naming_lib import dated_artifact_filename
 from scripts.goal_lineage import (
     LineageError,
     load_goal_lineage_file,
@@ -12,7 +15,13 @@ from scripts.goal_lineage import (
     planning_only_lineage,
 )
 from scripts.helper_provenance_lib import require_repo_local_helper
-from scripts.recent_lessons_lib import build_indexed_recent_lessons, write_lesson_selection_index
+from scripts.lesson_command_citation import (
+    INDEX_SCRIPT_RELATIVE,
+    index_build_command,
+    repo_carries_index_builder,
+    script_tree_root,
+)
+from scripts.recent_lessons_lib import build_indexed_recent_lessons, lesson_selection_index_path
 
 _PERSISTED_LINE_PATTERN = re.compile(r"^Persisted:.*$", re.MULTILINE)
 _GOAL_FIELD_PATTERN = re.compile(r"^Goal:[ \t]*(?P<value>[^\r\n]*)$")
@@ -55,6 +64,65 @@ def normalize_artifact_name(artifact_name: str) -> tuple[str, bool]:
     if artifact_name.endswith(".md"):
         return artifact_name, False
     return artifact_name + ".md", True
+
+
+_DATED_ARTIFACT_TOKEN = re.compile(r"\d{4}-\d{2}-\d{2}")
+
+
+def resolve_retro_artifact_path(
+    output_dir: Path,
+    artifact_name: str,
+    *,
+    artifact_date: dt.date | None = None,
+    subject_key: bool = False,
+) -> tuple[Path, bool]:
+    """Resolve a retro subject key to its one canonical artifact path.
+
+    A dated filename is an explicitly named artifact and remains unchanged for
+    compatibility with existing callers. An undated name is a subject key, so it
+    uses the dated-record rule. Scaffold callers set ``subject_key`` explicitly so
+    a subject containing a date token still follows that rule. Returning whether
+    the path was derived lets persistence refuse a collision the caller did not
+    name.
+    """
+    normalized_name, _was_normalized = normalize_artifact_name(artifact_name)
+    if not subject_key and (
+        normalized_name == "recent-lessons.md" or _DATED_ARTIFACT_TOKEN.search(normalized_name)
+    ):
+        return output_dir / normalized_name, False
+    return (
+        output_dir
+        / dated_artifact_filename(Path(normalized_name).stem, artifact_date=artifact_date),
+        True,
+    )
+
+
+def _run_index_builder(repo_root: Path, output_dir: Path) -> Path:
+    """Ask the target repository's builder to write its own index bytes."""
+    command = index_build_command(repo_root, "--write")
+    if repo_carries_index_builder(repo_root):
+        builder_path = repo_root / INDEX_SCRIPT_RELATIVE
+    else:
+        builder_path = script_tree_root() / INDEX_SCRIPT_RELATIVE
+    if not builder_path.is_file():
+        raise FileNotFoundError(
+            "retro lesson selection builder is unavailable in the running tree; "
+            f"cannot refresh the index with `{command}`"
+        )
+    completed = subprocess.run(
+        [sys.executable, str(builder_path), "--repo-root", str(repo_root), "--write"],
+        cwd=repo_root,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if completed.returncode != 0:
+        detail = (completed.stderr or completed.stdout).strip()
+        raise ValueError(
+            f"retro lesson selection builder failed with exit {completed.returncode}"
+            + (f": {detail}" if detail else "")
+        )
+    return lesson_selection_index_path(output_dir)
 
 
 def is_stub_summary(text: str) -> bool:
@@ -204,10 +272,14 @@ def persist_retro_artifact(
         raise ValueError(str(exc)) from exc
     if goal_identity is not None:
         markdown_text = _canonicalize_goal_metadata(markdown_text, goal_identity["goal_path"])
-    normalized_name, was_normalized = normalize_artifact_name(artifact_name)
-
-    artifact_path = output_dir / normalized_name
+    artifact_path, subject_path_derived = resolve_retro_artifact_path(output_dir, artifact_name)
     relpath = str(artifact_path.relative_to(repo_root))
+    if subject_path_derived and artifact_path.exists():
+        raise ValueError(
+            f"refusing to overwrite existing retro artifact `{relpath}` resolved from subject key "
+            f"`{artifact_name}`. Inspect that existing path and rerun with a different subject key, "
+            "or explicitly name the existing dated path only when replacement is intentional."
+        )
     line_stamped = bool(_PERSISTED_LINE_PATTERN.search(markdown_text))
     markdown_text = stamp_persisted_path(markdown_text, relpath)
     _write_text(artifact_path, markdown_text)
@@ -217,7 +289,7 @@ def persist_retro_artifact(
         "summary_refreshed": False,
         "persisted_line_stamped": line_stamped,
     }
-    if was_normalized:
+    if not artifact_name.endswith(".md"):
         result["artifact_name_normalized"] = True
     if goal_identity is not None:
         result.update(goal_identity)
@@ -243,7 +315,7 @@ def persist_retro_artifact(
             result["summary_skipped_reason"] = "no_candidates_existing_summary_protected"
         else:
             _write_text(summary_path, digest.summary_text)
-            index_path = write_lesson_selection_index(repo_root, output_dir, summary_path)
+            index_path = _run_index_builder(repo_root, output_dir)
             result["summary_path"] = str(summary_path.relative_to(repo_root))
             result["lesson_selection_index_path"] = str(index_path.relative_to(repo_root))
             result["summary_refreshed"] = True

@@ -38,7 +38,11 @@ emit_yaml = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True, help="Repo root that owns the retro adapter and output directory")
-    parser.add_argument("--artifact-name", required=True, help="Filename stem (without extension) for the persisted retro artifact")
+    parser.add_argument(
+        "--artifact-name",
+        required=True,
+        help="Subject key, or an explicitly named dated retro artifact filename",
+    )
     parser.add_argument("--markdown-file", type=Path, required=True, help="Path to the rendered retro markdown body to persist")
     parser.add_argument(
         "--goal-path",
@@ -94,16 +98,20 @@ def main() -> int:
     output_dir = repo_root / adapter["data"]["output_dir"]
     summary_rel = adapter["data"].get("summary_path")
     markdown_text = args.markdown_file.read_text(encoding="utf-8")
-    result = persist_retro_artifact(
-        repo_root=repo_root,
-        output_dir=output_dir,
-        artifact_name=args.artifact_name,
-        markdown_text=markdown_text,
-        summary_path=(repo_root / summary_rel) if isinstance(summary_rel, str) else None,
-        force_empty_summary=args.force_empty_summary,
-        goal_path=args.goal_path,
-        goal_lineage_path=args.goal_lineage_file,
-    )
+    try:
+        result = persist_retro_artifact(
+            repo_root=repo_root,
+            output_dir=output_dir,
+            artifact_name=args.artifact_name,
+            markdown_text=markdown_text,
+            summary_path=(repo_root / summary_rel) if isinstance(summary_rel, str) else None,
+            force_empty_summary=args.force_empty_summary,
+            goal_path=args.goal_path,
+            goal_lineage_path=args.goal_lineage_file,
+        )
+    except (FileNotFoundError, ValueError) as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
     emit_yaml(result)
     return 0
 

@@ -22,6 +22,8 @@ _adapter_version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
     __file__, "scripts.adapter_version_verdict"
 )
 _scaffold_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.scaffold_artifact_lib")
+_persistence_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.retro_persistence_lib")
+resolve_retro_artifact_path = _persistence_lib.resolve_retro_artifact_path
 
 VALIDATOR_SCRIPT_NAMES = ("validate_retro_artifact.py", "validate-retro-artifact.py")
 
@@ -165,6 +167,22 @@ def validator_command(repo_root: Path, write_artifact_path: str) -> str:
     )
 
 
+def _record_paths(
+    output_dir: str, *, date_text: str, record_slug: str, distinguishers: tuple[str, ...] = ("2", "3", "4")
+) -> tuple[Path, list[Path]]:
+    artifact_date = dt.date.fromisoformat(date_text)
+    base = resolve_retro_artifact_path(
+        Path(output_dir), record_slug, artifact_date=artifact_date, subject_key=True
+    )[0]
+    alternatives = [
+        resolve_retro_artifact_path(
+            Path(output_dir), f"{record_slug}-{tail}", artifact_date=artifact_date, subject_key=True
+        )[0]
+        for tail in distinguishers
+    ]
+    return base, [base, *alternatives]
+
+
 def payload_for(repo_root: Path, *, title: str | None, subject: str | None = None) -> dict[str, object]:
     # GUARDED AT THE READ SITE. Every scaffold in this family reads its write TARGET out
     # of the adapter, so an unhonored declaration does not degrade the answer -- it
@@ -187,20 +205,44 @@ def payload_for(repo_root: Path, *, title: str | None, subject: str | None = Non
     date_text = dt.date.today().isoformat()
     resolved_title = default_title(title)
     slug = _slug(subject or resolved_title)
-    return _scaffold_lib.subject_scoped_record_payload(
+    write_path, candidates = _record_paths(output_dir, date_text=date_text, record_slug=slug)
+    resolved_path = next((path for path in candidates if not (repo_root / path).exists()), None)
+    if resolved_path is None:
+        raise SystemExit(
+            f"every dated record path this scaffold derives for `{slug}` today already exists "
+            f"({', '.join(str(path) for path in candidates)}), and a scaffold writes a fresh "
+            "template over whatever is there. Rerun scaffold_retro_artifact.py with "
+            "--title <specific retro title>."
+        )
+    refusal = (
+        {}
+        if resolved_path == write_path
+        else _scaffold_lib.subject_refusal_facts(
+            refused_path=str(write_path),
+            refused_subject_key=_scaffold_lib.record_subject_slug(str(write_path)),
+            reason="record-occupied",
+        )
+    )
+    return _scaffold_lib.dated_record_payload(
         repo_root,
-        output_dir=output_dir,
+        write_artifact_path=str(resolved_path),
         date_text=date_text,
         title=resolved_title,
-        record_slug=slug,
         template=render_template(
             title=resolved_title,
             date_text=date_text,
             artifact_sections=list(adapter["data"].get("artifact_sections", [])),
             repo_root=repo_root,
         ),
-        validator_command_for=lambda path: validator_command(repo_root, path),
-        remedy="Rerun scaffold_retro_artifact.py with --title <specific retro title>.",
+        validator_command=validator_command(repo_root, str(resolved_path)),
+        extra={
+            **refusal,
+            **_scaffold_lib.final_subject_facts(
+                invocation_subject_key=slug,
+                target_subject_key=_scaffold_lib.record_subject_slug(str(resolved_path)),
+                chosen=resolved_path != write_path,
+            ),
+        },
     )
 
 
