@@ -23,11 +23,13 @@ def _execute_codex(
     timeout_seconds: int,
 ) -> dict[str, Any]:
     result: dict[str, Any] = {"exit_code": None, "timed_out": False, "interrupted": False}
-    process: subprocess.Popen[str] | None = None
 
-    def stop_process_group() -> None:
-        if process is None:
-            return
+    # Takes the process rather than closing over an Optional one. Every call site is
+    # inside the `with` block, after Popen has returned; a Popen that raises goes to
+    # the outer OSError handler and never reaches here. The former `if process is
+    # None: return` guard was therefore unreachable -- it existed to narrow the type
+    # of a variable that only needed to be Optional because of the closure.
+    def stop_process_group(process: subprocess.Popen[str]) -> None:
         try:
             os.killpg(process.pid, signal.SIGKILL)
         except ProcessLookupError:
@@ -53,14 +55,14 @@ def _execute_codex(
                 result["exit_code"] = process.returncode
             except subprocess.TimeoutExpired:
                 result["timed_out"] = True
-                stop_process_group()
+                stop_process_group(process)
                 process.communicate()
             except KeyboardInterrupt:
                 result["interrupted"] = True
-                stop_process_group()
+                stop_process_group(process)
                 process.communicate()
             else:
-                stop_process_group()
+                stop_process_group(process)
     except OSError as exc:
         result["exec_error"] = str(exc)
     return result
