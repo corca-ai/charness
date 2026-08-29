@@ -856,3 +856,36 @@ def test_an_uninitialised_submodule_does_not_bind_the_superproject_head(tmp_path
     entry = next(e for e in identity["reviewed_content"] if e["path"] == "sub")
     assert entry["content_sha256"] == hashlib.sha256(b"gitlink\0" + index_entry.encode()).hexdigest()
     assert entry["content_sha256"] != hashlib.sha256(b"gitlink\0" + superproject.encode()).hexdigest()
+
+
+def test_a_submodule_removed_from_disk_does_not_crash_identity_construction(
+    tmp_path: Path,
+) -> None:
+    """`subprocess.run(cwd=...)` raises when the directory is gone.
+
+    A function named `_optional` must not do that to its caller. A submodule
+    deleted from disk while its gitlink stayed in the index raised
+    `FileNotFoundError` out of identity construction instead of falling through
+    to the index entry — the very pre-image the removed-submodule support exists
+    to bind.
+    """
+    origin = _submodule_repo(tmp_path)
+    clone = tmp_path / "clone"
+    subprocess.run(
+        ["git", "-c", "protocol.file.allow=always", "clone", "-q", str(origin), str(clone)],
+        check=True, capture_output=True,
+    )
+    subprocess.run(
+        ["git", "-c", "protocol.file.allow=always", "submodule", "update", "--init", "-q"],
+        cwd=clone, check=True, capture_output=True,
+    )
+    index_entry = subprocess.run(
+        ["git", "ls-files", "-s", "--", "sub"], cwd=clone, capture_output=True, text=True
+    ).stdout.split()[1]
+    shutil.rmtree(clone / "sub")
+
+    identity = build_reviewed_input_identity(repo_root=clone, reviewed_paths=["sub"])
+
+    entry = next(e for e in identity["reviewed_content"] if e["path"] == "sub")
+    assert entry["content_sha256"] == hashlib.sha256(b"gitlink\0" + index_entry.encode()).hexdigest()
+    assert verify_reviewed_input_identity(clone, identity) == (True, "current")

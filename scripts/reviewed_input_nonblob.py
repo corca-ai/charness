@@ -24,7 +24,18 @@ from pathlib import Path
 
 
 def _git_bytes_optional(repo_root: Path, *args: str) -> bytes | None:
-    result = subprocess.run(["git", *args], cwd=repo_root, check=False, capture_output=True)
+    """None on any failure, INCLUDING a missing working directory.
+
+    `subprocess.run(cwd=...)` raises `FileNotFoundError` when the directory is
+    gone, which a function named `_optional` must not do to its caller: a
+    submodule deleted from disk while its gitlink stays in the index crashed
+    identity construction outright instead of falling through to the pre-image
+    that the removed-submodule support exists to bind.
+    """
+    try:
+        result = subprocess.run(["git", *args], cwd=repo_root, check=False, capture_output=True)
+    except OSError:
+        return None
     return result.stdout if result.returncode == 0 else None
 
 
