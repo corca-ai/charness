@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "capability-catalog",
-  "generated_at": "2026-08-25T11:47:01Z",
+  "generated_at": "2026-08-29T01:09:34Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -20,19 +20,14 @@
       {
         "id": "achieve",
         "name": "achieve",
-        "description": "Use when operating a long-running autonomous objective as an auditable goal lifecycle: interview prose intent into a reviewable goal artifact under charness-artifacts/goals/, keep slice progress and verification visible during the run, and prove the goal with honest non-claims at the end. Coordinates ideation/spec/impl/quality/issue/critique/retro around one goal artifact instead of replacing them, and stays a goal operator rather than a task execution engine.",
-        "summary": "Use when operating a long-running autonomous objective as an auditable goal lifecycle: interview prose intent into a reviewable goal artifact under charness-artifacts/goals/, keep slice progress and verification visible during the run, and prove the goal with honest non-claims at the end. Coordinates ideation/spec/impl/quality/issue/critique/retro around one goal artifact instead of replacing them, and stays a goal operator rather than a task execution engine.",
+        "description": "Use when shaping a consequential objective into a frozen planning record, binding it to a provider-backed Goal Run, or resuming that run with `/goal #N`.",
+        "summary": "Use when shaping a consequential objective into a frozen planning record, binding it to a provider-backed Goal Run, or resuming that run with `/goal #N`.",
         "path": "skills/public/achieve/SKILL.md",
         "skill_dir": "skills/public/achieve",
         "canonical_path": "skills/public/achieve/SKILL.md",
         "referenced_paths": [
-          "skills/shared/references/bootstrap-resolution.md",
-          "skills/public/achieve/references/goal-artifact.md",
-          "skills/public/achieve/references/lifecycle-after.md",
-          "skills/shared/references/retro-issue-destination-split.md",
-          "skills/public/achieve/references/coordination.md",
-          "skills/public/achieve/references/lifecycle.md",
-          "skills/public/achieve/references/index.md"
+          "skills/public/achieve/references/index.md",
+          "skills/shared/references/bootstrap-resolution.md"
         ],
         "source": "local-public",
         "layer": "public skill"
@@ -77,12 +72,12 @@
           "skills/public/create-cli/references/external-capability-clis.md",
           "skills/public/create-cli/references/quality-gates.md",
           "skills/shared/references/external-capability-proof-ladder.md",
-          "skills/public/prove/references/verification-ladder.md",
           "skills/public/create-cli/references/install-update.md",
           "skills/public/create-cli/references/version-provenance.md",
           "skills/public/create-cli/references/machine-readable-state.md",
           "skills/public/create-cli/references/code-shape.md",
-          "skills/public/create-cli/references/case-studies.md"
+          "skills/public/create-cli/references/case-studies.md",
+          "skills/public/prove/references/verification-ladder.md"
         ],
         "source": "local-public",
         "layer": "public skill"
@@ -130,6 +125,7 @@
           "skills/public/critique/references/cadence.md",
           "skills/public/critique/references/adapter-contract.md",
           "skills/shared/references/fresh-eye-subagent-review.md",
+          "skills/public/critique/references/prepare-packet.md",
           "skills/shared/references/disposition-reviewer-brief.md",
           "skills/public/critique/references/autonomous-trigger.md",
           "skills/public/critique/references/premortem-decision.md",
@@ -139,11 +135,9 @@
           "skills/public/critique/references/spec-critique.md",
           "skills/public/critique/references/adversarial-evidence-review.md",
           "skills/shared/references/bootstrap-resolution.md",
-          "skills/public/critique/references/prepare-packet.md",
           "skills/public/critique/references/angle-selection.md",
           "skills/public/critique/references/counterweight-triage.md",
-          "skills/public/critique/references/confirmed-input-over-anchoring.md",
-          "skills/shared/references/agent-assessment-invariant.md"
+          "skills/public/critique/references/confirmed-input-over-anchoring.md"
         ],
         "source": "local-public",
         "layer": "public skill"
@@ -201,28 +195,6 @@
           "skills/public/gather/scripts/gather_plan.py",
           "skills/public/gather/scripts/gather_public_url.py",
           "skills/public/gather/scripts/write_record.py"
-        ],
-        "source": "local-public",
-        "layer": "public skill"
-      },
-      {
-        "id": "handoff",
-        "name": "handoff",
-        "description": "Use when the user wants the next session prepared or asks to update a handoff artifact. Keep the handoff short, current, and operationally useful, and treat mention-only pickup as an instruction to continue the workflow named in the handoff trigger.",
-        "summary": "Use when the user wants the next session prepared or asks to update a handoff artifact. Keep the handoff short, current, and operationally useful, and treat mention-only pickup as an instruction to continue the workflow named in the handoff trigger.",
-        "path": "skills/public/handoff/SKILL.md",
-        "skill_dir": "skills/public/handoff",
-        "canonical_path": "skills/public/handoff/SKILL.md",
-        "referenced_paths": [
-          "skills/public/handoff/references/continuation-sequence.md",
-          "skills/shared/references/bootstrap-resolution.md",
-          "skills/public/handoff/references/chunked-routing.md",
-          "skills/public/handoff/references/spill-targets.md",
-          "skills/public/handoff/references/state-selection.md",
-          "skills/shared/references/closeout-discipline.md",
-          "skills/shared/references/fresh-eye-subagent-review.md",
-          "skills/public/handoff/references/adapter-contract.md",
-          "skills/public/handoff/references/workflow-trigger.md"
         ],
         "source": "local-public",
         "layer": "public skill"
@@ -301,24 +273,20 @@
       {
         "id": "impl",
         "name": "impl",
-        "description": "Use when work should move into code, config, tests, or operator-facing artifacts. Consume the current implementation contract when it exists, bootstrap a small honest contract inline when it does not, implement the smallest meaningful slice, then load `prove` to verify it and emit the slice closeout ledger before stopping.",
-        "summary": "Use when work should move into code, config, tests, or operator-facing artifacts. Consume the current implementation contract when it exists, bootstrap a small honest contract inline when it does not, implement the smallest meaningful slice, then load `prove` to verify it and emit the slice closeout ledger before stopping.",
+        "description": "Use when work should move into code, config, tests, or operator-facing artifacts. Read the current contract, make the smallest useful change (including deleting obsolete code or tests), run proportionate focused verification, and leave a concise evidence record.",
+        "summary": "Use when work should move into code, config, tests, or operator-facing artifacts. Read the current contract, make the smallest useful change (including deleting obsolete code or tests), run proportionate focused verification, and leave a concise evidence record.",
         "path": "skills/public/impl/SKILL.md",
         "skill_dir": "skills/public/impl",
         "canonical_path": "skills/public/impl/SKILL.md",
         "referenced_paths": [
-          "skills/public/impl/references/sequence-discipline.md",
-          "skills/public/impl/references/design-lenses.md",
-          "skills/shared/references/bootstrap-resolution.md",
-          "skills/public/impl/references/adapter-contract.md",
+          "skills/shared/references/prescribed-path-self-test.md",
           "skills/shared/references/source-bound-records.md",
-          "skills/public/impl/SKILL.md",
-          "skills/shared/references/active-goal-coordination.md",
+          "skills/public/impl/references/adapter-contract.md",
           "skills/public/impl/references/contract-consumption.md",
+          "skills/public/impl/references/design-lenses.md",
+          "skills/public/impl/references/sequence-discipline.md",
           "skills/public/impl/references/external-api-contract.md",
-          "skills/public/impl/references/spec-loop.md",
-          "skills/public/prove/SKILL.md",
-          "skills/shared/references/prescribed-path-self-test.md"
+          "skills/public/prove/SKILL.md"
         ],
         "source": "local-public",
         "layer": "public skill"
@@ -326,14 +294,13 @@
       {
         "id": "issue",
         "name": "issue",
-        "description": "Use when filing a GitHub issue from current context or resolving GitHub issues end-to-end through the adapter-resolved backend (`gh` by default, or a host-mediated capability such as `acme github`). Issue creation reports the observed problem before suggesting solutions; issue resolution treats GitHub as the source of truth, classifies the issue, runs a causal review for bug-class issues before designing the fix, and runs a resolution critique so the same class of issue does not recur.",
-        "summary": "Use when filing a GitHub issue from current context or resolving GitHub issues end-to-end through the adapter-resolved backend (`gh` by default, or a host-mediated capability such as `acme github`). Issue creation reports the observed problem before suggesting solutions; issue resolution treats GitHub as the source of truth, classifies the issue, runs a causal review for bug-class issues before designing the fix, and runs a resolution critique so the same class of issue does not recur.",
+        "description": "Use when filing, resolving, or managing parent/sub-issue GitHub trackers through the adapter-resolved backend (`gh` by default, or a host-mediated capability). Issue creation reports the observed problem before suggesting solutions; resolution treats GitHub as source of truth and keeps causal/critique closeout discipline.",
+        "summary": "Use when filing, resolving, or managing parent/sub-issue GitHub trackers through the adapter-resolved backend (`gh` by default, or a host-mediated capability). Issue creation reports the observed problem before suggesting solutions; resolution treats GitHub as source of truth and keeps causal/critique closeout discipline.",
         "path": "skills/public/issue/SKILL.md",
         "skill_dir": "skills/public/issue",
         "canonical_path": "skills/public/issue/SKILL.md",
         "referenced_paths": [
           "skills/shared/references/bootstrap-resolution.md",
-          "skills/shared/references/fresh-eye-subagent-review.md",
           "skills/public/issue/adapter.example.yaml",
           "skills/public/issue/references/resolve-flow.md",
           "skills/public/issue/references/issue-shaping.md",
@@ -341,9 +308,9 @@
           "skills/public/issue/references/causal-review.md",
           "skills/public/issue/references/issue-backend.md",
           "skills/public/issue/references/closeout-discipline.md",
+          "skills/shared/references/fresh-eye-subagent-review.md",
           "skills/shared/references/external-capability-proof-ladder.md",
           "skills/shared/references/rca-ledger-append.md",
-          "skills/shared/references/active-goal-coordination.md",
           "skills/public/issue/scripts/issue_tool.py"
         ],
         "source": "local-public",
@@ -377,21 +344,14 @@
       {
         "id": "prove",
         "name": "prove",
-        "description": "Use when a built implementation or contract slice needs its closeout proven before stopping: run the strongest honest verification, sync truth surfaces, bind the required fresh-eye critique, and emit the slice closeout ledger. `impl` loads this at its stop gate; contract-completing work consumes the same ledger.",
-        "summary": "Use when a built implementation or contract slice needs its closeout proven before stopping: run the strongest honest verification, sync truth surfaces, bind the required fresh-eye critique, and emit the slice closeout ledger. `impl` loads this at its stop gate; contract-completing work consumes the same ledger.",
+        "description": "Use when explicitly selected to format evidence for a concrete proof, irreversible, release, or live-boundary claim. It is conditional, not part of ordinary implementation.",
+        "summary": "Use when explicitly selected to format evidence for a concrete proof, irreversible, release, or live-boundary claim. It is conditional, not part of ordinary implementation.",
         "path": "skills/public/prove/SKILL.md",
         "skill_dir": "skills/public/prove",
         "canonical_path": "skills/public/prove/SKILL.md",
         "referenced_paths": [
-          "skills/shared/references/bootstrap-resolution.md",
-          "skills/public/impl/references/adapter-contract.md",
           "skills/public/prove/references/verification-ladder.md",
-          "skills/public/quality/references/cautilus-on-demand.md",
-          "skills/shared/references/prescribed-path-self-test.md",
-          "skills/shared/references/external-capability-proof-ladder.md",
-          "skills/public/prove/references/review-gate.md",
-          "skills/shared/references/boundary-ownership-brief.md",
-          "skills/shared/references/fresh-eye-subagent-review.md"
+          "skills/public/prove/references/review-gate.md"
         ],
         "source": "local-public",
         "layer": "public skill"
@@ -408,7 +368,6 @@
           "skills/shared/references/bootstrap-resolution.md",
           "skills/shared/references/binary-preflight.md",
           "skills/shared/references/fresh-eye-subagent-review.md",
-          "skills/public/quality/references/cautilus-on-demand.md",
           "skills/public/quality/references/prompt-asset-policy.md",
           "skills/public/quality/references/index.md"
         ],
@@ -448,12 +407,10 @@
           "skills/public/retro/references/expert-lens.md",
           "skills/public/retro/references/adapter-contract.md",
           "skills/public/retro/references/phase-aware-efficiency.md",
-          "skills/public/retro/references/closeout-telemetry.md",
           "skills/public/retro/references/prepare-packet.md",
           "skills/public/retro/references/section-guide.md",
           "skills/public/retro/references/waste-sibling-scan.md",
           "skills/shared/references/retro-issue-destination-split.md",
-          "skills/public/retro/references/lesson-evaluation.md",
           "skills/shared/references/rca-ledger-append.md",
           "skills/public/retro/references/trigger-and-persistence.md",
           "skills/public/debug/references/sibling-search.md"
@@ -471,19 +428,17 @@
         "canonical_path": "skills/public/setup/SKILL.md",
         "referenced_paths": [
           "skills/shared/references/bootstrap-resolution.md",
-          "skills/shared/references/fresh-eye-subagent-review.md",
+          "skills/shared/references/binary-preflight.md",
           "skills/public/setup/references/greenfield-flow.md",
           "skills/public/setup/references/normalization-flow.md",
           "skills/public/setup/references/agent-docs-policy.md",
           "skills/public/setup/references/default-surfaces.md",
-          "skills/public/setup/references/craken-like-profile.md",
+          "skills/public/setup/references/github-actions-defaults.md",
+          "skills/public/setup/references/operator-acceptance-synthesis.md",
           "skills/public/setup/references/probe-surface.md",
           "skills/public/setup/references/retro-memory-seam.md",
           "skills/public/setup/references/bootstrap-seams.md",
-          "skills/public/setup/references/hook-failure-visibility.md",
-          "skills/public/setup/references/github-actions-defaults.md",
-          "skills/public/setup/references/operator-acceptance-synthesis.md",
-          "skills/shared/references/agent-assessment-invariant.md"
+          "skills/public/setup/references/hook-failure-visibility.md"
         ],
         "source": "local-public",
         "layer": "public skill"
@@ -782,45 +737,6 @@
         "layer": "external integration"
       },
       {
-        "id": "cautilus",
-        "kind": "external_binary_with_skill",
-        "summary": "Standalone evaluation engine and bundled skill for bounded behavior review beyond repo-local deterministic gates.",
-        "access_modes": [
-          "binary",
-          "human-only",
-          "degraded"
-        ],
-        "support_state": "upstream-consumed",
-        "support_skill_path": null,
-        "discovery_stub_path": null,
-        "capability_requirements": {},
-        "config_layers": [],
-        "readiness_checks": [],
-        "supports_public_skills": [
-          "impl",
-          "quality",
-          "spec"
-        ],
-        "intent_triggers": [
-          "evaluator-backed behavior review",
-          "behavior evaluation",
-          "behavior review",
-          "prompt behavior regression",
-          "instruction behavior regression",
-          "baseline compare",
-          "cautilus eval",
-          "cautilus scenario",
-          "operator reading test",
-          "프롬프트 회귀",
-          "동작 평가"
-        ],
-        "strong_intent_triggers": [],
-        "recommendation_role": "validation",
-        "path": "integrations/tools/cautilus.json",
-        "source": "local-integration",
-        "layer": "external integration"
-      },
-      {
         "id": "defuddle",
         "kind": "external_binary",
         "summary": "Article and documentation page cleaner used by gather/web-fetch to turn cluttered public HTML into readable markdown before falling back to browser-mediated acquisition.",
@@ -1021,6 +937,40 @@
         "strong_intent_triggers": [],
         "recommendation_role": "validation",
         "path": "integrations/tools/nose.json",
+        "source": "local-integration",
+        "layer": "external integration"
+      },
+      {
+        "id": "repograph",
+        "kind": "external_binary",
+        "summary": "Rust repository-topology analyzer built from the `native/repograph` crate that ships in the charness checkout. Use when a gate needs export-safety, plugin-reference, standalone-target, or path-classification facts derived from real Python ASTs instead of regex approximations.",
+        "access_modes": [
+          "binary"
+        ],
+        "support_state": "integration-only",
+        "support_skill_path": null,
+        "discovery_stub_path": null,
+        "capability_requirements": {},
+        "config_layers": [],
+        "readiness_checks": [],
+        "supports_public_skills": [
+          "quality",
+          "release"
+        ],
+        "intent_triggers": [
+          "repograph",
+          "export safe",
+          "export-safe",
+          "plugin refs",
+          "plugin references",
+          "standalone targets",
+          "repository topology",
+          "path classification",
+          "native gate"
+        ],
+        "strong_intent_triggers": [],
+        "recommendation_role": "validation",
+        "path": "integrations/tools/repograph.json",
         "source": "local-integration",
         "layer": "external integration"
       },

@@ -57,7 +57,7 @@ def _scrub_ambient_runner_state() -> Iterator[None]:
     variable comes from, it is that a reader inside the suite defaults from it.
 
     The scheduled mutation workflow's "Select mutation sample" step launches the
-    coverage-baseline pytest (`python3 -m pytest -q -m 'not release_only' tests`)
+    coverage-baseline pytest (`env CHARNESS_ALLOW_BARE_PYTEST=1 python3 -m pytest -q -m 'not release_only' tests`)
     with the STEP's environment, and the suite inherited it in two ways, both
     reproduced:
 
@@ -199,6 +199,88 @@ def _disable_plugin_fallback_manifests(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 NESTED_PYTEST_ENV = "CHARNESS_NESTED_PYTEST"
+
+#: Set by `run_standing_pytest.py` in the child env it launches, so its SERIAL
+#: fallback is not mistaken for a bare run. NOT `PYTEST_DEBUG_TEMPROOT`: that one
+#: survives in any shell descended from a run that set it, so it reports "the
+#: runner owns this" for a hand-typed command in the same terminal -- the ambient
+#: state class `_scrub_ambient_runner_state` above already exists for.
+CANONICAL_RUNNER_ENV = "CHARNESS_STANDING_PYTEST"
+#: The two invocations that legitimately run bare and serial declare themselves:
+#: `cosmic-ray.toml`'s per-mutant test-command and the coverage baseline it shares.
+BARE_PYTEST_ESCAPE_ENV = "CHARNESS_ALLOW_BARE_PYTEST"
+#: A focused run is cheap serially and startup-sensitive; only a broad selection is
+#: worth refusing. Sized well above any single test module in this repo.
+BARE_PYTEST_ITEM_FLOOR = 300
+
+
+def bare_pytest_refusal(config: pytest.Config, items: list[pytest.Item]) -> str | None:
+    """The refusal decision, separated from the act of stopping the session.
+
+    Returning a message instead of calling `pytest.exit` directly keeps this
+    testable: `pytest.exit` raises `Exit`, which a worker interprets as "the
+    session is over" and reports as a crashed worker, so a test cannot simply
+    drive the hook and catch it.
+    """
+    # The primary test is not "who launched this" but "is the fast path in use":
+    # the runner always passes `-n`, so a broad selection with `numprocesses`
+    # unset is the expensive case no matter who typed it.
+    if getattr(config.option, "numprocesses", None):
+        return None
+    if os.environ.get(CANONICAL_RUNNER_ENV) or os.environ.get(BARE_PYTEST_ESCAPE_ENV) == "1":
+        return None
+    if os.environ.get("PYTEST_XDIST_WORKER") or os.environ.get(NESTED_PYTEST_ENV):
+        return None
+    if len(items) < BARE_PYTEST_ITEM_FLOOR:
+        return None
+
+    import importlib.util
+
+    guidance = (
+        f"\n{len(items)} tests selected without the repo's pytest runner.\n\n"
+        "  whole suite:  python3 scripts/run_standing_pytest.py --repo-root .\n"
+        "  focused:      python3 scripts/run_standing_pytest.py --repo-root . "
+        "--pytest-target <path-or-nodeid>\n"
+        "  full battery: ./scripts/run-quality.sh --full --release\n\n"
+        f"Set {BARE_PYTEST_ESCAPE_ENV}=1 to run single-process on purpose.\n"
+    )
+    if importlib.util.find_spec("xdist") is None:
+        # Nothing to refuse: without xdist the runner would also run serially.
+        print(f"warning: pytest-xdist is not installed.{guidance}", file=sys.stderr)
+        return None
+    return f"pytest-xdist is installed but unused, so this run would be single-process.{guidance}"
+
+
+def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
+    """Refuse a broad run that bypasses `scripts/run_standing_pytest.py`.
+
+    That script owns xdist worker selection, `--dist load` chunk sizing, an
+    external basetemp, and serial fallback. A bare `python3 -m pytest tests`
+    inherits none of it and runs single-process, and nothing in the output says
+    the fast path was skipped -- measured on this repo, 8400 tests take ~110s
+    through the runner and over half an hour without it.
+
+    This lived only in prose before: `docs/development.md` said "run focused
+    tests" without naming a command, and the command was written down once, in
+    `.agents/lane-brief-template.md`, which is read on the DELEGATION path only --
+    a session implementing directly never sees it. The 2026-07-19 runner-reuse
+    retro migrated every checked-in raw-pytest call site and verified with `rg`
+    that none remained, but a scan over files cannot see a command an agent types.
+    `2026-07-26-lesson-recurrence-mechanism.md` then measured why repeating the
+    prose does not help: "the prose channel does not change behavior at the moment
+    of action." This is that rule moved into the channel that does.
+
+    Scope is deliberately narrow. A focused selection passes untouched. A host
+    without xdist is warned rather than refused, because there the fast path does
+    not exist to be skipped.
+    """
+    refusal = bare_pytest_refusal(config, items)
+    if refusal is None:
+        return
+    # `pytest.exit`, not `raise`: an exception raised inside this hook is absorbed
+    # by the hook caller and the run continues. Verified here -- the hook entered,
+    # raised `UsageError`, and 5935 tests were still reported as collected.
+    pytest.exit(refusal, returncode=4)
 
 
 def pytest_sessionfinish(session: pytest.Session) -> None:

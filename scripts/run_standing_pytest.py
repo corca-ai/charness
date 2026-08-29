@@ -371,6 +371,13 @@ def run_standing_pytest(args: argparse.Namespace) -> int:
     env = os.environ.copy()
     env["CHARNESS_QUALITY_MODE"] = args.mode
     env["PYTEST_DEBUG_TEMPROOT"] = str(default_temp_root(repo_root, env))
+    # Read by `tests/conftest.py`'s bare-run guard so this runner's SERIAL fallback
+    # (old xdist, a `-p no:xdist` in PYTEST_ADDOPTS) is not mistaken for a bare
+    # `python3 -m pytest`. Deliberately a dedicated name: `PYTEST_DEBUG_TEMPROOT`
+    # cannot serve, because it survives in any shell descended from a run that set
+    # it, which is the ambient-runner-state class `_scrub_ambient_runner_state`
+    # already exists for.
+    env["CHARNESS_STANDING_PYTEST"] = "1"
     command = build_pytest_command(
         repo_root,
         basetemp=basetemp,
