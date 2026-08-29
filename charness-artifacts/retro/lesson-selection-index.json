@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-08-30",
-  "source_artifact_count": 417,
-  "candidate_count": 2154,
+  "source_artifact_count": 418,
+  "candidate_count": 2165,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -1430,6 +1430,29 @@
       ]
     },
     {
+      "candidate_id": "current_focus:bbb0f55fc98d",
+      "kind": "current_focus",
+      "lesson": "The 2026-09-01 plan's Step 1 (the empty-scope defect class) and Step 3, all four deferred handoffs the 2026-08-29 detector-blind-class retro left open, and the release-only lane.",
+      "normalized_key": "the 2026 09 01 plan s step 1 the empty scope defect class and",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/purpose-and-the-unread-input.md",
+      "latest_source_date": "2026-08-29",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/purpose-and-the-unread-input.md",
+          "date": "2026-08-29",
+          "section": "Context",
+          "kind": "current_focus",
+          "lesson": "The 2026-09-01 plan's Step 1 (the empty-scope defect class) and Step 3, all four deferred handoffs the 2026-08-29 detector-blind-class retro left open, and the release-only lane."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:d7690dd44523",
       "kind": "current_focus",
       "lesson": "The operator handed over `charness-artifacts/design-studies/2026-08-30-next-session-plan.md` and asked for design-then-execute.",
@@ -1522,6 +1545,29 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:ea75bd93ff8b",
+      "kind": "next_improvement",
+      "lesson": "capability — **make the prose-honesty gate advisory-with-judgment rather than a wider regex.** Operator-specified design: the detector is heuristic, so accept false negatives, surface it as a pre-commit ADVISORY on changes to `AGENTS.md`, `README.md`, `docs/**/*.md`, and let an agent judge the flagged text against the warning's own stated rule rather than widening the pattern. `novel:`",
+      "normalized_key": "capability make the prose honesty gate advisory with judgment rather than a wider regex",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/purpose-and-the-unread-input.md",
+      "latest_source_date": "2026-08-29",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/purpose-and-the-unread-input.md",
+          "date": "2026-08-29",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "capability — **make the prose-honesty gate advisory-with-judgment rather than a wider regex.** Operator-specified design: the detector is heuristic, so accept false negatives, surface it as a pre-commit ADVISORY on changes to `AGENTS.md`, `README.md`, `docs/**/*.md`, and let an agent judge the flagged text against the warning's own stated rule rather than widening the pattern. `novel:`"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:5f32a622929b",
       "kind": "next_improvement",
       "lesson": "capability — **seam fakes must reject malformed argv** (strict parsers, not payload-only). Applied in-session to both D9 fakes (classify, export-safe); the lane-brief template edit above carries the rule forward.",
@@ -1568,6 +1614,29 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:1ab9d6688e27",
+      "kind": "next_improvement",
+      "lesson": "capability — **the detector inventory is a reading surface with no reader.** It reports 13 detectors asserting success over an unestablished scope and 48 whose honesty is prose only. Next session reads it and dispositions the 13. Leaving it unread makes it exactly the cost the Purpose clause names. `novel:`",
+      "normalized_key": "capability the detector inventory is a reading surface with no reader it reports 13",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/purpose-and-the-unread-input.md",
+      "latest_source_date": "2026-08-29",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/purpose-and-the-unread-input.md",
+          "date": "2026-08-29",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "capability — **the detector inventory is a reading surface with no reader.** It reports 13 detectors asserting success over an unestablished scope and 48 whose honesty is prose only. Next session reads it and dispositions the 13. Leaving it unread makes it exactly the cost the Purpose clause names. `novel:`"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:7d128459e0af",
       "kind": "next_improvement",
       "lesson": "`charness-artifacts/retro/2026-08-30-a-class-discharged-as-a-list.md` carries the pattern analysis and the three named unfixed items; this artifact carries the session. The rule to keep: *discharging a class by repairing its known instances leaves the class intact — ask what property the instances violate, and check that instead, with a negative control proving the check can fire.*",
@@ -1587,6 +1656,29 @@
           "section": "Next Improvements",
           "kind": "next_improvement",
           "lesson": "`charness-artifacts/retro/2026-08-30-a-class-discharged-as-a-list.md` carries the pattern analysis and the three named unfixed items; this artifact carries the session. The rule to keep: *discharging a class by repairing its known instances leaves the class intact — ask what property the instances violate, and check that instead, with a negative control proving the check can fire.*"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:4b4eaf410c76",
+      "kind": "next_improvement",
+      "lesson": "memory — the four deferred handoffs from the prior retro are now closed; this artifact and the next-session prompt carry what replaced them.",
+      "normalized_key": "memory the four deferred handoffs from the prior retro are now closed this artifact",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/purpose-and-the-unread-input.md",
+      "latest_source_date": "2026-08-29",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/purpose-and-the-unread-input.md",
+          "date": "2026-08-29",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "memory — the four deferred handoffs from the prior retro are now closed; this artifact and the next-session prompt carry what replaced them."
         }
       ]
     },
@@ -1679,6 +1771,29 @@
           "section": "Next Improvements",
           "kind": "next_improvement",
           "lesson": "**when a plan's value rests on a quantity, measure the quantity before writing the plan.** Both wasted stretches this session were one command from being avoided. Concretely: any proposal containing \"this will be faster / smaller / cheaper\" must carry the measurement in the same message that proposes it, not in the message after the operator asks."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:1a69c1f40481",
+      "kind": "next_improvement",
+      "lesson": "workflow — **a plan's cited inputs are opened before the plan is executed.** Structural pattern: an artifact that names its sources in prose is trusted to have absorbed them, and the next session inherits the summary instead of the source. Triggering instance: this session re-derived a prior session's measurements, decisions, and a fully-diagnosed follow-up. Destination: the next-session prompt (below) and `docs/handoff-and-session-start.md` if one exists. `recurs:` — the prior retro's improvements were also written and not routed.",
+      "normalized_key": "workflow a plan s cited inputs are opened before the plan is executed structural",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/purpose-and-the-unread-input.md",
+      "latest_source_date": "2026-08-29",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/purpose-and-the-unread-input.md",
+          "date": "2026-08-29",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "workflow — **a plan's cited inputs are opened before the plan is executed.** Structural pattern: an artifact that names its sources in prose is trusted to have absorbed them, and the next session inherits the summary instead of the source. Triggering instance: this session re-derived a prior session's measurements, decisions, and a fully-diagnosed follow-up. Destination: the next-session prompt (below) and `docs/handoff-and-session-start.md` if one exists. `recurs:` — the prior retro's improvements were also written and not routed."
         }
       ]
     },
@@ -1821,6 +1936,75 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:831354b5e1d8",
+      "kind": "repeat_trap",
+      "lesson": "**I chased a dependency closure four levels deep before asking whether the test needed the real helper.** `check_markdown_inline_code.py` → `runtime_bootstrap` → `scripts/runtime_bootstrap.py` → `scripts.repo_file_listing`. The answer was that the detector's own test file already owns its message, so the composition test should stub it exactly as it stubs the external tool. The machinery I had built to install real helpers was reverted.",
+      "normalized_key": "i chased a dependency closure four levels deep before asking whether the test needed",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/purpose-and-the-unread-input.md",
+      "latest_source_date": "2026-08-29",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/purpose-and-the-unread-input.md",
+          "date": "2026-08-29",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "**I chased a dependency closure four levels deep before asking whether the test needed the real helper.** `check_markdown_inline_code.py` → `runtime_bootstrap` → `scripts/runtime_bootstrap.py` → `scripts.repo_file_listing`. The answer was that the detector's own test file already owns its message, so the composition test should stub it exactly as it stubs the external tool. The machinery I had built to install real helpers was reverted."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:39ba7c3db16d",
+      "kind": "repeat_trap",
+      "lesson": "**I did not run the length gate after a commit that changed a test file**, and pushed it 24 lines over its cap. Found later, by accident, while renaming that gate.",
+      "normalized_key": "i did not run the length gate after a commit that changed a test",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/purpose-and-the-unread-input.md",
+      "latest_source_date": "2026-08-29",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/purpose-and-the-unread-input.md",
+          "date": "2026-08-29",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "**I did not run the length gate after a commit that changed a test file**, and pushed it 24 lines over its cap. Found later, by accident, while renaming that gate."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:7e48218e7db3",
+      "kind": "repeat_trap",
+      "lesson": "**I optimised before asking what the thing was for — again.** I measured clone cost (0.63s / 0.51s / 0.42s) before asking what the cloning tests need. The prior retro records the operator making the identical intervention one session earlier (\"이 테스트 자체 jtbd가 뭐지?\"). The answer both times was that the clone was not load-bearing for the tests that could drop it.",
+      "normalized_key": "i optimised before asking what the thing was for again i measured clone cost",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/purpose-and-the-unread-input.md",
+      "latest_source_date": "2026-08-29",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/purpose-and-the-unread-input.md",
+          "date": "2026-08-29",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "**I optimised before asking what the thing was for — again.** I measured clone cost (0.63s / 0.51s / 0.42s) before asking what the cloning tests need. The prior retro records the operator making the identical intervention one session earlier (\"이 테스트 자체 jtbd가 뭐지?\"). The answer both times was that the clone was not load-bearing for the tests that could drop it."
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:ea72968635ee",
       "kind": "repeat_trap",
       "lesson": "**I optimised the fixture before asking whether the test needed it.** I found the 1.4 GB seed and made the copy 15x cheaper; the operator had to ask \"이 테스트 자체 jtbd가 뭐지? 너무 과한데?\" before I questioned the clone at all. Then the answer was a 180x setup win and no repository. This is `2026-05-20-quality-treadmill-vs-root-cause.md` exactly — bounding a cost before asking the root-cause question — and that retro is in the served digest.",
@@ -1867,6 +2051,29 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:41a34f26cd65",
+      "kind": "repeat_trap",
+      "lesson": "**I re-derived a prior session's work because I read the plan and not the inputs the plan cited.** The plan's header names `2026-08-29-detector-blind-class.md` as an input. I never opened it. Inside it, already recorded: the strings-first Python listing measured at 53.9 ms with *\"the dominant cost is API shape, not language\"*; the decision NOT to take #748 slice 2; the fixture-consolidation finding down to the file, the line number, and the confirmation that a sweep agent had already proven the minimal fixture. I re-measured all of it and presented it as discovery. Cost: the single largest block of this session.",
+      "normalized_key": "i re derived a prior session s work because i read the plan and",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/purpose-and-the-unread-input.md",
+      "latest_source_date": "2026-08-29",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/purpose-and-the-unread-input.md",
+          "date": "2026-08-29",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "**I re-derived a prior session's work because I read the plan and not the inputs the plan cited.** The plan's header names `2026-08-29-detector-blind-class.md` as an input. I never opened it. Inside it, already recorded: the strings-first Python listing measured at 53.9 ms with *\"the dominant cost is API shape, not language\"*; the decision NOT to take #748 slice 2; the fixture-consolidation finding down to the file, the line number, and the confirmation that a sweep agent had already proven the minimal fixture. I re-measured all of it and presented it as discovery. Cost: the single largest block of this session."
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:6fba560f4158",
       "kind": "repeat_trap",
       "lesson": "**Message changes chased across pinning tests one file at a time.** Renaming the length gate's output to stop lying about `.rs` files broke pins in `test_empty_scope_refusals.py` and `test_python_length_gates.py`, found serially by re-running. A grep for the literal before editing would have made it one step.",
@@ -1909,6 +2116,29 @@
           "section": "Waste",
           "kind": "repeat_trap",
           "lesson": "NOT waste: lane B's timeout salvage (96% of a 90-file refactor recovered from the worktree) and the five full batteries — each battery caught a real defect class the focused checks missed."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:4bda6c7927b3",
+      "kind": "repeat_trap",
+      "lesson": "NOT waste: three full-lane runs that each caught something focused runs did not (a cross-module private import, a polyglot constant, a skill-ownership overlap).",
+      "normalized_key": "not waste three full lane runs that each caught something focused runs did not",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/purpose-and-the-unread-input.md",
+      "latest_source_date": "2026-08-29",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/purpose-and-the-unread-input.md",
+          "date": "2026-08-29",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "NOT waste: three full-lane runs that each caught something focused runs did not (a cross-module private import, a polyglot constant, a skill-ownership overlap)."
         }
       ]
     },
@@ -1978,6 +2208,29 @@
           "section": "Waste",
           "kind": "repeat_trap",
           "lesson": "**Two long stretches built on an unmeasured quantity.** First: the plan's \"reduce the release machinery for ratio headroom\" rests on arithmetic that runs the other way — removing production lines RAISES `test/source`. Second: after the operator asked for Rust, I framed \"Rust transition is the test-speed fix\" and had to retract it, because native `match-surfaces` is 1.4x SLOWER and `repo_file_listing`'s dominant cost is `Path` construction, not Python. Both premises were one measurement away. I wrote plans first and measured second."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:59e2c5d872ea",
+      "kind": "repeat_trap",
+      "lesson": "**Two of three lane scopes were wrong.** #751 and #752 both returned `status: invalid` solely because `--scope` missed a test file. I built each scope from `ls tests/ | grep`, which does not look in subdirectories. Both candidates were sound and were integrated by hand. `.agents/claude-host.md` already carries this lesson.",
+      "normalized_key": "two of three lane scopes were wrong 751 and 752 both returned status invalid",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/purpose-and-the-unread-input.md",
+      "latest_source_date": "2026-08-29",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/purpose-and-the-unread-input.md",
+          "date": "2026-08-29",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "**Two of three lane scopes were wrong.** #751 and #752 both returned `status: invalid` solely because `--scope` missed a test file. I built each scope from `ls tests/ | grep`, which does not look in subdirectories. Both candidates were sound and were integrated by hand. `.agents/claude-host.md` already carries this lesson."
         }
       ]
     },
