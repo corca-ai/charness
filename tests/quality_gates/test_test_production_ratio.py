@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import os
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 import yaml
@@ -224,6 +226,93 @@ def test_test_production_ratio_typed_skips_unreadable_python(tmp_path: Path, mon
     )
     assert result.returncode == 0
     assert yaml.safe_load(result.stdout)["skipped"] == summary["skipped"]
+
+
+def test_python_shebang_probe_returns_false_for_unreadable_source(tmp_path: Path) -> None:
+    missing = tmp_path / "missing-tool"
+    invalid = tmp_path / "invalid-tool"
+    invalid.write_bytes(b"#!\xffpython\n")
+
+    assert RATIO._is_python_shebang(missing) is False
+    assert RATIO._is_python_shebang(invalid) is False
+
+
+def test_python_shebang_probe_returns_false_without_interpreter(tmp_path: Path) -> None:
+    tool = tmp_path / "tool"
+    tool.write_text("#!\n", encoding="utf-8")
+
+    assert RATIO._is_python_shebang(tool) is False
+
+
+def test_tokei_code_rejects_invalid_json(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(
+        RATIO.subprocess,
+        "run",
+        lambda *args, **kwargs: SimpleNamespace(returncode=0, stdout="not json", stderr=""),
+    )
+
+    with pytest.raises(RATIO.TokeiUnavailableError, match="tokei returned invalid JSON"):
+        RATIO._tokei_code([tmp_path / "app.py"], language="Python", repo_root=tmp_path)
+
+
+def test_tokei_code_returns_empty_for_missing_language(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(
+        RATIO.subprocess,
+        "run",
+        lambda *args, **kwargs: SimpleNamespace(returncode=0, stdout="{}", stderr=""),
+    )
+
+    assert RATIO._tokei_code([tmp_path / "app.py"], language="Python", repo_root=tmp_path) == (0, set())
+
+
+@pytest.mark.parametrize(
+    ("payload", "message"),
+    [
+        ({"Python": {"reports": {}}}, "invalid Python reports list"),
+        ({"Python": {"reports": ["app.py"]}}, "invalid Python report"),
+    ],
+)
+def test_tokei_code_rejects_malformed_reports(
+    tmp_path: Path, monkeypatch, payload: dict, message: str
+) -> None:
+    monkeypatch.setattr(
+        RATIO.subprocess,
+        "run",
+        lambda *args, **kwargs: SimpleNamespace(
+            returncode=0, stdout=json.dumps(payload), stderr=""
+        ),
+    )
+
+    with pytest.raises(RATIO.TokeiUnavailableError, match=message):
+        RATIO._tokei_code([tmp_path / "app.py"], language="Python", repo_root=tmp_path)
+
+
+def test_tokei_code_resolves_relative_report_path(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(
+        RATIO.subprocess,
+        "run",
+        lambda *args, **kwargs: SimpleNamespace(
+            returncode=0,
+            stdout=json.dumps({"Python": {"code": 3, "reports": [{"name": "app.py"}]}}),
+            stderr="",
+        ),
+    )
+    path = tmp_path / "app.py"
+
+    assert RATIO._tokei_code([path], language="Python", repo_root=tmp_path) == (3, {path.resolve()})
+
+
+def test_tokei_bucket_code_reports_unclassified_selected_file(tmp_path: Path, monkeypatch) -> None:
+    path = tmp_path / "hook"
+    path.write_text("echo hook\n", encoding="utf-8")
+    responses = iter([(1, set()), (0, set())])
+    monkeypatch.setattr(RATIO, "_tokei_code", lambda *args, **kwargs: next(responses))
+
+    with pytest.raises(
+        RATIO.TokeiUnavailableError,
+        match="tokei did not classify selected shell files: hook",
+    ):
+        RATIO._tokei_bucket_code([path], bucket="shell", language="Shell", repo_root=tmp_path)
 
 
 def test_test_production_ratio_fails_above_max() -> None:

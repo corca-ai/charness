@@ -136,6 +136,21 @@ def test_unreadable_python_source_is_a_typed_skip(tmp_path: Path) -> None:
     )
 
 
+def test_missing_registry_failure_includes_unreadable_source_skip(tmp_path: Path) -> None:
+    repo, _ = _make_repo(tmp_path)
+    (repo / "scripts/non_utf8.py").write_bytes(b"\xff\n")
+
+    code, messages = _evaluate(repo, None)
+
+    assert code == 1
+    assert any("found but no registry" in message for message in messages)
+    assert any(
+        "status=skipped reason=unreadable-python-source count=1" in message
+        and "scripts/non_utf8.py" in message
+        for message in messages
+    )
+
+
 # --- negative guards (the cardinal value of #330) --------------------------------
 
 
@@ -173,6 +188,22 @@ def test_unregistered_declaration_is_a_leak(tmp_path: Path) -> None:
     code, messages = _evaluate(repo, registry)
     assert code == 1
     assert any("LEAK" in m and "scripts/check_exact_counts.py" in m for m in messages)
+
+
+def test_registry_error_includes_unreadable_source_skip(tmp_path: Path) -> None:
+    repo, registry = _make_repo(tmp_path)
+    (repo / "scripts/check_exact_counts.py").write_text(_decl(), encoding="utf-8")
+    (repo / "scripts/non_utf8.py").write_bytes(b"\xff\n")
+
+    code, messages = _evaluate(repo, registry)
+
+    assert code == 1
+    assert any("LEAK" in message and "scripts/check_exact_counts.py" in message for message in messages)
+    assert any(
+        "status=skipped reason=unreadable-python-source count=1" in message
+        and "scripts/non_utf8.py" in message
+        for message in messages
+    )
 
 
 def test_annotated_unregistered_declaration_is_a_leak(tmp_path: Path) -> None:

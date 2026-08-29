@@ -18,6 +18,7 @@ from __future__ import annotations
 import subprocess
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -72,6 +73,73 @@ def test_no_adapter_at_all_is_not_a_refusal(tmp_path: Path) -> None:
     result = _run(_repo(tmp_path, None))
     assert result.returncode == 0, result.stderr
     assert "real_host=not-required" in result.stdout
+
+
+@pytest.mark.parametrize(
+    ("report", "message"),
+    [
+        ("not json", "native classify report is missing or unparseable"),
+        ('{"schema": "wrong"}', "expected schema repograph.classify.v1"),
+        ('{"schema": "repograph.classify.v1"}', "no paths array"),
+        ('{"schema": "repograph.classify.v1", "paths": [null]}', "non-object path record"),
+        (
+            '{"schema": "repograph.classify.v1", "paths": [{"path": 1, "role": "production"}]}',
+            "path and role must be strings",
+        ),
+        (
+            '{"schema": "repograph.classify.v1", "paths": [{"path": "other.py", "role": "production"}]}',
+            "unexpected path 'other.py'",
+        ),
+        (
+            '{"schema": "repograph.classify.v1", "paths": [{"path": "src/a.py", "role": "unknown"}]}',
+            "unknown role 'unknown'",
+        ),
+    ],
+)
+def test_malformed_native_classify_reports_are_refused(
+    report: str, message: str
+) -> None:
+    from tests.script_main import load_script_module
+
+    module = load_script_module("check_real_host_proof_report_refusal", GATE)
+    with pytest.raises(ValueError, match=message):
+        module._classify_report_roles(report, ["src/a.py"])
+
+
+@pytest.mark.parametrize(
+    ("failure", "message"),
+    [
+        (OSError("native missing"), "native classify could not be executed: native missing"),
+        (SimpleNamespace(returncode=2, stdout=""), "native classify exited with status 2"),
+    ],
+)
+def test_native_classify_execution_failures_are_reported_as_unavailable(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, failure: object, message: str
+) -> None:
+    from tests.script_main import load_script_module
+
+    module = load_script_module("check_real_host_proof_execution_refusal", GATE)
+    monkeypatch.setattr(
+        module,
+        "resolve_native_core",
+        lambda repo_root: SimpleNamespace(path=tmp_path / "repograph"),
+    )
+    if isinstance(failure, OSError):
+        def run(*args: object, **kwargs: object) -> object:
+            raise failure
+
+        monkeypatch.setattr(module.subprocess, "run", run)
+    else:
+        monkeypatch.setattr(module.subprocess, "run", lambda *args, **kwargs: failure)
+
+    path_hits, excluded, decision = module._classify_raw_glob_hits(tmp_path, ["src/a.py"])
+
+    assert path_hits == ["src/a.py"]
+    assert excluded == []
+    assert decision == {
+        "status": "unavailable",
+        "native_core": {"status": "unavailable", "reason": message},
+    }
 
 
 @pytest.mark.parametrize(

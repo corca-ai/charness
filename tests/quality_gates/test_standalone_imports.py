@@ -19,6 +19,7 @@ import re
 import subprocess
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 import yaml
@@ -378,3 +379,154 @@ def test_a_partial_run_names_unmatched_paths_even_when_something_matched(
     payload = _report(result)
     assert "PARTIAL: checked 1 of" in payload["scope_note"]
     assert payload["unmatched_changed"] == ["docs/index.md"]
+
+
+def test_native_report_detail_describes_unestablished_targets() -> None:
+    module = _load_check_module()
+
+    document = {
+        "unestablished": [
+            {"detail": "native inventory is stale"},
+            {"detail": "one target has no command"},
+            {"detail": 42},
+            "not a target",
+        ]
+    }
+
+    assert module._native_report_detail(document, "ignored stderr") == (
+        "native inventory is stale; one target has no command"
+    )
+    assert module._native_report_detail({}, "  native failed  ") == "native failed"
+    assert module._native_report_detail([], "") == "(no native diagnostic)"
+
+
+@pytest.mark.parametrize(
+    ("document", "message"),
+    [
+        ([], "did not emit a JSON object"),
+        ({"schema": "old"}, "unexpected schema: 'old'"),
+        ({"schema": "repograph.standalone_targets.v1"}, "has no target list"),
+        (
+            {"schema": "repograph.standalone_targets.v1", "targets": [None]},
+            "target 0 has no inventory-relative path",
+        ),
+        (
+            {
+                "schema": "repograph.standalone_targets.v1",
+                "targets": [{"path": "scripts/a.py"}],
+            },
+            "target 'scripts/a.py' has no shape list",
+        ),
+        (
+            {
+                "schema": "repograph.standalone_targets.v1",
+                "targets": [{"path": "scripts/a.py", "shapes": [None]}],
+            },
+            "target 'scripts/a.py' shape 0 has no command",
+        ),
+        (
+            {
+                "schema": "repograph.standalone_targets.v1",
+                "targets": [],
+                "scope": "unestablished",
+                "unestablished": [{"detail": "selection is unavailable"}],
+            },
+            "reported an unestablished condition: selection is unavailable",
+        ),
+    ],
+)
+def test_invalid_native_selection_documents_are_refused(
+    document: object, message: str
+) -> None:
+    module = _load_check_module()
+
+    with pytest.raises(module.NativeSelectionError, match=re.escape(message)):
+        module._validate_selection_document(document)
+
+
+def test_native_selection_refuses_unexecutable_binary(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    module = _load_check_module()
+    binary = tmp_path / "repograph"
+    monkeypatch.setattr(
+        module.native_gate_lib,
+        "resolve_native_core",
+        lambda repo: SimpleNamespace(path=binary),
+    )
+
+    def refuse_to_run(*args: object, **kwargs: object) -> None:
+        raise OSError("permission denied")
+
+    monkeypatch.setattr(module.subprocess, "run", refuse_to_run)
+
+    with pytest.raises(module.NativeSelectionError, match=r"could not execute.*permission denied"):
+        module.select_standalone_targets(tmp_path, changed=None)
+
+
+def test_native_selection_refuses_invalid_success_json(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    module = _load_check_module()
+    monkeypatch.setattr(
+        module.native_gate_lib,
+        "resolve_native_core",
+        lambda repo: SimpleNamespace(path=tmp_path / "repograph"),
+    )
+    monkeypatch.setattr(
+        module.subprocess,
+        "run",
+        lambda *args, **kwargs: SimpleNamespace(
+            stdout="{not json}", stderr="", returncode=0
+        ),
+    )
+
+    with pytest.raises(module.NativeSelectionError, match="emitted invalid JSON"):
+        module.select_standalone_targets(tmp_path, changed=None)
+
+
+def test_native_selection_reports_native_failure_detail(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    module = _load_check_module()
+    monkeypatch.setattr(
+        module.native_gate_lib,
+        "resolve_native_core",
+        lambda repo: SimpleNamespace(path=tmp_path / "repograph"),
+    )
+    monkeypatch.setattr(
+        module.subprocess,
+        "run",
+        lambda *args, **kwargs: SimpleNamespace(
+            stdout='{"unestablished":[{"detail":"inventory unavailable"}]}',
+            stderr="fallback stderr",
+            returncode=2,
+        ),
+    )
+
+    with pytest.raises(
+        module.NativeSelectionError,
+        match=r"exited 2 \(native condition\): inventory unavailable",
+    ):
+        module.select_standalone_targets(tmp_path, changed=None)
+
+
+@pytest.mark.parametrize(
+    ("error", "message"),
+    [
+        (native_gate_lib.NativeGateError("repograph is unavailable"), "native gate unavailable"),
+        (None, "selection failed for a human-readable reason"),
+    ],
+)
+def test_main_reports_native_selection_failures(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str], error: Exception | None,
+    message: str,
+) -> None:
+    module = _load_check_module()
+    if error is None:
+        error = module.NativeSelectionError(message)
+    monkeypatch.setattr(module, "run", lambda *args, **kwargs: (_ for _ in ()).throw(error))
+    monkeypatch.setattr(sys, "argv", ["check_standalone_imports", "--repo-root", str(ROOT)])
+
+    assert module.main() == 1
+    assert message in capsys.readouterr().err

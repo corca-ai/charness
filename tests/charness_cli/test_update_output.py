@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 import subprocess
 import sys
@@ -104,6 +105,30 @@ def test_installed_cli_update_all_without_json_prints_progress_and_summary(tmp_p
     detail_payload = yaml.safe_load(detail_result.stdout)
     assert detail_payload["response_level"] == "detail"
     assert detail_payload["tool_update"]["results"]["agent-browser"]["update"]["status"] in {"updated", "refreshed"}
+
+
+def test_probe_self_release_defaults_to_the_declared_repo(tmp_path: Path, monkeypatch) -> None:
+    """The no-argument call is the one production uses, and it was unexercised.
+
+    `charness:994` resolves the repo from `REPO_URL` when the caller passes none.
+    Every existing probe test supplies a repo explicitly, so a wrong default would
+    have surfaced first as a version check pointed at the wrong repository.
+    """
+
+    module = load_charness_module("charness_probe_self_release_default_under_test")
+    repo = module.self_release_repo()
+    fixture = tmp_path / "releases.json"
+    fixture.write_text(
+        json.dumps({repo: {"tag_name": "v9.9.9", "html_url": "https://example.invalid/r"}}),
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("CHARNESS_RELEASE_PROBE_FIXTURES", str(fixture))
+
+    release = module.probe_self_release()
+
+    assert release["repo"] == repo
+    assert release["latest_tag"] == "v9.9.9"
+    assert release["api_url"] == f"https://api.github.com/repos/{repo}/releases/latest"
 
 
 def test_update_human_summary_without_version_none_prints_tool_statuses(capsys) -> None:
