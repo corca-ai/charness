@@ -59,7 +59,7 @@ def test_check_python_lengths_rejects_too_long_skill_helper_file(tmp_path: Path)
     (helper_dir / "helper.py").write_text("\n".join(f"print({i})" for i in range(361)) + "\n", encoding="utf-8")
     result = run_script("scripts/check_python_lengths.py", "--repo-root", str(repo))
     assert result.returncode == 1
-    assert "Python code lines 361 exceed limit 360" in result.stderr
+    assert "tokei code lines 361 exceed limit 360" in result.stderr
 
 
 def test_check_python_lengths_reports_all_over_limit_files_in_one_run(tmp_path: Path) -> None:
@@ -81,8 +81,8 @@ def test_check_python_lengths_reports_all_over_limit_files_in_one_run(tmp_path: 
     )
 
     assert result.returncode == 1
-    assert "skills/public/demo/scripts/helper.py: Python code lines 361 exceed limit 360" in result.stderr
-    assert "scripts/tool.py: Python code lines 481 exceed limit 480" in result.stderr
+    assert "skills/public/demo/scripts/helper.py: tokei code lines 361 exceed limit 360" in result.stderr
+    assert "scripts/tool.py: tokei code lines 481 exceed limit 480" in result.stderr
     assert "Validation failed for 2 file(s)" in result.stderr
 
 
@@ -187,7 +187,7 @@ def test_check_python_lengths_rejects_too_long_test_file(tmp_path: Path) -> None
     (tests_dir / "test_big.py").write_text("\n".join(f"VALUE_{i} = {i}" for i in range(801)) + "\n", encoding="utf-8")
     result = run_script("scripts/check_python_lengths.py", "--repo-root", str(repo))
     assert result.returncode == 1
-    assert "Python code lines 801 exceed limit 800" in result.stderr
+    assert "tokei code lines 801 exceed limit 800" in result.stderr
 
 
 def test_check_python_lengths_warns_for_in_band_files_across_classes(tmp_path: Path) -> None:
@@ -208,9 +208,9 @@ def test_check_python_lengths_warns_for_in_band_files_across_classes(tmp_path: P
 
     assert result.returncode == 0, result.stderr
     warn_lines = [line for line in result.stdout.splitlines() if line.startswith("WARN: ")]
-    assert any("helper.py: Python code lines 340 are within the advisory warn band [330, 360]" in line for line in warn_lines)
-    assert any("scripts/tool.py: Python code lines 440 are within the advisory warn band [432, 480]" in line for line in warn_lines)
-    assert any("tests/test_band.py: Python code lines 730 are within the advisory warn band [720, 800]" in line for line in warn_lines)
+    assert any("helper.py: tokei code lines 340 are within the advisory warn band [330, 360]" in line for line in warn_lines)
+    assert any("scripts/tool.py: tokei code lines 440 are within the advisory warn band [432, 480]" in line for line in warn_lines)
+    assert any("tests/test_band.py: tokei code lines 730 are within the advisory warn band [720, 800]" in line for line in warn_lines)
 
 
 def test_check_python_lengths_does_not_warn_just_below_band(tmp_path: Path) -> None:
@@ -237,7 +237,7 @@ def test_check_python_lengths_paths_mode_rejects_over_limit_staged_file(tmp_path
         "skills/public/demo/scripts/over.py",
     )
     assert result.returncode == 1
-    assert "Python code lines 361 exceed limit 360" in result.stderr
+    assert "tokei code lines 361 exceed limit 360" in result.stderr
 
 
 def test_check_python_lengths_paths_mode_warns_for_in_band_staged_file(tmp_path: Path) -> None:
@@ -255,7 +255,7 @@ def test_check_python_lengths_paths_mode_warns_for_in_band_staged_file(tmp_path:
     )
     assert result.returncode == 0, result.stderr
     warn_lines = [line for line in result.stdout.splitlines() if line.startswith("WARN: ")]
-    assert any("band.py: Python code lines 340 are within the advisory warn band [330, 360]" in line for line in warn_lines)
+    assert any("band.py: tokei code lines 340 are within the advisory warn band [330, 360]" in line for line in warn_lines)
 
 
 def test_check_python_lengths_paths_mode_checks_only_listed_paths(tmp_path: Path) -> None:
@@ -297,6 +297,6 @@ def test_check_python_lengths_over_limit_message_teaches_split_or_delete(tmp_pat
         "skills/public/demo/scripts/over.py",
     )
     assert result.returncode == 1
-    assert "Python code lines 361 exceed limit 360" in result.stderr
+    assert "tokei code lines 361 exceed limit 360" in result.stderr
     assert "Split the file into a cohesive new module or delete code" in result.stderr
     assert "do not mechanically spill into an _extra_lib/_lib companion" in result.stderr
