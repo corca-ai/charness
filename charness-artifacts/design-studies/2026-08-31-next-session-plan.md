@@ -179,9 +179,25 @@ the numerator does.
   suite". This is a topology problem, not a gate problem, and it is the largest
   remaining structural item. `check-changed-line-mutation-coverage` is a 289s
   unbudgeted hotspot because of it.
-- **12 files still have genuinely uncovered changed lines** against base
-  `533f24dad` (the v8.0.0 prepare), now that the coverage instrument works.
-  Mostly `task_run_*.py`. This is real debt from ~93 commits, not an artifact.
+- **`release-changed-line-coverage` blocks on 11 files** against base
+  `533f24dad` (the v8.0.0 prepare), now that the coverage instrument works. This
+  is real debt from ~93 commits, not an artifact: the pre-repair list of 21 was
+  mostly instrumentation, and `scripts/native_gate_lib.py` left the list once
+  its own changed lines were covered (89% → 100%).
+
+  Intersected against `git diff --name-only a21bba5a1~1..HEAD`, exactly ONE of
+  the 11 is from the 2026-08-30 session — `charness`, five lines (994, 4530,
+  4531, 4533, 4534), the deliberately-kept uninstall residue cleanup and one
+  release-probe default. The other ten (`task_run_*.py` ×7,
+  `check_standalone_imports.py`, `check_test_production_ratio.py`,
+  `validate_inference_interpretation.py`, `check_real_host_proof.py`) predate
+  it.
+
+  Those five were left uncovered ON PURPOSE, and the reasoning is the ratio
+  tension above: adding a test for them trips `check-test-production-ratio`,
+  which then costs another documented #753 trim row, and clearing 1 of 11 does
+  not unblock the gate anyway. Clear this as one deliberate slice with the
+  ratio in view, not opportunistically.
 - **In-process bounded-reviewer delegation has failed five times across two
   sessions**, once with the explicit `opus` override. `.agents/claude-host.md`
   now records that an unreturned review is an unrun review. Either find a
