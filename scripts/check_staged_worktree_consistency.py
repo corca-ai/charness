@@ -30,6 +30,7 @@ ALLOW_ENV = "CHARNESS_ALLOW_PARTIAL_STAGE"
 # Only these spellings turn the bypass ON. "0"/"false"/"no"/"off"/"" -- the
 # spellings an operator uses to turn it OFF -- must keep the gate running.
 TRUE_VALUES = {"1", "true", "yes", "on"}
+_STATUS_CODES = frozenset(b".MTADRCU")
 # No --diff-filter. The first cut used ACM, which hid a path staged and then
 # DELETED on disk -- exactly the case worktree-walking validators skip entirely,
 # so the staged blob shipped unchecked. Widening it to ACMRD fixed that one letter
@@ -80,13 +81,21 @@ def _status_paths(repo_root: Path) -> tuple[set[str], set[str], set[str]]:
                 raise RuntimeError("git status returned a malformed unmerged record")
             xy, raw_path = fields[1], fields[10]
         elif kind in {b"?", b"!"}:
-            continue
+            raise RuntimeError(
+                "git status enumerated untracked or ignored paths despite "
+                "--untracked-files=no"
+            )
         elif kind == b"2":
             raise RuntimeError("git status reported a rename despite --no-renames")
         else:
             raise RuntimeError("git status returned an unknown record kind")
 
-        if len(xy) != 2 or not raw_path:
+        if (
+            len(xy) != 2
+            or any(status not in _STATUS_CODES for status in xy)
+            or xy == b".."
+            or not raw_path
+        ):
             raise RuntimeError("git status returned malformed path state")
         path = raw_path.decode("utf-8", errors="surrogateescape")
         x, y = xy[:1], xy[1:]
