@@ -108,6 +108,64 @@ def _record_creation_order_ns(path: Path) -> int:
     return path.stat().st_mtime_ns
 
 
+def _git_common_dir_via_git(repo_root: Path) -> Path:
+    git_common = subprocess.run(
+        ["git", "rev-parse", "--git-common-dir"],
+        cwd=repo_root,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    common_dir = Path(git_common)
+    if not common_dir.is_absolute():
+        common_dir = repo_root / common_dir
+    return common_dir.resolve()
+
+
+def _discover_git_dir(repo_root: Path) -> Path | None:
+    marker = repo_root / ".git"
+    if marker.is_file():
+        for line in marker.read_text(encoding="utf-8").splitlines():
+            stripped = line.strip()
+            if stripped.lower().startswith("gitdir:"):
+                git_dir = Path(stripped.split(":", 1)[1].strip())
+                if not git_dir.is_absolute():
+                    git_dir = repo_root / git_dir
+                return git_dir
+        return None
+    if marker.is_dir() and (marker / "HEAD").is_file():
+        return marker
+    return None
+
+
+def git_common_dir(repo_root: Path) -> Path:
+    """Git's common dir, from checkout files when discovery is local.
+
+    ``persist_failure_payload`` only needs the administration root. Ordinary
+    checkouts already have it on disk; ``rev-parse`` is the fallback for
+    environment-redirected or unreadable layouts.
+    """
+    if any(os.environ.get(name) for name in ("GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR")):
+        return _git_common_dir_via_git(repo_root)
+    try:
+        git_dir = _discover_git_dir(repo_root)
+        if git_dir is not None:
+            commondir = git_dir / "commondir"
+            if commondir.is_file():
+                raw = commondir.read_text(encoding="utf-8").splitlines()[0].strip()
+                common = Path(raw)
+                if not common.is_absolute():
+                    common = git_dir / common
+                resolved = common.resolve()
+                if resolved.is_dir():
+                    return resolved
+            elif git_dir.is_dir():
+                return git_dir.resolve()
+    except OSError:
+        pass
+    return _git_common_dir_via_git(repo_root)
+
+
 def persist_failure_payload(
     repo_root: Path,
     payload: dict[str, Any],
@@ -117,17 +175,7 @@ def persist_failure_payload(
     """Persist structured recovery evidence without dirtying the release worktree."""
     temporary_path: Path | None = None
     try:
-        git_common = subprocess.run(
-            ["git", "rev-parse", "--git-common-dir"],
-            cwd=repo_root,
-            check=True,
-            capture_output=True,
-            text=True,
-        ).stdout.strip()
-        common_dir = Path(git_common)
-        if not common_dir.is_absolute():
-            common_dir = repo_root / common_dir
-        record_dir = common_dir.resolve() / "charness-release-failures"
+        record_dir = git_common_dir(repo_root) / "charness-release-failures"
         record_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
         record_dir.chmod(0o700)
         tag = re.sub(r"[^A-Za-z0-9._-]+", "-", str(payload.get("tag_name", "release")))

@@ -126,6 +126,30 @@ def test_failure_record_retention_tolerates_concurrent_eviction(tmp_path: Path, 
     assert result["status"] == "persisted"
 
 
+def test_failure_record_does_not_launch_git_in_an_ordinary_checkout(
+    tmp_path: Path, monkeypatch
+) -> None:
+    runtime = _load_runtime()
+    repo = _seed_repo(tmp_path)
+    git_launches: list[tuple[str, ...]] = []
+    original = subprocess.run
+
+    def wrapped(argv, *args, **kwargs):
+        if isinstance(argv, (list, tuple)) and argv and Path(str(argv[0])).name == "git":
+            git_launches.append(tuple(str(part) for part in argv[1:]))
+        return original(argv, *args, **kwargs)
+
+    monkeypatch.setattr(subprocess, "run", wrapped)
+    result = runtime.persist_failure_payload(
+        repo,
+        {"tag_name": "v1"},
+        render_yaml=_render_yaml,
+    )
+    assert result["status"] == "persisted"
+    assert git_launches == []
+    assert (repo / ".git" / "charness-release-failures").is_dir()
+
+
 def test_failed_atomic_replace_removes_temporary_record(
     tmp_path: Path,
     monkeypatch,
