@@ -3,19 +3,19 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 173,
-  "indexed_artifact_count": 158,
+  "source_artifact_count": 174,
+  "indexed_artifact_count": 159,
   "risk_class_counts": {
     "contract-freeze-risk": 35,
     "external-seam": 26,
     "host-disproves-local": 7,
-    "none": 63,
+    "none": 64,
     "operator-visible-recovery": 23,
     "repeated-symptom": 17
   },
   "generalization_pressure_counts": {
     "factor-now": 23,
-    "monitor": 119,
+    "monitor": 120,
     "none": 16
   },
   "entries": [
@@ -2231,8 +2231,8 @@
       "forced": true
     },
     {
-      "artifact_path": "charness-artifacts/debug/latest.md",
-      "is_current_pointer": true,
+      "artifact_path": "charness-artifacts/debug/2026-08-30-issue-758-mutation-workflow-standing-baseline.md",
+      "is_current_pointer": false,
       "interrupt_id": "issue-758-standing-baseline-2026-08-30",
       "risk_classes": [
         "none"
@@ -2242,6 +2242,20 @@
       "critique_required": true,
       "next_step": "impl",
       "handoff_artifact": "charness-artifacts/critique/2026-08-30-issue-758-typed-content-digest-referent-review.md",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/latest.md",
+      "is_current_pointer": true,
+      "interrupt_id": "issue-758-shallow-history-2026-08-30",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "authoring-clone object database to provider-main artifact-referent gate.",
+      "generalization_pressure": "monitor",
+      "critique_required": false,
+      "next_step": "impl",
+      "handoff_artifact": "`charness-artifacts/goal-runs/744/amendments/2026-08-30-ignore-mutation-test-proof.md`",
       "forced": false
     }
   ],
