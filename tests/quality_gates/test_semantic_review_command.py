@@ -300,9 +300,9 @@ def test_prompt_reaches_explicit_reviewed_path_beyond_unrelated_section(tmp_path
     assert result.returncode == 0, result.stderr
     prompt = (tmp_path / payload["paths"]["prompt"]).read_text(encoding="utf-8")
     assert "Every explicitly declared `--reviewed-path`" in prompt
-    assert "Open each readable path from the repository root" in prompt
-    assert "The packet owns identity and provenance; the hash-bound paths own the semantic bytes." in prompt
-    assert "- `reviewed.txt`" in prompt
+    assert "Judge the inline payload, not the current workspace path" in prompt
+    assert '"path": "reviewed.txt"' in prompt
+    assert '"prompt_content": "base\\n"' in prompt
     assert "Do not infer reviewed content from hashes or unrelated packet sections" in prompt
 
 
@@ -328,8 +328,45 @@ def test_deletion_only_reviewed_input_reaches_worker_with_hash_checked_preimage(
     assert carrier.read_bytes() == b"base\n"
     assert stat.S_IMODE(carrier.stat().st_mode) == 0o444
     prompt = (tmp_path / payload["paths"]["prompt"]).read_text(encoding="utf-8")
-    assert "hash-checked read-only pre-image carriers" in prompt
+    assert '"disposition": "deleted-preimage"' in prompt
+    assert '"prompt_content": "base\\n"' in prompt
     assert entry["carrier_path"] in prompt
+
+
+def test_present_committed_ref_uses_bound_target_bytes_not_current_workspace(
+    tmp_path: Path,
+) -> None:
+    _repo(tmp_path)
+    (tmp_path / "reviewed.txt").write_text("bound target\n", encoding="utf-8")
+    _git(tmp_path, "add", "reviewed.txt")
+    _git(tmp_path, "commit", "-m", "bound target")
+    target = _git_output(tmp_path, "rev-parse", "HEAD")
+    (tmp_path / "reviewed.txt").write_text("later workspace\n", encoding="utf-8")
+    content = b"bound target\n"
+    packet = {
+        "reviewed_input_identity": {
+            "mode": "committed-ref",
+            "substrate_mode": "committed-ref",
+            "changed_ref": target,
+            "base_head": target,
+            "resolved_changed_ref": [target],
+            "reviewed_paths": ["reviewed.txt"],
+            "reviewed_content": [{
+                "path": "reviewed.txt",
+                "content_sha256": hashlib.sha256(content).hexdigest(),
+            }],
+        }
+    }
+    module = _packet_helper()
+    run_dir = tmp_path / ".charness" / "committed-present"
+    run_dir.mkdir(parents=True)
+
+    semantic_input = module.materialize_semantic_input(tmp_path, packet, run_dir)
+
+    entry = semantic_input["entries"][0]
+    assert entry["prompt_content"] == "bound target\n"
+    assert (tmp_path / entry["carrier_path"]).read_bytes() == content
+    assert entry["source"] == f"{target}:reviewed.txt"
 
 
 @pytest.mark.parametrize("ref_kind", ("commit", "range"))

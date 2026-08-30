@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Materialize verified deleted review inputs for a bounded worker."""
+"""Materialize identity-checked review bytes for every supported backend."""
 
 from __future__ import annotations
 
+import base64
 import hashlib
 import json
 import re
@@ -10,7 +11,8 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
-MAX_PREIMAGE_BYTES = 1024 * 1024
+MAX_SEMANTIC_INPUT_BYTES = 1024 * 1024
+MAX_PREIMAGE_BYTES = MAX_SEMANTIC_INPUT_BYTES
 
 
 class SemanticInputError(ValueError):
@@ -108,67 +110,169 @@ def _read_deleted_preimage(
     )
 
 
+def _expected_content(identity: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    return {
+        entry.get("path"): entry
+        for entry in identity.get("reviewed_content", [])
+        if isinstance(entry, dict) and isinstance(entry.get("path"), str)
+    }
+
+
+def _read_present_content(
+    root: Path, identity: dict[str, Any], path: str, expected_sha256: str
+) -> tuple[bytes, str]:
+    mode = identity.get("substrate_mode") or identity.get("mode")
+    if mode == "committed-ref":
+        target = identity.get("base_head")
+        if not isinstance(target, str) or not target:
+            raise SemanticInputError(
+                "semantic-source-invalid",
+                f"reviewed path `{path}` has no bound committed-ref target",
+                details={"path": path},
+            )
+        content = _git_bytes(root, "show", f"{target}:{path}")
+        source = f"{target}:{path}"
+        actual = hashlib.sha256(content).hexdigest() if content is not None else None
+    elif mode == "working-tree":
+        candidate = root / path
+        try:
+            candidate.resolve().relative_to(root.resolve())
+        except (OSError, ValueError) as exc:
+            raise SemanticInputError(
+                "semantic-source-invalid",
+                f"reviewed path `{path}` escapes the repository root",
+                details={"path": path},
+            ) from exc
+        if candidate.is_symlink() or not candidate.is_file():
+            content = None
+            actual = None
+        else:
+            content = candidate.read_bytes()
+            mode_tag = b"x\0" if candidate.stat().st_mode & 0o111 else b"-\0"
+            actual = hashlib.sha256(b"file\0" + mode_tag + content).hexdigest()
+        source = f"working-tree:{path}"
+    else:
+        raise SemanticInputError(
+            "semantic-source-invalid",
+            f"reviewed path `{path}` has unsupported substrate mode `{mode}`",
+            details={"path": path, "substrate_mode": mode},
+        )
+    if content is None:
+        raise SemanticInputError(
+            "semantic-source-unavailable",
+            f"reviewed path `{path}` has no readable regular-file bytes at its bound source",
+            details={"path": path, "source": source},
+        )
+    if actual != expected_sha256:
+        raise SemanticInputError(
+            "semantic-source-hash-mismatch",
+            f"reviewed path `{path}` bytes do not match its bound identity",
+            details={
+                "path": path,
+                "source": source,
+                "expected_sha256": expected_sha256,
+                "actual_sha256": actual,
+            },
+        )
+    return content, source
+
+
+def _prompt_content(content: bytes) -> tuple[str, str]:
+    try:
+        return "utf-8", content.decode("utf-8")
+    except UnicodeDecodeError:
+        return "base64", base64.b64encode(content).decode("ascii")
+
+
 def materialize_semantic_input(
     root: Path, packet: dict[str, Any], run_dir: Path
 ) -> dict[str, Any]:
-    """Carry deleted pre-images into a hash-checked read-only worker input."""
+    """Carry all reviewed bytes into backend-independent semantic input."""
     identity = packet.get("reviewed_input_identity")
     if not isinstance(identity, dict):
         return {"entries": [], "manifest": None}
-    _, deleted_paths = semantic_review_paths(packet)
-    if not deleted_paths:
-        return {"entries": [], "manifest": None}
+    readable_paths, deleted_paths = semantic_review_paths(packet)
     try:
         run_dir.resolve().relative_to(root.resolve())
     except ValueError as exc:
         raise SemanticInputError(
             "carrier-path-invalid", "semantic input carrier escaped the repository root"
         ) from exc
-    content_by_path = {
-        entry.get("path"): entry
-        for entry in identity.get("reviewed_content", [])
-        if isinstance(entry, dict) and isinstance(entry.get("path"), str)
-    }
-    staged: list[tuple[str, bytes, str, str]] = []
-    for path in deleted_paths:
+    content_by_path = _expected_content(identity)
+    staged: list[tuple[str, bytes, str, str, str]] = []
+    for path in readable_paths + deleted_paths:
         entry = content_by_path.get(path, {})
         expected = entry.get("content_sha256")
         if not isinstance(expected, str):
             raise SemanticInputError(
                 "preimage-hash-invalid",
-                f"deleted reviewed path `{path}` has no bound pre-image hash",
+                f"reviewed path `{path}` has no bound content hash",
                 details={"path": path},
             )
-        content, source = _read_deleted_preimage(root, identity, path, expected)
-        staged.append((path, content, source, expected))
+        if path in deleted_paths:
+            content, source = _read_deleted_preimage(root, identity, path, expected)
+            disposition = "deleted-preimage"
+        else:
+            content, source = _read_present_content(root, identity, path, expected)
+            disposition = "present"
+        staged.append((path, content, source, expected, disposition))
+
+    total_bytes = sum(len(content) for _, content, _, _, _ in staged)
+    if total_bytes > MAX_SEMANTIC_INPUT_BYTES:
+        raise SemanticInputError(
+            "semantic-input-too-large",
+            "reviewed semantic input exceeds the bounded worker input limit",
+            details={
+                "size_bytes": total_bytes,
+                "max_bytes": MAX_SEMANTIC_INPUT_BYTES,
+                "paths": [path for path, _, _, _, _ in staged],
+            },
+        )
 
     carrier_dir = run_dir / "semantic-input"
     carrier_dir.mkdir(parents=True, exist_ok=False)
     entries: list[dict[str, Any]] = []
-    for index, (path, content, source, expected) in enumerate(staged):
-        carrier = carrier_dir / f"{index:04d}-preimage.bin"
+    for index, (path, content, source, expected, disposition) in enumerate(staged):
+        carrier = carrier_dir / f"{index:04d}-content.bin"
         carrier.write_bytes(content)
         carrier.chmod(0o444)
-        if hashlib.sha256(carrier.read_bytes()).hexdigest() != expected:
+        carrier_sha256 = hashlib.sha256(content).hexdigest()
+        if carrier.read_bytes() != content:
             raise SemanticInputError(
-                "preimage-carrier-mismatch",
-                f"materialized pre-image carrier for `{path}` failed its bound hash check",
-                details={"path": path, "carrier": carrier.as_posix(), "expected_sha256": expected},
+                "semantic-carrier-mismatch",
+                f"materialized semantic carrier for `{path}` changed after writing",
+                details={"path": path, "carrier": carrier.as_posix()},
             )
-        entries.append(
-            {
-                "path": path,
-                "carrier_path": carrier.relative_to(root).as_posix(),
-                "content_sha256": expected,
-                "source": source,
-                "size_bytes": len(content),
-            }
-        )
+        encoding, prompt_content = _prompt_content(content)
+        entries.append({
+            "path": path,
+            "disposition": disposition,
+            "carrier_path": carrier.relative_to(root).as_posix(),
+            "content_sha256": expected,
+            "carrier_sha256": carrier_sha256,
+            "source": source,
+            "size_bytes": len(content),
+            "prompt_encoding": encoding,
+            "prompt_content": prompt_content,
+        })
     manifest = carrier_dir / "manifest.json"
     manifest.write_text(
-        json.dumps({"kind": "charness.semantic_input_carrier.v1", "entries": entries}, indent=2) + "\n",
+        json.dumps(
+            {
+                "kind": "charness.semantic_input_carrier.v1",
+                "entries": [
+                    {key: value for key, value in entry.items() if key != "prompt_content"}
+                    for entry in entries
+                ],
+            },
+            indent=2,
+        ) + "\n",
         encoding="utf-8",
     )
     manifest.chmod(0o444)
     carrier_dir.chmod(0o555)
-    return {"entries": entries, "manifest": manifest.relative_to(root).as_posix()}
+    return {
+        "entries": entries,
+        "manifest": manifest.relative_to(root).as_posix(),
+        "size_bytes": total_bytes,
+    }
