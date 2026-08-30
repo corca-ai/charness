@@ -211,3 +211,30 @@ def test_working_tree_producer_replaces_five_git_processes_with_one_snapshot(
     assert producer_module.main() == 0
     assert calls == [["git", *status.status_args()]]
     assert "- removed.md  (DELETED" in capsys.readouterr().out
+
+
+def test_a_staged_deletion_that_was_recreated_is_not_marked_deleted(tmp_path: Path) -> None:
+    """The marker must mean what the identity binds.
+
+    `git rm` then recreating the file leaves it in the staged-deletion list while
+    the file is back on disk, and the identity binds its present bytes. Marking
+    it DELETED made the narrative and the binding describe different states of
+    the same path — the disagreement this marker exists to end, not create.
+    """
+    repo = _repo_with_surfaces(tmp_path)
+    (repo / "kept.md").write_text("one\n", encoding="utf-8")
+    (repo / "revived.md").write_text("original\n", encoding="utf-8")
+    _run_git(repo, "add", "-A")
+    _run_git(repo, "commit", "-m", "initial")
+    _run_git(repo, "rm", "-q", "revived.md")
+    (repo / "revived.md").write_text("recreated\n", encoding="utf-8")
+
+    result = run_script(PRODUCER, "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+    lines = {line.split()[1]: line for line in result.stdout.splitlines() if line.startswith("- ")}
+    assert "DELETED" not in lines.get("revived.md", "")
+    _run_git(repo, "rm", "-q", "kept.md")
+    again = run_script(PRODUCER, "--repo-root", str(repo))
+    lines = {line.split()[1]: line for line in again.stdout.splitlines() if line.startswith("- ")}
+    assert "DELETED" in lines["kept.md"]
+    assert "DELETED" not in lines.get("revived.md", "")

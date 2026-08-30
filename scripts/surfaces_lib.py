@@ -320,7 +320,13 @@ def collect_changed_paths(repo_root: Path) -> list[str]:
 
 
 def collect_deleted_paths(repo_root: Path) -> set[str]:
-    return set(collect_working_tree_snapshot(repo_root).deleted_paths)
+    """Working-tree deletions from one status snapshot.
+
+    A path staged as deleted and then RECREATED on disk is not a deletion to a
+    reviewer: the file is there and the identity binds its present bytes.
+    """
+    removed = set(collect_working_tree_snapshot(repo_root).deleted_paths)
+    return {path for path in removed if not (repo_root / path).exists()}
 
 
 def collect_changed_paths_for_ref(repo_root: Path, ref: str) -> list[str]:

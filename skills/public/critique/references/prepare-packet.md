@@ -222,9 +222,12 @@ Rules:
   unreachable since the working-tree refusal landed, and then claimed a blanket
   refusal that committed-ref mode does not perform.
 - **Current pointers are BOUND, not skipped.** A `latest.md` symlink binds its
-  link payload AND the bytes of the record it names, in both the auto sweep and
-  an explicit declaration, so a retarget and a rewrite-in-place both stale the
-  verdict. A pointer resolving outside the repo root is refused. Refreshing that pointer is the documented step after filing any
+  link payload — the record it names — in both the auto sweep and an explicit
+  declaration, so a retarget stales the verdict. In WORKING-TREE mode the named
+  record's bytes are bound too, because that record can be rewritten in place
+  underneath a verdict; in COMMITTED-REF mode the ref already pins the whole
+  tree, so the link payload is the complete binding. A pointer resolving outside
+  the repo root is refused. Refreshing that pointer is the documented step after filing any
   record, so refusing it made every record-filing session unreviewable until it
   committed; excluding it was worse, because `auto_excluded_paths` is provenance
   and never digested, so a retarget could not stale an approved verdict. Binding
