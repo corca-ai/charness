@@ -457,11 +457,12 @@ def _working_tree_digest(
         return digest, False
     gitlink = _gitlink_sha256(repo_root, path, None, gitlink_snapshot)
     if gitlink is not None:
-        # An index gitlink survives its checkout being deleted, so binding it as
-        # present marked a REMOVED submodule undeleted -- and restoring the
-        # checkout then left that verdict `current`. Absence on disk is the
-        # deletion signal the index cannot carry.
-        return gitlink, not (repo_root / _lexical_path(path)).exists()
+        # A gitlink is DELETED when either signal says so, because each carries a
+        # removal the other cannot. `git rm --cached` drops the index entry and
+        # leaves the checkout; deleting the directory leaves the index entry.
+        indexed = _git_bytes_optional(repo_root, "ls-files", "-s", "--", path)
+        removed = not (repo_root / _lexical_path(path)).exists() or not (indexed or b"").strip()
+        return gitlink, removed
     staged = _object_or_show(repo_root, f":{path}", git_object_snapshot)
     if staged is not None:
         return _recorded_blob_digest(repo_root, path, None, staged), True

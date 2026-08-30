@@ -359,3 +359,46 @@ def test_a_gitlink_path_replaced_by_an_external_symlink_refuses(tmp_path: Path) 
     assert external_head != subprocess.run(
         ["git", "rev-parse", "HEAD"], cwd=repo, capture_output=True, text=True
     ).stdout.strip()
+
+
+def test_a_dirty_submodule_refuses_rather_than_binding_only_its_head(tmp_path: Path) -> None:
+    """Edits inside a submodule do not move its HEAD.
+
+    Binding only the commit reported `current` over content a reviewer had read
+    and the identity had never covered, and the working-tree substrate drops the
+    patch hashes so nothing else carried it. Binding a submodule's full working
+    state means recursing into it; refusing says plainly that this substrate
+    cannot describe what was read.
+    """
+    repo = _submodule_repo(tmp_path)
+    identity = build_reviewed_input_identity(repo_root=repo, reviewed_paths=["sub"])
+    assert verify_reviewed_input_identity(repo, identity) == (True, "current")
+
+    (repo / "sub" / "f.txt").write_text("edited inside the submodule\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="submodule with uncommitted changes"):
+        build_reviewed_input_identity(repo_root=repo, reviewed_paths=["sub"])
+
+
+def test_a_staged_submodule_removal_is_deleted_even_with_its_checkout_retained(
+    tmp_path: Path,
+) -> None:
+    """`git rm --cached` drops the index entry and leaves the checkout on disk.
+
+    Recognising a gitlink only from the index sent that state to the
+    ordinary-directory refusal, which never reached the HEAD pre-image binder;
+    and marking deletion on disk-absence alone would still have called it
+    present. Each signal carries a removal the other cannot.
+    """
+    repo = _submodule_repo(tmp_path)
+    head_gitlink = subprocess.run(
+        ["git", "ls-tree", "HEAD", "--", "sub"], cwd=repo, capture_output=True, text=True
+    ).stdout.split()[2]
+    _run_git(repo, "rm", "-q", "--cached", "sub")
+    assert (repo / "sub").is_dir(), "fixture must retain the checkout"
+
+    identity = build_reviewed_input_identity(repo_root=repo, reviewed_paths=["sub"])
+
+    entry = next(e for e in identity["reviewed_content"] if e["path"] == "sub")
+    assert entry["disposition"] == "deleted"
+    assert entry["content_sha256"] == hashlib.sha256(b"gitlink\0" + head_gitlink.encode()).hexdigest()

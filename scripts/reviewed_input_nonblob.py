@@ -332,6 +332,16 @@ def _gitlink_commit(
     elif index_commit is None:
         raw = _git_bytes_optional(repo_root, "ls-files", "-s", "--", path)
         object_field = 1
+        if not raw:
+            # `git rm --cached <submodule>` drops the index entry while leaving
+            # the checkout on disk. Recognising a gitlink only from the index
+            # then sent a staged submodule REMOVAL to the ordinary-directory
+            # refusal, which reached the HEAD pre-image binder never.
+            head_entry = _git_bytes_optional(repo_root, "ls-tree", "HEAD", "--", path)
+            if head_entry:
+                fields = head_entry.decode("utf-8", errors="surrogateescape").split()
+                if len(fields) > 2 and fields[0] == "160000":
+                    return fields[2]
     else:
         raw = None
         object_field = 1
@@ -381,6 +391,13 @@ def _gitlink_commit(
             return fields[object_field]
         resolved = Path(snapshot_lines[0].strip())
         if resolved.resolve() == submodule_root.resolve():
+            dirty = _git_bytes_optional(submodule_root, "status", "--porcelain")
+            if dirty is not None and dirty.strip():
+                raise ValueError(
+                    f"reviewed path `{path}` is a submodule with uncommitted changes; "
+                    "commit them or declare the files inside it, since a gitlink binds "
+                    "only the checked-out commit"
+                )
             return snapshot_lines[1].strip()
     return fields[object_field]
 
