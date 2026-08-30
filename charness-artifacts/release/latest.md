@@ -1,42 +1,97 @@
 # Release Surface Check
-
-<!-- charness-release-state:abandoned-prepare -->
-Date: 2026-08-29
+<!-- charness-release-state:prepared-awaiting-claims-review -->
+Date: 2026-08-31
 
 ## Scope
 
+Advanced `charness` toward release `8.0.0` (tag `v8.0.0`) through the repo-owned release helper.
+
+## Current Version
+
+- previous version: `7.0.0`
 - target version: `8.0.0`
+- git branch: `main`
+- git remote: `origin`
 
-This record ABANDONS the `8.0.0` prepare attempt of 2026-08-28
-(`533f24dad release: prepare charness v8.0.0 locally`). It is not a
-release record. The next release run rewrites this file.
+## Verification
 
-## Why this attempt is abandoned rather than resumed
+- `./scripts/run-quality.sh --release --non-claim=release-changed-line-coverage` exited 0 in 131.8s at `post-bump, pre-commit`, measured by this helper (`./scripts/run-quality.sh --release --non-claim=release-changed-line-coverage`).
+- `current_release.py` reported no version drift across 4 versioned surface(s), with 1 presence-only surface(s) not version-checked against target `8.0.0`, checked at `post-bump, pre-commit`.
 
-- Nothing was published. `git ls-remote --tags origin 'refs/tags/v8*'`
-  returns empty, there is no `v8.0.0` GitHub release, and `origin/main`
-  is 78 commits behind local `main`.
-- No claims review was ever committed against it. The superseded record
-  read `pending independent claims review` for the branch/tag push, the
-  GitHub release record, and the public surface verification, so the
-  prepared boundary binds no review and discards no evidence.
-- The prepared record commit is unreachable as a boundary. 78 commits of
-  the #748 slice-1 migration and the #753 test-corpus work landed on top
-  of it. `critique-boundary.md:145-150` names the abandon exit as "a
-  reset to the commit before the prepared record"; that reset would
-  discard all of that work, so the exit is taken by RECORDING the
-  abandonment here instead.
+## Release State
 
-`critique-boundary.md:124-131` states plainly that deleting the marker
-and amending is cheaper than authoring an accepted record, and that the
-floor "does not defeat a deliberate bypass" — its standard is that a
-reviewer should read the claims record itself rather than infer one from
-a green publish. This file is that record: the bypass is deliberate,
-its reason is stated, and no review verdict is claimed.
+- local release mutation: complete
+- branch/tag push: pending independent claims review.
+- GitHub release record: pending independent claims review before creation
+- public release surface verification: pending independent claims review
+- audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
-## Non-claims
+## Public Release Verification
 
-- No quality, real-host, or claims-review proof is carried forward from
-  the 2026-08-28 attempt. The new run establishes its own.
-- The superseded record's real-host checklist is not discharged by this
-  file.
+- GitHub release publication: expected after branch/tag push; not verified yet.
+
+## Release Adapter Preflight
+
+- Release adapter focused preflight status: `required`.
+- Reason: release adapter changed in the release delta; focused adapter preflight is required before release mutation
+- Previous release ref: `refs/tags/v7.0.0`
+- Adapter paths in release delta:
+  - `.agents/release-adapter.yaml`
+- Changed adapter fields:
+  - `checked_in_plugin_root`
+  - `materialized_plugin_root`
+  - `quality_command`
+  - `real_host_checklist`
+  - `real_host_required_path_globs`
+  - `real_host_required_surfaces`
+- Focused preflight commands:
+  - `python3 skills/public/release/scripts/resolve_adapter.py --repo-root .`
+- Focused preflight execution: `passed`.
+  - executed: `python3 skills/public/release/scripts/resolve_adapter.py --repo-root .`
+
+## Review Proof
+
+- Review proof: `charness-artifacts/critique/2026-08-31-v8.0.0-release-repair-critique.md`.
+
+## Claims Review
+
+- Claims review: not yet performed -- THIS record is the subject of the pending independent review, and publication is stopped until that review is committed.
+
+## Requested Review Gate
+
+- Requested-review gate status: `ok`.
+- Configuration status: `advisory_only`.
+- Policy: `advisory-only`.
+- Configured command count: `0`.
+
+## Install Refresh
+
+- Post-publish install refresh: pending final publish verification.
+
+## Release Runtime
+
+- `requested_review_gate`: 0.007s
+- `cli_skill_surface_gate`: 0.127s
+- `quality_command`: 131.767s
+- `fresh_checkout_probes_initial`: 4.082s
+
+## Fresh Checkout Probes
+
+- Fresh-checkout probe status: passed.
+- `./charness --help >/dev/null`
+- `./charness goal run --help >/dev/null`
+- `python3 scripts/doctor.py --repo-root . --skip-release-probe >/dev/null`
+
+## Issue Closeout
+
+- Issue closeout verification: pending or not requested.
+
+## User Update Steps
+
+- Run `charness update` to install the latest published Charness release.
+- Read the GitHub release notes for release-specific behavior changes, migrations, or rollback notes.
+
+
+## Bump Rationale
+
+> Publish the already-prepared 8.0.0 major release: it removes incompatible task and handoff surfaces, renames the materialized plugin export contract, and changes existing automation expectations.
