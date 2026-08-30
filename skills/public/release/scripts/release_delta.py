@@ -7,15 +7,17 @@ import subprocess
 from pathlib import Path
 
 _FULL_OBJECT_ID_RE = re.compile(r"^[0-9a-f]+$")
+_RESOLVED_OBJECT_ID_RE = re.compile(r"^[0-9a-f]{40}(?:[0-9a-f]{24})?$")
 
 
-def _git(repo_root: Path, *args: str, text: bool = True):
+def _git(repo_root: Path, *args: str, text: bool = True, input_data=None):
     result = subprocess.run(
         ["git", *args],
         cwd=repo_root,
         check=False,
         capture_output=True,
         text=text,
+        input=input_data,
     )
     if result.returncode != 0:
         stderr = result.stderr if text else os.fsdecode(result.stderr)
@@ -27,6 +29,50 @@ def _git(repo_root: Path, *args: str, text: bool = True):
 
 def resolve_full_commit(repo_root: Path, ref: str) -> str:
     return _git(repo_root, "rev-parse", "--verify", f"{ref}^{{commit}}").strip()
+
+
+def _resolve_release_commits(
+    repo_root: Path, base_ref: str, head_ref: str
+) -> tuple[str, str]:
+    refs = (("base", base_ref), ("head", head_ref))
+    expressions = [f"{ref}^{{commit}}" for _, ref in refs]
+    output = _git(
+        repo_root,
+        "cat-file",
+        "--batch-check=%(objectname) %(objecttype)",
+        input_data="\n".join(expressions) + "\n",
+    )
+    if not isinstance(output, str):
+        raise ValueError("git cat-file returned non-text ref resolution output")
+
+    records = output.splitlines()
+    resolved: list[str] = []
+    for index, (label, ref) in enumerate(refs):
+        if index >= len(records):
+            raise ValueError(
+                f"could not resolve {label} ref {ref!r}: "
+                "git cat-file returned missing output"
+            )
+        fields = records[index].split()
+        if (
+            len(fields) != 2
+            or not _RESOLVED_OBJECT_ID_RE.fullmatch(fields[0])
+            or fields[1] != "commit"
+        ):
+            detail = (
+                "git cat-file reported the object as missing"
+                if records[index].endswith(" missing")
+                else f"malformed git cat-file output {records[index]!r}"
+            )
+            raise ValueError(f"could not resolve {label} ref {ref!r}: {detail}")
+        resolved.append(fields[0])
+
+    if len(records) != len(refs):
+        raise ValueError(
+            "git cat-file returned unexpected extra ref resolution output for "
+            f"base ref {base_ref!r} and head ref {head_ref!r}"
+        )
+    return resolved[0], resolved[1]
 
 
 def path_list_sha256(paths: list[str]) -> str:
@@ -72,6 +118,5 @@ def collect_immutable_range(repo_root: Path, changed_range: str) -> dict[str, ob
 
 
 def collect_release_delta(repo_root: Path, base_ref: str, head_ref: str = "HEAD") -> dict[str, object]:
-    base_sha = resolve_full_commit(repo_root, base_ref)
-    head_sha = resolve_full_commit(repo_root, head_ref)
+    base_sha, head_sha = _resolve_release_commits(repo_root, base_ref, head_ref)
     return _collect_resolved_range(repo_root, base_sha, head_sha)
