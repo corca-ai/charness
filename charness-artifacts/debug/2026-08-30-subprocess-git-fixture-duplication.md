@@ -72,6 +72,12 @@ cross that boundary independently.
   bootstrap. The mutation wrapper also exits when its expected parent dies.
 - The census was instrumented, so its elapsed time is not speed evidence. It
   proves removed process work in this suite, not consumer-repository latency.
+- The v8.0.0 publish exposed a sibling after the census: the release helper's
+  130.8-second established quality run was followed by the pre-push hook's
+  100.8-second broad run over the same push. A semantic one-push receipt now
+  binds pass/exit/unproven/full-queue state to the exact clean HEAD/tree and
+  ignored materialized-export digest. The irreversible close-keyword scan is
+  never reused; stale or changed state runs the ordinary gate.
 
 ## Root Cause
 
@@ -109,6 +115,9 @@ the only actor capable of completing or cancelling the wait.
   unrelated Python processes, and only a timing failure exposed the contamination
   | keep diagnostic import hooks outside the repository, require an explicit log
   environment variable, and reject wall-time evidence from an instrumented run.
+- release/push composition | two individually correct quality owners ran in
+  sequence without a proof handoff | accept only the quality runner's semantic
+  receipt sealed to the final push subject; never infer trust from exit 0 alone.
 
 ## Sibling Search
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import runpy
+import shlex
 from pathlib import Path
 from typing import Any
 
@@ -41,7 +42,15 @@ def preflight_close_issue_carrier(
     )
 
 
-def run_pre_push_quality_gates(repo_root: Path, adapter_data: dict[str, Any], payload: dict[str, Any], *, cli: Any, stage: str) -> None:
+def run_pre_push_quality_gates(
+    repo_root: Path,
+    adapter_data: dict[str, Any],
+    payload: dict[str, Any],
+    *,
+    cli: Any,
+    stage: str,
+    prepush_receipt_path: Path | None = None,
+) -> None:
     payload["requested_review_gate"] = timed(
         payload, "requested_review_gate", lambda: cli.run_requested_review_gate(repo_root)
     )
@@ -52,11 +61,57 @@ def run_pre_push_quality_gates(repo_root: Path, adapter_data: dict[str, Any], pa
     # per-check lifecycle produced pure silence until it exited -- indistinguishable
     # from a hang, at the exact moment the operator is deciding whether to abort a
     # publish. The body stays isolated; only the lifecycle reaches stderr.
+    quality_command = str(adapter_data["quality_command"])
+    effective_command = quality_command
+    semantic_receipt = None
+    materialized_root = adapter_data.get("materialized_plugin_root")
+    try:
+        quality_argv = shlex.split(quality_command)
+    except ValueError:
+        quality_argv = []
+    quality_runner = None
+    if quality_argv:
+        candidate = Path(quality_argv[0])
+        quality_runner = candidate if candidate.is_absolute() else repo_root / candidate
+    receipt_capable = (
+        prepush_receipt_path is not None
+        and "--release" in quality_argv
+        and bool(quality_argv)
+        and quality_runner is not None
+        and quality_runner.resolve() == (repo_root / "scripts" / "run-quality.sh").resolve()
+        and isinstance(materialized_root, str)
+        and bool(materialized_root)
+        and (repo_root / "scripts" / "prepush_quality_receipt.py").is_file()
+    )
+    if receipt_capable:
+        semantic_receipt = prepush_receipt_path.with_name("semantic-quality.json")
+        effective_command = (
+            f"{quality_command} --receipt-json={shlex.quote(str(semantic_receipt))}"
+        )
     timed(
         payload,
         "quality_command",
-        lambda: cli.run_phase(str(adapter_data["quality_command"]), cwd=repo_root, phase="quality_command"),
+        lambda: cli.run_phase(effective_command, cwd=repo_root, phase="quality_command"),
     )
+    if receipt_capable and semantic_receipt is not None and prepush_receipt_path is not None:
+        cli.run(
+            [
+                "python3",
+                "scripts/prepush_quality_receipt.py",
+                "seal",
+                "--repo-root",
+                str(repo_root),
+                "--quality-command",
+                quality_command,
+                "--semantic-receipt",
+                str(semantic_receipt),
+                "--materialized-root",
+                str(materialized_root),
+                "--output",
+                str(prepush_receipt_path),
+            ],
+            cwd=repo_root,
+        )
     # STAMP THE RESULT, do not let the record render a default literal.
     #
     # `run_phase` raises on a non-zero exit, so reaching this line means the gate

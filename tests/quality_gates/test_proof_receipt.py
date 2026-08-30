@@ -108,6 +108,9 @@ def test_quality_receipt_keeps_mixed_recovery_and_actual_exit() -> None:
     )
 
 
+@pytest.mark.boundary_contract(
+    reason="prove the quality receipt CLI writes the semantic JSON consumed across the release/pre-push process boundary"
+)
 def test_quality_cli_writes_explicit_opt_in_receipt(tmp_path: Path) -> None:
     receipt_path = tmp_path / "receipt.json"
     result = subprocess.run(
@@ -125,6 +128,8 @@ def test_quality_cli_writes_explicit_opt_in_receipt(tmp_path: Path) -> None:
             "0",
             "--elapsed",
             "4ms",
+            "--execution-mode",
+            "full",
             "--measured-scope",
             "lint",
             "--json-path",
@@ -143,6 +148,9 @@ def test_quality_cli_writes_explicit_opt_in_receipt(tmp_path: Path) -> None:
     assert payload["measured_scope"] == ["lint"]
 
 
+@pytest.mark.boundary_contract(
+    reason="prove the quality receipt CLI preserves its delivery-order and exit-code contract when the output process boundary fails"
+)
 def test_quality_cli_write_failure_precedes_final_human_line(tmp_path: Path) -> None:
     blocked_target = tmp_path / "existing-directory"
     blocked_target.mkdir()
@@ -161,6 +169,8 @@ def test_quality_cli_write_failure_precedes_final_human_line(tmp_path: Path) -> 
             "0",
             "--elapsed",
             "4ms",
+            "--execution-mode",
+            "full",
             "--json-path",
             str(blocked_target),
         ],

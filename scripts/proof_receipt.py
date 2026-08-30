@@ -175,7 +175,15 @@ def _quality_cli(args: argparse.Namespace) -> int:
         recoveries=recoveries,
         unproven_subjects=args.unproven_subject,
         effective_exit_code=args.effective_exit_code,
-        details={"passed": args.passed, "failed": args.failed, "elapsed": args.elapsed},
+        details={
+            "passed": args.passed,
+            "failed": args.failed,
+            "elapsed": args.elapsed,
+            "execution_mode": args.execution_mode,
+            "release": args.release,
+            "full_queue": args.full_queue,
+            "non_claim": args.non_claim,
+        },
     )
     write_failed = False
     if args.json_path:
@@ -197,6 +205,10 @@ def _parser() -> argparse.ArgumentParser:
     quality.add_argument("--passed", type=int, required=True)
     quality.add_argument("--failed", type=int, required=True)
     quality.add_argument("--elapsed", required=True)
+    quality.add_argument("--execution-mode", choices=("full", "read-only"), required=True)
+    quality.add_argument("--release", action="store_true")
+    quality.add_argument("--full-queue", action="store_true")
+    quality.add_argument("--non-claim", default="")
     quality.add_argument("--measured-scope", action="append", default=[])
     quality.add_argument("--adverse-subject", action="append", default=[])
     quality.add_argument("--recovery", action="append", default=[])

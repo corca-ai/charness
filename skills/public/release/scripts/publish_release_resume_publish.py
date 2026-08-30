@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -144,8 +146,15 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
     payload["version_drift_check"] = cli.ensure_release_surface(
         repo_root, target_version, stage="post-claims-review, pre-push"
     )
+    receipt_dir = tempfile.TemporaryDirectory(prefix="charness-prepush-quality-")
+    receipt_path: Path | None = Path(receipt_dir.name) / "receipt.json"
     common.run_pre_push_quality_gates(
-        repo_root, adapter_data, payload, cli=cli, stage="post-claims-review, pre-push"
+        repo_root,
+        adapter_data,
+        payload,
+        cli=cli,
+        stage="post-claims-review, pre-push",
+        prepush_receipt_path=receipt_path,
     )
     fresh = common.timed(payload, "fresh_checkout_probes_resume", lambda: cli.run_fresh_checkout_probes(repo_root))
     payload["fresh_checkout_probe_status"] = fresh["status"]
@@ -181,24 +190,44 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
     )
     commit_artifact_before_push(repo_root, cli=cli, tag_name=tag_name, record_path=record_path)
 
+    branch_needed = state["remote_branch_sha"] != (
+        state.get("claims_evidence_commit") or state["head_sha"]
+    )
+    tag_needed = not state["tag_remote"]
+    if not receipt_path.is_file():
+        receipt_path = None
+
+    def push_with_receipt(command: list[str]) -> None:
+        previous = os.environ.get("CHARNESS_PREPUSH_QUALITY_RECEIPT")
+        if receipt_path is not None:
+            os.environ["CHARNESS_PREPUSH_QUALITY_RECEIPT"] = str(receipt_path)
+        try:
+            cli.run(command, cwd=repo_root)
+        finally:
+            if previous is None:
+                os.environ.pop("CHARNESS_PREPUSH_QUALITY_RECEIPT", None)
+            else:
+                os.environ["CHARNESS_PREPUSH_QUALITY_RECEIPT"] = previous
+
     def publish() -> tuple[str, Any]:
         if not state["tag_local"]:
             cli.run(["git", "tag", tag_name, state["prepared"]["commit"] if claims_lane else state["head_sha"]], cwd=repo_root)
-        branch_needed = state["remote_branch_sha"] != (state.get("claims_evidence_commit") or state["head_sha"])
-        tag_needed = not state["tag_remote"]
         if branch_needed and tag_needed:
-            cli.run(["git", "push", args.remote, branch, tag_name], cwd=repo_root)
+            push_with_receipt(["git", "push", args.remote, branch, tag_name])
         elif branch_needed:
-            cli.run(["git", "push", args.remote, branch], cwd=repo_root)
+            push_with_receipt(["git", "push", args.remote, branch])
         elif tag_needed:
-            cli.run(["git", "push", args.remote, tag_name], cwd=repo_root)
+            push_with_receipt(["git", "push", args.remote, tag_name])
         output = (
             expected_url or "" if state["release_exists"]
             else cli.create_release(repo_root, backend, tag_name=tag_name, title=plan["title"], notes_file=notes_file).stdout
         )
         return output, cli.verify_release_visible(repo_root, tag_name, backend, backend_command=cli.backend_command, run=cli.run)
 
-    release_stdout, verified = common.timed(payload, "push_create_verify_release", publish)
+    try:
+        release_stdout, verified = common.timed(payload, "push_create_verify_release", publish)
+    finally:
+        receipt_dir.cleanup()
     # The TAGGED commit on the claims lane, not HEAD: `publish` tags
     # `state["prepared"]["commit"]`, while HEAD here is the follow-on evidence commit
     # `commit_artifact_before_push` may have just made. The non-claims lane has no such

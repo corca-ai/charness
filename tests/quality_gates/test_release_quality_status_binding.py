@@ -25,7 +25,12 @@ to lose that race, and these tests pin the owner rather than the callers.
 """
 from __future__ import annotations
 
+import json
+import shlex
+import shutil
+import subprocess
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -160,3 +165,88 @@ def test_each_lane_states_its_own_true_stage() -> None:
     for name, expected in lanes.items():
         text = (_RELEASE / name).read_text(encoding="utf-8")
         assert f'stage="{expected}"' in text, f"{name} must state stage={expected!r}"
+
+
+@pytest.mark.boundary_contract(
+    reason="prove the release helper seals the semantic quality result to the exact Git and ignored export state consumed by pre-push"
+)
+def test_release_quality_seals_a_semantic_one_push_receipt(tmp_path: Path) -> None:
+    common = _load("publish_release_common")
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    (repo / "plugins" / "charness").mkdir(parents=True)
+    (repo / ".gitignore").write_text("plugins/\n", encoding="utf-8")
+    (repo / "scripts" / "run-quality.sh").write_text("#!/usr/bin/env bash\n", encoding="utf-8")
+    shutil.copy2(
+        ROOT / "scripts" / "prepush_quality_receipt.py",
+        repo / "scripts" / "prepush_quality_receipt.py",
+    )
+    (repo / "plugins" / "charness" / "plugin.txt").write_text("v1\n", encoding="utf-8")
+    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
+    subprocess.run(["git", "config", "user.name", "test"], cwd=repo, check=True)
+    subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=repo, check=True)
+    subprocess.run(["git", "add", ".gitignore", "scripts"], cwd=repo, check=True)
+    subprocess.run(["git", "commit", "-qm", "seed"], cwd=repo, check=True)
+
+    class Cli:
+        def run_requested_review_gate(self, _repo):
+            return {"status": "ok"}
+
+        def run_cli_skill_surface_gate(self, _repo, _adapter):
+            return None
+
+        def run_phase(self, command, *, cwd, phase):
+            receipt_arg = next(
+                value for value in shlex.split(command) if value.startswith("--receipt-json=")
+            )
+            receipt_path = Path(receipt_arg.split("=", 1)[1])
+            receipt_path.write_text(
+                json.dumps(
+                    {
+                        "surface": "quality",
+                        "status": "pass",
+                        "measured_scope": ["pytest-release", "validate-skills"],
+                        "adverse_subjects": [],
+                        "unproven_subjects": [],
+                        "cause": None,
+                        "effective_exit_code": 0,
+                        "details": {
+                            "passed": 2,
+                            "failed": 0,
+                            "elapsed": "1s",
+                            "execution_mode": "read-only",
+                            "release": True,
+                            "full_queue": True,
+                            "non_claim": "",
+                        },
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            return SimpleNamespace(returncode=0)
+
+        def run(self, command, *, cwd):
+            return subprocess.run(command, cwd=cwd, check=True, capture_output=True, text=True)
+
+    sealed = tmp_path / "sealed.json"
+    payload: dict = {}
+    common.run_pre_push_quality_gates(
+        repo,
+        {
+            "quality_command": "./scripts/run-quality.sh --release --read-only",
+            "materialized_plugin_root": "plugins/charness",
+        },
+        payload,
+        cli=Cli(),
+        stage="post-claims-review, pre-push",
+        prepush_receipt_path=sealed,
+    )
+
+    receipt = json.loads(sealed.read_text(encoding="utf-8"))
+    assert receipt["status"] == "pass"
+    assert receipt["verified_head"] == subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True
+    ).stdout.strip()
+    assert receipt["materialized_root"] == "plugins/charness"
+    assert payload["quality_status"].startswith("exited 0")

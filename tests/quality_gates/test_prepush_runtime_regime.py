@@ -18,11 +18,18 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
+pytestmark = pytest.mark.boundary_contract(
+    reason=(
+        "exercise the repository-owned pre-push hook as a real process because stdin, "
+        "environment, exit status, and one-shot receipt consumption are its public boundary"
+    )
+)
 
 
 def _git(repo: Path, *args: str) -> str:
@@ -43,13 +50,19 @@ def _seed_prepush_repo(tmp_path: Path) -> Path:
     (repo / "scripts").mkdir(parents=True)
     (repo / ".githooks").mkdir(parents=True)
     (repo / "docs").mkdir(parents=True)
+    (repo / "plugins" / "charness").mkdir(parents=True)
 
     shutil.copy2(ROOT / ".githooks" / "pre-push", repo / ".githooks" / "pre-push")
     shutil.copy2(ROOT / ".githooks" / "runtime-env.sh", repo / ".githooks" / "runtime-env.sh")
     # `yaml_output.py` joined this set with the unconditional-YAML migration:
     # `classify_push_diff.py` now imports `emit_yaml` at module scope, so a
     # synthetic repo without it fails at import and never reaches classification.
-    for name in ("classify_push_diff.py", "classify_push_diff_lib.py", "yaml_output.py"):
+    for name in (
+        "classify_push_diff.py",
+        "classify_push_diff_lib.py",
+        "prepush_quality_receipt.py",
+        "yaml_output.py",
+    ):
         shutil.copy2(ROOT / "scripts" / name, repo / "scripts" / name)
 
     # Pre-classification phases the hook runs unconditionally; they are not what
@@ -92,22 +105,35 @@ def _seed_prepush_repo(tmp_path: Path) -> Path:
     _git(repo, "config", "user.email", "test@example.com")
     _git(repo, "config", "user.name", "Test")
     (repo / "docs" / "seed.md").write_text("# seed\n", encoding="utf-8")
+    (repo / ".gitignore").write_text("plugins/\n", encoding="utf-8")
+    (repo / "plugins" / "charness" / "plugin.txt").write_text("seed\n", encoding="utf-8")
     _git(repo, "add", "-A")
     _git(repo, "commit", "-m", "seed")
     return repo
 
 
-def _run_hook(repo: Path, base_sha: str, head_sha: str, log: Path) -> subprocess.CompletedProcess[str]:
+def _run_hook(
+    repo: Path,
+    base_sha: str,
+    head_sha: str,
+    log: Path,
+    *,
+    receipt: Path | None = None,
+    push_input: str | None = None,
+) -> subprocess.CompletedProcess[str]:
     env = dict(os.environ)
     env["QUALITY_INVOCATION_LOG"] = str(log)
     env["GUARD_STDIN_LOG"] = str(log.with_name("guard-stdin.txt"))
     env.pop("CHARNESS_RUNTIME_REGIME", None)
     env.pop("CHARNESS_QUALITY_LABELS", None)
     env.pop("CHARNESS_FORCE_FULL_GATE", None)
+    env.pop("CHARNESS_PREPUSH_QUALITY_RECEIPT", None)
+    if receipt is not None:
+        env["CHARNESS_PREPUSH_QUALITY_RECEIPT"] = str(receipt)
     return subprocess.run(
         [str(repo / ".githooks" / "pre-push"), "origin", "https://example.invalid/x.git"],
         cwd=repo,
-        input=f"refs/heads/main {head_sha} refs/heads/main {base_sha}\n",
+        input=push_input or f"refs/heads/main {head_sha} refs/heads/main {base_sha}\n",
         env=env,
         check=False,
         capture_output=True,
@@ -140,6 +166,170 @@ def test_the_docs_only_subset_names_its_regime_so_its_samples_stay_out_of_the_fu
         "window the full-queue budgets are enforced against -- the #544 defect"
     )
     assert "--read-only" in payload["argv"]
+
+
+def test_release_receipt_reuses_quality_but_still_runs_the_irreversible_guard(
+    prepush_repo: Path, tmp_path: Path
+) -> None:
+    base = _git(prepush_repo, "rev-parse", "HEAD")
+    (prepush_repo / "scripts" / "thing.py").write_text("x = 1\n", encoding="utf-8")
+    _git(prepush_repo, "add", "scripts/thing.py")
+    _git(prepush_repo, "commit", "-m", "code change")
+    head = _git(prepush_repo, "rev-parse", "HEAD")
+    receipt = tmp_path / "quality-receipt.json"
+    semantic = tmp_path / "semantic-quality.json"
+    semantic.write_text(
+        json.dumps(
+            {
+                "surface": "quality",
+                "status": "pass",
+                "measured_scope": ["pytest-release", "validate-skills"],
+                "adverse_subjects": [],
+                "unproven_subjects": [],
+                "cause": None,
+                "effective_exit_code": 0,
+                "details": {
+                    "passed": 2,
+                    "failed": 0,
+                    "elapsed": "1s",
+                    "execution_mode": "read-only",
+                    "release": True,
+                    "full_queue": True,
+                    "non_claim": "",
+                },
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    subprocess.run(
+        [
+            sys.executable,
+            str(prepush_repo / "scripts" / "prepush_quality_receipt.py"),
+            "seal",
+            "--repo-root",
+            str(prepush_repo),
+            "--quality-command",
+            "./scripts/run-quality.sh --release",
+            "--semantic-receipt",
+            str(semantic),
+            "--materialized-root",
+            "plugins/charness",
+            "--output",
+            str(receipt),
+        ],
+        cwd=prepush_repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    unestablished = json.loads(semantic.read_text(encoding="utf-8"))
+    unestablished["status"] = "unestablished"
+    unestablished["unproven_subjects"] = ["release-changed-line-coverage"]
+    unestablished_path = tmp_path / "unestablished-quality.json"
+    unestablished_path.write_text(json.dumps(unestablished) + "\n", encoding="utf-8")
+    refused = subprocess.run(
+        [
+            sys.executable,
+            str(prepush_repo / "scripts" / "prepush_quality_receipt.py"),
+            "seal",
+            "--repo-root",
+            str(prepush_repo),
+            "--quality-command",
+            "./scripts/run-quality.sh --release",
+            "--semantic-receipt",
+            str(unestablished_path),
+            "--materialized-root",
+            "plugins/charness",
+            "--output",
+            str(tmp_path / "must-not-exist.json"),
+        ],
+        cwd=prepush_repo,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert refused.returncode == 1
+    assert "not an established release/full pass" in refused.stderr
+
+    log = tmp_path / "quality-invocation.json"
+    multi_ref_input = (
+        f"refs/heads/main {head} refs/heads/main {base}\n"
+        f"refs/tags/v1 {base} refs/tags/v1 {'0' * 40}\n"
+    )
+    result = _run_hook(
+        prepush_repo, base, head, log, receipt=receipt, push_input=multi_ref_input
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert not log.exists(), "a valid release receipt must omit the duplicate broad gate"
+    assert "reusing release quality receipt" in result.stdout
+    assert not receipt.exists(), "a successful hook validation consumes its one-push receipt"
+    assert (tmp_path / "guard-stdin.txt").read_text(encoding="utf-8") == multi_ref_input
+
+    export_receipt = tmp_path / "export-quality-receipt.json"
+    subprocess.run(
+        [
+            sys.executable,
+            str(prepush_repo / "scripts" / "prepush_quality_receipt.py"),
+            "seal",
+            "--repo-root",
+            str(prepush_repo),
+            "--quality-command",
+            "./scripts/run-quality.sh --release",
+            "--semantic-receipt",
+            str(semantic),
+            "--materialized-root",
+            "plugins/charness",
+            "--output",
+            str(export_receipt),
+        ],
+        cwd=prepush_repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    (prepush_repo / "plugins" / "charness" / "plugin.txt").write_text(
+        "changed after quality\n", encoding="utf-8"
+    )
+    export_fallback = _run_hook(prepush_repo, base, head, log, receipt=export_receipt)
+    assert export_fallback.returncode == 0, export_fallback.stderr
+    assert "materialized plugin export changed" in export_fallback.stderr
+    (prepush_repo / "plugins" / "charness" / "plugin.txt").write_text(
+        "seed\n", encoding="utf-8"
+    )
+
+    stale_receipt = tmp_path / "stale-quality-receipt.json"
+    subprocess.run(
+        [
+            sys.executable,
+            str(prepush_repo / "scripts" / "prepush_quality_receipt.py"),
+            "seal",
+            "--repo-root",
+            str(prepush_repo),
+            "--quality-command",
+            "./scripts/run-quality.sh --release",
+            "--semantic-receipt",
+            str(semantic),
+            "--materialized-root",
+            "plugins/charness",
+            "--output",
+            str(stale_receipt),
+        ],
+        cwd=prepush_repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    (prepush_repo / "scripts" / "later.py").write_text("x = 2\n", encoding="utf-8")
+    _git(prepush_repo, "add", "scripts/later.py")
+    _git(prepush_repo, "commit", "-m", "later change")
+    later = _git(prepush_repo, "rev-parse", "HEAD")
+    fallback = _run_hook(prepush_repo, head, later, log, receipt=stale_receipt)
+
+    assert fallback.returncode == 0, fallback.stderr
+    assert "receipt was not reusable" in fallback.stderr
+    assert json.loads(log.read_text(encoding="utf-8"))["argv"][-2:] == ["--full", "--read-only"]
 
 
 def test_a_full_gate_push_leaves_the_regime_empty(prepush_repo: Path, tmp_path: Path) -> None:

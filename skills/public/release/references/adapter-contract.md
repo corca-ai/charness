@@ -85,6 +85,11 @@ both fields to commands YOUR repo can run.
   This exact release-only label omits that lane rather than converting a failed
   verdict into success; all other release gates still run. Preserve the command
   in the tagged adapter and state the missing verdict in the release notes.
+  When this repo-owned release command produces an established semantic receipt,
+  the resume helper seals it to the exact clean HEAD/tree and materialized export.
+  The child push may reuse that one-shot receipt for the pre-push broad lane; the
+  close-keyword guard always runs, and any state drift falls back to the normal
+  pre-push gate.
 - `update_instructions`: empty list
 - `requested_review_commands`: empty list
 - `requested_review_policy`: `warn-if-unconfigured`

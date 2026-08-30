@@ -923,7 +923,17 @@ print_final_summary() {
   fi
 
   local -a receipt_args=(--status "$status" --effective-exit-code "$OVERALL_RC" \
-    --passed "$TOTAL_PASSES" --failed "$TOTAL_FAILURES" --elapsed "$(format_elapsed "$elapsed_ms")")
+    --passed "$TOTAL_PASSES" --failed "$TOTAL_FAILURES" --elapsed "$(format_elapsed "$elapsed_ms")" \
+    --execution-mode "$RUN_QUALITY_MODE")
+  if [[ "$RUN_QUALITY_RELEASE" == "1" ]]; then
+    receipt_args+=(--release)
+  fi
+  if [[ "$RUN_QUALITY_FULL_QUEUE" == "1" ]]; then
+    receipt_args+=(--full-queue)
+  fi
+  if [[ -n "$RUN_QUALITY_NON_CLAIM" ]]; then
+    receipt_args+=(--non-claim "$RUN_QUALITY_NON_CLAIM")
+  fi
   local scope_label unproven_label i
   for scope_label in "${MEASURED_LABELS[@]}"; do
     receipt_args+=(--measured-scope "$scope_label")

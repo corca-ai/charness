@@ -25,6 +25,22 @@ echo "charness pre-push: scanning the push range for GitHub close keywords"
 printf '%s\n' "$push_stdin" | python3 scripts/prepush_close_keyword_guard.py \
   --repo-root "$REPO_ROOT" --remote "${1:-origin}"
 
+# A release publish already ran a strict superset of this hook's broad quality
+# lane. Its child `git push` may carry a one-push receipt bound to the clean HEAD,
+# tree, repo, exact release command, and every local object on hook stdin. The
+# irreversible close-keyword scan above always runs; only the duplicated quality
+# lane below is eligible for reuse. A missing, stale, or malformed receipt falls
+# back to normal validation instead of weakening an ordinary push.
+prepush_receipt="${CHARNESS_PREPUSH_QUALITY_RECEIPT:-}"
+if [[ -n "$prepush_receipt" ]]; then
+  if printf '%s\n' "$push_stdin" | python3 scripts/prepush_quality_receipt.py validate \
+      --repo-root "$REPO_ROOT" --receipt "$prepush_receipt" --consume; then
+    echo "charness pre-push: reusing release quality receipt; duplicate broad gate omitted"
+    exit 0
+  fi
+  echo "charness pre-push: release quality receipt was not reusable; running normal gate" >&2
+fi
+
 # Slice 7 (#230 Waste 3): classify the pending push to decide whether to run
 # the full broad gate or a smaller docs-only subset. Stop condition is
 # mechanically enforced by classify_push_diff_lib.UNCONDITIONAL_FULL_GATE_PREFIXES
