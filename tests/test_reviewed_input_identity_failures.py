@@ -71,6 +71,25 @@ def test_clean_worktree_identity_skips_empty_patch_processes(
     assert calls == [status_call]
 
 
+def test_committed_ref_identity_does_not_probe_is_inside_work_tree(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _init_repo(tmp_path)
+    calls: list[tuple[str, ...]] = []
+    original = identity_lib._git_bytes
+
+    def observed(repo_root: Path, *args: str) -> bytes:
+        calls.append(args)
+        return original(repo_root, *args)
+
+    monkeypatch.setattr(identity_lib, "_git_bytes", observed)
+    captured = identity_lib.build_reviewed_input_identity(
+        repo_root=tmp_path, changed_ref="HEAD"
+    )
+    assert captured["status"] == "captured"
+    assert all(args[:2] != ("rev-parse", "--is-inside-work-tree") for args in calls)
+
+
 def test_worktree_status_snapshot_parses_only_nul_untracked_records(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

@@ -508,7 +508,7 @@ def build_reviewed_input_identity(
     try:
         if mode == SUBSTRATE_WORKING_TREE:
             status_snapshot = _working_tree_snapshot(repo_root)
-        else:
+        elif not _worktree.local_git_checkout(repo_root):
             _git_bytes(repo_root, "rev-parse", "--is-inside-work-tree")
     except ValueError as exc:
         return _unavailable(reviewed_paths, changed_ref, mode, str(exc))
