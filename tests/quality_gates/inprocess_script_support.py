@@ -14,6 +14,46 @@ ROOT = Path(__file__).resolve().parents[2]
 # entry points are listed here. Other scripts retain their process contract
 # unless they are explicitly reviewed and added to this mapping.
 _IN_PROCESS_SCRIPT_MODULES = {
+    "scripts/check_mutation_score.py": (
+        "tests.quality_gates.support_check_mutation_score",
+        ROOT / "scripts" / "check_mutation_score.py",
+    ),
+    "scripts/check_mutation_run_proof.py": (
+        "tests.quality_gates.support_check_mutation_run_proof",
+        ROOT / "scripts" / "check_mutation_run_proof.py",
+    ),
+    "skills/public/quality/scripts/plan_quality_run.py": (
+        "tests.quality_gates.support_plan_quality_run",
+        ROOT / "skills" / "public" / "quality" / "scripts" / "plan_quality_run.py",
+    ),
+    "scripts/check_changed_surfaces.py": (
+        "tests.quality_gates.support_check_changed_surfaces",
+        ROOT / "scripts" / "check_changed_surfaces.py",
+    ),
+    "scripts/command_plan_preflight.py": (
+        "tests.quality_gates.support_command_plan_preflight",
+        ROOT / "scripts" / "command_plan_preflight.py",
+    ),
+    "scripts/check_bootstrap_shim_consistency.py": (
+        "tests.quality_gates.support_check_bootstrap_shim_consistency",
+        ROOT / "scripts" / "check_bootstrap_shim_consistency.py",
+    ),
+    "skills/shared/scripts/reviewer_boundary_fingerprint.py": (
+        "tests.quality_gates.support_reviewer_boundary_fingerprint",
+        ROOT / "skills" / "shared" / "scripts" / "reviewer_boundary_fingerprint.py",
+    ),
+    "scripts/validate_adapters.py": (
+        "tests.quality_gates.support_validate_adapters",
+        ROOT / "scripts" / "validate_adapters.py",
+    ),
+    "skills/public/quality/scripts/render_runtime_summary.py": (
+        "tests.quality_gates.support_render_runtime_summary",
+        ROOT / "skills" / "public" / "quality" / "scripts" / "render_runtime_summary.py",
+    ),
+    "skills/public/quality/scripts/inventory_sloc.py": (
+        "tests.quality_gates.support_inventory_sloc",
+        ROOT / "skills" / "public" / "quality" / "scripts" / "inventory_sloc.py",
+    ),
     "scripts/check_code_lengths.py": (
         "tests.quality_gates.support_check_code_lengths",
         ROOT / "scripts" / "check_code_lengths.py",
