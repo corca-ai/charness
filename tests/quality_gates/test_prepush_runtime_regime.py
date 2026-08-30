@@ -23,6 +23,8 @@ from pathlib import Path
 
 import pytest
 
+from tests.quality_gates.prepush_close_keyword_fixtures import head as _head
+
 ROOT = Path(__file__).resolve().parents[2]
 pytestmark = pytest.mark.boundary_contract(
     reason=(
@@ -149,11 +151,11 @@ def prepush_repo(tmp_path: Path) -> Path:
 def test_the_docs_only_subset_names_its_regime_so_its_samples_stay_out_of_the_full_window(
     prepush_repo: Path, tmp_path: Path
 ) -> None:
-    base = _git(prepush_repo, "rev-parse", "HEAD")
+    base = _head(prepush_repo)
     (prepush_repo / "docs" / "note.md").write_text("# note\n", encoding="utf-8")
     _git(prepush_repo, "add", "-A")
     _git(prepush_repo, "commit", "-m", "docs only")
-    head = _git(prepush_repo, "rev-parse", "HEAD")
+    head = _head(prepush_repo)
 
     log = tmp_path / "invocation.json"
     result = _run_hook(prepush_repo, base, head, log)
@@ -171,11 +173,11 @@ def test_the_docs_only_subset_names_its_regime_so_its_samples_stay_out_of_the_fu
 def test_release_receipt_reuses_quality_but_still_runs_the_irreversible_guard(
     prepush_repo: Path, tmp_path: Path
 ) -> None:
-    base = _git(prepush_repo, "rev-parse", "HEAD")
+    base = _head(prepush_repo)
     (prepush_repo / "scripts" / "thing.py").write_text("x = 1\n", encoding="utf-8")
     _git(prepush_repo, "add", "scripts/thing.py")
     _git(prepush_repo, "commit", "-m", "code change")
-    head = _git(prepush_repo, "rev-parse", "HEAD")
+    head = _head(prepush_repo)
     receipt = tmp_path / "quality-receipt.json"
     semantic = tmp_path / "semantic-quality.json"
     semantic.write_text(
@@ -324,7 +326,7 @@ def test_release_receipt_reuses_quality_but_still_runs_the_irreversible_guard(
     (prepush_repo / "scripts" / "later.py").write_text("x = 2\n", encoding="utf-8")
     _git(prepush_repo, "add", "scripts/later.py")
     _git(prepush_repo, "commit", "-m", "later change")
-    later = _git(prepush_repo, "rev-parse", "HEAD")
+    later = _head(prepush_repo)
     fallback = _run_hook(prepush_repo, head, later, log, receipt=stale_receipt)
 
     assert fallback.returncode == 0, fallback.stderr
@@ -341,11 +343,11 @@ def test_a_full_gate_push_leaves_the_regime_empty(prepush_repo: Path, tmp_path: 
     # change, because with the regime popped from the environment the assertion
     # also holds with the whole fix reverted. It constrains a FUTURE edit that
     # regimes the full-gate branch. Do not count it as coverage of the fix.
-    base = _git(prepush_repo, "rev-parse", "HEAD")
+    base = _head(prepush_repo)
     (prepush_repo / "scripts" / "thing.py").write_text("x = 1\n", encoding="utf-8")
     _git(prepush_repo, "add", "-A")
     _git(prepush_repo, "commit", "-m", "code change")
-    head = _git(prepush_repo, "rev-parse", "HEAD")
+    head = _head(prepush_repo)
 
     log = tmp_path / "invocation.json"
     result = _run_hook(prepush_repo, base, head, log)
@@ -367,11 +369,11 @@ def test_both_stdin_consumers_receive_the_push_range(prepush_repo: Path, tmp_pat
     file contents rather than through stdin. Reading stdin once and replaying it is
     what makes both true at the same time, and this is the assertion that holds it.
     """
-    base = _git(prepush_repo, "rev-parse", "HEAD")
+    base = _head(prepush_repo)
     (prepush_repo / "docs" / "note.md").write_text("# note\n", encoding="utf-8")
     _git(prepush_repo, "add", "-A")
     _git(prepush_repo, "commit", "-m", "docs only")
-    head = _git(prepush_repo, "rev-parse", "HEAD")
+    head = _head(prepush_repo)
 
     log = tmp_path / "invocation.json"
     result = _run_hook(prepush_repo, base, head, log)

@@ -39,10 +39,15 @@ def commit(
         "commit", "-F", str(message_file),
     )
     message_file.unlink()
-    head = (repo / ".git" / "HEAD").read_text(encoding="ascii").strip()
-    if not head.startswith("ref: "):
-        return head
-    return (repo / ".git" / head.removeprefix("ref: ")).read_text(encoding="ascii").strip()
+    return head(repo)
+
+
+def head(repo: Path) -> str:
+    """Read the checked-out commit from Git files, not ``rev-parse``."""
+    pointer = (repo / ".git" / "HEAD").read_text(encoding="ascii").strip()
+    if not pointer.startswith("ref: "):
+        return pointer
+    return (repo / ".git" / pointer.removeprefix("ref: ")).read_text(encoding="ascii").strip()
 
 
 def _build_seed(staging: Path) -> None:

@@ -30,6 +30,9 @@ from tests.quality_gates.prepush_close_keyword_fixtures import (
     git as _git,
 )
 from tests.quality_gates.prepush_close_keyword_fixtures import (
+    head as _head,
+)
+from tests.quality_gates.prepush_close_keyword_fixtures import (
     repo_seed as prepush_close_keyword_seed,
 )
 from tests.quality_gates.prepush_close_keyword_fixtures import (
@@ -101,6 +104,23 @@ def test_cached_repo_seed_is_never_mutated_by_a_test_clone(
     assert _tree_snapshot(repo_seed) == before_seed
 
 
+def test_head_reads_the_checked_out_commit_from_git_files(
+    repo: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    git_verbs: list[str] = []
+    original = subprocess.run
+
+    def wrapped(argv: object, *args: object, **kwargs: object) -> object:
+        if isinstance(argv, (list, tuple)) and argv and Path(str(argv[0])).name == "git":
+            git_verbs.append(str(argv[1]))
+        return original(argv, *args, **kwargs)
+
+    monkeypatch.setattr(subprocess, "run", wrapped)
+    sha = _head(repo)
+    assert sha == (repo / ".git" / "refs" / "heads" / "main").read_text(encoding="ascii").strip()
+    assert git_verbs == []
+
+
 def _run(*args: str, stdin: str | None = None) -> tuple[int, dict]:
     saved = sys.stdin
     if stdin is not None:
@@ -116,7 +136,7 @@ def _run(*args: str, stdin: str | None = None) -> tuple[int, dict]:
 
 
 def test_refuses_the_wrapped_close_keyword_that_closed_626(repo: Path) -> None:
-    base = _git(repo, "rev-parse", "HEAD")
+    base = _head(repo)
     head = _commit(repo, BODY_626, "work.txt")
 
     code, payload = _run("--repo-root", str(repo), "--range", f"{base}..{head}")
@@ -138,7 +158,7 @@ def test_refuses_the_wrapped_close_keyword_that_closed_626(repo: Path) -> None:
 
 
 def test_a_close_keyword_with_a_valid_closeout_ledger_passes(repo: Path) -> None:
-    base = _git(repo, "rev-parse", "HEAD")
+    base = _head(repo)
     head = _commit(repo, BODY_VALID_CLOSEOUT, "work.txt")
 
     code, payload = _run("--repo-root", str(repo), "--range", f"{base}..{head}")
@@ -149,7 +169,7 @@ def test_a_close_keyword_with_a_valid_closeout_ledger_passes(repo: Path) -> None
 
 
 def test_a_range_with_no_close_keyword_is_not_applicable(repo: Path) -> None:
-    base = _git(repo, "rev-parse", "HEAD")
+    base = _head(repo)
     head = _commit(repo, "docs: ordinary commit about issue 42\n", "work.txt")
 
     code, payload = _run("--repo-root", str(repo), "--range", f"{base}..{head}")
@@ -160,7 +180,7 @@ def test_a_range_with_no_close_keyword_is_not_applicable(repo: Path) -> None:
 
 
 def test_a_close_keyword_qualified_to_another_repo_is_not_a_target(repo: Path) -> None:
-    base = _git(repo, "rev-parse", "HEAD")
+    base = _head(repo)
     head = _commit(repo, "fix: closes acme/other-repo#77 upstream\n", "work.txt")
 
     code, payload = _run("--repo-root", str(repo), "--range", f"{base}..{head}")
@@ -186,7 +206,7 @@ def test_a_close_keyword_qualified_to_another_repo_is_not_a_target(repo: Path) -
 
 
 def test_a_ref_deletion_lands_no_commits_and_scans_none(repo: Path) -> None:
-    head = _git(repo, "rev-parse", "HEAD")
+    head = _head(repo)
     assert SCAN.range_commits(repo, ZERO, head) == []
 
 
@@ -208,7 +228,7 @@ def test_a_ref_with_no_local_sha_is_skipped_without_resolving_a_range(repo: Path
     proposes no landing, so judging anything for that ref is judging commits it never
     offered.
     """
-    base = _git(repo, "rev-parse", "HEAD")
+    base = _head(repo)
     head = _commit(repo, "docs: a commit the empty-sha ref never proposed to land\n", "later.txt")
     refs = [
         {"local_ref": "", "local_sha": "", "remote_ref": "refs/heads/main", "remote_sha": base},
@@ -232,7 +252,7 @@ def test_a_new_ref_is_bounded_by_what_origin_already_has(repo: Path, tmp_path: P
     _git(repo, "init", "--bare", str(origin))
     _git(repo, "remote", "add", "origin", str(origin))
     _git(repo, "push", "-q", "--no-verify", "origin", "main")
-    published = _git(repo, "rev-parse", "HEAD")
+    published = _head(repo)
     _git(repo, "checkout", "-q", "-b", "feature")
     unpublished = _commit(repo, "docs: unpublished\n", "feature.txt")
 
@@ -274,7 +294,7 @@ def test_parses_the_pre_push_stdin_grammar_and_drops_malformed_lines() -> None:
 
 
 def test_reads_the_range_from_stdin_and_refuses(repo: Path) -> None:
-    base = _git(repo, "rev-parse", "HEAD")
+    base = _head(repo)
     head = _commit(repo, BODY_626, "work.txt")
 
     code, payload = _run(
@@ -286,7 +306,7 @@ def test_reads_the_range_from_stdin_and_refuses(repo: Path) -> None:
 
 
 def test_a_commit_reachable_from_two_pushed_refs_is_judged_once(repo: Path) -> None:
-    base = _git(repo, "rev-parse", "HEAD")
+    base = _head(repo)
     head = _commit(repo, BODY_626, "work.txt")
     _git(repo, "branch", "mirror", head)
 
@@ -416,7 +436,7 @@ def test_a_classification_declared_only_in_the_artifact_is_honored(repo: Path) -
     #700:` -- fabricating exactly the repair claims a `question` disposition exists to
     refuse, on a commit the deployed commit-msg floor had already passed.
     """
-    base = _git(repo, "rev-parse", "HEAD")
+    base = _head(repo)
     head = _commit(
         repo,
         QUESTION_MESSAGE,
@@ -439,7 +459,7 @@ def test_the_same_message_without_the_artifact_is_classified_bug_and_refused(rep
     the floor demands root-cause/prevention claims. Without this arm, the passing case
     above would also pass with the artifact parse deleted entirely.
     """
-    base = _git(repo, "rev-parse", "HEAD")
+    base = _head(repo)
     head = _commit(repo, QUESTION_MESSAGE, "work.txt")
 
     code, payload = _run("--repo-root", str(repo), "--range", f"{base}..{head}")
@@ -460,7 +480,7 @@ def test_every_close_keyword_commit_carries_its_authorization_record(repo: Path)
     no crosswalk, so what is pinned is that the check RAN and its verdict is in the
     payload -- a payload without it cannot be audited after the fact.
     """
-    base = _git(repo, "rev-parse", "HEAD")
+    base = _head(repo)
     head = _commit(repo, BODY_VALID_CLOSEOUT, "work.txt")
 
     _, payload = _run("--repo-root", str(repo), "--range", f"{base}..{head}")
@@ -552,7 +572,7 @@ def test_local_numbers_is_what_narrows_to_this_repo() -> None:
 
 
 def test_a_gh_dash_close_without_a_ledger_is_refused(repo: Path) -> None:
-    base = _git(repo, "rev-parse", "HEAD")
+    base = _head(repo)
     head = _commit(repo, "chore: tidy the lane\n\nIncidentally closes GH-700.\n", "work.txt")
 
     code, payload = _run("--repo-root", str(repo), "--range", f"{base}..{head}")
@@ -597,7 +617,7 @@ def test_a_remote_with_no_tracking_refs_excludes_nothing(repo: Path, tmp_path: P
     _git(repo, "remote", "add", "origin", str(origin))
     _git(repo, "push", "-q", "--no-verify", "origin", "main")
     _git(repo, "fetch", "-q", "origin")
-    published = _git(repo, "rev-parse", "HEAD")
+    published = _head(repo)
 
     # A `rev-list --count` probe answers `0` (exit 0) for a pattern matching no refs,
     # so it reports every remote name as usable and this branch would never be taken.
@@ -634,7 +654,7 @@ def test_a_crash_exits_two_rather_than_the_refusal_code(repo: Path, tmp_path: Pa
         "yaml_output.py",
     ):
         shutil.copy2(ROOT / "scripts" / name, lonely / name)
-    base = _git(repo, "rev-parse", "HEAD")
+    base = _head(repo)
     head = _commit(repo, BODY_626, "work.txt")
 
     result = subprocess.run(
@@ -659,7 +679,7 @@ def test_a_commit_that_only_edits_a_closeout_artifact_is_not_a_close(repo: Path)
     GitHub issue" and a remedy telling the author to reword a verb the message does
     not contain.
     """
-    base = _git(repo, "rev-parse", "HEAD")
+    base = _head(repo)
     _commit(
         repo,
         "docs: land the closeout artifact\n",
@@ -694,7 +714,7 @@ def test_the_unbounded_creation_scan_is_capped(repo: Path, monkeypatch) -> None:
     """
     for index in range(3):
         _commit(repo, f"chore: commit {index}\n", f"c{index}.txt")
-    head = _git(repo, "rev-parse", "HEAD")
+    head = _head(repo)
     monkeypatch.setattr(SCAN, "MAX_UNBOUNDED_CREATION_SCAN", 2)
 
     # No remote at all, so `_published_exclusions` returns [] and the cap is what
@@ -768,7 +788,7 @@ def test_a_satisfiable_close_keyword_gets_no_unsatisfiable_note(tmp_path: Path) 
 def test_the_creation_cap_is_reported_not_silent(repo: Path, monkeypatch) -> None:
     for index in range(3):
         _commit(repo, f"chore: commit {index}\n", f"c{index}.txt")
-    head = _git(repo, "rev-parse", "HEAD")
+    head = _head(repo)
     monkeypatch.setattr(SCAN, "MAX_UNBOUNDED_CREATION_SCAN", 2)
 
     code, payload = _run("--repo-root", str(repo), stdin=f"refs/heads/main {head} refs/heads/main {ZERO}\n")
@@ -805,7 +825,7 @@ def test_the_crash_mapping_is_reachable_in_process(repo: Path, capsys) -> None:
 
 
 def test_cli_passes_a_real_verdict_through_unchanged(repo: Path) -> None:
-    base = _git(repo, "rev-parse", "HEAD")
+    base = _head(repo)
     head = _commit(repo, BODY_626, "work.txt")
 
     # The crash mapping must not swallow a genuine refusal into `no-verdict`.
@@ -851,7 +871,7 @@ def test_a_partly_malformed_stdin_is_a_no_verdict_even_though_a_ref_parsed(
     repo: Path,
 ) -> None:
     """The dropped line names a ref nothing can recover, so the parsed one is not the push."""
-    base = _git(repo, "rev-parse", "HEAD")
+    base = _head(repo)
     head = _commit(repo, "docs: an innocent commit\n", "work.txt")
 
     code, payload = _run(
@@ -976,7 +996,7 @@ def test_a_protected_target_is_refused_by_authorization_before_any_ledger(
     branch whose hooks never ran).
     """
     build_protected_world(repo)
-    base = _git(repo, "rev-parse", "HEAD")
+    base = _head(repo)
     head = _commit(
         repo,
         BODY_VALID_CLOSEOUT.replace("#42", f"#{PROTECTED[0]}"),
