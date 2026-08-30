@@ -42,7 +42,9 @@ def _fake_state() -> dict:
     }
 
 
-def _run_closeout_tail(args, cli, state: dict | None = None) -> None:
+def _run_closeout_tail(
+    args, cli, state: dict | None = None, adapter_data: dict | None = None
+) -> dict:
     """Drive the LIVE tail: the one `resume_publish` actually calls.
 
     These cases used to reach it through `publish_release_execute._publish_and_finalize`,
@@ -62,13 +64,14 @@ def _run_closeout_tail(args, cli, state: dict | None = None) -> None:
     _COMMON.run_release_closeout_tail(
         Path("."),
         args=args,
-        adapter_data={},
+        adapter_data=adapter_data or {},
         state=state,
         issue_repo=state["issue_repo"],
         payload=state["payload"],
         cli=cli,
         carrier_source="release-resume",
     )
+    return state["payload"]
 
 
 def _base_cli(observer, recorder: dict) -> SimpleNamespace:
@@ -140,6 +143,45 @@ def test_wiring_proceeds_to_issue_close_on_recorded_disposition() -> None:
         ("issue-state-readback", True),
         ("final-artifact", True),
     ]
+
+
+def test_wiring_forwards_declared_install_refresh_to_the_live_tail() -> None:
+    recorder: dict = {}
+    commands: list[str] = []
+
+    def disposing_observer(_repo_root, payload, **_kwargs):
+        payload["distinct_channel_verification"] = {
+            "channel": "none",
+            "status": "skipped",
+            "reason": "fixture",
+        }
+
+    cli = _base_cli(disposing_observer, recorder)
+
+    def run_install_refresh(_repo_root, *, command, run_shell):
+        commands.append(command)
+        assert run_shell is cli.run_shell
+        return {"status": "refreshed", "command": command}
+
+    cli.run_post_publish_install_refresh = run_install_refresh
+    args = SimpleNamespace(
+        remote="origin",
+        close_issue=[],
+        close_issue_behavior=[],
+        close_issue_probe_record=[],
+    )
+
+    payload = _run_closeout_tail(
+        args,
+        cli,
+        adapter_data={"post_publish_install_refresh": "charness update"},
+    )
+
+    assert commands == ["charness update"]
+    assert payload["install_refresh"] == {
+        "status": "refreshed",
+        "command": "charness update",
+    }
 
 
 def test_carrier_commit_failure_prevents_issue_state_mutation() -> None:

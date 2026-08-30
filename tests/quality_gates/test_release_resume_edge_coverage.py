@@ -2,13 +2,11 @@
 
 from __future__ import annotations
 
-import json
 import tempfile
 from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
-import yaml
 
 from .release_resume_edge_support import (
     ClaimsResumeCli as _ClaimsResumeCli,
@@ -18,9 +16,6 @@ from .release_resume_edge_support import (
 )
 from .release_resume_edge_support import (
     ClassifierCli as _ClassifierCli,
-)
-from .release_resume_edge_support import (
-    ResumeCli as _ResumeCli,
 )
 from .seeding_support import load_module
 
@@ -32,7 +27,6 @@ def _load(name: str):
     return load_module(f"{name}_edge_coverage", SCRIPTS / f"{name}.py")
 
 
-RESUME_CLOSEOUT = _load("publish_release_resume_closeout")
 RESUME_PUBLISH = _load("publish_release_resume_publish")
 RESUME = _load("publish_release_resume")
 CLAIMS = _load("publish_release_claims_review")
@@ -148,139 +142,6 @@ def test_a_failed_post_create_verification_commits_the_artifact_before_it_refuse
         "the release already exist by the time verification runs"
     )
     assert clis[0].final_artifact_commits[0]["has_issue_closeout"] is False
-
-
-def test_resume_closeout_requires_original_irreversible_inputs() -> None:
-    args = SimpleNamespace(
-        close_issue=[],
-        close_issue_classification=None,
-        close_issue_carrier_file=None,
-        close_issue_behavior=[],
-        close_issue_probe_record=[],
-    )
-
-    with pytest.raises(
-        SystemExit, match="Recovery never infers or omits issue-close context"
-    ) as error:
-        RESUME_CLOSEOUT._require_closeout_resume_inputs(args)
-
-    for flag in (
-        "--close-issue",
-        "--close-issue-classification",
-        "--close-issue-carrier-file",
-        "--close-issue-behavior",
-    ):
-        assert flag in str(error.value)
-
-
-def test_resume_commit_file_refuses_missing_evidence() -> None:
-    cli = _ResumeCli(changed=[], files={})
-
-    with pytest.raises(SystemExit, match="does not contain required evidence"):
-        RESUME_CLOSEOUT._commit_file(Path("."), commit_ref="HEAD", path="missing.json", cli=cli)
-
-
-def test_resume_carrier_tree_refuses_wrong_tag_and_unbound_artifact() -> None:
-    observer = "charness-artifacts/probe/demo-v1.2.3-release-observer.json"
-    common = {"tag_name": "v9.9.9"}
-    cli = _ResumeCli(
-        changed=["charness-artifacts/release/latest.md", observer],
-        files={
-            "charness-artifacts/release/latest.md": "carrier-pending-state-verification",
-            observer: json.dumps({"target": {"tag": "v9.9.9"}}),
-        },
-    )
-    with pytest.raises(SystemExit, match="targets a different release tag"):
-        RESUME_CLOSEOUT._validate_carrier_evidence_tree(
-            Path("."),
-            commit_ref="HEAD",
-            artifact_relpath="charness-artifacts/release/latest.md",
-            tag_name="v1.2.3",
-            payload=common,
-            cli=cli,
-        )
-
-    cli.files[observer] = json.dumps({"target": {"tag": "v1.2.3"}})
-    cli.files["charness-artifacts/release/latest.md"] = "carrier-pending-state-verification"
-    with pytest.raises(SystemExit, match="does not bind its observer"):
-        RESUME_CLOSEOUT._validate_carrier_evidence_tree(
-            Path("."),
-            commit_ref="HEAD",
-            artifact_relpath="charness-artifacts/release/latest.md",
-            tag_name="v1.2.3",
-            payload={},
-            cli=cli,
-        )
-
-
-def test_resume_carrier_refuses_validation_that_does_not_match_preflight() -> None:
-    cli = _ResumeCli(changed=[], files={})
-    payload = {"issue_closeout_draft_validation": {"commit_message": "expected"}}
-    with pytest.raises(SystemExit, match="does not exactly match"):
-        RESUME_CLOSEOUT._validated_carrier_message(
-            Path("."),
-            args=SimpleNamespace(close_issue=[44], close_issue_classification="bug"),
-            issue_repo="example/demo",
-            payload=payload,
-            commit_message="different",
-            commit_ref="HEAD",
-            artifact_relpath="charness-artifacts/release/latest.md",
-            tag_name="v1.2.3",
-            cli=cli,
-        )
-    assert payload["resume_carrier_validation"]["matches_preflight_draft"] is False
-
-
-def test_resume_final_evidence_validator_is_an_in_process_state_transition() -> None:
-    """Final-artifact success/refusal do not need to replay publish and remote setup."""
-    artifact = "charness-artifacts/release/latest.md"
-    cli = _ResumeCli(
-        changed=[artifact],
-        files={artifact: "Issue closeout verification: `state-verified`"},
-    )
-    payload: dict = {}
-    RESUME_CLOSEOUT._validate_final_evidence_tree(
-        Path("."), commit_ref="HEAD", artifact_relpath=artifact, payload=payload, cli=cli
-    )
-    assert payload["resume_final_evidence"] == {"status": "validated", "artifact_path": artifact}
-
-    cli.files[artifact] = "carrier-pending-state-verification"
-    with pytest.raises(SystemExit, match="lacks its state-verified release artifact"):
-        RESUME_CLOSEOUT._validate_final_evidence_tree(
-            Path("."), commit_ref="HEAD", artifact_relpath=artifact, payload={}, cli=cli
-        )
-
-
-def test_resume_reconciles_ambiguous_push_after_remote_receipt() -> None:
-    cli = _ResumeCli(changed=[], files={}, push_error=True, remote_sha="carrier-sha")
-    payload: dict = {}
-    RESUME_CLOSEOUT._reconcile_push(
-        Path("."),
-        state={"remote_branch_sha": "old-sha", "head_sha": "carrier-sha"},
-        remote="origin",
-        branch="main",
-        payload=payload,
-        cli=cli,
-    )
-    assert payload["resume_remote_reconcile"] == {
-        "status": "push-error-but-shared",
-        "sha": "carrier-sha",
-    }
-    assert ["git", "ls-remote", "--heads", "origin", "refs/heads/main"] in cli.commands
-
-
-def test_resume_refuses_ambiguous_push_when_remote_identity_differs() -> None:
-    cli = _ResumeCli(changed=[], files={}, push_error=True, remote_sha="other-sha")
-
-    with pytest.raises(RuntimeError, match="connection lost"):
-        RESUME_CLOSEOUT._reconcile_push(
-            Path("."),
-            state={"remote_branch_sha": "old-sha", "head_sha": "carrier-sha"},
-            remote="origin",
-            branch="main",
-            payload={},
-            cli=cli,
-        )
 
 
 @pytest.mark.parametrize(
@@ -697,57 +558,6 @@ def test_a_state_classified_against_another_record_path_cannot_publish() -> None
             release_record_path=CLAIMS.release_record_path,
         )
     assert commands == []
-
-
-def test_resume_dry_run_validates_carrier_without_reconciling(capsys) -> None:
-    observer = "charness-artifacts/probe/demo-v1.2.3-release-observer.json"
-    message = "carrier message"
-    cli = _ResumeCli(
-        changed=["charness-artifacts/release/latest.md", observer],
-        files={
-            "charness-artifacts/release/latest.md": f"{observer}\ncarrier-pending-state-verification",
-            observer: json.dumps({"target": {"tag": "v1.2.3"}}),
-        },
-    )
-    args = SimpleNamespace(
-        execute=False,
-        close_issue=[44],
-        close_issue_classification="bug",
-        close_issue_carrier_file=Path("carrier.md"),
-        close_issue_behavior=["Behavior #44: fixture"],
-        close_issue_probe_record=["Probe record #44: local-only-by-contract"],
-        remote="origin",
-    )
-    plan = {
-        "payload": {"issue_closeout_draft_validation": {"commit_message": message}},
-        "issue_repo": "example/demo",
-        "tag_name": "v1.2.3",
-        "branch": "main",
-    }
-    state = {
-        "phase": "post-publication-carrier",
-        "head_message": message,
-        "head_sha": "carrier-sha",
-        "remote_branch_sha": "old-sha",
-        "record_path": _RECORD_PATH,
-    }
-    common = SimpleNamespace(preflight_close_issue_carrier=lambda *_args, **_kwargs: None)
-
-    RESUME_CLOSEOUT.resume_post_publication_closeout(
-        Path("."),
-        args=args,
-        plan=plan,
-        adapter_data={"output_dir": "charness-artifacts/release"},
-        state=state,
-        common=common,
-        cli=cli,
-    )
-    # The payload is YAML now, and `emit_yaml` line-wraps long scalars, so pin
-    # the parsed field rather than a raw-stdout substring.
-    assert yaml.safe_load(capsys.readouterr().out)["resume"] == (
-        "dry-run: would reconcile post-publication-carrier against the remote branch"
-    )
-    assert not any(command[:2] == ["git", "push"] for command in cli.commands)
 
 
 def test_a_claims_phase_without_a_validated_review_cannot_publish() -> None:

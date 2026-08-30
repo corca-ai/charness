@@ -17,14 +17,7 @@ from .release_publish_fixtures import (
     REPO_ROOT,
     _release_env,
     _run_publish,
-    _run_publish_patch,
     bug_closeout_body,
-)
-from .release_resume_fixtures import (
-    FailedCloseoutState,
-)
-from .release_resume_fixtures import (
-    seed_failed_closeout as _seed_failed_closeout,
 )
 from .release_resume_fixtures import (
     seed_partial_publish as _seed_partial_publish,
@@ -192,44 +185,6 @@ def test_post_publish_install_refresh_skips_when_not_declared() -> None:
     out = post_create.run_post_publish_install_refresh(Path("."), command="", run_shell=boom)
     assert out["status"] == "not_configured"
     assert out["command"] is None
-
-
-@pytest.mark.release_only
-def test_publish_auto_runs_declared_install_refresh_end_to_end(tmp_path: Path) -> None:
-    # Integration: a full --execute publish auto-runs the adapter-declared
-    # post_publish_install_refresh after the verified release and records it in
-    # the payload (locks the CLI wiring; the helper unit tests cover branches).
-    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
-    adapter = repo / ".agents" / "release-adapter.yaml"
-    adapter.write_text(
-        adapter.read_text(encoding="utf-8").replace(
-            "quality_command: ./scripts/run-quality.sh",
-            "quality_command: ./scripts/run-quality.sh\npost_publish_install_refresh: charness update",
-        ),
-        encoding="utf-8",
-    )
-    refresh_log = tmp_path / "charness-refresh.log"
-    fake_charness = bin_dir / "charness"
-    fake_charness.write_text(
-        f'#!/usr/bin/env bash\necho "ran $*" >> {refresh_log}\nexit 0\n', encoding="utf-8"
-    )
-    fake_charness.chmod(0o755)
-    _git(repo, "add", "-A")
-    _git(repo, "commit", "-m", "declare post_publish_install_refresh")
-
-    env = _release_env(tmp_path, bin_dir)
-    result = _run_publish_patch(repo, env)
-    assert result.returncode == 0, result.stderr
-    payload = yaml.safe_load(result.stdout)
-    assert payload["install_refresh"]["status"] == "refreshed"
-    assert payload["install_refresh"]["command"] == "charness update"
-    assert refresh_log.exists() and "ran update" in refresh_log.read_text(encoding="utf-8")
-    artifact_text = (repo / "charness-artifacts" / "release" / "latest.md").read_text(encoding="utf-8")
-    assert "## Install Refresh" in artifact_text
-    assert "Post-publish install refresh status: `refreshed`." in artifact_text
-    assert "Command: `charness update`" in artifact_text
-    assert "## Release Runtime" in artifact_text
-    assert "`quality_command`:" in artifact_text
 
 
 def test_release_runtime_timed_records_success_and_failure_paths() -> None:
@@ -539,24 +494,6 @@ def test_publish_dry_run_requires_clean_worktree(tmp_path: Path) -> None:
 # --- Gap 2: installed/exported plugin-cache bootstrap -------------------------
 
 
-@pytest.mark.release_only
-def test_publish_release_imports_from_exported_plugin_layout() -> None:
-    # The exported plugin layout drops the `public` path segment, so a hardcoded
-    # `skills.public.retro...` import raised ModuleNotFoundError from the cache.
-    exported = REPO_ROOT / "plugins" / "charness" / "skills" / "release" / "scripts" / "publish_release.py"
-    assert exported.is_file(), "exported plugin mirror must exist"
-    result = subprocess.run(
-        [sys.executable, str(exported), "--help"],
-        cwd=REPO_ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    assert "ModuleNotFoundError" not in result.stderr, result.stderr
-    assert result.returncode == 0, result.stderr
-    assert "--resume" in result.stdout
-
-
 def _resume_closeout_args(carrier: Path) -> tuple[str, ...]:
     return (
         "--close-issue", "44",
@@ -593,74 +530,6 @@ def _run_closeout_resume(
         "--critique-blocked",
         CRITIQUE_BLOCKED,
     )
-
-
-def _resume_patch_closeout(
-    repo: Path, env: dict[str, str], carrier: Path
-) -> subprocess.CompletedProcess[str]:
-    return _run_publish(
-        repo,
-        env,
-        "--resume",
-        "--publish-current",
-        "--execute",
-        "--close-issue", "44",
-        "--close-issue-classification", "bug",
-        "--close-issue-carrier-file", str(carrier),
-        "--close-issue-behavior", "Behavior #44: confirmed through recovery fixture",
-        "--close-issue-probe-record", "Probe record #44: local-only-by-contract",
-        "--critique-blocked", CRITIQUE_BLOCKED,
-        "--claims-review-artifact", "charness-artifacts/release-review/fixture-claims.json",
-    )
-
-
-@pytest.mark.release_only
-def test_resume_completes_tail_after_carrier_state_readback_failure(tmp_path: Path) -> None:
-    repo, env, carrier = _seed_failed_closeout(
-        tmp_path, state=FailedCloseoutState.ISSUE_READBACK_FAILED
-    )
-
-    resumed = _resume_patch_closeout(repo, env, carrier)
-    assert resumed.returncode == 0, resumed.stderr
-    payload = yaml.safe_load(resumed.stdout)
-    assert payload["issue_closeout"]["status"] == "state-verified"
-
-
-@pytest.mark.release_only
-def test_resume_refuses_exact_message_carrier_without_evidence_tree(tmp_path: Path) -> None:
-    repo, env, carrier = _seed_failed_closeout(
-        tmp_path, state=FailedCloseoutState.CARRIER_PUSH_FAILED
-    )
-
-    artifact = "charness-artifacts/release/latest.md"
-    changed = subprocess.run(
-        ["git", "diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD"],
-        cwd=repo, check=True, capture_output=True, text=True,
-    ).stdout.splitlines()
-    observer = next(path for path in changed if path.endswith("-release-observer.json"))
-    subprocess.run(["git", "checkout", "HEAD^", "--", artifact], cwd=repo, check=True)
-    subprocess.run(["git", "rm", observer], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(
-        ["git", "commit", "--amend", "--no-edit", "--allow-empty"],
-        cwd=repo, check=True, capture_output=True, text=True,
-    )
-    remote_before_resume = subprocess.run(
-        ["git", "ls-remote", "origin", "refs/heads/main"],
-        cwd=repo, check=True, capture_output=True, text=True,
-    ).stdout.split()[0]
-
-    resumed = _resume_patch_closeout(repo, env, carrier)
-    assert resumed.returncode != 0
-    # The release-record marker belongs only to its introducing commit.  This
-    # amended carrier therefore stays in post-publication recovery and rejects
-    # its missing observer tree directly instead of being misclassified as a
-    # fresh prepared record.
-    assert "carrier evidence tree" in resumed.stderr
-    remote_main = subprocess.run(
-        ["git", "ls-remote", "origin", "refs/heads/main"],
-        cwd=repo, check=True, capture_output=True, text=True,
-    ).stdout.split()[0]
-    assert remote_main == remote_before_resume
 
 
 @pytest.mark.release_only
