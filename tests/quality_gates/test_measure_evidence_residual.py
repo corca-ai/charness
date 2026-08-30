@@ -14,7 +14,7 @@ from pathlib import Path
 
 import yaml
 
-from tests.probe_drift_support import residual_floor_message
+from tests.residual_floor_support import residual_floor_message
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = REPO_ROOT / "scripts" / "measure_evidence_residual.py"

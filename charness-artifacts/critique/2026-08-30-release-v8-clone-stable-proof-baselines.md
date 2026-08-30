@@ -26,14 +26,14 @@ quality, claims review, publication, and public/install readback remain separate
   `scripts/measure_inventory_consumption_floor.py`, and their release tests; both
   verifier contracts changed because the failure was in their authority model.
 - Failure classification: verifier-defect
-- Negative control: command `python3 -m pytest -q tests/quality_gates/test_artifact_referents.py` | expected refusal for side-branch commit without an exact declaration | observed result non-durable false and blocking fixture | receipt 117 focused tests passed across both changed quality modules
-- Subject identity: sha256:b38383952b24f02dcf8bcb34569a398cbc9cc16c1004f98d38f855583f002f70
-- Verifier identity: sha256:8157d460f82d928abe0a80ead003f3b48feb550b9f6c934f805b919cb3806e79
-- Input identity: sha256:31b5936cf03eb2132224d614fb4e578da047be566c3a2abe48e9e41efc8b594a
+- Negative control: command `python3 -m pytest -q tests/quality_gates/test_artifact_referents.py` | expected refusal for side-branch commit without an exact declaration | observed result non-durable false and blocking fixture | receipt 172 focused tests passed across clone-stable and live residual boundaries
+- Subject identity: sha256:928c43d186051f2607b0d996a65d9d5dc8a7206a28b00bebcbc83597e221af99
+- Verifier identity: sha256:fc90b6bab96b72c162add38b3736677abd9a317fc75bfa0ef62f3c50a8fecf67
+- Input identity: sha256:ac40579205bf3ccb46745e58182b53bf1f8429532c96f93f79de556a263af1e9
 - Failure identity: stable:ambient-observation-promoted-to-durable-authority
-- Evidence identity: sha256:d14202625d3cda263f1d8321ae26224d1134e9119d4e564a5e775d258ccc859d
+- Evidence identity: sha256:f6a959c65b58ab779849246ff9779143647aeab2ff7498c6aea9bb7e78699837
 - Retry disposition: first-attempt
-- Retry key: sha256:a3cc5b6f566930534652af0fec117b978a89e26086ef49c18fc123737c374949
+- Retry key: sha256:9114fa84f507d3a0a913b99163ad127cbb6bcc3cf2072327513bc9b73b655e0d
 
 ## Failure Angles
 
@@ -43,6 +43,8 @@ quality, claims review, publication, and public/install readback remain separate
 - Candidate leakage: untracked declaration bytes could alter a prepublish verdict.
 - Incomplete history: a shallow clone could misclassify absent ancestry.
 - Performance regression: one Git subprocess per SHA made the structural repair slow.
+- Dead-owner preservation: removing the final equality caller could leave a
+  large diagnostic/test surface whose only JTBD was telling operators to rewrite history.
 - Ownership leakage: a repo-only declaration could become consumer Git policy.
 
 ## Counterweight Pass
@@ -66,6 +68,7 @@ while this measurement explicitly measures loss caused by the value floor.
 - F4 | bin: over-worry | evidence: strong | ref: `scripts/artifact-referent-local-context.json` | action: document | note: hardcoding exactly two sites in checker code would remove composability; exact structured declarations plus review own future additions.
 - F5 | bin: over-worry | evidence: strong | ref: `scripts/measure_inventory_consumption_floor.py` | action: document | note: zero engagement is owned by the end-to-end inventory validator, not the floor-loss measurement.
 - F6 | bin: valid-but-defer | evidence: strong | ref: `charness-artifacts/spec/2026-08-30-release-v8-clone-stable-proof-baselines.md` | action: defer | note: a generic consumer-facing local-history contract and hosted Mutation Tests remain non-goals.
+- F7 | bin: act-before-ship | evidence: strong | ref: `tests/test_probe_drift_message.py` | action: fix | note: the caller-derived guard proved the inventory drift helper had zero live consumers; its helper and dedicated tests were deleted while the independently live residual diagnostic was split to one owner.
 
 ## Reviewer Tier Evidence
 

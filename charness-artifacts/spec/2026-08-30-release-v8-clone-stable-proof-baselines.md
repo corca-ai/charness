@@ -30,6 +30,9 @@ measurement merely because valid corpus members were added.
 - Replace full live-payload equality against the dated inventory probe with
   live invariant checks over the current corpus.
 - Preserve the dated probe unchanged as historical measurement evidence.
+- Delete the inventory drift diagnostic and its dedicated tests if the live
+  invariant change removes their final production caller; retain independently
+  live residual-floor diagnostics under their own owner.
 
 ## Fixed Decisions
 
@@ -90,6 +93,8 @@ measurement merely because valid corpus members were added.
 - Lowered required citations, below-floor label values, refused exemptions, or
   an empty corpus remain blocking current observations.
 - The original release-focused failures pass before the release lane is retried.
+- No fake `probe_drift_message` caller or dead re-record guidance remains merely
+  to satisfy the former helper's caller-derived guard.
 
 ## Acceptance Checks
 

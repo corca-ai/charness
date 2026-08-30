@@ -77,7 +77,7 @@ def test_session_narrative_is_advisory(path: str) -> None:
     rewritten by every repair the review provokes. Real defects, not tag gates.
 
     Only `.md`. A `.json` under the same roots is machine-read state -- probe
-    records are consumed by `tests/probe_drift_support.py` -- and blocks."""
+    records are consumed by executable quality tests -- and blocks."""
     assert classify(path) == "advisory"
     assert classify(path.replace(".md", ".json")) == "blocking"
 

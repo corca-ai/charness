@@ -64,6 +64,12 @@ live rule-sensitive invariants rather than exact equality to mutable counts.
   control, and the two original corpus consumers. The full referent corpus is
   clean with two declared-local findings still visible. One ancestry snapshot
   reduced that check from about 60.5 seconds to 2.73 seconds.
+- The first broad retry passed 8,698 tests and exposed one consequence: removing
+  mutable probe equality left `probe_drift_message` with zero production callers.
+  Its own caller-derived guard refused the dead owner. The inventory message,
+  constants, and dedicated test matrix were deleted; the independently live
+  evidence-residual diagnostic moved to its own support owner and 47 focused
+  tests pass across that boundary.
 
 ## Root Cause
 
@@ -82,6 +88,10 @@ The pattern-of-patterns is one authority error: ambient authoring observations
 (a local object database and a dated payload) were treated as durable truth.
 The repair therefore changes authority at both seams instead of updating the
 two failing values.
+
+A sibling pattern was also confirmed: retaining a richly tested helper after
+its final consumer disappeared would preserve ceremony without a JTBD. The
+helper's own caller guard made that structural deletion mandatory.
 
 ## Invariant Proof
 
@@ -133,3 +143,5 @@ in an exact declaration bound to the candidate index, artifact line SHA-256,
 token, and reason. Refuse stale, malformed, untracked, unstaged, and shallow
 history states. The ancestry owner reads HEAD once; the corpus check fell from
 about 60.5 seconds to 2.73 seconds while the 117 focused tests passed.
+Delete diagnostic owners when their final live caller disappears; do not add a
+fake caller merely to preserve their tests.
