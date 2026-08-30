@@ -191,9 +191,12 @@ Rules:
   the read-only worker to open each readable path before judging. The packet
   owns identity and provenance; the paths own semantic bytes. A nonempty,
   consumer-defined section is context, not evidence that an unrelated reviewed
-  path reached the worker. Zero reviewed paths and a binding containing only
-  deleted paths refuse before the worker starts; mixed bindings name deleted
-  paths explicitly rather than silently treating their pre-image hash as bytes.
+  path reached the worker. Zero reviewed paths refuse before the worker starts.
+  Deleted paths remain reviewable when their bounded pre-image bytes can be
+  read and hash-checked into a read-only semantic-input carrier; unavailable,
+  mismatched, or oversized pre-images refuse explicitly rather than being
+  silently truncated. Mixed bindings name both readable paths and deleted
+  carriers explicitly.
 - A working-tree identity is content-addressed under `sha256-v2`: only the declared
   paths and the bytes at those paths enter `identity_sha256`. `base_head`,
   `staged_patch_sha256`, `unstaged_patch_sha256`, `declared_untracked`, and

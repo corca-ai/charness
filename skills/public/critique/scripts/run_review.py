@@ -93,6 +93,10 @@ def _failure_carrier(
         "remedy",
         "warning",
         "deleted_paths",
+        "path",
+        "sources",
+        "expected_sha256",
+        "max_bytes",
     ):
         if field in details:
             carrier[field] = details[field]
@@ -151,6 +155,13 @@ def _adapter_name(root: Path, adapter: dict[str, Any]) -> str:
         except (ValueError, OSError):
             return value
     return ".agents/critique-adapter.yaml"
+
+
+def _materialize_semantic_input(root: Path, packet: dict[str, Any], run_dir: Path) -> dict[str, Any]:
+    try:
+        return PACKET.materialize_semantic_input(root, packet, run_dir)
+    except PACKET.SemanticInputError as exc:
+        raise SUPPORT.RunReviewError(exc.code, str(exc), details=exc.details) from exc
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -219,6 +230,8 @@ def main(argv: list[str] | None = None) -> int:
         context["paths"] = {
             key: SUPPORT.relative(root, value) for key, value in paths.items() if key != "run_dir"
         }
+        semantic_input = _materialize_semantic_input(root, packet_payload, paths["run_dir"])
+        context["semantic_input"] = semantic_input
         paths["schema"].write_bytes(package["schema"].read_bytes())
         schema_sha = SUPPORT.sha256(paths["schema"])
         if schema_sha != SUPPORT.sha256(package["schema"]):
@@ -232,6 +245,7 @@ def main(argv: list[str] | None = None) -> int:
         PACKET.write_prompt(
             paths["prompt"], packet_payload, scope=args.scope, lens=args.lens,
             packet_sha=packet_sha, input_sha=input_sha, goal_lineage=goal_lineage,
+            semantic_input=semantic_input,
         )
         boundary_mode = READ_ONLY_BOUNDARY_MODE
         boundary_sha = None
@@ -248,6 +262,7 @@ def main(argv: list[str] | None = None) -> int:
             "backend": backend,
             "timeout_seconds": timeout,
             "goal_lineage": goal_lineage,
+            "semantic_input": semantic_input,
             "boundary_mode": boundary_mode,
             "boundary_fingerprint": boundary_sha,
         }
@@ -275,6 +290,7 @@ def main(argv: list[str] | None = None) -> int:
                 "timeout_seconds": timeout,
                 "scope": args.scope,
                 "lens": args.lens,
+                "semantic_input": semantic_input,
                 "goal_lineage": goal_lineage,
             })
             SUPPORT.write_yaml(paths["summary"], carrier)
@@ -321,6 +337,7 @@ def main(argv: list[str] | None = None) -> int:
             "scope": args.scope,
             "lens": args.lens,
             "parent_receipt_identity": parent_receipt,
+            "semantic_input": semantic_input,
             "runner_output": {"status": status, "returncode": returncode},
             "runner_stream": stream_evidence,
             "boundary_readback": {"mode": boundary_mode, "required": False},

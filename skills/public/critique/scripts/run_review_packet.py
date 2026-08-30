@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import json
 import re
 import sys
@@ -11,37 +12,27 @@ from pathlib import Path
 from typing import Any
 
 
-def _semantic_review_paths(packet: dict[str, Any]) -> tuple[list[str], list[str]]:
-    """Return readable and deleted paths from the verified input identity.
+def _load_semantic_input() -> Any:
+    path = Path(__file__).with_name("semantic_review_input.py")
+    spec = importlib.util.spec_from_file_location("charness_semantic_review_input", path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"cannot load semantic review input helper: {path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
-    Packet sections are consumer-defined context; they do not establish that
-    the explicitly reviewed artifact reached the worker.  The identity is the
-    one source of truth for that artifact.  A deleted path has a bound
-    pre-image, but no current path for a read-only worker to open.
-    """
-    identity = packet.get("reviewed_input_identity")
-    if not isinstance(identity, dict):
-        return [], []
-    raw_paths = identity.get("reviewed_paths")
-    raw_content = identity.get("reviewed_content")
-    if not isinstance(raw_paths, list) or not isinstance(raw_content, list):
-        return [], []
-    paths = [path for path in raw_paths if isinstance(path, str) and path]
-    deleted = {
-        entry.get("path")
-        for entry in raw_content
-        if isinstance(entry, dict)
-        and entry.get("disposition") == "deleted"
-        and isinstance(entry.get("path"), str)
-    }
-    return [path for path in paths if path not in deleted], sorted(deleted)
+
+SEMANTIC_INPUT = _load_semantic_input()
+MAX_PREIMAGE_BYTES = SEMANTIC_INPUT.MAX_PREIMAGE_BYTES
+SemanticInputError = SEMANTIC_INPUT.SemanticInputError
+materialize_semantic_input = SEMANTIC_INPUT.materialize_semantic_input
+_semantic_review_paths = SEMANTIC_INPUT.semantic_review_paths
 
 
 def _semantic_input_refusal(
     support: Any, root: Path, packet: dict[str, Any], packet_path: Path
 ) -> None:
     """Refuse a packet whose identity gives the worker no readable input."""
-    readable, deleted = _semantic_review_paths(packet)
     identity = packet.get("reviewed_input_identity")
     paths = identity.get("reviewed_paths") if isinstance(identity, dict) else None
     if not isinstance(paths, list) or not paths:
@@ -54,19 +45,6 @@ def _semantic_input_refusal(
                 "section_count": packet.get("section_count", 0),
                 "usable": False,
                 "remedy": "Provide at least one explicit or changed reviewed path and rerun",
-            },
-        )
-    if not readable and deleted:
-        raise support.RunReviewError(
-            "deleted-reviewed-paths",
-            "packet reviewed input contains only deleted paths and no readable semantic review input",
-            details={
-                "packet_path": support.relative(root, packet_path),
-                "scope_status": "deleted-input-only",
-                "section_count": packet.get("section_count", 0),
-                "usable": False,
-                "deleted_paths": deleted,
-                "remedy": "Provide at least one readable reviewed path or a packet with bounded semantic content, then rerun",
             },
         )
 
@@ -260,6 +238,7 @@ def write_prompt(
     packet_sha: str,
     input_sha: str,
     goal_lineage: dict[str, Any] | None = None,
+    semantic_input: dict[str, Any] | None = None,
 ) -> None:
     readable_paths, deleted_paths = _semantic_review_paths(packet)
     semantic_lines = [
@@ -267,12 +246,22 @@ def write_prompt(
         "The packet owns identity and provenance; the hash-bound paths own the semantic bytes.",
         "Open each readable path from the repository root using read-only access before judging.",
     ]
-    semantic_lines.extend(f"- `{path}`" for path in readable_paths)
+    semantic_lines.extend(f"- `{reviewed_path}`" for reviewed_path in readable_paths)
+    carriers = {
+        entry.get("path"): entry
+        for entry in (semantic_input or {}).get("entries", [])
+        if isinstance(entry, dict) and isinstance(entry.get("path"), str)
+    }
     if deleted_paths:
-        semantic_lines.append(
-            "Deleted reviewed paths are bound to their pre-image and have no current bytes to open:"
-        )
-        semantic_lines.extend(f"- `{path}` (deleted)" for path in deleted_paths)
+        semantic_lines.append("Deleted reviewed paths use these hash-checked read-only pre-image carriers:")
+        for reviewed_path in deleted_paths:
+            carrier = carriers.get(reviewed_path)
+            if not isinstance(carrier, dict):
+                raise ValueError(f"missing semantic input carrier for deleted path `{reviewed_path}`")
+            semantic_lines.append(
+                f"- `{reviewed_path}` pre-image: `{carrier['carrier_path']}` "
+                f"(sha256 `{carrier['content_sha256']}`)"
+            )
     semantic_lines.append(
         "Do not infer reviewed content from hashes or unrelated packet sections, and do not silently truncate large files."
     )

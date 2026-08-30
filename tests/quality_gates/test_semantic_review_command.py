@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import json
 import os
 import signal
@@ -12,10 +13,12 @@ import sys
 import time
 from pathlib import Path
 
+import pytest
 import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 WRAPPER = ROOT / "skills/public/critique/scripts/run_review.py"
+PACKET_HELPER = ROOT / "skills/public/critique/scripts/run_review_packet.py"
 
 
 def _write_executable(path: Path, body: str) -> None:
@@ -25,6 +28,10 @@ def _write_executable(path: Path, body: str) -> None:
 
 def _git(repo: Path, *args: str) -> None:
     subprocess.run(["git", *args], cwd=repo, check=True, capture_output=True, text=True)
+
+
+def _git_output(repo: Path, *args: str) -> str:
+    return subprocess.check_output(["git", *args], cwd=repo, text=True).strip()
 
 
 def _repo(tmp_path: Path, *, timeout: int = 5, with_packet_sections: bool = True) -> None:
@@ -172,6 +179,28 @@ def _run(
     return subprocess.run(command, cwd=ROOT, env=env, capture_output=True, text=True, check=False)
 
 
+def _packet_helper():
+    spec = importlib.util.spec_from_file_location("test_run_review_packet", PACKET_HELPER)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _deleted_packet(path: str, content_sha256: str) -> dict:
+    return {
+        "reviewed_input_identity": {
+            "mode": "working-tree",
+            "substrate_mode": "working-tree",
+            "changed_ref": None,
+            "reviewed_paths": [path],
+            "reviewed_content": [
+                {"path": path, "content_sha256": content_sha256, "disposition": "deleted"}
+            ],
+        }
+    }
+
+
 def _payload(result: subprocess.CompletedProcess[str]) -> dict:
     assert result.stdout, result.stderr
     return yaml.safe_load(result.stdout)
@@ -277,7 +306,7 @@ def test_prompt_reaches_explicit_reviewed_path_beyond_unrelated_section(tmp_path
     assert "Do not infer reviewed content from hashes or unrelated packet sections" in prompt
 
 
-def test_deletion_only_reviewed_input_refuses_before_reviewer_run_is_created(
+def test_deletion_only_reviewed_input_reaches_worker_with_hash_checked_preimage(
     tmp_path: Path,
 ) -> None:
     _repo(tmp_path)
@@ -286,16 +315,109 @@ def test_deletion_only_reviewed_input_refuses_before_reviewer_run_is_created(
     bin_dir.mkdir()
     _fake_codex(bin_dir / "codex")
 
-    result = _run(tmp_path, bin_dir, "deleted-only", dry_run=True)
+    result = _run(tmp_path, bin_dir, "deleted-only")
     payload = _payload(result)
 
-    assert result.returncode == 2
-    assert payload["reason_code"] == "deleted-reviewed-paths"
-    assert payload["scope_status"] == "deleted-input-only"
-    assert payload["reviewer_started"] is False
-    assert payload["usable"] is False
-    assert "reviewed.txt" in payload["deleted_paths"]
-    assert not (tmp_path / ".charness").exists()
+    assert result.returncode == 0, result.stderr
+    assert payload["execution_state"] == "terminal"
+    assert payload["reviewer_started"] is True
+    assert payload["delivery_state"] == "findings-received"
+    plan = json.loads((tmp_path / payload["paths"]["plan"]).read_text(encoding="utf-8"))
+    entry = plan["semantic_input"]["entries"][0]
+    carrier = tmp_path / entry["carrier_path"]
+    assert carrier.read_bytes() == b"base\n"
+    assert stat.S_IMODE(carrier.stat().st_mode) == 0o444
+    prompt = (tmp_path / payload["paths"]["prompt"]).read_text(encoding="utf-8")
+    assert "hash-checked read-only pre-image carriers" in prompt
+    assert entry["carrier_path"] in prompt
+
+
+@pytest.mark.parametrize("ref_kind", ("commit", "range"))
+def test_committed_deletion_preimage_reaches_carrier_for_commit_and_range(
+    tmp_path: Path, ref_kind: str
+) -> None:
+    _repo(tmp_path)
+    parent = _git_output(tmp_path, "rev-parse", "HEAD")
+    (tmp_path / "reviewed.txt").unlink()
+    _git(tmp_path, "add", "reviewed.txt")
+    _git(tmp_path, "commit", "-m", "delete reviewed input")
+    target = _git_output(tmp_path, "rev-parse", "HEAD")
+    changed_ref = target if ref_kind == "commit" else f"{parent}..{target}"
+    resolved = [target] if ref_kind == "commit" else [parent, target]
+    packet = {
+        "reviewed_input_identity": {
+            "mode": "committed-ref",
+            "substrate_mode": "committed-ref",
+            "changed_ref": changed_ref,
+            "resolved_changed_ref": resolved,
+            "reviewed_paths": ["reviewed.txt"],
+            "reviewed_content": [
+                {
+                    "path": "reviewed.txt",
+                    "content_sha256": hashlib.sha256(b"base\n").hexdigest(),
+                    "disposition": "deleted",
+                }
+            ],
+        }
+    }
+    module = _packet_helper()
+    run_dir = tmp_path / ".charness" / f"committed-{ref_kind}"
+    run_dir.mkdir(parents=True)
+
+    semantic_input = module.materialize_semantic_input(tmp_path, packet, run_dir)
+
+    entry = semantic_input["entries"][0]
+    assert (tmp_path / entry["carrier_path"]).read_bytes() == b"base\n"
+    assert entry["source"] == f"{parent}:reviewed.txt"
+
+
+def test_deleted_preimage_hash_mismatch_refuses_explicitly(tmp_path: Path) -> None:
+    _repo(tmp_path)
+    (tmp_path / "reviewed.txt").unlink()
+    packet = _deleted_packet("reviewed.txt", "0" * 64)
+    module = _packet_helper()
+    run_dir = tmp_path / ".charness" / "hash-mismatch"
+    run_dir.mkdir(parents=True)
+
+    with pytest.raises(module.SemanticInputError) as caught:
+        module.materialize_semantic_input(tmp_path, packet, run_dir)
+
+    assert caught.value.code == "preimage-hash-mismatch"
+    assert caught.value.details["path"] == "reviewed.txt"
+
+
+def test_deleted_preimage_unavailable_refuses_explicitly(tmp_path: Path) -> None:
+    _repo(tmp_path)
+    packet = _deleted_packet("missing.txt", hashlib.sha256(b"missing\n").hexdigest())
+    module = _packet_helper()
+    run_dir = tmp_path / ".charness" / "preimage-unavailable"
+    run_dir.mkdir(parents=True)
+
+    with pytest.raises(module.SemanticInputError) as caught:
+        module.materialize_semantic_input(tmp_path, packet, run_dir)
+
+    assert caught.value.code == "preimage-unavailable"
+    assert caught.value.details["path"] == "missing.txt"
+
+
+def test_deleted_preimage_oversize_refuses_without_truncation(tmp_path: Path) -> None:
+    _repo(tmp_path)
+    module = _packet_helper()
+    content = b"x" * (module.MAX_PREIMAGE_BYTES + 1)
+    (tmp_path / "large.bin").write_bytes(content)
+    _git(tmp_path, "add", "large.bin")
+    _git(tmp_path, "commit", "-m", "large fixture")
+    (tmp_path / "large.bin").unlink()
+    packet = _deleted_packet("large.bin", hashlib.sha256(content).hexdigest())
+    run_dir = tmp_path / ".charness" / "preimage-oversize"
+    run_dir.mkdir(parents=True)
+
+    with pytest.raises(module.SemanticInputError) as caught:
+        module.materialize_semantic_input(tmp_path, packet, run_dir)
+
+    assert caught.value.code == "preimage-too-large"
+    assert caught.value.details["path"] == "large.bin"
+    assert caught.value.details["max_bytes"] == module.MAX_PREIMAGE_BYTES
 
 
 def test_empty_reviewed_input_refuses_even_with_unrelated_section(tmp_path: Path) -> None:
