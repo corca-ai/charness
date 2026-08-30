@@ -191,6 +191,7 @@ def test_post_publish_install_refresh_skips_when_not_declared() -> None:
     assert out["command"] is None
 
 
+@pytest.mark.release_only
 def test_publish_auto_runs_declared_install_refresh_end_to_end(tmp_path: Path) -> None:
     # Integration: a full --execute publish auto-runs the adapter-declared
     # post_publish_install_refresh after the verified release and records it in
@@ -298,6 +299,7 @@ def test_update_instructions_version_blocker_logic() -> None:
     assert blocker(["Run `demo update`."], previous=None) is None
 
 
+@pytest.mark.release_only
 def test_publish_blocks_when_update_instructions_are_stale(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     adapter = repo / ".agents" / "release-adapter.yaml"
@@ -344,6 +346,7 @@ def test_invalid_git_identity_blocker_logic(tmp_path: Path, no_ambient_git_ident
     assert "author" in blocker
 
 
+@pytest.mark.release_only
 def test_publish_blocks_when_git_identity_is_invalid(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -421,6 +424,7 @@ def test_build_update_instructions_prep_payload_surfaces_stub_and_staleness() ->
     assert "0.1.0" not in as_none["stub_update_instructions_entry"]
 
 
+@pytest.mark.release_only
 def test_prep_update_instructions_emits_stub_without_critique_or_clean_worktree(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     env = _release_env(tmp_path, bin_dir)
@@ -439,6 +443,7 @@ def test_prep_update_instructions_emits_stub_without_critique_or_clean_worktree(
     assert payload["update_instructions_stale"] is False
 
 
+@pytest.mark.release_only
 def test_prep_reports_staleness_as_data_where_dry_run_would_hold(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     adapter = repo / ".agents" / "release-adapter.yaml"
@@ -463,6 +468,7 @@ def test_prep_reports_staleness_as_data_where_dry_run_would_hold(tmp_path: Path)
     assert "0.0.1" not in payload["stub_update_instructions_entry"]
 
 
+@pytest.mark.release_only
 def test_prep_update_instructions_honors_version_selectors(tmp_path: Path) -> None:
     # Lock in the non-`--part` branches of the shared target-version helper:
     # --set-version takes the explicit string; --publish-current targets the
@@ -482,6 +488,7 @@ def test_prep_update_instructions_honors_version_selectors(tmp_path: Path) -> No
     assert current_payload["target_version"] == current_payload["current_version"]
 
 
+@pytest.mark.release_only
 def test_prep_update_instructions_rejects_execute_combo(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     env = _release_env(tmp_path, bin_dir)
@@ -490,6 +497,7 @@ def test_prep_update_instructions_rejects_execute_combo(tmp_path: Path) -> None:
     assert "read-only pre-publish affordance" in result.stderr
 
 
+@pytest.mark.release_only
 def test_prep_update_instructions_rejects_invalid_adapter(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     # A non-integer adapter version is a validation error; prep must fail closed.
@@ -500,6 +508,7 @@ def test_prep_update_instructions_rejects_invalid_adapter(tmp_path: Path) -> Non
     assert "release adapter is invalid" in result.stderr
 
 
+@pytest.mark.release_only
 def test_prep_update_instructions_guards_non_string_manifest_version(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     manifest = repo / "packaging" / "demo.json"
@@ -512,6 +521,7 @@ def test_prep_update_instructions_guards_non_string_manifest_version(tmp_path: P
     assert "did not report a packaging manifest version" in result.stderr
 
 
+@pytest.mark.release_only
 def test_publish_dry_run_requires_clean_worktree(tmp_path: Path) -> None:
     # The non-prep path enforces a clean worktree before building the plan; prep
     # (above) deliberately does not. A dirty tree on the dry-run path is refused.
@@ -526,6 +536,7 @@ def test_publish_dry_run_requires_clean_worktree(tmp_path: Path) -> None:
 # --- Gap 2: installed/exported plugin-cache bootstrap -------------------------
 
 
+@pytest.mark.release_only
 def test_publish_release_imports_from_exported_plugin_layout() -> None:
     # The exported plugin layout drops the `public` path segment, so a hardcoded
     # `skills.public.retro...` import raised ModuleNotFoundError from the cache.
@@ -618,6 +629,7 @@ def _resume_patch_closeout(
     )
 
 
+@pytest.mark.release_only
 def test_resume_completes_tail_after_carrier_state_readback_failure(tmp_path: Path) -> None:
     repo, env, carrier = _seed_failed_closeout(tmp_path, issue_view_fail_after=1)
 
@@ -627,6 +639,7 @@ def test_resume_completes_tail_after_carrier_state_readback_failure(tmp_path: Pa
     assert payload["issue_closeout"]["status"] == "state-verified"
 
 
+@pytest.mark.release_only
 def test_resume_refuses_exact_message_carrier_without_evidence_tree(tmp_path: Path) -> None:
     repo, env, carrier = _seed_failed_closeout(
         tmp_path, failure_at=1, failure_mode="before"
@@ -663,6 +676,7 @@ def test_resume_refuses_exact_message_carrier_without_evidence_tree(tmp_path: Pa
     assert remote_main == remote_before_resume
 
 
+@pytest.mark.release_only
 def test_resume_with_clean_release_content_head_adds_post_observer_carrier(tmp_path: Path) -> None:
     repo, env, carrier = _prepare_closeout_resume(tmp_path, head_closeout_body=None)
 
@@ -674,6 +688,7 @@ def test_resume_with_clean_release_content_head_adds_post_observer_carrier(tmp_p
     assert payload["issue_closeout_carrier_commit_sha"]
 
 
+@pytest.mark.release_only
 def test_resume_refuses_head_closeout_keywords_before_quality_or_push(tmp_path: Path) -> None:
     repo, env, carrier = _prepare_closeout_resume(
         tmp_path, head_closeout_body=_resume_closeout_body() + "\n\nClose #45."
@@ -693,6 +708,7 @@ def test_resume_refuses_head_closeout_keywords_before_quality_or_push(tmp_path: 
     assert "quality_command" not in {entry["label"] for entry in payload.get("release_runtime", [])}
 
 
+@pytest.mark.release_only
 def test_resume_continues_partial_publish_idempotently(tmp_path: Path) -> None:
     repo, env, _carrier = _seed_partial_publish(tmp_path)
 
@@ -730,6 +746,7 @@ def test_resume_continues_partial_publish_idempotently(tmp_path: Path) -> None:
     assert payload["distinct_channel_verification"]["status"] == "confirmed"
 
 
+@pytest.mark.release_only
 def test_resume_recreates_missing_local_tag_after_revalidation(tmp_path: Path) -> None:
     repo, env, _carrier = _seed_partial_publish(tmp_path)
     subprocess.run(["git", "tag", "-d", "v0.0.0"], cwd=repo, check=True,
@@ -764,6 +781,7 @@ def test_resume_recreates_missing_local_tag_after_revalidation(tmp_path: Path) -
     assert ["tag", "v0.0.0", release_head] in git_log
 
 
+@pytest.mark.release_only
 def test_resume_dry_run_describes_revalidation_without_mutating(tmp_path: Path) -> None:
     repo, _env, _carrier = _seed_partial_publish(tmp_path)
     head_before = subprocess.run(
@@ -787,6 +805,7 @@ def test_resume_dry_run_describes_revalidation_without_mutating(tmp_path: Path) 
     ).stdout.strip() == head_before
 
 
+@pytest.mark.release_only
 def test_normal_dry_run_prints_plan_without_mutating(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     head_before = subprocess.run(
@@ -830,6 +849,7 @@ def test_resume_preflight_rejects_non_string_manifest_version(tmp_path: Path) ->
         raise AssertionError("non-string manifest version must block resume preflight")
 
 
+@pytest.mark.release_only
 def test_resume_refuses_missing_local_tag_when_remote_tag_exists(tmp_path: Path) -> None:
     repo, env, _carrier = _seed_partial_publish(tmp_path)
     subprocess.run(["git", "tag", "-d", "v0.0.0"], cwd=repo, check=True,
@@ -850,6 +870,7 @@ def test_resume_refuses_missing_local_tag_when_remote_tag_exists(tmp_path: Path)
     assert "refusing to reconstruct an ambiguous tag" in result.stderr
 
 
+@pytest.mark.release_only
 def test_resume_aborts_before_push_when_revalidation_fails(tmp_path: Path) -> None:
     # RN2: resume must RE-VALIDATE before continuing — never push a stale local
     # release commit unchecked. Make the re-validated quality gate fail and assert
@@ -881,6 +902,7 @@ def test_resume_aborts_before_push_when_revalidation_fails(tmp_path: Path) -> No
     assert "push_create_verify_release" not in runtime_labels
 
 
+@pytest.mark.release_only
 def test_resume_refuses_when_no_partial_state(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     env = _release_env(tmp_path, bin_dir)
@@ -893,6 +915,7 @@ def test_resume_refuses_when_no_partial_state(tmp_path: Path) -> None:
     assert "resume" in result.stderr.lower()
 
 
+@pytest.mark.release_only
 def test_resume_requires_publish_current(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     env = _release_env(tmp_path, bin_dir)
