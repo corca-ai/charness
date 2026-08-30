@@ -192,6 +192,33 @@ def test_candidate_carrier_reuses_equal_head_worktree_reads(
     ]
 
 
+def test_candidate_carrier_reuses_committed_diff_for_a_clean_commit(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    base = "a" * 40
+    head = "b" * 40
+    diff_calls: list[tuple[str, ...]] = []
+
+    def diff_paths(_repo: Path, *revisions: str) -> list[str]:
+        diff_calls.append(revisions)
+        return ["module.py"]
+
+    monkeypatch.setattr(task_run_git, "_is_ancestor", lambda *_args: True)
+    monkeypatch.setattr(task_run_git, "_diff_paths", diff_paths)
+    monkeypatch.setattr(
+        task_run_git,
+        "_collect_populations",
+        lambda _repo: {"tracked": [], "untracked": [], "ignored": []},
+    )
+
+    carrier = task_run_git._candidate_carrier(tmp_path, base, head=head)
+
+    assert carrier["carrier_kind"] == "commit-only"
+    assert carrier["committed_paths"] == ["module.py"]
+    assert carrier["changed_paths"] == ["module.py"]
+    assert diff_calls == [(base, head)]
+
+
 def test_candidate_carrier_reads_untracked_paths_once_for_a_commit_plus_dirty_tree(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

@@ -466,9 +466,14 @@ def _candidate_carrier(
         dirty_paths = list(working_tree_paths)
     else:
         dirty_paths = working_tree_paths
-        changed_paths = sorted(
-            set(_diff_paths(repo_root, base_sha)) | set(untracked_paths)
-        )
+        if has_commit and not dirty_paths:
+            # A clean descendant HEAD is exactly the committed candidate already
+            # read above. Re-running the same base diff cannot add information.
+            changed_paths = list(committed_paths)
+        else:
+            changed_paths = sorted(
+                set(_diff_paths(repo_root, base_sha)) | set(untracked_paths)
+            )
     if not has_commit:
         carrier_kind = "worktree-only"
     elif dirty_paths:
