@@ -297,10 +297,15 @@ def _current_pointer_payload(repo_root: Path, path: str) -> str | None:
         raise ValueError(
             f"reviewed path `{path}` is a current pointer resolving outside repo root"
         ) from exc
-    try:
-        selected = _sha256(resolved.read_bytes()) if resolved.is_file() else "absent"
-    except OSError:
-        selected = "unreadable"
+    if not resolved.is_file():
+        # A pointer naming nothing is a real, stable state: it selects no record.
+        selected = "absent"
+    else:
+        # A read FAILURE is not a state -- substituting a constant here let capture
+        # and verification agree on bytes neither could read, so an unreadable
+        # record verified as `current`. Refuse instead; the same shape as catching
+        # every OSError around the submodule checkout.
+        selected = _sha256(resolved.read_bytes())
     return _sha256(
         b"current-pointer\0" + os.fsencode(target) + b"\0" + selected.encode("ascii")
     )

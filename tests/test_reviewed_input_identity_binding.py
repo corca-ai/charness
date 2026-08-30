@@ -888,6 +888,10 @@ def test_a_submodule_removed_from_disk_does_not_crash_identity_construction(
 
     entry = next(e for e in identity["reviewed_content"] if e["path"] == "sub")
     assert entry["content_sha256"] == hashlib.sha256(b"gitlink\0" + index_entry.encode()).hexdigest()
+    # An index gitlink survives its checkout being deleted, so binding it without
+    # a disposition marked a REMOVED submodule undeleted, and restoring the
+    # checkout then left that verdict `current`.
+    assert entry["disposition"] == "deleted"
     assert verify_reviewed_input_identity(clone, identity) == (True, "current")
 
 
@@ -933,3 +937,27 @@ def test_a_non_absence_oserror_is_not_treated_as_a_missing_checkout(
 
     with pytest.raises(PermissionError):
         build_reviewed_input_identity(repo_root=repo, reviewed_paths=[".gitmodules", "sub"])
+
+
+def test_an_unreadable_pointer_target_refuses_instead_of_hashing_a_constant(
+    tmp_path: Path,
+) -> None:
+    """A read FAILURE is not a state.
+
+    Substituting a stable `unreadable` marker let capture and verification agree
+    on bytes neither could read, so an unreadable record verified as `current` —
+    the same failure-as-passing-verdict shape as swallowing every OSError around
+    a submodule checkout.
+    """
+    _init_identity_repo(tmp_path)
+    records = tmp_path / "charness-artifacts" / "quality"
+    records.mkdir(parents=True)
+    target = records / "record.md"
+    target.write_text("# Record\n", encoding="utf-8")
+    (records / "latest.md").symlink_to("record.md")
+    target.chmod(0o000)
+    try:
+        with pytest.raises(OSError):
+            build_reviewed_input_identity(repo_root=tmp_path)
+    finally:
+        target.chmod(0o644)

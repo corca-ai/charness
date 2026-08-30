@@ -1,0 +1,388 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-08-29T23:55:10Z",
+  "prepared_for": "67555154e^..HEAD",
+  "changed_ref": "67555154e^..HEAD",
+  "substrate_mode": "committed-ref",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for ref `67555154e^..HEAD`:\n- charness-artifacts/critique/2026-08-30-issue-759-declaration-intersection.md\n- charness-artifacts/critique/review-20260830T063108Z-1965424-packet.json\n- charness-artifacts/critique/review-20260830T063108Z-1965424-packet.md\n- charness-artifacts/critique/review-20260830T064052Z-2042213-packet.json\n- charness-artifacts/critique/review-20260830T064052Z-2042213-packet.md\n- charness-artifacts/critique/review-20260830T064102Z-2042513-packet.json\n- charness-artifacts/critique/review-20260830T064102Z-2042513-packet.md\n- charness-artifacts/critique/review-20260830T072220Z-2548028-packet.json\n- charness-artifacts/critique/review-20260830T072220Z-2548028-packet.md\n- charness-artifacts/critique/review-20260830T072629Z-2665087-packet.json\n- charness-artifacts/critique/review-20260830T072629Z-2665087-packet.md\n- charness-artifacts/critique/review-20260830T073305Z-2743495-packet.json\n- charness-artifacts/critique/review-20260830T073305Z-2743495-packet.md\n- charness-artifacts/critique/review-20260830T074059Z-2811511-packet.json\n- charness-artifacts/critique/review-20260830T074059Z-2811511-packet.md\n- charness-artifacts/critique/review-20260830T074929Z-2935643-packet.json\n- charness-artifacts/critique/review-20260830T074929Z-2935643-packet.md\n- charness-artifacts/critique/review-20260830T075738Z-3003017-packet.json\n- charness-artifacts/critique/review-20260830T075738Z-3003017-packet.md\n- charness-artifacts/critique/review-20260830T082954Z-3258490-packet.json\n- charness-artifacts/critique/review-20260830T082954Z-3258490-packet.md\n- charness-artifacts/critique/review-20260830T083804Z-3390404-packet.json\n- charness-artifacts/critique/review-20260830T083804Z-3390404-packet.md\n- charness-artifacts/critique/review-20260830T084439Z-3456882-packet.json\n- charness-artifacts/critique/review-20260830T084439Z-3456882-packet.md\n- charness-artifacts/quality/2026-08-30-declaration-intersection-sweep.md\n- charness-artifacts/quality/latest.md\n- charness-artifacts/release-review/2026-08-30-8.0.0-real-host-removal-surface-lock.md\n- charness-artifacts/retro/2026-08-30-session-retro.md\n- charness-artifacts/retro/lesson-selection-index.json\n- charness-artifacts/retro/recent-lessons.md\n- charness-artifacts/reviewed-paths-759.txt\n- charness-artifacts/reviewed-paths-crash.txt\n- charness-artifacts/reviewed-paths-narrow.txt\n- charness-artifacts/reviewed-paths-r2.txt\n- charness-artifacts/reviewed-paths-r3.txt\n- charness-artifacts/reviewed-paths-r4.txt\n- charness-artifacts/reviewed-paths-r5.txt\n- charness-artifacts/reviewed-paths-r6.txt\n- charness-artifacts/reviewed-paths-r7.txt\n- charness-artifacts/reviewed-paths-r8.txt\n- scripts/critique_packet_lib.py\n- scripts/critique_reviewed_input_binding.py\n- scripts/render_critique_section_changed_surfaces.py\n- scripts/reviewed_input_identity.py\n- scripts/reviewed_input_nonblob.py\n- scripts/reviewed_input_verification.py\n- scripts/surfaces_lib.py\n- skills/public/critique/references/prepare-packet.md\n- skills/public/critique/scripts/run_review_packet.py\n- skills/public/critique/scripts/run_review_support.py\n- skills/public/critique/scripts/verify_packet.py\n- skills/shared/scripts/reviewer_worker_carrier_support.py\n- tests/quality_gates/test_critique_enforcement_scope.py\n- tests/test_critique_prepare_packet.py\n- tests/test_critique_section_changed_surfaces.py\n- tests/test_release_changed_line_regressions.py\n- tests/test_reviewed_input_identity_binding.py\n- tests/test_reviewed_input_identity_failures.py\n- tests/test_reviewed_input_verifier_sibling_ownership.py\n- tests/test_run_review_declared_path_resolution.py\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/critique_packet_lib.py, scripts/critique_reviewed_input_binding.py, scripts/render_critique_section_changed_surfaces.py, scripts/reviewed_input_identity.py, scripts/reviewed_input_nonblob.py, scripts/reviewed_input_verification.py, scripts/surfaces_lib.py, skills/public/critique/references/prepare-packet.md, skills/public/critique/scripts/run_review_packet.py, skills/public/critique/scripts/run_review_support.py, skills/public/critique/scripts/verify_packet.py, skills/shared/scripts/reviewer_worker_carrier_support.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-08-30-issue-759-declaration-intersection.md, charness-artifacts/critique/review-20260830T063108Z-1965424-packet.md, charness-artifacts/critique/review-20260830T064052Z-2042213-packet.md, charness-artifacts/critique/review-20260830T064102Z-2042513-packet.md, charness-artifacts/critique/review-20260830T072220Z-2548028-packet.md, charness-artifacts/critique/review-20260830T072629Z-2665087-packet.md, charness-artifacts/critique/review-20260830T073305Z-2743495-packet.md, charness-artifacts/critique/review-20260830T074059Z-2811511-packet.md, charness-artifacts/critique/review-20260830T074929Z-2935643-packet.md, charness-artifacts/critique/review-20260830T075738Z-3003017-packet.md, charness-artifacts/critique/review-20260830T082954Z-3258490-packet.md, charness-artifacts/critique/review-20260830T083804Z-3390404-packet.md, charness-artifacts/critique/review-20260830T084439Z-3456882-packet.md, charness-artifacts/quality/2026-08-30-declaration-intersection-sweep.md, charness-artifacts/quality/latest.md, charness-artifacts/release-review/2026-08-30-8.0.0-real-host-removal-surface-lock.md, charness-artifacts/retro/2026-08-30-session-retro.md, charness-artifacts/retro/recent-lessons.md, skills/public/critique/references/prepare-packet.md\n  verify: ./scripts/check-docs.sh, ./scripts/check-secrets.sh\n- operational-evidence-records: Durable issue, quality, and release evidence attachments produced by local planning and closeout workflows.\n  source matches: charness-artifacts/quality/2026-08-30-declaration-intersection-sweep.md, charness-artifacts/quality/latest.md\n  verify: python3 scripts/check_release_issue_ledger.py --repo-root . --ledger charness-artifacts/issues/2026-08-20-next-release-ledger.json, python3 scripts/validate_quality_artifact.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/critique/references/prepare-packet.md, skills/public/critique/scripts/run_review_packet.py, skills/public/critique/scripts/run_review_support.py, skills/public/critique/scripts/verify_packet.py, skills/shared/scripts/reviewer_worker_carrier_support.py\n  verify: python3 scripts/validate_skills.py --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py, python3 scripts/check_skill_ownership_overlap.py --repo-root ., python3 scripts/validate_skill_ergonomics.py --repo-root .\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/critique/references/prepare-packet.md, skills/public/critique/scripts/run_review_packet.py, skills/public/critique/scripts/run_review_support.py, skills/public/critique/scripts/verify_packet.py, skills/shared/scripts/reviewer_worker_carrier_support.py\n  verify: python3 scripts/validate_public_skill_validation.py --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/critique/references/prepare-packet.md, skills/public/critique/scripts/run_review_packet.py, skills/public/critique/scripts/run_review_support.py, skills/public/critique/scripts/verify_packet.py, skills/shared/scripts/reviewer_worker_carrier_support.py\n  verify: python3 scripts/validate_public_skill_dogfood.py --repo-root .\n- release-claims-review-evidence: Committed, machine-readable claims-review evidence that binds a prepared local release record before publication may resume.\n  source matches: charness-artifacts/release-review/2026-08-30-8.0.0-real-host-removal-surface-lock.md\n  verify: for review_record in charness-artifacts/release-review/*.json; do [ -e \"$review_record\" ] && python3 -m json.tool \"$review_record\" >/dev/null || exit $?; done\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-30-issue-759-declaration-intersection.md, charness-artifacts/critique/review-20260830T063108Z-1965424-packet.json, charness-artifacts/critique/review-20260830T063108Z-1965424-packet.md, charness-artifacts/critique/review-20260830T064052Z-2042213-packet.json, charness-artifacts/critique/review-20260830T064052Z-2042213-packet.md, charness-artifacts/critique/review-20260830T064102Z-2042513-packet.json, charness-artifacts/critique/review-20260830T064102Z-2042513-packet.md, charness-artifacts/critique/review-20260830T072220Z-2548028-packet.json, charness-artifacts/critique/review-20260830T072220Z-2548028-packet.md, charness-artifacts/critique/review-20260830T072629Z-2665087-packet.json, charness-artifacts/critique/review-20260830T072629Z-2665087-packet.md, charness-artifacts/critique/review-20260830T073305Z-2743495-packet.json, charness-artifacts/critique/review-20260830T073305Z-2743495-packet.md, charness-artifacts/critique/review-20260830T074059Z-2811511-packet.json, charness-artifacts/critique/review-20260830T074059Z-2811511-packet.md, charness-artifacts/critique/review-20260830T074929Z-2935643-packet.json, charness-artifacts/critique/review-20260830T074929Z-2935643-packet.md, charness-artifacts/critique/review-20260830T075738Z-3003017-packet.json, charness-artifacts/critique/review-20260830T075738Z-3003017-packet.md, charness-artifacts/critique/review-20260830T082954Z-3258490-packet.json, charness-artifacts/critique/review-20260830T082954Z-3258490-packet.md, charness-artifacts/critique/review-20260830T083804Z-3390404-packet.json, charness-artifacts/critique/review-20260830T083804Z-3390404-packet.md, charness-artifacts/critique/review-20260830T084439Z-3456882-packet.json, charness-artifacts/critique/review-20260830T084439Z-3456882-packet.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- retro-lesson-selection-index: Durable retro prepare packets and generated advisory index for source-linked retro lesson digest selection.\n  source matches: charness-artifacts/retro/2026-08-30-session-retro.md, charness-artifacts/retro/recent-lessons.md\n  derived matches: charness-artifacts/retro/lesson-selection-index.json\n  sync: python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write\n  verify: for retro_packet_json in charness-artifacts/retro/*-packet.json; do if [ -e \"$retro_packet_json\" ]; then python3 -m json.tool \"$retro_packet_json\" >/dev/null || exit $?; fi; done, python3 scripts/build_retro_lesson_selection_index.py --repo-root . --check\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/critique_packet_lib.py, scripts/critique_reviewed_input_binding.py, scripts/render_critique_section_changed_surfaces.py, scripts/reviewed_input_identity.py, scripts/reviewed_input_nonblob.py, scripts/reviewed_input_verification.py, scripts/surfaces_lib.py, tests/quality_gates/test_critique_enforcement_scope.py, tests/test_critique_prepare_packet.py, tests/test_critique_section_changed_surfaces.py, tests/test_release_changed_line_regressions.py, tests/test_reviewed_input_identity_binding.py, tests/test_reviewed_input_identity_failures.py, tests/test_reviewed_input_verifier_sibling_ownership.py, tests/test_run_review_declared_path_resolution.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/check_code_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/critique_packet_lib.py, scripts/critique_reviewed_input_binding.py, scripts/render_critique_section_changed_surfaces.py, scripts/reviewed_input_identity.py, scripts/reviewed_input_nonblob.py, scripts/reviewed_input_verification.py, scripts/surfaces_lib.py, skills/public/critique/scripts/run_review_packet.py, skills/public/critique/scripts/run_review_support.py, skills/public/critique/scripts/verify_packet.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n- python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "scope_status": "populated",
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "reviewer_runner": {
+      "mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "timeout_seconds": 900
+    },
+    "execution_mode": "file-backed-worker",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed. Consume the worker receipt and delivery ledger; do not infer approval from a file or exit code."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "committed-ref",
+    "substrate_mode": "committed-ref",
+    "changed_ref": "67555154e^..HEAD",
+    "resolved_changed_ref": [
+      "eda0622b52ec35e5334d7e6ff8073998f726d801",
+      "e2b892a01e293cd2d1256ffa2dd894402d14b937"
+    ],
+    "base_head": "e2b892a01e293cd2d1256ffa2dd894402d14b937",
+    "base_head_role": "target",
+    "reviewed_paths": [
+      "charness-artifacts/critique/2026-08-30-issue-759-declaration-intersection.md",
+      "charness-artifacts/critique/review-20260830T063108Z-1965424-packet.json",
+      "charness-artifacts/critique/review-20260830T063108Z-1965424-packet.md",
+      "charness-artifacts/critique/review-20260830T064052Z-2042213-packet.json",
+      "charness-artifacts/critique/review-20260830T064052Z-2042213-packet.md",
+      "charness-artifacts/critique/review-20260830T064102Z-2042513-packet.json",
+      "charness-artifacts/critique/review-20260830T064102Z-2042513-packet.md",
+      "charness-artifacts/critique/review-20260830T072220Z-2548028-packet.json",
+      "charness-artifacts/critique/review-20260830T072220Z-2548028-packet.md",
+      "charness-artifacts/critique/review-20260830T072629Z-2665087-packet.json",
+      "charness-artifacts/critique/review-20260830T072629Z-2665087-packet.md",
+      "charness-artifacts/critique/review-20260830T073305Z-2743495-packet.json",
+      "charness-artifacts/critique/review-20260830T073305Z-2743495-packet.md",
+      "charness-artifacts/critique/review-20260830T074059Z-2811511-packet.json",
+      "charness-artifacts/critique/review-20260830T074059Z-2811511-packet.md",
+      "charness-artifacts/critique/review-20260830T074929Z-2935643-packet.json",
+      "charness-artifacts/critique/review-20260830T074929Z-2935643-packet.md",
+      "charness-artifacts/critique/review-20260830T075738Z-3003017-packet.json",
+      "charness-artifacts/critique/review-20260830T075738Z-3003017-packet.md",
+      "charness-artifacts/critique/review-20260830T082954Z-3258490-packet.json",
+      "charness-artifacts/critique/review-20260830T082954Z-3258490-packet.md",
+      "charness-artifacts/critique/review-20260830T083804Z-3390404-packet.json",
+      "charness-artifacts/critique/review-20260830T083804Z-3390404-packet.md",
+      "charness-artifacts/critique/review-20260830T084439Z-3456882-packet.json",
+      "charness-artifacts/critique/review-20260830T084439Z-3456882-packet.md",
+      "charness-artifacts/quality/2026-08-30-declaration-intersection-sweep.md",
+      "charness-artifacts/quality/latest.md",
+      "charness-artifacts/release-review/2026-08-30-8.0.0-real-host-removal-surface-lock.md",
+      "charness-artifacts/retro/2026-08-30-session-retro.md",
+      "charness-artifacts/retro/lesson-selection-index.json",
+      "charness-artifacts/retro/recent-lessons.md",
+      "charness-artifacts/reviewed-paths-759.txt",
+      "charness-artifacts/reviewed-paths-crash.txt",
+      "charness-artifacts/reviewed-paths-narrow.txt",
+      "charness-artifacts/reviewed-paths-r2.txt",
+      "charness-artifacts/reviewed-paths-r3.txt",
+      "charness-artifacts/reviewed-paths-r4.txt",
+      "charness-artifacts/reviewed-paths-r5.txt",
+      "charness-artifacts/reviewed-paths-r6.txt",
+      "charness-artifacts/reviewed-paths-r7.txt",
+      "charness-artifacts/reviewed-paths-r8.txt",
+      "scripts/critique_packet_lib.py",
+      "scripts/critique_reviewed_input_binding.py",
+      "scripts/render_critique_section_changed_surfaces.py",
+      "scripts/reviewed_input_identity.py",
+      "scripts/reviewed_input_nonblob.py",
+      "scripts/reviewed_input_verification.py",
+      "scripts/surfaces_lib.py",
+      "skills/public/critique/references/prepare-packet.md",
+      "skills/public/critique/scripts/run_review_packet.py",
+      "skills/public/critique/scripts/run_review_support.py",
+      "skills/public/critique/scripts/verify_packet.py",
+      "skills/shared/scripts/reviewer_worker_carrier_support.py",
+      "tests/quality_gates/test_critique_enforcement_scope.py",
+      "tests/test_critique_prepare_packet.py",
+      "tests/test_critique_section_changed_surfaces.py",
+      "tests/test_release_changed_line_regressions.py",
+      "tests/test_reviewed_input_identity_binding.py",
+      "tests/test_reviewed_input_identity_failures.py",
+      "tests/test_reviewed_input_verifier_sibling_ownership.py",
+      "tests/test_run_review_declared_path_resolution.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "charness-artifacts/critique/2026-08-30-issue-759-declaration-intersection.md",
+        "content_sha256": "5dc84c5bc9fdf1c650bedf60042b21d55e83226cae82d14e3c5f844de0317a03"
+      },
+      {
+        "path": "charness-artifacts/critique/review-20260830T063108Z-1965424-packet.json",
+        "content_sha256": "413fd0b53b36cf2a7bb24959be68cff5ce2f715b9c88c98c87db525a6572f36d"
+      },
+      {
+        "path": "charness-artifacts/critique/review-20260830T063108Z-1965424-packet.md",
+        "content_sha256": "7cb30285ca9b9b7b0015ae56f451064a383e8c464c4d30b9bfa7fe11d28226e9"
+      },
+      {
+        "path": "charness-artifacts/critique/review-20260830T064052Z-2042213-packet.json",
+        "content_sha256": "d34a7665807505e2fa78f39f32389e5377d967b235230625d483a47486e3f9be"
+      },
+      {
+        "path": "charness-artifacts/critique/review-20260830T064052Z-2042213-packet.md",
+        "content_sha256": "dd36c8a125834649e3ad77a4c0304a3e59622f7693b1a57d056220ef3bfe2b82"
+      },
+      {
+        "path": "charness-artifacts/critique/review-20260830T064102Z-2042513-packet.json",
+        "content_sha256": "8eefe01493aa61e0f3dcb9c36f39a6a78ee9e902b16f5e86cda0b238d71e4ff3"
+      },
+      {
+        "path": "charness-artifacts/critique/review-20260830T064102Z-2042513-packet.md",
+        "content_sha256": "1311888aa04893f26a3d7af5276115004521a0eb97c38268e540e03b1704d4a5"
+      },
+      {
+        "path": "charness-artifacts/critique/review-20260830T072220Z-2548028-packet.json",
+        "content_sha256": "68ce56c2b4ef0b80ee14d78367e9ab23e87061cf799b1a65e299658c846a56fd"
+      },
+      {
+        "path": "charness-artifacts/critique/review-20260830T072220Z-2548028-packet.md",
+        "content_sha256": "1bf6c32d23be6ae5ab2269d592908fdecae9521e221fc01be4553c7ec9500bef"
+      },
+      {
+        "path": "charness-artifacts/critique/review-20260830T072629Z-2665087-packet.json",
+        "content_sha256": "4bbc5da33d8c48187dcc6194a13d5dae756e26fe23132f2a40675dc8e0f5ba46"
+      },
+      {
+        "path": "charness-artifacts/critique/review-20260830T072629Z-2665087-packet.md",
+        "content_sha256": "30101c630ee6d5ec105d0f7eb44bc2cd0adbce232f2159b71c9461ed56ce9a9e"
+      },
+      {
+        "path": "charness-artifacts/critique/review-20260830T073305Z-2743495-packet.json",
+        "content_sha256": "fd86d3c6975ff56e239f2154f8f3e62c0e045be437b9fd3036f0a249ee3a26ec"
+      },
+      {
+        "path": "charness-artifacts/critique/review-20260830T073305Z-2743495-packet.md",
+        "content_sha256": "b810cc87769e173f5a4cde188f07365a0e43aec144036b72d1df12fad359ff65"
+      },
+      {
+        "path": "charness-artifacts/critique/review-20260830T074059Z-2811511-packet.json",
+        "content_sha256": "c978ee2dfe3c6b03cd76c216aad62f52b632743ec3480eff053ba9fbfa80e118"
+      },
+      {
+        "path": "charness-artifacts/critique/review-20260830T074059Z-2811511-packet.md",
+        "content_sha256": "0f583e358bd304f71a4e6563267dbbd0536d1353e0c71618c64fb9d11fe51ff9"
+      },
+      {
+        "path": "charness-artifacts/critique/review-20260830T074929Z-2935643-packet.json",
+        "content_sha256": "08728cb7a00cdc1e2d1a104017d61c0d5f8c19d2bca221f8f0657a531f92345e"
+      },
+      {
+        "path": "charness-artifacts/critique/review-20260830T074929Z-2935643-packet.md",
+        "content_sha256": "59901aea5c7c62cc69574148e810c3a613273cb1d93af27e41a5b4edc823ffc4"
+      },
+      {
+        "path": "charness-artifacts/critique/review-20260830T075738Z-3003017-packet.json",
+        "content_sha256": "0df7bf509710e964b25824e441639d8ff13ffb76991a859f44cfa53fab83f933"
+      },
+      {
+        "path": "charness-artifacts/critique/review-20260830T075738Z-3003017-packet.md",
+        "content_sha256": "8b63ac111db8aaa8c9647872358ca91a144fc481d4867561753408e07cb0f10c"
+      },
+      {
+        "path": "charness-artifacts/critique/review-20260830T082954Z-3258490-packet.json",
+        "content_sha256": "7d51aa6d3eb94a9112db8ef781c232e42a6357c59d9a060544b06de788aebde9"
+      },
+      {
+        "path": "charness-artifacts/critique/review-20260830T082954Z-3258490-packet.md",
+        "content_sha256": "9c7d39a0726a4003ea4e99a28482dc65afb8eee6aea90e7559852f6dd2ac9c2c"
+      },
+      {
+        "path": "charness-artifacts/critique/review-20260830T083804Z-3390404-packet.json",
+        "content_sha256": "857c8c54920a9eb94240355d859497831c3b3651acd8edd55c574ff4b21b25ae"
+      },
+      {
+        "path": "charness-artifacts/critique/review-20260830T083804Z-3390404-packet.md",
+        "content_sha256": "1b8ffd0ed254728c56ed2f32a0f78e0bc7374b195e0c63ea3b62af67fc7b1eca"
+      },
+      {
+        "path": "charness-artifacts/critique/review-20260830T084439Z-3456882-packet.json",
+        "content_sha256": "6e584f3ec6c12762460e6a5d2eda8c1a7d16ddb7a5a2909b37c48aa9c8053062"
+      },
+      {
+        "path": "charness-artifacts/critique/review-20260830T084439Z-3456882-packet.md",
+        "content_sha256": "134b9af98183987acb8d81dd2b5b2afbc775cbfc199d5f6b18047f9ca45edd49"
+      },
+      {
+        "path": "charness-artifacts/quality/2026-08-30-declaration-intersection-sweep.md",
+        "content_sha256": "61f3e527f23ade597b5f8d34e119a1e13d348c8ef68e8de106cf17be5102e097"
+      },
+      {
+        "path": "charness-artifacts/quality/latest.md",
+        "content_sha256": "a5873fa74f43c16181d33fe9e19e0edfe061d1d16f036b5e7142ab5f4021ba02"
+      },
+      {
+        "path": "charness-artifacts/release-review/2026-08-30-8.0.0-real-host-removal-surface-lock.md",
+        "content_sha256": "141db9437897305102b718ea5b79d798e8301b771a0f4f17459ad18361146dcc"
+      },
+      {
+        "path": "charness-artifacts/retro/2026-08-30-session-retro.md",
+        "content_sha256": "c0bc0fea65e8d4c825c338de7793d7e46f6c48734d64e49004eb621427ffaaa1"
+      },
+      {
+        "path": "charness-artifacts/retro/lesson-selection-index.json",
+        "content_sha256": "8aedcbb4c05073fe3727f615553c3d57a743d222aefd23e74ccfb44d4d1f0731"
+      },
+      {
+        "path": "charness-artifacts/retro/recent-lessons.md",
+        "content_sha256": "0d661527cc7e16ea95028842aeacf9576c3bb23667f487867757a99921f43762"
+      },
+      {
+        "path": "charness-artifacts/reviewed-paths-759.txt",
+        "content_sha256": "f23c5a0b1e64b1c96962b9ab67d13f1514e8b45e877e83f1a81d59d1946b3c67"
+      },
+      {
+        "path": "charness-artifacts/reviewed-paths-crash.txt",
+        "content_sha256": "fc27eebc2d34dd440f31c5d6d1c2dffa369c3cd3c28af3bc9e205b93ae1de9bf"
+      },
+      {
+        "path": "charness-artifacts/reviewed-paths-narrow.txt",
+        "content_sha256": "5db95020d92c49cfee2a27f8e1d32e61ddfd4c237402a50c278c2ff617ec7c44"
+      },
+      {
+        "path": "charness-artifacts/reviewed-paths-r2.txt",
+        "content_sha256": "be819073b11c8125eaa7617fcd30241f92bb6af830e4dce8048f9a2e500f3401"
+      },
+      {
+        "path": "charness-artifacts/reviewed-paths-r3.txt",
+        "content_sha256": "09d43a87d81a23752c48d8781ecf69a883c2771820a6db040676787e499d77c3"
+      },
+      {
+        "path": "charness-artifacts/reviewed-paths-r4.txt",
+        "content_sha256": "728f7526281e9c7dccdd6eee79a49ba6865e51f1b1e4129395479dc761f0d705"
+      },
+      {
+        "path": "charness-artifacts/reviewed-paths-r5.txt",
+        "content_sha256": "335c87a6ffb207c52878b5f31d01d642a757530474f153f9716a79a60d36ed62"
+      },
+      {
+        "path": "charness-artifacts/reviewed-paths-r6.txt",
+        "content_sha256": "d04d661f8649fe0906d66682b49d67e7c7d9c49652462fb9845d1aa70912f981"
+      },
+      {
+        "path": "charness-artifacts/reviewed-paths-r7.txt",
+        "content_sha256": "911aa9b509d85467a49c8829d793182cf2069e4cd217cc6eb701779bea7a9879"
+      },
+      {
+        "path": "charness-artifacts/reviewed-paths-r8.txt",
+        "content_sha256": "d53cdba8f24953f3f831dbc1ad790dc96d35ac746f36c8a50cae8694996274a1"
+      },
+      {
+        "path": "scripts/critique_packet_lib.py",
+        "content_sha256": "2ef40e534310368514f1b937d91fde3847e9f6504f56b148ccfe04353c4b8c22"
+      },
+      {
+        "path": "scripts/critique_reviewed_input_binding.py",
+        "content_sha256": "fd01584f831c2d6c06bb30d653dcf95ab9bfd2c225e63b433310654fa343bdd8"
+      },
+      {
+        "path": "scripts/render_critique_section_changed_surfaces.py",
+        "content_sha256": "914875518a09f2a721d9335b245eb815d85fe45cf00070504d1b68de239831cb"
+      },
+      {
+        "path": "scripts/reviewed_input_identity.py",
+        "content_sha256": "16164031bad286447f3c83cbb0401216d0311d1c7881d7d582cc485f64c0320e"
+      },
+      {
+        "path": "scripts/reviewed_input_nonblob.py",
+        "content_sha256": "45ef6ce049c66f9d91ccf6f05baea07b5286d2a60796f87aeafeff44885f98c5"
+      },
+      {
+        "path": "scripts/reviewed_input_verification.py",
+        "content_sha256": "f9a8e27fbe273b112e8449ebc2c9ea7464ca3c7eb2b0f3939ff92ee1f48b42be"
+      },
+      {
+        "path": "scripts/surfaces_lib.py",
+        "content_sha256": "a7b2cd62b6d11bdc8a31c70cac77572330f0e504580067ea9ba0bb3e77b97651"
+      },
+      {
+        "path": "skills/public/critique/references/prepare-packet.md",
+        "content_sha256": "5841739388e6e4f5bc47d1f1044a45b326c5c246d86ed23a093aab5b342d969a"
+      },
+      {
+        "path": "skills/public/critique/scripts/run_review_packet.py",
+        "content_sha256": "fef86de967dbc663dca5da430d32b77dd2bbb0683f8c0783b6b415b49d074813"
+      },
+      {
+        "path": "skills/public/critique/scripts/run_review_support.py",
+        "content_sha256": "603ca1835f2ddd8820768faba8990124cac5132fda27a907f648aacc9a72c0ce"
+      },
+      {
+        "path": "skills/public/critique/scripts/verify_packet.py",
+        "content_sha256": "61e30acdb14755c55ab40328aab06c89cbd53ddfef19521ea468f564d6c98252"
+      },
+      {
+        "path": "skills/shared/scripts/reviewer_worker_carrier_support.py",
+        "content_sha256": "ff7a28fb3cecd78306827137c495023aad74b7a7d6e87ab1b198f6026199801a"
+      },
+      {
+        "path": "tests/quality_gates/test_critique_enforcement_scope.py",
+        "content_sha256": "a3f89050d9c98727b998a256838d6ce96cfe6f91fa99e74aa1ec1f8e4b048a5b"
+      },
+      {
+        "path": "tests/test_critique_prepare_packet.py",
+        "content_sha256": "44d01be3a0cb5896ee6dea008ce8f1ed8f81f4fe63076183ea252caaa5a58b00"
+      },
+      {
+        "path": "tests/test_critique_section_changed_surfaces.py",
+        "content_sha256": "3f91dc9aeb465df3f3754df53847547dae16f199b22e0521f839d58949385ff9"
+      },
+      {
+        "path": "tests/test_release_changed_line_regressions.py",
+        "content_sha256": "489c9ca3632a820d63bfec3399551b99eee53e07ed052f16bc9b32bc652e76b9"
+      },
+      {
+        "path": "tests/test_reviewed_input_identity_binding.py",
+        "content_sha256": "5c3e96daa9b96759051f7a2fdb95485c2f884becc6265fc7255f950cc15b4b41"
+      },
+      {
+        "path": "tests/test_reviewed_input_identity_failures.py",
+        "content_sha256": "d6244f6ac01d9a64b234e2ad1ec1d75eb8e74e6f3ef79776b60f8ce1f7b054c1"
+      },
+      {
+        "path": "tests/test_reviewed_input_verifier_sibling_ownership.py",
+        "content_sha256": "da4738800efb18259e2ec07caa84e242ff4b58651d1baeccabd7fd5a715be194"
+      },
+      {
+        "path": "tests/test_run_review_declared_path_resolution.py",
+        "content_sha256": "1a130ef1acb581a7e8f29ba380a4f5d3d10890a11ec33acbff43098c34274787"
+      }
+    ],
+    "reviewed_patch_sha256": "964fa8d0954367404c0810c4dd9caaa40486fc79625624a6750073c2014b3d23",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "auto_excluded_paths": [],
+    "identity_sha256": "4c4a6d3405929d062d53d0649ec88bec016c4369007567e94fcb0e63a74fa192"
+  }
+}
