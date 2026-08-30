@@ -11,6 +11,7 @@ import yaml
 
 from scripts import worktree_doctor_checks as checks
 from scripts import worktree_doctor_lib as lib
+from tests.charness_cli.worktree_fixtures import copy_worktree_seed
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -20,13 +21,7 @@ def _git(*args: str, cwd: Path) -> None:
 
 
 def _make_git_worktree(tmp_path: Path) -> Path:
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    _git("init", "--initial-branch=main", cwd=repo)
-    (repo / "README.md").write_text("seed\n", encoding="utf-8")
-    _git("add", "README.md", cwd=repo)
-    _git("commit", "-m", "seed", cwd=repo)
-    return repo
+    return copy_worktree_seed(tmp_path, "repo")
 
 
 def _write_manifest(repo: Path, body: str) -> None:

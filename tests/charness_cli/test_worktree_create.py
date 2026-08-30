@@ -8,6 +8,7 @@ from pathlib import Path
 import yaml
 
 from scripts import worktree_create_lib as lib
+from tests.charness_cli.worktree_fixtures import copy_worktree_seed
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -27,13 +28,7 @@ def _git_commit_no_hooks(message: str, *, cwd: Path) -> subprocess.CompletedProc
 
 
 def _make_primary(tmp_path: Path) -> Path:
-    repo = tmp_path / "primary"
-    repo.mkdir()
-    _git("init", "--initial-branch=main", cwd=repo)
-    (repo / "README.md").write_text("seed\n", encoding="utf-8")
-    _git("add", "README.md", cwd=repo)
-    _git("commit", "-m", "seed", cwd=repo)
-    return repo
+    return copy_worktree_seed(tmp_path, "primary")
 
 
 def _install_lefthook_shim(repo: Path) -> None:
