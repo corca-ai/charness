@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Run a bounded review backend and publish a typed terminal receipt.
 
-The process and result boundary lives in ``reviewer_worker_runtime``. This
-entrypoint deliberately stays small: it parses the portable contract,
+The backend boundary lives in reviewer_worker_backend and lifecycle work lives
+in reviewer_worker_runtime. This entrypoint parses the portable contract,
 serializes every failure, and emits the receipt without interpreting it as a
 review approval.
 """
@@ -16,12 +16,11 @@ from typing import Any
 
 try:
     from reviewer_output import emit_yaml
+    from reviewer_worker_backend import WorkerError, atomic_write_json
     from reviewer_worker_capability import failure_receipt_fields
     from reviewer_worker_runtime import (
         SCHEMA_VERSION,
         SUCCESS,
-        WorkerError,
-        atomic_write_json,
         now,
         preflight,
         resolve,
@@ -29,12 +28,11 @@ try:
     )
 except ImportError:
     from skills.shared.scripts.reviewer_output import emit_yaml
+    from skills.shared.scripts.reviewer_worker_backend import WorkerError, atomic_write_json
     from skills.shared.scripts.reviewer_worker_capability import failure_receipt_fields
     from skills.shared.scripts.reviewer_worker_runtime import (
         SCHEMA_VERSION,
         SUCCESS,
-        WorkerError,
-        atomic_write_json,
         now,
         preflight,
         resolve,

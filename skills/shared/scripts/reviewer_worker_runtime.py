@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Portable process and result runtime for :mod:`reviewer_worker`.
+"""Portable lifecycle, validation, and receipt runtime for reviewer_worker.
 
-The CLI module owns argument parsing and terminal receipt emission. This module
-owns the backend boundary: path preflight, process-group cleanup, schema
-validation, and atomic result publication.
+The CLI module owns argument parsing and terminal receipt emission. Backend
+command construction, process execution, and raw-output normalization live in
+reviewer_worker_backend.
 """
 
 from __future__ import annotations
@@ -18,12 +18,12 @@ from pathlib import Path
 from typing import Any
 
 try:
-    from reviewer_process import ReviewerProcessError, run_bounded_process
-except ImportError:
-    from skills.shared.scripts.reviewer_process import ReviewerProcessError, run_bounded_process
-
-try:
     from reviewer_result_contract import write_model_authored_schema
+    from reviewer_worker_backend import (
+        SUCCESS,
+        WorkerError,
+        execute_backend,
+    )
     from reviewer_worker_capability import (
         CapabilityLifecycleError,
         WorkerCapability,
@@ -36,6 +36,11 @@ try:
     )
 except ImportError:
     from skills.shared.scripts.reviewer_result_contract import write_model_authored_schema
+    from skills.shared.scripts.reviewer_worker_backend import (
+        SUCCESS,
+        WorkerError,
+        execute_backend,
+    )
     from skills.shared.scripts.reviewer_worker_capability import (
         CapabilityLifecycleError,
         WorkerCapability,
@@ -48,48 +53,6 @@ except ImportError:
     )
 
 SCHEMA_VERSION = "charness.reviewer_worker.v1"
-SUCCESS = "succeeded"
-STATUSES = frozenset(
-    {
-        SUCCESS,
-        "input-invalid",
-        "stale-artifact-refused",
-        "backend-unavailable",
-        "backend-failed",
-        "timed-out",
-        "result-missing",
-        "result-empty",
-        "result-invalid-json",
-        "invalid-schema",
-        "schema-validator-unavailable",
-        "schema-invalid",
-        "interrupted",
-        "transport-unestablished",
-        "credential-invalid",
-        "authorization-insufficient",
-        "provider-unavailable",
-        "probe-invalid",
-    }
-)
-
-
-class WorkerError(ValueError):
-    """A typed, terminal worker failure that the CLI can serialize."""
-
-    def __init__(
-        self,
-        status: str,
-        message: str,
-        *,
-        exit_code: int | None = None,
-        capability: dict[str, Any] | None = None,
-    ) -> None:
-        if status not in STATUSES or status == SUCCESS:
-            raise ValueError(f"invalid worker failure status: {status}")
-        super().__init__(message)
-        self.status = status
-        self.exit_code = exit_code
-        self.capability = capability
 
 
 def now() -> str:
@@ -108,24 +71,6 @@ def sha256(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
-
-
-def atomic_write_json(path: Path, payload: dict[str, Any]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    fd, temporary = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
-    try:
-        with os.fdopen(fd, "w", encoding="utf-8") as handle:
-            json.dump(payload, handle, ensure_ascii=False, indent=2, sort_keys=True)
-            handle.write("\n")
-            handle.flush()
-            os.fsync(handle.fileno())
-        os.replace(temporary, path)
-    except Exception:
-        try:
-            os.unlink(temporary)
-        except OSError:
-            pass
-        raise
 
 
 def _schema_validator(schema_path: Path) -> tuple[Any, dict[str, Any]]:
@@ -234,63 +179,6 @@ def preflight(args: Any) -> dict[str, Any]:
     }
 
 
-def _command(backend: str, workspace: Path, schema: Path, pending_output: Path) -> list[str]:
-    if backend == "codex_exec":
-        return [
-            "codex", "exec", "-C", str(workspace), "--sandbox", "read-only", "--ephemeral",
-            "--output-schema", str(schema), "-o", str(pending_output), "-",
-        ]
-    if backend == "claude_p":
-        try:
-            schema_payload = json.loads(schema.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError) as exc:
-            raise WorkerError("invalid-schema", f"cannot load Claude JSON schema: {exc}") from exc
-        return [
-            "claude", "-p", "--no-session-persistence", "--tools", "", "--output-format", "json",
-            "--json-schema", json.dumps(schema_payload, ensure_ascii=False, separators=(",", ":")),
-        ]
-    raise WorkerError("input-invalid", f"unsupported backend: {backend}")
-
-
-def _normalize_claude(raw_path: Path, pending_output: Path) -> None:
-    try:
-        payload = json.loads(raw_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        raise WorkerError("result-invalid-json", f"Claude wrapper result is not valid JSON: {exc}") from exc
-    if not isinstance(payload, dict):
-        raise WorkerError("result-invalid-json", "Claude wrapper result must be a JSON object")
-    if payload.get("is_error"):
-        raise WorkerError("backend-failed", str(payload.get("result") or "claude reported is_error"))
-    structured = payload.get("structured_output")
-    atomic_write_json(pending_output, structured if isinstance(structured, dict) else payload)
-
-
-def _execute_backend(
-    args: Any,
-    paths: dict[str, Any],
-    *,
-    workspace: Path,
-    prompt: Path,
-    schema: Path,
-    stdout: Path,
-    stderr: Path,
-    temp_output: Path,
-    raw_output: Path,
-) -> int:
-    """Adapt backend-specific command/output paths to the process owner."""
-    try:
-        return run_bounded_process(
-            _command(args.backend, workspace, schema, temp_output),
-            cwd=workspace,
-            stdin_path=prompt,
-            stdout_path=stdout if args.backend == "codex_exec" else raw_output,
-            stderr_path=stderr,
-            timeout_seconds=float(paths["timeout_seconds"]),
-        )
-    except ReviewerProcessError as exc:
-        raise WorkerError(exc.status, str(exc), exit_code=exc.exit_code) from exc
-
-
 def run(args: Any, paths: dict[str, Any], run_id: str, started_at: str) -> dict[str, Any]:
     workspace = paths["workspace"]
     prompt = paths["prompt"]
@@ -315,21 +203,17 @@ def run(args: Any, paths: dict[str, Any], run_id: str, started_at: str) -> dict[
     status = SUCCESS
     error: str | None = None
     try:
-        exit_code = _execute_backend(
-            args,
-            paths,
+        exit_code = execute_backend(
+            args.backend,
             workspace=workspace,
             prompt=prompt,
             schema=model_schema,
             stdout=stdout,
             stderr=stderr,
-            temp_output=temp_output,
+            pending_output=temp_output,
             raw_output=raw_output,
+            timeout_seconds=float(paths["timeout_seconds"]),
         )
-        if exit_code != 0:
-            raise WorkerError("backend-failed", f"backend exited with code {exit_code}", exit_code=exit_code)
-        if args.backend == "claude_p":
-            _normalize_claude(raw_output, temp_output)
         capability = collect(capability, capability_file, attempt_id=args.attempt_id)
         result = _validate_result(
             temp_output,
