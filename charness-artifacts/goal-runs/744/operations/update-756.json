@@ -1,0 +1,17 @@
+{
+  "kind": "charness.goal-run-operation/v1",
+  "repo": "corca-ai/charness",
+  "parent_number": 744,
+  "draft_sha256": "eec33587771e5f6abf0e06eb32b1291f475b5b549860c96f73f89218fda44e20",
+  "binding_sha256": "2b5ac12a3722897bc5a11e88a881b45784adcbaab5e84840629ccd1d57421eb8",
+  "binding_path": "charness-artifacts/goals/2026-08-30-close-current-open-issues-goal-run.binding.json",
+  "observation_dir": "charness-artifacts/goal-runs/744/observations",
+  "operation": "update-body",
+  "attempt_id": "activate-update-756-1",
+  "target": {
+    "repo": "corca-ai/charness",
+    "number": 756,
+    "work_item_key": "issue-756-reviewer-backend"
+  },
+  "body_file": "charness-artifacts/goal-runs/744/bodies/issue-756-reviewer-backend.md"
+}
