@@ -26,14 +26,14 @@ quality, claims review, publication, and public/install readback remain separate
   `scripts/measure_inventory_consumption_floor.py`, and their release tests; both
   verifier contracts changed because the failure was in their authority model.
 - Failure classification: verifier-defect
-- Negative control: command `python3 -m pytest -q tests/quality_gates/test_artifact_referents.py` | expected refusal for side-branch commit without an exact declaration | observed result non-durable false and blocking fixture | receipt 172 proof tests, 14 hook tests, 8,699 standing tests, and 80 of 82 release gates passed before owned synchronization repairs
-- Subject identity: sha256:679d4e9961a8e5c428659b49b1449586b45fc0a9dac10ad8c0587fa9445f8ebe
+- Negative control: command `python3 -m pytest -q tests/quality_gates/test_artifact_referents.py` | expected refusal for side-branch commit without an exact declaration | observed result non-durable false and blocking fixture | receipt 172 proof tests, 14 hook tests, 86 referent tests, 8,699 standing tests, 82 broad gates, and exact changed-line coverage passed
+- Subject identity: sha256:14e4012470ffa52e11ab23f86d328cd9d6096a7c1eb70b2dbdf674a16facf6e4
 - Verifier identity: sha256:87968461e7d4d5e0e811db479d53506ac0d288fe5ff49ca8fb37807f733609b3
-- Input identity: sha256:ac9b74e525f0ee3cc5d393122aea21093fce30df506f81dbda439621598e0257
+- Input identity: sha256:72aff882342dd9d14ce579cd73b50249de94fb994f41788d9933f58d843d3e53
 - Failure identity: stable:ambient-observation-promoted-to-durable-authority
-- Evidence identity: sha256:38aea97da7b96390ac10839513a34b3e4cf5be1a11980486c46ba15fb81b5385
+- Evidence identity: sha256:073e7f724c02a524ddda122e60e8939bb4dd64bb5c4106b7f941a30df74e1638
 - Retry disposition: first-attempt
-- Retry key: sha256:78cd5e074ec66582744358deaac2f18d1b4f90df283781ee8c27dba0056822eb
+- Retry key: sha256:bab66bbcbf426115303bf28d1bb3b133570298b0c76eb434cb287400302c5139
 
 ## Failure Angles
 
@@ -70,6 +70,7 @@ while this measurement explicitly measures loss caused by the value floor.
 - F6 | bin: valid-but-defer | evidence: strong | ref: `charness-artifacts/spec/2026-08-30-release-v8-clone-stable-proof-baselines.md` | action: defer | note: a generic consumer-facing local-history contract and hosted Mutation Tests remain non-goals.
 - F7 | bin: act-before-ship | evidence: strong | ref: `tests/test_probe_drift_message.py` | action: fix | note: the caller-derived guard proved the inventory drift helper had zero live consumers; its helper and dedicated tests were deleted while the independently live residual diagnostic was split to one owner.
 - F8 | bin: act-before-ship | evidence: strong | ref: `scripts/install-git-hooks.sh` | action: fix | note: maintainer setup chmodded a sourced helper and dirtied the release clone; installation now mutates execute permission only for direct Git hook entrypoints, with a negative fixture.
+- F9 | bin: act-before-ship | evidence: strong | ref: `tests/quality_gates/test_artifact_referents.py` | action: fix | note: release changed-line coverage found ten unexecuted refusal branches before mutation; typed negative fixtures now cover each branch and the exact release coverage owner reports no blocking targets.
 
 ## Reviewer Tier Evidence
 

@@ -19,11 +19,10 @@ live rule-sensitive invariants rather than exact equality to mutable counts.
 ## Observed Facts
 
 - `pytest-release` ran 8,684 tests: 8,682 passed and the named corpus tests failed.
-- The inventory failure is exact: `live["artifacts"] == 158`, recorded value 156.
+- Inventory failure: live artifacts 158, recorded 156.
 - The artifact-referent failure tail lists grandfathered records, so the tail
   alone does not identify the new blocking referent.
-- Release rollback reports `status: restored`, original HEAD, and empty remaining
-  status.
+- Release rollback restored original HEAD and an empty status.
 
 ## Reproduction
 
@@ -76,6 +75,11 @@ live rule-sensitive invariants rather than exact equality to mutable counts.
   making the sourced `runtime-env.sh` executable and dirtying the clean clone.
   Installation now chmods only the three Git entrypoints; 14 hook tests include
   the non-executable helper negative control.
+- The following release retry passed all 8,699 tests and 82 broad gates, then
+  changed-line coverage identified ten uncovered error branches before mutation.
+  Negative fixtures now exercise ancestry-command failure, index-read failure,
+  malformed JSON, non-list payload, and duplicate declarations. The exact
+  release changed-line command is clean with no blocking targets.
 
 ## Root Cause
 

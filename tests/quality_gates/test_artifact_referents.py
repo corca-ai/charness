@@ -472,6 +472,21 @@ def test_shallow_history_is_unestablished_not_a_missing_commit(tmp_path: Path) -
         reachable_head_commits(shallow)
 
 
+def test_failed_head_ancestry_read_is_unestablished(monkeypatch: pytest.MonkeyPatch) -> None:
+    from scripts.artifact_referents import ResolverUnavailable, reachable_head_commits
+
+    results = iter(
+        [
+            subprocess.CompletedProcess([], 0, "false\n", ""),
+            subprocess.CompletedProcess([], 2, "", "rev-list failed"),
+        ]
+    )
+    monkeypatch.setattr(subprocess, "run", lambda *args, **kwargs: next(results))
+
+    with pytest.raises(ResolverUnavailable, match="rev-list failed"):
+        reachable_head_commits(ROOT)
+
+
 def test_exact_local_context_declaration_is_visible_and_stale_checked(tmp_path: Path) -> None:
     import hashlib
     import json
@@ -586,6 +601,84 @@ def test_untracked_local_context_declaration_cannot_change_the_verdict(tmp_path:
     )
     assert result.returncode == 1
     assert "unbound-local-context-declaration" in result.stdout
+
+
+def _declaration_bytes(tmp_path: Path, payload: object) -> tuple[Path, bytes]:
+    import json
+
+    repo = tmp_path / "repo"
+    path = repo / "scripts/artifact-referent-local-context.json"
+    path.parent.mkdir(parents=True)
+    data = json.dumps(payload).encode()
+    path.write_bytes(data)
+    return repo, data
+
+
+def _valid_declaration() -> dict[str, object]:
+    return {
+        "artifact": "charness-artifacts/goals/2026-08-30-x.md",
+        "line": 1,
+        "token": "deadbee",
+        "line_sha256": "0" * 64,
+        "reason": "intentional local context",
+    }
+
+
+def test_declaration_index_read_error_blocks(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from scripts.check_artifact_referents import load_local_context_declarations
+
+    repo, _data = _declaration_bytes(tmp_path, [_valid_declaration()])
+
+    def fail_index_read(*args, **kwargs):
+        raise OSError("index unavailable")
+
+    monkeypatch.setattr("scripts.check_artifact_referents.subprocess.run", fail_index_read)
+    declarations, defects = load_local_context_declarations(repo)
+
+    assert declarations == []
+    assert defects[0]["kind"] == "unbound-local-context-declaration"
+    assert "index unavailable" in str(defects[0]["detail"])
+
+
+@pytest.mark.parametrize(
+    ("raw", "expected_kind"),
+    [
+        (b"{not json", "malformed-local-context-declaration"),
+        (None, "malformed-local-context-declaration"),
+        ("duplicate", "duplicate-local-context-declaration"),
+    ],
+)
+def test_invalid_declaration_file_shapes_block(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    raw: bytes | None | str,
+    expected_kind: str,
+) -> None:
+    from scripts.check_artifact_referents import load_local_context_declarations
+
+    if raw == "duplicate":
+        payload: object = [_valid_declaration(), _valid_declaration()]
+        repo, data = _declaration_bytes(tmp_path, payload)
+    elif raw is None:
+        repo, data = _declaration_bytes(tmp_path, _valid_declaration())
+    else:
+        repo = tmp_path / "repo"
+        path = repo / "scripts/artifact-referent-local-context.json"
+        path.parent.mkdir(parents=True)
+        path.write_bytes(raw)
+        data = raw
+
+    indexed = subprocess.CompletedProcess([], 0, data, b"")
+    monkeypatch.setattr(
+        "scripts.check_artifact_referents.subprocess.run", lambda *args, **kwargs: indexed
+    )
+    declarations, defects = load_local_context_declarations(repo)
+
+    if raw == "duplicate":
+        assert declarations == [_valid_declaration()]
+    else:
+        assert declarations == []
+    assert expected_kind in [str(defect["kind"]) for defect in defects]
 
 
 # --------------------------------------------------------------------------
