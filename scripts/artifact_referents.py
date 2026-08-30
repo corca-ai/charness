@@ -272,28 +272,61 @@ class ResolverUnavailable(Exception):
     """
 
 
-def git_commit_exists(sha: str, repo_root: Path) -> bool:
-    """Whether `sha` resolves to a commit object in `repo_root`.
+def reachable_head_commits(repo_root: Path) -> set[str]:
+    """Full commit identities reachable from ``HEAD`` in a complete repository.
 
-    Raises `ResolverUnavailable` when git cannot answer at all.
+    The corpus gate asks about thousands of tokens. Reading the ancestry once
+    avoids turning a structural durability check into one Git process per token.
+    A shallow repository cannot disprove older reachability, so it is reported
+    as unestablished instead of producing false missing-history findings.
     """
     import subprocess
+
     try:
-        result = subprocess.run(
-            ["git", "-C", str(repo_root), "cat-file", "-t", sha],
+        shallow = subprocess.run(
+            ["git", "-C", str(repo_root), "rev-parse", "--is-shallow-repository"],
             capture_output=True, text=True, timeout=10,
+        )
+        if shallow.returncode != 0:
+            raise ResolverUnavailable(
+                (shallow.stderr or "").strip() or f"git exited {shallow.returncode}"
+            )
+        if shallow.stdout.strip() == "true":
+            raise ResolverUnavailable(
+                "repository history is shallow; missing ancestry cannot be disproved"
+            )
+        result = subprocess.run(
+            ["git", "-C", str(repo_root), "rev-list", "HEAD"],
+            capture_output=True, text=True, timeout=30,
         )
     except (OSError, subprocess.SubprocessError) as exc:
         raise ResolverUnavailable(f"git could not be run: {exc}") from exc
-    if result.returncode == 0:
-        return result.stdout.strip() == "commit"
-    stderr = (result.stderr or "").lower()
-    # `cat-file -t` on a well-formed repo answers "not a valid object name" for a
-    # SHA that is genuinely absent. Anything else -- no work tree, dubious
-    # ownership, a broken index -- is the resolver failing, not the referent.
-    if "not a valid object name" in stderr or "could not get object info" in stderr:
-        return False
-    raise ResolverUnavailable(stderr.strip() or f"git exited {result.returncode}")
+    if result.returncode != 0:
+        raise ResolverUnavailable(
+            (result.stderr or "").strip() or f"git exited {result.returncode}"
+        )
+    return set(result.stdout.splitlines())
+
+
+def commit_identity_in_ancestry(sha: str, commits: set[str]) -> bool:
+    """Whether a full or abbreviated identity names exactly one ancestry commit."""
+    return sum(commit.startswith(sha) for commit in commits) == 1
+
+
+def git_commit_reachable_from_head(sha: str, repo_root: Path) -> bool:
+    """Whether `sha` is durable history reachable from `repo_root`'s ``HEAD``.
+
+    Raises `ResolverUnavailable` when git cannot answer at all.
+
+    Object presence is deliberately insufficient. A long-lived authoring clone
+    can retain commits from deleted branches or sibling worktrees that a clean
+    clone of the same reviewed ``HEAD`` cannot fetch. The full ancestry reader
+    above makes the verdict a property of the published tree instead of the
+    local object database and is the single semantic owner. Exact and
+    unambiguous abbreviated identities are accepted; missing, non-commit, side
+    branch, and ambiguous prefixes are all non-durable.
+    """
+    return commit_identity_in_ancestry(sha, reachable_head_commits(repo_root))
 
 
 #: The disposition vocabulary, for detecting a line that ENUMERATES forms rather

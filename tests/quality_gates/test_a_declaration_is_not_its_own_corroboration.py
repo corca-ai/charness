@@ -15,8 +15,6 @@ from pathlib import Path
 import pytest
 import yaml
 
-from tests.probe_drift_support import FLOOR_PROBE, probe_drift_message
-
 from .support import ROOT, _load_script_module
 
 INVENTORY = _load_script_module(
@@ -252,9 +250,9 @@ def test_the_validator_reports_a_path_outside_the_repo_instead_of_crashing(tmp_p
 
 
 # --- the measurement itself ----------------------------------------------------------
-# The 2026-08-01 slice-5 critique (F2) recorded an unverified measurement script as
-# "the withdrawn attempts' mistake one level up", and the remedy it set was a test that
-# re-runs the recorded probe against today's tree. This mirrors it.
+# The dated probe records the 2026-08-01 measurement. The live test below owns
+# today's rule-sensitive invariants; valid additions to a growing corpus do not
+# rewrite historical evidence merely to satisfy an equality check.
 
 
 MEASURE = _load_script_module(
@@ -265,7 +263,7 @@ PROBE = ROOT / "charness-artifacts" / "probe" / "2026-08-01-inventory-consumptio
 
 
 @pytest.mark.slow_corpus
-def test_the_recorded_probe_still_matches_todays_tree():
+def test_the_current_corpus_preserves_the_recorded_floor_and_live_safety():
     import json
 
     recorded = json.loads(PROBE.read_text(encoding="utf-8"))
@@ -275,29 +273,42 @@ def test_the_recorded_probe_still_matches_todays_tree():
         ROOT / "skills" / "public" / "quality" / "references" / "inventory-consumer-fields.json",
     )
 
-    # #536: these four had NO assertion message at all, so a drift here reported a bare number
-    # comparison — the least actionable of the three sites, and the one carrying the denominator
-    # D47 cites. All three sites now say the same things.
-    assert live["floor"] == recorded["floor"], probe_drift_message("floor", probe=FLOOR_PROBE)
-    # The numbers other prose actually leans on: D47 cites the 169 denominator and the
-    # gate comment cites the label minimum of 7. Pinning only the floor let them drift.
-    assert live["artifacts"] == recorded["artifacts"], probe_drift_message(
-        "artifacts", probe=FLOOR_PROBE
-    )
-    assert live["field_mention_residuals"] == recorded["field_mention_residuals"], (
-        probe_drift_message("field_mention_residuals", probe=FLOOR_PROBE)
-    )
-    # The WHOLE dict, not just `min`. `_provenance.baseline_check` claims the gate
-    # pins "every residual figure", and it did not: `count` and `median` were
-    # unpinned, and `count` is one of the two figures the 2026-08-14 refresh moved
-    # (407 -> 411). A claim of gate coverage over a field the gate never compared
-    # is the declaration-is-not-corroboration defect this file is named for.
-    assert live["label_value_residuals"] == recorded["label_value_residuals"], (
-        probe_drift_message("label_value_residuals", probe=FLOOR_PROBE)
-    )
-    assert live["citations_lowered_below_requirement"] == []
-    assert live["label_value_residuals"]["below_floor"] == 0
-    assert live["exemption_counts"]["REFUSED-uncorroborated"] == 0
+    assert MEASURE.safety_defects(live, expected_floor=recorded["floor"]) == []
+    assert live["field_mention_residuals"]["count"] > 0
+    assert live["label_value_residuals"]["count"] > 0
+
+
+@pytest.mark.parametrize(
+    ("path", "value", "expected"),
+    [
+        (("floor",), 6, "floor-changed"),
+        (("artifacts",), 0, "empty-artifact-corpus"),
+        (("citations_lowered_below_requirement",), [{"path": "x"}], "required-citation-lowered"),
+        (("label_value_residuals", "below_floor"), 1, "label-value-below-floor"),
+        (("exemption_counts", "REFUSED-uncorroborated"), 1, "uncorroborated-exemption-refused"),
+    ],
+)
+def test_each_live_inventory_safety_invariant_has_a_negative_control(
+    path: tuple[str, ...], value: object, expected: str
+):
+    import copy
+
+    report = {
+        "floor": 5,
+        "artifacts": 1,
+        "field_mention_residuals": {"count": 1},
+        "label_value_residuals": {"count": 1, "below_floor": 0},
+        "citations_lowered_below_requirement": [],
+        "exemption_counts": {"REFUSED-uncorroborated": 0},
+    }
+    changed = copy.deepcopy(report)
+    target = changed
+    for key in path[:-1]:
+        target = target[key]
+    target[path[-1]] = value
+
+    defects = MEASURE.safety_defects(changed, expected_floor=5)
+    assert expected in defects
 
 
 def test_the_measurement_refuses_an_empty_corpus(tmp_path, monkeypatch, capsys):

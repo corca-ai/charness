@@ -1,0 +1,16 @@
+[
+  {
+    "artifact": "charness-artifacts/goals/2026-08-30-close-current-open-issues-goal-run.md",
+    "line": 196,
+    "token": "d309412d6",
+    "line_sha256": "e9bee853741de6c58f499ac25331073cb2791fe06fbf51682bab154c078323f9",
+    "reason": "The frozen Goal Draft names a Codex lane commit as local shaping context, not as published implementation evidence."
+  },
+  {
+    "artifact": "charness-artifacts/goals/2026-08-30-close-current-open-issues-goal-run.md",
+    "line": 199,
+    "token": "d309412d6",
+    "line_sha256": "7614ddd1bc6dae52777061b0a98ef03d758a9a5ed61ebbbbf0ac8e00add2a300",
+    "reason": "The frozen Goal Draft explicitly distinguishes excluded local main history from provider publication authority."
+  }
+]

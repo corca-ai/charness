@@ -162,6 +162,32 @@ def scan(repo_root: Path, corpus: Path, fields_path: Path, floor: int | None = N
     }
 
 
+def safety_defects(report: dict[str, object], *, expected_floor: int) -> list[str]:
+    """Current rule-sensitive failures, excluding mutable corpus measurements.
+
+    A dated probe is evidence of what was measured then; it is not a rolling
+    checksum of a growing corpus. This function owns the invariants that must be
+    true now, including scope-collapse guards, so the CLI and release test cannot
+    drift into separate definitions of safety.
+    """
+    defects: list[str] = []
+    if report["floor"] != expected_floor:
+        defects.append("floor-changed")
+    if int(report["artifacts"]) < 1:
+        defects.append("empty-artifact-corpus")
+    label_residuals = report["label_value_residuals"]
+    exemption_counts = report["exemption_counts"]
+    assert isinstance(label_residuals, dict)
+    assert isinstance(exemption_counts, dict)
+    if report["citations_lowered_below_requirement"]:
+        defects.append("required-citation-lowered")
+    if int(label_residuals["below_floor"]) > 0:
+        defects.append("label-value-below-floor")
+    if int(exemption_counts["REFUSED-uncorroborated"]) > 0:
+        defects.append("uncorroborated-exemption-refused")
+    return defects
+
+
 def main() -> int:
     parser = corpus_lib.build_parser(__doc__)
     parser.add_argument(
@@ -177,10 +203,8 @@ def main() -> int:
 
     report = scan(repo_root, corpus, fields_path, args.floor)
     emit_yaml(report)
-    return 1 if (
-        report["citations_lowered_below_requirement"]
-        or report["exemption_counts"]["REFUSED-uncorroborated"]
-        or report["label_value_residuals"]["below_floor"]
+    return 1 if safety_defects(
+        report, expected_floor=gate.MIN_ENGAGEMENT_RESIDUAL_CHARS
     ) else 0
 
 

@@ -36,6 +36,9 @@ correct on more than one floor.
 from __future__ import annotations
 
 import argparse
+import hashlib
+import json
+import subprocess
 import sys
 from datetime import date
 from pathlib import Path
@@ -50,23 +53,143 @@ from scripts.artifact_referents import (  # noqa: E402
     INLINE_DISPOSITION_RE,
     ResolverUnavailable,
     check_disposition_referents,
-    git_commit_exists,
+    commit_identity_in_ancestry,
+    reachable_head_commits,
     sha_candidates,
     unresolvable_shas,
 )
 from scripts.critique_enforcement_scope import date_from_filename  # noqa: E402
 from scripts.repo_path_display import display_path as _display_path  # noqa: E402
 
-#: `git cat-file` per SHA per artifact would be thousands of subprocesses across
+#: One Git reachability query per SHA per artifact would be thousands of
+#: subprocesses across
 #: the corpus. Same SHA, same answer, so resolve each once per run.
 _SHA_CACHE: dict[str, bool] = {}
+_HEAD_COMMITS_CACHE: dict[str, set[str]] = {}
 
 
-def _cached_commit_exists(sha: str, repo_root: Path) -> bool:
+def _cached_commit_reachable(sha: str, repo_root: Path) -> bool:
     key = f"{repo_root}:{sha}"
     if key not in _SHA_CACHE:
-        _SHA_CACHE[key] = git_commit_exists(sha, repo_root)
+        root_key = str(repo_root)
+        if root_key not in _HEAD_COMMITS_CACHE:
+            _HEAD_COMMITS_CACHE[root_key] = reachable_head_commits(repo_root)
+        _SHA_CACHE[key] = commit_identity_in_ancestry(
+            sha, _HEAD_COMMITS_CACHE[root_key]
+        )
     return _SHA_CACHE[key]
+
+
+# Repo-only declaration of intentional local authoring context. This belongs to
+# the Charness gate, not the portable resolver: consumer repositories own their
+# own history/topology policy and do not inherit this exception surface.
+LOCAL_CONTEXT_DECLARATIONS = Path("scripts/artifact-referent-local-context.json")
+_DECLARATION_KEYS = {"artifact", "line", "token", "line_sha256", "reason"}
+
+
+def line_sha256(line: str) -> str:
+    """Stable identity of one artifact line, excluding the newline carrier."""
+    return hashlib.sha256(line.encode("utf-8")).hexdigest()
+
+
+def load_local_context_declarations(
+    repo_root: Path,
+) -> tuple[list[dict[str, object]], list[dict[str, object]]]:
+    """Load exact, reasoned local-history declarations; malformed input blocks."""
+    path = repo_root / LOCAL_CONTEXT_DECLARATIONS
+    if not path.exists():
+        return [], []
+    display = _display_path(path, repo_root)
+    worktree_bytes = path.read_bytes()
+    try:
+        staged = subprocess.run(
+            ["git", "-C", str(repo_root), "show", f":{LOCAL_CONTEXT_DECLARATIONS}"],
+            capture_output=True, timeout=10,
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        staged = None
+        binding_error = str(exc)
+    else:
+        binding_error = (staged.stderr or b"").decode("utf-8", errors="replace").strip()
+    if staged is None or staged.returncode != 0 or staged.stdout != worktree_bytes:
+        return [], [{
+            "file": display, "line": 1, "enforced": True,
+            "kind": "unbound-local-context-declaration", "token": display,
+            "detail": (
+                "the declaration must exactly match the Git index candidate; untracked or "
+                f"unstaged exception bytes are not reviewable ({binding_error or 'byte mismatch'})"
+            ),
+        }]
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        return [], [{
+            "file": display, "line": 1, "enforced": True,
+            "kind": "malformed-local-context-declaration", "token": display,
+            "detail": f"local-context declarations are unreadable: {exc}",
+        }]
+    if not isinstance(payload, list):
+        payload = [payload]
+        top_level_error = True
+    else:
+        top_level_error = False
+
+    valid: list[dict[str, object]] = []
+    defects: list[dict[str, object]] = []
+    seen: set[tuple[str, int, str]] = set()
+    for index, raw in enumerate(payload, 1):
+        reason = raw.get("reason") if isinstance(raw, dict) else None
+        artifact = raw.get("artifact") if isinstance(raw, dict) else None
+        line = raw.get("line") if isinstance(raw, dict) else None
+        token = raw.get("token") if isinstance(raw, dict) else None
+        fingerprint = raw.get("line_sha256") if isinstance(raw, dict) else None
+        keys_ok = isinstance(raw, dict) and set(raw) == _DECLARATION_KEYS
+        path_ok = (
+            isinstance(artifact, str)
+            and artifact != ""
+            and not Path(artifact).is_absolute()
+            and ".." not in Path(artifact).parts
+        )
+        token_ok = isinstance(token, str) and sha_candidates(token) == [token]
+        if (
+            top_level_error
+            or not keys_ok
+            or not path_ok
+            or not isinstance(line, int)
+            or isinstance(line, bool)
+            or line < 1
+            or not token_ok
+            or not isinstance(fingerprint, str)
+            or len(fingerprint) != 64
+            or any(char not in "0123456789abcdef" for char in fingerprint)
+            or not isinstance(reason, str)
+            or not reason.strip()
+        ):
+            defects.append({
+                "file": display, "line": index, "enforced": True,
+                "kind": "malformed-local-context-declaration",
+                "token": str(token or index),
+                "detail": (
+                    "each declaration must contain exactly artifact, line, token, line_sha256, "
+                    "and a nonempty reason; artifact must be repo-relative, line positive, "
+                    "token one complete Git SHA candidate, and line_sha256 lowercase SHA-256"
+                ),
+            })
+            continue
+        identity = (artifact, line, token)
+        if identity in seen:
+            defects.append({
+                "file": display, "line": index, "enforced": True,
+                "kind": "duplicate-local-context-declaration", "token": token,
+                "detail": "duplicate declarations create two owners for one exception",
+            })
+            continue
+        seen.add(identity)
+        valid.append({
+            "artifact": artifact, "line": line, "token": token,
+            "line_sha256": fingerprint, "reason": reason.strip(),
+        })
+    return valid, defects
 
 #: Artifacts dated from here forward are ENFORCED. Earlier ones are counted and
 #: reported. This is the date the gate landed.
@@ -120,7 +243,13 @@ def disposition_lines(text: str) -> list[tuple[int, str]]:
 
 
 
-def audit_file(path: Path, repo_root: Path, scope: dict[str, int]) -> list[dict[str, object]]:
+def audit_file(
+    path: Path,
+    repo_root: Path,
+    scope: dict[str, int],
+    declared: dict[tuple[str, int, str, str], str] | None = None,
+    matched_declarations: set[tuple[str, int, str, str]] | None = None,
+) -> list[dict[str, object]]:
     """Findings for one artifact, accumulating SCOPE counters into `scope`.
 
     The counters exist because a gate that silently drops part of its own scope
@@ -131,6 +260,9 @@ def audit_file(path: Path, repo_root: Path, scope: dict[str, int]) -> list[dict[
     collapse rather than as a pass.
     """
     text = path.read_text(encoding="utf-8", errors="replace")
+    display_path = _display_path(path, repo_root)
+    declared = declared or {}
+    matched_declarations = matched_declarations if matched_declarations is not None else set()
     enforced = is_enforced(path)
     findings: list[dict[str, object]] = []
     for number, line in disposition_lines(text):
@@ -173,7 +305,7 @@ def audit_file(path: Path, repo_root: Path, scope: dict[str, int]) -> list[dict[
     seen: set[tuple[int, str]] = set()
     for number, line in enumerate(text.splitlines(), 1):
         try:
-            bad_shas = unresolvable_shas(line, repo_root, run=_cached_commit_exists)
+            bad_shas = unresolvable_shas(line, repo_root, run=_cached_commit_reachable)
         except ResolverUnavailable as exc:
             # Named, counted, and NOT silently clean. The run continues -- a
             # missing resolver must not block -- but the report says the rung
@@ -190,16 +322,27 @@ def audit_file(path: Path, repo_root: Path, scope: dict[str, int]) -> list[dict[
             if (number, sha) in seen:
                 continue
             seen.add((number, sha))
+            declaration_key = (display_path, number, sha, line_sha256(line))
+            reason = declared.get(declaration_key)
+            if reason is not None:
+                matched_declarations.add(declaration_key)
             findings.append({
-                "file": _display_path(path, repo_root),
+                "file": display_path,
                 "line": number,
-                "enforced": sha_enforced,
-                "kind": "unresolvable-commit-ref",
+                "enforced": sha_enforced and reason is None,
+                "declared_local": reason is not None,
+                "kind": (
+                    "declared-local-commit-ref" if reason is not None
+                    else "non-durable-commit-ref"
+                ),
                 "token": sha,
                 "detail": (
-                    f"`{sha}` does not resolve to a commit. A citation to a commit that is "
-                    "not there cannot be checked by a later reader, and a SHA attributed to "
-                    "the wrong thing reads exactly like one attributed to the right thing."
+                    f"`{sha}` is not reachable from the reviewed HEAD. "
+                    + (
+                        f"Intentional local authoring context is declared: {reason}"
+                        if reason is not None
+                        else "An object visible only in an authoring clone is not durable evidence."
+                    )
                 ),
             })
     return findings
@@ -220,7 +363,16 @@ def main() -> int:
     else:
         targets = sorted({p for glob in SCANNED_GLOBS for p in repo_root.glob(glob)})
 
-    findings: list[dict[str, object]] = []
+    declarations, declaration_defects = load_local_context_declarations(repo_root)
+    declared = {
+        (
+            str(item["artifact"]), int(item["line"]), str(item["token"]),
+            str(item["line_sha256"]),
+        ): str(item["reason"])
+        for item in declarations
+    }
+    matched_declarations: set[tuple[str, int, str, str]] = set()
+    findings: list[dict[str, object]] = list(declaration_defects)
     scope: dict[str, int] = {
         "dispositions": 0, "shas_resolved": 0, "sha_resolver_unavailable": 0,
     }
@@ -234,14 +386,35 @@ def main() -> int:
             # scanned a file it never opened.
             unreadable.append(_display_path(target, repo_root))
             continue
-        findings.extend(audit_file(target, repo_root, scope))
+        findings.extend(audit_file(target, repo_root, scope, declared, matched_declarations))
+
+    target_names = {_display_path(target, repo_root) for target in targets if target.is_file()}
+    for key, reason in declared.items():
+        artifact, line, token, _fingerprint = key
+        # A focused --path run owns declarations for that path only. The default
+        # corpus run owns the whole declaration surface, including paths that no
+        # longer belong to the scanned globs.
+        in_scope = artifact in target_names if args.path else True
+        if in_scope and key not in matched_declarations:
+            findings.append({
+                "file": str(LOCAL_CONTEXT_DECLARATIONS), "line": 1,
+                "enforced": True, "kind": "stale-local-context-declaration",
+                "token": token,
+                "detail": (
+                    f"{artifact}:{line} no longer produces the declared non-durable SHA finding; "
+                    f"remove or correct this one-time declaration ({reason})"
+                ),
+            })
 
     #: "ran, established nothing" -- the runner's own byte for a lane that could
     #: not judge part of its scope. Opted into per label in run-quality.sh.
     UNESTABLISHED_EXIT = 3
 
     blocking = [f for f in findings if f["enforced"]]
-    grandfathered = [f for f in findings if not f["enforced"]]
+    declared_local = [f for f in findings if f.get("declared_local")]
+    grandfathered = [
+        f for f in findings if not f["enforced"] and not f.get("declared_local")
+    ]
     empty_corpus = not args.path and not targets
     status = "blocked" if (blocking or unreadable or empty_corpus) else "clean"
     report = {
@@ -258,6 +431,7 @@ def main() -> int:
         "findings": len(findings),
         "blocking": len(blocking),
         "grandfathered": len(grandfathered),
+        "declared_local": len(declared_local),
         "enforced_from": ENFORCED_FROM.isoformat(),
         "empty_corpus": empty_corpus,
         "status": status,
@@ -278,6 +452,7 @@ def main() -> int:
         )
     print(f"enforced_from: {report['enforced_from']}")
     print(f"grandfathered (reported, not rewritten): {report['grandfathered']}")
+    print(f"declared local context (reported, exact): {report['declared_local']}")
     if report["unreadable"]:
         print(f"UNREADABLE (input error, not a pass): {', '.join(report['unreadable'])}")
     if report["empty_corpus"]:
@@ -288,6 +463,8 @@ def main() -> int:
         print(f"- [blocking] {finding['file']}:{finding['line']} {finding['kind']}: {finding['detail']}")
     for finding in grandfathered:
         print(f"- [grandfathered] {finding['file']}:{finding['line']} {finding['kind']}: `{finding['token']}`")
+    for finding in declared_local:
+        print(f"- [declared-local] {finding['file']}:{finding['line']} {finding['kind']}: {finding['detail']}")
 
     # Derived from `status`, NOT recomputed from `blocking`. An earlier version
     # returned `1 if blocking else 0` while `status` also accounted for unreadable

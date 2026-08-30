@@ -333,7 +333,7 @@ def test_an_undatable_artifact_is_NOT_fail_closed_for_shas(tmp_path: Path) -> No
     # repair that added these very tests.
     assert result.returncode == 0
     assert "grandfathered (reported, not rewritten): 1" in result.stdout
-    assert "unresolvable-commit-ref" in result.stdout
+    assert "non-durable-commit-ref" in result.stdout
 
 
 def test_a_pre_cutoff_artifact_reports_without_blocking(tmp_path: Path) -> None:
@@ -406,11 +406,186 @@ def test_git_refusing_is_distinguished_from_a_missing_commit() -> None:
     """`exit 128` is what git returns for "not a work tree" and for "dubious
     ownership" -- routine in containers. Treating it as "this SHA is absent"
     would report every SHA in every dated artifact as unresolvable."""
-    from scripts.artifact_referents import ResolverUnavailable, git_commit_exists
+    from scripts.artifact_referents import ResolverUnavailable, git_commit_reachable_from_head
 
-    assert git_commit_exists("96ba78f7f", ROOT) is True
+    assert git_commit_reachable_from_head("96ba78f7f", ROOT) is True
     with pytest.raises(ResolverUnavailable):
-        git_commit_exists("96ba78f7f", Path("/tmp"))
+        git_commit_reachable_from_head("96ba78f7f", Path("/tmp"))
+
+
+def _git(repo: Path, *args: str) -> str:
+    result = subprocess.run(
+        ["git", "-C", str(repo), *args], capture_output=True, text=True, check=True
+    )
+    return result.stdout.strip()
+
+
+def _repo_with_side_branch_commit(tmp_path: Path) -> tuple[Path, str]:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _git(repo, "init", "-b", "main")
+    _git(repo, "config", "user.name", "Charness Test")
+    _git(repo, "config", "user.email", "charness-test@example.invalid")
+    (repo / "base.txt").write_text("base\n", encoding="utf-8")
+    _git(repo, "add", "base.txt")
+    _git(repo, "commit", "-m", "base")
+    _git(repo, "switch", "-c", "local-lane")
+    (repo / "lane.txt").write_text("local\n", encoding="utf-8")
+    _git(repo, "add", "lane.txt")
+    _git(repo, "commit", "-m", "local lane")
+    local_sha = _git(repo, "rev-parse", "HEAD")
+    _git(repo, "switch", "main")
+    return repo, local_sha
+
+
+def test_an_object_visible_only_on_a_side_branch_is_not_durable(tmp_path: Path) -> None:
+    """Same tracked HEAD must answer identically in a clean and authoring clone."""
+    from scripts.artifact_referents import git_commit_reachable_from_head
+
+    repo, local_sha = _repo_with_side_branch_commit(tmp_path)
+
+    assert _git(repo, "cat-file", "-t", local_sha) == "commit"
+    assert git_commit_reachable_from_head(local_sha, repo) is False
+
+
+def test_absent_and_noncommit_objects_are_typed_negative(tmp_path: Path) -> None:
+    from scripts.artifact_referents import git_commit_reachable_from_head
+
+    repo, _local_sha = _repo_with_side_branch_commit(tmp_path)
+    blob_sha = _git(repo, "rev-parse", "HEAD:base.txt")
+
+    assert git_commit_reachable_from_head("deadbee1234", repo) is False
+    assert git_commit_reachable_from_head(blob_sha, repo) is False
+
+
+def test_shallow_history_is_unestablished_not_a_missing_commit(tmp_path: Path) -> None:
+    from scripts.artifact_referents import ResolverUnavailable, reachable_head_commits
+
+    repo, _local_sha = _repo_with_side_branch_commit(tmp_path)
+    shallow = tmp_path / "shallow"
+    subprocess.run(
+        ["git", "clone", "--depth=1", f"file://{repo}", str(shallow)],
+        capture_output=True, text=True, check=True,
+    )
+
+    with pytest.raises(ResolverUnavailable, match="shallow"):
+        reachable_head_commits(shallow)
+
+
+def test_exact_local_context_declaration_is_visible_and_stale_checked(tmp_path: Path) -> None:
+    import hashlib
+    import json
+
+    repo, local_sha = _repo_with_side_branch_commit(tmp_path)
+    artifact_rel = "charness-artifacts/goals/2026-08-30-local-context.md"
+    artifact = repo / artifact_rel
+    artifact.parent.mkdir(parents=True)
+    line = f"local lane `{local_sha[:10]}`"
+    artifact.write_text(f"{line}\n", encoding="utf-8")
+    declarations = repo / "scripts" / "artifact-referent-local-context.json"
+    declarations.parent.mkdir()
+    entry = {
+        "artifact": artifact_rel,
+        "line": 1,
+        "token": local_sha[:10],
+        "line_sha256": hashlib.sha256(line.encode()).hexdigest(),
+        "reason": "frozen local shaping context",
+    }
+    declarations.write_text(json.dumps([entry]), encoding="utf-8")
+    _git(repo, "add", str(declarations.relative_to(repo)))
+    command = [
+        sys.executable, str(GATE), "--repo-root", str(repo), "--path", artifact_rel,
+    ]
+
+    accepted = subprocess.run(command, capture_output=True, text=True, timeout=60)
+    assert accepted.returncode == 0, accepted.stdout
+    assert "declared local context (reported, exact): 1" in accepted.stdout
+    assert "declared-local-commit-ref" in accepted.stdout
+
+    artifact.write_text(f"changed context, same token `{local_sha[:10]}`\n", encoding="utf-8")
+    changed_line = subprocess.run(command, capture_output=True, text=True, timeout=60)
+    assert changed_line.returncode == 1
+    assert "stale-local-context-declaration" in changed_line.stdout
+    artifact.write_text(f"{line}\n", encoding="utf-8")
+
+    entry["line"] = 2
+    declarations.write_text(json.dumps([entry]), encoding="utf-8")
+    _git(repo, "add", str(declarations.relative_to(repo)))
+    stale = subprocess.run(command, capture_output=True, text=True, timeout=60)
+    assert stale.returncode == 1
+    assert "stale-local-context-declaration" in stale.stdout
+    assert "non-durable-commit-ref" in stale.stdout
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        {"reason": ""},
+        {"line": 0},
+        {"token": "not-a-sha"},
+        {"line_sha256": "not-a-fingerprint"},
+        {"extra": "second owner"},
+    ],
+)
+def test_malformed_local_context_declarations_block(
+    tmp_path: Path, mutation: dict[str, object]
+) -> None:
+    import hashlib
+    import json
+
+    repo, local_sha = _repo_with_side_branch_commit(tmp_path)
+    artifact_rel = "charness-artifacts/goals/2026-08-30-local-context.md"
+    artifact = repo / artifact_rel
+    artifact.parent.mkdir(parents=True)
+    line = f"local lane `{local_sha[:10]}`"
+    artifact.write_text(f"{line}\n", encoding="utf-8")
+    declarations = repo / "scripts" / "artifact-referent-local-context.json"
+    declarations.parent.mkdir()
+    entry: dict[str, object] = {
+        "artifact": artifact_rel,
+        "line": 1,
+        "token": local_sha[:10],
+        "line_sha256": hashlib.sha256(line.encode()).hexdigest(),
+        "reason": "why",
+    }
+    entry.update(mutation)
+    declarations.write_text(json.dumps([entry]), encoding="utf-8")
+    _git(repo, "add", str(declarations.relative_to(repo)))
+
+    result = subprocess.run(
+        [sys.executable, str(GATE), "--repo-root", str(repo), "--path", artifact_rel],
+        capture_output=True, text=True, timeout=60,
+    )
+    assert result.returncode == 1
+    assert "malformed-local-context-declaration" in result.stdout
+
+
+def test_untracked_local_context_declaration_cannot_change_the_verdict(tmp_path: Path) -> None:
+    import hashlib
+    import json
+
+    repo, local_sha = _repo_with_side_branch_commit(tmp_path)
+    artifact_rel = "charness-artifacts/goals/2026-08-30-local-context.md"
+    artifact = repo / artifact_rel
+    artifact.parent.mkdir(parents=True)
+    line = f"local lane `{local_sha[:10]}`"
+    artifact.write_text(f"{line}\n", encoding="utf-8")
+    declarations = repo / "scripts" / "artifact-referent-local-context.json"
+    declarations.parent.mkdir()
+    declarations.write_text(json.dumps([{
+        "artifact": artifact_rel,
+        "line": 1,
+        "token": local_sha[:10],
+        "line_sha256": hashlib.sha256(line.encode()).hexdigest(),
+        "reason": "unreviewed local bytes",
+    }]), encoding="utf-8")
+
+    result = subprocess.run(
+        [sys.executable, str(GATE), "--repo-root", str(repo), "--path", artifact_rel],
+        capture_output=True, text=True, timeout=60,
+    )
+    assert result.returncode == 1
+    assert "unbound-local-context-declaration" in result.stdout
 
 
 # --------------------------------------------------------------------------
@@ -586,10 +761,10 @@ def test_git_failing_to_run_at_all_raises_rather_than_answering() -> None:
     """The OSError arm. A missing or unexecutable git is "cannot answer", not
     "this SHA is absent" -- answering would report every SHA in the corpus as
     unresolvable."""
-    from scripts.artifact_referents import ResolverUnavailable, git_commit_exists
+    from scripts.artifact_referents import ResolverUnavailable, git_commit_reachable_from_head
 
     with pytest.raises(ResolverUnavailable):
-        git_commit_exists("96ba78f7f", Path("/nonexistent-root-9f3a/deeper"))
+        git_commit_reachable_from_head("96ba78f7f", Path("/nonexistent-root-9f3a/deeper"))
 
     # And the OSError arm specifically: git absent from PATH entirely.
     import subprocess as _sp
@@ -601,7 +776,7 @@ def test_git_failing_to_run_at_all_raises_rather_than_answering() -> None:
     _sp.run = _boom
     try:
         with pytest.raises(ResolverUnavailable, match="could not be run"):
-            git_commit_exists("96ba78f7f", ROOT)
+            git_commit_reachable_from_head("96ba78f7f", ROOT)
     finally:
         _sp.run = real
 
