@@ -11,6 +11,29 @@ import sys
 from pathlib import Path
 from typing import Any
 
+REFUSAL_DETAIL_FIELDS = (
+    "adapter_path",
+    "scope_status",
+    "section_count",
+    "usable",
+    "remedy",
+    "warning",
+    "declared_paths",
+    "changed_ref_paths",
+    "missing_paths",
+    "unexpected_paths",
+    "auto_excluded_paths",
+    "deleted_paths",
+    "path",
+    "source",
+    "sources",
+    "expected_sha256",
+    "actual_sha256",
+    "size_bytes",
+    "max_bytes",
+    "substrate_mode",
+)
+
 
 def _load_semantic_input() -> Any:
     path = Path(__file__).with_name("semantic_review_input.py")
@@ -101,15 +124,8 @@ def prepare_packet(
         command.extend(["--range", args.changed_range])
     code, stdout, stderr = support.run_command(command, root=root)
     payload = support.yaml_payload(stdout, label="prepare packet")
-    packet_name = payload.get("json_path")
     binding = payload.get("reviewed_input_binding")
     usable = binding.get("usable") if isinstance(binding, dict) else None
-    if not isinstance(packet_name, str):
-        raise support.RunReviewError(
-            "packet-invalid", "prepare packet did not return json_path",
-            details={"prepare": payload, "stderr": stderr},
-        )
-    packet = support.repo_path(root, packet_name, label="prepared packet")
     if code != 0 or payload.get("ok") is not True or usable is False:
         binding_data = binding if isinstance(binding, dict) else {}
         reason_code = payload.get("reason_code") or binding_data.get("reason_code")
@@ -119,12 +135,19 @@ def prepare_packet(
         if not isinstance(error, str) or not error:
             error = "prepared packet is not usable"
         details = {"prepare": payload, "stderr": stderr}
-        for field in ("adapter_path", "scope_status", "section_count", "usable", "remedy", "warning"):
+        for field in REFUSAL_DETAIL_FIELDS:
             if field in binding_data:
                 details[field] = binding_data[field]
             elif field in payload:
                 details[field] = payload[field]
         raise support.RunReviewError(reason_code, error, details=details)
+    packet_name = payload.get("json_path")
+    if not isinstance(packet_name, str):
+        raise support.RunReviewError(
+            "packet-invalid", "prepare packet did not return json_path",
+            details={"prepare": payload, "stderr": stderr},
+        )
+    packet = support.repo_path(root, packet_name, label="prepared packet")
     return packet
 
 

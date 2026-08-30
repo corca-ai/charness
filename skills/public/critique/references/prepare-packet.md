@@ -94,6 +94,14 @@ An explicit `--reviewed-path` is never silently removed; if it names the
 packet's own output path, the runner rejects the collision. Lexical traversal
 and paths through an out-of-repo symlinked directory are also rejected.
 
+In committed-ref mode, the exactness check remains a hard boundary. If the
+default sweep excluded a committed review artifact, preparation refuses with
+the missing and unexpected paths instead of silently adding or dropping them;
+use `run_review.py --reviewed-paths-file <manifest>` to declare the exact
+changed-ref set. The resulting identity is still checked against that set, so
+changing the packet declaration or any bound subject path cannot silently move
+the review to another subject.
+
 The runner passes that value to script sections as
 `CHARNESS_CRITIQUE_CHANGED_REF`. Producers that inspect changed files should
 prefer the explicit ref/range over the clean working tree.

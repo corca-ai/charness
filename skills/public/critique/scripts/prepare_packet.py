@@ -178,23 +178,23 @@ def main() -> int:
             excluded_reviewed_prefixes=excluded_prefixes,
         )
     except ReviewedInputError as exc:
-        yaml_output.emit_yaml(
-            {
-                "ok": False,
-                "status": "refused",
-                "reason_code": exc.code,
-                "error": str(exc),
-                "substrate_mode": substrate_mode,
-                "changed_ref": changed_ref,
-                "recovery": {
-                    "kind": "correct-review-substrate",
-                    "message": (
-                        "Correct the substrate mode/ref/path declaration and rerun; "
-                        "no packet was written."
-                    ),
-                },
-            }
-        )
+        refusal = {
+            "ok": False,
+            "status": "refused",
+            "reason_code": exc.code,
+            "error": str(exc),
+            "substrate_mode": substrate_mode,
+            "changed_ref": changed_ref,
+            "recovery": {
+                "kind": "correct-review-substrate",
+                "message": (
+                    "Correct the substrate mode/ref/path declaration and rerun; "
+                    "no packet was written."
+                ),
+            },
+        }
+        refusal.update(exc.details)
+        yaml_output.emit_yaml(refusal)
         return 1
 
     json_path, md_path = write_packet(packet, output_dir=output_dir, slug=slug)

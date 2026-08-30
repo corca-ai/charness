@@ -90,19 +90,7 @@ def _failure_carrier(
         "scope": scope,
         "lens": lens,
     })
-    for field in (
-        "adapter_path",
-        "scope_status",
-        "section_count",
-        "usable",
-        "remedy",
-        "warning",
-        "deleted_paths",
-        "path",
-        "sources",
-        "expected_sha256",
-        "max_bytes",
-    ):
+    for field in PACKET.REFUSAL_DETAIL_FIELDS:
         if field in details:
             carrier[field] = details[field]
     return carrier

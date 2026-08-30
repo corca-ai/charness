@@ -47,13 +47,16 @@ PROVENANCE_FIELDS = ("auto_excluded_paths",)
 class ReviewedInputError(ValueError):
     """Typed refusal while constructing or validating a review substrate."""
 
-    def __init__(self, code: str, message: str) -> None:
+    def __init__(
+        self, code: str, message: str, *, details: dict[str, Any] | None = None
+    ) -> None:
         self.code = code
+        self.details = details or {}
         super().__init__(message)
 
 
-def _fail(code: str, message: str) -> None:
-    raise ReviewedInputError(code, message)
+def _fail(code: str, message: str, *, details: dict[str, Any] | None = None) -> None:
+    raise ReviewedInputError(code, message, details=details)
 
 
 def _substrate_mode(changed_ref: str | None, substrate_mode: str | None) -> str:
@@ -260,10 +263,27 @@ def _review_paths(
         except ValueError as exc:
             _fail("changed-ref-unavailable", str(exc))
         if set(paths) != expected_paths:
+            declared_paths = set(paths)
+            missing_paths = sorted(expected_paths - declared_paths)
+            unexpected_paths = sorted(declared_paths - expected_paths)
+            remedy = (
+                "Declare the exact changed-ref path set with "
+                "`--reviewed-paths-file <manifest>` and rerun; the default sweep "
+                "continues to exclude review artifacts rather than self-review them."
+            )
             _fail(
                 "changed-ref-path-mismatch",
-                "declared reviewed paths do not exactly match the changed-ref path set "
-                f"(declared={sorted(paths)!r}, changed_ref={sorted(expected_paths)!r})",
+                "declared reviewed paths do not exactly match the changed-ref path set; "
+                f"missing from declaration={missing_paths!r}; "
+                f"unexpected declaration paths={unexpected_paths!r}. {remedy}",
+                details={
+                    "declared_paths": sorted(declared_paths),
+                    "changed_ref_paths": sorted(expected_paths),
+                    "missing_paths": missing_paths,
+                    "unexpected_paths": unexpected_paths,
+                    "auto_excluded_paths": auto_excluded,
+                    "remedy": remedy,
+                },
             )
     for path in paths:
         if changed_ref:
