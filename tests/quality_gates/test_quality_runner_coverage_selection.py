@@ -98,6 +98,48 @@ def test_run_quality_full_runs_check_coverage_without_control_plane_changes(tmp_
     assert "PASS check-coverage" in result.stdout
 
 
+def test_release_read_only_keeps_check_coverage_outside_the_mutation_nonclaim(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    (repo / "README.md").write_text("# demo\n", encoding="utf-8")
+    _commit_quality_runner_repo(repo)
+
+    result = run_shell_script(
+        repo / "scripts" / "run-quality.sh",
+        "--release",
+        "--read-only",
+        "--non-claim=release-changed-line-coverage",
+        cwd=repo,
+        env=env,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "PASS check-coverage" in result.stdout
+
+
+def test_release_read_only_surfaces_check_coverage_failure_despite_mutation_nonclaim(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    (repo / "README.md").write_text("# demo\n", encoding="utf-8")
+    _commit_quality_runner_repo(repo)
+    env["QUALITY_FAIL_LABEL"] = "check-coverage"
+
+    result = run_shell_script(
+        repo / "scripts" / "run-quality.sh",
+        "--release",
+        "--read-only",
+        "--non-claim=release-changed-line-coverage",
+        cwd=repo,
+        env=env,
+    )
+
+    assert result.returncode != 0
+    assert "FAIL check-coverage" in result.stdout
+    assert "quality failure output from check-coverage" in result.stdout
+
+
 def test_run_quality_full_surfaces_planted_check_coverage_regression(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
     (repo / "README.md").write_text("# demo\n", encoding="utf-8")

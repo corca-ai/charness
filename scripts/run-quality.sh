@@ -1190,7 +1190,11 @@ python_files=(
 queue_selected "py-compile" python3 -m py_compile "${python_files[@]}"
 queue_selected "ruff" ./scripts/check-python-lint.sh
 
-if [[ "$RUN_QUALITY_MODE" == "full" ]] || coverage_relevant_changes_present; then
+# Release quality is an indivisible claim even when it is read-only. The
+# changed-path shortcut exists for ordinary broad pre-push work; applying it to
+# release silently widened an explicit mutation-only non-claim into an omitted
+# repository coverage gate.
+if [[ "$RUN_QUALITY_RELEASE" == "1" || "$RUN_QUALITY_MODE" == "full" ]] || coverage_relevant_changes_present; then
   queue_selected "check-coverage" python3 scripts/check_coverage.py --repo-root "$REPO_ROOT"
 fi
 # Changed-line coverage is release-final only. It is deliberately absent from the
