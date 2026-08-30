@@ -6,6 +6,7 @@ import fnmatch
 import json
 import re
 import subprocess
+from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import Any
 
@@ -24,6 +25,12 @@ _RECURSIVE_EXTENSION_PATTERN = re.compile(r"^(?:(?P<dir>.+)/)?\*\*/\*(?P<ext>\.[
 
 class SurfaceError(Exception):
     pass
+
+
+@dataclass(frozen=True)
+class WorkingTreeSnapshot:
+    changed_paths: tuple[str, ...]
+    deleted_paths: frozenset[str]
 
 
 def normalize_repo_path(value: str) -> str:
@@ -282,24 +289,54 @@ def _run_git(repo_root: Path, *args: str) -> list[str]:
     return [entry for entry in decoded.split("\0") if entry]
 
 
+def _parse_working_tree_status(output: bytes) -> WorkingTreeSnapshot:
+    if output and not output.endswith(b"\0"):
+        raise SurfaceError("malformed git status record: missing NUL terminator")
+    records = output[:-1].split(b"\0") if output else []
+    changed_paths: list[str] = []
+    deleted_paths: set[str] = set()
+    index = 0
+    while index < len(records):
+        record = records[index]
+        if len(record) < 4 or record[2:3] != b" " or not record[3:]:
+            raise SurfaceError("malformed git status record")
+        status = record[:2]
+        path = record[3:].decode("utf-8", errors="surrogateescape")
+        if status in (b"  ", b"!!"):
+            index += 1
+            continue
+        changed_paths.append(path)
+        if b"D" in status:
+            deleted_paths.add(path)
+        if b"R" in status or b"C" in status:
+            if index + 1 >= len(records) or not records[index + 1]:
+                raise SurfaceError("malformed git status rename/copy record")
+            records[index + 1].decode("utf-8", errors="surrogateescape")
+            index += 1
+        index += 1
+    return WorkingTreeSnapshot(tuple(changed_paths), frozenset(deleted_paths))
+
+
+def collect_working_tree_snapshot(repo_root: Path) -> WorkingTreeSnapshot:
+    result = subprocess.run(
+        ["git", "status", "--porcelain=v1", "-z", "--untracked-files=all"],
+        cwd=repo_root,
+        check=False,
+        capture_output=True,
+    )
+    if result.returncode != 0:
+        stderr = result.stderr.decode("utf-8", errors="replace").strip()
+        stdout = result.stdout.decode("utf-8", errors="replace").strip()
+        raise SurfaceError(stderr or stdout or "git status failed")
+    return _parse_working_tree_status(result.stdout)
+
+
 def collect_changed_paths(repo_root: Path) -> list[str]:
-    tracked = _run_git(repo_root, "diff", "--name-only")
-    staged = _run_git(repo_root, "diff", "--name-only", "--cached")
-    untracked = _run_git(repo_root, "ls-files", "--others", "--exclude-standard")
-    return dedupe_preserve_order(tracked + staged + untracked)
+    return list(collect_working_tree_snapshot(repo_root).changed_paths)
 
 
 def collect_deleted_paths(repo_root: Path) -> set[str]:
-    """Working-tree deletions, staged and unstaged both.
-
-    Mirrors `collect_changed_paths`'s two-arm shape, and for the same reason: a
-    deletion staged with `git rm` and one made by removing the file on disk are
-    the same fact to a reviewer. Untracked files are not consulted -- an
-    untracked path cannot have been deleted by this change set.
-    """
-    tracked = _run_git(repo_root, "diff", "--name-only", "--diff-filter=D")
-    staged = _run_git(repo_root, "diff", "--name-only", "--cached", "--diff-filter=D")
-    return set(dedupe_preserve_order(tracked + staged))
+    return set(collect_working_tree_snapshot(repo_root).deleted_paths)
 
 
 def collect_changed_paths_for_ref(repo_root: Path, ref: str) -> list[str]:

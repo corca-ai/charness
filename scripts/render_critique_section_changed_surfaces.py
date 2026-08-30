@@ -21,10 +21,9 @@ REPO_ROOT = repo_root_from_script(__file__)
 
 _scripts_surfaces_lib_module = import_repo_module(__file__, "scripts.surfaces_lib")
 SurfaceError = _scripts_surfaces_lib_module.SurfaceError
-collect_changed_paths = _scripts_surfaces_lib_module.collect_changed_paths
+collect_working_tree_snapshot = _scripts_surfaces_lib_module.collect_working_tree_snapshot
 collect_changed_paths_for_ref = _scripts_surfaces_lib_module.collect_changed_paths_for_ref
 collect_deleted_paths_for_ref = _scripts_surfaces_lib_module.collect_deleted_paths_for_ref
-collect_deleted_paths = _scripts_surfaces_lib_module.collect_deleted_paths
 load_surfaces = _scripts_surfaces_lib_module.load_surfaces
 match_surfaces = _scripts_surfaces_lib_module.match_surfaces
 
@@ -102,19 +101,13 @@ def main() -> int:
     repo_root = args.repo_root.resolve()
     try:
         surfaces = load_surfaces(repo_root)
-        changed_paths = (
-            collect_changed_paths_for_ref(repo_root, args.changed_ref)
-            if args.changed_ref
-            else collect_changed_paths(repo_root)
-        )
-        # Both substrates, deliberately. Scoping the marker to `--changed-ref`
-        # left the DEFAULT working-tree packet -- the common one -- still
-        # rendering a removal exactly like an edit.
-        deleted_paths = (
-            collect_deleted_paths_for_ref(repo_root, args.changed_ref)
-            if args.changed_ref
-            else collect_deleted_paths(repo_root)
-        )
+        if args.changed_ref:
+            changed_paths = collect_changed_paths_for_ref(repo_root, args.changed_ref)
+            deleted_paths = collect_deleted_paths_for_ref(repo_root, args.changed_ref)
+        else:
+            snapshot = collect_working_tree_snapshot(repo_root)
+            changed_paths = list(snapshot.changed_paths)
+            deleted_paths = set(snapshot.deleted_paths)
         match = match_surfaces(surfaces, changed_paths)
     except SurfaceError as exc:
         print(f"surfaces lookup failed: {exc}")

@@ -5,6 +5,8 @@ from __future__ import annotations
 import subprocess
 from pathlib import Path
 
+import pytest
+
 from scripts import reviewed_input_identity, surfaces_lib
 
 
@@ -52,6 +54,7 @@ def test_worktree_matrix_keeps_changed_path_consumers_in_agreement(tmp_path: Pat
     _git(tmp_path, "config", "core.quotepath", "true")
     for name in ("rename-me.txt", "staged-delete.txt", "worktree-delete.txt"):
         (tmp_path / name).write_text(f"{name}\n", encoding="utf-8")
+    (tmp_path / ".gitignore").write_text("ignored.txt\n", encoding="utf-8")
     _git(tmp_path, "add", "-A")
     _git(tmp_path, "commit", "-q", "-m", "fixture")
 
@@ -85,7 +88,15 @@ def test_worktree_matrix_keeps_changed_path_consumers_in_agreement(tmp_path: Pat
 
     identity_paths = reviewed_input_identity._auto_paths(tmp_path, None)
     surface_paths = surfaces_lib.collect_changed_paths(tmp_path)
+    snapshot = surfaces_lib.collect_working_tree_snapshot(tmp_path)
     _assert_changed_path_agreement(identity_paths, surface_paths)
+    assert list(snapshot.changed_paths) == surface_paths
+    assert set(snapshot.deleted_paths) == {
+        "staged-delete.txt",
+        "worktree-delete.txt",
+        "staged-then-removed.txt",
+    }
+    assert surfaces_lib.collect_deleted_paths(tmp_path) == set(snapshot.deleted_paths)
     assert {
         "renamed.txt",
         "staged-delete.txt",
@@ -94,6 +105,60 @@ def test_worktree_matrix_keeps_changed_path_consumers_in_agreement(tmp_path: Pat
         "한글.txt",
         "sub",
     } <= set(identity_paths)
+    assert "rename-me.txt" not in surface_paths
+    assert "ignored.txt" not in surface_paths
+
+
+def test_porcelain_v1_snapshot_parses_rename_copy_and_surrogate_paths() -> None:
+    output = (
+        b" M unstaged.txt\0"
+        b"D  staged.txt\0"
+        b"R  renamed.txt\0old-name.txt\0"
+        b"C  copied.txt\0source.txt\0"
+        b"?? bad-\xff.txt\0"
+        b"!! ignored.txt\0"
+    )
+
+    snapshot = surfaces_lib._parse_working_tree_status(output)
+
+    assert snapshot.changed_paths == (
+        "unstaged.txt",
+        "staged.txt",
+        "renamed.txt",
+        "copied.txt",
+        "bad-\udcff.txt",
+    )
+    assert snapshot.deleted_paths == frozenset({"staged.txt"})
+
+
+@pytest.mark.parametrize(
+    "output",
+    [
+        b" M missing-terminator",
+        b"M malformed-separator\0",
+        b" M \0",
+        b"R  renamed.txt\0",
+        b"R  renamed.txt\0\0",
+    ],
+)
+def test_porcelain_v1_snapshot_rejects_malformed_records(output: bytes) -> None:
+    with pytest.raises(surfaces_lib.SurfaceError):
+        surfaces_lib._parse_working_tree_status(output)
+
+
+def test_collect_changed_paths_replaces_three_git_processes_with_one_status_snapshot(
+    tmp_path: Path, monkeypatch
+) -> None:
+    calls: list[list[str]] = []
+
+    def counting_run(command, *args, **kwargs):
+        calls.append(list(command))
+        return subprocess.CompletedProcess(command, 0, b"?? changed.txt\0", b"")
+
+    monkeypatch.setattr(subprocess, "run", counting_run)
+
+    assert surfaces_lib.collect_changed_paths(tmp_path) == ["changed.txt"]
+    assert calls == [["git", "status", "--porcelain=v1", "-z", "--untracked-files=all"]]
 
 
 def test_merge_matrix_keeps_changed_path_consumers_in_agreement(tmp_path: Path) -> None:

@@ -10,7 +10,10 @@ from __future__ import annotations
 
 import json
 import subprocess
+import sys
 from pathlib import Path
+
+from scripts import render_critique_section_changed_surfaces as producer_module
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -197,3 +200,27 @@ def test_a_staged_deletion_counts_the_same_as_an_unstaged_one(tmp_path: Path) ->
     lines = {line.split()[1]: line for line in result.stdout.splitlines() if line.startswith("- ")}
     assert "DELETED" in lines["staged-removal.md"]
     assert "DELETED" not in lines["kept.md"]
+
+
+def test_working_tree_producer_replaces_five_git_processes_with_one_snapshot(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    calls: list[list[str]] = []
+
+    def counting_run(command, *args, **kwargs):
+        calls.append(list(command))
+        output = b"" if command[1] == "init" else b" M kept.md\0 D removed.md\0"
+        return subprocess.CompletedProcess(command, 0, output, b"")
+
+    monkeypatch.setattr(subprocess, "run", counting_run)
+    repo = _repo_with_surfaces(tmp_path)
+    calls.clear()
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["render_critique_section_changed_surfaces.py", "--repo-root", str(repo)],
+    )
+
+    assert producer_module.main() == 0
+    assert calls == [["git", "status", "--porcelain=v1", "-z", "--untracked-files=all"]]
+    assert "- removed.md  (DELETED" in capsys.readouterr().out
