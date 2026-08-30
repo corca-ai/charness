@@ -238,3 +238,23 @@ def test_a_staged_deletion_that_was_recreated_is_not_marked_deleted(tmp_path: Pa
     lines = {line.split()[1]: line for line in again.stdout.splitlines() if line.startswith("- ")}
     assert "DELETED" in lines["kept.md"]
     assert "DELETED" not in lines.get("revived.md", "")
+
+
+def test_a_retained_but_broken_symlink_is_not_marked_deleted(tmp_path: Path) -> None:
+    """`Path.exists()` FOLLOWS a symlink.
+
+    A retained pointer whose target is gone therefore looked absent and rendered
+    DELETED, while the link file is still on disk and is the path under review.
+    """
+    repo = _repo_with_surfaces(tmp_path)
+    (repo / "target.md").write_text("target\n", encoding="utf-8")
+    (repo / "latest.md").symlink_to("target.md")
+    _run_git(repo, "add", "-A")
+    _run_git(repo, "commit", "-m", "initial")
+    (repo / "target.md").unlink()
+
+    result = run_script(PRODUCER, "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+    lines = {line.split()[1]: line for line in result.stdout.splitlines() if line.startswith("- ")}
+    assert "DELETED" in lines["target.md"], "the removed target IS a deletion"
+    assert "latest.md" not in lines or "DELETED" not in lines["latest.md"]

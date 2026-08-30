@@ -326,7 +326,13 @@ def collect_deleted_paths(repo_root: Path) -> set[str]:
     reviewer: the file is there and the identity binds its present bytes.
     """
     removed = set(collect_working_tree_snapshot(repo_root).deleted_paths)
-    return {path for path in removed if not (repo_root / path).exists()}
+    # `exists()` FOLLOWS a symlink, so a retained but broken pointer looked
+    # absent and was rendered DELETED while the link file is still there.
+    return {
+        path
+        for path in removed
+        if not ((repo_root / path).exists() or (repo_root / path).is_symlink())
+    }
 
 
 def collect_changed_paths_for_ref(repo_root: Path, ref: str) -> list[str]:

@@ -436,3 +436,32 @@ def test_a_failed_cleanliness_check_refuses_rather_than_reading_as_clean(
 
     with pytest.raises(ValueError, match="cleanliness could not be established"):
         nonblob._gitlink_commit(repo, "sub", None)
+
+
+def test_a_pointer_naming_a_directory_refuses(tmp_path: Path) -> None:
+    """A directory is neither a record nor an absence.
+
+    Treating it as `absent` gave a stable digest while everything inside could
+    change, so the pointer selected different content under an unchanged verdict.
+    """
+    _init_identity_repo(tmp_path)
+    records = tmp_path / "charness-artifacts" / "quality"
+    (records / "adir").mkdir(parents=True)
+    (records / "adir" / "inner.md").write_text("x\n", encoding="utf-8")
+    (records / "latest.md").symlink_to("adir")
+
+    with pytest.raises(ValueError, match="naming a directory"):
+        build_reviewed_input_identity(repo_root=tmp_path)
+
+
+def test_a_pointer_naming_nothing_is_still_bound_as_absent(tmp_path: Path) -> None:
+    """The discriminator: selecting no record is a real, stable state."""
+    _init_identity_repo(tmp_path)
+    records = tmp_path / "charness-artifacts" / "quality"
+    records.mkdir(parents=True)
+    (records / "latest.md").symlink_to("gone.md")
+
+    identity = build_reviewed_input_identity(repo_root=tmp_path)
+
+    assert "charness-artifacts/quality/latest.md" in identity["reviewed_paths"]
+    assert verify_reviewed_input_identity(tmp_path, identity) == (True, "current")

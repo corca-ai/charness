@@ -297,7 +297,15 @@ def _current_pointer_payload(repo_root: Path, path: str) -> str | None:
         raise ValueError(
             f"reviewed path `{path}` is a current pointer resolving outside repo root"
         ) from exc
-    if not resolved.is_file():
+    if resolved.is_dir():
+        # A directory is not a record and not an absence. Calling it `absent`
+        # gave a stable digest while everything inside it could change, so the
+        # pointer selected different content under an unchanged verdict.
+        raise ValueError(
+            f"reviewed path `{path}` is a current pointer naming a directory; a pointer "
+            "selects one record, and a directory's contents cannot be bound through it"
+        )
+    if not resolved.exists():
         # A pointer naming nothing is a real, stable state: it selects no record.
         selected = "absent"
     else:
