@@ -1,0 +1,9 @@
+Classification: feature
+
+Jtbd: Provide one typed, composable native repository-analysis capability slice so Charness gates can consume inventory, classification, reverse-reader, standalone-target, plugin-reference, and export-safe facts without rebuilding those migrated owners in Python.
+Boundary: Completed for the published generic native capability slice recorded in `charness-artifacts/design-studies/issue-748/evidence-748.md`. `repo_file_listing.py` and `surfaces_lib.match_surfaces` remain explicit Python owners; no plugin artifact, consumer export, Git/submodule/topology, release, repository-wide migration, or language-preference claim is made.
+Resolution Brief: Accept the independently proven native slice as the useful completion unit instead of forcing the two deferred helpers across an unproven consumer-artifact boundary.
+Implementation: The issue-748 evidence record binds deleted Python owners, native commands, parity, integration catches, full standing gates, and #743 resolution. Current provider-source readback additionally executed `repograph inventory --repo-root . --regular-files-only` and returned `repograph.inventory.v1`, `status: established`, `regular_files_only: true`, and 6,880 regular paths.
+Prevention: The native gate resolver, Quality Core provisioning, mutation-workflow Rust tests, parity suite, and owner-removal evidence keep the migrated slice single-owned; the two deferred Python owners remain named rather than falsely claimed migrated.
+Behavior #748: verified by the exact current provider-source inventory readback in `charness-artifacts/goal-runs/744/proofs/issue-748-native-inventory.md` plus the published parity/owner-removal record; this is a native capability proof, not consumer or release proof.
+AI-provenance: Agent-authored manual closeout from the operator-approved narrowed Work Item, published implementation evidence, exact provider-source native readback, and explicit non-claims.
