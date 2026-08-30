@@ -5,9 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
 
-from scripts.task_run_contract import FAIL, PASS
+from scripts.task_run_contract import FAIL, PASS, TaskRunError
 from scripts.task_run_git import (
-    _collect_populations,
     _collect_populations_with_metadata,
     _git_output,
     _parse_nul_paths,
@@ -30,8 +29,9 @@ def _parent_progress(
     specs: Sequence[Mapping[str, Any]],
     glob_matches: Callable[[Path, str], tuple[list[str], list[str]]] | None = None,
 ) -> tuple[dict[str, Any], dict[str, list[str]]]:
-    parent_after = _collect_populations(parent_root)
-    parent_after_head = _git_output(parent_root, "rev-parse", "HEAD").strip()
+    parent_after, parent_after_head, _ = _collect_populations_with_metadata(parent_root)
+    if parent_after_head is None:
+        raise TaskRunError("parent Git status did not report a valid HEAD")
     committed = (
         _parse_nul_paths(
             _git_output(

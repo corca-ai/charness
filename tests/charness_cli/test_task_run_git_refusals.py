@@ -13,7 +13,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts import task_run, task_run_git
+from scripts import task_run, task_run_evidence, task_run_git
 
 from .test_task_run_fixtures import _repo
 
@@ -168,3 +168,22 @@ def test_terminal_population_snapshot_keeps_head_branch_and_rename_paths(
         "untracked": ["new.py"],
         "ignored": [".cache"],
     }
+
+
+def test_parent_progress_refuses_a_status_snapshot_without_head(
+    tmp_path: Path, monkeypatch
+) -> None:
+    repo = _repo(tmp_path)
+    monkeypatch.setattr(
+        task_run_evidence,
+        "_collect_populations_with_metadata",
+        lambda _repo: ({"tracked": [], "untracked": [], "ignored": []}, None, None),
+    )
+
+    with pytest.raises(task_run.TaskRunError, match="did not report a valid HEAD"):
+        task_run_evidence._parent_progress(
+            parent_root=repo,
+            parent_before={"tracked": [], "untracked": [], "ignored": []},
+            parent_before_head="a" * 40,
+            specs=[],
+        )
