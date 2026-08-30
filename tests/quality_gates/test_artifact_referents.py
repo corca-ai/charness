@@ -13,6 +13,7 @@ the goal/retro artifacts, which had no such machinery.
 from __future__ import annotations
 
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -420,8 +421,8 @@ def _git(repo: Path, *args: str) -> str:
     return result.stdout.strip()
 
 
-def _repo_with_side_branch_commit(tmp_path: Path) -> tuple[Path, str]:
-    repo = tmp_path / "repo"
+def _build_side_branch_repo_seed(seed: Path) -> None:
+    repo = seed / "repo"
     repo.mkdir()
     _git(repo, "init", "-b", "main")
     _git(repo, "config", "user.name", "Charness Test")
@@ -435,7 +436,36 @@ def _repo_with_side_branch_commit(tmp_path: Path) -> tuple[Path, str]:
     _git(repo, "commit", "-m", "local lane")
     local_sha = _git(repo, "rev-parse", "HEAD")
     _git(repo, "switch", "main")
+    (seed / "side-branch-commit").write_text(f"{local_sha}\n", encoding="utf-8")
+
+
+def _repo_with_side_branch_commit(tmp_path: Path) -> tuple[Path, str]:
+    from tests.seed_cache import get_or_build
+
+    seed = get_or_build(
+        "artifact-referents-side-branch-repo-seed", _build_side_branch_repo_seed
+    )
+    repo = shutil.copytree(seed / "repo", tmp_path / "repo")
+    local_sha = (seed / "side-branch-commit").read_text(encoding="utf-8").strip()
     return repo, local_sha
+
+
+def test_side_branch_seed_copies_are_private(tmp_path: Path) -> None:
+    from scripts.artifact_referents import git_commit_reachable_from_head
+
+    first_root = tmp_path / "first"
+    second_root = tmp_path / "second"
+    first_root.mkdir()
+    second_root.mkdir()
+    first_repo, first_sha = _repo_with_side_branch_commit(first_root)
+    second_repo, second_sha = _repo_with_side_branch_commit(second_root)
+
+    (first_repo / "base.txt").write_text("mutated\n", encoding="utf-8")
+
+    assert first_repo != second_repo
+    assert first_sha == second_sha
+    assert (second_repo / "base.txt").read_text(encoding="utf-8") == "base\n"
+    assert git_commit_reachable_from_head(second_sha, second_repo) is False
 
 
 def test_an_object_visible_only_on_a_side_branch_is_not_durable(tmp_path: Path) -> None:
