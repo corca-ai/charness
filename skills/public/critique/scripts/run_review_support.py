@@ -70,6 +70,7 @@ def package_paths(script_dir: Path) -> dict[str, Path]:
         "runner": shared / "run_reviewer_worker.py",
         "capability": shared / "reviewer_capability.py",
         "lifecycle": shared / "reviewer_lifecycle.py",
+        "partial_output": shared / "reviewer_partial_output.py",
         "schema": schema,
         "prepare": script_dir / "prepare_packet.py",
         "verify_packet": script_dir / "verify_packet.py",

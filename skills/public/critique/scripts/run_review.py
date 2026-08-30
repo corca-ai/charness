@@ -5,36 +5,11 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
-import sys
 from pathlib import Path
 from typing import Any
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 READ_ONLY_BOUNDARY_MODE = "read-only-worker"
-
-
-def _partial_outputs(root: Path, paths: dict[str, Path]) -> list[dict[str, Any]]:
-    """Capture non-empty runner logs when a live run cannot deliver a report."""
-    outputs: list[dict[str, Any]] = []
-    for key, kind in (
-        ("runner_stdout", "runner-stdout"),
-        ("runner_stderr", "runner-stderr"),
-        ("backend_stdout", "backend-stdout"),
-        ("backend_stderr", "backend-stderr"),
-    ):
-        path = paths[key]
-        if not path.is_file() or path.stat().st_size == 0:
-            continue
-        outputs.append(
-            {
-                "schema_version": "charness.reviewer_partial_output.v1",
-                "kind": kind,
-                "path": SUPPORT.relative(root, path),
-                "bytes": path.stat().st_size,
-                "sha256": SUPPORT.sha256(path),
-            }
-        )
-    return outputs
 
 
 def _load_support() -> Any:
@@ -49,6 +24,9 @@ def _load_support() -> Any:
 
 SUPPORT = _load_support()
 PACKET = SUPPORT.load_module(SCRIPT_DIR / "run_review_packet.py", "charness_run_review_packet")
+INVOCATION = SUPPORT.load_module(
+    SCRIPT_DIR / "run_review_invocation.py", "charness_run_review_invocation"
+)
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -130,50 +108,6 @@ def _failure_carrier(
     return carrier
 
 
-def _runner_command(
-    package: dict[str, Path],
-    paths: dict[str, Path],
-    *,
-    root: Path,
-    backend: str,
-    scope: str,
-    attempt: str,
-    packet_sha: str,
-    input_sha: str,
-    parent_receipt: str,
-    boundary_mode: str,
-    boundary_sha: str | None,
-) -> list[str]:
-    def relative(key: str) -> str:
-        return SUPPORT.relative(root, paths[key])
-
-    command = [
-        sys.executable,
-        str(package["runner"]),
-        "--repo-root", str(root),
-        "--backend", backend,
-        "--prompt-file", relative("prompt"),
-        "--capability-file", relative("capability"),
-        "--scope", scope,
-        "--packet-identity", packet_sha,
-        "--reviewed-input-identity", input_sha,
-        "--attempt-id", attempt,
-        "--parent-receipt-identity", parent_receipt,
-        "--boundary-mode", boundary_mode,
-        "--ledger-file", relative("ledger"),
-        "--output-file", relative("output"),
-        "--receipt-file", relative("receipt"),
-        "--report-file", relative("report"),
-        "--schema-file", relative("schema"),
-        "--stdout-file", relative("backend_stdout"),
-        "--stderr-file", relative("backend_stderr"),
-        "--run-id", "run-" + attempt,
-    ]
-    if boundary_sha is not None:
-        command.extend(["--boundary-fingerprint", boundary_sha])
-    return command
-
-
 def _adapter_name(root: Path, adapter: dict[str, Any]) -> str:
     value = adapter.get("path")
     if isinstance(value, str) and value:
@@ -213,6 +147,9 @@ def main(argv: list[str] | None = None) -> int:
         )
         package = SUPPORT.package_paths(SCRIPT_DIR)
         lifecycle, capability_lib = SUPPORT.load_runtime(package)
+        partial_output = SUPPORT.load_module(
+            package["partial_output"], "charness_run_review_partial_output"
+        )
         adapter = SUPPORT.resolve_adapter(root, package["resolve_adapter"])
         data = adapter.get("data")
         sections = data.get("packet_sections", []) if isinstance(data, dict) else []
@@ -326,8 +263,8 @@ def main(argv: list[str] | None = None) -> int:
 
         if backend is None:
             raise SUPPORT.RunReviewError("backend-unavailable", "no backend selected for a live run")
-        command = _runner_command(
-            package, paths, root=root, backend=backend, scope=args.scope, attempt=attempt,
+        command = INVOCATION.runner_command(
+            SUPPORT, package, paths, root=root, backend=backend, scope=args.scope, attempt=attempt,
             packet_sha=packet_sha, input_sha=input_sha, parent_receipt=parent_receipt,
             boundary_mode=boundary_mode, boundary_sha=boundary_sha,
         )
@@ -355,7 +292,7 @@ def main(argv: list[str] | None = None) -> int:
             partial_outputs=(
                 []
                 if isinstance(report, dict) and report.get("delivery_state") == "findings-received"
-                else _partial_outputs(root, paths)
+                else partial_output.collect_run_logs(root, paths)
             ),
         )
         carrier.update({

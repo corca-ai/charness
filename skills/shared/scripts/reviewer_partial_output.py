@@ -3,16 +3,23 @@
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 from pathlib import Path
 from typing import Any
 
 try:
     from reviewer_delivery_fields import PARTIAL_OUTPUT_SCHEMA_VERSION, partial_output
 except ImportError:
-    from skills.shared.scripts.reviewer_delivery_fields import (
-        PARTIAL_OUTPUT_SCHEMA_VERSION,
-        partial_output,
+    fields_path = Path(__file__).with_name("reviewer_delivery_fields.py")
+    fields_spec = importlib.util.spec_from_file_location(
+        "charness_reviewer_delivery_fields", fields_path
     )
+    if fields_spec is None or fields_spec.loader is None:
+        raise RuntimeError(f"cannot load reviewer delivery fields: {fields_path}")
+    fields = importlib.util.module_from_spec(fields_spec)
+    fields_spec.loader.exec_module(fields)
+    PARTIAL_OUTPUT_SCHEMA_VERSION = fields.PARTIAL_OUTPUT_SCHEMA_VERSION
+    partial_output = fields.partial_output
 
 
 def _sha256(path: Path) -> str:
@@ -32,6 +39,24 @@ def descriptor(path: Path, *, kind: str = "backend-output") -> dict[str, Any]:
         "bytes": path.stat().st_size,
         "sha256": _sha256(path),
     }
+
+
+def collect_run_logs(root: Path, paths: dict[str, Path]) -> list[dict[str, Any]]:
+    """Describe non-empty runner logs without treating them as delivery."""
+    outputs: list[dict[str, Any]] = []
+    for key, kind in (
+        ("runner_stdout", "runner-stdout"),
+        ("runner_stderr", "runner-stderr"),
+        ("backend_stdout", "backend-stdout"),
+        ("backend_stderr", "backend-stderr"),
+    ):
+        path = paths[key]
+        if not path.is_file() or path.stat().st_size == 0:
+            continue
+        value = descriptor(path, kind=kind)
+        value["path"] = path.resolve().relative_to(root.resolve()).as_posix()
+        outputs.append(value)
+    return outputs
 
 
 def validate_receipt_output(
