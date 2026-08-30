@@ -74,7 +74,7 @@ def finalize_attempt(
     except (OSError, UnicodeDecodeError, json.JSONDecodeError, ValueError) as exc:
         receipt_error = exc
     pre_report: dict[str, Any] | None = None
-    if receipt is not None and receipt.get("status") == "succeeded":
+    if receipt is not None:
         try:
             pre_report = build_report(
                 receipt_path=str(receipt_path), ledger_path=str(ledger_path), attempt_id=attempt_id,
@@ -85,7 +85,20 @@ def finalize_attempt(
             )
         except (OSError, ValueError, KeyError, TypeError) as exc:
             receipt_error = exc
-        if pre_report is not None and pre_report.get("collection_ready"):
+        if (
+            pre_report is not None
+            and pre_report.get("partial_output_ok") is True
+            and isinstance(pre_report.get("partial_output"), dict)
+        ):
+            with ledger_lock(ledger_path):
+                ledger = _read(ledger_path)
+                attempt = ledger.require(attempt_id)
+                attempt.record_partial(
+                    partial_output=pre_report["partial_output"],
+                    recorded_at=(receipt or {}).get("finished_at", "") or utc_now(),
+                )
+                _write(ledger_path, ledger)
+        if receipt.get("status") == "succeeded" and pre_report is not None and pre_report.get("collection_ready"):
             with ledger_lock(ledger_path):
                 ledger = _read(ledger_path)
                 attempt = ledger.require(attempt_id)
@@ -97,8 +110,13 @@ def finalize_attempt(
                 )
                 _write(ledger_path, ledger)
         else:
+            terminal_failure = (
+                failure_state(receipt)
+                if receipt.get("status") in {"timed-out", "interrupted"}
+                else COLLECTION_FAILED
+            )
             _transition(
-                ledger_path, attempt_id, COLLECTION_FAILED,
+                ledger_path, attempt_id, terminal_failure,
                 "worker collection validation failed before findings-received: "
                 + (str(receipt_error) if receipt_error else str((pre_report or {}).get("reason"))),
                 (receipt or {}).get("finished_at"),

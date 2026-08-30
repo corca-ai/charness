@@ -13,6 +13,30 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 READ_ONLY_BOUNDARY_MODE = "read-only-worker"
 
 
+def _partial_outputs(root: Path, paths: dict[str, Path]) -> list[dict[str, Any]]:
+    """Capture non-empty runner logs when a live run cannot deliver a report."""
+    outputs: list[dict[str, Any]] = []
+    for key, kind in (
+        ("runner_stdout", "runner-stdout"),
+        ("runner_stderr", "runner-stderr"),
+        ("backend_stdout", "backend-stdout"),
+        ("backend_stderr", "backend-stderr"),
+    ):
+        path = paths[key]
+        if not path.is_file() or path.stat().st_size == 0:
+            continue
+        outputs.append(
+            {
+                "schema_version": "charness.reviewer_partial_output.v1",
+                "kind": kind,
+                "path": SUPPORT.relative(root, path),
+                "bytes": path.stat().st_size,
+                "sha256": SUPPORT.sha256(path),
+            }
+        )
+    return outputs
+
+
 def _load_support() -> Any:
     path = SCRIPT_DIR / "run_review_support.py"
     spec = importlib.util.spec_from_file_location("charness_run_review_support", path)
@@ -59,12 +83,15 @@ def _failure_carrier(
             "schema_version": "charness.reviewer_lifecycle.v1",
             "status": "runner-invalid",
             "execution_state": "preflight-blocked",
+            "lifecycle_state": "preflight-blocked",
             "reviewer_started": False,
             "delivery_state": "none",
             "verdict_state": "not-applicable",
             "review_verdict": None,
             "classification": None,
             "approval_eligible": False,
+            "output": {"state": "none", "approval_eligible": False, "artifacts": []},
+            "output_state": "none",
             "failure_identity": None,
             "next_move": "repair the named preflight boundary and rerun; reviewer did not start",
             "runner_returncode": None,
@@ -325,6 +352,11 @@ def main(argv: list[str] | None = None) -> int:
             boundary_ok=boundary_ok,
             boundary_reason=None,
             paths=context["paths"],
+            partial_outputs=(
+                []
+                if isinstance(report, dict) and report.get("delivery_state") == "findings-received"
+                else _partial_outputs(root, paths)
+            ),
         )
         carrier.update({
             "ok": bool(report) and status != "runner-invalid" and boundary_ok and stream_evidence["consistent"],

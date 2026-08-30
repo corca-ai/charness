@@ -16,7 +16,7 @@ from pathlib import Path
 
 try:
     from reviewer_capability import load_capability_file
-    from reviewer_delivery import _read, _write, ledger_lock
+    from reviewer_delivery import RUNNING, _read, _write, ledger_lock, utc_now
     from reviewer_delivery_fields import boundary_binding
     from reviewer_output import emit_yaml
     from reviewer_runner_support import finalize_attempt
@@ -42,7 +42,7 @@ try:
     )
 except ImportError:
     from skills.shared.scripts.reviewer_capability import load_capability_file
-    from skills.shared.scripts.reviewer_delivery import _read, _write, ledger_lock
+    from skills.shared.scripts.reviewer_delivery import RUNNING, _read, _write, ledger_lock, utc_now
     from skills.shared.scripts.reviewer_delivery_fields import boundary_binding
     from skills.shared.scripts.reviewer_output import emit_yaml
     from skills.shared.scripts.reviewer_runner_support import finalize_attempt
@@ -144,6 +144,11 @@ def main(argv: list[str] | None = None) -> int:
                 output_file=str(output_path),
                 receipt_file=str(receipt_path),
                 producer_run_id=producer_run_id,
+            )
+            ledger.require(args.attempt_id).transition(
+                RUNNING,
+                "reviewer worker process launched",
+                utc_now(),
             )
             _write(ledger_path, ledger)
 

@@ -313,6 +313,41 @@ def test_timeout_is_finite_and_typed_without_timeout_binary_fallback(tmp_path: P
     assert not output.exists()
 
 
+def test_timeout_preserves_backend_bytes_as_typed_partial_output(tmp_path: Path) -> None:
+    workspace, prompt, schema, capability, output, receipt = _inputs(tmp_path)
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    _executable(
+        bin_dir / "codex",
+        "#!/bin/sh\n"
+        "out=\"\"\n"
+        "while [ \"$#\" -gt 0 ]; do\n"
+        "  if [ \"$1\" = \"-o\" ]; then out=\"$2\"; shift 2; continue; fi\n"
+        "  shift\n"
+        "done\n"
+        "printf '%s\\n' '{\"partial\":true}' > \"$out\"\n"
+        "sleep 1\n",
+    )
+    old_path = os.environ["PATH"]
+    os.environ["PATH"] = f"{bin_dir}:{old_path}"
+    try:
+        result = _run(tmp_path, "codex_exec", workspace, prompt, schema, capability, output, receipt, timeout="0.05")
+    finally:
+        os.environ["PATH"] = old_path
+
+    assert result.returncode == 1
+    record = json.loads(receipt.read_text(encoding="utf-8"))
+    assert record["status"] == "timed-out"
+    assert not output.exists()
+    partial = output.with_name(f"{output.name}.partial")
+    assert partial.read_text(encoding="utf-8") == '{"partial":true}\n'
+    descriptor = record["partial_output"]
+    assert descriptor["schema_version"] == "charness.reviewer_partial_output.v1"
+    assert descriptor["kind"] == "backend-output"
+    assert descriptor["path"] == str(partial)
+    assert descriptor["bytes"] == partial.stat().st_size
+
+
 def test_timeout_terminates_backend_process_group(tmp_path: Path) -> None:
     workspace, prompt, schema, capability, output, receipt = _inputs(tmp_path)
     bin_dir = tmp_path / "bin"

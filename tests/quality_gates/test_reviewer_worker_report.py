@@ -148,6 +148,39 @@ def test_matching_typed_receipt_and_findings_ledger_is_approval_eligible(tmp_pat
     }
 
 
+def test_timed_out_partial_output_is_reported_without_approval(tmp_path: Path) -> None:
+    receipt = _receipt(tmp_path, status="timed-out")
+    ledger_path, _ = _ledger(tmp_path, findings=False)
+    output = tmp_path / "result.json"
+    partial = output.with_name("result.json.partial")
+    partial.write_text('{"partial":true}\n', encoding="utf-8")
+    receipt_payload = json.loads(receipt.read_text(encoding="utf-8"))
+    receipt_payload["partial_output"] = {
+        "schema_version": "charness.reviewer_partial_output.v1",
+        "kind": "backend-output",
+        "path": str(partial),
+        "bytes": partial.stat().st_size,
+        "sha256": hashlib.sha256(partial.read_bytes()).hexdigest(),
+    }
+    receipt.write_text(json.dumps(receipt_payload), encoding="utf-8")
+
+    ledger_payload = json.loads(ledger_path.read_text(encoding="utf-8"))
+    ledger = reviewer_delivery.DeliveryLedger.from_dict(ledger_payload)
+    ledger.require("attempt-1").record_partial(
+        partial_output=receipt_payload["partial_output"],
+        recorded_at="2026-08-21T00:00:00Z",
+    )
+    ledger_path.write_text(json.dumps(ledger.to_dict()), encoding="utf-8")
+
+    result = _run(tmp_path, receipt, ledger_path)
+    report = yaml.safe_load(result.stdout)
+    assert result.returncode == 1
+    assert report["delivery_state"] == "partial"
+    assert report["partial_output_ok"] is True
+    assert report["partial_output"] == receipt_payload["partial_output"]
+    assert report["approval_eligible"] is False
+
+
 def test_producer_output_join_is_checked_at_collection(tmp_path: Path) -> None:
     receipt = _receipt(tmp_path)
     ledger, _ = _ledger(tmp_path)

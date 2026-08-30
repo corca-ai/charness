@@ -7,6 +7,15 @@ from typing import Any, Callable
 
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 PARENT_RECEIPT_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]*$")
+PARTIAL_OUTPUT_SCHEMA_VERSION = "charness.reviewer_partial_output.v1"
+_PARTIAL_OUTPUT_KINDS = frozenset({
+    "backend-output",
+    "backend-stdout",
+    "backend-stderr",
+    "runner-stdout",
+    "runner-stderr",
+    "worker-output",
+})
 BOUNDARY_MODES = frozenset({"read-only-worker", "shared-tree-fingerprint"})
 DEFAULT_BOUNDARY_MODE = "read-only-worker"
 FINGERPRINT_BOUNDARY_MODE = "shared-tree-fingerprint"
@@ -23,6 +32,39 @@ def _sha256(value: object, label: str) -> str:
     if not _SHA256_RE.fullmatch(text):
         raise ValueError(f"{label} must be a lowercase SHA-256 identity")
     return text
+
+
+def partial_output(value: object) -> dict[str, Any]:
+    """Validate the small, identity-bound descriptor for preserved output.
+
+    Partial bytes are useful evidence, but they are never a review result.  The
+    descriptor therefore binds the bytes and their kind without giving a
+    consumer a second approval path.
+    """
+    if not isinstance(value, dict):
+        raise ValueError("partial_output must be an object")
+    expected = {"schema_version", "kind", "path", "bytes", "sha256"}
+    unknown = sorted(set(value) - expected)
+    if unknown:
+        raise ValueError(f"partial_output has unknown fields: {', '.join(unknown)}")
+    if value.get("schema_version") != PARTIAL_OUTPUT_SCHEMA_VERSION:
+        raise ValueError(
+            f"partial_output schema_version must be {PARTIAL_OUTPUT_SCHEMA_VERSION}"
+        )
+    kind = _text(value.get("kind"), "partial_output.kind")
+    if kind not in _PARTIAL_OUTPUT_KINDS:
+        raise ValueError(f"unknown partial_output.kind: {kind}")
+    path = _text(value.get("path"), "partial_output.path")
+    size = value.get("bytes")
+    if type(size) is not int or size < 1:
+        raise ValueError("partial_output.bytes must be a positive integer")
+    return {
+        "schema_version": PARTIAL_OUTPUT_SCHEMA_VERSION,
+        "kind": kind,
+        "path": path,
+        "bytes": size,
+        "sha256": _sha256(value.get("sha256"), "partial_output.sha256"),
+    }
 
 
 def parent_receipt_identity(value: object, label: str = "parent_receipt_identity") -> str:
@@ -77,6 +119,7 @@ def bound_fields(
     findings_received: str,
     execution_modes: frozenset[str],
     attempt_id: Callable[[object | None], str],
+    partial_state: str = "partial",
 ) -> dict[str, Any]:
     """Normalize optional fields and enforce state/identity invariants."""
     findings = (
@@ -88,6 +131,13 @@ def bound_fields(
         raise ValueError("findings-received history requires findings_identity")
     if state != findings_received and findings is not None:
         raise ValueError("findings_identity is only valid for findings-received")
+    partial = (
+        partial_output(payload["partial_output"])
+        if payload.get("partial_output") is not None
+        else None
+    )
+    if state == partial_state and partial is None:
+        raise ValueError("partial state requires partial_output")
     reviewed_input_identity = (
         _sha256(payload["reviewed_input_identity"], "reviewed_input_identity")
         if payload.get("reviewed_input_identity") is not None
@@ -128,6 +178,7 @@ def bound_fields(
         raise ValueError("retry_count must be a non-negative integer")
     return {
         "findings_identity": findings,
+        "partial_output": partial,
         "reviewed_input_identity": reviewed_input_identity,
         "execution_mode": execution_mode,
         "backend": _text(payload["backend"], "backend") if payload.get("backend") is not None else None,

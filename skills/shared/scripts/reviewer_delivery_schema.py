@@ -16,6 +16,7 @@ except ImportError:
 SCHEMA_VERSION = "charness.reviewer_delivery.v1"
 SPAWN_ACCEPTED = "spawn-accepted"
 RUNNING = "running"
+PARTIAL = "partial"
 FINDINGS_RECEIVED = "findings-received"
 INTERRUPTED = "interrupted"
 TIMED_OUT = "timed-out"
@@ -28,6 +29,7 @@ RECOVERED_FROM_TRANSCRIPT = "findings-recovered-from-transcript"
 CANONICAL_STATES = (
     SPAWN_ACCEPTED,
     RUNNING,
+    PARTIAL,
     FINDINGS_RECEIVED,
     INTERRUPTED,
     TIMED_OUT,
@@ -37,7 +39,18 @@ CANONICAL_STATES = (
     NON_DELIVERY_UNKNOWN,
     COLLECTION_FAILED,
 )
-TERMINAL_STATES = frozenset(CANONICAL_STATES[2:])
+TERMINAL_STATES = frozenset(
+    {
+        FINDINGS_RECEIVED,
+        INTERRUPTED,
+        TIMED_OUT,
+        HOST_CHANNEL_UNREADABLE,
+        HOST_CAPACITY_BLOCKED,
+        SPAWN_ACCEPTED_NO_DELIVERY,
+        NON_DELIVERY_UNKNOWN,
+        COLLECTION_FAILED,
+    }
+)
 RETRYABLE_STATES = frozenset(
     {
         INTERRUPTED,
@@ -53,6 +66,7 @@ APPROVAL_STATE = FINDINGS_RECEIVED
 _ALLOWED_TRANSITIONS = {
     SPAWN_ACCEPTED: frozenset(CANONICAL_STATES[1:]),
     RUNNING: frozenset(CANONICAL_STATES[2:]),
+    PARTIAL: frozenset(CANONICAL_STATES[3:]),
 }
 _EXECUTION_MODES = frozenset({"file-backed-worker", "typed-subagent"})
 

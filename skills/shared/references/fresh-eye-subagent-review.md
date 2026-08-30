@@ -398,6 +398,14 @@ process exit code, or worker receipt status alone. Require the generated report
 to say `collection_ready: true`; a shipping approval additionally requires
 `approval_eligible: true`:
 
+The same runner exposes in-progress work as typed `spawn-accepted`, `running`,
+or `partial` delivery states. A partial carrier is an identity-bound descriptor
+of preserved bytes (`schema_version`, kind, path, size, and SHA-256), not a
+review result. Timeout or interruption retains that descriptor while projecting
+the terminal non-delivery signal, and late bytes cannot resurrect the attempt;
+only `findings-received` with a terminal schema- and identity-checked result can
+be approval-eligible.
+
 ```bash
 python3 "$SKILL_DIR/../../shared/scripts/run_reviewer_worker.py" \
   --repo-root "$REPO_ROOT" \

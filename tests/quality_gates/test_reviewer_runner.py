@@ -132,6 +132,11 @@ printf '%s\n' '{"kind":"charness.bounded_review.v1","lens":"runner test","verdic
     assert report["approval_eligible"] is True
     assert report["execution_mode"] == "file-backed-worker"
     assert yaml.safe_load(files["report"].read_text(encoding="utf-8"))["approval_eligible"] is True
+    ledger = json.loads(files["ledger"].read_text(encoding="utf-8"))
+    assert [event["state"] for event in ledger["attempts"][0]["history"]][:2] == [
+        "spawn-accepted",
+        "running",
+    ]
 
 
 def test_file_backed_runner_resolves_relative_artifacts_once_from_repo_root(tmp_path: Path) -> None:

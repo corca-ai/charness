@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import threading
 import time
@@ -53,6 +54,54 @@ def test_findings_received_is_the_only_approval_state() -> None:
     assert attempt.state == delivery.FINDINGS_RECEIVED
     assert attempt.terminal is True
     assert attempt.delivery_complete is True
+
+
+@pytest.mark.parametrize("terminal_state", [delivery.TIMED_OUT, delivery.INTERRUPTED])
+def test_partial_output_is_typed_non_delivery_and_survives_terminal_failure(
+    tmp_path, terminal_state: str
+) -> None:
+    ledger = _ledger()
+    attempt = ledger.require("a1")
+    attempt.transition(delivery.RUNNING, "reviewer worker started", "2026-08-21T00:00:05Z")
+    partial_path = tmp_path / "result.json.partial"
+    partial_path.write_text('{"findings": ["observed before timeout"]}\n', encoding="utf-8")
+    descriptor = {
+        "schema_version": "charness.reviewer_partial_output.v1",
+        "kind": "backend-output",
+        "path": str(partial_path),
+        "bytes": partial_path.stat().st_size,
+        "sha256": hashlib.sha256(partial_path.read_bytes()).hexdigest(),
+    }
+
+    assert attempt.record_partial(partial_output=descriptor, recorded_at="2026-08-21T00:00:06Z") is True
+    assert attempt.state == delivery.PARTIAL
+    assert attempt.terminal is False
+    assert attempt.delivery_complete is False
+    with pytest.raises(delivery.DeliveryError, match="requires record_partial"):
+        attempt.transition(delivery.PARTIAL, "duplicate partial", "2026-08-21T00:00:07Z")
+
+    attempt.transition(terminal_state, f"host signal: {terminal_state}", "2026-08-21T00:00:10Z")
+    assert attempt.delivery_complete is False
+    assert attempt.partial_output == descriptor
+    assert attempt.history[-2]["state"] == delivery.PARTIAL
+    assert attempt.history[-2]["partial_output"] == descriptor
+    restored = delivery.DeliveryLedger.from_dict(ledger.to_dict()).require("a1")
+    assert restored.state == terminal_state
+    assert restored.partial_output == descriptor
+
+
+def test_partial_history_cannot_be_attached_to_a_non_partial_event() -> None:
+    payload = _ledger().to_dict()
+    event = payload["attempts"][0]["history"][0]
+    event["partial_output"] = {
+        "schema_version": "charness.reviewer_partial_output.v1",
+        "kind": "backend-output",
+        "path": "result.json.partial",
+        "bytes": 1,
+        "sha256": "a" * 64,
+    }
+    with pytest.raises(delivery.DeliveryError, match="only valid on a partial history event"):
+        delivery.DeliveryLedger.from_dict(payload)
 
 
 def test_parent_receipt_identity_is_case_sensitive_and_round_trips() -> None:

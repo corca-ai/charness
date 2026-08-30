@@ -12,6 +12,7 @@ try:
         _EXECUTION_MODES,
         CANONICAL_STATES,
         FINDINGS_RECEIVED,
+        PARTIAL,
         SPAWN_ACCEPTED,
         TERMINAL_STATES,
         DeliveryError,
@@ -27,6 +28,7 @@ except ImportError:
         _EXECUTION_MODES,
         CANONICAL_STATES,
         FINDINGS_RECEIVED,
+        PARTIAL,
         SPAWN_ACCEPTED,
         TERMINAL_STATES,
         DeliveryError,
@@ -60,6 +62,7 @@ def from_dict(cls: type, payload: dict[str, Any]):
         fields = bound_fields(
             payload, state, findings_received=FINDINGS_RECEIVED,
             execution_modes=_EXECUTION_MODES, attempt_id=_attempt_id,
+            partial_state=PARTIAL,
         )
         normalized_attempt_id = _attempt_id(payload["attempt_id"])
         validate_history(
@@ -67,6 +70,8 @@ def from_dict(cls: type, payload: dict[str, Any]):
             fields["findings_identity"], spawn_accepted=SPAWN_ACCEPTED,
             canonical_states=CANONICAL_STATES, terminal_states=TERMINAL_STATES,
             allowed_transitions=_ALLOWED_TRANSITIONS,
+            partial_state=PARTIAL,
+            partial_output_descriptor=fields["partial_output"],
         )
     except ValueError as exc:
         raise DeliveryError(str(exc)) from exc
@@ -91,6 +96,7 @@ def from_dict(cls: type, payload: dict[str, Any]):
         receipt_file=fields["receipt_file"],
         producer_run_id=fields["producer_run_id"],
         findings_identity=fields["findings_identity"],
+        partial_output=fields["partial_output"],
         retry_of=fields["retry_of"],
         retry_count=fields["retry_count"],
         history=history,
@@ -118,7 +124,7 @@ def to_dict(attempt) -> dict[str, Any]:
     for key in (
         "reviewed_input_identity", "execution_mode", "backend", "prompt_sha256",
         "schema_sha256", "capability_launch_envelope_sha256", "output_file",
-        "receipt_file", "producer_run_id", "findings_identity", "retry_of",
+        "receipt_file", "producer_run_id", "findings_identity", "partial_output", "retry_of",
     ):
         value = getattr(attempt, key)
         if value is not None:

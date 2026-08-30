@@ -35,6 +35,7 @@ for _state_name in (
     "COLLECTION_FAILED",
     "INTERRUPTED",
     "NON_DELIVERY_UNKNOWN",
+    "PARTIAL",
     "RECOVERED_FROM_TRANSCRIPT",
     "RUNNING",
     "SPAWN_ACCEPTED",
@@ -298,7 +299,7 @@ def _parser() -> argparse.ArgumentParser:
     transition.add_argument("--attempt-id", required=True)
     transition.add_argument(
         "--state",
-        choices=tuple(state for state in CANONICAL_STATES if state not in {"spawn-accepted", FINDINGS_RECEIVED}),
+        choices=tuple(state for state in CANONICAL_STATES if state not in {"spawn-accepted", "partial", FINDINGS_RECEIVED}),
         required=True,
     )
     transition.add_argument("--signal", required=True)

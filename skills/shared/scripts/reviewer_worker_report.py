@@ -47,6 +47,11 @@ except ImportError:
         require_bound_fields,
     )
 
+try:
+    from reviewer_partial_output import validate_receipt_output
+except ImportError:
+    from skills.shared.scripts.reviewer_partial_output import validate_receipt_output
+
 REPORT_SCHEMA_VERSION = "charness.reviewer_worker_report.v1"
 WORKER_SCHEMA_VERSION = "charness.reviewer_worker.v1"
 SUCCESS = "succeeded"
@@ -216,6 +221,7 @@ def build_report(
         expected_execution_mode=expected_execution_mode,
         receipt_path=receipt_file,
     )
+    partial_output, partial_reason = validate_receipt_output(receipt, attempt=attempt)
     semantic_result: dict[str, Any] | None = None
     semantic_reason = "canonical bounded-review result is not approval-eligible"
     if receipt_ok:
@@ -322,6 +328,8 @@ def build_report(
         "ledger_ok": ledger_ok,
         "result_schema_ok": semantic_result is not None,
         "collection_ready": collection_ready,
+        "partial_output": partial_output,
+        "partial_output_ok": partial_output is not None,
         "review_verdict": semantic_result.get("verdict") if semantic_result else None,
         "receipt_provenance_ok": receipt_provenance_ok,
         "findings_identity": attempt.findings_identity,
@@ -331,6 +339,7 @@ def build_report(
         "parent_receipt_identity": parent_receipt_identity,
         "provenance": provenance,
         "reason": reason,
+        "partial_output_reason": partial_reason,
     }
 
 

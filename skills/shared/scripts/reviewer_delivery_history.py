@@ -4,6 +4,11 @@ from __future__ import annotations
 
 from typing import Any
 
+try:
+    from reviewer_delivery_fields import partial_output
+except ImportError:
+    from skills.shared.scripts.reviewer_delivery_fields import partial_output
+
 
 def _text(value: object, label: str) -> str:
     if not isinstance(value, str) or not value.strip():
@@ -30,6 +35,8 @@ def _validate_event_collection(items: list[dict[str, Any]], attempt_id: str) -> 
         if item["event_id"] in event_ids:
             raise ValueError(f"duplicate event_id: {item['event_id']}")
         event_ids.add(item["event_id"])
+        if item.get("partial_output") is not None:
+            partial_output(item["partial_output"])
 
 
 def _validate_transitions(
@@ -64,6 +71,8 @@ def validate_history(
     canonical_states: tuple[str, ...],
     terminal_states: frozenset[str],
     allowed_transitions: dict[str, frozenset[str]],
+    partial_state: str = "partial",
+    partial_output_descriptor: dict[str, Any] | None = None,
 ) -> None:
     """Reject detached, state-valid, or independently edited event histories."""
     if not history:
@@ -72,6 +81,21 @@ def validate_history(
         raise ValueError("history must begin with spawn-accepted")
     _validate_event_collection([*history, *observations], attempt_id)
     _validate_transitions(history, state, canonical_states, terminal_states, allowed_transitions)
+    for item in history:
+        if item.get("partial_output") is not None and item.get("state") != partial_state:
+            raise ValueError("partial_output is only valid on a partial history event")
+    partial_events = [
+        item.get("partial_output")
+        for item in history
+        if item.get("partial_output") is not None
+    ]
+    if partial_output_descriptor is not None and partial_output_descriptor not in partial_events:
+        raise ValueError("partial_output must be bound by a partial history event")
+    if state == partial_state:
+        if not partial_events:
+            raise ValueError("partial history must bind partial_output")
+        if partial_output_descriptor != partial_events[-1]:
+            raise ValueError("partial state must retain the latest partial_output")
     if state == "findings-received":
         if history[-1].get("findings_identity") != findings_identity:
             raise ValueError("findings-received history must bind its findings_identity")

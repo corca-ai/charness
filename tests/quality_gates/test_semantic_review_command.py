@@ -505,6 +505,7 @@ def test_delivered_pass_and_block_are_distinct_from_runner_failure(tmp_path: Pat
     assert passed["delivery_state"] == "findings-received"
     assert passed["verdict_state"] == "pass"
     assert passed["approval_eligible"] is True
+    assert "partial_artifacts" not in passed["output"]
     assert passed["runner_stream"]["consistent"] is True
     assert blocked["execution_state"] == "terminal"
     assert blocked["reviewer_started"] is True
@@ -529,6 +530,12 @@ def test_worker_timeout_keeps_started_and_non_approval_state(tmp_path: Path) -> 
     assert payload["verdict_state"] == "not-applicable"
     assert payload["approval_eligible"] is False
     assert payload["execution_state"] == "started"
+    assert payload["lifecycle_state"] == "timed-out"
+    assert payload["output_state"] == "partial"
+    assert payload["output"]["approval_eligible"] is False
+    assert payload["output"]["artifacts"]
+    ledger = json.loads((tmp_path / payload["paths"]["ledger"]).read_text(encoding="utf-8"))
+    assert ledger["attempts"][-1]["state"] == "timed-out"
 
 
 def test_stale_packet_is_preflight_blocked_without_reviewer_start(tmp_path: Path) -> None:

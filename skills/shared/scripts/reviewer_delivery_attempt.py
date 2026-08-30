@@ -13,6 +13,7 @@ try:
         CANONICAL_STATES,
         FINDINGS_RECEIVED,
         NON_DELIVERY_UNKNOWN,
+        PARTIAL,
         RECOVERED_FROM_TRANSCRIPT,
         SPAWN_ACCEPTED,
         TERMINAL_STATES,
@@ -30,6 +31,7 @@ except ImportError:
         CANONICAL_STATES,
         FINDINGS_RECEIVED,
         NON_DELIVERY_UNKNOWN,
+        PARTIAL,
         RECOVERED_FROM_TRANSCRIPT,
         SPAWN_ACCEPTED,
         TERMINAL_STATES,
@@ -43,10 +45,14 @@ except ImportError:
 
 try:
     from reviewer_delivery_attempt_codec import from_dict as _from_dict, to_dict as _to_dict
-    from reviewer_delivery_fields import _sha256, boundary_binding
+    from reviewer_delivery_fields import _sha256, boundary_binding, partial_output as _partial_output
 except ImportError:
     from skills.shared.scripts.reviewer_delivery_attempt_codec import from_dict as _from_dict, to_dict as _to_dict
-    from skills.shared.scripts.reviewer_delivery_fields import _sha256, boundary_binding
+    from skills.shared.scripts.reviewer_delivery_fields import (
+        _sha256,
+        boundary_binding,
+        partial_output as _partial_output,
+    )
 
 
 @dataclass
@@ -71,6 +77,7 @@ class DeliveryAttempt:
     receipt_file: str | None = None
     producer_run_id: str | None = None
     findings_identity: str | None = None
+    partial_output: dict[str, Any] | None = None
     retry_of: str | None = None
     retry_count: int = 0
     history: list[dict[str, Any]] = field(default_factory=list)
@@ -197,7 +204,52 @@ class DeliveryAttempt:
     def transition(self, state: str, signal: str, recorded_at: str) -> None:
         if state == FINDINGS_RECEIVED:
             raise DeliveryError("findings-received requires record_findings provenance checks")
+        if state == PARTIAL:
+            raise DeliveryError("partial requires record_partial output binding")
         self._apply_transition(state, signal, recorded_at)
+
+    def record_partial(
+        self,
+        *,
+        partial_output: dict[str, Any],
+        recorded_at: str,
+        signal: str = "typed partial reviewer output preserved",
+    ) -> bool:
+        """Record useful output without making it a terminal delivery."""
+        when = _text(recorded_at, "recorded_at")
+        descriptor = _partial_output(partial_output)
+        if self.state in TERMINAL_STATES:
+            self.observations.append(
+                {
+                    "event_id": _event_id(),
+                    "state": "late-or-duplicate-partial",
+                    "signal": "partial output arrived after the attempt was terminal",
+                    "recorded_at": when,
+                    **_event_context(self),
+                    "partial_output": descriptor,
+                }
+            )
+            return False
+        if self.state == PARTIAL:
+            self.observations.append(
+                {
+                    "event_id": _event_id(),
+                    "state": "duplicate-partial",
+                    "signal": "partial output was already recorded for the attempt",
+                    "recorded_at": when,
+                    **_event_context(self),
+                    "partial_output": descriptor,
+                }
+            )
+            return False
+        self.partial_output = descriptor
+        self._apply_transition(
+            PARTIAL,
+            signal,
+            when,
+            event_fields={"partial_output": descriptor},
+        )
+        return True
 
     def record_findings(
         self,

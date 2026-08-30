@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Any
 
 try:
+    from reviewer_partial_output import descriptor as partial_output_descriptor
     from reviewer_result_contract import write_model_authored_schema
     from reviewer_worker_backend import (
         SUCCESS,
@@ -35,6 +36,9 @@ try:
         validate_result_non_claims,
     )
 except ImportError:
+    from skills.shared.scripts.reviewer_partial_output import (
+        descriptor as partial_output_descriptor,
+    )
     from skills.shared.scripts.reviewer_result_contract import write_model_authored_schema
     from skills.shared.scripts.reviewer_worker_backend import (
         SUCCESS,
@@ -138,6 +142,7 @@ def preflight(args: Any) -> dict[str, Any]:
     prompt = resolve(args.prompt_file, "prompt_file")
     schema = resolve(args.schema_file, "schema_file")
     output = resolve(args.output_file, "output_file")
+    partial_output = output.with_name(f"{output.name}.partial")
     receipt = resolve(args.receipt_file, "receipt_file")
     stdout = resolve(args.stdout_file or f"{output}.stdout", "stdout_file")
     stderr = resolve(args.stderr_file or f"{output}.stderr", "stderr_file")
@@ -153,10 +158,10 @@ def preflight(args: Any) -> dict[str, Any]:
             raise WorkerError("input-invalid", f"{label} is not a file: {path}")
     if not isinstance(args.timeout_seconds, (int, float)) or not math.isfinite(args.timeout_seconds) or args.timeout_seconds <= 0:
         raise WorkerError("input-invalid", "timeout_seconds must be finite and greater than zero")
-    all_paths = (prompt, schema, capability_file, output, receipt, stdout, stderr)
+    all_paths = (prompt, schema, capability_file, output, receipt, stdout, stderr, partial_output)
     if len({str(path) for path in all_paths}) != len(all_paths):
         raise WorkerError("input-invalid", "worker input and artifact paths must resolve to distinct files")
-    artifact_paths = (output, receipt, stdout, stderr)
+    artifact_paths = (output, receipt, stdout, stderr, partial_output)
     existing = [path for path in artifact_paths if path.exists()]
     if existing:
         rendered = ", ".join(str(path) for path in existing)
@@ -170,6 +175,7 @@ def preflight(args: Any) -> dict[str, Any]:
         "prompt": prompt,
         "schema": schema,
         "output": output,
+        "partial_output": partial_output,
         "receipt": receipt,
         "stdout": stdout,
         "stderr": stderr,
@@ -184,6 +190,7 @@ def run(args: Any, paths: dict[str, Any], run_id: str, started_at: str) -> dict[
     prompt = paths["prompt"]
     schema = paths["schema"]
     output = paths["output"]
+    partial_output_path = paths["partial_output"]
     stdout = paths["stdout"]
     stderr = paths["stderr"]
     capability_file = paths["capability_file"]
@@ -238,6 +245,20 @@ def run(args: Any, paths: dict[str, Any], run_id: str, started_at: str) -> dict[
         if exc.exit_code is not None:
             exit_code = exc.exit_code
     finally:
+        if status != SUCCESS:
+            partial_source = next(
+                (
+                    path
+                    for path in (raw_output, temp_output)
+                    if path.is_file() and path.stat().st_size > 0
+                ),
+                None,
+            )
+            if partial_source is not None:
+                try:
+                    os.replace(partial_source, partial_output_path)
+                except OSError:
+                    pass
         for path in (temp_output, raw_output, model_schema):
             try:
                 path.unlink()
@@ -279,6 +300,8 @@ def run(args: Any, paths: dict[str, Any], run_id: str, started_at: str) -> dict[
     if output.exists():
         receipt["output_size"] = output.stat().st_size
         receipt["output_sha256"] = sha256(output)
+    if partial_output_path.is_file() and partial_output_path.stat().st_size > 0:
+        receipt["partial_output"] = partial_output_descriptor(partial_output_path)
     if error:
         receipt["error"] = error
     return receipt
