@@ -44,7 +44,7 @@ def test_worktree_content_os_error_is_unavailable(tmp_path: Path, monkeypatch: p
     assert identity_lib._worktree_content_sha256(tmp_path, "missing") is None
 
 
-def test_worktree_identity_reads_repository_and_head_in_one_probe(
+def test_worktree_identity_reads_head_and_untracked_membership_in_one_status_snapshot(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     _init_repo(tmp_path)
@@ -60,9 +60,92 @@ def test_worktree_identity_reads_repository_and_head_in_one_probe(
         repo_root=tmp_path, reviewed_paths=["reviewed.txt"]
     )
 
+    status_call = (
+        "status",
+        "--porcelain=v2",
+        "-z",
+        "--branch",
+        "--untracked-files=all",
+    )
     assert captured["status"] == "captured"
-    assert ("rev-parse", "--is-inside-work-tree", "HEAD") in calls
-    assert ("rev-parse", "HEAD") not in calls
+    assert calls == [
+        status_call,
+        ("diff", "--cached", "--binary", "--", "reviewed.txt"),
+        ("diff", "--binary", "--", "reviewed.txt"),
+    ]
+
+
+def test_worktree_status_snapshot_parses_only_nul_untracked_records(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    branch_oid = b"a" * 40
+    utf8_path = "目录/文件.txt".encode("utf-8")
+    surrogate_path = b"invalid-\xff.txt"
+    tracked_path = b"tracked-looking-untracked.txt"
+    monkeypatch.setattr(
+        identity_lib,
+        "_git_bytes",
+        lambda _root, *args: (
+            b"# branch.oid "
+            + branch_oid
+            + b"\0# branch.head main\0? "
+            + utf8_path
+            + b"\0? "
+            + surrogate_path
+            + b"\0"
+            + b"1 .M N... 100644 100644 100644 "
+            + branch_oid
+            + b" "
+            + branch_oid
+            + b" "
+            + tracked_path
+            + b"\0"
+        ),
+    )
+
+    snapshot = identity_lib._working_tree_snapshot(tmp_path)
+
+    assert snapshot.branch_oid == branch_oid.decode()
+    assert snapshot.untracked_paths == {
+        "目录/文件.txt",
+        surrogate_path.decode("utf-8", errors="surrogateescape"),
+    }
+
+
+@pytest.mark.parametrize(
+    "status_output",
+    [
+        b"# branch.oid (initial)\0",
+        b"# branch.head main\0",
+        b"# branch.oid \0",
+        b"# branch.oid " + (b"g" * 40) + b"\0",
+        b"# branch.oid " + (b"0" * 40) + b"\0",
+        b"# branch.oid " + (b"a" * 41) + b"\0",
+    ],
+)
+def test_worktree_identity_makes_invalid_status_head_unavailable(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, status_output: bytes
+) -> None:
+    monkeypatch.setattr(identity_lib, "_git_bytes", lambda _root, *args: status_output)
+
+    identity = identity_lib.build_reviewed_input_identity(
+        repo_root=tmp_path, reviewed_paths=["reviewed.txt"]
+    )
+
+    assert identity["status"] == "unavailable"
+    assert "git status" in identity["reason"]
+
+
+def test_non_repository_status_failure_returns_typed_unavailable_identity(
+    tmp_path: Path,
+) -> None:
+    identity = identity_lib.build_reviewed_input_identity(
+        repo_root=tmp_path, reviewed_paths=["reviewed.txt"]
+    )
+
+    assert identity["status"] == "unavailable"
+    assert identity["substrate_mode"] == identity_lib.SUBSTRATE_WORKING_TREE
+    assert "git status" in identity["reason"]
 
 
 def test_auto_committed_ref_paths_are_swept_once(

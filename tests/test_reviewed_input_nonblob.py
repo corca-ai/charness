@@ -65,8 +65,8 @@ def test_identity_reuses_gitlink_snapshot_between_path_phases(
     git_calls: list[tuple[str, ...]] = []
 
     def fake_git_bytes(_root: Path, *args: str) -> bytes:
-        if args == ("rev-parse", "--is-inside-work-tree", "HEAD"):
-            return b"true\nbase\n"
+        if args == ("status", "--porcelain=v2", "-z", "--branch", "--untracked-files=all"):
+            return b"# branch.oid " + (b"a" * 40) + b"\0"
         return b""
 
     def fake_git_bytes_optional(_root: Path, *args: str) -> bytes | None:
