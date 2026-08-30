@@ -1,0 +1,25 @@
+{
+  "kind": "charness.expected-sub-issue-set/v1",
+  "repo": "corca-ai/charness",
+  "parent_number": 744,
+  "children": [
+    709,
+    731,
+    743,
+    745,
+    746,
+    747,
+    748,
+    749,
+    751,
+    752,
+    753,
+    756,
+    758,
+    759,
+    760,
+    761,
+    762
+  ],
+  "source": "2026-08-30 approval-cut observation O0; preserves seven existing #744 children and adds ten unparented activation-open issues"
+}

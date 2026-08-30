@@ -1,0 +1,14 @@
+{
+  "kind": "charness.goal-run-plan/v1",
+  "repo": "corca-ai/charness",
+  "parent_number": 744,
+  "operations": [
+    "read-body",
+    "read-state",
+    "update-body",
+    "list-children",
+    "add-child",
+    "record-observation",
+    "close-goal-run"
+  ]
+}

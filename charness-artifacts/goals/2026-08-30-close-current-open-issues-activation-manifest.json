@@ -1,0 +1,55 @@
+{
+  "kind": "charness.goal-activation-manifest/v1",
+  "repo": "corca-ai/charness",
+  "observed_at": "2026-08-30T04:46:02Z",
+  "provider_main_sha": "ab4b2d8b72d9450dbab32da89e4934acdf6724e8",
+  "open_set_sha256": "86b0a6279635cf254741283d4cbedc01e4aeb75eb1c219cb06699f835f610f35",
+  "open_number_set_sha256": "e7665aa8d71808dd594b09c8fbb545f3ee365c725fb8e7a11aefeda0055796c3",
+  "digest_contract": {
+    "open_set_command": "gh issue list --repo corca-ai/charness --state open --limit 1000 --json number,title,state,updatedAt,url | jq -cS 'sort_by(.number)' | sha256sum",
+    "open_number_set_command": "gh issue list --repo corca-ai/charness --state open --limit 1000 --json number | jq -cS 'sort_by(.number) | map(.number)' | sha256sum",
+    "issue_command_template": "gh issue view {number} --repo corca-ai/charness --comments --json number,title,body,comments,state,url,updatedAt | jq -cS . | sha256sum",
+    "parent_command_template": "gh issue view {number} --repo corca-ai/charness --json number,parent | jq -cS . | sha256sum",
+    "current_graph_command": "gh api --paginate --slurp repos/corca-ai/charness/issues/744/sub_issues | jq -cS '[.[][] | .number] | sort' | sha256sum",
+    "provider_main_command": "gh api repos/corca-ai/charness/commits/main --jq .sha",
+    "serialization": "jq -cS UTF-8 JSON plus one LF; SHA-256 covers the complete bytes",
+    "comparison_rule": "Re-run every command before binding creation and again before the first binding-bound provider mutation; any mismatch stops for re-observation and reapproval."
+  },
+  "activation_open_issues": [
+    {"number": 709, "title": "summarize()'s new_doc_family_count is pinned only on the arm that returns zero", "state": "OPEN", "updated_at": "2026-08-23T05:01:30Z", "parent_number": null, "provider_payload_sha256": "cc7948b04ec01edced810f90268a75bcd07c5c610eee3e1b85d614e5f50dce86", "parent_payload_sha256": "43f65534e8cabde6a00157267f8aa6ab9aa1f4a6c88c53210836f9fcb8d76579"},
+    {"number": 731, "title": "Reduce bounded-review friction and make partial worker progress first-class", "state": "OPEN", "updated_at": "2026-08-26T11:38:42Z", "parent_number": null, "provider_payload_sha256": "f9588181d6eec3aaf6f8c3de3d6115930ca04fe9e1c5de12b71249c23e94d4c3", "parent_payload_sha256": "b17df86a4b0d8ad9ef20690f6ae60b85ceef753a4d3405747e9324ae64fac717"},
+    {"number": 744, "title": "Umbrella: consolidate Charness repository analysis into a typed Rust core", "state": "OPEN", "updated_at": "2026-08-28T09:41:24Z", "parent_number": null, "provider_payload_sha256": "a781e8dda1ed67e10e4b28230079d2253700164f06efddafd5dd3fbaf7f2dc8c", "parent_payload_sha256": "5b6a11fb790ad61b59a0c45c08a4b111c620040e9d39f1a95aa066b7675a6b6e"},
+    {"number": 748, "title": "Migration: retire duplicated Python repository-boundary owners through the Rust core", "state": "OPEN", "updated_at": "2026-08-28T13:09:34Z", "parent_number": 744, "provider_payload_sha256": "70af429b9f3173d6b5c0ffc870d105a5a2cb9ce2f9c4beaed56bd49b00b4145e", "parent_payload_sha256": "47f832d05120a560cdeca5eeb271bbfb865d8794acf389e38b6e90018ab5d7b5"},
+    {"number": 749, "title": "Follow-up: reduce and type-check retained Python after native-core migration", "state": "OPEN", "updated_at": "2026-08-28T03:07:49Z", "parent_number": 744, "provider_payload_sha256": "a935aadfb480c92d4a6ad7b22d24d9e1396b1ddd6ec0c16e3cadc78769b5330c", "parent_payload_sha256": "cef0016401682cdf143d01baa5750ab6e28d7817057597d2f90328aea9ffff07"},
+    {"number": 751, "title": "Critique reviewed-path packets can omit all semantic review input", "state": "OPEN", "updated_at": "2026-08-28T04:43:00Z", "parent_number": null, "provider_payload_sha256": "087e4e307e3a3590d2ded1a57c45c3fb3f545867a05aac6c2d82b459be89f97b", "parent_payload_sha256": "d146417c3fcd489b495cc65cc8ed1f2949a5fe237943a88697f6cb776a2a1e28"},
+    {"number": 752, "title": "worktree prepare can skip declared setup when doctor does not cover dependency readiness", "state": "OPEN", "updated_at": "2026-08-28T06:25:40Z", "parent_number": null, "provider_payload_sha256": "9738b34b0e03176a07f822d4fe1f04f1d58c02c83aa656403af3ab810e9aaab8", "parent_payload_sha256": "a54e9f3f4cdc5b14e957aa617886ae2c95f9865b3c8b481ed8f20142e9575394"},
+    {"number": 753, "title": "Prune the test corpus with graph and mutation evidence: meta-layer concentration and change-detector pins", "state": "OPEN", "updated_at": "2026-08-28T09:40:50Z", "parent_number": 744, "provider_payload_sha256": "ec9d1899c3f19d22cbf55ead09dfd22e43cea6f0dbd604170bcb8fec8a664277", "parent_payload_sha256": "72236ccedfd9ec3c30a94e14fc1479384403b53ce4336d85c98401428788c5a4"},
+    {"number": 756, "title": "Split the backend boundary out of reviewer_worker_runtime", "state": "OPEN", "updated_at": "2026-08-29T10:21:10Z", "parent_number": null, "provider_payload_sha256": "b7c371c4c8a731acba58f37626862a955f53e05ce29f1576b1cec36ebfd5bd9a", "parent_payload_sha256": "58f74194a7beed68e1cb57e8535db2895ca8adbd52b27dce42b6d7128ba530db"},
+    {"number": 758, "title": "Mutation test regression on main", "state": "OPEN", "updated_at": "2026-08-29T12:41:21Z", "parent_number": null, "provider_payload_sha256": "b3c60a85c106d65236a9a3cb76e67d37e099ce7803f37c459dad833831797641", "parent_payload_sha256": "279f412541f4914308a0bd288cf8b199169ab75234365dd21927b27644dd74e8"},
+    {"number": 759, "title": "A change range containing deletions cannot be declared as bounded-review input", "state": "OPEN", "updated_at": "2026-08-29T13:52:55Z", "parent_number": null, "provider_payload_sha256": "1b6aecda6bc88d82c8c4aa6437b0efda9dc2b977a859bfb007d2867a037dc49c", "parent_payload_sha256": "d52da6ef83b00ba824aa68e349f9ab0559eadba5a9f4839df95991004804a2d5"},
+    {"number": 760, "title": "No gate asserts the two changed-path enumerators agree", "state": "OPEN", "updated_at": "2026-08-29T23:30:12Z", "parent_number": null, "provider_payload_sha256": "a640f8169a26a28634632c8169c6680e74e2ef27e340bb2e21740cab4c1b31a5", "parent_payload_sha256": "92f548e2df1bad329247a353d0a3cd691a60bb80f1426e8eb724d644e3e13d5a"},
+    {"number": 761, "title": "Submodule identity binding is unprobed in dirty, nested, and absent-directory states", "state": "OPEN", "updated_at": "2026-08-30T01:20:09Z", "parent_number": null, "provider_payload_sha256": "7761b6c14a03f3317a9fd27bd9dbf6109a2d3ebccb91ac520519e6a6c2c31f76", "parent_payload_sha256": "bbdbf1e35e07ccc7187a0f270eeb0e84740266bc002d4ea34c053a48d5b5f7ce"},
+    {"number": 762, "title": "A committed critique packet inside a range cannot be declared through the default path", "state": "OPEN", "updated_at": "2026-08-29T23:30:47Z", "parent_number": null, "provider_payload_sha256": "e80b38104f671689f48c09353453239e84fa40f099c9291b88f8534cc47696aa", "parent_payload_sha256": "99aed7d051f3caddc691a852133b54638c92e577187407b6ca94e7243cc410bb"}
+  ],
+  "current_744_children": [743, 745, 746, 747, 748, 749, 753],
+  "current_744_children_sha256": "2f29bd848d485fe35fb33fa2ef3e486f615c468d214294bb32d3b64e48a8068c",
+  "desired_744_children": [709, 731, 743, 745, 746, 747, 748, 749, 751, 752, 753, 756, 758, 759, 760, 761, 762],
+  "desired_744_children_sha256": "f6503f10c15a89d855bbb0da9cb52fc082e4dd2410f9b9f8ccebfa0383e8a7ab",
+  "decisions": {
+    "publication_route": "direct-main-two-stage-no-release",
+    "consumer_topology_owner": "consumer-repository-agent",
+    "goal_parent": 744
+  },
+  "approval_bundle": {
+    "reviewed_paths": {"path": "charness-artifacts/goal-runs/744/approval-reviewed-paths.txt", "sha256": "f35cd92a9d61541d36da6e4e512dc31411ae9fdeaaf57a018e0fb6ac4807cf0b", "count": 21},
+    "provider_plan": {"path": "charness-artifacts/goal-runs/744/provider-plan.json", "sha256": "76b0c45e485e6feb66956004fc53974229c07cd39000cca1aacd5b9f96c6f440", "preflight": "ready"},
+    "provider_preflight": {"path": "charness-artifacts/goal-runs/744/provider-preflight.md", "sha256": "dfb76379c819aae241f68c4d87e833a54ed96ccfdfae49e1bcc85ae712af7338", "observed_status": "ready", "mutation_invoked": false},
+    "approved_work_items": {"path": "charness-artifacts/goal-runs/744/approved-work-items.json", "file_sha256": "0d4cfbcc39c5fb04ffdd76d0a7aaf1ab85b8777e7021ddd433bf60af5b0e7d48", "canonical_items_sha256": "e6be1f983d6c3851a1f4810ec45b4980c027a7d49fccb5be724d3e261e9da475", "count": 17},
+    "parent_terminal_obligation": {"path": "charness-artifacts/goal-runs/744/parent-terminal-obligation.md", "sha256": "05d1037be37f14f2ce15f3b64d88cea1b5673e9c950926a3ed2c1e1f6e26f486"}
+  },
+  "non_claims": [
+    "No provider relationship or issue state was mutated by O0.",
+    "Issue #761 receives no new submodule correctness claim or product restriction.",
+    "Local unpublished commits are not authorized for publication by this manifest."
+  ]
+}

@@ -1,0 +1,172 @@
+[
+  {
+    "key": "issue-709-summary-projection",
+    "intent": "reuse",
+    "issue": {"repo": "corca-ai/charness", "number": 709, "url": "https://github.com/corca-ai/charness/issues/709"},
+    "dependencies": ["issue-751-semantic-review-input"],
+    "rank": 3,
+    "body_policy": "managed-addendum",
+    "body_sha256": "59d124b2bbdd2d21560828a4ebf1488888dc5285d26a9cd83d90a7c0a10174e8",
+    "observed": {"state": "OPEN", "title_sha256": "a7e7a87f83fdbab1943372fee51463641a7795e2c25d99033b199dc49a8d5bd3", "body_sha256": "3c5c547a32b65e5c7989f01957a225712696f39464f0d9a903a9bf2f3ada36be"}
+  },
+  {
+    "key": "issue-731-reviewer-lifecycle",
+    "intent": "reuse",
+    "issue": {"repo": "corca-ai/charness", "number": 731, "url": "https://github.com/corca-ai/charness/issues/731"},
+    "dependencies": ["issue-756-reviewer-backend"],
+    "rank": 4,
+    "body_policy": "managed-addendum",
+    "body_sha256": "146749e9463671e4254a05d844264b09d9b709e70c2d7cdffe6fd4f6cb6c6104",
+    "observed": {"state": "OPEN", "title_sha256": "2e2cfcae5c3e2ec392f0c710f6665ac5f661fb5046c428dd69ea46cfafe58226", "body_sha256": "99f24f60eb4a155909eb053f0a193e4ebb078ca47594f3511a4206ce8f9bff94"}
+  },
+  {
+    "key": "issue-743-host-proof-source-set",
+    "intent": "reuse",
+    "issue": {"repo": "corca-ai/charness", "number": 743, "url": "https://github.com/corca-ai/charness/issues/743"},
+    "dependencies": ["issue-746-typed-topology-core"],
+    "rank": 3,
+    "body_policy": "preserve-closed-evidence",
+    "body_sha256": null,
+    "observed": {"state": "CLOSED", "title_sha256": "0958dfb20a6ac23fff9d410aa4b29dcf794233f27093eb4c995948e991777753", "body_sha256": "f331899fd56fc6af78665f49f6059c26c577c737da5a3cb17ce1866935d5a481"}
+  },
+  {
+    "key": "issue-745-native-spike",
+    "intent": "reuse",
+    "issue": {"repo": "corca-ai/charness", "number": 745, "url": "https://github.com/corca-ai/charness/issues/745"},
+    "dependencies": [],
+    "rank": 1,
+    "body_policy": "preserve-closed-evidence",
+    "body_sha256": null,
+    "observed": {"state": "CLOSED", "title_sha256": "56803381c83f8c312bd552df7c9e728897c8a17ce3919cee5f55f9f6b9281ef4", "body_sha256": "66d6abe9a1d56f6b60c7512a48bc1800299fbdba213fb5aecc92900a64f0080c"}
+  },
+  {
+    "key": "issue-746-typed-topology-core",
+    "intent": "reuse",
+    "issue": {"repo": "corca-ai/charness", "number": 746, "url": "https://github.com/corca-ai/charness/issues/746"},
+    "dependencies": ["issue-745-native-spike"],
+    "rank": 2,
+    "body_policy": "preserve-closed-evidence",
+    "body_sha256": null,
+    "observed": {"state": "CLOSED", "title_sha256": "9811f0a0b5200840504e0e730ec8c8673589d8d16bfad996ad97f78f886332e0", "body_sha256": "a51b496cac97348e82aa76ea1c22fb7517aa4bd324051191e90e5cf7d9bef66a"}
+  },
+  {
+    "key": "issue-747-native-distribution",
+    "intent": "reuse",
+    "issue": {"repo": "corca-ai/charness", "number": 747, "url": "https://github.com/corca-ai/charness/issues/747"},
+    "dependencies": ["issue-746-typed-topology-core"],
+    "rank": 3,
+    "body_policy": "preserve-closed-evidence",
+    "body_sha256": null,
+    "observed": {"state": "CLOSED", "title_sha256": "bf9c0e03d0d9a4e091a2db3ff744258f71abe8589e5de77c25f7d2b8278ad921", "body_sha256": "b75ed83befb27a0311291d25c42fd60cf5c48bc9fc97d158bf4f352510faf819"}
+  },
+  {
+    "key": "issue-748-native-owner-migration",
+    "intent": "reuse",
+    "issue": {"repo": "corca-ai/charness", "number": 748, "url": "https://github.com/corca-ai/charness/issues/748"},
+    "dependencies": ["issue-743-host-proof-source-set", "issue-746-typed-topology-core", "issue-747-native-distribution"],
+    "rank": 4,
+    "body_policy": "managed-addendum",
+    "body_sha256": "73ada899b75b621348045ea036f77fd314eb2ef95f057073089eb5a5cfb0fb76",
+    "observed": {"state": "OPEN", "title_sha256": "a1110cadab2977f36759f5f946ccadee453033bf5c64298abd1b4d52243bc0da", "body_sha256": "66da68a3259ee34ba49a3e2648080385a916d6910f7b19b269ead51c70e490ff"}
+  },
+  {
+    "key": "issue-749-retained-python",
+    "intent": "reuse",
+    "issue": {"repo": "corca-ai/charness", "number": 749, "url": "https://github.com/corca-ai/charness/issues/749"},
+    "dependencies": ["issue-748-native-owner-migration", "issue-753-test-prune"],
+    "rank": 5,
+    "body_policy": "managed-addendum",
+    "body_sha256": "1992e3093e6a8d07e15edc473725e2f1e9981fde05a579d18d176220a60c815a",
+    "observed": {"state": "OPEN", "title_sha256": "3c41dd216ba1334c6065e6246496c953e8e2bf1093295a72264db5783a1da5f4", "body_sha256": "6b737c14638740452548d467ca22db52d8836ede06c883261a993db5d38efd58"}
+  },
+  {
+    "key": "issue-751-semantic-review-input",
+    "intent": "reuse",
+    "issue": {"repo": "corca-ai/charness", "number": 751, "url": "https://github.com/corca-ai/charness/issues/751"},
+    "dependencies": ["issue-759-deletion-range"],
+    "rank": 2,
+    "body_policy": "managed-addendum",
+    "body_sha256": "dc657a0c813c1634d61f464f1bb04be8b444b38c70006cc7452e3d2a6b834aa9",
+    "observed": {"state": "OPEN", "title_sha256": "65ed9e16c0593cdb4e6758c4e7e60fad67b709e9ba74186d6149460063aaad40", "body_sha256": "372182517452b4b5c5a82afef4faf2cf0c91a945744cb9434a57196a3827053b"}
+  },
+  {
+    "key": "issue-752-worktree-readiness",
+    "intent": "reuse",
+    "issue": {"repo": "corca-ai/charness", "number": 752, "url": "https://github.com/corca-ai/charness/issues/752"},
+    "dependencies": ["issue-751-semantic-review-input"],
+    "rank": 3,
+    "body_policy": "managed-addendum",
+    "body_sha256": "e9dbd770cf0bf4c82493b6f62255edf091a97d395f485c898c077829cb3240a4",
+    "observed": {"state": "OPEN", "title_sha256": "b97e9931e7fedb183ed46aa8b6d3d9b33d11be2a6b119816bff0a5e49f9b6a9b", "body_sha256": "82b5f7276482f1048dca35723c003717c836897e34100145c0cf1247f2a4441d"}
+  },
+  {
+    "key": "issue-753-test-prune",
+    "intent": "reuse",
+    "issue": {"repo": "corca-ai/charness", "number": 753, "url": "https://github.com/corca-ai/charness/issues/753"},
+    "dependencies": ["issue-746-typed-topology-core"],
+    "rank": 3,
+    "body_policy": "managed-addendum",
+    "body_sha256": "fe4193b4f0cc1c5b6cc853b599a93d6d852ffbdbabc6414c72ae9d5d0c67103c",
+    "observed": {"state": "OPEN", "title_sha256": "e8ab6efb4c9396891bde391a046b8f99e7b3d432d8a810f0f3bee5a02c9fc643", "body_sha256": "f6a8572da00c83fbc6c8e84d50719816ff313cb190a1ab451075ff6e4c56a90f"}
+  },
+  {
+    "key": "issue-756-reviewer-backend",
+    "intent": "reuse",
+    "issue": {"repo": "corca-ai/charness", "number": 756, "url": "https://github.com/corca-ai/charness/issues/756"},
+    "dependencies": ["issue-751-semantic-review-input"],
+    "rank": 3,
+    "body_policy": "managed-addendum",
+    "body_sha256": "99e52ee3a02c5506181d5e8621e862af4634431de85a43b64e03c38b188df67c",
+    "observed": {"state": "OPEN", "title_sha256": "7196649fc138d52e2cf05d1aec0fd86a0011c26ef5b060565c8a4e91752f5cf7", "body_sha256": "a50b2229fbf03ecb51b88f157177928418c0192cd76b1e572975fbc623d9a997"}
+  },
+  {
+    "key": "issue-758-mutation-main",
+    "intent": "reuse",
+    "issue": {"repo": "corca-ai/charness", "number": 758, "url": "https://github.com/corca-ai/charness/issues/758"},
+    "dependencies": [],
+    "rank": 1,
+    "body_policy": "managed-addendum",
+    "body_sha256": "7d37eb6c4fb2310654123c528cf70e4ff216a546e784746fc72765763d55e25d",
+    "observed": {"state": "OPEN", "title_sha256": "c9edcc3091f63ade383b663f8fc922e73bc6325bc9341d04b716e5ff3bcdead7", "body_sha256": "f395ac81f639ee9b3e41c475f6d8e8cf2b8b13083745831dae8ea03c22ed0d7f"}
+  },
+  {
+    "key": "issue-759-deletion-range",
+    "intent": "reuse",
+    "issue": {"repo": "corca-ai/charness", "number": 759, "url": "https://github.com/corca-ai/charness/issues/759"},
+    "dependencies": [],
+    "rank": 1,
+    "body_policy": "managed-addendum",
+    "body_sha256": "edd08c26f0e6cf572d690443e27465ca9002b7b6a78c0573e448a8859d7a8b04",
+    "observed": {"state": "OPEN", "title_sha256": "a9e3055eca3a655fac18bdeceaf71ea56884f04070a64b9569aa330fc4708020", "body_sha256": "69aadb8adb50c14c4f871d2f62089804576da64e3c8814ea5f2917d1ac941152"}
+  },
+  {
+    "key": "issue-760-enumerator-agreement",
+    "intent": "reuse",
+    "issue": {"repo": "corca-ai/charness", "number": 760, "url": "https://github.com/corca-ai/charness/issues/760"},
+    "dependencies": ["issue-759-deletion-range"],
+    "rank": 2,
+    "body_policy": "managed-addendum",
+    "body_sha256": "84a2ef05979db180551c61e8e6dcf76ce67c47f5486c00a96f299207df7d02f3",
+    "observed": {"state": "OPEN", "title_sha256": "f5262c36d1524461f39521d29ab11ac64107dd094a4d0f38f45cfe114d9672f4", "body_sha256": "ce202c48ca973886035e803d8fca320b2cdd9ca49316a64a7781b93573360278"}
+  },
+  {
+    "key": "issue-761-consumer-topology-owner",
+    "intent": "reuse",
+    "issue": {"repo": "corca-ai/charness", "number": 761, "url": "https://github.com/corca-ai/charness/issues/761"},
+    "dependencies": [],
+    "rank": 1,
+    "body_policy": "managed-addendum",
+    "body_sha256": "b862ee5030e45174ebc0e6ce548096faab41339c0a354847a8679daaef2774d6",
+    "observed": {"state": "OPEN", "title_sha256": "6a9c35f7b98058d79fab245af113558b874bd3c304f7e6f9dde8d74760d2eb8c", "body_sha256": "c9fdaf3ee3dbb5fbe6ba7f1adf4e5f8fb5d4dc8ee04614424e677e0814cc5582"}
+  },
+  {
+    "key": "issue-762-committed-packet-default",
+    "intent": "reuse",
+    "issue": {"repo": "corca-ai/charness", "number": 762, "url": "https://github.com/corca-ai/charness/issues/762"},
+    "dependencies": ["issue-760-enumerator-agreement"],
+    "rank": 3,
+    "body_policy": "managed-addendum",
+    "body_sha256": "d68a01ecf1c5142d37aa1b65bd19026019f627bdbed64656e02fc94cab42b8b3",
+    "observed": {"state": "OPEN", "title_sha256": "0ea0dc4885e61ad8d4e2cf8ec1bc8a5f74c042576e04a24335fa2fb25cd1f209", "body_sha256": "b4e660e6f56de628ad1e8b31526bb7f0fa0570e41def86ee3af632a7027fd41e"}
+  }
+]
