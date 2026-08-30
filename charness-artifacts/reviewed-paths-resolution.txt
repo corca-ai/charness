@@ -31,6 +31,8 @@ charness-artifacts/critique/review-20260830T090238Z-3610782-packet.json
 charness-artifacts/critique/review-20260830T090238Z-3610782-packet.md
 charness-artifacts/critique/review-20260830T091204Z-3748719-packet.json
 charness-artifacts/critique/review-20260830T091204Z-3748719-packet.md
+charness-artifacts/critique/review-20260830T092218Z-3879142-packet.json
+charness-artifacts/critique/review-20260830T092218Z-3879142-packet.md
 charness-artifacts/quality/2026-08-30-declaration-intersection-sweep.md
 charness-artifacts/quality/latest.md
 charness-artifacts/release-review/2026-08-30-8.0.0-real-host-removal-surface-lock.md

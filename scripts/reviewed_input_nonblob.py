@@ -391,8 +391,18 @@ def _gitlink_commit(
             return fields[object_field]
         resolved = Path(snapshot_lines[0].strip())
         if resolved.resolve() == submodule_root.resolve():
+            # A FAILED cleanliness check is not a clean checkout. Reading `None`
+            # as clean is the same failure-into-passing-verdict shape this module
+            # keeps closing -- and the second time in this one function, after
+            # the blanket `except OSError` did it around the HEAD lookup.
             dirty = _git_bytes_optional(submodule_root, "status", "--porcelain")
-            if dirty is not None and dirty.strip():
+            if dirty is None:
+                raise ValueError(
+                    f"reviewed path `{path}` is a submodule whose cleanliness could not "
+                    "be established; a gitlink binds only the checked-out commit, so an "
+                    "unverified worktree cannot be declared"
+                )
+            if dirty.strip():
                 raise ValueError(
                     f"reviewed path `{path}` is a submodule with uncommitted changes; "
                     "commit them or declare the files inside it, since a gitlink binds "

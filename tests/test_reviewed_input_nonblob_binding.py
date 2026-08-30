@@ -402,3 +402,37 @@ def test_a_staged_submodule_removal_is_deleted_even_with_its_checkout_retained(
     entry = next(e for e in identity["reviewed_content"] if e["path"] == "sub")
     assert entry["disposition"] == "deleted"
     assert entry["content_sha256"] == hashlib.sha256(b"gitlink\0" + head_gitlink.encode()).hexdigest()
+
+
+def test_a_failed_cleanliness_check_refuses_rather_than_reading_as_clean(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """A failed check is not a clean checkout.
+
+    `_git_bytes_optional` returns None on failure, and reading that as clean is
+    the same failure-into-passing-verdict shape this module keeps closing — the
+    second time in this one function, after a blanket `except OSError` did it
+    around the HEAD lookup.
+    """
+    from scripts import reviewed_input_nonblob as nonblob
+
+    repo = _submodule_repo(tmp_path)
+    real_run = subprocess.run
+
+    class _NonZero:
+        returncode = 1
+        stdout = b""
+        stderr = b"fatal: cannot read the index"
+
+    def fail_status(*args, **kwargs):
+        # A NONZERO EXIT, not a raised OSError: the narrowed catch propagates a
+        # raise, so `None` -- the value that used to read as clean -- is only
+        # produced by git running and failing.
+        if "status" in args[0]:
+            return _NonZero()
+        return real_run(*args, **kwargs)
+
+    monkeypatch.setattr(nonblob.subprocess, "run", fail_status)
+
+    with pytest.raises(ValueError, match="cleanliness could not be established"):
+        nonblob._gitlink_commit(repo, "sub", None)
