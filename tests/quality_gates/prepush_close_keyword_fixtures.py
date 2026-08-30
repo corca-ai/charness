@@ -23,23 +23,30 @@ def commit(
 ) -> str:
     """Commit through ``-F``, preserving leading ``#`` lines verbatim."""
     (repo / name).write_text(name, encoding="utf-8")
-    git(repo, "add", name)
+    paths = [name]
     for rel, content in (extra or {}).items():
         path = repo / rel
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content, encoding="utf-8")
-        git(repo, "add", rel)
+        paths.append(rel)
+    git(repo, "add", "--", *paths)
     message_file = repo / ".commit-message"
     message_file.write_text(body, encoding="utf-8")
-    git(repo, "commit", "-F", str(message_file))
+    git(
+        repo,
+        "-c", "user.email=test@example.com",
+        "-c", "user.name=Charness Test",
+        "commit", "-F", str(message_file),
+    )
     message_file.unlink()
-    return git(repo, "rev-parse", "HEAD")
+    head = (repo / ".git" / "HEAD").read_text(encoding="ascii").strip()
+    if not head.startswith("ref: "):
+        return head
+    return (repo / ".git" / head.removeprefix("ref: ")).read_text(encoding="ascii").strip()
 
 
 def _build_seed(staging: Path) -> None:
     git(staging, "init", "-b", "main")
-    git(staging, "config", "user.email", "test@example.com")
-    git(staging, "config", "user.name", "Charness Test")
     commit(staging, "chore: base commit\n", "base.txt")
 
 
