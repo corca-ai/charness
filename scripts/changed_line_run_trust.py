@@ -124,6 +124,7 @@ class TrustProbe(NamedTuple):
     contaminated: list[str]
     unestablished_reason: str | None
     unestablished_kind: str | None = None
+    resolved_pair: tuple[str, str] | None = None
 
 
 def _parse_status_paths(payload: bytes) -> list[str]:
@@ -198,6 +199,7 @@ def probe_run_trust(repo_root: Path, head_sha: str, eligible: set[str]) -> Trust
             [],
             "could not inspect the worktree for uncommitted mutation-pool changes",
             INSPECTION_FAILED,
+            pair,
         )
     # NOT guarded: an empty `eligible` set. A reviewer read it as the same
     # could-not-look-reads-as-nothing-found shape one layer up, and refusing on it
@@ -215,8 +217,9 @@ def probe_run_trust(repo_root: Path, head_sha: str, eligible: set[str]) -> Trust
             f"`{pair[1][:12]}`, but coverage is collected from the HEAD worktree, "
             "so the mapping and the measurement describe different trees",
             SCOPE_MISMATCH,
+            pair,
         )
-    return TrustProbe(contaminated, None, None)
+    return TrustProbe(contaminated, None, None, pair)
 
 
 def contaminating_pool_changes(repo_root: Path, head_sha: str, eligible: set[str]) -> list[str]:
@@ -251,15 +254,26 @@ def dirty_pool_refusal(uncommitted: list[str]) -> str:
     )
 
 
-def _pin_run_state(repo_root: Path, base_sha: str, head_sha: str) -> dict[str, str]:
+def _pin_run_state(
+    repo_root: Path,
+    base_sha: str,
+    head_sha: str,
+    *,
+    resolved_pair: tuple[str, str] | None = None,
+) -> dict[str, str]:
     """Snapshot what the whole run must stay anchored to.
 
     ``resolved_head_sha`` pins ``--head-sha HEAD`` to a concrete commit once, so a
     commit landing mid-run cannot re-resolve the range or shift the line mapping
     the ``blocking_detail`` numbers are computed against. ``head_commit`` and the
     changed-pool content fingerprint are the drift tripwires re-read at the end.
+    End-of-run drift re-reads without ``resolved_pair``; startup may reuse the
+    pair ``probe_run_trust`` already observed.
     """
-    if head_sha == "HEAD":
+    if resolved_pair is not None:
+        resolved = [resolved_pair[0]]
+        head_commit = [resolved_pair[1]]
+    elif head_sha == "HEAD":
         resolved = _git_lines(repo_root, ["rev-parse", "HEAD"])
         head_commit = resolved
     else:

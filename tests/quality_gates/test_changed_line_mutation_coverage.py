@@ -816,7 +816,9 @@ def test_probe_run_trust_reports_an_analyzed_head_that_is_not_HEAD(tmp_path: Pat
     teeth = _load_teeth()
 
     clean_at_head = teeth.probe_run_trust(repo, "HEAD", {"scripts/foo.py"})
-    assert clean_at_head == ([], None, None)
+    assert clean_at_head.contaminated == []
+    assert clean_at_head.unestablished_reason is None
+    assert clean_at_head.unestablished_kind is None
 
     older = teeth.probe_run_trust(repo, base, {"scripts/foo.py"})
     assert older.unestablished_reason is not None

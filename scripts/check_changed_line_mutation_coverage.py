@@ -416,7 +416,7 @@ def main() -> int:
     all_eligible = set(list_eligible(repo_root))
     trust = probe_run_trust(repo_root, head_sha, all_eligible)
     contaminated = trust.contaminated
-    pinned = _pin_run_state(repo_root, base_sha, head_sha)
+    pinned = _pin_run_state(repo_root, base_sha, head_sha, resolved_pair=trust.resolved_pair)
     metadata = _run_metadata(base_sha, head_sha, pinned, contaminated)
     if trust.unestablished_kind == INSPECTION_FAILED:
         # REFUSED (2), not unestablished (3). Exit 3's leniency is granted for a
