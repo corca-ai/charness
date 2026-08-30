@@ -58,10 +58,11 @@ No blocking or material advisory finding remains inside the bounded #752 and
 - Requested tier: high-leverage bounded fresh-eye.
 - Requested spawn fields: `model=gpt-5.6-luna`; the reviewer operated in the
   existing Luna lane under the operator's all-Luna delegation rule.
-- Host exposure state: requested_fields_sent.
-- Application state: metadata-hidden; no independent runtime record proves the
+- Host exposure state: requested_fields_sent
+- Application state: metadata-hidden
+  No independent runtime record proves the
   effective model parameter.
-- Delivery state: findings-received.
+- Delivery state: findings-received
 - Execution mode: typed-subagent
 
 ## Boundary Ownership
