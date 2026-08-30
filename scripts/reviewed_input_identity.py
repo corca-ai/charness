@@ -91,43 +91,38 @@ def _sha256(payload: bytes) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
+def _load_changed_path_owner():
+    """Load the adjacent surface module even when this file is loaded by path."""
+    sibling = Path(__file__).resolve().with_name("surfaces_lib.py")
+    canonical = "scripts.surfaces_lib"
+    loaded = sys.modules.get(canonical)
+    if loaded is not None and Path(getattr(loaded, "__file__", "")).resolve() == sibling:
+        return loaded
+    try:
+        spec = importlib.util.find_spec(canonical)
+    except (ImportError, ValueError):
+        spec = None
+    if spec is not None and spec.origin and Path(spec.origin).resolve() == sibling:
+        return importlib.import_module(canonical)
+    spec = importlib.util.spec_from_file_location("charness_surfaces_lib", sibling)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Unable to load changed-path owner from {sibling}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+_changed_path_owner = _load_changed_path_owner()
+
+
 def _auto_paths(repo_root: Path, changed_ref: str | None) -> list[str]:
-    """What changed, enumerated the same way `surfaces_lib` enumerates it.
-
-    The flags are load-bearing and were not aligned:
-
-    - `-m` on `diff-tree`. Without it git reports NOTHING for a merge commit, so
-      `--commit <merge-sha>` bound zero paths while the packet's changed-files
-      section (which already passed `-m`) listed the real ones. A reviewer read a
-      file list and the verdict bound none of it.
-    - `--cached` in the working-tree arm. `diff HEAD` compares the WORKTREE to
-      HEAD, so a path staged and then removed from disk appears in neither side
-      and vanished from the binding while still being rendered and
-      surface-matched.
-
-    `-z` was already right here; it is `surfaces_lib` that had to be brought up to
-    it. Both now name a path the way it exists on disk rather than however
-    `core.quotepath` would spell it.
-    """
-    if changed_ref and _is_range(changed_ref):
-        raw = _git_bytes(repo_root, "diff", "--name-only", "-z", changed_ref)
-    elif changed_ref:
-        raw = _git_bytes(
-            repo_root,
-            "diff-tree",
-            "--root",
-            "-m",
-            "--no-commit-id",
-            "--name-only",
-            "-r",
-            "-z",
-            changed_ref,
-        )
-    else:
-        raw = _git_bytes(repo_root, "diff", "--name-only", "-z", "HEAD")
-        raw += _git_bytes(repo_root, "diff", "--name-only", "--cached", "-z")
-        raw += _git_bytes(repo_root, "ls-files", "--others", "--exclude-standard", "-z")
-    return sorted({path.decode("utf-8", errors="surrogateescape") for path in raw.split(b"\0") if path})
+    """Delegate changed-path selection to the surface module's single owner."""
+    try:
+        if changed_ref:
+            return _changed_path_owner.collect_changed_paths_for_ref(repo_root, changed_ref)
+        return _changed_path_owner.collect_changed_paths(repo_root)
+    except _changed_path_owner.SurfaceError as exc:
+        raise ValueError(str(exc)) from exc
 
 
 def _lexical_path(path: str) -> Path:
