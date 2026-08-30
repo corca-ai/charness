@@ -9,9 +9,8 @@ import json
 import re
 import subprocess
 import sys
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, NamedTuple
 
 ALGORITHM = "sha256-v2"
 SUBSTRATE_WORKING_TREE = "working-tree"
@@ -61,8 +60,7 @@ def _fail(code: str, message: str, *, details: dict[str, Any] | None = None) -> 
     raise ReviewedInputError(code, message, details=details)
 
 
-@dataclass(frozen=True)
-class WorkingTreeSnapshot:
+class WorkingTreeSnapshot(NamedTuple):
     """The repository facts captured by one working-tree status observation."""
 
     branch_oid: str
