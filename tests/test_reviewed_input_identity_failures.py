@@ -44,7 +44,7 @@ def test_worktree_content_os_error_is_unavailable(tmp_path: Path, monkeypatch: p
     assert identity_lib._worktree_content_sha256(tmp_path, "missing") is None
 
 
-def test_worktree_identity_reads_head_and_untracked_membership_in_one_status_snapshot(
+def test_clean_worktree_identity_skips_empty_patch_processes(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     _init_repo(tmp_path)
@@ -68,11 +68,7 @@ def test_worktree_identity_reads_head_and_untracked_membership_in_one_status_sna
         "--untracked-files=all",
     )
     assert captured["status"] == "captured"
-    assert calls == [
-        status_call,
-        ("diff", "--cached", "--binary", "--", "reviewed.txt"),
-        ("diff", "--binary", "--", "reviewed.txt"),
-    ]
+    assert calls == [status_call]
 
 
 def test_worktree_status_snapshot_parses_only_nul_untracked_records(
@@ -110,6 +106,37 @@ def test_worktree_status_snapshot_parses_only_nul_untracked_records(
         "目录/文件.txt",
         surrogate_path.decode("utf-8", errors="surrogateescape"),
     }
+    assert snapshot.staged_dirty is False
+    assert snapshot.unstaged_dirty is True
+
+
+@pytest.mark.parametrize(
+    ("record", "staged", "unstaged"),
+    [
+        (b"1 M. N... fixture", True, False),
+        (b"1 .M N... fixture", False, True),
+        (b"u UU N... fixture", True, True),
+        (b"? untracked.txt", False, False),
+        (b"unknown", True, True),
+    ],
+)
+def test_status_snapshot_derives_only_conservative_patch_dirty_bits(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    record: bytes,
+    staged: bool,
+    unstaged: bool,
+) -> None:
+    monkeypatch.setattr(
+        identity_lib,
+        "_git_bytes",
+        lambda _root, *args: b"# branch.oid " + (b"a" * 40) + b"\0" + record + b"\0",
+    )
+
+    snapshot = identity_lib._working_tree_snapshot(tmp_path)
+
+    assert snapshot.staged_dirty is staged
+    assert snapshot.unstaged_dirty is unstaged
 
 
 @pytest.mark.parametrize(

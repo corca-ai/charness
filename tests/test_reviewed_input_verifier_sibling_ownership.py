@@ -162,3 +162,16 @@ def test_a_consumer_module_cannot_substitute_the_range_owner(monkeypatch) -> Non
     assert Path(module._range.__file__).resolve() == (
         IDENTITY.with_name("reviewed_input_range.py").resolve()
     )
+
+
+def test_a_consumer_module_cannot_substitute_the_worktree_owner(monkeypatch) -> None:
+    fake = types.ModuleType("scripts.reviewed_input_worktree")
+    fake.__file__ = "/tmp/consumer/scripts/reviewed_input_worktree.py"
+    fake.capture = lambda *_args: None
+    monkeypatch.setitem(sys.modules, "scripts.reviewed_input_worktree", fake)
+
+    module = _load_identity_by_path()
+
+    assert Path(module._worktree.__file__).resolve() == (
+        IDENTITY.with_name("reviewed_input_worktree.py").resolve()
+    )

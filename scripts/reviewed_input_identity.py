@@ -10,7 +10,7 @@ import re
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any, NamedTuple
+from typing import Any
 
 ALGORITHM = "sha256-v2"
 SUBSTRATE_WORKING_TREE = "working-tree"
@@ -22,7 +22,6 @@ _LEGACY_SUBSTRATE_MODE_ALIASES = {
     "worktree": SUBSTRATE_WORKING_TREE,
 }
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
-_GIT_OID_RE = re.compile(r"^(?:[0-9a-fA-F]{40}|[0-9a-fA-F]{64})$")
 # Owned by `scripts/artifact_naming_lib.py`, restated rather than imported. The
 # shipped reviewer runtime loads this file BY PATH (`spec_from_file_location`),
 # with no package context, so a sibling import would not resolve there.
@@ -60,13 +59,6 @@ def _fail(code: str, message: str, *, details: dict[str, Any] | None = None) -> 
     raise ReviewedInputError(code, message, details=details)
 
 
-class WorkingTreeSnapshot(NamedTuple):
-    """The repository facts captured by one working-tree status observation."""
-
-    branch_oid: str
-    untracked_paths: frozenset[str]
-
-
 def _substrate_mode(changed_ref: str | None, substrate_mode: str | None) -> str:
     inferred = SUBSTRATE_COMMITTED_REF if changed_ref else SUBSTRATE_WORKING_TREE
     mode = substrate_mode or inferred
@@ -96,47 +88,6 @@ def _git_bytes(repo_root: Path, *args: str) -> bytes:
 def _git_bytes_optional(repo_root: Path, *args: str) -> bytes | None:
     result = subprocess.run(["git", *args], cwd=repo_root, check=False, capture_output=True)
     return result.stdout if result.returncode == 0 else None
-
-
-def _working_tree_snapshot(repo_root: Path) -> WorkingTreeSnapshot:
-    """Capture the working-tree HEAD and untracked paths coherently.
-
-    This is deliberately a whole-tree status query. ``--untracked-files=all``
-    means its output grows with every untracked file, but scoping the query before
-    automatic path selection would either require a separate preflight or miss
-    paths that the auto sweep must bind. One status observation keeps the branch
-    identity and untracked membership from being assembled across Git snapshots.
-    """
-    raw = _git_bytes(
-        repo_root,
-        "status",
-        "--porcelain=v2",
-        "-z",
-        "--branch",
-        "--untracked-files=all",
-    )
-    branch_oid: str | None = None
-    untracked_paths: set[str] = set()
-    branch_prefix = b"# branch.oid "
-    for record in raw.split(b"\0"):
-        if not record:
-            continue
-        if record.startswith(branch_prefix):
-            if branch_oid is not None:
-                raise ValueError("git status reported multiple branch OIDs")
-            candidate = record[len(branch_prefix) :]
-            try:
-                value = candidate.decode("ascii")
-            except UnicodeDecodeError as exc:
-                raise ValueError("git status reported a malformed branch OID") from exc
-            if _GIT_OID_RE.fullmatch(value) is None or not set(value) - {"0"}:
-                raise ValueError("git status did not report a valid branch OID")
-            branch_oid = value
-        elif record.startswith(b"? "):
-            untracked_paths.add(record[2:].decode("utf-8", errors="surrogateescape"))
-    if branch_oid is None:
-        raise ValueError("git status did not report a valid branch OID")
-    return WorkingTreeSnapshot(branch_oid, frozenset(untracked_paths))
 
 
 def _sha256(payload: bytes) -> str:
@@ -196,6 +147,12 @@ _auto_paths = _path_selection.auto_paths
 _lexical_path = _path_selection.lexical_path
 _checked_path = _path_selection.checked_path
 _range = _load_sibling("reviewed_input_range")
+_worktree = _load_sibling("reviewed_input_worktree")
+WorkingTreeSnapshot = _worktree.WorkingTreeSnapshot
+
+
+def _working_tree_snapshot(repo_root: Path) -> WorkingTreeSnapshot:
+    return _worktree.capture(repo_root, _git_bytes)
 
 _nonblob = _load_sibling("reviewed_input_nonblob")
 _current_pointer_payload = _nonblob._current_pointer_payload
@@ -347,7 +304,7 @@ def _patch_components(
     paths: list[str],
     changed_ref: str | None,
     mode: str,
-    working_head: str | None = None,
+    working_snapshot: WorkingTreeSnapshot | None = None,
 ) -> tuple[list[str], str, bytes, bytes, bytes]:
     path_args = ["--", *paths]
     if mode == SUBSTRATE_COMMITTED_REF:
@@ -367,11 +324,9 @@ def _patch_components(
             else _git_bytes(repo_root, "show", "--format=", "--binary", changed_ref, *path_args)
         )
         return resolved_ref, base_head, reviewed_patch, b"", b""
-    base_head = working_head or _git_bytes(
-        repo_root, "rev-parse", "HEAD"
-    ).decode().strip()
-    staged_patch = _git_bytes(repo_root, "diff", "--cached", "--binary", *path_args) if paths else b""
-    unstaged_patch = _git_bytes(repo_root, "diff", "--binary", *path_args) if paths else b""
+    base_head, staged_patch, unstaged_patch = _worktree.patch_components(
+        repo_root, paths, working_snapshot, _git_bytes
+    )
     return [], base_head, b"", staged_patch, unstaged_patch
 
 
@@ -557,7 +512,6 @@ def build_reviewed_input_identity(
             _git_bytes(repo_root, "rev-parse", "--is-inside-work-tree")
     except ValueError as exc:
         return _unavailable(reviewed_paths, changed_ref, mode, str(exc))
-    working_head = status_snapshot.branch_oid if status_snapshot is not None else None
     gitlink_snapshot: GitlinkSnapshot = {}
 
     paths, auto_excluded = _review_paths(
@@ -570,7 +524,7 @@ def build_reviewed_input_identity(
         gitlink_snapshot,
     )
     resolved_ref, base_head, reviewed_patch, staged_patch, unstaged_patch = _patch_components(
-        repo_root, paths, changed_ref, mode, working_head
+        repo_root, paths, changed_ref, mode, status_snapshot
     )
     reviewed_content, declared_untracked = _content_components(
         repo_root,
