@@ -72,7 +72,12 @@ if [[ "$TARGET_REPO" == "$SOURCE_ROOT" ]]; then
   fi
   for hook in "$SOURCE_HOOKS_DIR"/*; do
     [[ -f "$hook" ]] || continue
-    chmod +x "$hook"
+    # Only direct Git hook entrypoints need execute permission. `runtime-env.sh`
+    # is sourced by those hooks; chmodding every helper dirtied a clean source
+    # clone during the maintainer setup that release quality itself requires.
+    case "$(basename "$hook")" in
+      commit-msg|pre-commit|pre-push) chmod +x "$hook" ;;
+    esac
   done
 else
   checker="$SOURCE_ROOT/scripts/check_issue_closeout_commit_msg.py"

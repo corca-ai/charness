@@ -70,6 +70,12 @@ live rule-sensitive invariants rather than exact equality to mutable counts.
   constants, and dedicated test matrix were deleted; the independently live
   evidence-residual diagnostic moved to its own support owner and 47 focused
   tests pass across that boundary.
+- The next broad retry passed all 8,699 tests and 80 of 82 release gates. The
+  remaining generated seam index was refreshed by its owner. Maintainer setup
+  also exposed that `install-git-hooks.sh` chmodded every `.githooks` file,
+  making the sourced `runtime-env.sh` executable and dirtying the clean clone.
+  Installation now chmods only the three Git entrypoints; 14 hook tests include
+  the non-executable helper negative control.
 
 ## Root Cause
 
@@ -92,6 +98,10 @@ two failing values.
 A sibling pattern was also confirmed: retaining a richly tested helper after
 its final consumer disappeared would preserve ceremony without a JTBD. The
 helper's own caller guard made that structural deletion mandatory.
+
+The hook failure was the same ownership error at a filesystem boundary:
+directory membership was treated as executable-role authority. The installer
+now classifies entrypoints explicitly instead of mutating every sibling.
 
 ## Invariant Proof
 
@@ -145,3 +155,5 @@ history states. The ancestry owner reads HEAD once; the corpus check fell from
 about 60.5 seconds to 2.73 seconds while the 117 focused tests passed.
 Delete diagnostic owners when their final live caller disappears; do not add a
 fake caller merely to preserve their tests.
+Install scripts must mutate only files whose role requires mutation; sourceable
+helpers do not inherit executable ownership from their directory.

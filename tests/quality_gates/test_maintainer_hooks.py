@@ -72,6 +72,27 @@ def test_install_git_hooks_sets_core_hookspath(tmp_path: Path) -> None:
     assert configured.stdout.strip() == str((repo / ".githooks").resolve())
 
 
+def test_install_git_hooks_does_not_make_sourced_helpers_executable(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    (repo / ".githooks").mkdir(parents=True)
+    shutil.copy2(ROOT / "scripts" / "install-git-hooks.sh", repo / "scripts/install-git-hooks.sh")
+    for name in ("pre-commit", "commit-msg", "pre-push", "runtime-env.sh"):
+        shutil.copy2(ROOT / ".githooks" / name, repo / ".githooks" / name)
+    (repo / ".githooks/runtime-env.sh").chmod(0o644)
+    _git(repo, "init")
+
+    result = subprocess.run(
+        ["bash", "scripts/install-git-hooks.sh"], cwd=repo,
+        check=False, capture_output=True, text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert (repo / ".githooks/runtime-env.sh").stat().st_mode & 0o111 == 0
+    for name in ("pre-commit", "commit-msg", "pre-push"):
+        assert (repo / ".githooks" / name).stat().st_mode & 0o111
+
+
 def test_install_git_hooks_materializes_consumer_commit_msg_hook(tmp_path: Path) -> None:
     source = tmp_path / "source"
     consumer = tmp_path / "consumer"
