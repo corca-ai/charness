@@ -67,6 +67,8 @@ No blocking or material advisory finding remains inside the bounded #752 and
 
 ## Boundary Ownership
 
+- Verdict: owned-correctly
+
 - #752 producer: adapter-declared doctor coverage; consumer: `worktree prepare`
   skip decision; owning surface: `scripts/worktree_doctor_lib.py`; verdict:
   owned-correctly.
