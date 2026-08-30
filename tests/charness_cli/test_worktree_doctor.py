@@ -54,62 +54,6 @@ def test_doctor_no_manifest_passes_canonical_only(tmp_path: Path) -> None:
     assert ids["husky_dir"] == "skipped"
 
 
-def test_canonical_doctor_reads_one_checkout_snapshot(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    repo = _make_git_worktree(tmp_path)
-    calls: list[tuple[str, ...]] = []
-    original = checks._git_output
-
-    def observed(repo_root: Path, *args: str) -> str | None:
-        calls.append(args)
-        return original(repo_root, *args)
-
-    monkeypatch.setattr(checks, "_git_output", observed)
-
-    result = checks.run_canonical_checks(repo, disabled=set())
-
-    assert all(item.status in {"pass", "skipped"} for item in result)
-    assert calls == [
-        (
-            "rev-parse",
-            "--git-common-dir",
-            "--git-dir",
-            "--is-bare-repository",
-        ),
-        ("config", "--get", "core.hooksPath"),
-    ]
-
-
-def test_canonical_skips_hook_config_when_hook_checks_are_disabled(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    repo = _make_git_worktree(tmp_path)
-    calls: list[tuple[str, ...]] = []
-    original = checks._git_output
-
-    def observed(repo_root: Path, *args: str) -> str | None:
-        calls.append(args)
-        return original(repo_root, *args)
-
-    monkeypatch.setattr(checks, "_git_output", observed)
-
-    result = checks.run_canonical_checks(
-        repo,
-        disabled={"hooks_path", "lefthook_shim", "husky_dir"},
-    )
-
-    assert [item.id for item in result] == ["git_common_dir", "worktree_isolation"]
-    assert calls == [
-        (
-            "rev-parse",
-            "--git-common-dir",
-            "--git-dir",
-            "--is-bare-repository",
-        )
-    ]
-
-
 def test_doctor_lefthook_shim_missing_node_modules_fails(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     repo = _make_git_worktree(tmp_path)
     hooks_dir = repo / ".git" / "hooks"

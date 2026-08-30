@@ -142,21 +142,6 @@ def test_git_output_returns_none_when_git_cannot_be_run(tmp_path: Path, monkeypa
     monkeypatch.setattr(checks.subprocess, "run", explode)
 
     assert checks._git_output(tmp_path, "rev-parse", "--git-dir") is None
-    assert checks.git_common_dir(tmp_path) is None
-    assert checks.is_bare_repository(tmp_path) is None
-
-
-def test_a_resolved_git_path_that_is_not_a_directory_is_none(tmp_path: Path, monkeypatch) -> None:
-    """`worktree_doctor_checks._resolved_git_path` — the non-directory fallthrough.
-
-    git printed something; it is not a directory, so it is not a git dir, and the
-    doctor must not report it as one."""
-    checks = import_repo_module(_ANCHOR, "scripts.worktree_doctor_checks")
-    not_a_dir = tmp_path / "gitfile"
-    not_a_dir.write_text("gitdir: elsewhere\n", encoding="utf-8")
-    monkeypatch.setattr(checks, "_git_output", lambda *_a, **_k: str(not_a_dir))
-
-    assert checks._resolved_git_path(tmp_path, "--git-dir") is None
 
 
 def test_worktree_doctor_main_runs_and_its_require_isolation_flag_parses(

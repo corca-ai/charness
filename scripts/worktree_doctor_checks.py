@@ -32,9 +32,8 @@ def _git_env() -> dict[str, str]:
 def _git_output(repo_root: Path, *args: str) -> str | None:
     """One read-only git probe, discovery-scrubbed. `None` for any non-answer.
 
-    Every git question this module asks goes through here so the scrub cannot be
-    applied to some probes and not others -- `git_config_value` was missing it
-    while `rev-parse` had it, which is exactly the drift a second copy produces.
+    Every git question this module asks goes through here so the discovery scrub
+    cannot be applied to some probes and not others.
     """
     try:
         result = subprocess.run(
@@ -53,17 +52,6 @@ def _git_output(repo_root: Path, *args: str) -> str | None:
     return result.stdout.strip() or None
 
 
-def _resolved_git_path(repo_root: Path, flag: str) -> Path | None:
-    raw = _git_output(repo_root, "rev-parse", flag)
-    if raw is None:
-        return None
-    candidate = Path(raw)
-    if not candidate.is_absolute():
-        candidate = repo_root / candidate
-    candidate = candidate.resolve()
-    return candidate if candidate.is_dir() else None
-
-
 @dataclass(frozen=True)
 class GitCheckoutFacts:
     """One coherent read of the checkout facts consumed by canonical doctor checks."""
@@ -71,62 +59,60 @@ class GitCheckoutFacts:
     common_dir: Path | None
     own_dir: Path | None
     is_bare: bool | None
-    hooks_path: str | None
+    hooks_path: Path | None
 
 
-def _resolved_git_output_path(repo_root: Path, raw: str) -> Path | None:
-    candidate = Path(raw)
-    if not candidate.is_absolute():
-        candidate = repo_root / candidate
-    resolved = candidate.resolve()
-    return resolved if resolved.is_dir() else None
+def _resolved_git_output_path(
+    repo_root: Path, raw: str, *, require_directory: bool = True
+) -> Path | None:
+    try:
+        candidate = Path(raw)
+        if not candidate.is_absolute():
+            candidate = repo_root / candidate
+        resolved = candidate.resolve()
+    except (OSError, RuntimeError, ValueError):
+        return None
+    return resolved if not require_directory or resolved.is_dir() else None
 
 
 def git_checkout_facts(
     repo_root: Path, *, include_hooks_path: bool = True
 ) -> GitCheckoutFacts:
-    """Read one checkout snapshot, optionally omitting the hook config plane."""
-    raw = _git_output(
-        repo_root,
+    """Read one checkout snapshot, optionally omitting the hooks target."""
+    rev_parse_args = [
         "rev-parse",
         "--git-common-dir",
         "--git-dir",
         "--is-bare-repository",
+    ]
+    expected_lines = 3
+    if include_hooks_path:
+        rev_parse_args.extend(["--git-path", "hooks"])
+        expected_lines = 4
+    raw = _git_output(
+        repo_root,
+        *rev_parse_args,
     )
     lines = raw.splitlines() if raw is not None else []
-    if len(lines) != 3:
+    if len(lines) != expected_lines:
         common_dir = own_dir = None
         is_bare = None
+        hooks_path = None
     else:
         common_dir = _resolved_git_output_path(repo_root, lines[0])
         own_dir = _resolved_git_output_path(repo_root, lines[1])
         is_bare = lines[2] == "true" if lines[2] in {"true", "false"} else None
+        hooks_path = (
+            _resolved_git_output_path(repo_root, lines[3], require_directory=False)
+            if include_hooks_path
+            else None
+        )
     return GitCheckoutFacts(
         common_dir=common_dir,
         own_dir=own_dir,
         is_bare=is_bare,
-        hooks_path=git_config_value(repo_root, "core.hooksPath") if include_hooks_path else None,
+        hooks_path=hooks_path,
     )
-
-
-def git_common_dir(repo_root: Path) -> Path | None:
-    return _resolved_git_path(repo_root, "--git-common-dir")
-
-
-def git_dir(repo_root: Path) -> Path | None:
-    """This CHECKOUT's own git dir. Equal to the common dir only in the main worktree."""
-    return _resolved_git_path(repo_root, "--git-dir")
-
-
-def is_bare_repository(repo_root: Path) -> bool | None:
-    raw = _git_output(repo_root, "rev-parse", "--is-bare-repository")
-    if raw is None:
-        return None
-    return raw == "true"
-
-
-def git_config_value(repo_root: Path, key: str) -> str | None:
-    return _git_output(repo_root, "config", "--get", key)
 
 
 def main_worktree(common_dir: Path | None) -> Path | None:
@@ -134,7 +120,7 @@ def main_worktree(common_dir: Path | None) -> Path | None:
 
     Best-effort by design and deliberately not the discriminator: a repository
     created with `--separate-git-dir`, or one whose git dir is simply not named
-    `.git`, has no `<common>/..` main worktree to name. `is_isolated_worktree`
+    `.git`, has no `<common>/..` main worktree to name. `checkout_isolation`
     decides isolation without this, so a `None` here costs a nicer message and
     never a verdict.
     """
@@ -148,53 +134,6 @@ def checkout_isolation(facts: GitCheckoutFacts) -> bool | None:
     if facts.is_bare is not False or facts.own_dir is None or facts.common_dir is None:
         return None
     return facts.own_dir != facts.common_dir
-
-
-def is_isolated_worktree(repo_root: Path, common_dir: Path | None) -> bool | None:
-    """True in a linked worktree, False in the main one, None when undecidable.
-
-    THE QUESTION IS WHICH INDEX THIS CHECKOUT WRITES, not which path it sits at.
-    An earlier version of this compared `repo_root` against the parent of the
-    common dir, and a round-1 reviewer took it apart: every one of these reported
-    "isolated" while writing the parent's index --
-
-    - `--repo-root <main>/scripts`, any subdirectory of the main worktree, which
-      is one plausible CLI typo away at all times;
-    - a directory wired to the SHARED gitdir by a `.git` file or
-      `--git-dir=<main>/.git --work-tree=.`, where `git add` writes
-      `<main>/.git/index` -- precisely the corruption this check exists to stop;
-    - a bare repo whose directory is literally named `.git` (`/srv/site/.git`,
-      or a `--separate-git-dir` target), where the old safety rested on a
-      FILENAME rather than on bareness.
-
-    Git answers the real question directly: `--git-dir` is this checkout's own
-    git dir and `--git-common-dir` is the shared one, and they differ if and only
-    if this is a linked worktree. That is immune to naming, to
-    `--separate-git-dir`, to submodules, and to being pointed at a subdirectory,
-    because it asks where the index IS rather than where the directory sits.
-    """
-    if is_bare_repository(repo_root):
-        # A bare repo has no worktree or index to isolate, so "isolated" has no
-        # truth value here. Answered before the comparison because a bare repo's
-        # git dir and common dir are equal, which would otherwise read as "main
-        # worktree" -- a definite answer to a question that has none.
-        return None
-    own = git_dir(repo_root)
-    if own is None or common_dir is None:
-        return None
-    return own != common_dir
-
-
-def resolve_hooks_dir(repo_root: Path, common_dir: Path | None) -> tuple[Path | None, str]:
-    configured = git_config_value(repo_root, "core.hooksPath")
-    if configured:
-        candidate = Path(configured)
-        if not candidate.is_absolute():
-            candidate = (repo_root / candidate).resolve()
-        return candidate, "configured"
-    if common_dir is not None:
-        return common_dir / "hooks", "default"
-    return None, "unknown"
 
 
 def shim_references_lefthook(hook_path: Path) -> bool:
@@ -221,8 +160,8 @@ def lefthook_resolves_from_worktree(repo_root: Path) -> tuple[bool, str]:
 
 
 def husky_marker_directory(hooks_path_value: str) -> Path | None:
-    """Return the worktree-relative `_/` directory that must exist for husky's
-    hook surface to work, or None if `core.hooksPath` does not look husky-shaped.
+    """Return the hooks target's `_/` directory required by husky, or None if
+    the effective hooks path does not look husky-shaped.
 
     Husky 9 (current default) sets `core.hooksPath=.husky`; the actual hook
     entry points live under `.husky/_/`. Husky 8 set `core.hooksPath=.husky/_`
@@ -256,24 +195,31 @@ def _check_git_common_dir(common_dir: Path | None) -> CheckResult:
     )
 
 
-def _check_hooks_path(configured: str | None, hooks_dir: Path | None, source: str) -> CheckResult:
-    if configured is None:
-        return CheckResult(
-            id="hooks_path",
-            status=SKIPPED,
-            detail="core.hooksPath is unset; using git's default hooks directory.",
-        )
-    if hooks_dir is None or not hooks_dir.is_dir():
+def _check_hooks_path(hooks_dir: Path | None, source: str) -> CheckResult:
+    if hooks_dir is None:
         return CheckResult(
             id="hooks_path",
             status=FAIL,
-            detail=f"core.hooksPath={configured!r} but the resolved directory does not exist in this worktree.",
+            detail="`git rev-parse --git-path hooks` did not return a usable hooks directory.",
+            next_step="Run charness worktree doctor inside a git worktree.",
+        )
+    if source == "default":
+        return CheckResult(
+            id="hooks_path",
+            status=SKIPPED,
+            detail=f"effective hooks target is Git's default directory: {hooks_dir}.",
+        )
+    if not hooks_dir.is_dir():
+        return CheckResult(
+            id="hooks_path",
+            status=FAIL,
+            detail=f"effective core.hooksPath target {hooks_dir} does not exist in this worktree.",
             next_step="Run `charness worktree prepare` so the hook manager re-installs the hooksPath target for this worktree.",
         )
     return CheckResult(
         id="hooks_path",
         status=PASS,
-        detail=f"core.hooksPath={configured!r} -> {hooks_dir} ({source})",
+        detail=f"effective core.hooksPath target {hooks_dir} ({source}).",
     )
 
 
@@ -315,8 +261,8 @@ def _check_lefthook_shim(repo_root: Path, hooks_dir: Path | None) -> CheckResult
     )
 
 
-def _check_husky_dir(repo_root: Path, configured: str | None) -> CheckResult:
-    marker = husky_marker_directory(configured or "")
+def _check_husky_dir(repo_root: Path, hooks_path: Path | str | None) -> CheckResult:
+    marker = husky_marker_directory(str(hooks_path) if hooks_path is not None else "")
     if marker is None:
         return CheckResult(
             id="husky_dir",
@@ -436,19 +382,13 @@ def run_canonical_checks_with_facts(
         include_hooks_path=bool(hook_check_ids.difference(disabled)),
     )
     common_dir = facts.common_dir
-    configured_hooks_path = facts.hooks_path
-    if configured_hooks_path:
-        configured_candidate = Path(configured_hooks_path)
-        hooks_dir = (
-            configured_candidate
-            if configured_candidate.is_absolute()
-            else (repo_root / configured_candidate).resolve()
-        )
-        hooks_source = "configured"
-    elif common_dir is not None:
-        hooks_dir, hooks_source = common_dir / "hooks", "default"
+    hooks_dir = facts.hooks_path
+    if hooks_dir is None:
+        hooks_source = "unknown"
+    elif common_dir is not None and hooks_dir == common_dir / "hooks":
+        hooks_source = "default"
     else:
-        hooks_dir, hooks_source = None, "unknown"
+        hooks_source = "configured"
     canonical_specs = (
         ("git_common_dir", lambda: _check_git_common_dir(common_dir)),
         (
@@ -457,9 +397,9 @@ def run_canonical_checks_with_facts(
                 repo_root, facts, require_isolation=require_isolation
             ),
         ),
-        ("hooks_path", lambda: _check_hooks_path(configured_hooks_path, hooks_dir, hooks_source)),
+        ("hooks_path", lambda: _check_hooks_path(hooks_dir, hooks_source)),
         ("lefthook_shim", lambda: _check_lefthook_shim(repo_root, hooks_dir)),
-        ("husky_dir", lambda: _check_husky_dir(repo_root, configured_hooks_path)),
+        ("husky_dir", lambda: _check_husky_dir(repo_root, hooks_dir)),
     )
     for check_id, runner in canonical_specs:
         if check_id in disabled:
