@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -10,6 +11,7 @@ import pytest
 import yaml
 
 from runtime_bootstrap import import_repo_module
+from tests.seed_cache import get_or_build
 
 from .support import run_script
 
@@ -43,18 +45,47 @@ def _write_adapter(repo: Path, eligible_globs: list[str]) -> None:
     (repo / ".agents" / "quality-adapter.yaml").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
-def _seed_repo(tmp_path: Path) -> tuple[Path, str]:
-    """A git repo whose pkg/foo.py gains line 4 in a second commit. Returns (repo, base_sha)."""
-    repo = tmp_path / "repo"
+def _build_changed_line_coverage_seed(staging: Path) -> None:
+    """Build the immutable two-commit repository shared by coverage-gate tests."""
+    repo = staging / "repo"
     (repo / "pkg").mkdir(parents=True)
-    _git(repo, "init")
+    _git(repo, "init", "-q")
     (repo / "pkg" / "foo.py").write_text("a = 1\nb = 2\nc = 3\n", encoding="utf-8")
     _git(repo, "add", "-A")
-    _git(repo, "commit", "-m", "base")
+    _git(
+        repo,
+        "-c",
+        "user.name=Charness Test Seed",
+        "-c",
+        "user.email=charness-test-seed@example.invalid",
+        "commit",
+        "-q",
+        "-m",
+        "base",
+    )
     base = _rev(repo)
     (repo / "pkg" / "foo.py").write_text("a = 1\nb = 2\nc = 3\nd = 4\n", encoding="utf-8")
     _git(repo, "add", "-A")
-    _git(repo, "commit", "-m", "add line 4")
+    _git(
+        repo,
+        "-c",
+        "user.name=Charness Test Seed",
+        "-c",
+        "user.email=charness-test-seed@example.invalid",
+        "commit",
+        "-q",
+        "-m",
+        "add line 4",
+    )
+    (staging / "refs.json").write_text(json.dumps({"base": base}), encoding="utf-8")
+
+
+def _seed_repo(tmp_path: Path) -> tuple[Path, str]:
+    """Copy the immutable two-commit seed into a private test repository."""
+    seed = get_or_build("changed-line-coverage-gate-repo-seed", _build_changed_line_coverage_seed)
+    base = json.loads((seed / "refs.json").read_text(encoding="utf-8"))["base"]
+    repo = tmp_path / "repo"
+    shutil.copytree(seed / "repo", repo)
     return repo, base
 
 
