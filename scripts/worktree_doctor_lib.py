@@ -28,6 +28,7 @@ tail = _state.tail
 
 _checks = import_repo_module(__file__, "scripts.worktree_doctor_checks")
 run_canonical_checks = _checks.run_canonical_checks
+run_canonical_checks_with_facts = _checks.run_canonical_checks_with_facts
 run_manifest_doctor_checks = _checks.run_manifest_doctor_checks
 
 
@@ -183,7 +184,7 @@ def run_doctor(repo_root: Path, *, require_isolation: bool = False) -> dict[str,
         manifest_state.data.get("doctor", {}).get("disable_canonical_checks", []) if manifest_state.data else []
     )
     disabled = {entry for entry in disabled_raw if isinstance(entry, str)}
-    canonical = run_canonical_checks(
+    canonical, facts = run_canonical_checks_with_facts(
         repo_root, disabled=disabled, require_isolation=require_isolation
     )
     manifest_checks = (
@@ -200,6 +201,12 @@ def run_doctor(repo_root: Path, *, require_isolation: bool = False) -> dict[str,
         "checks": [result.to_dict() for result in all_checks],
         "status": status,
         "next_step": next_step,
+        # Internal handoff for a just-created linked worktree. The canonical
+        # checks already proved this checkout's own git dir; consumers must
+        # revalidate the path before using it and must fail closed if absent.
+        "_checkout": {
+            "own_dir": str(facts.own_dir) if facts.own_dir is not None else None,
+        },
     }
 
 

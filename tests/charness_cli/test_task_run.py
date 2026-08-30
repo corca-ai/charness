@@ -340,6 +340,35 @@ def test_task_run_creates_named_lane_and_keeps_runtime_external(tmp_path: Path) 
     assert (tmp_path / "lane" / "module.py").read_text(encoding="utf-8") == "VALUE = 2\n"
 
 
+def test_task_run_reuses_doctor_checkout_dir_without_target_resnapshot(
+    tmp_path: Path, monkeypatch
+) -> None:
+    repo = _repo(tmp_path)
+    executable = _codex(tmp_path, "printf 'VALUE = 2\n' > module.py")
+    original_snapshot = task_run._repo_snapshot
+    snapshot_roots: list[Path] = []
+
+    def observed_snapshot(path: Path) -> dict[str, object]:
+        snapshot_roots.append(path.resolve())
+        return original_snapshot(path)
+
+    monkeypatch.setattr(task_run, "_repo_snapshot", observed_snapshot)
+    payload = _run(repo, tmp_path, executable)
+
+    assert payload["status"] == "completed", payload
+    assert snapshot_roots == [repo.resolve()]
+    assert Path(payload["git_worktree_dir"]).is_dir()
+
+
+@pytest.mark.parametrize(
+    "carrier",
+    [None, {}, {"own_dir": None}, {"own_dir": "relative/.git"}],
+)
+def test_task_run_rejects_missing_or_malformed_checkout_carrier(carrier) -> None:
+    with pytest.raises(task_run.TaskRunError):
+        task_run._checkout_own_dir({"_checkout": carrier})
+
+
 def test_task_run_assigns_distinct_lane_runtime_roots_and_leaves_worktrees_clean(
     tmp_path: Path,
 ) -> None:
@@ -592,17 +621,14 @@ def test_post_create_setup_failure_persists_terminal_result(tmp_path: Path, monk
     repo = _repo(tmp_path)
     executable = _codex(tmp_path, "exit 0")
 
-    original_snapshot = task_run._repo_snapshot
-    snapshot_calls = 0
+    original_create = task_run._worktree.run_create
 
-    def fail_target_snapshot(target: Path) -> dict[str, object]:
-        nonlocal snapshot_calls
-        snapshot_calls += 1
-        if snapshot_calls == 2:
-            raise RuntimeError("git-dir setup failed")
-        return original_snapshot(target)
+    def fail_target_carrier(*args, **kwargs) -> dict[str, object]:
+        payload = original_create(*args, **kwargs)
+        payload["_checkout"] = {"own_dir": str(tmp_path / "missing-git-dir")}
+        return payload
 
-    monkeypatch.setattr(task_run, "_repo_snapshot", fail_target_snapshot)
+    monkeypatch.setattr(task_run._worktree, "run_create", fail_target_carrier)
     payload = _run(
         repo,
         tmp_path,
@@ -613,7 +639,10 @@ def test_post_create_setup_failure_persists_terminal_result(tmp_path: Path, monk
 
     assert payload["status"] == "failed"
     assert payload["phase"] == "terminal"
-    assert payload["error"] == "task lifecycle failed: git-dir setup failed"
+    assert payload["error"] == (
+        "task lifecycle failed: worktree create payload checkout own_dir is not an existing "
+        f"directory: {tmp_path / 'missing-git-dir'}"
+    )
     assert task_run.task_status(repo, "setup-failure") == payload
 
 

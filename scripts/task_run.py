@@ -70,6 +70,28 @@ def _persist_completion(payload: dict[str, Any], runtime_path: Path) -> None:
     _persist(payload, runtime_path)
 
 
+def _checkout_own_dir(create_payload: dict[str, Any]) -> Path:
+    """Validate the checkout-specific Git dir carried by worktree creation."""
+    carrier = create_payload.get("_checkout")
+    if not isinstance(carrier, dict):
+        raise TaskRunError("worktree create payload is missing checkout metadata")
+    raw = carrier.get("own_dir")
+    if not isinstance(raw, str) or not raw or raw != raw.strip():
+        raise TaskRunError("worktree create payload has malformed checkout own_dir")
+    candidate = Path(raw)
+    if not candidate.is_absolute():
+        raise TaskRunError("worktree create payload checkout own_dir must be absolute")
+    try:
+        resolved = candidate.resolve()
+    except (OSError, RuntimeError, ValueError) as exc:
+        raise TaskRunError("worktree create payload has unusable checkout own_dir") from exc
+    if not resolved.is_dir():
+        raise TaskRunError(
+            f"worktree create payload checkout own_dir is not an existing directory: {resolved}"
+        )
+    return resolved
+
+
 def _terminal(
     payload: dict[str, Any],
     runtime_path: Path,
@@ -371,13 +393,12 @@ def run_task(
         )
 
     try:
+        git_worktree_dir = _checkout_own_dir(create_payload)
         configured_env = _exec.prepare_exec_environment(
             resolved_target,
             os.environ.copy(),
             runtime_root=execution_runtime_path,
         )
-        target_snapshot = _repo_snapshot(resolved_target)
-        git_worktree_dir = target_snapshot["git_dir"]
         command = build_codex_command(
             codex_path,
             effort=resolved["effort"],

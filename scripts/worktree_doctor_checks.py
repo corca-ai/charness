@@ -425,9 +425,9 @@ def _check_worktree_isolation(
     )
 
 
-def run_canonical_checks(
+def run_canonical_checks_with_facts(
     repo_root: Path, *, disabled: set[str], require_isolation: bool = False
-) -> list[CheckResult]:
+) -> tuple[list[CheckResult], GitCheckoutFacts]:
     repo_root = repo_root.resolve()
     results: list[CheckResult] = []
     hook_check_ids = {"hooks_path", "lefthook_shim", "husky_dir"}
@@ -465,4 +465,16 @@ def run_canonical_checks(
         if check_id in disabled:
             continue
         results.append(runner())
+    return results, facts
+
+
+def run_canonical_checks(
+    repo_root: Path, *, disabled: set[str], require_isolation: bool = False
+) -> list[CheckResult]:
+    """Run canonical checks while keeping the established list return shape."""
+    results, _facts = run_canonical_checks_with_facts(
+        repo_root,
+        disabled=disabled,
+        require_isolation=require_isolation,
+    )
     return results

@@ -73,6 +73,8 @@ def test_create_runs_doctor_and_warns_for_unprepared_worktree(tmp_path: Path, mo
     assert payload["created"] is True
     assert target.exists()
     assert payload["doctor"]["status"] == "fail"
+    assert payload["_checkout"] == payload["doctor"]["_checkout"]
+    assert Path(payload["_checkout"]["own_dir"]).is_dir()
     assert "charness worktree prepare" in payload["next_step"]
 
 

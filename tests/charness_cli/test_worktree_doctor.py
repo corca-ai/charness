@@ -46,6 +46,7 @@ def test_doctor_no_manifest_passes_canonical_only(tmp_path: Path) -> None:
     payload = lib.run_doctor(repo)
     assert payload["status"] == "pass"
     assert payload["manifest"]["found"] is False
+    assert payload["_checkout"] == {"own_dir": str((repo / ".git").resolve())}
     ids = {check["id"]: check["status"] for check in payload["checks"]}
     assert ids["git_common_dir"] == "pass"
     assert ids["hooks_path"] == "skipped"

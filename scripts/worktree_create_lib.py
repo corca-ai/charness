@@ -132,6 +132,7 @@ def run_create(
         "created": True,
         "actions": actions,
         "doctor": doctor,
+        "_checkout": doctor.get("_checkout"),
         "next_step": None,
     }
     if prepare:
@@ -147,6 +148,10 @@ def run_create(
         )
         payload["prepare"] = prepare_payload
         payload["doctor"] = prepare_payload.get("doctor", doctor)
+        updated_doctor = payload["doctor"]
+        payload["_checkout"] = (
+            updated_doctor.get("_checkout") if isinstance(updated_doctor, dict) else None
+        )
         if prepare_payload.get("status") == PASS:
             payload["status"] = PASS
             payload["next_step"] = None
