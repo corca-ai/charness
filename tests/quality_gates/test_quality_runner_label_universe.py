@@ -18,6 +18,19 @@ from pathlib import Path
 from .support import clone_quality_runner_repo, run_shell_script
 
 
+def test_runner_consumes_labels_only_without_an_inline_parser(
+    seeded_quality_runner_repo: Path,
+) -> None:
+    runner = (seeded_quality_runner_repo / "scripts" / "run-quality.sh").read_text(
+        encoding="utf-8"
+    )
+    assert (
+        'python3 scripts/quality_label_universe.py --repo-root "$REPO_ROOT" '
+        "--labels-only"
+    ) in runner
+    assert "python3 -c" not in runner
+
+
 def test_a_gate_label_the_universe_reader_cannot_see_refuses_the_run(
     tmp_path: Path, seeded_quality_runner_repo: Path
 ) -> None:

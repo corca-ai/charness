@@ -123,8 +123,9 @@ queue_selected \\
     assert "wrapped-gate" in _payload(result)["labels"]
 
 
+@pytest.mark.parametrize("flags", [(), ("--labels-only",)])
 def test_universe_refuses_a_label_outside_the_runtime_label_shape(
-    tmp_path: Path,
+    tmp_path: Path, flags: tuple[str, ...]
 ) -> None:
     """A hard-red path on a pre-push gate, so it owes a pin.
 
@@ -135,17 +136,20 @@ def test_universe_refuses_a_label_outside_the_runtime_label_shape(
     """
     runner = RUNNER_STUB + '\nqueue_selected "Check-Foo" python3 x.py\n'
     repo = _write_repo(tmp_path, runner=runner)
-    result = _run(UNIVERSE, "--repo-root", str(repo))
+    result = _run(UNIVERSE, "--repo-root", str(repo), *flags)
     assert result.returncode == 1
     assert "not a runtime" in result.stderr
 
 
-def test_universe_refuses_a_non_literal_label_at_a_call_site(tmp_path: Path) -> None:
+@pytest.mark.parametrize("flags", [(), ("--labels-only",)])
+def test_universe_refuses_a_non_literal_label_at_a_call_site(
+    tmp_path: Path, flags: tuple[str, ...]
+) -> None:
     """A shrunk universe turns a correct budget into a blocking false red whose
     only escape is `--no-verify`, so an unresolvable call site fails loudly."""
     runner = RUNNER_STUB + '\nqueue_selected "$computed" python3 x.py\n'
     repo = _write_repo(tmp_path, runner=runner)
-    result = _run(UNIVERSE, "--repo-root", str(repo))
+    result = _run(UNIVERSE, "--repo-root", str(repo), *flags)
     assert result.returncode == 1
     assert "non-literal label" in result.stderr
     assert "run-quality.sh:" in result.stderr
@@ -472,8 +476,9 @@ def test_this_repo_has_no_orphaned_budget(tmp_path: Path) -> None:
     assert payload["universe_sources"]["standing_startup_probes"] == 1
 
 
+@pytest.mark.parametrize("flags", [(), ("--labels-only",)])
 def test_an_unparseable_adapter_is_a_named_refusal_not_a_traceback(
-    tmp_path: Path,
+    tmp_path: Path, flags: tuple[str, ...]
 ) -> None:
     """The reader is consumed by `run-quality.sh` at STARTUP, so an unnamed
     exception here aborts the entire run with a traceback blaming the queue lines --
@@ -481,10 +486,22 @@ def test_an_unparseable_adapter_is_a_named_refusal_not_a_traceback(
     existed, the same adapter defect surfaced as one red gate with an accurate
     message; a repair must not make the diagnostic worse than what it replaced."""
     repo = _write_repo(tmp_path, adapter="startup_probes:\n  - label: x\n    note: >+\n      bad header\n")
-    result = _run(UNIVERSE, "--repo-root", str(repo))
+    result = _run(UNIVERSE, "--repo-root", str(repo), *flags)
     assert result.returncode == 1
     assert "could not be parsed" in result.stderr
     assert "Traceback" not in result.stderr
+
+
+@pytest.mark.parametrize("flags", [(), ("--labels-only",)])
+def test_a_producer_error_stays_nonzero_in_labels_only_mode(
+    tmp_path: Path, flags: tuple[str, ...]
+) -> None:
+    repo = _write_repo(tmp_path)
+    (repo / "scripts" / "run-quality.sh").write_bytes(b"\xff\n")
+    result = _run(UNIVERSE, "--repo-root", str(repo), *flags)
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert "UnicodeDecodeError" in result.stderr
 
 
 def test_a_declared_probe_with_no_readable_label_is_refused(tmp_path: Path) -> None:
@@ -529,6 +546,19 @@ def test_an_underivable_universe_answers_in_the_payload_never_in_prose(tmp_path:
     assert "does not vendor the run-quality surface" in payload["reason"]
 
 
+def test_labels_only_keeps_an_unresolved_universe_out_of_stdout(tmp_path: Path) -> None:
+    """The line transport must not silently turn unresolved into a valid empty set.
+
+    The runner still degrades non-fatally for a consumer that does not vendor its
+    own run-quality script, but the diagnostic remains visible on stderr.
+    """
+    repo = _write_repo(tmp_path, runner=None)
+    result = _run(UNIVERSE, "--repo-root", str(repo), "--labels-only")
+    assert result.returncode == 0
+    assert result.stdout == ""
+    assert "quality label universe: not derivable" in result.stderr
+
+
 def test_the_gate_surfaces_a_reader_refusal_instead_of_a_verdict(tmp_path: Path) -> None:
     """The gate's own `read_or_refuse` path. A reader refusal is not a budget
     verdict, and reporting it as one would be a verdict rendered over an input the
@@ -560,6 +590,22 @@ def test_a_derived_universe_carries_every_label_in_one_document(tmp_path: Path) 
     # Labels are keys downstream: a stray surrounding space or an empty entry makes
     # a universe member nothing can ever match.
     assert all(isinstance(label, str) and label.strip() == label and label for label in labels)
+
+
+def test_labels_only_matches_the_default_document_label_order(tmp_path: Path) -> None:
+    repo = _write_repo(tmp_path)
+    default = _run(UNIVERSE, "--repo-root", str(repo))
+    labels_only = _run(UNIVERSE, "--repo-root", str(repo), "--labels-only")
+    assert default.returncode == 0, default.stderr
+    assert labels_only.returncode == 0, labels_only.stderr
+
+    documents = list(yaml.safe_load_all(default.stdout))
+    assert len(documents) == 1
+    payload = documents[0]
+    assert payload["resolved"] is True
+    expected = "".join(f"{label}\n" for label in payload["labels"])
+    assert labels_only.stdout == expected
+    assert labels_only.stderr == ""
 
 
 def test_a_file_ending_mid_continuation_still_yields_its_last_line(

@@ -216,44 +216,16 @@ RUN_QUALITY_RUNTIME_BATCH="$RUN_QUALITY_TMPDIR/runtime-batch.jsonl"
 #
 # An EMPTY set disables the assertion rather than refusing every gate. That is the
 # consumer case (a runner this reader cannot see), where refusing would be the same
-# false-red the reconciliation exists to avoid. The reader keeps stdout to labels or
-# nothing and puts its prose on stderr precisely so this can be true: the first cut
-# printed "not derivable ..." on stdout, that sentence became a one-element universe,
-# the empty check below never fired, and the first gate was refused with a remedy
-# about queue-line quoting. A reader that genuinely cannot resolve a call site exits
-# nonzero instead of returning an empty set, and that is handled below.
+# false-red the reconciliation exists to avoid. The labels-only transport keeps
+# stdout to labels or nothing and puts its unresolved prose on stderr precisely so
+# this can be true: the first cut printed "not derivable ..." on stdout, that sentence
+# became a one-element universe, the empty check below never fired, and the first gate
+# was refused with a remedy about queue-line quoting. A reader that genuinely cannot
+# resolve a call site exits nonzero instead of returning an empty set, and that is
+# handled below.
 declare -A RUN_QUALITY_LABEL_UNIVERSE=()
 RUN_QUALITY_UNIVERSE_ERR="$RUN_QUALITY_TMPDIR/label-universe.err"
-if RUN_QUALITY_UNIVERSE_YAML="$(python3 scripts/quality_label_universe.py --repo-root "$REPO_ROOT" 2>"$RUN_QUALITY_UNIVERSE_ERR")"; then
-  # The reader emits one YAML document since the 2026-08-14 --json removal, not bare
-  # label lines. Reading it as lines made EVERY line ("resolved: true", "- label") a
-  # label, so the first queued gate failed the assertion and the runner exited 2.
-  # `resolved: false` still degrades to the empty set the block above describes: an
-  # unresolvable reader disables the assertion rather than refusing every gate.
-  RUN_QUALITY_UNIVERSE_TEXT="$(
-    # No backticks in the comments below: shellcheck reads this single-quoted Python as shell
-    # and reports SC2016 for them. Plain names cost nothing and keep the gate green without a
-    # suppression that would also hide a genuine unexpanded `$VAR` here.
-    printf '%s' "$RUN_QUALITY_UNIVERSE_YAML" | python3 -c '
-import json, sys
-raw = sys.stdin.read()
-try:
-    # JSON first, exactly like the Python readers (charness.parse_repo_script_payload
-    # and friends): yaml_output.render_yaml falls back to COMPACT JSON when PyYAML is
-    # absent, so on such an interpreter the producer emits JSON -- and requiring yaml
-    # here would refuse a payload the producer wrote perfectly well, while blaming YAML.
-    payload = json.loads(raw)
-except json.JSONDecodeError:
-    import yaml
-    payload = yaml.safe_load(raw)
-payload = payload or {}
-labels = payload.get("labels") or [] if payload.get("resolved") else []
-print("\n".join(labels))
-'
-  )" || {
-    echo "run-quality: FAIL could not parse the gate-label reader payload (tried JSON, then YAML)." >&2
-    exit 2
-  }
+if RUN_QUALITY_UNIVERSE_TEXT="$(python3 scripts/quality_label_universe.py --repo-root "$REPO_ROOT" --labels-only 2>"$RUN_QUALITY_UNIVERSE_ERR")"; then
   while IFS= read -r universe_label; do
     if [[ -n "$universe_label" ]]; then
       RUN_QUALITY_LABEL_UNIVERSE["$universe_label"]=1
