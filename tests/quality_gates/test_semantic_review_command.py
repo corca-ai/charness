@@ -6,6 +6,7 @@ import hashlib
 import importlib.util
 import json
 import os
+import shutil
 import signal
 import stat
 import subprocess
@@ -16,6 +17,8 @@ from pathlib import Path
 
 import pytest
 import yaml
+
+from tests.seed_cache import get_or_build
 
 ROOT = Path(__file__).resolve().parents[2]
 WRAPPER = ROOT / "skills/public/critique/scripts/run_review.py"
@@ -74,11 +77,12 @@ def _git_output(repo: Path, *args: str) -> str:
     return subprocess.check_output(["git", *args], cwd=repo, text=True).strip()
 
 
-def _repo(tmp_path: Path, *, timeout: int = 5, with_packet_sections: bool = True) -> None:
-    _git(tmp_path, "init")
-    (tmp_path / "reviewed.txt").write_text("base\n", encoding="utf-8")
-    (tmp_path / ".gitignore").write_text(".charness/\n", encoding="utf-8")
-    (tmp_path / ".agents").mkdir()
+def _write_repo_fixture(
+    repo: Path, *, timeout: int = 5, with_packet_sections: bool = True
+) -> None:
+    (repo / "reviewed.txt").write_text("base\n", encoding="utf-8")
+    (repo / ".gitignore").write_text(".charness/\n", encoding="utf-8")
+    (repo / ".agents").mkdir(exist_ok=True)
     adapter_lines = [
         "version: 1",
         "repo: semantic-review-fixture",
@@ -97,11 +101,66 @@ def _repo(tmp_path: Path, *, timeout: int = 5, with_packet_sections: bool = True
                 "    content: smoke-body",
             ]
         )
-    (tmp_path / ".agents" / "critique-adapter.yaml").write_text(
+    (repo / ".agents" / "critique-adapter.yaml").write_text(
         "\n".join(adapter_lines) + "\n", encoding="utf-8"
     )
-    _git(tmp_path, "add", ".")
-    _git(tmp_path, "commit", "-m", "fixture")
+
+
+def _build_repo_seed(seed_root: Path) -> None:
+    repo = seed_root / "repo"
+    repo.mkdir()
+    _write_repo_fixture(repo)
+    git_env = {
+        key: value for key, value in os.environ.items() if not key.startswith("GIT_")
+    }
+    git_env.update(
+        {
+            "GIT_AUTHOR_NAME": "Charness Test",
+            "GIT_AUTHOR_EMAIL": "tests@example.com",
+            "GIT_COMMITTER_NAME": "Charness Test",
+            "GIT_COMMITTER_EMAIL": "tests@example.com",
+            "GIT_AUTHOR_DATE": "2000-01-01T00:00:00+0000",
+            "GIT_COMMITTER_DATE": "2000-01-01T00:00:00+0000",
+            "GIT_CONFIG_GLOBAL": os.devnull,
+            "GIT_CONFIG_NOSYSTEM": "1",
+        }
+    )
+    for args in (("init",), ("add", "."), ("commit", "-m", "fixture")):
+        subprocess.run(
+            [
+                "git",
+                "-c",
+                "init.defaultBranch=main",
+                "-c",
+                "user.name=Charness Test",
+                "-c",
+                "user.email=tests@example.com",
+                *args,
+            ],
+            cwd=repo,
+            env=git_env,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+
+
+def _repo(tmp_path: Path, *, timeout: int = 5, with_packet_sections: bool = True) -> None:
+    seed = get_or_build("semantic-review-command-repo-seed", _build_repo_seed) / "repo"
+    shutil.copytree(seed, tmp_path, dirs_exist_ok=True)
+    _write_repo_fixture(tmp_path, timeout=timeout, with_packet_sections=with_packet_sections)
+    if timeout != 5 or not with_packet_sections:
+        _git(tmp_path, "add", ".agents/critique-adapter.yaml")
+        _git(
+            tmp_path,
+            "-c",
+            "user.name=Charness Test",
+            "-c",
+            "user.email=tests@example.com",
+            "commit",
+            "--amend",
+            "--no-edit",
+        )
 
 
 def _fake_codex(path: Path) -> None:
