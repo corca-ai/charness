@@ -21,6 +21,9 @@ from .release_publish_fixtures import (
     bug_closeout_body,
 )
 from .release_resume_fixtures import (
+    FailedCloseoutState,
+)
+from .release_resume_fixtures import (
     seed_failed_closeout as _seed_failed_closeout,
 )
 from .release_resume_fixtures import (
@@ -564,14 +567,6 @@ def _resume_closeout_args(carrier: Path) -> tuple[str, ...]:
     )
 
 
-def _resume_closeout_env(tmp_path: Path, bin_dir: Path) -> dict[str, str]:
-    env = _release_env(tmp_path, bin_dir)
-    issue_state = tmp_path / "issue-state.json"
-    issue_state.write_text(json.dumps({"44": "OPEN"}) + "\n", encoding="utf-8")
-    env["FAKE_GH_ISSUE_STATE"] = str(issue_state)
-    return env
-
-
 def _resume_closeout_body() -> str:
     return bug_closeout_body(
         close_line="Close #44.",
@@ -600,16 +595,6 @@ def _run_closeout_resume(
     )
 
 
-def _run_patch_closeout(repo: Path, env: dict[str, str]) -> subprocess.CompletedProcess[str]:
-    return _run_publish_patch(
-        repo,
-        env,
-        "--close-issue", "44",
-        "--close-issue-behavior", "Behavior #44: confirmed through recovery fixture",
-        "--close-issue-probe-record", "Probe record #44: local-only-by-contract",
-    )
-
-
 def _resume_patch_closeout(
     repo: Path, env: dict[str, str], carrier: Path
 ) -> subprocess.CompletedProcess[str]:
@@ -631,7 +616,9 @@ def _resume_patch_closeout(
 
 @pytest.mark.release_only
 def test_resume_completes_tail_after_carrier_state_readback_failure(tmp_path: Path) -> None:
-    repo, env, carrier = _seed_failed_closeout(tmp_path, issue_view_fail_after=1)
+    repo, env, carrier = _seed_failed_closeout(
+        tmp_path, state=FailedCloseoutState.ISSUE_READBACK_FAILED
+    )
 
     resumed = _resume_patch_closeout(repo, env, carrier)
     assert resumed.returncode == 0, resumed.stderr
@@ -642,7 +629,7 @@ def test_resume_completes_tail_after_carrier_state_readback_failure(tmp_path: Pa
 @pytest.mark.release_only
 def test_resume_refuses_exact_message_carrier_without_evidence_tree(tmp_path: Path) -> None:
     repo, env, carrier = _seed_failed_closeout(
-        tmp_path, failure_at=1, failure_mode="before"
+        tmp_path, state=FailedCloseoutState.CARRIER_PUSH_FAILED
     )
 
     artifact = "charness-artifacts/release/latest.md"
