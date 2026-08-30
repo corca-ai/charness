@@ -8,7 +8,7 @@ from typing import Any
 
 MARKER_RE = re.compile(r"<!--\s*charness-goal-run:(?P<version>[^\s]+)")
 BLOCK_RE = re.compile(
-    r"<!--\s*charness-goal-run:v1\s*\n(?P<payload>\{.*?\})\s*\n\s*-->", re.DOTALL
+    r"<!--\s*charness-goal-run:v1\s*\n(?P<payload>\{.*\})\s*\n\s*-->", re.DOTALL
 )
 
 

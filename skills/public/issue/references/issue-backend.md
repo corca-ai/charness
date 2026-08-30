@@ -224,10 +224,25 @@ python3 "$SKILL_DIR/scripts/issue_tool.py" goal-run-close \
   --repo <owner/repo> --number <parent> --proof-file <close-proof.json>
 ```
 
-The close provider checks the immutable binding/draft identity, the exact child
-graph, all linked child states, and issue-owned evidence identities before one
-guarded close. Generic `close-with-comment` refuses a body carrying the Goal Run
-marker, preventing a routine issue close from bypassing the Goal Run proof.
+The close provider checks a repo-contained, complete-byte-hash-bound final
+proof index before provider selection. The index is
+`charness.goal-run-final-proof-index/v1` and carries the draft/binding hashes,
+repository and parent identity, exact expected child identities, and the parent
+obligation identity. The close proof separately binds its comment bytes and
+the index bytes; missing, stale, malformed, foreign, or mismatched inputs
+refuse without a provider call. After that preflight, the provider checks the
+exact child graph, all linked child states, and issue-owned evidence identities
+before one guarded close. Generic `close-with-comment` refuses a body carrying
+the Goal Run marker, preventing a routine issue close from bypassing the Goal
+Run proof.
+
+The close terminal observation is immutable. Once it exists, the provider
+updates only `terminal_observation_path` and
+`terminal_observation_sha256` through the existing binding-aware tracker body
+update and independently reads the parent back. The final read must still
+identify the requested parent, report `CLOSED`, and bind the exact terminal
+receipt. A failed metadata update or final readback is reported as
+`unverified-write`; it is not folded into the close mutation's success.
 
 When `id != "gh"` and `commands.search_newest_open` is missing, `select`
 without an explicit selector stops with a clear error. Pass an explicit

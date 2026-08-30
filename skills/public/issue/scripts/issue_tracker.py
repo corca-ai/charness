@@ -36,7 +36,7 @@ UPDATE_PLACEHOLDERS = frozenset({"repo", "number", "body_file"})
 
 GOAL_RUN_MARKER_RE = re.compile(r"<!--\s*charness-goal-run:(?P<version>[^\s]+)")
 GOAL_RUN_BLOCK_RE = re.compile(
-    r"<!-- charness-goal-run:v1\s*\n(?P<payload>\{.*?\})\s*\n-->", re.DOTALL
+    r"<!-- charness-goal-run:v1\s*\n(?P<payload>\{.*\})\s*\n-->", re.DOTALL
 )
 BOOTSTRAP_OPERATIONS = CAPABILITIES.BOOTSTRAP_OPERATIONS
 tracker_capability_report = CAPABILITIES.tracker_capability_report

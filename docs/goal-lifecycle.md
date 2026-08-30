@@ -126,7 +126,8 @@ with:
 - initial graph SHA-256 and current membership revision/SHA-256
 - mutable `progress` cursor: schema, revision, reconciled counts, membership
   SHA-256, and one exact next-child identity
-- establishment and optional terminal observation path/SHA-256
+- establishment and optional terminal observation path/SHA-256; terminal
+  fields are written only after the immutable terminal receipt exists
 - a planning-reset note when a provisional parent is being reconciled
 
 The rest of the body is normal human-readable Markdown. Duplicate, malformed,
@@ -274,14 +275,19 @@ operation may reach the internal close primitive. It:
    historical closed children, rather than trusting state alone
 4. verifies every deferral on its successor parent
 5. checks whole-system proof and docs reconciliation
-6. persists the terminal attempt and closes the parent
-7. performs distinct post-close provider readback
-8. finalizes the immutable terminal observation, updates parent metadata with
-   its path/hash through the binding-aware update, and reads the still-closed
-   parent back again
+6. validates the separately bound final-proof index, including exact expected
+   child and parent-obligation identities, before provider selection
+7. persists the terminal attempt and closes the parent
+8. performs distinct post-close provider readback
+9. finalizes the immutable terminal observation
+10. updates only mutable parent terminal metadata with its path/hash through
+    the binding-aware update, and independently reads the still-closed parent
+    back again
 
 Comment-written/close-failed, close-invoked/readback-unknown, and
-closed/readback-failed are distinct partial outcomes. Retry reads first and
+closed/readback-failed are distinct partial outcomes. A terminal metadata
+update or its independent CLOSED readback is also a distinct
+`unverified-write` outcome; it is not atomic with close. Retry reads first and
 never re-closes an already-closed parent. Failed exact readback is `unverified`,
 never completion.
 

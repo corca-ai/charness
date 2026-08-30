@@ -108,9 +108,22 @@ For a complete Goal Run, prefer the file-backed provider surface:
 files carrying the parent, immutable draft/binding hashes, attempt identity, and
 observation directory, so the command line stays small without dropping the
 identity proof. `goal-run-close` is the only path that may close a Goal Run; it
-requires a separate proof file and exact graph/child/evidence readback. The
-primitive tracker commands below remain useful compatibility and diagnostic
-surfaces.
+requires a separate proof file and a separately bound
+`charness.goal-run-final-proof-index/v1` file. The close proof binds the
+complete bytes of its comment and index inputs. The index binds the same
+draft/binding/repository/parent identity, exact expected child identities, and
+the parent obligation identity. All of those files are validated as
+repo-contained inputs before the adapter is selected or a provider is called;
+stale, malformed, foreign, or mismatched evidence is a typed refusal.
+
+The close then performs exact graph/child/evidence readback and one guarded
+close. After the immutable terminal observation is written, only the mutable
+terminal metadata fields (`terminal_observation_path` and
+`terminal_observation_sha256`) are updated through the existing tracker body
+update/readback boundary. A distinct parent read must still report `CLOSED`
+and bind that receipt; a metadata update or readback failure is
+`unverified-write`, not a successful close. The primitive tracker commands
+below remain useful compatibility and diagnostic surfaces.
 
 1. For bootstrap, graph repair, or an explicitly requested diagnostic, run
    `issue_tool.py tracker-preflight --repo <owner/repo> --number <parent>`.
