@@ -49,6 +49,7 @@ def _verify_children(
     expected_children: list[dict[str, Any]],
     live_children: list[dict[str, Any]],
     backend: dict[str, Any],
+    binding: dict[str, Any],
 ) -> None:
     live_numbers = {child["number"] for child in live_children}
     proof_numbers = {child["number"] for child in proof["children"]}
@@ -63,17 +64,20 @@ def _verify_children(
             f"missing={sorted(live_numbers - proof_numbers)!r} "
             f"unexpected={sorted(proof_numbers - live_numbers)!r}"
         )
+    issues = []
     for entry in proof["children"]:
         live = next(child for child in live_children if child["number"] == entry["number"])
         if live.get("state") != "CLOSED":
             raise RuntimeError(f"linked child {repo}#{entry['number']} is not CLOSED")
         issue = READ.read_issue_with_comments(repo, entry["number"], backend=backend)["issue"]
+        issues.append(issue)
         if issue.get("state") != "CLOSED":
             raise RuntimeError(f"child {repo}#{entry['number']} state readback is not CLOSED")
         if not _evidence_is_live(issue, entry["evidence"]):
             raise RuntimeError(
                 f"child {repo}#{entry['number']} evidence identity is not present in issue-owned comments"
             )
+    CONTRACT.BINDING.require_created_children(binding, issues)
 
 
 def _prepare_close(
@@ -102,6 +106,29 @@ def _prepare_close(
             or parent_identity.get("number") != parent_number
         ):
             raise RuntimeError("Goal Run parent metadata identity does not match the requested parent")
+    try:
+        binding = CONTRACT.BINDING.load_binding(
+            repo_root,
+            metadata.get("binding_path"),
+            repo=repo,
+            parent_number=parent_number,
+            draft_sha256=proof["draft_sha256"],
+            binding_sha256=proof["binding_sha256"],
+        )
+        CONTRACT.BINDING.validate_parent_metadata(
+            metadata,
+            binding,
+            repo=repo,
+            parent_number=parent_number,
+            parent_url=parent.get("url"),
+        )
+        CONTRACT.BINDING.require_expected_children(
+            binding,
+            proof["final_proof_index"]["expected_children"],
+            context="final proof expected child set",
+        )
+    except (CONTRACT.BINDING.BindingError, RuntimeError) as exc:
+        raise RuntimeError(f"Goal Run binding validation failed: {exc}") from exc
     graph = TRACKER.list_sub_issues(repo, parent_number, backend=backend)
     _verify_children(
         repo,
@@ -109,6 +136,7 @@ def _prepare_close(
         proof["final_proof_index"]["expected_children"],
         graph["children"],
         backend,
+        binding,
     )
     return RECOVERY.plan(
         repo_root=repo_root,

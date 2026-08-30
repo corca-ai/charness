@@ -16,6 +16,7 @@ CLOSE = _load_local("issue_close", "issue_goal_run_contract_close")
 TRACKER = _load_local("issue_tracker", "issue_goal_run_contract_tracker")
 INPUT = _load_local("issue_goal_run_input", "issue_goal_run_contract_input")
 CLOSE_CONTRACT = _load_local("issue_goal_run_close_contract", "issue_goal_run_contract_close_input")
+BINDING = _load_local("issue_goal_run_binding", "issue_goal_run_contract_binding")
 
 PLAN_KIND = "charness.goal-run-plan/v1"
 OPERATION_KIND = "charness.goal-run-operation/v1"
@@ -69,6 +70,29 @@ def _target(value: Any, *, repo: str, parent_number: int) -> dict[str, Any]:
     return dict(value)
 
 
+def _validate_bound_inputs(
+    value: dict[str, Any], operation: str, target: dict[str, Any], *, parent_number: int
+) -> None:
+    if operation == "create-or-reuse-child" and not {"work_item_key", "title"}.issubset(target):
+        raise _error("schema-invalid", "create-or-reuse-child target requires work_item_key and title")
+    if operation in {"add-child", "remove-child"}:
+        if "sub_issue_number" not in target:
+            raise _error("schema-invalid", f"{operation} target requires sub_issue_number")
+        if "work_item_key" not in target:
+            raise _error("schema-invalid", f"{operation} target requires work_item_key")
+    if operation == "update-body":
+        is_parent = target["number"] == parent_number
+        if is_parent and "work_item_key" in target:
+            raise _error("schema-invalid", "parent update target must not pretend to be a Work Item")
+        if not is_parent and "work_item_key" not in target:
+            raise _error("schema-invalid", "child update target requires work_item_key")
+    bound = {"update-body", "create-or-reuse-child", "list-children", "add-child", "remove-child"}
+    if operation in bound and (not isinstance(value.get("binding_path"), str) or not value["binding_path"].strip()):
+        raise _error("input-missing", f"{operation} requires binding_path")
+    if operation == "list-children" and not isinstance(value.get("expected_child_file"), str):
+        raise _error("input-missing", "list-children requires expected_child_file for binding enforcement")
+
+
 def load_plan(path: Path, *, repo: str, parent_number: int) -> dict[str, Any]:
     value, digest = _read_json(path, kind=PLAN_KIND)
     _fields(value, {"kind", "repo", "parent_number", "operations"}, "plan")
@@ -92,7 +116,8 @@ def load_operation(path: Path, *, repo: str, parent_number: int) -> dict[str, An
         value,
         {
             "kind", "repo", "parent_number", "operation", "attempt_id", "draft_sha256",
-            "binding_sha256", "observation_dir", "target", "body_file", "expected_child_file", "result",
+            "binding_sha256", "binding_path", "observation_dir", "target", "body_file",
+            "expected_child_file", "result",
         },
         "operation",
     )
@@ -118,12 +143,7 @@ def load_operation(path: Path, *, repo: str, parent_number: int) -> dict[str, An
     body_file = value.get("body_file")
     if operation in {"update-body", "create-or-reuse-child"} and not isinstance(body_file, str):
         raise _error("input-missing", f"{operation} requires body_file")
-    if operation == "create-or-reuse-child" and not {"work_item_key", "title"}.issubset(target):
-        raise _error("schema-invalid", "create-or-reuse-child target requires work_item_key and title")
-    if operation in {"add-child", "remove-child"} and "sub_issue_number" not in target:
-        raise _error("schema-invalid", f"{operation} target requires sub_issue_number")
-    if operation in {"add-child", "remove-child"} and "work_item_key" not in target:
-        raise _error("schema-invalid", f"{operation} target requires work_item_key")
+    _validate_bound_inputs(value, operation, target, parent_number=parent_number)
     if operation == "record-observation" and not isinstance(value.get("result"), dict):
         raise _error("schema-invalid", "record-observation requires a result object")
     return {**value, "path": str(path), "sha256": digest, "target": target, "operation": operation}
@@ -131,6 +151,17 @@ def load_operation(path: Path, *, repo: str, parent_number: int) -> dict[str, An
 
 load_close_proof = CLOSE_CONTRACT.load_close_proof
 load_final_proof_index = CLOSE_CONTRACT.load_final_proof_index
+
+
+def validate_operation_binding(operation: dict[str, Any], repo_root: Path) -> dict[str, Any] | None:
+    try:
+        return BINDING.validate_operation_binding(
+            operation, repo_root, repo_file=repo_file, tracker=TRACKER
+        )
+    except BINDING.BindingError as exc:
+        raise _error(exc.code, str(exc)) from exc
+    except (OSError, RuntimeError, TypeError, ValueError) as exc:
+        raise _error("binding-mismatch", str(exc)) from exc
 
 
 def capability_report(

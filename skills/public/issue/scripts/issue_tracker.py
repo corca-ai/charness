@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import runpy
@@ -265,6 +266,8 @@ def update_issue_body(
     *,
     backend: dict[str, Any],
     terminal_metadata_update: bool = False,
+    expected_body_sha256: str | None = None,
+    pre_write_validator: Any | None = None,
 ) -> dict[str, Any]:
     if not body_file.is_file():
         raise RuntimeError(f"tracker body file not found: {body_file}")
@@ -272,12 +275,21 @@ def update_issue_body(
         repo, number, body_file=body_file, backend=backend, include_body=True
     )
     current_body = before.pop("body")
+    current_body_sha256 = hashlib.sha256(current_body.encode("utf-8")).hexdigest()
+    before["body_sha256"] = current_body_sha256
+    if expected_body_sha256 is not None and current_body_sha256 != expected_body_sha256:
+        raise RuntimeError(
+            "tracker body update refused because the live pre-write body digest differs "
+            f"from the bound observed digest: expected {expected_body_sha256}, got {current_body_sha256}"
+        )
     desired_body = body_file.read_text(encoding="utf-8")
     _guard_goal_run_metadata(
         current_body,
         desired_body,
         terminal_metadata_update=terminal_metadata_update,
     )
+    if pre_write_validator is not None:
+        pre_write_validator(current_body, desired_body)
     if before["body_verified"] is True:
         return {
             "ok": True,

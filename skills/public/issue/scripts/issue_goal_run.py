@@ -15,8 +15,8 @@ BACKEND = CONTRACT.BACKEND
 READ = _load_local("issue_read", "issue_goal_run_read")
 TRACKER = _load_local("issue_tracker", "issue_goal_run_tracker")
 OBSERVATION = _load_local("issue_tracker_observation", "issue_goal_run_observation")
+GUARD = _load_local("issue_goal_run_guard", "issue_goal_run_apply_guard")
 
-OBSERVATION_KIND = "charness.goal-run-observation/v1"
 OUTCOMES = {"started", "no-write", "verified-write", "unverified-write", "partial-graph", "verified-read", "refused"}
 
 
@@ -182,7 +182,13 @@ def _read_one(repo: str, number: int, backend: dict[str, Any], operation: str) -
     return result
 
 
-def _expected_graph(result: dict[str, Any], operation: dict[str, Any], repo_root: Path, repo: str, parent: int) -> dict[str, Any]:
+def _expected_graph(
+    result: dict[str, Any],
+    operation: dict[str, Any],
+    repo_root: Path,
+    repo: str,
+    parent: int,
+) -> dict[str, Any]:
     expected_file = operation.get("expected_child_file")
     if not isinstance(expected_file, str):
         return result
@@ -199,14 +205,39 @@ def _expected_graph(result: dict[str, Any], operation: dict[str, Any], repo_root
     return result
 
 
-def _execute(operation: dict[str, Any], *, repo_root: Path, backend: dict[str, Any], repo: str, parent: int) -> dict[str, Any]:
+def _execute(
+    operation: dict[str, Any],
+    *,
+    binding: dict[str, Any] | None,
+    repo_root: Path,
+    backend: dict[str, Any],
+    repo: str,
+    parent: int,
+) -> dict[str, Any]:
     name = operation["operation"]
     target = operation["target"]
     if name in {"read-body", "read-state"}:
         return _read_one(repo, target["number"], backend, name)
     if name == "update-body":
         body_file = CONTRACT.repo_file(repo_root, operation["body_file"], context="body_file")
-        return TRACKER.update_issue_body(repo, target["number"], body_file, backend=backend)
+        if target["number"] == parent:
+            assert binding is not None
+            return TRACKER.update_issue_body(
+                repo,
+                target["number"],
+                body_file,
+                backend=backend,
+                pre_write_validator=CONTRACT.BINDING.parent_body_validator(
+                    binding, repo=repo, parent_number=parent, guard=GUARD
+                ),
+            )
+        return TRACKER.update_issue_body(
+            repo,
+            target["number"],
+            body_file,
+            backend=backend,
+            expected_body_sha256=operation["observed_body_sha256"],
+        )
     if name == "create-or-reuse-child":
         body_file = CONTRACT.repo_file(repo_root, operation["body_file"], context="body_file")
         body_sha = hashlib.sha256(body_file.read_bytes()).hexdigest()
@@ -231,10 +262,16 @@ def _execute(operation: dict[str, Any], *, repo_root: Path, backend: dict[str, A
     if name == "list-children":
         result = TRACKER.list_sub_issues(repo, parent, backend=backend)
         return _expected_graph(result, operation, repo_root, repo, parent)
-    if name == "add-child":
-        return TRACKER.add_sub_issue(repo, parent, target["sub_issue_number"], backend=backend)
-    if name == "remove-child":
-        return TRACKER.remove_sub_issue(repo, parent, target["sub_issue_number"], backend=backend)
+    if name in {"add-child", "remove-child"}:
+        assert binding is not None
+        item = CONTRACT.BINDING.work_item_for_target(binding, target["work_item_key"])
+        if item["intent"] == "create":
+            issue = READ.read_issue_with_comments(repo, target["sub_issue_number"], backend=backend)["issue"]
+            CONTRACT.BINDING.require_issue_matches_item(
+                binding, key=item["key"], number=target["sub_issue_number"], issue=issue
+            )
+        mutate = TRACKER.add_sub_issue if name == "add-child" else TRACKER.remove_sub_issue
+        return mutate(repo, parent, target["sub_issue_number"], backend=backend)
     if name == "record-observation":
         result = dict(operation["result"])
         result.setdefault("status", "local-only")
@@ -261,6 +298,11 @@ def command_apply(args: Any, *, resolve_backend: Any, emit: Any) -> int:
         operation = CONTRACT.load_operation(
             args.operation_file.resolve(), repo=args.repo, parent_number=args.number
         )
+    except CONTRACT.GoalRunInputError as exc:
+        emit(_refusal(exc.code, str(exc), repo=args.repo, parent_number=args.number))
+        return 2
+    try:
+        binding = CONTRACT.validate_operation_binding(operation, args.repo_root.resolve())
     except CONTRACT.GoalRunInputError as exc:
         emit(_refusal(exc.code, str(exc), repo=args.repo, parent_number=args.number))
         return 2
@@ -306,7 +348,14 @@ def command_apply(args: Any, *, resolve_backend: Any, emit: Any) -> int:
         return 2
     try:
         result = _normalise_result(
-            _execute(operation, repo_root=args.repo_root.resolve(), backend=backend, repo=args.repo, parent=args.number),
+            _execute(
+                operation,
+                binding=binding,
+                repo_root=args.repo_root.resolve(),
+                backend=backend,
+                repo=args.repo,
+                parent=args.number,
+            ),
             name,
         )
     except (RuntimeError, OSError) as exc:

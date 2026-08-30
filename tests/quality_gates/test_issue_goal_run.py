@@ -9,7 +9,15 @@ from types import SimpleNamespace
 
 import pytest
 
-from tests.quality_gates.issue_goal_run_test_support import close_inputs as _close_inputs
+from tests.quality_gates.issue_goal_run_test_support import (
+    _fixture_metadata,
+)
+from tests.quality_gates.issue_goal_run_test_support import (
+    close_inputs as _close_inputs,
+)
+from tests.quality_gates.issue_goal_run_test_support import (
+    parent_body as _parent_body,
+)
 
 ROOT = Path(__file__).resolve().parents[2]
 PROVIDER_PATH = ROOT / "skills/public/issue/scripts/issue_goal_run.py"
@@ -182,7 +190,7 @@ def test_goal_run_close_refuses_open_child_before_observation_or_close(tmp_path:
             "issue": {
                 "number": 724,
                 "state": "OPEN",
-                "body": '<!-- charness-goal-run:v1\n{"draft_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","binding_sha256":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}\n-->\n',
+                "body": _parent_body(tmp_path),
             }
         }
     )
@@ -214,7 +222,7 @@ def test_goal_run_close_reuses_parent_read_for_carrier_preflight(tmp_path: Path)
     parent = {
         "number": 724,
         "state": "OPEN",
-        "body": '<!-- charness-goal-run:v1\n{"binding_sha256":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","draft_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","initial_graph_sha256":"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc","parent_identity":{"number":724,"repo":"corca-ai/charness"},"progress":{"revision":1}}\n-->\n',
+        "body": _parent_body(tmp_path),
         "comments": [],
     }
     child = {
@@ -268,11 +276,16 @@ def test_goal_run_close_reuses_parent_read_for_carrier_preflight(tmp_path: Path)
     assert emitted[0]["status"] == "verified-write"
     assert emitted[0]["terminal_metadata"]["readback"]["state"] == "CLOSED"
     metadata = json.loads(updated_parent["body"].split("\n", 2)[1])
-    assert metadata["draft_sha256"] == "a" * 64
-    assert metadata["binding_sha256"] == "b" * 64
-    assert metadata["initial_graph_sha256"] == "c" * 64
-    assert metadata["parent_identity"] == {"number": 724, "repo": REPO}
-    assert metadata["progress"] == {"revision": 1}
+    fixture = _fixture_metadata(tmp_path)
+    assert metadata["draft_sha256"] == fixture["draft_sha256"]
+    assert metadata["binding_sha256"] == fixture["binding_sha256"]
+    assert metadata["initial_graph_sha256"] == fixture["initial_graph_sha256"]
+    assert metadata["parent_identity"] == {
+        "number": 724,
+        "repo": REPO,
+        "url": f"https://github.com/{REPO}/issues/724",
+    }
+    assert metadata["progress"]["revision"] == 1
     assert metadata["terminal_observation_path"].endswith("close-2.terminal.json")
     assert metadata["terminal_observation_sha256"] == emitted[0]["observation"]["terminal_sha256"]
 
@@ -350,7 +363,7 @@ def test_goal_run_close_reports_metadata_failure_after_verified_close(tmp_path: 
     parent = {
         "number": 724,
         "state": "OPEN",
-        "body": '<!-- charness-goal-run:v1\n{"draft_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","binding_sha256":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}\n-->\n',
+        "body": _parent_body(tmp_path),
         "comments": [],
     }
     child = {"number": 725, "state": "CLOSED", "comments": [{"url": "comment"}]}
@@ -405,7 +418,7 @@ def test_goal_run_close_retry_repairs_metadata_without_reclosing(
     parent = {
         "number": 724,
         "state": "OPEN",
-        "body": '<!-- charness-goal-run:v1\n{"draft_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","binding_sha256":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}\n-->\n',
+        "body": _parent_body(tmp_path),
         "comments": [],
     }
     child = {"number": 725, "state": "CLOSED", "comments": [{"url": "comment"}]}
@@ -518,7 +531,7 @@ def test_goal_run_close_retry_reuses_prior_comment(tmp_path: Path) -> None:
     parent = {
         "number": 724,
         "state": "OPEN",
-        "body": '<!-- charness-goal-run:v1\n{"draft_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","binding_sha256":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}\n-->\n',
+        "body": _parent_body(tmp_path),
     }
     child = {"number": 725, "state": "CLOSED", "comments": [{"url": "comment"}]}
     calls = {"comment": 0, "resume": 0}
@@ -618,7 +631,11 @@ def test_goal_run_close_refuses_unverifiable_already_closed_metadata(tmp_path: P
     parent = {
         "number": 724,
         "state": "CLOSED",
-        "body": '<!-- charness-goal-run:v1\n{"draft_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","binding_sha256":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","terminal_observation_path":"observations/missing.terminal.json","terminal_observation_sha256":"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"}\n-->\n',
+        "body": _parent_body(
+            tmp_path,
+            terminal_observation_path="observations/missing.terminal.json",
+            terminal_observation_sha256="c" * 64,
+        ),
     }
     child = {"number": 725, "state": "CLOSED", "comments": [{"url": "comment"}]}
     module["command_close"].__globals__["READ"] = SimpleNamespace(
@@ -657,7 +674,7 @@ def test_goal_run_close_reports_parent_readback_failure_after_metadata_update(
     parent = {
         "number": 724,
         "state": "OPEN",
-        "body": '<!-- charness-goal-run:v1\n{"draft_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","binding_sha256":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}\n-->\n',
+        "body": _parent_body(tmp_path),
         "comments": [],
     }
     child = {"number": 725, "state": "CLOSED", "comments": [{"url": "comment"}]}

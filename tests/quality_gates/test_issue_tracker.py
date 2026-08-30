@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import importlib.util
 import json
 import subprocess
@@ -249,6 +250,41 @@ def test_update_command_failure_is_never_no_write(
     assert result["ok"] is False
     assert result["outcome"] == "unverified-write"
     assert result["mutation_invoked"] is True
+
+
+def test_update_body_refuses_live_prewrite_drift_before_provider(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    body = tmp_path / "body.md"
+    body.write_text("approved new body\n", encoding="utf-8")
+    provider_calls = 0
+
+    def must_not_run(_argv: list[str]) -> None:
+        nonlocal provider_calls
+        provider_calls += 1
+        raise AssertionError("live body drift must refuse before provider mutation")
+
+    monkeypatch.setattr(tracker, "run_backend", must_not_run)
+    monkeypatch.setattr(
+        tracker.VERIFY_CREATE,
+        "verify_created_issue",
+        lambda *_args, **_kwargs: {
+            "body_verified": False,
+            "body": "drifted live body\n",
+            "url": "https://github.com/corca-ai/charness/issues/725",
+        },
+    )
+
+    with pytest.raises(RuntimeError, match="live pre-write body digest differs"):
+        tracker.update_issue_body(
+            "corca-ai/charness",
+            725,
+            body,
+            backend=BACKEND,
+            expected_body_sha256=hashlib.sha256(b"observed body\n").hexdigest(),
+        )
+
+    assert provider_calls == 0
 
 
 def test_malformed_declared_template_fails_preflight_rendering() -> None:
