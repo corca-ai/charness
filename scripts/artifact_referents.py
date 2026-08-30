@@ -183,6 +183,20 @@ UUID_RE = re.compile(
     re.IGNORECASE,
 )
 
+# Content-addressed review packets type their SHA-256 values as identities. Their
+# abbreviated display values are SHA-shaped, but they are not Git commit
+# citations. Preserve the producer's explicit type while leaving any actual
+# commit candidate elsewhere on the same line visible to the resolver.
+TYPED_CONTENT_DIGEST_RE = re.compile(
+    r"\b(?:"
+    r"packet(?:[\s_-]+identity)?|"
+    r"(?:reviewed[\s_-]+)?input[\s_-]+identity|"
+    r"findings[\s_-]+identity|"
+    r"identity_sha256"
+    r")(?:\s*:\s*|\s+)`?([0-9a-f]{7,64})(?:\.\.\.)?`?",
+    re.IGNORECASE,
+)
+
 #: Words that are pure hex and >= 7 chars. English has a few; without this they
 #: reach `git cat-file` and are reported as unresolvable SHAs, which is a false
 #: positive on ordinary prose.
@@ -221,8 +235,16 @@ def sha_candidates(text: str) -> list[str]:
     """
     out = []
     uuid_spans = [match.span() for match in UUID_RE.finditer(text)]
+    content_digest_spans = [
+        match.span(1) for match in TYPED_CONTENT_DIGEST_RE.finditer(text)
+    ]
     for match in SHA_RE.finditer(text):
         if any(start <= match.start() and match.end() <= end for start, end in uuid_spans):
+            continue
+        if any(
+            start <= match.start() and match.end() <= end
+            for start, end in content_digest_spans
+        ):
             continue
         token = match.group(1)
         if token.lower() in _HEX_WORDS:

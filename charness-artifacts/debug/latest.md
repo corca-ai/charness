@@ -1,1 +1,1 @@
-2026-08-29-native-artifact-sidecar.md
+2026-08-30-issue-758-mutation-workflow-standing-baseline.md

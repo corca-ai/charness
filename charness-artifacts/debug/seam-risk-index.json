@@ -3,19 +3,19 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 171,
-  "indexed_artifact_count": 157,
+  "source_artifact_count": 173,
+  "indexed_artifact_count": 158,
   "risk_class_counts": {
     "contract-freeze-risk": 35,
     "external-seam": 26,
     "host-disproves-local": 7,
-    "none": 62,
+    "none": 63,
     "operator-visible-recovery": 23,
     "repeated-symptom": 17
   },
   "generalization_pressure_counts": {
     "factor-now": 23,
-    "monitor": 118,
+    "monitor": 119,
     "none": 16
   },
   "entries": [
@@ -2217,8 +2217,8 @@
       "forced": false
     },
     {
-      "artifact_path": "charness-artifacts/debug/latest.md",
-      "is_current_pointer": true,
+      "artifact_path": "charness-artifacts/debug/2026-08-29-native-artifact-sidecar.md",
+      "is_current_pointer": false,
       "interrupt_id": "native-artifact-sidecar-2026-08-29",
       "risk_classes": [
         "external-seam"
@@ -2229,6 +2229,20 @@
       "next_step": "spec",
       "handoff_artifact": "charness-artifacts/spec/native-artifact-roundtrip.md",
       "forced": true
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/latest.md",
+      "is_current_pointer": true,
+      "interrupt_id": "issue-758-standing-baseline-2026-08-30",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "none",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "charness-artifacts/critique/2026-08-30-issue-758-typed-content-digest-referent-review.md",
+      "forced": false
     }
   ],
   "skipped_artifacts": [
@@ -2278,6 +2292,10 @@
     },
     {
       "artifact_path": "charness-artifacts/debug/2026-08-21-r2-semantic-worker-delivery-blockers.md",
+      "reason": "debug artifact has no risk interrupt sections yet"
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-08-30-issue-759-deletion-range-premise.md",
       "reason": "debug artifact has no risk interrupt sections yet"
     },
     {

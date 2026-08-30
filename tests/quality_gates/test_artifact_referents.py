@@ -128,6 +128,36 @@ def test_an_unresolvable_sha_is_reported() -> None:
     assert unresolvable_shas("see `deadbee1234`", ROOT, run=lambda *a: False) == ["deadbee1234"]
 
 
+@pytest.mark.parametrize(
+    "content_label",
+    [
+        "packet",
+        "packet identity",
+        "packet_identity:",
+        "reviewed-input identity:",
+        "reviewed_input_identity:",
+        "input identity:",
+        "findings identity:",
+        "findings_identity:",
+        "identity_sha256:",
+    ],
+)
+def test_a_typed_content_identity_does_not_hide_a_commit_candidate(
+    content_label: str,
+) -> None:
+    from scripts.artifact_referents import sha_candidates
+
+    line = f"{content_label} `6015111c...`; commit `deadbee1234`"
+
+    assert sha_candidates(line) == ["deadbee1234"]
+
+
+def test_a_git_commit_identity_remains_a_commit_candidate() -> None:
+    from scripts.artifact_referents import sha_candidates
+
+    assert sha_candidates("Git commit identity: `c2db5e7cd1e6`") == ["c2db5e7cd1e6"]
+
+
 def test_uuid_components_are_not_commit_candidates_but_a_sibling_sha_is() -> None:
     from scripts.artifact_referents import sha_candidates
 
