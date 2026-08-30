@@ -21,8 +21,12 @@ consumer-topology correctness claim is made.
 
 ## Exact provider and CI observations
 
-- Provider `main`: `2ef6b357aeb7a2d32a4d710a33ba9e3df966d100`.
-- Quality Core run `33301584557`: `success` for that exact SHA.
+- Final material implementation SHA:
+  `2ef6b357aeb7a2d32a4d710a33ba9e3df966d100`; Quality Core run
+  `33301584557` succeeded for that exact SHA.
+- Published final-evidence SHA:
+  `40b084051729b9b32516cdc055290388b9f7e516`; Quality Core run
+  `33302199291` succeeded for that exact SHA before parent close.
 - Hosted Mutation Tests are not claimed. The operator-approved amendment
   `amendments/2026-08-30-ignore-mutation-test-proof.md` removed that proof
   obligation after runs `33296181601` and `33297693085` failed before

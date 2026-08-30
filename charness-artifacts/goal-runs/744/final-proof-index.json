@@ -1,0 +1,42 @@
+{
+  "kind": "charness.goal-run-final-proof-index/v1",
+  "repo": "corca-ai/charness",
+  "parent_number": 744,
+  "draft_sha256": "eec33587771e5f6abf0e06eb32b1291f475b5b549860c96f73f89218fda44e20",
+  "binding_sha256": "2b5ac12a3722897bc5a11e88a881b45784adcbaab5e84840629ccd1d57421eb8",
+  "expected_children": {
+    "path": "charness-artifacts/goals/2026-08-30-close-current-open-issues-expected-children.json",
+    "sha256": "8c7d8a81f9fcb8d66977cca5ee569a8d8bbdd4632508f06fe980dd92a8f312b8"
+  },
+  "parent_obligation": {
+    "path": "charness-artifacts/goal-runs/744/parent-terminal-obligation.md",
+    "sha256": "05d1037be37f14f2ce15f3b64d88cea1b5673e9c950926a3ed2c1e1f6e26f486"
+  },
+  "evidence": [
+    {
+      "role": "whole-system-reconciliation",
+      "path": "charness-artifacts/goal-runs/744/final-proof.md",
+      "sha256": "63a385a618a6bb4e12aadf04bcc38131b1912552b9cb0ea9e8db83239cf3e45e"
+    },
+    {
+      "role": "final-fresh-eye",
+      "path": "charness-artifacts/goal-runs/744/reviews/goal-744-final-fresh-eye.md",
+      "sha256": "1156c2a90af5a525c601d3a36b19dc20db8eb9ac745f79083e7f70632a426b2e"
+    },
+    {
+      "role": "final-quality-core",
+      "path": "charness-artifacts/goal-runs/744/proofs/final-quality-core.md",
+      "sha256": "f8567776d06f70ecc925226decea680aae5c59103ebdc2f970a054dd564ceedc"
+    },
+    {
+      "role": "mutation-proof-policy-amendment",
+      "path": "charness-artifacts/goal-runs/744/amendments/2026-08-30-ignore-mutation-test-proof.md",
+      "sha256": "e89dc9eb98fa87df2679ff5ac2df4eb71c63c69425d68d41eacd8ed14e5f8d73"
+    },
+    {
+      "role": "exact-graph-readback",
+      "path": "charness-artifacts/goal-runs/744/observations/goal-744-final-list-exact-graph-1.terminal.json",
+      "sha256": "a35fdfed04fd5dc0d9b407acdee3f95eeeb10ea55c1cfc37c5222acaddb9b8d2"
+    }
+  ]
+}
