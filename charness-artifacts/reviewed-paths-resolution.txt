@@ -23,6 +23,10 @@ charness-artifacts/critique/review-20260830T083804Z-3390404-packet.json
 charness-artifacts/critique/review-20260830T083804Z-3390404-packet.md
 charness-artifacts/critique/review-20260830T084439Z-3456882-packet.json
 charness-artifacts/critique/review-20260830T084439Z-3456882-packet.md
+charness-artifacts/critique/review-20260830T085509Z-3538560-packet.json
+charness-artifacts/critique/review-20260830T085509Z-3538560-packet.md
+charness-artifacts/critique/review-20260830T085629Z-3541014-packet.json
+charness-artifacts/critique/review-20260830T085629Z-3541014-packet.md
 charness-artifacts/quality/2026-08-30-declaration-intersection-sweep.md
 charness-artifacts/quality/latest.md
 charness-artifacts/release-review/2026-08-30-8.0.0-real-host-removal-surface-lock.md
@@ -39,6 +43,7 @@ charness-artifacts/reviewed-paths-r5.txt
 charness-artifacts/reviewed-paths-r6.txt
 charness-artifacts/reviewed-paths-r7.txt
 charness-artifacts/reviewed-paths-r8.txt
+charness-artifacts/reviewed-paths-resolution.txt
 scripts/critique_packet_lib.py
 scripts/critique_reviewed_input_binding.py
 scripts/render_critique_section_changed_surfaces.py

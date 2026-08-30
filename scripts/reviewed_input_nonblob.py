@@ -357,6 +357,19 @@ def _gitlink_commit(
     # submodule's. An uninitialised submodule has nothing checked out to read,
     # which is exactly when the index entry is the honest answer.
     submodule_root = repo_root / _lexical_path(path)
+    # Refuse to treat a SYMLINKED path as a gitlink at all, before git runs with
+    # its cwd inside. `_review_paths` skips `_checked_path` whenever a gitlink is
+    # recognised, so recognising one here removed the symlink and repo-root
+    # checks -- and the toplevel comparison below cannot restore them, because it
+    # resolves BOTH sides and a link to an external repository matches itself.
+    # Returning None hands the path back to `_checked_path`, which refuses it
+    # with the message that owns this boundary.
+    if submodule_root.is_symlink():
+        return None
+    try:
+        submodule_root.resolve().relative_to(repo_root.resolve())
+    except ValueError:
+        return None
     checked_out_snapshot = _git_bytes_optional(
         submodule_root, "rev-parse", "--show-toplevel", "HEAD"
     )
@@ -370,6 +383,8 @@ def _gitlink_commit(
         if resolved.resolve() == submodule_root.resolve():
             return snapshot_lines[1].strip()
     return fields[object_field]
+
+
 def _gitlink_sha256(
     repo_root: Path,
     path: str,

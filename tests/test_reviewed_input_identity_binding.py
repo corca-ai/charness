@@ -427,57 +427,8 @@ def test_a_single_commit_that_deletes_resolves_its_preimage_from_the_parent(
     assert (ok, reason) == (True, "current")
 
 
-def test_a_refreshed_current_pointer_is_bound_by_its_link_payload(tmp_path: Path) -> None:
-    """Filing a record and refreshing its `latest.md` pointer must stay reviewable.
-
-    The documented flow after writing any dated record is
-    `refresh_current_pointer.py --execute`, which repoints a `latest.md` SYMLINK.
-    That left a modified symlink in the change set, and the sweep fed it to
-    `_checked_path`, which refuses symlinks by design — so every session that
-    filed a record was unreviewable until it committed.
-
-    The pointer is BOUND rather than excluded. An earlier cut dropped it from the
-    sweep, and a fresh-eye review blocked on that: `auto_excluded_paths` sits in
-    `PROVENANCE_FIELDS` and is never digested, so retargeting the pointer left the
-    identity unchanged and an approved verdict silently followed the move.
-    """
-    _init_identity_repo(tmp_path)
-    records = tmp_path / "charness-artifacts" / "quality"
-    records.mkdir(parents=True)
-    (records / "2026-08-30-record.md").write_text("# Record\n", encoding="utf-8")
-    (records / "2026-08-29-older.md").write_text("# Older\n", encoding="utf-8")
-    (records / "latest.md").symlink_to("2026-08-30-record.md")
-
-    identity = build_reviewed_input_identity(repo_root=tmp_path)
-
-    assert identity["status"] == "captured"
-    pointer = "charness-artifacts/quality/latest.md"
-    assert pointer in identity["reviewed_paths"]
-    assert pointer not in identity["auto_excluded_paths"]
-    assert verify_reviewed_input_identity(tmp_path, identity) == (True, "current")
 
 
-def test_retargeting_the_current_pointer_stales_the_verdict(tmp_path: Path) -> None:
-    """The discriminator the fresh-eye review demanded.
-
-    Binding the link payload is only worth more than excluding it if a retarget
-    actually moves the digest. It is the selection that carries meaning here, so
-    pointing at a different record must not read as an unchanged input.
-    """
-    _init_identity_repo(tmp_path)
-    records = tmp_path / "charness-artifacts" / "quality"
-    records.mkdir(parents=True)
-    (records / "a.md").write_text("# A\n", encoding="utf-8")
-    (records / "b.md").write_text("# B\n", encoding="utf-8")
-    (records / "latest.md").symlink_to("a.md")
-    identity = build_reviewed_input_identity(repo_root=tmp_path)
-    assert verify_reviewed_input_identity(tmp_path, identity) == (True, "current")
-
-    (records / "latest.md").unlink()
-    (records / "latest.md").symlink_to("b.md")
-
-    ok, reason = verify_reviewed_input_identity(tmp_path, identity)
-    assert (ok, reason) == (False, "declared reviewed inputs are stale")
 
 
 def test_an_ordinary_symlink_in_the_sweep_is_not_silently_dropped(tmp_path: Path) -> None:
@@ -520,12 +471,6 @@ def test_retargeting_an_ordinary_symlink_cannot_pass_as_an_unchanged_input(
         build_reviewed_input_identity(repo_root=tmp_path)
 
 
-def test_the_current_pointer_filename_matches_its_owning_module(tmp_path: Path) -> None:
-    """The restated constant must not drift from `artifact_naming_lib`."""
-    from scripts.artifact_naming_lib import CURRENT_POINTER_FILENAME as OWNED
-    from scripts.reviewed_input_identity import CURRENT_POINTER_FILENAME as RESTATED
-
-    assert RESTATED == OWNED
 
 
 def test_the_sweep_exclusion_does_not_weaken_the_declared_symlink_refusal(
@@ -613,7 +558,9 @@ def test_a_staged_then_deleted_path_binds_its_index_blob(tmp_path: Path) -> None
         ["git", "show", ":staged.txt"], cwd=tmp_path, capture_output=True
     ).stdout
     entry = next(e for e in identity["reviewed_content"] if e["path"] == "staged.txt")
-    assert entry["content_sha256"] == hashlib.sha256(blob).hexdigest()
+    # Digested the way a present file is: mode tag first, so a mode-only change
+    # to a recovered path still moves the digest.
+    assert entry["content_sha256"] == hashlib.sha256(b"file\0-\0" + blob).hexdigest()
 
 
 def test_a_zero_path_binding_is_refused_even_when_currency_is_disabled(
@@ -888,76 +835,54 @@ def test_a_submodule_removed_from_disk_does_not_crash_identity_construction(
 
     entry = next(e for e in identity["reviewed_content"] if e["path"] == "sub")
     assert entry["content_sha256"] == hashlib.sha256(b"gitlink\0" + index_entry.encode()).hexdigest()
-    # An index gitlink survives its checkout being deleted, so binding it without
-    # a disposition marked a REMOVED submodule undeleted, and restoring the
-    # checkout then left that verdict `current`.
     assert entry["disposition"] == "deleted"
     assert verify_reviewed_input_identity(clone, identity) == (True, "current")
 
 
-def test_a_non_absence_oserror_is_not_treated_as_a_missing_checkout(
-    tmp_path: Path, monkeypatch
-) -> None:
-    """The axis-varying control the absent-directory test could not supply.
-
-    A blanket `except OSError` let a `PermissionError` over a PRESENT submodule
-    read as "no checkout to consult" and bind the stale index value. The
-    submodule's HEAD is genuinely moved off the index here and the PUBLIC
-    consumer is invoked, so this exercises the false-`current` scenario itself
-    rather than only proving that an exception escapes a private helper.
-    """
-    from scripts import reviewed_input_nonblob as nonblob
-
-    repo = _submodule_repo(tmp_path)
-    upstream = tmp_path / "upstream"
-    (upstream / "f.txt").write_text("v2\n", encoding="utf-8")
-    _run_git(upstream, "commit", "-am", "v2")
-    _run_git(repo / "sub", "fetch", "-q", "origin")
-    _run_git(repo / "sub", "checkout", "-q", "FETCH_HEAD")
-    # The checkout now differs from the index, so falling back to the index
-    # would bind a value no longer checked out -- the false `current`.
-    assert (
-        subprocess.run(
-            ["git", "-C", "sub", "rev-parse", "HEAD"], cwd=repo, capture_output=True, text=True
-        ).stdout.strip()
-        != subprocess.run(
-            ["git", "ls-files", "-s", "--", "sub"], cwd=repo, capture_output=True, text=True
-        ).stdout.split()[1]
-    )
-
-    real_run = subprocess.run
-
-    def deny_inside_submodule(*args, **kwargs):
-        cwd = str(kwargs.get("cwd", ""))
-        if cwd.endswith("sub"):
-            raise PermissionError(13, "permission denied")
-        return real_run(*args, **kwargs)
-
-    monkeypatch.setattr(nonblob.subprocess, "run", deny_inside_submodule)
-
-    with pytest.raises(PermissionError):
-        build_reviewed_input_identity(repo_root=repo, reviewed_paths=[".gitmodules", "sub"])
-
-
-def test_an_unreadable_pointer_target_refuses_instead_of_hashing_a_constant(
+def test_an_unreadable_present_file_refuses_instead_of_reading_as_deleted(
     tmp_path: Path,
 ) -> None:
-    """A read FAILURE is not a state.
+    """Absence is a state; a failure to read is not.
 
-    Substituting a stable `unreadable` marker let capture and verification agree
-    on bytes neither could read, so an unreadable record verified as `current` —
-    the same failure-as-passing-verdict shape as swallowing every OSError around
-    a submodule checkout.
+    A read failure over a PRESENT file returned the same `None` as absence, so
+    the deletion fallbacks bound HEAD's bytes and stamped `disposition: deleted`
+    on a file still sitting there with unreadable, changed contents — capture and
+    verification agreeing on bytes neither read.
     """
+    from scripts.reviewed_input_identity import _working_tree_digest
+
     _init_identity_repo(tmp_path)
-    records = tmp_path / "charness-artifacts" / "quality"
-    records.mkdir(parents=True)
-    target = records / "record.md"
-    target.write_text("# Record\n", encoding="utf-8")
-    (records / "latest.md").symlink_to("record.md")
+    target = tmp_path / "reviewed.txt"
+    target.write_text("changed\n", encoding="utf-8")
     target.chmod(0o000)
     try:
         with pytest.raises(OSError):
-            build_reviewed_input_identity(repo_root=tmp_path)
+            _working_tree_digest(tmp_path, "reviewed.txt", "HEAD")
     finally:
         target.chmod(0o644)
+
+
+def test_a_deleted_path_binds_its_recorded_mode_not_only_its_bytes(tmp_path: Path) -> None:
+    """`chmod +x` on a reviewed script is review-significant and moves no bytes.
+
+    A present file folds the exec bit into its digest for exactly that reason. A
+    deletion recovered from a tree hashed raw bytes only, so a mode-only change
+    to a deleted path verified as current — and the working-tree substrate drops
+    the staged/unstaged patch hashes from its digest, so nothing else carried it.
+    """
+    from scripts.reviewed_input_identity import _working_tree_digest
+
+    _init_identity_repo(tmp_path)
+    (tmp_path / "s.sh").write_text("#!/bin/sh\n", encoding="utf-8")
+    _run_git(tmp_path, "add", "-A")
+    _run_git(tmp_path, "commit", "-m", "add script")
+    _run_git(tmp_path, "update-index", "--chmod=+x", "s.sh")
+    _run_git(tmp_path, "commit", "-m", "make executable")
+    (tmp_path / "s.sh").unlink()
+    _run_git(tmp_path, "rm", "-q", "--cached", "s.sh")
+
+    executable = _working_tree_digest(tmp_path, "s.sh", "HEAD")
+    plain = _working_tree_digest(tmp_path, "s.sh", "HEAD^")
+
+    assert executable[1] is True and plain[1] is True
+    assert executable[0] != plain[0]

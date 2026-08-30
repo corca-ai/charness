@@ -103,6 +103,14 @@ def _sha256(payload: bytes) -> str:
 
 
 def _worktree_content_sha256(repo_root: Path, path: str) -> str | None:
+    """None only when the path is ABSENT from the working tree.
+
+    A read failure over a PRESENT file used to return None too, and the deletion
+    fallbacks then bound HEAD's bytes and stamped `disposition: deleted` on a
+    file that is still there with unreadable, changed contents -- capture and
+    verification agreeing on bytes neither read. Absence is a state; a failure to
+    read is not.
+    """
     try:
         # No symlink arm: `_checked_path` above refuses symlinks (f7a09d672), so
         # the link-payload branch that used to sit here was unreachable from the
@@ -116,6 +124,13 @@ def _worktree_content_sha256(repo_root: Path, path: str) -> str | None:
         mode_tag = b"x\0" if candidate.stat().st_mode & 0o111 else b"-\0"
         return _sha256(b"file\0" + mode_tag + candidate.read_bytes())
     except OSError:
+        # Resolved from `path`, not from `candidate`: `_checked_path` itself can
+        # raise, leaving `candidate` unbound, and referencing it there turned an
+        # OSError into a NameError. The existing contract test named exactly that
+        # path.
+        probe = repo_root / _lexical_path(path)
+        if probe.exists() or probe.is_symlink():
+            raise
         return None
 
 
@@ -397,6 +412,28 @@ def _committed_ref_digest(
     return None, False
 
 
+def _recorded_blob_digest(
+    repo_root: Path, path: str, tree_ref: str | None, blob: bytes
+) -> str:
+    """Digest a recovered blob the same way a present file is digested.
+
+    `_worktree_content_sha256` folds the exec bit in, because `chmod +x` on a
+    reviewed script is review-significant and its bytes do not move. A deletion
+    recovered from the index or a tree hashed raw bytes only, so a mode-only
+    change to a deleted path verified as current -- and the working-tree
+    substrate drops the staged/unstaged patch hashes from its digest, so nothing
+    else carried the mode either.
+    """
+    if tree_ref is None:
+        raw = _git_bytes_optional(repo_root, "ls-files", "-s", "--", path)
+        mode = raw.decode("utf-8", errors="surrogateescape").split()[0] if raw else ""
+    else:
+        raw = _git_bytes_optional(repo_root, "ls-tree", tree_ref, "--", path)
+        mode = raw.decode("utf-8", errors="surrogateescape").split()[0] if raw else ""
+    mode_tag = b"x\0" if mode == "100755" else b"-\0"
+    return _sha256(b"file\0" + mode_tag + blob)
+
+
 def _working_tree_digest(
     repo_root: Path,
     path: str,
@@ -427,10 +464,10 @@ def _working_tree_digest(
         return gitlink, not (repo_root / _lexical_path(path)).exists()
     staged = _object_or_show(repo_root, f":{path}", git_object_snapshot)
     if staged is not None:
-        return _sha256(staged), True
+        return _recorded_blob_digest(repo_root, path, None, staged), True
     previous = _object_or_show(repo_root, f"{base_head}:{path}", git_object_snapshot)
     if previous is not None:
-        return _sha256(previous), True
+        return _recorded_blob_digest(repo_root, path, base_head, previous), True
     # Same gitlink gap on this side: a submodule removed from index and disk is
     # unreadable by `git show`.
     return _gitlink_sha256(repo_root, path, base_head, gitlink_snapshot), True
