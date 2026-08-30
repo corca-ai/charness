@@ -53,23 +53,26 @@ def _run_git(repo_root: Path, *args: str) -> subprocess.CompletedProcess[str]:
     )
 
 
-def _resolve_head(repo_root: Path, head_sha: str | None) -> str | None:
-    if head_sha:
-        return head_sha
-    result = _run_git(repo_root, "rev-parse", "HEAD")
+def _commit_metadata_snapshot(repo_root: Path, head_sha: str | None) -> tuple[str, str | None, str] | None:
+    target = head_sha or "HEAD"
+    result = _run_git(repo_root, "log", "-1", "--format=%H%x00%P%x00%B%x00", target)
     if result.returncode != 0:
         return None
-    return result.stdout.strip() or None
+    fields = result.stdout.split("\0", 3)
+    if len(fields) < 3:
+        return None
+    resolved_head, parents, message = fields[:3]
+    if not resolved_head:
+        return None
+    parent_sha = parents.split(maxsplit=1)[0] if parents else None
+    return resolved_head, parent_sha, message
 
 
-def _parent_resolution(repo_root: Path, head_sha: str) -> tuple[str | None, str | None]:
-    parent_result = _run_git(repo_root, "rev-parse", f"{head_sha}^")
-    if parent_result.returncode == 0:
-        return parent_result.stdout.strip() or None, None
+def _missing_parent_reason(repo_root: Path) -> str:
     shallow_result = _run_git(repo_root, "rev-parse", "--is-shallow-repository")
     if shallow_result.returncode == 0 and shallow_result.stdout.strip() == "true":
-        return None, "shallow_clone"
-    return None, "no_parent"
+        return "shallow_clone"
+    return "no_parent"
 
 
 def _parse_name_status(stdout: str) -> list[tuple[str, str]]:
@@ -280,20 +283,21 @@ def _empty_result(skipped_reason: str | None) -> dict:
 def classify_t_signal(repo_root: Path, head_sha: str | None = None) -> dict:
     if not (repo_root / ".git").exists():
         return _empty_result("diff_unavailable")
-    head = _resolve_head(repo_root, head_sha)
-    if head is None:
-        return _empty_result("diff_unavailable")
 
-    parent_sha, skip_reason = _parent_resolution(repo_root, head)
+    metadata = _commit_metadata_snapshot(repo_root, head_sha)
+    if metadata is None:
+        if head_sha is None:
+            return _empty_result("diff_unavailable")
+        return _empty_result(_missing_parent_reason(repo_root))
+
+    resolved_head, parent_sha, head_message = metadata
+    head = head_sha or resolved_head
     if parent_sha is None:
-        return _empty_result(skip_reason)
+        return _empty_result(_missing_parent_reason(repo_root))
 
     diff_result = _run_git(repo_root, "diff", "--name-status", f"{parent_sha}..{head}")
     if diff_result.returncode != 0:
         return _empty_result("diff_unavailable")
-
-    message_result = _run_git(repo_root, "log", "-1", "--format=%B", head)
-    head_message = message_result.stdout if message_result.returncode == 0 else ""
 
     entries = _parse_name_status(diff_result.stdout)
     candidates = _collect_candidates(repo_root, parent_sha, head, entries, head_message)

@@ -326,6 +326,38 @@ def test_no_rule_match_returns_none(tmp_path: Path, classify) -> None:
     assert result["rule_id"] is None
 
 
+def test_normal_classification_uses_one_metadata_and_one_diff_call(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    module = _load_module()
+    repo = tmp_path / "repo"
+    (repo / ".git").mkdir(parents=True)
+    head = "a" * 40
+    first_parent = "b" * 40
+    second_parent = "c" * 40
+    metadata_args = ("log", "-1", "--format=%H%x00%P%x00%B%x00", "HEAD")
+    calls: list[tuple[str, ...]] = []
+
+    def run_git(repo_root: Path, *args: str) -> subprocess.CompletedProcess[str]:
+        calls.append(args)
+        if args == metadata_args:
+            stdout = f"{head}\0{first_parent} {second_parent}\0Implement feature\n\nCloses #123\n\0\n"
+            return subprocess.CompletedProcess(["git", *args], 0, stdout, "")
+        if args == ("diff", "--name-status", f"{first_parent}..{head}"):
+            return subprocess.CompletedProcess(
+                ["git", *args], 0, "M\tsrc/feature.py\n", ""
+            )
+        raise AssertionError(f"unexpected git call: {args}")
+
+    monkeypatch.setattr(module, "_run_git", run_git)
+
+    result = module.classify_t_signal(repo)
+
+    assert result["rule_id"] == "issue-closed"
+    assert result["commit_refs"] == [head]
+    assert calls == [metadata_args, ("diff", "--name-status", f"{first_parent}..{head}")]
+
+
 def test_not_a_git_repo_returns_diff_unavailable(tmp_path: Path, classify) -> None:
     result = classify(tmp_path)
 
