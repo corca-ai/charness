@@ -80,6 +80,11 @@ both fields to commands YOUR repo can run.
   should override this to include the marker — e.g.,
   `./scripts/run-quality.sh --release` — so publish covers update/install
   flow checks that standing pre-push intentionally skips.
+  A repo may make one release's changed-line evidence an explicit non-claim with
+  `./scripts/run-quality.sh --release --non-claim=release-changed-line-coverage`.
+  This exact release-only label omits that lane rather than converting a failed
+  verdict into success; all other release gates still run. Preserve the command
+  in the tagged adapter and state the missing verdict in the release notes.
 - `update_instructions`: empty list
 - `requested_review_commands`: empty list
 - `requested_review_policy`: `warn-if-unconfigured`

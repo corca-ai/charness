@@ -185,6 +185,66 @@ def test_release_partial_changed_line_fails_the_release(
     assert "PASS release-changed-line-coverage" not in result.stdout
 
 
+def test_release_explicit_non_claim_omits_only_changed_line_proof(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
+    repo, env, event_log = _release_fixture(tmp_path, seeded_quality_runner_repo)
+
+    result = run_shell_script(
+        repo / "scripts" / "run-quality.sh",
+        "--release",
+        "--non-claim=release-changed-line-coverage",
+        cwd=repo,
+        env=env,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert event_log.read_text(encoding="utf-8").splitlines() == [
+        "pytest-release",
+        "validate-skills",
+        "check-runtime-budget",
+    ]
+    assert "PASS release-changed-line-coverage" not in result.stdout
+    assert "FAIL release-changed-line-coverage" not in result.stdout
+    assert (
+        "NON-CLAIM: release-changed-line-coverage was not run by explicit release policy; "
+        "no changed-line verdict exists"
+    ) in result.stderr
+
+
+def test_changed_line_non_claim_requires_release(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
+    repo, env, _event_log = _release_fixture(tmp_path, seeded_quality_runner_repo)
+
+    result = run_shell_script(
+        repo / "scripts" / "run-quality.sh",
+        "--non-claim=release-changed-line-coverage",
+        cwd=repo,
+        env=env,
+    )
+
+    assert result.returncode == 2
+    assert "requires --release" in result.stderr
+
+
+def test_release_refuses_unknown_non_claim_label(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
+    repo, env, _event_log = _release_fixture(tmp_path, seeded_quality_runner_repo)
+
+    result = run_shell_script(
+        repo / "scripts" / "run-quality.sh",
+        "--release",
+        "--non-claim=mutation",
+        cwd=repo,
+        env=env,
+    )
+
+    assert result.returncode == 2
+    assert "unsupported --non-claim label mutation" in result.stderr
+
+
 def test_release_refuses_a_label_filter(
     tmp_path: Path, seeded_quality_runner_repo: Path
 ) -> None:

@@ -35,6 +35,7 @@ RUN_QUALITY_RELEASE=0
 RUN_QUALITY_MODE="${CHARNESS_QUALITY_MODE:-full}"
 RUN_QUALITY_INCLUDE_RELEASE_ONLY="${CHARNESS_QUALITY_INCLUDE_RELEASE_ONLY:-0}"
 RUN_QUALITY_RECEIPT_JSON="${CHARNESS_QUALITY_RECEIPT_JSON:-}"
+RUN_QUALITY_NON_CLAIM=""
 # The default developer lane is deliberately small.  `--full` remains the
 # explicit broad battery; an implementation should not
 # pay every inventory, evaluator, and mutation-proof gate just because it ran the
@@ -65,13 +66,21 @@ for arg in "$@"; do
         exit 2
       fi
       ;;
+    --non-claim=release-changed-line-coverage)
+      RUN_QUALITY_NON_CLAIM="release-changed-line-coverage"
+      ;;
+    --non-claim=*)
+      echo "run-quality: unsupported --non-claim label ${arg#*=}" >&2
+      exit 2
+      ;;
     --help|-h)
-      echo "Usage: ./scripts/run-quality.sh [--review] [--read-only|--full] [--release] [--receipt-json=PATH]"
+      echo "Usage: ./scripts/run-quality.sh [--review] [--read-only|--full] [--release] [--non-claim=release-changed-line-coverage] [--receipt-json=PATH]"
       echo "  --review     replay passing phase logs and validate external links online"
       echo "  --read-only  skip phases that would mutate git-tracked quality artifacts"
       echo "  --full       run the broad quality battery and refresh git-tracked artifacts"
       echo "  default      run only the core implementation lane"
       echo "  --release    include release-only tests"
+      echo "  --non-claim=release-changed-line-coverage  explicitly omit only the release-final changed-line lane; requires --release"
       echo "  --receipt-json=PATH  write the per-run semantic receipt (also via CHARNESS_QUALITY_RECEIPT_JSON)"
       exit 0
       ;;
@@ -81,6 +90,11 @@ for arg in "$@"; do
       ;;
   esac
 done
+
+if [[ -n "$RUN_QUALITY_NON_CLAIM" && "$RUN_QUALITY_RELEASE" != "1" ]]; then
+  echo "run-quality: --non-claim=release-changed-line-coverage requires --release" >&2
+  exit 2
+fi
 
 if [[ "$RUN_QUALITY_RELEASE" == "1" && -n "${CHARNESS_QUALITY_LABELS:-}" ]]; then
   echo "run-quality: --release is one indivisible lane; CHARNESS_QUALITY_LABELS cannot narrow it" >&2
@@ -1312,7 +1326,9 @@ fi
 # The release-final proof is the last release decision and has exactly one owner.
 # Every earlier release phase has flushed by this point; a blocking predecessor
 # leaves OVERALL_RC nonzero, so no changed-line work starts after a failed check.
-if [[ "$RUN_QUALITY_RELEASE" == "1" && "$OVERALL_RC" == "0" ]]; then
+if [[ "$RUN_QUALITY_RELEASE" == "1" && "$OVERALL_RC" == "0" && -n "$RUN_QUALITY_NON_CLAIM" ]]; then
+  echo "NON-CLAIM: release-changed-line-coverage was not run by explicit release policy; no changed-line verdict exists" >&2
+elif [[ "$RUN_QUALITY_RELEASE" == "1" && "$OVERALL_RC" == "0" ]]; then
   release_changed_line_coverage_json="$RUN_QUALITY_RUNTIME_ROOT/release-changed-line-coverage/coverage.json"
   if [[ -n "$CHANGED_LINE_BASE_SHA" ]]; then
     queue_selected "release-changed-line-coverage" python3 scripts/release_changed_line_coverage.py \
