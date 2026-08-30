@@ -36,7 +36,7 @@ UPDATE_PLACEHOLDERS = frozenset({"repo", "number", "body_file"})
 
 GOAL_RUN_MARKER_RE = re.compile(r"<!--\s*charness-goal-run:(?P<version>[^\s]+)")
 GOAL_RUN_BLOCK_RE = re.compile(
-    r"<!-- charness-goal-run:v1\s*\n(?P<payload>\{.*\})\s*\n-->", re.DOTALL
+    r"<!-- charness-goal-run:v1\s*\n(?P<payload>\{.*?\})\s*\n-->", re.DOTALL
 )
 BOOTSTRAP_OPERATIONS = CAPABILITIES.BOOTSTRAP_OPERATIONS
 tracker_capability_report = CAPABILITIES.tracker_capability_report
@@ -67,6 +67,10 @@ GOAL_RUN_IMMUTABLE_FIELDS = (
     "draft_sha256",
     "initial_graph_sha256",
 )
+GOAL_RUN_TERMINAL_FIELDS = (
+    "terminal_observation_path",
+    "terminal_observation_sha256",
+)
 
 
 def _goal_run_block(body: str, *, context: str) -> dict[str, Any] | None:
@@ -91,7 +95,9 @@ def _goal_run_block(body: str, *, context: str) -> dict[str, Any] | None:
     return payload
 
 
-def _guard_goal_run_metadata(current_body: str, desired_body: str) -> None:
+def _guard_goal_run_metadata(
+    current_body: str, desired_body: str, *, terminal_metadata_update: bool = False
+) -> None:
     current = _goal_run_block(current_body, context="current body")
     desired = _goal_run_block(desired_body, context="desired body")
     if current is not None and desired is None:
@@ -104,6 +110,17 @@ def _guard_goal_run_metadata(current_body: str, desired_body: str) -> None:
     if changed:
         raise RuntimeError(
             f"tracker update refused to alter immutable Goal Run identity fields: {changed!r}"
+        )
+    missing = object()
+    terminal_changed = [
+        field
+        for field in GOAL_RUN_TERMINAL_FIELDS
+        if current.get(field, missing) != desired.get(field, missing)
+    ]
+    if terminal_changed and not terminal_metadata_update:
+        raise RuntimeError(
+            "tracker update refused to alter terminal Goal Run metadata outside the "
+            f"dedicated close ingress: {terminal_changed!r}"
         )
 
 
@@ -242,7 +259,12 @@ def create_or_reuse_child(
 
 
 def update_issue_body(
-    repo: str, number: int, body_file: Path, *, backend: dict[str, Any]
+    repo: str,
+    number: int,
+    body_file: Path,
+    *,
+    backend: dict[str, Any],
+    terminal_metadata_update: bool = False,
 ) -> dict[str, Any]:
     if not body_file.is_file():
         raise RuntimeError(f"tracker body file not found: {body_file}")
@@ -251,7 +273,11 @@ def update_issue_body(
     )
     current_body = before.pop("body")
     desired_body = body_file.read_text(encoding="utf-8")
-    _guard_goal_run_metadata(current_body, desired_body)
+    _guard_goal_run_metadata(
+        current_body,
+        desired_body,
+        terminal_metadata_update=terminal_metadata_update,
+    )
     if before["body_verified"] is True:
         return {
             "ok": True,

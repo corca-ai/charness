@@ -227,10 +227,13 @@ python3 "$SKILL_DIR/scripts/issue_tool.py" goal-run-close \
 The close provider checks a repo-contained, complete-byte-hash-bound final
 proof index before provider selection. The index is
 `charness.goal-run-final-proof-index/v1` and carries the draft/binding hashes,
-repository and parent identity, exact expected child identities, and the parent
-obligation identity. The close proof separately binds its comment bytes and
-the index bytes; missing, stale, malformed, foreign, or mismatched inputs
-refuse without a provider call. After that preflight, the provider checks the
+repository and parent identity, a hash-bound typed expected-child file,
+hash-bound parent-obligation bytes, and generic role-labelled evidence
+artifacts. The close proof separately binds its comment bytes and the index
+bytes; missing, stale, malformed, foreign, or mismatched inputs refuse without
+a provider call. Issue core checks artifact identity and bytes; the Goal agent
+owns the meaning and sufficiency of CI/docs/whole-system roles. After that
+preflight, the provider checks the
 exact child graph, all linked child states, and issue-owned evidence identities
 before one guarded close. Generic `close-with-comment` refuses a body carrying
 the Goal Run marker, preventing a routine issue close from bypassing the Goal
@@ -243,6 +246,10 @@ update and independently reads the parent back. The final read must still
 identify the requested parent, report `CLOSED`, and bind the exact terminal
 receipt. A failed metadata update or final readback is reported as
 `unverified-write`; it is not folded into the close mutation's success.
+Retry uses typed mutation stages: a proven prior comment resumes at close
+without re-commenting, and a now-closed parent can repair terminal metadata by
+binding the prior close receipt without re-closing. An already-closed read is
+verified only after the referenced local receipt pair matches the Goal identity.
 
 When `id != "gh"` and `commands.search_newest_open` is missing, `select`
 without an explicit selector stops with a clear error. Pass an explicit

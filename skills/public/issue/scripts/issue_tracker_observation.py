@@ -83,6 +83,97 @@ def _read_receipt(path: Path) -> dict[str, Any] | None:
     return payload
 
 
+def read_attempt(
+    *, repo_root: Path, observation_dir: Path, attempt_id: str
+) -> dict[str, Any] | None:
+    """Read one complete immutable observation pair with receipt binding."""
+    if not ATTEMPT_ID_RE.fullmatch(attempt_id):
+        return None
+    directory = _validated_dir(repo_root, observation_dir)
+    started_path = directory / f"{attempt_id}.started.json"
+    terminal_path = directory / f"{attempt_id}.terminal.json"
+    started = _read_receipt(started_path)
+    terminal = _read_receipt(terminal_path)
+    if started is None or terminal is None:
+        return None
+    root = repo_root.resolve()
+    if (
+        started.get("kind") != "charness.goal-run-observation/v1"
+        or started.get("phase") != "started"
+        or started.get("attempt_id") != attempt_id
+        or terminal.get("kind") != "charness.goal-run-observation/v1"
+        or terminal.get("phase") != "terminal"
+        or terminal.get("attempt_id") != attempt_id
+        or terminal.get("started_sha256") != started.get("receipt_sha256")
+        or terminal.get("started_path") != str(started_path.relative_to(root))
+    ):
+        return None
+    return {
+        "started": {"path": str(started_path.relative_to(root)), "payload": started},
+        "terminal": {"path": str(terminal_path.relative_to(root)), "payload": terminal},
+    }
+
+
+def find_close_attempts(
+    *,
+    repo_root: Path,
+    observation_dir: Path,
+    repo: str,
+    parent_number: int,
+    draft_sha256: str,
+    binding_sha256: str,
+    exclude_attempt_id: str,
+) -> list[dict[str, Any]]:
+    """Return every prior close start bound to the same Goal identity.
+
+    Started-only or invalid-terminal records remain in the result with a null
+    terminal so the caller cannot mistake an observation crash window for a
+    mutation-free history.
+    """
+    directory = _validated_dir(repo_root, observation_dir)
+    if not directory.is_dir():
+        return []
+    matches: list[dict[str, Any]] = []
+    root = repo_root.resolve()
+    for started_path in sorted(directory.glob("*.started.json")):
+        attempt_id = started_path.name.removesuffix(".started.json")
+        if attempt_id == exclude_attempt_id:
+            continue
+        started = _read_receipt(started_path)
+        if started is None:
+            continue
+        parent = started.get("parent")
+        if (
+            started.get("kind") != "charness.goal-run-observation/v1"
+            or started.get("phase") != "started"
+            or started.get("attempt_id") != attempt_id
+            or not isinstance(parent, dict)
+            or not isinstance(parent.get("repo"), str)
+            or parent["repo"].casefold() != repo.casefold()
+            or parent.get("number") != parent_number
+            or started.get("operation") not in {"close-goal-run", "resume-goal-run-close"}
+            or started.get("draft_sha256") != draft_sha256
+            or started.get("binding_sha256") != binding_sha256
+        ):
+            continue
+        attempt = read_attempt(
+            repo_root=repo_root,
+            observation_dir=observation_dir,
+            attempt_id=attempt_id,
+        )
+        matches.append(
+            attempt
+            or {
+                "started": {
+                    "path": str(started_path.relative_to(root)),
+                    "payload": started,
+                },
+                "terminal": None,
+            }
+        )
+    return matches
+
+
 def find_unresolved_create(
     *,
     repo_root: Path,

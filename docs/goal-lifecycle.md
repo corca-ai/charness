@@ -271,25 +271,33 @@ operation may reach the internal close primitive. It:
 
 1. reads every linked child
 2. refuses any open child
-3. verifies each child's issue-owned closeout evidence, including the three
-   historical closed children, rather than trusting state alone
-4. verifies every deferral on its successor parent
-5. checks whole-system proof and docs reconciliation
-6. validates the separately bound final-proof index, including exact expected
-   child and parent-obligation identities, before provider selection
-7. persists the terminal attempt and closes the parent
-8. performs distinct post-close provider readback
-9. finalizes the immutable terminal observation
-10. updates only mutable parent terminal metadata with its path/hash through
+3. verifies that every approved issue-owned closeout comment identity still
+   exists on its child, including historical closed children
+4. validates the separately bound final-proof index before provider selection;
+   the index hash-binds the expected-child file, parent-obligation bytes, and
+   role-labelled evidence artifacts selected by the Goal agent
+5. persists the terminal attempt and closes the parent
+6. performs distinct post-close provider readback
+7. finalizes the immutable terminal observation
+8. updates only mutable parent terminal metadata with its path/hash through
     the binding-aware update, and independently reads the still-closed parent
     back again
 
 Comment-written/close-failed, close-invoked/readback-unknown, and
 closed/readback-failed are distinct partial outcomes. A terminal metadata
 update or its independent CLOSED readback is also a distinct
-`unverified-write` outcome; it is not atomic with close. Retry reads first and
-never re-closes an already-closed parent. Failed exact readback is `unverified`,
-never completion.
+`unverified-write` outcome; it is not atomic with close. Retry reads first,
+resumes close without posting a second comment when the prior receipt proves
+the comment landed, and repairs terminal metadata without re-closing when the
+provider now reads `CLOSED`. It never re-closes an already-closed parent. An
+already-closed result is valid only when its
+local terminal receipt pair is hash- and identity-verified. Failed exact
+readback is `unverified`, never completion.
+
+The close ingress validates artifact identity and byte binding, not the
+Goal-specific meaning of CI, docs, or whole-system evidence. The agent running
+the Goal owns that composition and records its selected artifacts in the
+generic role-labelled index.
 
 ## Ownership And Portability
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import runpy
+from functools import partial
 from pathlib import Path
 from typing import Any
 
@@ -23,6 +24,9 @@ _consolidation_readback = _load_local("issue_consolidation_readback")
 _state_readback = _load_local("issue_state_readback")
 _goal_run_guard = _load_local("issue_goal_run_guard")
 _COMMANDS = _load_local("issue_close_commands")
+_MUTATION = _load_local("issue_close_mutation", "issue_close_mutation_stages")
+_RETRY = _load_local("issue_close_retry", "issue_close_retry_carrier")
+_PREPARE = _load_local("issue_close_prepare", "issue_close_prepare_carrier")
 GH_COMMENT_DEFAULT = _COMMANDS.GH_COMMENT_DEFAULT
 GH_CLOSE_DEFAULT = _COMMANDS.GH_CLOSE_DEFAULT
 GH_VIEW_DEFAULT = _COMMANDS.GH_VIEW_DEFAULT
@@ -30,6 +34,9 @@ GH_VIEW_TARGET_DEFAULT = _COMMANDS.GH_VIEW_TARGET_DEFAULT
 COMMENT_PLACEHOLDERS = _COMMANDS.COMMENT_PLACEHOLDERS
 CLOSE_PLACEHOLDERS = _COMMANDS.CLOSE_PLACEHOLDERS
 VIEW_PLACEHOLDERS = _COMMANDS.VIEW_PLACEHOLDERS
+
+
+CloseMutationError = _MUTATION.CloseMutationError
 
 
 def _authorize_direct_close(
@@ -273,6 +280,18 @@ def _read_preflight_state(
     return existing
 
 
+_prepare_close_mutation = partial(
+    _PREPARE.prepare,
+    evaluate=evaluate_close_comment_carrier,
+    resolve_commands=_resolve_close_commands,
+    read_preflight=_read_preflight_state,
+    check_target=_check_goal_run_target,
+    format_failure=_CLOSE_COMMENT_FLOOR.format_close_comment_floor_failure,
+    guard_body=_goal_run_guard.refuse_generic_close,
+    refuse_reason=_refuse_completed_consolidation,
+)
+
+
 def close_with_comment(
     repo: str,
     number: int,
@@ -287,79 +306,27 @@ def close_with_comment(
     preflight_state: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     backend = backend or {"id": "gh", "binary": "gh", "commands": None}
-    # Ahead of the body read, where it has always been: a caller that asked for
-    # `completed` on a consolidation gets the contradiction, not a file-not-found.
-    _refuse_completed_consolidation(classification, reason)
-    if not body_file.is_file():
-        raise RuntimeError(f"close-comment body file not found: {body_file}")
-    body = body_file.read_text(encoding="utf-8")
-    if not goal_run_authorized:
-        _goal_run_guard.refuse_generic_close(body, context="close carrier")
-    floor_report = evaluate_close_comment_carrier(
-        repo, number, body,
-        repo_root=repo_root, classification=classification, backend=backend,
-        reason=reason, manual_target_declaration=manual_target_declaration,
+    prepared = _prepare_close_mutation(
+        repo,
+        number,
+        body_file,
+        repo_root=repo_root,
+        classification=classification,
+        backend=backend,
+        reason=reason,
+        manual_target_declaration=manual_target_declaration,
+        goal_run_authorized=goal_run_authorized,
+        preflight_state=preflight_state,
     )
-    authorization = floor_report["closeout_authorization"]
-    if not floor_report["ok"]:
-        # floor-addition-restraint: irreversible-boundary P5 floor, presence/form-only
-        raise RuntimeError(_CLOSE_COMMENT_FLOOR.format_close_comment_floor_failure(floor_report))
-    comment_argv, close_argv, view_argv = _resolve_close_commands(
-        backend, repo=repo, number=number, body_file=body_file, reason=reason
-    )
-    # This readback is deliberately before the first mutation. An argv containing
-    # --repo and number is a request, not proof that the backend answered about that
-    # target. The same strict helper is used again after close.
-    if view_argv is not None:
-        preflight_state = _read_preflight_state(
-            view_argv, repo=repo, number=number, existing=preflight_state
-        )
-    _check_goal_run_target(
+    verified_state = _MUTATION.comment_close(
+        prepared["comment_argv"],
+        prepared["close_argv"],
+        prepared["view_argv"],
         repo=repo,
         number=number,
-        backend=backend,
-        authorized=goal_run_authorized,
+        run_backend=_run_backend,
+        require_identity=require_exact_issue_identity,
     )
-    comment_result = _run_backend(comment_argv)
-    if comment_result.returncode != 0:
-        raise RuntimeError(
-            f"comment failed: exit={comment_result.returncode} stderr={comment_result.stderr.strip()!r}"
-        )
-    close_result = _run_backend(close_argv)
-    if close_result.returncode != 0:
-        raise RuntimeError(
-            "close failed after comment landed; do not re-comment on retry. "
-            f"comment_succeeded=True comment_argv={comment_argv!r} "
-            f"close_exit={close_result.returncode} close_stderr={close_result.stderr.strip()!r}"
-        )
-    verified_state: dict[str, Any] | None = None
-    if view_argv is not None:
-        view_result = _run_backend(view_argv)
-        if view_result.returncode != 0:
-            raise RuntimeError(
-                "close state verification failed after close command succeeded; "
-                f"view_exit={view_result.returncode} view_stderr={view_result.stderr.strip()!r}"
-            )
-        try:
-            verified_state = json.loads(view_result.stdout)
-        except Exception as exc:
-            raise RuntimeError(f"close state verification returned invalid JSON: {exc}") from exc
-        # The other half of the identity, checked against the ANSWER. Requiring `{repo}` in the
-        # template means the backend is TOLD which repository to read back; it does not mean it
-        # obeyed, and a wrong-repo answer carries the right number and the expected state. The
-        # `url` needed to check it was already being fetched and stored, and never read.
-        # Silence is not a mismatch: a payload that names no repository yields None here, and
-        # refusing those would fail every backend whose payload shape omits one.
-        require_exact_issue_identity(
-            verified_state,
-            expected_repo=repo,
-            expected_number=number,
-            context="post-mutation issue readback",
-        )
-        if verified_state.get("state") != "CLOSED":
-            raise RuntimeError(
-                f"close state verification failed: {repo}#{number} is {verified_state.get('state')!r}"
-            )
     # floor-addition-restraint: irreversible-boundary P5, forces-question-only --
     # advisory only (exit stays 0); a question/decision-needed close has nothing
     # live to confirm, so the only obligation is surfacing that the
@@ -370,18 +337,27 @@ def close_with_comment(
     # the closing operator would see. `verify-closeout` already surfaces these;
     # the carrier that writes to GitHub itself did not.
     review_advisory = review_advisory + list(
-        floor_report.get("resolution_critique", {}).get("review_advisory", []) or []
+        prepared["floor_report"].get("resolution_critique", {}).get("review_advisory", []) or []
     )
     return {
         "ok": True,
         "repo": repo,
         "number": number,
-        "comment_argv": comment_argv,
-        "close_argv": close_argv,
-        "view_argv": view_argv,
-        "preflight_state": preflight_state,
+        "comment_argv": prepared["comment_argv"],
+        "close_argv": prepared["close_argv"],
+        "view_argv": prepared["view_argv"],
+        "preflight_state": prepared["preflight_state"],
         "verified_state": verified_state,
         "reason": reason,
-        "closeout_authorization": authorization,
+        "closeout_authorization": prepared["authorization"],
         "review_advisory": review_advisory,
     }
+
+
+close_after_verified_comment = partial(
+    _RETRY.close_after_verified_comment,
+    prepare=_prepare_close_mutation,
+    mutation=_MUTATION,
+    run_backend=_run_backend,
+    require_identity=require_exact_issue_identity,
+)

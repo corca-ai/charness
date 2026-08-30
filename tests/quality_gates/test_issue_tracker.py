@@ -479,6 +479,50 @@ def test_update_body_refuses_to_strip_goal_run_metadata(
         tracker.update_issue_body("corca-ai/charness", 724, desired, backend=BACKEND)
 
 
+def test_generic_update_refuses_to_publish_terminal_metadata(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    current = '<!-- charness-goal-run:v1\n{"binding_sha256":"a","draft_sha256":"b"}\n-->\n'
+    desired = tmp_path / "body.md"
+    desired.write_text(
+        '<!-- charness-goal-run:v1\n{"binding_sha256":"a","draft_sha256":"b",'
+        '"terminal_observation_path":"observations/close.terminal.json",'
+        '"terminal_observation_sha256":"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"}\n-->\n',
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        tracker.VERIFY_CREATE,
+        "verify_created_issue",
+        lambda *_args, **_kwargs: {
+            "body_verified": False,
+            "body": current,
+            "url": "https://github.com/corca-ai/charness/issues/724",
+        },
+    )
+    monkeypatch.setattr(
+        tracker,
+        "run_backend",
+        lambda _argv: (_ for _ in ()).throw(AssertionError("must not write")),
+    )
+
+    with pytest.raises(RuntimeError, match="dedicated close ingress"):
+        tracker.update_issue_body("corca-ai/charness", 724, desired, backend=BACKEND)
+
+
+@pytest.mark.parametrize(
+    "field", ["terminal_observation_path", "terminal_observation_sha256"]
+)
+def test_generic_update_treats_a_null_terminal_key_as_a_change(field: str) -> None:
+    current = '<!-- charness-goal-run:v1\n{"binding_sha256":"a","draft_sha256":"b"}\n-->\n'
+    desired = (
+        '<!-- charness-goal-run:v1\n'
+        f'{{"binding_sha256":"a","draft_sha256":"b","{field}":null}}\n-->\n'
+    )
+
+    with pytest.raises(RuntimeError, match="dedicated close ingress"):
+        tracker._guard_goal_run_metadata(current, desired)
+
+
 @pytest.mark.parametrize(
     ("body", "message"),
     [

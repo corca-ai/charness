@@ -111,8 +111,9 @@ identity proof. `goal-run-close` is the only path that may close a Goal Run; it
 requires a separate proof file and a separately bound
 `charness.goal-run-final-proof-index/v1` file. The close proof binds the
 complete bytes of its comment and index inputs. The index binds the same
-draft/binding/repository/parent identity, exact expected child identities, and
-the parent obligation identity. All of those files are validated as
+draft/binding/repository/parent identity, a typed expected-child file, the
+parent-obligation bytes, and role-labelled evidence artifacts. All referenced
+files are validated as
 repo-contained inputs before the adapter is selected or a provider is called;
 stale, malformed, foreign, or mismatched evidence is a typed refusal.
 
@@ -124,6 +125,9 @@ update/readback boundary. A distinct parent read must still report `CLOSED`
 and bind that receipt; a metadata update or readback failure is
 `unverified-write`, not a successful close. The primitive tracker commands
 below remain useful compatibility and diagnostic surfaces.
+
+Retry never repeats a receipt-proven comment or re-closes a closed parent. The
+Goal agent owns evidence-role sufficiency; Issue core validates byte bindings.
 
 1. For bootstrap, graph repair, or an explicitly requested diagnostic, run
    `issue_tool.py tracker-preflight --repo <owner/repo> --number <parent>`.
