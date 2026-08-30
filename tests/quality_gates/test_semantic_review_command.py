@@ -147,6 +147,7 @@ def _run(
     packet_file: str | None = None,
     dry_run: bool = False,
     goal_lineage: str | None = None,
+    reviewed_path: str | None = "reviewed.txt",
 ) -> subprocess.CompletedProcess[str]:
     env = {**os.environ, "PATH": f"{bin_dir}:{os.environ['PATH']}", "FAKE_REVIEW_VERDICT": verdict}
     if sleep is not None:
@@ -160,9 +161,9 @@ def _run(
         "--attempt-id", attempt,
         "--backend", "codex_exec",
     ]
-    if packet_file is None:
-        command.extend(["--reviewed-path", "reviewed.txt"])
-    else:
+    if reviewed_path is not None and packet_file is None:
+        command.extend(["--reviewed-path", reviewed_path])
+    elif packet_file is not None:
         command.extend(["--packet-file", packet_file])
     if goal_lineage is not None:
         command.extend(["--goal-lineage-file", goal_lineage])
@@ -249,6 +250,67 @@ def test_empty_declared_producer_refuses_before_reviewer_start_with_its_own_caus
     )
     assert packet["ok"] is False
     assert packet["reason_code"] == "producer-empty"
+
+
+def test_prompt_reaches_explicit_reviewed_path_beyond_unrelated_section(tmp_path: Path) -> None:
+    _repo(tmp_path)
+    (tmp_path / ".agents" / "critique-adapter.yaml").write_text(
+        "version: 1\nrepo: semantic-review-fixture\n"
+        "reviewer_runner:\n  mode: file-backed-worker\n  backend: codex_exec\n"
+        "packet_sections:\n  - id: unrelated\n    title: Unrelated\n"
+        "    content_kind: static\n    content: unrelated context\n",
+        encoding="utf-8",
+    )
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    _fake_codex(bin_dir / "codex")
+
+    result = _run(tmp_path, bin_dir, "path-prompt", dry_run=True)
+    payload = _payload(result)
+
+    assert result.returncode == 0, result.stderr
+    prompt = (tmp_path / payload["paths"]["prompt"]).read_text(encoding="utf-8")
+    assert "Every explicitly declared `--reviewed-path`" in prompt
+    assert "Open each readable path from the repository root" in prompt
+    assert "The packet owns identity and provenance; the hash-bound paths own the semantic bytes." in prompt
+    assert "- `reviewed.txt`" in prompt
+    assert "Do not infer reviewed content from hashes or unrelated packet sections" in prompt
+
+
+def test_deletion_only_reviewed_input_refuses_before_reviewer_run_is_created(
+    tmp_path: Path,
+) -> None:
+    _repo(tmp_path)
+    (tmp_path / "reviewed.txt").unlink()
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    _fake_codex(bin_dir / "codex")
+
+    result = _run(tmp_path, bin_dir, "deleted-only", dry_run=True)
+    payload = _payload(result)
+
+    assert result.returncode == 2
+    assert payload["reason_code"] == "deleted-reviewed-paths"
+    assert payload["scope_status"] == "deleted-input-only"
+    assert payload["reviewer_started"] is False
+    assert payload["usable"] is False
+    assert "reviewed.txt" in payload["deleted_paths"]
+    assert not (tmp_path / ".charness").exists()
+
+
+def test_empty_reviewed_input_refuses_even_with_unrelated_section(tmp_path: Path) -> None:
+    _repo(tmp_path)
+    bin_dir = tmp_path / "bin"
+
+    result = _run(tmp_path, bin_dir, "empty-input", dry_run=True, reviewed_path=None)
+    payload = _payload(result)
+
+    assert result.returncode == 2
+    assert payload["reason_code"] == "empty-reviewed-paths"
+    assert payload["scope_status"] == "empty-reviewed-input"
+    assert payload["reviewer_started"] is False
+    assert payload["usable"] is False
+    assert not (tmp_path / ".charness").exists()
 
 
 def test_goal_run_lineage_is_carried_into_plan_prompt_and_carrier(tmp_path: Path) -> None:

@@ -85,7 +85,15 @@ def _failure_carrier(
         "scope": scope,
         "lens": lens,
     })
-    for field in ("adapter_path", "scope_status", "section_count", "usable", "remedy", "warning"):
+    for field in (
+        "adapter_path",
+        "scope_status",
+        "section_count",
+        "usable",
+        "remedy",
+        "warning",
+        "deleted_paths",
+    ):
         if field in details:
             carrier[field] = details[field]
     return carrier

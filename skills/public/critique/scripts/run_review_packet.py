@@ -11,6 +11,66 @@ from pathlib import Path
 from typing import Any
 
 
+def _semantic_review_paths(packet: dict[str, Any]) -> tuple[list[str], list[str]]:
+    """Return readable and deleted paths from the verified input identity.
+
+    Packet sections are consumer-defined context; they do not establish that
+    the explicitly reviewed artifact reached the worker.  The identity is the
+    one source of truth for that artifact.  A deleted path has a bound
+    pre-image, but no current path for a read-only worker to open.
+    """
+    identity = packet.get("reviewed_input_identity")
+    if not isinstance(identity, dict):
+        return [], []
+    raw_paths = identity.get("reviewed_paths")
+    raw_content = identity.get("reviewed_content")
+    if not isinstance(raw_paths, list) or not isinstance(raw_content, list):
+        return [], []
+    paths = [path for path in raw_paths if isinstance(path, str) and path]
+    deleted = {
+        entry.get("path")
+        for entry in raw_content
+        if isinstance(entry, dict)
+        and entry.get("disposition") == "deleted"
+        and isinstance(entry.get("path"), str)
+    }
+    return [path for path in paths if path not in deleted], sorted(deleted)
+
+
+def _semantic_input_refusal(
+    support: Any, root: Path, packet: dict[str, Any], packet_path: Path
+) -> None:
+    """Refuse a packet whose identity gives the worker no readable input."""
+    readable, deleted = _semantic_review_paths(packet)
+    identity = packet.get("reviewed_input_identity")
+    paths = identity.get("reviewed_paths") if isinstance(identity, dict) else None
+    if not isinstance(paths, list) or not paths:
+        raise support.RunReviewError(
+            "empty-reviewed-paths",
+            "packet reviewed input covers zero paths and carries no semantic review input",
+            details={
+                "packet_path": support.relative(root, packet_path),
+                "scope_status": "empty-reviewed-input",
+                "section_count": packet.get("section_count", 0),
+                "usable": False,
+                "remedy": "Provide at least one explicit or changed reviewed path and rerun",
+            },
+        )
+    if not readable and deleted:
+        raise support.RunReviewError(
+            "deleted-reviewed-paths",
+            "packet reviewed input contains only deleted paths and no readable semantic review input",
+            details={
+                "packet_path": support.relative(root, packet_path),
+                "scope_status": "deleted-input-only",
+                "section_count": packet.get("section_count", 0),
+                "usable": False,
+                "deleted_paths": deleted,
+                "remedy": "Provide at least one readable reviewed path or a packet with bounded semantic content, then rerun",
+            },
+        )
+
+
 def manifest_paths(support: Any, root: Path, manifest: str | None, explicit: list[str] | None) -> list[str]:
     values = list(explicit or [])
     if manifest is not None:
@@ -72,15 +132,18 @@ def prepare_packet(
         )
     packet = support.repo_path(root, packet_name, label="prepared packet")
     if code != 0 or payload.get("ok") is not True or usable is False:
-        reason_code = payload.get("reason_code")
+        binding_data = binding if isinstance(binding, dict) else {}
+        reason_code = payload.get("reason_code") or binding_data.get("reason_code")
         if not isinstance(reason_code, str) or not reason_code:
             reason_code = "packet-invalid"
-        error = payload.get("error")
+        error = payload.get("error") or binding_data.get("error")
         if not isinstance(error, str) or not error:
             error = "prepared packet is not usable"
         details = {"prepare": payload, "stderr": stderr}
         for field in ("adapter_path", "scope_status", "section_count", "usable", "remedy", "warning"):
-            if field in payload:
+            if field in binding_data:
+                details[field] = binding_data[field]
+            elif field in payload:
                 details[field] = payload[field]
         raise support.RunReviewError(reason_code, error, details=details)
     return packet
@@ -144,6 +207,7 @@ def read_packet(
         elif not has_content:
             details["remedy"] = "Repair the declared packet producer(s) so at least one section emits semantic review content, then rerun"
         raise support.RunReviewError(reason_code, error, details=details)
+    _semantic_input_refusal(support, root, payload, packet)
     identity = payload.get("reviewed_input_identity")
     identity_sha = identity.get("identity_sha256") if isinstance(identity, dict) else None
     if not isinstance(identity_sha, str) or not re.fullmatch(r"[0-9a-f]{64}", identity_sha):
@@ -197,6 +261,21 @@ def write_prompt(
     input_sha: str,
     goal_lineage: dict[str, Any] | None = None,
 ) -> None:
+    readable_paths, deleted_paths = _semantic_review_paths(packet)
+    semantic_lines = [
+        "Every explicitly declared `--reviewed-path` and every auto-bound path below is semantic review input.",
+        "The packet owns identity and provenance; the hash-bound paths own the semantic bytes.",
+        "Open each readable path from the repository root using read-only access before judging.",
+    ]
+    semantic_lines.extend(f"- `{path}`" for path in readable_paths)
+    if deleted_paths:
+        semantic_lines.append(
+            "Deleted reviewed paths are bound to their pre-image and have no current bytes to open:"
+        )
+        semantic_lines.extend(f"- `{path}` (deleted)" for path in deleted_paths)
+    semantic_lines.append(
+        "Do not infer reviewed content from hashes or unrelated packet sections, and do not silently truncate large files."
+    )
     lineage_lines = (
         "Goal evidence lineage (copy exactly):",
         json.dumps(goal_lineage, ensure_ascii=False, indent=2, sort_keys=True),
@@ -212,6 +291,7 @@ def write_prompt(
                 *lineage_lines,
                 "Return only JSON matching the supplied bounded-review result schema.",
                 "Do not edit the workspace, and do not treat partial progress as approval.",
+                *semantic_lines,
                 "The packet below is the authoritative review input:",
                 json.dumps(packet, ensure_ascii=False, indent=2, sort_keys=True),
                 "",

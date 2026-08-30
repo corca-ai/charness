@@ -187,6 +187,13 @@ Rules:
   reviewer-boundary fingerprint is a separate whole-worktree proof used only by
   the untyped shared-tree fallback; the default read-only worker does not
   snapshot and verify the parent tree.
+- The generated worker prompt lists every hash-bound reviewed path and requires
+  the read-only worker to open each readable path before judging. The packet
+  owns identity and provenance; the paths own semantic bytes. A nonempty,
+  consumer-defined section is context, not evidence that an unrelated reviewed
+  path reached the worker. Zero reviewed paths and a binding containing only
+  deleted paths refuse before the worker starts; mixed bindings name deleted
+  paths explicitly rather than silently treating their pre-image hash as bytes.
 - A working-tree identity is content-addressed under `sha256-v2`: only the declared
   paths and the bytes at those paths enter `identity_sha256`. `base_head`,
   `staged_patch_sha256`, `unstaged_patch_sha256`, `declared_untracked`, and

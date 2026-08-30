@@ -221,6 +221,10 @@ def main() -> int:
             "binding covers zero reviewed paths and proves nothing; re-run with "
             "explicit --reviewed-path values for what was actually reviewed"
         )
+        binding["reason_code"] = "empty-reviewed-paths"
+        binding["scope_status"] = "empty-reviewed-input"
+        binding["error"] = "packet reviewed input covers zero paths and carries no semantic review input"
+        binding["remedy"] = "Provide at least one explicit or changed reviewed path and rerun"
     result = packet_result_payload(
         packet, repo_root=repo_root, json_path=json_path, md_path=md_path
     )
