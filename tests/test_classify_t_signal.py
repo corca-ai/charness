@@ -43,16 +43,14 @@ def _git_env() -> dict:
 def _init_repo(repo: Path) -> dict:
     repo.mkdir(parents=True, exist_ok=True)
     env = _git_env()
-    _run(repo, "git", "init", "-q", env=env)
-    _run(repo, "git", "checkout", "-q", "-b", "main", env=env)
+    _run(repo, "git", "init", "-q", "-b", "main", env=env)
     return env
 
 
 def _commit(repo: Path, message: str, env: dict) -> str:
     _run(repo, "git", "add", "-A", env=env)
     _run(repo, "git", "commit", "-q", "-m", message, env=env)
-    head = _run(repo, "git", "rev-parse", "HEAD", env=env)
-    return head.stdout.strip()
+    return (repo / ".git" / "refs" / "heads" / "main").read_text(encoding="ascii").strip()
 
 
 def _write(repo: Path, rel: str, content: str = "x\n") -> None:
