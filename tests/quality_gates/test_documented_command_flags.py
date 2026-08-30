@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 import yaml
 
+from .argparse_help_probe_support import run_help_commands_in_process
 from .support import ROOT, run_script
 
 SHARED_PARSER_HELPER = """
@@ -93,7 +94,11 @@ def _repo(tmp_path: Path, *, scripts: dict[str, str], doc: str, doc_path: str = 
 
 
 def _findings(gate, root: Path) -> list[str]:
-    return list(gate.build_report(root)["findings"])
+    return list(_report(gate, root)["findings"])
+
+
+def _report(gate, root: Path) -> dict:
+    return gate.build_report(root, help_runner=run_help_commands_in_process)
 
 
 def test_flag_deleted_from_its_owning_script_is_reported(gate, tmp_path: Path) -> None:
@@ -324,7 +329,7 @@ def test_skipped_invocations_are_counted_so_a_pass_cannot_over_claim(gate, tmp_p
             "Run `python3 scripts/deleted.py --path X`.\n"
         ),
     )
-    report = gate.build_report(root)
+    report = _report(gate, root)
     assert report["status"] == "pass"
     assert report["skipped"] == {
         "placeholder-path": 1,
@@ -502,7 +507,7 @@ def test_ambiguous_basename_is_counted_not_guessed(gate, tmp_path: Path) -> None
         },
         doc="Run `resolve_adapter.py --path X --gone`.\n",
     )
-    report = gate.build_report(root)
+    report = _report(gate, root)
     assert report["findings"] == []
     assert report["skipped"] == {"ambiguous-or-unknown-script-basename": 1}
 
@@ -548,7 +553,7 @@ def test_main_reports_findings_on_stderr_and_exits_one(gate, tmp_path, monkeypat
         doc="Run `python3 scripts/preflight.py --gone`.\n",
     )
     monkeypatch.setattr("sys.argv", ["check_documented_command_flags.py", "--repo-root", str(root)])
-    assert gate.main() == 1
+    assert gate.main(help_runner=run_help_commands_in_process) == 1
     captured = capsys.readouterr()
     # The `Documented command flag drift detected:` headline was deleted with `--json`;
     # what has to survive is the STREAM choice — a failing verdict goes to stderr so a
@@ -569,7 +574,7 @@ def test_main_payload_goes_to_stdout_when_clean(gate, tmp_path, monkeypatch, cap
     monkeypatch.setattr(
         "sys.argv", ["check_documented_command_flags.py", "--repo-root", str(root)]
     )
-    assert gate.main() == 0
+    assert gate.main(help_runner=run_help_commands_in_process) == 0
     payload = yaml.safe_load(capsys.readouterr().out)
     assert payload["status"] == "pass"
     assert payload["invocations"] == 1
@@ -606,7 +611,7 @@ def test_flagless_invocations_are_left_to_the_link_gate(gate, tmp_path: Path) ->
         scripts={"scripts/log.py": PLAIN_SCRIPT},
         doc="First `python3 scripts/log.py`, then `python3 scripts/log.py --gone`.\n",
     )
-    report = gate.build_report(root)
+    report = _report(gate, root)
     assert report["invocations"] == 1
     assert len(report["findings"]) == 1
 
@@ -620,7 +625,7 @@ def test_non_repo_owned_and_package_less_skill_dir_paths_are_counted(gate, tmp_p
             'Run `python3 "$SKILL_DIR/scripts/thing.py" --their-flag`.\n'
         ),
     )
-    report = gate.build_report(root)
+    report = _report(gate, root)
     assert report["findings"] == []
     assert report["skipped"] == {
         "not-a-repo-owned-path": 1,
@@ -649,7 +654,7 @@ def test_skill_dir_path_escaping_the_repo_root_is_counted_not_resolved(gate, tmp
         doc='Run `python3 "$SKILL_DIR/../../../../outside/probe.py" --gone`.\n',
         doc_path="skills/public/quality/references/dispatch.md",
     )
-    report = gate.build_report(root)
+    report = _report(gate, root)
     assert report["findings"] == []
     assert report["skipped"] == {"unresolved-path-owned-by-check-doc-links": 1}
 
@@ -804,7 +809,7 @@ def test_a_backtick_span_wrapping_across_a_prose_line_break_is_scanned(gate, tmp
         scripts={"scripts/log.py": PLAIN_SCRIPT},
         doc="Regenerate that fact with `python3 scripts/log.py --path .\n--gone` (2026-08-10).\n",
     )
-    report = gate.build_report(root)
+    report = _report(gate, root)
     assert report["invocations"] == 1
     assert len(report["findings"]) == 1
     assert "docs/guide.md:1" in report["findings"][0]
@@ -943,7 +948,7 @@ def test_the_cli_name_used_as_an_option_value_is_counted_not_reported(gate, tmp_
         scripts={"scripts/log.py": PLAIN_SCRIPT, "charness": SUBCOMMAND_SCRIPT},
         doc="Run `python3 scripts/log.py --run-checks --path charness resolve-destination --gone`.\n",
     )
-    report = gate.build_report(root)
+    report = _report(gate, root)
     assert report["findings"] == []
     assert report["skipped"] == {"cli-name-as-an-argument-value": 1}
 
@@ -962,7 +967,7 @@ def test_a_rejection_probe_flag_is_skipped_while_its_neighbour_is_still_checked(
         '  "dry_run_probe": "python3 scripts/log.py --path . --gone --not-a-path"\n'
         '}\n',
     )
-    report = gate.build_report(root)
+    report = _report(gate, root)
     assert len(report["findings"]) == 1
     assert "`--gone`" in report["findings"][0]
     assert "`--not-a-path`" not in report["findings"][0]

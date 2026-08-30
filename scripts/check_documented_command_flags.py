@@ -69,6 +69,7 @@ active_depth = _argparse_surface.active_depth
 MAX_SUBCOMMAND_DEPTH = _argparse_surface.MAX_SUBCOMMAND_DEPTH
 _argparse_help_probe = import_repo_module(__file__, "scripts.argparse_help_probe")
 HelpProbe = _argparse_help_probe.HelpProbe
+HelpRunner = _argparse_help_probe.HelpRunner
 _check_doc_links = import_repo_module(__file__, "scripts.check_doc_links")
 iter_known_repo_paths = _check_doc_links.iter_known_repo_paths
 looks_like_repo_reference = _check_doc_links.looks_like_repo_reference
@@ -343,7 +344,12 @@ def _resolve_paths(probe, invocations: list[tuple]) -> list[tuple[str, ...]]:
     return paths
 
 
-def build_report(root: Path, *, require_git: bool = False) -> dict[str, object]:
+def build_report(
+    root: Path,
+    *,
+    require_git: bool = False,
+    help_runner: HelpRunner | None = None,
+) -> dict[str, object]:
     known_repo_paths = iter_known_repo_paths(root, require_git=require_git)
     basename_index = build_canonical_basename_index(known_repo_paths)
     invocations: list[tuple] = []
@@ -355,7 +361,7 @@ def build_report(root: Path, *, require_git: bool = False) -> dict[str, object]:
         invocations.extend((doc, lineno, script, bare, flags) for lineno, script, bare, flags in found)
         skipped.update(doc_skipped)
 
-    probe = HelpProbe(root)
+    probe = HelpProbe(root, runner=help_runner)
     paths = _resolve_paths(probe, invocations)
 
     findings: list[str] = []
@@ -411,13 +417,17 @@ def report_payload(report: dict[str, object]) -> dict[str, object]:
     )
 
 
-def main() -> int:
+def main(*, help_runner: HelpRunner | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--require-git-file-listing", action="store_true")
     args = parser.parse_args()
 
-    report = build_report(args.repo_root.resolve(), require_git=args.require_git_file_listing)
+    report = build_report(
+        args.repo_root.resolve(),
+        require_git=args.require_git_file_listing,
+        help_runner=help_runner,
+    )
     emit_findings_report(report_payload(report))
     return 1 if report["findings"] else 0
 
