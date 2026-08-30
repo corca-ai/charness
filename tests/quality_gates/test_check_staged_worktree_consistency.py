@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import importlib
 import shutil
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -162,7 +163,7 @@ def test_git_being_unusable_is_unestablished_not_clean(tmp_path: Path, monkeypat
     monkeypatch.setattr(cswc.subprocess, "run", _boom)
 
     with pytest.raises(RuntimeError) as excinfo:
-        cswc._git_names(tmp_path, "diff", "--cached", "--name-only")
+        cswc._status_paths(tmp_path)
     assert "git" in str(excinfo.value)
 
 
@@ -193,6 +194,21 @@ def test_untracked_but_still_on_disk_is_flagged_even_when_edited(tmp_path: Path,
     repo = _repo(tmp_path)
     git(repo, "rm", "-q", "--cached", "f.txt")
     (repo / "f.txt").write_text("edited after untracking\n", encoding="utf-8")
+    assert cswc.find_stale_staged(repo) == ["f.txt"]
+
+
+def test_ignored_orphan_is_visible_without_untracked_enumeration(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """The staged deletion record remains even when the on-disk copy is ignored."""
+    monkeypatch.delenv(cswc.ALLOW_ENV, raising=False)
+    repo = _repo(tmp_path)
+    (repo / ".gitignore").write_text("f.txt\n", encoding="utf-8")
+    git(repo, "add", ".gitignore")
+    git(repo, "commit", "-qm", "ignore tracked fixture")
+    git(repo, "rm", "-q", "--cached", "f.txt")
+
+    assert (repo / "f.txt").exists()
     assert cswc.find_stale_staged(repo) == ["f.txt"]
 
 
@@ -365,7 +381,6 @@ def test_a_case_only_respelling_is_not_an_orphan(tmp_path: Path, monkeypatch) ->
     git(repo, "mv", "Foo.md", "foo.md")
     (repo / "Foo.md").write_text("v1\n", encoding="utf-8")  # what a case-insensitive FS shows
 
-    assert "foo.md" in cswc._git_names(repo, "ls-files")
     assert cswc.find_stale_staged(repo) == []
 
 
@@ -421,16 +436,37 @@ def test_intent_to_add_rename_does_not_hide_a_staged_then_deleted_path(
     assert "f.txt" in cswc.find_stale_staged(repo)
 
 
-def test_git_names_refuses_a_pathspec_rather_than_matching_nothing(tmp_path: Path) -> None:
-    """`-z` is inserted after the subcommand, and a pathspec caller is refused.
+def test_classification_uses_one_status_snapshot(tmp_path: Path, monkeypatch) -> None:
+    calls: list[list[str]] = []
 
-    A trailing `-z` after a `--` would be read as a pathspec: the query matches
-    nothing, exits 0, and returns an empty set -- a clean verdict over a scope
-    that was never read, which is the failure `_git_names` exists to refuse.
-    """
-    repo = _repo(tmp_path)
-    with pytest.raises(RuntimeError, match="pathspec"):
-        cswc._git_names(repo, "ls-files", "--", "f.txt")
+    def _status(command, **_kwargs):
+        calls.append(command)
+        return subprocess.CompletedProcess(
+            command, 0, b"1 MM x x x x x x f.txt\0", b""
+        )
+
+    monkeypatch.setattr(cswc.subprocess, "run", _status)
+
+    assert cswc._classify_stale(tmp_path) == ({"f.txt"}, set())
+    assert calls == [[
+        "git", "status", "--porcelain=v2", "-z", "--no-renames",
+        "--untracked-files=no",
+    ]]
+
+
+def test_status_snapshot_refuses_unexpected_rename_records(
+    tmp_path: Path, monkeypatch
+) -> None:
+    monkeypatch.setattr(
+        cswc.subprocess,
+        "run",
+        lambda *_args, **_kwargs: subprocess.CompletedProcess(
+            [], 0, b"2 R. x x x x x x R100 new.txt\0old.txt\0", b""
+        ),
+    )
+
+    with pytest.raises(RuntimeError, match="rename despite --no-renames"):
+        cswc._status_paths(tmp_path)
 
 
 def test_a_non_utf8_filename_does_not_take_the_gate_down(tmp_path: Path, monkeypatch) -> None:

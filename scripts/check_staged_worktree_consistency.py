@@ -44,43 +44,59 @@ def allow_partial_stage() -> bool:
     return os.environ.get(ALLOW_ENV, "").strip().lower() in TRUE_VALUES
 
 
-def _git_names(repo_root: Path, *args: str) -> set[str]:
-    """Path names from one git query, or `RuntimeError` if git could not answer.
-
-    An empty set from a failed git is indistinguishable from "nothing staged", so
-    returning it would render a clean verdict over a scope that was never read.
-
-    Always ``-z``, and bytes rather than ``text=True``. Under ``-z`` git emits RAW
-    path bytes and stops C-quoting; without it, ``core.quotePath`` (ON by git
-    default) renders a non-ASCII path as the literal 12 characters
-    ``"docs/\\303\\251.md"``, quotes included, which no filesystem test can match --
-    a silent false negative for exactly the paths this gate must see. A strict
-    locale decode would instead take the hook down with a traceback that is not an
-    ``OSError``, so it would escape both handlers below; ``surrogateescape`` keeps
-    the name round-trippable. Same reasoning as ``staged_commit_gate_plan_helpers``.
-    """
-    if any(token == "--" or not token.startswith("-") for token in args[1:]):
-        # `-z` is inserted after the subcommand, not appended, because a trailing
-        # `-z` after a `--` would be read as a PATHSPEC: the query would then match
-        # nothing, exit 0, and hand back an empty set -- a clean verdict over a
-        # scope that was never read, which is the failure this function exists to
-        # refuse. Callers that need a pathspec must pass it explicitly and this
-        # guard tells them the shape is unsupported rather than failing open.
-        raise RuntimeError(f"git {' '.join(args)}: pathspec arguments are not supported here")
+def _status_paths(repo_root: Path) -> tuple[set[str], set[str], set[str]]:
+    """Return staged, unstaged, and post-index tracked paths from one status read."""
     try:
         result = subprocess.run(
-            ["git", args[0], "-z", *args[1:]],
+            [
+                "git", "status", "--porcelain=v2", "-z", "--no-renames",
+                "--untracked-files=no",
+            ],
             cwd=repo_root,
             capture_output=True,
             check=False,
         )
     except OSError as exc:  # git absent, cwd unusable
-        raise RuntimeError(f"git {' '.join(args)}: {exc}") from exc
+        raise RuntimeError(f"git status: {exc}") from exc
     if result.returncode != 0:
         message = result.stderr.decode("utf-8", errors="replace").strip()
-        raise RuntimeError(message or f"git {' '.join(args)} failed")
-    stdout = result.stdout.decode("utf-8", errors="surrogateescape")
-    return {name for name in stdout.split("\0") if name}
+        raise RuntimeError(message or "git status failed")
+
+    staged: set[str] = set()
+    unstaged: set[str] = set()
+    tracked: set[str] = set()
+    for record in result.stdout.split(b"\0"):
+        if not record or record.startswith(b"# "):
+            continue
+        kind = record[:1]
+        if kind == b"1":
+            fields = record.split(b" ", 8)
+            if len(fields) != 9:
+                raise RuntimeError("git status returned a malformed ordinary record")
+            xy, raw_path = fields[1], fields[8]
+        elif kind == b"u":
+            fields = record.split(b" ", 10)
+            if len(fields) != 11:
+                raise RuntimeError("git status returned a malformed unmerged record")
+            xy, raw_path = fields[1], fields[10]
+        elif kind in {b"?", b"!"}:
+            continue
+        elif kind == b"2":
+            raise RuntimeError("git status reported a rename despite --no-renames")
+        else:
+            raise RuntimeError("git status returned an unknown record kind")
+
+        if len(xy) != 2 or not raw_path:
+            raise RuntimeError("git status returned malformed path state")
+        path = raw_path.decode("utf-8", errors="surrogateescape")
+        x, y = xy[:1], xy[1:]
+        if x != b".":
+            staged.add(path)
+        if y != b".":
+            unstaged.add(path)
+        if kind == b"u" or x != b"D":
+            tracked.add(path)
+    return staged, unstaged, tracked
 
 
 def _on_disk(repo_root: Path, path: str) -> bool:
@@ -124,7 +140,7 @@ def find_stale_staged(repo_root: Path) -> list[str]:
 
 
 def _classify_stale(repo_root: Path) -> tuple[set[str], set[str]]:
-    """The two shapes, from one set of git reads, because they need one index.
+    """Classify stale paths from one porcelain-v2 index/worktree snapshot.
 
     Returns ``(edited, orphaned)``:
 
@@ -137,33 +153,12 @@ def _classify_stale(repo_root: Path) -> tuple[set[str], set[str]]:
       git reports it as untracked. The intersection went empty and the gate passed
       while the file the doc gates walked was exactly the file the commit deletes.
 
-    `--no-renames` is load-bearing on the staged read, and its absence is what a
-    first cut of this repair got wrong. With rename detection ON (git's default)
-    a staged `D old` + `A new` pair collapses into one `R` entry and `--name-only`
-    prints only the DESTINATION, so the source never appears and the whole check
-    degenerates to the old intersection. Verified: after `git mv a b` with `a`
-    recreated on disk, `--diff-filter=D` prints nothing and `--no-renames` prints
-    `a`.
-
-    Deliberately not a `--diff-filter` letter allowlist -- see the module comment
-    above `TRUE_VALUES`. "Is there an index entry for this name afterwards?" is the
-    question; `D` is one spelling of it, and `R`, and a future letter, which is how
-    the ACM -> ACMRD -> intersection history went.
+    Porcelain v2 exposes both sides as XY in one coherent observation. Rename
+    detection stays disabled so a deleted source and added destination remain
+    independently classifiable. Untracked enumeration is disabled: a staged
+    deletion remains a ``D.`` record, and ``_on_disk`` owns presence detection.
     """
-    staged = _git_names(repo_root, "diff", "--cached", "--name-only", "--no-renames")
-    # `--no-renames` on BOTH reads. Index-vs-worktree rename detection collapses a
-    # staged-and-then-moved path into one `R` entry printing only the destination
-    # when the destination is an intent-to-add entry -- which is what `git add -p`
-    # creates for a new file. Verified: with a staged edit to `a`, `git add -N b`
-    # and `a` gone from disk, `git diff --name-only` prints only `b`, so `a` fell
-    # out of the intersection and the ORIGINAL shape-1 defect resurfaced.
-    unstaged = _git_names(repo_root, "diff", "--name-only", "--no-renames")
-    # `--full-name` because `ls-files` is cwd-relative and cwd-scoped while
-    # `diff --cached` is repo-root-relative and repo-wide. Run from a subdirectory
-    # the two sets would not be comparable, `staged - tracked` would be "everything
-    # staged", and the orphan branch would quietly go empty -- the gate silently
-    # back to its pre-slice behavior. The whole new predicate rests on this query.
-    tracked = _git_names(repo_root, "ls-files", "--full-name")
+    staged, unstaged, tracked = _status_paths(repo_root)
     # A case-only rename (`Foo.md` -> `foo.md`) on a case-insensitive filesystem
     # stages a deletion of the old spelling while `lexists` resolves it to the NEW
     # file, which would be a false refusal on macOS and Windows -- and both remedies
