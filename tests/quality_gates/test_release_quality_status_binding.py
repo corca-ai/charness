@@ -26,6 +26,7 @@ to lose that race, and these tests pin the owner rather than the callers.
 from __future__ import annotations
 
 import json
+import os
 import shlex
 import shutil
 import subprocess
@@ -165,6 +166,26 @@ def test_each_lane_states_its_own_true_stage() -> None:
     for name, expected in lanes.items():
         text = (_RELEASE / name).read_text(encoding="utf-8")
         assert f'stage="{expected}"' in text, f"{name} must state stage={expected!r}"
+
+
+def test_resume_push_exposes_one_receipt_and_restores_the_host_environment(
+    tmp_path: Path, monkeypatch
+) -> None:
+    resume = _load("publish_release_resume_publish")
+    receipt = tmp_path / "receipt.json"
+    receipt.write_text("{}\n", encoding="utf-8")
+    monkeypatch.setenv("CHARNESS_PREPUSH_QUALITY_RECEIPT", "parent-value")
+    seen: list[str | None] = []
+
+    class Cli:
+        def run(self, _command, *, cwd):
+            assert cwd == tmp_path
+            seen.append(os.environ.get("CHARNESS_PREPUSH_QUALITY_RECEIPT"))
+
+    resume._run_push_with_receipt(Cli(), tmp_path, receipt, ["git", "push"])
+
+    assert seen == [str(receipt)]
+    assert os.environ["CHARNESS_PREPUSH_QUALITY_RECEIPT"] == "parent-value"
 
 
 @pytest.mark.boundary_contract(

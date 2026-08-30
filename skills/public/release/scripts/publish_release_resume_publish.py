@@ -70,6 +70,25 @@ def _notes_preflight(
     )
 
 
+def _run_push_with_receipt(
+    cli: Any,
+    repo_root: Path,
+    receipt_path: Path | None,
+    command: list[str],
+) -> None:
+    """Expose the one-push receipt to the child command, then restore the host."""
+    previous = os.environ.get("CHARNESS_PREPUSH_QUALITY_RECEIPT")
+    if receipt_path is not None:
+        os.environ["CHARNESS_PREPUSH_QUALITY_RECEIPT"] = str(receipt_path)
+    try:
+        cli.run(command, cwd=repo_root)
+    finally:
+        if previous is None:
+            os.environ.pop("CHARNESS_PREPUSH_QUALITY_RECEIPT", None)
+        else:
+            os.environ["CHARNESS_PREPUSH_QUALITY_RECEIPT"] = previous
+
+
 def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_data: dict[str, Any], cli: Any,
                    state: dict[str, Any] | None, resumable_state, assert_resumable, common: Any,
                    resume_closeout: Any, commit_artifact_before_push, release_record_path) -> None:
@@ -197,27 +216,15 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
     if not receipt_path.is_file():
         receipt_path = None
 
-    def push_with_receipt(command: list[str]) -> None:
-        previous = os.environ.get("CHARNESS_PREPUSH_QUALITY_RECEIPT")
-        if receipt_path is not None:
-            os.environ["CHARNESS_PREPUSH_QUALITY_RECEIPT"] = str(receipt_path)
-        try:
-            cli.run(command, cwd=repo_root)
-        finally:
-            if previous is None:
-                os.environ.pop("CHARNESS_PREPUSH_QUALITY_RECEIPT", None)
-            else:
-                os.environ["CHARNESS_PREPUSH_QUALITY_RECEIPT"] = previous
-
     def publish() -> tuple[str, Any]:
         if not state["tag_local"]:
             cli.run(["git", "tag", tag_name, state["prepared"]["commit"] if claims_lane else state["head_sha"]], cwd=repo_root)
         if branch_needed and tag_needed:
-            push_with_receipt(["git", "push", args.remote, branch, tag_name])
+            _run_push_with_receipt(cli, repo_root, receipt_path, ["git", "push", args.remote, branch, tag_name])
         elif branch_needed:
-            push_with_receipt(["git", "push", args.remote, branch])
+            _run_push_with_receipt(cli, repo_root, receipt_path, ["git", "push", args.remote, branch])
         elif tag_needed:
-            push_with_receipt(["git", "push", args.remote, tag_name])
+            _run_push_with_receipt(cli, repo_root, receipt_path, ["git", "push", args.remote, tag_name])
         output = (
             expected_url or "" if state["release_exists"]
             else cli.create_release(repo_root, backend, tag_name=tag_name, title=plan["title"], notes_file=notes_file).stdout

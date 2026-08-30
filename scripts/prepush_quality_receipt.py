@@ -48,12 +48,15 @@ def _quality_command_argv(repo_root: Path, command: str) -> list[str]:
 
 
 def _materialized_digest(repo_root: Path, relative_root: str) -> str:
-    root = (repo_root / relative_root).resolve()
-    if not root.is_relative_to(repo_root) or not root.is_dir():
+    materialized_root = (repo_root / relative_root).resolve()
+    if not materialized_root.is_relative_to(repo_root) or not materialized_root.is_dir():
         raise ReceiptError("materialized plugin root is absent or escapes the repository")
     digest = hashlib.sha256()
-    for path in sorted(root.rglob("*"), key=lambda item: item.relative_to(root).as_posix()):
-        relative = path.relative_to(root).as_posix().encode("utf-8")
+    for path in sorted(
+        materialized_root.rglob("*"),
+        key=lambda item: item.relative_to(materialized_root).as_posix(),
+    ):
+        relative = path.relative_to(materialized_root).as_posix().encode("utf-8")
         if path.is_symlink():
             digest.update(b"link\0" + relative + b"\0" + path.readlink().as_posix().encode("utf-8") + b"\0")
         elif path.is_file():
