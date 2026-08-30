@@ -35,6 +35,13 @@ def _git(repo: Path, *args: str) -> str:
     return result.stdout.strip()
 
 
+_SEED_NAME = "premise-preflight-repo-seed-v2"
+
+
+def _clone_head(repo: Path) -> str:
+    return (repo / ".git" / "refs" / "heads" / "main").read_text(encoding="ascii").strip()
+
+
 def _build_premise_preflight_seed(staging: Path) -> None:
     repo = staging / "repo"
     repo.mkdir()
@@ -48,24 +55,35 @@ def _build_premise_preflight_seed(staging: Path) -> None:
     _git(repo, "config", "user.name", "Premise Test")
     _git(repo, "add", ".")
     _git(repo, "commit", "-qm", "seed premise fixture")
+    (staging / "head.json").write_text(
+        json.dumps({"head": _clone_head(repo)}),
+        encoding="utf-8",
+    )
 
 
-def premise_preflight_seed(*, cache_get_or_build=None) -> Path:
-    """Return one source-bound immutable Git seed for premise-preflight tests."""
+def _premise_preflight_bundle(*, cache_get_or_build=None) -> Path:
     if cache_get_or_build is None:
         from tests.seed_cache import get_or_build
 
         cache_get_or_build = get_or_build
-    return cache_get_or_build(
-        "premise-preflight-repo-seed", _build_premise_preflight_seed
-    ) / "repo"
+    return cache_get_or_build(_SEED_NAME, _build_premise_preflight_seed)
+
+
+def premise_preflight_seed(*, cache_get_or_build=None) -> Path:
+    """Return one source-bound immutable Git seed for premise-preflight tests."""
+    return _premise_preflight_bundle(cache_get_or_build=cache_get_or_build) / "repo"
+
+
+def premise_preflight_seed_head(*, cache_get_or_build=None) -> str:
+    bundle = _premise_preflight_bundle(cache_get_or_build=cache_get_or_build)
+    return json.loads((bundle / "head.json").read_text(encoding="utf-8"))["head"]
 
 
 def _seed(tmp_path: Path) -> tuple[Path, Path, Path, dict[str, Any]]:
     seed = premise_preflight_seed()
     repo = tmp_path / "repo"
     shutil.copytree(seed, repo)
-    head = _git(repo, "rev-parse", "HEAD")
+    head = premise_preflight_seed_head()
     comments = [{"id": 1, "body": "captured"}]
     body = "Issue body\n"
     issue = {
@@ -133,6 +151,35 @@ def test_premise_preflight_seed_is_never_mutated_by_a_test_clone(tmp_path: Path)
     _git(repo, "commit", "-qm", "mutate only the disposable clone")
 
     assert _tree_snapshot(seed) == before_seed
+
+
+def test_seed_head_is_published_beside_the_immutable_repo() -> None:
+    seed = premise_preflight_seed()
+    published = premise_preflight_seed_head()
+    assert published == _clone_head(seed)
+
+
+def test_accepted_preflight_does_not_launch_rev_parse_show_or_log(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo, premise, issue, _ = _seed(tmp_path)
+    git_verbs: list[str] = []
+    original = subprocess.run
+
+    def wrapped(argv: Any, *args: Any, **kwargs: Any) -> Any:
+        if isinstance(argv, (list, tuple)) and argv and Path(str(argv[0])).name == "git":
+            git_verbs.append(str(argv[1]))
+        return original(argv, *args, **kwargs)
+
+    monkeypatch.setattr(subprocess, "run", wrapped)
+    result = run_preflight(repo, premise, issue)
+    assert result["status"] == "accepted"
+    assert "rev-parse" not in git_verbs
+    assert "show" not in git_verbs
+    assert "log" not in git_verbs
+    assert "cat-file" in git_verbs
+    assert "ls-tree" in git_verbs
+    assert "ls-files" in git_verbs
 
 
 def _write_issue(path: Path, issue: dict[str, Any], **changes: Any) -> None:
@@ -272,7 +319,7 @@ def test_captured_symlink_is_not_a_protected_regular_file(tmp_path: Path) -> Non
     link.symlink_to("target.txt")
     _git(repo, "add", "src/link.txt")
     _git(repo, "commit", "-qm", "add symlink")
-    candidate["tree"]["captured_head_sha"] = _git(repo, "rev-parse", "HEAD")
+    candidate["tree"]["captured_head_sha"] = _clone_head(repo)
     candidate["tree"]["protected"] = [{"path": "src/link.txt", "sha256": _sha(b"target.txt")}]
     candidate["tree"]["expected_missing"] = []
     premise.write_text(json.dumps(candidate), encoding="utf-8")
@@ -311,7 +358,7 @@ def test_whitespace_padded_marker_is_not_an_exact_match(tmp_path: Path) -> None:
     (repo / "marker.txt").write_text("marker shipped\n", encoding="utf-8")
     _git(repo, "add", "marker.txt")
     _git(repo, "commit", "-qm", "padded marker\n\n Charness-Premise-ID: issue-7-slice-2 ")
-    candidate["tree"]["captured_head_sha"] = _git(repo, "rev-parse", "HEAD")
+    candidate["tree"]["captured_head_sha"] = _clone_head(repo)
     premise.write_text(json.dumps(candidate), encoding="utf-8")
     assert run_preflight(repo, premise, issue)["status"] == "accepted"
 
@@ -319,7 +366,7 @@ def test_whitespace_padded_marker_is_not_an_exact_match(tmp_path: Path) -> None:
     (repo / "marker.txt").write_text("marker\n", encoding="utf-8")
     _git(repo, "add", "marker.txt")
     _git(repo, "commit", "-qm", "ship marker\n\nCharness-Premise-ID: issue-7-slice-2")
-    candidate["tree"]["captured_head_sha"] = _git(repo, "rev-parse", "HEAD")
+    candidate["tree"]["captured_head_sha"] = _clone_head(repo)
     premise.write_text(json.dumps(candidate), encoding="utf-8")
     assert run_preflight(repo, premise, issue)["decision"]["reason_codes"] == ["already_shipped", "duplicate_premise"]
 
@@ -495,25 +542,30 @@ def test_premise_scalar_and_repository_error_branches(tmp_path: Path, monkeypatc
     invalid.write_text("{", encoding="utf-8")
     _raises("invalid_json", premise_lib._load_json, tmp_path, invalid, "field")
 
-    monkeypatch.setattr(
-        premise_lib,
-        "_git",
-        lambda *_args: subprocess.CompletedProcess([], 1, stdout="", stderr="failed"),
-    )
-    _raises("invalid_git_state", premise_lib._current_head, tmp_path)
-    monkeypatch.setattr(
-        premise_lib,
-        "_git",
-        lambda *_args: subprocess.CompletedProcess([], 0, stdout="not-a-sha", stderr=""),
-    )
-    _raises("invalid_git_state", premise_lib._current_head, tmp_path)
+    original_inspect = premise_lib.inspect_captured_tree
+
+    def hide_head(*args: Any, **kwargs: Any) -> Any:
+        snap = original_inspect(*args, **kwargs)
+        return premise_git.CapturedTreeSnapshot(
+            snap.available,
+            snap.commit_exists,
+            snap.modes,
+            snap.objects,
+            None,
+            None,
+            snap.index_objects,
+        )
+
+    monkeypatch.setattr(premise_lib, "inspect_captured_tree", hide_head)
+    repo, premise, issue, _ = _seed(tmp_path)
+    _raises("invalid_git_state", run_preflight, repo, premise, issue)
 
 
 def test_premise_git_batch_parser_preserves_binary_blob_frames() -> None:
     object_id = b"a" * 40
     payload = object_id + b" blob 4\na\nb\n\nmissing-expression missing\n"
 
-    assert premise_git._parse_batch(payload, 2) == [("blob", b"a\nb\n"), None]
+    assert premise_git._parse_batch(payload, 2) == [(object_id.decode("ascii"), "blob", b"a\nb\n"), None]
     assert premise_git._parse_batch(payload + b"trailing", 2) is None
 
 
@@ -687,10 +739,16 @@ def test_premise_history_and_write_error_branches(tmp_path: Path, monkeypatch: p
     monkeypatch.undo()
     monkeypatch.setattr(
         premise_lib,
-        "_git",
-        lambda *_args: subprocess.CompletedProcess([], 1, stdout="", stderr="failed"),
+        "history_contains_exact_line",
+        lambda *_args, **_kwargs: None,
     )
-    _raises("invalid_git_state", premise_lib._marker_seen, repo, "issue-7-slice-2")
+    _raises(
+        "invalid_git_state",
+        premise_lib._marker_seen,
+        repo,
+        "issue-7-slice-2",
+        normalized["snapshot"],
+    )
 
     original_error = premise_history._error
     monkeypatch.setattr(premise_history, "_error", lambda *_args: None)

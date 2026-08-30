@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import subprocess
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 
@@ -13,10 +13,19 @@ class CapturedTreeSnapshot:
     commit_exists: bool
     modes: dict[str, str]
     objects: dict[str, tuple[str, bytes] | None]
+    current_head_sha: str | None = None
+    current_head_commit: bytes | None = None
+    index_objects: dict[str, tuple[str, bytes] | None] = field(default_factory=dict)
 
 
-def _parse_batch(payload: bytes, count: int) -> list[tuple[str, bytes] | None] | None:
-    parsed: list[tuple[str, bytes] | None] = []
+def _typed_payload(item: tuple[str, str, bytes] | None) -> tuple[str, bytes] | None:
+    if item is None:
+        return None
+    return (item[1], item[2])
+
+
+def _parse_batch(payload: bytes, count: int) -> list[tuple[str, str, bytes] | None] | None:
+    parsed: list[tuple[str, str, bytes] | None] = []
     cursor = 0
     for _ in range(count):
         header_end = payload.find(b"\n", cursor)
@@ -31,6 +40,7 @@ def _parse_batch(payload: bytes, count: int) -> list[tuple[str, bytes] | None] |
         if len(fields) != 3:
             return None
         try:
+            name = fields[0].decode("ascii")
             object_type = fields[1].decode("ascii")
             size = int(fields[2])
         except (UnicodeDecodeError, ValueError):
@@ -38,14 +48,14 @@ def _parse_batch(payload: bytes, count: int) -> list[tuple[str, bytes] | None] |
         end = cursor + size
         if end >= len(payload) or payload[end : end + 1] != b"\n":
             return None
-        parsed.append((object_type, payload[cursor:end]))
+        parsed.append((name, object_type, payload[cursor:end]))
         cursor = end + 1
     return parsed if not payload[cursor:] else None
 
 
 def _batch_objects(
     repo_root: Path, expressions: list[str]
-) -> list[tuple[str, bytes] | None] | None:
+) -> list[tuple[str, str, bytes] | None] | None:
     result = subprocess.run(
         ["git", "cat-file", "--batch"],
         cwd=repo_root,
@@ -82,6 +92,67 @@ def _tree_modes(repo_root: Path, revision: str, paths: list[str]) -> dict[str, s
     return modes
 
 
+def _commit_parents_and_message(payload: bytes) -> tuple[list[str], str]:
+    text = payload.decode("utf-8", errors="replace")
+    header, separator, message = text.partition("\n\n")
+    if not separator:
+        return [], ""
+    parents = [
+        line[7:].strip()
+        for line in header.splitlines()
+        if line.startswith("parent ")
+    ]
+    return parents, message
+
+
+def history_contains_exact_line(
+    repo_root: Path,
+    head_sha: str,
+    head_commit: bytes,
+    line: str,
+) -> bool | None:
+    """Walk HEAD's parent chain from already-read commit bytes.
+
+    Returns None when Git cannot supply a remaining parent object.
+    """
+    seen = {head_sha}
+    queue: list[bytes] = [head_commit]
+    while queue:
+        parents, message = _commit_parents_and_message(queue.pop())
+        if any(entry == line for entry in message.splitlines()):
+            return True
+        missing = [parent for parent in parents if parent not in seen]
+        for parent in missing:
+            seen.add(parent)
+        if not missing:
+            continue
+        batched = _batch_objects(repo_root, missing)
+        if batched is None:
+            return None
+        for item in batched:
+            if item is None or item[1] != "commit":
+                return None
+            queue.append(item[2])
+    return False
+
+
+def _head_and_index(
+    repo_root: Path, protected_paths: list[str]
+) -> tuple[str | None, bytes | None, dict[str, tuple[str, bytes] | None]]:
+    expressions = ["HEAD^{commit}", *(f":{path}" for path in protected_paths)]
+    batched = _batch_objects(repo_root, expressions)
+    if batched is None:
+        return None, None, {path: None for path in protected_paths}
+    head = batched[0]
+    head_sha = head[0] if head is not None and head[1] == "commit" else None
+    head_commit = head[2] if head is not None and head[1] == "commit" else None
+    index_objects = {
+        path: _typed_payload(item)
+        for path, item in zip(protected_paths, batched[1:])
+    }
+    return head_sha, head_commit, index_objects
+
+
 def _individual_snapshot(
     repo_root: Path,
     revision: str,
@@ -115,7 +186,7 @@ def _individual_snapshot(
             check=False,
         )
         parsed = _parse_batch(result.stdout, 1) if result.returncode == 0 else None
-        objects[path] = parsed[0] if parsed else None
+        objects[path] = _typed_payload(parsed[0] if parsed else None)
     for path in expected_missing:
         expression = f"{revision}:{path}"
         result = subprocess.run(
@@ -125,7 +196,16 @@ def _individual_snapshot(
             check=False,
         )
         objects[path] = ("present", b"") if result.returncode == 0 else None
-    return CapturedTreeSnapshot(True, commit.returncode == 0, modes, objects)
+    head_sha, head_commit, index_objects = _head_and_index(repo_root, protected_paths)
+    return CapturedTreeSnapshot(
+        True,
+        commit.returncode == 0,
+        modes,
+        objects,
+        head_sha,
+        head_commit,
+        index_objects,
+    )
 
 
 def inspect_captured_tree(
@@ -134,20 +214,38 @@ def inspect_captured_tree(
     protected_paths: list[str],
     expected_missing: list[str],
 ) -> CapturedTreeSnapshot:
-    """Read commit existence, path modes, and objects without per-path Git calls."""
+    """Read captured objects, current HEAD, and index blobs in one Git batch."""
     all_paths = [*protected_paths, *expected_missing]
     if any("\n" in path or "\r" in path for path in all_paths):
         return _individual_snapshot(repo_root, revision, protected_paths, expected_missing)
-    expressions = [f"{revision}^{{commit}}", *(f"{revision}:{path}" for path in all_paths)]
+    expressions = [
+        f"{revision}^{{commit}}",
+        "HEAD^{commit}",
+        *(f"{revision}:{path}" for path in all_paths),
+        *(f":{path}" for path in protected_paths),
+    ]
     objects = _batch_objects(repo_root, expressions)
     modes = _tree_modes(repo_root, revision, protected_paths)
     if objects is None or modes is None:
         return CapturedTreeSnapshot(False, False, {}, {})
-    commit = objects[0]
-    path_objects = dict(zip(all_paths, objects[1:]))
+    captured = objects[0]
+    head = objects[1]
+    path_offset = 2
+    path_objects = {
+        path: _typed_payload(item)
+        for path, item in zip(all_paths, objects[path_offset : path_offset + len(all_paths)])
+    }
+    index_offset = path_offset + len(all_paths)
+    index_objects = {
+        path: _typed_payload(item)
+        for path, item in zip(protected_paths, objects[index_offset:])
+    }
     return CapturedTreeSnapshot(
         True,
-        commit is not None and commit[0] == "commit",
+        captured is not None and captured[1] == "commit",
         modes,
         path_objects,
+        head[0] if head is not None and head[1] == "commit" else None,
+        head[2] if head is not None and head[1] == "commit" else None,
+        index_objects,
     )

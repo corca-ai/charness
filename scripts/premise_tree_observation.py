@@ -49,6 +49,8 @@ def _index_paths(repo_root: Path) -> set[bytes]:
 def observe_current_tree(
     repo_root: Path,
     candidate: dict[str, Any],
+    *,
+    index_objects: dict[str, tuple[str, bytes] | None] | None = None,
 ) -> tuple[dict[str, list[dict[str, Any]]], bool]:
     """Return normalized observations and whether protected state drifted."""
     observations: dict[str, list[dict[str, Any]]] = {
@@ -69,9 +71,14 @@ def observe_current_tree(
                 drift = True
             else:
                 drift = drift or worktree_sha != row["sha256"]
-        index = _git_bytes(repo_root, "show", f":{row['path']}")
-        if index.returncode == 0:
-            index_sha = _sha256(index.stdout)
+        if index_objects is not None:
+            indexed = index_objects.get(row["path"])
+            if indexed is not None and indexed[0] == "blob":
+                index_sha = _sha256(indexed[1])
+        else:
+            index = _git_bytes(repo_root, "show", f":{row['path']}")
+            if index.returncode == 0:
+                index_sha = _sha256(index.stdout)
         if index_sha != row["sha256"]:
             drift = True
         observations["protected"].append(
@@ -82,7 +89,7 @@ def observe_current_tree(
                 "worktree_sha256": worktree_sha,
             }
         )
-    index_paths = _index_paths(repo_root)
+    index_paths = _index_paths(repo_root) if candidate["expected_missing"] else set()
     for relative in candidate["expected_missing"]:
         path = _repo_path(repo_root, relative)
         relative_bytes = relative.encode("utf-8")

@@ -10,7 +10,6 @@ from __future__ import annotations
 import hashlib
 import json
 import re
-import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -33,7 +32,11 @@ from scripts.premise_decision_history import (
     _safe_repo_path,
     _timestamp,
 )
-from scripts.premise_git_snapshot import inspect_captured_tree
+from scripts.premise_git_snapshot import (
+    CapturedTreeSnapshot,
+    history_contains_exact_line,
+    inspect_captured_tree,
+)
 from scripts.premise_tree_observation import (
     CurrentTreeInspectionError,
     ObservationPathEscape,
@@ -90,20 +93,6 @@ def _load_json(repo_root: Path, raw_path: Path, field: str) -> dict[str, Any]:
     except (OSError, UnicodeError, json.JSONDecodeError) as exc:
         _error("invalid_json", field, f"cannot read valid JSON: {exc}")
     return _mapping(value, field)
-
-
-def _git(repo_root: Path, *args: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(["git", *args], cwd=repo_root, capture_output=True, text=True, check=False)
-
-
-def _current_head(repo_root: Path) -> str:
-    result = _git(repo_root, "rev-parse", "--verify", "HEAD^{commit}")
-    if result.returncode != 0:
-        _error("invalid_git_state", "tree.captured_head_sha", "repository HEAD does not resolve to a commit")
-    head = result.stdout.strip()
-    if _SHA_RE.fullmatch(head) is None:
-        _error("invalid_git_state", "tree.captured_head_sha", "git returned an invalid commit SHA")
-    return head
 
 
 def _sha256_bytes(value: bytes) -> str:
@@ -204,7 +193,12 @@ def _validate_candidate_tree(repo_root: Path, tree: dict[str, Any]) -> dict[str,
     for index, relative in enumerate(missing_rows):
         if snapshot.objects.get(relative) is not None:
             _error("invalid_premise", f"tree.expected_missing[{index}]", "path exists at captured HEAD")
-    return {"captured_head_sha": captured_head, "protected": protected_rows, "expected_missing": missing_rows}
+    return {
+        "captured_head_sha": captured_head,
+        "protected": protected_rows,
+        "expected_missing": missing_rows,
+        "snapshot": snapshot,
+    }
 
 
 def _validate_candidate(repo_root: Path, data: dict[str, Any]) -> dict[str, Any]:
@@ -258,17 +252,27 @@ def _validate_issue(repo_root: Path, data: dict[str, Any], candidate: dict[str, 
     }
 
 
-def _marker_seen(repo_root: Path, premise_id: str) -> bool:
-    result = _git(repo_root, "log", "HEAD", "--format=%B")
-    if result.returncode != 0:
+def _marker_seen(repo_root: Path, premise_id: str, snapshot: CapturedTreeSnapshot) -> bool:
+    if snapshot.current_head_sha is None or snapshot.current_head_commit is None:
         _error("invalid_git_state", "git.log", "cannot inspect commit history from current HEAD")
-    marker = f"Charness-Premise-ID: {premise_id}"
-    return any(line == marker for line in result.stdout.splitlines())
+    found = history_contains_exact_line(
+        repo_root,
+        snapshot.current_head_sha,
+        snapshot.current_head_commit,
+        f"Charness-Premise-ID: {premise_id}",
+    )
+    if found is None:
+        _error("invalid_git_state", "git.log", "cannot inspect commit history from current HEAD")
+    return found
 
 
-def _protected_observations(repo_root: Path, candidate: dict[str, Any]) -> tuple[dict[str, list[dict[str, Any]]], bool]:
+def _protected_observations(
+    repo_root: Path,
+    candidate: dict[str, Any],
+    index_objects: dict[str, tuple[str, bytes] | None] | None = None,
+) -> tuple[dict[str, list[dict[str, Any]]], bool]:
     try:
-        return observe_current_tree(repo_root, candidate)
+        return observe_current_tree(repo_root, candidate, index_objects=index_objects)
     except ObservationPathEscape as exc:
         _error("unsafe_path", "tree.protected", f"path resolves outside repository: `{exc}`")
     except CurrentTreeInspectionError as exc:
@@ -278,12 +282,15 @@ def _protected_observations(repo_root: Path, candidate: dict[str, Any]) -> tuple
 
 def run_preflight(repo_root: Path, premise_path: Path, issue_path: Path, *, decision_log: str | None = None) -> dict[str, Any]:
     candidate = _validate_candidate(repo_root, _load_json(repo_root, premise_path, "premise"))
+    snapshot = candidate.pop("snapshot")
     issue = _validate_issue(repo_root, _load_json(repo_root, issue_path, "issue_readback"), candidate)
     records = _read_decisions(repo_root, decision_log or candidate["decision_log"])
-    current_head = _current_head(repo_root)
+    current_head = snapshot.current_head_sha
+    if current_head is None or _SHA_RE.fullmatch(current_head) is None:
+        _error("invalid_git_state", "tree.captured_head_sha", "repository HEAD does not resolve to a commit")
     observations: dict[str, list[dict[str, Any]]] = {"protected": [], "expected_missing": []}
     reasons: list[dict[str, str]] = []
-    if issue["state"] == "CLOSED" or _marker_seen(repo_root, candidate["premise_id"]):
+    if issue["state"] == "CLOSED" or _marker_seen(repo_root, candidate["premise_id"], snapshot):
         reasons.append({"code": "already_shipped", "path": "issue.state", "message": "issue is closed or the exact premise marker is already reachable from current HEAD"})
     if any(record.get("status") == "accepted" and record.get("premise_id") == candidate["premise_id"] for record in records):
         reasons.append({"code": "duplicate_premise", "path": "decision_log", "message": "an accepted decision already exists for this premise ID"})
@@ -293,7 +300,9 @@ def run_preflight(repo_root: Path, premise_path: Path, issue_path: Path, *, deci
     if current_head != candidate["captured_head_sha"]:
         reasons.append({"code": "stale_tree", "path": "tree.captured_head_sha", "message": "current HEAD moved after the premise was captured"})
     else:
-        observations, drift = _protected_observations(repo_root, candidate)
+        observations, drift = _protected_observations(
+            repo_root, candidate, snapshot.index_objects
+        )
         if drift:
             reasons.append({"code": "partial_repair", "path": "tree.protected", "message": "protected index/worktree or expected-missing paths changed before implementation"})
     reasons.sort(key=lambda item: REASON_ORDER.index(item["code"]))
