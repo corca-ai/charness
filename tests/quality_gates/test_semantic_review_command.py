@@ -28,8 +28,7 @@ PACKET_HELPER = ROOT / "skills/public/critique/scripts/run_review_packet.py"
 @cache
 def _cached_working_tree_packet() -> dict:
     """Capture one immutable working-tree packet for runner-state tests."""
-    from scripts.reviewed_input_identity import build_reviewed_input_identity
-    from tests.reviewed_input_identity_fixtures import repo_seed
+    from tests.reviewed_input_identity_fixtures import reviewed_identity_seed
 
     return {
         "kind": "charness.critique_prepare_packet",
@@ -48,9 +47,7 @@ def _cached_working_tree_packet() -> dict:
         ],
         "substrate_mode": "working-tree",
         "changed_ref": None,
-        "reviewed_input_identity": build_reviewed_input_identity(
-            repo_root=repo_seed(), reviewed_paths=["reviewed.txt"]
-        ),
+        "reviewed_input_identity": reviewed_identity_seed(),
     }
 
 

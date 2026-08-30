@@ -25,10 +25,9 @@ VERIFY_ENTRYPOINTS = (
 @cache
 def _cached_working_tree_identity() -> dict:
     """Capture one immutable seed identity for verifier-only cases."""
-    from scripts.reviewed_input_identity import build_reviewed_input_identity
-    from tests.reviewed_input_identity_fixtures import repo_seed
+    from tests.reviewed_input_identity_fixtures import reviewed_identity_seed
 
-    return build_reviewed_input_identity(repo_root=repo_seed(), reviewed_paths=["reviewed.txt"])
+    return reviewed_identity_seed()
 
 
 def _git(repo: Path, *args: str) -> None:

@@ -1,1 +1,1 @@
-2026-08-31-mutation-git-calls.md
+2026-08-31-debug-review.md

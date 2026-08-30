@@ -28,6 +28,7 @@ from tests.quality_gates.reviewer_capability_support import (
 from tests.quality_gates.seeding_support import load_module, verify_closeout_args
 from tests.quality_gates.support import ROOT, run_script
 from tests.reviewed_input_identity_fixtures import repo_seed as identity_repo_seed
+from tests.reviewed_input_identity_fixtures import reviewed_identity_seed
 
 SCRIPT = "skills/public/issue/scripts/issue_tool.py"
 CRITIQUE_REL = "charness-artifacts/critique/res-42.md"
@@ -71,9 +72,7 @@ def _captured_reviewed_input() -> dict:
     cached seed keeps the real current-identity check while avoiding a fresh
     repository and capture operation for every carrier mutation.
     """
-    from scripts.reviewed_input_identity import build_reviewed_input_identity
-
-    return build_reviewed_input_identity(repo_root=identity_repo_seed(), reviewed_paths=["reviewed.txt"])
+    return reviewed_identity_seed()
 
 
 def _worker_delivered_artifact(

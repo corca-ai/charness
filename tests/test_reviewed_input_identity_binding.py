@@ -31,6 +31,7 @@ from scripts.validate_critique_artifacts import (
 from tests.reviewed_input_identity_fixtures import (
     repo_seed as identity_repo_seed,
 )
+from tests.reviewed_input_identity_fixtures import reviewed_identity_seed
 from tests.reviewed_input_identity_fixtures import (
     tree_snapshot as _tree_snapshot,
 )
@@ -59,9 +60,7 @@ def _init_identity_repo(repo: Path) -> None:
 @cache
 def _cached_seed_identity() -> dict:
     """Capture one immutable seed identity for integrity-only semantics tests."""
-    return build_reviewed_input_identity(
-        repo_root=identity_repo_seed(), reviewed_paths=["reviewed.txt"]
-    )
+    return reviewed_identity_seed()
 
 
 def _empty_identity() -> dict:
