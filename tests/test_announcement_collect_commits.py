@@ -3,6 +3,7 @@ from __future__ import annotations
 import subprocess
 from pathlib import Path
 
+import pytest
 import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -22,6 +23,37 @@ def git(repo: Path, *args: str) -> str:
 
 def init_repo(repo: Path) -> None:
     git(repo, "init", "-b", "main")
+
+
+@pytest.mark.boundary_contract(
+    reason="The commit-window threshold needs a real Git history; fast-import builds it in one process."
+)
+def import_linear_history(repo: Path, subjects: list[str]) -> None:
+    """Create the fanout-sized fixture in one Git process, not one per edit."""
+    init_repo(repo)
+    stream: list[str] = []
+    for index, subject in enumerate(subjects, start=1):
+        content = f"{index}\n"
+        stream.extend(
+            [
+                "blob\n",
+                f"mark :{index}\n",
+                f"data {len(content.encode())}\n{content}",
+                "commit refs/heads/main\n",
+                f"author Test <test@example.com> {index} +0000\n",
+                f"committer Test <test@example.com> {index} +0000\n",
+                f"data {len(subject.encode())}\n{subject}\n",
+                f"M 100644 :{index} file_{index}.txt\n",
+            ]
+        )
+    subprocess.run(
+        ["git", "fast-import", "--quiet"],
+        cwd=repo,
+        input="".join(stream),
+        check=True,
+        capture_output=True,
+        text=True,
+    )
 
 
 def run_collect(repo: Path, *args: str) -> dict[str, object]:
@@ -159,14 +191,7 @@ def test_collect_commits_fanout_hint_small_window(tmp_path: Path) -> None:
 
 
 def test_collect_commits_fanout_hint_large_window(tmp_path: Path) -> None:
-    init_repo(tmp_path)
-    (tmp_path / "seed").write_text("seed\n", encoding="utf-8")
-    git(tmp_path, "add", "seed")
-    git(tmp_path, "commit", "-m", "seed")
-    for index in range(32):
-        (tmp_path / f"file_{index}.txt").write_text(f"{index}\n", encoding="utf-8")
-        git(tmp_path, "add", f"file_{index}.txt")
-        git(tmp_path, "commit", "-m", f"commit {index}")
+    import_linear_history(tmp_path, ["seed", *(f"commit {index}" for index in range(32))])
 
     payload = run_collect(tmp_path, "--fanout-hint", "--limit", "50")
 
