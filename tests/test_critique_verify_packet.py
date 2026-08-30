@@ -4,7 +4,10 @@ import hashlib
 import json
 import runpy
 import shlex
+import shutil
 import subprocess
+import sys
+from functools import cache
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -17,6 +20,15 @@ VERIFY_ENTRYPOINTS = (
     ROOT / "skills/public/critique/scripts/verify_packet.py",
     ROOT / "plugins/charness/skills/critique/scripts/verify_packet.py",
 )
+
+
+@cache
+def _cached_working_tree_identity() -> dict:
+    """Capture one immutable seed identity for verifier-only cases."""
+    from scripts.reviewed_input_identity import build_reviewed_input_identity
+    from tests.reviewed_input_identity_fixtures import repo_seed
+
+    return build_reviewed_input_identity(repo_root=repo_seed(), reviewed_paths=["reviewed.txt"])
 
 
 def _git(repo: Path, *args: str) -> None:
@@ -54,6 +66,62 @@ def _prepare(tmp_path: Path) -> tuple[Path, dict, dict]:
     receipt = yaml.safe_load(result.stdout)
     packet_path = tmp_path / receipt["reviewed_input_binding"]["packet_path"]
     packet = json.loads(packet_path.read_text(encoding="utf-8"))
+    return packet_path, receipt, packet
+
+
+def _static_packet(tmp_path: Path) -> tuple[Path, dict, dict]:
+    """Install one captured packet for verifier/error semantics tests.
+
+    These cases exercise packet integrity, stale detection, and entrypoint
+    behavior.  They do not need to run the prepare CLI again; the identity is
+    captured once from the immutable seed and the repository bytes are copied
+    unchanged for each isolated test.
+    """
+    from tests.reviewed_input_identity_fixtures import repo_seed
+
+    shutil.copytree(repo_seed(), tmp_path, dirs_exist_ok=True)
+    packet = {
+        "kind": "charness.critique_prepare_packet",
+        "version": 1,
+        "repo": "test",
+        "generated_at": "2026-08-30T00:00:00Z",
+        "prepared_for": "verify",
+        "changed_ref": None,
+        "substrate_mode": "working-tree",
+        "adapter_path": None,
+        "sections": [
+            {
+                "id": "smoke",
+                "title": "Smoke",
+                "content_kind": "static",
+                "producer": "static-config (inline)",
+                "content": "smoke",
+                "ok": True,
+                "errors": [],
+            }
+        ],
+        "section_count": 1,
+        "ok": True,
+        "scope_status": "populated",
+        "reviewed_input_identity": _cached_working_tree_identity(),
+    }
+    packet_dir = tmp_path / "charness-artifacts" / "critique"
+    packet_dir.mkdir(parents=True, exist_ok=True)
+    packet_path = packet_dir / "verify-packet.json"
+    packet_path.write_text(json.dumps(packet, separators=(",", ":")) + "\n", encoding="utf-8")
+    packet_sha = hashlib.sha256(packet_path.read_bytes()).hexdigest()
+    identity_sha = packet["reviewed_input_identity"]["identity_sha256"]
+    binding = {
+        "packet_path": packet_path.relative_to(tmp_path).as_posix(),
+        "packet_sha256": packet_sha,
+        "identity_sha256": identity_sha,
+        "verify_command": (
+            f"{sys.executable} {VERIFY_ENTRYPOINTS[0]} --repo-root . "
+            f"--packet-path {packet_path.relative_to(tmp_path).as_posix()} "
+            f"--packet-sha256 {packet_sha} --identity-sha256 {identity_sha}"
+        ),
+    }
+    receipt = {"reviewed_input_binding": binding}
     return packet_path, receipt, packet
 
 
@@ -137,7 +205,7 @@ def test_raw_worktree_sha_differs_but_canonical_verifier_passes(tmp_path: Path) 
 
 
 def test_tampered_packet_refuses_with_structured_yaml(tmp_path: Path) -> None:
-    _packet_path, receipt, _packet = _prepare(tmp_path)
+    _packet_path, receipt, _packet = _static_packet(tmp_path)
     _packet_path.write_bytes(b"{}\n")
 
     result = _run(receipt["reviewed_input_binding"]["verify_command"], cwd=tmp_path)
@@ -209,7 +277,7 @@ def test_committed_ref_packet_refuses_mismatched_declared_paths(tmp_path: Path) 
 
 
 def test_verifier_refuses_null_hash_arguments_with_typed_reason(tmp_path: Path) -> None:
-    _packet_path, receipt, _packet = _prepare(tmp_path)
+    _packet_path, receipt, _packet = _static_packet(tmp_path)
     binding = receipt["reviewed_input_binding"]
     result = subprocess.run(
         [
@@ -234,7 +302,7 @@ def test_verifier_refuses_null_hash_arguments_with_typed_reason(tmp_path: Path) 
 
 
 def test_stale_reviewed_input_refuses(tmp_path: Path) -> None:
-    _packet_path, receipt, _packet = _prepare(tmp_path)
+    _packet_path, receipt, _packet = _static_packet(tmp_path)
     (tmp_path / "reviewed.txt").write_text("changed after review\n", encoding="utf-8")
 
     result = _run(receipt["reviewed_input_binding"]["verify_command"], cwd=tmp_path)
@@ -246,7 +314,7 @@ def test_stale_reviewed_input_refuses(tmp_path: Path) -> None:
 
 
 def test_malformed_packet_and_expected_identity_mismatch_refuse(tmp_path: Path) -> None:
-    packet_path, receipt, packet = _prepare(tmp_path)
+    packet_path, receipt, packet = _static_packet(tmp_path)
     binding = receipt["reviewed_input_binding"]
     verifier = str(VERIFY_ENTRYPOINTS[0])
     mismatch = subprocess.run(
@@ -307,7 +375,7 @@ def test_receipt_and_markdown_carry_one_executable_command(tmp_path: Path) -> No
 
 
 def test_source_and_generated_plugin_verifier_entrypoints_work(tmp_path: Path) -> None:
-    _packet_path, receipt, _packet = _prepare(tmp_path)
+    _packet_path, receipt, _packet = _static_packet(tmp_path)
     binding = receipt["reviewed_input_binding"]
     assert VERIFY_ENTRYPOINTS[0].read_bytes() == VERIFY_ENTRYPOINTS[1].read_bytes()
 

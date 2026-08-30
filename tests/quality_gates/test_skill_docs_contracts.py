@@ -407,7 +407,7 @@ def test_impl_keeps_optional_proof_conditional() -> None:
     assert "changed-line proof" in skill_text
 
 
-def test_impl_source_and_checked_in_plugin_export_are_byte_identical() -> None:
+def test_impl_source_and_materialized_plugin_export_are_byte_identical() -> None:
     assert (ROOT / "skills" / "public" / "impl" / "SKILL.md").read_bytes() == (
         PLUGIN_IMPL_SKILL_PATH.read_bytes()
     )

@@ -19,7 +19,7 @@ into host-specific plugin surfaces.
   `CHARNESS_RUNTIME_ROOT`; install/update must not create it in a checkout
 - generated Claude and Codex manifests should derive from this metadata instead
   of becoming manually curated policy copies
-- checked-in install-surface artifacts also derive from this metadata:
+- materialized plugin export artifacts also derive from this metadata:
   - `plugins/charness/.claude-plugin/plugin.json`
   - `plugins/charness/.codex-plugin/plugin.json`
   - `.claude-plugin/marketplace.json`
@@ -29,7 +29,7 @@ into host-specific plugin surfaces.
 - `scripts/validate_packaging.py` proves contract shape and repo-path integrity
 - `scripts/export_plugin.py` materializes temporary Claude/Codex plugin layouts
   from the shared manifest
-- `scripts/sync_root_plugin_manifests.py` refreshes the checked-in install
-  surface and root marketplace files
+- `scripts/sync_root_plugin_manifests.py` refreshes the materialized plugin
+  export and root marketplace files
 - `scripts/bootstrap_runtime.py` creates or reuses the managed checkout's
   isolated Python runtime for install/update/bootstrap commands

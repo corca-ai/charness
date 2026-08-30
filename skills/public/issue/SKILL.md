@@ -94,68 +94,11 @@ closing anything.
 8. Render the per-issue behavior verdict or typed disposition from a channel
    distinct from `CLOSED` state and the carrier body.
 
-`issue tracker` operations support an issue-native `achieve` goal. A routine
-Goal Run pickup reads the parent once and may request GitHub's
-`subIssuesSummary` in that same response; this is a cheap live count, not a
-full child-graph read or a second progress store. It then reads only the
-parent's cursor child. A closed cursor child is reported as a typed sync stop;
-routine pickup does not scan every child to repair the cursor.
-
-For a complete Goal Run, prefer the file-backed provider surface:
-`goal-run-preflight`, `goal-run-read`, and one `goal-run-apply` per operation
-(`update-body`, `create-or-reuse-child`, `list-children`, `add-child`,
-`remove-child`, or `record-observation`). Inputs are strict repo-contained JSON
-files carrying the parent, immutable draft/binding hashes, attempt identity, and
-observation directory, so the command line stays small without dropping the
-identity proof. `goal-run-close` is the only path that may close a Goal Run; it
-requires a separate proof file and a separately bound
-`charness.goal-run-final-proof-index/v1` file. The close proof binds the
-complete bytes of its comment and index inputs. The index binds the same
-draft/binding/repository/parent identity, a typed expected-child file, the
-parent-obligation bytes, and role-labelled evidence artifacts. All referenced
-files are validated as
-repo-contained inputs before the adapter is selected or a provider is called;
-stale, malformed, foreign, or mismatched evidence is a typed refusal.
-
-The close then performs exact graph/child/evidence readback and one guarded
-close. After the immutable terminal observation is written, only the mutable
-terminal metadata fields (`terminal_observation_path` and
-`terminal_observation_sha256`) are updated through the existing tracker body
-update/readback boundary. A distinct parent read must still report `CLOSED`
-and bind that receipt; a metadata update or readback failure is
-`unverified-write`, not a successful close. The primitive tracker commands
-below remain useful compatibility and diagnostic surfaces.
-
-Retry never repeats a receipt-proven comment or re-closes a closed parent. The
-Goal agent owns evidence-role sufficiency; Issue core validates byte bindings.
-
-1. For bootstrap, graph repair, or an explicitly requested diagnostic, run
-   `issue_tool.py tracker-preflight --repo <owner/repo> --number <parent>`.
-   Ordinary mutations resolve the provider once; their mutation functions own
-   the target read and post-write readback, so they do not run this probe again.
-2. Create a managed child with `create-or-reuse-child`. Its exact body contains
-   `<!-- charness-work-item-key: <key> -->`; retry first performs exhaustive
-   read-only discovery and refuses duplicate or mismatched keys. A prior
-   matching started-only or unverified-write observation interlocks later
-   attempts: they may recover an exact discovered issue but cannot invoke
-   create again until operator disposition resolves the earlier write.
-3. Use `update --body-file` for a complete body replacement. An already-current
-   body is a no-mutation read; an update cannot strip or alter immutable Goal Run
-   metadata, and any performed write needs byte-identical readback. The default
-   assumes one updating agent and adds no concurrency protocol.
-4. Use `add-sub-issue` / `remove-sub-issue` for real relationships and
-   `list-sub-issues --expect-child-file <json>` for exact graph proof. The
-   source file binds kind, repository, parent, child identities, and its
-   complete-byte SHA-256 so a long approved manifest is not transcribed into
-   shell arguments. An explicitly empty set remains an exact expectation; it is
-   not treated as an omitted expectation. An already-linked child is an idempotent
-   no-mutation result; a Markdown link never satisfies readback.
-   Any invoked mutation without conclusive readback is `unverified-write` and
-   stops for a fresh read; it is never reported as `no-write` or retried blindly.
-5. File-backed Goal Run operations carry binding/draft hashes, an attempt id,
-   and an observation directory so an interrupted external write can be
-   recovered. Simple issue operations do not inherit that Goal Run ceremony.
-6. Before closing a parent, require `list-sub-issues --expect-all-closed`.
+Issue-native tracker mechanics are adapter-routed. Goal Run pickup, the
+file-backed provider contract, parent amendments, observation binding, graph
+proof, and closeout are owned by
+[`references/issue-backend.md`](./references/issue-backend.md). The consuming
+repository owns any broader lifecycle policy.
 
 ## Guardrails
 

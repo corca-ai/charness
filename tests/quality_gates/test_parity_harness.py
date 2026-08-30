@@ -1,25 +1,62 @@
 from __future__ import annotations
 
+import hashlib
 import json
+import shutil
 import subprocess
 import sys
+import tempfile
+from functools import cache
 from pathlib import Path
 
 import yaml
 
 from runtime_bootstrap import import_repo_module
 
-from .support import ROOT, run_script
+from .support import ROOT, _load_script_module, run_script
+
+_BOUNDARY = _load_script_module(
+    "tests.quality_gates.reviewer_boundary_fingerprint_for_parity",
+    ROOT / "skills/shared/scripts/reviewer_boundary_fingerprint.py",
+)
 
 
 def seeded_repo(path: Path) -> Path:
-    """A git repo with a HEAD commit — `build_snapshot` resolves HEAD, so an empty repo is not a repo."""
-    path.mkdir(parents=True, exist_ok=True)
+    """Copy an immutable HEAD-bearing seed instead of rebuilding Git per test."""
+    shutil.copytree(_immutable_seed(), path)
+    return path
+
+
+@cache
+def _immutable_seed() -> Path:
+    """Create the fixture repository once per pytest worker, outside the worktree."""
+    path = Path(tempfile.mkdtemp(prefix="charness-parity-seed-"))
     subprocess.run(["git", "init"], cwd=path, check=True, capture_output=True)
     (path / "seed.txt").write_text("seed\n", encoding="utf-8")
     subprocess.run(["git", "add", "seed.txt"], cwd=path, check=True, capture_output=True)
     subprocess.run(["git", "commit", "-m", "seed"], cwd=path, check=True, capture_output=True)
     return path
+
+
+def write_review_snapshot(repo: Path, *, captured: dict[str, str] | None = None) -> Path:
+    """Write the parity input contract without rebuilding a Git state.
+
+    Snapshot capture has one real boundary E2E below. The parity matrix only
+    tests how an already-captured immutable seed is consumed, so rebuilding a
+    repository and invoking the capture CLI for every case adds no signal.
+    """
+    snapshot_dir = repo / ".charness" / "reviewer-boundary"
+    blob_dir = snapshot_dir / "blobs"
+    blob_dir.mkdir(parents=True, exist_ok=True)
+    source_blobs: dict[str, str] = {}
+    for path, source in (captured or {}).items():
+        key = hashlib.sha256(source.encode()).hexdigest()
+        (blob_dir / key).write_text(source, encoding="utf-8")
+        source_blobs[path] = key
+    snapshot = {"head": _parity._current_head(repo), "source_blobs": source_blobs}
+    snapshot_path = snapshot_dir / "snapshot.json"
+    snapshot_path.write_text(json.dumps(snapshot), encoding="utf-8")
+    return snapshot_path
 
 _parity = import_repo_module(ROOT / "scripts/parity_harness.py", "scripts.parity_harness")
 
@@ -269,7 +306,7 @@ def test_a_stale_snapshot_from_another_commit_is_not_read(tmp_path: Path) -> Non
     target = repo / "scripts" / "gate.py"
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text("def verdict(x):\n    return bool(x)\n", encoding="utf-8")
-    run_script("skills/shared/scripts/reviewer_boundary_fingerprint.py", "snapshot", "--repo-root", str(repo))
+    write_review_snapshot(repo, captured={"scripts/gate.py": target.read_text(encoding="utf-8")})
     assert _parity.captured_paths(repo) == ["scripts/gate.py"]
 
     subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True)
@@ -301,7 +338,7 @@ def test_a_file_clean_at_snapshot_time_is_reported_uncomparable_not_clean(tmp_pa
         check=True,
         capture_output=True,
     )
-    run_script("skills/shared/scripts/reviewer_boundary_fingerprint.py", "snapshot", "--repo-root", str(repo))
+    write_review_snapshot(repo)
 
     target.write_text("def verdict(x):\n    return False\n", encoding="utf-8")
     result = run_script("scripts/parity_harness.py", "--repo-root", str(repo))
@@ -323,7 +360,12 @@ def test_the_snapshot_blobs_are_not_reported_as_reviewer_drift(tmp_path: Path) -
     (repo / "scripts").mkdir(parents=True, exist_ok=True)
     (repo / "scripts" / "dirty.py").write_text("x = 1\n", encoding="utf-8")
 
-    run_script("skills/shared/scripts/reviewer_boundary_fingerprint.py", "snapshot", "--repo-root", str(repo))
+    run_script(
+        "skills/shared/scripts/reviewer_boundary_fingerprint.py",
+        "snapshot",
+        "--repo-root",
+        str(repo),
+    )
     verify = run_script(
         "skills/shared/scripts/reviewer_boundary_fingerprint.py",
         "verify",
@@ -343,22 +385,23 @@ def test_a_snapshot_written_at_the_repo_root_does_not_report_its_own_blobs(tmp_p
     """`--out <repo-root>/snapshot.json` puts blobs at `<repo>/blobs/` — the most
     visible place — and the round-1 repair's `directory == "."` guard skipped the
     drop exactly there, leaving the original blocker reachable through a flag."""
-    repo = seeded_repo(tmp_path / "repo")
-    (repo / "scripts").mkdir(parents=True, exist_ok=True)
-    (repo / "scripts" / "dirty.py").write_text("x = 1\n", encoding="utf-8")
-    out = repo / "snapshot.json"
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    key = "a" * 64
+    other = "b" * 64
+    snapshot = {
+        "untracked": {
+            "snapshot.json": "self",
+            f"blobs/{key}": "captured",
+            f"blobs/{other}": "unrelated",
+        },
+        "source_blobs": {"scripts/dirty.py": key},
+    }
+    _BOUNDARY._drop_self(snapshot, str(repo), str(repo / "snapshot.json"))
 
-    run_script(
-        "skills/shared/scripts/reviewer_boundary_fingerprint.py",
-        "snapshot", "--repo-root", str(repo), "--out", str(out),
-    )
-    verify = run_script(
-        "skills/shared/scripts/reviewer_boundary_fingerprint.py",
-        "verify", "--repo-root", str(repo), "--before", str(out),
-    )
-
-    payload = yaml.safe_load(verify.stdout)
-    assert payload["ok"] is True, payload["drift"]
+    assert "snapshot.json" not in snapshot["untracked"]
+    assert f"blobs/{key}" not in snapshot["untracked"]
+    assert snapshot["untracked"] == {f"blobs/{other}": "unrelated"}
 
 
 def test_a_destroyed_baseline_is_reported_as_lost_not_as_never_captured(tmp_path: Path) -> None:
@@ -367,7 +410,7 @@ def test_a_destroyed_baseline_is_reported_as_lost_not_as_never_captured(tmp_path
     target = repo / "scripts" / "gate.py"
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text("def verdict(x):\n    return bool(x)\n", encoding="utf-8")
-    run_script("skills/shared/scripts/reviewer_boundary_fingerprint.py", "snapshot", "--repo-root", str(repo))
+    write_review_snapshot(repo, captured={"scripts/gate.py": target.read_text(encoding="utf-8")})
     for blob in (repo / ".charness" / "reviewer-boundary" / "blobs").glob("*"):
         blob.unlink()
     target.write_text("def verdict(x):\n    return False\n", encoding="utf-8")

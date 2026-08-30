@@ -4,6 +4,10 @@ from pathlib import Path
 from typing import Any
 
 import public_spec_quality_lib as qlib
+from git_inventory_lib import (  # noqa: E402
+    VisibleRepoFilesSnapshot,
+    capture_visible_repo_files,
+)
 from public_spec_adapter_policy import load_quality_adapter_data, load_repo_script_module
 from public_spec_scan_lib import spec_inventory
 
@@ -22,14 +26,18 @@ def _filter_vendored(repo_root: Path, paths: list[Path], prefixes: list[str]) ->
     return _VENDORED_LIB.filter_vendored(repo_root, paths, prefixes)
 
 
-def iter_public_specs(repo_root: Path) -> list[Path]:
-    return qlib.visible_paths(repo_root, "*.spec.md")
+def iter_public_specs(
+    repo_root: Path, *, snapshot: VisibleRepoFilesSnapshot | None = None
+) -> list[Path]:
+    return qlib.visible_paths(repo_root, "*.spec.md", snapshot=snapshot)
 
 
-def iter_smoke_like_tests(repo_root: Path) -> tuple[list[str], list[str]]:
+def iter_smoke_like_tests(
+    repo_root: Path, *, snapshot: VisibleRepoFilesSnapshot | None = None
+) -> tuple[list[str], list[str]]:
     smoke_paths: set[str] = set()
     e2e_paths: set[str] = set()
-    for path in qlib.visible_paths(repo_root, "*"):
+    for path in qlib.visible_paths(repo_root, "*", snapshot=snapshot):
         rel = path.relative_to(repo_root).as_posix()
         lowered = rel.lower()
         if "smoke" in lowered:
@@ -51,13 +59,20 @@ def duplicate_commands(specs: list[dict[str, Any]]) -> list[dict[str, Any]]:
     ]
 
 
-def inventory(repo_root: Path) -> dict[str, Any]:
+def inventory(
+    repo_root: Path,
+    *,
+    snapshot: VisibleRepoFilesSnapshot | None = None,
+) -> dict[str, Any]:
+    snapshot = snapshot or capture_visible_repo_files(repo_root)
     data = load_quality_adapter_data(repo_root)
     vendored = _vendored_prefixes(data)
-    spec_paths = _filter_vendored(repo_root, iter_public_specs(repo_root), vendored)
+    spec_paths = _filter_vendored(
+        repo_root, iter_public_specs(repo_root, snapshot=snapshot), vendored
+    )
     specs = [spec_inventory(repo_root, path, data) for path in spec_paths]
     duplicates = duplicate_commands(specs)
-    smoke_paths, e2e_paths = iter_smoke_like_tests(repo_root)
+    smoke_paths, e2e_paths = iter_smoke_like_tests(repo_root, snapshot=snapshot)
     if vendored:
         smoke_paths = [path for path in smoke_paths if not _VENDORED_LIB.is_vendored_relative(path, vendored)]
         e2e_paths = [path for path in e2e_paths if not _VENDORED_LIB.is_vendored_relative(path, vendored)]

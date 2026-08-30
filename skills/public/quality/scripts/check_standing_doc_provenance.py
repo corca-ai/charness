@@ -51,7 +51,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def run(repo_root: Path) -> dict[str, object]:
+def run(repo_root: Path, *, snapshot=None) -> dict[str, object]:
     adapter = load_quality_adapter_strict(repo_root)
     adapter_errors = list(adapter.get("errors") or [])
     if adapter_errors:
@@ -64,7 +64,7 @@ def run(repo_root: Path) -> dict[str, object]:
             "inert": False,
         }
     config = adapter["data"].get("standing_doc_provenance") or {}
-    result = scan_standing_docs(repo_root, config)
+    result = scan_standing_docs(repo_root, config, snapshot=snapshot)
     return {
         "ok": not result["findings"],
         "adapter_errors": [],

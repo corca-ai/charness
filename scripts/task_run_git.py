@@ -46,6 +46,51 @@ def _git_output(repo_root: Path, *args: str) -> str:
     return result.stdout
 
 
+def _repo_snapshot(repo_root: Path) -> dict[str, Any]:
+    """Read immutable repository identity and topology in one Git operation.
+
+    The task lifecycle needs the same four scalar facts at its input boundary:
+    the worktree root, the shared administration directory, the checkout's
+    administration directory, and ``HEAD``.  Keeping them together makes that
+    boundary explicit and prevents callers from paying for independent
+    ``rev-parse`` probes that can never describe different states.
+    """
+    requested = repo_root.expanduser().resolve()
+    values = _git_output(
+        requested,
+        "rev-parse",
+        "--show-toplevel",
+        "--git-common-dir",
+        "--git-dir",
+        "HEAD",
+    ).splitlines()
+    if len(values) != 4:
+        raise TaskRunError("git rev-parse returned an incomplete repository snapshot")
+    discovered = Path(values[0]).resolve()
+    common = Path(values[1])
+    if not common.is_absolute():
+        common = discovered / common
+    git_dir = Path(values[2])
+    if not git_dir.is_absolute():
+        git_dir = discovered / git_dir
+    common = common.resolve()
+    git_dir = git_dir.resolve()
+    if discovered != requested:
+        raise TaskRunError(
+            f"--repo-root must be the Git worktree root, not a subdirectory: {requested}"
+        )
+    if not common.is_dir():
+        raise TaskRunError(f"Git common directory is not a directory: {common}")
+    if not git_dir.is_dir():
+        raise TaskRunError(f"Git directory is not a directory: {git_dir}")
+    return {
+        "repo_root": discovered,
+        "git_common_dir": common,
+        "git_dir": git_dir,
+        "head": values[3].strip(),
+    }
+
+
 def _commit_wip_candidate(repo_root: Path) -> dict[str, Any]:
     """Checkpoint all non-ignored lane output as an explicitly unverified WIP."""
     staged = _git(repo_root, "add", "--all", "--", ".")
@@ -190,6 +235,80 @@ def _collect_populations(repo_root: Path) -> dict[str, list[str]]:
     return {key: sorted(set(paths)) for key, paths in populations.items()}
 
 
+def _collect_populations_with_metadata(
+    repo_root: Path,
+) -> tuple[dict[str, list[str]], str | None, str | None]:
+    """Read terminal worktree populations together with Git's branch snapshot.
+
+    Porcelain v2's branch headers carry the same ``HEAD`` and branch identity
+    that completion used to fetch with separate ``rev-parse`` and
+    ``symbolic-ref`` calls.  Keeping these values attached to the one status
+    snapshot makes the completion boundary coherent: the candidate, branch,
+    and populations all describe one Git observation.
+    """
+    output = _git_output(
+        repo_root,
+        "status",
+        "--porcelain=v2",
+        "--branch",
+        "--untracked-files=all",
+        "--ignored=matching",
+        "-z",
+    )
+    populations: dict[str, list[str]] = {"tracked": [], "untracked": [], "ignored": []}
+    head: str | None = None
+    branch: str | None = None
+    records = output.split("\0")
+    index = 0
+    while index < len(records):
+        record = records[index]
+        index += 1
+        if not record:
+            continue
+        if record.startswith("# branch.oid "):
+            value = record.removeprefix("# branch.oid ").strip()
+            head = value if re.fullmatch(r"[0-9a-fA-F]{40,64}", value) else None
+            continue
+        if record.startswith("# branch.head "):
+            value = record.removeprefix("# branch.head ").strip()
+            branch = None if value in {"", "(detached)"} else value
+            continue
+        if record.startswith("# "):
+            # Upstream/ahead-behind headers are useful to humans but do not
+            # change the terminal candidate state being captured here.
+            continue
+        if record.startswith("? "):
+            populations["untracked"].append(record[2:])
+            continue
+        if record.startswith("! "):
+            populations["ignored"].append(record[2:])
+            continue
+        record_type = record[0]
+        if record_type == "1":
+            fields = record.split(" ", 8)
+            if len(fields) != 9:
+                raise TaskRunError(f"unexpected git status record: {record!r}")
+            populations["tracked"].append(fields[8])
+            continue
+        if record_type == "2":
+            fields = record.split(" ", 9)
+            if len(fields) != 10 or index >= len(records) or not records[index]:
+                raise TaskRunError(f"unexpected git status record: {record!r}")
+            populations["tracked"].append(fields[9])
+            populations["tracked"].append(records[index])
+            index += 1
+            continue
+        if record_type == "u":
+            fields = record.split(" ", 10)
+            if len(fields) != 11:
+                raise TaskRunError(f"unexpected git status record: {record!r}")
+            populations["tracked"].append(fields[10])
+            continue
+        raise TaskRunError(f"unexpected git status record: {record!r}")
+    normalized = {key: sorted(set(paths)) for key, paths in populations.items()}
+    return normalized, head, branch
+
+
 def _snapshot_payload(snapshot: Mapping[str, Sequence[str]]) -> dict[str, Any]:
     return {key: {"count": len(paths), "paths": list(paths)} for key, paths in snapshot.items()}
 
@@ -307,20 +426,49 @@ def _is_ancestor(repo_root: Path, base_sha: str, head: str) -> bool:
     return completed.returncode == 0
 
 
-def _candidate_carrier(repo_root: Path, base_sha: str) -> dict[str, Any]:
+def _candidate_carrier(
+    repo_root: Path,
+    base_sha: str,
+    populations: Mapping[str, Sequence[str]] | None = None,
+    head: str | None = None,
+    branch: str | None = None,
+) -> dict[str, Any]:
     """Describe which lane tree carries the complete validated candidate."""
-    head = _git_output(repo_root, "rev-parse", "HEAD").strip()
+    head = head or _git_output(repo_root, "rev-parse", "HEAD").strip()
     # ANCESTRY, not inequality. `head != base_sha` answers "did HEAD move", which is a
     # different question from "does HEAD carry the base-to-worktree candidate". A lane
     # that amends its own base, or resets to an ancestor, leaves a clean tree at a
     # SIBLING commit -- and the inequality test called that `commit-only` with
     # `head_is_complete: true`, which invites the parent to cherry-pick a commit that
     # replays against the wrong parent instead of carrying the validated candidate.
-    base_is_ancestor = _is_ancestor(repo_root, base_sha, head)
+    # Equality already establishes ancestry.  Most worktree-only task runs use
+    # ``base=HEAD`` and used to pay for a merge-base subprocess before asking
+    # Git for the same tracked diff twice below.
+    base_is_ancestor = head == base_sha or _is_ancestor(repo_root, base_sha, head)
     has_commit = head != base_sha and base_is_ancestor
     committed_paths = _diff_paths(repo_root, base_sha, head) if has_commit else []
-    dirty_paths = sorted(set(_diff_paths(repo_root, head)) | set(_untracked_paths(repo_root)))
-    changed_paths = _changed_paths(repo_root, base_sha)
+    # Porcelain status is the one coherent snapshot of the current worktree
+    # population.  Its tracked and untracked paths are exactly the dirty
+    # populations needed below; asking Git separately for `diff HEAD` and
+    # `ls-files --others` only re-reads that same boundary.  Keep the
+    # base-relative diff below because status cannot answer whether a path was
+    # restored to the selected base after a lane commit.
+    current_populations = populations or _collect_populations(repo_root)
+    untracked_paths = list(current_populations["untracked"])
+    working_tree_paths = sorted(
+        set(current_populations["tracked"]) | set(untracked_paths)
+    )
+    if head == base_sha:
+        # The two tracked views are identical when HEAD is the selected base;
+        # status is the complete candidate view, so no separate diff or
+        # untracked listing is necessary.
+        changed_paths = working_tree_paths
+        dirty_paths = list(working_tree_paths)
+    else:
+        dirty_paths = working_tree_paths
+        changed_paths = sorted(
+            set(_diff_paths(repo_root, base_sha)) | set(untracked_paths)
+        )
     if not has_commit:
         carrier_kind = "worktree-only"
     elif dirty_paths:
@@ -340,6 +488,7 @@ def _candidate_carrier(repo_root: Path, base_sha: str) -> dict[str, Any]:
         # while this is False knows a commit exists and does not carry the candidate.
         "base_is_ancestor_of_head": base_is_ancestor,
         "observed_head_sha": head,
+        "observed_branch": branch,
         "head_is_complete": has_commit and not dirty_paths,
         "content_digest": _candidate_content_digest(repo_root, base_sha, changed_paths),
     }

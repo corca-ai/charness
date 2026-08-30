@@ -8,6 +8,7 @@ from typing import Any, Callable, Mapping, Sequence
 from scripts.task_run_contract import FAIL, PASS
 from scripts.task_run_git import (
     _collect_populations,
+    _collect_populations_with_metadata,
     _git_output,
     _parse_nul_paths,
     _population_delta,
@@ -99,16 +100,25 @@ def _completion_evidence(
     require_change: bool,
     parent_before: Mapping[str, Sequence[str]],
     parent_before_head: str,
+    target_head: str | None = None,
     glob_matches: Callable[[Path, str], tuple[list[str], list[str]]] | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
-    after_exec = _collect_populations(target_path)
+    after_exec, observed_head, observed_branch = _collect_populations_with_metadata(target_path)
     populations = _population_delta(before_exec, after_exec)
     target_scope_specs = _refresh_scope_specs(
         target_path,
         scope_specs,
         glob_matches=glob_matches,
     )
-    scope = _scope_result(target_path, base_sha, target_scope_specs, require_change)
+    scope = _scope_result(
+        target_path,
+        base_sha,
+        target_scope_specs,
+        require_change,
+        after_exec,
+        target_head or observed_head,
+        observed_branch,
+    )
     parent_progress, parent_after = _parent_progress(
         parent_root=parent_root,
         parent_before=parent_before,

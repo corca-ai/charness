@@ -94,62 +94,6 @@ def _sha256(payload: bytes) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
-def _load_changed_path_owner():
-    """Load the adjacent surface module even when this file is loaded by path."""
-    sibling = Path(__file__).resolve().with_name("surfaces_lib.py")
-    canonical = "scripts.surfaces_lib"
-    loaded = sys.modules.get(canonical)
-    if loaded is not None and Path(getattr(loaded, "__file__", "")).resolve() == sibling:
-        return loaded
-    try:
-        spec = importlib.util.find_spec(canonical)
-    except (ImportError, ValueError):
-        spec = None
-    if spec is not None and spec.origin and Path(spec.origin).resolve() == sibling:
-        return importlib.import_module(canonical)
-    spec = importlib.util.spec_from_file_location("charness_surfaces_lib", sibling)
-    if spec is None or spec.loader is None:
-        raise ImportError(f"Unable to load changed-path owner from {sibling}")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
-_changed_path_owner = _load_changed_path_owner()
-
-
-def _auto_paths(repo_root: Path, changed_ref: str | None) -> list[str]:
-    """Delegate changed-path selection to the surface module's single owner."""
-    try:
-        if changed_ref:
-            return _changed_path_owner.collect_changed_paths_for_ref(repo_root, changed_ref)
-        return _changed_path_owner.collect_changed_paths(repo_root)
-    except _changed_path_owner.SurfaceError as exc:
-        raise ValueError(str(exc)) from exc
-
-
-def _lexical_path(path: str) -> Path:
-    relative = Path(path)
-    if relative.is_absolute() or ".." in relative.parts:
-        raise ValueError(f"reviewed path `{path}` resolves outside repo root")
-    return relative
-
-
-def _checked_path(repo_root: Path, path: str) -> Path:
-    relative = _lexical_path(path)
-    candidate = repo_root.resolve() / relative
-    if candidate.is_symlink():
-        raise ValueError(
-            f"reviewed path `{path}` is a symlink; declare the target file explicitly"
-        )
-    resolved_for_boundary = candidate.resolve()
-    try:
-        resolved_for_boundary.relative_to(repo_root.resolve())
-    except ValueError as exc:
-        raise ValueError(f"reviewed path `{path}` resolves outside repo root") from exc
-    return candidate
-
-
 def _worktree_content_sha256(repo_root: Path, path: str) -> str | None:
     try:
         # No symlink arm: `_checked_path` above refuses symlinks (f7a09d672), so
@@ -167,9 +111,8 @@ def _worktree_content_sha256(repo_root: Path, path: str) -> str | None:
         return None
 
 
-def _load_nonblob():
-    """The adjacent non-blob binder, resolved the same deterministic way the
-    verification module resolves this file.
+def _load_sibling(module_stem: str):
+    """Resolve an adjacent owner independently of consumer package state.
 
     Order is load-bearing: preferring the package import would let any
     already-importable module of that name win, and falling back to a by-path
@@ -177,8 +120,8 @@ def _load_nonblob():
     who imported first. Both were real defects here, one found by a fresh-eye
     review and one by the full suite.
     """
-    sibling = Path(__file__).resolve().with_name("reviewed_input_nonblob.py")
-    canonical = "scripts.reviewed_input_nonblob"
+    sibling = Path(__file__).resolve().with_name(f"{module_stem}.py")
+    canonical = f"scripts.{module_stem}"
     loaded = sys.modules.get(canonical)
     loaded_file = getattr(loaded, "__file__", None)
     if loaded_file is not None and Path(loaded_file).resolve() == sibling:
@@ -190,19 +133,29 @@ def _load_nonblob():
             spec = None
         if spec is not None and spec.origin and Path(spec.origin).resolve() == sibling:
             return importlib.import_module(canonical)
-        spec = importlib.util.spec_from_file_location("charness_reviewed_input_nonblob", sibling)
+        spec = importlib.util.spec_from_file_location(f"charness_{module_stem}", sibling)
         if spec is not None and spec.loader is not None:
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
             return module
-    from scripts import reviewed_input_nonblob as module  # noqa: PLC0415
-
-    return module
+    return importlib.import_module(canonical)
 
 
-_nonblob = _load_nonblob()
+_path_selection = _load_sibling("reviewed_input_path_selection")
+_changed_path_owner = _path_selection.changed_path_owner
+_auto_paths = _path_selection.auto_paths
+_lexical_path = _path_selection.lexical_path
+_checked_path = _path_selection.checked_path
+_range = _load_sibling("reviewed_input_range")
+
+_nonblob = _load_sibling("reviewed_input_nonblob")
 _current_pointer_payload = _nonblob._current_pointer_payload
 _gitlink_sha256 = _nonblob._gitlink_sha256
+_gitlink_snapshot_for_paths = _nonblob._gitlink_snapshot_for_paths
+_object_or_show = _nonblob._object_or_show
+_prepare_path_snapshots = _nonblob._prepare_path_snapshots
+GitlinkSnapshot = dict[tuple[Path, str, str | None], str | None]
+GitObjectSnapshot = dict[tuple[Path, str], bytes | None]
 
 
 def _unavailable(
@@ -245,8 +198,10 @@ def _review_paths(
     mode: str,
     excluded_paths: list[str] | None,
     excluded_prefixes: list[str] | None,
+    gitlink_snapshot: GitlinkSnapshot | None = None,
 ) -> tuple[list[str], list[str]]:
     auto_excluded: list[str] = []
+    swept: set[str] | None = None
     if reviewed_paths is None:
         # Exclusions apply to the auto sweep ONLY: an explicit --reviewed-path
         # declaration is what was read and is never silently dropped.
@@ -259,7 +214,9 @@ def _review_paths(
         paths = sorted(set(reviewed_paths))
     if mode == SUBSTRATE_COMMITTED_REF:
         try:
-            expected_paths = set(_auto_paths(repo_root, changed_ref))
+            expected_paths = swept if swept is not None else set(
+                _auto_paths(repo_root, changed_ref)
+            )
         except ValueError as exc:
             _fail("changed-ref-unavailable", str(exc))
         if set(paths) != expected_paths:
@@ -293,11 +250,16 @@ def _review_paths(
             # Bound by link payload below; `_checked_path` would refuse it as a
             # symlink and the round-trip through `verify` would never close.
             continue
-        if _gitlink_sha256(repo_root, path, None) is not None:
+        candidate = _checked_path(repo_root, path)
+        if not candidate.is_dir() or candidate.is_symlink():
+            continue
+        gitlink_snapshot.update(
+            _gitlink_snapshot_for_paths(repo_root, [path], None)
+        )
+        if _gitlink_sha256(repo_root, path, None, gitlink_snapshot) is not None:
             # A gitlink LOOKS like a directory on disk but binds a commit id, so
             # "declare the individual files" names files that do not exist.
             continue
-        candidate = _checked_path(repo_root, path)
         if candidate.is_dir() and not candidate.is_symlink():
             raise ValueError(
                 f"reviewed path `{path}` is a directory; declare the individual files "
@@ -307,7 +269,7 @@ def _review_paths(
 
 
 def _is_range(changed_ref: str) -> bool:
-    return ".." in changed_ref
+    return _range.is_range(changed_ref)
 
 
 def _range_endpoints(repo_root: Path, changed_ref: str) -> tuple[str | None, str]:
@@ -325,25 +287,18 @@ def _range_endpoints(repo_root: Path, changed_ref: str) -> tuple[str | None, str
     merge-base, not against a. Resolving the start to that merge-base is what
     makes the recorded endpoints describe the diff that was actually taken.
     """
-    if "..." in changed_ref:
-        left_raw, right_raw = changed_ref.split("...", 1)
-        left = left_raw or "HEAD"
-        right = right_raw or "HEAD"
-        merge_base = _git_bytes_optional(repo_root, "merge-base", left, right)
-        if merge_base is None:
-            _fail(
-                "unresolvable-range",
-                f"changed ref `{changed_ref}` has no merge base for `{left}` and `{right}`",
-            )
-        return merge_base.decode().strip(), right
-    if ".." in changed_ref:
-        left, right = changed_ref.split("..", 1)
-        return (left or "HEAD"), (right or "HEAD")
-    return None, changed_ref
+    try:
+        return _range.range_endpoints(repo_root, changed_ref, _git_bytes_optional)
+    except _range.UnresolvableRange as exc:
+        _fail("unresolvable-range", str(exc))
 
 
 def _patch_components(
-    repo_root: Path, paths: list[str], changed_ref: str | None, mode: str
+    repo_root: Path,
+    paths: list[str],
+    changed_ref: str | None,
+    mode: str,
+    working_head: str | None = None,
 ) -> tuple[list[str], str, bytes, bytes, bytes]:
     path_args = ["--", *paths]
     if mode == SUBSTRATE_COMMITTED_REF:
@@ -363,7 +318,9 @@ def _patch_components(
             else _git_bytes(repo_root, "show", "--format=", "--binary", changed_ref, *path_args)
         )
         return resolved_ref, base_head, reviewed_patch, b"", b""
-    base_head = _git_bytes(repo_root, "rev-parse", "HEAD").decode().strip()
+    base_head = working_head or _git_bytes(
+        repo_root, "rev-parse", "HEAD"
+    ).decode().strip()
     staged_patch = _git_bytes(repo_root, "diff", "--cached", "--binary", *path_args) if paths else b""
     unstaged_patch = _git_bytes(repo_root, "diff", "--binary", *path_args) if paths else b""
     return [], base_head, b"", staged_patch, unstaged_patch
@@ -385,19 +342,19 @@ def _preimage_refs(repo_root: Path, changed_ref: str | None) -> list[str]:
     commit has no parent, but a root commit deletes nothing, so an empty list
     simply finds no pre-image and the refusal stands.
     """
-    if not changed_ref:
-        return []
-    start_ref, target_ref = _range_endpoints(repo_root, changed_ref)
-    if start_ref is not None:
-        return [start_ref]
-    raw = _git_bytes_optional(repo_root, "rev-list", "--parents", "-n", "1", target_ref)
-    if not raw:
-        return []
-    return raw.decode("utf-8", errors="surrogateescape").split()[1:]
+    try:
+        return _range.preimage_refs(repo_root, changed_ref, _git_bytes_optional)
+    except _range.UnresolvableRange as exc:
+        _fail("unresolvable-range", str(exc))
 
 
 def _committed_ref_digest(
-    repo_root: Path, path: str, base_head: str, preimage_refs: list[str] | None
+    repo_root: Path,
+    path: str,
+    base_head: str,
+    preimage_refs: list[str] | None,
+    gitlink_snapshot: GitlinkSnapshot | None = None,
+    git_object_snapshot: GitObjectSnapshot | None = None,
 ) -> tuple[str | None, bool]:
     """(digest, was_deleted) for one path at a committed ref.
 
@@ -407,25 +364,33 @@ def _committed_ref_digest(
     produced one that no longer matched the range -- between them a removal slice
     had no valid declaration.
     """
-    content = _git_bytes_optional(repo_root, "show", f"{base_head}:{path}")
+    content = _object_or_show(repo_root, f"{base_head}:{path}", git_object_snapshot)
     if content is not None:
         return _sha256(content), False
-    gitlink = _gitlink_sha256(repo_root, path, base_head)
+    gitlink = _gitlink_sha256(repo_root, path, base_head, gitlink_snapshot)
     if gitlink is not None:
         return gitlink, False
     for preimage_ref in preimage_refs or ():
-        previous = _git_bytes_optional(repo_root, "show", f"{preimage_ref}:{path}")
+        previous = _object_or_show(repo_root, f"{preimage_ref}:{path}", git_object_snapshot)
         if previous is not None:
             return _sha256(previous), True
         # `git show <ref>:<path>` cannot read a gitlink, so a REMOVED submodule
         # fell through both the deletion fallback and the gitlink binder.
-        removed_gitlink = _gitlink_sha256(repo_root, path, preimage_ref)
+        removed_gitlink = _gitlink_sha256(
+            repo_root, path, preimage_ref, gitlink_snapshot
+        )
         if removed_gitlink is not None:
             return removed_gitlink, True
     return None, False
 
 
-def _working_tree_digest(repo_root: Path, path: str, base_head: str) -> tuple[str | None, bool]:
+def _working_tree_digest(
+    repo_root: Path,
+    path: str,
+    base_head: str,
+    gitlink_snapshot: GitlinkSnapshot | None = None,
+    git_object_snapshot: GitObjectSnapshot | None = None,
+) -> tuple[str | None, bool]:
     """(digest, was_deleted) for one path in the working tree.
 
     A deletion is still a reviewed input: bind its pre-change bytes rather than
@@ -440,25 +405,44 @@ def _working_tree_digest(repo_root: Path, path: str, base_head: str) -> tuple[st
     digest = _worktree_content_sha256(repo_root, path)
     if digest is not None:
         return digest, False
-    gitlink = _gitlink_sha256(repo_root, path, None)
+    gitlink = _gitlink_sha256(repo_root, path, None, gitlink_snapshot)
     if gitlink is not None:
         return gitlink, False
-    staged = _git_bytes_optional(repo_root, "show", f":{path}")
+    staged = _object_or_show(repo_root, f":{path}", git_object_snapshot)
     if staged is not None:
         return _sha256(staged), True
-    previous = _git_bytes_optional(repo_root, "show", f"{base_head}:{path}")
+    previous = _object_or_show(repo_root, f"{base_head}:{path}", git_object_snapshot)
     if previous is not None:
         return _sha256(previous), True
     # Same gitlink gap on this side: a submodule removed from index and disk is
     # unreadable by `git show`.
-    return _gitlink_sha256(repo_root, path, base_head), True
+    return _gitlink_sha256(repo_root, path, base_head, gitlink_snapshot), True
 
 
 def _content_components(
-    repo_root: Path, paths: list[str], base_head: str, mode: str, preimage_refs: list[str] | None = None
+    repo_root: Path,
+    paths: list[str],
+    base_head: str,
+    mode: str,
+    preimage_refs: list[str] | None = None,
+    gitlink_snapshot: GitlinkSnapshot | None = None,
+    git_object_snapshot: GitObjectSnapshot | None = None,
 ) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
     untracked: set[str] = set()
     path_args = ["--", *paths]
+    gitlink_snapshot = gitlink_snapshot if gitlink_snapshot is not None else {}
+    git_object_snapshot = git_object_snapshot if git_object_snapshot is not None else {}
+    _prepare_path_snapshots(
+        repo_root,
+        paths,
+        base_head=base_head,
+        committed_ref=mode == SUBSTRATE_COMMITTED_REF,
+        preimage_refs=preimage_refs,
+        gitlink_snapshot=gitlink_snapshot,
+        git_object_snapshot=git_object_snapshot,
+        current_pointer_payload=_current_pointer_payload,
+        worktree_content_sha256=_worktree_content_sha256,
+    )
     if paths and mode == SUBSTRATE_WORKING_TREE:
         raw_untracked = _git_bytes(
             repo_root, "ls-files", "--others", "--exclude-standard", "-z", *path_args
@@ -468,9 +452,22 @@ def _content_components(
     declared_untracked: list[dict[str, str]] = []
     for path in paths:
         if mode == SUBSTRATE_COMMITTED_REF:
-            digest, deleted = _committed_ref_digest(repo_root, path, base_head, preimage_refs)
+            digest, deleted = _committed_ref_digest(
+                repo_root,
+                path,
+                base_head,
+                preimage_refs,
+                gitlink_snapshot,
+                git_object_snapshot,
+            )
         else:
-            digest, deleted = _working_tree_digest(repo_root, path, base_head)
+            digest, deleted = _working_tree_digest(
+                repo_root,
+                path,
+                base_head,
+                gitlink_snapshot,
+                git_object_snapshot,
+            )
         if digest is None:
             _fail(
                 "null-content-hash",
@@ -504,9 +501,18 @@ def build_reviewed_input_identity(
 ) -> dict[str, Any]:
     mode = _substrate_mode(changed_ref, substrate_mode)
     try:
-        _git_bytes(repo_root, "rev-parse", "--is-inside-work-tree")
+        probe_args = ["--is-inside-work-tree"]
+        if mode == SUBSTRATE_WORKING_TREE:
+            probe_args.append("HEAD")
+        repository_probe = _git_bytes(repo_root, "rev-parse", *probe_args)
     except ValueError as exc:
         return _unavailable(reviewed_paths, changed_ref, mode, str(exc))
+    working_head = (
+        repository_probe.decode().splitlines()[-1]
+        if mode == SUBSTRATE_WORKING_TREE
+        else None
+    )
+    gitlink_snapshot: GitlinkSnapshot = {}
 
     paths, auto_excluded = _review_paths(
         repo_root,
@@ -515,12 +521,18 @@ def build_reviewed_input_identity(
         mode,
         excluded_paths,
         excluded_prefixes,
+        gitlink_snapshot,
     )
     resolved_ref, base_head, reviewed_patch, staged_patch, unstaged_patch = _patch_components(
-        repo_root, paths, changed_ref, mode
+        repo_root, paths, changed_ref, mode, working_head
     )
     reviewed_content, declared_untracked = _content_components(
-        repo_root, paths, base_head, mode, _preimage_refs(repo_root, changed_ref)
+        repo_root,
+        paths,
+        base_head,
+        mode,
+        _preimage_refs(repo_root, changed_ref),
+        gitlink_snapshot,
     )
 
     captured: dict[str, Any] = {

@@ -332,7 +332,7 @@ import sys
 import time
 from pathlib import Path
 
-marker, start, *command = sys.argv[1:]
+marker, start, expected_parent, *command = sys.argv[1:]
 # Published by rename, not by write_text. The parent polls the marker for EXISTENCE and
 # then reads it, so a plain write_text -- create, write, close -- lets the parent win
 # between create and write and read an empty file. That is `int("")`, which the parent
@@ -342,6 +342,8 @@ staging = Path(marker + ".partial")
 staging.write_text(str(os.getpid()) + "\\n", encoding="utf-8")
 os.replace(staging, marker)
 while not Path(start).exists():
+    if os.getppid() != int(expected_parent) or not Path(marker).parent.exists():
+        raise SystemExit(0)
     time.sleep(0.01)
 os.execvp(command[0], command)
 """
@@ -371,6 +373,7 @@ def run_mutation_command(
         _CHILD_WRAPPER,
         str(recovery.child_marker),
         str(recovery.child_start),
+        str(os.getpid()),
         *command,
     ]
     process = subprocess.Popen(

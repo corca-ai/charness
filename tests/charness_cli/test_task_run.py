@@ -592,10 +592,17 @@ def test_post_create_setup_failure_persists_terminal_result(tmp_path: Path, monk
     repo = _repo(tmp_path)
     executable = _codex(tmp_path, "exit 0")
 
-    def fail_git_dir(_target: Path) -> Path:
-        raise RuntimeError("git-dir setup failed")
+    original_snapshot = task_run._repo_snapshot
+    snapshot_calls = 0
 
-    monkeypatch.setattr(task_run, "_git_dir", fail_git_dir)
+    def fail_target_snapshot(target: Path) -> dict[str, object]:
+        nonlocal snapshot_calls
+        snapshot_calls += 1
+        if snapshot_calls == 2:
+            raise RuntimeError("git-dir setup failed")
+        return original_snapshot(target)
+
+    monkeypatch.setattr(task_run, "_repo_snapshot", fail_target_snapshot)
     payload = _run(
         repo,
         tmp_path,

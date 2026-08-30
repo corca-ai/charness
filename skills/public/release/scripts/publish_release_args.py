@@ -70,7 +70,7 @@ def build_parser() -> argparse.ArgumentParser:
         "commit, repeat the exact original issue, classification, carrier, behavior, repo, critique, and "
         "--notes-file arguments. Omitting --notes-file on resume is refused when notes for the tag are drafted."))
     parser.add_argument("--claims-review-artifact", help=(
-        "Repo-relative charness.release.claims-review.v3 JSON record for a marked prepared release; commit it "
+        "Repo-relative charness.release.claims-review.v4 JSON record for a marked prepared release; commit it "
         "with the review narrative it names, then use --resume --publish-current --claims-review-artifact <path>. "
         "A `pass` requires an `observer_distinctness` object naming one of separate-agent-context / separate-host / "
         "separate-operator plus its concrete signal and the review narrative; a host with no distinct observer "

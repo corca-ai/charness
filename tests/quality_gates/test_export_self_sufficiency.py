@@ -5,7 +5,7 @@ started: `tests/repo_copy.py` clones `packaging/` into every fixture, and
 `test_bootstrap_runtime.py` copies `bootstrap-python.json` in explicitly. A test
 written inside that harness manufactures the dependency it should have proven
 absent, and PASSES AGAINST THE DEFECT. So the positive assertions here run
-against the REAL checked-in export tree, and the fixtures below are hand-built
+against the REAL materialized export tree, and the fixtures below are hand-built
 minimal trees rather than repo copies.
 """
 
@@ -424,7 +424,7 @@ def test_a_missing_export_tree_is_unestablished_not_clean(tmp_path: Path, monkey
     (tmp_path / "packaging" / "charness.json").write_text("{}", encoding="utf-8")
     monkeypatch.setattr(_gate._packaging, "load_manifest", lambda *_a, **_k: {})
     monkeypatch.setattr(
-        _gate._packaging, "checked_in_plugin_root", lambda _manifest: Path("nowhere")
+        _gate._packaging, "materialized_plugin_root", lambda _manifest: Path("nowhere")
     )
 
     payload = _gate.run_check(tmp_path)

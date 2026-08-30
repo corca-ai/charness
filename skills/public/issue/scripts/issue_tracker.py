@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 import hashlib
-import json
-import re
 import runpy
 from pathlib import Path
 from typing import Any
@@ -19,6 +17,7 @@ DISCOVERY = _load_local("issue_tracker_discovery")
 RELATIONSHIPS = _load_local("issue_tracker_relationships")
 OUTCOME = _load_local("issue_tracker_outcome")
 CAPABILITIES = _load_local("issue_tracker_capabilities")
+GOAL_METADATA = _load_local("issue_tracker_goal_metadata")
 
 run_backend = BACKEND.run_backend
 resolve_op = BACKEND.resolve_op
@@ -35,10 +34,6 @@ GH_UPDATE_DEFAULT = [
 ]
 UPDATE_PLACEHOLDERS = frozenset({"repo", "number", "body_file"})
 
-GOAL_RUN_MARKER_RE = re.compile(r"<!--\s*charness-goal-run:(?P<version>[^\s]+)")
-GOAL_RUN_BLOCK_RE = re.compile(
-    r"<!-- charness-goal-run:v1\s*\n(?P<payload>\{.*?\})\s*\n-->", re.DOTALL
-)
 BOOTSTRAP_OPERATIONS = CAPABILITIES.BOOTSTRAP_OPERATIONS
 tracker_capability_report = CAPABILITIES.tracker_capability_report
 GH_DISCOVER_MANAGED_ISSUES_DEFAULT = DISCOVERY.GH_DISCOVER_MANAGED_ISSUES_DEFAULT
@@ -59,71 +54,6 @@ list_sub_issues = RELATIONSHIPS.list_sub_issues
 _resolve_issue_id = RELATIONSHIPS._resolve_issue_id
 add_sub_issue = RELATIONSHIPS.add_sub_issue
 remove_sub_issue = RELATIONSHIPS.remove_sub_issue
-
-GOAL_RUN_IMMUTABLE_FIELDS = (
-    "binding_schema",
-    "binding_path",
-    "binding_sha256",
-    "draft_path",
-    "draft_sha256",
-    "initial_graph_sha256",
-)
-GOAL_RUN_TERMINAL_FIELDS = (
-    "terminal_observation_path",
-    "terminal_observation_sha256",
-)
-
-
-def _goal_run_block(body: str, *, context: str) -> dict[str, Any] | None:
-    markers = list(GOAL_RUN_MARKER_RE.finditer(body))
-    matches = list(GOAL_RUN_BLOCK_RE.finditer(body))
-    if not markers:
-        return None
-    versions = [match.group("version") for match in markers]
-    unsupported = sorted(set(versions) - {"v1"})
-    if unsupported:
-        raise RuntimeError(
-            f"{context} has unsupported Goal Run metadata version(s): {unsupported!r}"
-        )
-    if len(markers) != 1 or len(matches) != 1:
-        raise RuntimeError(f"{context} has duplicate or malformed Goal Run metadata")
-    try:
-        payload = json.loads(matches[0].group("payload"))
-    except json.JSONDecodeError as exc:
-        raise RuntimeError(f"{context} Goal Run metadata is not valid JSON: {exc}") from exc
-    if not isinstance(payload, dict):
-        raise RuntimeError(f"{context} Goal Run metadata must be a JSON object")
-    return payload
-
-
-def _guard_goal_run_metadata(
-    current_body: str, desired_body: str, *, terminal_metadata_update: bool = False
-) -> None:
-    current = _goal_run_block(current_body, context="current body")
-    desired = _goal_run_block(desired_body, context="desired body")
-    if current is not None and desired is None:
-        raise RuntimeError("tracker update refused to strip Goal Run metadata")
-    if current is None or desired is None:
-        return
-    changed = [
-        field for field in GOAL_RUN_IMMUTABLE_FIELDS if current.get(field) != desired.get(field)
-    ]
-    if changed:
-        raise RuntimeError(
-            f"tracker update refused to alter immutable Goal Run identity fields: {changed!r}"
-        )
-    missing = object()
-    terminal_changed = [
-        field
-        for field in GOAL_RUN_TERMINAL_FIELDS
-        if current.get(field, missing) != desired.get(field, missing)
-    ]
-    if terminal_changed and not terminal_metadata_update:
-        raise RuntimeError(
-            "tracker update refused to alter terminal Goal Run metadata outside the "
-            f"dedicated close ingress: {terminal_changed!r}"
-        )
-
 
 def create_or_reuse_child(
     repo: str,
@@ -268,6 +198,7 @@ def update_issue_body(
     terminal_metadata_update: bool = False,
     expected_body_sha256: str | None = None,
     pre_write_validator: Any | None = None,
+    parent_amendment_validator: Any | None = None,
 ) -> dict[str, Any]:
     if not body_file.is_file():
         raise RuntimeError(f"tracker body file not found: {body_file}")
@@ -283,13 +214,16 @@ def update_issue_body(
             f"from the bound observed digest: expected {expected_body_sha256}, got {current_body_sha256}"
         )
     desired_body = body_file.read_text(encoding="utf-8")
-    _guard_goal_run_metadata(
+    GOAL_METADATA.guard_goal_run_metadata(
         current_body,
         desired_body,
         terminal_metadata_update=terminal_metadata_update,
+        allow_human_amendment=parent_amendment_validator is not None,
     )
     if pre_write_validator is not None:
         pre_write_validator(current_body, desired_body)
+    if parent_amendment_validator is not None:
+        parent_amendment_validator(current_body, desired_body)
     if before["body_verified"] is True:
         return {
             "ok": True,

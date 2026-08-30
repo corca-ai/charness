@@ -163,6 +163,92 @@ def test_candidate_digest_detects_retained_worktree_byte_drift(tmp_path: Path) -
     assert moved["content_digest"] != original_digest
 
 
+def test_candidate_carrier_reuses_equal_head_worktree_reads(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = _repo(tmp_path)
+    base = _git(repo, "rev-parse", "HEAD").stdout.strip()
+    calls: list[tuple[str, ...]] = []
+    original_git = task_run_git._git
+
+    def traced_git(root: Path, *args: str):
+        calls.append(args)
+        return original_git(root, *args)
+
+    monkeypatch.setattr(task_run_git, "_git", traced_git)
+    monkeypatch.setattr(
+        task_run_git,
+        "_is_ancestor",
+        lambda *_args: pytest.fail("equal HEAD and base must not spawn merge-base"),
+    )
+
+    carrier = task_run_git._candidate_carrier(repo, base)
+
+    assert carrier["base_is_ancestor_of_head"] is True
+    assert carrier["carrier_kind"] == "worktree-only"
+    assert calls == [
+        ("rev-parse", "HEAD"),
+        ("status", "--porcelain=v1", "--untracked-files=all", "--ignored=matching", "-z"),
+    ]
+
+
+def test_candidate_carrier_reads_untracked_paths_once_for_a_commit_plus_dirty_tree(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = _repo(tmp_path)
+    base = _git(repo, "rev-parse", "HEAD").stdout.strip()
+    (repo / "module.py").write_text("VALUE = 2\n", encoding="utf-8")
+    _commit(repo, "update module", "module.py")
+    (repo / "extra.py").write_text("VALUE = 3\n", encoding="utf-8")
+    calls: list[tuple[str, ...]] = []
+    ancestry_calls: list[tuple[Path, str, str]] = []
+    original_git = task_run_git._git
+    original_is_ancestor = task_run_git._is_ancestor
+
+    def traced_git(root: Path, *args: str):
+        calls.append(args)
+        return original_git(root, *args)
+
+    def traced_is_ancestor(root: Path, ancestor: str, descendant: str) -> bool:
+        ancestry_calls.append((root, ancestor, descendant))
+        return original_is_ancestor(root, ancestor, descendant)
+
+    monkeypatch.setattr(task_run_git, "_git", traced_git)
+    monkeypatch.setattr(task_run_git, "_is_ancestor", traced_is_ancestor)
+
+    carrier = task_run_git._candidate_carrier(repo, base)
+
+    assert carrier["carrier_kind"] == "commit-plus-dirty"
+    assert carrier["committed_paths"] == ["module.py"]
+    assert carrier["dirty_paths"] == ["extra.py"]
+    assert carrier["changed_paths"] == ["extra.py", "module.py"]
+    assert calls.count(
+        ("status", "--porcelain=v1", "--untracked-files=all", "--ignored=matching", "-z")
+    ) == 1
+    assert len(calls) == 4
+    assert len(ancestry_calls) == 1
+    assert len(calls) + len(ancestry_calls) == 5
+
+
+def test_candidate_carrier_keeps_base_scope_when_worktree_restores_a_committed_path(
+    tmp_path: Path,
+) -> None:
+    repo = _repo(tmp_path)
+    base = _git(repo, "rev-parse", "HEAD").stdout.strip()
+    (repo / "module.py").write_text("VALUE = 2\n", encoding="utf-8")
+    _commit(repo, "update module", "module.py")
+    (repo / "module.py").write_text("VALUE = 1\n", encoding="utf-8")
+
+    carrier = task_run_git._candidate_carrier(repo, base)
+
+    assert carrier["committed_paths"] == ["module.py"]
+    assert carrier["dirty_paths"] == ["module.py"]
+    # The lane commit and the worktree edit cancel relative to the selected
+    # base.  The current dirty status must not widen the base-relative scope.
+    assert carrier["changed_paths"] == []
+    assert carrier["carrier_kind"] == "commit-plus-dirty"
+
+
 def test_explicit_base_scope_resolution_uses_selected_tree_for_dry_run(tmp_path: Path) -> None:
     repo = _repo(tmp_path)
     (repo / "pkg").mkdir()

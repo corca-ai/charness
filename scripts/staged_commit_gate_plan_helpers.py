@@ -38,7 +38,7 @@ def collect_staged_scope_paths(repo_root: Path) -> list[str]:
     A deletion-only or rename-only commit has no A/C/M entry at all, so every
     surface predicate saw an empty list and the hook exited 0 having scheduled
     nothing, while the suppressed mirror-drift gate would have reported that the
-    checked-in plugin tree no longer matched its source.
+    materialized plugin export no longer matched its source.
     """
     stdout = _git_stdout(
         repo_root,

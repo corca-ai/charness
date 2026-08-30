@@ -110,49 +110,14 @@ def _assert_tag_discovery_failure(
 
 
 def test_publish_current_fails_closed_when_local_release_tag_discovery_fails(tmp_path: Path) -> None:
-    repo, bin_dir = _seed_publish_current_previous_tag_delta(tmp_path)
-    _write_base_ref_failing_git(bin_dir)
-    before_head = git(repo, "rev-parse", "HEAD")
-    env = _publish_env(tmp_path, bin_dir)
-    env["FAKE_GIT_TAG_LIST_FAIL"] = "1"
-
-    result = subprocess.run(
-        [
-            "python3",
-            "skills/public/release/scripts/publish_release.py",
-            "--critique-blocked",
-            "synthetic-host-signal for legacy release publish tag-history test",
-            "--repo-root",
-            str(repo),
-            "--publish-current",
-            "--execute",
-        ],
-        cwd=REPO_ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-        env=env,
+    _assert_tag_discovery_failure(
+        tmp_path,
+        ["git", "tag", "--list", "v[0-9]*.[0-9]*.[0-9]*"],
+        source="local tags",
+        command="git tag --list v[0-9]*.[0-9]*.[0-9]*",
+        exit_code=45,
+        stderr_marker="forced local tag list failure",
     )
-
-    assert result.returncode == 1
-    assert result.stdout == ""
-    assert "release tag discovery failed while resolving previous release version" in result.stderr
-    assert "source: local tags" in result.stderr
-    assert "command: git tag --list v[0-9]*.[0-9]*.[0-9]*" in result.stderr
-    assert "exit_code: 45" in result.stderr
-    assert "forced local tag list failure" in result.stderr
-    assert json.loads((repo / "packaging" / "demo.json").read_text(encoding="utf-8"))["version"] == "0.0.1"
-    assert not (repo / ".quality-ran").exists()
-    assert not (repo / "charness-artifacts" / "release" / "latest.md").exists()
-    assert git(repo, "rev-parse", "HEAD") == before_head
-    assert git(repo, "tag", "--list", "v0.0.1") == ""
-    git_log = json.loads((tmp_path / "git-log.json").read_text(encoding="utf-8"))
-    gh_log_path = tmp_path / "gh-log.json"
-    gh_log = json.loads(gh_log_path.read_text(encoding="utf-8")) if gh_log_path.exists() else []
-    assert ["commit", "-m", "Release v0.0.1"] not in git_log
-    assert ["tag", "v0.0.1"] not in git_log
-    assert not any(entry and entry[0] == "push" for entry in git_log)
-    assert not any(entry[:2] == ["release", "create"] for entry in gh_log)
 
 
 def test_publish_current_fails_closed_when_remote_release_tag_discovery_fails(tmp_path: Path) -> None:

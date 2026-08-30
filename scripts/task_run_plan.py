@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any, Mapping, Sequence
 
 from scripts.task_run_contract import TaskRunError
 from scripts.task_run_git import (
@@ -39,6 +39,7 @@ def resolve_task_inputs(
     skip_prepare: bool,
     allow_no_change: bool,
     timeout_seconds: int,
+    repo_snapshot: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     if prepare and skip_prepare:
         raise TaskRunError("--prepare and --skip-prepare cannot be used together")
@@ -80,10 +81,17 @@ def resolve_task_inputs(
         raise TaskRunError("--prompt or --prompt-file must contain non-empty instructions")
     if effort is None:
         raise TaskRunError("task runs require the orchestrator-selected --effort")
-    base_sha = _resolve_base_sha(resolved_repo, resolved_base)
+    if repo_snapshot is not None and resolved_base == "HEAD":
+        base_sha = str(repo_snapshot["head"])
+    else:
+        base_sha = _resolve_base_sha(resolved_repo, resolved_base)
     normalized_scopes = normalize_scopes(scopes)
     scope_specs = resolve_scope_specs(resolved_repo, normalized_scopes, base_sha)
-    git_common_dir = _git_common_dir(resolved_repo)
+    git_common_dir = (
+        Path(repo_snapshot["git_common_dir"])
+        if repo_snapshot is not None
+        else _git_common_dir(resolved_repo)
+    )
     codex_path = _resolve_codex(codex)
     if not isinstance(timeout_seconds, int) or timeout_seconds < 1:
         raise TaskRunError("--timeout-seconds must be a positive integer")

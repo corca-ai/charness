@@ -13,16 +13,23 @@ from .seeding_support import load_module, write_quality_adapter
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "skills/public/quality/scripts/inventory_cli_ergonomics.py"
 inventory_cli = load_module("inventory_cli_ergonomics", SCRIPT)
+VisibleRepoFilesSnapshot = sys.modules["git_inventory_lib"].VisibleRepoFilesSnapshot
 
 
-def run_inventory(*args: str) -> dict[str, object]:
+def run_inventory(*args: str, real_inventory: bool = False) -> dict[str, object]:
     old_argv = sys.argv[:]
     stdout = io.StringIO()
+    original_capture = inventory_cli.capture_visible_repo_files
+    if not real_inventory:
+        # Matrix fixtures are uncommitted; use the explicit non-git fallback view
+        # and reserve one test for the real inventory boundary.
+        inventory_cli.capture_visible_repo_files = lambda _repo: VisibleRepoFilesSnapshot(None)
     try:
         sys.argv = [str(SCRIPT), *args]
         with contextlib.redirect_stdout(stdout):
             assert inventory_cli.main() == 0
     finally:
+        inventory_cli.capture_visible_repo_files = original_capture
         sys.argv = old_argv
     return yaml.safe_load(stdout.getvalue())
 
@@ -129,6 +136,7 @@ def test_committed_cli_ergonomics_inputs_are_scanned_clean() -> None:
         "--repo-root",
         str(ROOT),
         "--detail",
+        real_inventory=True,
     )
     assert payload["status"] == "clean"
     assert payload["scope_classification"] == "scanned"

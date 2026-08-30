@@ -24,7 +24,7 @@ _review_gate = SKILL_RUNTIME.load_local_skill_module(__file__, "check_requested_
 _publish_helpers = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_helpers")
 _preflight = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_preflight")
 _planner_packets = SKILL_RUNTIME.load_local_skill_module(__file__, "plan_release_run_packets")
-_claims_review = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_claims_review")
+_claims_evidence = SKILL_RUNTIME.load_local_skill_module(__file__, "claims_review_evidence")
 _publish_plan = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_plan")
 _drafted_notes = SKILL_RUNTIME.load_local_skill_module(__file__, "drafted_release_notes")
 _prepared_stop = SKILL_RUNTIME.load_local_skill_module(__file__, "plan_release_prepared_stop")
@@ -52,7 +52,9 @@ resume_claims_packets = _planner_packets.resume_claims_packets
 next_action = _planner_packets.next_action
 release_plan_target_version = _publish_plan.target_version
 ENVELOPE = SimpleNamespace(
-    **runpy.run_path(str(Path(__file__).resolve().parents[3] / "shared" / "scripts" / "run_plan_envelope.py"))
+    **runpy.run_path(
+        str(Path(__file__).resolve().parents[3] / "shared" / "scripts" / "run_plan_envelope.py")
+    )
 )
 
 
@@ -119,7 +121,8 @@ def resume_summary_lines(payload: dict[str, Any]) -> list[str]:
     return [
         f"{packet['id']}: {packet['command']}"
         for packet in payload.get("publish_packets") or []
-        if str(packet.get("id", "")).startswith("publish-resume")
+        if packet.get("id") == "claims-review-scaffold"
+        or str(packet.get("id", "")).startswith("publish-resume")
     ]
 
 
@@ -153,7 +156,9 @@ def build_plan(args: argparse.Namespace) -> dict[str, Any]:
         versions = release_payload.get("surface_versions")
         if isinstance(versions, dict):
             current_version = versions.get("packaging_manifest")
-    target_version = _target_version(args, current_version if isinstance(current_version, str) else None)
+    target_version = _target_version(
+        args, current_version if isinstance(current_version, str) else None
+    )
     previous_version = None
     update_blocker = None
     if target_version and isinstance(current_version, str):
@@ -177,7 +182,9 @@ def build_plan(args: argparse.Namespace) -> dict[str, Any]:
     prepared_claims = prepared_claims_state(
         repo_root,
         current_version=current_version if isinstance(current_version, str) else None,
-        binding_tokens=release_binding_tokens(current_version if isinstance(current_version, str) else None),
+        binding_tokens=release_binding_tokens(
+            current_version if isinstance(current_version, str) else None
+        ),
         accepts=_prepared_stop.critique_acceptor(
             repo_root,
             release_binding_tokens(current_version if isinstance(current_version, str) else None),
@@ -186,10 +193,12 @@ def build_plan(args: argparse.Namespace) -> dict[str, Any]:
         marker_text=_prepared_stop.head_release_record(repo_root, record_path),
         release_record=record_path or "",
         committed_record=_prepared_stop.committed_claims_record(
-            repo_root, claims_record_in_change_set=_claims_review.claims_record_in_change_set
+            repo_root, claims_record_in_change_set=_claims_evidence.claims_record_in_change_set
         ),
         drafted_notes=_prepared_stop.drafted_notes_candidates(
-            repo_root, data, f"v{current_version}" if isinstance(current_version, str) else None,
+            repo_root,
+            data,
+            f"v{current_version}" if isinstance(current_version, str) else None,
             find_drafted_notes=_drafted_notes.find_drafted_notes,
         ),
     )
@@ -207,7 +216,11 @@ def build_plan(args: argparse.Namespace) -> dict[str, Any]:
         next_action=planned_next_action,
         gate_packets=gate_packets(),
         repo_root=str(repo_root),
-        mode="publish-current" if args.publish_current else "bump-and-publish" if target_version else "inspect",
+        mode="publish-current"
+        if args.publish_current
+        else "bump-and-publish"
+        if target_version
+        else "inspect",
         branch=branch,
         remote=args.remote,
         adapter={
@@ -264,16 +277,16 @@ def main() -> int:
     # planner's work IS bounded -- a run of this length means something is wrong,
     # and a report-only command should say so rather than hang. An explicit
     # CHARNESS_SCRIPT_TIMEOUT_SECONDS still overrides this.
-    cancel_timeout = SKILL_RUNTIME.arm_cli_timeout(
-        label="release run planner", default_seconds=90
-    )
+    cancel_timeout = SKILL_RUNTIME.arm_cli_timeout(label="release run planner", default_seconds=90)
     try:
         args = parse_args()
         payload = build_plan(args)
         if args.detail:
             yaml_output.emit_yaml(payload)
         else:
-            print(f"next_action={payload['next_action']['kind']}: {payload['next_action']['reason']}")
+            print(
+                f"next_action={payload['next_action']['kind']}: {payload['next_action']['reason']}"
+            )
             for line in resume_summary_lines(payload):
                 print(line)
         return 0

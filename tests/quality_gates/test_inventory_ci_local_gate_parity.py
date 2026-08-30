@@ -9,14 +9,32 @@ from pathlib import Path
 import yaml
 
 from runtime_bootstrap import import_repo_module
+from tests.script_main import run_loaded_script_main
 
-from .support import run_script
+from .seeding_support import load_module
+from .support import run_script as subprocess_run_script
 
 SCRIPT = "skills/public/quality/scripts/inventory_ci_local_gate_parity.py"
 REPO_ROOT = Path(__file__).resolve().parents[2]
 _argparse_surface = import_repo_module(
     REPO_ROOT / "scripts/argparse_surface_lib.py", "scripts.argparse_surface_lib"
 )
+_MODULE = load_module(
+    "inventory_ci_local_gate_parity_under_test",
+    REPO_ROOT / "skills" / "public" / "quality" / "scripts" / "inventory_ci_local_gate_parity.py",
+)
+VisibleRepoFilesSnapshot = sys.modules["git_inventory_lib"].VisibleRepoFilesSnapshot
+
+
+def run_script(*args: str, real_inventory: bool = False):
+    if real_inventory:
+        return subprocess_run_script(*args)
+    original_capture = _MODULE.capture_visible_repo_files
+    _MODULE.capture_visible_repo_files = lambda _repo, **_kwargs: VisibleRepoFilesSnapshot(None)
+    try:
+        return run_loaded_script_main(str(args[0]), _MODULE, *args[1:])
+    finally:
+        _MODULE.capture_visible_repo_files = original_capture
 
 
 def _write_workflow(tmp_path: Path, body: str) -> Path:
@@ -94,6 +112,7 @@ def test_strict_workflow_listing_fails_closed_outside_git(tmp_path: Path) -> Non
         str(repo),
         "--require-git-file-listing",
         "--detail",
+        real_inventory=True,
     )
 
     assert result.returncode == 1
@@ -611,7 +630,9 @@ def test_real_repo_workflows_or_zero_parity_issues(tmp_path: Path) -> None:
     asserted directly, so a third workflow (exempt or not) fires this test, which
     is the signal #137 actually asked for.
     """
-    result = run_script(SCRIPT, "--repo-root", str(REPO_ROOT), "--detail")
+    result = run_script(
+        SCRIPT, "--repo-root", str(REPO_ROOT), "--detail", real_inventory=True
+    )
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
     assert payload["parity_issues"] == []

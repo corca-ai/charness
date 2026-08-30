@@ -4,6 +4,7 @@ import json
 import os
 import shutil
 import subprocess
+from functools import partial
 from pathlib import Path
 
 import yaml
@@ -55,6 +56,9 @@ def _init_identity_repo(repo: Path) -> None:
     (repo / "unrelated.txt").write_text("base\n", encoding="utf-8")
     _run_git(repo, "add", ".")
     _run_git(repo, "commit", "-m", "initial")
+
+
+_build_shape_packet = partial(build_packet, include_reviewed_input_identity=False)
 
 
 def test_load_adapter_missing_returns_inferred_defaults(tmp_path: Path) -> None:
@@ -181,8 +185,7 @@ packet_sections:
     command: "echo B-body"
 """)
     adapter = load_adapter(tmp_path)
-    packet = build_packet(adapter=adapter, repo_root=tmp_path,
-                          prepared_for="unit test")
+    packet = _build_shape_packet(adapter=adapter, repo_root=tmp_path, prepared_for="unit test")
     assert packet["kind"] == PACKET_KIND
     assert packet["version"] == PACKET_VERSION
     assert packet["section_count"] == 2
@@ -195,7 +198,7 @@ packet_sections:
 def test_build_packet_with_no_declared_sections_is_not_ok(tmp_path: Path) -> None:
     adapter = load_adapter(tmp_path)
 
-    packet = build_packet(adapter=adapter, repo_root=tmp_path, prepared_for="empty")
+    packet = _build_shape_packet(adapter=adapter, repo_root=tmp_path, prepared_for="empty")
 
     assert packet["section_count"] == 0
     assert packet["ok"] is False
@@ -215,7 +218,7 @@ packet_sections:
     command: "printf ''"
 """)
 
-    packet = build_packet(
+    packet = _build_shape_packet(
         adapter=load_adapter(tmp_path), repo_root=tmp_path, prepared_for="empty producer"
     )
 
@@ -244,7 +247,7 @@ packet_sections:
     command: "python3 {helper.name}"
 """)
     adapter = load_adapter(tmp_path)
-    packet = build_packet(
+    packet = _build_shape_packet(
         adapter=adapter,
         repo_root=tmp_path,
         prepared_for="commit review",
@@ -273,7 +276,7 @@ packet_sections:
 """)
     monkeypatch.setenv("CHARNESS_CRITIQUE_CHANGED_REF", "HEAD^..HEAD")
     adapter = load_adapter(tmp_path)
-    packet = build_packet(adapter=adapter, repo_root=tmp_path, prepared_for="working tree")
+    packet = _build_shape_packet(adapter=adapter, repo_root=tmp_path, prepared_for="working tree")
 
     assert packet["ok"] is True
     assert packet["changed_ref"] is None
@@ -339,7 +342,7 @@ packet_sections:
     command: "false"
 """)
     adapter = load_adapter(tmp_path)
-    packet = build_packet(adapter=adapter, repo_root=tmp_path, prepared_for="unit")
+    packet = _build_shape_packet(adapter=adapter, repo_root=tmp_path, prepared_for="unit")
     assert packet["ok"] is False
     assert packet["sections"][0]["ok"] is True
     assert packet["sections"][1]["ok"] is False
@@ -356,7 +359,12 @@ packet_sections:
     content: alpha-body
 """)
     adapter = load_adapter(tmp_path)
-    packet = build_packet(adapter=adapter, repo_root=tmp_path, prepared_for="unit", changed_ref="HEAD")
+    packet = _build_shape_packet(
+        adapter=adapter,
+        repo_root=tmp_path,
+        prepared_for="unit",
+        changed_ref="HEAD",
+    )
     md = render_markdown(packet)
     assert "Alpha Section" in md
     assert "alpha-body" in md
@@ -395,7 +403,7 @@ def test_render_markdown_distinguishes_reviewed_and_auto_excluded_paths(tmp_path
 
 def test_charness_packet_carries_the_semantic_reviewer_question() -> None:
     adapter = load_adapter(REPO_ROOT)
-    packet = build_packet(adapter=adapter, repo_root=REPO_ROOT, prepared_for="unit")
+    packet = _build_shape_packet(adapter=adapter, repo_root=REPO_ROOT, prepared_for="unit")
 
     section = next(
         item for item in packet["sections"] if item["id"] == "reviewer-packet-semantic-question"
@@ -432,7 +440,7 @@ packet_sections:
     content: body
 """)
     adapter = load_adapter(tmp_path)
-    packet = build_packet(adapter=adapter, repo_root=tmp_path, prepared_for="unit")
+    packet = _build_shape_packet(adapter=adapter, repo_root=tmp_path, prepared_for="unit")
     evidence = packet["reviewer_tier_evidence"]
     assert evidence["requested_tier"] == "high-leverage"
     assert evidence["requested_spawn_fields"] == {
@@ -471,7 +479,7 @@ packet_sections:
     content: body
 """)
     adapter = load_adapter(tmp_path)
-    packet = build_packet(adapter=adapter, repo_root=tmp_path, prepared_for="unit")
+    packet = _build_shape_packet(adapter=adapter, repo_root=tmp_path, prepared_for="unit")
     out = tmp_path / "out"
     json_path, md_path = write_packet(packet, output_dir=out, slug="test")
     assert json_path.is_file() and md_path.is_file()

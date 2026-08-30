@@ -256,7 +256,7 @@ def test_known_versions_grounds_the_outgoing_version_on_both_lanes(tmp_path: Pat
     (tmp_path / ".agents").mkdir()
     (tmp_path / ".agents" / "release-adapter.yaml").write_text(
         "version: 1\nrepo: demo\noutput_dir: notes\npackage_id: demo\n"
-        "packaging_manifest_path: packaging/demo.json\nchecked_in_plugin_root: plugins/demo\n",
+        "packaging_manifest_path: packaging/demo.json\nmaterialized_plugin_root: plugins/demo\n",
         encoding="utf-8",
     )
     (tmp_path / "packaging").mkdir()

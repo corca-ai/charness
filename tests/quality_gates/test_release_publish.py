@@ -7,9 +7,12 @@ from pathlib import Path
 import pytest
 import yaml
 
+from . import release_publish_fixtures as fixture_support
 from .issue_closeout_support import bug_closeout_body
 from .release_publish_fixtures import (
     REPO_ROOT,
+    _build_release_publish_seed,
+    _copy_release_publish_seed,
     _release_env,
     _run_publish,
     _run_publish_patch,
@@ -17,11 +20,83 @@ from .release_publish_fixtures import (
     _seed_publish_release_repo,
     _write_exec,
     commit_claims_review,
+    ensure_fixture_release_base,
+    release_publish_seed,
 )
 from .release_script_loading import load_release_script
 from .seeding_support import git, write_release_adapter
 
 CLAIMS_REVIEW = load_release_script("publish_release_claims_review", suffix="direct_parent")
+
+
+def _tree_snapshot(root: Path) -> dict[str, bytes]:
+    return {
+        path.relative_to(root).as_posix(): path.read_bytes()
+        for path in sorted(root.rglob("*"))
+        if path.is_file()
+    }
+
+
+@pytest.mark.release_only
+def test_release_fixture_seed_is_cached_isolated_and_bootstrap_is_not_repeated(
+    tmp_path: Path, monkeypatch
+) -> None:
+    from tests import seed_cache
+
+    monkeypatch.setenv("CHARNESS_TEST_SEED_CACHE_ROOT", str(tmp_path / "cache"))
+    monkeypatch.setattr(seed_cache, "_SOURCE_HASH", "release-fixture-cache-proof")
+    git_commands: list[tuple[str, ...]] = []
+    real_run = fixture_support.subprocess.run
+
+    def recording_run(args, *run_args, **run_kwargs):
+        if args and args[0] == "git":
+            git_commands.append(tuple(args))
+        return real_run(args, *run_args, **run_kwargs)
+
+    monkeypatch.setattr(fixture_support.subprocess, "run", recording_run)
+
+    uncached_root = tmp_path / "uncached"
+    uncached_root.mkdir()
+    uncached_seed = uncached_root / "seed"
+    uncached_seed.mkdir()
+    _build_release_publish_seed(uncached_seed)
+    uncached_test_root = tmp_path / "uncached-test"
+    uncached_test_root.mkdir()
+    _copy_release_publish_seed(uncached_test_root, uncached_seed)
+    uncached_second_root = tmp_path / "uncached-second"
+    uncached_second_root.mkdir()
+    uncached_second_seed = uncached_second_root / "seed"
+    uncached_second_seed.mkdir()
+    _build_release_publish_seed(uncached_second_seed)
+    uncached_second_test_root = tmp_path / "uncached-second-test"
+    uncached_second_test_root.mkdir()
+    _copy_release_publish_seed(uncached_second_test_root, uncached_second_seed)
+    uncached_count = len(git_commands)
+
+    seed = release_publish_seed()
+    before_seed = _tree_snapshot(seed)
+    cached_root = tmp_path / "cached"
+    cached_root.mkdir()
+    _copy_release_publish_seed(cached_root, seed)
+    cached_second_root = tmp_path / "cached-second"
+    cached_second_root.mkdir()
+    _copy_release_publish_seed(cached_second_root, seed)
+    cached_count = len(git_commands) - uncached_count
+
+    assert uncached_count == 12
+    assert cached_count == 8
+    assert release_publish_seed() == seed
+    assert git_commands[-2][1:] == (
+        "remote",
+        "add",
+        "origin",
+        str(cached_second_root / "remote.git"),
+    )
+    assert git_commands[-1][1:] == ("push", "-u", "origin", "main")
+
+    first_clone = cached_root / "repo"
+    ensure_fixture_release_base(first_clone)
+    assert _tree_snapshot(seed) == before_seed
 
 
 @pytest.mark.release_only
@@ -642,7 +717,7 @@ def test_publish_release_records_passed_fresh_checkout_probes_before_push(tmp_pa
 @pytest.mark.release_only
 def test_publish_release_runs_adapter_preflight_before_bump(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
-    subprocess.run(["git", "tag", "v0.0.0"], cwd=repo, check=True, capture_output=True, text=True)
+    ensure_fixture_release_base(repo)
     resolver_path = repo / "skills" / "public" / "release" / "scripts" / "resolve_adapter.py"
     resolver_path.parent.mkdir(parents=True)
     _write_exec(resolver_path, "#!/usr/bin/env python3\nprint('adapter ok')\n")
@@ -696,7 +771,7 @@ def test_publish_release_runs_adapter_preflight_before_bump(tmp_path: Path) -> N
 @pytest.mark.release_only
 def test_publish_release_records_adapter_preflight_in_release_artifact(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
-    subprocess.run(["git", "tag", "v0.0.0"], cwd=repo, check=True, capture_output=True, text=True)
+    ensure_fixture_release_base(repo)
     resolver_path = repo / "skills" / "public" / "release" / "scripts" / "resolve_adapter.py"
     resolver_path.parent.mkdir(parents=True)
     _write_exec(resolver_path, "#!/usr/bin/env python3\nprint('adapter ok')\n")

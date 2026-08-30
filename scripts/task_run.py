@@ -12,6 +12,7 @@ from typing import Any, Sequence
 from runtime_bootstrap import import_repo_module
 from scripts import task_run_completion as _completion
 from scripts import task_run_support as _support
+from scripts.task_run_git import _repo_snapshot
 from scripts.task_run_plan import resolve_task_inputs as _resolve_task_inputs
 
 _worktree = import_repo_module(__file__, "scripts.worktree_create_lib")
@@ -188,6 +189,7 @@ def _complete_task(
     execution: dict[str, Any],
     started_at: float,
     candidate_commit: dict[str, Any] | None,
+    target_head: str | None = None,
 ) -> dict[str, Any]:
     return _completion.complete_task(
         payload,
@@ -204,6 +206,7 @@ def _complete_task(
         execution=execution,
         started_at=started_at,
         candidate_commit=candidate_commit,
+        target_head=target_head,
         persist=_persist_completion,
         result_delivery=_support._result_delivery,
         completion_evidence=_completion_evidence,
@@ -238,9 +241,10 @@ def run_task(
     resolved_repo: Path | None = None
     resolved_target: Path | None = None
     try:
-        resolved_repo = _support._require_git_root(repo_root)
+        repo_snapshot = _repo_snapshot(repo_root)
+        resolved_repo = repo_snapshot["repo_root"]
         parent_before = _collect_populations(resolved_repo)
-        parent_before_head = _git_output(resolved_repo, "rev-parse", "HEAD").strip()
+        parent_before_head = str(repo_snapshot["head"])
         if any(parent_before[population] for population in ("tracked", "untracked")):
             raise TaskRunError(
                 "parent worktree must be clean before launching a task; "
@@ -262,6 +266,7 @@ def run_task(
             skip_prepare=skip_prepare,
             allow_no_change=allow_no_change,
             timeout_seconds=timeout_seconds,
+            repo_snapshot=repo_snapshot,
         )
     except (OSError, TaskRunError, subprocess.SubprocessError) as exc:
         return _failure_payload(
@@ -371,7 +376,8 @@ def run_task(
             os.environ.copy(),
             runtime_root=execution_runtime_path,
         )
-        git_worktree_dir = _git_dir(resolved_target)
+        target_snapshot = _repo_snapshot(resolved_target)
+        git_worktree_dir = target_snapshot["git_dir"]
         command = build_codex_command(
             codex_path,
             effort=resolved["effort"],
@@ -462,6 +468,11 @@ def run_task(
             execution=execution,
             started_at=started_at,
             candidate_commit=candidate_commit,
+            target_head=(
+                str(candidate_commit["sha"])
+                if candidate_commit is not None and candidate_commit.get("status") == "committed"
+                else None
+            ),
         )
     except KeyboardInterrupt:
         return _terminal(

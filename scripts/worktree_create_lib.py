@@ -140,7 +140,11 @@ def run_create(
         # `payload["status"]` on the next two lines -- was produced by a doctor
         # run that did not require isolation, silently erasing the verdict on the
         # prescribed `--prepare` path.
-        prepare_payload = _doctor_lib.run_prepare(target_path, require_isolation=True)
+        prepare_payload = _doctor_lib.run_prepare(
+            target_path,
+            require_isolation=True,
+            pre_doctor=doctor,
+        )
         payload["prepare"] = prepare_payload
         payload["doctor"] = prepare_payload.get("doctor", doctor)
         if prepare_payload.get("status") == PASS:

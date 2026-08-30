@@ -40,7 +40,7 @@ def test_release_current_release_reports_packaging_version(monkeypatch, capsys) 
     expected = json.loads((ROOT / "packaging" / "charness.json").read_text(encoding="utf-8"))["version"]
     assert payload["package_id"] == "charness"
     assert payload["surface_versions"]["packaging_manifest"] == expected
-    assert payload["checked_in_plugin_root"].endswith("plugins/charness")
+    assert payload["materialized_plugin_root"].endswith("plugins/charness")
     # `current_release` is a status dump; it deliberately does NOT run the probes,
     # so the block it embeds is `not_established`, never a probe verdict.
     # `configured` used to be that word, and it read as a satisfied probe run.

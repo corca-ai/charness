@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import importlib.util
+import runpy
 from pathlib import Path
 from typing import Any
 
@@ -25,6 +26,10 @@ def _load_achieve(name: str, alias: str) -> Any:
 
 BINDING = _load_achieve("goal_binding", "issue_goal_run_binding_contract")
 PICKUP = _load_achieve("goal_run_pickup_contract", "issue_goal_run_pickup_contract")
+_load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_import.py"))[
+    "sibling_loader"
+](__file__)
+AMENDMENT = _load_local("issue_goal_run_parent_amendment", "issue_goal_run_parent_amendment_contract")
 BindingError = BINDING.BindingError
 
 
@@ -67,7 +72,9 @@ def load_binding(
     except BINDING.BindingError:
         raise
     except (OSError, TypeError, ValueError) as exc:
-        raise BINDING.BindingError("binding-invalid", f"could not validate Goal Binding: {exc}") from exc
+        raise BINDING.BindingError(
+            "binding-invalid", f"could not validate Goal Binding: {exc}"
+        ) from exc
 
 
 def approved_issue_identities(binding: dict[str, Any]) -> set[tuple[str, int]]:
@@ -105,11 +112,17 @@ def work_item_for_target(
 ) -> dict[str, Any]:
     matches = [item for item in binding["approved_work_items"] if item.get("key") == key]
     if len(matches) != 1:
-        raise RuntimeError(f"{context} key {key!r} is not uniquely approved by the immutable Goal Binding")
+        raise RuntimeError(
+            f"{context} key {key!r} is not uniquely approved by the immutable Goal Binding"
+        )
     item = matches[0]
     issue = item.get("issue")
     if number is not None:
-        if not isinstance(issue, dict) or issue.get("repo") != binding["parent"]["repo"] or issue.get("number") != number:
+        if (
+            not isinstance(issue, dict)
+            or issue.get("repo") != binding["parent"]["repo"]
+            or issue.get("number") != number
+        ):
             raise RuntimeError(
                 f"{context} key {key!r} does not identify issue "
                 f"{binding['parent']['repo']}#{number} in the immutable Goal Binding"
@@ -147,8 +160,13 @@ def require_issue_matches_item(
     body = issue.get("body")
     if issue.get("number") != number or not isinstance(body, str):
         raise RuntimeError(f"created Work Item {key!r} provider readback is incomplete")
-    if body.count(work_item_marker(key)) != 1 or hashlib.sha256(body.encode("utf-8")).hexdigest() != item["body_sha256"]:
-        raise RuntimeError(f"issue #{number} does not carry the approved body for created Work Item {key!r}")
+    if (
+        body.count(work_item_marker(key)) != 1
+        or hashlib.sha256(body.encode("utf-8")).hexdigest() != item["body_sha256"]
+    ):
+        raise RuntimeError(
+            f"issue #{number} does not carry the approved body for created Work Item {key!r}"
+        )
 
 
 def require_created_children(binding: dict[str, Any], issues: list[dict[str, Any]]) -> None:
@@ -191,13 +209,17 @@ def validate_parent_metadata(
     except PICKUP.PickupError as exc:
         raise RuntimeError(str(exc)) from exc
     if metadata["binding_schema"] != binding["kind"]:
-        raise RuntimeError("Goal Run metadata binding schema differs from the immutable Goal Binding")
+        raise RuntimeError(
+            "Goal Run metadata binding schema differs from the immutable Goal Binding"
+        )
     if metadata["binding_sha256"] != binding["binding_sha256"]:
         raise RuntimeError("Goal Run metadata binding hash differs from the immutable Goal Binding")
     if metadata["draft_sha256"] != binding["draft_sha256"]:
         raise RuntimeError("Goal Run metadata draft hash differs from the immutable Goal Binding")
     if metadata["initial_graph_sha256"] != binding["approved_work_items_sha256"]:
-        raise RuntimeError("Goal Run metadata initial graph differs from the immutable Goal Binding")
+        raise RuntimeError(
+            "Goal Run metadata initial graph differs from the immutable Goal Binding"
+        )
     if metadata["parent_identity"] != binding["parent"]:
         raise RuntimeError("Goal Run metadata parent differs from the immutable Goal Binding")
     return metadata
@@ -212,45 +234,29 @@ def validate_parent_body_update(
     parent_number: int,
     parent_url: str | None,
     guard: Any,
+    amendment_authorization_file: Path | None = None,
 ) -> None:
-    current = guard.parse_goal_run_metadata(current_body, context="current Goal Run parent body")
-    desired = guard.parse_goal_run_metadata(desired_body, context="desired Goal Run parent body")
-    if desired is None:
-        raise RuntimeError("parent update must carry complete Goal Run metadata")
-    validate_parent_metadata(
-        desired,
-        binding,
+    AMENDMENT.validate_parent_body_update(
+        current_body,
+        desired_body,
+        binding=binding,
         repo=repo,
         parent_number=parent_number,
         parent_url=parent_url,
+        guard=guard,
+        validate_parent_metadata=validate_parent_metadata,
+        canonical_json_bytes=BINDING.canonical_json_bytes,
+        amendment_authorization_file=amendment_authorization_file,
     )
-    if current is not None:
-        validate_parent_metadata(
-            current,
-            binding,
-            repo=repo,
-            parent_number=parent_number,
-            parent_url=parent_url,
-        )
-    current_matches = list(guard.BLOCK_RE.finditer(current_body))
-    desired_matches = list(guard.BLOCK_RE.finditer(desired_body))
-    if len(desired_matches) != 1 or len(current_matches) > 1:
-        raise RuntimeError("Goal Run parent metadata must have one replaceable block")
-    desired_match = desired_matches[0]
-    if not current_matches:
-        if desired_body[: desired_match.start()] != current_body or desired_body[desired_match.end():] not in {"", "\n"}:
-            raise RuntimeError("initial parent metadata must append to the exact live human-readable body")
-        return
-    current_match = current_matches[0]
-    if (
-        current_body[: current_match.start()] != desired_body[: desired_match.start()]
-        or current_body[current_match.end():] != desired_body[desired_match.end():]
-    ):
-        raise RuntimeError("parent update must preserve the exact live human-readable body around metadata")
 
 
 def parent_body_validator(
-    binding: dict[str, Any], *, repo: str, parent_number: int, guard: Any
+    binding: dict[str, Any],
+    *,
+    repo: str,
+    parent_number: int,
+    guard: Any,
+    amendment_authorization_file: Path | None = None,
 ) -> Any:
     def validate(current_body: str, desired_body: str) -> None:
         validate_parent_body_update(
@@ -261,6 +267,7 @@ def parent_body_validator(
             parent_number=parent_number,
             parent_url=f"https://github.com/{repo}/issues/{parent_number}",
             guard=guard,
+            amendment_authorization_file=amendment_authorization_file,
         )
 
     return validate
@@ -283,6 +290,16 @@ def validate_operation_binding(
         binding_sha256=operation["binding_sha256"],
     )
     target = operation["target"]
+    if (
+        name == "update-body"
+        and target["number"] == operation["parent_number"]
+        and operation.get("amendment_authorization_file") is not None
+    ):
+        repo_file(
+            repo_root,
+            operation["amendment_authorization_file"],
+            context="amendment_authorization_file",
+        )
     if name == "update-body" and target["number"] != operation["parent_number"]:
         body = repo_file(repo_root, operation["body_file"], context="body_file").read_bytes()
         _, observed_sha256 = validate_managed_body(

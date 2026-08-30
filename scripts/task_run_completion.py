@@ -32,6 +32,7 @@ def complete_task(
     git: Callable[..., Any],
     git_output: Callable[..., str],
     pass_value: str,
+    target_head: str | None = None,
 ) -> dict[str, Any]:
     delivery = result_delivery(stdout_log)
     evidence, scope, parent_progress = completion_evidence(
@@ -43,19 +44,22 @@ def complete_task(
         require_change=require_change,
         parent_before=parent_before,
         parent_before_head=parent_before_head,
+        target_head=target_head,
     )
-    target_branch = (
-        git_output(resolved_target, "symbolic-ref", "--quiet", "--short", "HEAD").strip()
-        if git(resolved_target, "symbolic-ref", "--quiet", "--short", "HEAD").returncode == 0
-        else None
-    )
+    carrier = scope.get("candidate_carrier", {})
+    observed_head = carrier.get("observed_head_sha") if isinstance(carrier, Mapping) else None
+    target_branch = carrier.get("observed_branch") if isinstance(carrier, Mapping) else None
+    if target_branch is None and not observed_head:
+        branch_result = git(resolved_target, "symbolic-ref", "--quiet", "--short", "HEAD")
+        target_branch = branch_result.stdout.strip() if branch_result.returncode == 0 else None
+    target_sha = observed_head or git_output(resolved_target, "rev-parse", "HEAD").strip()
     payload.update(
         {
             "phase": "terminal",
             "execution": execution,
             "result_delivery": delivery,
             "duration_ms": int((time.monotonic() - started_at) * 1000),
-            "target_sha": git_output(resolved_target, "rev-parse", "HEAD").strip(),
+            "target_sha": target_sha,
             "target_branch": target_branch,
             **evidence,
         }

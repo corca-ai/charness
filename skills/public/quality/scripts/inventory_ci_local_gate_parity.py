@@ -58,6 +58,7 @@ load_yaml_file = _adapter_lib.load_yaml_file
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import ci_local_gate_parity_lib as plib  # noqa: E402
+from git_inventory_lib import capture_visible_repo_files  # noqa: E402
 from summary_output_lib import add_output_args, emit_selected  # noqa: E402
 
 
@@ -198,12 +199,21 @@ def _build_parser() -> argparse.ArgumentParser:
 def main() -> int:
     args = _build_parser().parse_args()
     root = args.repo_root.resolve()
+    try:
+        snapshot = capture_visible_repo_files(
+            root,
+            require_git=args.require_git_file_listing,
+            context="CI/local gate parity workflow listing",
+        )
+    except plib.GitFileListingError as error:
+        raise plib.WorkflowListingError(str(error)) from error
     named_globs = args.workflow_glob
     globs = plib.resolve_workflow_globs(named_globs)
     workflow_files = plib.iter_workflow_files(
         root,
         globs,
         require_git=args.require_git_file_listing,
+        snapshot=snapshot,
     )
     if named_globs and not workflow_files:
         # The caller named this scope; resolving to nothing is a failed assertion,

@@ -19,7 +19,7 @@ This module is the one home for the two questions that fixes:
 
 The second question is asked with ``helper_provenance_lib.is_charness_source_tree``
 rather than a file test, because the two must not disagree about one invocation: the
-checked-in ``plugins/charness/`` export owns the builder and carries no packaging
+materialized ``plugins/charness/`` export owns the builder and carries no packaging
 manifest, so a file test alone classified it as a competing source tree and told the
 operator to run the exported builder against the export -- the one action the repo's
 shell gates refuse outright.
@@ -108,7 +108,7 @@ def index_build_command(repo_root: Path, *flags: str) -> str:
 
 def refresh_digest_command(repo_root: Path) -> str:
     # The SAME provenance gate `index_build_command` uses. A bare `is_file()` here was
-    # the round-1 defect surviving in the sibling: a target carrying a checked-in export
+    # the round-1 defect surviving in the sibling: a target carrying a materialized export
     # (this repo's own `plugins/charness` shape, or any consumer that commits one under
     # its root) got cited its OWN copy while the provenance guard classifies that tree
     # as `consuming-repo` -- so one function cites the repo and the other cites the

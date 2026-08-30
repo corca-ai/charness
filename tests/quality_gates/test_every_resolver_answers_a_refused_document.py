@@ -29,7 +29,8 @@ only protection and began resolving a charness default over a repo that declared
 That consumer is guarded on the CONDITION now. The exit codes themselves are still not
 normalised -- that is a behavior change for every caller that branches on them -- so the
 split is PINNED in `NON_ZERO_EXIT_SKILLS` and a move in either direction is a diff rather
-than a silence. See `test_the_exit_code_divergence_is_recorded_rather_than_asserted_uniform`.
+than a silence. The real-process smoke below keeps that delivery contract visible while the
+semantic matrix runs in-process.
 """
 
 from __future__ import annotations
@@ -42,6 +43,7 @@ import pytest
 import yaml
 
 from scripts import adapter_version_verdict
+from tests.script_main import load_script_module, run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[2]
 RESOLVERS = sorted((ROOT / "skills" / "public").glob("*/scripts/resolve_adapter.py"))
@@ -61,10 +63,21 @@ def _skill(resolver: Path) -> str:
     return resolver.parents[1].name
 
 
-def _resolve(resolver: Path, tmp_path: Path, document: str) -> tuple[dict, subprocess.CompletedProcess]:
+def _resolver_module(resolver: Path) -> object:
+    return load_script_module(f"resolver_refusal_{_skill(resolver)}", resolver)
+
+
+def _write_adapter(resolver: Path, tmp_path: Path, document: str) -> Path:
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True, exist_ok=True)
     (repo / ".agents" / f"{_skill(resolver)}-adapter.yaml").write_text(document, encoding="utf-8")
+    return repo
+
+
+def _resolve_subprocess(
+    resolver: Path, tmp_path: Path, document: str
+) -> tuple[dict, subprocess.CompletedProcess]:
+    repo = _write_adapter(resolver, tmp_path, document)
     done = subprocess.run(
         [sys.executable, str(resolver), "--repo-root", str(repo)],
         capture_output=True, text=True, check=False, cwd=ROOT,
@@ -73,15 +86,23 @@ def _resolve(resolver: Path, tmp_path: Path, document: str) -> tuple[dict, subpr
     return (payload if isinstance(payload, dict) else {}), done
 
 
-def _resolve_without_adapter(resolver: Path, tmp_path: Path) -> tuple[dict, subprocess.CompletedProcess]:
+def _resolve_in_process(resolver: Path, tmp_path: Path, document: str) -> tuple[dict, object]:
+    repo = _write_adapter(resolver, tmp_path, document)
+    done = run_loaded_script_main(
+        str(resolver), _resolver_module(resolver), "--repo-root", str(repo)
+    )
+    payload = yaml.safe_load(done.stdout) if done.stdout.strip() else None
+    return (payload if isinstance(payload, dict) else {}), done
+
+
+def _resolve_without_adapter_in_process(resolver: Path, tmp_path: Path) -> tuple[dict, object]:
     """The opt-in baseline: a repo that declared nothing. Writing an EMPTY document instead
     is a different input entirely -- the file exists, so `found` is True and the resolver is
     reporting on a document rather than on its absence."""
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True, exist_ok=True)
-    done = subprocess.run(
-        [sys.executable, str(resolver), "--repo-root", str(repo)],
-        capture_output=True, text=True, check=False, cwd=ROOT,
+    done = run_loaded_script_main(
+        str(resolver), _resolver_module(resolver), "--repo-root", str(repo)
     )
     payload = yaml.safe_load(done.stdout) if done.stdout.strip() else None
     return (payload if isinstance(payload, dict) else {}), done
@@ -106,11 +127,14 @@ def test_the_resolver_roster_is_complete():
 
 @pytest.mark.parametrize("resolver", RESOLVERS, ids=_skill)
 def test_a_refused_parse_renders_a_verdict_and_never_a_traceback(resolver: Path, tmp_path: Path):
-    payload, done = _resolve(resolver, tmp_path, REFUSED_PARSE)
+    """One real process smoke; the remaining assertions use in-process calls."""
+    payload, done = _resolve_subprocess(resolver, tmp_path, REFUSED_PARSE)
     assert "Traceback" not in done.stderr, done.stderr
     assert payload, f"no rendered payload: {done.stdout!r} {done.stderr!r}"
     assert payload["found"] is True
     assert payload["valid"] is False
+    expected = 1 if _skill(resolver) in NON_ZERO_EXIT_SKILLS else 0
+    assert done.returncode == expected, f"{_skill(resolver)} exited {done.returncode}"
     # The payload must still be the reader's own inferred defaults, not absent: that is the
     # state every consumer guard is written against.
     assert isinstance(payload.get("data"), dict) and payload["data"]
@@ -120,7 +144,7 @@ def test_a_refused_parse_renders_a_verdict_and_never_a_traceback(resolver: Path,
 def test_the_parse_refusal_door_is_reachable(resolver: Path, tmp_path: Path):
     """`adapter_version_verdict.parse_refused` answered False for five resolvers, for
     inputs it was written to catch, because they raised instead of recording."""
-    payload, _ = _resolve(resolver, tmp_path, REFUSED_PARSE)
+    payload, _ = _resolve_in_process(resolver, tmp_path, REFUSED_PARSE)
     assert adapter_version_verdict.parse_refused(payload.get("errors")), payload.get("errors")
     assert adapter_version_verdict.declarations_unhonored(payload.get("errors"))
 
@@ -129,7 +153,7 @@ def test_the_parse_refusal_door_is_reachable(resolver: Path, tmp_path: Path):
 def test_the_dropped_line_door_is_reachable(resolver: Path, tmp_path: Path):
     """`declarations_dropped` reads `warnings`, which the bare loader discarded entirely --
     so a repo's declaration could vanish with `errors: []` and `valid: true`."""
-    payload, done = _resolve(resolver, tmp_path, DROPPED_LINE)
+    payload, done = _resolve_in_process(resolver, tmp_path, DROPPED_LINE)
     assert "Traceback" not in done.stderr, done.stderr
     assert adapter_version_verdict.declarations_dropped(payload), payload.get("warnings")
 
@@ -145,7 +169,7 @@ def test_a_speakable_well_formed_document_is_honored(resolver: Path, tmp_path: P
     `test_quality_readers_version_refusal` and `test_narrative_impl_version_refusal` both
     check honored VALUES. Said out loud because the first version of this docstring read as
     if the sweep covered it."""
-    payload, done = _resolve(resolver, tmp_path, "version: 1\nrepo: demo\n")
+    payload, done = _resolve_in_process(resolver, tmp_path, "version: 1\nrepo: demo\n")
     assert "Traceback" not in done.stderr, done.stderr
     assert payload["found"] is True
     assert payload["valid"] is True, payload.get("errors")
@@ -154,28 +178,6 @@ def test_a_speakable_well_formed_document_is_honored(resolver: Path, tmp_path: P
     # Against a repo with NO adapter at all, not against a hard-coded field. `issue` renders
     # no `repo` key, so asserting one made this control pass for fifteen resolvers and fail
     # for the sixteenth on the test's own assumption rather than on any behavior.
-    absent, _ = _resolve_without_adapter(resolver, tmp_path / "empty")
+    absent, _ = _resolve_without_adapter_in_process(resolver, tmp_path / "empty")
     assert absent["found"] is False
     assert payload["found"] != absent["found"]
-
-
-@pytest.mark.parametrize("resolver", RESOLVERS, ids=_skill)
-def test_the_exit_code_divergence_is_recorded_rather_than_asserted_uniform(resolver: Path, tmp_path: Path):
-    """`#673`'s acceptance says "non-zero exit", and this repair did NOT deliver that half.
-
-    Fourteen resolvers exit 0 with `valid: false`; `critique` and `issue` exit 1.
-
-    CORRECTED: an earlier version of this docstring said the divergence "predates the
-    parse-refusal repair". It does not — that repair MOVED four resolvers from non-zero to 0,
-    and a bounded review found `resolve_artifact_path` keyed on exactly that. The module
-    docstring above was fixed and this copy was not, which is a refuted sentence re-published
-    on a proof surface: the class this whole goal exists to kill, alive on the test that pins
-    the residual. What is true is that the SPLIT is not what made a consumer guard blind, and
-    that normalising sixteen exit codes changes behavior for every caller that branches on
-    them.
-    Pinning the current split here means a change in either direction is a diff to
-    `NON_ZERO_EXIT_SKILLS`, not a silence — which is the honest form of a residual.
-    """
-    _payload, done = _resolve(resolver, tmp_path, REFUSED_PARSE)
-    expected = 1 if _skill(resolver) in NON_ZERO_EXIT_SKILLS else 0
-    assert done.returncode == expected, f"{_skill(resolver)} exited {done.returncode}"

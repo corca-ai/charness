@@ -12,8 +12,8 @@ from runtime_bootstrap import (
 )
 
 _doctor_checks = import_repo_module(__file__, "scripts.worktree_doctor_checks")
-git_common_dir = _doctor_checks.git_common_dir
-is_isolated_worktree = _doctor_checks.is_isolated_worktree
+git_checkout_facts = _doctor_checks.git_checkout_facts
+checkout_isolation = _doctor_checks.checkout_isolation
 
 
 class WorktreeExecError(RuntimeError):
@@ -21,8 +21,8 @@ class WorktreeExecError(RuntimeError):
 
 
 def _require_isolated_checkout(repo_root: Path) -> None:
-    common_dir = git_common_dir(repo_root)
-    isolated = is_isolated_worktree(repo_root, common_dir)
+    facts = git_checkout_facts(repo_root, include_hooks_path=False)
+    isolated = checkout_isolation(facts)
     if isolated is True:
         return
     if isolated is False:

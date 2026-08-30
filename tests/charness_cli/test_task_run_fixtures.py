@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -19,8 +20,8 @@ def _git(repo: Path, *args: str) -> subprocess.CompletedProcess[str]:
     )
 
 
-def _repo(tmp_path: Path, *, ignored: bool = False) -> Path:
-    repo = tmp_path / "parent"
+def _build_repo_seed(seed_root: Path, *, ignored: bool) -> None:
+    repo = seed_root / "repo"
     repo.mkdir()
     _git(repo, "init", "--initial-branch=main")
     (repo / "module.py").write_text("VALUE = 1\n", encoding="utf-8")
@@ -39,6 +40,21 @@ def _repo(tmp_path: Path, *, ignored: bool = False) -> Path:
         "-m",
         "seed",
     )
+
+
+def _repo_seed(*, ignored: bool) -> Path:
+    from tests.seed_cache import get_or_build
+
+    name = "task-run-ignored-repo-seed" if ignored else "task-run-repo-seed"
+    return get_or_build(
+        name,
+        lambda seed_root: _build_repo_seed(seed_root, ignored=ignored),
+    ) / "repo"
+
+
+def _repo(tmp_path: Path, *, ignored: bool = False) -> Path:
+    repo = tmp_path / "parent"
+    shutil.copytree(_repo_seed(ignored=ignored), repo)
     return repo
 
 

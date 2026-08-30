@@ -13,11 +13,28 @@ from .support import (
     ROOT,
     assert_quality_receipt,
     clone_quality_runner_repo,
+    quality_runner_seed,
     run_shell_script,
     write_executable,
 )
 
 RUN_QUALITY_SCRIPT_TEXT = (ROOT / "scripts" / "run-quality.sh").read_text(encoding="utf-8")
+
+
+def test_quality_runner_seed_uses_the_cross_worker_cache(tmp_path: Path) -> None:
+    cache_calls: list[str] = []
+
+    def fake_cache(name: str, builder) -> Path:
+        cache_calls.append(name)
+        staging = tmp_path / name
+        staging.mkdir()
+        builder(staging)
+        return staging
+
+    seed = quality_runner_seed(cache_get_or_build=fake_cache)
+
+    assert cache_calls == ["quality-runner-repo-seed"]
+    assert (seed / "scripts" / "run-quality.sh").is_file()
 
 
 def _assert_external_failure_recovery(repo: Path, label: str) -> None:
@@ -60,7 +77,9 @@ def test_run_quality_full_omits_release_or_explicit_only_advisories(
 ) -> None:
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
 
-    result = run_shell_script(repo / "scripts" / "run-quality.sh", "--full", "--read-only", cwd=repo, env=env)
+    result = run_shell_script(
+        repo / "scripts" / "run-quality.sh", "--full", "--read-only", cwd=repo, env=env
+    )
 
     assert result.returncode == 0, result.stderr
     assert "PASS check-command-docs" not in result.stdout
@@ -78,10 +97,14 @@ def test_run_quality_explicitly_selects_packaging_export_validation(
 
     assert result.returncode == 0, result.stderr
     assert "PASS validate-packaging-committed" in result.stdout
-    assert not any(line.startswith("PASS validate-packaging ") for line in result.stdout.splitlines())
+    assert not any(
+        line.startswith("PASS validate-packaging ") for line in result.stdout.splitlines()
+    )
 
 
-def test_run_quality_summarizes_success_without_replaying_logs(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
+def test_run_quality_summarizes_success_without_replaying_logs(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
     env["CHARNESS_QUALITY_LABELS"] = "validate-skills,check-markdown,pytest,check-coverage"
     result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
@@ -164,7 +187,7 @@ def test_run_quality_rejects_unmatched_filter_even_with_forced_opt_in(
     assert "matched no queued checks" in result.stderr
 
 
-def test_quality_runner_clones_do_not_contaminate_each_other_or_the_module_seed(
+def test_quality_runner_clones_do_not_contaminate_each_other_or_the_cached_seed(
     tmp_path: Path, seeded_quality_runner_repo: Path
 ) -> None:
     first_clone, _ = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
@@ -181,7 +204,9 @@ def test_quality_runner_clones_do_not_contaminate_each_other_or_the_module_seed(
     assert (seeded_quality_runner_repo / runner_path).read_text(encoding="utf-8") == original_runner
 
 
-def test_dead_code_advisory_gate_is_default_off(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
+def test_dead_code_advisory_gate_is_default_off(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
     # Default-off: a normal run (no opt-in env var, label set that does not name it)
     # must NOT queue the vulture-backed dead-code advisory.
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
@@ -215,7 +240,9 @@ def test_dead_code_advisory_gate_runs_when_explicitly_labeled(
     assert "PASS dead-code-advisory" in result.stdout
 
 
-def test_run_quality_uses_external_pytest_temp_root(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
+def test_run_quality_uses_external_pytest_temp_root(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
     real_python = sys.executable
     log_path = repo / "pytest-invocation.json"
@@ -229,7 +256,7 @@ def test_run_quality_uses_external_pytest_temp_root(tmp_path: Path, seeded_quali
                 "  shift 2",
                 '  if [[ "${1:-}" == "--version" ]]; then echo "pytest 9.0.2"; exit 0; fi',
                 '  if [[ "${1:-}" == "--help" ]]; then echo "  -n numprocesses, --numprocesses=numprocesses"; exit 0; fi',
-                f"  {real_python!r} - <<'PY' \"$PYTEST_DEBUG_TEMPROOT\" \"$@\"",
+                f'  {real_python!r} - <<\'PY\' "$PYTEST_DEBUG_TEMPROOT" "$@"',
                 "import json",
                 "import sys",
                 "from pathlib import Path",
@@ -238,7 +265,7 @@ def test_run_quality_uses_external_pytest_temp_root(tmp_path: Path, seeded_quali
                 "  echo 'quality success output from pytest'",
                 "  exit 0",
                 "fi",
-                f"exec {real_python!r} \"$@\"",
+                f'exec {real_python!r} "$@"',
                 "",
             ]
         ),
@@ -395,7 +422,9 @@ def test_run_quality_passes_expanded_targets_to_test_completeness(
     assert "tests/test_*.py" not in args
 
 
-def test_run_quality_replays_only_failing_command_logs(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
+def test_run_quality_replays_only_failing_command_logs(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
     env["CHARNESS_QUALITY_LABELS"] = "validate-skills,check-markdown,pytest,check-coverage"
     env["QUALITY_FAIL_LABEL"] = "check-markdown"
@@ -410,7 +439,9 @@ def test_run_quality_replays_only_failing_command_logs(tmp_path: Path, seeded_qu
     )
 
 
-def test_run_quality_can_select_command_docs_gate(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
+def test_run_quality_can_select_command_docs_gate(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
     env["CHARNESS_QUALITY_LABELS"] = "check-command-docs"
     result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
@@ -432,10 +463,14 @@ def test_run_quality_can_select_test_production_ratio_gate(
     assert_quality_receipt(repo, result, status="pass", passed=1, failed=0)
 
 
-def test_run_quality_replays_passing_attention_logs(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
+def test_run_quality_replays_passing_attention_logs(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
     attention_tokens = ("WARNING", "WARN", "WEAK", "ADVISORY")
     for attention_token in attention_tokens:
-        repo, env = clone_quality_runner_repo(tmp_path / attention_token.lower(), seeded_quality_runner_repo)
+        repo, env = clone_quality_runner_repo(
+            tmp_path / attention_token.lower(), seeded_quality_runner_repo
+        )
         warning_script = repo / "scripts" / "validate_skill_ergonomics.py"
         warning_script.write_text(
             "\n".join(
@@ -461,7 +496,9 @@ def test_run_quality_replays_passing_attention_logs(tmp_path: Path, seeded_quali
         assert_quality_receipt(repo, result, status="pass", passed=1, failed=0)
 
 
-def test_run_quality_keeps_passing_non_attention_logs_quiet(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
+def test_run_quality_keeps_passing_non_attention_logs_quiet(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
     warning_script = repo / "scripts" / "validate_skill_ergonomics.py"
     warning_script.write_text(
@@ -610,7 +647,9 @@ def test_run_quality_enforces_ci_local_gate_parity_inventory(
     tmp_path: Path, seeded_quality_runner_repo: Path
 ) -> None:
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
-    inventory_script = repo / "skills" / "public" / "quality" / "scripts" / "inventory_ci_local_gate_parity.py"
+    inventory_script = (
+        repo / "skills" / "public" / "quality" / "scripts" / "inventory_ci_local_gate_parity.py"
+    )
     inventory_script.write_text(
         "\n".join(
             [
@@ -679,7 +718,9 @@ def test_run_quality_enforces_current_pointer_write_scan(
     assert_quality_receipt(repo, result, status="pass", passed=1, failed=0)
 
 
-def test_run_quality_verbose_replays_success_logs(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
+def test_run_quality_verbose_replays_success_logs(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
     env["CHARNESS_QUALITY_LABELS"] = "validate-skills,check-markdown,pytest,check-coverage"
     env["CHARNESS_QUALITY_VERBOSE"] = "1"
@@ -723,7 +764,7 @@ def test_every_queued_repo_script_gate_has_a_seeded_harness_stub() -> None:
     for line in runner.splitlines():
         if "queue_selected" not in line:
             continue
-        for path in re.findall(r'([\w$/{}.-]*scripts/[a-z0-9_]+\.py)', line):
+        for path in re.findall(r"([\w$/{}.-]*scripts/[a-z0-9_]+\.py)", line):
             prefix, _, name = path.rpartition("scripts/")
             # Repo-root scripts only. Skill-package gates (skills/public/quality/scripts)
             # come from QUALITY_RUNTIME_STUBS and are seeded elsewhere.
@@ -737,7 +778,7 @@ def test_every_queued_repo_script_gate_has_a_seeded_harness_stub() -> None:
     for line in runner.splitlines():
         if "queue_selected" not in line:
             continue
-        for path in re.findall(r'([\w$/{}.-]*scripts/[a-z0-9-]+\.sh)', line):
+        for path in re.findall(r"([\w$/{}.-]*scripts/[a-z0-9-]+\.sh)", line):
             prefix, _, name = path.rpartition("scripts/")
             if prefix in ("", "./", "$REPO_ROOT/"):
                 queued.add(name)
@@ -761,7 +802,9 @@ def test_quality_runner_keeps_specdown_reports_out_of_the_worktree() -> None:
     must pass a `-config`, and the config that helper produces must point every
     reporter outside the repo."""
     runner = RUN_QUALITY_SCRIPT_TEXT
-    specdown_command = next(line for line in runner.splitlines() if 'queue_selected "specdown"' in line)
+    specdown_command = next(
+        line for line in runner.splitlines() if 'queue_selected "specdown"' in line
+    )
 
     # Unescape the nested `bash -c` quoting so the assertions can bind the flag to
     # the variable. Asserting `-config` is merely PRESENT would still pass if the
@@ -769,7 +812,9 @@ def test_quality_runner_keeps_specdown_reports_out_of_the_worktree() -> None:
     # this test is being repaired for.
     unescaped = specdown_command.replace("\\", "")
     assert 'queue_selected "specdown" bash -c' in specdown_command
-    assert 'specdown_config=$(python3 "$REPO_ROOT/scripts/specdown_ephemeral_config.py"' in unescaped
+    assert (
+        'specdown_config=$(python3 "$REPO_ROOT/scripts/specdown_ephemeral_config.py"' in unescaped
+    )
     assert 'specdown run -config "$specdown_config"' in unescaped
     assert "RUN_QUALITY_TMPDIR/specdown-report" in specdown_command
     # Removed on 2026-07-22 because specdown rejects them; keep them gone.

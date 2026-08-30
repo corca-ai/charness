@@ -182,7 +182,7 @@ def build_payload(repo_root: Path) -> dict[str, object]:
     #
     # WHAT IT COSTS TO BE UNGUARDED, measured on the real CLI: a repo declaring
     # `package_id: acme-harness`, `packaging_manifest_path: vendor/mypkg/manifest.json`
-    # and `checked_in_plugin_root: vendor/mypkg` under a refused version got back
+    # and `materialized_plugin_root: vendor/mypkg` under a refused version got back
     # `package_id: <its own directory name>` and two paths under `packaging/` and
     # `plugins/` that do not exist -- exit 0. This surface answers "which package is this
     # release, and where does it live", and it answered with a charness guess while
@@ -198,7 +198,7 @@ def build_payload(repo_root: Path) -> dict[str, object]:
     data = adapter["data"]
     manifest_path = repo_root / data["packaging_manifest_path"]
     package_id = data["package_id"]
-    plugin_root = repo_root / data["checked_in_plugin_root"]
+    plugin_root = repo_root / data["materialized_plugin_root"]
     payload: dict[str, object] = {
         "adapter": {
             "found": adapter["found"],
@@ -208,7 +208,7 @@ def build_payload(repo_root: Path) -> dict[str, object]:
         },
         "package_id": package_id,
         "packaging_manifest_path": str(manifest_path),
-        "checked_in_plugin_root": str(plugin_root),
+        "materialized_plugin_root": str(plugin_root),
         "surface_versions": {
             "packaging_manifest": _version_at(manifest_path),
             "claude_plugin": _version_at(plugin_root / ".claude-plugin" / "plugin.json"),

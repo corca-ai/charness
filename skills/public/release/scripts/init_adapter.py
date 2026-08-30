@@ -32,7 +32,7 @@ def build_items(repo_name: str, _args: object) -> list[tuple[str, object]]:
         *base_adapter_items(repo_name, "charness-artifacts/release"),
         ("package_id", repo_name),
         ("packaging_manifest_path", f"packaging/{repo_name}.json"),
-        ("checked_in_plugin_root", f"plugins/{repo_name}"),
+        ("materialized_plugin_root", f"plugins/{repo_name}"),
         ("sync_command", "python3 scripts/sync_root_plugin_manifests.py --repo-root ."),
         ("quality_command", "./scripts/run-quality.sh"),
         ("update_instructions", []),

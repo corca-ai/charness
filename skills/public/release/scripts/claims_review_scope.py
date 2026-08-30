@@ -33,8 +33,8 @@ findings out of a release.
 """
 from __future__ import annotations
 
+import hashlib
 import re
-import sys
 from pathlib import Path
 from typing import Any
 
@@ -146,6 +146,12 @@ def partition(paths: list[str]) -> dict[str, list[str]]:
     return {"blocking": sorted(blocking), "advisory": sorted(advisory)}
 
 
+def changed_paths_sha256(paths: list[str]) -> str:
+    """Stable identity for the exact release-delta path set."""
+    payload = "\0".join(sorted(set(paths))).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
 def _assert_findings_are_renderable(findings: object) -> None:
     """Refuse an advisory finding that would stop being ONE field of the record.
 
@@ -212,22 +218,20 @@ def assert_scope_covers_delta(scope: dict[str, Any], delta_paths: list[str]) -> 
     """
     declared = set(scope.get("blocking_paths", [])) | set(scope.get("advisory_paths", []))
     actual = set(delta_paths)
-    # Only BLOCKING delta paths must be accounted for. Requiring set equality
-    # over the whole delta was the first cut and is too brittle to be safe: the
-    # delta includes files the PREPARE step writes (the release record itself,
-    # regenerated manifests), so a reviewer would have to predict artifacts that
-    # do not exist when they write the record, and a late refusal at the publish
-    # boundary is expensive. Omitting an ADVISORY path costs nothing -- advisory
-    # paths gate nothing by construction. Omitting a BLOCKING one is the real
-    # hole, and that is what this refuses.
-    missing = sorted(p for p in actual - declared if classify(p) == "blocking")
+    # The claims-review scaffold now runs AFTER prepare and derives this exact
+    # partition from the committed release delta. The old blocking-only check was
+    # compensation for a hand-authored record that had to predict prepare output;
+    # keeping that compensation after derivation would make the machine-generated
+    # `advisory_paths` list optional in practice and let the record claim it reviewed
+    # session narrative it never named.
+    missing = sorted(actual - declared)
     invented = sorted(declared - actual)
     if missing:
         raise SystemExit(
-            f"--resume: claims-review `review_scope` omits {len(missing)} BLOCKING changed "
+            f"--resume: claims-review `review_scope` omits {len(missing)} changed "
             f"path(s) the release actually carries: {missing[:8]}. A `pass` must account for "
-            "every shipped surface in the delta; an unlisted one is a surface nobody said "
-            "they looked at."
+            "the complete release delta; an unlisted path is a surface nobody said they "
+            "looked at."
         )
     if invented:
         raise SystemExit(
@@ -303,21 +307,6 @@ def assert_scope_is_declared(data: dict[str, Any], *, verdict: str) -> None:
         )
 
 
-def _record_stand_down(data: dict[str, Any], reason: str) -> None:
-    """Mark completeness as NOT verified, durably as well as on stderr.
-
-    stderr alone reproduced the defect a previous round found on the SHA rung:
-    the published record rendered identically whether the check ran or stood
-    down, and a passing phase's log is deleted at exit. `unproven` is written
-    into the record for exactly this reason -- stderr is not enough.
-    """
-    data["scope_completeness"] = {"verified": False, "reason": reason}
-    sys.stderr.write(
-        f"WARNING (claims review): `review_scope` COMPLETENESS was not checked -- {reason}. "
-        "Only its classification was verified; the scope may omit changed paths.\n"
-    )
-
-
 def assert_scope_matches_release_delta(repo_root: Path, data: dict[str, Any], *,
                                         prepared: dict[str, str], run,
                                         previous_version: str | None = None) -> None:
@@ -327,12 +316,9 @@ def assert_scope_matches_release_delta(repo_root: Path, data: dict[str, Any], *,
     path from both lists. This derives the real delta -- previous tag to the
     prepared commit -- and requires the scope to be a PARTITION of it.
 
-    When the base cannot be resolved (no previous tag: a first release, or a
-    shallow clone) the completeness half is SKIPPED and said out loud on stderr.
-    It is not silently passed: a check that cannot run must not read as a check
-    that ran, which is the defect class this whole slice exists to close. The
-    classification half still runs, and that is the half that blocks the
-    laundering shape a fresh-eye round demonstrated.
+    A pass is a completeness claim, so an absent base, shallow history, or a
+    non-ancestor base is refused. The honest state in those environments is an
+    `unproven` verdict, which deliberately carries no scope claim.
     """
     # `--match` on the RELEASE tag glob, matching the canonical resolver's own
     # filter in `publish_release_helpers._release_tag_versions`. Bare
@@ -344,25 +330,51 @@ def assert_scope_matches_release_delta(repo_root: Path, data: dict[str, Any], *,
     #
     # `previous_version` is preferred when the caller knows it: that is the tag
     # the release itself is measured from, and it needs no reachability guess.
+    shallow = run(["git", "rev-parse", "--is-shallow-repository"], cwd=repo_root, check=False)
+    if shallow.returncode != 0 or shallow.stdout.strip() == "true":
+        raise SystemExit(
+            "--resume: a passing claims review requires complete release history; "
+            "the repository is shallow or its history depth could not be established"
+        )
     base = ""
     if previous_version:
         resolved = run(["git", "rev-parse", "--verify", f"refs/tags/v{previous_version}"],
                        cwd=repo_root, check=False)
         if resolved.returncode == 0:
-            base = f"v{previous_version}"
+            base = f"refs/tags/v{previous_version}"
     if not base:
         described = run(["git", "describe", "--tags", "--abbrev=0",
                          "--match", "v[0-9]*.[0-9]*.[0-9]*", f"{prepared['commit']}^"],
                         cwd=repo_root, check=False)
         base = described.stdout.strip() if described.returncode == 0 else ""
     if not base:
-        _record_stand_down(
-            data, "no release tag reachable from the prepared commit"
+        raise SystemExit(
+            "--resume: a passing claims review requires a previous release tag; "
+            "no release base is reachable from the prepared commit"
         )
-        return
+    ancestor = run(
+        ["git", "merge-base", "--is-ancestor", base, prepared["commit"]],
+        cwd=repo_root,
+        check=False,
+    )
+    if ancestor.returncode != 0:
+        raise SystemExit(
+            f"--resume: claims-review base {base} is not an ancestor of the prepared commit"
+        )
     listed = run(["git", "diff-tree", "--no-commit-id", "--name-only", "-r",
                   f"{base}..{prepared['commit']}"], cwd=repo_root, check=False)
     if listed.returncode != 0:
-        _record_stand_down(data, f"could not list the release delta {base}..prepared")
-        return
-    assert_scope_covers_delta(data["review_scope"], [p for p in listed.stdout.splitlines() if p])
+        raise SystemExit(f"--resume: could not list the release delta {base}..prepared")
+    delta_paths = [p for p in listed.stdout.splitlines() if p]
+    assert_scope_covers_delta(data["review_scope"], delta_paths)
+    basis = data.get("scope_basis")
+    expected = {
+        "base_ref": base,
+        "changed_paths_sha256": changed_paths_sha256(delta_paths),
+        "changed_path_count": len(set(delta_paths)),
+    }
+    if basis != expected:
+        raise SystemExit(
+            "--resume: claims-review `scope_basis` does not bind the exact release delta; "
+            f"expected {expected!r}, observed {basis!r}"
+        )

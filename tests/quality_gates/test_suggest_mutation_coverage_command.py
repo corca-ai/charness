@@ -1,10 +1,14 @@
 from __future__ import annotations
 
+import json
+import shutil
 import subprocess
 from pathlib import Path
 
 import pytest
 import yaml
+
+from tests.seed_cache import get_or_build
 
 from .support import run_script
 
@@ -17,8 +21,9 @@ def _git(repo: Path, *args: str) -> str:
     ).stdout.strip()
 
 
-def _seed_repo(tmp_path: Path) -> tuple[Path, str]:
-    repo = tmp_path / "repo"
+def _build_suggest_seed(staging: Path) -> None:
+    """Build the immutable base history shared by suggestion tests."""
+    repo = staging / "repo"
     (repo / "scripts").mkdir(parents=True)
     (repo / "tests" / "quality_gates").mkdir(parents=True)
     _git(repo, "init", "-q")
@@ -35,6 +40,17 @@ def _seed_repo(tmp_path: Path) -> tuple[Path, str]:
     _git(repo, "add", "-A")
     _git(repo, "commit", "-q", "-m", "base")
     base = _git(repo, "rev-parse", "HEAD")
+
+    (staging / "refs.json").write_text(json.dumps({"base": base}), encoding="utf-8")
+
+
+def _seed_repo(tmp_path: Path) -> tuple[Path, str]:
+    """Copy the immutable source-bound base and apply this test's changed line."""
+    seed = get_or_build("suggest-mutation-coverage-repo-seed", _build_suggest_seed)
+    refs = json.loads((seed / "refs.json").read_text(encoding="utf-8"))
+    base = refs["base"]
+    repo = tmp_path / "repo"
+    shutil.copytree(seed / "repo", repo)
     (repo / "scripts" / "foo.py").write_text("def value():\n    return 2\n", encoding="utf-8")
     return repo, base
 
@@ -506,14 +522,14 @@ def test_cli_help_explains_statuses_and_closeout_workflow() -> None:
 # answer. Both gaps below produced the same observable — a changed file mapped to
 # a test that does not cover it — and a false block is how a gate gets bypassed.
 # --------------------------------------------------------------------------- #
-def _seed_dynamic_loader_repo(tmp_path: Path) -> tuple[Path, str]:
+def _build_dynamic_loader_seed(staging: Path) -> None:
     """A test that loads a production module by STEM, assembling the dir separately.
 
     This is the repo's own dominant in-process-coverage idiom, and it is invisible to
     a quoted-path / dotted-module / import-statement search: the only literal in the
     test is the bare stem.
     """
-    repo = tmp_path / "repo"
+    repo = staging / "repo"
     (repo / "scripts").mkdir(parents=True)
     (repo / "tests").mkdir(parents=True)
     _git(repo, "init", "-q")
@@ -535,8 +551,18 @@ def _seed_dynamic_loader_repo(tmp_path: Path) -> tuple[Path, str]:
     _git(repo, "add", "-A")
     _git(repo, "commit", "-q", "-m", "base")
     base = _git(repo, "rev-parse", "HEAD")
+
+    (staging / "refs.json").write_text(json.dumps({"base": base}), encoding="utf-8")
+
+
+def _seed_dynamic_loader_repo(tmp_path: Path) -> tuple[Path, str]:
+    """Copy the immutable dynamic-loader history and apply its changed line."""
+    seed = get_or_build("suggest-mutation-dynamic-loader-seed", _build_dynamic_loader_seed)
+    refs = json.loads((seed / "refs.json").read_text(encoding="utf-8"))
+    repo = tmp_path / "repo"
+    shutil.copytree(seed / "repo", repo)
     (repo / "scripts" / "shape_lib.py").write_text("def shape():\n    return 2\n", encoding="utf-8")
-    return repo, base
+    return repo, refs["base"]
 
 
 def test_maps_a_module_loaded_by_bare_stem(tmp_path: Path) -> None:

@@ -78,10 +78,7 @@ COPY_HEAVY_HELPERS = frozenset(
 )
 COPY_HEAVY_TOKEN_RE = re.compile(
     r"\b("
-    + "|".join(
-        re.escape(name)
-        for name in sorted(COPY_HEAVY_FIXTURES | COPY_HEAVY_HELPERS)
-    )
+    + "|".join(re.escape(name) for name in sorted(COPY_HEAVY_FIXTURES | COPY_HEAVY_HELPERS))
     + r")\b"
 )
 REPO_ROOT_NAMES = frozenset({"ROOT", "REPO_ROOT", "_ROOT", "_REPO_ROOT", "PLUGIN_ROOT"})
@@ -99,6 +96,7 @@ PATH_WRITE_METHODS = frozenset(
         "write_text",
     }
 )
+CACHED_READ_ONLY_FIXTURES = frozenset({"seeded_quality_runner_repo"})
 # floor-addition-restraint: merge a reproduced xdist shared-worktree escape
 # into the existing test-isolation gate; this is a finite direct-Path ratchet,
 # not a claim to sandbox arbitrary Python, libraries, or subprocesses.
@@ -123,7 +121,9 @@ def _module_is_release_only(tree: ast.Module) -> bool:
     for node in tree.body:
         if not isinstance(node, ast.Assign):
             continue
-        if not any(isinstance(target, ast.Name) and target.id == "pytestmark" for target in node.targets):
+        if not any(
+            isinstance(target, ast.Name) and target.id == "pytestmark" for target in node.targets
+        ):
             continue
         if _is_release_only_marker(node.value):
             return True
@@ -275,9 +275,7 @@ def _module_repo_path_names(tree: ast.Module) -> set[str]:
             )
         elif isinstance(node, (ast.Import, ast.ImportFrom)):
             tainted.update(
-                alias.asname or alias.name
-                for alias in node.names
-                if alias.name in REPO_ROOT_NAMES
+                alias.asname or alias.name for alias in node.names if alias.name in REPO_ROOT_NAMES
             )
     changed = True
     while changed:
@@ -324,9 +322,7 @@ class _RepoWriteVisitor(ast.NodeVisitor):
                 node.func.value, self.tainted_names
             ):
                 self.violations.append((node.lineno, method))
-            elif method == "open" and _expr_uses_repo_path(
-                node.func.value, self.tainted_names
-            ):
+            elif method == "open" and _expr_uses_repo_path(node.func.value, self.tainted_names):
                 mode = self._open_mode(node)
                 if any(flag in mode for flag in "wax+"):
                     self.violations.append((node.lineno, f"Path.open(mode={mode!r})"))
@@ -391,6 +387,30 @@ def _shared_repo_write_violations(source: str, rel_path: Path) -> list[str]:
     return violations
 
 
+def _cached_seed_write_violations(source: str, rel_path: Path) -> list[str]:
+    """Refuse mutation of a filesystem-cached seed shared across xdist workers."""
+    try:
+        tree = ast.parse(source, filename=rel_path.as_posix())
+    except SyntaxError:
+        return []
+    violations: list[str] = []
+    for node in _function_scopes(tree.body):
+        fixtures = {
+            argument.arg for argument in node.args.args if argument.arg in CACHED_READ_ONLY_FIXTURES
+        }
+        if not fixtures:
+            continue
+        visitor = _RepoWriteVisitor(fixtures)
+        visitor.visit(node)
+        for line, operation in visitor.violations:
+            violations.append(
+                f"{rel_path.as_posix()}:{line}: `{node.name}` mutates cached read-only "
+                f"fixture(s) {sorted(fixtures)!r} via `{operation}`. Clone the seed into "
+                "tmp_path first so parallel tests cannot contaminate each other."
+            )
+    return violations
+
+
 def _iter_python_files(tests_root: Path) -> list[Path]:
     files: list[Path] = []
     for path in tests_root.rglob("*.py"):
@@ -424,6 +444,7 @@ def find_violations(repo_root: Path) -> list[str]:
         if COPY_HEAVY_TOKEN_RE.search(text):
             violations.extend(_copy_heavy_marker_violations(text, rel_path))
         violations.extend(_shared_repo_write_violations(text, rel_path))
+        violations.extend(_cached_seed_write_violations(text, rel_path))
     return violations
 
 

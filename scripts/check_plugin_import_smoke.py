@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Exec every .py in the checked-in plugin tree to catch broken imports.
+"""Exec every .py in the materialized plugin export to catch broken imports.
 
 Companion gate to the native-backed `check-export-safe-imports` gate. That gate
 rejects a known family of dev-tree-only imports statically. This gate executes every module

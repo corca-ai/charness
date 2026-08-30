@@ -40,7 +40,7 @@ def _load_skill_runtime_bootstrap():
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 
 _repo_file_listing = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.repo_file_listing")
-iter_matching_repo_files = _repo_file_listing.iter_matching_repo_files
+git_list_repo_files = _repo_file_listing.git_list_repo_files
 
 #: Python sources this repo OWNS. `plugins/**` and `mutants/**` are absent by
 #: construction rather than by exclusion: neither matches these globs. That is
@@ -78,6 +78,26 @@ class Surface(NamedTuple):
     derive: Callable[..., tuple[list[str], list[str]]]
 
 
+class TrackedReleaseTree(NamedTuple):
+    repo_root: Path
+    allowed: frozenset[Path] | None
+
+
+def _tracked_release_tree(repo_root: Path, *, require_git: bool) -> TrackedReleaseTree:
+    root = repo_root.resolve()
+    listed = git_list_repo_files(
+        root,
+        include_untracked=False,
+        require_git=require_git,
+    )
+    allowed = (
+        frozenset(path for path in listed if path.is_file())
+        if listed is not None
+        else None
+    )
+    return TrackedReleaseTree(root, allowed)
+
+
 def _rel(repo_root: Path, path: Path) -> str:
     try:
         return str(path.resolve().relative_to(repo_root.resolve()))
@@ -85,7 +105,7 @@ def _rel(repo_root: Path, path: Path) -> str:
         return str(path)
 
 
-def _tracked(repo_root: Path, patterns: tuple[str, ...], *, require_git: bool) -> list[Path]:
+def _tracked(tree: TrackedReleaseTree, patterns: tuple[str, ...]) -> list[Path]:
     """Files matching ``patterns`` that are actually part of the release.
 
     `include_untracked=False` is the whole point and it is not the library
@@ -96,12 +116,18 @@ def _tracked(repo_root: Path, patterns: tuple[str, ...], *, require_git: bool) -
     not contain, and the same worktree state made the publish gate refuse notes
     that were correct about the shipped tree.
     """
-    return list(iter_matching_repo_files(repo_root, patterns, include_untracked=False, require_git=require_git))
+    matches: set[Path] = set()
+    for pattern in patterns:
+        for path in tree.repo_root.glob(pattern):
+            if not path.is_file() or (tree.allowed is not None and path not in tree.allowed):
+                continue
+            matches.add(path)
+    return sorted(matches)
 
 
-def _python_sources(repo_root: Path, *, require_git: bool) -> list[Path]:
-    paths = _tracked(repo_root, _PYTHON_SCAN_GLOBS, require_git=require_git)
-    paths.extend(_tracked(repo_root, (_CLI_ENTRYPOINT,), require_git=require_git))
+def _python_sources(tree: TrackedReleaseTree) -> list[Path]:
+    paths = _tracked(tree, _PYTHON_SCAN_GLOBS)
+    paths.extend(_tracked(tree, (_CLI_ENTRYPOINT,)))
     return sorted(set(paths))
 
 
@@ -142,10 +168,12 @@ def _declares_option(tree: ast.Module, option: str) -> bool:
     )
 
 
-def _json_declaring_scripts(repo_root: Path, *, require_git: bool) -> tuple[list[str], list[str]]:
+def _json_declaring_scripts(
+    repo_root: Path, *, tracked_tree: TrackedReleaseTree
+) -> tuple[list[str], list[str]]:
     hits: list[str] = []
     unreadable: list[str] = []
-    for path in _python_sources(repo_root, require_git=require_git):
+    for path in _python_sources(tracked_tree):
         tree = _parsed(path)
         if tree is None:
             unreadable.append(_rel(repo_root, path))
@@ -160,7 +188,12 @@ def _json_declaring_scripts(repo_root: Path, *, require_git: bool) -> tuple[list
     return sorted(set(hits)), extra
 
 
-def _charness_subcommands(repo_root: Path, *, require_git: bool) -> tuple[list[str], list[str]]:
+def _charness_subcommands(
+    repo_root: Path,
+    *,
+    tracked_tree: TrackedReleaseTree | None = None,
+    require_git: bool = False,
+) -> tuple[list[str], list[str]]:
     """Top-level `charness` subcommands, by AST over the entrypoint.
 
     Matched on the receiver NAME `subparsers`, which is what makes this the
@@ -169,7 +202,8 @@ def _charness_subcommands(repo_root: Path, *, require_git: bool) -> tuple[list[s
     would produce a flat list that no invocation matches — `charness run` is
     not a command, `charness task run` is.
     """
-    tracked = _tracked(repo_root, (_CLI_ENTRYPOINT,), require_git=require_git)
+    tree = tracked_tree or _tracked_release_tree(repo_root, require_git=require_git)
+    tracked = _tracked(tree, (_CLI_ENTRYPOINT,))
     if not tracked:
         return [], [f"`{_CLI_ENTRYPOINT}` is not a tracked file in this tree, so no subcommand was derived"]
     path = tracked[0]
@@ -186,15 +220,19 @@ def _charness_subcommands(repo_root: Path, *, require_git: bool) -> tuple[list[s
     return sorted(set(names)), []
 
 
-def _public_skills(repo_root: Path, *, require_git: bool) -> tuple[list[str], list[str]]:
-    manifests = _tracked(repo_root, ("skills/public/*/SKILL.md",), require_git=require_git)
+def _public_skills(
+    repo_root: Path, *, tracked_tree: TrackedReleaseTree
+) -> tuple[list[str], list[str]]:
+    manifests = _tracked(tracked_tree, ("skills/public/*/SKILL.md",))
     if not manifests:
         return [], ["no tracked `skills/public/*/SKILL.md` was found in this tree, so no public skill was derived"]
     return sorted({path.parent.name for path in manifests}), []
 
 
-def _repo_shell_gates(repo_root: Path, *, require_git: bool) -> tuple[list[str], list[str]]:
-    return sorted({path.name for path in _tracked(repo_root, ("scripts/check-*.sh",), require_git=require_git)}), []
+def _repo_shell_gates(
+    repo_root: Path, *, tracked_tree: TrackedReleaseTree
+) -> tuple[list[str], list[str]]:
+    return sorted({path.name for path in _tracked(tracked_tree, ("scripts/check-*.sh",))}), []
 
 
 #: Append-only in spirit: removing a surface removes a check, and every id here
@@ -243,8 +281,15 @@ SURFACES: tuple[Surface, ...] = (
 SURFACE_IDS: tuple[str, ...] = tuple(surface.id for surface in SURFACES)
 
 
-def derive_surface(surface: Surface, repo_root: Path, *, require_git: bool = False) -> dict[str, object]:
-    items, extra_unscanned = surface.derive(repo_root, require_git=require_git)
+def derive_surface(
+    surface: Surface,
+    repo_root: Path,
+    *,
+    require_git: bool = False,
+    tracked_tree: TrackedReleaseTree | None = None,
+) -> dict[str, object]:
+    tree = tracked_tree or _tracked_release_tree(repo_root, require_git=require_git)
+    items, extra_unscanned = surface.derive(repo_root, tracked_tree=tree)
     return {
         "id": surface.id,
         "question": surface.question,
@@ -257,7 +302,16 @@ def derive_surface(surface: Surface, repo_root: Path, *, require_git: bool = Fal
 
 def derive_surfaces(repo_root: Path, *, require_git: bool = False) -> list[dict[str, object]]:
     """Every registered surface, measured against ``repo_root``, in registry order."""
-    return [derive_surface(surface, repo_root, require_git=require_git) for surface in SURFACES]
+    tree = _tracked_release_tree(repo_root, require_git=require_git)
+    return [
+        derive_surface(
+            surface,
+            repo_root,
+            require_git=require_git,
+            tracked_tree=tree,
+        )
+        for surface in SURFACES
+    ]
 
 
 def surface_field(derived: dict[str, object], field: str) -> str | None:

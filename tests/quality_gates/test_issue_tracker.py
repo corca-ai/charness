@@ -515,6 +515,57 @@ def test_update_body_refuses_to_strip_goal_run_metadata(
         tracker.update_issue_body("corca-ai/charness", 724, desired, backend=BACKEND)
 
 
+@pytest.mark.parametrize(
+    "desired_parent",
+    [
+        {"repo": "corca-ai/charness", "number": 725},
+        None,
+    ],
+    ids=["changed", "removed"],
+)
+def test_generic_update_refuses_to_alter_goal_run_parent_identity_before_provider(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    desired_parent: dict[str, object] | None,
+) -> None:
+    parent = {"repo": "corca-ai/charness", "number": 724}
+    current_payload = {
+        "binding_sha256": "a",
+        "draft_sha256": "b",
+        "parent_identity": parent,
+    }
+    desired_payload = dict(current_payload)
+    if desired_parent is None:
+        desired_payload.pop("parent_identity")
+    else:
+        desired_payload["parent_identity"] = desired_parent
+    current = (
+        f"<!-- charness-goal-run:v1\n{json.dumps(current_payload, separators=(',', ':'))}\n-->\n"
+    )
+    desired = tmp_path / "body.md"
+    desired.write_text(
+        f"<!-- charness-goal-run:v1\n{json.dumps(desired_payload, separators=(',', ':'))}\n-->\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        tracker.VERIFY_CREATE,
+        "verify_created_issue",
+        lambda *_args, **_kwargs: {
+            "body_verified": False,
+            "body": current,
+            "url": "https://github.com/corca-ai/charness/issues/724",
+        },
+    )
+    monkeypatch.setattr(
+        tracker,
+        "run_backend",
+        lambda _argv: (_ for _ in ()).throw(AssertionError("must not write")),
+    )
+
+    with pytest.raises(RuntimeError, match="parent_identity"):
+        tracker.update_issue_body("corca-ai/charness", 724, desired, backend=BACKEND)
+
+
 def test_generic_update_refuses_to_publish_terminal_metadata(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -545,18 +596,46 @@ def test_generic_update_refuses_to_publish_terminal_metadata(
         tracker.update_issue_body("corca-ai/charness", 724, desired, backend=BACKEND)
 
 
-@pytest.mark.parametrize(
-    "field", ["terminal_observation_path", "terminal_observation_sha256"]
-)
+def test_generic_update_refuses_to_amend_goal_run_human_markdown(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    metadata = '{"binding_sha256":"a","draft_sha256":"b"}'
+    current = f"original prefix\n<!-- charness-goal-run:v1\n{metadata}\n-->\noriginal suffix\n"
+    desired = tmp_path / "body.md"
+    desired.write_text(
+        f"changed prefix\n<!-- charness-goal-run:v1\n{metadata}\n-->\noriginal suffix\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(
+        tracker.VERIFY_CREATE,
+        "verify_created_issue",
+        lambda *_args, **_kwargs: {
+            "body_verified": False,
+            "body": current,
+            "url": "https://github.com/corca-ai/charness/issues/724",
+        },
+    )
+    monkeypatch.setattr(
+        tracker,
+        "run_backend",
+        lambda _argv: (_ for _ in ()).throw(AssertionError("must not write")),
+    )
+
+    with pytest.raises(RuntimeError, match="bound parent amendment capability"):
+        tracker.update_issue_body("corca-ai/charness", 724, desired, backend=BACKEND)
+
+
+@pytest.mark.parametrize("field", ["terminal_observation_path", "terminal_observation_sha256"])
 def test_generic_update_treats_a_null_terminal_key_as_a_change(field: str) -> None:
     current = '<!-- charness-goal-run:v1\n{"binding_sha256":"a","draft_sha256":"b"}\n-->\n'
     desired = (
-        '<!-- charness-goal-run:v1\n'
+        "<!-- charness-goal-run:v1\n"
         f'{{"binding_sha256":"a","draft_sha256":"b","{field}":null}}\n-->\n'
     )
 
     with pytest.raises(RuntimeError, match="dedicated close ingress"):
-        tracker._guard_goal_run_metadata(current, desired)
+        tracker.GOAL_METADATA.guard_goal_run_metadata(current, desired)
 
 
 @pytest.mark.parametrize(

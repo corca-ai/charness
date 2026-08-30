@@ -9,10 +9,10 @@ concepts.
   skills consume under the hood
 - colocated capability metadata at `skills/support/<skill-id>/capability.json`
   when `charness` owns the runtime surface
-Checked-in plugin exports flatten public skills for host discovery and copy
+Materialized plugin exports flatten public skills for host discovery and copy
 Charness-owned support assets into `<repo-root>/plugins/charness/support/`.
 Upstream-consumed support skills are not checked into this source tree or the
-checked-in plugin tree; they are materialized into the installed plugin under
+materialized plugin export; they are materialized into the installed plugin under
 `support/<tool-id>/` during `charness init`, `charness update`, or
 `charness tool sync-support`.
 

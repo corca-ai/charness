@@ -23,6 +23,7 @@ from pathlib import Path
 import pytest
 import yaml
 
+from .dup_ratchet_test_support import git as _git
 from .seeding_support import load_module
 from .support import ROOT, run_script
 
@@ -44,10 +45,18 @@ scope = _load("dup_ratchet_scope")
 
 def _evaluate(**over):
     base = dict(
-        code_family_ids=set(), gate_baseline_ids=set(), doc_drift_signatures=set(),
-        intentional_code_ids=set(), intentional_doc_signatures=set(),
-        fixable_ceiling=0, floor_F=0, escalation_K=3,
-        stagnation=0, anchor="anchorsha", anchor_is_ancestor=True, degraded_reasons=None,
+        code_family_ids=set(),
+        gate_baseline_ids=set(),
+        doc_drift_signatures=set(),
+        intentional_code_ids=set(),
+        intentional_doc_signatures=set(),
+        fixable_ceiling=0,
+        floor_F=0,
+        escalation_K=3,
+        stagnation=0,
+        anchor="anchorsha",
+        anchor_is_ancestor=True,
+        degraded_reasons=None,
     )
     base.update(over)
     return lib.evaluate(**base)
@@ -61,7 +70,6 @@ def _evaluate(**over):
 from tests.quality_gates.test_dup_ratchet import (  # noqa: E402
     _code_inventory,
     _doc_inventory,
-    _git,
     _write_json,
 )
 
@@ -72,23 +80,35 @@ def _consumer_repo(tmp_path: Path, *, scope_paths: tuple[str, ...] = ("src",)) -
     builds, scoped down to what this file's tests need."""
     repo = tmp_path / "consumer"
     (repo / ".agents").mkdir(parents=True)
-    _write_json(repo / "q" / "dup-review.json", {
-        "schemaVersion": "charness.quality.dup_review.v1",
-        "fixable_ceiling": 0, "entries": [],
-    })
+    _write_json(
+        repo / "q" / "dup-review.json",
+        {
+            "schemaVersion": "charness.quality.dup_review.v1",
+            "fixable_ceiling": 0,
+            "entries": [],
+        },
+    )
     _write_json(
         repo / "q" / "dup-ratchet-baseline.json",
         baseline_lib.build_gate_baseline({"known1": ["known1"]}),
     )
     lines = [
-        "version: 1", "repo: consumer", "dup_ratchet:", "  enabled: true",
-        "  floor_F: 0", "  escalation_K: 10", "  scope_paths:",
+        "version: 1",
+        "repo: consumer",
+        "dup_ratchet:",
+        "  enabled: true",
+        "  floor_F: 0",
+        "  escalation_K: 10",
+        "  scope_paths:",
     ]
     lines.extend(f"    - {path}" for path in scope_paths)
-    lines.extend([
-        "  review_artifact_path: q/dup-review.json",
-        "  gate_baseline_path: q/dup-ratchet-baseline.json", "",
-    ])
+    lines.extend(
+        [
+            "  review_artifact_path: q/dup-review.json",
+            "  gate_baseline_path: q/dup-ratchet-baseline.json",
+            "",
+        ]
+    )
     (repo / ".agents" / "quality-adapter.yaml").write_text("\n".join(lines), encoding="utf-8")
     return repo
 
@@ -97,9 +117,17 @@ def _run_gate(repo: Path, tmp_path: Path) -> subprocess.CompletedProcess[str]:
     code_json = _code_inventory(tmp_path / "code.json", ["known1"])
     doc_json = _doc_inventory(tmp_path / "doc.json", [])
     return run_script(
-        str(CHECK_SCRIPT), "--repo-root", str(repo),
-        "--code-inventory", str(code_json), "--doc-inventory", str(doc_json),
-        "--detail", cwd=ROOT,
+        str(CHECK_SCRIPT),
+        "--repo-root",
+        str(repo),
+        "--code-inventory",
+        str(code_json),
+        "--doc-inventory",
+        str(doc_json),
+        "--detail",
+        "--stagnation",
+        "0",
+        cwd=ROOT,
     )
 
 
@@ -108,8 +136,11 @@ def _run_gate(repo: Path, tmp_path: Path) -> subprocess.CompletedProcess[str]:
 # --------------------------------------------------------------------------- #
 def test_scope_coverage_counts_uncovered_files_and_respects_path_segments() -> None:
     tracked = {
-        "scripts/a.py", "skills/public/x.py", "skills/public-2/y.py",
-        "tests/test_a.py", "skills/shared/z.py",
+        "scripts/a.py",
+        "skills/public/x.py",
+        "skills/public-2/y.py",
+        "tests/test_a.py",
+        "skills/shared/z.py",
     }
     coverage = scope.scope_coverage(tracked, ["scripts", "skills/public"])
     assert coverage == {
@@ -285,9 +316,15 @@ def test_a_failed_code_scan_suppresses_the_scope_line_and_names_the_in_scope_gap
     doc_json = _doc_inventory(tmp_path / "doc.json", [])
 
     result = run_script(
-        str(CHECK_SCRIPT), "--repo-root", str(repo),
-        "--code-inventory", str(broken), "--doc-inventory", str(doc_json),
-        "--detail", cwd=ROOT,
+        str(CHECK_SCRIPT),
+        "--repo-root",
+        str(repo),
+        "--code-inventory",
+        str(broken),
+        "--doc-inventory",
+        str(doc_json),
+        "--detail",
+        cwd=ROOT,
     )
     verdict = yaml.safe_load(result.stdout)
     joined = " ".join(verdict["messages"])
@@ -477,9 +514,9 @@ def test_empty_scope_claims_nothing_about_whether_the_scanner_fell_back() -> Non
 
     params = list(inspect.signature(module._scope_did_not_judge).parameters)
     assert params == ["scope_paths", "coverage", "tracked_known"], params
-    assert not any(
-        "reason" in name or "scan" in name or "degraded" in name for name in params
-    ), params
+    assert not any("reason" in name or "scan" in name or "degraded" in name for name in params), (
+        params
+    )
 
 
 def test_empty_scope_without_git_does_not_frame_the_whole_tree_as_unjudged() -> None:
@@ -529,13 +566,18 @@ def test_a_zero_family_scan_against_a_live_baseline_says_it_did_not_judge_in_sco
     # No --code-inventory: the zero-families backstop is keyed on a REAL scan.
     doc_json = _doc_inventory(tmp_path / "doc.json", [])
     result = run_script(
-        str(CHECK_SCRIPT), "--repo-root", str(repo),
-        "--doc-inventory", str(doc_json), "--detail", cwd=ROOT,
+        str(CHECK_SCRIPT),
+        "--repo-root",
+        str(repo),
+        "--doc-inventory",
+        str(doc_json),
+        "--detail",
+        cwd=ROOT,
     )
     verdict = yaml.safe_load(result.stdout)
-    assert any(
-        "returned 0 families" in reason for reason in verdict["degraded_reasons"]
-    ), f"fixture did not reach the backstop: {verdict['degraded_reasons']}"
+    assert any("returned 0 families" in reason for reason in verdict["degraded_reasons"]), (
+        f"fixture did not reach the backstop: {verdict['degraded_reasons']}"
+    )
 
     assert any(
         "more likely a broken scan than a cleared repo" in entry
@@ -563,9 +605,15 @@ def test_summary_reports_the_new_family_count_by_value_on_a_blocking_run(tmp_pat
     code_json = _code_inventory(tmp_path / "code.json", ["known1", "newfam1", "newfam2"])
     doc_json = _doc_inventory(tmp_path / "doc.json", [])
     result = run_script(
-        str(CHECK_SCRIPT), "--repo-root", str(repo),
-        "--code-inventory", str(code_json), "--doc-inventory", str(doc_json),
-        "--summary", cwd=ROOT,
+        str(CHECK_SCRIPT),
+        "--repo-root",
+        str(repo),
+        "--code-inventory",
+        str(code_json),
+        "--doc-inventory",
+        str(doc_json),
+        "--summary",
+        cwd=ROOT,
     )
     payload = yaml.safe_load(result.stdout)
 
@@ -597,9 +645,15 @@ def test_summary_publishes_a_nonzero_doc_family_count(tmp_path: Path) -> None:
     code_json = _code_inventory(tmp_path / "code.json", ["known1"])
     doc_json = _doc_inventory(tmp_path / "doc.json", ["docs/a.md#one", "docs/b.md#two"])
     result = run_script(
-        str(CHECK_SCRIPT), "--repo-root", str(repo),
-        "--code-inventory", str(code_json), "--doc-inventory", str(doc_json),
-        "--summary", cwd=ROOT,
+        str(CHECK_SCRIPT),
+        "--repo-root",
+        str(repo),
+        "--code-inventory",
+        str(code_json),
+        "--doc-inventory",
+        str(doc_json),
+        "--summary",
+        cwd=ROOT,
     )
     payload = yaml.safe_load(result.stdout)
 
@@ -664,9 +718,15 @@ def test_an_armed_run_still_publishes_the_scope_fields_in_summary(tmp_path: Path
     code_json = _code_inventory(tmp_path / "code.json", ["known1"])
     doc_json = _doc_inventory(tmp_path / "doc.json", [])
     result = run_script(
-        str(CHECK_SCRIPT), "--repo-root", str(repo),
-        "--code-inventory", str(code_json), "--doc-inventory", str(doc_json),
-        "--summary", cwd=ROOT,
+        str(CHECK_SCRIPT),
+        "--repo-root",
+        str(repo),
+        "--code-inventory",
+        str(code_json),
+        "--doc-inventory",
+        str(doc_json),
+        "--summary",
+        cwd=ROOT,
     )
 
     payload = yaml.safe_load(result.stdout)

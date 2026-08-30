@@ -54,6 +54,8 @@ check = _load("check_dup_ratchet")
 
 def _run_inproc(repo: Path, *cli: str) -> dict:
     """Drive check_dup_ratchet.run() in-process (mirrors main()'s repo_root.resolve())."""
+    if "--stagnation" not in cli:
+        cli = (*cli, "--stagnation", "0")
     args = check.parse_args(["--repo-root", str(repo), *cli])
     return check.run(args.repo_root.resolve(), args)
 
@@ -241,55 +243,6 @@ def test_overlay_fixable_ceiling_reads_int_else_zero() -> None:
 # --------------------------------------------------------------------------- #
 # SC4 (git seams) — real git fixture: resolve_anchor / ancestor / stagnation
 # --------------------------------------------------------------------------- #
-def _git(repo: Path, *args: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        ["git", "-c", "user.email=t@t", "-c", "user.name=t", *args],
-        cwd=repo, check=True, capture_output=True, text=True,
-    )
-
-
-def test_git_seams_anchor_stagnation_and_reset(tmp_path: Path) -> None:
-    repo = tmp_path / "r"
-    repo.mkdir()
-    _git(repo, "init")
-    overlay = repo / "q" / "dup-review.json"
-    overlay.parent.mkdir(parents=True)
-    overlay.write_text("{}\n", encoding="utf-8")
-    _git(repo, "add", ".")
-    _git(repo, "commit", "-m", "seed overlay")
-    anchor = _git(repo, "rev-parse", "HEAD").stdout.strip()
-
-    for index in range(3):
-        _git(repo, "commit", "--allow-empty", "-m", f"work {index}")
-
-    assert gitmod.resolve_anchor(repo, "q/dup-review.json") == anchor
-    assert gitmod.anchor_is_ancestor(repo, anchor) is True
-    assert gitmod.stagnation_commits(repo, anchor) == 3
-
-    # Editing the overlay (a review) advances the anchor and resets the clock.
-    overlay.write_text('{"reviewed": 1}\n', encoding="utf-8")
-    _git(repo, "add", ".")
-    _git(repo, "commit", "-m", "lower the ceiling")
-    new_anchor = _git(repo, "rev-parse", "HEAD").stdout.strip()
-    assert gitmod.resolve_anchor(repo, "q/dup-review.json") == new_anchor
-    assert gitmod.stagnation_commits(repo, new_anchor) == 0
-
-
-def test_git_seams_orphan_and_missing(tmp_path: Path) -> None:
-    repo = tmp_path / "r"
-    repo.mkdir()
-    _git(repo, "init")
-    (repo / "f.txt").write_text("x\n", encoding="utf-8")
-    _git(repo, "add", ".")
-    _git(repo, "commit", "-m", "init")
-    # A bogus/orphaned anchor is not an ancestor, and stagnation is unknowable.
-    assert gitmod.anchor_is_ancestor(repo, "0" * 40) is False
-    assert gitmod.stagnation_commits(repo, "0" * 40) is None
-    assert gitmod.anchor_is_ancestor(repo, None) is False
-    # A path never committed has no anchor.
-    assert gitmod.resolve_anchor(repo, "q/never.json") is None
-
-
 # --------------------------------------------------------------------------- #
 # SC6 — family_summary emits family_id AND propagates the slice-4 content
 # fingerprint (so the inventory --json the overlay seed consumes carries it).
@@ -385,10 +338,13 @@ def _run_gate(repo: Path, tmp_path: Path, *, code_ids: list[str], doc_sigs: list
               extra: list[str] | None = None) -> subprocess.CompletedProcess[str]:
     code_json = _code_inventory(tmp_path / "code.json", code_ids)
     doc_json = _doc_inventory(tmp_path / "doc.json", doc_sigs or [])
+    extra_args = list(extra or [])
+    if "--stagnation" not in extra_args:
+        extra_args.extend(("--stagnation", "0"))
     return run_script(
         str(CHECK_SCRIPT), "--repo-root", str(repo),
         "--code-inventory", str(code_json), "--doc-inventory", str(doc_json),
-        "--detail", *(extra or []), cwd=ROOT,
+        "--detail", *extra_args, cwd=ROOT,
     )
 
 
@@ -497,6 +453,7 @@ def test_cli_empty_real_scan_with_nonempty_baseline_degrades(tmp_path: Path) -> 
     result = run_script(
         str(CHECK_SCRIPT), "--repo-root", str(repo),
         "--doc-inventory", str(doc_json), "--detail", cwd=ROOT,
+        real_process=True,
     )
     assert result.returncode == 0, result.stdout + result.stderr
     verdict = _verdict(result)
@@ -1013,77 +970,3 @@ def test_inproc_legacy_v2_baseline_degrades_never_blocks(tmp_path: Path) -> None
     report = _run_inproc(repo, "--code-inventory", str(code_json), "--doc-inventory", str(doc_json))
     assert report["status"] == "degraded" and report["block"] is False
     assert any("gate baseline missing/unreadable" in r for r in report["degraded_reasons"])
-
-
-# --------------------------------------------------------------------------- #
-# Hard-block member evidence — a blocked new family names its member spans
-# --------------------------------------------------------------------------- #
-def _located_family(fingerprint: str, locations: list[dict]) -> dict:
-    return {"family_fingerprint": fingerprint, "family_member_hashes": [fingerprint], "locations": locations}
-
-
-def test_inproc_hard_block_names_member_paths_and_diff_status(tmp_path: Path) -> None:
-    # The block report must carry each new family's member file/span plus whether that
-    # member file is part of the current worktree diff, so a collateral clustering
-    # rotation among untouched files is recognizable from the gate output alone.
-    repo = _consumer_repo(tmp_path, baseline_ids=("known1",))
-    (repo / "untouched.py").write_text("a = 1\n", encoding="utf-8")
-    _git(repo, "init")
-    _git(repo, "add", ".")
-    _git(repo, "commit", "-m", "seed")
-    (repo / "touched.py").write_text("b = 2\n", encoding="utf-8")  # untracked -> in current diff
-    code_json = _write_json(tmp_path / "code.json", {
-        "status": "findings",
-        "families": [
-            _code_family("known1", ["known1"]),
-            _located_family("NEWFAM", [
-                {"file": "untouched.py", "start": 1, "end": 1},
-                {"file": "touched.py", "start": 1, "end": 1},
-            ]),
-        ],
-    })
-    doc_json = _doc_inventory(tmp_path / "doc.json", [])
-    report = _run_inproc(repo, "--code-inventory", str(code_json), "--doc-inventory", str(doc_json))
-    assert report["status"] == "hard-block"
-    assert report["new_code_family_members"] == {"NEWFAM": [
-        {"file": "untouched.py", "start": 1, "end": 1, "in_current_diff": False},
-        {"file": "touched.py", "start": 1, "end": 1, "in_current_diff": True},
-    ]}
-    member_lines = [m for m in report["messages"] if m.startswith("new family NEWFAM")]
-    assert member_lines == [
-        "new family NEWFAM: members untouched.py:1-1 (untouched), touched.py:1-1 (in current diff)"
-    ]
-
-
-def test_inproc_hard_block_member_evidence_without_git_is_unknown(tmp_path: Path) -> None:
-    # Outside a git worktree the diff status is unknown, never a guess; the member
-    # spans still render. A family with no injected locations says so explicitly
-    # instead of silently omitting the evidence.
-    repo = _consumer_repo(tmp_path, baseline_ids=("known1",))
-    code_json = _write_json(tmp_path / "code.json", {
-        "status": "findings",
-        "families": [
-            _code_family("known1", ["known1"]),
-            _located_family("LOCFAM", [{"file": "x.py", "start": 3, "end": 9}]),
-            _code_family("BAREFAM", ["BAREFAM"]),
-        ],
-    })
-    doc_json = _doc_inventory(tmp_path / "doc.json", [])
-    report = _run_inproc(repo, "--code-inventory", str(code_json), "--doc-inventory", str(doc_json))
-    assert report["status"] == "hard-block"
-    assert report["new_code_family_members"]["LOCFAM"][0]["in_current_diff"] is None
-    assert report["new_code_family_members"]["BAREFAM"] == []
-    assert any("x.py:3-9 (diff status unknown)" in m for m in report["messages"])
-    assert any(m == "new family BAREFAM: member spans unavailable from this scan" for m in report["messages"])
-
-
-def test_family_member_spans_drops_malformed_and_no_git_changed_paths_is_none(tmp_path: Path) -> None:
-    fam = {"locations": [
-        {"file": "a.py", "start": 1, "end": 2},
-        {"file": "", "start": 1, "end": 2},
-        {"file": "b.py", "start": True, "end": 2},
-        "not-a-dict",
-        {"file": "c.py", "start": 1},
-    ]}
-    assert scan.family_member_spans(fam) == [{"file": "a.py", "start": 1, "end": 2}]
-    assert gitmod.changed_worktree_paths(tmp_path) is None

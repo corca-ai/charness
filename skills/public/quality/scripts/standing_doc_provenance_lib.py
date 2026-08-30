@@ -26,7 +26,10 @@ if str(_HERE) not in sys.path:
     sys.path.insert(0, str(_HERE))
 
 import skill_text_quality_lib as tqlib  # noqa: E402
-from git_inventory_lib import visible_repo_files  # noqa: E402
+from git_inventory_lib import (  # noqa: E402
+    VisibleRepoFilesSnapshot,
+    visible_repo_files,
+)
 
 ISO_DATE_RE = re.compile(r"\b20\d{2}-\d{2}-\d{2}\b")
 _FENCE_RE = re.compile(r"^\s*(```|~~~)")
@@ -56,7 +59,13 @@ def _strip_path_tokens(text: str) -> str:
     return " ".join(token for token in text.split() if "/" not in token)
 
 
-def _resolve_paths(repo_root: Path, standing_docs: list[str], tracking_allowlist: list[str]) -> list[Path]:
+def _resolve_paths(
+    repo_root: Path,
+    standing_docs: list[str],
+    tracking_allowlist: list[str],
+    *,
+    snapshot: VisibleRepoFilesSnapshot | None = None,
+) -> list[Path]:
     """Expand `standing_docs` globs under repo_root, minus `tracking_allowlist`.
 
     Allowlist entries are matched both as globs and as posix-relative prefixes so
@@ -67,7 +76,12 @@ def _resolve_paths(repo_root: Path, standing_docs: list[str], tracking_allowlist
     # listing is unavailable (e.g. a non-git fixture) — in which case the raw glob
     # stands. This keeps the config-driven glob from becoming a blind repo-wide
     # scan (inventory-gitignore-scan-hygiene).
-    visible = visible_repo_files(repo_root, require_git=False, context="standing-doc provenance scan")
+    visible = visible_repo_files(
+        repo_root,
+        require_git=False,
+        context="standing-doc provenance scan",
+        snapshot=snapshot,
+    )
     allowed: set[Path] = set()
     for pattern in tracking_allowlist:
         for candidate in repo_root.glob(pattern):
@@ -133,7 +147,12 @@ def scan_standing_doc(repo_root: Path, path: Path, inline_allow_marker: str) -> 
     return findings
 
 
-def scan_standing_docs(repo_root: Path, config: dict[str, object]) -> dict[str, object]:
+def scan_standing_docs(
+    repo_root: Path,
+    config: dict[str, object],
+    *,
+    snapshot: VisibleRepoFilesSnapshot | None = None,
+) -> dict[str, object]:
     """Run the provenance-placement scan over the configured standing docs.
 
     `config` is the validated `standing_doc_provenance` adapter block. Returns
@@ -146,7 +165,9 @@ def scan_standing_docs(repo_root: Path, config: dict[str, object]) -> dict[str, 
     inline_allow_marker = str(config.get("inline_allow_marker") or "")
     if not standing_docs:
         return {"scanned": [], "findings": [], "inert": True}
-    paths = _resolve_paths(repo_root, standing_docs, tracking_allowlist)
+    paths = _resolve_paths(
+        repo_root, standing_docs, tracking_allowlist, snapshot=snapshot
+    )
     findings: list[dict[str, object]] = []
     scanned: list[str] = []
     for path in sorted(paths):

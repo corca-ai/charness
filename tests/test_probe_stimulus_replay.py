@@ -380,7 +380,16 @@ def test_a_construct_the_reader_refuses_outright_is_a_verdict_and_not_a_tracebac
     assert "refuses outright" in " ".join(result["reasons"])
 
 
-def test_a_resolver_that_never_answers_is_refused_rather_than_read_as_agreement():
+def test_a_resolver_entrypoint_delivery_smoke_still_runs_as_a_real_process(tmp_path):
+    resolver = ROOT / "skills/public/narrative/scripts/resolve_adapter.py"
+    delivered = replay._resolve_process(
+        ROOT, resolver, tmp_path, "narrative-adapter.yaml", NARRATIVE_LIVE
+    )
+    assert delivered["exit_code"] == 0
+    assert delivered["data"] is not None
+
+
+def test_a_resolver_that_never_answers_is_refused_rather_than_read_as_agreement(tmp_path):
     """Two silences must not compare equal and pass. The WHOLE arm's None was refused from
     the start; the ABLATED arm's None was not, and compared against a real payload it is
     unequal -- so a timed-out resolver read as `this declaration is live` and turned a
@@ -389,11 +398,17 @@ def test_a_resolver_that_never_answers_is_refused_rather_than_read_as_agreement(
     original = replay._RESOLVE_TIMEOUT_SECONDS
     try:
         replay._RESOLVE_TIMEOUT_SECONDS = 0.001
-        timed_out = _replay(_stimulus("narrative-adapter.yaml", NARRATIVE_LIVE))
+        timed_out = replay._resolve_process(
+            ROOT,
+            ROOT / "skills/public/narrative/scripts/resolve_adapter.py",
+            tmp_path,
+            "narrative-adapter.yaml",
+            NARRATIVE_LIVE,
+        )
     finally:
         replay._RESOLVE_TIMEOUT_SECONDS = original
-    assert timed_out["state"] == replay.STIMULUS_NOT_ESTABLISHED
-    assert "rendered no `data:` payload" in " ".join(timed_out["reasons"])
+    assert timed_out["data"] is None
+    assert timed_out["exit_code"] is None
 
 
 def test_an_unquoted_heredoc_delimiter_is_refused_because_the_shell_rewrites_the_body():

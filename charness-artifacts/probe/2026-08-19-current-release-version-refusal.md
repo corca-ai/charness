@@ -6,7 +6,8 @@ where it lives.
 Claim: `current_release.py` refuses when the adapter's version was not speakable, instead
   of resolving the package id and both release paths from charness defaults
 Claim kind: change
-Observable: the `package_id`, `packaging_manifest_path` and `checked_in_plugin_root` the
+Observable: the `package_id`, `packaging_manifest_path` and current
+  `materialized_plugin_root` equivalent the
   CLI prints, and its process exit code, under a repo that declared all three
 Source ref: scripts/adapter-consumer-classification.json
 Source revision: bda87440c
@@ -49,7 +50,7 @@ cat > $D/.agents/release-adapter.yaml <<'YAML'
 version: 9
 package_id: acme-harness
 packaging_manifest_path: vendor/mypkg/manifest.json
-checked_in_plugin_root: vendor/mypkg
+materialized_plugin_root: vendor/mypkg
 YAML
 echo '{"version": "7.7.7"}' > $D/vendor/mypkg/manifest.json
 echo '{"version": "7.7.7"}' > $D/vendor/mypkg/.claude-plugin/plugin.json
@@ -83,7 +84,7 @@ exit 1
 ## Polarity controls
 
 - speakable version (`version: 1`), same declarations → `package_id: acme-harness`,
-  `checked_in_plugin_root: .../vendor/mypkg`, exit 0. The guard does not fire on good
+  `materialized_plugin_root: .../vendor/mypkg`, exit 0. The guard does not fire on good
   input, and the surface now reports what the repo actually said.
 - no adapter file at all → a payload with an inferred `package_id`, exit 0. The opt-in
   design survives: declaring nothing is not the same as declaring something unreadable.

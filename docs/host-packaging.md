@@ -189,8 +189,8 @@ What it intentionally does not materialize yet:
 
 ## Release-Time Version Override
 
-The shared packaging manifest keeps the default version. That remains the
-checked-in source of truth.
+The shared packaging manifest keeps the default version and remains the source
+of truth.
 
 When a release workflow needs a stamped export without mutating
 [`packaging/charness.json`](../packaging/charness.json), the export entrypoint may override the emitted

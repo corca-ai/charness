@@ -88,6 +88,9 @@ def _du_bytes(path: Path, *args: str) -> int | None:
         return None
 
 
+_du_bytes_many = _SCAN.du_bytes_many
+
+
 def _iter_file_stats(path: Path):
     stack = [path]
     while stack:
@@ -105,6 +108,42 @@ def _dir_usage(path: Path) -> dict[str, int]:
         "bytes": apparent if apparent is not None else sum(item.st_size for item in _iter_file_stats(path)),
         "disk_bytes": disk if disk is not None else sum(item.st_blocks * 512 for item in _iter_file_stats(path)),
     }
+
+
+def _dir_usages(paths: list[Path]) -> dict[Path, dict[str, int]]:
+    """Measure a stable path set with two batched ``du`` queries and safe fallbacks."""
+    unique_paths = list(dict.fromkeys(paths))
+    apparent = _du_bytes_many(unique_paths, "-sb")
+    disk = _du_bytes_many(unique_paths, "-sB1")
+    return {
+        path: (
+            {"bytes": apparent[path], "disk_bytes": disk[path]}
+            if path in apparent and path in disk
+            else _dir_usage(path)
+        )
+        for path in unique_paths
+    }
+
+
+def _attach_usage_totals(
+    usage_paths: list[Path],
+    seed_totals: dict[str, dict[str, int]],
+    top_tests: list[dict[str, Any]],
+) -> dict[Path, dict[str, int]]:
+    root = usage_paths[0]
+    usages = {root: _dir_usage(root)}
+    usages.update(_dir_usages(usage_paths[1:]))
+    for prefix in PYTEST_SEED_PREFIXES:
+        for path in usage_paths:
+            if path.name.startswith(prefix):
+                usage = usages[path]
+                seed_totals[prefix]["bytes"] += usage["bytes"]
+                seed_totals[prefix]["disk_bytes"] += usage["disk_bytes"]
+    for item in top_tests:
+        usage = usages[root / item["path"]]
+        item["bytes"] = usage["bytes"]
+        item["disk_bytes"] = usage["disk_bytes"]
+    return usages
 
 # The `du`-backed quick scan, its retry policy, and its failure taxonomy live in
 # their own module. Re-exported under the historical private names so existing
@@ -124,6 +163,7 @@ def _pytest_temp_footprint() -> dict[str, Any]:
         prefix: {"count": 0, "bytes": 0, "disk_bytes": 0} for prefix in PYTEST_SEED_PREFIXES
     }
     top_tests: list[dict[str, Any]] = []
+    usage_paths = [root]
     worker_count = 0
     for session in sessions:
         workers = [path for path in _iter_child_dirs(session) if PYTEST_WORKER_RE.match(path.name)]
@@ -139,32 +179,32 @@ def _pytest_temp_footprint() -> dict[str, Any]:
                 continue
             for prefix in PYTEST_SEED_PREFIXES:
                 if path.name.startswith(prefix):
-                    usage = _dir_usage(path)
+                    usage_paths.append(path)
                     seed_totals[prefix]["count"] += 1
-                    seed_totals[prefix]["bytes"] += usage["bytes"]
-                    seed_totals[prefix]["disk_bytes"] += usage["disk_bytes"]
                     matched_seed_roots.append(path)
                     break
         for worker in workers:
             for path in _iter_child_dirs(worker):
                 if path.name.startswith("test_"):
-                    usage = _dir_usage(path)
+                    usage_paths.append(path)
                     top_tests.append(
                         {
                             "path": path.relative_to(root).as_posix(),
-                            "bytes": usage["bytes"],
-                            "disk_bytes": usage["disk_bytes"],
+                            "bytes": 0,
+                            "disk_bytes": 0,
                         }
                     )
+    usages = _attach_usage_totals(usage_paths, seed_totals, top_tests)
     top_tests.sort(key=lambda item: int(item["disk_bytes"]), reverse=True)
+    root_usage = usages[root]
     return {
         "status": "available",
         "root": str(root),
         "session_count": len(sessions),
         "session_names": [path.name for path in sessions],
         "worker_dir_count": worker_count,
-        "total_bytes": _dir_usage(root)["bytes"],
-        "total_disk_bytes": _dir_usage(root)["disk_bytes"],
+        "total_bytes": root_usage["bytes"],
+        "total_disk_bytes": root_usage["disk_bytes"],
         "seed_totals": seed_totals,
         "top_test_dirs": top_tests[:10],
     }

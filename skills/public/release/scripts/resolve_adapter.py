@@ -28,7 +28,7 @@ optional_bool = _scripts_adapter_lib_module.optional_bool
 
 STRING_FIELDS = (
     "repo", "language", "output_dir", "preset_id", "preset_version", "customized_from",
-    "package_id", "packaging_manifest_path", "checked_in_plugin_root", "sync_command",
+    "package_id", "packaging_manifest_path", "materialized_plugin_root", "sync_command",
     "quality_command", "post_publish_install_refresh", "post_publish_distinct_channel_probe",
     "post_publish_version_readback", "post_publish_doctor_readback", "requested_review_policy",
 )
@@ -180,7 +180,7 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "artifact_class": "history",
         "package_id": package_id,
         "packaging_manifest_path": f"packaging/{package_id}.json",
-        "checked_in_plugin_root": f"plugins/{package_id}",
+        "materialized_plugin_root": f"plugins/{package_id}",
         "sync_command": "python3 scripts/sync_root_plugin_manifests.py --repo-root .",
         "quality_command": "./scripts/run-quality.sh",
         "post_publish_install_refresh": "",

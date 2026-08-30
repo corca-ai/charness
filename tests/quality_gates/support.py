@@ -9,9 +9,18 @@ import subprocess
 import sys
 from pathlib import Path
 
-import pytest
 import yaml
 
+from tests.quality_gates import git_fixture_support as _git_fixture_support
+from tests.quality_gates.inprocess_script_support import (
+    run_allowlisted_script,
+)
+from tests.quality_gates.quality_runner_seed import (
+    quality_runner_seed as quality_runner_seed,
+)
+from tests.quality_gates.quality_runner_seed import (
+    seeded_quality_runner_repo as seeded_quality_runner_repo,
+)
 from tests.script_main import run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -27,7 +36,9 @@ ADAPTER_LIB_SPEC.loader.exec_module(ADAPTER_LIB)
 # The YAML emitter now lives beside the parser rather than inside it. Round-trip tests
 # need both halves, so both are loaded here instead of one re-exporting the other.
 ADAPTER_RENDER_LIB_PATH = ROOT / "scripts" / "adapter_yaml_render_lib.py"
-ADAPTER_RENDER_LIB_SPEC = importlib.util.spec_from_file_location("adapter_yaml_render_lib", ADAPTER_RENDER_LIB_PATH)
+ADAPTER_RENDER_LIB_SPEC = importlib.util.spec_from_file_location(
+    "adapter_yaml_render_lib", ADAPTER_RENDER_LIB_PATH
+)
 assert ADAPTER_RENDER_LIB_SPEC is not None and ADAPTER_RENDER_LIB_SPEC.loader is not None
 ADAPTER_RENDER_LIB = importlib.util.module_from_spec(ADAPTER_RENDER_LIB_SPEC)
 ADAPTER_RENDER_LIB_SPEC.loader.exec_module(ADAPTER_RENDER_LIB)
@@ -51,11 +62,57 @@ SETUP_RESOLVE_ADAPTER = _load_script_module(
     "tests.quality_gates.support_setup_resolve_adapter",
     ROOT / "skills/public/setup/scripts/resolve_adapter.py",
 )
+ISSUE_TOOL = _load_script_module(
+    "tests.quality_gates.support_issue_tool",
+    ROOT / "skills/public/issue/scripts/issue_tool.py",
+)
+ISSUE_TOOL_PATH = ROOT / "skills" / "public" / "issue" / "scripts" / "issue_tool.py"
 
+# Keep the historical support-module imports stable while the cohesive Git fixture
+# owner lives in its own module.
+GUARD_SCRIPT = _git_fixture_support.GUARD_SCRIPT
+MIRROR_RELATIVE = _git_fixture_support.MIRROR_RELATIVE
+_empty_git_seed = _git_fixture_support._empty_git_seed
+charness_shaped_repo = _git_fixture_support.charness_shaped_repo
+init_git_repo = _git_fixture_support.init_git_repo
+install_repo_root_script = _git_fixture_support.install_repo_root_script
 
 def run_script(
-    *args: str, cwd: Path | None = None, env: dict[str, str] | None = None
+    *args: str,
+    cwd: Path | None = None,
+    env: dict[str, str] | None = None,
+    real_process: bool = False,
 ) -> subprocess.CompletedProcess[str]:
+    script = Path(args[0]) if args else None
+    if not real_process and script is not None:
+        in_process = run_allowlisted_script(
+            script,
+            tuple(args[1:]),
+            cwd=cwd,
+            env=env,
+        )
+        if in_process is not None:
+            return in_process
+        try:
+            is_issue_tool = script.resolve() == ISSUE_TOOL_PATH
+        except OSError:
+            is_issue_tool = False
+        if is_issue_tool:
+            previous_cwd = Path.cwd()
+            try:
+                if cwd is not None:
+                    os.chdir(cwd)
+                result = run_loaded_script_main(
+                    script.name,
+                    ISSUE_TOOL,
+                    *args[1:],
+                    env=env,
+                )
+            finally:
+                os.chdir(previous_cwd)
+            return subprocess.CompletedProcess(
+                [sys.executable, *args], result.returncode, result.stdout, result.stderr
+            )
     return subprocess.run(
         [sys.executable, *args],
         cwd=cwd or ROOT,
@@ -74,7 +131,9 @@ def inspect_setup_repo(repo: Path, *, env: dict[str, str] | None = None) -> dict
     literal JSON -- including the compact-JSON fallback `render_yaml` uses when PyYAML
     is absent -- parses here unchanged.
     """
-    result = run_loaded_script_main("inspect_repo.py", SETUP_INSPECT_REPO, "--repo-root", str(repo), env=env)
+    result = run_loaded_script_main(
+        "inspect_repo.py", SETUP_INSPECT_REPO, "--repo-root", str(repo), env=env
+    )
     assert result.returncode == 0, result.stderr
     return yaml.safe_load(result.stdout)
 
@@ -104,7 +163,9 @@ def bundle_payload_or_report(result, label: str) -> dict:
             f"stdout={result.stdout[:400]!r}, stderr={result.stderr.strip()!r}"
         ) from exc
     if not isinstance(parsed, dict):
-        raise AssertionError(f"{label} payload was {type(parsed).__name__}, not an object: {parsed!r}")
+        raise AssertionError(
+            f"{label} payload was {type(parsed).__name__}, not an object: {parsed!r}"
+        )
     return parsed
 
 
@@ -152,7 +213,11 @@ def bundle_blocker_report(payload: dict, label: str) -> str:
             # Split ONLY the blocker that comma-joins its subject. Splitting every subject
             # mangles a POSIX-legal path containing a comma into two bogus lines, and this
             # helper's whole job is to survive an awkward payload rather than garble it.
-            parts = str(subject).split(",") if blocker.get("code") == "unmatched_surface_path" else [str(subject)]
+            parts = (
+                str(subject).split(",")
+                if blocker.get("code") == "unmatched_surface_path"
+                else [str(subject)]
+            )
             for part in parts:
                 lines.append(f"    subject: {part.strip()}")
     return "\n".join(lines)
@@ -183,7 +248,10 @@ def run_shell_script(
 ) -> subprocess.CompletedProcess[str]:
     run_env = env
     if script.name == "run-quality.sh" and cwd is not None:
-        run_env = {**(env or os.environ), "CHARNESS_QUALITY_RECEIPT_JSON": str(cwd / "receipt.json")}
+        run_env = {
+            **(env or os.environ),
+            "CHARNESS_QUALITY_RECEIPT_JSON": str(cwd / "receipt.json"),
+        }
     return subprocess.run(
         ["/bin/bash", str(script), *args],
         cwd=cwd or ROOT,
@@ -217,7 +285,9 @@ def assert_quality_receipt(
         adverse_subjects or []
     )
     if adverse_recoveries is not None:
-        assert [subject["recovery"] for subject in receipt["adverse_subjects"]] == adverse_recoveries
+        assert [
+            subject["recovery"] for subject in receipt["adverse_subjects"]
+        ] == adverse_recoveries
     assert receipt["unproven_subjects"] == (unproven_subjects or [])
 
 
@@ -231,11 +301,15 @@ def fake_gh_env(tmp_path: Path) -> dict[str, str]:
     tests that need `gh` present on PATH but not real."""
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir(exist_ok=True)
-    write_executable(bin_dir / "gh", '#!/usr/bin/env sh\nif [ "$1" = auth ]; then exit 0; fi\nexit 0\n')
+    write_executable(
+        bin_dir / "gh", '#!/usr/bin/env sh\nif [ "$1" = auth ]; then exit 0; fi\nexit 0\n'
+    )
     return {**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin"}
 
 
-def write_argv_logging_fake(bin_dir: Path, name: str, log_env: str, response_lines: list[str]) -> Path:
+def write_argv_logging_fake(
+    bin_dir: Path, name: str, log_env: str, response_lines: list[str]
+) -> Path:
     """Write a fake `gh`/`acme` binary that appends its argv (as a list) to the JSON
     file named by the `log_env` environment variable, then runs `response_lines`
     (which decide what to print per subcommand). Shares the log-append preamble so
@@ -293,18 +367,6 @@ def write_issue_adapter_with_backend(tmp_path: Path, *, backend_id: str, binary:
     )
 
 
-def init_git_repo(repo: Path, *tracked_paths: str) -> None:
-    subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True, text=True)
-    if tracked_paths:
-        subprocess.run(
-            ["git", "add", *tracked_paths],
-            cwd=repo,
-            check=True,
-            capture_output=True,
-            text=True,
-        )
-
-
 QUALITY_PYTHON_STUBS = (
     ("validate-skills", "validate_skills.py"),
     ("validate-quality-reference-catalog", "validate_quality_reference_catalog.py"),
@@ -334,7 +396,6 @@ QUALITY_PYTHON_STUBS = (
     ("check-inventory-declaration-coverage", "check_inventory_declaration_coverage.py"),
     ("check-timing-layer-completeness", "check_timing_layer_completeness.py"),
     ("check-runtime-budget-universe", "check_runtime_budget_universe.py"),
-
     ("validate-quality-closeout-contract", "validate_quality_closeout_contract.py"),
     ("validate-critique-artifacts", "validate_critique_artifacts.py"),
     ("validate-ideation-artifact", "validate_ideation_artifact.py"),
@@ -499,7 +560,7 @@ def seed_quality_python_binary_stub(target_dir: Path) -> None:
                 'if [[ "${1:-}" == "scripts/record_quality_runtime.py" ]]; then',
                 "  exit 0",
                 "fi",
-                f"exec {real_python!r} \"$@\"",
+                f'exec {real_python!r} "$@"',
                 "",
             ]
         ),
@@ -590,7 +651,9 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
     # missing-file error rather than on runner behavior -- the same "copied rather
     # than stubbed" rule as the Python modules below, for the same reason: a stub
     # would disable the export-copy refusal in every runner test.
-    shutil.copy2(ROOT / "scripts" / "exported-copy-guard.sh", scripts_dir / "exported-copy-guard.sh")
+    shutil.copy2(
+        ROOT / "scripts" / "exported-copy-guard.sh", scripts_dir / "exported-copy-guard.sh"
+    )
     # The runner shares the shell runtime/cache primitive with installed hooks.
     # Seed the real file so these tests exercise runner behavior instead of an
     # incomplete synthetic checkout.
@@ -634,6 +697,7 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
         # import rather than on behavior.
         "standing_pytest_basetemp.py",
         "standing_pytest_run_record.py",
+        "standing_pytest_environment.py",
     ):
         shutil.copy2(ROOT / "scripts" / real_name, scripts_dir / real_name)
         (scripts_dir / real_name).chmod(0o755)
@@ -667,12 +731,6 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
     # it would red every runner test with a message about the export copy.
     init_git_repo(repo)
     return repo, {"PATH": f"{bin_dir}:/usr/bin:/bin"}
-
-
-@pytest.fixture(scope="module")
-def seeded_quality_runner_repo(tmp_path_factory: pytest.TempPathFactory) -> Path:
-    seed_root = tmp_path_factory.mktemp("quality-runner-seed")
-    return make_quality_runner_repo(seed_root)[0]
 
 
 def clone_quality_runner_repo(tmp_path: Path, seeded_repo: Path) -> tuple[Path, dict[str, str]]:
@@ -753,7 +811,9 @@ def seed_runtime_budget_repo(
                         f"    samples: {probe['samples']}",
                     ]
                 )
-    (repo / ".agents" / "quality-adapter.yaml").write_text("\n".join(adapter_lines) + "\n", encoding="utf-8")
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "\n".join(adapter_lines) + "\n", encoding="utf-8"
+    )
     if signals is not None:
         (repo / ".charness" / "quality" / "runtime-signals.json").write_text(
             json.dumps(signals), encoding="utf-8"
@@ -763,70 +823,3 @@ def seed_runtime_budget_repo(
             json.dumps(smoothing), encoding="utf-8"
         )
     return repo
-
-
-MIRROR_RELATIVE = Path("plugins") / "charness"
-GUARD_SCRIPT = "exported-copy-guard.sh"
-
-
-def install_repo_root_script(repo: Path, script_name: str) -> tuple[Path, Path]:
-    """Place `script_name` at the repo root AND in the generated mirror, byte-identical.
-
-    `scripts/check_staged_mirror_drift.py` and `.githooks/pre-push` enforce that byte identity,
-    so the mirrored copy is never a different program: whatever the source copy does, right or
-    wrong, the mirror does too. Both copies are therefore under test here.
-    """
-
-    source = repo / "scripts" / script_name
-    mirror = repo / MIRROR_RELATIVE / "scripts" / script_name
-    source.parent.mkdir(parents=True, exist_ok=True)
-    mirror.parent.mkdir(parents=True, exist_ok=True)
-    if script_name in {"check-python-lint.sh", "run-quality.sh"}:
-        (repo / ".githooks").mkdir(exist_ok=True)
-        shutil.copy2(ROOT / ".githooks" / "runtime-env.sh", repo / ".githooks" / "runtime-env.sh")
-    # The guard travels with every gate that sources it, in BOTH copies. Shipping it to
-    # only one side would make these tests measure "the guard file is missing" instead of
-    # "the guard refused", which is a different green.
-    #
-    # Repo-owned Python HELPERS a gate shells out to are deliberately NOT installed
-    # here. Their dependency closure reaches back into `scripts/` as a package
-    # (`scripts.repo_file_listing` and onward), so installing them means reproducing
-    # the repo, which is the thing this fixture exists to avoid. A test whose subject
-    # is the gate's COMPOSITION stubs those helpers exactly as it stubs the external
-    # tool; a test whose subject is a helper's own output belongs in that helper's
-    # test file.
-    #
-    # Blind class: a gate run from this fixture without such a stub reaches a MISSING
-    # helper, and gates that treat a helper's non-zero exit as an advisory will report
-    # that absence as an advisory rather than as a failure. Callers asserting on
-    # advisory text must install a stub.
-    for name in (script_name, GUARD_SCRIPT):
-        shutil.copy2(ROOT / "scripts" / name, source.parent / name)
-        shutil.copy2(ROOT / "scripts" / name, mirror.parent / name)
-    return source, mirror
-
-
-def charness_shaped_repo(tmp_path: Path, script_name: str) -> tuple[Path, Path, Path]:
-    """A git repo shaped like this one: root-level docs, plus a `plugins/charness` mirror.
-
-    This is the canonical alternative to cloning the real checkout. A gate that measures a
-    repo-root population needs a repo SHAPE, not this repository's contents, and the two are
-    not interchangeable: a fixture that IS the checkout has no fixed input, so its verdict
-    moves with unrelated repo content. `test_python_and_security_gates.py` already lost an
-    assertion that way -- a wrapped inline code span in `docs/index.md` broke a test about
-    markdownlint's exit code, and the repair was to delete the assertion, because the
-    assertion had only ever encoded "every checked-in Markdown file happens to be clean".
-    """
-
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    (repo / "AGENTS.md").write_text("# Agents\n", encoding="utf-8")
-    (repo / "README.md").write_text("# Readme\n", encoding="utf-8")
-    (repo / "docs").mkdir()
-    (repo / "docs" / "nested.md").write_text("# Nested\n", encoding="utf-8")
-    (repo / MIRROR_RELATIVE / "docs").mkdir(parents=True)
-    (repo / MIRROR_RELATIVE / "docs" / "mirrored.md").write_text("# Mirrored\n", encoding="utf-8")
-    source, mirror = install_repo_root_script(repo, script_name)
-    subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True, text=True)
-    return repo, source, mirror

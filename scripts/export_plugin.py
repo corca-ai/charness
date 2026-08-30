@@ -15,7 +15,7 @@ REPO_ROOT = repo_root_from_script(__file__)
 _scripts_packaging_lib_module = import_repo_module(__file__, "scripts.packaging_lib")
 PackagingError = _scripts_packaging_lib_module.PackagingError
 build_codex_marketplace = _scripts_packaging_lib_module.build_codex_marketplace
-checked_in_plugin_root = _scripts_packaging_lib_module.checked_in_plugin_root
+materialized_plugin_root = _scripts_packaging_lib_module.materialized_plugin_root
 export_plugin_tree = _scripts_packaging_lib_module.export_plugin_tree
 load_manifest = _scripts_packaging_lib_module.load_manifest
 manifest_with_version_override = _scripts_packaging_lib_module.manifest_with_version_override
@@ -27,7 +27,7 @@ class ExportError(Exception):
 
 
 def export_plugin(repo_root: Path, output_root: Path, manifest: dict, host: str, with_marketplace: bool) -> Path:
-    plugin_root = output_root / checked_in_plugin_root(manifest)
+    plugin_root = output_root / materialized_plugin_root(manifest)
     if plugin_root.exists():
         shutil.rmtree(plugin_root)
     export_plugin_tree(repo_root, plugin_root, manifest)

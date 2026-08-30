@@ -133,3 +133,32 @@ def test_identity_resolves_the_adjacent_changed_path_owner(monkeypatch) -> None:
     assert Path(module._changed_path_owner.__file__).resolve() == (
         IDENTITY.with_name("surfaces_lib.py").resolve()
     )
+
+
+def test_a_consumer_module_cannot_substitute_the_path_selection_owner(monkeypatch) -> None:
+    fake = types.ModuleType("scripts.reviewed_input_path_selection")
+    fake.changed_path_owner = types.SimpleNamespace(__file__="/tmp/consumer/surfaces_lib.py")
+    fake.auto_paths = lambda *_args: ["consumer-owned"]
+    fake.lexical_path = Path
+    fake.checked_path = lambda root, path: root / path
+    fake.__file__ = "/tmp/consumer/scripts/reviewed_input_path_selection.py"
+    monkeypatch.setitem(sys.modules, "scripts.reviewed_input_path_selection", fake)
+
+    module = _load_identity_by_path()
+
+    assert Path(module._path_selection.__file__).resolve() == (
+        IDENTITY.with_name("reviewed_input_path_selection.py").resolve()
+    )
+
+
+def test_a_consumer_module_cannot_substitute_the_range_owner(monkeypatch) -> None:
+    fake = types.ModuleType("scripts.reviewed_input_range")
+    fake.__file__ = "/tmp/consumer/scripts/reviewed_input_range.py"
+    fake.range_endpoints = lambda *_args: (None, "consumer-owned")
+    monkeypatch.setitem(sys.modules, "scripts.reviewed_input_range", fake)
+
+    module = _load_identity_by_path()
+
+    assert Path(module._range.__file__).resolve() == (
+        IDENTITY.with_name("reviewed_input_range.py").resolve()
+    )

@@ -23,6 +23,7 @@ _SPEC = importlib.util.spec_from_file_location(
 assert _SPEC is not None and _SPEC.loader is not None
 _MODULE = importlib.util.module_from_spec(_SPEC)
 _SPEC.loader.exec_module(_MODULE)
+VisibleRepoFilesSnapshot = sys.modules["git_inventory_lib"].VisibleRepoFilesSnapshot
 
 
 class _Result(NamedTuple):
@@ -31,14 +32,23 @@ class _Result(NamedTuple):
     stderr: str
 
 
-def _run(*args: str) -> _Result:
+def _run(*args: str, real_inventory: bool = False) -> _Result:
     out, err = io.StringIO(), io.StringIO()
     saved_argv = sys.argv
     sys.argv = ["inventory_public_spec_quality.py", *args]
+    original_inventory = _MODULE.inventory
+    if not real_inventory:
+        # These fixtures are intentionally uncommitted. Inject the same fallback
+        # view a non-git checkout would use, keeping the matrix pure; one explicit
+        # test below retains the real CLI inventory boundary.
+        _MODULE.inventory = lambda repo: original_inventory(
+            repo, snapshot=VisibleRepoFilesSnapshot(None)
+        )
     try:
         with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
             code = _MODULE.main()
     finally:
+        _MODULE.inventory = original_inventory
         sys.argv = saved_argv
     return _Result(returncode=code, stdout=out.getvalue(), stderr=err.getvalue())
 
@@ -89,6 +99,7 @@ def test_inventory_public_spec_quality_flags_reader_facing_drift(tmp_path: Path)
         "--repo-root",
         str(repo),
         "--detail",
+        real_inventory=True,
     )
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)

@@ -41,7 +41,7 @@ _ADAPTER_BASE = "\n".join(
         "output_dir: charness-artifacts/release",
         "package_id: demo",
         "packaging_manifest_path: packaging/demo.json",
-        "checked_in_plugin_root: plugins/demo",
+        "materialized_plugin_root: plugins/demo",
         'sync_command: "true"',
         'quality_command: "true"',
         "",

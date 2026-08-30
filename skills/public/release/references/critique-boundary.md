@@ -41,14 +41,15 @@ publish with the review unproven rather than substituting a same-agent reread.
 
 ### Claims Record Shape
 
-The claims round's record is a `charness.release.claims-review.v3` JSON file
+The claims round's record is a `charness.release.claims-review.v4` JSON file
 
 under `charness-artifacts/release-review/`, committed as the direct child of the
 marked prepared release commit, together with the review narrative it names and
 nothing else.
 
 A `pass` must additionally declare `review_scope` (`blocking_paths` /
-`advisory_paths`) and `advisory_findings`. The split exists because a claims
+`advisory_paths`), `scope_basis` (the previous tag plus the exact changed-path
+digest/count), and `advisory_findings`. The split exists because a claims
 round that reviews the session narrative shipping inside its own bundle cannot
 converge: repairing a narrative finding changes the bundle, which changes the
 record and the counts, which needs new prose nothing has reviewed. Two releases
@@ -99,16 +100,17 @@ declares no `output_dir` at all, or whose release record is not readable at the
 derived path — including one whose release output directory is untracked — is
 refused rather than published through a lane that validates no claims review.
 
-**Every checked-in example under `charness-artifacts/release-review/` predates
-`v3`.** Copying one as a template produces a record the floor refuses AFTER the
-prepared commit exists, where the only repair is an in-place amend. Add
-`review_scope` and `advisory_findings` before committing the evidence child.
+Do not copy a historical record as a template. After the reviewer writes a new
+narrative, run the planner-emitted `scaffold_claims_review.py` command. It reads
+the exact prepared commit and derives record identity, target/tag, both complete
+scope lists, and `scope_basis`; reviewer identity, distinctness, findings, and
+the narrative remain explicit human/agent judgment inputs.
 
-An already-committed pre-`v3` record is repaired by AMENDING that commit in place; a
+An already-committed pre-`v4` record is repaired by AMENDING that commit in place; a
 follow-on commit is not the direct child of the prepared record and is refused,
 and an already-pushed record needs a force-push to the release branch.
 
-Every pre-`v3` shape is refused by name -- `v1` and `v2` alike. Its only distinctness test was that
+Every pre-`v4` shape is refused by name. The early shapes' only distinctness test was that
 `preparer_context` and `reviewer_context` were unequal strings, so one agent
 writing two different strings satisfied the distinct-observer floor completely,
 and a spawn-blocked session had `verdict: pass` as its only path forward.

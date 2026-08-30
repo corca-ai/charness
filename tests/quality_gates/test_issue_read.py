@@ -53,6 +53,7 @@ def test_issue_read_fails_when_backend_omits_comments(tmp_path: Path) -> None:
         "--repo-root",
         str(tmp_path),
         env=environment_with_path(bin_dir, path_tail="/usr/bin:/bin"),
+        real_process=True,
     )
 
     assert result.returncode == 2

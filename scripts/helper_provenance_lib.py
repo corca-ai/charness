@@ -15,7 +15,7 @@ the only remediation that terminates. When it does not, the refusal says so and
 tells the operator to stop and decide rather than resync-and-retry, because the
 resync can be what removes the entry point.
 
-"A different tree" includes a tree CONTAINED in the target: the checked-in
+"A different tree" includes a tree CONTAINED in the target: the materialized
 ``plugins/<pkg>`` export is a full second charness tree that this repo declares as
 an install source, and it is stale during every ``mutate -> sync`` window.
 
@@ -194,8 +194,8 @@ _EXPORT_PARENT = "plugins"
 _RESYNC_CURE = "  python3 scripts/sync_root_plugin_manifests.py --repo-root ."
 
 
-def _is_checked_in_export(verdict: dict) -> bool:
-    """True only for the target repo's OWN checked-in `plugins/<pkg>` export.
+def _is_materialized_export(verdict: dict) -> bool:
+    """True only for the target repo's OWN materialized `plugins/<pkg>` export.
 
     Containment alone is the wrong test: a git worktree created inside the repo is
     also contained, and telling its operator to run the plugin resync would mutate
@@ -290,7 +290,7 @@ def inspect_helper_provenance(
         }
     if own_root == target_root:
         return {**verdict, "status": "same-tree"}
-    # A copy merely CONTAINED in the target root is not the same tree. The checked-in
+    # A copy merely CONTAINED in the target root is not the same tree. The materialized
     # `plugins/<pkg>` mirror is a full second charness tree that this repo's own
     # packaging manifest declares as an install source, so exempting it made the one
     # copy that is stale during every `mutate -> sync` window structurally unchecked.
@@ -491,8 +491,8 @@ def format_refusal(verdict: dict) -> str:
     lines.append(
         "Writing through this copy can emit an artifact schema the target repo's own gates reject,"
     )
-    if _is_checked_in_export(verdict):
-        # The newly-compared population: this repo's own checked-in export. Its drift
+    if _is_materialized_export(verdict):
+        # The newly-compared population: this repo's own materialized export. Its drift
         # has a one-command cure, and it is the branch where the generic
         # "do not resync" advice below would be exactly backwards.
         lines.append("and re-running the same copy overwrites any fix. Resync the contained copy:")

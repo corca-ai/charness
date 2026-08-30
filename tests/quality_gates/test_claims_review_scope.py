@@ -25,8 +25,10 @@ from .support import ROOT
 _RELEASE = ROOT / "skills" / "public" / "release" / "scripts"
 sys.path.insert(0, str(_RELEASE))
 
+from claims_review_schema import SCHEMA_VERSION  # noqa: E402
 from claims_review_scope import (  # noqa: E402
     assert_scope_is_declared,
+    changed_paths_sha256,
     classify,
 )
 
@@ -157,7 +159,7 @@ def test_advisory_findings_survive_into_the_validator_result() -> None:
     narrative = "charness-artifacts/release-review/2026-08-22-v9.9.9-prepared-claims-review.md"
     review_json = "charness-artifacts/release-review/2026-08-22-v9.9.9-prepared-claims-review.json"
     record = {
-        "schema_version": module.SCHEMA_VERSION,
+        "schema_version": SCHEMA_VERSION,
         "prepared_commit": prepared["commit"],
         "release_record_path": prepared["path"],
         "release_record_sha256": prepared["sha256"],
@@ -166,13 +168,19 @@ def test_advisory_findings_survive_into_the_validator_result() -> None:
         "verdict": "pass",
         "preparer_context": "parent",
         "reviewer_context": "bounded-reviewer",
-        "review_artifact": narrative,
         "observer_distinctness": {
             "kind": "separate-agent-context",
             "signal": "bounded-reviewer spawn, read-only envelope",
             "review_artifact": narrative,
         },
         "review_scope": {"blocking_paths": ["scripts/a.py"], "advisory_paths": ["charness-artifacts/retro/2026-08-22-r.md"]},
+        "scope_basis": {
+            "base_ref": "v9.9.8",
+            "changed_paths_sha256": changed_paths_sha256(
+                ["scripts/a.py", "charness-artifacts/retro/2026-08-22-r.md"]
+            ),
+            "changed_path_count": 2,
+        },
         "advisory_findings": [{"file": "charness-artifacts/retro/2026-08-22-r.md", "summary": "count drifted"}],
     }
 
@@ -180,6 +188,13 @@ def test_advisory_findings_survive_into_the_validator_result() -> None:
         joined = " ".join(args)
         if "--format=%P" in joined:
             return SimpleNamespace(returncode=0, stdout=prepared["commit"])
+        if "describe" in joined:
+            return SimpleNamespace(returncode=0, stdout="v9.9.8\n")
+        if "diff-tree" in joined and "v9.9.8" in joined:
+            return SimpleNamespace(
+                returncode=0,
+                stdout="scripts/a.py\ncharness-artifacts/retro/2026-08-22-r.md\n",
+            )
         if "diff-tree" in joined and "--name-status" in joined:
             return SimpleNamespace(returncode=0, stdout=f"A\t{narrative}\n")
         if "diff-tree" in joined:
@@ -233,7 +248,7 @@ def _fake_git(prepared, review_json, narrative, record, *, delta=None, base="v9.
 
 def _scoped_record(prepared, narrative, *, blocking, advisory, findings=None):
     return {
-        "schema_version": "charness.release.claims-review.v3",
+        "schema_version": "charness.release.claims-review.v4",
         "prepared_commit": prepared["commit"],
         "release_record_path": prepared["path"],
         "release_record_sha256": prepared["sha256"],
@@ -242,7 +257,6 @@ def _scoped_record(prepared, narrative, *, blocking, advisory, findings=None):
         "verdict": "pass",
         "preparer_context": "parent",
         "reviewer_context": "bounded-reviewer",
-        "review_artifact": narrative,
         "observer_distinctness": {
             "kind": "separate-agent-context",
             "signal": "bounded-reviewer spawn, read-only envelope",
@@ -258,6 +272,14 @@ def _invoke(record, delta):
     prepared = {"commit": "P" * 40, "path": "charness-artifacts/release/latest.md", "sha256": "s" * 64}
     narrative = "charness-artifacts/release-review/2026-08-22-v9.9.9-prepared-claims-review.md"
     review_json = narrative.replace(".md", ".json")
+    record.setdefault(
+        "scope_basis",
+        {
+            "base_ref": "v9.9.8",
+            "changed_paths_sha256": changed_paths_sha256(delta),
+            "changed_path_count": len(set(delta)),
+        },
+    )
     return module.validate_claims_review(
         ROOT, prepared=prepared, evidence_commit="R" * 40, artifact_path=review_json,
         target_version="9.9.9", tag_name="v9.9.9",
@@ -302,7 +324,7 @@ def test_a_scope_that_omits_a_changed_path_is_refused() -> None:
     narrative = "charness-artifacts/release-review/2026-08-22-v9.9.9-prepared-claims-review.md"
     record = _scoped_record(prepared, narrative, blocking=["scripts/a.py"], advisory=[])
 
-    with pytest.raises(SystemExit, match="omits 1 BLOCKING changed"):
+    with pytest.raises(SystemExit, match="omits 1 changed"):
         _invoke(record, ["scripts/a.py", "scripts/quietly_broken.py"])
 
 
@@ -328,6 +350,18 @@ def test_a_faithful_scope_passes_end_to_end() -> None:
 
     assert result["verdict"] == "pass"
     assert result["advisory_findings"] == [{"file": retro, "summary": "blocker tally drifted"}]
+
+
+def test_v4_refuses_a_retired_state_field_instead_of_silently_carrying_it() -> None:
+    """State contraction is closed-world. A producer, transport, or renderer cannot
+    keep an obsolete optional state alive by attaching an ignored dictionary key."""
+    prepared = {"commit": "P" * 40, "path": "charness-artifacts/release/latest.md", "sha256": "s" * 64}
+    narrative = "charness-artifacts/release-review/2026-08-22-v9.9.9-prepared-claims-review.md"
+    record = _scoped_record(prepared, narrative, blocking=["scripts/a.py"], advisory=[])
+    record["scope_completeness"] = {"verified": False, "reason": "retired stand-down"}
+
+    with pytest.raises(SystemExit, match=r"unknown=\['scope_completeness'\]"):
+        _invoke(record, ["scripts/a.py"])
 
 
 def test_machine_read_state_under_an_advisory_root_still_blocks() -> None:
@@ -480,24 +514,22 @@ def test_only_a_DATED_stem_is_narrative() -> None:
     assert classify("charness-artifacts/retro/some-new-pointer.md") == "blocking"
 
 
-def test_the_stand_down_is_recorded_durably_not_only_on_stderr() -> None:
-    """A previous round found the SHA rung standing down invisibly: the record
-    rendered identically whether the check ran, and a passing phase's log is
-    deleted at exit. `unproven` is written into the record for exactly this
-    reason."""
+def test_an_unestablished_scope_base_refuses_a_pass() -> None:
+    """A pass is a completeness claim; a missing history base belongs in the
+    explicit `unproven` verdict rather than a passing record with a warning."""
     from claims_review_scope import assert_scope_matches_release_delta
 
     data = {"review_scope": {"blocking_paths": ["scripts/a.py"], "advisory_paths": []}}
 
     def no_tags(args, cwd=None, check=True):
+        if "--is-shallow-repository" in args:
+            return SimpleNamespace(returncode=0, stdout="false\n")
         return SimpleNamespace(returncode=1, stdout="")
 
-    assert_scope_matches_release_delta(
-        ROOT, data, prepared={"commit": "P" * 40}, run=no_tags,
-    )
-
-    assert data["scope_completeness"]["verified"] is False
-    assert data["scope_completeness"]["reason"]
+    with pytest.raises(SystemExit, match="requires a previous release tag"):
+        assert_scope_matches_release_delta(
+            ROOT, data, prepared={"commit": "P" * 40}, run=no_tags,
+        )
 
 
 def test_the_release_base_is_matched_to_release_tags_only() -> None:
@@ -510,12 +542,15 @@ def test_the_release_base_is_matched_to_release_tags_only() -> None:
 
     def record_args(args, cwd=None, check=True):
         seen.append(args)
+        if "--is-shallow-repository" in args:
+            return SimpleNamespace(returncode=0, stdout="false\n")
         return SimpleNamespace(returncode=1, stdout="")
 
-    assert_scope_matches_release_delta(
-        ROOT, {"review_scope": {"blocking_paths": [], "advisory_paths": []}},
-        prepared={"commit": "P" * 40}, run=record_args,
-    )
+    with pytest.raises(SystemExit, match="previous release tag"):
+        assert_scope_matches_release_delta(
+            ROOT, {"review_scope": {"blocking_paths": [], "advisory_paths": []}},
+            prepared={"commit": "P" * 40}, run=record_args,
+        )
 
     describe = next(a for a in seen if "describe" in " ".join(a))
     assert "--match" in describe, f"release-tag glob missing from {describe}"
@@ -530,14 +565,25 @@ def test_a_known_previous_version_is_preferred_over_reachability() -> None:
     def run(args, cwd=None, check=True):
         joined = " ".join(args)
         calls.append(joined)
+        if "--is-shallow-repository" in joined:
+            return SimpleNamespace(returncode=0, stdout="false\n")
         if "rev-parse" in joined:
             return SimpleNamespace(returncode=0, stdout="abc123\n")
+        if "merge-base" in joined:
+            return SimpleNamespace(returncode=0, stdout="")
         if "diff-tree" in joined:
             return SimpleNamespace(returncode=0, stdout="scripts/a.py\n")
         return SimpleNamespace(returncode=1, stdout="")
 
     assert_scope_matches_release_delta(
-        ROOT, {"review_scope": {"blocking_paths": ["scripts/a.py"], "advisory_paths": []}},
+        ROOT, {
+            "review_scope": {"blocking_paths": ["scripts/a.py"], "advisory_paths": []},
+            "scope_basis": {
+                "base_ref": "refs/tags/v6.2.2",
+                "changed_paths_sha256": changed_paths_sha256(["scripts/a.py"]),
+                "changed_path_count": 1,
+            },
+        },
         prepared={"commit": "P" * 40}, run=run, previous_version="6.2.2",
     )
 

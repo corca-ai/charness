@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import sys
 from pathlib import Path
 from types import ModuleType
 
@@ -18,10 +19,11 @@ def _load_checker() -> ModuleType:
 
 
 CHECKER = _load_checker()
+VisibleRepoFilesSnapshot = sys.modules["git_inventory_lib"].VisibleRepoFilesSnapshot
 
 
 def _run(repo: Path) -> dict[str, object]:
-    return CHECKER.run(repo.resolve())
+    return CHECKER.run(repo.resolve(), snapshot=VisibleRepoFilesSnapshot(None))
 
 
 def _returncode(payload: dict[str, object]) -> int:

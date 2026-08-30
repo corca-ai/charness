@@ -111,7 +111,7 @@ This slice does not add:
   `export GH_TOKEN="${GH_TOKEN_ACME_DEV}"` without printing the secret value.
 - verify that the resolved provider (a known integration tool or support
   capability) can consume that env export path.
-- run repo validators and standing tests after syncing the checked-in plugin
+- run repo validators and standing tests after syncing the materialized plugin
   export surface.
 
 ## Canonical Artifact

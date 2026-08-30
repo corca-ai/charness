@@ -94,16 +94,6 @@ def _scope_lines(claims_review: dict[str, Any]) -> list[str]:
         f"- Verdict scope: {len(blocking)} blocking path(s) gated this tag; "
         f"{len(advisory)} advisory path(s) (session narrative) were reviewed but did not.",
     ]
-    completeness = claims_review.get("scope_completeness")
-    if isinstance(completeness, dict) and not completeness.get("verified", True):
-        # In the RECORD, not only on stderr. A verdict whose scope was never
-        # checked for completeness must not render identically to one that was.
-        lines.append(
-            "- Verdict scope completeness: NOT VERIFIED -- "
-            f"{flatten_signal(completeness.get('reason') or 'no reason recorded')}. "
-            "The declared scope was classification-checked but not compared against the "
-            "release delta, so it may omit changed paths."
-        )
     if not findings:
         # Stated, not omitted. An absent line and "none found" read identically,
         # and the split is only honest if "nobody looked" is distinguishable.

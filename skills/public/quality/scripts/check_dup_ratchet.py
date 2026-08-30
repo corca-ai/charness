@@ -98,15 +98,6 @@ BOUNDARY_CONTRACT_ID = "duplicate_lineage"
 DEFAULT_BASELINE_DELTA_THRESHOLD = 50
 
 
-def _resolve_stagnation(repo_root: Path, review_rel: str, args) -> tuple[int | None, str | None, bool]:
-    if args.stagnation is not None:
-        return args.stagnation, "<injected>", True
-    anchor = _ratchet_git.resolve_anchor(repo_root, review_rel)
-    is_ancestor = _ratchet_git.anchor_is_ancestor(repo_root, anchor)
-    stagnation = _ratchet_git.stagnation_commits(repo_root, anchor) if is_ancestor else None
-    return stagnation, anchor, is_ancestor
-
-
 def _evaluate_config(repo_root: Path, config: dict, args) -> dict:  # noqa: C901
     floor_F = int(config.get("floor_F", 0))
     # The validated adapter always supplies these; the fallbacks match the policy
@@ -189,7 +180,13 @@ def _evaluate_config(repo_root: Path, config: dict, args) -> dict:  # noqa: C901
     candidate_new = code_ids - (baseline_ids or set()) - intentional_code
     reductions = _ratchet.classify_reductions(live_members, baseline_members or {}, candidate_new)
     code_ids_for_evaluate = code_ids - {r["new_fingerprint"] for r in reductions}
-    stagnation, anchor, is_ancestor = _resolve_stagnation(repo_root, review_rel, args)
+    # One operation-scoped Git snapshot feeds the stagnation, scope-population,
+    # and changed-member evidence arms. The old wiring independently asked for
+    # anchor/ancestry/distance, ls-files, diff, and untracked paths even though
+    # those facts all describe this same check.
+    git_snapshot, stagnation, anchor, is_ancestor = _ratchet_git.gate_snapshot(
+        repo_root, review_rel, args.stagnation
+    )
     verdict = _ratchet.evaluate(
         code_family_ids=code_ids_for_evaluate, gate_baseline_ids=baseline_ids or set(),
         doc_drift_signatures=doc_signatures, intentional_code_ids=intentional_code,
@@ -203,7 +200,7 @@ def _evaluate_config(repo_root: Path, config: dict, args) -> dict:  # noqa: C901
     # uncovered-file count into did_not_judge -- additive only, never read by
     # ok/block/status above.
     verdict["scope_paths"] = scope_paths
-    tracked = _ratchet_git.tracked_files(repo_root)
+    tracked = git_snapshot.tracked_paths
     coverage = _scope.scope_coverage(tracked, scope_paths)
     verdict["scope_coverage"] = coverage
     scope_entries, scope_messages = _scope_did_not_judge(
@@ -340,11 +337,16 @@ def _evaluate_config(repo_root: Path, config: dict, args) -> dict:  # noqa: C901
             f"ADVISORY (lineage): {proposal['new_fingerprint']} is a "
             f"{proposal['relation']}{suffix}; explicit review/rebind required"
         )
-    _attach_new_family_member_evidence(repo_root, verdict, live_spans)
+    _attach_new_family_member_evidence(repo_root, verdict, live_spans, git_snapshot)
     return verdict
 
 
-def _attach_new_family_member_evidence(repo_root: Path, verdict: dict, live_spans: dict) -> None:
+def _attach_new_family_member_evidence(
+    repo_root: Path,
+    verdict: dict,
+    live_spans: dict,
+    git_snapshot,
+) -> None:
     """A hard block used to name only the opaque gate fingerprint, so every consumer
     had to rebuild the gate's own scan to find the members behind it. Attach the
     member evidence the scan already had — file, span, and whether each member file
@@ -355,7 +357,7 @@ def _attach_new_family_member_evidence(repo_root: Path, verdict: dict, live_span
     new_code = verdict.get("new_code_families") or []
     if not verdict.get("hard_block") or not new_code:
         return
-    changed = _ratchet_git.changed_worktree_paths(repo_root)
+    changed = git_snapshot.load_changed_paths(repo_root)
     evidence: dict[str, list[dict]] = {}
     for fingerprint in new_code:
         evidence[fingerprint] = [

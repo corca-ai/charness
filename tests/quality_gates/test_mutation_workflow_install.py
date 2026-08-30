@@ -12,7 +12,7 @@ one: the plugin copy lives under `skills/quality/scripts/`, so a template path
 written relative to the repo root resolved to a nonexistent file there and the
 install crashed *after* it had already appended the adapter scaffold. Every test
 passed while the only real delivery path was broken. These cases drive the
-checked-in plugin copy itself.
+materialized plugin export itself.
 """
 from __future__ import annotations
 

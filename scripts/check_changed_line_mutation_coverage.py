@@ -89,12 +89,13 @@ from scripts.changed_line_verdict_codes import (  # noqa: E402
 )
 from scripts.mutation_changed_files_lib import (  # noqa: E402
     changed_line_coverage_marker_path,
-    changed_line_numbers,
-    changed_line_scope_gap_targets,
     changed_pool_fingerprint,
-    classify_changed_line_scope_gap,
     read_changed_line_coverage_marker,
     write_coverage_fingerprint_marker,
+)
+from scripts.mutation_changed_line_verdict import (  # noqa: E402
+    blocking_details,
+    changed_line_scope_verdict,
 )
 from scripts.mutation_sampling_lib import (  # noqa: E402
     coverage_is_context_bearing,
@@ -376,27 +377,8 @@ def _blocking_report(repo_root, args, base_sha, head_sha, changed_before_coverag
         "statement_lines": statement_lines,
         "coverage_enabled": True,
     }
-    blocking = classify_changed_line_scope_gap(**scope)
-    blocking_targets = changed_line_scope_gap_targets(**scope)
-
-    blocking_detail: dict[str, object] = {}
-    for path in blocking:
-        changed = changed_line_numbers(repo_root, base_sha, head_sha, path)
-        if path not in statement_lines:
-            # "subprocess-only" was the pre-#465 wording and asserted a cause the
-            # 2026-07-30 measurement narrowed: a spawn that inherits the environment
-            # and runs the script at its real in-repo path IS attributed, so being
-            # subprocess-tested is not by itself why a file is untracked. Name the
-            # two honest possibilities and point at the payload that examines one.
-            blocking_detail[path] = (
-                "file not tracked by the test suite (untested, or exercised only where coverage "
-                "was never attributed -- see subprocess_coverage_advisory, and its _scope "
-                "sibling, which says what was examined when the advisory itself is empty) "
-                "-> covers as 0%"
-            )
-        else:
-            _executed, missing = statement_lines[path]
-            blocking_detail[path] = {"changed_and_missing": sorted(changed & missing)}
+    blocking, blocking_targets, changed_lines = changed_line_scope_verdict(scope)
+    blocking_detail = blocking_details(blocking, statement_lines, changed_lines)
 
     return {
         "ok": not blocking,

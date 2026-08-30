@@ -28,15 +28,15 @@ def validate_exported_public_skills(
 ) -> None:
     source_public_dir = root / validate_relative_path(source.get("public_skills_dir"), "source.public_skills_dir")
     exported_skills_dir = plugin_root / "skills"
-    require_dir(exported_skills_dir, "checked_in_plugin.skills")
+    require_dir(exported_skills_dir, "materialized_plugin_export.skills")
     if (exported_skills_dir / "public").exists() or (exported_skills_dir / "support").exists():
-        raise RuntimeError("checked-in plugin skills must be flat public skill directories, not `skills/public` or `skills/support`")
+        raise RuntimeError("materialized plugin export skills must be flat public skill directories, not `skills/public` or `skills/support`")
     expected = iter_skill_ids(source_public_dir)
     actual = iter_skill_ids(exported_skills_dir)
     if actual != expected:
-        raise RuntimeError("checked-in plugin public skills do not match source public skills")
+        raise RuntimeError("materialized plugin export public skills do not match source public skills")
     for skill_id in expected:
-        require_file(exported_skills_dir / skill_id / "SKILL.md", f"checked_in_plugin.skills.{skill_id}")
+        require_file(exported_skills_dir / skill_id / "SKILL.md", f"materialized_plugin_export.skills.{skill_id}")
 
 
 def validate_exported_support_assets(
@@ -49,24 +49,24 @@ def validate_exported_support_assets(
 ) -> None:
     source_support_dir = root / validate_relative_path(source.get("support_skills_dir"), "source.support_skills_dir")
     exported_support_dir = plugin_root / "support"
-    require_dir(exported_support_dir, "checked_in_plugin.support")
+    require_dir(exported_support_dir, "materialized_plugin_export.support")
     if (exported_support_dir / "generated").exists():
-        raise RuntimeError("checked-in plugin support assets must exclude machine-generated support artifacts")
+        raise RuntimeError("materialized plugin export support assets must exclude machine-generated support artifacts")
     expected = iter_skill_ids(source_support_dir, exclude=("generated",))
     actual = iter_skill_ids(exported_support_dir)
     if actual != expected:
-        raise RuntimeError("checked-in plugin support assets do not match source support assets")
+        raise RuntimeError("materialized plugin export support assets do not match source support assets")
     for entry in expected:
         capability_path = exported_support_dir / entry / "capability.json"
         if capability_path.exists():
             capability_data = json.loads(capability_path.read_text(encoding="utf-8"))
             if capability_data.get("support_skill_path") != f"support/{entry}/SKILL.md":
                 raise RuntimeError(
-                    f"checked-in plugin support capability `{entry}` has an unexpected support_skill_path"
+                    f"materialized plugin export support capability `{entry}` has an unexpected support_skill_path"
                 )
 
 
-def validate_checked_in_plugin_tree(
+def validate_materialized_plugin_export(
     root: Path,
     data: dict[str, object],
     *,
@@ -76,10 +76,10 @@ def validate_checked_in_plugin_tree(
     validate_relative_path: Callable[[object, str], str],
 ) -> None:
     plugin_root = root / "plugins" / data["package_id"]
-    require_dir(plugin_root, "checked_in_plugin.root")
-    require_file(plugin_root / "README.md", "checked_in_plugin.readme")
-    require_json_matches(plugin_root / data["claude"]["manifest_path"], data["claude"]["manifest"], "checked_in_plugin.claude.manifest_path")
-    require_json_matches(plugin_root / data["codex"]["manifest_path"], data["codex"]["manifest"], "checked_in_plugin.codex.manifest_path")
+    require_dir(plugin_root, "materialized_plugin_export.root")
+    require_file(plugin_root / "README.md", "materialized_plugin_export.readme")
+    require_json_matches(plugin_root / data["claude"]["manifest_path"], data["claude"]["manifest"], "materialized_plugin_export.claude.manifest_path")
+    require_json_matches(plugin_root / data["codex"]["manifest_path"], data["codex"]["manifest"], "materialized_plugin_export.codex.manifest_path")
     source = data["source"]
     if not isinstance(source, dict):
         raise RuntimeError("`source` must be an object")
@@ -99,56 +99,49 @@ def validate_checked_in_plugin_tree(
         validate_relative_path=validate_relative_path,
     )
     if (root / "skills" / "shared").is_dir():
-        require_dir(plugin_root / "shared", "checked_in_plugin.shared")
+        require_dir(plugin_root / "shared", "materialized_plugin_export.shared")
     for field in ("profiles_dir", "presets_dir", "integrations_dir"):
         rel_path = validate_relative_path(source.get(field), f"source.{field}")
-        require_dir(plugin_root / rel_path, f"checked_in_plugin.{field}")
+        require_dir(plugin_root / rel_path, f"materialized_plugin_export.{field}")
     if (root / "integrations" / "locks").is_dir():
-        require_dir(plugin_root / "integrations" / "locks", "checked_in_plugin.integrations_locks")
+        require_dir(plugin_root / "integrations" / "locks", "materialized_plugin_export.integrations_locks")
     if (root / "scripts").is_dir():
-        require_dir(plugin_root / "scripts", "checked_in_plugin.scripts")
-        require_file(plugin_root / "scripts" / "adapter_lib.py", "checked_in_plugin.scripts.adapter_lib")
+        require_dir(plugin_root / "scripts", "materialized_plugin_export.scripts")
+        require_file(plugin_root / "scripts" / "adapter_lib.py", "materialized_plugin_export.scripts.adapter_lib")
         # `adapter_lib` loads this BY PATH at module scope since the YAML dialect moved
         # out of it, so an installed plugin missing it fails at import of `adapter_lib` --
         # strictly earlier than the `adapter_yaml_render_lib` case below, which earned its
         # own entry for the same reason. Joined the list when the parser moved out.
         require_file(
             plugin_root / "scripts" / "adapter_yaml_parse.py",
-            "checked_in_plugin.scripts.adapter_yaml_parse",
+            "materialized_plugin_export.scripts.adapter_yaml_parse",
         )
         # adapter_init_lib imports this at module level, so an installed plugin missing it
         # fails at import, not at first render. It joined the list when the YAML emitter
         # moved out of adapter_lib.
         require_file(
             plugin_root / "scripts" / "adapter_yaml_render_lib.py",
-            "checked_in_plugin.scripts.adapter_yaml_render_lib",
+            "materialized_plugin_export.scripts.adapter_yaml_render_lib",
         )
-        require_file(plugin_root / "scripts" / "adapter_init_lib.py", "checked_in_plugin.scripts.adapter_init_lib")
-        require_file(plugin_root / "scripts" / "control_plane_lib.py", "checked_in_plugin.scripts.control_plane_lib")
-    validate_checked_in_plugin_tree_matches_generated(root, plugin_root, data)
+        require_file(plugin_root / "scripts" / "adapter_init_lib.py", "materialized_plugin_export.scripts.adapter_init_lib")
+        require_file(plugin_root / "scripts" / "control_plane_lib.py", "materialized_plugin_export.scripts.control_plane_lib")
+    validate_materialized_plugin_export_matches_generated(root, plugin_root, data)
 
 
-def collect_files(root: Path, *, repo_root: Path | None = None) -> set[Path]:
-    if repo_root is not None:
-        prefix = str(root.relative_to(repo_root))
-        result = subprocess.run(
-            ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard", "--", prefix],
-            cwd=repo_root,
-            check=False,
-            capture_output=True,
-        )
-        if result.returncode == 0:
-            prefix_path = Path(prefix)
-            entries = [rel.decode("utf-8") for rel in result.stdout.split(b"\0") if rel]
-            return {
-                Path(entry).relative_to(prefix_path)
-                for entry in entries
-                if (repo_root / entry).is_file()
-            }
+def collect_files(root: Path) -> set[Path]:
+    """Return the files physically present beneath an export root.
+
+    The materialized install surface is deliberately gitignored: it is a local
+    materialization for hosts, not a second authored source tree.  Comparing it
+    through ``git ls-files --others --exclude-standard`` therefore turns every
+    valid export into an empty tree.  Export validation is about the bytes a
+    host will read, so filesystem presence is the authoritative observation.
+    """
+
     return {path.relative_to(root) for path in root.rglob("*") if path.is_file()}
 
 
-def validate_checked_in_plugin_tree_matches_generated(root: Path, plugin_root: Path, data: dict[str, object]) -> None:
+def validate_materialized_plugin_export_matches_generated(root: Path, plugin_root: Path, data: dict[str, object]) -> None:
     from scripts.packaging_lib import export_plugin_tree
 
     with tempfile.TemporaryDirectory(prefix="charness-validate-plugin-tree-") as tmpdir:
@@ -156,7 +149,7 @@ def validate_checked_in_plugin_tree_matches_generated(root: Path, plugin_root: P
         export_plugin_tree(root, generated_plugin_root, data)
 
         expected_files = collect_files(generated_plugin_root)
-        actual_files = collect_files(plugin_root, repo_root=root)
+        actual_files = collect_files(plugin_root)
         if actual_files != expected_files:
             missing = sorted(str(path) for path in expected_files - actual_files)
             extra = sorted(str(path) for path in actual_files - expected_files)
@@ -166,7 +159,7 @@ def validate_checked_in_plugin_tree_matches_generated(root: Path, plugin_root: P
             if extra:
                 details.append(f"extra: {', '.join(extra)}")
             raise RuntimeError(
-                "checked-in plugin tree does not match the generated install surface"
+                "materialized plugin export does not match the generated install surface"
                 + (f" ({'; '.join(details)})" if details else "")
                 + "; re-run `python3 scripts/sync_root_plugin_manifests.py` to refresh the mirror"
             )
@@ -176,7 +169,7 @@ def validate_checked_in_plugin_tree_matches_generated(root: Path, plugin_root: P
             actual_text = (plugin_root / rel_path).read_text(encoding="utf-8")
             if actual_text != expected_text:
                 raise RuntimeError(
-                    "checked-in plugin tree does not match the generated install surface "
+                    "materialized plugin export does not match the generated install surface "
                     f"(drift at `{(plugin_root / rel_path).relative_to(root)}`); "
                     "re-run `python3 scripts/sync_root_plugin_manifests.py` to refresh the mirror"
                 )

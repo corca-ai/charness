@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+from .argparse_help_probe_support import run_help_commands_in_process
 from .support import ROOT
 
 # A stand-in for the real CLI. Two levels of subparsers, plus the two shapes that
@@ -64,7 +65,7 @@ def _repo(
 
 
 def _report(gate, root: Path) -> dict:
-    return gate.build_report(root)
+    return gate.build_report(root, help_runner=run_help_commands_in_process)
 
 
 def _findings(gate, root: Path) -> list[str]:

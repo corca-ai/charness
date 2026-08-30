@@ -182,8 +182,11 @@ def _scope_result(
     base_sha: str,
     specs: Sequence[Mapping[str, Any]],
     require_change: bool,
+    populations: Mapping[str, Sequence[str]] | None = None,
+    head: str | None = None,
+    branch: str | None = None,
 ) -> dict[str, Any]:
-    carrier = _candidate_carrier(repo_root, base_sha)
+    carrier = _candidate_carrier(repo_root, base_sha, populations, head, branch)
     changed = carrier.pop("changed_paths")
     allowed = _paths_in_scopes(changed, specs)
     disallowed = sorted(set(changed) - set(allowed))

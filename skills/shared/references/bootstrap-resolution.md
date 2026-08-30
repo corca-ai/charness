@@ -168,13 +168,13 @@ both recorded below: `scope-unestablished` (a verdict reached with no counterpar
 resolved at all) and `own-root-unestablished` (the running script's own tree could
 not be located, so there is nothing to compare *from*).
 "A different tree" includes one *contained* in the
-target — the checked-in `plugins/<pkg>` export is a second charness tree, and it
+target — the materialized `plugins/<pkg>` export is a second charness tree, and it
 is stale during every `mutate -> sync` window, so it is compared rather than
 exempted. When the target carries its own copy of the invoked helper, the refusal
 names it and rewrites the invocation's own arguments in place — the repo root
 retargeted to `.` where the operator put it, so a subcommand CLI stays runnable —
 because that is the only remediation that terminates; re-running the drifted copy
-overwrites the fix. For the repo's own checked-in `plugins/<pkg>` export the
+overwrites the fix. For the repo's own materialized `plugins/<pkg>` export the
 refusal names the resync instead, since that is the one command that ends its
 staleness. For any other copy with no counterpart in the target, the refusal says
 so and asks the operator to stop and decide rather than resync and retry, since

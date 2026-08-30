@@ -76,6 +76,7 @@ BACKTICK_CONTENT_RE = _check_doc_links.BACKTICK_CONTENT_RE
 iter_docs = _check_doc_links.iter_docs
 _repo_file_listing = import_repo_module(__file__, "scripts.repo_file_listing")
 iter_matching_repo_files = _repo_file_listing.iter_matching_repo_files
+RepoFileSnapshot = _repo_file_listing.RepoFileSnapshot
 
 # Defined here rather than in the gate because this is the half that has to
 # RECOGNIZE the name as a command token: a `charness tool doctor --json` in a test
@@ -117,11 +118,16 @@ def iter_scanned_files(root: Path, *, require_git: bool = False) -> Iterator[tup
     let six of seven `--json` residues survive a clean gate run -- including a
     release-phase instruction and a script whose default mode exited 2.
     """
-    for doc in iter_docs(root, require_git=require_git):
+    snapshot = RepoFileSnapshot(root, require_git=require_git)
+    for doc in iter_docs(root, require_git=require_git, snapshot=snapshot):
         yield doc, iter_command_carriers(doc)
-    for config in iter_matching_repo_files(root, COMMAND_CONFIG_GLOBS, require_git=require_git):
+    for config in iter_matching_repo_files(
+        root, COMMAND_CONFIG_GLOBS, require_git=require_git, snapshot=snapshot
+    ):
         yield config, iter_config_carriers(config)
-    for source in iter_matching_repo_files(root, ARGV_SOURCE_GLOBS, require_git=require_git):
+    for source in iter_matching_repo_files(
+        root, ARGV_SOURCE_GLOBS, require_git=require_git, snapshot=snapshot
+    ):
         yield source, iter_argv_carriers(source)
 
 

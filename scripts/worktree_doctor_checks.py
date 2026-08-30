@@ -3,18 +3,18 @@ from __future__ import annotations
 import os
 import shutil
 import subprocess
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
 
 from runtime_bootstrap import import_repo_module
 
 _state = import_repo_module(__file__, "scripts.worktree_doctor_state")
 CheckResult = _state.CheckResult
-DEFAULT_DOCTOR_TIMEOUT_SECONDS = _state.DEFAULT_DOCTOR_TIMEOUT_SECONDS
 FAIL = _state.FAIL
 PASS = _state.PASS
 SKIPPED = _state.SKIPPED
-tail = _state.tail
+_manifest = import_repo_module(__file__, "scripts.worktree_doctor_manifest")
+run_manifest_doctor_checks = _manifest.run_manifest_doctor_checks
 
 
 # `git rev-parse` answers about the repository it DISCOVERS, and these three
@@ -64,6 +64,51 @@ def _resolved_git_path(repo_root: Path, flag: str) -> Path | None:
     return candidate if candidate.is_dir() else None
 
 
+@dataclass(frozen=True)
+class GitCheckoutFacts:
+    """One coherent read of the checkout facts consumed by canonical doctor checks."""
+
+    common_dir: Path | None
+    own_dir: Path | None
+    is_bare: bool | None
+    hooks_path: str | None
+
+
+def _resolved_git_output_path(repo_root: Path, raw: str) -> Path | None:
+    candidate = Path(raw)
+    if not candidate.is_absolute():
+        candidate = repo_root / candidate
+    resolved = candidate.resolve()
+    return resolved if resolved.is_dir() else None
+
+
+def git_checkout_facts(
+    repo_root: Path, *, include_hooks_path: bool = True
+) -> GitCheckoutFacts:
+    """Read one checkout snapshot, optionally omitting the hook config plane."""
+    raw = _git_output(
+        repo_root,
+        "rev-parse",
+        "--git-common-dir",
+        "--git-dir",
+        "--is-bare-repository",
+    )
+    lines = raw.splitlines() if raw is not None else []
+    if len(lines) != 3:
+        common_dir = own_dir = None
+        is_bare = None
+    else:
+        common_dir = _resolved_git_output_path(repo_root, lines[0])
+        own_dir = _resolved_git_output_path(repo_root, lines[1])
+        is_bare = lines[2] == "true" if lines[2] in {"true", "false"} else None
+    return GitCheckoutFacts(
+        common_dir=common_dir,
+        own_dir=own_dir,
+        is_bare=is_bare,
+        hooks_path=git_config_value(repo_root, "core.hooksPath") if include_hooks_path else None,
+    )
+
+
 def git_common_dir(repo_root: Path) -> Path | None:
     return _resolved_git_path(repo_root, "--git-common-dir")
 
@@ -96,6 +141,13 @@ def main_worktree(common_dir: Path | None) -> Path | None:
     if common_dir is None or common_dir.name != ".git":
         return None
     return common_dir.parent
+
+
+def checkout_isolation(facts: GitCheckoutFacts) -> bool | None:
+    """Derive the index-sharing verdict from an already-read checkout snapshot."""
+    if facts.is_bare is not False or facts.own_dir is None or facts.common_dir is None:
+        return None
+    return facts.own_dir != facts.common_dir
 
 
 def is_isolated_worktree(repo_root: Path, common_dir: Path | None) -> bool | None:
@@ -287,7 +339,10 @@ def _check_husky_dir(repo_root: Path, configured: str | None) -> CheckResult:
 
 
 def _check_worktree_isolation(
-    repo_root: Path, common_dir: Path | None, *, require_isolation: bool
+    repo_root: Path,
+    facts: GitCheckoutFacts,
+    *,
+    require_isolation: bool,
 ) -> CheckResult:
     """Does this checkout share the parent's worktree and index, or its own?
 
@@ -312,7 +367,8 @@ def _check_worktree_isolation(
     write-capable agent is the one who knows, and it is the one that passes
     `--require-isolation`.
     """
-    isolated = is_isolated_worktree(repo_root, common_dir)
+    common_dir = facts.common_dir
+    isolated = checkout_isolation(facts)
     if isolated is None:
         return CheckResult(
             id="worktree_isolation",
@@ -341,7 +397,7 @@ def _check_worktree_isolation(
             # even true of the config plane: `core.hooksPath` here still points
             # into the parent, so the agent's commits run parent-owned hooks.
             detail=(
-                f"{repo_root} has its own git dir ({git_dir(repo_root)}), separate from the "
+                f"{repo_root} has its own git dir ({facts.own_dir}), separate from the "
                 f"shared one ({common_dir}), so its index and HEAD are its own{where}."
             ),
         )
@@ -374,15 +430,31 @@ def run_canonical_checks(
 ) -> list[CheckResult]:
     repo_root = repo_root.resolve()
     results: list[CheckResult] = []
-    common_dir = git_common_dir(repo_root)
-    hooks_dir, hooks_source = resolve_hooks_dir(repo_root, common_dir)
-    configured_hooks_path = git_config_value(repo_root, "core.hooksPath")
+    hook_check_ids = {"hooks_path", "lefthook_shim", "husky_dir"}
+    facts = git_checkout_facts(
+        repo_root,
+        include_hooks_path=bool(hook_check_ids.difference(disabled)),
+    )
+    common_dir = facts.common_dir
+    configured_hooks_path = facts.hooks_path
+    if configured_hooks_path:
+        configured_candidate = Path(configured_hooks_path)
+        hooks_dir = (
+            configured_candidate
+            if configured_candidate.is_absolute()
+            else (repo_root / configured_candidate).resolve()
+        )
+        hooks_source = "configured"
+    elif common_dir is not None:
+        hooks_dir, hooks_source = common_dir / "hooks", "default"
+    else:
+        hooks_dir, hooks_source = None, "unknown"
     canonical_specs = (
         ("git_common_dir", lambda: _check_git_common_dir(common_dir)),
         (
             "worktree_isolation",
             lambda: _check_worktree_isolation(
-                repo_root, common_dir, require_isolation=require_isolation
+                repo_root, facts, require_isolation=require_isolation
             ),
         ),
         ("hooks_path", lambda: _check_hooks_path(configured_hooks_path, hooks_dir, hooks_source)),
@@ -394,59 +466,3 @@ def run_canonical_checks(
             continue
         results.append(runner())
     return results
-
-
-def _run_manifest_doctor_command(
-    entry: dict[str, Any], repo_root: Path
-) -> CheckResult:
-    check_id = entry.get("id")
-    argv = list(entry.get("argv") or [])
-    timeout = int(entry.get("timeout_seconds") or DEFAULT_DOCTOR_TIMEOUT_SECONDS)
-    expect_exit = int(entry.get("expect_exit_code", 0))
-    next_hint = entry.get("next_action_hint")
-    try:
-        result = subprocess.run(
-            argv,
-            cwd=repo_root,
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-        )
-    except FileNotFoundError as exc:
-        return CheckResult(
-            id=check_id,
-            status=FAIL,
-            detail=f"command not found: {exc.filename or argv[0]}",
-            next_step=next_hint,
-            source="manifest",
-        )
-    except subprocess.TimeoutExpired:
-        return CheckResult(
-            id=check_id,
-            status=FAIL,
-            detail=f"command timed out after {timeout}s: {argv}",
-            next_step=next_hint,
-            source="manifest",
-        )
-    if result.returncode == expect_exit:
-        return CheckResult(
-            id=check_id,
-            status=PASS,
-            detail=f"exit_code={result.returncode}",
-            source="manifest",
-        )
-    last = tail((result.stderr or result.stdout or "").strip())
-    return CheckResult(
-        id=check_id,
-        status=FAIL,
-        detail=f"exit_code={result.returncode} (expected {expect_exit}); tail: {last}",
-        next_step=next_hint,
-        source="manifest",
-    )
-
-
-def run_manifest_doctor_checks(repo_root: Path, manifest: dict[str, Any]) -> list[CheckResult]:
-    doctor = manifest.get("doctor") or {}
-    checks = doctor.get("checks") or []
-    return [_run_manifest_doctor_command(entry, repo_root) for entry in checks]

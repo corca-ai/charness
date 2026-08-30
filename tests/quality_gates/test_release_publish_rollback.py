@@ -97,36 +97,50 @@ def test_precommit_quality_failure_restores_clean_retryable_worktree(tmp_path: P
 
 
 def test_git_add_failure_before_release_commit_rolls_back(tmp_path: Path) -> None:
-    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
-    env = _release_env(tmp_path, bin_dir)
-    env["FAKE_GIT_ADD_FAIL"] = "1"
+    rollback = _load_rollback()
+    repo, _remote, _bin_dir = _seed_publish_release_repo(tmp_path)
+    manifest = repo / "packaging" / "demo.json"
+    manifest.write_text('{"version": "0.0.1"}\n', encoding="utf-8")
+    artifact = repo / "charness-artifacts" / "release" / "latest.md"
+    artifact.parent.mkdir(parents=True)
+    artifact.write_text("prepared release artifact\n", encoding="utf-8")
     head_before = _git(repo, "rev-parse", "HEAD")
 
-    result = _run_publish_patch(repo, env)
+    result = rollback.rollback_precommit_changes(
+        repo,
+        {"head_sha": head_before},
+        tag_name="v0.0.1",
+        run_command=lambda args, *, cwd, check=True: subprocess.run(
+            args, cwd=cwd, check=check, capture_output=True, text=True
+        ),
+    )
 
-    assert result.returncode != 0
+    assert result["status"] == "restored"
     assert _git(repo, "rev-parse", "HEAD") == head_before
     assert _git(repo, "status", "--short") == ""
-    rollback = _failure_payload(result.stderr)["precommit_rollback"]
-    assert rollback["status"] == "restored"
+    assert result["restored_paths"] == ["packaging/demo.json"]
+    assert result["quarantined_paths"] == ["charness-artifacts/release/latest.md"]
 
 
 def test_restore_failure_does_not_claim_planned_paths_were_restored(tmp_path: Path) -> None:
-    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
-    quality_script = repo / "scripts" / "run-quality.sh"
-    quality_script.write_text("#!/usr/bin/env bash\nexit 1\n", encoding="utf-8")
-    quality_script.chmod(0o755)
-    _git(repo, "add", "scripts/run-quality.sh")
-    _git(repo, "commit", "-m", "make release quality fail")
-    env = _release_env(tmp_path, bin_dir)
-    env["FAKE_GIT_RESTORE_FAIL"] = "1"
+    rollback = _load_rollback()
+    repo, _remote, _bin_dir = _seed_publish_release_repo(tmp_path)
+    manifest = repo / "packaging" / "demo.json"
+    manifest.write_text('{"version": "0.0.1"}\n', encoding="utf-8")
+    head_before = _git(repo, "rev-parse", "HEAD")
 
-    result = _run_publish_patch(repo, env)
+    def fail_restore(args, *, cwd, check=True):
+        if args[:3] == ["git", "restore", "--source"]:
+            raise RuntimeError("injected restore failure")
+        return subprocess.run(args, cwd=cwd, check=check, capture_output=True, text=True)
 
-    rollback = _failure_payload(result.stderr)["precommit_rollback"]
-    assert rollback["status"] == "failed"
-    assert rollback["restored_paths"] == []
-    assert rollback["remaining_status"]
+    result = rollback.rollback_precommit_changes(
+        repo, {"head_sha": head_before}, tag_name="v0.0.1", run_command=fail_restore
+    )
+
+    assert result["status"] == "failed"
+    assert result["restored_paths"] == []
+    assert result["remaining_status"]
 
 
 def test_quarantine_reports_completed_moves_before_a_later_failure(

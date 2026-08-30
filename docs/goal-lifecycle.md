@@ -130,10 +130,20 @@ with:
   fields are written only after the immutable terminal receipt exists
 - a planning-reset note when a provisional parent is being reconciled
 
-The rest of the body is normal human-readable Markdown. Duplicate, malformed,
-foreign-version, or stripped blocks refuse before update or close. Exact
-provider readback must agree with immutable local identity; neither side
-silently rewrites the other.
+The rest of the body is normal human-readable Markdown. During bootstrap, the
+metadata block is appended to the exact live human-readable body that was
+read; an initial write cannot replace that body. After the block exists,
+parent `update-body` preserves the human-readable Markdown by default. A
+consumer may request an amendment with the optional
+`amendment_authorization_file`; this repo-contained canonical
+`charness.goal-run-parent-amendment/v1` receipt binds the parent identity,
+binding hash, current and desired complete-body hashes, and the explicit
+approval response/session/timestamp plus a non-empty reason. The bound
+validator checks that receipt only after reading the live body and before
+provider mutation. Duplicate, malformed, foreign-version, stripped, or
+identity-mutated blocks refuse before provider mutation. Exact provider
+readback must agree with the complete desired body, including any authorized
+human amendment.
 
 ## Activation And Pickup
 
@@ -256,10 +266,15 @@ not behavioral proof; the child issue's closeout comment/provider receipt names
 and binds the required evidence. The parent cursor advances with the published
 transition; there is no second local child-acceptance ledger.
 
-Parent body updates are limited to the managed cursor and shared contract. One
-agent owns those updates; optimistic concurrency is not part of the default
-model. Full graph reconciliation remains explicit rather than running on every
-ordinary pickup.
+Parent body updates preserve the machine-managed identity and cursor contract
+and preserve the human-readable Markdown by default. An authorized bound
+update may amend that Markdown only with a canonical amendment receipt whose
+body hashes match the live and submitted bytes. The bootstrap append rule
+protects the live body while the first block is added; later updates validate
+both current and desired metadata against the immutable binding and then
+require complete-body provider readback. One agent owns those updates;
+optimistic concurrency is not part of the default model. Full graph
+reconciliation remains explicit rather than running on every ordinary pickup.
 
 A deferred child moves to a successor Goal Run with a durable reason and exact
 remove/add readback. Merely unlinking it cannot make the current parent closable.

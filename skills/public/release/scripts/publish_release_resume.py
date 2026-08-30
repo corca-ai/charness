@@ -12,12 +12,13 @@ has and skipping a release that already exists.
 The resume flow reuses the CLI module's already-bound helpers (passed in as
 ``cli``) so there is no second copy of the publish tail to drift.
 """
+
 from __future__ import annotations
 
 import importlib.util
 import runpy
 import sys
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 from typing import Any
 
 
@@ -44,9 +45,15 @@ def _load_resume_closeout():
 
 
 _resume_closeout = _load_resume_closeout()
-_claims_review = runpy.run_path(str(Path(__file__).resolve().with_name("publish_release_claims_review.py")))
-_resume_publish = runpy.run_path(str(Path(__file__).resolve().with_name("publish_release_resume_publish.py")))
-_resume_state = runpy.run_path(str(Path(__file__).resolve().with_name("publish_release_resume_state.py")))
+_claims_review = runpy.run_path(
+    str(Path(__file__).resolve().with_name("publish_release_claims_review.py"))
+)
+_resume_publish = runpy.run_path(
+    str(Path(__file__).resolve().with_name("publish_release_resume_publish.py"))
+)
+_resume_state = runpy.run_path(
+    str(Path(__file__).resolve().with_name("publish_release_resume_state.py"))
+)
 _helpers = runpy.run_path(str(Path(__file__).resolve().with_name("publish_release_helpers.py")))
 
 # Re-exported: `resumable_state` is the resume surface's public entry point and several
@@ -56,26 +63,13 @@ resumable_state = _resume_state["resumable_state"]
 
 
 def _artifact_commit_candidates(record_path: str) -> list[str]:
-    """The pathspecs a pre-push artifact commit should consider, most general first.
-
-    `charness-artifacts` alone was the whole pathspec, and it is the AUTHORING repo's own
-    tree: in a consumer whose adapter writes elsewhere the status read matched nothing, the
-    caller returned early, and the mitigation it exists for silently no-opped for exactly
-    the file its comment names. A record directory already under that parent adds nothing.
-
-    A record at the repo root (`output_dir: .` or blank) has `.` as its directory, which as
-    a pathspec would sweep the whole worktree; the record FILE is the honest scope there.
-    """
-    record_dir = str(PurePosixPath(record_path).parent)
-    paths = ["charness-artifacts"]
-    if record_dir in {".", ""}:
-        paths.append(record_path)
-    elif record_dir not in paths and not record_dir.startswith("charness-artifacts/"):
-        paths.append(record_dir)
-    return paths
+    """Compatibility entry point for the shared adapter-derived path contract."""
+    return _resume_state["artifact_commit_candidates"](record_path)
 
 
-def _commit_artifact_before_push(repo_root: Path, *, cli: Any, tag_name: str, record_path: str) -> None:
+def _commit_artifact_before_push(
+    repo_root: Path, *, cli: Any, tag_name: str, record_path: str
+) -> None:
     # B1: the resume refresh of the release record (and any retro-trigger artifact) must be
     # committed BEFORE the push, mirroring the normal flow's release commit. Otherwise the
     # artifact tree is dirty at push time and a pre-push hook's `git diff --quiet` blocks
@@ -111,21 +105,37 @@ def _assert_post_publication_resumable(state: dict[str, Any], *, tag_name: str) 
     if state["phase"] not in post_publication_phases:
         return False
     if not (state["tag_local"] and state["tag_remote"] and state["release_exists"]):
-        raise SystemExit(f"--resume: `{tag_name}` carrier HEAD lacks confirmed tag/release publication state.")
+        raise SystemExit(
+            f"--resume: `{tag_name}` carrier HEAD lacks confirmed tag/release publication state."
+        )
     claims_evidence = state.get("claims_evidence_commit", "")
     expected_parent = (
         claims_evidence
         if state["phase"] == "post-publication-claims-carrier"
-        else state["tag_sha"] if state["phase"] == "post-publication-carrier" else state["parent_sha"]
+        else state["tag_sha"]
+        if state["phase"] == "post-publication-carrier"
+        else state["parent_sha"]
     )
     if state["phase"] == "post-publication-carrier":
-        valid, message = state["head_parent_is_tag"], "carrier HEAD is not directly based on its release tag."
+        valid, message = (
+            state["head_parent_is_tag"],
+            "carrier HEAD is not directly based on its release tag.",
+        )
     elif state["phase"] == "post-publication-final":
-        valid, message = state["head_grandparent_is_tag"], "final closeout HEAD is not based on its carrier and release tag."
+        valid, message = (
+            state["head_grandparent_is_tag"],
+            "final closeout HEAD is not based on its carrier and release tag.",
+        )
     elif state["phase"] == "post-publication-claims-carrier":
-        valid, message = state["parent_sha"] == claims_evidence, "claims carrier is not directly based on its claims evidence."
+        valid, message = (
+            state["parent_sha"] == claims_evidence,
+            "claims carrier is not directly based on its claims evidence.",
+        )
     else:
-        valid, message = state["grandparent_sha"] == claims_evidence, "claims final HEAD is not based on its carrier and evidence."
+        valid, message = (
+            state["grandparent_sha"] == claims_evidence,
+            "claims final HEAD is not based on its carrier and evidence.",
+        )
     if not valid:
         raise SystemExit(f"--resume: `{tag_name}` {message}")
     if state["remote_branch_sha"] not in {expected_parent, state["head_sha"]}:
@@ -149,9 +159,13 @@ def assert_resumable(state: dict[str, Any], *, tag_name: str) -> None:
         if not isinstance(prepared, dict):
             raise SystemExit("--resume: marked prepared state lacks its release-record binding")
         if state["tag_local"] and state["tag_sha"] != prepared["commit"]:
-            raise SystemExit(f"--resume: local tag `{tag_name}` does not point at the prepared release record")
+            raise SystemExit(
+                f"--resume: local tag `{tag_name}` does not point at the prepared release record"
+            )
         if state["tag_remote"] and state["remote_tag_sha"] != prepared["commit"]:
-            raise SystemExit(f"--resume: remote tag `{tag_name}` does not point at the prepared release record")
+            raise SystemExit(
+                f"--resume: remote tag `{tag_name}` does not point at the prepared release record"
+            )
         allowed_remote_heads = {
             state.get("prepared_parent_sha", ""),
             prepared["commit"],
@@ -231,7 +245,9 @@ def preflight_resume_state(
     # because the states this catches otherwise reach it looking ORDINARY: an unreadable path
     # yields no marker, so the phase resolves to `release-content` and a HEAD that really is
     # the release commit passes -- publication proceeds with the claims floor never invoked.
-    _claims_review["assert_record_readable"](repo_root, record_path=record_path, commit="HEAD", run=cli.run)
+    _claims_review["assert_record_readable"](
+        repo_root, record_path=record_path, commit="HEAD", run=cli.run
+    )
     # The publication tail owns the irreversible-boundary check: after claims review and
     # before push/create it re-reads the target surface and binds the disposition into the
     # release artifact. Keep this classifier preflight focused on record readability so a
@@ -252,14 +268,21 @@ def preflight_resume_state(
     _claims_review["assert_claims_artifact_is_read"](state["phase"], args.claims_review_artifact)
     if state["phase"] in _claims_review["CLAIMS_PHASES"]:
         state["claims_review"] = _claims_review["validate_claims_review"](
-            repo_root, prepared=state["prepared"], evidence_commit=state.get("claims_evidence_commit") or state["head_sha"],
-            artifact_path=args.claims_review_artifact, target_version=current_version, tag_name=tag_name, run=cli.run,
+            repo_root,
+            prepared=state["prepared"],
+            evidence_commit=state.get("claims_evidence_commit") or state["head_sha"],
+            artifact_path=args.claims_review_artifact,
+            target_version=current_version,
+            tag_name=tag_name,
+            run=cli.run,
             # Resolved through the CANONICAL owner rather than re-derived: it
             # filters to the release-tag glob and consults the remote, which a
             # local `git describe` cannot. The scope-completeness check falls
             # back to a `--match`ed describe when this returns None.
             previous_version=_helpers["latest_previous_release_version"](
-                repo_root, target_version=current_version, remote=args.remote,
+                repo_root,
+                target_version=current_version,
+                remote=args.remote,
             ),
         )
         _claims_review["unproven_claims_warning"](state["claims_review"], write=sys.stderr.write)
@@ -276,8 +299,16 @@ def resume_publish(
     state: dict[str, Any] | None = None,
 ) -> None:
     _resume_publish["resume_publish"](
-        repo_root, args=args, plan=plan, adapter_data=adapter_data, cli=cli, state=state,
-        resumable_state=resumable_state, assert_resumable=assert_resumable, common=_common,
-        resume_closeout=_resume_closeout, commit_artifact_before_push=_commit_artifact_before_push,
+        repo_root,
+        args=args,
+        plan=plan,
+        adapter_data=adapter_data,
+        cli=cli,
+        state=state,
+        resumable_state=resumable_state,
+        assert_resumable=assert_resumable,
+        common=_common,
+        resume_closeout=_resume_closeout,
+        commit_artifact_before_push=_commit_artifact_before_push,
         release_record_path=_claims_review["release_record_path"],
     )

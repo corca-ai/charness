@@ -10,7 +10,11 @@ from types import SimpleNamespace
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import cli_ergonomics_lib as celib  # noqa: E402
-from git_inventory_lib import visible_repo_files  # noqa: E402
+from git_inventory_lib import (  # noqa: E402
+    VisibleRepoFilesSnapshot,
+    capture_visible_repo_files,
+    visible_repo_files,
+)
 from summary_output_lib import add_output_args, emit_selected  # noqa: E402
 
 
@@ -48,8 +52,14 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def _default_paths(repo_root: Path, patterns: list[str], vendored: list[str]) -> list[Path]:
-    visible_files = visible_repo_files(repo_root)
+def _default_paths(
+    repo_root: Path,
+    patterns: list[str],
+    vendored: list[str],
+    *,
+    snapshot: VisibleRepoFilesSnapshot | None = None,
+) -> list[Path]:
+    visible_files = visible_repo_files(repo_root, snapshot=snapshot)
     seen: set[Path] = set()
     found: list[Path] = []
     for pattern in patterns:
@@ -88,17 +98,28 @@ def summarize(payload: dict[str, object], *, sample_limit: int = 10) -> dict[str
 def main() -> int:
     args = parse_args()
     repo_root = args.repo_root.resolve()
+    snapshot = capture_visible_repo_files(repo_root)
     adapter = _quality_adapter_lib.load_quality_adapter_permissive(repo_root)
     vendored = _adapter_vendored_prefixes(adapter)
     registry_paths = (
         [(repo_root / path).resolve() for path in args.registry_file]
         if args.registry_file
-        else _default_paths(repo_root, ["**/command-registry.json", "**/*command-registry*.json"], vendored)
+        else _default_paths(
+            repo_root,
+            ["**/command-registry.json", "**/*command-registry*.json"],
+            vendored,
+            snapshot=snapshot,
+        )
     )
     archetype_contract_paths = (
         [(repo_root / path).resolve() for path in args.archetype_contract_file]
         if args.archetype_contract_file
-        else _default_paths(repo_root, ["**/command-archetypes.json", "**/*archetype-contract*.json"], vendored)
+        else _default_paths(
+            repo_root,
+            ["**/command-archetypes.json", "**/*archetype-contract*.json"],
+            vendored,
+            snapshot=snapshot,
+        )
     )
     registries = [celib.inventory_registry(repo_root, path, threshold=args.flat_help_threshold) for path in registry_paths]
     archetype_contracts = [celib.inventory_archetype_contract(repo_root, path) for path in archetype_contract_paths]

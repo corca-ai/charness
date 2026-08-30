@@ -7,8 +7,10 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import shutil
 import subprocess
 import sys
+from functools import cache
 from pathlib import Path
 
 import pytest
@@ -25,6 +27,7 @@ from tests.quality_gates.reviewer_capability_support import (
 )
 from tests.quality_gates.seeding_support import load_module, verify_closeout_args
 from tests.quality_gates.support import ROOT, run_script
+from tests.reviewed_input_identity_fixtures import repo_seed as identity_repo_seed
 
 SCRIPT = "skills/public/issue/scripts/issue_tool.py"
 CRITIQUE_REL = "charness-artifacts/critique/res-42.md"
@@ -60,6 +63,19 @@ def _seed(repo: Path, *, satisfaction: str | None, contract: bool) -> None:
     seed_commit(repo, bug_closeout_body(critique_line=f"Critique: {CRITIQUE_REL}"))
 
 
+@cache
+def _captured_reviewed_input() -> dict:
+    """Capture one immutable seed identity for carrier-only mutations.
+
+    These tests exercise the file-backed worker joins, not Git capture.  The
+    cached seed keeps the real current-identity check while avoiding a fresh
+    repository and capture operation for every carrier mutation.
+    """
+    from scripts.reviewed_input_identity import build_reviewed_input_identity
+
+    return build_reviewed_input_identity(repo_root=identity_repo_seed(), reviewed_paths=["reviewed.txt"])
+
+
 def _worker_delivered_artifact(
     tmp_path: Path,
     *,
@@ -67,15 +83,8 @@ def _worker_delivered_artifact(
     capability: dict | None = None,
 ) -> Path:
     capability_payload = capability or ready_capability("issue-worker-1")
-    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
-    subprocess.run(["git", "-C", str(tmp_path), "config", "user.email", "test@example.com"], check=True)
-    subprocess.run(["git", "-C", str(tmp_path), "config", "user.name", "Test"], check=True)
-    (tmp_path / "fixture.txt").write_text("fixture\n", encoding="utf-8")
-    subprocess.run(["git", "-C", str(tmp_path), "add", "fixture.txt"], check=True)
-    subprocess.run(["git", "-C", str(tmp_path), "commit", "-qm", "fixture"], check=True)
-    from scripts.reviewed_input_identity import build_reviewed_input_identity
-
-    reviewed_input = build_reviewed_input_identity(repo_root=tmp_path, reviewed_paths=["fixture.txt"])
+    shutil.copytree(identity_repo_seed(), tmp_path, dirs_exist_ok=True)
+    reviewed_input = _captured_reviewed_input()
     input_identity = reviewed_input["identity_sha256"]
     packet_path = tmp_path / "packet.json"
     packet_path.write_text(

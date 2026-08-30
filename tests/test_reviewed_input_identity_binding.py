@@ -9,18 +9,17 @@ from __future__ import annotations
 
 import hashlib
 import json
+import shutil
 import subprocess
 from datetime import date
+from functools import cache
 from pathlib import Path
 
 import pytest
 import yaml
 
-from scripts.critique_adapter_lib import load_adapter
 from scripts.critique_packet_lib import (
-    build_packet,
     build_reviewed_input_identity,
-    write_packet,
 )
 from scripts.reviewed_input_verification import verify_reviewed_input_identity
 from scripts.validate_critique_artifacts import (
@@ -28,6 +27,12 @@ from scripts.validate_critique_artifacts import (
 )
 from scripts.validate_critique_artifacts import (
     validate_reviewed_input_binding,
+)
+from tests.reviewed_input_identity_fixtures import (
+    repo_seed as identity_repo_seed,
+)
+from tests.reviewed_input_identity_fixtures import (
+    tree_snapshot as _tree_snapshot,
 )
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -48,11 +53,66 @@ def _run_git(repo: Path, *args: str) -> None:
 
 
 def _init_identity_repo(repo: Path) -> None:
-    _run_git(repo, "init")
-    (repo / "reviewed.txt").write_text("base\n", encoding="utf-8")
-    (repo / "unrelated.txt").write_text("base\n", encoding="utf-8")
-    _run_git(repo, "add", ".")
-    _run_git(repo, "commit", "-m", "initial")
+    shutil.copytree(identity_repo_seed(), repo, dirs_exist_ok=True)
+
+
+@cache
+def _cached_seed_identity() -> dict:
+    """Capture one immutable seed identity for integrity-only semantics tests."""
+    return build_reviewed_input_identity(
+        repo_root=identity_repo_seed(), reviewed_paths=["reviewed.txt"]
+    )
+
+
+def _empty_identity() -> dict:
+    """Build a deliberately empty binding without invoking repository capture."""
+    from scripts.reviewed_input_identity import _with_identity_digest
+
+    return _with_identity_digest(
+        {
+            "algorithm": "sha256-v2",
+            "status": "captured",
+            "mode": "working-tree",
+            "substrate_mode": "working-tree",
+            "changed_ref": None,
+            "reviewed_paths": [],
+        }
+    )
+
+
+def _write_static_packet(repo: Path, identity: dict) -> Path:
+    """Write the smallest valid packet for binding-only tests."""
+    packet = {
+        "kind": "charness.critique_prepare_packet",
+        "version": 1,
+        "repo": "identity-fixture",
+        "prepared_for": "working tree",
+        "changed_ref": None,
+        "substrate_mode": "working-tree",
+        "reviewed_input_identity": identity,
+    }
+    path = repo / "charness-artifacts" / "critique" / "bound-packet.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(json.dumps(packet, separators=(",", ":")).encode("utf-8"))
+    return path
+
+
+@pytest.fixture(scope="session")
+def cached_identity_repo_seed() -> Path:
+    return identity_repo_seed()
+
+
+def test_cached_identity_seed_is_never_mutated_by_a_test_clone(
+    tmp_path: Path, cached_identity_repo_seed: Path
+) -> None:
+    before_seed = _tree_snapshot(cached_identity_repo_seed)
+    clone = tmp_path / "clone"
+    shutil.copytree(cached_identity_repo_seed, clone)
+    (clone / "reviewed.txt").write_text("clone only\n", encoding="utf-8")
+    _run_git(clone, "add", ".")
+    _run_git(clone, "commit", "-m", "clone-only")
+
+    assert _tree_snapshot(cached_identity_repo_seed) == before_seed
 
 
 def test_reviewed_input_identity_is_ordered_and_content_addressed(tmp_path: Path) -> None:
@@ -96,10 +156,7 @@ def test_reviewed_input_identity_is_ordered_and_content_addressed(tmp_path: Path
 
 
 def test_noncurrent_identity_algorithm_is_refused(tmp_path: Path) -> None:
-    _init_identity_repo(tmp_path)
-    current = build_reviewed_input_identity(
-        repo_root=tmp_path, reviewed_paths=["reviewed.txt"]
-    )
+    current = _cached_seed_identity()
     retired = dict(current, algorithm="sha256-v1")
     ok, reason = verify_reviewed_input_identity(tmp_path, retired)
     assert not ok
@@ -130,8 +187,7 @@ def test_mode_only_change_stales_a_v2_binding(tmp_path: Path) -> None:
 
 def test_zero_path_binding_is_not_current(tmp_path: Path) -> None:
     """An empty path set digests to the same constant in every repo forever."""
-    _init_identity_repo(tmp_path)
-    empty = build_reviewed_input_identity(repo_root=tmp_path, reviewed_paths=[])
+    empty = _empty_identity()
     assert verify_reviewed_input_identity(tmp_path, empty) == (
         False,
         "declared reviewed inputs cover zero paths",
@@ -240,18 +296,12 @@ def _write_bound_critique(repo: Path, packet_path: Path, identity_sha256: str) -
 
 def test_reviewed_input_binding_stales_only_for_declared_input(tmp_path: Path) -> None:
     _init_identity_repo(tmp_path)
-    adapter = load_adapter(tmp_path)
-    packet = build_packet(
-        adapter=adapter,
-        repo_root=tmp_path,
-        prepared_for="working tree",
-        reviewed_paths=["reviewed.txt"],
-    )
-    packet_path, _ = write_packet(packet, output_dir=tmp_path / "charness-artifacts/critique", slug="bound")
+    identity = _cached_seed_identity()
+    packet_path = _write_static_packet(tmp_path, identity)
     artifact = _write_bound_critique(
         tmp_path,
         packet_path,
-        packet["reviewed_input_identity"]["identity_sha256"],
+        identity["identity_sha256"],
     )
     text = artifact.read_text(encoding="utf-8")
 
@@ -272,15 +322,9 @@ def test_reviewed_input_binding_stales_only_for_declared_input(tmp_path: Path) -
 
 def test_reviewed_input_binding_rejects_packet_byte_tamper(tmp_path: Path) -> None:
     _init_identity_repo(tmp_path)
-    adapter = load_adapter(tmp_path)
-    packet = build_packet(
-        adapter=adapter,
-        repo_root=tmp_path,
-        prepared_for="working tree",
-        reviewed_paths=["reviewed.txt"],
-    )
-    packet_path, _ = write_packet(packet, output_dir=tmp_path / "charness-artifacts/critique", slug="bound")
-    artifact = _write_bound_critique(tmp_path, packet_path, packet["reviewed_input_identity"]["identity_sha256"])
+    identity = _cached_seed_identity()
+    packet_path = _write_static_packet(tmp_path, identity)
+    artifact = _write_bound_critique(tmp_path, packet_path, identity["identity_sha256"])
     packet_path.write_text(packet_path.read_text(encoding="utf-8") + " ", encoding="utf-8")
 
     with pytest.raises(CritiqueValidationError, match="packet bytes are stale or tampered"):
@@ -361,30 +405,14 @@ def test_a_committed_range_with_a_deletion_binds_the_preimage_instead_of_refusin
     assert identity["status"] == "captured"
     assert identity["reviewed_paths"] == ["kept.txt", "unrelated.txt"]
     entries = {entry["path"]: entry for entry in identity["reviewed_content"]}
+    # The marker stays deletion-only so existing surviving-file identities keep
+    # their prior digest shape.
+    assert "disposition" not in entries["kept.txt"]
     assert entries["unrelated.txt"]["disposition"] == "deleted"
     # The bound hash is the PRE-image, so the identity answers "what was removed".
     assert entries["unrelated.txt"]["content_sha256"] == hashlib.sha256(preimage).hexdigest()
     ok, reason = verify_reviewed_input_identity(tmp_path, identity)
     assert (ok, reason) == (True, "current")
-
-
-def test_a_surviving_path_carries_no_disposition_so_older_identities_do_not_move(
-    tmp_path: Path,
-) -> None:
-    """The marker is deletion-only on purpose.
-
-    Stamping every entry with a disposition would change the digest of every
-    identity ever captured, and each one would then read as `stale` — a corpus-wide
-    false alarm. A deleted entry could not exist before this repair, so nothing
-    already recorded moves.
-    """
-    changed_ref = _commit_with_deletion(tmp_path)
-
-    identity = build_reviewed_input_identity(repo_root=tmp_path, changed_ref=changed_ref)
-
-    entries = {entry["path"]: entry for entry in identity["reviewed_content"]}
-    assert "disposition" not in entries["kept.txt"]
-
 
 def test_a_single_commit_that_deletes_resolves_its_preimage_from_the_parent(
     tmp_path: Path,
@@ -602,12 +630,9 @@ def test_a_zero_path_binding_is_refused_even_when_currency_is_disabled(
     failed. One correctly-disabled check was silently disabling a second,
     independent one.
     """
-    _init_identity_repo(tmp_path)
     packet_dir = tmp_path / "charness-artifacts" / "critique"
     packet_dir.mkdir(parents=True)
-    identity = build_reviewed_input_identity(
-        repo_root=tmp_path, reviewed_paths=[], substrate_mode="working-tree"
-    )
+    identity = _empty_identity()
     packet = {
         "kind": "charness.critique_prepare_packet",
         "substrate_mode": "working-tree",
@@ -641,9 +666,7 @@ def test_a_populated_binding_still_passes_integrity_only_mode(tmp_path: Path) ->
     _init_identity_repo(tmp_path)
     packet_dir = tmp_path / "charness-artifacts" / "critique"
     packet_dir.mkdir(parents=True)
-    identity = build_reviewed_input_identity(
-        repo_root=tmp_path, reviewed_paths=["reviewed.txt"], substrate_mode="working-tree"
-    )
+    identity = _cached_seed_identity()
     packet = {
         "kind": "charness.critique_prepare_packet",
         "substrate_mode": "working-tree",

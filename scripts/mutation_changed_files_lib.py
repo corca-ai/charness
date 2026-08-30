@@ -10,7 +10,32 @@ import hashlib
 import json
 import re
 import subprocess
+from collections.abc import Mapping
 from pathlib import Path
+
+from scripts.mutation_changed_line_diff import (  # noqa: E402
+    changed_line_numbers_for_paths as _batch_changed_line_numbers_for_paths,
+)
+
+_IMMUTABLE_REF = re.compile(r"[0-9a-f]{40}")
+_CHANGED_LINE_CACHE: dict[tuple[str, str, str, str], frozenset[int]] = {}
+
+
+def _is_immutable_ref(value: str) -> bool:
+    """Whether a ref names an immutable Git object rather than a moving ref."""
+    return bool(_IMMUTABLE_REF.fullmatch(value))
+
+
+def changed_line_numbers_for_paths(
+    repo_root: Path,
+    base_sha: str,
+    head_sha: str,
+    paths: list[str],
+) -> dict[str, set[int]]:
+    """Return changed new-file lines for several paths in one Git invocation."""
+    return _batch_changed_line_numbers_for_paths(
+        repo_root, base_sha, head_sha, paths, changed_line_numbers
+    )
 
 
 def changed_line_numbers(repo_root: Path, base_sha: str, head_sha: str, path: str) -> set[int]:
@@ -22,6 +47,11 @@ def changed_line_numbers(repo_root: Path, base_sha: str, head_sha: str, path: st
     if not base_sha:
         return set()
     head = head_sha or "HEAD"
+    cache_key = (str(repo_root.resolve()), base_sha, head, path)
+    if _is_immutable_ref(base_sha) and _is_immutable_ref(head):
+        cached = _CHANGED_LINE_CACHE.get(cache_key)
+        if cached is not None:
+            return set(cached)
     command = ["git", "diff", "-U0", "--no-renames", f"{base_sha}..{head}", "--", path]
     result = subprocess.run(command, cwd=repo_root, check=True, text=True, capture_output=True)
     lines: set[int] = set()
@@ -29,7 +59,60 @@ def changed_line_numbers(repo_root: Path, base_sha: str, head_sha: str, path: st
         start = int(match.group(1))
         count = int(match.group(2)) if match.group(2) is not None else 1
         lines.update(range(start, start + count))
+    if _is_immutable_ref(base_sha) and _is_immutable_ref(head):
+        _CHANGED_LINE_CACHE[cache_key] = frozenset(lines)
     return lines
+
+
+def _classify_changed_line_scope_gap_from_map(
+    *,
+    changed_before_coverage: list[str],
+    statement_lines: dict[str, tuple[set[int], set[int]]],
+    coverage_enabled: bool,
+    changed_lines: Mapping[str, set[int]],
+) -> list[str]:
+    if not coverage_enabled:
+        return []
+    gaps: list[str] = []
+    for path in changed_before_coverage:
+        changed = changed_lines.get(path, set())
+        if not changed:
+            continue
+        if path not in statement_lines:
+            gaps.append(path)
+            continue
+        _executed, missing = statement_lines[path]
+        if changed & missing:
+            gaps.append(path)
+    return sorted(gaps)
+
+
+def _changed_line_scope_gap_targets_from_map(
+    *,
+    repo_root: Path,
+    head_sha: str,
+    changed_before_coverage: list[str],
+    statement_lines: dict[str, tuple[set[int], set[int]]],
+    coverage_enabled: bool,
+    changed_lines: Mapping[str, set[int]],
+) -> dict[str, list[dict[str, object]]]:
+    if not coverage_enabled:
+        return {}
+    targets: dict[str, list[dict[str, object]]] = {}
+    for path in changed_before_coverage:
+        changed = changed_lines.get(path, set())
+        if not changed:
+            continue
+        if path not in statement_lines:
+            target_lines = changed
+        else:
+            _executed, missing = statement_lines[path]
+            target_lines = changed & missing
+        if target_lines:
+            entries = line_source_targets(repo_root, path, target_lines, ref=head_sha)
+            if entries:
+                targets[path] = entries
+    return dict(sorted(targets.items()))
 
 
 def classify_changed_line_scope_gap(
@@ -40,6 +123,7 @@ def classify_changed_line_scope_gap(
     changed_before_coverage: list[str],
     statement_lines: dict[str, tuple[set[int], set[int]]],
     coverage_enabled: bool,
+    _changed_lines: Mapping[str, set[int]] | None = None,
 ) -> list[str]:
     """Changed pool files whose changed lines are not test-covered (the blocker).
 
@@ -49,6 +133,13 @@ def classify_changed_line_scope_gap(
     """
     if not coverage_enabled or not base_sha:
         return []
+    if _changed_lines is not None:
+        return _classify_changed_line_scope_gap_from_map(
+            changed_before_coverage=changed_before_coverage,
+            statement_lines=statement_lines,
+            coverage_enabled=coverage_enabled,
+            changed_lines=_changed_lines,
+        )
     gaps: list[str] = []
     for path in changed_before_coverage:
         changed = changed_line_numbers(repo_root, base_sha, head_sha, path)
@@ -71,6 +162,7 @@ def changed_line_scope_gap_targets(
     changed_before_coverage: list[str],
     statement_lines: dict[str, tuple[set[int], set[int]]],
     coverage_enabled: bool,
+    _changed_lines: Mapping[str, set[int]] | None = None,
 ) -> dict[str, list[dict[str, object]]]:
     """Exact changed-line targets that make the scope-gap blocker fire.
 
@@ -81,6 +173,15 @@ def changed_line_scope_gap_targets(
     """
     if not coverage_enabled or not base_sha:
         return {}
+    if _changed_lines is not None:
+        return _changed_line_scope_gap_targets_from_map(
+            repo_root=repo_root,
+            head_sha=head_sha,
+            changed_before_coverage=changed_before_coverage,
+            statement_lines=statement_lines,
+            coverage_enabled=coverage_enabled,
+            changed_lines=_changed_lines,
+        )
     targets: dict[str, list[dict[str, object]]] = {}
     for path in changed_before_coverage:
         changed = changed_line_numbers(repo_root, base_sha, head_sha, path)
@@ -109,6 +210,9 @@ def classify_changed_sample_scope(
     statement_lines: dict[str, tuple[set[int], set[int]]],
     coverage_enabled: bool,
 ) -> tuple[list[str], list[str], list[str], list[str], list[str], dict[str, list[dict[str, object]]]]:
+    changed_lines = changed_line_numbers_for_paths(
+        repo_root, base_sha or "", head_sha, changed_before_coverage
+    ) if coverage_enabled and base_sha else {}
     changed = [path for path in changed_before_coverage if path in set(eligible)]
     (
         changed_files_excluded_by_file_coverage,
@@ -127,6 +231,7 @@ def classify_changed_sample_scope(
         changed_before_coverage=changed_before_coverage,
         statement_lines=statement_lines,
         coverage_enabled=coverage_enabled,
+        _changed_lines=changed_lines,
     )
     changed_line_uncovered_changed_line_targets = changed_line_scope_gap_targets(
         repo_root=repo_root,
@@ -135,6 +240,7 @@ def classify_changed_sample_scope(
         changed_before_coverage=changed_before_coverage,
         statement_lines=statement_lines,
         coverage_enabled=coverage_enabled,
+        _changed_lines=changed_lines,
     )
     return (
         changed,
@@ -200,6 +306,7 @@ def changed_pool_files_vs_base(repo_root: Path, base_sha: str) -> list[str]:
         return []
     from scripts.sample_mutation_files import list_eligible, mutation_pathspecs  # noqa: E402
 
+    eligible = list_eligible(repo_root)
     command = ["git", "diff", "--name-only", base_sha, "--", *mutation_pathspecs()]
     result = subprocess.run(command, cwd=repo_root, check=True, text=True, capture_output=True)
     changed = {line.strip() for line in result.stdout.splitlines() if line.strip()}
@@ -220,7 +327,7 @@ def changed_pool_files_vs_base(repo_root: Path, base_sha: str) -> list[str]:
     changed.update(
         line.strip() for line in untracked_result.stdout.splitlines() if line.strip()
     )
-    return sorted(changed & set(list_eligible(repo_root)))
+    return sorted(changed & set(eligible))
 
 
 def _safe_read_bytes(path: Path) -> bytes:

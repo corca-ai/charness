@@ -105,11 +105,13 @@ walk_subcommands = _argparse_surface.walk_subcommands
 MAX_SUBCOMMAND_DEPTH = _argparse_surface.MAX_SUBCOMMAND_DEPTH
 _argparse_help_probe = import_repo_module(__file__, "scripts.argparse_help_probe")
 HelpProbe = _argparse_help_probe.HelpProbe
+HelpRunner = _argparse_help_probe.HelpRunner
 _check_doc_links = import_repo_module(__file__, "scripts.check_doc_links")
 iter_docs = _check_doc_links.iter_docs
 BACKTICK_CONTENT_RE = _check_doc_links.BACKTICK_CONTENT_RE
 _repo_file_listing = import_repo_module(__file__, "scripts.repo_file_listing")
 iter_matching_repo_files = _repo_file_listing.iter_matching_repo_files
+RepoFileSnapshot = _repo_file_listing.RepoFileSnapshot
 _markdown_doc_scan = import_repo_module(__file__, "scripts.markdown_doc_scan")
 iter_doc_lines_with_language = _markdown_doc_scan.iter_doc_lines_with_language
 _gate_report_emit = import_repo_module(__file__, "scripts.gate_report_emit")
@@ -327,22 +329,32 @@ def iter_scanned_files(root: Path, *, require_git: bool = False) -> Iterator[tup
     `domain_language_contract`'s own, so the replacement is a superset of what it
     scanned rather than a narrowing.
     """
-    for doc in iter_docs(root, require_git=require_git):
+    snapshot = RepoFileSnapshot(root, require_git=require_git)
+    for doc in iter_docs(root, require_git=require_git, snapshot=snapshot):
         yield doc, iter_command_carriers(doc)
-    for spec in iter_matching_repo_files(root, SPEC_DOC_GLOBS, require_git=require_git):
+    for spec in iter_matching_repo_files(
+        root, SPEC_DOC_GLOBS, require_git=require_git, snapshot=snapshot
+    ):
         yield spec, iter_command_carriers(spec)
-    for source in iter_matching_repo_files(root, SOURCE_GLOBS, require_git=require_git):
+    for source in iter_matching_repo_files(
+        root, SOURCE_GLOBS, require_git=require_git, snapshot=snapshot
+    ):
         yield source, iter_source_carriers(source)
 
 
-def build_report(root: Path, *, require_git: bool = False) -> dict[str, object]:
+def build_report(
+    root: Path,
+    *,
+    require_git: bool = False,
+    help_runner: HelpRunner | None = None,
+) -> dict[str, object]:
     invocations: list[tuple] = []
     for path, carriers in iter_scanned_files(root, require_git=require_git):
         invocations.extend(
             (path, lineno, tokens) for lineno, tokens in iter_documented_invocations(carriers)
         )
 
-    probe = HelpProbe(root)
+    probe = HelpProbe(root, runner=help_runner)
     probe.prime({(CLI_NAME,)})
     if not probe.subcommand_choices((CLI_NAME,)):
         # No derivable authority means no verdict. Reporting "0 findings" here

@@ -412,26 +412,26 @@ def main() -> int:
     # Collect on BOTH axes: every rule inside one retro, and every failing retro
     # in the batch. Stopping at the first of either makes the author pay one gate
     # run per problem.
-    return run_changed_artifact_validator(
-        default_repo_root=REPO_ROOT,
-        all_help="Validate every checked retro artifact.",
-        artifact_label="retro artifact",
-        changed_paths_fn=changed_paths,
-        candidate_paths_fn=candidate_paths,
-        validate_factory=_validate_factory,
-        fail_fast_help=(
-            "Stop at the first rule violation instead of reporting every violation in one pass."
-        ),
-        # A CALLABLE, resolved after `--repo-root` is parsed: the prefix this
-        # validator owns is the one the repo being validated declares, not the one
-        # this file was written in.
-        owned_prefix=retro_artifact_prefix,
-        preflight=_unspeakable_adapter_version,
-    )
+    try:
+        return run_changed_artifact_validator(
+            default_repo_root=REPO_ROOT,
+            all_help="Validate every checked retro artifact.",
+            artifact_label="retro artifact",
+            changed_paths_fn=changed_paths,
+            candidate_paths_fn=candidate_paths,
+            validate_factory=_validate_factory,
+            fail_fast_help=(
+                "Stop at the first rule violation instead of reporting every violation in one pass."
+            ),
+            # A CALLABLE, resolved after `--repo-root` is parsed: the prefix this
+            # validator owns is the one the repo being validated declares, not the one
+            # this file was written in.
+            owned_prefix=retro_artifact_prefix,
+            preflight=_unspeakable_adapter_version,
+        )
+    except ValidationError as exc:
+        return report_validation_failure(str(exc), artifact_type="retro")
 
 
 if __name__ == "__main__":
-    try:
-        raise SystemExit(main())
-    except ValidationError as exc:
-        raise SystemExit(report_validation_failure(str(exc), artifact_type="retro"))
+    raise SystemExit(main())

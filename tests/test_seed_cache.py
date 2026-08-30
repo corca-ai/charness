@@ -5,7 +5,30 @@ import os
 import time
 from pathlib import Path
 
+import pytest
+
 from tests import seed_cache
+
+
+def test_source_hash_reuses_the_controller_value_in_workers(monkeypatch) -> None:
+    inherited = "a" * 32
+    monkeypatch.setattr(seed_cache, "_SOURCE_HASH", None)
+    monkeypatch.setenv(seed_cache._SOURCE_HASH_ENV, inherited)
+    monkeypatch.setattr(
+        seed_cache,
+        "_compute_source_hash",
+        lambda _root: (_ for _ in ()).throw(AssertionError("must reuse controller hash")),
+    )
+
+    assert seed_cache.source_hash() == inherited
+
+
+def test_invalid_inherited_source_hash_is_not_trusted(monkeypatch) -> None:
+    monkeypatch.setattr(seed_cache, "_SOURCE_HASH", None)
+    monkeypatch.setenv(seed_cache._SOURCE_HASH_ENV, "not-a-source-hash")
+    monkeypatch.setattr(seed_cache, "_compute_source_hash", lambda _root: "b" * 32)
+
+    assert seed_cache.source_hash() == "b" * 32
 
 
 def _concurrent_seed_worker(
@@ -21,7 +44,14 @@ def _concurrent_seed_worker(
     def build(destination: Path) -> None:
         with Path(counter_path).open("a", encoding="utf-8") as counter:
             counter.write("build\n")
+        # Give the peer time to wait for this outer seed. The cache must release its
+        # root lock while waiting so a builder can safely compose another cached seed.
         time.sleep(0.2)
+        dependency = seed_cache.get_or_build(
+            "dependency",
+            lambda nested: (nested / "ready.txt").write_text("ready\n", encoding="utf-8"),
+        )
+        assert (dependency / "ready.txt").read_text(encoding="utf-8") == "ready\n"
         (destination / "complete.txt").write_text("complete\n", encoding="utf-8")
 
     result = seed_cache.get_or_build("shared", build)
@@ -50,6 +80,9 @@ def _cross_hash_seed_worker(
     result_queue.put((source_hash, (result / "complete.txt").read_text(encoding="utf-8")))
 
 
+@pytest.mark.boundary_contract(
+    reason="Cross-process locking is the behavior under test; an in-process fake cannot prove it."
+)
 def test_seed_cache_builds_once_across_processes(tmp_path: Path) -> None:
     context = multiprocessing.get_context("spawn")
     start_event = context.Event()
@@ -74,6 +107,9 @@ def test_seed_cache_builds_once_across_processes(tmp_path: Path) -> None:
     assert sorted(result_queue.get(timeout=2) for _ in workers) == ["complete\n", "complete\n"]
 
 
+@pytest.mark.boundary_contract(
+    reason="Cross-process pruning races are the behavior under test."
+)
 def test_seed_cache_pruning_does_not_delete_a_different_hash_build(
     tmp_path: Path,
 ) -> None:

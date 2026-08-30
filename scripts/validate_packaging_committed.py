@@ -49,7 +49,7 @@ def validate_snapshot(snapshot_root: Path) -> subprocess.CompletedProcess[str]:
     script_path = snapshot_root / "scripts" / "validate_packaging.py"
     if not script_path.is_file():
         raise ValidationError(f"snapshot is missing `{script_path.relative_to(snapshot_root)}`")
-    # No `--validate-export`. That flag requires the checked-in plugin tree to exist in
+    # No `--validate-export`. That flag requires the materialized plugin export to exist in
     # the snapshot, and `plugins/` stopped being tracked on 2026-08-29: it is generated
     # by `sync_root_plugin_manifests.py` on `charness init`/`update` and at the release
     # version bump, so a committed tree legitimately has none. (An earlier spelling of

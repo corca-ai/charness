@@ -2,8 +2,8 @@
   "version": 1,
   "surfaces": [
     {
-      "surface_id": "checked-in-plugin-export",
-      "description": "Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.",
+      "surface_id": "materialized-plugin-export",
+      "description": "Materialized plugin export and root marketplace artifacts derived from repo-owned source paths.",
       "source_paths": [
         "README.md",
         "packaging/**",
@@ -31,8 +31,8 @@
         "python3 scripts/validate_packaging_committed.py --repo-root ."
       ],
       "notes": [
-        "Edit the repo-owned source path, not the checked-in plugin export.",
-        "If a derived artifact changes, regenerate it and commit the result."
+        "Edit the repo-owned source path, not the materialized plugin export.",
+        "If a derived artifact changes, regenerate the export and commit any tracked root artifacts."
       ],
       "generated_markdown": [
         {
@@ -467,7 +467,7 @@
     },
     {
       "surface_id": "export-self-sufficiency",
-      "description": "Whether the checked-in plugin export can run on a machine that has only the export: shipped dependency contract, and repo-root paths exported modules read.",
+      "description": "Whether the materialized plugin export can run on a machine that has only the export: shipped dependency contract, and repo-root paths exported modules read.",
       "source_paths": [
         "scripts/check_export_self_sufficiency.py",
         "scripts/export_self_sufficiency_lib.py",

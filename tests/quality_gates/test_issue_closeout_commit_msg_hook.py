@@ -44,7 +44,13 @@ def test_commit_msg_gate_skips_when_no_issue_closeout_artifact_is_staged(tmp_pat
     message = tmp_path / "message.txt"
     message.write_text("Ordinary commit\n", encoding="utf-8")
 
-    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message))
+    result = run_script(
+        SCRIPT,
+        "--repo-root",
+        str(tmp_path),
+        "--commit-msg-file",
+        str(message),
+    )
 
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
@@ -57,7 +63,14 @@ def test_commit_msg_gate_rejects_staged_closeout_artifact_without_commit_carrier
     message = tmp_path / "message.txt"
     message.write_text("Resolve issue without close keywords\n", encoding="utf-8")
 
-    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message))
+    result = run_script(
+        SCRIPT,
+        "--repo-root",
+        str(tmp_path),
+        "--commit-msg-file",
+        str(message),
+        real_process=True,
+    )
 
     assert result.returncode == 1
     payload = yaml.safe_load(result.stdout)

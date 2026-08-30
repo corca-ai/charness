@@ -326,13 +326,49 @@ def test_the_wrapper_publishes_its_pgid_by_rename(tmp_path: Path) -> None:
     start = tmp_path / "child-start"
     start.write_text("start\n", encoding="utf-8")
     proc = subprocess.run(
-        [sys.executable, "-c", mr._CHILD_WRAPPER, str(marker), str(start), sys.executable, "-c", ""],
+        [
+            sys.executable,
+            "-c",
+            mr._CHILD_WRAPPER,
+            str(marker),
+            str(start),
+            str(os.getpid()),
+            sys.executable,
+            "-c",
+            "",
+        ],
         check=False, capture_output=True, text=True,
     )
     assert proc.returncode == 0, proc.stderr
     assert int(marker.read_text(encoding="utf-8").strip()) > 1
     # No staging file survives a normal run -- `clear()` rmdir's this directory.
     assert not (tmp_path / "child-pgid.partial").exists()
+
+
+@pytest.mark.boundary_contract(reason="prove a pre-exec child exits when its parent dies before attachment")
+def test_the_wrapper_does_not_outlive_a_parent_that_dies_before_start(tmp_path: Path) -> None:
+    marker = tmp_path / "child-pgid"
+    start = tmp_path / "child-start"
+    proc = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            mr._CHILD_WRAPPER,
+            str(marker),
+            str(start),
+            "0",
+            sys.executable,
+            "-c",
+            "raise SystemExit(99)",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        timeout=2,
+    )
+    assert proc.returncode == 0, proc.stderr
+    assert marker.is_file()
+    assert not start.exists()
 
 
 def test_pid_activity_handles_permissions_proc_errors_and_zombies(monkeypatch: pytest.MonkeyPatch) -> None:

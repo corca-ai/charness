@@ -2,10 +2,13 @@ from __future__ import annotations
 
 import importlib.util
 import os
+import shutil
 import subprocess
 from pathlib import Path
 
 import pytest
+
+from tests.seed_cache import get_or_build
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 MODULE_PATH = REPO_ROOT / "scripts" / "classify_t_signal.py"
@@ -24,8 +27,7 @@ def _run(repo: Path, *args: str, env: dict | None = None) -> subprocess.Complete
     return result
 
 
-def _init_repo(repo: Path) -> dict:
-    repo.mkdir(parents=True, exist_ok=True)
+def _git_env() -> dict:
     env = dict(os.environ)
     env.update(
         {
@@ -35,6 +37,12 @@ def _init_repo(repo: Path) -> dict:
             "GIT_COMMITTER_EMAIL": "test@example.com",
         }
     )
+    return env
+
+
+def _init_repo(repo: Path) -> dict:
+    repo.mkdir(parents=True, exist_ok=True)
+    env = _git_env()
     _run(repo, "git", "init", "-q", env=env)
     _run(repo, "git", "checkout", "-q", "-b", "main", env=env)
     return env
@@ -53,11 +61,19 @@ def _write(repo: Path, rel: str, content: str = "x\n") -> None:
     target.write_text(content, encoding="utf-8")
 
 
-def _setup_with_baseline(repo: Path) -> dict:
+def _build_baseline_seed(staging: Path) -> None:
+    """Build the immutable one-commit history shared by classifier tests."""
+    repo = staging / "repo"
     env = _init_repo(repo)
     _write(repo, "README.md", "# baseline\n")
     _commit(repo, "initial", env)
-    return env
+
+
+def _setup_with_baseline(repo: Path) -> dict:
+    """Copy the source-bound baseline before applying a test's semantic commits."""
+    seed = get_or_build("classify-t-signal-baseline-seed", _build_baseline_seed)
+    shutil.copytree(seed / "repo", repo)
+    return _git_env()
 
 
 @pytest.fixture()

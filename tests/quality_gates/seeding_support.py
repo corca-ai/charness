@@ -7,6 +7,7 @@ import importlib.util
 import io
 import json
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -271,36 +272,107 @@ def git(repo: Path, *args: str) -> str:
     ).stdout.strip()
 
 
+def _build_empty_git_dir_seed(seed_root: Path) -> None:
+    repo = seed_root / "repo"
+    repo.mkdir()
+    git(repo, "init", "-q")
+
+
+def _empty_git_dir_seed() -> Path:
+    from tests.seed_cache import get_or_build
+
+    return get_or_build(
+        "quality-gates-empty-git-dir-seed",
+        _build_empty_git_dir_seed,
+    ) / "repo" / ".git"
+
+
+def _install_empty_git_dir(repo: Path, *, branch: str | None = None) -> None:
+    shutil.copytree(_empty_git_dir_seed(), repo / ".git")
+    if branch is not None:
+        (repo / ".git" / "HEAD").write_text(
+            f"ref: refs/heads/{branch}\n",
+            encoding="utf-8",
+        )
+
+
+def _build_staged_readme_seed(seed_root: Path) -> None:
+    """Build the common pre-commit index used by variable-message fixtures."""
+    repo = seed_root / "repo"
+    repo.mkdir()
+    _install_empty_git_dir(repo)
+    write_text(repo / "README.md", "# Test\n")
+    git(repo, "add", "README.md")
+
+
+def _staged_readme_seed() -> Path:
+    from tests.seed_cache import get_or_build
+
+    return get_or_build(
+        "quality-gates-staged-readme-seed",
+        _build_staged_readme_seed,
+    ) / "repo" / ".git"
+
+
+def _install_staged_readme(repo: Path, *, branch: str | None = None) -> None:
+    shutil.copytree(_staged_readme_seed(), repo / ".git")
+    write_text(repo / "README.md", "# Test\n")
+    if branch is not None:
+        (repo / ".git" / "HEAD").write_text(
+            f"ref: refs/heads/{branch}\n",
+            encoding="utf-8",
+        )
+
+
 def init_git_repo(tmp_path: Path, name: str = "repo") -> Path:
     """Create a temporary repository and initialize its git metadata."""
     repo = make_repo(tmp_path, name)
-    git(repo, "init", "-q")
+    _install_empty_git_dir(repo)
     return repo
 
 
 def seed_two_changed_pool_files(tmp_path: Path) -> tuple[Path, str, str]:
     """Create the shared two-file git history used by changed-line tests."""
-    repo = make_repo(tmp_path)
-    scripts = repo / "scripts"
-    scripts.mkdir(parents=True)
-    git(repo, "init", "-q")
-    for name in ("foo.py", "bar.py"):
-        write_text(scripts / name, "def a():\n    return 1\n")
-    git(repo, "add", "-A")
-    git(repo, "commit", "-q", "-m", "base")
-    base = git(repo, "rev-parse", "HEAD")
-    for name in ("foo.py", "bar.py"):
-        write_text(scripts / name, "def a():\n    return 1\n\n\ndef b():\n    return 2\n")
-    git(repo, "add", "-A")
-    git(repo, "commit", "-q", "-m", "head")
-    return repo, base, git(repo, "rev-parse", "HEAD")
+    from tests.seed_cache import get_or_build
+
+    def build(seed_root: Path) -> None:
+        repo = seed_root / "repo"
+        repo.mkdir()
+        scripts = repo / "scripts"
+        scripts.mkdir()
+        _install_empty_git_dir(repo)
+        for name in ("foo.py", "bar.py"):
+            write_text(scripts / name, "def a():\n    return 1\n")
+        git(repo, "add", "-A")
+        git(repo, "commit", "-q", "-m", "base")
+        branch_ref = (repo / ".git" / "HEAD").read_text(encoding="ascii").strip()[5:]
+        (seed_root / "base").write_text(
+            (repo / ".git" / branch_ref).read_text(encoding="ascii").strip(),
+            encoding="ascii",
+        )
+        for name in ("foo.py", "bar.py"):
+            write_text(
+                scripts / name,
+                "def a():\n    return 1\n\n\ndef b():\n    return 2\n",
+            )
+        git(repo, "add", "-A")
+        git(repo, "commit", "-q", "-m", "head")
+        (seed_root / "head").write_text(
+            (repo / ".git" / branch_ref).read_text(encoding="ascii").strip(),
+            encoding="ascii",
+        )
+
+    seed = get_or_build("quality-gates-two-changed-pool-seed", build)
+    repo = tmp_path / "repo"
+    shutil.copytree(seed / "repo", repo)
+    base = (seed / "base").read_text(encoding="ascii")
+    head = (seed / "head").read_text(encoding="ascii")
+    return repo, base, head
 
 
 def seed_commit(repo: Path, body: str) -> None:
     """Create the small main-branch commit used by closeout fixtures."""
-    git(repo, "init", "-q", "-b", "main")
-    write_text(repo / "README.md", "# Test\n")
-    git(repo, "add", "README.md")
+    _install_staged_readme(repo, branch="main")
     command = ["commit", "-m", "Resolve issue"]
     for paragraph in body.split("\n\n"):
         command.extend(["-m", paragraph])

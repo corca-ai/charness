@@ -67,26 +67,37 @@ def _git_lines(repo_root: Path, args: list[str]) -> list[str]:
     return _git_lines_or_none(repo_root, args) or []
 
 
+def _resolve_pair(repo_root: Path, first: str, second: str) -> tuple[str, str] | None:
+    """Resolve two revisions in one coherent Git snapshot."""
+    if first.startswith("-") or second.startswith("-"):
+        return None
+    resolved = _git_lines_or_none(
+        repo_root,
+        ["rev-parse", first, second],
+    )
+    if resolved is None or len(resolved) != 2:
+        return None
+    return resolved[0], resolved[1]
+
+
 def _head_resolves_to_head(repo_root: Path, head_sha: str) -> bool:
     if head_sha == "HEAD":
         return True
-    resolved = _git_lines(repo_root, ["rev-parse", head_sha])
-    head = _git_lines(repo_root, ["rev-parse", "HEAD"])
-    return bool(resolved) and bool(head) and resolved[0] == head[0]
+    pair = _resolve_pair(repo_root, head_sha, "HEAD")
+    return pair is not None and pair[0] == pair[1]
 
 
 def uncommitted_pool_changes(repo_root: Path, eligible: set[str]) -> list[str]:
     """Eligible mutation-pool files with uncommitted worktree changes vs HEAD.
 
-    Runs the same two probes as ``_worktree_paths`` and must share its quoting
-    fix: this function was left on the raw helper when that fix landed, so on a
+    Runs the same status snapshot as ``probe_run_trust`` and must share its path
+    decoding: this function was left on the raw helper when that fix landed, so on a
     machine with git's default ``core.quotePath`` a dirty non-ASCII-named pool
     file stayed invisible HERE while the sibling detector saw it — two detectors
     disagreeing about the same tree, which is the state this module exists to
     make impossible.
     """
-    changed = set(_worktree_paths(repo_root, ["diff", "--name-only", "HEAD"]) or [])
-    changed.update(_worktree_paths(repo_root, ["ls-files", "--others", "--exclude-standard"]) or [])
+    changed = set(_worktree_status_paths(repo_root) or [])
     return sorted(path for path in changed if path in eligible)
 
 
@@ -115,17 +126,46 @@ class TrustProbe(NamedTuple):
     unestablished_kind: str | None = None
 
 
-def _worktree_paths(repo_root: Path, args: list[str]) -> list[str] | None:
-    """A git path listing with path quoting turned off.
+def _parse_status_paths(payload: bytes) -> list[str]:
+    """Decode primary paths from porcelain-v1's NUL-delimited output.
 
-    Under the default ``core.quotePath=true`` git renders a non-ASCII path as
-    ``"scripts/f\\303\\266.py"`` — quoted and octal-escaped — which never matches
-    the plain POSIX path the eligible set holds, so a dirty pool file with such a
-    name silently failed to register as contamination. Masked on the machine this
-    was written on, whose global config sets the flag to false; reproduced by
-    forcing the default back on.
+    Rename/copy records carry the source as a second field under ``-z``. The old
+    ``diff --name-only HEAD`` detector reported the destination, so retain that
+    contract and skip the following source field.
     """
-    return _git_lines_or_none(repo_root, ["-c", "core.quotePath=false", *args])
+    fields = payload.split(b"\0")
+    paths: list[str] = []
+    index = 0
+    while index < len(fields):
+        record = fields[index]
+        index += 1
+        if not record or len(record) < 4 or record[2:3] != b" ":
+            continue
+        status = record[:2]
+        paths.append(record[3:].decode("utf-8", errors="surrogateescape"))
+        if b"R" in status or b"C" in status:
+            index += 1
+    return paths
+
+
+def _worktree_status_paths(repo_root: Path) -> list[str] | None:
+    """Tracked and untracked paths from one coherent Git snapshot.
+
+    NUL framing removes quote-mode ambiguity and preserves non-ASCII paths. A
+    single porcelain status replaces the former ``diff`` plus ``ls-files`` pair,
+    so staged, unstaged, and untracked state is observed at one point in time.
+    """
+    try:
+        result = subprocess.run(
+            ["git", "status", "--porcelain=v1", "-z", "--untracked-files=all"],
+            cwd=repo_root,
+            capture_output=True,
+        )
+    except OSError:
+        return None
+    if result.returncode != 0:
+        return None
+    return _parse_status_paths(result.stdout)
 
 
 def probe_run_trust(repo_root: Path, head_sha: str, eligible: set[str]) -> TrustProbe:
@@ -146,16 +186,14 @@ def probe_run_trust(repo_root: Path, head_sha: str, eligible: set[str]) -> Trust
       direction: an explicit older ``--head-sha`` over a dirty pool reported no
       contamination at all. Reproduced before the fix.
     """
-    resolved = _git_lines_or_none(repo_root, ["rev-parse", "--verify", head_sha]) if head_sha != "HEAD" else None
-    head = _git_lines_or_none(repo_root, ["rev-parse", "HEAD"])
-    if head_sha != "HEAD" and (resolved is None or head is None):
+    pair = _resolve_pair(repo_root, head_sha, "HEAD") if head_sha != "HEAD" else None
+    if head_sha != "HEAD" and pair is None:
         return TrustProbe(
             [], f"could not resolve `{head_sha}` or `HEAD` to compare them", INSPECTION_FAILED
         )
 
-    tracked = _worktree_paths(repo_root, ["diff", "--name-only", "HEAD"])
-    untracked = _worktree_paths(repo_root, ["ls-files", "--others", "--exclude-standard"])
-    if tracked is None or untracked is None:
+    worktree_paths = _worktree_status_paths(repo_root)
+    if worktree_paths is None:
         return TrustProbe(
             [],
             "could not inspect the worktree for uncommitted mutation-pool changes",
@@ -169,12 +207,12 @@ def probe_run_trust(repo_root: Path, head_sha: str, eligible: set[str]) -> Trust
     # pool anyway — so the run already reports "no eligible mutation-pool files
     # changed" and exits 0, which is the honest statement for both. Refusing here
     # would re-break the empty-scope contract this slice just repaired.
-    contaminated = sorted({*tracked, *untracked} & eligible)
-    if head_sha != "HEAD" and resolved and head and resolved[0] != head[0]:
+    contaminated = sorted(set(worktree_paths) & eligible)
+    if pair is not None and pair[0] != pair[1]:
         return TrustProbe(
             contaminated,
-            f"the analyzed head `{resolved[0][:12]}` is not the checked-out HEAD "
-            f"`{head[0][:12]}`, but coverage is collected from the HEAD worktree, "
+            f"the analyzed head `{pair[0][:12]}` is not the checked-out HEAD "
+            f"`{pair[1][:12]}`, but coverage is collected from the HEAD worktree, "
             "so the mapping and the measurement describe different trees",
             SCOPE_MISMATCH,
         )
@@ -221,8 +259,13 @@ def _pin_run_state(repo_root: Path, base_sha: str, head_sha: str) -> dict[str, s
     the ``blocking_detail`` numbers are computed against. ``head_commit`` and the
     changed-pool content fingerprint are the drift tripwires re-read at the end.
     """
-    resolved = _git_lines(repo_root, ["rev-parse", head_sha])
-    head_commit = _git_lines(repo_root, ["rev-parse", "HEAD"])
+    if head_sha == "HEAD":
+        resolved = _git_lines(repo_root, ["rev-parse", "HEAD"])
+        head_commit = resolved
+    else:
+        pair = _resolve_pair(repo_root, head_sha, "HEAD")
+        resolved = [pair[0]] if pair is not None else []
+        head_commit = [pair[1]] if pair is not None else []
     try:
         fingerprint = changed_pool_fingerprint(repo_root, base_sha)
     except (subprocess.CalledProcessError, OSError):

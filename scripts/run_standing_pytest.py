@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Canonical runner for the repo's standing pytest gate."""
+
 from __future__ import annotations
 
 import argparse
 import contextlib
-import importlib.metadata
 import importlib.util
 import os
 import shlex
@@ -101,32 +101,20 @@ DEFAULT_XDIST_WORKER_CAP = 16
 # would have passed the flag to exactly those two versions.
 MIN_XDIST_FOR_SCHED_CHUNK = (3, 2)
 
+_environment = import_repo_module(__file__, "scripts.standing_pytest_environment")
+
 
 def usable_cpu_count() -> int:
-    """CPUs this process may actually run on. The repo's owner for PROCESS WIDTH.
-
-    Deliberately not routed through the quality skill's `runtime_profile_lib`, which
-    owns the same stdlib read for a different question. That one is a writer/reader
-    CONTRACT -- the recorder stamps a profile id the budget gate looks budgets up
-    under, so two derivations there mean two machines. Worker width is a local
-    performance choice with no cross-process consumer, and importing a skill module
-    for it proved actively worse: this runner is re-entered as a bare child process
-    (coverage-instrumented, sys.path[0] elsewhere), where the import raised
-    `ModuleNotFoundError` and took the whole gate down over a tuning number.
-
-    Same `OSError` handling as that lib, for the same reason: affinity can be refused
-    by a seccomp/LSM policy, and worker width must never be why the suite cannot start.
-    """
-    try:
-        return len(os.sched_getaffinity(0)) or 1
-    except (AttributeError, OSError):
-        return os.cpu_count() or 1
+    """Compatibility seam for tests and callers that patch process width."""
+    return _environment.usable_cpu_count()
 
 
 def choose_pytest_command(env: dict[str, str] | None = None) -> list[str]:
     env = os.environ if env is None else env
     if importlib.util.find_spec("pytest") is not None:
-        python = env.get("CHARNESS_STANDING_PYTEST_PYTHON", sys.executable).strip() or sys.executable
+        python = (
+            env.get("CHARNESS_STANDING_PYTEST_PYTHON", sys.executable).strip() or sys.executable
+        )
         return [python, "-m", "pytest"]
     return ["pytest"]
 
@@ -150,7 +138,11 @@ def has_xdist(pytest_command: list[str], env: dict[str, str] | None = None) -> b
         return False
     if _plugin_disabled("xdist", env.get("PYTEST_ADDOPTS", "")):
         return False
-    current_python_pytest = [env.get("CHARNESS_STANDING_PYTEST_PYTHON", sys.executable).strip() or sys.executable, "-m", "pytest"]
+    current_python_pytest = [
+        env.get("CHARNESS_STANDING_PYTEST_PYTHON", sys.executable).strip() or sys.executable,
+        "-m",
+        "pytest",
+    ]
     if pytest_command != current_python_pytest:
         return False
     return importlib.util.find_spec("xdist") is not None
@@ -188,37 +180,8 @@ def choose_xdist_workers(env: dict[str, str] | None = None) -> str:
 
 
 def xdist_version() -> tuple[int, ...]:
-    """This interpreter's pytest-xdist version as a tuple, or `()` when unknown.
-
-    Takes no `env`, deliberately: the lookup reads THIS process's installed metadata,
-    so the answer is scoped to the runner's interpreter, not to the one
-    `CHARNESS_STANDING_PYTEST_PYTHON` may name. An `env` parameter here would advertise
-    a targeting this cannot do. `has_xdist` already carries the same same-interpreter
-    assumption and handles the mismatch by refusing xdist entirely, which also
-    suppresses this flag.
-
-    Deliberately not `packaging.version`: `pyproject.toml` puts the repo root on the
-    test-session `sys.path`, and this repo HAS a root `packaging/` directory with no
-    `__init__.py`. Importing `packaging` here would resolve to that namespace package
-    on any in-repo run and raise on the `.version` attribute -- the exact
-    script-basename shadowing the pytest config block warns about, one directory up.
-    A leading-digit split is enough for a two-component floor.
-    """
-    try:
-        raw = importlib.metadata.version("pytest-xdist")
-    except importlib.metadata.PackageNotFoundError:
-        return ()
-    parts: list[int] = []
-    for chunk in raw.split(".")[:3]:
-        digits = ""
-        for char in chunk:
-            if not char.isdigit():
-                break
-            digits += char
-        if not digits:
-            break
-        parts.append(int(digits))
-    return tuple(parts)
+    """Compatibility seam for tests and callers that patch xdist detection."""
+    return _environment.xdist_version()
 
 
 def choose_sched_chunk(env: dict[str, str] | None = None) -> tuple[str | None, str | None]:
@@ -261,12 +224,11 @@ def choose_sched_chunk(env: dict[str, str] | None = None) -> tuple[str | None, s
     the trade is favourable rather than free. The dominant shared state -- the
     `seeded_charness_repo` / `seeded_managed_home` family -- is safe, because it lives
     in `tests/seed_cache.py`'s source-hash-keyed FILESYSTEM cache that every worker
-    shares. What does get rebuilt per worker is module-scoped `tmp_path_factory` state
-    that never went through that cache, chiefly `seeded_quality_runner_repo` in
-    `tests/quality_gates/support.py` (~80 consumers): under contiguous chunks it was
-    built once or twice, now up to once per worker. The measured 45.5s -> 26.9s is NET
-    of that duplicated setup, so the trade pays -- but seed-cache-backing that fixture
-    is the next win here, not a claim that nothing was given up.
+    shares. `seeded_quality_runner_repo` now uses that same source-hash cache and every
+    test mutates an isolated clone, so scattering no longer pays a per-worker rebuild
+    of the shared quality-runner seed. Other module-scoped fixtures can still give up
+    locality; the measured 45.5s -> 26.9s remains a net observation, not a claim that
+    scattering is free.
     """
     env = os.environ if env is None else env
     override = env.get("CHARNESS_PYTEST_SCHED_CHUNK", "").strip()
@@ -293,11 +255,16 @@ def choose_sched_chunk(env: dict[str, str] | None = None) -> tuple[str | None, s
     installed = xdist_version()
     if installed < MIN_XDIST_FOR_SCHED_CHUNK:
         shown = ".".join(str(part) for part in installed) if installed else "unknown"
-        return None, f"pytest-xdist {shown} is below {'.'.join(str(p) for p in MIN_XDIST_FOR_SCHED_CHUNK)}"
+        return (
+            None,
+            f"pytest-xdist {shown} is below {'.'.join(str(p) for p in MIN_XDIST_FOR_SCHED_CHUNK)}",
+        )
     return "1", None
 
 
-def expand_targets(repo_root: Path, targets: tuple[str, ...] = STANDING_PYTEST_TARGETS) -> list[str]:
+def expand_targets(
+    repo_root: Path, targets: tuple[str, ...] = STANDING_PYTEST_TARGETS
+) -> list[str]:
     expanded: list[str] = []
     for target in targets:
         if any(char in target for char in "*?["):
@@ -389,7 +356,9 @@ def run_standing_pytest(args: argparse.Namespace) -> int:
     if args.print_command:
         print(shlex.join(command))
         return 0
-    lock_context = _hold_basetemp_lock(basetemp) if runner_owned_basetemp else contextlib.nullcontext()
+    lock_context = (
+        _hold_basetemp_lock(basetemp) if runner_owned_basetemp else contextlib.nullcontext()
+    )
     with lock_context:
         write_run_record(repo_root, {"state": "running", "command": shlex.join(command)})
         # SC11. This was a bare `subprocess.run` -- the repo's LONGEST child on a
@@ -494,7 +463,11 @@ def run_standing_pytest(args: argparse.Namespace) -> int:
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=Path("."))
-    parser.add_argument("--mode", choices=("full", "read-only"), default=os.environ.get("CHARNESS_QUALITY_MODE", "full"))
+    parser.add_argument(
+        "--mode",
+        choices=("full", "read-only"),
+        default=os.environ.get("CHARNESS_QUALITY_MODE", "full"),
+    )
     parser.add_argument("--basetemp", type=Path)
     parser.add_argument("--include-release-only", action="store_true")
     parser.add_argument("--keep-basetemp", action="store_true")

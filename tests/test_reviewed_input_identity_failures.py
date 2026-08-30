@@ -44,6 +44,53 @@ def test_worktree_content_os_error_is_unavailable(tmp_path: Path, monkeypatch: p
     assert identity_lib._worktree_content_sha256(tmp_path, "missing") is None
 
 
+def test_worktree_identity_reads_repository_and_head_in_one_probe(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _init_repo(tmp_path)
+    calls: list[tuple[str, ...]] = []
+    original = identity_lib._git_bytes
+
+    def observed(repo_root: Path, *args: str) -> bytes:
+        calls.append(args)
+        return original(repo_root, *args)
+
+    monkeypatch.setattr(identity_lib, "_git_bytes", observed)
+    captured = identity_lib.build_reviewed_input_identity(
+        repo_root=tmp_path, reviewed_paths=["reviewed.txt"]
+    )
+
+    assert captured["status"] == "captured"
+    assert ("rev-parse", "--is-inside-work-tree", "HEAD") in calls
+    assert ("rev-parse", "HEAD") not in calls
+
+
+def test_auto_committed_ref_paths_are_swept_once(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    calls = 0
+
+    def swept(*_args) -> list[str]:
+        nonlocal calls
+        calls += 1
+        return ["reviewed.txt"]
+
+    monkeypatch.setattr(identity_lib, "_auto_paths", swept)
+
+    paths, excluded = identity_lib._review_paths(
+        tmp_path,
+        None,
+        "HEAD",
+        identity_lib.SUBSTRATE_COMMITTED_REF,
+        None,
+        None,
+    )
+
+    assert paths == ["reviewed.txt"]
+    assert excluded == []
+    assert calls == 1
+
+
 def test_identity_reconstruction_failures(tmp_path: Path) -> None:
     assert verification_lib.verify_reviewed_input_identity(tmp_path, {"status": "unavailable"}) == (
         False,

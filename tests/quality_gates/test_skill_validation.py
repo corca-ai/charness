@@ -34,7 +34,9 @@ def test_validate_skills_rejects_unquoted_description(tmp_path: Path) -> None:
         tmp_path,
         "Use when something has punctuation: this should be rejected.",
     )
-    result = run_script("scripts/validate_skills.py", "--repo-root", str(repo))
+    result = run_script(
+        "scripts/validate_skills.py", "--repo-root", str(repo), real_process=True
+    )
     assert result.returncode == 1
     assert "double-quoted" in result.stderr
 

@@ -51,7 +51,7 @@ def test_retro_auto_trigger_hits_configured_install_surface() -> None:
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
     assert payload["triggered"] is True
-    assert "checked-in-plugin-export" in payload["surface_hits"]
+    assert "materialized-plugin-export" in payload["surface_hits"]
 
 
 def test_retro_auto_trigger_skips_non_matching_slice() -> None:
@@ -296,7 +296,7 @@ def test_retro_auto_trigger_reports_missing_surfaces_remediation_when_configured
     tmp_path: Path,
 ) -> None:
     repo = tmp_path / "repo"
-    _write_adapter(repo, "auto_session_trigger_surfaces:", "  - checked-in-plugin-export")
+    _write_adapter(repo, "auto_session_trigger_surfaces:", "  - materialized-plugin-export")
 
     result = run_script(
         "skills/public/retro/scripts/check_auto_trigger.py",

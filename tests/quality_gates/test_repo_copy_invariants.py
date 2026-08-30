@@ -25,6 +25,7 @@ def run_repo_copy_invariants(monkeypatch, capsys, *args: str) -> SimpleNamespace
     captured = capsys.readouterr()
     return SimpleNamespace(returncode=returncode, stdout=captured.out, stderr=captured.err)
 
+
 REQUIRED_VOLATILE_COPY_EXCLUDES = {
     ".charness",
     ".git",
@@ -82,7 +83,9 @@ def test_coverage_copy_ignore_drops_generated_reports(tmp_path: Path) -> None:
     assert not (target / "reports").exists()
 
 
-def test_check_test_repo_copy_invariants_flags_inline_ignore(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_check_test_repo_copy_invariants_flags_inline_ignore(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = tmp_path / "fake-charness"
     (repo / "tests").mkdir(parents=True)
     (repo / "tests" / "__init__.py").write_text("", encoding="utf-8")
@@ -374,8 +377,7 @@ def test_check_test_repo_copy_invariants_flags_import_time_root_write(
     repo = tmp_path / "fake-charness"
     (repo / "tests").mkdir(parents=True)
     (repo / "tests" / "test_import_write.py").write_text(
-        "from .support import ROOT\n"
-        "(ROOT / 'temporary.txt').touch()\n",
+        "from .support import ROOT\n(ROOT / 'temporary.txt').touch()\n",
         encoding="utf-8",
     )
 
@@ -518,6 +520,40 @@ def test_check_test_repo_copy_invariants_accepts_tmp_write_and_root_read(
         "def test_isolated(tmp_path):\n"
         "    source = (ROOT / 'AGENTS.md').read_text()\n"
         "    (tmp_path / 'AGENTS.md').write_text(source)\n",
+        encoding="utf-8",
+    )
+
+    result = run_repo_copy_invariants(monkeypatch, capsys, "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stderr
+
+
+def test_cached_quality_runner_seed_is_read_only(tmp_path: Path, monkeypatch, capsys) -> None:
+    repo = tmp_path / "fake-charness"
+    (repo / "tests").mkdir(parents=True)
+    (repo / "tests" / "test_seed_write.py").write_text(
+        "def test_write(seeded_quality_runner_repo):\n"
+        "    target = seeded_quality_runner_repo / 'scripts' / 'run-quality.sh'\n"
+        "    target.write_text('contaminated')\n",
+        encoding="utf-8",
+    )
+
+    result = run_repo_copy_invariants(monkeypatch, capsys, "--repo-root", str(repo))
+
+    assert result.returncode == 1
+    assert "mutates cached read-only fixture" in result.stderr
+    assert "Clone the seed into tmp_path first" in result.stderr
+
+
+def test_cached_quality_runner_seed_may_be_read_then_cloned(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    repo = tmp_path / "fake-charness"
+    (repo / "tests").mkdir(parents=True)
+    (repo / "tests" / "test_seed_clone.py").write_text(
+        "def test_clone(tmp_path, seeded_quality_runner_repo):\n"
+        "    source = (seeded_quality_runner_repo / 'README.md').read_text()\n"
+        "    (tmp_path / 'README.md').write_text(source)\n",
         encoding="utf-8",
     )
 

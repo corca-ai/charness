@@ -97,6 +97,32 @@ def pytest_temp_root() -> Path:
     return base / f"pytest-of-{user}"
 
 
+def du_bytes_many(paths: list[Path], *args: str) -> dict[Path, int]:
+    """Read one ``du`` metric for a stable path set in a single process."""
+    if not paths:
+        return {}
+    try:
+        result = subprocess.run(
+            ["du", *args, *(str(path) for path in paths)],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return {}
+    values: dict[Path, int] = {}
+    for line in result.stdout.splitlines():
+        size_text, separator, raw_path = line.partition("\t")
+        if not separator:
+            size_text, _, raw_path = line.partition(" ")
+        try:
+            values[Path(raw_path)] = int(size_text)
+        except (ValueError, TypeError):
+            continue
+    return values
+
+
 def _du_usage_error(stderr: str) -> bool:
     lowered = stderr.lower()
     return any(token in lowered for token in DU_USAGE_ERROR_TOKENS)

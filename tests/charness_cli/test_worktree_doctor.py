@@ -9,6 +9,7 @@ from pathlib import Path
 import pytest
 import yaml
 
+from scripts import worktree_doctor_checks as checks
 from scripts import worktree_doctor_lib as lib
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -33,6 +34,18 @@ def _write_manifest(repo: Path, body: str) -> None:
     (repo / ".agents" / "worktree-adapter.yaml").write_text(body, encoding="utf-8")
 
 
+def _plain_repo(tmp_path: Path) -> Path:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    return repo
+
+
+def _doctor_payload(
+    status: str = "pass", checks: tuple[dict[str, str], ...] = (), next_step: str | None = None
+) -> dict[str, object]:
+    return {"status": status, "checks": list(checks), "next_step": next_step}
+
+
 def test_doctor_no_manifest_passes_canonical_only(tmp_path: Path) -> None:
     repo = _make_git_worktree(tmp_path)
     payload = lib.run_doctor(repo)
@@ -43,6 +56,62 @@ def test_doctor_no_manifest_passes_canonical_only(tmp_path: Path) -> None:
     assert ids["hooks_path"] == "skipped"
     assert ids["lefthook_shim"] == "skipped"
     assert ids["husky_dir"] == "skipped"
+
+
+def test_canonical_doctor_reads_one_checkout_snapshot(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = _make_git_worktree(tmp_path)
+    calls: list[tuple[str, ...]] = []
+    original = checks._git_output
+
+    def observed(repo_root: Path, *args: str) -> str | None:
+        calls.append(args)
+        return original(repo_root, *args)
+
+    monkeypatch.setattr(checks, "_git_output", observed)
+
+    result = checks.run_canonical_checks(repo, disabled=set())
+
+    assert all(item.status in {"pass", "skipped"} for item in result)
+    assert calls == [
+        (
+            "rev-parse",
+            "--git-common-dir",
+            "--git-dir",
+            "--is-bare-repository",
+        ),
+        ("config", "--get", "core.hooksPath"),
+    ]
+
+
+def test_canonical_skips_hook_config_when_hook_checks_are_disabled(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = _make_git_worktree(tmp_path)
+    calls: list[tuple[str, ...]] = []
+    original = checks._git_output
+
+    def observed(repo_root: Path, *args: str) -> str | None:
+        calls.append(args)
+        return original(repo_root, *args)
+
+    monkeypatch.setattr(checks, "_git_output", observed)
+
+    result = checks.run_canonical_checks(
+        repo,
+        disabled={"hooks_path", "lefthook_shim", "husky_dir"},
+    )
+
+    assert [item.id for item in result] == ["git_common_dir", "worktree_isolation"]
+    assert calls == [
+        (
+            "rev-parse",
+            "--git-common-dir",
+            "--git-dir",
+            "--is-bare-repository",
+        )
+    ]
 
 
 def test_doctor_lefthook_shim_missing_node_modules_fails(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -67,9 +136,9 @@ def test_doctor_lefthook_shim_missing_node_modules_fails(tmp_path: Path, monkeyp
 
 
 def test_doctor_lefthook_shim_resolves_via_node_modules(tmp_path: Path) -> None:
-    repo = _make_git_worktree(tmp_path)
-    hooks_dir = repo / ".git" / "hooks"
-    hooks_dir.mkdir(parents=True, exist_ok=True)
+    repo = _plain_repo(tmp_path)
+    hooks_dir = repo / "hooks"
+    hooks_dir.mkdir()
     shim = hooks_dir / "pre-commit"
     shim.write_text("#!/bin/sh\nexec lefthook run pre-commit\n", encoding="utf-8")
     shim.chmod(0o755)
@@ -78,10 +147,8 @@ def test_doctor_lefthook_shim_resolves_via_node_modules(tmp_path: Path) -> None:
     binary = binary_dir / "lefthook"
     binary.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
     binary.chmod(0o755)
-    payload = lib.run_doctor(repo)
-    lefthook = next(check for check in payload["checks"] if check["id"] == "lefthook_shim")
-    assert lefthook["status"] == "pass"
-    assert payload["status"] == "pass"
+    result = checks._check_lefthook_shim(repo, hooks_dir)
+    assert result.status == checks.PASS
 
 
 def test_doctor_husky_marker_missing_fails(tmp_path: Path) -> None:
@@ -95,34 +162,28 @@ def test_doctor_husky_marker_missing_fails(tmp_path: Path) -> None:
 
 
 def test_doctor_husky_marker_present_passes(tmp_path: Path) -> None:
-    repo = _make_git_worktree(tmp_path)
+    repo = _plain_repo(tmp_path)
     (repo / ".husky" / "_").mkdir(parents=True)
     (repo / ".husky" / "_" / "pre-commit").write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
-    _git("config", "core.hooksPath", ".husky/_", cwd=repo)
-    payload = lib.run_doctor(repo)
-    husky = next(check for check in payload["checks"] if check["id"] == "husky_dir")
-    assert husky["status"] == "pass"
+    result = checks._check_husky_dir(repo, ".husky/_")
+    assert result.status == checks.PASS
 
 
 def test_doctor_husky_v9_default_missing_underscore_fails(tmp_path: Path) -> None:
-    repo = _make_git_worktree(tmp_path)
+    repo = _plain_repo(tmp_path)
     (repo / ".husky").mkdir()
     (repo / ".husky" / "pre-commit").write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
-    _git("config", "core.hooksPath", ".husky", cwd=repo)
-    payload = lib.run_doctor(repo)
-    husky = next(check for check in payload["checks"] if check["id"] == "husky_dir")
-    assert husky["status"] == "fail"
-    assert "_" in (husky["detail"] or "")
+    result = checks._check_husky_dir(repo, ".husky")
+    assert result.status == checks.FAIL
+    assert "_" in (result.detail or "")
 
 
 def test_doctor_husky_v9_default_with_underscore_passes(tmp_path: Path) -> None:
-    repo = _make_git_worktree(tmp_path)
+    repo = _plain_repo(tmp_path)
     (repo / ".husky" / "_").mkdir(parents=True)
     (repo / ".husky" / "_" / "h").write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
-    _git("config", "core.hooksPath", ".husky", cwd=repo)
-    payload = lib.run_doctor(repo)
-    husky = next(check for check in payload["checks"] if check["id"] == "husky_dir")
-    assert husky["status"] == "pass"
+    result = checks._check_husky_dir(repo, ".husky")
+    assert result.status == checks.PASS
 
 
 def test_manifest_inline_array_argv_emits_targeted_error(tmp_path: Path) -> None:
@@ -191,8 +252,11 @@ def test_manifest_without_a_version_is_still_refused(tmp_path: Path) -> None:
     assert "manifest.version is required" in payload["manifest"]["errors"]
 
 
-def test_manifest_doctor_check_runs_extra_command(tmp_path: Path) -> None:
+def test_manifest_doctor_check_runs_extra_command(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     repo = _make_git_worktree(tmp_path)
+    monkeypatch.setattr(lib, "run_canonical_checks", lambda *_args, **_kwargs: [])
     _write_manifest(
         repo,
         (
@@ -216,8 +280,11 @@ def test_manifest_doctor_check_runs_extra_command(tmp_path: Path) -> None:
     assert env_probe["source"] == "manifest"
 
 
-def test_manifest_doctor_check_failure_surfaces_next_step(tmp_path: Path) -> None:
+def test_manifest_doctor_check_failure_surfaces_next_step(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     repo = _make_git_worktree(tmp_path)
+    monkeypatch.setattr(lib, "run_canonical_checks", lambda *_args, **_kwargs: [])
     _write_manifest(
         repo,
         (
@@ -255,8 +322,21 @@ def test_manifest_doctor_check_failure_surfaces_next_step(tmp_path: Path) -> Non
     assert emitted["next_step"] == "do the thing"
 
 
-def test_prepare_with_passing_commands_but_failing_doctor_surfaces_next_step(tmp_path: Path) -> None:
+def test_prepare_with_passing_commands_but_failing_doctor_surfaces_next_step(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     repo = _make_git_worktree(tmp_path)
+    calls = 0
+
+    def fake_doctor(*_args, **_kwargs):
+        nonlocal calls
+        calls += 1
+        return _doctor_payload(
+            "pass" if calls == 1 else "fail",
+            next_step="rerun setup",
+        )
+
+    monkeypatch.setattr(lib, "run_doctor", fake_doctor)
     _write_manifest(
         repo,
         (
@@ -292,8 +372,11 @@ def test_prepare_with_passing_commands_but_failing_doctor_surfaces_next_step(tmp
     assert emitted["next_step"]
 
 
-def test_prepare_runs_commands_when_doctor_was_passing_with_force(tmp_path: Path) -> None:
+def test_prepare_runs_commands_when_doctor_was_passing_with_force(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     repo = _make_git_worktree(tmp_path)
+    monkeypatch.setattr(lib, "run_doctor", lambda *_args, **_kwargs: _doctor_payload())
     marker = repo / "marker.txt"
     _write_manifest(
         repo,
@@ -314,8 +397,11 @@ def test_prepare_runs_commands_when_doctor_was_passing_with_force(tmp_path: Path
     assert marker.read_text(encoding="utf-8").strip() == "ok"
 
 
-def test_prepare_runs_when_doctor_passes_without_declared_coverage(tmp_path: Path) -> None:
+def test_prepare_runs_when_doctor_passes_without_declared_coverage(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     repo = _make_git_worktree(tmp_path)
+    monkeypatch.setattr(lib, "run_doctor", lambda *_args, **_kwargs: _doctor_payload())
     _write_manifest(
         repo,
         (
@@ -342,8 +428,17 @@ def test_prepare_runs_when_doctor_passes_without_declared_coverage(tmp_path: Pat
     assert "skipped" not in payload
 
 
-def test_prepare_skips_when_passing_doctor_declares_coverage(tmp_path: Path) -> None:
+def test_prepare_skips_when_passing_doctor_declares_coverage(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     repo = _make_git_worktree(tmp_path)
+    monkeypatch.setattr(
+        lib,
+        "run_doctor",
+        lambda *_args, **_kwargs: _doctor_payload(
+            checks=({"id": "dependencies-ready", "status": "pass"},)
+        ),
+    )
     _write_manifest(
         repo,
         (
@@ -379,8 +474,11 @@ def test_prepare_skips_when_passing_doctor_declares_coverage(tmp_path: Path) -> 
     assert "dependencies-ready" in payload["skipped"]
 
 
-def test_prepare_command_failure_surfaces_fail(tmp_path: Path) -> None:
+def test_prepare_command_failure_surfaces_fail(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     repo = _make_git_worktree(tmp_path)
+    monkeypatch.setattr(lib, "run_doctor", lambda *_args, **_kwargs: _doctor_payload())
     _write_manifest(
         repo,
         (

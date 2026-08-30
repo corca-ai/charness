@@ -13,7 +13,15 @@ check_runtime_budget = load_module("check_runtime_budget_under_test", ROOT / SCR
 
 def test_runtime_budget_gate_no_budgets_passes(tmp_path: Path) -> None:
     repo = seed_runtime_budget_repo(tmp_path, budgets=None, signals=None)
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--detail", "--runtime-profile", "default")
+    result = run_script(
+        SCRIPT,
+        "--repo-root",
+        str(repo),
+        "--detail",
+        "--runtime-profile",
+        "default",
+        real_process=True,
+    )
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
     assert payload["budgets_configured"] == 0

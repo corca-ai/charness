@@ -34,6 +34,12 @@ CURRENT_RELEASE = _load_script_module(
 )
 
 
+@pytest.fixture(autouse=True)
+def _surface_tests_do_not_recheck_worktree(monkeypatch):
+    """Keep surface-state tests in-process; Git cleanliness has its own boundary tests."""
+    monkeypatch.setattr(CURRENT_RELEASE, "_git_status", lambda _repo: [])
+
+
 # --- the shared parser channel (the root cause under S24) ---------------------------
 
 

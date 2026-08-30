@@ -9,7 +9,10 @@ from pathlib import Path
 from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from git_inventory_lib import visible_repo_files  # noqa: E402
+from git_inventory_lib import (  # noqa: E402
+    VisibleRepoFilesSnapshot,
+    visible_repo_files,
+)
 
 DEFAULT_PATTERNS = [".agents/cli-side-effect-probes.json", "**/cli-side-effect-probes.json", "**/*side-effect-probes*.json"]
 DEFAULT_PROBE_TIMEOUT_SECONDS = 20
@@ -29,8 +32,13 @@ def _filter_path(repo_root: Path, path: Path, visible: set[Path] | None, seen: s
     return True
 
 
-def default_paths(repo_root: Path, vendored_filter=None) -> list[Path]:
-    visible_files = visible_repo_files(repo_root)
+def default_paths(
+    repo_root: Path,
+    vendored_filter=None,
+    *,
+    snapshot: VisibleRepoFilesSnapshot | None = None,
+) -> list[Path]:
+    visible_files = visible_repo_files(repo_root, snapshot=snapshot)
     seen: set[Path] = set()
     found: list[Path] = []
     for pattern in DEFAULT_PATTERNS:
@@ -190,9 +198,20 @@ def inventory_contract(repo_root: Path, path: Path, *, execute_probes: bool) -> 
     return {"path": str(path.relative_to(repo_root)), "command_count": len(commands), "commands": commands, "findings": findings}
 
 
-def build_inventory(repo_root: Path, *, contract_paths: list[Path], execute_probes: bool, vendored_filter=None) -> dict[str, object]:
+def build_inventory(
+    repo_root: Path,
+    *,
+    contract_paths: list[Path],
+    execute_probes: bool,
+    vendored_filter=None,
+    snapshot: VisibleRepoFilesSnapshot | None = None,
+) -> dict[str, object]:
     requested = bool(contract_paths)
-    paths = contract_paths if contract_paths else default_paths(repo_root, vendored_filter=vendored_filter)
+    paths = (
+        contract_paths
+        if contract_paths
+        else default_paths(repo_root, vendored_filter=vendored_filter, snapshot=snapshot)
+    )
     contracts = [inventory_contract(repo_root, path, execute_probes=execute_probes) for path in paths]
     findings = [finding for contract in contracts for finding in contract["findings"]]
     if not contracts:

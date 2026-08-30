@@ -398,27 +398,45 @@ def test_close_issue_requires_github_repo_before_mutation(tmp_path: Path) -> Non
 
 
 def test_close_issue_missing_carrier_file_fails_before_quality_or_mutation(tmp_path: Path) -> None:
-    repo, env, initial_head = _close_issue_publish_context(tmp_path)
+    release_closeout = _load_release_closeout_module()
 
-    result = _run_close_issue_publish(repo, env, carrier=None)
-
-    assert result.returncode == 1
-    assert "--close-issue-carrier-file" in result.stderr
-    _assert_stopped_before_mutation(repo, tmp_path, initial_head)
+    with pytest.raises(SystemExit, match="--close-issue-carrier-file"):
+        release_closeout.preflight_release_issues(
+            tmp_path,
+            repo="example/demo",
+            issue_numbers=[44],
+            payload={},
+            run=None,
+            classification="bug",
+        )
 
 
 def test_close_issue_invalid_carrier_fails_before_quality_or_mutation(tmp_path: Path) -> None:
-    repo, env, initial_head = _close_issue_publish_context(tmp_path)
+    release_closeout = _load_release_closeout_module()
     carrier = tmp_path / "closeout.md"
     carrier.write_text("Close #44.\n", encoding="utf-8")
 
-    result = _run_close_issue_publish(repo, env, carrier=carrier)
+    with pytest.raises(SystemExit) as excinfo:
+        release_closeout.preflight_release_issues(
+            tmp_path,
+            repo="example/demo",
+            issue_numbers=[44],
+            payload={
+                "tag_name": "v1.0.0",
+                "quality_command": "./scripts/run-quality.sh",
+                "commit_message": "Release demo v1.0.0",
+            },
+            run=None,
+            behavior_lines=["Behavior #44: confirmed via fresh checkout install"],
+            probe_record_lines=["Probe record #44: local-only-by-contract"],
+            classification="bug",
+            carrier_file=carrier,
+        )
 
-    assert result.returncode == 1
-    assert "carrier failed issue-owned draft validation" in result.stderr
-    assert "missing_fields" in result.stderr
-    assert "resolution_critique_ok: False" in result.stderr
-    _assert_stopped_before_mutation(repo, tmp_path, initial_head)
+    message = str(excinfo.value)
+    assert "carrier failed issue-owned draft validation" in message
+    assert "missing_fields" in message
+    assert "resolution_critique_ok: False" in message
 
 
 def test_close_issue_preflight_without_close_issue_skips_carrier_validation(tmp_path: Path) -> None:

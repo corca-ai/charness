@@ -49,6 +49,10 @@ python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 6. Use the repo-owned publish helper for bump, sync, verify, tag, publish,
    distinct-channel confirmation, issue closeout, install refresh, and final
    artifact persistence.
+   When it stops at `prepared-awaiting-claims-review`, write the review narrative,
+   then use the planner-emitted `scaffold_claims_review.py` command. The scaffold
+   derives the prepared record hash and complete release-delta partition; do not
+   hand-copy those fields into JSON.
 7. Treat helper output as evidence, not terminal success. Judge public release
    surface verified status and open risks through `references/publication-boundary.md`.
    Before a retry or resume, use the shared `scope-too-broad`,

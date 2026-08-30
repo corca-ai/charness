@@ -19,10 +19,29 @@ _MODULE = load_module(
     ROOT / "skills" / "public" / "quality" / "scripts" / "inventory_cli_side_effect_probes.py",
 )
 _PROBE_LIB = sys.modules["cli_side_effect_probe_lib"]
+VisibleRepoFilesSnapshot = sys.modules["git_inventory_lib"].VisibleRepoFilesSnapshot
 
 
-def _run(repo: Path, *args: str):
-    return run_main(_MODULE.main, "inventory_cli_side_effect_probes.py", "--repo-root", str(repo), *args)
+def _run(repo: Path, *args: str, real_inventory: bool = False):
+    original_build_inventory = _MODULE.build_inventory
+    if not real_inventory:
+        # Fixture contracts are intentionally uncommitted. Inject the explicit
+        # non-git fallback view; one test retains the real inventory boundary.
+        _MODULE.build_inventory = lambda *build_args, **build_kwargs: original_build_inventory(
+            *build_args,
+            **build_kwargs,
+            snapshot=VisibleRepoFilesSnapshot(None),
+        )
+    try:
+        return run_main(
+            _MODULE.main,
+            "inventory_cli_side_effect_probes.py",
+            "--repo-root",
+            str(repo),
+            *args,
+        )
+    finally:
+        _MODULE.build_inventory = original_build_inventory
 
 
 def test_inventory_cli_side_effect_probes_flags_missing_mutation_contract(tmp_path: Path) -> None:
@@ -42,7 +61,7 @@ def test_inventory_cli_side_effect_probes_flags_missing_mutation_contract(tmp_pa
         indent=None,
     )
 
-    result = _run(repo, "--detail")
+    result = _run(repo, "--detail", real_inventory=True)
 
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)

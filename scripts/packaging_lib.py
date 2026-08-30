@@ -194,7 +194,7 @@ def rewrite_exported_consumer_validator_catalog(plugin_root: Path) -> None:
     catalog_path.write_text(contents.replace(source_marker, exported_marker, 1), encoding="utf-8")
 
 
-def checked_in_plugin_root(manifest: dict) -> Path:
+def materialized_plugin_root(manifest: dict) -> Path:
     return Path(manifest["codex"]["repo_marketplace"]["default_source_path"].removeprefix("./"))
 
 
@@ -231,7 +231,7 @@ def export_plugin_tree(repo_root: Path, plugin_root: Path, manifest: dict) -> No
         repo_root,
         repo_root / readme_rel,
         plugin_root / readme_rel,
-        derived_path=(checked_in_plugin_root(manifest) / readme_rel).as_posix(),
+        derived_path=(materialized_plugin_root(manifest) / readme_rel).as_posix(),
     )
     readme_path = plugin_root / readme_rel
     readme_path.write_text(
@@ -377,6 +377,6 @@ def expected_root_artifacts(manifest: dict) -> list[tuple[str, dict]]:
         ),
         (
             codex_marketplace["path"],
-            build_codex_marketplace(manifest, source_path=codex_marketplace["checked_in_source_path"]),
+            build_codex_marketplace(manifest, source_path=codex_marketplace["materialized_source_path"]),
         ),
     ]

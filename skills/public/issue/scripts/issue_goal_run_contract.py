@@ -6,9 +6,9 @@ import runpy
 from pathlib import Path
 from typing import Any
 
-_load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_import.py"))["sibling_loader"](
-    __file__
-)
+_load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_import.py"))[
+    "sibling_loader"
+](__file__)
 BACKEND = _load_local("issue_backend", "issue_goal_run_contract_backend")
 CREATE = _load_local("issue_create", "issue_goal_run_contract_create")
 READ = _load_local("issue_read", "issue_goal_run_contract_read")
@@ -59,7 +59,9 @@ def _target(value: Any, *, repo: str, parent_number: int) -> dict[str, Any]:
         raise _error("schema-invalid", "operation target must be an object")
     _fields(value, {"repo", "number", "sub_issue_number", "work_item_key", "title"}, "target")
     if "repo" in value and _repo(value["repo"], "target.repo").lower() != repo.lower():
-        raise _error("parent-mismatch", "operation target repository differs from the requested repository")
+        raise _error(
+            "parent-mismatch", "operation target repository differs from the requested repository"
+        )
     if "number" in value:
         _positive(value["number"], "target.number")
     if "sub_issue_number" in value:
@@ -74,7 +76,9 @@ def _validate_bound_inputs(
     value: dict[str, Any], operation: str, target: dict[str, Any], *, parent_number: int
 ) -> None:
     if operation == "create-or-reuse-child" and not {"work_item_key", "title"}.issubset(target):
-        raise _error("schema-invalid", "create-or-reuse-child target requires work_item_key and title")
+        raise _error(
+            "schema-invalid", "create-or-reuse-child target requires work_item_key and title"
+        )
     if operation in {"add-child", "remove-child"}:
         if "sub_issue_number" not in target:
             raise _error("schema-invalid", f"{operation} target requires sub_issue_number")
@@ -83,14 +87,37 @@ def _validate_bound_inputs(
     if operation == "update-body":
         is_parent = target["number"] == parent_number
         if is_parent and "work_item_key" in target:
-            raise _error("schema-invalid", "parent update target must not pretend to be a Work Item")
+            raise _error(
+                "schema-invalid", "parent update target must not pretend to be a Work Item"
+            )
         if not is_parent and "work_item_key" not in target:
             raise _error("schema-invalid", "child update target requires work_item_key")
+        authorization_file = value.get("amendment_authorization_file")
+        if authorization_file is not None:
+            if not is_parent:
+                raise _error(
+                    "schema-invalid",
+                    "amendment_authorization_file is only valid for the Goal Run parent",
+                )
+            if not isinstance(authorization_file, str) or not authorization_file.strip():
+                raise _error(
+                    "path-invalid",
+                    "amendment_authorization_file must be a repository-contained path",
+                )
+    elif "amendment_authorization_file" in value:
+        raise _error(
+            "schema-invalid",
+            "amendment_authorization_file is only valid for update-body",
+        )
     bound = {"update-body", "create-or-reuse-child", "list-children", "add-child", "remove-child"}
-    if operation in bound and (not isinstance(value.get("binding_path"), str) or not value["binding_path"].strip()):
+    if operation in bound and (
+        not isinstance(value.get("binding_path"), str) or not value["binding_path"].strip()
+    ):
         raise _error("input-missing", f"{operation} requires binding_path")
     if operation == "list-children" and not isinstance(value.get("expected_child_file"), str):
-        raise _error("input-missing", "list-children requires expected_child_file for binding enforcement")
+        raise _error(
+            "input-missing", "list-children requires expected_child_file for binding enforcement"
+        )
 
 
 def load_plan(path: Path, *, repo: str, parent_number: int) -> dict[str, Any]:
@@ -101,13 +128,21 @@ def load_plan(path: Path, *, repo: str, parent_number: int) -> dict[str, Any]:
     if _positive(value.get("parent_number"), "plan.parent_number") != parent_number:
         raise _error("parent-mismatch", "plan parent differs from the requested parent")
     operations = value.get("operations", list(OPERATIONS))
-    if not isinstance(operations, list) or not operations or any(
-        not isinstance(item, str) or item not in OPERATIONS for item in operations
+    if (
+        not isinstance(operations, list)
+        or not operations
+        or any(not isinstance(item, str) or item not in OPERATIONS for item in operations)
     ):
         raise _error("schema-invalid", f"plan.operations must contain only {list(OPERATIONS)!r}")
     if len(operations) != len(set(operations)):
         raise _error("schema-invalid", "plan.operations contains duplicates")
-    return {"path": str(path), "sha256": digest, "repo": repo, "parent_number": parent_number, "operations": operations}
+    return {
+        "path": str(path),
+        "sha256": digest,
+        "repo": repo,
+        "parent_number": parent_number,
+        "operations": operations,
+    }
 
 
 def load_operation(path: Path, *, repo: str, parent_number: int) -> dict[str, Any]:
@@ -115,14 +150,27 @@ def load_operation(path: Path, *, repo: str, parent_number: int) -> dict[str, An
     _fields(
         value,
         {
-            "kind", "repo", "parent_number", "operation", "attempt_id", "draft_sha256",
-            "binding_sha256", "binding_path", "observation_dir", "target", "body_file",
-            "expected_child_file", "result",
+            "kind",
+            "repo",
+            "parent_number",
+            "operation",
+            "attempt_id",
+            "draft_sha256",
+            "binding_sha256",
+            "binding_path",
+            "observation_dir",
+            "target",
+            "body_file",
+            "expected_child_file",
+            "amendment_authorization_file",
+            "result",
         },
         "operation",
     )
     if _repo(value.get("repo"), "operation.repo").lower() != repo.lower():
-        raise _error("parent-mismatch", "operation repository differs from the requested repository")
+        raise _error(
+            "parent-mismatch", "operation repository differs from the requested repository"
+        )
     if _positive(value.get("parent_number"), "operation.parent_number") != parent_number:
         raise _error("parent-mismatch", "operation parent differs from the requested parent")
     operation = value.get("operation")
@@ -171,16 +219,105 @@ def capability_report(
     required = sorted({name for operation in requested for name in BACKEND_REQUIREMENTS[operation]})
     probe_repo = repo
     probes: dict[str, Any] = {
-        "create": lambda: BACKEND.resolve_op(backend, "create", CREATE.GH_CREATE_DEFAULT, CREATE.CREATE_PLACEHOLDERS, required=frozenset({"repo", "title", "body_file"}), repo=probe_repo, title="probe", body_file="/tmp/body"),
-        "view": lambda: BACKEND.resolve_op(backend, "view", READ.GH_READ_DEFAULT, READ.VIEW_PLACEHOLDERS, required=frozenset({"repo", "number", "json_fields"}), repo=probe_repo, number="1", json_fields="number,body,comments,state,url"),
-        "discover_managed_issues": lambda: BACKEND.resolve_op(backend, "discover_managed_issues", TRACKER.GH_DISCOVER_MANAGED_ISSUES_DEFAULT, TRACKER.DISCOVER_MANAGED_ISSUES_PLACEHOLDERS, required=frozenset({"repo"}), repo=probe_repo),
-        "update": lambda: BACKEND.resolve_op(backend, "update", TRACKER.GH_UPDATE_DEFAULT, TRACKER.UPDATE_PLACEHOLDERS, required=frozenset({"repo", "number", "body_file"}), repo=probe_repo, number="1", body_file="/tmp/body"),
-        "list_sub_issues": lambda: BACKEND.resolve_op(backend, "list_sub_issues", TRACKER.GH_LIST_SUB_ISSUES_DEFAULT, TRACKER.LIST_SUB_ISSUES_PLACEHOLDERS, required=frozenset({"repo", "number"}), repo=probe_repo, number="1"),
-        "resolve_issue_id": lambda: BACKEND.resolve_op(backend, "resolve_issue_id", TRACKER.GH_RESOLVE_ISSUE_ID_DEFAULT, TRACKER.RESOLVE_ISSUE_ID_PLACEHOLDERS, required=frozenset({"repo", "sub_issue_number"}), repo=probe_repo, sub_issue_number="2"),
-        "add_sub_issue": lambda: BACKEND.resolve_op(backend, "add_sub_issue", TRACKER.GH_ADD_SUB_ISSUE_DEFAULT, TRACKER.MUTATE_SUB_ISSUE_PLACEHOLDERS, required=frozenset({"repo", "number", "sub_issue_id"}), repo=probe_repo, number="1", sub_issue_id="2", sub_issue_number="2"),
-        "remove_sub_issue": lambda: BACKEND.resolve_op(backend, "remove_sub_issue", TRACKER.GH_REMOVE_SUB_ISSUE_DEFAULT, TRACKER.MUTATE_SUB_ISSUE_PLACEHOLDERS, required=frozenset({"repo", "number", "sub_issue_id"}), repo=probe_repo, number="1", sub_issue_id="2", sub_issue_number="2"),
-        "comment": lambda: BACKEND.resolve_op(backend, "comment", CLOSE.GH_COMMENT_DEFAULT, CLOSE.COMMENT_PLACEHOLDERS, required=frozenset({"repo", "number", "body_file"}), repo=probe_repo, number="1", body_file="/tmp/body", reason="completed"),
-        "close": lambda: BACKEND.resolve_op(backend, "close", CLOSE.GH_CLOSE_DEFAULT, CLOSE.CLOSE_PLACEHOLDERS, required=frozenset({"repo", "number"}), repo=probe_repo, number="1", reason="completed"),
+        "create": lambda: BACKEND.resolve_op(
+            backend,
+            "create",
+            CREATE.GH_CREATE_DEFAULT,
+            CREATE.CREATE_PLACEHOLDERS,
+            required=frozenset({"repo", "title", "body_file"}),
+            repo=probe_repo,
+            title="probe",
+            body_file="/tmp/body",
+        ),
+        "view": lambda: BACKEND.resolve_op(
+            backend,
+            "view",
+            READ.GH_READ_DEFAULT,
+            READ.VIEW_PLACEHOLDERS,
+            required=frozenset({"repo", "number", "json_fields"}),
+            repo=probe_repo,
+            number="1",
+            json_fields="number,body,comments,state,url",
+        ),
+        "discover_managed_issues": lambda: BACKEND.resolve_op(
+            backend,
+            "discover_managed_issues",
+            TRACKER.GH_DISCOVER_MANAGED_ISSUES_DEFAULT,
+            TRACKER.DISCOVER_MANAGED_ISSUES_PLACEHOLDERS,
+            required=frozenset({"repo"}),
+            repo=probe_repo,
+        ),
+        "update": lambda: BACKEND.resolve_op(
+            backend,
+            "update",
+            TRACKER.GH_UPDATE_DEFAULT,
+            TRACKER.UPDATE_PLACEHOLDERS,
+            required=frozenset({"repo", "number", "body_file"}),
+            repo=probe_repo,
+            number="1",
+            body_file="/tmp/body",
+        ),
+        "list_sub_issues": lambda: BACKEND.resolve_op(
+            backend,
+            "list_sub_issues",
+            TRACKER.GH_LIST_SUB_ISSUES_DEFAULT,
+            TRACKER.LIST_SUB_ISSUES_PLACEHOLDERS,
+            required=frozenset({"repo", "number"}),
+            repo=probe_repo,
+            number="1",
+        ),
+        "resolve_issue_id": lambda: BACKEND.resolve_op(
+            backend,
+            "resolve_issue_id",
+            TRACKER.GH_RESOLVE_ISSUE_ID_DEFAULT,
+            TRACKER.RESOLVE_ISSUE_ID_PLACEHOLDERS,
+            required=frozenset({"repo", "sub_issue_number"}),
+            repo=probe_repo,
+            sub_issue_number="2",
+        ),
+        "add_sub_issue": lambda: BACKEND.resolve_op(
+            backend,
+            "add_sub_issue",
+            TRACKER.GH_ADD_SUB_ISSUE_DEFAULT,
+            TRACKER.MUTATE_SUB_ISSUE_PLACEHOLDERS,
+            required=frozenset({"repo", "number", "sub_issue_id"}),
+            repo=probe_repo,
+            number="1",
+            sub_issue_id="2",
+            sub_issue_number="2",
+        ),
+        "remove_sub_issue": lambda: BACKEND.resolve_op(
+            backend,
+            "remove_sub_issue",
+            TRACKER.GH_REMOVE_SUB_ISSUE_DEFAULT,
+            TRACKER.MUTATE_SUB_ISSUE_PLACEHOLDERS,
+            required=frozenset({"repo", "number", "sub_issue_id"}),
+            repo=probe_repo,
+            number="1",
+            sub_issue_id="2",
+            sub_issue_number="2",
+        ),
+        "comment": lambda: BACKEND.resolve_op(
+            backend,
+            "comment",
+            CLOSE.GH_COMMENT_DEFAULT,
+            CLOSE.COMMENT_PLACEHOLDERS,
+            required=frozenset({"repo", "number", "body_file"}),
+            repo=probe_repo,
+            number="1",
+            body_file="/tmp/body",
+            reason="completed",
+        ),
+        "close": lambda: BACKEND.resolve_op(
+            backend,
+            "close",
+            CLOSE.GH_CLOSE_DEFAULT,
+            CLOSE.CLOSE_PLACEHOLDERS,
+            required=frozenset({"repo", "number"}),
+            repo=probe_repo,
+            number="1",
+            reason="completed",
+        ),
     }
     declared = {name: BACKEND.op_is_declared(backend, name) for name in required}
     template_errors: dict[str, str] = {}
@@ -193,7 +330,10 @@ def capability_report(
             template_errors[name] = str(exc)
     goal = {
         operation: operation == "record-observation"
-        or all(declared.get(name, False) and name not in template_errors for name in BACKEND_REQUIREMENTS[operation])
+        or all(
+            declared.get(name, False) and name not in template_errors
+            for name in BACKEND_REQUIREMENTS[operation]
+        )
         for operation in requested
     }
     missing_backend = [name for name in required if not declared[name]]

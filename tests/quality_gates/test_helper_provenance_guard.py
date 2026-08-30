@@ -464,7 +464,7 @@ def test_entrypoint_guard_skips_help(monkeypatch, tmp_path: Path) -> None:
 
 
 def _nested_mirror(source: Path, *, version: str, lib_body: str = "VALUE = 1\n") -> Path:
-    """The checked-in `plugins/<pkg>` export: a second charness tree INSIDE the target."""
+    """The materialized `plugins/<pkg>` export: a second charness tree INSIDE the target."""
 
     root = source / "plugins" / "charness"
     _write(root / ".claude-plugin" / "plugin.json", json.dumps({"name": "charness", "version": version}))

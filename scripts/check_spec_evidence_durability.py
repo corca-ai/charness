@@ -16,6 +16,7 @@ REPO_ROOT = repo_root_from_script(__file__)
 
 _repo_file_listing = import_repo_module(__file__, "scripts.repo_file_listing")
 iter_matching_repo_files = _repo_file_listing.iter_matching_repo_files
+RepoFileSnapshot = _repo_file_listing.RepoFileSnapshot
 _markdown_doc_scan = import_repo_module(__file__, "scripts.markdown_doc_scan")
 iter_doc_lines = _markdown_doc_scan.iter_doc_lines
 #: The repo's ONE owner of an artifact's effective grandfathering date. Imported
@@ -190,10 +191,12 @@ def iter_citation_lines(doc: Path) -> list[tuple[int, str, list[str]]]:
     return out
 
 
-def violations_for_doc(root: Path, doc: Path) -> list[str]:
+def citation_candidates(
+    root: Path, doc: Path
+) -> dict[Path, list[tuple[int, str]]]:
     citation_lines = iter_citation_lines(doc)
     if not citation_lines:
-        return []
+        return {}
     candidates_by_path: dict[Path, list[tuple[int, str]]] = {}
     for lineno, line, candidates in citation_lines:
         if REPRODUCTION_MARKER_RE.search(line):
@@ -203,12 +206,32 @@ def violations_for_doc(root: Path, doc: Path) -> list[str]:
             if resolved is None:
                 continue
             candidates_by_path.setdefault(resolved, []).append((lineno, candidate))
+    return candidates_by_path
+
+
+def violations_for_doc(
+    root: Path,
+    doc: Path,
+    *,
+    candidates_by_path: dict[Path, list[tuple[int, str]]] | None = None,
+    ignored_paths: set[Path] | None = None,
+) -> list[str]:
+    if candidates_by_path is None:
+        candidates_by_path = citation_candidates(root, doc)
     if not candidates_by_path:
         return []
-    ignored = git_check_ignore(root, list(candidates_by_path.keys()))
+    ignored = (
+        git_check_ignore(root, list(candidates_by_path))
+        if ignored_paths is None
+        else ignored_paths
+    )
     if ignored is None or not ignored:
         return []
-    ignored = {path for path in ignored if not under_generated_export(root, path)}
+    ignored = {
+        path
+        for path in candidates_by_path
+        if path in ignored and not under_generated_export(root, path)
+    }
     if not ignored:
         return []
     rel_doc = doc.relative_to(root).as_posix() if doc.is_absolute() else str(doc)
@@ -376,16 +399,44 @@ def main() -> int:
             f"Skipping evidence-durability check: no git work tree at {root}.",
         )
         return 0
-    docs = iter_matching_repo_files(root, DOC_GLOBS, require_git=args.require_git_file_listing)
-    late_docs = iter_matching_repo_files(
-        root, LATE_DOC_GLOBS, require_git=args.require_git_file_listing
+    snapshot = RepoFileSnapshot(root, require_git=args.require_git_file_listing)
+    docs = iter_matching_repo_files(
+        root,
+        DOC_GLOBS,
+        require_git=args.require_git_file_listing,
+        snapshot=snapshot,
     )
+    late_docs = iter_matching_repo_files(
+        root,
+        LATE_DOC_GLOBS,
+        require_git=args.require_git_file_listing,
+        snapshot=snapshot,
+    )
+    candidates_by_doc = {
+        doc: citation_candidates(root, doc) for doc in [*docs, *late_docs]
+    }
+    all_candidate_paths = sorted(
+        {path for candidates in candidates_by_doc.values() for path in candidates}
+    )
+    ignored_paths = git_check_ignore(root, all_candidate_paths) or set()
     all_messages: list[str] = []
     for doc in docs:
-        all_messages.extend(violations_for_doc(root, doc))
+        all_messages.extend(
+            violations_for_doc(
+                root,
+                doc,
+                candidates_by_path=candidates_by_doc[doc],
+                ignored_paths=ignored_paths,
+            )
+        )
     grandfathered = 0
     for doc in late_docs:
-        messages = violations_for_doc(root, doc)
+        messages = violations_for_doc(
+            root,
+            doc,
+            candidates_by_path=candidates_by_doc[doc],
+            ignored_paths=ignored_paths,
+        )
         if not messages:
             continue
         if is_enforced_late_doc(doc, doc.read_text(encoding="utf-8")):

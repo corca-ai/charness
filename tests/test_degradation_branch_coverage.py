@@ -110,11 +110,30 @@ def test_changed_pool_fingerprint_failure_degrades_to_empty(monkeypatch, tmp_pat
         raise subprocess.CalledProcessError(128, ["git"])
 
     monkeypatch.setattr(trust, "changed_pool_fingerprint", boom)
-    monkeypatch.setattr(trust, "_git_lines", lambda *_a, **_k: ["deadbeef"])
+    monkeypatch.setattr(trust, "_resolve_pair", lambda *_a, **_k: ("deadbeef", "deadbeef"))
     pinned = trust._pin_run_state(tmp_path, "base", "head")
     assert pinned["pool_fingerprint"] == ""
     # The rest of the pin must still be usable, i.e. the failure is contained.
     assert pinned["resolved_head_sha"] == "deadbeef"
+
+
+def test_pin_run_state_reads_literal_head_once(monkeypatch, tmp_path) -> None:
+    from scripts import changed_line_run_trust as trust
+
+    calls: list[tuple[str, ...]] = []
+
+    def git_lines(_root, args):
+        calls.append(tuple(args))
+        return ["deadbeef"]
+
+    monkeypatch.setattr(trust, "_git_lines", git_lines)
+    monkeypatch.setattr(trust, "changed_pool_fingerprint", lambda *_args: "pool")
+
+    pinned = trust._pin_run_state(tmp_path, "base", "HEAD")
+
+    assert pinned["resolved_head_sha"] == "deadbeef"
+    assert pinned["head_commit"] == "deadbeef"
+    assert calls == [("rev-parse", "HEAD")]
 
 
 # --- check_doc_links: truncation and the no-index fallback --------------------
@@ -136,9 +155,7 @@ def test_unresolved_command_message_truncates_after_three(tmp_path) -> None:
     (root / "docs").mkdir()
     doc = root / "docs" / "doc.md"
     doc.write_text(
-        "# D\n\n"
-        + "\n".join(f"run `python3 scripts/absent{n}.py`" for n in range(5))
-        + "\n",
+        "# D\n\n" + "\n".join(f"run `python3 scripts/absent{n}.py`" for n in range(5)) + "\n",
         encoding="utf-8",
     )
     result = _run("scripts/check_doc_links.py", "--repo-root", str(root))
@@ -450,7 +467,7 @@ def test_pin_run_state_survives_a_git_failure_in_the_fingerprint(monkeypatch, tm
         raise OSError("git not found")
 
     monkeypatch.setattr(trust, "changed_pool_fingerprint", boom)
-    monkeypatch.setattr(trust, "_git_lines", lambda *_a, **_k: ["cafebabe"])
+    monkeypatch.setattr(trust, "_resolve_pair", lambda *_a, **_k: ("cafebabe", "cafebabe"))
 
     pinned = trust._pin_run_state(tmp_path, "base", "head")
 
@@ -528,7 +545,9 @@ def test_a_scaffold_says_so_when_it_cannot_reach_the_gates_resolver(monkeypatch)
     def boom(*_args, **_kwargs):
         raise AttributeError("resolver missing from a stale vendored validator")
 
-    validator = SimpleNamespace(resolve_adapter_line_budget=boom, WORD_BUDGET_FIELD="max_artifact_words")
+    validator = SimpleNamespace(
+        resolve_adapter_line_budget=boom, WORD_BUDGET_FIELD="max_artifact_words"
+    )
     budget = scaffold_artifact_lib.size_budget(validator, 180, {"data": {}}, guidance="g")
 
     assert budget == {
@@ -622,6 +641,9 @@ def test_a_scaffold_still_imports_when_the_repo_root_validator_is_absent(
     # rather than the shipped literal asserted against a gate this install cannot run.
     from scripts import scaffold_artifact_lib
 
-    assert scaffold_artifact_lib.size_budget(
-        getattr(module, attr), module._MAX_ARTIFACT_WORDS, {"data": {}}, guidance="g"
-    ) is None
+    assert (
+        scaffold_artifact_lib.size_budget(
+            getattr(module, attr), module._MAX_ARTIFACT_WORDS, {"data": {}}, guidance="g"
+        )
+        is None
+    )

@@ -36,6 +36,7 @@ _scripts_artifact_naming_lib_module = import_repo_module(__file__, "scripts.arti
 current_artifact_filename = _scripts_artifact_naming_lib_module.current_artifact_filename
 _scripts_repo_file_listing_module = import_repo_module(__file__, "scripts.repo_file_listing")
 iter_matching_repo_files = _scripts_repo_file_listing_module.iter_matching_repo_files
+RepoFileSnapshot = _scripts_repo_file_listing_module.RepoFileSnapshot
 _scripts_check_coverage_lib_module = import_repo_module(__file__, "scripts.check_coverage_lib")
 PER_FILE_MIN_COVERAGE = _scripts_check_coverage_lib_module.PER_FILE_MIN_COVERAGE
 PER_FILE_MIN_STATEMENTS = _scripts_check_coverage_lib_module.PER_FILE_MIN_STATEMENTS
@@ -111,7 +112,12 @@ def validate_resolver(path: Path, root: Path) -> None:
         )
 
 
-def iter_resolvers(root: Path, *, require_git: bool = False) -> list[Path]:
+def iter_resolvers(
+    root: Path,
+    *,
+    require_git: bool = False,
+    snapshot: RepoFileSnapshot | None = None,
+) -> list[Path]:
     if (root / "skills" / "public").is_dir():
         patterns = ("skills/public/*/scripts/resolve_adapter.py",)
     elif (root / "skills").is_dir():
@@ -125,14 +131,21 @@ def iter_resolvers(root: Path, *, require_git: bool = False) -> list[Path]:
         root,
         patterns,
         require_git=require_git,
+        snapshot=snapshot,
     )
 
 
-def iter_adapter_yaml(root: Path, *, require_git: bool = False) -> list[Path]:
+def iter_adapter_yaml(
+    root: Path,
+    *,
+    require_git: bool = False,
+    snapshot: RepoFileSnapshot | None = None,
+) -> list[Path]:
     return iter_matching_repo_files(
         root,
         (".agents/*-adapter.yaml",),
         require_git=require_git,
+        snapshot=snapshot,
     )
 
 
@@ -324,8 +337,13 @@ def main() -> int:
     args = parser.parse_args()
 
     root = args.repo_root.resolve()
-    resolvers = iter_resolvers(root, require_git=args.require_git_file_listing)
-    adapter_yaml = iter_adapter_yaml(root, require_git=args.require_git_file_listing)
+    snapshot = RepoFileSnapshot(root, require_git=args.require_git_file_listing)
+    resolvers = iter_resolvers(
+        root, require_git=args.require_git_file_listing, snapshot=snapshot
+    )
+    adapter_yaml = iter_adapter_yaml(
+        root, require_git=args.require_git_file_listing, snapshot=snapshot
+    )
     if not resolvers and not adapter_yaml:
         print("No adapter surfaces found.")
         return 0

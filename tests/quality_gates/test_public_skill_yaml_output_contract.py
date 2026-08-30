@@ -155,6 +155,17 @@ def _run(*args: str) -> subprocess.CompletedProcess[str]:
     )
 
 
+def _loaded(command: str) -> object:
+    path = ROOT / command
+    module_name = "yaml_output_contract_" + command.replace("/", "_").replace(".", "_")
+    return load_script_module(module_name, path)
+
+
+def _run_loaded(*args: str) -> SimpleNamespace:
+    command, *script_args = args
+    return run_loaded_script_main(command, _loaded(command), *script_args)
+
+
 @pytest.mark.parametrize(
     "skills_root",
     [ROOT / "skills" / "public", ROOT / "plugins" / "charness" / "skills"],
@@ -224,8 +235,8 @@ def test_inventory_dispatch_commands_are_runnable_yaml_surfaces(
             for value in argv
         ]
         command = f"skills/public/quality/scripts/{argv[0]}"
-        summary = _run(command, *argv[1:])
-        help_result = _run(command, "--help")
+        summary = _run_loaded(command, *argv[1:])
+        help_result = _run_loaded(command, "--help")
 
         assert summary.returncode == 0, command
         assert isinstance(yaml.safe_load(summary.stdout), dict), command
@@ -278,6 +289,7 @@ def test_quality_inventory_keeps_one_real_subprocess_entrypoint_smoke(tmp_path: 
 
     assert result.returncode == 0, result.stderr
     assert yaml.safe_load(result.stdout)["status"] == "unconfigured"
+    assert result.stderr == ""
 
 
 def test_quality_dispatch_plugin_commands_match_canonical_source() -> None:
@@ -303,7 +315,7 @@ def test_quality_dispatch_plugin_commands_match_canonical_source() -> None:
     ],
 )
 def test_summary_and_detail_are_mutually_exclusive(command: str) -> None:
-    result = _run(command, "--repo-root", ".", "--summary", "--detail")
+    result = _run_loaded(command, "--repo-root", ".", "--summary", "--detail")
 
     assert result.returncode == 2
     assert "not allowed with argument" in result.stderr
@@ -311,8 +323,8 @@ def test_summary_and_detail_are_mutually_exclusive(command: str) -> None:
 
 @pytest.mark.parametrize("command", ALWAYS_STRUCTURED_COMMANDS)
 def test_default_yaml_is_structured(command: tuple[str, ...]) -> None:
-    default = _run(*command)
-    help_result = _run(command[0], "--help")
+    default = _run_loaded(*command)
+    help_result = _run_loaded(command[0], "--help")
 
     assert default.returncode == 0
     assert isinstance(yaml.safe_load(default.stdout), dict)
@@ -321,8 +333,8 @@ def test_default_yaml_is_structured(command: tuple[str, ...]) -> None:
 
 @pytest.mark.parametrize("command", DETAIL_COMMANDS)
 def test_detail_yaml_is_structured(command: tuple[str, ...]) -> None:
-    detail = _run(*command, "--detail")
-    help_result = _run(command[0], "--help")
+    detail = _run_loaded(*command, "--detail")
+    help_result = _run_loaded(command[0], "--help")
 
     assert detail.returncode != 2
     assert isinstance(yaml.safe_load(detail.stdout), dict)
@@ -331,8 +343,8 @@ def test_detail_yaml_is_structured(command: tuple[str, ...]) -> None:
 
 @pytest.mark.parametrize("command", SUMMARY_COMMANDS)
 def test_summary_yaml_is_structured(command: tuple[str, ...]) -> None:
-    summary = _run(*command, "--summary")
-    help_result = _run(command[0], "--help")
+    summary = _run_loaded(*command, "--summary")
+    help_result = _run_loaded(command[0], "--help")
 
     assert summary.returncode == 0
     assert isinstance(yaml.safe_load(summary.stdout), dict)
@@ -571,7 +583,7 @@ def test_a_json_flag_is_an_argparse_error_on_every_migrated_command(
     a caller still passing the old flag that it is gone, instead of handing them a
     payload they will read as the format they asked for.
     """
-    result = _run(*command, "--json")
+    result = _run_loaded(*command, "--json")
 
     assert result.returncode == 2, f"{command[0]}: {result.stdout}{result.stderr}"
     assert "unrecognized arguments: --json" in result.stderr, command[0]

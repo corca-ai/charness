@@ -351,7 +351,11 @@ def _prepare_coverage(manifest: dict[str, Any], doctor: dict[str, Any]) -> dict[
 
 
 def run_prepare(
-    repo_root: Path, *, force: bool = False, require_isolation: bool = False
+    repo_root: Path,
+    *,
+    force: bool = False,
+    require_isolation: bool = False,
+    pre_doctor: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Prepare a worktree, carrying the caller's isolation requirement THROUGH.
 
@@ -368,7 +372,8 @@ def run_prepare(
     if not manifest_state.found or not manifest_state.valid:
         return _missing_manifest_payload(manifest_state)
 
-    pre_doctor = run_doctor(repo_root, require_isolation=require_isolation)
+    if pre_doctor is None:
+        pre_doctor = run_doctor(repo_root, require_isolation=require_isolation)
     coverage = _prepare_coverage(manifest_state.data, pre_doctor)
     skip_when_clean = bool(manifest_state.data.get("prepare", {}).get("skip_if_doctor_passes", False))
     if pre_doctor["status"] == PASS and skip_when_clean and coverage["established"] and not force:

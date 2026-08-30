@@ -5,7 +5,10 @@ from pathlib import Path
 from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from git_inventory_lib import visible_repo_files  # noqa: E402
+from git_inventory_lib import (  # noqa: E402
+    VisibleRepoFilesSnapshot,
+    visible_repo_files,
+)
 
 IGNORED_PARTS = {".git", ".charness", "__pycache__", "node_modules", "plugins", "evals"}
 REVIEW_PROMPTS = [
@@ -32,8 +35,13 @@ E2E_DELETE = [
 ]
 
 
-def visible_paths(repo_root: Path, pattern: str) -> list[Path]:
-    visible_files = visible_repo_files(repo_root)
+def visible_paths(
+    repo_root: Path,
+    pattern: str,
+    *,
+    snapshot: VisibleRepoFilesSnapshot | None = None,
+) -> list[Path]:
+    visible_files = visible_repo_files(repo_root, snapshot=snapshot)
     candidates = visible_files if visible_files is not None else repo_root.rglob(pattern)
     return sorted(
         path for path in candidates

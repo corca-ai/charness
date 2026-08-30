@@ -22,6 +22,12 @@ from scripts.mutation_changed_files_lib import (
     changed_line_coverage_marker_path,
 )
 
+from .changed_line_mutation_fixtures import (
+    git as _git,
+)
+from .changed_line_mutation_fixtures import (
+    seed_repo_with_changed_pool_file as _seed_repo_with_changed_pool_file,
+)
 from .seeding_support import seed_two_changed_pool_files
 from .support import ROOT, run_script
 
@@ -37,29 +43,6 @@ def _load_teeth():
     return module
 
 
-def _git(repo: Path, *args: str) -> str:
-    return subprocess.run(
-        ["git", *args], cwd=repo, check=True, capture_output=True, text=True
-    ).stdout.strip()
-
-
-def _seed_repo_with_changed_pool_file(tmp_path: Path) -> tuple[Path, str, str]:
-    repo = tmp_path / "repo"
-    (repo / "scripts").mkdir(parents=True)
-    _git(repo, "init", "-q")
-    foo = repo / "scripts" / "foo.py"
-    foo.write_text("def a():\n    return 1\n", encoding="utf-8")
-    _git(repo, "add", "-A")
-    _git(repo, "commit", "-q", "-m", "base")
-    base = _git(repo, "rev-parse", "HEAD")
-    # add a new function -> changed lines 3-6 (def b / return 2 are statements)
-    foo.write_text("def a():\n    return 1\n\n\ndef b():\n    return 2\n", encoding="utf-8")
-    _git(repo, "add", "-A")
-    _git(repo, "commit", "-q", "-m", "head")
-    head = _git(repo, "rev-parse", "HEAD")
-    return repo, base, head
-
-
 def _write_coverage(repo: Path, *, executed: list[int], missing: list[int]) -> Path:
     cov = repo / "coverage.json"
     cov.write_text(
@@ -69,7 +52,14 @@ def _write_coverage(repo: Path, *, executed: list[int], missing: list[int]) -> P
     return cov
 
 
-def _run(repo: Path, base: str, head: str, cov: Path) -> subprocess.CompletedProcess[str]:
+def _run(
+    repo: Path,
+    base: str,
+    head: str,
+    cov: Path,
+    *,
+    real_process: bool = False,
+) -> subprocess.CompletedProcess[str]:
     return run_script(
         _TEETH,
         "--repo-root", str(repo),
@@ -77,6 +67,7 @@ def _run(repo: Path, base: str, head: str, cov: Path) -> subprocess.CompletedPro
         "--head-sha", head,
         "--reuse-coverage",
         "--coverage-json", str(cov),
+        real_process=real_process,
     )
 
 
@@ -84,7 +75,7 @@ def test_flags_uncovered_changed_lines(tmp_path: Path) -> None:
     repo, base, head = _seed_repo_with_changed_pool_file(tmp_path)
     cov = _write_coverage(repo, executed=[1, 2], missing=[5, 6])  # def b left uncovered
 
-    result = _run(repo, base, head, cov)
+    result = _run(repo, base, head, cov, real_process=True)
 
     assert result.returncode == 1, result.stdout + result.stderr
     payload = yaml.safe_load(result.stdout)
@@ -441,34 +432,6 @@ def test_false_green_warning_silent_when_head_is_not_HEAD(tmp_path: Path) -> Non
     teeth = _load_teeth()
     # Analyzing an explicit earlier ref is not the head==HEAD false-green case.
     assert teeth.false_green_warning(repo, base, {"scripts/foo.py"}) is None
-
-
-def test_git_lines_empty_outside_git_repo(tmp_path: Path) -> None:
-    # `git` in a non-repo dir exits non-zero -> _git_lines returns [] (the
-    # returncode != 0 branch), so the warning helper stays silent rather than crash.
-    teeth = _load_teeth()
-    assert teeth.uncommitted_pool_changes(tmp_path, {"scripts/foo.py"}) == []
-
-
-def test_git_lines_handles_missing_git_binary(tmp_path: Path, monkeypatch) -> None:
-    # OSError (e.g. git absent) -> _git_lines returns [] instead of propagating.
-    # Patch the OWNING module: the gate re-exports these names, and patching a
-    # re-export leaves the real callee untouched — the test would go green while
-    # exercising nothing, which is the class this whole file is about.
-    import importlib.util
-
-    spec = importlib.util.spec_from_file_location(
-        "changed_line_run_trust_under_test", ROOT / "scripts" / "changed_line_run_trust.py"
-    )
-    trust = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(trust)
-
-    def boom(*_args, **_kwargs):
-        raise OSError("git not found")
-
-    monkeypatch.setattr(trust.subprocess, "run", boom)
-    assert trust._git_lines(tmp_path, ["status"]) == []
-    assert trust._head_resolves_to_head(tmp_path, "some-ref") is False
 
 
 def test_a_dirty_pool_still_reports_unestablished_when_the_scope_was_also_partial(tmp_path: Path) -> None:

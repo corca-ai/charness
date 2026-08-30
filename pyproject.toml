@@ -10,6 +10,7 @@ tmp_path_retention_count = 1
 tmp_path_retention_policy = "failed"
 markers = [
   "release_only: excluded from standing pre-push but included in full local release/update quality gates",
+  "boundary_contract(reason): declares why a test must cross a real process or Git repository boundary",
   # Added for #668, when the standing lane's runtime budget went red and the label's own
   # REVISIT TRIGGER forbade a third relevel, naming "per-test profiling or a smaller
   # standing set" instead. This is the smaller standing set.

@@ -114,7 +114,7 @@ def main() -> None:
             f"Nothing was bumped. `sync_command` is RUN after the version is written, so a "
             f"missing script would leave a bumped manifest with an unsynced plugin mirror.\n"
             f"Set `sync_command` in this repo's release adapter to the command that "
-            f"regenerates its checked-in plugin surface."
+            f"regenerates its materialized plugin export."
         )
 
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))

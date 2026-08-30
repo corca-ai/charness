@@ -4,8 +4,13 @@ from pathlib import Path
 
 import pytest
 
-from scripts import repo_layout
-from scripts.repo_file_listing import RepoFileListingError, iter_matching_repo_files
+from scripts import repo_file_listing, repo_layout
+from scripts.repo_file_listing import (
+    RepoFileListingError,
+    RepoFileSnapshot,
+    iter_matching_repo_files,
+    iter_repo_files,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -93,6 +98,55 @@ def test_iter_matching_repo_files_can_require_git_listing(tmp_path):
     message = str(exc_info.value)
     assert "repo file listing failed" in message
     assert "command: git ls-files -z --cached --others --exclude-standard" in message
+
+
+def test_plain_fixture_fallback_does_not_spawn_a_predictable_git_refusal(
+    tmp_path, monkeypatch
+):
+    repo = tmp_path / "plain-fixture"
+    repo.mkdir()
+    readme = repo / "README.md"
+    readme.write_text("# Demo\n", encoding="utf-8")
+
+    def unexpected_git(*_args, **_kwargs):
+        raise AssertionError("plain fixture must not probe Git before its fallback")
+
+    monkeypatch.setattr(repo_file_listing.subprocess, "run", unexpected_git)
+
+    assert iter_matching_repo_files(repo, ("README.md",)) == [readme]
+
+
+def test_bare_repository_signature_still_reaches_the_real_git_boundary(tmp_path) -> None:
+    repo = tmp_path / "bare.git"
+    (repo / "objects").mkdir(parents=True)
+    (repo / "refs").mkdir()
+    (repo / "HEAD").write_text("ref: refs/heads/main\n", encoding="utf-8")
+
+    assert repo_file_listing._git_metadata_is_discoverable(repo) is True
+
+
+def test_repo_file_snapshot_reuses_one_listing_across_derived_views(
+    tmp_path, monkeypatch
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    readme = repo / "README.md"
+    readme.write_text("# Demo\n", encoding="utf-8")
+    calls = 0
+
+    def listed(*args, **kwargs):
+        nonlocal calls
+        calls += 1
+        return [readme]
+
+    monkeypatch.setattr(repo_file_listing, "git_list_repo_files", listed)
+    snapshot = RepoFileSnapshot(repo)
+
+    assert iter_repo_files(repo, snapshot=snapshot) == [readme]
+    assert iter_matching_repo_files(
+        repo, ("*.md",), snapshot=snapshot
+    ) == [readme]
+    assert calls == 1
 
 
 def test_load_support_capability_schema_uses_override(tmp_path, monkeypatch):

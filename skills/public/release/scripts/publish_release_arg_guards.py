@@ -18,8 +18,8 @@ CRITIQUE_ARTIFACT_PREFIX = "charness-artifacts/critique/"
 
 # One owner for the record-sentinel rule. This path is rendered into the release record
 # as `## Review Proof` on every write, including the published one.
-_claims_review = runpy.run_path(
-    str(Path(__file__).resolve().with_name("publish_release_claims_review.py"))
+_claims_evidence = runpy.run_path(
+    str(Path(__file__).resolve().with_name("claims_review_evidence.py"))
 )
 
 
@@ -37,7 +37,7 @@ def validate_critique_artifact_arg(
     normalized = relpath.as_posix()
     if not normalized.startswith(CRITIQUE_ARTIFACT_PREFIX) or relpath.suffix != ".md":
         raise SystemExit("--critique-artifact must point at a critique markdown artifact")
-    _claims_review["assert_no_record_sentinel"](normalized, "--critique-artifact")
+    _claims_evidence["assert_no_record_sentinel"](normalized, "--critique-artifact")
     resolved = (repo_root / relpath).resolve()
     try:
         resolved.relative_to(repo_root)
@@ -80,8 +80,7 @@ def validate_bump_rationale_arg(bump_rationale: str | None) -> str | None:
     argument time, before any mutation.
     """
     if bump_rationale is not None:
-        _claims_review["assert_no_record_sentinel"](bump_rationale, "--bump-rationale")
+        _claims_evidence["assert_no_record_sentinel"](bump_rationale, "--bump-rationale")
     return bump_rationale
-
 
 

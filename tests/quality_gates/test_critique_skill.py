@@ -231,6 +231,7 @@ def test_critique_artifact_validator_rejects_missing_explicit_allowance_blocker(
         str(repo),
         "--paths",
         "charness-artifacts/critique/demo.md",
+        real_process=True,
     )
 
     assert result.returncode == 1

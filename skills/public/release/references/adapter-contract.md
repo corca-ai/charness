@@ -21,7 +21,7 @@ Use `<repo-root>/.agents/release-adapter.yaml`.
 
 - `package_id`
 - `packaging_manifest_path`
-- `checked_in_plugin_root`
+- `materialized_plugin_root`
 - `sync_command`
 - `quality_command`
 - `post_publish_install_refresh`
@@ -73,7 +73,7 @@ both fields to commands YOUR repo can run.
 - `output_dir`: `<repo-root>/charness-artifacts/release`
 - `package_id`: repo directory name
 - `packaging_manifest_path`: `<repo-root>/packaging/<repo>.json`
-- `checked_in_plugin_root`: `<repo-root>/plugins/<package_id>`
+- `materialized_plugin_root`: `<repo-root>/plugins/<package_id>`
 - `sync_command`: `python3 scripts/sync_root_plugin_manifests.py --repo-root .`
 - `quality_command`: `<repo-root>/scripts/run-quality.sh`. Repos that gate
   release-time regression tests behind a pytest marker (e.g., `release_only`)

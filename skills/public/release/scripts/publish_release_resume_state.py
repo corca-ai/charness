@@ -11,13 +11,19 @@ Deliberately separate from the refusals. This module answers "what state is this
 apart from the judge is what lets the judge run its checks in whatever order is safest
 without the classification quietly depending on that order.
 """
+
 from __future__ import annotations
 
 import runpy
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
-_claims_review = runpy.run_path(str(Path(__file__).resolve().with_name("publish_release_claims_review.py")))
+_claims_evidence = runpy.run_path(
+    str(Path(__file__).resolve().with_name("claims_review_evidence.py"))
+)
+_claims_review = runpy.run_path(
+    str(Path(__file__).resolve().with_name("publish_release_claims_review.py"))
+)
 
 
 def git_out(cli: Any, repo_root: Path, args: list[str]) -> str:
@@ -29,19 +35,57 @@ def optional_git_out(cli: Any, repo_root: Path, args: list[str]) -> str:
     return result.stdout.strip() if result.returncode == 0 else ""
 
 
-def is_claims_evidence_commit(cli: Any, repo_root: Path, *, prepared_commit: str, evidence_commit: str) -> bool:
-    parents = optional_git_out(cli, repo_root, ["show", "-s", "--format=%P", evidence_commit]).split()
+def artifact_commit_candidates(record_path: str) -> list[str]:
+    """Return the release-owned pathspecs that may be refreshed before resume push.
+
+    The release adapter owns the record location.  Keep the author's generated
+    inventory under ``charness-artifacts`` in scope as well, but derive the
+    consumer-specific path from the adapter record rather than assuming that
+    every consumer uses the author's directory layout.
+    """
+    record_dir = str(PurePosixPath(record_path).parent)
+    paths = ["charness-artifacts"]
+    if record_dir in {".", ""}:
+        paths.append(record_path)
+    elif record_dir not in paths and not record_dir.startswith("charness-artifacts/"):
+        paths.append(record_dir)
+    return paths
+
+
+def _artifact_path_matches(path: str, candidate: str) -> bool:
+    """Match a changed file against a directory pathspec without prefix aliases."""
+    return path == candidate or path.startswith(f"{candidate}/")
+
+
+def is_claims_evidence_commit(
+    cli: Any, repo_root: Path, *, prepared_commit: str, evidence_commit: str
+) -> bool:
+    parents = optional_git_out(
+        cli, repo_root, ["show", "-s", "--format=%P", evidence_commit]
+    ).split()
     if parents != [prepared_commit]:
         return False
-    changed = [line for line in cli.run(
-        ["git", "diff-tree", "--no-commit-id", "--name-only", "-r", prepared_commit, evidence_commit],
-        cwd=repo_root,
-    ).stdout.splitlines() if line]
+    changed = [
+        line
+        for line in cli.run(
+            [
+                "git",
+                "diff-tree",
+                "--no-commit-id",
+                "--name-only",
+                "-r",
+                prepared_commit,
+                evidence_commit,
+            ],
+            cwd=repo_root,
+        ).stdout.splitlines()
+        if line
+    ]
     # The claims-review schema's `pass` verdict carries the review's own narrative
     # alongside the JSON record, so R is one record plus at most its narrative -- never
     # anything else. The shape rule has one owner; `validate_claims_review` is what binds
     # the second path to the one the record actually names.
-    return _claims_review["claims_record_in_change_set"](changed) is not None
+    return _claims_evidence["claims_record_in_change_set"](changed) is not None
 
 
 def claims_evidence_child(cli: Any, repo_root: Path, *, prepared_commit: str) -> str:
@@ -76,24 +120,24 @@ _MAX_ARTIFACT_COMMITS = 4
 #: different things to a reader debugging a refused resume.
 _BOUNDARY_WALK_EXHAUSTED = "boundary-walk-exhausted"
 
-#: The only paths the resume's own artifact commit may touch. Anything else means an
-#: operator authored the commit, whatever its subject says.
-_GENERATED_ARTIFACT_PREFIXES = ("charness-artifacts/",)
 
+def _is_generated_artifact_commit(
+    cli: Any, repo_root: Path, commit: str, *, tag_name: str, record_path: str
+) -> bool:
+    """Whether `commit` has the resume's generated-commit shape.
 
-def _is_generated_artifact_commit(cli: Any, repo_root: Path, commit: str, *, tag_name: str) -> bool:
-    """Whether `commit` is one the resume itself made, by SUBJECT and by CONTENT.
-
-    Subject alone is not enough, and a bounded review showed the cost: the subject is
-    the one thing an operator can read off `git log` and copy, so
+    This is a recovery classifier, not cryptographic authorship proof: an operator
+    with write access can imitate a subject and allowed path. Requiring both still
+    prevents unrelated commits from being silently walked past, while the claims
+    record's parent and change-set checks remain the publication evidence boundary.
+    The subject is the one thing an operator can read off `git log` and copy, so
     `git commit --allow-empty -m "chore(release): commit <tag> artifact before resume
-    push"` over staged content would have been walked past, and the run would then tag,
-    push, create the release and close issues over content the reviewed claims record
-    does not cover -- while binding publication to that record is the entire purpose of
-    the boundary. The sibling that proves the claims record itself
-    (`is_claims_evidence_commit`) checks parentage AND change set; this now matches.
+    push"` alone is not enough. The allowed content is derived from the adapter's
+    record path plus the explicitly generated `charness-artifacts` companion tree.
     """
-    if optional_git_out(cli, repo_root, ["show", "-s", "--format=%s", commit]) != release_artifact_commit_subject(tag_name):
+    if optional_git_out(
+        cli, repo_root, ["show", "-s", "--format=%s", commit]
+    ) != release_artifact_commit_subject(tag_name):
         return False
     changed = [
         line
@@ -102,14 +146,17 @@ def _is_generated_artifact_commit(cli: Any, repo_root: Path, commit: str, *, tag
         ).splitlines()
         if line.strip()
     ]
-    # An EMPTY change set is refused too: `--allow-empty` is the cheapest way to forge
-    # this commit, and an empty diff is not evidence of a regenerated artifact.
+    # An EMPTY change set is refused too: `--allow-empty` is the cheapest imitation,
+    # and an empty diff is not evidence of a regenerated artifact.
+    candidates = artifact_commit_candidates(record_path)
     return bool(changed) and all(
-        path.startswith(_GENERATED_ARTIFACT_PREFIXES) for path in changed
+        any(_artifact_path_matches(path, candidate) for candidate in candidates) for path in changed
     )
 
 
-def claims_evidence_boundary(cli: Any, repo_root: Path, commit: str, *, tag_name: str) -> str:
+def claims_evidence_boundary(
+    cli: Any, repo_root: Path, commit: str, *, tag_name: str, record_path: str
+) -> str:
     """`commit`, or the first ancestor of it that is not a generated artifact commit.
 
     WHY THIS EXISTS. The resume lane re-runs the full quality gate, which REGENERATES
@@ -124,15 +171,17 @@ def claims_evidence_boundary(cli: Any, repo_root: Path, commit: str, *, tag_name
     routine behavior rather than by operator error.
 
     Deliberately narrow. Only a commit whose subject is EXACTLY the generated one for
-    THIS tag is walked through, and only a few of them. Anything an operator authored,
-    anything for another tag, and anything beyond the bound stops the walk, so this
-    widens the classifier by precisely the commits the release itself creates and by
-    nothing else. The claims record's own identity is still proven by
-    `is_claims_evidence_commit`; this only decides which commit that check is asked about.
+    THIS tag is walked through, and only a few of them. A commit outside the adapter-
+    derived record scope or the generated companion tree stops the walk. This is a
+    shape-based recovery hint, not a proof that the local operator did not author the
+    commit; the claims record's own identity is still proven by
+    `is_claims_evidence_commit`. This only decides which commit that check is asked about.
     """
     current = commit
     for _ in range(_MAX_ARTIFACT_COMMITS):
-        if not current or not _is_generated_artifact_commit(cli, repo_root, current, tag_name=tag_name):
+        if not current or not _is_generated_artifact_commit(
+            cli, repo_root, current, tag_name=tag_name, record_path=record_path
+        ):
             return current
         current = optional_git_out(cli, repo_root, ["rev-parse", f"{current}^"])
     # Budget exhausted while still standing on a generated commit. Returning `current`
@@ -161,27 +210,42 @@ def resumable_state(
     tag_sha = ""
     if tag_state["local"]:
         tag_sha = git_out(cli, repo_root, ["rev-list", "-n", "1", tag_name])
-    tag_is_ancestor_head = bool(tag_sha) and cli.run(
-        ["git", "merge-base", "--is-ancestor", tag_name, "HEAD"], cwd=repo_root, check=False
-    ).returncode == 0
-    parent_sha = optional_git_out(cli, repo_root, ["rev-parse", "HEAD^"]) if head_sha != tag_sha else ""
+    tag_is_ancestor_head = (
+        bool(tag_sha)
+        and cli.run(
+            ["git", "merge-base", "--is-ancestor", tag_name, "HEAD"], cwd=repo_root, check=False
+        ).returncode
+        == 0
+    )
+    parent_sha = (
+        optional_git_out(cli, repo_root, ["rev-parse", "HEAD^"]) if head_sha != tag_sha else ""
+    )
     grandparent_sha = (
         optional_git_out(cli, repo_root, ["rev-parse", "HEAD^^"])
         if tag_sha and parent_sha and parent_sha != tag_sha
         else ""
     )
-    parent_message = git_out(cli, repo_root, ["show", "-s", "--format=%B", "HEAD^"]) if parent_sha else ""
+    parent_message = (
+        git_out(cli, repo_root, ["show", "-s", "--format=%B", "HEAD^"]) if parent_sha else ""
+    )
     remote_result = cli.run(
         ["git", "ls-remote", "--heads", remote, f"refs/heads/{branch}"],
         cwd=repo_root,
         check=False,
     )
-    remote_branch_sha = remote_result.stdout.split(maxsplit=1)[0] if remote_result.returncode == 0 and remote_result.stdout.strip() else ""
+    remote_branch_sha = (
+        remote_result.stdout.split(maxsplit=1)[0]
+        if remote_result.returncode == 0 and remote_result.stdout.strip()
+        else ""
+    )
     close_refs = cli.release_content_close_keyword_refs(head_message)
     parent_close_refs = cli.release_content_close_keyword_refs(parent_message)
     phase = "release-content"
+
     def _prepared(commit: str) -> dict[str, str] | None:
-        return _claims_review["prepared_record"](repo_root, commit=commit, record_path=record_path, run=cli.run)
+        return _claims_review["prepared_record"](
+            repo_root, commit=commit, record_path=record_path, run=cli.run
+        )
 
     prepared_head = _prepared(head_sha)
     prepared = _prepared(parent_sha) if parent_sha else None
@@ -192,13 +256,19 @@ def resumable_state(
         if tagged_prepared
         else ""
     )
+
     # Each claims arm asks the same question of a DIFFERENT commit: "walking back past
     # the release's own generated artifact commits, is this R?" Computed once and named,
     # rather than inline in three conditions -- three spellings of one predicate is how
     # the arms would drift apart, and the boundary walk shells out to git per step.
     def _is_claims_evidence(commit: str) -> bool:
-        return bool(tagged_prepared) and bool(tagged_claims_evidence) and (
-            claims_evidence_boundary(cli, repo_root, commit, tag_name=tag_name) == tagged_claims_evidence
+        return (
+            bool(tagged_prepared)
+            and bool(tagged_claims_evidence)
+            and claims_evidence_boundary(
+                cli, repo_root, commit, tag_name=tag_name, record_path=record_path
+            )
+            == tagged_claims_evidence
         )
 
     def _bind_tagged_claims(name: str) -> tuple[str, dict[str, str] | None, str]:
@@ -213,13 +283,17 @@ def resumable_state(
         phase = "prepared-claims-review"
         prepared = prepared_head
     elif _is_claims_evidence(parent_sha) and close_refs:
-        phase, prepared, claims_evidence_commit = _bind_tagged_claims("post-publication-claims-carrier")
+        phase, prepared, claims_evidence_commit = _bind_tagged_claims(
+            "post-publication-claims-carrier"
+        )
     elif (
         _is_claims_evidence(grandparent_sha)
         and parent_close_refs
         and head_subject == f"Record release issue closeout for {tag_name}"
     ):
-        phase, prepared, claims_evidence_commit = _bind_tagged_claims("post-publication-claims-final")
+        phase, prepared, claims_evidence_commit = _bind_tagged_claims(
+            "post-publication-claims-final"
+        )
     elif _is_claims_evidence(head_sha):
         phase, prepared, claims_evidence_commit = _bind_tagged_claims("prepared-claims-review")
     elif (
@@ -232,7 +306,9 @@ def resumable_state(
     elif (
         prepared
         and parent_message.splitlines()[0:1] == [commit_message]
-        and is_claims_evidence_commit(cli, repo_root, prepared_commit=prepared["commit"], evidence_commit=head_sha)
+        and is_claims_evidence_commit(
+            cli, repo_root, prepared_commit=prepared["commit"], evidence_commit=head_sha
+        )
     ):
         phase = "prepared-claims-review"
         claims_evidence_commit = head_sha
@@ -241,11 +317,15 @@ def resumable_state(
         if isinstance(prepared, dict)
         else ""
     )
-    remote_is_prepared_base = bool(remote_branch_sha and prepared_parent_sha) and cli.run(
-        ["git", "merge-base", "--is-ancestor", remote_branch_sha, prepared_parent_sha],
-        cwd=repo_root,
-        check=False,
-    ).returncode == 0
+    remote_is_prepared_base = (
+        bool(remote_branch_sha and prepared_parent_sha)
+        and cli.run(
+            ["git", "merge-base", "--is-ancestor", remote_branch_sha, prepared_parent_sha],
+            cwd=repo_root,
+            check=False,
+        ).returncode
+        == 0
+    )
     return {
         "head_is_release_commit": head_subject == commit_message,
         "phase": phase,

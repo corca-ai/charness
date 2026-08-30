@@ -96,7 +96,7 @@ def make_demo_packaging_repo(
             "repo_marketplace": {
                 "path": ".agents/plugins/marketplace.json",
                 "default_source_path": "./plugins/demo",
-                "checked_in_source_path": "./plugins/demo",
+                "materialized_source_path": "./plugins/demo",
                 "display_name": "demo",
                 "category": "Productivity",
             },
@@ -161,7 +161,7 @@ def make_clean_git_repo(tmp_path: Path, seeded_charness_git_repo: Path) -> Path:
 
 
 @pytest.mark.release_only
-def test_validate_packaging_default_allows_checked_in_plugin_tree_drift(
+def test_validate_packaging_default_allows_materialized_plugin_export_drift(
     tmp_path: Path, seeded_charness_git_repo: Path
 ) -> None:
     repo = make_clean_git_repo(tmp_path, seeded_charness_git_repo)
@@ -179,7 +179,7 @@ def test_validate_packaging_default_allows_checked_in_plugin_tree_drift(
         "--validate-export",
     )
     assert export_result.returncode == 1
-    assert "checked-in plugin tree does not match the generated install surface" in export_result.stderr
+    assert "materialized plugin export does not match the generated install surface" in export_result.stderr
     assert "scripts/sync_root_plugin_manifests.py" in export_result.stderr
 
 
@@ -241,7 +241,7 @@ def test_sync_root_plugin_manifests_writes_install_surface(tmp_path: Path) -> No
                     "repo_marketplace": {
                         "path": ".agents/plugins/marketplace.json",
                         "default_source_path": "./plugins/demo",
-                        "checked_in_source_path": "./plugins/demo",
+                        "materialized_source_path": "./plugins/demo",
                         "display_name": "demo",
                         "category": "Productivity",
                     },
@@ -291,6 +291,24 @@ def test_sync_root_plugin_manifests_writes_install_surface(tmp_path: Path) -> No
 
 
 @pytest.mark.release_only
+def test_validate_packaging_export_reads_gitignored_plugin_tree(
+    tmp_path: Path, seeded_charness_git_repo: Path
+) -> None:
+    """The host-facing export is intentionally gitignored but still validated on disk."""
+    repo = make_clean_git_repo(tmp_path, seeded_charness_git_repo)
+
+    result = run_loaded_script_main(
+        "validate_packaging.py",
+        validate_packaging_module,
+        "--repo-root",
+        str(repo),
+        "--validate-export",
+    )
+
+    assert result.returncode == 0, result.stderr
+
+
+@pytest.mark.release_only
 def test_exported_consumer_validator_catalog_uses_installed_package_root(
     tmp_path: Path, seeded_charness_repo: Path
 ) -> None:
@@ -333,9 +351,9 @@ def test_validate_packaging_committed_accepts_clean_head(
 
 
 # DELETED 2026-08-29: `test_validate_packaging_committed_rejects_partial_commit_with_uncommitted_export`.
-# It asserted that `validate_packaging_committed` refuses when "the checked-in plugin
-# tree does not match the generated install surface". `--validate-export` was dropped
-# when `plugins/` stopped being tracked, so there is no checked-in plugin tree and the
+# It asserted that `validate_packaging_committed` refuses when "the materialized plugin
+# export does not match the generated install surface". `--validate-export` was dropped
+# when `plugins/` stopped being tracked, so there is no tracked plugin export and the
 # scenario it drove cannot occur. It had been RED since that change. Kept as a comment
 # rather than a skipped test or a renamed tombstone: this repo does not add "must not
 # exist" tests for retired behaviour, and a red test nobody can make green is worse
@@ -589,7 +607,7 @@ def test_install_surface_names_the_parser_adapter_lib_loads_by_path(monkeypatch:
     same reason. The file joined the required list when the YAML dialect moved out of
     `adapter_lib` (`#673`'s length-cap split).
 
-    Drives `validate_checked_in_plugin_tree` directly with recording collaborators rather
+    Drives `validate_materialized_plugin_export` directly with recording collaborators rather
     than cloning a seeded repo, so it runs in the STANDING lane. The release-marked sibling
     below proves the same requirement end-to-end; this one is what the changed-line gate can
     see, and a requirement no standing test covers can be deleted with every gate green.
@@ -601,8 +619,8 @@ def test_install_surface_names_the_parser_adapter_lib_loads_by_path(monkeypatch:
     required: list[str] = []
     root = Path(__file__).resolve().parents[2]
     manifest = json.loads((root / "packaging" / "charness.json").read_text(encoding="utf-8"))
-    monkeypatch.setattr(surface, "validate_checked_in_plugin_tree_matches_generated", lambda *_args: None)
-    surface.validate_checked_in_plugin_tree(
+    monkeypatch.setattr(surface, "validate_materialized_plugin_export_matches_generated", lambda *_args: None)
+    surface.validate_materialized_plugin_export(
         root,
         manifest,
         require_dir=lambda *_a: None,

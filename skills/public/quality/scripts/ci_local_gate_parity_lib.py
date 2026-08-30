@@ -9,7 +9,11 @@ from pathlib import Path
 from typing import Any, Callable
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from git_inventory_lib import GitFileListingError, visible_repo_files  # noqa: E402
+from git_inventory_lib import (  # noqa: E402
+    GitFileListingError,
+    VisibleRepoFilesSnapshot,
+    visible_repo_files,
+)
 
 # GitHub Actions accepts BOTH extensions, and the gate saw only one: the same
 # workflow saved as `ci.yaml` scanned 0 files and exited 0 where `ci.yml` raised a
@@ -77,7 +81,11 @@ class WorkflowListingError(SystemExit):
 
 
 def iter_workflow_files(
-    repo_root: Path, glob_pattern: str | Sequence[str], *, require_git: bool = False
+    repo_root: Path,
+    glob_pattern: str | Sequence[str],
+    *,
+    require_git: bool = False,
+    snapshot: VisibleRepoFilesSnapshot | None = None,
 ) -> list[Path]:
     """Workflow files under one glob or several, de-duplicated and ordered.
 
@@ -92,7 +100,10 @@ def iter_workflow_files(
     # ratchet doing its job — the fix is to adopt the owner, not to re-baseline.
     try:
         visible = visible_repo_files(
-            repo_root, require_git=require_git, context="CI/local gate parity workflow listing"
+            repo_root,
+            require_git=require_git,
+            context="CI/local gate parity workflow listing",
+            snapshot=snapshot,
         )
     except GitFileListingError as error:
         # Re-raised as this module's SystemExit subclass so the CLI still fails

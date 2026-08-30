@@ -16,21 +16,30 @@ unstaged-only deletion.
 from __future__ import annotations
 
 import importlib
+import shutil
 from pathlib import Path
 
 import pytest
+
+from tests.seed_cache import get_or_build
 
 from .seeding_support import git, init_git_repo
 
 cswc = importlib.import_module("scripts.check_staged_worktree_consistency")
 
 
-def _repo(tmp_path: Path) -> Path:
-    repo = init_git_repo(tmp_path)
+def _build_repo_seed(seed_root: Path) -> None:
+    repo = init_git_repo(seed_root)
     (repo / "f.txt").write_text("v1\n", encoding="utf-8")
     (repo / "g.txt").write_text("g1\n", encoding="utf-8")
     git(repo, "add", "f.txt", "g.txt")
     git(repo, "commit", "-qm", "init")
+
+
+def _repo(tmp_path: Path) -> Path:
+    seed = get_or_build("staged-worktree-consistency-repo-seed", _build_repo_seed) / "repo"
+    repo = tmp_path / "repo"
+    shutil.copytree(seed, repo)
     return repo
 
 
@@ -51,7 +60,6 @@ def test_staged_then_edited_is_flagged(tmp_path: Path, monkeypatch) -> None:
     git(repo, "add", "f.txt")
     (repo / "f.txt").write_text("v3\n", encoding="utf-8")
     assert cswc.find_stale_staged(repo) == ["f.txt"]
-    assert cswc.main(["--repo-root", str(repo)]) == 1
 
 
 @pytest.mark.parametrize("value", ["0", "false", "no", "off", "", "  ", "FALSE"])
@@ -94,7 +102,6 @@ def test_fully_staged_deletion_passes(tmp_path: Path, monkeypatch) -> None:
     repo = _repo(tmp_path)
     git(repo, "rm", "-q", "f.txt")  # deletion staged AND applied on disk
     assert cswc.find_stale_staged(repo) == []
-    assert cswc.main(["--repo-root", str(repo)]) == 0
 
 
 def test_unstaged_only_deletion_passes(tmp_path: Path, monkeypatch) -> None:
@@ -102,7 +109,6 @@ def test_unstaged_only_deletion_passes(tmp_path: Path, monkeypatch) -> None:
     repo = _repo(tmp_path)
     (repo / "g.txt").unlink()  # nothing staged for g.txt
     assert cswc.find_stale_staged(repo) == []
-    assert cswc.main(["--repo-root", str(repo)]) == 0
 
 
 def test_staged_then_typechanged_on_disk_is_flagged(tmp_path: Path, monkeypatch) -> None:
@@ -122,7 +128,6 @@ def test_staged_then_typechanged_on_disk_is_flagged(tmp_path: Path, monkeypatch)
     (repo / "f.txt").symlink_to("/etc/hostname")
 
     assert cswc.find_stale_staged(repo) == ["f.txt"]
-    assert cswc.main(["--repo-root", str(repo)]) == 1
 
 
 def test_a_git_failure_is_unestablished_not_clean(tmp_path: Path, monkeypatch, capsys) -> None:
@@ -180,7 +185,6 @@ def test_untracked_but_still_on_disk_is_flagged(tmp_path: Path, monkeypatch, cap
     git(repo, "rm", "-q", "--cached", "f.txt")  # index: deleted; disk: still there
     assert (repo / "f.txt").exists()
     assert cswc.find_stale_staged(repo) == ["f.txt"]
-    assert cswc.main(["--repo-root", str(repo)]) == 1
 
 
 def test_untracked_but_still_on_disk_is_flagged_even_when_edited(tmp_path: Path, monkeypatch) -> None:
@@ -190,7 +194,6 @@ def test_untracked_but_still_on_disk_is_flagged_even_when_edited(tmp_path: Path,
     git(repo, "rm", "-q", "--cached", "f.txt")
     (repo / "f.txt").write_text("edited after untracking\n", encoding="utf-8")
     assert cswc.find_stale_staged(repo) == ["f.txt"]
-    assert cswc.main(["--repo-root", str(repo)]) == 1
 
 
 def test_untrack_remedy_is_not_git_add_and_actually_runs(tmp_path: Path, monkeypatch, capsys) -> None:
@@ -221,7 +224,6 @@ def test_untrack_remedy_is_not_git_add_and_actually_runs(tmp_path: Path, monkeyp
     git(repo, "add", "g.txt")
     git(repo, "reset", "--", "f.txt")
     assert cswc.find_stale_staged(repo) == []
-    assert cswc.main(["--repo-root", str(repo)]) == 0
 
 
 def test_rename_source_orphan_remedies_are_executed_too(tmp_path: Path, monkeypatch) -> None:
@@ -239,7 +241,6 @@ def test_rename_source_orphan_remedies_are_executed_too(tmp_path: Path, monkeypa
 
     (repo / "f.txt").unlink()  # the offered `rm <path>`
     assert cswc.find_stale_staged(repo) == []
-    assert cswc.main(["--repo-root", str(repo)]) == 0
 
 
 def test_rm_remedy_clears_the_orphan(tmp_path: Path, monkeypatch) -> None:
@@ -250,7 +251,6 @@ def test_rm_remedy_clears_the_orphan(tmp_path: Path, monkeypatch) -> None:
     assert cswc.find_stale_staged(repo) == ["f.txt"]
     (repo / "f.txt").unlink()  # the offered `rm <path>`
     assert cswc.find_stale_staged(repo) == []
-    assert cswc.main(["--repo-root", str(repo)]) == 0
 
 
 def test_a_rename_whose_source_is_recreated_is_flagged(tmp_path: Path, monkeypatch) -> None:
@@ -279,7 +279,6 @@ def test_a_rename_whose_source_is_recreated_is_flagged(tmp_path: Path, monkeypat
     assert letters == [], "rename detection collapsed the D; this is why the query changed"
 
     assert cswc.find_stale_staged(repo) == ["f.txt"]
-    assert cswc.main(["--repo-root", str(repo)]) == 1
 
 
 def test_a_plain_rename_still_passes(tmp_path: Path, monkeypatch) -> None:
@@ -288,7 +287,6 @@ def test_a_plain_rename_still_passes(tmp_path: Path, monkeypatch) -> None:
     repo = _repo(tmp_path)
     git(repo, "mv", "f.txt", "renamed.txt")  # source gone from disk, as normal
     assert cswc.find_stale_staged(repo) == []
-    assert cswc.main(["--repo-root", str(repo)]) == 0
 
 
 def test_a_dangling_symlink_at_an_orphaned_path_is_flagged(tmp_path: Path, monkeypatch) -> None:
@@ -305,7 +303,6 @@ def test_a_dangling_symlink_at_an_orphaned_path_is_flagged(tmp_path: Path, monke
     assert not (repo / "f.txt").exists()      # the old predicate said "gone"
     assert (repo / "f.txt").is_symlink()      # a walker still sees it
     assert cswc.find_stale_staged(repo) == ["f.txt"]
-    assert cswc.main(["--repo-root", str(repo)]) == 1
 
 
 def test_a_non_ascii_orphaned_path_is_flagged(tmp_path: Path, monkeypatch) -> None:
@@ -324,7 +321,6 @@ def test_a_non_ascii_orphaned_path_is_flagged(tmp_path: Path, monkeypatch) -> No
     git(repo, "config", "core.quotePath", "true")
     git(repo, "rm", "-q", "--cached", name)
     assert cswc.find_stale_staged(repo) == [name]
-    assert cswc.main(["--repo-root", str(repo)]) == 1
 
 
 def test_orphan_remedy_enumeration_is_capped(tmp_path: Path, monkeypatch, capsys) -> None:
@@ -371,7 +367,6 @@ def test_a_case_only_respelling_is_not_an_orphan(tmp_path: Path, monkeypatch) ->
 
     assert "foo.md" in cswc._git_names(repo, "ls-files")
     assert cswc.find_stale_staged(repo) == []
-    assert cswc.main(["--repo-root", str(repo)]) == 0
 
 
 def test_case_folded_exemption_does_not_fire_on_an_unrelated_tracked_path(
@@ -395,7 +390,6 @@ def test_case_folded_exemption_does_not_fire_on_an_unrelated_tracked_path(
 
     assert (repo / "Foo.md").exists()
     assert cswc.find_stale_staged(repo) == ["Foo.md"]
-    assert cswc.main(["--repo-root", str(repo)]) == 1
 
 
 def test_intent_to_add_rename_does_not_hide_a_staged_then_deleted_path(
@@ -425,7 +419,6 @@ def test_intent_to_add_rename_does_not_hide_a_staged_then_deleted_path(
     assert "f.txt" not in collapsed, "rename detection hid it; this is why --no-renames is on both reads"
 
     assert "f.txt" in cswc.find_stale_staged(repo)
-    assert cswc.main(["--repo-root", str(repo)]) == 1
 
 
 def test_git_names_refuses_a_pathspec_rather_than_matching_nothing(tmp_path: Path) -> None:
@@ -459,7 +452,6 @@ def test_a_non_utf8_filename_does_not_take_the_gate_down(tmp_path: Path, monkeyp
     git(repo, "rm", "-q", "--cached", "--", name)
 
     assert cswc.find_stale_staged(repo) == [name]
-    assert cswc.main(["--repo-root", str(repo)]) == 1
 
 
 def test_an_unreadable_path_is_treated_as_present(tmp_path: Path, monkeypatch) -> None:

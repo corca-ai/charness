@@ -37,7 +37,7 @@ def _write_release_repo(tmp_path: Path, *, with_sync: bool = True) -> tuple[Path
                 "customized_from: portable-defaults",
                 "package_id: demo",
                 "packaging_manifest_path: packaging/demo.json",
-                "checked_in_plugin_root: plugins/demo",
+                "materialized_plugin_root: plugins/demo",
                 "sync_command: python3 scripts/sync_root_plugin_manifests.py --repo-root .",
                 "quality_command: ./scripts/run-quality.sh",
                 "",

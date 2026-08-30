@@ -2,7 +2,7 @@
 "which package is this release, and where does it live" with a charness guess.
 
 Measured on the real CLI before the repair: a repo declaring `package_id: acme-harness`,
-`packaging_manifest_path: vendor/mypkg/manifest.json` and `checked_in_plugin_root:
+`packaging_manifest_path: vendor/mypkg/manifest.json` and `materialized_plugin_root:
 vendor/mypkg` under a refused version got back a `package_id` inferred from its own
 directory name and two paths under `packaging/` and `plugins/` that do not exist — at
 exit 0, with `valid: false` printed in the same payload and acted on by nothing.
@@ -24,7 +24,7 @@ SCRIPT = ROOT / "skills" / "public" / "release" / "scripts" / "current_release.p
 DECLARED = (
     "package_id: acme-harness\n"
     "packaging_manifest_path: vendor/mypkg/manifest.json\n"
-    "checked_in_plugin_root: vendor/mypkg\n"
+    "materialized_plugin_root: vendor/mypkg\n"
 )
 
 

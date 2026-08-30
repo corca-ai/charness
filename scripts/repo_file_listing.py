@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import subprocess
 from pathlib import Path
 
@@ -17,6 +18,45 @@ class RepoFileListingError(SystemExit):
 
 class GeneratedMirrorAbsentError(Exception):
     """The generated plugin mirror is not on disk, so its scope is unestablished."""
+
+
+class RepoFileSnapshot:
+    """One operation's coherent Git-backed file population.
+
+    Callers that derive several views of the same tree pass this object through
+    instead of paying for an identical ``git ls-files`` at every helper layer.
+    The cache is deliberately explicit and operation-scoped: a later operation
+    that may follow a mutation creates a new snapshot.
+    """
+
+    def __init__(self, repo_root: Path, *, require_git: bool = False) -> None:
+        self.repo_root = repo_root.resolve()
+        self.require_git = require_git
+        self._paths: dict[bool, list[Path] | None] = {}
+
+    def list_files(self, *, include_untracked: bool = True) -> list[Path] | None:
+        if include_untracked not in self._paths:
+            self._paths[include_untracked] = git_list_repo_files(
+                self.repo_root,
+                include_untracked=include_untracked,
+                require_git=self.require_git,
+            )
+        return self._paths[include_untracked]
+
+
+def _listing_snapshot(
+    repo_root: Path,
+    *,
+    require_git: bool,
+    snapshot: RepoFileSnapshot | None,
+) -> RepoFileSnapshot:
+    if snapshot is None:
+        return RepoFileSnapshot(repo_root, require_git=require_git)
+    if snapshot.repo_root != repo_root.resolve():
+        raise ValueError("repo file snapshot belongs to a different repository")
+    if require_git and not snapshot.require_git:
+        raise ValueError("required Git listing cannot use a fallback-capable snapshot")
+    return snapshot
 
 
 # `/plugins/` is gitignored on purpose (6e05e026e): it is derived, and
@@ -59,6 +99,49 @@ def _decode_output(value: bytes) -> str:
     return value.decode("utf-8", errors="replace")
 
 
+def _git_metadata_is_discoverable(repo_root: Path) -> bool:
+    """Return whether Git could discover a work-tree from ``repo_root``.
+
+    A large class of callers deliberately supports a plain fixture directory:
+    ``git_list_repo_files`` used to launch Git there, receive its predictable
+    "not a repository" refusal, and only then take the documented filesystem
+    fallback.  That probe has no information value.  Check the same local
+    discovery boundary that Git walks first, while preserving the two cases
+    where the environment can redirect discovery outside that boundary.
+
+    This is intentionally only an admission check.  A discoverable ``.git``
+    can still be malformed or inaccessible, so the real Git call below remains
+    the authority and keeps its existing failure contract.
+    """
+    if any(os.environ.get(name) for name in ("GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR")):
+        return True
+    root = repo_root.resolve()
+    if not root.is_dir():
+        return False
+    if (
+        (root / "HEAD").is_file()
+        and (root / "objects").is_dir()
+        and (root / "refs").is_dir()
+    ):
+        return True
+    for candidate in (root, *root.parents):
+        marker = candidate / ".git"
+        if marker.is_file():
+            try:
+                if marker.read_text(encoding="utf-8").lstrip().startswith("gitdir:"):
+                    return True
+            except OSError:
+                continue
+        elif marker.is_dir() and (marker / "HEAD").is_file():
+            # Empty `.git` directories are common in shared temporary roots and
+            # are not Git repositories.  Requiring the object store (or a
+            # linked common directory) avoids paying a process for that known
+            # non-repository marker while still admitting ordinary worktrees.
+            if (marker / "objects").is_dir() or (marker / "commondir").is_file():
+                return True
+    return False
+
+
 def git_list_repo_files(
     repo_root: Path,
     *,
@@ -68,6 +151,16 @@ def git_list_repo_files(
     args = ["git", "ls-files", "-z", "--cached"]
     if include_untracked:
         args.extend(["--others", "--exclude-standard"])
+    if not _git_metadata_is_discoverable(repo_root):
+        if require_git:
+            raise RepoFileListingError(
+                "repo file listing failed\n"
+                f"command: {' '.join(args)}\n"
+                "exit_code: 128\n"
+                "STDOUT:\n\n"
+                "STDERR:\nnot a git repository (Git discovery preflight)"
+            )
+        return None
     result = subprocess.run(
         args,
         cwd=repo_root,
@@ -92,12 +185,12 @@ def iter_repo_files(
     *,
     include_untracked: bool = True,
     require_git: bool = False,
+    snapshot: RepoFileSnapshot | None = None,
 ) -> list[Path]:
-    paths = git_list_repo_files(
-        repo_root,
-        include_untracked=include_untracked,
-        require_git=require_git,
+    listing = _listing_snapshot(
+        repo_root, require_git=require_git, snapshot=snapshot
     )
+    paths = listing.list_files(include_untracked=include_untracked)
     if paths is not None:
         return [path for path in paths if path.is_file()]
 
@@ -128,6 +221,7 @@ def iter_matching_repo_files(
     *,
     include_untracked: bool = True,
     require_git: bool = False,
+    snapshot: RepoFileSnapshot | None = None,
 ) -> list[Path]:
     standard_patterns, support_subpatterns = _split_support_patterns(patterns)
     support_root = support_dir(repo_root)
@@ -139,11 +233,10 @@ def iter_matching_repo_files(
     matches: list[Path] = []
     seen: set[Path] = set()
 
-    git_paths = git_list_repo_files(
-        repo_root,
-        include_untracked=include_untracked,
-        require_git=require_git,
+    listing = _listing_snapshot(
+        repo_root, require_git=require_git, snapshot=snapshot
     )
+    git_paths = listing.list_files(include_untracked=include_untracked)
     if git_paths is not None:
         allowed = {path for path in git_paths if path.is_file()}
         for pattern in standard_patterns:

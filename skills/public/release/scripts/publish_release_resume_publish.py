@@ -110,7 +110,6 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
             # untrue at the one surface outside readers actually get.
             "review_scope": state["claims_review"].get("review_scope"),
             "advisory_findings": state["claims_review"].get("advisory_findings") or [],
-            "scope_completeness": state["claims_review"].get("scope_completeness"),
         }
     if state["phase"] in POST_PUBLICATION:
         resume_closeout.resume_post_publication_closeout(repo_root, args=args, plan=plan, adapter_data=adapter_data,

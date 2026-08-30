@@ -86,6 +86,7 @@ def test_codex_audit_sqlite_filters_threads_and_reports_snapshots(tmp_path: Path
         "thread-a",
         "--format",
         "yaml",
+        real_process=True,
     )
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)

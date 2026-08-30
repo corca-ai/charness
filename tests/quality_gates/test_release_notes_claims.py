@@ -115,6 +115,24 @@ def test_the_surfaces_measure_the_fixture_tree(tmp_path: Path) -> None:
     assert derived["charness-subcommands"]["items"] == ["demo", "group"]
 
 
+def test_all_claim_surfaces_share_one_tracked_tree_snapshot(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = _fixture_repo(tmp_path)
+    calls = 0
+    original = SURFACES.git_list_repo_files
+
+    def observed(*args, **kwargs):
+        nonlocal calls
+        calls += 1
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(SURFACES, "git_list_repo_files", observed)
+
+    assert len(SURFACES.derive_surfaces(repo)) == len(SURFACES.SURFACES)
+    assert calls == 1
+
+
 def test_a_json_adjacent_flag_is_not_a_json_declaration(tmp_path: Path) -> None:
     """`--json-path` and `--json-out` are what this tree actually still carries.
 

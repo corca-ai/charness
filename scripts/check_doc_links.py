@@ -13,9 +13,12 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-_scripts_repo_file_listing_module = import_repo_module(__file__, "scripts.repo_file_listing")
-iter_matching_repo_files = _scripts_repo_file_listing_module.iter_matching_repo_files
-iter_repo_files = _scripts_repo_file_listing_module.iter_repo_files
+_doc_file_population = import_repo_module(__file__, "scripts.doc_file_population")
+DOC_GLOBS = _doc_file_population.DOC_GLOBS
+RepoFileSnapshot = _doc_file_population.RepoFileSnapshot
+iter_docs = _doc_file_population.iter_docs
+iter_known_repo_paths = _doc_file_population.iter_known_repo_paths
+iter_known_markdown_paths = _doc_file_population.iter_known_markdown_paths
 _quality_adapter_module = import_repo_module(__file__, "scripts.quality_adapter_lib")
 load_quality_adapter = _quality_adapter_module.load_quality_adapter
 _markdown_doc_scan = import_repo_module(__file__, "scripts.markdown_doc_scan")
@@ -29,16 +32,6 @@ INERT_LINK = _markdown_doc_scan.INERT_LINK
 _portable_command_carrier = import_repo_module(__file__, "scripts.portable_command_carrier")
 iter_unportable_command_targets = _portable_command_carrier.iter_unportable_command_targets
 
-DOC_GLOBS = (
-    "README.md",
-    "AGENTS.md",
-    "docs/**/*.md",
-    "presets/**/*.md",
-    "profiles/**/*.md",
-    "skills/public/**/*.md",
-    "skills/support/**/*.md",
-    "skills/shared/**/*.md",
-)
 MARKDOWN_LINK_RE = re.compile(r"\[[^\]]+\]\([^)]+\)")
 INLINE_CODE_RE = re.compile(r"`[^`\n]+`")
 # Command-shaped references: `python3 scripts/x.py`, `bash scripts/x.sh`,
@@ -52,7 +45,6 @@ PATH_TOKEN_RE = re.compile(r"\b(?:README\.md|(?:[A-Za-z0-9._-]+/)+[A-Za-z0-9._-]
 BACKTICK_CONTENT_RE = re.compile(r"`([^`\n]+)`")
 PATHY_TOKEN_RE = re.compile(r"^(?:[A-Za-z0-9._-]+/)+[A-Za-z0-9_-]+\.[A-Za-z0-9._-]+$")
 EXTENSION_TOKEN_RE = re.compile(r"^[A-Za-z0-9_.-]+\.[A-Za-z][A-Za-z0-9]{0,5}$")
-SKIP_DIR_NAMES = {".git", "node_modules", ".pytest_cache", "__pycache__"}
 PORTABLE_SKILL_KINDS = {"public", "support"}
 # `<authoring-repo>/` is deliberately SEPARATE from `<repo-root>/`, not a synonym.
 # `<repo-root>/` means "the tree the reader is operating on", so it is
@@ -104,25 +96,6 @@ REPO_REFERENCE_PREFIXES = (
 
 class ValidationError(Exception):
     pass
-
-
-def iter_docs(root: Path, *, require_git: bool = False) -> list[Path]:
-    return iter_matching_repo_files(root, DOC_GLOBS, require_git=require_git)
-
-
-def iter_known_repo_paths(root: Path, *, require_git: bool = False, suffix: str | None = None) -> set[str]:
-    known: set[str] = set()
-    for path in iter_repo_files(root, require_git=require_git):
-        if suffix is not None and path.suffix != suffix:
-            continue
-        if any(part in SKIP_DIR_NAMES for part in path.parts):
-            continue
-        known.add(path.relative_to(root).as_posix())
-    return known
-
-
-def iter_known_markdown_paths(root: Path, *, require_git: bool = False) -> set[str]:
-    return iter_known_repo_paths(root, require_git=require_git, suffix=".md")
 
 
 def build_unique_basename_index(known_repo_paths: set[str], *, keep=None) -> dict[str, str]:
@@ -507,12 +480,19 @@ def main() -> int:
     args = parser.parse_args()
 
     root = args.repo_root.resolve()
-    known_markdown_paths = iter_known_markdown_paths(root, require_git=args.require_git_file_listing)
-    known_repo_paths = iter_known_repo_paths(root, require_git=args.require_git_file_listing)
+    snapshot = RepoFileSnapshot(root, require_git=args.require_git_file_listing)
+    known_repo_paths = iter_known_repo_paths(
+        root, require_git=args.require_git_file_listing, snapshot=snapshot
+    )
+    known_markdown_paths = {
+        path for path in known_repo_paths if Path(path).suffix == ".md"
+    }
     unique_basename_index = build_unique_basename_index(known_repo_paths)
     known_directories = build_known_directories(known_repo_paths)
     canonical_markdown_surfaces = load_canonical_markdown_surfaces(root)
-    for doc in iter_docs(root, require_git=args.require_git_file_listing):
+    for doc in iter_docs(
+        root, require_git=args.require_git_file_listing, snapshot=snapshot
+    ):
         contents = doc.read_text(encoding="utf-8")
         for target in iter_link_targets(contents):
             validate_link(root, doc, target)

@@ -117,7 +117,7 @@ def ensure_source_checkout(repo_root: Path, package_id: str) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Export the checked-in charness plugin surface into a machine-local Codex plugin root and register it in the personal marketplace."
+        description="Export the materialized charness plugin surface into a machine-local Codex plugin root and register it in the personal marketplace."
     )
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--package-id", default="charness")

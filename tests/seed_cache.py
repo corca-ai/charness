@@ -93,11 +93,17 @@ def _compute_source_hash(source_root: Path) -> str:
 
 
 _SOURCE_HASH: str | None = None
+_SOURCE_HASH_ENV = "CHARNESS_TEST_SEED_SOURCE_HASH"
 
 
 def source_hash() -> str:
     global _SOURCE_HASH
-    if _SOURCE_HASH is None:
+    if _SOURCE_HASH is not None:
+        return _SOURCE_HASH
+    inherited = os.environ.get(_SOURCE_HASH_ENV, "").strip()
+    if re.fullmatch(r"[0-9a-f]{32}", inherited):
+        _SOURCE_HASH = inherited
+    else:
         _SOURCE_HASH = _compute_source_hash(ROOT)
     return _SOURCE_HASH
 
@@ -193,18 +199,28 @@ def get_or_build(name: str, builder: Callable[[Path], None]) -> Path:
     prune_lock = filelock.FileLock(str(cache_root / _PRUNE_LOCK_NAME))
     build_lock = filelock.FileLock(str(lock_path))
     cache_root.mkdir(parents=True, exist_ok=True)
-    # Pruning and acquiring the per-entry lock must be one transaction. Otherwise another
-    # process can pass the lock check, remove this entry, and win the per-entry lock before
-    # this process reaches it. Release the root lock after acquisition so different source
-    # hashes can still build in parallel.
-    with prune_lock:
-        cache_dir.mkdir(parents=True, exist_ok=True)
-        _touch_used(cache_dir)
-        # Before the build, so a machine that is already too full to build has its own stale
-        # entries reclaimed first. The failure this prevents does not look like a full disk: it
-        # looks like a nondeterministic set of fixture `git commit` calls returning 1.
-        _prune_unlocked(cache_root, current=cache_dir.name, keep=_keep_count())
-        build_lock.acquire()
+    # Pruning and acquiring an AVAILABLE per-entry lock are one transaction. Never wait for
+    # that lock while holding the root lock: a builder may compose another cached seed, which
+    # needs the root lock in turn. When another builder owns this entry, wait without the root
+    # lock and retry the whole transaction so pruning cannot race the eventual acquisition.
+    while True:
+        with prune_lock:
+            cache_dir.mkdir(parents=True, exist_ok=True)
+            _touch_used(cache_dir)
+            # Before the build, so a machine that is already too full to build has its own
+            # stale entries reclaimed first. The failure this prevents does not look like a
+            # full disk: it looks like nondeterministic fixture `git commit` failures.
+            _prune_unlocked(cache_root, current=cache_dir.name, keep=_keep_count())
+            try:
+                build_lock.acquire(timeout=0)
+            except filelock.Timeout:
+                pass
+            else:
+                break
+        # Synchronize with the current owner, then reacquire under the prune lock. The ready
+        # state is checked only after the transactional retry succeeds.
+        with build_lock:
+            pass
     try:
         if ready.is_file() and final.is_dir():
             return final

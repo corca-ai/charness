@@ -103,6 +103,32 @@ def test_exec_refuses_primary_worktree_by_default(tmp_path: Path) -> None:
         lib.run_exec(repo, ["/bin/true"])
 
 
+def test_exec_preflight_reads_one_topology_snapshot(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = _make_primary(tmp_path)
+    calls: list[tuple[str, ...]] = []
+    original = lib._doctor_checks._git_output
+
+    def observed(repo_root: Path, *args: str) -> str | None:
+        calls.append(args)
+        return original(repo_root, *args)
+
+    monkeypatch.setattr(lib._doctor_checks, "_git_output", observed)
+
+    with pytest.raises(lib.WorktreeExecError, match="primary worktree"):
+        lib.run_exec(repo, ["/bin/true"])
+
+    assert calls == [
+        (
+            "rev-parse",
+            "--git-common-dir",
+            "--git-dir",
+            "--is-bare-repository",
+        )
+    ]
+
+
 def test_cli_exec_in_linked_worktree_keeps_python_outputs_external(tmp_path: Path) -> None:
     repo = _make_primary(tmp_path)
     (repo / "module.py").write_text("VALUE = 7\n", encoding="utf-8")

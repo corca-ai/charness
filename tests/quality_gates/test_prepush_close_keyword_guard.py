@@ -23,6 +23,18 @@ import pytest
 import yaml
 
 from tests.closeout_authorization_world import CROSSWALK_REL, PROTECTED, build_protected_world
+from tests.quality_gates.prepush_close_keyword_fixtures import (
+    commit as _commit,
+)
+from tests.quality_gates.prepush_close_keyword_fixtures import (
+    git as _git,
+)
+from tests.quality_gates.prepush_close_keyword_fixtures import (
+    repo_seed as prepush_close_keyword_seed,
+)
+from tests.quality_gates.prepush_close_keyword_fixtures import (
+    tree_snapshot as _tree_snapshot,
+)
 from tests.quality_gates.support import ROOT
 from tests.script_main import load_script_module, run_loaded_script_main
 
@@ -66,38 +78,27 @@ BODY_VALID_CLOSEOUT = "\n\n".join(
 )
 
 
-def _git(repo: Path, *args: str) -> str:
-    result = subprocess.run(["git", *args], cwd=repo, check=True, capture_output=True, text=True)
-    return result.stdout.strip()
-
-
-def _commit(repo: Path, body: str, name: str, extra: dict[str, str] | None = None) -> str:
-    """Commit with `-F`, which is the cleanup mode that made #626 possible: git stores
-    a `#`-leading line verbatim under `-m`/`-F` and strips it only in editor mode."""
-    (repo / name).write_text(name, encoding="utf-8")
-    _git(repo, "add", name)
-    for rel, content in (extra or {}).items():
-        path = repo / rel
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(content, encoding="utf-8")
-        _git(repo, "add", rel)
-    message_file = repo / ".commit-message"
-    message_file.write_text(body, encoding="utf-8")
-    _git(repo, "commit", "-F", str(message_file))
-    message_file.unlink()
-    return _git(repo, "rev-parse", "HEAD")
-
-
 @pytest.fixture
-def repo(tmp_path: Path) -> Path:
-    _git(tmp_path, "init", "-b", "main")
-    # Identity is set explicitly rather than inherited: on an image with no global
-    # `user.name`/`user.email` every `_commit` here would raise and the whole file
-    # would error out for a reason unrelated to what it checks.
-    _git(tmp_path, "config", "user.email", "test@example.com")
-    _git(tmp_path, "config", "user.name", "Charness Test")
-    _commit(tmp_path, "chore: base commit\n", "base.txt")
+def repo(tmp_path: Path, repo_seed: Path) -> Path:
+    shutil.copytree(repo_seed, tmp_path, dirs_exist_ok=True)
     return tmp_path
+
+
+@pytest.fixture(scope="session")
+def repo_seed() -> Path:
+    return prepush_close_keyword_seed()
+
+
+def test_cached_repo_seed_is_never_mutated_by_a_test_clone(
+    tmp_path: Path, repo_seed: Path
+) -> None:
+    before_seed = _tree_snapshot(repo_seed)
+    clone = tmp_path / "clone"
+    shutil.copytree(repo_seed, clone)
+
+    _commit(clone, "docs: mutate only the disposable clone\n", "clone-only.txt")
+
+    assert _tree_snapshot(repo_seed) == before_seed
 
 
 def _run(*args: str, stdin: str | None = None) -> tuple[int, dict]:

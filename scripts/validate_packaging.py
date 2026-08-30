@@ -17,7 +17,7 @@ _scripts_packaging_policy_validators_module = import_repo_module(__file__, "scri
 PackagingPolicyValidationError = _scripts_packaging_policy_validators_module.PackagingPolicyValidationError
 validate_optional_public_skill_policy = _scripts_packaging_policy_validators_module.validate_optional_public_skill_policy
 _scripts_validate_packaging_install_surface_module = import_repo_module(__file__, "scripts.validate_packaging_install_surface")
-validate_checked_in_plugin_tree = _scripts_validate_packaging_install_surface_module.validate_checked_in_plugin_tree
+validate_materialized_plugin_export = _scripts_validate_packaging_install_surface_module.validate_materialized_plugin_export
 
 SLUG_RE = re.compile(r"^[a-z0-9]+(?:[.-][a-z0-9]+)*$")
 VERSION_RE = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?$")
@@ -193,12 +193,12 @@ def _validate_codex_marketplace(marketplace: object, package_id: str) -> None:
             "`codex.repo_marketplace.default_source_path` must point at "
             f"`./plugins/{package_id}`"
         )
-    checked_in_source_path = validate_string(
-        marketplace.get("checked_in_source_path"), "codex.repo_marketplace.checked_in_source_path"
+    materialized_source_path = validate_string(
+        marketplace.get("materialized_source_path"), "codex.repo_marketplace.materialized_source_path"
     )
-    if checked_in_source_path != default_source_path:
+    if materialized_source_path != default_source_path:
         raise ValidationError(
-            "`codex.repo_marketplace.checked_in_source_path` must match `default_source_path`"
+            "`codex.repo_marketplace.materialized_source_path` must match `default_source_path`"
         )
     validate_string(marketplace.get("display_name"), "codex.repo_marketplace.display_name")
     validate_string(marketplace.get("category"), "codex.repo_marketplace.category")
@@ -304,7 +304,7 @@ def validate_root_install_artifacts(
                         "name": data["package_id"],
                         "source": {
                             "source": "local",
-                            "path": codex_marketplace["checked_in_source_path"],
+                            "path": codex_marketplace["materialized_source_path"],
                         },
                         "policy": {
                             "installation": "AVAILABLE",
@@ -321,7 +321,7 @@ def validate_root_install_artifacts(
         require_json_matches(root / rel_path, expected, field)
     if validate_export:
         try:
-            validate_checked_in_plugin_tree(
+            validate_materialized_plugin_export(
                 root,
                 data,
                 require_dir=require_dir,
@@ -368,7 +368,7 @@ def validate_claude(
     validate_slug(marketplace.get("name"), "claude.marketplace.name")
     if validate_string(marketplace.get("source_path"), "claude.marketplace.source_path") != f"./plugins/{package_id}":
         raise ValidationError(
-            "`claude.marketplace.source_path` must point at the checked-in plugin tree"
+            "`claude.marketplace.source_path` must point at the materialized plugin export"
         )
 
 def validate_packaging_manifest(
@@ -431,7 +431,7 @@ def main() -> int:
     parser.add_argument(
         "--validate-export",
         action="store_true",
-        help="also validate the checked-in plugin export against generated content",
+        help="also validate the materialized plugin export against generated content",
     )
     args = parser.parse_args()
 

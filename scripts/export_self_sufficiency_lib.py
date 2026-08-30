@@ -10,7 +10,7 @@ contract it reads. The third was found by a stranded session on another machine.
 
 WHY THE EXISTING GATES CANNOT SEE IT, which is the reason this is a new question
 and not a stricter setting on an old one. `validate_packaging_install_surface.py`
-re-runs the exporter into a tmpdir and diffs it against the checked-in tree, so
+re-runs the exporter into a tmpdir and diffs it against the materialized tree, so
 its ORACLE IS THE EXPORTER: anything the exporter omits is absent from both sides
 and the diff is empty. It is a fixed-point check on the generator, not a
 self-sufficiency check on the artifact. The native-backed `check-export-safe-imports`

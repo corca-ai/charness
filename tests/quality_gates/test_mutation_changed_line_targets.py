@@ -48,6 +48,53 @@ def test_changed_line_scope_gap_targets_include_source_text(
     }
 
 
+def test_changed_line_numbers_for_paths_batches_normal_paths(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[list[str]] = []
+
+    def fake_run(command, **_kwargs):
+        calls.append(command)
+        output = (
+            "diff --git a/scripts/foo.py b/scripts/foo.py\n"
+            "+++ b/scripts/foo.py\n"
+            "@@ -1 +2,2 @@\n"
+            "+new\n"
+            "diff --git a/scripts/bar.py b/scripts/bar.py\n"
+            "+++ b/scripts/bar.py\n"
+            "@@ -4 +5 @@\n"
+            "+also-new\n"
+        )
+        return subprocess.CompletedProcess(command, 0, output, "")
+
+    monkeypatch.setattr(mutation_changed_files_lib.subprocess, "run", fake_run)
+    changed = mutation_changed_files_lib.changed_line_numbers_for_paths(
+        Path("/repo"), "a" * 40, "b" * 40, ["scripts/foo.py", "scripts/bar.py"]
+    )
+
+    assert changed == {"scripts/foo.py": {2, 3}, "scripts/bar.py": {5}}
+    assert len(calls) == 1
+
+
+def test_changed_line_numbers_reuses_immutable_range_result(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[list[str]] = []
+
+    def fake_run(command, **_kwargs):
+        calls.append(command)
+        return subprocess.CompletedProcess(
+            command,
+            0,
+            "+++ b/scripts/foo.py\n@@ -1 +2 @@\n+new\n",
+            "",
+        )
+
+    monkeypatch.setattr(mutation_changed_files_lib.subprocess, "run", fake_run)
+    args = (Path("/repo"), "c" * 40, "d" * 40, "scripts/foo.py")
+    assert mutation_changed_files_lib.changed_line_numbers(*args) == {2}
+    assert mutation_changed_files_lib.changed_line_numbers(*args) == {2}
+    assert len(calls) == 1
+
+
 def test_manifest_surfaces_changed_line_proof_targets(tmp_path: Path) -> None:
     manifest_json = tmp_path / "sample.json"
     manifest_md = tmp_path / "sample.md"

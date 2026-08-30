@@ -5,6 +5,8 @@ from pathlib import Path
 
 import pytest
 
+from scripts import check_spec_evidence_durability as gate
+
 from .support import init_git_repo, run_script
 
 
@@ -27,7 +29,12 @@ def test_flags_gitignored_backtick_citation(tmp_path: Path) -> None:
         "# Demo Spec\n\nProof: see `artifacts/eval-summary.json` for the field.\n",
         encoding="utf-8",
     )
-    result = run_script("scripts/check_spec_evidence_durability.py", "--repo-root", str(repo))
+    result = run_script(
+        "scripts/check_spec_evidence_durability.py",
+        "--repo-root",
+        str(repo),
+        real_process=True,
+    )
     assert result.returncode == 1
     assert "gitignored target" in result.stderr
     assert "artifacts/eval-summary.json" in result.stderr
@@ -205,6 +212,31 @@ def test_scope_covers_quality_release_dogfood_subdirs(tmp_path: Path) -> None:
     assert result.returncode == 1
     for subdir in ("quality", "release", "dogfood", "debug", "premortem"):
         assert f"charness-artifacts/{subdir}/demo.md" in result.stderr
+
+
+def test_main_batches_all_citation_paths_into_one_git_ignore_query(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = _bootstrap_repo(tmp_path)
+    spec_dir = repo / "charness-artifacts" / "spec"
+    for name in ("one.md", "two.md"):
+        (spec_dir / name).write_text(
+            f"# Demo\n\nProof: `artifacts/{name}.json`.\n", encoding="utf-8"
+        )
+    calls: list[list[Path]] = []
+
+    def all_ignored(_root: Path, paths: list[Path]) -> set[Path]:
+        calls.append(paths)
+        return set(paths)
+
+    monkeypatch.setattr(gate, "git_check_ignore", all_ignored)
+    monkeypatch.setattr(
+        "sys.argv", ["check_spec_evidence_durability.py", "--repo-root", str(repo)]
+    )
+
+    assert gate.main() == 1
+    assert len(calls) == 1
+    assert {path.name for path in calls[0]} == {"one.md.json", "two.md.json"}
 
 
 # --------------------------------------------------------------------------- #

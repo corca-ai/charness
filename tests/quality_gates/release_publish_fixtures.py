@@ -51,7 +51,7 @@ def _write_release_adapter(repo: Path) -> None:
                 "customized_from: portable-defaults",
                 "package_id: demo",
                 "packaging_manifest_path: packaging/demo.json",
-                "checked_in_plugin_root: plugins/demo",
+                "materialized_plugin_root: plugins/demo",
                 "sync_command: python3 scripts/sync_root_plugin_manifests.py --repo-root .",
                 "quality_command: ./scripts/run-quality.sh",
                 "post_publish_distinct_channel_probe: distinct-channel-probe {tag}",
@@ -138,26 +138,97 @@ def _write_fake_distinct_channel_probe(bin_dir: Path) -> None:
     script.chmod(0o755)
 
 
-def _setup_git(repo: Path, remote: Path) -> None:
+def _setup_git(repo: Path) -> None:
     subprocess.run(["git", "init", "-b", "main"], cwd=repo, check=True, capture_output=True, text=True)
     subprocess.run(["git", "add", "."], cwd=repo, check=True, capture_output=True, text=True)
     subprocess.run(["git", "commit", "-m", "seed"], cwd=repo, check=True, capture_output=True, text=True)
+
+
+def _attach_remote_and_push(repo: Path, remote: Path) -> None:
     subprocess.run(["git", "remote", "add", "origin", str(remote)], cwd=repo, check=True, capture_output=True, text=True)
     subprocess.run(["git", "push", "-u", "origin", "main"], cwd=repo, check=True, capture_output=True, text=True)
 
 
-def _seed_publish_release_repo(tmp_path: Path) -> tuple[Path, Path, Path]:
-    repo, remote, bin_dir = _make_release_paths(tmp_path)
+def ensure_fixture_release_base(repo: Path) -> None:
+    """Give claims-review fixtures a prior release without changing the shared seed."""
+    present = subprocess.run(
+        ["git", "rev-parse", "--verify", "refs/tags/v0.0.0"],
+        cwd=repo,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if present.returncode == 0:
+        return
+    root = subprocess.run(
+        ["git", "rev-list", "--max-parents=0", "HEAD"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.splitlines()[0]
+    subprocess.run(
+        ["git", "tag", "v0.0.0", root],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    subprocess.run(
+        ["git", "push", "origin", "v0.0.0"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+
+def _build_release_publish_seed(staging: Path) -> None:
+    repo = staging / "repo"
+    remote = staging / "remote.git"
+    bin_dir = staging / "bin"
     _prepare_release_tree(repo, remote, bin_dir)
-    subprocess.run(["git", "init", "--bare", str(remote)], check=True, capture_output=True, text=True)
+    subprocess.run(
+        ["git", "init", "--bare", str(remote)],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
     _write_release_adapter(repo)
     _write_fake_git(repo, bin_dir)
     _write_sync_script(repo)
     _write_quality_script(repo)
     _write_fake_gh(bin_dir)
     _write_fake_distinct_channel_probe(bin_dir)
-    _setup_git(repo, remote)
+    _setup_git(repo)
+
+
+def release_publish_seed(*, cache_get_or_build=None) -> Path:
+    """Return one source-bound immutable release-fixture bundle.
+
+    The bundle contains a committed repository with no remote, an empty bare remote,
+    and the static fake-tool binaries. Tests copy all three parts before attaching the
+    test-local remote, so pushes, tags, and readbacks remain per-test operations.
+    ``cache_get_or_build`` is injectable only for the focused wiring test.
+    """
+    if cache_get_or_build is None:
+        from tests.seed_cache import get_or_build
+
+        cache_get_or_build = get_or_build
+    return cache_get_or_build("release-publish-repo-seed", _build_release_publish_seed)
+
+
+def _copy_release_publish_seed(tmp_path: Path, seed: Path) -> tuple[Path, Path, Path]:
+    repo, remote, bin_dir = _make_release_paths(tmp_path)
+    shutil.copytree(seed / "repo", repo)
+    shutil.copytree(seed / "remote.git", remote)
+    shutil.copytree(seed / "bin", bin_dir)
+    _attach_remote_and_push(repo, remote)
     return repo, remote, bin_dir
+
+
+def _seed_publish_release_repo(tmp_path: Path) -> tuple[Path, Path, Path]:
+    return _copy_release_publish_seed(tmp_path, release_publish_seed())
 
 
 def _simulate_partial_publish(
@@ -243,7 +314,7 @@ def claims_review_record(
     release_record_path: str = "charness-artifacts/release/latest.md",
 ) -> dict:
     record = {
-        "schema_version": "charness.release.claims-review.v3",
+        "schema_version": "charness.release.claims-review.v4",
         "prepared_commit": prepared_commit,
         "release_record_path": release_record_path,
         "release_record_sha256": hashlib.sha256(prepared_record.encode("utf-8")).hexdigest(),
@@ -267,17 +338,22 @@ def claims_review_record(
             "blocking_paths": ["scripts/fixture_shipped.py"],
             "advisory_paths": [],
         }
+        record["scope_basis"] = {
+            "base_ref": "refs/tags/v0.0.0",
+            "changed_paths_sha256": "fixture-overwritten-after-scope-derivation",
+            "changed_path_count": 1,
+        }
         record["advisory_findings"] = []
     return record
 
 
-def _derive_review_scope(repo: Path, prepared_commit: str) -> dict[str, list[str]]:
+def _derive_review_scope(repo: Path, prepared_commit: str) -> tuple[dict[str, list[str]], dict]:
     """Partition the real prepared-commit delta, the way a reviewer would."""
     import sys as _sys
     release_scripts = REPO_ROOT / "skills" / "public" / "release" / "scripts"
     if str(release_scripts) not in _sys.path:
         _sys.path.insert(0, str(release_scripts))
-    from claims_review_scope import partition  # noqa: PLC0415
+    from claims_review_scope import changed_paths_sha256, partition  # noqa: PLC0415
 
     described = subprocess.run(
         ["git", "describe", "--tags", "--abbrev=0", f"{prepared_commit}^"],
@@ -293,8 +369,16 @@ def _derive_review_scope(repo: Path, prepared_commit: str) -> dict[str, list[str
         ["git", "diff-tree", "--no-commit-id", "--name-only", "-r", span],
         cwd=repo, capture_output=True, text=True,
     )
-    split = partition([line for line in listed.stdout.splitlines() if line])
-    return {"blocking_paths": split["blocking"], "advisory_paths": split["advisory"]}
+    paths = [line for line in listed.stdout.splitlines() if line]
+    split = partition(paths)
+    return (
+        {"blocking_paths": split["blocking"], "advisory_paths": split["advisory"]},
+        {
+            "base_ref": f"refs/tags/{base}" if base else "<fixture-no-release-base>",
+            "changed_paths_sha256": changed_paths_sha256(paths),
+            "changed_path_count": len(set(paths)),
+        },
+    )
 
 
 def commit_claims_review(
@@ -309,7 +393,8 @@ def commit_claims_review(
     kind: str = "separate-agent-context",
     release_record_path: str = "charness-artifacts/release/latest.md",
 ) -> str:
-    """Write and commit the v2 record plus its narrative; return the record's path."""
+    """Write and commit the v4 record plus its narrative; return the record's path."""
+    ensure_fixture_release_base(repo)
     review_path = f"charness-artifacts/release-review/{stem}.json"
     narrative_path = f"charness-artifacts/release-review/{stem}.md"
     record = claims_review_record(
@@ -322,7 +407,7 @@ def commit_claims_review(
         # record is the prepared commit's child, so the delta is knowable when
         # it is written. A hardcoded scope here would make the fixture pass a
         # completeness check that no real record could satisfy.
-        record["review_scope"] = _derive_review_scope(repo, prepared_commit)
+        record["review_scope"], record["scope_basis"] = _derive_review_scope(repo, prepared_commit)
     paths = [review_path]
     (repo / review_path).parent.mkdir(parents=True, exist_ok=True)
     (repo / review_path).write_text(json.dumps(record) + "\n", encoding="utf-8")

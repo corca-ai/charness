@@ -113,6 +113,7 @@ from __future__ import annotations
 import subprocess
 import sys
 import tempfile
+from functools import lru_cache
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module
@@ -143,6 +144,23 @@ STIMULUS_NOT_ESTABLISHED = _boundary_probe.PROBE_NOT_ESTABLISHED
 
 _RESOLVE_TIMEOUT_SECONDS = 120
 
+
+@lru_cache(maxsize=None)
+def _resolver_loader(resolver: str):
+    """Load one resolver's pure adapter function once for this replay process."""
+    import runpy
+
+    namespace = runpy.run_path(resolver)
+    loader = namespace.get("load_adapter")
+    if callable(loader):
+        return loader
+    policy = namespace.get("adapter_policy")
+    loader = getattr(policy, "load_adapter", None)
+    if callable(loader):
+        return loader
+    raise AttributeError(f"resolver {resolver} does not expose a load_adapter callable")
+
+
 def _resolver_for(repo_root: Path, skill: str) -> Path | None:
     if not _SKILL_NAME_RE.match(skill):
         return None
@@ -151,12 +169,32 @@ def _resolver_for(repo_root: Path, skill: str) -> Path | None:
 
 
 def _resolve(repo_root: Path, resolver: Path, sandbox: Path, filename: str, text: str) -> dict:
-    """Run one real resolver over one document and return its rendered output.
+    """Resolve one document in-process and return its structured adapter output.
 
     The sandbox is REUSED between the whole and ablated runs of a document, so the resolved
     payload cannot differ merely because the temp path differed -- which would make every
     ablation look like a live declaration and silently disarm the whole check.
     """
+    agents = sandbox / ".agents"
+    agents.mkdir(parents=True, exist_ok=True)
+    (agents / filename).write_text(text, encoding="utf-8")
+    try:
+        payload = _resolver_loader(str(resolver))(sandbox)
+    except Exception as exc:  # pragma: no cover - resolver absent or broken
+        return {"data": None, "output": f"the resolver could not be run: {exc}", "exit_code": None}
+    if not isinstance(payload, dict) or not isinstance(payload.get("data"), dict):
+        return {"data": None, "output": repr(payload), "exit_code": None}
+    return {
+        "data": payload["data"],
+        "output": repr(payload),
+        "exit_code": 0 if payload.get("valid") is not False else 1,
+    }
+
+
+def _resolve_process(
+    repo_root: Path, resolver: Path, sandbox: Path, filename: str, text: str
+) -> dict:
+    """Run one resolver entrypoint as a process for delivery-boundary smoke tests."""
     agents = sandbox / ".agents"
     agents.mkdir(parents=True, exist_ok=True)
     (agents / filename).write_text(text, encoding="utf-8")
@@ -324,7 +362,7 @@ def _inspect_document(repo_root: Path, document: dict) -> dict:
 
 def _declaration_verdict(
     repo_root: Path, resolver: Path, sandbox: Path, filename: str,
-    speakable: str, declaration: dict, whole: str,
+    speakable: str, declaration: dict, whole: object,
 ) -> tuple[str | None, str | None]:
     """``(verdict, reason)`` for ONE declaration: is it read, unread, or a restated default?
 

@@ -1,13 +1,17 @@
 from __future__ import annotations
 
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
 from types import SimpleNamespace
+from unittest.mock import patch
 
 import pytest
 import yaml
+
+from tests.seed_cache import get_or_build
 
 from .release_publish_fixtures import (
     PUBLISH_SCRIPT,
@@ -68,15 +72,94 @@ def _run_plan(repo: Path, env: dict[str, str], *args: str) -> subprocess.Complet
     )
 
 
+def _run_plan_in_process(
+    repo: Path, *args: str, check_current_status: bool = False
+) -> subprocess.CompletedProcess[str]:
+    """Run planner logic in-process for payload-only matrix cases.
+
+    These cases assert planner routing and packet shape, not the release status reader.
+    Keep the dirty-tree case on the real status path, while clean payload cases avoid
+    launching a second CLI and repeating a Git status read already covered by the release
+    surface tests and the prepared-stop boundary test below.
+    """
+    values = _args(repo_root=repo)
+    iterator = iter(args)
+    for value in iterator:
+        if value == "--part":
+            values.part = next(iterator)
+        elif value == "--publish-current":
+            values.publish_current = True
+        elif value == "--set-version":
+            values.set_version = next(iterator)
+        elif value == "--critique-blocked":
+            values.critique_blocked = next(iterator)
+        elif value == "--critique-artifact":
+            values.critique_artifact = next(iterator)
+        else:
+            raise AssertionError(f"unsupported in-process planner argument: {value}")
+    status_patch = patch.object(_PLANNER._current_release, "_git_status", return_value=[])
+    with status_patch if not check_current_status else patch.object(
+        _PLANNER._current_release, "_git_status", wraps=_PLANNER._current_release._git_status
+    ):
+        payload = _PLANNER.build_plan(values)
+    return subprocess.CompletedProcess(
+        ["plan_release_run.py"], 0, stdout=yaml.safe_dump(payload, sort_keys=False), stderr=""
+    )
+
+
 def _git(repo: Path, *args: str) -> None:
     subprocess.run(["git", *args], cwd=repo, check=True, capture_output=True, text=True)
 
 
+def _build_prepared_stop_seed(staging: Path) -> None:
+    """Cache the one real prepare needed to exercise planner stop discovery."""
+    repo, _remote, bin_dir = _seed_publish_release_repo(staging)
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(REPO_ROOT / PUBLISH_SCRIPT),
+            "--repo-root",
+            str(repo),
+            "--part",
+            "patch",
+            "--execute",
+            "--critique-blocked",
+            "synthetic-test-harness does not spawn real critique subagents",
+        ],
+        cwd=REPO_ROOT,
+        env=_release_env(staging, bin_dir),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        raise AssertionError(result.stderr)
+    (staging / "payload.yaml").write_text(result.stdout, encoding="utf-8")
+    _git(repo, "remote", "remove", "origin")
+
+
+def _prepared_stop_seed() -> Path:
+    return get_or_build("release-prepared-stop-planner", _build_prepared_stop_seed)
+
+
+def _copy_prepared_stop(tmp_path: Path) -> tuple[Path, dict[str, str], dict[str, object]]:
+    seed = _prepared_stop_seed()
+    repo = tmp_path / "repo"
+    remote = tmp_path / "remote.git"
+    bin_dir = tmp_path / "bin"
+    shutil.copytree(seed / "repo", repo)
+    shutil.copytree(seed / "remote.git", remote)
+    shutil.copytree(seed / "bin", bin_dir)
+    _git(repo, "remote", "add", "origin", str(remote))
+    _git(repo, "fetch", "origin")
+    payload = yaml.safe_load((seed / "payload.yaml").read_text(encoding="utf-8"))
+    return repo, _release_env(tmp_path, bin_dir), payload
+
+
 def test_release_run_planner_reports_inspect_packet_without_mutation(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
-    env = _release_env(tmp_path, bin_dir)
 
-    result = _run_plan(repo, env)
+    result = _run_plan_in_process(repo)
 
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
@@ -117,9 +200,8 @@ def test_release_run_planner_routes_declared_specialized_lane_without_mutation(t
     )
     manifest = repo / "packaging" / "demo.json"
     before_manifest = manifest.read_bytes()
-    env = _release_env(tmp_path, bin_dir)
 
-    result = _run_plan(repo, env)
+    result = _run_plan_in_process(repo)
 
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
@@ -145,9 +227,8 @@ def test_release_run_planner_routes_declared_specialized_lane_without_mutation(t
 
 def test_release_run_planner_requires_critique_before_publish(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
-    env = _release_env(tmp_path, bin_dir)
 
-    result = _run_plan(repo, env, "--part", "patch")
+    result = _run_plan_in_process(repo, "--part", "patch")
 
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
@@ -172,9 +253,10 @@ def test_release_run_planner_surfaces_stale_update_instructions_before_publish(t
     )
     _git(repo, "add", "-A")
     _git(repo, "commit", "-m", "seed stale update instructions")
-    env = _release_env(tmp_path, bin_dir)
 
-    result = _run_plan(repo, env, "--part", "patch", "--critique-blocked", "test host lacks agent tool")
+    result = _run_plan_in_process(
+        repo, "--part", "patch", "--critique-blocked", "test host lacks agent tool"
+    )
 
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
@@ -197,9 +279,15 @@ def test_release_run_planner_prioritizes_update_instruction_prep_over_dirty_tree
     _git(repo, "add", "-A")
     _git(repo, "commit", "-m", "seed stale update instructions")
     (repo / "WIP.txt").write_text("dirty tree should not hide prep guidance", encoding="utf-8")
-    env = _release_env(tmp_path, bin_dir)
 
-    result = _run_plan(repo, env, "--part", "patch", "--critique-blocked", "test host lacks agent tool")
+    result = _run_plan_in_process(
+        repo,
+        "--part",
+        "patch",
+        "--critique-blocked",
+        "test host lacks agent tool",
+        check_current_status=True,
+    )
 
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
@@ -214,9 +302,10 @@ def test_release_run_planner_points_to_publish_dry_run_when_ready(tmp_path: Path
     critique.write_text("# Demo critique\n", encoding="utf-8")
     _git(repo, "add", "-A")
     _git(repo, "commit", "-m", "add critique")
-    env = _release_env(tmp_path, bin_dir)
 
-    result = _run_plan(repo, env, "--part", "patch", "--critique-artifact", "charness-artifacts/critique/demo.md")
+    result = _run_plan_in_process(
+        repo, "--part", "patch", "--critique-artifact", "charness-artifacts/critique/demo.md"
+    )
 
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
@@ -228,10 +317,9 @@ def test_release_run_planner_points_to_publish_dry_run_when_ready(tmp_path: Path
 
 def test_release_run_planner_preserves_blocked_host_signal_in_publish_packet(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
-    env = _release_env(tmp_path, bin_dir)
     signal = "host runtime has no subagent tool in this fixture"
 
-    result = _run_plan(repo, env, "--part", "patch", "--critique-blocked", signal)
+    result = _run_plan_in_process(repo, "--part", "patch", "--critique-blocked", signal)
 
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
@@ -430,7 +518,13 @@ def test_planner_emits_the_resume_command_with_every_required_flag(tmp_path: Pat
     plan = yaml.safe_load(_run_plan(repo, env).stdout)
 
     packets = {packet["id"]: packet for packet in plan["publish_packets"]}
-    assert set(packets) == {"publish-resume-dry-run", "publish-resume-execute"}
+    assert set(packets) == {
+        "claims-review-scaffold", "publish-resume-dry-run", "publish-resume-execute"
+    }
+    scaffold = packets["claims-review-scaffold"]
+    assert "scaffold_claims_review.py" in scaffold["command"]
+    assert "--write" in scaffold["command"]
+    assert scaffold["requires_user_confirmation"] is False
     execute = packets["publish-resume-execute"]
     for flag in ("--resume", "--publish-current", "--claims-review-artifact",
                  "--critique-artifact", "--execute"):
@@ -446,6 +540,7 @@ def test_planner_emits_the_resume_command_with_every_required_flag(tmp_path: Pat
     )
     assert summary.returncode == 0, summary.stderr
     assert "publish-resume-execute:" in summary.stdout
+    assert "claims-review-scaffold:" in summary.stdout
     assert "--claims-review-artifact" in summary.stdout
 
 
@@ -696,17 +791,22 @@ def test_prepared_claims_packets_are_exercised_in_process(tmp_path: Path) -> Non
         assert RECORD in action["reason"]
 
 
-def test_resume_summary_lines_selects_only_resume_packets() -> None:
+def test_resume_summary_lines_selects_scaffold_and_resume_packets() -> None:
     """The summary line is the operator-facing half of the prepared-stop repair, and it
     is only ever reached through a subprocess planner run."""
     assert _PLANNER.resume_summary_lines({}) == []
     assert _PLANNER.resume_summary_lines({"publish_packets": None}) == []
     assert _PLANNER.resume_summary_lines({"publish_packets": [
         {"id": "publish-dry-run", "command": "not this one"},
+        {"id": "claims-review-scaffold", "command": "scaffold"},
         {"id": "publish-resume-dry-run", "command": "dry"},
         {"id": "publish-resume-execute", "command": "exec"},
         {"command": "no id at all"},
-    ]}) == ["publish-resume-dry-run: dry", "publish-resume-execute: exec"]
+    ]}) == [
+        "claims-review-scaffold: scaffold",
+        "publish-resume-dry-run: dry",
+        "publish-resume-execute: exec",
+    ]
 
 
 # Deliberately NOT `release_only`. Its siblings are excluded from the standing set for
@@ -720,10 +820,11 @@ def test_the_planner_summary_prints_the_resume_command_in_process(tmp_path: Path
     prepared-stop repair, so it is driven here through `main()` directly."""
     from tests.script_main import run_loaded_script_main
 
-    repo, env, _payload = _prepare_release_stop(tmp_path)
-    result = run_loaded_script_main(
-        "plan_release_run.py", _PLANNER, "--repo-root", str(repo), env=env
-    )
+    repo, env, _payload = _copy_prepared_stop(tmp_path)
+    with patch.object(_PLANNER._current_release, "_git_status", return_value=[]):
+        result = run_loaded_script_main(
+            "plan_release_run.py", _PLANNER, "--repo-root", str(repo), env=env
+        )
 
     assert result.returncode == 0, result.stderr
     assert "next_action=resume_prepared_claims_review" in result.stdout

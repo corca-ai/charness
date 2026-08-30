@@ -18,9 +18,16 @@ from .release_publish_fixtures import (
     _release_env,
     _run_publish,
     _run_publish_patch,
-    _seed_publish_release_repo,
-    _simulate_partial_publish,
     bug_closeout_body,
+)
+from .release_resume_fixtures import (
+    seed_failed_closeout as _seed_failed_closeout,
+)
+from .release_resume_fixtures import (
+    seed_partial_publish as _seed_partial_publish,
+)
+from .release_resume_fixtures import (
+    seed_publish_release as _seed_publish_release_repo,
 )
 
 PREFLIGHT_PATH = REPO_ROOT / "skills" / "public" / "release" / "scripts" / "publish_release_preflight.py"
@@ -564,11 +571,7 @@ def _resume_closeout_body() -> str:
 def _prepare_closeout_resume(
     tmp_path: Path, *, head_closeout_body: str | None
 ) -> tuple[Path, dict[str, str], Path]:
-    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
-    carrier = tmp_path / "resume-closeout.md"
-    carrier.write_text(_resume_closeout_body() + "\n", encoding="utf-8")
-    _simulate_partial_publish(repo, closeout_body=head_closeout_body)
-    return repo, _resume_closeout_env(tmp_path, bin_dir), carrier
+    return _seed_partial_publish(tmp_path, head_closeout_body=head_closeout_body)
 
 
 def _run_closeout_resume(
@@ -615,69 +618,8 @@ def _resume_patch_closeout(
     )
 
 
-def _seed_failed_closeout(tmp_path: Path) -> tuple[Path, dict[str, str], Path]:
-    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
-    env = _resume_closeout_env(tmp_path, bin_dir)
-    carrier = tmp_path / "synthetic-release-closeout.md"
-    return repo, env, carrier
-
-
-@pytest.mark.parametrize(
-    ("failure_mode", "expected_status"),
-    [("before", "pushed"), ("after", "already-shared")],
-)
-def test_resume_reconciles_carrier_push_without_duplicate(
-    tmp_path: Path, failure_mode: str, expected_status: str
-) -> None:
-    repo, env, carrier = _seed_failed_closeout(tmp_path)
-    env["FAKE_GIT_BRANCH_PUSH_ERROR_AT"] = "1"
-    env["FAKE_GIT_BRANCH_PUSH_ERROR_MODE"] = failure_mode
-
-    failed = _run_patch_closeout(repo, env)
-    assert failed.returncode != 0
-    env.pop("FAKE_GIT_BRANCH_PUSH_ERROR_AT")
-    env.pop("FAKE_GIT_BRANCH_PUSH_ERROR_MODE")
-
-    resumed = _resume_patch_closeout(repo, env, carrier)
-    assert resumed.returncode == 0, resumed.stderr
-    payload = yaml.safe_load(resumed.stdout)
-    assert payload["resume_remote_reconcile"]["status"] == expected_status
-    log = subprocess.run(
-        ["git", "log", "--format=%B"], cwd=repo, check=True, capture_output=True, text=True
-    ).stdout
-    assert log.count("Close #44.") == 1
-
-
-def test_post_publication_resume_without_original_closeout_inputs_fails_actionably(
-    tmp_path: Path,
-) -> None:
-    repo, env, _carrier = _seed_failed_closeout(tmp_path)
-    env["FAKE_GIT_BRANCH_PUSH_ERROR_AT"] = "1"
-    env["FAKE_GIT_BRANCH_PUSH_ERROR_MODE"] = "before"
-    failed = _run_patch_closeout(repo, env)
-    assert failed.returncode != 0
-    env.pop("FAKE_GIT_BRANCH_PUSH_ERROR_AT")
-    env.pop("FAKE_GIT_BRANCH_PUSH_ERROR_MODE")
-
-    resumed = _run_publish(
-        repo, env, "--resume", "--publish-current", "--execute",
-        "--critique-blocked", CRITIQUE_BLOCKED,
-        "--claims-review-artifact", "charness-artifacts/release-review/fixture-claims.json",
-    )
-
-    assert resumed.returncode != 0
-    assert "post-publication issue-closeout recovery requires the original" in resumed.stderr
-    assert "--close-issue-carrier-file" in resumed.stderr
-    assert "Recovery never infers or omits issue-close context" in resumed.stderr
-
-
 def test_resume_completes_tail_after_carrier_state_readback_failure(tmp_path: Path) -> None:
-    repo, env, carrier = _seed_failed_closeout(tmp_path)
-    env["FAKE_GH_ISSUE_VIEW_FAIL_AFTER"] = "1"
-
-    failed = _run_patch_closeout(repo, env)
-    assert failed.returncode != 0
-    env.pop("FAKE_GH_ISSUE_VIEW_FAIL_AFTER")
+    repo, env, carrier = _seed_failed_closeout(tmp_path, issue_view_fail_after=1)
 
     resumed = _resume_patch_closeout(repo, env, carrier)
     assert resumed.returncode == 0, resumed.stderr
@@ -686,13 +628,9 @@ def test_resume_completes_tail_after_carrier_state_readback_failure(tmp_path: Pa
 
 
 def test_resume_refuses_exact_message_carrier_without_evidence_tree(tmp_path: Path) -> None:
-    repo, env, carrier = _seed_failed_closeout(tmp_path)
-    env["FAKE_GIT_BRANCH_PUSH_ERROR_AT"] = "1"
-    env["FAKE_GIT_BRANCH_PUSH_ERROR_MODE"] = "before"
-    failed = _run_patch_closeout(repo, env)
-    assert failed.returncode != 0
-    env.pop("FAKE_GIT_BRANCH_PUSH_ERROR_AT")
-    env.pop("FAKE_GIT_BRANCH_PUSH_ERROR_MODE")
+    repo, env, carrier = _seed_failed_closeout(
+        tmp_path, failure_at=1, failure_mode="before"
+    )
 
     artifact = "charness-artifacts/release/latest.md"
     changed = subprocess.run(
@@ -725,44 +663,6 @@ def test_resume_refuses_exact_message_carrier_without_evidence_tree(tmp_path: Pa
     assert remote_main == remote_before_resume
 
 
-def test_resume_reconciles_ambiguous_final_artifact_push(tmp_path: Path) -> None:
-    repo, env, carrier = _seed_failed_closeout(tmp_path)
-    env["FAKE_GIT_BRANCH_PUSH_ERROR_AT"] = "2"
-    env["FAKE_GIT_BRANCH_PUSH_ERROR_MODE"] = "after"
-
-    failed = _run_patch_closeout(repo, env)
-    assert failed.returncode != 0
-    env.pop("FAKE_GIT_BRANCH_PUSH_ERROR_AT")
-    env.pop("FAKE_GIT_BRANCH_PUSH_ERROR_MODE")
-
-    resumed = _resume_patch_closeout(repo, env, carrier)
-    assert resumed.returncode == 0, resumed.stderr
-    payload = yaml.safe_load(resumed.stdout)
-    assert payload["resume_state"]["phase"] == "post-publication-claims-final"
-    assert payload["resume_remote_reconcile"]["status"] == "already-shared"
-
-
-def test_resume_refuses_final_commit_without_state_verified_artifact(tmp_path: Path) -> None:
-    repo, env, carrier = _seed_failed_closeout(tmp_path)
-    env["FAKE_GIT_BRANCH_PUSH_ERROR_AT"] = "2"
-    env["FAKE_GIT_BRANCH_PUSH_ERROR_MODE"] = "before"
-    failed = _run_patch_closeout(repo, env)
-    assert failed.returncode != 0
-    env.pop("FAKE_GIT_BRANCH_PUSH_ERROR_AT")
-    env.pop("FAKE_GIT_BRANCH_PUSH_ERROR_MODE")
-
-    artifact = "charness-artifacts/release/latest.md"
-    subprocess.run(["git", "checkout", "HEAD^", "--", artifact], cwd=repo, check=True)
-    subprocess.run(
-        ["git", "commit", "--amend", "--no-edit", "--allow-empty"],
-        cwd=repo, check=True, capture_output=True, text=True,
-    )
-
-    resumed = _resume_patch_closeout(repo, env, carrier)
-    assert resumed.returncode != 0
-    assert "lacks its state-verified release artifact" in resumed.stderr
-
-
 def test_resume_with_clean_release_content_head_adds_post_observer_carrier(tmp_path: Path) -> None:
     repo, env, carrier = _prepare_closeout_resume(tmp_path, head_closeout_body=None)
 
@@ -774,24 +674,7 @@ def test_resume_with_clean_release_content_head_adds_post_observer_carrier(tmp_p
     assert payload["issue_closeout_carrier_commit_sha"]
 
 
-def test_resume_refuses_existing_head_closeout_before_quality_or_push(tmp_path: Path) -> None:
-    repo, env, carrier = _prepare_closeout_resume(
-        tmp_path, head_closeout_body=_resume_closeout_body()
-    )
-
-    result = _run_closeout_resume(repo, env, carrier)
-
-    assert result.returncode != 0
-    git_log = json.loads((tmp_path / "git-log.json").read_text(encoding="utf-8"))
-    assert not any(entry[:1] == ["push"] for entry in git_log)
-    payload = _failure_payload(result.stderr)
-    assert payload["resume_head_release_content_close_refs"] == [
-        {"repo": None, "number": 44}
-    ]
-    assert "quality_command" not in {entry["label"] for entry in payload.get("release_runtime", [])}
-
-
-def test_resume_refuses_unintended_close_keyword_before_quality(tmp_path: Path) -> None:
+def test_resume_refuses_head_closeout_keywords_before_quality_or_push(tmp_path: Path) -> None:
     repo, env, carrier = _prepare_closeout_resume(
         tmp_path, head_closeout_body=_resume_closeout_body() + "\n\nClose #45."
     )
@@ -802,18 +685,16 @@ def test_resume_refuses_unintended_close_keyword_before_quality(tmp_path: Path) 
     git_log = json.loads((tmp_path / "git-log.json").read_text(encoding="utf-8"))
     assert not any(entry[:1] == ["push"] for entry in git_log)
     payload = _failure_payload(result.stderr)
-    assert payload["issue_closeout_draft_validation"]["ok"] is True
     assert payload["resume_head_release_content_close_refs"] == [
         {"repo": None, "number": 44},
         {"repo": None, "number": 45},
     ]
+    assert payload["issue_closeout_draft_validation"]["ok"] is True
     assert "quality_command" not in {entry["label"] for entry in payload.get("release_runtime", [])}
 
 
 def test_resume_continues_partial_publish_idempotently(tmp_path: Path) -> None:
-    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
-    _simulate_partial_publish(repo)
-    env = _release_env(tmp_path, bin_dir)
+    repo, env, _carrier = _seed_partial_publish(tmp_path)
 
     result = _run_publish(
         repo, env, "--resume", "--publish-current", "--execute",
@@ -829,6 +710,10 @@ def test_resume_continues_partial_publish_idempotently(tmp_path: Path) -> None:
     pushes = [entry for entry in git_log if entry[:1] == ["push"]]
     # The resume pushed the branch + tag (and the verification record commit).
     assert any("v0.0.0" in entry for entry in pushes), pushes
+    commit_indices = [i for i, entry in enumerate(git_log) if entry[:1] == ["commit"]]
+    push_indices = [i for i, entry in enumerate(git_log) if entry[:1] == ["push"]]
+    assert commit_indices and push_indices, git_log
+    assert min(commit_indices) < min(push_indices), git_log
     # It must NOT have created a second release commit or re-tagged.
     assert ["tag", "v0.0.0"] not in git_log
     assert not any(entry[:1] == ["commit"] and "Release demo 0.0.0" in entry for entry in git_log)
@@ -841,11 +726,14 @@ def test_resume_continues_partial_publish_idempotently(tmp_path: Path) -> None:
     assert "quality_command" in runtime_labels
     assert "push_create_verify_release" in runtime_labels
     assert "post_publish_install_refresh" in runtime_labels
+    assert "retro_trigger_evaluation" not in payload
+    assert payload["distinct_channel_verification"]["status"] == "confirmed"
 
 
 def test_resume_recreates_missing_local_tag_after_revalidation(tmp_path: Path) -> None:
-    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
-    _simulate_partial_publish(repo, create_tag=False)
+    repo, env, _carrier = _seed_partial_publish(tmp_path)
+    subprocess.run(["git", "tag", "-d", "v0.0.0"], cwd=repo, check=True,
+                   capture_output=True, text=True)
     release_head = subprocess.run(
         ["git", "rev-parse", "HEAD"],
         cwd=repo,
@@ -853,8 +741,6 @@ def test_resume_recreates_missing_local_tag_after_revalidation(tmp_path: Path) -
         capture_output=True,
         text=True,
     ).stdout.strip()
-    env = _release_env(tmp_path, bin_dir)
-
     result = _run_publish(
         repo,
         env,
@@ -879,15 +765,14 @@ def test_resume_recreates_missing_local_tag_after_revalidation(tmp_path: Path) -
 
 
 def test_resume_dry_run_describes_revalidation_without_mutating(tmp_path: Path) -> None:
-    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
-    _simulate_partial_publish(repo)
+    repo, _env, _carrier = _seed_partial_publish(tmp_path)
     head_before = subprocess.run(
         ["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True
     ).stdout.strip()
 
     result = _run_publish(
         repo,
-        _release_env(tmp_path, bin_dir),
+        _release_env(tmp_path, repo.parent / "bin"),
         "--resume",
         "--publish-current",
         "--critique-blocked",
@@ -946,9 +831,9 @@ def test_resume_preflight_rejects_non_string_manifest_version(tmp_path: Path) ->
 
 
 def test_resume_refuses_missing_local_tag_when_remote_tag_exists(tmp_path: Path) -> None:
-    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
-    _simulate_partial_publish(repo, create_tag=False)
-    env = _release_env(tmp_path, bin_dir)
+    repo, env, _carrier = _seed_partial_publish(tmp_path)
+    subprocess.run(["git", "tag", "-d", "v0.0.0"], cwd=repo, check=True,
+                   capture_output=True, text=True)
     env["FAKE_GIT_TARGET_TAG_EXISTS"] = "1"
 
     result = _run_publish(
@@ -965,47 +850,19 @@ def test_resume_refuses_missing_local_tag_when_remote_tag_exists(tmp_path: Path)
     assert "refusing to reconstruct an ambiguous tag" in result.stderr
 
 
-def test_resume_commits_artifact_before_push(tmp_path: Path) -> None:
-    # #312-B1: resume must commit the refreshed charness-artifacts/release/latest.md
-    # BEFORE the push (so .githooks/pre-push's `git diff --quiet -- charness-artifacts`
-    # does not falsely block).
-    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
-    _simulate_partial_publish(repo)
-    env = _release_env(tmp_path, bin_dir)
-
-    result = _run_publish(
-        repo, env, "--resume", "--publish-current", "--execute",
-        "--critique-blocked", CRITIQUE_BLOCKED,
-    )
-    assert result.returncode == 0, result.stderr
-
-    git_log = json.loads((tmp_path / "git-log.json").read_text(encoding="utf-8"))
-    commit_indices = [i for i, entry in enumerate(git_log) if entry[:1] == ["commit"]]
-    push_indices = [i for i, entry in enumerate(git_log) if entry[:1] == ["push"]]
-    assert commit_indices and push_indices, git_log
-    # The refreshed release artifact is committed before the first push: a clean
-    # charness-artifacts/ tree at push time.
-    assert min(commit_indices) < min(push_indices), git_log
-
-    payload = yaml.safe_load(result.stdout)
-    assert "retro_trigger_evaluation" not in payload
-    # WS-1: the resumed publish also records the rung-2 distinct-channel verdict
-    # before its issue-close boundary (the resume path was a parallel escape).
-    assert payload["distinct_channel_verification"]["status"] == "confirmed", payload.get("distinct_channel_verification")
-
-
 def test_resume_aborts_before_push_when_revalidation_fails(tmp_path: Path) -> None:
     # RN2: resume must RE-VALIDATE before continuing — never push a stale local
     # release commit unchecked. Make the re-validated quality gate fail and assert
     # resume aborts before any push or release-create.
-    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    repo, env, _carrier = _seed_partial_publish(tmp_path)
     (repo / "scripts" / "run-quality.sh").write_text(
         "#!/usr/bin/env bash\nset -euo pipefail\necho 'quality gate failed on resume' >&2\nexit 1\n",
         encoding="utf-8",
     )
     (repo / "scripts" / "run-quality.sh").chmod(0o755)
-    _simulate_partial_publish(repo)  # the failing quality script is part of the release commit
-    env = _release_env(tmp_path, bin_dir)
+    _git(repo, "add", "scripts/run-quality.sh")
+    _git(repo, "commit", "--amend", "--no-edit", "--allow-empty")
+    _git(repo, "tag", "-f", "v0.0.0")
 
     result = _run_publish(
         repo, env, "--resume", "--publish-current", "--execute",

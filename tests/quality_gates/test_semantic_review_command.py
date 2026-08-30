@@ -11,6 +11,7 @@ import stat
 import subprocess
 import sys
 import time
+from functools import cache
 from pathlib import Path
 
 import pytest
@@ -19,6 +20,45 @@ import yaml
 ROOT = Path(__file__).resolve().parents[2]
 WRAPPER = ROOT / "skills/public/critique/scripts/run_review.py"
 PACKET_HELPER = ROOT / "skills/public/critique/scripts/run_review_packet.py"
+
+
+@cache
+def _cached_working_tree_packet() -> dict:
+    """Capture one immutable working-tree packet for runner-state tests."""
+    from scripts.reviewed_input_identity import build_reviewed_input_identity
+    from tests.reviewed_input_identity_fixtures import repo_seed
+
+    return {
+        "kind": "charness.critique_prepare_packet",
+        "repo": "semantic-review-fixture",
+        "prepared_for": "working tree",
+        "ok": True,
+        "scope_status": "captured",
+        "section_count": 1,
+        "sections": [
+            {
+                "id": "smoke",
+                "title": "Smoke",
+                "content_kind": "static",
+                "content": "smoke-body",
+            }
+        ],
+        "substrate_mode": "working-tree",
+        "changed_ref": None,
+        "reviewed_input_identity": build_reviewed_input_identity(
+            repo_root=repo_seed(), reviewed_paths=["reviewed.txt"]
+        ),
+    }
+
+
+def _install_cached_working_tree_packet(repo: Path) -> str:
+    path = repo / "charness-artifacts" / "critique" / "cached-working-tree-packet.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(_cached_working_tree_packet(), separators=(",", ":")) + "\n",
+        encoding="utf-8",
+    )
+    return path.relative_to(repo).as_posix()
 
 
 def _write_executable(path: Path, body: str) -> None:
@@ -294,7 +334,13 @@ def test_prompt_reaches_explicit_reviewed_path_beyond_unrelated_section(tmp_path
     bin_dir.mkdir()
     _fake_codex(bin_dir / "codex")
 
-    result = _run(tmp_path, bin_dir, "path-prompt", dry_run=True)
+    result = _run(
+        tmp_path,
+        bin_dir,
+        "path-prompt",
+        dry_run=True,
+        packet_file=_install_cached_working_tree_packet(tmp_path),
+    )
     payload = _payload(result)
 
     assert result.returncode == 0, result.stderr
@@ -479,7 +525,14 @@ def test_goal_run_lineage_is_carried_into_plan_prompt_and_carrier(tmp_path: Path
     bin_dir.mkdir()
     _fake_codex(bin_dir / "codex")
 
-    result = _run(tmp_path, bin_dir, "lineage", dry_run=True, goal_lineage=lineage)
+    result = _run(
+        tmp_path,
+        bin_dir,
+        "lineage",
+        dry_run=True,
+        goal_lineage=lineage,
+        packet_file=_install_cached_working_tree_packet(tmp_path),
+    )
     payload = _payload(result)
 
     assert result.returncode == 0, result.stderr
@@ -497,8 +550,11 @@ def test_delivered_pass_and_block_are_distinct_from_runner_failure(tmp_path: Pat
     bin_dir.mkdir()
     _fake_codex(bin_dir / "codex")
 
-    passed = _payload(_run(tmp_path, bin_dir, "delivered-pass"))
-    blocked = _payload(_run(tmp_path, bin_dir, "delivered-block", verdict="block"))
+    packet_file = _install_cached_working_tree_packet(tmp_path)
+    passed = _payload(_run(tmp_path, bin_dir, "delivered-pass", packet_file=packet_file))
+    blocked = _payload(
+        _run(tmp_path, bin_dir, "delivered-block", verdict="block", packet_file=packet_file)
+    )
 
     assert passed["execution_state"] == "terminal"
     assert passed["reviewer_started"] is True
@@ -568,6 +624,7 @@ def test_parent_interrupt_returns_typed_state_and_kills_backend_descendant(tmp_p
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     _fake_codex(bin_dir / "codex")
+    packet_file = _install_cached_working_tree_packet(tmp_path)
     child_pid_file = tmp_path / "child.pid"
     env = {
         **os.environ,
@@ -583,7 +640,7 @@ def test_parent_interrupt_returns_typed_state_and_kills_backend_descendant(tmp_p
         "--lens", "operability",
         "--attempt-id", "parent-interrupt",
         "--backend", "codex_exec",
-        "--reviewed-path", "reviewed.txt",
+        "--packet-file", packet_file,
     ]
     process = subprocess.Popen(command, cwd=ROOT, env=env, stdout=subprocess.PIPE, text=True)
     child_pid = None

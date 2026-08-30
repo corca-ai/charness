@@ -77,7 +77,16 @@ def test_flags_uncovered_changed_line(tmp_path: Path) -> None:
     _write_adapter(repo, ["pkg/**/*.py"])
     _write_coverage(repo, missing=[4], executed=[1, 2, 3])
     _stamp(repo, base)
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", base, "--head-sha", "HEAD")
+    result = run_script(
+        SCRIPT,
+        "--repo-root",
+        str(repo),
+        "--base-sha",
+        base,
+        "--head-sha",
+        "HEAD",
+        real_process=True,
+    )
     assert result.returncode == 1, result.stderr
     payload = yaml.safe_load(result.stdout)
     assert payload["blocking"] == ["pkg/foo.py"]
@@ -540,4 +549,3 @@ def test_gate_config_is_the_one_reader_for_both_entry_points() -> None:
         ["a"], "c.json", ["b"]
     )
     assert gate.gate_config({}) == ([], "", [])
-

@@ -253,7 +253,7 @@ def test_stale_index_refusal_keeps_the_foreign_copy_warning_for_a_repo_that_owns
     builder.parent.mkdir(parents=True, exist_ok=True)
     builder.write_text("# stand-in for this repo's own builder\n", encoding="utf-8")
     # BOTH conditions, matching `helper_provenance_lib.is_charness_source_tree`. The
-    # checked-in `plugins/charness/` export owns the builder and carries no packaging
+    # materialized `plugins/charness/` export owns the builder and carries no packaging
     # manifest, so a file test alone printed this warning for a target the provenance
     # guard treats as a plain consuming repo.
     marker = repo / "packaging" / "charness.json"

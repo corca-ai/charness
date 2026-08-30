@@ -16,6 +16,7 @@ probe serve both callers: neither owns a notion of "the script" separate from
 from __future__ import annotations
 
 import os
+from collections.abc import Callable
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module
@@ -35,14 +36,22 @@ HELP_COLUMNS = "200"
 # kind of fact: the probe owns the rendering its readers parse.
 HELP_LOCALE_ENV = {"LC_ALL": "C", "LANGUAGE": ""}
 PROBE_TIMEOUT_SECONDS = 120
+HelpRunner = Callable[..., list[object]]
 
 
 class HelpProbe:
     """``--help`` results for a set of argv prefixes, primed in batched rounds."""
 
-    def __init__(self, root: Path, *, interpreter: str = "python3") -> None:
+    def __init__(
+        self,
+        root: Path,
+        *,
+        interpreter: str = "python3",
+        runner: HelpRunner | None = None,
+    ) -> None:
         self._root = root
         self._interpreter = interpreter
+        self._runner = runner or run_processes_in_order
         self._results: dict[tuple[str, ...], object] = {}
 
     def prime(self, targets: set[tuple[str, ...]]) -> None:
@@ -52,8 +61,11 @@ class HelpProbe:
             return
         env = dict(os.environ, COLUMNS=HELP_COLUMNS, **HELP_LOCALE_ENV)
         commands = [[self._interpreter, *target, "--help"] for target in pending]
-        results = run_processes_in_order(
-            commands, cwd=self._root, env=env, timeout_seconds=PROBE_TIMEOUT_SECONDS
+        results = self._runner(
+            commands,
+            cwd=self._root,
+            env=env,
+            timeout_seconds=PROBE_TIMEOUT_SECONDS,
         )
         self._results.update(zip(pending, results, strict=True))
 

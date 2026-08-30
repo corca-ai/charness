@@ -3,19 +3,19 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 175,
-  "indexed_artifact_count": 160,
+  "source_artifact_count": 178,
+  "indexed_artifact_count": 163,
   "risk_class_counts": {
     "contract-freeze-risk": 35,
     "external-seam": 26,
     "host-disproves-local": 8,
-    "none": 64,
+    "none": 67,
     "operator-visible-recovery": 23,
     "repeated-symptom": 18
   },
   "generalization_pressure_counts": {
     "factor-now": 24,
-    "monitor": 120,
+    "monitor": 123,
     "none": 16
   },
   "entries": [
@@ -2259,8 +2259,22 @@
       "forced": false
     },
     {
-      "artifact_path": "charness-artifacts/debug/latest.md",
-      "is_current_pointer": true,
+      "artifact_path": "charness-artifacts/debug/2026-08-30-release-claims-review-derived-fact-authoring-and-state-contraction-residue.md",
+      "is_current_pointer": false,
+      "interrupt_id": "release-claims-v4",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "prepared commit to claims evidence child",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "this record",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-08-30-release-v8-artifact-corpus-drift.md",
+      "is_current_pointer": false,
       "interrupt_id": "release-v8-artifact-corpus-drift-2026-08-30",
       "risk_classes": [
         "host-disproves-local",
@@ -2272,6 +2286,34 @@
       "next_step": "spec",
       "handoff_artifact": "charness-artifacts/spec/2026-08-30-release-v8-clone-stable-proof-baselines.md",
       "forced": true
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-08-30-subprocess-git-fixture-duplication.md",
+      "is_current_pointer": false,
+      "interrupt_id": "subprocess-density-2026-08-30",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "local synchronous process boundary",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "none",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/latest.md",
+      "is_current_pointer": true,
+      "interrupt_id": "mutation-global-cache-2026-08-31",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "filesystem token -> Git semantic result",
+      "generalization_pressure": "monitor",
+      "critique_required": false,
+      "next_step": "impl",
+      "handoff_artifact": "none",
+      "forced": false
     }
   ],
   "skipped_artifacts": [

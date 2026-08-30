@@ -111,13 +111,13 @@ def run_check(repo_root: Path, *, package_id: str = DEFAULT_PACKAGE_ID) -> dict:
             ),
         }
     manifest = _packaging.load_manifest(repo_root, package_id)
-    export_root = repo_root / _packaging.checked_in_plugin_root(manifest)
+    export_root = repo_root / _packaging.materialized_plugin_root(manifest)
     if not export_root.is_dir():
         # Zero files scanned is an unestablished scope, not a clean one: it reads
         # identically to a full pass while proving nothing about the artifact.
         return {
             "status": "unestablished",
-            "reason": f"no checked-in export tree at {export_root}; nothing was validated",
+            "reason": f"no materialized export tree at {export_root}; nothing was validated",
         }
 
     repo_root_entries = {entry.name for entry in repo_root.iterdir()}
@@ -141,7 +141,7 @@ def run_check(repo_root: Path, *, package_id: str = DEFAULT_PACKAGE_ID) -> dict:
 
     payload: dict[str, object] = {
         "status": "fail" if entrypoint_findings or consumer_doc_instructions else "pass",
-        "export_root": _packaging.checked_in_plugin_root(manifest).as_posix(),
+        "export_root": _packaging.materialized_plugin_root(manifest).as_posix(),
         "scanned_python_files": len(list(export_root.rglob("*.py"))),
         "documented_entrypoint_count": len(_lib.documented_entrypoint_names(export_root)),
         "unguarded_entrypoint_imports": entrypoint_findings,

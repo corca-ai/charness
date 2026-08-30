@@ -22,7 +22,7 @@ when they need to gate on changed seams.
 ## Why surface ids, not raw globs
 
 A surface id is a named claim about what the seam is (`release-packaging`,
-`integrations-and-control-plane`, `checked-in-plugin-export`, ...) and is
+`integrations-and-control-plane`, `materialized-plugin-export`, ...) and is
 owned by [.agents/surfaces.json](../.agents/surfaces.json). Multiple
 skills can subscribe to the same surface and stay in sync as the path
 shape underneath the surface evolves. Raw globs duplicated across adapters

@@ -47,6 +47,25 @@ def test_require_git_root_refuses_a_subdirectory(tmp_path: Path) -> None:
         task_run_git._require_git_root(subdirectory)
 
 
+def test_repo_snapshot_batches_identity_topology_and_head(tmp_path: Path, monkeypatch) -> None:
+    repo = _repo(tmp_path)
+    calls: list[tuple[str, ...]] = []
+    original_git = task_run_git._git
+
+    def traced_git(root: Path, *args: str):
+        calls.append(args)
+        return original_git(root, *args)
+
+    monkeypatch.setattr(task_run_git, "_git", traced_git)
+    snapshot = task_run_git._repo_snapshot(repo)
+
+    assert snapshot["repo_root"] == repo.resolve()
+    assert snapshot["git_common_dir"] == (repo / ".git").resolve()
+    assert snapshot["git_dir"] == (repo / ".git").resolve()
+    assert len(snapshot["head"]) == 40
+    assert calls == [("rev-parse", "--show-toplevel", "--git-common-dir", "--git-dir", "HEAD")]
+
+
 @pytest.mark.parametrize(
     ("base", "message"),
     [
@@ -121,4 +140,31 @@ def test_collect_populations_refuses_malformed_and_tracks_rename_destination(
         "tracked": ["new.py", "old.py"],
         "untracked": [],
         "ignored": [],
+    }
+
+
+def test_terminal_population_snapshot_keeps_head_branch_and_rename_paths(
+    tmp_path: Path, monkeypatch
+) -> None:
+    repo = _repo(tmp_path)
+    monkeypatch.setattr(
+        task_run_git,
+        "_git_output",
+        lambda *_args: (
+            "# branch.oid " + "a" * 40 + "\0"
+            "# branch.head lane/task-run\0"
+            "# branch.upstream origin/main\0"
+            "2 R. N... 100644 100644 100644 abc abc R100 renamed.py\0old.py\0"
+            "? new.py\0! .cache\0"
+        ),
+    )
+
+    populations, head, branch = task_run_git._collect_populations_with_metadata(repo)
+
+    assert head == "a" * 40
+    assert branch == "lane/task-run"
+    assert populations == {
+        "tracked": ["old.py", "renamed.py"],
+        "untracked": ["new.py"],
+        "ignored": [".cache"],
     }

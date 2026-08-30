@@ -16,12 +16,15 @@ from __future__ import annotations
 import importlib.util
 import io
 import json
+import shutil
 import subprocess
 import sys
 from pathlib import Path
 
 import pytest
 import yaml
+
+from tests.seed_cache import get_or_build
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -40,9 +43,8 @@ def advisory():
     return _load_module("scripts/dup_ratchet_edit_advisory.py", "_dup_edit_advisory")
 
 
-@pytest.fixture
-def git_repo(tmp_path: Path) -> Path:
-    repo = tmp_path / "repo"
+def _build_dup_ratchet_repo_seed(seed_root: Path) -> None:
+    repo = seed_root / "repo"
     (repo / "scripts").mkdir(parents=True)
     (repo / ".agents").mkdir()
     (repo / ".agents/quality-adapter.yaml").write_text(
@@ -58,7 +60,41 @@ def git_repo(tmp_path: Path) -> Path:
         ["git", "commit", "-q", "-m", "seed"],
     ):
         subprocess.run(cmd, cwd=repo, check=True, capture_output=True)
+
+
+@pytest.fixture(scope="session")
+def dup_ratchet_repo_seed() -> Path:
+    return get_or_build("dup-ratchet-edit-advisory-repo-seed", _build_dup_ratchet_repo_seed) / "repo"
+
+
+def _tree_snapshot(root: Path) -> tuple[tuple[str, bytes], ...]:
+    return tuple(
+        sorted(
+            (path.relative_to(root).as_posix(), path.read_bytes())
+            for path in root.rglob("*")
+            if path.is_file()
+        )
+    )
+
+
+@pytest.fixture
+def git_repo(tmp_path: Path, dup_ratchet_repo_seed: Path) -> Path:
+    repo = tmp_path / "repo"
+    shutil.copytree(dup_ratchet_repo_seed, repo)
     return repo
+
+
+def test_cached_dup_ratchet_seed_is_never_mutated_by_a_test_clone(
+    tmp_path: Path, dup_ratchet_repo_seed: Path
+) -> None:
+    before_seed = _tree_snapshot(dup_ratchet_repo_seed)
+    clone = tmp_path / "clone"
+    shutil.copytree(dup_ratchet_repo_seed, clone)
+    (clone / "scripts/seed.py").write_text("clone only\n", encoding="utf-8")
+    subprocess.run(["git", "add", "-A"], cwd=clone, check=True, capture_output=True)
+    subprocess.run(["git", "commit", "-q", "-m", "clone-only"], cwd=clone, check=True, capture_output=True)
+
+    assert _tree_snapshot(dup_ratchet_repo_seed) == before_seed
 
 
 def test_a_substantial_addition_to_a_scanned_file_fires(git_repo: Path, advisory) -> None:

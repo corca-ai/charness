@@ -253,7 +253,7 @@ def test_reports_every_unfollowable_link_not_only_the_first(tmp_path: Path, monk
 def test_the_live_tree_confirms_the_class_is_not_yet_zero_or_is_repaired(monkeypatch, capsys) -> None:
     """Guards the repair itself: once the 12 are fixed this pins them fixed.
 
-    Runs against the checked-in tree rather than a fixture, because the defect
+    Runs against the materialized tree rather than a fixture, because the defect
     this gate exists for is a property of the SHIPPED mirror, and a fixture can
     only ever prove the rule, never the tree.
     """

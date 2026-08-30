@@ -7,7 +7,7 @@ import pytest
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
-# The checked-in plugin mirror is the canonical installed-like tree: it ships
+# The materialized plugin export is the canonical installed-like tree: it ships
 # scaffolds under skills/<skill>/scripts/ AND a sibling scripts/ dir carrying the
 # bundled validators, exactly the ancestor an installed/cached plugin exposes.
 PLUGIN_ROOT = ROOT / "plugins" / "charness"

@@ -100,7 +100,12 @@ def seed_repo(
 
 def test_current_pointer_freshness_accepts_queued_non_stale_pointers(tmp_path: Path) -> None:
     repo = seed_repo(tmp_path)
-    result = run_script("scripts/validate_current_pointer_freshness.py", "--repo-root", str(repo))
+    result = run_script(
+        "scripts/validate_current_pointer_freshness.py",
+        "--repo-root",
+        str(repo),
+        real_process=True,
+    )
     assert result.returncode == 0
     assert "Validated rolling current-pointer freshness claims." in result.stdout
 

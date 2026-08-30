@@ -27,6 +27,7 @@ def test_check_code_lengths_strict_listing_fails_closed_outside_git(tmp_path: Pa
         "--repo-root",
         str(repo),
         "--require-git-file-listing",
+        real_process=True,
     )
 
     assert result.returncode == 1
@@ -118,6 +119,7 @@ def test_check_code_lengths_fails_when_tokei_missing_instead_of_falling_back(tmp
         "--repo-root",
         str(repo),
         env={**os.environ, "PATH": str(bin_dir)},
+        real_process=True,
     )
 
     assert result.returncode == 1

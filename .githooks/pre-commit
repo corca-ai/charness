@@ -16,6 +16,15 @@ if ! git diff --cached --check; then
   exit 2
 fi
 
+# This is advisory-only: it reads staged Python test hunks in two batched Git
+# queries and names direct process/Git fixture construction without blocking a
+# commit. A non-empty pytest.mark.boundary_contract(reason="...") records why a
+# delivery boundary is intentional; the full boundary-bypass ratchet below the
+# broader quality lane remains the exact no-increase check.
+if ! python3 -B scripts/check_staged_test_boundaries.py --repo-root "$REPO_ROOT"; then
+  echo "ADVISORY: staged test boundary review unavailable; commit was not blocked." >&2
+fi
+
 # This is an advisory boundary: the conditional consumes the checker's failure
 # status while preserving its finding or unavailable-check output.
 if ! python3 -B skills/public/quality/scripts/check_regenerable_facts.py --repo-root "$REPO_ROOT" --staged-paths; then

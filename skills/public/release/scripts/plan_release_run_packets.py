@@ -97,6 +97,31 @@ def resume_claims_packets(prepared: dict[str, Any] | None) -> list[dict[str, obj
     notes_candidates = prepared.get("drafted_notes_candidates") or []
     notes = ["--notes-file", notes_candidates[0]] if len(notes_candidates) == 1 else []
 
+    scaffold = {
+        "id": "claims-review-scaffold",
+        "command": command_text([
+            'python3 "$SKILL_DIR/scripts/scaffold_claims_review.py"',
+            "--repo-root", ".",
+            "--preparer-context", "REPLACE_WITH_PREPARER_CONTEXT",
+            "--reviewer-context", "REPLACE_WITH_REVIEWER_CONTEXT",
+            "--observer-kind", "separate-agent-context",
+            "--observer-signal", "REPLACE_WITH_CONCRETE_DISTINCT_OBSERVER_SIGNAL",
+            "--review-artifact", f"{CLAIMS_REVIEW_DIR}/REPLACE_WITH_REVIEW_NARRATIVE.md",
+            "--write",
+        ]),
+        "requires_user_confirmation": False,
+        "purpose": (
+            "derive the exact prepared-record bindings and full release-delta scope "
+            "after the distinct reviewer writes its narrative"
+        ),
+        "placeholders": [
+            "REPLACE_WITH_CONCRETE_DISTINCT_OBSERVER_SIGNAL",
+            "REPLACE_WITH_PREPARER_CONTEXT",
+            "REPLACE_WITH_REVIEWER_CONTEXT",
+            "REPLACE_WITH_REVIEW_NARRATIVE.md",
+        ],
+    }
+
     def packet(packet_id: str, *, execute: bool) -> dict[str, object]:
         command = [
             'python3 "$SKILL_DIR/scripts/publish_release.py"', "--repo-root", ".",
@@ -140,7 +165,11 @@ def resume_claims_packets(prepared: dict[str, Any] | None) -> list[dict[str, obj
             ),
         }
 
-    return [packet("publish-resume-dry-run", execute=False), packet("publish-resume-execute", execute=True)]
+    return [
+        scaffold,
+        packet("publish-resume-dry-run", execute=False),
+        packet("publish-resume-execute", execute=True),
+    ]
 
 
 def action(kind: str, reason: str) -> dict[str, Any]:

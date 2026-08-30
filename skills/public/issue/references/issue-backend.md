@@ -170,8 +170,14 @@ through to another backend.
 `<!-- charness-work-item-key: <key> -->` once in the body. It discovers before
 create and after any invoked create; duplicate, mismatched, or undiscoverable
 outcomes stop without a blind second create. `update` returns without mutation
-when bytes are already current, refuses stripped/malformed Goal Run metadata,
-and performs byte-identical body readback after a write. `list-sub-issues` proves exact
+when bytes are already current, refuses stripped/malformed or identity-mutated
+Goal Run metadata, and performs byte-identical body readback after a write.
+Existing Goal Run parent Markdown is byte-preserving by default. A bound parent
+amendment must provide the optional repo-contained canonical
+`charness.goal-run-parent-amendment/v1` authorization receipt, whose
+parent/binding/current-body/desired-body hashes and explicit approval fields are
+checked before mutation; the initial metadata write must append to the exact
+live body. `list-sub-issues` proves exact
 issue and parent identities; Markdown links never count. `add-sub-issue` is
 idempotent: an existing relationship returns `already-linked` without mutation.
 Before parent close, `list-sub-issues --expect-all-closed` refuses while any

@@ -9,6 +9,8 @@ from pathlib import Path
 
 import pytest
 
+from tests import seed_cache
+
 pytest_plugins = [
     "tests.repo_copy",
     "tests.quality_gates.support",
@@ -16,6 +18,12 @@ pytest_plugins = [
 ]
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+def pytest_configure(config) -> None:
+    """Compute the source-bound seed key once before xdist workers are spawned."""
+    if not hasattr(config, "workerinput") and config.pluginmanager.hasplugin("xdist"):
+        os.environ.setdefault(seed_cache._SOURCE_HASH_ENV, seed_cache.source_hash())
 
 
 @pytest.fixture(scope="session", autouse=True)

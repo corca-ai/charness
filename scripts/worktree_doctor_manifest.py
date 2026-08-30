@@ -1,0 +1,72 @@
+from __future__ import annotations
+
+import subprocess
+from pathlib import Path
+from typing import Any
+
+from runtime_bootstrap import import_repo_module
+
+_state = import_repo_module(__file__, "scripts.worktree_doctor_state")
+CheckResult = _state.CheckResult
+DEFAULT_DOCTOR_TIMEOUT_SECONDS = _state.DEFAULT_DOCTOR_TIMEOUT_SECONDS
+FAIL = _state.FAIL
+PASS = _state.PASS
+tail = _state.tail
+
+
+def _run_manifest_doctor_command(
+    entry: dict[str, Any], repo_root: Path
+) -> CheckResult:
+    check_id = entry.get("id")
+    argv = list(entry.get("argv") or [])
+    timeout = int(entry.get("timeout_seconds") or DEFAULT_DOCTOR_TIMEOUT_SECONDS)
+    expect_exit = int(entry.get("expect_exit_code", 0))
+    next_hint = entry.get("next_action_hint")
+    try:
+        result = subprocess.run(
+            argv,
+            cwd=repo_root,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+    except FileNotFoundError as exc:
+        return CheckResult(
+            id=check_id,
+            status=FAIL,
+            detail=f"command not found: {exc.filename or argv[0]}",
+            next_step=next_hint,
+            source="manifest",
+        )
+    except subprocess.TimeoutExpired:
+        return CheckResult(
+            id=check_id,
+            status=FAIL,
+            detail=f"command timed out after {timeout}s: {argv}",
+            next_step=next_hint,
+            source="manifest",
+        )
+    if result.returncode == expect_exit:
+        return CheckResult(
+            id=check_id,
+            status=PASS,
+            detail=f"exit_code={result.returncode}",
+            source="manifest",
+        )
+    last = tail((result.stderr or result.stdout or "").strip())
+    return CheckResult(
+        id=check_id,
+        status=FAIL,
+        detail=f"exit_code={result.returncode} (expected {expect_exit}); tail: {last}",
+        next_step=next_hint,
+        source="manifest",
+    )
+
+
+def run_manifest_doctor_checks(
+    repo_root: Path, manifest: dict[str, Any]
+) -> list[CheckResult]:
+    doctor = manifest.get("doctor") or {}
+    checks = doctor.get("checks") or []
+    return [_run_manifest_doctor_command(entry, repo_root) for entry in checks]

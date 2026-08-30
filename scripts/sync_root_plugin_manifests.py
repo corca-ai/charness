@@ -15,7 +15,7 @@ REPO_ROOT = repo_root_from_script(__file__)
 
 _scripts_packaging_lib_module = import_repo_module(__file__, "scripts.packaging_lib")
 PackagingError = _scripts_packaging_lib_module.PackagingError
-checked_in_plugin_root = _scripts_packaging_lib_module.checked_in_plugin_root
+materialized_plugin_root = _scripts_packaging_lib_module.materialized_plugin_root
 expected_root_artifacts = _scripts_packaging_lib_module.expected_root_artifacts
 export_plugin_tree = _scripts_packaging_lib_module.export_plugin_tree
 load_manifest = _scripts_packaging_lib_module.load_manifest
@@ -54,7 +54,7 @@ def _change_summary(before: dict[str, str], after: dict[str, str]) -> dict[str, 
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Generate the checked-in plugin install surface and root marketplace files from the shared packaging manifest."
+        description="Generate the materialized plugin export and root marketplace files from the shared packaging manifest."
     )
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--package-id", default="charness")
@@ -64,7 +64,7 @@ def main() -> int:
     manifest = load_manifest(repo_root, args.package_id)
     written_paths: list[str] = []
     removed_paths: list[str] = []
-    plugin_root = repo_root / checked_in_plugin_root(manifest)
+    plugin_root = repo_root / materialized_plugin_root(manifest)
     root_artifact_paths = [repo_root / rel_path for rel_path, _payload in expected_root_artifacts(manifest)]
     stale_manifest_paths = [
         repo_root / ".claude-plugin" / "plugin.json",

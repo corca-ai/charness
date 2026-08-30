@@ -293,6 +293,7 @@ def test_a_named_missing_retro_is_refused_under_a_custom_output_dir(tmp_path: Pa
         str(repo),
         "--paths",
         "artifacts/retros/2026-08-17-never-written.md",
+        real_process=True,
     )
 
     assert result.returncode != 0, result.stdout
