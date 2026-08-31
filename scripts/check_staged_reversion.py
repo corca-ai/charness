@@ -66,8 +66,12 @@ try:
 except ModuleNotFoundError:
     from yaml_output import emit_yaml
 
+try:
+    from scripts.env_bypass import env_bypass_enabled
+except ModuleNotFoundError:
+    from env_bypass import env_bypass_enabled
+
 _ENV_BYPASS = "CHARNESS_ALLOW_STAGED_REVERSION"
-_TRUTHY = {"1", "true", "yes", "on"}
 _GITLINK_MODE = "160000"
 
 
@@ -288,7 +292,7 @@ def find_staged_reversions(
 def _bypassed(args: argparse.Namespace) -> bool:
     if getattr(args, "allow_staged_reversion", False):
         return True
-    return os.environ.get(_ENV_BYPASS, "").strip().lower() in _TRUTHY
+    return env_bypass_enabled(_ENV_BYPASS)
 
 
 def main(argv: list[str] | None = None) -> int:

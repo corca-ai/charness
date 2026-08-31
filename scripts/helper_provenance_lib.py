@@ -27,18 +27,14 @@ from __future__ import annotations
 
 import hashlib
 import json
-import os
 import sys
 from pathlib import Path
 from types import ModuleType
 from typing import Iterable
 
+from scripts.env_bypass import env_bypass_enabled
+
 OVERRIDE_ENV = "CHARNESS_ALLOW_FOREIGN_HELPER"
-# Only these spellings disable the refusal. Bare truthiness would make
-# `CHARNESS_ALLOW_FOREIGN_HELPER=0` -- the spelling an operator uses to keep the
-# guard ON -- turn it OFF, which is the A6 bypass-inversion defect one file over
-# in scripts/check_staged_worktree_consistency.py.
-OVERRIDE_TRUE_VALUES = {"1", "true", "yes", "on"}
 SOURCE_TREE_MARKER = Path("packaging") / "charness.json"
 _OWN_ROOT_MARKER = Path("scripts") / "runtime_bootstrap.py"
 _VERSION_SOURCES = (
@@ -558,7 +554,7 @@ def require_repo_local_helper(
     # nothing" are different facts, and only the first is a pass.
     if verdict["status"] not in _REFUSED_STATUSES:
         return verdict
-    if os.environ.get(OVERRIDE_ENV, "").strip().lower() in OVERRIDE_TRUE_VALUES:
+    if env_bypass_enabled(OVERRIDE_ENV):
         print(
             f"warning: {OVERRIDE_ENV} is set; writing through an unverified helper copy "
             f"({verdict['status']}) "

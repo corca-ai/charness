@@ -51,8 +51,12 @@ try:
 except ModuleNotFoundError:
     from yaml_output import emit_yaml
 
+try:
+    from scripts.env_bypass import env_bypass_enabled
+except ModuleNotFoundError:
+    from env_bypass import env_bypass_enabled
+
 _ENV_BYPASS = "CHARNESS_ALLOW_ROUTER_CHANGE"
-_TRUTHY = {"1", "true", "yes", "on"}
 
 # The root router names, not a policy list: these are the two filenames the
 # Claude Code / Codex ecosystem reads as "the repository's instructions". A
@@ -115,7 +119,7 @@ def staged_router_paths(repo_root: str) -> list[str]:
 def _bypassed(args: argparse.Namespace) -> bool:
     if getattr(args, "allow_router_change", False):
         return True
-    return os.environ.get(_ENV_BYPASS, "").strip().lower() in _TRUTHY
+    return env_bypass_enabled(_ENV_BYPASS)
 
 
 def main(argv: list[str] | None = None) -> int:

@@ -21,12 +21,12 @@ on-disk copy and prints `ok`, and the commit removes the file from the tree.
 from __future__ import annotations
 
 import argparse
-import os
 import subprocess
 import sys
 from collections.abc import Callable
 from pathlib import Path
 
+from scripts.env_bypass import env_bypass_enabled
 from scripts.git_status_snapshot import (
     GitStatusError,
     GitStatusSnapshot,
@@ -35,9 +35,6 @@ from scripts.git_status_snapshot import parse as parse_git_status
 from scripts.git_status_snapshot import status_args as git_status_args
 
 ALLOW_ENV = "CHARNESS_ALLOW_PARTIAL_STAGE"
-# Only these spellings turn the bypass ON. "0"/"false"/"no"/"off"/"" -- the
-# spellings an operator uses to turn it OFF -- must keep the gate running.
-TRUE_VALUES = {"1", "true", "yes", "on"}
 _STATUS_CODES = frozenset(".MTADRCU")
 _STAGED_STATUS_ARGS = git_status_args(branch=False, untracked="no", no_renames=True)
 # No --diff-filter. The first cut used ACM, which hid a path staged and then
@@ -51,7 +48,7 @@ _STAGED_STATUS_ARGS = git_status_args(branch=False, untracked="no", no_renames=T
 
 def allow_partial_stage() -> bool:
     """True only for an explicit truthy spelling of the bypass env var."""
-    return os.environ.get(ALLOW_ENV, "").strip().lower() in TRUE_VALUES
+    return env_bypass_enabled(ALLOW_ENV)
 
 
 def _index_sides(snapshot: GitStatusSnapshot) -> tuple[set[str], set[str], set[str]]:
