@@ -1,39 +1,31 @@
 """Behavior pins for the checkout-facts seams whose degraded arms had no executed
 test when the v8.0.2 release lane measured them.
 
-One class of defect repeated across many owners: a helper that reads Git's own
-files, or a scan that reads the repository's, has a "the environment did not
-cooperate" arm -- an unreadable administration file, a process whose working
-directory was removed underneath it, a status Git refused to produce -- and that
-arm decides whether the caller gets a verdict or a traceback. Every test below
-names the operator-visible consequence of one such arm, not the line it happens
-to execute.
+Most of what is pinned here is a "the environment did not cooperate" arm -- an
+unreadable administration file, a process whose working directory was removed
+underneath it, a status Git refused to produce -- where the arm decides whether
+a caller gets a verdict or a traceback out of a gate. Some are ordinary parsing
+and routing paths that happened to be uncovered. A test here aims to name an
+operator-visible consequence rather than the line it executes.
 
 Its companion, `test_batch8.py`, covers the other half of the same release
 measurement: the layout a packaged script actually runs in, plus the task-run,
 reviewed-input, and release surfaces that consume these facts.
 
-Some arms are reproduced from real environment state; some are reached with a
-test double. This docstring no longer says which ones, and that is the point.
-Two earlier versions tried to enumerate it and were wrong both times -- the first
-claimed the `Path.resolve` cases were "the only places here that do not use a
-real environment", the second omitted the `FactsCheckout` seam -- and a file
-whose purpose is to stop unearned honesty claims is the worst possible place to
-keep making one. The techniques below are described so a reader knows what to
-look for; the authority on any single test is that test.
+On test doubles, and why this paragraph does not characterise them. Some arms
+here are reproduced from real environment state; some are reached with a double.
+Three consecutive review rounds caught this docstring getting that summary wrong,
+each time in the direction of claiming more than the file delivers: first that
+the `Path.resolve` cases were the only doubles, then omitting the
+`FactsCheckout` seam, then asserting no real state could reach a doubled arm --
+while `test_batch8.py` reproduces one of those very conditions (`git` absent from
+`PATH`) for real. A summary that has been wrong three times is not worth a
+fourth attempt.
 
-Reproduced from real state, with no double: a removed process working directory
-(the only real source of `OSError` from a non-strict `Path.resolve` on 3.10), a
-`chmod 000` administration file, an empty `commondir`, a symlink cycle, a config
-Git itself rejects, a git-less directory.
-
-Reached with a double, where no real state gets there: `Path.resolve` replaced
-for one named path (once a caller has made a path absolute, non-strict `resolve`
-swallows every filesystem error except a symlink loop, which it re-raises as
-`RuntimeError`); a producer replaced so it emits the malformed input its
-consumer's guard exists for; and `scripts.checkout_view.FactsCheckout`, whose own
-docstring calls itself injected, standing in for a checkout observation that
-failed.
+So: read the test. Each one states the method it used and why that method, and
+that statement is the one to trust. `monkeypatch.setattr`, `FactsCheckout`, and
+`monkeypatch.setenv` are where the doubles live if you want to find them
+yourself.
 """
 
 from __future__ import annotations
@@ -784,19 +776,23 @@ def test_an_os_level_status_failure_is_reported_as_a_surface_error(
 ) -> None:
     """An `OSError` from the status read is converted to this module's error type.
 
-    Fault-injected: the condition is `git` missing from `PATH` or a working
-    directory that no longer exists. Both are real, and both would otherwise
-    escape every `except SurfaceError` handler in the surfaces pipeline -- the
-    handlers that turn "could not read the tree" into a reported refusal.
+    Reproduced, not injected: the checkout is real and discoverable, so the
+    file-based preflight passes and the status read reaches `subprocess`, which
+    then cannot find `git` on an emptied `PATH`. That `FileNotFoundError` would
+    otherwise escape every `except SurfaceError` handler in the surfaces pipeline
+    -- the handlers that turn "could not read the tree" into a reported refusal
+    rather than a traceback.
+
+    An earlier version replaced `capture_git_status` with a raising stub. It
+    reached the same arm, but it also let this file's summary claim no real state
+    could get here, which `test_batch8.py` disproves by emptying `PATH` for real.
+    Removing the double removes the temptation.
     """
+    repo = install_committed_repo(tmp_path / "repo", {"tracked.py": "base\n"})
+    monkeypatch.setenv("PATH", str(tmp_path / "empty-bin"))
 
-    def unavailable(_repo_root: Path) -> None:
-        raise OSError("No such file or directory: 'git'")
-
-    monkeypatch.setattr(surfaces_lib, "capture_git_status", unavailable)
-
-    with pytest.raises(surfaces_lib.SurfaceError, match="git"):
-        surfaces_lib.collect_working_tree_snapshot(tmp_path)
+    with pytest.raises(surfaces_lib.SurfaceError):
+        surfaces_lib.collect_working_tree_snapshot(repo)
 
 
 # --- scripts/mutation_changed_files_lib -----------------------------------------
