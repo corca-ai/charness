@@ -3,19 +3,19 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 178,
-  "indexed_artifact_count": 163,
+  "source_artifact_count": 179,
+  "indexed_artifact_count": 164,
   "risk_class_counts": {
     "contract-freeze-risk": 35,
     "external-seam": 26,
     "host-disproves-local": 8,
-    "none": 67,
+    "none": 68,
     "operator-visible-recovery": 23,
     "repeated-symptom": 18
   },
   "generalization_pressure_counts": {
     "factor-now": 24,
-    "monitor": 123,
+    "monitor": 124,
     "none": 16
   },
   "entries": [
@@ -2302,8 +2302,8 @@
       "forced": false
     },
     {
-      "artifact_path": "charness-artifacts/debug/latest.md",
-      "is_current_pointer": true,
+      "artifact_path": "charness-artifacts/debug/2026-08-31-mutation-git-calls.md",
+      "is_current_pointer": false,
       "interrupt_id": "mutation-global-cache-2026-08-31",
       "risk_classes": [
         "none"
@@ -2311,6 +2311,20 @@
       "seam": "filesystem token -> Git semantic result",
       "generalization_pressure": "monitor",
       "critique_required": false,
+      "next_step": "impl",
+      "handoff_artifact": "none",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/latest.md",
+      "is_current_pointer": true,
+      "interrupt_id": "reviewed-input-seed-immutability-2026-08-31",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "xdist workers consuming one filesystem cache bundle",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
       "next_step": "impl",
       "handoff_artifact": "none",
       "forced": false
