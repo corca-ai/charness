@@ -14,6 +14,7 @@ import sys
 from pathlib import Path
 
 from scripts import render_critique_section_changed_surfaces as producer_module
+from tests.quality_gates.git_fixture_support import init_git_repo
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -30,7 +31,7 @@ def test_the_changed_files_section_marks_deletions_instead_of_listing_them_as_ed
     rendered a removal exactly like an edit. A reviewer cannot ask what a deletion
     cost if the packet never says one happened.
     """
-    _run_git(tmp_path, "init")
+    init_git_repo(tmp_path)
     agents_dir = tmp_path / ".agents"
     agents_dir.mkdir()
     (agents_dir / "surfaces.json").write_text(
@@ -81,7 +82,7 @@ def test_the_changed_files_section_marks_deletions_instead_of_listing_them_as_ed
 
 def test_a_ref_with_no_deletions_gains_no_deletion_prose(tmp_path: Path) -> None:
     """The summary line must not appear when nothing was removed."""
-    _run_git(tmp_path, "init")
+    init_git_repo(tmp_path)
     agents_dir = tmp_path / ".agents"
     agents_dir.mkdir()
     (agents_dir / "surfaces.json").write_text(
@@ -123,7 +124,7 @@ def test_a_ref_with_no_deletions_gains_no_deletion_prose(tmp_path: Path) -> None
 
 
 def _repo_with_surfaces(tmp_path: Path) -> Path:
-    _run_git(tmp_path, "init")
+    init_git_repo(tmp_path)
     agents_dir = tmp_path / ".agents"
     agents_dir.mkdir()
     (agents_dir / "surfaces.json").write_text(

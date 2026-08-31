@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -9,19 +10,30 @@ import pytest
 
 from scripts import reviewed_input_identity as identity_lib
 from scripts import reviewed_input_verification as verification_lib
+from tests.quality_gates.git_fixture_support import init_git_repo
+from tests.seed_cache import get_or_build
 
 
 def _git(repo: Path, *args: str) -> None:
     subprocess.run(["git", *args], cwd=repo, check=True, capture_output=True)
 
 
-def _init_repo(repo: Path) -> None:
-    _git(repo, "init")
+def _build_two_commit_seed(staging: Path) -> None:
+    repo = staging / "repo"
+    repo.mkdir()
     (repo / "reviewed.txt").write_text("one\n", encoding="utf-8")
-    _git(repo, "add", "reviewed.txt")
-    _git(repo, "commit", "-m", "first")
+    init_git_repo(repo, "reviewed.txt")
+    _git(repo, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-m", "first")
     (repo / "reviewed.txt").write_text("two\n", encoding="utf-8")
-    _git(repo, "commit", "-am", "second")
+    _git(repo, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-am", "second")
+
+
+def _init_repo(repo: Path) -> None:
+    shutil.copytree(
+        get_or_build("reviewed-input-two-commit-seed", _build_two_commit_seed) / "repo",
+        repo,
+        dirs_exist_ok=True,
+    )
 
 
 def test_changed_ref_range_and_empty_path_identity(tmp_path: Path) -> None:

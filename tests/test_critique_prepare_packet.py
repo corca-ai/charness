@@ -37,6 +37,8 @@ from scripts.validate_critique_artifacts import (
 from scripts.validate_critique_artifacts import (
     candidate_paths as critique_candidate_paths,
 )
+from tests.quality_gates.git_fixture_support import init_git_repo
+from tests.reviewed_input_identity_fixtures import repo_seed as identity_repo_seed
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -51,11 +53,7 @@ def _run_git(repo: Path, *args: str) -> None:
 
 
 def _init_identity_repo(repo: Path) -> None:
-    _run_git(repo, "init")
-    (repo / "reviewed.txt").write_text("base\n", encoding="utf-8")
-    (repo / "unrelated.txt").write_text("base\n", encoding="utf-8")
-    _run_git(repo, "add", ".")
-    _run_git(repo, "commit", "-m", "initial")
+    shutil.copytree(identity_repo_seed(), repo, dirs_exist_ok=True)
 
 
 _build_shape_packet = partial(build_packet, include_reviewed_input_identity=False)
@@ -284,7 +282,7 @@ packet_sections:
 
 
 def test_collect_changed_paths_for_ref_reads_committed_diff(tmp_path: Path) -> None:
-    _run_git(tmp_path, "init")
+    init_git_repo(tmp_path)
     (tmp_path / "README.md").write_text("one\n", encoding="utf-8")
     _run_git(tmp_path, "add", "README.md")
     _run_git(tmp_path, "commit", "-m", "initial")
@@ -795,7 +793,7 @@ def test_prepare_packet_markdown_kind_accepts_sequence_lines_only_for_matching_t
 
 
 def test_runner_cli_json_changed_ref_with_default_surface_producer(tmp_path: Path) -> None:
-    _run_git(tmp_path, "init")
+    init_git_repo(tmp_path)
     agents_dir = tmp_path / ".agents"
     agents_dir.mkdir()
     (agents_dir / "surfaces.json").write_text(
@@ -867,7 +865,7 @@ packet_sections:
 
 
 def test_runner_cli_commit_alias_sets_changed_ref_and_prepared_for(tmp_path: Path) -> None:
-    _run_git(tmp_path, "init")
+    init_git_repo(tmp_path)
     agents_dir = tmp_path / ".agents"
     agents_dir.mkdir()
     (agents_dir / "surfaces.json").write_text(
