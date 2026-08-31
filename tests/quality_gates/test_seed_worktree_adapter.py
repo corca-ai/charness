@@ -208,6 +208,27 @@ def test_detection_simple_git_hooks(tmp_path: Path) -> None:
     assert "- npx\n        - simple-git-hooks" in rendered
 
 
+def test_git_config_skips_git_spawn_on_non_repo_path(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A tmp dir with no `.git` must never spawn `git config --get`.
+
+    `git config --get` on a non-repo dir also fails and yields the same
+    unset-looking `None`, so checking only the return value would still pass
+    with the spawn left in place. Forbidding the spawn is the only proof the
+    filesystem preflight is load-bearing.
+    """
+    repo = tmp_path / "repo"
+    repo.mkdir()
+
+    def _forbidden(*args: object, **kwargs: object) -> None:
+        raise AssertionError("git subprocess must not run for a non-repo path")
+
+    monkeypatch.setattr(LIB.subprocess, "run", _forbidden)
+
+    assert LIB._git_config(repo, "core.hooksPath") is None
+
+
 def test_detection_no_node_tooling(tmp_path: Path) -> None:
     """Python-only repo: neutral commented template."""
     repo = tmp_path / "repo"

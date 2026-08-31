@@ -2,6 +2,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
+from scripts import setup_inspect_quality_lib
+
 from .support import inspect_setup_repo
 from .support import seed_normalize_repo as _seed_normalize_repo
 
@@ -175,6 +179,28 @@ def test_setup_inspect_reports_retro_memory_without_enforcing_root_prose(tmp_pat
     finding_types = {finding["type"] for finding in normalization["findings"]}
     assert "agents_missing_retro_recent_lessons_memory" not in finding_types
     assert "retro_summary_without_adapter" not in finding_types
+
+
+def test_detect_hook_policy_skips_git_spawn_on_non_repo_path(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A non-repo tmp dir must never spawn `git config`, not merely return None.
+
+    Asserting only the return value would still pass with the spawn in place
+    (a non-repo `git config --get` also yields an unset-looking empty
+    string). Forbidding the spawn outright is the only way to prove the
+    filesystem preflight actually short-circuits it.
+    """
+
+    def _forbidden(*args: object, **kwargs: object) -> None:
+        raise AssertionError("git subprocess must not run for a non-repo path")
+
+    monkeypatch.setattr(setup_inspect_quality_lib.subprocess, "run", _forbidden)
+
+    result = setup_inspect_quality_lib._detect_hook_policy(tmp_path, {})
+
+    assert result["hook_manager"] is None
+    assert result["hook_policy"]["existing_manager_action"] == "propose-lefthook"
 
 
 def test_setup_inspect_does_not_recreate_removed_root_policies(tmp_path: Path) -> None:

@@ -8,9 +8,24 @@ from __future__ import annotations
 
 import json
 import subprocess
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from string import Template
+
+
+def _ensure_scripts_package() -> None:
+    here = Path(__file__).resolve()
+    for candidate in (here, *here.parents):
+        if (candidate / "scripts" / "git_checkout.py").is_file():
+            root = str(candidate)
+            if root not in sys.path:
+                sys.path.insert(0, root)
+            return
+
+
+_ensure_scripts_package()
+from scripts.git_checkout import discoverable as _git_metadata_is_discoverable  # noqa: E402
 
 PACKAGE_MANAGER_PRIORITY: tuple[tuple[str, str], ...] = (
     ("pnpm-lock.yaml", "pnpm"),
@@ -95,6 +110,8 @@ def _read_package_json(repo_root: Path) -> dict | None:
 
 
 def _git_config(repo_root: Path, key: str) -> str | None:
+    if not _git_metadata_is_discoverable(repo_root):
+        return None
     try:
         result = subprocess.run(
             ["git", "config", "--get", key],

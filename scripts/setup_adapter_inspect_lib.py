@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import json
+import shutil
 import subprocess
 from pathlib import Path
 
+from scripts.git_checkout import discoverable as _git_metadata_is_discoverable
 from scripts.setup_agent_docs_lib import _recommendation
 
 WORKTREE_ADAPTER_RELATIVE_PATH = Path(".agents/worktree-adapter.yaml")
@@ -41,7 +43,19 @@ def _probe_active_worktrees(repo_root: Path) -> tuple[int, str]:
     `timeout`. Exposing the status separately keeps the count honest: a
     timeout or missing git binary previously coerced to `0` and silently
     suppressed the missing-adapter recommendation on slow or non-git layouts.
+
+    A filesystem preflight answers `not_a_git_repo` without spawning `git`:
+    `git worktree list` on a non-work-tree exits non-zero, which already fell
+    into this same branch, so the preflight changes nothing observable. The
+    `git_missing` check must still run first: a missing binary previously won
+    that race regardless of repo shape (`FileNotFoundError` before any
+    "not a git repository" stderr existed to read), and `shutil.which` answers
+    that without a spawn either.
     """
+    if shutil.which("git") is None:
+        return 0, "git_missing"
+    if not _git_metadata_is_discoverable(repo_root):
+        return 0, "not_a_git_repo"
     try:
         result = subprocess.run(
             ["git", "worktree", "list", "--porcelain"],

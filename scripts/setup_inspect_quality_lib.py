@@ -6,6 +6,8 @@ import shutil
 import subprocess
 from pathlib import Path
 
+from scripts.git_checkout import discoverable as _git_metadata_is_discoverable
+
 
 def _present_paths(repo_root: Path, candidates: tuple[str, ...]) -> list[str]:
     return [candidate for candidate in candidates if (repo_root / candidate).is_file()]
@@ -89,17 +91,19 @@ def _detect_hook_policy(repo_root: Path, package_json: dict[str, object]) -> dic
         name == "pre-commit" for name, _ in hook_candidates
     ):
         hook_candidates.append(("pre-commit", "existing package pre-commit configuration must be preserved and integrated"))
-    try:
-        configured = subprocess.run(
-            ["git", "config", "--get", "core.hooksPath"],
-            cwd=repo_root,
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=2,
-        ).stdout.strip()
-    except (OSError, subprocess.SubprocessError):
-        configured = ""
+    configured = ""
+    if _git_metadata_is_discoverable(repo_root):
+        try:
+            configured = subprocess.run(
+                ["git", "config", "--get", "core.hooksPath"],
+                cwd=repo_root,
+                check=False,
+                capture_output=True,
+                text=True,
+                timeout=2,
+            ).stdout.strip()
+        except (OSError, subprocess.SubprocessError):
+            configured = ""
     if configured and not any(name == "git-native" for name, _ in hook_candidates):
         hook_candidates.append(("git-native", f"git core.hooksPath={configured}"))
     hook_manager = hook_candidates[0][0] if hook_candidates else None

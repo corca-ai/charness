@@ -3,6 +3,9 @@ from __future__ import annotations
 import subprocess
 from pathlib import Path
 
+import pytest
+
+from scripts import setup_adapter_inspect_lib
 from tests.quality_gates.repo_shapes import replace_with_committed_repo
 
 from .support import SETUP_RESOLVE_ADAPTER, inspect_setup_repo
@@ -182,6 +185,49 @@ def test_setup_inspect_reports_both_worktree_signals_without_recommendations(tmp
         "worktree_adapter_missing_for_hook_manager",
         "worktree_adapter_missing_for_active_worktrees",
     }
+
+
+def test_probe_active_worktrees_skips_git_spawn_on_non_repo_path(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A non-repo tmp dir must never spawn `git worktree list`.
+
+    `git worktree list` on a non-repo also exits non-zero and lands on the
+    same `not_a_git_repo` status the preflight returns, so checking only the
+    return value would still pass with the spawn left in place. Forbidding
+    the spawn is the only proof the filesystem preflight is load-bearing.
+    """
+
+    def _forbidden(*args: object, **kwargs: object) -> None:
+        raise AssertionError("git subprocess must not run for a non-repo path")
+
+    monkeypatch.setattr(setup_adapter_inspect_lib.subprocess, "run", _forbidden)
+
+    count, status = setup_adapter_inspect_lib._probe_active_worktrees(tmp_path)
+
+    assert (count, status) == (0, "not_a_git_repo")
+
+
+def test_probe_active_worktrees_reports_git_missing_before_repo_check(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A missing `git` binary must still win over `not_a_git_repo`.
+
+    `shutil.which` returning `None` short-circuits before the (also
+    spawn-free) discoverability check runs, preserving the pre-existing
+    priority: a missing binary was `git_missing` regardless of repo shape.
+    """
+
+    monkeypatch.setattr(setup_adapter_inspect_lib.shutil, "which", lambda _name: None)
+
+    def _forbidden(*args: object, **kwargs: object) -> None:
+        raise AssertionError("git subprocess must not run when the binary is missing")
+
+    monkeypatch.setattr(setup_adapter_inspect_lib.subprocess, "run", _forbidden)
+
+    count, status = setup_adapter_inspect_lib._probe_active_worktrees(tmp_path)
+
+    assert (count, status) == (0, "git_missing")
 
 
 def test_setup_inspect_reports_setup_adapter_absence(tmp_path: Path) -> None:
