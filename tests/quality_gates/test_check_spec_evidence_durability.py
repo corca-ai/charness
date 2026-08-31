@@ -1,22 +1,23 @@
 from __future__ import annotations
 
-import subprocess
 from pathlib import Path
 
 import pytest
 
 from scripts import check_spec_evidence_durability as gate
 
-from .support import init_git_repo, run_script
+from .support import run_script
 
 
 def _bootstrap_repo(tmp_path: Path) -> Path:
-    repo = tmp_path / "repo"
-    spec_dir = repo / "charness-artifacts" / "spec"
-    spec_dir.mkdir(parents=True)
-    (repo / ".gitignore").write_text("artifacts/\n", encoding="utf-8")
-    init_git_repo(repo, ".gitignore")
-    subprocess.run(["git", "commit", "-m", "init"], cwd=repo, check=True, capture_output=True)
+    from .repo_shapes import install_committed_repo
+
+    repo = install_committed_repo(
+        tmp_path / "repo",
+        {".gitignore": "artifacts/\n"},
+        message="init",
+    )
+    (repo / "charness-artifacts" / "spec").mkdir(parents=True)
     (repo / "artifacts").mkdir()
     (repo / "artifacts" / "eval-summary.json").write_text("{}\n", encoding="utf-8")
     return repo

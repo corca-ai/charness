@@ -266,14 +266,16 @@ def run_main(main: Callable[[], int], argv0: str, *args: str) -> SimpleNamespace
 _run = subprocess.run
 
 
-def git(repo: Path, *args: str) -> str:
+def git(repo: Path, *args: str, env: Mapping[str, str] | None = None) -> str:
     """Run a fixture-repository git command and return trimmed stdout."""
+    merged = None if env is None else {**os.environ, **env}
     return _run(
         ["git", "-c", "user.email=t@t", "-c", "user.name=t", *args],
         cwd=repo,
         check=True,
         capture_output=True,
         text=True,
+        env=merged,
     ).stdout.strip()
 
 

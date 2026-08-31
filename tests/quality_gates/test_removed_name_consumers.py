@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-import subprocess
 from pathlib import Path
 
 import yaml
 
 from runtime_bootstrap import import_repo_module
 
+from .repo_shapes import install_committed_repo
 from .support import ROOT, run_script
 
 _removed = import_repo_module(ROOT / "scripts/removed_name_consumers.py", "scripts.removed_name_consumers")
@@ -27,20 +27,7 @@ CONSUMER = (
 
 
 def seeded_repo(path: Path, files: dict[str, str]) -> Path:
-    path.mkdir(parents=True, exist_ok=True)
-    subprocess.run(["git", "init"], cwd=path, check=True, capture_output=True)
-    for relative, body in files.items():
-        target = path / relative
-        target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(body, encoding="utf-8")
-    subprocess.run(["git", "add", "-A"], cwd=path, check=True, capture_output=True)
-    subprocess.run(
-        ["git", "-c", "user.email=a@b", "-c", "user.name=a", "commit", "-m", "seed"],
-        cwd=path,
-        check=True,
-        capture_output=True,
-    )
-    return path
+    return install_committed_repo(path, files)
 
 
 def test_the_real_dynamic_consumer_is_named(tmp_path: Path) -> None:

@@ -2,11 +2,9 @@ from __future__ import annotations
 
 import hashlib
 import json
-import shutil
 import subprocess
 import sys
 import tempfile
-from functools import cache
 from pathlib import Path
 
 import yaml
@@ -23,19 +21,9 @@ _BOUNDARY = _load_script_module(
 
 def seeded_repo(path: Path) -> Path:
     """Copy an immutable HEAD-bearing seed instead of rebuilding Git per test."""
-    shutil.copytree(_immutable_seed(), path)
-    return path
+    from .repo_shapes import install_committed_repo
 
-
-@cache
-def _immutable_seed() -> Path:
-    """Create the fixture repository once per pytest worker, outside the worktree."""
-    path = Path(tempfile.mkdtemp(prefix="charness-parity-seed-"))
-    subprocess.run(["git", "init"], cwd=path, check=True, capture_output=True)
-    (path / "seed.txt").write_text("seed\n", encoding="utf-8")
-    subprocess.run(["git", "add", "seed.txt"], cwd=path, check=True, capture_output=True)
-    subprocess.run(["git", "commit", "-m", "seed"], cwd=path, check=True, capture_output=True)
-    return path
+    return install_committed_repo(path, {"seed.txt": "seed\n"})
 
 
 def write_review_snapshot(repo: Path, *, captured: dict[str, str] | None = None) -> Path:
@@ -429,7 +417,6 @@ def test_a_returned_file_handle_is_not_consumed_or_collapsed() -> None:
     current = _parity.load_module_from_source(
         "def openit(p):\n    return open(p + '.other', 'w')\n", "parity_handle_b"
     )
-    import tempfile
 
     with tempfile.TemporaryDirectory() as tmp:
         divergences = _parity.compare_callables(baseline.openit, current.openit, [(f"{tmp}/x",)])

@@ -5,8 +5,6 @@ from pathlib import Path
 
 from scripts import check_skill_cut_safety as csafety
 
-from .git_fixture_support import init_git_repo
-
 SKILL_REL = "skills/public/demo/SKILL.md"
 CORE_PIN = "Always prefer the primary source over a cached summary."
 SEDIMENT = "This sentence is pure sediment with no behavioral effect at all."
@@ -22,22 +20,23 @@ def _commit(repo: Path, message: str) -> None:
 
 
 def _seed_repo(repo: Path) -> Path:
-    repo.mkdir()
-    init_git_repo(repo)
-    skill_dir = repo / "skills" / "public" / "demo"
-    (skill_dir / "references").mkdir(parents=True)
-    (skill_dir / "SKILL.md").write_text(
-        "---\nname: demo\n---\n\n# Demo\n\n"
-        f"{CORE_PIN}\n"
-        f"{SEDIMENT}\n"
-        f"{MOVABLE}\n",
-        encoding="utf-8",
+    from .repo_shapes import install_committed_repo
+
+    install_committed_repo(
+        repo,
+        {
+            "skills/public/demo/SKILL.md": (
+                "---\nname: demo\n---\n\n# Demo\n\n"
+                f"{CORE_PIN}\n"
+                f"{SEDIMENT}\n"
+                f"{MOVABLE}\n"
+            ),
+            "skills/public/demo/references/detail.md": "# Detail\n\nUnrelated note.\n",
+        },
+        message="base",
     )
-    (skill_dir / "references" / "detail.md").write_text("# Detail\n\nUnrelated note.\n", encoding="utf-8")
     (repo / "tests").mkdir()
-    _run(repo, "git", "add", "-A")
-    _commit(repo, "base")
-    return skill_dir
+    return repo / "skills" / "public" / "demo"
 
 
 def _patch_pins(monkeypatch, core=(), package=()) -> None:

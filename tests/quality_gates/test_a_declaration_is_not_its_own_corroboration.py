@@ -29,25 +29,21 @@ def _artifact(body: str, date: str = "2026-08-01") -> str:
 
 
 def _write_repo(tmp_path: Path, text: str, *, git: bool, commit_date: str | None = None) -> tuple[Path, Path]:
-    repo = tmp_path / "repo"
-    repo.mkdir()
+    from .repo_shapes import install_committed_repo
+
     fields = ROOT / "skills" / "public" / "quality" / "references" / "inventory-consumer-fields.json"
-    (repo / "fields.json").write_text(fields.read_text(encoding="utf-8"), encoding="utf-8")
-    artifact = repo / "artifact.md"
-    artifact.write_text(text, encoding="utf-8")
+    files = {
+        "fields.json": fields.read_text(encoding="utf-8"),
+        "artifact.md": text,
+    }
+    repo = tmp_path / "repo"
     if git:
-        env = {
-            **{k: v for k, v in __import__("os").environ.items()},
-            "GIT_AUTHOR_NAME": "T", "GIT_AUTHOR_EMAIL": "t@e.x",
-            "GIT_COMMITTER_NAME": "T", "GIT_COMMITTER_EMAIL": "t@e.x",
-        }
-        if commit_date:
-            env["GIT_COMMITTER_DATE"] = commit_date
-            env["GIT_AUTHOR_DATE"] = commit_date
-        subprocess.run(["git", "init", "-q", "."], cwd=repo, check=True, env=env)
-        subprocess.run(["git", "add", "-A"], cwd=repo, check=True, env=env)
-        subprocess.run(["git", "commit", "-q", "-m", "seed"], cwd=repo, check=True, env=env)
-    return repo, artifact
+        install_committed_repo(repo, files, author_date=commit_date)
+    else:
+        repo.mkdir()
+        (repo / "fields.json").write_text(files["fields.json"], encoding="utf-8")
+        (repo / "artifact.md").write_text(text, encoding="utf-8")
+    return repo, repo / "artifact.md"
 
 
 def _run(repo: Path, artifact: Path) -> subprocess.CompletedProcess:
