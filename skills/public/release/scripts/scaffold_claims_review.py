@@ -171,23 +171,14 @@ def _release_scope(
 
 
 def _allowed_dirty_paths(repo_root: Path, allowed: set[str]) -> None:
-    status = _helpers.run(
-        ["git", "status", "--porcelain=v1", "-z", "--untracked-files=all"],
-        cwd=repo_root,
-    ).stdout.split("\0")
-    observed: set[str] = set()
-    index = 0
-    while index < len(status):
-        entry = status[index]
-        index += 1
-        if not entry:
-            continue
-        code, path = entry[:2], entry[3:]
-        observed.add(path)
-        if "R" in code or "C" in code:
-            if index < len(status) and status[index]:
-                observed.add(status[index])
-                index += 1
+    status_mod = SKILL_RUNTIME.load_repo_module_from_skill_script(
+        __file__, "scripts.git_status_snapshot"
+    )
+    try:
+        snapshot = status_mod.capture(repo_root)
+    except status_mod.GitStatusError as exc:
+        raise SystemExit(f"claims-review scaffold: git status failed: {exc}") from exc
+    observed = set(snapshot.dirty_names())
     unexpected = sorted(observed - allowed)
     if unexpected:
         raise SystemExit(

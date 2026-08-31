@@ -3,8 +3,6 @@ from __future__ import annotations
 import importlib
 import os
 import re
-import shutil
-import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -175,32 +173,14 @@ def _expand_pattern(repo_root: Path, pattern: str) -> tuple[list[Path], list[str
 
 
 def _changed_markdown_paths(repo_root: Path) -> tuple[set[str], list[str]]:
-    git = shutil.which("git") or next(
-        (str(candidate) for candidate in (Path("/usr/bin/git"), Path("/opt/homebrew/bin/git")) if candidate.is_file()),
-        None,
-    )
-    if git is None:
-        return set(), ["git not found; using configured scope as-is."]
+    from scripts.git_status_snapshot import GitStatusError
+    from scripts.git_status_snapshot import capture as capture_git_status
+
     try:
-        completed = subprocess.run(
-            [git, "status", "--porcelain=v1", "--untracked-files=all"],
-            cwd=repo_root,
-            check=False,
-            capture_output=True,
-            text=True,
-        )
-    except FileNotFoundError:
-        return set(), ["git not found on PATH; using configured scope as-is."]
-    if completed.returncode != 0:
+        snapshot = capture_git_status(repo_root)
+    except (GitStatusError, OSError):
         return set(), ["Unable to resolve changed files from git status; using configured scope as-is."]
-    changed = set()
-    for raw_line in completed.stdout.splitlines():
-        if len(raw_line) < 4:
-            continue
-        path_text = raw_line[3:].split(" -> ", 1)[-1].strip()
-        if path_text:
-            changed.add(path_text)
-    return changed, []
+    return set(snapshot.dirty_destination_paths()), []
 
 
 def select_targets(repo_root: Path, config: PreviewConfig) -> tuple[list[Path], list[str]]:

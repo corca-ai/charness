@@ -161,6 +161,11 @@ def _attach_doctor_summaries(entries: list[dict[str, Any]]) -> dict[str, int]:
 
 
 def _git_common_dir(repo_root: Path) -> Path | None:
+    from scripts.git_checkout import layout_from_files
+
+    layout = layout_from_files(repo_root)
+    if layout is not None:
+        return layout.common_dir
     proc = subprocess.run(
         ["git", "rev-parse", "--git-common-dir"],
         cwd=repo_root,

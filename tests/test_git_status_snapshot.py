@@ -34,6 +34,10 @@ def test_parse_projects_head_dirty_deleted_and_rename_destination() -> None:
     }
     assert snapshot.staged_or_unstaged_dirty() == (True, True)
     assert snapshot.untracked_paths() == frozenset({"new.py"})
+    assert snapshot.dirty_names() == frozenset(
+        {"edited.py", "gone.py", "renamed.py", "old.py", "new.py"}
+    )
+    assert snapshot.is_clean() is False
 
 
 def test_parse_rejects_malformed_and_duplicate_oids() -> None:

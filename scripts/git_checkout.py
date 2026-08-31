@@ -10,6 +10,7 @@ from __future__ import annotations
 import os
 import re
 from pathlib import Path
+from typing import NamedTuple
 
 DISCOVERY_ENV = ("GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR")
 # Index redirection is not repo discovery, but on-disk HEAD is no longer the
@@ -87,3 +88,83 @@ def head_oid_from_files(repo_root: Path) -> str | None:
     except OSError:
         return None
     return None
+
+
+class CheckoutLayout(NamedTuple):
+    git_dir: Path
+    common_dir: Path
+
+
+class CheckoutIdentity(NamedTuple):
+    repo_root: Path
+    git_dir: Path
+    common_dir: Path
+    head_oid: str
+
+
+def _common_dir_for(git_dir: Path) -> Path | None:
+    commondir = git_dir / "commondir"
+    if commondir.is_file():
+        try:
+            raw = commondir.read_text(encoding="utf-8").splitlines()[0].strip()
+        except (OSError, IndexError):
+            return None
+        common = Path(raw)
+        if not common.is_absolute():
+            common = git_dir / common
+        try:
+            resolved = common.resolve()
+        except OSError:
+            return None
+        return resolved if resolved.is_dir() else None
+    return git_dir if git_dir.is_dir() else None
+
+
+def worktree_root_from_files(repo_root: Path) -> Path | None:
+    """The worktree root Git would discover from files, or None when env redirects."""
+    if discovery_redirected():
+        return None
+    try:
+        root = repo_root.expanduser().resolve()
+    except OSError:
+        return None
+    if not root.is_dir():
+        return None
+    if git_dir_at(root) is not None or _is_bare(root):
+        return root
+    for candidate in root.parents:
+        if git_dir_at(candidate) is not None:
+            return candidate
+    return None
+
+
+def layout_from_files(repo_root: Path) -> CheckoutLayout | None:
+    """Administration directories from checkout files when discovery is local."""
+    if discovery_redirected(names=FILE_HEAD_ENV):
+        return None
+    git_dir = git_dir_at(repo_root)
+    if git_dir is None:
+        return None
+    try:
+        git_dir = git_dir.resolve()
+    except OSError:
+        return None
+    common = _common_dir_for(git_dir)
+    if common is None:
+        return None
+    return CheckoutLayout(git_dir, common)
+
+
+def identity_from_files(repo_root: Path) -> CheckoutIdentity | None:
+    """Worktree root, git dirs, and HEAD from files when discovery is local."""
+    if discovery_redirected(names=FILE_HEAD_ENV):
+        return None
+    try:
+        root = repo_root.expanduser().resolve()
+    except OSError:
+        return None
+    layout = layout_from_files(root)
+    head = head_oid_from_files(root)
+    if layout is None or head is None:
+        return None
+    return CheckoutIdentity(root, layout.git_dir, layout.common_dir, head)

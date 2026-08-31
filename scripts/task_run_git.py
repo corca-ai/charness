@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from scripts.git_checkout import head_oid_from_files as _head_sha_from_checkout
+from scripts.git_checkout import identity_from_files, layout_from_files, worktree_root_from_files
 from scripts.git_status_snapshot import GitStatusError
 from scripts.git_status_snapshot import parse as parse_git_status
 from scripts.git_status_snapshot import status_args as git_status_args
@@ -51,15 +52,26 @@ def _git_output(repo_root: Path, *args: str) -> str:
 
 
 def _repo_snapshot(repo_root: Path) -> dict[str, Any]:
-    """Read immutable repository identity and topology in one Git operation.
+    """Read immutable repository identity and topology from checkout files.
 
     The task lifecycle needs the same four scalar facts at its input boundary:
     the worktree root, the shared administration directory, the checkout's
-    administration directory, and ``HEAD``.  Keeping them together makes that
-    boundary explicit and prevents callers from paying for independent
-    ``rev-parse`` probes that can never describe different states.
+    administration directory, and ``HEAD``.  Ordinary layouts already state
+    them; ``rev-parse`` remains the fallback for redirected or packed layouts.
     """
     requested = repo_root.expanduser().resolve()
+    identity = identity_from_files(requested)
+    if identity is not None:
+        if identity.repo_root != requested:
+            raise TaskRunError(
+                f"--repo-root must be the Git worktree root, not a subdirectory: {requested}"
+            )
+        return {
+            "repo_root": identity.repo_root,
+            "git_common_dir": identity.common_dir,
+            "git_dir": identity.git_dir,
+            "head": identity.head_oid,
+        }
     values = _git_output(
         requested,
         "rev-parse",
@@ -120,7 +132,8 @@ def _commit_wip_candidate(repo_root: Path) -> dict[str, Any]:
 
     return {
         "status": "committed",
-        "sha": _git_output(repo_root, "rev-parse", "HEAD").strip(),
+        "sha": _head_sha_from_checkout(repo_root)
+        or _git_output(repo_root, "rev-parse", "HEAD").strip(),
         "message": WIP_CANDIDATE_COMMIT_MESSAGE,
         "correctness_verified": False,
     }
@@ -128,7 +141,9 @@ def _commit_wip_candidate(repo_root: Path) -> dict[str, Any]:
 
 def _require_git_root(repo_root: Path) -> Path:
     repo_root = repo_root.expanduser().resolve()
-    discovered = Path(_git_output(repo_root, "rev-parse", "--show-toplevel").strip()).resolve()
+    discovered = worktree_root_from_files(repo_root)
+    if discovered is None:
+        discovered = Path(_git_output(repo_root, "rev-parse", "--show-toplevel").strip()).resolve()
     if discovered != repo_root:
         raise TaskRunError(
             f"--repo-root must be the Git worktree root, not a subdirectory: {repo_root}"
@@ -155,6 +170,9 @@ def _resolve_base_sha(repo_root: Path, base: str) -> str:
 
 def _git_common_dir(repo_root: Path) -> Path:
     """Writable Git administration root required for a linked worktree."""
+    layout = layout_from_files(repo_root)
+    if layout is not None:
+        return layout.common_dir
     value = _git_output(repo_root, "rev-parse", "--git-common-dir").strip()
     common = Path(value)
     if not common.is_absolute():
@@ -167,6 +185,9 @@ def _git_common_dir(repo_root: Path) -> Path:
 
 def _git_dir(repo_root: Path) -> Path:
     """Return the checkout-specific Git administration directory."""
+    layout = layout_from_files(repo_root)
+    if layout is not None:
+        return layout.git_dir
     value = _git_output(repo_root, "rev-parse", "--git-dir").strip()
     git_dir = Path(value)
     if not git_dir.is_absolute():

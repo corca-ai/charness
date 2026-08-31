@@ -122,22 +122,6 @@ def _git_common_dir_via_git(repo_root: Path) -> Path:
     return common_dir.resolve()
 
 
-def _discover_git_dir(repo_root: Path) -> Path | None:
-    marker = repo_root / ".git"
-    if marker.is_file():
-        for line in marker.read_text(encoding="utf-8").splitlines():
-            stripped = line.strip()
-            if stripped.lower().startswith("gitdir:"):
-                git_dir = Path(stripped.split(":", 1)[1].strip())
-                if not git_dir.is_absolute():
-                    git_dir = repo_root / git_dir
-                return git_dir
-        return None
-    if marker.is_dir() and (marker / "HEAD").is_file():
-        return marker
-    return None
-
-
 def git_common_dir(repo_root: Path) -> Path:
     """Git's common dir, from checkout files when discovery is local.
 
@@ -145,24 +129,11 @@ def git_common_dir(repo_root: Path) -> Path:
     checkouts already have it on disk; ``rev-parse`` is the fallback for
     environment-redirected or unreadable layouts.
     """
-    if any(os.environ.get(name) for name in ("GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR")):
-        return _git_common_dir_via_git(repo_root)
-    try:
-        git_dir = _discover_git_dir(repo_root)
-        if git_dir is not None:
-            commondir = git_dir / "commondir"
-            if commondir.is_file():
-                raw = commondir.read_text(encoding="utf-8").splitlines()[0].strip()
-                common = Path(raw)
-                if not common.is_absolute():
-                    common = git_dir / common
-                resolved = common.resolve()
-                if resolved.is_dir():
-                    return resolved
-            elif git_dir.is_dir():
-                return git_dir.resolve()
-    except OSError:
-        pass
+    from scripts.git_checkout import layout_from_files
+
+    layout = layout_from_files(repo_root)
+    if layout is not None:
+        return layout.common_dir
     return _git_common_dir_via_git(repo_root)
 
 

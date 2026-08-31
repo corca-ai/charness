@@ -7,6 +7,7 @@ from typing import Any
 from runtime_bootstrap import import_repo_module
 
 _audit_lib = import_repo_module(__file__, "scripts.worktree_audit_lib")
+_status = import_repo_module(__file__, "scripts.git_status_snapshot")
 
 PASS = "pass"
 FAIL = "fail"
@@ -38,10 +39,12 @@ def _find_entry(entries: list[dict[str, Any]], target_path: Path) -> dict[str, A
 
 
 def _is_dirty(path: Path) -> tuple[bool, str]:
-    result = _run_git(path, "status", "--porcelain", cwd=path)
-    if result.returncode != 0:
-        return True, result.stderr.strip() or "git status failed"
-    return bool(result.stdout.strip()), result.stdout.strip()
+    try:
+        snapshot = _status.capture(path)
+    except (_status.GitStatusError, OSError) as exc:
+        return True, str(exc) or "git status failed"
+    dirty = snapshot.dirty_destination_paths()
+    return bool(dirty), "\n".join(dirty)
 
 
 def _branch_is_contained(repo_root: Path, branch: str, base: str) -> tuple[bool, str]:

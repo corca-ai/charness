@@ -31,6 +31,13 @@ def _git(repo_root: Path, *args: str) -> str:
     return result.stdout.strip()
 
 
+def _head_and_tree(repo_root: Path) -> tuple[str, str]:
+    values = _git(repo_root, "rev-parse", "HEAD", "HEAD^{tree}").splitlines()
+    if len(values) != 2:
+        raise ReceiptError("git rev-parse returned an incomplete HEAD/tree snapshot")
+    return values[0], values[1]
+
+
 def _quality_command_argv(repo_root: Path, command: str) -> list[str]:
     try:
         argv = shlex.split(command)
@@ -100,8 +107,7 @@ def seal_receipt(
     semantic, semantic_sha = _semantic_receipt(semantic_receipt)
     if _git(repo_root, "status", "--porcelain", "--untracked-files=all"):
         raise ReceiptError("repository is not clean after release quality")
-    head = _git(repo_root, "rev-parse", "HEAD")
-    tree = _git(repo_root, "rev-parse", "HEAD^{tree}")
+    head, tree = _head_and_tree(repo_root)
     return {
         "schema_version": SCHEMA,
         "status": "pass",
@@ -182,8 +188,7 @@ def validate_receipt(
         raise ReceiptError("sealed semantic quality identity is malformed")
     if _git(repo_root, "status", "--porcelain", "--untracked-files=all"):
         raise ReceiptError("repository changed after the quality receipt")
-    head = _git(repo_root, "rev-parse", "HEAD")
-    tree = _git(repo_root, "rev-parse", "HEAD^{tree}")
+    head, tree = _head_and_tree(repo_root)
     if receipt["verified_head"] != head or receipt["verified_tree"] != tree:
         raise ReceiptError("receipt HEAD/tree is stale")
     if receipt["materialized_sha256"] != _materialized_digest(

@@ -15,7 +15,25 @@ from __future__ import annotations
 import hashlib
 import os
 import subprocess
+import sys
 from datetime import datetime, timezone
+from pathlib import Path
+
+
+def _ensure_scripts_package() -> None:
+    here = Path(__file__).resolve()
+    for candidate in (here, *here.parents):
+        if (candidate / "scripts" / "git_status_snapshot.py").is_file():
+            root = str(candidate)
+            if root not in sys.path:
+                sys.path.insert(0, root)
+            return
+
+
+_ensure_scripts_package()
+from scripts.git_checkout import head_oid_from_files  # noqa: E402
+from scripts.git_status_snapshot import parse as parse_git_status  # noqa: E402
+from scripts.git_status_snapshot import status_args as git_status_args  # noqa: E402
 
 
 class FingerprintError(Exception):
@@ -46,13 +64,36 @@ def _git_bytes(repo_root: str, *args: str) -> bytes:
     return proc.stdout
 
 
+def _status_payload(repo_root: str) -> bytes:
+    return _git_bytes(repo_root, *git_status_args())
+
+
+def _status_entries_from_payload(payload: bytes) -> list[str]:
+    return sorted(
+        entry.decode("utf-8", errors="surrogateescape")
+        for entry in payload.split(b"\0")
+        if entry and not entry.startswith(b"# ")
+    )
+
+
 def _status_entries(repo_root: str) -> list[str]:
-    raw = _git_text(repo_root, "status", "--porcelain=v2", "-z", "--untracked-files=all")
-    return sorted(entry for entry in raw.split("\0") if entry)
+    return _status_entries_from_payload(_status_payload(repo_root))
+
+
+def _xy_by_path(snapshot) -> dict[str, str]:
+    return {
+        record.path: record.xy
+        for record in snapshot.records
+        if record.kind in {"ordinary", "rename", "unmerged"}
+    }
+
+
+def _changed_paths(snapshot) -> list[str]:
+    return sorted(_xy_by_path(snapshot))
 
 
 def _status_path(entry: str) -> str | None:
-    """Extract the path field from a porcelain v2 change-type entry (1/2/u)."""
+    """Path field from a stored porcelain v2 change-type entry (1/2/u)."""
     prefix = entry[0] if entry else ""
     field_count = {"1": 8, "2": 9, "u": 10}.get(prefix)
     if field_count is None:
@@ -62,7 +103,7 @@ def _status_path(entry: str) -> str | None:
 
 
 def _status_path_map(entries: list[str]) -> dict[str, str]:
-    """path -> XY status pair, for the change-type (1/2/u) entries only."""
+    """path -> XY for stored fingerprint status entries (not a live parse)."""
     result: dict[str, str] = {}
     for entry in entries:
         if len(entry) < 4 or entry[0] not in ("1", "2", "u") or entry[1] != " ":
@@ -71,10 +112,6 @@ def _status_path_map(entries: list[str]) -> dict[str, str]:
         if path is not None:
             result[path] = entry[2:4]
     return result
-
-
-def _changed_paths(entries: list[str]) -> list[str]:
-    return sorted(_status_path_map(entries))
 
 
 def _hash_worktree(repo_root: str, path: str) -> str:
@@ -91,7 +128,7 @@ def _hash_worktree(repo_root: str, path: str) -> str:
     return f"{mode}:" + hashlib.sha256(body).hexdigest()
 
 
-def _changed_content(repo_root: str, entries: list[str]) -> dict[str, str]:
+def _changed_content(repo_root: str, snapshot) -> dict[str, str]:
     """Per-path worktree digests for every path git reports as changed.
 
     The aggregate patch digests cannot attribute drift to a path, and the
@@ -100,15 +137,12 @@ def _changed_content(repo_root: str, entries: list[str]) -> dict[str, str]:
     already-dirty file left no per-path trace. That is exactly the state a
     mid-task parent tree is in, so per-path content is what makes attribution
     (and the drift report itself) trustworthy there."""
-    return {path: _hash_worktree(repo_root, path) for path in _changed_paths(entries)}
+    return {path: _hash_worktree(repo_root, path) for path in _changed_paths(snapshot)}
 
 
-def _hash_untracked(repo_root: str, entries: list[str]) -> dict[str, str]:
+def _hash_untracked(repo_root: str, snapshot) -> dict[str, str]:
     result: dict[str, str] = {}
-    for entry in entries:
-        if not entry.startswith("? "):
-            continue
-        path = entry[2:]
+    for path in snapshot.untracked_paths():
         try:
             with open(os.path.join(repo_root, path), "rb") as handle:
                 result[path] = hashlib.sha256(handle.read()).hexdigest()
@@ -122,7 +156,7 @@ SOURCE_BLOB_SUFFIXES = (".py",)
 SOURCE_BLOB_MAX_BYTES = 512 * 1024
 
 
-def _capture_source_blobs(repo_root: str, snapshot_dir: str, entries: list[str]) -> dict[str, str]:
+def _capture_source_blobs(repo_root: str, snapshot_dir: str, snapshot) -> dict[str, str]:
     """Content-address the Python sources a reviewer is about to read.
 
     The digests above answer "did this path change"; they cannot answer "change
@@ -138,8 +172,7 @@ def _capture_source_blobs(repo_root: str, snapshot_dir: str, entries: list[str])
     """
     blob_dir = os.path.join(snapshot_dir, SOURCE_BLOB_DIRNAME)
     captured: dict[str, str] = {}
-    paths = set(_changed_paths(entries))
-    paths.update(entry[2:] for entry in entries if entry.startswith("? "))
+    paths = set(snapshot.dirty_names())
     for path in sorted(paths):
         if not path.endswith(SOURCE_BLOB_SUFFIXES):
             continue
@@ -180,10 +213,15 @@ def new_window(window_id: str | None = None) -> dict:
 
 
 def build_snapshot(repo_root: str, window: dict | None = None, snapshot_dir: str | None = None) -> dict:
-    entries = _status_entries(repo_root)
+    payload = _status_payload(repo_root)
+    snapshot = parse_git_status(payload)
+    entries = _status_entries_from_payload(payload)
+    head = snapshot.head_oid or head_oid_from_files(Path(repo_root))
+    if head is None:
+        head = _git_text(repo_root, "rev-parse", "HEAD").strip()
     return {
         "window": window if window is not None else new_window(),
-        "head": _git_text(repo_root, "rev-parse", "HEAD").strip(),
+        "head": head,
         "status": entries,
         "staged_patch_sha256": hashlib.sha256(
             _git_bytes(repo_root, "diff", "--cached", "--binary")
@@ -191,9 +229,9 @@ def build_snapshot(repo_root: str, window: dict | None = None, snapshot_dir: str
         "worktree_patch_sha256": hashlib.sha256(
             _git_bytes(repo_root, "diff", "--binary")
         ).hexdigest(),
-        "changed_content": _changed_content(repo_root, entries),
-        "untracked": _hash_untracked(repo_root, entries),
+        "changed_content": _changed_content(repo_root, snapshot),
+        "untracked": _hash_untracked(repo_root, snapshot),
         "source_blobs": (
-            _capture_source_blobs(repo_root, snapshot_dir, entries) if snapshot_dir else {}
+            _capture_source_blobs(repo_root, snapshot_dir, snapshot) if snapshot_dir else {}
         ),
     }

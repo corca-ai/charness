@@ -59,6 +59,15 @@ def test_real_checkout_projects_discoverable_local_and_head(tmp_path: Path) -> N
         text=True,
     ).stdout.strip()
     assert head == expected
+    identity = checkout.identity_from_files(repo)
+    assert identity is not None
+    assert identity.repo_root == repo.resolve()
+    assert identity.git_dir == (repo / ".git").resolve()
+    assert identity.common_dir == (repo / ".git").resolve()
+    assert identity.head_oid == expected
+    nested = repo / "sub"
+    nested.mkdir()
+    assert checkout.worktree_root_from_files(nested) == repo.resolve()
 
 
 def test_discovery_env_admits_git_but_refuses_file_projections(

@@ -63,7 +63,7 @@ def test_repo_snapshot_batches_identity_topology_and_head(tmp_path: Path, monkey
     assert snapshot["git_common_dir"] == (repo / ".git").resolve()
     assert snapshot["git_dir"] == (repo / ".git").resolve()
     assert len(snapshot["head"]) == 40
-    assert calls == [("rev-parse", "--show-toplevel", "--git-common-dir", "--git-dir", "HEAD")]
+    assert calls == []
 
 
 @pytest.mark.parametrize(
@@ -82,6 +82,7 @@ def test_base_resolution_refuses_missing_commit(tmp_path: Path, base: str, messa
 
 def test_git_administration_paths_require_directories(tmp_path: Path, monkeypatch) -> None:
     repo = _repo(tmp_path)
+    monkeypatch.setattr(task_run_git, "layout_from_files", lambda *_args: None)
     monkeypatch.setattr(task_run_git, "_git_output", lambda *_args: "missing-common\n")
     with pytest.raises(task_run.TaskRunError, match="Git common directory is not a directory"):
         task_run_git._git_common_dir(repo)

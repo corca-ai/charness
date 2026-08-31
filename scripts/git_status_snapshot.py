@@ -79,6 +79,19 @@ class GitStatusSnapshot(NamedTuple):
     def untracked_paths(self) -> frozenset[str]:
         return frozenset(record.path for record in self.records if record.kind == "untracked")
 
+    def dirty_names(self) -> frozenset[str]:
+        names: set[str] = set()
+        for record in self.records:
+            if record.kind == "ignored":
+                continue
+            names.add(record.path)
+            if record.orig_path:
+                names.add(record.orig_path)
+        return frozenset(names)
+
+    def is_clean(self) -> bool:
+        return not self.dirty_destination_paths()
+
 
 def status_args(
     *,

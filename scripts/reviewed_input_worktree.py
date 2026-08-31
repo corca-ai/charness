@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Callable, NamedTuple
 
-from scripts.git_checkout import local_checkout
+from scripts.git_checkout import head_oid_from_files, local_checkout
 from scripts.git_status_snapshot import GitStatusError
 from scripts.git_status_snapshot import capture as capture_git_status
 
@@ -43,9 +43,12 @@ def patch_components(
     snapshot: WorkingTreeSnapshot | None,
     git_bytes: GitBytes,
 ) -> tuple[str, bytes, bytes]:
-    base_head = snapshot.branch_oid if snapshot else git_bytes(
-        repo_root, "rev-parse", "HEAD"
-    ).decode().strip()
+    base_head = (
+        snapshot.branch_oid
+        if snapshot
+        else head_oid_from_files(repo_root)
+        or git_bytes(repo_root, "rev-parse", "HEAD").decode().strip()
+    )
     path_args = ["--", *paths]
     staged = (
         git_bytes(repo_root, "diff", "--cached", "--binary", *path_args)
