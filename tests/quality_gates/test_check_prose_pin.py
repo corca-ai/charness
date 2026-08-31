@@ -5,6 +5,8 @@ from pathlib import Path
 
 from scripts import check_prose_pin as prose_pin
 
+from .git_fixture_support import init_git_repo
+
 PINNED_PHRASE = "the closeout ledger never reports a number not present in the verified set"
 
 
@@ -18,7 +20,7 @@ def _commit(repo: Path, message: str) -> None:
 
 def _seed_repo(repo: Path) -> None:
     repo.mkdir()
-    _run(repo, "git", "init")
+    init_git_repo(repo)
     (repo / "docs").mkdir()
     (repo / "docs" / "guide.md").write_text(
         f"# Guide\n\nRule: {PINNED_PHRASE}.\n",

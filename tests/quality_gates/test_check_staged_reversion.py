@@ -15,6 +15,7 @@ from pathlib import Path
 import pytest
 import yaml
 
+from .git_fixture_support import init_git_repo
 from .support import run_script
 
 csr = importlib.import_module("scripts.check_staged_reversion")
@@ -33,7 +34,7 @@ def _git(repo: Path, *args: str) -> None:
 def _repo(tmp_path: Path) -> Path:
     repo = tmp_path / "repo"
     repo.mkdir()
-    _git(repo, "init", "-q")
+    init_git_repo(repo)
     return repo
 
 

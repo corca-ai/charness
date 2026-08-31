@@ -5,6 +5,8 @@ from pathlib import Path
 
 from scripts import check_skill_cut_safety as csafety
 
+from .git_fixture_support import init_git_repo
+
 SKILL_REL = "skills/public/demo/SKILL.md"
 CORE_PIN = "Always prefer the primary source over a cached summary."
 SEDIMENT = "This sentence is pure sediment with no behavioral effect at all."
@@ -21,7 +23,7 @@ def _commit(repo: Path, message: str) -> None:
 
 def _seed_repo(repo: Path) -> Path:
     repo.mkdir()
-    _run(repo, "git", "init")
+    init_git_repo(repo)
     skill_dir = repo / "skills" / "public" / "demo"
     (skill_dir / "references").mkdir(parents=True)
     (skill_dir / "SKILL.md").write_text(
