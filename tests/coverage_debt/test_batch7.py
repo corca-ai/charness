@@ -13,26 +13,27 @@ Its companion, `test_batch8.py`, covers the other half of the same release
 measurement: the layout a packaged script actually runs in, plus the task-run,
 reviewed-input, and release surfaces that consume these facts.
 
-Some arms are reproduced, some are injected. Which is which is stated per test,
-in that test's own docstring, and the summary below is deliberately not a count:
-an earlier version of this docstring claimed the `Path.resolve` cases were "the
-only places here that do not use a real environment", which was false of this
-file's own tests and is exactly the kind of unearned honesty claim these pins
-exist to prevent.
+Some arms are reproduced from real environment state; some are reached with a
+test double. This docstring no longer says which ones, and that is the point.
+Two earlier versions tried to enumerate it and were wrong both times -- the first
+claimed the `Path.resolve` cases were "the only places here that do not use a
+real environment", the second omitted the `FactsCheckout` seam -- and a file
+whose purpose is to stop unearned honesty claims is the worst possible place to
+keep making one. The techniques below are described so a reader knows what to
+look for; the authority on any single test is that test.
 
-Reproduced for real, with no test double: a removed process working directory
+Reproduced from real state, with no double: a removed process working directory
 (the only real source of `OSError` from a non-strict `Path.resolve` on 3.10), a
 `chmod 000` administration file, an empty `commondir`, a symlink cycle, a config
 Git itself rejects, a git-less directory.
 
-Injected, because no real state reaches the arm: the two `Path.resolve` cases
-below (after a caller has made the path absolute, non-strict `resolve` swallows
-every filesystem error except a symlink loop, which it re-raises as
-`RuntimeError`), and the four gates whose upstream producer cannot be made to
-emit the malformed input the arm exists for -- a `git log` record with missing
-fields, a `git status` payload that will not parse, and an `OSError` from the
-status read itself. Each of those says so in its own docstring, and says what
-deleting the guard would cost instead.
+Reached with a double, where no real state gets there: `Path.resolve` replaced
+for one named path (once a caller has made a path absolute, non-strict `resolve`
+swallows every filesystem error except a symlink loop, which it re-raises as
+`RuntimeError`); a producer replaced so it emits the malformed input its
+consumer's guard exists for; and `scripts.checkout_view.FactsCheckout`, whose own
+docstring calls itself injected, standing in for a checkout observation that
+failed.
 """
 
 from __future__ import annotations
@@ -594,6 +595,10 @@ def test_an_unlisted_checkout_answers_unknown_rather_than_untracked(tmp_path: Pa
     "nothing was listed". Callers gate destructive cleanup on this answer, so
     collapsing the two would let an unavailable listing read as "this path is
     untracked" and authorise the deletion the distinction exists to prevent.
+
+    Reached through `FactsCheckout`, an injected checkout view, because the
+    unavailable listing is the input under test rather than something a real
+    checkout can be asked to produce on demand.
     """
     view = checkout_view.FactsCheckout(tmp_path, files=None)
 
@@ -608,6 +613,10 @@ def test_a_listed_path_outside_the_repo_is_skipped_not_matched(tmp_path: Path) -
     depend on listing order. `continue` is what keeps one stray absolute entry --
     an alternate object store, a linked worktree's own listing -- from hiding
     every path after it.
+
+    The listing is injected through `FactsCheckout`: no real `git ls-files` over
+    this checkout would emit a path outside it, which is exactly why the guard is
+    unreachable without a double.
     """
     view = checkout_view.FactsCheckout(
         tmp_path, files=[Path("/elsewhere/stray.py"), tmp_path / "owned.py"]
@@ -803,6 +812,10 @@ def test_an_unreadable_status_leaves_the_changed_pool_with_its_tracked_half(
     and the changed-line gate would then report a smaller changed set than the
     commit actually carries -- an under-report on the gate whose job is to block
     on uncovered changed lines.
+
+    The unreadable status is injected through `FactsCheckout`, whose `status()`
+    raises when it holds no snapshot; that stands in for a real `git status`
+    failure, which cannot be provoked on demand over a healthy checkout.
 
     The base must differ from the worktree for this to prove anything. An earlier
     version compared HEAD against a clean tree, so the tracked diff was empty
