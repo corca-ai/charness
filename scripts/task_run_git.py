@@ -44,6 +44,10 @@ def _git(repo_root: Path, *args: str) -> subprocess.CompletedProcess[str]:
 
 
 def _git_output(repo_root: Path, *args: str) -> str:
+    if args == ("rev-parse", "HEAD"):
+        oid = _head_sha_from_checkout(repo_root)
+        if oid:
+            return oid
     result = _git(repo_root, *args)
     if result.returncode != 0:
         detail = result.stderr.strip() or result.stdout.strip() or "git command failed"

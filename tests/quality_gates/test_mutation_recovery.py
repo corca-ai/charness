@@ -192,6 +192,7 @@ def test_recovery_state_dir_handles_git_exec_failure_and_relative_git_dir(
     monkeypatch.setattr(mr.subprocess, "run", unavailable)
     assert mr.recovery_state_dir(tmp_path) == tmp_path / ".charness" / "mutation-recovery"
 
+    monkeypatch.setenv("GIT_DIR", str(tmp_path / ".git"))
     completed = subprocess.CompletedProcess(["git"], 0, ".git\n", "")
     monkeypatch.setattr(mr.subprocess, "run", lambda *_args, **_kwargs: completed)
     assert mr.recovery_state_dir(tmp_path) == (tmp_path / ".git" / "charness-mutation-recovery").resolve()
