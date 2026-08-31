@@ -18,6 +18,7 @@ from pathlib import Path
 import pytest
 import yaml
 
+from tests.quality_gates.repo_shapes import install_committed_repo
 from tests.seed_cache import get_or_build
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -692,3 +693,50 @@ def test_parent_interrupt_returns_typed_state_and_kills_backend_descendant(tmp_p
         time.sleep(0.05)
     else:
         raise AssertionError("backend descendant survived parent interruption")
+
+
+def test_the_deleted_preimage_digest_matches_the_binder_across_the_skill_boundary(
+    tmp_path: Path,
+) -> None:
+    """The producer BINDS a deletion; a portable skill script CHECKS it. Neither can import
+    the other, so the framing is restated on both sides -- and it drifted.
+
+    There are TWO framings, one per substrate, and that is the part the drift hid. The
+    working-tree binder folds the exec bit in (`b"file\\0" + mode_tag + blob`); the
+    committed-ref binder hashes raw bytes. The checker compared raw for both, so committed
+    ranges kept passing while every deletion-only working-tree review refused with
+    `preimage-hash-mismatch` -- a half-green that reads as an unrelated flake.
+
+    Drives the real binders rather than restating their constants a THIRD time: a test that
+    hardcodes the framing goes green with the checker against a binder that has moved on,
+    which is the failure it is here to catch.
+    """
+    from scripts import reviewed_input_identity as binder
+
+    spec = importlib.util.spec_from_file_location(
+        "semantic_review_input_drift",
+        ROOT / "skills/public/critique/scripts/semantic_review_input.py",
+    )
+    checker = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(checker)
+
+    repo = install_committed_repo(
+        tmp_path / "repo",
+        {"plain.txt": "base\n", "runner.sh": "#!/bin/sh\n"},
+        executable=("runner.sh",),
+    )
+
+    for path, blob in (("plain.txt", b"base\n"), ("runner.sh", b"#!/bin/sh\n")):
+        worktree_bound = binder._recorded_blob_digest(repo, path, None, blob)
+        assert worktree_bound in checker.worktree_deleted_digests(blob), path
+        assert binder._sha256(blob) in checker.committed_deleted_digests(blob), path
+
+    # The substrate test must actually SELECT between them, or carrying two framings buys
+    # nothing -- this is the branch that was missing.
+    assert checker._preimage_digests({}) is checker.worktree_deleted_digests
+    assert (
+        checker._preimage_digests({"substrate_mode": "committed-ref", "changed_ref": "HEAD~1"})
+        is checker.committed_deleted_digests
+    )
+    # The two exec-bit tags must stay distinguishable, or "matches under either" is vacuous.
+    assert len(set(checker.worktree_deleted_digests(b"base\n"))) == 2

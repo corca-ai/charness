@@ -243,7 +243,16 @@ def test_the_baseline_pytest_run_does_not_inherit_the_workflow_mutation_range() 
         ["git", "rev-parse", "HEAD"], cwd=repo_root, check=True, capture_output=True, text=True
     ).stdout.strip()
 
-    victim = "tests/quality_gates/test_changed_line_coverage_gate.py::test_a_git_failure_is_unestablished_not_an_empty_change_set"
+    # A hardcoded nodeid, because the child has to run the REAL victim -- and therefore a
+    # standing maintenance obligation: this name has already died once to a test merge that
+    # folded the old `test_a_git_failure_is_unestablished_not_an_empty_change_set` into the
+    # one-checkout node below. Renaming or re-merging that node must repoint this line. Pick
+    # a victim that both seeds a throwaway repo AND reads `MUTATION_HEAD_SHA`; the one named
+    # here does the latter through `_assert_stale_head_and_invalid_adapter`.
+    victim = (
+        "tests/quality_gates/test_changed_line_coverage_gate.py"
+        "::test_coverage_gate_shapes_on_one_checkout"
+    )
     nested = subprocess.run(
         [sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider", "-p", "no:randomly", victim],
         cwd=repo_root,
@@ -252,6 +261,13 @@ def test_the_baseline_pytest_run_does_not_inherit_the_workflow_mutation_range() 
         text=True,
         env={**os.environ, "CHARNESS_NESTED_PYTEST": "1",
              "MUTATION_BASE_SHA": outer_head, "MUTATION_HEAD_SHA": outer_head},
+    )
+    # A renamed victim exits 4 with "not found", which is a DIFFERENT failure from the one
+    # this test exists to catch. Say which one happened, or the next merge spends its time
+    # debugging inherited-environment scrubbing that never broke.
+    # pytest's own collection error, not any substring a victim's output might contain.
+    assert f"ERROR: not found: {victim}" not in nested.stdout, (
+        f"the victim nodeid no longer exists; repoint `victim` above.\n{nested.stdout}"
     )
     assert nested.returncode == 0, nested.stdout + nested.stderr
 

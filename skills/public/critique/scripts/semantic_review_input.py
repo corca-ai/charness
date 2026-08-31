@@ -14,6 +14,48 @@ from typing import Any
 MAX_SEMANTIC_INPUT_BYTES = 1024 * 1024
 MAX_PREIMAGE_BYTES = MAX_SEMANTIC_INPUT_BYTES
 
+#: The two framings `scripts/reviewed_input_identity.py` binds a deletion under, one per
+#: substrate. They are NOT the same, and reading them as one is what broke this file:
+#:
+#:   working tree  `_recorded_blob_digest`  -> sha256(b"file\0" + mode_tag + blob)
+#:   committed ref `_committed_ref_digest`  -> sha256(blob)
+#:
+#: The mode tag records the exec bit, because `chmod +x` on a reviewed script is
+#: review-significant and its bytes do not move. Only the working-tree binder carries it.
+#:
+#: RESTATED, not imported, and that is the hazard. A critique skill script must stay
+#: portable -- nothing under `skills/` imports `scripts/` -- so this lives on both sides of
+#: that boundary and drifted: the working-tree binder gained its mode tag while this file
+#: still compared raw `sha256(blob)` for BOTH substrates, so every deletion-only
+#: working-tree review refused with `preimage-hash-mismatch` while committed ranges passed.
+#: `test_the_deleted_preimage_digest_matches_the_binder_across_the_skill_boundary` drives
+#: the real binders and pins both; extend it if either framing moves.
+_DELETED_BLOB_PREFIX = b"file\0"
+_DELETED_BLOB_MODE_TAGS = (b"-\0", b"x\0")
+
+
+def worktree_deleted_digests(blob: bytes) -> tuple[str, ...]:
+    """Every digest the WORKING-TREE binder could have bound for ``blob``, one per mode tag.
+
+    Enumerating the two tags RECOVERS the mode from the hash instead of asking Git for it.
+    That is not a weakening: the bound hash covers the (mode, bytes) pair, so a match under
+    one tag proves that pair, and it costs no extra `git ls-files`/`ls-tree` on a path Git
+    has already been asked about twice.
+    """
+    return tuple(
+        hashlib.sha256(_DELETED_BLOB_PREFIX + tag + blob).hexdigest()
+        for tag in _DELETED_BLOB_MODE_TAGS
+    )
+
+
+def committed_deleted_digests(blob: bytes) -> tuple[str, ...]:
+    """What the COMMITTED-REF binder bound for ``blob``: raw bytes, no mode.
+
+    A separate one-element function rather than a bare `sha256` call at the callsite, so
+    the asymmetry above is named where it is used and the guard test can drive both.
+    """
+    return (hashlib.sha256(blob).hexdigest(),)
+
 
 class SemanticInputError(ValueError):
     """A deleted reviewed input cannot be safely carried to the worker."""
@@ -49,6 +91,17 @@ def _git_bytes(root: Path, *args: str) -> bytes | None:
     return result.stdout if result.returncode == 0 else None
 
 
+def _preimage_digests(identity: dict[str, Any]):
+    """The binder that produced this identity, chosen by the SAME substrate test that
+    chooses the pre-image sources below. Read them together: a substrate's sources and its
+    framing are one decision, and splitting them is how the two fell out of step."""
+    mode = identity.get("substrate_mode") or identity.get("mode")
+    changed_ref = identity.get("changed_ref")
+    if mode == "committed-ref" and isinstance(changed_ref, str) and changed_ref:
+        return committed_deleted_digests
+    return worktree_deleted_digests
+
+
 def _preimage_sources(root: Path, identity: dict[str, Any]) -> list[tuple[str, tuple[str, ...]]]:
     mode = identity.get("substrate_mode") or identity.get("mode")
     changed_ref = identity.get("changed_ref")
@@ -77,6 +130,7 @@ def _read_deleted_preimage(
             details={"path": path},
         )
     candidates = _preimage_sources(root, identity)
+    digests_for = _preimage_digests(identity)
     mismatches: list[str] = []
     oversized: list[str] = []
     for source_template, command_template in candidates:
@@ -88,7 +142,7 @@ def _read_deleted_preimage(
         if len(content) > MAX_PREIMAGE_BYTES:
             oversized.append(source)
             continue
-        if hashlib.sha256(content).hexdigest() == expected_sha256:
+        if expected_sha256 in digests_for(content):
             return content, source
         mismatches.append(source)
     if oversized:

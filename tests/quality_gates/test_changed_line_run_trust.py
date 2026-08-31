@@ -106,6 +106,33 @@ def test_pin_reuses_the_trust_probe_revision_pair(tmp_path: Path, monkeypatch) -
     assert pinned["pool_fingerprint"] == "fp"
 
 
+def test_the_startup_pin_shares_its_status_snapshot_and_the_drift_re_read_does_not(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """Why `changed_pool_fingerprint` has a `checkout` parameter at all.
+
+    The startup pin hands its snapshot on so dirty-path inspection and the fingerprint
+    are ONE observation; the end-of-run drift re-read must not, because a cached
+    `GitCheckout.status()` cannot see worktree edits that landed during the run. Nothing
+    asserted either half, so the forwarding could stop -- silently costing a second
+    `git status` -- or start on the drift path, silently making drift blind.
+    """
+    seen: list[object] = []
+
+    def fingerprint(*_args, **kwargs):
+        seen.append(kwargs.get("checkout", "NOT-PASSED"))
+        return "fp"
+
+    monkeypatch.setattr(trust, "changed_pool_fingerprint", fingerprint)
+    monkeypatch.setattr(trust, "_git_lines", lambda *_a, **_k: ["deadbeef"])
+    view = FactsCheckout(tmp_path, status=parse_status(b""))
+
+    trust._pin_run_state(tmp_path, "base", "HEAD", checkout=view)
+    trust._pin_run_state(tmp_path, "base", "HEAD")
+
+    assert seen == [view, None]
+
+
 def test_probe_run_trust_classifies_injected_status_without_git() -> None:
     oid = "a" * 40
     payload = (

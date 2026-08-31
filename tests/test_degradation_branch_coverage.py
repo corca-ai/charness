@@ -127,7 +127,11 @@ def test_pin_run_state_reads_literal_head_once(monkeypatch, tmp_path) -> None:
         return ["deadbeef"]
 
     monkeypatch.setattr(trust, "_git_lines", git_lines)
-    monkeypatch.setattr(trust, "changed_pool_fingerprint", lambda *_args: "pool")
+    # `**_kwargs`, not `*_args` alone: the production call passes `checkout=` by keyword,
+    # and a positional-only stub turns that into a TypeError inside the try/except that
+    # DEGRADES the fingerprint -- so a stale stub here does not read as a stale stub, it
+    # reads as the degradation branch this file is otherwise about.
+    monkeypatch.setattr(trust, "changed_pool_fingerprint", lambda *_args, **_kwargs: "pool")
 
     pinned = trust._pin_run_state(tmp_path, "base", "HEAD")
 
