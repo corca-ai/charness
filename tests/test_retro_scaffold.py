@@ -8,6 +8,7 @@ from pathlib import Path
 import yaml
 
 import scripts.export_plugin as export_plugin_module
+from tests.quality_gates.support import run_script
 from tests.script_main import run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -20,16 +21,6 @@ SCAFFOLD_SPEC = importlib.util.spec_from_file_location(
 assert SCAFFOLD_SPEC is not None and SCAFFOLD_SPEC.loader is not None
 SCAFFOLD_MODULE = importlib.util.module_from_spec(SCAFFOLD_SPEC)
 SCAFFOLD_SPEC.loader.exec_module(SCAFFOLD_MODULE)
-
-
-def run_script(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        ["python3", *args],
-        cwd=cwd or ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
 
 
 def test_retro_scaffold_reports_validator_and_template(tmp_path: Path) -> None:

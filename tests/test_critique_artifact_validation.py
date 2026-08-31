@@ -2,24 +2,19 @@ from __future__ import annotations
 
 import importlib.util
 import os
-import subprocess
 from pathlib import Path
 
 import pytest
+
+from tests.quality_gates.repo_shapes import install_committed_repo
+from tests.quality_gates.support import run_script
 
 ROOT = Path(__file__).resolve().parents[1]
 
 ARTIFACT_RELPATH = "charness-artifacts/critique/2026-06-12-demo-critique.md"
 
 
-def run_script(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        ["python3", *args],
-        cwd=cwd or ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+
 
 
 def seed_repo(tmp_path: Path, artifact_body: str) -> Path:
@@ -204,14 +199,7 @@ def test_empty_artifact_set_does_not_run_the_cross_surface_probe(tmp_path: Path)
     grafted history) raises SurfaceError, which is not a ValidationError, so it
     would turn a silent pass into an uncaught traceback.
     """
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    subprocess.run(["git", "init", "-q", "."], cwd=repo, check=True)
-    subprocess.run(
-        ["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "--allow-empty", "-m", "init"],
-        cwd=repo,
-        check=True,
-    )
+    repo = install_committed_repo(tmp_path / "repo", {"README.md": "seed\n"}, message="init")
     result = run_script(
         str(ROOT / "scripts" / "validate_critique_artifacts.py"),
         "--repo-root",

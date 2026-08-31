@@ -70,7 +70,7 @@ def test_symbol_residue_accepts_explicit_concept(tmp_path: Path) -> None:
     )
     replace_with_committed_repo(repo)
 
-    findings = csr.find_residue(repo, concepts=["trivial goal exemption"])
+    findings = csr.find_residue(repo, symbols=[], concepts=["trivial goal exemption"])
     assert [(f.symbol, f.variant, f.path) for f in findings] == [
         ("trivial goal exemption", "Trivial Goal Exemption", "docs/contract.md")
     ]

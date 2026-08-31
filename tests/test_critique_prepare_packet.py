@@ -37,10 +37,12 @@ from scripts.validate_critique_artifacts import (
 from scripts.validate_critique_artifacts import (
     candidate_paths as critique_candidate_paths,
 )
-from tests.quality_gates.git_fixture_support import init_git_repo
+from tests.quality_gates.repo_shapes import install_two_commit_repo
+from tests.quality_gates.support import run_script
 from tests.reviewed_input_identity_fixtures import repo_seed as identity_repo_seed
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+PREPARE = "skills/public/critique/scripts/prepare_packet.py"
 
 
 def _write_yaml(path: Path, body: str) -> None:
@@ -500,11 +502,8 @@ packet_sections:
     content_kind: static
     content: smoke-body
 """)
-    runner = REPO_ROOT / "skills/public/critique/scripts/prepare_packet.py"
-    command = ["python3", str(runner), "--repo-root", str(tmp_path), "--slug", "repeat"]
-
-    assert subprocess.run(command, capture_output=True, text=True, check=False).returncode == 0
-    rerun = subprocess.run(command, capture_output=True, text=True, check=False)
+    assert run_script(PREPARE, "--repo-root", str(tmp_path), "--slug", "repeat").returncode == 0
+    rerun = run_script(PREPARE, "--repo-root", str(tmp_path), "--slug", "repeat")
     assert rerun.returncode == 0, rerun.stderr
     packet = json.loads(
         (tmp_path / "charness-artifacts/critique/repeat-packet.json").read_text(encoding="utf-8")
@@ -517,14 +516,7 @@ packet_sections:
 
 def test_prepare_packet_refuses_adapter_without_sections_with_typed_payload(tmp_path: Path) -> None:
     _write_yaml(tmp_path / ".agents/critique-adapter.yaml", "version: 1\nrepo: rt\n")
-    runner = REPO_ROOT / "skills/public/critique/scripts/prepare_packet.py"
-
-    result = subprocess.run(
-        ["python3", str(runner), "--repo-root", str(tmp_path), "--slug", "empty-adapter"],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    result = run_script(PREPARE, "--repo-root", str(tmp_path), "--slug", "empty-adapter")
 
     payload = yaml.safe_load(result.stdout)
     assert result.returncode != 0
@@ -552,14 +544,7 @@ packet_sections:
     content_kind: script
     command: "printf ''"
 """)
-    runner = REPO_ROOT / "skills/public/critique/scripts/prepare_packet.py"
-
-    result = subprocess.run(
-        ["python3", str(runner), "--repo-root", str(tmp_path), "--slug", "empty-producer"],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    result = run_script(PREPARE, "--repo-root", str(tmp_path), "--slug", "empty-producer")
 
     payload = yaml.safe_load(result.stdout)
     assert result.returncode != 0
@@ -585,14 +570,7 @@ packet_sections:
     content_kind: static
     content: semantic review input
 """)
-    runner = REPO_ROOT / "skills/public/critique/scripts/prepare_packet.py"
-
-    result = subprocess.run(
-        ["python3", str(runner), "--repo-root", str(tmp_path), "--slug", "real"],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    result = run_script(PREPARE, "--repo-root", str(tmp_path), "--slug", "real")
 
     payload = yaml.safe_load(result.stdout)
     assert result.returncode == 0, result.stderr
@@ -613,21 +591,14 @@ packet_sections:
     content_kind: static
     content: smoke-body
 """)
-    runner = REPO_ROOT / "skills/public/critique/scripts/prepare_packet.py"
-    result = subprocess.run(
-        [
-            "python3",
-            str(runner),
-            "--repo-root",
-            str(tmp_path),
-            "--slug",
-            "collision",
-            "--reviewed-path",
-            "charness-artifacts/critique/collision-packet.json",
-        ],
-        capture_output=True,
-        text=True,
-        check=False,
+    result = run_script(
+        PREPARE,
+        "--repo-root",
+        str(tmp_path),
+        "--slug",
+        "collision",
+        "--reviewed-path",
+        "charness-artifacts/critique/collision-packet.json",
     )
 
     assert result.returncode == 2
@@ -644,12 +615,8 @@ packet_sections:
     content_kind: static
     content: smoke-body
 """)
-    runner = REPO_ROOT / "skills/public/critique/scripts/prepare_packet.py"
-    result = subprocess.run(
-        ["python3", str(runner), "--repo-root", str(tmp_path), "--prepared-for", "smoke", "--slug", "smoke"],
-        capture_output=True,
-        text=True,
-        check=False,
+    result = run_script(
+        PREPARE, "--repo-root", str(tmp_path), "--prepared-for", "smoke", "--slug", "smoke"
     )
     assert result.returncode == 0, result.stderr
     candidates = critique_candidate_paths(
@@ -795,61 +762,57 @@ def test_prepare_packet_markdown_kind_accepts_sequence_lines_only_for_matching_t
     ) == "quality.prepare-packet"
 
 
-def test_runner_cli_json_changed_ref_with_default_surface_producer(tmp_path: Path) -> None:
-    init_git_repo(tmp_path)
-    agents_dir = tmp_path / ".agents"
-    agents_dir.mkdir()
-    (agents_dir / "surfaces.json").write_text(
-        json.dumps(
-            {
-                "version": 1,
-                "surfaces": [
-                    {
-                        "surface_id": "repo-markdown",
-                        "description": "Markdown",
-                        "source_paths": ["README.md"],
-                        "derived_paths": [],
-                        "sync_commands": [],
-                        "verify_commands": ["check docs"],
-                        "notes": [],
-                        "generated_markdown": [],
-                    }
-                ],
-            }
-        ),
-        encoding="utf-8",
-    )
+def _two_commit_prepare_repo(tmp_path: Path) -> Path:
     producer = REPO_ROOT / "scripts/render_critique_section_changed_surfaces.py"
-    _write_yaml(tmp_path / ".agents/critique-adapter.yaml", f"""\
-version: 1
-repo: rt
-packet_sections:
-  - id: changed-files-and-owning-surfaces
-    title: Changed Files And Owning Surfaces
-    content_kind: script
-    command: "python3 {producer} --repo-root ."
-""")
-    (tmp_path / "README.md").write_text("one\n", encoding="utf-8")
-    _run_git(tmp_path, "add", ".")
-    _run_git(tmp_path, "commit", "-m", "initial")
-    (tmp_path / "README.md").write_text("two\n", encoding="utf-8")
-    _run_git(tmp_path, "commit", "-am", "update")
+    install_two_commit_repo(
+        tmp_path,
+        {
+            ".agents/surfaces.json": json.dumps(
+                {
+                    "version": 1,
+                    "surfaces": [
+                        {
+                            "surface_id": "repo-markdown",
+                            "description": "Markdown",
+                            "source_paths": ["README.md"],
+                            "derived_paths": [],
+                            "sync_commands": [],
+                            "verify_commands": ["check docs"],
+                            "notes": [],
+                            "generated_markdown": [],
+                        }
+                    ],
+                }
+            ),
+            ".agents/critique-adapter.yaml": (
+                "version: 1\n"
+                "repo: rt\n"
+                "packet_sections:\n"
+                "  - id: changed-files-and-owning-surfaces\n"
+                "    title: Changed Files And Owning Surfaces\n"
+                "    content_kind: script\n"
+                f'    command: "python3 {producer} --repo-root ."\n'
+            ),
+            "README.md": "one\n",
+        },
+        {"README.md": "two\n"},
+        first_message="initial",
+        second_message="update",
+    )
+    return tmp_path
 
-    runner = REPO_ROOT / "skills/public/critique/scripts/prepare_packet.py"
-    result = subprocess.run(
-        [
-            "python3",
-            str(runner),
-            "--repo-root",
-            str(tmp_path),
-            "--prepared-for",
-            "head",
-            "--changed-ref",
-            "HEAD",
-        ],
-        capture_output=True,
-        text=True,
-        check=False,
+
+def test_runner_cli_json_changed_ref_with_default_surface_producer(tmp_path: Path) -> None:
+    _two_commit_prepare_repo(tmp_path)
+
+    result = run_script(
+        PREPARE,
+        "--repo-root",
+        str(tmp_path),
+        "--prepared-for",
+        "head",
+        "--changed-ref",
+        "HEAD",
         env={**os.environ, "CHARNESS_CRITIQUE_CHANGED_REF": "SHOULD_NOT_WIN"},
     )
 
@@ -868,52 +831,9 @@ packet_sections:
 
 
 def test_runner_cli_commit_alias_sets_changed_ref_and_prepared_for(tmp_path: Path) -> None:
-    init_git_repo(tmp_path)
-    agents_dir = tmp_path / ".agents"
-    agents_dir.mkdir()
-    (agents_dir / "surfaces.json").write_text(
-        json.dumps(
-            {
-                "version": 1,
-                "surfaces": [
-                    {
-                        "surface_id": "repo-markdown",
-                        "description": "Markdown",
-                        "source_paths": ["README.md"],
-                        "derived_paths": [],
-                        "sync_commands": [],
-                        "verify_commands": ["check docs"],
-                        "notes": [],
-                        "generated_markdown": [],
-                    }
-                ],
-            }
-        ),
-        encoding="utf-8",
-    )
-    producer = REPO_ROOT / "scripts/render_critique_section_changed_surfaces.py"
-    _write_yaml(tmp_path / ".agents/critique-adapter.yaml", f"""\
-version: 1
-repo: rt
-packet_sections:
-  - id: changed-files-and-owning-surfaces
-    title: Changed Files And Owning Surfaces
-    content_kind: script
-    command: "python3 {producer} --repo-root ."
-""")
-    (tmp_path / "README.md").write_text("one\n", encoding="utf-8")
-    _run_git(tmp_path, "add", ".")
-    _run_git(tmp_path, "commit", "-m", "initial")
-    (tmp_path / "README.md").write_text("two\n", encoding="utf-8")
-    _run_git(tmp_path, "commit", "-am", "update")
+    _two_commit_prepare_repo(tmp_path)
 
-    runner = REPO_ROOT / "skills/public/critique/scripts/prepare_packet.py"
-    result = subprocess.run(
-        ["python3", str(runner), "--repo-root", str(tmp_path), "--commit", "HEAD"],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    result = run_script(PREPARE, "--repo-root", str(tmp_path), "--commit", "HEAD")
 
     assert result.returncode == 0, result.stderr
     # Same `--json`-was-a-MODE removal as above. `prepared_for` is not on the

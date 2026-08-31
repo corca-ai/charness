@@ -18,12 +18,11 @@ adapter anything, and a control asserts that arm still works under a refused ver
 from __future__ import annotations
 
 import subprocess
-import sys
 from pathlib import Path
 
 import pytest
 
-from .support import ROOT
+from .support import run_script
 
 SCANNER = "skills/public/quality/references/find_inline_prompt_bulk.py"
 
@@ -52,11 +51,7 @@ def _repo(tmp_path: Path, adapter: str | None) -> Path:
 
 
 def _run(repo: Path, *args: str) -> subprocess.CompletedProcess:
-    return subprocess.run(
-        [sys.executable, str(ROOT / SCANNER), "--repo-root", str(repo), *args],
-        capture_output=True,
-        text=True,
-    )
+    return run_script(SCANNER, "--repo-root", str(repo), *args)
 
 
 @pytest.mark.parametrize("version", ["9", "!!int 9"], ids=["unspeakable", "unparseable"])

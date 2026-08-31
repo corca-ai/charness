@@ -1,19 +1,10 @@
 from __future__ import annotations
 
-import subprocess
 from pathlib import Path
 
+from tests.quality_gates.support import run_script
+
 ROOT = Path(__file__).resolve().parents[1]
-
-
-def run_script(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        ["python3", *args],
-        cwd=cwd or ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
 
 
 def seed_repo(tmp_path: Path, artifact_body: str) -> Path:

@@ -10,6 +10,7 @@ from pathlib import Path
 import yaml
 
 from tests.quality_gates.repo_shapes import install_two_commit_repo
+from tests.quality_gates.support import run_script
 
 ROOT = Path(__file__).resolve().parents[1]
 PREPARE = ROOT / "skills/public/critique/scripts/prepare_packet.py"
@@ -53,20 +54,14 @@ def test_default_committed_packet_refusal_lists_omitted_paths_and_remedy(
     tmp_path: Path,
 ) -> None:
     changed_ref = _committed_packet_repo(tmp_path)
-    result = subprocess.run(
-        [
-            sys.executable,
-            str(PREPARE),
-            "--repo-root",
-            str(tmp_path),
-            "--slug",
-            "default-refusal",
-            "--commit",
-            changed_ref,
-        ],
-        capture_output=True,
-        text=True,
-        check=False,
+    result = run_script(
+        str(PREPARE),
+        "--repo-root",
+        str(tmp_path),
+        "--slug",
+        "default-refusal",
+        "--commit",
+        changed_ref,
     )
 
     payload = yaml.safe_load(result.stdout)
@@ -169,24 +164,18 @@ def test_semantic_wrapper_preserves_default_refusal_details(tmp_path: Path) -> N
 
 def test_committed_refusal_reports_extra_declared_paths_too(tmp_path: Path) -> None:
     changed_ref = _committed_packet_repo(tmp_path)
-    result = subprocess.run(
-        [
-            sys.executable,
-            str(PREPARE),
-            "--repo-root",
-            str(tmp_path),
-            "--slug",
-            "extra-refusal",
-            "--commit",
-            changed_ref,
-            "--reviewed-path",
-            "reviewed.txt",
-            "--reviewed-path",
-            "not-in-ref.txt",
-        ],
-        capture_output=True,
-        text=True,
-        check=False,
+    result = run_script(
+        str(PREPARE),
+        "--repo-root",
+        str(tmp_path),
+        "--slug",
+        "extra-refusal",
+        "--commit",
+        changed_ref,
+        "--reviewed-path",
+        "reviewed.txt",
+        "--reviewed-path",
+        "not-in-ref.txt",
     )
 
     payload = yaml.safe_load(result.stdout)

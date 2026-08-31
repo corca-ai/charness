@@ -6,11 +6,12 @@ integration of the acquire/gather CLIs with SEEDED responses (no live X fetch)."
 from __future__ import annotations
 
 import json
-import subprocess
 import sys
 from pathlib import Path
 
 import yaml
+
+from tests.quality_gates.support import run_script
 
 ROOT = Path(__file__).resolve().parents[1]
 WEBFETCH = ROOT / "skills" / "support" / "web-fetch" / "scripts"
@@ -226,7 +227,7 @@ def _run_acquire(tmp_path: Path, *, direct: str, seed: dict | None) -> dict:
         seed_file = tmp_path / "seed.json"
         seed_file.write_text(json.dumps(seed), encoding="utf-8")
         cmd += ["--domain-route-response-file", str(seed_file)]
-    result = subprocess.run(cmd, cwd=ROOT, check=False, capture_output=True, text=True)
+    result = run_script(*cmd[1:], cwd=ROOT)
     assert result.returncode == 0, result.stderr
     return yaml.safe_load(result.stdout)
 
@@ -259,9 +260,13 @@ def test_acquire_default_is_exact_unavailable_not_substituted(tmp_path: Path) ->
 def test_acquire_non_twitter_has_no_source_identity(tmp_path: Path) -> None:
     direct_file = tmp_path / "ok.html"
     direct_file.write_text("hello world " * 200, encoding="utf-8")
-    result = subprocess.run(
-        [sys.executable, str(WEBFETCH / "acquire_public_url.py"), "--url", "https://example.com/a", "--direct-response-file", str(direct_file)],
-        cwd=ROOT, check=False, capture_output=True, text=True,
+    result = run_script(
+        str(WEBFETCH / "acquire_public_url.py"),
+        "--url",
+        "https://example.com/a",
+        "--direct-response-file",
+        str(direct_file),
+        cwd=ROOT,
     )
     assert result.returncode == 0, result.stderr
     assert "source_identity" not in yaml.safe_load(result.stdout)  # behavior-preserving for other sources
@@ -347,10 +352,8 @@ def test_gather_writes_exact_source_blocked_record(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    result = subprocess.run(
-        [
-            sys.executable,
-            str(ROOT / "skills" / "public" / "gather" / "scripts" / "gather_public_url.py"),
+    result = run_script(
+        str(ROOT / "skills" / "public" / "gather" / "scripts" / "gather_public_url.py"),
             "--repo-root",
             str(tmp_path),
             "--url",
@@ -366,11 +369,7 @@ def test_gather_writes_exact_source_blocked_record(tmp_path: Path) -> None:
             "--date",
             "2026-06-24",
             "--execute",
-        ],
         cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
     )
 
     assert result.returncode == 0, result.stderr
@@ -401,10 +400,8 @@ def test_gather_writes_exact_source_fetched_record_with_resolution(tmp_path: Pat
     seed_file = tmp_path / "seed.json"
     seed_file.write_text(json.dumps({SYND_URL: {"text": json.dumps({"id_str": SID, "text": "body"})}}), encoding="utf-8")
 
-    result = subprocess.run(
-        [
-            sys.executable,
-            str(ROOT / "skills" / "public" / "gather" / "scripts" / "gather_public_url.py"),
+    result = run_script(
+        str(ROOT / "skills" / "public" / "gather" / "scripts" / "gather_public_url.py"),
             "--repo-root",
             str(tmp_path),
             "--url",
@@ -420,11 +417,7 @@ def test_gather_writes_exact_source_fetched_record_with_resolution(tmp_path: Pat
             "--date",
             "2026-06-24",
             "--execute",
-        ],
         cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
     )
 
     assert result.returncode == 0, result.stderr
@@ -442,10 +435,8 @@ def test_gather_writes_exact_source_unavailable_record(tmp_path: Path) -> None:
     direct_file = tmp_path / "direct.html"
     direct_file.write_text(CAPTCHA, encoding="utf-8")
 
-    result = subprocess.run(
-        [
-            sys.executable,
-            str(ROOT / "skills" / "public" / "gather" / "scripts" / "gather_public_url.py"),
+    result = run_script(
+        str(ROOT / "skills" / "public" / "gather" / "scripts" / "gather_public_url.py"),
             "--repo-root",
             str(tmp_path),
             "--url",
@@ -459,11 +450,7 @@ def test_gather_writes_exact_source_unavailable_record(tmp_path: Path) -> None:
             "--date",
             "2026-06-24",
             "--execute",
-        ],
         cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
     )
 
     assert result.returncode == 0, result.stderr
@@ -483,10 +470,8 @@ def test_gather_does_not_write_non_status_x_terminal_record(tmp_path: Path) -> N
     direct_file = tmp_path / "direct.html"
     direct_file.write_text(CAPTCHA, encoding="utf-8")
 
-    result = subprocess.run(
-        [
-            sys.executable,
-            str(ROOT / "skills" / "public" / "gather" / "scripts" / "gather_public_url.py"),
+    result = run_script(
+        str(ROOT / "skills" / "public" / "gather" / "scripts" / "gather_public_url.py"),
             "--repo-root",
             str(tmp_path),
             "--url",
@@ -498,11 +483,7 @@ def test_gather_does_not_write_non_status_x_terminal_record(tmp_path: Path) -> N
             "--date",
             "2026-06-24",
             "--execute",
-        ],
         cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
     )
 
     assert result.returncode == 1

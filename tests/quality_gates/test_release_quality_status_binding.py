@@ -35,6 +35,8 @@ from types import SimpleNamespace
 
 import pytest
 
+from tests.quality_gates.repo_shapes import replace_with_committed_repo
+
 from .seeding_support import load_module
 from .support import ROOT
 
@@ -203,11 +205,7 @@ def test_release_quality_seals_a_semantic_one_push_receipt(tmp_path: Path) -> No
         repo / "scripts" / "prepush_quality_receipt.py",
     )
     (repo / "plugins" / "charness" / "plugin.txt").write_text("v1\n", encoding="utf-8")
-    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
-    subprocess.run(["git", "config", "user.name", "test"], cwd=repo, check=True)
-    subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=repo, check=True)
-    subprocess.run(["git", "add", ".gitignore", "scripts"], cwd=repo, check=True)
-    subprocess.run(["git", "commit", "-qm", "seed"], cwd=repo, check=True)
+    replace_with_committed_repo(repo, message="seed")
 
     class Cli:
         def run_requested_review_gate(self, _repo):

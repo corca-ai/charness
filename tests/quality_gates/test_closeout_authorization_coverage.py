@@ -32,6 +32,7 @@ import pytest
 import yaml
 
 from tests.closeout_authorization_world import CROSSWALK_REL, build_protected_world
+from tests.quality_gates.seeding_support import _install_empty_git_dir
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ISSUE_SCRIPTS = REPO_ROOT / "skills" / "public" / "issue" / "scripts"
@@ -234,7 +235,7 @@ def test_the_commit_hook_tells_a_blocked_author_what_was_refused_and_what_else_i
     and the two legitimate ways out, and states that unrelated closes are unaffected.
     """
     hook = _load(SCRIPTS / "check_issue_closeout_commit_msg.py", "coverage_commit_hook")
-    subprocess.run(["git", "init", "-b", "main"], cwd=tmp_path, check=True, capture_output=True)
+    _install_empty_git_dir(tmp_path, branch="main")
     build_protected_world(tmp_path)
     message_file = tmp_path / "COMMIT_EDITMSG"
     message_file.write_text("Repair the boundary\n\nCloses #514\n", encoding="utf-8")

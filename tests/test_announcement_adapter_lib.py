@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import subprocess
 from pathlib import Path
 
 from scripts.announcement_adapter_lib import (
@@ -8,6 +7,7 @@ from scripts.announcement_adapter_lib import (
     load_announcement_adapter,
     validate_announcement_adapter_data,
 )
+from tests.quality_gates.support import run_script
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -85,17 +85,11 @@ def test_delivery_kind_rejects_unknown_value(tmp_path: Path) -> None:
 
 
 def test_init_adapter_scaffolds_public_body_shape(tmp_path: Path) -> None:
-    result = subprocess.run(
-        [
-            "python3",
-            str(ROOT / "skills" / "public" / "announcement" / "scripts" / "init_adapter.py"),
-            "--repo-root",
-            str(tmp_path),
-        ],
+    result = run_script(
+        str(ROOT / "skills" / "public" / "announcement" / "scripts" / "init_adapter.py"),
+        "--repo-root",
+        str(tmp_path),
         cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
     )
     assert result.returncode == 0, result.stderr
     adapter_text = (tmp_path / ".agents" / "announcement-adapter.yaml").read_text(encoding="utf-8")

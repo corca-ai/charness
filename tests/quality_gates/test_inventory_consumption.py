@@ -10,24 +10,19 @@ from __future__ import annotations
 
 import json
 import subprocess
-import sys
 from pathlib import Path
 
 import pytest
 
 from scripts import validate_inventory_consumption_declaration as declaration
+from tests.quality_gates.support import run_script
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts" / "validate_inventory_consumption.py"
 
 
 def _run(repo_root: Path) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        [sys.executable, str(SCRIPT), "--repo-root", str(repo_root)],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    return run_script(str(SCRIPT), "--repo-root", str(repo_root))
 
 
 def test_declaration_runner_rejects_non_yaml_inventory_output(
@@ -326,11 +321,6 @@ def test_no_commands_run_section_means_nothing_to_enforce(tmp_path: Path) -> Non
 
 def test_real_repo_artifact_passes() -> None:
     """The committed charness-artifacts/quality/latest.md must satisfy the contract."""
-    result = subprocess.run(
-        [sys.executable, str(SCRIPT), "--repo-root", str(ROOT)],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    result = _run(ROOT)
 
     assert result.returncode == 0, result.stderr

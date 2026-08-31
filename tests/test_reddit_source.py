@@ -8,6 +8,8 @@ from types import SimpleNamespace
 
 import yaml
 
+from tests.quality_gates.support import run_script
+
 ROOT = Path(__file__).resolve().parents[1]
 WEB_FETCH_SCRIPTS = ROOT / "skills" / "support" / "web-fetch" / "scripts"
 sys.path.insert(0, str(WEB_FETCH_SCRIPTS))
@@ -17,13 +19,7 @@ import reddit_source as rs  # noqa: E402
 
 
 def run_helper(script: str, *args: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        [sys.executable, script, *args],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    return run_script(script, *args, cwd=ROOT)
 
 
 def test_reddit_source_helper_branches(monkeypatch) -> None:

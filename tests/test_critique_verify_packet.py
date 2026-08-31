@@ -14,6 +14,8 @@ from types import SimpleNamespace
 import pytest
 import yaml
 
+from tests.quality_gates.support import run_script
+
 ROOT = Path(__file__).resolve().parents[1]
 PREPARE = ROOT / "skills/public/critique/scripts/prepare_packet.py"
 VERIFY_ENTRYPOINTS = (
@@ -57,19 +59,14 @@ def _prepare(tmp_path: Path) -> tuple[Path, dict, dict]:
         },
         message="initial",
     )
-    result = subprocess.run(
-        [
-            "python3",
-            str(PREPARE),
-            "--repo-root",
-            str(tmp_path),
-            "--slug",
-            "verify",
-            "--reviewed-path",
-            "reviewed.txt",
-        ],
-        capture_output=True,
-        text=True,
+    result = run_script(
+        str(PREPARE),
+        "--repo-root",
+        str(tmp_path),
+        "--slug",
+        "verify",
+        "--reviewed-path",
+        "reviewed.txt",
     )
     assert result.returncode == 0, result.stderr
     receipt = yaml.safe_load(result.stdout)
@@ -153,7 +150,10 @@ def _committed_ref_repo(tmp_path: Path) -> Path:
 
 
 def _run(command: str, *, cwd: Path) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(shlex.split(command), cwd=cwd, capture_output=True, text=True)
+    parts = shlex.split(command)
+    if parts and Path(parts[0]).name in {"python", "python3"}:
+        return run_script(*parts[1:], cwd=cwd)
+    return subprocess.run(parts, cwd=cwd, capture_output=True, text=True)
 
 
 def _verifier_namespace() -> dict:
@@ -225,21 +225,16 @@ def test_tampered_packet_refuses_with_structured_yaml(tmp_path: Path) -> None:
 
 def test_committed_ref_packet_records_explicit_mode_and_exact_paths(tmp_path: Path) -> None:
     repo = _committed_ref_repo(tmp_path)
-    result = subprocess.run(
-        [
-            "python3",
-            str(PREPARE),
-            "--repo-root",
-            str(repo),
-            "--slug",
-            "committed",
-            "--commit",
-            "HEAD",
-            "--reviewed-path",
-            "reviewed.txt",
-        ],
-        capture_output=True,
-        text=True,
+    result = run_script(
+        str(PREPARE),
+        "--repo-root",
+        str(repo),
+        "--slug",
+        "committed",
+        "--commit",
+        "HEAD",
+        "--reviewed-path",
+        "reviewed.txt",
     )
     assert result.returncode == 0, result.stderr
     receipt = yaml.safe_load(result.stdout)
@@ -260,21 +255,16 @@ def test_committed_ref_packet_records_explicit_mode_and_exact_paths(tmp_path: Pa
 
 def test_committed_ref_packet_refuses_mismatched_declared_paths(tmp_path: Path) -> None:
     repo = _committed_ref_repo(tmp_path)
-    result = subprocess.run(
-        [
-            "python3",
-            str(PREPARE),
-            "--repo-root",
-            str(repo),
-            "--slug",
-            "mismatch",
-            "--commit",
-            "HEAD",
-            "--reviewed-path",
-            ".agents/critique-adapter.yaml",
-        ],
-        capture_output=True,
-        text=True,
+    result = run_script(
+        str(PREPARE),
+        "--repo-root",
+        str(repo),
+        "--slug",
+        "mismatch",
+        "--commit",
+        "HEAD",
+        "--reviewed-path",
+        ".agents/critique-adapter.yaml",
     )
     assert result.returncode == 1
     payload = yaml.safe_load(result.stdout)

@@ -29,6 +29,20 @@ def _seed_repo(repo: Path) -> None:
     )
 
 
+def test_removed_lines_come_from_hunk_bodies_not_file_headers() -> None:
+    diff = (
+        "diff --git a/docs/guide.md b/docs/guide.md\n"
+        "--- a/docs/guide.md\n"
+        "+++ b/docs/guide.md\n"
+        "@@ -2 +2 @@\n"
+        f"-Rule: {PINNED_PHRASE}.\n"
+        "+Rule: something else.\n"
+    )
+    removed = prose_pin.removed_lines_from_unified_diff(diff)
+    assert PINNED_PHRASE in "\n".join(removed)
+    assert "a/docs/guide.md" not in removed
+
+
 def test_prose_pin_flags_edited_doc_prose(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     _seed_repo(repo)

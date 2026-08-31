@@ -5,7 +5,13 @@ from pathlib import Path
 
 import pytest
 
-from .git_fixture_support import init_git_repo
+from scripts.repo_file_listing import (
+    RepoFileSnapshot,
+    bind_subject_listing,
+    unbind_subject_listing,
+)
+from tests.quality_gates.repo_shapes import install_committed_repo
+
 from .seeding_support import load_module
 from .support import ROOT
 
@@ -56,9 +62,34 @@ def test_visible_repo_files_require_git_refuses_a_plain_directory_without_git(
 
 def test_visible_repo_files_lists_a_real_checkout(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    repo.mkdir()
-    (repo / "tracked.py").write_text("x\n", encoding="utf-8")
-    init_git_repo(repo, "tracked.py")
+    install_committed_repo(repo, {"tracked.py": "x\n"})
     files = _LIB.visible_repo_files(repo)
     assert files is not None
     assert repo / "tracked.py" in files
+
+
+def test_visible_repo_files_reuses_a_bound_subject_listing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    tracked = repo / "tracked.py"
+    tracked.write_text("x\n", encoding="utf-8")
+    calls = 0
+
+    from scripts import repo_file_listing as listing
+
+    def counted(*_args, **_kwargs):
+        nonlocal calls
+        calls += 1
+        return [tracked]
+
+    monkeypatch.setattr(listing, "git_list_repo_files", counted)
+    bind_subject_listing(RepoFileSnapshot(repo, require_git=True))
+    try:
+        first = _LIB.visible_repo_files(repo, require_git=True)
+        second = _LIB.visible_repo_files(repo, require_git=True)
+        assert first == second == {tracked}
+        assert calls == 1
+    finally:
+        unbind_subject_listing(repo, require_git=True)

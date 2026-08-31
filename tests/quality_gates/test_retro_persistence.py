@@ -11,6 +11,7 @@ import pytest
 import yaml
 
 from runtime_bootstrap import import_repo_module
+from tests.quality_gates.repo_shapes import install_committed_repo
 from tests.quality_gates.seeding_support import write_retro_adapter
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -153,26 +154,18 @@ def test_persist_does_not_overwrite_undated_sibling_when_scaffold_resolves_dated
     with another session's content. The persist call receives the same subject
     key; it must land on the scaffold target and leave the undated file intact.
     """
-    repo = tmp_path / "repo"
+    other_session = "# Other session\n\nThis content must survive.\n"
+    repo = install_committed_repo(
+        tmp_path / "repo",
+        {"charness-artifacts/retro/session-retro-2.md": other_session},
+    )
     write_retro_adapter(repo, include_summary_path=False)
     (repo / ".agents" / "retro-adapter.yaml").write_text(
         (repo / ".agents" / "retro-adapter.yaml").read_text(encoding="utf-8")
         + "summary_path: null\n",
         encoding="utf-8",
     )
-    output_dir = repo / "charness-artifacts" / "retro"
-    undated = output_dir / "session-retro-2.md"
-    other_session = "# Other session\n\nThis content must survive.\n"
-    undated.write_text(other_session, encoding="utf-8")
-    subprocess.run(["git", "init", "--quiet", str(repo)], check=True)
-    subprocess.run(["git", "-C", str(repo), "add", str(undated.relative_to(repo))], check=True)
-    tracked = subprocess.run(
-        ["git", "-C", str(repo), "ls-files", "--error-unmatch", str(undated.relative_to(repo))],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    assert tracked.stdout.strip() == str(undated.relative_to(repo))
+    undated = repo / "charness-artifacts" / "retro" / "session-retro-2.md"
     markdown_file = repo / "new-session.md"
     markdown_file.write_text(
         "# Session Retro 2\n\n"

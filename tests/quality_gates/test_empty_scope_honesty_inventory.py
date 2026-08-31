@@ -9,10 +9,11 @@ measures.
 """
 from __future__ import annotations
 
-import subprocess
 from pathlib import Path
 
 import yaml
+
+from tests.quality_gates.git_fixture_support import init_git_repo
 
 from .support import ROOT, run_script
 
@@ -101,7 +102,7 @@ def test_the_real_repo_run_is_a_reading_surface_not_a_gate(tmp_path: Path) -> No
 
     repo = tmp_path / "repo"
     (repo / "scripts").mkdir(parents=True)
-    subprocess.run(["git", "init", "-q"], cwd=repo, check=True, capture_output=True)
+    init_git_repo(repo)
     (repo / "scripts" / "check_liar.py").write_text(
         "import argparse\n"
         "p = argparse.ArgumentParser()\n"

@@ -9,6 +9,7 @@ import yaml
 
 from runtime_bootstrap import import_repo_module
 from skills.public.critique.scripts.verification_retry import build_retry_key
+from tests.quality_gates.support import run_script
 
 ROOT = Path(__file__).resolve().parents[1]
 _export_plugin = import_repo_module(__file__, "scripts.export_plugin")
@@ -84,14 +85,7 @@ def filled_in_template(template: str) -> str:
     )
 
 
-def run_script(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        ["python3", *args],
-        cwd=cwd or ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+
 
 
 def test_critique_scaffold_reports_validator_and_template(tmp_path: Path) -> None:

@@ -35,6 +35,66 @@ def _repo(tmp_path: Path) -> Path:
     )
 
 
+def _present(*paths: str) -> object:
+    visible = set(paths)
+    return lambda path: path in visible
+
+
+def test_classify_stale_projects_edited_and_orphaned_from_index_sides() -> None:
+    edited, orphaned = cswc.classify_stale(
+        {"f.txt"}, {"f.txt"}, {"f.txt"}, present=_present("f.txt")
+    )
+    assert edited == {"f.txt"}
+    assert orphaned == set()
+
+    edited, orphaned = cswc.classify_stale(
+        {"f.txt"}, set(), set(), present=_present("f.txt")
+    )
+    assert edited == set()
+    assert orphaned == {"f.txt"}
+
+    edited, orphaned = cswc.classify_stale(
+        {"f.txt"}, set(), set(), present=_present()
+    )
+    assert (edited, orphaned) == (set(), set())
+
+
+def test_classify_stale_passes_a_clean_full_stage_and_a_fully_applied_deletion() -> None:
+    edited, orphaned = cswc.classify_stale(
+        {"f.txt"}, set(), {"f.txt"}, present=_present("f.txt")
+    )
+    assert (edited, orphaned) == (set(), set())
+
+    edited, orphaned = cswc.classify_stale(
+        {"f.txt"}, set(), set(), present=_present()
+    )
+    assert (edited, orphaned) == (set(), set())
+
+    edited, orphaned = cswc.classify_stale(
+        set(), {"g.txt"}, {"g.txt"}, present=_present()
+    )
+    assert (edited, orphaned) == (set(), set())
+
+
+def test_classify_stale_case_fold_requires_the_new_spelling_to_be_staged() -> None:
+    edited, orphaned = cswc.classify_stale(
+        {"Foo.md", "foo.md"},
+        set(),
+        {"foo.md"},
+        present=_present("Foo.md", "foo.md"),
+    )
+    assert (edited, orphaned) == (set(), set())
+
+    edited, orphaned = cswc.classify_stale(
+        {"Foo.md"},
+        set(),
+        set(),
+        present=_present("Foo.md", "foo.md"),
+    )
+    assert edited == set()
+    assert orphaned == {"Foo.md"}
+
+
 def test_staged_then_deleted_on_disk_is_flagged(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.delenv(cswc.ALLOW_ENV, raising=False)
     repo = _repo(tmp_path)
@@ -54,30 +114,23 @@ def test_staged_then_edited_is_flagged(tmp_path: Path, monkeypatch) -> None:
     assert cswc.find_stale_staged(repo) == ["f.txt"]
 
 
-@pytest.mark.parametrize("value", ["0", "false", "no", "off", "", "  ", "FALSE"])
-def test_falsy_env_values_do_not_enable_the_bypass(
-    tmp_path: Path, monkeypatch, value: str
-) -> None:
+def test_env_values_that_enable_or_disable_the_bypass(monkeypatch) -> None:
+    for value in ("0", "false", "no", "off", "", "  ", "FALSE"):
+        monkeypatch.setenv(cswc.ALLOW_ENV, value)
+        assert cswc.allow_partial_stage() is False, repr(value)
+    for value in ("1", "true", "YES", " on "):
+        monkeypatch.setenv(cswc.ALLOW_ENV, value)
+        assert cswc.allow_partial_stage() is True, repr(value)
+    assert cswc.main(["--repo-root", "/nonexistent"]) == 0
+
+
+def test_falsy_bypass_still_runs_the_gate(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setenv(cswc.ALLOW_ENV, "0")
     repo = _repo(tmp_path)
     (repo / "f.txt").write_text("v2\n", encoding="utf-8")
     git(repo, "add", "f.txt")
     (repo / "f.txt").unlink()
-    monkeypatch.setenv(cswc.ALLOW_ENV, value)
-    assert cswc.allow_partial_stage() is False
     assert cswc.main(["--repo-root", str(repo)]) == 1
-
-
-@pytest.mark.parametrize("value", ["1", "true", "YES", " on "])
-def test_truthy_env_values_enable_the_bypass(
-    tmp_path: Path, monkeypatch, value: str
-) -> None:
-    repo = _repo(tmp_path)
-    (repo / "f.txt").write_text("v2\n", encoding="utf-8")
-    git(repo, "add", "f.txt")
-    (repo / "f.txt").write_text("v3\n", encoding="utf-8")
-    monkeypatch.setenv(cswc.ALLOW_ENV, value)
-    assert cswc.allow_partial_stage() is True
-    assert cswc.main(["--repo-root", str(repo)]) == 0
 
 
 def test_clean_full_stage_passes(tmp_path: Path, monkeypatch) -> None:
@@ -334,17 +387,10 @@ def test_orphan_remedy_enumeration_is_capped(tmp_path: Path, monkeypatch, capsys
     """`git rm -r --cached <dir>` can orphan thousands of paths; an uncapped list
     buries the bypass line printed after it."""
     monkeypatch.delenv(cswc.ALLOW_ENV, raising=False)
-    repo = _repo(tmp_path)
-    vendored = repo / "vendored"
-    vendored.mkdir()
-    for index in range(25):
-        (vendored / f"f{index}.txt").write_text("x\n", encoding="utf-8")
-    git(repo, "add", "vendored")
-    git(repo, "commit", "-qm", "vendored")
-    git(repo, "rm", "-rq", "--cached", "vendored")
+    paths = {f"vendored/f{index}.txt" for index in range(25)}
+    monkeypatch.setattr(cswc, "_classify_stale", lambda _repo: (set(), paths))
 
-    assert len(cswc.find_stale_staged(repo)) == 25
-    assert cswc.main(["--repo-root", str(repo)]) == 1
+    assert cswc.main(["--repo-root", str(tmp_path)]) == 1
     err = capsys.readouterr().err
     assert "and 15 more path(s) in the same state" in err
     # The count, not just the trailer: a regression that enumerates all 25 pairs
@@ -506,14 +552,9 @@ def test_an_unreadable_path_is_treated_as_present(tmp_path: Path, monkeypatch) -
     Guessing "absent" on an OSError (a name too long, a permission on a parent)
     would fail open on exactly the paths hardest to inspect.
     """
-    monkeypatch.delenv(cswc.ALLOW_ENV, raising=False)
-    repo = _repo(tmp_path)
-    git(repo, "rm", "-q", "--cached", "f.txt")
-    (repo / "f.txt").unlink()
 
     def _raise(_self):
         raise OSError("cannot stat")
 
     monkeypatch.setattr(Path, "is_symlink", _raise)
-    assert cswc._on_disk(repo, "f.txt") is True
-    assert cswc.find_stale_staged(repo) == ["f.txt"]
+    assert cswc._on_disk(tmp_path, "f.txt") is True

@@ -35,12 +35,11 @@ with a property their callers supply.
 from __future__ import annotations
 
 import subprocess
-import sys
 from pathlib import Path
 
 import pytest
 
-from .support import ROOT
+from .support import run_script
 
 # Literal, so `suggest_mutation_coverage_command` can map these tests to their sources.
 READERS = (
@@ -81,11 +80,7 @@ def _repo(tmp_path: Path, adapter: str | None) -> Path:
 
 
 def _run(rel: str, repo: Path) -> subprocess.CompletedProcess:
-    return subprocess.run(
-        [sys.executable, str(ROOT / rel), "--repo-root", str(repo)],
-        capture_output=True,
-        text=True,
-    )
+    return run_script(rel, "--repo-root", str(repo))
 
 
 @pytest.mark.parametrize("rel", READERS, ids=[Path(r).stem for r in READERS])

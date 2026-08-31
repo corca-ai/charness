@@ -21,12 +21,11 @@ says otherwise. The flag was printed, not used.
 from __future__ import annotations
 
 import subprocess
-import sys
 from pathlib import Path
 
 import pytest
 
-from .support import ROOT
+from .support import run_script
 
 # Literal, so the coverage mapper can bind these tests to their sources by name.
 MAP_SOURCES = "skills/public/narrative/scripts/map_sources.py"
@@ -59,11 +58,7 @@ def _repo(tmp_path: Path, name: str, adapter: str | None) -> Path:
 
 
 def _run(rel: str, repo: Path) -> subprocess.CompletedProcess:
-    return subprocess.run(
-        [sys.executable, str(ROOT / rel), "--repo-root", str(repo)],
-        capture_output=True,
-        text=True,
-    )
+    return run_script(rel, "--repo-root", str(repo))
 
 
 @pytest.mark.parametrize("version", ["9", "!!int 9"], ids=["unspeakable", "unparseable"])

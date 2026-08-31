@@ -1,13 +1,11 @@
 from __future__ import annotations
 
-import subprocess
-
 import yaml
 
 from scripts.adapter_lib import load_yaml_file
 from scripts.critique_adapter_lib import validate_adapter_data
 
-from .support import ROOT
+from .support import ROOT, run_script
 
 SHARED_REVIEW = ROOT / "skills" / "shared" / "references" / "fresh-eye-subagent-review.md"
 CRITIQUE_DIR = ROOT / "skills" / "public" / "critique"
@@ -118,12 +116,7 @@ def test_live_critique_adapter_pins_codex_high_leverage_default() -> None:
 
 
 def test_critique_init_adapter_scaffolds_reviewer_tiers(tmp_path) -> None:
-    result = subprocess.run(
-        ["python3", str(INIT_ADAPTER), "--repo-root", str(tmp_path)],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    result = run_script(str(INIT_ADAPTER), "--repo-root", str(tmp_path))
     assert result.returncode == 0, result.stderr
     raw = load_yaml_file(tmp_path / ".agents" / "critique-adapter.yaml")
     data, errors, _ = validate_adapter_data(raw if isinstance(raw, dict) else {}, tmp_path)
@@ -140,12 +133,7 @@ def test_critique_init_adapter_scaffolds_reviewer_tiers(tmp_path) -> None:
 
 
 def test_critique_init_adapter_scaffold_lives_in_template_asset(tmp_path) -> None:
-    result = subprocess.run(
-        ["python3", str(INIT_ADAPTER), "--repo-root", str(tmp_path)],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    result = run_script(str(INIT_ADAPTER), "--repo-root", str(tmp_path))
     assert result.returncode == 0, result.stderr
     assert (tmp_path / ".agents" / "critique-adapter.yaml").read_text(
         encoding="utf-8"
@@ -153,16 +141,10 @@ def test_critique_init_adapter_scaffold_lives_in_template_asset(tmp_path) -> Non
 
 
 def test_missing_critique_adapter_does_not_infer_host_specific_tier(tmp_path) -> None:
-    result = subprocess.run(
-        [
-            "python3",
-            str(CRITIQUE_DIR / "scripts" / "resolve_adapter.py"),
-            "--repo-root",
-            str(tmp_path),
-        ],
-        capture_output=True,
-        text=True,
-        check=False,
+    result = run_script(
+        str(CRITIQUE_DIR / "scripts" / "resolve_adapter.py"),
+        "--repo-root",
+        str(tmp_path),
     )
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)

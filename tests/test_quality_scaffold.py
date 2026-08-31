@@ -8,6 +8,7 @@ from pathlib import Path
 import yaml
 
 from runtime_bootstrap import import_repo_module
+from tests.quality_gates.support import run_script
 
 ROOT = Path(__file__).resolve().parents[1]
 _export_plugin = import_repo_module(__file__, "scripts.export_plugin")
@@ -37,16 +38,6 @@ REQUIRED_HEADINGS = (
     "## Recommended Next Quality Moves",
     "## History",
 )
-
-
-def run_script(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        ["python3", *args],
-        cwd=cwd or ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
 
 
 def scaffold_payload(repo: Path) -> dict[str, object]:

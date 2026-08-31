@@ -9,7 +9,9 @@ from types import ModuleType, SimpleNamespace
 import pytest
 import yaml
 
-from .support import ROOT
+from tests.quality_gates.repo_shapes import install_committed_repo
+
+from .support import ROOT, run_script
 
 SCRIPT = ROOT / "skills" / "public" / "quality" / "scripts" / "inventory_structural_waste.py"
 LIB = ROOT / "skills" / "public" / "quality" / "scripts" / "structural_waste_lib.py"
@@ -30,13 +32,11 @@ def _write(path: Path, text: str) -> None:
 
 
 def _run_json(repo: Path) -> dict:
-    result = subprocess.run(
-        [sys.executable, str(SCRIPT), "--repo-root", str(repo), "--detail"],
-        cwd=ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
+    result = run_script(str(SCRIPT), "--repo-root", str(repo), "--detail", cwd=ROOT)
+    if result.returncode != 0:
+        raise subprocess.CalledProcessError(
+            result.returncode, [sys.executable, str(SCRIPT)], result.stdout, result.stderr
+        )
     return yaml.safe_load(result.stdout)
 
 
@@ -141,13 +141,11 @@ def test_structural_waste_does_not_flag_visible_prefilter(tmp_path: Path) -> Non
 
 
 def test_structural_waste_skips_worktree_deleted_tracked_source(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
-    source = repo / "scripts" / "deleted.py"
-    _write(source, "import ast\nast.parse('x')\n")
-    subprocess.run(["git", "add", "scripts/deleted.py"], cwd=repo, check=True)
-    source.unlink()
+    repo = install_committed_repo(
+        tmp_path / "repo",
+        {"scripts/deleted.py": "import ast\nast.parse('x')\n"},
+    )
+    (repo / "scripts" / "deleted.py").unlink()
 
     payload = _run_json(repo)
 
@@ -249,13 +247,8 @@ def test_structural_waste_text_output_prints_intra_test_reread(tmp_path: Path) -
         + "\n",
     )
 
-    result = subprocess.run(
-        [sys.executable, str(SCRIPT), "--repo-root", str(repo)],
-        cwd=ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
+    result = run_script(str(SCRIPT), "--repo-root", str(repo), cwd=ROOT)
+    assert result.returncode == 0, result.stderr
 
     assert "intra-test repeated-read candidate(s)" in result.stdout
     assert "  reread tests/test_dup.py :: skills/demo/SKILL.md (x2)" in result.stdout
@@ -307,13 +300,8 @@ def test_structural_waste_intra_test_read_normalizes_path_forms(tmp_path: Path) 
 def test_structural_waste_text_output_carries_interpretation(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
-    result = subprocess.run(
-        [sys.executable, str(SCRIPT), "--repo-root", str(repo)],
-        cwd=ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
+    result = run_script(str(SCRIPT), "--repo-root", str(repo), cwd=ROOT)
+    assert result.returncode == 0, result.stderr
 
     assert "Structural waste inventory" in result.stdout
     assert "advisory structural signal, not a refactor mandate" in result.stdout
@@ -334,13 +322,8 @@ def test_structural_waste_text_output_prints_findings_and_candidates(tmp_path: P
         "from pathlib import Path\nimport ast\nfor path in Path('.').rglob('*.py'):\n    ast.parse(path.read_text())\n",
     )
 
-    result = subprocess.run(
-        [sys.executable, str(SCRIPT), "--repo-root", str(repo)],
-        cwd=ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
+    result = run_script(str(SCRIPT), "--repo-root", str(repo), cwd=ROOT)
+    assert result.returncode == 0, result.stderr
 
     assert "ADVISORY duplicate_discovery" in result.stdout
     assert "  duplicate .githooks/pre-push::git_hook" in result.stdout
@@ -370,8 +353,6 @@ def test_structural_waste_helper_edges(tmp_path: Path, monkeypatch: pytest.Monke
     lib = _load_module(LIB, "structural_waste_lib_edges_test")
     repo = tmp_path / "repo"
     repo.mkdir()
-    tracked = SimpleNamespace(returncode=0, stdout=b"scripts/a.py\0")
-    monkeypatch.setattr(lib.subprocess, "run", lambda *_args, **_kwargs: tracked)
     _write(repo / "scripts" / "a.py", "print('a')\n")
 
     assert lib._tracked_files(repo) == [repo / "scripts" / "a.py"]
@@ -406,14 +387,13 @@ def test_a_test_file_deleted_but_not_yet_staged_does_not_crash_the_gate(tmp_path
     it could read.
     """
     repo = tmp_path / "repo"
-    _write(repo / "tests" / "quality_gates" / "test_gone.py", "X = 1\n")
-    _write(repo / "tests" / "quality_gates" / "test_kept.py", "Y = 2\n")
-    for command in (
-        ["git", "init", "-q"],
-        ["git", "add", "-A"],
-        ["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-qm", "seed"],
-    ):
-        subprocess.run(command, cwd=repo, check=True, capture_output=True)
+    install_committed_repo(
+        repo,
+        {
+            "tests/quality_gates/test_gone.py": "X = 1\n",
+            "tests/quality_gates/test_kept.py": "Y = 2\n",
+        },
+    )
     (repo / "tests" / "quality_gates" / "test_gone.py").unlink()
 
     payload = _run_json(repo)

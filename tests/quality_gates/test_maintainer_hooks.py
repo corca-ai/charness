@@ -10,6 +10,7 @@ from pathlib import Path
 import pytest
 
 from runtime_bootstrap import import_repo_module
+from tests.quality_gates.git_fixture_support import init_git_repo
 
 from .support import ROOT
 
@@ -36,7 +37,7 @@ def _seed_source_repo(tmp_path: Path, pre_push_text: str = PRE_PUSH_HOOK_TEXT) -
     for name in ("pre-commit", "commit-msg"):
         shutil.copy2(ROOT / ".githooks" / name, repo / ".githooks" / name)
     (repo / ".githooks" / "pre-push").write_text(pre_push_text, encoding="utf-8")
-    _git(repo, "init")
+    init_git_repo(repo)
     _git(repo, "config", "core.hooksPath", str(repo / ".githooks"))
     return repo
 
@@ -64,7 +65,7 @@ def test_install_git_hooks_sets_core_hookspath(tmp_path: Path) -> None:
     shutil.copy2(ROOT / "scripts" / "install-git-hooks.sh", repo / "scripts" / "install-git-hooks.sh")
     for name in ("pre-commit", "commit-msg", "pre-push"):
         shutil.copy2(ROOT / ".githooks" / name, repo / ".githooks" / name)
-    _git(repo, "init")
+    init_git_repo(repo)
 
     result = subprocess.run(
         ["bash", "scripts/install-git-hooks.sh"],
@@ -86,7 +87,7 @@ def test_install_git_hooks_does_not_make_sourced_helpers_executable(tmp_path: Pa
     for name in ("pre-commit", "commit-msg", "pre-push", "runtime-env.sh"):
         shutil.copy2(ROOT / ".githooks" / name, repo / ".githooks" / name)
     (repo / ".githooks/runtime-env.sh").chmod(0o644)
-    _git(repo, "init")
+    init_git_repo(repo)
 
     result = subprocess.run(
         ["bash", "scripts/install-git-hooks.sh"], cwd=repo,
@@ -103,12 +104,12 @@ def test_install_git_hooks_materializes_consumer_commit_msg_hook(tmp_path: Path)
     source = tmp_path / "source"
     consumer = tmp_path / "consumer"
     (source / "scripts").mkdir(parents=True)
-    (consumer / ".git").mkdir(parents=True)
+    consumer.mkdir(parents=True)
     shutil.copy2(ROOT / "scripts" / "install-git-hooks.sh", source / "scripts" / "install-git-hooks.sh")
     checker = source / "scripts" / "check_issue_closeout_commit_msg.py"
     checker.write_text("#!/usr/bin/env python3\nprint('checker')\n", encoding="utf-8")
     checker.chmod(0o755)
-    _git(consumer, "init")
+    init_git_repo(consumer)
 
     result = subprocess.run(
         ["bash", str(source / "scripts" / "install-git-hooks.sh"), "--repo-root", str(consumer)],
@@ -163,7 +164,7 @@ def test_hook_runtime_clears_git_discovery_for_child_repositories(tmp_path: Path
     repo = tmp_path / "repo"
     (repo / ".githooks").mkdir(parents=True)
     shutil.copy2(ROOT / ".githooks" / "runtime-env.sh", repo / ".githooks" / "runtime-env.sh")
-    _git(repo, "init", "-q")
+    init_git_repo(repo)
     child = repo / "child"
     child.mkdir()
 

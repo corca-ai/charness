@@ -6,26 +6,22 @@ from pathlib import Path
 
 import yaml
 
+from .support import run_script
+
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts" / "validate_attention_state_visibility.py"
 
 
 def _run(repo: Path, declaration: Path, scan_root: Path) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        [
-            "python3",
-            str(SCRIPT),
-            "--repo-root",
-            str(repo),
-            "--declaration-path",
-            str(declaration),
-            "--scan-root",
-            str(scan_root),
-        ],
+    return run_script(
+        str(SCRIPT),
+        "--repo-root",
+        str(repo),
+        "--declaration-path",
+        str(declaration),
+        "--scan-root",
+        str(scan_root),
         cwd=ROOT,
-        text=True,
-        capture_output=True,
-        check=False,
     )
 
 
@@ -178,13 +174,7 @@ def test_default_paths_support_exported_plugin_layout(tmp_path: Path) -> None:
         },
     )
 
-    result = subprocess.run(
-        ["python3", str(SCRIPT), "--repo-root", str(repo)],
-        cwd=ROOT,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
+    result = run_script(str(SCRIPT), "--repo-root", str(repo), cwd=ROOT)
 
     assert result.returncode == 0, result.stderr
     # The retired sentence carried the detected-file count; `detected_file_count`

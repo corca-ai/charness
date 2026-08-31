@@ -3,6 +3,8 @@ from __future__ import annotations
 import subprocess
 from pathlib import Path
 
+from tests.quality_gates.repo_shapes import replace_with_committed_repo
+
 from .support import SETUP_RESOLVE_ADAPTER, inspect_setup_repo
 
 
@@ -12,12 +14,7 @@ def _make_active_worktrees(repo: Path, count: int) -> None:
     `count` is the total number of worktrees reported by `git worktree list`
     (so 2 means the main repo plus one linked worktree).
     """
-    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
-    subprocess.run(
-        ["git", "-c", "user.email=t@e", "-c", "user.name=t", "commit", "--allow-empty", "-m", "init", "-q"],
-        cwd=repo,
-        check=True,
-    )
+    replace_with_committed_repo(repo, message="init")
     for index in range(count - 1):
         worktree_dir = repo.parent / f"{repo.name}-wt-{index}"
         subprocess.run(

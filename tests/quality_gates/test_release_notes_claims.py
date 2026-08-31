@@ -19,6 +19,7 @@ from pathlib import Path
 
 import pytest
 
+from tests.quality_gates.repo_shapes import replace_with_committed_repo
 from tests.script_loader import load_script_module
 
 from .support import ROOT
@@ -68,14 +69,15 @@ def _fixture_repo(tmp_path: Path) -> Path:
     (repo / ".agents" / "release-adapter.yaml").write_text(
         "version: 1\nrepo: demo\noutput_dir: charness-artifacts/release\n", encoding="utf-8"
     )
-    # A real git repo, because the publish gate derives with
-    # `require_git=True` and counts TRACKED content only. A bare directory
-    # fixture would exercise the glob fallback instead of the path publish
-    # actually takes, and would have hidden that untracked files were being
-    # counted into the shipped-tree claim.
-    _git(repo, "init")
-    _git(repo, "add", "-A")
     return repo
+
+
+def _tree(repo: Path) -> object:
+    root = repo.resolve()
+    allowed = frozenset(
+        path for path in root.rglob("*") if path.is_file() and ".git" not in path.parts
+    )
+    return SURFACES.TrackedReleaseTree(root, allowed)
 
 
 def _git(repo: Path, *args: str) -> None:
@@ -83,25 +85,39 @@ def _git(repo: Path, *args: str) -> None:
 
 
 def _write_tracked(repo: Path, rel: str, text: str) -> Path:
-    """Write a file AND stage it, because only tracked content is in the release.
-
-    Staging is not fixture noise here — it is the property under test. Written
-    without it, these files are untracked, the derivation correctly ignores them,
-    and the test measures nothing.
-    """
     path = repo / rel
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8")
-    _git(repo, "add", "-A")
     return path
 
 
 def _remove_tracked(repo: Path, rel: str) -> None:
     (repo / rel).unlink()
-    _git(repo, "add", "-A")
 
 
 def _derived(repo: Path) -> dict[str, dict[str, object]]:
-    return {str(entry["id"]): entry for entry in SURFACES.derive_surfaces(repo)}
+    return {
+        str(entry["id"]): entry
+        for entry in SURFACES.derive_surfaces(repo, tracked_tree=_tree(repo))
+    }
+
+
+def _render(repo: Path) -> str:
+    return GENERATE.render_block(repo, tracked_tree=_tree(repo))
+
+
+def _audit(notes: Path, repo: Path) -> list:
+    return CLAIMS.audit_notes_file(notes, repo, tracked_tree=_tree(repo))
+
+
+def _preflight(repo: Path, notes: Path, *, target_tag: str = "v0.1.0", **kwargs) -> None:
+    GATE.run_notes_file_preflight(
+        repo,
+        target_tag=target_tag,
+        notes_file=notes,
+        tracked_tree=_tree(repo),
+        **kwargs,
+    )
 
 
 def test_the_surfaces_measure_the_fixture_tree(tmp_path: Path) -> None:
@@ -119,15 +135,16 @@ def test_all_claim_surfaces_share_one_tracked_tree_snapshot(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     repo = _fixture_repo(tmp_path)
+    replace_with_committed_repo(repo)
     calls = 0
-    original = SURFACES.git_list_repo_files
+    original = SURFACES._repo_file_listing.git_list_repo_files
 
     def observed(*args, **kwargs):
         nonlocal calls
         calls += 1
         return original(*args, **kwargs)
 
-    monkeypatch.setattr(SURFACES, "git_list_repo_files", observed)
+    monkeypatch.setattr(SURFACES._repo_file_listing, "git_list_repo_files", observed)
 
     assert len(SURFACES.derive_surfaces(repo)) == len(SURFACES.SURFACES)
     assert calls == 1
@@ -163,23 +180,23 @@ def test_generated_notes_over_the_same_tree_produce_no_finding(tmp_path: Path) -
     repo = _fixture_repo(tmp_path)
     notes = repo / "charness-artifacts" / "release" / "v0.1.0-notes.md"
 
-    GENERATE._do_sync(notes, GENERATE.render_block(repo))
+    GENERATE._do_sync(notes, _render(repo))
 
-    assert CLAIMS.audit_notes_file(notes, repo) == []
+    assert _audit(notes, repo) == []
 
 
 def test_notes_asserting_a_surface_the_tree_does_not_have_are_an_over_claim(tmp_path: Path) -> None:
     """The recorded sentence, in miniature: a digit in prose over a measured zero."""
     repo = _fixture_repo(tmp_path)
     notes = repo / "charness-artifacts" / "release" / "v0.1.0-notes.md"
-    GENERATE._do_sync(notes, GENERATE.render_block(repo))
+    GENERATE._do_sync(notes, _render(repo))
     notes.write_text(
         notes.read_text(encoding="utf-8")
         + "\nTwelve scripts still declare it: {{claim:json-declaring-scripts.count=12}}.\n",
         encoding="utf-8",
     )
 
-    findings = CLAIMS.audit_notes_file(notes, repo)
+    findings = _audit(notes, repo)
 
     assert [finding["kind"] for finding in findings] == ["marker-disagrees"]
     assert findings[0]["direction"] == "over-claim"
@@ -190,12 +207,12 @@ def test_notes_asserting_a_surface_the_tree_does_not_have_are_an_over_claim(tmp_
 def test_notes_omitting_a_surface_the_tree_has_are_an_under_claim(tmp_path: Path) -> None:
     repo = _fixture_repo(tmp_path)
     notes = repo / "charness-artifacts" / "release" / "v0.1.0-notes.md"
-    GENERATE._do_sync(notes, GENERATE.render_block(repo))
+    GENERATE._do_sync(notes, _render(repo))
     text = notes.read_text(encoding="utf-8")
     start = text.index("<!-- claim-surface: repo-shell-gates -->")
     notes.write_text(text[:start] + text[text.index(CLAIMS.BLOCK_END):], encoding="utf-8")
 
-    findings = CLAIMS.audit_notes_file(notes, repo)
+    findings = _audit(notes, repo)
 
     assert [finding["kind"] for finding in findings] == ["surface-omitted"]
     assert findings[0]["direction"] == "under-claim"
@@ -206,7 +223,7 @@ def test_a_hand_edited_derived_block_is_caught_with_its_direction(tmp_path: Path
     repo = _fixture_repo(tmp_path)
     _write_tracked(repo, "scripts/real.py", _JSON_DECLARING)
     notes = repo / "charness-artifacts" / "release" / "v0.1.0-notes.md"
-    GENERATE._do_sync(notes, GENERATE.render_block(repo))
+    GENERATE._do_sync(notes, _render(repo))
 
     # The hand-repair that failed twice: edit the block instead of regenerating.
     # Scoped to one chunk — the fixture's other surfaces also measure 1, and a
@@ -216,7 +233,7 @@ def test_a_hand_edited_derived_block_is_caught_with_its_direction(tmp_path: Path
     end = text.index("<!-- claim-surface: charness-subcommands -->")
     notes.write_text(text[:start] + text[start:end].replace("count: 1", "count: 9") + text[end:], encoding="utf-8")
 
-    findings = CLAIMS.audit_notes_file(notes, repo)
+    findings = _audit(notes, repo)
 
     assert [finding["kind"] for finding in findings] == ["surface-disagrees"]
     assert findings[0]["direction"] == "over-claim"
@@ -229,14 +246,14 @@ def test_an_unknown_surface_or_field_is_unresolvable_rather_than_a_mismatch(tmp_
     does not exist."""
     repo = _fixture_repo(tmp_path)
     notes = repo / "charness-artifacts" / "release" / "v0.1.0-notes.md"
-    GENERATE._do_sync(notes, GENERATE.render_block(repo))
+    GENERATE._do_sync(notes, _render(repo))
     notes.write_text(
         notes.read_text(encoding="utf-8")
         + "\n{{claim:no-such-surface.count=1}} and {{claim:public-skills.median=1}}\n",
         encoding="utf-8",
     )
 
-    findings = CLAIMS.audit_notes_file(notes, repo)
+    findings = _audit(notes, repo)
 
     assert [finding["kind"] for finding in findings] == ["marker-unknown-surface", "marker-unknown-field"]
     assert {finding["direction"] for finding in findings} == {"unresolvable"}
@@ -247,7 +264,7 @@ def test_notes_with_no_derived_block_at_all_are_named_as_such(tmp_path: Path) ->
     notes = repo / "charness-artifacts" / "release" / "v0.1.0-notes.md"
     notes.write_text("# 0.1.0\n\nEverything is fine.\n", encoding="utf-8")
 
-    findings = CLAIMS.audit_notes_file(notes, repo)
+    findings = _audit(notes, repo)
 
     assert [finding["kind"] for finding in findings] == ["missing-derived-block"]
 
@@ -257,7 +274,7 @@ def test_an_unterminated_block_is_malformed_rather_than_read_to_end_of_file(tmp_
     notes = repo / "charness-artifacts" / "release" / "v0.1.0-notes.md"
     notes.write_text(f"# 0.1.0\n\n{CLAIMS.BLOCK_BEGIN}\n\nstill going\n", encoding="utf-8")
 
-    findings = CLAIMS.audit_notes_file(notes, repo)
+    findings = _audit(notes, repo)
 
     assert [finding["kind"] for finding in findings] == ["malformed-derived-block"]
 
@@ -265,14 +282,14 @@ def test_an_unterminated_block_is_malformed_rather_than_read_to_end_of_file(tmp_
 def test_a_surface_described_twice_is_refused_rather_than_last_wins(tmp_path: Path) -> None:
     repo = _fixture_repo(tmp_path)
     notes = repo / "charness-artifacts" / "release" / "v0.1.0-notes.md"
-    GENERATE._do_sync(notes, GENERATE.render_block(repo))
+    GENERATE._do_sync(notes, _render(repo))
     text = notes.read_text(encoding="utf-8")
     chunk_start = text.index("<!-- claim-surface: public-skills -->")
     chunk_end = text.index("<!-- claim-surface: repo-shell-gates -->")
     chunk = text[chunk_start:chunk_end]
     notes.write_text(text[:chunk_start] + chunk + chunk + text[chunk_start:][len(chunk):], encoding="utf-8")
 
-    kinds = [finding["kind"] for finding in CLAIMS.audit_notes_file(notes, repo)]
+    kinds = [finding["kind"] for finding in _audit(notes, repo)]
 
     assert "duplicate-surface-block" in kinds
 
@@ -282,11 +299,11 @@ def test_sync_appends_a_block_without_destroying_authored_prose(tmp_path: Path) 
     notes = repo / "charness-artifacts" / "release" / "v0.1.0-notes.md"
     notes.write_text("# 0.1.0\n\nThe authored part.\n", encoding="utf-8")
 
-    GENERATE._do_sync(notes, GENERATE.render_block(repo))
+    GENERATE._do_sync(notes, _render(repo))
 
     text = notes.read_text(encoding="utf-8")
     assert "The authored part." in text
-    assert CLAIMS.audit_notes_file(notes, repo) == []
+    assert _audit(notes, repo) == []
 
 
 # --- the publish boundary -------------------------------------------------
@@ -295,13 +312,13 @@ def test_sync_appends_a_block_without_destroying_authored_prose(tmp_path: Path) 
 def test_publish_preflight_refuses_notes_the_tree_contradicts(tmp_path: Path) -> None:
     repo = _fixture_repo(tmp_path)
     notes = repo / "charness-artifacts" / "release" / "2026-05-13-v0.1.0-notes.md"
-    GENERATE._do_sync(notes, GENERATE.render_block(repo))
+    GENERATE._do_sync(notes, _render(repo))
     notes.write_text(
         notes.read_text(encoding="utf-8") + "\n{{claim:public-skills.count=99}}\n", encoding="utf-8"
     )
 
     with pytest.raises(SystemExit) as excinfo:
-        GATE.run_notes_file_preflight(repo, target_tag="v0.1.0", notes_file=notes)
+        _preflight(repo, notes)
 
     message = str(excinfo.value)
     assert "over-claim" in message
@@ -318,13 +335,13 @@ def test_publish_preflight_refuses_notes_that_were_correct_when_generated(tmp_pa
     repo = _fixture_repo(tmp_path)
     _write_tracked(repo, "scripts/real.py", _JSON_DECLARING)
     notes = repo / "charness-artifacts" / "release" / "2026-05-13-v0.1.0-notes.md"
-    GENERATE._do_sync(notes, GENERATE.render_block(repo))
-    GATE.run_notes_file_preflight(repo, target_tag="v0.1.0", notes_file=notes)
+    GENERATE._do_sync(notes, _render(repo))
+    _preflight(repo, notes)
 
     _remove_tracked(repo, "scripts/real.py")
 
     with pytest.raises(SystemExit) as excinfo:
-        GATE.run_notes_file_preflight(repo, target_tag="v0.1.0", notes_file=notes)
+        _preflight(repo, notes)
 
     message = str(excinfo.value)
     assert "over-claim" in message
@@ -342,13 +359,13 @@ def test_the_opt_out_covers_an_absent_block_and_not_a_contradicted_claim(tmp_pat
     notes = repo / "charness-artifacts" / "release" / "2026-05-13-v0.1.0-notes.md"
     notes.write_text("# 0.1.0\n\nNo derived block here.\n", encoding="utf-8")
 
-    GATE.run_notes_file_preflight(repo, target_tag="v0.1.0", notes_file=notes)
+    _preflight(repo, notes)
 
     notes.write_text(
         "# 0.1.0\n\nStill {{claim:public-skills.count=99}} skills.\n", encoding="utf-8"
     )
     with pytest.raises(SystemExit):
-        GATE.run_notes_file_preflight(repo, target_tag="v0.1.0", notes_file=notes)
+        _preflight(repo, notes)
 
 
 def test_the_requirement_is_armed_by_default_so_deleting_the_line_re_arms_it(tmp_path: Path) -> None:
@@ -362,14 +379,14 @@ def test_the_requirement_is_armed_by_default_so_deleting_the_line_re_arms_it(tmp
     notes.write_text("# 0.1.0\n\nNo derived block here.\n", encoding="utf-8")
 
     with pytest.raises(SystemExit) as excinfo:
-        GATE.run_notes_file_preflight(repo, target_tag="v0.1.0", notes_file=notes)
+        _preflight(repo, notes)
 
     assert "missing-derived-block" in str(excinfo.value)
 
 
 def _synced_notes(repo: Path, name: str = "2026-05-13-v0.1.0-notes.md") -> Path:
     notes = repo / "charness-artifacts" / "release" / name
-    GENERATE._do_sync(notes, GENERATE.render_block(repo))
+    GENERATE._do_sync(notes, _render(repo))
     return notes
 
 
@@ -389,7 +406,7 @@ def test_publish_preflight_refuses_an_ungrounded_quantity_in_prose(tmp_path: Pat
     )
 
     with pytest.raises(SystemExit) as excinfo:
-        GATE.run_notes_file_preflight(repo, target_tag="v0.1.0", notes_file=notes)
+        _preflight(repo, notes)
 
     message = str(excinfo.value)
     assert "bare-quantity" in message
@@ -410,7 +427,7 @@ def test_publish_preflight_does_not_refuse_on_an_advisory_word_alone(tmp_path: P
         encoding="utf-8",
     )
 
-    GATE.run_notes_file_preflight(repo, target_tag="v0.1.0", notes_file=notes)
+    _preflight(repo, notes)
 
 
 def test_the_refusal_names_the_adapter_key_and_the_remedy(tmp_path: Path) -> None:
@@ -423,7 +440,7 @@ def test_the_refusal_names_the_adapter_key_and_the_remedy(tmp_path: Path) -> Non
     notes.write_text("# 0.1.0\n\nNo derived block here.\n", encoding="utf-8")
 
     with pytest.raises(SystemExit) as excinfo:
-        GATE.run_notes_file_preflight(repo, target_tag="v0.1.0", notes_file=notes)
+        _preflight(repo, notes)
 
     message = str(excinfo.value)
     assert "generate_release_notes.py" in message
@@ -440,16 +457,14 @@ def test_the_opt_out_disarms_prose_containment_as_well_as_the_block(tmp_path: Pa
     notes.write_text("# 0.1.0\n\nTwelve scripts still declare one.\n", encoding="utf-8")
 
     with pytest.raises(SystemExit):
-        GATE.run_notes_file_preflight(repo, target_tag="v0.1.0", notes_file=notes)
+        _preflight(repo, notes)
 
     (repo / ".agents" / "release-adapter.yaml").write_text(
         "version: 1\nrepo: demo\noutput_dir: charness-artifacts/release\n"
         "require_derived_release_claims: false\n",
         encoding="utf-8",
     )
-    _git(repo, "add", "-A")
-
-    GATE.run_notes_file_preflight(repo, target_tag="v0.1.0", notes_file=notes)
+    _preflight(repo, notes)
 
 
 def test_the_claim_arms_run_on_the_resume_lane_too(tmp_path: Path) -> None:
@@ -463,16 +478,15 @@ def test_the_claim_arms_run_on_the_resume_lane_too(tmp_path: Path) -> None:
     claims. This is the test that fails if the lane check comes back."""
     repo = _fixture_repo(tmp_path)
     validated = _synced_notes(repo, "2026-05-14-v0.1.0-notes.md")
-    GATE.run_notes_file_preflight(repo, target_tag="v0.1.0", notes_file=validated, on_resume=True)
+    _preflight(repo, validated, on_resume=True)
 
     # A second, stale draft for the same tag: a real candidate as far as the
     # drafted-notes arm is concerned, and never validated by the prepare.
     stale = repo / "charness-artifacts" / "release" / "2026-05-13-v0.1.0-notes.md"
     stale.write_text("# 0.1.0\n\nTwelve scripts still declare one.\n", encoding="utf-8")
-    _git(repo, "add", "-A")
 
     with pytest.raises(SystemExit):
-        GATE.run_notes_file_preflight(repo, target_tag="v0.1.0", notes_file=stale, on_resume=True)
+        _preflight(repo, stale, on_resume=True)
 
 
 def test_the_remedy_is_not_attached_to_an_unrelated_blocker(tmp_path: Path) -> None:
@@ -491,7 +505,7 @@ def test_the_remedy_is_not_attached_to_an_unrelated_blocker(tmp_path: Path) -> N
     )
 
     with pytest.raises(SystemExit) as excinfo:
-        GATE.run_notes_file_preflight(repo, target_tag="v0.1.0", notes_file=notes)
+        _preflight(repo, notes)
 
     message = str(excinfo.value)
     assert "surface-triage-sweep" in message
@@ -545,7 +559,7 @@ def test_an_items_level_over_claim_is_named_over_claim(tmp_path: Path) -> None:
     text = notes.read_text(encoding="utf-8")
     notes.write_text(text.replace("- check-demo.sh", "- check-invented.sh"), encoding="utf-8")
 
-    findings = CLAIMS.audit_notes_file(notes, repo)
+    findings = _audit(notes, repo)
 
     assert [f["kind"] for f in findings] == ["surface-disagrees"]
     assert findings[0]["direction"] == "over-claim"
@@ -558,13 +572,28 @@ def test_an_untracked_file_is_not_counted_into_the_shipped_tree(tmp_path: Path) 
     exists to refuse: notes synced in that worktree assert a skill the release
     does not contain."""
     repo = _fixture_repo(tmp_path)
-    before = _derived(repo)["public-skills"]["items"]
+    replace_with_committed_repo(repo)
+    before = [
+        entry["items"]
+        for entry in SURFACES.derive_surfaces(repo, require_git=True)
+        if entry["id"] == "public-skills"
+    ][0]
 
     scratch = repo / "skills" / "public" / "scratch"
     scratch.mkdir(parents=True)
     (scratch / "SKILL.md").write_text("# scratch\n", encoding="utf-8")
 
-    assert _derived(repo)["public-skills"]["items"] == before
+    after = [
+        entry["items"]
+        for entry in SURFACES.derive_surfaces(repo, require_git=True)
+        if entry["id"] == "public-skills"
+    ][0]
+    assert after == before
 
     _git(repo, "add", "-A")
-    assert "scratch" in _derived(repo)["public-skills"]["items"]
+    shipped = [
+        entry["items"]
+        for entry in SURFACES.derive_surfaces(repo, require_git=True)
+        if entry["id"] == "public-skills"
+    ][0]
+    assert "scratch" in shipped

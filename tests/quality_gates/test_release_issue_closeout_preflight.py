@@ -10,7 +10,7 @@ import pytest
 
 from .issue_closeout_support import bug_closeout_body, load_verify_module
 from .release_publish_fixtures import _seed_publish_release_repo, _write_exec
-from .seeding_support import load_module
+from .seeding_support import _install_empty_git_dir, load_module
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -215,7 +215,7 @@ def test_release_generated_final_message_refuses_unintended_close_keyword(tmp_pa
 def test_release_generated_final_message_passes_commit_msg_gate(tmp_path: Path) -> None:
     release_closeout = _load_release_closeout_module()
     commit_msg_checker = _load_commit_msg_checker()
-    subprocess.run(["git", "init", "-b", "main"], cwd=tmp_path, check=True, capture_output=True, text=True)
+    _install_empty_git_dir(tmp_path, branch="main")
     payload = _release_payload(
         classification="feature",
         carrier_body=_feature_closeout_body(

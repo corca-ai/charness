@@ -22,7 +22,7 @@ from pathlib import Path
 
 import pytest
 
-from .support import ROOT
+from .support import ROOT, run_script
 
 # `(skill, declared_output_dir, default_path_fragment)`.
 SCAFFOLDS = (
@@ -71,11 +71,7 @@ def _repo(tmp_path: Path, skill: str, adapter: str | None) -> Path:
 
 
 def _run(skill: str, repo: Path) -> subprocess.CompletedProcess:
-    return subprocess.run(
-        [sys.executable, str(_script(skill)), "--repo-root", str(repo), "--title", "probe"],
-        capture_output=True,
-        text=True,
-    )
+    return run_script(str(_script(skill)), "--repo-root", str(repo), "--title", "probe")
 
 
 @pytest.mark.parametrize(("skill", "declared", "default"), SCAFFOLDS, ids=[s[0] for s in SCAFFOLDS])

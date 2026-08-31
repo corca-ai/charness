@@ -55,15 +55,10 @@ CARRIER = load_script_module(
 )
 ZERO = "0" * 40
 
-# The exact wrapped shape that closed #626: the close verb ends one line and the ref
-# starts the next, so the ref line begins with `#`.
-BODY_626 = (
-    "test(lesson-loop): prove the S3 claims that had no failing test\n"
-    "\n"
-    "S6 rather than S3 because it changes the disposition GRAMMAR, and before S7\n"
-    "rather than after because S7 closes\n"
-    "#626/#627/#631 on the strength of that gate.\n"
-)
+# Close verb on one line, issue ref starting the next with `#`. Slash is not
+# GitHub's comma grammar, so only the first number is a close target.
+WRAPPED_HASH_REF = "closes\n#42/#43/#44 on the strength of that gate.\n"
+REFUSED_CLOSE = "Closes #42.\n"
 
 BODY_VALID_CLOSEOUT = "\n\n".join(
     [
@@ -121,6 +116,22 @@ def test_head_reads_the_checked_out_commit_from_git_files(
     assert git_verbs == []
 
 
+def _finding(repo: Path, body: str, files: dict[str, str] | None = None) -> dict | None:
+    """Classify one already-observed stored message and tree, without a unique commit."""
+    planted = files or {}
+    verify = CARRIER._load_issue_verify_closeout()
+    return GUARD._judge(
+        repo,
+        "corca-ai/charness",
+        "a" * 40,
+        CARRIER,
+        verify,
+        body=body,
+        list_paths=lambda _root: list(planted),
+        read_file=lambda _root, path: planted[path],
+    )
+
+
 def _run(*args: str, stdin: str | None = None) -> tuple[int, dict]:
     saved = sys.stdin
     if stdin is not None:
@@ -135,9 +146,9 @@ def _run(*args: str, stdin: str | None = None) -> tuple[int, dict]:
 # --- the regression: what the guard must refuse -----------------------------------
 
 
-def test_refuses_the_wrapped_close_keyword_that_closed_626(repo: Path) -> None:
+def test_refuses_a_close_keyword_whose_issue_ref_starts_a_hash_line(repo: Path) -> None:
     base = _head(repo)
-    head = _commit(repo, BODY_626, "work.txt")
+    head = _commit(repo, WRAPPED_HASH_REF, "work.txt")
 
     code, payload = _run("--repo-root", str(repo), "--range", f"{base}..{head}")
 
@@ -145,58 +156,34 @@ def test_refuses_the_wrapped_close_keyword_that_closed_626(repo: Path) -> None:
     assert payload["status"] == "refused"
     finding = payload["close_keyword_commits"][0]
     assert finding["commit"] == head
-    # 626 and only 626: the `/` separator is not GitHub's comma grammar, so #627 and
-    # #631 never linked and a guard that claimed them would be over-reporting the
-    # blast radius of the very act it is describing.
-    assert finding["numbers"] == [626]
+    assert finding["numbers"] == [42]
     assert finding["ok"] is False
     assert "not undoable" in payload["summary"]
-    # The remediation has to name the not-intended branch, because that is the branch
-    # #626 was on: the fix is rewording, not manufacturing a closeout ledger for an
-    # issue the author never meant to close.
     assert "reword" in payload["remediation"]
+    assert GUARD.cli(["--repo-root", str(repo), "--range", f"{base}..{head}"]) == 1
 
 
 def test_a_close_keyword_with_a_valid_closeout_ledger_passes(repo: Path) -> None:
-    base = _head(repo)
-    head = _commit(repo, BODY_VALID_CLOSEOUT, "work.txt")
-
-    code, payload = _run("--repo-root", str(repo), "--range", f"{base}..{head}")
-
-    assert code == 0, payload
-    assert payload["status"] == "verified"
-    assert payload["close_keyword_commits"][0]["numbers"] == [42]
+    finding = _finding(repo, BODY_VALID_CLOSEOUT)
+    assert finding is not None
+    assert finding["ok"] is True
+    assert finding["numbers"] == [42]
 
 
 def test_a_range_with_no_close_keyword_is_not_applicable(repo: Path) -> None:
-    base = _head(repo)
-    head = _commit(repo, "docs: ordinary commit about issue 42\n", "work.txt")
-
-    code, payload = _run("--repo-root", str(repo), "--range", f"{base}..{head}")
-
-    assert code == 0
-    assert payload["status"] == "not_applicable"
-    assert payload["commits_scanned"] == 1
+    assert _finding(repo, "docs: ordinary commit about issue 42\n") is None
 
 
 def test_a_close_keyword_qualified_to_another_repo_is_not_a_target(repo: Path) -> None:
-    base = _head(repo)
-    head = _commit(repo, "fix: closes acme/other-repo#77 upstream\n", "work.txt")
-
-    code, payload = _run("--repo-root", str(repo), "--range", f"{base}..{head}")
-
     # GitHub cannot close a foreign issue from here, so no LEDGER floor applies and
     # the push is not refused: folding it in would refuse over an impossible close
     # while pushing the author toward the unqualified form that would close THIS
     # repo's #77.
-    assert code == 0
-    # Without this the assertion above would also hold if range resolution had
-    # scanned nothing at all, which is the one way a green verdict lies.
-    assert payload["commits_scanned"] == 1
+    finding = _finding(repo, "fix: closes acme/other-repo#77 upstream\n")
+    assert finding is not None
     # The commit IS still carried into the finding, with no ledger report, because
     # protected-target authorization has to see a foreign target to refuse it --
     # dropping the ref before authorization ran was a measured escape.
-    finding = payload["close_keyword_commits"][0]
     assert finding["numbers"] == [77]
     assert finding["reports"] == []
     assert finding["closeout_authorization"]["authorized"] is True
@@ -295,19 +282,19 @@ def test_parses_the_pre_push_stdin_grammar_and_drops_malformed_lines() -> None:
 
 def test_reads_the_range_from_stdin_and_refuses(repo: Path) -> None:
     base = _head(repo)
-    head = _commit(repo, BODY_626, "work.txt")
+    head = _commit(repo, REFUSED_CLOSE, "work.txt")
 
     code, payload = _run(
         "--repo-root", str(repo), stdin=f"refs/heads/main {head} refs/heads/main {base}\n"
     )
 
     assert code == 1
-    assert payload["close_keyword_commits"][0]["numbers"] == [626]
+    assert payload["close_keyword_commits"][0]["numbers"] == [42]
 
 
 def test_a_commit_reachable_from_two_pushed_refs_is_judged_once(repo: Path) -> None:
     base = _head(repo)
-    head = _commit(repo, BODY_626, "work.txt")
+    head = _commit(repo, REFUSED_CLOSE, "work.txt")
     _git(repo, "branch", "mirror", head)
 
     code, payload = _run(
@@ -338,22 +325,19 @@ def test_no_refs_on_stdin_is_reported_as_no_refs(repo: Path) -> None:
 def test_the_carrier_now_sees_a_close_keyword_whose_ref_line_starts_with_hash(
     tmp_path: Path,
 ) -> None:
-    _git(tmp_path, "init", "-b", "main")
     message = tmp_path / "message.txt"
-    message.write_text(BODY_626, encoding="utf-8")
-
-    result = run_loaded_script_main(
-        "check_issue_closeout_commit_msg.py",
-        CARRIER,
-        "--repo-root",
-        str(tmp_path),
-        "--commit-msg-file",
-        str(message),
+    message.write_text(WRAPPED_HASH_REF, encoding="utf-8")
+    report = CARRIER.evaluate(
+        tmp_path,
+        message,
+        "corca-ai/charness",
+        list_paths=lambda _root: [],
+        read_file=lambda _root, path: "",
     )
-    payload = yaml.safe_load(result.stdout)
+    payload = CARRIER.report_payload(report)
 
-    assert result.returncode == 1, result.stdout
-    assert payload["bare_close_numbers"] == [626]
+    assert report["ok"] is False
+    assert payload["bare_close_numbers"] == [42]
 
 
 def test_the_carrier_scan_text_keeps_both_bodies() -> None:
@@ -368,7 +352,6 @@ def test_the_carrier_scan_text_keeps_both_bodies() -> None:
 
 
 def test_a_git_comment_block_alone_does_not_trigger_the_carrier(tmp_path: Path) -> None:
-    _git(tmp_path, "init", "-b", "main")
     message = tmp_path / "message.txt"
     message.write_text(
         "docs: ordinary commit\n"
@@ -381,22 +364,20 @@ def test_a_git_comment_block_alone_does_not_trigger_the_carrier(tmp_path: Path) 
         "#\tmodified:   scripts/check_issue_closeout_commit_msg.py\n",
         encoding="utf-8",
     )
-
-    result = run_loaded_script_main(
-        "check_issue_closeout_commit_msg.py",
-        CARRIER,
-        "--repo-root",
-        str(tmp_path),
-        "--commit-msg-file",
-        str(message),
+    report = CARRIER.evaluate(
+        tmp_path,
+        message,
+        "corca-ai/charness",
+        list_paths=lambda _root: [],
+        read_file=lambda _root, path: "",
     )
 
     # Honest about its own strength: this arm kills no mutant of the widening, because
     # it also passes with the widening reverted. It constrains a FUTURE edit that
     # widens detection far enough to catch git's own template, which is the realistic
     # shape of a false refusal here. Do not count it as coverage of the repair.
-    assert result.returncode == 0, result.stdout
-    assert yaml.safe_load(result.stdout)["status"] == "not_applicable"
+    assert report["ok"] is True
+    assert report["status"] == "not_applicable"
 
 
 # --- what round 1 of the bounded review found ------------------------------------
@@ -436,18 +417,13 @@ def test_a_classification_declared_only_in_the_artifact_is_honored(repo: Path) -
     #700:` -- fabricating exactly the repair claims a `question` disposition exists to
     refuse, on a commit the deployed commit-msg floor had already passed.
     """
-    base = _head(repo)
-    head = _commit(
+    finding = _finding(
         repo,
         QUESTION_MESSAGE,
-        "work.txt",
-        extra={"charness-artifacts/issue/2026-08-16-issue-700-closeout.md": QUESTION_ARTIFACT},
+        {"charness-artifacts/issue/2026-08-16-issue-700-closeout.md": QUESTION_ARTIFACT},
     )
-
-    code, payload = _run("--repo-root", str(repo), "--range", f"{base}..{head}")
-
-    assert code == 0, payload
-    report = payload["close_keyword_commits"][0]["reports"][0]
+    assert finding is not None and finding["ok"] is True
+    report = finding["reports"][0]
     assert report["classification"] == "question"
     assert report["source_artifact"].endswith("issue-700-closeout.md")
 
@@ -459,13 +435,9 @@ def test_the_same_message_without_the_artifact_is_classified_bug_and_refused(rep
     the floor demands root-cause/prevention claims. Without this arm, the passing case
     above would also pass with the artifact parse deleted entirely.
     """
-    base = _head(repo)
-    head = _commit(repo, QUESTION_MESSAGE, "work.txt")
-
-    code, payload = _run("--repo-root", str(repo), "--range", f"{base}..{head}")
-
-    assert code == 1
-    report = payload["close_keyword_commits"][0]["reports"][0]
+    finding = _finding(repo, QUESTION_MESSAGE)
+    assert finding is not None and finding["ok"] is False
+    report = finding["reports"][0]
     assert report["classification"] == "bug"
     assert report["source_artifact"] is None
     assert "root_cause" in report["missing_fields"]
@@ -480,12 +452,9 @@ def test_every_close_keyword_commit_carries_its_authorization_record(repo: Path)
     no crosswalk, so what is pinned is that the check RAN and its verdict is in the
     payload -- a payload without it cannot be audited after the fact.
     """
-    base = _head(repo)
-    head = _commit(repo, BODY_VALID_CLOSEOUT, "work.txt")
-
-    _, payload = _run("--repo-root", str(repo), "--range", f"{base}..{head}")
-
-    authorization = payload["close_keyword_commits"][0]["closeout_authorization"]
+    finding = _finding(repo, BODY_VALID_CLOSEOUT)
+    assert finding is not None
+    authorization = finding["closeout_authorization"]
     assert "authorized" in authorization
     assert authorization["carrier_source"] == "commit-msg"
 
@@ -572,13 +541,9 @@ def test_local_numbers_is_what_narrows_to_this_repo() -> None:
 
 
 def test_a_gh_dash_close_without_a_ledger_is_refused(repo: Path) -> None:
-    base = _head(repo)
-    head = _commit(repo, "chore: tidy the lane\n\nIncidentally closes GH-700.\n", "work.txt")
-
-    code, payload = _run("--repo-root", str(repo), "--range", f"{base}..{head}")
-
-    assert code == 1
-    assert payload["close_keyword_commits"][0]["numbers"] == [700]
+    finding = _finding(repo, "chore: tidy the lane\n\nIncidentally closes GH-700.\n")
+    assert finding is not None and finding["ok"] is False
+    assert finding["numbers"] == [700]
 
 
 def test_the_creation_arm_bounds_by_the_remote_actually_being_pushed_to(
@@ -655,7 +620,7 @@ def test_a_crash_exits_two_rather_than_the_refusal_code(repo: Path, tmp_path: Pa
     ):
         shutil.copy2(ROOT / "scripts" / name, lonely / name)
     base = _head(repo)
-    head = _commit(repo, BODY_626, "work.txt")
+    head = _commit(repo, "chore: extra commit\n", "work.txt")
 
     result = subprocess.run(
         [sys.executable, str(lonely / "prepush_close_keyword_guard.py"),
@@ -679,29 +644,15 @@ def test_a_commit_that_only_edits_a_closeout_artifact_is_not_a_close(repo: Path)
     GitHub issue" and a remedy telling the author to reword a verb the message does
     not contain.
     """
-    base = _head(repo)
-    _commit(
-        repo,
-        "docs: land the closeout artifact\n",
-        "first.txt",
-        extra={"charness-artifacts/issue/2026-08-16-issue-700-closeout.md": QUESTION_ARTIFACT},
-    )
-    head = _commit(
+    finding = _finding(
         repo,
         "docs: fix a broken link in the #700 closeout artifact\n",
-        "second.txt",
-        extra={
+        {
             "charness-artifacts/issue/2026-08-16-issue-700-closeout.md":
                 QUESTION_ARTIFACT + "\nSee also: docs/index.md\n"
         },
     )
-
-    code, payload = _run("--repo-root", str(repo), "--range", f"{base}..{head}")
-
-    assert code == 0, payload
-    assert payload["status"] == "not_applicable"
-    assert payload["commits_scanned"] == 2
-    assert head not in [finding["commit"] for finding in payload["close_keyword_commits"]]
+    assert finding is None
 
 
 def test_the_unbounded_creation_scan_is_capped(repo: Path, monkeypatch) -> None:
@@ -749,38 +700,40 @@ def test_an_unsatisfiable_close_keyword_is_named_for_both_channels(tmp_path: Pat
     number GitHub acts on and the ledger reports missing, and neither clears by adding
     a ledger. Covering only the first left the second with the unfollowable remedy.
     """
-    _git(tmp_path, "init", "-b", "main")
     message = tmp_path / "message.txt"
     message.write_text(
         "chore: quote the failing log\n\nThe CI log said:\n\n```\nFixes #123\n```\n",
         encoding="utf-8",
     )
-
-    result = run_loaded_script_main(
-        "check_issue_closeout_commit_msg.py", CARRIER,
-        "--repo-root", str(tmp_path), "--commit-msg-file", str(message),
+    report = CARRIER.evaluate(
+        tmp_path,
+        message,
+        "corca-ai/charness",
+        list_paths=lambda _root: [],
+        read_file=lambda _root, path: "",
     )
-    payload = yaml.safe_load(result.stdout)
+    payload = CARRIER.report_payload(report)
 
-    assert result.returncode == 1
+    assert report["ok"] is False
     assert payload["unsatisfiable_close_numbers"] == [123]
     assert "no ledger you add will clear this" in payload["unsatisfiable_close_note"]
 
 
 def test_a_satisfiable_close_keyword_gets_no_unsatisfiable_note(tmp_path: Path) -> None:
-    _git(tmp_path, "init", "-b", "main")
     message = tmp_path / "message.txt"
     message.write_text("chore: work\n\nFixes #123\n", encoding="utf-8")
-
-    result = run_loaded_script_main(
-        "check_issue_closeout_commit_msg.py", CARRIER,
-        "--repo-root", str(tmp_path), "--commit-msg-file", str(message),
+    report = CARRIER.evaluate(
+        tmp_path,
+        message,
+        "corca-ai/charness",
+        list_paths=lambda _root: [],
+        read_file=lambda _root, path: "",
     )
-    payload = yaml.safe_load(result.stdout)
+    payload = CARRIER.report_payload(report)
 
     # Refused for a missing ledger, which IS followable -- so the note must be absent,
     # or it would tell an author to reword a message whose remedy is a ledger.
-    assert result.returncode == 1
+    assert report["ok"] is False
     assert payload["unsatisfiable_close_numbers"] == []
     assert "unsatisfiable_close_note" not in payload
 
@@ -822,14 +775,6 @@ def test_the_crash_mapping_is_reachable_in_process(repo: Path, capsys) -> None:
 
     assert code == GUARD.NO_VERDICT_EXIT
     assert "crashed" in capsys.readouterr().err
-
-
-def test_cli_passes_a_real_verdict_through_unchanged(repo: Path) -> None:
-    base = _head(repo)
-    head = _commit(repo, BODY_626, "work.txt")
-
-    # The crash mapping must not swallow a genuine refusal into `no-verdict`.
-    assert GUARD.cli(["--repo-root", str(repo), "--range", f"{base}..{head}"]) == 1
 
 
 def test_the_scan_module_docstring_names_the_stale_clone_caveat() -> None:

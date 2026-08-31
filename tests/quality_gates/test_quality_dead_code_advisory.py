@@ -11,7 +11,9 @@ from pathlib import Path
 
 import yaml
 
-from .support import ROOT, init_git_repo
+from tests.quality_gates.repo_shapes import install_committed_repo
+
+from .support import ROOT
 
 SCRIPT = ROOT / "skills" / "public" / "quality" / "scripts" / "run_dead_code_advisory.py"
 EVIDENCE_SCRIPT = ROOT / "skills" / "public" / "quality" / "scripts" / "dynamic_entrypoint_evidence.py"
@@ -99,10 +101,13 @@ def test_dead_code_advisory_reports_not_applicable_for_typescript_only_repo(
     bin_dir.mkdir()
     _seed_fake_vulture(bin_dir, sweep_finding=None)
     repo = tmp_path / "repo"
-    (repo / "src").mkdir(parents=True)
-    (repo / "src" / "app.ts").write_text("export const app = true;\n", encoding="utf-8")
-    (repo / "package.json").write_text('{"scripts":{"test":"vitest"}}\n', encoding="utf-8")
-    init_git_repo(repo, "src/app.ts", "package.json")
+    install_committed_repo(
+        repo,
+        {
+            "src/app.ts": "export const app = true;\n",
+            "package.json": '{"scripts":{"test":"vitest"}}\n',
+        },
+    )
 
     payload = _run_dead_code_advisory(
         monkeypatch, bin_dir, "--repo-root", str(repo), "--detail"
@@ -125,11 +130,13 @@ def test_dead_code_advisory_reports_partial_for_mixed_language_repo(
     bin_dir.mkdir()
     _seed_fake_vulture(bin_dir, sweep_finding=None)
     repo = tmp_path / "repo"
-    (repo / "scripts").mkdir(parents=True)
-    (repo / "src").mkdir()
-    (repo / "scripts" / "helper.py").write_text("KEEP = True\n", encoding="utf-8")
-    (repo / "src" / "app.ts").write_text("export const app = true;\n", encoding="utf-8")
-    init_git_repo(repo, "scripts/helper.py", "src/app.ts")
+    install_committed_repo(
+        repo,
+        {
+            "scripts/helper.py": "KEEP = True\n",
+            "src/app.ts": "export const app = true;\n",
+        },
+    )
 
     payload = _run_dead_code_advisory(
         monkeypatch, bin_dir, "--repo-root", str(repo), "--detail"
@@ -153,11 +160,13 @@ def test_dead_code_advisory_explicit_path_scopes_non_python_census(
     bin_dir.mkdir()
     _seed_fake_vulture(bin_dir, sweep_finding=None)
     repo = tmp_path / "repo"
-    (repo / "scripts").mkdir(parents=True)
-    (repo / "src").mkdir()
-    (repo / "scripts" / "helper.py").write_text("KEEP = True\n", encoding="utf-8")
-    (repo / "src" / "app.ts").write_text("export const app = true;\n", encoding="utf-8")
-    init_git_repo(repo, "scripts/helper.py", "src/app.ts")
+    install_committed_repo(
+        repo,
+        {
+            "scripts/helper.py": "KEEP = True\n",
+            "src/app.ts": "export const app = true;\n",
+        },
+    )
 
     payload = _run_dead_code_advisory(
         monkeypatch,
@@ -291,12 +300,15 @@ def test_dead_code_advisory_human_output_survives_missing_vulture(tmp_path: Path
 
 def test_dead_code_advisory_scans_untracked_nonignored_python(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    repo.mkdir()
-    (repo / ".gitignore").write_text("ignored.py\n", encoding="utf-8")
-    (repo / "tracked.py").write_text("TRACKED = True\n", encoding="utf-8")
+    install_committed_repo(
+        repo,
+        {
+            ".gitignore": "ignored.py\n",
+            "tracked.py": "TRACKED = True\n",
+        },
+    )
     (repo / "untracked.py").write_text("UNTRACKED = True\n", encoding="utf-8")
     (repo / "ignored.py").write_text("IGNORED = True\n", encoding="utf-8")
-    init_git_repo(repo, ".gitignore", "tracked.py")
 
     from importlib.util import module_from_spec, spec_from_file_location
 
@@ -311,29 +323,22 @@ def test_dead_code_advisory_scans_untracked_nonignored_python(tmp_path: Path) ->
     ]
 
 
-def test_dead_code_advisory_non_python_census_timeout_is_bounded(
-    tmp_path: Path, monkeypatch
+def test_dead_code_advisory_non_python_census_unreadable_population_is_empty(
+    tmp_path: Path,
 ) -> None:
     spec = importlib.util.spec_from_file_location(
-        "run_dead_code_advisory_non_python_timeout", SCRIPT
+        "run_dead_code_advisory_non_python_unreadable", SCRIPT
     )
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-
-    def time_out(*_args, **_kwargs):
-        raise module.subprocess.TimeoutExpired(["git", "ls-files"], 30)
-
-    monkeypatch.setattr(module.subprocess, "run", time_out)
 
     assert module.git_visible_non_python_sources(tmp_path) == []
 
 
 def test_dead_code_advisory_skips_deleted_tracked_python(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    repo.mkdir()
-    (repo / "tracked.py").write_text("TRACKED = True\n", encoding="utf-8")
-    init_git_repo(repo, "tracked.py")
+    install_committed_repo(repo, {"tracked.py": "TRACKED = True\n"})
     (repo / "tracked.py").unlink()
 
     from importlib.util import module_from_spec, spec_from_file_location

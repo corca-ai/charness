@@ -732,11 +732,9 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
     # it would red every runner test with a message about the export copy.
     # Commit once in the seed so clones are HEAD-bearing; tests must not rebuild
     # that shared prefix with per-test git add/commit.
-    init_git_repo(repo)
-    from tests.quality_gates.seeding_support import git
+    from tests.quality_gates.repo_shapes import replace_with_committed_repo
 
-    git(repo, "add", "-A")
-    git(repo, "commit", "-q", "-m", "seed")
+    replace_with_committed_repo(repo, message="seed")
     pointer = (repo / ".git" / "HEAD").read_text(encoding="ascii").strip()
     oid = (
         (repo / ".git" / pointer[5:]).read_text(encoding="ascii").strip()

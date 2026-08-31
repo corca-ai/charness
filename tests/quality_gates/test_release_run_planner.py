@@ -11,6 +11,7 @@ from unittest.mock import patch
 import pytest
 import yaml
 
+from tests.quality_gates.git_fixture_support import init_git_repo
 from tests.seed_cache import get_or_build
 
 from .release_publish_fixtures import (
@@ -663,7 +664,7 @@ def test_planner_prepared_stop_helpers_are_exercised_in_process(tmp_path: Path) 
     """
     repo = tmp_path / "repo"
     (repo / "charness-artifacts" / "critique").mkdir(parents=True)
-    subprocess.run(["git", "init", "-q", str(repo)], check=True, capture_output=True)
+    init_git_repo(repo)
     _git(repo, "config", "user.email", "t@example.test")
     _git(repo, "config", "user.name", "T")
 

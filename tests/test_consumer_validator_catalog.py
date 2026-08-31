@@ -8,6 +8,7 @@ import pytest
 import yaml
 
 from scripts import check_consumer_validator_catalog as catalog_check
+from tests.quality_gates.git_fixture_support import init_git_repo
 from tests.script_main import run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -652,13 +653,11 @@ def test_required_adoption_declares_exactly_one_decision_for_each_consumer(tmp_p
 
 
 def test_staged_adoption_requires_an_index_entry(tmp_path: Path) -> None:
-    import subprocess
-
     repo = _fixture_repo(tmp_path)
     entry = _entry("scripts/check_demo.py", consumer_facing=True)
     _write_catalog(repo, [entry])
     adoption = _write_adoption(repo, [{"id": entry["id"], "wired": True}])
-    subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True)
+    init_git_repo(repo)
 
     with pytest.raises(catalog_check.CatalogError, match="must be staged"):
         catalog_check.validate_catalog(

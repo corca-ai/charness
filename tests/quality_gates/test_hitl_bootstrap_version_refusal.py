@@ -19,10 +19,9 @@ half-bootstrapped session an operator then has to tell apart from a real one.
 from __future__ import annotations
 
 import subprocess
-import sys
 from pathlib import Path
 
-from .support import ROOT
+from .support import ROOT, run_script
 
 BOOTSTRAP = ROOT / "skills" / "public" / "hitl" / "scripts" / "bootstrap_review.py"
 
@@ -38,15 +37,14 @@ def _repo(tmp_path: Path, adapter: str | None) -> Path:
 
 
 def _run(repo: Path, session_id: str) -> subprocess.CompletedProcess:
-    return subprocess.run(
-        [
-            sys.executable, str(BOOTSTRAP),
-            "--repo-root", str(repo),
-            "--session-id", session_id,
-            "--target", "README.md",
-        ],
-        capture_output=True,
-        text=True,
+    return run_script(
+        str(BOOTSTRAP),
+        "--repo-root",
+        str(repo),
+        "--session-id",
+        session_id,
+        "--target",
+        "README.md",
     )
 
 

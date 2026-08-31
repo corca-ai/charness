@@ -1,24 +1,20 @@
 from __future__ import annotations
 
 import subprocess
-import sys
 from pathlib import Path
 
 import yaml
 
-from .support import ROOT
+from tests.quality_gates.repo_shapes import install_committed_repo
+
+from .support import ROOT, run_script
 
 SCRIPT = ROOT / "skills" / "public" / "quality" / "scripts" / "inventory_gitignore_scan_hygiene.py"
 
 
 def _run_hygiene(repo: Path, *args: str) -> dict[str, object]:
-    result = subprocess.run(
-        [sys.executable, str(SCRIPT), "--repo-root", str(repo), "--detail", *args],
-        cwd=ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
+    result = run_script(str(SCRIPT), "--repo-root", str(repo), "--detail", *args, cwd=ROOT)
+    assert result.returncode == 0, result.stderr
     return yaml.safe_load(result.stdout)
 
 
@@ -85,12 +81,8 @@ def test_gitignore_scan_hygiene_require_empty_fails_on_findings(tmp_path: Path) 
     script = tmp_path / "scan.py"
     script.write_text("def scan(repo_root):\n    return list(repo_root.rglob('*'))\n", encoding="utf-8")
 
-    result = subprocess.run(
-        [sys.executable, str(SCRIPT), "--repo-root", str(tmp_path), "--path-glob", "*.py", "--require-empty"],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
+    result = run_script(
+        str(SCRIPT), "--repo-root", str(tmp_path), "--path-glob", "*.py", "--require-empty", cwd=ROOT
     )
 
     assert result.returncode == 1
@@ -100,20 +92,14 @@ def test_gitignore_scan_hygiene_require_empty_fails_on_findings(tmp_path: Path) 
 def test_gitignore_scan_hygiene_strict_listing_fails_closed_outside_git(tmp_path: Path) -> None:
     (tmp_path / "scan.py").write_text("def scan(repo_root):\n    return []\n", encoding="utf-8")
 
-    result = subprocess.run(
-        [
-            sys.executable,
-            str(SCRIPT),
-            "--repo-root",
-            str(tmp_path),
-            "--path-glob",
-            "*.py",
-            "--require-git-file-listing",
-        ],
+    result = run_script(
+        str(SCRIPT),
+        "--repo-root",
+        str(tmp_path),
+        "--path-glob",
+        "*.py",
+        "--require-git-file-listing",
         cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
     )
 
     assert result.returncode == 1
@@ -122,8 +108,7 @@ def test_gitignore_scan_hygiene_strict_listing_fails_closed_outside_git(tmp_path
 
 
 def test_gitignore_scan_hygiene_respects_gitignore_for_inventory_inputs(tmp_path: Path) -> None:
-    subprocess.run(["git", "init"], cwd=tmp_path, check=True, capture_output=True, text=True)
-    (tmp_path / ".gitignore").write_text("ignored/\n", encoding="utf-8")
+    install_committed_repo(tmp_path, {".gitignore": "ignored/\n"})
     ignored_dir = tmp_path / "ignored"
     ignored_dir.mkdir()
     (ignored_dir / "bad_scan.py").write_text(

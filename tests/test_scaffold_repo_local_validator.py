@@ -1,27 +1,17 @@
 from __future__ import annotations
 
-import subprocess
 from pathlib import Path
 
 import pytest
 import yaml
+
+from tests.quality_gates.support import run_script
 
 ROOT = Path(__file__).resolve().parents[1]
 # The materialized plugin export is the canonical installed-like tree: it ships
 # scaffolds under skills/<skill>/scripts/ AND a sibling scripts/ dir carrying the
 # bundled validators, exactly the ancestor an installed/cached plugin exposes.
 PLUGIN_ROOT = ROOT / "plugins" / "charness"
-
-
-def run_script(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        ["python3", *args],
-        cwd=cwd or ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-
 
 # (skill_id, plugin skill dir, scaffold filename, repo-local validator filename)
 SCAFFOLD_CASES = [

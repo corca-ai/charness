@@ -8,6 +8,7 @@ import pytest
 from tests.quality_gates import seeding_support as seeds
 from tests.quality_gates.repo_shapes import (
     install_committed_repo,
+    install_submodule_repo,
     install_two_commit_repo,
     replace_with_committed_repo,
 )
@@ -125,3 +126,40 @@ def test_install_committed_repo_refuses_a_non_empty_destination(tmp_path: Path) 
     (dest / "stray.txt").write_text("nope\n", encoding="utf-8")
     with pytest.raises(ValueError, match="non-empty"):
         install_committed_repo(dest, {"README.md": "# seed\n"})
+
+
+def test_install_submodule_repo_is_a_copy_with_no_test_time_git(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    first, first_upstream = install_submodule_repo(tmp_path / "one" / "repo")
+    assert (first / "sub" / "f.txt").read_text(encoding="utf-8") == "v1\n"
+    assert (first / "sub" / ".git").is_file()
+    assert git(first / "sub", "rev-parse", "--abbrev-ref", "HEAD") == "main"
+    launches: list[tuple[str, ...]] = []
+    original = seeds._run
+
+    def wrapped(argv, *args, **kwargs):
+        if isinstance(argv, (list, tuple)) and argv and Path(str(argv[0])).name == "git":
+            launches.append(tuple(str(part) for part in argv))
+        return original(argv, *args, **kwargs)
+
+    monkeypatch.setattr(seeds, "_run", wrapped)
+    monkeypatch.setattr(subprocess, "run", wrapped)
+    second, second_upstream = install_submodule_repo(tmp_path / "two" / "repo")
+    assert launches == []
+    assert git(first, "rev-parse", "HEAD") == git(second, "rev-parse", "HEAD")
+    assert git(first / "sub", "rev-parse", "HEAD") == git(second / "sub", "rev-parse", "HEAD")
+    assert git(first_upstream, "rev-parse", "HEAD") == git(second_upstream, "rev-parse", "HEAD")
+
+
+def test_install_submodule_repo_origin_follows_the_copied_upstream(tmp_path: Path) -> None:
+    repo, upstream = install_submodule_repo(tmp_path / "repo")
+    seed_head = git(upstream, "rev-parse", "HEAD")
+    (upstream / "f.txt").write_text("v2\n", encoding="utf-8")
+    git(upstream, "commit", "-am", "v2")
+    copied_head = git(upstream, "rev-parse", "HEAD")
+    git(repo / "sub", "fetch", "-q", "origin")
+    assert git(repo / "sub", "rev-parse", "FETCH_HEAD") == copied_head
+    assert copied_head != seed_head
+    git(repo / "sub", "checkout", "-q", "FETCH_HEAD")
+    assert (repo / "sub" / "f.txt").read_text(encoding="utf-8") == "v2\n"

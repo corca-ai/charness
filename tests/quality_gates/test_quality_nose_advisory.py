@@ -9,7 +9,7 @@ from pathlib import Path
 
 import yaml
 
-from .support import ROOT
+from .support import ROOT, run_script
 
 SCRIPT = ROOT / "skills" / "public" / "quality" / "scripts" / "inventory_nose_clones.py"
 
@@ -49,10 +49,12 @@ def _run(
         env = {**os.environ, "PATH": "/nonexistent-empty-bin", "NOSE_BIN": ""}
     else:
         env = {**os.environ, "PATH": f"{bin_dir}:{os.environ.get('PATH', '')}", "NOSE_BIN": ""}
-    return subprocess.run(
-        [sys.executable, str(SCRIPT), *script_args],
-        cwd=ROOT, check=check, capture_output=True, text=True, env=env,
-    )
+    result = run_script(str(SCRIPT), *script_args, cwd=ROOT, env=env)
+    if check and result.returncode != 0:
+        raise subprocess.CalledProcessError(
+            result.returncode, [sys.executable, str(SCRIPT), *script_args], result.stdout, result.stderr
+        )
+    return result
 
 
 def test_nose_advisory_reports_missing_without_failing(tmp_path: Path) -> None:

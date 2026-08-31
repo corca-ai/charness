@@ -7,6 +7,8 @@ from pathlib import Path
 
 import yaml
 
+from tests.quality_gates.support import run_script
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -16,6 +18,8 @@ def run_helper(
     input_text: str | None = None,
     env: dict[str, str] | None = None,
 ) -> subprocess.CompletedProcess[str]:
+    if input_text is None:
+        return run_script(script, *args, cwd=ROOT, env=env)
     return subprocess.run(
         [sys.executable, script, *args],
         cwd=ROOT,
@@ -428,6 +432,9 @@ def test_gather_public_url_persists_design_intent_and_blocks_real_login(tmp_path
     )
     assert blocked_result.returncode == 1
     blocked_payload = yaml.safe_load(blocked_result.stdout)
+    assert blocked_payload["status"] == "blocked"
+    assert blocked_payload["reason"] == "acquisition-blocked"
+    assert blocked_payload["acquisition_disposition"] == "blocked"
     assert blocked_payload["final_status"] == "login-wall"
     assert blocked_payload["write_record"] is None
     assert not (blocked_root / "charness-artifacts" / "gather" / "latest.md").exists()
@@ -477,36 +484,6 @@ def test_gather_public_url_does_not_write_invalid_regex_acquisition(tmp_path: Pa
     assert payload["reason"] == "acquisition-error"
     assert payload["acquisition_disposition"] == "error"
     assert payload["acquisition"]["final_status"] == "invalid-proof"
-    assert not (tmp_path / "charness-artifacts" / "gather" / "latest.md").exists()
-
-
-def test_gather_public_url_does_not_write_blocked_acquisition(tmp_path: Path) -> None:
-    direct = tmp_path / "direct.html"
-    direct.write_text("<html><body><h1>Sign in</h1><p>needle</p></body></html>", encoding="utf-8")
-
-    result = run_helper(
-        "skills/public/gather/scripts/gather_public_url.py",
-        "--repo-root",
-        str(tmp_path),
-        "--url",
-        "https://example.com/private",
-        "--direct-response-file",
-        str(direct),
-        "--expect-text",
-        "needle",
-        "--browser-mode",
-        "off",
-        "--date",
-        "2026-05-16",
-        "--execute",
-    )
-    assert result.returncode == 1
-    payload = yaml.safe_load(result.stdout)
-    assert payload["status"] == "blocked"
-    assert payload["reason"] == "acquisition-blocked"
-    assert payload["acquisition_disposition"] == "blocked"
-    assert payload["final_status"] == "login-wall"
-    assert payload["write_record"] is None
     assert not (tmp_path / "charness-artifacts" / "gather" / "latest.md").exists()
 
 

@@ -7,6 +7,7 @@ import subprocess
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module
+from tests.quality_gates.repo_shapes import install_committed_repo
 
 ROOT = Path(__file__).resolve().parents[2]
 _export = import_repo_module(__file__, "scripts.export_plugin")
@@ -32,24 +33,10 @@ def test_exported_plugin_carries_boundary_helper_and_claude_agent(tmp_path: Path
     # Exercise the command exactly as a consumer invokes it: cwd is the
     # consuming repository while the helper is resolved from the installed
     # skill directory, never from ``<consumer>/skills/shared``.
-    consumer = tmp_path / "consumer"
-    consumer.mkdir()
-    subprocess.run(["git", "init", "-q"], cwd=consumer, check=True)
-    (consumer / "README.md").write_text("consumer\n", encoding="utf-8")
-    subprocess.run(["git", "add", "README.md"], cwd=consumer, check=True)
-    subprocess.run(
-        [
-            "git",
-            "-c",
-            "user.email=test@example.com",
-            "-c",
-            "user.name=test",
-            "commit",
-            "-qm",
-            "seed",
-        ],
-        cwd=consumer,
-        check=True,
+    consumer = install_committed_repo(
+        tmp_path / "consumer",
+        {"README.md": "consumer\n"},
+        message="seed",
     )
     skill_dir = plugin_root / "skills" / "critique"
     result = subprocess.run(

@@ -15,6 +15,7 @@ from types import SimpleNamespace
 
 import yaml
 
+from tests.quality_gates.repo_shapes import install_two_commit_repo
 from tests.script_loader import load_script_module
 
 from .seeding_support import seed_two_changed_pool_files
@@ -23,7 +24,6 @@ from .test_changed_line_mutation_coverage import (
     _TEETH,
     UNESTABLISHED_EXIT,
     _dirty_pool_file,
-    _git,
     _seed_repo_with_changed_pool_file,
     _write_coverage,
     _write_two_file_coverage,
@@ -52,86 +52,25 @@ def _run_two_file(repo: Path, base: str, head: str, cov: Path, *limit: str):
     )
 
 
-def test_a_partial_denominator_states_both_numbers_on_a_passing_run(tmp_path: Path) -> None:
-    """The acceptance fixture: a NON-blocking verdict whose scope was partial.
-
-    This payload already listed the file it skipped, but `changed_pool_files` (the
-    numerator list) is not on this path at all — so "1 of 2" was not reconstructable
-    here by any amount of `len()`-ing. A reader who saw `blocking: []` saw a green
-    whose scope they could not recover.
-    """
-    repo, base, head = seed_two_changed_pool_files(tmp_path)
-    cov = _write_two_file_coverage(repo)
-
-    result = _run_two_file(repo, base, head, cov, "scripts/foo.py")
-
-    # Exit 4 (PARTIAL), not 0. Operator decision 2026-08-06 on #488, folding D40's
-    # residual: a partial scope stops wearing a PASS, and still never refuses.
-    assert result.returncode == 4, result.stdout + result.stderr
-    assert yaml.safe_load(result.stdout)["blocking"] == []
-    assert yaml.safe_load(result.stdout)["changed_line_proof"] == "partial"
-    assert _counts(result) == {"analyzed": 1, "changed": 2}
-    # Both channels, agreeing. stderr already said "analyzed only 1 of 2"; the
-    # machine-readable payload said it nowhere, so a consumer parsing JSON and an
-    # operator reading the terminal were getting different amounts of the truth.
-    assert "analyzed only 1 of 2" in result.stderr
-
-
-def test_a_partial_denominator_is_not_a_pass_and_is_not_a_refusal(tmp_path: Path) -> None:
-    """The control, re-pointed by the operator's 2026-08-06 answer on #488.
-
-    D40's residual left the toll question open and this test pinned exit 0 while it
-    stood. The answer taken was neither of the two D40 feared: a partial scope gets
-    its own byte (4), so it stops reading as PASS, and it still never refuses a push
-    — policy (a) survives, and this repo's lane does not go red on ordinary work.
-
-    Three states, three bytes, all asserted here so a future change cannot collapse
-    two of them: a partial CLEAN scope is 4, a real uncovered changed line is still
-    1, and neither is 0.
-    """
+def test_two_file_denominator_shapes_on_one_checkout(tmp_path: Path) -> None:
     repo, base, head = seed_two_changed_pool_files(tmp_path)
     cov = _write_two_file_coverage(repo)
 
     partial = _run_two_file(repo, base, head, cov, "scripts/foo.py")
-    unlimited = _run_two_file(repo, base, head, cov)
-
-    assert partial.returncode == 4, "a partial denominator must not report a bare pass"
-    assert unlimited.returncode == 1, "a real uncovered changed line must still block"
+    assert partial.returncode == 4, partial.stdout + partial.stderr
+    payload = yaml.safe_load(partial.stdout)
+    assert payload["blocking"] == []
+    assert payload["changed_line_proof"] == "partial"
     assert _counts(partial) == {"analyzed": 1, "changed": 2}
+    assert "analyzed only 1 of 2" in partial.stderr
+
+    unlimited = _run_two_file(repo, base, head, cov)
+    assert unlimited.returncode == 1, "a real uncovered changed line must still block"
     assert _counts(unlimited) == {"analyzed": 2, "changed": 2}
 
-
-def test_a_full_denominator_says_so_rather_than_staying_silent(tmp_path: Path) -> None:
-    """`analyzed == changed` is the honest "nothing was left out", and it is stated.
-
-    Silence would be the ambiguity this lane exists to remove: a reader cannot tell
-    a complete scope from an undisclosed one by the absence of a field.
-    """
-    repo, base, head = _seed_repo_with_changed_pool_file(tmp_path)
-    cov = _write_coverage(repo, executed=[1, 2, 5, 6], missing=[])
-
-    result = run_script(
-        _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
-        "--reuse-coverage", "--coverage-json", str(cov),
-    )
-
-    assert result.returncode == 0, result.stdout + result.stderr
-    assert _counts(result) == {"analyzed": 1, "changed": 1}
-
-
-def test_a_limit_that_analyzes_nothing_states_zero_of_the_real_denominator(tmp_path: Path) -> None:
-    """The strongest disclosure case: `0 of 2`, on the exit-3 path.
-
-    "Analyzed nothing" and "nothing changed" are different facts that used to
-    render as the same shape of payload.
-    """
-    repo, base, head = seed_two_changed_pool_files(tmp_path)
-    cov = _write_two_file_coverage(repo)
-
-    result = _run_two_file(repo, base, head, cov, "scripts/absent.py")
-
-    assert result.returncode == UNESTABLISHED_EXIT, result.stdout + result.stderr
-    assert _counts(result) == {"analyzed": 0, "changed": 2}
+    nothing = _run_two_file(repo, base, head, cov, "scripts/absent.py")
+    assert nothing.returncode == UNESTABLISHED_EXIT, nothing.stdout + nothing.stderr
+    assert _counts(nothing) == {"analyzed": 0, "changed": 2}
 
 
 def test_an_empty_range_states_zero_of_zero(tmp_path: Path) -> None:
@@ -139,17 +78,13 @@ def test_an_empty_range_states_zero_of_zero(tmp_path: Path) -> None:
 
     Distinct from the not-computed paths below: this run DID look.
     """
-    repo = tmp_path / "repo"
-    (repo / "docs").mkdir(parents=True)
-    _git(repo, "init", "-q")
-    (repo / "docs" / "note.md").write_text("base\n", encoding="utf-8")
-    _git(repo, "add", "-A")
-    _git(repo, "commit", "-q", "-m", "base")
-    base = _git(repo, "rev-parse", "HEAD")
-    (repo / "docs" / "note.md").write_text("base\nmore\n", encoding="utf-8")
-    _git(repo, "add", "-A")
-    _git(repo, "commit", "-q", "-m", "head")
-    head = _git(repo, "rev-parse", "HEAD")
+    repo, base, head = install_two_commit_repo(
+        tmp_path / "repo",
+        {"docs/note.md": "base\n"},
+        {"docs/note.md": "base\nmore\n"},
+        first_message="base",
+        second_message="head",
+    )
 
     result = run_script(
         _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", head, "--reuse-coverage"
@@ -159,108 +94,59 @@ def test_an_empty_range_states_zero_of_zero(tmp_path: Path) -> None:
     assert _counts(result) == {"analyzed": 0, "changed": 0}
 
 
-def test_the_unverified_skip_states_what_it_skipped_over(tmp_path: Path) -> None:
-    """The pre-push lane's most common verdict, and the #335 recurrence driver.
-
-    A skip already said coverage was unavailable; it did not say how large the set
-    it went silent about was. `1 of 1` is the difference between "one file went
-    unverified" and an unbounded green.
-    """
+def test_one_file_denominator_shapes_on_one_checkout(tmp_path: Path) -> None:
     repo, base, head = _seed_repo_with_changed_pool_file(tmp_path)
-    absent = repo / "reports" / "mutation" / "test-coverage.json"  # never written
 
-    result = run_script(
-        _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
-        "--reuse-coverage", "--skip-if-no-coverage", "--coverage-json", str(absent),
-    )
-
-    assert result.returncode == UNESTABLISHED_EXIT, result.stdout + result.stderr
-    assert _counts(result) == {"analyzed": 1, "changed": 1}
-
-
-def test_the_pair_is_the_ranges_population_and_says_so_beside_the_dirty_keys(tmp_path: Path) -> None:
-    """The honest limit of this pair, pinned rather than left to the docstring.
-
-    `--allow-dirty` derives its set from `base..head`, which cannot see uncommitted
-    pool edits — so an equal pair here means "all of what this range could see",
-    not "all of what changed". The claim that the pair is complete is NOT made; the
-    payload carries `dirty_pool_unverified` and the offending files beside it, and
-    a reader who takes the pair alone is the failure this test exists to document.
-    """
-    repo, base, head = _seed_repo_with_changed_pool_file(tmp_path)
-    cov = _write_coverage(repo, executed=[1, 2, 5, 6], missing=[])
-    _dirty_pool_file(repo)  # uncommitted: invisible to base..head
-
-    result = run_script(
-        _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
-        "--reuse-coverage", "--coverage-json", str(cov), "--allow-dirty",
-    )
-
-    payload = yaml.safe_load(result.stdout)
-    assert _counts(result) == {"analyzed": 1, "changed": 1}
-    assert payload["dirty_pool_unverified"] is True
-    assert payload["uncommitted_pool_files"] == ["scripts/foo.py"]
-
-
-def test_a_run_with_no_base_sha_reports_the_pair_as_not_computed(tmp_path: Path) -> None:
-    """Nulls, not zeros. This run derived no changed set at all, so `0 of 0` would
-    assert an empty scope it never earned — indistinguishable from the honest
-    empty range above."""
-    repo, _base, _head = _seed_repo_with_changed_pool_file(tmp_path)
-
-    result = run_script(_TEETH, "--repo-root", str(repo), "--base-sha", "", "--reuse-coverage")
-
-    assert result.returncode == 0, result.stdout + result.stderr
-    counts = _counts(result)
+    no_base = run_script(_TEETH, "--repo-root", str(repo), "--base-sha", "", "--reuse-coverage")
+    assert no_base.returncode == 0, no_base.stdout + no_base.stderr
+    counts = _counts(no_base)
     assert counts["analyzed"] is None and counts["changed"] is None
     assert "no base_sha" in counts["not_computed"]
 
+    cov = _write_coverage(repo, executed=[1, 2, 5, 6], missing=[])
+    full = run_script(
+        _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
+        "--reuse-coverage", "--coverage-json", str(cov),
+    )
+    assert full.returncode == 0, full.stdout + full.stderr
+    assert _counts(full) == {"analyzed": 1, "changed": 1}
 
-def test_a_startup_refusal_reports_the_pair_as_not_computed(tmp_path: Path) -> None:
-    """The refusal paths fire before the changed set exists, and say so.
+    absent = repo / "reports" / "mutation" / "test-coverage.json"
+    skip = run_script(
+        _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
+        "--reuse-coverage", "--skip-if-no-coverage", "--coverage-json", str(absent),
+    )
+    assert skip.returncode == UNESTABLISHED_EXIT, skip.stdout + skip.stderr
+    assert _counts(skip) == {"analyzed": 1, "changed": 1}
 
-    A refusal is already "no verdict", but it still emits a payload — and a payload
-    with no scope field is the gap this lane closes everywhere else.
-    """
-    repo, base, _head = _seed_repo_with_changed_pool_file(tmp_path)
     _dirty_pool_file(repo)
+    dirty = run_script(
+        _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
+        "--reuse-coverage", "--coverage-json", str(cov), "--allow-dirty",
+    )
+    payload = yaml.safe_load(dirty.stdout)
+    assert _counts(dirty) == {"analyzed": 1, "changed": 1}
+    assert payload["dirty_pool_unverified"] is True
+    assert payload["uncommitted_pool_files"] == ["scripts/foo.py"]
 
-    result = run_script(_TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", "HEAD")
+    refused = run_script(_TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", "HEAD")
+    assert refused.returncode == 2, refused.stdout + refused.stderr
+    refused_counts = _counts(refused)
+    assert refused_counts["analyzed"] is None and refused_counts["changed"] is None
+    assert "startup refusal" in refused_counts["not_computed"]
 
-    assert result.returncode == 2, result.stdout + result.stderr
-    counts = _counts(result)
-    assert counts["analyzed"] is None and counts["changed"] is None
-    assert "startup refusal" in counts["not_computed"]
 
-
-def test_an_absent_limit_analyzes_everything(tmp_path: Path) -> None:
-    """`--limit-to-file` is absent on every pre-existing caller, so an empty list
-    must mean "analyze all", never "analyze none". Pinned here too because the
-    split moved modules: the gate's own copy of this test proves the re-export
-    still resolves, this one proves the moved implementation still behaves."""
+def test_scope_count_helpers_are_pure_arithmetic() -> None:
     counts_module = _load_scope_counts()
-
     analyzed, unanalyzed = counts_module.apply_file_limit(
         SimpleNamespace(limit_to_file=[]), ["scripts/foo.py", "scripts/bar.py"]
     )
-
     assert analyzed == ["scripts/foo.py", "scripts/bar.py"]
     assert unanalyzed == []
-
-
-def test_the_pair_counts_the_whole_changed_set_not_just_the_analyzed_one() -> None:
-    """Direct unit pin on the arithmetic the payload tests observe indirectly."""
-    counts_module = _load_scope_counts()
-
     assert counts_module.scope_counts(["a", "b"], ["c"]) == {
         COUNTS_KEY: {"analyzed": 2, "changed": 3}
     }
     assert counts_module.scope_counts([], []) == {COUNTS_KEY: {"analyzed": 0, "changed": 0}}
-
-
-def test_a_not_computed_pair_carries_its_reason_instead_of_a_number() -> None:
-    counts_module = _load_scope_counts()
-
     assert counts_module.scope_counts_not_computed("because") == {
         COUNTS_KEY: {"analyzed": None, "changed": None, "not_computed": "because"}
     }

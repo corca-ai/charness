@@ -15,9 +15,11 @@ from pathlib import Path
 
 from scripts import git_status_snapshot as status
 from scripts import render_critique_section_changed_surfaces as producer_module
-from tests.quality_gates.repo_shapes import replace_with_committed_repo
+from tests.quality_gates.repo_shapes import install_two_commit_repo, replace_with_committed_repo
+from tests.quality_gates.support import run_script
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+PRODUCER = "scripts/render_critique_section_changed_surfaces.py"
 
 
 def _run_git(repo: Path, *args: str) -> None:
@@ -70,13 +72,7 @@ def test_the_changed_files_section_marks_deletions_instead_of_listing_them_as_ed
     _run_git(tmp_path, "add", "-A")
     _run_git(tmp_path, "commit", "-m", "remove one, edit one")
 
-    producer = REPO_ROOT / "scripts/render_critique_section_changed_surfaces.py"
-    result = subprocess.run(
-        ["python3", str(producer), "--repo-root", str(tmp_path), "--changed-ref", "HEAD^..HEAD"],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    result = run_script(PRODUCER, "--repo-root", str(tmp_path), "--changed-ref", "HEAD^..HEAD")
 
     assert result.returncode == 0, result.stderr
     lines = {line.split()[1]: line for line in result.stdout.splitlines() if line.startswith("- ")}
@@ -89,42 +85,32 @@ def test_the_changed_files_section_marks_deletions_instead_of_listing_them_as_ed
 
 def test_a_ref_with_no_deletions_gains_no_deletion_prose(tmp_path: Path) -> None:
     """The summary line must not appear when nothing was removed."""
-    from tests.quality_gates.repo_shapes import replace_with_committed_repo
-
-    agents_dir = tmp_path / ".agents"
-    agents_dir.mkdir()
-    (agents_dir / "surfaces.json").write_text(
-        json.dumps(
-            {
-                "version": 1,
-                "surfaces": [
-                    {
-                        "surface_id": "docs",
-                        "description": "Markdown",
-                        "source_paths": ["*.md"],
-                        "derived_paths": [],
-                        "sync_commands": [],
-                        "verify_commands": ["check docs"],
-                        "notes": [],
-                        "generated_markdown": [],
-                    }
-                ],
-            }
-        ),
-        encoding="utf-8",
+    surfaces = json.dumps(
+        {
+            "version": 1,
+            "surfaces": [
+                {
+                    "surface_id": "docs",
+                    "description": "Markdown",
+                    "source_paths": ["*.md"],
+                    "derived_paths": [],
+                    "sync_commands": [],
+                    "verify_commands": ["check docs"],
+                    "notes": [],
+                    "generated_markdown": [],
+                }
+            ],
+        }
     )
-    (tmp_path / "kept.md").write_text("one\n", encoding="utf-8")
-    replace_with_committed_repo(tmp_path, message="initial")
-    (tmp_path / "kept.md").write_text("two\n", encoding="utf-8")
-    _run_git(tmp_path, "commit", "-am", "edit")
-
-    producer = REPO_ROOT / "scripts/render_critique_section_changed_surfaces.py"
-    result = subprocess.run(
-        ["python3", str(producer), "--repo-root", str(tmp_path), "--changed-ref", "HEAD^..HEAD"],
-        capture_output=True,
-        text=True,
-        check=False,
+    install_two_commit_repo(
+        tmp_path,
+        {".agents/surfaces.json": surfaces, "kept.md": "one\n"},
+        {"kept.md": "two\n"},
+        first_message="initial",
+        second_message="edit",
     )
+
+    result = run_script(PRODUCER, "--repo-root", str(tmp_path), "--changed-ref", "HEAD^..HEAD")
 
     assert result.returncode == 0, result.stderr
     assert "DELETED" not in result.stdout
@@ -169,13 +155,7 @@ def test_a_working_tree_deletion_is_marked_too(tmp_path: Path) -> None:
     (repo / "kept.md").write_text("two\n", encoding="utf-8")
     (repo / "removed.md").unlink()
 
-    producer = REPO_ROOT / "scripts/render_critique_section_changed_surfaces.py"
-    result = subprocess.run(
-        ["python3", str(producer), "--repo-root", str(repo)],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    result = run_script(PRODUCER, "--repo-root", str(repo))
 
     assert result.returncode == 0, result.stderr
     lines = {line.split()[1]: line for line in result.stdout.splitlines() if line.startswith("- ")}
@@ -193,13 +173,7 @@ def test_a_staged_deletion_counts_the_same_as_an_unstaged_one(tmp_path: Path) ->
     (repo / "kept.md").write_text("two\n", encoding="utf-8")
     _run_git(repo, "rm", "-q", "staged-removal.md")
 
-    producer = REPO_ROOT / "scripts/render_critique_section_changed_surfaces.py"
-    result = subprocess.run(
-        ["python3", str(producer), "--repo-root", str(repo)],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    result = run_script(PRODUCER, "--repo-root", str(repo))
 
     assert result.returncode == 0, result.stderr
     lines = {line.split()[1]: line for line in result.stdout.splitlines() if line.startswith("- ")}

@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import json
 import os
-import subprocess
 from pathlib import Path
 
 import yaml
+
+from tests.quality_gates.git_fixture_support import init_git_repo
 
 from .support import ROOT, pin_state_home, run_cli
 
@@ -26,7 +27,7 @@ def write_repo_capability_config(target_repo_root: Path, *, bindings: dict[str, 
 
 def init_target_repo(path: Path) -> Path:
     path.mkdir(parents=True, exist_ok=True)
-    subprocess.run(["git", "init"], cwd=path, check=True, capture_output=True, text=True)
+    init_git_repo(path)
     return path
 
 

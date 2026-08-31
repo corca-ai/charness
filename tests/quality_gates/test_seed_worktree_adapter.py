@@ -16,6 +16,7 @@ from string import Template
 
 import pytest
 
+from tests.quality_gates.git_fixture_support import init_git_repo
 from tests.quality_gates.seeding_support import load_module
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -107,7 +108,7 @@ def test_detection_npm_repo_owned_hooks(tmp_path: Path) -> None:
         encoding="utf-8",
     )
     (repo / ".githooks").mkdir()
-    subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True)
+    init_git_repo(repo)
     subprocess.run(
         ["git", "config", "core.hooksPath", ".githooks"],
         cwd=repo,

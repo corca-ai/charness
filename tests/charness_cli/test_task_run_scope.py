@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts import task_run, task_run_git, task_run_scope
+from scripts import checkout_view, task_run, task_run_git, task_run_scope
 
 from .test_task_run_fixtures import _codex, _commit, _git, _repo, _run
 
@@ -168,14 +168,21 @@ def test_candidate_carrier_reuses_equal_head_worktree_reads(
 ) -> None:
     repo = _repo(tmp_path)
     base = _git(repo, "rev-parse", "HEAD").stdout.strip()
-    calls: list[tuple[str, ...]] = []
+    git_calls: list[tuple[str, ...]] = []
+    status_calls: list[dict] = []
     original_git = task_run_git._git
+    original_status = checkout_view.capture_status
 
     def traced_git(root: Path, *args: str):
-        calls.append(args)
+        git_calls.append(args)
         return original_git(root, *args)
 
+    def traced_status(root, **kwargs):
+        status_calls.append(kwargs)
+        return original_status(root, **kwargs)
+
     monkeypatch.setattr(task_run_git, "_git", traced_git)
+    monkeypatch.setattr(checkout_view, "capture_status", traced_status)
     monkeypatch.setattr(
         task_run_git,
         "_is_ancestor",
@@ -187,16 +194,9 @@ def test_candidate_carrier_reuses_equal_head_worktree_reads(
     assert carrier["base_is_ancestor_of_head"] is True
     assert carrier["carrier_kind"] == "worktree-only"
     assert carrier["observed_head_sha"] == base
-    assert calls == [
-        (
-            "status",
-            "--porcelain=v2",
-            "--branch",
-            "--untracked-files=all",
-            "--ignored=matching",
-            "-z",
-        ),
-    ]
+    assert git_calls == []
+    assert len(status_calls) == 1
+    assert status_calls[0].get("ignored") is True
 
 
 def test_candidate_carrier_reuses_committed_diff_for_a_clean_commit(
@@ -234,21 +234,28 @@ def test_candidate_carrier_reads_untracked_paths_once_for_a_commit_plus_dirty_tr
     (repo / "module.py").write_text("VALUE = 2\n", encoding="utf-8")
     _commit(repo, "update module", "module.py")
     (repo / "extra.py").write_text("VALUE = 3\n", encoding="utf-8")
-    calls: list[tuple[str, ...]] = []
+    git_calls: list[tuple[str, ...]] = []
+    status_calls: list[dict] = []
     ancestry_calls: list[tuple[Path, str, str]] = []
     original_git = task_run_git._git
     original_is_ancestor = task_run_git._is_ancestor
+    original_status = checkout_view.capture_status
 
     def traced_git(root: Path, *args: str):
-        calls.append(args)
+        git_calls.append(args)
         return original_git(root, *args)
 
     def traced_is_ancestor(root: Path, ancestor: str, descendant: str) -> bool:
         ancestry_calls.append((root, ancestor, descendant))
         return original_is_ancestor(root, ancestor, descendant)
 
+    def traced_status(root, **kwargs):
+        status_calls.append(kwargs)
+        return original_status(root, **kwargs)
+
     monkeypatch.setattr(task_run_git, "_git", traced_git)
     monkeypatch.setattr(task_run_git, "_is_ancestor", traced_is_ancestor)
+    monkeypatch.setattr(checkout_view, "capture_status", traced_status)
 
     carrier = task_run_git._candidate_carrier(repo, base)
 
@@ -256,20 +263,12 @@ def test_candidate_carrier_reads_untracked_paths_once_for_a_commit_plus_dirty_tr
     assert carrier["committed_paths"] == ["module.py"]
     assert carrier["dirty_paths"] == ["extra.py"]
     assert carrier["changed_paths"] == ["extra.py", "module.py"]
-    assert calls.count(
-        (
-            "status",
-            "--porcelain=v2",
-            "--branch",
-            "--untracked-files=all",
-            "--ignored=matching",
-            "-z",
-        )
-    ) == 1
-    assert ("rev-parse", "HEAD") not in calls
-    assert len(calls) == 3
+    assert len(status_calls) == 1
+    assert status_calls[0].get("ignored") is True
+    assert ("rev-parse", "HEAD") not in git_calls
+    assert len(git_calls) + len(status_calls) == 3
     assert len(ancestry_calls) == 1
-    assert len(calls) + len(ancestry_calls) == 4
+    assert len(git_calls) + len(status_calls) + len(ancestry_calls) == 4
 
 
 def test_candidate_carrier_keeps_base_scope_when_worktree_restores_a_committed_path(
@@ -554,6 +553,7 @@ def test_absent_scope_remains_exact_when_command_creates_a_directory(tmp_path: P
 
 def _lane_tree(tmp_path, kind: str):
     """A lane worktree in one of the histories a receipt must tell apart."""
+    from tests.quality_gates.repo_shapes import install_committed_repo
 
     def git(*args: str) -> None:
         subprocess.run(
@@ -561,10 +561,7 @@ def _lane_tree(tmp_path, kind: str):
             check=True, capture_output=True,
         )
 
-    git("init", "-q")
-    (tmp_path / "seed.txt").write_text("s\n", encoding="utf-8")
-    git("add", "-A")
-    git("commit", "-qm", "base")
+    install_committed_repo(tmp_path, {"seed.txt": "s\n"}, message="base")
     base = subprocess.run(
         ["git", "-C", str(tmp_path), "rev-parse", "HEAD"], capture_output=True, text=True
     ).stdout.strip()

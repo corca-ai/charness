@@ -18,7 +18,6 @@ from __future__ import annotations
 import subprocess
 from pathlib import Path
 
-import pytest
 import yaml
 
 from tests.control_plane.support import seed_control_plane_repo
@@ -75,26 +74,20 @@ def _empty_root(tmp_path: Path) -> Path:
     return root
 
 
-@pytest.mark.parametrize(
-    ("script", "args", "expected_fragment"),
-    [
-        ("scripts/validate_packaging.py", [], "no packaging manifests found"),
-        # The `no bootstrap shim copies found under <root>` sentence was deleted with
-        # `--json` on 2026-08-14; the same refusal now rides on `status: empty-scope`,
-        # `checked_files: 0`, `scanned_repo_root` and this remedy line.
-        ("scripts/check_bootstrap_shim_consistency.py", [], "nothing was compared"),
-        # S42: zero SKILL.md under the named root.
-        ("scripts/check_skill_bootstrap_vars.py", [], "no public/support SKILL.md files found"),
-        # S46: no tests/ means the gate inspected no Python files.
-        ("scripts/check_test_repo_copy_invariants.py", [], "no test Python files found"),
-        # S49: every per-manifest rule iterates a hardcoded glob under the root.
-        ("scripts/validate_integrations.py", [], "no integration manifests found"),
-    ],
-)
-def test_zero_scope_scan_refuses(tmp_path: Path, script: str, args: list[str], expected_fragment: str) -> None:
-    result = run_gate(script, "--repo-root", str(_empty_root(tmp_path)), *args)
-    assert result.returncode != 0, result.stdout + result.stderr
-    assert expected_fragment.lower() in (result.stdout + result.stderr).lower()
+def test_zero_scope_scan_refuses(tmp_path: Path) -> None:
+    root = str(_empty_root(tmp_path))
+    cases = (
+        ("scripts/validate_packaging.py", "no packaging manifests found"),
+        ("scripts/check_bootstrap_shim_consistency.py", "nothing was compared"),
+        ("scripts/check_skill_bootstrap_vars.py", "no public/support SKILL.md files found"),
+        ("scripts/check_test_repo_copy_invariants.py", "no test Python files found"),
+        ("scripts/validate_integrations.py", "no integration manifests found"),
+    )
+    for script, expected_fragment in cases:
+        result = run_gate(script, "--repo-root", root)
+        combined = (result.stdout + result.stderr).lower()
+        assert result.returncode != 0, script
+        assert expected_fragment.lower() in combined, script
 
 
 def test_validate_integrations_zero_locks_is_the_sanctioned_discovered_empty_pass(
@@ -130,22 +123,20 @@ def test_bootstrap_shim_payload_names_the_empty_scope(tmp_path: Path) -> None:
     assert result.returncode != 0
 
 
-@pytest.mark.parametrize(
-    ("script", "named"),
-    [
-        ("scripts/validate_critique_artifacts.py", "charness-artifacts/critique/typo.md"),
-        ("scripts/validate_retro_artifact.py", "charness-artifacts/retro/typo.md"),
-        ("scripts/validate_ideation_artifact.py", "charness-artifacts/ideation/typo.md"),
-    ],
-)
-def test_named_path_that_resolves_to_nothing_refuses(tmp_path: Path, script: str, named: str) -> None:
+def test_named_path_that_resolves_to_nothing_refuses(tmp_path: Path) -> None:
     """A typo or a stale reference previously printed `Validated 0 <label>(s).`
     and exited 0. Only paths the validator OWNS are judged: a changed path from
     another family is the tool saying "none of this is yours"."""
-    (tmp_path / named).parent.mkdir(parents=True)
-    result = run_gate(script, "--repo-root", str(tmp_path), "--paths", named)
-    assert result.returncode != 0, result.stdout + result.stderr
-    assert "resolve to nothing" in (result.stdout + result.stderr)
+    cases = (
+        ("scripts/validate_critique_artifacts.py", "charness-artifacts/critique/typo.md"),
+        ("scripts/validate_retro_artifact.py", "charness-artifacts/retro/typo.md"),
+        ("scripts/validate_ideation_artifact.py", "charness-artifacts/ideation/typo.md"),
+    )
+    for script, named in cases:
+        (tmp_path / named).parent.mkdir(parents=True, exist_ok=True)
+        result = run_gate(script, "--repo-root", str(tmp_path), "--paths", named)
+        assert result.returncode != 0, script
+        assert "resolve to nothing" in (result.stdout + result.stderr), script
 
 
 def test_named_critique_path_traversal_refuses(tmp_path: Path) -> None:
@@ -217,22 +208,20 @@ def test_discovered_empty_set_stays_a_cheap_pass(tmp_path: Path) -> None:
     assert result.returncode == 0, result.stdout + result.stderr
 
 
-@pytest.mark.parametrize(
-    ("args", "expected_fragment"),
-    [
-        (["--claim", "score"], "no run identified"),
-        (["--claim", "changed-line"], "no base_sha evidence"),
-    ],
-)
-def test_mutation_run_proof_refuses_without_a_run(args: list[str], expected_fragment: str) -> None:
+def test_mutation_run_proof_refuses_without_a_run() -> None:
     """`--claim score` with no facts at all used to return `provable: true` for a
     run the caller never identified. The changed-line claim already refused, on
     its own discriminator (base_sha), which is why it tolerates an unknown event."""
-    result = run_gate("scripts/check_mutation_run_proof.py", *args)
-    assert result.returncode != 0, result.stdout + result.stderr
-    verdict = yaml.safe_load(result.stdout)
-    assert verdict["provable"] is False
-    assert expected_fragment in verdict["reason"]
+    cases = (
+        (["--claim", "score"], "no run identified"),
+        (["--claim", "changed-line"], "no base_sha evidence"),
+    )
+    for args, expected_fragment in cases:
+        result = run_gate("scripts/check_mutation_run_proof.py", *args)
+        assert result.returncode != 0, args
+        verdict = yaml.safe_load(result.stdout)
+        assert verdict["provable"] is False
+        assert expected_fragment in verdict["reason"]
 
 
 def test_mutation_run_proof_still_confirms_a_green_identified_run() -> None:
@@ -473,22 +462,28 @@ _ALL_USES_WORKFLOW = (
 )
 
 
-@pytest.mark.parametrize("suffix", ["yml", "yaml"])
-def test_parity_gate_reads_both_workflow_extensions(tmp_path: Path, suffix: str) -> None:
+def test_parity_gate_reads_both_workflow_extensions(tmp_path: Path) -> None:
     """S30: GitHub Actions accepts both extensions and the default glob read only
     `.yml`, so the identical workflow saved as `ci.yaml` scanned 0 files and exited
     0 where `ci.yml` raised a parity issue and exited 1. The denominator, not the
     verdict, was wrong.
     """
-    repo = _workflow_repo(tmp_path, f"ci.{suffix}", _PARITY_WORKFLOW)
+    repo = tmp_path / "wf-repo"
+    workflows = repo / ".github" / "workflows"
+    workflows.mkdir(parents=True)
+    (workflows / "ci.yml").write_text(_PARITY_WORKFLOW, encoding="utf-8")
+    (workflows / "nightly.yaml").write_text(_PARITY_WORKFLOW, encoding="utf-8")
     result = run_gate(
         "skills/public/quality/scripts/inventory_ci_local_gate_parity.py",
         "--repo-root",
         str(repo),
         "--require-empty-parity-issues",
     )
-    assert result.returncode == 1, result.stdout + result.stderr
-    assert "secret-scan" in result.stdout + result.stderr
+    combined = result.stdout + result.stderr
+    assert result.returncode == 1, combined
+    assert "secret-scan" in combined
+    assert "ci.yml" in combined
+    assert "nightly.yaml" in combined
 
 
 def test_parity_gate_refuses_a_named_glob_that_matched_nothing(tmp_path: Path) -> None:

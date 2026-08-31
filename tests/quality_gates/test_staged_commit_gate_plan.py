@@ -14,6 +14,8 @@ from scripts.staged_commit_gate_plan import (
     staged_commit_gate_plan,
 )
 from scripts.surfaces_lib import load_surfaces, match_surfaces
+from tests.quality_gates.git_fixture_support import init_git_repo
+from tests.quality_gates.repo_shapes import install_committed_repo
 
 from .support import ROOT, run_script
 
@@ -78,7 +80,7 @@ def test_staged_worktree_consistency_blocks_edit_after_stage(tmp_path: Path, mon
     def git(*args: str) -> None:
         subprocess.run(["git", *args], cwd=repo, check=True, capture_output=True, text=True)
 
-    git("init")
+    init_git_repo(repo)
     target = repo / "f.txt"
     target.write_text("v1\n", encoding="utf-8")
     git("add", "f.txt")
@@ -448,15 +450,10 @@ def test_a_rename_only_commit_sees_both_sides(tmp_path: Path) -> None:
     """The other half: rename detection turns both sides into one `R` entry, which
     `--diff-filter=ACM` drops entirely."""
 
-    repo = tmp_path / "repo"
-    source = repo / "skills" / "public" / "demo" / "SKILL.md"
-    source.parent.mkdir(parents=True)
-    source.write_text("---\nname: demo\n---\n\n# Demo\n", encoding="utf-8")
-    subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(
-        ["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-m", "seed"],
-        cwd=repo, check=True, capture_output=True, text=True,
+    repo = install_committed_repo(
+        tmp_path / "repo",
+        {"skills/public/demo/SKILL.md": "---\nname: demo\n---\n\n# Demo\n"},
+        message="seed",
     )
     subprocess.run(
         ["git", "mv", "skills/public/demo/SKILL.md", "skills/public/demo/MOVED.md"],

@@ -6,6 +6,8 @@ from types import SimpleNamespace
 
 import pytest
 
+from tests.quality_gates.repo_shapes import install_committed_repo
+
 from .release_script_loading import load_release_script
 
 RESUME = load_release_script("publish_release_resume", suffix="state_validation")
@@ -21,14 +23,9 @@ def _git(repo: Path, *args: str) -> str:
 
 
 def test_remote_annotated_tag_identity_is_peeled_to_release_commit(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
+    repo = install_committed_repo(tmp_path / "repo", {"README.md": "release\n"}, message="seed")
     remote = tmp_path / "remote.git"
-    repo.mkdir()
     subprocess.run(["git", "init", "--bare", str(remote)], check=True, capture_output=True)
-    _git(repo, "init", "-b", "main")
-    (repo / "README.md").write_text("release\n", encoding="utf-8")
-    _git(repo, "add", "README.md")
-    _git(repo, "commit", "-m", "seed")
     release_sha = _git(repo, "rev-parse", "HEAD")
     _git(repo, "tag", "-a", "v1.2.3", "-m", "release")
     _git(repo, "remote", "add", "origin", str(remote))
@@ -40,14 +37,9 @@ def test_remote_annotated_tag_identity_is_peeled_to_release_commit(tmp_path: Pat
 
 
 def test_remote_lightweight_tag_identity_uses_direct_commit(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
+    repo = install_committed_repo(tmp_path / "repo", {"README.md": "release\n"}, message="seed")
     remote = tmp_path / "remote.git"
-    repo.mkdir()
     subprocess.run(["git", "init", "--bare", str(remote)], check=True, capture_output=True)
-    _git(repo, "init", "-b", "main")
-    (repo / "README.md").write_text("release\n", encoding="utf-8")
-    _git(repo, "add", "README.md")
-    _git(repo, "commit", "-m", "seed")
     release_sha = _git(repo, "rev-parse", "HEAD")
     _git(repo, "tag", "v1.2.3")
     _git(repo, "remote", "add", "origin", str(remote))

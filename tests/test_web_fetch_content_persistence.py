@@ -7,6 +7,7 @@ import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
+import pytest
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -135,157 +136,74 @@ def test_gather_public_url_rejects_non_positive_content_limit(tmp_path: Path) ->
     assert "must be a positive integer" in result.stderr
 
 
-def test_acquire_public_url_does_not_include_raw_json_selected_content(tmp_path: Path) -> None:
-    direct = tmp_path / "direct.json"
-    direct.write_text(
-        json.dumps({"title": "Readable Title", "body": "secret API body should not persist"}),
-        encoding="utf-8",
-    )
-
+@pytest.mark.parametrize(
+    ("filename", "body", "url", "expect"),
+    [
+        pytest.param(
+            "direct.json",
+            json.dumps({"title": "Readable Title", "body": "secret API body should not persist"}),
+            "https://example.com/api/article",
+            ("--expect-json-field", "title"),
+            id="json",
+        ),
+        pytest.param(
+            "direct.ndjson",
+            '{"title":"Readable Title"}\n{"body":"secret NDJSON body should not persist"}',
+            "https://example.com/api/stream",
+            ("--expect-text", "Readable Title"),
+            id="ndjson",
+        ),
+        pytest.param(
+            "direct.json",
+            '\ufeff{"title":"Readable Title","body":"secret BOM JSON body should not persist"}',
+            "https://example.com/api/article",
+            ("--expect-text", "Readable Title"),
+            id="bom-json",
+        ),
+        pytest.param(
+            "direct.txt",
+            ")]}'\n" + json.dumps({"title": "Readable Title", "body": "secret XSSI body should not persist"}),
+            "https://example.com/api/xssi",
+            ("--expect-text", "Readable Title"),
+            id="xssi-json",
+        ),
+        pytest.param(
+            "direct.js",
+            'callback({"title":"Readable Title","body":"secret JSONP body should not persist"});',
+            "https://example.com/api/jsonp",
+            ("--expect-text", "Readable Title"),
+            id="jsonp",
+        ),
+        pytest.param(
+            "direct.js",
+            'window.__DATA__={"title":"Readable Title","body":"secret JS body should not persist"};',
+            "https://example.com/api/data",
+            ("--expect-text", "Readable Title"),
+            id="js-assignment",
+        ),
+    ],
+)
+def test_acquire_public_url_does_not_include_raw_structured_selected_content(
+    tmp_path: Path,
+    filename: str,
+    body: str,
+    url: str,
+    expect: tuple[str, str],
+) -> None:
+    """`--include-selected-content` still refuses JSON-shaped bodies, every encoding door."""
+    direct = tmp_path / filename
+    direct.write_text(body, encoding="utf-8")
     result = run_helper(
         "skills/support/web-fetch/scripts/acquire_public_url.py",
         "--url",
-        "https://example.com/api/article",
+        url,
         "--direct-response-file",
         str(direct),
-        "--expect-json-field",
-        "title",
+        *expect,
         "--browser-mode",
         "off",
         "--include-selected-content",
     )
-
-    assert result.returncode == 0, result.stderr
-    payload = yaml.safe_load(result.stdout)
-    assert payload["disposition"] == "success"
-    assert payload["selected_attempt"]["stage_id"] == "direct-public-fetch"
-    assert "selected_content" not in payload
-
-
-def test_acquire_public_url_does_not_include_raw_ndjson_selected_content(tmp_path: Path) -> None:
-    direct = tmp_path / "direct.ndjson"
-    direct.write_text(
-        '{"title":"Readable Title"}\n{"body":"secret NDJSON body should not persist"}',
-        encoding="utf-8",
-    )
-
-    result = run_helper(
-        "skills/support/web-fetch/scripts/acquire_public_url.py",
-        "--url",
-        "https://example.com/api/stream",
-        "--direct-response-file",
-        str(direct),
-        "--expect-text",
-        "Readable Title",
-        "--browser-mode",
-        "off",
-        "--include-selected-content",
-    )
-
-    assert result.returncode == 0, result.stderr
-    payload = yaml.safe_load(result.stdout)
-    assert payload["disposition"] == "success"
-    assert "selected_content" not in payload
-
-
-def test_acquire_public_url_does_not_include_bom_json_selected_content(tmp_path: Path) -> None:
-    direct = tmp_path / "direct.json"
-    direct.write_text(
-        '\ufeff{"title":"Readable Title","body":"secret BOM JSON body should not persist"}',
-        encoding="utf-8",
-    )
-
-    result = run_helper(
-        "skills/support/web-fetch/scripts/acquire_public_url.py",
-        "--url",
-        "https://example.com/api/article",
-        "--direct-response-file",
-        str(direct),
-        "--expect-text",
-        "Readable Title",
-        "--browser-mode",
-        "off",
-        "--include-selected-content",
-    )
-
-    assert result.returncode == 0, result.stderr
-    payload = yaml.safe_load(result.stdout)
-    assert payload["disposition"] == "success"
-    assert "selected_content" not in payload
-
-
-def test_acquire_public_url_does_not_include_xssi_json_selected_content(tmp_path: Path) -> None:
-    direct = tmp_path / "direct.txt"
-    direct.write_text(
-        ")]}'\n" + json.dumps({"title": "Readable Title", "body": "secret XSSI body should not persist"}),
-        encoding="utf-8",
-    )
-
-    result = run_helper(
-        "skills/support/web-fetch/scripts/acquire_public_url.py",
-        "--url",
-        "https://example.com/api/xssi",
-        "--direct-response-file",
-        str(direct),
-        "--expect-text",
-        "Readable Title",
-        "--browser-mode",
-        "off",
-        "--include-selected-content",
-    )
-
-    assert result.returncode == 0, result.stderr
-    payload = yaml.safe_load(result.stdout)
-    assert payload["disposition"] == "success"
-    assert "selected_content" not in payload
-
-
-def test_acquire_public_url_does_not_include_jsonp_selected_content(tmp_path: Path) -> None:
-    direct = tmp_path / "direct.js"
-    direct.write_text(
-        'callback({"title":"Readable Title","body":"secret JSONP body should not persist"});',
-        encoding="utf-8",
-    )
-
-    result = run_helper(
-        "skills/support/web-fetch/scripts/acquire_public_url.py",
-        "--url",
-        "https://example.com/api/jsonp",
-        "--direct-response-file",
-        str(direct),
-        "--expect-text",
-        "Readable Title",
-        "--browser-mode",
-        "off",
-        "--include-selected-content",
-    )
-
-    assert result.returncode == 0, result.stderr
-    payload = yaml.safe_load(result.stdout)
-    assert payload["disposition"] == "success"
-    assert "selected_content" not in payload
-
-
-def test_acquire_public_url_does_not_include_js_assignment_selected_content(tmp_path: Path) -> None:
-    direct = tmp_path / "direct.js"
-    direct.write_text(
-        'window.__DATA__={"title":"Readable Title","body":"secret JS body should not persist"};',
-        encoding="utf-8",
-    )
-
-    result = run_helper(
-        "skills/support/web-fetch/scripts/acquire_public_url.py",
-        "--url",
-        "https://example.com/api/data",
-        "--direct-response-file",
-        str(direct),
-        "--expect-text",
-        "Readable Title",
-        "--browser-mode",
-        "off",
-        "--include-selected-content",
-    )
-
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
     assert payload["disposition"] == "success"

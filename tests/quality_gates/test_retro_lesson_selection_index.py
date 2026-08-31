@@ -109,7 +109,7 @@ def test_build_retro_lesson_selection_index_check_rejects_stale_index(tmp_path: 
             )
         )
         .file("charness-artifacts/retro/lesson-selection-index.json", "{}\n")
-        .run(tmp_path, BUILD_INDEX, "--check")
+        .run(tmp_path, BUILD_INDEX, "--check", real_process=True)
         .failed(1)
         .stderr_has("retro lesson selection index", "--write")
     )
@@ -156,7 +156,7 @@ def test_build_retro_lesson_selection_index_check_rejects_stale_digest(tmp_path:
         "# Recent Retro Lessons\n\nstale\n", encoding="utf-8"
     )
 
-    run_at(repo, BUILD_INDEX, "--check").failed(1).stderr_has(
+    run_at(repo, BUILD_INDEX, "--check", real_process=True).failed(1).stderr_has(
         "recent lessons digest", "refresh_recent_lessons.py"
     )
 

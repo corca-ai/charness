@@ -104,42 +104,16 @@ def _write_repo_fixture(
 
 
 def _build_repo_seed(seed_root: Path) -> None:
+    from tests.quality_gates.repo_shapes import replace_with_committed_repo
+
     repo = seed_root / "repo"
     repo.mkdir()
     _write_repo_fixture(repo)
-    git_env = {
-        key: value for key, value in os.environ.items() if not key.startswith("GIT_")
-    }
-    git_env.update(
-        {
-            "GIT_AUTHOR_NAME": "Charness Test",
-            "GIT_AUTHOR_EMAIL": "tests@example.com",
-            "GIT_COMMITTER_NAME": "Charness Test",
-            "GIT_COMMITTER_EMAIL": "tests@example.com",
-            "GIT_AUTHOR_DATE": "2000-01-01T00:00:00+0000",
-            "GIT_COMMITTER_DATE": "2000-01-01T00:00:00+0000",
-            "GIT_CONFIG_GLOBAL": os.devnull,
-            "GIT_CONFIG_NOSYSTEM": "1",
-        }
+    replace_with_committed_repo(
+        repo,
+        message="fixture",
+        author_date="2000-01-01T00:00:00+0000",
     )
-    for args in (("init",), ("add", "."), ("commit", "-m", "fixture")):
-        subprocess.run(
-            [
-                "git",
-                "-c",
-                "init.defaultBranch=main",
-                "-c",
-                "user.name=Charness Test",
-                "-c",
-                "user.email=tests@example.com",
-                *args,
-            ],
-            cwd=repo,
-            env=git_env,
-            check=True,
-            capture_output=True,
-            text=True,
-        )
 
 
 def _repo(tmp_path: Path, *, timeout: int = 5, with_packet_sections: bool = True) -> None:
@@ -471,9 +445,8 @@ def test_present_committed_ref_uses_bound_target_bytes_not_current_workspace(
     assert entry["source"] == f"{target}:reviewed.txt"
 
 
-@pytest.mark.parametrize("ref_kind", ("commit", "range"))
 def test_committed_deletion_preimage_reaches_carrier_for_commit_and_range(
-    tmp_path: Path, ref_kind: str
+    tmp_path: Path,
 ) -> None:
     _repo(tmp_path)
     parent = _git_output(tmp_path, "rev-parse", "HEAD")
@@ -481,79 +454,71 @@ def test_committed_deletion_preimage_reaches_carrier_for_commit_and_range(
     _git(tmp_path, "add", "reviewed.txt")
     _git(tmp_path, "commit", "-m", "delete reviewed input")
     target = _git_output(tmp_path, "rev-parse", "HEAD")
-    changed_ref = target if ref_kind == "commit" else f"{parent}..{target}"
-    resolved = [target] if ref_kind == "commit" else [parent, target]
-    packet = {
-        "reviewed_input_identity": {
-            "mode": "committed-ref",
-            "substrate_mode": "committed-ref",
-            "changed_ref": changed_ref,
-            "resolved_changed_ref": resolved,
-            "reviewed_paths": ["reviewed.txt"],
-            "reviewed_content": [
-                {
-                    "path": "reviewed.txt",
-                    "content_sha256": hashlib.sha256(b"base\n").hexdigest(),
-                    "disposition": "deleted",
-                }
-            ],
-        }
-    }
     module = _packet_helper()
-    run_dir = tmp_path / ".charness" / f"committed-{ref_kind}"
-    run_dir.mkdir(parents=True)
+    for ref_kind, changed_ref, resolved in (
+        ("commit", target, [target]),
+        ("range", f"{parent}..{target}", [parent, target]),
+    ):
+        packet = {
+            "reviewed_input_identity": {
+                "mode": "committed-ref",
+                "substrate_mode": "committed-ref",
+                "changed_ref": changed_ref,
+                "resolved_changed_ref": resolved,
+                "reviewed_paths": ["reviewed.txt"],
+                "reviewed_content": [
+                    {
+                        "path": "reviewed.txt",
+                        "content_sha256": hashlib.sha256(b"base\n").hexdigest(),
+                        "disposition": "deleted",
+                    }
+                ],
+            }
+        }
+        run_dir = tmp_path / ".charness" / f"committed-{ref_kind}"
+        run_dir.mkdir(parents=True)
+        semantic_input = module.materialize_semantic_input(tmp_path, packet, run_dir)
+        entry = semantic_input["entries"][0]
+        assert (tmp_path / entry["carrier_path"]).read_bytes() == b"base\n"
+        assert entry["source"] == f"{parent}:reviewed.txt"
 
-    semantic_input = module.materialize_semantic_input(tmp_path, packet, run_dir)
 
-    entry = semantic_input["entries"][0]
-    assert (tmp_path / entry["carrier_path"]).read_bytes() == b"base\n"
-    assert entry["source"] == f"{parent}:reviewed.txt"
-
-
-def test_deleted_preimage_hash_mismatch_refuses_explicitly(tmp_path: Path) -> None:
+def test_deleted_preimage_refusals_on_one_tree(tmp_path: Path) -> None:
     _repo(tmp_path)
     (tmp_path / "reviewed.txt").unlink()
-    packet = _deleted_packet("reviewed.txt", "0" * 64)
     module = _packet_helper()
-    run_dir = tmp_path / ".charness" / "hash-mismatch"
-    run_dir.mkdir(parents=True)
 
+    mismatch_dir = tmp_path / ".charness" / "hash-mismatch"
+    mismatch_dir.mkdir(parents=True)
     with pytest.raises(module.SemanticInputError) as caught:
-        module.materialize_semantic_input(tmp_path, packet, run_dir)
-
+        module.materialize_semantic_input(
+            tmp_path, _deleted_packet("reviewed.txt", "0" * 64), mismatch_dir
+        )
     assert caught.value.code == "preimage-hash-mismatch"
     assert caught.value.details["path"] == "reviewed.txt"
 
-
-def test_deleted_preimage_unavailable_refuses_explicitly(tmp_path: Path) -> None:
-    _repo(tmp_path)
-    packet = _deleted_packet("missing.txt", hashlib.sha256(b"missing\n").hexdigest())
-    module = _packet_helper()
-    run_dir = tmp_path / ".charness" / "preimage-unavailable"
-    run_dir.mkdir(parents=True)
-
+    unavailable_dir = tmp_path / ".charness" / "preimage-unavailable"
+    unavailable_dir.mkdir(parents=True)
     with pytest.raises(module.SemanticInputError) as caught:
-        module.materialize_semantic_input(tmp_path, packet, run_dir)
-
+        module.materialize_semantic_input(
+            tmp_path,
+            _deleted_packet("missing.txt", hashlib.sha256(b"missing\n").hexdigest()),
+            unavailable_dir,
+        )
     assert caught.value.code == "preimage-unavailable"
     assert caught.value.details["path"] == "missing.txt"
 
-
-def test_deleted_preimage_oversize_refuses_without_truncation(tmp_path: Path) -> None:
-    _repo(tmp_path)
-    module = _packet_helper()
     content = b"x" * (module.MAX_PREIMAGE_BYTES + 1)
     (tmp_path / "large.bin").write_bytes(content)
     _git(tmp_path, "add", "large.bin")
     _git(tmp_path, "commit", "-m", "large fixture")
     (tmp_path / "large.bin").unlink()
-    packet = _deleted_packet("large.bin", hashlib.sha256(content).hexdigest())
-    run_dir = tmp_path / ".charness" / "preimage-oversize"
-    run_dir.mkdir(parents=True)
-
+    oversize_dir = tmp_path / ".charness" / "preimage-oversize"
+    oversize_dir.mkdir(parents=True)
     with pytest.raises(module.SemanticInputError) as caught:
-        module.materialize_semantic_input(tmp_path, packet, run_dir)
-
+        module.materialize_semantic_input(
+            tmp_path, _deleted_packet("large.bin", hashlib.sha256(content).hexdigest()), oversize_dir
+        )
     assert caught.value.code == "preimage-too-large"
     assert caught.value.details["path"] == "large.bin"
     assert caught.value.details["max_bytes"] == module.MAX_PREIMAGE_BYTES

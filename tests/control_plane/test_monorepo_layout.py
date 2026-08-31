@@ -8,8 +8,10 @@ from scripts import repo_file_listing, repo_layout
 from scripts.repo_file_listing import (
     RepoFileListingError,
     RepoFileSnapshot,
+    bind_subject_listing,
     iter_matching_repo_files,
     iter_repo_files,
+    unbind_subject_listing,
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -147,6 +149,35 @@ def test_repo_file_snapshot_reuses_one_listing_across_derived_views(
         repo, ("*.md",), snapshot=snapshot
     ) == [readme]
     assert calls == 1
+
+
+def test_bound_subject_listing_is_shared_until_unbound(tmp_path, monkeypatch):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    readme = repo / "README.md"
+    readme.write_text("# Demo\n", encoding="utf-8")
+    calls = 0
+
+    def listed(*args, **kwargs):
+        nonlocal calls
+        calls += 1
+        return [readme]
+
+    monkeypatch.setattr(repo_file_listing, "git_list_repo_files", listed)
+    bind_subject_listing(RepoFileSnapshot(repo, require_git=True))
+    try:
+        assert iter_repo_files(repo, require_git=True) == [readme]
+        assert iter_matching_repo_files(repo, ("*.md",), require_git=True) == [readme]
+        assert RepoFileSnapshot(repo, require_git=True).list_files() == [readme]
+        assert calls == 1
+    finally:
+        unbind_subject_listing(repo, require_git=True)
+    assert RepoFileSnapshot(repo, require_git=True).list_files() == [readme]
+    assert calls == 2
+
+
+def test_this_repo_listing_is_bound_for_the_session() -> None:
+    assert repo_file_listing._subject_listing(REPO_ROOT, require_git=True) is not None
 
 
 def test_load_support_capability_schema_uses_override(tmp_path, monkeypatch):

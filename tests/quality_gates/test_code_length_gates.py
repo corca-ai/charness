@@ -10,9 +10,10 @@ from pathlib import Path
 
 import pytest
 
+from tests.quality_gates.repo_shapes import install_committed_repo
 from tests.script_main import run_loaded_script_main
 
-from .support import init_git_repo, run_script
+from .support import run_script
 
 PYTHON_LENGTHS = importlib.import_module("scripts.check_code_lengths")
 
@@ -164,19 +165,21 @@ def test_tokei_code_counts_rejects_invalid_json(monkeypatch, tmp_path: Path) -> 
 
 def test_check_code_lengths_ignores_gitignored_python_files(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    scripts_dir = repo / "scripts"
-    tests_dir = repo / "tests"
-    scripts_dir.mkdir(parents=True)
-    tests_dir.mkdir(parents=True)
-    (repo / ".gitignore").write_text("scripts/generated_*.py\ntests/generated_*.py\n", encoding="utf-8")
-    (scripts_dir / "kept.py").write_text("def short():\n    return 1\n", encoding="utf-8")
-    (scripts_dir / "generated_long.py").write_text("\n".join(f"print({i})" for i in range(381)) + "\n", encoding="utf-8")
-    (tests_dir / "kept_test.py").write_text("def test_short():\n    assert True\n", encoding="utf-8")
-    (tests_dir / "generated_long.py").write_text(
+    install_committed_repo(
+        repo,
+        {
+            ".gitignore": "scripts/generated_*.py\ntests/generated_*.py\n",
+            "scripts/kept.py": "def short():\n    return 1\n",
+            "tests/kept_test.py": "def test_short():\n    assert True\n",
+        },
+    )
+    (repo / "scripts" / "generated_long.py").write_text(
+        "\n".join(f"print({i})" for i in range(381)) + "\n", encoding="utf-8"
+    )
+    (repo / "tests" / "generated_long.py").write_text(
         "\n".join(["def test_generated():", *[f"    value_{i} = {i}" for i in range(151)], "    assert True", ""]),
         encoding="utf-8",
     )
-    init_git_repo(repo, ".gitignore", "scripts/kept.py", "tests/kept_test.py")
 
     result = run_script("scripts/check_code_lengths.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr

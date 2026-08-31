@@ -8,6 +8,7 @@ from types import SimpleNamespace
 import yaml
 
 from runtime_bootstrap import load_path_module
+from tests.quality_gates.support import run_script
 
 ROOT = Path(__file__).resolve().parents[1]
 WEB_FETCH_SCRIPTS = ROOT / "skills" / "support" / "web-fetch" / "scripts"
@@ -37,6 +38,8 @@ def run_helper(
     *args: str,
     input_text: str | None = None,
 ) -> subprocess.CompletedProcess[str]:
+    if input_text is None:
+        return run_script(script, *args, cwd=ROOT)
     return subprocess.run(
         [sys.executable, script, *args],
         cwd=ROOT,

@@ -11,6 +11,7 @@ import yaml
 from scripts import lesson_ledger_lib as ledger
 from scripts import lesson_score_outcome_lib as outcome_lib
 from scripts import seed_lesson_transitions as seeder
+from tests.quality_gates.support import run_script
 from tests.test_lesson_ledger import ROOT, _ledger, _retro, _validate
 
 
@@ -279,21 +280,23 @@ def test_cli_dry_run_and_write_roundtrip(tmp_path: Path) -> None:
     the ledger byte-identical while it does."""
     _retro(tmp_path, "source.md", "a")
     path = _empty_ledger(tmp_path)
-    command = [
-        sys.executable,
+    rehearsal = run_script(
         str(ROOT / "scripts/seed_lesson_transitions.py"),
         "--repo-root",
         str(tmp_path),
-    ]
-
-    rehearsal = subprocess.run([*command, "--dry-run"], check=False, capture_output=True, text=True)
+        "--dry-run",
+    )
     assert rehearsal.returncode == 0, rehearsal.stderr
     planned = yaml.safe_load(rehearsal.stdout)
     assert planned["dry_run"] is True and planned["seeded_count"] == 1
     # The ledger on disk stays JSON; only the command's own receipt moved to YAML.
     assert json.loads(path.read_text(encoding="utf-8"))["transitions"] == []
 
-    applied = subprocess.run(command, check=False, capture_output=True, text=True)
+    applied = run_script(
+        str(ROOT / "scripts/seed_lesson_transitions.py"),
+        "--repo-root",
+        str(tmp_path),
+    )
     assert applied.returncode == 0, applied.stderr
     applied_receipt = yaml.safe_load(applied.stdout)
     assert applied_receipt["seeded"] == planned["seeded"]
@@ -316,14 +319,12 @@ def test_receipt_carries_the_freeze_warning_and_its_context_on_every_path(tmp_pa
     """
     _retro(tmp_path, "source.md", "a")
     _empty_ledger(tmp_path)
-    command = [
-        sys.executable,
+    rehearsal = run_script(
         str(ROOT / "scripts/seed_lesson_transitions.py"),
         "--repo-root",
         str(tmp_path),
-    ]
-
-    rehearsal = subprocess.run([*command, "--dry-run"], check=False, capture_output=True, text=True)
+        "--dry-run",
+    )
     assert rehearsal.returncode == 0, rehearsal.stderr
     planned = yaml.safe_load(rehearsal.stdout)
     assert planned["dry_run"] is True and planned["seeded_count"] == 1
@@ -333,14 +334,22 @@ def test_receipt_carries_the_freeze_warning_and_its_context_on_every_path(tmp_pa
     assert planned["active_lesson_count"] == 1
     assert planned["active_lesson_budget"] == ledger.ACTIVE_LESSON_BUDGET
 
-    applied = subprocess.run(command, check=False, capture_output=True, text=True)
+    applied = run_script(
+        str(ROOT / "scripts/seed_lesson_transitions.py"),
+        "--repo-root",
+        str(tmp_path),
+    )
     assert applied.returncode == 0, applied.stderr
     written = yaml.safe_load(applied.stdout)
     assert written["dry_run"] is False and written["seeded_count"] == 1
     assert "unrepairably" in written["freeze_note"]
 
     # And the nothing-to-do receipt names why, rather than reporting an empty list.
-    idle = subprocess.run(command, check=False, capture_output=True, text=True)
+    idle = run_script(
+        str(ROOT / "scripts/seed_lesson_transitions.py"),
+        "--repo-root",
+        str(tmp_path),
+    )
     assert idle.returncode == 0, idle.stderr
     nothing = yaml.safe_load(idle.stdout)
     assert nothing["seeded"] == [] and nothing["already_seeded_count"] == 1
@@ -394,16 +403,11 @@ def test_two_concurrent_seeders_smoke_check_the_shared_lock(tmp_path: Path) -> N
 
 def test_cli_refuses_a_missing_ledger_and_names_the_bootstrap(tmp_path: Path) -> None:
     _retro(tmp_path, "source.md", "a")
-    command = subprocess.run(
-        [
-            sys.executable,
-            str(ROOT / "scripts/seed_lesson_transitions.py"),
-            "--repo-root",
-            str(tmp_path),
-        ],
-        check=False,
-        capture_output=True,
-        text=True,
+    command = run_script(
+        str(ROOT / "scripts/seed_lesson_transitions.py"),
+        "--repo-root",
+        str(tmp_path),
+        real_process=True,
     )
     assert command.returncode == 1
     assert not (tmp_path / "charness-artifacts/retro/lesson-ledger.json").exists()

@@ -92,7 +92,6 @@ def test_git_snapshot_batches_gate_facts(tmp_path: Path, monkeypatch: pytest.Mon
     assert calls == [
         ["log", "-1", "--format=%H", "HEAD", "--", "q/dup-review.json"],
         ["rev-list", "--left-right", "--count", f"{anchor}...HEAD"],
-        ["ls-files"],
         list(git_status_args()),
     ]
 
@@ -204,10 +203,8 @@ def test_git_seams_do_not_launch_git_on_a_plain_directory(
 
 
 def test_tracked_files_lists_a_real_checkout(tmp_path: Path) -> None:
-    from .git_fixture_support import init_git_repo
+    from tests.quality_gates.repo_shapes import install_committed_repo
 
     repo = tmp_path / "r"
-    repo.mkdir()
-    (repo / "f.txt").write_text("x\n", encoding="utf-8")
-    init_git_repo(repo, "f.txt")
+    install_committed_repo(repo, {"f.txt": "x\n"})
     assert gitmod.tracked_files(repo) == {"f.txt"}

@@ -7,6 +7,7 @@ from pathlib import Path
 
 import yaml
 
+from tests.quality_gates.git_fixture_support import init_git_repo
 from tests.quality_gates.seeding_support import (
     close_comment_args,
     environment_with_path,
@@ -146,7 +147,7 @@ def test_issue_target_uses_default_org_for_bare_repo(tmp_path: Path) -> None:
 
 
 def test_issue_target_infers_current_repo_from_git_remote(tmp_path: Path) -> None:
-    subprocess.run(["git", "init"], cwd=tmp_path, check=True, capture_output=True, text=True)
+    init_git_repo(tmp_path)
     subprocess.run(
         ["git", "remote", "add", "origin", "git@github.com:corca-ai/charness.git"],
         cwd=tmp_path,

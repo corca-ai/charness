@@ -20,7 +20,7 @@ from pathlib import Path
 
 import pytest
 
-from .support import ROOT
+from .support import ROOT, run_script
 
 sys.path.insert(0, str(ROOT))
 
@@ -45,42 +45,21 @@ GATE = ROOT / "scripts" / "check_artifact_referents.py"
 # --------------------------------------------------------------------------
 
 
-def test_the_hash_N_that_passed_every_gate_is_caught() -> None:
-    """THE regression. `issue #N` shipped inside a release bundle pointing at
-    nothing, because `#N` is not in the form floor's placeholder vocabulary
-    (`TODO|TBD|<...>|FIXME`) and `issue #N` is a well-formed disposition."""
+def test_issue_reference_placeholders_and_prose() -> None:
+    """`issue #N` shipped inside a release bundle pointing at nothing, because
+    `#N` is not in the form floor's placeholder vocabulary."""
     assert bad_issue_refs("Structural follow-up: issue #N (recurs: ...)") == ["N"]
-
-
-def test_a_real_issue_number_passes() -> None:
     assert bad_issue_refs("Structural follow-up: issue #700 (novel: ...)") == []
     assert bad_issue_refs("`tracked issue: #701.`") == []
-
-
-@pytest.mark.parametrize("token", ["TBD", "todo", "x", "nnn"])
-def test_other_placeholder_shapes_are_caught_too(token: str) -> None:
-    assert bad_issue_refs(f"applied: issue #{token}") == [token]
-
-
-# --------------------------------------------------------------------------
-# False positives -- a gate authors learn to skip is worse than no gate
-# --------------------------------------------------------------------------
-
-
-@pytest.mark.parametrize(
-    "prose",
-    [
+    for token in ("TBD", "todo", "x", "nnn"):
+        assert bad_issue_refs(f"applied: issue #{token}") == [token], token
+    for prose in (
         "the issue closeout floor was not run",
         "issue carrier is absent",
         "no issue anchors in a portable package",
         "the issue names two invariants",
-    ],
-)
-def test_prose_about_issues_is_not_an_issue_reference(prose: str) -> None:
-    """`issue <word>` is ordinary English about this repo's own machinery and
-    appears in dozens of checked-in goals. Requiring `#` or digits is what keeps
-    this gate credible."""
-    assert bad_issue_refs(prose) == []
+    ):
+        assert bad_issue_refs(prose) == [], prose
 
 
 def test_angle_bracket_placeholders_defer_to_the_form_floor() -> None:
@@ -98,13 +77,13 @@ def test_a_todo_line_belongs_to_the_form_floor_not_here() -> None:
     assert check_disposition_referents(scaffold, ROOT) == []
 
 
-@pytest.mark.parametrize("word", ["defaced", "acceded", "effaced"])
-def test_hex_looking_english_is_not_a_sha(word: str) -> None:
-    """Every parameter must be >= 7 chars, or `SHA_RE`'s `{7,40}` bound excludes
+def test_hex_looking_english_is_not_a_sha() -> None:
+    """Every word must be >= 7 chars, or `SHA_RE`'s `{7,40}` bound excludes
     it before `_HEX_WORDS` is consulted and the test passes with the filter
-    deleted. The earlier version had two 6-char words doing exactly that."""
-    assert len(word) >= 7
-    assert unresolvable_shas(f"the {word} of it", ROOT, run=lambda *a: False) == []
+    deleted."""
+    for word in ("defaced", "acceded", "effaced"):
+        assert len(word) >= 7
+        assert unresolvable_shas(f"the {word} of it", ROOT, run=lambda *a: False) == []
 
 
 def test_a_long_digit_run_is_a_number_not_a_sha() -> None:
@@ -129,9 +108,10 @@ def test_an_unresolvable_sha_is_reported() -> None:
     assert unresolvable_shas("see `deadbee1234`", ROOT, run=lambda *a: False) == ["deadbee1234"]
 
 
-@pytest.mark.parametrize(
-    "content_label",
-    [
+def test_a_typed_content_identity_does_not_hide_a_commit_candidate() -> None:
+    from scripts.artifact_referents import sha_candidates
+
+    for content_label in (
         "packet",
         "packet identity",
         "packet_identity:",
@@ -141,16 +121,9 @@ def test_an_unresolvable_sha_is_reported() -> None:
         "findings identity:",
         "findings_identity:",
         "identity_sha256:",
-    ],
-)
-def test_a_typed_content_identity_does_not_hide_a_commit_candidate(
-    content_label: str,
-) -> None:
-    from scripts.artifact_referents import sha_candidates
-
-    line = f"{content_label} `6015111c...`; commit `deadbee1234`"
-
-    assert sha_candidates(line) == ["deadbee1234"]
+    ):
+        line = f"{content_label} `6015111c...`; commit `deadbee1234`"
+        assert sha_candidates(line) == ["deadbee1234"], content_label
 
 
 def test_a_git_commit_identity_remains_a_commit_candidate() -> None:
@@ -236,10 +209,7 @@ def test_sites_are_reported_with_line_numbers() -> None:
 
 
 def _run(*args: str) -> subprocess.CompletedProcess:
-    return subprocess.run(
-        [sys.executable, str(GATE), "--repo-root", str(ROOT), *args],
-        capture_output=True, text=True, timeout=180,
-    )
+    return run_script(str(GATE), "--repo-root", str(ROOT), *args)
 
 
 def test_the_gate_blocks_on_a_dated_artifact_with_a_bad_referent(tmp_path: Path) -> None:
@@ -371,10 +341,7 @@ def test_a_directory_argument_is_an_input_error_not_a_pass(tmp_path: Path) -> No
 def test_an_empty_corpus_blocks_rather_than_reporting_clean(tmp_path: Path) -> None:
     """Both adjacent gates in run-quality.sh carry an empty-corpus guard. Without
     one, a renamed artifact directory reads as a pass."""
-    result = subprocess.run(
-        [sys.executable, str(GATE), "--repo-root", str(tmp_path)],
-        capture_output=True, text=True, timeout=60,
-    )
+    result = run_script(str(GATE), "--repo-root", str(tmp_path))
 
     assert result.returncode == 1
     assert "EMPTY CORPUS" in result.stdout
@@ -422,14 +389,11 @@ def _git(repo: Path, *args: str) -> str:
 
 
 def _build_side_branch_repo_seed(seed: Path) -> None:
-    repo = seed / "repo"
-    repo.mkdir()
-    _git(repo, "init", "-b", "main")
+    from tests.quality_gates.repo_shapes import install_committed_repo
+
+    repo = install_committed_repo(seed / "repo", {"base.txt": "base\n"}, message="base")
     _git(repo, "config", "user.name", "Charness Test")
     _git(repo, "config", "user.email", "charness-test@example.invalid")
-    (repo / "base.txt").write_text("base\n", encoding="utf-8")
-    _git(repo, "add", "base.txt")
-    _git(repo, "commit", "-m", "base")
     _git(repo, "switch", "-c", "local-lane")
     (repo / "lane.txt").write_text("local\n", encoding="utf-8")
     _git(repo, "add", "lane.txt")
@@ -542,13 +506,13 @@ def test_exact_local_context_declaration_is_visible_and_stale_checked(tmp_path: 
         sys.executable, str(GATE), "--repo-root", str(repo), "--path", artifact_rel,
     ]
 
-    accepted = subprocess.run(command, capture_output=True, text=True, timeout=60)
+    accepted = run_script(*command[1:])
     assert accepted.returncode == 0, accepted.stdout
     assert "declared local context (reported, exact): 1" in accepted.stdout
     assert "declared-local-commit-ref" in accepted.stdout
 
     artifact.write_text(f"changed context, same token `{local_sha[:10]}`\n", encoding="utf-8")
-    changed_line = subprocess.run(command, capture_output=True, text=True, timeout=60)
+    changed_line = run_script(*command[1:])
     assert changed_line.returncode == 1
     assert "stale-local-context-declaration" in changed_line.stdout
     artifact.write_text(f"{line}\n", encoding="utf-8")
@@ -556,7 +520,7 @@ def test_exact_local_context_declaration_is_visible_and_stale_checked(tmp_path: 
     entry["line"] = 2
     declarations.write_text(json.dumps([entry]), encoding="utf-8")
     _git(repo, "add", str(declarations.relative_to(repo)))
-    stale = subprocess.run(command, capture_output=True, text=True, timeout=60)
+    stale = run_script(*command[1:])
     assert stale.returncode == 1
     assert "stale-local-context-declaration" in stale.stdout
     assert "non-durable-commit-ref" in stale.stdout
@@ -597,10 +561,7 @@ def test_malformed_local_context_declarations_block(
     declarations.write_text(json.dumps([entry]), encoding="utf-8")
     _git(repo, "add", str(declarations.relative_to(repo)))
 
-    result = subprocess.run(
-        [sys.executable, str(GATE), "--repo-root", str(repo), "--path", artifact_rel],
-        capture_output=True, text=True, timeout=60,
-    )
+    result = run_script(str(GATE), "--repo-root", str(repo), "--path", artifact_rel)
     assert result.returncode == 1
     assert "malformed-local-context-declaration" in result.stdout
 
@@ -625,10 +586,7 @@ def test_untracked_local_context_declaration_cannot_change_the_verdict(tmp_path:
         "reason": "unreviewed local bytes",
     }]), encoding="utf-8")
 
-    result = subprocess.run(
-        [sys.executable, str(GATE), "--repo-root", str(repo), "--path", artifact_rel],
-        capture_output=True, text=True, timeout=60,
-    )
+    result = run_script(str(GATE), "--repo-root", str(repo), "--path", artifact_rel)
     assert result.returncode == 1
     assert "unbound-local-context-declaration" in result.stdout
 
@@ -726,41 +684,28 @@ def test_an_unrelated_TODO_elsewhere_on_the_line_does_not_disarm_the_rung() -> N
     assert len(check_disposition_referents(evasion, ROOT)) == 1
 
 
-@pytest.mark.parametrize(
-    "documentation",
-    [
-        "the floor accepts `applied: <what>` / `issue #N` / `none — <reason>`",
-        "(`issue #N`/`applied:`/`accepted-risk:`/`out-of-scope:`) accepts it.",
-    ],
-)
-def test_the_gate_can_be_documented_inside_its_own_corpus(documentation: str) -> None:
+def test_the_gate_can_be_documented_inside_its_own_corpus() -> None:
     """Otherwise the next retro explaining this gate is its own first false
     positive. The discriminator is ENUMERATION, not backticks -- the real v6.3.0
     defect was itself inside a code span."""
-    assert check_disposition_referents(documentation, ROOT) == []
+    for documentation in (
+        "the floor accepts `applied: <what>` / `issue #N` / `none — <reason>`",
+        "(`issue #N`/`applied:`/`accepted-risk:`/`out-of-scope:`) accepts it.",
+    ):
+        assert check_disposition_referents(documentation, ROOT) == [], documentation
 
 
-@pytest.mark.parametrize(
-    "real_defect",
-    [
+def test_a_committed_disposition_is_still_caught_inside_backticks() -> None:
+    """A backtick exemption would have exempted the exact defect this exists for."""
+    for real_defect in (
         "Decision: `issue #N (recurs: the release flow already solves this)`",
         "Structural follow-up: issue #N (novel: something specific)",
         "- **applied**: issue #N",
-    ],
-)
-def test_a_committed_disposition_is_still_caught_inside_backticks(real_defect: str) -> None:
-    """A backtick exemption would have exempted the exact defect this exists for."""
-    assert len(check_disposition_referents(real_defect, ROOT)) == 1
+    ):
+        assert len(check_disposition_referents(real_defect, ROOT)) == 1, real_defect
 
 
-@pytest.mark.parametrize(
-    "spelling",
-    [
-        "Disposition: **applied** — see scripts/does_not_exist_here.py",
-        "- **applied**: scripts/does_not_exist_here.py",
-    ],
-)
-def test_this_repos_other_disposition_spellings_are_seen(spelling: str) -> None:
+def test_this_repos_other_disposition_spellings_are_seen() -> None:
     """`Disposition:` appears 75 times across 28 checked-in goals, and `**applied**`
     puts bold markers between the word and the colon."""
     import importlib.util
@@ -768,8 +713,11 @@ def test_this_repos_other_disposition_spellings_are_seen(spelling: str) -> None:
     spec = importlib.util.spec_from_file_location("gate", GATE)
     gate = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(gate)
-
-    assert gate.disposition_lines(spelling) != []
+    for spelling in (
+        "Disposition: **applied** — see scripts/does_not_exist_here.py",
+        "- **applied**: scripts/does_not_exist_here.py",
+    ):
+        assert gate.disposition_lines(spelling) != [], spelling
 
 
 # --------------------------------------------------------------------------
@@ -827,10 +775,7 @@ def test_a_refusing_resolver_exits_unestablished_not_pass(tmp_path: Path) -> Non
     artifact = tmp_path / "2026-08-25-nogit.md"
     artifact.write_text("landed at `deadbee1234`\n", encoding="utf-8")
 
-    result = subprocess.run(
-        [sys.executable, str(GATE), "--repo-root", str(tmp_path), "--path", str(artifact)],
-        capture_output=True, text=True, timeout=60,
-    )
+    result = run_script(str(GATE), "--repo-root", str(tmp_path), "--path", str(artifact))
 
     assert result.returncode == 3, result.stdout
     assert "WARNING" in result.stdout, "run-quality only prints a passing gate's log on this token"

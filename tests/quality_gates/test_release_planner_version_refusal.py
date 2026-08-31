@@ -22,6 +22,8 @@ from pathlib import Path
 
 import pytest
 
+from tests.quality_gates.git_fixture_support import init_git_repo
+
 from .support import ROOT
 
 PLANNER = ROOT / "skills" / "public" / "release" / "scripts" / "plan_release_run.py"
@@ -43,7 +45,7 @@ def _repo(tmp_path: Path, adapter: str) -> Path:
     # a repo here the speakable-version control would fail on git rather than on the
     # behavior it exists to pin — and a control that fails for the wrong reason proves
     # nothing about the refusal above it.
-    subprocess.run(["git", "init", "-q"], cwd=repo, check=True, capture_output=True)
+    init_git_repo(repo)
     return repo
 
 

@@ -4,6 +4,8 @@ from pathlib import Path
 
 import pytest
 
+from tests.quality_gates.repo_shapes import install_two_commit_repo
+
 from .support import ROOT, run_script
 
 # The boundary-ownership typed-presence floor (#408/#414/#416): every critique
@@ -252,26 +254,35 @@ def test_changed_ref_range_fires_tooth_end_to_end(tmp_path: Path) -> None:
     # committed change touches a `scripts/*_lib.py` path rejects a bare
     # `single-surface` verdict — exactly the CI path. Fails if the wiring regresses
     # to a bare sha (which resolves the fork-point's own diff, not the range).
-    import subprocess
-
-    repo = tmp_path / "repo"
-    _write_adapter_with_globs(repo, "scripts/*_lib.py")
-    (repo / "scripts").mkdir(exist_ok=True)
-    (repo / "scripts" / "keep.py").write_text("x = 1\n", encoding="utf-8")
-
-    def g(*a: str) -> str:
-        return subprocess.run(["git", "-C", str(repo), *a], check=True, capture_output=True, text=True).stdout
-
-    # Identity comes from GIT_AUTHOR_*/GIT_COMMITTER_* in the session fixture, so
-    # this seeding does not spawn `git config`.
-    for cmd in (["init"], ["add", "-A"], ["commit", "-qm", "base"]):
-        g(*cmd)
-    base = g("rev-parse", "HEAD").strip()
-
-    (repo / "scripts" / "foo_lib.py").write_text("def f():\n    return 1\n", encoding="utf-8")
-    relpath = _write_with_verdict(repo, "2026-07-06-demo.md", "single-surface")
-    g("add", "-A")
-    g("commit", "-qm", "change")
+    artifact = "\n".join(
+        [
+            "# Demo Critique",
+            "",
+            _FRESH_EYE_OK,
+            "",
+            "## Boundary Ownership",
+            "",
+            "- Verdict: single-surface",
+            "",
+        ]
+    )
+    repo, base, _head = install_two_commit_repo(
+        tmp_path / "repo",
+        {
+            ".agents/critique-adapter.yaml": (
+                "version: 1\nrepo: demo\n"
+                'boundary_cross_surface_globs:\n  - "scripts/*_lib.py"\n'
+            ),
+            "scripts/keep.py": "x = 1\n",
+        },
+        {
+            "scripts/foo_lib.py": "def f():\n    return 1\n",
+            "charness-artifacts/critique/2026-07-06-demo.md": artifact,
+        },
+        first_message="base",
+        second_message="change",
+    )
+    relpath = "charness-artifacts/critique/2026-07-06-demo.md"
 
     result = _run(repo, relpath, "--changed-ref", f"{base}..HEAD")
     assert result.returncode == 1

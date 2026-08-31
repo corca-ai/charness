@@ -9,6 +9,11 @@ from pathlib import Path
 
 import pytest
 
+from scripts.repo_file_listing import (
+    RepoFileSnapshot,
+    bind_subject_listing,
+    unbind_subject_listing,
+)
 from tests import seed_cache
 
 pytest_plugins = [
@@ -21,9 +26,19 @@ _REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 def pytest_configure(config) -> None:
-    """Compute the source-bound seed key once before xdist workers are spawned."""
+    """Compute the source-bound seed key once before xdist workers are spawned.
+
+    Also bind this checkout's file listing so inventory of the subject repo
+    observes once per worker. The snapshot is empty until first list: tests
+    that monkeypatch listing still see that patch if they run first.
+    """
     if not hasattr(config, "workerinput") and config.pluginmanager.hasplugin("xdist"):
         os.environ.setdefault(seed_cache._SOURCE_HASH_ENV, seed_cache.source_hash())
+    bind_subject_listing(RepoFileSnapshot(_REPO_ROOT, require_git=True))
+
+
+def pytest_unconfigure(config) -> None:
+    unbind_subject_listing(_REPO_ROOT, require_git=True)
 
 
 @pytest.fixture(scope="session", autouse=True)

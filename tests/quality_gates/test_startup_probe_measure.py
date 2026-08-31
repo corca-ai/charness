@@ -65,32 +65,6 @@ def _seed_repo(
     return repo
 
 
-def test_measure_startup_probes_filters_by_class_and_reports_timings(tmp_path: Path) -> None:
-    repo = _seed_repo(tmp_path)
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--class", "standing", "--detail")
-    assert result.returncode == 0, result.stderr
-    payload = yaml.safe_load(result.stdout)
-    assert payload["probes_configured"] == 2
-    assert payload["probes_measured"] == 1
-    assert payload["failures"] == []
-    measured = payload["measured"][0]
-    assert measured["label"] == "demo-version"
-    assert measured["class"] == "standing"
-    assert measured["startup_mode"] == "warm"
-    assert measured["surface"] == "direct"
-    assert measured["samples_requested"] == 2
-    assert measured["samples_ran"] == 2
-    assert measured["status"] == "ok"
-
-
-def test_measure_startup_probes_summary_yaml_is_structured(tmp_path: Path) -> None:
-    repo = _seed_repo(tmp_path)
-    args = ("--repo-root", str(repo), "--class", "standing", "--summary")
-    yaml_result = run_script(SCRIPT, *args)
-    assert yaml_result.returncode == 0
-    assert yaml.safe_load(yaml_result.stdout)["probes_measured"] == 1
-
-
 def test_measure_startup_probes_summary_bounds_failures() -> None:
     failures = [{"label": f"probe-{index}"} for index in range(12)]
     payload = MEASURE_STARTUP_PROBES.summarize(
@@ -109,27 +83,42 @@ def test_measure_startup_probes_summary_bounds_failures() -> None:
     assert payload["failures_truncated"] is True
 
 
-def test_measure_startup_probes_can_record_runtime_signals(tmp_path: Path) -> None:
+def test_measure_startup_probes_shapes_on_one_tree(tmp_path: Path) -> None:
     repo = _seed_repo(tmp_path)
-    result = run_script(
+    detail = run_script(
         SCRIPT,
         "--repo-root",
         str(repo),
         "--class",
         "standing",
-        "--record-runtime-signals",
         "--detail",
+        "--record-runtime-signals",
     )
-    assert result.returncode == 0, result.stderr
-    summary = json.loads((repo / ".charness" / "quality" / "runtime-signals.json").read_text(encoding="utf-8"))
-    assert any("demo-version" in profile["commands"] for profile in summary["profiles"].values())
+    assert detail.returncode == 0, detail.stderr
+    payload = yaml.safe_load(detail.stdout)
+    assert payload["probes_configured"] == 2
+    assert payload["probes_measured"] == 1
+    assert payload["failures"] == []
+    measured = payload["measured"][0]
+    assert measured["label"] == "demo-version"
+    assert measured["class"] == "standing"
+    assert measured["startup_mode"] == "warm"
+    assert measured["surface"] == "direct"
+    assert measured["samples_requested"] == 2
+    assert measured["samples_ran"] == 2
+    assert measured["status"] == "ok"
+    recorded = json.loads(
+        (repo / ".charness" / "quality" / "runtime-signals.json").read_text(encoding="utf-8")
+    )
+    assert any("demo-version" in profile["commands"] for profile in recorded["profiles"].values())
 
+    summary = run_script(SCRIPT, "--repo-root", str(repo), "--class", "standing", "--summary")
+    assert summary.returncode == 0
+    assert yaml.safe_load(summary.stdout)["probes_measured"] == 1
 
-def test_measure_startup_probes_records_to_explicit_external_state_root(tmp_path: Path) -> None:
-    repo = _seed_repo(tmp_path)
+    (repo / ".charness" / "quality" / "runtime-signals.json").unlink()
     state_root = tmp_path / "task-result" / "runtime" / "quality"
-
-    result = run_script(
+    external = run_script(
         SCRIPT,
         "--repo-root",
         str(repo),
@@ -139,41 +128,31 @@ def test_measure_startup_probes_records_to_explicit_external_state_root(tmp_path
         "--state-root",
         str(state_root),
     )
-
-    assert result.returncode == 0, result.stderr
-    summary = json.loads((state_root / "runtime-signals.json").read_text(encoding="utf-8"))
-    assert any("demo-version" in profile["commands"] for profile in summary["profiles"].values())
+    assert external.returncode == 0, external.stderr
+    external_summary = json.loads((state_root / "runtime-signals.json").read_text(encoding="utf-8"))
+    assert any("demo-version" in profile["commands"] for profile in external_summary["profiles"].values())
     assert not (repo / ".charness" / "quality" / "runtime-signals.json").exists()
 
+    failing_repo = _seed_repo(tmp_path / "failing", failing=True)
+    failed = run_script(SCRIPT, "--repo-root", str(failing_repo), "--class", "standing", "--detail")
+    assert failed.returncode == 1
+    failed_payload = yaml.safe_load(failed.stdout)
+    assert len(failed_payload["failures"]) == 1
+    assert failed_payload["failures"][0]["label"] == "demo-version"
+    assert failed_payload["failures"][0]["status"] == "command-failed"
 
-def test_measure_startup_probes_fails_when_command_fails(tmp_path: Path) -> None:
-    repo = _seed_repo(tmp_path, failing=True)
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--class", "standing", "--detail")
-    assert result.returncode == 1
-    payload = yaml.safe_load(result.stdout)
-    assert len(payload["failures"]) == 1
-    assert payload["failures"][0]["label"] == "demo-version"
-    assert payload["failures"][0]["status"] == "command-failed"
-
-
-def test_measure_startup_probes_times_out_hanging_command(tmp_path: Path) -> None:
-    repo = _seed_repo(tmp_path, probe_sleep_seconds=0.2, timeout_seconds=0.05)
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--class", "standing", "--detail")
-    assert result.returncode == 1
-    payload = yaml.safe_load(result.stdout)
-    assert len(payload["failures"]) == 1
-    assert payload["failures"][0]["status"] == "command-timeout"
-    assert payload["failures"][0]["timeout_seconds"] == 0.05
-    assert payload["failures"][0]["returncode"] == 124
-
-
-def test_measure_startup_probes_human_output_reports_timeout(tmp_path: Path) -> None:
-    repo = _seed_repo(tmp_path, probe_sleep_seconds=0.2, timeout_seconds=0.05)
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--class", "standing")
-
-    assert result.returncode == 1
-    assert "COMMAND-TIMEOUT" in result.stdout
-    assert "rc 124" in result.stdout
+    timeout_repo = _seed_repo(tmp_path / "timeout", probe_sleep_seconds=0.2, timeout_seconds=0.05)
+    timed_out = run_script(SCRIPT, "--repo-root", str(timeout_repo), "--class", "standing", "--detail")
+    assert timed_out.returncode == 1
+    timeout_payload = yaml.safe_load(timed_out.stdout)
+    assert len(timeout_payload["failures"]) == 1
+    assert timeout_payload["failures"][0]["status"] == "command-timeout"
+    assert timeout_payload["failures"][0]["timeout_seconds"] == 0.05
+    assert timeout_payload["failures"][0]["returncode"] == 124
+    human = run_script(SCRIPT, "--repo-root", str(timeout_repo), "--class", "standing")
+    assert human.returncode == 1
+    assert "COMMAND-TIMEOUT" in human.stdout
+    assert "rc 124" in human.stdout
 
 
 def test_timeout_seconds_uses_default_for_invalid_probe_value() -> None:

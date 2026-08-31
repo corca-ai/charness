@@ -19,10 +19,11 @@ it again.
 from __future__ import annotations
 
 import subprocess
-import sys
 from pathlib import Path
 
 import pytest
+
+from .support import run_script
 
 ROOT = Path(__file__).resolve().parents[2]
 CLI = ROOT / "scripts" / "resolve_artifact_path.py"
@@ -46,9 +47,8 @@ def _repo(tmp_path: Path, adapter: str) -> Path:
 
 
 def _run(repo: Path) -> subprocess.CompletedProcess:
-    return subprocess.run(
-        [sys.executable, str(CLI), "--repo-root", str(repo), "--skill-id", "quality", "--slug", "probe"],
-        capture_output=True, text=True, check=False, cwd=ROOT,
+    return run_script(
+        str(CLI), "--repo-root", str(repo), "--skill-id", "quality", "--slug", "probe", cwd=ROOT
     )
 
 

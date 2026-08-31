@@ -15,7 +15,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from .support import ROOT, _load_script_module
+from .support import ROOT, _load_script_module, run_script
 
 INVENTORY = _load_script_module(
     "validate_inventory_consumption_under_test",
@@ -47,14 +47,14 @@ def _write_repo(tmp_path: Path, text: str, *, git: bool, commit_date: str | None
 
 
 def _run(repo: Path, artifact: Path) -> subprocess.CompletedProcess:
-    return subprocess.run(
-        [
-            sys.executable, str(ROOT / "scripts" / "validate_inventory_consumption.py"),
-            "--repo-root", str(repo),
-            "--artifact-path", str(artifact),
-            "--consumer-fields-path", str(repo / "fields.json"),
-        ],
-        capture_output=True, text=True,
+    return run_script(
+        "scripts/validate_inventory_consumption.py",
+        "--repo-root",
+        str(repo),
+        "--artifact-path",
+        str(artifact),
+        "--consumer-fields-path",
+        str(repo / "fields.json"),
     )
 
 
@@ -274,19 +274,7 @@ def test_the_current_corpus_preserves_the_recorded_floor_and_live_safety():
     assert live["label_value_residuals"]["count"] > 0
 
 
-@pytest.mark.parametrize(
-    ("path", "value", "expected"),
-    [
-        (("floor",), 6, "floor-changed"),
-        (("artifacts",), 0, "empty-artifact-corpus"),
-        (("citations_lowered_below_requirement",), [{"path": "x"}], "required-citation-lowered"),
-        (("label_value_residuals", "below_floor"), 1, "label-value-below-floor"),
-        (("exemption_counts", "REFUSED-uncorroborated"), 1, "uncorroborated-exemption-refused"),
-    ],
-)
-def test_each_live_inventory_safety_invariant_has_a_negative_control(
-    path: tuple[str, ...], value: object, expected: str
-):
+def test_each_live_inventory_safety_invariant_has_a_negative_control():
     import copy
 
     report = {
@@ -297,14 +285,21 @@ def test_each_live_inventory_safety_invariant_has_a_negative_control(
         "citations_lowered_below_requirement": [],
         "exemption_counts": {"REFUSED-uncorroborated": 0},
     }
-    changed = copy.deepcopy(report)
-    target = changed
-    for key in path[:-1]:
-        target = target[key]
-    target[path[-1]] = value
-
-    defects = MEASURE.safety_defects(changed, expected_floor=5)
-    assert expected in defects
+    cases = (
+        (("floor",), 6, "floor-changed"),
+        (("artifacts",), 0, "empty-artifact-corpus"),
+        (("citations_lowered_below_requirement",), [{"path": "x"}], "required-citation-lowered"),
+        (("label_value_residuals", "below_floor"), 1, "label-value-below-floor"),
+        (("exemption_counts", "REFUSED-uncorroborated"), 1, "uncorroborated-exemption-refused"),
+    )
+    for path, value, expected in cases:
+        changed = copy.deepcopy(report)
+        target = changed
+        for key in path[:-1]:
+            target = target[key]
+        target[path[-1]] = value
+        defects = MEASURE.safety_defects(changed, expected_floor=5)
+        assert expected in defects, expected
 
 
 def test_the_measurement_refuses_an_empty_corpus(tmp_path, monkeypatch, capsys):

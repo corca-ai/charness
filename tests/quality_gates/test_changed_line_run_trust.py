@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 
 from scripts import changed_line_run_trust as trust
+from scripts.checkout_view import FactsCheckout
+from scripts.git_status_snapshot import parse as parse_status
 
 
 def test_git_lines_empty_outside_git_repo(tmp_path: Path) -> None:
@@ -102,3 +104,24 @@ def test_pin_reuses_the_trust_probe_revision_pair(tmp_path: Path, monkeypatch) -
     assert pinned["resolved_head_sha"] == pair[0]
     assert pinned["head_commit"] == pair[1]
     assert pinned["pool_fingerprint"] == "fp"
+
+
+def test_probe_run_trust_classifies_injected_status_without_git() -> None:
+    oid = "a" * 40
+    payload = (
+        b"# branch.oid " + oid.encode("ascii") + b"\0"
+        b"# branch.head main\0"
+        b"1 .M N... 100644 100644 100644 "
+        + oid.encode("ascii")
+        + b" "
+        + oid.encode("ascii")
+        + b" scripts/edited.py\0"
+    )
+    view = FactsCheckout(Path("/unused"), status=parse_status(payload))
+    probe = trust.probe_run_trust(Path("/unused"), oid, {"scripts/edited.py"}, checkout=view)
+    assert probe.contaminated == ["scripts/edited.py"]
+    assert probe.resolved_pair == (oid, oid)
+    assert probe.unestablished_reason is None
+    assert trust.uncommitted_pool_changes(
+        Path("/unused"), {"scripts/edited.py"}, checkout=view
+    ) == ["scripts/edited.py"]

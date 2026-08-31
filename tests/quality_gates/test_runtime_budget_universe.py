@@ -8,12 +8,13 @@ much and a test suite that only pins the teeth would let that recur.
 
 from __future__ import annotations
 
-import subprocess
 import sys
 from pathlib import Path
 
 import pytest
 import yaml
+
+from tests.quality_gates.support import run_script
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT))
@@ -58,16 +59,11 @@ def _write_repo(
     return repo
 
 
-def _run(script: Path, *args: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        [sys.executable, str(script), *args],
-        capture_output=True,
-        text=True,
-        cwd=REPO_ROOT,
-    )
+def _run(script: Path, *args: str, real_process: bool = False):
+    return run_script(str(script), *args, cwd=REPO_ROOT, real_process=real_process)
 
 
-def _payload(result: subprocess.CompletedProcess[str]) -> dict:
+def _payload(result) -> dict:
     return yaml.safe_load(result.stdout)
 
 
@@ -498,7 +494,7 @@ def test_a_producer_error_stays_nonzero_in_labels_only_mode(
 ) -> None:
     repo = _write_repo(tmp_path)
     (repo / "scripts" / "run-quality.sh").write_bytes(b"\xff\n")
-    result = _run(UNIVERSE, "--repo-root", str(repo), *flags)
+    result = _run(UNIVERSE, "--repo-root", str(repo), *flags, real_process=True)
     assert result.returncode == 1
     assert result.stdout == ""
     assert "UnicodeDecodeError" in result.stderr

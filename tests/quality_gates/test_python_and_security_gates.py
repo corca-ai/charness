@@ -9,10 +9,11 @@ from pathlib import Path
 
 import yaml
 
+from tests.quality_gates.repo_shapes import install_committed_repo
+
 from .support import (
     ROOT,
     charness_shaped_repo,
-    init_git_repo,
     run_script,
     run_shell_script,
     write_executable,
@@ -373,27 +374,26 @@ def test_check_secrets_prefers_gitleaks_when_available(tmp_path: Path) -> None:
 
 def test_check_secrets_falls_back_to_secretlint_via_npm(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    scripts_dir = repo / "scripts"
-    scripts_dir.mkdir(parents=True)
-    shutil.copy2(ROOT / "scripts" / "check-secrets.sh", scripts_dir / "check-secrets.sh")
-    shutil.copy2(ROOT / "scripts" / "exported-copy-guard.sh", scripts_dir / "exported-copy-guard.sh")
-    shutil.copy2(ROOT / ".secretlintrc.json", repo / ".secretlintrc.json")
-    shutil.copy2(ROOT / ".secretlintignore", repo / ".secretlintignore")
-    (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
-    (repo / ".gitignore").write_text("integrations/locks/*.json\n", encoding="utf-8")
-    (repo / "integrations" / "locks").mkdir(parents=True)
-    (repo / "integrations" / "locks" / "agent-browser.json").write_text(
-        '{"token":"ignored-runtime-state"}\n',
-        encoding="utf-8",
-    )
-    init_git_repo(
+    install_committed_repo(
         repo,
-        "README.md",
-        ".gitignore",
-        ".secretlintrc.json",
-        ".secretlintignore",
-        "scripts/check-secrets.sh",
+        {
+            "README.md": "# Demo\n",
+            ".gitignore": "integrations/locks/*.json\n",
+            ".secretlintrc.json": (ROOT / ".secretlintrc.json").read_text(encoding="utf-8"),
+            ".secretlintignore": (ROOT / ".secretlintignore").read_text(encoding="utf-8"),
+            "scripts/check-secrets.sh": (ROOT / "scripts" / "check-secrets.sh").read_text(
+                encoding="utf-8"
+            ),
+        },
+        executable=("scripts/check-secrets.sh",),
     )
+    shutil.copy2(
+        ROOT / "scripts" / "exported-copy-guard.sh",
+        repo / "scripts" / "exported-copy-guard.sh",
+    )
+    ignored = repo / "integrations" / "locks" / "agent-browser.json"
+    ignored.parent.mkdir(parents=True)
+    ignored.write_text('{"token":"ignored-runtime-state"}\n', encoding="utf-8")
 
     bin_dir = repo / "bin"
     bin_dir.mkdir()
@@ -489,10 +489,20 @@ def test_check_secrets_gitleaks_fails_when_git_listing_fails(tmp_path: Path) -> 
 
 def test_check_secrets_gitleaks_skips_deleted_tracked_files(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    _copy_script(repo, "check-secrets.sh")
-    shutil.copy2(ROOT / ".gitleaks.toml", repo / ".gitleaks.toml")
-    (repo / "secret.txt").write_text("token=missing-from-staged-scan\n", encoding="utf-8")
-    init_git_repo(repo, "secret.txt", ".gitleaks.toml", "scripts/check-secrets.sh")
+    install_committed_repo(
+        repo,
+        {
+            "secret.txt": "token=missing-from-staged-scan\n",
+            ".gitleaks.toml": (ROOT / ".gitleaks.toml").read_text(encoding="utf-8"),
+            "scripts/check-secrets.sh": (ROOT / "scripts" / "check-secrets.sh").read_text(
+                encoding="utf-8"
+            ),
+            "scripts/exported-copy-guard.sh": (
+                ROOT / "scripts" / "exported-copy-guard.sh"
+            ).read_text(encoding="utf-8"),
+        },
+        executable=("scripts/check-secrets.sh", "scripts/exported-copy-guard.sh"),
+    )
     (repo / "secret.txt").unlink()
 
     bin_dir = repo / "bin"

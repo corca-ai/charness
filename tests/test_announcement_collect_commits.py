@@ -6,6 +6,8 @@ from pathlib import Path
 import pytest
 import yaml
 
+from tests.quality_gates.support import run_script
+
 ROOT = Path(__file__).resolve().parent.parent
 COLLECT_COMMITS = ROOT / "skills" / "public" / "announcement" / "scripts" / "collect_commits.py"
 
@@ -22,7 +24,10 @@ def git(repo: Path, *args: str) -> str:
 
 
 def init_repo(repo: Path) -> None:
-    git(repo, "init", "-b", "main")
+    from tests.quality_gates.seeding_support import _install_empty_git_dir
+
+    repo.mkdir(parents=True, exist_ok=True)
+    _install_empty_git_dir(repo, branch="main")
 
 
 def _readme_commit(dest: Path, message: str) -> Path:
@@ -63,13 +68,8 @@ def import_linear_history(repo: Path, subjects: list[str]) -> None:
 
 
 def run_collect(repo: Path, *args: str) -> dict[str, object]:
-    result = subprocess.run(
-        ["python3", str(COLLECT_COMMITS), "--repo-root", str(repo), *args],
-        cwd=ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
+    result = run_script(str(COLLECT_COMMITS), "--repo-root", str(repo), *args, cwd=ROOT)
+    assert result.returncode == 0, result.stderr
     return yaml.safe_load(result.stdout)
 
 
@@ -158,20 +158,14 @@ def test_collect_commits_preserves_subject_only_shape_and_closing_reference(tmp_
     assert commit["closing_references"] == ["Fixes #150"]
 
 
-def test_collect_commits_omits_fanout_hint_by_default(tmp_path: Path) -> None:
+def test_collect_commits_fanout_hint_is_opt_in_on_a_small_window(tmp_path: Path) -> None:
     _readme_commit(tmp_path, "first")
 
-    payload = run_collect(tmp_path)
+    omitted = run_collect(tmp_path)
+    assert "fanout_hint" not in omitted
 
-    assert "fanout_hint" not in payload
-
-
-def test_collect_commits_fanout_hint_small_window(tmp_path: Path) -> None:
-    _readme_commit(tmp_path, "first")
-
-    payload = run_collect(tmp_path, "--fanout-hint")
-
-    hint = payload["fanout_hint"]
+    hinted = run_collect(tmp_path, "--fanout-hint")
+    hint = hinted["fanout_hint"]
     assert hint["commit_count"] == 1
     assert hint["recommended"] is False
     assert hint["signals"] == []

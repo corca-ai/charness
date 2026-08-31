@@ -36,7 +36,7 @@ from scripts.quality_adapter_lib import (
     validate_quality_adapter_data,
 )
 from scripts.quality_policy_defaults import DEFAULT_MUTATION_TESTING
-from tests.quality_gates.support import run_loaded_script_main
+from tests.quality_gates.support import run_loaded_script_main, run_script
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -209,10 +209,8 @@ def test_a2_unknown_commands_subkey_warns(tmp_path: Path) -> None:
 
 
 def _run_propose(repo: Path, execute: bool = False) -> dict:
-    args = ["python3", str(PROPOSE_SCRIPT), "--repo-root", str(repo)]
-    if execute:
-        args.append("--execute")
-    result = subprocess.run(args, check=False, capture_output=True, text=True)
+    extra = ("--execute",) if execute else ()
+    result = run_script(str(PROPOSE_SCRIPT), "--repo-root", str(repo), *extra)
     assert result.returncode == 0, result.stderr
     # `propose_mutation_testing.py` reports in YAML since the `--json` removal. YAML is a
     # JSON superset, so this also reads the compact-JSON fallback used without PyYAML.
@@ -295,12 +293,7 @@ def test_a3_execute_refuses_without_adapter(tmp_path: Path) -> None:
     repo = tmp_path / "r"
     repo.mkdir()
     # No adapter file exists. --execute would produce a broken header-less file.
-    result = subprocess.run(
-        ["python3", str(PROPOSE_SCRIPT), "--repo-root", str(repo), "--execute"],
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    result = run_script(str(PROPOSE_SCRIPT), "--repo-root", str(repo), "--execute")
     assert result.returncode != 0
     assert "init_adapter" in result.stderr or "init_adapter" in result.stdout
 

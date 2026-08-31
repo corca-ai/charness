@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-import subprocess
+import json
 from pathlib import Path
 
 import pytest
 import yaml
 
+from tests.quality_gates.repo_shapes import install_two_commit_repo
 from tests.script_main import load_script_module, run_loaded_script_main
 
 from .seeding_support import write_surface
@@ -208,24 +209,43 @@ def test_retro_auto_trigger_hit_short_circuits_every_doubt(tmp_path: Path) -> No
 
 
 def test_retro_auto_trigger_commit_range_survives_clean_tree(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    _write_adapter(repo, "auto_session_trigger_surfaces:", "  - release-helper")
-    write_surface(
-        repo,
-        "release-helper",
-        "release helper scripts",
-        ["skills/public/release/**"],
+    adapter = "\n".join(
+        [
+            "version: 1",
+            "repo: consumer",
+            "output_dir: charness-artifacts/retro",
+            "auto_session_trigger_surfaces:",
+            "  - release-helper",
+            "",
+        ]
     )
-    helper_path = repo / "skills" / "public" / "release" / "scripts" / "publish_release.py"
-    helper_path.parent.mkdir(parents=True)
-    helper_path.write_text("print('before')\n", encoding="utf-8")
-    subprocess.run(["git", "init", "-b", "main"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "add", "."], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "commit", "-m", "seed"], cwd=repo, check=True, capture_output=True, text=True)
-    helper_path.write_text("print('after')\n", encoding="utf-8")
-    subprocess.run(["git", "add", "."], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "commit", "-m", "change release helper"], cwd=repo, check=True, capture_output=True, text=True)
+    surfaces = {
+        "version": 1,
+        "surfaces": [
+            {
+                "surface_id": "release-helper",
+                "description": "release helper scripts",
+                "source_paths": ["skills/public/release/**"],
+                "derived_paths": [],
+                "sync_commands": [],
+                "verify_commands": [],
+                "notes": [],
+            }
+        ],
+    }
+    repo, _base, _head = install_two_commit_repo(
+        tmp_path / "repo",
+        {
+            ".agents/retro-adapter.yaml": adapter,
+            ".agents/surfaces.json": json.dumps(surfaces, indent=2) + "\n",
+            "skills/public/release/scripts/publish_release.py": "print('before')\n",
+        },
+        {
+            "skills/public/release/scripts/publish_release.py": "print('after')\n",
+        },
+        first_message="seed",
+        second_message="change release helper",
+    )
 
     # The clean tree is the point of this case: post-commit there is nothing to compare,
     # which is undetermined, NOT a miss. The explicit range below is how the same slice
@@ -304,6 +324,7 @@ def test_retro_auto_trigger_reports_missing_surfaces_remediation_when_configured
         str(repo),
         "--paths",
         "README.md",
+        real_process=True,
     )
 
     assert result.returncode == 1

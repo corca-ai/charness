@@ -74,6 +74,17 @@ def _committed_seed(
     return get_or_build(f"shape-one-commit-{key}", build) / "repo"
 
 
+def _copytree_into_empty(source: Path, dest: Path) -> Path:
+    dest = Path(dest)
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    if dest.exists():
+        if any(dest.iterdir()):
+            raise ValueError(f"refusing to install a checkout into a non-empty path: {dest}")
+        dest.rmdir()
+    shutil.copytree(source, dest)
+    return dest
+
+
 def install_committed_repo(
     dest: Path,
     files: Mapping[str, str],
@@ -94,14 +105,7 @@ def install_committed_repo(
         author_date=author_date,
         executable=executable,
     )
-    dest = Path(dest)
-    dest.parent.mkdir(parents=True, exist_ok=True)
-    if dest.exists():
-        if any(dest.iterdir()):
-            raise ValueError(f"refusing to install a checkout into a non-empty path: {dest}")
-        dest.rmdir()
-    shutil.copytree(source, dest)
-    return dest
+    return _copytree_into_empty(source, dest)
 
 
 def _head_oid(repo: Path) -> str:
@@ -217,12 +221,106 @@ def install_two_commit_repo(
         )
 
     bundle = get_or_build(f"shape-two-commit-{key}", build)
-    dest = Path(dest)
-    dest.parent.mkdir(parents=True, exist_ok=True)
-    if dest.exists():
-        if any(dest.iterdir()):
-            raise ValueError(f"refusing to install a checkout into a non-empty path: {dest}")
-        dest.rmdir()
-    shutil.copytree(bundle / "repo", dest)
+    dest = _copytree_into_empty(bundle / "repo", dest)
     first_oid, second_oid = (bundle / "oids.txt").read_text(encoding="ascii").splitlines()[:2]
     return dest, first_oid, second_oid
+
+
+_DEFAULT_SUPERPROJECT = {"root.txt": "r\n"}
+_DEFAULT_SUBMODULE = {"f.txt": "v1\n"}
+
+
+def _submodule_digest(
+    files: Mapping[str, str],
+    submodule_files: Mapping[str, str],
+    *,
+    message: str,
+    submodule_message: str,
+    add_message: str,
+    submodule_path: str,
+    branch: str,
+) -> str:
+    digest = hashlib.sha256()
+    for part in (branch, message, submodule_message, add_message, submodule_path):
+        digest.update(part.encode())
+        digest.update(b"\0")
+    for label, snapshot in (("super", files), ("sub", submodule_files)):
+        digest.update(label.encode())
+        digest.update(b"\0")
+        for relative in sorted(snapshot):
+            digest.update(relative.encode())
+            digest.update(b"\0")
+            digest.update(snapshot[relative].encode("utf-8"))
+            digest.update(b"\0")
+    return digest.hexdigest()[:20]
+
+
+def install_submodule_repo(
+    dest: Path,
+    files: Mapping[str, str] | None = None,
+    submodule_files: Mapping[str, str] | None = None,
+    *,
+    message: str = "init",
+    submodule_message: str = "v1",
+    add_message: str = "add submodule",
+    submodule_path: str = "sub",
+    branch: str = "main",
+) -> tuple[Path, Path]:
+    """Install a superproject with an initialized submodule by copy.
+
+    ``dest`` is the superproject. Its sibling ``upstream/`` is the submodule
+    origin. Same snapshots reuse one frozen seed. Test-time Git count is zero.
+    Unique tails (moving the checked-out submodule HEAD, dropping the gitlink,
+    cloning without init) still speak Git.
+
+    Origin URLs are rewritten to paths relative to the submodule worktree so a
+    copied bundle fetches its own sibling, not the seed.
+    """
+    from tests.quality_gates.seeding_support import git
+
+    super_files = dict(_DEFAULT_SUPERPROJECT if files is None else files)
+    nested_files = dict(_DEFAULT_SUBMODULE if submodule_files is None else submodule_files)
+    key = _submodule_digest(
+        super_files,
+        nested_files,
+        message=message,
+        submodule_message=submodule_message,
+        add_message=add_message,
+        submodule_path=submodule_path,
+        branch=branch,
+    )
+
+    def build(seed_root: Path) -> None:
+        install_committed_repo(
+            seed_root / "upstream", nested_files, message=submodule_message, branch=branch
+        )
+        install_committed_repo(seed_root / "repo", super_files, message=message, branch=branch)
+        repo = seed_root / "repo"
+        git(
+            repo,
+            "-c",
+            "protocol.file.allow=always",
+            "submodule",
+            "add",
+            "-q",
+            "../upstream",
+            submodule_path,
+        )
+        git(repo, "config", f"submodule.{submodule_path}.url", "../upstream")
+        origin = "../" * (len(Path(submodule_path).parts) + 1) + "upstream"
+        git(
+            repo,
+            "config",
+            "--file",
+            f".git/modules/{submodule_path}/config",
+            "remote.origin.url",
+            origin,
+        )
+        git(repo, "commit", "-q", "-m", add_message)
+
+    bundle = get_or_build(f"shape-submodule-{key}", build)
+    dest = Path(dest)
+    upstream = dest.parent / "upstream"
+    dest = _copytree_into_empty(bundle / "repo", dest)
+    _copytree_into_empty(bundle / "upstream", upstream)
+    return dest, upstream

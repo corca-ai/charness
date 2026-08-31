@@ -12,8 +12,9 @@ import pytest
 from scripts import validate_adapters as VALIDATE_ADAPTERS
 from scripts import validate_presets as VALIDATE_PRESETS
 from scripts import validate_profiles as VALIDATE_PROFILES
+from tests.quality_gates.repo_shapes import install_committed_repo
 
-from .support import init_git_repo, run_script
+from .support import run_script
 
 
 def test_validate_profiles_rejects_missing_skill_reference(tmp_path: Path) -> None:
@@ -141,31 +142,33 @@ def test_validate_presets_refuses_invalid_reconciliation_frontmatter(
 
 def test_validate_presets_ignores_gitignored_files(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    presets_dir = repo / "presets"
-    presets_dir.mkdir(parents=True)
-    (repo / ".gitignore").write_text("presets/generated-*.md\n", encoding="utf-8")
-    (presets_dir / "kept.md").write_text(
-        "\n".join(
-            [
-                "---",
-                "name: kept",
-                'description: "Kept preset."',
-                "preset_kind: portable-defaults",
-                "install_scope: maintainer",
-                "---",
-                "",
-                "# kept",
-                "",
-                "## Intended Use",
-                "",
-                "Valid tracked preset.",
-                "",
-            ]
-        ),
-        encoding="utf-8",
+    install_committed_repo(
+        repo,
+        {
+            ".gitignore": "presets/generated-*.md\n",
+            "presets/kept.md": "\n".join(
+                [
+                    "---",
+                    "name: kept",
+                    'description: "Kept preset."',
+                    "preset_kind: portable-defaults",
+                    "install_scope: maintainer",
+                    "---",
+                    "",
+                    "# kept",
+                    "",
+                    "## Intended Use",
+                    "",
+                    "Valid tracked preset.",
+                    "",
+                ]
+            )
+            + "\n",
+        },
     )
-    (presets_dir / "generated-bad.md").write_text("# Missing frontmatter on ignored file.\n", encoding="utf-8")
-    init_git_repo(repo, ".gitignore", "presets/kept.md")
+    (repo / "presets" / "generated-bad.md").write_text(
+        "# Missing frontmatter on ignored file.\n", encoding="utf-8"
+    )
 
     result = run_script("scripts/validate_presets.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
@@ -338,60 +341,53 @@ def test_validate_profiles_rejects_unknown_top_level_field(tmp_path: Path) -> No
 
 def test_validate_profiles_ignores_gitignored_profiles(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    profiles_dir = repo / "profiles"
-    public_skill_dir = repo / "skills" / "public" / "impl"
-    profiles_dir.mkdir(parents=True)
-    public_skill_dir.mkdir(parents=True)
-    (repo / ".gitignore").write_text("profiles/generated-*.json\n", encoding="utf-8")
-    (public_skill_dir / "SKILL.md").write_text(
-        "---\nname: impl\ndescription: \"demo\"\n---\n\n# Impl\n\n## References\n\n- `references/demo.md`\n",
-        encoding="utf-8",
-    )
-    (public_skill_dir / "references").mkdir(parents=True)
-    (public_skill_dir / "references" / "demo.md").write_text("# Demo\n", encoding="utf-8")
-    (profiles_dir / "kept.json").write_text(
-        json.dumps(
-            {
-                "schema_version": "1",
-                "profile_id": "kept",
-                "display_name": "Kept",
-                "purpose": "Test",
-                "bundles": {"public_skills": ["impl"]},
-            }
-        ),
-        encoding="utf-8",
-    )
-    (profiles_dir / "generated-bad.json").write_text('{"profile_id":"generated-bad"}\n', encoding="utf-8")
-    init_git_repo(
+    install_committed_repo(
         repo,
-        ".gitignore",
-        "profiles/kept.json",
-        "skills/public/impl/SKILL.md",
-        "skills/public/impl/references/demo.md",
+        {
+            ".gitignore": "profiles/generated-*.json\n",
+            "skills/public/impl/SKILL.md": (
+                "---\nname: impl\ndescription: \"demo\"\n---\n\n# Impl\n\n## References\n\n"
+                "- `references/demo.md`\n"
+            ),
+            "skills/public/impl/references/demo.md": "# Demo\n",
+            "profiles/kept.json": json.dumps(
+                {
+                    "schema_version": "1",
+                    "profile_id": "kept",
+                    "display_name": "Kept",
+                    "purpose": "Test",
+                    "bundles": {"public_skills": ["impl"]},
+                }
+            )
+            + "\n",
+        },
+    )
+    (repo / "profiles" / "generated-bad.json").write_text(
+        '{"profile_id":"generated-bad"}\n', encoding="utf-8"
     )
 
     result = run_script("scripts/validate_profiles.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 def test_validate_adapters_ignores_gitignored_skills(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    kept_dir = repo / "skills" / "public" / "kept" / "scripts"
-    ignored_dir = repo / "skills" / "public" / "generated" / "scripts"
-    kept_dir.mkdir(parents=True)
-    ignored_dir.mkdir(parents=True)
-    (repo / ".gitignore").write_text("skills/public/generated/\n", encoding="utf-8")
-    (kept_dir / "resolve_adapter.py").write_text(
-        "\n".join(
-            [
-                "#!/usr/bin/env python3",
-                "import json",
-                'print(json.dumps({"valid": True, "artifact_filename": "latest.md", "artifact_path": "charness-artifacts/kept/latest.md"}))',
-                "",
-            ]
-        ),
-        encoding="utf-8",
+    install_committed_repo(
+        repo,
+        {
+            ".gitignore": "skills/public/generated/\n",
+            "skills/public/kept/scripts/resolve_adapter.py": "\n".join(
+                [
+                    "#!/usr/bin/env python3",
+                    "import json",
+                    'print(json.dumps({"valid": True, "artifact_filename": "latest.md", "artifact_path": "charness-artifacts/kept/latest.md"}))',
+                    "",
+                ]
+            )
+            + "\n",
+        },
     )
-    (ignored_dir / "resolve_adapter.py").write_text("#!/usr/bin/env python3\nraise SystemExit(1)\n", encoding="utf-8")
-    init_git_repo(repo, ".gitignore", "skills/public/kept/scripts/resolve_adapter.py")
+    ignored = repo / "skills" / "public" / "generated" / "scripts" / "resolve_adapter.py"
+    ignored.parent.mkdir(parents=True)
+    ignored.write_text("#!/usr/bin/env python3\nraise SystemExit(1)\n", encoding="utf-8")
 
     result = run_script("scripts/validate_adapters.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr

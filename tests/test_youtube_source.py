@@ -9,6 +9,8 @@ from pathlib import Path
 
 import yaml
 
+from tests.quality_gates.support import run_script
+
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "skills" / "support" / "web-fetch" / "scripts"))
 import acquire_public_url  # noqa: E402
@@ -19,14 +21,7 @@ from acquisition_trace_lib import AcquisitionAttempt  # noqa: E402
 
 
 def run_helper(script: str, *args: str, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        [sys.executable, script, *args],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-        env=env,
-    )
+    return run_script(script, *args, cwd=ROOT, env=env)
 
 
 def _fake_ytdlp(tmp_path: Path, body: str, *, exit_code: int = 0) -> dict[str, str]:

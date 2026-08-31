@@ -1,22 +1,17 @@
 from __future__ import annotations
 
 import re
-import subprocess
-import sys
 from pathlib import Path
+
+from tests.quality_gates.support import run_script
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "skills" / "support" / "web-fetch" / "scripts"
 
 
 def _help(script: str) -> str:
-    result = subprocess.run(
-        [sys.executable, str(SCRIPTS / script), "--help"],
-        cwd=ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
+    result = run_script(str(SCRIPTS / script), "--help", cwd=ROOT)
+    assert result.returncode == 0, result.stderr
     return result.stdout
 
 

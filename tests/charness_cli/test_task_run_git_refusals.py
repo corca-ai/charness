@@ -122,19 +122,29 @@ def test_worktree_validation_refuses_inside_and_existing_paths(tmp_path: Path) -
 
 
 def test_collect_populations_refuses_malformed_and_tracks_rename_destination(
-    tmp_path: Path, monkeypatch
+    tmp_path: Path,
 ) -> None:
-    repo = _repo(tmp_path)
-    monkeypatch.setattr(task_run_git, "_git_output", lambda *_args: "x\0")
-    with pytest.raises(task_run.TaskRunError, match="unexpected git status record"):
-        task_run_git._collect_populations(repo)
+    from scripts.checkout_view import FactsCheckout
+    from scripts.git_status_snapshot import GitStatusError
+    from scripts.git_status_snapshot import parse as parse_status
 
-    monkeypatch.setattr(
-        task_run_git,
-        "_git_output",
-        lambda *_args: "2 R. N... 100644 100644 100644 abc abc R100 new.py\0old.py\0",
+    class _Broken:
+        repo_root = tmp_path
+
+        def status(self, **_kwargs):
+            raise GitStatusError("unexpected git status record")
+
+        def list_files(self, **_kwargs):
+            return None
+
+    with pytest.raises(task_run.TaskRunError, match="unexpected git status record"):
+        task_run_git._collect_populations(tmp_path, checkout=_Broken())
+
+    view = FactsCheckout(
+        tmp_path,
+        status=parse_status(b"2 R. N... 100644 100644 100644 abc abc R100 new.py\0old.py\0"),
     )
-    assert task_run_git._collect_populations(repo) == {
+    assert task_run_git._collect_populations(tmp_path, checkout=view) == {
         "tracked": ["new.py", "old.py"],
         "untracked": [],
         "ignored": [],
@@ -142,22 +152,27 @@ def test_collect_populations_refuses_malformed_and_tracks_rename_destination(
 
 
 def test_terminal_population_snapshot_keeps_head_branch_and_rename_paths(
-    tmp_path: Path, monkeypatch
+    tmp_path: Path,
 ) -> None:
-    repo = _repo(tmp_path)
-    monkeypatch.setattr(
-        task_run_git,
-        "_git_output",
-        lambda *_args: (
-            "# branch.oid " + "a" * 40 + "\0"
-            "# branch.head lane/task-run\0"
-            "# branch.upstream origin/main\0"
-            "2 R. N... 100644 100644 100644 abc abc R100 renamed.py\0old.py\0"
-            "? new.py\0! .cache\0"
+    from scripts.checkout_view import FactsCheckout
+    from scripts.git_status_snapshot import parse as parse_status
+
+    view = FactsCheckout(
+        tmp_path,
+        status=parse_status(
+            (
+                b"# branch.oid " + b"a" * 40 + b"\0"
+                b"# branch.head lane/task-run\0"
+                b"# branch.upstream origin/main\0"
+                b"2 R. N... 100644 100644 100644 abc abc R100 renamed.py\0old.py\0"
+                b"? new.py\0! .cache\0"
+            )
         ),
     )
 
-    populations, head, branch = task_run_git._collect_populations_with_metadata(repo)
+    populations, head, branch = task_run_git._collect_populations_with_metadata(
+        tmp_path, checkout=view
+    )
 
     assert head == "a" * 40
     assert branch == "lane/task-run"

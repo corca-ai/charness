@@ -124,19 +124,20 @@ def test_a_scanned_suffix_outside_the_declared_roots_stays_silent(git_repo: Path
     Python tree outside the ratchet's declared scope, which is where a regression
     here would fire loudest.
     """
-    (git_repo / "tests").mkdir()
-    (git_repo / "tests/helper.py").write_text("\n".join(f"t{i} = {i}" for i in range(80)), encoding="utf-8")
     assert advisory.in_ratchet_scope("tests/helper.py", advisory.scope_paths(git_repo)) is False
-    assert advisory.advise_for_edited_file(git_repo, "tests/helper.py") is None
+    assert (
+        advisory.advise_for_edited_file(git_repo, "tests/helper.py", added=80, head_sha="a" * 40)
+        is None
+    )
 
 
 def test_unscanned_suffixes_stay_silent(git_repo: Path, advisory) -> None:
     """Docs and prose are not ratchet-relevant, inside a scanned root or not."""
-    (git_repo / "docs").mkdir()
-    (git_repo / "docs/x.md").write_text("\n".join("line" for _ in range(80)), encoding="utf-8")
-    assert advisory.advise_for_edited_file(git_repo, "docs/x.md") is None
-    (git_repo / "scripts/notes.md").write_text("\n".join("line" for _ in range(80)), encoding="utf-8")
-    assert advisory.advise_for_edited_file(git_repo, "scripts/notes.md") is None
+    assert advisory.advise_for_edited_file(git_repo, "docs/x.md", added=80, head_sha="a" * 40) is None
+    assert (
+        advisory.advise_for_edited_file(git_repo, "scripts/notes.md", added=80, head_sha="a" * 40)
+        is None
+    )
 
 
 def test_non_python_sources_the_ratchet_really_scans_are_covered(git_repo: Path, advisory) -> None:
@@ -145,8 +146,10 @@ def test_non_python_sources_the_ratchet_really_scans_are_covered(git_repo: Path,
     A `.py`-only advisory would be silent for exactly the files that already
     produced duplicate families here.
     """
-    (git_repo / "scripts/tool.mjs").write_text("\n".join(f"const a{i} = {i};" for i in range(80)), encoding="utf-8")
-    assert advisory.advise_for_edited_file(git_repo, "scripts/tool.mjs") is not None
+    assert (
+        advisory.advise_for_edited_file(git_repo, "scripts/tool.mjs", added=80, head_sha="a" * 40)
+        is not None
+    )
 
 
 def test_a_repo_that_never_opted_into_the_ratchet_is_not_advised(git_repo: Path, advisory) -> None:
@@ -158,8 +161,10 @@ def test_a_repo_that_never_opted_into_the_ratchet_is_not_advised(git_repo: Path,
     """
     (git_repo / ".agents/quality-adapter.yaml").write_text("version: 1\n", encoding="utf-8")
     assert advisory.scope_paths(git_repo) == ()
-    (git_repo / "scripts/seed.py").write_text("\n".join(f"n{i} = {i}" for i in range(80)), encoding="utf-8")
-    assert advisory.advise_for_edited_file(git_repo, "scripts/seed.py") is None
+    assert (
+        advisory.advise_for_edited_file(git_repo, "scripts/seed.py", added=80, head_sha="a" * 40)
+        is None
+    )
 
 
 def test_it_advises_once_per_file_per_head_not_on_every_later_edit(git_repo: Path, advisory) -> None:
@@ -169,14 +174,13 @@ def test_it_advises_once_per_file_per_head_not_on_every_later_edit(git_repo: Pat
     later one-word edit to the same file re-emits the whole advisory. Repeated
     identical advisories are the token-theater this module exists to avoid.
     """
-    target = git_repo / "scripts/seed.py"
-    target.write_text("\n".join(f"r{i} = {i}" for i in range(80)), encoding="utf-8")
-    assert advisory.advise_for_edited_file(git_repo, "scripts/seed.py") is not None
-    target.write_text("\n".join(f"r{i} = {i}" for i in range(80)) + "\n# typo fix\n", encoding="utf-8")
-    assert advisory.advise_for_edited_file(git_repo, "scripts/seed.py") is None, "must not re-fire"
+    head = "a" * 40
+    assert advisory.advise_for_edited_file(git_repo, "scripts/seed.py", added=80, head_sha=head) is not None
+    assert (
+        advisory.advise_for_edited_file(git_repo, "scripts/seed.py", added=80, head_sha=head) is None
+    ), "must not re-fire"
     # A different file in the same slice is still its own first time.
-    (git_repo / "scripts/other.py").write_text("\n".join(f"o{i} = {i}" for i in range(80)), encoding="utf-8")
-    assert advisory.advise_for_edited_file(git_repo, "scripts/other.py") is not None
+    assert advisory.advise_for_edited_file(git_repo, "scripts/other.py", added=80, head_sha=head) is not None
 
 
 def test_the_signal_returns_after_a_commit_moves_head(git_repo: Path, advisory) -> None:
@@ -481,21 +485,19 @@ def test_a_suppression_state_file_that_cannot_be_written_re_advises(
     )
 
 
-def test_a_failing_ls_files_reports_no_answer(git_repo: Path, advisory, monkeypatch) -> None:
-    """`git diff` can succeed with no numstat row while `ls-files` then fails.
+def test_unreadable_tracked_membership_reports_no_answer(
+    git_repo: Path, advisory, monkeypatch
+) -> None:
+    """`git diff` can succeed with no numstat row while tracked membership fails.
 
     That pair is the only way to reach the tracked-check's own failure path, and
     it must report "no answer" rather than fall through to the byte count, which
     would report a whole file as added for a file that is merely unchanged.
     """
-    real_git = advisory._git
-
-    def fail_ls_files(repo_root, *args):
-        if args and args[0] == "ls-files":
-            return None
-        return real_git(repo_root, *args)
-
-    monkeypatch.setattr(advisory, "_git", fail_ls_files)
+    monkeypatch.setattr(
+        "scripts.checkout_view.path_is_tracked",
+        lambda *_args, **_kwargs: None,
+    )
     assert advisory.added_lines_vs_head(git_repo, "scripts/seed.py") is None
 
 

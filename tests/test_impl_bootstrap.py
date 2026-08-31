@@ -18,6 +18,8 @@ from pathlib import Path
 import pytest
 import yaml
 
+from tests.quality_gates.support import run_script
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 INIT_ENTRYPOINT = REPO_ROOT / "skills/public/impl/scripts/init_adapter.py"
 RESOLVE_ENTRYPOINT = REPO_ROOT / "skills/public/impl/scripts/resolve_adapter.py"
@@ -54,13 +56,7 @@ def _load_init_adapter_lib():
 
 
 def _run(entrypoint: Path, repo: Path, *extra: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        [sys.executable, str(entrypoint), "--repo-root", str(repo), *extra],
-        cwd=repo,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    return run_script(str(entrypoint), "--repo-root", str(repo), *extra, cwd=repo)
 
 
 def _write_adapter(repo: Path, contents: str) -> Path:

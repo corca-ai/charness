@@ -20,6 +20,10 @@ from types import SimpleNamespace
 import pytest
 import yaml
 
+from tests.quality_gates.git_fixture_support import init_git_repo
+from tests.quality_gates.repo_shapes import install_committed_repo
+from tests.quality_gates.support import run_script
+
 from .seeding_support import load_module
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -309,13 +313,11 @@ def _run(repo: Path, *extra: str) -> tuple[int, dict]:
     emitter line-wraps long diagnostics: a substring assertion would then pass or
     fail on where the wrap landed rather than on what the gate decided.
     """
-    import subprocess
-    import sys
-
-    completed = subprocess.run(
-        [sys.executable, str(SKILL_SCRIPTS / "check_regenerable_facts.py"), "--repo-root", str(repo), *extra],
-        capture_output=True,
-        text=True,
+    completed = run_script(
+        str(SKILL_SCRIPTS / "check_regenerable_facts.py"),
+        "--repo-root",
+        str(repo),
+        *extra,
     )
     payload = yaml.safe_load(completed.stdout)
     assert isinstance(payload, dict), f"stdout was not a YAML mapping: {completed.stdout!r} {completed.stderr!r}"
@@ -327,16 +329,17 @@ def _staged_repo(tmp_path: Path, rel: str, text: str) -> Path:
     path = repo / rel
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8")
-    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
+    init_git_repo(repo)
     subprocess.run(["git", "add", "--", rel], cwd=repo, check=True)
     return repo
 
 
 def _run_staged(repo: Path) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        [sys.executable, str(SKILL_SCRIPTS / "check_regenerable_facts.py"), "--repo-root", str(repo), "--staged-paths"],
-        capture_output=True,
-        text=True,
+    return run_script(
+        str(SKILL_SCRIPTS / "check_regenerable_facts.py"),
+        "--repo-root",
+        str(repo),
+        "--staged-paths",
     )
 
 
@@ -365,7 +368,7 @@ def test_staged_file_outside_the_three_advisory_surfaces_is_silent(tmp_path: Pat
 def test_no_staged_advisory_surface_produces_no_verdict(tmp_path: Path) -> None:
     repo = tmp_path / "unstaged"
     repo.mkdir()
-    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
+    init_git_repo(repo)
     (repo / "docs").mkdir()
     (repo / "docs" / "current.md").write_text("The suite carries 12 tests.\n", encoding="utf-8")
 
@@ -548,13 +551,14 @@ def test_gitignored_files_are_not_this_repos_prose(tmp_path: Path) -> None:
     # A bare filesystem walk reads node_modules/ and build output -- files no
     # reader treats as the repo's prose and the author cannot fix. Caught by
     # inventory-gitignore-scan-hygiene when this gate was first pushed.
-    import subprocess
-
-    repo = tmp_path / "git"
-    (repo / "docs").mkdir(parents=True)
-    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
-    (repo / ".gitignore").write_text("docs/vendored.md\n", encoding="utf-8")
-    (repo / "AGENTS.md").write_text("clean prose\n", encoding="utf-8")
+    repo = install_committed_repo(
+        tmp_path / "git",
+        {
+            ".gitignore": "docs/vendored.md\n",
+            "AGENTS.md": "clean prose\n",
+        },
+    )
+    (repo / "docs").mkdir(parents=True, exist_ok=True)
     (repo / "docs" / "vendored.md").write_text("Pinned at v9.9.9 by a vendor.\n", encoding="utf-8")
 
     report = lib.scan_repo(repo, {"data": {"regenerable_facts": {"surfaces": ["AGENTS.md", "docs/**/*.md"]}}})

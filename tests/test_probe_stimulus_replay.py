@@ -32,13 +32,13 @@ used, which is the whole claim.
 from __future__ import annotations
 
 import subprocess
-import sys
 from pathlib import Path
 
 import pytest
 
 from scripts import probe_record_lib
 from scripts import probe_stimulus_replay as replay
+from tests.quality_gates.support import run_script
 
 ROOT = Path(__file__).resolve().parents[1]
 CLI = ROOT / "scripts" / "check_probe_record.py"
@@ -489,9 +489,8 @@ def _record_text(stimulus_body: str, *, filename: str = "narrative-adapter.yaml"
 
 
 def _cli(record: Path, *flags: str) -> subprocess.CompletedProcess:
-    return subprocess.run(
-        [sys.executable, str(CLI), "--repo-root", str(ROOT), "--record", str(record), *flags],
-        capture_output=True, text=True, check=False, cwd=ROOT,
+    return run_script(
+        str(CLI), "--repo-root", str(ROOT), "--record", str(record), *flags, cwd=ROOT
     )
 
 

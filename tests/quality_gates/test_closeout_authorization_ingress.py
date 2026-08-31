@@ -21,6 +21,7 @@ import pytest
 import yaml
 
 from tests.closeout_authorization_world import build_protected_world
+from tests.quality_gates.seeding_support import _install_empty_git_dir
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ISSUE_SCRIPTS = REPO_ROOT / "skills" / "public" / "issue" / "scripts"
@@ -191,7 +192,7 @@ def test_an_unrelated_direct_close_still_reaches_the_backend_unchanged(tmp_path:
 
 
 def _init_repo(repo: Path) -> None:
-    subprocess.run(["git", "init", "-b", "main"], cwd=repo, check=True, capture_output=True, text=True)
+    _install_empty_git_dir(repo, branch="main")
 
 
 def _stage(repo: Path, rel: str, body: str) -> None:

@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import importlib.util
 import json
-import subprocess
 import sys
 from pathlib import Path
 
 import yaml
+
+from tests.quality_gates.support import run_script
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "skills" / "public" / "impl" / "scripts" / "survey_verification.py"
@@ -135,12 +136,8 @@ def test_survey_emits_lint_gate_block_in_json(tmp_path: Path) -> None:
     (tmp_path / "pyproject.toml").write_text(
         "[tool.ruff.lint]\nselect = [\"E\"]\n", encoding="utf-8"
     )
-    result = subprocess.run(
-        ["python3", str(SCRIPT), "--repo-root", str(tmp_path)],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
+    result = run_script(str(SCRIPT), "--repo-root", str(tmp_path))
+    assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
     assert payload["lint_gate"]["detected"] is True
     assert payload["lint_gate"]["command"] == "ruff check ."
@@ -149,12 +146,8 @@ def test_survey_emits_lint_gate_block_in_json(tmp_path: Path) -> None:
 
 
 def test_survey_emits_not_detected_warning_when_no_gate(tmp_path: Path) -> None:
-    result = subprocess.run(
-        ["python3", str(SCRIPT), "--repo-root", str(tmp_path)],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
+    result = run_script(str(SCRIPT), "--repo-root", str(tmp_path))
+    assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
     assert payload["lint_gate"]["detected"] is False
     assert payload["summary"]["lint_gate_detected"] is False

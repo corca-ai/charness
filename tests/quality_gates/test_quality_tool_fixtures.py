@@ -13,14 +13,13 @@ from __future__ import annotations
 import hashlib
 import json
 import subprocess
-import sys
 from pathlib import Path
 
 import pytest
 
 from tests.script_loader import load_script_module
 
-from .support import ROOT
+from .support import ROOT, run_script
 
 SCRIPT = ROOT / "scripts" / "check_quality_tool_fixtures.py"
 EMPTY_SHA256 = hashlib.sha256(b"").hexdigest()
@@ -35,10 +34,7 @@ RECORD = {
 
 
 def _run(repo_root: Path) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        [sys.executable, str(SCRIPT), "--repo-root", str(repo_root)],
-        capture_output=True, text=True, check=False,
-    )
+    return run_script(str(SCRIPT), "--repo-root", str(repo_root))
 
 
 def _fixture_dir(tmp_path: Path) -> Path:

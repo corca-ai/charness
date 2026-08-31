@@ -102,6 +102,285 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_check_changed_line_mutation_coverage",
         ROOT / "scripts" / "check_changed_line_mutation_coverage.py",
     ),
+    "scripts/validate_debug_artifact.py": (
+        "tests.quality_gates.support_validate_debug_artifact",
+        ROOT / "scripts" / "validate_debug_artifact.py",
+    ),
+    "scripts/validate_quality_artifact.py": (
+        "tests.quality_gates.support_validate_quality_artifact",
+        ROOT / "scripts" / "validate_quality_artifact.py",
+    ),
+    "scripts/check_quality_tool_fixtures.py": (
+        "tests.quality_gates.support_check_quality_tool_fixtures",
+        ROOT / "scripts" / "check_quality_tool_fixtures.py",
+    ),
+    "scripts/quality_label_universe.py": (
+        "tests.quality_gates.support_quality_label_universe",
+        ROOT / "scripts" / "quality_label_universe.py",
+    ),
+    "scripts/check_runtime_budget_universe.py": (
+        "tests.quality_gates.support_check_runtime_budget_universe",
+        ROOT / "scripts" / "check_runtime_budget_universe.py",
+    ),
+    "scripts/validate_inventory_consumption.py": (
+        "tests.quality_gates.support_validate_inventory_consumption",
+        ROOT / "scripts" / "validate_inventory_consumption.py",
+    ),
+    "skills/public/release/scripts/audit_public_release_narrative.py": (
+        "tests.quality_gates.support_audit_public_release_narrative",
+        ROOT / "skills" / "public" / "release" / "scripts" / "audit_public_release_narrative.py",
+    ),
+    "skills/shared/scripts/reviewer_worker_report.py": (
+        "tests.quality_gates.support_reviewer_worker_report",
+        ROOT / "skills" / "shared" / "scripts" / "reviewer_worker_report.py",
+    ),
+    "skills/public/quality/scripts/inventory_nose_clones.py": (
+        "tests.quality_gates.support_inventory_nose_clones",
+        ROOT / "skills" / "public" / "quality" / "scripts" / "inventory_nose_clones.py",
+    ),
+    "skills/public/quality/scripts/inventory_doc_duplicates.py": (
+        "tests.quality_gates.support_inventory_doc_duplicates",
+        ROOT / "skills" / "public" / "quality" / "scripts" / "inventory_doc_duplicates.py",
+    ),
+    "skills/public/quality/scripts/inventory_structural_waste.py": (
+        "tests.quality_gates.support_inventory_structural_waste",
+        ROOT / "skills" / "public" / "quality" / "scripts" / "inventory_structural_waste.py",
+    ),
+    "skills/public/quality/scripts/check_regenerable_facts.py": (
+        "tests.quality_gates.support_check_regenerable_facts",
+        ROOT / "skills" / "public" / "quality" / "scripts" / "check_regenerable_facts.py",
+    ),
+    "scripts/validate_ideation_artifact.py": (
+        "tests.quality_gates.support_validate_ideation_artifact",
+        ROOT / "scripts" / "validate_ideation_artifact.py",
+    ),
+    "scripts/check_artifact_referents.py": (
+        "tests.quality_gates.support_check_artifact_referents",
+        ROOT / "scripts" / "check_artifact_referents.py",
+    ),
+    "scripts/check_boundary_bypass_ratchet.py": (
+        "tests.quality_gates.support_check_boundary_bypass_ratchet",
+        ROOT / "scripts" / "check_boundary_bypass_ratchet.py",
+    ),
+    "scripts/check_cli_skill_surface.py": (
+        "tests.quality_gates.support_check_cli_skill_surface",
+        ROOT / "scripts" / "check_cli_skill_surface.py",
+    ),
+    "scripts/select_verifiers.py": (
+        "tests.quality_gates.support_select_verifiers",
+        ROOT / "scripts" / "select_verifiers.py",
+    ),
+    "skills/public/retro/scripts/check_auto_trigger.py": (
+        "tests.quality_gates.support_check_auto_trigger",
+        ROOT / "skills" / "public" / "retro" / "scripts" / "check_auto_trigger.py",
+    ),
+    "skills/public/announcement/scripts/preflight_sources.py": (
+        "tests.quality_gates.support_preflight_sources",
+        ROOT / "skills" / "public" / "announcement" / "scripts" / "preflight_sources.py",
+    ),
+    "skills/public/announcement/scripts/record_announcement.py": (
+        "tests.quality_gates.support_record_announcement",
+        ROOT / "skills" / "public" / "announcement" / "scripts" / "record_announcement.py",
+    ),
+    "skills/public/impl/scripts/init_adapter.py": (
+        "tests.quality_gates.support_init_adapter",
+        ROOT / "skills" / "public" / "impl" / "scripts" / "init_adapter.py",
+    ),
+    "skills/public/quality/scripts/measure_startup_probes.py": (
+        "tests.quality_gates.support_measure_startup_probes",
+        ROOT / "skills" / "public" / "quality" / "scripts" / "measure_startup_probes.py",
+    ),
+    "skills/public/issue/scripts/validate_proposal_fields.py": (
+        "tests.quality_gates.support_validate_proposal_fields",
+        ROOT / "skills" / "public" / "issue" / "scripts" / "validate_proposal_fields.py",
+    ),
+    "skills/public/hitl/scripts/bootstrap_review.py": (
+        "tests.quality_gates.support_bootstrap_review",
+        ROOT / "skills" / "public" / "hitl" / "scripts" / "bootstrap_review.py",
+    ),
+    "skills/public/hitl/scripts/check_chunk_contract.py": (
+        "tests.quality_gates.support_check_chunk_contract",
+        ROOT / "skills" / "public" / "hitl" / "scripts" / "check_chunk_contract.py",
+    ),
+    "skills/public/gather/scripts/gather_plan.py": (
+        "tests.quality_gates.support_gather_plan",
+        ROOT / "skills" / "public" / "gather" / "scripts" / "gather_plan.py",
+    ),
+    "skills/public/release/scripts/check_requested_review_gate.py": (
+        "tests.quality_gates.support_check_requested_review_gate",
+        ROOT / "skills" / "public" / "release" / "scripts" / "check_requested_review_gate.py",
+    ),
+    "skills/public/quality/scripts/propose_mutation_testing.py": (
+        "tests.quality_gates.support_propose_mutation_testing",
+        ROOT / "skills" / "public" / "quality" / "scripts" / "propose_mutation_testing.py",
+    ),
+    "scripts/check_probe_record.py": (
+        "tests.quality_gates.support_check_probe_record",
+        ROOT / "scripts" / "check_probe_record.py",
+    ),
+    "skills/public/quality/scripts/scaffold_quality_artifact.py": (
+        "tests.quality_gates.support_scaffold_quality_artifact",
+        ROOT / "skills" / "public" / "quality" / "scripts" / "scaffold_quality_artifact.py",
+    ),
+    "skills/public/retro/scripts/scaffold_retro_artifact.py": (
+        "tests.quality_gates.support_scaffold_retro_artifact",
+        ROOT / "skills" / "public" / "retro" / "scripts" / "scaffold_retro_artifact.py",
+    ),
+    "skills/public/debug/scripts/scaffold_debug_artifact.py": (
+        "tests.quality_gates.support_scaffold_debug_artifact",
+        ROOT / "skills" / "public" / "debug" / "scripts" / "scaffold_debug_artifact.py",
+    ),
+    "skills/public/critique/scripts/scaffold_critique_artifact.py": (
+        "tests.quality_gates.support_scaffold_critique_artifact",
+        ROOT / "skills" / "public" / "critique" / "scripts" / "scaffold_critique_artifact.py",
+    ),
+    "skills/public/ideation/scripts/scaffold_ideation_artifact.py": (
+        "tests.quality_gates.support_scaffold_ideation_artifact",
+        ROOT / "skills" / "public" / "ideation" / "scripts" / "scaffold_ideation_artifact.py",
+    ),
+    "skills/public/gather/scripts/write_record.py": (
+        "tests.quality_gates.support_write_record",
+        ROOT / "skills" / "public" / "gather" / "scripts" / "write_record.py",
+    ),
+    "skills/public/retro/scripts/prepare_packet.py": (
+        "tests.quality_gates.support_retro_prepare_packet",
+        ROOT / "skills" / "public" / "retro" / "scripts" / "prepare_packet.py",
+    ),
+    "skills/public/critique/scripts/prepare_packet.py": (
+        "tests.quality_gates.support_critique_prepare_packet",
+        ROOT / "skills" / "public" / "critique" / "scripts" / "prepare_packet.py",
+    ),
+    "skills/public/narrative/scripts/map_sources.py": (
+        "tests.quality_gates.support_map_sources",
+        ROOT / "skills" / "public" / "narrative" / "scripts" / "map_sources.py",
+    ),
+    "skills/public/release/scripts/bump_version.py": (
+        "tests.quality_gates.support_bump_version",
+        ROOT / "skills" / "public" / "release" / "scripts" / "bump_version.py",
+    ),
+    "skills/public/quality/scripts/inventory_ci_recoverable_gates.py": (
+        "tests.quality_gates.support_inventory_ci_recoverable_gates",
+        ROOT / "skills" / "public" / "quality" / "scripts" / "inventory_ci_recoverable_gates.py",
+    ),
+    "skills/public/quality/scripts/resolve_quality_artifact.py": (
+        "tests.quality_gates.support_resolve_quality_artifact",
+        ROOT / "skills" / "public" / "quality" / "scripts" / "resolve_quality_artifact.py",
+    ),
+    "skills/public/setup/scripts/init_adapter.py": (
+        "tests.quality_gates.support_setup_init_adapter",
+        ROOT / "skills" / "public" / "setup" / "scripts" / "init_adapter.py",
+    ),
+    "skills/public/create-skill/scripts/init_adapter.py": (
+        "tests.quality_gates.support_create_skill_init_adapter",
+        ROOT / "skills" / "public" / "create-skill" / "scripts" / "init_adapter.py",
+    ),
+    "skills/public/critique/scripts/init_adapter.py": (
+        "tests.quality_gates.support_critique_init_adapter",
+        ROOT / "skills" / "public" / "critique" / "scripts" / "init_adapter.py",
+    ),
+    "skills/public/announcement/scripts/init_adapter.py": (
+        "tests.quality_gates.support_announcement_init_adapter",
+        ROOT / "skills" / "public" / "announcement" / "scripts" / "init_adapter.py",
+    ),
+    "skills/public/impl/scripts/survey_verification.py": (
+        "tests.quality_gates.support_survey_verification",
+        ROOT / "skills" / "public" / "impl" / "scripts" / "survey_verification.py",
+    ),
+    "skills/shared/scripts/reviewer_delivery.py": (
+        "tests.quality_gates.support_reviewer_delivery",
+        ROOT / "skills" / "shared" / "scripts" / "reviewer_delivery.py",
+    ),
+    "skills/public/announcement/scripts/collect_commits.py": (
+        "tests.quality_gates.support_collect_commits",
+        ROOT / "skills" / "public" / "announcement" / "scripts" / "collect_commits.py",
+    ),
+    "scripts/seed_lesson_transitions.py": (
+        "tests.quality_gates.support_seed_lesson_transitions",
+        ROOT / "scripts" / "seed_lesson_transitions.py",
+    ),
+    "skills/public/quality/references/find_inline_prompt_bulk.py": (
+        "tests.quality_gates.support_find_inline_prompt_bulk",
+        ROOT / "skills" / "public" / "quality" / "references" / "find_inline_prompt_bulk.py",
+    ),
+    "scripts/build_retro_lesson_selection_index.py": (
+        "tests.quality_gates.support_build_retro_lesson_selection_index",
+        ROOT / "scripts" / "build_retro_lesson_selection_index.py",
+    ),
+    "skills/public/achieve/scripts/upsert_goal.py": (
+        "tests.quality_gates.support_upsert_goal",
+        ROOT / "skills" / "public" / "achieve" / "scripts" / "upsert_goal.py",
+    ),
+    "scripts/render_critique_section_changed_surfaces.py": (
+        "tests.quality_gates.support_render_critique_section_changed_surfaces",
+        ROOT / "scripts" / "render_critique_section_changed_surfaces.py",
+    ),
+    "scripts/measure_evidence_residual.py": (
+        "tests.quality_gates.support_measure_evidence_residual",
+        ROOT / "scripts" / "measure_evidence_residual.py",
+    ),
+    "skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py": (
+        "tests.quality_gates.support_inventory_gitignore_scan_hygiene",
+        ROOT / "skills" / "public" / "quality" / "scripts" / "inventory_gitignore_scan_hygiene.py",
+    ),
+    "scripts/check_upstream_support_drift.py": (
+        "tests.quality_gates.support_check_upstream_support_drift",
+        ROOT / "scripts" / "check_upstream_support_drift.py",
+    ),
+    "scripts/resolve_artifact_path.py": (
+        "tests.quality_gates.support_resolve_artifact_path",
+        ROOT / "scripts" / "resolve_artifact_path.py",
+    ),
+    "skills/support/web-fetch/scripts/route_public_fetch.py": (
+        "tests.quality_gates.support_route_public_fetch",
+        ROOT / "skills" / "support" / "web-fetch" / "scripts" / "route_public_fetch.py",
+    ),
+    "skills/support/web-fetch/scripts/classify_fetch_response.py": (
+        "tests.quality_gates.support_classify_fetch_response",
+        ROOT / "skills" / "support" / "web-fetch" / "scripts" / "classify_fetch_response.py",
+    ),
+    "skills/support/web-fetch/scripts/acquire_public_url.py": (
+        "tests.quality_gates.support_acquire_public_url",
+        ROOT / "skills" / "support" / "web-fetch" / "scripts" / "acquire_public_url.py",
+    ),
+    "skills/public/gather/scripts/gather_public_url.py": (
+        "tests.quality_gates.support_gather_public_url",
+        ROOT / "skills" / "public" / "gather" / "scripts" / "gather_public_url.py",
+    ),
+    "scripts/validate_attention_state_visibility.py": (
+        "tests.quality_gates.support_validate_attention_state_visibility",
+        ROOT / "scripts" / "validate_attention_state_visibility.py",
+    ),
+    "scripts/check_doc_links.py": (
+        "tests.quality_gates.support_check_doc_links",
+        ROOT / "scripts" / "check_doc_links.py",
+    ),
+    "skills/public/critique/scripts/verify_packet.py": (
+        "tests.quality_gates.support_verify_packet",
+        ROOT / "skills" / "public" / "critique" / "scripts" / "verify_packet.py",
+    ),
+    **{
+        f"skills/public/{skill}/scripts/resolve_adapter.py": (
+            f"tests.quality_gates.support_resolve_adapter_{skill.replace('-', '_')}",
+            ROOT / "skills" / "public" / skill / "scripts" / "resolve_adapter.py",
+        )
+        for skill in (
+            "achieve",
+            "announcement",
+            "create-skill",
+            "critique",
+            "debug",
+            "gather",
+            "hitl",
+            "hotl",
+            "impl",
+            "issue",
+            "narrative",
+            "quality",
+            "release",
+            "retro",
+            "setup",
+        )
+    },
 }
 
 

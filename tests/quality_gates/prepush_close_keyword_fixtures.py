@@ -51,7 +51,9 @@ def head(repo: Path) -> str:
 
 
 def _build_seed(staging: Path) -> None:
-    git(staging, "init", "-b", "main")
+    from tests.quality_gates.seeding_support import _install_empty_git_dir
+
+    _install_empty_git_dir(staging, branch="main")
     commit(staging, "chore: base commit\n", "base.txt")
 
 

@@ -46,6 +46,8 @@ from typing import Any, Union
 
 import yaml
 
+from tests.quality_gates.support import run_script
+
 ROOT = Path(__file__).resolve().parents[1]
 
 Content = Union[str, Callable[[], str]]
@@ -88,14 +90,23 @@ class Repo:
             target.write_text(_render(content), encoding="utf-8")
         return repo
 
-    def run(self, root: Path, script: str, *flags: str, env: Mapping[str, str] | None = None) -> Result:
+    def run(
+        self,
+        root: Path,
+        script: str,
+        *flags: str,
+        env: Mapping[str, str] | None = None,
+        real_process: bool = False,
+    ) -> Result:
         """Build the repo, then run ``script`` with ``--repo-root`` auto-injected.
 
         Each call re-materializes a fresh repo and re-evaluates content thunks. For
         a multi-step flow against one repo (run, mutate a file, run again), call
         ``build()`` once and reuse ``run_at``.
         """
-        return run_at(self.build(root), script, *flags, env=env)
+        return run_at(
+            self.build(root), script, *flags, env=env, real_process=real_process
+        )
 
 
 @dataclass(frozen=True)
@@ -142,23 +153,40 @@ class Result:
         return json.loads(self.file_text(rel))
 
 
-def _run(argv: Iterable[str], repo: Path, env: Mapping[str, str] | None) -> Result:
-    proc = subprocess.run(
-        ["python3", *argv],
+def _run(
+    argv: Iterable[str],
+    repo: Path,
+    env: Mapping[str, str] | None,
+    *,
+    real_process: bool = False,
+) -> Result:
+    proc = run_script(
+        *argv,
         cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
         env=dict(env) if env is not None else None,
+        real_process=real_process,
     )
     return Result(proc, repo)
 
 
-def run_at(repo: Path, script: str, *flags: str, env: Mapping[str, str] | None = None) -> Result:
+def run_at(
+    repo: Path,
+    script: str,
+    *flags: str,
+    env: Mapping[str, str] | None = None,
+    real_process: bool = False,
+) -> Result:
     """Run ``script`` against an already-built ``repo``, injecting ``--repo-root``."""
-    return _run([script, "--repo-root", str(repo), *flags], repo, env)
+    return _run(
+        [script, "--repo-root", str(repo), *flags], repo, env, real_process=real_process
+    )
 
 
-def run_raw(repo: Path, *argv: str, env: Mapping[str, str] | None = None) -> Result:
+def run_raw(
+    repo: Path,
+    *argv: str,
+    env: Mapping[str, str] | None = None,
+    real_process: bool = False,
+) -> Result:
     """Run a raw ``python3`` argv against ``repo`` with no flag injection."""
-    return _run(argv, repo, env)
+    return _run(argv, repo, env, real_process=real_process)

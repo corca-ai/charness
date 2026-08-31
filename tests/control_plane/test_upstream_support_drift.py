@@ -11,10 +11,11 @@ from __future__ import annotations
 import json
 import os
 import subprocess
-import sys
 from pathlib import Path
 
 import yaml
+
+from tests.quality_gates.support import run_script
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts" / "check_upstream_support_drift.py"
@@ -27,13 +28,7 @@ def _run(repo_root: Path, fixture_path: Path, *extra: str) -> subprocess.Complet
         "CHARNESS_UPSTREAM_SUPPORT_PROBE_FIXTURES": str(fixture_path),
         "CHARNESS_UPSTREAM_SUPPORT_PROBE_NO_GH": "1",
     }
-    return subprocess.run(
-        [sys.executable, str(SCRIPT), "--repo-root", str(repo_root), *extra],
-        capture_output=True,
-        text=True,
-        check=False,
-        env=env,
-    )
+    return run_script(str(SCRIPT), "--repo-root", str(repo_root), *extra, env=env)
 
 
 def _seed_manifest(tmp_path: Path, **support_skill_source: object) -> Path:

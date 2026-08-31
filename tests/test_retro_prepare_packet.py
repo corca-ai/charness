@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import subprocess
 from pathlib import Path
 
 import pytest
@@ -12,6 +11,7 @@ from scripts.validate_retro_artifact import candidate_paths as retro_candidate_p
 from scripts.validate_retro_artifact import validate_retro_artifact
 from skills.public.retro.scripts import prepare_packet
 from skills.public.retro.scripts.resolve_adapter import load_adapter, validate_adapter_data
+from tests.quality_gates.support import run_script
 
 ROOT = Path(__file__).resolve().parents[1]
 PREPARE = "skills/public/retro/scripts/prepare_packet.py"
@@ -22,24 +22,7 @@ def _write_yaml(path: Path, body: str) -> None:
     path.write_text(body, encoding="utf-8")
 
 
-def run_script(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        ["python3", *args],
-        cwd=cwd or ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
 
-
-def _run_git(repo_root: Path, *args: str) -> None:
-    subprocess.run(
-        ["git", "-c", "user.email=t@t", "-c", "user.name=t", *args],
-        cwd=repo_root,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
 
 
 def test_retro_prepare_packet_bootstrap_missing_fails(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -383,48 +366,45 @@ output_dir: charness-artifacts/retro
 
 
 def test_retro_prepare_packet_changed_ref_reaches_default_surface_producer(tmp_path: Path) -> None:
-    from tests.quality_gates.repo_shapes import replace_with_committed_repo
+    from tests.quality_gates.repo_shapes import install_two_commit_repo
 
-    agents_dir = tmp_path / ".agents"
-    agents_dir.mkdir()
-    (agents_dir / "surfaces.json").write_text(
-        json.dumps(
-            {
-                "version": 1,
-                "surfaces": [
-                    {
-                        "surface_id": "repo-markdown",
-                        "description": "Markdown",
-                        "source_paths": ["README.md"],
-                        "derived_paths": [],
-                        "sync_commands": [],
-                        "verify_commands": ["check docs"],
-                        "notes": [],
-                        "generated_markdown": [],
-                    }
-                ],
-            }
-        ),
-        encoding="utf-8",
-    )
     producer = ROOT / "scripts/render_critique_section_changed_surfaces.py"
-    _write_yaml(
-        tmp_path / ".agents/retro-adapter.yaml",
-        f"""\
-version: 1
-repo: demo
-output_dir: charness-artifacts/retro
-packet_sections:
-  - id: changed-files-and-owning-surfaces
-    title: Changed Files And Owning Surfaces
-    content_kind: script
-    command: "python3 {producer} --repo-root ."
-""",
+    install_two_commit_repo(
+        tmp_path,
+        {
+            ".agents/surfaces.json": json.dumps(
+                {
+                    "version": 1,
+                    "surfaces": [
+                        {
+                            "surface_id": "repo-markdown",
+                            "description": "Markdown",
+                            "source_paths": ["README.md"],
+                            "derived_paths": [],
+                            "sync_commands": [],
+                            "verify_commands": ["check docs"],
+                            "notes": [],
+                            "generated_markdown": [],
+                        }
+                    ],
+                }
+            ),
+            ".agents/retro-adapter.yaml": (
+                "version: 1\n"
+                "repo: demo\n"
+                "output_dir: charness-artifacts/retro\n"
+                "packet_sections:\n"
+                "  - id: changed-files-and-owning-surfaces\n"
+                "    title: Changed Files And Owning Surfaces\n"
+                "    content_kind: script\n"
+                f'    command: "python3 {producer} --repo-root ."\n'
+            ),
+            "README.md": "one\n",
+        },
+        {"README.md": "two\n"},
+        first_message="initial",
+        second_message="update",
     )
-    (tmp_path / "README.md").write_text("one\n", encoding="utf-8")
-    replace_with_committed_repo(tmp_path, message="initial")
-    (tmp_path / "README.md").write_text("two\n", encoding="utf-8")
-    _run_git(tmp_path, "commit", "-am", "update")
 
     result = run_script(
         PREPARE,

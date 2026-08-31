@@ -3,12 +3,13 @@ from __future__ import annotations
 import contextlib
 import importlib.util
 import io
-import subprocess
 import sys
 from pathlib import Path
 
 import pytest
 import yaml
+
+from tests.quality_gates.repo_shapes import install_committed_repo
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCRIPT = REPO_ROOT / "skills/public/quality/references/find_inline_prompt_bulk.py"
@@ -31,18 +32,6 @@ def run_prompt_bulk(*args: str) -> dict[str, object]:
     # allowed to fall back to JSON syntax when PyYAML is missing, and `safe_load`
     # reads either.
     return yaml.safe_load(stdout.getvalue())
-
-
-def init_git_repo(repo: Path, *tracked_paths: str) -> None:
-    subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True, text=True)
-    if tracked_paths:
-        subprocess.run(
-            ["git", "add", *tracked_paths],
-            cwd=repo,
-            check=True,
-            capture_output=True,
-            text=True,
-        )
 
 
 def test_find_inline_prompt_bulk_reports_large_multiline_strings(tmp_path: Path) -> None:
@@ -134,19 +123,18 @@ def test_find_inline_prompt_bulk_keeps_control_flow_string_expressions(tmp_path:
 
 
 def test_find_inline_prompt_bulk_ignores_gitignored_files(tmp_path: Path) -> None:
+    bulky = 'PROMPT = """line one\\n' + ("x" * 450) + '"""\n'
     repo = tmp_path / "repo"
-    (repo / "src").mkdir(parents=True)
-    (repo / ".artifacts").mkdir(parents=True)
-    (repo / ".gitignore").write_text(".artifacts/**\n", encoding="utf-8")
-    (repo / "src" / "kept.py").write_text(
-        'PROMPT = """line one\\n' + ("x" * 450) + '"""\n',
-        encoding="utf-8",
+    install_committed_repo(
+        repo,
+        {
+            ".gitignore": ".artifacts/**\n",
+            "src/kept.py": bulky,
+        },
     )
-    (repo / ".artifacts" / "generated.py").write_text(
-        'PROMPT = """line one\\n' + ("x" * 450) + '"""\n',
-        encoding="utf-8",
-    )
-    init_git_repo(repo, ".gitignore", "src/kept.py")
+    generated = repo / ".artifacts" / "generated.py"
+    generated.parent.mkdir(parents=True)
+    generated.write_text(bulky, encoding="utf-8")
 
     payload = run_prompt_bulk(
         "--repo-root",
@@ -161,44 +149,29 @@ def test_find_inline_prompt_bulk_ignores_gitignored_files(tmp_path: Path) -> Non
 
 
 def test_find_inline_prompt_bulk_uses_quality_adapter_policy(tmp_path: Path) -> None:
+    bulky = 'PROMPT = """line one\\n' + ("x" * 320) + '"""\n'
     repo = tmp_path / "repo"
-    (repo / ".agents").mkdir(parents=True)
-    (repo / "src").mkdir(parents=True)
-    (repo / "plugins" / "mirror").mkdir(parents=True)
-    (repo / ".agents" / "quality-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: demo",
-                "prompt_asset_policy:",
-                "  source_globs:",
-                "    - src/**/*.py",
-                "  min_multiline_chars: 300",
-                "  exemption_globs:",
-                "    - src/exempt_*.py",
-                "",
-            ]
-        ),
-        encoding="utf-8",
-    )
-    (repo / "src" / "kept.py").write_text(
-        'PROMPT = """line one\\n' + ("x" * 320) + '"""\n',
-        encoding="utf-8",
-    )
-    (repo / "src" / "exempt_prompt.py").write_text(
-        'PROMPT = """line one\\n' + ("x" * 320) + '"""\n',
-        encoding="utf-8",
-    )
-    (repo / "plugins" / "mirror" / "ignored.py").write_text(
-        'PROMPT = """line one\\n' + ("x" * 320) + '"""\n',
-        encoding="utf-8",
-    )
-    init_git_repo(
+    install_committed_repo(
         repo,
-        ".agents/quality-adapter.yaml",
-        "src/kept.py",
-        "src/exempt_prompt.py",
-        "plugins/mirror/ignored.py",
+        {
+            ".agents/quality-adapter.yaml": "\n".join(
+                [
+                    "version: 1",
+                    "repo: demo",
+                    "prompt_asset_policy:",
+                    "  source_globs:",
+                    "    - src/**/*.py",
+                    "  min_multiline_chars: 300",
+                    "  exemption_globs:",
+                    "    - src/exempt_*.py",
+                    "",
+                ]
+            )
+            + "\n",
+            "src/kept.py": bulky,
+            "src/exempt_prompt.py": bulky,
+            "plugins/mirror/ignored.py": bulky,
+        },
     )
 
     payload = run_prompt_bulk(

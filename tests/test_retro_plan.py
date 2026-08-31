@@ -2,14 +2,13 @@ from __future__ import annotations
 
 import importlib.util
 import json
-import subprocess
 from pathlib import Path
 from types import ModuleType
 
 import pytest
 import yaml
 
-from tests.quality_gates.git_fixture_support import init_git_repo
+from tests.quality_gates.repo_shapes import install_committed_repo
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -27,16 +26,21 @@ RETRO_OUTPUT_DIR_LIB = _load(
 )
 
 
-def _git(repo: Path, *args: str) -> None:
-    subprocess.run(["git", *args], cwd=repo, check=True, capture_output=True, text=True)
+_PLAN_REPO_FILES = {
+    ".agents/retro-adapter.yaml": (
+        "version: 1\n"
+        "repo: demo\n"
+        "language: en\n"
+        "output_dir: charness-artifacts/retro\n"
+        "default_mode: session\n"
+        "summary_path: charness-artifacts/retro/recent-lessons.md\n"
+    ),
+    "tracked.py": "x = 1\n",
+}
 
 
-def _init_git_repo_with_commit(repo: Path) -> None:
-    repo.mkdir(parents=True, exist_ok=True)
-    init_git_repo(repo)
-    (repo / "tracked.py").write_text("x = 1\n", encoding="utf-8")
-    _git(repo, "add", "-A")
-    _git(repo, "commit", "-q", "-m", "snapshot")
+def _committed_plan_repo(tmp_path: Path) -> Path:
+    return install_committed_repo(tmp_path / "repo", _PLAN_REPO_FILES, message="snapshot")
 
 
 def load_plan_module() -> ModuleType:
@@ -296,9 +300,7 @@ def test_retro_plan_scaffold_uses_repo_declared_artifact_sections(tmp_path: Path
 
 
 def test_retro_plan_infers_work_paths_from_recent_commits(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    write_adapter(repo)
-    _init_git_repo_with_commit(repo)  # clean worktree after commit
+    repo = _committed_plan_repo(tmp_path)  # clean worktree after commit
 
     payload = run_plan(repo)  # no changed_paths -> infer from repo state
 
@@ -314,9 +316,7 @@ def test_retro_plan_infers_work_paths_from_recent_commits(tmp_path: Path) -> Non
 
 
 def test_retro_plan_infers_work_paths_from_working_tree(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    write_adapter(repo)
-    _init_git_repo_with_commit(repo)
+    repo = _committed_plan_repo(tmp_path)
     (repo / "tracked.py").write_text("x = 2\n", encoding="utf-8")  # dirty worktree
 
     payload = run_plan(repo)
@@ -325,9 +325,7 @@ def test_retro_plan_infers_work_paths_from_working_tree(tmp_path: Path) -> None:
 
 
 def test_retro_plan_work_paths_falls_back_when_surfaces_errors(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    repo = tmp_path / "repo"
-    write_adapter(repo)
-    _init_git_repo_with_commit(repo)
+    repo = _committed_plan_repo(tmp_path)
     module = load_plan_module()
 
     class Boom:

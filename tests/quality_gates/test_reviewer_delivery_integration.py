@@ -3,23 +3,18 @@
 from __future__ import annotations
 
 import subprocess
-import sys
 from pathlib import Path
 
 import yaml
+
+from .support import run_script
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "skills/shared/scripts/reviewer_delivery.py"
 
 
 def _run(ledger: Path, *args: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        [sys.executable, str(SCRIPT), "--ledger", str(ledger), *args],
-        cwd=ROOT,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    return run_script(str(SCRIPT), "--ledger", str(ledger), *args, cwd=ROOT)
 
 
 def _payload(result: subprocess.CompletedProcess[str]) -> dict:

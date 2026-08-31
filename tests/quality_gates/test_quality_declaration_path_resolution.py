@@ -7,6 +7,9 @@ from types import SimpleNamespace
 
 import pytest
 
+from tests.quality_gates.git_fixture_support import init_git_repo
+from tests.quality_gates.repo_shapes import install_committed_repo
+
 from .support import ROOT, _load_script_module
 
 LIFECYCLE = _load_script_module(
@@ -148,15 +151,12 @@ def test_preset_reconciliation_distinguishes_applied_missing_and_metadata_only(
     ]
 
 
-@pytest.mark.parametrize("frontmatter", ["---not-a-fence", "---not-a-fence\nname: malformed\n"])
-def test_preset_contract_refuses_malformed_frontmatter(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, frontmatter: str) -> None:
+def test_preset_contract_refuses_malformed_frontmatter(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     repo = tmp_path / "app"
     presets = repo / "presets"
     presets.mkdir(parents=True)
-    (presets / "strict.md").write_text(
-        "---\nname: strict\ndescription: \"Strict fixture.\"\npreset_kind: sample-vocabulary\ninstall_scope: maintainer\nreconciliation:\n  required_adapter_commands:\n    - pytest\n" + frontmatter,
-        encoding="utf-8",
-    )
     validator = LIFECYCLE._repo_module("scripts.validate_presets")
     monkeypatch.setattr(
         LIFECYCLE,
@@ -165,10 +165,13 @@ def test_preset_contract_refuses_malformed_frontmatter(tmp_path: Path, monkeypat
         if name == "scripts.validate_presets"
         else SimpleNamespace(detect_preset_lineage=lambda _repo: []),
     )
-
-    contract = LIFECYCLE._preset_contract(repo, "strict")
-
-    assert contract["state"] == "unavailable"
+    prefix = (
+        "---\nname: strict\ndescription: \"Strict fixture.\"\npreset_kind: sample-vocabulary\n"
+        "install_scope: maintainer\nreconciliation:\n  required_adapter_commands:\n    - pytest\n"
+    )
+    for frontmatter in ("---not-a-fence", "---not-a-fence\nname: malformed\n"):
+        (presets / "strict.md").write_text(prefix + frontmatter, encoding="utf-8")
+        assert LIFECYCLE._preset_contract(repo, "strict")["state"] == "unavailable"
 
 
 def test_preset_contract_accepts_crlf_and_refuses_external_symlink(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -453,13 +456,13 @@ def test_declaration_lifecycle_reports_unavailable_catalog_gates(
     assert packets == []
 
 
-def test_declared_paths_do_not_resolve_ignored_repo_skills(tmp_path: Path) -> None:
-    repo = tmp_path / "app"
+def test_declared_paths_do_not_resolve_ignored_repo_skills_or_support_symlink(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = install_committed_repo(tmp_path / "app", {".gitignore": "ignored/\n"})
     ignored_skill = repo / "ignored" / "private" / "SKILL.md"
     ignored_skill.parent.mkdir(parents=True)
     ignored_skill.write_text("# ignored\n", encoding="utf-8")
-    (repo / ".gitignore").write_text("ignored/\n", encoding="utf-8")
-    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
 
     rows = _declared_paths(
         repo, "ignored/*/SKILL.md", "ignored/private/SKILL.md"
@@ -482,25 +485,35 @@ def test_declared_paths_do_not_resolve_ignored_repo_skills(tmp_path: Path) -> No
         },
     ]
 
+    support = tmp_path / "support"
+    alias = support / "alias"
+    alias.mkdir(parents=True)
+    (alias / "SKILL.md").symlink_to(ignored_skill)
+    init_git_repo(support)
+    monkeypatch.setenv("CHARNESS_SUPPORT_DIR", str(support))
+    row = _declared_paths(repo, "skills/support/alias/SKILL.md")[0]
+    assert row["target_state"] == "unreachable"
+    assert row["resolved_paths"] == []
+    assert row["routing_state"] == "partial"
+    assert row["excluded_match_count"] == 1
+    assert "target_scope" not in row
 
-@pytest.mark.parametrize(
-    "declaration",
-    ["../outside/SKILL.md", "../outside/*/SKILL.md", "/tmp/outside/SKILL.md"],
-)
-def test_declared_paths_refuse_out_of_repo_declarations(
-    tmp_path: Path, declaration: str
-) -> None:
+
+def test_declared_paths_refuse_out_of_repo_declarations(tmp_path: Path) -> None:
     repo = tmp_path / "app"
     repo.mkdir()
     outside = tmp_path / "outside" / "nested"
     outside.mkdir(parents=True)
     (outside / "SKILL.md").write_text("# outside\n", encoding="utf-8")
 
-    row = _declared_paths(repo, declaration)[0]
-
-    assert row["target_state"] == "unreachable"
-    assert row["resolved_paths"] == []
-    assert "repo-relative" in row["declaration_error"]
+    rows = _declared_paths(
+        repo, "../outside/SKILL.md", "../outside/*/SKILL.md", "/tmp/outside/SKILL.md"
+    )
+    assert len(rows) == 3
+    for row in rows:
+        assert row["target_state"] == "unreachable"
+        assert row["resolved_paths"] == []
+        assert "repo-relative" in row["declaration_error"]
 
 
 def test_declared_paths_virtualize_configured_external_support(
@@ -522,53 +535,25 @@ def test_declared_paths_virtualize_configured_external_support(
     assert str(tmp_path) not in str(row)
 
 
-@pytest.mark.parametrize(
-    "declaration",
-    ["skills/support/private/SKILL.md", "skills/support/*/SKILL.md"],
-)
 def test_declared_paths_do_not_resolve_ignored_external_support(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, declaration: str
-) -> None:
-    repo = tmp_path / "app"
-    repo.mkdir()
-    support = tmp_path / "support"
-    ignored_skill = support / "private" / "SKILL.md"
-    ignored_skill.parent.mkdir(parents=True)
-    ignored_skill.write_text("# ignored\n", encoding="utf-8")
-    (support / ".gitignore").write_text("private/\n", encoding="utf-8")
-    subprocess.run(["git", "init", "-q"], cwd=support, check=True)
-    monkeypatch.setenv("CHARNESS_SUPPORT_DIR", str(support))
-
-    row = _declared_paths(repo, declaration)[0]
-
-    assert row["target_state"] == "unreachable"
-    assert row["resolved_paths"] == []
-    assert row["routing_state"] == "routed"
-
-
-def test_declared_paths_refuse_external_support_symlink_into_repo(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     repo = tmp_path / "app"
-    ignored_skill = repo / "ignored" / "private" / "SKILL.md"
+    repo.mkdir()
+    support = install_committed_repo(tmp_path / "support", {".gitignore": "private/\n"})
+    ignored_skill = support / "private" / "SKILL.md"
     ignored_skill.parent.mkdir(parents=True)
     ignored_skill.write_text("# ignored\n", encoding="utf-8")
-    (repo / ".gitignore").write_text("ignored/\n", encoding="utf-8")
-    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
-    support = tmp_path / "support"
-    alias = support / "alias"
-    alias.mkdir(parents=True)
-    (alias / "SKILL.md").symlink_to(ignored_skill)
-    subprocess.run(["git", "init", "-q"], cwd=support, check=True)
     monkeypatch.setenv("CHARNESS_SUPPORT_DIR", str(support))
 
-    row = _declared_paths(repo, "skills/support/alias/SKILL.md")[0]
-
-    assert row["target_state"] == "unreachable"
-    assert row["resolved_paths"] == []
-    assert row["routing_state"] == "partial"
-    assert row["excluded_match_count"] == 1
-    assert "target_scope" not in row
+    rows = _declared_paths(
+        repo, "skills/support/private/SKILL.md", "skills/support/*/SKILL.md"
+    )
+    assert len(rows) == 2
+    for row in rows:
+        assert row["target_state"] == "unreachable"
+        assert row["resolved_paths"] == []
+        assert row["routing_state"] == "routed"
 
 
 def test_declared_paths_refuse_repo_symlink_escape(tmp_path: Path) -> None:

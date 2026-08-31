@@ -1,26 +1,60 @@
 from __future__ import annotations
 
+import importlib
 import shutil
 import subprocess
 from pathlib import Path
+from types import SimpleNamespace
+from typing import Any
 
 import yaml
 
+from tests.quality_gates.seeding_support import _install_empty_git_dir
 from tests.quality_gates.support import run_script
 
 SCRIPT = "scripts/check_issue_closeout_commit_msg.py"
+hook = importlib.import_module("scripts.check_issue_closeout_commit_msg")
+
+
+def _init_git_repo(repo: Path) -> None:
+    repo.mkdir(parents=True, exist_ok=True)
+    _install_empty_git_dir(repo, branch="main")
 
 
 def _init_repo(repo: Path) -> None:
-    subprocess.run(["git", "init", "-b", "main"], cwd=repo, check=True, capture_output=True, text=True)
+    repo.mkdir(parents=True, exist_ok=True)
 
 
 def _stage_issue_closeout(repo: Path, body: str) -> Path:
     path = repo / "charness-artifacts" / "issue" / "closeout.md"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(body, encoding="utf-8")
-    subprocess.run(["git", "add", str(path.relative_to(repo))], cwd=repo, check=True, capture_output=True, text=True)
     return path
+
+
+def _run(repo_root: Path, message: Path, *, repo: str = "corca-ai/charness") -> SimpleNamespace:
+    """Evaluate from planted artifact bytes; do not re-ask the Git index."""
+    folder = repo_root / "charness-artifacts" / "issue"
+    files: dict[str, str] = {}
+    if folder.is_dir():
+        for path in folder.glob("*.md"):
+            if path.is_file():
+                files[path.relative_to(repo_root).as_posix()] = path.read_text(encoding="utf-8")
+    report = hook.evaluate(
+        repo_root,
+        message,
+        repo,
+        list_paths=lambda _root: list(files),
+        read_file=lambda _root, path: files[path],
+    )
+    payload: dict[str, Any] = hook.report_payload(report)
+    dumped = yaml.safe_dump(payload)
+    return SimpleNamespace(
+        returncode=0 if report["ok"] else 1,
+        payload=payload,
+        stdout=dumped,
+        stderr="",
+    )
 
 
 def _bug_closeout_body(close_line: str = "Close #42.") -> str:
@@ -44,13 +78,7 @@ def test_commit_msg_gate_skips_when_no_issue_closeout_artifact_is_staged(tmp_pat
     message = tmp_path / "message.txt"
     message.write_text("Ordinary commit\n", encoding="utf-8")
 
-    result = run_script(
-        SCRIPT,
-        "--repo-root",
-        str(tmp_path),
-        "--commit-msg-file",
-        str(message),
-    )
+    result = _run(tmp_path, message)
 
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
@@ -58,8 +86,15 @@ def test_commit_msg_gate_skips_when_no_issue_closeout_artifact_is_staged(tmp_pat
 
 
 def test_commit_msg_gate_rejects_staged_closeout_artifact_without_commit_carrier(tmp_path: Path) -> None:
-    _init_repo(tmp_path)
+    _init_git_repo(tmp_path)
     _stage_issue_closeout(tmp_path, _bug_closeout_body())
+    subprocess.run(
+        ["git", "add", "charness-artifacts/issue/closeout.md"],
+        cwd=tmp_path,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
     message = tmp_path / "message.txt"
     message.write_text("Resolve issue without close keywords\n", encoding="utf-8")
 
@@ -85,7 +120,7 @@ def test_commit_msg_gate_accepts_commit_message_closeout_carrier(tmp_path: Path)
     message = tmp_path / "message.txt"
     message.write_text(_bug_closeout_body(), encoding="utf-8")
 
-    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message))
+    result = _run(tmp_path, message)
 
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
@@ -101,7 +136,7 @@ def test_commit_msg_gate_ignores_close_keywords_inside_staged_code_fence(tmp_pat
     message = tmp_path / "message.txt"
     message.write_text("Ordinary commit\n", encoding="utf-8")
 
-    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message))
+    result = _run(tmp_path, message)
 
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
@@ -115,7 +150,7 @@ def test_commit_msg_gate_rejects_bare_close_keyword_with_no_staged_artifact_and_
     message = tmp_path / "message.txt"
     message.write_text("Fixes #123\n", encoding="utf-8")
 
-    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message))
+    result = _run(tmp_path, message)
 
     assert result.returncode == 1
     payload = yaml.safe_load(result.stdout)
@@ -138,7 +173,7 @@ def test_commit_msg_gate_allows_bare_issue_reference_without_close_keyword(tmp_p
     message = tmp_path / "message.txt"
     message.write_text("See #123 for context.\n", encoding="utf-8")
 
-    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message))
+    result = _run(tmp_path, message)
 
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
@@ -152,7 +187,7 @@ def test_commit_msg_gate_accepts_bare_close_keyword_when_message_carries_full_le
     message = tmp_path / "message.txt"
     message.write_text(_bug_closeout_body(), encoding="utf-8")
 
-    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message))
+    result = _run(tmp_path, message)
 
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
@@ -170,7 +205,7 @@ def test_commit_msg_gate_staged_artifact_behavior_is_unaffected_by_bare_keyword_
     message = tmp_path / "message.txt"
     message.write_text(_bug_closeout_body(), encoding="utf-8")
 
-    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message))
+    result = _run(tmp_path, message)
 
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
@@ -189,7 +224,7 @@ def test_commit_msg_gate_rejects_bare_colon_close_keyword_with_no_carrier(tmp_pa
     message = tmp_path / "message.txt"
     message.write_text("Closes: #123\n", encoding="utf-8")
 
-    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message))
+    result = _run(tmp_path, message)
 
     assert result.returncode == 1
     payload = yaml.safe_load(result.stdout)
@@ -205,7 +240,7 @@ def test_commit_msg_gate_captures_all_numbers_in_single_keyword_comma_list(tmp_p
     message = tmp_path / "message.txt"
     message.write_text("Closes #10, #11, #12\n", encoding="utf-8")
 
-    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message))
+    result = _run(tmp_path, message)
 
     assert result.returncode == 1
     payload = yaml.safe_load(result.stdout)
@@ -236,7 +271,7 @@ def test_commit_msg_gate_bare_close_with_answer_substring_defaults_to_bug_not_qu
         encoding="utf-8",
     )
 
-    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message))
+    result = _run(tmp_path, message)
 
     assert result.returncode == 1
     payload = yaml.safe_load(result.stdout)
@@ -274,7 +309,7 @@ def test_commit_msg_gate_staged_artifact_never_infers_the_exempt_classification(
     message = tmp_path / "message.txt"
     message.write_text(body, encoding="utf-8")
 
-    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message))
+    result = _run(tmp_path, message)
 
     assert result.returncode == 1
     payload = yaml.safe_load(result.stdout)
@@ -308,7 +343,7 @@ def test_commit_msg_gate_explicit_question_classification_still_exempts(tmp_path
     message = tmp_path / "message.txt"
     message.write_text(body, encoding="utf-8")
 
-    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message))
+    result = _run(tmp_path, message)
 
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
@@ -338,7 +373,7 @@ def test_commit_msg_gate_surfaces_exemption_advisory_for_question_close(tmp_path
     message = tmp_path / "message.txt"
     message.write_text(body, encoding="utf-8")
 
-    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message))
+    result = _run(tmp_path, message)
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "verified"
@@ -358,7 +393,7 @@ def test_commit_msg_gate_bug_close_surfaces_no_exemption_advisory(tmp_path: Path
     message = tmp_path / "message.txt"
     message.write_text(_bug_closeout_body(), encoding="utf-8")
 
-    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message))
+    result = _run(tmp_path, message)
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "verified"
@@ -378,7 +413,7 @@ def test_commit_msg_gate_surfaces_skipped_resolution_critique(tmp_path: Path) ->
     message = tmp_path / "message.txt"
     message.write_text(_bug_closeout_body(), encoding="utf-8")
 
-    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message))
+    result = _run(tmp_path, message)
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "verified"
@@ -404,7 +439,7 @@ def test_commit_msg_gate_executed_resolution_critique_surfaces_no_skip_advisory(
     message = tmp_path / "message.txt"
     message.write_text(body, encoding="utf-8")
 
-    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message))
+    result = _run(tmp_path, message)
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "verified"
@@ -422,7 +457,7 @@ def test_commit_msg_gate_fenced_close_keyword_in_message_still_triggers_floor(tm
     message = tmp_path / "message.txt"
     message.write_text("```\nFixes #123\n```\n", encoding="utf-8")
 
-    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message))
+    result = _run(tmp_path, message)
 
     assert result.returncode == 1
     payload = yaml.safe_load(result.stdout)
@@ -435,9 +470,15 @@ def test_commit_msg_checker_resolves_exported_plugin_skill_layout(tmp_path: Path
     plugin = tmp_path / "plugin"
     shutil.copytree(Path(__file__).resolve().parents[2] / "plugins" / "charness", plugin)
     repo = tmp_path / "repo"
-    repo.mkdir()
-    _init_repo(repo)
+    _init_git_repo(repo)
     _stage_issue_closeout(repo, _bug_closeout_body())
+    subprocess.run(
+        ["git", "add", "charness-artifacts/issue/closeout.md"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
     message = repo / "message.txt"
     message.write_text(_bug_closeout_body(), encoding="utf-8")
 
@@ -487,7 +528,7 @@ def test_commit_msg_gate_accepts_pausing_brief_with_provenance_and_no_close_keyw
     message = tmp_path / "message.txt"
     message.write_text("Persist paused resolution brief for #77\n", encoding="utf-8")
 
-    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message))
+    result = _run(tmp_path, message)
 
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
@@ -505,7 +546,7 @@ def test_commit_msg_gate_rejects_pausing_brief_missing_provenance_line(tmp_path:
     message = tmp_path / "message.txt"
     message.write_text("Persist paused resolution brief for #77\n", encoding="utf-8")
 
-    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message))
+    result = _run(tmp_path, message)
 
     assert result.returncode == 1
     payload = yaml.safe_load(result.stdout)
@@ -531,7 +572,7 @@ def test_commit_msg_gate_keeps_full_ledger_teeth_when_message_close_keywords_pau
     message = tmp_path / "message.txt"
     message.write_text("Close #77\n\nDone.\n", encoding="utf-8")
 
-    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message))
+    result = _run(tmp_path, message)
 
     assert result.returncode == 1
     payload = yaml.safe_load(result.stdout)
@@ -559,7 +600,7 @@ def test_commit_msg_gate_reads_bold_classification_from_staged_artifact(tmp_path
     message = tmp_path / "message.txt"
     message.write_text(body, encoding="utf-8")
 
-    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message))
+    result = _run(tmp_path, message)
 
     payload = yaml.safe_load(result.stdout)
     assert payload["artifacts"][0]["classification"] == "deferred-work"
@@ -587,7 +628,7 @@ def test_commit_msg_gate_stays_out_of_scope_for_template_faithful_brief(tmp_path
     message = tmp_path / "message.txt"
     message.write_text("Persist paused resolution brief for #77\n", encoding="utf-8")
 
-    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message))
+    result = _run(tmp_path, message)
 
     assert result.returncode == 0, result.stderr
     assert yaml.safe_load(result.stdout)["status"] == "not_applicable"
@@ -619,7 +660,7 @@ def test_commit_msg_gate_bug_markers_outrank_feature_markers(tmp_path: Path) -> 
     message = tmp_path / "message.txt"
     message.write_text(body, encoding="utf-8")
 
-    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message))
+    result = _run(tmp_path, message)
 
     assert result.returncode == 1
     payload = yaml.safe_load(result.stdout)
@@ -653,7 +694,7 @@ def test_commit_msg_gate_bare_close_ignores_fenced_classification_line(tmp_path:
         encoding="utf-8",
     )
 
-    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message))
+    result = _run(tmp_path, message)
 
     assert result.returncode == 1
     report = yaml.safe_load(result.stdout)["reports"][0]
@@ -683,7 +724,7 @@ def test_commit_msg_gate_bare_close_honors_unfenced_classification_line(tmp_path
         encoding="utf-8",
     )
 
-    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message))
+    result = _run(tmp_path, message)
 
     assert result.returncode == 0, result.stderr
     report = yaml.safe_load(result.stdout)["reports"][0]
@@ -709,7 +750,7 @@ def test_commit_msg_gate_renders_the_specific_critique_failure(tmp_path: Path) -
     message = tmp_path / "message.txt"
     message.write_text(body, encoding="utf-8")
 
-    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message))
+    result = _run(tmp_path, message)
 
     assert result.returncode == 1
     payload = yaml.safe_load(result.stdout)
@@ -748,7 +789,7 @@ def test_commit_msg_gate_refuses_a_question_close_with_no_provenance_marker(tmp_
     message = tmp_path / "message.txt"
     message.write_text(body, encoding="utf-8")
 
-    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message))
+    result = _run(tmp_path, message)
 
     assert result.returncode != 0
     report = yaml.safe_load(result.stdout)["reports"][0]
@@ -777,7 +818,7 @@ def test_commit_msg_gate_names_the_undispositioned_hotl_entry_it_refused(tmp_pat
     message = tmp_path / "message.txt"
     message.write_text(body, encoding="utf-8")
 
-    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message))
+    result = _run(tmp_path, message)
 
     assert result.returncode != 0
     payload = yaml.safe_load(result.stdout)

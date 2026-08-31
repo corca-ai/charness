@@ -8,12 +8,11 @@ repeat that shape one level up, so the script has its own tests.
 from __future__ import annotations
 
 import json
-import subprocess
-import sys
 from pathlib import Path
 
 import yaml
 
+from tests.quality_gates.support import run_script
 from tests.residual_floor_support import residual_floor_message
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -21,13 +20,7 @@ SCRIPT = REPO_ROOT / "scripts" / "measure_evidence_residual.py"
 
 
 def _run(repo_root: Path) -> tuple[int, dict]:
-    result = subprocess.run(
-        [sys.executable, str(SCRIPT), "--repo-root", str(repo_root)],
-        capture_output=True,
-        text=True,
-        check=False,
-        cwd=REPO_ROOT,
-    )
+    result = run_script(str(SCRIPT), "--repo-root", str(repo_root), cwd=REPO_ROOT)
     # Command stdout is YAML; the persisted probe artifact this is compared against
     # is still JSON on disk and is still read with `json.loads` below.
     return result.returncode, yaml.safe_load(result.stdout)

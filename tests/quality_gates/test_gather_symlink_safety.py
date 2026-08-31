@@ -293,7 +293,7 @@ def test_write_record_refuses_empty_content_instead_of_erasing_the_pointer(tmp_p
         result = run_script(
             WRITE_RECORD, "--repo-root", str(repo), "--slug", f"{label}-record",
             "--date", "2026-05-10", "--content-file", str(content_file), "--execute",
-            cwd=Path.cwd(), env={**os.environ},
+            cwd=Path.cwd(), env={**os.environ}, real_process=True,
         )
         assert result.returncode == 1, label
         assert "refusing to write an empty gather record" in result.stderr, label
@@ -306,7 +306,7 @@ def test_write_record_refuses_empty_content_instead_of_erasing_the_pointer(tmp_p
     planned = run_script(
         WRITE_RECORD, "--repo-root", str(repo), "--slug", "empty-plan",
         "--date", "2026-05-11", "--content-file", str(tmp_path / "empty.md"),
-        cwd=Path.cwd(), env={**os.environ},
+        cwd=Path.cwd(), env={**os.environ}, real_process=True,
     )
     assert planned.returncode == 1
     assert "refusing to write an empty gather record" in planned.stderr
@@ -338,7 +338,7 @@ def test_write_record_refuses_a_content_file_that_is_not_a_file(tmp_path: Path) 
             result = run_script(
                 WRITE_RECORD, "--repo-root", str(repo), "--slug", f"{label}-{arm}",
                 "--date", "2026-05-13", "--content-file", str(content_file), *extra,
-                cwd=Path.cwd(), env={**os.environ},
+                cwd=Path.cwd(), env={**os.environ}, real_process=True,
             )
             assert result.returncode == 1, f"{label}/{arm}"
             assert "does not exist or is not a file" in result.stderr, f"{label}/{arm}"

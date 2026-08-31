@@ -2,37 +2,24 @@ from __future__ import annotations
 
 import hashlib
 import json
-import shutil
-import subprocess
 from pathlib import Path
 
 import pytest
 
 from scripts import reviewed_input_identity as identity_lib
 from scripts import reviewed_input_verification as verification_lib
-from tests.quality_gates.git_fixture_support import init_git_repo
-from tests.seed_cache import get_or_build
-
-
-def _git(repo: Path, *args: str) -> None:
-    subprocess.run(["git", *args], cwd=repo, check=True, capture_output=True)
-
-
-def _build_two_commit_seed(staging: Path) -> None:
-    repo = staging / "repo"
-    repo.mkdir()
-    (repo / "reviewed.txt").write_text("one\n", encoding="utf-8")
-    init_git_repo(repo, "reviewed.txt")
-    _git(repo, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-m", "first")
-    (repo / "reviewed.txt").write_text("two\n", encoding="utf-8")
-    _git(repo, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-am", "second")
+from scripts.git_status_snapshot import parse as parse_status
+from scripts.reviewed_input_worktree import WorkingTreeSnapshot
+from tests.quality_gates.repo_shapes import install_two_commit_repo
 
 
 def _init_repo(repo: Path) -> None:
-    shutil.copytree(
-        get_or_build("reviewed-input-two-commit-seed", _build_two_commit_seed) / "repo",
+    install_two_commit_repo(
         repo,
-        dirs_exist_ok=True,
+        {"reviewed.txt": "one\n"},
+        {"reviewed.txt": "two\n"},
+        first_message="first",
+        second_message="second",
     )
 
 
@@ -97,17 +84,13 @@ def test_committed_ref_identity_does_not_probe_is_inside_work_tree(
     assert all(args[:2] != ("rev-parse", "--is-inside-work-tree") for args in calls)
 
 
-def test_worktree_status_snapshot_parses_only_nul_untracked_records(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_worktree_status_snapshot_parses_only_nul_untracked_records() -> None:
     branch_oid = b"a" * 40
     utf8_path = "目录/文件.txt".encode("utf-8")
     surrogate_path = b"invalid-\xff.txt"
     tracked_path = b"tracked-looking-untracked.txt"
-    monkeypatch.setattr(
-        identity_lib,
-        "_git_bytes",
-        lambda _root, *args: (
+    snapshot = WorkingTreeSnapshot.from_status(
+        parse_status(
             b"# branch.oid "
             + branch_oid
             + b"\0# branch.head main\0? "
@@ -122,10 +105,8 @@ def test_worktree_status_snapshot_parses_only_nul_untracked_records(
             + b" "
             + tracked_path
             + b"\0"
-        ),
+        )
     )
-
-    snapshot = identity_lib._working_tree_snapshot(tmp_path)
 
     assert snapshot.branch_oid == branch_oid.decode()
     assert snapshot.untracked_paths == {
@@ -136,87 +117,52 @@ def test_worktree_status_snapshot_parses_only_nul_untracked_records(
     assert snapshot.unstaged_dirty is True
 
 
-@pytest.mark.parametrize(
-    ("record", "staged", "unstaged"),
-    [
-        (
-            b"1 M. N... 100644 100644 100644 " + (b"a" * 40) + b" " + (b"a" * 40) + b" fixture",
-            True,
-            False,
-        ),
-        (
-            b"1 .M N... 100644 100644 100644 " + (b"a" * 40) + b" " + (b"a" * 40) + b" fixture",
-            False,
-            True,
-        ),
+def test_status_snapshot_derives_only_conservative_patch_dirty_bits() -> None:
+    oid = b"a" * 40
+    cases = (
+        (b"1 M. N... 100644 100644 100644 " + oid + b" " + oid + b" fixture", True, False),
+        (b"1 .M N... 100644 100644 100644 " + oid + b" " + oid + b" fixture", False, True),
         (
             b"u UU N... 100644 100644 100644 100644 "
-            + (b"a" * 40)
-            + b" "
-            + (b"a" * 40)
-            + b" "
-            + (b"a" * 40)
-            + b" fixture",
+            + oid + b" " + oid + b" " + oid + b" fixture",
             True,
             True,
         ),
         (b"? untracked.txt", False, False),
-    ],
-)
-def test_status_snapshot_derives_only_conservative_patch_dirty_bits(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-    record: bytes,
-    staged: bool,
-    unstaged: bool,
-) -> None:
-    monkeypatch.setattr(
-        identity_lib,
-        "_git_bytes",
-        lambda _root, *args: b"# branch.oid " + (b"a" * 40) + b"\0" + record + b"\0",
     )
+    for record, staged, unstaged in cases:
+        snapshot = WorkingTreeSnapshot.from_status(
+            parse_status(b"# branch.oid " + oid + b"\0" + record + b"\0")
+        )
+        assert snapshot.staged_dirty is staged, record
+        assert snapshot.unstaged_dirty is unstaged, record
 
-    snapshot = identity_lib._working_tree_snapshot(tmp_path)
 
-    assert snapshot.staged_dirty is staged
-    assert snapshot.unstaged_dirty is unstaged
+def test_unknown_status_record_fails_closed() -> None:
+    from scripts.git_status_snapshot import GitStatusError
+
+    with pytest.raises(GitStatusError, match="unexpected git status record"):
+        parse_status(b"# branch.oid " + (b"a" * 40) + b"\0unknown\0")
 
 
-def test_unknown_status_record_fails_closed(
+def test_worktree_identity_makes_invalid_status_head_unavailable(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setattr(
-        identity_lib,
-        "_git_bytes",
-        lambda _root, *args: b"# branch.oid " + (b"a" * 40) + b"\0unknown\0",
-    )
-
-    with pytest.raises(ValueError, match="unexpected git status record"):
-        identity_lib._working_tree_snapshot(tmp_path)
-
-
-@pytest.mark.parametrize(
-    "status_output",
-    [
+    outputs = (
         b"# branch.oid (initial)\0",
         b"# branch.head main\0",
         b"# branch.oid \0",
         b"# branch.oid " + (b"g" * 40) + b"\0",
         b"# branch.oid " + (b"0" * 40) + b"\0",
         b"# branch.oid " + (b"a" * 41) + b"\0",
-    ],
-)
-def test_worktree_identity_makes_invalid_status_head_unavailable(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, status_output: bytes
-) -> None:
-    monkeypatch.setattr(identity_lib, "_git_bytes", lambda _root, *args: status_output)
-
-    identity = identity_lib.build_reviewed_input_identity(
-        repo_root=tmp_path, reviewed_paths=["reviewed.txt"]
     )
-
-    assert identity["status"] == "unavailable"
-    assert "git status" in identity["reason"]
+    for status_output in outputs:
+        monkeypatch.setattr(identity_lib, "_git_bytes", lambda _root, *args, captured=status_output: captured)
+        identity = identity_lib.build_reviewed_input_identity(
+            repo_root=tmp_path, reviewed_paths=["reviewed.txt"]
+        )
+        assert identity["status"] == "unavailable", status_output
+        assert "git status" in identity["reason"]
 
 
 def test_non_repository_status_failure_returns_typed_unavailable_identity(
@@ -286,12 +232,15 @@ def _write_packet(tmp_path: Path, relative: str, payload: bytes) -> tuple[str, s
     return relative, hashlib.sha256(payload).hexdigest()
 
 
-@pytest.mark.parametrize(
-    ("payload", "identity_sha", "reason"),
-    [
+def test_packet_binding_rejects_malformed_payloads(tmp_path: Path) -> None:
+    cases = (
         (b"not-json", "x", "reviewed packet is not valid JSON"),
         (json.dumps({"kind": "wrong"}).encode(), "x", "reviewed packet has the wrong kind"),
-        (json.dumps({"kind": "critique-prepare-packet"}).encode(), "x", "reviewed packet has no reviewed input identity"),
+        (
+            json.dumps({"kind": "critique-prepare-packet"}).encode(),
+            "x",
+            "reviewed packet has no reviewed input identity",
+        ),
         (
             json.dumps(
                 {
@@ -302,19 +251,16 @@ def _write_packet(tmp_path: Path, relative: str, payload: bytes) -> tuple[str, s
             "other",
             "artifact identity does not match the reviewed packet",
         ),
-    ],
-)
-def test_packet_binding_rejects_malformed_payloads(
-    tmp_path: Path, payload: bytes, identity_sha: str, reason: str
-) -> None:
-    packet_path, digest = _write_packet(tmp_path, "packets/input.json", payload)
-    assert verification_lib.verify_packet_binding(
-        repo_root=tmp_path,
-        packet_path=packet_path,
-        packet_sha256=digest,
-        identity_sha256=identity_sha,
-        expected_kind="critique-prepare-packet",
-    ) == (False, reason)
+    )
+    for payload, identity_sha, reason in cases:
+        packet_path, digest = _write_packet(tmp_path, "packets/input.json", payload)
+        assert verification_lib.verify_packet_binding(
+            repo_root=tmp_path,
+            packet_path=packet_path,
+            packet_sha256=digest,
+            identity_sha256=identity_sha,
+            expected_kind="critique-prepare-packet",
+        ) == (False, reason)
 
 
 def test_packet_binding_rejects_outside_and_missing_paths(tmp_path: Path) -> None:

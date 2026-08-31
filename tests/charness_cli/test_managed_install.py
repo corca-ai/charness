@@ -13,6 +13,7 @@ from pathlib import Path
 import pytest
 import yaml
 
+from tests.quality_gates.repo_shapes import install_committed_repo
 from tests.repo_copy import clone_seeded_charness_repo
 
 from .support import (
@@ -117,13 +118,8 @@ def assert_managed_checkout_has_no_tracked_runtime_dirt(managed_checkout: Path) 
 
 def test_git_has_tracked_changes_blocks_tracked_edits_without_blocking_untracked_files(tmp_path: Path) -> None:
     module = load_charness_module()
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True, text=True)
+    repo = install_committed_repo(tmp_path / "repo", {"tracked.txt": "tracked\n"}, message="seed")
     tracked = repo / "tracked.txt"
-    tracked.write_text("tracked\n", encoding="utf-8")
-    subprocess.run(["git", "add", "tracked.txt"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "commit", "-m", "seed"], cwd=repo, check=True, capture_output=True, text=True)
 
     (repo / "runtime-cache.txt").write_text("untracked runtime cache\n", encoding="utf-8")
     assert module.git_has_tracked_changes(repo) is False

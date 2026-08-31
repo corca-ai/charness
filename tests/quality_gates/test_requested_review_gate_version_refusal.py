@@ -25,12 +25,11 @@ the document and reaches the same charness defaults. Both doors are pinned below
 from __future__ import annotations
 
 import subprocess
-import sys
 from pathlib import Path
 
 import pytest
 
-from .support import ROOT
+from .support import ROOT, run_script
 
 GATE = ROOT / "skills" / "public" / "release" / "scripts" / "check_requested_review_gate.py"
 
@@ -46,9 +45,7 @@ def _repo(tmp_path: Path, adapter: str | None) -> Path:
 
 
 def _run(repo: Path) -> subprocess.CompletedProcess:
-    return subprocess.run(
-        [sys.executable, str(GATE), "--repo-root", str(repo)], capture_output=True, text=True
-    )
+    return run_script(str(GATE), "--repo-root", str(repo))
 
 
 # `advisory-only`, not `block-if-unconfigured`. A round-1 bounded review found the

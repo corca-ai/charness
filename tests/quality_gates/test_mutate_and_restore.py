@@ -205,28 +205,39 @@ def test_a_failure_between_the_write_and_the_bytecode_drop_still_restores(
     assert (repo / "subject.py").read_text(encoding="utf-8") == SUBJECT
 
 
-def test_an_absent_mutation_is_refused_not_counted_as_killed(tmp_path: Path) -> None:
-    # A find string that matches nothing is a no-op. Counting it as killed is a
-    # kill the sweep did not earn.
-    repo = _repo(tmp_path, subject=SUBJECT, test_body=GOOD_TEST)
-    plan = _plan(mutants=[{"id": "typo", "path": "subject.py", "find": "a ++ b", "replace": "x"}])
-
-    sweep = mar.run_sweep(plan, repo, emit=lambda _line: None)
-
+@pytest.mark.parametrize(
+    ("subject", "mutant", "detail"),
+    [
+        pytest.param(
+            SUBJECT,
+            {"id": "typo", "path": "subject.py", "find": "a ++ b", "replace": "x"},
+            "not found",
+            id="absent-find",
+        ),
+        pytest.param(
+            SUBJECT + "FIRST = 1\nSECOND = 1\n",
+            {"id": "amb", "path": "subject.py", "find": "= 1", "replace": "= 2"},
+            "occurs 2 times",
+            id="ambiguous-find",
+        ),
+        pytest.param(
+            SUBJECT,
+            {"id": "noop", "path": "subject.py", "find": "a + b", "replace": "a + b"},
+            "no-op mutant",
+            id="no-op-replacement",
+        ),
+    ],
+)
+def test_an_unearned_edit_is_refused_not_counted_as_killed(
+    tmp_path: Path, subject: str, mutant: dict, detail: str
+) -> None:
+    """Find/replace that does not earn an edit cannot come back killed or survived."""
+    repo = _repo(tmp_path, subject=subject, test_body=GOOD_TEST)
+    sweep = mar.run_sweep(_plan(mutants=[mutant]), repo, emit=lambda _line: None)
     assert [m.verdict for m in sweep.mutants] == [mar.REFUSED]
-    assert "not found" in sweep.mutants[0].detail
+    assert detail in sweep.mutants[0].detail
+    assert (repo / "subject.py").read_text(encoding="utf-8") == subject
     assert mar.exit_code(sweep) == 1
-
-
-def test_an_ambiguous_mutation_is_refused(tmp_path: Path) -> None:
-    repo = _repo(tmp_path, subject=SUBJECT + "FIRST = 1\nSECOND = 1\n", test_body=GOOD_TEST)
-    plan = _plan(mutants=[{"id": "amb", "path": "subject.py", "find": "= 1", "replace": "= 2"}])
-
-    sweep = mar.run_sweep(plan, repo, emit=lambda _line: None)
-
-    assert [m.verdict for m in sweep.mutants] == [mar.REFUSED]
-    assert "occurs 2 times" in sweep.mutants[0].detail
-    assert (repo / "subject.py").read_text(encoding="utf-8") == SUBJECT + "FIRST = 1\nSECOND = 1\n"
 
 
 def test_the_baseline_count_is_emitted_before_the_first_mutant(tmp_path: Path) -> None:
@@ -357,11 +368,84 @@ def _classify(returncode: int, output: str, baseline_passed: int = 1) -> tuple[s
     return mar.classify_mutant_run(completed, baseline)
 
 
-def test_a_crashed_run_with_no_summary_is_refused_not_killed() -> None:
-    # THE round-1 finding. A crashed runner exits non-zero with nothing caught.
-    verdict, detail = _classify(2, "INTERNALERROR> something exploded")
-    assert verdict == mar.REFUSED
-    assert "no readable summary" in detail
+@pytest.mark.parametrize(
+    ("returncode", "output", "baseline_passed", "verdict", "detail"),
+    [
+        pytest.param(
+            2,
+            "INTERNALERROR> something exploded",
+            1,
+            mar.REFUSED,
+            "no readable summary",
+            id="crashed-no-summary",
+        ),
+        pytest.param(
+            1,
+            "1 failed in 0.10s",
+            9,
+            mar.REFUSED,
+            "scope shrank",
+            id="collected-fewer-than-baseline",
+        ),
+        pytest.param(
+            1,
+            "1 failed, 8 passed in 0.10s",
+            9,
+            mar.KILLED,
+            None,
+            id="failure-accounts-for-baseline",
+        ),
+        pytest.param(
+            0,
+            "20 passed in 0.10s",
+            23,
+            mar.REFUSED,
+            "scope shrank",
+            id="green-run-lost-tests",
+        ),
+        pytest.param(
+            0,
+            "23 passed in 0.10s",
+            23,
+            mar.SURVIVED,
+            None,
+            id="green-run-full-scope-survived",
+        ),
+        pytest.param(
+            1,
+            "1 failed, 8 passed, 1 error in 0.10s",
+            9,
+            mar.KILLED,
+            None,
+            id="teardown-error-beside-failure-is-kill",
+        ),
+        pytest.param(
+            2,
+            "2 errors in 0.10s",
+            0,
+            mar.REFUSED,
+            "did not run to a verdict",
+            id="error-only-run",
+        ),
+    ],
+)
+def test_classify_mutant_run_refuses_unearned_verdicts(
+    returncode: int,
+    output: str,
+    baseline_passed: int,
+    verdict: str,
+    detail: str | None,
+) -> None:
+    """One table for `classify_mutant_run`: unmeasurable is not killed/survived.
+
+    Each row is a door that used to live as its own test. The load-bearing property
+    is the same: exit code plus a pytest summary must earn the verdict, and a
+    missing summary, a shrunken scope, or an error-only run must refuse.
+    """
+    got, got_detail = _classify(returncode, output, baseline_passed=baseline_passed)
+    assert got == verdict
+    if detail is not None:
+        assert detail in got_detail
 
 
 def test_a_real_syntax_error_mutant_is_refused_not_killed(tmp_path: Path) -> None:
@@ -394,20 +478,6 @@ def test_a_real_mutant_that_fails_one_of_several_tests_is_killed(tmp_path: Path)
 
     assert sweep.baseline.passed == 3
     assert [m.verdict for m in sweep.mutants] == [mar.KILLED], sweep.mutants[0].detail
-
-
-def test_a_run_that_collected_fewer_tests_than_the_baseline_is_refused() -> None:
-    # The word-split defect's sibling: pytest silently ran a subset, so the
-    # failure count is real but the scope shrank.
-    verdict, detail = _classify(1, "1 failed in 0.10s", baseline_passed=9)
-    assert verdict == mar.REFUSED
-    assert "scope shrank" in detail
-
-
-def test_a_real_test_failure_that_accounts_for_the_baseline_is_a_kill() -> None:
-    verdict, detail = _classify(1, "1 failed, 8 passed in 0.10s", baseline_passed=9)
-    assert verdict == mar.KILLED
-    assert detail == ""
 
 
 def test_a_mutant_targeting_a_path_outside_the_repo_is_refused(tmp_path: Path) -> None:
@@ -456,19 +526,6 @@ def test_a_missing_target_file_is_refused(tmp_path: Path) -> None:
     assert "does not exist" in result.detail
 
 
-def test_a_green_run_that_lost_tests_is_refused_not_reported_as_a_survivor() -> None:
-    # Round 2's blocker: SURVIVED is a verdict about other code exactly as much
-    # as KILLED, and it was returned from a bare exit-0 with no scope check. A
-    # mutant that shrinks collection while staying green would be reported as an
-    # uncaught survivor, sending the reader after a phantom.
-    verdict, detail = _classify(0, "20 passed in 0.10s", baseline_passed=23)
-    assert verdict == mar.REFUSED
-    assert "scope shrank" in detail
-
-    verdict, _ = _classify(0, "23 passed in 0.10s", baseline_passed=23)
-    assert verdict == mar.SURVIVED
-
-
 def test_a_crash_exits_three_so_it_cannot_be_read_as_survivors_found(tmp_path: Path) -> None:
     # Round 2: `except BaseException -> restore + raise` left the crash exiting 1,
     # which is what `exit_code` returns for "survivors or refusals found". Any
@@ -493,34 +550,6 @@ def test_a_crash_exits_three_so_it_cannot_be_read_as_survivors_found(tmp_path: P
 
     assert completed.returncode == 3, completed.stderr
     assert "CRASHED" in completed.stderr
-
-
-def test_a_no_op_mutant_is_refused_not_reported_as_survived(tmp_path: Path) -> None:
-    # Found by using this runner on another gate: a mutant whose replacement equals
-    # its find text changes nothing, so it can only ever come back SURVIVED -- a
-    # verdict about code that was never changed. The author reads it as an
-    # uncovered line and goes hunting for a test that already exists.
-    repo = _repo(tmp_path, subject=SUBJECT, test_body=GOOD_TEST)
-    plan = _plan(mutants=[{"id": "noop", "path": "subject.py", "find": "a + b", "replace": "a + b"}])
-
-    sweep = mar.run_sweep(plan, repo, emit=lambda _l: None)
-
-    assert [m.verdict for m in sweep.mutants] == [mar.REFUSED]
-    assert "no-op mutant" in sweep.mutants[0].detail
-
-
-def test_a_teardown_error_beside_a_real_failure_is_still_a_kill() -> None:
-    # pytest reports a fixture/teardown error alongside a genuine `failed`.
-    # Refusing that would throw away a real kill, which is why the error branch
-    # runs AFTER the failure check.
-    verdict, _ = _classify(1, "1 failed, 8 passed, 1 error in 0.10s", baseline_passed=9)
-    assert verdict == mar.KILLED
-
-
-def test_an_error_only_run_is_refused_with_the_error_reason() -> None:
-    verdict, detail = _classify(2, "2 errors in 0.10s", baseline_passed=0)
-    assert verdict == mar.REFUSED
-    assert "did not run to a verdict" in detail
 
 
 def test_a_failed_restore_is_raised_not_swallowed(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -814,27 +843,6 @@ def test_every_removed_callee_is_reported_including_builtins() -> None:
     assert mar.removed_calls(before, after) == ("guard", "sorted", "tuple")
 
 
-def test_a_sweep_that_only_drops_builtins_still_states_the_non_claim(tmp_path: Path) -> None:
-    """The end-to-end consequence: an UNDECLARED removal never silences the warning.
-
-    This used to depend on the builtins filter. It now depends on the declaration, which
-    is the stronger property -- it holds for `.join` and `guard` too, not only for the
-    handful of names that happen to live in `builtins`.
-    """
-    subject = "def add(a, b):\n    return len([a, b]) and a + b\n"
-    test_body = "from subject import add\n\n\ndef test_add():\n    assert add(2, 3) == 5\n"
-    repo = _repo(tmp_path, subject=subject, test_body=test_body)
-    plan = _plan(
-        mutants=[{"id": "drops-len", "path": "subject.py", "find": "len([a, b]) and ", "replace": ""}]
-    )
-
-    sweep = mar.run_sweep(plan, repo, emit=lambda _line: None)
-    payload = mar.render(sweep)
-
-    assert payload["call_site_mutants"] == 0
-    assert payload["call_site_non_claim"] is not None
-
-
 def test_an_undeclared_call_removal_does_not_silence_the_non_claim(tmp_path: Path) -> None:
     """Round 1's blocker: the inferred count silenced the tool's own warning.
 
@@ -858,6 +866,9 @@ def test_an_undeclared_call_removal_does_not_silence_the_non_claim(tmp_path: Pat
     assert payload["mutants"][0]["removed_calls"] == ["join", "str"], payload["mutants"][0]
     assert payload["call_site_mutants"] == 0, "an undeclared removal must not count"
     assert payload["call_site_non_claim"] is not None, "the non-claim must survive an incidental removal"
+    # Wording: the trigger is "no mutant was DECLARED", not "nothing was deleted".
+    assert "DECLARED" in payload["call_site_non_claim"]
+    assert "no mutant deleted a call site" not in payload["call_site_non_claim"]
 
 
 def test_a_false_call_site_declaration_is_refused(tmp_path: Path) -> None:
@@ -916,27 +927,6 @@ def test_the_classification_cannot_leave_the_tree_mutated(tmp_path: Path, monkey
         )
 
     assert (repo / "subject.py").read_text(encoding="utf-8") == SUBJECT
-
-
-def test_the_non_claim_says_declared_not_deleted(tmp_path: Path) -> None:
-    """Round 2's blocker: the sentence contradicted the run that printed it.
-
-    The trigger is "no mutant was DECLARED"; the wording said "no mutant deleted a call
-    site". On the very run pinned by `test_an_undeclared_call_removal_does_not_silence_the_
-    non_claim` the per-mutant line reads `[removes join, str]` while the non-claim said
-    nothing was deleted -- two contradictory statements in one report, on a surface whose
-    thesis is not reporting what it did not establish.
-    """
-    subject = "def add(a, b):\n    return ' '.join([str(a)]) and a + b\n"
-    test_body = "from subject import add\n\n\ndef test_add():\n    assert add(2, 3) == 5\n"
-    repo = _repo(tmp_path, subject=subject, test_body=test_body)
-    plan = _plan(mutants=[{"id": "drops-join", "path": "subject.py", "find": "' '.join([str(a)]) and ", "replace": ""}])
-
-    sweep = mar.run_sweep(plan, repo, emit=lambda _line: None)
-    non_claim = mar.render(sweep)["call_site_non_claim"]
-
-    assert "DECLARED" in non_claim, non_claim
-    assert "no mutant deleted a call site" not in non_claim, non_claim
 
 
 def test_a_declared_call_site_mutant_that_was_refused_does_not_silence_the_non_claim() -> None:

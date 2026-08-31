@@ -5,8 +5,9 @@ from pathlib import Path
 from types import SimpleNamespace
 
 from runtime_bootstrap import import_repo_module, load_path_module
+from tests.quality_gates.repo_shapes import install_committed_repo
 
-from .support import ROOT, init_git_repo, run_script
+from .support import ROOT, run_script
 
 _check_doc_links = import_repo_module(ROOT / "scripts/check_doc_links.py", "scripts.check_doc_links")
 _portable_command_carrier = load_path_module(
@@ -424,14 +425,19 @@ def test_check_doc_links_resolves_command_targets_against_the_git_listing(
     # exist on the CI checkout, so resolving by `.exists()` would pass locally
     # and fail there. Every sibling check already resolves via the git listing.
     repo = tmp_path / "repo"
-    (repo / "scripts").mkdir(parents=True)
-    (repo / ".gitignore").write_text("scripts/local_only.py\n", encoding="utf-8")
-    (repo / "README.md").write_text(
-        "\n".join(["# Demo", "", "```bash", "python3 scripts/local_only.py", "```", ""]),
-        encoding="utf-8",
+    install_committed_repo(
+        repo,
+        {
+            ".gitignore": "scripts/local_only.py\n",
+            "README.md": "\n".join(
+                ["# Demo", "", "```bash", "python3 scripts/local_only.py", "```", ""]
+            )
+            + "\n",
+        },
     )
-    (repo / "scripts" / "local_only.py").write_text("print('hi')\n", encoding="utf-8")
-    init_git_repo(repo, ".gitignore", "README.md")
+    local_only = repo / "scripts" / "local_only.py"
+    local_only.parent.mkdir(parents=True)
+    local_only.write_text("print('hi')\n", encoding="utf-8")
 
     result = run_script("scripts/check_doc_links.py", "--repo-root", str(repo), "--require-git-file-listing")
 
@@ -458,13 +464,15 @@ def test_check_doc_links_ignores_command_shaped_text_outside_a_fence(
 
 def test_check_doc_links_ignores_gitignored_markdown(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    docs_dir = repo / "docs"
-    docs_dir.mkdir(parents=True)
-    (repo / ".gitignore").write_text("docs/generated-*.md\n", encoding="utf-8")
-    (repo / "README.md").write_text("# Demo\n\nUse the linked guide: [guide](./docs/guide.md).\n", encoding="utf-8")
-    (docs_dir / "guide.md").write_text("# Guide\n", encoding="utf-8")
-    (docs_dir / "generated-bad.md").write_text("[bad](/tmp/not-in-repo.md)\n", encoding="utf-8")
-    init_git_repo(repo, ".gitignore", "README.md", "docs/guide.md")
+    install_committed_repo(
+        repo,
+        {
+            ".gitignore": "docs/generated-*.md\n",
+            "README.md": "# Demo\n\nUse the linked guide: [guide](./docs/guide.md).\n",
+            "docs/guide.md": "# Guide\n",
+        },
+    )
+    (repo / "docs" / "generated-bad.md").write_text("[bad](/tmp/not-in-repo.md)\n", encoding="utf-8")
 
     result = run_script("scripts/check_doc_links.py", "--repo-root", str(repo), "--require-git-file-listing")
     assert result.returncode == 0, result.stderr

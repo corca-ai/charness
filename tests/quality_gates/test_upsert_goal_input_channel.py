@@ -2,21 +2,18 @@ from __future__ import annotations
 
 import json
 import subprocess
-import sys
 from pathlib import Path
 
 import yaml
+
+from .support import run_script
 
 ROOT = Path(__file__).resolve().parents[2]
 HELPER = ROOT / "skills/public/achieve/scripts/upsert_goal.py"
 
 
 def _run(repo: Path, *args: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        [sys.executable, str(HELPER), "--repo-root", str(repo), *args],
-        capture_output=True,
-        text=True,
-    )
+    return run_script(str(HELPER), "--repo-root", str(repo), *args)
 
 
 def _path(repo: Path) -> Path:

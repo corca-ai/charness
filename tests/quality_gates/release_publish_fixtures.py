@@ -14,6 +14,7 @@ import yaml
 from scripts.yaml_output import render_yaml
 
 from .issue_closeout_support import bug_closeout_body
+from .support import run_script
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 PUBLISH_SCRIPT = "skills/public/release/scripts/publish_release.py"
@@ -139,9 +140,9 @@ def _write_fake_distinct_channel_probe(bin_dir: Path) -> None:
 
 
 def _setup_git(repo: Path) -> None:
-    subprocess.run(["git", "init", "-b", "main"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "add", "."], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "commit", "-m", "seed"], cwd=repo, check=True, capture_output=True, text=True)
+    from tests.quality_gates.repo_shapes import replace_with_committed_repo
+
+    replace_with_committed_repo(repo, message="seed")
 
 
 def _attach_remote_and_push(repo: Path, remote: Path) -> None:
@@ -484,10 +485,4 @@ def _run_publish_patch(repo: Path, env: dict[str, str], *extra: str) -> subproce
 
 
 def _run_review_gate(repo: Path, *extra: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        ["python3", REVIEW_GATE_SCRIPT, "--repo-root", str(repo), *extra],
-        cwd=REPO_ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    return run_script(REVIEW_GATE_SCRIPT, "--repo-root", str(repo), *extra, cwd=REPO_ROOT)

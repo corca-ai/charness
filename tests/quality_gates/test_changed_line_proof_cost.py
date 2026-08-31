@@ -65,54 +65,25 @@ def _record_probe(monkeypatch, teeth) -> dict:
 # --------------------------------------------------------------------------- #
 
 
-def test_the_context_flag_exists_and_parses(monkeypatch) -> None:
-    """Pins that the FLAG EXISTS. Without this, the behavioural tests below stay
-    green against a tree where `--collect-test-contexts` was never added, because
-    they build the args namespace themselves and never go through argparse."""
+def test_context_collection_is_opt_in_and_decoupled_from_the_marker(
+    tmp_path: Path, monkeypatch
+) -> None:
     teeth = _load_teeth()
     monkeypatch.setattr(sys, "argv", ["teeth", "--collect-test-contexts"])
-
     assert teeth.parse_args().collect_test_contexts is True
-
-
-def test_the_context_flag_defaults_off(monkeypatch) -> None:
-    teeth = _load_teeth()
     monkeypatch.setattr(sys, "argv", ["teeth"])
-
     assert teeth.parse_args().collect_test_contexts is False
 
-
-def test_the_default_probe_collects_no_contexts(tmp_path: Path, monkeypatch) -> None:
-    teeth = _load_teeth()
     seen = _record_probe(monkeypatch, teeth)
-
     teeth._ensure_coverage(_probe_args(), tmp_path, tmp_path / "cov.json", "abc123")
-
     assert seen["dynamic_context"] is False
 
-
-def test_the_opt_in_flag_restores_context_collection(tmp_path: Path, monkeypatch) -> None:
-    """The cosmic-ray sampler is the one real reader of the `contexts` block, so the
-    capability stays reachable -- it just stops being the default nobody asked for."""
-    teeth = _load_teeth()
     seen = _record_probe(monkeypatch, teeth)
-
     teeth._ensure_coverage(
         _probe_args(collect_test_contexts=True), tmp_path, tmp_path / "cov.json", "abc123"
     )
-
     assert seen["dynamic_context"] is True
 
-
-def test_the_marker_flag_no_longer_governs_context_collection(tmp_path: Path, monkeypatch) -> None:
-    """THE decoupling pin, and the one that would catch a revert.
-
-    `--write-fresh-marker` used to decide both things: it stamped the freshness
-    marker AND silently chose the cheap probe, which left the other arm paying 671x
-    for a column no reader consults. Both marker arms must now answer the context
-    question the same way, because the marker has nothing to do with it.
-    """
-    teeth = _load_teeth()
     answers = {}
     for marker in (False, True):
         seen = _record_probe(monkeypatch, teeth)
@@ -120,7 +91,6 @@ def test_the_marker_flag_no_longer_governs_context_collection(tmp_path: Path, mo
             _probe_args(write_fresh_marker=marker), tmp_path, tmp_path / "cov.json", "abc123"
         )
         answers[marker] = seen["dynamic_context"]
-
     assert answers == {False: False, True: False}
 
 
@@ -143,126 +113,70 @@ def _two_commit_foo(tmp_path: Path) -> tuple[Path, str, str]:
     )
 
 
-def _skip_payload(tmp_path: Path, *, stale: bool) -> dict:
-    """Drive the real script to a coverage-source skip and read its YAML payload.
-
-    Uses the seeding helpers' shape rather than importing them: this module owns a
-    single-purpose repo where one eligible pool file changed, which is the only
-    state in which the skip branch is reachable (an empty changed set returns
-    earlier).
-    """
-    repo, base, head = _two_commit_foo(tmp_path)
-
-    cov = repo / "cov.json"
-    args = ["--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
-            "--reuse-coverage", "--coverage-json", str(cov)]
-    if stale:
-        # A coverage JSON WITH a fingerprint marker that does not match the current
-        # changed-pool content: the stale branch, which is the one that used to name
-        # only the 11-15 minute rebuild.
-        cov.write_text('{"files": {}}', encoding="utf-8")
-        (repo / "cov.json.changed-line.fingerprint").write_text("stale-marker\n", encoding="utf-8")
-        args.append("--require-fresh-coverage")
-    else:
-        args.append("--skip-if-no-coverage")
-
-    result = run_script(_TEETH, *args)
-    return yaml.safe_load(result.stdout)
-
-
-def test_the_stale_branch_publishes_a_copyable_resume_command(tmp_path: Path) -> None:
-    payload = _skip_payload(tmp_path, stale=True)
-
-    assert "stale" in payload["reason"]
-    assert "release_changed_line_coverage.py" in payload["resume_command"]
-    assert "--base-sha" in payload["resume_command"]
-
-
-def test_the_absent_coverage_branch_publishes_the_same_route(tmp_path: Path) -> None:
-    """Both branches reach the same dead end, so both must name the same way out.
-    They used to answer with two different costs."""
-    payload = _skip_payload(tmp_path, stale=False)
-
-    assert "release_changed_line_coverage.py" in payload["resume_command"]
-
-
-def test_the_resume_command_does_not_redirect_the_focused_corpus(tmp_path: Path) -> None:
-    """A safety pin, not an ergonomics one.
-
-    The release producer's own `--coverage-json` default is deliberately NOT the
-    canonical corpus: its coverage comes from a test SUBSET, and parking that at the
-    broad mutation report's path with a VALID freshness marker would make every
-    `--require-fresh-coverage` consumer read freshness as breadth. If this route
-    ever grows a `--coverage-json` argument, it hands the operator the command that
-    does exactly that.
-    """
-    payload = _skip_payload(tmp_path, stale=True)
-
-    assert "--coverage-json" not in payload["resume_command"]
-
-
-# --------------------------------------------------------------------------- #
-# 3. a corpus written by the OTHER consumer is declined cheaply
-#
-# The sampler needs `contexts` and defaults to the same canonical path this
-# lane's producer writes, so whichever ran last decides whether the other works.
-# Fixing the write side does not close that; the freshness marker fingerprints
-# changed-pool CONTENT, not the writer, so a sampler-written corpus still carries
-# a marker that validates. The read side has to notice.
-# --------------------------------------------------------------------------- #
-
-
-def _reuse_payload(tmp_path: Path, *, show_contexts) -> dict:
-    repo, base, head = _two_commit_foo(tmp_path)
-
-    cov = repo / "cov.json"
-    meta = {"format": 3, "show_contexts": show_contexts} if show_contexts is not None else {"format": 3}
-    cov.write_text(json.dumps({
-        "meta": meta,
-        "files": {"scripts/foo.py": {"executed_lines": [1, 2, 5, 6], "missing_lines": []}},
-    }), encoding="utf-8")
-
+def _run_teeth(repo: Path, base: str, head: str, cov: Path, *args: str) -> dict:
     result = run_script(
-        _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
-        "--reuse-coverage", "--coverage-json", str(cov),
+        _TEETH,
+        "--repo-root",
+        str(repo),
+        "--base-sha",
+        base,
+        "--head-sha",
+        head,
+        "--reuse-coverage",
+        "--coverage-json",
+        str(cov),
+        *args,
     )
     return yaml.safe_load(result.stdout)
 
 
-def test_a_context_bearing_corpus_is_declined_with_the_route(tmp_path: Path) -> None:
-    payload = _reuse_payload(tmp_path, show_contexts=True)
+def test_skip_and_reuse_shapes_on_one_checkout(tmp_path: Path) -> None:
+    repo, base, head = _two_commit_foo(tmp_path)
+    cov = repo / "cov.json"
 
-    assert "per-test `contexts`" in payload["reason"]
-    assert "release_changed_line_coverage.py" in payload["resume_command"]
+    cov.write_text('{"files": {}}', encoding="utf-8")
+    (repo / "cov.json.changed-line.fingerprint").write_text("stale-marker\n", encoding="utf-8")
+    stale = _run_teeth(repo, base, head, cov, "--require-fresh-coverage")
+    assert "stale" in stale["reason"]
+    assert "release_changed_line_coverage.py" in stale["resume_command"]
+    assert "--base-sha" in stale["resume_command"]
+    assert "--coverage-json" not in stale["resume_command"]
 
+    cov.unlink()
+    (repo / "cov.json.changed-line.fingerprint").unlink(missing_ok=True)
+    absent = _run_teeth(repo, base, head, cov, "--skip-if-no-coverage")
+    assert "release_changed_line_coverage.py" in absent["resume_command"]
 
-def test_declining_is_a_skip_and_never_a_blocker(tmp_path: Path) -> None:
-    """The corpus being wrong for this READER says nothing about whether the
-    changed lines are covered. Manufacturing a blocker from that would be the
-    substitution this lane exists to refuse."""
-    payload = _reuse_payload(tmp_path, show_contexts=True)
+    def write_corpus(*, show_contexts):
+        meta = {"format": 3, "show_contexts": show_contexts} if show_contexts is not None else {"format": 3}
+        cov.write_text(
+            json.dumps(
+                {
+                    "meta": meta,
+                    "files": {
+                        "scripts/foo.py": {"executed_lines": [1, 2, 5, 6], "missing_lines": []}
+                    },
+                }
+            ),
+            encoding="utf-8",
+        )
 
-    assert payload["ok"] is True
-    assert payload["blocking"] == []
+    write_corpus(show_contexts=True)
+    declined = _run_teeth(repo, base, head, cov)
+    assert "per-test `contexts`" in declined["reason"]
+    assert "release_changed_line_coverage.py" in declined["resume_command"]
+    assert declined["ok"] is True
+    assert declined["blocking"] == []
 
+    write_corpus(show_contexts=False)
+    plain = _run_teeth(repo, base, head, cov)
+    assert "per-test `contexts`" not in str(plain.get("reason", ""))
+    assert plain["changed_pool_files"] == ["scripts/foo.py"]
 
-def test_a_plain_corpus_is_still_used(tmp_path: Path) -> None:
-    """The guard must not fire on this lane's own producer output, or it disables
-    the reuse path it was added to protect."""
-    payload = _reuse_payload(tmp_path, show_contexts=False)
-
-    assert "per-test `contexts`" not in str(payload.get("reason", ""))
-    assert payload["changed_pool_files"] == ["scripts/foo.py"]
-
-
-def test_an_unreadable_header_proceeds_exactly_as_before(tmp_path: Path) -> None:
-    """`None` means unknown, not suspicious. Gating on an absence would refuse
-    every corpus written by a coverage version that ordered its keys differently
-    -- a new refusal built on a fact nobody established."""
-    payload = _reuse_payload(tmp_path, show_contexts=None)
-
-    assert "per-test `contexts`" not in str(payload.get("reason", ""))
-    assert payload["changed_pool_files"] == ["scripts/foo.py"]
+    write_corpus(show_contexts=None)
+    unknown = _run_teeth(repo, base, head, cov)
+    assert "per-test `contexts`" not in str(unknown.get("reason", ""))
+    assert unknown["changed_pool_files"] == ["scripts/foo.py"]
 
 
 def test_an_unreadable_coverage_header_is_unknown_not_context_bearing() -> None:

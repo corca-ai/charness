@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import subprocess
-import sys
 from pathlib import Path
 
 from scripts import probe_record_lib
+from tests.quality_gates.support import run_script
 
 ROOT = Path(__file__).resolve().parents[1]
 CLI = ROOT / "scripts" / "check_probe_record.py"
@@ -621,11 +621,7 @@ def _cli(tmp_path: Path, text: str, *args: str) -> subprocess.CompletedProcess:
     (tmp_path / "adapter.py").write_text(SOURCE_BODY, encoding="utf-8")
     record = tmp_path / "record.md"
     record.write_text(text, encoding="utf-8")
-    return subprocess.run(
-        [sys.executable, str(CLI), "--repo-root", str(tmp_path), "--record", str(record), *args],
-        capture_output=True,
-        text=True,
-    )
+    return run_script(str(CLI), "--repo-root", str(tmp_path), "--record", str(record), *args)
 
 
 def test_cli_reports_without_gating_by_default(tmp_path: Path) -> None:
@@ -660,10 +656,8 @@ def test_cli_require_evaluated_refuses_a_recorded_refusal(tmp_path: Path) -> Non
 
 
 def test_cli_reports_an_unreadable_record_rather_than_crashing(tmp_path: Path) -> None:
-    result = subprocess.run(
-        [sys.executable, str(CLI), "--repo-root", str(tmp_path), "--record", str(tmp_path / "absent.md")],
-        capture_output=True,
-        text=True,
+    result = run_script(
+        str(CLI), "--repo-root", str(tmp_path), "--record", str(tmp_path / "absent.md")
     )
     assert result.returncode == 0
     assert "not-established" in result.stdout

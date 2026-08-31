@@ -12,6 +12,7 @@ import pytest
 import yaml
 
 from scripts.yaml_output import render_yaml as _render_yaml
+from tests.quality_gates.git_fixture_support import init_git_repo
 
 from .release_publish_fixtures import (
     REPO_ROOT,
@@ -82,7 +83,7 @@ def test_failure_payload_preserves_bounded_terminal_detail_when_record_write_fai
     runtime = _load_runtime()
     repo = tmp_path / "repo"
     repo.mkdir()
-    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
+    init_git_repo(repo)
     stream = io.StringIO()
 
     def broken_renderer(payload):
@@ -288,7 +289,7 @@ def test_invalid_git_identity_blocker_logic(tmp_path: Path, no_ambient_git_ident
     preflight = _load_preflight()
     repo = tmp_path / "repo"
     repo.mkdir()
-    _git(repo, "init")
+    init_git_repo(repo)
     _git(repo, "config", "user.name", "Dev")
     _git(repo, "config", "user.email", "dev@example.com")
 

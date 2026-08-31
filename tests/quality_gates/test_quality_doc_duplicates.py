@@ -5,12 +5,11 @@ import os
 import re
 import stat
 import subprocess
-import sys
 from pathlib import Path
 
 import yaml
 
-from .support import ROOT
+from .support import ROOT, run_script
 
 SCRIPT = ROOT / "skills" / "public" / "quality" / "scripts" / "inventory_doc_duplicates.py"
 
@@ -72,18 +71,11 @@ def _run_with_output(
         # Keep the real PATH so the fake nose's python3 shebang resolves; the
         # NOSE_BIN override still pins discovery to the fake, not the real binary.
         env["NOSE_BIN"] = nose_bin
-    command = [sys.executable, str(SCRIPT), "--repo-root", str(repo)]
+    args = [str(SCRIPT), "--repo-root", str(repo)]
     if output_mode is not None:
-        command.append(output_mode)
-    command.extend(extra)
-    return subprocess.run(
-        command,
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-        env=env,
-    )
+        args.append(output_mode)
+    args.extend(extra)
+    return run_script(*args, cwd=ROOT, env=env)
 
 
 def test_doc_dup_missing_nose_is_advisory_but_require_fails(tmp_path: Path) -> None:
@@ -175,13 +167,7 @@ def test_doc_dup_reports_new_family_then_baseline_filters_it(tmp_path: Path) -> 
 
 
 def test_doc_dup_help_explains_root_and_json_options() -> None:
-    result = subprocess.run(
-        [sys.executable, str(SCRIPT), "--help"],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    result = run_script(str(SCRIPT), "--help", cwd=ROOT)
     assert result.returncode == 0, result.stderr
     expected = {
         "--repo-root": "Repository root to scan and use for baseline paths",

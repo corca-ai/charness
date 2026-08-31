@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import re
-import subprocess
 from pathlib import Path
 
 import pytest
 import yaml
+
+from .support import run_script
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 AUDIT_SCRIPT = "skills/public/release/scripts/audit_public_release_narrative.py"
@@ -59,21 +60,15 @@ Advanced `demo` toward release `0.1.0` (tag `v0.1.0`) through the repo-owned rel
 """
 
 
-def _run_audit(repo: Path, *extra: str) -> subprocess.CompletedProcess:
-    return subprocess.run(
-        [
-            "python3",
-            AUDIT_SCRIPT,
-            "--repo-root",
-            str(repo),
-            "--target-tag",
-            "v0.1.0",
-            *extra,
-        ],
+def _run_audit(repo: Path, *extra: str):
+    return run_script(
+        AUDIT_SCRIPT,
+        "--repo-root",
+        str(repo),
+        "--target-tag",
+        "v0.1.0",
+        *extra,
         cwd=REPO_ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
     )
 
 

@@ -10,6 +10,8 @@ from types import SimpleNamespace
 import pytest
 import yaml
 
+from tests.quality_gates.repo_shapes import install_committed_repo
+
 from .support import ROOT, init_git_repo, run_script
 
 SPEC = importlib.util.spec_from_file_location(
@@ -166,21 +168,14 @@ def test_surface_buckets_include_executable_languages_and_exclude_fixtures(tmp_p
 
 def test_surface_file_buckets_are_shared_by_both_engines(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    (repo / "native" / "demo" / "src").mkdir(parents=True)
-    (repo / "native" / "demo" / "tests").mkdir(parents=True)
-    (repo / "tests").mkdir()
-    (repo / "script.py").write_text("print('source')\n", encoding="utf-8")
-    (repo / "native" / "demo" / "src" / "lib.rs").write_text("fn main() {}\n", encoding="utf-8")
-    (repo / "native" / "demo" / "tests" / "test.rs").write_text("#[test]\nfn it_works() {}\n", encoding="utf-8")
-    (repo / "tests" / "test_script.py").write_text(
-        "def test_script():\n    assert True\n", encoding="utf-8"
-    )
-    init_git_repo(
+    install_committed_repo(
         repo,
-        "script.py",
-        "native/demo/src/lib.rs",
-        "native/demo/tests/test.rs",
-        "tests/test_script.py",
+        {
+            "script.py": "print('source')\n",
+            "native/demo/src/lib.rs": "fn main() {}\n",
+            "native/demo/tests/test.rs": "#[test]\nfn it_works() {}\n",
+            "tests/test_script.py": "def test_script():\n    assert True\n",
+        },
     )
 
     split_summary = RATIO._splitlines_summary(repo, require_git=True)
@@ -265,26 +260,21 @@ def test_tokei_code_returns_empty_for_missing_language(tmp_path: Path, monkeypat
     assert RATIO._tokei_code([tmp_path / "app.py"], language="Python", repo_root=tmp_path) == (0, set())
 
 
-@pytest.mark.parametrize(
-    ("payload", "message"),
-    [
+def test_tokei_code_rejects_malformed_reports(tmp_path: Path, monkeypatch) -> None:
+    cases = (
         ({"Python": {"reports": {}}}, "invalid Python reports list"),
         ({"Python": {"reports": ["app.py"]}}, "invalid Python report"),
-    ],
-)
-def test_tokei_code_rejects_malformed_reports(
-    tmp_path: Path, monkeypatch, payload: dict, message: str
-) -> None:
-    monkeypatch.setattr(
-        RATIO.subprocess,
-        "run",
-        lambda *args, **kwargs: SimpleNamespace(
-            returncode=0, stdout=json.dumps(payload), stderr=""
-        ),
     )
-
-    with pytest.raises(RATIO.TokeiUnavailableError, match=message):
-        RATIO._tokei_code([tmp_path / "app.py"], language="Python", repo_root=tmp_path)
+    for payload, message in cases:
+        monkeypatch.setattr(
+            RATIO.subprocess,
+            "run",
+            lambda *args, captured=payload, **kwargs: SimpleNamespace(
+                returncode=0, stdout=json.dumps(captured), stderr=""
+            ),
+        )
+        with pytest.raises(RATIO.TokeiUnavailableError, match=message):
+            RATIO._tokei_code([tmp_path / "app.py"], language="Python", repo_root=tmp_path)
 
 
 def test_tokei_code_resolves_relative_report_path(tmp_path: Path, monkeypatch) -> None:
@@ -393,13 +383,15 @@ def test_cli_tokei_engine_returns_two_when_binary_missing(tmp_path: Path) -> Non
 
 def test_splitlines_ratio_ignores_gitignored_python_files(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    (repo / "scripts").mkdir(parents=True)
-    (repo / "tests").mkdir()
-    (repo / ".gitignore").write_text("scripts/generated.py\n", encoding="utf-8")
-    (repo / "scripts" / "kept.py").write_text("print('kept')\n", encoding="utf-8")
+    install_committed_repo(
+        repo,
+        {
+            ".gitignore": "scripts/generated.py\n",
+            "scripts/kept.py": "print('kept')\n",
+            "tests/test_kept.py": "def test_kept():\n    assert True\n",
+        },
+    )
     (repo / "scripts" / "generated.py").write_text("print('ignored')\n" * 100, encoding="utf-8")
-    (repo / "tests" / "test_kept.py").write_text("def test_kept():\n    assert True\n", encoding="utf-8")
-    init_git_repo(repo, ".gitignore", "scripts/kept.py", "tests/test_kept.py")
 
     summary = RATIO.summarize(repo, engine="splitlines")
 
@@ -413,13 +405,13 @@ def test_cli_under_threshold_returns_zero_on_synthetic_repo(tmp_path: Path, monk
     # threshold); the other two main() ratio branches (blocking over-threshold
     # rc1, advisory WARN rc0) already have tests.
     repo = tmp_path / "repo"
-    (repo / "scripts").mkdir(parents=True)
-    (repo / "tests").mkdir()
-    (repo / "scripts" / "app.py").write_text("print('line')\n" * 20, encoding="utf-8")
-    (repo / "tests" / "test_app.py").write_text(
-        "def test_app():\n    assert True\n", encoding="utf-8"
+    install_committed_repo(
+        repo,
+        {
+            "scripts/app.py": "print('line')\n" * 20,
+            "tests/test_app.py": "def test_app():\n    assert True\n",
+        },
     )
-    init_git_repo(repo, "scripts/app.py", "tests/test_app.py")
 
     monkeypatch.setattr(sys, "argv", ["check_test_production_ratio.py", "--repo-root", str(repo)])
 

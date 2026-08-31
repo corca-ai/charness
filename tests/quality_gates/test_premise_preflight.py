@@ -50,11 +50,9 @@ def _build_premise_preflight_seed(staging: Path) -> None:
     (repo / "src").mkdir()
     protected = repo / "src" / "target.txt"
     protected.write_text("original\n", encoding="utf-8")
-    subprocess.run(["git", "init", "-q", "-b", "main"], cwd=repo, check=True)
-    _git(repo, "config", "user.email", "test@example.invalid")
-    _git(repo, "config", "user.name", "Premise Test")
-    _git(repo, "add", ".")
-    _git(repo, "commit", "-qm", "seed premise fixture")
+    from tests.quality_gates.repo_shapes import replace_with_committed_repo
+
+    replace_with_committed_repo(repo, message="seed premise fixture")
     (staging / "head.json").write_text(
         json.dumps({"head": _clone_head(repo)}),
         encoding="utf-8",
@@ -569,15 +567,7 @@ def test_premise_git_batch_parser_preserves_binary_blob_frames() -> None:
     assert premise_git._parse_batch(payload + b"trailing", 2) is None
 
 
-def test_premise_tree_observation_reports_an_unreadable_index(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    monkeypatch.setattr(
-        premise_tree,
-        "_git_bytes",
-        lambda *_args: subprocess.CompletedProcess([], 1, stdout=b"", stderr=b"failed"),
-    )
-
+def test_premise_tree_observation_reports_an_unreadable_index(tmp_path: Path) -> None:
     with pytest.raises(premise_tree.CurrentTreeInspectionError):
         premise_tree._index_paths(tmp_path)
 

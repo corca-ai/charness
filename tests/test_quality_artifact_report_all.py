@@ -1,26 +1,10 @@
 from __future__ import annotations
 
-import os
-import subprocess
 from pathlib import Path
-from typing import Mapping
+
+from tests.quality_gates.support import run_script
 
 ROOT = Path(__file__).resolve().parents[1]
-
-
-def run_script(
-    *args: str,
-    cwd: Path | None = None,
-    env: Mapping[str, str] | None = None,
-) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        ["python3", *args],
-        cwd=cwd or ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-        env=None if env is None else {**os.environ, **env},
-    )
 
 
 SURFACE_CONTRACT_FIXTURE = """## Surface Contract Review

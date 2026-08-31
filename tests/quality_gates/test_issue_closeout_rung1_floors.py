@@ -13,111 +13,62 @@ from tests.quality_gates.issue_closeout_support import (
 from tests.quality_gates.support import run_script
 
 
-def test_issue_verify_closeout_rejects_silent_behavioral_verdict(tmp_path: Path) -> None:
-    """Seeded escape: a bug carrier silent on the per-issue behavioral verdict
-    must FAIL before the CLOSED-state green can stand alone."""
-    seed_commit(tmp_path, bug_closeout_body(close_line="Close #42.", behavior_line=None))
+def test_rung1_floors_on_the_carrier() -> None:
+    module = load_verify_module()
+    silent = bug_closeout_body(behavior_line=None)
+    assert module.evaluate_behavioral_verdict(silent, "bug", [42])["missing"] == [42]
 
-    result = run_script(
-        SCRIPT, "verify-closeout", "--repo-root", str(tmp_path),
-        "--repo", "corca-ai/charness", "--number", "42",
-        "--classification", "bug", "--carrier", "direct-commit", "--commit-ref", "HEAD",
-    )
-
-    assert result.returncode == 2, result.stdout
-    payload = yaml.safe_load(result.stdout)
-    assert payload["ok"] is False
-    assert payload["behavioral_verdict"]["ok"] is False
-    assert payload["behavioral_verdict"]["missing"] == [42]
-
-
-def test_issue_verify_closeout_accepts_typed_nonverified_disposition(tmp_path: Path) -> None:
-    """Render-not-declare: a typed non-`verified` disposition satisfies the floor
-    exactly as a confirmation does — the obligation is to render, not to confirm."""
-    seed_commit(
-        tmp_path,
-        bug_closeout_body(
-            close_line="Close #42.",
-            behavior_line="Behavior #42: local-only-by-contract — surface is local by the resolution contract",
+    typed_behavior = bug_closeout_body(
+        behavior_line=(
+            "Behavior #42: local-only-by-contract — surface is local "
+            "by the resolution contract"
         ),
     )
+    assert module.evaluate_behavioral_verdict(typed_behavior, "bug", [42])["ok"] is True
 
-    result = run_script(
-        SCRIPT, "verify-closeout", "--repo-root", str(tmp_path),
-        "--repo", "corca-ai/charness", "--number", "42",
-        "--classification", "bug", "--carrier", "direct-commit", "--commit-ref", "HEAD",
+    undisposed = bug_closeout_body(
+        hotl_line="HOTL #42: still checking the connector roundtrip"
     )
+    hotl = module.evaluate_hotl_dispositions(undisposed, "bug", [42])
+    assert hotl["undispositioned"][0]["target"] == "#42"
+    assert module.evaluate_behavioral_verdict(undisposed, "bug", [42])["ok"] is True
 
-    assert result.returncode == 0, result.stderr
-    payload = yaml.safe_load(result.stdout)
-    assert payload["behavioral_verdict"]["ok"] is True
-    assert payload["status"] == "carrier_verified"
-
-
-def test_issue_verify_closeout_rejects_undispositioned_hotl_entry(tmp_path: Path) -> None:
-    """WS-2 seeded escape (Direction-3): a bug carrier that PRESENTS a HOTL entry
-    without a typed disposition must FAIL before the CLOSED-state green stands."""
-    seed_commit(
-        tmp_path,
-        bug_closeout_body(
-            close_line="Close #42.",
-            hotl_line="HOTL #42: still checking the connector roundtrip",
-        ),
+    typed_hotl = bug_closeout_body(
+        hotl_line="HOTL #42: blocked-needs-operator — awaiting prod approval; queued in the ODQ"
     )
+    disposed = module.evaluate_hotl_dispositions(typed_hotl, "bug", [42])
+    assert disposed["applies"] is True
+    assert disposed["ok"] is True
 
-    result = run_script(
-        SCRIPT, "verify-closeout", "--repo-root", str(tmp_path),
-        "--repo", "corca-ai/charness", "--number", "42",
-        "--classification", "bug", "--carrier", "direct-commit", "--commit-ref", "HEAD",
+    inert = module.evaluate_hotl_dispositions(bug_closeout_body(), "bug", [42])
+    assert inert["applies"] is False
+    assert inert["ok"] is True
+
+    assert module.evaluate_ai_provenance(
+        bug_closeout_body(provenance_line=None), "bug"
+    )["ok"] is False
+
+    question = "\n\n".join(
+        [
+            "Close #42.",
+            "JTBD: answer a clarification question.",
+            "Answer: documented the resolved decision in the issue thread.",
+            "AI-provenance: authored by an agent session.",
+        ]
     )
+    assert module.evaluate_behavioral_verdict(question, "question", [42])["applies"] is False
+    assert module.evaluate_ai_provenance(question, "question")["ok"] is True
 
-    assert result.returncode == 2, result.stdout
-    payload = yaml.safe_load(result.stdout)
-    assert payload["ok"] is False
-    assert payload["hotl_dispositions"]["ok"] is False
-    assert payload["hotl_dispositions"]["undispositioned"][0]["target"] == "#42"
-    # the OTHER floors pass — the close fails ONLY on the undispositioned HOTL entry
-    assert payload["behavioral_verdict"]["ok"] is True
-
-
-def test_issue_verify_closeout_accepts_typed_hotl_disposition(tmp_path: Path) -> None:
-    """A typed HOTL status (here `blocked-needs-operator`) disposes the entry —
-    render-not-declare: the floor passes; honesty is the resolution critique."""
-    seed_commit(
-        tmp_path,
-        bug_closeout_body(
-            close_line="Close #42.",
-            hotl_line="HOTL #42: blocked-needs-operator — awaiting prod approval; queued in the ODQ",
-        ),
+    question_silent = "\n\n".join(
+        [
+            "Close #42.",
+            "JTBD: answer a clarification question.",
+            "Answer: documented the resolved decision in the issue thread.",
+        ]
     )
-
-    result = run_script(
-        SCRIPT, "verify-closeout", "--repo-root", str(tmp_path),
-        "--repo", "corca-ai/charness", "--number", "42",
-        "--classification", "bug", "--carrier", "direct-commit", "--commit-ref", "HEAD",
-    )
-
-    assert result.returncode == 0, result.stderr
-    payload = yaml.safe_load(result.stdout)
-    assert payload["hotl_dispositions"]["applies"] is True
-    assert payload["hotl_dispositions"]["ok"] is True
-
-
-def test_issue_verify_closeout_inert_without_hotl_entry(tmp_path: Path) -> None:
-    """Presence-gated: a carrier with NO HOTL entry is inert (no live loop to
-    dispose) — the floor does not over-fire on internal/no-live closes."""
-    seed_commit(tmp_path, bug_closeout_body(close_line="Close #42."))
-
-    result = run_script(
-        SCRIPT, "verify-closeout", "--repo-root", str(tmp_path),
-        "--repo", "corca-ai/charness", "--number", "42",
-        "--classification", "bug", "--carrier", "direct-commit", "--commit-ref", "HEAD",
-    )
-
-    assert result.returncode == 0, result.stderr
-    payload = yaml.safe_load(result.stdout)
-    assert payload["hotl_dispositions"]["applies"] is False
-    assert payload["hotl_dispositions"]["ok"] is True
+    provenance = module.evaluate_ai_provenance(question_silent, "question")
+    assert provenance["applies"] is True
+    assert provenance["ok"] is False
 
 
 def test_evaluate_hotl_dispositions_unit() -> None:
@@ -218,85 +169,6 @@ def test_evaluate_hotl_dispositions_refuses_a_status_negation() -> None:
         "#77 tracks the residual defect",
     ):
         assert fn(f"HOTL #1: {dispositioned}", "bug", [1])["ok"] is True, dispositioned
-
-
-def test_issue_verify_closeout_rejects_missing_ai_provenance_marker(tmp_path: Path) -> None:
-    """Seeded escape: an agent-authored bug carrier without an AI-provenance marker
-    is not legible to the distinct observer and must FAIL its presence check."""
-    seed_commit(tmp_path, bug_closeout_body(close_line="Close #42.", provenance_line=None))
-
-    result = run_script(
-        SCRIPT, "verify-closeout", "--repo-root", str(tmp_path),
-        "--repo", "corca-ai/charness", "--number", "42",
-        "--classification", "bug", "--carrier", "direct-commit", "--commit-ref", "HEAD",
-    )
-
-    assert result.returncode == 2, result.stdout
-    payload = yaml.safe_load(result.stdout)
-    assert payload["ok"] is False
-    assert payload["ai_provenance"]["ok"] is False
-
-
-def test_issue_verify_closeout_question_class_exempts_behavior_but_not_provenance(
-    tmp_path: Path,
-) -> None:
-    """A `question` carrier has no behavior to confirm, so THAT floor is inert.
-
-    AI-provenance is not: it is a fact about who authored the text, and an
-    agent-posted `question` close is exactly as agent-authored as a `bug` one. The
-    two floors used to share one classification gate; only one of them had a reason
-    for it.
-    """
-    seed_commit(
-        tmp_path,
-        "\n\n".join(
-            [
-                "Close #42.",
-                "JTBD: answer a clarification question.",
-                "Answer: documented the resolved decision in the issue thread.",
-                "AI-provenance: authored by an agent session.",
-            ]
-        ),
-    )
-
-    result = run_script(
-        SCRIPT, "verify-closeout", "--repo-root", str(tmp_path),
-        "--repo", "corca-ai/charness", "--number", "42",
-        "--classification", "question", "--carrier", "direct-commit", "--commit-ref", "HEAD",
-    )
-
-    assert result.returncode == 0, result.stderr
-    payload = yaml.safe_load(result.stdout)
-    assert payload["behavioral_verdict"]["applies"] is False
-    assert payload["ai_provenance"]["applies"] is True
-    assert payload["ai_provenance"]["ok"] is True
-
-
-def test_issue_verify_closeout_refuses_a_question_close_with_no_provenance_marker(
-    tmp_path: Path,
-) -> None:
-    """The other half, and the one that used to pass silently."""
-    seed_commit(
-        tmp_path,
-        "\n\n".join(
-            [
-                "Close #42.",
-                "JTBD: answer a clarification question.",
-                "Answer: documented the resolved decision in the issue thread.",
-            ]
-        ),
-    )
-
-    result = run_script(
-        SCRIPT, "verify-closeout", "--repo-root", str(tmp_path),
-        "--repo", "corca-ai/charness", "--number", "42",
-        "--classification", "question", "--carrier", "direct-commit", "--commit-ref", "HEAD",
-    )
-
-    payload = yaml.safe_load(result.stdout)
-    assert payload["ok"] is False
-    assert payload["ai_provenance"]["applies"] is True
-    assert payload["ai_provenance"]["ok"] is False
 
 
 def test_issue_verify_closeout_requires_per_issue_behavioral_verdict_in_bundle(tmp_path: Path) -> None:

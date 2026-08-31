@@ -3,13 +3,13 @@ from __future__ import annotations
 import importlib.util
 import json
 import subprocess
-import sys
 from pathlib import Path
 
 import pytest
 import yaml
 
 from tests.dsl import Repo
+from tests.quality_gates.support import run_script
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -60,13 +60,7 @@ def _repo_with_candidate(tmp_path: Path) -> Path:
 
 
 def _run_ratchet(*args: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        [sys.executable, str(CHECK_RATCHET), *args],
-        cwd=ROOT,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    return run_script(str(CHECK_RATCHET), *args, cwd=ROOT)
 
 
 def test_matching_baseline_passes(tmp_path: Path) -> None:

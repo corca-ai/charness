@@ -44,6 +44,24 @@ def _patch_pins(monkeypatch, core=(), package=()) -> None:
     monkeypatch.setattr(csafety._contracts, "PACKAGE_CONTRACTS", {SKILL_REL: tuple(package)})
 
 
+def _report(
+    repo: Path,
+    *,
+    paths: list[str] | None = None,
+    deleted: list[str] | None = None,
+    removed: dict[str, list[str]] | None = None,
+    staged: bool = False,
+) -> dict:
+    return csafety.build_report(
+        repo.resolve(),
+        paths,
+        [repo / "tests"],
+        staged=staged,
+        removed_by_path=removed,
+        deleted_paths=deleted,
+    )
+
+
 def test_core_contract_break_blocks(tmp_path: Path, monkeypatch) -> None:
     repo = tmp_path / "repo"
     skill_dir = _seed_repo(repo)
@@ -51,7 +69,7 @@ def test_core_contract_break_blocks(tmp_path: Path, monkeypatch) -> None:
     skill_md = skill_dir / "SKILL.md"
     skill_md.write_text(skill_md.read_text().replace(CORE_PIN, "Primary source is usually nicer."), encoding="utf-8")
 
-    report = csafety.build_report(repo.resolve(), None, [repo / "tests"])
+    report = _report(repo, paths=[SKILL_REL], removed={SKILL_REL: [CORE_PIN]})
     assert report["status"] == "blocked"
     [skill] = report["skills"]
     kinds = {b["kind"] for b in skill["blocks"]}
@@ -65,7 +83,7 @@ def test_reference_home_gap_is_review_not_block(tmp_path: Path, monkeypatch) -> 
     skill_md = skill_dir / "SKILL.md"
     skill_md.write_text(skill_md.read_text().replace(SEDIMENT + "\n", ""), encoding="utf-8")
 
-    report = csafety.build_report(repo.resolve(), None, [repo / "tests"])
+    report = _report(repo, paths=[SKILL_REL], removed={SKILL_REL: [SEDIMENT]})
     assert report["status"] == "review"  # no contract/test pin broke -> exit 0
     [skill] = report["skills"]
     assert not skill["blocks"]
@@ -82,7 +100,7 @@ def test_sprawl_split_to_reference_is_lossless_clean(tmp_path: Path, monkeypatch
     detail = skill_dir / "references" / "detail.md"
     detail.write_text(detail.read_text() + f"\n{MOVABLE}\n", encoding="utf-8")
 
-    report = csafety.build_report(repo.resolve(), None, [repo / "tests"])
+    report = _report(repo, paths=[SKILL_REL], removed={SKILL_REL: [MOVABLE]})
     [skill] = report["skills"]
     assert not skill["blocks"]
     # The moved line survives in the reference, so it is NOT a reference-home gap.
@@ -98,7 +116,7 @@ def test_package_pin_may_move_to_reference(tmp_path: Path, monkeypatch) -> None:
     detail = skill_dir / "references" / "detail.md"
     detail.write_text(detail.read_text() + f"\n{MOVABLE}\n", encoding="utf-8")
 
-    report = csafety.build_report(repo.resolve(), None, [repo / "tests"])
+    report = _report(repo, paths=[SKILL_REL], removed={SKILL_REL: [MOVABLE]})
     [skill] = report["skills"]
     # A package pin that moved to a reference still survives the package -> no break.
     assert not any(b["kind"] == "package-contract" for b in skill["blocks"])
@@ -114,7 +132,7 @@ def test_test_literal_pin_blocks(tmp_path: Path, monkeypatch) -> None:
     skill_md = skill_dir / "SKILL.md"
     skill_md.write_text(skill_md.read_text().replace(SEDIMENT + "\n", ""), encoding="utf-8")
 
-    report = csafety.build_report(repo.resolve(), None, [repo / "tests"])
+    report = _report(repo, paths=[SKILL_REL], removed={SKILL_REL: [SEDIMENT]})
     assert report["status"] == "blocked"
     [skill] = report["skills"]
     assert any(b["kind"] == "test-pin" for b in skill["blocks"])
@@ -128,15 +146,13 @@ def test_test_pin_surviving_elsewhere_not_blocked(tmp_path: Path, monkeypatch) -
     _patch_pins(monkeypatch)
     skill_md = skill_dir / "SKILL.md"
     skill_md.write_text(skill_md.read_text() + f"\n{SEDIMENT}\n", encoding="utf-8")  # 2nd copy
-    _run(repo, "git", "add", "-A")
-    _commit(repo, "two-copy")
     (repo / "tests" / "test_demo.py").write_text(
         f'def test_demo_pins(text):\n    assert "{SEDIMENT}" in text\n', encoding="utf-8"
     )
     # Remove only the first copy; the literal survives at the appended copy.
     skill_md.write_text(skill_md.read_text().replace(SEDIMENT + "\n", "", 1), encoding="utf-8")
 
-    report = csafety.build_report(repo.resolve(), None, [repo / "tests"])
+    report = _report(repo, paths=[SKILL_REL], removed={SKILL_REL: [SEDIMENT]})
     [skill] = report["skills"]
     assert not any(b["kind"] == "test-pin" for b in skill["blocks"])
 
@@ -148,7 +164,7 @@ def test_clean_when_nothing_removed(tmp_path: Path, monkeypatch) -> None:
     skill_md = skill_dir / "SKILL.md"
     skill_md.write_text(skill_md.read_text() + "\nA purely additive trailing line of guidance.\n", encoding="utf-8")
 
-    report = csafety.build_report(repo.resolve(), None, [repo / "tests"])
+    report = _report(repo, paths=[SKILL_REL], removed={SKILL_REL: []})
     assert report["status"] == "clean"
 
 
@@ -161,7 +177,7 @@ def test_deleted_skill_md_forces_review_not_silent_clean(tmp_path: Path, monkeyp
     _patch_pins(monkeypatch, core=[CORE_PIN])
     (skill_dir / "SKILL.md").unlink()
 
-    report = csafety.build_report(repo.resolve(), None, [repo / "tests"])
+    report = _report(repo, paths=[], deleted=[SKILL_REL], removed={SKILL_REL: []})
     assert report["status"] == "review"
     [skill] = report["skills"]
     assert skill["path"] == SKILL_REL
@@ -175,7 +191,9 @@ def test_deleted_reference_home_forces_review(tmp_path: Path, monkeypatch) -> No
     _patch_pins(monkeypatch, core=[CORE_PIN])
     (skill_dir / "references" / "detail.md").unlink()
 
-    report = csafety.build_report(repo.resolve(), None, [repo / "tests"])
+    report = _report(
+        repo, paths=[], deleted=["skills/public/demo/references/detail.md"]
+    )
     assert report["status"] == "review"
     paths = {s["path"] for s in report["skills"]}
     assert "skills/public/demo/references/detail.md" in paths
@@ -193,11 +211,13 @@ def test_deleted_shared_reference_forces_review(tmp_path: Path, monkeypatch) -> 
     shared_ref = repo / "skills" / "shared" / "references" / "fresh-eye-subagent-review.md"
     shared_ref.parent.mkdir(parents=True)
     shared_ref.write_text("# Fresh Eye\n\nCross-skill contract text.\n", encoding="utf-8")
-    _run(repo, "git", "add", "-A")
-    _commit(repo, "add shared reference")
     shared_ref.unlink()
 
-    report = csafety.build_report(repo.resolve(), None, [repo / "tests"])
+    report = _report(
+        repo,
+        paths=[],
+        deleted=["skills/shared/references/fresh-eye-subagent-review.md"],
+    )
     assert report["status"] == "review"
     paths = {s["path"] for s in report["skills"]}
     assert "skills/shared/references/fresh-eye-subagent-review.md" in paths
@@ -236,7 +256,12 @@ def test_deleted_skill_md_with_surviving_test_pin_still_blocks(tmp_path: Path, m
     )
     (skill_dir / "SKILL.md").unlink()
 
-    report = csafety.build_report(repo.resolve(), None, [repo / "tests"])
+    report = _report(
+        repo,
+        paths=[],
+        deleted=[SKILL_REL],
+        removed={SKILL_REL: [SEDIMENT]},
+    )
     assert report["status"] == "blocked"
     [skill] = report["skills"]
     assert any(b["kind"] == "test-pin" for b in skill["blocks"])
@@ -278,7 +303,7 @@ def test_explicit_path_mode_does_not_scan_for_deletions(tmp_path: Path, monkeypa
     _patch_pins(monkeypatch, core=[CORE_PIN])
     (skill_dir / "SKILL.md").unlink()
 
-    report = csafety.build_report(repo.resolve(), [SKILL_REL], [repo / "tests"])
+    report = _report(repo, paths=[SKILL_REL], removed={SKILL_REL: []})
     assert report["status"] == "clean"
 
 
@@ -302,7 +327,7 @@ def test_report_payload_reports_deleted_surface_reviews(tmp_path: Path, monkeypa
     _patch_pins(monkeypatch, core=[CORE_PIN])
     (skill_dir / "SKILL.md").unlink()
 
-    report = csafety.build_report(repo.resolve(), None, [repo / "tests"])
+    report = _report(repo, paths=[], deleted=[SKILL_REL], removed={SKILL_REL: []})
     assert report["status"] == "review"
     payload = csafety.report_payload(report)
     reviews = [review for skill in payload["skills"] for review in skill["reviews"]]

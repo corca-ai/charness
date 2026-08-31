@@ -15,6 +15,8 @@ from pathlib import Path
 import pytest
 import yaml
 
+from tests.quality_gates.repo_shapes import install_committed_repo
+
 from .git_fixture_support import init_git_repo
 from .support import run_script
 
@@ -44,106 +46,118 @@ def _commit(repo: Path, name: str, content: str) -> None:
     _git(repo, "commit", "-qm", f"add {name}")
 
 
-def _stage_phantom(repo: Path) -> None:
+def _committed(tmp_path: Path, name: str, content: str) -> Path:
+    return install_committed_repo(tmp_path / "repo", {name: content})
+
+
+def _stage_phantom(tmp_path: Path) -> Path:
     """HEAD == v2, index == v1 (staged reversion), worktree == v2 == HEAD."""
-    _commit(repo, "f.py", "v2\n")
+    repo = _committed(tmp_path, "f.py", "v2\n")
     (repo / "f.py").write_text("v1\n", encoding="utf-8")
     _git(repo, "add", "f.py")
     (repo / "f.py").write_text("v2\n", encoding="utf-8")
+    return repo
 
 
-def test_phantom_modified_reversion_is_flagged(tmp_path: Path) -> None:
-    repo = _repo(tmp_path)
-    _stage_phantom(repo)
+def test_classify_reversion_reads_the_three_blob_fingerprint() -> None:
+    modified = csr.classify_reversion(
+        "f.py", head_blob="h", index_blob="i", worktree_blob="h"
+    )
+    assert modified is not None
+    assert modified.case == "modified-reversion-phantom"
+    assert "--cached" not in modified.recovery
+
+    deletion = csr.classify_reversion(
+        "f.py", head_blob="h", index_blob=None, worktree_blob="h"
+    )
+    assert deletion is not None
+    assert deletion.case == "staged-deletion-phantom"
+    assert "--cached" in deletion.recovery
+
+    assert csr.classify_reversion(
+        "f.py", head_blob="h", index_blob="w", worktree_blob="w"
+    ) is None
+    assert csr.classify_reversion(
+        "f.py", head_blob="h", index_blob="h", worktree_blob="h"
+    ) is None
+    assert csr.classify_reversion(
+        "f.py", head_blob="h", index_blob=None, worktree_blob=None
+    ) is None
+    assert csr.classify_reversion(
+        "b.py", head_blob=None, index_blob="n", worktree_blob="n"
+    ) is None
+    assert csr.classify_reversion(
+        "f.py", head_blob="h", index_blob="i", worktree_blob="h", unmerged=True
+    ) is None
+    assert csr.classify_reversion(
+        "sub", head_blob="h", index_blob="i", worktree_blob="h", gitlink=True
+    ) is None
+
+
+def test_find_staged_reversions_classifies_injected_triples_without_git(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def forbidden(*_args, **_kwargs):
+        raise AssertionError("injected triples must not ask Git")
+
+    monkeypatch.setattr(csr, "_git", forbidden)
+    findings = csr.find_staged_reversions(
+        "/unused",
+        triples=[
+            {
+                "path": "f.py",
+                "head_blob": "h",
+                "index_blob": "i",
+                "worktree_blob": "h",
+            },
+            {
+                "path": "ok.py",
+                "head_blob": "h",
+                "index_blob": "h",
+                "worktree_blob": "h",
+            },
+        ],
+    )
+    assert [item.path for item in findings] == ["f.py"]
+    assert findings[0].case == "modified-reversion-phantom"
+
+
+def test_phantom_modified_reversion_is_flagged_and_blocks_cli(tmp_path: Path) -> None:
+    repo = _stage_phantom(tmp_path)
     findings = csr.find_staged_reversions(str(repo))
     assert [f.case for f in findings] == ["modified-reversion-phantom"]
     assert findings[0].path == "f.py"
     assert "git add" in findings[0].recovery
-    # ...and the two cases must not collapse to one message: `git add` appears in
-    # BOTH, so asserting only that would stay green if `_recovery` were flattened.
-    # The deletion branch exists to name the `git rm --cached` reading instead of
-    # telling the operator to undo the untrack they meant to make.
     assert "--cached" not in findings[0].recovery
-
-
-def test_legit_full_stage_passes(tmp_path: Path) -> None:
-    repo = _repo(tmp_path)
-    _commit(repo, "f.py", "v1\n")
-    (repo / "f.py").write_text("v2\n", encoding="utf-8")
-    _git(repo, "add", "f.py")  # index == worktree == v2 != HEAD
-    assert csr.find_staged_reversions(str(repo)) == []
-
-
-def test_mode_only_stage_passes(tmp_path: Path) -> None:
-    repo = _repo(tmp_path)
-    _commit(repo, "f.py", "v1\n")
-    (repo / "f.py").chmod(0o755)
-    _git(repo, "add", "f.py")  # same blob, only the mode changed
-    assert csr.find_staged_reversions(str(repo)) == []
-
-
-def test_new_file_add_passes(tmp_path: Path) -> None:
-    repo = _repo(tmp_path)
-    _commit(repo, "a.py", "x\n")
-    (repo / "b.py").write_text("new\n", encoding="utf-8")
-    _git(repo, "add", "b.py")
-    assert csr.find_staged_reversions(str(repo)) == []
-
-
-def test_genuine_deletion_passes(tmp_path: Path) -> None:
-    repo = _repo(tmp_path)
-    _commit(repo, "f.py", "v1\n")
-    _git(repo, "rm", "-q", "f.py")  # index AND worktree both gone
-    assert csr.find_staged_reversions(str(repo)) == []
-
-
-def test_staged_deletion_phantom_is_flagged(tmp_path: Path) -> None:
-    repo = _repo(tmp_path)
-    _commit(repo, "f.py", "v1\n")
-    _git(repo, "rm", "--cached", "-q", "f.py")  # index deletes; worktree keeps v1 == HEAD
-    findings = csr.find_staged_reversions(str(repo))
-    assert [f.case for f in findings] == ["staged-deletion-phantom"]
-
-
-def test_clean_tree_passes(tmp_path: Path) -> None:
-    repo = _repo(tmp_path)
-    _commit(repo, "f.py", "v1\n")
-    assert csr.find_staged_reversions(str(repo)) == []
-
-
-def test_cli_blocks_phantom(tmp_path: Path) -> None:
-    repo = _repo(tmp_path)
-    _stage_phantom(repo)
     result = run_script("scripts/check_staged_reversion.py", "--repo-root", str(repo))
     assert result.returncode == 1, result.stdout
     payload = yaml.safe_load(result.stdout)
     assert payload["state"] == "blocked"
     assert [finding["path"] for finding in payload["findings"]] == ["f.py"]
-    # The blocking REASON travelled only in the deleted human banner; a payload that
-    # blocks without saying why is a gate nobody can act on.
     assert "silently re-introduce removed code" in payload["detail"]
 
 
-def test_cli_flag_bypass_allows(tmp_path: Path, capsys) -> None:
-    repo = _repo(tmp_path)
-    _stage_phantom(repo)
-    assert csr.main(["--repo-root", str(repo), "--allow-staged-reversion"]) == 0
+def test_mode_only_stage_is_the_same_blob(tmp_path: Path) -> None:
+    """Mode-only stages keep the blob; Git must not invent a phantom hash."""
+    repo = _committed(tmp_path, "f.py", "v1\n")
+    (repo / "f.py").chmod(0o755)
+    _git(repo, "add", "f.py")  # same blob, only the mode changed
+    assert csr.find_staged_reversions(str(repo)) == []
+
+
+def test_staged_deletion_phantom_is_flagged(tmp_path: Path) -> None:
+    repo = _committed(tmp_path, "f.py", "v1\n")
+    _git(repo, "rm", "--cached", "-q", "f.py")  # index deletes; worktree keeps v1 == HEAD
+    findings = csr.find_staged_reversions(str(repo))
+    assert [f.case for f in findings] == ["staged-deletion-phantom"]
+
+
+def test_cli_bypass_allows_without_a_repo(monkeypatch, capsys) -> None:
+    assert csr.main(["--repo-root", "/nonexistent", "--allow-staged-reversion"]) == 0
     assert "allowed" in capsys.readouterr().out
-
-
-def test_cli_env_bypass_allows(tmp_path: Path, monkeypatch, capsys) -> None:
-    repo = _repo(tmp_path)
-    _stage_phantom(repo)
     monkeypatch.setenv("CHARNESS_ALLOW_STAGED_REVERSION", "1")
-    assert csr.main(["--repo-root", str(repo)]) == 0
+    assert csr.main(["--repo-root", "/nonexistent"]) == 0
     assert "allowed" in capsys.readouterr().out
-
-
-def test_clean_tree_cli_exit_zero(tmp_path: Path, capsys) -> None:
-    repo = _repo(tmp_path)
-    _commit(repo, "f.py", "v1\n")
-    assert csr.main(["--repo-root", str(repo)]) == 0
-    assert "clean" in capsys.readouterr().out
 
 
 # --- git could not establish the scope (A5) ------------------------------------
@@ -152,34 +166,16 @@ def test_clean_tree_cli_exit_zero(tmp_path: Path, capsys) -> None:
 # rather than print a clean verdict over a scope it never read.
 
 
-def test_non_repo_root_raises_instead_of_returning_empty(tmp_path: Path) -> None:
+def test_non_repo_root_is_unestablished_not_clean(tmp_path: Path, capsys) -> None:
     not_a_repo = tmp_path / "not-a-repo"
     not_a_repo.mkdir()
     with pytest.raises(RuntimeError):
         csr.find_staged_reversions(str(not_a_repo))
-
-
-def test_non_repo_root_cli_is_unestablished_not_clean(tmp_path: Path, capsys) -> None:
-    """The refusal half: exit 1, and the word `clean` appears NOWHERE in what the
-    operator reads. A gate that cannot read the index must not put a clean verdict in
-    front of anyone, in any field."""
-    not_a_repo = tmp_path / "not-a-repo"
-    not_a_repo.mkdir()
     assert csr.main(["--repo-root", str(not_a_repo)]) == 1
     out = capsys.readouterr().out
     assert "clean" not in out
-    # ...and the operator is told how to make the index readable again, which lived
-    # only in the deleted human branch.
     assert "safe.directory" in out
-
-
-def test_non_repo_root_cli_payload_is_unestablished(tmp_path: Path, capsys) -> None:
-    """The payload half: a machine reader sees the distinct `unestablished` state with
-    the underlying git error, not an empty finding list it would read as clean."""
-    not_a_repo = tmp_path / "not-a-repo"
-    not_a_repo.mkdir()
-    assert csr.main(["--repo-root", str(not_a_repo)]) == 1
-    payload = yaml.safe_load(capsys.readouterr().out)
+    payload = yaml.safe_load(out)
     assert payload["state"] == "unestablished"
     assert payload["error"]
 
@@ -192,8 +188,7 @@ def test_dubious_ownership_does_not_report_clean_over_a_real_phantom(
     Pre-fix this printed {"state": "clean"} / exit 0 while a real staged
     reversion sat in the index -- the exact silent re-commit #258 exists to stop.
     """
-    repo = _repo(tmp_path)
-    _stage_phantom(repo)
+    repo = _stage_phantom(tmp_path)
     # Sanity: the phantom is genuinely there when git can read the repo.
     assert [f.case for f in csr.find_staged_reversions(str(repo))] == [
         "modified-reversion-phantom"
@@ -222,8 +217,7 @@ def _git_probe(repo: Path, env: dict[str, str]) -> subprocess.CompletedProcess[s
 
 def test_a_deletion_phantom_recovery_names_the_untrack_reading(tmp_path: Path) -> None:
     """The discriminating half of the per-case recovery split."""
-    repo = _repo(tmp_path)
-    _commit(repo, "f.py", "v1\n")
+    repo = _committed(tmp_path, "f.py", "v1\n")
     _git(repo, "rm", "--cached", "-q", "f.py")
 
     recovery = csr.find_staged_reversions(str(repo))[0].recovery
@@ -240,8 +234,7 @@ def test_an_unhashable_worktree_file_is_unestablished_not_dropped(tmp_path: Path
     real phantom silently vanish (`None == head_blob` is False), so the gate printed
     clean over the exact corruption it exists to catch.
     """
-    repo = _repo(tmp_path)
-    _stage_phantom(repo)  # a genuine phantom is present first...
+    repo = _stage_phantom(tmp_path)  # a genuine phantom is present first...
     assert len(csr.find_staged_reversions(str(repo))) == 1
 
     # ...then make the worktree copy a dangling symlink: lexists is True, so the

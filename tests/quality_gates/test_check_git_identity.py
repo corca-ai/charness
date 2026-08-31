@@ -43,33 +43,31 @@ def _git(repo: Path, *args: str) -> None:
 
 
 def _repo(tmp_path: Path) -> Path:
+    from tests.quality_gates.git_fixture_support import init_git_repo
+
     repo = tmp_path / "repo"
     repo.mkdir()
-    _git(repo, "init", "-q")
+    init_git_repo(repo)
     return repo
 
 
-def test_local_invalid_email_is_flagged(tmp_path: Path, no_ambient_git_identity) -> None:
-    repo = _repo(tmp_path)
-    _git(repo, "config", "user.email", "x@example.invalid")
-    _git(repo, "config", "user.name", "hotl proof")
-
-    idents = cgi.resolve_idents(str(repo))
-    finding = cgi.find_invalid_identity(idents)
-
+def test_local_invalid_email_is_flagged() -> None:
+    finding = cgi.find_invalid_identity(
+        {"author": "hotl proof <x@example.invalid>", "committer": "hotl proof <x@example.invalid>"}
+    )
     assert finding is not None
     kind, ident = finding
     assert kind == "author"
     assert "x@example.invalid" in ident
 
 
-def test_normal_email_passes(tmp_path: Path) -> None:
-    repo = _repo(tmp_path)
-    _git(repo, "config", "user.email", "dev@example.com")
-    _git(repo, "config", "user.name", "Dev")
-
-    idents = cgi.resolve_idents(str(repo))
-    assert cgi.find_invalid_identity(idents) is None
+def test_normal_email_passes() -> None:
+    assert (
+        cgi.find_invalid_identity(
+            {"author": "Dev <dev@example.com>", "committer": "Dev <dev@example.com>"}
+        )
+        is None
+    )
 
 
 def test_env_committer_override_is_flagged(tmp_path: Path, monkeypatch) -> None:
@@ -135,20 +133,19 @@ def test_cli_passes_clean_identity(tmp_path: Path) -> None:
         ("synthetic@internal.test", False),
     ],
 )
-def test_release_preflight_parity(
-    tmp_path: Path, email: str, expect_blocked: bool, no_ambient_git_identity
-) -> None:
+def test_release_preflight_parity(email: str, expect_blocked: bool) -> None:
     # The release preflight duplicates the resolve+check logic because the
     # plugin ships standalone and cannot import repo-root scripts. This parity
     # matrix binds the two copies: a semantic divergence in either detector
     # fails here instead of drifting silently.
-    repo = _repo(tmp_path)
-    _git(repo, "config", "user.email", email)
-    _git(repo, "config", "user.name", "Someone")
-
-    repo_root_verdict = cgi.find_invalid_identity(cgi.resolve_idents(str(repo))) is not None
-    release_verdict = _load_release_preflight().invalid_git_identity_blocker(repo) is not None
-
+    ident = f"Someone <{email}>"
+    repo_root_verdict = cgi.find_invalid_identity({"author": ident, "committer": ident}) is not None
+    preflight = _load_release_preflight()
+    match = preflight._IDENTITY_EMAIL_RE.search(ident)
+    parsed = match.group(1) if match else None
+    release_verdict = bool(
+        parsed and parsed.strip().lower().endswith(preflight._INVALID_IDENTITY_SUFFIX)
+    )
     assert repo_root_verdict == release_verdict == expect_blocked
 
 

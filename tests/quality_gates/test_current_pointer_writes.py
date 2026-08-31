@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import ast
 import hashlib
-import subprocess
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -10,10 +9,12 @@ from types import SimpleNamespace
 import pytest
 import yaml
 
+from tests.quality_gates.git_fixture_support import init_git_repo
+from tests.quality_gates.repo_shapes import install_committed_repo
 from tests.script_loader import load_script_module
 
 from .seeding_support import load_module
-from .support import ROOT, init_git_repo, run_script
+from .support import ROOT, run_script
 
 WRITER = load_module("current_pointer_writer_lib", ROOT / "scripts" / "current_pointer_writer_lib.py")
 RELEASE_ARTIFACT = load_module(
@@ -25,6 +26,10 @@ SCANNER = load_module(
     ROOT / "scripts" / "check_current_pointer_writes.py",
     register=True,
 )
+
+def _scanner_repo(tmp_path: Path, files: dict[str, str]) -> Path:
+    return install_committed_repo(tmp_path / "repo", {".gitignore": "\n", **files})
+
 
 HITL_SYNC_REVIEW_ARTIFACT = load_script_module(
     "tests.quality_gates.current_pointer_hitl_sync_review_artifact",
@@ -66,61 +71,94 @@ def _scanner_findings(stdout: str) -> set[tuple[str, int]]:
 
 
 
-def test_current_pointer_write_scanner_flags_direct_latest_write(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    script_dir = repo / "scripts"
-    script_dir.mkdir(parents=True)
-    (repo / ".gitignore").write_text("\n", encoding="utf-8")
-    bad = script_dir / "bad_writer.py"
-    bad.write_text(
-        "from pathlib import Path\n"
-        "target = Path('charness-artifacts/demo') / 'latest.md'\n"
-        "target.write_text('bad', encoding='utf-8')\n",
-        encoding="utf-8",
+def test_current_pointer_write_shapes_are_caught_in_one_scan(tmp_path: Path) -> None:
+    repo = _scanner_repo(
+        tmp_path,
+        {
+            "scripts/bad_writer.py": (
+                "from pathlib import Path\n"
+                "target = Path('charness-artifacts/demo') / 'latest.md'\n"
+                "target.write_text('bad', encoding='utf-8')\n"
+            ),
+            "scripts/expression_writer.py": (
+                "from pathlib import Path\n"
+                "CURRENT = 'latest.md'\n"
+                "(Path('charness-artifacts/demo') / CURRENT).write_text('bad', encoding='utf-8')\n"
+            ),
+            "scripts/binary_writer.py": (
+                "from pathlib import Path\n"
+                "target = Path('charness-artifacts/demo') / 'latest.json'\n"
+                "target.write_bytes(b'bad')\n"
+                "with target.open('w', encoding='utf-8') as handle:\n"
+                "    handle.write('bad')\n"
+            ),
+            "scripts/constant_writer.py": (
+                "from pathlib import Path\n"
+                "CURRENT = 'latest.md'\n"
+                "target = Path('charness-artifacts/demo') / CURRENT\n"
+                "target.write_text('bad', encoding='utf-8')\n"
+            ),
+            "scripts/constant_open_writer.py": (
+                "from pathlib import Path\n"
+                "CURRENT = 'latest.md'\n"
+                "with open(Path('charness-artifacts/demo') / CURRENT, 'w', encoding='utf-8') as handle:\n"
+                "    handle.write('bad')\n"
+            ),
+            "scripts/mixed_writer.py": (
+                "from pathlib import Path\n"
+                "from scripts.current_pointer_writer_lib import write_current_pointer_text\n"
+                "target = Path('charness-artifacts/demo') / 'latest.md'\n"
+                "write_current_pointer_text(target, 'ok')\n"
+                "target.write_text('bad', encoding='utf-8')\n"
+            ),
+            "scripts/shadow_writer.py": (
+                "from pathlib import Path\n"
+                "CURRENT = 'latest.md'\n"
+                "def write_record() -> None:\n"
+                "    CURRENT = '2026-05-24-record.md'\n"
+                "    target = Path('charness-artifacts/demo') / CURRENT\n"
+                "    target.write_text('ok', encoding='utf-8')\n"
+            ),
+        },
     )
-    init_git_repo(repo, ".gitignore", "scripts/bad_writer.py")
 
-    result = run_script("scripts/check_current_pointer_writes.py", "--repo-root", str(repo), "--require-empty")
-
-    assert result.returncode == 1
-    assert ("scripts/bad_writer.py", 3) in _scanner_findings(result.stdout)
-
-
-def test_current_pointer_write_scanner_flags_direct_expression_write(tmp_path: Path, monkeypatch, capsys) -> None:
-    repo = tmp_path / "repo"
-    script_dir = repo / "scripts"
-    script_dir.mkdir(parents=True)
-    (repo / ".gitignore").write_text("\n", encoding="utf-8")
-    bad = script_dir / "expression_writer.py"
-    bad.write_text(
-        "from pathlib import Path\n"
-        "CURRENT = 'latest.md'\n"
-        "(Path('charness-artifacts/demo') / CURRENT).write_text('bad', encoding='utf-8')\n",
-        encoding="utf-8",
+    result = run_script(
+        "scripts/check_current_pointer_writes.py", "--repo-root", str(repo), "--require-empty"
     )
-    init_git_repo(repo, ".gitignore", "scripts/expression_writer.py")
-
-    result = run_current_pointer_scanner(monkeypatch, capsys, "--repo-root", str(repo), "--require-empty")
-
+    findings = _scanner_findings(result.stdout)
     assert result.returncode == 1
-    assert ("scripts/expression_writer.py", 3) in _scanner_findings(result.stdout)
+    assert {
+        ("scripts/bad_writer.py", 3),
+        ("scripts/expression_writer.py", 3),
+        ("scripts/binary_writer.py", 3),
+        ("scripts/binary_writer.py", 4),
+        ("scripts/constant_writer.py", 4),
+        ("scripts/constant_open_writer.py", 3),
+        ("scripts/mixed_writer.py", 5),
+    } <= findings
+    assert not any(path == "scripts/shadow_writer.py" for path, _line in findings)
+
+    removed_flag = "--" + "json"
+    rejected = run_script(
+        "scripts/check_current_pointer_writes.py", "--repo-root", str(repo), removed_flag
+    )
+    assert rejected.returncode == 2
+    assert removed_flag in rejected.stderr
 
 
 def test_current_pointer_write_scanner_structured_output(tmp_path: Path) -> None:
     """The structured payload is the only output shape, so there is no opt-in flag
     to ask for it and a run that does not `--require-empty` still reports its
     findings on stdout."""
-    repo = tmp_path / "repo"
-    script_dir = repo / "scripts"
-    script_dir.mkdir(parents=True)
-    (repo / ".gitignore").write_text("\n", encoding="utf-8")
-    bad = script_dir / "structured_writer.py"
-    bad.write_text(
-        "from pathlib import Path\n"
-        "(Path('charness-artifacts/demo') / 'latest.md').write_text('bad', encoding='utf-8')\n",
-        encoding="utf-8",
+    repo = _scanner_repo(
+        tmp_path,
+        {
+            "scripts/structured_writer.py": (
+                "from pathlib import Path\n"
+                "(Path('charness-artifacts/demo') / 'latest.md').write_text('bad', encoding='utf-8')\n"
+            ),
+        },
     )
-    init_git_repo(repo, ".gitignore", "scripts/structured_writer.py")
 
     result = run_script("scripts/check_current_pointer_writes.py", "--repo-root", str(repo))
 
@@ -253,7 +291,7 @@ def test_the_union_stays_git_derived(tmp_path: Path, monkeypatch) -> None:
     )
     (repo / "skills" / "support" / "scripts" / "tracked_writer.py").write_text(body, encoding="utf-8")
     (repo / "skills" / "support" / "scripts" / "ignored_writer.py").write_text(body, encoding="utf-8")
-    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
+    init_git_repo(repo)
     monkeypatch.setenv("CHARNESS_SUPPORT_DIR", str(tmp_path / "external-support"))
 
     paths = sorted(item.path for item in SCANNER.scan_repo(repo))
@@ -346,7 +384,7 @@ def test_an_external_support_tree_is_reported_not_crashed_on(tmp_path: Path, mon
         "(Path('d') / 'latest.md').write_text('bad', encoding='utf-8')\n",
         encoding="utf-8",
     )
-    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
+    init_git_repo(repo)
     monkeypatch.setenv("CHARNESS_SUPPORT_DIR", str(external))
 
     # NO stub on the population owner. The first cut of this test replaced it with
@@ -378,7 +416,7 @@ def test_population_survives_a_path_containing_a_newline(tmp_path: Path) -> None
     """
     repo = tmp_path / "repo"
     (repo / "scripts").mkdir(parents=True)
-    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
+    init_git_repo(repo)
     weird = repo / "scripts" / "we\nird.py"
     weird.write_text("from pathlib import Path\n", encoding="utf-8")
     plain = repo / "scripts" / "plain.py"
@@ -393,17 +431,15 @@ def test_population_survives_a_path_containing_a_newline(tmp_path: Path) -> None
 
 
 def test_current_pointer_write_scanner_skips_generated_plugin_mirrors(tmp_path: Path, monkeypatch, capsys) -> None:
-    repo = tmp_path / "repo"
-    plugin_script_dir = repo / "plugins" / "charness" / "scripts"
-    plugin_script_dir.mkdir(parents=True)
-    (repo / ".gitignore").write_text("\n", encoding="utf-8")
-    mirrored = plugin_script_dir / "mirrored_writer.py"
-    mirrored.write_text(
-        "from pathlib import Path\n"
-        "(Path('charness-artifacts/demo') / 'latest.md').write_text('bad', encoding='utf-8')\n",
-        encoding="utf-8",
+    repo = _scanner_repo(
+        tmp_path,
+        {
+            "plugins/charness/scripts/mirrored_writer.py": (
+                "from pathlib import Path\n"
+                "(Path('charness-artifacts/demo') / 'latest.md').write_text('bad', encoding='utf-8')\n"
+            ),
+        },
     )
-    init_git_repo(repo, ".gitignore", "plugins/charness/scripts/mirrored_writer.py")
 
     result = run_current_pointer_scanner(monkeypatch, capsys, "--repo-root", str(repo), "--require-empty")
 
@@ -423,120 +459,6 @@ def test_current_pointer_write_scanner_ignores_helper_and_syntax_error(tmp_path:
     assert SCANNER.scan_path(repo, broken) == []
 
 
-def test_current_pointer_write_scanner_does_not_exempt_mixed_helper_file(tmp_path: Path, monkeypatch, capsys) -> None:
-    repo = tmp_path / "repo"
-    script_dir = repo / "scripts"
-    script_dir.mkdir(parents=True)
-    (repo / ".gitignore").write_text("\n", encoding="utf-8")
-    bad = script_dir / "mixed_writer.py"
-    bad.write_text(
-        "from pathlib import Path\n"
-        "from scripts.current_pointer_writer_lib import write_current_pointer_text\n"
-        "target = Path('charness-artifacts/demo') / 'latest.md'\n"
-        "write_current_pointer_text(target, 'ok')\n"
-        "target.write_text('bad', encoding='utf-8')\n",
-        encoding="utf-8",
-    )
-    init_git_repo(repo, ".gitignore", "scripts/mixed_writer.py")
-
-    result = run_current_pointer_scanner(monkeypatch, capsys, "--repo-root", str(repo), "--require-empty")
-
-    assert result.returncode == 1
-    assert ("scripts/mixed_writer.py", 5) in _scanner_findings(result.stdout)
-
-
-def test_current_pointer_write_scanner_flags_write_bytes_and_path_open(tmp_path: Path, monkeypatch, capsys) -> None:
-    repo = tmp_path / "repo"
-    script_dir = repo / "scripts"
-    script_dir.mkdir(parents=True)
-    (repo / ".gitignore").write_text("\n", encoding="utf-8")
-    bad = script_dir / "binary_writer.py"
-    bad.write_text(
-        "from pathlib import Path\n"
-        "target = Path('charness-artifacts/demo') / 'latest.json'\n"
-        "target.write_bytes(b'bad')\n"
-        "with target.open('w', encoding='utf-8') as handle:\n"
-        "    handle.write('bad')\n",
-        encoding="utf-8",
-    )
-    init_git_repo(repo, ".gitignore", "scripts/binary_writer.py")
-
-    result = run_current_pointer_scanner(monkeypatch, capsys, "--repo-root", str(repo), "--require-empty")
-
-    assert result.returncode == 1
-    findings = _scanner_findings(result.stdout)
-    assert ("scripts/binary_writer.py", 3) in findings
-    assert ("scripts/binary_writer.py", 4) in findings
-
-
-def test_current_pointer_write_scanner_resolves_simple_filename_constants(tmp_path: Path, monkeypatch, capsys) -> None:
-    repo = tmp_path / "repo"
-    script_dir = repo / "scripts"
-    script_dir.mkdir(parents=True)
-    (repo / ".gitignore").write_text("\n", encoding="utf-8")
-    bad = script_dir / "constant_writer.py"
-    bad.write_text(
-        "from pathlib import Path\n"
-        "CURRENT = 'latest.md'\n"
-        "target = Path('charness-artifacts/demo') / CURRENT\n"
-        "target.write_text('bad', encoding='utf-8')\n",
-        encoding="utf-8",
-    )
-    init_git_repo(repo, ".gitignore", "scripts/constant_writer.py")
-
-    result = run_current_pointer_scanner(monkeypatch, capsys, "--repo-root", str(repo), "--require-empty")
-
-    assert result.returncode == 1
-    assert ("scripts/constant_writer.py", 4) in _scanner_findings(result.stdout)
-
-
-def test_current_pointer_write_scanner_resolves_builtin_open_constant_path(tmp_path: Path, monkeypatch, capsys) -> None:
-    repo = tmp_path / "repo"
-    script_dir = repo / "scripts"
-    script_dir.mkdir(parents=True)
-    (repo / ".gitignore").write_text("\n", encoding="utf-8")
-    bad = script_dir / "constant_open_writer.py"
-    bad.write_text(
-        "from pathlib import Path\n"
-        "CURRENT = 'latest.md'\n"
-        "with open(Path('charness-artifacts/demo') / CURRENT, 'w', encoding='utf-8') as handle:\n"
-        "    handle.write('bad')\n",
-        encoding="utf-8",
-    )
-    init_git_repo(repo, ".gitignore", "scripts/constant_open_writer.py")
-
-    result = run_current_pointer_scanner(monkeypatch, capsys, "--repo-root", str(repo), "--require-empty")
-
-    assert result.returncode == 1
-    assert ("scripts/constant_open_writer.py", 3) in _scanner_findings(result.stdout)
-
-
-def test_current_pointer_write_scanner_does_not_treat_local_shadow_as_pointer(
-    tmp_path: Path,
-    monkeypatch,
-    capsys,
-) -> None:
-    repo = tmp_path / "repo"
-    script_dir = repo / "scripts"
-    script_dir.mkdir(parents=True)
-    (repo / ".gitignore").write_text("\n", encoding="utf-8")
-    ok = script_dir / "shadow_writer.py"
-    ok.write_text(
-        "from pathlib import Path\n"
-        "CURRENT = 'latest.md'\n"
-        "def write_record() -> None:\n"
-        "    CURRENT = '2026-05-24-record.md'\n"
-        "    target = Path('charness-artifacts/demo') / CURRENT\n"
-        "    target.write_text('ok', encoding='utf-8')\n",
-        encoding="utf-8",
-    )
-    init_git_repo(repo, ".gitignore", "scripts/shadow_writer.py")
-
-    result = run_current_pointer_scanner(monkeypatch, capsys, "--repo-root", str(repo), "--require-empty")
-
-    assert result.returncode == 0
-
-
 def test_current_pointer_write_scanner_constant_helpers_ignore_non_name_targets() -> None:
     tree = SCANNER.ast.parse("obj.attr = 'latest.md'\nCURRENT = 'latest.md'\ntarget = CURRENT\n")
     SCANNER._attach_parent_links(tree)
@@ -551,25 +473,17 @@ def test_current_pointer_write_scanner_prefilters_non_candidate_files(
     tmp_path: Path,
     monkeypatch,
 ) -> None:
-    repo = tmp_path / "repo"
-    script_dir = repo / "scripts"
-    script_dir.mkdir(parents=True)
-    (repo / ".gitignore").write_text("\n", encoding="utf-8")
-    (script_dir / "ordinary_writer.py").write_text(
-        "from pathlib import Path\nPath('notes.md').write_text('ok')\n",
-        encoding="utf-8",
-    )
-    candidate = script_dir / "candidate_writer.py"
-    candidate.write_text(
-        "from pathlib import Path\n"
-        "(Path('charness-artifacts/demo') / 'latest.md').write_text('bad')\n",
-        encoding="utf-8",
-    )
-    init_git_repo(
-        repo,
-        ".gitignore",
-        "scripts/ordinary_writer.py",
-        "scripts/candidate_writer.py",
+    repo = _scanner_repo(
+        tmp_path,
+        {
+            "scripts/ordinary_writer.py": (
+                "from pathlib import Path\nPath('notes.md').write_text('ok')\n"
+            ),
+            "scripts/candidate_writer.py": (
+                "from pathlib import Path\n"
+                "(Path('charness-artifacts/demo') / 'latest.md').write_text('bad')\n"
+            ),
+        },
     )
 
     scanned: list[str] = []
@@ -589,25 +503,18 @@ def test_current_pointer_write_scanner_skips_helper_during_repo_scan(
     tmp_path: Path,
     monkeypatch,
 ) -> None:
-    repo = tmp_path / "repo"
-    script_dir = repo / "scripts"
-    script_dir.mkdir(parents=True)
-    (repo / ".gitignore").write_text("\n", encoding="utf-8")
-    (script_dir / "current_pointer_writer_lib.py").write_text(
-        "from pathlib import Path\n"
-        "(Path('charness-artifacts/demo') / 'latest.md').write_text('helper')\n",
-        encoding="utf-8",
-    )
-    (script_dir / "candidate_writer.py").write_text(
-        "from pathlib import Path\n"
-        "(Path('charness-artifacts/demo') / 'latest.md').write_text('bad')\n",
-        encoding="utf-8",
-    )
-    init_git_repo(
-        repo,
-        ".gitignore",
-        "scripts/current_pointer_writer_lib.py",
-        "scripts/candidate_writer.py",
+    repo = _scanner_repo(
+        tmp_path,
+        {
+            "scripts/current_pointer_writer_lib.py": (
+                "from pathlib import Path\n"
+                "(Path('charness-artifacts/demo') / 'latest.md').write_text('helper')\n"
+            ),
+            "scripts/candidate_writer.py": (
+                "from pathlib import Path\n"
+                "(Path('charness-artifacts/demo') / 'latest.md').write_text('bad')\n"
+            ),
+        },
     )
 
     scanned: list[str] = []
@@ -645,12 +552,9 @@ _COMPUTED_WRITE = (
 )
 
 
-def test_pointer_write_scan_covers_skills_shared(tmp_path: Path) -> None:
-    """D9 regression: `skills/shared` was absent from `SCAN_ROOTS`, so the gate
-    reported clean over a scope that excluded it.
-
-    Confirmed with the discriminating control: an IDENTICAL violation was caught
-    under `scripts/` and `skills/public/` and invisible under `skills/shared/`."""
+def test_pointer_write_scan_covers_roots_computed_names_and_leaves_ordinary_writes(
+    tmp_path: Path,
+) -> None:
     repo = tmp_path / "repo"
     for relative in (
         "scripts/writer.py",
@@ -658,54 +562,8 @@ def test_pointer_write_scan_covers_skills_shared(tmp_path: Path) -> None:
         "skills/shared/scripts/writer.py",
     ):
         _pointer_write_fixture(repo, relative, _LITERAL_WRITE)
-
-    findings = SCANNER.scan_repo(repo)
-    flagged = {finding.path for finding in findings}
-
-    assert "skills/shared/scripts/writer.py" in flagged
-    assert "scripts/writer.py" in flagged
-    assert "skills/public/x/scripts/writer.py" in flagged
-
-
-def test_pointer_write_scan_refuses_silence_on_a_computed_name(tmp_path: Path) -> None:
-    """The other half of D9: the gate matched string constants only, so
-    `f"latest.{ext}"` produced a path it could not see — and the prefilter
-    required the literal `latest.md` in the text, so such a file never even
-    reached the AST scan. A computed pointer name is a scope this gate cannot
-    establish, and it now says so instead of reporting clean."""
-    repo = tmp_path / "repo"
     _pointer_write_fixture(repo, "scripts/computed.py", _COMPUTED_WRITE)
-
-    findings = SCANNER.scan_repo(repo)
-
-    assert len(findings) == 1
-    assert findings[0].path == "scripts/computed.py"
-    assert "BUILT at runtime" in findings[0].reason
-
-
-def test_pointer_write_scan_still_passes_a_clean_tree(tmp_path: Path) -> None:
-    """Falsifiable counterpart: neither widening flags an ordinary write."""
-    repo = tmp_path / "repo"
-    _pointer_write_fixture(
-        repo,
-        "skills/shared/scripts/ordinary.py",
-        "from pathlib import Path\ndef write(root):\n    (root / 'notes.md').write_text('x')\n",
-    )
-
-    assert SCANNER.scan_repo(repo) == []
-
-
-def test_computed_pointer_name_is_caught_through_an_assigned_variable(tmp_path: Path) -> None:
-    """The computed detector originally saw only the single-expression form, but
-    the two-statement form is the idiom this repo actually writes — and its
-    LITERAL twin was already handled, so covering one and not the other left the
-    dominant shape invisible.
-
-    Also pins the concatenation case: Python parses `a + b + c`
-    left-associatively, so in `str(out) + "/latest." + ext` the pointer-ish
-    literal is only ever a RIGHT operand and inspecting `left` alone missed it."""
-    repo = tmp_path / "repo"
-    shapes = {
+    assigned_shapes = {
         "assigned.py": (
             "from pathlib import Path\ndef write(root, ext='md'):\n"
             '    target = root / "charness-artifacts" / f"latest.{ext}"\n'
@@ -721,19 +579,13 @@ def test_computed_pointer_name_is_caught_through_an_assigned_variable(tmp_path: 
             '    target.open(mode="w").write("x")\n'
         ),
     }
-    for name, body in shapes.items():
+    for name, body in assigned_shapes.items():
         _pointer_write_fixture(repo, f"scripts/{name}", body)
-
-    flagged = {finding.path for finding in SCANNER.scan_repo(repo)}
-
-    assert flagged == {f"scripts/{name}" for name in shapes}
-
-
-def test_computed_detector_leaves_an_ordinary_assigned_write_alone(tmp_path: Path) -> None:
-    """Falsifiable counterpart for the widened detector: an assigned path that is
-    not a pointer name is untouched, and so is an f-string that merely mentions
-    `latest` in prose."""
-    repo = tmp_path / "repo"
+    _pointer_write_fixture(
+        repo,
+        "skills/shared/scripts/ordinary.py",
+        "from pathlib import Path\ndef write(root):\n    (root / 'notes.md').write_text('x')\n",
+    )
     _pointer_write_fixture(
         repo,
         "scripts/ordinary.py",
@@ -742,7 +594,21 @@ def test_computed_detector_leaves_an_ordinary_assigned_write_alone(tmp_path: Pat
         '    target.write_text(f"latest sample {n}")\n',
     )
 
-    assert SCANNER.scan_repo(repo) == []
+    findings = SCANNER.scan_repo(repo)
+    flagged = {finding.path for finding in findings}
+    assert {
+        "scripts/writer.py",
+        "skills/public/x/scripts/writer.py",
+        "skills/shared/scripts/writer.py",
+        "scripts/computed.py",
+        "scripts/assigned.py",
+        "scripts/concat.py",
+        "scripts/keyword_mode.py",
+    } <= flagged
+    assert "skills/shared/scripts/ordinary.py" not in flagged
+    assert "scripts/ordinary.py" not in flagged
+    computed = next(item for item in findings if item.path == "scripts/computed.py")
+    assert "BUILT at runtime" in computed.reason
 
 
 def test_computed_detector_catches_a_bare_stem_head_and_ignores_a_read_open() -> None:

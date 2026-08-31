@@ -5,7 +5,6 @@ from __future__ import annotations
 import hashlib
 import json
 import subprocess
-import sys
 from pathlib import Path
 
 # provenance-contract fixture: reviewer_delivery
@@ -20,6 +19,7 @@ from tests.quality_gates.reviewer_capability_support import (
     target_non_claim,
     unavailable_optional_capability,
 )
+from tests.quality_gates.support import run_script
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "skills/shared/scripts/reviewer_worker_report.py"
@@ -105,29 +105,23 @@ def _ledger(
 
 
 def _run(tmp_path: Path, receipt: Path, ledger: Path, *, scope: str = "scope-1") -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        [
-            sys.executable,
-            str(SCRIPT),
-            "--receipt-file",
-            str(receipt),
-            "--ledger-file",
-            str(ledger),
-            "--attempt-id",
-            "attempt-1",
-            "--scope",
-            scope,
-            "--packet-identity",
-            "a" * 64,
-            "--reviewed-input-identity",
-            "a" * 64,
-            "--parent-receipt-identity",
-            "parent-1",
-        ],
+    return run_script(
+        str(SCRIPT),
+        "--receipt-file",
+        str(receipt),
+        "--ledger-file",
+        str(ledger),
+        "--attempt-id",
+        "attempt-1",
+        "--scope",
+        scope,
+        "--packet-identity",
+        "a" * 64,
+        "--reviewed-input-identity",
+        "a" * 64,
+        "--parent-receipt-identity",
+        "parent-1",
         cwd=tmp_path,
-        capture_output=True,
-        text=True,
-        check=False,
     )
 
 

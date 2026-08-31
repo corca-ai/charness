@@ -22,13 +22,13 @@ Two shapes of quiet failure are covered:
 from __future__ import annotations
 
 import importlib.util
-import subprocess
 from pathlib import Path
 
 import pytest
 
 from scripts.quality_adapter_lib import load_quality_adapter_permissive
 
+from .git_fixture_support import init_git_repo
 from .quality_bootstrap_support import seed_quality_repo
 from .seeding_support import write_quality_adapter
 from .support import ROOT
@@ -62,43 +62,32 @@ def _repo(tmp_path: Path, name: str = "repo") -> Path:
     """
     repo = tmp_path / name
     repo.mkdir()
-    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
+    init_git_repo(repo)
     return repo
 
 
-@pytest.mark.parametrize(
-    ("pattern", "gate_relative", "anchored"),
-    [
+def test_gate_discovery_honors_the_anchor_the_pattern_declares(tmp_path: Path) -> None:
+    from tests.quality_gates.seeding_support import git
+
+    repo = _repo(tmp_path)
+    cases = (
         ("*-quality-gate.sh", "scripts/repo-quality-gate.sh", "scripts/*-quality-gate.sh"),
         (".githooks/pre-commit", ".githooks/pre-commit", ".githooks/pre-commit"),
         ("scripts/check_coverage.py", "scripts/check_coverage.py", "scripts/check_coverage.py"),
         ("scripts/*/gate.sh", "scripts/ci/gate.sh", "scripts/*/gate.sh"),
         ("**/*-quality-gate.sh", "tools/nested/repo-quality-gate.sh", "**/*-quality-gate.sh"),
-    ],
-)
-def test_gate_discovery_honors_the_anchor_the_pattern_declares(
-    tmp_path: Path, pattern: str, gate_relative: str, anchored: str
-) -> None:
-    repo = _repo(tmp_path)
-    _write(repo, gate_relative)
-    module = _load(repo, {"gate_script_pattern": pattern})
-
-    assert module.anchored_gate_pattern() == anchored
-    discovered = [path.relative_to(repo).as_posix() for path in module.discover_gate_scripts()]
-    assert discovered == [gate_relative]
-
-
-def test_a_githooks_gate_is_nameable_at_all(tmp_path: Path) -> None:
-    """The literal case reported from a consuming repo whose stop gate is `.githooks/`.
-
-    Before the anchor split this asserted the defect: the pattern resolved under
-    `scripts/`, discovery returned nothing, and `main` raised `no gate scripts matched`.
-    """
-    repo = _repo(tmp_path)
-    _write(repo, ".githooks/pre-commit", "#!/usr/bin/env bash\n")
-    module = _load(repo, {"gate_script_pattern": ".githooks/pre-commit"})
-
-    assert module.discover_gate_scripts(), "a .githooks stop gate must be expressible"
+    )
+    for _pattern, gate_relative, _anchored in cases:
+        _write(repo, gate_relative)
+    git(repo, "add", "-A")
+    git(repo, "commit", "-q", "-m", "gates")
+    for pattern, gate_relative, anchored in cases:
+        module = _load(repo, {"gate_script_pattern": pattern})
+        assert module.anchored_gate_pattern() == anchored, pattern
+        discovered = [path.relative_to(repo).as_posix() for path in module.discover_gate_scripts()]
+        assert gate_relative in discovered, pattern
+        if "*" not in pattern:
+            assert discovered == [gate_relative], pattern
 
 
 def test_an_absolute_pattern_fails_rather_than_raising(tmp_path: Path) -> None:
@@ -322,7 +311,13 @@ def test_a_missing_git_binary_fails_rather_than_raising(tmp_path: Path, monkeypa
     the same defect the absolute-pattern branch exists to prevent.
     """
     module = _load(_repo(tmp_path), {})
-    monkeypatch.setattr(module.subprocess, "run", lambda *a, **k: (_ for _ in ()).throw(FileNotFoundError("git")))
+    import scripts.repo_file_listing as listing
+
+    monkeypatch.setattr(
+        listing.subprocess,
+        "run",
+        lambda *a, **k: (_ for _ in ()).throw(FileNotFoundError("git")),
+    )
 
     with pytest.raises(SystemExit) as excinfo:
         module.tracked_repo_files()
