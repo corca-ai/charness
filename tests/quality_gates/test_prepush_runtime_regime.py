@@ -23,6 +23,7 @@ from pathlib import Path
 import pytest
 
 from tests.quality_gates.prepush_close_keyword_fixtures import head as _head
+from tests.script_closure import script_import_closure
 
 ROOT = Path(__file__).resolve().parents[2]
 pytestmark = pytest.mark.boundary_contract(
@@ -81,14 +82,13 @@ def _seed_prepush_repo(tmp_path: Path) -> Path:
             '" -- "$@"\n'
         ),
     }
-    # `yaml_output.py` joined this set with the unconditional-YAML migration:
-    # `classify_push_diff.py` now imports `emit_yaml` at module scope, so a
+    # DERIVED, not listed. `yaml_output.py` once had to be added here BY HAND after
+    # `classify_push_diff.py` began importing `emit_yaml` at module scope -- a
     # synthetic repo without it fails at import and never reaches classification.
-    for name in (
-        "classify_push_diff.py",
-        "classify_push_diff_lib.py",
-        "prepush_quality_receipt.py",
-        "yaml_output.py",
+    # A literal list restates the import graph and goes stale on the next such
+    # import; deriving it removes the restatement rather than repairing it again.
+    for name in script_import_closure(
+        "classify_push_diff.py", "prepush_quality_receipt.py"
     ):
         files[f"scripts/{name}"] = (ROOT / "scripts" / name).read_text(encoding="utf-8")
 

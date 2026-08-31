@@ -13,6 +13,7 @@ import yaml
 from runtime_bootstrap import import_repo_module
 from tests.quality_gates.repo_shapes import install_committed_repo
 from tests.quality_gates.seeding_support import write_retro_adapter
+from tests.script_closure import script_import_closure
 
 ROOT = Path(__file__).resolve().parents[2]
 _persist_retro_artifact = import_repo_module(
@@ -287,14 +288,13 @@ def test_persist_then_repo_checker_accepts_the_repo_producer_index(
     write_retro_adapter(repo)
     (repo / "packaging").mkdir(parents=True)
     (repo / "packaging" / "charness.json").write_text('{"package_id": "charness"}\n', encoding="utf-8")
-    for name in (
-        "runtime_bootstrap.py",
-        "yaml_output.py",
-        "adapter_lib.py",
-        "helper_provenance_lib.py",
-        "lesson_command_citation.py",
-        "recent_lessons_lib.py",
-        "build_retro_lesson_selection_index.py",
+    # DERIVED, not listed. The literal tuple this replaces was a restatement of
+    # the import graph with nothing binding it to the graph, and it went stale
+    # the moment `helper_provenance_lib` gained an import. `adapter_lib` is a
+    # second ENTRY point rather than a closure member: the target checkout reads
+    # its retro adapter through it, which no import from the builder reaches.
+    for name in script_import_closure(
+        "build_retro_lesson_selection_index.py", "adapter_lib.py"
     ):
         target = repo / "scripts" / name
         target.parent.mkdir(parents=True, exist_ok=True)
