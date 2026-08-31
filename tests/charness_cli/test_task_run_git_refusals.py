@@ -102,18 +102,11 @@ def test_branch_validation_refuses_syntactically_invalid_names(tmp_path: Path) -
         task_run_git._validate_branch(repo, "bad..branch")
 
 
-def test_branch_validation_preserves_git_refusal_detail(tmp_path: Path, monkeypatch) -> None:
+def test_branch_validation_refuses_git_illegal_spellings_locally(tmp_path: Path) -> None:
     repo = _repo(tmp_path)
-    monkeypatch.setattr(
-        task_run_git,
-        "_git",
-        lambda *_args: subprocess.CompletedProcess(
-            ["git"], 1, stdout="", stderr="git rejected branch\n"
-        ),
-    )
-
-    with pytest.raises(task_run.TaskRunError, match="git rejected branch"):
-        task_run_git._validate_branch(repo, "valid-ish//branch")
+    for branch in ("valid-ish//branch", "topic.lock", "foo.lock/bar"):
+        with pytest.raises(task_run.TaskRunError, match="not a valid named branch"):
+            task_run_git._validate_branch(repo, branch)
 
 
 def test_worktree_validation_refuses_inside_and_existing_paths(tmp_path: Path) -> None:

@@ -75,10 +75,44 @@ def _resolved_git_output_path(
     return resolved if not require_directory or resolved.is_dir() else None
 
 
+def _hooks_path_from_layout(repo_root: Path, layout) -> Path:
+    for config in (layout.git_dir / "config", layout.common_dir / "config"):
+        try:
+            text = config.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        for line in text.splitlines():
+            stripped = line.strip()
+            if not stripped.lower().startswith("hookspath"):
+                continue
+            _, _, value = stripped.partition("=")
+            value = value.strip().strip('"')
+            if not value:
+                continue
+            path = Path(value)
+            if not path.is_absolute():
+                path = repo_root / path
+            try:
+                return path.resolve()
+            except OSError:
+                return path
+    return layout.common_dir / "hooks"
+
+
 def git_checkout_facts(
     repo_root: Path, *, include_hooks_path: bool = True
 ) -> GitCheckoutFacts:
     """Read one checkout snapshot, optionally omitting the hooks target."""
+    from scripts.git_checkout import is_bare_repository, layout_from_files
+
+    layout = layout_from_files(repo_root)
+    if layout is not None:
+        return GitCheckoutFacts(
+            layout.common_dir,
+            layout.git_dir,
+            is_bare_repository(repo_root),
+            _hooks_path_from_layout(repo_root, layout) if include_hooks_path else None,
+        )
     rev_parse_args = [
         "rev-parse",
         "--git-common-dir",

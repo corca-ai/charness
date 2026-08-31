@@ -77,6 +77,10 @@ def _substrate_mode(changed_ref: str | None, substrate_mode: str | None) -> str:
 
 
 def _git_bytes(repo_root: Path, *args: str) -> bytes:
+    if args == ("rev-parse", "HEAD"):
+        oid = _checkout.head_oid_from_files(repo_root)
+        if oid:
+            return oid.encode("ascii") + b"\n"
     result = subprocess.run(["git", *args], cwd=repo_root, check=False, capture_output=True)
     if result.returncode != 0:
         raise ValueError(
@@ -86,6 +90,10 @@ def _git_bytes(repo_root: Path, *args: str) -> bytes:
 
 
 def _git_bytes_optional(repo_root: Path, *args: str) -> bytes | None:
+    if args == ("rev-parse", "HEAD"):
+        oid = _checkout.head_oid_from_files(repo_root)
+        if oid:
+            return oid.encode("ascii") + b"\n"
     result = subprocess.run(["git", *args], cwd=repo_root, check=False, capture_output=True)
     return result.stdout if result.returncode == 0 else None
 
@@ -141,6 +149,7 @@ def _load_sibling(module_stem: str):
     return importlib.import_module(canonical)
 
 
+_checkout = _load_sibling("git_checkout")
 _path_selection = _load_sibling("reviewed_input_path_selection")
 _changed_path_owner = _path_selection.changed_path_owner
 _auto_paths = _path_selection.auto_paths

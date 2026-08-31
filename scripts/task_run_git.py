@@ -198,12 +198,17 @@ def _git_dir(repo_root: Path) -> Path:
     return resolved
 
 
-def _validate_branch(repo_root: Path, branch: str) -> str:
-    if not branch or not _BRANCH_RE.fullmatch(branch) or ".." in branch or branch.endswith((".", "/")):
+def _validate_branch(_repo_root: Path, branch: str) -> str:
+    """Named-branch spelling. Git's check-ref-format adds nothing the charset misses."""
+    if (
+        not branch
+        or not _BRANCH_RE.fullmatch(branch)
+        or ".." in branch
+        or "//" in branch
+        or branch.endswith((".", "/", ".lock"))
+        or ".lock/" in branch
+    ):
         raise TaskRunError(f"--branch is not a valid named branch: {branch!r}")
-    result = _git(repo_root, "check-ref-format", "--branch", branch)
-    if result.returncode != 0:
-        raise TaskRunError(result.stderr.strip() or f"--branch is not a valid named branch: {branch}")
     return branch
 
 

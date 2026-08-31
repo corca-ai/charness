@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from scripts import lesson_score_outcome_lib as outcome_lib
+from scripts.git_checkout import head_oid_from_files
 from scripts.recent_lessons_lib import build_lesson_selection_index
 
 LEDGER_FILENAME = "lesson-ledger.json"
@@ -142,17 +143,26 @@ def candidate_sources(
     }
 
 
+_COMMITTED_LEDGER_CACHE: dict[tuple[str, str, str], tuple[list[Any], list[Any], int, list[Any]] | None] = {}
+
+
 def _committed_state(
     repo_root: Path, path: Path
 ) -> tuple[list[Any], list[Any], int, list[Any]] | None:
+    relative = path.relative_to(repo_root).as_posix()
+    head = head_oid_from_files(repo_root) or ""
+    cache_key = (str(repo_root.resolve()), relative, head)
+    if cache_key in _COMMITTED_LEDGER_CACHE:
+        return _COMMITTED_LEDGER_CACHE[cache_key]
     result = subprocess.run(
-        ["git", "show", f"HEAD:{path.relative_to(repo_root)}"],
+        ["git", "show", f"HEAD:{relative}"],
         cwd=repo_root,
         text=True,
         capture_output=True,
         check=False,
     )
     if result.returncode:
+        _COMMITTED_LEDGER_CACHE[cache_key] = None
         return None
     try:
         previous = json.loads(result.stdout)
@@ -186,24 +196,28 @@ def _committed_state(
             set(previous) == V8_TOP_LEVEL_KEYS
             and isinstance(previous.get("score_events"), list)
         ):
-            return (
+            payload = (
                 previous["transitions"],
                 previous["score_events"],
                 ACTIVE_LESSON_BUDGET,
                 [],
             )
+            _COMMITTED_LEDGER_CACHE[cache_key] = payload
+            return payload
         _fail("committed ledger is missing a required append-only list")
     if (
         isinstance(previous.get("score_events"), list)
         and isinstance(previous.get("lifecycle_events"), list)
         and type(previous.get("active_lesson_budget")) is int
     ):
-        return (
+        payload = (
             previous["transitions"],
             previous["score_events"],
             previous["active_lesson_budget"],
             previous["lifecycle_events"],
         )
+        _COMMITTED_LEDGER_CACHE[cache_key] = payload
+        return payload
     _fail("committed ledger is missing a required append-only list or its budget")
 
 

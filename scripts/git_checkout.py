@@ -70,6 +70,14 @@ def local_checkout(repo_root: Path) -> bool:
     return not discovery_redirected() and git_dir_at(repo_root) is not None
 
 
+def is_bare_repository(repo_root: Path) -> bool:
+    try:
+        root = repo_root.expanduser().resolve()
+    except OSError:
+        return False
+    return _is_bare(root)
+
+
 def head_oid_from_files(repo_root: Path) -> str | None:
     """HEAD object id from Git files when discovery is local."""
     if discovery_redirected(names=FILE_HEAD_ENV):
@@ -144,6 +152,12 @@ def layout_from_files(repo_root: Path) -> CheckoutLayout | None:
         return None
     git_dir = git_dir_at(repo_root)
     if git_dir is None:
+        try:
+            root = repo_root.expanduser().resolve()
+        except OSError:
+            return None
+        if _is_bare(root):
+            return CheckoutLayout(root, root)
         return None
     try:
         git_dir = git_dir.resolve()

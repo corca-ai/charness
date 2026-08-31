@@ -41,6 +41,14 @@ def _sha256(content: bytes) -> str:
 def recovery_state_dir(repo_root: Path) -> Path:
     """Keep recovery bytes in git metadata when possible, never in a commit."""
     try:
+        from scripts.git_checkout import layout_from_files
+    except ModuleNotFoundError:
+        from git_checkout import layout_from_files
+
+    layout = layout_from_files(repo_root)
+    if layout is not None:
+        return layout.git_dir / "charness-mutation-recovery"
+    try:
         completed = subprocess.run(
             ["git", "rev-parse", "--git-dir"],
             cwd=repo_root,
