@@ -9,6 +9,8 @@ from types import ModuleType
 import pytest
 import yaml
 
+from tests.quality_gates.git_fixture_support import init_git_repo
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -31,7 +33,7 @@ def _git(repo: Path, *args: str) -> None:
 
 def _init_git_repo_with_commit(repo: Path) -> None:
     repo.mkdir(parents=True, exist_ok=True)
-    _git(repo, "init", "-q")
+    init_git_repo(repo)
     (repo / "tracked.py").write_text("x = 1\n", encoding="utf-8")
     _git(repo, "add", "-A")
     _git(repo, "commit", "-q", "-m", "snapshot")

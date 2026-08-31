@@ -5,6 +5,7 @@ import re
 import subprocess
 from pathlib import Path
 
+from .git_fixture_support import init_git_repo
 from .seeding_support import load_module
 
 RUNTIME_PATH = (
@@ -24,7 +25,7 @@ def _load_runtime():
 def _seed_repo(tmp_path: Path) -> Path:
     repo = tmp_path / "repo"
     repo.mkdir()
-    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
+    init_git_repo(repo)
     return repo
 
 

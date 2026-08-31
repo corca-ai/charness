@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 from scripts import reviewed_input_identity, surfaces_lib
+from tests.quality_gates.git_fixture_support import init_git_repo
 
 
 def _git(repo: Path, *args: str) -> None:
@@ -28,7 +29,7 @@ def _git(repo: Path, *args: str) -> None:
 
 def _seed_repo(repo: Path) -> None:
     repo.mkdir(parents=True, exist_ok=True)
-    _git(repo, "init", "-q")
+    init_git_repo(repo)
     (repo / "base.txt").write_text("base\n", encoding="utf-8")
     _git(repo, "add", "base.txt")
     _git(repo, "commit", "-q", "-m", "base")
