@@ -19,8 +19,13 @@ from __future__ import annotations
 
 import argparse
 import importlib
+import importlib.machinery
+import importlib.util
+from pathlib import Path
 
 import pytest
+
+ROOT = Path(__file__).resolve().parents[2]
 
 env_bypass = importlib.import_module("scripts.env_bypass")
 csr = importlib.import_module("scripts.check_staged_reversion")
@@ -88,6 +93,35 @@ def test_partial_stage_env_bypass_routes_through_the_shared_helper(monkeypatch) 
 
     monkeypatch.setenv(cswc.ALLOW_ENV, " on ")
     assert cswc.allow_partial_stage() is True
+
+
+def test_the_standalone_cli_copy_agrees_with_the_owner_on_every_spelling(monkeypatch) -> None:
+    """The one copy that CANNOT import the owner is bound to it by this test.
+
+    The root `charness` CLI is the installed standalone entry point: its
+    source-root probe returns None when no charness tree is present, so
+    `scripts.env_bypass` is not importable in the case that entry point exists to
+    serve. Its `bool_env` is therefore a deliberate fifth copy of the table.
+
+    A comment saying "keep these in sync" is the restatement pattern this whole
+    slice exists to remove. This drives BOTH implementations over the same
+    spellings instead, so the copies cannot drift silently -- the shape the repo
+    already uses where a portable script cannot import across its boundary.
+    """
+    loader = importlib.machinery.SourceFileLoader(
+        "charness_cli_under_env_bypass_test", str(ROOT / "charness")
+    )
+    spec = importlib.util.spec_from_loader("charness_cli_under_env_bypass_test", loader)
+    assert spec is not None and spec.loader is not None
+    cli = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(cli)
+
+    for value in OFF_SPELLINGS + ON_SPELLINGS:
+        monkeypatch.setenv(_ENV, value)
+        assert cli.bool_env(_ENV) is env_bypass.env_bypass_enabled(_ENV), repr(value)
+
+    monkeypatch.delenv(_ENV, raising=False)
+    assert cli.bool_env(_ENV) is env_bypass.env_bypass_enabled(_ENV) is False
 
 
 def test_the_cli_flag_still_bypasses_without_any_env_value(monkeypatch) -> None:

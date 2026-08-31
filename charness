@@ -426,6 +426,16 @@ def compare_semver_like(left: object, right: object) -> int | None:
 
 
 def bool_env(name: str) -> bool:
+    # The FIFTH copy of the table owned by `scripts/env_bypass.py`, and the one
+    # copy that cannot import its owner. This file is the installed standalone
+    # CLI: `source_root` above returns None when no charness source tree is
+    # present, so `scripts` is not importable here in the case this entry point
+    # exists to serve. The duplication is deliberate and load-bearing.
+    #
+    # It is still the same contract, so it keeps the same allowlist: bare
+    # truthiness would make `CHARNESS_NO_UPDATE_CHECK=0` -- the spelling an
+    # operator uses to keep the check ON -- switch it off. If the table in
+    # `scripts/env_bypass.py` ever changes, change it here too.
     return os.environ.get(name, "").strip().lower() in {"1", "true", "yes", "on"}
 
 

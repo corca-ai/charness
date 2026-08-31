@@ -32,7 +32,17 @@ from pathlib import Path
 from types import ModuleType
 from typing import Iterable
 
-from scripts.env_bypass import env_bypass_enabled
+# Dual-path, like every other consumer of this helper. A bare
+# `from scripts.env_bypass import ...` turned a module whose imports were
+# stdlib-only into one that requires `scripts` to be importable AS A PACKAGE.
+# This module is mirrored into the exported plugin tree and is also imported
+# FLAT by callers that put `scripts/` itself on `sys.path`
+# (`tests/test_degradation_branch_coverage.py` does exactly that, and survived
+# only because pytest independently puts the repo root on `sys.path` too).
+try:
+    from scripts.env_bypass import env_bypass_enabled
+except ModuleNotFoundError:
+    from env_bypass import env_bypass_enabled
 
 OVERRIDE_ENV = "CHARNESS_ALLOW_FOREIGN_HELPER"
 SOURCE_TREE_MARKER = Path("packaging") / "charness.json"
