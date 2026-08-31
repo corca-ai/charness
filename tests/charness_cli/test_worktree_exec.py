@@ -114,14 +114,7 @@ def test_exec_preflight_reads_one_topology_snapshot(
     with pytest.raises(lib.WorktreeExecError, match="primary worktree"):
         lib.run_exec(repo, ["/bin/true"])
 
-    assert calls == [
-        (
-            "rev-parse",
-            "--git-common-dir",
-            "--git-dir",
-            "--is-bare-repository",
-        )
-    ]
+    assert calls == []
 
 
 def test_cli_exec_in_linked_worktree_keeps_python_outputs_external(tmp_path: Path) -> None:

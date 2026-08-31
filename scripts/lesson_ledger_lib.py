@@ -150,9 +150,9 @@ def _committed_state(
     repo_root: Path, path: Path
 ) -> tuple[list[Any], list[Any], int, list[Any]] | None:
     relative = path.relative_to(repo_root).as_posix()
-    head = head_oid_from_files(repo_root) or ""
-    cache_key = (str(repo_root.resolve()), relative, head)
-    if cache_key in _COMMITTED_LEDGER_CACHE:
+    head = head_oid_from_files(repo_root)
+    cache_key = (str(repo_root.resolve()), relative, head) if head else None
+    if cache_key is not None and cache_key in _COMMITTED_LEDGER_CACHE:
         return _COMMITTED_LEDGER_CACHE[cache_key]
     result = subprocess.run(
         ["git", "show", f"HEAD:{relative}"],
@@ -162,7 +162,6 @@ def _committed_state(
         check=False,
     )
     if result.returncode:
-        _COMMITTED_LEDGER_CACHE[cache_key] = None
         return None
     try:
         previous = json.loads(result.stdout)
@@ -202,7 +201,8 @@ def _committed_state(
                 ACTIVE_LESSON_BUDGET,
                 [],
             )
-            _COMMITTED_LEDGER_CACHE[cache_key] = payload
+            if cache_key is not None:
+                _COMMITTED_LEDGER_CACHE[cache_key] = payload
             return payload
         _fail("committed ledger is missing a required append-only list")
     if (
@@ -216,7 +216,8 @@ def _committed_state(
             previous["active_lesson_budget"],
             previous["lifecycle_events"],
         )
-        _COMMITTED_LEDGER_CACHE[cache_key] = payload
+        if cache_key is not None:
+            _COMMITTED_LEDGER_CACHE[cache_key] = payload
         return payload
     _fail("committed ledger is missing a required append-only list or its budget")
 
