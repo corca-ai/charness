@@ -39,17 +39,6 @@ def write_json(path: Path, payload: object, *, indent: int | None = 2) -> Path:
     return write_text(path, json.dumps(payload, indent=indent) + "\n")
 
 
-def append_text(path: Path, contents: str) -> Path:
-    """Append UTF-8 fixture text while retaining the file's existing contents."""
-    return write_text(path, path.read_text(encoding="utf-8") + contents)
-
-
-def write_files(root: Path, files: Mapping[str, str]) -> None:
-    """Write a small named fixture set relative to ``root``."""
-    for relative, contents in files.items():
-        write_text(root / relative, contents)
-
-
 def write_skill(
     repo: Path,
     body: Sequence[str],
@@ -161,13 +150,6 @@ def write_retro_adapter(repo: Path, *, include_summary_path: bool = True) -> Pat
         lines.append("summary_path: charness-artifacts/retro/recent-lessons.md")
     lines.extend(["evidence_paths: []", "metrics_commands: []"])
     return write_text(repo / ".agents" / "retro-adapter.yaml", "\n".join(lines) + "\n")
-
-
-def write_release_surfaces(repo: Path) -> Path:
-    """Write the operator-docs surface used by release fixture repositories."""
-    return write_surface(
-        repo, "operator-docs", "Operator docs.", ["README.md"]
-    )
 
 
 def write_executable(path: Path, contents: str) -> Path:

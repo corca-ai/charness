@@ -56,11 +56,6 @@ def _verify(repo: Path, *args: str) -> tuple[int, dict]:
     return result.returncode, yaml.safe_load(result.stdout)
 
 
-def _verify_default(repo: Path, *args: str) -> tuple[int, dict]:
-    result = run_script(SCRIPT, "verify", "--repo-root", str(repo), *args)
-    return result.returncode, yaml.safe_load(result.stdout)
-
-
 def _drift_paths(payload: dict) -> set[tuple[str, str | None]]:
     return {(d["kind"], d["path"]) for d in payload["drift"]}
 

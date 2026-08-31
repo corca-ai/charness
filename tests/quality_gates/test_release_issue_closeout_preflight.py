@@ -124,24 +124,6 @@ def _run_close_issue_publish(
     )
 
 
-def _close_issue_publish_context(
-    tmp_path: Path,
-) -> tuple[Path, dict[str, str], str]:
-    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
-    initial_head = subprocess.run(
-        ["git", "rev-parse", "HEAD"],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout.strip()
-    env = _publish_env(tmp_path, bin_dir)
-    issue_state = tmp_path / "issue-state.json"
-    issue_state.write_text(json.dumps({"44": "OPEN"}) + "\n", encoding="utf-8")
-    env["FAKE_GH_ISSUE_STATE"] = str(issue_state)
-    return repo, env, initial_head
-
-
 def test_release_generated_final_message_passes_issue_owned_direct_commit_draft_validation(tmp_path: Path) -> None:
     release_closeout = _load_release_closeout_module()
     validate_closeout_draft = _load_issue_validate_closeout_draft()

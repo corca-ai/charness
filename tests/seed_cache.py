@@ -158,11 +158,6 @@ def _marker_time(marker: Path, *, fallback: Path) -> float:
         return 0.0
 
 
-def _touch_used(entry: Path) -> None:
-    """Mark a source-hash entry directory as used."""
-    _touch_marker(entry / ".used")
-
-
 def _last_used(entry: Path) -> float:
     return _marker_time(entry / ".used", fallback=entry)
 
