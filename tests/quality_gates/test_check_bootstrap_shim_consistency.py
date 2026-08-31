@@ -28,130 +28,87 @@ def _seed_repo(tmp_path: Path, *, drifted: bool) -> Path:
     return repo
 
 
-def test_reports_drifted_copy_and_exits_nonzero(tmp_path: Path) -> None:
-    repo = _seed_repo(tmp_path, drifted=True)
-    result = run_script(SCRIPT, "--repo-root", str(repo))
-    assert result.returncode == 1
-    payload = yaml.safe_load(result.stdout)
-    assert payload["status"] == "drift"
-    assert payload["checked_files"] == 2
-    assert payload["drifted"] == ["skills/public/demo/scripts/second_helper.py"]
+def _payload(result):
+    return yaml.safe_load(result.stdout)
 
 
-def test_clean_tree_exits_zero(tmp_path: Path) -> None:
+def test_shim_scan_and_fix_shapes_on_one_tree(tmp_path: Path) -> None:
     repo = _seed_repo(tmp_path, drifted=False)
-    result = run_script(SCRIPT, "--repo-root", str(repo))
-    assert result.returncode == 0
-    payload = yaml.safe_load(result.stdout)
-    # `ok` alone is not the claim: the count is what says two copies were actually
-    # compared, and `empty-scope` is the state a zero-comparison run reports instead.
-    assert payload["status"] == "ok"
-    assert payload["checked_files"] == 2
+    target = repo / "skills" / "public" / "demo" / "scripts" / "second_helper.py"
+    scripts = repo / "scripts"
+    scripts.mkdir(parents=True)
 
+    clean = run_script(SCRIPT, "--repo-root", str(repo))
+    assert clean.returncode == 0
+    clean_payload = _payload(clean)
+    assert clean_payload["status"] == "ok"
+    assert clean_payload["checked_files"] == 2
 
-def test_fix_rewrites_to_canonical_and_round_trips(tmp_path: Path) -> None:
-    repo = _seed_repo(tmp_path, drifted=True)
-    fix_result = run_script(SCRIPT, "--repo-root", str(repo), "--fix")
-    assert fix_result.returncode == 0
-    payload = yaml.safe_load(fix_result.stdout)
-    assert payload["fixed"] == ["skills/public/demo/scripts/second_helper.py"]
-    rewritten = (repo / "skills/public/demo/scripts/second_helper.py").read_text(encoding="utf-8")
-    assert shim_gate.CANONICAL_SHIM in rewritten
-    recheck = run_script(SCRIPT, "--repo-root", str(repo))
-    assert recheck.returncode == 0
+    (scripts / "module_loader.py").write_text(
+        "def _load_skill_runtime_bootstrap_module():\n    return None\n",
+        encoding="utf-8",
+    )
+    (scripts / "broken_helper.py").write_text(
+        "def _load_skill_runtime_bootstrap(:\n    pass\n", encoding="utf-8"
+    )
+    ignored = run_script(SCRIPT, "--repo-root", str(repo))
+    assert ignored.returncode == 0
+    assert _payload(ignored)["checked_files"] == 2
 
-
-def test_nested_drifted_copy_is_reported_not_rewritten(tmp_path: Path) -> None:
-    repo = _seed_repo(tmp_path, drifted=False)
-    nested = repo / "scripts" / "nested_holder.py"
-    nested.parent.mkdir(parents=True)
+    nested = scripts / "nested_holder.py"
     nested.write_text(
         HEADER + "def outer():\n" + textwrap.indent(DRIFTED_SHIM, "    "),
         encoding="utf-8",
     )
-    fix_result = run_script(SCRIPT, "--repo-root", str(repo), "--fix")
-    assert fix_result.returncode == 1
-    payload = yaml.safe_load(fix_result.stdout)
-    assert payload["unfixable"] == ["scripts/nested_holder.py"]
+    nested_fix = run_script(SCRIPT, "--repo-root", str(repo), "--fix")
+    assert nested_fix.returncode == 1
+    assert _payload(nested_fix)["unfixable"] == ["scripts/nested_holder.py"]
     assert textwrap.indent(DRIFTED_SHIM, "    ").rstrip() in nested.read_text(encoding="utf-8")
+    nested.unlink()
 
-
-def test_fix_is_safe_with_form_feed_before_the_shim(tmp_path: Path) -> None:
-    repo = _seed_repo(tmp_path, drifted=False)
-    target = repo / "skills" / "public" / "demo" / "scripts" / "second_helper.py"
     target.write_text(
         HEADER + 'PAGE_BREAK = "before\x0cafter"\nKEEP_ME = 1\n\n' + DRIFTED_SHIM,
         encoding="utf-8",
     )
-    # splitlines-based splicing would treat the \x0c as a line break, shift
-    # the window, and delete real statements while reporting success.
-    fix_result = run_script(SCRIPT, "--repo-root", str(repo), "--fix")
-    assert fix_result.returncode == 0
+    form_feed = run_script(SCRIPT, "--repo-root", str(repo), "--fix")
+    assert form_feed.returncode == 0
     rewritten = target.read_text(encoding="utf-8")
     assert "KEEP_ME = 1" in rewritten
     assert shim_gate.CANONICAL_SHIM in rewritten
-    recheck = run_script(SCRIPT, "--repo-root", str(repo))
-    assert recheck.returncode == 0
+    assert run_script(SCRIPT, "--repo-root", str(repo)).returncode == 0
 
-
-def test_fix_rewrites_two_module_level_shims_in_one_file(tmp_path: Path) -> None:
-    repo = _seed_repo(tmp_path, drifted=False)
-    target = repo / "skills" / "public" / "demo" / "scripts" / "second_helper.py"
     target.write_text(HEADER + DRIFTED_SHIM + "\n\n" + DRIFTED_SHIM, encoding="utf-8")
-    fix_result = run_script(SCRIPT, "--repo-root", str(repo), "--fix")
-    assert fix_result.returncode == 0
-    rewritten = target.read_text(encoding="utf-8")
-    assert rewritten.count(shim_gate.CANONICAL_SHIM) == 2
+    doubled = run_script(SCRIPT, "--repo-root", str(repo), "--fix")
+    assert doubled.returncode == 0
+    assert target.read_text(encoding="utf-8").count(shim_gate.CANONICAL_SHIM) == 2
 
-
-def test_failure_message_names_the_deliberate_evolution_path(tmp_path: Path) -> None:
-    repo = _seed_repo(tmp_path, drifted=True)
-    result = run_script(SCRIPT, "--repo-root", str(repo))
-    assert result.returncode == 1
-    # The remedy used to be a stderr line; output is unconditionally YAML now, so a
-    # drift verdict has to carry the deliberate-evolution path in the payload itself.
-    remedies = yaml.safe_load(result.stdout)["remedies"]
-    assert any("CANONICAL_SHIM" in remedy for remedy in remedies), remedies
-
-
-def test_name_prefix_collision_is_not_scanned(tmp_path: Path) -> None:
-    repo = _seed_repo(tmp_path, drifted=False)
-    holder = repo / "scripts" / "module_loader.py"
-    holder.parent.mkdir(parents=True, exist_ok=True)
-    holder.write_text(
-        "def _load_skill_runtime_bootstrap_module():\n    return None\n",
-        encoding="utf-8",
-    )
-    result = run_script(SCRIPT, "--repo-root", str(repo))
-    assert result.returncode == 0
-    assert yaml.safe_load(result.stdout)["checked_files"] == 2
-
-
-def test_syntax_error_file_is_not_scanned_and_does_not_crash(tmp_path: Path) -> None:
-    repo = _seed_repo(tmp_path, drifted=False)
-    bad = repo / "scripts" / "broken_helper.py"
-    bad.parent.mkdir(parents=True, exist_ok=True)
-    bad.write_text("def _load_skill_runtime_bootstrap(:\n    pass\n", encoding="utf-8")
-    result = run_script(SCRIPT, "--repo-root", str(repo))
-    assert result.returncode == 0
-    assert yaml.safe_load(result.stdout)["checked_files"] == 2
-
-
-def test_fix_with_residual_nested_drift_reports_unfixable_not_fixed(tmp_path: Path) -> None:
-    repo = _seed_repo(tmp_path, drifted=False)
-    target = repo / "scripts" / "mixed_holder.py"
-    target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(
+    mixed = scripts / "mixed_holder.py"
+    mixed.write_text(
         HEADER + DRIFTED_SHIM + "\n\ndef outer():\n" + textwrap.indent(DRIFTED_SHIM, "    "),
         encoding="utf-8",
     )
-    fix_result = run_script(SCRIPT, "--repo-root", str(repo), "--fix")
-    assert fix_result.returncode == 1
-    payload = yaml.safe_load(fix_result.stdout)
-    assert payload["unfixable"] == ["scripts/mixed_holder.py"]
-    assert payload["fixed"] == []
-    rewritten = target.read_text(encoding="utf-8")
-    assert shim_gate.CANONICAL_SHIM in rewritten
+    mixed_fix = run_script(SCRIPT, "--repo-root", str(repo), "--fix")
+    assert mixed_fix.returncode == 1
+    mixed_payload = _payload(mixed_fix)
+    assert mixed_payload["unfixable"] == ["scripts/mixed_holder.py"]
+    assert mixed_payload["fixed"] == []
+    assert shim_gate.CANONICAL_SHIM in mixed.read_text(encoding="utf-8")
+    mixed.unlink()
+
+    target.write_text(HEADER + DRIFTED_SHIM, encoding="utf-8")
+    drifted = run_script(SCRIPT, "--repo-root", str(repo))
+    assert drifted.returncode == 1
+    drifted_payload = _payload(drifted)
+    assert drifted_payload["status"] == "drift"
+    assert drifted_payload["checked_files"] == 2
+    assert drifted_payload["drifted"] == ["skills/public/demo/scripts/second_helper.py"]
+    assert any("CANONICAL_SHIM" in remedy for remedy in drifted_payload["remedies"])
+
+    repaired = run_script(SCRIPT, "--repo-root", str(repo), "--fix")
+    assert repaired.returncode == 0
+    assert _payload(repaired)["fixed"] == ["skills/public/demo/scripts/second_helper.py"]
+    assert shim_gate.CANONICAL_SHIM in target.read_text(encoding="utf-8")
+    assert run_script(SCRIPT, "--repo-root", str(repo)).returncode == 0
 
 
 def test_normalized_setup_helper_still_bootstraps() -> None:
@@ -213,13 +170,8 @@ def test_fix_refuses_a_file_whose_module_never_imports_runpy(tmp_path: Path) -> 
     assert "runpy" in reason
 
 
-def test_required_names_are_derived_from_the_canonical_shim() -> None:
-    """A hand-kept list would go stale the moment CANONICAL_SHIM is edited."""
+def test_shim_dependency_contracts_without_a_tree() -> None:
     assert shim_gate._shim_required_names() == {"Path", "SimpleNamespace", "runpy"}
-
-
-def test_conditional_and_aliased_imports_count_as_bound(tmp_path: Path) -> None:
-    """The repo's real import shapes must not read as missing dependencies."""
     source = textwrap.dedent(
         """
         from types import SimpleNamespace
@@ -233,7 +185,6 @@ def test_conditional_and_aliased_imports_count_as_bound(tmp_path: Path) -> None:
         """
     )
     assert shim_gate.missing_shim_dependencies(source) == []
-
     nested = textwrap.dedent(
         """
         from pathlib import Path
@@ -243,5 +194,4 @@ def test_conditional_and_aliased_imports_count_as_bound(tmp_path: Path) -> None:
             import runpy
         """
     )
-    # An import inside another function is invisible to the module-level shim.
     assert shim_gate.missing_shim_dependencies(nested) == ["runpy"]

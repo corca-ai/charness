@@ -503,26 +503,24 @@ def test_status_snapshot_refuses_unexpected_rename_records(
         cswc._status_paths(tmp_path)
 
 
-@pytest.mark.parametrize(
-    "stdout",
-    [
+def test_status_snapshot_never_turns_malformed_records_into_clean(
+    tmp_path: Path, monkeypatch
+) -> None:
+    for stdout in (
         b"1 .. x x x x x x f.txt\0",
         b"1 Z. x x x x x x f.txt\0",
         b"? stray.txt\0",
         b"! ignored.txt\0",
-    ],
-)
-def test_status_snapshot_never_turns_malformed_records_into_clean(
-    tmp_path: Path, monkeypatch, stdout: bytes
-) -> None:
-    monkeypatch.setattr(
-        cswc.subprocess,
-        "run",
-        lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0, stdout, b""),
-    )
-
-    with pytest.raises(RuntimeError):
-        cswc._status_paths(tmp_path)
+    ):
+        monkeypatch.setattr(
+            cswc.subprocess,
+            "run",
+            lambda *_args, captured=stdout, **_kwargs: subprocess.CompletedProcess(
+                [], 0, captured, b""
+            ),
+        )
+        with pytest.raises(RuntimeError):
+            cswc._status_paths(tmp_path)
 
 
 def test_a_non_utf8_filename_does_not_take_the_gate_down(tmp_path: Path, monkeypatch) -> None:

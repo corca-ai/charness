@@ -46,32 +46,28 @@ def _write_extra_guard(repo: Path) -> None:
     )
 
 
-def test_setup_inspect_uses_bounded_default_source_guard_roots(tmp_path: Path) -> None:
+def test_setup_inspect_source_guard_roots_on_one_tree(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     _seed_repo(repo, ["version: 1", "repo: repo", "prose_wrap_policy: semantic"])
     _write_extra_guard(repo)
 
-    payload = _run_inspect(repo)
+    default = _run_inspect(repo)
+    assert default["prose_wrap"]["source_guard_count"] == 1
+    assert default["prose_wrap"]["source_guards"][0]["spec_path"] == "docs/spec.md"
 
-    assert payload["prose_wrap"]["source_guard_count"] == 1
-    assert payload["prose_wrap"]["source_guards"][0]["spec_path"] == "docs/spec.md"
-
-
-def test_setup_inspect_adapter_can_override_source_guard_roots(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    _seed_repo(
-        repo,
-        [
-            "version: 1",
-            "repo: repo",
-            "prose_wrap_policy: semantic",
-            "source_guard_scan_roots:",
-            "  - notes",
-        ],
+    (repo / ".agents" / "setup-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: repo",
+                "prose_wrap_policy: semantic",
+                "source_guard_scan_roots:",
+                "  - notes",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
     )
-    _write_extra_guard(repo)
-
-    payload = _run_inspect(repo)
-
-    assert payload["prose_wrap"]["source_guard_count"] == 1
-    assert payload["prose_wrap"]["source_guards"][0]["spec_path"] == "notes/extra.md"
+    overridden = _run_inspect(repo)
+    assert overridden["prose_wrap"]["source_guard_count"] == 1
+    assert overridden["prose_wrap"]["source_guards"][0]["spec_path"] == "notes/extra.md"
