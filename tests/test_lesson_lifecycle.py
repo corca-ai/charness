@@ -8,6 +8,7 @@ import yaml
 
 from scripts import lesson_ledger_lib as ledger
 from scripts import record_lesson_lifecycle as lifecycle_recorder
+from tests.quality_gates.git_fixture_support import init_git_repo
 from tests.script_main import run_loaded_script_main
 from tests.test_lesson_ledger import (
     _git,
@@ -118,7 +119,7 @@ def test_lifecycle_budget_and_committed_prefix_are_enforced(tmp_path: Path) -> N
     with pytest.raises(ValueError, match="exceeds fixed budget"):
         ledger._replay_lifecycle([], replayed, budget=50, repo_root=tmp_path)
 
-    _git(tmp_path, "init")
+    init_git_repo(tmp_path)
     _git(tmp_path, "config", "user.email", "test@example.com")
     _git(tmp_path, "config", "user.name", "Test User")
     _retro(tmp_path, "source.md", "a")

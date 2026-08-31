@@ -9,6 +9,8 @@ from pathlib import Path
 
 import yaml
 
+from tests.quality_gates.git_fixture_support import init_git_repo
+
 ROOT = Path(__file__).resolve().parents[1]
 PREPARE = ROOT / "skills/public/critique/scripts/prepare_packet.py"
 RUN_REVIEW = ROOT / "skills/public/critique/scripts/run_review.py"
@@ -26,7 +28,7 @@ def _git(repo: Path, *args: str) -> None:
 
 
 def _committed_packet_repo(repo: Path) -> str:
-    _git(repo, "init", "-q")
+    init_git_repo(repo)
     (repo / "reviewed.txt").write_text("before\n", encoding="utf-8")
     (repo / ".agents").mkdir()
     (repo / ".agents/critique-adapter.yaml").write_text(
