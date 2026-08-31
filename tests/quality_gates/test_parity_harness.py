@@ -494,17 +494,17 @@ def _run_cli(monkeypatch, capsys, *args: str) -> tuple[int, str]:
 
 
 def test_a_snapshot_recording_another_head_is_discarded(tmp_path: Path) -> None:
-    snapshot_dir = tmp_path / ".charness" / "reviewer-boundary"
-    snapshot_dir.mkdir(parents=True)
-    (snapshot_dir / "snapshot.json").write_text(
-        json.dumps({"head": "0" * 40, "source_blobs": {"scripts/x.py": "abc"}}), encoding="utf-8"
-    )
-    subprocess.run(["git", "init"], cwd=tmp_path, check=True, capture_output=True)
-    (tmp_path / "seed.txt").write_text("s\n", encoding="utf-8")
-    subprocess.run(["git", "add", "-A"], cwd=tmp_path, check=True, capture_output=True)
-    subprocess.run(
-        ["git", "-c", "user.email=a@b", "-c", "user.name=a", "commit", "-m", "s"],
-        cwd=tmp_path, check=True, capture_output=True,
+    from .repo_shapes import install_committed_repo
+
+    install_committed_repo(
+        tmp_path,
+        {
+            ".charness/reviewer-boundary/snapshot.json": json.dumps(
+                {"head": "0" * 40, "source_blobs": {"scripts/x.py": "abc"}}
+            ),
+            "seed.txt": "s\n",
+        },
+        message="s",
     )
 
     assert _parity.snapshot_payload(tmp_path) == {}

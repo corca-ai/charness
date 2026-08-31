@@ -9,43 +9,29 @@ here and not run by these tests.
 """
 from __future__ import annotations
 
-import subprocess
 from pathlib import Path
 
+from .repo_shapes import install_two_commit_repo
 from .seeding_support import load_module
 from .support import ROOT
 
 MODULE = load_module("rust_changed_line_coverage", ROOT / "scripts/rust_changed_line_coverage.py")
 
 
-def _repo(tmp_path: Path) -> Path:
-    repo = tmp_path / "repo"
-    (repo / "native" / "demo" / "src").mkdir(parents=True)
-    subprocess.run(["git", "init", "-q"], cwd=repo, check=True, capture_output=True)
-    return repo
-
-
-def _commit(repo: Path, message: str) -> str:
-    subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True)
-    subprocess.run(
-        ["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-qm", message],
-        cwd=repo, check=True, capture_output=True,
-    )
-    return subprocess.run(
-        ["git", "rev-parse", "HEAD"], cwd=repo, capture_output=True, text=True, check=True
-    ).stdout.strip()
+_LIB_SEED = "fn a() {}\nfn b() {}\nfn c() {}\n"
 
 
 def test_only_added_and_modified_lines_are_judged(tmp_path: Path) -> None:
     """The diff decides the scope. A file's untouched lines are not this lane's
     business -- judging them would make every Rust change carry the whole crate."""
 
-    repo = _repo(tmp_path)
-    source = repo / "native" / "demo" / "src" / "lib.rs"
-    source.write_text("fn a() {}\nfn b() {}\nfn c() {}\n", encoding="utf-8")
-    base = _commit(repo, "seed")
-    source.write_text("fn a() {}\nfn b2() {}\nfn c() {}\nfn d() {}\n", encoding="utf-8")
-    _commit(repo, "change")
+    repo, base, _head = install_two_commit_repo(
+        tmp_path / "repo",
+        {"native/demo/src/lib.rs": _LIB_SEED},
+        {"native/demo/src/lib.rs": "fn a() {}\nfn b2() {}\nfn c() {}\nfn d() {}\n"},
+        first_message="seed",
+        second_message="change",
+    )
 
     changed = MODULE.changed_rust_lines(repo, base)
 
@@ -56,12 +42,13 @@ def test_a_pure_deletion_contributes_no_judged_lines(tmp_path: Path) -> None:
     """A hunk that only removes lines has `+N,0`. Read as one added line at N it
     would judge a line this diff did not write."""
 
-    repo = _repo(tmp_path)
-    source = repo / "native" / "demo" / "src" / "lib.rs"
-    source.write_text("fn a() {}\nfn b() {}\nfn c() {}\n", encoding="utf-8")
-    base = _commit(repo, "seed")
-    source.write_text("fn a() {}\nfn c() {}\n", encoding="utf-8")
-    _commit(repo, "delete")
+    repo, base, _head = install_two_commit_repo(
+        tmp_path / "repo",
+        {"native/demo/src/lib.rs": _LIB_SEED},
+        {"native/demo/src/lib.rs": "fn a() {}\nfn c() {}\n"},
+        first_message="seed",
+        second_message="delete",
+    )
 
     assert MODULE.changed_rust_lines(repo, base) == {}
 
@@ -110,11 +97,13 @@ def test_a_diff_that_touched_no_rust_says_empty_scope(tmp_path: Path) -> None:
     """A discovered empty set stays a cheap pass -- and says so, rather than
     reporting a clean floor over a comparison that never happened."""
 
-    repo = _repo(tmp_path)
-    (repo / "README.md").write_text("# demo\n", encoding="utf-8")
-    base = _commit(repo, "seed")
-    (repo / "README.md").write_text("# demo\n\nmore\n", encoding="utf-8")
-    _commit(repo, "docs only")
+    repo, base, _head = install_two_commit_repo(
+        tmp_path / "repo",
+        {"README.md": "# demo\n"},
+        {"README.md": "# demo\n\nmore\n"},
+        first_message="seed",
+        second_message="docs only",
+    )
 
     report = MODULE.build_report(repo, base_sha=base)
 

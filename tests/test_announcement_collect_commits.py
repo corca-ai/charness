@@ -12,7 +12,7 @@ COLLECT_COMMITS = ROOT / "skills" / "public" / "announcement" / "scripts" / "col
 
 def git(repo: Path, *args: str) -> str:
     result = subprocess.run(
-        ["git", *args],
+        ["git", "-c", "user.email=test@example.com", "-c", "user.name=Test", *args],
         cwd=repo,
         check=True,
         capture_output=True,
@@ -23,6 +23,12 @@ def git(repo: Path, *args: str) -> str:
 
 def init_repo(repo: Path) -> None:
     git(repo, "init", "-b", "main")
+
+
+def _readme_commit(dest: Path, message: str) -> Path:
+    from tests.quality_gates.repo_shapes import install_committed_repo
+
+    return install_committed_repo(dest, {"README.md": "seed\n"}, message=message)
 
 
 @pytest.mark.boundary_contract(
@@ -68,16 +74,11 @@ def run_collect(repo: Path, *args: str) -> dict[str, object]:
 
 
 def test_collect_commits_includes_body_trailers_and_closing_references(tmp_path: Path) -> None:
-    init_repo(tmp_path)
-    (tmp_path / "README.md").write_text("seed\n", encoding="utf-8")
-    git(tmp_path, "add", "README.md")
-    git(
+    _readme_commit(
         tmp_path,
-        "commit",
-        "-m",
-        "announcement sees intent",
-        "-m",
-        "Explain the human-facing value before diff archaeology.\n\nResolves #150\n\nVerification: pytest",
+        "announcement sees intent\n\n"
+        "Explain the human-facing value before diff archaeology.\n\n"
+        "Resolves #150\n\nVerification: pytest",
     )
 
     payload = run_collect(tmp_path)
@@ -101,10 +102,9 @@ def test_collect_commits_includes_body_trailers_and_closing_references(tmp_path:
 
 
 def test_collect_commits_marks_merge_commit_body(tmp_path: Path) -> None:
-    init_repo(tmp_path)
-    (tmp_path / "base.txt").write_text("base\n", encoding="utf-8")
-    git(tmp_path, "add", "base.txt")
-    git(tmp_path, "commit", "-m", "base")
+    from tests.quality_gates.repo_shapes import install_committed_repo
+
+    install_committed_repo(tmp_path, {"base.txt": "base\n"}, message="base")
     git(tmp_path, "checkout", "-b", "feature")
     (tmp_path / "feature.txt").write_text("feature\n", encoding="utf-8")
     git(tmp_path, "add", "feature.txt")
@@ -135,10 +135,7 @@ def test_collect_commits_marks_merge_commit_body(tmp_path: Path) -> None:
 
 
 def test_collect_commits_trims_long_body(tmp_path: Path) -> None:
-    init_repo(tmp_path)
-    (tmp_path / "README.md").write_text("seed\n", encoding="utf-8")
-    git(tmp_path, "add", "README.md")
-    git(tmp_path, "commit", "-m", "long body", "-m", "abcdef")
+    _readme_commit(tmp_path, "long body\n\nabcdef")
 
     payload = run_collect(tmp_path, "--body-limit", "3")
 
@@ -148,10 +145,7 @@ def test_collect_commits_trims_long_body(tmp_path: Path) -> None:
 
 
 def test_collect_commits_preserves_subject_only_shape_and_closing_reference(tmp_path: Path) -> None:
-    init_repo(tmp_path)
-    (tmp_path / "README.md").write_text("seed\n", encoding="utf-8")
-    git(tmp_path, "add", "README.md")
-    git(tmp_path, "commit", "-m", "Fixes #150")
+    _readme_commit(tmp_path, "Fixes #150")
 
     payload = run_collect(tmp_path)
 
@@ -165,10 +159,7 @@ def test_collect_commits_preserves_subject_only_shape_and_closing_reference(tmp_
 
 
 def test_collect_commits_omits_fanout_hint_by_default(tmp_path: Path) -> None:
-    init_repo(tmp_path)
-    (tmp_path / "README.md").write_text("seed\n", encoding="utf-8")
-    git(tmp_path, "add", "README.md")
-    git(tmp_path, "commit", "-m", "first")
+    _readme_commit(tmp_path, "first")
 
     payload = run_collect(tmp_path)
 
@@ -176,10 +167,7 @@ def test_collect_commits_omits_fanout_hint_by_default(tmp_path: Path) -> None:
 
 
 def test_collect_commits_fanout_hint_small_window(tmp_path: Path) -> None:
-    init_repo(tmp_path)
-    (tmp_path / "README.md").write_text("seed\n", encoding="utf-8")
-    git(tmp_path, "add", "README.md")
-    git(tmp_path, "commit", "-m", "first")
+    _readme_commit(tmp_path, "first")
 
     payload = run_collect(tmp_path, "--fanout-hint")
 
@@ -202,18 +190,11 @@ def test_collect_commits_fanout_hint_large_window(tmp_path: Path) -> None:
 
 
 def test_collect_commits_bounds_trailers_and_closing_references(tmp_path: Path) -> None:
-    init_repo(tmp_path)
-    (tmp_path / "README.md").write_text("seed\n", encoding="utf-8")
-    git(tmp_path, "add", "README.md")
     closing_lines = "\n".join(f"Resolves #{150 + index}" for index in range(25))
     trailer_lines = "\n".join(f"Token-{index}: {'x' * 500}" for index in range(25))
-    git(
+    _readme_commit(
         tmp_path,
-        "commit",
-        "-m",
-        "bounded metadata",
-        "-m",
-        f"Human value.\n\n{closing_lines}\n\n{trailer_lines}",
+        f"bounded metadata\n\nHuman value.\n\n{closing_lines}\n\n{trailer_lines}",
     )
 
     payload = run_collect(tmp_path)
