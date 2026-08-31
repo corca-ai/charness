@@ -40,6 +40,19 @@ _LITERAL_PATH_LOADERS = frozenset(
         "load_local_skill_module",
         "_load_local_release_module",
         "_load_sibling",
+        # `tests/script_loader.load_script_module` is this repo's own by-path test
+        # loader, and its call shape hides the reference from every other pattern
+        # here: the module name argument is a test-local alias
+        # (`"generate_release_notes_under_test"`), and the file argument is a
+        # `DIR / "name.py"` expression, so neither the quoted-path, dotted-module,
+        # import-statement, segment-chain, nor stem-as-argument pattern can see it.
+        # Measured consequence: `generate_release_notes.py` was reported as mapping
+        # to NO standing test while `tests/quality_gates/test_release_notes_claims.py`
+        # drove it through 27 cases, which made the release-final lane report PARTIAL
+        # -- a lane that analyzed 69 of 70 changed pool files and could not say so as
+        # a pass. This is the mapper gap `release_changed_line_coverage.py` names as
+        # the mapper's to close rather than the policy's.
+        "load_script_module",
     }
 )
 
