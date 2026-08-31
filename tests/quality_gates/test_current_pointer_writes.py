@@ -300,6 +300,42 @@ def test_the_union_stays_git_derived(tmp_path: Path, monkeypatch) -> None:
     )
 
 
+def test_the_support_union_pays_for_git_ls_files_once(tmp_path: Path, monkeypatch) -> None:
+    """The union branch used to ask the owner for TWO listings of the same tree:
+    one via `iter_matching_repo_files`, one via `iter_repo_files`. The inline
+    comment claiming the second was free was only true when a subject listing
+    happened to be bound; a fresh `RepoFileSnapshot`, explicitly threaded through
+    both calls, makes it free unconditionally. This repo root is unbound (the
+    bound subject in `tests/conftest.py` is keyed to THIS repo's own root, not a
+    `tmp_path` fixture), so a real second `git ls-files` process would show up
+    here if the sharing regressed.
+    """
+    repo = tmp_path / "repo"
+    (repo / "skills" / "support" / "scripts").mkdir(parents=True)
+    body = (
+        "from pathlib import Path\n"
+        "(Path('e') / 'latest.md').write_text('bad', encoding='utf-8')\n"
+    )
+    (repo / "skills" / "support" / "scripts" / "tracked_writer.py").write_text(body, encoding="utf-8")
+    init_git_repo(repo)
+    monkeypatch.setenv("CHARNESS_SUPPORT_DIR", str(tmp_path / "external-support"))
+
+    listing = sys.modules[SCANNER.iter_matching_repo_files.__module__]
+    real_run = listing.subprocess.run
+    calls: list[list[str]] = []
+
+    def counting_run(args, **kwargs):
+        calls.append(list(args))
+        return real_run(args, **kwargs)
+
+    monkeypatch.setattr(listing.subprocess, "run", counting_run)
+
+    SCANNER.scan_repo(repo)
+
+    ls_files_calls = [call for call in calls if call[:2] == ["git", "ls-files"]]
+    assert len(ls_files_calls) == 1, ls_files_calls
+
+
 def test_display_path_resolves_both_sides(tmp_path: Path, monkeypatch) -> None:
     """`support_dir` resolves its override; this side must resolve too.
 

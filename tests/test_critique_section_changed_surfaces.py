@@ -213,6 +213,57 @@ def test_working_tree_producer_replaces_five_git_processes_with_one_snapshot(
     assert "- removed.md  (DELETED" in capsys.readouterr().out
 
 
+def test_changed_ref_producer_replaces_two_diffs_with_one_name_status_pass(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    """`--changed-ref` used to run a `--name-only` diff for the changed paths and a
+    second `--name-only --diff-filter=D` diff for the deletions among them, over
+    the identical ref. One `--name-status` pass already carries the per-path
+    status letter both used to need a separate process to isolate -- the
+    `--changed-ref` sibling of `test_working_tree_producer_replaces_five_git_processes_with_one_snapshot`.
+    """
+    repo = _repo_with_surfaces(tmp_path)
+    (repo / "kept.md").write_text("one\n", encoding="utf-8")
+    (repo / "removed.md").write_text("doomed\n", encoding="utf-8")
+    replace_with_committed_repo(repo, message="initial")
+    (repo / "kept.md").write_text("two\n", encoding="utf-8")
+    (repo / "removed.md").unlink()
+    _run_git(repo, "add", "-A")
+    _run_git(repo, "commit", "-m", "remove one, edit one")
+
+    real_run = subprocess.run
+    calls: list[list[str]] = []
+
+    def counting_run(command, *args, **kwargs):
+        calls.append(list(command))
+        return real_run(command, *args, **kwargs)
+
+    monkeypatch.setattr(subprocess, "run", counting_run)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "render_critique_section_changed_surfaces.py",
+            "--repo-root",
+            str(repo),
+            "--changed-ref",
+            "HEAD^..HEAD",
+        ],
+    )
+
+    assert producer_module.main() == 0
+    git_calls = [call for call in calls if call and call[0] == "git"]
+    assert len(git_calls) == 1, git_calls
+    assert git_calls[0][:3] == ["git", "diff", "--name-status"]
+    lines = {
+        line.split()[1]: line
+        for line in capsys.readouterr().out.splitlines()
+        if line.startswith("- ")
+    }
+    assert "DELETED" in lines["removed.md"]
+    assert "DELETED" not in lines["kept.md"]
+
+
 def test_a_staged_deletion_that_was_recreated_is_not_marked_deleted(tmp_path: Path) -> None:
     """The marker must mean what the identity binds.
 

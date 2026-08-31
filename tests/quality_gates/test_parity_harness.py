@@ -644,6 +644,7 @@ def test_the_entrypoint_reports_a_parity_error_on_stderr(tmp_path: Path) -> None
     result = run_script(
         "scripts/parity_harness.py", "--repo-root", str(repo), "--against", "HEAD",
         "--paths", "scripts/broken.py",
+        real_process=True,
     )
 
     assert result.returncode == 1

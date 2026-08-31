@@ -232,6 +232,45 @@ def test_the_reported_consumer_shape_resolves_with_the_deleted_sub_keys_still_go
     assert not any("do not go looking" in warning for warning in resolved["warnings"])
 
 
+def test_main_reuses_one_repo_file_snapshot_for_both_populations(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """`discover_gate_scripts` and `operational_ref_sources` used to each build
+    their own unbound `RepoFileSnapshot` inside one `main()` run -- two
+    `git ls-files` processes over the identical stable tree. `main` now threads
+    one `RepoFileSnapshot` through both; this pins the count so it cannot
+    silently double again.
+    """
+    repo = _repo(tmp_path)
+    _write(repo, ".githooks/pre-commit", "#!/usr/bin/env bash\n")
+    _write(repo, "coverage.json", '{"files": {}}\n')
+    module = _load(
+        repo,
+        {
+            "min_statements_threshold": 30,
+            "fail_below_pct": 80.0,
+            "warn_ceiling_pct": 95.0,
+            "gate_script_pattern": ".githooks/pre-commit",
+        },
+        replace=True,
+    )
+
+    import scripts.repo_file_listing as listing
+
+    real_run = listing.subprocess.run
+    calls: list[list[str]] = []
+
+    def counting_run(args, **kwargs):
+        calls.append(list(args))
+        return real_run(args, **kwargs)
+
+    monkeypatch.setattr(listing.subprocess, "run", counting_run)
+
+    assert module.main() == 0
+    ls_files_calls = [call for call in calls if call[:2] == ["git", "ls-files"]]
+    assert len(ls_files_calls) == 1, ls_files_calls
+
+
 def test_a_root_level_gate_is_not_lost_by_a_recursive_pattern(tmp_path: Path) -> None:
     """`fnmatch` and `Path.glob` disagree about `**/`, and the loss lands in DISCOVERY.
 

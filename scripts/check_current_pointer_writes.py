@@ -7,11 +7,11 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 try:
-    from scripts.repo_file_listing import iter_matching_repo_files, iter_repo_files
+    from scripts.repo_file_listing import RepoFileSnapshot, iter_matching_repo_files, iter_repo_files
     from scripts.repo_layout import support_dir
     from scripts.yaml_output import emit_yaml
 except ModuleNotFoundError:  # invoked as a script rather than a package module
-    from repo_file_listing import iter_matching_repo_files, iter_repo_files
+    from repo_file_listing import RepoFileSnapshot, iter_matching_repo_files, iter_repo_files
     from repo_layout import support_dir
 
     from yaml_output import emit_yaml
@@ -93,7 +93,15 @@ def _git_visible_python_files(repo_root: Path, *, require_git: bool = False) -> 
     file lands under one of the roots; the identity is the claim that matters.
     """
     patterns = tuple(f"{root.as_posix()}/**/*.py" for root in SCAN_ROOTS)
-    files = set(iter_matching_repo_files(repo_root, patterns, require_git=require_git))
+    # ONE explicit snapshot, threaded through both listing calls below. Passing it
+    # is what actually makes the second call free: without it, each call falls
+    # back to whatever `RepoFileSnapshot` the process happens to have bound as the
+    # pytest subject (or none at all outside pytest), and the inline claim that
+    # "there is no second git call" held only by that accident.
+    snapshot = RepoFileSnapshot(repo_root, require_git=require_git)
+    files = set(
+        iter_matching_repo_files(repo_root, patterns, require_git=require_git, snapshot=snapshot)
+    )
     # UNION, not swap. The owner REPLACES a `skills/support/` pattern with the
     # external tree when `CHARNESS_SUPPORT_DIR` is set -- so delegating naively
     # dropped this repo's own 25 tracked files under `skills/support/` from the
@@ -104,9 +112,8 @@ def _git_visible_python_files(repo_root: Path, *, require_git: bool = False) -> 
     # override before this union, 683 + external after it.
     in_repo_support = repo_root / _SUPPORT_PATTERN_PREFIX
     if support_dir(repo_root) != in_repo_support.resolve() and in_repo_support.is_dir():
-        # Still no second git call: the listing comes from the same owner, and the
-        # glob only narrows it.
-        tracked = set(iter_repo_files(repo_root, require_git=require_git))
+        # No second git call: the SAME snapshot instance answers this listing too.
+        tracked = set(iter_repo_files(repo_root, require_git=require_git, snapshot=snapshot))
         files.update(path for path in in_repo_support.glob("**/*.py") if path in tracked)
     return sorted(files)
 

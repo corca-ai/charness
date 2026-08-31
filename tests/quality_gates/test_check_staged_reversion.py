@@ -285,5 +285,5 @@ def test_git_being_unusable_is_unestablished_not_clean(tmp_path: Path, monkeypat
     monkeypatch.setattr(csr.subprocess, "run", _boom)
 
     with pytest.raises(RuntimeError) as excinfo:
-        csr._staged_paths(str(tmp_path))
+        csr._staged_raw_diff(str(tmp_path))
     assert "git" in str(excinfo.value)

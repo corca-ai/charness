@@ -35,6 +35,11 @@ import json
 import subprocess
 from pathlib import Path
 
+try:
+    from scripts.git_checkout import head_oid_from_files
+except ModuleNotFoundError:  # invoked as `python3 scripts/dup_ratchet_edit_advisory.py`
+    from git_checkout import head_oid_from_files
+
 #: Fallback when the adapter cannot be read. Kept identical to the shipped
 #: `.agents/quality-adapter.yaml` `dup_ratchet.scope_paths` default.
 DEFAULT_SCOPE_PATHS = ("scripts", "skills/public", "skills/support")
@@ -246,8 +251,10 @@ def advise_for_edited_file(
     if added_count is None or added_count < threshold:
         return None
     if head_sha is None:
-        head = _git(repo_root, "rev-parse", "HEAD")
-        head_sha = head.stdout.strip() if head is not None and head.returncode == 0 else None
+        # `.git/HEAD` already states this; a `rev-parse` subprocess purely to key
+        # a dedupe cache asked Git a question the checkout files already answer
+        # (see `scripts.git_checkout.head_oid_from_files`).
+        head_sha = head_oid_from_files(repo_root)
     if _already_advised(repo_root, relpath, head_sha):
         return None
     return advisory_message(relpath, added_count)

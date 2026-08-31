@@ -270,7 +270,11 @@ def run_gate(
     if not coverage_rel:
         return {"ok": True, **base, "reason": "no coverage_json configured: gate skipped (non-blocking)"}
     scope = resolve_head_scope(repo_root, head_sha)
-    base = {**base, "resolved_head_sha": scope.resolved}
+    # `_head_scope` is a private, non-YAML-safe passenger: `run()` pops it back off
+    # before the report is ever emitted. It exists so a caller that also needs
+    # this SAME scope (the false-green warning) can thread it through instead of
+    # calling `resolve_head_scope` a second time over the identical `head_sha`.
+    base = {**base, "resolved_head_sha": scope.resolved, "_head_scope": scope}
     if scope.error:
         # Could-not-look, not nothing-found — the same distinction the changed-set
         # arm below draws. `ok: False`, because a head this gate cannot resolve is

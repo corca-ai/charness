@@ -195,6 +195,34 @@ def test_the_signal_returns_after_a_commit_moves_head(git_repo: Path, advisory) 
     assert advisory.advise_for_edited_file(git_repo, "scripts/seed.py") is not None
 
 
+def test_advising_without_a_head_sha_spawns_no_rev_parse(
+    git_repo: Path, advisory, monkeypatch
+) -> None:
+    """The dedupe key comes from `.git/HEAD`, not a `rev-parse HEAD` subprocess.
+
+    `added_lines_vs_head` still spawns its own `git diff --numstat`, so one git
+    process for a fresh edit is correct; a second, purely to key the
+    once-per-HEAD dedupe cache, is the query this fix removes.
+    """
+    target = git_repo / "scripts/seed.py"
+    target.write_text("\n".join(f"e{i} = {i}" for i in range(80)), encoding="utf-8")
+
+    real_run = subprocess.run
+    calls: list[list[str]] = []
+
+    def counting_run(command, *args, **kwargs):
+        calls.append(list(command))
+        return real_run(command, *args, **kwargs)
+
+    monkeypatch.setattr(advisory.subprocess, "run", counting_run)
+
+    assert advisory.advise_for_edited_file(git_repo, "scripts/seed.py") is not None
+
+    git_calls = [call for call in calls if call and call[0] == "git"]
+    assert len(git_calls) == 1, git_calls
+    assert git_calls[0][:2] == ["git", "diff"]
+
+
 def test_generated_mirrors_are_never_advised_about(git_repo: Path, advisory) -> None:
     """Warning about a mirror sends the author to fix a file that is regenerated
     from the one they should be editing."""

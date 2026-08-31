@@ -10,7 +10,7 @@ would then silently re-commit the reverted code — undoing the change — with 
 gate still green, because the reverted code is internally self-consistent.
 
 Detector (three-way blob-hash comparison, per path in
-``git diff --cached --name-only``):
+``git diff --cached --raw``):
 
     head_blob     = blob of HEAD:<path>      (None if absent in HEAD)
     index_blob    = blob staged at :<path>   (None if staged for deletion)
@@ -81,19 +81,36 @@ def _git(repo_root: str, *args: str) -> "subprocess.CompletedProcess[str]":
     )
 
 
-def _staged_paths(repo_root: str) -> list[str]:
-    """Repo-relative paths with staged changes (index vs HEAD), deletions included.
+def _blob_or_none(sha: str) -> str | None:
+    """``None`` for the all-zero placeholder ``--raw`` prints for an absent blob."""
+    return None if set(sha) == {"0"} else sha
+
+
+def _staged_raw_diff(repo_root: str) -> list[dict[str, object]]:
+    """One ``git diff --cached --raw`` pass over every staged path.
+
+    A ``--raw`` record already carries the old (HEAD) mode/blob and the new
+    (index) mode/blob for a path, plus an explicit ``U`` status for an unmerged
+    one -- the same three facts a ``--name-only`` scoping diff, a per-path
+    ``ls-tree HEAD``, and a per-path ``ls-files --stage`` used to need three
+    separate git processes to assemble. ``--no-renames`` keeps one path per
+    record; this gate classifies per-path triples and a rename record with two
+    paths would need its own decomposition.
 
     Raises ``RuntimeError`` if git cannot enumerate the index (not a repository,
     dubious ownership, missing git, ...; the exit code is git's and varies by
-    subcommand and version, so nothing keys on a specific one). This call establishes the
-    gate's entire scope: an empty list from a failed git is indistinguishable
-    from "nothing staged", so returning it would render a clean verdict over a
-    scope that was never read (mirrors the sibling gate
+    subcommand and version, so nothing keys on a specific one). This call
+    establishes the gate's entire scope: an empty list from a failed git is
+    indistinguishable from "nothing staged", so returning it would render a
+    clean verdict over a scope that was never read (mirrors the sibling gate
     ``check_staged_worktree_consistency.py``).
     """
     try:
-        proc = _git(repo_root, "diff", "--cached", "--name-only", "-z")
+        # `-c core.abbrev=no`: `--raw` abbreviates object names by default (a
+        # short hash git itself may lengthen later as the repo grows), and an
+        # abbreviated `head_blob` compared against `_worktree_blob`'s full
+        # `hash-object` output never matches even when the content is identical.
+        proc = _git(repo_root, "-c", "core.abbrev=no", "diff", "--cached", "--raw", "-z", "--no-renames")
     except OSError as exc:  # git absent, repo_root unusable as cwd, ...
         raise RuntimeError(f"git diff --cached failed: {exc}") from exc
     if proc.returncode != 0:
@@ -101,45 +118,26 @@ def _staged_paths(repo_root: str) -> list[str]:
         # failures, which would bury the gate's own message.
         reason = next((ln for ln in proc.stderr.splitlines() if ln.strip()), "")
         raise RuntimeError(
-            reason.strip() or f"git diff --cached --name-only exited {proc.returncode}"
+            reason.strip() or f"git diff --cached --raw exited {proc.returncode}"
         )
-    return [p for p in proc.stdout.split("\0") if p]
-
-
-def _head_entry(repo_root: str, path: str) -> tuple[str | None, str | None]:
-    """(mode, blob) of HEAD:<path>, or (None, None) if absent in HEAD."""
-    proc = _git(repo_root, "ls-tree", "HEAD", "-z", "--", path)
-    if proc.returncode != 0 or not proc.stdout:
-        return None, None
-    record = proc.stdout.split("\0")[0]  # "<mode> <type> <sha>\t<path>"
-    meta = record.partition("\t")[0]
-    parts = meta.split()
-    if len(parts) < 3:
-        return None, None
-    return parts[0], parts[2]
-
-
-def _index_entry(repo_root: str, path: str) -> tuple[str | None, str | None, bool]:
-    """(mode, blob, unmerged) for :<path>; (None, None, False) when staged for deletion.
-
-    Record [0] of an UNMERGED path is stage 1 -- the merge base, not an index blob.
-    Reading it as the staged content made a mid-merge `git checkout --ours` look
-    like a modified-reversion phantom (base != HEAD, worktree == HEAD), and reading
-    "no stage 0" as a staged deletion turns it into a deletion phantom instead.
-    Neither is true, `git commit` refuses a conflicted path anyway, so the caller
-    skips it on the third element rather than guessing from the first two.
-    """
-    proc = _git(repo_root, "ls-files", "--stage", "-z", "--", path)
-    if proc.returncode != 0 or not proc.stdout:
-        return None, None, False
-    records = [record for record in proc.stdout.split("\0") if record]
-    for record in records:  # "<mode> <sha> <stage>\t<path>"
-        meta = record.partition("\t")[0]
-        parts = meta.split()
-        if len(parts) < 3 or parts[2] != "0":
-            continue
-        return parts[0], parts[1], False
-    return None, None, bool(records)
+    records = [r for r in proc.stdout.split("\0") if r]
+    entries: list[dict[str, object]] = []
+    index = 0
+    while index < len(records):
+        meta, path = records[index], records[index + 1]
+        index += 2
+        # ":<old-mode> <new-mode> <old-sha> <new-sha> <status>"
+        old_mode, new_mode, old_sha, new_sha, status = meta.lstrip(":").split()
+        entries.append(
+            {
+                "path": path,
+                "head_blob": _blob_or_none(old_sha),
+                "index_blob": _blob_or_none(new_sha),
+                "unmerged": status.startswith("U"),
+                "gitlink": _GITLINK_MODE in (old_mode, new_mode),
+            }
+        )
+    return entries
 
 
 def _worktree_blob(repo_root: str, path: str) -> str | None:
@@ -270,17 +268,17 @@ def find_staged_reversions(
                 findings.append(finding)
         return findings
     findings = []
-    for path in _staged_paths(repo_root):
-        head_mode, head_blob = _head_entry(repo_root, path)
-        index_mode, index_blob, unmerged = _index_entry(repo_root, path)
+    for entry in _staged_raw_diff(repo_root):
+        unmerged = bool(entry["unmerged"])
+        path = str(entry["path"])
         worktree_blob = None if unmerged else _worktree_blob(repo_root, path)
         finding = classify_reversion(
             path,
-            head_blob=head_blob,
-            index_blob=index_blob,
+            head_blob=entry["head_blob"],  # type: ignore[arg-type]
+            index_blob=entry["index_blob"],  # type: ignore[arg-type]
             worktree_blob=worktree_blob,
             unmerged=unmerged,
-            gitlink=_GITLINK_MODE in (head_mode, index_mode),
+            gitlink=bool(entry["gitlink"]),
         )
         if finding is not None:
             findings.append(finding)

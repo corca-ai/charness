@@ -365,3 +365,50 @@ def collect_deleted_paths_for_ref(repo_root: Path, ref: str) -> set[str]:
             "--diff-filter=D", "-r", ref,
         )
     return set(dedupe_preserve_order(_run_git(repo_root, *args)))
+
+
+def _parse_name_status_records(records: list[str]) -> tuple[list[str], set[str]]:
+    """(changed paths, deleted paths) from one `--name-status -z` record stream.
+
+    A rename record carries three NUL-separated fields (`status`, old path, new
+    path); every other status carries two (`status`, path). Only the LAST field
+    is the path this reports, matching what `--name-only` alone would have
+    printed for the same record: a rename shows only its destination, never its
+    source, and a pure `D` record shows the one path it has.
+    """
+    changed: list[str] = []
+    deleted: set[str] = set()
+    index = 0
+    while index < len(records):
+        status = records[index]
+        fields = 3 if status.startswith(("R", "C")) else 2
+        path = records[index + fields - 1]
+        index += fields
+        changed.append(path)
+        if status.startswith("D"):
+            deleted.add(path)
+    return dedupe_preserve_order(changed), deleted
+
+
+def collect_changed_and_deleted_paths_for_ref(
+    repo_root: Path, ref: str
+) -> tuple[list[str], set[str]]:
+    """`(changed_paths, deleted_paths)` for one ref, from a single git process.
+
+    `collect_changed_paths_for_ref` and `collect_deleted_paths_for_ref` each ran
+    their own diff over the identical ref -- a `--name-only` pass and a second
+    `--name-only --diff-filter=D` pass -- for a caller that wants both. A single
+    `--name-status` pass already carries the per-path status letter that
+    `--diff-filter=D` used to need a second process to isolate.
+    """
+    ref = ref.strip()
+    if not ref:
+        raise SurfaceError("changed ref must be non-empty")
+    if ".." in ref:
+        args = ("diff", "--name-status", ref)
+    else:
+        args = (
+            "diff-tree", "--root", "-m", "--no-commit-id", "--name-status",
+            "-r", ref,
+        )
+    return _parse_name_status_records(_run_git(repo_root, *args))

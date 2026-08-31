@@ -74,7 +74,14 @@ def _resolve_shas(args) -> tuple[str | None, str]:
     return base, head
 
 
-def _false_green_warning(repo_root: Path, head_sha: str, eligible_globs: list[str], exclude_globs: list[str]) -> str | None:
+def _false_green_warning(
+    repo_root: Path,
+    head_sha: str,
+    eligible_globs: list[str],
+    exclude_globs: list[str],
+    *,
+    scope: "_gate_lib.HeadScope | None" = None,
+) -> str | None:
     """Warn when analyzing HEAD while eligible pool files have uncommitted changes
     excluded from base..HEAD — a clean verdict would be a false green for them.
 
@@ -84,12 +91,19 @@ def _false_green_warning(repo_root: Path, head_sha: str, eligible_globs: list[st
     "different head" here — and this guard, whose whole job is the false green,
     turned itself off on a run that had just been cleared to render a verdict.
 
+    `scope`, when given, is the `HeadScope` `run_gate` already resolved for this
+    SAME `head_sha` -- threaded through so this does not re-ask git the identical
+    question. `run_gate` only resolves a scope once it is past its own
+    base-sha/coverage-config skip checks, so a caller reached before either exists
+    (`scope=None`) still resolves it here itself.
+
     Nothing raises out of here any more either. `_git_lines` raises on a nonzero
     git exit, so an unresolvable `--head-sha` used to kill the process with a
     traceback AFTER `run_gate` had already produced the unestablished report —
     the operator got no parseable payload at all.
     """
-    scope = _gate_lib.resolve_head_scope(repo_root, head_sha)
+    if scope is None:
+        scope = _gate_lib.resolve_head_scope(repo_root, head_sha)
     if scope.error or scope.mismatch:
         return None
     try:
@@ -125,6 +139,12 @@ def run(repo_root: Path, args) -> dict[str, object]:
         marker_path=_changed_files_lib.coverage_fingerprint_marker_path,
     )
     report["adapter_errors"] = []
+    # Pop, don't leave: `run_gate` rides its already-resolved `HeadScope` through
+    # the report only so this function can thread it into `_false_green_warning`
+    # below without a second `resolve_head_scope` over the same `head_sha`. It is
+    # not YAML-safe and not part of the gate's contract, so it must never reach
+    # the payload `main()` emits.
+    resolved_scope = report.pop("_head_scope", None)
     disclosure = report.get("analyzed_head_not_checked_out_head")
     if disclosure:
         # Exit stays 0 (the analyzed range really did change no eligible file), so
@@ -138,7 +158,8 @@ def run(repo_root: Path, args) -> dict[str, object]:
         )
     if not report.get("inert") and not report.get("unestablished"):
         warning = _false_green_warning(
-            repo_root, head_sha, list(config.get("eligible_globs") or []), list(config.get("exclude_globs") or [])
+            repo_root, head_sha, list(config.get("eligible_globs") or []), list(config.get("exclude_globs") or []),
+            scope=resolved_scope,
         )
         if warning:
             report["warning"] = warning

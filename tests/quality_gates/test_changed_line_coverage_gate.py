@@ -328,6 +328,42 @@ def test_git_probe_contracts_on_one_checkout(tmp_path: Path) -> None:
         gate._git_lines = original
 
 
+def test_false_green_check_reuses_run_gates_resolved_head_scope(tmp_path: Path) -> None:
+    """The false-green warning must not re-resolve `HeadScope` for the same head
+    `run_gate` already resolved. Pins the `rev-parse --verify` call count so a
+    reintroduced second resolution cannot silently come back.
+    """
+    entry = import_repo_module(__file__, "skills.public.quality.scripts.check_changed_line_coverage")
+    repo, base = _seed_repo(tmp_path)
+    _write_adapter(repo, ["pkg/**/*.py"])
+    _write_coverage(repo, missing=[], executed=[1, 2, 3, 4])
+    _stamp(repo, base)
+
+    calls: list[list[str]] = []
+    # `entry._gate_lib` -- the module `run()` ACTUALLY calls through, loaded via
+    # `SKILL_RUNTIME.load_local_skill_module` rather than `import_repo_module` --
+    # may not be the same module object `import_repo_module` would hand back for
+    # the identical file. Patching that separate reference would silently miss
+    # every call `entry.run` makes.
+    original = entry._gate_lib._git_lines
+
+    def counting(repo_root, args):
+        calls.append(list(args))
+        return original(repo_root, args)
+
+    entry._gate_lib._git_lines = counting
+    try:
+        args = entry.parse_args(["--repo-root", str(repo), "--base-sha", base, "--head-sha", "HEAD"])
+        report = entry.run(repo, args)
+    finally:
+        entry._gate_lib._git_lines = original
+
+    assert report["ok"] is True
+    assert "_head_scope" not in report, "the internal HeadScope passenger must never reach the payload"
+    verify_calls = [call for call in calls if call[:2] == ["rev-parse", "--verify"]]
+    assert len(verify_calls) == 1, verify_calls
+
+
 def test_an_unborn_repo_cannot_resolve_head_and_says_so(tmp_path: Path) -> None:
     gate = import_repo_module(__file__, "skills.public.quality.scripts.changed_line_coverage_gate_lib")
     repo = tmp_path / "repo"

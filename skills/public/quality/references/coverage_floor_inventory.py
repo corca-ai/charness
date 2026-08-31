@@ -72,7 +72,7 @@ def anchored_gate_pattern() -> str:
     return f"scripts/{pattern}"
 
 
-def tracked_repo_files() -> list[str]:
+def tracked_repo_files(*, snapshot: RepoFileSnapshot | None = None) -> list[str]:
     """Repo-relative paths from `git ls-files`, so the scan is gitignore-aware.
 
     A filesystem walk sees build output, virtualenvs and anything else `.gitignore`
@@ -82,6 +82,11 @@ def tracked_repo_files() -> list[str]:
     population -- a `glob` here and a pattern match there is two readers that can
     disagree.
 
+    `snapshot`, when given, is a `RepoFileSnapshot` the caller already built --
+    `main` threads ONE through both `discover_gate_scripts` and
+    `operational_ref_sources` so a single `main()` run does not pay for `git
+    ls-files` twice over the same stable tree.
+
     PRECONDITION, stated because it is new: a git repository and a `git` binary. This
     gate refuses without them rather than falling back to a walk, because an
     unestablished population under a passing verdict is the false green it exists to
@@ -89,9 +94,8 @@ def tracked_repo_files() -> list[str]:
     say so.
     """
     try:
-        listed = RepoFileSnapshot(REPO_ROOT, require_git=True).list_files(
-            include_untracked=True
-        )
+        listing = snapshot if snapshot is not None else RepoFileSnapshot(REPO_ROOT, require_git=True)
+        listed = listing.list_files(include_untracked=True)
     except RepoFileListingError as exc:
         raise SystemExit(
             "FAIL: git file listing failed; this gate scans a tracked population and "
@@ -107,7 +111,7 @@ def tracked_repo_files() -> list[str]:
     return [path.relative_to(REPO_ROOT).as_posix() for path in listed]
 
 
-def discover_gate_scripts() -> list[Path]:
+def discover_gate_scripts(*, snapshot: RepoFileSnapshot | None = None) -> list[Path]:
     pattern = anchored_gate_pattern()
     if pattern.startswith("/"):
         # An absolute pattern can never match a repo-relative listing. Every other bad
@@ -116,7 +120,11 @@ def discover_gate_scripts() -> list[Path]:
         raise SystemExit(
             f"FAIL: gate_script_pattern must be repo-relative, got absolute {pattern!r}"
         )
-    return [REPO_ROOT / path for path in sorted(tracked_repo_files()) if matches_gate_pattern(path)]
+    return [
+        REPO_ROOT / path
+        for path in sorted(tracked_repo_files(snapshot=snapshot))
+        if matches_gate_pattern(path)
+    ]
 
 
 def collect_declared_floors(gate_paths: list[Path]) -> set[str]:
@@ -197,7 +205,7 @@ def matches_gate_pattern(path: str) -> bool:
     return bool(_glob_to_regex(anchored_gate_pattern()).match(path))
 
 
-def operational_ref_sources() -> list[Path]:
+def operational_ref_sources(*, snapshot: RepoFileSnapshot | None = None) -> list[Path]:
     """The lefthook and CI files this repo actually has, in that order.
 
     `.get`, not `[...]`: a repo that declares `coverage_floor_policy.lefthook_path`
@@ -205,7 +213,7 @@ def operational_ref_sources() -> list[Path]:
     such key at all, and an unconditional lookup turned following the documentation
     into a `KeyError` traceback.
     """
-    tracked = set(tracked_repo_files())
+    tracked = set(tracked_repo_files(snapshot=snapshot))
     sources: list[Path] = []
     lefthook = POLICY.get("lefthook_path")
     # The SAME population discovery reads. Resolving lefthook with `is_file()` while
@@ -247,9 +255,11 @@ def load_operational_refs(sources: list[Path]) -> set[str]:
     return refs
 
 
-def meta_check_gate_scripts(gate_paths: list[Path]) -> None:
+def meta_check_gate_scripts(
+    gate_paths: list[Path], *, snapshot: RepoFileSnapshot | None = None
+) -> None:
     discovered = {path.relative_to(REPO_ROOT).as_posix() for path in gate_paths}
-    sources = operational_ref_sources()
+    sources = operational_ref_sources(snapshot=snapshot)
     if not sources:
         declared = declared_operational_keys()
         if declared:
@@ -323,13 +333,18 @@ def classify_unfloored_files(report: dict[str, object], declared: set[str], exem
 
 
 def main() -> int:
-    gate_paths = discover_gate_scripts()
+    # ONE snapshot for the whole run: `discover_gate_scripts` and
+    # `meta_check_gate_scripts` (via `operational_ref_sources`) each need the
+    # tracked-file population, and threading one `RepoFileSnapshot` through both
+    # means `git ls-files` runs once instead of twice over the identical tree.
+    snapshot = RepoFileSnapshot(REPO_ROOT, require_git=True)
+    gate_paths = discover_gate_scripts(snapshot=snapshot)
     if not gate_paths:
         raise SystemExit("FAIL: no gate scripts matched gate_script_pattern")
     for gate_path in gate_paths:
         if not gate_path.is_file():
             raise SystemExit(f"FAIL: gate script path does not exist: {gate_path.relative_to(REPO_ROOT)}")
-    meta_check_gate_scripts(gate_paths)
+    meta_check_gate_scripts(gate_paths, snapshot=snapshot)
 
     declared = collect_declared_floors(gate_paths)
     exempted = collect_exemptions()
