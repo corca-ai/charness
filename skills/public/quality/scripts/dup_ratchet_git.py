@@ -16,28 +16,26 @@ blocks on a phantom.
 
 from __future__ import annotations
 
-import os
 import subprocess
+import sys
 from pathlib import Path
 
 
-def _git_metadata_is_discoverable(repo_root: Path) -> bool:
-    if any(os.environ.get(name) for name in ("GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR")):
-        return True
-    root = repo_root.resolve()
-    if not root.is_dir():
-        return False
-    marker = root / ".git"
-    if marker.is_file():
-        try:
-            return marker.read_text(encoding="utf-8").lstrip().startswith("gitdir:")
-        except OSError:
-            return False
-    return (
-        marker.is_dir()
-        and (marker / "HEAD").is_file()
-        and ((marker / "objects").is_dir() or (marker / "commondir").is_file())
-    )
+def _ensure_scripts_package() -> None:
+    here = Path(__file__).resolve()
+    for candidate in (here, *here.parents):
+        if (candidate / "scripts" / "git_checkout.py").is_file():
+            root = str(candidate)
+            if root not in sys.path:
+                sys.path.insert(0, root)
+            return
+
+
+_ensure_scripts_package()
+from scripts.git_checkout import discoverable as _git_metadata_is_discoverable  # noqa: E402
+from scripts.git_status_snapshot import GitStatusError  # noqa: E402
+from scripts.git_status_snapshot import parse as parse_git_status  # noqa: E402
+from scripts.git_status_snapshot import status_args as git_status_args  # noqa: E402
 
 
 def _git_output(repo_root: Path, args: list[str]) -> tuple[int, str]:
@@ -109,45 +107,15 @@ def _anchor_progress(repo_root: Path, anchor: str | None, head: str = "HEAD") ->
 
 
 def _status_changed_paths(repo_root: Path) -> set[str] | None:
-    """Read tracked and untracked changes in one status operation.
-
-    Porcelain output is stable for machine consumers and includes staged and
-    unstaged tracked changes as well as untracked files.  Rename/copy records
-    carry a second NUL-delimited path; ``diff --name-only HEAD`` (the previous
-    query) reports the destination, so the source is deliberately skipped to
-    preserve that path-set contract.
-    """
-    rc, out = _git_output(
-        repo_root,
-        ["status", "--porcelain=v1", "--untracked-files=all", "-z"],
-    )
+    """Dirty destination paths from the shared porcelain-v2 snapshot."""
+    rc, out = _git_output(repo_root, list(git_status_args()))
     if rc != 0:
         return None
-    records = out.split("\0")
-    changed: set[str] = set()
-    index = 0
-    while index < len(records):
-        record = records[index]
-        index += 1
-        if not record:
-            continue
-        # ``_git_output`` trims the complete stdout for the legacy line-based
-        # helpers. An unstaged record begins with a significant space, so put
-        # that status column back when strip() removed it from the first row.
-        if len(record) >= 2 and record[1] == " " and (len(record) < 3 or record[2] != " "):
-            record = " " + record
-        if len(record) < 4 or record[2] != " ":
-            # A malformed status record is an unknown Git answer, not an
-            # opportunity to silently call the worktree clean.
-            return None
-        status, path = record[:2], record[3:]
-        if status == "??":
-            changed.add(path)
-        elif status != "!!":
-            changed.add(path)
-            if status[0] in {"R", "C"} and index < len(records):
-                index += 1
-    return {path.strip() for path in changed if path.strip()}
+    try:
+        snapshot = parse_git_status(out.encode("utf-8", errors="surrogateescape"))
+    except GitStatusError:
+        return None
+    return set(snapshot.dirty_destination_paths())
 
 
 class GitSnapshot:
@@ -249,25 +217,6 @@ def changed_worktree_paths(repo_root: Path) -> set[str] | None:
     blocked family member is part of the current change or a collateral clustering
     rotation among untouched files; ``None`` renders as unknown, never a guess."""
     return _status_changed_paths(repo_root)
-
-
-def _git_metadata_is_discoverable(repo_root: Path) -> bool:
-    if any(os.environ.get(name) for name in ("GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR")):
-        return True
-    root = repo_root.resolve()
-    if not root.is_dir():
-        return False
-    marker = root / ".git"
-    if marker.is_file():
-        try:
-            return marker.read_text(encoding="utf-8").lstrip().startswith("gitdir:")
-        except OSError:
-            return False
-    return (
-        marker.is_dir()
-        and (marker / "HEAD").is_file()
-        and ((marker / "objects").is_dir() or (marker / "commondir").is_file())
-    )
 
 
 def tracked_files(repo_root: Path) -> set[str] | None:

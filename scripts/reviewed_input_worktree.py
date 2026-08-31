@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-import os
 from pathlib import Path
 from typing import Callable, NamedTuple
 
+from scripts.git_checkout import local_checkout
 from scripts.git_status_snapshot import GitStatusError
 from scripts.git_status_snapshot import capture as capture_git_status
 
@@ -20,26 +20,8 @@ class WorkingTreeSnapshot(NamedTuple):
 
 
 def local_git_checkout(repo_root: Path) -> bool:
-    """True when Git would discover a checkout from ``repo_root`` itself.
-
-    Environment-redirected discovery (``GIT_DIR`` and siblings) still belongs
-    to Git: this only admits the ordinary on-disk layout so committed-ref
-    identity capture does not spend ``rev-parse --is-inside-work-tree`` to
-    learn a fact the files already state.
-    """
-    if any(os.environ.get(name) for name in ("GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR")):
-        return False
-    marker = repo_root / ".git"
-    if marker.is_file():
-        try:
-            return marker.read_text(encoding="utf-8").lstrip().startswith("gitdir:")
-        except OSError:
-            return False
-    return (
-        marker.is_dir()
-        and (marker / "HEAD").is_file()
-        and ((marker / "objects").is_dir() or (marker / "commondir").is_file())
-    )
+    """Ordinary on-disk checkout at this root; env redirect still belongs to Git."""
+    return local_checkout(repo_root)
 
 
 def capture(repo_root: Path, git_bytes: GitBytes) -> WorkingTreeSnapshot:

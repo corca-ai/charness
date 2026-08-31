@@ -159,6 +159,7 @@ def test_collect_changed_paths_replaces_three_git_processes_with_one_status_snap
         calls.append(list(command))
         return subprocess.CompletedProcess(command, 0, b"? changed.txt\0", b"")
 
+    monkeypatch.setattr(status, "discoverable", lambda _root: True)
     monkeypatch.setattr(subprocess, "run", counting_run)
 
     assert surfaces_lib.collect_changed_paths(tmp_path) == ["changed.txt"]

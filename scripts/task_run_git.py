@@ -10,6 +10,7 @@ import subprocess
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from scripts.git_checkout import head_oid_from_files as _head_sha_from_checkout
 from scripts.git_status_snapshot import GitStatusError
 from scripts.git_status_snapshot import parse as parse_git_status
 from scripts.git_status_snapshot import status_args as git_status_args
@@ -339,41 +340,6 @@ def _is_ancestor(repo_root: Path, base_sha: str, head: str) -> bool:
         check=False,
     )
     return completed.returncode == 0
-
-
-def _head_sha_from_checkout(repo_root: Path) -> str | None:
-    """Read HEAD from Git files when discovery is local.
-
-    ``rev-parse HEAD`` is the fallback for packed-refs, environment
-    redirection, and unreadable layouts.
-    """
-    if any(os.environ.get(name) for name in _GIT_DISCOVERY_ENV):
-        return None
-    marker = repo_root / ".git"
-    git_dir: Path | None = None
-    try:
-        if marker.is_file():
-            for line in marker.read_text(encoding="utf-8").splitlines():
-                stripped = line.strip()
-                if stripped.lower().startswith("gitdir:"):
-                    git_dir = Path(stripped.split(":", 1)[1].strip())
-                    if not git_dir.is_absolute():
-                        git_dir = repo_root / git_dir
-                    break
-        elif marker.is_dir():
-            git_dir = marker
-        if git_dir is None:
-            return None
-        text = (git_dir / "HEAD").read_text(encoding="ascii").strip()
-        if re.fullmatch(r"[0-9a-fA-F]{40,64}", text):
-            return text
-        if text.startswith("ref: "):
-            sha = (git_dir / text[5:]).read_text(encoding="ascii").strip()
-            if re.fullmatch(r"[0-9a-fA-F]{40,64}", sha):
-                return sha
-    except OSError:
-        return None
-    return None
 
 
 def _candidate_carrier(

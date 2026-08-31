@@ -13,6 +13,8 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Callable, NamedTuple
 
+from scripts.git_checkout import discoverable
+
 _GIT_OID_RE = re.compile(r"^(?:[0-9a-fA-F]{40}|[0-9a-fA-F]{64})$")
 GitBytes = Callable[..., bytes]
 
@@ -197,6 +199,8 @@ def capture(
     if git_bytes is not None:
         payload = git_bytes(repo_root, *args)
         return parse(payload if isinstance(payload, bytes) else payload.encode("utf-8"))
+    if not discoverable(repo_root):
+        raise GitStatusError("not a git repository (Git discovery preflight)")
     result = subprocess.run(
         ["git", *args],
         cwd=repo_root,

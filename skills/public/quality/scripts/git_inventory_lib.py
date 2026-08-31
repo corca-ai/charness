@@ -1,9 +1,23 @@
 from __future__ import annotations
 
-import os
 import subprocess
+import sys
 from dataclasses import dataclass
 from pathlib import Path
+
+
+def _ensure_scripts_package() -> None:
+    here = Path(__file__).resolve()
+    for candidate in (here, *here.parents):
+        if (candidate / "scripts" / "git_checkout.py").is_file():
+            root = str(candidate)
+            if root not in sys.path:
+                sys.path.insert(0, root)
+            return
+
+
+_ensure_scripts_package()
+from scripts.git_checkout import discoverable as _git_metadata_is_discoverable  # noqa: E402
 
 
 class GitFileListingError(RuntimeError):
@@ -24,33 +38,6 @@ class VisibleRepoFilesSnapshot:
 
 def _decode_output(value: bytes) -> str:
     return value.decode("utf-8", errors="replace")
-
-
-def _git_metadata_is_discoverable(repo_root: Path) -> bool:
-    """Admit the same local Git discovery boundary as ``repo_file_listing``.
-
-    A missing or empty ``.git`` is not a repository. Asking Git only confirms
-    that, so the probe has no information value.
-    """
-    if any(os.environ.get(name) for name in ("GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR")):
-        return True
-    root = repo_root.resolve()
-    if not root.is_dir():
-        return False
-    if (root / "HEAD").is_file() and (root / "objects").is_dir() and (root / "refs").is_dir():
-        return True
-    for candidate in (root, *root.parents):
-        marker = candidate / ".git"
-        if marker.is_file():
-            try:
-                if marker.read_text(encoding="utf-8").lstrip().startswith("gitdir:"):
-                    return True
-            except OSError:
-                continue
-        elif marker.is_dir() and (marker / "HEAD").is_file():
-            if (marker / "objects").is_dir() or (marker / "commondir").is_file():
-                return True
-    return False
 
 
 def visible_repo_files(

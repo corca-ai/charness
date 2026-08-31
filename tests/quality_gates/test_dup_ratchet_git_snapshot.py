@@ -7,6 +7,8 @@ from pathlib import Path
 
 import pytest
 
+from scripts.git_status_snapshot import status_args as git_status_args
+
 from .dup_ratchet_test_support import git as _git
 from .seeding_support import load_module
 from .test_dup_ratchet import (
@@ -96,7 +98,7 @@ def test_git_snapshot_batches_gate_facts(tmp_path: Path, monkeypatch: pytest.Mon
         ["log", "-1", "--format=%H", "HEAD", "--", "q/dup-review.json"],
         ["rev-list", "--left-right", "--count", f"{anchor}...HEAD"],
         ["ls-files"],
-        ["status", "--porcelain=v1", "--untracked-files=all", "-z"],
+        list(git_status_args()),
     ]
 
 

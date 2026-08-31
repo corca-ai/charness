@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
-import os
 import subprocess
 from pathlib import Path
 
 try:
+    from scripts.git_checkout import discoverable as _git_metadata_is_discoverable
     from scripts.repo_layout import support_dir
 except ModuleNotFoundError:
+    from git_checkout import discoverable as _git_metadata_is_discoverable
     from repo_layout import support_dir
 
 
@@ -97,49 +98,6 @@ def iter_generated_mirror_files(repo_root: Path, patterns: tuple[str, ...]) -> l
 
 def _decode_output(value: bytes) -> str:
     return value.decode("utf-8", errors="replace")
-
-
-def _git_metadata_is_discoverable(repo_root: Path) -> bool:
-    """Return whether Git could discover a work-tree from ``repo_root``.
-
-    A large class of callers deliberately supports a plain fixture directory:
-    ``git_list_repo_files`` used to launch Git there, receive its predictable
-    "not a repository" refusal, and only then take the documented filesystem
-    fallback.  That probe has no information value.  Check the same local
-    discovery boundary that Git walks first, while preserving the two cases
-    where the environment can redirect discovery outside that boundary.
-
-    This is intentionally only an admission check.  A discoverable ``.git``
-    can still be malformed or inaccessible, so the real Git call below remains
-    the authority and keeps its existing failure contract.
-    """
-    if any(os.environ.get(name) for name in ("GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR")):
-        return True
-    root = repo_root.resolve()
-    if not root.is_dir():
-        return False
-    if (
-        (root / "HEAD").is_file()
-        and (root / "objects").is_dir()
-        and (root / "refs").is_dir()
-    ):
-        return True
-    for candidate in (root, *root.parents):
-        marker = candidate / ".git"
-        if marker.is_file():
-            try:
-                if marker.read_text(encoding="utf-8").lstrip().startswith("gitdir:"):
-                    return True
-            except OSError:
-                continue
-        elif marker.is_dir() and (marker / "HEAD").is_file():
-            # Empty `.git` directories are common in shared temporary roots and
-            # are not Git repositories.  Requiring the object store (or a
-            # linked common directory) avoids paying a process for that known
-            # non-repository marker while still admitting ordinary worktrees.
-            if (marker / "objects").is_dir() or (marker / "commondir").is_file():
-                return True
-    return False
 
 
 def git_list_repo_files(
