@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import subprocess
 import sys
 from pathlib import Path
 
@@ -334,27 +333,6 @@ def test_run_quality_records_release_aggregate_runtime_suffix(
 ) -> None:
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
     log_path = _capture_run_quality_runtime_records(repo)
-    subprocess.run(["git", "add", "."], cwd=repo, check=True)
-    subprocess.run(
-        [
-            "git",
-            "-c",
-            "user.name=Charness Test",
-            "-c",
-            "user.email=charness-test@example.invalid",
-            "commit",
-            "-m",
-            "seed release range",
-        ],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-    )
-    subprocess.run(
-        ["git", "update-ref", "refs/remotes/origin/main", "HEAD"],
-        cwd=repo,
-        check=True,
-    )
 
     result = run_shell_script(repo / "scripts" / "run-quality.sh", "--release", cwd=repo, env=env)
 

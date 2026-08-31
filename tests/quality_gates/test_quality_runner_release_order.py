@@ -3,7 +3,6 @@ from __future__ import annotations
 import os
 import shlex
 import shutil
-import subprocess
 import sys
 from pathlib import Path
 
@@ -34,26 +33,14 @@ def _release_fixture(
     tmp_path: Path, seeded_quality_runner_repo: Path
 ) -> tuple[Path, dict[str, str], Path]:
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
-    shutil.copy2(_runner_path(), repo / "scripts" / "run-quality.sh")
+    source_runner = _runner_path()
+    dest_runner = repo / "scripts" / "run-quality.sh"
+    if source_runner.read_bytes() != dest_runner.read_bytes():
+        shutil.copy2(source_runner, dest_runner)
+        from tests.quality_gates.seeding_support import git
 
-    subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(
-        ["git", "-c", "user.name=quality-test", "-c", "user.email=quality-test@example.com", "commit", "-qm", "seed"],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    base_sha = subprocess.run(
-        ["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True
-    ).stdout.strip()
-    subprocess.run(
-        ["git", "update-ref", "refs/remotes/origin/main", base_sha],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
+        git(repo, "add", "--", "scripts/run-quality.sh")
+        git(repo, "commit", "-q", "-m", "seed")
 
     event_log = tmp_path / "release-order.log"
     producer_args_log = tmp_path / "release-producer-args.log"

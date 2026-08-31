@@ -273,16 +273,9 @@ def _git_stage(repo: Path, rel: str, content: str) -> None:
 
 
 def _git_commit_skill(repo: Path, rel: str, content: str) -> None:
-    (repo / rel).parent.mkdir(parents=True, exist_ok=True)
-    subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True, text=True)
-    _git_stage(repo, rel, content)
-    subprocess.run(
-        ["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-m", "base"],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
+    from .repo_shapes import install_committed_repo
+
+    install_committed_repo(repo, {rel: content}, message="base")
 
 
 def test_scan_changed_skill_md_blocks_new_drop_below_buffer(tmp_path: Path) -> None:
@@ -348,10 +341,10 @@ def test_scan_changed_skill_md_ignores_non_skill_core_paths(tmp_path: Path) -> N
     still has to ratchet something, or the verdict covers no scope at all (that
     all-dropped case is pinned in test_empty_scope_refusals.py)."""
     repo = tmp_path / "repo"
-    (repo / "docs").mkdir(parents=True)
-    (repo / "docs" / "note.md").write_text("# Note\n", encoding="utf-8")
     rel = "skills/public/demo/SKILL.md"
     _git_commit_skill(repo, rel, _skill_with_core(_LIMIT - (_BUFFER + 4)))
+    (repo / "docs").mkdir()
+    (repo / "docs" / "note.md").write_text("# Note\n", encoding="utf-8")
 
     report = preflight.scan_changed_skill_md(repo.resolve(), ["docs/note.md", rel])
     assert report["status"] == "ok"

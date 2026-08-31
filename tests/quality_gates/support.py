@@ -725,11 +725,27 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
     seed_quality_shell_stubs(scripts_dir)
     seed_quality_bin_stubs(bin_dir)
     seed_quality_python_binary_stub(bin_dir)
+    (repo / "README.md").write_text("# demo\n", encoding="utf-8")
     # A git repo, not a bare directory. `run-quality.sh` now refuses when its own root
     # is not the git toplevel, and a bare tmp dir inherits whatever repository happens
     # to enclose the pytest temp root -- a dotfiles-tracked $HOME is the common case, and
     # it would red every runner test with a message about the export copy.
+    # Commit once in the seed so clones are HEAD-bearing; tests must not rebuild
+    # that shared prefix with per-test git add/commit.
     init_git_repo(repo)
+    from tests.quality_gates.seeding_support import git
+
+    git(repo, "add", "-A")
+    git(repo, "commit", "-q", "-m", "seed")
+    pointer = (repo / ".git" / "HEAD").read_text(encoding="ascii").strip()
+    oid = (
+        (repo / ".git" / pointer[5:]).read_text(encoding="ascii").strip()
+        if pointer.startswith("ref: ")
+        else pointer
+    )
+    origin_main = repo / ".git" / "refs" / "remotes" / "origin" / "main"
+    origin_main.parent.mkdir(parents=True, exist_ok=True)
+    origin_main.write_text(oid + "\n", encoding="ascii")
     return repo, {"PATH": f"{bin_dir}:/usr/bin:/bin"}
 
 
