@@ -7,7 +7,11 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 try:
-    from scripts.repo_file_listing import RepoFileSnapshot, iter_matching_repo_files, iter_repo_files
+    from scripts.repo_file_listing import (
+        RepoFileSnapshot,
+        iter_matching_repo_files,
+        iter_repo_files,
+    )
     from scripts.repo_layout import support_dir
     from scripts.yaml_output import emit_yaml
 except ModuleNotFoundError:  # invoked as a script rather than a package module

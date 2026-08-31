@@ -13,7 +13,6 @@ import sys
 from functools import cache
 from pathlib import Path
 
-import pytest
 import yaml
 
 from tests.quality_gates.issue_closeout_support import bug_closeout_body, seed_commit

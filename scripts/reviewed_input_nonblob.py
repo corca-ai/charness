@@ -326,6 +326,46 @@ def _current_pointer_payload(repo_root: Path, path: str) -> str | None:
     return _sha256(
         b"current-pointer\0" + os.fsencode(target) + b"\0" + selected.encode("ascii")
     )
+def _checked_out_gitlink_commit(path: str, submodule_root: Path) -> str | None:
+    """The commit the submodule is CHECKED OUT at, or None to fall back to the record.
+
+    The toplevel is proven to BE this path first. Git repository discovery walks
+    upward, so `git -C <uninitialised-submodule> rev-parse HEAD` returns the
+    SUPERPROJECT's HEAD -- an unrelated commit bound as if it were the
+    submodule's. An uninitialised submodule has nothing checked out to read,
+    which is exactly when the index entry is the honest answer.
+    """
+    checked_out_snapshot = _git_bytes_optional(
+        submodule_root, "rev-parse", "--show-toplevel", "HEAD"
+    )
+    if checked_out_snapshot is None:
+        return None
+    snapshot_lines = checked_out_snapshot.decode("utf-8", errors="surrogateescape").splitlines()
+    if len(snapshot_lines) != 2:
+        return None
+    resolved = Path(snapshot_lines[0].strip())
+    if resolved.resolve() != submodule_root.resolve():
+        return None
+    # A FAILED cleanliness check is not a clean checkout. Reading `None`
+    # as clean is the same failure-into-passing-verdict shape this module
+    # keeps closing -- and the second time in this one function, after
+    # the blanket `except OSError` did it around the HEAD lookup.
+    dirty = _git_bytes_optional(submodule_root, "status", "--porcelain")
+    if dirty is None:
+        raise ValueError(
+            f"reviewed path `{path}` is a submodule whose cleanliness could not "
+            "be established; a gitlink binds only the checked-out commit, so an "
+            "unverified worktree cannot be declared"
+        )
+    if dirty.strip():
+        raise ValueError(
+            f"reviewed path `{path}` is a submodule with uncommitted changes; "
+            "commit them or declare the files inside it, since a gitlink binds "
+            "only the checked-out commit"
+        )
+    return snapshot_lines[1].strip()
+
+
 def _gitlink_commit(
     repo_root: Path,
     path: str,
@@ -377,12 +417,6 @@ def _gitlink_commit(
     # moving the submodule's HEAD without staging it left the index entry --
     # and therefore the identity -- unchanged, so a changed reviewed input
     # verified as current.
-    #
-    # The toplevel is proven to BE this path first. Git repository discovery
-    # walks upward, so `git -C <uninitialised-submodule> rev-parse HEAD` returns
-    # the SUPERPROJECT's HEAD -- an unrelated commit bound as if it were the
-    # submodule's. An uninitialised submodule has nothing checked out to read,
-    # which is exactly when the index entry is the honest answer.
     submodule_root = repo_root / _lexical_path(path)
     # Refuse to treat a SYMLINKED path as a gitlink at all, before git runs with
     # its cwd inside. `_review_paths` skips `_checked_path` whenever a gitlink is
@@ -397,35 +431,9 @@ def _gitlink_commit(
         submodule_root.resolve().relative_to(repo_root.resolve())
     except ValueError:
         return None
-    checked_out_snapshot = _git_bytes_optional(
-        submodule_root, "rev-parse", "--show-toplevel", "HEAD"
-    )
-    if checked_out_snapshot is not None:
-        snapshot_lines = checked_out_snapshot.decode(
-            "utf-8", errors="surrogateescape"
-        ).splitlines()
-        if len(snapshot_lines) != 2:
-            return fields[object_field]
-        resolved = Path(snapshot_lines[0].strip())
-        if resolved.resolve() == submodule_root.resolve():
-            # A FAILED cleanliness check is not a clean checkout. Reading `None`
-            # as clean is the same failure-into-passing-verdict shape this module
-            # keeps closing -- and the second time in this one function, after
-            # the blanket `except OSError` did it around the HEAD lookup.
-            dirty = _git_bytes_optional(submodule_root, "status", "--porcelain")
-            if dirty is None:
-                raise ValueError(
-                    f"reviewed path `{path}` is a submodule whose cleanliness could not "
-                    "be established; a gitlink binds only the checked-out commit, so an "
-                    "unverified worktree cannot be declared"
-                )
-            if dirty.strip():
-                raise ValueError(
-                    f"reviewed path `{path}` is a submodule with uncommitted changes; "
-                    "commit them or declare the files inside it, since a gitlink binds "
-                    "only the checked-out commit"
-                )
-            return snapshot_lines[1].strip()
+    checked_out = _checked_out_gitlink_commit(path, submodule_root)
+    if checked_out is not None:
+        return checked_out
     return fields[object_field]
 
 
