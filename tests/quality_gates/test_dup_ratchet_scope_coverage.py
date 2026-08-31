@@ -23,7 +23,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from .dup_ratchet_test_support import git as _git
+from .repo_shapes import replace_with_committed_repo
 from .seeding_support import load_module
 from .support import ROOT, run_script
 
@@ -160,10 +160,8 @@ def test_scope_coverage_returns_none_when_tracked_files_unknown() -> None:
 def test_git_tracked_files_reads_committed_paths(tmp_path: Path) -> None:
     repo = tmp_path / "r"
     repo.mkdir()
-    _git(repo, "init")
     (repo / "a.py").write_text("a = 1\n", encoding="utf-8")
-    _git(repo, "add", ".")
-    _git(repo, "commit", "-m", "seed")
+    replace_with_committed_repo(repo)
     assert gitmod.tracked_files(repo) == {"a.py"}
 
 
@@ -197,9 +195,7 @@ def test_cli_echoes_scope_paths_and_computes_uncovered_count(tmp_path: Path) -> 
     (repo / "tests" / "b.py").write_text("b = 1\n", encoding="utf-8")
     (repo / "docs").mkdir(parents=True, exist_ok=True)
     (repo / "docs" / "c.md").write_text("# c\n", encoding="utf-8")
-    _git(repo, "init")
-    _git(repo, "add", ".")
-    _git(repo, "commit", "-m", "seed")
+    replace_with_committed_repo(repo)
 
     result = _run_gate(repo, tmp_path)
     assert result.returncode == 0, result.stdout + result.stderr
@@ -281,9 +277,7 @@ def test_a_degrade_that_did_not_stop_the_code_scan_still_reports_its_true_scope(
     """
     repo = _consumer_repo(tmp_path, scope_paths=("src",))
     (repo / "q" / "dup-review.json").unlink()
-    _git(repo, "init")
-    _git(repo, "add", "-A")
-    _git(repo, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-m", "seed")
+    replace_with_committed_repo(repo)
 
     verdict = yaml.safe_load(_run_gate(repo, tmp_path).stdout)
     joined = " ".join(verdict["messages"])
@@ -308,9 +302,7 @@ def test_a_failed_code_scan_suppresses_the_scope_line_and_names_the_in_scope_gap
     reassurance on precisely the run where nothing was judged.
     """
     repo = _consumer_repo(tmp_path, scope_paths=("src",))
-    _git(repo, "init")
-    _git(repo, "add", "-A")
-    _git(repo, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-m", "seed")
+    replace_with_committed_repo(repo)
     broken = tmp_path / "broken-code.json"
     broken.write_text("", encoding="utf-8")
     doc_json = _doc_inventory(tmp_path / "doc.json", [])
@@ -560,9 +552,7 @@ def test_a_zero_family_scan_against_a_live_baseline_says_it_did_not_judge_in_sco
     # proof of anything.
     (repo / "src").mkdir()
     (repo / "src" / "a.py").write_text("def a():\n    return 1\n", encoding="utf-8")
-    _git(repo, "init")
-    _git(repo, "add", "-A")
-    _git(repo, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-m", "seed")
+    replace_with_committed_repo(repo)
     # No --code-inventory: the zero-families backstop is keyed on a REAL scan.
     doc_json = _doc_inventory(tmp_path / "doc.json", [])
     result = run_script(
@@ -598,9 +588,7 @@ def test_summary_reports_the_new_family_count_by_value_on_a_blocking_run(tmp_pat
     the assertion checked that the key was present, not what it said.
     """
     repo = _consumer_repo(tmp_path, scope_paths=("src",))
-    _git(repo, "init")
-    _git(repo, "add", "-A")
-    _git(repo, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-m", "seed")
+    replace_with_committed_repo(repo)
     # Two families the baseline does not carry: a real hard block.
     code_json = _code_inventory(tmp_path / "code.json", ["known1", "newfam1", "newfam2"])
     doc_json = _doc_inventory(tmp_path / "doc.json", [])
@@ -639,9 +627,7 @@ def test_summary_publishes_a_nonzero_doc_family_count(tmp_path: Path) -> None:
     """
 
     repo = _consumer_repo(tmp_path, scope_paths=("src",))
-    _git(repo, "init")
-    _git(repo, "add", "-A")
-    _git(repo, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-m", "seed")
+    replace_with_committed_repo(repo)
     code_json = _code_inventory(tmp_path / "code.json", ["known1"])
     doc_json = _doc_inventory(tmp_path / "doc.json", ["docs/a.md#one", "docs/b.md#two"])
     result = run_script(

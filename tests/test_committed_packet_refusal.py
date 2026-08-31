@@ -9,51 +9,43 @@ from pathlib import Path
 
 import yaml
 
-from tests.quality_gates.git_fixture_support import init_git_repo
+from tests.quality_gates.repo_shapes import install_two_commit_repo
 
 ROOT = Path(__file__).resolve().parents[1]
 PREPARE = ROOT / "skills/public/critique/scripts/prepare_packet.py"
 RUN_REVIEW = ROOT / "skills/public/critique/scripts/run_review.py"
 
-
-def _git(repo: Path, *args: str) -> None:
-    result = subprocess.run(
-        ["git", "-c", "user.email=test@example.com", "-c", "user.name=Test", *args],
-        cwd=repo,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    assert result.returncode == 0, result.stderr
+_PACKET_ADAPTER = (
+    "version: 1\n"
+    "repo: packet-fixture\n"
+    "reviewer_runner:\n"
+    "  mode: file-backed-worker\n"
+    "  backend: codex_exec\n"
+    "  timeout_seconds: 5\n"
+    "packet_sections:\n"
+    "  - id: smoke\n"
+    "    title: Smoke\n"
+    "    content_kind: static\n"
+    "    content: smoke\n"
+)
 
 
 def _committed_packet_repo(repo: Path) -> str:
-    init_git_repo(repo)
-    (repo / "reviewed.txt").write_text("before\n", encoding="utf-8")
-    (repo / ".agents").mkdir()
-    (repo / ".agents/critique-adapter.yaml").write_text(
-        "version: 1\n"
-        "repo: packet-fixture\n"
-        "reviewer_runner:\n"
-        "  mode: file-backed-worker\n"
-        "  backend: codex_exec\n"
-        "  timeout_seconds: 5\n"
-        "packet_sections:\n"
-        "  - id: smoke\n"
-        "    title: Smoke\n"
-        "    content_kind: static\n"
-        "    content: smoke\n",
-        encoding="utf-8",
+    install_two_commit_repo(
+        repo,
+        {
+            "reviewed.txt": "before\n",
+            ".agents/critique-adapter.yaml": _PACKET_ADAPTER,
+        },
+        {
+            "reviewed.txt": "after\n",
+            "charness-artifacts/critique/prior-packet.json": (
+                '{"kind":"charness.critique_prepare_packet"}\n'
+            ),
+        },
+        first_message="base",
+        second_message="change with prior packet",
     )
-    _git(repo, "add", ".")
-    _git(repo, "commit", "-q", "-m", "base")
-
-    (repo / "reviewed.txt").write_text("after\n", encoding="utf-8")
-    packet = repo / "charness-artifacts/critique/prior-packet.json"
-    packet.parent.mkdir(parents=True)
-    packet.write_text('{"kind":"charness.critique_prepare_packet"}\n', encoding="utf-8")
-    _git(repo, "add", "reviewed.txt", str(packet.relative_to(repo)))
-    _git(repo, "commit", "-q", "-m", "change with prior packet")
     return "HEAD"
 
 

@@ -15,13 +15,19 @@ from pathlib import Path
 
 from scripts import git_status_snapshot as status
 from scripts import render_critique_section_changed_surfaces as producer_module
-from tests.quality_gates.git_fixture_support import init_git_repo
+from tests.quality_gates.repo_shapes import replace_with_committed_repo
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 
 def _run_git(repo: Path, *args: str) -> None:
-    subprocess.run(["git", *args], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(
+        ["git", "-c", "user.email=t@t", "-c", "user.name=t", *args],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
 
 
 def test_the_changed_files_section_marks_deletions_instead_of_listing_them_as_edits(
@@ -32,7 +38,8 @@ def test_the_changed_files_section_marks_deletions_instead_of_listing_them_as_ed
     rendered a removal exactly like an edit. A reviewer cannot ask what a deletion
     cost if the packet never says one happened.
     """
-    init_git_repo(tmp_path)
+    from tests.quality_gates.repo_shapes import replace_with_committed_repo
+
     agents_dir = tmp_path / ".agents"
     agents_dir.mkdir()
     (agents_dir / "surfaces.json").write_text(
@@ -57,8 +64,7 @@ def test_the_changed_files_section_marks_deletions_instead_of_listing_them_as_ed
     )
     (tmp_path / "kept.md").write_text("one\n", encoding="utf-8")
     (tmp_path / "removed.md").write_text("doomed\n", encoding="utf-8")
-    _run_git(tmp_path, "add", ".")
-    _run_git(tmp_path, "commit", "-m", "initial")
+    replace_with_committed_repo(tmp_path, message="initial")
     (tmp_path / "kept.md").write_text("two\n", encoding="utf-8")
     (tmp_path / "removed.md").unlink()
     _run_git(tmp_path, "add", "-A")
@@ -83,7 +89,8 @@ def test_the_changed_files_section_marks_deletions_instead_of_listing_them_as_ed
 
 def test_a_ref_with_no_deletions_gains_no_deletion_prose(tmp_path: Path) -> None:
     """The summary line must not appear when nothing was removed."""
-    init_git_repo(tmp_path)
+    from tests.quality_gates.repo_shapes import replace_with_committed_repo
+
     agents_dir = tmp_path / ".agents"
     agents_dir.mkdir()
     (agents_dir / "surfaces.json").write_text(
@@ -107,8 +114,7 @@ def test_a_ref_with_no_deletions_gains_no_deletion_prose(tmp_path: Path) -> None
         encoding="utf-8",
     )
     (tmp_path / "kept.md").write_text("one\n", encoding="utf-8")
-    _run_git(tmp_path, "add", ".")
-    _run_git(tmp_path, "commit", "-m", "initial")
+    replace_with_committed_repo(tmp_path, message="initial")
     (tmp_path / "kept.md").write_text("two\n", encoding="utf-8")
     _run_git(tmp_path, "commit", "-am", "edit")
 
@@ -125,7 +131,6 @@ def test_a_ref_with_no_deletions_gains_no_deletion_prose(tmp_path: Path) -> None
 
 
 def _repo_with_surfaces(tmp_path: Path) -> Path:
-    init_git_repo(tmp_path)
     agents_dir = tmp_path / ".agents"
     agents_dir.mkdir()
     (agents_dir / "surfaces.json").write_text(
@@ -160,8 +165,7 @@ def test_a_working_tree_deletion_is_marked_too(tmp_path: Path) -> None:
     repo = _repo_with_surfaces(tmp_path)
     (repo / "kept.md").write_text("one\n", encoding="utf-8")
     (repo / "removed.md").write_text("doomed\n", encoding="utf-8")
-    _run_git(repo, "add", "-A")
-    _run_git(repo, "commit", "-m", "initial")
+    replace_with_committed_repo(repo, message="initial")
     (repo / "kept.md").write_text("two\n", encoding="utf-8")
     (repo / "removed.md").unlink()
 
@@ -185,8 +189,7 @@ def test_a_staged_deletion_counts_the_same_as_an_unstaged_one(tmp_path: Path) ->
     repo = _repo_with_surfaces(tmp_path)
     (repo / "kept.md").write_text("one\n", encoding="utf-8")
     (repo / "staged-removal.md").write_text("doomed\n", encoding="utf-8")
-    _run_git(repo, "add", "-A")
-    _run_git(repo, "commit", "-m", "initial")
+    replace_with_committed_repo(repo, message="initial")
     (repo / "kept.md").write_text("two\n", encoding="utf-8")
     _run_git(repo, "rm", "-q", "staged-removal.md")
 
@@ -208,6 +211,7 @@ def test_working_tree_producer_replaces_five_git_processes_with_one_snapshot(
     tmp_path: Path, monkeypatch, capsys
 ) -> None:
     repo = _repo_with_surfaces(tmp_path)
+    replace_with_committed_repo(repo, message="initial")
     calls: list[list[str]] = []
     oid = b"a" * 40
 

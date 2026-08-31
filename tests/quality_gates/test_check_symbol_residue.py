@@ -5,14 +5,16 @@ from pathlib import Path
 
 import yaml
 
-from .seeding_support import git, init_git_repo
+from .repo_shapes import replace_with_committed_repo
 from .support import run_script
 
 csr = importlib.import_module("scripts.check_symbol_residue")
 
 
 def _repo(tmp_path: Path) -> Path:
-    return init_git_repo(tmp_path)
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    return repo
 
 
 def test_symbol_residue_warns_on_deleted_symbol_phrase(tmp_path: Path) -> None:
@@ -25,8 +27,7 @@ def test_symbol_residue_warns_on_deleted_symbol_phrase(tmp_path: Path) -> None:
     (repo / "docs" / "contract.md").write_text(
         "The Non-Trivial Goal exemption still exists.\n", encoding="utf-8"
     )
-    git(repo, "add", ".")
-    git(repo, "commit", "-qm", "seed")
+    replace_with_committed_repo(repo)
 
     (repo / "scripts" / "goal.py").write_text("", encoding="utf-8")
 
@@ -46,8 +47,7 @@ def test_symbol_residue_cli_is_advisory_exit_zero(tmp_path: Path) -> None:
     (repo / "skills" / "note.md").write_text(
         "The trivial-goal-marker path remains documented.\n", encoding="utf-8"
     )
-    git(repo, "add", ".")
-    git(repo, "commit", "-qm", "seed")
+    replace_with_committed_repo(repo)
 
     (repo / "scripts" / "rules.py").write_text("", encoding="utf-8")
 
@@ -68,8 +68,7 @@ def test_symbol_residue_accepts_explicit_concept(tmp_path: Path) -> None:
     (repo / "docs" / "contract.md").write_text(
         "The Trivial Goal Exemption section is stale.\n", encoding="utf-8"
     )
-    git(repo, "add", ".")
-    git(repo, "commit", "-qm", "seed")
+    replace_with_committed_repo(repo)
 
     findings = csr.find_residue(repo, concepts=["trivial goal exemption"])
     assert [(f.symbol, f.variant, f.path) for f in findings] == [

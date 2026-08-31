@@ -129,6 +129,20 @@ def test_the_marker_flag_no_longer_governs_context_collection(tmp_path: Path, mo
 # --------------------------------------------------------------------------- #
 
 
+_FOO_BASE = "def a():\n    return 1\n"
+_FOO_HEAD = "def a():\n    return 1\n\n\ndef b():\n    return 2\n"
+
+
+def _two_commit_foo(tmp_path: Path) -> tuple[Path, str, str]:
+    from .repo_shapes import install_two_commit_repo
+
+    return install_two_commit_repo(
+        tmp_path / "repo",
+        {"scripts/foo.py": _FOO_BASE},
+        {"scripts/foo.py": _FOO_HEAD},
+    )
+
+
 def _skip_payload(tmp_path: Path, *, stale: bool) -> dict:
     """Drive the real script to a coverage-source skip and read its YAML payload.
 
@@ -137,26 +151,7 @@ def _skip_payload(tmp_path: Path, *, stale: bool) -> dict:
     state in which the skip branch is reachable (an empty changed set returns
     earlier).
     """
-    import subprocess
-
-    repo = tmp_path / "repo"
-    (repo / "scripts").mkdir(parents=True)
-
-    def git(*args: str) -> str:
-        return subprocess.run(
-            ["git", *args], cwd=repo, check=True, capture_output=True, text=True
-        ).stdout.strip()
-
-    git("init", "-q")
-    foo = repo / "scripts" / "foo.py"
-    foo.write_text("def a():\n    return 1\n", encoding="utf-8")
-    git("add", "-A")
-    git("-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "-m", "base")
-    base = git("rev-parse", "HEAD")
-    foo.write_text("def a():\n    return 1\n\n\ndef b():\n    return 2\n", encoding="utf-8")
-    git("add", "-A")
-    git("-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "-m", "head")
-    head = git("rev-parse", "HEAD")
+    repo, base, head = _two_commit_foo(tmp_path)
 
     cov = repo / "cov.json"
     args = ["--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
@@ -218,26 +213,7 @@ def test_the_resume_command_does_not_redirect_the_focused_corpus(tmp_path: Path)
 
 
 def _reuse_payload(tmp_path: Path, *, show_contexts) -> dict:
-    import subprocess
-
-    repo = tmp_path / "repo"
-    (repo / "scripts").mkdir(parents=True)
-
-    def git(*args: str) -> str:
-        return subprocess.run(
-            ["git", *args], cwd=repo, check=True, capture_output=True, text=True
-        ).stdout.strip()
-
-    git("init", "-q")
-    foo = repo / "scripts" / "foo.py"
-    foo.write_text("def a():\n    return 1\n", encoding="utf-8")
-    git("add", "-A")
-    git("-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "-m", "base")
-    base = git("rev-parse", "HEAD")
-    foo.write_text("def a():\n    return 1\n\n\ndef b():\n    return 2\n", encoding="utf-8")
-    git("add", "-A")
-    git("-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "-m", "head")
-    head = git("rev-parse", "HEAD")
+    repo, base, head = _two_commit_foo(tmp_path)
 
     cov = repo / "cov.json"
     meta = {"format": 3, "show_contexts": show_contexts} if show_contexts is not None else {"format": 3}

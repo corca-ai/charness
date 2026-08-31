@@ -9,7 +9,6 @@ import pytest
 
 from scripts import git_status_snapshot as status
 from scripts import reviewed_input_identity, surfaces_lib
-from tests.quality_gates.git_fixture_support import init_git_repo
 
 
 def _git(repo: Path, *args: str) -> None:
@@ -29,11 +28,9 @@ def _git(repo: Path, *args: str) -> None:
 
 
 def _seed_repo(repo: Path) -> None:
-    repo.mkdir(parents=True, exist_ok=True)
-    init_git_repo(repo)
-    (repo / "base.txt").write_text("base\n", encoding="utf-8")
-    _git(repo, "add", "base.txt")
-    _git(repo, "commit", "-q", "-m", "base")
+    from tests.quality_gates.repo_shapes import install_committed_repo
+
+    install_committed_repo(repo, {"base.txt": "base\n"}, message="base")
 
 
 def _assert_changed_path_agreement(

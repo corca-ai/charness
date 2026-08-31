@@ -17,7 +17,6 @@ from scripts import lesson_ledger_writer_lib as writer
 from scripts import record_lesson_score as scorer
 from tests.lesson_ledger_fixtures import blank_lesson, legacy_v8_payload, outcome_event
 from tests.lesson_ledger_fixtures import materialize as _materialize
-from tests.quality_gates.git_fixture_support import init_git_repo
 from tests.script_loader import load_script_module
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -367,11 +366,11 @@ def test_empty_ledger_bootstrap_is_valid_and_refuses_overwrite(tmp_path: Path) -
 
 def test_empty_ledger_bootstrap_refuses_to_wipe_a_committed_ledger(tmp_path: Path) -> None:
     init = load_script_module("init_lesson_ledger_wipe_test", ROOT / "scripts/init_lesson_ledger.py")
+    from tests.quality_gates.repo_shapes import replace_with_committed_repo
+
     _retro(tmp_path, "source.md", "a")
     path = _ledger(tmp_path)
-    init_git_repo(tmp_path)
-    _git(tmp_path, "add", "-A")
-    _git(tmp_path, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-m", "seed")
+    replace_with_committed_repo(tmp_path)
     path.unlink()
     with pytest.raises(ValueError, match="committed transitions were rewritten"):
         init.init_lesson_ledger(

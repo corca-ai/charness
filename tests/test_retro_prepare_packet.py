@@ -33,7 +33,13 @@ def run_script(*args: str, cwd: Path | None = None) -> subprocess.CompletedProce
 
 
 def _run_git(repo_root: Path, *args: str) -> None:
-    subprocess.run(["git", *args], cwd=repo_root, check=True, capture_output=True, text=True)
+    subprocess.run(
+        ["git", "-c", "user.email=t@t", "-c", "user.name=t", *args],
+        cwd=repo_root,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
 
 
 def test_retro_prepare_packet_bootstrap_missing_fails(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -377,7 +383,8 @@ output_dir: charness-artifacts/retro
 
 
 def test_retro_prepare_packet_changed_ref_reaches_default_surface_producer(tmp_path: Path) -> None:
-    _run_git(tmp_path, "init")
+    from tests.quality_gates.repo_shapes import replace_with_committed_repo
+
     agents_dir = tmp_path / ".agents"
     agents_dir.mkdir()
     (agents_dir / "surfaces.json").write_text(
@@ -415,8 +422,7 @@ packet_sections:
 """,
     )
     (tmp_path / "README.md").write_text("one\n", encoding="utf-8")
-    _run_git(tmp_path, "add", ".")
-    _run_git(tmp_path, "commit", "-m", "initial")
+    replace_with_committed_repo(tmp_path, message="initial")
     (tmp_path / "README.md").write_text("two\n", encoding="utf-8")
     _run_git(tmp_path, "commit", "-am", "update")
 

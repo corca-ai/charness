@@ -10,6 +10,7 @@ import pytest
 from scripts.git_status_snapshot import status_args as git_status_args
 
 from .dup_ratchet_test_support import git as _git
+from .repo_shapes import replace_with_committed_repo
 from .seeding_support import load_module
 from .test_dup_ratchet import (
     _code_family,
@@ -27,12 +28,10 @@ scan = load_module("dup_ratchet_scan_snapshot_inproc", SCRIPTS / "dup_ratchet_sc
 def test_git_seams_anchor_stagnation_and_reset(tmp_path: Path) -> None:
     repo = tmp_path / "r"
     repo.mkdir()
-    _git(repo, "init")
     overlay = repo / "q" / "dup-review.json"
     overlay.parent.mkdir(parents=True)
     overlay.write_text("{}\n", encoding="utf-8")
-    _git(repo, "add", ".")
-    _git(repo, "commit", "-m", "seed overlay")
+    replace_with_committed_repo(repo, message="seed overlay")
     anchor = _git(repo, "rev-parse", "HEAD").stdout.strip()
 
     for index in range(3):
@@ -53,10 +52,8 @@ def test_git_seams_anchor_stagnation_and_reset(tmp_path: Path) -> None:
 def test_git_seams_orphan_and_missing(tmp_path: Path) -> None:
     repo = tmp_path / "r"
     repo.mkdir()
-    _git(repo, "init")
     (repo / "f.txt").write_text("x\n", encoding="utf-8")
-    _git(repo, "add", ".")
-    _git(repo, "commit", "-m", "init")
+    replace_with_committed_repo(repo, message="init")
     assert gitmod.anchor_is_ancestor(repo, "0" * 40) is False
     assert gitmod.stagnation_commits(repo, "0" * 40) is None
     assert gitmod.anchor_is_ancestor(repo, None) is False
@@ -66,14 +63,12 @@ def test_git_seams_orphan_and_missing(tmp_path: Path) -> None:
 def test_git_snapshot_batches_gate_facts(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     repo = tmp_path / "r"
     repo.mkdir()
-    _git(repo, "init")
     overlay = repo / "q" / "dup-review.json"
     overlay.parent.mkdir(parents=True)
     overlay.write_text("{}\n", encoding="utf-8")
     tracked = repo / "tracked.py"
     tracked.write_text("seed\n", encoding="utf-8")
-    _git(repo, "add", ".")
-    _git(repo, "commit", "-m", "seed overlay")
+    replace_with_committed_repo(repo, message="seed overlay")
     anchor = _git(repo, "rev-parse", "HEAD").stdout.strip()
     _git(repo, "commit", "--allow-empty", "-m", "work")
     tracked.write_text("changed\n", encoding="utf-8")
@@ -113,9 +108,7 @@ def _located_family(fingerprint: str, locations: list[dict]) -> dict:
 def test_inproc_hard_block_names_member_paths_and_diff_status(tmp_path: Path) -> None:
     repo = _consumer_repo(tmp_path, baseline_ids=("known1",))
     (repo / "untouched.py").write_text("a = 1\n", encoding="utf-8")
-    _git(repo, "init")
-    _git(repo, "add", ".")
-    _git(repo, "commit", "-m", "seed")
+    replace_with_committed_repo(repo)
     (repo / "touched.py").write_text("b = 2\n", encoding="utf-8")
     code_json = _write_json(
         tmp_path / "code.json",

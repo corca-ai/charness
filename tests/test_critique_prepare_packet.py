@@ -282,12 +282,15 @@ packet_sections:
 
 
 def test_collect_changed_paths_for_ref_reads_committed_diff(tmp_path: Path) -> None:
-    init_git_repo(tmp_path)
-    (tmp_path / "README.md").write_text("one\n", encoding="utf-8")
-    _run_git(tmp_path, "add", "README.md")
-    _run_git(tmp_path, "commit", "-m", "initial")
-    (tmp_path / "README.md").write_text("two\n", encoding="utf-8")
-    _run_git(tmp_path, "commit", "-am", "update")
+    from tests.quality_gates.repo_shapes import install_two_commit_repo
+
+    install_two_commit_repo(
+        tmp_path,
+        {"README.md": "one\n"},
+        {"README.md": "two\n"},
+        first_message="initial",
+        second_message="update",
+    )
 
     assert collect_changed_paths_for_ref(tmp_path, "HEAD^..HEAD") == ["README.md"]
     assert collect_changed_paths_for_ref(tmp_path, "HEAD") == ["README.md"]

@@ -358,10 +358,6 @@ def test_each_run_check_carries_a_pass_fail_reading_of_its_return_code() -> None
 # --- check_skill_cut_safety -----------------------------------------------------
 
 
-def _git(repo: Path, *args: str) -> None:
-    subprocess.run(["git", *args], cwd=repo, check=True, capture_output=True, text=True)
-
-
 def test_a_blocked_cut_carries_the_blocked_remedy(tmp_path: Path, monkeypatch) -> None:
     """A blocked cut-safety verdict names what to do about it, and names
     something different from the review-only remedy.
@@ -371,19 +367,20 @@ def test_a_blocked_cut_carries_the_blocked_remedy(tmp_path: Path, monkeypatch) -
     and the review remedy ("confirm each line") is the wrong instruction for a
     broken contract pin.
     """
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    _git(repo, "init")
-    skill_dir = repo / "skills" / "public" / "demo"
-    (skill_dir / "references").mkdir(parents=True)
+    from tests.quality_gates.repo_shapes import install_committed_repo
+
     pin = "Always prefer the primary source over a cached summary."
-    (skill_dir / "SKILL.md").write_text(f"---\nname: demo\n---\n\n# Demo\n\n{pin}\n", encoding="utf-8")
+    repo = install_committed_repo(
+        tmp_path / "repo",
+        {
+            "skills/public/demo/SKILL.md": f"---\nname: demo\n---\n\n# Demo\n\n{pin}\n",
+        },
+        message="base",
+    )
     (repo / "tests").mkdir()
-    _git(repo, "add", "-A")
-    _git(repo, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-m", "base")
     monkeypatch.setattr(csafety._contracts, "CORE_CONTRACTS", {"skills/public/demo/SKILL.md": (pin,)})
     monkeypatch.setattr(csafety._contracts, "PACKAGE_CONTRACTS", {"skills/public/demo/SKILL.md": ()})
-    (skill_dir / "SKILL.md").write_text(
+    (repo / "skills" / "public" / "demo" / "SKILL.md").write_text(
         "---\nname: demo\n---\n\n# Demo\n\nPrimary source is usually nicer.\n", encoding="utf-8"
     )
 

@@ -15,7 +15,6 @@ import hashlib
 import importlib.machinery
 import importlib.util
 import json
-import subprocess
 import sys
 from pathlib import Path
 
@@ -421,10 +420,6 @@ def test_staged_helper_absence_is_an_explicit_empty_gate(tmp_path: Path) -> None
     assert staged_helpers.provenance_contract_self_test_gate(tmp_path) == []
 
 
-def _git(repo: Path, *args: str) -> None:
-    subprocess.run(["git", *args], cwd=repo, check=True, capture_output=True)
-
-
 def test_reviewed_identity_substrate_and_deletion_edges(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     with pytest.raises(reviewed_identity.ReviewedInputError) as invalid_mode:
         reviewed_identity._substrate_mode(None, "invalid")
@@ -452,22 +447,14 @@ def test_reviewed_identity_substrate_and_deletion_edges(tmp_path: Path, monkeypa
         )
     assert unavailable.value.code == "changed-ref-unavailable"
 
-    repo = tmp_path / "deletion"
-    repo.mkdir()
-    _git(repo, "init")
-    (repo / "gone.txt").write_text("before\n", encoding="utf-8")
-    _git(repo, "add", "gone.txt")
-    _git(repo, "-c", "user.name=Test", "-c", "user.email=test@example.invalid", "commit", "-m", "seed")
+    from tests.quality_gates.repo_shapes import install_committed_repo
+
+    repo = install_committed_repo(tmp_path / "deletion", {"gone.txt": "before\n"})
     (repo / "gone.txt").unlink()
     identity = reviewed_identity.build_reviewed_input_identity(repo_root=repo, reviewed_paths=["gone.txt"])
     assert identity["reviewed_content"][0]["content_sha256"]
 
-    empty_repo = tmp_path / "empty"
-    empty_repo.mkdir()
-    _git(empty_repo, "init")
-    (empty_repo / "seed.txt").write_text("seed\n", encoding="utf-8")
-    _git(empty_repo, "add", "seed.txt")
-    _git(empty_repo, "-c", "user.name=Test", "-c", "user.email=test@example.invalid", "commit", "-m", "seed")
+    empty_repo = install_committed_repo(tmp_path / "empty", {"seed.txt": "seed\n"})
     with pytest.raises(reviewed_identity.ReviewedInputError) as null_hash:
         reviewed_identity.build_reviewed_input_identity(repo_root=empty_repo, reviewed_paths=["missing.txt"])
     assert null_hash.value.code == "null-content-hash"

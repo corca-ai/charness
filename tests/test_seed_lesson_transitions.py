@@ -11,8 +11,7 @@ import yaml
 from scripts import lesson_ledger_lib as ledger
 from scripts import lesson_score_outcome_lib as outcome_lib
 from scripts import seed_lesson_transitions as seeder
-from tests.quality_gates.git_fixture_support import init_git_repo
-from tests.test_lesson_ledger import ROOT, _git, _ledger, _retro, _validate
+from tests.test_lesson_ledger import ROOT, _ledger, _retro, _validate
 
 
 def _empty_ledger(repo: Path) -> Path:
@@ -261,11 +260,11 @@ def test_over_budget_seeding_is_refused_with_its_arithmetic(tmp_path: Path, monk
 def test_committed_transition_prefix_is_preserved_across_a_seed(tmp_path: Path) -> None:
     """The append-only gate compares against `git show HEAD:<path>`, which is exactly
     what the hand-edit this command replaces could not satisfy."""
+    from tests.quality_gates.repo_shapes import replace_with_committed_repo
+
     _retro(tmp_path, "source.md", "a")
     _ledger(tmp_path)
-    init_git_repo(tmp_path)
-    _git(tmp_path, "add", "-A")
-    _git(tmp_path, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-m", "seed")
+    replace_with_committed_repo(tmp_path)
     _retro(tmp_path, "later.md", "b")
 
     _seed(tmp_path)

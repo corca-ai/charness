@@ -18,7 +18,8 @@ from pathlib import Path
 
 import yaml
 
-from .seeding_support import git, init_git_repo
+from .repo_shapes import replace_with_committed_repo
+from .seeding_support import git
 from .support import ROOT, _load_script_module, run_script
 
 SCRIPT = "skills/shared/scripts/reviewer_boundary_fingerprint.py"
@@ -30,10 +31,10 @@ _FINGERPRINT = _load_script_module(
 
 def _repo(tmp_path: Path) -> Path:
     """A seeded repo with one tracked file and one pre-existing untracked file."""
-    repo = init_git_repo(tmp_path)
+    repo = tmp_path / "repo"
+    repo.mkdir()
     (repo / "f.py").write_text("v1\n", encoding="utf-8")
-    git(repo, "add", "f.py")
-    git(repo, "commit", "-qm", "seed")
+    replace_with_committed_repo(repo)
     (repo / "pre.txt").write_text("pre-existing untracked\n", encoding="utf-8")
     return repo
 
