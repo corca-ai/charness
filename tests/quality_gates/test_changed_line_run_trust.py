@@ -18,15 +18,20 @@ def test_git_lines_handles_missing_git_binary(tmp_path: Path, monkeypatch) -> No
     assert trust._head_resolves_to_head(tmp_path, "some-ref") is False
 
 
-def test_porcelain_status_paths_cover_tracked_untracked_and_rename_destination() -> None:
+def test_porcelain_status_snapshot_covers_head_untracked_and_rename_destination() -> None:
+    oid = b"a" * 40
     payload = (
-        b" M scripts/edited.py\0"
-        b"?? scripts/new.py\0"
-        b"R  scripts/new-name.py\0scripts/old-name.py\0"
-        b"A  scripts/f\xc3\xb6.py\0"
+        b"# branch.oid " + oid + b"\0"
+        b"# branch.head main\0"
+        b"1 .M N... 100644 100644 100644 " + oid + b" " + oid + b" scripts/edited.py\0"
+        b"? scripts/new.py\0"
+        b"2 R. N... 100644 100644 100644 " + oid + b" " + oid + b" R100 scripts/new-name.py\0"
+        b"scripts/old-name.py\0"
+        b"1 A. N... 100644 100644 100644 " + oid + b" " + oid + b" scripts/f\xc3\xb6.py\0"
     )
-
-    assert trust._parse_status_paths(payload) == [
+    snapshot = trust._parse_status_snapshot(payload)
+    assert snapshot.head_oid == oid.decode("ascii")
+    assert snapshot.paths == [
         "scripts/edited.py",
         "scripts/new.py",
         "scripts/new-name.py",
@@ -50,13 +55,36 @@ def test_revision_pair_uses_one_git_snapshot(tmp_path: Path, monkeypatch) -> Non
 def test_probe_run_trust_exposes_the_resolved_revision_pair(
     tmp_path: Path, monkeypatch
 ) -> None:
-    pair = ("a" * 40, "a" * 40)
-    monkeypatch.setattr(trust, "_resolve_pair", lambda *_args, **_kwargs: pair)
-    monkeypatch.setattr(trust, "_worktree_status_paths", lambda *_args, **_kwargs: [])
+    oid = "a" * 40
+    monkeypatch.setattr(
+        trust,
+        "_worktree_trust_snapshot",
+        lambda *_args, **_kwargs: trust.WorktreeTrustSnapshot([], oid),
+    )
 
-    probe = trust.probe_run_trust(tmp_path, "analyzed", set())
+    probe = trust.probe_run_trust(tmp_path, oid, set())
 
-    assert probe.resolved_pair == pair
+    assert probe.resolved_pair == (oid, oid)
+
+
+def test_probe_run_trust_does_not_rev_parse_a_sha_already_on_the_status_snapshot(
+    tmp_path: Path, monkeypatch
+) -> None:
+    analyzed = "b" * 40
+    live = "a" * 40
+    monkeypatch.setattr(
+        trust,
+        "_worktree_trust_snapshot",
+        lambda *_args, **_kwargs: trust.WorktreeTrustSnapshot([], live),
+    )
+
+    def forbidden(_repo_root: Path, args: list[str]) -> list[str]:
+        raise AssertionError(args)
+
+    monkeypatch.setattr(trust, "_git_lines_or_none", forbidden)
+    probe = trust.probe_run_trust(tmp_path, analyzed, set())
+    assert probe.resolved_pair == (analyzed, live)
+    assert probe.unestablished_kind == trust.SCOPE_MISMATCH
 
 
 def test_pin_reuses_the_trust_probe_revision_pair(tmp_path: Path, monkeypatch) -> None:
