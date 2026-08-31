@@ -1,18 +1,28 @@
 from __future__ import annotations
 
-import json
-import shutil
 import subprocess
 from pathlib import Path
 
 import pytest
 import yaml
 
-from tests.seed_cache import get_or_build
+from scripts.git_checkout import head_oid_from_files
 
+from .repo_shapes import install_committed_repo
 from .support import run_script
 
 SCRIPT = "scripts/suggest_mutation_coverage_command.py"
+
+_SUGGEST_FILES = {
+    "scripts/foo.py": "def value():\n    return 1\n",
+    "scripts/bar.py": "def other():\n    return 1\n",
+    "tests/quality_gates/test_foo.py": (
+        "from scripts import foo\n\n\ndef test_value():\n    assert foo.value() == 1\n"
+    ),
+    "tests/test_top.py": (
+        "import scripts.foo\n\n\ndef test_top_value():\n    assert scripts.foo.value() == 1\n"
+    ),
+}
 
 
 def _git(repo: Path, *args: str) -> str:
@@ -21,36 +31,11 @@ def _git(repo: Path, *args: str) -> str:
     ).stdout.strip()
 
 
-def _build_suggest_seed(staging: Path) -> None:
-    """Build the immutable base history shared by suggestion tests."""
-    repo = staging / "repo"
-    (repo / "scripts").mkdir(parents=True)
-    (repo / "tests" / "quality_gates").mkdir(parents=True)
-    _git(repo, "init", "-q")
-    (repo / "scripts" / "foo.py").write_text("def value():\n    return 1\n", encoding="utf-8")
-    (repo / "scripts" / "bar.py").write_text("def other():\n    return 1\n", encoding="utf-8")
-    (repo / "tests" / "quality_gates" / "test_foo.py").write_text(
-        "from scripts import foo\n\n\ndef test_value():\n    assert foo.value() == 1\n",
-        encoding="utf-8",
-    )
-    (repo / "tests" / "test_top.py").write_text(
-        "import scripts.foo\n\n\ndef test_top_value():\n    assert scripts.foo.value() == 1\n",
-        encoding="utf-8",
-    )
-    _git(repo, "add", "-A")
-    _git(repo, "commit", "-q", "-m", "base")
-    base = _git(repo, "rev-parse", "HEAD")
-
-    (staging / "refs.json").write_text(json.dumps({"base": base}), encoding="utf-8")
-
-
 def _seed_repo(tmp_path: Path) -> tuple[Path, str]:
-    """Copy the immutable source-bound base and apply this test's changed line."""
-    seed = get_or_build("suggest-mutation-coverage-repo-seed", _build_suggest_seed)
-    refs = json.loads((seed / "refs.json").read_text(encoding="utf-8"))
-    base = refs["base"]
-    repo = tmp_path / "repo"
-    shutil.copytree(seed / "repo", repo)
+    """Install the shared one-commit base and apply this test's changed line."""
+    repo = install_committed_repo(tmp_path / "repo", _SUGGEST_FILES, message="base")
+    base = head_oid_from_files(repo)
+    assert base is not None
     (repo / "scripts" / "foo.py").write_text("def value():\n    return 2\n", encoding="utf-8")
     return repo, base
 
@@ -522,20 +507,10 @@ def test_cli_help_explains_statuses_and_closeout_workflow() -> None:
 # answer. Both gaps below produced the same observable — a changed file mapped to
 # a test that does not cover it — and a false block is how a gate gets bypassed.
 # --------------------------------------------------------------------------- #
-def _build_dynamic_loader_seed(staging: Path) -> None:
-    """A test that loads a production module by STEM, assembling the dir separately.
-
-    This is the repo's own dominant in-process-coverage idiom, and it is invisible to
-    a quoted-path / dotted-module / import-statement search: the only literal in the
-    test is the bare stem.
-    """
-    repo = staging / "repo"
-    (repo / "scripts").mkdir(parents=True)
-    (repo / "tests").mkdir(parents=True)
-    _git(repo, "init", "-q")
-    (repo / "scripts" / "shape_lib.py").write_text("def shape():\n    return 1\n", encoding="utf-8")
-    (repo / "scripts" / "decoy.py").write_text("def decoy():\n    return 1\n", encoding="utf-8")
-    (repo / "tests" / "test_inproc.py").write_text(
+_DYNAMIC_LOADER_FILES = {
+    "scripts/shape_lib.py": "def shape():\n    return 1\n",
+    "scripts/decoy.py": "def decoy():\n    return 1\n",
+    "tests/test_inproc.py": (
         "import importlib.util\n"
         "from pathlib import Path\n"
         "SCRIPTS = Path(__file__).resolve().parents[1] / 'scripts'\n"
@@ -545,24 +520,18 @@ def _build_dynamic_loader_seed(staging: Path) -> None:
         "    spec.loader.exec_module(module)\n"
         "    return module\n"
         "sl = _load('shape_lib')\n\n\n"
-        "def test_shape():\n    assert sl.shape() == 1\n",
-        encoding="utf-8",
-    )
-    _git(repo, "add", "-A")
-    _git(repo, "commit", "-q", "-m", "base")
-    base = _git(repo, "rev-parse", "HEAD")
-
-    (staging / "refs.json").write_text(json.dumps({"base": base}), encoding="utf-8")
+        "def test_shape():\n    assert sl.shape() == 1\n"
+    ),
+}
 
 
 def _seed_dynamic_loader_repo(tmp_path: Path) -> tuple[Path, str]:
-    """Copy the immutable dynamic-loader history and apply its changed line."""
-    seed = get_or_build("suggest-mutation-dynamic-loader-seed", _build_dynamic_loader_seed)
-    refs = json.loads((seed / "refs.json").read_text(encoding="utf-8"))
-    repo = tmp_path / "repo"
-    shutil.copytree(seed / "repo", repo)
+    """Install the shared stem-loader history and apply its changed line."""
+    repo = install_committed_repo(tmp_path / "repo", _DYNAMIC_LOADER_FILES, message="base")
+    base = head_oid_from_files(repo)
+    assert base is not None
     (repo / "scripts" / "shape_lib.py").write_text("def shape():\n    return 2\n", encoding="utf-8")
-    return repo, refs["base"]
+    return repo, base
 
 
 def test_maps_a_module_loaded_by_bare_stem(tmp_path: Path) -> None:
@@ -602,21 +571,21 @@ def test_maps_a_module_reached_only_through_another_production_module(tmp_path: 
     """
     from scripts.suggest_mutation_coverage_command import build_recommendation
 
-    repo = tmp_path / "repo"
-    (repo / "scripts").mkdir(parents=True)
-    (repo / "tests").mkdir(parents=True)
-    _git(repo, "init", "-q")
-    (repo / "scripts" / "leaf.py").write_text("def leaf():\n    return 1\n", encoding="utf-8")
-    (repo / "scripts" / "mid.py").write_text(
-        "from scripts.leaf import leaf\n\n\ndef mid():\n    return leaf()\n", encoding="utf-8"
+    repo = install_committed_repo(
+        tmp_path / "repo",
+        {
+            "scripts/leaf.py": "def leaf():\n    return 1\n",
+            "scripts/mid.py": (
+                "from scripts.leaf import leaf\n\n\ndef mid():\n    return leaf()\n"
+            ),
+            "tests/test_mid.py": (
+                "from scripts import mid\n\n\ndef test_mid():\n    assert mid.mid() == 1\n"
+            ),
+        },
+        message="base",
     )
-    (repo / "tests" / "test_mid.py").write_text(
-        "from scripts import mid\n\n\ndef test_mid():\n    assert mid.mid() == 1\n",
-        encoding="utf-8",
-    )
-    _git(repo, "add", "-A")
-    _git(repo, "commit", "-q", "-m", "base")
-    base = _git(repo, "rev-parse", "HEAD")
+    base = head_oid_from_files(repo)
+    assert base is not None
     # Only the LEAF changes, and no test names it.
     (repo / "scripts" / "leaf.py").write_text("def leaf():\n    return 2\n", encoding="utf-8")
 

@@ -727,18 +727,10 @@ def test_a_path_deleted_against_a_non_first_parent_still_binds(tmp_path: Path) -
 
 
 def _submodule_repo(tmp_path: Path) -> Path:
-    upstream = tmp_path / "upstream"
-    upstream.mkdir()
-    _run_git(upstream, "init")
-    (upstream / "f.txt").write_text("v1\n", encoding="utf-8")
-    _run_git(upstream, "add", "-A")
-    _run_git(upstream, "commit", "-m", "v1")
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    _run_git(repo, "init")
-    (repo / "root.txt").write_text("r\n", encoding="utf-8")
-    _run_git(repo, "add", "-A")
-    _run_git(repo, "commit", "-m", "init")
+    from tests.quality_gates.repo_shapes import install_committed_repo
+
+    upstream = install_committed_repo(tmp_path / "upstream", {"f.txt": "v1\n"}, message="v1")
+    repo = install_committed_repo(tmp_path / "repo", {"root.txt": "r\n"}, message="init")
     subprocess.run(
         ["git", "-c", "protocol.file.allow=always", "-c", "user.email=t@t", "-c", "user.name=t",
          "submodule", "add", "-q", str(upstream), "sub"],

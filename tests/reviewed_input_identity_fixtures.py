@@ -1,28 +1,19 @@
 from __future__ import annotations
 
 import json
-import subprocess
 from pathlib import Path
 
 _SEED_NAME = "reviewed-input-identity-repo-seed-v2"
 
 
 def _build_seed(seed_root: Path) -> None:
-    repo = seed_root / "repo"
-    repo.mkdir()
-    (repo / "reviewed.txt").write_text("base\n", encoding="utf-8")
-    (repo / "unrelated.txt").write_text("base\n", encoding="utf-8")
-    for cmd in (
-        ["init"],
-        ["add", "."],
-        ["commit", "-m", "initial"],
-    ):
-        subprocess.run(
-            ["git", "-c", "user.email=t@t", "-c", "user.name=t", *cmd],
-            cwd=repo,
-            check=True,
-            capture_output=True,
-        )
+    from tests.quality_gates.repo_shapes import install_committed_repo
+
+    repo = install_committed_repo(
+        seed_root / "repo",
+        {"reviewed.txt": "base\n", "unrelated.txt": "base\n"},
+        message="initial",
+    )
 
     # Git's read commands may take optional index locks, so consumers must never
     # run identity capture against the shared repository. Capture once while the
