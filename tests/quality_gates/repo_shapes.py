@@ -3,6 +3,12 @@
 A test that needs a Git story installs a named shape by copy. Git runs once
 when the seed is built, not once per test. Unique tails (an extra dirty file,
 a second commit, a remote) still speak Git; the shared prefix does not.
+
+"Once" means once per MACHINE, not once per run and not once per edit. A shape
+holds only the literal files its own key digests, never a copy of this
+repository, so it is cached outside the source-hash namespace -- see
+`seed_cache.get_or_build`'s `content_addressed` parameter and
+`_SHAPE_BUILDER_VERSION` below for the two promises that buys.
 """
 
 from __future__ import annotations
@@ -14,6 +20,20 @@ from pathlib import Path
 
 from tests.seed_cache import get_or_build
 
+#: Bump when a `build` closure in this file changes what it writes -- INCLUDING through
+#: the helpers it calls. The closures below write through
+#: `seeding_support._install_empty_git_dir` (and `write_text`/`git`), so a change THERE
+#: changes every shape's bytes while leaving every shape key identical. The version has
+#: to cover the whole producing closure, not the lines that happen to live in this file.
+#:
+#: These shapes are cached OUTSIDE the source-hash namespace (`content_addressed=True`),
+#: which is only sound because a shape holds no repo content. What that namespace does not
+#: give back is the rebuild an edited builder used to get for free from the source hash, so
+#: the key has to carry it. A builder change without a bump here reuses a stale shape on
+#: every machine that already has one, and the test that notices will look like a flake --
+#: on a machine whose cache was already warm, which is not the machine that made the edit.
+_SHAPE_BUILDER_VERSION = "1"
+
 
 def _file_digest(
     files: Mapping[str, str],
@@ -24,6 +44,8 @@ def _file_digest(
     executable: Sequence[str],
 ) -> str:
     digest = hashlib.sha256()
+    digest.update(_SHAPE_BUILDER_VERSION.encode())
+    digest.update(b"\0")
     digest.update(branch.encode())
     digest.update(b"\0")
     digest.update(message.encode())
@@ -71,7 +93,7 @@ def _committed_seed(
         git(repo, "add", "-A")
         git(repo, "commit", "-q", "-m", message, env=extra or None)
 
-    return get_or_build(f"shape-one-commit-{key}", build) / "repo"
+    return get_or_build(f"shape-one-commit-{key}", build, content_addressed=True) / "repo"
 
 
 def _copytree_into_empty(source: Path, dest: Path) -> Path:
@@ -165,6 +187,8 @@ def _two_commit_digest(
     branch: str,
 ) -> str:
     digest = hashlib.sha256()
+    digest.update(_SHAPE_BUILDER_VERSION.encode())
+    digest.update(b"\0")
     digest.update(branch.encode())
     digest.update(b"\0")
     digest.update(first_message.encode())
@@ -220,7 +244,7 @@ def install_two_commit_repo(
             encoding="ascii",
         )
 
-    bundle = get_or_build(f"shape-two-commit-{key}", build)
+    bundle = get_or_build(f"shape-two-commit-{key}", build, content_addressed=True)
     dest = _copytree_into_empty(bundle / "repo", dest)
     first_oid, second_oid = (bundle / "oids.txt").read_text(encoding="ascii").splitlines()[:2]
     return dest, first_oid, second_oid
@@ -241,7 +265,14 @@ def _submodule_digest(
     branch: str,
 ) -> str:
     digest = hashlib.sha256()
-    for part in (branch, message, submodule_message, add_message, submodule_path):
+    for part in (
+        _SHAPE_BUILDER_VERSION,
+        branch,
+        message,
+        submodule_message,
+        add_message,
+        submodule_path,
+    ):
         digest.update(part.encode())
         digest.update(b"\0")
     for label, snapshot in (("super", files), ("sub", submodule_files)):
@@ -318,7 +349,7 @@ def install_submodule_repo(
         )
         git(repo, "commit", "-q", "-m", add_message)
 
-    bundle = get_or_build(f"shape-submodule-{key}", build)
+    bundle = get_or_build(f"shape-submodule-{key}", build, content_addressed=True)
     dest = Path(dest)
     upstream = dest.parent / "upstream"
     dest = _copytree_into_empty(bundle / "repo", dest)

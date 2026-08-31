@@ -197,3 +197,83 @@ def test_seed_cache_rebuilds_partial_directory_without_ready_marker(
 
     assert not (result / "partial.txt").exists()
     assert (result / "complete.txt").read_text(encoding="utf-8") == "rebuilt"
+
+
+def test_a_content_addressed_seed_survives_a_source_change_and_a_default_one_does_not(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    """The whole reason the shape namespace exists, with its own control.
+
+    A shape holds no repo content, so a source change cannot invalidate it -- but that is
+    only worth a second namespace if the DEFAULT still rebuilds. Measured on the full
+    standing suite before this split, one edit cost the next run 392 fixture `git` calls,
+    ~330 of them rebuilding 147 shapes that had depended on nothing that changed.
+    """
+    monkeypatch.setenv("CHARNESS_TEST_SEED_CACHE_ROOT", str(tmp_path / "cache"))
+    builds: list[str] = []
+
+    def build(kind: str):
+        def _build(destination: Path) -> None:
+            builds.append(kind)
+            (destination / "payload.txt").write_text(kind, encoding="utf-8")
+
+        return _build
+
+    monkeypatch.setattr(seed_cache, "_SOURCE_HASH", "a" * 32)
+    shape = seed_cache.get_or_build("demo-shape", build("shape"), content_addressed=True)
+    seed_cache.get_or_build("demo-default", build("default"))
+    assert builds == ["shape", "default"]
+
+    # One edit: a new working tree state, therefore a new source hash.
+    monkeypatch.setattr(seed_cache, "_SOURCE_HASH", "b" * 32)
+    again = seed_cache.get_or_build("demo-shape", build("shape"), content_addressed=True)
+    seed_cache.get_or_build("demo-default", build("default"))
+
+    assert builds == ["shape", "default", "default"], "the shape must not have rebuilt"
+    assert again == shape
+    assert (again / "payload.txt").read_text(encoding="utf-8") == "shape"
+    # And it lives outside every source-hash entry, where no source hash can reach it.
+    assert shape.parent == seed_cache.shapes_root()
+    assert not seed_cache._HASH_DIR.match(shape.parent.name)
+
+
+def test_every_shape_key_carries_the_builder_version(monkeypatch) -> None:
+    """Leaving the source-hash namespace gives up the rebuild an edited builder used to get
+    for free. Each of the three shape families has to buy that back in its own key."""
+    from tests.quality_gates import repo_shapes
+
+    def keys() -> tuple[str, str, str]:
+        return (
+            repo_shapes._file_digest(
+                {"f.txt": "v\n"},
+                message="m",
+                branch="main",
+                author_date=None,
+                executable=(),
+            ),
+            repo_shapes._two_commit_digest(
+                {"f.txt": "1\n"},
+                {"f.txt": "2\n"},
+                first_message="a",
+                second_message="b",
+                branch="main",
+            ),
+            repo_shapes._submodule_digest(
+                {"r.txt": "r\n"},
+                {"f.txt": "v\n"},
+                message="m",
+                submodule_message="s",
+                add_message="add",
+                submodule_path="sub",
+                branch="main",
+            ),
+        )
+
+    before = keys()
+    monkeypatch.setattr(repo_shapes, "_SHAPE_BUILDER_VERSION", "2")
+    after = keys()
+
+    assert len(set(before)) == 3, "the three families must not collide"
+    for family, old, new in zip(("one-commit", "two-commit", "submodule"), before, after):
+        assert old != new, family

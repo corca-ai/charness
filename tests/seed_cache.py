@@ -27,10 +27,23 @@ ROOT = Path(__file__).resolve().parents[1]
 #: The cache had no eviction at all: `get_or_build` only ever removed the entry it was
 #: about to rebuild.
 SEED_CACHE_KEEP = 3
+
+#: The shape namespace, which is NOT source-hash keyed. See `get_or_build`'s
+#: `content_addressed` parameter for why, and for what a caller must guarantee to use it.
+#:
+#: Its entries cost ~40 KB each, not hundreds of megabytes, because a shape holds only the
+#: literal files its own key digests -- never a copy of this repository. Measured 2026-08-31:
+#: 147 shapes, 16 MB. Its growth axis is also different: a source-hash entry is minted by
+#: every EDIT, a shape only by a fixture asking for a file set no fixture has asked for
+#: before. So the cap is generous where `SEED_CACHE_KEEP` is tight -- 512 shapes is ~20 MB,
+#: three orders of magnitude away from the failure this file's other cap exists to prevent.
+SHAPE_CACHE_KEEP = 512
 #: A source hash is the first 32 chars of a sha256 digest. Pruning matches this shape and
-#: nothing else, so an unrelated directory under the cache root is never removed.
+#: nothing else, so an unrelated directory under the cache root is never removed. The
+#: shape namespace is a NAME, not a hash, and is therefore invisible to that pruner.
 _HASH_DIR = re.compile(r"^[0-9a-f]{32}$")
 _PRUNE_LOCK_NAME = ".prune.lock"
+_SHAPES_DIRNAME = "shapes"
 
 
 def _keep_count() -> int:
@@ -41,6 +54,16 @@ def _keep_count() -> int:
         return max(1, int(raw))
     except ValueError:
         return SEED_CACHE_KEEP
+
+
+def _shape_keep_count() -> int:
+    raw = os.environ.get("CHARNESS_TEST_SHAPE_CACHE_KEEP")
+    if raw is None:
+        return SHAPE_CACHE_KEEP
+    try:
+        return max(1, int(raw))
+    except ValueError:
+        return SHAPE_CACHE_KEEP
 
 
 def _user_cache_root() -> Path:
@@ -108,21 +131,20 @@ def source_hash() -> str:
     return _SOURCE_HASH
 
 
-def _touch_used(entry: Path) -> None:
-    """Record that this entry was USED, not merely created.
+def _touch_marker(marker: Path) -> None:
+    """Record that the thing this marker names was USED, not merely created.
 
     Recency has to come from a marker we write, not from directory mtime: reading a cached
     seed does not touch the directory, so an mtime policy would evict the entry every run
     reuses and keep the ones nothing has opened since May.
     """
     try:
-        (entry / ".used").write_text(str(time.time()), encoding="utf-8")
+        marker.write_text(str(time.time()), encoding="utf-8")
     except OSError:
         pass
 
 
-def _last_used(entry: Path) -> float:
-    marker = entry / ".used"
+def _marker_time(marker: Path, *, fallback: Path) -> float:
     try:
         return float(marker.read_text(encoding="utf-8").strip())
     except (OSError, ValueError):
@@ -131,9 +153,18 @@ def _last_used(entry: Path) -> float:
         except OSError:
             pass
     try:
-        return entry.stat().st_mtime
+        return fallback.stat().st_mtime
     except OSError:
         return 0.0
+
+
+def _touch_used(entry: Path) -> None:
+    """Mark a source-hash entry directory as used."""
+    _touch_marker(entry / ".used")
+
+
+def _last_used(entry: Path) -> float:
+    return _marker_time(entry / ".used", fallback=entry)
 
 
 def _prune_unlocked(cache_root: Path, *, current: str, keep: int) -> list[str]:
@@ -156,24 +187,70 @@ def _prune_unlocked(cache_root: Path, *, current: str, keep: int) -> list[str]:
     stale = sorted(entries, key=_last_used, reverse=True)[survivors:]
     removed: list[str] = []
     for entry in stale:
-        locks = list(entry.glob("*.lock"))
-        held = False
-        for lock_path in locks:
-            lock = filelock.FileLock(str(lock_path), timeout=0)
-            try:
-                lock.acquire()
-            except Exception:
-                held = True
-                break
-            else:
-                lock.release()
-        if held:
+        if _entry_is_locked(list(entry.glob("*.lock"))):
             continue
         try:
             shutil.rmtree(entry)
         except OSError:
             continue
         removed.append(entry.name)
+    return removed
+
+
+def _entry_is_locked(entry_locks: list[Path]) -> bool:
+    """Whether any of these lock files is held by another process right now."""
+    for lock_path in entry_locks:
+        lock = filelock.FileLock(str(lock_path), timeout=0)
+        try:
+            lock.acquire()
+        except Exception:
+            return True
+        else:
+            lock.release()
+    return False
+
+
+def _prune_shapes_unlocked(shapes_root: Path, *, current: str, keep: int) -> list[str]:
+    """Drop least-recently-used SHAPES beyond ``keep``.
+
+    Recency is per shape name, not per namespace: the whole point of this namespace is that
+    one shape survives edits that mint a new source hash, so evicting the namespace
+    wholesale would reinstate exactly the invalidation it exists to remove.
+
+    A shape's three sibling files (`<name>`, `<name>.ready`, `<name>.used`) are removed
+    together, and `<name>.lock` is left alone -- it is the file another process synchronizes
+    on, and deleting it out from under a waiter breaks the lock rather than the cache.
+    """
+    try:
+        names = sorted(
+            path.name[: -len(".ready")]
+            for path in shapes_root.iterdir()
+            if path.is_file() and path.name.endswith(".ready")
+        )
+    except OSError:
+        return []
+    names = [name for name in names if name != current]
+    survivors = max(0, keep - 1)
+    stale = sorted(
+        names,
+        key=lambda name: _marker_time(
+            shapes_root / f"{name}.used", fallback=shapes_root / name
+        ),
+        reverse=True,
+    )
+    removed: list[str] = []
+    for name in stale[survivors:]:
+        if _entry_is_locked([shapes_root / f"{name}.lock"]):
+            continue
+        try:
+            # `.ready` first. It is the claim "this tree is complete", so a prune that dies
+            # midway must leave a MISSING seed, never a ready marker over a half-deleted one.
+            (shapes_root / f"{name}.ready").unlink(missing_ok=True)
+            shutil.rmtree(shapes_root / name, ignore_errors=True)
+            (shapes_root / f"{name}.used").unlink(missing_ok=True)
+        except OSError:
+            continue
+        removed.append(name)
     return removed
 
 
@@ -190,9 +267,51 @@ def _prune(cache_root: Path, *, current: str, keep: int) -> list[str]:
         return _prune_unlocked(cache_root, current=current, keep=keep)
 
 
-def get_or_build(name: str, builder: Callable[[Path], None]) -> Path:
+def shapes_root() -> Path:
+    """The source-hash-INDEPENDENT namespace. See `get_or_build(content_addressed=True)`."""
+    return _user_cache_root() / _SHAPES_DIRNAME
+
+
+def get_or_build(
+    name: str, builder: Callable[[Path], None], *, content_addressed: bool = False
+) -> Path:
+    """Build ``name`` once and reuse it.
+
+    By default the entry lives under `source_hash()` -- HEAD plus the diff plus every
+    untracked file's content -- because the default seed COPIES THIS REPOSITORY, and a copy
+    of a tree that has changed is the wrong tree.
+
+    ``content_addressed=True`` puts the entry in a namespace with no source hash at all.
+    The caller promises TWO things, and both are required:
+
+      1. The built tree is a function of ``name`` alone. It contains no repo content, so
+         there is nothing for a source change to invalidate.
+      2. ``name`` digests the BUILDER'S BEHAVIOUR as well as its inputs. The source hash was
+         silently providing this second guarantee -- edit the builder, mint a new hash, get
+         a rebuild -- and a caller leaving that namespace gives it up. `repo_shapes.py` folds
+         `_SHAPE_BUILDER_VERSION` into every shape key for exactly this reason.
+
+    Measured cost of the default for a seed that did not need it (2026-08-31, full standing
+    suite): a cold cache spent 397 fixture `git` calls where a warm one spent 65. Because
+    every edit minted a new source hash, the 147 content-addressed shapes paid that ~330-call
+    rebuild again after every edit, forever, having depended on none of it.
+    """
     cache_root = _user_cache_root()
-    cache_dir = cache_root / source_hash()
+    if content_addressed:
+        cache_dir = cache_root / _SHAPES_DIRNAME
+        used_marker = cache_dir / f"{name}.used"
+        keep = _shape_keep_count()
+
+        def prune() -> None:
+            _prune_shapes_unlocked(cache_dir, current=name, keep=keep)
+    else:
+        cache_dir = cache_root / source_hash()
+        used_marker = cache_dir / ".used"
+        keep = _keep_count()
+
+        def prune() -> None:
+            _prune_unlocked(cache_root, current=cache_dir.name, keep=keep)
+
     final = cache_dir / name
     ready = cache_dir / f"{name}.ready"
     lock_path = cache_dir / f"{name}.lock"
@@ -203,14 +322,18 @@ def get_or_build(name: str, builder: Callable[[Path], None]) -> Path:
     # that lock while holding the root lock: a builder may compose another cached seed, which
     # needs the root lock in turn. When another builder owns this entry, wait without the root
     # lock and retry the whole transaction so pruning cannot race the eventual acquisition.
+    #
+    # ONE prune lock serves both namespaces on purpose: a shape builder composes other shapes
+    # (`install_submodule_repo` builds two committed repos), so two locks would be two orders
+    # to take them in.
     while True:
         with prune_lock:
             cache_dir.mkdir(parents=True, exist_ok=True)
-            _touch_used(cache_dir)
+            _touch_marker(used_marker)
             # Before the build, so a machine that is already too full to build has its own
             # stale entries reclaimed first. The failure this prevents does not look like a
             # full disk: it looks like nondeterministic fixture `git commit` failures.
-            _prune_unlocked(cache_root, current=cache_dir.name, keep=_keep_count())
+            prune()
             try:
                 build_lock.acquire(timeout=0)
             except filelock.Timeout:

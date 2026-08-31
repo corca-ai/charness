@@ -131,6 +131,65 @@ def test_get_or_build_prunes_and_marks_use(tmp_path: Path, monkeypatch: pytest.M
     assert (tmp_path / ("c" * 32) / ".used").read_text(encoding="utf-8") != first
 
 
+def _shape(root: Path, name: str, *, used: float) -> Path:
+    entry = root / name
+    entry.mkdir(parents=True)
+    (entry / "payload").write_text("shape", encoding="utf-8")
+    (root / f"{name}.ready").write_text("ok", encoding="utf-8")
+    (root / f"{name}.used").write_text(str(used), encoding="utf-8")
+    return entry
+
+
+def test_the_shape_namespace_is_capped_per_shape_and_by_use(tmp_path: Path) -> None:
+    """Unbounded is how this cache reached 1.1 TB once. The shape namespace is cheap
+    (~40 KB an entry) but not free, so it is capped too -- per SHAPE, because evicting the
+    namespace wholesale would reinstate the invalidation the namespace exists to remove."""
+    now = time.time()
+    current = "shape-one-commit-current"
+    _shape(tmp_path, current, used=0.0)
+    fresh = _shape(tmp_path, "shape-one-commit-fresh", used=now)
+    stale = _shape(tmp_path, "shape-two-commit-stale", used=now - 10_000)
+
+    removed = seed_cache._prune_shapes_unlocked(tmp_path, current=current, keep=2)
+
+    assert (tmp_path / current).is_dir(), "the entry being built is never evicted"
+    assert fresh.is_dir()
+    assert not stale.exists()
+    assert removed == ["shape-two-commit-stale"]
+    # The whole trio goes, so a surviving `.ready` can never point at a deleted tree.
+    assert not (tmp_path / "shape-two-commit-stale.ready").exists()
+    assert not (tmp_path / "shape-two-commit-stale.used").exists()
+
+
+def test_the_source_hash_pruner_cannot_reach_the_shape_namespace(tmp_path: Path) -> None:
+    """`shapes` is a name, not a 32-hex hash, so the source-hash pruner never sees it. That
+    is load-bearing now, not incidental: it is what makes a shape outlive an edit."""
+    current = "b" * 32
+    _entry(tmp_path, current, used=time.time())
+    shapes = tmp_path / seed_cache._SHAPES_DIRNAME
+    kept = _shape(shapes, "shape-one-commit-abc", used=0.0)
+
+    seed_cache._prune(tmp_path, current=current, keep=1)
+
+    assert kept.is_dir()
+    assert (shapes / "shape-one-commit-abc.ready").is_file()
+
+
+def test_a_locked_shape_is_skipped_rather_than_removed(tmp_path: Path) -> None:
+    import filelock
+
+    stale = _shape(tmp_path, "shape-one-commit-busy", used=0.0)
+    lock = filelock.FileLock(str(tmp_path / "shape-one-commit-busy.lock"))
+    lock.acquire()
+    try:
+        removed = seed_cache._prune_shapes_unlocked(tmp_path, current="other", keep=1)
+    finally:
+        lock.release()
+
+    assert stale.is_dir()
+    assert removed == []
+
+
 def test_the_keep_count_is_bounded_and_survives_a_bad_override(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("CHARNESS_TEST_SEED_CACHE_KEEP", raising=False)
     assert seed_cache._keep_count() == seed_cache.SEED_CACHE_KEEP
@@ -141,3 +200,12 @@ def test_the_keep_count_is_bounded_and_survives_a_bad_override(monkeypatch: pyte
     assert seed_cache._keep_count() == 1
     monkeypatch.setenv("CHARNESS_TEST_SEED_CACHE_KEEP", "not-a-number")
     assert seed_cache._keep_count() == seed_cache.SEED_CACHE_KEEP
+
+    monkeypatch.delenv("CHARNESS_TEST_SHAPE_CACHE_KEEP", raising=False)
+    assert seed_cache._shape_keep_count() == seed_cache.SHAPE_CACHE_KEEP
+    monkeypatch.setenv("CHARNESS_TEST_SHAPE_CACHE_KEEP", "9")
+    assert seed_cache._shape_keep_count() == 9
+    monkeypatch.setenv("CHARNESS_TEST_SHAPE_CACHE_KEEP", "0")
+    assert seed_cache._shape_keep_count() == 1
+    monkeypatch.setenv("CHARNESS_TEST_SHAPE_CACHE_KEEP", "not-a-number")
+    assert seed_cache._shape_keep_count() == seed_cache.SHAPE_CACHE_KEEP
