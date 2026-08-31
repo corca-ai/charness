@@ -83,9 +83,21 @@ def test_release_fixture_seed_is_cached_isolated_and_bootstrap_is_not_repeated(
     _copy_release_publish_seed(cached_second_root, seed)
     cached_count = len(git_commands) - uncached_count
 
-    assert uncached_count == 12
-    assert cached_count == 8
+    # 12 and 8 until the seed catalog landed. `_setup_git` used to shell out to git
+    # per build; it now delegates to `repo_shapes.replace_with_committed_repo`, which
+    # COPIES a cached one-commit checkout and runs no git of its own. So these counts
+    # fell as a result of the improvement this test exists to protect -- and the
+    # release-only lane has been red ever since, invisibly, because the standing lane
+    # excludes `release_only` and a skipped gate is not a passed gate.
+    assert uncached_count == 6
+    assert cached_count == 5
+
+    # The counts above are a proxy: they only see git run from THIS module, which is
+    # precisely why they went stale when the work moved to another one. This is the
+    # property the test is named for, and it survives the work moving again.
+    before_reask = len(git_commands)
     assert release_publish_seed() == seed
+    assert len(git_commands) == before_reask, "re-asking for the seed rebuilt it"
     assert git_commands[-2][1:] == (
         "remote",
         "add",
