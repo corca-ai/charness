@@ -426,6 +426,41 @@ def _is_ancestor(repo_root: Path, base_sha: str, head: str) -> bool:
     return completed.returncode == 0
 
 
+def _head_sha_from_checkout(repo_root: Path) -> str | None:
+    """Read HEAD from Git files when discovery is local.
+
+    ``rev-parse HEAD`` is the fallback for packed-refs, environment
+    redirection, and unreadable layouts.
+    """
+    if any(os.environ.get(name) for name in _GIT_DISCOVERY_ENV):
+        return None
+    marker = repo_root / ".git"
+    git_dir: Path | None = None
+    try:
+        if marker.is_file():
+            for line in marker.read_text(encoding="utf-8").splitlines():
+                stripped = line.strip()
+                if stripped.lower().startswith("gitdir:"):
+                    git_dir = Path(stripped.split(":", 1)[1].strip())
+                    if not git_dir.is_absolute():
+                        git_dir = repo_root / git_dir
+                    break
+        elif marker.is_dir():
+            git_dir = marker
+        if git_dir is None:
+            return None
+        text = (git_dir / "HEAD").read_text(encoding="ascii").strip()
+        if re.fullmatch(r"[0-9a-fA-F]{40,64}", text):
+            return text
+        if text.startswith("ref: "):
+            sha = (git_dir / text[5:]).read_text(encoding="ascii").strip()
+            if re.fullmatch(r"[0-9a-fA-F]{40,64}", sha):
+                return sha
+    except OSError:
+        return None
+    return None
+
+
 def _candidate_carrier(
     repo_root: Path,
     base_sha: str,
@@ -434,7 +469,7 @@ def _candidate_carrier(
     branch: str | None = None,
 ) -> dict[str, Any]:
     """Describe which lane tree carries the complete validated candidate."""
-    head = head or _git_output(repo_root, "rev-parse", "HEAD").strip()
+    head = head or _head_sha_from_checkout(repo_root) or _git_output(repo_root, "rev-parse", "HEAD").strip()
     # ANCESTRY, not inequality. `head != base_sha` answers "did HEAD move", which is a
     # different question from "does HEAD carry the base-to-worktree candidate". A lane
     # that amends its own base, or resets to an ancestor, leaves a clean tree at a

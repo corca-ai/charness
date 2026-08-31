@@ -186,8 +186,8 @@ def test_candidate_carrier_reuses_equal_head_worktree_reads(
 
     assert carrier["base_is_ancestor_of_head"] is True
     assert carrier["carrier_kind"] == "worktree-only"
+    assert carrier["observed_head_sha"] == base
     assert calls == [
-        ("rev-parse", "HEAD"),
         ("status", "--porcelain=v1", "--untracked-files=all", "--ignored=matching", "-z"),
     ]
 
@@ -252,9 +252,10 @@ def test_candidate_carrier_reads_untracked_paths_once_for_a_commit_plus_dirty_tr
     assert calls.count(
         ("status", "--porcelain=v1", "--untracked-files=all", "--ignored=matching", "-z")
     ) == 1
-    assert len(calls) == 4
+    assert ("rev-parse", "HEAD") not in calls
+    assert len(calls) == 3
     assert len(ancestry_calls) == 1
-    assert len(calls) + len(ancestry_calls) == 5
+    assert len(calls) + len(ancestry_calls) == 4
 
 
 def test_candidate_carrier_keeps_base_scope_when_worktree_restores_a_committed_path(
