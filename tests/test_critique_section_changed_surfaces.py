@@ -224,8 +224,7 @@ def test_a_staged_deletion_that_was_recreated_is_not_marked_deleted(tmp_path: Pa
     repo = _repo_with_surfaces(tmp_path)
     (repo / "kept.md").write_text("one\n", encoding="utf-8")
     (repo / "revived.md").write_text("original\n", encoding="utf-8")
-    _run_git(repo, "add", "-A")
-    _run_git(repo, "commit", "-m", "initial")
+    replace_with_committed_repo(repo, message="initial")
     _run_git(repo, "rm", "-q", "revived.md")
     (repo / "revived.md").write_text("recreated\n", encoding="utf-8")
 
@@ -249,8 +248,7 @@ def test_a_retained_but_broken_symlink_is_not_marked_deleted(tmp_path: Path) -> 
     repo = _repo_with_surfaces(tmp_path)
     (repo / "target.md").write_text("target\n", encoding="utf-8")
     (repo / "latest.md").symlink_to("target.md")
-    _run_git(repo, "add", "-A")
-    _run_git(repo, "commit", "-m", "initial")
+    replace_with_committed_repo(repo, message="initial")
     (repo / "target.md").unlink()
 
     result = run_script(PRODUCER, "--repo-root", str(repo))

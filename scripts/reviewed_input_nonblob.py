@@ -186,6 +186,15 @@ def _gitlink_snapshot_for_paths(
         snapshot[(root, path, base_head)] = (
             _sha256(b"gitlink\0" + commit.encode("ascii")) if commit is not None else None
         )
+    if base_head is None:
+        for path in paths:
+            key = (root, path, base_head)
+            if snapshot.get(key) is not None:
+                continue
+            commit = _gitlink_commit(repo_root, path, None)
+            snapshot[key] = (
+                _sha256(b"gitlink\0" + commit.encode("ascii")) if commit is not None else None
+            )
     return snapshot
 
 

@@ -310,8 +310,13 @@ def collect_working_tree_snapshot(repo_root: Path) -> WorkingTreeSnapshot:
         raise SurfaceError(str(exc)) from exc
     except OSError as exc:
         raise SurfaceError(str(exc) or "git status failed") from exc
+    deleted = {
+        path
+        for path in snapshot.deleted_paths()
+        if not ((repo_root / path).exists() or (repo_root / path).is_symlink())
+    }
     return WorkingTreeSnapshot(
-        tuple(snapshot.dirty_destination_paths()), snapshot.deleted_paths()
+        tuple(snapshot.dirty_destination_paths()), deleted
     )
 
 
@@ -324,15 +329,9 @@ def collect_deleted_paths(repo_root: Path) -> set[str]:
 
     A path staged as deleted and then RECREATED on disk is not a deletion to a
     reviewer: the file is there and the identity binds its present bytes.
+    `exists()` follows a symlink, so a retained but broken pointer is kept.
     """
-    removed = set(collect_working_tree_snapshot(repo_root).deleted_paths)
-    # `exists()` FOLLOWS a symlink, so a retained but broken pointer looked
-    # absent and was rendered DELETED while the link file is still there.
-    return {
-        path
-        for path in removed
-        if not ((repo_root / path).exists() or (repo_root / path).is_symlink())
-    }
+    return set(collect_working_tree_snapshot(repo_root).deleted_paths)
 
 
 def collect_changed_paths_for_ref(repo_root: Path, ref: str) -> list[str]:
