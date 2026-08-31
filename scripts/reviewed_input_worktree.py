@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 from pathlib import Path
 from typing import Callable, NamedTuple
 
@@ -9,6 +10,7 @@ from scripts.checkout_view import CheckoutView
 from scripts.git_checkout import head_oid_from_files, local_checkout
 from scripts.git_status_snapshot import GitStatusError, GitStatusSnapshot
 from scripts.git_status_snapshot import capture as capture_git_status
+from scripts.reviewed_input_path_selection import checked_path, lexical_path
 
 GitBytes = Callable[..., bytes]
 
@@ -72,3 +74,39 @@ def patch_components(
         else b""
     )
     return base_head, staged, unstaged
+
+
+def _digest(payload: bytes) -> str:
+    return hashlib.sha256(payload).hexdigest()
+
+
+def content_sha256(repo_root: Path, path: str) -> str | None:
+    """None only when the path is ABSENT from the working tree.
+
+    A read failure over a PRESENT file used to return None too, and the deletion
+    fallbacks then bound HEAD's bytes and stamped `disposition: deleted` on a
+    file that is still there with unreadable, changed contents -- capture and
+    verification agreeing on bytes neither read. Absence is a state; a failure to
+    read is not.
+    """
+    try:
+        # No symlink arm: `_checked_path` above refuses symlinks (f7a09d672), so
+        # the link-payload branch that used to sit here was unreachable from the
+        # moment that approval boundary landed, and the public contract went on
+        # describing it. Removed rather than left as decoration.
+        candidate = checked_path(repo_root, path)
+        if not candidate.is_file():
+            return None
+        # The exec bit belongs in the content digest: otherwise `chmod +x` on a
+        # reviewed script would pass as unchanged because its bytes are identical.
+        mode_tag = b"x\0" if candidate.stat().st_mode & 0o111 else b"-\0"
+        return _digest(b"file\0" + mode_tag + candidate.read_bytes())
+    except OSError:
+        # Resolved from `path`, not from `candidate`: `_checked_path` itself can
+        # raise, leaving `candidate` unbound, and referencing it there turned an
+        # OSError into a NameError. The existing contract test named exactly that
+        # path.
+        probe = repo_root / lexical_path(path)
+        if probe.exists() or probe.is_symlink():
+            raise
+        return None

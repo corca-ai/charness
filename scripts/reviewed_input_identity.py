@@ -3,12 +3,9 @@
 from __future__ import annotations
 
 import hashlib
-import importlib
-import importlib.util
 import json
 import re
 import subprocess
-import sys
 from pathlib import Path
 from typing import Any
 
@@ -102,67 +99,14 @@ def _sha256(payload: bytes) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
-def _worktree_content_sha256(repo_root: Path, path: str) -> str | None:
-    """None only when the path is ABSENT from the working tree.
-
-    A read failure over a PRESENT file used to return None too, and the deletion
-    fallbacks then bound HEAD's bytes and stamped `disposition: deleted` on a
-    file that is still there with unreadable, changed contents -- capture and
-    verification agreeing on bytes neither read. Absence is a state; a failure to
-    read is not.
-    """
-    try:
-        # No symlink arm: `_checked_path` above refuses symlinks (f7a09d672), so
-        # the link-payload branch that used to sit here was unreachable from the
-        # moment that approval boundary landed, and the public contract went on
-        # describing it. Removed rather than left as decoration.
-        candidate = _checked_path(repo_root, path)
-        if not candidate.is_file():
-            return None
-        # The exec bit belongs in the content digest: otherwise `chmod +x` on a
-        # reviewed script would pass as unchanged because its bytes are identical.
-        mode_tag = b"x\0" if candidate.stat().st_mode & 0o111 else b"-\0"
-        return _sha256(b"file\0" + mode_tag + candidate.read_bytes())
-    except OSError:
-        # Resolved from `path`, not from `candidate`: `_checked_path` itself can
-        # raise, leaving `candidate` unbound, and referencing it there turned an
-        # OSError into a NameError. The existing contract test named exactly that
-        # path.
-        probe = repo_root / _lexical_path(path)
-        if probe.exists() or probe.is_symlink():
-            raise
-        return None
 
 
-def _load_sibling(module_stem: str):
-    """Resolve an adjacent owner independently of consumer package state.
 
-    Order is load-bearing: preferring the package import would let any
-    already-importable module of that name win, and falling back to a by-path
-    load whenever the canonical name is unbound would make the object depend on
-    who imported first. Both were real defects here, one found by a fresh-eye
-    review and one by the full suite.
-    """
-    sibling = Path(__file__).resolve().with_name(f"{module_stem}.py")
-    canonical = f"scripts.{module_stem}"
-    loaded = sys.modules.get(canonical)
-    loaded_file = getattr(loaded, "__file__", None)
-    if loaded_file is not None and Path(loaded_file).resolve() == sibling:
-        return loaded
-    if sibling.is_file():
-        try:
-            spec = importlib.util.find_spec(canonical)
-        except (ImportError, ValueError):
-            spec = None
-        if spec is not None and spec.origin and Path(spec.origin).resolve() == sibling:
-            return importlib.import_module(canonical)
-        spec = importlib.util.spec_from_file_location(f"charness_{module_stem}", sibling)
-        if spec is not None and spec.loader is not None:
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
-            return module
-    return importlib.import_module(canonical)
 
+try:
+    from scripts.sibling_module_loader import load_sibling as _load_sibling
+except ModuleNotFoundError:  # invoked as `python3 scripts/<name>.py`
+    from sibling_module_loader import load_sibling as _load_sibling
 
 _checkout = _load_sibling("git_checkout")
 _path_selection = _load_sibling("reviewed_input_path_selection")
@@ -173,6 +117,7 @@ _checked_path = _path_selection.checked_path
 _range = _load_sibling("reviewed_input_range")
 _worktree = _load_sibling("reviewed_input_worktree")
 WorkingTreeSnapshot = _worktree.WorkingTreeSnapshot
+_worktree_content_sha256 = _worktree.content_sha256
 
 
 def _working_tree_snapshot(repo_root: Path) -> WorkingTreeSnapshot:
