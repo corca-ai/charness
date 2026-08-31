@@ -2,8 +2,8 @@
 
 ## Current Focus
 
+- Continued the Goal 744 Git/subprocess campaign from the uncommitted pickup note. (source: `charness-artifacts/retro/2026-08-31-session-retro.md`)
 - Picked up the 2026-08-29 next-session plan. (source: `charness-artifacts/retro/2026-08-30-session-retro.md`)
-- The operator, watching a session accumulate small failures, asked for patterns and patterns-of-patterns rather than incident response, and for structural repair regardless of who authored the defect. (source: `charness-artifacts/retro/2026-08-30-a-class-discharged-as-a-list.md`)
 
 ## Repeat Traps
 
@@ -17,7 +17,7 @@
 - **workflow — prefer a structural property over an enumerated refusal.** Slice A's first cut recognised ambiguity with an enumerated four-word negation list (`not|never|without|no`), and round 2 showed it disarmed the floor on genuinely deferring lines. The repair that worked is structural and positional — *decline only when EVERY flag mention on the line is negated* — which is the same shape the lesson names. I committed the enumerated form first. `applied: the current achieve contract in skills/public/achieve/references/goal-artifact.md records the structural property; no standalone cadence-owner file remains.` (source: `charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md`; sources: 3)
 - state a detector's blind class — "what can this mechanism NOT see?" — in its module docstring before writing its first acceptance test. The HTML guard's blind class was "it cannot see any renderer", which was the whole finding, and it took three review rounds to surface. (source: `charness-artifacts/retro/2026-08-18-session-retro.md`; sources: 3)
 - **capability**: classify production PLR2004 findings and trial a no-increase baseline before considering a blocking rule. (source: `charness-artifacts/retro/2026-08-14-session-retro.md`; sources: 3)
-- capability — **an enumerator-agreement gate.** The only durable fix for the drift; hand-alignment is what decayed. Destination: `#760`. (source: `charness-artifacts/retro/2026-08-30-session-retro.md`)
+- **capability — `novel:` add an orphaned-`_case_`-helper gate.** Five files now carry `_case_*` dispatch families and nothing detects a helper that loses its caller. A ~15-line check (helpers defined, names referenced, difference empty) would have failed this session's diff. Destination: a repo quality gate beside the other structural checks. Structural pattern: a consolidation shape whose failure mode is silent unreachability. Triggering instance(s): `test_issue_worker_carrier.py`, five helpers, eleven assertions. (source: `charness-artifacts/retro/2026-08-31-session-retro.md`)
 
 ## Selection Policy
 
@@ -48,5 +48,5 @@
 - `charness-artifacts/retro/2026-08-18-session-retro.md`
 - `charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md`
 - `charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md`
-- `charness-artifacts/retro/2026-08-30-a-class-discharged-as-a-list.md`
 - `charness-artifacts/retro/2026-08-30-session-retro.md`
+- `charness-artifacts/retro/2026-08-31-session-retro.md`
