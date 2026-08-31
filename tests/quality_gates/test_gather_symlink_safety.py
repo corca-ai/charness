@@ -14,18 +14,15 @@ import os
 import subprocess
 from pathlib import Path
 
-from .support import init_git_repo, run_script
+from .repo_shapes import install_committed_repo
+from .support import run_script
 
 WRITE_RECORD = "skills/public/gather/scripts/write_record.py"
 
 
 def _bootstrap_gather_repo(tmp_path: Path) -> Path:
-    repo = tmp_path / "repo"
-    gather_dir = repo / "charness-artifacts" / "gather"
-    gather_dir.mkdir(parents=True)
-    (repo / ".gitignore").write_text("\n", encoding="utf-8")
-    init_git_repo(repo, ".gitignore")
-    subprocess.run(["git", "commit", "-m", "init"], cwd=repo, check=True, capture_output=True)
+    repo = install_committed_repo(tmp_path / "repo", {".gitignore": "\n"}, message="init")
+    (repo / "charness-artifacts" / "gather").mkdir(parents=True)
     return repo
 
 

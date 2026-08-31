@@ -505,16 +505,14 @@ def test_glow_check_main_unhealthy_status_returns_one(monkeypatch, capsys) -> No
 
 
 def test_markdown_preview_uses_yaml_config_and_changed_only_scope(tmp_path: Path, monkeypatch, capsys) -> None:
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    (repo / ".agents").mkdir()
-    (repo / "docs").mkdir()
-    (repo / "README.md").write_text("# Root\n", encoding="utf-8")
-    (repo / "docs" / "guide.md").write_text("# Guide\n", encoding="utf-8")
-    subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "add", "."], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "commit", "-m", "seed"], cwd=repo, check=True, capture_output=True, text=True)
+    from tests.quality_gates.repo_shapes import install_committed_repo
+
+    repo = install_committed_repo(
+        tmp_path / "repo",
+        {"README.md": "# Root\n", "docs/guide.md": "# Guide\n"},
+    )
     (repo / "docs" / "guide.md").write_text("# Guide\n\nChanged\n", encoding="utf-8")
+    (repo / ".agents").mkdir()
     (repo / ".agents" / "markdown-preview.yaml").write_text(
         "\n".join(
             [

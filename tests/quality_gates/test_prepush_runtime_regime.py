@@ -16,7 +16,6 @@ from __future__ import annotations
 
 import json
 import os
-import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -36,7 +35,11 @@ pytestmark = pytest.mark.boundary_contract(
 
 def _git(repo: Path, *args: str) -> str:
     result = subprocess.run(
-        ["git", *args], cwd=repo, check=True, capture_output=True, text=True
+        ["git", "-c", "user.email=test@example.com", "-c", "user.name=Test", *args],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
     )
     return result.stdout.strip()
 
@@ -48,14 +51,36 @@ def _seed_prepush_repo(tmp_path: Path) -> Path:
     itself runs the real `classify_push_diff.py`, so a change that stopped routing
     docs pushes to the subset would surface here rather than being assumed away.
     """
-    repo = tmp_path / "repo"
-    (repo / "scripts").mkdir(parents=True)
-    (repo / ".githooks").mkdir(parents=True)
-    (repo / "docs").mkdir(parents=True)
-    (repo / "plugins" / "charness").mkdir(parents=True)
+    from .repo_shapes import install_committed_repo
 
-    shutil.copy2(ROOT / ".githooks" / "pre-push", repo / ".githooks" / "pre-push")
-    shutil.copy2(ROOT / ".githooks" / "runtime-env.sh", repo / ".githooks" / "runtime-env.sh")
+    files = {
+        ".githooks/pre-push": (ROOT / ".githooks" / "pre-push").read_text(encoding="utf-8"),
+        ".githooks/runtime-env.sh": (ROOT / ".githooks" / "runtime-env.sh").read_text(
+            encoding="utf-8"
+        ),
+        "docs/seed.md": "# seed\n",
+        ".gitignore": "plugins/\n",
+        "plugins/charness/plugin.txt": "seed\n",
+        "scripts/sync_root_plugin_manifests.py": "#!/usr/bin/env python3\n",
+        "scripts/validate_current_pointer_freshness.py": "#!/usr/bin/env python3\n",
+        # Records hook stdin so the classifier and the guard both see the range.
+        "scripts/prepush_close_keyword_guard.py": (
+            "#!/usr/bin/env python3\n"
+            "import os, sys\n"
+            "open(os.environ['GUARD_STDIN_LOG'], 'w').write(sys.stdin.read())\n"
+        ),
+        "scripts/run-quality.sh": (
+            "#!/usr/bin/env bash\n"
+            "set -euo pipefail\n"
+            'python3 -c "'
+            "import json,os,sys;"
+            "json.dump({'argv':sys.argv[1:],"
+            "'labels':os.environ.get('CHARNESS_QUALITY_LABELS',''),"
+            "'regime':os.environ.get('CHARNESS_RUNTIME_REGIME','')},"
+            "open(os.environ['QUALITY_INVOCATION_LOG'],'w'))"
+            '" -- "$@"\n'
+        ),
+    }
     # `yaml_output.py` joined this set with the unconditional-YAML migration:
     # `classify_push_diff.py` now imports `emit_yaml` at module scope, so a
     # synthetic repo without it fails at import and never reaches classification.
@@ -65,53 +90,13 @@ def _seed_prepush_repo(tmp_path: Path) -> Path:
         "prepush_quality_receipt.py",
         "yaml_output.py",
     ):
-        shutil.copy2(ROOT / "scripts" / name, repo / "scripts" / name)
+        files[f"scripts/{name}"] = (ROOT / "scripts" / name).read_text(encoding="utf-8")
 
-    # Pre-classification phases the hook runs unconditionally; they are not what
-    # this test is about, and each needs the full repo to do anything real.
-    for name in ("sync_root_plugin_manifests.py", "validate_current_pointer_freshness.py"):
-        (repo / "scripts" / name).write_text("#!/usr/bin/env python3\n", encoding="utf-8")
-
-    # The close-keyword guard is stubbed to RECORD ITS STDIN rather than to do
-    # nothing. It and the diff classifier are two consumers of a git hook's stdin,
-    # which is a pipe: whichever read first would drain it, and the second would see
-    # an empty range and report "nothing to check". Both failure directions are
-    # silent, so what this fixture pins is that BOTH consumers got the range -- the
-    # guard's own verdicts live in `test_prepush_close_keyword_guard.py`, which needs
-    # a real repo the classification fixture deliberately is not.
-    (repo / "scripts" / "prepush_close_keyword_guard.py").write_text(
-        "#!/usr/bin/env python3\n"
-        "import os, sys\n"
-        "open(os.environ['GUARD_STDIN_LOG'], 'w').write(sys.stdin.read())\n",
-        encoding="utf-8",
+    return install_committed_repo(
+        tmp_path / "repo",
+        files,
+        executable=(".githooks/pre-push", "scripts/run-quality.sh"),
     )
-
-    # The stub records the ENVIRONMENT the hook handed the runner, which is the
-    # fact under test, plus argv so the read-only mode stays visible.
-    (repo / "scripts" / "run-quality.sh").write_text(
-        "#!/usr/bin/env bash\n"
-        "set -euo pipefail\n"
-        'python3 -c "'
-        "import json,os,sys;"
-        "json.dump({'argv':sys.argv[1:],"
-        "'labels':os.environ.get('CHARNESS_QUALITY_LABELS',''),"
-        "'regime':os.environ.get('CHARNESS_RUNTIME_REGIME','')},"
-        "open(os.environ['QUALITY_INVOCATION_LOG'],'w'))"
-        '" -- "$@"\n',
-        encoding="utf-8",
-    )
-    (repo / "scripts" / "run-quality.sh").chmod(0o755)
-    (repo / ".githooks" / "pre-push").chmod(0o755)
-
-    _git(repo, "init", "-b", "main")
-    _git(repo, "config", "user.email", "test@example.com")
-    _git(repo, "config", "user.name", "Test")
-    (repo / "docs" / "seed.md").write_text("# seed\n", encoding="utf-8")
-    (repo / ".gitignore").write_text("plugins/\n", encoding="utf-8")
-    (repo / "plugins" / "charness" / "plugin.txt").write_text("seed\n", encoding="utf-8")
-    _git(repo, "add", "-A")
-    _git(repo, "commit", "-m", "seed")
-    return repo
 
 
 def _run_hook(

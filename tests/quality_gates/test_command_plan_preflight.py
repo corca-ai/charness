@@ -2,14 +2,23 @@ from __future__ import annotations
 
 import importlib.util
 import json
-import subprocess
 from pathlib import Path
 
 import pytest
 
+from .repo_shapes import install_committed_repo
 from .support import ROOT, run_script
 
 SCRIPT = ROOT / "scripts" / "command_plan_preflight.py"
+
+_DEMO_PY = """import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--repo-root')
+parser.add_argument('--detail', action='store_true')
+parser.add_argument('-v', action='store_true')
+parser.parse_args()
+"""
 
 
 def _write_plan(repo: Path, payload: dict) -> Path:
@@ -21,17 +30,7 @@ def _write_plan(repo: Path, payload: dict) -> Path:
 def _demo(repo: Path) -> None:
     scripts = repo / "scripts"
     scripts.mkdir(parents=True, exist_ok=True)
-    (scripts / "demo.py").write_text(
-        """import argparse
-
-parser = argparse.ArgumentParser()
-parser.add_argument('--repo-root')
-parser.add_argument('--detail', action='store_true')
-parser.add_argument('-v', action='store_true')
-parser.parse_args()
-""",
-        encoding="utf-8",
-    )
+    (scripts / "demo.py").write_text(_DEMO_PY, encoding="utf-8")
 
 
 def _base_plan() -> dict:
@@ -146,14 +145,11 @@ def test_owner_or_flag_failure_stops_later_help_probes(tmp_path: Path) -> None:
 
 
 def test_ref_resolution_is_verified_before_help_probe(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    _demo(repo)
-    subprocess.run(["git", "init", "-q", "-b", "main"], cwd=repo, check=True)
-    subprocess.run(["git", "config", "user.email", "test@example.invalid"], cwd=repo, check=True)
-    subprocess.run(["git", "config", "user.name", "Command Plan Test"], cwd=repo, check=True)
-    subprocess.run(["git", "add", "."], cwd=repo, check=True)
-    subprocess.run(["git", "commit", "-qm", "seed command plan"], cwd=repo, check=True)
+    repo = install_committed_repo(
+        tmp_path / "repo",
+        {"scripts/demo.py": _DEMO_PY},
+        message="seed command plan",
+    )
     plan = _base_plan()
     plan["refs"] = [{"id": "missing", "ref": "does-not-exist"}]
     plan["commands"].append(
@@ -267,14 +263,11 @@ def test_target_and_ref_inventory_failures_are_not_silent(tmp_path: Path, monkey
 
 def test_ref_verifier_records_success_failure_and_bad_shape(tmp_path: Path) -> None:
     module = _load_preflight_module()
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    subprocess.run(["git", "init", "-q", "-b", "main"], cwd=repo, check=True)
-    subprocess.run(["git", "config", "user.email", "test@example.invalid"], cwd=repo, check=True)
-    subprocess.run(["git", "config", "user.name", "Command Plan Test"], cwd=repo, check=True)
-    (repo / "seed.txt").write_text("seed", encoding="utf-8")
-    subprocess.run(["git", "add", "."], cwd=repo, check=True)
-    subprocess.run(["git", "commit", "-qm", "seed refs"], cwd=repo, check=True)
+    repo = install_committed_repo(
+        tmp_path / "repo",
+        {"seed.txt": "seed"},
+        message="seed refs",
+    )
     observations, errors = module._verify_refs(
         repo, [None, {"id": "head", "ref": "HEAD"}, {"id": "missing", "ref": "nope"}]
     )

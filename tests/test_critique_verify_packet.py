@@ -30,23 +30,33 @@ def _cached_working_tree_identity() -> dict:
     return reviewed_identity_seed()
 
 
+_CRITIQUE_ADAPTER = (
+    "version: 1\nrepo: test\npacket_sections:\n"
+    "  - id: smoke\n    title: Smoke\n    content_kind: static\n    content: smoke\n"
+)
+
+
 def _git(repo: Path, *args: str) -> None:
-    result = subprocess.run(["git", *args], cwd=repo, capture_output=True, text=True)
+    result = subprocess.run(
+        ["git", "-c", "user.email=test@example.com", "-c", "user.name=test", *args],
+        cwd=repo,
+        capture_output=True,
+        text=True,
+    )
     assert result.returncode == 0, result.stderr
 
 
 def _prepare(tmp_path: Path) -> tuple[Path, dict, dict]:
-    _git(tmp_path, "init")
-    reviewed = tmp_path / "reviewed.txt"
-    reviewed.write_text("reviewed bytes\n", encoding="utf-8")
-    (tmp_path / ".agents").mkdir()
-    (tmp_path / ".agents" / "critique-adapter.yaml").write_text(
-        "version: 1\nrepo: test\npacket_sections:\n"
-        "  - id: smoke\n    title: Smoke\n    content_kind: static\n    content: smoke\n",
-        encoding="utf-8",
+    from tests.quality_gates.repo_shapes import install_committed_repo
+
+    install_committed_repo(
+        tmp_path,
+        {
+            "reviewed.txt": "reviewed bytes\n",
+            ".agents/critique-adapter.yaml": _CRITIQUE_ADAPTER,
+        },
+        message="initial",
     )
-    _git(tmp_path, "add", "reviewed.txt")
-    _git(tmp_path, "commit", "-m", "initial")
     result = subprocess.run(
         [
             "python3",
@@ -125,23 +135,21 @@ def _static_packet(tmp_path: Path) -> tuple[Path, dict, dict]:
 
 
 def _committed_ref_repo(tmp_path: Path) -> Path:
-    _git(tmp_path, "init")
-    _git(tmp_path, "config", "user.email", "test@example.com")
-    _git(tmp_path, "config", "user.name", "test")
-    reviewed = tmp_path / "reviewed.txt"
-    reviewed.write_text("before\n", encoding="utf-8")
-    (tmp_path / ".agents").mkdir()
-    (tmp_path / ".agents/critique-adapter.yaml").write_text(
-        "version: 1\nrepo: test\npacket_sections:\n"
-        "  - id: smoke\n    title: Smoke\n    content_kind: static\n    content: smoke\n",
-        encoding="utf-8",
+    from tests.quality_gates.repo_shapes import install_committed_repo
+
+    repo = install_committed_repo(
+        tmp_path,
+        {
+            "reviewed.txt": "before\n",
+            ".agents/critique-adapter.yaml": _CRITIQUE_ADAPTER,
+        },
+        message="initial",
     )
-    _git(tmp_path, "add", "reviewed.txt", ".agents/critique-adapter.yaml")
-    _git(tmp_path, "commit", "-m", "initial")
+    reviewed = repo / "reviewed.txt"
     reviewed.write_text("after\n", encoding="utf-8")
-    _git(tmp_path, "add", "reviewed.txt")
-    _git(tmp_path, "commit", "-m", "change")
-    return tmp_path
+    _git(repo, "add", "reviewed.txt")
+    _git(repo, "commit", "-m", "change")
+    return repo
 
 
 def _run(command: str, *, cwd: Path) -> subprocess.CompletedProcess[str]:

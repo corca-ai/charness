@@ -16,32 +16,23 @@ unstaged-only deletion.
 from __future__ import annotations
 
 import importlib
-import shutil
 import subprocess
 from pathlib import Path
 
 import pytest
 
-from tests.seed_cache import get_or_build
-
-from .seeding_support import git, init_git_repo
+from .repo_shapes import install_committed_repo
+from .seeding_support import git
 
 cswc = importlib.import_module("scripts.check_staged_worktree_consistency")
 
 
-def _build_repo_seed(seed_root: Path) -> None:
-    repo = init_git_repo(seed_root)
-    (repo / "f.txt").write_text("v1\n", encoding="utf-8")
-    (repo / "g.txt").write_text("g1\n", encoding="utf-8")
-    git(repo, "add", "f.txt", "g.txt")
-    git(repo, "commit", "-qm", "init")
-
-
 def _repo(tmp_path: Path) -> Path:
-    seed = get_or_build("staged-worktree-consistency-repo-seed", _build_repo_seed) / "repo"
-    repo = tmp_path / "repo"
-    shutil.copytree(seed, repo)
-    return repo
+    return install_committed_repo(
+        tmp_path / "repo",
+        {"f.txt": "v1\n", "g.txt": "g1\n"},
+        message="init",
+    )
 
 
 def test_staged_then_deleted_on_disk_is_flagged(tmp_path: Path, monkeypatch) -> None:

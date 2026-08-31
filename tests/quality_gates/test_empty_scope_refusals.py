@@ -64,13 +64,9 @@ def _git(repo: Path, *args: str) -> None:
 
 
 def _seeded_repo(tmp_path: Path) -> Path:
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    _git(repo, "init", "-q")
-    (repo / "README.md").write_text("seed\n", encoding="utf-8")
-    _git(repo, "add", "README.md")
-    _git(repo, "commit", "-qm", "seed")
-    return repo
+    from .repo_shapes import install_committed_repo
+
+    return install_committed_repo(tmp_path / "repo", {"README.md": "seed\n"})
 
 
 def _empty_root(tmp_path: Path) -> Path:

@@ -16,7 +16,6 @@ from __future__ import annotations
 import importlib.util
 import io
 import json
-import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -24,9 +23,16 @@ from pathlib import Path
 import pytest
 import yaml
 
-from tests.seed_cache import get_or_build
+from .repo_shapes import install_committed_repo
 
 ROOT = Path(__file__).resolve().parents[2]
+
+_DUP_RATCHET_FILES = {
+    ".agents/quality-adapter.yaml": (
+        "dup_ratchet:\n  enabled: true\n  scope_paths:\n    - scripts\n    - skills/public\n"
+    ),
+    "scripts/seed.py": "x = 1\n",
+}
 
 
 def _load_module(relpath: str, name: str):
@@ -43,30 +49,6 @@ def advisory():
     return _load_module("scripts/dup_ratchet_edit_advisory.py", "_dup_edit_advisory")
 
 
-def _build_dup_ratchet_repo_seed(seed_root: Path) -> None:
-    repo = seed_root / "repo"
-    (repo / "scripts").mkdir(parents=True)
-    (repo / ".agents").mkdir()
-    (repo / ".agents/quality-adapter.yaml").write_text(
-        "dup_ratchet:\n  enabled: true\n  scope_paths:\n    - scripts\n    - skills/public\n",
-        encoding="utf-8",
-    )
-    (repo / "scripts/seed.py").write_text("x = 1\n", encoding="utf-8")
-    for cmd in (
-        ["git", "init", "-q"],
-        ["git", "config", "user.email", "t@example.com"],
-        ["git", "config", "user.name", "t"],
-        ["git", "add", "-A"],
-        ["git", "commit", "-q", "-m", "seed"],
-    ):
-        subprocess.run(cmd, cwd=repo, check=True, capture_output=True)
-
-
-@pytest.fixture(scope="session")
-def dup_ratchet_repo_seed() -> Path:
-    return get_or_build("dup-ratchet-edit-advisory-repo-seed", _build_dup_ratchet_repo_seed) / "repo"
-
-
 def _tree_snapshot(root: Path) -> tuple[tuple[str, bytes], ...]:
     return tuple(
         sorted(
@@ -78,23 +60,24 @@ def _tree_snapshot(root: Path) -> tuple[tuple[str, bytes], ...]:
 
 
 @pytest.fixture
-def git_repo(tmp_path: Path, dup_ratchet_repo_seed: Path) -> Path:
-    repo = tmp_path / "repo"
-    shutil.copytree(dup_ratchet_repo_seed, repo)
-    return repo
+def git_repo(tmp_path: Path) -> Path:
+    return install_committed_repo(tmp_path / "repo", _DUP_RATCHET_FILES)
 
 
-def test_cached_dup_ratchet_seed_is_never_mutated_by_a_test_clone(
-    tmp_path: Path, dup_ratchet_repo_seed: Path
-) -> None:
-    before_seed = _tree_snapshot(dup_ratchet_repo_seed)
-    clone = tmp_path / "clone"
-    shutil.copytree(dup_ratchet_repo_seed, clone)
+def test_cached_dup_ratchet_seed_is_never_mutated_by_a_test_clone(tmp_path: Path) -> None:
+    first = install_committed_repo(tmp_path / "seed", _DUP_RATCHET_FILES)
+    before_seed = _tree_snapshot(first)
+    clone = install_committed_repo(tmp_path / "clone", _DUP_RATCHET_FILES)
     (clone / "scripts/seed.py").write_text("clone only\n", encoding="utf-8")
     subprocess.run(["git", "add", "-A"], cwd=clone, check=True, capture_output=True)
-    subprocess.run(["git", "commit", "-q", "-m", "clone-only"], cwd=clone, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "-c", "user.email=t@example.com", "-c", "user.name=t", "commit", "-q", "-m", "clone-only"],
+        cwd=clone,
+        check=True,
+        capture_output=True,
+    )
 
-    assert _tree_snapshot(dup_ratchet_repo_seed) == before_seed
+    assert _tree_snapshot(first) == before_seed
 
 
 def test_a_substantial_addition_to_a_scanned_file_fires(git_repo: Path, advisory) -> None:

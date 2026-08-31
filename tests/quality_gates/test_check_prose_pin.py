@@ -5,7 +5,7 @@ from pathlib import Path
 
 from scripts import check_prose_pin as prose_pin
 
-from .git_fixture_support import init_git_repo
+from .repo_shapes import install_committed_repo
 
 PINNED_PHRASE = "the closeout ledger never reports a number not present in the verified set"
 
@@ -14,33 +14,19 @@ def _run(repo: Path, *args: str) -> None:
     subprocess.run(list(args), cwd=repo, check=True, capture_output=True, text=True)
 
 
-def _commit(repo: Path, message: str) -> None:
-    _run(repo, "git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-m", message)
-
-
 def _seed_repo(repo: Path) -> None:
-    repo.mkdir()
-    init_git_repo(repo)
-    (repo / "docs").mkdir()
-    (repo / "docs" / "guide.md").write_text(
-        f"# Guide\n\nRule: {PINNED_PHRASE}.\n",
-        encoding="utf-8",
+    install_committed_repo(
+        repo,
+        {
+            "docs/guide.md": f"# Guide\n\nRule: {PINNED_PHRASE}.\n",
+            "skills/public/demo/SKILL.md": "---\nname: demo\n---\n\n# Demo\n",
+            "tests/test_prose.py": (
+                f'def test_guide_pins_rule(text):\n    assert "{PINNED_PHRASE}" in text\n'
+            ),
+            "tests/test_path.py": 'PATH = "skills/public/demo/SKILL.md"\n',
+        },
+        message="base",
     )
-    skill_dir = repo / "skills" / "public" / "demo"
-    skill_dir.mkdir(parents=True)
-    (skill_dir / "SKILL.md").write_text("---\nname: demo\n---\n\n# Demo\n", encoding="utf-8")
-    tests_dir = repo / "tests"
-    tests_dir.mkdir()
-    (tests_dir / "test_prose.py").write_text(
-        f'def test_guide_pins_rule(text):\n    assert "{PINNED_PHRASE}" in text\n',
-        encoding="utf-8",
-    )
-    (tests_dir / "test_path.py").write_text(
-        'PATH = "skills/public/demo/SKILL.md"\n',
-        encoding="utf-8",
-    )
-    _run(repo, "git", "add", "-A")
-    _commit(repo, "base")
 
 
 def test_prose_pin_flags_edited_doc_prose(tmp_path: Path) -> None:

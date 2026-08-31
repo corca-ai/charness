@@ -33,6 +33,32 @@ def test_install_committed_repo_is_a_copy_with_no_test_time_git(
     assert git(first, "rev-parse", "HEAD") == git(second, "rev-parse", "HEAD")
 
 
+def test_install_committed_repo_keeps_executable_bits_without_test_time_git(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    files = {"bin/run.sh": "#!/bin/sh\necho ok\n", "README.md": "# seed\n"}
+    first = install_committed_repo(
+        tmp_path / "one", files, executable=("bin/run.sh",)
+    )
+    assert (first / "bin" / "run.sh").stat().st_mode & 0o111
+    launches: list[tuple[str, ...]] = []
+    original = seeds._run
+
+    def wrapped(argv, *args, **kwargs):
+        if isinstance(argv, (list, tuple)) and argv and Path(str(argv[0])).name == "git":
+            launches.append(tuple(str(part) for part in argv))
+        return original(argv, *args, **kwargs)
+
+    monkeypatch.setattr(seeds, "_run", wrapped)
+    monkeypatch.setattr(subprocess, "run", wrapped)
+    second = install_committed_repo(
+        tmp_path / "two", files, executable=("bin/run.sh",)
+    )
+    assert launches == []
+    assert (second / "bin" / "run.sh").stat().st_mode & 0o111
+    assert git(first, "rev-parse", "HEAD") == git(second, "rev-parse", "HEAD")
+
+
 def test_install_committed_repo_refuses_a_non_empty_destination(tmp_path: Path) -> None:
     dest = tmp_path / "repo"
     dest.mkdir()

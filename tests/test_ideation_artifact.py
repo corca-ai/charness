@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import subprocess
 from pathlib import Path
 
 from tests.quality_gates.support import run_script
@@ -13,10 +12,6 @@ def _seed(repo: Path, body: str) -> Path:
     artifact.parent.mkdir(parents=True, exist_ok=True)
     artifact.write_text(body, encoding="utf-8")
     return artifact
-
-
-def _run_git(repo: Path, *args: str) -> None:
-    subprocess.run(["git", *args], cwd=repo, check=True, capture_output=True, text=True)
 
 
 def test_validate_ideation_structured_questions_accepts_well_formed_block(tmp_path: Path) -> None:
@@ -102,12 +97,9 @@ def test_validate_ideation_artifact_no_artifacts_passes(tmp_path: Path) -> None:
 
 
 def test_validate_ideation_artifact_uses_changed_path_discovery(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    _run_git(repo, "init")
-    (repo / "README.md").write_text("seed\n", encoding="utf-8")
-    _run_git(repo, "add", "README.md")
-    _run_git(repo, "commit", "-m", "seed")
+    from tests.quality_gates.repo_shapes import install_committed_repo
+
+    repo = install_committed_repo(tmp_path / "repo", {"README.md": "seed\n"})
     _seed(
         repo,
         _PRELUDE

@@ -44,16 +44,19 @@ RENDER_PREVIEW = load_script_module(
 
 
 def _git(*args: str, cwd: Path) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(["git", *args], cwd=cwd, check=True, capture_output=True, text=True)
+    return subprocess.run(
+        ["git", "-c", "user.email=t@t", "-c", "user.name=t", *args],
+        cwd=cwd,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
 
 
 def _seed_git_repo(path: Path) -> Path:
-    path.mkdir(parents=True, exist_ok=True)
-    _git("init", "--initial-branch=main", cwd=path)
-    (path / "README.md").write_text("seed\n", encoding="utf-8")
-    _git("add", "README.md", cwd=path)
-    _git("commit", "-m", "seed", cwd=path)
-    return path
+    from tests.quality_gates.repo_shapes import install_committed_repo
+
+    return install_committed_repo(path, {"README.md": "seed\n"})
 
 
 def _load_copy_of(script: Path, tmp_path: Path, module_name: str):

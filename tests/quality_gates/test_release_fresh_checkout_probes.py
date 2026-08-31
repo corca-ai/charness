@@ -51,20 +51,18 @@ _ADAPTER_BASE = "\n".join(
 
 def _seed_repo(root: Path, probes: list[str]) -> Path:
     """A real git repo with a named branch: `--run-probes` clones it by branch."""
-    (root / ".agents").mkdir(parents=True)
+    from .repo_shapes import install_committed_repo
+
     body = _ADAPTER_BASE
     if probes:
         body += "fresh_checkout_probes:\n" + "".join(f"- {probe!r}\n" for probe in probes)
-    (root / ".agents" / "release-adapter.yaml").write_text(body, encoding="utf-8")
-    (root / "README.md").write_text("# demo\n", encoding="utf-8")
-    subprocess.run(["git", "init", "-q", "-b", "main", "."], cwd=root, check=True)
-    subprocess.run(["git", "add", "-A"], cwd=root, check=True)
-    subprocess.run(
-        ["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-qm", "seed"],
-        cwd=root,
-        check=True,
+    return install_committed_repo(
+        root,
+        {
+            ".agents/release-adapter.yaml": body,
+            "README.md": "# demo\n",
+        },
     )
-    return root
 
 
 def _run(*args: str):

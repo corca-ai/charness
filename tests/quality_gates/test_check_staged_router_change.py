@@ -48,14 +48,12 @@ def _git(repo: Path, *args: str) -> None:
 
 
 def _repo(tmp_path: Path) -> Path:
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    _git(repo, "init", "-q")
-    (repo / "AGENTS.md").write_text("# Router\n", encoding="utf-8")
-    (repo / "app.py").write_text("x = 1\n", encoding="utf-8")
-    _git(repo, "add", "AGENTS.md", "app.py")
-    _git(repo, "commit", "-qm", "seed")
-    return repo
+    from .repo_shapes import install_committed_repo
+
+    return install_committed_repo(
+        tmp_path / "repo",
+        {"AGENTS.md": "# Router\n", "app.py": "x = 1\n"},
+    )
 
 
 def test_ordinary_work_is_not_a_router_change(tmp_path: Path) -> None:

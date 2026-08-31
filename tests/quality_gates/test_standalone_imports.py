@@ -262,14 +262,11 @@ def test_changed_paths_resolve_against_the_repo_root_not_the_cwd(clean_repo: Pat
 
 def _mini_repo(root: Path, files: dict[str, str]) -> Path:
     """A Git-backed throwaway package for cycle shapes outside this repo."""
-    (root / "scripts").mkdir(parents=True)
-    (root / "scripts" / "__init__.py").write_text("", encoding="utf-8")
-    for name, body in files.items():
-        (root / "scripts" / name).write_text(body, encoding="utf-8")
-    subprocess.run(["git", "init", "-q"], cwd=root, check=True)
-    subprocess.run(["git", "add", "."], cwd=root, check=True)
-    subprocess.run(["git", "commit", "-qm", "seed"], cwd=root, check=True)
-    return root
+    from .repo_shapes import install_committed_repo
+
+    payload = {"scripts/__init__.py": ""}
+    payload.update({f"scripts/{name}": body for name, body in files.items()})
+    return install_committed_repo(root, payload)
 
 
 def test_a_cycle_a_module_turns_into_a_missing_sibling_is_still_caught(

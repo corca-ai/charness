@@ -221,18 +221,14 @@ def test_an_empty_quote_is_unresolvable_never_verified(tmp_path: Path) -> None:
 def _git_repo_with_source(tmp_path: Path) -> str:
     """A repo whose committed `adapter.py` carries `QUOTED` and whose WORKTREE no longer
     does -- the living-document rot the pin exists for."""
-    def run(*args: str) -> subprocess.CompletedProcess:
-        return subprocess.run(["git", *args], cwd=tmp_path, capture_output=True, text=True, check=True)
+    from scripts.git_checkout import head_oid_from_files
+    from tests.quality_gates.repo_shapes import install_committed_repo
 
-    run("init", "-q")
-    run("config", "user.email", "probe@example.invalid")
-    run("config", "user.name", "probe")
-    (tmp_path / "adapter.py").write_text(SOURCE_BODY, encoding="utf-8")
-    run("add", "adapter.py")
-    run("commit", "-q", "-m", "seed")
-    sha = subprocess.run(["git", "rev-parse", "HEAD"], cwd=tmp_path, capture_output=True, text=True, check=True)
+    install_committed_repo(tmp_path, {"adapter.py": SOURCE_BODY})
+    sha = head_oid_from_files(tmp_path)
+    assert sha is not None
     (tmp_path / "adapter.py").write_text("def resolve(payload):\n    return payload\n", encoding="utf-8")
-    return sha.stdout.strip()
+    return sha
 
 
 def test_an_unpinned_quote_rots_when_the_source_is_edited(tmp_path: Path) -> None:
