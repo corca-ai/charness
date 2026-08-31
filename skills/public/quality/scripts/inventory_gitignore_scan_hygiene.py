@@ -20,6 +20,13 @@ GIT_AWARE_MARKERS = (
     "git_list_repo_files",
     "iter_repo_files",
     "iter_matching_repo_files",
+    # The repo's own listing owner, and the spelling three flagged call sites
+    # actually use. `RepoFileSnapshot.list_files` delegates to
+    # `git_list_repo_files` -- already trusted above -- but this check reads the
+    # ENCLOSING FUNCTION's source text, where only the class name appears. So a
+    # function that lists through the snapshot and keeps `rglob` as its guarded
+    # fallback read as having no gitignore-aware source at all.
+    "RepoFileSnapshot",
     "--exclude-standard",
     "check-ignore",
     "pathspec",

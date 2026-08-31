@@ -149,3 +149,30 @@ def test_subagent_worktrees_are_ignored_so_a_live_agent_cannot_red_the_gates() -
         "`.claude/worktrees/` is not gitignored; a worktree-isolated subagent will be "
         "staged as an embedded repo and will red the bundle preflights while it runs"
     )
+
+
+def test_a_snapshot_backed_fallback_is_not_flagged(tmp_path: Path) -> None:
+    """`rglob` guarded by the repo's own listing owner is not an ungoverned scan.
+
+    `RepoFileSnapshot.list_files` delegates to `git_list_repo_files`, which this
+    check already trusts -- but it reads the ENCLOSING FUNCTION's source text, and
+    the class name is the only spelling that appears at the call sites. Three real
+    call sites in `skills/public/quality/scripts/` list through the snapshot and
+    keep `rglob` only for the branch where git listing is unavailable; without the
+    marker they read as having no gitignore-aware source at all.
+    """
+    script = tmp_path / "scan.py"
+    script.write_text(
+        "from pathlib import Path\n"
+        "from scripts.repo_file_listing import RepoFileSnapshot\n"
+        "def scan(repo_root: Path):\n"
+        "    listed = RepoFileSnapshot(repo_root).list_files(include_untracked=True)\n"
+        "    if listed is None:\n"
+        "        return sorted(repo_root.rglob('*.md'))\n"
+        "    return sorted(path for path in listed if path.suffix == '.md')\n",
+        encoding="utf-8",
+    )
+
+    payload = _run_hygiene(tmp_path, "--path-glob", "*.py")
+
+    assert payload["findings"] == []
