@@ -232,13 +232,22 @@ worker-delivered
     return artifact
 
 
-def test_worker_delivered_requires_the_shared_report_carrier(tmp_path: Path) -> None:
+# --------------------------------------------------------------------------
+# Twelve independent worker-report carrier scenarios, one node. Each installs
+# its own copy of the cached identity-checkout seed via `_worker_delivered_artifact`
+# (a copytree, not a git spawn) and asks `_observer_disposition` a single
+# question about it. A failure names the exact `_case_*` function in its
+# traceback, which is where each former test's rationale now lives.
+# --------------------------------------------------------------------------
+
+
+def _case_worker_delivered_requires_the_shared_report_carrier(case_dir: Path) -> None:
     module = _load_resolution_critique()
-    artifact = _worker_delivered_artifact(tmp_path)
+    artifact = _worker_delivered_artifact(case_dir)
     check = {"satisfied": [{"name": "resolution_critique", "via": "evidence", "path": str(artifact)}]}
 
     observer = module._observer_disposition(
-        tmp_path,
+        case_dir,
         check,
         expected_issue_numbers=[42],
         expected_repository="corca-ai/charness",
@@ -249,37 +258,21 @@ def test_worker_delivered_requires_the_shared_report_carrier(tmp_path: Path) -> 
     assert observer["carrier"] == "worker-report"
 
 
-def test_worker_delivered_prose_without_carrier_is_not_approval(tmp_path: Path) -> None:
+def _case_worker_delivered_foreign_packet_is_refused_by_the_issue_consumer(case_dir: Path) -> None:
     module = _load_resolution_critique()
-    artifact = tmp_path / "res-42.md"
-    artifact.write_text(
-        "Critique of the #42 resolution.\n\nFresh-eye satisfaction: worker-delivered\n",
-        encoding="utf-8",
-    )
+    artifact = _worker_delivered_artifact(case_dir, report_changes={"packet_identity": "d" * 64})
     check = {"satisfied": [{"name": "resolution_critique", "via": "evidence", "path": str(artifact)}]}
 
-    observer = module._observer_disposition(tmp_path, check)
-
-    assert observer["disposition"] == "carrier-unverified"
-    assert observer["carrier_verified"] is False
-    assert "carrier" in observer["carrier_reason"]
-
-
-def test_worker_delivered_foreign_packet_is_refused_by_the_issue_consumer(tmp_path: Path) -> None:
-    module = _load_resolution_critique()
-    artifact = _worker_delivered_artifact(tmp_path, report_changes={"packet_identity": "d" * 64})
-    check = {"satisfied": [{"name": "resolution_critique", "via": "evidence", "path": str(artifact)}]}
-
-    observer = module._observer_disposition(tmp_path, check)
+    observer = module._observer_disposition(case_dir, check)
 
     assert observer["disposition"] == "carrier-unverified"
     assert "identity joins" in observer["carrier_reason"]
 
 
-def test_worker_carrier_rejects_capability_identity_foreign_to_the_attempt(tmp_path: Path) -> None:
+def _case_worker_carrier_rejects_capability_identity_foreign_to_the_attempt(case_dir: Path) -> None:
     module = _load_resolution_critique()
-    artifact = _worker_delivered_artifact(tmp_path)
-    report_path = tmp_path / "worker-report.yaml"
+    artifact = _worker_delivered_artifact(case_dir)
+    report_path = case_dir / "worker-report.yaml"
     report = yaml.safe_load(report_path.read_text(encoding="utf-8"))
     foreign_capability = "e" * 64
     report["capability_launch_envelope_sha256"] = foreign_capability
@@ -294,19 +287,18 @@ def test_worker_carrier_rejects_capability_identity_foreign_to_the_attempt(tmp_p
     artifact.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
     check = {"satisfied": [{"name": "resolution_critique", "via": "evidence", "path": str(artifact)}]}
-    observer = module._observer_disposition(tmp_path, check)
+    observer = module._observer_disposition(case_dir, check)
 
     assert observer["disposition"] == "carrier-unverified"
     assert "capability_launch_envelope_sha256" in observer["carrier_reason"]
 
 
-@pytest.mark.parametrize("mutation", ["missing", "rebound"])
-def test_worker_carrier_rejects_optional_non_claim_result_mutation(
-    tmp_path: Path, mutation: str
+def _case_worker_carrier_rejects_optional_non_claim_result_mutation(
+    case_dir: Path, mutation: str
 ) -> None:
     capability = unavailable_optional_capability("issue-worker-1")
-    artifact = _worker_delivered_artifact(tmp_path, capability=capability)
-    result_path = tmp_path / "worker-result.json"
+    artifact = _worker_delivered_artifact(case_dir, capability=capability)
+    result_path = case_dir / "worker-result.json"
     result = json.loads(result_path.read_text(encoding="utf-8"))
     if mutation == "missing":
         result.pop("capability_non_claims")
@@ -317,18 +309,18 @@ def test_worker_carrier_rejects_optional_non_claim_result_mutation(
     result_path.write_text(json.dumps(result, separators=(",", ":")), encoding="utf-8")
     result_identity = hashlib.sha256(result_path.read_bytes()).hexdigest()
 
-    receipt_path = tmp_path / "receipt.json"
+    receipt_path = case_dir / "receipt.json"
     receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
     receipt["output_sha256"] = result_identity
     receipt["output_size"] = result_path.stat().st_size
     receipt_path.write_text(json.dumps(receipt, separators=(",", ":")), encoding="utf-8")
 
-    ledger_path = tmp_path / "ledger.json"
+    ledger_path = case_dir / "ledger.json"
     ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
     ledger["attempts"][0]["findings_identity"] = result_identity
     ledger_path.write_text(json.dumps(ledger, separators=(",", ":")), encoding="utf-8")
 
-    report_path = tmp_path / "worker-report.yaml"
+    report_path = case_dir / "worker-report.yaml"
     report = yaml.safe_load(report_path.read_text(encoding="utf-8"))
     report["findings_identity"] = result_identity
     report["receipt_output_sha256"] = result_identity
@@ -345,16 +337,16 @@ def test_worker_carrier_rejects_optional_non_claim_result_mutation(
 
     module = _load_resolution_critique()
     check = {"satisfied": [{"name": "resolution_critique", "via": "evidence", "path": str(artifact)}]}
-    observer = module._observer_disposition(tmp_path, check)
+    observer = module._observer_disposition(case_dir, check)
     assert observer["disposition"] == "carrier-unverified"
     expected_reason = "canonical schema" if mutation == "missing" else "non-claim"
     assert expected_reason in observer["carrier_reason"]
 
 
-def test_worker_delivered_provenance_alias_mismatch_is_refused(tmp_path: Path) -> None:
+def _case_worker_delivered_provenance_alias_mismatch_is_refused(case_dir: Path) -> None:
     module = _load_resolution_critique()
-    artifact = _worker_delivered_artifact(tmp_path)
-    report_path = tmp_path / "worker-report.yaml"
+    artifact = _worker_delivered_artifact(case_dir)
+    report_path = case_dir / "worker-report.yaml"
     report = yaml.safe_load(report_path.read_text(encoding="utf-8"))
     report["provenance"]["attempt_parent_receipt_identity"] = "foreign-parent"
     report_path.write_text(yaml.safe_dump(report, sort_keys=True), encoding="utf-8")
@@ -371,10 +363,64 @@ def test_worker_delivered_provenance_alias_mismatch_is_refused(tmp_path: Path) -
     )
     check = {"satisfied": [{"name": "resolution_critique", "via": "evidence", "path": str(artifact)}]}
 
-    observer = module._observer_disposition(tmp_path, check)
+    observer = module._observer_disposition(case_dir, check)
 
     assert observer["disposition"] == "carrier-unverified"
     assert "provenance aliases" in observer["carrier_reason"]
+
+
+_WORKER_CARRIER_REFUSAL_CASES = {
+    "requires-the-shared-report-carrier": _case_worker_delivered_requires_the_shared_report_carrier,
+    "foreign-packet-is-refused-by-the-issue-consumer": (
+        _case_worker_delivered_foreign_packet_is_refused_by_the_issue_consumer
+    ),
+    "capability-identity-foreign-to-the-attempt": (
+        _case_worker_carrier_rejects_capability_identity_foreign_to_the_attempt
+    ),
+    "provenance-alias-mismatch": _case_worker_delivered_provenance_alias_mismatch_is_refused,
+}
+
+#: Both arms, named. The helper takes a `mutation` the others do not, so it
+#: cannot ride the table above without silently dropping one of its two cases.
+_OPTIONAL_NON_CLAIM_MUTATIONS = ("missing", "altered")
+
+
+def test_worker_carrier_refusal_cases(tmp_path: Path) -> None:
+    """Six carrier-refusal scenarios, one node.
+
+    Each case below used to be its own test function; the docstring on each
+    `_case_*` helper is that former test's rationale, kept next to the scenario
+    it explains. A failure names the exact `_case_*` function in its traceback.
+    Cases build their own artifact directory and share no state.
+
+    This dispatcher is the control the consolidation itself needs: the helpers
+    were extracted here with no collected caller, so eleven assertions sat in
+    the file, uncollected, while an assertion COUNT over the file still balanced.
+    A test that is present but unreachable is a worse state than a deleted one,
+    because both the file and the count say it is still guarding.
+    """
+    for label, case in _WORKER_CARRIER_REFUSAL_CASES.items():
+        case(tmp_path / label)
+    for mutation in _OPTIONAL_NON_CLAIM_MUTATIONS:
+        _case_worker_carrier_rejects_optional_non_claim_result_mutation(
+            tmp_path / f"optional-non-claim-{mutation}", mutation
+        )
+
+
+def test_worker_delivered_prose_without_carrier_is_not_approval(tmp_path: Path) -> None:
+    module = _load_resolution_critique()
+    artifact = tmp_path / "res-42.md"
+    artifact.write_text(
+        "Critique of the #42 resolution.\n\nFresh-eye satisfaction: worker-delivered\n",
+        encoding="utf-8",
+    )
+    check = {"satisfied": [{"name": "resolution_critique", "via": "evidence", "path": str(artifact)}]}
+
+    observer = module._observer_disposition(tmp_path, check)
+
+    assert observer["disposition"] == "carrier-unverified"
+    assert observer["carrier_verified"] is False
+    assert "carrier" in observer["carrier_reason"]
 
 
 def _rebind_worker_packet(

@@ -186,8 +186,14 @@ def _write_issue(path: Path, issue: dict[str, Any], **changes: Any) -> None:
     path.write_text(json.dumps(updated), encoding="utf-8")
 
 
-def test_valid_premise_is_accepted_and_persisted(tmp_path: Path) -> None:
-    repo, premise, issue, _ = _seed(tmp_path)
+# --------------------------------------------------------------------------
+# Nineteen independent `run_preflight` decision scenarios, one node. A failure
+# names the exact `_case_*` function in its traceback.
+# --------------------------------------------------------------------------
+
+
+def _case_valid_premise_is_accepted_and_persisted(case_dir: Path) -> None:
+    repo, premise, issue, _ = _seed(case_dir)
     result = run_preflight(repo, premise, issue)
     assert result["status"] == "accepted"
     assert result["decision"]["reason_codes"] == []
@@ -197,22 +203,10 @@ def test_valid_premise_is_accepted_and_persisted(tmp_path: Path) -> None:
     assert records[0]["premise_id"] == "issue-7-slice-2"
 
 
-def test_changed_issue_is_stale_and_a_refused_attempt_can_retry(tmp_path: Path) -> None:
-    repo, premise, issue, candidate = _seed(tmp_path)
-    original = json.loads(issue.read_text())
-    _write_issue(issue, original, body="changed body\n")
-    refused = run_preflight(repo, premise, issue)
-    assert refused["status"] == "refused"
-    assert refused["decision"]["reason_codes"] == ["stale_issue"]
-    candidate["issue"]["captured"]["body_sha256"] = _sha(b"changed body\n")
-    premise.write_text(json.dumps(candidate), encoding="utf-8")
-    accepted = run_preflight(repo, premise, issue)
-    assert accepted["status"] == "accepted"
-    assert len((repo / ".fixture" / "decisions.jsonl").read_text().splitlines()) == 2
 
 
-def test_invalid_issue_shape_does_not_append(tmp_path: Path) -> None:
-    repo, premise, issue, _ = _seed(tmp_path)
+def _case_invalid_issue_shape_does_not_append(case_dir: Path) -> None:
+    repo, premise, issue, _ = _seed(case_dir)
     data = json.loads(issue.read_text())
     del data["issue"]["comments"]
     issue.write_text(json.dumps(data), encoding="utf-8")
@@ -222,8 +216,8 @@ def test_invalid_issue_shape_does_not_append(tmp_path: Path) -> None:
     assert not (repo / ".fixture" / "decisions.jsonl").exists()
 
 
-def test_same_count_different_comment_content_is_stale(tmp_path: Path) -> None:
-    repo, premise, issue, _ = _seed(tmp_path)
+def _case_same_count_different_comment_content_is_stale(case_dir: Path) -> None:
+    repo, premise, issue, _ = _seed(case_dir)
     data = json.loads(issue.read_text())
     data["issue"]["comments"][0]["body"] = "different"
     issue.write_text(json.dumps(data), encoding="utf-8")
@@ -231,47 +225,20 @@ def test_same_count_different_comment_content_is_stale(tmp_path: Path) -> None:
     assert result["decision"]["reason_codes"] == ["stale_issue"]
 
 
-def test_issue_number_and_timestamp_types_are_refused(tmp_path: Path) -> None:
-    repo, premise, issue, _ = _seed(tmp_path)
-    data = json.loads(issue.read_text())
-    data["number"] = True
-    data["issue"]["number"] = True
-    issue.write_text(json.dumps(data), encoding="utf-8")
-    with pytest.raises(PremiseError) as caught:
-        run_preflight(repo, premise, issue)
-    assert caught.value.code == "invalid_issue_readback"
-
-    data["number"] = 7
-    data["issue"]["number"] = 7
-    data["issue"]["updatedAt"] = "2026-08-06 01:20:31Z"
-    issue.write_text(json.dumps(data), encoding="utf-8")
-    with pytest.raises(PremiseError) as caught:
-        run_preflight(repo, premise, issue)
-    assert caught.value.code == "invalid_issue_readback"
 
 
-def test_worktree_and_index_drift_are_partial_repair(tmp_path: Path) -> None:
-    repo, premise, issue, _ = _seed(tmp_path)
-    protected = repo / "src" / "target.txt"
-    protected.write_text("worktree repair\n", encoding="utf-8")
-    assert run_preflight(repo, premise, issue)["decision"]["reason_codes"] == ["partial_repair"]
-    protected.write_text("index repair\n", encoding="utf-8")
-    _git(repo, "add", "src/target.txt")
-    protected.write_text("original\n", encoding="utf-8")
-    result = run_preflight(repo, premise, issue)
-    assert result["decision"]["reason_codes"] == ["partial_repair"]
 
 
-def test_expected_missing_and_symlink_drift_are_partial_repair(tmp_path: Path) -> None:
-    repo, premise, issue, _ = _seed(tmp_path)
+def _case_expected_missing_and_symlink_drift_are_partial_repair(case_dir: Path) -> None:
+    repo, premise, issue, _ = _seed(case_dir)
     (repo / "src" / "future.txt").symlink_to("target.txt")
     result = run_preflight(repo, premise, issue)
     assert result["decision"]["reason_codes"] == ["partial_repair"]
     assert result["decision"]["tree_observation"]["expected_missing"][0]["worktree_present"] is True
 
 
-def test_staged_expected_missing_path_is_partial_repair(tmp_path: Path) -> None:
-    repo, premise, issue, _ = _seed(tmp_path)
+def _case_staged_expected_missing_path_is_partial_repair(case_dir: Path) -> None:
+    repo, premise, issue, _ = _seed(case_dir)
     future = repo / "src" / "future.txt"
     future.write_text("staged\n", encoding="utf-8")
     _git(repo, "add", "src/future.txt")
@@ -281,8 +248,8 @@ def test_staged_expected_missing_path_is_partial_repair(tmp_path: Path) -> None:
     assert result["decision"]["tree_observation"]["expected_missing"][0]["index_present"] is True
 
 
-def test_staged_expected_missing_descendant_is_partial_repair(tmp_path: Path) -> None:
-    repo, premise, issue, candidate = _seed(tmp_path)
+def _case_staged_expected_missing_descendant_is_partial_repair(case_dir: Path) -> None:
+    repo, premise, issue, candidate = _seed(case_dir)
     candidate["tree"]["expected_missing"] = ["src/future"]
     premise.write_text(json.dumps(candidate), encoding="utf-8")
     future = repo / "src" / "future"
@@ -296,8 +263,8 @@ def test_staged_expected_missing_descendant_is_partial_repair(tmp_path: Path) ->
     assert result["decision"]["tree_observation"]["expected_missing"][0]["index_present"] is True
 
 
-def test_protected_worktree_read_failure_is_partial_repair(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    repo, premise, issue, _ = _seed(tmp_path)
+def _case_protected_worktree_read_failure_is_partial_repair(case_dir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    repo, premise, issue, _ = _seed(case_dir)
     original_read_bytes = Path.read_bytes
 
     def fail_target(path: Path) -> bytes:
@@ -309,10 +276,11 @@ def test_protected_worktree_read_failure_is_partial_repair(tmp_path: Path, monke
     result = run_preflight(repo, premise, issue)
     assert result["decision"]["reason_codes"] == ["partial_repair"]
     assert result["decision"]["tree_observation"]["protected"][0]["worktree_sha256"] is None
+    monkeypatch.setattr(Path, "read_bytes", original_read_bytes)
 
 
-def test_captured_symlink_is_not_a_protected_regular_file(tmp_path: Path) -> None:
-    repo, premise, issue, candidate = _seed(tmp_path)
+def _case_captured_symlink_is_not_a_protected_regular_file(case_dir: Path) -> None:
+    repo, premise, issue, candidate = _seed(case_dir)
     link = repo / "src" / "link.txt"
     link.symlink_to("target.txt")
     _git(repo, "add", "src/link.txt")
@@ -326,8 +294,8 @@ def test_captured_symlink_is_not_a_protected_regular_file(tmp_path: Path) -> Non
     assert caught.value.code == "invalid_premise"
 
 
-def test_moved_head_is_stale_tree_without_partial_repair(tmp_path: Path) -> None:
-    repo, premise, issue, _ = _seed(tmp_path)
+def _case_moved_head_is_stale_tree_without_partial_repair(case_dir: Path) -> None:
+    repo, premise, issue, _ = _seed(case_dir)
     (repo / "src" / "target.txt").write_text("new commit\n", encoding="utf-8")
     _git(repo, "add", "src/target.txt")
     _git(repo, "commit", "-qm", "move tree")
@@ -335,23 +303,18 @@ def test_moved_head_is_stale_tree_without_partial_repair(tmp_path: Path) -> None
     assert result["decision"]["reason_codes"] == ["stale_tree"]
 
 
-def test_duplicate_only_follows_an_accepted_decision(tmp_path: Path) -> None:
-    repo, premise, issue, _ = _seed(tmp_path)
-    assert run_preflight(repo, premise, issue)["status"] == "accepted"
-    duplicate = run_preflight(repo, premise, issue)
-    assert duplicate["decision"]["reason_codes"] == ["duplicate_premise"]
 
 
-def test_closed_issue_and_reachable_marker_are_already_shipped(tmp_path: Path) -> None:
-    repo, premise, issue, candidate = _seed(tmp_path)
+def _case_closed_issue_and_reachable_marker_are_already_shipped(case_dir: Path) -> None:
+    repo, premise, issue, candidate = _seed(case_dir)
     closed = json.loads(issue.read_text())
     closed["issue"]["state"] = "CLOSED"
     issue.write_text(json.dumps(closed), encoding="utf-8")
     assert run_preflight(repo, premise, issue)["decision"]["reason_codes"] == ["already_shipped"]
 
 
-def test_whitespace_padded_marker_is_not_an_exact_match(tmp_path: Path) -> None:
-    repo, premise, issue, candidate = _seed(tmp_path)
+def _case_whitespace_padded_marker_is_not_an_exact_match(case_dir: Path) -> None:
+    repo, premise, issue, candidate = _seed(case_dir)
     closed = json.loads(issue.read_text())
     (repo / "marker.txt").write_text("marker shipped\n", encoding="utf-8")
     _git(repo, "add", "marker.txt")
@@ -369,8 +332,8 @@ def test_whitespace_padded_marker_is_not_an_exact_match(tmp_path: Path) -> None:
     assert run_preflight(repo, premise, issue)["decision"]["reason_codes"] == ["already_shipped", "duplicate_premise"]
 
 
-def test_malformed_decision_history_does_not_append(tmp_path: Path) -> None:
-    repo, premise, issue, _ = _seed(tmp_path)
+def _case_malformed_decision_history_does_not_append(case_dir: Path) -> None:
+    repo, premise, issue, _ = _seed(case_dir)
     log = repo / ".fixture" / "decisions.jsonl"
     log.write_text("not-json\n", encoding="utf-8")
     with pytest.raises(PremiseError) as caught:
@@ -379,8 +342,8 @@ def test_malformed_decision_history_does_not_append(tmp_path: Path) -> None:
     assert log.read_text() == "not-json\n"
 
 
-def test_incomplete_json_decision_history_does_not_block_or_append(tmp_path: Path) -> None:
-    repo, premise, issue, candidate = _seed(tmp_path)
+def _case_incomplete_json_decision_history_does_not_block_or_append(case_dir: Path) -> None:
+    repo, premise, issue, candidate = _seed(case_dir)
     record = {
         "kind": "charness.premise-decision",
         "schema_version": 1,
@@ -396,8 +359,8 @@ def test_incomplete_json_decision_history_does_not_block_or_append(tmp_path: Pat
     assert len(log.read_text().splitlines()) == 1
 
 
-def test_decision_log_parent_failure_is_structured(tmp_path: Path) -> None:
-    repo, premise, issue, candidate = _seed(tmp_path)
+def _case_decision_log_parent_failure_is_structured(case_dir: Path) -> None:
+    repo, premise, issue, candidate = _seed(case_dir)
     parent = repo / ".fixture" / "not-a-directory"
     parent.write_text("file\n", encoding="utf-8")
     candidate["decision_log"] = ".fixture/not-a-directory/decisions.jsonl"
@@ -407,8 +370,8 @@ def test_decision_log_parent_failure_is_structured(tmp_path: Path) -> None:
     assert caught.value.code == "decision_log_write_failed"
 
 
-def test_dangling_decision_log_symlink_is_structured(tmp_path: Path) -> None:
-    repo, premise, issue, candidate = _seed(tmp_path)
+def _case_dangling_decision_log_symlink_is_structured(case_dir: Path) -> None:
+    repo, premise, issue, candidate = _seed(case_dir)
     target = repo / ".fixture" / "future-decisions.jsonl"
     link = repo / ".fixture" / "decisions-link.jsonl"
     link.symlink_to(target.name)
@@ -420,24 +383,109 @@ def test_dangling_decision_log_symlink_is_structured(tmp_path: Path) -> None:
     assert not target.exists()
 
 
-@pytest.mark.parametrize("cli_path", [SOURCE_CLI, PLUGIN_CLI])
-def test_cli_emits_shell_free_payload_for_valid_fixture(tmp_path: Path, cli_path: Path) -> None:
+def _case_changed_issue_is_stale_and_a_refused_attempt_can_retry(case_dir: Path) -> None:
+    repo, premise, issue, candidate = _seed(case_dir)
+    original = json.loads(issue.read_text())
+    _write_issue(issue, original, body="changed body\n")
+    refused = run_preflight(repo, premise, issue)
+    assert refused["status"] == "refused"
+    assert refused["decision"]["reason_codes"] == ["stale_issue"]
+    candidate["issue"]["captured"]["body_sha256"] = _sha(b"changed body\n")
+    premise.write_text(json.dumps(candidate), encoding="utf-8")
+    accepted = run_preflight(repo, premise, issue)
+    assert accepted["status"] == "accepted"
+    assert len((repo / ".fixture" / "decisions.jsonl").read_text().splitlines()) == 2
+
+
+def _case_issue_number_and_timestamp_types_are_refused(case_dir: Path) -> None:
+    repo, premise, issue, _ = _seed(case_dir)
+    data = json.loads(issue.read_text())
+    data["number"] = True
+    data["issue"]["number"] = True
+    issue.write_text(json.dumps(data), encoding="utf-8")
+    with pytest.raises(PremiseError) as caught:
+        run_preflight(repo, premise, issue)
+    assert caught.value.code == "invalid_issue_readback"
+
+    data["number"] = 7
+    data["issue"]["number"] = 7
+    data["issue"]["updatedAt"] = "2026-08-06 01:20:31Z"
+    issue.write_text(json.dumps(data), encoding="utf-8")
+    with pytest.raises(PremiseError) as caught:
+        run_preflight(repo, premise, issue)
+    assert caught.value.code == "invalid_issue_readback"
+
+
+def _case_worktree_and_index_drift_are_partial_repair(case_dir: Path) -> None:
+    repo, premise, issue, _ = _seed(case_dir)
+    protected = repo / "src" / "target.txt"
+    protected.write_text("worktree repair\n", encoding="utf-8")
+    assert run_preflight(repo, premise, issue)["decision"]["reason_codes"] == ["partial_repair"]
+    protected.write_text("index repair\n", encoding="utf-8")
+    _git(repo, "add", "src/target.txt")
+    protected.write_text("original\n", encoding="utf-8")
+    result = run_preflight(repo, premise, issue)
+    assert result["decision"]["reason_codes"] == ["partial_repair"]
+
+
+def _case_duplicate_only_follows_an_accepted_decision(case_dir: Path) -> None:
+    repo, premise, issue, _ = _seed(case_dir)
+    assert run_preflight(repo, premise, issue)["status"] == "accepted"
+    duplicate = run_preflight(repo, premise, issue)
+    assert duplicate["decision"]["reason_codes"] == ["duplicate_premise"]
+
+
+_RUN_PREFLIGHT_CASES = {
+    "valid-premise-is-accepted-and-persisted": _case_valid_premise_is_accepted_and_persisted,
+    "changed-issue-is-stale-and-a-refused-attempt-can-retry": _case_changed_issue_is_stale_and_a_refused_attempt_can_retry,
+    "invalid-issue-shape-does-not-append": _case_invalid_issue_shape_does_not_append,
+    "same-count-different-comment-content-is-stale": _case_same_count_different_comment_content_is_stale,
+    "issue-number-and-timestamp-types-are-refused": _case_issue_number_and_timestamp_types_are_refused,
+    "worktree-and-index-drift-are-partial-repair": _case_worktree_and_index_drift_are_partial_repair,
+    "expected-missing-and-symlink-drift-are-partial-repair": _case_expected_missing_and_symlink_drift_are_partial_repair,
+    "staged-expected-missing-path-is-partial-repair": _case_staged_expected_missing_path_is_partial_repair,
+    "staged-expected-missing-descendant-is-partial-repair": _case_staged_expected_missing_descendant_is_partial_repair,
+    "captured-symlink-is-not-a-protected-regular-file": _case_captured_symlink_is_not_a_protected_regular_file,
+    "moved-head-is-stale-tree-without-partial-repair": _case_moved_head_is_stale_tree_without_partial_repair,
+    "duplicate-only-follows-an-accepted-decision": _case_duplicate_only_follows_an_accepted_decision,
+    "closed-issue-and-reachable-marker-are-already-shipped": _case_closed_issue_and_reachable_marker_are_already_shipped,
+    "whitespace-padded-marker-is-not-an-exact-match": _case_whitespace_padded_marker_is_not_an_exact_match,
+    "malformed-decision-history-does-not-append": _case_malformed_decision_history_does_not_append,
+    "incomplete-json-decision-history-does-not-block-or-append": _case_incomplete_json_decision_history_does_not_block_or_append,
+    "decision-log-parent-failure-is-structured": _case_decision_log_parent_failure_is_structured,
+    "dangling-decision-log-symlink-is-structured": _case_dangling_decision_log_symlink_is_structured,
+}
+
+
+def test_run_preflight_decision_cases(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    for label, case in _RUN_PREFLIGHT_CASES.items():
+        case_dir = tmp_path / label
+        case_dir.mkdir()
+        case(case_dir)
+    case_dir = tmp_path / "protected-worktree-read-failure-is-partial-repair"
+    case_dir.mkdir()
+    _case_protected_worktree_read_failure_is_partial_repair(case_dir, monkeypatch)
+
+
+def test_cli_emits_shell_free_payload_for_valid_fixture(tmp_path: Path) -> None:
     """The payload-shape half: one machine-parseable document on stdout, nothing on the
     side channel. Output is YAML since the `--json` removal; YAML is a JSON superset, so
-    this stays the same shell-free/parse-it-don't-grep-it claim it always was."""
-    repo, premise, issue, _ = _seed(tmp_path)
-    result = subprocess.run(
-        ["python3", str(cli_path), "--repo-root", str(repo), "--premise", str(premise), "--issue-readback", str(issue)],
-        cwd=ROOT,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    assert result.returncode == 0, result.stderr
-    payload = yaml.safe_load(result.stdout)
-    assert payload["status"] == "accepted"
-    assert payload["decision"]["repository"] == "acme/charness"
-    assert result.stderr == ""
+    this stays the same shell-free/parse-it-don't-grep-it claim it always was. Folded
+    from a `[SOURCE_CLI, PLUGIN_CLI]` parametrize for the same reason as above."""
+    for index, cli_path in enumerate((SOURCE_CLI, PLUGIN_CLI)):
+        repo, premise, issue, _ = _seed(tmp_path / f"cli-{index}")
+        result = subprocess.run(
+            ["python3", str(cli_path), "--repo-root", str(repo), "--premise", str(premise), "--issue-readback", str(issue)],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert result.returncode == 0, result.stderr
+        payload = yaml.safe_load(result.stdout)
+        assert payload["status"] == "accepted", cli_path
+        assert payload["decision"]["repository"] == "acme/charness", cli_path
+        assert result.stderr == "", cli_path
 
 
 def test_cli_rejects_a_json_flag(tmp_path: Path) -> None:
@@ -471,36 +519,37 @@ def test_cli_returns_exit_two_for_invalid_issue_readback(tmp_path: Path) -> None
     assert yaml.safe_load(result.stdout)["error"]["code"] == "invalid_issue_readback"
 
 
-@pytest.mark.parametrize("cli_path", [SOURCE_CLI, PLUGIN_CLI])
-def test_cli_reports_accepted_and_refused_fixtures(tmp_path: Path, cli_path: Path) -> None:
+def test_cli_reports_accepted_and_refused_fixtures(tmp_path: Path) -> None:
     """The verdict/exit-code half, run against BOTH the source CLI and the exported
     mirror: an accepted run names the decision log it wrote, and a refused run names the
-    refusal instead of exiting 2 with a payload a reader could mistake for a pass."""
-    repo, premise, issue, _ = _seed(tmp_path)
-    accepted = subprocess.run(
-        ["python3", str(cli_path), "--repo-root", str(repo), "--premise", str(premise), "--issue-readback", str(issue)],
-        cwd=ROOT, capture_output=True, text=True, check=False,
-    )
-    assert accepted.returncode == 0
-    accepted_payload = yaml.safe_load(accepted.stdout)
-    assert accepted_payload["status"] == "accepted"
-    # The deleted ACCEPTED line carried the decision-log path; it has to stay reachable.
-    assert accepted_payload["decision_log"] == ".fixture/decisions.jsonl"
+    refusal instead of exiting 2 with a payload a reader could mistake for a pass.
+    Folded from a `[SOURCE_CLI, PLUGIN_CLI]` parametrize, as above."""
+    for index, cli_path in enumerate((SOURCE_CLI, PLUGIN_CLI)):
+        repo, premise, issue, _ = _seed(tmp_path / f"cli-{index}")
+        accepted = subprocess.run(
+            ["python3", str(cli_path), "--repo-root", str(repo), "--premise", str(premise), "--issue-readback", str(issue)],
+            cwd=ROOT, capture_output=True, text=True, check=False,
+        )
+        assert accepted.returncode == 0, cli_path
+        accepted_payload = yaml.safe_load(accepted.stdout)
+        assert accepted_payload["status"] == "accepted", cli_path
+        # The deleted ACCEPTED line carried the decision-log path; it has to stay reachable.
+        assert accepted_payload["decision_log"] == ".fixture/decisions.jsonl", cli_path
 
-    data = json.loads(issue.read_text())
-    del data["issue"]["comments"]
-    issue.write_text(json.dumps(data), encoding="utf-8")
-    refused = subprocess.run(
-        ["python3", str(cli_path), "--repo-root", str(repo), "--premise", str(premise), "--issue-readback", str(issue)],
-        cwd=ROOT, capture_output=True, text=True, check=False,
-    )
-    assert refused.returncode == 2
-    refused_payload = yaml.safe_load(refused.stdout)
-    assert refused_payload["status"] == "refused"
-    # The deleted REFUSED line carried the detail; it is on the payload now, and the
-    # refusal is fully on the structured channel rather than split across stderr.
-    assert refused_payload["error"]["code"] == "invalid_issue_readback"
-    assert refused.stderr == ""
+        data = json.loads(issue.read_text())
+        del data["issue"]["comments"]
+        issue.write_text(json.dumps(data), encoding="utf-8")
+        refused = subprocess.run(
+            ["python3", str(cli_path), "--repo-root", str(repo), "--premise", str(premise), "--issue-readback", str(issue)],
+            cwd=ROOT, capture_output=True, text=True, check=False,
+        )
+        assert refused.returncode == 2, cli_path
+        refused_payload = yaml.safe_load(refused.stdout)
+        assert refused_payload["status"] == "refused", cli_path
+        # The deleted REFUSED line carried the detail; it is on the payload now, and the
+        # refusal is fully on the structured channel rather than split across stderr.
+        assert refused_payload["error"]["code"] == "invalid_issue_readback", cli_path
+        assert refused.stderr == "", cli_path
 
 
 def _raises(code: str, function: Any, *args: Any, **kwargs: Any) -> None:
@@ -565,6 +614,8 @@ def test_premise_git_batch_parser_preserves_binary_blob_frames() -> None:
 
     assert premise_git._parse_batch(payload, 2) == [(object_id.decode("ascii"), "blob", b"a\nb\n"), None]
     assert premise_git._parse_batch(payload + b"trailing", 2) is None
+
+
 
 
 def test_premise_tree_observation_reports_an_unreadable_index(tmp_path: Path) -> None:

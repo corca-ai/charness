@@ -46,18 +46,28 @@ def _seed(repo: Path, **kwargs: object) -> dict:
     )
 
 
-def test_seeding_an_empty_ledger_makes_a_tagged_class_validate(tmp_path: Path) -> None:
+# --------------------------------------------------------------------------
+# Ten independent seed/validate scenarios, one node. Each installs its own
+# small retro/ledger fixture (plain file writes, no git), so bundling them
+# here does not share the product's own `_committed_state` git calls -- it
+# only drops ten nodes' fixture/collection overhead to one. A failure names
+# the exact `_case_*` function in its traceback, which is where each former
+# test's docstring/rationale now lives.
+# --------------------------------------------------------------------------
+
+
+def _case_seeding_an_empty_ledger_makes_a_tagged_class_validate(case_dir: Path) -> None:
     """The whole point of #625: ledger exists -> a lesson is actually in it.
 
     The pre-fix state was an empty ledger that validated forever while
     `render_lesson_selection_preview` reported `0 eligible`, and no command could
     change that.
     """
-    _retro(tmp_path, "source.md", "a")
-    path = _empty_ledger(tmp_path)
-    assert _validate(tmp_path)["lesson_count"] == 0
+    _retro(case_dir, "source.md", "a")
+    path = _empty_ledger(case_dir)
+    assert _validate(case_dir)["lesson_count"] == 0
 
-    receipt = _seed(tmp_path)
+    receipt = _seed(case_dir)
 
     assert receipt["seeded_count"] == 1
     assert receipt["seeded"][0] == {
@@ -66,7 +76,7 @@ def test_seeding_an_empty_ledger_makes_a_tagged_class_validate(tmp_path: Path) -
         "lesson_id": "a",
         "source_retro": "charness-artifacts/retro/source.md",
     }
-    assert _validate(tmp_path)["lesson_count"] == 1
+    assert _validate(case_dir)["lesson_count"] == 1
     lesson = json.loads(path.read_text(encoding="utf-8"))["lessons"]["a"]
     assert lesson == {
         "source_retro": "charness-artifacts/retro/source.md",
@@ -79,90 +89,90 @@ def test_seeding_an_empty_ledger_makes_a_tagged_class_validate(tmp_path: Path) -
     }
 
 
-def test_dry_run_reports_the_plan_and_writes_nothing(tmp_path: Path) -> None:
-    _retro(tmp_path, "source.md", "a")
-    path = _empty_ledger(tmp_path)
+def _case_dry_run_reports_the_plan_and_writes_nothing(case_dir: Path) -> None:
+    _retro(case_dir, "source.md", "a")
+    path = _empty_ledger(case_dir)
     before = path.read_bytes()
 
-    receipt = _seed(tmp_path, dry_run=True)
+    receipt = _seed(case_dir, dry_run=True)
 
     assert receipt["dry_run"] is True
     assert [item["lesson_id"] for item in receipt["seeded"]] == ["a"]
     assert path.read_bytes() == before
 
 
-def test_empty_plan_is_not_reported_as_a_dry_run(tmp_path: Path) -> None:
+def _case_empty_plan_is_not_reported_as_a_dry_run(case_dir: Path) -> None:
     """`dry_run` must mean "asked to rehearse", never "happened to write nothing"."""
-    _retro(tmp_path, "source.md", "a")
-    _ledger(tmp_path)
+    _retro(case_dir, "source.md", "a")
+    _ledger(case_dir)
 
-    receipt = _seed(tmp_path)
+    receipt = _seed(case_dir)
 
     assert receipt["seeded"] == []
     assert receipt["dry_run"] is False
 
 
-def test_appending_a_later_class_is_the_same_operation_as_seeding(tmp_path: Path) -> None:
+def _case_appending_a_later_class_is_the_same_operation_as_seeding(case_dir: Path) -> None:
     """A lesson authored after the ledger existed must have a path in.
 
     A bootstrap-only seeder would close the cold start and leave this open, which
     is the state the authoring repo was actually in: 16 seeded classes, 15 tagged
     classes with no command that could add them.
     """
-    _retro(tmp_path, "source.md", "a")
-    _ledger(tmp_path)
-    _retro(tmp_path, "later.md", "b")
+    _retro(case_dir, "source.md", "a")
+    _ledger(case_dir)
+    _retro(case_dir, "later.md", "b")
 
-    receipt = _seed(tmp_path)
+    receipt = _seed(case_dir)
 
     assert [item["lesson_id"] for item in receipt["seeded"]] == ["b"]
     assert receipt["seeded"][0]["sequence"] == 2
-    assert set(json.loads((tmp_path / "charness-artifacts/retro/lesson-ledger.json").read_text()) ["lessons"]) == {"a", "b"}
+    assert set(json.loads((case_dir / "charness-artifacts/retro/lesson-ledger.json").read_text()) ["lessons"]) == {"a", "b"}
 
 
-def test_multi_source_class_cites_its_latest_source(tmp_path: Path) -> None:
+def _case_multi_source_class_cites_its_latest_source(case_dir: Path) -> None:
     """The digest renders a class from its newest observation, so the ledger cites
     the same artifact; citing an older member would attribute the shown wording to
     a retro that does not contain it."""
-    _retro(tmp_path, "2026-08-01-old.md", "a")
-    _retro(tmp_path, "2026-08-30-new.md", "a")
-    _empty_ledger(tmp_path)
+    _retro(case_dir, "2026-08-01-old.md", "a")
+    _retro(case_dir, "2026-08-30-new.md", "a")
+    _empty_ledger(case_dir)
 
-    receipt = _seed(tmp_path)
+    receipt = _seed(case_dir)
 
     assert receipt["seeded"][0]["source_retro"] == "charness-artifacts/retro/2026-08-30-new.md"
-    assert _validate(tmp_path)["lesson_count"] == 1
+    assert _validate(case_dir)["lesson_count"] == 1
 
 
-def test_untagged_lesson_is_never_invented_as_a_class(tmp_path: Path) -> None:
-    path = tmp_path / "charness-artifacts/retro/untagged.md"
+def _case_untagged_lesson_is_never_invented_as_a_class(case_dir: Path) -> None:
+    path = case_dir / "charness-artifacts/retro/untagged.md"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
         "# Session Retro\nDate: 2026-08-12\n\n## Waste\n\n- a lesson with no class tag\n",
         encoding="utf-8",
     )
-    ledger_path = _empty_ledger(tmp_path)
+    ledger_path = _empty_ledger(case_dir)
     before = ledger_path.read_bytes()
 
-    assert _seed(tmp_path)["seeded"] == []
+    assert _seed(case_dir)["seeded"] == []
     assert ledger_path.read_bytes() == before
     with pytest.raises(ValueError, match="not a tagged retro class"):
-        _seed(tmp_path, lesson_ids=["invented"])
+        _seed(case_dir, lesson_ids=["invented"])
     assert ledger_path.read_bytes() == before
 
 
-def test_reseeding_a_seeded_lesson_is_refused_without_rewriting(tmp_path: Path) -> None:
-    _retro(tmp_path, "source.md", "a")
-    path = _ledger(tmp_path)
+def _case_reseeding_a_seeded_lesson_is_refused_without_rewriting(case_dir: Path) -> None:
+    _retro(case_dir, "source.md", "a")
+    path = _ledger(case_dir)
     before = path.read_bytes()
 
     with pytest.raises(ValueError, match="already seeded"):
-        _seed(tmp_path, lesson_ids=["a"])
+        _seed(case_dir, lesson_ids=["a"])
 
     assert path.read_bytes() == before
 
 
-def test_a_transition_id_burned_by_another_lesson_is_refused_by_name(tmp_path: Path) -> None:
+def _case_a_transition_id_burned_by_another_lesson_is_refused_by_name(case_dir: Path) -> None:
     """The collision the `already seeded` check cannot see.
 
     `seeded` is keyed by lesson_id and `existing_ids` by transition_id, and the two
@@ -176,8 +186,8 @@ def test_a_transition_id_burned_by_another_lesson_is_refused_by_name(tmp_path: P
     unreachable from a ledger this command itself wrote: nothing here mints
     `seed-a` for anything but `a`.
     """
-    _retro(tmp_path, "source.md", "a")
-    _retro(tmp_path, "other.md", "b")
+    _retro(case_dir, "source.md", "a")
+    _retro(case_dir, "other.md", "b")
     payload = {
     # `b` holds `seed-a`, and `a` is tagged, unseeded, and therefore a target.
         "transitions": [
@@ -193,9 +203,9 @@ def test_a_transition_id_burned_by_another_lesson_is_refused_by_name(tmp_path: P
 
     with pytest.raises(ValueError) as raised:
         seeder.plan_seeds(
-            repo_root=tmp_path,
-            output_dir=tmp_path / "charness-artifacts/retro",
-            summary_path=tmp_path / "charness-artifacts/retro/recent-lessons.md",
+            repo_root=case_dir,
+            output_dir=case_dir / "charness-artifacts/retro",
+            summary_path=case_dir / "charness-artifacts/retro/recent-lessons.md",
             payload=payload,
             lesson_ids=None,
         )
@@ -209,9 +219,9 @@ def test_a_transition_id_burned_by_another_lesson_is_refused_by_name(tmp_path: P
     # And `b` alone -- the only lesson whose id is spent -- still plans cleanly, so
     # the refusal is about the collision rather than about the fixture.
     assert seeder.plan_seeds(
-        repo_root=tmp_path,
-        output_dir=tmp_path / "charness-artifacts/retro",
-        summary_path=tmp_path / "charness-artifacts/retro/recent-lessons.md",
+        repo_root=case_dir,
+        output_dir=case_dir / "charness-artifacts/retro",
+        summary_path=case_dir / "charness-artifacts/retro/recent-lessons.md",
         payload={"transitions": [], "lessons": {}},
         lesson_ids=["b"],
     ) == [
@@ -224,38 +234,82 @@ def test_a_transition_id_burned_by_another_lesson_is_refused_by_name(tmp_path: P
     ]
 
 
-def test_selected_subset_leaves_other_classes_unseeded(tmp_path: Path) -> None:
-    _retro(tmp_path, "a.md", "a")
-    _retro(tmp_path, "b.md", "b")
-    _empty_ledger(tmp_path)
+def _case_selected_subset_leaves_other_classes_unseeded(case_dir: Path) -> None:
+    _retro(case_dir, "a.md", "a")
+    _retro(case_dir, "b.md", "b")
+    _empty_ledger(case_dir)
 
-    receipt = _seed(tmp_path, lesson_ids=["b"])
+    receipt = _seed(case_dir, lesson_ids=["b"])
 
     assert [item["lesson_id"] for item in receipt["seeded"]] == ["b"]
-    assert set(_validate(tmp_path) and json.loads(
-        (tmp_path / "charness-artifacts/retro/lesson-ledger.json").read_text()
+    assert set(_validate(case_dir) and json.loads(
+        (case_dir / "charness-artifacts/retro/lesson-ledger.json").read_text()
     )["lessons"]) == {"b"}
 
 
-def test_over_budget_seeding_is_refused_with_its_arithmetic(tmp_path: Path, monkeypatch) -> None:
-    _retro(tmp_path, "a.md", "a")
-    _retro(tmp_path, "b.md", "b")
+def _case_over_budget_seeding_is_refused_with_its_arithmetic(case_dir: Path, monkeypatch) -> None:
+    _retro(case_dir, "a.md", "a")
+    _retro(case_dir, "b.md", "b")
     # Both module objects: the seeder imports the library through
     # `import_repo_module`, which can hand back a distinct instance, and the ledger
     # file itself must carry the same budget or its own fixed-budget check fires
     # first and the seeder's arithmetic is never reached.
     for module in {id(ledger): ledger, id(seeder._ledger): seeder._ledger}.values():
         monkeypatch.setattr(module, "ACTIVE_LESSON_BUDGET", 1)
-    path = _empty_ledger(tmp_path)
+    path = _empty_ledger(case_dir)
     before = path.read_bytes()
 
     with pytest.raises(ValueError, match="past the fixed budget of 1"):
-        _seed(tmp_path)
+        _seed(case_dir)
 
     assert path.read_bytes() == before
     # And the one-lesson subset still fits, so the refusal is about the arithmetic
     # rather than the command being broken at a small budget.
-    assert _seed(tmp_path, lesson_ids=["a"])["seeded_count"] == 1
+    assert _seed(case_dir, lesson_ids=["a"])["seeded_count"] == 1
+
+
+_SEED_TRANSITION_CASES = {
+    "seeding-an-empty-ledger-makes-a-tagged-class-validate": (
+        _case_seeding_an_empty_ledger_makes_a_tagged_class_validate, False
+    ),
+    "dry-run-reports-the-plan-and-writes-nothing": (
+        _case_dry_run_reports_the_plan_and_writes_nothing, False
+    ),
+    "empty-plan-is-not-reported-as-a-dry-run": (
+        _case_empty_plan_is_not_reported_as_a_dry_run, False
+    ),
+    "appending-a-later-class-is-the-same-operation-as-seeding": (
+        _case_appending_a_later_class_is_the_same_operation_as_seeding, False
+    ),
+    "multi-source-class-cites-its-latest-source": (
+        _case_multi_source_class_cites_its_latest_source, False
+    ),
+    "untagged-lesson-is-never-invented-as-a-class": (
+        _case_untagged_lesson_is_never_invented_as_a_class, False
+    ),
+    "reseeding-a-seeded-lesson-is-refused-without-rewriting": (
+        _case_reseeding_a_seeded_lesson_is_refused_without_rewriting, False
+    ),
+    "a-transition-id-burned-by-another-lesson-is-refused-by-name": (
+        _case_a_transition_id_burned_by_another_lesson_is_refused_by_name, False
+    ),
+    "selected-subset-leaves-other-classes-unseeded": (
+        _case_selected_subset_leaves_other_classes_unseeded, False
+    ),
+    "over-budget-seeding-is-refused-with-its-arithmetic": (
+        _case_over_budget_seeding_is_refused_with_its_arithmetic, True
+    ),
+}
+
+
+def test_seed_and_validate_decision_cases(tmp_path: Path, monkeypatch) -> None:
+    for label, (case, needs_monkeypatch) in _SEED_TRANSITION_CASES.items():
+        case_dir = tmp_path / label
+        case_dir.mkdir()
+        if needs_monkeypatch:
+            case(case_dir, monkeypatch)
+        else:
+            case(case_dir)
 
 
 def test_committed_transition_prefix_is_preserved_across_a_seed(tmp_path: Path) -> None:
@@ -273,6 +327,8 @@ def test_committed_transition_prefix_is_preserved_across_a_seed(tmp_path: Path) 
     payload = json.loads((tmp_path / "charness-artifacts/retro/lesson-ledger.json").read_text())
     assert [item["lesson_id"] for item in payload["transitions"]] == ["a", "b"]
     assert _validate(tmp_path)["transition_count"] == 2
+
+
 
 
 def test_cli_dry_run_and_write_roundtrip(tmp_path: Path) -> None:

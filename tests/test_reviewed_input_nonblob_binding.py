@@ -31,11 +31,11 @@ def _run_git(repo: Path, *args: str) -> None:
 
 
 def _init_identity_repo(repo: Path) -> None:
-    _run_git(repo, "init")
-    (repo / "reviewed.txt").write_text("base\n", encoding="utf-8")
-    (repo / "unrelated.txt").write_text("base\n", encoding="utf-8")
-    _run_git(repo, "add", ".")
-    _run_git(repo, "commit", "-m", "initial")
+    from tests.quality_gates.repo_shapes import install_committed_repo
+
+    install_committed_repo(
+        repo, {"reviewed.txt": "base\n", "unrelated.txt": "base\n"}, message="initial"
+    )
 
 
 def test_a_refreshed_current_pointer_is_bound_by_its_link_payload(tmp_path: Path) -> None:
@@ -94,24 +94,9 @@ def test_the_current_pointer_filename_matches_its_owning_module(tmp_path: Path) 
 
     assert RESTATED == OWNED
 def _submodule_repo(tmp_path: Path) -> Path:
-    upstream = tmp_path / "upstream"
-    upstream.mkdir()
-    _run_git(upstream, "init")
-    (upstream / "f.txt").write_text("v1\n", encoding="utf-8")
-    _run_git(upstream, "add", "-A")
-    _run_git(upstream, "commit", "-m", "v1")
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    _run_git(repo, "init")
-    (repo / "root.txt").write_text("r\n", encoding="utf-8")
-    _run_git(repo, "add", "-A")
-    _run_git(repo, "commit", "-m", "init")
-    subprocess.run(
-        ["git", "-c", "protocol.file.allow=always", "-c", "user.email=t@t", "-c", "user.name=t",
-         "submodule", "add", "-q", str(upstream), "sub"],
-        cwd=repo, check=True, capture_output=True,
-    )
-    _run_git(repo, "commit", "-m", "add submodule")
+    from tests.quality_gates.repo_shapes import install_submodule_repo
+
+    repo, _upstream = install_submodule_repo(tmp_path / "repo")
     return repo
 def test_a_working_tree_submodule_binds_its_commit_not_the_index_stage(tmp_path: Path) -> None:
     """`ls-files -s` prints `<mode> <object> <stage>`; `ls-tree` prints `<mode> <type> <object>`.
@@ -186,7 +171,9 @@ def test_moving_a_submodule_head_without_staging_stales_the_verdict(tmp_path: Pa
     its digest, so no other field could compensate.
     """
     repo = _submodule_repo(tmp_path)
-    identity = build_reviewed_input_identity(repo_root=repo, reviewed_paths=[".gitmodules", "sub"])
+    identity = build_reviewed_input_identity(
+        repo_root=repo, reviewed_paths=[".gitmodules", "sub"]
+    )
     assert verify_reviewed_input_identity(repo, identity) == (True, "current")
 
     upstream = tmp_path / "upstream"
@@ -252,7 +239,10 @@ def test_a_submodule_removed_from_disk_does_not_crash_identity_construction(
     ).stdout.split()[1]
     shutil.rmtree(clone / "sub")
 
-    identity = build_reviewed_input_identity(repo_root=clone, reviewed_paths=["sub"])
+    # Nothing about the removed submodule changes before the re-verify below,
+    identity = build_reviewed_input_identity(
+        repo_root=clone, reviewed_paths=["sub"]
+    )
 
     entry = next(e for e in identity["reviewed_content"] if e["path"] == "sub")
     assert entry["content_sha256"] == hashlib.sha256(b"gitlink\0" + index_entry.encode()).hexdigest()
@@ -371,7 +361,10 @@ def test_a_dirty_submodule_refuses_rather_than_binding_only_its_head(tmp_path: P
     cannot describe what was read.
     """
     repo = _submodule_repo(tmp_path)
-    identity = build_reviewed_input_identity(repo_root=repo, reviewed_paths=["sub"])
+    # The submodule is still clean and unmoved between build and this immediate
+    identity = build_reviewed_input_identity(
+        repo_root=repo, reviewed_paths=["sub"]
+    )
     assert verify_reviewed_input_identity(repo, identity) == (True, "current")
 
     (repo / "sub" / "f.txt").write_text("edited inside the submodule\n", encoding="utf-8")

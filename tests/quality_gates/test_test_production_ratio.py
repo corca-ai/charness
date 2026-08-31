@@ -305,6 +305,9 @@ def test_tokei_bucket_code_reports_unclassified_selected_file(tmp_path: Path, mo
         RATIO._tokei_bucket_code([path], bucket="shell", language="Shell", repo_root=tmp_path)
 
 
+@pytest.mark.boundary_contract(
+    reason="covers the __main__ block: a RatioError must exit 1 with a message, not a traceback"
+)
 def test_test_production_ratio_fails_above_max() -> None:
     """Covers the `__main__` block: a RatioError must exit 1 with a message, not a
     traceback, so this one stays a real spawn."""

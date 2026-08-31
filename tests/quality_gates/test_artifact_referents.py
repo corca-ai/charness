@@ -204,7 +204,9 @@ def test_sites_are_reported_with_line_numbers() -> None:
 
 
 # --------------------------------------------------------------------------
-# End to end
+# End to end: twelve independent single-artifact gate invocations, one node.
+# Each carries its former test's rationale in its own docstring; a failure
+# names the exact `_case_*` function in its traceback.
 # --------------------------------------------------------------------------
 
 
@@ -212,43 +214,152 @@ def _run(*args: str) -> subprocess.CompletedProcess:
     return run_script(str(GATE), "--repo-root", str(ROOT), *args)
 
 
-def test_the_gate_blocks_on_a_dated_artifact_with_a_bad_referent(tmp_path: Path) -> None:
-    artifact = tmp_path / "2026-08-25-control.md"
+def _case_gate_blocks_on_dated_artifact_with_bad_referent(case_dir: Path) -> None:
+    artifact = case_dir / "2026-08-25-control.md"
     artifact.write_text("Structural follow-up: issue #N (novel: x)\n", encoding="utf-8")
-
     result = _run("--path", str(artifact))
-
     assert result.returncode == 1
     assert "unresolvable-issue-ref" in result.stdout
 
 
-def test_the_gate_passes_the_same_artifact_once_repaired(tmp_path: Path) -> None:
-    artifact = tmp_path / "2026-08-25-control.md"
+def _case_gate_passes_the_same_artifact_once_repaired(case_dir: Path) -> None:
+    artifact = case_dir / "2026-08-25-control.md"
     artifact.write_text("Structural follow-up: issue #700 (novel: x)\n", encoding="utf-8")
-
     result = _run("--path", str(artifact))
-
     assert result.returncode == 0
     assert "status: clean" in result.stdout
 
 
-def test_an_out_of_tree_path_does_not_crash_the_gate(tmp_path: Path) -> None:
+def _case_out_of_tree_path_does_not_crash(case_dir: Path) -> None:
     """`Path.relative_to` RAISES on a path outside the root rather than
     returning something, and a checker that crashes on an out-of-tree input is
     one whose negative control cannot be written. Found while writing that
     control."""
     # The fixture must PRODUCE A FINDING: `_display_path` is only reached while
     # constructing one, so a clean fixture never exercises the ValueError this
-    # test is named for. A reviewer caught the earlier version passing for the
+    # case is named for. A reviewer caught the earlier version passing for the
     # wrong reason.
-    artifact = tmp_path / "2026-08-25-outside.md"
+    artifact = case_dir / "2026-08-25-outside.md"
     artifact.write_text("Structural follow-up: issue #N (novel: x)\n", encoding="utf-8")
-
     result = _run("--path", str(artifact))
-
     assert "Traceback" not in result.stderr
     assert result.returncode == 1
     assert str(artifact) in result.stdout
+
+
+def _case_undatable_artifact_fail_closed_for_issue_refs(case_dir: Path) -> None:
+    """`#N` was never valid, so an undated filename must not buy an exemption."""
+    artifact = case_dir / "recent-lessons.md"
+    artifact.write_text("Structural follow-up: issue #N (novel: x)\n", encoding="utf-8")
+    result = _run("--path", str(artifact))
+    assert result.returncode == 1
+    assert "unresolvable-issue-ref" in result.stdout
+
+
+def _case_undatable_artifact_not_fail_closed_for_shas(case_dir: Path) -> None:
+    """The asymmetry. A SHA can be correct when written and stop resolving when
+    history is rewritten, so blocking an undated rolling digest would punish an
+    author for a change made after they wrote it -- and the only remedy would be
+    editing frozen memory so a checker goes green."""
+    artifact = case_dir / "recent-lessons.md"
+    artifact.write_text("landed at `deadbee1234`\n", encoding="utf-8")
+    result = _run("--path", str(artifact))
+    # Assert the COUNT, not the label. `grandfathered (reported, not rewritten):`
+    # prints unconditionally, so `"grandfathered" in stdout` passed with zero
+    # findings, with a broken SHA_RE, and with the fixture never opened -- the
+    # render-identically-either-way shape this gate refuses, reintroduced by the
+    # repair that added these very cases.
+    assert result.returncode == 0
+    assert "grandfathered (reported, not rewritten): 1" in result.stdout
+    assert "non-durable-commit-ref" in result.stdout
+
+
+def _case_pre_cutoff_artifact_reports_without_blocking(case_dir: Path) -> None:
+    artifact = case_dir / "2026-01-01-frozen.md"
+    artifact.write_text("Structural follow-up: issue #N (novel: x)\n", encoding="utf-8")
+    result = _run("--path", str(artifact))
+    assert result.returncode == 0
+    assert "grandfathered (reported, not rewritten): 1" in result.stdout
+
+
+def _case_path_that_does_not_exist_is_input_error(case_dir: Path) -> None:
+    """`scanned` used to count a file the gate never opened, so a typo in a
+    wiring line was indistinguishable from a passing run."""
+    result = _run("--path", "/tmp/definitely-not-here-9f3a.md")
+    assert result.returncode == 1
+    assert "UNREADABLE" in result.stdout
+
+
+def _case_directory_argument_is_input_error(case_dir: Path) -> None:
+    result = _run("--path", str(case_dir))
+    assert result.returncode == 1
+    assert "UNREADABLE" in result.stdout
+
+
+def _case_empty_corpus_blocks(case_dir: Path) -> None:
+    """Both adjacent gates in run-quality.sh carry an empty-corpus guard. Without
+    one, a renamed artifact directory reads as a pass."""
+    result = run_script(str(GATE), "--repo-root", str(case_dir))
+    assert result.returncode == 1
+    assert "EMPTY CORPUS" in result.stdout
+
+
+def _case_exit_code_follows_printed_status(case_dir: Path) -> None:
+    """The status line and the exit code must not disagree: the runner believes
+    the code and the human believes the message. An earlier version printed
+    `status: blocked` and exited 0."""
+    result = _run("--path", "/tmp/definitely-not-here-9f3a.md")
+    assert ("status: blocked" in result.stdout) == (result.returncode == 1)
+
+
+def _case_refusing_resolver_exits_unestablished(case_dir: Path) -> None:
+    """The B3 repair turned a false-positive storm into a SILENT false negative:
+    the gate exited 0, run-quality printed PASS, and the passing phase's log --
+    carrying the only explanation -- is deleted at EXIT. Exit 3 is the runner's
+    own byte for "ran, established nothing"."""
+    artifact = case_dir / "2026-08-25-nogit.md"
+    artifact.write_text("landed at `deadbee1234`\n", encoding="utf-8")
+    result = run_script(str(GATE), "--repo-root", str(case_dir), "--path", str(artifact))
+    assert result.returncode == 3, result.stdout
+    assert "WARNING" in result.stdout, "run-quality only prints a passing gate's log on this token"
+    assert "STOOD DOWN" in result.stdout
+
+
+def _case_inconsistent_quantity_reported_with_first_site(case_dir: Path) -> None:
+    """The quantity findings are assembled in the gate, not the library, and
+    that assembly had no test: the release gate named both of its lines
+    uncovered."""
+    artifact = case_dir / "2026-08-25-quantities.md"
+    artifact.write_text(
+        "Found {{q:total=27}} blockers.\n\nOf the {{q:total=21}} above ...\n", encoding="utf-8"
+    )
+    result = _run("--path", str(artifact))
+    assert result.returncode == 1
+    assert "inconsistent-quantity" in result.stdout
+    assert ":1 " in result.stdout, "should anchor on the FIRST site"
+
+
+_GATE_INVOCATION_CASES = {
+    "gate-blocks-on-dated-artifact-with-bad-referent": _case_gate_blocks_on_dated_artifact_with_bad_referent,
+    "gate-passes-the-same-artifact-once-repaired": _case_gate_passes_the_same_artifact_once_repaired,
+    "out-of-tree-path-does-not-crash": _case_out_of_tree_path_does_not_crash,
+    "undatable-artifact-fail-closed-for-issue-refs": _case_undatable_artifact_fail_closed_for_issue_refs,
+    "undatable-artifact-not-fail-closed-for-shas": _case_undatable_artifact_not_fail_closed_for_shas,
+    "pre-cutoff-artifact-reports-without-blocking": _case_pre_cutoff_artifact_reports_without_blocking,
+    "path-that-does-not-exist-is-input-error": _case_path_that_does_not_exist_is_input_error,
+    "directory-argument-is-input-error": _case_directory_argument_is_input_error,
+    "empty-corpus-blocks": _case_empty_corpus_blocks,
+    "exit-code-follows-printed-status": _case_exit_code_follows_printed_status,
+    "refusing-resolver-exits-unestablished": _case_refusing_resolver_exits_unestablished,
+    "inconsistent-quantity-reported-with-first-site": _case_inconsistent_quantity_reported_with_first_site,
+}
+
+
+def test_gate_invocation_cases(tmp_path: Path) -> None:
+    for label, case in _GATE_INVOCATION_CASES.items():
+        case_dir = tmp_path / label
+        case_dir.mkdir()
+        case(case_dir)
 
 
 def test_the_repo_corpus_is_clean_and_reports_its_grandfathered_set() -> None:
@@ -269,91 +380,6 @@ def test_the_repo_corpus_is_clean_and_reports_its_grandfathered_set() -> None:
     assert scanned > 500, "the corpus collapsed; a clean verdict here proves nothing"
     assert dispositions > 100, "the disposition regex stopped matching corpus-wide"
     assert grandfathered > 0, "frozen history should be reported, not silently absent"
-
-
-# --------------------------------------------------------------------------
-# The enforcement asymmetry -- had ZERO tests until a reviewer said so
-# --------------------------------------------------------------------------
-
-
-def test_an_undatable_artifact_is_fail_closed_for_issue_refs(tmp_path: Path) -> None:
-    """`#N` was never valid, so an undated filename must not buy an exemption."""
-    artifact = tmp_path / "recent-lessons.md"
-    artifact.write_text("Structural follow-up: issue #N (novel: x)\n", encoding="utf-8")
-
-    result = _run("--path", str(artifact))
-
-    assert result.returncode == 1
-    assert "unresolvable-issue-ref" in result.stdout
-
-
-def test_an_undatable_artifact_is_NOT_fail_closed_for_shas(tmp_path: Path) -> None:
-    """The asymmetry. A SHA can be correct when written and stop resolving when
-    history is rewritten, so blocking an undated rolling digest would punish an
-    author for a change made after they wrote it -- and the only remedy would be
-    editing frozen memory so a checker goes green."""
-    artifact = tmp_path / "recent-lessons.md"
-    artifact.write_text("landed at `deadbee1234`\n", encoding="utf-8")
-
-    result = _run("--path", str(artifact))
-
-    # Assert the COUNT, not the label. `grandfathered (reported, not rewritten):`
-    # prints unconditionally, so `"grandfathered" in stdout` passed with zero
-    # findings, with a broken SHA_RE, and with the fixture never opened -- the
-    # render-identically-either-way shape this gate refuses, reintroduced by the
-    # repair that added these very tests.
-    assert result.returncode == 0
-    assert "grandfathered (reported, not rewritten): 1" in result.stdout
-    assert "non-durable-commit-ref" in result.stdout
-
-
-def test_a_pre_cutoff_artifact_reports_without_blocking(tmp_path: Path) -> None:
-    artifact = tmp_path / "2026-01-01-frozen.md"
-    artifact.write_text("Structural follow-up: issue #N (novel: x)\n", encoding="utf-8")
-
-    result = _run("--path", str(artifact))
-
-    assert result.returncode == 0
-    assert "grandfathered (reported, not rewritten): 1" in result.stdout
-
-
-# --------------------------------------------------------------------------
-# A clean verdict must mean "nothing was wrong", never "nothing was looked at"
-# --------------------------------------------------------------------------
-
-
-def test_a_path_that_does_not_exist_is_an_input_error_not_a_pass() -> None:
-    """`scanned` used to count a file the gate never opened, so a typo in a
-    wiring line was indistinguishable from a passing run."""
-    result = _run("--path", "/tmp/definitely-not-here-9f3a.md")
-
-    assert result.returncode == 1
-    assert "UNREADABLE" in result.stdout
-
-
-def test_a_directory_argument_is_an_input_error_not_a_pass(tmp_path: Path) -> None:
-    result = _run("--path", str(tmp_path))
-
-    assert result.returncode == 1
-    assert "UNREADABLE" in result.stdout
-
-
-def test_an_empty_corpus_blocks_rather_than_reporting_clean(tmp_path: Path) -> None:
-    """Both adjacent gates in run-quality.sh carry an empty-corpus guard. Without
-    one, a renamed artifact directory reads as a pass."""
-    result = run_script(str(GATE), "--repo-root", str(tmp_path))
-
-    assert result.returncode == 1
-    assert "EMPTY CORPUS" in result.stdout
-
-
-def test_the_exit_code_follows_the_printed_status() -> None:
-    """The status line and the exit code must not disagree: the runner believes
-    the code and the human believes the message. An earlier version printed
-    `status: blocked` and exited 0."""
-    result = _run("--path", "/tmp/definitely-not-here-9f3a.md")
-
-    assert ("status: blocked" in result.stdout) == (result.returncode == 1)
 
 
 def test_scope_is_reported_as_numbers() -> None:
@@ -432,36 +458,36 @@ def test_side_branch_seed_copies_are_private(tmp_path: Path) -> None:
     assert git_commit_reachable_from_head(second_sha, second_repo) is False
 
 
-def test_an_object_visible_only_on_a_side_branch_is_not_durable(tmp_path: Path) -> None:
-    """Same tracked HEAD must answer identically in a clean and authoring clone."""
-    from scripts.artifact_referents import git_commit_reachable_from_head
+def test_reachability_and_history_queries_over_one_side_branch_checkout(tmp_path: Path) -> None:
+    """Three read-only questions against one immutable side-branch checkout,
+    merged because none of them mutates the repo they observe.
+
+    - "Same tracked HEAD must answer identically in a clean and authoring
+      clone" (a commit visible only on a side branch is not durable).
+    - Absent and non-commit objects are both typed negative, not durable.
+    - A shallow clone cannot answer "reachable from HEAD" at all; it must
+      refuse rather than report a missing commit.
+    """
+    from scripts.artifact_referents import (
+        ResolverUnavailable,
+        git_commit_reachable_from_head,
+        reachable_head_commits,
+    )
 
     repo, local_sha = _repo_with_side_branch_commit(tmp_path)
 
     assert _git(repo, "cat-file", "-t", local_sha) == "commit"
     assert git_commit_reachable_from_head(local_sha, repo) is False
 
-
-def test_absent_and_noncommit_objects_are_typed_negative(tmp_path: Path) -> None:
-    from scripts.artifact_referents import git_commit_reachable_from_head
-
-    repo, _local_sha = _repo_with_side_branch_commit(tmp_path)
     blob_sha = _git(repo, "rev-parse", "HEAD:base.txt")
-
     assert git_commit_reachable_from_head("deadbee1234", repo) is False
     assert git_commit_reachable_from_head(blob_sha, repo) is False
 
-
-def test_shallow_history_is_unestablished_not_a_missing_commit(tmp_path: Path) -> None:
-    from scripts.artifact_referents import ResolverUnavailable, reachable_head_commits
-
-    repo, _local_sha = _repo_with_side_branch_commit(tmp_path)
     shallow = tmp_path / "shallow"
     subprocess.run(
         ["git", "clone", "--depth=1", f"file://{repo}", str(shallow)],
         capture_output=True, text=True, check=True,
     )
-
     with pytest.raises(ResolverUnavailable, match="shallow"):
         reachable_head_commits(shallow)
 
@@ -526,44 +552,48 @@ def test_exact_local_context_declaration_is_visible_and_stale_checked(tmp_path: 
     assert "non-durable-commit-ref" in stale.stdout
 
 
-@pytest.mark.parametrize(
-    "mutation",
-    [
-        {"reason": ""},
-        {"line": 0},
-        {"token": "not-a-sha"},
-        {"line_sha256": "not-a-fingerprint"},
-        {"extra": "second owner"},
-    ],
-)
-def test_malformed_local_context_declarations_block(
-    tmp_path: Path, mutation: dict[str, object]
-) -> None:
+_MALFORMED_LOCAL_CONTEXT_MUTATIONS = [
+    {"reason": ""},
+    {"line": 0},
+    {"token": "not-a-sha"},
+    {"line_sha256": "not-a-fingerprint"},
+    {"extra": "second owner"},
+]
+
+
+def test_malformed_local_context_declarations_block(tmp_path: Path) -> None:
+    """Five ways a declaration can be malformed, one node.
+
+    Was a `pytest.mark.parametrize` -- five pytest nodes for five variants of
+    one otherwise-identical repo build. The wanted shape keeps the git-owning
+    checkout construction inside a loop of one node instead.
+    """
     import hashlib
     import json
 
-    repo, local_sha = _repo_with_side_branch_commit(tmp_path)
-    artifact_rel = "charness-artifacts/goals/2026-08-30-local-context.md"
-    artifact = repo / artifact_rel
-    artifact.parent.mkdir(parents=True)
-    line = f"local lane `{local_sha[:10]}`"
-    artifact.write_text(f"{line}\n", encoding="utf-8")
-    declarations = repo / "scripts" / "artifact-referent-local-context.json"
-    declarations.parent.mkdir()
-    entry: dict[str, object] = {
-        "artifact": artifact_rel,
-        "line": 1,
-        "token": local_sha[:10],
-        "line_sha256": hashlib.sha256(line.encode()).hexdigest(),
-        "reason": "why",
-    }
-    entry.update(mutation)
-    declarations.write_text(json.dumps([entry]), encoding="utf-8")
-    _git(repo, "add", str(declarations.relative_to(repo)))
+    for index, mutation in enumerate(_MALFORMED_LOCAL_CONTEXT_MUTATIONS):
+        repo, local_sha = _repo_with_side_branch_commit(tmp_path / f"case-{index}")
+        artifact_rel = "charness-artifacts/goals/2026-08-30-local-context.md"
+        artifact = repo / artifact_rel
+        artifact.parent.mkdir(parents=True)
+        line = f"local lane `{local_sha[:10]}`"
+        artifact.write_text(f"{line}\n", encoding="utf-8")
+        declarations = repo / "scripts" / "artifact-referent-local-context.json"
+        declarations.parent.mkdir()
+        entry: dict[str, object] = {
+            "artifact": artifact_rel,
+            "line": 1,
+            "token": local_sha[:10],
+            "line_sha256": hashlib.sha256(line.encode()).hexdigest(),
+            "reason": "why",
+        }
+        entry.update(mutation)
+        declarations.write_text(json.dumps([entry]), encoding="utf-8")
+        _git(repo, "add", str(declarations.relative_to(repo)))
 
-    result = run_script(str(GATE), "--repo-root", str(repo), "--path", artifact_rel)
-    assert result.returncode == 1
-    assert "malformed-local-context-declaration" in result.stdout
+        result = run_script(str(GATE), "--repo-root", str(repo), "--path", artifact_rel)
+        assert result.returncode == 1, mutation
+        assert "malformed-local-context-declaration" in result.stdout, mutation
 
 
 def test_untracked_local_context_declaration_cannot_change_the_verdict(tmp_path: Path) -> None:
@@ -628,45 +658,48 @@ def test_declaration_index_read_error_blocks(tmp_path: Path, monkeypatch: pytest
     assert "index unavailable" in str(defects[0]["detail"])
 
 
-@pytest.mark.parametrize(
-    ("raw", "expected_kind"),
-    [
-        (b"{not json", "malformed-local-context-declaration"),
-        (None, "malformed-local-context-declaration"),
-        ("duplicate", "duplicate-local-context-declaration"),
-    ],
-)
+_INVALID_DECLARATION_FILE_SHAPES = [
+    (b"{not json", "malformed-local-context-declaration"),
+    (None, "malformed-local-context-declaration"),
+    ("duplicate", "duplicate-local-context-declaration"),
+]
+
+
 def test_invalid_declaration_file_shapes_block(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-    raw: bytes | None | str,
-    expected_kind: str,
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    """No real git anywhere in these three: `subprocess.run` is mocked outright.
+
+    Was a `pytest.mark.parametrize`; folded into a loop for the same reason as
+    the malformed-declaration cases above, even though this cluster's git count
+    was already zero -- the parametrize node-count cost was independent of it.
+    """
     from scripts.check_artifact_referents import load_local_context_declarations
 
-    if raw == "duplicate":
-        payload: object = [_valid_declaration(), _valid_declaration()]
-        repo, data = _declaration_bytes(tmp_path, payload)
-    elif raw is None:
-        repo, data = _declaration_bytes(tmp_path, _valid_declaration())
-    else:
-        repo = tmp_path / "repo"
-        path = repo / "scripts/artifact-referent-local-context.json"
-        path.parent.mkdir(parents=True)
-        path.write_bytes(raw)
-        data = raw
+    for raw, expected_kind in _INVALID_DECLARATION_FILE_SHAPES:
+        if raw == "duplicate":
+            payload: object = [_valid_declaration(), _valid_declaration()]
+            repo, data = _declaration_bytes(tmp_path / "duplicate", payload)
+        elif raw is None:
+            repo, data = _declaration_bytes(tmp_path / "none", _valid_declaration())
+        else:
+            repo = tmp_path / "malformed" / "repo"
+            path = repo / "scripts/artifact-referent-local-context.json"
+            path.parent.mkdir(parents=True)
+            path.write_bytes(raw)
+            data = raw
 
-    indexed = subprocess.CompletedProcess([], 0, data, b"")
-    monkeypatch.setattr(
-        "scripts.check_artifact_referents.subprocess.run", lambda *args, **kwargs: indexed
-    )
-    declarations, defects = load_local_context_declarations(repo)
+        indexed = subprocess.CompletedProcess([], 0, data, b"")
+        monkeypatch.setattr(
+            "scripts.check_artifact_referents.subprocess.run", lambda *args, **kwargs: indexed
+        )
+        declarations, defects = load_local_context_declarations(repo)
 
-    if raw == "duplicate":
-        assert declarations == [_valid_declaration()]
-    else:
-        assert declarations == []
-    assert expected_kind in [str(defect["kind"]) for defect in defects]
+        if raw == "duplicate":
+            assert declarations == [_valid_declaration()], raw
+        else:
+            assert declarations == [], raw
+        assert expected_kind in [str(defect["kind"]) for defect in defects], raw
 
 
 # --------------------------------------------------------------------------
@@ -767,21 +800,6 @@ def test_an_inline_disposition_placeholder_defers() -> None:
     assert is_placeholder_line("- The retro entry is applied: TODO") is True
 
 
-def test_a_refusing_resolver_exits_unestablished_not_pass(tmp_path: Path) -> None:
-    """The B3 repair turned a false-positive storm into a SILENT false negative:
-    the gate exited 0, run-quality printed PASS, and the passing phase's log --
-    carrying the only explanation -- is deleted at EXIT. Exit 3 is the runner's
-    own byte for "ran, established nothing"."""
-    artifact = tmp_path / "2026-08-25-nogit.md"
-    artifact.write_text("landed at `deadbee1234`\n", encoding="utf-8")
-
-    result = run_script(str(GATE), "--repo-root", str(tmp_path), "--path", str(artifact))
-
-    assert result.returncode == 3, result.stdout
-    assert "WARNING" in result.stdout, "run-quality only prints a passing gate's log on this token"
-    assert "STOOD DOWN" in result.stdout
-
-
 def test_shas_resolved_counts_tokens_not_lines() -> None:
     """M1: the counter incremented once per LINE, so it stayed at the corpus
     line count even if SHA_RE stopped matching entirely -- structurally unable
@@ -847,19 +865,3 @@ def test_git_failing_to_run_at_all_raises_rather_than_answering() -> None:
             git_commit_reachable_from_head("96ba78f7f", ROOT)
     finally:
         _sp.run = real
-
-
-def test_an_inconsistent_quantity_is_reported_with_its_first_site(tmp_path: Path) -> None:
-    """The quantity findings are assembled in the gate, not the library, and
-    that assembly had no test: the release gate named both of its lines
-    uncovered."""
-    artifact = tmp_path / "2026-08-25-quantities.md"
-    artifact.write_text(
-        "Found {{q:total=27}} blockers.\n\nOf the {{q:total=21}} above ...\n", encoding="utf-8"
-    )
-
-    result = _run("--path", str(artifact))
-
-    assert result.returncode == 1
-    assert "inconsistent-quantity" in result.stdout
-    assert ":1 " in result.stdout, "should anchor on the FIRST site"
