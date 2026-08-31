@@ -31,45 +31,82 @@ ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
 
 
+def _is_script(stem: str) -> bool:
+    """A name resolves only if `scripts/<stem>.py` is really there."""
+    return bool(stem) and stem.isidentifier() and (SCRIPTS / f"{stem}.py").is_file()
+
+
+def _from_string(value: str) -> set[str]:
+    """Modules named by a STRING rather than an import statement.
+
+    Two live spellings: `import_repo_module(__file__, "scripts.x")` and
+    `spec_from_file_location(..., Path(__file__).with_name("x.py"))`.
+
+    `_is_script` rejects the runtime-composed case: the literal prefix in
+    `"scripts." + name` splits to `["scripts", ""]`, which put an EMPTY module
+    name in the closure -- harmless downstream (no `scripts/.py` exists) but a
+    garbage entry that would mask a real miss in any caller inspecting this set.
+    """
+    parts = value.split(".")
+    if len(parts) == 2 and parts[0] == "scripts" and _is_script(parts[1]):
+        return {parts[1]}
+    # The `.py` suffix, rather than any bare word, is what keeps a script whose
+    # stem is ordinary English (`support`, `quality`) out of every closure.
+    if value.endswith(".py") and _is_script(value.removesuffix(".py")):
+        return {value.removesuffix(".py")}
+    return set()
+
+
+def _from_import(node: ast.Import) -> set[str]:
+    """`import scripts.x` and the bare flat `import x` nine scripts/ modules use."""
+    found: set[str] = set()
+    for alias in node.names:
+        parts = alias.name.split(".")
+        if len(parts) == 2 and parts[0] == "scripts" and _is_script(parts[1]):
+            found.add(parts[1])
+        elif len(parts) == 1 and _is_script(parts[0]):
+            found.add(parts[0])
+    return found
+
+
+def _from_import_from(node: ast.ImportFrom) -> set[str]:
+    """`from scripts.x import y`, `from scripts import x`, and the dual-path fallback.
+
+    The `from scripts import x` case is the one that bit: the NAMES carry the
+    modules there, not the module path, so reading only `node.module` (just
+    `"scripts"`) returned nothing for six modules including `task_run.py`.
+    """
+    if node.level or not node.module:
+        return set()
+    parts = node.module.split(".")
+    if parts == ["scripts"]:
+        return {alias.name for alias in node.names if _is_script(alias.name)}
+    if len(parts) == 2 and parts[0] == "scripts" and _is_script(parts[1]):
+        return {parts[1]}
+    # The portable `except ModuleNotFoundError: from x import y` fallback, which is
+    # why resolution asks "does the file exist" rather than matching a prefix.
+    if len(parts) == 1 and _is_script(parts[0]):
+        return {parts[0]}
+    return set()
+
+
 def _referenced(source: str) -> set[str]:
     """Module stems this source imports that resolve to a `scripts/*.py` file.
 
-    Recognises the four spellings this repo actually uses: `import scripts.x`,
-    `from scripts.x import y`, the portable dual-path fallback `from x import y`
-    that scripts use under `except ModuleNotFoundError`, and the DYNAMIC form
-    `import_repo_module(__file__, "scripts.x")`. The dual-path one is why the
-    check is "does `scripts/<stem>.py` exist" rather than a prefix match.
-
-    The dynamic form is not optional: `build_retro_lesson_selection_index.py`
+    Covers every spelling this repo actually uses -- see the three helpers above.
+    The dynamic string form is not optional: `build_retro_lesson_selection_index.py`
     reaches `recent_lessons_lib` only that way, so a closure built from static
-    imports alone is short by four files and the fixture still dies at import --
+    imports alone is short by four files and the fixture still dies at import,
     which is the failure this helper exists to make impossible.
     """
     found: set[str] = set()
     for node in ast.walk(ast.parse(source)):
         if isinstance(node, ast.Constant) and isinstance(node.value, str):
-            parts = node.value.split(".")
-            if len(parts) == 2 and parts[0] == "scripts":
-                found.add(parts[1])
-            elif node.value.endswith(".py") and (SCRIPTS / node.value).is_file():
-                # `spec_from_file_location(..., Path(__file__).with_name("x.py"))`
-                # -- how `classify_push_diff.py` reaches its own lib. Matching on
-                # the `.py` suffix rather than on any bare word keeps this from
-                # dragging in a script whose stem is an ordinary English string.
-                found.add(node.value.removesuffix(".py"))
+            found |= _from_string(node.value)
         elif isinstance(node, ast.Import):
-            for alias in node.names:
-                parts = alias.name.split(".")
-                if len(parts) == 2 and parts[0] == "scripts":
-                    found.add(parts[1])
+            found |= _from_import(node)
         elif isinstance(node, ast.ImportFrom):
-            if node.level or not node.module:
-                continue
-            parts = node.module.split(".")
-            if len(parts) == 2 and parts[0] == "scripts":
-                found.add(parts[1])
-            elif len(parts) == 1 and (SCRIPTS / f"{parts[0]}.py").is_file():
-                found.add(parts[0])
+            found |= _from_import_from(node)
     return found
 
 
