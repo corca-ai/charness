@@ -204,35 +204,9 @@ def _parse_nul_paths(output: str) -> list[str]:
 
 
 def _collect_populations(repo_root: Path) -> dict[str, list[str]]:
-    output = _git_output(
-        repo_root,
-        "status",
-        "--porcelain=v1",
-        "--untracked-files=all",
-        "--ignored=matching",
-        "-z",
-    )
-    populations: dict[str, list[str]] = {"tracked": [], "untracked": [], "ignored": []}
-    records = output.split("\0")
-    index = 0
-    while index < len(records):
-        record = records[index]
-        index += 1
-        if not record:
-            continue
-        if len(record) < 3:
-            raise TaskRunError(f"unexpected git status record: {record!r}")
-        status, path = record[:2], record[3:]
-        if status == "??":
-            populations["untracked"].append(path)
-        elif status == "!!":
-            populations["ignored"].append(path)
-        else:
-            populations["tracked"].append(path)
-        if status[0] in {"R", "C"} and index < len(records) and records[index]:
-            populations["tracked"].append(records[index])
-            index += 1
-    return {key: sorted(set(paths)) for key, paths in populations.items()}
+    """Worktree populations from the same porcelain-v2 snapshot as completion."""
+    populations, _, _ = _collect_populations_with_metadata(repo_root)
+    return populations
 
 
 def _collect_populations_with_metadata(

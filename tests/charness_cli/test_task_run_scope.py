@@ -188,7 +188,14 @@ def test_candidate_carrier_reuses_equal_head_worktree_reads(
     assert carrier["carrier_kind"] == "worktree-only"
     assert carrier["observed_head_sha"] == base
     assert calls == [
-        ("status", "--porcelain=v1", "--untracked-files=all", "--ignored=matching", "-z"),
+        (
+            "status",
+            "--porcelain=v2",
+            "--branch",
+            "--untracked-files=all",
+            "--ignored=matching",
+            "-z",
+        ),
     ]
 
 
@@ -250,7 +257,14 @@ def test_candidate_carrier_reads_untracked_paths_once_for_a_commit_plus_dirty_tr
     assert carrier["dirty_paths"] == ["extra.py"]
     assert carrier["changed_paths"] == ["extra.py", "module.py"]
     assert calls.count(
-        ("status", "--porcelain=v1", "--untracked-files=all", "--ignored=matching", "-z")
+        (
+            "status",
+            "--porcelain=v2",
+            "--branch",
+            "--untracked-files=all",
+            "--ignored=matching",
+            "-z",
+        )
     ) == 1
     assert ("rev-parse", "HEAD") not in calls
     assert len(calls) == 3

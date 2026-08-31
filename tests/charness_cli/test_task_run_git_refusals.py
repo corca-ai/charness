@@ -135,7 +135,11 @@ def test_collect_populations_refuses_malformed_and_tracks_rename_destination(
     with pytest.raises(task_run.TaskRunError, match="unexpected git status record"):
         task_run_git._collect_populations(repo)
 
-    monkeypatch.setattr(task_run_git, "_git_output", lambda *_args: "R  old.py\0new.py\0")
+    monkeypatch.setattr(
+        task_run_git,
+        "_git_output",
+        lambda *_args: "2 R. N... 100644 100644 100644 abc abc R100 new.py\0old.py\0",
+    )
     assert task_run_git._collect_populations(repo) == {
         "tracked": ["new.py", "old.py"],
         "untracked": [],
