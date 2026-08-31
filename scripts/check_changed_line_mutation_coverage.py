@@ -87,6 +87,7 @@ from scripts.changed_line_verdict_codes import (  # noqa: E402
     UNESTABLISHED_EXIT,
     _verdict_exit_code,
 )
+from scripts.checkout_view import GitCheckout  # noqa: E402
 from scripts.mutation_changed_files_lib import (  # noqa: E402
     changed_line_coverage_marker_path,
     changed_pool_fingerprint,
@@ -414,9 +415,16 @@ def main() -> int:
     # coverage/probe work, so a contaminated run costs ~0s instead of ~10 minutes
     # and a commit landing mid-run cannot re-resolve `HEAD` under the analysis.
     all_eligible = set(list_eligible(repo_root))
-    trust = probe_run_trust(repo_root, head_sha, all_eligible)
+    checkout = GitCheckout(repo_root)
+    trust = probe_run_trust(repo_root, head_sha, all_eligible, checkout=checkout)
     contaminated = trust.contaminated
-    pinned = _pin_run_state(repo_root, base_sha, head_sha, resolved_pair=trust.resolved_pair)
+    pinned = _pin_run_state(
+        repo_root,
+        base_sha,
+        head_sha,
+        resolved_pair=trust.resolved_pair,
+        checkout=checkout,
+    )
     metadata = _run_metadata(base_sha, head_sha, pinned, contaminated)
     if trust.unestablished_kind == INSPECTION_FAILED:
         # REFUSED (2), not unestablished (3). Exit 3's leniency is granted for a

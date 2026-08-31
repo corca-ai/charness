@@ -175,10 +175,12 @@ def added_lines_vs_head(repo_root: Path, relpath: str) -> int | None:
     target = repo_root / relpath
     if not target.is_file():
         return None
-    tracked = _git(repo_root, "ls-files", "--error-unmatch", relpath)
+    from scripts.checkout_view import GitCheckout, path_is_tracked
+
+    tracked = path_is_tracked(GitCheckout(repo_root), relpath)
     if tracked is None:
         return None
-    if tracked.returncode == 0:
+    if tracked:
         return 0  # tracked and unchanged versus HEAD
     try:
         return len(target.read_text(encoding="utf-8").splitlines())
@@ -232,20 +234,23 @@ def advise_for_edited_file(
     relpath: str,
     *,
     threshold: int = DEFAULT_ADDED_LINE_THRESHOLD,
+    added: int | None = None,
+    head_sha: str | None = None,
 ) -> str | None:
     """The advisory text for a just-edited file, or None to stay silent."""
 
     roots = scope_paths(repo_root)
     if not roots or not in_ratchet_scope(relpath, roots, repo_root=repo_root):
         return None
-    added = added_lines_vs_head(repo_root, relpath)
-    if added is None or added < threshold:
+    added_count = added_lines_vs_head(repo_root, relpath) if added is None else added
+    if added_count is None or added_count < threshold:
         return None
-    head = _git(repo_root, "rev-parse", "HEAD")
-    head_sha = head.stdout.strip() if head is not None and head.returncode == 0 else None
+    if head_sha is None:
+        head = _git(repo_root, "rev-parse", "HEAD")
+        head_sha = head.stdout.strip() if head is not None and head.returncode == 0 else None
     if _already_advised(repo_root, relpath, head_sha):
         return None
-    return advisory_message(relpath, added)
+    return advisory_message(relpath, added_count)
 
 
 def advisory_message(relpath: str, added: int) -> str:

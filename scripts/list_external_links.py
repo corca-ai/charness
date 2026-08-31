@@ -4,9 +4,13 @@ from __future__ import annotations
 
 import argparse
 import re
-import subprocess
 from pathlib import Path
 from urllib.parse import urlsplit
+
+try:
+    from scripts.repo_file_listing import iter_repo_files
+except ModuleNotFoundError:
+    from repo_file_listing import iter_repo_files
 
 TEXT_SUFFIXES = {".md", ".json", ".yaml", ".yml", ".jsonc", ".toml"}
 SKIP_DIR_NAMES = {".git", ".charness", "node_modules", ".pytest_cache", "charness-artifacts", "__pycache__"}
@@ -25,32 +29,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def list_candidate_files(repo_root: Path) -> list[Path]:
-    try:
-        result = subprocess.run(
-            ["git", "ls-files"],
-            cwd=repo_root,
-            check=False,
-            capture_output=True,
-            text=True,
-        )
-        if result.returncode == 0:
-            candidates = []
-            for line in result.stdout.splitlines():
-                rel = line.strip()
-                if not rel:
-                    continue
-                path = repo_root / rel
-                if should_scan_path(path):
-                    candidates.append(path)
-            return sorted(candidates)
-    except FileNotFoundError:
-        pass
-
-    candidates = []
-    for path in repo_root.rglob("*"):
-        if should_scan_path(path):
-            candidates.append(path)
-    return sorted(candidates)
+    return sorted(path for path in iter_repo_files(repo_root) if should_scan_path(path))
 
 
 def should_scan_path(path: Path) -> bool:

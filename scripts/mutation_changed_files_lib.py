@@ -13,6 +13,8 @@ import subprocess
 from collections.abc import Mapping
 from pathlib import Path
 
+from scripts.checkout_view import CheckoutView, GitCheckout  # noqa: E402
+from scripts.git_status_snapshot import GitStatusError  # noqa: E402
 from scripts.mutation_changed_line_diff import (  # noqa: E402
     changed_line_numbers_for_paths as _batch_changed_line_numbers_for_paths,
 )
@@ -289,7 +291,13 @@ def line_source_text(repo_root: Path, path: str, ref: str | None = None) -> list
         return []
 
 
-def changed_pool_files_vs_base(repo_root: Path, base_sha: str) -> list[str]:
+def changed_pool_files_vs_base(
+    repo_root: Path,
+    base_sha: str,
+    *,
+    checkout: CheckoutView | None = None,
+    untracked: frozenset[str] | None = None,
+) -> list[str]:
     """Eligible mutation-pool files that differ from ``base_sha`` in the worktree.
 
     Diffs ``base_sha`` against the WORKING TREE (no ``..head``) on purpose: the
@@ -298,9 +306,9 @@ def changed_pool_files_vs_base(repo_root: Path, base_sha: str) -> list[str]:
     yields the same changed-file set and the same on-disk content across the
     commit boundary, which is what lets the freshness fingerprint match.
 
-    ``git diff`` lists tracked changes only, so union eligible untracked files from
-    ``git ls-files``. That keeps the pre-commit producer's selection and content
-    fingerprint identical after those files become part of the commit.
+    ``git diff`` lists tracked changes only. Untracked membership is a checkout
+    view (status), not a second listing command: untracked is not in any commit,
+    so vs-base and vs-HEAD are the same population.
     """
     if not base_sha:
         return []
@@ -310,23 +318,12 @@ def changed_pool_files_vs_base(repo_root: Path, base_sha: str) -> list[str]:
     command = ["git", "diff", "--name-only", base_sha, "--", *mutation_pathspecs()]
     result = subprocess.run(command, cwd=repo_root, check=True, text=True, capture_output=True)
     changed = {line.strip() for line in result.stdout.splitlines() if line.strip()}
-    untracked_result = subprocess.run(
-        [
-            "git",
-            "ls-files",
-            "--others",
-            "--exclude-standard",
-            "--",
-            *mutation_pathspecs(),
-        ],
-        cwd=repo_root,
-        check=True,
-        text=True,
-        capture_output=True,
-    )
-    changed.update(
-        line.strip() for line in untracked_result.stdout.splitlines() if line.strip()
-    )
+    if untracked is None:
+        try:
+            untracked = (checkout or GitCheckout(repo_root)).status().untracked_paths()
+        except (GitStatusError, OSError):
+            untracked = frozenset()
+    changed.update(path for path in untracked if path in eligible)
     return sorted(changed & set(eligible))
 
 
@@ -340,7 +337,12 @@ def _safe_read_bytes(path: Path) -> bytes:
         return b"<absent>"
 
 
-def changed_pool_fingerprint(repo_root: Path, base_sha: str) -> str:
+def changed_pool_fingerprint(
+    repo_root: Path,
+    base_sha: str,
+    *,
+    checkout: CheckoutView | None = None,
+) -> str:
     """Content fingerprint of the changed eligible pool files over base→worktree.
 
     Stable across the pre-commit→commit boundary (the producer stamps it, the
@@ -353,7 +355,7 @@ def changed_pool_fingerprint(repo_root: Path, base_sha: str) -> str:
     digest = hashlib.sha256()
     digest.update(b"charness-changed-pool-fingerprint-v1\n")
     digest.update((base_sha or "").encode() + b"\n")
-    for path in changed_pool_files_vs_base(repo_root, base_sha):
+    for path in changed_pool_files_vs_base(repo_root, base_sha, checkout=checkout):
         digest.update(f"{path}:".encode())
         digest.update(hashlib.sha256(_safe_read_bytes(repo_root / path)).hexdigest().encode())
         digest.update(b"\n")

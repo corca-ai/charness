@@ -5,11 +5,25 @@ from __future__ import annotations
 import argparse
 import re
 import runpy
-import subprocess
+import sys
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Iterable
 from urllib.parse import unquote
+
+
+def _ensure_scripts_package() -> None:
+    here = Path(__file__).resolve()
+    for candidate in (here, *here.parents):
+        if (candidate / "scripts" / "repo_file_listing.py").is_file():
+            root = str(candidate)
+            if root not in sys.path:
+                sys.path.insert(0, root)
+            return
+
+
+_ensure_scripts_package()
+from scripts.repo_file_listing import RepoFileSnapshot  # noqa: E402
 
 DEFAULT_REVIEW_PROMPTS = [
     "Keep first-touch docs concise; let deeper docs own durable procedure and edge cases.",
@@ -84,16 +98,12 @@ def iter_doc_paths(repo_root: Path, requested: list[str]) -> Iterable[Path]:
 
 
 def iter_markdown_files(repo_root: Path) -> Iterable[Path]:
-    result = subprocess.run(
-        ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard", "*.md"],
-        cwd=repo_root,
-        check=False,
-        capture_output=True,
+    listed = RepoFileSnapshot(repo_root).list_files(include_untracked=True)
+    candidates = (
+        sorted(path for path in listed if path.suffix == ".md")
+        if listed is not None
+        else sorted(repo_root.rglob("*.md"))
     )
-    if result.returncode == 0:
-        candidates = sorted(repo_root / rel.decode("utf-8") for rel in result.stdout.split(b"\0") if rel)
-    else:
-        candidates = sorted(repo_root.rglob("*.md"))
     for path in candidates:
         try:
             relative = path.relative_to(repo_root)

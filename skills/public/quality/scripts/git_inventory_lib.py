@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -17,7 +16,7 @@ def _ensure_scripts_package() -> None:
 
 
 _ensure_scripts_package()
-from scripts.git_checkout import discoverable as _git_metadata_is_discoverable  # noqa: E402
+from scripts.repo_file_listing import RepoFileListingError, RepoFileSnapshot  # noqa: E402
 
 
 class GitFileListingError(RuntimeError):
@@ -36,10 +35,6 @@ class VisibleRepoFilesSnapshot:
     files: set[Path] | None
 
 
-def _decode_output(value: bytes) -> str:
-    return value.decode("utf-8", errors="replace")
-
-
 def visible_repo_files(
     repo_root: Path,
     *,
@@ -49,34 +44,15 @@ def visible_repo_files(
 ) -> set[Path] | None:
     if snapshot is not None:
         return snapshot.files
-    command = ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"]
-    if not _git_metadata_is_discoverable(repo_root):
-        if require_git:
-            raise GitFileListingError(
-                f"{context} failed\n"
-                f"command: {' '.join(command)}\n"
-                "exit_code: 128\n"
-                "STDOUT:\n\n"
-                "STDERR:\nnot a git repository (Git discovery preflight)"
-            )
-        return None
-    result = subprocess.run(
-        command,
-        cwd=repo_root,
-        check=False,
-        capture_output=True,
-    )
-    if result.returncode != 0:
-        if require_git:
-            raise GitFileListingError(
-                f"{context} failed\n"
-                f"command: {' '.join(command)}\n"
-                f"exit_code: {result.returncode}\n"
-                f"STDOUT:\n{_decode_output(result.stdout)}\n"
-                f"STDERR:\n{_decode_output(result.stderr)}"
-            )
-        return None
-    return {repo_root / rel.decode("utf-8") for rel in result.stdout.split(b"\0") if rel}
+    try:
+        paths = RepoFileSnapshot(repo_root, require_git=require_git).list_files(
+            include_untracked=True
+        )
+    except RepoFileListingError as exc:
+        raise GitFileListingError(
+            str(exc).replace("repo file listing failed", f"{context} failed", 1)
+        ) from exc
+    return None if paths is None else set(paths)
 
 
 def capture_visible_repo_files(

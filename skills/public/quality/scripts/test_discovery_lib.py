@@ -12,8 +12,23 @@ built-in globs stay here only as the zero-config default.
 from __future__ import annotations
 
 import subprocess
+import sys
 from pathlib import Path
 from typing import Any
+
+
+def _ensure_scripts_package() -> None:
+    here = Path(__file__).resolve()
+    for candidate in (here, *here.parents):
+        if (candidate / "scripts" / "repo_file_listing.py").is_file():
+            root = str(candidate)
+            if root not in sys.path:
+                sys.path.insert(0, root)
+            return
+
+
+_ensure_scripts_package()
+from scripts.repo_file_listing import RepoFileSnapshot  # noqa: E402
 
 IGNORED_DIRS = {
     ".artifacts", ".charness", ".git", ".hg", ".mypy_cache", ".pytest_cache",
@@ -57,24 +72,24 @@ def _effective_patterns(discovery: dict[str, Any]) -> tuple[tuple[str, ...], tup
 def _discover_by_patterns(
     repo_root: Path, patterns: tuple[str, ...], fallback_patterns: tuple[str, ...]
 ) -> list[Path]:
-    result = subprocess.run(
-        ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard", "--", *patterns],
-        cwd=repo_root,
-        check=False,
-        capture_output=True,
-    )
-    if result.returncode == 0:
-        return sorted(
+    _ = patterns
+    listed = RepoFileSnapshot(repo_root).list_files(include_untracked=True)
+    if listed is None:
+        return sorted({
             path
-            for rel in result.stdout.split(b"\0")
-            if rel and (path := repo_root / rel.decode("utf-8")).is_file()
-        )
-    return sorted({
-        path
-        for pattern in fallback_patterns
-        for path in repo_root.rglob(pattern)
-        if path.is_file() and not _is_ignored(path.relative_to(repo_root))
-    })
+            for pattern in fallback_patterns
+            for path in repo_root.rglob(pattern)
+            if path.is_file() and not _is_ignored(path.relative_to(repo_root))
+        })
+    allowed = {path for path in listed if path.is_file()}
+    found: list[Path] = []
+    seen: set[Path] = set()
+    for pattern in fallback_patterns:
+        for path in repo_root.rglob(pattern):
+            if path in allowed and path not in seen:
+                seen.add(path)
+                found.append(path)
+    return sorted(found)
 
 
 def _discover_by_command(repo_root: Path, command: str) -> tuple[list[Path] | None, str | None]:

@@ -10,11 +10,10 @@ import subprocess
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from scripts.checkout_view import CheckoutView, GitCheckout, moment_from_status
 from scripts.git_checkout import head_oid_from_files as _head_sha_from_checkout
 from scripts.git_checkout import identity_from_files, layout_from_files, worktree_root_from_files
 from scripts.git_status_snapshot import GitStatusError
-from scripts.git_status_snapshot import parse as parse_git_status
-from scripts.git_status_snapshot import status_args as git_status_args
 from scripts.task_run_contract import (
     _BRANCH_RE,
     _GIT_DISCOVERY_ENV,
@@ -237,22 +236,25 @@ def _parse_nul_paths(output: str) -> list[str]:
     return sorted({entry for entry in output.split("\0") if entry})
 
 
-def _collect_populations(repo_root: Path) -> dict[str, list[str]]:
+def _collect_populations(
+    repo_root: Path, *, checkout: CheckoutView | None = None
+) -> dict[str, list[str]]:
     """Worktree populations from the same porcelain-v2 snapshot as completion."""
-    populations, _, _ = _collect_populations_with_metadata(repo_root)
+    populations, _, _ = _collect_populations_with_metadata(repo_root, checkout=checkout)
     return populations
 
 
 def _collect_populations_with_metadata(
-    repo_root: Path,
+    repo_root: Path, *, checkout: CheckoutView | None = None
 ) -> tuple[dict[str, list[str]], str | None, str | None]:
-    """Read terminal worktree populations together with Git's branch snapshot."""
-    output = _git_output(repo_root, *git_status_args(ignored=True))
+    """Read one worktree moment: dirty populations plus the checked-out HEAD."""
     try:
-        snapshot = parse_git_status(output.encode("utf-8", errors="surrogateescape"))
-    except GitStatusError as exc:
+        moment = moment_from_status(
+            (checkout or GitCheckout(repo_root)).status(ignored=True)
+        )
+    except (GitStatusError, OSError) as exc:
         raise TaskRunError(str(exc)) from exc
-    return snapshot.populations(), snapshot.head_oid, snapshot.branch
+    return moment.populations, moment.head_oid, moment.branch
 
 
 def _snapshot_payload(snapshot: Mapping[str, Sequence[str]]) -> dict[str, Any]:

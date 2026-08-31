@@ -11,8 +11,11 @@ from dataclasses import dataclass
 from pathlib import Path
 
 try:
+    from scripts.repo_file_listing import RepoFileSnapshot
     from scripts.yaml_output import emit_yaml
 except ModuleNotFoundError:
+    from repo_file_listing import RepoFileSnapshot
+
     from yaml_output import emit_yaml
 
 SYMBOL_RE = re.compile(r"^\s*(?:def|class)\s+([A-Za-z_][A-Za-z0-9_]*)\b")
@@ -81,14 +84,18 @@ def symbol_variants(symbol: str) -> list[str]:
 
 
 def _tracked_scan_paths(repo_root: Path, scan_roots: list[str]) -> list[Path]:
-    proc = _git(repo_root, "ls-files", "--", *scan_roots)
-    if proc.returncode != 0:
+    listed = RepoFileSnapshot(repo_root).list_files(include_untracked=False)
+    if listed is None:
         return []
-    return [
-        repo_root / line
-        for line in proc.stdout.splitlines()
-        if line.endswith((".md", ".txt", ".json", ".yaml", ".yml"))
-    ]
+    suffixes = {".md", ".txt", ".json", ".yaml", ".yml"}
+    matches: list[Path] = []
+    for path in listed:
+        if path.suffix not in suffixes or not path.is_file():
+            continue
+        rel = path.relative_to(repo_root).as_posix()
+        if any(rel == root or rel.startswith(f"{root}/") for root in scan_roots):
+            matches.append(path)
+    return matches
 
 
 def concept_variants(concept: str) -> list[str]:
@@ -115,11 +122,8 @@ def find_residue(
     symbols: list[str] | None = None,
     concepts: list[str] | None = None,
 ) -> list[Finding]:
-    variants_by_symbol = {
-        symbol: symbol_variants(symbol) for symbol in deleted_symbols(repo_root)
-    }
-    for symbol in symbols or []:
-        variants_by_symbol[symbol] = symbol_variants(symbol)
+    observed = deleted_symbols(repo_root) if symbols is None else symbols
+    variants_by_symbol = {symbol: symbol_variants(symbol) for symbol in observed}
     for concept in concepts or []:
         variants = concept_variants(concept)
         if variants:
@@ -151,8 +155,8 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--repo-root", type=Path, default=Path("."))
     parser.add_argument("--scan-root", action="append", default=[])
-    parser.add_argument("--symbol", action="append", default=[], help="Also scan for an explicitly named deleted symbol.")
-    parser.add_argument("--concept", action="append", default=[], help="Also scan for an explicitly named deleted concept.")
+    parser.add_argument("--symbol", action="append", default=None, help="Also scan for an explicitly named deleted symbol.")
+    parser.add_argument("--concept", action="append", default=None, help="Also scan for an explicitly named deleted concept.")
     args = parser.parse_args(argv)
 
     findings = find_residue(

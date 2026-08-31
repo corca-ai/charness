@@ -107,16 +107,20 @@ def _filter(entries: Iterable[tuple[str, str]], *, statuses: set[str] | None, pr
     return matched
 
 
-def _deferred_decision_ids(repo_root: Path, ref: str) -> set[str]:
-    show_result = _run_git(repo_root, "show", f"{ref}:{DEFERRED_DECISIONS_PATH}")
-    if show_result.returncode != 0:
-        return set()
+def _deferred_decision_ids_from_text(text: str) -> set[str]:
     ids: set[str] = set()
-    for line in show_result.stdout.splitlines():
+    for line in text.splitlines():
         match = DEFERRED_DECISION_HEADING_RE.match(line)
         if match:
             ids.add(match.group(1))
     return ids
+
+
+def _deferred_decision_ids(repo_root: Path, ref: str) -> set[str]:
+    show_result = _run_git(repo_root, "show", f"{ref}:{DEFERRED_DECISIONS_PATH}")
+    if show_result.returncode != 0:
+        return set()
+    return _deferred_decision_ids_from_text(show_result.stdout)
 
 
 def _deferred_decision_added(repo_root: Path, parent_sha: str, head_sha: str) -> bool:
@@ -212,11 +216,11 @@ def _diff_rule_candidate(rule: dict, entries: list[tuple[str, str]], head_sha: s
 
 
 def _collect_candidates(
-    repo_root: Path,
-    parent_sha: str,
-    head_sha: str,
     entries: list[tuple[str, str]],
+    head_sha: str,
     head_message: str,
+    *,
+    deferred_heading_added: bool = False,
 ) -> list[dict]:
     candidates: list[dict] = []
     for rule in DIFF_RULES:
@@ -224,9 +228,7 @@ def _collect_candidates(
         if candidate is not None:
             candidates.append(candidate)
 
-    if any(path == DEFERRED_DECISIONS_PATH for _, path in entries) and _deferred_decision_added(
-        repo_root, parent_sha, head_sha
-    ):
+    if deferred_heading_added and any(path == DEFERRED_DECISIONS_PATH for _, path in entries):
         candidates.append(
             _candidate(
                 "deferred-decision-added",
@@ -280,6 +282,41 @@ def _empty_result(skipped_reason: str | None) -> dict:
     }
 
 
+def classify_from_observation(
+    entries: list[tuple[str, str]],
+    head_message: str,
+    head_sha: str,
+    *,
+    deferred_heading_added: bool = False,
+) -> dict:
+    """Classify a T-signal from already-observed diff entries and the HEAD message.
+
+    Callers that already have the name-status list and commit message project
+    from this; they do not re-ask Git. ``classify_t_signal`` observes once, then
+    calls here. ``deferred_heading_added`` is the blob observation for a new
+    ``## D<n>`` heading — not a second parse of the path list.
+    """
+    winner = _select_strongest(
+        _collect_candidates(
+            entries,
+            head_sha,
+            head_message,
+            deferred_heading_added=deferred_heading_added,
+        )
+    )
+    if winner is None:
+        return _empty_result(None)
+    return {
+        "t_status": winner["t_status"],
+        "rule_id": winner["rule_id"],
+        "confidence": winner["confidence"],
+        "matched_paths": winner["matched_paths"],
+        "commit_refs": winner["commit_refs"],
+        "diff_kind": winner["diff_kind"],
+        "skipped_reason": None,
+    }
+
+
 def classify_t_signal(repo_root: Path, head_sha: str | None = None) -> dict:
     if not (repo_root / ".git").exists():
         return _empty_result("diff_unavailable")
@@ -300,28 +337,15 @@ def classify_t_signal(repo_root: Path, head_sha: str | None = None) -> dict:
         return _empty_result("diff_unavailable")
 
     entries = _parse_name_status(diff_result.stdout)
-    candidates = _collect_candidates(repo_root, parent_sha, head, entries, head_message)
-    winner = _select_strongest(candidates)
-    if winner is None:
-        return {
-            "t_status": "none",
-            "rule_id": None,
-            "confidence": None,
-            "matched_paths": None,
-            "commit_refs": None,
-            "diff_kind": None,
-            "skipped_reason": None,
-        }
-
-    return {
-        "t_status": winner["t_status"],
-        "rule_id": winner["rule_id"],
-        "confidence": winner["confidence"],
-        "matched_paths": winner["matched_paths"],
-        "commit_refs": winner["commit_refs"],
-        "diff_kind": winner["diff_kind"],
-        "skipped_reason": None,
-    }
+    deferred_heading_added = any(
+        path == DEFERRED_DECISIONS_PATH for _, path in entries
+    ) and _deferred_decision_added(repo_root, parent_sha, head)
+    return classify_from_observation(
+        entries,
+        head_message,
+        head,
+        deferred_heading_added=deferred_heading_added,
+    )
 
 
 def main() -> int:

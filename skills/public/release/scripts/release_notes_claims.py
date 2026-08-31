@@ -376,7 +376,13 @@ def audit_notes_text(text: str, derived_surfaces: list[dict[str, object]]) -> li
     return [*_block_findings(text, derived_surfaces), *_marker_findings(text, derived_surfaces)]
 
 
-def audit_notes_file(path: Path, repo_root: Path, *, require_git: bool = False) -> list[dict[str, object]]:
+def audit_notes_file(
+    path: Path,
+    repo_root: Path,
+    *,
+    require_git: bool = False,
+    tracked_tree=None,
+) -> list[dict[str, object]]:
     try:
         text = path.read_text(encoding="utf-8")
     except OSError as exc:
@@ -388,7 +394,10 @@ def audit_notes_file(path: Path, repo_root: Path, *, require_git: bool = False) 
                 "detail": f"could not read the notes file `{path}`: {exc}",
             }
         ]
-    return audit_notes_text(text, derive_surfaces(repo_root, require_git=require_git))
+    return audit_notes_text(
+        text,
+        derive_surfaces(repo_root, require_git=require_git, tracked_tree=tracked_tree),
+    )
 
 
 def finding_lines(findings: list[dict[str, object]]) -> list[str]:

@@ -8,7 +8,7 @@ import pytest
 from scripts import git_checkout as checkout
 from scripts.git_status_snapshot import GitStatusError
 from scripts.git_status_snapshot import capture as capture_status
-from tests.quality_gates.git_fixture_support import init_git_repo
+from tests.quality_gates.repo_shapes import install_committed_repo
 
 
 def test_plain_directory_is_not_discoverable_and_is_not_a_local_checkout(tmp_path: Path) -> None:
@@ -38,15 +38,7 @@ def test_bare_repository_signature_is_discoverable(tmp_path: Path) -> None:
 
 def test_real_checkout_projects_discoverable_local_and_head(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    repo.mkdir()
-    (repo / "tracked.py").write_text("base\n", encoding="utf-8")
-    init_git_repo(repo, "tracked.py")
-    subprocess.run(
-        ["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-qm", "seed"],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-    )
+    install_committed_repo(repo, {"tracked.py": "base\n"})
     assert checkout.discoverable(repo) is True
     assert checkout.local_checkout(repo) is True
     head = checkout.head_oid_from_files(repo)

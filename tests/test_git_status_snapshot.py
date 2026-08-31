@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from scripts import git_status_snapshot as status
-from tests.quality_gates.git_fixture_support import init_git_repo
+from tests.quality_gates.repo_shapes import install_committed_repo
 
 
 def test_parse_projects_head_dirty_deleted_and_rename_destination() -> None:
@@ -69,15 +69,7 @@ def test_status_args_vary_the_observation_not_the_parser() -> None:
 
 def test_capture_reads_a_real_checkout_once(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     repo = tmp_path / "repo"
-    repo.mkdir()
-    (repo / "tracked.py").write_text("base\n", encoding="utf-8")
-    init_git_repo(repo, "tracked.py")
-    subprocess.run(
-        ["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-qm", "seed"],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-    )
+    install_committed_repo(repo, {"tracked.py": "base\n"})
     (repo / "tracked.py").write_text("dirty\n", encoding="utf-8")
     (repo / "extra.py").write_text("new\n", encoding="utf-8")
     calls: list[tuple[str, ...]] = []

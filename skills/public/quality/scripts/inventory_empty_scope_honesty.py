@@ -56,6 +56,7 @@ from __future__ import annotations
 import argparse
 import glob as globlib
 import runpy
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -174,14 +175,32 @@ def probe_detector(repo_root: Path, script: str, empty_repo: Path) -> dict[str, 
     }
 
 
+def _empty_git_dir() -> Path:
+    """One empty `.git` tree, copied into each probe checkout.
+
+    Detectors need a Git worktree to list files. They do not need a unique
+    object store, so Git runs once to mint the template.
+    """
+    cached = getattr(_empty_git_dir, "_seed", None)
+    if cached is not None:
+        return cached
+    root = Path(tempfile.mkdtemp(prefix="charness-empty-git-"))
+    subprocess.run(["git", "init", "-q"], cwd=root, check=True, capture_output=True)
+    seed = root / ".git"
+    _empty_git_dir._seed = seed  # type: ignore[attr-defined]
+    return seed
+
+
 def build_report(repo_root: Path, *, empty_repo_parent: Path) -> dict[str, Any]:
     detectors = discover_detectors(repo_root)
     findings: list[dict[str, Any]] = []
-    for index, script in enumerate(detectors):
-        empty_repo = empty_repo_parent / f"r{index}"
-        empty_repo.mkdir(parents=True)
-        subprocess.run(["git", "init", "-q"], cwd=empty_repo, check=True, capture_output=True)
-        findings.append(probe_detector(repo_root, script, empty_repo))
+    if detectors:
+        template = _empty_git_dir()
+        for index, script in enumerate(detectors):
+            empty_repo = empty_repo_parent / f"r{index}"
+            empty_repo.mkdir(parents=True)
+            shutil.copytree(template, empty_repo / ".git")
+            findings.append(probe_detector(repo_root, script, empty_repo))
     counts: dict[str, int] = {}
     for finding in findings:
         counts[finding["bucket"]] = counts.get(finding["bucket"], 0) + 1

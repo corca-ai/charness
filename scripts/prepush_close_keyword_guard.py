@@ -231,7 +231,15 @@ def evaluate(repo_root: Path, push_refs: list[dict[str, str]], repo: str, remote
 
 
 def _judge(
-    repo_root: Path, repo: str, sha: str, checker: Any, issue_verify_closeout: Any
+    repo_root: Path,
+    repo: str,
+    sha: str,
+    checker: Any,
+    issue_verify_closeout: Any,
+    *,
+    body: str | None = None,
+    list_paths: Any = None,
+    read_file: Any = None,
 ) -> dict[str, Any] | None:
     """One commit, through the carrier's own decision sequence.
 
@@ -248,7 +256,7 @@ def _judge(
     close-keywords one of its numbers, which is exactly the overlap that ends the
     pause exemption. It is returned and named rather than dropped silently.
     """
-    body = commit_body(repo_root, sha)
+    body = commit_body(repo_root, sha) if body is None else body
     qualified = close_targets(body, issue_verify_closeout.iter_close_keyword_refs)
     # A CLOSE KEYWORD is the trigger, not a touched artifact. The commit-msg carrier
     # keys on the staged artifact too, because staging one is an intent to close; a
@@ -266,8 +274,10 @@ def _judge(
             repo_root,
             issue_verify_closeout.iter_close_keyword_refs,
             issue_verify_closeout.strip_code_fences,
-            list_paths=lambda root, _sha=sha: commit_paths(root, _sha),
-            read_file=lambda root, path, _sha=sha: commit_file(root, _sha, path),
+            list_paths=list_paths
+            or (lambda root, _sha=sha: commit_paths(root, _sha)),
+            read_file=read_file
+            or (lambda root, path, _sha=sha: commit_file(root, _sha, path)),
         )
         if set(artifact["numbers"]) & closable
     ]

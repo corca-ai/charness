@@ -41,6 +41,7 @@ SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 
 _repo_file_listing = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.repo_file_listing")
 git_list_repo_files = _repo_file_listing.git_list_repo_files
+RepoFileSnapshot = _repo_file_listing.RepoFileSnapshot
 
 #: Python sources this repo OWNS. `plugins/**` and `mutants/**` are absent by
 #: construction rather than by exclusion: neither matches these globs. That is
@@ -83,13 +84,15 @@ class TrackedReleaseTree(NamedTuple):
     allowed: frozenset[Path] | None
 
 
-def _tracked_release_tree(repo_root: Path, *, require_git: bool) -> TrackedReleaseTree:
+def _tracked_release_tree(
+    repo_root: Path,
+    *,
+    require_git: bool,
+    snapshot: RepoFileSnapshot | None = None,
+) -> TrackedReleaseTree:
     root = repo_root.resolve()
-    listed = git_list_repo_files(
-        root,
-        include_untracked=False,
-        require_git=require_git,
-    )
+    listing = snapshot or RepoFileSnapshot(root, require_git=require_git)
+    listed = listing.list_files(include_untracked=False)
     allowed = (
         frozenset(path for path in listed if path.is_file())
         if listed is not None
@@ -300,9 +303,14 @@ def derive_surface(
     }
 
 
-def derive_surfaces(repo_root: Path, *, require_git: bool = False) -> list[dict[str, object]]:
+def derive_surfaces(
+    repo_root: Path,
+    *,
+    require_git: bool = False,
+    tracked_tree: TrackedReleaseTree | None = None,
+) -> list[dict[str, object]]:
     """Every registered surface, measured against ``repo_root``, in registry order."""
-    tree = _tracked_release_tree(repo_root, require_git=require_git)
+    tree = tracked_tree or _tracked_release_tree(repo_root, require_git=require_git)
     return [
         derive_surface(
             surface,

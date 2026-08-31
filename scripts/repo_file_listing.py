@@ -21,6 +21,9 @@ class GeneratedMirrorAbsentError(Exception):
     """The generated plugin mirror is not on disk, so its scope is unestablished."""
 
 
+_SUBJECT: dict[tuple[Path, bool], RepoFileSnapshot] = {}
+
+
 class RepoFileSnapshot:
     """One operation's coherent Git-backed file population.
 
@@ -28,12 +31,16 @@ class RepoFileSnapshot:
     instead of paying for an identical ``git ls-files`` at every helper layer.
     The cache is deliberately explicit and operation-scoped: a later operation
     that may follow a mutation creates a new snapshot.
+
+    A bound subject listing (this repo during pytest) is the exception: new
+    snapshots of that root share the already-observed paths until unbound.
     """
 
     def __init__(self, repo_root: Path, *, require_git: bool = False) -> None:
         self.repo_root = repo_root.resolve()
         self.require_git = require_git
-        self._paths: dict[bool, list[Path] | None] = {}
+        bound = _subject_listing(self.repo_root, require_git=self.require_git)
+        self._paths: dict[bool, list[Path] | None] = bound._paths if bound is not None else {}
 
     def list_files(self, *, include_untracked: bool = True) -> list[Path] | None:
         if include_untracked not in self._paths:
@@ -45,6 +52,29 @@ class RepoFileSnapshot:
         return self._paths[include_untracked]
 
 
+def bind_subject_listing(snapshot: RepoFileSnapshot) -> None:
+    """Share one listing of ``snapshot.repo_root`` until unbound.
+
+    Inventory of a stable subject observes once. A later operation that may
+    follow a mutation constructs its own ``RepoFileSnapshot``.
+    """
+    _SUBJECT[(snapshot.repo_root, snapshot.require_git)] = snapshot
+
+
+def unbind_subject_listing(repo_root: Path, *, require_git: bool = True) -> None:
+    _SUBJECT.pop((repo_root.resolve(), require_git), None)
+
+
+def _subject_listing(repo_root: Path, *, require_git: bool) -> RepoFileSnapshot | None:
+    resolved = repo_root.resolve()
+    found = _SUBJECT.get((resolved, require_git))
+    if found is not None:
+        return found
+    if not require_git:
+        return _SUBJECT.get((resolved, True))
+    return None
+
+
 def _listing_snapshot(
     repo_root: Path,
     *,
@@ -52,7 +82,8 @@ def _listing_snapshot(
     snapshot: RepoFileSnapshot | None,
 ) -> RepoFileSnapshot:
     if snapshot is None:
-        return RepoFileSnapshot(repo_root, require_git=require_git)
+        bound = _subject_listing(repo_root, require_git=require_git)
+        return bound if bound is not None else RepoFileSnapshot(repo_root, require_git=require_git)
     if snapshot.repo_root != repo_root.resolve():
         raise ValueError("repo file snapshot belongs to a different repository")
     if require_git and not snapshot.require_git:

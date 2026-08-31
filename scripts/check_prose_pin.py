@@ -84,18 +84,16 @@ def changed_status(repo_root: Path, *, staged: bool = False) -> list[tuple[str, 
     return rows
 
 
-def removed_lines(repo_root: Path, path: str) -> list[str]:
-    """Lines the working-tree diff removed/changed from ``path`` vs HEAD."""
-    out = _git(repo_root, "diff", "--unified=0", "HEAD", "--", path)
-    if out is None:
-        return []
+def removed_lines_from_unified_diff(diff_text: str) -> list[str]:
+    """``-`` hunk body lines from an already-observed unified diff.
+
+    Collects inside a hunk only: the ``--- a/path`` / ``+++ b/path`` file headers
+    precede the first ``@@``, so gating on the hunk boundary keeps a removed
+    content line that itself starts with ``--`` from being mistaken for a header.
+    """
     removed: list[str] = []
-    # Collect "-" body lines only inside a hunk: the ``--- a/path`` / ``+++ b/path``
-    # file headers precede the first ``@@``, so gating on the hunk boundary keeps a
-    # removed content line that itself starts with ``--`` from being mistaken for a
-    # header.
     in_hunk = False
-    for line in out.splitlines():
+    for line in diff_text.splitlines():
         if line.startswith("@@"):
             in_hunk = True
             continue
@@ -104,6 +102,14 @@ def removed_lines(repo_root: Path, path: str) -> list[str]:
             if stripped:
                 removed.append(stripped)
     return removed
+
+
+def removed_lines(repo_root: Path, path: str) -> list[str]:
+    """Lines the working-tree diff removed/changed from ``path`` vs HEAD."""
+    out = _git(repo_root, "diff", "--unified=0", "HEAD", "--", path)
+    if out is None:
+        return []
+    return removed_lines_from_unified_diff(out)
 
 
 def test_string_literals(test_roots: list[Path]) -> list[tuple[str, Path, int]]:

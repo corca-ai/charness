@@ -65,8 +65,12 @@ with `generate_release_notes.py --sync`.
 """
 
 
-def render_block(repo_root: Path, *, require_git: bool = False) -> str:
-    return _claims.render_derived_block(_surfaces.derive_surfaces(repo_root, require_git=require_git))
+def render_block(repo_root: Path, *, require_git: bool = False, tracked_tree=None) -> str:
+    return _claims.render_derived_block(
+        _surfaces.derive_surfaces(
+            repo_root, require_git=require_git, tracked_tree=tracked_tree
+        )
+    )
 
 
 def sync_notes_text(text: str, block: str) -> tuple[str, str]:

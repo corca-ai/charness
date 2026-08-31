@@ -134,7 +134,9 @@ def notes_narrative_blockers(
     return _narrative_lint.finding_lines(_narrative_lint.blocking(findings))
 
 
-def notes_claim_blockers(repo_root: Path, notes_file: Path) -> list[str]:
+def notes_claim_blockers(
+    repo_root: Path, notes_file: Path, *, tracked_tree=None
+) -> list[str]:
     """Where the notes' derived claims disagree with the tree being published.
 
     This runs HERE, in the pre-bump preflight, and not also in
@@ -161,7 +163,9 @@ def notes_claim_blockers(repo_root: Path, notes_file: Path) -> list[str]:
     # A repo that opted out is not being gated at all, so demanding git of it
     # would refuse a publish over a check it declined.
     try:
-        findings = _notes_claims.audit_notes_file(notes_file, repo_root, require_git=required)
+        findings = _notes_claims.audit_notes_file(
+            notes_file, repo_root, require_git=required, tracked_tree=tracked_tree
+        )
     except RepoFileListingError as exc:
         # A traceback where a verdict belongs is the shape this repo keeps
         # repairing. Refusing is correct -- nothing read the shipped tree, so no
@@ -252,6 +256,7 @@ def run_notes_file_preflight(
     notes_file: Path | None,
     on_resume: bool = False,
     previous_version: str | None = None,
+    tracked_tree=None,
 ) -> None:
     # The drafted-notes refusal is a directory listing with no dependency on the
     # bump, the release surface, or the pre-push gates, and `run_narrative_audit`
@@ -290,7 +295,7 @@ def run_notes_file_preflight(
     claims_blockers: list[str] = []
     if notes_file is not None and not notes_blockers:
         claims_blockers = [
-            *notes_claim_blockers(repo_root, notes_file),
+            *notes_claim_blockers(repo_root, notes_file, tracked_tree=tracked_tree),
             *notes_narrative_blockers(
                 repo_root, notes_file, target_tag=target_tag, previous_version=previous_version
             ),

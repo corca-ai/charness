@@ -351,13 +351,22 @@ def _exemption_advisories(reports: list[dict[str, Any]], advisory_fn: Any) -> li
     return lines
 
 
-def evaluate(repo_root: Path, commit_msg_file: Path, repo: str) -> dict[str, Any]:
+def evaluate(
+    repo_root: Path,
+    commit_msg_file: Path,
+    repo: str,
+    *,
+    list_paths: Any = None,
+    read_file: Any = None,
+) -> dict[str, Any]:
     issue_verify_closeout = _load_issue_verify_closeout()
     iter_refs = issue_verify_closeout.iter_close_keyword_refs
     artifacts = _issue_closeout_artifacts(
         repo_root,
         iter_refs,
         issue_verify_closeout.strip_code_fences,
+        list_paths=list_paths,
+        read_file=read_file,
     )
     commit_msg_file = commit_msg_file.resolve()
     raw_body = commit_msg_file.read_text(encoding="utf-8")

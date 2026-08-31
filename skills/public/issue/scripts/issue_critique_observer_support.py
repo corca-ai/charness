@@ -36,19 +36,23 @@ def artifact_observed_date(path: Path, text: str) -> date | None:
         return None
 
 
+def _path_is_tracked(root: Path, relative: str) -> bool:
+    try:
+        from scripts.repo_file_listing import RepoFileSnapshot
+    except ModuleNotFoundError:
+        from repo_file_listing import RepoFileSnapshot
+    listed = RepoFileSnapshot(root).list_files(include_untracked=False)
+    return listed is not None and (root / relative) in listed
+
+
 def _tracked_before_rule(path: Path, repo_root: Path) -> bool:
     """Require committed pre-rule bytes before trusting an old self-date."""
     try:
         root = repo_root.resolve()
         candidate = path.resolve()
         relative = candidate.relative_to(root)
-        subprocess.run(
-            ["git", "ls-files", "--error-unmatch", "--", relative.as_posix()],
-            cwd=root,
-            check=True,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
+        if not _path_is_tracked(root, relative.as_posix()):
+            return False
         result = subprocess.run(
             ["git", "log", "-1", "--format=%cI", "--", relative.as_posix()],
             cwd=root,

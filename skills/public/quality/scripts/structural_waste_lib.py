@@ -3,7 +3,7 @@ from __future__ import annotations
 import ast
 import importlib.util
 import re
-import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -43,17 +43,25 @@ discover_surfaces = _DISCOVERY.discover_surfaces
 iter_snippets = _DISCOVERY.iter_snippets
 
 
+def _iter_repo_files():
+    try:
+        from scripts.repo_file_listing import iter_repo_files
+    except ModuleNotFoundError:
+        root = next(
+            candidate
+            for candidate in Path(__file__).resolve().parents
+            if (candidate / "scripts" / "repo_file_listing.py").is_file()
+        )
+        sys.path.insert(0, str(root))
+        from scripts.repo_file_listing import iter_repo_files
+    return iter_repo_files
+
+
+_ITER_REPO_FILES = _iter_repo_files()
+
+
 def _tracked_files(repo_root: Path) -> list[Path]:
-    result = subprocess.run(
-        ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
-        cwd=repo_root,
-        check=False,
-        capture_output=True,
-    )
-    if result.returncode == 0:
-        paths = [repo_root / rel.decode("utf-8") for rel in result.stdout.split(b"\0") if rel]
-        return sorted(path for path in paths if path.is_file())
-    return sorted(path for path in repo_root.rglob("*") if path.is_file())
+    return _ITER_REPO_FILES(repo_root, include_untracked=True)
 
 
 def _is_ignored(path: Path) -> bool:

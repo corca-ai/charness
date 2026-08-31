@@ -18,9 +18,13 @@ from __future__ import annotations
 
 import json
 import re
-import subprocess
 import sys
 from pathlib import Path
+
+try:
+    from scripts.repo_file_listing import RepoFileListingError, RepoFileSnapshot
+except ModuleNotFoundError:
+    from repo_file_listing import RepoFileListingError, RepoFileSnapshot
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 POLICY = {
@@ -85,23 +89,22 @@ def tracked_repo_files() -> list[str]:
     say so.
     """
     try:
-        result = subprocess.run(
-            ["git", "-C", str(REPO_ROOT), "ls-files", "--cached", "--others", "--exclude-standard"],
-            capture_output=True,
-            text=True,
-            check=False,
+        listed = RepoFileSnapshot(REPO_ROOT, require_git=True).list_files(
+            include_untracked=True
         )
-    except OSError as exc:
-        # No `git` on PATH. Every other bad input in this file gets a `FAIL:` line, and
-        # a bare traceback here would be the one shape an operator cannot act on --
-        # the same defect the absolute-pattern branch below was added to fix.
-        raise SystemExit(f"FAIL: git is required to establish the scanned population: {exc}") from exc
-    if result.returncode != 0:
+    except RepoFileListingError as exc:
         raise SystemExit(
             "FAIL: git file listing failed; this gate scans a tracked population and "
-            f"cannot report over an unestablished one.\n{result.stderr.strip()}"
+            f"cannot report over an unestablished one.\n{exc}"
+        ) from exc
+    except OSError as exc:
+        raise SystemExit(f"FAIL: git is required to establish the scanned population: {exc}") from exc
+    if listed is None:
+        raise SystemExit(
+            "FAIL: git file listing failed; this gate scans a tracked population and "
+            "cannot report over an unestablished one."
         )
-    return [line for line in result.stdout.splitlines() if line]
+    return [path.relative_to(REPO_ROOT).as_posix() for path in listed]
 
 
 def discover_gate_scripts() -> list[Path]:

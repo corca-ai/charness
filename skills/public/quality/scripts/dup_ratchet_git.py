@@ -36,6 +36,7 @@ from scripts.git_checkout import discoverable as _git_metadata_is_discoverable  
 from scripts.git_status_snapshot import GitStatusError  # noqa: E402
 from scripts.git_status_snapshot import parse as parse_git_status  # noqa: E402
 from scripts.git_status_snapshot import status_args as git_status_args  # noqa: E402
+from scripts.repo_file_listing import RepoFileSnapshot  # noqa: E402
 
 
 def _git_output(repo_root: Path, args: list[str]) -> tuple[int, str]:
@@ -228,7 +229,7 @@ def tracked_files(repo_root: Path) -> set[str] | None:
     "code" at all. ``None`` (not an empty set) on failure -- an unreadable
     population is unknown, never zero.
     """
-    rc, out = _git_output(repo_root, ["ls-files"])
-    if rc != 0:
+    listed = RepoFileSnapshot(repo_root).list_files(include_untracked=False)
+    if listed is None:
         return None
-    return {line.strip() for line in out.splitlines() if line.strip()}
+    return {path.relative_to(repo_root).as_posix() for path in listed}

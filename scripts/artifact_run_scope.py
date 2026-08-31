@@ -21,6 +21,9 @@ from dataclasses import dataclass
 from pathlib import Path, PureWindowsPath
 from typing import Any
 
+from scripts.checkout_view import GitCheckout
+from scripts.git_status_snapshot import GitStatusError
+
 
 class ValidationError(Exception):
     pass
@@ -69,9 +72,15 @@ def _git_paths(repo_root: Path, args: list[str], *, artifact_label: str) -> list
 
 
 def git_changed_paths(repo_root: Path, *, artifact_label: str) -> list[str]:
-    paths = set(_git_paths(repo_root, ["diff", "--name-only", "HEAD", "--"], artifact_label=artifact_label))
-    paths.update(_git_paths(repo_root, ["ls-files", "--others", "--exclude-standard"], artifact_label=artifact_label))
-    return sorted(paths)
+    """Dirty worktree paths vs HEAD: one status observation, not diff+ls-files."""
+    try:
+        return sorted(GitCheckout(repo_root).status().dirty_destination_paths())
+    except (GitStatusError, OSError) as exc:
+        detail = str(exc).strip()
+        message = f"{artifact_label} artifact changed-path discovery failed"
+        if detail:
+            message = f"{message}; output: {detail}"
+        raise ValidationError(message) from exc
 
 
 def add_changed_artifact_args(parser, *, default_repo_root: Path, all_help: str) -> None:

@@ -24,9 +24,13 @@ import argparse
 import os
 import subprocess
 import sys
+from collections.abc import Callable
 from pathlib import Path
 
-from scripts.git_status_snapshot import GitStatusError
+from scripts.git_status_snapshot import (
+    GitStatusError,
+    GitStatusSnapshot,
+)
 from scripts.git_status_snapshot import parse as parse_git_status
 from scripts.git_status_snapshot import status_args as git_status_args
 
@@ -50,25 +54,8 @@ def allow_partial_stage() -> bool:
     return os.environ.get(ALLOW_ENV, "").strip().lower() in TRUE_VALUES
 
 
-def _status_paths(repo_root: Path) -> tuple[set[str], set[str], set[str]]:
-    """Return staged, unstaged, and post-index tracked paths from one status read."""
-    try:
-        result = subprocess.run(
-            ["git", *_STAGED_STATUS_ARGS],
-            cwd=repo_root,
-            capture_output=True,
-            check=False,
-        )
-    except OSError as exc:  # git absent, cwd unusable
-        raise RuntimeError(f"git status: {exc}") from exc
-    if result.returncode != 0:
-        message = result.stderr.decode("utf-8", errors="replace").strip()
-        raise RuntimeError(message or "git status failed")
-    try:
-        snapshot = parse_git_status(result.stdout)
-    except GitStatusError as exc:
-        raise RuntimeError(str(exc)) from exc
-
+def _index_sides(snapshot: GitStatusSnapshot) -> tuple[set[str], set[str], set[str]]:
+    """Project staged, unstaged, and post-index tracked paths from one snapshot."""
     staged: set[str] = set()
     unstaged: set[str] = set()
     tracked: set[str] = set()
@@ -96,6 +83,27 @@ def _status_paths(repo_root: Path) -> tuple[set[str], set[str], set[str]]:
         if record.kind == "unmerged" or x != "D":
             tracked.add(record.path)
     return staged, unstaged, tracked
+
+
+def _status_paths(repo_root: Path) -> tuple[set[str], set[str], set[str]]:
+    """Return staged, unstaged, and post-index tracked paths from one status read."""
+    try:
+        result = subprocess.run(
+            ["git", *_STAGED_STATUS_ARGS],
+            cwd=repo_root,
+            capture_output=True,
+            check=False,
+        )
+    except OSError as exc:  # git absent, cwd unusable
+        raise RuntimeError(f"git status: {exc}") from exc
+    if result.returncode != 0:
+        message = result.stderr.decode("utf-8", errors="replace").strip()
+        raise RuntimeError(message or "git status failed")
+    try:
+        snapshot = parse_git_status(result.stdout)
+    except GitStatusError as exc:
+        raise RuntimeError(str(exc)) from exc
+    return _index_sides(snapshot)
 
 
 def _on_disk(repo_root: Path, path: str) -> bool:
@@ -138,8 +146,14 @@ def find_stale_staged(repo_root: Path) -> list[str]:
     return sorted(edited | orphaned)
 
 
-def _classify_stale(repo_root: Path) -> tuple[set[str], set[str]]:
-    """Classify stale paths from one porcelain-v2 index/worktree snapshot.
+def classify_stale(
+    staged: set[str],
+    unstaged: set[str],
+    tracked: set[str],
+    *,
+    present: Callable[[str], bool],
+) -> tuple[set[str], set[str]]:
+    """Classify stale paths from one already-observed index/worktree snapshot.
 
     Returns ``(edited, orphaned)``:
 
@@ -155,9 +169,8 @@ def _classify_stale(repo_root: Path) -> tuple[set[str], set[str]]:
     Porcelain v2 exposes both sides as XY in one coherent observation. Rename
     detection stays disabled so a deleted source and added destination remain
     independently classifiable. Untracked enumeration is disabled: a staged
-    deletion remains a ``D.`` record, and ``_on_disk`` owns presence detection.
+    deletion remains a ``D.`` record, and ``present`` owns presence detection.
     """
-    staged, unstaged, tracked = _status_paths(repo_root)
     # A case-only rename (`Foo.md` -> `foo.md`) on a case-insensitive filesystem
     # stages a deletion of the old spelling while `lexists` resolves it to the NEW
     # file, which would be a false refusal on macOS and Windows -- and both remedies
@@ -174,9 +187,16 @@ def _classify_stale(repo_root: Path) -> tuple[set[str], set[str]]:
     orphaned = {
         path
         for path in staged - tracked
-        if path.casefold() not in folded and _on_disk(repo_root, path)
+        if path.casefold() not in folded and present(path)
     }
     return staged & unstaged, orphaned
+
+
+def _classify_stale(repo_root: Path) -> tuple[set[str], set[str]]:
+    staged, unstaged, tracked = _status_paths(repo_root)
+    return classify_stale(
+        staged, unstaged, tracked, present=lambda path: _on_disk(repo_root, path)
+    )
 
 
 def _remedy_lines(paths: list[str], render, *, cap: int = 10) -> str:

@@ -20,6 +20,11 @@ _dynamic_entrypoints = SimpleNamespace(
 _source_roles = SimpleNamespace(
     **runpy.run_path(str(Path(__file__).with_name("source_role_evidence.py")))
 )
+_inventory = SimpleNamespace(
+    **runpy.run_path(str(Path(__file__).with_name("git_inventory_lib.py")))
+)
+capture_visible_repo_files = _inventory.capture_visible_repo_files
+visible_repo_files = _inventory.visible_repo_files
 
 DEFAULT_PATHS = ("runtime_bootstrap.py", "skill_runtime_bootstrap.py", "scripts", "skills", "tests")
 FINDING_RE = re.compile(
@@ -32,66 +37,37 @@ MOCK_PROTOCOL_NAMES = ("side_effect", "return_value", "call_args", "mock_calls")
 TEST_PROTOCOL_TERMS = ("fake", "mock", "stub", "driver", "protocol")
 STRUCTURED_OUTPUT_NAMES = ("rss_kib",)
 SOURCE_SCANNED_CONTRACTS = {}
-GIT_LIST_TIMEOUT_SECONDS = 30
 VULTURE_TIMEOUT_SECONDS = 120
 NON_PYTHON_SOURCE_SUFFIXES = frozenset(
     {".c", ".cc", ".cpp", ".go", ".java", ".js", ".jsx", ".kt", ".rs", ".svelte", ".ts", ".tsx"}
 )
 
 
-def git_visible_python_paths(repo_root: Path, roots: tuple[str, ...]) -> list[str]:
-    try:
-        result = subprocess.run(
-            ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard", "--", "*.py"],
-            cwd=repo_root,
-            check=False,
-            capture_output=True,
-            timeout=GIT_LIST_TIMEOUT_SECONDS,
-        )
-    except subprocess.TimeoutExpired:
-        return [root for root in roots if (repo_root / root).exists()]
-    if result.returncode != 0:
+def git_visible_python_paths(repo_root: Path, roots: tuple[str, ...], *, snapshot=None) -> list[str]:
+    listed = visible_repo_files(repo_root, snapshot=snapshot)
+    if listed is None:
         return [root for root in roots if (repo_root / root).exists()]
     selected: list[str] = []
-    for raw in result.stdout.split(b"\0"):
-        if not raw:
+    for path in listed:
+        if not path.is_file() or path.suffix != ".py":
             continue
-        rel = raw.decode("utf-8")
-        path = repo_root / rel
-        if not path.is_file():
-            continue
+        rel = path.relative_to(repo_root).as_posix()
         if any(rel == root or rel.startswith(f"{root}/") for root in roots):
             selected.append(rel)
     return sorted(selected)
 
 
-def git_visible_non_python_sources(
-    repo_root: Path, roots: tuple[str, ...] | None = None
-) -> list[str]:
-    try:
-        result = subprocess.run(
-            ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
-            cwd=repo_root,
-            check=False,
-            capture_output=True,
-            timeout=GIT_LIST_TIMEOUT_SECONDS,
-        )
-    except subprocess.TimeoutExpired:
-        return []
-    if result.returncode != 0:
+def git_visible_non_python_sources(repo_root: Path, roots: tuple[str, ...] | None = None, *, snapshot=None) -> list[str]:
+    listed = visible_repo_files(repo_root, snapshot=snapshot)
+    if listed is None:
         return []
     selected: list[str] = []
-    for raw in result.stdout.split(b"\0"):
-        if not raw:
+    for path in listed:
+        if not path.is_file() or path.suffix.casefold() not in NON_PYTHON_SOURCE_SUFFIXES:
             continue
-        rel = raw.decode("utf-8")
-        if Path(rel).suffix.casefold() not in NON_PYTHON_SOURCE_SUFFIXES:
-            continue
-        if roots is not None and not any(
-            rel == root or rel.startswith(f"{root}/") for root in roots
-        ):
-            continue
-        selected.append(rel)
+        rel = path.relative_to(repo_root).as_posix()
+        if roots is None or any(rel == root or rel.startswith(f"{root}/") for root in roots):
+            selected.append(rel)
     return sorted(selected)
 
 
@@ -299,10 +275,11 @@ def main() -> int:
 
     repo_root = args.repo_root.resolve()
     roots = tuple(args.path or DEFAULT_PATHS)
-    paths = git_visible_python_paths(repo_root, roots)
+    snapshot = capture_visible_repo_files(repo_root)
+    paths = git_visible_python_paths(repo_root, roots, snapshot=snapshot)
     non_python_scope = "requested-roots" if args.path else "repo-wide-default-guard"
     non_python_sources = git_visible_non_python_sources(
-        repo_root, roots if args.path else None
+        repo_root, roots if args.path else None, snapshot=snapshot
     )
     applicable = bool(paths)
     applicability = (

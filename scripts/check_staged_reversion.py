@@ -207,36 +207,83 @@ class Finding:
         }
 
 
-def find_staged_reversions(repo_root: str) -> list[Finding]:
-    """Return the unambiguous staged-reversion phantoms among staged paths."""
-    findings: list[Finding] = []
-    for path in _staged_paths(repo_root):
-        head_mode, head_blob = _head_entry(repo_root, path)
-        index_mode, index_blob, unmerged = _index_entry(repo_root, path)
-        if unmerged:
-            continue  # conflicted: no stage-0 entry, and git refuses to commit it
-        if _GITLINK_MODE in (head_mode, index_mode):
-            continue  # skip submodule gitlinks defensively
-        worktree_blob = _worktree_blob(repo_root, path)
+def classify_reversion(
+    path: str,
+    *,
+    head_blob: str | None,
+    index_blob: str | None,
+    worktree_blob: str | None,
+    unmerged: bool = False,
+    gitlink: bool = False,
+) -> Finding | None:
+    """Classify one already-observed HEAD/index/worktree triple.
 
-        # Fingerprint: the index diverges from HEAD, yet the worktree agrees with
-        # HEAD. ``None == None`` is intentional (both absent => the worktree
-        # agrees with HEAD that the path should not exist).
-        if index_blob != head_blob and worktree_blob == head_blob:
-            case = (
+    Fingerprint: the index diverges from HEAD, yet the worktree agrees with
+    HEAD. ``None == None`` is intentional (both absent => the worktree agrees
+    with HEAD that the path should not exist). Callers that already have the
+    three blobs project from this; they do not re-ask Git.
+    """
+    if unmerged:
+        return None  # conflicted: no stage-0 entry, and git refuses to commit it
+    if gitlink:
+        return None  # skip submodule gitlinks defensively
+    if index_blob != head_blob and worktree_blob == head_blob:
+        return Finding(
+            path=path,
+            case=(
                 "staged-deletion-phantom"
                 if index_blob is None
                 else "modified-reversion-phantom"
+            ),
+            head_blob=head_blob,
+            index_blob=index_blob,
+            worktree_blob=worktree_blob,
+        )
+    return None
+
+
+def find_staged_reversions(
+    repo_root: str,
+    *,
+    triples: list[dict[str, object]] | None = None,
+) -> list[Finding]:
+    """Return the unambiguous staged-reversion phantoms among staged paths.
+
+    ``triples`` is already-observed HEAD/index/worktree facts. The Git adapter
+    below obtains them; classifiers do not.
+    """
+    if triples is not None:
+        findings: list[Finding] = []
+        for triple in triples:
+            head_blob = triple.get("head_blob")
+            index_blob = triple.get("index_blob")
+            worktree_blob = triple.get("worktree_blob")
+            finding = classify_reversion(
+                str(triple["path"]),
+                head_blob=None if head_blob is None else str(head_blob),
+                index_blob=None if index_blob is None else str(index_blob),
+                worktree_blob=None if worktree_blob is None else str(worktree_blob),
+                unmerged=bool(triple.get("unmerged", False)),
+                gitlink=bool(triple.get("gitlink", False)),
             )
-            findings.append(
-                Finding(
-                    path=path,
-                    case=case,
-                    head_blob=head_blob,
-                    index_blob=index_blob,
-                    worktree_blob=worktree_blob,
-                )
-            )
+            if finding is not None:
+                findings.append(finding)
+        return findings
+    findings = []
+    for path in _staged_paths(repo_root):
+        head_mode, head_blob = _head_entry(repo_root, path)
+        index_mode, index_blob, unmerged = _index_entry(repo_root, path)
+        worktree_blob = None if unmerged else _worktree_blob(repo_root, path)
+        finding = classify_reversion(
+            path,
+            head_blob=head_blob,
+            index_blob=index_blob,
+            worktree_blob=worktree_blob,
+            unmerged=unmerged,
+            gitlink=_GITLINK_MODE in (head_mode, index_mode),
+        )
+        if finding is not None:
+            findings.append(finding)
     return findings
 
 

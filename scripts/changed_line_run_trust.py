@@ -38,8 +38,8 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:  # pragma: no cover - import bootstrap
     sys.path.insert(0, str(REPO_ROOT))
 
+from scripts.checkout_view import CheckoutView, GitCheckout  # noqa: E402
 from scripts.git_status_snapshot import GitStatusError  # noqa: E402
-from scripts.git_status_snapshot import capture as capture_git_status  # noqa: E402
 from scripts.git_status_snapshot import parse as parse_git_status  # noqa: E402
 from scripts.mutation_changed_files_lib import changed_pool_fingerprint  # noqa: E402
 
@@ -93,7 +93,12 @@ def _head_resolves_to_head(repo_root: Path, head_sha: str) -> bool:
     return pair is not None and pair[0] == pair[1]
 
 
-def uncommitted_pool_changes(repo_root: Path, eligible: set[str]) -> list[str]:
+def uncommitted_pool_changes(
+    repo_root: Path,
+    eligible: set[str],
+    *,
+    checkout: CheckoutView | None = None,
+) -> list[str]:
     """Eligible mutation-pool files with uncommitted worktree changes vs HEAD.
 
     Runs the same status snapshot as ``probe_run_trust`` and must share its path
@@ -103,7 +108,7 @@ def uncommitted_pool_changes(repo_root: Path, eligible: set[str]) -> list[str]:
     disagreeing about the same tree, which is the state this module exists to
     make impossible.
     """
-    changed = set(_worktree_status_paths(repo_root) or [])
+    changed = set(_worktree_status_paths(repo_root, checkout) or [])
     return sorted(path for path in changed if path in eligible)
 
 
@@ -145,21 +150,31 @@ def _parse_status_snapshot(payload: bytes) -> WorktreeTrustSnapshot:
     return WorktreeTrustSnapshot(snapshot.dirty_destination_paths(), snapshot.head_oid)
 
 
-def _worktree_trust_snapshot(repo_root: Path) -> WorktreeTrustSnapshot | None:
-    """Dirty paths and HEAD from one coherent Git snapshot."""
+def _worktree_trust_snapshot(
+    repo_root: Path, checkout: CheckoutView | None = None
+) -> WorktreeTrustSnapshot | None:
+    """Dirty paths and HEAD from one coherent checkout observation."""
     try:
-        snapshot = capture_git_status(repo_root)
+        snapshot = (checkout or GitCheckout(repo_root)).status()
     except (GitStatusError, OSError):
         return None
     return WorktreeTrustSnapshot(snapshot.dirty_destination_paths(), snapshot.head_oid)
 
 
-def _worktree_status_paths(repo_root: Path) -> list[str] | None:
-    snapshot = _worktree_trust_snapshot(repo_root)
+def _worktree_status_paths(
+    repo_root: Path, checkout: CheckoutView | None = None
+) -> list[str] | None:
+    snapshot = _worktree_trust_snapshot(repo_root, checkout)
     return None if snapshot is None else snapshot.paths
 
 
-def probe_run_trust(repo_root: Path, head_sha: str, eligible: set[str]) -> TrustProbe:
+def probe_run_trust(
+    repo_root: Path,
+    head_sha: str,
+    eligible: set[str],
+    *,
+    checkout: CheckoutView | None = None,
+) -> TrustProbe:
     """Decide whether this run's inputs can support a verdict at all.
 
     Three ways they cannot, each previously invisible:
@@ -177,7 +192,7 @@ def probe_run_trust(repo_root: Path, head_sha: str, eligible: set[str]) -> Trust
       direction: an explicit older ``--head-sha`` over a dirty pool reported no
       contamination at all. Reproduced before the fix.
     """
-    snapshot = _worktree_trust_snapshot(repo_root)
+    snapshot = _worktree_trust_snapshot(repo_root, checkout)
     if snapshot is None:
         return TrustProbe(
             [],
@@ -263,6 +278,7 @@ def _pin_run_state(
     head_sha: str,
     *,
     resolved_pair: tuple[str, str] | None = None,
+    checkout: CheckoutView | None = None,
 ) -> dict[str, str]:
     """Snapshot what the whole run must stay anchored to.
 
@@ -271,7 +287,10 @@ def _pin_run_state(
     the ``blocking_detail`` numbers are computed against. ``head_commit`` and the
     changed-pool content fingerprint are the drift tripwires re-read at the end.
     End-of-run drift re-reads without ``resolved_pair``; startup may reuse the
-    pair ``probe_run_trust`` already observed.
+    pair ``probe_run_trust`` already observed. Pass ``checkout`` only for that
+    startup pin so dirty-path inspection and the fingerprint share one status
+    snapshot. Drift must omit it: a cached ``GitCheckout.status()`` cannot see
+    worktree edits that landed during the run.
     """
     if resolved_pair is not None:
         resolved = [resolved_pair[0]]
@@ -284,7 +303,7 @@ def _pin_run_state(
         resolved = [pair[0]] if pair is not None else []
         head_commit = [pair[1]] if pair is not None else []
     try:
-        fingerprint = changed_pool_fingerprint(repo_root, base_sha)
+        fingerprint = changed_pool_fingerprint(repo_root, base_sha, checkout=checkout)
     except (subprocess.CalledProcessError, OSError):
         fingerprint = ""
     return {

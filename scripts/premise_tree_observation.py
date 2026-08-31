@@ -40,10 +40,22 @@ def _git_bytes(repo_root: Path, *args: str) -> subprocess.CompletedProcess[bytes
 
 
 def _index_paths(repo_root: Path) -> set[bytes]:
-    result = _git_bytes(repo_root, "ls-files", "-z")
-    if result.returncode != 0:
+    try:
+        from scripts.repo_file_listing import RepoFileListingError, RepoFileSnapshot
+    except ModuleNotFoundError:
+        from repo_file_listing import RepoFileListingError, RepoFileSnapshot
+    try:
+        listed = RepoFileSnapshot(repo_root, require_git=True).list_files(
+            include_untracked=False
+        )
+    except RepoFileListingError as exc:
+        raise CurrentTreeInspectionError("cannot inspect the current index") from exc
+    if listed is None:
         raise CurrentTreeInspectionError("cannot inspect the current index")
-    return {entry for entry in result.stdout.split(b"\0") if entry}
+    return {
+        path.relative_to(repo_root).as_posix().encode("utf-8")
+        for path in listed
+    }
 
 
 def observe_current_tree(
@@ -51,6 +63,7 @@ def observe_current_tree(
     candidate: dict[str, Any],
     *,
     index_objects: dict[str, tuple[str, bytes] | None] | None = None,
+    index_paths: set[bytes] | None = None,
 ) -> tuple[dict[str, list[dict[str, Any]]], bool]:
     """Return normalized observations and whether protected state drifted."""
     observations: dict[str, list[dict[str, Any]]] = {
@@ -89,7 +102,8 @@ def observe_current_tree(
                 "worktree_sha256": worktree_sha,
             }
         )
-    index_paths = _index_paths(repo_root) if candidate["expected_missing"] else set()
+    if index_paths is None:
+        index_paths = _index_paths(repo_root) if candidate["expected_missing"] else set()
     for relative in candidate["expected_missing"]:
         path = _repo_path(repo_root, relative)
         relative_bytes = relative.encode("utf-8")

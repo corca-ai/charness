@@ -137,7 +137,9 @@ def _preview(text: str, width: int = 100) -> str:
     return text if len(text) <= width else text[: width - 3] + "..."
 
 
-def reference_home_gaps(repo_root: Path, rel: str) -> list[dict[str, Any]]:
+def reference_home_gaps(
+    repo_root: Path, rel: str, *, removed: list[str] | None = None
+) -> list[dict[str, Any]]:
     """Removed prose lines whose content does not survive in the body or a reference.
 
     Each gap is a REVIEW item: confirm it is a justified no-op deletion (the §5
@@ -151,19 +153,26 @@ def reference_home_gaps(repo_root: Path, rel: str) -> list[dict[str, Any]]:
     refs = _package_reference_text(repo_root, rel)
     gaps: list[dict[str, Any]] = []
     seen: set[str] = set()
-    for removed in _prose_pin.removed_lines(repo_root, rel):
-        if removed in seen:
+    lines = _prose_pin.removed_lines(repo_root, rel) if removed is None else removed
+    for line in lines:
+        if line in seen:
             continue
-        if len(removed) < MIN_PROSE_LENGTH or " " not in removed.strip():
+        if len(line) < MIN_PROSE_LENGTH or " " not in line.strip():
             continue
-        if removed in body or removed in refs:
+        if line in body or line in refs:
             continue
-        seen.add(removed)
-        gaps.append({"severity": "review", "kind": "reference-home-gap", "phrase": _preview(removed)})
+        seen.add(line)
+        gaps.append({"severity": "review", "kind": "reference-home-gap", "phrase": _preview(line)})
     return gaps
 
 
-def test_pin_breaks(repo_root: Path, rel: str, test_roots: list[Path]) -> list[dict[str, Any]]:
+def test_pin_breaks(
+    repo_root: Path,
+    rel: str,
+    test_roots: list[Path],
+    *,
+    removed: list[str] | None = None,
+) -> list[dict[str, Any]]:
     """``tests/`` literal pins on lines this cut removed, that no longer survive.
 
     Reuses the `check_prose_pin` removed-line + test-literal scan, then suppresses a
@@ -175,7 +184,9 @@ def test_pin_breaks(repo_root: Path, rel: str, test_roots: list[Path]) -> list[d
     """
     skill_md = repo_root / rel
     body = skill_md.read_text(encoding="utf-8") if skill_md.is_file() else ""
-    removed_blob = "\n".join(_prose_pin.removed_lines(repo_root, rel))
+    removed_blob = "\n".join(
+        _prose_pin.removed_lines(repo_root, rel) if removed is None else removed
+    )
     if not removed_blob:
         return []
     breaks: list[dict[str, Any]] = []
@@ -201,11 +212,17 @@ def test_pin_breaks(repo_root: Path, rel: str, test_roots: list[Path]) -> list[d
     return breaks
 
 
-def deletion_findings(repo_root: Path, rel: str, test_roots: list[Path]) -> list[dict[str, Any]]:
+def deletion_findings(
+    repo_root: Path,
+    rel: str,
+    test_roots: list[Path],
+    *,
+    removed: list[str] | None = None,
+) -> list[dict[str, Any]]:
     """Findings for a deleted skill surface: any surviving test-pin break (a real
     deterministic block, unaffected by the file being gone) plus an unconditional
     REVIEW -- a maximal cut must never fall through to zero findings."""
-    findings = test_pin_breaks(repo_root, rel, test_roots)
+    findings = test_pin_breaks(repo_root, rel, test_roots, removed=removed)
     findings.append({"severity": "review", "kind": "deleted-surface", "phrase": rel})
     return findings
 
@@ -216,17 +233,21 @@ def build_report(
     test_roots: list[Path],
     *,
     staged: bool = False,
+    removed_by_path: dict[str, list[str]] | None = None,
+    deleted_paths: list[str] | None = None,
 ) -> dict[str, Any]:
     targets = paths if paths is not None else changed_skill_md(repo_root, staged=staged)
     targets = sorted({Path(p).as_posix() for p in targets})
+    removed_map = removed_by_path or {}
     skills: list[dict[str, Any]] = []
     for rel in targets:
         if not _is_skill_md(rel):
             continue
+        removed = removed_map.get(rel)
         findings = (
             contract_pin_breaks(repo_root, rel)
-            + test_pin_breaks(repo_root, rel, test_roots)
-            + reference_home_gaps(repo_root, rel)
+            + test_pin_breaks(repo_root, rel, test_roots, removed=removed)
+            + reference_home_gaps(repo_root, rel, removed=removed)
         )
         blocks = [f for f in findings if f["severity"] == "block"]
         reviews = [f for f in findings if f["severity"] == "review"]
@@ -238,15 +259,29 @@ def build_report(
                 "reviews": reviews,
             }
         )
-    if paths is None:
+    if deleted_paths is not None:
+        deleted = deleted_paths
+    elif paths is None:
         # #<north-star> structural-skip fix: a deletion is invisible to
         # `changed_skill_md` (it filters `code != "D"`), so it needs its own pass
         # over the same diff -- otherwise a maximal cut yields zero findings.
-        for rel in deleted_skill_surfaces(repo_root, staged=staged):
-            findings = deletion_findings(repo_root, rel, test_roots)
-            blocks = [f for f in findings if f["severity"] == "block"]
-            reviews = [f for f in findings if f["severity"] == "review"]
-            skills.append({"path": rel, "status": "blocked" if blocks else "review", "blocks": blocks, "reviews": reviews})
+        deleted = deleted_skill_surfaces(repo_root, staged=staged)
+    else:
+        deleted = []
+    for rel in deleted:
+        findings = deletion_findings(
+            repo_root, rel, test_roots, removed=removed_map.get(rel)
+        )
+        blocks = [f for f in findings if f["severity"] == "block"]
+        reviews = [f for f in findings if f["severity"] == "review"]
+        skills.append(
+            {
+                "path": rel,
+                "status": "blocked" if blocks else "review",
+                "blocks": blocks,
+                "reviews": reviews,
+            }
+        )
     if paths and not skills:
         # A NAMED scope this gate cannot judge. `--path` is how a caller asks "is
         # this cut safe", and every named path being dropped by `_is_skill_md`
