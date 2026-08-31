@@ -38,6 +38,9 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:  # pragma: no cover - import bootstrap
     sys.path.insert(0, str(REPO_ROOT))
 
+from scripts.git_status_snapshot import GitStatusError  # noqa: E402
+from scripts.git_status_snapshot import capture as capture_git_status  # noqa: E402
+from scripts.git_status_snapshot import parse as parse_git_status  # noqa: E402
 from scripts.mutation_changed_files_lib import changed_pool_fingerprint  # noqa: E402
 
 _GIT_OID_RE = re.compile(r"^(?:[0-9a-fA-F]{40}|[0-9a-fA-F]{64})$")
@@ -138,72 +141,17 @@ class WorktreeTrustSnapshot(NamedTuple):
 
 
 def _parse_status_snapshot(payload: bytes) -> WorktreeTrustSnapshot:
-    """Decode dirty destinations and ``branch.oid`` from porcelain-v2 ``-z``.
-
-    Rename/copy records carry the source as a second field. The old
-    ``diff --name-only HEAD`` detector reported the destination, so retain that
-    contract and skip the following source field.
-    """
-    fields = payload.split(b"\0")
-    paths: list[str] = []
-    head_oid: str | None = None
-    index = 0
-    while index < len(fields):
-        record = fields[index]
-        index += 1
-        if not record:
-            continue
-        if record.startswith(b"# branch.oid "):
-            try:
-                value = record.removeprefix(b"# branch.oid ").decode("ascii")
-            except UnicodeDecodeError:
-                continue
-            if _GIT_OID_RE.fullmatch(value):
-                head_oid = value
-            continue
-        if record.startswith(b"# "):
-            continue
-        if record.startswith(b"? "):
-            paths.append(record[2:].decode("utf-8", errors="surrogateescape"))
-            continue
-        if record.startswith((b"1 ", b"u ")):
-            path = record.split(b" ", 8)[-1] if record.startswith(b"1 ") else record.split(b" ", 10)[-1]
-            paths.append(path.decode("utf-8", errors="surrogateescape"))
-            continue
-        if record.startswith(b"2 "):
-            path = record.split(b" ", 9)[-1]
-            paths.append(path.decode("utf-8", errors="surrogateescape"))
-            if index < len(fields):
-                index += 1
-            continue
-    return WorktreeTrustSnapshot(paths, head_oid)
+    snapshot = parse_git_status(payload)
+    return WorktreeTrustSnapshot(snapshot.dirty_destination_paths(), snapshot.head_oid)
 
 
 def _worktree_trust_snapshot(repo_root: Path) -> WorktreeTrustSnapshot | None:
-    """Dirty paths and HEAD from one coherent Git snapshot.
-
-    Porcelain v2 ``--branch`` carries the same live ``HEAD`` that the analyzed
-    ref used to fetch with a separate ``rev-parse``. Contamination and
-    analyzed-vs-HEAD identity therefore describe one observation.
-    """
+    """Dirty paths and HEAD from one coherent Git snapshot."""
     try:
-        result = subprocess.run(
-            [
-                "git",
-                "status",
-                "--porcelain=v2",
-                "-z",
-                "--branch",
-                "--untracked-files=all",
-            ],
-            cwd=repo_root,
-            capture_output=True,
-        )
-    except OSError:
+        snapshot = capture_git_status(repo_root)
+    except (GitStatusError, OSError):
         return None
-    if result.returncode != 0:
-        return None
-    return _parse_status_snapshot(result.stdout)
+    return WorktreeTrustSnapshot(snapshot.dirty_destination_paths(), snapshot.head_oid)
 
 
 def _worktree_status_paths(repo_root: Path) -> list[str] | None:

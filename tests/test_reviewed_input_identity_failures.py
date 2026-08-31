@@ -72,15 +72,10 @@ def test_clean_worktree_identity_skips_empty_patch_processes(
         repo_root=tmp_path, reviewed_paths=["reviewed.txt"]
     )
 
-    status_call = (
-        "status",
-        "--porcelain=v2",
-        "-z",
-        "--branch",
-        "--untracked-files=all",
-    )
+    from scripts.git_status_snapshot import status_args
+
     assert captured["status"] == "captured"
-    assert calls == [status_call]
+    assert calls == [status_args()]
 
 
 def test_committed_ref_identity_does_not_probe_is_inside_work_tree(
@@ -144,11 +139,28 @@ def test_worktree_status_snapshot_parses_only_nul_untracked_records(
 @pytest.mark.parametrize(
     ("record", "staged", "unstaged"),
     [
-        (b"1 M. N... fixture", True, False),
-        (b"1 .M N... fixture", False, True),
-        (b"u UU N... fixture", True, True),
+        (
+            b"1 M. N... 100644 100644 100644 " + (b"a" * 40) + b" " + (b"a" * 40) + b" fixture",
+            True,
+            False,
+        ),
+        (
+            b"1 .M N... 100644 100644 100644 " + (b"a" * 40) + b" " + (b"a" * 40) + b" fixture",
+            False,
+            True,
+        ),
+        (
+            b"u UU N... 100644 100644 100644 100644 "
+            + (b"a" * 40)
+            + b" "
+            + (b"a" * 40)
+            + b" "
+            + (b"a" * 40)
+            + b" fixture",
+            True,
+            True,
+        ),
         (b"? untracked.txt", False, False),
-        (b"unknown", True, True),
     ],
 )
 def test_status_snapshot_derives_only_conservative_patch_dirty_bits(
@@ -168,6 +180,19 @@ def test_status_snapshot_derives_only_conservative_patch_dirty_bits(
 
     assert snapshot.staged_dirty is staged
     assert snapshot.unstaged_dirty is unstaged
+
+
+def test_unknown_status_record_fails_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(
+        identity_lib,
+        "_git_bytes",
+        lambda _root, *args: b"# branch.oid " + (b"a" * 40) + b"\0unknown\0",
+    )
+
+    with pytest.raises(ValueError, match="unexpected git status record"):
+        identity_lib._working_tree_snapshot(tmp_path)
 
 
 @pytest.mark.parametrize(

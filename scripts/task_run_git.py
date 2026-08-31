@@ -10,6 +10,9 @@ import subprocess
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from scripts.git_status_snapshot import GitStatusError
+from scripts.git_status_snapshot import parse as parse_git_status
+from scripts.git_status_snapshot import status_args as git_status_args
 from scripts.task_run_contract import (
     _BRANCH_RE,
     _GIT_DISCOVERY_ENV,
@@ -212,75 +215,13 @@ def _collect_populations(repo_root: Path) -> dict[str, list[str]]:
 def _collect_populations_with_metadata(
     repo_root: Path,
 ) -> tuple[dict[str, list[str]], str | None, str | None]:
-    """Read terminal worktree populations together with Git's branch snapshot.
-
-    Porcelain v2's branch headers carry the same ``HEAD`` and branch identity
-    that completion used to fetch with separate ``rev-parse`` and
-    ``symbolic-ref`` calls.  Keeping these values attached to the one status
-    snapshot makes the completion boundary coherent: the candidate, branch,
-    and populations all describe one Git observation.
-    """
-    output = _git_output(
-        repo_root,
-        "status",
-        "--porcelain=v2",
-        "--branch",
-        "--untracked-files=all",
-        "--ignored=matching",
-        "-z",
-    )
-    populations: dict[str, list[str]] = {"tracked": [], "untracked": [], "ignored": []}
-    head: str | None = None
-    branch: str | None = None
-    records = output.split("\0")
-    index = 0
-    while index < len(records):
-        record = records[index]
-        index += 1
-        if not record:
-            continue
-        if record.startswith("# branch.oid "):
-            value = record.removeprefix("# branch.oid ").strip()
-            head = value if re.fullmatch(r"[0-9a-fA-F]{40,64}", value) else None
-            continue
-        if record.startswith("# branch.head "):
-            value = record.removeprefix("# branch.head ").strip()
-            branch = None if value in {"", "(detached)"} else value
-            continue
-        if record.startswith("# "):
-            # Upstream/ahead-behind headers are useful to humans but do not
-            # change the terminal candidate state being captured here.
-            continue
-        if record.startswith("? "):
-            populations["untracked"].append(record[2:])
-            continue
-        if record.startswith("! "):
-            populations["ignored"].append(record[2:])
-            continue
-        record_type = record[0]
-        if record_type == "1":
-            fields = record.split(" ", 8)
-            if len(fields) != 9:
-                raise TaskRunError(f"unexpected git status record: {record!r}")
-            populations["tracked"].append(fields[8])
-            continue
-        if record_type == "2":
-            fields = record.split(" ", 9)
-            if len(fields) != 10 or index >= len(records) or not records[index]:
-                raise TaskRunError(f"unexpected git status record: {record!r}")
-            populations["tracked"].append(fields[9])
-            populations["tracked"].append(records[index])
-            index += 1
-            continue
-        if record_type == "u":
-            fields = record.split(" ", 10)
-            if len(fields) != 11:
-                raise TaskRunError(f"unexpected git status record: {record!r}")
-            populations["tracked"].append(fields[10])
-            continue
-        raise TaskRunError(f"unexpected git status record: {record!r}")
-    normalized = {key: sorted(set(paths)) for key, paths in populations.items()}
-    return normalized, head, branch
+    """Read terminal worktree populations together with Git's branch snapshot."""
+    output = _git_output(repo_root, *git_status_args(ignored=True))
+    try:
+        snapshot = parse_git_status(output.encode("utf-8", errors="surrogateescape"))
+    except GitStatusError as exc:
+        raise TaskRunError(str(exc)) from exc
+    return snapshot.populations(), snapshot.head_oid, snapshot.branch
 
 
 def _snapshot_payload(snapshot: Mapping[str, Sequence[str]]) -> dict[str, Any]:

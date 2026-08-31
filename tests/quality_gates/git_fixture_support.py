@@ -7,6 +7,9 @@ import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+# Bound at import so tests that wrap production ``subprocess.run`` cannot
+# intercept fixture Git and poison the shared empty-git seed on disk.
+_run = subprocess.run
 
 
 def _empty_git_seed() -> Path:
@@ -16,7 +19,7 @@ def _empty_git_seed() -> Path:
     def build(seed_root: Path) -> None:
         seed_repo = seed_root / "repo"
         seed_repo.mkdir()
-        subprocess.run(
+        _run(
             ["git", "init"],
             cwd=seed_repo,
             check=True,
@@ -38,11 +41,9 @@ def init_git_repo(repo: Path, *tracked_paths: str) -> None:
     else:
         # Preserve the old behavior for callers intentionally reusing an
         # existing repository (including linked-worktree `.git` files).
-        subprocess.run(
-            ["git", "init"], cwd=repo, check=True, capture_output=True, text=True
-        )
+        _run(["git", "init"], cwd=repo, check=True, capture_output=True, text=True)
     if tracked_paths:
-        subprocess.run(
+        _run(
             ["git", "add", *tracked_paths],
             cwd=repo,
             check=True,
@@ -117,7 +118,5 @@ def charness_shaped_repo(tmp_path: Path, script_name: str) -> tuple[Path, Path, 
     (mirror_docs / "mirrored.md").write_text("# Mirrored\n", encoding="utf-8")
     source, mirror = install_repo_root_script(repo, script_name)
     init_git_repo(repo)
-    subprocess.run(
-        ["git", "add", "-A"], cwd=repo, check=True, capture_output=True, text=True
-    )
+    _run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True, text=True)
     return repo, source, mirror

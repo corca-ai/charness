@@ -10,6 +10,10 @@ from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import Any
 
+from scripts.git_status_snapshot import GitStatusError
+from scripts.git_status_snapshot import capture as capture_git_status
+from scripts.git_status_snapshot import parse as parse_git_status
+
 SURFACES_PATH = Path(".agents/surfaces.json")
 
 # A `<dir>/**/*.X` pattern is the #331 closeout-matcher footgun: surface matching
@@ -290,45 +294,25 @@ def _run_git(repo_root: Path, *args: str) -> list[str]:
 
 
 def _parse_working_tree_status(output: bytes) -> WorkingTreeSnapshot:
-    if output and not output.endswith(b"\0"):
-        raise SurfaceError("malformed git status record: missing NUL terminator")
-    records = output[:-1].split(b"\0") if output else []
-    changed_paths: list[str] = []
-    deleted_paths: set[str] = set()
-    index = 0
-    while index < len(records):
-        record = records[index]
-        if len(record) < 4 or record[2:3] != b" " or not record[3:]:
-            raise SurfaceError("malformed git status record")
-        status = record[:2]
-        path = record[3:].decode("utf-8", errors="surrogateescape")
-        if status in (b"  ", b"!!"):
-            index += 1
-            continue
-        changed_paths.append(path)
-        if b"D" in status:
-            deleted_paths.add(path)
-        if b"R" in status or b"C" in status:
-            if index + 1 >= len(records) or not records[index + 1]:
-                raise SurfaceError("malformed git status rename/copy record")
-            records[index + 1].decode("utf-8", errors="surrogateescape")
-            index += 1
-        index += 1
-    return WorkingTreeSnapshot(tuple(changed_paths), frozenset(deleted_paths))
+    try:
+        snapshot = parse_git_status(output)
+    except GitStatusError as exc:
+        raise SurfaceError(str(exc)) from exc
+    return WorkingTreeSnapshot(
+        tuple(snapshot.dirty_destination_paths()), snapshot.deleted_paths()
+    )
 
 
 def collect_working_tree_snapshot(repo_root: Path) -> WorkingTreeSnapshot:
-    result = subprocess.run(
-        ["git", "status", "--porcelain=v1", "-z", "--untracked-files=all"],
-        cwd=repo_root,
-        check=False,
-        capture_output=True,
+    try:
+        snapshot = capture_git_status(repo_root)
+    except GitStatusError as exc:
+        raise SurfaceError(str(exc)) from exc
+    except OSError as exc:
+        raise SurfaceError(str(exc) or "git status failed") from exc
+    return WorkingTreeSnapshot(
+        tuple(snapshot.dirty_destination_paths()), snapshot.deleted_paths()
     )
-    if result.returncode != 0:
-        stderr = result.stderr.decode("utf-8", errors="replace").strip()
-        stdout = result.stdout.decode("utf-8", errors="replace").strip()
-        raise SurfaceError(stderr or stdout or "git status failed")
-    return _parse_working_tree_status(result.stdout)
 
 
 def collect_changed_paths(repo_root: Path) -> list[str]:

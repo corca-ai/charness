@@ -261,9 +261,14 @@ def run_main(main: Callable[[], int], argv0: str, *args: str) -> SimpleNamespace
     return SimpleNamespace(returncode=code, stdout=out.getvalue(), stderr=err.getvalue())
 
 
+# Bound at import so tests that wrap production ``subprocess.run`` cannot
+# intercept fixture Git and poison the shared empty-git seed on disk.
+_run = subprocess.run
+
+
 def git(repo: Path, *args: str) -> str:
     """Run a fixture-repository git command and return trimmed stdout."""
-    return subprocess.run(
+    return _run(
         ["git", "-c", "user.email=t@t", "-c", "user.name=t", *args],
         cwd=repo,
         check=True,

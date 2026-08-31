@@ -6,6 +6,7 @@ import pytest
 
 from scripts import reviewed_input_identity as identity_lib
 from scripts import reviewed_input_nonblob
+from scripts.git_status_snapshot import status_args
 
 
 def test_initialized_gitlink_uses_one_checked_out_snapshot_query(
@@ -65,7 +66,7 @@ def test_identity_reuses_gitlink_snapshot_between_path_phases(
     git_calls: list[tuple[str, ...]] = []
 
     def fake_git_bytes(_root: Path, *args: str) -> bytes:
-        if args == ("status", "--porcelain=v2", "-z", "--branch", "--untracked-files=all"):
+        if args == status_args():
             return b"# branch.oid " + (b"a" * 40) + b"\0"
         return b""
 

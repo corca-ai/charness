@@ -13,6 +13,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+from scripts import git_status_snapshot as status
 from scripts import render_critique_section_changed_surfaces as producer_module
 from tests.quality_gates.git_fixture_support import init_git_repo
 
@@ -206,16 +207,23 @@ def test_a_staged_deletion_counts_the_same_as_an_unstaged_one(tmp_path: Path) ->
 def test_working_tree_producer_replaces_five_git_processes_with_one_snapshot(
     tmp_path: Path, monkeypatch, capsys
 ) -> None:
+    repo = _repo_with_surfaces(tmp_path)
     calls: list[list[str]] = []
+    oid = b"a" * 40
 
     def counting_run(command, *args, **kwargs):
         calls.append(list(command))
-        output = b"" if command[1] == "init" else b" M kept.md\0 D removed.md\0"
-        return subprocess.CompletedProcess(command, 0, output, b"")
+        return subprocess.CompletedProcess(
+            command,
+            0,
+            (
+                b"1 .M N... 100644 100644 100644 " + oid + b" " + oid + b" kept.md\0"
+                b"1 D. N... 100644 000000 000000 " + oid + b" " + (b"0" * 40) + b" removed.md\0"
+            ),
+            b"",
+        )
 
     monkeypatch.setattr(subprocess, "run", counting_run)
-    repo = _repo_with_surfaces(tmp_path)
-    calls.clear()
     monkeypatch.setattr(
         sys,
         "argv",
@@ -223,5 +231,5 @@ def test_working_tree_producer_replaces_five_git_processes_with_one_snapshot(
     )
 
     assert producer_module.main() == 0
-    assert calls == [["git", "status", "--porcelain=v1", "-z", "--untracked-files=all"]]
+    assert calls == [["git", *status.status_args()]]
     assert "- removed.md  (DELETED" in capsys.readouterr().out

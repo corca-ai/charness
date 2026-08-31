@@ -448,10 +448,7 @@ def test_classification_uses_one_status_snapshot(tmp_path: Path, monkeypatch) ->
     monkeypatch.setattr(cswc.subprocess, "run", _status)
 
     assert cswc._classify_stale(tmp_path) == ({"f.txt"}, set())
-    assert calls == [[
-        "git", "status", "--porcelain=v2", "-z", "--no-renames",
-        "--untracked-files=no",
-    ]]
+    assert calls == [["git", *cswc._STAGED_STATUS_ARGS]]
 
 
 def test_status_snapshot_refuses_unexpected_rename_records(

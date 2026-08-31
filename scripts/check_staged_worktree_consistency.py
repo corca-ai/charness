@@ -26,11 +26,16 @@ import subprocess
 import sys
 from pathlib import Path
 
+from scripts.git_status_snapshot import GitStatusError
+from scripts.git_status_snapshot import parse as parse_git_status
+from scripts.git_status_snapshot import status_args as git_status_args
+
 ALLOW_ENV = "CHARNESS_ALLOW_PARTIAL_STAGE"
 # Only these spellings turn the bypass ON. "0"/"false"/"no"/"off"/"" -- the
 # spellings an operator uses to turn it OFF -- must keep the gate running.
 TRUE_VALUES = {"1", "true", "yes", "on"}
-_STATUS_CODES = frozenset(b".MTADRCU")
+_STATUS_CODES = frozenset(".MTADRCU")
+_STAGED_STATUS_ARGS = git_status_args(branch=False, untracked="no", no_renames=True)
 # No --diff-filter. The first cut used ACM, which hid a path staged and then
 # DELETED on disk -- exactly the case worktree-walking validators skip entirely,
 # so the staged blob shipped unchecked. Widening it to ACMRD fixed that one letter
@@ -49,10 +54,7 @@ def _status_paths(repo_root: Path) -> tuple[set[str], set[str], set[str]]:
     """Return staged, unstaged, and post-index tracked paths from one status read."""
     try:
         result = subprocess.run(
-            [
-                "git", "status", "--porcelain=v2", "-z", "--no-renames",
-                "--untracked-files=no",
-            ],
+            ["git", *_STAGED_STATUS_ARGS],
             cwd=repo_root,
             capture_output=True,
             check=False,
@@ -62,49 +64,37 @@ def _status_paths(repo_root: Path) -> tuple[set[str], set[str], set[str]]:
     if result.returncode != 0:
         message = result.stderr.decode("utf-8", errors="replace").strip()
         raise RuntimeError(message or "git status failed")
+    try:
+        snapshot = parse_git_status(result.stdout)
+    except GitStatusError as exc:
+        raise RuntimeError(str(exc)) from exc
 
     staged: set[str] = set()
     unstaged: set[str] = set()
     tracked: set[str] = set()
-    for record in result.stdout.split(b"\0"):
-        if not record or record.startswith(b"# "):
-            continue
-        kind = record[:1]
-        if kind == b"1":
-            fields = record.split(b" ", 8)
-            if len(fields) != 9:
-                raise RuntimeError("git status returned a malformed ordinary record")
-            xy, raw_path = fields[1], fields[8]
-        elif kind == b"u":
-            fields = record.split(b" ", 10)
-            if len(fields) != 11:
-                raise RuntimeError("git status returned a malformed unmerged record")
-            xy, raw_path = fields[1], fields[10]
-        elif kind in {b"?", b"!"}:
+    for record in snapshot.records:
+        if record.kind == "rename":
+            raise RuntimeError("git status reported a rename despite --no-renames")
+        if record.kind in {"untracked", "ignored"}:
             raise RuntimeError(
                 "git status enumerated untracked or ignored paths despite "
                 "--untracked-files=no"
             )
-        elif kind == b"2":
-            raise RuntimeError("git status reported a rename despite --no-renames")
-        else:
-            raise RuntimeError("git status returned an unknown record kind")
-
+        xy = record.xy
         if (
             len(xy) != 2
             or any(status not in _STATUS_CODES for status in xy)
-            or xy == b".."
-            or not raw_path
+            or xy == ".."
+            or not record.path
         ):
             raise RuntimeError("git status returned malformed path state")
-        path = raw_path.decode("utf-8", errors="surrogateescape")
-        x, y = xy[:1], xy[1:]
-        if x != b".":
-            staged.add(path)
-        if y != b".":
-            unstaged.add(path)
-        if kind == b"u" or x != b"D":
-            tracked.add(path)
+        x, y = xy[0], xy[1]
+        if x != ".":
+            staged.add(record.path)
+        if y != ".":
+            unstaged.add(record.path)
+        if record.kind == "unmerged" or x != "D":
+            tracked.add(record.path)
     return staged, unstaged, tracked
 
 

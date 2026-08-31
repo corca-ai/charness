@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+from scripts import git_status_snapshot as status
 from scripts import reviewed_input_identity, surfaces_lib
 from tests.quality_gates.git_fixture_support import init_git_repo
 
@@ -110,14 +111,18 @@ def test_worktree_matrix_keeps_changed_path_consumers_in_agreement(tmp_path: Pat
     assert "ignored.txt" not in surface_paths
 
 
-def test_porcelain_v1_snapshot_parses_rename_copy_and_surrogate_paths() -> None:
+def test_porcelain_snapshot_parses_rename_copy_and_surrogate_paths() -> None:
+    oid = b"a" * 40
+    zeros = b"0" * 40
     output = (
-        b" M unstaged.txt\0"
-        b"D  staged.txt\0"
-        b"R  renamed.txt\0old-name.txt\0"
-        b"C  copied.txt\0source.txt\0"
-        b"?? bad-\xff.txt\0"
-        b"!! ignored.txt\0"
+        b"1 .M N... 100644 100644 100644 " + oid + b" " + oid + b" unstaged.txt\0"
+        b"1 D. N... 100644 000000 000000 " + oid + b" " + zeros + b" staged.txt\0"
+        b"2 R. N... 100644 100644 100644 " + oid + b" " + oid + b" R100 renamed.txt\0"
+        b"old-name.txt\0"
+        b"2 C. N... 100644 100644 100644 " + oid + b" " + oid + b" C100 copied.txt\0"
+        b"source.txt\0"
+        b"? bad-\xff.txt\0"
+        b"! ignored.txt\0"
     )
 
     snapshot = surfaces_lib._parse_working_tree_status(output)
@@ -135,14 +140,12 @@ def test_porcelain_v1_snapshot_parses_rename_copy_and_surrogate_paths() -> None:
 @pytest.mark.parametrize(
     "output",
     [
-        b" M missing-terminator",
-        b"M malformed-separator\0",
-        b" M \0",
-        b"R  renamed.txt\0",
-        b"R  renamed.txt\0\0",
+        b"x\0",
+        b"1 .M incomplete\0",
+        b"2 R. N... 100644 100644 100644 " + b"a" * 40 + b" " + b"a" * 40 + b" R100 renamed.txt\0",
     ],
 )
-def test_porcelain_v1_snapshot_rejects_malformed_records(output: bytes) -> None:
+def test_porcelain_snapshot_rejects_malformed_records(output: bytes) -> None:
     with pytest.raises(surfaces_lib.SurfaceError):
         surfaces_lib._parse_working_tree_status(output)
 
@@ -154,12 +157,12 @@ def test_collect_changed_paths_replaces_three_git_processes_with_one_status_snap
 
     def counting_run(command, *args, **kwargs):
         calls.append(list(command))
-        return subprocess.CompletedProcess(command, 0, b"?? changed.txt\0", b"")
+        return subprocess.CompletedProcess(command, 0, b"? changed.txt\0", b"")
 
     monkeypatch.setattr(subprocess, "run", counting_run)
 
     assert surfaces_lib.collect_changed_paths(tmp_path) == ["changed.txt"]
-    assert calls == [["git", "status", "--porcelain=v1", "-z", "--untracked-files=all"]]
+    assert calls == [["git", *status.status_args()]]
 
 
 def test_merge_matrix_keeps_changed_path_consumers_in_agreement(tmp_path: Path) -> None:
