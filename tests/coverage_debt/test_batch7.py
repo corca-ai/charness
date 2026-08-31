@@ -13,20 +13,26 @@ Its companion, `test_batch8.py`, covers the other half of the same release
 measurement: the layout a packaged script actually runs in, plus the task-run,
 reviewed-input, and release surfaces that consume these facts.
 
-Two fault-injection notes, because they are the only places here that do not use
-a real environment:
+Some arms are reproduced, some are injected. Which is which is stated per test,
+in that test's own docstring, and the summary below is deliberately not a count:
+an earlier version of this docstring claimed the `Path.resolve` cases were "the
+only places here that do not use a real environment", which was false of this
+file's own tests and is exactly the kind of unearned honesty claim these pins
+exist to prevent.
 
-* `Path.resolve()` in CPython 3.10 raises `OSError` from exactly one real
-  condition -- a RELATIVE path resolved while the process working directory has
-  been removed -- and raises `RuntimeError`, not `OSError`, on a symlink loop.
-  Where a caller has already made the path absolute, the `except OSError` arm
-  cannot be reached from any real filesystem state, so it is reached by replacing
-  `Path.resolve` for one specific path. The alternative is to delete the guard,
-  which would turn an unresolvable administration directory into a traceback
-  inside a gate.
-* Every other environmental failure here is produced for real: a removed working
-  directory, a `chmod 000` file, an empty `commondir`, a config Git rejects, a
-  git-less directory.
+Reproduced for real, with no test double: a removed process working directory
+(the only real source of `OSError` from a non-strict `Path.resolve` on 3.10), a
+`chmod 000` administration file, an empty `commondir`, a symlink cycle, a config
+Git itself rejects, a git-less directory.
+
+Injected, because no real state reaches the arm: the two `Path.resolve` cases
+below (after a caller has made the path absolute, non-strict `resolve` swallows
+every filesystem error except a symlink loop, which it re-raises as
+`RuntimeError`), and the four gates whose upstream producer cannot be made to
+emit the malformed input the arm exists for -- a `git log` record with missing
+fields, a `git status` payload that will not parse, and an `OSError` from the
+status read itself. Each of those says so in its own docstring, and says what
+deleting the guard would cost instead.
 """
 
 from __future__ import annotations
@@ -797,6 +803,13 @@ def test_an_unreadable_status_leaves_the_changed_pool_with_its_tracked_half(
     and the changed-line gate would then report a smaller changed set than the
     commit actually carries -- an under-report on the gate whose job is to block
     on uncovered changed lines.
+
+    The base must differ from the worktree for this to prove anything. An earlier
+    version compared HEAD against a clean tree, so the tracked diff was empty
+    before the unreadable-status arm was ever reached and `== []` would have held
+    for an implementation that returned nothing at all on that exception -- the
+    precise failure this docstring claims to prevent, asserted by a test that
+    could not see it.
     """
     repo = install_committed_repo(
         tmp_path / "repo", {"scripts/sample.py": "x = 1\n"}, message="base"
@@ -804,12 +817,15 @@ def test_an_unreadable_status_leaves_the_changed_pool_with_its_tracked_half(
     base = subprocess.run(
         ["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True
     ).stdout.strip()
+    # A real tracked change over that base, so an empty answer is distinguishable
+    # from a correct one.
+    (repo / "scripts" / "sample.py").write_text("x = 2\n", encoding="utf-8")
 
     changed = mutation_changed_files_lib.changed_pool_files_vs_base(
         repo, base, checkout=checkout_view.FactsCheckout(repo, status=None)
     )
 
-    assert changed == []
+    assert changed == ["scripts/sample.py"]
 
 
 # --- scripts/premise_preflight_lib ----------------------------------------------

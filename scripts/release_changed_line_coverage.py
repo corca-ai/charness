@@ -48,8 +48,12 @@ Exit codes:
      refusable at the release boundary with that flag, which is what makes it
      distinct from 4.
   4  PARTIAL: some of the changed pool set was analyzed and some was not, and
-     what WAS analyzed came back clean. `run-quality.sh` renders it UNPROVEN. It
-     is NOT refusable -- policy (a) above is the
+     what WAS analyzed came back clean. `run-quality.sh` renders it FAIL for THIS
+     label: rendering 3/4 as UNPROVEN is opt-in per label via
+     `UNESTABLISHED_CAPABLE_LABELS`, and `release-changed-line-coverage` is
+     deliberately not in that list, so an incomplete release-final analysis stops
+     the lane rather than annotating it. It
+     is NOT refusable by `--refuse-unestablished` -- policy (a) above is the
      owner's deliberate non-blocking choice, and the repair for the false green
      it produced was to stop calling it a PASS, not to stop a release on the
      mapper's blind spot. 3 was previously undocumented here; documenting it
@@ -77,9 +81,10 @@ NO_VERDICT_EXIT = _verdict_codes.REFUSED_EXIT
 # The consumer's exit-0 reason for a range that contained no eligible pool file.
 EMPTY_SCOPE_REASON_PREFIX = "no eligible mutation-pool files changed"
 # What `check_changed_line_mutation_coverage.py` returns when it judged no scope.
-# Non-blocking by design: mid-work it becomes this wrapper's own exit 3, which
-# run-quality renders UNPROVEN; the release lane's `--refuse-unestablished` turns
-# it into a 1.
+# Non-blocking by design: mid-work it becomes this wrapper's own exit 3. Whether
+# run-quality renders that UNPROVEN or FAIL is its per-label opt-in
+# (`UNESTABLISHED_CAPABLE_LABELS`), which this label is not in; the release lane's
+# `--refuse-unestablished` turns it into a 1 regardless.
 CONSUMER_UNESTABLISHED_EXIT = _verdict_codes.UNESTABLISHED_EXIT
 UNESTABLISHED_EXIT = _verdict_codes.UNESTABLISHED_EXIT
 # What the consumer returns when it judged its analyzed set clean but could not
@@ -88,7 +93,8 @@ UNESTABLISHED_EXIT = _verdict_codes.UNESTABLISHED_EXIT
 # repair for that false green is to stop calling it a PASS, not to start
 # stopping a release on the mapper's blind spot.
 CONSUMER_PARTIAL_EXIT = _verdict_codes.PARTIAL_EXIT
-# This lane's own byte for the same state. `run-quality.sh` renders it UNPROVEN.
+# This lane's own byte for the same state. `run-quality.sh` renders it FAIL for
+# this label, which is not in its `UNESTABLISHED_CAPABLE_LABELS` opt-in list.
 PARTIAL_EXIT = _verdict_codes.PARTIAL_EXIT
 CONSUMER = "scripts/check_changed_line_mutation_coverage.py"
 
