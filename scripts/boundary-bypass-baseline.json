@@ -4,11 +4,11 @@
   "inventory_schemaVersion": "charness.quality.boundary_bypass_inventory.v2",
   "call_site_fingerprint_algo_version": "1",
   "summary": {
-    "candidate_count": 42,
+    "candidate_count": 41,
     "convertible_count": 1,
-    "internal_boundary_count": 28,
+    "internal_boundary_count": 26,
     "keep_boundary_count": 23,
-    "candidate_key_count": 42
+    "candidate_key_count": 41
   },
   "candidate_keys": [
     "03317004492f3b03",
@@ -21,31 +21,30 @@
     "2afa2f7e74cef060",
     "311f0583cede02c5",
     "31d6a126367940a2",
-    "3282537862e9c0e4",
     "3972fc454265f2e9",
     "3b4fad91d955c7b7",
     "3e86c6cbdd720473",
     "3fa411270d9911ac",
     "46fc4a405e3dbe33",
+    "54afa0ad7cff2122",
     "584137bc9502bb52",
     "5aaa8310abddb4cc",
     "64beb6de7c290c6a",
-    "6a34e88fa8ab3d91",
     "70eb62ded1eae63a",
     "783e9c64272e4fde",
     "8dabe177e3532495",
     "8f4dcccce3e774b4",
     "9337a774dfde198e",
     "9875ebf099eff9ed",
+    "a0e7d15d7c09e801",
     "ae5a91735ed1dfd2",
     "b01f54994c12d25d",
-    "b0960f3b9fba3daf",
     "b11d217e862ac837",
-    "b300d515f1f0ee1a",
+    "b5b3752de4a125a5",
     "b9fda138fdfd80c5",
+    "cf1ef93210457cd4",
     "d11a41b4d1b636a0",
-    "d45e00f2707dc717",
-    "d85a8c87109c4366",
+    "dd77fe8edd20af64",
     "e47a116e9526f3c8",
     "ea1b0c89af5cdea5",
     "ed9d50431430820f",
@@ -59,6 +58,12 @@
       "test_file": "tests/control_plane/test_lock_schema_resilience.py",
       "import_safe_targets": [
         "scripts/doctor.py"
+      ]
+    },
+    {
+      "test_file": "tests/quality_gates/test_a_declaration_is_not_its_own_corroboration.py",
+      "import_safe_targets": [
+        "scripts/validate_inventory_consumption.py"
       ]
     },
     {
@@ -373,5 +378,5 @@
       ]
     }
   ],
-  "writer_integrity_sha256": "46bad4c994469ba81df260f15dd44a59b261f5db9a472a8e5dbd77341a769612"
+  "writer_integrity_sha256": "610c48d68579f7e2b4f33abeae34e27c1517bd77ab309bd7bb439931979e2a64"
 }
