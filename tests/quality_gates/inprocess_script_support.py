@@ -358,6 +358,146 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_verify_packet",
         ROOT / "skills" / "public" / "critique" / "scripts" / "verify_packet.py",
     ),
+    "scripts/parity_harness.py": (
+        "tests.quality_gates.support_parity_harness",
+        ROOT / "scripts" / "parity_harness.py",
+    ),
+    "skills/public/setup/scripts/seed_dependencies.py": (
+        "tests.quality_gates.support_setup_seed_dependencies",
+        ROOT / "skills" / "public" / "setup" / "scripts" / "seed_dependencies.py",
+    ),
+    "skills/public/retro/scripts/refresh_recent_lessons.py": (
+        "tests.quality_gates.support_refresh_recent_lessons",
+        ROOT / "skills" / "public" / "retro" / "scripts" / "refresh_recent_lessons.py",
+    ),
+    "scripts/check_markdown_inline_code.py": (
+        "tests.quality_gates.support_check_markdown_inline_code",
+        ROOT / "scripts" / "check_markdown_inline_code.py",
+    ),
+    "scripts/check_current_pointer_writes.py": (
+        "tests.quality_gates.support_check_current_pointer_writes",
+        ROOT / "scripts" / "check_current_pointer_writes.py",
+    ),
+    "scripts/validate_profiles.py": (
+        "tests.quality_gates.support_validate_profiles",
+        ROOT / "scripts" / "validate_profiles.py",
+    ),
+    "scripts/check_supply_chain.py": (
+        "tests.quality_gates.support_check_supply_chain",
+        ROOT / "scripts" / "check_supply_chain.py",
+    ),
+    "scripts/check_command_docs.py": (
+        "tests.quality_gates.support_check_command_docs",
+        ROOT / "scripts" / "check_command_docs.py",
+    ),
+    "scripts/suggest_public_skill_dogfood.py": (
+        "tests.quality_gates.support_suggest_public_skill_dogfood",
+        ROOT / "scripts" / "suggest_public_skill_dogfood.py",
+    ),
+    "skills/public/quality/scripts/suggest_public_skill_dogfood.py": (
+        "tests.quality_gates.support_quality_suggest_public_skill_dogfood",
+        ROOT / "skills" / "public" / "quality" / "scripts" / "suggest_public_skill_dogfood.py",
+    ),
+    "scripts/staged_commit_gate_plan.py": (
+        "tests.quality_gates.support_staged_commit_gate_plan",
+        ROOT / "scripts" / "staged_commit_gate_plan.py",
+    ),
+    "skills/public/quality/scripts/check_standing_doc_provenance.py": (
+        "tests.quality_gates.support_check_standing_doc_provenance",
+        ROOT / "skills" / "public" / "quality" / "scripts" / "check_standing_doc_provenance.py",
+    ),
+    "scripts/check_test_production_ratio.py": (
+        "tests.quality_gates.support_check_test_production_ratio",
+        ROOT / "scripts" / "check_test_production_ratio.py",
+    ),
+    "scripts/check_git_identity.py": (
+        "tests.quality_gates.support_check_git_identity",
+        ROOT / "scripts" / "check_git_identity.py",
+    ),
+    "scripts/check_plugin_doc_links.py": (
+        "tests.quality_gates.support_check_plugin_doc_links",
+        ROOT / "scripts" / "check_plugin_doc_links.py",
+    ),
+    "scripts/check_public_doc_coupling.py": (
+        "tests.quality_gates.support_check_public_doc_coupling",
+        ROOT / "scripts" / "check_public_doc_coupling.py",
+    ),
+    "scripts/check_staged_reversion.py": (
+        "tests.quality_gates.support_check_staged_reversion",
+        ROOT / "scripts" / "check_staged_reversion.py",
+    ),
+    "scripts/check_documented_command_flags.py": (
+        "tests.quality_gates.support_check_documented_command_flags",
+        ROOT / "scripts" / "check_documented_command_flags.py",
+    ),
+    "skills/public/quality/scripts/seed_dup_review.py": (
+        "tests.quality_gates.support_seed_dup_review",
+        ROOT / "skills" / "public" / "quality" / "scripts" / "seed_dup_review.py",
+    ),
+    "skills/public/quality/scripts/inventory_empty_scope_honesty.py": (
+        "tests.quality_gates.support_inventory_empty_scope_honesty",
+        ROOT / "skills" / "public" / "quality" / "scripts" / "inventory_empty_scope_honesty.py",
+    ),
+    "skills/public/quality/scripts/inventory_ci_local_gate_parity.py": (
+        "tests.quality_gates.support_inventory_ci_local_gate_parity",
+        ROOT / "skills" / "public" / "quality" / "scripts" / "inventory_ci_local_gate_parity.py",
+    ),
+    "scripts/check_python_filenames.py": (
+        "tests.quality_gates.support_check_python_filenames",
+        ROOT / "scripts" / "check_python_filenames.py",
+    ),
+    "scripts/check_github_actions.py": (
+        "tests.quality_gates.support_check_github_actions",
+        ROOT / "scripts" / "check_github_actions.py",
+    ),
+    "scripts/check_skill_ownership_overlap.py": (
+        "tests.quality_gates.support_check_skill_ownership_overlap",
+        ROOT / "scripts" / "check_skill_ownership_overlap.py",
+    ),
+    "scripts/check_symbol_residue.py": (
+        "tests.quality_gates.support_check_symbol_residue",
+        ROOT / "scripts" / "check_symbol_residue.py",
+    ),
+    "scripts/check_python_runtime_inheritance.py": (
+        "tests.quality_gates.support_check_python_runtime_inheritance",
+        ROOT / "scripts" / "check_python_runtime_inheritance.py",
+    ),
+    "scripts/render_cli_reference.py": (
+        "tests.quality_gates.support_render_cli_reference",
+        ROOT / "scripts" / "render_cli_reference.py",
+    ),
+    "scripts/build_debug_seam_risk_index.py": (
+        "tests.quality_gates.support_build_debug_seam_risk_index",
+        ROOT / "scripts" / "build_debug_seam_risk_index.py",
+    ),
+    "skills/public/narrative/scripts/review_adapter.py": (
+        "tests.quality_gates.support_narrative_review_adapter",
+        ROOT / "skills" / "public" / "narrative" / "scripts" / "review_adapter.py",
+    ),
+    "scripts/validate_presets.py": (
+        "tests.quality_gates.support_validate_presets",
+        ROOT / "scripts" / "validate_presets.py",
+    ),
+    "scripts/release_changed_line_coverage.py": (
+        "tests.quality_gates.support_release_changed_line_coverage",
+        ROOT / "scripts" / "release_changed_line_coverage.py",
+    ),
+    "scripts/removed_name_consumers.py": (
+        "tests.quality_gates.support_removed_name_consumers",
+        ROOT / "scripts" / "removed_name_consumers.py",
+    ),
+    "scripts/check_test_repo_copy_invariants.py": (
+        "tests.quality_gates.support_check_test_repo_copy_invariants",
+        ROOT / "scripts" / "check_test_repo_copy_invariants.py",
+    ),
+    "skills/public/setup/scripts/inspect_repo.py": (
+        "tests.quality_gates.support_setup_inspect_repo_cli",
+        ROOT / "skills" / "public" / "setup" / "scripts" / "inspect_repo.py",
+    ),
+    "scripts/check_skill_contracts.py": (
+        "tests.quality_gates.support_check_skill_contracts",
+        ROOT / "scripts" / "check_skill_contracts.py",
+    ),
     **{
         f"skills/public/{skill}/scripts/resolve_adapter.py": (
             f"tests.quality_gates.support_resolve_adapter_{skill.replace('-', '_')}",

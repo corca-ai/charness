@@ -7,6 +7,7 @@ import sys
 import tempfile
 from pathlib import Path
 
+import pytest
 import yaml
 
 from runtime_bootstrap import import_repo_module
@@ -629,6 +630,9 @@ def test_a_truncated_status_field_is_skipped(tmp_path: Path, monkeypatch) -> Non
     assert _parity.changed_python_paths(tmp_path) == ["scripts/real.py"]
 
 
+@pytest.mark.boundary_contract(
+    reason="the subject IS the process boundary: stderr text and exit code as a caller sees them"
+)
 def test_the_entrypoint_reports_a_parity_error_on_stderr(tmp_path: Path) -> None:
     """Covers the `__main__` block: a ParityError must exit 1 with a message, not a traceback."""
     repo = seeded_repo(tmp_path / "repo")

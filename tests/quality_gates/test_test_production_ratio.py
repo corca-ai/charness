@@ -306,12 +306,15 @@ def test_tokei_bucket_code_reports_unclassified_selected_file(tmp_path: Path, mo
 
 
 def test_test_production_ratio_fails_above_max() -> None:
+    """Covers the `__main__` block: a RatioError must exit 1 with a message, not a
+    traceback, so this one stays a real spawn."""
     result = run_script(
         "scripts/check_test_production_ratio.py",
         "--repo-root",
         str(ROOT),
         "--max-ratio",
         "0.01",
+        real_process=True,
     )
 
     assert result.returncode == 1
