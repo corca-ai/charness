@@ -16,11 +16,33 @@ blocks on a phantom.
 
 from __future__ import annotations
 
+import os
 import subprocess
 from pathlib import Path
 
 
+def _git_metadata_is_discoverable(repo_root: Path) -> bool:
+    if any(os.environ.get(name) for name in ("GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR")):
+        return True
+    root = repo_root.resolve()
+    if not root.is_dir():
+        return False
+    marker = root / ".git"
+    if marker.is_file():
+        try:
+            return marker.read_text(encoding="utf-8").lstrip().startswith("gitdir:")
+        except OSError:
+            return False
+    return (
+        marker.is_dir()
+        and (marker / "HEAD").is_file()
+        and ((marker / "objects").is_dir() or (marker / "commondir").is_file())
+    )
+
+
 def _git_output(repo_root: Path, args: list[str]) -> tuple[int, str]:
+    if not _git_metadata_is_discoverable(repo_root):
+        return 1, ""
     try:
         result = subprocess.run(["git", *args], cwd=repo_root, capture_output=True, text=True)
     except OSError:
@@ -227,6 +249,25 @@ def changed_worktree_paths(repo_root: Path) -> set[str] | None:
     blocked family member is part of the current change or a collateral clustering
     rotation among untouched files; ``None`` renders as unknown, never a guess."""
     return _status_changed_paths(repo_root)
+
+
+def _git_metadata_is_discoverable(repo_root: Path) -> bool:
+    if any(os.environ.get(name) for name in ("GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR")):
+        return True
+    root = repo_root.resolve()
+    if not root.is_dir():
+        return False
+    marker = root / ".git"
+    if marker.is_file():
+        try:
+            return marker.read_text(encoding="utf-8").lstrip().startswith("gitdir:")
+        except OSError:
+            return False
+    return (
+        marker.is_dir()
+        and (marker / "HEAD").is_file()
+        and ((marker / "objects").is_dir() or (marker / "commondir").is_file())
+    )
 
 
 def tracked_files(repo_root: Path) -> set[str] | None:

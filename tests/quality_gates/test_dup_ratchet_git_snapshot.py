@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -184,3 +185,34 @@ def test_family_member_spans_drops_malformed_and_no_git_changed_paths_is_none(
     }
     assert scan.family_member_spans(fam) == [{"file": "a.py", "start": 1, "end": 2}]
     assert gitmod.changed_worktree_paths(tmp_path) is None
+
+
+def test_git_seams_do_not_launch_git_on_a_plain_directory(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = tmp_path / "plain"
+    repo.mkdir()
+    (repo / "f.txt").write_text("x\n", encoding="utf-8")
+    launches: list[tuple[str, ...]] = []
+    original = subprocess.run
+
+    def wrapped(argv, *args, **kwargs):
+        if isinstance(argv, (list, tuple)) and argv and Path(str(argv[0])).name == "git":
+            launches.append(tuple(str(part) for part in argv[1:]))
+        return original(argv, *args, **kwargs)
+
+    monkeypatch.setattr(subprocess, "run", wrapped)
+    assert gitmod.tracked_files(repo) is None
+    assert gitmod.changed_worktree_paths(repo) is None
+    assert gitmod.resolve_anchor(repo, "q/dup-review.json") is None
+    assert launches == []
+
+
+def test_tracked_files_lists_a_real_checkout(tmp_path: Path) -> None:
+    from .git_fixture_support import init_git_repo
+
+    repo = tmp_path / "r"
+    repo.mkdir()
+    (repo / "f.txt").write_text("x\n", encoding="utf-8")
+    init_git_repo(repo, "f.txt")
+    assert gitmod.tracked_files(repo) == {"f.txt"}
