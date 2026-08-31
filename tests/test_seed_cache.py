@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import hashlib
 import multiprocessing
 import os
+import subprocess
 import time
 from pathlib import Path
 
@@ -46,16 +48,88 @@ def test_a_failed_git_read_refuses_instead_of_naming_a_shared_cache_key(tmp_path
         seed_cache._compute_source_hash(not_a_repo)
 
 
-def test_two_unreadable_roots_do_not_collapse_to_one_key(tmp_path) -> None:
-    """The negative control for the test above: without the refusal these are EQUAL."""
+@pytest.mark.boundary_contract(
+    reason=(
+        "reproduces the PRE-FIX digest, which is defined by what real `git` writes to "
+        "stdout when it fails; a fake git would be my own belief about the failure "
+        "rather than the failure that shipped"
+    )
+)
+def test_the_discarded_return_code_is_what_collapsed_two_trees_to_one_key(tmp_path) -> None:
+    """Pins the PROPERTY (distinct source states never share a key), not the mechanism.
+
+    Asserting `pytest.raises` on a second directory would just be the previous test
+    run twice: no mutant can kill one without killing the other. So this reproduces
+    the pre-fix digest inline and shows it COLLIDING, which is the fact that makes
+    the refusal worth having. A future repair that keeps the suite running by
+    minting a distinct per-root key instead of raising still satisfies this test --
+    the contract is "no collision", not "raise".
+    """
     first = tmp_path / "one"
     second = tmp_path / "two"
     first.mkdir()
     second.mkdir()
+    (first / "alpha.txt").write_text("A" * 100, encoding="utf-8")
+    (second / "beta.md").write_text("B" * 9000, encoding="utf-8")
+
+    def pre_fix_digest(root) -> str:
+        """`subprocess.run(..., check=False)` reading only `.stdout`, as it was."""
+        d = hashlib.sha256()
+        for args in (
+            ["rev-parse", "HEAD"],
+            ["diff", "HEAD"],
+            ["ls-files", "--others", "--exclude-standard"],
+        ):
+            d.update(
+                subprocess.run(
+                    ["git", "-C", str(root), *args],
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                ).stdout.encode()
+            )
+        return d.hexdigest()[:32]
+
+    assert pre_fix_digest(first) == pre_fix_digest(second), (
+        "the defect being fixed is gone from the reproduction itself"
+    )
 
     for root in (first, second):
         with pytest.raises(seed_cache.SourceStateUnreadable):
             seed_cache._compute_source_hash(root)
+
+
+@pytest.mark.boundary_contract(
+    reason=(
+        "the subject is the key computed over a real checkout: the untracked set comes "
+        "from `git ls-files --others`, so the repository IS the input under test"
+    )
+)
+def test_untracked_content_is_length_prefixed_so_names_cannot_absorb_content(
+    tmp_path,
+) -> None:
+    """`name\\0content` concatenated is ambiguous; two different trees digested equal.
+
+    Files `a` (empty) and `b` (b"c") emit `a\\0b\\0c`; a single file `a` holding
+    `b"b\\0c"` emits the same bytes.
+    """
+    def build(root, files: dict[str, bytes]) -> str:
+        root.mkdir()
+        subprocess.run(["git", "-C", str(root), "init", "-q"], check=True)
+        # `-c` is a GLOBAL git option: it has to precede the subcommand, not follow it.
+        subprocess.run(
+            ["git", "-C", str(root), "-c", "user.email=t@t", "-c", "user.name=t",
+             "commit", "-q", "--allow-empty", "-m", "seed"],
+            check=True, capture_output=True,
+        )
+        for name, payload in files.items():
+            (root / name).write_bytes(payload)
+        return seed_cache._compute_source_hash(root)
+
+    split = build(tmp_path / "split", {"a": b"", "b": b"c"})
+    joined = build(tmp_path / "joined", {"a": b"b\0c"})
+
+    assert split != joined
 
 
 def _concurrent_seed_worker(

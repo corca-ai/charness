@@ -108,7 +108,10 @@ def _git_read(source_root: Path, *args: str) -> str:
         reason = next((ln for ln in proc.stderr.splitlines() if ln.strip()), "")
         raise SourceStateUnreadable(
             f"git {args[0]} exited {proc.returncode} in {source_root}: "
-            f"{reason.strip() or 'no stderr'}"
+            f"{reason.strip() or 'no stderr'}. The seed cache cannot name a key for a "
+            f"source state it could not read. Fix repository access (e.g. "
+            f"`git config --global --add safe.directory {source_root}`), or set "
+            f"{_SOURCE_HASH_ENV}=<32 hex chars> to supply the key yourself."
         )
     return proc.stdout
 
@@ -127,14 +130,28 @@ def _compute_source_hash(source_root: Path) -> str:
         if not rel:
             continue
         full = source_root / rel
+        # LENGTH-PREFIXED, not NUL-separated. `name\0content` concatenated is
+        # ambiguous: files `a` (empty) and `b` (b"c") emit `a\0b\0c`, and so does
+        # a single file `a` holding b"b\0c". Two different trees, one key.
+        digest.update(f"{rel}\0".encode())
         if not full.is_file():
+            # `git ls-files --others` reports a nested untracked repository as one
+            # `dir/` entry. Skipping it dropped the whole subtree from the key, so
+            # two trees differing only inside it collided. Recorded as a distinct
+            # kind instead -- still not its contents, but no longer indistinguishable
+            # from the file being absent.
+            digest.update(b"non-file\0")
             continue
-        digest.update(rel.encode())
-        digest.update(b"\0")
         try:
-            digest.update(full.read_bytes())
-        except OSError:
-            continue
+            payload = full.read_bytes()
+        except OSError as exc:
+            # UNKNOWN is not EMPTY -- the same rule `_git_read` enforces above. A
+            # file present but unreadable (mode 000, EPERM, or deleted in the race
+            # between `is_file()` and this read) digested identically to an empty
+            # one, which is a collision between two different source states.
+            raise SourceStateUnreadable(f"cannot read untracked {rel!r}: {exc}") from exc
+        digest.update(f"{len(payload)}\0".encode())
+        digest.update(payload)
     return digest.hexdigest()[:32]
 
 

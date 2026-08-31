@@ -33,7 +33,20 @@ def pytest_configure(config) -> None:
     that monkeypatch listing still see that patch if they run first.
     """
     if not hasattr(config, "workerinput") and config.pluginmanager.hasplugin("xdist"):
-        os.environ.setdefault(seed_cache._SOURCE_HASH_ENV, seed_cache.source_hash())
+        try:
+            os.environ.setdefault(seed_cache._SOURCE_HASH_ENV, seed_cache.source_hash())
+        except seed_cache.SourceStateUnreadable as exc:
+            # This call is an OPTIMISATION: compute the key once so xdist workers
+            # inherit it instead of each recomputing. Letting the refusal escape
+            # here turns "seed-backed tests cannot run" into "pytest INTERNALERRORs
+            # and zero tests are collected" -- a strictly worse outcome than the
+            # fail-open collision the refusal exists to prevent, and one that lands
+            # on any checkout git reports dubious ownership for.
+            #
+            # So it degrades: the key stays unset, every test that does not touch a
+            # cached seed runs normally, and the ones that do fail individually with
+            # the message below rather than taking the session down with them.
+            print(f"seed cache disabled: {exc}", file=sys.stderr)
     bind_subject_listing(RepoFileSnapshot(_REPO_ROOT, require_git=True))
 
 
