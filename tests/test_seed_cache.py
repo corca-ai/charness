@@ -31,6 +31,33 @@ def test_invalid_inherited_source_hash_is_not_trusted(monkeypatch) -> None:
     assert seed_cache.source_hash() == "b" * 32
 
 
+def test_a_failed_git_read_refuses_instead_of_naming_a_shared_cache_key(tmp_path) -> None:
+    """A directory git cannot read must not digest to a key other checkouts share.
+
+    Discarding the return code fed the empty string into the digest, so EVERY
+    source state that failed the same way produced one constant key -- a single
+    cache namespace that unrelated checkouts would both write into and read back,
+    serving each other's seeds as a hit.
+    """
+    not_a_repo = tmp_path / "not-a-repo"
+    not_a_repo.mkdir()
+
+    with pytest.raises(seed_cache.SourceStateUnreadable):
+        seed_cache._compute_source_hash(not_a_repo)
+
+
+def test_two_unreadable_roots_do_not_collapse_to_one_key(tmp_path) -> None:
+    """The negative control for the test above: without the refusal these are EQUAL."""
+    first = tmp_path / "one"
+    second = tmp_path / "two"
+    first.mkdir()
+    second.mkdir()
+
+    for root in (first, second):
+        with pytest.raises(seed_cache.SourceStateUnreadable):
+            seed_cache._compute_source_hash(root)
+
+
 def _concurrent_seed_worker(
     cache_root: str,
     counter_path: str,

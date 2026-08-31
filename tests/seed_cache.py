@@ -75,30 +75,53 @@ def _user_cache_root() -> Path:
     return base / "charness" / "test-seeds"
 
 
+class SourceStateUnreadable(RuntimeError):
+    """Git could not establish the source state this cache key is supposed to name."""
+
+
+def _git_read(source_root: Path, *args: str) -> str:
+    """One read-only git query whose FAILURE is never mistaken for an empty answer.
+
+    Every gate in this repo already refuses on this shape -- "an empty list from a
+    failed git is indistinguishable from nothing staged, so returning it would
+    render a clean verdict over a scope that was never read". This function is
+    where that rule was missing, and the consequence is worse here than a wrong
+    verdict.
+
+    `source_hash()` NAMES A CACHE DIRECTORY. Discarding the return code meant a
+    failed read contributed the empty string, so every source state that fails the
+    same way digests to the SAME constant key -- one shared namespace that unrelated
+    checkouts would both write into and both read back. A dubious-ownership repo and
+    a detached checkout at a different commit would be served each other's seeds,
+    silently, as if the cache had hit.
+    """
+    try:
+        proc = subprocess.run(
+            ["git", "-C", str(source_root), *args],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+    except OSError as exc:  # git absent, source_root unusable
+        raise SourceStateUnreadable(f"git {args[0]}: {exc}") from exc
+    if proc.returncode != 0:
+        reason = next((ln for ln in proc.stderr.splitlines() if ln.strip()), "")
+        raise SourceStateUnreadable(
+            f"git {args[0]} exited {proc.returncode} in {source_root}: "
+            f"{reason.strip() or 'no stderr'}"
+        )
+    return proc.stdout
+
+
 def _compute_source_hash(source_root: Path) -> str:
     digest = hashlib.sha256()
-    head = subprocess.run(
-        ["git", "-C", str(source_root), "rev-parse", "HEAD"],
-        capture_output=True,
-        text=True,
-        check=False,
-    ).stdout.strip()
+    head = _git_read(source_root, "rev-parse", "HEAD").strip()
     digest.update(head.encode())
     digest.update(b"\n---DIFF---\n")
-    diff = subprocess.run(
-        ["git", "-C", str(source_root), "diff", "HEAD"],
-        capture_output=True,
-        text=True,
-        check=False,
-    ).stdout
+    diff = _git_read(source_root, "diff", "HEAD")
     digest.update(diff.encode())
     digest.update(b"\n---UNTRACKED---\n")
-    untracked = subprocess.run(
-        ["git", "-C", str(source_root), "ls-files", "--others", "--exclude-standard"],
-        capture_output=True,
-        text=True,
-        check=False,
-    ).stdout
+    untracked = _git_read(source_root, "ls-files", "--others", "--exclude-standard")
     for rel in sorted(untracked.splitlines()):
         rel = rel.strip()
         if not rel:
