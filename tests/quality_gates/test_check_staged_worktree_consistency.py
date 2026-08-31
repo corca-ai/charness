@@ -17,12 +17,15 @@ from __future__ import annotations
 
 import importlib
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
 
 from .repo_shapes import install_committed_repo
 from .seeding_support import git
+
+ROOT = Path(__file__).resolve().parents[2]
 
 cswc = importlib.import_module("scripts.check_staged_worktree_consistency")
 
@@ -578,3 +581,38 @@ def test_an_unreadable_path_is_treated_as_present(tmp_path: Path, monkeypatch) -
 
     monkeypatch.setattr(Path, "is_symlink", _raise)
     assert cswc._on_disk(tmp_path, "f.txt") is True
+
+
+@pytest.mark.boundary_contract(
+    reason=(
+        "the defect is the ARGV, so it is only observable as a real process: every "
+        "in-process import resolves `scripts.` via pyproject `pythonpath`, which is "
+        "exactly what hid a gate that could not run through its own invocation"
+    )
+)
+@pytest.mark.parametrize(
+    "script",
+    [
+        "check_staged_worktree_consistency.py",
+        "check_staged_reversion.py",
+        "check_staged_router_change.py",
+    ],
+)
+def test_index_hygiene_gates_import_through_their_scheduled_argv(script: str) -> None:
+    """`python3 scripts/<gate>.py --repo-root .` must not die at import.
+
+    That argv is what `staged_commit_gate_plan_helpers.index_hygiene_gates` builds,
+    and it puts `<repo>/scripts` on `sys.path` WITHOUT the repo root. This gate
+    imported `scripts.git_status_snapshot`, which imports `scripts.git_checkout` in
+    turn, so it raised `ModuleNotFoundError: No module named 'scripts'` and could
+    not run at all -- while every test passed, because tests import it in-process.
+    """
+    result = subprocess.run(
+        [sys.executable, f"scripts/{script}", "--repo-root", "."],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert "ModuleNotFoundError" not in result.stderr, result.stderr

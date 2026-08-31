@@ -26,6 +26,22 @@ import sys
 from collections.abc import Callable
 from pathlib import Path
 
+if __package__ in (None, ""):  # `python3 scripts/<name>.py`, not `-m scripts.<name>`
+    # That argv puts `<repo>/scripts` on `sys.path` and NOT the repo root, so
+    # `from scripts.… import …` raised `ModuleNotFoundError: No module named
+    # 'scripts'` and this gate could not run through its own scheduled
+    # invocation (`staged_commit_gate_plan_helpers.py:115`) at all.
+    #
+    # The repo root goes on the path rather than each import gaining a bare-name
+    # fallback, because the failure is not local: `git_status_snapshot` imports
+    # `scripts.git_checkout` in turn, so a per-import dual-path here fixes only
+    # the first link and dies on the next one down.
+    #
+    # No test could observe this. Every test reaches these gates IN-PROCESS,
+    # where `pyproject.toml` `pythonpath = [".", "scripts"]` supplies both
+    # spellings at once.
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 from scripts.env_bypass import env_bypass_enabled
 from scripts.git_status_snapshot import (
     GitStatusError,
