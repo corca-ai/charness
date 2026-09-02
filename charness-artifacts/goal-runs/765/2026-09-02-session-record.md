@@ -267,6 +267,34 @@ Steps 1 and 2 of "Next session, in order" are done.
   6); pickup names #770 (`scripts-packaging`). The #770 P0 foundation lane
   was launched from `briefs/brief-770-p0-foundation.md`; P1 to P4 follow it.
 
+- #770 scripts-packaging closed in this session. The map
+  (`briefs/map-770.md`, section 0) corrected four stale premises before any
+  lane ran: `scripts/__init__.py` already existed, `import_repo_module`
+  already resolved dotted names, the real blocker was the bare sibling import
+  on line one of 185 files plus `repo_root_from_script` returning
+  `<repo>/scripts` for a nested file, and `scripts/` already had two
+  non-Python subdirectories. Two proposed package names shadowed installed
+  distributions and were renamed before landing: `packaging` became
+  `plugin_export`, `coverage` became `mutation`. One P0 foundation lane and
+  four parallel package lanes (P1 to P4) produced the moves; the parent
+  integrated each by cherry-pick with a rename-aware conflict resolver and a
+  cumulative rename sweep, then reconciled the whole tree in one integration
+  commit and one follow-up. Landed shape: seventeen concept packages, 322
+  renames, a flat residue of 41 exported or adapter-anchored scripts that
+  carry the same ten-line root-walking shim, the shim excluded from the length
+  gate, `tools/check_bootstrap_shim_consistency.py` in the standing lane,
+  `tools/snapshot_gate_universes.py` parity against the pre-move snapshot
+  (`charness-artifacts/quality/2026-09-02-gate-universes-before-770.yaml`),
+  and a `moved-path-referent` rule in the artifact referents gate so a frozen
+  record naming a path that existed at its last commit is reported, not
+  blocking. The reconciliation after the lanes was the expensive part: seeded
+  gate fixtures naming flat paths (`seed_script_closure` now copies a script
+  with its import closure at packaged paths), skill fallbacks inserting
+  `scripts/` and then importing `scripts.`, three same-name root and skill
+  scripts the sweep had mis-packaged, and a critique scaffold whose validator
+  names had been rewritten to a package path the consumer lookup already
+  searches. Figures at closeout: seventeen packages, 322 renames, 41 flat scripts, full pytest 8592 passed, full read-only lane 80 passed.
+
 ## Lessons this session paid for
 
 - The default `run-quality.sh` lane ran five gates and the full lane ran only

@@ -131,7 +131,7 @@ nothing stops them drifting again — which is how three of these started.
 
 ## Advisory
 
-- `python3 scripts/check_code_lengths.py --repo-root .` forced the module split.
+- `python3 scripts/gates/check_code_lengths.py --repo-root .` forced the module split.
   The boundary is production vs verification, and it is load-bearing: the shipped
   reviewer runtime loads these files BY PATH, so production must stay a leaf.
 
