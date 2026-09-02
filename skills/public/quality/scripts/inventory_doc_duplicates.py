@@ -17,25 +17,39 @@ re-flagging the accepted intentional mass every run.
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
+import runpy
 import shlex
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import nose_tool_lib as nose_tool  # noqa: E402
 from summary_output_lib import add_output_args, emit_selected  # noqa: E402
 
-DEFAULT_SCAN_PATH = "."
-# Exclude the export mirror (every source doc would otherwise pair 1:1 with its
-# plugin copy), durable artifacts, and the mutation scratch tree. nose already
-# honors .gitignore on top of these.
-DEFAULT_EXCLUDES = ("plugins/**", "charness-artifacts/**", "mutants/**")
-DEFAULT_BASELINE_REL = "charness-artifacts/quality/doc-nose-baseline.json"
-MIN_NOSE_VERSION = (0, 13, 0)
-NOSE_TIMEOUT_SECONDS = nose_tool.NOSE_TIMEOUT_SECONDS
+
+def _load_skill_runtime_bootstrap():
+    bootstrap = next(
+        (
+            ancestor / "skill_runtime_bootstrap.py"
+            for ancestor in Path(__file__).resolve().parents
+            if (ancestor / "skill_runtime_bootstrap.py").is_file()
+        ),
+        None,
+    )
+    if bootstrap is None:
+        raise ImportError("skill_runtime_bootstrap.py not found")
+    return SimpleNamespace(**runpy.run_path(str(bootstrap)))
+
+
+SKILL_RUNTIME = _load_skill_runtime_bootstrap()
+_scan = SKILL_RUNTIME.load_local_skill_module(__file__, "doc_duplicate_scan")
+nose_tool = _scan.nose_tool
+DEFAULT_SCAN_PATH = _scan.DEFAULT_SCAN_PATH
+DEFAULT_BASELINE_REL = _scan.DEFAULT_BASELINE_REL
+MIN_NOSE_VERSION = _scan.MIN_NOSE_VERSION
+NOSE_TIMEOUT_SECONDS = _scan.NOSE_TIMEOUT_SECONDS
 
 # Advisory interpretation contract (see skills/shared/references/
 # advisory-interpretation-contract.md): this inference-layer proxy self-declares
@@ -68,124 +82,49 @@ def nose_version(nose_bin: str) -> tuple[int, int, int] | None:
     return nose_tool.probe_nose_version(nose_bin).get("version")
 
 
-def family_signature(family: dict[str, Any]) -> str:
-    """Stable identity for a Markdown family: sorted member ``path#heading``
-    tuples. Headings survive line-number churn far better than spans, so a doc
-    edit that shifts lines does not re-flag an already-accepted family.
-    """
-    parts: list[str] = []
-    for member in family.get("members") or []:
-        if isinstance(member, dict):
-            path = str(member.get("path", "")).lstrip("./")
-            heading = str(member.get("heading", ""))
-            parts.append(f"{path}#{heading}")
-    parts.sort()
-    digest = hashlib.sha256("|".join(parts).encode("utf-8")).hexdigest()
-    return digest[:16]
+family_signature = _scan.family_signature
+build_command = _scan.build_command
 
 
-def build_command(nose_bin: str, scan_path: str, excludes: list[str]) -> list[str]:
-    command = [nose_bin, "query", scan_path]
-    for pattern in excludes:
-        command.extend(["--exclude", pattern])
-    command.extend(["--format", "json"])
-    return command
+run_query = _scan.run_query
 
 
-def run_query(repo_root: Path, command: list[str]) -> dict[str, Any]:
-    result = nose_tool.run_json_query(repo_root, command)
-    if result.get("error_kind") == "timeout":
-        return {"status": "error", "families": [], "stderr": f"nose timed out after {NOSE_TIMEOUT_SECONDS}s"}
-    if result.get("error_kind") == "oserror":
-        return {"status": "error", "families": [], "stderr": f"nose could not be executed: {result.get('error', '')}"}
-    if result.get("error_kind") in {"invalid-json", "empty-output"}:
-        # Name the actual kind: an empty stdout is a producer that printed nothing, which is
-        # a different diagnosis from output that failed to parse.
-        stderr = (
-            "nose emitted no output; the scan produced nothing to read"
-            if result.get("error_kind") == "empty-output"
-            else f"nose returned invalid JSON: {result.get('error', 'unparseable stdout')}"
-        )
-        # Keep nose's own stderr: a nonzero exit with blank stdout reaches this branch, and
-        # the diagnosis the operator needs is what nose printed, not just "no JSON".
-        if result.get("stderr"):
-            stderr = f"{stderr}; {result['stderr']}"
-        return {"status": "error", "families": [], "stderr": stderr}
-    if result["status"] == "error":
-        return {"status": "error", "families": [], "stderr": result["stderr"]}
-    payload = result["payload"]
-    families = payload.get("markdown") if isinstance(payload, dict) else None
-    if not isinstance(families, list):
-        # Shape parity with the code arm's `nose_report_lib.report_shape_error`: a payload
-        # whose Markdown family list the reader cannot key (renamed/future key, a
-        # non-object report) establishes NO family set, so it is an error rather than zero
-        # doc drift. Reading it as `[]` made a bumped nose render a clean doc advisory AND
-        # a vacuously clean dup-ratchet doc arm — the doc-side twin of triage sweep S34.
-        keys = ", ".join(sorted(str(key) for key in payload)[:8]) if isinstance(payload, dict) else "<not an object>"
-        return {
-            "status": "error", "families": [],
-            "stderr": f"nose report declares no `markdown` family list (keys: {keys}); "
-                      "the Markdown family set is unestablished",
-        }
-    return {
-        "status": "ok",
-        "families": families,
-        "schema_version": payload.get("schema_version"),
-        "stderr": result["stderr"],
-    }
+load_baseline = _scan.load_baseline
+write_baseline = _scan.write_baseline
 
 
-def load_baseline(repo_root: Path, baseline_rel: str) -> set[str]:
-    path = repo_root / baseline_rel
-    if not path.is_file():
-        return set()
-    data = json.loads(path.read_text(encoding="utf-8"))
-    signatures = data.get("signatures") if isinstance(data, dict) else data
-    return {str(sig) for sig in signatures} if isinstance(signatures, list) else set()
-
-
-def write_baseline(repo_root: Path, baseline_rel: str, families: list[dict[str, Any]]) -> None:
-    path = repo_root / baseline_rel
-    path.parent.mkdir(parents=True, exist_ok=True)
-    signatures = sorted({family_signature(fam) for fam in families})
-    payload = {
-        "schema": 1,
-        "tool": "nose-markdown",
-        "note": (
-            "Accepted (intentional/shared-template) Markdown duplicate families so "
-            "the advisory reports only new/changed drift. Signature = sorted member "
-            "path#heading tuples. Re-baseline per scanner version with --write-baseline; "
-            "never treat the accepted count as a reduction target (see item 5 review)."
-        ),
-        "signatures": signatures,
-    }
-    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-
-
-def family_view(family: dict[str, Any]) -> dict[str, Any]:
-    witness = family.get("witness") or {}
-    return {
-        "signature": family_signature(family),
-        "tier": family.get("tier"),
-        "score": family.get("score"),
-        "files": family.get("files"),
-        "removable": family.get("removable"),
-        "commonness": family.get("commonness"),
-        "witness": {
-            "a": f"{witness.get('a_path', '')}:{witness.get('a_start', '')}-{witness.get('a_end', '')}",
-            "b": f"{witness.get('b_path', '')}:{witness.get('b_start', '')}-{witness.get('b_end', '')}",
-            "matched_lines": witness.get("matched_lines"),
-        },
-    }
+family_view = _scan.family_view
 
 
 def payload_for_args(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = args.repo_root.resolve()
-    scan_path = args.path or DEFAULT_SCAN_PATH
-    excludes = list(args.exclude) if args.exclude else list(DEFAULT_EXCLUDES)
+    scope = _scan.resolve_doc_scope(repo_root, args.path)
+    scan_path = scope["scan_path"]
+    universe_files = scope["universe_files"]
+    scope_refusal = scope["scope_refusal"]
+    excludes = list(args.exclude)
     baseline_rel = args.baseline or DEFAULT_BASELINE_REL
+    if scope_refusal:
+        return {
+            "status": "scope-refused",
+            "advisory": True,
+            "repo_root": str(repo_root),
+            "scan_path": scan_path,
+            "excludes": excludes,
+            "family_count": 0,
+            "families": [],
+            "notes": [scope_refusal],
+        }
+    discovered_empty = universe_files is not None and not universe_files
+    empty_scope_note = scope["empty_scope_note"] if discovered_empty else None
     nose_bin = resolve_nose_bin()
     if nose_bin is None:
+        notes = [
+            "nose is REQUIRED (>=0.13.0) for doc near-duplicate review; install per integrations/tools/nose.json.",
+            "The run-quality `nose` phase fails closed when the binary is absent; this advisory only reports.",
+        ]
+        if empty_scope_note:
+            notes.append(empty_scope_note)
         return {
             "status": "missing",
             "advisory": True,
@@ -194,15 +133,18 @@ def payload_for_args(args: argparse.Namespace) -> dict[str, Any]:
             "excludes": excludes,
             "family_count": 0,
             "families": [],
-            "notes": [
-                "nose is REQUIRED (>=0.13.0) for doc near-duplicate review; install per integrations/tools/nose.json.",
-                "The run-quality `nose` phase fails closed when the binary is absent; this advisory only reports.",
-            ],
+            "notes": notes,
         }
     version = nose_version(nose_bin)
     if version is not None and version < MIN_NOSE_VERSION:
         want = ".".join(str(part) for part in MIN_NOSE_VERSION)
         have = ".".join(str(part) for part in version)
+        notes = [
+            f"nose {have} cannot detect Markdown families; doc near-duplicate review needs >= {want}.",
+            "Update per integrations/tools/nose.json; an old nose silently reports zero doc families.",
+        ]
+        if empty_scope_note:
+            notes.append(empty_scope_note)
         return {
             "status": "version-too-old",
             "advisory": True,
@@ -212,10 +154,18 @@ def payload_for_args(args: argparse.Namespace) -> dict[str, Any]:
             "tool_version": have,
             "family_count": 0,
             "families": [],
-            "notes": [
-                f"nose {have} cannot detect Markdown families; doc near-duplicate review needs >= {want}.",
-                "Update per integrations/tools/nose.json; an old nose silently reports zero doc families.",
-            ],
+            "notes": notes,
+        }
+    if empty_scope_note:
+        return {
+            "status": "empty-scope",
+            "advisory": True,
+            "repo_root": str(repo_root),
+            "scan_path": scan_path,
+            "excludes": excludes,
+            "family_count": 0,
+            "families": [],
+            "notes": [empty_scope_note],
         }
     command = build_command(nose_bin, scan_path, excludes)
     result = run_query(repo_root, command)
@@ -275,24 +225,40 @@ def payload_for_args(args: argparse.Namespace) -> dict[str, Any]:
 
 def print_human(payload: dict[str, Any]) -> None:
     status = payload["status"]
+    if status == "scope-refused":
+        print(f"REFUSED: {payload['notes'][0]}")
+        return
+    if status == "empty-scope":
+        print(payload["notes"][0])
+        return
     if status == "missing":
-        print("ADVISORY: nose missing; doc near-duplicate inventory skipped. nose >=0.13.0 is required (integrations/tools/nose.json).")
+        print(
+            "ADVISORY: nose missing; doc near-duplicate inventory skipped. nose >=0.13.0 is required (integrations/tools/nose.json)."
+        )
         return
     if status == "version-too-old":
-        print(f"ADVISORY: nose {payload.get('tool_version')} too old for Markdown families; need >=0.13.0 (integrations/tools/nose.json).")
+        print(
+            f"ADVISORY: nose {payload.get('tool_version')} too old for Markdown families; need >=0.13.0 (integrations/tools/nose.json)."
+        )
         return
     if status == "error":
         print(f"ADVISORY: nose doc inventory error; review manually. {payload.get('stderr', '')}")
         return
     if status == "baseline-written":
-        print(f"doc baseline written: {payload.get('baseline')} ({payload.get('family_count')} families accepted).")
+        print(
+            f"doc baseline written: {payload.get('baseline')} ({payload.get('family_count')} families accepted)."
+        )
         return
     total = payload.get("total_family_count", 0)
     new = payload["family_count"]
     accepted = payload.get("accepted_count", 0)
-    print(f"nose doc-duplicate advisory: {new} new/changed Markdown family(ies) ({total} total, {accepted} accepted in baseline).")
+    print(
+        f"nose doc-duplicate advisory: {new} new/changed Markdown family(ies) ({total} total, {accepted} accepted in baseline)."
+    )
     if payload.get("baseline"):
-        print(f"BASELINE: active ({payload['baseline']}); reporting only new/changed doc families (drift).")
+        print(
+            f"BASELINE: active ({payload['baseline']}); reporting only new/changed doc families (drift)."
+        )
     for index, family in enumerate(payload["families"][:5], start=1):
         witness = family["witness"]
         print(
@@ -332,10 +298,31 @@ def main() -> int:
         required=True,
         help="Repository root to scan and use for baseline paths",
     )
-    parser.add_argument("--path", help=f"Repo-relative scan root (default {DEFAULT_SCAN_PATH}).")
-    parser.add_argument("--exclude", action="append", default=[], help="Gitignore-style glob to skip; repeatable. Defaults to mirror/artifact/mutant excludes.")
-    parser.add_argument("--baseline", help=f"Accepted doc-family baseline (repo-relative). Defaults to {DEFAULT_BASELINE_REL} when it exists.")
-    parser.add_argument("--write-baseline", action="store_true", help="Write current doc families to the baseline and exit (accept today's state).")
+    parser.add_argument(
+        "--path",
+        help=(
+            "Explicit repo-relative scan root (legacy default is "
+            f"{DEFAULT_SCAN_PATH}); when omitted, scan the adapter's doc_surfaces."
+        ),
+    )
+    parser.add_argument(
+        "--exclude",
+        action="append",
+        default=[],
+        help=(
+            "Gitignore-style glob to skip; repeatable. The default scan uses the "
+            "adapter's doc_surfaces roots and adds no exclusions."
+        ),
+    )
+    parser.add_argument(
+        "--baseline",
+        help=f"Accepted doc-family baseline (repo-relative). Defaults to {DEFAULT_BASELINE_REL} when it exists.",
+    )
+    parser.add_argument(
+        "--write-baseline",
+        action="store_true",
+        help="Write current doc families to the baseline and exit (accept today's state).",
+    )
     parser.add_argument(
         "--require-nose",
         action="store_true",
@@ -363,10 +350,13 @@ def main() -> int:
     if args.json_out is not None:
         args.json_out.parent.mkdir(parents=True, exist_ok=True)
         args.json_out.write_text(
-            json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+            json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
         )
     if not emit_selected(payload, args, summarize=summarize):
         print_human(payload)
+    if payload["status"] == "scope-refused":
+        return 1
     if args.require_nose and payload["status"] in ("missing", "version-too-old", "error"):
         return 1
     return 0

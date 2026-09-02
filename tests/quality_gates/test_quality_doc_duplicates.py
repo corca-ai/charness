@@ -25,12 +25,29 @@ _FAKE_FAMILY = {
     "exact": False,
     "template": False,
     "members": [
-        {"path": "./docs/alpha.md", "heading": "Shared", "kind": "section", "start_line": 1, "end_line": 6},
-        {"path": "./docs/beta.md", "heading": "Shared", "kind": "section", "start_line": 9, "end_line": 14},
+        {
+            "path": "./docs/alpha.md",
+            "heading": "Shared",
+            "kind": "section",
+            "start_line": 1,
+            "end_line": 6,
+        },
+        {
+            "path": "./docs/beta.md",
+            "heading": "Shared",
+            "kind": "section",
+            "start_line": 9,
+            "end_line": 14,
+        },
     ],
     "witness": {
-        "a_path": "./docs/alpha.md", "a_start": 1, "a_end": 6,
-        "b_path": "./docs/beta.md", "b_start": 9, "b_end": 14, "matched_lines": 6,
+        "a_path": "./docs/alpha.md",
+        "a_start": 1,
+        "a_end": 6,
+        "b_path": "./docs/beta.md",
+        "b_start": 9,
+        "b_end": 14,
+        "matched_lines": 6,
     },
 }
 
@@ -71,7 +88,10 @@ def _run_with_output(
         # Keep the real PATH so the fake nose's python3 shebang resolves; the
         # NOSE_BIN override still pins discovery to the fake, not the real binary.
         env["NOSE_BIN"] = nose_bin
-    args = [str(SCRIPT), "--repo-root", str(repo)]
+    # These cases exercise nose/baseline behavior. Keep their scan explicit so
+    # the fixtures do not also depend on the adapter-universe population; the
+    # consumer-universe behavior has dedicated seeded cases below.
+    args = [str(SCRIPT), "--repo-root", str(repo), "--path", "."]
     if output_mode is not None:
         args.append(output_mode)
     args.extend(extra)

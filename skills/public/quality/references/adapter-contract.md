@@ -604,7 +604,8 @@ the adapter comments next to each sub-key.
   are lists of strings. An empty list is an explicit empty declaration.
 - `artifact_roots` is a mapping from artifact family (`spec`, `quality`,
   `release`, `dogfood`, `debug`, `premortem`, `design-studies`, `goals`,
-  `critique`, `retro`, `probe`, `issues`, or `release-review`) to its root.
+  `critique`, `ideation`, `retro`, `probe`, `issues`, or `release-review`) to
+  its root.
   Consumers address one family as `artifact_roots.<family>`.
 - `specdown_config` and `secrets_config` are strings naming their config file.
 

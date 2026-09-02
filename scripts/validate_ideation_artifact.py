@@ -16,8 +16,16 @@ ValidationError = _artifact_validator.ValidationError
 report_validation_failure = _artifact_validator.report_validation_failure
 run_changed_artifact_validator = _artifact_validator.run_changed_artifact_validator
 git_changed_paths = _artifact_validator.git_changed_paths
+_quality_adapter = import_repo_module(__file__, "scripts.quality_adapter_lib")
+load_quality_adapter = _quality_adapter.load_quality_adapter
+_quality_universes = import_repo_module(__file__, "scripts.quality_universes_lib")
+DEFAULT_ARTIFACT_ROOTS = _quality_universes.DEFAULT_ARTIFACT_ROOTS
+matching_files = _quality_universes.matching_files
+refuse_if_declared_and_empty = _quality_universes.refuse_if_declared_and_empty
+resolve_universe = _quality_universes.resolve_universe
 
-IDEATION_ARTIFACT_PREFIX = "charness-artifacts/ideation/"
+IDEATION_ARTIFACT_ROOT = DEFAULT_ARTIFACT_ROOTS["ideation"]
+IDEATION_ARTIFACT_PREFIX = f"{IDEATION_ARTIFACT_ROOT}/"
 STRUCTURED_QUESTIONS_HEADING = "## Structured Questions"
 STRUCTURED_URGENCY = frozenset({"must-resolve", "probe-in-impl", "defer"})
 STRUCTURED_ACTIONS = frozenset({"spec", "impl", "hold"})
@@ -28,12 +36,41 @@ def changed_paths(repo_root: Path) -> list[str]:
     return git_changed_paths(repo_root, artifact_label="ideation")
 
 
+def _ideation_universe(repo_root: Path):
+    return resolve_universe(
+        load_quality_adapter(repo_root),
+        "artifact_roots.ideation",
+        default=IDEATION_ARTIFACT_ROOT,
+    )
+
+
+def _ideation_prefix(repo_root: Path) -> str:
+    patterns = _ideation_universe(repo_root).patterns
+    return f"{patterns[0].rstrip('/')}/" if patterns else IDEATION_ARTIFACT_PREFIX
+
+
+def _resolved_ideation_scope(repo_root: Path) -> list[Path]:
+    universe = _ideation_universe(repo_root)
+    files = [path for path in matching_files(repo_root, universe) if path.suffix.lower() == ".md"]
+    refusal = refuse_if_declared_and_empty(universe, files, "validate-ideation-artifact")
+    if refusal:
+        raise ValidationError(refusal)
+    return files
+
+
 def candidate_paths(repo_root: Path, paths: list[str], *, all_artifacts: bool) -> list[Path]:
     if all_artifacts:
-        return sorted((repo_root / IDEATION_ARTIFACT_PREFIX).glob("*.md"))
+        files = _resolved_ideation_scope(repo_root)
+        if not files:
+            print(
+                "Discovered empty ideation artifact universe: no Markdown artifacts "
+                "matched the configured scope."
+            )
+        return files
     candidates: list[Path] = []
+    prefix = _ideation_prefix(repo_root)
     for relpath in paths:
-        if relpath.startswith(IDEATION_ARTIFACT_PREFIX) and relpath.endswith(".md"):
+        if relpath.startswith(prefix) and relpath.endswith(".md"):
             path = repo_root / relpath
             if path.is_file():
                 candidates.append(path)
@@ -69,7 +106,7 @@ def main() -> int:
         fail_fast_help=(
             "Stop at the first failing artifact instead of reporting every failure in one pass."
         ),
-        owned_prefix=IDEATION_ARTIFACT_PREFIX,
+        owned_prefix=_ideation_prefix,
     )
 
 

@@ -32,7 +32,9 @@ def _load():
 dd = _load()
 
 
-def _completed(stdout: str = "", returncode: int = 0, stderr: str = "") -> subprocess.CompletedProcess:
+def _completed(
+    stdout: str = "", returncode: int = 0, stderr: str = ""
+) -> subprocess.CompletedProcess:
     return subprocess.CompletedProcess(["nose"], returncode, stdout, stderr)
 
 
@@ -64,7 +66,9 @@ def test_nose_version_oserror(monkeypatch) -> None:
 
 
 def test_nose_version_ok(monkeypatch) -> None:
-    monkeypatch.setattr(dd.nose_tool.subprocess, "run", lambda *_a, **_k: _completed(stdout="nose 0.13.0"))
+    monkeypatch.setattr(
+        dd.nose_tool.subprocess, "run", lambda *_a, **_k: _completed(stdout="nose 0.13.0")
+    )
     assert dd.nose_version("nose") == (0, 13, 0)
 
 
@@ -97,7 +101,9 @@ def test_run_query_nonzero_exit(monkeypatch, tmp_path: Path) -> None:
     # because the old path reached this case through the generic exit-code branch and said
     # nothing about the missing report. Asserting only `boom` passes on the old code too,
     # which would leave the doc arm's empty-output handling pinned by nothing.
-    monkeypatch.setattr(dd.nose_tool.subprocess, "run", lambda *_a, **_k: _completed(returncode=2, stderr="boom"))
+    monkeypatch.setattr(
+        dd.nose_tool.subprocess, "run", lambda *_a, **_k: _completed(returncode=2, stderr="boom")
+    )
     result = dd.run_query(tmp_path, ["nose"])
     assert result["status"] == "error"
     assert "no output" in result["stderr"]
@@ -118,7 +124,9 @@ def test_run_query_unrecognized_report_shape_is_error(monkeypatch, tmp_path: Pat
     # `status: "ok"` with zero families — a clean doc advisory AND a vacuously clean
     # dup-ratchet doc arm over a report the reader did not understand.
     payload = {"schema_version": 99, "markdown_families": [{"signature": "a"}]}
-    monkeypatch.setattr(dd.nose_tool.subprocess, "run", lambda *_a, **_k: _completed(stdout=json.dumps(payload)))
+    monkeypatch.setattr(
+        dd.nose_tool.subprocess, "run", lambda *_a, **_k: _completed(stdout=json.dumps(payload))
+    )
     result = dd.run_query(tmp_path, ["nose"])
     assert result["status"] == "error"
     assert "no `markdown` family list" in result["stderr"]
@@ -129,7 +137,8 @@ def test_run_query_declared_empty_markdown_list_is_ok(monkeypatch, tmp_path: Pat
     # The discriminating control: a report that DECLARES an empty Markdown family list is
     # a real clean doc scan.
     monkeypatch.setattr(
-        dd.nose_tool.subprocess, "run",
+        dd.nose_tool.subprocess,
+        "run",
         lambda *_a, **_k: _completed(stdout=json.dumps({"schema_version": 9, "markdown": []})),
     )
     result = dd.run_query(tmp_path, ["nose"])
@@ -139,26 +148,37 @@ def test_run_query_declared_empty_markdown_list_is_ok(monkeypatch, tmp_path: Pat
 def test_shared_transport_keeps_nonzero_json_payload(monkeypatch, tmp_path: Path) -> None:
     payload = {"markdown": []}
     monkeypatch.setattr(
-        dd.nose_tool.subprocess, "run",
+        dd.nose_tool.subprocess,
+        "run",
         lambda *_a, **_k: _completed(stdout=json.dumps(payload), returncode=2, stderr="boom"),
     )
     result = dd.nose_tool.run_json_query(tmp_path, ["nose"])
     assert result == {
-        "status": "error", "exit_code": 2, "stdout": json.dumps(payload),
-        "stderr": "boom", "payload": payload, "error_kind": "nonzero",
+        "status": "error",
+        "exit_code": 2,
+        "stdout": json.dumps(payload),
+        "stderr": "boom",
+        "payload": payload,
+        "error_kind": "nonzero",
     }
 
 
 def test_run_query_invalid_json(monkeypatch, tmp_path: Path) -> None:
-    monkeypatch.setattr(dd.nose_tool.subprocess, "run", lambda *_a, **_k: _completed(stdout="not json"))
+    monkeypatch.setattr(
+        dd.nose_tool.subprocess, "run", lambda *_a, **_k: _completed(stdout="not json")
+    )
     result = dd.run_query(tmp_path, ["nose"])
     assert result["status"] == "error"
     assert "invalid JSON" in result["stderr"]
 
 
 def test_run_query_ok(monkeypatch, tmp_path: Path) -> None:
-    payload = json.dumps({"schema_version": 1, "markdown": [{"members": [{"path": "a.md", "heading": "H"}]}]})
-    monkeypatch.setattr(dd.nose_tool.subprocess, "run", lambda *_a, **_k: _completed(stdout=payload))
+    payload = json.dumps(
+        {"schema_version": 1, "markdown": [{"members": [{"path": "a.md", "heading": "H"}]}]}
+    )
+    monkeypatch.setattr(
+        dd.nose_tool.subprocess, "run", lambda *_a, **_k: _completed(stdout=payload)
+    )
     result = dd.run_query(tmp_path, ["nose"])
     assert result["status"] == "ok"
     assert len(result["families"]) == 1

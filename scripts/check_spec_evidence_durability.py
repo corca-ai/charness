@@ -15,9 +15,17 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-_repo_file_listing = import_repo_module(__file__, "scripts.repo_file_listing")
-iter_matching_repo_files = _repo_file_listing.iter_matching_repo_files
-RepoFileSnapshot = _repo_file_listing.RepoFileSnapshot
+_quality_adapter = import_repo_module(__file__, "scripts.quality_adapter_lib")
+load_quality_adapter = _quality_adapter.load_quality_adapter
+_quality_universes = import_repo_module(__file__, "scripts.quality_universes_lib")
+DEFAULT_ARTIFACT_ROOTS = _quality_universes.DEFAULT_ARTIFACT_ROOTS
+matching_files = _quality_universes.matching_files
+refuse_if_declared_and_empty = _quality_universes.refuse_if_declared_and_empty
+resolve_universe = _quality_universes.resolve_universe
+_critique_adapter = import_repo_module(__file__, "scripts.critique_adapter_lib")
+load_critique_adapter = _critique_adapter.load_adapter
+_retro_index = import_repo_module(__file__, "scripts.build_retro_lesson_selection_index")
+load_retro_paths = _retro_index._load_retro_paths
 _markdown_doc_scan = import_repo_module(__file__, "scripts.markdown_doc_scan")
 iter_doc_lines = _markdown_doc_scan.iter_doc_lines
 #: The repo's ONE owner of an artifact's effective grandfathering date. Imported
@@ -27,14 +35,14 @@ _scope = import_repo_module(__file__, "scripts.critique_enforcement_scope")
 _subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
 run_process = _subprocess_guard.run_process
 
-DOC_GLOBS = (
-    "charness-artifacts/spec/**/*.md",
-    "charness-artifacts/quality/**/*.md",
-    "charness-artifacts/release/**/*.md",
-    "charness-artifacts/dogfood/**/*.md",
-    "charness-artifacts/debug/**/*.md",
-    "charness-artifacts/premortem/**/*.md",
-    "charness-artifacts/design-studies/**/*.md",
+PRIMARY_ARTIFACT_FAMILIES = (
+    "spec",
+    "quality",
+    "release",
+    "dogfood",
+    "debug",
+    "premortem",
+    "design-studies",
 )
 
 #: Evidence families added later, and enforced only from `ENFORCED_FROM` forward.
@@ -51,19 +59,59 @@ DOC_GLOBS = (
 #: which is the inversion this repo refuses. So history is COUNTED and reported,
 #: never rewritten, and the gate binds on artifacts written from the anchor date
 #: forward -- the ones whose citations a future session will actually try to follow.
-LATE_DOC_GLOBS = (
-    "charness-artifacts/goals/**/*.md",
-    "charness-artifacts/critique/**/*.md",
-    "charness-artifacts/retro/**/*.md",
-    "charness-artifacts/probe/**/*.md",
-    "charness-artifacts/issues/**/*.md",
-    "charness-artifacts/release-review/**/*.md",
+LATE_ARTIFACT_FAMILIES = ("goals", "critique", "retro", "probe", "issues", "release-review")
+DOC_GLOBS = tuple(
+    f"{DEFAULT_ARTIFACT_ROOTS[family]}/**/*.md" for family in PRIMARY_ARTIFACT_FAMILIES
+)
+LATE_DOC_GLOBS = tuple(
+    f"{DEFAULT_ARTIFACT_ROOTS[family]}/**/*.md" for family in LATE_ARTIFACT_FAMILIES
 )
 #: The date this widening landed. A doc in `LATE_DOC_GLOBS` is enforced when its
 #: FILENAME dates it on or after this; earlier ones are grandfathered. A doc whose
 #: filename carries no readable date is enforced whatever its body says -- see
 #: `is_enforced_late_doc` for why only that channel grandfathers.
 ENFORCED_FROM = date(2026, 8, 22)
+
+
+def _adapter_owned_default(repo_root: Path, family: str) -> str:
+    """Use a skill-owned output directory as the family's portable fallback."""
+    if family == "critique":
+        data = load_critique_adapter(repo_root).get("data") or {}
+        output_dir = data.get("output_dir")
+        if isinstance(output_dir, str) and output_dir:
+            return output_dir
+    if family == "retro":
+        try:
+            output_dir, _summary_path = load_retro_paths(repo_root)
+        except FileNotFoundError:
+            pass
+        else:
+            return output_dir.relative_to(repo_root).as_posix()
+    return DEFAULT_ARTIFACT_ROOTS[family]
+
+
+def _resolved_artifact_docs(repo_root: Path, families: tuple[str, ...]):
+    adapter = load_quality_adapter(repo_root)
+    docs_by_family: dict[str, list[Path]] = {}
+    empty_families: list[str] = []
+    for family in families:
+        universe = resolve_universe(
+            adapter,
+            f"artifact_roots.{family}",
+            default=_adapter_owned_default(repo_root, family),
+        )
+        files = [
+            path for path in matching_files(repo_root, universe) if path.suffix.lower() == ".md"
+        ]
+        refusal = refuse_if_declared_and_empty(universe, files, "check-spec-evidence-durability")
+        if refusal:
+            raise ValueError(refusal)
+        if not files:
+            empty_families.append(family)
+        docs_by_family[family] = files
+    return docs_by_family, empty_families
+
+
 #: `docs/**` is deliberately NOT here. Doctrine that NAMES a runtime path
 #: (`artifact-policy.md` explaining where `.charness/quality/runtime-signals.json`
 #: is written) is not an artifact CITING that file as its own proof, and the 9
@@ -405,19 +453,15 @@ def main() -> int:
             f"Skipping evidence-durability check: no git work tree at {root}.",
         )
         return 0
-    snapshot = RepoFileSnapshot(root, require_git=args.require_git_file_listing)
-    docs = iter_matching_repo_files(
-        root,
-        DOC_GLOBS,
-        require_git=args.require_git_file_listing,
-        snapshot=snapshot,
-    )
-    late_docs = iter_matching_repo_files(
-        root,
-        LATE_DOC_GLOBS,
-        require_git=args.require_git_file_listing,
-        snapshot=snapshot,
-    )
+    try:
+        docs_by_family, empty_families = _resolved_artifact_docs(root, PRIMARY_ARTIFACT_FAMILIES)
+        late_by_family, late_empty_families = _resolved_artifact_docs(root, LATE_ARTIFACT_FAMILIES)
+    except ValueError as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
+    docs = [path for family in PRIMARY_ARTIFACT_FAMILIES for path in docs_by_family[family]]
+    late_docs = [path for family in LATE_ARTIFACT_FAMILIES for path in late_by_family[family]]
+    empty_families.extend(late_empty_families)
     candidates_by_doc = {doc: citation_candidates(root, doc) for doc in [*docs, *late_docs]}
     all_candidate_paths = sorted(
         {path for candidates in candidates_by_doc.values() for path in candidates}
@@ -459,7 +503,15 @@ def main() -> int:
         if advisory:
             print(advisory)
         return 1
-    print(f"Validated spec evidence durability across {len(docs) + len(late_docs)} doc(s).")
+    scope_note = (
+        f" Discovered empty artifact universe(s): {', '.join(empty_families)}."
+        if empty_families
+        else ""
+    )
+    print(
+        f"Validated spec evidence durability across {len(docs) + len(late_docs)} doc(s)."
+        f"{scope_note}"
+    )
     if advisory:
         print(advisory)
     return 0

@@ -299,11 +299,10 @@ def _case_directory_argument_is_input_error(case_dir: Path) -> None:
 
 
 def _case_empty_corpus_blocks(case_dir: Path) -> None:
-    """Both adjacent gates in run-quality.sh carry an empty-corpus guard. Without
-    one, a renamed artifact directory reads as a pass."""
+    """An undeclared empty universe is a reported discovered-empty no-op."""
     result = run_script(str(GATE), "--repo-root", str(case_dir))
-    assert result.returncode == 1
-    assert "EMPTY CORPUS" in result.stdout
+    assert result.returncode == 0
+    assert "DISCOVERED EMPTY" in result.stdout
 
 
 def _case_exit_code_follows_printed_status(case_dir: Path) -> None:

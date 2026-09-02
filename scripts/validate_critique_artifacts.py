@@ -14,7 +14,6 @@ REPO_ROOT = repo_root_from_script(__file__)
 
 _artifact_validator = import_repo_module(__file__, "scripts.artifact_validator")
 _adversarial_evidence = import_repo_module(__file__, "scripts.adversarial_evidence")
-_prepare_packet_markdown_kind = import_repo_module(__file__, "scripts.prepare_packet_markdown_kind")
 ValidationError = _artifact_validator.ValidationError
 report_validation_failure = _artifact_validator.report_validation_failure
 git_changed_paths = _artifact_validator.git_changed_paths
@@ -26,7 +25,6 @@ run_validation_checks = _artifact_validator.run_validation_checks
 validate_adversarial_evidence = partial(
     _adversarial_evidence.validate_for_artifact, error_cls=ValidationError
 )
-file_is_prepare_packet_markdown_kind = _prepare_packet_markdown_kind.file_is_prepare_packet_markdown_kind
 
 # Cross-surface probe (#408): consulted only when --changed-ref/--changed-path is passed.
 _boundary_probe_lib = import_repo_module(__file__, "scripts.boundary_probe_lib")
@@ -42,8 +40,9 @@ _sections = import_repo_module(__file__, "scripts.markdown_sections")
 # The required-fields / unique-id / typed-enum loop over a structured-entry
 # section, shared with the ideation `## Structured Questions` floor.
 _structured_findings = import_repo_module(__file__, "scripts.critique_structured_findings")
-_critique_paths = import_repo_module(__file__, "scripts.critique_artifact_paths")
 _verification_scope = import_repo_module(__file__, "scripts.critique_verification_scope")
+_critique_universe = import_repo_module(__file__, "scripts.critique_artifact_universe")
+__getattr__ = _critique_universe.__getattribute__
 PACKET_CONSUMED_RE = _scope.PACKET_CONSUMED_RE
 critique_observed_date = _scope.critique_observed_date
 # Kept as module attributes: `tests/test_validate_critique_artifacts_dates.py`
@@ -59,9 +58,6 @@ DELIVERY_STATE_VALUES = _reviewer_evidence.DELIVERY_STATE_VALUES
 DELIVERY_STATE_VALUES_SUMMARY = _reviewer_evidence.DELIVERY_STATE_VALUES_SUMMARY
 WORKER_REPORT_FIELDS = _reviewer_evidence.WORKER_REPORT_FIELDS
 
-CRITIQUE_ARTIFACT_PREFIX = _critique_paths.CRITIQUE_ARTIFACT_PREFIX
-CRITIQUE_PREPARE_PACKET_TITLE_RE = re.compile(r"^# Critique Prepare Packet(?:\s+—\s+\S.*)?$")
-STRUCTURED_FINDINGS_HEADING = _structured_findings.STRUCTURED_FINDINGS_HEADING
 # Public compatibility surface: the scaffold tests and installed consumers have
 # historically imported these validator enums directly. Extracting the parser
 # must not turn a structural refactor into an API disappearance.
@@ -70,7 +66,6 @@ STRUCTURED_EVIDENCE = _structured_findings.STRUCTURED_EVIDENCE
 STRUCTURED_ACTIONS = _structured_findings.STRUCTURED_ACTIONS
 STRUCTURED_REQUIRED_FIELDS = _structured_findings.STRUCTURED_REQUIRED_FIELDS
 STRUCTURED_FINDING_FORM = _structured_findings.STRUCTURED_FINDING_FORM
-CRITIQUE_PREPARE_PACKET_KIND = "charness.critique_prepare_packet"
 FORBIDDEN_SUBAGENT_BLOCKER_PHRASES = (
     "did not explicitly allow subagents",
     "explicit subagent allowance",
@@ -79,7 +74,10 @@ FORBIDDEN_SUBAGENT_BLOCKER_PHRASES = (
     "current session delegation policy",
     "current developer instruction only permits",
 )
-DELEGATION_CONTRACT_MARKERS = ("subagent delegation", "repo-mandated bounded fresh-eye subagent reviews are already delegated")
+DELEGATION_CONTRACT_MARKERS = (
+    "subagent delegation",
+    "repo-mandated bounded fresh-eye subagent reviews are already delegated",
+)
 # `delegation signal` added with the authorization ladder (#475). A user who
 # DECLINES the standing delegation request at rung 3 is a real, recorded reason
 # the review did not run, but it is not a host or tool signal — and the only
@@ -127,8 +125,8 @@ FRESH_EYE_TODO_MARKER = "todo"
 # next day). See skills/shared/references/boundary-ownership-brief.md.
 BOUNDARY_OWNERSHIP_RULE_DATE = date(2026, 7, 6)
 BOUNDARY_OWNERSHIP_HEADING = "## Boundary Ownership"
-BOUNDARY_VERDICT_VALUES = ("single-surface", "owned-correctly", "moved-to-owner", "escalated-to-issue-spec")
-BOUNDARY_VERDICT_SUMMARY = "`single-surface` / `owned-correctly` / `moved-to-owner` / `escalated-to-issue-spec`"
+BOUNDARY_VERDICT_VALUES = tuple("single-surface owned-correctly moved-to-owner escalated-to-issue-spec".split())  # fmt: skip
+BOUNDARY_VERDICT_SUMMARY = " / ".join(f"`{value}`" for value in BOUNDARY_VERDICT_VALUES)
 
 VERIFICATION_FAILURE_CLASSIFICATIONS = _verification_scope.FAILURE_CLASSIFICATIONS
 VERIFICATION_RETRY_DISPOSITIONS = _verification_scope.RETRY_DISPOSITIONS
@@ -193,19 +191,6 @@ def changed_paths(repo_root: Path) -> list[str]:
     return git_changed_paths(repo_root, artifact_label="critique")
 
 
-def candidate_paths(repo_root: Path, paths: list[str], *, all_artifacts: bool) -> list[Path]:
-    return _critique_paths.candidate_paths(
-        repo_root,
-        paths,
-        all_artifacts=all_artifacts,
-        packet_checker=lambda path: file_is_prepare_packet_markdown_kind(
-            path,
-            expected_kind=CRITIQUE_PREPARE_PACKET_KIND,
-            expected_title_re=CRITIQUE_PREPARE_PACKET_TITLE_RE,
-        ),
-    )
-
-
 def _normalize_contract_text(text: str) -> str:
     """Drop fenced blocks, flatten inline markup, collapse whitespace."""
 
@@ -265,7 +250,11 @@ def _delegation_record_state(repo_root: Path) -> tuple[str | None, list[str] | N
     scopes: list[str] | None = None
     if "scopes" in data:
         raw_scopes = data.get("scopes")
-        if not isinstance(raw_scopes, list) or not raw_scopes or not all(isinstance(s, str) for s in raw_scopes):
+        if (
+            not isinstance(raw_scopes, list)
+            or not raw_scopes
+            or not all(isinstance(s, str) for s in raw_scopes)
+        ):
             return None, None
         scopes = [s.strip().lower() for s in raw_scopes]
     return decision, scopes
@@ -510,7 +499,11 @@ def validate_critique_artifact(
                 )
 
     def _check_blocked_signal_detail() -> None:
-        if status_lowered and "blocked" in status_lowered and "parent-delegated" not in status_lowered:
+        if (
+            status_lowered
+            and "blocked" in status_lowered
+            and "parent-delegated" not in status_lowered
+        ):
             if not has_blocked_signal_detail(text):
                 raise ValidationError(
                     f"{path}: blocked critique fresh-eye satisfaction must cite `host signal:`, "
@@ -555,7 +548,10 @@ def validate_critique_artifact(
 
     checks = (
         lambda: validate_adversarial_evidence(
-            text, artifact_label="critique artifact", evidence_mode=evidence_mode, repo_root=repo_root
+            text,
+            artifact_label="critique artifact",
+            evidence_mode=evidence_mode,
+            repo_root=repo_root,
         ),
         _check_fresh_eye_typed_presence,
         lambda: check_boundary_ownership_typed_presence(
@@ -586,7 +582,10 @@ def validate_critique_artifact(
         ),
     )
     run_validation_checks(
-        checks, collect_all=collect_all, artifact_label="critique artifact", error_cls=ValidationError
+        checks,
+        collect_all=collect_all,
+        artifact_label="critique artifact",
+        error_cls=ValidationError,
     )
 
 
@@ -672,14 +671,14 @@ def main() -> int:
         all_help="Validate every checked critique artifact.",
         artifact_label="critique artifact",
         changed_paths_fn=changed_paths,
-        candidate_paths_fn=candidate_paths,
+        candidate_paths_fn=_critique_universe.candidate_paths,
         validate_factory=validate_factory,
         on_complete=on_complete,
         extra_args=_add_validator_args,
         fail_fast_help=(
             "Stop at the first rule violation instead of reporting every violation in one pass."
         ),
-        owned_prefix=CRITIQUE_ARTIFACT_PREFIX,
+        owned_prefix=_critique_universe.prefix,
     )
 
 

@@ -46,6 +46,7 @@ DEFAULT_ARTIFACT_ROOTS = {
     "design-studies": "charness-artifacts/design-studies",
     "goals": "charness-artifacts/goals",
     "critique": "charness-artifacts/critique",
+    "ideation": "charness-artifacts/ideation",
     "retro": "charness-artifacts/retro",
     "probe": "charness-artifacts/probe",
     "issues": "charness-artifacts/issues",

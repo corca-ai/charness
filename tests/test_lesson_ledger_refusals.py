@@ -76,9 +76,9 @@ def test_ledger_checker_and_writer_scripts_print_refusals(
     tmp_path: Path, monkeypatch, capsys
 ) -> None:
     monkeypatch.setattr(sys, "argv", ["check_lesson_ledger.py", "--repo-root", str(tmp_path)])
-    with pytest.raises(SystemExit, match="1"):
+    with pytest.raises(SystemExit, match="0"):
         runpy.run_path(str(ROOT / "scripts/check_lesson_ledger.py"), run_name="__main__")
-    assert "missing lesson ledger" in capsys.readouterr().err
+    assert "Discovered empty lesson ledger universe" in capsys.readouterr().out
     for script, args in (
         (
             "record_lesson_score.py",

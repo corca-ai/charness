@@ -41,7 +41,9 @@ INLINE_CODE_RE = re.compile(r"`[^`\n]+`")
 COMMAND_TARGET_RE = re.compile(
     r"(?:^|[\s|(\"'=&;])(?:python3?\s+|bash\s+|sh\s+|\./)([A-Za-z0-9._<>/-]+\.(?:py|sh))"
 )
-PATH_TOKEN_RE = re.compile(r"\b(?:README\.md|(?:[A-Za-z0-9._-]+/)+[A-Za-z0-9._-]+\.md)(?:#[A-Za-z0-9._-]+)?\b")
+PATH_TOKEN_RE = re.compile(
+    r"\b(?:README\.md|(?:[A-Za-z0-9._-]+/)+[A-Za-z0-9._-]+\.md)(?:#[A-Za-z0-9._-]+)?\b"
+)
 BACKTICK_CONTENT_RE = re.compile(r"`([^`\n]+)`")
 PATHY_TOKEN_RE = re.compile(r"^(?:[A-Za-z0-9._-]+/)+[A-Za-z0-9_-]+\.[A-Za-z0-9._-]+$")
 EXTENSION_TOKEN_RE = re.compile(r"^[A-Za-z0-9_.-]+\.[A-Za-z][A-Za-z0-9]{0,5}$")
@@ -171,7 +173,9 @@ def load_canonical_markdown_surfaces(root: Path) -> set[str]:
     payload = load_quality_adapter(root)
     if payload.get("errors"):
         rendered = "; ".join(str(error) for error in payload["errors"])
-        raise ValidationError(f"quality adapter errors while loading canonical markdown surfaces: {rendered}")
+        raise ValidationError(
+            f"quality adapter errors while loading canonical markdown surfaces: {rendered}"
+        )
     surfaces = payload.get("data", {}).get("canonical_markdown_surfaces", [])
     return {normalize_surface_token(surface) for surface in surfaces if isinstance(surface, str)}
 
@@ -185,7 +189,9 @@ def strip_markdown_links(line: str) -> str:
     return MARKDOWN_LINK_RE.sub("", line)
 
 
-def classify_prefixed_backtick(candidate: str, known_repo_paths: set[str], known_directories: set[str]) -> str | None:
+def classify_prefixed_backtick(
+    candidate: str, known_repo_paths: set[str], known_directories: set[str]
+) -> str | None:
     stripped = candidate.rstrip("/")
     while stripped.startswith("./"):
         stripped = stripped[2:]
@@ -392,7 +398,9 @@ def iter_authoring_repo_contradictions(doc: Path) -> list[tuple[int, str]]:
                 continue
             # Report where the PHRASE sits, not where its sentence began: the
             # contradiction is what the reader has to go fix.
-            phrase_at = min(start + sentence.index(AUTHORING_REPO_PHRASE), len(offset_to_lineno) - 1)
+            phrase_at = min(
+                start + sentence.index(AUTHORING_REPO_PHRASE), len(offset_to_lineno) - 1
+            )
             findings.append((offset_to_lineno[phrase_at], " ".join(sentence.split())))
     return findings
 
@@ -484,19 +492,21 @@ def main() -> int:
     known_repo_paths = iter_known_repo_paths(
         root, require_git=args.require_git_file_listing, snapshot=snapshot
     )
-    known_markdown_paths = {
-        path for path in known_repo_paths if Path(path).suffix == ".md"
-    }
+    known_markdown_paths = {path for path in known_repo_paths if Path(path).suffix == ".md"}
     unique_basename_index = build_unique_basename_index(known_repo_paths)
     known_directories = build_known_directories(known_repo_paths)
     canonical_markdown_surfaces = load_canonical_markdown_surfaces(root)
-    for doc in iter_docs(
-        root, require_git=args.require_git_file_listing, snapshot=snapshot
-    ):
+    try:
+        docs = iter_docs(root, require_git=args.require_git_file_listing, snapshot=snapshot)
+    except ValueError as exc:
+        raise ValidationError(str(exc)) from exc
+    for doc in docs:
         contents = doc.read_text(encoding="utf-8")
         for target in iter_link_targets(contents):
             validate_link(root, doc, target)
-        bare_refs = iter_bare_internal_doc_refs(root, doc, known_markdown_paths, canonical_markdown_surfaces)
+        bare_refs = iter_bare_internal_doc_refs(
+            root, doc, known_markdown_paths, canonical_markdown_surfaces
+        )
         if bare_refs:
             refs = ", ".join(f"`{ref}`" for ref in bare_refs[:3])
             if len(bare_refs) > 3:
@@ -513,7 +523,9 @@ def main() -> int:
             canonical_markdown_surfaces,
         )
         if backticked:
-            refs = ", ".join(f"`{cand}` (line {ln}, {reason})" for ln, cand, reason in backticked[:3])
+            refs = ", ".join(
+                f"`{cand}` (line {ln}, {reason})" for ln, cand, reason in backticked[:3]
+            )
             if len(backticked) > 3:
                 refs += ", ..."
             # Branch on the reason. Telling an author to "use markdown links" for an
@@ -559,7 +571,8 @@ def main() -> int:
                 "use `$SKILL_DIR/...` for this skill's own scripts or `<plugin-dir>/...` "
                 "for another shipped package"
             )
-    print("Validated markdown links.")
+    scope_note = " (discovered empty universe)" if not docs else ""
+    print(f"Validated markdown links across {len(docs)} document(s){scope_note}.")
     return 0
 
 

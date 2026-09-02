@@ -22,6 +22,7 @@ from pathlib import Path
 import yaml
 
 from tests.control_plane.support import seed_control_plane_repo
+from tests.quality_gates.repo_shapes import install_committed_repo
 from tests.script_main import load_script_module, run_loaded_script_main
 
 from .support import ROOT
@@ -34,9 +35,15 @@ _MODULES = {
     for name in (
         "scripts/validate_packaging.py",
         "tools/check_bootstrap_shim_consistency.py",
+        "scripts/check_doc_links.py",
+        "scripts/check_docs_graph.py",
+        "skills/public/quality/scripts/inventory_doc_duplicates.py",
+        "scripts/check_spec_evidence_durability.py",
+        "scripts/check_artifact_referents.py",
         "scripts/validate_critique_artifacts.py",
         "scripts/validate_retro_artifact.py",
         "scripts/validate_ideation_artifact.py",
+        "scripts/check_lesson_ledger.py",
         "scripts/check_mutation_run_proof.py",
         "scripts/check_code_lengths.py",
         "scripts/check_python_runtime_inheritance.py",
@@ -94,6 +101,49 @@ def test_zero_scope_scan_refuses(tmp_path: Path) -> None:
         combined = (result.stdout + result.stderr).lower()
         assert result.returncode != 0, script
         assert expected_fragment.lower() in combined, script
+
+
+def test_declared_u2_universes_refuse_when_empty(tmp_path: Path) -> None:
+    """Every adapter-declared U2 scope must establish at least one input."""
+    cases = (
+        ("doc_surfaces", None, "scripts/check_doc_links.py", ()),
+        ("doc_surfaces", None, "scripts/check_docs_graph.py", ()),
+        ("doc_surfaces", None, "skills/public/quality/scripts/inventory_doc_duplicates.py", ()),
+        ("artifact_roots", "spec", "scripts/check_spec_evidence_durability.py", ()),
+        ("artifact_roots", "goals", "scripts/check_artifact_referents.py", ()),
+        (
+            "artifact_roots",
+            "critique",
+            "scripts/validate_critique_artifacts.py",
+            ("--all",),
+        ),
+        (
+            "artifact_roots",
+            "ideation",
+            "scripts/validate_ideation_artifact.py",
+            ("--all",),
+        ),
+        ("artifact_roots", "retro", "scripts/check_lesson_ledger.py", ()),
+    )
+    for index, (field, family, script, extra) in enumerate(cases):
+        if field == "doc_surfaces":
+            universe = f"  {field}:\n    - tmp-u2-missing-{index}/**/*.md\n"
+        else:
+            universe = f"  artifact_roots:\n    {family}: tmp-u2-missing-{index}\n"
+        repo = install_committed_repo(
+            tmp_path / f"repo-{index}",
+            {
+                ".agents/quality-adapter.yaml": (
+                    "version: 1\nrepo: consumer\nlanguage: en\n"
+                    "output_dir: artifacts/quality\nuniverses:\n"
+                    f"{universe}"
+                ),
+            },
+        )
+        result = run_gate(script, "--repo-root", str(repo), *extra)
+        combined = result.stdout + result.stderr
+        assert result.returncode != 0, (script, combined)
+        assert "refusing empty declared universe" in combined, (script, combined)
 
 
 def test_validate_integrations_zero_locks_is_the_sanctioned_discovered_empty_pass(

@@ -9,15 +9,17 @@ from runtime_bootstrap import import_repo_module
 
 _artifact_run_scope = import_repo_module(__file__, "scripts.artifact_run_scope")
 safe_repo_relative_path = _artifact_run_scope.safe_repo_relative_path
+_quality_universes = import_repo_module(__file__, "scripts.quality_universes_lib")
+DEFAULT_CRITIQUE_ROOT = _quality_universes.DEFAULT_ARTIFACT_ROOTS["critique"]
 
-CRITIQUE_ARTIFACT_PREFIX = "charness-artifacts/critique/"
-CRITIQUE_ROUNDS_PREFIX = "charness-artifacts/critique/rounds/"
+CRITIQUE_ARTIFACT_PREFIX = f"{DEFAULT_CRITIQUE_ROOT}/"
+CRITIQUE_ROUNDS_PREFIX = f"{DEFAULT_CRITIQUE_ROOT}/rounds/"
 
 
-def is_critique_round_record(relpath: str) -> bool:
+def is_critique_round_record(relpath: str, *, rounds_prefix: str = CRITIQUE_ROUNDS_PREFIX) -> bool:
     """Whether a normalized repo-relative path belongs to round evidence."""
 
-    return relpath.startswith(CRITIQUE_ROUNDS_PREFIX) and relpath.endswith(".md")
+    return relpath.startswith(rounds_prefix) and relpath.endswith(".md")
 
 
 def candidate_paths(
@@ -26,18 +28,28 @@ def candidate_paths(
     *,
     all_artifacts: bool,
     packet_checker: Callable[[Path], bool],
+    artifact_prefix: str = CRITIQUE_ARTIFACT_PREFIX,
+    universe_files: Sequence[Path] | None = None,
 ) -> list[Path]:
     """Select final critique records, excluding packets and round evidence."""
 
-    raw_paths = sorted((repo_root / CRITIQUE_ARTIFACT_PREFIX).glob("*.md")) if all_artifacts else paths
+    prefix = artifact_prefix.rstrip("/") + "/"
+    rounds_prefix = f"{prefix}rounds/"
+    raw_paths = (
+        sorted(universe_files)
+        if all_artifacts and universe_files is not None
+        else sorted((repo_root / prefix).glob("*.md"))
+        if all_artifacts
+        else paths
+    )
     candidates: list[Path] = []
     for raw in raw_paths:
         normalized = safe_repo_relative_path(
             raw.relative_to(repo_root).as_posix() if isinstance(raw, Path) else str(raw)
         )
-        if normalized is None or not normalized.startswith(CRITIQUE_ARTIFACT_PREFIX):
+        if normalized is None or not normalized.startswith(prefix):
             continue
-        if is_critique_round_record(normalized):
+        if is_critique_round_record(normalized, rounds_prefix=rounds_prefix):
             continue
         path = repo_root / normalized
         # Changed-path mode receives every changed artifact, including JSON/YAML

@@ -65,6 +65,15 @@ from scripts.repo_path_display import display_path as _display_path  # noqa: E40
 
 _subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
 run_process = _subprocess_guard.run_process
+_quality_adapter = import_repo_module(__file__, "scripts.quality_adapter_lib")
+load_quality_adapter = _quality_adapter.load_quality_adapter
+_quality_universes = import_repo_module(__file__, "scripts.quality_universes_lib")
+DEFAULT_ARTIFACT_ROOTS = _quality_universes.DEFAULT_ARTIFACT_ROOTS
+matching_files = _quality_universes.matching_files
+refuse_if_declared_and_empty = _quality_universes.refuse_if_declared_and_empty
+resolve_universe = _quality_universes.resolve_universe
+_retro_index = import_repo_module(__file__, "scripts.build_retro_lesson_selection_index")
+load_retro_paths = _retro_index._load_retro_paths
 
 #: One Git reachability query per SHA per artifact would be thousands of
 #: subprocesses across
@@ -226,10 +235,42 @@ ENFORCED_FROM = date(2026, 8, 22)
 
 #: Families whose dispositions ship inside release bundles and are read as
 #: statements of fact by later sessions.
-SCANNED_GLOBS = (
-    "charness-artifacts/goals/*.md",
-    "charness-artifacts/retro/*.md",
-)
+SCANNED_FAMILIES = ("goals", "retro")
+SCANNED_GLOBS = tuple(f"{DEFAULT_ARTIFACT_ROOTS[family]}/*.md" for family in SCANNED_FAMILIES)
+
+
+def _artifact_default(repo_root: Path, family: str) -> str:
+    if family == "retro":
+        try:
+            output_dir, _summary_path = load_retro_paths(repo_root)
+        except FileNotFoundError:
+            pass
+        else:
+            return output_dir.relative_to(repo_root).as_posix()
+    return DEFAULT_ARTIFACT_ROOTS[family]
+
+
+def _resolved_targets(repo_root: Path) -> tuple[list[Path], list[str]]:
+    adapter = load_quality_adapter(repo_root)
+    targets: set[Path] = set()
+    empty_families: list[str] = []
+    for family in SCANNED_FAMILIES:
+        universe = resolve_universe(
+            adapter,
+            f"artifact_roots.{family}",
+            default=_artifact_default(repo_root, family),
+        )
+        files = [
+            path for path in matching_files(repo_root, universe) if path.suffix.lower() == ".md"
+        ]
+        refusal = refuse_if_declared_and_empty(universe, files, "check-artifact-referents")
+        if refusal:
+            raise ValueError(refusal)
+        if not files:
+            empty_families.append(family)
+        targets.update(files)
+    return sorted(targets), empty_families
+
 
 # The disposition vocabulary is IMPORTED, not redefined. Two near-identical
 # copies existed after round 1; the failure mode is not "they drift" but "one
@@ -398,8 +439,13 @@ def main() -> int:
 
     if args.path:
         targets = [Path(p) if Path(p).is_absolute() else repo_root / p for p in args.path]
+        empty_families: list[str] = []
     else:
-        targets = sorted({p for glob in SCANNED_GLOBS for p in repo_root.glob(glob)})
+        try:
+            targets, empty_families = _resolved_targets(repo_root)
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
 
     declarations, declaration_defects = load_local_context_declarations(repo_root)
     declared = {
@@ -460,7 +506,7 @@ def main() -> int:
     declared_local = [f for f in findings if f.get("declared_local")]
     grandfathered = [f for f in findings if not f["enforced"] and not f.get("declared_local")]
     empty_corpus = not args.path and not targets
-    status = "blocked" if (blocking or unreadable or empty_corpus) else "clean"
+    status = "blocked" if (blocking or unreadable) else "clean"
     report = {
         "scanned": len(targets) - len(unreadable),
         "unreadable": unreadable,
@@ -478,6 +524,7 @@ def main() -> int:
         "declared_local": len(declared_local),
         "enforced_from": ENFORCED_FROM.isoformat(),
         "empty_corpus": empty_corpus,
+        "empty_families": empty_families,
         "status": status,
         "blocking_findings": blocking,
     }
@@ -499,10 +546,11 @@ def main() -> int:
     print(f"declared local context (reported, exact): {report['declared_local']}")
     if report["unreadable"]:
         print(f"UNREADABLE (input error, not a pass): {', '.join(report['unreadable'])}")
-    if report["empty_corpus"]:
+    if report["empty_corpus"] or report["empty_families"]:
         print(
-            "EMPTY CORPUS: the scanned globs matched nothing — a clean verdict here "
-            "would mean the gate found nothing to look at, not that nothing was wrong"
+            "DISCOVERED EMPTY: no artifacts matched the configured universe(s) "
+            f"({', '.join(report['empty_families']) or 'all scanned families'}); "
+            "the empty scope is reported, not treated as evidence of clean referents"
         )
     print(f"status: {report['status']}")
     for finding in blocking:

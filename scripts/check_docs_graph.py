@@ -44,12 +44,33 @@ from yaml_output import emit_yaml
 REPO_ROOT = repo_root_from_script(__file__)
 _subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
 run_monitored_phase = _subprocess_guard.run_monitored_phase
+_quality_adapter = import_repo_module(__file__, "scripts.quality_adapter_lib")
+load_quality_adapter = _quality_adapter.load_quality_adapter
+_quality_universes = import_repo_module(__file__, "scripts.quality_universes_lib")
+DEFAULT_UNIVERSES = _quality_universes.DEFAULT_UNIVERSES
+matching_files = _quality_universes.matching_files
+refuse_if_declared_and_empty = _quality_universes.refuse_if_declared_and_empty
+resolve_universe = _quality_universes.resolve_universe
 
 # The runner's shared "analyzed nothing, so this is not a pass" byte. It renders
 # as UNPROVEN in the quality summary rather than as a silent success.
 UNESTABLISHED_EXIT = 3
 
-DEFAULT_SCAN_ROOT = "docs"
+
+def _scan_root_from_patterns(patterns: tuple[str, ...]) -> str:
+    """Choose the first directory-bearing root from a doc-surface pattern set."""
+    for pattern in patterns:
+        parts = Path(pattern).parts
+        if (
+            parts
+            and not any(char in parts[0] for char in "*?[")
+            and (len(parts) > 1 or Path(pattern).suffix.lower() != ".md")
+        ):
+            return parts[0]
+    return "."
+
+
+DEFAULT_SCAN_ROOT = _scan_root_from_patterns(tuple(DEFAULT_UNIVERSES["doc_surfaces"]))
 # awiki exits 0 on a clean graph and 1 on lint findings. This gate does not read
 # the code as its verdict -- findings are why it parses the summary instead --
 # but a code OUTSIDE this set means awiki did not complete a scan, and a summary
@@ -157,6 +178,16 @@ def _corroborates_clean(summary: dict[str, float]) -> bool:
 # timeout turns that into a TimeoutExpired, which the guard in `evaluate` renders
 # as NOT-RUN -- the honest answer for a scan that never finished.
 AWIKI_TIMEOUT_SECONDS = 120
+
+
+def _resolved_doc_scope(repo_root: Path):
+    universe = resolve_universe(
+        load_quality_adapter(repo_root),
+        "doc_surfaces",
+        default=DEFAULT_UNIVERSES["doc_surfaces"],
+    )
+    files = [path for path in matching_files(repo_root, universe) if path.suffix.lower() == ".md"]
+    return universe, files
 
 
 def _run_awiki(repo_root: Path, scan_root: str) -> tuple[int, str]:
@@ -331,7 +362,7 @@ def _not_run(reason: str, **extra: object) -> dict[str, object]:
 
 def evaluate(
     repo_root: Path,
-    scan_root: str = DEFAULT_SCAN_ROOT,
+    scan_root: str | None = None,
     bars: dict[str, int] | None = None,
     *,
     link_only_lines_bar: int | None = None,
@@ -343,6 +374,18 @@ def evaluate(
     docs graph on a run where it saw nothing -- so the whole body is guarded.
     """
     try:
+        if scan_root is None:
+            universe, files = _resolved_doc_scope(repo_root)
+            scan_root = _scan_root_from_patterns(universe.patterns)
+            refusal = refuse_if_declared_and_empty(universe, files, "docs-graph")
+            if refusal:
+                return _not_run(refusal, scan_root=scan_root)
+            if not files:
+                return _not_run(
+                    f"docs-graph: discovered empty universe under `{scan_root}/`; "
+                    "no documentation graph was established.",
+                    scan_root=scan_root,
+                )
         resolved = bars if bars is not None else resolve_bars(repo_root, link_only_lines_bar)
         return _evaluate(repo_root, scan_root, resolved)
     except Exception as exc:  # noqa: BLE001 -- see docstring: a crash must not read as a verdict
@@ -618,7 +661,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument(
         "--scan-root",
-        default=DEFAULT_SCAN_ROOT,
+        default=None,
         help=(
             "Directory holding the wiki, relative to --repo-root. A consuming repo whose "
             "docs live elsewhere points this there; a scan that reads nothing reports "
