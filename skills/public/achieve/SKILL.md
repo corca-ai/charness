@@ -32,12 +32,26 @@ repository, provider, prior operator answers, or evidence. Then ask only from
 the resolution frontier: unresolved distinctions that could change the goal,
 boundary, acceptance, or execution order. Collapse answered branches, do not
 reopen them without contradictory evidence, and stop when finer resolution
-would not change activation or the next action.
+would not change activation or the next action. An answer can open a new
+frontier; the interview is rounds, not one batch.
 
-Each consequential question records alternatives, tradeoffs, a recommendation
-and reason, the operator answer, and rejected alternatives. If the ceiling is
-reached with a decision unanswered, return `interview-cap-reached` and wait for
-the ordinary operator answer; do not create a binding or provider parent.
+Keep the interview as one JSON record beside the draft
+(`<draft>.interview.json`, `version: 1`) and validate it before any parent is
+created:
+
+```bash
+python3 "$SKILL_DIR/scripts/interview_contract.py" --repo-root . \
+  --record charness-artifacts/goals/<draft>.interview.json
+```
+
+Each question carries `decision`, at least two `options` with an `id`,
+`summary`, and `tradeoff`, a `recommendation` with its `reason`, and once
+answered an `answer` plus one `rejected_alternatives` entry per non-selected
+option. Unresolved decisions go in `remaining_consequential_decisions`. Only
+`interview-complete` permits parent creation. If the ceiling is reached with a
+decision unanswered, the record reads `interview-cap-reached`; wait for the
+ordinary operator answer and do not create a binding or provider parent.
+Mirror each answered decision into the draft's `## Interview Decisions`.
 
 An unanswered ordinary planning question is not a local blocked status. It is
 simply an unresolved planning decision. The draft remains mutable until the
@@ -45,7 +59,18 @@ operator approves the complete plan.
 
 ## Approval and identity
 
-After planning and explicit approval of the exact briefing and draft bytes:
+Approval is of a briefing, not of a chat summary. Before asking for it:
+
+1. critique the draft's framing, ownership, and architecture (`critique`);
+2. draft each Work Item's executable child body from the Slice Plan;
+3. critique the repaired whole adversarially;
+4. audit the draft against the current tree so every Starting Truth figure and
+   path is still true; and
+5. write the briefing: purpose, target structure, execution order, and proof.
+   The draft itself may be the briefing when it carries all four; the binding
+   records the briefing's hash either way.
+
+After explicit approval of the exact briefing and draft bytes:
 
 1. read the intended parent through the selected issue provider;
 2. freeze and hash the complete Goal Draft; and
