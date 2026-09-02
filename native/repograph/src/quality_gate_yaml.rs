@@ -121,6 +121,12 @@ pub(super) fn parse_quality_gate_list(text: &str) -> Result<Vec<DeclaredQualityG
         }
 
         draft.command_mode = false;
+        if trimmed.starts_with('-') {
+            // A block list under a field other than `command` (for example
+            // `condition: mode_in:`); the carrier graph reads only label and
+            // command, so nested lists are skipped, not refused.
+            continue;
+        }
         let Some((key, value)) = yaml_mapping_entry(trimmed) else {
             return Err(format!("line {line} is not a mapping field in a gate row"));
         };
