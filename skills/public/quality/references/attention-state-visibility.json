@@ -65,7 +65,7 @@
         "summary_projection",
         "not_configured"
       ],
-      "rationale": "`summary_path: null` is the retro adapter's declared opt-out of the Markdown digest (#750, applied to this repo by #774). The command still writes or validates the source-linked selection index and validates the ledger; its payload names the digest comparison as `summary_projection: not_configured` so a reader can tell a declared absence from a comparison that ran."
+      "rationale": "`summary_path: null` is the retro adapter's declared opt-out of the Markdown digest. The command still writes or validates the source-linked selection index and validates the ledger; its payload names the digest comparison as `summary_projection: not_configured` so a reader can tell a declared absence from a comparison that ran."
     },
     "scripts/check_cli_skill_surface.py": {
       "states": [
