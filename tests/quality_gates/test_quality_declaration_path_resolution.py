@@ -32,7 +32,11 @@ def test_an_unparseable_command_is_kept_rather_than_declared_unavailable(tmp_pat
     the failure this whole module is a guard against -- an unenforceable bar reading as
     protection. Kept-and-visible is the recoverable half of that trade.
     """
-    gate = {"id": "unbalanced", "command": './run-quality.sh --mode "full', "run_when": "repo-native command"}
+    gate = {
+        "id": "unbalanced",
+        "command": './run-quality.sh --mode "full',
+        "run_when": "repo-native command",
+    }
 
     applicable, unavailable = APPLICABILITY.applicable_catalog_gates(tmp_path, {}, [gate])
 
@@ -51,9 +55,7 @@ def test_repo_module_bootstraps_repo_import_path_and_fails_loudly(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     root_text = str(ROOT)
-    monkeypatch.setattr(
-        LIFECYCLE.sys, "path", [entry for entry in sys.path if entry != root_text]
-    )
+    monkeypatch.setattr(LIFECYCLE.sys, "path", [entry for entry in sys.path if entry != root_text])
 
     module = LIFECYCLE._repo_module("scripts.adapter_lib")
 
@@ -63,6 +65,9 @@ def test_repo_module_bootstraps_repo_import_path_and_fails_loudly(
         LIFECYCLE._repo_module("scripts.quality_module_that_does_not_exist")
 
 
+@pytest.mark.boundary_contract(
+    reason="prove declaration lifecycle loading works in a clean interpreter without preloaded importlib state"
+)
 def test_declaration_lifecycle_loads_when_importlib_util_was_not_preloaded() -> None:
     source = LIFECYCLE_PATH.read_text(encoding="utf-8")
     program = "\n".join(
@@ -91,16 +96,18 @@ def test_preset_reconciliation_distinguishes_applied_missing_and_metadata_only(
     presets = repo / "presets"
     presets.mkdir(parents=True)
     (presets / "strict.md").write_text(
-        "---\nname: strict\ndescription: \"Strict reconciliation fixture.\"\npreset_kind: sample-vocabulary\ninstall_scope: maintainer\nreconciliation:\n  required_adapter_commands:\n    - python3 -m pytest\n    - ruff check .\n---\n# strict\n\n## Intended Use\n\nTest fixture.\n",
+        '---\nname: strict\ndescription: "Strict reconciliation fixture."\npreset_kind: sample-vocabulary\ninstall_scope: maintainer\nreconciliation:\n  required_adapter_commands:\n    - python3 -m pytest\n    - ruff check .\n---\n# strict\n\n## Intended Use\n\nTest fixture.\n',
         encoding="utf-8",
     )
     (presets / "metadata.md").write_text(
-        "---\nname: metadata\ndescription: \"Metadata fixture.\"\npreset_kind: sample-vocabulary\ninstall_scope: maintainer\n---\n# metadata\n\n## Intended Use\n\nTest fixture.\n",
+        '---\nname: metadata\ndescription: "Metadata fixture."\npreset_kind: sample-vocabulary\ninstall_scope: maintainer\n---\n# metadata\n\n## Intended Use\n\nTest fixture.\n',
         encoding="utf-8",
     )
     modules = {
         "scripts.validate_presets": LIFECYCLE._repo_module("scripts.validate_presets"),
-        "scripts.quality_bootstrap_detect": SimpleNamespace(detect_preset_lineage=lambda _repo: ["strict"]),
+        "scripts.quality_bootstrap_detect": SimpleNamespace(
+            detect_preset_lineage=lambda _repo: ["strict"]
+        ),
     }
     monkeypatch.setattr(LIFECYCLE, "_repo_module", modules.__getitem__)
 
@@ -147,7 +154,10 @@ def test_preset_reconciliation_distinguishes_applied_missing_and_metadata_only(
             "kind": "preset_requirement_missing",
             "detail": "strict: declare adapter command: python3 -m pytest",
         },
-        {"kind": "preset_requirement_missing", "detail": "strict: declare adapter command: ruff check ."},
+        {
+            "kind": "preset_requirement_missing",
+            "detail": "strict: declare adapter command: ruff check .",
+        },
     ]
 
 
@@ -161,12 +171,14 @@ def test_preset_contract_refuses_malformed_frontmatter(
     monkeypatch.setattr(
         LIFECYCLE,
         "_repo_module",
-        lambda name: validator
-        if name == "scripts.validate_presets"
-        else SimpleNamespace(detect_preset_lineage=lambda _repo: []),
+        lambda name: (
+            validator
+            if name == "scripts.validate_presets"
+            else SimpleNamespace(detect_preset_lineage=lambda _repo: [])
+        ),
     )
     prefix = (
-        "---\nname: strict\ndescription: \"Strict fixture.\"\npreset_kind: sample-vocabulary\n"
+        '---\nname: strict\ndescription: "Strict fixture."\npreset_kind: sample-vocabulary\n'
         "install_scope: maintainer\nreconciliation:\n  required_adapter_commands:\n    - pytest\n"
     )
     for frontmatter in ("---not-a-fence", "---not-a-fence\nname: malformed\n"):
@@ -174,38 +186,66 @@ def test_preset_contract_refuses_malformed_frontmatter(
         assert LIFECYCLE._preset_contract(repo, "strict")["state"] == "unavailable"
 
 
-def test_preset_contract_accepts_crlf_and_refuses_external_symlink(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_preset_contract_accepts_crlf_and_refuses_external_symlink(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     repo = tmp_path / "app"
     presets = repo / "presets"
     presets.mkdir(parents=True)
-    (presets / "crlf.md").write_bytes(b"---\r\nname: crlf\r\ndescription: \"CRLF fixture.\"\r\npreset_kind: sample-vocabulary\r\ninstall_scope: maintainer\r\nreconciliation:\r\n  required_adapter_commands:\r\n    - pytest\r\n---\r\n# crlf\r\n\r\n## Intended Use\r\n\r\nTest fixture.\r\n")
+    (presets / "crlf.md").write_bytes(
+        b'---\r\nname: crlf\r\ndescription: "CRLF fixture."\r\npreset_kind: sample-vocabulary\r\ninstall_scope: maintainer\r\nreconciliation:\r\n  required_adapter_commands:\r\n    - pytest\r\n---\r\n# crlf\r\n\r\n## Intended Use\r\n\r\nTest fixture.\r\n'
+    )
     outside = tmp_path / "outside.md"
-    outside.write_text("---\nname: external\ndescription: \"External fixture.\"\npreset_kind: sample-vocabulary\ninstall_scope: maintainer\nreconciliation:\n  required_adapter_commands:\n    - pytest\n---\n# external\n\n## Intended Use\n\nTest fixture.\n", encoding="utf-8")
+    outside.write_text(
+        '---\nname: external\ndescription: "External fixture."\npreset_kind: sample-vocabulary\ninstall_scope: maintainer\nreconciliation:\n  required_adapter_commands:\n    - pytest\n---\n# external\n\n## Intended Use\n\nTest fixture.\n',
+        encoding="utf-8",
+    )
     (presets / "external.md").symlink_to(outside)
     validator = LIFECYCLE._repo_module("scripts.validate_presets")
-    monkeypatch.setattr(LIFECYCLE, "_repo_module", lambda name: validator if name == "scripts.validate_presets" else SimpleNamespace(detect_preset_lineage=lambda _repo: []))
+    monkeypatch.setattr(
+        LIFECYCLE,
+        "_repo_module",
+        lambda name: (
+            validator
+            if name == "scripts.validate_presets"
+            else SimpleNamespace(detect_preset_lineage=lambda _repo: [])
+        ),
+    )
 
     assert LIFECYCLE._preset_contract(repo, "crlf")["state"] == "prescribed"
     assert LIFECYCLE._preset_contract(repo, "external")["state"] == "unavailable"
     assert LIFECYCLE._preset_contract(repo, "../external")["state"] == "unavailable"
 
 
-def test_preset_contract_refuses_a_presets_directory_symlink(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_preset_contract_refuses_a_presets_directory_symlink(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     repo = tmp_path / "app"
     outside_presets = tmp_path / "outside-presets"
     outside_presets.mkdir()
     (outside_presets / "strict.md").write_text(
-        "---\nname: strict\ndescription: \"Strict fixture.\"\npreset_kind: sample-vocabulary\ninstall_scope: maintainer\nreconciliation:\n  required_adapter_commands:\n    - pytest\n---\n# strict\n\n## Intended Use\n\nTest fixture.\n",
+        '---\nname: strict\ndescription: "Strict fixture."\npreset_kind: sample-vocabulary\ninstall_scope: maintainer\nreconciliation:\n  required_adapter_commands:\n    - pytest\n---\n# strict\n\n## Intended Use\n\nTest fixture.\n',
         encoding="utf-8",
     )
     repo.mkdir()
     (repo / "presets").symlink_to(outside_presets, target_is_directory=True)
     validator = LIFECYCLE._repo_module("scripts.validate_presets")
-    monkeypatch.setattr(LIFECYCLE, "_repo_module", lambda name: validator if name == "scripts.validate_presets" else SimpleNamespace(detect_preset_lineage=lambda _repo: []))
+    monkeypatch.setattr(
+        LIFECYCLE,
+        "_repo_module",
+        lambda name: (
+            validator
+            if name == "scripts.validate_presets"
+            else SimpleNamespace(detect_preset_lineage=lambda _repo: [])
+        ),
+    )
 
     contract = LIFECYCLE._preset_contract(repo, "strict")
 
-    assert contract == {"state": "unavailable", "reason": "presets/strict.md must resolve inside presets/"}
+    assert contract == {
+        "state": "unavailable",
+        "reason": "presets/strict.md must resolve inside presets/",
+    }
 
 
 def test_declaration_lifecycle_refuses_when_adjacent_catalog_is_not_loadable(
@@ -215,7 +255,9 @@ def test_declaration_lifecycle_refuses_when_adjacent_catalog_is_not_loadable(
         LIFECYCLE.importlib.util, "spec_from_file_location", lambda *_args, **_kwargs: None
     )
 
-    with pytest.raises(ImportError, match="quality_catalog_gate_applicability.py not loadable beside"):
+    with pytest.raises(
+        ImportError, match="quality_catalog_gate_applicability.py not loadable beside"
+    ):
         LIFECYCLE._load_catalog_applicability()
 
 
@@ -239,13 +281,16 @@ def test_preset_reconciliation_reports_unavailable_contract_shapes(
     strict = presets / "strict.md"
     strict.write_text("fixture", encoding="utf-8")
     validator = SimpleNamespace(
-        re=__import__("re"), PRESET_NAME_RE=r"[a-z]+",
+        re=__import__("re"),
+        PRESET_NAME_RE=r"[a-z]+",
         ValidationError=ValueError,
         validate_preset=lambda _path: {"reconciliation": "wrong-shape"},
     )
     modules = {
         "scripts.validate_presets": validator,
-        "scripts.quality_bootstrap_detect": SimpleNamespace(detect_preset_lineage=lambda _repo: ["strict"]),
+        "scripts.quality_bootstrap_detect": SimpleNamespace(
+            detect_preset_lineage=lambda _repo: ["strict"]
+        ),
     }
     monkeypatch.setattr(LIFECYCLE, "_repo_module", modules.__getitem__)
 
@@ -264,15 +309,21 @@ def test_preset_reconciliation_reports_unavailable_contract_shapes(
     )
     rows, gaps = LIFECYCLE._preset_rows(repo, {"preset_lineage": ["strict"]})
     assert rows[0]["reconciliation_state"] == "unavailable"
-    assert gaps == [{"kind": "preset_reconciliation_unavailable", "detail": "strict: forced unavailable"}]
+    assert gaps == [
+        {"kind": "preset_reconciliation_unavailable", "detail": "strict: forced unavailable"}
+    ]
 
 
-def test_preset_contract_reports_a_resolve_oserror(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_preset_contract_reports_a_resolve_oserror(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     repo = tmp_path / "app"
     preset = repo / "presets" / "strict.md"
     preset.parent.mkdir(parents=True)
     preset.write_text("fixture", encoding="utf-8")
-    validator = SimpleNamespace(re=__import__("re"), PRESET_NAME_RE=r"[a-z]+", ValidationError=ValueError)
+    validator = SimpleNamespace(
+        re=__import__("re"), PRESET_NAME_RE=r"[a-z]+", ValidationError=ValueError
+    )
     monkeypatch.setattr(LIFECYCLE, "_repo_module", lambda _name: validator)
     original = Path.resolve
 
@@ -283,7 +334,8 @@ def test_preset_contract_reports_a_resolve_oserror(tmp_path: Path, monkeypatch: 
 
     monkeypatch.setattr(Path, "resolve", fail_preset)
     assert LIFECYCLE._preset_contract(repo, "strict") == {
-        "state": "unavailable", "reason": "could not resolve presets/strict.md"
+        "state": "unavailable",
+        "reason": "could not resolve presets/strict.md",
     }
 
 
@@ -296,9 +348,7 @@ def test_declaration_helpers_skip_non_values_without_creating_routes(
     repo = tmp_path / "app"
     repo.mkdir()
 
-    path_rows = LIFECYCLE._declared_skill_paths(
-        repo, {"skill_ergonomics_skill_paths": [None, ""]}
-    )
+    path_rows = LIFECYCLE._declared_skill_paths(repo, {"skill_ergonomics_skill_paths": [None, ""]})
 
     assert [row["command"] for row in command_rows] == ["python3 -m pytest"]
     assert len(packets) == 1
@@ -314,9 +364,7 @@ def test_declared_paths_report_uninterpretable_patterns(
     def fail_listing(_repo: Path, _patterns: tuple[str, ...]):
         raise ValueError("bad pattern")
 
-    monkeypatch.setattr(
-        LIFECYCLE._REPO_FILE_LISTING, "iter_matching_repo_files", fail_listing
-    )
+    monkeypatch.setattr(LIFECYCLE._REPO_FILE_LISTING, "iter_matching_repo_files", fail_listing)
 
     row = _declared_paths(repo, "skills/*/SKILL.md")[0]
 
@@ -371,15 +419,11 @@ def test_declaration_lifecycle_treats_non_mapping_yaml_as_empty(
             }
         ),
         "scripts.adapter_lib": SimpleNamespace(load_yaml_file=lambda _path: []),
-        "scripts.quality_bootstrap_detect": SimpleNamespace(
-            detect_preset_lineage=lambda _repo: []
-        ),
+        "scripts.quality_bootstrap_detect": SimpleNamespace(detect_preset_lineage=lambda _repo: []),
     }
     monkeypatch.setattr(LIFECYCLE, "_repo_module", modules.__getitem__)
 
-    report, packets = LIFECYCLE.build_declaration_lifecycle(
-        tmp_path, skills=[], catalog_gates=[]
-    )
+    report, packets = LIFECYCLE.build_declaration_lifecycle(tmp_path, skills=[], catalog_gates=[])
 
     assert report["status"] == "configured"
     assert report["commands"] == []
@@ -402,9 +446,7 @@ def test_declaration_lifecycle_keeps_catalog_gates_when_no_adapter_exists(
             }
         ),
         "scripts.adapter_lib": SimpleNamespace(load_yaml_file=lambda _path: {}),
-        "scripts.quality_bootstrap_detect": SimpleNamespace(
-            detect_preset_lineage=lambda _repo: []
-        ),
+        "scripts.quality_bootstrap_detect": SimpleNamespace(detect_preset_lineage=lambda _repo: []),
     }
     monkeypatch.setattr(LIFECYCLE, "_repo_module", modules.__getitem__)
     catalog_gates = [{"id": "repo-native", "command": "./scripts/run-quality.sh"}]
@@ -433,9 +475,7 @@ def test_declaration_lifecycle_reports_unavailable_catalog_gates(
             }
         ),
         "scripts.adapter_lib": SimpleNamespace(load_yaml_file=lambda _path: {}),
-        "scripts.quality_bootstrap_detect": SimpleNamespace(
-            detect_preset_lineage=lambda _repo: []
-        ),
+        "scripts.quality_bootstrap_detect": SimpleNamespace(detect_preset_lineage=lambda _repo: []),
     }
     unavailable = {"id": "repo-native", "reason": "runner is absent"}
     monkeypatch.setattr(LIFECYCLE, "_repo_module", modules.__getitem__)
@@ -464,9 +504,7 @@ def test_declared_paths_do_not_resolve_ignored_repo_skills_or_support_symlink(
     ignored_skill.parent.mkdir(parents=True)
     ignored_skill.write_text("# ignored\n", encoding="utf-8")
 
-    rows = _declared_paths(
-        repo, "ignored/*/SKILL.md", "ignored/private/SKILL.md"
-    )
+    rows = _declared_paths(repo, "ignored/*/SKILL.md", "ignored/private/SKILL.md")
 
     assert rows == [
         {
@@ -546,9 +584,7 @@ def test_declared_paths_do_not_resolve_ignored_external_support(
     ignored_skill.write_text("# ignored\n", encoding="utf-8")
     monkeypatch.setenv("CHARNESS_SUPPORT_DIR", str(support))
 
-    rows = _declared_paths(
-        repo, "skills/support/private/SKILL.md", "skills/support/*/SKILL.md"
-    )
+    rows = _declared_paths(repo, "skills/support/private/SKILL.md", "skills/support/*/SKILL.md")
     assert len(rows) == 2
     for row in rows:
         assert row["target_state"] == "unreachable"

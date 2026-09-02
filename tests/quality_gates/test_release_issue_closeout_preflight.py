@@ -13,6 +13,9 @@ from .release_publish_fixtures import _seed_publish_release_repo, _write_exec
 from .seeding_support import _install_empty_git_dir, load_module
 
 ROOT = Path(__file__).resolve().parents[2]
+pytestmark = pytest.mark.boundary_contract(
+    reason="observe the release publish target's real git and GitHub child commands at the irreversible closeout preflight boundary"
+)
 
 
 def _load_issue_validate_closeout_draft():
@@ -107,8 +110,10 @@ def _run_close_issue_publish(
         argv.extend(["--close-issue-carrier-file", str(carrier)])
     argv.extend(
         [
-            "--close-issue-behavior", "Behavior #44: confirmed via fresh checkout install",
-            "--close-issue-probe-record", "Probe record #44: local-only-by-contract",
+            "--close-issue-behavior",
+            "Behavior #44: confirmed via fresh checkout install",
+            "--close-issue-probe-record",
+            "Probe record #44: local-only-by-contract",
             "--critique-blocked",
             "synthetic-host-signal for legacy issue-closeout preflight test",
             "--execute",
@@ -124,7 +129,9 @@ def _run_close_issue_publish(
     )
 
 
-def test_release_generated_final_message_passes_issue_owned_direct_commit_draft_validation(tmp_path: Path) -> None:
+def test_release_generated_final_message_passes_issue_owned_direct_commit_draft_validation(
+    tmp_path: Path,
+) -> None:
     release_closeout = _load_release_closeout_module()
     validate_closeout_draft = _load_issue_validate_closeout_draft()
     verifier = load_verify_module()
@@ -276,7 +283,9 @@ def test_release_closeout_message_refuses_commit_validation_when_issue_helpers_m
     message_module = _load_release_closeout_message_module()
     for helper_name in ("_ISSUE_VALIDATE_CLOSEOUT_DRAFT", "_ISSUE_VERIFY_CLOSEOUT"):
         monkeypatch.setattr(message_module, helper_name, None)
-    monkeypatch.setattr(message_module, "_ISSUE_CLOSEOUT_DRAFT_ERROR", "missing issue helpers (forced)")
+    monkeypatch.setattr(
+        message_module, "_ISSUE_CLOSEOUT_DRAFT_ERROR", "missing issue helpers (forced)"
+    )
 
     with pytest.raises(SystemExit, match="closeout draft helpers"):
         message_module.validate_release_closeout_commit_message(
@@ -293,9 +302,13 @@ def _assert_stopped_before_mutation(repo: Path, tmp_path: Path, initial_head: st
     assert manifest["version"] == "0.0.0"
     assert not (repo / ".quality-ran").exists()
     assert not (repo / "charness-artifacts" / "release" / "latest.md").exists()
-    head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True)
+    head = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True
+    )
     assert head.stdout.strip() == initial_head
-    tags = subprocess.run(["git", "tag", "--list", "v0.0.1"], cwd=repo, check=True, capture_output=True, text=True)
+    tags = subprocess.run(
+        ["git", "tag", "--list", "v0.0.1"], cwd=repo, check=True, capture_output=True, text=True
+    )
     assert tags.stdout.strip() == ""
     git_log = json.loads((tmp_path / "git-log.json").read_text(encoding="utf-8"))
     assert not any(entry and entry[0] in {"commit", "push"} for entry in git_log)
@@ -304,7 +317,9 @@ def _assert_stopped_before_mutation(repo: Path, tmp_path: Path, initial_head: st
 
 def test_close_issue_preflight_fails_before_mutation(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
-    initial_head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True).stdout.strip()
+    initial_head = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True
+    ).stdout.strip()
     env = _publish_env(tmp_path, bin_dir)
     env["FAKE_GH_ISSUE_STATE"] = str(tmp_path / "issue-state.json")
     env["FAKE_GH_ISSUE_VIEW_FAIL"] = "1"
@@ -362,9 +377,23 @@ def test_close_issue_requires_github_repo_before_mutation(tmp_path: Path) -> Non
         + "      - '{title}'\n",
         encoding="utf-8",
     )
-    subprocess.run(["git", "add", ".agents/release-adapter.yaml"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "commit", "-m", "Use custom release backend"], cwd=repo, check=True, capture_output=True, text=True)
-    initial_head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True).stdout.strip()
+    subprocess.run(
+        ["git", "add", ".agents/release-adapter.yaml"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    subprocess.run(
+        ["git", "commit", "-m", "Use custom release backend"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    initial_head = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True
+    ).stdout.strip()
     env = _publish_env(tmp_path, bin_dir)
     env["FAKE_RELEASE_BACKEND_LOG"] = str(tmp_path / "release-backend-log.json")
     env["FAKE_CLOSEOUT_CARRIER"] = str(tmp_path / "closeout.md")
@@ -456,11 +485,14 @@ def test_close_issue_preflight_requires_classification_and_existing_carrier(
 ) -> None:
     release_closeout = _load_release_closeout_module()
     resolved_kwargs = {
-        key: tmp_path / value if key == "carrier_file" else value
-        for key, value in kwargs.items()
+        key: tmp_path / value if key == "carrier_file" else value for key, value in kwargs.items()
     }
     with pytest.raises(SystemExit, match=message):
         release_closeout.preflight_release_issues(
-            tmp_path, repo="example/demo", issue_numbers=[44], payload={}, run=None,
+            tmp_path,
+            repo="example/demo",
+            issue_numbers=[44],
+            payload={},
+            run=None,
             **resolved_kwargs,
         )

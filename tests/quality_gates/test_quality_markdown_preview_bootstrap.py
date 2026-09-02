@@ -9,35 +9,41 @@ from types import SimpleNamespace
 
 import yaml
 
-from runtime_bootstrap import import_repo_module
+from tests.script_main import load_script_module, run_loaded_script_main
 
 from .support import ROOT
 
 SCRIPT = "skills/public/quality/scripts/bootstrap_markdown_preview.py"
-_bootstrap_markdown_preview = import_repo_module(
-    ROOT / SCRIPT,
+_bootstrap_markdown_preview = load_script_module(
     "skills.public.quality.scripts.bootstrap_markdown_preview",
+    ROOT / SCRIPT,
 )
 
 
-def _run_quality_preview(repo: Path, *args: str, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        [
-            "python3",
+def _run_quality_preview(
+    repo: Path, *args: str, env: dict[str, str] | None = None
+) -> subprocess.CompletedProcess[str]:
+    previous_cwd = Path.cwd()
+    try:
+        os.chdir(ROOT)
+        result = run_loaded_script_main(
             SCRIPT,
+            _bootstrap_markdown_preview,
             "--repo-root",
             str(repo),
             *args,
-        ],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-        env=env,
+            env=env,
+        )
+    finally:
+        os.chdir(previous_cwd)
+    return subprocess.CompletedProcess(
+        [SCRIPT, *args], result.returncode, result.stdout, result.stderr
     )
 
 
-def run_quality_preview(monkeypatch, capsys, repo: Path, *args: str, path_env: str | None = None) -> SimpleNamespace:
+def run_quality_preview(
+    monkeypatch, capsys, repo: Path, *args: str, path_env: str | None = None
+) -> SimpleNamespace:
     monkeypatch.setattr(sys, "argv", [SCRIPT, "--repo-root", str(repo), *args])
     if path_env is not None:
         monkeypatch.setenv("PATH", path_env)
@@ -96,7 +102,9 @@ def test_quality_bootstrap_markdown_preview_scaffolds_and_executes(tmp_path: Pat
     assert (repo / ".artifacts" / "markdown-preview" / "docs__guide.w100.txt").is_file()
 
 
-def test_quality_bootstrap_markdown_preview_preserves_existing_config(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_quality_bootstrap_markdown_preview_preserves_existing_config(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     (repo / "docs").mkdir()
@@ -137,7 +145,9 @@ def test_quality_bootstrap_markdown_preview_preserves_existing_config(tmp_path: 
     assert (repo / ".artifacts" / "docs-preview" / "docs__guide.w90.txt").is_file()
 
 
-def test_quality_bootstrap_markdown_preview_reports_not_applicable(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_quality_bootstrap_markdown_preview_reports_not_applicable(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     (repo / "src").mkdir()
@@ -153,7 +163,9 @@ def test_quality_bootstrap_markdown_preview_reports_not_applicable(tmp_path: Pat
     assert payload["preview_command"] is None
 
 
-def test_quality_bootstrap_markdown_preview_reports_unchanged_on_a_rerun(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_quality_bootstrap_markdown_preview_reports_unchanged_on_a_rerun(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     """A rerun that would write byte-identical config must not report a write.
 
     Reachable through `--output` pointing outside the config search paths: the

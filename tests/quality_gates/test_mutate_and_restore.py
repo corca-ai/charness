@@ -18,6 +18,7 @@ import pytest
 import yaml
 
 from runtime_bootstrap import import_repo_module
+from tests.script_main import run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts" / "mutate_and_restore.py"
@@ -45,10 +46,16 @@ def _plan(**overrides) -> dict:
     return plan
 
 
-def test_a_broken_baseline_refuses_the_whole_sweep_instead_of_reporting_kills(tmp_path: Path) -> None:
+def test_a_broken_baseline_refuses_the_whole_sweep_instead_of_reporting_kills(
+    tmp_path: Path,
+) -> None:
     # The measured defect: a baseline that exits non-zero makes every mutant read
     # as killed, and the sweep looks exactly like a clean one.
-    repo = _repo(tmp_path, subject=SUBJECT, test_body="from subject import add\n\n\ndef test_add():\n    assert add(2, 3) == 99\n")
+    repo = _repo(
+        tmp_path,
+        subject=SUBJECT,
+        test_body="from subject import add\n\n\ndef test_add():\n    assert add(2, 3) == 99\n",
+    )
     plan = _plan(mutants=[{"id": "m1", "path": "subject.py", "find": "a + b", "replace": "a * b"}])
 
     sweep = mar.run_sweep(plan, repo, emit=lambda _line: None)
@@ -81,7 +88,9 @@ def test_a_zero_test_baseline_refuses(tmp_path: Path, monkeypatch: pytest.Monkey
     # branch is pinned against a stub rather than left unreachable and untested.
     repo = _repo(tmp_path, subject=SUBJECT, test_body="# no tests here\n")
     monkeypatch.setattr(
-        mar, "run_command", lambda command, cwd: subprocess.CompletedProcess(command, 0, "no tests ran in 0.01s", "")
+        mar,
+        "run_command",
+        lambda command, cwd: subprocess.CompletedProcess(command, 0, "no tests ran in 0.01s", ""),
     )
 
     sweep = mar.run_sweep(_plan(mutants=[]), repo, emit=lambda _line: None)
@@ -113,7 +122,9 @@ def test_a_surviving_mutant_is_reported_as_survived(tmp_path: Path) -> None:
     # The sweep must be able to say "your test did not catch this", which is the
     # only reason to run one.
     repo = _repo(tmp_path, subject=SUBJECT, test_body=GOOD_TEST)
-    plan = _plan(mutants=[{"id": "unused-body", "path": "subject.py", "find": "a - b", "replace": "a // b"}])
+    plan = _plan(
+        mutants=[{"id": "unused-body", "path": "subject.py", "find": "a - b", "replace": "a // b"}]
+    )
 
     sweep = mar.run_sweep(plan, repo, emit=lambda _line: None)
 
@@ -125,7 +136,9 @@ def test_a_surviving_mutant_is_reported_as_survived(tmp_path: Path) -> None:
 
 def test_a_killed_mutant_is_reported_as_killed_and_the_sweep_passes(tmp_path: Path) -> None:
     repo = _repo(tmp_path, subject=SUBJECT, test_body=GOOD_TEST)
-    plan = _plan(mutants=[{"id": "add-body", "path": "subject.py", "find": "a + b", "replace": "a * b"}])
+    plan = _plan(
+        mutants=[{"id": "add-body", "path": "subject.py", "find": "a + b", "replace": "a * b"}]
+    )
 
     sweep = mar.run_sweep(plan, repo, emit=lambda _line: None)
 
@@ -252,11 +265,16 @@ def test_the_baseline_count_is_emitted_before_the_first_mutant(tmp_path: Path) -
     assert "killed" in lines[1]
 
 
+@pytest.mark.boundary_contract(
+    reason="assert the mutation runner CLI's exact exit-code contract for baseline refusal and survivors"
+)
 def test_cli_exits_two_on_a_refused_baseline_and_one_on_a_survivor(tmp_path: Path) -> None:
     repo = _repo(tmp_path, subject=SUBJECT, test_body=GOOD_TEST)
     survivor = tmp_path / "survivor.json"
     survivor.write_text(
-        json.dumps(_plan(mutants=[{"id": "s", "path": "subject.py", "find": "a - b", "replace": "a // b"}])),
+        json.dumps(
+            _plan(mutants=[{"id": "s", "path": "subject.py", "find": "a - b", "replace": "a // b"}])
+        ),
         encoding="utf-8",
     )
     broken = tmp_path / "broken.json"
@@ -336,7 +354,9 @@ def test_mutating_a_source_file_drops_its_stale_bytecode(tmp_path: Path) -> None
         # source. Without this the assertion below is vacuous -- the cache was
         # already cleared above -- and deleting restore's guard passes it.
         mar.run_command(PYTEST_CMD, repo)
-        assert mar.bytecode_cache_paths(repo / "subject.py"), "precondition: mutated bytecode cached"
+        assert mar.bytecode_cache_paths(repo / "subject.py"), (
+            "precondition: mutated bytecode cached"
+        )
     finally:
         mar.restore(repo / "subject.py", original)
 
@@ -347,15 +367,23 @@ def test_mutating_a_source_file_drops_its_stale_bytecode(tmp_path: Path) -> None
     )
 
 
-def test_an_unreadable_baseline_summary_refuses_the_sweep(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_an_unreadable_baseline_summary_refuses_the_sweep(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     # Round 1 found this refusal had NO test: deleting the branch left the suite
     # green. The parent confirmed it by mutation before repairing.
     repo = _repo(tmp_path, subject=SUBJECT, test_body=GOOD_TEST)
     monkeypatch.setattr(
-        mar, "run_command", lambda command, cwd: subprocess.CompletedProcess(command, 0, "done, no summary", "")
+        mar,
+        "run_command",
+        lambda command, cwd: subprocess.CompletedProcess(command, 0, "done, no summary", ""),
     )
 
-    sweep = mar.run_sweep(_plan(mutants=[{"id": "m", "path": "subject.py", "find": "a + b", "replace": "a * b"}]), repo, emit=lambda _l: None)
+    sweep = mar.run_sweep(
+        _plan(mutants=[{"id": "m", "path": "subject.py", "find": "a + b", "replace": "a * b"}]),
+        repo,
+        emit=lambda _l: None,
+    )
 
     assert sweep.baseline.earned is False
     assert "no readable passing count" in sweep.baseline.refusal
@@ -453,7 +481,9 @@ def test_a_real_syntax_error_mutant_is_refused_not_killed(tmp_path: Path) -> Non
     # (#569's shape): the replacement does not parse, so pytest never runs a
     # test. Exit code alone would call this a kill.
     repo = _repo(tmp_path, subject=SUBJECT, test_body=GOOD_TEST)
-    plan = _plan(mutants=[{"id": "syntax", "path": "subject.py", "find": "a + b", "replace": "a +"}])
+    plan = _plan(
+        mutants=[{"id": "syntax", "path": "subject.py", "find": "a + b", "replace": "a +"}]
+    )
 
     sweep = mar.run_sweep(plan, repo, emit=lambda _l: None)
 
@@ -472,7 +502,9 @@ def test_a_real_mutant_that_fails_one_of_several_tests_is_killed(tmp_path: Path)
         "def test_types():\n    assert isinstance(add(1, 1), int)\n"
     )
     repo = _repo(tmp_path, subject=SUBJECT, test_body=body)
-    plan = _plan(mutants=[{"id": "real", "path": "subject.py", "find": "a - b", "replace": "a + b"}])
+    plan = _plan(
+        mutants=[{"id": "real", "path": "subject.py", "find": "a - b", "replace": "a + b"}]
+    )
 
     sweep = mar.run_sweep(plan, repo, emit=lambda _l: None)
 
@@ -509,7 +541,12 @@ def test_a_plan_entry_without_a_replace_key_is_refused(tmp_path: Path) -> None:
     repo = _repo(tmp_path, subject=SUBJECT, test_body=GOOD_TEST)
     baseline = mar.Baseline(returncode=0, passed=1, output="")
 
-    result = mar.run_mutant({"id": "typo", "path": "subject.py", "find": "a + b", "replacement": "a * b"}, PYTEST_CMD, repo, baseline)
+    result = mar.run_mutant(
+        {"id": "typo", "path": "subject.py", "find": "a + b", "replacement": "a * b"},
+        PYTEST_CMD,
+        repo,
+        baseline,
+    )
 
     assert result.verdict == mar.REFUSED
     assert "is missing ['replace']" in result.detail
@@ -520,12 +557,17 @@ def test_a_missing_target_file_is_refused(tmp_path: Path) -> None:
     repo = _repo(tmp_path, subject=SUBJECT, test_body=GOOD_TEST)
     baseline = mar.Baseline(returncode=0, passed=1, output="")
 
-    result = mar.run_mutant({"id": "gone", "path": "nope.py", "find": "x", "replace": "y"}, PYTEST_CMD, repo, baseline)
+    result = mar.run_mutant(
+        {"id": "gone", "path": "nope.py", "find": "x", "replace": "y"}, PYTEST_CMD, repo, baseline
+    )
 
     assert result.verdict == mar.REFUSED
     assert "does not exist" in result.detail
 
 
+@pytest.mark.boundary_contract(
+    reason="assert the mutation runner CLI's exact crash exit byte and stderr contract"
+)
 def test_a_crash_exits_three_so_it_cannot_be_read_as_survivors_found(tmp_path: Path) -> None:
     # Round 2: `except BaseException -> restore + raise` left the crash exiting 1,
     # which is what `exit_code` returns for "survivors or refusals found". Any
@@ -552,7 +594,9 @@ def test_a_crash_exits_three_so_it_cannot_be_read_as_survivors_found(tmp_path: P
     assert "CRASHED" in completed.stderr
 
 
-def test_a_failed_restore_is_raised_not_swallowed(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_a_failed_restore_is_raised_not_swallowed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     # `restore` verifies bytes; a filesystem that accepts the write but returns
     # different content must be loud, not silently leave a mutated worktree.
     repo = _repo(tmp_path, subject=SUBJECT, test_body=GOOD_TEST)
@@ -564,13 +608,17 @@ def test_a_failed_restore_is_raised_not_swallowed(tmp_path: Path, monkeypatch: p
         mar.restore(path, original)
 
 
+@pytest.mark.boundary_contract(
+    reason="assert the mutation runner CLI's exact sweep-refusal exit and output contract"
+)
 def test_the_cli_exits_two_on_a_sweep_error(tmp_path: Path) -> None:
     # A SweepError is a refusal the caller must see, and it is exit 2 -- distinct
     # from 1 (survivors/refusals) and 3 (crash).
     repo = _repo(tmp_path, subject=SUBJECT, test_body=GOOD_TEST)
     plan_path = tmp_path / "bad.json"
     plan_path.write_text(
-        json.dumps({"test_command": PYTEST_CMD, "mutants": [{"path": "subject.py", "find": "x"}]}), encoding="utf-8"
+        json.dumps({"test_command": PYTEST_CMD, "mutants": [{"path": "subject.py", "find": "x"}]}),
+        encoding="utf-8",
     )
 
     completed = subprocess.run(
@@ -594,14 +642,14 @@ def test_the_summary_names_the_baseline_it_measured_against(tmp_path: Path) -> N
     repo = _repo(tmp_path, subject=SUBJECT, test_body=GOOD_TEST)
     plan_path = tmp_path / "p.json"
     plan_path.write_text(
-        json.dumps(_plan(mutants=[{"id": "k", "path": "subject.py", "find": "a + b", "replace": "a * b"}])),
+        json.dumps(
+            _plan(mutants=[{"id": "k", "path": "subject.py", "find": "a + b", "replace": "a * b"}])
+        ),
         encoding="utf-8",
     )
 
-    completed = subprocess.run(
-        [sys.executable, str(SCRIPT), "--repo-root", str(repo), "--plan", str(plan_path)],
-        capture_output=True,
-        text=True,
+    completed = run_loaded_script_main(
+        str(SCRIPT), mar, "--repo-root", str(repo), "--plan", str(plan_path)
     )
 
     assert completed.returncode == 0, completed.stderr
@@ -611,7 +659,9 @@ def test_the_summary_names_the_baseline_it_measured_against(tmp_path: Path) -> N
     assert payload["killed"] == 1
 
 
-def test_main_in_process_covers_the_exit_paths(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_main_in_process_covers_the_exit_paths(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     # The CLI tests above run subprocesses, which coverage cannot see, so the
     # exit-code mapping read as uncovered changed lines. Drive main() in-process.
     repo = _repo(tmp_path, subject=SUBJECT, test_body=GOOD_TEST)
@@ -620,19 +670,33 @@ def test_main_in_process_covers_the_exit_paths(tmp_path: Path, monkeypatch: pyte
     def run(plan: dict) -> int:
         plan_path.write_text(json.dumps(plan), encoding="utf-8")
         monkeypatch.setattr(
-            sys, "argv", ["mutate_and_restore.py", "--repo-root", str(repo), "--plan", str(plan_path)]
+            sys,
+            "argv",
+            ["mutate_and_restore.py", "--repo-root", str(repo), "--plan", str(plan_path)],
         )
         return mar.main()
 
-    assert run(_plan(mutants=[{"id": "k", "path": "subject.py", "find": "a + b", "replace": "a * b"}])) == 0
-    assert run(_plan(mutants=[{"id": "s", "path": "subject.py", "find": "a - b", "replace": "a // b"}])) == 1
+    assert (
+        run(_plan(mutants=[{"id": "k", "path": "subject.py", "find": "a + b", "replace": "a * b"}]))
+        == 0
+    )
+    assert (
+        run(
+            _plan(mutants=[{"id": "s", "path": "subject.py", "find": "a - b", "replace": "a // b"}])
+        )
+        == 1
+    )
 
     # exit 2: a SweepError out of the sweep itself.
-    monkeypatch.setattr(mar, "run_sweep", lambda *_a, **_k: (_ for _ in ()).throw(mar.SweepError("boom")))
+    monkeypatch.setattr(
+        mar, "run_sweep", lambda *_a, **_k: (_ for _ in ()).throw(mar.SweepError("boom"))
+    )
     assert run(_plan(mutants=[])) == 2
 
     # exit 3: any other crash, kept distinct from 1 so it cannot read as survivors.
-    monkeypatch.setattr(mar, "run_sweep", lambda *_a, **_k: (_ for _ in ()).throw(RuntimeError("kaboom")))
+    monkeypatch.setattr(
+        mar, "run_sweep", lambda *_a, **_k: (_ for _ in ()).throw(RuntimeError("kaboom"))
+    )
     assert run(_plan(mutants=[])) == 3
 
 
@@ -646,7 +710,9 @@ def test_a_non_python_target_skips_bytecode_invalidation(tmp_path: Path) -> None
     assert target.read_text(encoding="utf-8") == "x\n"
 
 
-def test_a_failure_inside_apply_restores_and_re_raises(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_a_failure_inside_apply_restores_and_re_raises(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     # The `except BaseException: restore; raise` arm, driven by a non-SweepError
     # out of apply_mutation itself.
     repo = _repo(tmp_path, subject=SUBJECT, test_body=GOOD_TEST)
@@ -660,7 +726,10 @@ def test_a_failure_inside_apply_restores_and_re_raises(tmp_path: Path, monkeypat
 
     with pytest.raises(RuntimeError, match="apply exploded"):
         mar.run_mutant(
-            {"id": "m", "path": "subject.py", "find": "a + b", "replace": "a * b"}, PYTEST_CMD, repo, baseline
+            {"id": "m", "path": "subject.py", "find": "a + b", "replace": "a * b"},
+            PYTEST_CMD,
+            repo,
+            baseline,
         )
 
     assert (repo / "subject.py").read_text(encoding="utf-8") == SUBJECT
@@ -706,7 +775,9 @@ def test_a_body_only_mutation_removes_no_call() -> None:
     Without this, a classifier that returned every callee in the file would pass the test
     above and be useless -- it would report a call site for every mutant ever run.
     """
-    mutated = CALLER_SUBJECT.replace("    return value\n\n\ndef run", "    return value + 1\n\n\ndef run")
+    mutated = CALLER_SUBJECT.replace(
+        "    return value\n\n\ndef run", "    return value + 1\n\n\ndef run"
+    )
 
     assert mar.removed_calls(CALLER_SUBJECT.encode(), mutated.encode()) == ()
 
@@ -741,7 +812,9 @@ def test_a_sweep_with_no_call_site_mutant_states_the_non_claim(tmp_path: Path) -
     printed while the repair was dead in production.
     """
     repo = _repo(tmp_path, subject=SUBJECT, test_body=GOOD_TEST)
-    plan = _plan(mutants=[{"id": "body", "path": "subject.py", "find": "a + b", "replace": "a * b"}])
+    plan = _plan(
+        mutants=[{"id": "body", "path": "subject.py", "find": "a + b", "replace": "a * b"}]
+    )
 
     sweep = mar.run_sweep(plan, repo, emit=lambda _line: None)
     payload = mar.render(sweep)
@@ -781,14 +854,18 @@ def test_a_sweep_containing_a_call_site_mutant_makes_no_such_non_claim(tmp_path:
     assert payload["call_site_non_claim"] is None
 
 
-def test_a_refused_mutant_is_unclassified_rather_than_counted_as_no_call_site(tmp_path: Path) -> None:
+def test_a_refused_mutant_is_unclassified_rather_than_counted_as_no_call_site(
+    tmp_path: Path,
+) -> None:
     """A mutant refused before it was ever applied established nothing about calls.
 
     `None` rather than `()`: the file was never written, so "removed no call" would be a
     verdict about an edit that did not happen.
     """
     repo = _repo(tmp_path, subject=SUBJECT, test_body=GOOD_TEST)
-    plan = _plan(mutants=[{"id": "absent", "path": "subject.py", "find": "not-in-the-file", "replace": "x"}])
+    plan = _plan(
+        mutants=[{"id": "absent", "path": "subject.py", "find": "not-in-the-file", "replace": "x"}]
+    )
 
     sweep = mar.run_sweep(plan, repo, emit=lambda _line: None)
     payload = mar.render(sweep)
@@ -798,6 +875,9 @@ def test_a_refused_mutant_is_unclassified_rather_than_counted_as_no_call_site(tm
     assert payload["call_site_mutants"] == 0
 
 
+@pytest.mark.boundary_contract(
+    reason="assert the mutation runner's real CLI stdout/stderr contract for the operator non-claim"
+)
 def test_the_cli_prints_the_call_site_count_and_the_non_claim(tmp_path: Path) -> None:
     """Operator-visible through the real command, not buried in the runner's internals.
 
@@ -809,7 +889,11 @@ def test_the_cli_prints_the_call_site_count_and_the_non_claim(tmp_path: Path) ->
     repo = _repo(tmp_path, subject=SUBJECT, test_body=GOOD_TEST)
     plan_path = tmp_path / "plan.json"
     plan_path.write_text(
-        json.dumps(_plan(mutants=[{"id": "body", "path": "subject.py", "find": "a + b", "replace": "a * b"}])),
+        json.dumps(
+            _plan(
+                mutants=[{"id": "body", "path": "subject.py", "find": "a + b", "replace": "a * b"}]
+            )
+        ),
         encoding="utf-8",
     )
 
@@ -858,14 +942,25 @@ def test_an_undeclared_call_removal_does_not_silence_the_non_claim(tmp_path: Pat
     subject = "def add(a, b):\n    return ' '.join([str(a)]) and a + b\n"
     test_body = "from subject import add\n\n\ndef test_add():\n    assert add(2, 3) == 5\n"
     repo = _repo(tmp_path, subject=subject, test_body=test_body)
-    plan = _plan(mutants=[{"id": "drops-join", "path": "subject.py", "find": "' '.join([str(a)]) and ", "replace": ""}])
+    plan = _plan(
+        mutants=[
+            {
+                "id": "drops-join",
+                "path": "subject.py",
+                "find": "' '.join([str(a)]) and ",
+                "replace": "",
+            }
+        ]
+    )
 
     sweep = mar.run_sweep(plan, repo, emit=lambda _line: None)
     payload = mar.render(sweep)
 
     assert payload["mutants"][0]["removed_calls"] == ["join", "str"], payload["mutants"][0]
     assert payload["call_site_mutants"] == 0, "an undeclared removal must not count"
-    assert payload["call_site_non_claim"] is not None, "the non-claim must survive an incidental removal"
+    assert payload["call_site_non_claim"] is not None, (
+        "the non-claim must survive an incidental removal"
+    )
     # Wording: the trigger is "no mutant was DECLARED", not "nothing was deleted".
     assert "DECLARED" in payload["call_site_non_claim"]
     assert "no mutant deleted a call site" not in payload["call_site_non_claim"]
@@ -880,7 +975,15 @@ def test_a_false_call_site_declaration_is_refused(tmp_path: Path) -> None:
     """
     repo = _repo(tmp_path, subject=SUBJECT, test_body=GOOD_TEST)
     plan = _plan(
-        mutants=[{"id": "lying", "path": "subject.py", "find": "a + b", "replace": "a * b", "call_site": True}]
+        mutants=[
+            {
+                "id": "lying",
+                "path": "subject.py",
+                "find": "a + b",
+                "replace": "a * b",
+                "call_site": True,
+            }
+        ]
     )
 
     sweep = mar.run_sweep(plan, repo, emit=lambda _line: None)
@@ -900,13 +1003,17 @@ def test_a_super_init_deletion_is_visible_to_the_classifier() -> None:
     repo has five `super().__init__()` call sites. The filter is now gone entirely, which
     fixes the class rather than this instance.
     """
-    before = b"class C(B):\n    def __init__(self):\n        super().__init__()\n        self.x = 1\n"
+    before = (
+        b"class C(B):\n    def __init__(self):\n        super().__init__()\n        self.x = 1\n"
+    )
     after = b"class C(B):\n    def __init__(self):\n        self.x = 1\n"
 
     assert mar.removed_calls(before, after) == ("__init__", "super")
 
 
-def test_the_classification_cannot_leave_the_tree_mutated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_the_classification_cannot_leave_the_tree_mutated(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """Round 1's second blocker: classification sat OUTSIDE the restoring `finally`.
 
     `ast.parse` can raise `RecursionError` on deeply nested source and the read can raise
@@ -923,7 +1030,10 @@ def test_the_classification_cannot_leave_the_tree_mutated(tmp_path: Path, monkey
 
     with pytest.raises(RecursionError):
         mar.run_mutant(
-            {"id": "m", "path": "subject.py", "find": "a + b", "replace": "a * b"}, PYTEST_CMD, repo, baseline
+            {"id": "m", "path": "subject.py", "find": "a + b", "replace": "a * b"},
+            PYTEST_CMD,
+            repo,
+            baseline,
         )
 
     assert (repo / "subject.py").read_text(encoding="utf-8") == SUBJECT
@@ -1022,7 +1132,10 @@ def test_the_human_line_marks_the_declaration_and_the_removals_readably() -> Non
     sweep = mar.Sweep(baseline=baseline)
 
     for result, expected in (
-        (mar.MutantResult("a", "s.py", mar.KILLED, "", 1, ("guard",), True), " [call-site; removes guard]"),
+        (
+            mar.MutantResult("a", "s.py", mar.KILLED, "", 1, ("guard",), True),
+            " [call-site; removes guard]",
+        ),
         (mar.MutantResult("b", "s.py", mar.KILLED, "", 1, ("join",), False), " [removes join]"),
         (mar.MutantResult("c", "s.py", mar.KILLED, "", 1, (), False), ""),
     ):

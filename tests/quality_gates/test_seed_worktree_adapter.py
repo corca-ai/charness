@@ -13,11 +13,13 @@ import json
 import subprocess
 from pathlib import Path
 from string import Template
+from types import SimpleNamespace
 
 import pytest
 
 from tests.quality_gates.git_fixture_support import init_git_repo
 from tests.quality_gates.seeding_support import load_module
+from tests.script_main import load_script_module, run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "skills" / "public" / "setup" / "scripts" / "seed_worktree_adapter.py"
@@ -25,16 +27,19 @@ LIB_PATH = ROOT / "skills" / "public" / "setup" / "scripts" / "seed_worktree_ada
 TEMPLATE_DIR = ROOT / "skills" / "public" / "setup" / "scripts" / "templates"
 
 LIB = load_module("seed_worktree_adapter_lib", LIB_PATH, register=True)
+_SCRIPT = load_script_module("seed_worktree_adapter_for_test", SCRIPT)
 
 
-def _run(cwd: Path, *args: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        ["python3", str(SCRIPT), *args],
-        cwd=cwd,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+def _run(cwd: Path, *args: str) -> SimpleNamespace:
+    previous_cwd = Path.cwd()
+    try:
+        import os
+
+        os.chdir(cwd)
+        result = run_loaded_script_main(str(SCRIPT), _SCRIPT, *args)
+    finally:
+        os.chdir(previous_cwd)
+    return result
 
 
 def test_repo_root_dot_invocation_writes_file_and_exits_zero(tmp_path: Path) -> None:
@@ -96,15 +101,16 @@ def test_detection_pnpm_lefthook(tmp_path: Path) -> None:
     assert "- lefthook\n        - install" in rendered
 
 
+@pytest.mark.boundary_contract(
+    reason="observe the consumer fixture's real git hooksPath configuration before adapter detection"
+)
 def test_detection_npm_repo_owned_hooks(tmp_path: Path) -> None:
     """Consumer shape: npm lockfile + repo-owned .githooks + hooks:install script."""
     repo = tmp_path / "repo"
     repo.mkdir()
     (repo / "package-lock.json").touch()
     (repo / "package.json").write_text(
-        json.dumps(
-            {"name": "demo", "scripts": {"hooks:install": "./bin/hooks-install"}}
-        ),
+        json.dumps({"name": "demo", "scripts": {"hooks:install": "./bin/hooks-install"}}),
         encoding="utf-8",
     )
     (repo / ".githooks").mkdir()

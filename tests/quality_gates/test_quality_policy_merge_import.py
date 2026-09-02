@@ -13,6 +13,7 @@ SUBPROCESS on purpose: in-process it would be satisfied by whatever a conftest o
 earlier test file already imported, which is precisely the masking being guarded
 against.
 """
+
 from __future__ import annotations
 
 import subprocess
@@ -22,6 +23,9 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
+pytestmark = pytest.mark.boundary_contract(
+    reason="prove each quality-policy module imports first in a fresh interpreter without prior pytest module state"
+)
 
 
 @pytest.mark.parametrize(
@@ -50,8 +54,6 @@ def test_the_reexport_still_resolves_from_either_entry_point() -> None:
         "from scripts.quality_policy_merge import merge_coverage_floor_policy as m; "
         "assert m is merge_coverage_floor_policy"
     )
-    result = subprocess.run(
-        [sys.executable, "-c", probe], cwd=ROOT, capture_output=True, text=True
-    )
+    result = subprocess.run([sys.executable, "-c", probe], cwd=ROOT, capture_output=True, text=True)
 
     assert result.returncode == 0, result.stderr

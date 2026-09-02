@@ -92,7 +92,13 @@ JSON_FLAG_MUST_BE_UNRECOGNIZED = (
     ("scripts/check_cli_skill_surface.py", "--repo-root", "."),
     ("scripts/check_command_docs.py", "--repo-root", "."),
     ("scripts/check_github_actions.py", "--repo-root", "."),
-    ("scripts/check_issue_closeout_commit_msg.py", "--repo-root", ".", "--commit-msg-file", "README.md"),
+    (
+        "scripts/check_issue_closeout_commit_msg.py",
+        "--repo-root",
+        ".",
+        "--commit-msg-file",
+        "README.md",
+    ),
     ("scripts/check_public_doc_coupling.py", "--repo-root", "."),
     ("scripts/check_skill_ownership_overlap.py", "--repo-root", "."),
     ("scripts/dup_ratchet_edit_advisory.py", "--repo-root", ".", "--path", "README.md"),
@@ -138,13 +144,14 @@ def _owned_python_sources() -> list[Path]:
 def _module_level_names(path: Path) -> tuple[set[str], ast.Module]:
     tree = ast.parse(path.read_text(encoding="utf-8"))
     defined = {
-        node.name
-        for node in tree.body
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+        node.name for node in tree.body if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
     }
     return defined, tree
 
 
+@pytest.mark.boundary_contract(
+    reason="exercise the quality inventory's standalone executable entrypoint for its one process smoke"
+)
 def _run(*args: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         [sys.executable, *args],
@@ -279,6 +286,9 @@ def test_every_quality_inventory_exposes_yaml_output_contract(
     assert set(sys.modules) == modules_before
 
 
+@pytest.mark.boundary_contract(
+    reason="exercise the quality inventory's __main__ dispatch as a real executable entrypoint"
+)
 def test_quality_inventory_keeps_one_real_subprocess_entrypoint_smoke(tmp_path: Path) -> None:
     result = _run(
         "skills/public/quality/scripts/inventory_skill_ergonomics.py",
@@ -351,7 +361,9 @@ def test_summary_yaml_is_structured(command: tuple[str, ...]) -> None:
     assert "--json" not in help_result.stdout
 
 
-def test_yaml_renderer_falls_back_to_json_syntax_valid_yaml(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_yaml_renderer_falls_back_to_json_syntax_valid_yaml(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     real_import = builtins.__import__
 
     def import_without_yaml(name, globals=None, locals=None, fromlist=(), level=0):
@@ -384,9 +396,7 @@ def test_no_repo_owned_command_declares_a_json_flag() -> None:
             function = node.func
             if not (isinstance(function, ast.Attribute) and function.attr == "add_argument"):
                 continue
-            if any(
-                isinstance(arg, ast.Constant) and arg.value == "--json" for arg in node.args
-            ):
+            if any(isinstance(arg, ast.Constant) and arg.value == "--json" for arg in node.args):
                 offenders.append(f"{path.relative_to(ROOT)}:{node.lineno}")
 
     assert offenders == [], f"repo-owned commands still declare --json: {offenders}"
@@ -451,9 +461,7 @@ def _json_stdout_sites(tree: ast.Module) -> list[int]:
             if any("stdout" in ast.unparse(stream) for stream in streams):
                 sites.append(node.lineno)
             continue
-        writes_stdout = (
-            isinstance(function, ast.Name) and function.id == "print"
-        ) or (
+        writes_stdout = (isinstance(function, ast.Name) and function.id == "print") or (
             isinstance(function, ast.Attribute)
             and function.attr in {"write", "writelines"}
             and "stdout" in ast.unparse(function.value)
@@ -463,9 +471,7 @@ def _json_stdout_sites(tree: ast.Module) -> list[int]:
         # `print(..., file=sys.stderr)` is NOT a stdout site. Machine-readable stderr
         # diagnostics are a different channel, and flagging them pushes a legitimate
         # design onto an exempt list documented as being about stdout wire protocols.
-        redirected = next(
-            (kw.value for kw in node.keywords if kw.arg == "file"), None
-        )
+        redirected = next((kw.value for kw in node.keywords if kw.arg == "file"), None)
         if redirected is not None and "stdout" not in ast.unparse(redirected):
             continue
         for argument in node.args:
@@ -522,9 +528,7 @@ def _indirect_json_stdout_sites(tree: ast.Module) -> list[int]:
         if not isinstance(node, ast.Call):
             continue
         function = node.func
-        writes_stdout = (
-            isinstance(function, ast.Name) and function.id == "print"
-        ) or (
+        writes_stdout = (isinstance(function, ast.Name) and function.id == "print") or (
             isinstance(function, ast.Attribute)
             and function.attr in {"write", "writelines"}
             and "stdout" in ast.unparse(function.value)

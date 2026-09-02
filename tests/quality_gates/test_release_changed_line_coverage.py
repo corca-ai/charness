@@ -24,6 +24,10 @@ from .support import ROOT, run_script
 
 SCRIPT = "scripts/release_changed_line_coverage.py"
 
+pytestmark = pytest.mark.boundary_contract(
+    reason="prove the focused release coverage command executes its real standing pytest child and reports release-only selection"
+)
+
 
 @pytest.fixture()
 def gate():
@@ -41,19 +45,23 @@ def _recommendation(**overrides) -> dict:
         "unmapped_changed_pool_files": ["scripts/unmapped.py"],
     }
     payload.update(overrides)
-    targets = sorted({
-        target
-        for paths in payload["mapped_tests_by_file"].values()
-        for target in paths
-    })
+    targets = sorted(
+        {target for paths in payload["mapped_tests_by_file"].values() for target in paths}
+    )
     if targets:
         payload.setdefault(
             "command",
-            shlex.join([
-                "python3", "scripts/run_standing_pytest.py", "--repo-root", ".",
-                "--mode", "read-only",
-                *(token for target in targets for token in ("--pytest-target", target)),
-            ]),
+            shlex.join(
+                [
+                    "python3",
+                    "scripts/run_standing_pytest.py",
+                    "--repo-root",
+                    ".",
+                    "--mode",
+                    "read-only",
+                    *(token for target in targets for token in ("--pytest-target", target)),
+                ]
+            ),
         )
     else:
         payload.pop("command", None)
@@ -145,7 +153,12 @@ def test_focused_command_is_instrumentable_and_keeps_broad_marker_policy(gate) -
     from scripts.mutation_sampling_lib import read_test_command
 
     command = gate._focused_pytest_command(
-        _recommendation(mapped_tests_by_file={"a.py": ["tests/test_b.py"], "c.py": ["tests/test_a.py", "tests/test_b.py"]})
+        _recommendation(
+            mapped_tests_by_file={
+                "a.py": ["tests/test_b.py"],
+                "c.py": ["tests/test_a.py", "tests/test_b.py"],
+            }
+        )
     )
 
     tokens = shlex.split(command)
@@ -163,7 +176,10 @@ def test_focused_command_is_instrumentable_and_keeps_broad_marker_policy(gate) -
     assert "--include-release-only" not in tokens
     assert tokens.count("--pytest-target") == 2
     assert tokens[tokens.index("--pytest-target") + 1] == "tests/test_a.py"
-    assert tokens[tokens.index("--pytest-target", tokens.index("--pytest-target") + 1) + 1] == "tests/test_b.py"
+    assert (
+        tokens[tokens.index("--pytest-target", tokens.index("--pytest-target") + 1) + 1]
+        == "tests/test_b.py"
+    )
     assert gate._producer.is_instrumentable_pytest_command(command)
 
 
@@ -227,11 +243,10 @@ def test_focused_producer_exports_only_mapped_changed_files(gate, monkeypatch) -
 
     monkeypatch.setattr(gate._producer, "produce_command_coverage", fake_produce)
     monkeypatch.setattr(Path, "is_file", lambda _self: True)
+
     def fake_consumer(argv, **_kwargs):
         captured["consumer_argv"] = argv
-        return subprocess.CompletedProcess(
-            argv, 0, json.dumps({"ok": True, "blocking": []}), ""
-        )
+        return subprocess.CompletedProcess(argv, 0, json.dumps({"ok": True, "blocking": []}), "")
 
     monkeypatch.setattr(gate.subprocess, "run", fake_consumer)
 
@@ -308,11 +323,16 @@ def test_a_dirty_pool_is_unestablished_not_clean(gate) -> None:
 
 def test_a_limit_that_analyzed_nothing_is_unestablished_not_clean(gate) -> None:
     status, reason = gate._verdict_from_consumer(
-        _consumer(json.dumps({
-            "ok": True, "blocking": [],
-            "reason": "every changed mutation-pool file (2) fell OUTSIDE --limit-to-file; "
-                      "this run analyzed nothing and proves nothing about them",
-        }))
+        _consumer(
+            json.dumps(
+                {
+                    "ok": True,
+                    "blocking": [],
+                    "reason": "every changed mutation-pool file (2) fell OUTSIDE --limit-to-file; "
+                    "this run analyzed nothing and proves nothing about them",
+                }
+            )
+        )
     )
 
     assert status == gate.UNESTABLISHED_STATUS
@@ -383,7 +403,9 @@ def _blocking_consumer_stub(gate, monkeypatch, consumer_payload: dict, returncod
     )
 
 
-def test_the_wrapper_does_not_rewrite_an_unestablished_status_into_partial(gate, monkeypatch, capsys) -> None:
+def test_the_wrapper_does_not_rewrite_an_unestablished_status_into_partial(
+    gate, monkeypatch, capsys
+) -> None:
     """The braces half of the guard above, driven directly.
 
     If a consumer ever returns 4 for a payload the wrapper reads as dirty, the
@@ -397,15 +419,15 @@ def test_the_wrapper_does_not_rewrite_an_unestablished_status_into_partial(gate,
         returncode=4,
     )
 
-    code = gate.main(
-        ["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--refuse-unestablished"]
-    )
+    code = gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--refuse-unestablished"])
 
     assert code == 1
     assert yaml.safe_load(capsys.readouterr().out)["status"] == gate.UNESTABLISHED_STATUS
 
 
-def test_a_partial_consumer_result_becomes_partial_and_never_refuses(gate, monkeypatch, capsys) -> None:
+def test_a_partial_consumer_result_becomes_partial_and_never_refuses(
+    gate, monkeypatch, capsys
+) -> None:
     """The #488 seam, end to end. `returncode=4` is what the consumer ACTUALLY returns
     for this payload — SOME changed pool files analyzed, one left out — so the stub does
     not fabricate a combination the consumer cannot produce.
@@ -434,7 +456,9 @@ def test_a_partial_consumer_result_becomes_partial_and_never_refuses(gate, monke
     assert "analyzed only PART of the changed mutation-pool set" in captured.err
 
 
-def test_a_partial_consumer_result_stays_unproven_without_release_refusal(gate, monkeypatch, capsys) -> None:
+def test_a_partial_consumer_result_stays_unproven_without_release_refusal(
+    gate, monkeypatch, capsys
+) -> None:
     """The discriminating control for the test above, and the one that keeps the repair
     from overturning policy (a) sideways. The state now has a non-zero byte, so the
     cheap next step would be to route it through `--refuse-unestablished` — which is
@@ -452,9 +476,7 @@ def test_a_partial_consumer_result_stays_unproven_without_release_refusal(gate, 
         returncode=4,
     )
 
-    code = gate.main(
-        ["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--refuse-unestablished"]
-    )
+    code = gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--refuse-unestablished"])
 
     assert code == 4, "the partial state is unproven, not a clean pass"
     assert yaml.safe_load(capsys.readouterr().out)["status"] == gate.PARTIAL_STATUS
@@ -469,9 +491,7 @@ def test_an_unestablished_result_refuses_at_release_boundary(gate, monkeypatch, 
         gate, monkeypatch, {"ok": True, "blocking": [], "dirty_pool_unverified": True}, returncode=3
     )
 
-    code = gate.main(
-        ["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--refuse-unestablished"]
-    )
+    code = gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--refuse-unestablished"])
 
     assert code == 1
     captured = capsys.readouterr()
@@ -514,9 +534,7 @@ def test_policy_a_stays_non_blocking_for_direct_diagnostics(gate, monkeypatch, c
         lambda *_a, **_k: _recommendation(status="missing", mapped_tests_by_file={}),
     )
 
-    code = gate.main(
-        ["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--refuse-unestablished"]
-    )
+    code = gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--refuse-unestablished"])
 
     # Discriminating because the INPUT varies: `--refuse-unestablished` is passed.
     # Asserting `!= 1` right after `== 4` on the same value would restate it.
@@ -583,7 +601,9 @@ def test_output_reports_status_and_reason(gate, monkeypatch, capsys) -> None:
     The `status -- reason` human line this used to read was deleted with `--json`
     on 2026-08-14. Both facts it carried are payload keys now, so the assertion
     moves to the keys rather than to the sentence that formatted them."""
-    _blocking_consumer_stub(gate, monkeypatch, {"ok": True, "blocking": [], "changed_pool_files": ["scripts/a.py"]})
+    _blocking_consumer_stub(
+        gate, monkeypatch, {"ok": True, "blocking": [], "changed_pool_files": ["scripts/a.py"]}
+    )
 
     assert gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40]) == 0
 
@@ -596,7 +616,9 @@ def test_the_consumer_payload_reaches_the_operator(gate, monkeypatch, capsys) ->
     """The consumer's own payload used to be written raw to stdout beside this
     lane's human line. One YAML document cannot carry interleaved child bytes, so
     it rides under `consumer_stdout` — the operator must still be able to read it."""
-    _blocking_consumer_stub(gate, monkeypatch, {"ok": True, "blocking": [], "marker": "PAYLOAD_MARKER"})
+    _blocking_consumer_stub(
+        gate, monkeypatch, {"ok": True, "blocking": [], "marker": "PAYLOAD_MARKER"}
+    )
 
     gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40])
 
@@ -629,7 +651,9 @@ def test_an_unreadable_consumer_payload_refuses_end_to_end(gate, monkeypatch, ca
     assert "established no changed-line verdict" in captured.err
 
 
-def test_a_consumer_error_is_still_a_no_verdict_not_an_unestablished(gate, monkeypatch, capsys) -> None:
+def test_a_consumer_error_is_still_a_no_verdict_not_an_unestablished(
+    gate, monkeypatch, capsys
+) -> None:
     """Exit 3 is the ONLY consumer code routed to the unestablished path. A refusal
     (2) or any other non-zero must stay `no-verdict`, or the wrapper launders a real
     failure into a non-blocking word."""
@@ -668,15 +692,18 @@ def test_the_release_refusal_carries_the_payload_that_names_what_went_unproven(
     on the non-blocking path and withholding it on the release-refusal path is
     a refusal the operator cannot diagnose."""
     _blocking_consumer_stub(
-        gate, monkeypatch,
-        {"ok": True, "blocking": [], "dirty_pool_unverified": True,
-         "uncommitted_pool_files": ["scripts/x.py"]},
+        gate,
+        monkeypatch,
+        {
+            "ok": True,
+            "blocking": [],
+            "dirty_pool_unverified": True,
+            "uncommitted_pool_files": ["scripts/x.py"],
+        },
         returncode=3,
     )
 
-    code = gate.main(
-        ["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--refuse-unestablished"]
-    )
+    code = gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--refuse-unestablished"])
 
     assert code == 1
     payload = yaml.safe_load(capsys.readouterr().out)
@@ -688,15 +715,17 @@ def test_an_empty_changed_set_is_clean_not_refusable(gate, monkeypatch, capsys) 
     `unestablished` made it refusable, so a release could be stopped with the reason
     "no eligible mutation-pool files changed" — an incoherent blocker."""
     _blocking_consumer_stub(
-        gate, monkeypatch,
-        {"ok": True, "blocking": [],
-         "reason": "no eligible mutation-pool files changed in this range"},
+        gate,
+        monkeypatch,
+        {
+            "ok": True,
+            "blocking": [],
+            "reason": "no eligible mutation-pool files changed in this range",
+        },
         returncode=0,
     )
 
-    code = gate.main(
-        ["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--refuse-unestablished"]
-    )
+    code = gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--refuse-unestablished"])
 
     assert code == 0
     assert yaml.safe_load(capsys.readouterr().out)["status"] == "clean"

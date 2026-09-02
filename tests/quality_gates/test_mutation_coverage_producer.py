@@ -4,6 +4,7 @@ The producer instruments a focused pytest command with plain coverage, exports a
 small coverage JSON, and stamps the producer-qualified freshness marker the
 changed-line consumer trusts.
 """
+
 from __future__ import annotations
 
 import shlex
@@ -27,7 +28,9 @@ def test_instrument_broad_command_rewrites_and_preserves_glob(tmp_path: Path) ->
     from scripts.mutation_coverage_producer import instrument_broad_command
 
     data_file = tmp_path / ".mutation-coverage"
-    broad = "pytest -q -m 'not release_only' tests/quality_gates tests/control_plane tests/test_*.py"
+    broad = (
+        "pytest -q -m 'not release_only' tests/quality_gates tests/control_plane tests/test_*.py"
+    )
     out = instrument_broad_command(broad, data_file)
     # The interpreter is the caller's when the command names one, else the SAME
     # default the argv builder uses -- it was a hardcoded `python3` here until a
@@ -85,6 +88,9 @@ def test_instrument_broad_command_rejects_non_pytest(tmp_path: Path) -> None:
     assert is_standing_pytest_runner_command("python3 scripts/run_standing_pytest.py 'unterminated")
 
 
+@pytest.mark.boundary_contract(
+    reason="prove the standing pytest runner's real child and xdist workers produce the coverage JSON consumed by mutation sampling"
+)
 def test_standing_runner_child_process_reaches_coverage_json(tmp_path: Path) -> None:
     """The focused runner adds a subprocess boundary; prove coverage crosses it."""
     from scripts import mutation_coverage_producer as prod
@@ -93,9 +99,7 @@ def test_standing_runner_child_process_reaches_coverage_json(tmp_path: Path) -> 
     repo = tmp_path / "repo"
     (repo / "scripts").mkdir(parents=True)
     (repo / "tests").mkdir()
-    (repo / "scripts" / "demo.py").write_text(
-        "def answer():\n    return 42\n", encoding="utf-8"
-    )
+    (repo / "scripts" / "demo.py").write_text("def answer():\n    return 42\n", encoding="utf-8")
     test_source = (
         "import os\n"
         "from pathlib import Path\n\n"
@@ -113,8 +117,8 @@ def test_standing_runner_child_process_reaches_coverage_json(tmp_path: Path) -> 
     runner = Path(__file__).resolve().parents[2] / "scripts" / "run_standing_pytest.py"
     command = prod.instrument_broad_command(
         f"python3 {runner} --repo-root {repo} --mode read-only "
-            "--pytest-target tests/test_demo_one.py "
-            "--pytest-target tests/test_demo_two.py",
+        "--pytest-target tests/test_demo_one.py "
+        "--pytest-target tests/test_demo_two.py",
         data_file,
     )
 
@@ -167,7 +171,9 @@ def test_produce_command_coverage_emits_json_and_marker(tmp_path: Path, monkeypa
     assert read_changed_line_coverage_marker(marker) == changed_pool_fingerprint(repo, base)
 
 
-def test_produce_command_coverage_can_export_only_requested_paths(tmp_path: Path, monkeypatch) -> None:
+def test_produce_command_coverage_can_export_only_requested_paths(
+    tmp_path: Path, monkeypatch
+) -> None:
     from scripts import mutation_coverage_producer as prod
 
     repo, base = _seed_repo(tmp_path)
@@ -201,7 +207,9 @@ def test_produce_command_coverage_can_export_only_requested_paths(tmp_path: Path
     }
 
 
-def test_combine_export_preserves_all_include_paths_in_coverage_argv(tmp_path: Path, monkeypatch) -> None:
+def test_combine_export_preserves_all_include_paths_in_coverage_argv(
+    tmp_path: Path, monkeypatch
+) -> None:
     from scripts import mutation_sampling_lib as sampling
 
     commands: list[list[str]] = []
@@ -260,6 +268,9 @@ def test_safe_read_bytes_falls_back_for_unreadable_path(tmp_path: Path) -> None:
     assert _safe_read_bytes(tmp_path / "missing.py") == b"<absent>"
 
 
+@pytest.mark.boundary_contract(
+    reason="exercise default mutation-base discovery against real git refs created for the fixture"
+)
 def test_default_mutation_base_sha_matches_merge_base(tmp_path: Path) -> None:
     from scripts.mutation_coverage_producer import default_mutation_base_sha
 
@@ -339,11 +350,7 @@ def test_every_key_the_subprocess_env_sets_is_exported_to_the_child() -> None:
     produced = sampling.coverage_subprocess_env(
         Path("/tmp/rcfile"), Path("/tmp/sitecustomize"), data_file=Path("/tmp/data")
     )
-    assigned = {
-        key
-        for key, value in produced.items()
-        if baseline.get(key) != value
-    }
+    assigned = {key for key, value in produced.items() if baseline.get(key) != value}
 
     missing = sorted(assigned - set(prod._COVERAGE_ENV_KEYS))
     assert not missing, (

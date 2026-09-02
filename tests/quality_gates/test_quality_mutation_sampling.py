@@ -37,6 +37,7 @@ from scripts.sample_mutation_files import (
     pool_for_path,
     write_manifest,
 )
+from tests.script_main import run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -104,6 +105,9 @@ def test_list_changed_fails_closed_when_git_diff_fails(monkeypatch: pytest.Monke
     assert "forced diff failure" in message
 
 
+@pytest.mark.boundary_contract(
+    reason="assert the sampler CLI's exact refusal exit and stderr when its git diff child fails"
+)
 def test_sample_script_fails_closed_before_writes_when_changed_diff_fails(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     bin_dir = tmp_path / "bin"
@@ -145,7 +149,13 @@ def test_sample_script_fails_closed_before_writes_when_changed_diff_fails(tmp_pa
     }
 
     result = subprocess.run(
-        ["python3", "scripts/sample_mutation_files.py", "--repo-root", str(repo), "--skip-coverage"],
+        [
+            "python3",
+            "scripts/sample_mutation_files.py",
+            "--repo-root",
+            str(repo),
+            "--skip-coverage",
+        ],
         cwd=ROOT,
         check=False,
         capture_output=True,
@@ -215,21 +225,27 @@ def test_sample_script_rewrites_config_and_manifest(tmp_path: Path) -> None:
     env.pop("MUTATION_BASE_SHA", None)
     env.pop("MUTATION_HEAD_SHA", None)
 
-    result = subprocess.run(
-        ["python3", "scripts/sample_mutation_files.py", "--repo-root", str(repo)],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-        env=env,
-    )
+    previous_cwd = Path.cwd()
+    try:
+        os.chdir(ROOT)
+        result = run_loaded_script_main(
+            "scripts/sample_mutation_files.py",
+            sample_mutation_files,
+            "--repo-root",
+            str(repo),
+            env=env,
+        )
+    finally:
+        os.chdir(previous_cwd)
 
     assert result.returncode == 0, result.stderr
-    manifest = json.loads((repo / "reports" / "mutation" / "sample.json").read_text(encoding="utf-8"))
+    manifest = json.loads(
+        (repo / "reports" / "mutation" / "sample.json").read_text(encoding="utf-8")
+    )
     assert manifest["base_sha"] is None
     assert len(manifest["sample"]) == 2
     text = (repo / "cosmic-ray.toml").read_text(encoding="utf-8")
-    assert 'module-path = [\n' in text
+    assert "module-path = [\n" in text
     for path in manifest["sample"]:
         assert f'    "{path}",' in text
     assert "scripts/control_plane_lib.py" not in manifest["sample"]
@@ -266,6 +282,9 @@ def test_sample_pool_includes_core_and_skill_helper_python(tmp_path: Path) -> No
     assert pool_for_path("skills/support/web-fetch/scripts/helper.py") == "support-skill-python"
 
 
+@pytest.mark.boundary_contract(
+    reason="assert the sampler CLI's exact refusal exit and stderr for an empty mutation universe"
+)
 def test_sample_refuses_when_repo_contains_only_out_of_pool_files(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / "other").mkdir(parents=True)
@@ -313,15 +332,12 @@ def test_sample_filters_eligible_files_by_statement_coverage() -> None:
         "scripts/c.py": (set(), set()),
     }
 
-    assert (
-        filter_eligible_by_coverage(
-            eligible,
-            covered,
-            statements,
-            min_file_coverage=1.0,
-        )
-        == ["scripts/a.py"]
-    )
+    assert filter_eligible_by_coverage(
+        eligible,
+        covered,
+        statements,
+        min_file_coverage=1.0,
+    ) == ["scripts/a.py"]
 
 
 def test_sample_excludes_partially_covered_files_when_scope_gaps_are_fatal() -> None:
@@ -332,15 +348,12 @@ def test_sample_excludes_partially_covered_files_when_scope_gaps_are_fatal() -> 
         "scripts/b.py": ({1, 2}, set()),
     }
 
-    assert (
-        filter_eligible_by_coverage(
-            eligible,
-            covered,
-            statements,
-            min_file_coverage=1.0,
-        )
-        == ["scripts/b.py"]
-    )
+    assert filter_eligible_by_coverage(
+        eligible,
+        covered,
+        statements,
+        min_file_coverage=1.0,
+    ) == ["scripts/b.py"]
 
 
 def test_sample_requires_mutation_line_coverage_after_file_coverage() -> None:
@@ -432,6 +445,9 @@ def test_changed_line_scope_gap_blocks_only_uncovered_changed_lines(
     )
 
 
+@pytest.mark.boundary_contract(
+    reason="observe the changed-line sampler's real git child while computing an added-line range"
+)
 def test_changed_line_numbers_parses_added_lines_over_range(tmp_path: Path) -> None:
     def git(*args: str) -> None:
         subprocess.run(["git", *args], cwd=tmp_path, check=True, capture_output=True, text=True)
@@ -632,6 +648,9 @@ def test_mutation_line_probe_paths_stay_under_reports(tmp_path: Path) -> None:
     assert probe_session == tmp_path / "reports" / "mutation" / "cosmic-ray-sample-probe.sqlite"
 
 
+@pytest.mark.boundary_contract(
+    reason="observe the external cosmic-ray executable accepting the extensionless charness target"
+)
 def test_cosmic_ray_accepts_extensionless_charness_target(tmp_path: Path) -> None:
     if shutil.which("cosmic-ray") is None:
         pytest.skip("cosmic-ray unavailable")
@@ -703,8 +722,9 @@ def test_sample_rewrites_cosmic_ray_test_command(tmp_path: Path) -> None:
         "python3 -m pytest -q tests/test_demo.py::test_demo",
     )
 
-    assert 'test-command = "python3 -m pytest -q tests/test_demo.py::test_demo"' in config.read_text(
-        encoding="utf-8"
+    assert (
+        'test-command = "python3 -m pytest -q tests/test_demo.py::test_demo"'
+        in config.read_text(encoding="utf-8")
     )
 
 

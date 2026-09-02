@@ -10,6 +10,7 @@ GitHub read the stored message and closed #626.
 Two surfaces are pinned here. The guard, which reads stored messages and so has no
 model of git's cleanup to be wrong about, and the carrier's own repair.
 """
+
 from __future__ import annotations
 
 import importlib
@@ -41,7 +42,9 @@ from tests.quality_gates.prepush_close_keyword_fixtures import (
 from tests.quality_gates.support import ROOT
 from tests.script_main import load_script_module, run_loaded_script_main
 
-GUARD = load_script_module("prepush_close_keyword_guard", ROOT / "scripts" / "prepush_close_keyword_guard.py")
+GUARD = load_script_module(
+    "prepush_close_keyword_guard", ROOT / "scripts" / "prepush_close_keyword_guard.py"
+)
 # The reading half: range resolution and close-keyword detection. Addressed directly
 # rather than through the guard's re-export, because a `monkeypatch` of the guard's
 # imported copy would not reach the module that actually reads the constant.
@@ -87,9 +90,7 @@ def repo_seed() -> Path:
     return prepush_close_keyword_seed()
 
 
-def test_cached_repo_seed_is_never_mutated_by_a_test_clone(
-    tmp_path: Path, repo_seed: Path
-) -> None:
+def test_cached_repo_seed_is_never_mutated_by_a_test_clone(tmp_path: Path, repo_seed: Path) -> None:
     before_seed = _tree_snapshot(repo_seed)
     clone = tmp_path / "clone"
     shutil.copytree(repo_seed, clone)
@@ -219,8 +220,12 @@ def test_a_ref_with_no_local_sha_is_skipped_without_resolving_a_range(repo: Path
     head = _commit(repo, "docs: a commit the empty-sha ref never proposed to land\n", "later.txt")
     refs = [
         {"local_ref": "", "local_sha": "", "remote_ref": "refs/heads/main", "remote_sha": base},
-        {"local_ref": "refs/heads/main", "local_sha": head, "remote_ref": "refs/heads/main",
-         "remote_sha": head},
+        {
+            "local_ref": "refs/heads/main",
+            "local_sha": head,
+            "remote_ref": "refs/heads/main",
+            "remote_sha": head,
+        },
     ]
 
     payload = GUARD.evaluate(repo, refs, "corca-ai/charness", "origin")
@@ -234,6 +239,9 @@ def test_a_ref_with_no_local_sha_is_skipped_without_resolving_a_range(repo: Path
     )
 
 
+@pytest.mark.boundary_contract(
+    reason="exercise close-keyword range resolution against real git refs and commits"
+)
 def test_a_new_ref_is_bounded_by_what_origin_already_has(repo: Path, tmp_path: Path) -> None:
     origin = tmp_path.parent / "origin.git"
     _git(repo, "init", "--bare", str(origin))
@@ -469,14 +477,19 @@ SCANNER = load_script_module(
     ("body", "expected"),
     [
         ("fix: closes GH-700\n", [(None, 700)]),
-        ("fix: closes https://github.com/corca-ai/charness/issues/700\n", [("corca-ai/charness", 700)]),
+        (
+            "fix: closes https://github.com/corca-ai/charness/issues/700\n",
+            [("corca-ai/charness", 700)],
+        ),
         ("fix: closes #700\n", [(None, 700)]),
         # The comma-list form applies to every spelling, not only to `#N`. Reporting
         # only the first left the guard narrower than GitHub on the one surface whose
         # job is to be at least as wide.
         ("fix: closes GH-700, GH-701\n", [(None, 700), (None, 701)]),
-        ("fix: closes #700, https://github.com/corca-ai/charness/issues/701\n",
-         [(None, 700), ("corca-ai/charness", 701)]),
+        (
+            "fix: closes #700, https://github.com/corca-ai/charness/issues/701\n",
+            [(None, 700), ("corca-ai/charness", 701)],
+        ),
         # Not a close: a bare mention cross-references on GitHub but closes nothing,
         # and refusing over it would stop every commit that cites an issue.
         ("fix: see GH-700 and https://github.com/corca-ai/charness/issues/701\n", []),
@@ -497,7 +510,10 @@ def test_close_targets_covers_the_spellings_github_closes_on(body: str, expected
     ("body", "expected"),
     [
         ("fix: closes GH-700\n", [(None, 700)]),
-        ("fix: closes https://github.com/corca-ai/charness/issues/700\n", [("corca-ai/charness", 700)]),
+        (
+            "fix: closes https://github.com/corca-ai/charness/issues/700\n",
+            [("corca-ai/charness", 700)],
+        ),
         ("fix: closes GH-700, GH-701\n", [(None, 700), (None, 701)]),
         ("fix: closes #700\n", [(None, 700)]),
         ("fix: see GH-700\n", []),
@@ -510,10 +526,14 @@ def test_close_targets_covers_the_spellings_github_closes_on(body: str, expected
         # literal, and reachable the moment `GH-`/`github.com` arrived on one side only.
         ("fix: closes gh-700\n", [(None, 700)]),
         ("fix: CLOSES Gh-700\n", [(None, 700)]),
-        ("fix: closes https://GitHub.com/corca-ai/charness/issues/700\n",
-         [("corca-ai/charness", 700)]),
-        ("fix: closes HTTPS://GITHUB.COM/corca-ai/charness/ISSUES/700\n",
-         [("corca-ai/charness", 700)]),
+        (
+            "fix: closes https://GitHub.com/corca-ai/charness/issues/700\n",
+            [("corca-ai/charness", 700)],
+        ),
+        (
+            "fix: closes HTTPS://GITHUB.COM/corca-ai/charness/ISSUES/700\n",
+            [("corca-ai/charness", 700)],
+        ),
     ],
 )
 def test_the_canonical_scanner_itself_sees_every_spelling(body: str, expected: list) -> None:
@@ -530,9 +550,7 @@ def test_the_canonical_scanner_itself_sees_every_spelling(body: str, expected: l
 
 
 def test_local_numbers_is_what_narrows_to_this_repo() -> None:
-    qualified = SCAN.close_targets(
-        "fix: closes #700, acme/other#701\n", SCANNER
-    )
+    qualified = SCAN.close_targets("fix: closes #700, acme/other#701\n", SCANNER)
     # Two separate questions, deliberately: the LEDGER floor applies only to closes
     # GitHub can fire from here, but authorization is handed the unfiltered set --
     # filtering before it ran let a crosswalk-protected foreign target escape.
@@ -546,6 +564,9 @@ def test_a_gh_dash_close_without_a_ledger_is_refused(repo: Path) -> None:
     assert finding["numbers"] == [700]
 
 
+@pytest.mark.boundary_contract(
+    reason="exercise close-keyword remote selection against real git remotes and refs"
+)
 def test_the_creation_arm_bounds_by_the_remote_actually_being_pushed_to(
     repo: Path, tmp_path: Path
 ) -> None:
@@ -570,6 +591,9 @@ def test_the_creation_arm_bounds_by_the_remote_actually_being_pushed_to(
     assert on_origin_only not in SCAN.range_commits(repo, on_origin_only, ZERO, "origin")
 
 
+@pytest.mark.boundary_contract(
+    reason="exercise close-keyword fallback behavior against a real git remote without tracking refs"
+)
 def test_a_remote_with_no_tracking_refs_excludes_nothing(repo: Path, tmp_path: Path) -> None:
     """No exclusion, NOT "every remote-tracking ref".
 
@@ -601,6 +625,9 @@ def test_dropped_stdin_lines_are_counted_rather_than_absorbed() -> None:
     assert only_garbage[0]["local_sha"] == ""
 
 
+@pytest.mark.boundary_contract(
+    reason="assert the close-keyword guard's exact crash exit and stderr contract from a partial installed layout"
+)
 def test_a_crash_exits_two_rather_than_the_refusal_code(repo: Path, tmp_path: Path) -> None:
     """A partial install (scripts without the issue skill) must not report a verdict.
 
@@ -623,9 +650,17 @@ def test_a_crash_exits_two_rather_than_the_refusal_code(repo: Path, tmp_path: Pa
     head = _commit(repo, "chore: extra commit\n", "work.txt")
 
     result = subprocess.run(
-        [sys.executable, str(lonely / "prepush_close_keyword_guard.py"),
-         "--repo-root", str(repo), "--range", f"{base}..{head}"],
-        capture_output=True, text=True, check=False,
+        [
+            sys.executable,
+            str(lonely / "prepush_close_keyword_guard.py"),
+            "--repo-root",
+            str(repo),
+            "--range",
+            f"{base}..{head}",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
     )
 
     assert result.returncode == GUARD.NO_VERDICT_EXIT, result.stdout + result.stderr
@@ -648,8 +683,8 @@ def test_a_commit_that_only_edits_a_closeout_artifact_is_not_a_close(repo: Path)
         repo,
         "docs: fix a broken link in the #700 closeout artifact\n",
         {
-            "charness-artifacts/issue/2026-08-16-issue-700-closeout.md":
-                QUESTION_ARTIFACT + "\nSee also: docs/index.md\n"
+            "charness-artifacts/issue/2026-08-16-issue-700-closeout.md": QUESTION_ARTIFACT
+            + "\nSee also: docs/index.md\n"
         },
     )
     assert finding is None
@@ -744,7 +779,9 @@ def test_the_creation_cap_is_reported_not_silent(repo: Path, monkeypatch) -> Non
     head = _head(repo)
     monkeypatch.setattr(SCAN, "MAX_UNBOUNDED_CREATION_SCAN", 2)
 
-    code, payload = _run("--repo-root", str(repo), stdin=f"refs/heads/main {head} refs/heads/main {ZERO}\n")
+    code, payload = _run(
+        "--repo-root", str(repo), stdin=f"refs/heads/main {head} refs/heads/main {ZERO}\n"
+    )
 
     assert code == 0
     # A silent truncation reads as "the whole range came back clean", which is the
@@ -763,6 +800,7 @@ def test_the_crash_mapping_is_reachable_in_process(repo: Path, capsys) -> None:
     in-process run, so the branch a blocking hook falls back to was proven only by a
     subprocess that coverage never watched.
     """
+
     def explode(*_args, **_kwargs):
         raise RuntimeError("the issue skill is missing")
 
@@ -946,8 +984,11 @@ def test_a_protected_target_is_refused_by_authorization_before_any_ledger(
         repo,
         BODY_VALID_CLOSEOUT.replace("#42", f"#{PROTECTED[0]}"),
         "work.txt",
-        extra={rel: (repo / rel).read_text(encoding="utf-8")
-               for rel in [CROSSWALK_REL] if (repo / rel).is_file()},
+        extra={
+            rel: (repo / rel).read_text(encoding="utf-8")
+            for rel in [CROSSWALK_REL]
+            if (repo / rel).is_file()
+        },
     )
 
     code, payload = _run("--repo-root", str(repo), "--range", f"{base}..{head}")

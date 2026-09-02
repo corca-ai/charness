@@ -22,6 +22,9 @@ from tests.quality_gates.repo_shapes import install_committed_repo
 from tests.seed_cache import get_or_build
 
 ROOT = Path(__file__).resolve().parents[2]
+pytestmark = pytest.mark.boundary_contract(
+    reason="observe the semantic review command's real backend child and typed process-interruption state"
+)
 WRAPPER = ROOT / "skills/public/critique/scripts/run_review.py"
 PACKET_HELPER = ROOT / "skills/public/critique/scripts/run_review_packet.py"
 
@@ -75,9 +78,7 @@ def _git_output(repo: Path, *args: str) -> str:
     return subprocess.check_output(["git", *args], cwd=repo, text=True).strip()
 
 
-def _write_repo_fixture(
-    repo: Path, *, timeout: int = 5, with_packet_sections: bool = True
-) -> None:
+def _write_repo_fixture(repo: Path, *, timeout: int = 5, with_packet_sections: bool = True) -> None:
     (repo / "reviewed.txt").write_text("base\n", encoding="utf-8")
     (repo / ".gitignore").write_text(".charness/\n", encoding="utf-8")
     (repo / ".agents").mkdir(exist_ok=True)
@@ -183,11 +184,13 @@ def _seed_lineage(repo: Path) -> str:
     binding = repo / "charness-artifacts" / "goals" / "draft.binding.json"
     draft.parent.mkdir(parents=True)
     draft.write_text("# Frozen draft\n", encoding="utf-8")
-    binding.write_text("{\"kind\": \"binding\"}\n", encoding="utf-8")
+    binding.write_text('{"kind": "binding"}\n', encoding="utf-8")
     lineage = repo / ".charness" / "lineage.json"
     lineage.parent.mkdir(exist_ok=True)
+
     def sha(path: Path) -> str:
         return hashlib.sha256(path.read_bytes()).hexdigest()
+
     lineage.write_text(
         json.dumps(
             {
@@ -195,7 +198,10 @@ def _seed_lineage(repo: Path) -> str:
                 "schema_version": 1,
                 "disposition": "goal-bound",
                 "draft": {"path": "charness-artifacts/goals/draft.md", "sha256": sha(draft)},
-                "binding": {"path": "charness-artifacts/goals/draft.binding.json", "sha256": sha(binding)},
+                "binding": {
+                    "path": "charness-artifacts/goals/draft.binding.json",
+                    "sha256": sha(binding),
+                },
                 "goal_run": {
                     "repo": "acme/project",
                     "number": 10,
@@ -233,11 +239,16 @@ def _run(
     command = [
         sys.executable,
         str(WRAPPER),
-        "--repo-root", str(repo),
-        "--scope", "semantic command",
-        "--lens", "operability",
-        "--attempt-id", attempt,
-        "--backend", "codex_exec",
+        "--repo-root",
+        str(repo),
+        "--scope",
+        "semantic command",
+        "--lens",
+        "operability",
+        "--attempt-id",
+        attempt,
+        "--backend",
+        "codex_exec",
     ]
     if reviewed_path is not None and packet_file is None:
         command.extend(["--reviewed-path", reviewed_path])
@@ -428,10 +439,12 @@ def test_present_committed_ref_uses_bound_target_bytes_not_current_workspace(
             "base_head": target,
             "resolved_changed_ref": [target],
             "reviewed_paths": ["reviewed.txt"],
-            "reviewed_content": [{
-                "path": "reviewed.txt",
-                "content_sha256": hashlib.sha256(content).hexdigest(),
-            }],
+            "reviewed_content": [
+                {
+                    "path": "reviewed.txt",
+                    "content_sha256": hashlib.sha256(content).hexdigest(),
+                }
+            ],
         }
     }
     module = _packet_helper()
@@ -518,7 +531,9 @@ def test_deleted_preimage_refusals_on_one_tree(tmp_path: Path) -> None:
     oversize_dir.mkdir(parents=True)
     with pytest.raises(module.SemanticInputError) as caught:
         module.materialize_semantic_input(
-            tmp_path, _deleted_packet("large.bin", hashlib.sha256(content).hexdigest()), oversize_dir
+            tmp_path,
+            _deleted_packet("large.bin", hashlib.sha256(content).hexdigest()),
+            oversize_dir,
         )
     assert caught.value.code == "preimage-too-large"
     assert caught.value.details["path"] == "large.bin"
@@ -657,12 +672,18 @@ def test_parent_interrupt_returns_typed_state_and_kills_backend_descendant(tmp_p
     command = [
         sys.executable,
         str(WRAPPER),
-        "--repo-root", str(tmp_path),
-        "--scope", "semantic command",
-        "--lens", "operability",
-        "--attempt-id", "parent-interrupt",
-        "--backend", "codex_exec",
-        "--packet-file", packet_file,
+        "--repo-root",
+        str(tmp_path),
+        "--scope",
+        "semantic command",
+        "--lens",
+        "operability",
+        "--attempt-id",
+        "parent-interrupt",
+        "--backend",
+        "codex_exec",
+        "--packet-file",
+        packet_file,
     ]
     process = subprocess.Popen(command, cwd=ROOT, env=env, stdout=subprocess.PIPE, text=True)
     child_pid = None

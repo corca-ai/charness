@@ -13,6 +13,7 @@ behaviour lives in `test_retention_refusal_coverage.py` besides. The split is
 real but PARTIAL, and describing a partial split as a clean seam is the same
 over-claim this slice keeps catching in its own prose.
 """
+
 from __future__ import annotations
 
 import json
@@ -126,9 +127,7 @@ def test_standing_pytest_run_record_survives_an_unwritable_state_dir(
     monkeypatch.setenv("CHARNESS_RUNTIME_ROOT", str(tmp_path / "runtime"))
     monkeypatch.delenv("CHARNESS_RUNTIME_ROOT_AUTO", raising=False)
     monkeypatch.delenv("CHARNESS_RUNTIME_REPO_KEY", raising=False)
-    monkeypatch.setattr(
-        Path, "mkdir", lambda *a, **k: (_ for _ in ()).throw(OSError("read-only"))
-    )
+    monkeypatch.setattr(Path, "mkdir", lambda *a, **k: (_ for _ in ()).throw(OSError("read-only")))
 
     runner.write_run_record(repo, {"state": "finished"})
 
@@ -168,7 +167,9 @@ def test_standing_pytest_records_are_repo_scoped_under_a_shared_runtime_root(
     assert first_record.parent.parent.name == second_record.parent.parent.name == "standing-pytest"
 
 
-def test_runtime_root_keeps_auto_identity_across_repeated_calls(tmp_path: Path, monkeypatch) -> None:
+def test_runtime_root_keeps_auto_identity_across_repeated_calls(
+    tmp_path: Path, monkeypatch
+) -> None:
     from scripts import runtime_bootstrap
 
     repo = tmp_path / "repo"
@@ -294,6 +295,9 @@ def test_an_interrupted_run_records_a_terminal_state_and_marks_its_basetemp(
     assert (basetemp / runner._FAILED_BASETEMP_MARKER).is_file()
 
 
+@pytest.mark.boundary_contract(
+    reason="prove the standing runner's SIGTERM path reaps the real child process tree"
+)
 def test_sigterm_is_converted_so_the_guard_can_reap_the_child(monkeypatch) -> None:
     """SIGTERM's default disposition runs no cleanup at all.
 
@@ -316,6 +320,9 @@ def test_sigterm_is_converted_so_the_guard_can_reap_the_child(monkeypatch) -> No
     assert signal.getsignal(signal.SIGTERM) is before
 
 
+@pytest.mark.boundary_contract(
+    reason="prove the standing runner's SIGTERM path reaps the real child process tree"
+)
 def test_a_wrapper_sigterm_reaps_the_real_child_tree(tmp_path: Path) -> None:
     """The end-to-end proof the round-1 blocker's fix had been missing.
 

@@ -13,6 +13,7 @@ imports back to module scope. The reconstruction is verified to produce the exac
 `ImportError: ... partially initialized module` from the issue, so it is the defect and
 not a lookalike.
 """
+
 from __future__ import annotations
 
 import re
@@ -29,6 +30,9 @@ from tests.repo_copy import clone_seeded_charness_repo
 
 ROOT = Path(__file__).resolve().parents[2]
 MERGE_REL = "scripts/quality_policy_merge.py"
+pytestmark = pytest.mark.boundary_contract(
+    reason="prove standalone-import checks and their module-order probe run in a fresh interpreter"
+)
 
 
 def _reconstruct_the_cycle(source: str) -> str:
@@ -94,17 +98,29 @@ def _load_check_module():
 def _run_check_at(repo: Path, *args: str) -> subprocess.CompletedProcess:
     """Run the REAL check against a throwaway package root."""
     return subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_standalone_imports.py"),
-         "--repo-root", str(repo), *args],
-        capture_output=True, text=True,
+        [
+            sys.executable,
+            str(ROOT / "scripts" / "check_standalone_imports.py"),
+            "--repo-root",
+            str(repo),
+            *args,
+        ],
+        capture_output=True,
+        text=True,
     )
 
 
 def _run_check(repo: Path, *args: str) -> subprocess.CompletedProcess:
     return subprocess.run(
-        [sys.executable, str(repo / "scripts" / "check_standalone_imports.py"),
-         "--repo-root", str(repo), *args],
-        capture_output=True, text=True,
+        [
+            sys.executable,
+            str(repo / "scripts" / "check_standalone_imports.py"),
+            "--repo-root",
+            str(repo),
+            *args,
+        ],
+        capture_output=True,
+        text=True,
     )
 
 
@@ -150,7 +166,9 @@ def test_the_reconstruction_really_is_the_issues_cycle(repo_with_the_real_cycle:
     defect and not something that merely fails to import."""
     result = subprocess.run(
         [sys.executable, "-c", "import scripts.quality_policy_merge"],
-        cwd=repo_with_the_real_cycle, capture_output=True, text=True,
+        cwd=repo_with_the_real_cycle,
+        capture_output=True,
+        text=True,
     )
 
     assert result.returncode != 0
@@ -251,9 +269,17 @@ def test_changed_paths_resolve_against_the_repo_root_not_the_cwd(clean_repo: Pat
     """The same bug from the other side: a relative `--changed` path must name a module
     in the repo being CHECKED, whatever directory the process happens to start in."""
     result = subprocess.run(
-        [sys.executable, str(clean_repo / "scripts" / "check_standalone_imports.py"),
-         "--repo-root", str(clean_repo), "--changed", MERGE_REL],
-        cwd=ROOT, capture_output=True, text=True,
+        [
+            sys.executable,
+            str(clean_repo / "scripts" / "check_standalone_imports.py"),
+            "--repo-root",
+            str(clean_repo),
+            "--changed",
+            MERGE_REL,
+        ],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
     )
 
     assert result.returncode == 0, result.stdout
@@ -283,11 +309,14 @@ def test_a_cycle_a_module_turns_into_a_missing_sibling_is_still_caught(
     the cycle does not run. CPython's exception chaining keeps the original text in the
     same stderr, so a cycle marker anywhere vetoes the fallback.
     """
-    repo = _mini_repo(tmp_path, {
-        "lib_x.py": "from scripts.entry_y import NAME\nVALUE = 'lib'\n",
-        "entry_y.py": "try:\n    from scripts import lib_x as lib\nexcept ImportError:\n"
-                      "    import lib_x as lib\nNAME = 'entry'\n",
-    })
+    repo = _mini_repo(
+        tmp_path,
+        {
+            "lib_x.py": "from scripts.entry_y import NAME\nVALUE = 'lib'\n",
+            "entry_y.py": "try:\n    from scripts import lib_x as lib\nexcept ImportError:\n"
+            "    import lib_x as lib\nNAME = 'entry'\n",
+        },
+    )
 
     result = _run_check_at(repo)
 
@@ -321,10 +350,13 @@ def test_a_wrong_shape_sibling_error_still_falls_through(
     """The false-positive control for the two tests above. Narrowing the fallback must
     not break the case it exists for: 35 healthy modules in this repo use the
     sibling-import preamble and fail the package shape by design."""
-    repo = _mini_repo(tmp_path, {
-        "helper.py": "VALUE = 'helper'\n",
-        "entry.py": "import helper\nNAME = helper.VALUE\n",
-    })
+    repo = _mini_repo(
+        tmp_path,
+        {
+            "helper.py": "VALUE = 'helper'\n",
+            "entry.py": "import helper\nNAME = helper.VALUE\n",
+        },
+    )
 
     result = _run_check_at(repo)
 
@@ -336,9 +368,7 @@ def test_every_tracked_module_is_either_discovered_or_deliberately_excluded(
 ) -> None:
     """The real native selection must cover every authoring-tree module."""
     tracked = _tracked_python_paths(ROOT)
-    discovered = {
-        target["path"] for target in _native_standalone_report(ROOT)["targets"]
-    }
+    discovered = {target["path"] for target in _native_standalone_report(ROOT)["targets"]}
     excluded_prefixes = (
         "tests/",
         "plugins/",
@@ -360,9 +390,7 @@ def test_the_exported_mirror_enumerates_its_own_modules(real_native_core: Path) 
     """The real native selection must cover the shipped mirror layout too."""
     mirror = ROOT / "plugins" / "charness"
     tracked = _tracked_python_paths(mirror)
-    discovered = {
-        target["path"] for target in _native_standalone_report(mirror)["targets"]
-    }
+    discovered = {target["path"] for target in _native_standalone_report(mirror)["targets"]}
 
     assert not sorted(tracked - discovered), (
         "these tracked mirror modules are not in the real native standalone-targets output: "
@@ -441,9 +469,7 @@ def test_native_report_detail_describes_unestablished_targets() -> None:
         ),
     ],
 )
-def test_invalid_native_selection_documents_are_refused(
-    document: object, message: str
-) -> None:
+def test_invalid_native_selection_documents_are_refused(document: object, message: str) -> None:
     module = _load_check_module()
 
     with pytest.raises(module.NativeSelectionError, match=re.escape(message)):
@@ -482,9 +508,7 @@ def test_native_selection_refuses_invalid_success_json(
     monkeypatch.setattr(
         module.subprocess,
         "run",
-        lambda *args, **kwargs: SimpleNamespace(
-            stdout="{not json}", stderr="", returncode=0
-        ),
+        lambda *args, **kwargs: SimpleNamespace(stdout="{not json}", stderr="", returncode=0),
     )
 
     with pytest.raises(module.NativeSelectionError, match="emitted invalid JSON"):
@@ -525,7 +549,9 @@ def test_native_selection_reports_native_failure_detail(
     ],
 )
 def test_main_reports_native_selection_failures(
-    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str], error: Exception | None,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    error: Exception | None,
     message: str,
 ) -> None:
     module = _load_check_module()

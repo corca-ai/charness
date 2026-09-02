@@ -14,19 +14,22 @@ The row for `current_release` ALONE already made this exit 1, by inheritance:
 `test_the_refusal_is_this_file_s_own_not_inherited_from_a_callee` is the test
 that separates the two, by proving the refusal survives a callee that does not refuse.
 """
+
 from __future__ import annotations
 
-import subprocess
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
 from tests.quality_gates.git_fixture_support import init_git_repo
+from tests.script_main import load_script_module, run_loaded_script_main
 
 from .support import ROOT
 
 PLANNER = ROOT / "skills" / "public" / "release" / "scripts" / "plan_release_run.py"
+_PLANNER = load_script_module("plan_release_run_version_refusal_for_test", PLANNER)
 
 # `output_dir`, NOT `release_record_path`. The latter is what this row's probe record first
 # declared and it is a key NO adapter consumer reads -- `plan_release_prepared_stop` and
@@ -34,7 +37,7 @@ PLANNER = ROOT / "skills" / "public" / "release" / "scripts" / "plan_release_run
 # copy of the constant cannot drift. `check_probe_record --replay-stimulus` refused the
 # record for it; this fixture carried the same dead key one commit longer, which is the
 # record-and-test-disagree shape this family has now produced in both directions.
-DECLARED = 'output_dir: charness-artifacts/release-mine\n'
+DECLARED = "output_dir: charness-artifacts/release-mine\n"
 
 
 def _repo(tmp_path: Path, adapter: str) -> Path:
@@ -49,10 +52,9 @@ def _repo(tmp_path: Path, adapter: str) -> Path:
     return repo
 
 
-def _run(repo: Path) -> subprocess.CompletedProcess:
-    return subprocess.run(
-        [sys.executable, str(PLANNER), "--repo-root", str(repo)], capture_output=True, text=True
-    )
+def _run(repo: Path) -> SimpleNamespace:
+    result = run_loaded_script_main(str(PLANNER), _PLANNER, "--repo-root", str(repo))
+    return result
 
 
 def test_an_unspeakable_version_refuses_instead_of_planning_from_defaults(tmp_path: Path) -> None:
@@ -103,7 +105,8 @@ def test_the_refusal_is_this_file_s_own_not_inherited_from_a_callee(
     # the standing lane missed and the changed-line producer's xdist run caught.
     module = load_script_module("plan_release_run_for_own_guard_isolation_test", PLANNER)
     monkeypatch.setattr(
-        module, "build_release_payload",
+        module,
+        "build_release_payload",
         lambda repo_root: {"surface_versions": {"packaging_manifest": "1.2.3"}},
     )
     monkeypatch.setattr(

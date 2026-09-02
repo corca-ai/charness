@@ -14,10 +14,10 @@ Each row is measured on its own CLI, not asserted from a shared shape. The table
 the same five stimuli, run against each surface's own `main()`.
 
 """
+
 from __future__ import annotations
 
 import subprocess
-import sys
 from pathlib import Path
 
 import pytest
@@ -202,11 +202,7 @@ def test_the_planner_behavior_change_this_slice_caused_is_pinned(
         (repo / ".agents" / f"{skill}-adapter.yaml").write_text(
             f"version: {version}\nrepo: demo\noutput_dir: docs/mine-{skill}\n", encoding="utf-8"
         )
-        result = subprocess.run(
-            [sys.executable, str(ROOT / planner), "--repo-root", str(repo)],
-            capture_output=True,
-            text=True,
-        )
+        result = run_script(str(ROOT / planner), "--repo-root", str(repo))
         assert result.returncode == 1, result.stdout
         assert expected in result.stderr, result.stderr
         # `stdout.strip() == ""` rather than two absent tokens. A round-2 bounded review

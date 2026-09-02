@@ -1,13 +1,14 @@
 from __future__ import annotations
 
-import subprocess
-import sys
 from pathlib import Path
 
+import pytest
 import yaml
 
 from scripts import setup_hook_failure_visibility_lib as visibility
 from scripts.setup_hook_failure_visibility_lib import inspect_hook_failure_visibility
+
+from .support import run_script
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE_REF = ROOT / "skills/public/setup/references/hook-failure-visibility.md"
@@ -22,14 +23,11 @@ def _write_lefthook(repo: Path, text: str) -> dict[str, object]:
     return inspect_hook_failure_visibility(repo)
 
 
+@pytest.mark.boundary_contract(
+    reason="prove the generated setup inspector mirror runs from its installed layout while source calls stay in-process"
+)
 def _run_inspector(script: Path, repo: Path) -> dict[str, object]:
-    result = subprocess.run(
-        [sys.executable, str(script), "--repo-root", str(repo)],
-        cwd=ROOT,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    result = run_script(str(script), "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     # `inspect_repo.py` emits YAML since the `--json` removal; YAML is a JSON superset,
     # so this also parses the compact-JSON fallback used when PyYAML is unavailable.
@@ -132,9 +130,7 @@ def test_reader_tracks_shell_redirection_order_and_equivalent_stderr_forms(tmp_p
         "      run: ./gate 2>&1 > logs/failure.log\n"
         "      fail_text: PUSH BLOCKED; read logs/failure.log\n",
     )
-    assert reversed_order["commands"][0]["gaps"] == [
-        "stderr-not-redirected-to-advertised-log"
-    ]
+    assert reversed_order["commands"][0]["gaps"] == ["stderr-not-redirected-to-advertised-log"]
 
     for name, redirect in (
         ("separate", "> logs/failure.log 2> logs/failure.log"),
@@ -230,9 +226,7 @@ def test_reader_types_malformed_command_rows_and_stage_configs(tmp_path: Path) -
     non_mapping = visibility._command_row("pre-push", "quality", [])
     assert non_mapping["gaps"] == ["command-entry-not-mapping"]
 
-    malformed = visibility._command_row(
-        "pre-push", "quality", {"run": 7, "fail_text": 8}
-    )
+    malformed = visibility._command_row("pre-push", "quality", {"run": 7, "fail_text": 8})
     assert malformed["gaps"] == ["run-not-string", "fail-text-not-string"]
 
     missing_pointer = visibility._command_row(

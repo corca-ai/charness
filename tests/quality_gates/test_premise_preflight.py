@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import shutil
 import subprocess
 from pathlib import Path
@@ -15,10 +16,32 @@ import scripts.premise_git_snapshot as premise_git
 import scripts.premise_preflight_lib as premise_lib
 import scripts.premise_tree_observation as premise_tree
 from scripts.premise_preflight_lib import PremiseError, run_preflight
+from tests.script_main import load_script_module, run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE_CLI = ROOT / "scripts" / "check_premise_preflight.py"
 PLUGIN_CLI = ROOT / "plugins" / "charness" / "scripts" / "check_premise_preflight.py"
+_SOURCE_CLI_MODULE = load_script_module("check_premise_preflight_source_for_test", SOURCE_CLI)
+
+
+@pytest.mark.boundary_contract(
+    reason="prove the exported premise-preflight CLI runs from its installed mirror while source calls stay in-process"
+)
+def _run_cli(cli_path: Path, *args: str):
+    if cli_path == PLUGIN_CLI:
+        return subprocess.run(
+            ["python3", str(cli_path), *args],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+    previous_cwd = Path.cwd()
+    try:
+        os.chdir(ROOT)
+        return run_loaded_script_main(str(cli_path), _SOURCE_CLI_MODULE, *args)
+    finally:
+        os.chdir(previous_cwd)
 
 
 def _sha(value: bytes) -> str:
@@ -30,6 +53,9 @@ def _comments_sha(comments: list[dict[str, Any]]) -> str:
     return _sha(rendered.encode("utf-8"))
 
 
+@pytest.mark.boundary_contract(
+    reason="construct premise fixtures through real git snapshots consumed by the preflight target"
+)
 def _git(repo: Path, *args: str) -> str:
     result = subprocess.run(["git", *args], cwd=repo, capture_output=True, text=True, check=True)
     return result.stdout.strip()
@@ -198,11 +224,12 @@ def _case_valid_premise_is_accepted_and_persisted(case_dir: Path) -> None:
     assert result["status"] == "accepted"
     assert result["decision"]["reason_codes"] == []
     assert result["decision"]["non_claim"].startswith("offline captured-readback")
-    records = [json.loads(line) for line in (repo / ".fixture" / "decisions.jsonl").read_text().splitlines()]
+    records = [
+        json.loads(line)
+        for line in (repo / ".fixture" / "decisions.jsonl").read_text().splitlines()
+    ]
     assert records[0]["attempt_id"] == result["decision"]["attempt_id"]
     assert records[0]["premise_id"] == "issue-7-slice-2"
-
-
 
 
 def _case_invalid_issue_shape_does_not_append(case_dir: Path) -> None:
@@ -223,10 +250,6 @@ def _case_same_count_different_comment_content_is_stale(case_dir: Path) -> None:
     issue.write_text(json.dumps(data), encoding="utf-8")
     result = run_preflight(repo, premise, issue)
     assert result["decision"]["reason_codes"] == ["stale_issue"]
-
-
-
-
 
 
 def _case_expected_missing_and_symlink_drift_are_partial_repair(case_dir: Path) -> None:
@@ -263,7 +286,9 @@ def _case_staged_expected_missing_descendant_is_partial_repair(case_dir: Path) -
     assert result["decision"]["tree_observation"]["expected_missing"][0]["index_present"] is True
 
 
-def _case_protected_worktree_read_failure_is_partial_repair(case_dir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def _case_protected_worktree_read_failure_is_partial_repair(
+    case_dir: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     repo, premise, issue, _ = _seed(case_dir)
     original_read_bytes = Path.read_bytes
 
@@ -303,8 +328,6 @@ def _case_moved_head_is_stale_tree_without_partial_repair(case_dir: Path) -> Non
     assert result["decision"]["reason_codes"] == ["stale_tree"]
 
 
-
-
 def _case_closed_issue_and_reachable_marker_are_already_shipped(case_dir: Path) -> None:
     repo, premise, issue, candidate = _seed(case_dir)
     closed = json.loads(issue.read_text())
@@ -323,13 +346,18 @@ def _case_whitespace_padded_marker_is_not_an_exact_match(case_dir: Path) -> None
     premise.write_text(json.dumps(candidate), encoding="utf-8")
     assert run_preflight(repo, premise, issue)["status"] == "accepted"
 
-    issue.write_text(json.dumps({**closed, "issue": {**closed["issue"], "state": "OPEN"}}), encoding="utf-8")
+    issue.write_text(
+        json.dumps({**closed, "issue": {**closed["issue"], "state": "OPEN"}}), encoding="utf-8"
+    )
     (repo / "marker.txt").write_text("marker\n", encoding="utf-8")
     _git(repo, "add", "marker.txt")
     _git(repo, "commit", "-qm", "ship marker\n\nCharness-Premise-ID: issue-7-slice-2")
     candidate["tree"]["captured_head_sha"] = _clone_head(repo)
     premise.write_text(json.dumps(candidate), encoding="utf-8")
-    assert run_preflight(repo, premise, issue)["decision"]["reason_codes"] == ["already_shipped", "duplicate_premise"]
+    assert run_preflight(repo, premise, issue)["decision"]["reason_codes"] == [
+        "already_shipped",
+        "duplicate_premise",
+    ]
 
 
 def _case_malformed_decision_history_does_not_append(case_dir: Path) -> None:
@@ -474,12 +502,14 @@ def test_cli_emits_shell_free_payload_for_valid_fixture(tmp_path: Path) -> None:
     from a `[SOURCE_CLI, PLUGIN_CLI]` parametrize for the same reason as above."""
     for index, cli_path in enumerate((SOURCE_CLI, PLUGIN_CLI)):
         repo, premise, issue, _ = _seed(tmp_path / f"cli-{index}")
-        result = subprocess.run(
-            ["python3", str(cli_path), "--repo-root", str(repo), "--premise", str(premise), "--issue-readback", str(issue)],
-            cwd=ROOT,
-            capture_output=True,
-            text=True,
-            check=False,
+        result = _run_cli(
+            cli_path,
+            "--repo-root",
+            str(repo),
+            "--premise",
+            str(premise),
+            "--issue-readback",
+            str(issue),
         )
         assert result.returncode == 0, result.stderr
         payload = yaml.safe_load(result.stdout)
@@ -492,12 +522,15 @@ def test_cli_rejects_a_json_flag(tmp_path: Path) -> None:
     """`--json` was removed repo-wide, not kept as a no-op: a caller still passing it is
     told so (argparse exit 2) rather than silently getting a different contract."""
     repo, premise, issue, _ = _seed(tmp_path)
-    result = subprocess.run(
-        ["python3", str(SOURCE_CLI), "--repo-root", str(repo), "--premise", str(premise), "--issue-readback", str(issue), "--json"],
-        cwd=ROOT,
-        capture_output=True,
-        text=True,
-        check=False,
+    result = _run_cli(
+        SOURCE_CLI,
+        "--repo-root",
+        str(repo),
+        "--premise",
+        str(premise),
+        "--issue-readback",
+        str(issue),
+        "--json",
     )
     assert result.returncode == 2
     assert "unrecognized arguments: --json" in result.stderr
@@ -508,12 +541,14 @@ def test_cli_returns_exit_two_for_invalid_issue_readback(tmp_path: Path) -> None
     data = json.loads(issue.read_text())
     del data["issue"]["comments"]
     issue.write_text(json.dumps(data), encoding="utf-8")
-    result = subprocess.run(
-        ["python3", str(SOURCE_CLI), "--repo-root", str(repo), "--premise", str(premise), "--issue-readback", str(issue)],
-        cwd=ROOT,
-        capture_output=True,
-        text=True,
-        check=False,
+    result = _run_cli(
+        SOURCE_CLI,
+        "--repo-root",
+        str(repo),
+        "--premise",
+        str(premise),
+        "--issue-readback",
+        str(issue),
     )
     assert result.returncode == 2
     assert yaml.safe_load(result.stdout)["error"]["code"] == "invalid_issue_readback"
@@ -526,9 +561,14 @@ def test_cli_reports_accepted_and_refused_fixtures(tmp_path: Path) -> None:
     Folded from a `[SOURCE_CLI, PLUGIN_CLI]` parametrize, as above."""
     for index, cli_path in enumerate((SOURCE_CLI, PLUGIN_CLI)):
         repo, premise, issue, _ = _seed(tmp_path / f"cli-{index}")
-        accepted = subprocess.run(
-            ["python3", str(cli_path), "--repo-root", str(repo), "--premise", str(premise), "--issue-readback", str(issue)],
-            cwd=ROOT, capture_output=True, text=True, check=False,
+        accepted = _run_cli(
+            cli_path,
+            "--repo-root",
+            str(repo),
+            "--premise",
+            str(premise),
+            "--issue-readback",
+            str(issue),
         )
         assert accepted.returncode == 0, cli_path
         accepted_payload = yaml.safe_load(accepted.stdout)
@@ -539,9 +579,14 @@ def test_cli_reports_accepted_and_refused_fixtures(tmp_path: Path) -> None:
         data = json.loads(issue.read_text())
         del data["issue"]["comments"]
         issue.write_text(json.dumps(data), encoding="utf-8")
-        refused = subprocess.run(
-            ["python3", str(cli_path), "--repo-root", str(repo), "--premise", str(premise), "--issue-readback", str(issue)],
-            cwd=ROOT, capture_output=True, text=True, check=False,
+        refused = _run_cli(
+            cli_path,
+            "--repo-root",
+            str(repo),
+            "--premise",
+            str(premise),
+            "--issue-readback",
+            str(issue),
         )
         assert refused.returncode == 2, cli_path
         refused_payload = yaml.safe_load(refused.stdout)
@@ -558,7 +603,9 @@ def _raises(code: str, function: Any, *args: Any, **kwargs: Any) -> None:
     assert caught.value.code == code
 
 
-def test_premise_scalar_and_repository_error_branches(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_premise_scalar_and_repository_error_branches(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     _raises("invalid_premise", premise_lib._mapping, [], "field")
     _raises("invalid_premise", premise_lib._string, "", "field")
     _raises("invalid_premise", premise_lib._integer, -1, "field")
@@ -573,10 +620,12 @@ def test_premise_scalar_and_repository_error_branches(tmp_path: Path, monkeypatc
     with pytest.raises(AssertionError):
         premise_lib._relative_path("../outside", "field")
     monkeypatch.setattr(premise_lib, "_error", original_error)
+
     class NaiveDateTime:
         @classmethod
         def fromisoformat(cls, _: str) -> Any:
             return type("Naive", (), {"tzinfo": None})()
+
     original_datetime = premise_history._datetime.datetime
     monkeypatch.setattr(premise_history._datetime, "datetime", NaiveDateTime)
     _raises("invalid_premise", premise_lib._timestamp, "2026-08-06T01:02:03Z", "field")
@@ -584,7 +633,9 @@ def test_premise_scalar_and_repository_error_branches(tmp_path: Path, monkeypatc
 
     missing = tmp_path / "missing.json"
     _raises("missing_input", premise_lib._load_json, tmp_path, missing, "field")
-    _raises("unsafe_path", premise_lib._load_json, tmp_path, tmp_path.parent / "outside.json", "field")
+    _raises(
+        "unsafe_path", premise_lib._load_json, tmp_path, tmp_path.parent / "outside.json", "field"
+    )
     invalid = tmp_path / "invalid.json"
     invalid.write_text("{", encoding="utf-8")
     _raises("invalid_json", premise_lib._load_json, tmp_path, invalid, "field")
@@ -612,10 +663,11 @@ def test_premise_git_batch_parser_preserves_binary_blob_frames() -> None:
     object_id = b"a" * 40
     payload = object_id + b" blob 4\na\nb\n\nmissing-expression missing\n"
 
-    assert premise_git._parse_batch(payload, 2) == [(object_id.decode("ascii"), "blob", b"a\nb\n"), None]
+    assert premise_git._parse_batch(payload, 2) == [
+        (object_id.decode("ascii"), "blob", b"a\nb\n"),
+        None,
+    ]
     assert premise_git._parse_batch(payload + b"trailing", 2) is None
-
-
 
 
 def test_premise_tree_observation_reports_an_unreadable_index(tmp_path: Path) -> None:
@@ -677,10 +729,18 @@ def test_premise_candidate_and_issue_error_branches(tmp_path: Path) -> None:
     normalized = premise_lib._validate_candidate(repo, candidate)
     valid_issue = json.loads(issue.read_text())
     issue_mutations = [
-        (lambda value: value.update(ok=False), {"repository": "acme/charness", "issue_number": 7}, "invalid_issue_readback"),
+        (
+            lambda value: value.update(ok=False),
+            {"repository": "acme/charness", "issue_number": 7},
+            "invalid_issue_readback",
+        ),
         (lambda value: value.update(repo="other/repo"), normalized, "invalid_issue_readback"),
         (lambda value: value.update(issue=[]), normalized, "invalid_issue_readback"),
-        (lambda value: value.update(number=True), {"repository": "acme/charness", "issue_number": True}, "invalid_issue_readback"),
+        (
+            lambda value: value.update(number=True),
+            {"repository": "acme/charness", "issue_number": True},
+            "invalid_issue_readback",
+        ),
     ]
     for mutate, issue_candidate, code in issue_mutations:
         data = json.loads(json.dumps(valid_issue))
@@ -706,12 +766,22 @@ def test_premise_candidate_and_issue_error_branches(tmp_path: Path) -> None:
     _raises("invalid_issue_readback", premise_lib._validate_issue, repo, data, normalized)
 
 
-def test_premise_history_and_write_error_branches(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_premise_history_and_write_error_branches(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     repo, premise, issue, candidate = _seed(tmp_path)
     normalized = premise_lib._validate_candidate(repo, candidate)
     issue_data = premise_lib._validate_issue(repo, json.loads(issue.read_text()), normalized)
     observations, _ = premise_lib._protected_observations(repo, normalized)
-    record = premise_history._record(repo, normalized, issue_data, normalized["captured_head_sha"], observations, [], status="accepted")
+    record = premise_history._record(
+        repo,
+        normalized,
+        issue_data,
+        normalized["captured_head_sha"],
+        observations,
+        [],
+        status="accepted",
+    )
 
     _raises("invalid_decision_history", premise_history._history_hash, "bad", "field")
     _raises("invalid_decision_history", premise_history._history_git_sha, "bad", "field")
@@ -758,8 +828,14 @@ def test_premise_history_and_write_error_branches(tmp_path: Path, monkeypatch: p
         ({**record, "reason_codes": ["bad"]}, "invalid_decision_history"),
         ({**record, "reason_codes": ["stale_tree", "already_shipped"]}, "invalid_decision_history"),
         ({**record, "reasons": None}, "invalid_decision_history"),
-        ({**record, "status": "refused", "reason_codes": ["stale_tree"], "reasons": [{}]}, "invalid_decision_history"),
-        ({**record, "status": "refused", "reason_codes": [], "reasons": []}, "invalid_decision_history"),
+        (
+            {**record, "status": "refused", "reason_codes": ["stale_tree"], "reasons": [{}]},
+            "invalid_decision_history",
+        ),
+        (
+            {**record, "status": "refused", "reason_codes": [], "reasons": []},
+            "invalid_decision_history",
+        ),
         ({**record, "non_claim": "changed"}, "invalid_decision_history"),
     ]
     for value, code in record_mutations:
@@ -797,13 +873,28 @@ def test_premise_history_and_write_error_branches(tmp_path: Path, monkeypatch: p
         premise_history._history_path("../bad", "field")
     monkeypatch.setattr(premise_history, "_error", original_error)
 
-    missing_candidate = {"protected": [{"path": "src/missing.txt", "sha256": "0" * 64}], "expected_missing": []}
+    missing_candidate = {
+        "protected": [{"path": "src/missing.txt", "sha256": "0" * 64}],
+        "expected_missing": [],
+    }
     _, drift = premise_lib._protected_observations(repo, missing_candidate)
     assert drift is True
     link = repo / ".fixture" / "append-link.jsonl"
     link.symlink_to("future.jsonl")
-    _raises("decision_log_write_failed", premise_history._append_decision, repo, ".fixture/append-link.jsonl", record)
+    _raises(
+        "decision_log_write_failed",
+        premise_history._append_decision,
+        repo,
+        ".fixture/append-link.jsonl",
+        record,
+    )
     link.unlink()
     directory = repo / ".fixture" / "append-dir.jsonl"
     directory.mkdir()
-    _raises("decision_log_write_failed", premise_history._append_decision, repo, ".fixture/append-dir.jsonl", record)
+    _raises(
+        "decision_log_write_failed",
+        premise_history._append_decision,
+        repo,
+        ".fixture/append-dir.jsonl",
+        record,
+    )

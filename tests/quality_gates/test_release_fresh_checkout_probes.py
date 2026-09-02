@@ -13,6 +13,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
 import yaml
 
 from tests.script_main import load_script_module, run_loaded_script_main
@@ -144,6 +145,9 @@ def test_a_repo_declaring_no_probes_is_answered_never_refused(tmp_path: Path) ->
         assert payload["probe_results"] == []
 
 
+@pytest.mark.boundary_contract(
+    reason="prove the fresh-checkout CLI's __main__ entrypoint returns the shell-visible unestablished exit byte"
+)
 def test_the_real_process_entrypoint_returns_the_unestablished_byte(tmp_path: Path) -> None:
     """In-process `main` and a real subprocess must agree on the byte, because the
     release gate packet is a shell command and the shell reads `$?`."""
@@ -165,7 +169,9 @@ def test_the_real_process_entrypoint_returns_the_unestablished_byte(tmp_path: Pa
     assert result.returncode == 3, result.stdout + result.stderr
 
 
-def test_the_release_artifact_does_not_render_an_unrun_probe_set_as_a_status(tmp_path: Path) -> None:
+def test_the_release_artifact_does_not_render_an_unrun_probe_set_as_a_status(
+    tmp_path: Path,
+) -> None:
     """The artifact a rung-2 human audit reads. `- Fresh-checkout probe status:
     configured.` is a sentence that reads as a satisfied probe run and is not one."""
     lines = _ARTIFACT_SECTIONS.fresh_checkout_lines(

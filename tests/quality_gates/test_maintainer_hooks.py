@@ -11,14 +11,29 @@ import pytest
 
 from runtime_bootstrap import import_repo_module
 from tests.quality_gates.git_fixture_support import init_git_repo
+from tests.script_main import load_script_module, run_loaded_script_main
 
 from .support import ROOT
 
 PRE_PUSH_HOOK_TEXT = (ROOT / ".githooks" / "pre-push").read_text(encoding="utf-8")
 PRE_COMMIT_HOOK_TEXT = (ROOT / ".githooks" / "pre-commit").read_text(encoding="utf-8")
+_VALIDATE_SETUP = load_script_module(
+    "validate_maintainer_setup_for_test",
+    ROOT / "scripts" / "validate_maintainer_setup.py",
+)
+CACHED_BOUNDARY_REASON = (
+    "exercise the repository-owned hook-install and runtime shell processes because "
+    "their environment, executable bits, and child git behavior are the public boundary"
+)
 CLOSE_GUARD_INVOCATION = (
-    'printf \'%s\\n\' "$push_stdin" | python3 scripts/prepush_close_keyword_guard.py \\\n'
+    "printf '%s\\n' \"$push_stdin\" | python3 scripts/prepush_close_keyword_guard.py \\\n"
     '  --repo-root "$REPO_ROOT" --remote "${1:-origin}"'
+)
+pytestmark = pytest.mark.boundary_contract(
+    reason=(
+        "exercise repository-owned hook-install and runtime shell processes because their "
+        "environment, executable bits, and child git behavior are the public boundary"
+    )
 )
 
 
@@ -33,7 +48,10 @@ def _seed_source_repo(tmp_path: Path, pre_push_text: str = PRE_PUSH_HOOK_TEXT) -
     (repo / "packaging").mkdir(parents=True)
     (repo / "plugins" / "charness").mkdir(parents=True)
     (repo / "packaging" / "charness.json").write_text("{}\n", encoding="utf-8")
-    shutil.copy2(ROOT / "scripts" / "validate_maintainer_setup.py", repo / "scripts" / "validate_maintainer_setup.py")
+    shutil.copy2(
+        ROOT / "scripts" / "validate_maintainer_setup.py",
+        repo / "scripts" / "validate_maintainer_setup.py",
+    )
     for name in ("pre-commit", "commit-msg"):
         shutil.copy2(ROOT / ".githooks" / name, repo / ".githooks" / name)
     (repo / ".githooks" / "pre-push").write_text(pre_push_text, encoding="utf-8")
@@ -43,12 +61,16 @@ def _seed_source_repo(tmp_path: Path, pre_push_text: str = PRE_PUSH_HOOK_TEXT) -
 
 
 def _run_setup(repo: Path) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        ["python3", "scripts/validate_maintainer_setup.py", "--repo-root", str(repo)],
-        cwd=repo,
-        check=False,
-        capture_output=True,
-        text=True,
+    previous_cwd = Path.cwd()
+    try:
+        os.chdir(repo)
+        result = run_loaded_script_main(
+            "validate_maintainer_setup.py", _VALIDATE_SETUP, "--repo-root", str(repo)
+        )
+    finally:
+        os.chdir(previous_cwd)
+    return subprocess.CompletedProcess(
+        ["validate_maintainer_setup.py"], result.returncode, result.stdout, result.stderr
     )
 
 
@@ -62,7 +84,9 @@ def test_install_git_hooks_sets_core_hookspath(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / "scripts").mkdir(parents=True)
     (repo / ".githooks").mkdir(parents=True)
-    shutil.copy2(ROOT / "scripts" / "install-git-hooks.sh", repo / "scripts" / "install-git-hooks.sh")
+    shutil.copy2(
+        ROOT / "scripts" / "install-git-hooks.sh", repo / "scripts" / "install-git-hooks.sh"
+    )
     for name in ("pre-commit", "commit-msg", "pre-push"):
         shutil.copy2(ROOT / ".githooks" / name, repo / ".githooks" / name)
     init_git_repo(repo)
@@ -90,8 +114,11 @@ def test_install_git_hooks_does_not_make_sourced_helpers_executable(tmp_path: Pa
     init_git_repo(repo)
 
     result = subprocess.run(
-        ["bash", "scripts/install-git-hooks.sh"], cwd=repo,
-        check=False, capture_output=True, text=True,
+        ["bash", "scripts/install-git-hooks.sh"],
+        cwd=repo,
+        check=False,
+        capture_output=True,
+        text=True,
     )
 
     assert result.returncode == 0, result.stderr
@@ -105,7 +132,9 @@ def test_install_git_hooks_materializes_consumer_commit_msg_hook(tmp_path: Path)
     consumer = tmp_path / "consumer"
     (source / "scripts").mkdir(parents=True)
     consumer.mkdir(parents=True)
-    shutil.copy2(ROOT / "scripts" / "install-git-hooks.sh", source / "scripts" / "install-git-hooks.sh")
+    shutil.copy2(
+        ROOT / "scripts" / "install-git-hooks.sh", source / "scripts" / "install-git-hooks.sh"
+    )
     checker = source / "scripts" / "check_issue_closeout_commit_msg.py"
     checker.write_text("#!/usr/bin/env python3\nprint('checker')\n", encoding="utf-8")
     checker.chmod(0o755)
@@ -135,7 +164,7 @@ def test_hook_runtime_bootstrap_confines_initial_python_cache(tmp_path: Path) ->
         [
             "bash",
             "-c",
-            "REPO_ROOT=\"$1\"; source \"$REPO_ROOT/.githooks/runtime-env.sh\"; "
+            'REPO_ROOT="$1"; source "$REPO_ROOT/.githooks/runtime-env.sh"; '
             "printf '%s\\n' \"$PYTHONPYCACHEPREFIX\"; python3 -m py_compile scripts/subject.py",
             "runtime-env-test",
             str(repo),
@@ -173,9 +202,9 @@ def test_hook_runtime_clears_git_discovery_for_child_repositories(tmp_path: Path
             "bash",
             "-c",
             "set -euo pipefail; "
-            "REPO_ROOT=\"$1\"; source \"$REPO_ROOT/.githooks/runtime-env.sh\"; "
-            "test -z \"${GIT_DIR:-}\"; test -z \"${GIT_WORK_TREE:-}\"; "
-            "cd \"$2\"; git init -q; git config user.name Child; git config user.email child@example.com",
+            'REPO_ROOT="$1"; source "$REPO_ROOT/.githooks/runtime-env.sh"; '
+            'test -z "${GIT_DIR:-}"; test -z "${GIT_WORK_TREE:-}"; '
+            'cd "$2"; git init -q; git config user.name Child; git config user.email child@example.com',
             "runtime-env-git-test",
             str(repo),
             str(child),
@@ -212,14 +241,18 @@ def test_pre_push_keeps_release_boundary_and_drops_mutation_arm(tmp_path: Path) 
 
 
 def test_pre_commit_keeps_the_irreversible_identity_guard() -> None:
-    assert 'python3 -B scripts/check_git_identity.py --repo-root "$REPO_ROOT"' in PRE_COMMIT_HOOK_TEXT
+    assert (
+        'python3 -B scripts/check_git_identity.py --repo-root "$REPO_ROOT"' in PRE_COMMIT_HOOK_TEXT
+    )
     assert 'check_git_identity.py --repo-root "$REPO_ROOT" || true' not in PRE_COMMIT_HOOK_TEXT
     assert "runtime-env.sh" not in PRE_COMMIT_HOOK_TEXT
 
 
 def _guard_hook(tmp_path: Path, invocation: str) -> Path:
     hook = tmp_path / "pre-push"
-    hook.write_text(PRE_PUSH_HOOK_TEXT.replace(CLOSE_GUARD_INVOCATION, invocation), encoding="utf-8")
+    hook.write_text(
+        PRE_PUSH_HOOK_TEXT.replace(CLOSE_GUARD_INVOCATION, invocation), encoding="utf-8"
+    )
     return hook
 
 
@@ -228,16 +261,19 @@ def _guard_hook(tmp_path: Path, invocation: str) -> Path:
     [
         ('echo "run python3 scripts/prepush_close_keyword_guard.py yourself"', "no longer runs"),
         (
-            'printf \'%s\\n\' "$push_stdin" | python3 scripts/prepush_close_keyword_guard.py \\\n'
+            "printf '%s\\n' \"$push_stdin\" | python3 scripts/prepush_close_keyword_guard.py \\\n"
             '  --repo-root "$REPO_ROOT" || true',
             "discards its verdict",
         ),
         (
-            'printf \'%s\\n\' "$push_stdin" | python3 scripts/prepush_close_keyword_guard.py '
+            "printf '%s\\n' \"$push_stdin\" | python3 scripts/prepush_close_keyword_guard.py "
             '--repo-root "$REPO_ROOT" &',
             "discards its verdict",
         ),
-        ('# python3 scripts/prepush_close_keyword_guard.py --repo-root "$REPO_ROOT"', "no longer runs"),
+        (
+            '# python3 scripts/prepush_close_keyword_guard.py --repo-root "$REPO_ROOT"',
+            "no longer runs",
+        ),
         ('$GUARD --repo-root "$REPO_ROOT" # prepush_close_keyword_guard.py', "cannot classify"),
     ],
 )
@@ -246,7 +282,9 @@ def test_close_keyword_guard_arming_refuses_each_disarm(
 ) -> None:
     module = import_repo_module(__file__, "scripts.validate_maintainer_setup")
     with pytest.raises(module.ValidationError) as excinfo:
-        module.check_close_keyword_guard_arming(_guard_hook(tmp_path, invocation), ".githooks/pre-push")
+        module.check_close_keyword_guard_arming(
+            _guard_hook(tmp_path, invocation), ".githooks/pre-push"
+        )
     assert expected in str(excinfo.value)
 
 

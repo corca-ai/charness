@@ -21,6 +21,9 @@ from .release_publish_fixtures import (
 from .support import ROOT
 
 SCAFFOLD = ROOT / "skills/public/release/scripts/scaffold_claims_review.py"
+pytestmark = pytest.mark.boundary_contract(
+    reason="observe the claims-review scaffold executable and its real git-backed release record boundary"
+)
 sys.path.insert(0, str(SCAFFOLD.parent))
 from claims_review_scope import changed_paths_sha256, partition  # noqa: E402
 

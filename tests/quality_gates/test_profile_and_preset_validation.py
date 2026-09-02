@@ -102,13 +102,15 @@ def test_validate_presets_rejects_product_slice_without_exposure_contract(tmp_pa
     except VALIDATE_PRESETS.ValidationError as exc:
         assert "product-slice presets must include an `## Exposure Contract` section" in str(exc)
     else:
-        raise AssertionError("validate_preset did not reject product slice without exposure contract")
+        raise AssertionError(
+            "validate_preset did not reject product slice without exposure contract"
+        )
 
 
 def test_validate_presets_accepts_nested_reconciliation_contract(tmp_path: Path) -> None:
     preset = tmp_path / "strict.md"
     preset.write_text(
-        "---\nname: strict\ndescription: \"Strict.\"\npreset_kind: sample-vocabulary\ninstall_scope: maintainer\n"
+        '---\nname: strict\ndescription: "Strict."\npreset_kind: sample-vocabulary\ninstall_scope: maintainer\n'
         "reconciliation:\n  required_adapter_commands:\n    - python3 -m pytest\n---\n# strict\n\n## Intended Use\n\nTest.\n",
         encoding="utf-8",
     )
@@ -180,9 +182,9 @@ def test_sample_quality_presets_carry_concrete_lint_defaults() -> None:
     typescript_quality = (root / "presets" / "typescript-quality.md").read_text(encoding="utf-8")
     presets_readme = (root / "presets" / "README.md").read_text(encoding="utf-8")
 
-    assert '`ruff check` with `E`, `F`, `I`, and `C90`' in python_quality
-    assert '[tool.ruff.lint.mccabe] max-complexity = 15' in python_quality
-    assert '`eslint` with a standing `complexity` rule' in typescript_quality
+    assert "`ruff check` with `E`, `F`, `I`, and `C90`" in python_quality
+    assert "[tool.ruff.lint.mccabe] max-complexity = 15" in python_quality
+    assert "`eslint` with a standing `complexity` rule" in typescript_quality
     assert 'complexity: ["error", 15]' in typescript_quality
     assert "including `eslint` + `complexity` and `tsc --noEmit` defaults" in presets_readme
     assert "including `ruff` + `C90` and one type-checker default" in presets_readme
@@ -205,7 +207,7 @@ def test_validate_adapters_rejects_charness_quality_coverage_floor_drift(tmp_pat
                 "  warn_ceiling_pct: 95.0",
                 "  floor_drift_lock_pp: 1.0",
                 "  exemption_list_path: scripts/coverage-floor-exemptions.txt",
-                "  gate_script_pattern: \"*-quality-gate.sh\"",
+                '  gate_script_pattern: "*-quality-gate.sh"',
                 "  lefthook_path: lefthook.yml",
                 "  ci_workflow_glob: .github/workflows/*.yml",
                 "product_surfaces:",
@@ -250,7 +252,9 @@ def test_validate_adapters_rejects_charness_quality_coverage_floor_drift(tmp_pat
 
     result = run_script("scripts/validate_adapters.py", "--repo-root", str(repo))
     assert result.returncode == 1
-    assert "coverage_floor_policy.fail_below_pct must match check_coverage.py (85.0)" in result.stderr
+    assert (
+        "coverage_floor_policy.fail_below_pct must match check_coverage.py (85.0)" in result.stderr
+    )
 
 
 def test_validate_profiles_rejects_unknown_smoke_scenario(tmp_path: Path) -> None:
@@ -260,7 +264,7 @@ def test_validate_profiles_rejects_unknown_smoke_scenario(tmp_path: Path) -> Non
     profiles_dir.mkdir(parents=True)
     public_skill_dir.mkdir(parents=True)
     (public_skill_dir / "SKILL.md").write_text(
-        "---\nname: impl\ndescription: \"demo\"\n---\n\n# Impl\n",
+        '---\nname: impl\ndescription: "demo"\n---\n\n# Impl\n',
         encoding="utf-8",
     )
     (profiles_dir / "demo.json").write_text(
@@ -288,7 +292,7 @@ def test_validate_profiles_rejects_missing_extends_reference(tmp_path: Path) -> 
     profiles_dir.mkdir(parents=True)
     public_skill_dir.mkdir(parents=True)
     (public_skill_dir / "SKILL.md").write_text(
-        "---\nname: impl\ndescription: \"demo\"\n---\n\n# Impl\n",
+        '---\nname: impl\ndescription: "demo"\n---\n\n# Impl\n',
         encoding="utf-8",
     )
     (profiles_dir / "demo.json").write_text(
@@ -316,7 +320,7 @@ def test_validate_profiles_rejects_unknown_top_level_field(tmp_path: Path) -> No
     profiles_dir.mkdir(parents=True)
     public_skill_dir.mkdir(parents=True)
     (public_skill_dir / "SKILL.md").write_text(
-        "---\nname: impl\ndescription: \"demo\"\n---\n\n# Impl\n\n## References\n\n- `references/demo.md`\n",
+        '---\nname: impl\ndescription: "demo"\n---\n\n# Impl\n\n## References\n\n- `references/demo.md`\n',
         encoding="utf-8",
     )
     (public_skill_dir / "references").mkdir(parents=True)
@@ -346,7 +350,7 @@ def test_validate_profiles_ignores_gitignored_profiles(tmp_path: Path) -> None:
         {
             ".gitignore": "profiles/generated-*.json\n",
             "skills/public/impl/SKILL.md": (
-                "---\nname: impl\ndescription: \"demo\"\n---\n\n# Impl\n\n## References\n\n"
+                '---\nname: impl\ndescription: "demo"\n---\n\n# Impl\n\n## References\n\n'
                 "- `references/demo.md`\n"
             ),
             "skills/public/impl/references/demo.md": "# Demo\n",
@@ -368,6 +372,8 @@ def test_validate_profiles_ignores_gitignored_profiles(tmp_path: Path) -> None:
 
     result = run_script("scripts/validate_profiles.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
+
+
 def test_validate_adapters_ignores_gitignored_skills(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     install_committed_repo(
@@ -393,7 +399,9 @@ def test_validate_adapters_ignores_gitignored_skills(tmp_path: Path) -> None:
     assert result.returncode == 0, result.stderr
 
 
-def test_validate_adapters_rejects_charness_quality_adapter_with_missing_mature_fields(tmp_path: Path) -> None:
+def test_validate_adapters_rejects_charness_quality_adapter_with_missing_mature_fields(
+    tmp_path: Path,
+) -> None:
     repo = tmp_path / "charness"
     agents_dir = repo / ".agents"
     agents_dir.mkdir(parents=True)
@@ -517,11 +525,17 @@ def test_validate_adapters_rejects_invalid_quality_adapter_rule(tmp_path: Path) 
 
 
 def test_validate_adapters_accepts_checked_in_charness_quality_coverage_floor() -> None:
-    result = run_script("scripts/validate_adapters.py", "--repo-root", str(Path(__file__).resolve().parents[2]))
+    result = run_script(
+        "scripts/validate_adapters.py", "--repo-root", str(Path(__file__).resolve().parents[2])
+    )
 
     assert result.returncode == 0, result.stderr
 
 
+@pytest.mark.boundary_contract(
+    reason="prove the exported validator runs from its flattened installed layout in a "
+    "scrubbed child environment"
+)
 def test_exported_validate_adapters_runs_from_flattened_layout(tmp_path: Path) -> None:
     output_root = tmp_path / "export"
     exported = subprocess.run(
@@ -643,7 +657,9 @@ def test_validate_adapters_rejects_charness_quality_command_drift(tmp_path: Path
     assert "gate_commands must exactly name the standing quality gate" in result.stderr
 
 
-def test_validate_adapters_rejects_charness_quality_coverage_floor_threshold_drift(tmp_path: Path) -> None:
+def test_validate_adapters_rejects_charness_quality_coverage_floor_threshold_drift(
+    tmp_path: Path,
+) -> None:
     cases = [
         (
             "min_statements_threshold",

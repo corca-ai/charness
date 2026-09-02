@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import subprocess
 import sys
 from pathlib import Path
 
@@ -16,14 +15,7 @@ inventory_dual = load_module("inventory_dual_implementation", SCRIPT)
 VisibleRepoFilesSnapshot = sys.modules["git_inventory_lib"].VisibleRepoFilesSnapshot
 
 
-def _run(*args: str, real_process: bool = False):
-    if real_process:
-        return subprocess.run(
-            [sys.executable, str(SCRIPT), *args],
-            check=False,
-            capture_output=True,
-            text=True,
-        )
+def _run(*args: str):
     original_build_payload = inventory_dual.build_payload
     inventory_dual.build_payload = lambda repo, **kwargs: original_build_payload(
         repo, **kwargs, snapshot=VisibleRepoFilesSnapshot(None)
@@ -52,9 +44,7 @@ def test_inventory_dual_implementation_reports_shared_schema_id(tmp_path: Path) 
         encoding="utf-8",
     )
 
-    payload = inventory_dual.build_payload(
-        repo, snapshot=VisibleRepoFilesSnapshot(None)
-    )
+    payload = inventory_dual.build_payload(repo, snapshot=VisibleRepoFilesSnapshot(None))
     assert payload["candidate_count"] == 1
     candidate = payload["candidates"][0]
     assert candidate["schema_id"] == "demo.behavior.packet.v1"
@@ -68,12 +58,18 @@ def test_inventory_dual_implementation_defaults_to_yaml_with_json_compatibility(
 ) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
-    default = _run("--repo-root", str(repo), real_process=True)
+    default = _run("--repo-root", str(repo))
     detail_json = _run("--repo-root", str(repo), "--detail")
     summary = _run("--repo-root", str(repo), "--summary")
     summary_json = _run("--repo-root", str(repo), "--summary")
 
-    assert default.returncode == detail_json.returncode == summary.returncode == summary_json.returncode == 0
+    assert (
+        default.returncode
+        == detail_json.returncode
+        == summary.returncode
+        == summary_json.returncode
+        == 0
+    )
     assert yaml.safe_load(default.stdout) == yaml.safe_load(detail_json.stdout)
     assert yaml.safe_load(summary.stdout) == yaml.safe_load(summary_json.stdout)
 

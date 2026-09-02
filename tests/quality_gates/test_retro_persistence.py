@@ -13,6 +13,7 @@ import yaml
 from runtime_bootstrap import import_repo_module
 from tests.quality_gates.repo_shapes import install_committed_repo
 from tests.quality_gates.seeding_support import write_retro_adapter
+from tests.quality_gates.support import run_script
 from tests.script_closure import script_import_closure
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -79,7 +80,10 @@ def test_persist_retro_artifact_writes_artifact_snapshot_and_recent_lessons(
     payload = yaml.safe_load(result.stdout)
     assert payload["artifact_path"] == "charness-artifacts/retro/weekly-2026-04-14.md"
     assert payload["summary_path"] == "charness-artifacts/retro/recent-lessons.md"
-    assert payload["lesson_selection_index_path"] == "charness-artifacts/retro/lesson-selection-index.json"
+    assert (
+        payload["lesson_selection_index_path"]
+        == "charness-artifacts/retro/lesson-selection-index.json"
+    )
     assert payload["summary_refreshed"] is True
 
     summary_text = (output_dir / "recent-lessons.md").read_text(encoding="utf-8")
@@ -99,7 +103,8 @@ def test_persist_retro_artifact_stamps_persisted_path(tmp_path: Path, monkeypatc
     write_retro_adapter(repo, include_summary_path=False)
     markdown_file = repo / "session.md"
     markdown_file.write_text(
-        "\n".join(["# Session Retro", "", "## Persisted", "", "Persisted: yes: TODO path", ""]) + "\n",
+        "\n".join(["# Session Retro", "", "## Persisted", "", "Persisted: yes: TODO path", ""])
+        + "\n",
         encoding="utf-8",
     )
 
@@ -207,7 +212,9 @@ def test_persist_refuses_subject_collision_and_names_deliberate_next_action(
         + "summary_path: null\n",
         encoding="utf-8",
     )
-    target = repo / "charness-artifacts" / "retro" / f"{date.today().isoformat()}-session-retro-2.md"
+    target = (
+        repo / "charness-artifacts" / "retro" / f"{date.today().isoformat()}-session-retro-2.md"
+    )
     existing = "# Existing retro\n\nThis must not be replaced.\n"
     target.write_text(existing, encoding="utf-8")
     markdown_file = repo / "new-session.md"
@@ -258,22 +265,18 @@ def test_persist_then_index_checker_accepts_persisted_index(
     )
     assert result.returncode == 0, result.stderr
 
-    checker = subprocess.run(
-        [
-            sys.executable,
-            str(ROOT / "scripts" / "build_retro_lesson_selection_index.py"),
-            "--repo-root",
-            str(repo),
-            "--check",
-        ],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
+    checker = run_script(
+        "scripts/build_retro_lesson_selection_index.py",
+        "--repo-root",
+        str(repo),
+        "--check",
     )
     assert checker.returncode == 0, checker.stderr
 
 
+@pytest.mark.boundary_contract(
+    reason="prove the copied repo's lesson-index producer is runnable from its installed-style layout"
+)
 def test_persist_then_repo_checker_accepts_the_repo_producer_index(
     tmp_path: Path, monkeypatch, capsys
 ) -> None:
@@ -287,15 +290,15 @@ def test_persist_then_repo_checker_accepts_the_repo_producer_index(
     repo = tmp_path / "repo with spaces"
     write_retro_adapter(repo)
     (repo / "packaging").mkdir(parents=True)
-    (repo / "packaging" / "charness.json").write_text('{"package_id": "charness"}\n', encoding="utf-8")
+    (repo / "packaging" / "charness.json").write_text(
+        '{"package_id": "charness"}\n', encoding="utf-8"
+    )
     # DERIVED, not listed. The literal tuple this replaces was a restatement of
     # the import graph with nothing binding it to the graph, and it went stale
     # the moment `helper_provenance_lib` gained an import. `adapter_lib` is a
     # second ENTRY point rather than a closure member: the target checkout reads
     # its retro adapter through it, which no import from the builder reaches.
-    for name in script_import_closure(
-        "build_retro_lesson_selection_index.py", "adapter_lib.py"
-    ):
+    for name in script_import_closure("build_retro_lesson_selection_index.py", "adapter_lib.py"):
         target = repo / "scripts" / name
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(ROOT / "scripts" / name, target)
@@ -331,7 +334,13 @@ def test_persist_then_repo_checker_accepts_the_repo_producer_index(
     assert result.returncode == 0, result.stderr
 
     checker = subprocess.run(
-        [sys.executable, str(repo / "scripts" / "build_retro_lesson_selection_index.py"), "--repo-root", str(repo), "--check"],
+        [
+            sys.executable,
+            str(repo / "scripts" / "build_retro_lesson_selection_index.py"),
+            "--repo-root",
+            str(repo),
+            "--check",
+        ],
         cwd=repo,
         check=False,
         capture_output=True,
@@ -372,9 +381,12 @@ def _goal_retro(goal_value: str) -> str:
 def test_goal_metadata_canonicalizer_keeps_text_without_one_field_unchanged() -> None:
     text = "# Goal Retro\n\n## Context\n\n- No identity metadata.\n"
 
-    assert _persistence_lib._canonicalize_goal_metadata(
-        text, "charness-artifacts/goals/2026-05-07-owner.md"
-    ) == text
+    assert (
+        _persistence_lib._canonicalize_goal_metadata(
+            text, "charness-artifacts/goals/2026-05-07-owner.md"
+        )
+        == text
+    )
 
 
 def test_goal_metadata_canonicalizer_preserves_crlf_when_rewriting_a_slug() -> None:
@@ -385,9 +397,7 @@ def test_goal_metadata_canonicalizer_preserves_crlf_when_rewriting_a_slug() -> N
     )
 
     assert rewritten == (
-        "# Goal Retro\r\n"
-        "Goal: charness-artifacts/goals/2026-05-07-owner.md\r\n"
-        "\r\n## Context\r\n"
+        "# Goal Retro\r\nGoal: charness-artifacts/goals/2026-05-07-owner.md\r\n\r\n## Context\r\n"
     )
 
 
@@ -422,7 +432,9 @@ def test_goal_aware_persistence_accepts_matching_path_at_cli_boundary(
     outside = tmp_path / "outside"
     outside.mkdir()
     markdown_file = repo / "goal-retro.md"
-    markdown_file.write_text(_goal_retro("charness-artifacts/goals/2026-05-07-owner.md"), encoding="utf-8")
+    markdown_file.write_text(
+        _goal_retro("charness-artifacts/goals/2026-05-07-owner.md"), encoding="utf-8"
+    )
     monkeypatch.chdir(outside)
 
     result = run_persist(
@@ -746,7 +758,9 @@ def test_persist_writes_no_digest_when_the_projection_is_disabled(
     assert payload.get("summary_refreshed") is not True
 
 
-def test_a_date_bearing_subject_key_resolves_to_one_path(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_a_date_bearing_subject_key_resolves_to_one_path(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     """The scaffold and persistence must not split a subject that CONTAINS a date.
 
     The dated-artifact predicate matched a date anywhere in the name, so the subject
@@ -791,9 +805,14 @@ def test_a_date_bearing_subject_key_cannot_overwrite_an_undated_sibling(
         encoding="utf-8",
     )
     result = run_persist(
-        monkeypatch, capsys, "--repo-root", str(repo),
-        "--artifact-name", "session-2026-08-29",
-        "--markdown-file", str(markdown_file),
+        monkeypatch,
+        capsys,
+        "--repo-root",
+        str(repo),
+        "--artifact-name",
+        "session-2026-08-29",
+        "--markdown-file",
+        str(markdown_file),
     )
 
     assert result.returncode == 0, result.stderr

@@ -4,6 +4,7 @@ import json
 import subprocess
 from pathlib import Path
 
+import pytest
 import yaml
 
 from scripts.staged_commit_gate_plan import (
@@ -20,6 +21,9 @@ from tests.quality_gates.repo_shapes import install_committed_repo
 from .support import ROOT, run_script
 
 SURFACES_JSON = (ROOT / ".agents" / "surfaces.json").read_text(encoding="utf-8")
+pytestmark = pytest.mark.boundary_contract(
+    reason="observe the staged-commit fixture's real git rename/configuration boundary"
+)
 
 
 def _surface_verify_commands_for(paths: list[str]) -> set[str]:
@@ -129,7 +133,11 @@ def test_staged_commit_plan_skips_core_headroom_for_a_deleted_skill_md() -> None
 
 def test_staged_commit_plan_skips_core_headroom_without_changed_skill_md() -> None:
     # A reference edit or a non-skill change must not pull the SKILL.md core gate.
-    for paths in (["skills/public/demo/references/note.md"], ["scripts/new_helper.py"], ["README.md"]):
+    for paths in (
+        ["skills/public/demo/references/note.md"],
+        ["scripts/new_helper.py"],
+        ["README.md"],
+    ):
         assert "check-skill-core-headroom (staged)" not in _labels(paths)
 
 
@@ -190,7 +198,9 @@ def test_staged_commit_plan_skips_artifact_shape_for_non_artifact_md(tmp_path: P
         assert "check-artifact-shape (staged)" in _labels_with_files(tmp_path, paths)
     # ...and a DELETED one in the same family does not, because the shape validator
     # would be handed a file that is gone.
-    assert "check-artifact-shape (staged)" not in _labels(["charness-artifacts/critique/2026-06-08-gone.md"])
+    assert "check-artifact-shape (staged)" not in _labels(
+        ["charness-artifacts/critique/2026-06-08-gone.md"]
+    )
 
 
 def test_gate_command_serializes_to_dict() -> None:
@@ -327,9 +337,13 @@ def test_leak_scan_inventory_declaration_coverage_fires_for_inventory_python_onl
     # #368 sibling (#145 family): a new inventory_*.py under skills/public/quality/
     # scripts/ pulls the cheap declaration-coverage scan; a non-inventory scripts/.py
     # or a non-inventory quality script does not.
-    assert "check-inventory-declaration-coverage" in _labels(["skills/public/quality/scripts/inventory_new.py"])
+    assert "check-inventory-declaration-coverage" in _labels(
+        ["skills/public/quality/scripts/inventory_new.py"]
+    )
     assert "check-inventory-declaration-coverage" not in _labels(["scripts/new_helper.py"])
-    assert "check-inventory-declaration-coverage" not in _labels(["skills/public/quality/scripts/render_runtime_summary.py"])
+    assert "check-inventory-declaration-coverage" not in _labels(
+        ["skills/public/quality/scripts/render_runtime_summary.py"]
+    )
 
 
 def test_timing_layer_completeness_fires_for_run_quality_or_timing_doc_edits_only() -> None:
@@ -368,11 +382,21 @@ def test_consumer_validator_catalog_pull_covers_source_and_exported_paths() -> N
 
 
 def test_quality_reference_catalog_parity_fires_for_quality_reference_surface() -> None:
-    assert "validate-quality-reference-catalog" in _labels(["skills/public/quality/references/index.md"])
-    assert "validate-quality-reference-catalog" in _labels(["skills/public/quality/references/catalog.yaml"])
-    assert "validate-quality-reference-catalog" in _labels(["skills/public/quality/references/security-npm.md"])
-    assert "validate-quality-reference-catalog" in _labels(["scripts/validate_quality_reference_catalog.py"])
-    assert "validate-quality-reference-catalog" not in _labels(["skills/public/debug/references/index.md"])
+    assert "validate-quality-reference-catalog" in _labels(
+        ["skills/public/quality/references/index.md"]
+    )
+    assert "validate-quality-reference-catalog" in _labels(
+        ["skills/public/quality/references/catalog.yaml"]
+    )
+    assert "validate-quality-reference-catalog" in _labels(
+        ["skills/public/quality/references/security-npm.md"]
+    )
+    assert "validate-quality-reference-catalog" in _labels(
+        ["scripts/validate_quality_reference_catalog.py"]
+    )
+    assert "validate-quality-reference-catalog" not in _labels(
+        ["skills/public/debug/references/index.md"]
+    )
     assert "validate-quality-reference-catalog" not in _labels(["docs/usage.md"])
 
 
@@ -380,12 +404,16 @@ def test_leak_scan_gates_degrade_when_validator_absent(tmp_path: Path) -> None:
     # In a repo without the validator scripts (seeded tmp / consumer repo), the
     # leak-scan pulls degrade to no gate rather than planning a missing command —
     # the same _timing_pull_gate contract the other pulls use.
-    labels = [c.label for c in staged_commit_gate_plan(tmp_path, ["scripts/new_helper.py"], ruff_path="")]
+    labels = [
+        c.label for c in staged_commit_gate_plan(tmp_path, ["scripts/new_helper.py"], ruff_path="")
+    ]
     assert "validate-inference-interpretation" not in labels
     assert "check-bootstrap-shim-consistency" not in labels
     inv_labels = [
         c.label
-        for c in staged_commit_gate_plan(tmp_path, ["skills/public/quality/scripts/inventory_x.py"], ruff_path="")
+        for c in staged_commit_gate_plan(
+            tmp_path, ["skills/public/quality/scripts/inventory_x.py"], ruff_path=""
+        )
     ]
     assert "check-inventory-declaration-coverage" not in inv_labels
 
@@ -429,7 +457,9 @@ def test_staged_commit_gate_plan_cli_emits_the_planned_labels() -> None:
     # and the flag under test would be unproven.
     assert no_ruff_labels == [
         command.label
-        for command in staged_commit_gate_plan(ROOT, ["scripts/helper_provenance_lib.py"], ruff_path="")
+        for command in staged_commit_gate_plan(
+            ROOT, ["scripts/helper_provenance_lib.py"], ruff_path=""
+        )
     ]
     assert "check-python-lengths (staged)" in no_ruff_labels
     assert "ruff (staged)" not in no_ruff_labels
@@ -457,12 +487,19 @@ def test_a_rename_only_commit_sees_both_sides(tmp_path: Path) -> None:
     )
     subprocess.run(
         ["git", "mv", "skills/public/demo/SKILL.md", "skills/public/demo/MOVED.md"],
-        cwd=repo, check=True, capture_output=True, text=True,
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
     )
     # Rename detection is a git CONFIG, and `git init` inherits the caller's global
     # one. Both assertions below turn on it, so pin it instead of inheriting.
     subprocess.run(
-        ["git", "config", "diff.renames", "true"], cwd=repo, check=True, capture_output=True, text=True
+        ["git", "config", "diff.renames", "true"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
     )
 
     scope = collect_staged_scope_paths(repo)
@@ -495,7 +532,9 @@ def test_a_scope_path_never_reaches_a_per_file_validator() -> None:
         "skills/public/critique/SKILL.md",
         "charness-artifacts/critique/2026-07-27-provenance-containment.md",
     ]
-    plan = staged_commit_gate_plan(ROOT, present, scope_paths=[*present, *_GONE_PATHS], ruff_path="/bin/true")
+    plan = staged_commit_gate_plan(
+        ROOT, present, scope_paths=[*present, *_GONE_PATHS], ruff_path="/bin/true"
+    )
     labels = {command.label for command in plan}
     assert {"py_compile (staged)", "check-python-lengths (staged)", "ruff (staged)"} <= labels
     assert {"check-skill-core-headroom (staged)", "check-artifact-shape (staged)"} <= labels
@@ -512,7 +551,8 @@ def test_skill_packages_surface_runs_fast_ergonomics_checker() -> None:
     surfaces = json.loads(SURFACES_JSON)
     skill_packages = next(s for s in surfaces["surfaces"] if s["surface_id"] == "skill-packages")
     assert (
-        "python3 scripts/validate_skill_ergonomics.py --repo-root ." in skill_packages["verify_commands"]
+        "python3 scripts/validate_skill_ergonomics.py --repo-root ."
+        in skill_packages["verify_commands"]
     ), skill_packages["verify_commands"]
 
 
@@ -554,7 +594,9 @@ def test_precommit_plan_agrees_with_fast_subset_for_skill_change() -> None:
     }
     assert "python3 scripts/validate_skill_ergonomics.py --repo-root ." in expected_fast
 
-    precommit_labels = {command.label for command in staged_commit_gate_plan(ROOT, paths, ruff_path="")}
+    precommit_labels = {
+        command.label for command in staged_commit_gate_plan(ROOT, paths, ruff_path="")
+    }
     for command, label in FAST_SURFACE_VERIFY_COMMANDS.items():
         if command in expected_fast:
             assert label in precommit_labels, (label, precommit_labels)
@@ -595,7 +637,9 @@ def test_fast_surface_verify_gates_degrade_on_surface_error() -> None:
 def test_unrelated_change_adds_no_fast_surface_gates() -> None:
     # #314: a markdown-only change whose surfaces declare no fast checker must
     # not pull the fast subset into the pre-commit plan (no broad widening).
-    labels = {command.label for command in staged_commit_gate_plan(ROOT, ["README.md"], ruff_path="")}
+    labels = {
+        command.label for command in staged_commit_gate_plan(ROOT, ["README.md"], ruff_path="")
+    }
     assert labels.isdisjoint(set(FAST_SURFACE_VERIFY_COMMANDS.values()))
 
 
@@ -613,6 +657,11 @@ def test_a_renamed_and_edited_file_still_gets_its_per_file_gates() -> None:
 def test_surface_validators_are_presence_guarded_on_their_own_script(tmp_path: Path) -> None:
     """Retiring a validator must not schedule the very script the commit deletes."""
 
-    labels = [command.label for command in staged_commit_gate_plan(tmp_path, scope_paths=["skills/public/demo/SKILL.md"])]
+    labels = [
+        command.label
+        for command in staged_commit_gate_plan(
+            tmp_path, scope_paths=["skills/public/demo/SKILL.md"]
+        )
+    ]
     assert "validate-skills" not in labels
     assert "run-evals" not in labels

@@ -27,6 +27,9 @@ from .release_script_loading import load_release_script
 from .seeding_support import git, write_release_adapter
 
 CLAIMS_REVIEW = load_release_script("publish_release_claims_review", suffix="direct_parent")
+pytestmark = pytest.mark.boundary_contract(
+    reason="exercise the exported release publish entrypoint with its real git and GitHub-backed topology"
+)
 
 
 def _tree_snapshot(root: Path) -> dict[str, bytes]:
@@ -116,11 +119,20 @@ def test_execute_prepares_claims_review_record_without_publication(tmp_path: Pat
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     git_log_path = tmp_path / "git-log.json"
     gh_log_path = tmp_path / "gh-log.json"
-    prior_git_log = json.loads(git_log_path.read_text(encoding="utf-8")) if git_log_path.exists() else []
-    prior_gh_log = json.loads(gh_log_path.read_text(encoding="utf-8")) if gh_log_path.exists() else []
+    prior_git_log = (
+        json.loads(git_log_path.read_text(encoding="utf-8")) if git_log_path.exists() else []
+    )
+    prior_gh_log = (
+        json.loads(gh_log_path.read_text(encoding="utf-8")) if gh_log_path.exists() else []
+    )
     result = _run_publish(
-        repo, _release_env(tmp_path, bin_dir), "--part", "patch", "--execute",
-        "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents",
+        repo,
+        _release_env(tmp_path, bin_dir),
+        "--part",
+        "patch",
+        "--execute",
+        "--critique-blocked",
+        "synthetic-test-harness does not spawn real critique subagents",
     )
 
     assert result.returncode == 0, result.stderr
@@ -142,8 +154,13 @@ def test_resume_refuses_missing_claims_review_before_auth_or_publish(tmp_path: P
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     env = _release_env(tmp_path, bin_dir)
     prepared = _run_publish(
-        repo, env, "--part", "patch", "--execute",
-        "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents",
+        repo,
+        env,
+        "--part",
+        "patch",
+        "--execute",
+        "--critique-blocked",
+        "synthetic-test-harness does not spawn real critique subagents",
     )
     assert prepared.returncode == 0, prepared.stderr
     gh_log_path = tmp_path / "gh-log.json"
@@ -152,13 +169,20 @@ def test_resume_refuses_missing_claims_review_before_auth_or_publish(tmp_path: P
     prior_git = json.loads(git_log_path.read_text(encoding="utf-8"))
 
     refused = _run_publish(
-        repo, env, "--resume", "--publish-current", "--execute",
-        "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents",
+        repo,
+        env,
+        "--resume",
+        "--publish-current",
+        "--execute",
+        "--critique-blocked",
+        "synthetic-test-harness does not spawn real critique subagents",
     )
 
     assert refused.returncode != 0
     assert "requires --claims-review-artifact" in refused.stderr
-    assert ["auth", "status"] not in json.loads(gh_log_path.read_text(encoding="utf-8"))[len(prior_gh) :]
+    assert ["auth", "status"] not in json.loads(gh_log_path.read_text(encoding="utf-8"))[
+        len(prior_gh) :
+    ]
     git_log = json.loads(git_log_path.read_text(encoding="utf-8"))[len(prior_git) :]
     assert ["push", "origin", "main", "v0.0.1"] not in git_log
     assert ["tag", "v0.0.1"] not in git_log
@@ -168,22 +192,44 @@ def test_resume_refuses_missing_claims_review_before_auth_or_publish(tmp_path: P
 def test_exported_plugin_executes_claims_review_topology(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     env = _release_env(tmp_path, bin_dir)
-    plugin_publish = REPO_ROOT / "plugins" / "charness" / "skills" / "release" / "scripts" / "publish_release.py"
+    plugin_publish = (
+        REPO_ROOT / "plugins" / "charness" / "skills" / "release" / "scripts" / "publish_release.py"
+    )
     prepared = subprocess.run(
-        ["python3", str(plugin_publish), "--repo-root", str(repo), "--part", "patch", "--execute",
-         "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents"],
-        cwd=REPO_ROOT, check=False, capture_output=True, text=True, env=env,
+        [
+            "python3",
+            str(plugin_publish),
+            "--repo-root",
+            str(repo),
+            "--part",
+            "patch",
+            "--execute",
+            "--critique-blocked",
+            "synthetic-test-harness does not spawn real critique subagents",
+        ],
+        cwd=REPO_ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
     )
     assert prepared.returncode == 0, prepared.stderr
     payload = yaml.safe_load(prepared.stdout)
     prepared_commit = payload["prepared_release_commit"]
     record = subprocess.run(
         ["git", "show", f"{prepared_commit}:charness-artifacts/release/latest.md"],
-        cwd=repo, check=True, capture_output=True, text=True,
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
     ).stdout
     review_path = commit_claims_review(
-        repo, prepared_commit=prepared_commit, prepared_record=record,
-        target_version=payload["target_version"], tag_name=payload["tag_name"], stem="plugin-claims",
+        repo,
+        prepared_commit=prepared_commit,
+        prepared_record=record,
+        target_version=payload["target_version"],
+        tag_name=payload["tag_name"],
+        stem="plugin-claims",
     )
     evidence_commit = git(repo, "rev-parse", "HEAD")
     # Simulate response loss after P's tag reaches the remote but before R's
@@ -192,19 +238,39 @@ def test_exported_plugin_executes_claims_review_topology(tmp_path: Path) -> None
     git(repo, "push", "origin", "v0.0.1")
 
     resumed = subprocess.run(
-        ["python3", str(plugin_publish), "--repo-root", str(repo), "--resume", "--publish-current", "--execute",
-         "--claims-review-artifact", review_path,
-         "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents"],
-        cwd=REPO_ROOT, check=False, capture_output=True, text=True, env=env,
+        [
+            "python3",
+            str(plugin_publish),
+            "--repo-root",
+            str(repo),
+            "--resume",
+            "--publish-current",
+            "--execute",
+            "--claims-review-artifact",
+            review_path,
+            "--critique-blocked",
+            "synthetic-test-harness does not spawn real critique subagents",
+        ],
+        cwd=REPO_ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
     )
     assert resumed.returncode == 0, resumed.stderr
     tag_commit = git(repo, "rev-list", "-n", "1", "v0.0.1")
     remote_head = git(repo, "ls-remote", "origin", "refs/heads/main").split()[0]
     assert tag_commit == prepared_commit
-    assert subprocess.run(
-        ["git", "merge-base", "--is-ancestor", evidence_commit, remote_head],
-        cwd=repo, check=False, capture_output=True, text=True,
-    ).returncode == 0
+    assert (
+        subprocess.run(
+            ["git", "merge-base", "--is-ancestor", evidence_commit, remote_head],
+            cwd=repo,
+            check=False,
+            capture_output=True,
+            text=True,
+        ).returncode
+        == 0
+    )
 
 
 @pytest.mark.release_only
@@ -221,7 +287,9 @@ def test_publish_release_bumps_pushes_tags_and_creates_release(tmp_path: Path) -
     git(repo, "commit", "-m", "Add critique proof")
 
     env = _release_env(tmp_path, bin_dir)
-    result = _run_publish_patch(repo, env, "--critique-artifact", "charness-artifacts/critique/demo.md")
+    result = _run_publish_patch(
+        repo, env, "--critique-artifact", "charness-artifacts/critique/demo.md"
+    )
 
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
@@ -254,9 +322,14 @@ def test_publish_release_bumps_pushes_tags_and_creates_release(tmp_path: Path) -
     assert payload["release_url"] == "https://github.com/example/demo/releases/tag/v0.0.1"
     assert payload["public_release_verification"] == "verified"
     assert "post_publish_artifact_commit_sha" in payload
-    artifact_text = (repo / "charness-artifacts" / "release" / "latest.md").read_text(encoding="utf-8")
+    artifact_text = (repo / "charness-artifacts" / "release" / "latest.md").read_text(
+        encoding="utf-8"
+    )
     assert "## Release State" in artifact_text
-    assert "GitHub release record: verified URL `https://github.com/example/demo/releases/tag/v0.0.1`" in artifact_text
+    assert (
+        "GitHub release record: verified URL `https://github.com/example/demo/releases/tag/v0.0.1`"
+        in artifact_text
+    )
     assert "public release surface verification: verified" in artifact_text
     assert "## Public Release Verification" in artifact_text
     assert "GitHub release publication: verified by the release backend." in artifact_text
@@ -279,7 +352,9 @@ def test_publish_release_bumps_pushes_tags_and_creates_release(tmp_path: Path) -
 
 
 @pytest.mark.release_only
-def test_release_artifact_does_not_claim_post_publish_proof_before_verification(tmp_path: Path) -> None:
+def test_release_artifact_does_not_claim_post_publish_proof_before_verification(
+    tmp_path: Path,
+) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
 
     env = _release_env(tmp_path, bin_dir)
@@ -311,13 +386,21 @@ def test_publish_release_fails_after_post_create_verification_failure(tmp_path: 
     assert "post_publish_artifact_commit_sha:" in result.stderr
     assert "not_committed" not in result.stderr
     gh_log = json.loads((tmp_path / "gh-log.json").read_text(encoding="utf-8"))
-    release_create_index = next(index for index, entry in enumerate(gh_log) if entry[:2] == ["release", "create"])
-    post_create_views = [entry for entry in gh_log[release_create_index + 1 :] if entry == ["release", "view", "v0.0.1"]]
+    release_create_index = next(
+        index for index, entry in enumerate(gh_log) if entry[:2] == ["release", "create"]
+    )
+    post_create_views = [
+        entry
+        for entry in gh_log[release_create_index + 1 :]
+        if entry == ["release", "view", "v0.0.1"]
+    ]
     assert len(post_create_views) >= 3
     git_log = json.loads((tmp_path / "git-log.json").read_text(encoding="utf-8"))
     assert ["push", "origin", "main", "v0.0.1"] in git_log
     assert ["push", "origin", "main"] in git_log
-    artifact_text = (repo / "charness-artifacts" / "release" / "latest.md").read_text(encoding="utf-8")
+    artifact_text = (repo / "charness-artifacts" / "release" / "latest.md").read_text(
+        encoding="utf-8"
+    )
     assert "public release surface verification: failed" in artifact_text
     assert "create returned `https://github.com/example/demo/releases/tag/v0.0.1`" in artifact_text
     assert "post-create verification failed" in artifact_text
@@ -325,7 +408,9 @@ def test_publish_release_fails_after_post_create_verification_failure(tmp_path: 
 
 
 @pytest.mark.release_only
-def test_publish_release_does_not_close_issues_when_post_create_verification_fails(tmp_path: Path) -> None:
+def test_publish_release_does_not_close_issues_when_post_create_verification_fails(
+    tmp_path: Path,
+) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
 
     env = _release_env(tmp_path, bin_dir)
@@ -333,25 +418,40 @@ def test_publish_release_does_not_close_issues_when_post_create_verification_fai
     env["FAKE_GH_RELEASE_CREATE_WITHOUT_VIEW"] = "1"
     Path(env["FAKE_GH_ISSUE_STATE"]).write_text(json.dumps({"44": "OPEN"}) + "\n", encoding="utf-8")
     result = _run_publish_patch(
-        repo, env, "--close-issue", "44",
-        "--close-issue-behavior", "Behavior #44: confirmed via fresh checkout install",
-        "--close-issue-probe-record", "Probe record #44: local-only-by-contract",
+        repo,
+        env,
+        "--close-issue",
+        "44",
+        "--close-issue-behavior",
+        "Behavior #44: confirmed via fresh checkout install",
+        "--close-issue-probe-record",
+        "Probe record #44: local-only-by-contract",
     )
 
     assert result.returncode == 1
     state = json.loads(Path(env["FAKE_GH_ISSUE_STATE"]).read_text(encoding="utf-8"))
     assert state["44"] == "OPEN"
     gh_log = json.loads((tmp_path / "gh-log.json").read_text(encoding="utf-8"))
-    release_create_index = next(index for index, entry in enumerate(gh_log) if entry[:2] == ["release", "create"])
-    post_create_views = [entry for entry in gh_log[release_create_index + 1 :] if entry == ["release", "view", "v0.0.1"]]
+    release_create_index = next(
+        index for index, entry in enumerate(gh_log) if entry[:2] == ["release", "create"]
+    )
+    post_create_views = [
+        entry
+        for entry in gh_log[release_create_index + 1 :]
+        if entry == ["release", "view", "v0.0.1"]
+    ]
     assert len(post_create_views) >= 3
     assert not any(entry[:2] == ["issue", "close"] for entry in gh_log)
-    artifact_text = (repo / "charness-artifacts" / "release" / "latest.md").read_text(encoding="utf-8")
+    artifact_text = (repo / "charness-artifacts" / "release" / "latest.md").read_text(
+        encoding="utf-8"
+    )
     assert "Issue closeout verification: pending or not requested." in artifact_text
 
 
 @pytest.mark.release_only
-def test_publish_release_records_distinct_channel_confirmation_before_issue_close(tmp_path: Path) -> None:
+def test_publish_release_records_distinct_channel_confirmation_before_issue_close(
+    tmp_path: Path,
+) -> None:
     # WS-1 rung-2: a channel distinct from `gh release view` confirms the published
     # release, and the verdict is RECORDED before the irreversible issue close.
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
@@ -359,9 +459,14 @@ def test_publish_release_records_distinct_channel_confirmation_before_issue_clos
     env["FAKE_GH_ISSUE_STATE"] = str(tmp_path / "issue-state.json")
     Path(env["FAKE_GH_ISSUE_STATE"]).write_text(json.dumps({"44": "OPEN"}) + "\n", encoding="utf-8")
     result = _run_publish_patch(
-        repo, env, "--close-issue", "44",
-        "--close-issue-behavior", "Behavior #44: confirmed via fresh checkout install",
-        "--close-issue-probe-record", "Probe record #44: local-only-by-contract",
+        repo,
+        env,
+        "--close-issue",
+        "44",
+        "--close-issue-behavior",
+        "Behavior #44: confirmed via fresh checkout install",
+        "--close-issue-probe-record",
+        "Probe record #44: local-only-by-contract",
     )
 
     assert result.returncode == 0, result.stderr
@@ -373,13 +478,17 @@ def test_publish_release_records_distinct_channel_confirmation_before_issue_clos
     assert distinct_log == [["v0.0.1"]]
     state = json.loads(Path(env["FAKE_GH_ISSUE_STATE"]).read_text(encoding="utf-8"))
     assert state["44"] == "CLOSED"
-    artifact_text = (repo / "charness-artifacts" / "release" / "latest.md").read_text(encoding="utf-8")
+    artifact_text = (repo / "charness-artifacts" / "release" / "latest.md").read_text(
+        encoding="utf-8"
+    )
     assert "adapter-probe" in artifact_text
     assert "confirmed" in artifact_text
 
 
 @pytest.mark.release_only
-def test_publish_release_records_distinct_channel_disposition_and_still_closes(tmp_path: Path) -> None:
+def test_publish_release_records_distinct_channel_disposition_and_still_closes(
+    tmp_path: Path,
+) -> None:
     # F2a: a typed non-`verified` disposition (the distinct channel could not
     # confirm) passes the rung-1 presence floor EQUALLY — the close advances on
     # record-presence, never on an automated `confirmed ⇒ proceed` gate; the
@@ -390,9 +499,14 @@ def test_publish_release_records_distinct_channel_disposition_and_still_closes(t
     env["FAKE_GH_ISSUE_STATE"] = str(tmp_path / "issue-state.json")
     Path(env["FAKE_GH_ISSUE_STATE"]).write_text(json.dumps({"44": "OPEN"}) + "\n", encoding="utf-8")
     result = _run_publish_patch(
-        repo, env, "--close-issue", "44",
-        "--close-issue-behavior", "Behavior #44: confirmed via fresh checkout install",
-        "--close-issue-probe-record", "Probe record #44: local-only-by-contract",
+        repo,
+        env,
+        "--close-issue",
+        "44",
+        "--close-issue-behavior",
+        "Behavior #44: confirmed via fresh checkout install",
+        "--close-issue-probe-record",
+        "Probe record #44: local-only-by-contract",
     )
 
     assert result.returncode == 0, result.stderr
@@ -401,7 +515,9 @@ def test_publish_release_records_distinct_channel_disposition_and_still_closes(t
     assert payload["public_release_verification"] == "unproven"
     state = json.loads(Path(env["FAKE_GH_ISSUE_STATE"]).read_text(encoding="utf-8"))
     assert state["44"] == "CLOSED"
-    artifact_text = (repo / "charness-artifacts" / "release" / "latest.md").read_text(encoding="utf-8")
+    artifact_text = (repo / "charness-artifacts" / "release" / "latest.md").read_text(
+        encoding="utf-8"
+    )
     assert "Rung-2 distinct-channel verdict: `not-confirmed`" in artifact_text
 
 
@@ -413,9 +529,14 @@ def test_publish_release_verifies_and_falls_back_to_manual_issue_close(tmp_path:
     env["FAKE_GH_ISSUE_STATE"] = str(tmp_path / "issue-state.json")
     Path(env["FAKE_GH_ISSUE_STATE"]).write_text(json.dumps({"44": "OPEN"}) + "\n", encoding="utf-8")
     result = _run_publish_patch(
-        repo, env, "--close-issue", "44",
-        "--close-issue-behavior", "Behavior #44: confirmed via fresh checkout install",
-        "--close-issue-probe-record", "Probe record #44: local-only-by-contract",
+        repo,
+        env,
+        "--close-issue",
+        "44",
+        "--close-issue-behavior",
+        "Behavior #44: confirmed via fresh checkout install",
+        "--close-issue-probe-record",
+        "Probe record #44: local-only-by-contract",
     )
 
     assert result.returncode == 0, result.stderr
@@ -429,7 +550,9 @@ def test_publish_release_verifies_and_falls_back_to_manual_issue_close(tmp_path:
     assert payload["issue_closeout"]["issues"][0]["carrier"] == "direct_post_publish_commit_body"
     assert payload["issue_closeout"]["issues"][0]["manual_fallback_used"] is True
     assert payload["issue_closeout_commit_sha"]
-    artifact_text = (repo / "charness-artifacts" / "release" / "latest.md").read_text(encoding="utf-8")
+    artifact_text = (repo / "charness-artifacts" / "release" / "latest.md").read_text(
+        encoding="utf-8"
+    )
     assert "## Issue Closeout" in artifact_text
     assert "Issue closeout verification: `state-verified`." in artifact_text
     assert "Issue #44: `CLOSED`" in artifact_text
@@ -447,9 +570,12 @@ def test_publish_release_verifies_and_falls_back_to_manual_issue_close(tmp_path:
     gh_log = json.loads((tmp_path / "gh-log.json").read_text(encoding="utf-8"))
     assert ["issue", "view", "44", "--repo", "example/demo", "--json", "number,state,url"] in gh_log
     assert any(entry[:5] == ["issue", "close", "44", "--repo", "example/demo"] for entry in gh_log)
-    release_create_index = next(index for index, entry in enumerate(gh_log) if entry[:2] == ["release", "create"])
+    release_create_index = next(
+        index for index, entry in enumerate(gh_log) if entry[:2] == ["release", "create"]
+    )
     issue_view_indexes = [
-        index for index, entry in enumerate(gh_log)
+        index
+        for index, entry in enumerate(gh_log)
         if entry == ["issue", "view", "44", "--repo", "example/demo", "--json", "number,state,url"]
     ]
     assert issue_view_indexes[0] < release_create_index
@@ -482,8 +608,10 @@ def test_publish_release_accepts_full_bug_closeout_carrier(tmp_path: Path) -> No
         "bug",
         "--close-issue-carrier-file",
         str(carrier),
-        "--close-issue-behavior", "Behavior #44: confirmed via fresh checkout install",
-        "--close-issue-probe-record", "Probe record #44: local-only-by-contract",
+        "--close-issue-behavior",
+        "Behavior #44: confirmed via fresh checkout install",
+        "--close-issue-probe-record",
+        "Probe record #44: local-only-by-contract",
     )
 
     assert result.returncode == 0, result.stderr
@@ -598,7 +726,9 @@ def test_requested_review_gate_honors_advisory_only_policy(tmp_path: Path) -> No
     assert "configuration status: advisory_only" in plain.stdout
 
 
-def test_requested_review_gate_blocks_failed_command_under_advisory_only_policy(tmp_path: Path) -> None:
+def test_requested_review_gate_blocks_failed_command_under_advisory_only_policy(
+    tmp_path: Path,
+) -> None:
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)
     (repo / "charness-artifacts" / "release").mkdir(parents=True)
@@ -634,7 +764,13 @@ def test_publish_release_blocks_failed_requested_review_command(tmp_path: Path) 
         + "\nrequested_review_commands:\n- \"bash -c 'echo review unavailable >&2; exit 1'\"\n",
         encoding="utf-8",
     )
-    subprocess.run(["git", "add", ".agents/release-adapter.yaml"], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(
+        ["git", "add", ".agents/release-adapter.yaml"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
     subprocess.run(
         ["git", "commit", "-m", "Configure requested review gate"],
         cwd=repo,
@@ -655,15 +791,23 @@ def test_publish_release_blocks_failed_requested_review_command(tmp_path: Path) 
 @pytest.mark.release_only
 def test_publish_release_blocks_failed_fresh_checkout_probe_before_tag_push(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
-    (repo / ".git" / "info" / "exclude").write_text(".fresh-checkout-only-missing\n", encoding="utf-8")
+    (repo / ".git" / "info" / "exclude").write_text(
+        ".fresh-checkout-only-missing\n", encoding="utf-8"
+    )
     (repo / ".fresh-checkout-only-missing").write_text("maintainer local only\n", encoding="utf-8")
     adapter_path = repo / ".agents" / "release-adapter.yaml"
     adapter_path.write_text(
         adapter_path.read_text(encoding="utf-8")
-        + "\nfresh_checkout_probes:\n- \"test ! -f .fresh-checkout-only-missing\"\n- \"test \\\"$(git rev-list --count HEAD)\\\" = 1\"\n- \"bash -c 'echo fresh checkout failed >&2; exit 1'\"\n",
+        + '\nfresh_checkout_probes:\n- "test ! -f .fresh-checkout-only-missing"\n- "test \\"$(git rev-list --count HEAD)\\" = 1"\n- "bash -c \'echo fresh checkout failed >&2; exit 1\'"\n',
         encoding="utf-8",
     )
-    subprocess.run(["git", "add", ".agents/release-adapter.yaml"], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(
+        ["git", "add", ".agents/release-adapter.yaml"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
     subprocess.run(
         ["git", "commit", "-m", "Configure fresh checkout probe"],
         cwd=repo,
@@ -680,7 +824,12 @@ def test_publish_release_blocks_failed_fresh_checkout_probe_before_tag_push(tmp_
     assert "fresh checkout failed" in result.stderr
     assert ".fresh-checkout-only-missing" not in result.stderr
     assert "git rev-list --count HEAD" not in result.stderr
-    assert subprocess.run(["git", "tag", "--list", "v0.0.1"], cwd=repo, check=True, capture_output=True, text=True).stdout.strip() == ""
+    assert (
+        subprocess.run(
+            ["git", "tag", "--list", "v0.0.1"], cwd=repo, check=True, capture_output=True, text=True
+        ).stdout.strip()
+        == ""
+    )
     git_log = json.loads((tmp_path / "git-log.json").read_text(encoding="utf-8"))
     assert not any(entry and entry[0] == "push" for entry in git_log)
     gh_log = json.loads((tmp_path / "gh-log.json").read_text(encoding="utf-8"))
@@ -690,15 +839,23 @@ def test_publish_release_blocks_failed_fresh_checkout_probe_before_tag_push(tmp_
 @pytest.mark.release_only
 def test_publish_release_records_passed_fresh_checkout_probes_before_push(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
-    (repo / ".git" / "info" / "exclude").write_text(".fresh-checkout-only-missing\n", encoding="utf-8")
+    (repo / ".git" / "info" / "exclude").write_text(
+        ".fresh-checkout-only-missing\n", encoding="utf-8"
+    )
     (repo / ".fresh-checkout-only-missing").write_text("maintainer local only\n", encoding="utf-8")
     adapter_path = repo / ".agents" / "release-adapter.yaml"
     adapter_path.write_text(
         adapter_path.read_text(encoding="utf-8")
-        + "\nfresh_checkout_probes:\n- \"test ! -f .fresh-checkout-only-missing\"\n- \"test \\\"$(git rev-list --count HEAD)\\\" = 1\"\n",
+        + '\nfresh_checkout_probes:\n- "test ! -f .fresh-checkout-only-missing"\n- "test \\"$(git rev-list --count HEAD)\\" = 1"\n',
         encoding="utf-8",
     )
-    subprocess.run(["git", "add", ".agents/release-adapter.yaml"], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(
+        ["git", "add", ".agents/release-adapter.yaml"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
     subprocess.run(
         ["git", "commit", "-m", "Configure passing fresh checkout probes"],
         cwd=repo,
@@ -713,7 +870,9 @@ def test_publish_release_records_passed_fresh_checkout_probes_before_push(tmp_pa
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
     assert payload["fresh_checkout_probe_status"] == "passed"
-    artifact_text = (repo / "charness-artifacts" / "release" / "latest.md").read_text(encoding="utf-8")
+    artifact_text = (repo / "charness-artifacts" / "release" / "latest.md").read_text(
+        encoding="utf-8"
+    )
     assert "Fresh-checkout probe status: passed." in artifact_text
     assert "`test ! -f .fresh-checkout-only-missing`" in artifact_text
     git_log = json.loads((tmp_path / "git-log.json").read_text(encoding="utf-8"))
@@ -738,14 +897,11 @@ def test_publish_release_runs_adapter_preflight_before_bump(tmp_path: Path) -> N
     test_path.write_text("def test_ok(): pass\n", encoding="utf-8")
     _write_exec(
         bin_dir / "pytest",
-        "#!/usr/bin/env bash\n"
-        "echo focused adapter preflight failed >&2\n"
-        "exit 7\n",
+        "#!/usr/bin/env bash\necho focused adapter preflight failed >&2\nexit 7\n",
     )
     adapter_path = repo / ".agents" / "release-adapter.yaml"
     adapter_path.write_text(
-        adapter_path.read_text(encoding="utf-8")
-        + "\nfresh_checkout_probes:\n- test ok\n",
+        adapter_path.read_text(encoding="utf-8") + "\nfresh_checkout_probes:\n- test ok\n",
         encoding="utf-8",
     )
     subprocess.run(
@@ -771,13 +927,16 @@ def test_publish_release_runs_adapter_preflight_before_bump(tmp_path: Path) -> N
     manifest = json.loads((repo / "packaging" / "demo.json").read_text(encoding="utf-8"))
     assert manifest["version"] == "0.0.0"
     assert not (repo / ".quality-ran").exists()
-    assert subprocess.run(
-        ["git", "tag", "--list", "v0.0.1"],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout.strip() == ""
+    assert (
+        subprocess.run(
+            ["git", "tag", "--list", "v0.0.1"],
+            cwd=repo,
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+        == ""
+    )
 
 
 @pytest.mark.release_only
@@ -793,8 +952,7 @@ def test_publish_release_records_adapter_preflight_in_release_artifact(tmp_path:
     _write_exec(bin_dir / "pytest", "#!/usr/bin/env bash\nexit 0\n")
     adapter_path = repo / ".agents" / "release-adapter.yaml"
     adapter_path.write_text(
-        adapter_path.read_text(encoding="utf-8")
-        + "\nfresh_checkout_probes:\n- test ok\n",
+        adapter_path.read_text(encoding="utf-8") + "\nfresh_checkout_probes:\n- test ok\n",
         encoding="utf-8",
     )
     subprocess.run(
@@ -816,8 +974,13 @@ def test_publish_release_records_adapter_preflight_in_release_artifact(tmp_path:
     result = _run_publish_patch(repo, env)
 
     assert result.returncode == 0, result.stderr
-    artifact_text = (repo / "charness-artifacts" / "release" / "latest.md").read_text(encoding="utf-8")
+    artifact_text = (repo / "charness-artifacts" / "release" / "latest.md").read_text(
+        encoding="utf-8"
+    )
     assert "## Release Adapter Preflight" in artifact_text
     assert "Release adapter focused preflight status: `required`." in artifact_text
     assert "`fresh_checkout_probes`" in artifact_text
-    assert "`pytest tests/quality_gates/test_release_backend.py::test_release_adapter_preserves_fresh_checkout_probes" in artifact_text
+    assert (
+        "`pytest tests/quality_gates/test_release_backend.py::test_release_adapter_preserves_fresh_checkout_probes"
+        in artifact_text
+    )

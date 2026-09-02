@@ -126,6 +126,9 @@ def make_demo_packaging_repo(
     return repo
 
 
+@pytest.mark.boundary_contract(
+    reason="construct the clean packaging fixture through real git staging and commit operations"
+)
 def make_clean_git_repo(tmp_path: Path, seeded_charness_git_repo: Path) -> Path:
     repo = clone_seeded_charness_repo(tmp_path, seeded_charness_git_repo)
     sync = run_loaded_script_main(
@@ -168,7 +171,9 @@ def test_validate_packaging_default_allows_materialized_plugin_export_drift(
     readme_path = repo / "README.md"
     readme_path.write_text(readme_path.read_text(encoding="utf-8") + "\nDrift.\n", encoding="utf-8")
 
-    result = run_loaded_script_main("validate_packaging.py", validate_packaging_module, "--repo-root", str(repo))
+    result = run_loaded_script_main(
+        "validate_packaging.py", validate_packaging_module, "--repo-root", str(repo)
+    )
     assert result.returncode == 0, result.stderr
 
     export_result = run_loaded_script_main(
@@ -179,7 +184,10 @@ def test_validate_packaging_default_allows_materialized_plugin_export_drift(
         "--validate-export",
     )
     assert export_result.returncode == 1
-    assert "materialized plugin export does not match the generated install surface" in export_result.stderr
+    assert (
+        "materialized plugin export does not match the generated install surface"
+        in export_result.stderr
+    )
     assert "scripts/sync_root_plugin_manifests.py" in export_result.stderr
 
 
@@ -194,7 +202,9 @@ def test_sync_root_plugin_manifests_writes_install_surface(tmp_path: Path) -> No
         "integrations/tools",
     ):
         (repo / relative).mkdir(parents=True)
-    shutil.copy2(ROOT / "packaging" / "plugin.schema.json", repo / "packaging" / "plugin.schema.json")
+    shutil.copy2(
+        ROOT / "packaging" / "plugin.schema.json", repo / "packaging" / "plugin.schema.json"
+    )
     (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
     (repo / "packaging" / "demo.json").write_text(
         json.dumps(
@@ -286,7 +296,9 @@ def test_sync_root_plugin_manifests_writes_install_surface(tmp_path: Path) -> No
     assert (repo / "plugins" / "demo" / ".codex-plugin" / "plugin.json").exists()
     assert (repo / ".agents" / "plugins" / "marketplace.json").exists()
 
-    validate = run_loaded_script_main("validate_packaging.py", validate_packaging_module, "--repo-root", str(repo))
+    validate = run_loaded_script_main(
+        "validate_packaging.py", validate_packaging_module, "--repo-root", str(repo)
+    )
     assert validate.returncode == 0, validate.stderr
 
 
@@ -323,7 +335,9 @@ def test_exported_consumer_validator_catalog_uses_installed_package_root(
 
     assert result.returncode == 0, result.stderr
     source_catalog = repo / "skills/public/quality/references/consumer-validator-catalog.yaml"
-    exported_catalog = repo / "plugins/charness/skills/quality/references/consumer-validator-catalog.yaml"
+    exported_catalog = (
+        repo / "plugins/charness/skills/quality/references/consumer-validator-catalog.yaml"
+    )
     assert "package_root: plugins/charness" in source_catalog.read_text(encoding="utf-8")
     assert "package_root: ." in exported_catalog.read_text(encoding="utf-8")
 
@@ -346,7 +360,9 @@ def test_validate_packaging_committed_accepts_clean_head(
 ) -> None:
     repo = make_clean_git_repo(tmp_path, seeded_charness_git_repo)
 
-    result = run_script("scripts/validate_packaging_committed.py", "--repo-root", str(repo), cwd=repo)
+    result = run_script(
+        "scripts/validate_packaging_committed.py", "--repo-root", str(repo), cwd=repo
+    )
     assert result.returncode == 0, result.stderr
 
 
@@ -397,18 +413,26 @@ def test_eval_registry_scenarios_are_immutable_contract_records() -> None:
 
 def test_validate_packaging_rejects_wrong_codex_manifest_path(tmp_path: Path) -> None:
     repo = make_demo_packaging_repo(tmp_path, codex_manifest_path="plugin.json")
-    result = run_loaded_script_main("validate_packaging.py", validate_packaging_module, "--repo-root", str(repo))
+    result = run_loaded_script_main(
+        "validate_packaging.py", validate_packaging_module, "--repo-root", str(repo)
+    )
     assert result.returncode == 1
     assert ".codex-plugin/plugin.json" in result.stderr
 
 
 def test_validate_packaging_rejects_unknown_top_level_field(tmp_path: Path) -> None:
     repo = make_demo_packaging_repo(tmp_path, include_unexpected_field=True)
-    result = run_loaded_script_main("validate_packaging.py", validate_packaging_module, "--repo-root", str(repo))
+    result = run_loaded_script_main(
+        "validate_packaging.py", validate_packaging_module, "--repo-root", str(repo)
+    )
     assert result.returncode == 1
     assert "Additional properties are not allowed" in result.stderr
 
 
+@pytest.mark.boundary_contract(
+    reason="prove the packaging install-surface checker bootstraps from a clean interpreter "
+    "with ambient repo-import variables removed"
+)
 def test_validate_packaging_install_surface_bootstraps_repo_imports(tmp_path: Path) -> None:
     env = os.environ.copy()
     env.pop("PYTHONPATH", None)
@@ -451,14 +475,20 @@ def test_plugin_import_smoke_allows_exported_script_sibling_imports(tmp_path: Pa
 
 
 @pytest.mark.release_only
-def test_validate_packaging_rejects_invalid_public_skill_policy_when_present(tmp_path: Path, seeded_charness_repo: Path) -> None:
+def test_validate_packaging_rejects_invalid_public_skill_policy_when_present(
+    tmp_path: Path, seeded_charness_repo: Path
+) -> None:
     repo = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
     policy_path = repo / "docs" / "public-skill-validation.json"
     policy = json.loads(policy_path.read_text(encoding="utf-8"))
     policy["tiers"]["hitl-recommended"].remove("critique")
-    policy_path.write_text(json.dumps(policy, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    policy_path.write_text(
+        json.dumps(policy, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
 
-    result = run_loaded_script_main("validate_packaging.py", validate_packaging_module, "--repo-root", str(repo))
+    result = run_loaded_script_main(
+        "validate_packaging.py", validate_packaging_module, "--repo-root", str(repo)
+    )
     assert result.returncode == 1
     assert "does not classify every public skill" in result.stderr
 
@@ -504,9 +534,15 @@ def test_export_plugin_materializes_codex_and_claude_layouts(tmp_path: Path) -> 
     exported_readme = claude_root / "plugins" / "charness" / "README.md"
     exported_profiles = claude_root / "plugins" / "charness" / "profiles"
     exported_gather_skill = claude_root / "plugins" / "charness" / "skills" / "gather" / "SKILL.md"
-    exported_shared_ref = claude_root / "plugins" / "charness" / "shared" / "references" / "binary-preflight.md"
-    exported_support_skill = claude_root / "plugins" / "charness" / "support" / "web-fetch" / "SKILL.md"
-    exported_agent_browser = claude_root / "plugins" / "charness" / "support" / "agent-browser" / "SKILL.md"
+    exported_shared_ref = (
+        claude_root / "plugins" / "charness" / "shared" / "references" / "binary-preflight.md"
+    )
+    exported_support_skill = (
+        claude_root / "plugins" / "charness" / "support" / "web-fetch" / "SKILL.md"
+    )
+    exported_agent_browser = (
+        claude_root / "plugins" / "charness" / "support" / "agent-browser" / "SKILL.md"
+    )
     exported_specdown = claude_root / "plugins" / "charness" / "support" / "specdown" / "SKILL.md"
     exported_helper_script = claude_root / "plugins" / "charness" / "scripts" / "adapter_lib.py"
     exported_scripts = claude_root / "plugins" / "charness" / "scripts"
@@ -520,8 +556,7 @@ def test_export_plugin_materializes_codex_and_claude_layouts(tmp_path: Path) -> 
     assert not exported_specdown.exists()
     assert exported_helper_script.is_file()
     assert all(
-        not (exported_scripts / name).exists()
-        for name in packaging_lib.SOURCE_ONLY_PLUGIN_SCRIPTS
+        not (exported_scripts / name).exists() for name in packaging_lib.SOURCE_ONLY_PLUGIN_SCRIPTS
     )
     assert (exported_scripts / "public_skill_dogfood_lib.py").is_file()
     assert (
@@ -535,19 +570,31 @@ def test_export_plugin_materializes_codex_and_claude_layouts(tmp_path: Path) -> 
     ).is_file()
     assert not (claude_root / "plugins" / "charness" / "skills" / "public").exists()
     assert not (claude_root / "plugins" / "charness" / "support" / "generated").exists()
-    assert json.loads(claude_manifest.read_text(encoding="utf-8"))["repository"] == "https://github.com/corca-ai/charness"
+    assert (
+        json.loads(claude_manifest.read_text(encoding="utf-8"))["repository"]
+        == "https://github.com/corca-ai/charness"
+    )
     exported_readme_text = exported_readme.read_text(encoding="utf-8")
     assert exported_readme_text.startswith("<!--\ngenerated_file: true\n")
     assert "source_path: README.md" in exported_readme_text
-    assert "sync_command: python3 scripts/sync_root_plugin_manifests.py --repo-root ." in exported_readme_text
+    assert (
+        "sync_command: python3 scripts/sync_root_plugin_manifests.py --repo-root ."
+        in exported_readme_text
+    )
     assert "./skills/public/" not in exported_readme_text
     assert "./skills/support/" not in exported_readme_text
     assert "./plugins/charness/support/" not in exported_readme_text
     assert "(./skills/)" in exported_readme_text
     assert "(./support/agent-browser/SKILL.md)" not in exported_readme_text
     assert "(./support/specdown/SKILL.md)" not in exported_readme_text
-    assert "(https://github.com/corca-ai/charness/blob/main/docs/cli-reference.md)" in exported_readme_text
-    assert "(https://github.com/corca-ai/charness/blob/main/docs/host-packaging.md)" in exported_readme_text
+    assert (
+        "(https://github.com/corca-ai/charness/blob/main/docs/cli-reference.md)"
+        in exported_readme_text
+    )
+    assert (
+        "(https://github.com/corca-ai/charness/blob/main/docs/host-packaging.md)"
+        in exported_readme_text
+    )
 
     validate_exported_skills = run_script(
         "scripts/validate_skills.py",
@@ -558,13 +605,30 @@ def test_export_plugin_materializes_codex_and_claude_layouts(tmp_path: Path) -> 
 
     plugin_root = claude_root / "plugins" / "charness"
     for target in re.findall(r"\[[^\]]+\]\((\./[^)]+)\)", exported_readme_text):
-        if target.startswith(("./skills/", "./support/", "./integrations/", "./profiles/", "./presets/", "./README.md")):
+        if target.startswith(
+            (
+                "./skills/",
+                "./support/",
+                "./integrations/",
+                "./profiles/",
+                "./presets/",
+                "./README.md",
+            )
+        ):
             assert (plugin_root / target.removeprefix("./").split("#", 1)[0]).exists(), target
 
     consumer_root = tmp_path / "consumer"
     consumer_root.mkdir()
     gather_resolve = run_script(
-        str(claude_root / "plugins" / "charness" / "skills" / "gather" / "scripts" / "resolve_adapter.py"),
+        str(
+            claude_root
+            / "plugins"
+            / "charness"
+            / "skills"
+            / "gather"
+            / "scripts"
+            / "resolve_adapter.py"
+        ),
         "--repo-root",
         str(consumer_root),
         cwd=ROOT,
@@ -594,13 +658,18 @@ def test_export_plugin_allows_version_override(tmp_path: Path) -> None:
     codex_manifest = output_root / "plugins" / "charness" / ".codex-plugin" / "plugin.json"
     codex_marketplace = output_root / ".agents" / "plugins" / "marketplace.json"
     assert json.loads(codex_manifest.read_text(encoding="utf-8"))["version"] == "1.2.3"
-    assert json.loads(codex_marketplace.read_text(encoding="utf-8"))["plugins"][0]["name"] == "charness"
+    assert (
+        json.loads(codex_marketplace.read_text(encoding="utf-8"))["plugins"][0]["name"]
+        == "charness"
+    )
 
     shared_manifest = json.loads((ROOT / "packaging" / "charness.json").read_text(encoding="utf-8"))
     assert shared_manifest["version"] != "1.2.3"
 
 
-def test_install_surface_names_the_parser_adapter_lib_loads_by_path(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_install_surface_names_the_parser_adapter_lib_loads_by_path(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """`adapter_lib` loads `adapter_yaml_parse` BY PATH at module scope, so an installed
     plugin missing it fails at IMPORT of `adapter_lib` — earlier than the
     `adapter_yaml_render_lib` case beside it in the floor, which earned its entry for the
@@ -616,10 +685,13 @@ def test_install_surface_names_the_parser_adapter_lib_loads_by_path(monkeypatch:
     Patch it here so this standing test remains narrowly about the required parser file.
     """
     from scripts import validate_packaging_install_surface as surface
+
     required: list[str] = []
     root = Path(__file__).resolve().parents[2]
     manifest = json.loads((root / "packaging" / "charness.json").read_text(encoding="utf-8"))
-    monkeypatch.setattr(surface, "validate_materialized_plugin_export_matches_generated", lambda *_args: None)
+    monkeypatch.setattr(
+        surface, "validate_materialized_plugin_export_matches_generated", lambda *_args: None
+    )
     surface.validate_materialized_plugin_export(
         root,
         manifest,

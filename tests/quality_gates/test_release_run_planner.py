@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import re
 import shutil
 import subprocess
@@ -12,6 +13,7 @@ import pytest
 import yaml
 
 from tests.quality_gates.git_fixture_support import init_git_repo
+from tests.script_main import run_loaded_script_main
 from tests.seed_cache import get_or_build
 
 from .release_publish_fixtures import (
@@ -24,6 +26,9 @@ from .release_publish_fixtures import (
 from .seeding_support import load_module
 
 PLANNER = "skills/public/release/scripts/plan_release_run.py"
+pytestmark = pytest.mark.boundary_contract(
+    reason="observe the release publish preparation's real git and external release child commands"
+)
 
 
 def _load_script_module(name: str, rel_path: str):
@@ -62,15 +67,20 @@ def _args(**overrides: object) -> SimpleNamespace:
     return SimpleNamespace(**values)
 
 
-def _run_plan(repo: Path, env: dict[str, str], *args: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        ["python3", str(REPO_ROOT / PLANNER), "--repo-root", str(repo), "--detail", *args],
-        cwd=REPO_ROOT,
-        env=env,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+def _run_plan(
+    repo: Path, env: dict[str, str], *args: str, detail: bool = True
+) -> subprocess.CompletedProcess[str]:
+    previous_cwd = Path.cwd()
+    try:
+        os.chdir(REPO_ROOT)
+        cli_args = ["--repo-root", str(repo)]
+        if detail:
+            cli_args.append("--detail")
+        cli_args.extend(args)
+        result = run_loaded_script_main(PLANNER, _PLANNER, *cli_args, env=env)
+    finally:
+        os.chdir(previous_cwd)
+    return result
 
 
 def _run_plan_in_process(
@@ -99,8 +109,12 @@ def _run_plan_in_process(
         else:
             raise AssertionError(f"unsupported in-process planner argument: {value}")
     status_patch = patch.object(_PLANNER._current_release, "_git_status", return_value=[])
-    with status_patch if not check_current_status else patch.object(
-        _PLANNER._current_release, "_git_status", wraps=_PLANNER._current_release._git_status
+    with (
+        status_patch
+        if not check_current_status
+        else patch.object(
+            _PLANNER._current_release, "_git_status", wraps=_PLANNER._current_release._git_status
+        )
     ):
         payload = _PLANNER.build_plan(values)
     return subprocess.CompletedProcess(
@@ -184,7 +198,9 @@ def test_release_run_planner_reports_inspect_packet_without_mutation(tmp_path: P
     assert not (repo / ".quality-ran").exists()
 
 
-def test_release_run_planner_routes_declared_specialized_lane_without_mutation(tmp_path: Path) -> None:
+def test_release_run_planner_routes_declared_specialized_lane_without_mutation(
+    tmp_path: Path,
+) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     workflow = repo / ".github" / "workflows" / "demo-release.yml"
     workflow.parent.mkdir(parents=True)
@@ -242,7 +258,9 @@ def test_release_run_planner_requires_critique_before_publish(tmp_path: Path) ->
     assert payload["publish_packets"] == []
 
 
-def test_release_run_planner_surfaces_stale_update_instructions_before_publish(tmp_path: Path) -> None:
+def test_release_run_planner_surfaces_stale_update_instructions_before_publish(
+    tmp_path: Path,
+) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     adapter = repo / ".agents" / "release-adapter.yaml"
     adapter.write_text(
@@ -267,7 +285,9 @@ def test_release_run_planner_surfaces_stale_update_instructions_before_publish(t
     assert "version-agnostic" in payload["next_action"]["reason"]
 
 
-def test_release_run_planner_prioritizes_update_instruction_prep_over_dirty_tree(tmp_path: Path) -> None:
+def test_release_run_planner_prioritizes_update_instruction_prep_over_dirty_tree(
+    tmp_path: Path,
+) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     adapter = repo / ".agents" / "release-adapter.yaml"
     adapter.write_text(
@@ -311,12 +331,16 @@ def test_release_run_planner_points_to_publish_dry_run_when_ready(tmp_path: Path
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
     assert payload["next_action"]["kind"] == "publish_dry_run"
-    execute_packet = next(packet for packet in payload["publish_packets"] if packet["id"] == "publish-execute")
+    execute_packet = next(
+        packet for packet in payload["publish_packets"] if packet["id"] == "publish-execute"
+    )
     assert execute_packet["requires_user_confirmation"] is True
     assert PUBLISH_SCRIPT not in result.stderr
 
 
-def test_release_run_planner_preserves_blocked_host_signal_in_publish_packet(tmp_path: Path) -> None:
+def test_release_run_planner_preserves_blocked_host_signal_in_publish_packet(
+    tmp_path: Path,
+) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     signal = "host runtime has no subagent tool in this fixture"
 
@@ -340,7 +364,7 @@ def test_release_run_planner_plain_output(capsys, monkeypatch: pytest.MonkeyPatc
     monkeypatch.setattr(
         _PLANNER.SKILL_RUNTIME,
         "arm_cli_timeout",
-        lambda **_kwargs: (lambda: None),
+        lambda **_kwargs: lambda: None,
     )
 
     assert _PLANNER.main() == 0
@@ -352,7 +376,7 @@ def test_release_run_planner_main_emits_yaml_detail_in_process(
 ) -> None:
     plan = {"next_action": {"kind": "inspect_only", "reason": "test"}}
     monkeypatch.setattr(_PLANNER, "build_plan", lambda _args: plan)
-    monkeypatch.setattr(_PLANNER.SKILL_RUNTIME, "arm_cli_timeout", lambda **_kwargs: (lambda: None))
+    monkeypatch.setattr(_PLANNER.SKILL_RUNTIME, "arm_cli_timeout", lambda **_kwargs: lambda: None)
 
     monkeypatch.setattr(_PLANNER, "parse_args", lambda: _args(detail=True))
     assert _PLANNER.main() == 0
@@ -455,11 +479,26 @@ def test_release_run_packets_emit_publish_current_and_set_version_commands() -> 
 @pytest.mark.parametrize(
     ("adapter", "release_payload", "target_version", "expected"),
     [
-        ({"found": False, "valid": False}, {"drift": [], "git_status": []}, None, "scaffold_adapter"),
+        (
+            {"found": False, "valid": False},
+            {"drift": [], "git_status": []},
+            None,
+            "scaffold_adapter",
+        ),
         ({"found": True, "valid": False}, {"drift": [], "git_status": []}, None, "repair_adapter"),
         ({"found": True, "valid": True}, None, None, "repair_release_surface"),
-        ({"found": True, "valid": True}, {"drift": ["packaging/charness.json"], "git_status": []}, None, "sync_release_surface"),
-        ({"found": True, "valid": True}, {"drift": [], "git_status": [" M file"]}, "1.2.4", "clean_worktree"),
+        (
+            {"found": True, "valid": True},
+            {"drift": ["packaging/charness.json"], "git_status": []},
+            None,
+            "sync_release_surface",
+        ),
+        (
+            {"found": True, "valid": True},
+            {"drift": [], "git_status": [" M file"]},
+            "1.2.4",
+            "clean_worktree",
+        ),
     ],
 )
 def test_release_run_packets_next_action_blockers(
@@ -484,9 +523,22 @@ def _prepare_release_stop(tmp_path: Path):
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     env = _release_env(tmp_path, bin_dir)
     prepared = subprocess.run(
-        ["python3", str(PUBLISH_SCRIPT), "--repo-root", str(repo), "--part", "patch", "--execute",
-         "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents"],
-        cwd=REPO_ROOT, env=env, check=False, capture_output=True, text=True,
+        [
+            "python3",
+            str(PUBLISH_SCRIPT),
+            "--repo-root",
+            str(repo),
+            "--part",
+            "patch",
+            "--execute",
+            "--critique-blocked",
+            "synthetic-test-harness does not spawn real critique subagents",
+        ],
+        cwd=REPO_ROOT,
+        env=env,
+        check=False,
+        capture_output=True,
+        text=True,
     )
     assert prepared.returncode == 0, prepared.stderr
     return repo, env, yaml.safe_load(prepared.stdout)
@@ -507,7 +559,10 @@ def test_planner_routes_a_prepared_claims_stop_to_a_resume_not_inspect_only(tmp_
     assert plan["next_action"]["kind"] == "resume_prepared_claims_review"
     assert payload["tag_name"] in plan["next_action"]["reason"]
     assert plan["prepared_claims_review"]["target_version"] == payload["target_version"]
-    assert plan["prepared_claims_review"]["marker"] == "charness-release-state:prepared-awaiting-claims-review"
+    assert (
+        plan["prepared_claims_review"]["marker"]
+        == "charness-release-state:prepared-awaiting-claims-review"
+    )
 
 
 @pytest.mark.release_only
@@ -520,25 +575,29 @@ def test_planner_emits_the_resume_command_with_every_required_flag(tmp_path: Pat
 
     packets = {packet["id"]: packet for packet in plan["publish_packets"]}
     assert set(packets) == {
-        "claims-review-scaffold", "publish-resume-dry-run", "publish-resume-execute"
+        "claims-review-scaffold",
+        "publish-resume-dry-run",
+        "publish-resume-execute",
     }
     scaffold = packets["claims-review-scaffold"]
     assert "scaffold_claims_review.py" in scaffold["command"]
     assert "--write" in scaffold["command"]
     assert scaffold["requires_user_confirmation"] is False
     execute = packets["publish-resume-execute"]
-    for flag in ("--resume", "--publish-current", "--claims-review-artifact",
-                 "--critique-artifact", "--execute"):
+    for flag in (
+        "--resume",
+        "--publish-current",
+        "--claims-review-artifact",
+        "--critique-artifact",
+        "--execute",
+    ):
         assert flag in execute["command"], execute["command"]
     assert execute["requires_user_confirmation"] is True
     assert packets["publish-resume-dry-run"]["requires_user_confirmation"] is False
     assert "--execute" not in packets["publish-resume-dry-run"]["command"]
 
     # And on the summary line, which is where an operator at a prepared stop looks.
-    summary = subprocess.run(
-        ["python3", str(REPO_ROOT / PLANNER), "--repo-root", str(repo)],
-        cwd=REPO_ROOT, env=env, check=False, capture_output=True, text=True,
-    )
+    summary = _run_plan(repo, env, detail=False)
     assert summary.returncode == 0, summary.stderr
     assert "publish-resume-execute:" in summary.stdout
     assert "claims-review-scaffold:" in summary.stdout
@@ -574,7 +633,9 @@ def test_planner_names_only_a_critique_artifact_the_publish_gate_accepts(tmp_pat
     stub = critique_dir / f"stub-{slug}.md"
     stub.write_text(f"# {version}\n", encoding="utf-8")
     unrelated = critique_dir / "unrelated.md"
-    unrelated.write_text("# Some other critique\n\nAbout nothing in particular.\n", encoding="utf-8")
+    unrelated.write_text(
+        "# Some other critique\n\nAbout nothing in particular.\n", encoding="utf-8"
+    )
     _git(repo, "add", str(good), str(stub), str(unrelated))
     _git(repo, "commit", "-m", "Add critique candidates")
 
@@ -614,12 +675,23 @@ def test_the_resume_packet_uses_the_committed_claims_record_when_there_is_one(
     in exactly the state where it is knowable."""
     repo, env, payload = _prepare_release_stop(tmp_path)
     record = subprocess.run(
-        ["git", "show", f"{payload['prepared_release_commit']}:charness-artifacts/release/latest.md"],
-        cwd=repo, check=True, capture_output=True, text=True,
+        [
+            "git",
+            "show",
+            f"{payload['prepared_release_commit']}:charness-artifacts/release/latest.md",
+        ],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
     ).stdout
     review_path = commit_claims_review(
-        repo, prepared_commit=payload["prepared_release_commit"], prepared_record=record,
-        target_version=payload["target_version"], tag_name=payload["tag_name"], stem="planner-claims",
+        repo,
+        prepared_commit=payload["prepared_release_commit"],
+        prepared_record=record,
+        target_version=payload["target_version"],
+        tag_name=payload["tag_name"],
+        stem="planner-claims",
     )
 
     plan = yaml.safe_load(_run_plan(repo, env).stdout)
@@ -651,7 +723,9 @@ def test_the_planner_reads_the_marker_from_the_commit_not_the_worktree(tmp_path:
     env2 = _release_env(second, bin_dir2)
     target = repo2 / "charness-artifacts" / "release" / "latest.md"
     target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text("<!-- charness-release-state:prepared-awaiting-claims-review -->\n", encoding="utf-8")
+    target.write_text(
+        "<!-- charness-release-state:prepared-awaiting-claims-review -->\n", encoding="utf-8"
+    )
     plan2 = yaml.safe_load(_run_plan(repo2, env2).stdout)
     assert plan2["next_action"]["kind"] != "resume_prepared_claims_review"
     assert plan2["prepared_claims_review"] is None
@@ -671,8 +745,14 @@ def test_planner_prepared_stop_helpers_are_exercised_in_process(tmp_path: Path) 
     # The record path is derived from the adapter, and the planner is TOLERANT where the
     # publish helper refuses: an adapter that declares no `output_dir` means "no prepared
     # stop detected", not a crash in a read-only planner.
-    assert _PREPARED_STOP.release_record_path({"output_dir": "artifacts/release"}) == "artifacts/release/latest.md"
-    assert _PREPARED_STOP.release_record_path({"output_dir": "artifacts/release/"}) == "artifacts/release/latest.md"
+    assert (
+        _PREPARED_STOP.release_record_path({"output_dir": "artifacts/release"})
+        == "artifacts/release/latest.md"
+    )
+    assert (
+        _PREPARED_STOP.release_record_path({"output_dir": "artifacts/release/"})
+        == "artifacts/release/latest.md"
+    )
     assert _PREPARED_STOP.release_record_path({}) is None
     assert _PREPARED_STOP.release_record_path({"output_dir": "  "}) is None
     assert _PREPARED_STOP.head_release_record(repo, None) is None
@@ -683,32 +763,50 @@ def test_planner_prepared_stop_helpers_are_exercised_in_process(tmp_path: Path) 
     def _raises(*_args, **_kwargs):
         raise OSError("notes directory is unreadable")
 
+    assert (
+        _PREPARED_STOP.drafted_notes_candidates(
+            repo, {"output_dir": "charness-artifacts/release"}, "v1.2.3", find_drafted_notes=_raises
+        )
+        == []
+    )
+    assert (
+        _PREPARED_STOP.drafted_notes_candidates(repo, {}, "v1.2.3", find_drafted_notes=_raises)
+        == []
+    )
+    assert (
+        _PREPARED_STOP.drafted_notes_candidates(
+            repo, {"output_dir": "charness-artifacts/release"}, None, find_drafted_notes=_raises
+        )
+        == []
+    )
     assert _PREPARED_STOP.drafted_notes_candidates(
-        repo, {"output_dir": "charness-artifacts/release"}, "v1.2.3", find_drafted_notes=_raises
-    ) == []
-    assert _PREPARED_STOP.drafted_notes_candidates(
-        repo, {}, "v1.2.3", find_drafted_notes=_raises
-    ) == []
-    assert _PREPARED_STOP.drafted_notes_candidates(
-        repo, {"output_dir": "charness-artifacts/release"}, None, find_drafted_notes=_raises
-    ) == []
-    assert _PREPARED_STOP.drafted_notes_candidates(
-        repo, {"output_dir": "charness-artifacts/release"}, "v1.2.3",
-        find_drafted_notes=lambda root, _dir, *, target_tag: [root / "charness-artifacts" / "release" / "notes-v1.2.3.md"],
+        repo,
+        {"output_dir": "charness-artifacts/release"},
+        "v1.2.3",
+        find_drafted_notes=lambda root, _dir, *, target_tag: [
+            root / "charness-artifacts" / "release" / "notes-v1.2.3.md"
+        ],
     ) == ["charness-artifacts/release/notes-v1.2.3.md"]
 
     # No release record at HEAD (no commits yet) -> no marker, so no prepared stop.
     assert _PREPARED_STOP.head_release_record(repo, "charness-artifacts/release/latest.md") is None
-    assert _PREPARED_STOP.committed_claims_record(
-        repo, claims_record_in_change_set=lambda changed: None
-    ) is None
+    assert (
+        _PREPARED_STOP.committed_claims_record(
+            repo, claims_record_in_change_set=lambda changed: None
+        )
+        is None
+    )
 
     bound = repo / "charness-artifacts" / "critique" / "release-1-2-3.md"
-    bound.write_text("# Release critique\n\nScope and risks for the 1.2.3 candidate.\n", encoding="utf-8")
+    bound.write_text(
+        "# Release critique\n\nScope and risks for the 1.2.3 candidate.\n", encoding="utf-8"
+    )
     stub = repo / "charness-artifacts" / "critique" / "stub-1-2-3.md"
     stub.write_text("# 1.2.3\n", encoding="utf-8")
     untracked = repo / "charness-artifacts" / "critique" / "untracked-1-2-3.md"
-    untracked.write_text("# Untracked\n\nRelease: 1.2.3 and some substance here.\n", encoding="utf-8")
+    untracked.write_text(
+        "# Untracked\n\nRelease: 1.2.3 and some substance here.\n", encoding="utf-8"
+    )
     _git(repo, "add", str(bound), str(stub))
     _git(repo, "commit", "-m", "critique candidates")
 
@@ -721,9 +819,12 @@ def test_planner_prepared_stop_helpers_are_exercised_in_process(tmp_path: Path) 
     # Stub: the gate's refusal is the exact message the resume packet exists to prevent.
     assert accepts("charness-artifacts/critique/stub-1-2-3.md") is False
     # No resolvable version -> presence-only tokens; the acceptor still requires tracked.
-    assert _PREPARED_STOP.critique_acceptor(
-        repo, _CLOSEOUT_TOKENS(None), closeout_evidence=_CLOSEOUT_EVIDENCE
-    )("charness-artifacts/critique/untracked-1-2-3.md") is False
+    assert (
+        _PREPARED_STOP.critique_acceptor(
+            repo, _CLOSEOUT_TOKENS(None), closeout_evidence=_CLOSEOUT_EVIDENCE
+        )("charness-artifacts/critique/untracked-1-2-3.md")
+        is False
+    )
 
 
 def test_prepared_claims_packets_are_exercised_in_process(tmp_path: Path) -> None:
@@ -735,54 +836,89 @@ def test_prepared_claims_packets_are_exercised_in_process(tmp_path: Path) -> Non
     repo = tmp_path / "repo"
     (repo / "charness-artifacts" / "critique").mkdir(parents=True)
 
-    assert _PACKETS.prepared_claims_state(
-        repo, current_version="1.2.3", binding_tokens=["1.2.3"],
-        accepts=lambda _rel: True, marker_text="no marker here",
-        release_record=RECORD,
-    ) is None
-    assert _PACKETS.prepared_claims_state(
-        repo, current_version="1.2.3", binding_tokens=["1.2.3"],
-        accepts=lambda _rel: True, marker_text=None,
-        release_record=RECORD,
-    ) is None
+    assert (
+        _PACKETS.prepared_claims_state(
+            repo,
+            current_version="1.2.3",
+            binding_tokens=["1.2.3"],
+            accepts=lambda _rel: True,
+            marker_text="no marker here",
+            release_record=RECORD,
+        )
+        is None
+    )
+    assert (
+        _PACKETS.prepared_claims_state(
+            repo,
+            current_version="1.2.3",
+            binding_tokens=["1.2.3"],
+            accepts=lambda _rel: True,
+            marker_text=None,
+            release_record=RECORD,
+        )
+        is None
+    )
 
     (repo / "charness-artifacts" / "critique" / "a.md").write_text("a\n", encoding="utf-8")
     (repo / "charness-artifacts" / "critique" / "b.md").write_text("b\n", encoding="utf-8")
 
     one = _PACKETS.prepared_claims_state(
-        repo, current_version="1.2.3", binding_tokens=["1.2.3"],
-        accepts=lambda rel: rel.endswith("a.md"), marker_text=marker, release_record=RECORD,
+        repo,
+        current_version="1.2.3",
+        binding_tokens=["1.2.3"],
+        accepts=lambda rel: rel.endswith("a.md"),
+        marker_text=marker,
+        release_record=RECORD,
     )
     assert one["critique_artifact_candidates"] == ["charness-artifacts/critique/a.md"]
     assert one["tag_name"] == "v1.2.3"
     packets = {p["id"]: p for p in _PACKETS.resume_claims_packets(one)}
-    assert "--critique-artifact charness-artifacts/critique/a.md" in packets["publish-resume-execute"]["command"]
+    assert (
+        "--critique-artifact charness-artifacts/critique/a.md"
+        in packets["publish-resume-execute"]["command"]
+    )
     assert "<claims-review-record>" in packets["publish-resume-execute"]["command"]
     assert "--notes-file" in packets["publish-resume-execute"]["repeat_original_arguments"]
     assert _PACKETS.resume_claims_packets(None) == []
 
     both = _PACKETS.prepared_claims_state(
-        repo, current_version="1.2.3", binding_tokens=["1.2.3"],
-        accepts=lambda _rel: True, marker_text=marker, release_record=RECORD,
+        repo,
+        current_version="1.2.3",
+        binding_tokens=["1.2.3"],
+        accepts=lambda _rel: True,
+        marker_text=marker,
+        release_record=RECORD,
         committed_record="charness-artifacts/release-review/r.json",
     )
     assert len(both["critique_artifact_candidates"]) == 2
-    execute = next(p for p in _PACKETS.resume_claims_packets(both) if p["id"] == "publish-resume-execute")
+    execute = next(
+        p for p in _PACKETS.resume_claims_packets(both) if p["id"] == "publish-resume-execute"
+    )
     assert "<release-critique-artifact>" in execute["command"]
     assert "--claims-review-artifact charness-artifacts/release-review/r.json" in execute["command"]
 
     none_bound = _PACKETS.prepared_claims_state(
-        repo, current_version="1.2.3", binding_tokens=["1.2.3"],
-        accepts=lambda _rel: False, marker_text=marker, release_record=RECORD,
+        repo,
+        current_version="1.2.3",
+        binding_tokens=["1.2.3"],
+        accepts=lambda _rel: False,
+        marker_text=marker,
+        release_record=RECORD,
     )
     base = {"found": True, "valid": True}
     payload = {"drift": [], "git_status": ""}
-    for prepared, expected in ((one, "--critique-artifact charness-artifacts/critique/a.md"),
-                               (both, "one of"),
-                               (none_bound, "no artifact under")):
+    for prepared, expected in (
+        (one, "--critique-artifact charness-artifacts/critique/a.md"),
+        (both, "one of"),
+        (none_bound, "no artifact under"),
+    ):
         action = _PACKETS.next_action(
-            args=_args(), adapter=base, release_payload=payload,
-            target_version=None, update_blocker=None, prepared_claims=prepared,
+            args=_args(),
+            adapter=base,
+            release_payload=payload,
+            target_version=None,
+            update_blocker=None,
+            prepared_claims=prepared,
         )
         assert action["kind"] == "resume_prepared_claims_review"
         assert expected in action["reason"]
@@ -797,13 +933,17 @@ def test_resume_summary_lines_selects_scaffold_and_resume_packets() -> None:
     is only ever reached through a subprocess planner run."""
     assert _PLANNER.resume_summary_lines({}) == []
     assert _PLANNER.resume_summary_lines({"publish_packets": None}) == []
-    assert _PLANNER.resume_summary_lines({"publish_packets": [
-        {"id": "publish-dry-run", "command": "not this one"},
-        {"id": "claims-review-scaffold", "command": "scaffold"},
-        {"id": "publish-resume-dry-run", "command": "dry"},
-        {"id": "publish-resume-execute", "command": "exec"},
-        {"command": "no id at all"},
-    ]}) == [
+    assert _PLANNER.resume_summary_lines(
+        {
+            "publish_packets": [
+                {"id": "publish-dry-run", "command": "not this one"},
+                {"id": "claims-review-scaffold", "command": "scaffold"},
+                {"id": "publish-resume-dry-run", "command": "dry"},
+                {"id": "publish-resume-execute", "command": "exec"},
+                {"command": "no id at all"},
+            ]
+        }
+    ) == [
         "claims-review-scaffold: scaffold",
         "publish-resume-dry-run: dry",
         "publish-resume-execute: exec",

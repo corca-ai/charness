@@ -40,10 +40,14 @@ from tests.quality_gates.support import run_loaded_script_main, run_script
 
 ROOT = Path(__file__).resolve().parents[2]
 
-MUTATION_WORKFLOW = (ROOT / ".github" / "workflows" / "mutation-tests.yml").read_text(encoding="utf-8")
+MUTATION_WORKFLOW = (ROOT / ".github" / "workflows" / "mutation-tests.yml").read_text(
+    encoding="utf-8"
+)
 
 PROPOSE_SCRIPT = ROOT / "skills" / "public" / "quality" / "scripts" / "propose_mutation_testing.py"
-TEMPLATE_PATH = ROOT / "skills" / "public" / "quality" / "scripts" / "templates" / "mutation-tests.yml"
+TEMPLATE_PATH = (
+    ROOT / "skills" / "public" / "quality" / "scripts" / "templates" / "mutation-tests.yml"
+)
 
 
 # ---------------------------------------------------------------------------
@@ -190,7 +194,8 @@ def test_a2_unknown_commands_subkey_warns(tmp_path: Path) -> None:
     repo.mkdir()
     _write_adapter(
         repo,
-        _ADAPTER_HEADER + dedent(
+        _ADAPTER_HEADER
+        + dedent(
             """\
             mutation_testing:
               commands:
@@ -412,10 +417,7 @@ def test_mutation_workflows_scope_issue_selection_to_their_own_marker() -> None:
 
 def test_a4_template_does_not_summarize_dry_run_without_dump() -> None:
     body = TEMPLATE_PATH.read_text(encoding="utf-8")
-    assert (
-        "steps.plan.outputs.mode == 'full' && steps.adapter.outputs.cmd_summary != ''"
-        in body
-    )
+    assert "steps.plan.outputs.mode == 'full' && steps.adapter.outputs.cmd_summary != ''" in body
 
 
 def test_a4_template_rotates_scheduled_sample_seed() -> None:
@@ -430,10 +432,7 @@ def test_a4_template_reuses_sample_seed_for_mutation_run() -> None:
 
 def test_a4_template_samples_only_full_runs_with_sample_command() -> None:
     body = TEMPLATE_PATH.read_text(encoding="utf-8")
-    assert (
-        "steps.plan.outputs.mode == 'full' && steps.adapter.outputs.cmd_sample != ''"
-        in body
-    )
+    assert "steps.plan.outputs.mode == 'full' && steps.adapter.outputs.cmd_sample != ''" in body
 
 
 def test_checked_in_mutation_workflow_rotates_scheduled_sample_seed() -> None:
@@ -448,10 +447,7 @@ def test_checked_in_mutation_workflow_reuses_sample_seed_for_mutation_run() -> N
 
 def test_checked_in_mutation_workflow_samples_only_full_runs_with_sample_command() -> None:
     body = MUTATION_WORKFLOW
-    assert (
-        "steps.plan.outputs.mode == 'full' && steps.adapter.outputs.cmd_sample != ''"
-        in body
-    )
+    assert "steps.plan.outputs.mode == 'full' && steps.adapter.outputs.cmd_sample != ''" in body
 
 
 def test_checked_in_mutation_workflow_uses_repo_owned_requirements() -> None:
@@ -495,7 +491,9 @@ def test_checked_in_workflows_install_ripgrep_before_running_the_standing_suite(
     """
     suite_marker = "scripts/run_standing_pytest.py"
     mutation_body = MUTATION_WORKFLOW
-    adapter = yaml.safe_load((ROOT / ".agents" / "quality-adapter.yaml").read_text(encoding="utf-8"))
+    adapter = yaml.safe_load(
+        (ROOT / ".agents" / "quality-adapter.yaml").read_text(encoding="utf-8")
+    )
     sample_command = adapter["mutation_testing"]["commands"]["sample"]
     assert suite_marker in sample_command
     sample_step = "- name: Select mutation sample"
@@ -543,7 +541,12 @@ def _yq_available() -> bool:
     return shutil.which("yq") is not None
 
 
-@pytest.mark.skipif(not _yq_available(), reason="yq not installed locally; CI Ubuntu image provides it")
+@pytest.mark.boundary_contract(
+    reason="observe the external yq executable parsing the mutation adapter's four command slots"
+)
+@pytest.mark.skipif(
+    not _yq_available(), reason="yq not installed locally; CI Ubuntu image provides it"
+)
 def test_a5_yq_parses_all_four_slots(tmp_path: Path) -> None:
     repo = tmp_path / "r"
     repo.mkdir()
@@ -569,7 +572,15 @@ def test_a5_yq_parses_all_four_slots(tmp_path: Path) -> None:
 
 
 def test_a7_propose_script_mirrors_to_plugin_export() -> None:
-    plugin_script = ROOT / "plugins" / "charness" / "skills" / "quality" / "scripts" / "propose_mutation_testing.py"
+    plugin_script = (
+        ROOT
+        / "plugins"
+        / "charness"
+        / "skills"
+        / "quality"
+        / "scripts"
+        / "propose_mutation_testing.py"
+    )
     assert plugin_script.is_file(), f"plugin export missing: {plugin_script}"
 
 
@@ -661,9 +672,7 @@ def test_cosmic_ray_summary_reports_actionable_survivors(tmp_path: Path) -> None
 
     assert details["definitions"] == [("demo", 1)]
     assert details["operators"] == [("core/NumberReplacer", 1)]
-    assert details["locations"] == [
-        ("demo.py", 2, "demo", "core/NumberReplacer", "return 1")
-    ]
+    assert details["locations"] == [("demo.py", 2, "demo", "core/NumberReplacer", "return 1")]
 
 
 def test_check_mutation_score_writes_survivor_details(tmp_path: Path) -> None:
@@ -752,7 +761,10 @@ def test_cosmic_ray_filter_identifies_uncovered_mutation_lines() -> None:
         module_path = Path("scripts/demo.py")
         start_pos = (12, 0)
 
-    assert coverage_skip_reason(Mutation(), {"scripts/demo.py": {10, 11}}) == UNCOVERED_MUTATION_SKIP_OUTPUT
+    assert (
+        coverage_skip_reason(Mutation(), {"scripts/demo.py": {10, 11}})
+        == UNCOVERED_MUTATION_SKIP_OUTPUT
+    )
     assert coverage_skip_reason(Mutation(), {"scripts/demo.py": {12}}) is None
 
 
@@ -774,6 +786,9 @@ def test_cosmic_ray_filter_bootstraps_repo_root_for_direct_script_import(
     assert module.mutation_line_is_covered(1, {1}, [])
 
 
+@pytest.mark.boundary_contract(
+    reason="observe the mutation wrapper invoking the real cosmic-ray binary and its filter child in order"
+)
 def test_run_cosmic_ray_mutation_invokes_filter_after_init(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
@@ -811,11 +826,14 @@ def test_run_cosmic_ray_mutation_invokes_filter_after_init(tmp_path: Path) -> No
     fake_cosmic.chmod(0o755)
     fake_filter = repo / "filter.py"
     fake_filter.write_text(
-        "from pathlib import Path\n"
-        "Path('filter-called').write_text('yes\\n', encoding='utf-8')\n",
+        "from pathlib import Path\nPath('filter-called').write_text('yes\\n', encoding='utf-8')\n",
         encoding="utf-8",
     )
-    env = {**os.environ, "PATH": f"{bin_dir}:{os.environ['PATH']}", "FAKE_COSMIC_LOG": str(tmp_path / "cosmic.log")}
+    env = {
+        **os.environ,
+        "PATH": f"{bin_dir}:{os.environ['PATH']}",
+        "FAKE_COSMIC_LOG": str(tmp_path / "cosmic.log"),
+    }
 
     result = subprocess.run(
         [

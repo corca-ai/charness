@@ -20,7 +20,9 @@ def test_standing_pytest_command_uses_xdist_and_expands_globs(tmp_path: Path, mo
     (tmp_path / "tests" / "quality_gates").mkdir()
     (tmp_path / "tests" / "control_plane").mkdir()
     (tmp_path / "tests" / "charness_cli").mkdir()
-    monkeypatch.setattr(runner, "choose_pytest_command", lambda env=None: [sys.executable, "-m", "pytest"])
+    monkeypatch.setattr(
+        runner, "choose_pytest_command", lambda env=None: [sys.executable, "-m", "pytest"]
+    )
     monkeypatch.setattr(runner, "has_xdist", lambda command, env=None: True)
     monkeypatch.setattr(runner.os, "cpu_count", lambda: 36)
     # Affinity is what the worker width reads, so a host-derived assertion must pin
@@ -41,11 +43,18 @@ def test_standing_pytest_command_uses_xdist_and_expands_globs(tmp_path: Path, mo
     # Both full-lane markers, in ONE expression: `slow_corpus` rides the same switch as
     # `release_only` so the two cannot drift into a lane that runs neither (#668).
     assert command[:6] == [
-        sys.executable, "-m", "pytest", "-q", "-m", "not release_only and not slow_corpus",
+        sys.executable,
+        "-m",
+        "pytest",
+        "-q",
+        "-m",
+        "not release_only and not slow_corpus",
     ]
     assert "-n" in command
     assert "16" in command
-    assert ["--maxschedchunk", "1"] == command[command.index("--maxschedchunk") : command.index("--maxschedchunk") + 2]
+    assert ["--maxschedchunk", "1"] == command[
+        command.index("--maxschedchunk") : command.index("--maxschedchunk") + 2
+    ]
     assert "tests/test_alpha.py" in command
     assert "tests/test_*.py" not in command
     assert "tests/charness_cli" in command
@@ -56,7 +65,9 @@ def test_standing_pytest_command_appends_extra_pytest_targets(tmp_path: Path, mo
 
     (tmp_path / "tests").mkdir()
     (tmp_path / "tests" / "test_alpha.py").write_text("def test_alpha(): pass\n", encoding="utf-8")
-    monkeypatch.setattr(runner, "choose_pytest_command", lambda env=None: [sys.executable, "-m", "pytest"])
+    monkeypatch.setattr(
+        runner, "choose_pytest_command", lambda env=None: [sys.executable, "-m", "pytest"]
+    )
     monkeypatch.setattr(runner, "has_xdist", lambda command, env=None: False)
 
     command = runner.build_pytest_command(
@@ -76,7 +87,9 @@ def test_standing_pytest_command_replaces_targets_without_losing_xdist(
 ) -> None:
     from scripts import run_standing_pytest as runner
 
-    monkeypatch.setattr(runner, "choose_pytest_command", lambda env=None: [sys.executable, "-m", "pytest"])
+    monkeypatch.setattr(
+        runner, "choose_pytest_command", lambda env=None: [sys.executable, "-m", "pytest"]
+    )
     monkeypatch.setattr(runner, "has_xdist", lambda command, env=None: True)
     # Pin the host-derived worker width: choose_xdist_workers() is
     # min(cpu_count, 16), so an unpatched cpu_count makes this assertion pass
@@ -192,9 +205,7 @@ def test_runtime_bootstrap_rejects_explicit_repo_local_runtime_root(tmp_path: Pa
         configure_runtime_environment(repo, {"CHARNESS_RUNTIME_ROOT": str(repo / "runtime")})
 
 
-def test_standing_pytest_default_basetemp_uses_user_and_time(
-    tmp_path: Path, monkeypatch
-) -> None:
+def test_standing_pytest_default_basetemp_uses_user_and_time(tmp_path: Path, monkeypatch) -> None:
     from scripts import standing_pytest_basetemp as basetemp_lib
 
     repo = tmp_path / "repo"
@@ -202,15 +213,22 @@ def test_standing_pytest_default_basetemp_uses_user_and_time(
     monkeypatch.setattr(
         basetemp_lib.subprocess,
         "run",
-        lambda *args, **kwargs: subprocess.CompletedProcess(args=[], returncode=0, stdout="alice\n"),
+        lambda *args, **kwargs: subprocess.CompletedProcess(
+            args=[], returncode=0, stdout="alice\n"
+        ),
     )
     monkeypatch.setattr(basetemp_lib.time, "time_ns", lambda: 123)
 
     # The leaf is deliberately NOT "pytest-*" so nested pytest runs' numbered-dir
     # cleanup cannot target this lock-less explicit basetemp (see
     # test_default_basetemp_survives_nested_pytest_cleanup).
-    assert basetemp_lib.default_basetemp(repo, {"HOME": str(tmp_path / "home")}).name == "charness-run-123"
-    assert "pytest-of-alice" in str(basetemp_lib.default_basetemp(repo, {"HOME": str(tmp_path / "home")}))
+    assert (
+        basetemp_lib.default_basetemp(repo, {"HOME": str(tmp_path / "home")}).name
+        == "charness-run-123"
+    )
+    assert "pytest-of-alice" in str(
+        basetemp_lib.default_basetemp(repo, {"HOME": str(tmp_path / "home")})
+    )
 
 
 def test_standing_pytest_command_probes_and_serial_fallback(
@@ -348,7 +366,9 @@ def test_standing_pytest_warns_on_stderr_when_scheduling_is_suppressed(
     """
     from scripts import run_standing_pytest as runner
 
-    monkeypatch.setattr(runner, "choose_pytest_command", lambda env=None: [sys.executable, "-m", "pytest"])
+    monkeypatch.setattr(
+        runner, "choose_pytest_command", lambda env=None: [sys.executable, "-m", "pytest"]
+    )
     monkeypatch.setattr(runner, "has_xdist", lambda command, env=None: True)
     monkeypatch.setattr(runner.os, "sched_getaffinity", lambda _pid: set(range(36)))
     monkeypatch.setattr(runner, "xdist_version", lambda: (3, 1, 0))
@@ -403,7 +423,11 @@ def test_standing_pytest_choose_prefers_python_module(monkeypatch) -> None:
     monkeypatch.setattr(runner.importlib.util, "find_spec", lambda name: object())
 
     assert runner.choose_pytest_command() == [sys.executable, "-m", "pytest"]
-    assert runner.choose_pytest_command({"CHARNESS_STANDING_PYTEST_PYTHON": "python3"}) == ["python3", "-m", "pytest"]
+    assert runner.choose_pytest_command({"CHARNESS_STANDING_PYTEST_PYTHON": "python3"}) == [
+        "python3",
+        "-m",
+        "pytest",
+    ]
 
 
 def test_standing_pytest_xdist_probe_uses_importlib_without_subprocess(monkeypatch) -> None:
@@ -427,7 +451,12 @@ def test_standing_pytest_xdist_probe_uses_importlib_without_subprocess(monkeypat
     )
 
     assert runner.has_xdist([sys.executable, "-m", "pytest"], {}) is True
-    assert runner.has_xdist(["python3", "-m", "pytest"], {"CHARNESS_STANDING_PYTEST_PYTHON": "python3"}) is True
+    assert (
+        runner.has_xdist(
+            ["python3", "-m", "pytest"], {"CHARNESS_STANDING_PYTEST_PYTHON": "python3"}
+        )
+        is True
+    )
     assert looked_up == ["xdist", "xdist"]
 
 
@@ -436,33 +465,49 @@ def test_standing_pytest_xdist_probe_honors_disabled_plugin(monkeypatch) -> None
 
     monkeypatch.setattr(runner.importlib.util, "find_spec", lambda name: object())
 
-    assert runner.has_xdist(
-        [sys.executable, "-m", "pytest"],
-        {"PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1"},
-    ) is False
-    assert runner.has_xdist(
-        [sys.executable, "-m", "pytest"],
-        {"PYTEST_ADDOPTS": "-p no:xdist"},
-    ) is False
-    assert runner.has_xdist(
-        [sys.executable, "-m", "pytest"],
-        {"PYTEST_ADDOPTS": "-pno:xdist"},
-    ) is False
+    assert (
+        runner.has_xdist(
+            [sys.executable, "-m", "pytest"],
+            {"PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1"},
+        )
+        is False
+    )
+    assert (
+        runner.has_xdist(
+            [sys.executable, "-m", "pytest"],
+            {"PYTEST_ADDOPTS": "-p no:xdist"},
+        )
+        is False
+    )
+    assert (
+        runner.has_xdist(
+            [sys.executable, "-m", "pytest"],
+            {"PYTEST_ADDOPTS": "-pno:xdist"},
+        )
+        is False
+    )
     assert runner.has_xdist(["pytest"], {}) is False
 
 
-def test_standing_pytest_xdist_disabled_option_falls_back_on_unbalanced_addopts(monkeypatch) -> None:
+def test_standing_pytest_xdist_disabled_option_falls_back_on_unbalanced_addopts(
+    monkeypatch,
+) -> None:
     from scripts import run_standing_pytest as runner
 
     monkeypatch.setattr(runner.importlib.util, "find_spec", lambda name: object())
 
-    assert runner.has_xdist(
-        [sys.executable, "-m", "pytest"],
-        {"PYTEST_ADDOPTS": "-p no:xdist 'unterminated"},
-    ) is False
+    assert (
+        runner.has_xdist(
+            [sys.executable, "-m", "pytest"],
+            {"PYTEST_ADDOPTS": "-p no:xdist 'unterminated"},
+        )
+        is False
+    )
 
 
-def test_standing_pytest_run_print_command_and_executes(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_standing_pytest_run_print_command_and_executes(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     from scripts import run_standing_pytest as runner
 
     repo = tmp_path / "repo"
@@ -739,21 +784,31 @@ def test_standing_pytest_main_print_modes(tmp_path: Path, monkeypatch, capsys) -
     assert "tests/quality_gates" in capsys.readouterr().out
     assert runner.main(["--repo-root", str(repo), "--print-expanded-targets"]) == 0
     assert "tests/demo.py" in capsys.readouterr().out
-    assert runner.main([
-        "--repo-root",
-        str(repo),
-        "--pytest-target",
-        "tests/replacement.py::test_one",
-        "--print-expanded-targets",
-    ]) == 0
+    assert (
+        runner.main(
+            [
+                "--repo-root",
+                str(repo),
+                "--pytest-target",
+                "tests/replacement.py::test_one",
+                "--print-expanded-targets",
+            ]
+        )
+        == 0
+    )
     assert capsys.readouterr().out.strip() == "tests/replacement.py::test_one"
-    assert runner.main([
-        "--repo-root",
-        str(repo),
-        "--extra-pytest-target",
-        "tests/focused.py::test_one",
-        "--print-expanded-targets",
-    ]) == 0
+    assert (
+        runner.main(
+            [
+                "--repo-root",
+                str(repo),
+                "--extra-pytest-target",
+                "tests/focused.py::test_one",
+                "--print-expanded-targets",
+            ]
+        )
+        == 0
+    )
     assert "tests/focused.py::test_one" in capsys.readouterr().out
     assert runner.main(["--repo-root", str(repo), "--print-temp-root"]) == 0
     assert str(tmp_path / "temp") in capsys.readouterr().out
@@ -773,6 +828,9 @@ def test_standing_pytest_script_entrypoint_print_targets(monkeypatch, capsys) ->
     assert "tests/quality_gates" in capsys.readouterr().out
 
 
+@pytest.mark.boundary_contract(
+    reason="prove the install-update shell entrypoint delegates to the real standing runner executable"
+)
 def test_install_update_self_validation_delegates_to_parallel_runner(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     scripts = repo / "scripts"
@@ -788,7 +846,7 @@ def test_install_update_self_validation_delegates_to_parallel_runner(tmp_path: P
     capture = tmp_path / "args.txt"
     fake_python = bin_dir / "python3"
     fake_python.write_text(
-        "#!/usr/bin/env bash\nprintf '%s\\n' \"$@\" > \"$CAPTURE_ARGS\"\n",
+        '#!/usr/bin/env bash\nprintf \'%s\\n\' "$@" > "$CAPTURE_ARGS"\n',
         encoding="utf-8",
     )
     fake_python.chmod(0o755)
@@ -855,7 +913,9 @@ def test_default_basetemp_survives_nested_pytest_cleanup(tmp_path: Path) -> None
     env = {"PYTEST_DEBUG_TEMPROOT": str(tmp_path / "temproot")}
 
     basetemp = basetemp_lib.default_basetemp(repo, env)
-    basetemp.mkdir(parents=True, mode=0o700)  # mimic pytest's explicit-basetemp mkdir (no lock file)
+    basetemp.mkdir(
+        parents=True, mode=0o700
+    )  # mimic pytest's explicit-basetemp mkdir (no lock file)
     (basetemp / "popen-gw0").mkdir()  # a live xdist worker temp dir
 
     rootdir = basetemp.parent
@@ -921,7 +981,14 @@ def test_affinity_readers_stay_in_parity_across_their_two_owners(monkeypatch) ->
 
     from scripts import run_standing_pytest as runner
 
-    lib_path = _Path(runner.__file__).resolve().parent.parent / "skills" / "public" / "quality" / "scripts" / "runtime_profile_lib.py"
+    lib_path = (
+        _Path(runner.__file__).resolve().parent.parent
+        / "skills"
+        / "public"
+        / "quality"
+        / "scripts"
+        / "runtime_profile_lib.py"
+    )
     spec = importlib.util.spec_from_file_location("parity_runtime_profile_lib", lib_path)
     assert spec is not None and spec.loader is not None
     profile_lib = importlib.util.module_from_spec(spec)

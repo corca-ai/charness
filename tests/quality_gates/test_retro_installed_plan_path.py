@@ -3,12 +3,42 @@
 from __future__ import annotations
 
 import subprocess
+import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 import yaml
 
+from tests.script_main import load_script_module, run_loaded_script_main
+
 ROOT = Path(__file__).resolve().parents[2]
+
+
+@pytest.mark.boundary_contract(
+    reason="prove the generated retro planner runs from the installed layout"
+)
+def _run(planner: Path, *args: str) -> SimpleNamespace:
+    if "plugins" in planner.parts:
+        return subprocess.run(
+            [sys.executable, str(planner), *args],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+    module_name = (
+        "retro_planner_" + ("plugin" if "plugins" in planner.parts else "source") + "_for_test"
+    )
+    module = load_script_module(module_name, planner)
+    previous_cwd = Path.cwd()
+    try:
+        import os
+
+        os.chdir(ROOT)
+        return run_loaded_script_main(str(planner), module, *args)
+    finally:
+        os.chdir(previous_cwd)
 
 
 @pytest.mark.parametrize(
@@ -20,19 +50,12 @@ ROOT = Path(__file__).resolve().parents[2]
     ids=["authoring-layout", "exported-layout"],
 )
 def test_auto_trigger_packet_uses_installed_skill_root(planner: Path, tmp_path: Path) -> None:
-    result = subprocess.run(
-        [
-            "python3",
-            str(planner),
-            "--repo-root",
-            str(tmp_path),
-            "--changed-paths",
-            "scripts/example.ts",
-        ],
-        cwd=ROOT,
-        capture_output=True,
-        text=True,
-        check=False,
+    result = _run(
+        planner,
+        "--repo-root",
+        str(tmp_path),
+        "--changed-paths",
+        "scripts/example.ts",
     )
 
     assert result.returncode == 0, result.stdout + result.stderr
@@ -41,7 +64,7 @@ def test_auto_trigger_packet_uses_installed_skill_root(planner: Path, tmp_path: 
 
     assert packet["command"] == (
         'python3 "$SKILL_DIR/scripts/check_auto_trigger.py" --repo-root . '
-        '--paths scripts/example.ts'
+        "--paths scripts/example.ts"
     )
     assert packet["path"] == "scripts/check_auto_trigger.py"
     assert packet["path_base"] == "skill-dir"

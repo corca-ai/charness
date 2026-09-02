@@ -1,28 +1,26 @@
 from __future__ import annotations
 
 import re
-import subprocess
 import sys
 from pathlib import Path
 
 import pytest
 import yaml
 
+from tests.script_main import run_loaded_script_main
+
 from .seeding_support import load_module
 
 ROOT = Path(__file__).resolve().parents[2]
-SCRIPT = (
-    ROOT
-    / "skills"
-    / "public"
-    / "quality"
-    / "scripts"
-    / "inventory_release_only_sentinels.py"
-)
+SCRIPT = ROOT / "skills" / "public" / "quality" / "scripts" / "inventory_release_only_sentinels.py"
 
 
 def _load_inventory():
     return load_module("inventory_release_only_sentinels", SCRIPT)
+
+
+def _run_cli(*args: str):
+    return run_loaded_script_main("inventory_release_only_sentinels.py", _load_inventory(), *args)
 
 
 def _assert_help_pairs(output: str, expected_pairs: dict[str, str]) -> None:
@@ -48,11 +46,11 @@ def test_release_only_sentinel_help_describes_repo_root_and_yaml_modes(
     assert excinfo.value.code == 0
     _assert_help_pairs(
         capsys.readouterr().out,
-            {
-                "--repo-root": "Repository root containing the pytest files to inspect.",
-                "--summary": "Emit compact YAML counts and samples instead of full per-test attribution.",
-                "--detail": "Emit full per-test attribution as YAML.",
-            },
+        {
+            "--repo-root": "Repository root containing the pytest files to inspect.",
+            "--summary": "Emit compact YAML counts and samples instead of full per-test attribution.",
+            "--detail": "Emit full per-test attribution as YAML.",
+        },
     )
 
 
@@ -147,19 +145,8 @@ def test_release_only_sentinel_inventory_cli_accepts_selected_files(tmp_path: Pa
         encoding="utf-8",
     )
 
-    result = subprocess.run(
-        [
-            "python3",
-            str(SCRIPT),
-            "--repo-root",
-            str(tmp_path),
-            "--path",
-            "tests/test_release_flow.py",
-            "--detail",
-        ],
-        text=True,
-        capture_output=True,
-        check=True,
+    result = _run_cli(
+        "--repo-root", str(tmp_path), "--path", "tests/test_release_flow.py", "--detail"
     )
 
     payload = yaml.safe_load(result.stdout)
@@ -188,33 +175,11 @@ def test_release_only_sentinel_inventory_summary_omits_full_test_names(tmp_path:
         encoding="utf-8",
     )
 
-    full = subprocess.run(
-        [
-            "python3",
-            str(SCRIPT),
-            "--repo-root",
-            str(tmp_path),
-            "--path",
-            "tests/test_release_flow.py",
-            "--detail",
-        ],
-        text=True,
-        capture_output=True,
-        check=True,
+    full = _run_cli(
+        "--repo-root", str(tmp_path), "--path", "tests/test_release_flow.py", "--detail"
     )
-    summary = subprocess.run(
-        [
-            "python3",
-            str(SCRIPT),
-            "--repo-root",
-            str(tmp_path),
-            "--path",
-            "tests/test_release_flow.py",
-            "--summary",
-        ],
-        text=True,
-        capture_output=True,
-        check=True,
+    summary = _run_cli(
+        "--repo-root", str(tmp_path), "--path", "tests/test_release_flow.py", "--summary"
     )
 
     payload = yaml.safe_load(summary.stdout)

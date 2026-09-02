@@ -93,12 +93,18 @@ def _interruptible_plan(tmp_path: Path) -> tuple[Path, Path]:
 def _wait_for_mutation(repo: Path) -> None:
     deadline = time.monotonic() + 8
     while time.monotonic() < deadline:
-        if "MUTATED" in (repo / "subject.py").read_text(encoding="utf-8") and (repo / "runner.pid").exists():
+        if (
+            "MUTATED" in (repo / "subject.py").read_text(encoding="utf-8")
+            and (repo / "runner.pid").exists()
+        ):
             return
         time.sleep(0.02)
     raise AssertionError("the subprocess never reached the active mutation")
 
 
+@pytest.mark.boundary_contract(
+    reason="prove SIGTERM sent to the real mutation runner restores the file and clears its recovery journal"
+)
 def test_sigterm_routes_through_restore_and_clears_the_journal(tmp_path: Path) -> None:
     repo, plan_path = _interruptible_plan(tmp_path)
     process = subprocess.Popen(
@@ -118,6 +124,9 @@ def test_sigterm_routes_through_restore_and_clears_the_journal(tmp_path: Path) -
     assert not mar.MutationRecovery(repo).pending
 
 
+@pytest.mark.boundary_contract(
+    reason="prove SIGKILL can leave a pending mutation child and the later recovery CLI restores exact bytes"
+)
 def test_sigkill_leaves_a_detectable_journal_that_recovers_exact_bytes(tmp_path: Path) -> None:
     repo, plan_path = _interruptible_plan(tmp_path)
     process = subprocess.Popen(
@@ -155,9 +164,10 @@ def test_sigkill_leaves_a_detectable_journal_that_recovers_exact_bytes(tmp_path:
         assert list(repo.glob(".subject.py.charness-write-*")) == []
         assert not mar.MutationRecovery(repo).pending
         child_stat = Path(f"/proc/{child_pid}/stat")
-        assert not child_stat.exists() or child_stat.read_text(encoding="utf-8").rsplit(")", 1)[1].split()[0] == "Z", (
-            "recovery returned while the mutated test child was still active"
-        )
+        assert (
+            not child_stat.exists()
+            or child_stat.read_text(encoding="utf-8").rsplit(")", 1)[1].split()[0] == "Z"
+        ), "recovery returned while the mutated test child was still active"
     finally:
         try:
             os.kill(child_pid, signal.SIGTERM)
@@ -195,7 +205,10 @@ def test_recovery_state_dir_handles_git_exec_failure_and_relative_git_dir(
     monkeypatch.setenv("GIT_DIR", str(tmp_path / ".git"))
     completed = subprocess.CompletedProcess(["git"], 0, ".git\n", "")
     monkeypatch.setattr(mr.subprocess, "run", lambda *_args, **_kwargs: completed)
-    assert mr.recovery_state_dir(tmp_path) == (tmp_path / ".git" / "charness-mutation-recovery").resolve()
+    assert (
+        mr.recovery_state_dir(tmp_path)
+        == (tmp_path / ".git" / "charness-mutation-recovery").resolve()
+    )
 
 
 def test_begin_refuses_existing_owner_and_removes_partial_record_on_write_failure(
@@ -225,17 +238,23 @@ def test_begin_refuses_existing_owner_and_removes_partial_record_on_write_failur
 
 
 def test_journal_read_and_clear_refuse_corruption_and_changed_ownership(tmp_path: Path) -> None:
-    _repo, _target, invalid, _journal_id, _original, _mutated = _seed_recovery(tmp_path, "invalid-json")
+    _repo, _target, invalid, _journal_id, _original, _mutated = _seed_recovery(
+        tmp_path, "invalid-json"
+    )
     invalid.journal_path.write_text("{", encoding="utf-8")
     with pytest.raises(mar.SweepError, match="unreadable"):
         invalid._read()
 
-    _repo, _target, unsupported, _journal_id, _original, _mutated = _seed_recovery(tmp_path, "unsupported")
+    _repo, _target, unsupported, _journal_id, _original, _mutated = _seed_recovery(
+        tmp_path, "unsupported"
+    )
     _rewrite_journal(unsupported, lambda payload: payload.update(version=9))
     with pytest.raises(mar.SweepError, match="unsupported version"):
         unsupported._read()
 
-    _repo, _target, recovery, journal_id, _original, _mutated = _seed_recovery(tmp_path, "ownership")
+    _repo, _target, recovery, journal_id, _original, _mutated = _seed_recovery(
+        tmp_path, "ownership"
+    )
     with pytest.raises(mar.SweepError, match="ownership changed"):
         recovery.clear("another-owner")
     staged = recovery.state_dir / "journal.leftover.tmp"
@@ -270,7 +289,9 @@ def test_attach_child_refuses_early_exit_timeout_invalid_marker_and_changed_owne
     # because the wait is now a retry loop: an unreadable marker is re-read until the
     # deadline rather than refused on the first look, so a real clock would spend the
     # whole 5s window here proving nothing.
-    _repo, _target, invalid, journal_id, _original, _mutated = _seed_recovery(tmp_path, "invalid-marker")
+    _repo, _target, invalid, journal_id, _original, _mutated = _seed_recovery(
+        tmp_path, "invalid-marker"
+    )
     invalid.child_marker.write_text("not-a-pgid", encoding="utf-8")
     invalid_clock = iter((0.0, 1.0, 6.0))
     with monkeypatch.context() as invalid_patch:
@@ -278,7 +299,9 @@ def test_attach_child_refuses_early_exit_timeout_invalid_marker_and_changed_owne
         with pytest.raises(mar.SweepError, match="invalid process group"):
             invalid.attach_child(journal_id, Process(None))
 
-    _repo, _target, changed, _journal_id, _original, _mutated = _seed_recovery(tmp_path, "changed-owner")
+    _repo, _target, changed, _journal_id, _original, _mutated = _seed_recovery(
+        tmp_path, "changed-owner"
+    )
     changed.child_marker.write_text("43210", encoding="utf-8")
     with pytest.raises(mar.SweepError, match="ownership changed before child launch"):
         changed.attach_child("another-owner", Process(None))
@@ -299,7 +322,9 @@ def test_a_marker_caught_mid_write_is_waited_out_not_called_invalid(tmp_path: Pa
         def poll(self):
             return None
 
-    _repo, _target, recovery, journal_id, _original, _mutated = _seed_recovery(tmp_path, "mid-write")
+    _repo, _target, recovery, journal_id, _original, _mutated = _seed_recovery(
+        tmp_path, "mid-write"
+    )
     recovery.child_marker.write_text("", encoding="utf-8")
     filled: list[int] = []
 
@@ -319,6 +344,9 @@ def test_a_marker_caught_mid_write_is_waited_out_not_called_invalid(tmp_path: Pa
     assert filled, "the marker was read before the parent ever waited; the window was not exercised"
 
 
+@pytest.mark.boundary_contract(
+    reason="prove the recovery wrapper's real child process publishes a complete process-group marker"
+)
 def test_the_wrapper_publishes_its_pgid_by_rename(tmp_path: Path) -> None:
     # The writer's side of the same race, run for real: the wrapper is executed with a
     # marker path, and the file it leaves must be complete. Asserting the source text
@@ -338,7 +366,9 @@ def test_the_wrapper_publishes_its_pgid_by_rename(tmp_path: Path) -> None:
             "-c",
             "",
         ],
-        check=False, capture_output=True, text=True,
+        check=False,
+        capture_output=True,
+        text=True,
     )
     assert proc.returncode == 0, proc.stderr
     assert int(marker.read_text(encoding="utf-8").strip()) > 1
@@ -346,7 +376,9 @@ def test_the_wrapper_publishes_its_pgid_by_rename(tmp_path: Path) -> None:
     assert not (tmp_path / "child-pgid.partial").exists()
 
 
-@pytest.mark.boundary_contract(reason="prove a pre-exec child exits when its parent dies before attachment")
+@pytest.mark.boundary_contract(
+    reason="prove a pre-exec child exits when its parent dies before attachment"
+)
 def test_the_wrapper_does_not_outlive_a_parent_that_dies_before_start(tmp_path: Path) -> None:
     marker = tmp_path / "child-pgid"
     start = tmp_path / "child-start"
@@ -372,7 +404,9 @@ def test_the_wrapper_does_not_outlive_a_parent_that_dies_before_start(tmp_path: 
     assert not start.exists()
 
 
-def test_pid_activity_handles_permissions_proc_errors_and_zombies(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_pid_activity_handles_permissions_proc_errors_and_zombies(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     def denied(_pid, _signal):
         raise PermissionError
 
@@ -432,7 +466,9 @@ def test_group_activity_ignores_bad_proc_rows_and_falls_back_to_killpg(
 def test_owned_process_recovery_refuses_live_owner_bad_marker_and_unsafe_group(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    _repo, _target, recovery, _journal_id, _original, _mutated = _seed_recovery(tmp_path, "owned-process")
+    _repo, _target, recovery, _journal_id, _original, _mutated = _seed_recovery(
+        tmp_path, "owned-process"
+    )
     monkeypatch.setattr(recovery, "_pid_active", lambda _pid: True)
     with pytest.raises(mar.SweepError, match="still active"):
         recovery._stop_owned_processes({"pid": os.getpid() + 10_000})
@@ -450,7 +486,9 @@ def test_owned_process_recovery_refuses_live_owner_bad_marker_and_unsafe_group(
 def test_owned_process_recovery_escalates_after_term_and_refuses_a_surviving_group(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    _repo, _target, recovery, _journal_id, _original, _mutated = _seed_recovery(tmp_path, "escalate")
+    _repo, _target, recovery, _journal_id, _original, _mutated = _seed_recovery(
+        tmp_path, "escalate"
+    )
     monkeypatch.setattr(mr.time, "monotonic", lambda: 0.0)
     monkeypatch.setattr(mr.time, "sleep", lambda _delay: None)
     signals: list[int] = []
@@ -472,8 +510,16 @@ def test_owned_process_recovery_escalates_after_term_and_refuses_a_surviving_gro
     [
         ("missing-path", lambda payload: payload.pop("path"), "no target path"),
         ("absent-target", lambda payload: payload.update(path="absent.py"), "absent or escapes"),
-        ("invalid-bytes", lambda payload: payload.update(original_base64="%%%"), "invalid pristine bytes"),
-        ("digest-mismatch", lambda payload: payload.update(original_sha256="0" * 64), "digest does not match"),
+        (
+            "invalid-bytes",
+            lambda payload: payload.update(original_base64="%%%"),
+            "invalid pristine bytes",
+        ),
+        (
+            "digest-mismatch",
+            lambda payload: payload.update(original_sha256="0" * 64),
+            "digest does not match",
+        ),
     ],
 )
 def test_recovery_refuses_malformed_or_unowned_records(
@@ -486,7 +532,9 @@ def test_recovery_refuses_malformed_or_unowned_records(
     assert recovery.pending
 
 
-def test_recovery_handles_absence_incomplete_record_and_already_restored_bytes(tmp_path: Path) -> None:
+def test_recovery_handles_absence_incomplete_record_and_already_restored_bytes(
+    tmp_path: Path,
+) -> None:
     empty_repo = tmp_path / "empty"
     empty_repo.mkdir()
     empty = mar.MutationRecovery(empty_repo)
@@ -496,7 +544,10 @@ def test_recovery_handles_absence_incomplete_record_and_already_restored_bytes(t
     incomplete_repo.mkdir()
     incomplete = mar.MutationRecovery(incomplete_repo)
     incomplete.state_dir.mkdir(parents=True)
-    assert incomplete.recover(mar.restore) == "cleared an incomplete recovery record; no source mutation could remain"
+    assert (
+        incomplete.recover(mar.restore)
+        == "cleared an incomplete recovery record; no source mutation could remain"
+    )
     assert not incomplete.pending
 
     _repo, target, recovery, _journal_id, original, _mutated = _seed_recovery(tmp_path, "restored")
@@ -527,7 +578,9 @@ def test_stop_process_group_refuses_unsafe_handles_missing_and_escalates(
     monkeypatch.setattr(mr.time, "monotonic", lambda: 0.0)
     monkeypatch.setattr(mr.time, "sleep", lambda _delay: None)
     activity = iter((True, False, True))
-    monkeypatch.setattr(mr.MutationRecovery, "_group_active", staticmethod(lambda _pgid: next(activity)))
+    monkeypatch.setattr(
+        mr.MutationRecovery, "_group_active", staticmethod(lambda _pgid: next(activity))
+    )
     mr._stop_process_group(43210)
     assert signals == [signal.SIGTERM, signal.SIGKILL]
 
@@ -549,11 +602,17 @@ def test_run_mutation_command_kills_an_unattached_child_after_bad_marker(
         def wait(self):
             self.waited = True
 
-    _repo, _target, recovery, journal_id, _original, _mutated = _seed_recovery(tmp_path, "bad-child")
+    _repo, _target, recovery, journal_id, _original, _mutated = _seed_recovery(
+        tmp_path, "bad-child"
+    )
     process = Process()
     monkeypatch.setattr(mr.subprocess, "Popen", lambda *_args, **_kwargs: process)
     recovery.child_marker.write_text("invalid", encoding="utf-8")
-    monkeypatch.setattr(recovery, "attach_child", lambda *_args: (_ for _ in ()).throw(RuntimeError("attach failed")))
+    monkeypatch.setattr(
+        recovery,
+        "attach_child",
+        lambda *_args: (_ for _ in ()).throw(RuntimeError("attach failed")),
+    )
 
     with pytest.raises(RuntimeError, match="attach failed"):
         mr.run_mutation_command(["ignored"], tmp_path, recovery, journal_id)
@@ -569,7 +628,9 @@ def test_refused_apply_clears_journal_and_recovery_cli_covers_clean_and_error_pa
     target = repo / "subject.py"
     target.write_text("value = 1\n", encoding="utf-8")
     baseline = mar.Baseline(returncode=0, passed=1, output="1 passed")
-    monkeypatch.setattr(mar, "apply_mutation", lambda *_args: (_ for _ in ()).throw(mar.SweepError("refused apply")))
+    monkeypatch.setattr(
+        mar, "apply_mutation", lambda *_args: (_ for _ in ()).throw(mar.SweepError("refused apply"))
+    )
 
     result = mar.run_mutant(
         {"id": "refused", "path": "subject.py", "find": "1", "replace": "2"},
@@ -580,7 +641,9 @@ def test_refused_apply_clears_journal_and_recovery_cli_covers_clean_and_error_pa
     assert result.verdict == mar.REFUSED
     assert not mar.MutationRecovery(repo).pending
 
-    monkeypatch.setattr(sys, "argv", ["mutate_and_restore.py", "--repo-root", str(repo), "--check-recovery"])
+    monkeypatch.setattr(
+        sys, "argv", ["mutate_and_restore.py", "--repo-root", str(repo), "--check-recovery"]
+    )
     assert mar.main() == 0
     assert "no interrupted mutation recovery is pending" in capsys.readouterr().out
 
@@ -594,11 +657,16 @@ def test_refused_apply_clears_journal_and_recovery_cli_covers_clean_and_error_pa
             raise mar.SweepError("cannot recover")
 
     monkeypatch.setattr(mar, "MutationRecovery", FailedRecovery)
-    monkeypatch.setattr(sys, "argv", ["mutate_and_restore.py", "--repo-root", str(repo), "--recover"])
+    monkeypatch.setattr(
+        sys, "argv", ["mutate_and_restore.py", "--repo-root", str(repo), "--recover"]
+    )
     assert mar.main() == 2
     assert "cannot recover" in capsys.readouterr().err
 
 
+@pytest.mark.boundary_contract(
+    reason="prove real quality and pre-commit child processes refuse pending recovery before unblocking after repair"
+)
 def test_commit_and_quality_consumers_refuse_pending_recovery_then_unblock(tmp_path: Path) -> None:
     quality_repo = tmp_path / "quality-consumer"
     (quality_repo / "scripts").mkdir(parents=True)

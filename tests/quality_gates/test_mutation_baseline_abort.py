@@ -215,6 +215,9 @@ def test_select_eligible_writes_log_tail_when_no_nodeids_parsed(
     assert "ModuleNotFoundError" in "\n".join(marker["log_tail"])
 
 
+@pytest.mark.boundary_contract(
+    reason="prove the baseline workflow launches a nested pytest child with its own mutation-range environment"
+)
 def test_the_baseline_pytest_run_does_not_inherit_the_workflow_mutation_range() -> None:
     """The coverage-baseline pytest must not see the sampler's own range (#466).
 
@@ -254,13 +257,27 @@ def test_the_baseline_pytest_run_does_not_inherit_the_workflow_mutation_range() 
         "::test_coverage_gate_shapes_on_one_checkout"
     )
     nested = subprocess.run(
-        [sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider", "-p", "no:randomly", victim],
+        [
+            sys.executable,
+            "-m",
+            "pytest",
+            "-q",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:randomly",
+            victim,
+        ],
         cwd=repo_root,
         check=False,
         capture_output=True,
         text=True,
-        env={**os.environ, "CHARNESS_NESTED_PYTEST": "1",
-             "MUTATION_BASE_SHA": outer_head, "MUTATION_HEAD_SHA": outer_head},
+        env={
+            **os.environ,
+            "CHARNESS_NESTED_PYTEST": "1",
+            "MUTATION_BASE_SHA": outer_head,
+            "MUTATION_HEAD_SHA": outer_head,
+        },
     )
     # A renamed victim exits 4 with "not found", which is a DIFFERENT failure from the one
     # this test exists to catch. Say which one happened, or the next merge spends its time
@@ -272,6 +289,9 @@ def test_the_baseline_pytest_run_does_not_inherit_the_workflow_mutation_range() 
     assert nested.returncode == 0, nested.stdout + nested.stderr
 
 
+@pytest.mark.boundary_contract(
+    reason="prove the nested baseline pytest child does not inherit the parent workflow step-output destination"
+)
 def test_the_baseline_pytest_run_does_not_write_to_the_runner_step_output(tmp_path: Path) -> None:
     """`$GITHUB_OUTPUT` is the same inherited-runner-state class as the range.
 
@@ -287,7 +307,17 @@ def test_the_baseline_pytest_run_does_not_write_to_the_runner_step_output(tmp_pa
 
     victim = "tests/quality_gates/test_mutation_baseline_abort.py::test_sample_script_removes_stale_marker_on_successful_start"
     nested = subprocess.run(
-        [sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider", "-p", "no:randomly", victim],
+        [
+            sys.executable,
+            "-m",
+            "pytest",
+            "-q",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:randomly",
+            victim,
+        ],
         cwd=Path(__file__).resolve().parents[2],
         check=False,
         capture_output=True,
@@ -464,7 +494,10 @@ def test_check_mutation_score_marker_used_when_marker_is_newer_than_stats(tmp_pa
 
     assert result.returncode == 2
     summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
-    assert "Blocking signal: the sampler's coverage-baseline pytest failed before mutation ran" in summary
+    assert (
+        "Blocking signal: the sampler's coverage-baseline pytest failed before mutation ran"
+        in summary
+    )
     assert "tests/x.py::test_y" in summary
 
 
@@ -573,7 +606,9 @@ def test_a_zero_denominator_is_unmeasured_on_both_mutation_slices(tmp_path: Path
     assert metrics["status"] == "UNMEASURED"
     assert metrics["passed"] is False, "unmeasured must not be forgiven into a pass"
 
-    rendered = "\n".join(check_mutation_score_summary_lib.build_summary_lines([], tmp_path, metrics))
+    rendered = "\n".join(
+        check_mutation_score_summary_lib.build_summary_lines([], tmp_path, metrics)
+    )
     assert "- Status: **UNMEASURED**" in rendered
     # EVERY VERDICT ROW, not just the status row. The first cut asserted only
     # `- Status: **FAIL**`, and that narrowing is what hid the blocker: the summary
@@ -621,7 +656,12 @@ def test_a_zero_denominator_is_unmeasured_on_both_mutation_slices(tmp_path: Path
     js_measured = tmp_path / "js-measured.md"
     check_js_mutation_score.append_summary(
         js_measured,
-        {"counts": {"Killed": 1, "Survived": 9}, "reachable": 10, "score": 10.0, "survived_locations": []},
+        {
+            "counts": {"Killed": 1, "Survived": 9},
+            "reachable": 10,
+            "score": 10.0,
+            "survived_locations": [],
+        },
         80.0,
     )
     assert "- Status: **FAIL**" in js_measured.read_text(encoding="utf-8")
@@ -837,7 +877,9 @@ def test_the_cosmic_ray_wrapper_clears_a_stale_marker_before_its_baseline(tmp_pa
     )
     repo = tmp_path / "repo"
     repo.mkdir()
-    (repo / "cosmic-ray.toml").write_text('[cosmic-ray]\nmodule-path = ["mod.py"]\n', encoding="utf-8")
+    (repo / "cosmic-ray.toml").write_text(
+        '[cosmic-ray]\nmodule-path = ["mod.py"]\n', encoding="utf-8"
+    )
     marker_path = repo / "reports" / "mutation" / "baseline-abort.json"
     marker_path.parent.mkdir(parents=True)
     write_baseline_abort_marker(

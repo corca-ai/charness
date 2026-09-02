@@ -32,7 +32,9 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from runtime_bootstrap import load_path_module, skill_script  # noqa: E402
 
 LIB_PATH = ROOT / "skills" / "public" / "quality" / "scripts" / "command_dominance_lib.py"
-INVENTORY_PATH = ROOT / "skills" / "public" / "quality" / "scripts" / "inventory_command_dominance.py"
+INVENTORY_PATH = (
+    ROOT / "skills" / "public" / "quality" / "scripts" / "inventory_command_dominance.py"
+)
 
 DOMINANCE = load_path_module("command_dominance_lib_gaps", LIB_PATH)
 INVENTORY = load_path_module("inventory_command_dominance_gaps", INVENTORY_PATH)
@@ -214,17 +216,15 @@ def test_the_standing_gate_arm_reports_a_dominated_command_inside_a_runner(tmp_p
     )
     hooks = repo / ".githooks"
     hooks.mkdir()
-    (hooks / "pre-push").write_text("#!/usr/bin/env bash\n./scripts/run-quality.sh\n", encoding="utf-8")
+    (hooks / "pre-push").write_text(
+        "#!/usr/bin/env bash\n./scripts/run-quality.sh\n", encoding="utf-8"
+    )
     (repo / ".agents" / "command-dominance.yaml").write_text(
-        REGISTRY_YAML
-        + "wrapper_programs:\n  - program: queue_selected\n    skip_args: 1\n",
+        REGISTRY_YAML + "wrapper_programs:\n  - program: queue_selected\n    skip_args: 1\n",
         encoding="utf-8",
     )
     report = GATE.evaluate(repo)
-    seams = {
-        (finding.get("context") or {}).get("seam")
-        for finding in report["findings"]
-    }
+    seams = {(finding.get("context") or {}).get("seam") for finding in report["findings"]}
     assert "standing-gate" in seams, report["findings"]
     assert report["blocking"]
 
@@ -328,8 +328,7 @@ def test_the_inventory_scan_loop_runs_when_a_registry_is_present(tmp_path: Path)
 def test_the_inventory_reports_an_exempt_site_separately(tmp_path: Path) -> None:
     repo = _repo_with_registry(tmp_path)
     (repo / ".agents" / "command-dominance.yaml").write_text(
-        REGISTRY_YAML
-        + "exemptions:\n"
+        REGISTRY_YAML + "exemptions:\n"
         "  - id: deliberate\n"
         "    site: cosmic-ray.toml:test-command\n"
         "    rule: bare-pytest-whole-suite\n"
@@ -341,14 +340,18 @@ def test_the_inventory_reports_an_exempt_site_separately(tmp_path: Path) -> None
     assert [f["site"] for f in payload["exempt_findings"]] == ["cosmic-ray.toml:test-command"]
 
 
-def test_a_declared_config_literal_missing_from_the_consumers_tree_is_skipped(tmp_path: Path) -> None:
+def test_a_declared_config_literal_missing_from_the_consumers_tree_is_skipped(
+    tmp_path: Path,
+) -> None:
     repo = _repo_with_registry(tmp_path)
     (repo / "cosmic-ray.toml").unlink()
     payload = INVENTORY.inventory(repo, repo / ".agents" / "command-dominance.yaml")
     assert payload["dominated_findings"] == []
 
 
-def test_a_relative_registry_path_resolves_against_the_repo_root(tmp_path, monkeypatch, capsys) -> None:
+def test_a_relative_registry_path_resolves_against_the_repo_root(
+    tmp_path, monkeypatch, capsys
+) -> None:
     repo = _repo_with_registry(tmp_path, literal=REPLACEMENT)
     monkeypatch.setattr(
         sys,
@@ -370,7 +373,9 @@ def test_a_relative_registry_path_resolves_against_the_repo_root(tmp_path, monke
     assert str(repo) in out
 
 
-def test_the_inventory_entrypoint_emits_yaml_without_a_mode_flag(tmp_path, monkeypatch, capsys) -> None:
+def test_the_inventory_entrypoint_emits_yaml_without_a_mode_flag(
+    tmp_path, monkeypatch, capsys
+) -> None:
     repo = _repo_with_registry(tmp_path, literal=REPLACEMENT)
     monkeypatch.setattr(sys, "argv", ["inventory_command_dominance.py", "--repo-root", str(repo)])
     assert INVENTORY.main() == 0
@@ -384,6 +389,9 @@ def test_the_inventory_refuses_to_start_without_its_skill_runtime(tmp_path, monk
         INVENTORY._load_skill_runtime_bootstrap()
 
 
+@pytest.mark.boundary_contract(
+    reason="prove the command-dominance inventory's real executable entrypoint scans a consumer fixture"
+)
 def test_the_inventory_runs_as_a_script_and_never_fails_a_consumers_lane(tmp_path: Path) -> None:
     """Exit 0 is the contract, proven through a real process rather than a call.
 
@@ -601,11 +609,18 @@ def test_a_focused_run_with_no_path_target_is_not_dominated() -> None:
     registry = DOMINANCE.parse_registry(
         adapter_lib.load_yaml_file(ROOT / ".agents" / "command-dominance.yaml")
     )
-    for focused in ("pytest -k smoke", "python3 -m pytest -q -k test_foo", "python3 -m pytest -m smoke"):
+    for focused in (
+        "pytest -k smoke",
+        "python3 -m pytest -q -k test_foo",
+        "python3 -m pytest -m smoke",
+    ):
         assert DOMINANCE.match_command(focused, registry) is None, focused
     # And the reverse must still hold: a focus flag does NOT excuse a command
     # that also names the whole tree, or SC17's own live instance would retire.
-    assert DOMINANCE.match_command("python3 -m pytest -q -m 'not release_only' tests", registry) is not None
+    assert (
+        DOMINANCE.match_command("python3 -m pytest -q -m 'not release_only' tests", registry)
+        is not None
+    )
 
 
 # --------------------------------------------------------------------------
@@ -738,7 +753,6 @@ def test_the_manifest_records_the_command_the_probe_actually_ran() -> None:
     assert skipped["coverage_command"] is None, "no probe ran, so neither command is honest"
 
 
-
 def test_the_inventory_reports_an_unreadable_adapter_rather_than_crashing(tmp_path) -> None:
     """A consumer's malformed quality adapter must not fail their lane.
 
@@ -755,7 +769,9 @@ def test_the_inventory_reports_an_unreadable_adapter_rather_than_crashing(tmp_pa
     assert payload["budget_state"]["detail"]
 
 
-def test_a_relative_adapter_path_resolves_against_the_repo_root(tmp_path, monkeypatch, capsys) -> None:
+def test_a_relative_adapter_path_resolves_against_the_repo_root(
+    tmp_path, monkeypatch, capsys
+) -> None:
     """Observes the RESOLUTION, not just that something was emitted.
 
     A round-2 reviewer measured that the first version asserted only exit 0 and a
@@ -816,6 +832,9 @@ def test_the_missing_yaml_message_says_the_install_is_incomplete_with_no_contrac
             raise AssertionError(f"the guard invented a requirements path: {candidate}")
 
 
+@pytest.mark.boundary_contract(
+    reason="prove the detached inventory executable's __main__ help path works from an installed-style cwd"
+)
 def test_the_yaml_guard_says_the_install_is_incomplete_when_no_contract_is_found(tmp_path) -> None:
     """The no-fallback branch, EXECUTED.
 

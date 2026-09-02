@@ -114,9 +114,7 @@ def test_dotted_absence_survives_bootstrap_and_resolution(tmp_path: Path) -> Non
     assert "lefthook_path" not in policy
     assert "ci_workflow_glob" not in policy
     assert "exemption_list_path" not in policy
-    assert is_deliberately_absent(
-        resolved["data"], "coverage_floor_policy.lefthook_path"
-    )
+    assert is_deliberately_absent(resolved["data"], "coverage_floor_policy.lefthook_path")
     assert _bootstrap(repo)["adapter_status"] == "unchanged"
 
 
@@ -185,7 +183,10 @@ def test_rationale_survives_a_second_bootstrap(tmp_path: Path) -> None:
 
     assert second["adapter_status"] == "unchanged"
     assert _adapter(repo).read_text(encoding="utf-8") == after_first
-    assert second["deliberately_absent"]["coverage_floor_policy"] == "this repo uses neither lefthook nor CI"
+    assert (
+        second["deliberately_absent"]["coverage_floor_policy"]
+        == "this repo uses neither lefthook nor CI"
+    )
     assert "this repo uses neither lefthook nor CI" in after_first
 
 
@@ -202,7 +203,9 @@ def test_adapter_without_the_field_is_unaffected(tmp_path: Path) -> None:
     assert "deliberately-absent" not in payload["field_statuses"].values()
 
 
-def test_resolution_carries_the_declaration_and_names_where_it_does_not_bite(tmp_path: Path) -> None:
+def test_resolution_carries_the_declaration_and_names_where_it_does_not_bite(
+    tmp_path: Path,
+) -> None:
     """Keeping the file from being rewritten is only half the job.
 
     Resolution still fills unset fields from repo defaults, so a repo that declared
@@ -251,7 +254,9 @@ def test_trailing_comment_does_not_swallow_a_nested_block(tmp_path: Path) -> Non
     assert "fail_below_pct: 90.0" in _adapter(repo).read_text(encoding="utf-8")
 
 
-def test_a_partially_deleted_block_is_reported_augmented_and_names_its_refills(tmp_path: Path) -> None:
+def test_a_partially_deleted_block_is_reported_augmented_and_names_its_refills(
+    tmp_path: Path,
+) -> None:
     """#489, from the reproduction pasted on the issue.
 
     An operator who keeps `coverage_floor_policy:` and deletes one key from it gets
@@ -273,7 +278,9 @@ def test_a_partially_deleted_block_is_reported_augmented_and_names_its_refills(t
 
     assert payload["field_statuses"]["coverage_floor_policy"] == "augmented"
     change = _change(payload, "coverage_floor_policy")
-    assert "lefthook_path" in change["requested_value"], "the sub-key the operator deleted must be named"
+    assert "lefthook_path" in change["requested_value"], (
+        "the sub-key the operator deleted must be named"
+    )
     assert change["current_value"]["fail_below_pct"] == 90.0
     warning = payload["customization_warning"]
     assert "lefthook_path" in warning
@@ -320,7 +327,9 @@ def test_a_wrong_typed_sub_key_the_merge_drops_is_a_refill_too(tmp_path: Path) -
     payload = _bootstrap(repo)
 
     assert payload["field_statuses"]["coverage_floor_policy"] == "augmented"
-    assert "min_statements_threshold" in _change(payload, "coverage_floor_policy")["requested_value"]
+    assert (
+        "min_statements_threshold" in _change(payload, "coverage_floor_policy")["requested_value"]
+    )
 
 
 def test_an_int_written_against_a_float_default_is_not_a_refill(tmp_path: Path) -> None:
@@ -390,9 +399,10 @@ def test_a_fully_specified_block_is_still_preserved_and_claims_nothing(tmp_path:
     from scripts.quality_policy_defaults import DEFAULT_COVERAGE_FLOOR_POLICY
 
     repo = seed_quality_repo(tmp_path)
-    block = "\n".join(f"  {key}: {value!r}".replace("'", '"') if isinstance(value, str)
-                       else f"  {key}: {value}"
-                       for key, value in DEFAULT_COVERAGE_FLOOR_POLICY.items())
+    block = "\n".join(
+        f"  {key}: {value!r}".replace("'", '"') if isinstance(value, str) else f"  {key}: {value}"
+        for key, value in DEFAULT_COVERAGE_FLOOR_POLICY.items()
+    )
     _adapter(repo).write_text(
         "version: 1\nrepo: demo\noutput_dir: charness-artifacts/quality\n"
         "coverage_floor_policy:\n" + block + "\n",
@@ -430,9 +440,8 @@ def test_comment_counter_agrees_with_the_parser_on_apostrophes(tmp_path: Path) -
     repo = seed_quality_repo(tmp_path)
     _adapter(repo).write_text(
         "version: 1\nrepo: it's-a-repo  # renamed upstream, keep this\n"
-        "output_dir: charness-artifacts/quality\n" + CUSTOMIZED_ADAPTER.split("version: 1\n")[1].replace(
-            "repo: demo\n", ""
-        ),
+        "output_dir: charness-artifacts/quality\n"
+        + CUSTOMIZED_ADAPTER.split("version: 1\n")[1].replace("repo: demo\n", ""),
         encoding="utf-8",
     )
 
@@ -469,7 +478,9 @@ def test_dry_run_claims_no_loss_when_a_real_run_would_not_write(tmp_path: Path) 
     repo = seed_quality_repo(tmp_path)
     _bootstrap(repo)
     canonical = _adapter(repo).read_text(encoding="utf-8")
-    _adapter(repo).write_text("# an annotation a real run would leave alone\n" + canonical, encoding="utf-8")
+    _adapter(repo).write_text(
+        "# an annotation a real run would leave alone\n" + canonical, encoding="utf-8"
+    )
 
     result = _run_quality_bootstrap_adapter("--repo-root", str(repo), "--dry-run")
     payload = yaml.safe_load(result.stdout)
@@ -565,7 +576,9 @@ def test_resolution_does_not_name_a_structural_field_as_still_defaulted(tmp_path
 
     resolved = load_quality_adapter_permissive(repo)
 
-    assert not any("output_dir" in warning and "preset default" in warning for warning in resolved["warnings"])
+    assert not any(
+        "output_dir" in warning and "preset default" in warning for warning in resolved["warnings"]
+    )
 
 
 def test_declared_absence_of_an_unset_field_reports_no_default_conflict(tmp_path: Path) -> None:
@@ -589,7 +602,7 @@ def test_scalar_shaped_strings_round_trip_through_the_renderer() -> None:
         rendered = render_yaml_mapping([("deliberately_absent", {"f": text})])
         assert load_yaml(rendered)["deliberately_absent"]["f"] == text, text
     # A value that is genuinely plain must NOT be needlessly quoted.
-    assert 'f: plain text\n' in render_yaml_mapping([("deliberately_absent", {"f": "plain text"})])
+    assert "f: plain text\n" in render_yaml_mapping([("deliberately_absent", {"f": "plain text"})])
 
 
 def test_rationale_that_looks_like_a_scalar_round_trips_as_text(tmp_path: Path) -> None:
@@ -597,14 +610,17 @@ def test_rationale_that_looks_like_a_scalar_round_trips_as_text(tmp_path: Path) 
     repo = seed_quality_repo(tmp_path)
     _adapter(repo).write_text(
         "version: 1\nrepo: demo\noutput_dir: charness-artifacts/quality\n"
-        "deliberately_absent:\n  security_commands: \"true\"\n  coverage_floor_policy: \"123\"\n",
+        'deliberately_absent:\n  security_commands: "true"\n  coverage_floor_policy: "123"\n',
         encoding="utf-8",
     )
 
     _bootstrap(repo)
     second = _bootstrap(repo)
 
-    assert second["deliberately_absent"] == {"security_commands": "true", "coverage_floor_policy": "123"}
+    assert second["deliberately_absent"] == {
+        "security_commands": "true",
+        "coverage_floor_policy": "123",
+    }
 
 
 # Fields whose default names a filesystem location but which are deliberately NOT
@@ -646,18 +662,34 @@ def test_path_bearing_exclusions_are_honest() -> None:
 
 
 def test_the_ruler_admits_what_it_documents() -> None:
-    """"contains `/` or ends in a file extension, and no whitespace" — as stated."""
-    for path in ("lefthook.yml", ".github/workflows/*.yml", "coverage.xml", "lcov.info", "AGENTS.md", "a/b"):
+    """ "contains `/` or ends in a file extension, and no whitespace" — as stated."""
+    for path in (
+        "lefthook.yml",
+        ".github/workflows/*.yml",
+        "coverage.xml",
+        "lcov.info",
+        "AGENTS.md",
+        "a/b",
+    ):
         assert names_a_filesystem_location(path), path
-    for not_a_path in ("17 */3 * * *", "Covered by pytest:\\s+`tests/[^`]+`", "en", "default", "", "provenance-allow"):
+    for not_a_path in (
+        "17 */3 * * *",
+        "Covered by pytest:\\s+`tests/[^`]+`",
+        "en",
+        "default",
+        "",
+        "provenance-allow",
+    ):
         assert not names_a_filesystem_location(not_a_path), not_a_path
 
 
 def test_nested_and_list_paths_are_reachable() -> None:
     """A shape the walker cannot reach is a phantom path the warning silently omits."""
     entries = path_bearing_entries(
-        {"report_paths": {"summary_md": "reports/mutation/summary.md"},
-         "probes": [{"log": "reports/probe.log"}, "docs/x.md", "not-a-path"]},
+        {
+            "report_paths": {"summary_md": "reports/mutation/summary.md"},
+            "probes": [{"log": "reports/probe.log"}, "docs/x.md", "not-a-path"],
+        },
         "f",
     )
     assert entries == {
@@ -670,7 +702,9 @@ def test_nested_and_list_paths_are_reachable() -> None:
 def test_every_mapped_path_is_actually_marked_when_declared_absent(tmp_path: Path) -> None:
     """Every path in a treated field's default must actually be marked at runtime."""
     repo = seed_quality_repo(tmp_path)
-    declared = "\n".join(f"  {field}: declared absent for this test" for field in sorted(PATH_BEARING_ABSENCE_FIELDS))
+    declared = "\n".join(
+        f"  {field}: declared absent for this test" for field in sorted(PATH_BEARING_ABSENCE_FIELDS)
+    )
     _adapter(repo).write_text(
         "version: 1\nrepo: demo\noutput_dir: charness-artifacts/quality\n"
         f"deliberately_absent:\n{declared}\n",
@@ -699,7 +733,10 @@ def test_declared_absence_marks_the_phantom_paths_it_does_not_claim(tmp_path: Pa
 
     assert unasserted["coverage_floor_policy.lefthook_path"] == "lefthook.yml"
     assert unasserted["coverage_floor_policy.ci_workflow_glob"] == ".github/workflows/*.yml"
-    assert unasserted["coverage_floor_policy.exemption_list_path"] == "scripts/coverage-floor-exemptions.txt"
+    assert (
+        unasserted["coverage_floor_policy.exemption_list_path"]
+        == "scripts/coverage-floor-exemptions.txt"
+    )
     # The value itself is unchanged, so no consumer that indexes it breaks.
     assert resolved["data"]["coverage_floor_policy"]["lefthook_path"] == "lefthook.yml"
     assert any("do not go looking for them" in w for w in resolved["warnings"])
@@ -778,7 +815,9 @@ def test_a_rewrite_that_reverts_nothing_says_nothing(tmp_path: Path) -> None:
 
     # A newly detected concept path is a legitimate merge, not a reversion.
     (repo / "charness-artifacts" / "quality").mkdir(parents=True, exist_ok=True)
-    (repo / "charness-artifacts" / "quality" / "latest.md").write_text("# report\n", encoding="utf-8")
+    (repo / "charness-artifacts" / "quality" / "latest.md").write_text(
+        "# report\n", encoding="utf-8"
+    )
 
     result = _run_quality_bootstrap_adapter("--repo-root", str(repo))
     payload = yaml.safe_load(result.stdout)
@@ -840,7 +879,10 @@ def test_issue_496_suppresses_only_the_two_inert_command_leaves(tmp_path: Path) 
     assert "commands.dry_run" not in warning
     assert "commands.sample" not in warning
     assert "drop the whole" not in warning.lower()
-    assert all(not surface.startswith("commands.") for surface in (item["surface"] for item in payload["requested_changes"]))
+    assert all(
+        not surface.startswith("commands.")
+        for surface in (item["surface"] for item in payload["requested_changes"])
+    )
     state, _, _ = build_bootstrap_state(repo)
     refills = state["_subkey_refills"]["mutation_testing"]
     assert "commands.dry_run" not in refills
@@ -901,6 +943,9 @@ def test_prompt_asset_empty_scope_remains_reportable_and_warning_is_safe(tmp_pat
     assert "exemption_globs" in state["_subkey_refills"]["prompt_asset_policy"]
 
 
+@pytest.mark.boundary_contract(
+    reason="prove the generated quality bootstrap mirror runs from its installed layout and matches the source payload"
+)
 def test_plugin_bootstrap_matches_source_for_issue_496_fixture(tmp_path: Path) -> None:
     adapter = (
         "version: 1\nrepo: demo\noutput_dir: charness-artifacts/quality\n"
@@ -918,7 +963,15 @@ def test_plugin_bootstrap_matches_source_for_issue_496_fixture(tmp_path: Path) -
     plugin = subprocess.run(
         [
             sys.executable,
-            str(ROOT / "plugins" / "charness" / "skills" / "quality" / "scripts" / "bootstrap_adapter.py"),
+            str(
+                ROOT
+                / "plugins"
+                / "charness"
+                / "skills"
+                / "quality"
+                / "scripts"
+                / "bootstrap_adapter.py"
+            ),
             "--repo-root",
             str(plugin_repo),
         ],

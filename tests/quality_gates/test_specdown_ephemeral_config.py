@@ -240,6 +240,9 @@ def test_main_requires_an_out_dir(tmp_path: Path, monkeypatch: pytest.MonkeyPatc
     assert excinfo.value.code != 0
 
 
+@pytest.mark.boundary_contract(
+    reason="exercise specdown ephemeral config's __main__ dispatch as a real executable"
+)
 def test_cli_entrypoint_dispatches_through_main_and_exits_zero(tmp_path: Path) -> None:
     """One real CLI smoke, deliberately at the process boundary.
 

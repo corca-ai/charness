@@ -2,19 +2,17 @@ from __future__ import annotations
 
 import json
 import os
-import subprocess
 import sys
 from pathlib import Path
-from types import SimpleNamespace
 
 import yaml
 
-from runtime_bootstrap import load_path_module
+from tests.script_main import load_script_module, run_loaded_script_main
 
 from .support import ROOT
 
 QUALITY_SCRIPT = "skills/public/quality/scripts/list_tool_recommendations.py"
-_quality_tool_recommendations = load_path_module(
+_quality_tool_recommendations = load_script_module(
     "tests.quality_gates.quality_list_tool_recommendations",
     ROOT / QUALITY_SCRIPT,
 )
@@ -38,16 +36,16 @@ def _isolated_path() -> str:
     return os.pathsep.join(dict.fromkeys(isolated_path_parts))
 
 
-def _run_quality_recommendations(monkeypatch, capsys, tmp_path: Path, *args: str) -> dict[str, object]:
+def _run_quality_recommendations(
+    monkeypatch, capsys, tmp_path: Path, *args: str
+) -> dict[str, object]:
     monkeypatch.setenv("PATH", _isolated_path())
     monkeypatch.setattr(
         sys,
         "argv",
         [QUALITY_SCRIPT, "--repo-root", str(tmp_path), *args],
     )
-    code = _quality_tool_recommendations.main() or 0
-    captured = capsys.readouterr()
-    result = SimpleNamespace(returncode=code, stdout=captured.out, stderr=captured.err)
+    result = run_loaded_script_main(QUALITY_SCRIPT, _quality_tool_recommendations, *sys.argv[1:])
     assert result.returncode == 0, result.stderr
     return yaml.safe_load(result.stdout)
 
@@ -59,24 +57,25 @@ def _run_recommendations(
     recommendation_role: str | None = None,
     next_skill_id: str | None = None,
 ) -> dict[str, object]:
-    result = subprocess.run(
-        [sys.executable, script_relpath, "--repo-root", str(tmp_path)]
-        + (
-            ["--recommendation-role", recommendation_role]
-            if recommendation_role is not None
-            else []
-        )
-        + (["--next-skill-id", next_skill_id] if next_skill_id is not None else []),
-        cwd=ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
+    args = ["--repo-root", str(tmp_path)]
+    if recommendation_role is not None:
+        args.extend(["--recommendation-role", recommendation_role])
+    if next_skill_id is not None:
+        args.extend(["--next-skill-id", next_skill_id])
+    module_name = "recommendations_" + script_relpath.replace("/", "_").replace(".", "_")
+    result = run_loaded_script_main(
+        script_relpath,
+        load_script_module(module_name, ROOT / script_relpath),
+        *args,
         env={**os.environ, "PATH": _isolated_path()},
     )
+    assert result.returncode == 0, result.stderr
     return yaml.safe_load(result.stdout)
 
 
-def test_quality_tool_recommendations_filter_role_by_next_skill(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_quality_tool_recommendations_filter_role_by_next_skill(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     _write_manifest(
         tmp_path,
         "impl-only.json",
@@ -93,11 +92,21 @@ def test_quality_tool_recommendations_filter_role_by_next_skill(tmp_path: Path, 
                 "update": {"mode": "manual", "docs_url": "https://example.com", "notes": []},
             },
             "checks": {
-                "detect": {"commands": ["impl-only --version"], "success_criteria": ["exit_code:0"]},
-                "healthcheck": {"commands": ["impl-only --help"], "success_criteria": ["exit_code:0"]},
+                "detect": {
+                    "commands": ["impl-only --version"],
+                    "success_criteria": ["exit_code:0"],
+                },
+                "healthcheck": {
+                    "commands": ["impl-only --help"],
+                    "success_criteria": ["exit_code:0"],
+                },
             },
             "access_modes": ["binary"],
-            "version_expectation": {"policy": "advisory", "constraint": "latest", "detected_by": "stdout"},
+            "version_expectation": {
+                "policy": "advisory",
+                "constraint": "latest",
+                "detected_by": "stdout",
+            },
             "supports_public_skills": ["impl"],
             "recommendation_role": "validation",
         },
@@ -135,14 +144,22 @@ def test_narrative_tool_recommendations_emit_blocking_runtime_routes(tmp_path: P
                     "install_url": "https://github.com/charmbracelet/glow#installation",
                     "notes": ["Install glow."],
                 },
-                "update": {"mode": "manual", "docs_url": "https://github.com/charmbracelet/glow/releases", "notes": ["Update glow."]},
+                "update": {
+                    "mode": "manual",
+                    "docs_url": "https://github.com/charmbracelet/glow/releases",
+                    "notes": ["Update glow."],
+                },
             },
             "checks": {
                 "detect": {"commands": ["glow --version"], "success_criteria": ["exit_code:0"]},
                 "healthcheck": {"commands": ["glow --help"], "success_criteria": ["exit_code:0"]},
             },
             "access_modes": ["binary", "degraded"],
-            "version_expectation": {"policy": "advisory", "constraint": "latest", "detected_by": "stdout"},
+            "version_expectation": {
+                "policy": "advisory",
+                "constraint": "latest",
+                "detected_by": "stdout",
+            },
             "supports_public_skills": ["narrative", "quality"],
             "recommendation_role": "runtime",
         },

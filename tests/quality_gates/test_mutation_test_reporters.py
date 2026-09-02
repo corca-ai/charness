@@ -9,6 +9,7 @@ advisory length warn band, and because this is its own concept: what a reporter
 owns is "what counts did the runner report", and nothing about killed/survived/
 refused. Classification stays where it was and is tested where it was.
 """
+
 from __future__ import annotations
 
 import json
@@ -23,7 +24,13 @@ from runtime_bootstrap import import_repo_module
 
 from .support import ROOT
 
-reporters = import_repo_module("scripts/mutation_test_reporters.py", "scripts.mutation_test_reporters")
+pytestmark = pytest.mark.boundary_contract(
+    reason="observe mutate_and_restore running a real Node test binary and classify its process output while restoring the tree"
+)
+
+reporters = import_repo_module(
+    "scripts/mutation_test_reporters.py", "scripts.mutation_test_reporters"
+)
 mar = import_repo_module("scripts/mutate_and_restore.py", "scripts.mutate_and_restore")
 
 _NODE_PASS = """\
@@ -115,10 +122,7 @@ def test_node_cancelled_counts_as_an_error_not_a_failure() -> None:
 def test_node_skipped_and_todo_are_not_accounted() -> None:
     """Folding them into the total would let a mutant that turns tests into skips
     satisfy the harness's baseline-scope check and read as a survivor."""
-    output = (
-        _NODE_PASS.replace("# pass 2", "# pass 0")
-        .replace("# skipped 0", "# skipped 2")
-    )
+    output = _NODE_PASS.replace("# pass 2", "# pass 0").replace("# skipped 0", "# skipped 2")
 
     counts = reporters.NodeTestReporter.read(output)
 
@@ -182,7 +186,7 @@ def test_the_refusal_names_the_reporter_that_can_read_it() -> None:
 
     assert "`pytest` reporter found no readable count report" in message
     assert "`node-test`" in message
-    assert "set `\"reporter\"` in the plan" in message
+    assert 'set `"reporter"` in the plan' in message
 
 
 def test_the_refusal_does_not_invent_a_reader_for_unreadable_bytes() -> None:
@@ -220,7 +224,9 @@ def _seed_node_fixture(tmp_path: Path) -> Path:
     subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True)
     subprocess.run(
         ["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-qm", "base"],
-        cwd=repo, check=True, capture_output=True,
+        cwd=repo,
+        check=True,
+        capture_output=True,
     )
     return repo
 
@@ -229,14 +235,25 @@ def _run_harness(repo: Path, plan: dict, tmp_path: Path) -> subprocess.Completed
     plan_path = tmp_path / "plan.json"
     plan_path.write_text(json.dumps(plan), encoding="utf-8")
     return subprocess.run(
-        ["python3", str(ROOT / "scripts" / "mutate_and_restore.py"),
-         "--repo-root", str(repo), "--plan", str(plan_path)],
-        capture_output=True, text=True,
+        [
+            "python3",
+            str(ROOT / "scripts" / "mutate_and_restore.py"),
+            "--repo-root",
+            str(repo),
+            "--plan",
+            str(plan_path),
+        ],
+        capture_output=True,
+        text=True,
     )
 
 
-_MUTANT = {"id": "add-to-mul", "path": "src/calc.js",
-           "find": "return a + b;", "replace": "return a * b;"}
+_MUTANT = {
+    "id": "add-to-mul",
+    "path": "src/calc.js",
+    "find": "return a + b;",
+    "replace": "return a * b;",
+}
 
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
@@ -250,16 +267,18 @@ def test_a_node_repository_gets_a_real_verdict(tmp_path: Path) -> None:
     repo = _seed_node_fixture(tmp_path)
 
     result = _run_harness(
-        repo, {"test_command": ["node", "--test"], "reporter": "node-test", "mutants": [_MUTANT]}, tmp_path
+        repo,
+        {"test_command": ["node", "--test"], "reporter": "node-test", "mutants": [_MUTANT]},
+        tmp_path,
     )
 
     # The YAML payload on stdout is the machine-readable contract; the streamed
     # progress line goes to stderr. Assert the payload, because that is what a
     # consumer reads, and a progress line is not a verdict.
     payload = yaml.safe_load(result.stdout)
-    assert payload["baseline"] == {
-        "earned": True, "passed": 2, "returncode": 0, "refusal": None
-    }, result.stdout + result.stderr
+    assert payload["baseline"] == {"earned": True, "passed": 2, "returncode": 0, "refusal": None}, (
+        result.stdout + result.stderr
+    )
     assert payload["killed"] == 1
     assert payload["mutants"][0]["verdict"] == "killed"
     assert result.returncode == 0, result.stdout + result.stderr
@@ -273,7 +292,9 @@ def test_the_mutated_node_file_is_restored(tmp_path: Path) -> None:
     before = (repo / "src" / "calc.js").read_bytes()
 
     _run_harness(
-        repo, {"test_command": ["node", "--test"], "reporter": "node-test", "mutants": [_MUTANT]}, tmp_path
+        repo,
+        {"test_command": ["node", "--test"], "reporter": "node-test", "mutants": [_MUTANT]},
+        tmp_path,
     )
 
     assert (repo / "src" / "calc.js").read_bytes() == before
@@ -285,14 +306,18 @@ def test_the_default_reporter_still_refuses_a_node_tree_but_says_why(tmp_path: P
     it must now carry the way out rather than being a dead end."""
     repo = _seed_node_fixture(tmp_path)
 
-    result = _run_harness(repo, {"test_command": ["node", "--test"], "mutants": [_MUTANT]}, tmp_path)
+    result = _run_harness(
+        repo, {"test_command": ["node", "--test"], "mutants": [_MUTANT]}, tmp_path
+    )
 
     assert result.returncode == 2
     # The structured `refusal`, not the streamed progress line: the payload is
     # what a consumer reads back, and it is where the way out has to be.
     payload = yaml.safe_load(result.stdout)
     assert payload["baseline"]["earned"] is False
-    assert payload["baseline"]["returncode"] == 0, "the Node baseline is GREEN; only the READER failed"
+    assert payload["baseline"]["returncode"] == 0, (
+        "the Node baseline is GREEN; only the READER failed"
+    )
     assert "`node-test`" in payload["baseline"]["refusal"]
 
 
@@ -303,7 +328,9 @@ def test_an_unknown_reporter_refuses_before_running_anything(tmp_path: Path) -> 
     repo = _seed_node_fixture(tmp_path)
 
     result = _run_harness(
-        repo, {"test_command": ["node", "--test"], "reporter": "node", "mutants": [_MUTANT]}, tmp_path
+        repo,
+        {"test_command": ["node", "--test"], "reporter": "node", "mutants": [_MUTANT]},
+        tmp_path,
     )
 
     assert result.returncode == 2
@@ -631,9 +658,18 @@ def test_a_module_breaking_mutant_is_refused_not_killed(tmp_path: Path) -> None:
 
     result = _run_harness(
         repo,
-        {"test_command": ["node", "--test"], "reporter": "node-test",
-         "mutants": [{"id": "syntax-break", "path": "src/calc.js",
-                      "find": "return a + b;", "replace": "return a +"}]},
+        {
+            "test_command": ["node", "--test"],
+            "reporter": "node-test",
+            "mutants": [
+                {
+                    "id": "syntax-break",
+                    "path": "src/calc.js",
+                    "find": "return a + b;",
+                    "replace": "return a +",
+                }
+            ],
+        },
         tmp_path,
     )
 
@@ -667,7 +703,9 @@ def test_the_call_site_non_claim_says_the_check_was_inapplicable(tmp_path: Path)
     repo = _seed_node_fixture(tmp_path)
 
     result = _run_harness(
-        repo, {"test_command": ["node", "--test"], "reporter": "node-test", "mutants": [_MUTANT]}, tmp_path
+        repo,
+        {"test_command": ["node", "--test"], "reporter": "node-test", "mutants": [_MUTANT]},
+        tmp_path,
     )
 
     payload = yaml.safe_load(result.stdout)

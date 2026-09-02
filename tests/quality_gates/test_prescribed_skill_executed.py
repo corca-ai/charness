@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import importlib.util
-import subprocess
-import sys
 from pathlib import Path
 
 import pytest
 import yaml
+
+from tests.script_main import load_script_module, run_loaded_script_main
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 LIB_PATH = REPO_ROOT / "scripts/check_prescribed_skill_executed_lib.py"
@@ -15,6 +15,11 @@ CLI_PATH = REPO_ROOT / "scripts/check_prescribed_skill_executed.py"
 _spec = importlib.util.spec_from_file_location("check_prescribed_skill_executed_lib", LIB_PATH)
 lib = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(lib)
+_CLI = load_script_module("check_prescribed_skill_executed_for_test", CLI_PATH)
+
+
+def _run_cli(*args: str):
+    return run_loaded_script_main(str(CLI_PATH), _CLI, *args)
 
 
 def _touch(path: Path, body: str = "x") -> None:
@@ -135,18 +140,11 @@ def test_parse_skip_arg_round_trips() -> None:
 
 
 def test_cli_smoke_fails_with_exit_one(tmp_path: Path) -> None:
-    result = subprocess.run(
-        [
-            sys.executable,
-            str(CLI_PATH),
-            "--repo-root",
-            str(tmp_path),
-            "--require",
-            "retro_artifact",
-        ],
-        capture_output=True,
-        text=True,
-        check=False,
+    result = _run_cli(
+        "--repo-root",
+        str(tmp_path),
+        "--require",
+        "retro_artifact",
     )
     assert result.returncode == 1
     payload = yaml.safe_load(result.stdout)
@@ -157,20 +155,13 @@ def test_cli_smoke_fails_with_exit_one(tmp_path: Path) -> None:
 def test_cli_smoke_passes_with_real_file(tmp_path: Path) -> None:
     path = tmp_path / "charness-artifacts/retro/x.md"
     _touch(path, "retro body")
-    result = subprocess.run(
-        [
-            sys.executable,
-            str(CLI_PATH),
-            "--repo-root",
-            str(tmp_path),
-            "--require",
-            "retro_artifact",
-            "--evidence",
-            "retro_artifact:charness-artifacts/retro/x.md",
-        ],
-        capture_output=True,
-        text=True,
-        check=False,
+    result = _run_cli(
+        "--repo-root",
+        str(tmp_path),
+        "--require",
+        "retro_artifact",
+        "--evidence",
+        "retro_artifact:charness-artifacts/retro/x.md",
     )
     assert result.returncode == 0
     payload = yaml.safe_load(result.stdout)
@@ -368,9 +359,7 @@ def test_binding_bare_number_still_binds_the_forms_this_repo_writes(
     """False-refusal control for B4: every citation form found in the repo's real
     checked-in critique artifacts must still bind, otherwise the fix degenerates
     into a gate that always refuses."""
-    number = body.split("#")[-1][:3] if "#" in body else "".join(
-        c for c in body if c.isdigit()
-    )[:3]
+    number = body.split("#")[-1][:3] if "#" in body else "".join(c for c in body if c.isdigit())[:3]
     path = tmp_path / "charness-artifacts/critique/2026-05-14-packet.md"
     _touch(path, body)
     binds, reason = lib.evidence_binds_to_context(path, tokens=[number])
@@ -454,7 +443,9 @@ def test_check_binds_evidence_when_tokens_are_supplied(tmp_path: Path) -> None:
     report = lib.check(
         repo_root=tmp_path,
         required=["resolution_critique"],
-        evidence={"resolution_critique": "charness-artifacts/critique/2026-07-27-a3-staged-scope.md"},
+        evidence={
+            "resolution_critique": "charness-artifacts/critique/2026-07-27-a3-staged-scope.md"
+        },
         skips={},
         kind="issue-resolution",
         tokens=["466"],

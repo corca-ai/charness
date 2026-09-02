@@ -9,6 +9,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
 import yaml
 
 from tests.quality_gates.reviewer_capability_support import (
@@ -18,6 +19,9 @@ from tests.quality_gates.reviewer_capability_support import (
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "skills/shared/scripts/reviewer_worker.py"
+pytestmark = pytest.mark.boundary_contract(
+    reason="observe the reviewer worker's real backend child, timeout, and schema-delivery process boundary"
+)
 
 
 def _executable(path: Path, body: str) -> None:
@@ -58,7 +62,14 @@ def _inputs(tmp_path: Path) -> tuple[Path, Path, Path, Path, Path, Path]:
     )
     capability = tmp_path / "capability.json"
     capability.write_text(json.dumps(ready_capability("attempt-1")), encoding="utf-8")
-    return workspace, prompt, schema, capability, tmp_path / "result.json", tmp_path / "receipt.json"
+    return (
+        workspace,
+        prompt,
+        schema,
+        capability,
+        tmp_path / "result.json",
+        tmp_path / "receipt.json",
+    )
 
 
 def _run(
@@ -132,13 +143,19 @@ cat >/dev/null
 printf '%s\n' '{"kind":"review","reason":"fresh","capability_non_claims":[],"capability_non_claims_sha256":"__EMPTY_NON_CLAIMS_SHA256__","packet_sha256":"pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp","reviewed_input_identity_sha256":"iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"}' > "$out"
 """,
     )
-    script = (bin_dir / "codex").read_text(encoding="utf-8").replace("__EMPTY_NON_CLAIMS_SHA256__", EMPTY_NON_CLAIMS_SHA256)
+    script = (
+        (bin_dir / "codex")
+        .read_text(encoding="utf-8")
+        .replace("__EMPTY_NON_CLAIMS_SHA256__", EMPTY_NON_CLAIMS_SHA256)
+    )
     (bin_dir / "codex").write_text(script, encoding="utf-8")
     (bin_dir / "codex").chmod(0o755)
     old_path = os.environ["PATH"]
     os.environ["PATH"] = f"{bin_dir}:{old_path}"
     try:
-        result = _run(tmp_path, "codex_exec", workspace, prompt, schema, capability, output, receipt)
+        result = _run(
+            tmp_path, "codex_exec", workspace, prompt, schema, capability, output, receipt
+        )
     finally:
         os.environ["PATH"] = old_path
     assert result.returncode == 0, result.stderr
@@ -178,7 +195,9 @@ def test_transport_unestablished_is_typed_and_backend_is_not_started(tmp_path: P
     old_path = os.environ["PATH"]
     os.environ["PATH"] = f"{bin_dir}:{old_path}"
     try:
-        result = _run(tmp_path, "codex_exec", workspace, prompt, schema, capability, output, receipt)
+        result = _run(
+            tmp_path, "codex_exec", workspace, prompt, schema, capability, output, receipt
+        )
     finally:
         os.environ["PATH"] = old_path
     assert result.returncode == 1
@@ -195,7 +214,7 @@ def test_capability_drift_between_launch_and_collection_is_refused(tmp_path: Pat
     bin_dir.mkdir()
     _executable(
         bin_dir / "codex",
-        f'''#!/bin/sh
+        f"""#!/bin/sh
 out=""
 while [ "$#" -gt 0 ]; do
   if [ "$1" = "-o" ]; then out="$2"; shift 2; continue; fi
@@ -204,12 +223,14 @@ done
 cat >/dev/null
 printf '%s\\n' '{{"kind":"review","reason":"fresh","packet_sha256":"pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp","reviewed_input_identity_sha256":"iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"}}' > "$out"
 sed -i 's/fixture-config-1/fixture-config-2/' {capability}
-''',
+""",
     )
     old_path = os.environ["PATH"]
     os.environ["PATH"] = f"{bin_dir}:{old_path}"
     try:
-        result = _run(tmp_path, "codex_exec", workspace, prompt, schema, capability, output, receipt)
+        result = _run(
+            tmp_path, "codex_exec", workspace, prompt, schema, capability, output, receipt
+        )
     finally:
         os.environ["PATH"] = old_path
     assert result.returncode == 1
@@ -257,7 +278,9 @@ printf '%s\n' '{"kind":"not-the-contract"}' > "$out"
     old_path = os.environ["PATH"]
     os.environ["PATH"] = f"{bin_dir}:{old_path}"
     try:
-        result = _run(tmp_path, "codex_exec", workspace, prompt, schema, capability, output, receipt)
+        result = _run(
+            tmp_path, "codex_exec", workspace, prompt, schema, capability, output, receipt
+        )
     finally:
         os.environ["PATH"] = old_path
     assert result.returncode == 1
@@ -266,7 +289,9 @@ printf '%s\n' '{"kind":"not-the-contract"}' > "$out"
     assert not output.exists()
 
 
-def test_result_identity_mismatch_is_schema_invalid_even_when_provider_schema_allows_it(tmp_path: Path) -> None:
+def test_result_identity_mismatch_is_schema_invalid_even_when_provider_schema_allows_it(
+    tmp_path: Path,
+) -> None:
     workspace, prompt, schema, capability, output, receipt = _inputs(tmp_path)
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
@@ -284,7 +309,9 @@ printf '%s\n' '{"kind":"review","reason":"wrong packet","packet_sha256":"xxxxxxx
     old_path = os.environ["PATH"]
     os.environ["PATH"] = f"{bin_dir}:{old_path}"
     try:
-        result = _run(tmp_path, "codex_exec", workspace, prompt, schema, capability, output, receipt)
+        result = _run(
+            tmp_path, "codex_exec", workspace, prompt, schema, capability, output, receipt
+        )
     finally:
         os.environ["PATH"] = old_path
     assert result.returncode == 1
@@ -303,7 +330,17 @@ def test_timeout_is_finite_and_typed_without_timeout_binary_fallback(tmp_path: P
     old_path = os.environ["PATH"]
     os.environ["PATH"] = f"{bin_dir}:{old_path}"
     try:
-        result = _run(tmp_path, "codex_exec", workspace, prompt, schema, capability, output, receipt, timeout="0.05")
+        result = _run(
+            tmp_path,
+            "codex_exec",
+            workspace,
+            prompt,
+            schema,
+            capability,
+            output,
+            receipt,
+            timeout="0.05",
+        )
     finally:
         os.environ["PATH"] = old_path
     assert result.returncode == 1
@@ -320,9 +357,9 @@ def test_timeout_preserves_backend_bytes_as_typed_partial_output(tmp_path: Path)
     _executable(
         bin_dir / "codex",
         "#!/bin/sh\n"
-        "out=\"\"\n"
-        "while [ \"$#\" -gt 0 ]; do\n"
-        "  if [ \"$1\" = \"-o\" ]; then out=\"$2\"; shift 2; continue; fi\n"
+        'out=""\n'
+        'while [ "$#" -gt 0 ]; do\n'
+        '  if [ "$1" = "-o" ]; then out="$2"; shift 2; continue; fi\n'
         "  shift\n"
         "done\n"
         "printf '%s\\n' '{\"partial\":true}' > \"$out\"\n"
@@ -331,7 +368,17 @@ def test_timeout_preserves_backend_bytes_as_typed_partial_output(tmp_path: Path)
     old_path = os.environ["PATH"]
     os.environ["PATH"] = f"{bin_dir}:{old_path}"
     try:
-        result = _run(tmp_path, "codex_exec", workspace, prompt, schema, capability, output, receipt, timeout="0.05")
+        result = _run(
+            tmp_path,
+            "codex_exec",
+            workspace,
+            prompt,
+            schema,
+            capability,
+            output,
+            receipt,
+            timeout="0.05",
+        )
     finally:
         os.environ["PATH"] = old_path
 
@@ -358,12 +405,22 @@ def test_timeout_terminates_backend_process_group(tmp_path: Path) -> None:
         "#!/bin/sh\n"
         "(sleep 30) &\n"
         f"child=$!\nprintf '%s\\n' \"$child\" > {child_pid}\n"
-        "wait \"$child\"\n",
+        'wait "$child"\n',
     )
     old_path = os.environ["PATH"]
     os.environ["PATH"] = f"{bin_dir}:{old_path}"
     try:
-        result = _run(tmp_path, "codex_exec", workspace, prompt, schema, capability, output, receipt, timeout="0.05")
+        result = _run(
+            tmp_path,
+            "codex_exec",
+            workspace,
+            prompt,
+            schema,
+            capability,
+            output,
+            receipt,
+            timeout="0.05",
+        )
     finally:
         os.environ["PATH"] = old_path
     assert result.returncode == 1
@@ -385,7 +442,11 @@ cat >/dev/null
 printf '%s\n' '{"is_error":false,"structured_output":{"kind":"review","reason":"claude","capability_non_claims":[],"capability_non_claims_sha256":"__EMPTY_NON_CLAIMS_SHA256__","packet_sha256":"pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp","reviewed_input_identity_sha256":"iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"}}'
         """,
     )
-    script = (bin_dir / "claude").read_text(encoding="utf-8").replace("__EMPTY_NON_CLAIMS_SHA256__", EMPTY_NON_CLAIMS_SHA256)
+    script = (
+        (bin_dir / "claude")
+        .read_text(encoding="utf-8")
+        .replace("__EMPTY_NON_CLAIMS_SHA256__", EMPTY_NON_CLAIMS_SHA256)
+    )
     (bin_dir / "claude").write_text(script, encoding="utf-8")
     (bin_dir / "claude").chmod(0o755)
     old_path = os.environ["PATH"]
@@ -431,7 +492,9 @@ printf '%s\\n' '{{"kind":"review","reason":"semantic-only","packet_sha256":"{"p"
     old_path = os.environ["PATH"]
     os.environ["PATH"] = f"{bin_dir}:{old_path}"
     try:
-        result = _run(tmp_path, "codex_exec", workspace, prompt, schema, capability, output, receipt)
+        result = _run(
+            tmp_path, "codex_exec", workspace, prompt, schema, capability, output, receipt
+        )
     finally:
         os.environ["PATH"] = old_path
 
@@ -485,7 +548,9 @@ printf '%s\\n' '{{"kind":"review","reason":"invents","packet_sha256":"{"p" * 64}
     old_path = os.environ["PATH"]
     os.environ["PATH"] = f"{bin_dir}:{old_path}"
     try:
-        result = _run(tmp_path, "codex_exec", workspace, prompt, schema, capability, output, receipt)
+        result = _run(
+            tmp_path, "codex_exec", workspace, prompt, schema, capability, output, receipt
+        )
     finally:
         os.environ["PATH"] = old_path
 

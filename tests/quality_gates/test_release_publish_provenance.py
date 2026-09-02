@@ -5,6 +5,7 @@ than spilled into a `_lib` companion (D33): resilience covers what a publish
 does when a step fails mid-run, while this covers refusing a run that should
 never have started.
 """
+
 from __future__ import annotations
 
 import json
@@ -13,9 +14,14 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 from ..repo_copy import REPO_COPY_IGNORE
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+pytestmark = pytest.mark.boundary_contract(
+    reason="prove the release entrypoint's installed-style foreign copy is rejected while the repo-local executable proceeds"
+)
 
 
 def _foreign_tree(tmp_path: Path) -> Path:
