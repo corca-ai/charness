@@ -54,8 +54,16 @@ from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script 
 from scripts.yaml_output import emit_yaml  # noqa: E402
 
 REPO_ROOT = repo_root_from_script(__file__)
-_subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
-run_monitored_phase = _subprocess_guard.run_monitored_phase
+# What awiki IS -- its argv, timeout, exit codes, lifecycle line, and the shape of
+# its output -- lives beside this gate in `docs_graph_awiki`. This file JUDGES.
+_awiki = import_repo_module(__file__, "scripts.gates_support.docs_graph_awiki")
+OBSERVED_EXIT_CODES = _awiki.OBSERVED_EXIT_CODES
+PASSING_VERDICT = _awiki.PASSING_VERDICT
+_corroborates_clean = _awiki.corroborates_clean
+# Bound by name here so a verdict test can patch the observation out.
+_run_awiki = _awiki.run_awiki
+parse_summary = _awiki.parse_summary
+named_pages = _awiki.named_pages
 _quality_adapter = import_repo_module(__file__, "scripts.adapters.quality_adapter_lib")
 load_quality_adapter = _quality_adapter.load_quality_adapter
 _quality_universes = import_repo_module(__file__, "scripts.adapters.quality_universes_lib")
@@ -83,11 +91,6 @@ def _scan_root_from_patterns(patterns: tuple[str, ...]) -> str:
 
 
 DEFAULT_SCAN_ROOT = _scan_root_from_patterns(tuple(DEFAULT_UNIVERSES["doc_surfaces"]))
-# awiki exits 0 on a clean graph and 1 on lint findings. This gate does not read
-# the code as its verdict -- findings are why it parses the summary instead --
-# but a code OUTSIDE this set means awiki did not complete a scan, and a summary
-# it may have printed on the way out describes a graph it did not finish reading.
-OBSERVED_EXIT_CODES = frozenset({0, 1})
 # The `link_only_lines` RATCHET. It may only ever decrease, and only with a
 # recorded decision; raising it to whatever the tree currently measures is how a
 # bar satisfies its criterion with zero work, so a raise is a contract change and
@@ -159,37 +162,11 @@ LINK_ONLY_LINES_SLACK_NOT_COMPUTABLE = (
     "not computable this run: `link_only_lines` was not observed while a "
     "different metric failed, so its count is neither zero nor printed"
 )
-_SUMMARY_RE = re.compile(r"^//\s*(?P<verdict>\w+)\s+(?P<fields>.*)$")
-_FIELD_RE = re.compile(r"(?P<key>[a-z_]+)=(?P<value>[0-9.]+)")
-# awiki's own token for "every rule passed". It is the only thing that licenses
-# reading an ABSENT orphan/island count as zero, and even then only alongside the
-# ratios below.
-PASSING_VERDICT = "ok"
-# Present on both the passing and failing summary lines (captured at 0.5.0 in
-# tests/fixtures/), so they can corroborate a passing verdict that omits the
-# counts themselves.
-_CLEAN_COROBORATION = {"orphan_rate": 0.0, "largest_component_ratio": 1.0}
 # A scan that read nothing is trivially "connected": an empty root reports
 # `ok ... documents=0 orphan_rate=0.0000` and EXITS 0 (measured). Without this
 # floor, a consuming repo whose docs live somewhere else gets a clean docs
 # verdict over a graph that was never read.
 MIN_SCANNED_DOCUMENTS = 1
-
-
-def _corroborates_clean(summary: dict[str, float]) -> bool:
-    """Do the ratios awiki always prints agree that nothing is orphaned or split?
-
-    Required before an absent count is read as zero. If awiki ever says `ok` while
-    printing a non-zero orphan rate, that is a contradiction, and the gate reports
-    NOT-RUN rather than picking whichever half it prefers.
-    """
-    return all(summary.get(key) == expected for key, expected in _CLEAN_COROBORATION.items())
-
-
-# A hung `awiki` would hang the whole quality run with no verdict at all. The
-# timeout turns that into a TimeoutExpired, which the guard in `evaluate` renders
-# as NOT-RUN -- the honest answer for a scan that never finished.
-AWIKI_TIMEOUT_SECONDS = 120
 
 
 def _resolved_doc_scope(repo_root: Path):
@@ -200,64 +177,6 @@ def _resolved_doc_scope(repo_root: Path):
     )
     files = [path for path in matching_files(repo_root, universe) if path.suffix.lower() == ".md"]
     return universe, files
-
-
-def _run_awiki(repo_root: Path, scan_root: str) -> tuple[int, str]:
-    outcome = run_monitored_phase(
-        ["awiki", "lint", "-root", scan_root, "-recursive"],
-        cwd=repo_root,
-        phase="docs-graph-awiki",
-        timeout_seconds=AWIKI_TIMEOUT_SECONDS,
-    )
-    return outcome.returncode, f"{outcome.stdout}\n{outcome.stderr}"
-
-
-def parse_summary(output: str) -> tuple[str, dict[str, float]] | None:
-    """Read awiki's `// <verdict> documents=.. orphans=.. ...` summary line.
-
-    Returns `(verdict, fields)`, or None when no summary line is present, which
-    the caller treats as NOT-RUN. The format is not a declared stable interface
-    upstream, so failing to parse it must never resolve to a pass.
-    """
-    for line in output.splitlines():
-        match = _SUMMARY_RE.match(line.strip())
-        if not match:
-            continue
-        fields: dict[str, float] = {}
-        for field in _FIELD_RE.finditer(match.group("fields")):
-            try:
-                fields[field.group("key")] = float(field.group("value"))
-            except ValueError:
-                # `[0-9.]+` accepts strings float() rejects (`1.2.3`, `.`). A
-                # value this gate cannot read is drift, and drift must reach the
-                # NOT-RUN path -- an uncaught ValueError would exit 1, which the
-                # runner renders as FAIL: the gate asserting a broken docs graph
-                # on a run where it observed nothing.
-                return None
-        if fields:
-            return match.group("verdict"), fields
-    return None
-
-
-# awiki annotates each finding block with guidance lines (`// why:`, `// fix:`,
-# `// example:`). They are NOT section headers, and treating them as such ends the
-# block immediately -- which made a failing run report the count while naming no
-# page, the one thing an operator needs from it.
-#
-# The rule is STRUCTURAL rather than a list of the annotations seen so far: a
-# header is a bare token or `token=value` (`// orphan`, `// link_only_line`,
-# `// island=1`, all captured in tests/fixtures/), while an annotation carries a
-# COLON before any `=`. Keyed on an allowlist, a new `// note:` upstream would
-# silently reintroduce the bug this replaced; keyed on `[a-z_]+:` alone, so would
-# a multi-word `// see also:` or a capitalised `// Note:`.
-_ANNOTATION_RE = re.compile(r"^//[^=]*:")
-
-
-def _block_header(line: str) -> str | None:
-    """The block name for an awiki section header line, else None."""
-    if not line.startswith("//") or _ANNOTATION_RE.match(line):
-        return None
-    return line[2:].strip().split("=", 1)[0].strip() or None
 
 
 def ratchet_rows(repo_root: Path) -> list[tuple[str, int]]:
@@ -341,31 +260,6 @@ def resolve_bars(repo_root: Path, override: int | None = None) -> dict[str, int]
         resolve_link_only_lines_bar(repo_root) if override is None else override
     )
     return bars
-
-
-def named_pages(output: str, block: str) -> list[str]:
-    """The pages awiki listed under `block`, so a failure says WHICH.
-
-    Deduplicated in first-seen order, with ` x<n>` appended when a page carries
-    more than one finding. A connectivity block names each page once, so this is
-    a no-op there; `link_only_line` is PER LINE and named one page 41 times in a
-    row on the tree that added it, which is a list an operator scrolls past
-    rather than reads.
-    """
-    counts: dict[str, int] = {}
-    in_block = False
-    for line in output.splitlines():
-        stripped = line.strip()
-        header = _block_header(stripped)
-        if header is not None:
-            in_block = header == block
-            continue
-        if stripped.startswith("//"):
-            continue
-        if in_block and stripped.startswith("[["):
-            name = stripped.split("]]", 1)[0].lstrip("[")
-            counts[name] = counts.get(name, 0) + 1
-    return [name if count == 1 else f"{name} x{count}" for name, count in counts.items()]
 
 
 def _not_run(reason: str, **extra: object) -> dict[str, object]:

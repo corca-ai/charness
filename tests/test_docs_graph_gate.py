@@ -25,6 +25,9 @@ from runtime_bootstrap import import_repo_module
 ROOT = Path(__file__).resolve().parents[1]
 GATE = "scripts/gates/check_docs_graph.py"
 _gate = import_repo_module(__file__, "scripts.gates.check_docs_graph")
+# The process contract (argv, timeout, lifecycle line) is the sibling module's;
+# `_run_awiki` is bound on the gate so the verdict tests can patch it out.
+_awiki = import_repo_module(__file__, "scripts.gates_support.docs_graph_awiki")
 _QUALITY_ROWS = quality_label_universe.quality_gate_rows(ROOT) or []
 
 # CAPTURED from awiki 0.5.0, not hand-written. The passing line is the one that
@@ -944,7 +947,7 @@ def _stub_awiki(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, script: str) ->
     reason="prove the docs gate passes its declared argv and cwd to the external awiki binary"
 )
 def test_run_awiki_invokes_the_binary_with_the_argv_and_cwd_the_gate_declares(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     recorder = tmp_path / "argv.txt"
     _stub_awiki(
@@ -970,24 +973,87 @@ def test_run_awiki_invokes_the_binary_with_the_argv_and_cwd_the_gate_declares(
     # diagnostics there, and a summary parser reading only stdout would report
     # not-run for a run that told it exactly what went wrong.
     assert output == "out\n\nerr\n"
+    # Exit 3 is outside OBSERVED_EXIT_CODES: the scan did not complete, `_evaluate`
+    # says NOT-RUN, and the guard's own FAIL line is the honest console echo of it.
+    lifecycle = capsys.readouterr().err
+    assert "FAIL [docs-graph-awiki]" in lifecycle
+    assert "OBSERVED [docs-graph-awiki]" not in lifecycle
 
 
 @pytest.mark.boundary_contract(
     reason="prove the docs gate converts an external awiki timeout into its declared result"
 )
 def test_a_hung_awiki_times_out_rather_than_hanging_the_whole_quality_run(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     # The declared reason `AWIKI_TIMEOUT_SECONDS` exists, executed for the first time.
     # `evaluate` renders the guard's timeout result as NOT-RUN; what was never proven
     # is that the timeout FIRES, so the guard the comment promises was resting on a
     # keyword argument nothing had exercised.
     _stub_awiki(tmp_path, monkeypatch, "#!/bin/sh\nsleep 30\n")
-    monkeypatch.setattr(_gate, "AWIKI_TIMEOUT_SECONDS", 0.25)
+    monkeypatch.setattr(_awiki, "AWIKI_TIMEOUT_SECONDS", 0.25)
 
     returncode, output = _gate._run_awiki(tmp_path, "docs/wiki")
     assert returncode == 124
     assert "timed out after 0.25s" in output
+    # A timeout keeps the guard's FAIL line: the scan never finished, and
+    # `_evaluate` renders 124 as NOT-RUN, so red on the console is not a lie here.
+    lifecycle = capsys.readouterr().err
+    assert "RUN [docs-graph-awiki]" in lifecycle
+    assert "FAIL [docs-graph-awiki]" in lifecycle
+    assert "OBSERVED [docs-graph-awiki]" not in lifecycle
+
+
+# awiki exits 1 on ANY lint finding, and `link_only_lines` under the bar is a
+# finding. On this repo's own tree that made every full lane print
+# `FAIL [docs-graph-awiki]` beside a `status: pass` (#776). Nothing aggregates
+# that line (the gate is label-only); only the operator read it, as a red.
+_FINDINGS_UNDER_EVERY_BAR = (
+    "// lint_failed documents=43 orphans=0 islands=0 link_only_lines=12 "
+    "largest_component_ratio=1.0000 orphan_rate=0.0000 content_coverage=1.0000\n"
+    "// link_only_line\n"
+    "[[artifact-policy]]:23: - [deferred-decisions.md](./deferred-decisions.md)\n"
+)
+
+
+def _stub_awiki_exiting_one(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, output: str) -> None:
+    body = output.replace("\\", "\\\\").replace("'", "'\\''")
+    _stub_awiki(tmp_path, monkeypatch, f"#!/bin/sh\nprintf '%s' '{body}'\nexit 1\n")
+
+
+def test_lint_findings_under_every_bar_pass_without_a_fail_line_on_the_console(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    _stub_awiki_exiting_one(tmp_path, monkeypatch, _FINDINGS_UNDER_EVERY_BAR)
+    # The exported default bar is 0; this repo's recorded ratchet sits above its
+    # measured count, which is exactly the shape that printed a red beside a pass.
+    bars = {**_gate.METRIC_BARS, "link_only_lines": 12}
+
+    result = _gate._evaluate(tmp_path, "docs/wiki", bars)
+
+    assert result["status"] == "pass", result
+    lifecycle = capsys.readouterr().err
+    assert "RUN [docs-graph-awiki]" in lifecycle
+    assert "FAIL [docs-graph-awiki]" not in lifecycle
+    assert "OBSERVED [docs-graph-awiki]" in lifecycle
+    # One terminal line, rendered once: the guard's held line is replaced, not doubled.
+    assert lifecycle.count("[docs-graph-awiki]") == 2
+
+
+def test_lint_findings_over_a_bar_still_fail_by_the_metric_not_by_the_exit_code(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    # Same exit code, different verdict: the console line is neutral because the
+    # exit code does not carry the verdict; the named metric does.
+    _stub_awiki_exiting_one(tmp_path, monkeypatch, _ORPHAN_OUTPUT)
+
+    result = _gate._evaluate(tmp_path, "docs/wiki", dict(_gate.METRIC_BARS))
+
+    assert result["status"] == "fail", result
+    assert "orphans" in result["failures"]
+    lifecycle = capsys.readouterr().err
+    assert "FAIL [docs-graph-awiki]" not in lifecycle
+    assert "OBSERVED [docs-graph-awiki]" in lifecycle
 
 
 def test_main_exits_nonzero_on_fail_and_zero_on_pass(monkeypatch: pytest.MonkeyPatch) -> None:

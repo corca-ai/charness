@@ -59,7 +59,11 @@ code. Three points, all measured:
    against a bar takes the count without the exit code, and can sit above zero
    where the rule over-reports. The bar is a required value that may only ever
    decrease; since S6 it lives in the ratchet record below, which
-   [check_docs_graph.py](../scripts/gates/check_docs_graph.py) reads.
+   [check_docs_graph.py](../scripts/gates/check_docs_graph.py) reads. The
+   console phase line follows the same rule: awiki's findings exit renders as
+   `OBSERVED [docs-graph-awiki]`, never `FAIL`, because the verdict is the
+   gate's and a tree under every bar still exits 1. A timeout or an unknown
+   exit code keeps the guard's `FAIL` line beside the gate's NOT-RUN verdict.
 3. **The residual under that bar is the wrapping population, and the sweep
    decision still stands.** Recount rather than trusting a number here —
    `awiki lint -root docs -recursive` prints it and it moves with every docs
