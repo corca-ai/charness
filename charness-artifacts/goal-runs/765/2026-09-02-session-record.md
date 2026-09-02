@@ -243,6 +243,24 @@ Steps 1 and 2 of "Next session, in order" are done.
   gate's own remediation (delete stale `pytest-*` sessions older than ten
   minutes) brought it to 137 MB.
 
+- #769 closed in this session. Every lane is integrated; the distinct-observer
+  critique on the landed tree
+  (`charness-artifacts/critique/2026-09-02-769-export-boundary.md`) found seven
+  act-before-ship defects the lanes and the parent had missed, all fixed before
+  the closeout: a shipped skill script importing `tools.validate_presets`
+  (the module returned to `scripts/`), three sites reading a bare `tools/`
+  directory as the authoring checkout, an export arm blind to dotted and
+  argv spellings and advisory only (now blocking on executable references
+  outside an `export-guard:` line), the engine's py-compile carrying its own
+  glob list, and `check-python-lint.sh` sourcing a hook file the export lacks.
+  Deferred with anchors: the exported `run-quality.sh` cannot target a
+  consumer (`GATE_ACCEPTS_REPO_ROOT_HATCH=0`; the consumer route is the
+  planner over the consumer's own declared list), and the exported-copy test
+  seeds a narrower shape than a real install (#772's live proof covers it).
+  Figures at closeout: 45 `tools/` modules, `run-quality.sh` 77 lines with no
+  exemption, 101 declared rows over 95 labels and 8 phases, ten universe
+  families, full pytest 8577 passed, full read-only lane 80 passed.
+
 ## Lessons this session paid for
 
 - The default `run-quality.sh` lane ran five gates and the full lane ran only
