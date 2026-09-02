@@ -206,6 +206,26 @@ Steps 1 and 2 of "Next session, in order" are done.
   reads `summary_projection: not_configured`, focused ledger, lesson, and
   pickup tests 243 passed.
 
+- Steps 5 and 6: the operator approved the push in-session. A clean clone of
+  the tip was NOT green twice more: the retro cited the pre-rebase L4 SHA
+  (`check_artifact_referents` refused it; fixed by repointing to `e804963a7`),
+  and `test_artifact_referents.py` declared a ten-character SHA prefix that
+  `sha_candidates` skips when all digits (a one-in-a-hundred flake; fixed by
+  declaring the full SHA). The clone also needed `install-git-hooks.sh`
+  before `validate-maintainer-setup` passed. Pushed `474b9f514` to
+  `origin/main` from the clone (hook lane green); #768 and #774 CLOSED;
+  `verify-closeout` = `verified` for both; cursor advanced by
+  `operations/update-parent-progress-769.json` (progress 6/3/9 revision 5);
+  pickup names #769.
+- Step 7 (#769) started in the same session: three explorer maps
+  (`briefs/map-769-{runner,export,conditional}.md`) were written to files
+  because the host truncates agent replies near 4k characters; the design is
+  split into eleven lanes (U0-U3 universes, R1-R3 and R2a/R2b runner, T1-T2
+  tools, S consumer scope) with briefs beside the maps. `charness task run`
+  fails a candidate that changes paths outside `--scope`; U0 and R1 were
+  launched with a single-file scope before that was read (their commits
+  still land on their branches), every later lane uses `--scope '**/*'`.
+
 ## Lessons this session paid for
 
 - The default `run-quality.sh` lane ran five gates and the full lane ran only
