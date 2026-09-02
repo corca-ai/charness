@@ -12,6 +12,7 @@ purpose: a pin whose expected value is this tree's current count would go red on
 every unrelated commit that adds a skill or a gate, and the first remedy anyone
 reaches for is to re-record the number — which is the class under test.
 """
+
 from __future__ import annotations
 
 import subprocess
@@ -26,10 +27,18 @@ from .support import ROOT
 
 _RELEASE_SCRIPTS = ROOT / "skills" / "public" / "release" / "scripts"
 
-SURFACES = load_script_module("release_claim_surfaces_under_test", _RELEASE_SCRIPTS / "release_claim_surfaces.py")
-CLAIMS = load_script_module("release_notes_claims_under_test", _RELEASE_SCRIPTS / "release_notes_claims.py")
-GENERATE = load_script_module("generate_release_notes_under_test", _RELEASE_SCRIPTS / "generate_release_notes.py")
-GATE = load_script_module("narrative_gate_claims_under_test", _RELEASE_SCRIPTS / "publish_release_narrative_gate.py")
+SURFACES = load_script_module(
+    "release_claim_surfaces_under_test", _RELEASE_SCRIPTS / "release_claim_surfaces.py"
+)
+CLAIMS = load_script_module(
+    "release_notes_claims_under_test", _RELEASE_SCRIPTS / "release_notes_claims.py"
+)
+GENERATE = load_script_module(
+    "generate_release_notes_under_test", _RELEASE_SCRIPTS / "generate_release_notes.py"
+)
+GATE = load_script_module(
+    "narrative_gate_claims_under_test", _RELEASE_SCRIPTS / "publish_release_narrative_gate.py"
+)
 
 _ENTRYPOINT = """#!/usr/bin/env python3
 import argparse
@@ -65,6 +74,10 @@ def _fixture_repo(tmp_path: Path) -> Path:
     (repo / "charness-artifacts" / "release").mkdir(parents=True)
     (repo / "skills" / "public" / "demo" / "SKILL.md").write_text("# demo\n", encoding="utf-8")
     (repo / "scripts" / "check-demo.sh").write_text("#!/usr/bin/env bash\n", encoding="utf-8")
+    (repo / "scripts" / "package").mkdir()
+    (repo / "scripts" / "package" / "check-nested.sh").write_text(
+        "#!/usr/bin/env bash\n", encoding="utf-8"
+    )
     (repo / "charness").write_text(_ENTRYPOINT, encoding="utf-8")
     (repo / ".agents" / "release-adapter.yaml").write_text(
         "version: 1\nrepo: demo\noutput_dir: charness-artifacts/release\n", encoding="utf-8"
@@ -125,7 +138,7 @@ def test_the_surfaces_measure_the_fixture_tree(tmp_path: Path) -> None:
 
     assert derived["json-declaring-scripts"]["count"] == 0
     assert derived["public-skills"]["items"] == ["demo"]
-    assert derived["repo-shell-gates"]["items"] == ["check-demo.sh"]
+    assert derived["repo-shell-gates"]["items"] == ["check-demo.sh", "check-nested.sh"]
     # Top-level only. `inner` is declared on a nested subparser, and a flat list
     # that included it would name `charness inner`, which is not an invocation.
     assert derived["charness-subcommands"]["items"] == ["demo", "group"]
@@ -167,7 +180,9 @@ def test_a_json_adjacent_flag_is_not_a_json_declaration(tmp_path: Path) -> None:
     assert surface["items"] == ["scripts/real.py"]
 
 
-def test_a_source_that_does_not_parse_is_declared_unscanned_not_counted_as_zero(tmp_path: Path) -> None:
+def test_a_source_that_does_not_parse_is_declared_unscanned_not_counted_as_zero(
+    tmp_path: Path,
+) -> None:
     repo = _fixture_repo(tmp_path)
     _write_tracked(repo, "scripts/broken.py", "def (\n")
 
@@ -210,7 +225,7 @@ def test_notes_omitting_a_surface_the_tree_has_are_an_under_claim(tmp_path: Path
     GENERATE._do_sync(notes, _render(repo))
     text = notes.read_text(encoding="utf-8")
     start = text.index("<!-- claim-surface: repo-shell-gates -->")
-    notes.write_text(text[:start] + text[text.index(CLAIMS.BLOCK_END):], encoding="utf-8")
+    notes.write_text(text[:start] + text[text.index(CLAIMS.BLOCK_END) :], encoding="utf-8")
 
     findings = _audit(notes, repo)
 
@@ -231,7 +246,10 @@ def test_a_hand_edited_derived_block_is_caught_with_its_direction(tmp_path: Path
     text = notes.read_text(encoding="utf-8")
     start = text.index("<!-- claim-surface: json-declaring-scripts -->")
     end = text.index("<!-- claim-surface: charness-subcommands -->")
-    notes.write_text(text[:start] + text[start:end].replace("count: 1", "count: 9") + text[end:], encoding="utf-8")
+    notes.write_text(
+        text[:start] + text[start:end].replace("count: 1", "count: 9") + text[end:],
+        encoding="utf-8",
+    )
 
     findings = _audit(notes, repo)
 
@@ -255,7 +273,10 @@ def test_an_unknown_surface_or_field_is_unresolvable_rather_than_a_mismatch(tmp_
 
     findings = _audit(notes, repo)
 
-    assert [finding["kind"] for finding in findings] == ["marker-unknown-surface", "marker-unknown-field"]
+    assert [finding["kind"] for finding in findings] == [
+        "marker-unknown-surface",
+        "marker-unknown-field",
+    ]
     assert {finding["direction"] for finding in findings} == {"unresolvable"}
 
 
@@ -287,7 +308,9 @@ def test_a_surface_described_twice_is_refused_rather_than_last_wins(tmp_path: Pa
     chunk_start = text.index("<!-- claim-surface: public-skills -->")
     chunk_end = text.index("<!-- claim-surface: repo-shell-gates -->")
     chunk = text[chunk_start:chunk_end]
-    notes.write_text(text[:chunk_start] + chunk + chunk + text[chunk_start:][len(chunk):], encoding="utf-8")
+    notes.write_text(
+        text[:chunk_start] + chunk + chunk + text[chunk_start:][len(chunk) :], encoding="utf-8"
+    )
 
     kinds = [finding["kind"] for finding in _audit(notes, repo)]
 
@@ -368,7 +391,9 @@ def test_the_opt_out_covers_an_absent_block_and_not_a_contradicted_claim(tmp_pat
         _preflight(repo, notes)
 
 
-def test_the_requirement_is_armed_by_default_so_deleting_the_line_re_arms_it(tmp_path: Path) -> None:
+def test_the_requirement_is_armed_by_default_so_deleting_the_line_re_arms_it(
+    tmp_path: Path,
+) -> None:
     """Disarm-by-deletion, refused by direction.
 
     An opt-IN flag is disarmed by deleting one adapter line with nothing red.
@@ -400,8 +425,7 @@ def test_publish_preflight_refuses_an_ungrounded_quantity_in_prose(tmp_path: Pat
     repo = _fixture_repo(tmp_path)
     notes = _synced_notes(repo)
     notes.write_text(
-        notes.read_text(encoding="utf-8")
-        + "\nTwelve public skill scripts still declare one.\n",
+        notes.read_text(encoding="utf-8") + "\nTwelve public skill scripts still declare one.\n",
         encoding="utf-8",
     )
 
@@ -512,7 +536,9 @@ def test_the_remedy_is_not_attached_to_an_unrelated_blocker(tmp_path: Path) -> N
     assert GATE.CLAIMS_REMEDY not in message
 
 
-def test_check_refuses_an_ungrounded_quantity_and_is_not_stricter_than_the_gate(tmp_path: Path) -> None:
+def test_check_refuses_an_ungrounded_quantity_and_is_not_stricter_than_the_gate(
+    tmp_path: Path,
+) -> None:
     """`--check` is the command the skill's workflow tells an author to run.
 
     Two regressions it has already had: printing `clean` while running only the

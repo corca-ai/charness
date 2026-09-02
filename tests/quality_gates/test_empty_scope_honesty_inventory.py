@@ -7,6 +7,7 @@ and the inventory's own empty-scope behaviour, because an inventory that reporte
 clean table over a discovery glob that matched nothing would be the very defect it
 measures.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -75,9 +76,14 @@ def test_libraries_are_not_counted_as_detectors(tmp_path: Path) -> None:
     module = _load()
     (tmp_path / "scripts").mkdir()
     (tmp_path / "scripts" / "check_real.py").write_text("", encoding="utf-8")
+    (tmp_path / "scripts" / "package").mkdir()
+    (tmp_path / "scripts" / "package" / "check_nested.py").write_text("", encoding="utf-8")
     (tmp_path / "scripts" / "check_thing_lib.py").write_text("", encoding="utf-8")
 
-    assert module.discover_detectors(tmp_path) == ["scripts/check_real.py"]
+    assert module.discover_detectors(tmp_path) == [
+        "scripts/check_real.py",
+        "scripts/package/check_nested.py",
+    ]
 
 
 def test_an_empty_discovery_glob_reports_its_own_empty_scope(tmp_path: Path) -> None:
@@ -122,8 +128,12 @@ def test_the_real_repo_run_is_a_reading_surface_not_a_gate(tmp_path: Path) -> No
     # ...and the opt-in flag is what turns the same finding into a refusal, so the
     # non-gate posture is a CHOICE this test pins rather than an absence of teeth.
     armed = run_script(
-        str(SCRIPT), "--repo-root", str(repo),
-        "--require-no-positive-verdict-over-zero", "--summary", cwd=ROOT,
+        str(SCRIPT),
+        "--repo-root",
+        str(repo),
+        "--require-no-positive-verdict-over-zero",
+        "--summary",
+        cwd=ROOT,
     )
     assert armed.returncode == 1, armed.stdout + armed.stderr
     assert "scripts/check_liar.py" in armed.stderr

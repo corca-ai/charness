@@ -34,7 +34,7 @@ NODE_GLOBS = (
 _PATH_RE = re.compile(
     r"(?<![A-Za-z0-9_./-])((?:scripts|tools|skills)/[A-Za-z0-9_./-]+\.(?:py|sh|mjs|json|txt))(?![A-Za-z0-9_./-])"
 )
-_MODULE_RE = re.compile(r"^(scripts|tools)\.([A-Za-z0-9_]+)$")
+_MODULE_RE = re.compile(r"^(scripts|tools)\.([A-Za-z0-9_]+(?:\.[A-Za-z0-9_]+)*)$")
 _SURFACE_PREFIXES = (
     ".agents/",
     ".claude/",
@@ -109,7 +109,8 @@ def _node_relative(path: Path, nodes: dict[str, Path]) -> str:
 def _module_target(value: str, nodes: dict[str, Path]) -> str | None:
     match = _MODULE_RE.fullmatch(value)
     if match:
-        return _path_target(f"{match.group(1)}/{match.group(2)}.py", nodes)
+        relative = match.group(2).replace(".", "/")
+        return _path_target(f"{match.group(1)}/{relative}.py", nodes)
     return None
 
 

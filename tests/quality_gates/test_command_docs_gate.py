@@ -45,6 +45,20 @@ def _root_cli_command_paths() -> set[tuple[str, ...]]:
     return _parser_command_paths(runpy.run_path(str(ROOT / "charness"))["build_parser"]())
 
 
+def _json_declarations(root: Path) -> list[str]:
+    declarations: list[str] = []
+    for path in [root / "charness", *sorted((root / "scripts").rglob("*.py"))]:
+        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+            if not isinstance(node, ast.Call):
+                continue
+            function = node.func
+            if not (isinstance(function, ast.Attribute) and function.attr == "add_argument"):
+                continue
+            if any(isinstance(arg, ast.Constant) and arg.value == "--json" for arg in node.args):
+                declarations.append(f"{path.relative_to(root)}:{node.lineno}")
+    return declarations
+
+
 def _command_doc_paths() -> set[tuple[str, ...]]:
     contract = yaml.safe_load((ROOT / ".agents" / "command-docs.yaml").read_text(encoding="utf-8"))
     return {
@@ -266,17 +280,7 @@ def test_root_cli_has_no_json_compatibility_flag() -> None:
     surface, so that is what is read here: no declaration anywhere the CLI
     dispatches, and a real invocation refused rather than ignored.
     """
-    declarations: list[str] = []
-    for path in [ROOT / "charness", *sorted((ROOT / "scripts").glob("*.py"))]:
-        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
-            if not isinstance(node, ast.Call):
-                continue
-            function = node.func
-            if not (isinstance(function, ast.Attribute) and function.attr == "add_argument"):
-                continue
-            if any(isinstance(arg, ast.Constant) and arg.value == "--json" for arg in node.args):
-                declarations.append(f"{path.relative_to(ROOT)}:{node.lineno}")
-
+    declarations = _json_declarations(ROOT)
     assert declarations == [], f"the root CLI surface still declares --json: {declarations}"
 
     # Behavioral half: a caller still passing the old flag is told it is gone,
@@ -293,6 +297,18 @@ def test_root_cli_has_no_json_compatibility_flag() -> None:
 
     assert completed.returncode == 2, completed.stdout + completed.stderr
     assert "unrecognized arguments: --json" in completed.stderr
+
+
+def test_json_declaration_scan_includes_nested_scripts(tmp_path: Path) -> None:
+    nested = tmp_path / "scripts" / "package"
+    nested.mkdir(parents=True)
+    (tmp_path / "charness").write_text("", encoding="utf-8")
+    (nested / "check_json.py").write_text(
+        "import argparse\nparser = argparse.ArgumentParser()\nparser.add_argument('--json')\n",
+        encoding="utf-8",
+    )
+
+    assert _json_declarations(tmp_path) == ["scripts/package/check_json.py:3"]
 
 
 def test_root_cli_mutating_modes_have_side_effect_probe_contracts() -> None:

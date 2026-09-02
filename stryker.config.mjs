@@ -1,4 +1,4 @@
-const defaultMutate = ["scripts/agent-runtime/*.mjs"];
+const defaultMutate = ["scripts/agent-runtime/**/*.mjs"];
 const mutate = process.env.MUTATION_JS_TARGETS
 	? process.env.MUTATION_JS_TARGETS.split(/\s+/).filter(Boolean)
 	: defaultMutate;

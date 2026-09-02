@@ -21,6 +21,7 @@ appended to, and each surface carries its own `unscanned` list so a reader can
 see the edge of what was measured instead of inferring a completeness nobody
 established.
 """
+
 from __future__ import annotations
 
 import ast
@@ -31,7 +32,14 @@ from typing import Callable, NamedTuple
 
 
 def _load_skill_runtime_bootstrap():
-    bootstrap = next((ancestor / "skill_runtime_bootstrap.py" for ancestor in Path(__file__).resolve().parents if (ancestor / "skill_runtime_bootstrap.py").is_file()), None)
+    bootstrap = next(
+        (
+            ancestor / "skill_runtime_bootstrap.py"
+            for ancestor in Path(__file__).resolve().parents
+            if (ancestor / "skill_runtime_bootstrap.py").is_file()
+        ),
+        None,
+    )
     if bootstrap is None:
         raise ImportError("skill_runtime_bootstrap.py not found")
     return SimpleNamespace(**runpy.run_path(str(bootstrap)))
@@ -39,7 +47,9 @@ def _load_skill_runtime_bootstrap():
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 
-_repo_file_listing = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.repo_file_listing")
+_repo_file_listing = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.repo_file_listing"
+)
 git_list_repo_files = _repo_file_listing.git_list_repo_files
 RepoFileSnapshot = _repo_file_listing.RepoFileSnapshot
 
@@ -93,11 +103,7 @@ def _tracked_release_tree(
     root = repo_root.resolve()
     listing = snapshot or RepoFileSnapshot(root, require_git=require_git)
     listed = listing.list_files(include_untracked=False)
-    allowed = (
-        frozenset(path for path in listed if path.is_file())
-        if listed is not None
-        else None
-    )
+    allowed = frozenset(path for path in listed if path.is_file()) if listed is not None else None
     return TrackedReleaseTree(root, allowed)
 
 
@@ -150,7 +156,11 @@ def _method_calls(tree: ast.Module, method: str):
     chain gets one condition wrong and the surface silently measures zero.
     """
     for node in ast.walk(tree):
-        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and node.func.attr == method:
+        if (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and node.func.attr == method
+        ):
             yield node
 
 
@@ -184,7 +194,9 @@ def _json_declaring_scripts(
         if _declares_option(tree, "--json"):
             hits.append(_rel(repo_root, path))
     extra = (
-        [f"{len(unreadable)} source(s) this derivation could not parse and therefore did not measure: {sorted(unreadable)}"]
+        [
+            f"{len(unreadable)} source(s) this derivation could not parse and therefore did not measure: {sorted(unreadable)}"
+        ]
         if unreadable
         else []
     )
@@ -208,7 +220,9 @@ def _charness_subcommands(
     tree = tracked_tree or _tracked_release_tree(repo_root, require_git=require_git)
     tracked = _tracked(tree, (_CLI_ENTRYPOINT,))
     if not tracked:
-        return [], [f"`{_CLI_ENTRYPOINT}` is not a tracked file in this tree, so no subcommand was derived"]
+        return [], [
+            f"`{_CLI_ENTRYPOINT}` is not a tracked file in this tree, so no subcommand was derived"
+        ]
     path = tracked[0]
     tree = _parsed(path)
     if tree is None:
@@ -218,7 +232,11 @@ def _charness_subcommands(
         receiver = node.func.value
         if not (isinstance(receiver, ast.Name) and receiver.id == "subparsers"):
             continue
-        if node.args and isinstance(node.args[0], ast.Constant) and isinstance(node.args[0].value, str):
+        if (
+            node.args
+            and isinstance(node.args[0], ast.Constant)
+            and isinstance(node.args[0].value, str)
+        ):
             names.append(node.args[0].value)
     return sorted(set(names)), []
 
@@ -228,14 +246,16 @@ def _public_skills(
 ) -> tuple[list[str], list[str]]:
     manifests = _tracked(tracked_tree, ("skills/public/*/SKILL.md",))
     if not manifests:
-        return [], ["no tracked `skills/public/*/SKILL.md` was found in this tree, so no public skill was derived"]
+        return [], [
+            "no tracked `skills/public/*/SKILL.md` was found in this tree, so no public skill was derived"
+        ]
     return sorted({path.parent.name for path in manifests}), []
 
 
 def _repo_shell_gates(
     repo_root: Path, *, tracked_tree: TrackedReleaseTree
 ) -> tuple[list[str], list[str]]:
-    return sorted({path.name for path in _tracked(tracked_tree, ("scripts/check-*.sh",))}), []
+    return sorted({path.name for path in _tracked(tracked_tree, ("scripts/**/check-*.sh",))}), []
 
 
 #: Append-only in spirit: removing a surface removes a check, and every id here
@@ -272,7 +292,7 @@ SURFACES: tuple[Surface, ...] = (
     Surface(
         id="repo-shell-gates",
         question="which `check-*.sh` shell gates this repo ships",
-        scanned=("scripts/check-*.sh",),
+        scanned=("scripts/**/check-*.sh",),
         unscanned=(
             "Python gates under `scripts/`, which are far more numerous and are not this surface",
             "gates a consuming repo wires from its own tree",

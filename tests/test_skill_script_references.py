@@ -373,6 +373,17 @@ def test_the_authoring_marker_resolves_for_every_shipped_package_shape(tmp_path:
     assert {row["status"] for row in rows} == {inventory_module.AUTHORING_MARKED}
 
 
+def test_nested_skill_script_is_in_the_package_script_index(tmp_path: Path) -> None:
+    package_scripts = tmp_path / "skills" / "public" / "demo" / "scripts" / "package"
+    package_scripts.mkdir(parents=True)
+    (package_scripts / "helper.py").write_text("print('ok')\n", encoding="utf-8")
+
+    packages = inventory_module.iter_skill_packages(tmp_path)
+    index = inventory_module._package_script_index(packages)
+
+    assert "package/helper.py" in index[inventory_module.AUTHORING]
+
+
 def test_the_authoring_marker_resolves_docs_and_artifacts_in_both_layouts(tmp_path: Path) -> None:
     """The placeholder covers the whole authoring tree, not only scripts/."""
     (tmp_path / "docs").mkdir()

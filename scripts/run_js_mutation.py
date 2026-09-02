@@ -29,7 +29,7 @@ DEFAULT_REPORT_JSON = Path("reports/mutation/stryker-js.json")
 DEFAULT_TIMEOUT_SECONDS = 900
 DEFAULT_MAX_FILES = 1
 DEFAULT_MAX_MUTANTS = 120
-JS_MUTATION_POOL = ("scripts/agent-runtime/*.mjs",)
+JS_MUTATION_POOL = ("scripts/agent-runtime/**/*.mjs",)
 JS_MUTATION_MUTANT_WEIGHTS = {
     "scripts/agent-runtime/codex-eval-runtime.mjs": 142,
     "scripts/agent-runtime/contract-versions.mjs": 5,

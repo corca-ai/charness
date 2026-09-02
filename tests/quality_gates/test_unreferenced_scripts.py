@@ -47,3 +47,26 @@ def test_empty_script_universe_refuses(tmp_path: Path) -> None:
     assert result.returncode == 1
     assert "refusing empty matched script universe" in result.stderr
     assert "scripts/**" in result.stderr
+
+
+def test_strict_keeps_a_nested_dotted_import_reachable(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    nested = repo / "scripts" / "pkg"
+    nested.mkdir(parents=True)
+    (nested / "entry.py").write_text("VALUE = 1\n", encoding="utf-8")
+    (nested / "consumer.py").write_text(
+        "from scripts.pkg.entry import VALUE\nassert VALUE == 1\n", encoding="utf-8"
+    )
+    tests = repo / "tests"
+    tests.mkdir()
+    (tests / "test_consumer.py").write_text(
+        "from scripts.pkg.consumer import VALUE\nassert VALUE == 1\n", encoding="utf-8"
+    )
+
+    result = _run("--repo-root", str(repo), "--strict")
+
+    assert result.returncode == 0
+    payload = yaml.safe_load(result.stdout)
+    assert "scripts/pkg/entry.py" not in payload["unreferenced"]
+    assert "scripts/pkg/consumer.py" not in payload["unreferenced"]
+    assert payload["verdict"] == "ok"

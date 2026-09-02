@@ -262,7 +262,9 @@ def unshipped_path_findings(
 #: How an exported doc/adapter spells a command a consumer should run. The
 #: `$SKILL_DIR` form is the export's own 100+-site convention; a script named
 #: this way is a surface a consumer is TOLD to execute.
-DOCUMENTED_ENTRYPOINT_RE = re.compile(r"(?:\$SKILL_DIR|\$\{SKILL_DIR\})/scripts/([a-z0-9_]+\.py)")
+DOCUMENTED_ENTRYPOINT_RE = re.compile(
+    r"(?:\$SKILL_DIR|\$\{SKILL_DIR\})/scripts/([a-z0-9_][a-z0-9_./-]*\.py)"
+)
 _ENTRYPOINT_DOC_SUFFIXES = (".md", ".yaml", ".yml", ".json")
 
 
@@ -285,7 +287,7 @@ def documented_entrypoint_names(export_root: Path) -> set[str]:
 #: the instruction resolves to the wrong tree -- or to nothing -- even though the
 #: script ships. `<plugin-dir>/scripts/<name>.py` is the spelling that resolves
 #: in both trees (`check_plugin_dir_references.py` owns that placeholder).
-REPO_ROOT_SCRIPT_INSTRUCTION_RE = re.compile(r"python3 scripts/([a-z0-9_]+\.(?:py|sh))")
+REPO_ROOT_SCRIPT_INSTRUCTION_RE = re.compile(r"python3 scripts/([a-z0-9_][a-z0-9_./-]*\.(?:py|sh))")
 
 #: A generated file's header names the generator that produced it. That is
 #: PROVENANCE for whoever regenerates it in THIS repo -- a maintainer action --
@@ -362,7 +364,12 @@ def repo_root_instruction_findings(
     which is a declaration, not a measurement.
     """
     findings: list[dict[str, object]] = []
-    shipped = {path.name for path in (export_root / "scripts").glob("*") if path.is_file()}
+    scripts_root = export_root / "scripts"
+    shipped = {
+        path.relative_to(scripts_root).as_posix()
+        for path in scripts_root.rglob("*")
+        if path.is_file()
+    }
     for path in sorted(export_root.rglob("*")):
         if path.suffix not in (*_ENTRYPOINT_DOC_SUFFIXES, ".py") or not path.is_file():
             continue

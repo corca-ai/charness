@@ -334,6 +334,7 @@
       "source_paths": [
         ".agents/*-adapter.yaml",
         "scripts/adapter*_lib.py",
+        "scripts/**/adapter*_lib.py",
         "scripts/adapter_init_lib.py",
         "scripts/simple_skill_adapter_lib.py"
       ],
@@ -451,6 +452,7 @@
       "description": "Repo-owned JavaScript agent-runtime modules and their native test command.",
       "source_paths": [
         "scripts/agent-runtime/*.mjs",
+        "scripts/agent-runtime/**/*.mjs",
         "tests/agent-runtime/*.mjs",
         "package.json",
         "stryker.config.mjs"

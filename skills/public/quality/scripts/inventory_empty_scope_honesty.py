@@ -70,7 +70,14 @@ from typing import Any
 
 
 def _load_skill_runtime_bootstrap():
-    bootstrap = next((ancestor / "skill_runtime_bootstrap.py" for ancestor in Path(__file__).resolve().parents if (ancestor / "skill_runtime_bootstrap.py").is_file()), None)
+    bootstrap = next(
+        (
+            ancestor / "skill_runtime_bootstrap.py"
+            for ancestor in Path(__file__).resolve().parents
+            if (ancestor / "skill_runtime_bootstrap.py").is_file()
+        ),
+        None,
+    )
     if bootstrap is None:
         raise ImportError("skill_runtime_bootstrap.py not found")
     return SimpleNamespace(**runpy.run_path(str(bootstrap)))
@@ -86,8 +93,8 @@ from summary_output_lib import add_output_args, emit_selected  # noqa: E402
 
 # discovery-boundary: every family here is Python; the suffix is uniform by construction
 DETECTOR_GLOBS = (
-    "scripts/check_*.py",
-    "scripts/validate_*.py",
+    "scripts/**/check_*.py",
+    "scripts/**/validate_*.py",
     "tools/check_*.py",
     "tools/validate_*.py",
     "skills/public/*/scripts/inventory_*.py",
@@ -133,7 +140,7 @@ def discover_detectors(repo_root: Path) -> list[str]:
     found = {
         path
         for pattern in DETECTOR_GLOBS
-        for path in globlib.glob(pattern, root_dir=str(repo_root))
+        for path in globlib.glob(pattern, root_dir=str(repo_root), recursive=True)
         if not path.endswith(LIBRARY_SUFFIXES)
     }
     return sorted(found)

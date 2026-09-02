@@ -16,7 +16,7 @@ universes:
   # check-shell
   shell_sources:
     - '*.sh'
-    - scripts/*.sh
+    - scripts/**/*.sh
     - tests/**/*.sh
   # check-test-production-ratio
   test_roots:

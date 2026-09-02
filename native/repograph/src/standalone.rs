@@ -9,6 +9,7 @@ use crate::selection::matching_files;
 pub const SCAN_PATTERNS: &[&str] = &[
     "*.py",
     "scripts/*.py",
+    "scripts/**/*.py",
     "tools/*.py",
     "skills/*/*/scripts/*.py",
     "skills/*/scripts/*.py",
@@ -138,13 +139,10 @@ fn probe_target(repo_root: &Path, path: &str) -> ProbeTarget {
         .unwrap_or_default()
         .to_string();
     let mut shapes = Vec::new();
-    let is_top_level_scripts = relative
-        .parent()
-        .is_some_and(|parent| parent == Path::new("scripts"));
-    if is_top_level_scripts {
+    if let Some(package_module) = scripts_module_name(relative) {
         shapes.push(ProbeShape {
             shape: "package".to_string(),
-            command: format!("import scripts.{module}"),
+            command: format!("import scripts.{package_module}"),
         });
     }
     let parent = repo_root.join(relative.parent().unwrap_or_else(|| Path::new(".")));
@@ -160,6 +158,21 @@ fn probe_target(repo_root: &Path, path: &str) -> ProbeTarget {
         shapes,
         path: path.to_string(),
     }
+}
+
+fn scripts_module_name(relative: &Path) -> Option<String> {
+    let script_path = relative.strip_prefix("scripts").ok()?;
+    let mut components = script_path.components();
+    let mut names = Vec::new();
+    while let Some(component) = components.next() {
+        let name = component.as_os_str().to_str()?;
+        if components.clone().next().is_none() {
+            names.push(name.strip_suffix(".py")?);
+        } else {
+            names.push(name);
+        }
+    }
+    Some(names.join("."))
 }
 
 fn python_repr(value: &str) -> String {
@@ -314,5 +327,20 @@ mod tests {
         let report = analyze(&root, &inventory, Some(&[]));
         assert_eq!(report.checked, 0);
         assert!(report.scope_note.contains("NOTHING WAS CHECKED"));
+    }
+
+    #[test]
+    fn nested_scripts_keep_the_package_import_shape() {
+        let inventory =
+            FileInventory::from_file_list_bytes(b"scripts/pkg/check_demo.py\0").unwrap();
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("fixtures");
+        let report = analyze(&root, &inventory, None);
+
+        assert_eq!(report.targets[0].module, "check_demo");
+        assert_eq!(report.targets[0].shapes[0].shape, "package");
+        assert_eq!(
+            report.targets[0].shapes[0].command,
+            "import scripts.pkg.check_demo"
+        );
     }
 }

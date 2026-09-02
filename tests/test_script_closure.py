@@ -7,15 +7,30 @@ unrelated fixture dies with `ModuleNotFoundError`. So each spelling it claims to
 recognise is pinned here, and the spellings it CANNOT see are pinned too --
 declared limits rather than discovered ones.
 """
+
 from __future__ import annotations
 
 import pytest
 
+import tests.script_closure as closure
 from tests.script_closure import _referenced, script_import_closure
 
 
 def test_dotted_package_import_is_seen() -> None:
     assert "yaml_output" in _referenced("import scripts.yaml_output\n")
+
+
+def test_nested_dotted_package_import_is_seen_in_a_fixture(tmp_path, monkeypatch) -> None:
+    scripts = tmp_path / "scripts" / "pkg"
+    scripts.mkdir(parents=True)
+    (scripts / "entry.py").write_text("VALUE = 1\n", encoding="utf-8")
+    (scripts / "consumer.py").write_text("from scripts.pkg.entry import VALUE\n", encoding="utf-8")
+    monkeypatch.setattr(closure, "SCRIPTS", tmp_path / "scripts")
+
+    assert closure.script_import_closure("pkg/consumer.py") == (
+        "pkg/consumer.py",
+        "pkg/entry.py",
+    )
 
 
 def test_from_package_import_is_seen() -> None:
@@ -44,9 +59,7 @@ def test_from_scripts_import_name_is_seen() -> None:
 
 def test_the_regression_cases_a_reviewer_traced_are_all_reached() -> None:
     assert "task_run_completion.py" in script_import_closure("task_run.py")
-    assert "check_mutation_score_summary_lib.py" in script_import_closure(
-        "check_mutation_score.py"
-    )
+    assert "check_mutation_score_summary_lib.py" in script_import_closure("check_mutation_score.py")
     assert "claude_session_jsonl_audit.py" in script_import_closure("host_log_probe_lib.py")
 
 
@@ -116,7 +129,9 @@ def test_entry_names_are_accepted_with_or_without_the_suffix() -> None:
 
 
 def test_a_runtime_composed_module_name_is_a_known_blind_spot() -> None:
-    source = 'name = "recent_" + "lessons_lib"\nm = import_repo_module(__file__, "scripts." + name)\n'
+    source = (
+        'name = "recent_" + "lessons_lib"\nm = import_repo_module(__file__, "scripts." + name)\n'
+    )
 
     assert _referenced(source) == set(), (
         "if this now resolves, the blind-spot note in tests/script_closure.py is stale"

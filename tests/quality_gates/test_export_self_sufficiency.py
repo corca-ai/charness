@@ -610,6 +610,25 @@ def test_the_arm_measures_the_INSTRUCTION_and_not_merely_the_script_name(tmp_pat
     assert _lib.repo_root_instruction_findings(fixed) == []
 
 
+def test_nested_script_entrypoints_are_seen_in_the_export(tmp_path: Path) -> None:
+    export_root = tmp_path / "plugins" / "charness"
+    nested = export_root / "scripts" / "package"
+    nested.mkdir(parents=True)
+    (nested / "render_thing.py").write_text("x = 1\n", encoding="utf-8")
+    (export_root / "skills" / "demo").mkdir(parents=True)
+    (export_root / "skills" / "demo" / "SKILL.md").write_text(
+        "Run `$SKILL_DIR/scripts/package/render_thing.py`.\n", encoding="utf-8"
+    )
+    (export_root / "skills" / "demo" / "references.md").write_text(
+        "Run `python3 scripts/package/render_thing.py`.\n", encoding="utf-8"
+    )
+
+    assert _lib.documented_entrypoint_names(export_root) == {"package/render_thing.py"}
+    assert [finding["script"] for finding in _lib.repo_root_instruction_findings(export_root)] == [
+        "package/render_thing.py"
+    ]
+
+
 def test_an_instruction_naming_an_unshipped_script_is_not_this_arms_business(
     tmp_path: Path,
 ) -> None:

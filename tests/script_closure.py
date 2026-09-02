@@ -22,6 +22,7 @@ this walks the WHOLE module rather than only module-scope imports -- a
 function-level `from scripts.x import y` is just as fatal when the fixture runs
 that function.
 """
+
 from __future__ import annotations
 
 import ast
@@ -31,9 +32,20 @@ ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
 
 
+def _script_relative(stem: str) -> str:
+    """Normalize a flat stem, slash path, or dotted package name to a path."""
+    value = stem.removesuffix(".py")
+    return value.replace(".", "/") if "/" not in value else value
+
+
 def _is_script(stem: str) -> bool:
     """A name resolves only if `scripts/<stem>.py` is really there."""
-    return bool(stem) and stem.isidentifier() and (SCRIPTS / f"{stem}.py").is_file()
+    relative = _script_relative(stem)
+    return (
+        bool(relative)
+        and all(part.isidentifier() for part in relative.split("/"))
+        and (SCRIPTS / f"{relative}.py").is_file()
+    )
 
 
 def _from_string(value: str) -> set[str]:
@@ -47,13 +59,14 @@ def _from_string(value: str) -> set[str]:
     name in the closure -- harmless downstream (no `scripts/.py` exists) but a
     garbage entry that would mask a real miss in any caller inspecting this set.
     """
-    parts = value.split(".")
-    if len(parts) == 2 and parts[0] == "scripts" and _is_script(parts[1]):
-        return {parts[1]}
+    if value.startswith("scripts."):
+        relative = value.removeprefix("scripts.")
+        if _is_script(relative):
+            return {_script_relative(relative)}
     # The `.py` suffix, rather than any bare word, is what keeps a script whose
     # stem is ordinary English (`support`, `quality`) out of every closure.
     if value.endswith(".py") and _is_script(value.removesuffix(".py")):
-        return {value.removesuffix(".py")}
+        return {_script_relative(value)}
     return set()
 
 
@@ -62,8 +75,8 @@ def _from_import(node: ast.Import) -> set[str]:
     found: set[str] = set()
     for alias in node.names:
         parts = alias.name.split(".")
-        if len(parts) == 2 and parts[0] == "scripts" and _is_script(parts[1]):
-            found.add(parts[1])
+        if len(parts) > 1 and parts[0] == "scripts" and _is_script(".".join(parts[1:])):
+            found.add(_script_relative(".".join(parts[1:])))
         elif len(parts) == 1 and _is_script(parts[0]):
             found.add(parts[0])
     return found
@@ -79,14 +92,20 @@ def _from_import_from(node: ast.ImportFrom) -> set[str]:
     if node.level or not node.module:
         return set()
     parts = node.module.split(".")
-    if parts == ["scripts"]:
-        return {alias.name for alias in node.names if _is_script(alias.name)}
-    if len(parts) == 2 and parts[0] == "scripts" and _is_script(parts[1]):
-        return {parts[1]}
+    if parts and parts[0] == "scripts":
+        module_relative = ".".join(parts[1:])
+        candidates = []
+        if module_relative:
+            candidates.append(module_relative)
+        candidates.extend(
+            f"{module_relative}.{alias.name}" if module_relative else alias.name
+            for alias in node.names
+        )
+        return {_script_relative(candidate) for candidate in candidates if _is_script(candidate)}
     # The portable `except ModuleNotFoundError: from x import y` fallback, which is
     # why resolution asks "does the file exist" rather than matching a prefix.
     if len(parts) == 1 and _is_script(parts[0]):
-        return {parts[0]}
+        return {_script_relative(parts[0])}
     return set()
 
 
@@ -122,14 +141,15 @@ def script_import_closure(*entry_names: str) -> tuple[str, ...]:
         stem = pending.pop()
         if stem in seen:
             continue
-        path = SCRIPTS / f"{stem}.py"
+        relative = _script_relative(stem)
+        path = SCRIPTS / f"{relative}.py"
         if not path.is_file():
             # Not a `scripts/` module (stdlib, third party, or a typo in the
             # caller's entry list). Silently skipping a genuine typo would hand
             # back a closure that is short by everything the missing entry
             # imports, so an explicitly named entry must exist.
             if stem in {n.removesuffix(".py") for n in entry_names}:
-                raise FileNotFoundError(f"scripts/{stem}.py does not exist")
+                raise FileNotFoundError(f"scripts/{relative}.py does not exist")
             continue
         seen.add(stem)
         pending.extend(_referenced(path.read_text(encoding="utf-8")))

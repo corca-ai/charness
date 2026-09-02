@@ -26,6 +26,7 @@ auto_session_trigger_surfaces:
   - integrations-and-control-plane
 auto_session_trigger_path_globs:
   - scripts/capability_catalog*.py
+  - scripts/**/capability_catalog*.py
   - skills/public/release/**
   - skills/support/**
   - README.md

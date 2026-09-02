@@ -48,7 +48,7 @@ CONFIDENCE_RANK = {"low": 1, "medium": 2, "high": 3}
 
 RETRO_LESSON_RE = re.compile(r"^charness-artifacts/retro/\d{4}-\d{2}-\d{2}-.*-session\.md$")
 DEBUG_RCA_RE = re.compile(r"^charness-artifacts/debug/\d{4}-\d{2}-\d{2}-.*\.md$")
-GATE_SCRIPT_RE = re.compile(r"^scripts/(check|validate)_[A-Za-z0-9_]+\.py$")
+GATE_SCRIPT_RE = re.compile(r"^scripts/(?:[A-Za-z0-9_-]+/)*(check|validate)_[A-Za-z0-9_]+\.py$")
 QUALITY_RUNNER_PATH = "scripts/run-quality.sh"
 QUALITY_GATE_LIST_PATH = ".agents/quality-gates.yaml"
 CONVENTION_DOC_PATHS = frozenset(

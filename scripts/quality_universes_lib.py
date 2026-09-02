@@ -104,7 +104,7 @@ DEFAULT_UNIVERSES = {
         "skills/shared/scripts/**/*.py",
         "skills/support/*/vendor/*.py",
     ],
-    "shell_sources": ["*.sh", "scripts/*.sh", "tools/*.sh", "tests/**/*.sh", ".githooks/*"],
+    "shell_sources": ["*.sh", "scripts/**/*.sh", "tools/*.sh", "tests/**/*.sh", ".githooks/*"],
     "test_roots": ["tests"],
     "doc_surfaces": [
         "README.md",

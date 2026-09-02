@@ -47,7 +47,7 @@ def test_stryker_config_mutates_only_agent_runtime_sources() -> None:
 
     assert result.returncode == 0, result.stderr
     config = json.loads(result.stdout)
-    assert config["mutate"] == ["scripts/agent-runtime/*.mjs"]
+    assert config["mutate"] == ["scripts/agent-runtime/**/*.mjs"]
     assert "plugins/**" in config["ignorePatterns"]
     assert "node_modules/**" in config["ignorePatterns"]
     assert config["testRunner"] == "command"
@@ -78,7 +78,7 @@ def test_js_mutation_weight_table_covers_every_pool_target() -> None:
 
 
 def test_js_mutation_full_mode_rejects_unweighted_pool_target(tmp_path, monkeypatch) -> None:
-    target = tmp_path / "scripts" / "agent-runtime" / "new-runtime.mjs"
+    target = tmp_path / "scripts" / "agent-runtime" / "nested" / "new-runtime.mjs"
     target.parent.mkdir(parents=True)
     target.write_text("export const value = 1;\n", encoding="utf-8")
     monkeypatch.delenv("MUTATION_JS_TARGETS", raising=False)

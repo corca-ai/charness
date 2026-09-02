@@ -9,7 +9,7 @@ from types import SimpleNamespace
 
 import yaml
 
-from scripts.surfaces_lib import SurfaceError, load_surfaces
+from scripts.surfaces_lib import SurfaceError, load_surfaces, path_matches_patterns
 from tools import validate_surfaces
 
 from .seeding_support import write_json, write_surface
@@ -52,6 +52,18 @@ def test_check_changed_surfaces_reports_expected_obligations_for_readme() -> Non
         "python3 -m tools.validate_packaging_committed --repo-root ." in payload["verify_commands"]
     )
     assert "./scripts/check-docs.sh" in payload["verify_commands"]
+
+
+def test_adapter_surface_pattern_covers_a_nested_helper() -> None:
+    manifest = load_surfaces(ROOT)
+    adapter_surface = next(
+        item for item in manifest["surfaces"] if item["surface_id"] == "adapters"
+    )
+
+    assert path_matches_patterns(
+        "scripts/pkg/adapter_helper_lib.py", adapter_surface["source_paths"]
+    )
+    assert path_matches_patterns("scripts/adapter_helper_lib.py", adapter_surface["source_paths"])
 
 
 def _verify_commands_for(*paths: str) -> list[str]:

@@ -852,7 +852,7 @@ universes:
     - skills/support/*/vendor/*.py
   shell_sources:             # check-shell
     - "*.sh"
-    - scripts/*.sh
+    - scripts/**/*.sh
     - tools/*.sh
     - tests/**/*.sh
     - .githooks/*

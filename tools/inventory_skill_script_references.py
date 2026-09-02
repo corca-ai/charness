@@ -241,7 +241,11 @@ def _package_script_index(packages: list["SkillPackage"]) -> dict[str, set[str]]
         bucket = index.setdefault(package.layout, set())
         scripts_dir = package.root / "scripts"
         if scripts_dir.is_dir():
-            bucket.update(entry.name for entry in scripts_dir.iterdir() if entry.is_file())
+            bucket.update(
+                entry.relative_to(scripts_dir).as_posix()
+                for entry in scripts_dir.rglob("*")
+                if entry.is_file()
+            )
     return index
 
 

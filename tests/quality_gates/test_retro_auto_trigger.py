@@ -72,6 +72,25 @@ def test_retro_auto_trigger_skips_non_matching_slice() -> None:
     assert payload["path_hits"] == []
 
 
+def test_retro_auto_trigger_matches_a_nested_capability_catalog_path(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    _write_adapter(
+        repo, "auto_session_trigger_path_globs:", "  - scripts/**/capability_catalog*.py"
+    )
+
+    result = _run_main(
+        "--repo-root",
+        str(repo),
+        "--paths",
+        "scripts/package/capability_catalog.py",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = yaml.safe_load(result.stdout)
+    assert payload["triggered"] is True
+    assert payload["path_hits"] == ["scripts/package/capability_catalog.py"]
+
+
 # The four adapter-side worlds that all printed `triggered: false` + `"missing"` before.
 # Each is a repo that never answered the trigger question, and none of them is a `no`.
 @pytest.mark.parametrize(

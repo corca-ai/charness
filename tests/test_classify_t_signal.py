@@ -127,6 +127,12 @@ def test_gate_script_added_beats_modification(module) -> None:
     assert "scripts/check_new.py" in result["matched_paths"]
 
 
+def test_nested_gate_script_is_classified(module) -> None:
+    result = _observe(module, [("A", "scripts/package/check_new.py")])
+
+    assert result["rule_id"] == "gate-script-added"
+
+
 def test_gate_script_modified_low_confidence(module) -> None:
     result = _observe(module, [("M", "scripts/validate_existing.py")])
     assert result["rule_id"] == "gate-script-modified"

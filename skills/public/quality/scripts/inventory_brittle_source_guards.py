@@ -39,7 +39,9 @@ def _normalize_whitespace(text: str) -> str:
 
 def _looks_like_prose_line(line: str) -> bool:
     stripped = line.strip()
-    return bool(stripped) and not stripped.startswith(("#", "-", "*", "|", "```", ">", "<", "{", "}"))
+    return bool(stripped) and not stripped.startswith(
+        ("#", "-", "*", "|", "```", ">", "<", "{", "}")
+    )
 
 
 def _hard_wrap_score(text: str) -> dict[str, int]:
@@ -57,17 +59,21 @@ def _is_hard_wrapped(score: dict[str, int]) -> bool:
     return score["wrapped_lines"] >= 3 and score["wrapped_lines"] / score["prose_lines"] >= 0.4
 
 
-def _source_guard_scan(repo_root: Path, scan_roots: list[Path]) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
+def _source_guard_scan(
+    repo_root: Path, scan_roots: list[Path]
+) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
     return fixed_source_guard_rows(repo_root, scan_roots)
 
 
 def _policy_state(repo_root: Path) -> dict[str, Any]:
     agents = repo_root / "AGENTS.md"
     text = agents.read_text(encoding="utf-8", errors="replace") if agents.is_file() else ""
-    has_policy = bool(re.search(r"semantic line|semantic-line|prose wrap|prose-wrap", text, re.IGNORECASE))
+    has_policy = bool(
+        re.search(r"semantic line|semantic-line|prose wrap|prose-wrap", text, re.IGNORECASE)
+    )
     enforcement_tools = sorted(
         path.relative_to(repo_root).as_posix()
-        for path in (repo_root / "scripts").glob("*prose*")
+        for path in (repo_root / "scripts").rglob("*prose*")
         if path.is_file()
     )
     return {
@@ -77,7 +83,9 @@ def _policy_state(repo_root: Path) -> dict[str, Any]:
     }
 
 
-def _finding_for_guard(repo_root: Path, guard: dict[str, str], min_pattern_chars: int) -> dict[str, Any]:
+def _finding_for_guard(
+    repo_root: Path, guard: dict[str, str], min_pattern_chars: int
+) -> dict[str, Any]:
     target = repo_root / guard["target_path"]
     pattern = guard["pattern"]
     finding: dict[str, Any] = {
@@ -93,7 +101,9 @@ def _finding_for_guard(repo_root: Path, guard: dict[str, str], min_pattern_chars
         return finding
     if not target.is_file():
         finding["status"] = "missing_target"
-        finding["recommendation"] = "Fix the source_guard target path before judging wrap fragility."
+        finding["recommendation"] = (
+            "Fix the source_guard target path before judging wrap fragility."
+        )
         return finding
 
     text = target.read_text(encoding="utf-8", errors="replace")
@@ -121,7 +131,9 @@ def _finding_for_guard(repo_root: Path, guard: dict[str, str], min_pattern_chars
         )
     elif not exact_found and normalized_found:
         finding["status"] = "normalization_needed"
-        finding["recommendation"] = "The matcher must normalize whitespace or the target prose should be reformatted."
+        finding["recommendation"] = (
+            "The matcher must normalize whitespace or the target prose should be reformatted."
+        )
     return finding
 
 
@@ -131,10 +143,16 @@ def inventory(
     min_pattern_chars: int = DEFAULT_MIN_PATTERN_CHARS,
     scan_roots: list[Path] | None = None,
 ) -> dict[str, Any]:
-    resolved_scan_roots = scan_roots if scan_roots is not None else list(DEFAULT_SOURCE_GUARD_SCAN_ROOTS)
+    resolved_scan_roots = (
+        scan_roots if scan_roots is not None else list(DEFAULT_SOURCE_GUARD_SCAN_ROOTS)
+    )
     guards, warnings = _source_guard_scan(repo_root, resolved_scan_roots)
     findings = [_finding_for_guard(repo_root, guard, min_pattern_chars) for guard in guards]
-    fragile = [finding for finding in findings if finding["status"] in {"brittle", "at_risk", "normalization_needed"}]
+    fragile = [
+        finding
+        for finding in findings
+        if finding["status"] in {"brittle", "at_risk", "normalization_needed"}
+    ]
     return {
         "repo_root": str(repo_root),
         "min_pattern_chars": min_pattern_chars,
@@ -153,7 +171,11 @@ def inventory(
 
 def summarize(payload: dict[str, Any], *, sample_limit: int = 10) -> dict[str, Any]:
     findings = payload.get("findings", [])
-    fragile = [finding for finding in findings if finding.get("status") != "ok"] if isinstance(findings, list) else []
+    fragile = (
+        [finding for finding in findings if finding.get("status") != "ok"]
+        if isinstance(findings, list)
+        else []
+    )
     return {
         "summary_note": "summary is triage output; use --detail for all source-guard findings",
         "repo_root": payload["repo_root"],
@@ -166,8 +188,18 @@ def summarize(payload: dict[str, Any], *, sample_limit: int = 10) -> dict[str, A
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root for the brittle source-guard markdown inventory")
-    parser.add_argument("--min-pattern-chars", type=int, default=DEFAULT_MIN_PATTERN_CHARS, help="Minimum quoted-pattern length before a source guard is treated as durable")
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        required=True,
+        help="Repo root for the brittle source-guard markdown inventory",
+    )
+    parser.add_argument(
+        "--min-pattern-chars",
+        type=int,
+        default=DEFAULT_MIN_PATTERN_CHARS,
+        help="Minimum quoted-pattern length before a source guard is treated as durable",
+    )
     parser.add_argument(
         "--scan-root",
         action="append",
@@ -189,7 +221,9 @@ def main() -> int:
     if not emit_selected(payload, args, summarize=summarize):
         for finding in payload["findings"]:
             if finding["status"] != "ok":
-                print(f"{finding['status']}: {finding['spec_path']}:{finding['line']} -> {finding['target_path']}")
+                print(
+                    f"{finding['status']}: {finding['spec_path']}:{finding['line']} -> {finding['target_path']}"
+                )
     return 0
 
 

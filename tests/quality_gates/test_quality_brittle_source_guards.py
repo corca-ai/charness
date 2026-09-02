@@ -19,7 +19,9 @@ _MODULE = load_module(
 
 
 def _run(repo: Path, *args: str):
-    return run_main(_MODULE.main, "inventory_brittle_source_guards.py", "--repo-root", str(repo), *args)
+    return run_main(
+        _MODULE.main, "inventory_brittle_source_guards.py", "--repo-root", str(repo), *args
+    )
 
 
 def test_inventory_brittle_source_guards_flags_wrapped_fixed_pattern(tmp_path: Path) -> None:
@@ -72,14 +74,17 @@ def test_inventory_brittle_source_guards_reports_policy_without_tool(tmp_path: P
         "# Agents\n\nUse semantic line breaks for prose markdown.\n",
         encoding="utf-8",
     )
+    nested_tool = repo / "scripts" / "package" / "check_prose_pin.py"
+    nested_tool.parent.mkdir(parents=True)
+    nested_tool.write_text("# recursive enforcement tool\n", encoding="utf-8")
 
     result = _run(repo, "--detail")
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
     assert payload["policy"] == {
         "policy_declared": True,
-        "enforcement_tools": [],
-        "policy_without_tool": True,
+        "enforcement_tools": ["scripts/package/check_prose_pin.py"],
+        "policy_without_tool": False,
     }
 
 
@@ -199,7 +204,8 @@ def test_inventory_brittle_source_guards_scan_root_overrides_defaults(tmp_path: 
         encoding="utf-8",
     )
 
-    result = _run(repo,
+    result = _run(
+        repo,
         "--scan-root",
         "notes",
         "--detail",
