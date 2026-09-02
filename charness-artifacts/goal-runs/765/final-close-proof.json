@@ -1,0 +1,90 @@
+{
+  "kind": "charness.goal-run-close-proof/v1",
+  "repo": "corca-ai/charness",
+  "parent_number": 765,
+  "attempt_id": "goal-765-final-close-1",
+  "draft_sha256": "129f065a28ce2c6a6a7fd7dc5f6ff2b63349b75ddf1ab62411ea4879ff8d2501",
+  "binding_sha256": "20fdaf7e9a3e1489a308b11041555a9249b2e826d93d951f294a565b24d161cf",
+  "observation_dir": "charness-artifacts/goal-runs/765/observations",
+  "comment_file": "charness-artifacts/goal-runs/765/closeouts/issue-765.md",
+  "comment_sha256": "b5b4105169d4e8d10c634a88a9e9be8c4d02f58939fb9127df4c83826c28b569",
+  "final_proof_index_file": "charness-artifacts/goal-runs/765/final-proof-index.json",
+  "final_proof_index_sha256": "126908615f476068f0c1404c5bc9c2bc4771a5659b80a9e85b4a83e26122beed",
+  "classification": "feature",
+  "reason": "completed",
+  "manual_target_declaration": null,
+  "children": [
+    {
+      "repo": "corca-ai/charness",
+      "number": 766,
+      "evidence": {
+        "kind": "issue-owned-closeout/v1",
+        "identity": "https://github.com/corca-ai/charness/issues/766#issuecomment-5516528447"
+      }
+    },
+    {
+      "repo": "corca-ai/charness",
+      "number": 767,
+      "evidence": {
+        "kind": "issue-owned-closeout/v1",
+        "identity": "https://github.com/corca-ai/charness/issues/767#issuecomment-5516528792"
+      }
+    },
+    {
+      "repo": "corca-ai/charness",
+      "number": 768,
+      "evidence": {
+        "kind": "issue-owned-closeout/v1",
+        "identity": "https://github.com/corca-ai/charness/issues/768#issuecomment-5516529240"
+      }
+    },
+    {
+      "repo": "corca-ai/charness",
+      "number": 769,
+      "evidence": {
+        "kind": "issue-owned-closeout/v1",
+        "identity": "https://github.com/corca-ai/charness/issues/769#issuecomment-5516529628"
+      }
+    },
+    {
+      "repo": "corca-ai/charness",
+      "number": 770,
+      "evidence": {
+        "kind": "issue-owned-closeout/v1",
+        "identity": "https://github.com/corca-ai/charness/issues/770#issuecomment-5516530017"
+      }
+    },
+    {
+      "repo": "corca-ai/charness",
+      "number": 771,
+      "evidence": {
+        "kind": "issue-owned-closeout/v1",
+        "identity": "https://github.com/corca-ai/charness/issues/771#issuecomment-5516530365"
+      }
+    },
+    {
+      "repo": "corca-ai/charness",
+      "number": 772,
+      "evidence": {
+        "kind": "issue-owned-closeout/v1",
+        "identity": "https://github.com/corca-ai/charness/issues/772#issuecomment-5516558678"
+      }
+    },
+    {
+      "repo": "corca-ai/charness",
+      "number": 773,
+      "evidence": {
+        "kind": "issue-owned-closeout/v1",
+        "identity": "https://github.com/corca-ai/charness/issues/773#issuecomment-5516530662"
+      }
+    },
+    {
+      "repo": "corca-ai/charness",
+      "number": 774,
+      "evidence": {
+        "kind": "issue-owned-closeout/v1",
+        "identity": "https://github.com/corca-ai/charness/issues/774#issuecomment-5516530985"
+      }
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+Goal Run #765 closed through `issue_tool.py goal-run-close` after exact readback.
+
+Classification: feature
+Jtbd: the repository is realigned with `docs/design-north-star.md`: documentation as code, gates scoped to their universes, no repo script spawning another, a quality boundary between shipped and repo-only gates, repo helpers in concept packages, and a Goal Run machinery that can amend itself and record rework.
+Boundary: nine Work Items (766, 767, 768, 769, 770, 771, 772, 773, 774), each closed by a `Closes #N` commit on `origin/main`, each `verify-closeout` = `verified`, each with an issue-owned closeout comment bound in `charness-artifacts/goal-runs/765/final-close-proof.json`. No release, tag, publish, or installed-host mutation is claimed.
+Resolution Brief: `charness-artifacts/goals/2026-09-02-north-star-realignment.md` (frozen draft sha256 129f065a28ce2c6a6a7fd7dc5f6ff2b63349b75ddf1ab62411ea4879ff8d2501; binding sha256 20fdaf7e9a3e1489a308b11041555a9249b2e826d93d951f294a565b24d161cf).
+Implementation: `charness-artifacts/goal-runs/765/final-proof.md` names the carrier commit and comment for every child and the whole-system evidence: the clean consumer install proof (`charness-artifacts/probe/2026-09-03-772-installed-consumer-proof.md`), the release lane green at `3fd042d4c` (84 passed), the distinct-observer export-boundary critique, and gate-universe parity across the packaging.
+Prevention: the standing and release lanes, the shim-consistency and gate-universe tools, the referents gate's moved-path rule, and the lesson ledger (two new classes seeded from the 2026-09-03 retro) carry the run's lessons forward.
+Behavior: verified — `goal-run-read` returned nine linked children all `CLOSED` before this close; the close proof binds the expected graph, the parent terminal obligation, and five role-labelled evidence artifacts by byte hash.
+AI-provenance: the run was executed by an AI agent (Claude Code) with Codex lanes, under operator approval for the graph, the two amendments, and every push.

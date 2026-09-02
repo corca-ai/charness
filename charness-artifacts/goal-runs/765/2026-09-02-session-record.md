@@ -179,6 +179,34 @@ classes seeded, one RCA event). Lane worktrees are all removed.
    lane brief should cite rows and treat the 22 conditional `ship` rows as
    the design's centre. Then #770, #772.
 
+## Goal Run #765 closed (fourth session, 2026-09-03)
+
+- #772 integrated-closeout: the map-772 recipe was rerun verbatim against
+  `55a1f235e` in an isolated sandbox; every consumer command exit 0, no
+  `tools/` shipped or executed, the exported runner refuses by name
+  (`charness-artifacts/probe/2026-09-03-772-installed-consumer-proof.md`,
+  transcripts beside it). The release lane, which the standing lane's marker
+  filter never runs, found three regressions hidden since #768 (fixture argv,
+  the failure payload's import-bound stderr, four stubs exiting at import)
+  and then refused to claim the stubs until a standing test drove them;
+  fixed in `1da602d3f`, `1a9235c34`, `3fd042d4c`; lane green 84 passed at
+  `3fd042d4c`. Closeout `9b7b0115b` (`Closes #772`), pushed from a clean
+  clone (hook lane 79 passed), `verify-closeout` = `verified`.
+- Parent close: the nine children had no issue-owned comment (all were closed
+  by commit carriers), and `goal-run-close` requires one URL per child, so
+  each child's carrier body was posted as its closeout comment
+  (`closeouts/issue-<n>.md`). `expected-final-graph.json` (seven initial plus
+  the two amendments), `parent-terminal-obligation.md`, `final-proof.md`,
+  `final-proof-index.json`, and `final-close-proof.json` bind the evidence by
+  byte hash; `observations/goal-765-final-read.yaml` is the pre-close exact
+  readback (nine `CLOSED`). `goal-run-close` returned `verified-write` with
+  `verified_state: CLOSED`; an independent `gh issue view 765` readback
+  reports `CLOSED`.
+- Not done, carried as follow-ups outside this run: the single layout resolver
+  (2026-09-03 retro, `layout-oracle-duplication`), the fifteen unseeded lesson
+  classes against the 50-lesson budget, and the `docs-graph-awiki` line that
+  prints FAIL as an uncounted advisory.
+
 ## Next session, in order (written at the end of the third session)
 
 State at the end of the third session: `origin/main` = local `main`

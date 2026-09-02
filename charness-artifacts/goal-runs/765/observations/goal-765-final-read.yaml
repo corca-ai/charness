@@ -1,0 +1,248 @@
+ok: true
+kind: charness.goal-run-read/v1
+status: verified-read
+outcome: verified-read
+mutation_invoked: false
+repo: corca-ai/charness
+parent_number: 765
+parent:
+  repo: corca-ai/charness
+  number: 765
+  title: 'Goal Run: realign charness to its north star (docs as code, tools/ split,
+    in-process tests, scripts packages)'
+  state: OPEN
+  url: https://github.com/corca-ai/charness/issues/765
+  updated_at: '2026-09-02T19:21:34Z'
+  body: "## Situation\n\nCharness exists to reduce rework in the repositories that\
+    \ consume it and to make agentic development there fast. A read-only audit of\
+    \ this checkout on 2026-09-02 found that the repository's own structure no longer\
+    \ reflects that purpose: the shipped `quality` skill carries this repository's\
+    \ entire gate machine, `scripts/` is a flat tree of 397 files with no boundary\
+    \ between consumer-facing code and repo-only tooling, subprocess use is pervasive\
+    \ in both production and tests despite an in-process idiom, and `docs/` mixes\
+    \ current contracts with completed project records.\n\n## Experience\n\nA new\
+    \ session reads `docs/index.md`, finds `north-star-overhaul-roadmap.md` labelled\
+    \ \"active roadmap\", and plans work that closed on 2026-06-20. A consumer installs\
+    \ the plugin and receives 199 quality scripts, most of which police this repository's\
+    \ release lane rather than their own repo's health. A maintainer wants to add\
+    \ a subdirectory under `scripts/` and cannot, because about 50 single-star globs\
+    \ would silently drop it from every gate. A test author wants to import a script\
+    \ in-process and finds a forward-only ratchet that grandfathers 193 files forever.\n\
+    \n## Evidence\n\n| Surface | Measured 2026-09-02 |\n| --- | --- |\n| `docs/` |\
+    \ 43 pages; 40 lack `Last verified`; 1 retired roadmap called active in 2 places;\
+    \ 6 self-described working records; `readme-proof.md` cites README sections that\
+    \ no longer exist; 3 dead script citations |\n| AGENTS.md / README | AGENTS.md\
+    \ lacks the docs-as-code principles; README omits hosts, prerequisites, install\
+    \ effects, undo, and the skill list; `docs/index.md` does not link README |\n\
+    | Production subprocess | 205 sites; 19 re-spawn this repo's own Python (14 pure\
+    \ habit); 7 hardcoded `python3`; 189 of 205 bypass `scripts/subprocess_guard.py`\
+    \ |\n| Test subprocess | 289 of 565 files use subprocess; 193 spawn `python3`\
+    \ on a repo script; 91 use the in-process loaders; ratchet policy `no_increase`\
+    \ |\n| `quality` skill | 199 scripts referenced vs ~118 for the other 19 public\
+    \ skills; `run-quality.sh` 1341 lines, 97 gates, exempt from the length gate because\
+    \ `.sh` is not covered |\n| `scripts/` | 385 `.py` + 12 `.sh`, flat; 299 of 397\
+    \ reachable from both a shipped skill and the quality lane; 32 quality-lane-only;\
+    \ 12 tests-only; 2 unreferenced; no file-level dead-code gate (knip absent, vulture\
+    \ advisory default-off) |\n| Rework signal | usage-episode instrumentation removed\
+    \ as unmeasurable; no current instrument |\n\nPlanning record: `charness-artifacts/goals/2026-09-02-north-star-realignment.md`.\n\
+    \n## Impact\n\nMachinery that does not prevent consumer rework is cost, by the\
+    \ north star's own definition. Today the cost lands on every new session (stale\
+    \ planning surfaces), every consumer install (repo-only gates shipped), and every\
+    \ maintainer change to `scripts/` or `tests/` (flat layout, non-converging ratchets).\
+    \ Refactoring further inside the current boundaries makes the same machine tidier\
+    \ without changing who it serves.\n\n## Desired outcome\n\n- `docs/` holds only\
+    \ current contracts and every page carries a verified date; AGENTS.md states the\
+    \ docs-as-code principles; README is a user guide linked from the index.\n- Every\
+    \ production spawn goes through `subprocess_guard`; no repo script re-spawns repo\
+    \ Python; tests import in-process unless a declared boundary is the claim.\n-\
+    \ The `quality` skill exports only what checks a consumer repo's health via gates\
+    \ and intelligence; repo-only gates live in a root `tools/` tree that is not exported.\n\
+    - `scripts/` is organised into concept packages whose gates cover subdirectories\
+    \ and shell files; unreferenced scripts are detected.\n- Consumer rework is observed\
+    \ through the operator's own issue filing and read by retro.\n\nSuccess is a wrong\
+    \ answer's escape path closed and a concept made clearer, never a line, gate,\
+    \ or file count.\n\n## Ownership contract\n\n- Goal Draft owns approved intent,\
+    \ boundaries, and slice design. Goal Binding owns the frozen identity. This parent\
+    \ owns the current-child cursor. Work Item issues own routine implementation state\
+    \ and behavioural proof.\n- Per-surface migration, never bulk deletion: each moved\
+    \ gate, doc, or test names the failure mode it catches and proves the replacement\
+    \ on a seeded instance.\n- Gate-scope repair precedes any subdirectory under `scripts/`.\n\
+    - The export boundary is a proof surface: distinct-observer review and a clean-export\
+    \ probe before that child closes.\n- AGENTS.md changes only under the operator's\
+    \ explicit approval, given 2026-09-02 for the four docs-as-code principles.\n\n\
+    ## Work sequence\n\nOrder chosen for advantage on 2026-09-02: instrument first,\
+    \ fix the binding rigidity second, then the surfaces every session reads, then\
+    \ the mechanical migrations in dependency order.\n\n1. #771 rework-instrument\n\
+    2. #773 goal-run-binding-simplification (amendment, added after binding)\n3. #766\
+    \ docs-as-code\n4. #767 gate-scope-repair\n5. #768 subprocess-retroactive-removal\n\
+    6. #774 ledger-only-lessons (amendment, added 2026-09-02)\n7. #769 quality-boundary-and-run-quality\n\
+    8. #770 scripts-packaging\n9. #772 integrated-closeout\n\n## Completion criteria\n\
+    \n- Every child provider-closed with behavioural evidence.\n- Clean consumer install\
+    \ proof recorded from a throwaway repository.\n- Release lane green on the integrated\
+    \ tree with the skip list read.\n- Parent closed only through the guarded Goal\
+    \ Run close path after exact readback.\n\n## Non-claims\n\n- Test reallocation\
+    \ toward `spec`, `impl`, `prove`, and `create-cli` is a follow-up goal, not this\
+    \ run.\n- No skill behaviour is redesigned; no git porcelain is replaced by a\
+    \ library.\n- Push, tag, release publish, and installed-host mutation remain separately\
+    \ authorised.\n\nAI provenance: drafted and filed by an AI agent from the operator-approved\
+    \ Goal Draft and direct activation approval.\n\n<!-- charness-goal-run:v1\n{\n\
+    \  \"amendments\": [\n    {\n      \"approval\": {\n        \"observed_at\": \"\
+    2026-09-02T03:20:16+00:00\",\n        \"response\": \"파일링해서 이번 골에 포함시키자\",\n \
+    \       \"session_id\": \"goal-765-2026-09-02\"\n      },\n      \"dependencies\"\
+    : [\n        \"rework-instrument\"\n      ],\n      \"key\": \"goal-run-binding-simplification\"\
+    ,\n      \"number\": 773,\n      \"rank\": 2,\n      \"reason\": \"Operator asked\
+    \ on 2026-09-02 to include the binding-rigidity fix (#773) in this Goal Run; the\
+    \ immutable binding could not admit it, which is the very defect #773 records.\"\
+    ,\n      \"repo\": \"corca-ai/charness\",\n      \"url\": \"https://github.com/corca-ai/charness/issues/773\"\
+    \n    },\n    {\n      \"approval\": {\n        \"observed_at\": \"2026-09-02T07:51:20+00:00\"\
+    ,\n        \"response\": \"승인. 완료 후에는 다음 세션 시작할 프롬프트도 다시 줘\",\n        \"session_id\"\
+    : \"goal-765-2026-09-02\"\n      },\n      \"dependencies\": [\n        \"subprocess-retroactive-removal\"\
+    \n      ],\n      \"key\": \"ledger-only-lessons\",\n      \"number\": 774,\n\
+    \      \"rank\": 5,\n      \"reason\": \"Operator asked on 2026-09-02 to include\
+    \ the ledger-only lessons repair (#774) in this Goal Run: the 2026-08-29 opt-out\
+    \ (#750) was built for consumers and never applied to charness, and achieve pickup\
+    \ still reads the digest; the second recorded rework instance of this run.\",\n\
+    \      \"repo\": \"corca-ai/charness\",\n      \"url\": \"https://github.com/corca-ai/charness/issues/774\"\
+    \n    }\n  ],\n  \"binding_path\": \"charness-artifacts/goals/2026-09-02-north-star-realignment.binding.json\"\
+    ,\n  \"binding_schema\": \"charness.goal-binding/v1\",\n  \"binding_sha256\":\
+    \ \"20fdaf7e9a3e1489a308b11041555a9249b2e826d93d951f294a565b24d161cf\",\n  \"\
+    bootstrap_verification\": \"verified-target-roundtrip\",\n  \"draft_path\": \"\
+    charness-artifacts/goals/2026-09-02-north-star-realignment.md\",\n  \"draft_sha256\"\
+    : \"129f065a28ce2c6a6a7fd7dc5f6ff2b63349b75ddf1ab62411ea4879ff8d2501\",\n  \"\
+    initial_graph_sha256\": \"2473a6d41daf1b9c2b6ae24040670850f1ad1a0544cd7fa97fef056ca8ad8b62\"\
+    ,\n  \"parent_identity\": {\n    \"number\": 765,\n    \"repo\": \"corca-ai/charness\"\
+    ,\n    \"url\": \"https://github.com/corca-ai/charness/issues/765\"\n  },\n  \"\
+    progress\": {\n    \"completed\": 8,\n    \"next\": {\n      \"key\": \"integrated-closeout\"\
+    ,\n      \"number\": 772,\n      \"repo\": \"corca-ai/charness\",\n      \"state\"\
+    : \"OPEN\",\n      \"url\": \"https://github.com/corca-ai/charness/issues/772\"\
+    \n    },\n    \"open\": 1,\n    \"revision\": 7,\n    \"schema\": \"charness.goal-progress/v1\"\
+    ,\n    \"total\": 9\n  }\n}\n-->\n"
+  comment_count: 0
+  sub_issues_summary:
+    total: 9
+    completed: 9
+    open: 0
+    percent_completed: 100
+children:
+- number: 766
+  title: 'Docs as code: retire records from docs/, enforce Last verified, principles
+    in AGENTS.md, README as user guide'
+  state: CLOSED
+  url: https://github.com/corca-ai/charness/issues/766
+  parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/765
+- number: 767
+  title: 'Gate scope repair: recursive script globs, .sh length cap, unreferenced-script
+    check'
+  state: CLOSED
+  url: https://github.com/corca-ai/charness/issues/767
+  parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/765
+- number: 768
+  title: 'Subprocess retroactive removal: one guarded spawn primitive, in-process
+    tests by default'
+  state: CLOSED
+  url: https://github.com/corca-ai/charness/issues/768
+  parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/765
+- number: 769
+  title: 'Quality boundary: consumer-only export, root tools/ for repo gates, declarative
+    run-quality'
+  state: CLOSED
+  url: https://github.com/corca-ai/charness/issues/769
+  parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/765
+- number: 770
+  title: 'Scripts packaging: concept packages under scripts/ with gate-universe parity'
+  state: CLOSED
+  url: https://github.com/corca-ai/charness/issues/770
+  parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/765
+- number: 771
+  title: 'Rework instrument: rework label and causing-skill line read by retro'
+  state: CLOSED
+  url: https://github.com/corca-ai/charness/issues/771
+  parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/765
+- number: 772
+  title: 'Integrated closeout: clean consumer install proof, release lane, guarded
+    parent close'
+  state: CLOSED
+  url: https://github.com/corca-ai/charness/issues/772
+  parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/765
+- number: 773
+  title: 'Goal Run binding hashes content, not identity: one-line child edits and
+    new Work Items force a full re-bootstrap'
+  state: CLOSED
+  url: https://github.com/corca-ai/charness/issues/773
+  parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/765
+- number: 774
+  title: Charness still projects recent-lessons.md although the operator chose the
+    ledger as the only lesson surface
+  state: CLOSED
+  url: https://github.com/corca-ai/charness/issues/774
+  parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/765
+graph:
+  ok: true
+  status: verified-read
+  outcome: verified-read
+  mutation_invoked: false
+  repo: corca-ai/charness
+  parent_number: 765
+  count: 9
+  completed: 9
+  open: 0
+  percent_completed: 100
+  children:
+  - number: 766
+    title: 'Docs as code: retire records from docs/, enforce Last verified, principles
+      in AGENTS.md, README as user guide'
+    state: CLOSED
+    url: https://github.com/corca-ai/charness/issues/766
+    parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/765
+  - number: 767
+    title: 'Gate scope repair: recursive script globs, .sh length cap, unreferenced-script
+      check'
+    state: CLOSED
+    url: https://github.com/corca-ai/charness/issues/767
+    parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/765
+  - number: 768
+    title: 'Subprocess retroactive removal: one guarded spawn primitive, in-process
+      tests by default'
+    state: CLOSED
+    url: https://github.com/corca-ai/charness/issues/768
+    parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/765
+  - number: 769
+    title: 'Quality boundary: consumer-only export, root tools/ for repo gates, declarative
+      run-quality'
+    state: CLOSED
+    url: https://github.com/corca-ai/charness/issues/769
+    parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/765
+  - number: 770
+    title: 'Scripts packaging: concept packages under scripts/ with gate-universe
+      parity'
+    state: CLOSED
+    url: https://github.com/corca-ai/charness/issues/770
+    parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/765
+  - number: 771
+    title: 'Rework instrument: rework label and causing-skill line read by retro'
+    state: CLOSED
+    url: https://github.com/corca-ai/charness/issues/771
+    parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/765
+  - number: 772
+    title: 'Integrated closeout: clean consumer install proof, release lane, guarded
+      parent close'
+    state: CLOSED
+    url: https://github.com/corca-ai/charness/issues/772
+    parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/765
+  - number: 773
+    title: 'Goal Run binding hashes content, not identity: one-line child edits and
+      new Work Items force a full re-bootstrap'
+    state: CLOSED
+    url: https://github.com/corca-ai/charness/issues/773
+    parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/765
+  - number: 774
+    title: Charness still projects recent-lessons.md although the operator chose the
+      ledger as the only lesson surface
+    state: CLOSED
+    url: https://github.com/corca-ai/charness/issues/774
+    parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/765
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null
