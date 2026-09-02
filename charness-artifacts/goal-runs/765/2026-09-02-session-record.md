@@ -93,36 +93,88 @@ the guard never raises. `check_subprocess_form.py` is NOT yet queued in
 `run-quality.sh` because the runner fixture list (`tests/quality_gates/support.py`)
 was inside a repair lane's scope.
 
-## Next session, in order
+## #768 subprocess-retroactive-removal: integrated and green (second session)
 
-1. Relaunch the three repair lanes from `briefs/brief-768-repair.md` with the
-   batches `briefs/repair-batch-r{0,1,2}.txt` (replace `__SCOPE__` with the
-   batch as a bulleted list). They were stopped at wrap-up with almost no
-   edits; the worktrees `task-run/subprocess-768-r{0,1,2}` under the charness
-   runtime cache may still exist and can be removed. Integrate candidate-first.
-2. Launch `briefs/brief-768-ratchet.md` (retires the boundary-bypass ratchet,
-   wires `check-subprocess-form` into the runner, fixture list, and
-   timing-layers doc, and runs the issue's acceptance greps).
-3. Full standing pytest green, then the #768 closeout carrier (feature
-   classification; template in the four earlier closeout commits), rewriting
-   the three WIP subjects into it or into a squash.
-4. #774 ledger-only-lessons (added by amendment on 2026-09-02, `rework`,
-   causing skills retro and achieve): apply `summary_path: null` to this
-   repo's retro adapter, delete `recent-lessons.md`, make `goal_run_pickup.py`
-   read the ledger preview, and drop the digest comparison from this lane.
-   Body: `bodies/ledger-only-lessons.md`; operation
-   `operations/amend-add-ledger-only-lessons.json` (verified-write). Small;
-   one lane or the parent directly.
-5. #769 quality-boundary-and-run-quality: the parent's design is
-   `charness-artifacts/quality/2026-09-02-gate-classification-769.md`,
-   reviewed twice by bounded reviewers; both reports were truncated by the
-   host, so angles 2 to 4 beyond the recorded rows are unreviewed. The real
-   finding: eight `ship` gates need adapter-declared inputs or they are a
-   vacuous green in a consumer repo. Then #770, #772.
-6. Once the #768 tree is green and its closeout carrier is verified, ask the
-   operator for the push of the remaining commits (that push is NOT covered
-   by the step-0 authorization), then verify #768 CLOSED and advance the
-   cursor the same way as step 4 of "Session start".
+Lanes r0, r1, r2 (`briefs/brief-768-repair.md` with `repair-batch-r{0,1,2}.txt`)
+and the ratchet lane (`briefs/brief-768-ratchet.md`) ran in parallel at xhigh;
+all four returned candidates. The ratchet lane could not write `.agents/` in
+its sandbox, so the parent applied the two adapter and surfaces edits in its
+worktree and committed there before cherry-picking. Each lane named exactly one
+production blocker outside its scope, and the parent fixed each on main:
+
+- `check_staged_worktree_consistency.py` decoded guard text as bytes.
+- `inventory_empty_scope_honesty.py` called a loader the bootstrap does not
+  export, loaded detectors before swapping argv, and left the detector's
+  directory off `sys.path`.
+- `test_batch6.py` loaded three modules by path under their bare names, which
+  rebinds `sys.modules` at collection time in every xdist worker: three
+  order-dependent failures found by bisecting the 563-file collection set.
+- `gather_public_url.py` ran its record writer in-process with a shared module
+  table; fifteen skills ship a `resolve_adapter.py`, so the wrong skill's
+  adapter picked the output directory: an intermittent gather failure.
+
+Full read-only quality lane green with the skip list empty; docs check PASS.
+The three WIP lane subjects were rewritten at closeout (P2, T2, T3).
+
+Lessons this paid for: an in-process migration must emulate what a child
+interpreter gave for free (empty module table, argv before import, script dir
+first on `sys.path`); `load_script_module` under a bare name is a collection-
+time rebind, never use it for a module the code under test imports lazily;
+bisect the COLLECTION set, not the runtime prefix, when a failure passes alone.
+
+## #774 ledger-only-lessons: integrated (second session)
+
+One Codex lane (`briefs/` not needed; prompt in the commit body) produced every
+change except `.agents/retro-adapter.yaml` and `.agents/surfaces.json`, which
+the lane sandbox holds read-only; the parent applied those two edits in the
+lane worktree and committed there (`93cf83600`, cherry-picked to main).
+Proof on main: `recent-lessons.md` absent, `/goal #765` pickup `ok: true` with
+`lessons.selection: bounded-ledger-preview`, 164 focused tests, docs check
+PASS. Closeout carrier follows #768's.
+
+Lesson: a Codex lane cannot write `.agents/`; a brief that needs an adapter
+or surfaces edit must say the parent applies it, or the lane ends uncommitted.
+
+## Next session, in order (written at the end of the second session)
+
+State: local `main` is 40+ commits ahead of `origin/main` (`a5002ffc9`), all
+unpushed. #768 is integrated and every gate but one was green at the last full
+lane; #774 is integrated and verified. Nothing is closed on GitHub yet.
+
+1. Read "#768 ... integrated and green" and "#774 ... integrated" below, then
+   confirm the tree: `python3 scripts/sync_root_plugin_manifests.py --repo-root .`
+   (the generated mirror MUST be regenerated after any skill or script edit or
+   two mirror tests go red), then `./scripts/run-quality.sh --full --read-only`.
+   The only expected red is `check-python-lengths` naming the L4 files if the
+   L4 lane (`length-768-L4`, scope: goal_run_pickup.py,
+   publish_release_helpers.py, check_artifact_surface_preflight.py,
+   recent_lessons_lib.py) did not land; see the "L4" note below for its state.
+2. Reword the three WIP lane subjects with `/tmp/reword-768.sh` if it still
+   exists, else by hand (`git rebase -i a5002ffc9`): b646c21f6 is the P2
+   production lane (skill and worktree spawns through the guard), 697975921 is
+   T2 (quality-gate tests in-process), f72baa7b6 is T3 (CLI and coverage-debt
+   tests in-process). SHAs are the post-rebase ones on this main.
+3. #768 closeout carrier: one commit with `Closes #768`, the template of the
+   four earlier closeout commits (`git show 7f4bcf835 -s`), feature
+   classification. Acceptance figures measured on this tree: subprocess form
+   gate 762 production files, zero direct spawns; test files naming
+   `sys.executable` or `"python3"`: 103, files carrying `boundary_contract`:
+   85, A minus B 36 (the 36 are helpers and in-process CLI loaders, not
+   spawns), B minus A 18; collection 8504 selected of 8635.
+4. #774 closeout carrier the same way (`Closes #774`, classification feature,
+   rework label already on the issue).
+5. Ask the operator for the push of everything after `a5002ffc9` (NOT covered
+   by the step-0 authorization). Push from a fresh clone of the ref with the
+   GitHub remote added; the pre-push hook gates the PARENT working tree, and
+   the runner's basetemp is machine-local.
+6. `verify-closeout` for #768 and #774, advance the cursor (`update-body`
+   operation like `operations/update-parent-progress-768.json`, progress
+   6/3/9 revision 5, next = #769 quality-boundary-and-run-quality), re-run
+   pickup until it names #769.
+7. #769: the classification now has a third fresh-eye pass applied
+   (`charness-artifacts/quality/2026-09-02-gate-classification-769.md`); the
+   lane brief should cite rows and treat the 22 conditional `ship` rows as
+   the design's centre. Then #770, #772.
 
 ## Lessons this session paid for
 
@@ -137,3 +189,17 @@ was inside a repair lane's scope.
   launch and do not write files while a launch is sleeping.
 - Bounded-reviewer reports are truncated by the host around 4k characters;
   ask for under 60 lines and run two passes with disjoint angles.
+- A Codex lane cannot write `.agents/`. Two lanes (ratchet, #774) ended
+  uncommitted for that reason alone; say in the brief that the parent applies
+  adapter and surfaces edits.
+- The generated `plugins/` mirror is not tracked but two standing tests
+  compare it byte for byte; regenerate it before every full lane.
+- The pre-push hook runs the quality lane on the parent working tree, so a
+  mid-migration parent cannot push a green ref; push from a clone of the ref.
+- A shell `cd` into a lane worktree persists across tool calls; two
+  cherry-picks ran inside the lane worktree instead of main. Use `git -C`.
+- Bisect the collection set (all test modules import in every xdist worker),
+  not the runtime prefix, when a failure passes alone; it found the polluter
+  in nine runs of 20 seconds where the runtime bisect found nothing.
+- An in-process migration must emulate the child interpreter: empty module
+  table, argv swapped before import, script directory first on `sys.path`.
