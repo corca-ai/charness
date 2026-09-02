@@ -288,6 +288,8 @@ phases:
     - --scan-root
     - scripts
     - --scan-root
+    - tools
+    - --scan-root
     - skills
     - --scan-root-map
     - ../charness-support=skills/support
