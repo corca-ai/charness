@@ -7,7 +7,7 @@ from collections.abc import Callable, Sequence
 from pathlib import Path
 
 
-def _load_repo_layout() -> dict[str, object]:
+def _load_repo_layout(start: Path = Path(__file__)) -> dict[str, object]:
     """The layout resolver, by its one fixed path, without importing repo machinery.
 
     ``scaffold_ideation_artifact.py`` loads this module by file path with no
@@ -20,7 +20,7 @@ def _load_repo_layout() -> dict[str, object]:
     location is asked for, at the repo root here and at the plugin root once
     exported.
     """
-    for ancestor in Path(__file__).resolve().parents:
+    for ancestor in start.resolve().parents:
         candidate = ancestor / "scripts" / "core" / "repo_layout.py"
         if candidate.is_file():
             return runpy.run_path(str(candidate))

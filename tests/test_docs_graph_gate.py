@@ -1081,3 +1081,14 @@ def test_the_module_main_guard_executes(tmp_path: Path, monkeypatch: pytest.Monk
         runpy.run_path(str(ROOT / GATE), run_name="__main__")
 
     assert excinfo.value.code == _gate.UNESTABLISHED_EXIT
+
+
+def test_the_awiki_module_bootstrap_shim_inserts_the_repo_root_when_absent(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import sys
+
+    stripped = [entry for entry in sys.path if entry and Path(entry).resolve() != ROOT.resolve()]
+    monkeypatch.setattr(sys, "path", stripped)
+    _awiki._load_repo_runtime_bootstrap()
+    assert str(ROOT.resolve()) in sys.path or str(ROOT) in sys.path

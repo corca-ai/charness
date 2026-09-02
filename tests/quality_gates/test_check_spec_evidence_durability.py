@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
 
 from scripts.gates import check_spec_evidence_durability as gate
+from scripts.gates_support import evidence_durability_scope as scope
 
 from .support import run_script
 
@@ -222,3 +224,36 @@ def test_late_family_enforcement_and_grandfathering_share_one_ignore_query(
     assert "whose FILENAME date precedes" in result.stdout
     assert "whose exact bytes a sibling Goal Binding hashes" in result.stdout
     assert "whatever its body says -- is enforced" in result.stdout
+
+
+def test_binding_freezes_refuses_every_shape_short_of_an_exact_match(tmp_path: Path) -> None:
+    doc = tmp_path / "2999-01-01-demo.md"
+    doc.write_text("# Demo\n", encoding="utf-8")
+    assert scope.binding_freezes(tmp_path / "2999-01-01-demo.txt") is False  # not a draft
+    assert scope.binding_freezes(doc) is False  # no sibling binding
+    binding = tmp_path / "2999-01-01-demo.binding.json"
+    binding.write_text("{not json", encoding="utf-8")
+    assert scope.binding_freezes(doc) is False
+    binding.write_text(json.dumps(["not", "a", "dict"]), encoding="utf-8")
+    assert scope.binding_freezes(doc) is False
+    binding.write_text(
+        json.dumps({"kind": scope.GOAL_BINDING_KIND, "draft": "nope"}), encoding="utf-8"
+    )
+    assert scope.binding_freezes(doc) is False
+    binding.write_text(
+        json.dumps({"kind": scope.GOAL_BINDING_KIND, "draft": {"sha256": _sha256(doc)}}),
+        encoding="utf-8",
+    )
+    assert scope.binding_freezes(doc) is True
+    doc.write_text("# Demo edited after binding\n", encoding="utf-8")
+    assert scope.binding_freezes(doc) is False
+
+
+def test_the_scope_module_bootstrap_shim_inserts_the_repo_root_when_absent(monkeypatch) -> None:
+    import sys
+
+    root = Path(__file__).resolve().parents[2]
+    stripped = [entry for entry in sys.path if entry and Path(entry).resolve() != root]
+    monkeypatch.setattr(sys, "path", stripped)
+    scope._load_repo_runtime_bootstrap()
+    assert str(root) in sys.path

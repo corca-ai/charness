@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import runpy
+import sys
 from pathlib import Path
 
 import pytest
@@ -83,3 +85,26 @@ def test_live_repo_asks_only_the_resolver() -> None:
         for failure in gate.check_file(ROOT, path)
     ]
     assert failures == []
+
+
+def test_an_unparseable_file_is_reported_not_skipped(tmp_path: Path, capsys) -> None:
+    repo = _seed(tmp_path, "def broken(:\n")
+    assert gate.main(["--repo-root", str(repo)]) == 1
+    assert "scripts/probe.py: cannot parse" in capsys.readouterr().err
+
+
+def test_the_module_main_guard_executes(tmp_path: Path, monkeypatch) -> None:
+    repo = _seed(tmp_path, "VALUE = 1\n")
+    monkeypatch.setattr(sys, "argv", ["check_script_lookup_form.py", "--repo-root", str(repo)])
+    with pytest.raises(SystemExit) as excinfo:
+        runpy.run_path(str(ROOT / "scripts/gates/check_script_lookup_form.py"), run_name="__main__")
+    assert excinfo.value.code == 0
+
+
+def test_bootstrap_shim_inserts_the_repo_root_when_it_is_absent(monkeypatch) -> None:
+    # The shim's insert branch runs only in a process where the root is not yet
+    # on sys.path, which pytest never is; strip it so the branch is exercised.
+    stripped = [entry for entry in sys.path if entry and Path(entry).resolve() != ROOT.resolve()]
+    monkeypatch.setattr(sys, "path", stripped)
+    gate._load_repo_runtime_bootstrap()
+    assert str(ROOT.resolve()) in sys.path or str(ROOT) in sys.path

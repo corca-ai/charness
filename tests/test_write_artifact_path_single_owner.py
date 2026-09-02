@@ -30,10 +30,14 @@ from __future__ import annotations
 import datetime as dt
 from pathlib import Path
 
+import pytest
+
 from runtime_bootstrap import import_repo_module
 from tests.quality_gates.support import ROOT
 
-_scaffold_lib = import_repo_module(ROOT / "scripts/core/scaffold_artifact_lib.py", "scripts.core.scaffold_artifact_lib")
+_scaffold_lib = import_repo_module(
+    ROOT / "scripts/core/scaffold_artifact_lib.py", "scripts.core.scaffold_artifact_lib"
+)
 _resolve_quality_artifact = import_repo_module(
     ROOT / "skills/public/quality/scripts/resolve_quality_artifact.py",
     "skills.public.quality.scripts.resolve_quality_artifact",
@@ -63,7 +67,9 @@ def _seed_resolved_debug_pointer(repo: Path) -> Path:
     debug_dir = repo / "charness-artifacts" / "debug"
     debug_dir.mkdir(parents=True, exist_ok=True)
     target = debug_dir / "debug-2026-05-06-demo.md"
-    target.write_text("# Demo\n\n## Interrupt Decision\n\n- Resolution: resolved\n", encoding="utf-8")
+    target.write_text(
+        "# Demo\n\n## Interrupt Decision\n\n- Resolution: resolved\n", encoding="utf-8"
+    )
     (debug_dir / "latest.md").symlink_to(target.name)
     return target
 
@@ -169,7 +175,11 @@ _PRODUCER_ROOTS = ("scripts", "skills/public", "skills/support", "skills/shared"
 # `scaffold_debug_artifact.py`) build their payload by delegation and never spell the key at
 # all, so a literal-only predicate excluded the issue's own subjects. That was the first
 # version of this guard, and a bounded round caught it.
-_KEY_LITERALS = ('"write_artifact_path":', "'write_artifact_path':", "write_artifact_path=write_artifact_path")
+_KEY_LITERALS = (
+    '"write_artifact_path":',
+    "'write_artifact_path':",
+    "write_artifact_path=write_artifact_path",
+)
 _DELEGATED_PAYLOAD_CALLS = (
     "current_pointer_payload(",
     "dated_record_payload(",
@@ -313,7 +323,9 @@ def test_every_scaffold_payload_says_what_writing_would_destroy(tmp_path: Path) 
         )
 
 
-def test_the_debug_resolved_followup_reports_the_FRESH_target_not_the_old_one(tmp_path: Path) -> None:
+def test_the_debug_resolved_followup_reports_the_FRESH_target_not_the_old_one(
+    tmp_path: Path,
+) -> None:
     """The one branch where the effect key was deterministically false.
 
     `scaffold_debug_artifact.payload_for` builds the current-pointer payload and then swaps in
@@ -333,7 +345,9 @@ def test_the_debug_resolved_followup_reports_the_FRESH_target_not_the_old_one(tm
     assert payload["write_artifact_effect"] == "create_new_file"
 
 
-def test_the_pair_of_write_target_facts_says_whether_a_write_destroys_content(tmp_path: Path) -> None:
+def test_the_pair_of_write_target_facts_says_whether_a_write_destroys_content(
+    tmp_path: Path,
+) -> None:
     """#548's actual harm: the payload said WHERE, never whether anything was already there."""
     repo = tmp_path / "repo"
     pointer = _seed_pointer(repo, "symlink_to_existing")
@@ -345,14 +359,18 @@ def test_the_pair_of_write_target_facts_says_whether_a_write_destroys_content(tm
         "write_artifact_effect": "overwrite_existing_content",
     }
 
-    fresh = _scaffold_lib.write_target_facts(repo, "charness-artifacts/quality/2026-01-03-quality-review.md")
+    fresh = _scaffold_lib.write_target_facts(
+        repo, "charness-artifacts/quality/2026-01-03-quality-review.md"
+    )
     assert fresh == {
         "write_artifact_target_exists": False,
         "write_artifact_effect": "create_new_file",
     }
 
 
-def test_the_quality_scaffold_payload_admits_it_would_overwrite_a_finished_review(tmp_path: Path) -> None:
+def test_the_quality_scaffold_payload_admits_it_would_overwrite_a_finished_review(
+    tmp_path: Path,
+) -> None:
     """The composed verdict, not only the module that computes it.
 
     This is the exact shape of `#538`: the pointer resolves to a completed dated review, so
@@ -366,7 +384,9 @@ def test_the_quality_scaffold_payload_admits_it_would_overwrite_a_finished_revie
     )
 
     assert payload["write_artifact_role"] == "current_pointer_target"
-    assert payload["write_artifact_path"] == "charness-artifacts/quality/2026-01-02-quality-review.md"
+    assert (
+        payload["write_artifact_path"] == "charness-artifacts/quality/2026-01-02-quality-review.md"
+    )
     assert payload["write_artifact_target_exists"] is True
     assert payload["write_artifact_effect"] == "overwrite_existing_content"
 
@@ -423,3 +443,12 @@ def test_the_two_skills_still_explain_how_to_read_the_write_target_facts() -> No
                 f"{relative} no longer explains {anchor!r}; the write-target facts would be "
                 "emitted with no surface telling an agent what to do with them"
             )
+
+
+def test_the_owner_refuses_to_start_without_the_layout_resolver(tmp_path: Path) -> None:
+    """The one path the owner hard-codes must miss loudly, never fall back to a search."""
+    import runpy
+
+    owner = runpy.run_path(str(ROOT / "scripts/core/scaffold_artifact_lib.py"))
+    with pytest.raises(ImportError, match="scripts/core/repo_layout.py not found"):
+        owner["_load_repo_layout"](tmp_path / "nowhere" / "owner.py")

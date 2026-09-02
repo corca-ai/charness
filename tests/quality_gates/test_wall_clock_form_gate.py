@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import runpy
+import sys
 from pathlib import Path
 
 import pytest
@@ -100,3 +102,67 @@ def test_live_repo_has_no_wall_clock_site_above_its_record() -> None:
     assert scanned
     failures, _prompts = gate.judge(found, gate.load_baseline(ROOT / gate.DEFAULT_BASELINE_REL))
     assert failures == []
+
+
+def test_without_a_record_every_site_is_new(tmp_path: Path, capsys) -> None:
+    repo = _seed(tmp_path, "import time\n\n\ndef test_x():\n    time.sleep(0.1)\n")
+    assert gate.main(["--repo-root", str(repo)]) == 1
+    assert "baseline 0" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize(
+    "payload, message",
+    [
+        ({"schema": "other", "files": {}}, "not a charness.wall-clock-baseline/v1 record"),
+        ({"schema": gate.BASELINE_SCHEMA, "files": {"tests/x.py": 0}}, "positive site counts"),
+        ({"schema": gate.BASELINE_SCHEMA, "files": ["tests/x.py"]}, "positive site counts"),
+    ],
+)
+def test_a_malformed_record_is_refused(tmp_path: Path, payload: dict, message: str) -> None:
+    repo = _seed(tmp_path, "def test_x():\n    assert True\n")
+    record = repo / gate.DEFAULT_BASELINE_REL
+    record.parent.mkdir(parents=True, exist_ok=True)
+    record.write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(SystemExit, match=message):
+        gate.main(["--repo-root", str(repo)])
+
+
+def test_a_partly_shrunk_file_prompts_with_its_new_count(tmp_path: Path, capsys) -> None:
+    repo = _seed(
+        tmp_path,
+        "import time\n\n\ndef test_x():\n    time.sleep(0.1)\n",
+        baseline={"tests/test_probe.py": 3},
+    )
+    assert gate.main(["--repo-root", str(repo)]) == 0
+    assert "tests/test_probe.py: 1 < baseline 3; lower the record" in capsys.readouterr().err
+
+
+def test_writing_the_record_lowers_it_and_the_written_record_reads_back(
+    tmp_path: Path, capsys
+) -> None:
+    repo = _seed(
+        tmp_path,
+        "import time\n\n\ndef test_x():\n    time.sleep(0.1)\n",
+        baseline={"tests/test_probe.py": 3},
+    )
+    assert gate.main(["--repo-root", str(repo), "--write-baseline"]) == 0
+    assert "Wrote wall-clock baseline: 1 site(s) in 1 file(s)." in capsys.readouterr().out
+    assert gate.load_baseline(repo / gate.DEFAULT_BASELINE_REL) == {"tests/test_probe.py": 1}
+    assert gate.main(["--repo-root", str(repo)]) == 0
+
+
+def test_the_module_main_guard_executes(tmp_path: Path, monkeypatch) -> None:
+    repo = _seed(tmp_path, "def test_x():\n    assert True\n", baseline={})
+    monkeypatch.setattr(sys, "argv", ["check_wall_clock_form.py", "--repo-root", str(repo)])
+    with pytest.raises(SystemExit) as excinfo:
+        runpy.run_path(str(ROOT / "scripts/gates/check_wall_clock_form.py"), run_name="__main__")
+    assert excinfo.value.code == 0
+
+
+def test_bootstrap_shim_inserts_the_repo_root_when_it_is_absent(monkeypatch) -> None:
+    # The shim's insert branch runs only in a process where the root is not yet
+    # on sys.path, which pytest never is; strip it so the branch is exercised.
+    stripped = [entry for entry in sys.path if entry and Path(entry).resolve() != ROOT.resolve()]
+    monkeypatch.setattr(sys, "path", stripped)
+    gate._load_repo_runtime_bootstrap()
+    assert str(ROOT.resolve()) in sys.path or str(ROOT) in sys.path
