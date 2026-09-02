@@ -28,7 +28,9 @@ def _seed_split_layout(public_root: Path, support_root: Path) -> None:
 
     support_root.mkdir(parents=True)
     schema_src = REPO_ROOT / "skills" / "support" / "capability.schema.json"
-    (support_root / "capability.schema.json").write_text(schema_src.read_text(encoding="utf-8"), encoding="utf-8")
+    (support_root / "capability.schema.json").write_text(
+        schema_src.read_text(encoding="utf-8"), encoding="utf-8"
+    )
     demo_support = support_root / "demo-support"
     demo_support.mkdir()
     (demo_support / "SKILL.md").write_text("# support demo\n", encoding="utf-8")
@@ -102,9 +104,7 @@ def test_iter_matching_repo_files_can_require_git_listing(tmp_path):
     assert "command: git ls-files -z --cached --others --exclude-standard" in message
 
 
-def test_plain_fixture_fallback_does_not_spawn_a_predictable_git_refusal(
-    tmp_path, monkeypatch
-):
+def test_plain_fixture_fallback_does_not_spawn_a_predictable_git_refusal(tmp_path, monkeypatch):
     repo = tmp_path / "plain-fixture"
     repo.mkdir()
     readme = repo / "README.md"
@@ -113,7 +113,7 @@ def test_plain_fixture_fallback_does_not_spawn_a_predictable_git_refusal(
     def unexpected_git(*_args, **_kwargs):
         raise AssertionError("plain fixture must not probe Git before its fallback")
 
-    monkeypatch.setattr(repo_file_listing.subprocess, "run", unexpected_git)
+    monkeypatch.setattr(repo_file_listing, "run_process", unexpected_git)
 
     assert iter_matching_repo_files(repo, ("README.md",)) == [readme]
 
@@ -127,9 +127,7 @@ def test_bare_repository_signature_still_reaches_the_real_git_boundary(tmp_path)
     assert repo_file_listing._git_metadata_is_discoverable(repo) is True
 
 
-def test_repo_file_snapshot_reuses_one_listing_across_derived_views(
-    tmp_path, monkeypatch
-):
+def test_repo_file_snapshot_reuses_one_listing_across_derived_views(tmp_path, monkeypatch):
     repo = tmp_path / "repo"
     repo.mkdir()
     readme = repo / "README.md"
@@ -145,9 +143,7 @@ def test_repo_file_snapshot_reuses_one_listing_across_derived_views(
     snapshot = RepoFileSnapshot(repo)
 
     assert iter_repo_files(repo, snapshot=snapshot) == [readme]
-    assert iter_matching_repo_files(
-        repo, ("*.md",), snapshot=snapshot
-    ) == [readme]
+    assert iter_matching_repo_files(repo, ("*.md",), snapshot=snapshot) == [readme]
     assert calls == 1
 
 

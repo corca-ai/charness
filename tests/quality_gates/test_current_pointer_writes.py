@@ -16,7 +16,9 @@ from tests.script_loader import load_script_module
 from .seeding_support import load_module
 from .support import ROOT, run_script
 
-WRITER = load_module("current_pointer_writer_lib", ROOT / "scripts" / "current_pointer_writer_lib.py")
+WRITER = load_module(
+    "current_pointer_writer_lib", ROOT / "scripts" / "current_pointer_writer_lib.py"
+)
 RELEASE_ARTIFACT = load_module(
     "publish_release_artifact",
     ROOT / "skills" / "public" / "release" / "scripts" / "publish_release_artifact.py",
@@ -26,6 +28,7 @@ SCANNER = load_module(
     ROOT / "scripts" / "check_current_pointer_writes.py",
     register=True,
 )
+
 
 def _scanner_repo(tmp_path: Path, files: dict[str, str]) -> Path:
     return install_committed_repo(tmp_path / "repo", {".gitignore": "\n", **files})
@@ -44,8 +47,6 @@ def run_current_pointer_scanner(monkeypatch, capsys, *args: str) -> SimpleNamesp
     return SimpleNamespace(returncode=code, stdout=captured.out, stderr=captured.err)
 
 
-
-
 def _sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -59,16 +60,6 @@ def _scanner_findings(stdout: str) -> set[tuple[str, int]]:
     """
     payload = yaml.safe_load(stdout)
     return {(item["path"], item["line"]) for item in payload["findings"]}
-
-
-
-
-
-
-
-
-
-
 
 
 def test_current_pointer_write_shapes_are_caught_in_one_scan(tmp_path: Path) -> None:
@@ -174,7 +165,9 @@ def test_current_pointer_write_scanner_structured_output(tmp_path: Path) -> None
     # removed flag here made the gate refuse the very test that proves it is removed.
     # Commit 0a1a534 hit this exact trap once already.
     removed_flag = "--" + "json"
-    rejected = run_script("scripts/check_current_pointer_writes.py", "--repo-root", str(repo), removed_flag)
+    rejected = run_script(
+        "scripts/check_current_pointer_writes.py", "--repo-root", str(repo), removed_flag
+    )
     assert rejected.returncode == 2
     assert removed_flag in rejected.stderr
 
@@ -193,11 +186,9 @@ def test_current_pointer_write_scanner_fallback_file_listing(
     # `repo_file_listing` now, so that is where the git-unavailable seam lives —
     # and patching a `subprocess` this module no longer imports would have made
     # the test pass against a seam that does not exist.
-    # The owner's OWN function, not the stdlib `subprocess` object it happens to
-    # hold: patching `listing.subprocess.run` replaces it process-wide, which is
-    # harmless today and bites the first time this test grows a step that shells
-    # out. Round-1 review.
+    # Patch the owner's bound guard function, not a process-wide stdlib object.
     listing = sys.modules[SCANNER.iter_matching_repo_files.__module__]
+
     def _git_unavailable(_repo_root, *, include_untracked=True, require_git=False):
         # Stands in for a real git failure, INCLUDING its `require_git` contract:
         # a stub that always returns None makes the strict path unreachable and
@@ -224,9 +215,9 @@ def test_population_is_derived_by_the_shared_owner_not_hand_rolled() -> None:
     violation. The roots stay here (they are this check's scope); the LISTING is
     `repo_file_listing`, which 10+ validators already share.
     """
-    source = (Path(__file__).resolve().parents[2] / "scripts/check_current_pointer_writes.py").read_text(
-        encoding="utf-8"
-    )
+    source = (
+        Path(__file__).resolve().parents[2] / "scripts/check_current_pointer_writes.py"
+    ).read_text(encoding="utf-8")
     assert "iter_matching_repo_files" in source
     # Not merely imported — the hand-rolled listing is GONE, so no second
     # population is left to drift from the owner. Pinned as "this module imports
@@ -259,14 +250,12 @@ def test_the_scan_consumes_only_what_the_owner_returned(tmp_path: Path, monkeypa
     (repo / "scripts").mkdir(parents=True)
     seen = repo / "scripts" / "seen.py"
     seen.write_text(
-        "from pathlib import Path\n"
-        "(Path('a') / 'latest.md').write_text('bad', encoding='utf-8')\n",
+        "from pathlib import Path\n(Path('a') / 'latest.md').write_text('bad', encoding='utf-8')\n",
         encoding="utf-8",
     )
     unseen = repo / "scripts" / "unseen.py"
     unseen.write_text(
-        "from pathlib import Path\n"
-        "(Path('b') / 'latest.md').write_text('bad', encoding='utf-8')\n",
+        "from pathlib import Path\n(Path('b') / 'latest.md').write_text('bad', encoding='utf-8')\n",
         encoding="utf-8",
     )
     monkeypatch.setattr(SCANNER, "iter_matching_repo_files", lambda *_a, **_k: [seen])
@@ -286,11 +275,14 @@ def test_the_union_stays_git_derived(tmp_path: Path, monkeypatch) -> None:
     (repo / "skills" / "support" / "scripts").mkdir(parents=True)
     (repo / ".gitignore").write_text("ignored_writer.py\n", encoding="utf-8")
     body = (
-        "from pathlib import Path\n"
-        "(Path('e') / 'latest.md').write_text('bad', encoding='utf-8')\n"
+        "from pathlib import Path\n(Path('e') / 'latest.md').write_text('bad', encoding='utf-8')\n"
     )
-    (repo / "skills" / "support" / "scripts" / "tracked_writer.py").write_text(body, encoding="utf-8")
-    (repo / "skills" / "support" / "scripts" / "ignored_writer.py").write_text(body, encoding="utf-8")
+    (repo / "skills" / "support" / "scripts" / "tracked_writer.py").write_text(
+        body, encoding="utf-8"
+    )
+    (repo / "skills" / "support" / "scripts" / "ignored_writer.py").write_text(
+        body, encoding="utf-8"
+    )
     init_git_repo(repo)
     monkeypatch.setenv("CHARNESS_SUPPORT_DIR", str(tmp_path / "external-support"))
 
@@ -313,22 +305,23 @@ def test_the_support_union_pays_for_git_ls_files_once(tmp_path: Path, monkeypatc
     repo = tmp_path / "repo"
     (repo / "skills" / "support" / "scripts").mkdir(parents=True)
     body = (
-        "from pathlib import Path\n"
-        "(Path('e') / 'latest.md').write_text('bad', encoding='utf-8')\n"
+        "from pathlib import Path\n(Path('e') / 'latest.md').write_text('bad', encoding='utf-8')\n"
     )
-    (repo / "skills" / "support" / "scripts" / "tracked_writer.py").write_text(body, encoding="utf-8")
+    (repo / "skills" / "support" / "scripts" / "tracked_writer.py").write_text(
+        body, encoding="utf-8"
+    )
     init_git_repo(repo)
     monkeypatch.setenv("CHARNESS_SUPPORT_DIR", str(tmp_path / "external-support"))
 
     listing = sys.modules[SCANNER.iter_matching_repo_files.__module__]
-    real_run = listing.subprocess.run
+    real_run = listing.run_process
     calls: list[list[str]] = []
 
     def counting_run(args, **kwargs):
         calls.append(list(args))
         return real_run(args, **kwargs)
 
-    monkeypatch.setattr(listing.subprocess, "run", counting_run)
+    monkeypatch.setattr(listing, "run_process", counting_run)
 
     SCANNER.scan_repo(repo)
 
@@ -386,7 +379,9 @@ def test_require_git_reaches_the_population_from_the_cli(tmp_path: Path, monkeyp
 
     # hop 1: the CLI flag -> scan_repo
     monkeypatch.setattr(
-        sys, "argv", ["check_current_pointer_writes.py", "--repo-root", str(repo), "--require-git-file-listing"]
+        sys,
+        "argv",
+        ["check_current_pointer_writes.py", "--repo-root", str(repo), "--require-git-file-listing"],
     )
     with pytest.raises(listing.RepoFileListingError):
         SCANNER.main()
@@ -408,16 +403,14 @@ def test_an_external_support_tree_is_reported_not_crashed_on(tmp_path: Path, mon
     (external / "scripts").mkdir(parents=True)
     offender = external / "scripts" / "writer.py"
     offender.write_text(
-        "from pathlib import Path\n"
-        "(Path('c') / 'latest.md').write_text('bad', encoding='utf-8')\n",
+        "from pathlib import Path\n(Path('c') / 'latest.md').write_text('bad', encoding='utf-8')\n",
         encoding="utf-8",
     )
     # The IN-REPO support tree too, so the union is proven rather than assumed.
     (repo / "skills" / "support" / "scripts").mkdir(parents=True)
     in_repo = repo / "skills" / "support" / "scripts" / "inrepo_writer.py"
     in_repo.write_text(
-        "from pathlib import Path\n"
-        "(Path('d') / 'latest.md').write_text('bad', encoding='utf-8')\n",
+        "from pathlib import Path\n(Path('d') / 'latest.md').write_text('bad', encoding='utf-8')\n",
         encoding="utf-8",
     )
     init_git_repo(repo)
@@ -466,7 +459,9 @@ def test_population_survives_a_path_containing_a_newline(tmp_path: Path) -> None
     assert weird in found, "a newline in a path must not drop the file from the population"
 
 
-def test_current_pointer_write_scanner_skips_generated_plugin_mirrors(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_current_pointer_write_scanner_skips_generated_plugin_mirrors(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = _scanner_repo(
         tmp_path,
         {
@@ -477,7 +472,9 @@ def test_current_pointer_write_scanner_skips_generated_plugin_mirrors(tmp_path: 
         },
     )
 
-    result = run_current_pointer_scanner(monkeypatch, capsys, "--repo-root", str(repo), "--require-empty")
+    result = run_current_pointer_scanner(
+        monkeypatch, capsys, "--repo-root", str(repo), "--require-empty"
+    )
 
     assert result.returncode == 0
 
@@ -487,7 +484,9 @@ def test_current_pointer_write_scanner_ignores_helper_and_syntax_error(tmp_path:
     script_dir = repo / "scripts"
     script_dir.mkdir(parents=True)
     helper = script_dir / "current_pointer_writer_lib.py"
-    helper.write_text("from pathlib import Path\nPath('x/latest.md').write_text('ok')\n", encoding="utf-8")
+    helper.write_text(
+        "from pathlib import Path\nPath('x/latest.md').write_text('ok')\n", encoding="utf-8"
+    )
     broken = script_dir / "broken.py"
     broken.write_text("def broken(:\n", encoding="utf-8")
 
@@ -502,7 +501,9 @@ def test_current_pointer_write_scanner_constant_helpers_ignore_non_name_targets(
 
     assert SCANNER._resolved_string_constants(tree) == {"CURRENT": "latest.md"}
     assert SCANNER._scope_assigned_names(first_assign) == set()
-    assert SCANNER._pointer_names_in_resolved(tree.body[2].value, {"CURRENT": "latest.md"}, set()) == {"latest.md"}
+    assert SCANNER._pointer_names_in_resolved(
+        tree.body[2].value, {"CURRENT": "latest.md"}, set()
+    ) == {"latest.md"}
 
 
 def test_current_pointer_write_scanner_prefilters_non_candidate_files(
@@ -669,10 +670,3 @@ def test_computed_detector_catches_a_bare_stem_head_and_ignores_a_read_open() ->
 
     write_open = SCANNER.ast.parse('path.open("w")\n').body[0].value
     assert SCANNER._write_target_node(write_open) is not None
-
-
-
-
-
-
-

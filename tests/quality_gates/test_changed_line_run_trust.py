@@ -15,7 +15,7 @@ def test_git_lines_handles_missing_git_binary(tmp_path: Path, monkeypatch) -> No
     def boom(*_args, **_kwargs):
         raise OSError("git not found")
 
-    monkeypatch.setattr(trust.subprocess, "run", boom)
+    monkeypatch.setattr(trust, "run_process", boom)
     assert trust._git_lines(tmp_path, ["status"]) == []
     assert trust._head_resolves_to_head(tmp_path, "some-ref") is False
 
@@ -54,9 +54,7 @@ def test_revision_pair_uses_one_git_snapshot(tmp_path: Path, monkeypatch) -> Non
     assert calls == [["rev-parse", "release-ref", "HEAD"]]
 
 
-def test_probe_run_trust_exposes_the_resolved_revision_pair(
-    tmp_path: Path, monkeypatch
-) -> None:
+def test_probe_run_trust_exposes_the_resolved_revision_pair(tmp_path: Path, monkeypatch) -> None:
     oid = "a" * 40
     monkeypatch.setattr(
         trust,

@@ -273,21 +273,21 @@ def test_cli_skill_surface_retries_a_starved_probe_before_concluding(
     ]
 
 
-def test_cli_skill_surface_drain_timeout_override_is_positive_only(monkeypatch) -> None:
-    monkeypatch.delenv(_check_cli_skill_surface.DRAIN_TIMEOUT_ENV, raising=False)
+def test_cli_skill_surface_probe_timeout_override_is_positive_only(monkeypatch) -> None:
+    monkeypatch.delenv(_check_cli_skill_surface.PROBE_TIMEOUT_ENV, raising=False)
     assert (
-        _check_cli_skill_surface._drain_timeout_seconds()
-        == _check_cli_skill_surface.DRAIN_TIMEOUT_SECONDS
+        _check_cli_skill_surface._probe_timeout_seconds()
+        == _check_cli_skill_surface.DEFAULT_PROBE_TIMEOUT_SECONDS
     )
 
-    monkeypatch.setenv(_check_cli_skill_surface.DRAIN_TIMEOUT_ENV, "0.125")
-    assert _check_cli_skill_surface._drain_timeout_seconds() == 0.125
+    monkeypatch.setenv(_check_cli_skill_surface.PROBE_TIMEOUT_ENV, "0.125")
+    assert _check_cli_skill_surface._probe_timeout_seconds() == 0.125
 
     for invalid in ("invalid", "0", "-1"):
-        monkeypatch.setenv(_check_cli_skill_surface.DRAIN_TIMEOUT_ENV, invalid)
+        monkeypatch.setenv(_check_cli_skill_surface.PROBE_TIMEOUT_ENV, invalid)
         assert (
-            _check_cli_skill_surface._drain_timeout_seconds()
-            == _check_cli_skill_surface.DRAIN_TIMEOUT_SECONDS
+            _check_cli_skill_surface._probe_timeout_seconds()
+            == _check_cli_skill_surface.DEFAULT_PROBE_TIMEOUT_SECONDS
         )
 
 
@@ -661,7 +661,7 @@ def test_cli_skill_surface_bounds_the_drain_when_the_grandchild_escapes_the_grou
     """The drain deadline must bind when killing the group cannot reach the holder.
 
     Killing the probe's process group reaps the ordinary grandchild, which makes
-    the drain return instantly and leaves `DRAIN_TIMEOUT_SECONDS` unexercised --
+    the drain return instantly and leaves the guard's post-kill drain unexercised --
     a mutation sweep confirmed the deadline could be deleted with the suite
     green. A grandchild that calls `setsid()` escapes the group, still holds the
     inherited pipe, and is the input that makes the deadline load-bearing.
@@ -683,7 +683,6 @@ def test_cli_skill_surface_bounds_the_drain_when_the_grandchild_escapes_the_grou
     )
     env = os.environ.copy()
     env["CHARNESS_CLI_SKILL_SURFACE_PROBE_TIMEOUT_SECONDS"] = "0.5"
-    env["CHARNESS_CLI_SKILL_SURFACE_DRAIN_TIMEOUT_SECONDS"] = "0.1"
 
     started = time.monotonic()
     try:
@@ -708,10 +707,9 @@ def test_cli_skill_surface_bounds_the_drain_when_the_grandchild_escapes_the_grou
     assert payload["status"] == "unobserved"
     assert payload["probe_results"][0]["timed_out"] is True
     assert len(escaped_pids) == payload["probe_results"][0]["attempts"]
-    # The production default stays at five seconds. This test proves the same
-    # deadline branch under a test-owned budget and retains the independent
-    # outer bound above as regression containment.
-    assert elapsed < 5, f"test-owned drain deadline did not bind: {elapsed:.1f}s"
+    # The guard's post-kill drain is five seconds per attempt. Two probe attempts
+    # therefore remain bounded well below fifteen seconds.
+    assert elapsed < 15, f"post-kill drain did not bind: {elapsed:.1f}s"
 
 
 @pytest.mark.boundary_contract(
@@ -734,14 +732,15 @@ def test_kill_group_and_drain_never_signals_a_group_the_probe_does_not_own(tmp_p
         "import subprocess, sys, time\n"
         f"sys.path.insert(0, {str(ROOT / 'scripts')!r})\n"
         "from runtime_bootstrap import import_repo_module\n"
-        f"m = import_repo_module({str(ROOT / 'scripts/check_cli_skill_surface.py')!r}, 'scripts.check_cli_skill_surface')\n"
+        f"m = import_repo_module({str(ROOT / 'scripts/subprocess_guard.py')!r}, 'scripts.subprocess_guard')\n"
         # No start_new_session: the child SHARES this process's group, so an
         # unguarded killpg would take this process down with it.
         "child = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(600)'],\n"
         "                         stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)\n"
-        "m._kill_group_and_drain(child)\n"
+        "m._kill_tree(child)\n"
         # One-sided otherwise: 'we were not killed' also holds when nothing
         # was killed at all, which leaks the child and proves half the property.
+        "child.wait(timeout=5)\n"
         "assert child.poll() is not None, 'the child was never reaped'\n"
         "print('SURVIVED', flush=True)\n",
         encoding="utf-8",
@@ -799,8 +798,6 @@ def test_cli_skill_surface_keeps_partial_output_when_even_the_drain_times_out(
     )
     env = os.environ.copy()
     env["CHARNESS_CLI_SKILL_SURFACE_PROBE_TIMEOUT_SECONDS"] = "0.5"
-    env["CHARNESS_CLI_SKILL_SURFACE_DRAIN_TIMEOUT_SECONDS"] = "0.1"
-
     try:
         result = _run_bounded_in_own_session(
             "scripts/check_cli_skill_surface.py",

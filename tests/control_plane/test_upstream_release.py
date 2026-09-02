@@ -28,9 +28,7 @@ class FakeResponse:
         return json.dumps(self.payload).encode("utf-8")
 
 
-def test_probe_github_release_prefers_authenticated_gh_cli(
-    tmp_path: Path, monkeypatch
-) -> None:
+def test_probe_github_release_prefers_authenticated_gh_cli(tmp_path: Path, monkeypatch) -> None:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     gh = bin_dir / "gh"
@@ -40,7 +38,7 @@ def test_probe_github_release_prefers_authenticated_gh_cli(
                 "#!/usr/bin/env bash",
                 "set -euo pipefail",
                 'printf "%s\\n" "$*" > "$GH_ARGS_PATH"',
-                'cat <<\'JSON\'',
+                "cat <<'JSON'",
                 "{",
                 '  "tag_name": "v1.2.3",',
                 '  "html_url": "https://github.com/example/tool/releases/tag/v1.2.3",',
@@ -86,14 +84,16 @@ def test_probe_github_release_falls_back_to_urllib_when_gh_disabled(
 
     monkeypatch.setenv("CHARNESS_RELEASE_PROBE_NO_GH", "1")
     monkeypatch.delenv("CHARNESS_RELEASE_PROBE_FIXTURES", raising=False)
-    monkeypatch.setattr(upstream.subprocess, "run", fail_run)
+    monkeypatch.setattr(upstream, "run_process", fail_run)
     monkeypatch.setattr(upstream.urllib.request, "urlopen", fake_urlopen)
 
     release = probe_github_release("example/tool")
 
     assert release["status"] == "ok"
     assert release["latest_version"] == "2.0.0"
-    assert captured["request"].full_url == "https://api.github.com/repos/example/tool/releases/latest"
+    assert (
+        captured["request"].full_url == "https://api.github.com/repos/example/tool/releases/latest"
+    )
 
 
 def test_probe_github_release_falls_back_when_gh_is_unavailable(monkeypatch) -> None:
@@ -109,14 +109,16 @@ def test_probe_github_release_falls_back_when_gh_is_unavailable(monkeypatch) -> 
     monkeypatch.delenv("CHARNESS_RELEASE_PROBE_NO_GH", raising=False)
     monkeypatch.delenv("CHARNESS_RELEASE_PROBE_FIXTURES", raising=False)
     monkeypatch.setattr(upstream.shutil, "which", lambda _name: None)
-    monkeypatch.setattr(upstream.subprocess, "run", fail_run)
+    monkeypatch.setattr(upstream, "run_process", fail_run)
     monkeypatch.setattr(upstream.urllib.request, "urlopen", fake_urlopen)
 
     release = probe_github_release("example/tool")
 
     assert release["status"] == "ok"
     assert release["latest_version"] == "2.1.0"
-    assert captured["request"].full_url == "https://api.github.com/repos/example/tool/releases/latest"
+    assert (
+        captured["request"].full_url == "https://api.github.com/repos/example/tool/releases/latest"
+    )
 
 
 def test_probe_github_release_falls_back_when_gh_is_unauthenticated(
@@ -136,14 +138,16 @@ def test_probe_github_release_falls_back_when_gh_is_unauthenticated(
     monkeypatch.delenv("CHARNESS_RELEASE_PROBE_NO_GH", raising=False)
     monkeypatch.delenv("CHARNESS_RELEASE_PROBE_FIXTURES", raising=False)
     monkeypatch.setattr(upstream.shutil, "which", lambda _name: "/usr/bin/gh")
-    monkeypatch.setattr(upstream.subprocess, "run", lambda *_args, **_kwargs: Completed())
+    monkeypatch.setattr(upstream, "run_process", lambda *_args, **_kwargs: Completed())
     monkeypatch.setattr(upstream.urllib.request, "urlopen", fake_urlopen)
 
     release = probe_github_release("example/tool")
 
     assert release["status"] == "ok"
     assert release["latest_version"] == "2.2.0"
-    assert captured["request"].full_url == "https://api.github.com/repos/example/tool/releases/latest"
+    assert (
+        captured["request"].full_url == "https://api.github.com/repos/example/tool/releases/latest"
+    )
 
 
 def test_probe_github_release_adds_token_header_to_urllib_fallback(monkeypatch) -> None:
@@ -237,7 +241,7 @@ def test_probe_github_release_reports_malformed_gh_payload(monkeypatch) -> None:
     monkeypatch.delenv("CHARNESS_RELEASE_PROBE_NO_GH", raising=False)
     monkeypatch.delenv("CHARNESS_RELEASE_PROBE_FIXTURES", raising=False)
     monkeypatch.setattr(upstream.shutil, "which", lambda _name: "/usr/bin/gh")
-    monkeypatch.setattr(upstream.subprocess, "run", lambda *_args, **_kwargs: Completed())
+    monkeypatch.setattr(upstream, "run_process", lambda *_args, **_kwargs: Completed())
     monkeypatch.setattr(upstream.urllib.request, "urlopen", fail_urlopen)
 
     release = probe_github_release("example/malformed-gh")
@@ -249,7 +253,7 @@ def test_probe_github_release_reports_malformed_gh_payload(monkeypatch) -> None:
 
 def test_probe_github_release_reports_gh_timeout_without_crashing(monkeypatch) -> None:
     def timeout_run(*_args: object, **_kwargs: object) -> None:
-        raise subprocess.TimeoutExpired(["gh", "api"], timeout=10)
+        return subprocess.CompletedProcess(["gh", "api"], 124, "", "timed out")
 
     def fail_urlopen(*_args: object, **_kwargs: object) -> None:
         raise AssertionError("timed-out gh release probes should not fall through to urllib")
@@ -257,7 +261,7 @@ def test_probe_github_release_reports_gh_timeout_without_crashing(monkeypatch) -
     monkeypatch.delenv("CHARNESS_RELEASE_PROBE_NO_GH", raising=False)
     monkeypatch.delenv("CHARNESS_RELEASE_PROBE_FIXTURES", raising=False)
     monkeypatch.setattr(upstream.shutil, "which", lambda _name: "/usr/bin/gh")
-    monkeypatch.setattr(upstream.subprocess, "run", timeout_run)
+    monkeypatch.setattr(upstream, "run_process", timeout_run)
     monkeypatch.setattr(upstream.urllib.request, "urlopen", fail_urlopen)
 
     release = probe_github_release("example/timeout")

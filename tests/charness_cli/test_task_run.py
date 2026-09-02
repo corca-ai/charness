@@ -111,22 +111,15 @@ def test_read_task_results_refuses_non_object_json(tmp_path: Path) -> None:
 def test_execute_codex_records_keyboard_interrupt_and_stops_the_group(
     tmp_path: Path, monkeypatch
 ) -> None:
-    class InterruptingProcess:
-        pid = 31415
-        returncode = None
-
-        def __init__(self) -> None:
-            self.communicate_calls = 0
-
-        def communicate(self, **_kwargs) -> None:
-            self.communicate_calls += 1
-            if self.communicate_calls == 1:
-                raise KeyboardInterrupt
-            self.returncode = 0
-
-    process = InterruptingProcess()
     killed: list[tuple[int, signal.Signals]] = []
-    monkeypatch.setattr(task_run_execution.subprocess, "Popen", lambda *_args, **_kwargs: process)
+    stdout_log = tmp_path / "stdout.log"
+    stderr_log = tmp_path / "stderr.log"
+
+    def interrupting_phase(*_args, **_kwargs):
+        stdout_log.with_suffix(".pgid").write_text("31415\n", encoding="utf-8")
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr(task_run_execution, "run_monitored_phase", interrupting_phase)
     monkeypatch.setattr(
         task_run_execution.os,
         "killpg",
@@ -138,13 +131,12 @@ def test_execute_codex_records_keyboard_interrupt_and_stops_the_group(
         prompt="stop",
         target_path=tmp_path,
         configured_env={},
-        stdout_log=tmp_path / "stdout.log",
-        stderr_log=tmp_path / "stderr.log",
+        stdout_log=stdout_log,
+        stderr_log=stderr_log,
         timeout_seconds=1,
     )
 
     assert result == {"exit_code": None, "timed_out": False, "interrupted": True}
-    assert process.communicate_calls == 2
     assert killed == [(31415, signal.SIGKILL)]
 
 
@@ -152,7 +144,7 @@ def test_execute_codex_reports_process_start_oserror(tmp_path: Path, monkeypatch
     def fail_start(*_args, **_kwargs):
         raise OSError("cannot execute codex")
 
-    monkeypatch.setattr(task_run_execution.subprocess, "Popen", fail_start)
+    monkeypatch.setattr(task_run_execution, "run_monitored_phase", fail_start)
     result = task_run_execution._execute_codex(
         ["codex"],
         prompt="start",
@@ -164,8 +156,6 @@ def test_execute_codex_reports_process_start_oserror(tmp_path: Path, monkeypatch
     )
 
     assert result["exec_error"] == "cannot execute codex"
-
-
 
 
 def test_codex_arguments_fix_luna_sandbox_and_effort(tmp_path: Path) -> None:
@@ -191,7 +181,9 @@ def test_codex_effort_is_limited_to_orchestrator_presets() -> None:
         task_run.build_codex_args(effort="high")
 
 
-def test_task_run_lane_shorthand_owns_safe_defaults_and_external_target(tmp_path: Path, monkeypatch) -> None:
+def test_task_run_lane_shorthand_owns_safe_defaults_and_external_target(
+    tmp_path: Path, monkeypatch
+) -> None:
     repo = _repo(tmp_path)
     executable = _codex(tmp_path, "exit 0")
     monkeypatch.setenv("TMPDIR", str(tmp_path / "runtime-base"))
@@ -212,7 +204,10 @@ def test_task_run_lane_shorthand_owns_safe_defaults_and_external_target(tmp_path
     assert payload["branch"] == "task/short-lane"
     assert payload["base"] == "HEAD"
     assert payload["base_sha"] == _git(repo, "rev-parse", "HEAD").stdout.strip()
-    assert Path(payload["worktree_path"]) == Path(payload["runtime_root"]) / "task-run" / "short-lane" / "worktree"
+    assert (
+        Path(payload["worktree_path"])
+        == Path(payload["runtime_root"]) / "task-run" / "short-lane" / "worktree"
+    )
     assert payload["prepare"] is True
     assert payload["require_change"] is True
     assert payload["codex"] == {
@@ -362,9 +357,9 @@ def test_task_run_assigns_distinct_lane_runtime_roots_and_leaves_worktrees_clean
     repo = _repo(tmp_path)
     executable = _codex(
         tmp_path,
-        "mkdir -p \"$CHARNESS_RUNTIME_ROOT\"\n"
-        "printf '%s\\n' \"$CHARNESS_RUNTIME_ROOT\" > \"$CHARNESS_RUNTIME_ROOT/observed-root\"\n"
-        "printf '%s\\n' \"$PYTHONPYCACHEPREFIX\" \"$TMPDIR\" \"$RUFF_CACHE_DIR\" \"$COVERAGE_FILE\" \"$XDG_CACHE_HOME\" > \"$CHARNESS_RUNTIME_ROOT/observed-paths\"\n"
+        'mkdir -p "$CHARNESS_RUNTIME_ROOT"\n'
+        'printf \'%s\\n\' "$CHARNESS_RUNTIME_ROOT" > "$CHARNESS_RUNTIME_ROOT/observed-root"\n'
+        'printf \'%s\\n\' "$PYTHONPYCACHEPREFIX" "$TMPDIR" "$RUFF_CACHE_DIR" "$COVERAGE_FILE" "$XDG_CACHE_HOME" > "$CHARNESS_RUNTIME_ROOT/observed-paths"\n'
         "printf 'VALUE = 2\\n' > module.py\n"
         "git add -- module.py\n"
         "git -c user.email=test@example.com -c user.name=test commit -m 'update module'",
@@ -391,12 +386,19 @@ def test_task_run_assigns_distinct_lane_runtime_roots_and_leaves_worktrees_clean
         result_dir = Path(payload["result_path"]).parent
         assert execution_root == result_dir / "runtime"
         assert execution_root.is_dir()
-        assert (execution_root / "observed-root").read_text(encoding="utf-8").strip() == str(execution_root)
-        observed_paths = (execution_root / "observed-paths").read_text(encoding="utf-8").splitlines()
+        assert (execution_root / "observed-root").read_text(encoding="utf-8").strip() == str(
+            execution_root
+        )
+        observed_paths = (
+            (execution_root / "observed-paths").read_text(encoding="utf-8").splitlines()
+        )
         assert all(Path(path).is_relative_to(execution_root) for path in observed_paths)
         assert task_run.task_status(repo, payload["task_id"]) == payload
         worktree = Path(payload["worktree_path"])
-        assert _git(worktree, "status", "--porcelain=v1", "--ignored", "--untracked-files=all").stdout == ""
+        assert (
+            _git(worktree, "status", "--porcelain=v1", "--ignored", "--untracked-files=all").stdout
+            == ""
+        )
 
     assert _git(repo, "status", "--porcelain=v1", "--ignored", "--untracked-files=all").stdout == ""
 
@@ -728,9 +730,7 @@ def test_timeout_commits_a_typed_wip_candidate_without_satisfying_completion(
     assert payload["candidate"]["changed_paths"] == ["module.py"]
     assert commit["status"] == "committed"
     assert commit["sha"] == payload["target_sha"]
-    assert commit["message"] == (
-        "task-run: WIP candidate — interrupted mid-edit — state unknown"
-    )
+    assert commit["message"] == ("task-run: WIP candidate — interrupted mid-edit — state unknown")
     assert commit["correctness_verified"] is False
     assert payload["scope"]["require_change"] is True
     assert payload["scope"]["verdict"] == "pass"
@@ -738,7 +738,10 @@ def test_timeout_commits_a_typed_wip_candidate_without_satisfying_completion(
     assert "interrupted mid-edit — state unknown" in payload["next_step"]
     assert "not a correctness claim" in payload["next_step"]
     assert _git(worktree, "status", "--porcelain=v1").stdout == ""
-    assert _git(worktree, "show", "-s", "--format=%s", commit["sha"]).stdout.strip() == commit["message"]
+    assert (
+        _git(worktree, "show", "-s", "--format=%s", commit["sha"]).stdout.strip()
+        == commit["message"]
+    )
     assert _git(repo, "rev-parse", "HEAD").stdout.strip() == payload["base_sha"]
 
 

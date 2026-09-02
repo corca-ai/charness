@@ -62,6 +62,7 @@ charness_shaped_repo = _git_fixture_support.charness_shaped_repo
 init_git_repo = _git_fixture_support.init_git_repo
 install_repo_root_script = _git_fixture_support.install_repo_root_script
 
+
 def run_script(
     *args: str,
     cwd: Path | None = None,
@@ -70,6 +71,12 @@ def run_script(
 ) -> subprocess.CompletedProcess[str]:
     script = Path(args[0]) if args else None
     if not real_process and script is not None:
+        # The extensionless top-level CLI has a SourceFileLoader-specific seam;
+        # the generic script loader cannot derive a module spec for it.
+        if script.name == "charness" and not script.suffix:
+            from tests.charness_cli.support import run_cli_path
+
+            return run_cli_path(script, *args[1:], cwd=cwd, env=env)
         in_process = run_allowlisted_script(
             script,
             tuple(args[1:]),

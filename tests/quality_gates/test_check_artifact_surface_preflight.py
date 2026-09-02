@@ -29,17 +29,6 @@ def _minimal_repo(tmp_path: Path) -> Path:
     return repo
 
 
-def _redirect_repo_scripts_to_root(monkeypatch: pytest.MonkeyPatch) -> None:
-    real_run = preflight._run
-
-    def run_repo_script(repo_root: Path, argv: list[str]):
-        if len(argv) > 1 and argv[1].startswith("scripts/"):
-            argv = [argv[0], str(ROOT / argv[1]), *argv[2:]]
-        return real_run(repo_root, argv)
-
-    monkeypatch.setattr(preflight, "_run", run_repo_script)
-
-
 # --- registry / surface resolution (pure) -------------------------------------
 
 
@@ -112,17 +101,18 @@ def test_extract_section_pulls_named_block() -> None:
 
 
 def _fake_run(rc_for):
-    def runner(repo_root, argv):
+    def runner(repo_root, script, args):
         import subprocess
 
-        joined = " ".join(argv)
-        return subprocess.CompletedProcess(argv, rc_for(joined), stdout="out\n", stderr="err\n")
+        command = [str(script), *args]
+        joined = " ".join(command)
+        return subprocess.CompletedProcess(command, rc_for(joined), stdout="out\n", stderr="err\n")
 
     return runner
 
 
 def test_changed_artifacts_groups_by_validator_and_passes(monkeypatch) -> None:
-    monkeypatch.setattr(preflight, "_run", _fake_run(lambda _cmd: 0))
+    monkeypatch.setattr(preflight, "_run_repo_script", _fake_run(lambda _cmd: 0))
     report = preflight.changed_artifacts(
         ROOT,
         [
@@ -160,7 +150,9 @@ def test_changed_artifacts_refuses_malformed_paths_instead_of_silently_omitting(
 
 
 def test_changed_artifacts_blocks_when_owning_validator_fails(monkeypatch) -> None:
-    monkeypatch.setattr(preflight, "_run", _fake_run(lambda cmd: 1 if "critique" in cmd else 0))
+    monkeypatch.setattr(
+        preflight, "_run_repo_script", _fake_run(lambda cmd: 1 if "critique" in cmd else 0)
+    )
     report = preflight.changed_artifacts(
         ROOT,
         ["charness-artifacts/critique/bad.md", "charness-artifacts/ideation/ok.md"],
@@ -175,13 +167,13 @@ def test_changed_artifacts_skips_author_time_only_surfaces(monkeypatch) -> None:
     # gate is their enforcement, and the fail-fast sweep stays changed-scoped.
     captured: list[list[str]] = []
 
-    def fake_run(repo_root, argv):
+    def fake_run(repo_root, script, args):
         import subprocess
 
-        captured.append(argv)
-        return subprocess.CompletedProcess(argv, 0, stdout="", stderr="")
+        captured.append([str(script), *args])
+        return subprocess.CompletedProcess([str(script), *args], 0, stdout="", stderr="")
 
-    monkeypatch.setattr(preflight, "_run", fake_run)
+    monkeypatch.setattr(preflight, "_run_repo_script", fake_run)
     report = preflight.changed_artifacts(
         ROOT,
         ["charness-artifacts/quality/b.md"],
@@ -192,7 +184,7 @@ def test_changed_artifacts_skips_author_time_only_surfaces(monkeypatch) -> None:
 
 
 def test_changed_artifacts_noop_for_unrelated_paths(monkeypatch) -> None:
-    monkeypatch.setattr(preflight, "_run", _fake_run(lambda _cmd: 1))
+    monkeypatch.setattr(preflight, "_run_repo_script", _fake_run(lambda _cmd: 1))
     report = preflight.changed_artifacts(ROOT, ["docs/x.md", "scripts/y.py"])
     assert report["status"] == "ok"
     assert report["checked"] == []
@@ -303,7 +295,6 @@ def test_describe_debug_is_changed_scoped_after_gaining_paths() -> None:
 
 def test_changed_artifacts_passes_scaffold_roundtrip(
     tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     repo = _minimal_repo(tmp_path)
     # the critique scaffold's own render must pass its validator at the commit
@@ -386,7 +377,6 @@ def test_changed_artifacts_passes_scaffold_roundtrip(
     target.write_text(filled_in_stub, encoding="utf-8")
     rel = target.relative_to(repo).as_posix()
 
-    _redirect_repo_scripts_to_root(monkeypatch)
     report = preflight.changed_artifacts(repo, [rel])
     assert report["status"] == "ok", report
 
@@ -434,16 +424,16 @@ def test_describe_prefix_surface_includes_paths_and_failure_detail(
 ) -> None:
     # critique is paths_arg=True: describe must pass --paths AND, when the file
     # fails its owning validator, echo the failure detail. Force the FAIL arm via
-    # a stubbed _run (independent of the critique validator's enforce-when-present
+    # a stubbed repo-script runner (independent of the critique validator's enforce-when-present
     # rules), which exercises describe's --paths/verdict/detail lines.
     import subprocess
 
-    def failing_run(repo_root, argv):
+    def failing_run(repo_root, script, args):
         return subprocess.CompletedProcess(
-            argv, 1, stdout="", stderr="missing reviewer-tier section"
+            [str(script), *args], 1, stdout="", stderr="missing reviewer-tier section"
         )
 
-    monkeypatch.setattr(preflight, "_run", failing_run)
+    monkeypatch.setattr(preflight, "_run_repo_script", failing_run)
     repo = _minimal_repo(tmp_path)
     target = repo / "charness-artifacts" / "critique" / "_preflight_describe_selftest.md"
     target.parent.mkdir(parents=True)

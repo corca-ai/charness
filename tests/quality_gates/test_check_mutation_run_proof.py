@@ -6,9 +6,11 @@ refusal when a mutation workflow run is cited as proof of a claim its trigger
 cannot evaluate. The classifier is pure, so the refusal matrix is pinned
 without network or git state; the CLI is exercised over facts and manifests.
 """
+
 from __future__ import annotations
 
 import json
+import subprocess
 from pathlib import Path
 
 import yaml
@@ -107,7 +109,10 @@ def test_manifest_facts_from_json_and_md(tmp_path: Path) -> None:
     json_manifest.write_text(json.dumps({"base_sha": "abc123"}), encoding="utf-8")
     # An older manifest shape carries no range key: reported as not-established
     # rather than as an empty range, which would be a refusal it cannot support.
-    assert GATE.facts_from_manifest(json_manifest) == {"base_sha": "abc123", "changed_pool_files": None}
+    assert GATE.facts_from_manifest(json_manifest) == {
+        "base_sha": "abc123",
+        "changed_pool_files": None,
+    }
 
     json_manifest.write_text(json.dumps({"base_sha": None}), encoding="utf-8")
     assert GATE.facts_from_manifest(json_manifest) == {"base_sha": "", "changed_pool_files": None}
@@ -116,13 +121,19 @@ def test_manifest_facts_from_json_and_md(tmp_path: Path) -> None:
         json.dumps({"base_sha": "abc123", "changed_files_before_coverage": ["a.py", "b.py"]}),
         encoding="utf-8",
     )
-    assert GATE.facts_from_manifest(json_manifest) == {"base_sha": "abc123", "changed_pool_files": 2}
+    assert GATE.facts_from_manifest(json_manifest) == {
+        "base_sha": "abc123",
+        "changed_pool_files": 2,
+    }
 
     md_manifest = tmp_path / "sample.md"
     md_manifest.write_text(
         "# Mutation Sample\n\n- Base SHA: `abc123`\n- Head SHA: `def456`\n", encoding="utf-8"
     )
-    assert GATE.facts_from_manifest(md_manifest) == {"base_sha": "abc123", "changed_pool_files": None}
+    assert GATE.facts_from_manifest(md_manifest) == {
+        "base_sha": "abc123",
+        "changed_pool_files": None,
+    }
 
     md_manifest.write_text(
         "# Mutation Sample\n\n- Base SHA: `abc123`\n- Changed pool files: 0\n", encoding="utf-8"
@@ -151,9 +162,11 @@ def test_facts_from_run_parses_gh_payload(monkeypatch) -> None:
     def fake_run(command, **_kwargs):
         assert command[:3] == ["gh", "run", "view"]
         assert "--repo" in command and "corca-ai/charness" in command
-        return subprocess_result(0, json.dumps({"event": "workflow_dispatch", "conclusion": "success"}), "")
+        return subprocess_result(
+            command, 0, json.dumps({"event": "workflow_dispatch", "conclusion": "success"}), ""
+        )
 
-    monkeypatch.setattr(GATE.subprocess, "run", fake_run)
+    monkeypatch.setattr(GATE, "run_process", fake_run)
     facts = GATE.facts_from_run("123", "corca-ai/charness")
     assert facts == {"event": "workflow_dispatch", "conclusion": "success"}
 
@@ -161,9 +174,9 @@ def test_facts_from_run_parses_gh_payload(monkeypatch) -> None:
 def test_facts_from_run_omits_repo_flag_and_raises_on_failure(monkeypatch) -> None:
     def fake_run(command, **_kwargs):
         assert "--repo" not in command
-        return subprocess_result(1, "", "run not found")
+        return subprocess_result(command, 1, "", "run not found")
 
-    monkeypatch.setattr(GATE.subprocess, "run", fake_run)
+    monkeypatch.setattr(GATE, "run_process", fake_run)
     try:
         GATE.facts_from_run("123", None)
     except RuntimeError as error:
@@ -172,20 +185,17 @@ def test_facts_from_run_omits_repo_flag_and_raises_on_failure(monkeypatch) -> No
         raise AssertionError("expected RuntimeError when gh run view fails")
 
 
-def subprocess_result(returncode: int, stdout: str, stderr: str):
-    class Result:
-        pass
-
-    result = Result()
-    result.returncode = returncode
-    result.stdout = stdout
-    result.stderr = stderr
-    return result
+def subprocess_result(
+    command: list[str], returncode: int, stdout: str, stderr: str
+) -> subprocess.CompletedProcess[str]:
+    return subprocess.CompletedProcess(command, returncode, stdout, stderr)
 
 
 def test_main_run_id_branch_refuses_dispatch(monkeypatch, capsys) -> None:
     monkeypatch.setattr(
-        GATE, "facts_from_run", lambda run_id, repo: {"event": "workflow_dispatch", "conclusion": "success"}
+        GATE,
+        "facts_from_run",
+        lambda run_id, repo: {"event": "workflow_dispatch", "conclusion": "success"},
     )
     exit_code = GATE.main(["--claim", "changed-line", "--run-id", "123"])
     captured = capsys.readouterr()
@@ -222,10 +232,14 @@ def _manifest_with(changed_pool_files: int, base_sha: str = "abc123") -> Path:
 
     path = Path(tempfile.mkdtemp()) / "sample.json"
     path.write_text(
-        json.dumps({
-            "base_sha": base_sha,
-            "changed_files_before_coverage": [f"scripts/f{i}.py" for i in range(changed_pool_files)],
-        }),
+        json.dumps(
+            {
+                "base_sha": base_sha,
+                "changed_files_before_coverage": [
+                    f"scripts/f{i}.py" for i in range(changed_pool_files)
+                ],
+            }
+        ),
         encoding="utf-8",
     )
     return path
@@ -254,8 +268,15 @@ def test_cli_accepts_changed_line_claim_with_base_sha_but_says_what_it_did_not_c
     # A manifest-established range is the quiet path: nothing unestablished, so
     # nothing to warn about. Without this control the warning could fire always.
     established = run_script(
-        _GATE, "--claim", "changed-line", "--event", "schedule", "--base-sha", "abc123",
-        "--sample-manifest", str(_manifest_with(2)),
+        _GATE,
+        "--claim",
+        "changed-line",
+        "--event",
+        "schedule",
+        "--base-sha",
+        "abc123",
+        "--sample-manifest",
+        str(_manifest_with(2)),
     )
     assert established.returncode == 0, established.stderr
     assert "RANGE CONTENTS" not in established.stderr
@@ -295,11 +316,14 @@ def test_the_cli_refuses_an_empty_range_manifest(tmp_path: Path) -> None:
     """
     empty = tmp_path / "sample.json"
     empty.write_text(
-        json.dumps({"base_sha": "a" * 40, "changed_files_before_coverage": [], "changed_files": []}),
+        json.dumps(
+            {"base_sha": "a" * 40, "changed_files_before_coverage": [], "changed_files": []}
+        ),
         encoding="utf-8",
     )
-    result = run_script(_GATE, "--claim", "changed-line", "--event", "schedule",
-                        "--sample-manifest", str(empty))
+    result = run_script(
+        _GATE, "--claim", "changed-line", "--event", "schedule", "--sample-manifest", str(empty)
+    )
     assert result.returncode == 1, result.stdout + result.stderr
     payload = yaml.safe_load(result.stdout)
     assert payload["provable"] is False
@@ -310,8 +334,9 @@ def test_the_cli_refuses_an_empty_range_manifest(tmp_path: Path) -> None:
         json.dumps({"base_sha": "a" * 40, "changed_files_before_coverage": ["scripts/x.py"]}),
         encoding="utf-8",
     )
-    ok = run_script(_GATE, "--claim", "changed-line", "--event", "schedule",
-                    "--sample-manifest", str(real))
+    ok = run_script(
+        _GATE, "--claim", "changed-line", "--event", "schedule", "--sample-manifest", str(real)
+    )
     assert ok.returncode == 0, ok.stdout + ok.stderr
     assert yaml.safe_load(ok.stdout)["range_established"] is True
 
@@ -323,8 +348,9 @@ def test_the_markdown_manifest_carries_the_same_range_fact(tmp_path: Path) -> No
         "# Mutation Sample\n\n- Base SHA: `" + "a" * 40 + "`\n- Changed pool files: 0\n",
         encoding="utf-8",
     )
-    result = run_script(_GATE, "--claim", "changed-line", "--event", "schedule",
-                        "--sample-manifest", str(md))
+    result = run_script(
+        _GATE, "--claim", "changed-line", "--event", "schedule", "--sample-manifest", str(md)
+    )
     assert result.returncode == 1, result.stdout + result.stderr
     assert "EMPTY changed pool" in yaml.safe_load(result.stdout)["reason"]
 
@@ -338,8 +364,9 @@ def test_the_markdown_manifest_carries_the_same_range_fact(tmp_path: Path) -> No
         "- Changed eligible files after coverage/mutation-line filters: 3\n",
         encoding="utf-8",
     )
-    ok = run_script(_GATE, "--claim", "changed-line", "--event", "schedule",
-                    "--sample-manifest", str(md))
+    ok = run_script(
+        _GATE, "--claim", "changed-line", "--event", "schedule", "--sample-manifest", str(md)
+    )
     assert ok.returncode == 0, ok.stdout + ok.stderr
     payload = yaml.safe_load(ok.stdout)
     assert payload["range_established"] is True
@@ -359,16 +386,34 @@ def test_a_manifest_cannot_lend_its_range_to_a_base_it_never_analyzed(tmp_path: 
         json.dumps({"base_sha": "b" * 40, "changed_files_before_coverage": ["scripts/x.py"]}),
         encoding="utf-8",
     )
-    clash = run_script(_GATE, "--claim", "changed-line", "--event", "schedule",
-                       "--base-sha", "a" * 40, "--sample-manifest", str(manifest))
+    clash = run_script(
+        _GATE,
+        "--claim",
+        "changed-line",
+        "--event",
+        "schedule",
+        "--base-sha",
+        "a" * 40,
+        "--sample-manifest",
+        str(manifest),
+    )
     assert clash.returncode == 1, clash.stdout + clash.stderr
     assert "contradicts the manifest's own base" in clash.stderr
 
     # Abbreviation is not disagreement: this repo's own advice is
     # `--base-sha origin/main`, and an operator resolving that to a short sha
     # must not be refused for naming the same commit two ways.
-    abbreviated = run_script(_GATE, "--claim", "changed-line", "--event", "schedule",
-                             "--base-sha", "b" * 12, "--sample-manifest", str(manifest))
+    abbreviated = run_script(
+        _GATE,
+        "--claim",
+        "changed-line",
+        "--event",
+        "schedule",
+        "--base-sha",
+        "b" * 12,
+        "--sample-manifest",
+        str(manifest),
+    )
     assert abbreviated.returncode == 0, abbreviated.stdout + abbreviated.stderr
     assert yaml.safe_load(abbreviated.stdout)["range_established"] is True
 
@@ -378,8 +423,17 @@ def test_a_manifest_cannot_lend_its_range_to_a_base_it_never_analyzed(tmp_path: 
         json.dumps({"base_sha": "", "changed_files_before_coverage": ["scripts/x.py"]}),
         encoding="utf-8",
     )
-    borrowed = run_script(_GATE, "--claim", "changed-line", "--event", "schedule",
-                          "--base-sha", "a" * 40, "--sample-manifest", str(baseless))
+    borrowed = run_script(
+        _GATE,
+        "--claim",
+        "changed-line",
+        "--event",
+        "schedule",
+        "--base-sha",
+        "a" * 40,
+        "--sample-manifest",
+        str(baseless),
+    )
     assert borrowed.returncode == 0, borrowed.stdout + borrowed.stderr
     assert yaml.safe_load(borrowed.stdout)["range_established"] is False
     assert "records no base SHA of its own" in borrowed.stderr
@@ -394,15 +448,22 @@ def test_a_gate_report_is_not_a_sample_manifest(tmp_path: Path) -> None:
     """
     report = tmp_path / "gate-report.json"
     report.write_text(
-        json.dumps({
-            "ok": False, "blocking": [], "refused": True, "base_sha": "a" * 40,
-            "changed_line_proof": "refused", "reason": "dirty worktree",
-            "changed_files_before_coverage": ["scripts/x.py"],
-        }),
+        json.dumps(
+            {
+                "ok": False,
+                "blocking": [],
+                "refused": True,
+                "base_sha": "a" * 40,
+                "changed_line_proof": "refused",
+                "reason": "dirty worktree",
+                "changed_files_before_coverage": ["scripts/x.py"],
+            }
+        ),
         encoding="utf-8",
     )
-    result = run_script(_GATE, "--claim", "changed-line", "--event", "schedule",
-                        "--sample-manifest", str(report))
+    result = run_script(
+        _GATE, "--claim", "changed-line", "--event", "schedule", "--sample-manifest", str(report)
+    )
     assert result.returncode == 1, result.stdout + result.stderr
     assert "GATE REPORT" in result.stderr
 
@@ -410,15 +471,20 @@ def test_a_gate_report_is_not_a_sample_manifest(tmp_path: Path) -> None:
     # the marker keys and must still be accepted.
     manifest = tmp_path / "sample.json"
     manifest.write_text(
-        json.dumps({
-            "base_sha": "a" * 40, "seed": "x", "sample": [],
-            "changed_files_before_coverage": ["scripts/x.py"],
-            "changed_line_uncovered_changed_files": [],
-        }),
+        json.dumps(
+            {
+                "base_sha": "a" * 40,
+                "seed": "x",
+                "sample": [],
+                "changed_files_before_coverage": ["scripts/x.py"],
+                "changed_line_uncovered_changed_files": [],
+            }
+        ),
         encoding="utf-8",
     )
-    ok = run_script(_GATE, "--claim", "changed-line", "--event", "schedule",
-                    "--sample-manifest", str(manifest))
+    ok = run_script(
+        _GATE, "--claim", "changed-line", "--event", "schedule", "--sample-manifest", str(manifest)
+    )
     assert ok.returncode == 0, ok.stdout + ok.stderr
 
 
@@ -431,9 +497,9 @@ def test_same_commit_is_abbreviation_tolerant_but_not_credulous() -> None:
     """
     same = GATE._same_commit
     assert same("a" * 40, "a" * 40)
-    assert same("a" * 7, "a" * 40)          # abbreviated form of the same commit
-    assert same("A" * 12, "a" * 40)          # case-insensitive hex
-    assert not same("b" * 40, "a" * 40)      # genuinely different commits
-    assert not same("a" * 6, "a" * 40)       # too short to identify a commit
+    assert same("a" * 7, "a" * 40)  # abbreviated form of the same commit
+    assert same("A" * 12, "a" * 40)  # case-insensitive hex
+    assert not same("b" * 40, "a" * 40)  # genuinely different commits
+    assert not same("a" * 6, "a" * 40)  # too short to identify a commit
     assert not same("origin/main", "a" * 40)  # a ref NAME is not a prefix
     assert not same("main", "a" * 40)

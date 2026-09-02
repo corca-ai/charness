@@ -53,7 +53,9 @@ def _run(script: Path, *args: str) -> subprocess.CompletedProcess[str]:
         module,
         *args,
     )
-    return subprocess.CompletedProcess([str(script), *args], result.returncode, result.stdout, result.stderr)
+    return subprocess.CompletedProcess(
+        [str(script), *args], result.returncode, result.stdout, result.stderr
+    )
 
 
 # --- check_artifact_surface_preflight: structured-stdout parsing ----------------
@@ -127,7 +129,9 @@ def test_a_path_naming_an_unshipped_repo_root_entry_is_reported(tmp_path: Path) 
         export_root, repo_root_entries={"packaging"}, relative_to=export_root
     )
 
-    assert [(f["segment"], f["literal"]) for f in findings] == [("packaging", "packaging/bootstrap.json")]
+    assert [(f["segment"], f["literal"]) for f in findings] == [
+        ("packaging", "packaging/bootstrap.json")
+    ]
 
 
 def test_a_single_literal_spelling_a_subpath_is_reported_like_the_two_literal_one(
@@ -338,8 +342,8 @@ def test_each_run_check_carries_a_pass_fail_reading_of_its_return_code() -> None
     validator gets missed, which is the round-trip this preflight exists to end.
     """
     report = SKILL_PREFLIGHT.build_report(ROOT, "skills/public/quality/SKILL.md", 0, False)
-    ok = subprocess.run([sys.executable, "-c", ""], capture_output=True, text=True)
-    bad = subprocess.run([sys.executable, "-c", "raise SystemExit(3)"], capture_output=True, text=True)
+    ok = subprocess.CompletedProcess([sys.executable, "-c", ""], 0, "", "")
+    bad = subprocess.CompletedProcess([sys.executable, "-c", "raise SystemExit(3)"], 3, "", "")
     report["checks"] = [
         SKILL_PREFLIGHT._check_result("passing", ["python3", "-c", ""], ok),
         SKILL_PREFLIGHT._check_result("failing", ["python3", "-c", "raise SystemExit(3)"], bad),
@@ -377,8 +381,12 @@ def test_a_blocked_cut_carries_the_blocked_remedy(tmp_path: Path, monkeypatch) -
         message="base",
     )
     (repo / "tests").mkdir()
-    monkeypatch.setattr(csafety._contracts, "CORE_CONTRACTS", {"skills/public/demo/SKILL.md": (pin,)})
-    monkeypatch.setattr(csafety._contracts, "PACKAGE_CONTRACTS", {"skills/public/demo/SKILL.md": ()})
+    monkeypatch.setattr(
+        csafety._contracts, "CORE_CONTRACTS", {"skills/public/demo/SKILL.md": (pin,)}
+    )
+    monkeypatch.setattr(
+        csafety._contracts, "PACKAGE_CONTRACTS", {"skills/public/demo/SKILL.md": ()}
+    )
     (repo / "skills" / "public" / "demo" / "SKILL.md").write_text(
         "---\nname: demo\n---\n\n# Demo\n\nPrimary source is usually nicer.\n", encoding="utf-8"
     )
@@ -475,7 +483,10 @@ def test_the_quality_resolver_reports_the_dated_record_and_the_pointer_refresh(
     payload = yaml.safe_load(result.stdout)
     assert payload["skill_id"] == "quality"
     assert payload["slug"] == "batch-six-review"
-    assert payload["record_artifact_path"] == "charness-artifacts/quality/2026-04-15-batch-six-review.md"
+    assert (
+        payload["record_artifact_path"]
+        == "charness-artifacts/quality/2026-04-15-batch-six-review.md"
+    )
     assert payload["write_artifact_path"] == payload["record_artifact_path"]
     assert payload["write_artifact_role"] == "durable_record"
     assert payload["update_current_pointer_after_write"] is True

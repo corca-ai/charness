@@ -372,6 +372,7 @@ _STALE_STAGED_CASES = {
 }
 
 
+@pytest.mark.boundary_contract(reason="real Git constructs and inspects staged rename/index states")
 def test_stale_staged_classification_cases(tmp_path: Path, monkeypatch) -> None:
     """Eighteen independent `find_stale_staged`/`main` scenarios, one node.
 
@@ -498,9 +499,9 @@ def test_classification_uses_one_status_snapshot(tmp_path: Path, monkeypatch) ->
 
     def _status(command, **_kwargs):
         calls.append(command)
-        return subprocess.CompletedProcess(command, 0, b"1 MM x x x x x x f.txt\0", b"")
+        return subprocess.CompletedProcess(command, 0, "1 MM x x x x x x f.txt\0", "")
 
-    monkeypatch.setattr(cswc.subprocess, "run", _status)
+    monkeypatch.setattr(cswc, "run_process", _status)
 
     assert cswc._classify_stale(tmp_path) == ({"f.txt"}, set())
     assert calls == [["git", *cswc._STAGED_STATUS_ARGS]]
@@ -520,7 +521,7 @@ def _status_case_git_missing(monkeypatch) -> None:
     def _boom(*_args, **_kwargs):
         raise FileNotFoundError("No such file or directory: 'git'")
 
-    monkeypatch.setattr(cswc.subprocess, "run", _boom)
+    monkeypatch.setattr(cswc, "run_process", _boom)
     with pytest.raises(RuntimeError) as excinfo:
         cswc._status_paths(Path("/unused"))
     assert "git" in str(excinfo.value)
@@ -528,10 +529,10 @@ def _status_case_git_missing(monkeypatch) -> None:
 
 def _status_case_unexpected_rename_record(monkeypatch) -> None:
     monkeypatch.setattr(
-        cswc.subprocess,
-        "run",
+        cswc,
+        "run_process",
         lambda *_args, **_kwargs: subprocess.CompletedProcess(
-            [], 0, b"2 R. x x x x x x R100 new.txt\0old.txt\0", b""
+            [], 0, "2 R. x x x x x x R100 new.txt\0old.txt\0", ""
         ),
     )
     with pytest.raises(RuntimeError, match="rename despite --no-renames"):
@@ -540,16 +541,16 @@ def _status_case_unexpected_rename_record(monkeypatch) -> None:
 
 def _status_case_malformed_records(monkeypatch) -> None:
     for stdout in (
-        b"1 .. x x x x x x f.txt\0",
-        b"1 Z. x x x x x x f.txt\0",
-        b"? stray.txt\0",
-        b"! ignored.txt\0",
+        "1 .. x x x x x x f.txt\0",
+        "1 Z. x x x x x x f.txt\0",
+        "? stray.txt\0",
+        "! ignored.txt\0",
     ):
         monkeypatch.setattr(
-            cswc.subprocess,
-            "run",
+            cswc,
+            "run_process",
             lambda *_args, captured=stdout, **_kwargs: subprocess.CompletedProcess(
-                [], 0, captured, b""
+                [], 0, captured, ""
             ),
         )
         with pytest.raises(RuntimeError):

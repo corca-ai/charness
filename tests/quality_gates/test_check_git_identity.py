@@ -5,6 +5,7 @@ identity the way git itself would (`git var GIT_AUTHOR_IDENT` / `git var
 GIT_COMMITTER_IDENT`, which honor config AND environment overrides) and refuses
 when either resolved email's domain is the RFC 2606 `.invalid` placeholder TLD.
 """
+
 from __future__ import annotations
 
 import importlib
@@ -94,9 +95,11 @@ def test_git_var_failure_does_not_block(monkeypatch) -> None:
     # fresh environment with no user.email configured anywhere). This gate
     # must not add a new failure mode there -- git itself refuses the commit.
     monkeypatch.setattr(
-        cgi.subprocess,
-        "run",
-        lambda *args, **kwargs: subprocess.CompletedProcess(args=[], returncode=128, stderr="fatal: empty ident\n"),
+        cgi,
+        "run_process",
+        lambda *args, **kwargs: subprocess.CompletedProcess(
+            args=[], returncode=128, stdout="", stderr="fatal: empty ident\n"
+        ),
     )
     assert cgi.main(["--repo-root", "."]) == 0
 
@@ -155,8 +158,8 @@ def test_release_preflight_unresolvable_ident_not_blocked(monkeypatch) -> None:
     # blocker must not add a new failure mode -- git itself refuses the commit.
     preflight = _load_release_preflight()
     monkeypatch.setattr(
-        preflight.subprocess,
-        "run",
+        preflight,
+        "run_process",
         lambda *args, **kwargs: subprocess.CompletedProcess(
             args=[], returncode=128, stdout="", stderr="fatal: empty ident\n"
         ),

@@ -13,6 +13,7 @@ the goal/retro artifacts, which had no such machinery.
 
 from __future__ import annotations
 
+import json
 import re
 import shutil
 import subprocess
@@ -495,7 +496,7 @@ def test_failed_head_ancestry_read_is_unestablished(monkeypatch: pytest.MonkeyPa
             subprocess.CompletedProcess([], 2, "", "rev-list failed"),
         ]
     )
-    monkeypatch.setattr(subprocess, "run", lambda *args, **kwargs: next(results))
+    monkeypatch.setattr(ARTIFACT_REFERENTS, "run_process", lambda *args, **kwargs: next(results))
 
     with pytest.raises(ResolverUnavailable, match="rev-list failed"):
         reachable_head_commits(ROOT)
@@ -649,7 +650,7 @@ def test_declaration_index_read_error_blocks(
     def fail_index_read(*args, **kwargs):
         raise OSError("index unavailable")
 
-    monkeypatch.setattr(ARTIFACT_GATE.subprocess, "run", fail_index_read)
+    monkeypatch.setattr(ARTIFACT_GATE, "run_process", fail_index_read)
     declarations, defects = load_local_context_declarations(repo)
 
     assert declarations == []
@@ -667,7 +668,7 @@ _INVALID_DECLARATION_FILE_SHAPES = [
 def test_invalid_declaration_file_shapes_block(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """No real git anywhere in these three: `subprocess.run` is mocked outright.
+    """No real git anywhere in these three: the guard seam is mocked outright.
 
     Was a `pytest.mark.parametrize`; folded into a loop for the same reason as
     the malformed-declaration cases above, even though this cluster's git count
@@ -686,8 +687,10 @@ def test_invalid_declaration_file_shapes_block(
             path.write_bytes(raw)
             data = raw
 
-        indexed = subprocess.CompletedProcess([], 0, data, b"")
-        monkeypatch.setattr(ARTIFACT_GATE.subprocess, "run", lambda *args, **kwargs: indexed)
+        indexed = subprocess.CompletedProcess(
+            [], 0, data.decode("utf-8") if isinstance(data, bytes) else json.dumps(data), ""
+        )
+        monkeypatch.setattr(ARTIFACT_GATE, "run_process", lambda *args, **kwargs: indexed)
         declarations, defects = load_local_context_declarations(repo)
 
         if raw == "duplicate":
@@ -836,7 +839,9 @@ def test_a_url_in_a_disposition_is_not_treated_as_a_repo_path() -> None:
     assert missing_paths(line, ROOT) == []
 
 
-def test_git_failing_to_run_at_all_raises_rather_than_answering() -> None:
+def test_git_failing_to_run_at_all_raises_rather_than_answering(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """The OSError arm. A missing or unexecutable git is "cannot answer", not
     "this SHA is absent" -- answering would report every SHA in the corpus as
     unresolvable."""
@@ -844,15 +849,9 @@ def test_git_failing_to_run_at_all_raises_rather_than_answering() -> None:
         git_commit_reachable_from_head("96ba78f7f", Path("/nonexistent-root-9f3a/deeper"))
 
     # And the OSError arm specifically: git absent from PATH entirely.
-    import subprocess as _sp
-
     def _boom(*args, **kwargs):
         raise OSError("no git here")
 
-    real = _sp.run
-    _sp.run = _boom
-    try:
-        with pytest.raises(ResolverUnavailable, match="could not be run"):
-            git_commit_reachable_from_head("96ba78f7f", ROOT)
-    finally:
-        _sp.run = real
+    monkeypatch.setattr(ARTIFACT_REFERENTS, "run_process", _boom)
+    with pytest.raises(ResolverUnavailable, match="could not be run"):
+        git_commit_reachable_from_head("96ba78f7f", ROOT)

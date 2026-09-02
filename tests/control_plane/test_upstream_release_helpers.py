@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -112,7 +113,9 @@ def test_upgrade_advisory_reports_current_when_at_or_past_latest() -> None:
 def test_upgrade_advisory_returns_none_when_comparison_is_not_honest() -> None:
     # errored / missing release probe
     assert upstream.upgrade_advisory("0.15.4", None) is None
-    assert upstream.upgrade_advisory("0.15.4", {"status": "error", "latest_version": "0.17.1"}) is None
+    assert (
+        upstream.upgrade_advisory("0.15.4", {"status": "error", "latest_version": "0.17.1"}) is None
+    )
     assert upstream.upgrade_advisory("0.15.4", {"status": "ok", "latest_version": None}) is None
     # missing or unparseable installed version
     assert upstream.upgrade_advisory(None, _ok_release("0.17.1")) is None
@@ -121,7 +124,12 @@ def test_upgrade_advisory_returns_none_when_comparison_is_not_honest() -> None:
 
 def test_probe_release_requires_github_manifest_shape() -> None:
     assert upstream.probe_release({"tool_id": "demo"}) is None
-    assert upstream.probe_release({"upstream_repo": "example/demo", "homepage": "https://example.com/demo"}) is None
+    assert (
+        upstream.probe_release(
+            {"upstream_repo": "example/demo", "homepage": "https://example.com/demo"}
+        )
+        is None
+    )
 
 
 def test_probe_gh_release_helper_returns_none_when_cli_is_disabled_or_invalid(
@@ -133,10 +141,6 @@ def test_probe_gh_release_helper_returns_none_when_cli_is_disabled_or_invalid(
     monkeypatch.delenv("CHARNESS_RELEASE_PROBE_NO_GH", raising=False)
     monkeypatch.setattr(upstream.shutil, "which", lambda _name: "/usr/bin/gh")
 
-    class InvalidJson:
-        returncode = 0
-        stdout = "{not-json"
-        stderr = ""
-
-    monkeypatch.setattr(upstream.subprocess, "run", lambda *_args, **_kwargs: InvalidJson())
+    invalid_json = subprocess.CompletedProcess([], 0, "{not-json", "")
+    monkeypatch.setattr(upstream, "run_process", lambda *_args, **_kwargs: invalid_json)
     assert upstream._probe_github_release_with_gh("example/tool") is None

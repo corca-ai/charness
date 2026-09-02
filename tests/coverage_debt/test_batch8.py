@@ -374,9 +374,7 @@ def test_a_committed_v8_ledger_migrates_and_is_cached_for_this_head(
         "score_events": [],
         "lessons": [],
     }
-    repo = install_committed_repo(
-        tmp_path / "repo", {"ledger.json": json.dumps(committed) + "\n"}
-    )
+    repo = install_committed_repo(tmp_path / "repo", {"ledger.json": json.dumps(committed) + "\n"})
 
     state = lesson_ledger_lib._committed_state(repo, repo / "ledger.json")
 
@@ -388,6 +386,9 @@ def test_a_committed_v8_ledger_migrates_and_is_cached_for_this_head(
 # --- scripts/task_run_git -------------------------------------------------------
 
 
+@pytest.mark.boundary_contract(
+    reason="target fast path is compared with real Git's rev-parse answer"
+)
 def test_head_comes_from_the_checkout_files_before_git_is_spawned(
     tmp_path: Path,
 ) -> None:
@@ -470,6 +471,9 @@ def test_a_checkout_own_dir_that_cannot_be_resolved_is_refused_by_name(
 # --- scripts/reviewed_input_identity --------------------------------------------
 
 
+@pytest.mark.boundary_contract(
+    reason="target checkout-file projection is compared with real Git output"
+)
 def test_reviewed_identity_reads_head_from_the_checkout_files(tmp_path: Path) -> None:
     """The optional Git reader answers `rev-parse HEAD` from disk, with the same
     trailing-newline shape a real `git rev-parse` produces.
@@ -588,9 +592,7 @@ def test_a_gitlink_reached_through_a_symlinked_parent_is_not_read_as_a_gitlink(
 
     # An index entry that DOES record a gitlink, so the containment check -- not an
     # absent entry -- is what decides the answer.
-    assert (
-        reviewed_nonblob._gitlink_commit(repo, "link/sub", None, index_commit="a" * 40) is None
-    )
+    assert reviewed_nonblob._gitlink_commit(repo, "link/sub", None, index_commit="a" * 40) is None
 
 
 # --- scripts/reviewed_input_worktree --------------------------------------------
@@ -655,14 +657,14 @@ def test_a_hook_path_probe_that_will_not_run_leaves_the_policy_unconfigured(
     snapshot the operator is being shown before they approve anything.
     """
     repo = install_committed_repo(tmp_path / "repo", {"tracked.py": "base\n"})
-    real_run = subprocess.run
+    real_run = setup_inspect_quality_lib.run_process
 
     def refuse_git_config(argv, *args, **kwargs):
         if isinstance(argv, (list, tuple)) and list(argv[:2]) == ["git", "config"]:
-            raise subprocess.TimeoutExpired(list(argv), 2)
+            return subprocess.CompletedProcess(list(argv), 124, "", "timed out after 2s")
         return real_run(argv, *args, **kwargs)
 
-    monkeypatch.setattr(subprocess, "run", refuse_git_config)
+    monkeypatch.setattr(setup_inspect_quality_lib, "run_process", refuse_git_config)
 
     policy = setup_inspect_quality_lib._detect_hook_policy(repo, {})
 
@@ -750,7 +752,12 @@ def test_a_root_script_binds_its_owners_flat_when_the_package_is_unreachable(
     test having left the package reachable is not a fact about the layout under
     test.
     """
-    _without_the_scripts_package(monkeypatch)
+    blocked = None
+    if script.endswith("check_symbol_residue.py"):
+        blocked = "scripts.repo_file_listing"
+    elif script.endswith("dup_ratchet_edit_advisory.py"):
+        blocked = "scripts.git_checkout"
+    _without_the_scripts_package(monkeypatch, only=blocked)
     before = set(sys.modules)
     try:
         module = load_script_module(f"{Path(script).stem}_flat_batch7", ROOT / script)
@@ -762,6 +769,7 @@ def test_a_root_script_binds_its_owners_flat_when_the_package_is_unreachable(
 
 
 def test_the_identity_builder_binds_the_sibling_loader_flat(
+    tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """The identity builder's own sibling-loader import has a flat fallback, and
@@ -786,7 +794,12 @@ def test_the_identity_builder_binds_the_sibling_loader_flat(
         )
 
         assert module._load_sibling.__module__ == "sibling_module_loader"
-        assert module._checkout.head_oid_from_files(ROOT) is not None
+        repo = tmp_path / "repo"
+        git_dir = repo / ".git"
+        (git_dir / "objects").mkdir(parents=True)
+        (git_dir / "refs").mkdir()
+        (git_dir / "HEAD").write_text("a" * 40, encoding="ascii")
+        assert module._checkout.head_oid_from_files(repo) == "a" * 40
     finally:
         for name in set(sys.modules) - before:
             del sys.modules[name]

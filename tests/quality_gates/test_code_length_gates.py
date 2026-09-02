@@ -165,8 +165,8 @@ def test_tokei_code_counts_rejects_missing_code_field(monkeypatch, tmp_path: Pat
 
     monkeypatch.setattr(PYTHON_LENGTHS.shutil, "which", lambda _name: "/fake/tokei")
     monkeypatch.setattr(
-        PYTHON_LENGTHS.subprocess,
-        "run",
+        PYTHON_LENGTHS,
+        "run_process",
         lambda *args, **kwargs: subprocess.CompletedProcess(
             args[0],
             0,
@@ -185,8 +185,8 @@ def test_tokei_code_counts_rejects_invalid_json(monkeypatch, tmp_path: Path) -> 
 
     monkeypatch.setattr(PYTHON_LENGTHS.shutil, "which", lambda _name: "/fake/tokei")
     monkeypatch.setattr(
-        PYTHON_LENGTHS.subprocess,
-        "run",
+        PYTHON_LENGTHS,
+        "run_process",
         lambda *args, **kwargs: subprocess.CompletedProcess(args[0], 0, "{not-json", ""),
     )
 

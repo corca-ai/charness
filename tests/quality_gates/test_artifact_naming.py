@@ -7,6 +7,7 @@ import sys
 from datetime import date
 from pathlib import Path
 
+import pytest
 import yaml
 
 import scripts.export_plugin as export_plugin_module
@@ -28,6 +29,7 @@ INVENTORY = load_module(
     ROOT / "scripts" / "inventory_current_pointer_layouts.py",
     register=True,
 )
+
 
 def _load_quality_resolver():
     return load_module(
@@ -71,10 +73,16 @@ def test_resolve_artifact_path_reports_record_and_current_paths() -> None:
     assert payload["slug"] == "insane-search-review"
     assert payload["artifact_class"] == "history"
     assert payload["artifact_path"] == "charness-artifacts/gather/latest.md"
-    assert payload["record_artifact_path"] == "charness-artifacts/gather/2026-04-15-insane-search-review.md"
+    assert (
+        payload["record_artifact_path"]
+        == "charness-artifacts/gather/2026-04-15-insane-search-review.md"
+    )
     assert payload["record_artifact_supported"] is True
     assert payload["current_artifact_path"] == "charness-artifacts/gather/latest.md"
-    assert payload["write_artifact_path"] == "charness-artifacts/gather/2026-04-15-insane-search-review.md"
+    assert (
+        payload["write_artifact_path"]
+        == "charness-artifacts/gather/2026-04-15-insane-search-review.md"
+    )
     assert payload["write_artifact_role"] == "durable_record"
     assert payload["update_current_pointer_after_write"] is True
     assert payload["frontmatter"]["artifact_kind"] == "record"
@@ -148,7 +156,9 @@ def test_inventory_current_pointer_layouts_reports_adapter_and_disk_shapes(tmp_p
     assert by_skill["demo"].on_disk_layout == "regular_current_pointer"
 
 
-def test_inventory_current_pointer_layouts_default_discovery_and_path_helpers(tmp_path: Path) -> None:
+def test_inventory_current_pointer_layouts_default_discovery_and_path_helpers(
+    tmp_path: Path,
+) -> None:
     repo = tmp_path / "repo"
     (repo / "skills" / "public" / "quality").mkdir(parents=True)
     artifact_dir = repo / "charness-artifacts" / "quality"
@@ -163,10 +173,16 @@ def test_inventory_current_pointer_layouts_default_discovery_and_path_helpers(tm
     assert INVENTORY._discovery_source(repo, "demo") == "artifact_family"
     assert INVENTORY._discovery_source(repo, "selected-only") == "selected"
     assert INVENTORY._path_layout(repo, None) == "adapter_unmanaged"
-    assert INVENTORY._path_layout(repo, "charness-artifacts/quality/missing.md") == "missing_current_pointer"
+    assert (
+        INVENTORY._path_layout(repo, "charness-artifacts/quality/missing.md")
+        == "missing_current_pointer"
+    )
     directory_pointer = repo / "charness-artifacts" / "quality" / "directory-pointer"
     directory_pointer.mkdir()
-    assert INVENTORY._path_layout(repo, "charness-artifacts/quality/directory-pointer") == "non_file_current_pointer"
+    assert (
+        INVENTORY._path_layout(repo, "charness-artifacts/quality/directory-pointer")
+        == "non_file_current_pointer"
+    )
     assert INVENTORY._portable_path(repo, tmp_path / "outside.md") == str(tmp_path / "outside.md")
 
 
@@ -193,12 +209,12 @@ def test_inventory_current_pointer_layouts_error_and_symlink_branches(
     }
     assert INVENTORY._unresolved_status("boom") == ("unresolved", "resolver_error")
 
-    # The resolver is repo-owned, so its stdout is YAML and a truncated document is
-    # reported as invalid YAML rather than invalid JSON.
+    # The resolver is now called in-process. Its malformed-payload refusal still
+    # reports invalid YAML rather than falling through to field readers.
     monkeypatch.setattr(
-        INVENTORY.subprocess,
-        "run",
-        lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0, "{", ""),
+        INVENTORY._resolver,
+        "payload_for",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(ValueError("invalid YAML: truncated")),
     )
     payload, error = INVENTORY._run_resolver(repo, "quality", date(2026, 6, 16))
 
@@ -206,12 +222,14 @@ def test_inventory_current_pointer_layouts_error_and_symlink_branches(
     assert error is not None
     assert "invalid YAML" in error
 
-    # A well-formed YAML document that is not a mapping parses cleanly, so it needs
-    # its own refusal instead of reaching the field readers as a list.
+    # A well-formed YAML document that is not a mapping is still refused before
+    # reaching the field readers.
     monkeypatch.setattr(
-        INVENTORY.subprocess,
-        "run",
-        lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0, "- not-a-mapping\n", ""),
+        INVENTORY._resolver,
+        "payload_for",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            ValueError("resolver returned a non-mapping payload")
+        ),
     )
     payload, error = INVENTORY._run_resolver(repo, "quality", date(2026, 6, 16))
 
@@ -331,7 +349,9 @@ def test_inventory_current_pointer_layouts_dunder_main(
     )
 
     try:
-        runpy.run_path(str(ROOT / "scripts" / "inventory_current_pointer_layouts.py"), run_name="__main__")
+        runpy.run_path(
+            str(ROOT / "scripts" / "inventory_current_pointer_layouts.py"), run_name="__main__"
+        )
     except SystemExit as exc:
         assert exc.code == 0
     else:
@@ -395,7 +415,10 @@ def test_current_intent_resolves_symlinked_latest_to_write_target(tmp_path: Path
     assert payload["artifact_path"] == "charness-artifacts/quality/latest.md"
     assert payload["current_artifact_path"] == "charness-artifacts/quality/latest.md"
     assert payload["current_pointer_is_symlink"] is True
-    assert payload["current_pointer_target_path"] == "charness-artifacts/quality/history/current-quality.md"
+    assert (
+        payload["current_pointer_target_path"]
+        == "charness-artifacts/quality/history/current-quality.md"
+    )
     assert payload["write_artifact_path"] == "charness-artifacts/quality/history/current-quality.md"
     assert payload["write_artifact_role"] == "current_pointer_target"
     assert payload["update_current_pointer_after_write"] is False
@@ -473,6 +496,8 @@ def test_refresh_current_pointer_repoints_existing_symlink(tmp_path: Path) -> No
     payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "updated"
     assert os.readlink(current) == "2026-04-15-quality-review.md"
+
+
 def test_invalid_artifact_class_fails_instead_of_defaulting_to_history(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     write_minimal_resolver(repo, "quality", "charness-artifacts/quality", artifact_class="typo")
@@ -583,6 +608,9 @@ def test_refresh_current_pointer_symlink_strategy_refuses_to_clobber_regular_fil
     assert current.read_text(encoding="utf-8") == "# Quality Review\n\nHand-written.\n"
 
 
+@pytest.mark.boundary_contract(
+    reason="env-scrubbed export self-sufficiency: invoke the installed refresh CLI from a consumer repo"
+)
 def test_exported_resolver_uses_plugin_skill_resolver_for_consumer_repo(tmp_path: Path) -> None:
     export_root = tmp_path / "export"
     export_result = run_loaded_script_main(
@@ -601,7 +629,15 @@ def test_exported_resolver_uses_plugin_skill_resolver_for_consumer_repo(tmp_path
     consumer = tmp_path / "consumer"
     (consumer / ".agents").mkdir(parents=True)
     (consumer / ".agents" / "quality-adapter.yaml").write_text(
-        "\n".join(["version: 1", "repo: consumer", "language: en", "output_dir: charness-artifacts/quality", ""]),
+        "\n".join(
+            [
+                "version: 1",
+                "repo: consumer",
+                "language: en",
+                "output_dir: charness-artifacts/quality",
+                "",
+            ]
+        ),
         encoding="utf-8",
     )
     artifact_dir = consumer / "charness-artifacts" / "quality"

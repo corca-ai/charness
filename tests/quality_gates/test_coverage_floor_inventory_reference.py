@@ -22,6 +22,7 @@ Two shapes of quiet failure are covered:
 from __future__ import annotations
 
 import importlib.util
+import sys
 from pathlib import Path
 
 import pytest
@@ -178,8 +179,9 @@ def test_a_repo_with_no_lefthook_and_no_ci_is_unmeasured_not_drifted(
     assert module.collect_exemptions() == set()
     module.meta_check_gate_scripts([gate])
 
-    assert "SKIP: coverage_floor_policy declares no lefthook or CI surface" in capsys.readouterr().err
-
+    assert (
+        "SKIP: coverage_floor_policy declares no lefthook or CI surface" in capsys.readouterr().err
+    )
 
 
 def test_the_reported_consumer_shape_resolves_with_the_deleted_sub_keys_still_gone(
@@ -255,16 +257,16 @@ def test_main_reuses_one_repo_file_snapshot_for_both_populations(
         replace=True,
     )
 
-    import scripts.repo_file_listing as listing
+    listing = sys.modules[module.RepoFileSnapshot.list_files.__module__]
 
-    real_run = listing.subprocess.run
+    real_run = listing.run_process
     calls: list[list[str]] = []
 
     def counting_run(args, **kwargs):
         calls.append(list(args))
         return real_run(args, **kwargs)
 
-    monkeypatch.setattr(listing.subprocess, "run", counting_run)
+    monkeypatch.setattr(listing, "run_process", counting_run)
 
     assert module.main() == 0
     ls_files_calls = [call for call in calls if call[:2] == ["git", "ls-files"]]
@@ -350,11 +352,11 @@ def test_a_missing_git_binary_fails_rather_than_raising(tmp_path: Path, monkeypa
     the same defect the absolute-pattern branch exists to prevent.
     """
     module = _load(_repo(tmp_path), {})
-    import scripts.repo_file_listing as listing
+    listing = sys.modules[module.RepoFileSnapshot.list_files.__module__]
 
     monkeypatch.setattr(
-        listing.subprocess,
-        "run",
+        listing,
+        "run_process",
         lambda *a, **k: (_ for _ in ()).throw(FileNotFoundError("git")),
     )
 
