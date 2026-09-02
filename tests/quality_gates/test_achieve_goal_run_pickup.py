@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import shutil
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -253,15 +252,31 @@ def test_seeded_digest_adapter_keeps_the_existing_pickup_projection(tmp_path: Pa
     }
 
 
-def test_ledger_only_adapter_reads_the_bounded_selection_preview(tmp_path: Path) -> None:
+def test_ledger_only_adapter_reads_the_bounded_selection_preview(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """With `summary_path: null` the projection comes from the ledger preview, bounded.
+
+    The preview builder is patched at the seam pickup binds, so the test proves
+    pickup's own projection (source, bounding, empty-item filtering) without
+    copying the real checkout's ledger (repo-copy invariant).
+    """
     (tmp_path / ".agents").mkdir(parents=True)
     (tmp_path / ".agents" / "retro-adapter.yaml").write_text(
         "version: 1\nrepo: consumer\nsummary_path: null\n",
         encoding="utf-8",
     )
-    shutil.copytree(
-        ROOT / "charness-artifacts" / "retro",
-        tmp_path / "charness-artifacts" / "retro",
+    retro_dir = tmp_path / "charness-artifacts" / "retro"
+    retro_dir.mkdir(parents=True)
+    (retro_dir / "lesson-selection-index.json").write_text("{}\n", encoding="utf-8")
+    long_lesson = "x" * (pickup._LESSON_MAX_CHARS + 40)
+    items = [{"lesson": f"lesson {index}"} for index in range(len(pickup._LESSON_SECTIONS) + 2)]
+    items[0] = {"lesson": long_lesson}
+    items.append({"lesson": "   "})
+    monkeypatch.setattr(
+        pickup._lesson_projection._lesson_preview,
+        "build_lesson_selection_preview",
+        lambda **_kwargs: {"items": items},
     )
 
     result = pickup._read_lesson_projection(tmp_path)
@@ -271,7 +286,7 @@ def test_ledger_only_adapter_reads_the_bounded_selection_preview(tmp_path: Path)
     assert result["status"] == "selected"
     assert result["item_count"] == len(pickup._LESSON_SECTIONS)
     assert all(len(item["lesson"]) <= pickup._LESSON_MAX_CHARS for item in result["items"])
-    assert not (tmp_path / "charness-artifacts" / "retro" / "recent-lessons.md").exists()
+    assert not (retro_dir / "recent-lessons.md").exists()
 
 
 def test_pickup_refuses_closed_parent_before_binding_or_mutation(

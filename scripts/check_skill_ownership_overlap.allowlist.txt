@@ -13,11 +13,9 @@ setup:adapter:worktree:seed-only -- setup seeds .agents/worktree-adapter.yaml; r
 issue:artifact:gather:read-only cite -- issue resolve flow references gather artifacts as evidence sources
 release:artifact:critique:read-only proof -- release helper validates a tracked critique artifact path before rendering review proof in release/latest.md
 release:artifact:release-review:read-write claims boundary -- the release workflow owns the narrowly scoped, committed claims-review evidence that gates a prepared local release record before any publication side effect
-critique:artifact:retro:read-only cite -- code-critique reference cross-links charness-artifacts/retro/recent-lessons.md as the defect-class memory home
 critique:artifact:spec:read-only scan -- autonomous trigger scans spec artifacts only to identify the current pending critique target
 critique:adapter:retro:boundary cite -- adapter-contract.md names .agents/retro-adapter.yaml as the seam where a future retro-prepare slot would live; ownership stays retro-side
 achieve:artifact:goals:owns -- achieve owns charness-artifacts/goals/<date-slug>.md as the goal lifecycle artifact namespace; no other skill writes there
-achieve:artifact:retro:read-only projection -- achieve reads retro-owned recent-lessons.md or lesson-selection-index.json; retro owns generation
 issue:artifact:critique:read-only proof -- issue closeout-discipline requires a critique artifact path or blocked-host signal as resolution-critique evidence; ownership stays critique
 release:artifact:probe:read-write convention -- publication-boundary.md directs independent-observer release evidence into a durable JSON probe artifact; ownership stays probe
 release:artifact:goals:classification only -- the claims-review scope splitter names charness-artifacts/goals/ so it can classify a goal artifact appearing in the release delta as advisory (session narrative) rather than tag-gating. It reads no goal, writes no goal, and knows nothing of the goal lifecycle; achieve keeps ownership
