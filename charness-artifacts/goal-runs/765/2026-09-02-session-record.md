@@ -295,6 +295,13 @@ Steps 1 and 2 of "Next session, in order" are done.
   names had been rewritten to a package path the consumer lookup already
   searches. Figures at closeout: seventeen packages, 322 renames, 41 flat scripts, full pytest 8592 passed, full read-only lane 80 passed.
 
+- #770 pushed (`ff71dc9a9` to `origin/main` from a clean clone, hook lane
+  79 passed), CLOSED on GitHub, `verify-closeout` = `verified`; cursor
+  advanced by `operations/update-parent-progress-772.json` (progress 8/1/9
+  revision 7, `verified-write`); pickup names #772 (`integrated-closeout`).
+  Next session starts there: the install proof from `briefs/map-772.md`, the
+  deferred exported-runner consumer route (critique F9), and critique F10.
+
 ## Lessons this session paid for
 
 - The default `run-quality.sh` lane ran five gates and the full lane ran only
