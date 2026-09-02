@@ -4,7 +4,12 @@ node_modules/
 .pytest_cache/
 .lycheecache
 mutants/
-reports/
+# ANCHORED, like `/plugins/` below and for the same reason: this rule exists for the
+# mutation runner's `reports/mutation/` at the repo root. Unanchored it also ignored
+# `charness-artifacts/critique/reports/`, so a critique artifact's worker report
+# carrier was written there, never committed, and CI's whole-tree artifact
+# validation failed on a carrier that existed on exactly one machine (#764).
+/reports/
 .artifacts/
 .cautilus/
 .agents/charness-discovery/

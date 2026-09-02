@@ -500,6 +500,33 @@ def build_reviewed_input_identity(
     excluded_prefixes: list[str] | None = None,
 ) -> dict[str, Any]:
     mode = _substrate_mode(changed_ref, substrate_mode)
+    gitlink_snapshot: GitlinkSnapshot = {}
+
+    def select_paths() -> tuple[list[str], list[str]]:
+        return _review_paths(
+            repo_root,
+            reviewed_paths,
+            changed_ref,
+            mode,
+            excluded_paths,
+            excluded_prefixes,
+            gitlink_snapshot,
+        )
+
+    # DECLARED working-tree paths meet the filesystem boundary before git reads
+    # the tree. git >= 2.5x refuses `git status` outright when a submodule path
+    # has been replaced by a symlink, and with the snapshot first that refusal
+    # arrived before `_checked_path` could, turning the identity `unavailable` --
+    # still closed, but by git's version-dependent message instead of the
+    # owner's, so the test pinning the owner's refusal failed on the CI runner's
+    # git while passing on 2.34 (#764). The declared-path check needs no git, so
+    # nothing is lost by asking it first. The auto sweep stays after the snapshot:
+    # it reads git itself, and its failure is the `unavailable` verdict.
+    selected = (
+        select_paths()
+        if reviewed_paths is not None and mode == SUBSTRATE_WORKING_TREE
+        else None
+    )
     status_snapshot: WorkingTreeSnapshot | None = None
     try:
         if mode == SUBSTRATE_WORKING_TREE:
@@ -508,17 +535,8 @@ def build_reviewed_input_identity(
             _git_bytes(repo_root, "rev-parse", "--is-inside-work-tree")
     except ValueError as exc:
         return _unavailable(reviewed_paths, changed_ref, mode, str(exc))
-    gitlink_snapshot: GitlinkSnapshot = {}
 
-    paths, auto_excluded = _review_paths(
-        repo_root,
-        reviewed_paths,
-        changed_ref,
-        mode,
-        excluded_paths,
-        excluded_prefixes,
-        gitlink_snapshot,
-    )
+    paths, auto_excluded = selected if selected is not None else select_paths()
     resolved_ref, base_head, reviewed_patch, staged_patch, unstaged_patch = _patch_components(
         repo_root, paths, changed_ref, mode, status_snapshot
     )

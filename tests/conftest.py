@@ -196,8 +196,22 @@ def _git_identity_from_the_environment(
     # the developer happens to have. `init.defaultBranch` is load-bearing --
     # isolating global config revealed that tests asserting on `origin/main` were
     # silently relying on the developer's own default, and got `master` without it.
+    #
+    # `maintenance.auto = false` is load-bearing too. git >= 2.46 detaches
+    # `maintenance run --auto` after every `git commit`, and the daemon takes
+    # `.git/objects/maintenance.lock` BEFORE it forks, so the lock is still there
+    # for a moment after `commit` has returned. A seed builder publishes its shape
+    # the instant that commit returns, and the next test's `shutil.copytree` then
+    # lists the lock and finds it gone -- 82 `shutil.Error`s in one CI baseline
+    # run (#764), on whichever tests asked for a fresh shape first. A fast
+    # machine loses that race about 1 commit in 40 and a two-core runner far
+    # more often; git 2.34 never detaches, which is why it never showed locally.
+    # Fixture repos have nothing to maintain, so the knob costs nothing.
     empty_global = tmp_path_factory.getbasetemp() / "test-gitconfig"
-    empty_global.write_text("[init]\n\tdefaultBranch = main\n", encoding="utf-8")
+    empty_global.write_text(
+        "[init]\n\tdefaultBranch = main\n[maintenance]\n\tauto = false\n",
+        encoding="utf-8",
+    )
     overrides = {
         **GIT_IDENTITY_ENV,
         "GIT_CONFIG_GLOBAL": str(empty_global),
