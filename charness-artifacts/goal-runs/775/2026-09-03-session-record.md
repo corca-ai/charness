@@ -76,7 +76,38 @@ regenerated before any lane.
   `test_prepush_close_keyword_guard.py`). All folded.
 - #778 release-lane-standing-evidence: commit `0c9f79ab1`. Clean-clone proof in `778-clean-clone-proof.md`: seeded release-only failure refused in 123 s; clean code push passed in 257 s. The first proof attempt caught a real release-only regression from the #777 rename (fixed before the second attempt).
 
-#779 census recorded in `wall-clock-census.md` (96 sites, 51 in rewrite scope).
+- #779 wall-clock-census-and-764: commit 8d01bae96. Census in `wall-clock-census.md`
+  (96 sites); `check_wall_clock_form.py` holds `charness-artifacts/quality/wall-clock-baseline.json`
+  (47 sites, 14 files) to a shrinking count. The five #764 failures read from run
+  33631065064's log: two wall-clock drain claims, three shape leaks (isolated PATH,
+  definition-time `gh` runner binding); all rewritten. CI-shape baseline before 1
+  failed (a checkout copy racing cargo), after 8631 passed. The hosted read on the
+  pushed tree belongs to #782.
+
+## Next session, in order
+
+1. Operator: authorise the push. Then push from a clean clone (the hook runs the
+   release lane), `verify-closeout` for #776, #777, #778, #779, advance the
+   cursor with `operations/update-parent-progress-777.json` then a fresh
+   operation naming #780 (bodies for 777 and 778 are prepared; regenerate for
+   the cursor's real next child after readback), and re-run `/goal #775`.
+2. Operator: confirm the durability-gate binding channel (`ce49c2bee`), made
+   outside any child to unblock the standard lane.
+3. #780 wall-clock-rewrite-remainder: 47 sites in `wall-clock-baseline.json`.
+   Patterns settled while reading them: (a) `elapsed < N` after a timeout is
+   dropped, the claim is `timed_out` plus the drain marker, and the clamp is
+   unit-tested through `_resolve_interval`; (b) a deadline poll for a child
+   marker becomes a blocking read on a FIFO or pipe the child holds, so the
+   observation is forced and the standing runner's budget is the only bound;
+   (c) a sleep before "the grandchild is dead" becomes a read to EOF on a pipe
+   the grandchild inherited; (d) a sleep for mtime ordering becomes a
+   controlled clock (`os.utime` or a patched `time.time` in the module under
+   test); (e) the JSON-RPC absolute-deadline claim gets a fake monotonic clock.
+   Lower the baseline with `--write-baseline` as each file reaches zero.
+4. #781 lesson-promotion-and-budget: joint per-lesson review with the operator;
+   nothing applied by rule.
+5. #782 integrated-closeout after the scheduled mutation run on the pushed tree.
+
 
 Push, `verify-closeout`, and cursor advance (operation files
 `operations/update-parent-progress-77{7,8}.json` prepared) wait on the
