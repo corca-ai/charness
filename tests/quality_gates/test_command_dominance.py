@@ -658,13 +658,15 @@ def test_the_universe_advisory_marker_is_pinned() -> None:
     assert "basis" in payload["advisory"]
 
 
-def test_sc19_and_sc16_ship_to_consumers_rather_than_living_only_here() -> None:
+def test_sc19_and_sc16_ship_to_consumers_rather_than_living_only_here(
+    exported_plugin_tree: Path,
+) -> None:
     """Both criteria are `exported-surface` verification types.
 
     A cost angle that lives only in this repo's own review prompts satisfies the
     sentence and not the criterion.
     """
-    plugin = ROOT / "plugins" / "charness"
+    plugin = exported_plugin_tree
     # CONTENT, not `.is_file()`. A byte-stale mirror -- a pre-slice copy without
     # the blind-class paragraph -- satisfied every earlier assertion here.
     # The SIBLINGS are listed, not just the lib. `command_dominance_lib` loads

@@ -35,19 +35,9 @@ def test_quality_core_runs_the_timing_completeness_gate_but_docs_pre_push_does_n
         workflow,
         re.MULTILINE,
     )
-    labels = re.search(r'^DOCS_ONLY_LABELS="([^"]*)"$', pre_push, re.MULTILINE)
-    assert labels is not None
-    assert labels.group(1).split(",") == [
-        "check-docs",
-        "check-references-link-inventory",
-        "check-spec-evidence-durability",
-        "validate-debug-artifact",
-        "validate-quality-artifact",
-        "validate-retro-artifact",
-        "validate-ideation-artifact",
-        "validate-critique-artifacts",
-        "validate-current-pointer-freshness",
-    ]
+    assert "--print-docs-only-labels" in pre_push
+    assert '--gates "$REPO_ROOT/.agents/quality-gates.yaml"' in pre_push
+    assert not re.search(r'^DOCS_ONLY_LABELS="[^"]*"$', pre_push, re.MULTILINE)
 
 
 def test_run_quality_labels_dedupes_in_first_seen_order() -> None:

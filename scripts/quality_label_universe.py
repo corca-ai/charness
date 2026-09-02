@@ -63,6 +63,7 @@ from __future__ import annotations
 
 import argparse
 import re
+import shlex
 import sys
 from pathlib import Path
 from typing import Any, Callable, TypeVar
@@ -268,8 +269,13 @@ def queue_call_labels(text: str, repo_root: Path | None = None) -> list[str]:
         rows = quality_gate_rows(repo_root)
         if rows is not None:
             return _declared_gate_labels(rows)
+    return list(dict.fromkeys(label for label, _argv in queue_call_pairs(text)))
+
+
+def queue_call_pairs(text: str) -> list[tuple[str, tuple[str, ...]]]:
+    """Return literal ``(label, argv)`` pairs from legacy shell queue sites."""
     dispatchers = _dispatcher_names()
-    seen: dict[str, None] = {}
+    seen: dict[tuple[str, tuple[str, ...]], None] = {}
     current_function: str | None = None
     for lineno, line in _logical_lines(text):
         opened = _FUNCTION_OPEN_RE.match(line)
@@ -298,7 +304,17 @@ def queue_call_labels(text: str, repo_root: Path | None = None) -> list[str]:
                 f"{RUN_QUALITY_PATH}:{lineno}: label {label!r} is not a runtime "
                 "label shape (lowercase alphanumerics, dots, dashes, underscores)."
             )
-        seen.setdefault(label, None)
+        try:
+            tokens = shlex.split(line, comments=True)
+        except ValueError as error:
+            raise UniverseError(
+                f"{RUN_QUALITY_PATH}:{lineno}: queue call cannot be parsed as argv: {error}"
+            ) from error
+        if len(tokens) < 3 or tokens[0] not in QUEUE_FUNCTIONS or tokens[1] != label:
+            raise UniverseError(
+                f"{RUN_QUALITY_PATH}:{lineno}: queue call for {label!r} has no command argv"
+            )
+        seen.setdefault((label, tuple(tokens[2:])), None)
     return list(seen)
 
 
@@ -423,25 +439,43 @@ def label_universe(repo_root: Path) -> dict[str, object]:
     }
 
 
-def parity(repo_root: Path) -> dict[str, set[str]]:
-    """Compare declared row labels with labels still found in the shell runner."""
+def parity(repo_root: Path) -> dict[str, object]:
+    """Validate the migration seam without making the retired queue authoritative.
+
+    Consumer repositories may still have a shell queue, so compare it there. This
+    repository's wrapper intentionally has no queue call sites; its declared rows
+    are the source of truth and the empty legacy surface is therefore a successful
+    migration state rather than a false mismatch.
+    """
     rows = quality_gate_rows(repo_root)
     if rows is None:
         raise UniverseError(f"{QUALITY_GATES_PATH} is absent; migration parity cannot be measured")
     runner = repo_root / RUN_QUALITY_PATH
-    shell_labels = (
-        set(queue_call_labels(runner.read_text(encoding="utf-8"))) if runner.is_file() else set()
-    )
     data_labels = set(_declared_gate_labels(rows))
+    data_pairs = {(row["label"], tuple(row["command"])) for row in rows}
+    shell_text = runner.read_text(encoding="utf-8") if runner.is_file() else ""
+    legacy_shell_pairs = set(queue_call_pairs(shell_text)) if "queue_" in shell_text else set()
+    shell_pairs = legacy_shell_pairs or data_pairs
+    shell_labels = {label for label, _argv in shell_pairs}
     return {
         "data_labels": data_labels,
         "shell_labels": shell_labels,
         "symmetric_difference": data_labels ^ shell_labels,
+        "data_pairs": data_pairs,
+        "shell_pairs": shell_pairs,
+        "pair_symmetric_difference": data_pairs ^ shell_pairs,
     }
 
 
-def _parity_payload(comparison: dict[str, set[str]]) -> dict[str, object]:
-    return {key: sorted(value) for key, value in comparison.items()}
+def _parity_payload(comparison: dict[str, object]) -> dict[str, object]:
+    return {
+        key: sorted(
+            [list(pair[:1]) + [list(pair[1])] for pair in value]
+            if key.endswith("pairs") or key == "pair_symmetric_difference"
+            else value
+        )
+        for key, value in comparison.items()
+    }
 
 
 def read_or_refuse(gate_name: str, compute: Callable[[], T]) -> tuple[int, T | None]:
@@ -485,7 +519,9 @@ def main() -> int:
         if comparison is None:
             return code
         emit_yaml(_parity_payload(comparison))
-        return 1 if comparison["symmetric_difference"] else 0
+        return 1 if (
+            comparison["symmetric_difference"] or comparison["pair_symmetric_difference"]
+        ) else 0
     code, universe = read_or_refuse(
         "quality label universe", lambda: label_universe(args.repo_root.resolve())
     )

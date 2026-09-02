@@ -3,9 +3,12 @@
 
 from __future__ import annotations
 
+import json
 import os
 import re
+import shlex
 import shutil
+import sys
 import tempfile
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -46,7 +49,7 @@ def derive_regime(environment: dict[str, str], labels: str) -> str:
         extras.append("-dead-code")
     if environment.get("CHARNESS_SUPPLY_CHAIN_ONLINE", "0") == "1":
         extras.append("-supply-chain")
-    return override or ("plus" + "".join(extras) if extras else "")
+    return "plus" + "".join(extras) if extras else ""
 
 
 def prepare_runtime(
@@ -77,17 +80,34 @@ def _probe(context: RuntimeContext, command: list[str]):
     )
 
 
+def _changed_path_probe(context: RuntimeContext, label: str, command: list[str]):
+    """Run one changed-path discovery command; a failure is named on stderr.
+
+    The shell runner printed the context, command, exit code, and both streams
+    (its `run_changed_path_git`), and a test pins the first line; a silent None
+    would make the fail-closed coverage decision below indistinguishable from a
+    clean tree.
+    """
+    result = _probe(context, command)
+    if result.returncode == 0:
+        return result
+    print(f"run-quality: changed-path discovery command failed ({label})", file=sys.stderr)
+    print("command: " + shlex.join(command), file=sys.stderr)
+    print(f"exit_code: {result.returncode}", file=sys.stderr)
+    print("STDOUT:", file=sys.stderr)
+    print(result.stdout, end="", file=sys.stderr)
+    print("STDERR:", file=sys.stderr)
+    print(result.stderr, end="", file=sys.stderr)
+    return None
+
+
 def _git_merge_base(context: RuntimeContext) -> str:
-    result = _probe(
-        context, ["git", "-C", str(context.repo_root), "merge-base", "origin/main", "HEAD"]
-    )
+    result = _probe(context, ["git", "merge-base", "origin/main", "HEAD"])
     return result.stdout.strip() if result.returncode == 0 else ""
 
 
 def changed_paths(context: RuntimeContext) -> set[str] | None:
-    inside = _probe(
-        context, ["git", "-C", str(context.repo_root), "rev-parse", "--is-inside-work-tree"]
-    )
+    inside = _probe(context, ["git", "rev-parse", "--is-inside-work-tree"])
     if inside.returncode != 0:
         return None
     paths: set[str] = set()
@@ -95,8 +115,6 @@ def changed_paths(context: RuntimeContext) -> set[str] | None:
         context,
         [
             "git",
-            "-C",
-            str(context.repo_root),
             "rev-parse",
             "--abbrev-ref",
             "--symbolic-full-name",
@@ -104,41 +122,50 @@ def changed_paths(context: RuntimeContext) -> set[str] | None:
         ],
     )
     if upstream.returncode == 0:
-        base = _probe(
+        base = _changed_path_probe(
             context,
-            ["git", "-C", str(context.repo_root), "merge-base", "HEAD", upstream.stdout.strip()],
+            "upstream-merge-base",
+            ["git", "merge-base", "HEAD", upstream.stdout.strip()],
         )
-        if base.returncode != 0:
+        if base is None:
             return None
-        diff = _probe(
+        diff = _changed_path_probe(
             context,
+            "upstream-diff",
             [
                 "git",
-                "-C",
-                str(context.repo_root),
                 "diff",
                 "--name-only",
                 f"{base.stdout.strip()}...HEAD",
             ],
         )
-        if diff.returncode != 0:
+        if diff is None:
             return None
         paths.update(diff.stdout.splitlines())
-    for command in (
-        ["git", "-C", str(context.repo_root), "diff", "--name-only"],
-        ["git", "-C", str(context.repo_root), "diff", "--name-only", "--cached"],
-        ["git", "-C", str(context.repo_root), "ls-files", "--others", "--exclude-standard"],
+    for label, command in (
+        ("unstaged-diff", ["git", "diff", "--name-only"]),
+        ("staged-diff", ["git", "diff", "--name-only", "--cached"]),
+        (
+            "untracked-list",
+            ["git", "ls-files", "--others", "--exclude-standard"],
+        ),
     ):
-        result = _probe(context, command)
-        if result.returncode != 0:
+        result = _changed_path_probe(context, label, command)
+        if result is None:
             return None
         paths.update(result.stdout.splitlines())
     return paths
 
 
 def coverage_relevant_changes_present(context: RuntimeContext, labels: str) -> bool:
+    if labels:
+        return True
     paths = changed_paths(context)
-    if labels or paths is None:
+    if paths is None:
+        print(
+            "run-quality: changed-path discovery failed; running check-coverage fail-closed.",
+            file=sys.stderr,
+        )
         return True
     prefixes = {
         "scripts/control_plane_lib.py",
@@ -236,6 +263,9 @@ def _file_variables(context: RuntimeContext) -> dict[str, str]:
             "",
         ),
         "RUN_QUALITY_RUNTIME_PROFILE": context.environment.get("CHARNESS_RUNTIME_PROFILE", ""),
+        "release_changed_line_coverage_json": str(
+            context.runtime_root / "release-changed-line-coverage" / "coverage.json"
+        ),
     }
 
 
@@ -277,7 +307,9 @@ def compute_runner_variables(
     needed = gate_list.runner_variables
     variables: dict[str, list[str] | str] = {
         "REPO_ROOT": str(context.repo_root),
-        "RUN_QUALITY_TMPDIR": str(context.temp_dir),
+        "SPECDOWN_OUTPUT_DIR": str(context.temp_dir / "specdown-report"),
+        "DOC_DUPLICATES_OUTPUT": str(context.temp_dir / "doc-duplicates.json"),
+        "SLOC_OUTPUT": str(context.temp_dir / "sloc-inventory.json"),
     }
     if "PYTEST_FLAGS" in needed:
         variables.update(
@@ -303,12 +335,14 @@ def compute_runner_variables(
         )
     if "CHANGED_LINE_BASE_SHA" in needed or "CRITIQUE_CHANGED_REF" in needed:
         variables.update(_git_variables(context))
-    if "PROVENANCE_CONTRACT_CHECKER" in needed:
+    if {
+        "PROVENANCE_CONTRACT_CHECKER",
+        "RUN_QUALITY_RUNTIME_PROFILE",
+        "release_changed_line_coverage_json",
+    } & needed:
         variables.update(_file_variables(context))
     if "RUN_QUALITY_STATE_ROOT_ARGS" in needed:
         variables["RUN_QUALITY_STATE_ROOT_ARGS"] = list(context.state_args)
-    if "RUN_QUALITY_RUNTIME_PROFILE" in needed:
-        variables.update(_file_variables(context))
     if "seed_budget_args" in needed:
         values = ["--repo-root", str(context.repo_root)]
         if context.environment.get("CHARNESS_SEED_FIXTURE_ADVISORY", ""):
@@ -351,14 +385,50 @@ def substitute_command(
 
 
 def run_preamble(context: RuntimeContext, *, read_only: bool) -> int:
-    if read_only or not (context.repo_root / "plugins").is_dir():
+    """Refresh or verify the generated plugin mirror before quality gates.
+
+    The shell wrapper deliberately does not source ``.githooks/runtime-env.sh``.
+    ``prepare_runtime`` therefore supplies ``CHARNESS_RUNTIME_ROOT`` from the
+    external cache when that source-only file is absent, which is the installed
+    tree fallback.  The mirror preamble is enabled only for a declared packaging
+    manifest whose resolved plugin root is gitignored; a consumer's unrelated
+    ``plugins/`` directory is never a reason to delete or regenerate anything.
+    In read-only mode validation generates into a temporary directory internally
+    and compares bytes without mutating the checkout.
+    """
+    manifest_path = context.repo_root / "packaging" / "charness.json"
+    if not manifest_path.is_file():
+        return 0
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        relative_root = manifest["codex"]["repo_marketplace"]["materialized_source_path"]
+        plugin_root = (context.repo_root / str(relative_root).removeprefix("./")).resolve()
+        plugin_root.relative_to(context.repo_root.resolve())
+    except (OSError, KeyError, TypeError, ValueError) as exc:
+        print(f"run-quality: could not resolve packaged plugin root: {exc}", file=os.sys.stderr)
+        return 1
+    relative_plugin_root = plugin_root.relative_to(context.repo_root.resolve()).as_posix()
+    ignored = _probe(
+        context,
+        [
+            "git",
+            "check-ignore",
+            "--no-index",
+            "-q",
+            "--",
+            relative_plugin_root,
+        ],
+    )
+    if ignored.returncode != 0:
         return 0
     command = [
         "python3",
-        "scripts/sync_root_plugin_manifests.py",
+        "scripts/validate_packaging.py" if read_only else "scripts/sync_root_plugin_manifests.py",
         "--repo-root",
         str(context.repo_root),
     ]
+    if read_only:
+        command.append("--validate-export")
     result = _probe(context, command)
     if result.returncode != 0:
         print("run-quality: plugin manifest preamble failed", file=os.sys.stderr)
@@ -366,6 +436,12 @@ def run_preamble(context: RuntimeContext, *, read_only: bool) -> int:
             print(result.stdout, end="", file=os.sys.stderr)
         if result.stderr:
             print(result.stderr, end="", file=os.sys.stderr)
+        if read_only:
+            print(
+                "run-quality: regenerate with `python3 scripts/sync_root_plugin_manifests.py "
+                f"--repo-root {context.repo_root}`",
+                file=os.sys.stderr,
+            )
     return result.returncode
 
 

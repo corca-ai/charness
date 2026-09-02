@@ -293,23 +293,12 @@ def file_warn_for(path: Path, root: Path) -> int:
     return SKILL_HELPER_FILE_WARN
 
 
-SHELL_LENGTH_EXEMPTIONS = {
-    "scripts/run-quality.sh": "2026-09-02; retired by #769",
-}
-
-
 def validate_file_length(path: Path, root: Path, *, code_lines: int) -> str | None:
     """Hard-fail when a file exceeds its code-line limit; otherwise return an advisory
     ``WARN:`` line when the file sits in the ``[warn, limit]`` band, or ``None``.
     """
     relative = path.relative_to(root)
-    exemption = SHELL_LENGTH_EXEMPTIONS.get(relative.as_posix())
     limit = file_limit_for(path, root)
-    if exemption is not None and code_lines > limit:
-        return (
-            f"WARN: {relative}: physical lines {code_lines} exceed shell cap {limit}; "
-            f"NAMED EXEMPTION ({exemption})."
-        )
     measurement = "physical lines" if relative.suffix == ".sh" else "tokei code lines"
     if code_lines > limit:
         # Operator-endorsed teeth (charness-artifacts/gather/2026-07-04-enforcing-

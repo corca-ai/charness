@@ -276,8 +276,8 @@ def test_run_quality_wires_changed_ref_range_for_cross_surface_probe() -> None:
     assert "$CRITIQUE_CHANGED_REF" in command, (
         "the --changed-ref value must come from the runner-computed range variable"
     )
-    run_quality = (ROOT / "scripts" / "run-quality.sh").read_text(encoding="utf-8")
-    assert "..HEAD" in run_quality, (
+    engine_runtime = (ROOT / "scripts" / "run_quality_engine_runtime.py").read_text(encoding="utf-8")
+    assert "..HEAD" in engine_runtime, (
         "the --changed-ref value must be a range (base..HEAD); a bare sha resolves to "
         "the fork-point commit's own diff, not the change under review (DBD-4 wiring bug)"
     )

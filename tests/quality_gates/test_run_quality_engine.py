@@ -141,8 +141,8 @@ def test_explicit_and_env_opt_in_selection(tmp_path: Path) -> None:
     assert "PASS opt-in" not in not_opted_in.stdout
 
     explicit_without_condition = _run(repo, env, "--labels", "opt-in")
-    assert explicit_without_condition.returncode == 2
-    assert "matched no queued checks" in explicit_without_condition.stderr
+    assert explicit_without_condition.returncode == 0
+    assert _labels(explicit_without_condition.stdout) == ["opt-in"]
 
 
 def test_concurrent_completion_and_heartbeat_are_observable(tmp_path: Path) -> None:
@@ -208,7 +208,14 @@ def test_plugin_preamble_runs_for_writable_full_mode_and_skips_read_only(
     tmp_path: Path,
 ) -> None:
     repo, env = _seed(tmp_path)
-    (repo / "plugins").mkdir()
+    (repo / "packaging").mkdir(exist_ok=True)
+    (repo / "packaging" / "charness.json").write_text(
+        json.dumps(
+            {"codex": {"repo_marketplace": {"materialized_source_path": "./plugins/charness"}}}
+        ),
+        encoding="utf-8",
+    )
+    (repo / ".gitignore").write_text("/plugins/\n", encoding="utf-8")
     write_executable(
         repo / "scripts" / "sync_root_plugin_manifests.py",
         "from pathlib import Path\nPath('preamble-ran').write_text('yes')\n",

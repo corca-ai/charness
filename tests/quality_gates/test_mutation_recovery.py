@@ -672,6 +672,24 @@ def test_commit_and_quality_consumers_refuse_pending_recovery_then_unblock(tmp_p
         ROOT / "scripts" / "exported-copy-guard.sh",
         quality_repo / "scripts" / "exported-copy-guard.sh",
     )
+    (quality_repo / "packaging").mkdir()
+    shutil.copy2(ROOT / "packaging" / "charness.json", quality_repo / "packaging" / "charness.json")
+    for name in (
+        "run_quality_engine.py",
+        "run_quality_engine_model.py",
+        "run_quality_engine_output.py",
+        "run_quality_engine_runtime.py",
+        "run_quality_engine_selection.py",
+        "run_quality_engine_receipt.py",
+        "run_quality_engine_phase.py",
+        "runtime_bootstrap.py",
+        "subprocess_guard.py",
+        "proof_receipt.py",
+        "quality_label_universe.py",
+    ):
+        shutil.copy2(ROOT / "scripts" / name, quality_repo / "scripts" / name)
+    (quality_repo / ".agents").mkdir()
+    shutil.copy2(ROOT / ".agents" / "quality-gates.yaml", quality_repo / ".agents" / "quality-gates.yaml")
     quality_state = quality_repo / ".charness" / "mutation-recovery"
     quality_state.mkdir(parents=True)
 

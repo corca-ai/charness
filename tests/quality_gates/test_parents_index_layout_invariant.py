@@ -60,17 +60,14 @@ def resolved_ancestor(script: Path, index: int) -> Path | None:
 
 
 AUTHORING_TREE = ROOT / "skills"
-INSTALLED_TREE = ROOT / "plugins" / "charness" / "skills"
-
-
-def test_both_trees_are_present_so_this_test_can_mean_anything() -> None:
+def test_both_trees_are_present_so_this_test_can_mean_anything(exported_plugin_tree: Path) -> None:
     """Without both trees the comparison below is vacuous, and would pass silently."""
     assert AUTHORING_TREE.is_dir(), "authoring skill tree missing"
-    assert INSTALLED_TREE.is_dir(), "installed mirror missing — run sync_root_plugin_manifests.py"
+    assert (exported_plugin_tree / "skills").is_dir(), "exported skill tree missing"
     assert iter_skill_scripts(AUTHORING_TREE), "no authoring skill scripts found"
 
 
-def test_every_parents_site_resolves_inside_its_own_tree_root() -> None:
+def test_every_parents_site_resolves_inside_its_own_tree_root(exported_plugin_tree: Path) -> None:
     """A `parents[N]` that climbs out of its own tree is unreachable for that tree's reader.
 
     Authoring scripts must stay at or under the repo root; installed scripts must
@@ -78,7 +75,8 @@ def test_every_parents_site_resolves_inside_its_own_tree_root() -> None:
     This is the assertion that catches an off-by-one in either direction.
     """
     failures: list[str] = []
-    for tree, boundary in ((AUTHORING_TREE, ROOT), (INSTALLED_TREE, ROOT / "plugins" / "charness")):
+    installed_tree = exported_plugin_tree / "skills"
+    for tree, boundary in ((AUTHORING_TREE, ROOT), (installed_tree, exported_plugin_tree)):
         for script in iter_skill_scripts(tree):
             for lineno, index in iter_parents_sites(script):
                 ancestor = resolved_ancestor(script, index)
@@ -93,7 +91,7 @@ def test_every_parents_site_resolves_inside_its_own_tree_root() -> None:
     assert not failures, "\n".join(failures)
 
 
-def test_the_cancellation_holds_for_every_mirrored_skill_script() -> None:
+def test_the_cancellation_holds_for_every_mirrored_skill_script(exported_plugin_tree: Path) -> None:
     """The same `parents[N]` index must appear at the same line in both copies of a script.
 
     That equality IS the cancellation: the exporter changes the path depth but not
@@ -102,11 +100,12 @@ def test_the_cancellation_holds_for_every_mirrored_skill_script() -> None:
     the indices stay equal (same source) while one tree's resolution goes wrong —
     which the previous test catches. Together they pin both halves.
     """
+    installed_tree = exported_plugin_tree / "skills"
     mismatches: list[str] = []
     for authored in iter_skill_scripts(AUTHORING_TREE):
         relative = authored.relative_to(AUTHORING_TREE)
         # `skills/<kind>/<skill>/...` flattens to `skills/<skill>/...`
-        installed = INSTALLED_TREE.joinpath(*relative.parts[1:])
+        installed = installed_tree.joinpath(*relative.parts[1:])
         if not installed.is_file():
             continue
         if iter_parents_sites(authored) != iter_parents_sites(installed):

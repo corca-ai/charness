@@ -64,6 +64,12 @@ def _seed_prepush_repo(tmp_path: Path) -> Path:
         "plugins/charness/plugin.txt": "seed\n",
         "scripts/sync_root_plugin_manifests.py": "#!/usr/bin/env python3\n",
         "scripts/validate_current_pointer_freshness.py": "#!/usr/bin/env python3\n",
+        "scripts/run_quality_engine.py": (
+            "#!/usr/bin/env python3\n"
+            "import sys\n"
+            "if '--print-docs-only-labels' in sys.argv:\n"
+            "    print('check-docs')\n"
+        ),
         # Records hook stdin so the classifier and the guard both see the range.
         "scripts/prepush_close_keyword_guard.py": (
             "#!/usr/bin/env python3\n"

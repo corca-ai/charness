@@ -94,7 +94,13 @@ fi
 # catches orphans never ran on the change class that creates them. It is safe to add:
 # it costs ~0.07s, and on a machine without `awiki` it reports UNPROVEN and blocks
 # nothing rather than failing the push.
-DOCS_ONLY_LABELS="check-docs,check-references-link-inventory,check-spec-evidence-durability,validate-debug-artifact,validate-quality-artifact,validate-retro-artifact,validate-ideation-artifact,validate-critique-artifacts,validate-current-pointer-freshness"
+DOCS_ONLY_LABELS="$(
+  python3 scripts/run_quality_engine.py \
+    --repo-root "$REPO_ROOT" \
+    --gates "$REPO_ROOT/.agents/quality-gates.yaml" \
+    --print-docs-only-labels |
+    python3 -c 'import sys; print(",".join(line.strip() for line in sys.stdin if line.strip()))'
+)"
 
 if [[ "$classification" == "docs-artifact-only" ]]; then
   echo "charness pre-push: docs/artifact-only push detected ($reason)"

@@ -25,6 +25,8 @@ import shutil
 import subprocess
 from pathlib import Path
 
+import pytest
+
 from .seeding_support import write_quality_adapter
 from .support import (
     GUARD_SCRIPT,
@@ -390,6 +392,24 @@ def test_the_three_newly_guarded_gates_refuse_from_the_generated_mirror(tmp_path
         assert result.returncode == 1, (name, result.stdout, result.stderr)
         assert f"{gate}: refusing to run from an exported copy." in result.stderr, name
         assert "CHARNESS_REPO_ROOT" in result.stderr, name
+
+
+@pytest.mark.boundary_contract(
+    reason="the exported run-quality shell boundary must refuse by gate name outside any repo"
+)
+def test_exported_run_quality_refuses_by_name_outside_any_repo(tmp_path: Path) -> None:
+    installed = tmp_path / "installed" / "scripts"
+    installed.mkdir(parents=True)
+    shutil.copy2(ROOT / "scripts" / "run-quality.sh", installed / "run-quality.sh")
+    shutil.copy2(ROOT / "scripts" / "exported-copy-guard.sh", installed / "exported-copy-guard.sh")
+
+    result = run_shell_script(
+        installed / "run-quality.sh", cwd=tmp_path, env={**os.environ}
+    )
+
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "run-quality: refusing to run from an installed/exported copy" in result.stderr
+    assert "No such file or directory" not in result.stderr
 
 
 def test_the_guard_refuses_a_caller_that_forgot_to_name_itself(tmp_path: Path) -> None:

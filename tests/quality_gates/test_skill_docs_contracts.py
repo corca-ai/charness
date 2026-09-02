@@ -5,11 +5,9 @@ import json
 from .support import ROOT
 
 IMPL_SKILL = (ROOT / "skills" / "public" / "impl" / "SKILL.md").read_text(encoding="utf-8")
-PLUGIN_IMPL_SKILL_PATH = ROOT / "plugins" / "charness" / "skills" / "impl" / "SKILL.md"
 # Prove is a conditional evidence formatter alongside the implementation workflow.
 PROVE_SKILL = (ROOT / "skills" / "public" / "prove" / "SKILL.md").read_text(encoding="utf-8")
 SETUP_SKILL = (ROOT / "skills" / "public" / "setup" / "SKILL.md").read_text(encoding="utf-8")
-PLUGIN_SETUP_SKILL_PATH = ROOT / "plugins" / "charness" / "skills" / "setup" / "SKILL.md"
 QUALITY_SKILL = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
 CRITIQUE_SKILL = (ROOT / "skills" / "public" / "critique" / "SKILL.md").read_text(encoding="utf-8")
 DEBUG_SKILL = (ROOT / "skills" / "public" / "debug" / "SKILL.md").read_text(encoding="utf-8")
@@ -25,13 +23,15 @@ DISPATCH = (
 MAINTAINER_LOCAL_ENFORCEMENT = (
     ROOT / "skills" / "public" / "quality" / "references" / "maintainer-local-enforcement.md"
 ).read_text(encoding="utf-8")
-QUALITY_INDEX = (ROOT / "skills" / "public" / "quality" / "references" / "index.md").read_text(
-    encoding="utf-8"
-)
+QUALITY_INDEX = (
+    ROOT / "skills" / "public" / "quality" / "references" / "index.md"
+).read_text(encoding="utf-8")
 PROMPT_ASSET_POLICY = (
     ROOT / "skills" / "public" / "quality" / "references" / "prompt-asset-policy.md"
 ).read_text(encoding="utf-8")
-PUBLIC_SKILL_VALIDATION = (ROOT / "docs" / "public-skill-validation.md").read_text(encoding="utf-8")
+PUBLIC_SKILL_VALIDATION = (
+    ROOT / "docs" / "public-skill-validation.md"
+).read_text(encoding="utf-8")
 
 
 def test_setup_skill_bootstraps_probe_surface_guidance() -> None:
@@ -48,7 +48,7 @@ def test_setup_skill_bootstraps_probe_surface_guidance() -> None:
     assert "local discoverability" in probe_reference
 
 
-def test_setup_pins_live_spawn_first_execution_contract() -> None:
+def test_setup_pins_live_spawn_first_execution_contract(exported_plugin_tree) -> None:
     """Setup emits the repo-level execution contract; Achieve stays planning-only."""
     setup = SETUP_SKILL.lower()
 
@@ -57,20 +57,15 @@ def test_setup_pins_live_spawn_first_execution_contract() -> None:
     assert "task run" in setup
     assert "isolation" in setup
     assert "may route" not in setup
-    assert (
-        PLUGIN_SETUP_SKILL_PATH.read_bytes()
-        == (ROOT / "skills" / "public" / "setup" / "SKILL.md").read_bytes()
-    )
+    assert (exported_plugin_tree / "skills" / "setup" / "SKILL.md").read_bytes() == (
+        ROOT / "skills" / "public" / "setup" / "SKILL.md"
+    ).read_bytes()
 
 
 def test_setup_skill_describes_the_minimal_flat_wiki_profile() -> None:
     skill_text = SETUP_SKILL.lower()
     defaults = DEFAULT_SURFACES.lower()
-    normalization = (
-        (ROOT / "skills/public/setup/references/normalization-flow.md")
-        .read_text(encoding="utf-8")
-        .lower()
-    )
+    normalization = (ROOT / "skills/public/setup/references/normalization-flow.md").read_text(encoding="utf-8").lower()
 
     for text in (defaults, normalization):
         assert "docs/index.md" in text
@@ -109,11 +104,7 @@ def test_setup_does_not_duplicate_artifact_commit_policy() -> None:
     skill_text = SETUP_SKILL.lower()
     bootstrap_seams = BOOTSTRAP_SEAMS.lower()
     default_surfaces = DEFAULT_SURFACES.lower()
-    normalization_flow = (
-        (ROOT / "skills/public/setup/references/normalization-flow.md")
-        .read_text(encoding="utf-8")
-        .lower()
-    )
+    normalization_flow = (ROOT / "skills/public/setup/references/normalization-flow.md").read_text(encoding="utf-8").lower()
 
     assert "bootstrap-seams.md" in skill_text
     assert "bootstrap-seams.md" in skill_text
@@ -139,12 +130,12 @@ def test_hitl_skill_carries_review_chunk_and_state_recording_rules() -> None:
     chunk_contract = (
         ROOT / "skills" / "public" / "hitl" / "references" / "chunk-contract.md"
     ).read_text(encoding="utf-8")
-    state_model = (ROOT / "skills" / "public" / "hitl" / "references" / "state-model.md").read_text(
-        encoding="utf-8"
-    )
-    report_mode = (ROOT / "skills" / "public" / "hitl" / "references" / "report-mode.md").read_text(
-        encoding="utf-8"
-    )
+    state_model = (
+        ROOT / "skills" / "public" / "hitl" / "references" / "state-model.md"
+    ).read_text(encoding="utf-8")
+    report_mode = (
+        ROOT / "skills" / "public" / "hitl" / "references" / "report-mode.md"
+    ).read_text(encoding="utf-8")
     adapter_contract = (
         ROOT / "skills" / "public" / "hitl" / "references" / "adapter-contract.md"
     ).read_text(encoding="utf-8")
@@ -159,9 +150,7 @@ def test_hitl_skill_carries_review_chunk_and_state_recording_rules() -> None:
     assert "last_presented_chunk_id" in skill_text
     assert "active_rules_applied" in skill_text
     assert "target_cursor_checked" in skill_text
-    assert (
-        "sync live runtime state into `<repo-root>/charness-artifacts/hitl/latest.md`" in skill_text
-    )
+    assert "sync live runtime state into `<repo-root>/charness-artifacts/hitl/latest.md`" in skill_text
     assert "durable artifact freshness check" in skill_text
     assert "check_review_state.py" in skill_text
     assert "Active Rules Applied" in skill_text
@@ -213,10 +202,7 @@ def test_prove_skill_keeps_claim_proof_and_owner_routing_explicit() -> None:
         ROOT / "skills" / "public" / "prove" / "references" / "verification-ladder.md"
     ).read_text(encoding="utf-8")
 
-    assert (
-        "Use Prove only when the user, current contract, or boundary owner explicitly selects it."
-        in normalized_skill
-    )
+    assert "Use Prove only when the user, current contract, or boundary owner explicitly selects it." in normalized_skill
     assert "ordinary reversible implementation" in skill_text
     assert "Identify the claim." in skill_text
     assert "narrowest strongest evidence." in skill_text
@@ -233,7 +219,9 @@ def test_prove_skill_keeps_claim_proof_and_owner_routing_explicit() -> None:
 
 
 def test_debug_and_quality_carry_async_and_hidden_network_field_lessons() -> None:
-    debug_text = (ROOT / "skills" / "public" / "debug" / "SKILL.md").read_text(encoding="utf-8")
+    debug_text = (
+        ROOT / "skills" / "public" / "debug" / "SKILL.md"
+    ).read_text(encoding="utf-8")
     maintainer_local = MAINTAINER_LOCAL_ENFORCEMENT
 
     assert "pre-worker\n     acknowledgement" in debug_text
@@ -244,12 +232,14 @@ def test_debug_and_quality_carry_async_and_hidden_network_field_lessons() -> Non
     assert "explicit refresh,\n> update, or release action" in maintainer_local
 
 
-def test_critique_and_debug_share_the_evidence_led_adversarial_route() -> None:
+def test_critique_and_debug_share_the_evidence_led_adversarial_route(exported_plugin_tree) -> None:
     critique_reference = (
         ROOT / "skills" / "public" / "critique" / "references" / "adversarial-evidence-review.md"
     )
-    pattern_reference = ROOT / "skills" / "public" / "debug" / "references" / "pattern-ladder.md"
-    plugin_root = ROOT / "plugins" / "charness" / "skills"
+    pattern_reference = (
+        ROOT / "skills" / "public" / "debug" / "references" / "pattern-ladder.md"
+    )
+    plugin_root = exported_plugin_tree / "skills"
 
     assert "## Evidence-Led Mode" in CRITIQUE_SKILL
     assert "Do not treat the counterweight pass as adversarial evidence" in CRITIQUE_SKILL
@@ -259,21 +249,12 @@ def test_critique_and_debug_share_the_evidence_led_adversarial_route() -> None:
     assert critique_reference.is_file()
     assert pattern_reference.is_file()
     assert "Finding: <stable id>" in critique_reference.read_text(encoding="utf-8")
-    assert "Evidence Digest: sha256:<64 lowercase hex>" in critique_reference.read_text(
-        encoding="utf-8"
-    )
-    assert "receipt sha256: <64 lowercase hex or `none`>" in critique_reference.read_text(
-        encoding="utf-8"
-    )
-    assert "charness.adversarial-evidence.receipt.v1" in critique_reference.read_text(
-        encoding="utf-8"
-    )
+    assert "Evidence Digest: sha256:<64 lowercase hex>" in critique_reference.read_text(encoding="utf-8")
+    assert "receipt sha256: <64 lowercase hex or `none`>" in critique_reference.read_text(encoding="utf-8")
+    assert "charness.adversarial-evidence.receipt.v1" in critique_reference.read_text(encoding="utf-8")
     assert "Report Source SHA256" in critique_reference.read_text(encoding="utf-8")
     assert "- Finding: <stable id> | source:" in critique_reference.read_text(encoding="utf-8")
-    assert (
-        "Level: observed failure | local pattern | interface sibling | pattern of patterns"
-        in pattern_reference.read_text(encoding="utf-8")
-    )
+    assert "Level: observed failure | local pattern | interface sibling | pattern of patterns" in pattern_reference.read_text(encoding="utf-8")
 
     assert (plugin_root / "critique" / "SKILL.md").read_bytes() == CRITIQUE_SKILL.encode()
     assert (plugin_root / "debug" / "SKILL.md").read_bytes() == DEBUG_SKILL.encode()
@@ -284,31 +265,11 @@ def test_critique_and_debug_share_the_evidence_led_adversarial_route() -> None:
         plugin_root / "debug" / "references" / "pattern-ladder.md"
     ).read_bytes() == pattern_reference.read_bytes()
     assert (
-        (
-            ROOT
-            / "skills"
-            / "public"
-            / "debug"
-            / ".."
-            / "critique"
-            / "references"
-            / "adversarial-evidence-review.md"
-        )
-        .resolve()
-        .is_file()
-    )
+        ROOT / "skills" / "public" / "debug" / ".." / "critique" / "references" / "adversarial-evidence-review.md"
+    ).resolve().is_file()
     assert (
-        (
-            plugin_root
-            / "debug"
-            / ".."
-            / "critique"
-            / "references"
-            / "adversarial-evidence-review.md"
-        )
-        .resolve()
-        .is_file()
-    )
+        plugin_root / "debug" / ".." / "critique" / "references" / "adversarial-evidence-review.md"
+    ).resolve().is_file()
     assert "Use `critique` first" in critique_reference.read_text(encoding="utf-8")
 
 
@@ -406,10 +367,7 @@ def test_quality_skill_keeps_testability_tool_detail_in_reference() -> None:
 
     assert "references/testability-and-selection.md" in index
     assert "testability, selection, and duplicated proof" in index
-    assert (
-        "Do not claim that deterministic affected-test selection is always possible"
-        in reference_text
-    )
+    assert "Do not claim that deterministic affected-test selection is always possible" in reference_text
     assert "cheap deterministic\ncandidate subset" in reference_text
     assert "pytest-testmon" in reference_text
     assert "Jest or Vitest" in reference_text
@@ -423,9 +381,7 @@ def test_quality_skill_keeps_testability_tool_detail_in_reference() -> None:
 
 def test_prove_skill_carries_truth_surface_sync_guardrail() -> None:
     skill_text = PROVE_SKILL
-    adapter_contract = (
-        ROOT / "skills" / "public" / "impl" / "references" / "adapter-contract.md"
-    ).read_text(encoding="utf-8")
+    adapter_contract = (ROOT / "skills" / "public" / "impl" / "references" / "adapter-contract.md").read_text(encoding="utf-8")
     assert "Sync actual truth surfaces." in skill_text
     assert "source-of-truth docs" in skill_text
     assert "truth_surfaces" in adapter_contract
@@ -439,10 +395,7 @@ def test_impl_skill_defaults_to_autonomous_continuation() -> None:
     assert "continuation" in skill_text and "checkpoints" in skill_text
     assert "irreversible" in skill_text and "external side effect" in skill_text
     assert "focused tests for the changed module or user flow" in skill_text
-    assert (
-        "Use `prove` when the user or the boundary explicitly requires its evidence format"
-        in normalized_skill
-    )
+    assert "Use `prove` when the user or the boundary explicitly requires its evidence format" in normalized_skill
 
 
 def test_impl_keeps_optional_proof_conditional() -> None:
@@ -454,9 +407,9 @@ def test_impl_keeps_optional_proof_conditional() -> None:
     assert "changed-line proof" in skill_text
 
 
-def test_impl_source_and_materialized_plugin_export_are_byte_identical() -> None:
+def test_impl_source_and_materialized_plugin_export_are_byte_identical(exported_plugin_tree) -> None:
     assert (ROOT / "skills" / "public" / "impl" / "SKILL.md").read_bytes() == (
-        PLUGIN_IMPL_SKILL_PATH.read_bytes()
+        (exported_plugin_tree / "skills" / "impl" / "SKILL.md").read_bytes()
     )
 
 
@@ -474,9 +427,7 @@ def test_validate_integrations_rejects_unsafe_agent_browser_check_commands() -> 
         },
     }
     try:
-        validate_agent_browser_check_commands(
-            manifest, ROOT / "integrations" / "tools" / "agent-browser.json"
-        )
+        validate_agent_browser_check_commands(manifest, ROOT / "integrations" / "tools" / "agent-browser.json")
     except ValidationError as exc:
         assert "unsafe agent-browser probe" in str(exc)
         assert "timeout 5 agent-browser open https://example.com" in str(exc)
@@ -501,9 +452,7 @@ def test_validate_integrations_rejects_unsafe_support_readiness_commands() -> No
         ],
     }
     try:
-        validate_agent_browser_readiness_commands(
-            capability, ROOT / "skills" / "support" / "demo" / "capability.json"
-        )
+        validate_agent_browser_readiness_commands(capability, ROOT / "skills" / "support" / "demo" / "capability.json")
     except ValidationError as exc:
         assert "unsafe agent-browser probe" in str(exc)
         assert "readiness_checks[0].commands[0]" in str(exc)

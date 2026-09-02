@@ -21,22 +21,50 @@ def _condition_matches(
     mode: str,
     environment: Mapping[str, str],
     predicates: Mapping[str, Callable[[], bool]],
+    release: bool,
+    non_claim: str,
 ) -> bool:
     if not gate.condition:
         return True
-    verb, value = next(iter(gate.condition.items()))
-    if verb == "env":
-        return all(
-            environment.get(str(name), "") == str(expected) for name, expected in value.items()
-        )
-    if verb == "file_exists":
-        return (repo_root / str(value)).is_file()
-    if verb == "mode_in":
-        return mode in value
-    predicate = predicates.get(str(value))
-    if predicate is None:
-        raise RunnerError(f"gate {gate.label!r} names unknown predicate {value!r}")
-    return predicate()
+
+    def evaluate(condition: dict[str, object]) -> bool:
+        results: list[bool] = []
+        for verb, value in condition.items():
+            if verb == "any_of":
+                results.append(any(evaluate(branch) for branch in value))
+            elif verb == "all_of":
+                results.append(all(evaluate(branch) for branch in value))
+            elif verb == "env":
+                results.append(
+                    all(
+                        (expected == "nonempty" and bool(environment.get(str(name), "")))
+                        or environment.get(str(name), "") == str(expected)
+                        for name, expected in value.items()
+                    )
+                )
+            elif verb == "file_exists":
+                results.append((repo_root / str(value)).is_file())
+            elif verb == "mode_in":
+                results.append(mode in value)
+            elif verb == "release":
+                results.append(release is bool(value))
+            elif verb == "prior_phases_green":
+                # This is resolved at phase execution time. A true condition is
+                # provisionally selectable so the engine can preserve the row and
+                # skip it after an earlier phase fails.
+                results.append(True if value else True)
+            elif verb == "non_claim_absent":
+                results.append(non_claim != str(value))
+            elif verb == "predicate":
+                predicate = predicates.get(str(value))
+                if predicate is None:
+                    raise RunnerError(f"gate {gate.label!r} names unknown predicate {value!r}")
+                results.append(predicate())
+            else:  # validated by the model, retained for direct callers
+                raise RunnerError(f"gate {gate.label!r} names unknown condition {verb!r}")
+        return all(results)
+
+    return evaluate(gate.condition)
 
 
 def _lane_matches(
@@ -48,7 +76,9 @@ def _lane_matches(
     explicit: frozenset[str],
 ) -> bool:
     if explicit:
-        return gate.label in explicit
+        # An opt-in is enabled by its environment switch even during a filtered
+        # run; naming an opt-in is the explicit alternative to that switch.
+        return gate.label in explicit or gate.lane == "opt-in"
     if gate.lane == "core":
         return full_queue or not explicit
     if gate.lane == "standard":
@@ -69,6 +99,7 @@ def select_gates(
     release: bool,
     include_release_only: bool,
     labels: str,
+    non_claim: str = "",
     environment: Mapping[str, str] | None = None,
     predicates: Mapping[str, Callable[[], bool]] | None = None,
     excluded_labels: frozenset[str] = frozenset(),
@@ -90,12 +121,18 @@ def select_gates(
                 explicit=explicit,
             ):
                 continue
-            if not _condition_matches(
+            if not (
+                explicit
+                and gate.label in explicit
+                and gate.lane == "opt-in"
+            ) and not _condition_matches(
                 gate,
                 repo_root=repo_root,
                 mode=mode,
                 environment=environment,
                 predicates=predicates,
+                release=release,
+                non_claim=non_claim,
             ):
                 continue
             variant_key = gate.variant_of or gate.label
@@ -108,3 +145,16 @@ def select_gates(
 
 def selected_count(selected: Mapping[str, tuple[Gate, ...]]) -> int:
     return sum(len(gates) for gates in selected.values())
+
+
+def requires_prior_phases_green(gate: Gate) -> bool:
+    """Whether a selected row is gated on earlier phase success."""
+    def find(condition: dict[str, object]) -> bool:
+        for verb, value in condition.items():
+            if verb == "prior_phases_green" and value is True:
+                return True
+            if verb in {"any_of", "all_of"} and any(find(branch) for branch in value):
+                return True
+        return False
+
+    return find(gate.condition)

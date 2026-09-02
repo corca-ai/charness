@@ -7,6 +7,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
 import yaml
 
 from tests.quality_gates import git_fixture_support as _git_fixture_support
@@ -22,6 +23,31 @@ from tests.quality_gates.quality_runner_seed import (
 from tests.script_main import load_script_module, run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[2]
+
+
+@pytest.fixture(scope="session")
+def exported_plugin_tree(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """Export the plugin once into pytest's external temporary runtime.
+
+    Byte-level mirror assertions must observe the exporter output, not depend on
+    whether the checked-in materialization happened to be refreshed before pytest.
+    """
+    output_root = tmp_path_factory.mktemp("quality-plugin-export")
+    export_plugin = load_script_module(
+        "tests.quality_gates.support_export_plugin", ROOT / "scripts" / "export_plugin.py"
+    )
+    result = run_loaded_script_main(
+        "export_plugin.py",
+        export_plugin,
+        "--repo-root",
+        str(ROOT),
+        "--host",
+        "codex",
+        "--output-root",
+        str(output_root),
+    )
+    assert result.returncode == 0, result.stderr
+    return output_root / "plugins" / "charness"
 EVAL_REGISTRY = load_script_module(
     "tests.quality_gates.support_eval_registry", ROOT / "scripts" / "eval_registry.py"
 )
@@ -660,6 +686,19 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
         "standing_pytest_basetemp.py",
         "standing_pytest_run_record.py",
         "standing_pytest_environment.py",
+        "run_quality_engine.py",
+        "run_quality_engine_model.py",
+        "run_quality_engine_output.py",
+        "run_quality_engine_phase.py",
+        "run_quality_engine_receipt.py",
+        "run_quality_engine_runtime.py",
+        "run_quality_engine_selection.py",
+        "quality_gate_provenance_fallback.py",
+        "run_specdown.py",
+        "inventory_gitignore_scan_hygiene_unavailable.py",
+        "inventory_cli_ergonomics_unavailable.py",
+        "inventory_nose_clones_unavailable.py",
+        "release_changed_line_coverage_unavailable.py",
     ):
         shutil.copy2(ROOT / "scripts" / real_name, scripts_dir / real_name)
         (scripts_dir / real_name).chmod(0o755)
@@ -685,6 +724,8 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
         + "\n",
         encoding="utf-8",
     )
+    (repo / "packaging").mkdir()
+    shutil.copy2(ROOT / "packaging" / "charness.json", repo / "packaging" / "charness.json")
     seed_quality_python_stubs(
         scripts_dir,
         tuple(

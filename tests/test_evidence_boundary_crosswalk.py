@@ -1045,15 +1045,17 @@ def test_absent_instance_is_reported_as_inapplicable_not_as_a_pass() -> None:
         assert result["crosswalk_status"] == "crosswalk_missing"
 
 
-def test_the_installed_plugin_projection_exposes_the_same_authorization_entrypoint() -> None:
+def test_the_installed_plugin_projection_exposes_the_same_authorization_entrypoint(
+    exported_plugin_tree: Path,
+) -> None:
     """The installed copy must carry the gate too.
 
     A gate that exists only in the source tree is not a gate for anyone running the
     plugin, which is every consumer.
     """
-    projection = REPO_ROOT / "plugins" / "charness" / "scripts" / "evidence_boundary_crosswalk.py"
+    projection = exported_plugin_tree / "scripts" / "evidence_boundary_crosswalk.py"
 
-    assert projection.is_file(), "run scripts/sync_root_plugin_manifests.py"
+    assert projection.is_file(), "export_plugin.py must carry the authorization projection"
     source = projection.read_text(encoding="utf-8")
     assert "def authorize_closeout(" in source
     assert source == (REPO_ROOT / "scripts" / "evidence_boundary_crosswalk.py").read_text(encoding="utf-8")

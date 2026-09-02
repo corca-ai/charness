@@ -10,7 +10,7 @@ from pathlib import Path
 
 from run_quality_engine_phase import GateResult
 
-_ATTENTION = re.compile(r"(^|: |- |[\"'])(WARNING|WARN|WEAK|ADVISORY)(:|\s)")
+_ATTENTION = re.compile(r"(^|\n|: |- |[\"'])(WARNING|WARN|WEAK|ADVISORY)(:|\s)")
 
 
 def format_elapsed(elapsed_ms: int) -> str:

@@ -2,9 +2,8 @@
 
 """Meta-gate (#368): the validator-timing classification table must stay EXHAUSTIVE.
 
-Every gate `run-quality.sh` runs (every `queue_*` wrapper's literal label, read by
-the shared `quality_label_universe` reader — this gate saw only `queue_selected`
-until 2026-08-10, so three opt-in gates were unclassified the whole time) must
+Every gate `run-quality.sh` runs (every declared row label, read by the shared
+`quality_label_universe` reader) must
 carry a recorded timing verdict in `docs/validator-timing-layers.md`'s
 classification table — either pulled to the commit boundary or an explicit
 "stays" reason. This closes the recurring shift-left class structurally
@@ -28,6 +27,7 @@ import sys
 from pathlib import Path
 
 import quality_label_universe
+import render_validator_timing_layers
 
 from runtime_bootstrap import repo_root_from_script
 
@@ -172,6 +172,21 @@ def main() -> int:
     if read is None:
         return code
     (missing, checked), stale = read
+    data_file = repo_root / quality_label_universe.QUALITY_GATES_PATH
+    timing_doc = repo_root / TIMING_DOC_PATH
+    if data_file.is_file() and timing_doc.is_file():
+        expected = render_validator_timing_layers.rendered_classification_section(repo_root)
+        current = timing_doc.read_text(encoding="utf-8")
+        start = current.find(TABLE_HEADING)
+        end = current.find("\n## Adding a new timing pull", start + len(TABLE_HEADING))
+        actual = current[start:end] + "\n" if start >= 0 and end >= 0 else ""
+        if actual != expected:
+            print(
+                "timing-layer completeness: classification table is stale; run "
+                "`python3 scripts/render_validator_timing_layers.py --write`.",
+                file=sys.stderr,
+            )
+            return 1
     if not checked:
         print("timing-layer completeness: run-quality.sh or timing doc absent; no gate.")
         return 0

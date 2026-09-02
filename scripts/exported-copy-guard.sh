@@ -120,6 +120,18 @@ if [[ -n "$git_toplevel" ]]; then
     exit 1
   fi
 fi
+if [[ -z "$git_toplevel" && ! -f "$REPO_ROOT/packaging/charness.json" ]]; then
+  {
+    echo "${GATE_NAME}: refusing to run from an installed/exported copy without a source checkout."
+    echo "  package root: $REPO_ROOT"
+    echo "  no git toplevel was found and packaging/charness.json is absent."
+    if [[ -n "${GATE_CONSEQUENCE:-}" ]]; then
+      echo "$GATE_CONSEQUENCE"
+    fi
+    echo "Run this gate from a charness source checkout."
+  } >&2
+  exit 1
+fi
 # Verified means COMPARED and agreed, not merely supplied. When git names no toplevel
 # nothing was established, so the flag stays 0.
 # shellcheck disable=SC2034

@@ -3,10 +3,12 @@ from __future__ import annotations
 import importlib.util
 import json
 import os
+import shlex
 import subprocess
 import sys
 from pathlib import Path
 
+import quality_label_universe
 import pytest
 import yaml
 
@@ -80,12 +82,10 @@ def test_test_production_ratio_refuses_declared_empty_test_roots(tmp_path: Path)
         RATIO.summarize(repo, engine="splitlines")
 
 
-def _ratio_invocation(runner_text: str) -> str:
-    for line in runner_text.splitlines():
-        stripped = line.strip()
-        if stripped.startswith('queue_selected "check-test-production-ratio"'):
-            return stripped
-    raise AssertionError("run-quality.sh no longer queues check-test-production-ratio")
+def _ratio_invocation() -> str:
+    rows = quality_label_universe.quality_gate_rows(ROOT) or []
+    row = next(row for row in rows if row["label"] == "check-test-production-ratio")
+    return shlex.join(row["command"])
 
 
 def test_ratio_gate_stays_advisory_in_the_runner() -> None:
@@ -98,20 +98,21 @@ def test_ratio_gate_stays_advisory_in_the_runner() -> None:
     `release-changed-line-coverage`. This is that missing pin.
     """
 
-    invocation = _ratio_invocation(
-        (ROOT / "scripts" / "run-quality.sh").read_text(encoding="utf-8")
-    )
+    invocation = _ratio_invocation()
     assert "--advisory" in invocation, (
         "check-test-production-ratio must stay advisory in run-quality.sh: a whole-repo "
         "LOC ratio is a smell sensor, not a release contract, and as a hard block it "
         "makes covering a changed line cost the deletion of production safety code"
     )
     # Negative control: the reader must FAIL a blocking invocation, or it pins nothing.
-    blocking = (
-        'queue_selected "check-test-production-ratio" python3 '
-        'scripts/check_test_production_ratio.py --repo-root "$REPO_ROOT" --require-git-file-listing'
-    )
-    assert "--advisory" not in _ratio_invocation(blocking)
+    blocking = [
+        "python3",
+        "scripts/check_test_production_ratio.py",
+        "--repo-root",
+        "$REPO_ROOT",
+        "--require-git-file-listing",
+    ]
+    assert "--advisory" not in shlex.join(blocking)
 
 
 def test_surface_buckets_include_executable_languages_and_exclude_fixtures(tmp_path: Path) -> None:

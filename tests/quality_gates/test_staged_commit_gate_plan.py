@@ -7,7 +7,6 @@ from pathlib import Path
 import pytest
 import yaml
 
-from scripts import packaging_lib
 from scripts.staged_commit_gate_plan import (
     FAST_SURFACE_VERIFY_COMMANDS,
     GateCommand,
@@ -25,13 +24,6 @@ SURFACES_JSON = (ROOT / ".agents" / "surfaces.json").read_text(encoding="utf-8")
 pytestmark = pytest.mark.boundary_contract(
     reason="observe the staged-commit fixture's real git rename/configuration boundary"
 )
-
-
-def _export_plugin(tmp_path: Path) -> Path:
-    plugin = tmp_path / "plugin"
-    manifest = packaging_lib.load_manifest(ROOT, "charness")
-    packaging_lib.export_plugin_tree(ROOT, plugin, manifest)
-    return plugin
 
 
 def _surface_verify_commands_for(paths: list[str]) -> set[str]:
@@ -476,13 +468,12 @@ def test_staged_commit_gate_plan_cli_emits_the_planned_labels() -> None:
     assert "ruff (staged)" not in no_ruff_labels
 
 
-def test_staged_commit_gate_plan_plugin_mirror_matches_source(tmp_path: Path) -> None:
+def test_staged_commit_gate_plan_plugin_mirror_matches_source(exported_plugin_tree: Path) -> None:
     # Split out of the json-and-text test so a stale export names ITSELF rather than
     # taking the source-CLI assertions down with it.
     args = ("--repo-root", str(ROOT), "--paths", "README.md")
     source_result = run_script("scripts/staged_commit_gate_plan.py", *args)
-    plugin = _export_plugin(tmp_path)
-    plugin_result = run_script(str(plugin / "scripts" / "staged_commit_gate_plan.py"), *args)
+    plugin_result = run_script(str(exported_plugin_tree / "scripts" / "staged_commit_gate_plan.py"), *args)
     assert source_result.returncode == 0, source_result.stderr
     assert plugin_result.returncode == 0, plugin_result.stderr
     assert yaml.safe_load(plugin_result.stdout) == yaml.safe_load(source_result.stdout)

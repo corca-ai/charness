@@ -193,8 +193,12 @@ def _chatter_axis(surfaces: list[dict[str, Any]], snippets: list[dict[str, str]]
         ),
         (
             "specdown",
-            lambda s: bool(re.search(r"(^|&&\s*|\|\|\s*|;\s*|\(\s*|\s)specdown\b", s)),
-            lambda s: bool(re.search(r"(^|\s)(-q|-quiet|--quiet)(\s|$)", s)),
+            lambda s: bool(
+                re.search(r"(^|&&\s*|\|\|\s*|;\s*|\(\s*|\s)specdown\b", s)
+            )
+            or "run_specdown.py" in s,
+            lambda s: bool(re.search(r"(^|\s)(-q|-quiet|--quiet)(\s|$)", s))
+            or "run_specdown.py" in s,
             "Gate `specdown` behind a quieter default or a repo-owned `VERBOSE=1` escape hatch.",
         ),
     ]

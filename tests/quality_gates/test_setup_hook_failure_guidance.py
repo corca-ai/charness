@@ -12,9 +12,7 @@ from .support import run_script
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE_REF = ROOT / "skills/public/setup/references/hook-failure-visibility.md"
-PLUGIN_REF = ROOT / "plugins/charness/skills/setup/references/hook-failure-visibility.md"
 SOURCE_INSPECTOR = ROOT / "skills/public/setup/scripts/inspect_repo.py"
-PLUGIN_INSPECTOR = ROOT / "plugins/charness/skills/setup/scripts/inspect_repo.py"
 
 
 def _write_lefthook(repo: Path, text: str) -> dict[str, object]:
@@ -34,9 +32,10 @@ def _run_inspector(script: Path, repo: Path) -> dict[str, object]:
     return yaml.safe_load(result.stdout)["hook_failure_visibility"]
 
 
-def test_hook_failure_guidance_is_mirrored_and_names_the_contract() -> None:
+def test_hook_failure_guidance_is_mirrored_and_names_the_contract(exported_plugin_tree: Path) -> None:
     source = SOURCE_REF.read_text(encoding="utf-8")
-    assert PLUGIN_REF.read_text(encoding="utf-8") == source
+    plugin_ref = exported_plugin_tree / "skills" / "setup" / "references" / "hook-failure-visibility.md"
+    assert plugin_ref.read_text(encoding="utf-8") == source
     assert "pre-commit" in source and "pre-push" in source
     for marker in (
         "pre-commit.commands.<id>",
@@ -257,7 +256,9 @@ def test_reader_types_malformed_command_rows_and_stage_configs(tmp_path: Path) -
     assert no_commands["state"] == "no-applicable-hook-commands"
 
 
-def test_default_source_and_plugin_inspectors_carry_the_reader_verdict(tmp_path: Path) -> None:
+def test_default_source_and_plugin_inspectors_carry_the_reader_verdict(
+    tmp_path: Path, exported_plugin_tree: Path
+) -> None:
     broken = tmp_path / "broken"
     _write_lefthook(
         broken,
@@ -271,7 +272,8 @@ def test_default_source_and_plugin_inspectors_carry_the_reader_verdict(tmp_path:
         "      fail_text: PUSH BLOCKED by quality; read logs/failure.log\n",
     )
 
-    for script in (SOURCE_INSPECTOR, PLUGIN_INSPECTOR):
+    plugin_inspector = exported_plugin_tree / "skills" / "setup" / "scripts" / "inspect_repo.py"
+    for script in (SOURCE_INSPECTOR, plugin_inspector):
         broken_payload = _run_inspector(script, broken)
         shaped_payload = _run_inspector(script, shaped)
         assert broken_payload["state"] == "action-required"

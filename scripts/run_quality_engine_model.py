@@ -84,24 +84,64 @@ def _command(value: Any, label: str) -> tuple[str, ...]:
     return tuple(value)
 
 
+_CONDITION_VERBS = frozenset(
+    {
+        "any_of",
+        "all_of",
+        "env",
+        "file_exists",
+        "mode_in",
+        "predicate",
+        "release",
+        "prior_phases_green",
+        "non_claim_absent",
+    }
+)
+
+
 def _condition(value: Any, label: str) -> dict[str, Any]:
+    """Validate the small boolean condition language used by gate rows.
+
+    A plain mapping is an implicit ``all_of``.  Explicit ``any_of``/``all_of``
+    keep the YAML readable when a row needs more than one alternative.
+    """
     if value is None:
         return {}
     condition = _mapping(value, label)
-    if len(condition) != 1:
-        raise RunnerError(f"{label} must contain exactly one condition verb")
-    verb = next(iter(condition))
-    if verb not in {"env", "file_exists", "mode_in", "predicate"}:
-        raise RunnerError(f"{label} uses unsupported condition {verb!r}")
-    if verb == "env" and not isinstance(condition[verb], dict):
-        raise RunnerError(f"{label}.env must be a mapping")
-    if verb == "mode_in" and (
-        not isinstance(condition[verb], list)
-        or any(not isinstance(item, str) for item in condition[verb])
-    ):
-        raise RunnerError(f"{label}.mode_in must be a list of strings")
-    if verb in {"file_exists", "predicate"} and not isinstance(condition[verb], str):
-        raise RunnerError(f"{label}.{verb} must be a string")
+    if not condition:
+        raise RunnerError(f"{label} must not be empty")
+    unknown = set(condition) - _CONDITION_VERBS
+    if unknown:
+        raise RunnerError(f"{label} uses unsupported condition {sorted(unknown)[0]!r}")
+    if "any_of" in condition or "all_of" in condition:
+        if len(condition) != 1:
+            raise RunnerError(f"{label} combinators cannot be mixed with condition verbs")
+        verb = next(iter(condition))
+        branches = condition[verb]
+        if (
+            not isinstance(branches, list)
+            or not branches
+            or any(not isinstance(branch, dict) for branch in branches)
+        ):
+            raise RunnerError(f"{label}.{verb} must be a non-empty list of mappings")
+        return {verb: [_condition(branch, f"{label}.{verb}[{index}]") for index, branch in enumerate(branches)]}
+    for verb, branch in condition.items():
+        if verb == "env":
+            if not isinstance(branch, dict) or any(
+                not isinstance(name, str) or not name or not isinstance(expected, str)
+                for name, expected in branch.items()
+            ):
+                raise RunnerError(f"{label}.env must map non-empty names to strings")
+        elif verb == "mode_in":
+            if not isinstance(branch, list) or not branch or any(
+                not isinstance(item, str) for item in branch
+            ):
+                raise RunnerError(f"{label}.mode_in must be a non-empty list of strings")
+        elif verb in {"file_exists", "predicate", "non_claim_absent"}:
+            if not isinstance(branch, str) or not branch:
+                raise RunnerError(f"{label}.{verb} must be a non-empty string")
+        elif verb in {"release", "prior_phases_green"} and not isinstance(branch, bool):
+            raise RunnerError(f"{label}.{verb} must be true or false")
     return condition
 
 
@@ -194,4 +234,15 @@ def load_gate_list(path: Path) -> GateList:
             groups = {gate.variant_of or gate.label for gate in rows}
             if len(groups) != 1:
                 raise RunnerError(f"duplicate gate label {label!r} is not variant-qualified")
+    variable_tokens: set[str] = set()
+    token_re = re.compile(r"\$(?:\{([A-Za-z_][A-Za-z0-9_]*)(?:\[@\])?\}|([A-Za-z_][A-Za-z0-9_]*))")
+    for gate in all_gates:
+        for token in gate.command:
+            for match in token_re.finditer(token):
+                variable_tokens.add(match.group(1) or match.group(2))
+    undeclared = sorted(variable_tokens - set(variables))
+    if undeclared:
+        raise RunnerError(
+            f"gate list command references undeclared runner_variables: {', '.join(undeclared)}"
+        )
     return GateList(phases=phases, runner_variables=frozenset(variables))

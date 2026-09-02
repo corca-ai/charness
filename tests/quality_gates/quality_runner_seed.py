@@ -19,7 +19,7 @@ def quality_runner_seed(*, cache_get_or_build=None) -> Path:
     def build(staging: Path) -> None:
         make_quality_runner_repo(staging)
 
-    return cache_get_or_build("quality-runner-repo-seed", build) / "repo"
+    return cache_get_or_build("quality-runner-repo-seed-r2b", build) / "repo"
 
 
 @pytest.fixture(scope="session")

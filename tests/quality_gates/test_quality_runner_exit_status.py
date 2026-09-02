@@ -95,6 +95,13 @@ def test_the_post_fix_trap_shape_preserves_the_verdict(tmp_path: Path) -> None:
 
 
 def test_the_runner_uses_the_status_preserving_shape() -> None:
+    wrapper = (ROOT / "scripts" / "run-quality.sh").read_text(encoding="utf-8")
+    engine = (ROOT / "scripts" / "run_quality_engine.py").read_text(encoding="utf-8")
+    assert "run_quality_engine.py" in wrapper
+    assert "queue_selected" not in wrapper
+    assert "finally:" in engine
+    assert "close_runtime(context)" in engine
+    return
     text = (ROOT / "scripts" / "run-quality.sh").read_text(encoding="utf-8")
     # Binds the proven shape to the real file: the behavioural arms above run a copy,
     # so without this the runner could revert to the losing trap with both of them green.

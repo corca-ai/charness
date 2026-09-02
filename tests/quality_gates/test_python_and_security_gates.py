@@ -37,6 +37,8 @@ def _copy_script(repo: Path, script_name: str) -> Path:
         shutil.copy2(
             ROOT / "scripts" / "quality_universes_lib.py", scripts_dir / "quality_universes_lib.py"
         )
+    (repo / "packaging").mkdir(exist_ok=True)
+    shutil.copy2(ROOT / "packaging" / "charness.json", repo / "packaging" / "charness.json")
     return script_path
 
 
@@ -256,6 +258,8 @@ def test_check_shell_fails_when_root_file_discovery_fails(tmp_path: Path) -> Non
 def test_check_shell_skips_shellcheck_when_successful_discovery_is_empty(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
+    (repo / "packaging").mkdir()
+    shutil.copy2(ROOT / "packaging" / "charness.json", repo / "packaging" / "charness.json")
     script_path = ROOT / "scripts" / "check-shell.sh"
     bin_dir = repo / "bin"
     bin_dir.mkdir()
@@ -347,6 +351,8 @@ def test_check_secrets_prefers_gitleaks_when_available(tmp_path: Path) -> None:
     shutil.copy2(
         ROOT / "scripts" / "quality_universes_lib.py", scripts_dir / "quality_universes_lib.py"
     )
+    (repo / "packaging").mkdir(exist_ok=True)
+    shutil.copy2(ROOT / "packaging" / "charness.json", repo / "packaging" / "charness.json")
     (repo / ".agents").mkdir()
     (repo / ".agents" / "quality-adapter.yaml").write_text(
         "version: 1\nrepo: consumer\nuniverses:\n  secrets_config: config/gitleaks.toml\n",

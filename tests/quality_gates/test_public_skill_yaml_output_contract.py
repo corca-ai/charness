@@ -253,11 +253,11 @@ def test_inventory_dispatch_commands_are_runnable_yaml_surfaces(
 
 
 def test_every_quality_inventory_exposes_yaml_output_contract(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, exported_plugin_tree: Path
 ) -> None:
     monkeypatch.setenv("PYTEST_DEBUG_TEMPROOT", str(tmp_path / "inventory-pytest-temp"))
     source_dir = ROOT / "skills/public/quality/scripts"
-    plugin_dir = ROOT / "plugins/charness/skills/quality/scripts"
+    plugin_dir = exported_plugin_tree / "skills" / "quality" / "scripts"
     source_names = {path.name for path in source_dir.glob("inventory_*.py")}
     plugin_names = {path.name for path in plugin_dir.glob("inventory_*.py")}
 
@@ -302,7 +302,7 @@ def test_quality_inventory_keeps_one_real_subprocess_entrypoint_smoke(tmp_path: 
     assert result.stderr == ""
 
 
-def test_quality_dispatch_plugin_commands_match_canonical_source() -> None:
+def test_quality_dispatch_plugin_commands_match_canonical_source(exported_plugin_tree: Path) -> None:
     names = {
         shlex.split(snippet)[0]
         for snippet in re.findall(r"`\$SKILL_DIR/scripts/([^`]*)`", INVENTORY_DISPATCH)
@@ -313,7 +313,7 @@ def test_quality_dispatch_plugin_commands_match_canonical_source() -> None:
 
     for script_name in sorted(names):
         source = ROOT / "skills/public/quality/scripts" / script_name
-        plugin = ROOT / "plugins/charness/skills/quality/scripts" / script_name
+        plugin = exported_plugin_tree / "skills" / "quality" / "scripts" / script_name
         assert plugin.read_bytes() == source.read_bytes(), script_name
 
 

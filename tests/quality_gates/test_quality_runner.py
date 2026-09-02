@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from runtime_bootstrap import import_repo_module
 from scripts.run_standing_pytest import choose_xdist_workers
@@ -33,7 +34,7 @@ def test_quality_runner_seed_uses_the_cross_worker_cache(tmp_path: Path) -> None
 
     seed = quality_runner_seed(cache_get_or_build=fake_cache)
 
-    assert cache_calls == ["quality-runner-repo-seed"]
+    assert cache_calls == ["quality-runner-repo-seed-r2b"]
     assert (seed / "scripts" / "run-quality.sh").is_file()
 
 
@@ -794,32 +795,26 @@ def test_every_queued_repo_script_gate_has_a_seeded_harness_stub() -> None:
 
 
 def test_quality_runner_keeps_specdown_reports_out_of_the_worktree() -> None:
-    """This test used to grep the runner for `specdown run -jobs 4 -out` and pass --
-    while every quality run dirtied the tracked `.charness/specdown/report.json`.
-    `-out` redirects only the HTML directory; the JSON reporter's destination lives
-    in `specdown.json`, so the flag the test pinned never controlled the file the
-    test is named after. Assert the redirect that actually decides it: the runner
-    must pass a `-config`, and the config that helper produces must point every
-    reporter outside the repo."""
-    runner = RUN_QUALITY_SCRIPT_TEXT
-    specdown_command = next(
-        line for line in runner.splitlines() if 'queue_selected "specdown"' in line
+    """The declared specdown row carries a clean argv and an external output path."""
+    data = yaml.safe_load(
+        (ROOT / ".agents" / "quality-gates.yaml").read_text(encoding="utf-8")
     )
-
-    # Unescape the nested `bash -c` quoting so the assertions can bind the flag to
-    # the variable. Asserting `-config` is merely PRESENT would still pass if the
-    # runner passed the repo's own specdown.json -- the same assert-the-proxy hole
-    # this test is being repaired for.
-    unescaped = specdown_command.replace("\\", "")
-    assert 'queue_selected "specdown" bash -c' in specdown_command
-    assert (
-        'specdown_config=$(python3 "$REPO_ROOT/scripts/specdown_ephemeral_config.py"' in unescaped
+    row = next(
+        gate
+        for phase in data["phases"]
+        for gate in phase.get("gates", [])
+        if gate["label"] == "specdown"
     )
-    assert 'specdown run -config "$specdown_config"' in unescaped
-    assert "RUN_QUALITY_TMPDIR/specdown-report" in specdown_command
-    # Removed on 2026-07-22 because specdown rejects them; keep them gone.
-    assert "-quiet" not in specdown_command
-    assert "-no-report" not in specdown_command
+    assert row["command"] == [
+        "python3",
+        "scripts/run_specdown.py",
+        "--repo-root",
+        "$REPO_ROOT",
+        "--output-dir",
+        "$SPECDOWN_OUTPUT_DIR",
+    ]
+    assert "bash" not in row["command"] and "-c" not in row["command"]
+    assert "specdown run -jobs 4 -out" not in RUN_QUALITY_SCRIPT_TEXT
 
 
 def test_specdown_ephemeral_config_redirects_every_reporter_out_of_the_repo(tmp_path: Path) -> None:

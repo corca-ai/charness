@@ -11,6 +11,8 @@ from types import SimpleNamespace
 
 import pytest
 
+ROOT = Path(__file__).resolve().parents[2]
+
 
 def test_standing_pytest_command_uses_xdist_and_expands_globs(tmp_path: Path, monkeypatch) -> None:
     from scripts import run_standing_pytest as runner
@@ -841,6 +843,8 @@ def test_install_update_self_validation_delegates_to_parallel_runner(tmp_path: P
     # The gate sources the shared export-copy guard; without it the run dies on a
     # missing file rather than on the delegation this test is about.
     shutil.copy2(source.parent / "exported-copy-guard.sh", scripts / "exported-copy-guard.sh")
+    (repo / "packaging").mkdir()
+    shutil.copy2(ROOT / "packaging" / "charness.json", repo / "packaging" / "charness.json")
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     capture = tmp_path / "args.txt"

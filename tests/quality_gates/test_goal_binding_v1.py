@@ -13,8 +13,6 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "skills/public/achieve/scripts/goal_binding.py"
-PLUGIN_SCRIPT = ROOT / "plugins/charness/skills/achieve/scripts/goal_binding.py"
-PLUGIN_SUPPORT_SCRIPT = ROOT / "plugins/charness/skills/achieve/scripts/goal_binding_support.py"
 SUPPORT_SCRIPT = ROOT / "skills/public/achieve/scripts/goal_binding_support.py"
 OBSERVATION_SCRIPT = ROOT / "skills/public/issue/scripts/issue_tracker_observation.py"
 
@@ -546,10 +544,16 @@ def test_provider_observation_consumes_validator_returned_hash(tmp_path: Path) -
 @pytest.mark.boundary_contract(
     reason="env-scrubbed export self-sufficiency: a clean interpreter validates source and exported bindings"
 )
-def test_clean_process_validates_frozen_pair_and_export_matches_source(tmp_path: Path) -> None:
+def test_clean_process_validates_frozen_pair_and_export_matches_source(
+    tmp_path: Path, exported_plugin_tree: Path
+) -> None:
     draft, path, payload = _fixture(tmp_path)
-    assert SCRIPT.read_bytes() == PLUGIN_SCRIPT.read_bytes()
-    assert SUPPORT_SCRIPT.read_bytes() == PLUGIN_SUPPORT_SCRIPT.read_bytes()
+    plugin_script = exported_plugin_tree / "skills" / "achieve" / "scripts" / "goal_binding.py"
+    plugin_support_script = (
+        exported_plugin_tree / "skills" / "achieve" / "scripts" / "goal_binding_support.py"
+    )
+    assert SCRIPT.read_bytes() == plugin_script.read_bytes()
+    assert SUPPORT_SCRIPT.read_bytes() == plugin_support_script.read_bytes()
 
     code = """
 import importlib.util
@@ -569,7 +573,7 @@ result = module.validate_binding(
 assert result['authority'] == 'parent-bound'
 assert result['binding_sha256'] == sys.argv[7]
 """
-    for candidate in (SCRIPT, PLUGIN_SCRIPT):
+    for candidate in (SCRIPT, plugin_script):
         completed = subprocess.run(
             [
                 sys.executable,
