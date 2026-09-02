@@ -422,7 +422,8 @@ def test_quality_run_plan_lists_all_on_demand_reference_triggers(tmp_path: Path)
     # Deliberately NOT "every on-demand read has a trigger": that cannot fail here, because
     # scripts/validate_quality_reference_catalog.py:65-66 already raises on an on-demand
     # reference without a `trigger`, and it is queued at run-quality.sh:721.
-    assert len(triggers) >= 35
+    # 2026-09-02: 35 -> 34 when #768 retired references/boundary-bypass-ratchet.md.
+    assert len(triggers) >= 34
     # This one CAN fail, and nothing else holds it. The map is keyed by path
     # (plan_quality_run.py:304-308) while the catalog validator assigns `paths[path] = role`
     # (scripts/validate_quality_reference_catalog.py:67) with no duplicate check -- so two entries
