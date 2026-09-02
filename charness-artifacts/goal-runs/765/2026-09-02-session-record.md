@@ -152,8 +152,8 @@ classes seeded, one RCA event). Lane worktrees are all removed.
    (the generated mirror MUST be regenerated after any skill or script edit or
    two mirror tests go red), then `./scripts/run-quality.sh --full --read-only`.
    Expect green; if not, the reds are the tree's, not the procedure's.
-2. Reword the three WIP lane subjects with `/tmp/reword-768.sh` if it still
-   exists, else by hand (`git rebase -i a5002ffc9`): b646c21f6 is the P2
+2. Reword the three WIP lane subjects with
+   `bash briefs/reword-768-wip-subjects.sh` (or by hand: `git rebase -i a5002ffc9`): b646c21f6 is the P2
    production lane (skill and worktree spawns through the guard), 697975921 is
    T2 (quality-gate tests in-process), f72baa7b6 is T3 (CLI and coverage-debt
    tests in-process). SHAs are the post-rebase ones on this main.
