@@ -1,0 +1,1 @@
+status=unconfigured: skill_ergonomics_skill_paths is empty in quality-adapter.yaml; no SKILL.md files were found at default fallback paths skills/, skills/public/, or skills/support/.

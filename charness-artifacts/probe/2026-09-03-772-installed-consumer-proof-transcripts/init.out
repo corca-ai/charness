@@ -1,0 +1,54 @@
+event: init
+response_level: summary
+detail_available: true
+package_id: charness
+repo_root: /tmp/charness-772-proof/home/.agents/src/charness
+target_repo_root: /tmp/charness-772-proof/home/.agents/src/charness
+checkout_version: 8.0.2
+codex_source_version: 8.0.2
+codex_cache_manifest_version: null
+codex_cache_manifest_status: null
+codex_source_cache_drift: false
+completed_actions:
+- codex_source_prepared
+- codex_marketplace_registered
+- upstream_support_skills_synced
+- grok_plugin_installed
+checkout:
+  repo_root: /tmp/charness-772-proof/home/.agents/src/charness
+  pulled: false
+  cloned: false
+codex_host_install:
+  status: skipped
+  method: codex-app-server-plugin-install
+  reason: codex-cli-missing
+codex_host_guidance:
+  status: host-unavailable
+  manual_action_required: false
+  message: Codex CLI not detected; charness prepared the local plugin source and personal
+    marketplace only.
+claude_host_guidance:
+  status: unavailable
+  manual_action_required: false
+  message: Claude CLI not detected on this machine.
+grok_host_guidance:
+  status: unavailable
+  manual_action_required: false
+  message: Grok CLI not detected on this machine.
+host_next_steps:
+  codex: Codex CLI not detected; charness prepared the local plugin source and personal
+    marketplace only.
+  claude: Claude CLI not detected on this machine.
+  grok: Grok CLI not detected on this machine.
+repo_onboarding:
+  status: source-checkout
+  manual_action_required: false
+  message: null
+next_action:
+  kind: none
+  host: null
+  status: no-action
+  manual_action_required: false
+  message: No manual host action is currently required. See `host_next_steps` for
+    host-specific status.
+  source: host_next_steps

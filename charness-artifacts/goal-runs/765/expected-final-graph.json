@@ -1,0 +1,33 @@
+{
+  "kind": "charness.expected-sub-issue-set/v1",
+  "repo": "corca-ai/charness",
+  "parent_number": 765,
+  "children": [
+    766,
+    767,
+    768,
+    769,
+    770,
+    771,
+    772,
+    773,
+    774
+  ],
+  "source": {
+    "status": "operator-approved-initial-graph-plus-two-approved-amendments",
+    "initial_graph_path": "charness-artifacts/goal-runs/765/expected-initial-graph.json",
+    "amendments": [
+      {
+        "number": 773,
+        "operation": "charness-artifacts/goal-runs/765/operations/amend-add-goal-run-binding-simplification.json"
+      },
+      {
+        "number": 774,
+        "operation": "charness-artifacts/goal-runs/765/operations/amend-add-ledger-only-lessons.json"
+      }
+    ],
+    "frozen_draft_sha256": "129f065a28ce2c6a6a7fd7dc5f6ff2b63349b75ddf1ab62411ea4879ff8d2501",
+    "binding_sha256": "20fdaf7e9a3e1489a308b11041555a9249b2e826d93d951f294a565b24d161cf",
+    "live_readback": "goal-run-read verified-read on 2026-09-03: nine linked children, 766 to 771, 773, 774 CLOSED, 772 OPEN at read time"
+  }
+}

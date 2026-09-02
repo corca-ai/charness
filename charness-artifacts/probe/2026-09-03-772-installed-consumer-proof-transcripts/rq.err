@@ -1,0 +1,5 @@
+run-quality: refusing to run from an installed/exported copy without a source checkout.
+  package root: /tmp/charness-772-proof/home/.codex/plugins/charness
+  no git toplevel was found and packaging/charness.json is absent.
+This runner executes the declared quality gate list from its package root.
+Run this gate from a charness source checkout.

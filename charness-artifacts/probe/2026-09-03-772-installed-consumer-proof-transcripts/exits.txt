@@ -1,0 +1,10 @@
+init exit=0
+doctor exit=0
+update exit=0
+version exit=0
+doctor-write-state exit=0
+plan_quality_run exit=0
+check_regenerable_facts exit=0
+render_runtime_summary exit=0
+inventory_skill_ergonomics exit=0
+exported-run-quality exit=1

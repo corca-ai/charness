@@ -1,0 +1,44 @@
+Quality run plan:
+- next_action: read_primer_refs
+- skills_in_scope: false (no skills/public or skills/support SKILL.md files found)
+- gate_plan: report_first
+- declaration_lifecycle: not-configured (0 gap(s))
+  - adapter: not-found / valid
+- required_reads:
+  - references/quality-lenses.md: Interpret every quality packet through concept, behavior, security, and operability. [7448 bytes]
+  - references/surface-contract-review.md: Separate routed gate receipts from semantic surface coverage and disclose unexamined axes. [1820 bytes]
+  - references/proposal-flow.md: Keep recommendations concrete, sourced, and proportionate. [5841 bytes]
+  - references/operability-signals.md: Read runtime, setup, CI, and maintenance signals as quality evidence. [4394 bytes]
+- phase_barriers:
+  - Read declaration_lifecycle before gates; declared-only, unreachable, missing, and not-run are not covered verdicts.
+  - Read required_reads before broad gates.
+  - The brief carries the load-bearing classification/automation/maintainer-enforcement discipline and the inventory-dispatch routing index (concern area -> inventories + detail_refs) inline; apply it and open a brief detail_ref only when its trigger fires.
+  - Run deterministic gates as evidence packets, then analyze the report against the primer refs before fixing.
+  - Use gate trust_model/cost_tier/parallel_group to decide whether to trust, parallelize, or manually inspect a packet.
+  - Open on-demand refs only when a concrete gate, inventory, source, or operator finding matches their trigger.
+- brief (load-bearing residue of demoted primers; open detail_ref on trigger):
+  - gate states: healthy, weak, missing, deferred (see references/gate-classification.md)
+  - weak also = present but easy to game, too shallow for the claimed confidence, duplicated by a better gate, OR a green non-shallow gate STILL paying standing runtime after a cheaper, more-direct proof now covers the same seam (cost-redundancy alone makes a working gate weak)
+  - automation: AUTO_EXISTING, AUTO_CANDIDATE, NON_AUTOMATABLE (see references/automation-promotion.md)
+  - maintainer-local: If the repo has a canonical final stop-before-finish gate, record HOW it is enforced before push in maintainer clones (checked-in hook + clone validator, repo-owned installer, or explicit documented omission).
+    field: record a Maintainer-Local Enforcement disposition; 'Unclear' is not acceptable — default to `missing` until the gap is closed or explicitly deferred with a reason
+  - inventory dispatch (9 concern areas; open references/inventory-dispatch.md on trigger):
+    - cli-operator-surface: inventory_cli_ergonomics.py, inventory_cli_side_effect_probes.py
+    - docs-readability: inventory_entrypoint_docs_ergonomics.py, inventory_public_spec_quality.py
+    - skills: inventory_skill_ergonomics.py, suggest_public_skill_dogfood.py
+    - runtime-test-economics: inventory_standing_gate_verbosity.py, inventory_standing_test_economics.py, inventory_command_dominance.py, inventory_structural_waste.py, inventory_ci_recoverable_gates.py, render_runtime_summary.py
+    - agent-production-runtime: (detail_refs only)
+    - source-hygiene: inventory_dual_implementation.py, inventory_brittle_source_guards.py, inventory_lint_ignores.py, inventory_nose_clones.py, inventory_gitignore_scan_hygiene.py, inventory_hardcoded_discovery.py, run_dead_code_advisory.py
+    - adapter-gate-design: inventory_adapter_gate_design.py
+    - security-supply-chain: (detail_refs only)
+    - coverage-eval-depth: (detail_refs only)
+- gate_packets:
+  - read-only-quality: broad / hard gate plus advisory sub-packets; green is evidence, not judgment
+    command: ./scripts/run-quality.sh --read-only
+  - runtime-summary: cheap / measurement packet
+    command: python3 "$SKILL_DIR/scripts/render_runtime_summary.py" --repo-root . --detail
+  - regenerable-facts: cheap / hard on findings or invalid declared scope; unconfigured docs are a typed no-verdict at exit 0, never a clean claim
+    command: python3 "$SKILL_DIR/scripts/check_regenerable_facts.py" --repo-root .
+  - skill-ergonomics: cheap / heuristic advisory with false positives and false negatives
+    command: python3 "$SKILL_DIR/scripts/inventory_skill_ergonomics.py" --repo-root . --summary
+- on_demand_reads: open only from concrete findings

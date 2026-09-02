@@ -1,0 +1,12 @@
+ls: cannot access '/tmp/charness-772-proof/home/.codex/plugins/charness/tools': No such file or directory
+---
+      1 "$REPO_ROOT/tools/
+      1 f"integrations/tools/
+      1 "integrations/tools/
+      3 /integrations/tools/
+     19 integrations/tools/
+      1 "./tools/
+      1 "/tools/
+     47 "tools/
+      1 /tools/
+     15 tools/

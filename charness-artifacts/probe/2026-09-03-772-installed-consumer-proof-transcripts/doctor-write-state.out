@@ -1,0 +1,48 @@
+event: doctor
+response_level: summary
+detail_available: true
+package_id: charness
+repo_root: /tmp/charness-772-proof/home/.agents/src/charness
+managed_checkout: true
+target_repo_root: /tmp/charness-772-proof/consumer
+checkout_version: 8.0.2
+checkout_git_head: 55a1f235e
+codex_source_version: 8.0.2
+codex_cache_manifest_version: null
+codex_cache_manifest_status: null
+codex_source_cache_drift: false
+codex_enabled_plugin_id: null
+codex_enabled_plugin_ids: []
+codex_host_guidance:
+  status: host-unavailable
+  manual_action_required: false
+  message: Codex CLI not detected; charness prepared the local plugin source and personal
+    marketplace only.
+claude_host_guidance:
+  status: unavailable
+  manual_action_required: false
+  message: Claude CLI not detected on this machine.
+grok_host_guidance:
+  status: unavailable
+  manual_action_required: false
+  message: Grok CLI not detected on this machine.
+host_next_steps:
+  codex: Codex CLI not detected; charness prepared the local plugin source and personal
+    marketplace only.
+  claude: Claude CLI not detected on this machine.
+  grok: Grok CLI not detected on this machine.
+  repo: This repo does not look fully charness-onboarded yet. After restarting the
+    host, start a repo-root session and run the `setup` skill before broader work.
+repo_onboarding:
+  status: required
+  manual_action_required: true
+  message: This repo does not look fully charness-onboarded yet. After restarting
+    the host, start a repo-root session and run the `setup` skill before broader work.
+next_action:
+  kind: repo-init
+  host: null
+  status: required
+  manual_action_required: true
+  message: This repo does not look fully charness-onboarded yet. After restarting
+    the host, start a repo-root session and run the `setup` skill before broader work.
+  source: repo_onboarding

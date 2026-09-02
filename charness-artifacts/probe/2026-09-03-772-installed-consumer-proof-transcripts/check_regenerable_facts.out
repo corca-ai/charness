@@ -1,0 +1,16 @@
+declared: false
+checked: 1
+surfaces:
+- AGENTS.md
+- CLAUDE.md
+- README.md
+- skills/*/*/SKILL.md
+- skills/*/*/references/*.md
+exempted: []
+findings: []
+unclassified_docs: []
+unreasoned_exemptions: []
+adapter_refusal: null
+status: clean
+diagnostics:
+- no regenerable facts in 1 forward-looking file(s) (0 exempted with a recorded reason)

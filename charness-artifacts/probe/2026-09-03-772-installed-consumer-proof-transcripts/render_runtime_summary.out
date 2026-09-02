@@ -1,0 +1,3 @@
+- runtime source: not configured; add structured timing capture (or a `command_timing_log` adapter key) before reporting timing trends.
+- runtime hot spots: unavailable until structured runtime metrics have samples.
+- runtime visibility: weak due to `runtime_visibility_missing_budgets`, `runtime_visibility_missing_startup_probes`; Add budgets for dominant standing-gate phases once structured runtime samples exist; Add at least one standing startup probe for agent-facing CLI or adapter startup.
