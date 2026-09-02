@@ -13,7 +13,21 @@ import re
 from pathlib import Path
 from typing import Any
 
-from scripts.premise_decision_history import (
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.premise.premise_decision_history import (  # noqa: E402
     _ID_RE,
     _REPOSITORY_RE,
     _SHA256_RE,
@@ -32,12 +46,12 @@ from scripts.premise_decision_history import (
     _safe_repo_path,
     _timestamp,
 )
-from scripts.premise_git_snapshot import (
+from scripts.premise.premise_git_snapshot import (  # noqa: E402
     CapturedTreeSnapshot,
     history_contains_exact_line,
     inspect_captured_tree,
 )
-from scripts.premise_tree_observation import (
+from scripts.premise.premise_tree_observation import (  # noqa: E402
     CurrentTreeInspectionError,
     ObservationPathEscape,
     observe_current_tree,

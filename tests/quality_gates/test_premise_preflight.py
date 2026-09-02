@@ -11,16 +11,16 @@ from typing import Any
 import pytest
 import yaml
 
-import scripts.premise_decision_history as premise_history
-import scripts.premise_git_snapshot as premise_git
-import scripts.premise_preflight_lib as premise_lib
-import scripts.premise_tree_observation as premise_tree
-from scripts.premise_preflight_lib import PremiseError, run_preflight
+import scripts.premise.premise_decision_history as premise_history
+import scripts.premise.premise_git_snapshot as premise_git
+import scripts.premise.premise_preflight_lib as premise_lib
+import scripts.premise.premise_tree_observation as premise_tree
+from scripts.premise.premise_preflight_lib import PremiseError, run_preflight
 from tests.script_main import load_script_module, run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[2]
-SOURCE_CLI = ROOT / "scripts" / "check_premise_preflight.py"
-PLUGIN_CLI = ROOT / "plugins" / "charness" / "scripts" / "check_premise_preflight.py"
+SOURCE_CLI = ROOT / "scripts" / "premise" / "check_premise_preflight.py"
+PLUGIN_CLI = ROOT / "plugins" / "charness" / "scripts" / "premise" / "check_premise_preflight.py"
 _SOURCE_CLI_MODULE = load_script_module("check_premise_preflight_source_for_test", SOURCE_CLI)
 
 

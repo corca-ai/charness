@@ -821,7 +821,7 @@ def test_the_premise_tree_observation_lists_the_index_without_the_package(
     before = set(sys.modules)
     try:
         observation = load_script_module(
-            "premise_tree_observation_flat_batch7", ROOT / "scripts/premise_tree_observation.py"
+            "premise_tree_observation_flat_batch7", ROOT / "scripts/premise/premise_tree_observation.py"
         )
 
         assert observation._index_paths(repo) == {b"tracked.py"}

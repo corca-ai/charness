@@ -7,6 +7,20 @@ import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
 
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
 try:
     from scripts.core.subprocess_guard import run_process
 except ModuleNotFoundError:  # loaded as a standalone sibling module

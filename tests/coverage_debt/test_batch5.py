@@ -348,11 +348,12 @@ def test_a_score_for_a_lesson_no_transition_ever_seeded_is_refused() -> None:
 
 
 # ---------------------------------------------------------------------------
-# scripts/check_premise_preflight.py -- reason codes on a decision-level refusal
+# scripts/premise/check_premise_preflight.py -- reason codes on a decision-level refusal
 # ---------------------------------------------------------------------------
 
 PREMISE_CLI = load_script_module(
-    "check_premise_preflight_batch5", ROOT / "scripts" / "check_premise_preflight.py"
+    "check_premise_preflight_batch5",
+    ROOT / "scripts" / "premise" / "check_premise_preflight.py",
 )
 
 

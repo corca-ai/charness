@@ -40,18 +40,19 @@ import pytest
 from scripts import (
     changed_line_run_trust,
     check_prose_pin,
-    premise_preflight_lib,
+    checkout_view,
+    mutation_changed_files_lib,
     surfaces_lib,
-    task_run_state,
+    worktree_cleanup_lib,
 )
-from scripts import premise_git_snapshot as premise_snapshot
-from scripts.core import git_checkout as checkout
-from scripts.core import git_status_snapshot as status_snapshot
-from scripts.gates_support import classify_t_signal as t_signal
-from scripts.hooks import check_staged_worktree_consistency as staged_consistency
-from scripts.mutation import mutation_changed_files_lib
-from scripts.worktree import checkout_view, worktree_cleanup_lib
-from scripts.worktree import worktree_doctor_checks as worktree_checks
+from scripts import check_staged_worktree_consistency as staged_consistency
+from scripts import classify_t_signal as t_signal
+from scripts import git_checkout as checkout
+from scripts import git_status_snapshot as status_snapshot
+from scripts import worktree_doctor_checks as worktree_checks
+from scripts.premise import premise_git_snapshot as premise_snapshot
+from scripts.premise import premise_preflight_lib
+from scripts.task_run.task_run import task_run_state
 from tests.quality_gates.repo_shapes import install_committed_repo
 from tests.script_loader import load_script_module
 
@@ -385,7 +386,10 @@ def test_a_parent_that_is_not_a_commit_stops_the_walk_with_no_verdict(
     repo = install_committed_repo(tmp_path / "repo", {"tracked.py": "base\n"})
     payload = b"tree t\nparent " + b"0" * 40 + b"\n\nsubject\n"
 
-    assert premise_snapshot.history_contains_exact_line(repo, "h" * 40, payload, "marker") is None
+    assert (
+        premise_snapshot.history_contains_exact_line(repo, "h" * 40, payload, "marker")
+        is None
+    )
 
 
 def test_a_path_containing_a_newline_is_snapshotted_one_object_at_a_time(
