@@ -62,6 +62,7 @@ infer a stronger claim from local tests.
 
 If a finding is not required for the current Goal Run, file or defer it through
 `issue` with a reason. Do not expand the graph merely because a local fix is
-convenient. If it is an in-scope independently closable Work Item, add it only
-through the provider's explicit graph-amendment operation and preserve the
-immutable initial binding.
+convenient. If it is an in-scope independently closable Work Item, add it through the
+issue-owned `add-child` operation with an `amendment` (rank, dependencies,
+reason, operator approval); the parent metadata's `amendments` list records it
+and the immutable initial binding is preserved.

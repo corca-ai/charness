@@ -18,7 +18,7 @@ Prove the composition once and close the parent through its guarded readback pat
 
 ## Dependencies
 
-docs-as-code, gate-scope-repair, subprocess-retroactive-removal, quality-boundary-and-run-quality, scripts-packaging, rework-instrument.
+rework-instrument, goal-run-binding-simplification, docs-as-code, gate-scope-repair, subprocess-retroactive-removal, quality-boundary-and-run-quality, scripts-packaging.
 
 ## Non-claims
 

@@ -69,7 +69,18 @@ provider mutation and execution state.
 
 ## Binding and pickup
 
-Approval freezes the exact draft bytes and the binding records their SHA-256.
-The binding also records the exact parent identity and approved Work Item
-manifest. Resume uses the issue-native objective `/goal #N`; the Goal Run pickup
-validates that identity and selects the provider cursor's next child.
+Approval freezes the draft and the binding records its SHA-256 as the identity
+of the plan that was approved. The binding also records the parent identity and
+the approved Work Item manifest. Resume uses the issue-native objective
+`/goal #N`; the Goal Run pickup validates that identity and selects the provider
+cursor's next child.
+
+What is bound is identity, not prose. A child is identified by its
+`<!-- charness-work-item-key: <key> -->` marker, membership by the provider's
+sub-issue graph, and the plan by the approval-time draft hash. Child prose, the
+parent's human-readable body, and the draft may be corrected afterwards; those
+edits are reversible and visible in provider or git history, so pickup reports
+`draft_amended` instead of refusing. A Work Item added after binding is an
+*amendment*: the parent metadata carries `amendments`, each naming the issue,
+rank, dependencies, reason, and operator approval, and the issue-owned
+`add-child` operation records it. The binding file itself is never rewritten.

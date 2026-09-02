@@ -145,6 +145,10 @@ def load_plan(path: Path, *, repo: str, parent_number: int) -> dict[str, Any]:
     }
 
 
+def operation_name(value: dict[str, Any]) -> Any:
+    return value.get("operation")
+
+
 def load_operation(path: Path, *, repo: str, parent_number: int) -> dict[str, Any]:
     value, digest = _read_json(path, kind=OPERATION_KIND)
     _fields(
@@ -163,10 +167,20 @@ def load_operation(path: Path, *, repo: str, parent_number: int) -> dict[str, An
             "body_file",
             "expected_child_file",
             "amendment_authorization_file",
+            "amendment",
+            "parent_metadata",
             "result",
         },
         "operation",
     )
+    amendment = value.get("amendment")
+    if amendment is not None:
+        if operation_name(value) not in {"add-child"}:
+            raise _error("schema-invalid", "amendment is only valid for add-child")
+        if not isinstance(amendment, dict) or set(amendment) != {"rank", "dependencies", "reason", "approval"}:
+            raise _error("schema-invalid", "amendment must carry rank, dependencies, reason, approval")
+    if value.get("parent_metadata") is not None and not isinstance(value["parent_metadata"], dict):
+        raise _error("schema-invalid", "parent_metadata must be the parent's Goal Run metadata object")
     if _repo(value.get("repo"), "operation.repo").lower() != repo.lower():
         raise _error(
             "parent-mismatch", "operation repository differs from the requested repository"

@@ -1,0 +1,33 @@
+ok: true
+status: verified-write
+outcome: verified-write
+mutation_invoked: true
+operation: update-body
+action: updated
+repo: corca-ai/charness
+number: 772
+url: https://github.com/corca-ai/charness/issues/772
+body_verified: true
+before:
+  ok: true
+  repo: corca-ai/charness
+  number: 772
+  url: https://github.com/corca-ai/charness/issues/772
+  readback_verified: true
+  body_verified: false
+  body_verification: byte-identical
+  stored_body_bytes: 1175
+  body_sha256: db9a72eadf8a81ba0d624fe6651d07623db803143b66b0506f11caa41132ef3a
+single_updater_assumption: true
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null
+observation:
+  started_path: charness-artifacts/goal-runs/765/observations/amend-child-integrated-closeout-2.started.json
+  started_sha256: 29a2c4e4fcf5e2ea0cdc637c0074eb76ffbc9cdfedb86dfd472534bd9b165d8f
+  terminal_path: charness-artifacts/goal-runs/765/observations/amend-child-integrated-closeout-2.terminal.json
+  terminal_sha256: b046d9e02b9cfe26a76f8fba39517662c265209c4802535e9c34339d72ced6ed
+kind: charness.goal-run-apply/v1
+attempt_id: amend-child-integrated-closeout-2

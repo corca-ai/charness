@@ -156,12 +156,16 @@ def test_structural_validation_is_explicitly_not_authority(tmp_path: Path) -> No
     assert _strict_validate(draft, path, payload)["authority"] == "parent-bound"
 
 
-def test_single_byte_draft_change_refuses_without_rebinding(tmp_path: Path) -> None:
+def test_draft_change_after_binding_is_reported_not_refused(tmp_path: Path) -> None:
+    """The binding keeps the approval-time hash as identity; an amended draft is visible, not fatal."""
     draft, path, payload = _fixture(tmp_path)
+    assert _strict_validate(draft, path, payload)["draft_amended"] is False
     draft.write_text("# changed draft\n", encoding="utf-8")
 
-    with pytest.raises(binding.BindingError, match="draft-hash-mismatch"):
-        _strict_validate(draft, path, payload)
+    result = _strict_validate(draft, path, payload)
+    assert result["draft_amended"] is True
+    assert result["draft_sha256"] == payload["draft"]["sha256"]
+    assert result["draft_current_sha256"] != payload["draft"]["sha256"]
 
 
 def test_binding_state_fields_are_not_allowed(tmp_path: Path) -> None:

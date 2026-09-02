@@ -1,0 +1,33 @@
+ok: true
+status: verified-write
+outcome: verified-write
+mutation_invoked: true
+operation: update-body
+action: updated
+repo: corca-ai/charness
+number: 765
+url: https://github.com/corca-ai/charness/issues/765
+body_verified: true
+before:
+  ok: true
+  repo: corca-ai/charness
+  number: 765
+  url: https://github.com/corca-ai/charness/issues/765
+  readback_verified: true
+  body_verified: false
+  body_verification: byte-identical
+  stored_body_bytes: 6893
+  body_sha256: 63369e005b7068bfc5cd1239f0f6d6147c8f33936a11d0b6e68b6986645cc053
+single_updater_assumption: true
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null
+observation:
+  started_path: charness-artifacts/goal-runs/765/observations/amend-parent-773-1.started.json
+  started_sha256: b8fa86d33db52827fa0651a602fa178d6a6fe74f9d7514b6f1c3a2c8dcb4effc
+  terminal_path: charness-artifacts/goal-runs/765/observations/amend-parent-773-1.terminal.json
+  terminal_sha256: 50127ec1e632e7ca057d32c0a501c6dd05c5e52032a69a1ce9d76f973576ddbe
+kind: charness.goal-run-apply/v1
+attempt_id: amend-parent-773-1

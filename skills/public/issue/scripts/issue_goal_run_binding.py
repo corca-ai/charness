@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import hashlib
 import importlib.util
 import runpy
 from pathlib import Path
@@ -90,34 +89,59 @@ def work_item_marker(key: str) -> str:
     return f"<!-- charness-work-item-key: {key} -->"
 
 
+def amended_items(metadata: dict[str, Any] | None) -> list[dict[str, Any]]:
+    """Work Items the parent appended after binding (validated by the pickup contract)."""
+    if not metadata:
+        return []
+    PICKUP.validate_amendments(metadata.get("amendments"), repo=metadata["parent_identity"]["repo"])
+    return PICKUP.amendment_items(metadata)
+
+
+def all_work_items(binding: dict[str, Any], metadata: dict[str, Any] | None = None) -> list[dict[str, Any]]:
+    return PICKUP.effective_work_items(binding["approved_work_items"], metadata or {})
+
+
 def require_expected_children(
-    binding: dict[str, Any], children: list[dict[str, Any]], *, context: str
+    binding: dict[str, Any],
+    children: list[dict[str, Any]],
+    *,
+    context: str,
+    metadata: dict[str, Any] | None = None,
 ) -> None:
     actual = {
         (child.get("repo", binding["parent"]["repo"]).casefold(), child["number"])
         for child in children
     }
-    reused = approved_issue_identities(binding)
-    expected_count = len(binding["approved_work_items"])
-    if len(actual) != len(children) or not reused.issubset(actual) or len(actual) != expected_count:
+    known = approved_issue_identities(binding) | {
+        (item["issue"]["repo"].casefold(), item["issue"]["number"]) for item in amended_items(metadata)
+    }
+    expected_count = len(all_work_items(binding, metadata))
+    if len(actual) != len(children) or not known.issubset(actual) or len(actual) != expected_count:
         raise RuntimeError(
-            f"{context} issue identities differ from the immutable Goal Binding: "
-            f"missing_reused={sorted(reused - actual)!r} "
+            f"{context} issue identities differ from the Goal Run's approved Work Items: "
+            f"missing_known={sorted(known - actual)!r} "
             f"expected_count={expected_count} actual_count={len(actual)}"
         )
 
 
 def work_item_for_target(
-    binding: dict[str, Any], key: str, *, number: int | None = None, context: str = "Work Item"
+    binding: dict[str, Any],
+    key: str,
+    *,
+    number: int | None = None,
+    context: str = "Work Item",
+    metadata: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    matches = [item for item in binding["approved_work_items"] if item.get("key") == key]
+    matches = [item for item in all_work_items(binding, metadata) if item.get("key") == key]
     if len(matches) != 1:
         raise RuntimeError(
-            f"{context} key {key!r} is not uniquely approved by the immutable Goal Binding"
+            f"{context} key {key!r} is not an approved Work Item (binding or parent amendment)"
         )
     item = matches[0]
     issue = item.get("issue")
-    if number is not None:
+    # A created Work Item's number is assigned by the provider and is not in the
+    # binding; its identity is the marker, which the body checks enforce.
+    if number is not None and not (item.get("intent") == "create" and issue is None):
         if (
             not isinstance(issue, dict)
             or issue.get("repo") != binding["parent"]["repo"]
@@ -130,19 +154,33 @@ def work_item_for_target(
     return item
 
 
+def require_marker(key: str, body: bytes | str, *, context: str) -> None:
+    """A child's identity is its work-item marker, present exactly once."""
+    text = body.decode("utf-8") if isinstance(body, bytes) else body
+    if text.count(work_item_marker(key)) != 1:
+        raise RuntimeError(f"{context} must carry the marker for Work Item {key!r} exactly once")
+
+
 def validate_managed_body(
-    binding: dict[str, Any], *, key: str, number: int, body: bytes
-) -> tuple[dict[str, Any], str]:
-    item = work_item_for_target(binding, key, number=number)
-    if item["body_policy"] not in {"managed", "managed-addendum"} or item["body_sha256"] is None:
-        raise RuntimeError(f"Work Item {key!r} does not approve a managed body update")
-    submitted = hashlib.sha256(body).hexdigest()
-    if submitted != item["body_sha256"]:
-        raise RuntimeError(
-            f"submitted body digest for Work Item {key!r} differs from its approved body digest"
-        )
-    observed = item["observed"]
-    return item, observed["body_sha256"]
+    binding: dict[str, Any],
+    *,
+    key: str,
+    number: int,
+    body: bytes,
+    metadata: dict[str, Any] | None = None,
+) -> tuple[dict[str, Any], str | None]:
+    """A child body may change; only its identity marker is enforced.
+
+    Prose is reversible and visible in the provider's edit history, so it is not
+    hashed. The returned observed digest, when the binding recorded one, lets the
+    tracker compare-and-set against a stale read.
+    """
+    item = work_item_for_target(binding, key, number=number, metadata=metadata)
+    if item["intent"] == "reuse" and item["body_policy"] == "preserve-closed-evidence":
+        raise RuntimeError(f"Work Item {key!r} preserves closed evidence and does not accept a body update")
+    require_marker(key, body, context=f"submitted body for Work Item {key!r}")
+    observed = item.get("observed")
+    return item, observed["body_sha256"] if isinstance(observed, dict) else None
 
 
 def require_issue_matches_item(
@@ -160,22 +198,29 @@ def require_issue_matches_item(
     body = issue.get("body")
     if issue.get("number") != number or not isinstance(body, str):
         raise RuntimeError(f"created Work Item {key!r} provider readback is incomplete")
-    if (
-        body.count(work_item_marker(key)) != 1
-        or hashlib.sha256(body.encode("utf-8")).hexdigest() != item["body_sha256"]
-    ):
-        raise RuntimeError(
-            f"issue #{number} does not carry the approved body for created Work Item {key!r}"
-        )
+    if item["intent"] == "amended":
+        if item["issue"]["number"] != number:
+            raise RuntimeError(f"issue #{number} is not the amended Work Item {key!r}")
+        return
+    require_marker(key, body, context=f"issue #{number}")
 
 
-def require_created_children(binding: dict[str, Any], issues: list[dict[str, Any]]) -> None:
-    """Match every provider-assigned create identity to one immutable Work Item."""
+def require_created_children(
+    binding: dict[str, Any],
+    issues: list[dict[str, Any]],
+    metadata: dict[str, Any] | None = None,
+) -> None:
+    """Match every non-reused live child to one approved Work Item by identity."""
     reused_numbers = {number for _, number in approved_issue_identities(binding)}
+    amended = {item["issue"]["number"]: item for item in amended_items(metadata)}
     created = [item for item in binding["approved_work_items"] if item["intent"] == "create"]
-    candidates = [issue for issue in issues if issue.get("number") not in reused_numbers]
+    candidates = [
+        issue
+        for issue in issues
+        if issue.get("number") not in reused_numbers and issue.get("number") not in amended
+    ]
     if len(candidates) != len(created):
-        raise RuntimeError("live created-child count differs from the immutable Goal Binding")
+        raise RuntimeError("live created-child count differs from the approved Work Items")
     unmatched = list(candidates)
     for item in created:
         matches = [
@@ -183,7 +228,6 @@ def require_created_children(binding: dict[str, Any], issues: list[dict[str, Any
             for issue in unmatched
             if isinstance(issue.get("body"), str)
             and issue["body"].count(work_item_marker(item["key"])) == 1
-            and hashlib.sha256(issue["body"].encode("utf-8")).hexdigest() == item["body_sha256"]
         ]
         if len(matches) != 1:
             raise RuntimeError(f"created Work Item {item['key']!r} does not map to one live child")
@@ -300,10 +344,11 @@ def validate_operation_binding(
             operation["amendment_authorization_file"],
             context="amendment_authorization_file",
         )
+    metadata = operation.get("parent_metadata")
     if name == "update-body" and target["number"] != operation["parent_number"]:
         body = repo_file(repo_root, operation["body_file"], context="body_file").read_bytes()
         _, observed_sha256 = validate_managed_body(
-            binding, key=target["work_item_key"], number=target["number"], body=body
+            binding, key=target["work_item_key"], number=target["number"], body=body, metadata=metadata
         )
         operation["observed_body_sha256"] = observed_sha256
     elif name == "create-or-reuse-child":
@@ -311,8 +356,7 @@ def validate_operation_binding(
         item = work_item_for_target(binding, target["work_item_key"])
         if item["intent"] != "create":
             raise RuntimeError("create-or-reuse-child requires an approved create Work Item")
-        if hashlib.sha256(body).hexdigest() != item["body_sha256"]:
-            raise RuntimeError("submitted child body differs from the approved Work Item body")
+        require_marker(target["work_item_key"], body, context="submitted child body")
     elif name == "list-children":
         expected_path = repo_file(
             repo_root, operation["expected_child_file"], context="expected_child_file"
@@ -324,14 +368,27 @@ def validate_operation_binding(
             binding,
             [{"repo": operation["repo"], "number": number} for number in expected["children"]],
             context="expected child set",
+            metadata=metadata,
         )
     elif name in {"add-child", "remove-child"}:
-        item = work_item_for_target(binding, target["work_item_key"])
-        if item["intent"] == "reuse":
+        amendment = operation.get("amendment")
+        if amendment is not None:
+            # Graph amendment: an operator-approved Work Item appended to a live run.
+            entry = {**amendment, "key": target["work_item_key"], "repo": operation["repo"],
+                     "number": target["sub_issue_number"],
+                     "url": f"https://github.com/{operation['repo']}/issues/{target['sub_issue_number']}"}
+            PICKUP.validate_amendments([entry], repo=operation["repo"])
+            if any(item["key"] == entry["key"] for item in all_work_items(binding, metadata)):
+                raise RuntimeError(f"amendment key {entry['key']!r} is already an approved Work Item")
+            operation["amendment_entry"] = entry
+            return binding
+        item = work_item_for_target(binding, target["work_item_key"], metadata=metadata)
+        if item["intent"] in {"reuse", "amended"}:
             work_item_for_target(
                 binding,
                 target["work_item_key"],
                 number=target["sub_issue_number"],
                 context=f"{name} target",
+                metadata=metadata,
             )
     return binding

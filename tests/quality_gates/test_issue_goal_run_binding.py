@@ -162,7 +162,7 @@ def test_list_refuses_expected_child_set_outside_binding_before_provider(tmp_pat
     assert result["mutation_invoked"] is False
 
 
-def test_created_child_identity_is_bound_by_approved_body_bytes() -> None:
+def test_created_child_identity_is_its_marker_not_its_prose() -> None:
     module = runpy.run_path(str(BINDING_PATH))
     body = "<!-- charness-work-item-key: created-child -->\napproved body\n"
     binding = {
@@ -172,6 +172,8 @@ def test_created_child_identity_is_bound_by_approved_body_bytes() -> None:
                 "key": "created-child",
                 "intent": "create",
                 "issue": None,
+                "rank": 1,
+                "dependencies": [],
                 "body_sha256": hashlib.sha256(body.encode()).hexdigest(),
             }
         ],
@@ -181,9 +183,44 @@ def test_created_child_identity_is_bound_by_approved_body_bytes() -> None:
         binding, [{"repo": REPO, "number": 900}], context="created graph"
     )
     module["require_created_children"](binding, [{"number": 900, "body": body}])
+    # prose may be corrected after creation; the marker is the identity
+    module["require_created_children"](binding, [{"number": 900, "body": body + "corrected scope\n"}])
 
     with pytest.raises(RuntimeError, match="does not map to one live child"):
-        module["require_created_children"](binding, [{"number": 900, "body": body + "drift"}])
+        module["require_created_children"](binding, [{"number": 900, "body": "no marker\n"}])
+
+
+def test_amended_work_item_joins_the_graph_by_number() -> None:
+    module = runpy.run_path(str(BINDING_PATH))
+    binding = {
+        "parent": {"repo": REPO, "number": 724},
+        "approved_work_items": [
+            {"key": "first", "intent": "create", "issue": None, "rank": 1, "dependencies": [],
+             "body_sha256": hashlib.sha256(b"x").hexdigest()},
+        ],
+    }
+    metadata = {
+        "parent_identity": {"repo": REPO, "number": 724, "url": f"https://github.com/{REPO}/issues/724"},
+        "amendments": [{
+            "key": "late", "repo": REPO, "number": 901, "url": f"https://github.com/{REPO}/issues/901",
+            "rank": 2, "dependencies": ["first"], "reason": "added after binding",
+            "approval": {"response": "approve", "session_id": "s", "observed_at": "t"},
+        }],
+    }
+    first = {"number": 900, "body": "<!-- charness-work-item-key: first -->\n"}
+    late = {"number": 901, "body": "no marker needed; identity is the amendment number\n"}
+    module["require_expected_children"](
+        binding, [{"repo": REPO, "number": 900}, {"repo": REPO, "number": 901}],
+        context="amended graph", metadata=metadata,
+    )
+    module["require_created_children"](binding, [first, late], metadata)
+    assert module["work_item_for_target"](binding, "late", number=901, metadata=metadata)["intent"] == "amended"
+    with pytest.raises(RuntimeError, match="not an approved Work Item"):
+        module["work_item_for_target"](binding, "late")
+    with pytest.raises(RuntimeError, match="differ from the Goal Run's approved Work Items"):
+        module["require_expected_children"](
+            binding, [{"repo": REPO, "number": 900}], context="amended graph", metadata=metadata
+        )
 
 
 @pytest.mark.parametrize("position", ["prefix", "suffix"])
@@ -245,40 +282,24 @@ def test_parent_update_allows_human_body_amendment_with_verified_provider_readba
     assert provider_calls == [["update"]]
 
 
-def test_parent_update_refuses_human_body_amendment_without_authorization(
+def test_parent_human_body_may_change_without_an_authorization_receipt(
     tmp_path: Path,
 ) -> None:
+    """Prose on the parent is reversible and provider-logged; only the metadata block is bound."""
     close_inputs(tmp_path)
+    module = runpy.run_path(str(BINDING_PATH))
+    binding = module["load_binding"](
+        tmp_path, "goal.binding.json", repo=REPO, parent_number=724,
+        draft_sha256=_fixture_metadata(tmp_path)["draft_sha256"],
+        binding_sha256=_fixture_metadata(tmp_path)["binding_sha256"],
+    )
+    guard = runpy.run_path(str(ROOT / "skills/public/issue/scripts/issue_goal_run_guard.py"))
     current = "original prefix\n" + parent_body(tmp_path) + "original suffix\n"
     desired = "changed prefix\n" + parent_body(tmp_path) + "original suffix\n"
-    (tmp_path / "body.md").write_text(desired, encoding="utf-8")
-    module = _provider()
-    tracker = module["TRACKER"]
-    tracker.VERIFY_CREATE = SimpleNamespace(
-        verify_created_issue=lambda *_args, **_kwargs: {
-            "body_verified": False,
-            "body": current,
-            "url": f"https://github.com/{REPO}/issues/724",
-        }
+    module["validate_parent_body_update"](
+        current, desired, binding=binding, repo=REPO, parent_number=724,
+        parent_url=f"https://github.com/{REPO}/issues/724", guard=SimpleNamespace(**guard),
     )
-    tracker.run_backend = lambda *_args, **_kwargs: (_ for _ in ()).throw(
-        AssertionError("unauthorized human amendment must not write")
-    )
-    operation = _bound_operation(
-        tmp_path, "update-body", {"repo": REPO, "number": 724}, body_file="body.md"
-    )
-    emitted: list[dict[str, object]] = []
-
-    rc = module["command_apply"](
-        Namespace(repo=REPO, number=724, operation_file=operation, repo_root=tmp_path),
-        resolve_backend=lambda *_args, **_kwargs: {"adapter_ok": True, "backend": {"id": "gh"}},
-        emit=emitted.append,
-    )
-
-    assert rc == 2
-    assert emitted[0]["status"] == "provider-refused"
-    assert emitted[0]["mutation_invoked"] is False
-    assert "authorization receipt" in emitted[0]["error"]
 
 
 @pytest.mark.parametrize(
@@ -381,7 +402,7 @@ def test_initial_parent_metadata_append_cannot_overwrite_live_human_body(
     assert rc == 2
     assert emitted[0]["status"] == "provider-refused"
     assert emitted[0]["mutation_invoked"] is False
-    assert "exact live human-readable body" in emitted[0]["error"]
+    assert "not replace it" in emitted[0]["error"]
 
 
 def test_parent_metadata_identity_mutation_still_refuses_before_provider(
@@ -449,5 +470,5 @@ def test_close_refuses_final_expected_set_outside_binding_before_graph(tmp_path:
 
     assert rc == 2
     assert emitted[0]["status"] == "close-refused"
-    assert "immutable Goal Binding" in emitted[0]["error"]
+    assert "approved Work Items" in emitted[0]["error"]
     assert not (tmp_path / "observations").exists()

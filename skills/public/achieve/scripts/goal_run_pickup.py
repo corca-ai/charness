@@ -30,6 +30,7 @@ if str(_SCRIPT_DIR) not in sys.path:
 
 from goal_run_pickup_contract import (  # noqa: E402 - the sibling contract is loaded after the portable path bootstrap
     PickupError,
+    effective_work_items,
     parse_objective,
     select_from_parent_progress,
     validate_metadata,
@@ -240,7 +241,8 @@ def pickup(repo_root: Path, objective: str) -> dict[str, Any]:
         repo=repo,
         parent_number=number,
     )
-    selection = select_from_parent_progress(progress, binding["approved_work_items"], repo=repo)
+    work_items = effective_work_items(binding["approved_work_items"], metadata)
+    selection = select_from_parent_progress(progress, work_items, repo=repo)
     child_reader = _load_path(_issue_script("issue_read"), "issue_pickup_child_read")
     selected_number = selection["selected_child"]["number"]
     try:
@@ -289,12 +291,17 @@ def pickup(repo_root: Path, objective: str) -> dict[str, Any]:
         "repository": repository,
         "parent": {"repo": repo, "number": number, "url": parent["url"], "state": parent["state"]},
         "metadata": metadata,
-        "binding": {"path": metadata["binding_path"], "sha256": binding["binding_sha256"], "draft_sha256": binding["draft_sha256"]},
+        "binding": {
+            "path": metadata["binding_path"],
+            "sha256": binding["binding_sha256"],
+            "draft_sha256": binding["draft_sha256"],
+            "draft_amended": binding.get("draft_amended", False),
+        },
         "progress": progress,
         "sub_issues_summary": summary,
         "graph": {
             "count": progress["total"],
-            "membership_sha256": progress["membership_sha256"],
+            "amended_work_items": [item["key"] for item in work_items if item.get("intent") == "amended"],
             "source": "parent-progress",
             "reconciliation": "explicit-sync-only",
             "provider_summary": summary,

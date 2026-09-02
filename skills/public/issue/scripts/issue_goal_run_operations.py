@@ -150,14 +150,18 @@ def execute(
         )
     if name in {"add-child", "remove-child"}:
         assert binding is not None
-        item = contract.BINDING.work_item_for_target(binding, target["work_item_key"])
-        if item["intent"] == "create":
-            issue = read.read_issue_with_comments(
-                repo, target["sub_issue_number"], backend=backend
-            )["issue"]
-            contract.BINDING.require_issue_matches_item(
-                binding, key=item["key"], number=target["sub_issue_number"], issue=issue
+        metadata = operation.get("parent_metadata")
+        if operation.get("amendment_entry") is None:
+            item = contract.BINDING.work_item_for_target(
+                binding, target["work_item_key"], metadata=metadata
             )
+            if item["intent"] == "create":
+                issue = read.read_issue_with_comments(
+                    repo, target["sub_issue_number"], backend=backend
+                )["issue"]
+                contract.BINDING.require_issue_matches_item(
+                    binding, key=item["key"], number=target["sub_issue_number"], issue=issue
+                )
         mutate = tracker.add_sub_issue if name == "add-child" else tracker.remove_sub_issue
         return mutate(repo, parent, target["sub_issue_number"], backend=backend)
     if name == "record-observation":

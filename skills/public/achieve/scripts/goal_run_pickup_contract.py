@@ -16,10 +16,14 @@ PROGRESS_FIELDS = {
     "total",
     "completed",
     "open",
-    "membership_sha256",
     "next",
 }
+# Tolerated for pre-amendment parents; never required and never compared.
+PROGRESS_OPTIONAL_FIELDS = {"membership_sha256"}
 NEXT_FIELDS = {"key", "repo", "number", "url", "state"}
+AMENDMENT_FIELDS = {"key", "repo", "number", "url", "rank", "dependencies", "reason", "approval"}
+AMENDMENT_APPROVAL_FIELDS = {"response", "session_id", "observed_at"}
+KEY_RE = re.compile(r"^[a-z0-9][a-z0-9._-]*$")
 
 
 class PickupError(ValueError):
@@ -60,7 +64,6 @@ def validate_metadata(
         "initial_graph_sha256",
         "bootstrap_verification",
         "parent_identity",
-        "current_membership_sha256",
     }
     missing = sorted(required - set(metadata))
     if missing:
@@ -80,13 +83,86 @@ def validate_metadata(
         "binding_sha256",
         "draft_sha256",
         "initial_graph_sha256",
-        "current_membership_sha256",
     ):
         _sha(metadata[field], f"metadata.{field}")
     for field in ("binding_path", "draft_path"):
         if not isinstance(metadata[field], str) or not metadata[field].strip():
             raise PickupError("metadata-invalid", f"metadata.{field} must be a non-empty repo-relative path")
+    validate_amendments(metadata.get("amendments"), repo=repo)
     return dict(metadata)
+
+
+def validate_amendments(value: Any, *, repo: str) -> list[dict[str, Any]]:
+    """Validate the parent-owned list of Work Items appended after binding.
+
+    An amendment is the one sanctioned way to widen a live Goal Run. It names an
+    existing issue, its rank and dependencies, the reason, and the operator's
+    approval. The immutable binding is untouched; the parent records the change.
+    """
+    if value is None:
+        return []
+    if not isinstance(value, list):
+        raise PickupError("metadata-invalid", "metadata.amendments must be a list")
+    seen: set[str] = set()
+    result = []
+    for index, entry in enumerate(value):
+        context = f"metadata.amendments[{index}]"
+        if not isinstance(entry, dict) or set(entry) != AMENDMENT_FIELDS:
+            raise PickupError("metadata-invalid", f"{context} has the wrong fields")
+        key = entry["key"]
+        if not isinstance(key, str) or not KEY_RE.fullmatch(key) or key in seen:
+            raise PickupError("metadata-invalid", f"{context}.key is invalid or duplicated")
+        seen.add(key)
+        if not isinstance(entry["repo"], str) or entry["repo"].lower() != repo.lower():
+            raise PickupError("metadata-invalid", f"{context}.repo differs from the Goal Run repository")
+        number = entry["number"]
+        if type(number) is not int or number <= 0:
+            raise PickupError("metadata-invalid", f"{context}.number must be a positive integer")
+        if entry["url"] != f"https://github.com/{repo}/issues/{number}":
+            raise PickupError("metadata-invalid", f"{context}.url does not match its repository and number")
+        if type(entry["rank"]) is not int or entry["rank"] <= 0:
+            raise PickupError("metadata-invalid", f"{context}.rank must be positive")
+        deps = entry["dependencies"]
+        if not isinstance(deps, list) or any(not isinstance(d, str) or not KEY_RE.fullmatch(d) for d in deps):
+            raise PickupError("metadata-invalid", f"{context}.dependencies are invalid")
+        if not isinstance(entry["reason"], str) or not entry["reason"].strip():
+            raise PickupError("metadata-invalid", f"{context}.reason must be non-empty text")
+        approval = entry["approval"]
+        if not isinstance(approval, dict) or set(approval) != AMENDMENT_APPROVAL_FIELDS or any(
+            not isinstance(approval[f], str) or not approval[f].strip() for f in approval
+        ):
+            raise PickupError("metadata-invalid", f"{context}.approval must record response, session_id, observed_at")
+        result.append(dict(entry))
+    return result
+
+
+def amendment_items(metadata: dict[str, Any]) -> list[dict[str, Any]]:
+    """Project parent amendments into the Work Item shape pickup and close use."""
+    return [
+        {
+            "key": entry["key"],
+            "intent": "amended",
+            "issue": {"repo": entry["repo"], "number": entry["number"], "url": entry["url"]},
+            "dependencies": list(entry["dependencies"]),
+            "rank": entry["rank"],
+            "body_policy": "amended",
+            "body_sha256": None,
+            "observed": None,
+        }
+        for entry in (metadata.get("amendments") or [])
+    ]
+
+
+def effective_work_items(binding_items: list[dict[str, Any]], metadata: dict[str, Any]) -> list[dict[str, Any]]:
+    """Binding items plus parent amendments; keys must not collide."""
+    items = list(binding_items)
+    keys = {item.get("key") for item in items}
+    for item in amendment_items(metadata):
+        if item["key"] in keys:
+            raise PickupError("metadata-invalid", f"amendment {item['key']!r} collides with an approved Work Item")
+        keys.add(item["key"])
+        items.append(item)
+    return items
 
 
 def _validate_progress_next(
@@ -146,7 +222,7 @@ def validate_progress(
             "progress-sync-required",
             "Goal Run parent has no managed execution cursor; run explicit Goal Run progress sync",
         )
-    extras = sorted(set(progress) - PROGRESS_FIELDS)
+    extras = sorted(set(progress) - PROGRESS_FIELDS - PROGRESS_OPTIONAL_FIELDS)
     missing = sorted(PROGRESS_FIELDS - set(progress))
     if extras or missing:
         detail: dict[str, Any] = {}
@@ -164,13 +240,8 @@ def validate_progress(
             raise PickupError("progress-invalid", f"progress.{field} must be a non-negative integer")
     if progress["total"] <= 0 or progress["completed"] + progress["open"] != progress["total"]:
         raise PickupError("progress-invalid", "parent execution counts do not reconcile")
-    _sha(progress["membership_sha256"], "progress.membership_sha256")
-    if progress["membership_sha256"] != metadata["current_membership_sha256"]:
-        raise PickupError(
-            "progress-stale",
-            "parent execution cursor does not name the current membership revision",
-        )
-    _validate_progress_next(progress, binding_items, repo=repo)
+    # Membership is the provider's sub-issue graph; the cursor does not restate it.
+    _validate_progress_next(progress, effective_work_items(binding_items, metadata), repo=repo)
     return dict(progress)
 
 

@@ -50,6 +50,7 @@ def _verify_children(
     live_children: list[dict[str, Any]],
     backend: dict[str, Any],
     binding: dict[str, Any],
+    metadata: dict[str, Any] | None = None,
 ) -> None:
     live_numbers = {child["number"] for child in live_children}
     proof_numbers = {child["number"] for child in proof["children"]}
@@ -77,7 +78,7 @@ def _verify_children(
             raise RuntimeError(
                 f"child {repo}#{entry['number']} evidence identity is not present in issue-owned comments"
             )
-    CONTRACT.BINDING.require_created_children(binding, issues)
+    CONTRACT.BINDING.require_created_children(binding, issues, metadata)
 
 
 def _prepare_close(
@@ -126,6 +127,7 @@ def _prepare_close(
             binding,
             proof["final_proof_index"]["expected_children"],
             context="final proof expected child set",
+            metadata=metadata,
         )
     except (CONTRACT.BINDING.BindingError, RuntimeError) as exc:
         raise RuntimeError(f"Goal Run binding validation failed: {exc}") from exc
@@ -137,6 +139,7 @@ def _prepare_close(
         graph["children"],
         backend,
         binding,
+        metadata,
     )
     return RECOVERY.plan(
         repo_root=repo_root,

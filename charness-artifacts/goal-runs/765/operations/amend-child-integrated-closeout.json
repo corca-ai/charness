@@ -1,0 +1,63 @@
+{
+ "kind": "charness.goal-run-operation/v1",
+ "repo": "corca-ai/charness",
+ "parent_number": 765,
+ "operation": "update-body",
+ "attempt_id": "amend-child-integrated-closeout-2",
+ "draft_sha256": "129f065a28ce2c6a6a7fd7dc5f6ff2b63349b75ddf1ab62411ea4879ff8d2501",
+ "binding_sha256": "20fdaf7e9a3e1489a308b11041555a9249b2e826d93d951f294a565b24d161cf",
+ "binding_path": "charness-artifacts/goals/2026-09-02-north-star-realignment.binding.json",
+ "observation_dir": "charness-artifacts/goal-runs/765/observations",
+ "target": {
+  "repo": "corca-ai/charness",
+  "number": 772,
+  "work_item_key": "integrated-closeout"
+ },
+ "body_file": "charness-artifacts/goal-runs/765/bodies/integrated-closeout.md",
+ "parent_metadata": {
+  "amendments": [
+   {
+    "approval": {
+     "observed_at": "2026-09-02T03:20:16+00:00",
+     "response": "\ud30c\uc77c\ub9c1\ud574\uc11c \uc774\ubc88 \uace8\uc5d0 \ud3ec\ud568\uc2dc\ud0a4\uc790",
+     "session_id": "goal-765-2026-09-02"
+    },
+    "dependencies": [
+     "rework-instrument"
+    ],
+    "key": "goal-run-binding-simplification",
+    "number": 773,
+    "rank": 2,
+    "reason": "Operator asked on 2026-09-02 to include the binding-rigidity fix (#773) in this Goal Run; the immutable binding could not admit it, which is the very defect #773 records.",
+    "repo": "corca-ai/charness",
+    "url": "https://github.com/corca-ai/charness/issues/773"
+   }
+  ],
+  "binding_path": "charness-artifacts/goals/2026-09-02-north-star-realignment.binding.json",
+  "binding_schema": "charness.goal-binding/v1",
+  "binding_sha256": "20fdaf7e9a3e1489a308b11041555a9249b2e826d93d951f294a565b24d161cf",
+  "bootstrap_verification": "verified-target-roundtrip",
+  "draft_path": "charness-artifacts/goals/2026-09-02-north-star-realignment.md",
+  "draft_sha256": "129f065a28ce2c6a6a7fd7dc5f6ff2b63349b75ddf1ab62411ea4879ff8d2501",
+  "initial_graph_sha256": "2473a6d41daf1b9c2b6ae24040670850f1ad1a0544cd7fa97fef056ca8ad8b62",
+  "parent_identity": {
+   "number": 765,
+   "repo": "corca-ai/charness",
+   "url": "https://github.com/corca-ai/charness/issues/765"
+  },
+  "progress": {
+   "completed": 0,
+   "next": {
+    "key": "rework-instrument",
+    "number": 771,
+    "repo": "corca-ai/charness",
+    "state": "OPEN",
+    "url": "https://github.com/corca-ai/charness/issues/771"
+   },
+   "open": 8,
+   "revision": 2,
+   "schema": "charness.goal-progress/v1",
+   "total": 8
+  }
+ }
+}

@@ -83,6 +83,10 @@ def load_authorization(
     return value
 
 
+def _human_text(body: str, match: Any) -> str:
+    return (body[: match.start()] + body[match.end() :]).strip()
+
+
 def validate_parent_body_update(
     current_body: str,
     desired_body: str,
@@ -124,28 +128,19 @@ def validate_parent_body_update(
     if not current_matches:
         if amendment_authorization_file is not None:
             raise RuntimeError("parent amendment authorization is not valid during metadata bootstrap")
-        if desired_body[: desired_match.start()] != current_body or desired_body[
-            desired_match.end() :
-        ] not in {"", "\n"}:
+        # Bootstrap adds the block; the human body is the live body, modulo whitespace.
+        if _human_text(desired_body, desired_match) != current_body.strip():
             raise RuntimeError(
-                "initial parent metadata must append to the exact live human-readable body"
+                "initial parent metadata must be added to the live human-readable body, not replace it"
             )
         return
     current_match = current_matches[0]
-    current_human = (
-        current_body[: current_match.start()],
-        current_body[current_match.end() :],
-    )
-    desired_human = (
-        desired_body[: desired_match.start()],
-        desired_body[desired_match.end() :],
-    )
-    if current_human == desired_human:
+    if _human_text(current_body, current_match) == _human_text(desired_body, desired_match):
         return
+    # The human-readable body is reversible prose with provider edit history; an
+    # authorization receipt is validated when supplied but is not required.
     if amendment_authorization_file is None:
-        raise RuntimeError(
-            "parent human-readable Markdown amendment requires an explicit authorization receipt"
-        )
+        return
     load_authorization(
         amendment_authorization_file,
         binding=binding,

@@ -1,0 +1,7 @@
+{"kind":"charness.goal-run-operation/v1","repo":"corca-ai/charness","parent_number":765,
+ "operation":"add-child","attempt_id":"amend-add-goal-run-binding-simplification-1",
+ "draft_sha256":"129f065a28ce2c6a6a7fd7dc5f6ff2b63349b75ddf1ab62411ea4879ff8d2501","binding_sha256":"20fdaf7e9a3e1489a308b11041555a9249b2e826d93d951f294a565b24d161cf","binding_path":"charness-artifacts/goals/2026-09-02-north-star-realignment.binding.json","observation_dir":"charness-artifacts/goal-runs/765/observations",
+ "target":{"repo":"corca-ai/charness","sub_issue_number":773,"work_item_key":"goal-run-binding-simplification"},
+ "amendment":{"rank":2,"dependencies":["rework-instrument"],
+   "reason":"Operator asked on 2026-09-02 to include the binding-rigidity fix (#773) in this Goal Run; the immutable binding could not admit it, which is the very defect #773 records.",
+   "approval":{"response":"파일링해서 이번 골에 포함시키자","session_id":"goal-765-2026-09-02","observed_at":"2026-09-02T03:20:16+00:00"}}}

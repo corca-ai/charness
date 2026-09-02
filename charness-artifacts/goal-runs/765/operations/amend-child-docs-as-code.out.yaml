@@ -1,0 +1,33 @@
+ok: true
+status: verified-write
+outcome: verified-write
+mutation_invoked: true
+operation: update-body
+action: updated
+repo: corca-ai/charness
+number: 766
+url: https://github.com/corca-ai/charness/issues/766
+body_verified: true
+before:
+  ok: true
+  repo: corca-ai/charness
+  number: 766
+  url: https://github.com/corca-ai/charness/issues/766
+  readback_verified: true
+  body_verified: false
+  body_verification: byte-identical
+  stored_body_bytes: 2386
+  body_sha256: c4fb51e4c6fdaff68b3d861b3ba3813da9dc9cdd186763d8e5817eadac044791
+single_updater_assumption: true
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null
+observation:
+  started_path: charness-artifacts/goal-runs/765/observations/amend-child-docs-as-code-2.started.json
+  started_sha256: 043be2d73d3f9d154b64e580dcc162dc22d86f6968e30ea65898380b4a6acdfb
+  terminal_path: charness-artifacts/goal-runs/765/observations/amend-child-docs-as-code-2.terminal.json
+  terminal_sha256: ca898cf08cb689b08d651de6a0978ff8437a24dce6730824f7e8f1348619dcad
+kind: charness.goal-run-apply/v1
+attempt_id: amend-child-docs-as-code-2

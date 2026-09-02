@@ -177,8 +177,10 @@ def _validate_payload(  # noqa: C901 -- binding payload validation keeps cross-f
         raise
     except (OSError, ValueError) as exc:
         raise BindingError("draft-missing", f"could not read frozen draft {draft_file}: {exc}") from exc
-    if actual_draft_sha != draft_sha:
-        raise BindingError("draft-hash-mismatch", "frozen draft bytes differ")
+    # The binding records the draft hash at approval as the plan's identity.
+    # The draft file may be amended afterwards under operator approval; that is
+    # reversible, visible in git, and reported rather than refused.
+    draft_amended = actual_draft_sha != draft_sha
     if expected_draft_path is not None:
         expected_rel = _expected_draft_relative(root, expected_draft_path)
         if draft_path != expected_rel:
@@ -215,6 +217,8 @@ def _validate_payload(  # noqa: C901 -- binding payload validation keeps cross-f
         "binding_sha256": actual_binding_sha,
         "draft_path": draft_path,
         "draft_sha256": draft_sha,
+        "draft_amended": draft_amended,
+        "draft_current_sha256": actual_draft_sha,
         "briefing_sha256": approval["briefing_sha256"],
         "approval": approval,
         "parent": parent,

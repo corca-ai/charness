@@ -342,7 +342,70 @@ def test_pickup_reads_only_cursor_child_and_refuses_closed_cursor(
     assert result["outcome"] == "verified-read"
     assert result["mutation_invoked"] is False
     assert result["selected_child"]["key"] == "provider"
-    assert result["graph"]["membership_sha256"] == membership
+    assert result["graph"]["amended_work_items"] == []
+    assert result["binding"]["draft_amended"] is False
     assert result["selection"] == {"source": "parent-progress", "child_reads": 1}
     assert result["child_issue"]["body"] == "child body"
     assert result["selected_child"]["state"] == "OPEN"
+
+
+def test_metadata_amendment_shape_and_effective_items() -> None:
+    """An amendment appends one approved Work Item to a live run without touching the binding."""
+    contract = load_module(
+        "goal_run_pickup_contract_under_test",
+        ROOT / "skills/public/achieve/scripts/goal_run_pickup_contract.py",
+    )
+    metadata = _metadata()
+    metadata.pop("current_membership_sha256")
+    metadata["progress"].pop("membership_sha256")
+    amendment = {
+        "key": "late-item",
+        "repo": REPO,
+        "number": 773,
+        "url": f"https://github.com/{REPO}/issues/773",
+        "rank": 2,
+        "dependencies": ["provider"],
+        "reason": "operator asked to include it after binding",
+        "approval": {"response": "approve", "session_id": "s", "observed_at": "2026-09-02T00:00:00+00:00"},
+    }
+    metadata["amendments"] = [amendment]
+    validated = contract.validate_metadata(
+        metadata, repo=REPO, parent_number=PARENT_NUMBER, parent_url=PARENT_URL
+    )
+    binding_items = [{"key": "provider", "rank": 1, "dependencies": []}]
+    items = contract.effective_work_items(binding_items, validated)
+    assert [item["key"] for item in items] == ["provider", "late-item"]
+    assert items[1]["intent"] == "amended"
+    assert items[1]["issue"]["number"] == 773
+
+    metadata["progress"]["next"] = {
+        "key": "late-item", "repo": REPO, "number": 773,
+        "url": f"https://github.com/{REPO}/issues/773", "state": "OPEN",
+    }
+    progress = contract.validate_progress(metadata, binding_items, repo=REPO, parent_number=PARENT_NUMBER)
+    assert progress["next"]["key"] == "late-item"
+
+    with pytest.raises(contract.PickupError, match="collides"):
+        contract.effective_work_items(binding_items, {**metadata, "amendments": [{**amendment, "key": "provider"}]})
+    for bad in (
+        {**amendment, "repo": "other/repo"},
+        {**amendment, "approval": {"response": "", "session_id": "s", "observed_at": "t"}},
+    ):
+        with pytest.raises(contract.PickupError, match="metadata-invalid|amendments"):
+            contract.validate_metadata(
+                {**metadata, "amendments": [bad]}, repo=REPO, parent_number=PARENT_NUMBER, parent_url=PARENT_URL
+            )
+
+
+def test_membership_hash_is_neither_required_nor_compared() -> None:
+    contract = load_module(
+        "goal_run_pickup_contract_under_test_membership",
+        ROOT / "skills/public/achieve/scripts/goal_run_pickup_contract.py",
+    )
+    metadata = _metadata()
+    metadata.pop("current_membership_sha256")
+    metadata["progress"]["membership_sha256"] = _sha("e")  # stale leftover from an older parent
+    contract.validate_metadata(metadata, repo=REPO, parent_number=PARENT_NUMBER, parent_url=PARENT_URL)
+    contract.validate_progress(
+        metadata, [{"key": "provider", "rank": 1, "dependencies": []}], repo=REPO, parent_number=PARENT_NUMBER
+    )
