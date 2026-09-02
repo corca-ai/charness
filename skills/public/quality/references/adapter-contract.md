@@ -86,6 +86,7 @@ Quality-specific fields:
 - `mutation_testing`
 - `standing_doc_provenance`
 - `changed_line_mutation_gate`
+- `universes`
 
 Use explicit empty lists to record an intentional opt-out.
 Keep `coverage_fragile_margin_pp` numeric; `1.0` is the portable default.
@@ -591,6 +592,35 @@ The remedy the gate names depends on what the command COSTS. A cheap command
 one — a multi-minute suite, a fan-out census, a full-corpus sweep — carries the
 command AND a link to the checked-in artifact holding its output, because telling
 every future reader to re-run it moves the cost onto all of them forever.
+
+### `universes`
+
+`universes` groups the file families quality gates scan. A family is declared
+once here and can be consumed by several gates; the owning labels belong in
+the adapter comments next to each sub-key.
+
+- `pytest_targets`, `python_sources`, `shell_sources`, `test_roots`,
+  `doc_surfaces`, `scanner_globs`, `ci_gate_patterns`, and `mutation_pool`
+  are lists of strings. An empty list is an explicit empty declaration.
+- `artifact_roots` is a mapping from artifact family (`spec`, `quality`,
+  `release`, `dogfood`, `debug`, `premortem`, `design-studies`, `goals`,
+  `critique`, `retro`, `probe`, `issues`, or `release-review`) to its root.
+  Consumers address one family as `artifact_roots.<family>`.
+- `specdown_config` and `secrets_config` are strings naming their config file.
+
+The portable defaults are the literals carried by Charness's standing pytest
+targets, Python compile array, shell discovery, test-production ratio, document
+population, artifact validators, gitignore scanner, CI parity scanner, mutation
+pool, specdown wrapper, and secrets gate. They are defined in the exported
+`<plugin-dir>/scripts/quality_universes_lib.py` module so a gate and the adapter resolver use
+the same values.
+
+An undeclared family resolves to its portable default and an empty match is a
+discovered empty. A declared family replaces that default; if it matches no
+files, the shared reader returns a refusal naming the gate label. This includes
+an explicit empty list. `deliberately_absent: {universes: <reason>}` preserves
+the default pattern set for compatibility but marks its path-bearing values as
+unasserted, so the repo does not claim those paths exist.
 
 ## Artifact Rule
 

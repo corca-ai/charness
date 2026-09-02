@@ -35,6 +35,7 @@ from scripts.quality_policy_defaults import (
     validate_skill_ergonomics_gate_rules,
     validate_standing_doc_provenance,
 )
+from scripts.quality_universes_lib import DEFAULT_UNIVERSES
 
 ARTIFACT_FILENAME = "latest.md"
 ARTIFACT_CLASS = "history"
@@ -140,17 +141,22 @@ def infer_quality_defaults(repo_root: Path) -> dict[str, Any]:
         "standing_doc_provenance": copy.deepcopy(DEFAULT_STANDING_DOC_PROVENANCE),
         "changed_line_mutation_gate": copy.deepcopy(DEFAULT_CHANGED_LINE_MUTATION_GATE),
         "dup_ratchet": copy.deepcopy(DEFAULT_DUP_RATCHET),
+        "universes": copy.deepcopy(DEFAULT_UNIVERSES),
     }
 
 
-def _apply_policy_fields(data: dict[str, Any], validated: dict[str, Any], errors: list[str]) -> None:
+def _apply_policy_fields(
+    data: dict[str, Any], validated: dict[str, Any], errors: list[str]
+) -> None:
     coverage_fragile_margin_pp = _float_value(
         data.get("coverage_fragile_margin_pp"), "coverage_fragile_margin_pp", errors
     )
     if coverage_fragile_margin_pp is not None:
         validated["coverage_fragile_margin_pp"] = coverage_fragile_margin_pp
 
-    coverage_floor_policy = validate_coverage_floor_policy(data.get("coverage_floor_policy"), errors)
+    coverage_floor_policy = validate_coverage_floor_policy(
+        data.get("coverage_floor_policy"), errors
+    )
     if coverage_floor_policy is not None:
         validated["coverage_floor_policy"] = coverage_floor_policy
 
@@ -172,13 +178,17 @@ def _apply_policy_fields(data: dict[str, Any], validated: dict[str, Any], errors
         errors,
     )
     if public_spec_implementation_ref_density_floor is not None:
-        validated["public_spec_implementation_ref_density_floor"] = public_spec_implementation_ref_density_floor
+        validated["public_spec_implementation_ref_density_floor"] = (
+            public_spec_implementation_ref_density_floor
+        )
 
     # Raw FILE words, matching what `validate_quality_artifact.py` counts. Written only
     # when the repo declared
     # one, so the DEFAULT number keeps living in the validator that enforces it;
     # `minimum=1` because a ceiling of 0 refuses every possible artifact.
-    max_artifact_words = _int_value(data.get("max_artifact_words"), "max_artifact_words", errors, minimum=1)
+    max_artifact_words = _int_value(
+        data.get("max_artifact_words"), "max_artifact_words", errors, minimum=1
+    )
     if max_artifact_words is not None:
         validated["max_artifact_words"] = max_artifact_words
     # Retired 2026-08-19. An ERROR, not a drop: a dropped key leaves a consuming repo's
@@ -199,7 +209,9 @@ def _apply_policy_fields(data: dict[str, Any], validated: dict[str, Any], errors
         errors,
     )
     if public_spec_implementation_guard_min_lines is not None:
-        validated["public_spec_implementation_guard_min_lines"] = public_spec_implementation_guard_min_lines
+        validated["public_spec_implementation_guard_min_lines"] = (
+            public_spec_implementation_guard_min_lines
+        )
 
     prompt_asset_policy = validate_prompt_asset_policy(data.get("prompt_asset_policy"), errors)
     if prompt_asset_policy is not None:
@@ -233,7 +245,9 @@ def _apply_standing_doc_provenance(
 def _apply_changed_line_mutation_gate(
     data: dict[str, Any], validated: dict[str, Any], errors: list[str], warnings: list[str]
 ) -> None:
-    block = validate_changed_line_mutation_gate(data.get("changed_line_mutation_gate"), errors, warnings)
+    block = validate_changed_line_mutation_gate(
+        data.get("changed_line_mutation_gate"), errors, warnings
+    )
     if block is not None:
         validated["changed_line_mutation_gate"] = block
 
@@ -246,10 +260,21 @@ def _apply_dup_ratchet(
         validated["dup_ratchet"] = block
 
 
+def _apply_universes(data: dict[str, Any], validated: dict[str, Any], errors: list[str]) -> None:
+    block = adapter_validators.validate_universes(data.get("universes"), errors)
+    if block is not None:
+        validated["universes"] = block
+    validated["_universes_declared"] = (
+        copy.deepcopy(data.get("universes")) if "universes" in data else None
+    )
+
+
 def _apply_test_file_discovery(
     data: dict[str, Any], validated: dict[str, Any], errors: list[str], warnings: list[str]
 ) -> None:
-    block = adapter_validators.test_file_discovery(data.get("test_file_discovery"), errors, warnings)
+    block = adapter_validators.test_file_discovery(
+        data.get("test_file_discovery"), errors, warnings
+    )
     if block is not None:
         validated["test_file_discovery"] = block
 
@@ -257,7 +282,9 @@ def _apply_test_file_discovery(
 def _apply_lint_ignore_discovery(
     data: dict[str, Any], validated: dict[str, Any], errors: list[str], warnings: list[str]
 ) -> None:
-    block = adapter_validators.lint_ignore_discovery(data.get("lint_ignore_discovery"), errors, warnings)
+    block = adapter_validators.lint_ignore_discovery(
+        data.get("lint_ignore_discovery"), errors, warnings
+    )
     if block is not None:
         validated["lint_ignore_discovery"] = block
 
@@ -322,7 +349,7 @@ def path_bearing_entries(value: Any, prefix: str = "") -> dict[str, str]:
 # markers assert nothing about the filesystem.
 PATH_BEARING_ABSENCE_FIELDS = frozenset(
     "coverage_floor_policy changed_line_mutation_gate dup_ratchet mutation_testing "
-    "canonical_markdown_surfaces".split()
+    "canonical_markdown_surfaces universes".split()
 )
 
 
@@ -349,7 +376,9 @@ def unasserted_paths(validated: dict[str, Any], honored: dict[str, str]) -> dict
     return found
 
 
-def _apply_deliberate_absence(data: dict[str, Any], validated: dict[str, Any], warnings: list[str]) -> None:
+def _apply_deliberate_absence(
+    data: dict[str, Any], validated: dict[str, Any], warnings: list[str]
+) -> None:
     """Carry the operator's declared absences through resolution, and mark the phantom paths.
 
     Keeping the bootstrap from rewriting the field is only half the job: this resolver
@@ -375,7 +404,9 @@ def _apply_deliberate_absence(data: dict[str, Any], validated: dict[str, Any], w
         )
         return
     honored = {
-        field: reason for field, reason in declared.items() if isinstance(field, str) and isinstance(reason, str)
+        field: reason
+        for field, reason in declared.items()
+        if isinstance(field, str) and isinstance(reason, str)
     }
     if discarded := sorted(str(field) for field in declared if field not in honored):
         warnings.append(
@@ -404,7 +435,9 @@ def _apply_deliberate_absence(data: dict[str, Any], validated: dict[str, Any], w
         if unasserted:
             warning += (
                 " These resolved values name PATHS this repo does not claim exist, so do not go "
-                "looking for them: " + ", ".join(f"{ref} ({path})" for ref, path in sorted(unasserted.items())) + "."
+                "looking for them: "
+                + ", ".join(f"{ref} ({path})" for ref, path in sorted(unasserted.items()))
+                + "."
             )
         warnings.append(warning)
 
@@ -434,11 +467,11 @@ def _apply_regenerable_facts(
     if not isinstance(exemptions, dict):
         errors.append("regenerable_facts.exemptions must be a mapping of path -> reason")
         return
-    unreasoned = sorted(path for path, reason in exemptions.items() if not str(reason or "").strip())
+    unreasoned = sorted(
+        path for path, reason in exemptions.items() if not str(reason or "").strip()
+    )
     if unreasoned:
-        errors.append(
-            "regenerable_facts.exemptions needs a reason for: " + ", ".join(unreasoned)
-        )
+        errors.append("regenerable_facts.exemptions needs a reason for: " + ", ".join(unreasoned))
         return
     resolved = {"exemptions": {str(k): str(v).strip() for k, v in exemptions.items()}}
     # Absence and an explicit empty list are different declarations. Writing
@@ -465,19 +498,24 @@ def validate_quality_adapter_data(
     configured_artifact_class = data.get("artifact_class")
     if configured_artifact_class is None:
         validated["artifact_class"] = ARTIFACT_CLASS
-    elif isinstance(configured_artifact_class, str) and configured_artifact_class in ARTIFACT_CLASSES:
+    elif (
+        isinstance(configured_artifact_class, str) and configured_artifact_class in ARTIFACT_CLASSES
+    ):
         validated["artifact_class"] = configured_artifact_class
     else:
         errors.append("artifact_class must be one of: current, history, rolling")
     _apply_policy_fields(data, validated, errors)
     adapter_validators.apply_list_fields(data, validated, errors)
-    nose_inventory_paths = adapter_validators.nose_inventory_paths(validated.get("nose_inventory_paths"), errors)
+    nose_inventory_paths = adapter_validators.nose_inventory_paths(
+        validated.get("nose_inventory_paths"), errors
+    )
     if nose_inventory_paths is not None:
         validated["nose_inventory_paths"] = nose_inventory_paths
     _apply_mutation_testing(data, validated, errors, warnings)
     _apply_standing_doc_provenance(data, validated, errors, warnings)
     _apply_changed_line_mutation_gate(data, validated, errors, warnings)
     _apply_dup_ratchet(data, validated, errors, warnings)
+    _apply_universes(data, validated, errors)
     _apply_test_file_discovery(data, validated, errors, warnings)
     _apply_lint_ignore_discovery(data, validated, errors, warnings)
     _apply_regenerable_facts(data, validated, errors, warnings)
@@ -486,7 +524,9 @@ def validate_quality_adapter_data(
     if data.get("repo") == "CHANGE_ME":
         warnings.append("repo is still set to CHANGE_ME")
     if not validated["gate_commands"]:
-        warnings.append("No gate_commands configured; quality will rely on repo detection and proposals.")
+        warnings.append(
+            "No gate_commands configured; quality will rely on repo detection and proposals."
+        )
     return validated, errors, warnings
 
 
@@ -506,7 +546,7 @@ def load_quality_adapter(repo_root: Path) -> dict[str, Any]:
     # `load_yaml_file`. The bare loader RAISES on a document the parser refuses and DISCARDS
     # the uninterpreted-line sink, so `parse_refused` and `declarations_dropped` were both
     # structurally dead for this skill's consumers (#673).
-    return resolve_adapter_payload(
+    payload = resolve_adapter_payload(
         repo_root,
         candidates=ADAPTER_CANDIDATES,
         infer_defaults=infer_quality_defaults,
@@ -517,6 +557,13 @@ def load_quality_adapter(repo_root: Path) -> dict[str, Any]:
         ],
         derive=_quality_derived,
     )
+    data = payload.get("data")
+    if isinstance(data, dict):
+        declared = data.pop("_universes_declared", None)
+    else:
+        declared = None
+    payload["_universes_declared"] = declared if payload.get("found") else None
+    return payload
 
 
 def load_quality_adapter_strict(repo_root: Path) -> dict[str, Any]:

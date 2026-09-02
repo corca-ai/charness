@@ -4,6 +4,7 @@ Keeps resolve_adapter.py inside the SKILL_HELPER_FILE_MAX line budget while
 new adapter fields accrete over time. Each validator returns the parsed value
 or None, appending human-readable errors to the shared list.
 """
+
 from __future__ import annotations
 
 import re
@@ -17,6 +18,7 @@ from scripts.adapter_lib import (
     optional_string_list,
 )
 from scripts.quality_policy_defaults import validate_skill_ergonomics_gate_rules
+from scripts.quality_universes_lib import validate_universes as _validate_universes
 
 _RESOLVER_DIR = Path(__file__).resolve().parent
 if str(_RESOLVER_DIR) not in sys.path:
@@ -25,6 +27,9 @@ from runtime_budget_intent import runtime_budget_intent  # noqa: E402
 
 RUNTIME_PROFILE_ID_RE = re.compile(r"^[A-Za-z0-9_.-]+$")
 DEFAULT_STARTUP_PROBE_TIMEOUT_SECONDS = 20
+Data = dict[str, Any]
+Messages = list[str]
+BudgetProfiles = dict[str, dict[str, dict[str, int]]]
 
 STRING_FIELDS = (
     "repo",
@@ -62,7 +67,7 @@ LIST_FIELDS = (
 )
 
 
-def validate_version_field(data: dict[str, Any], validated: dict[str, Any], errors: list[str]) -> dict[str, Any]:
+def validate_version_field(data: Data, validated: Data, errors: Messages) -> Data:
     """Returns the declared fields the caller's remaining passes may honor: empty on a
     refused version. The caller must rebind `data` to it -- a discarded return here is
     the pre-repair behavior, not a stylistic choice."""
@@ -76,7 +81,7 @@ def apply_string_fields(data: dict[str, Any], validated: dict[str, Any], errors:
             validated[field] = value
 
 
-def apply_runtime_fields(data: dict[str, Any], validated: dict[str, Any], errors: list[str]) -> None:
+def apply_runtime_fields(data: Data, validated: Data, errors: Messages) -> None:
     for field, validator in (
         ("runtime_budgets", runtime_budgets),
         ("runtime_budget_profiles", runtime_budget_profiles),
@@ -96,6 +101,10 @@ def apply_list_fields(data: dict[str, Any], validated: dict[str, Any], errors: l
         items = optional_string_list(data.get(field), field, errors)
         if items is not None:
             validated[field] = items
+
+
+def validate_universes(value: Any, errors: list[str]) -> dict[str, Any] | None:
+    return _validate_universes(value, errors)
 
 
 def runtime_budgets(value: Any, errors: list[str]) -> dict[str, int] | None:
@@ -138,7 +147,7 @@ def _runtime_profile_id(value: Any, field: str, errors: list[str]) -> str | None
     return value
 
 
-def runtime_budget_profiles(value: Any, errors: list[str]) -> dict[str, dict[str, dict[str, int]]] | None:
+def runtime_budget_profiles(value: Any, errors: Messages) -> BudgetProfiles | None:
     if value is None:
         return None
     if not isinstance(value, dict):
@@ -146,7 +155,9 @@ def runtime_budget_profiles(value: Any, errors: list[str]) -> dict[str, dict[str
         return None
     validated: dict[str, dict[str, dict[str, int]]] = {}
     for profile_id, raw_profile in value.items():
-        valid_profile_id = _runtime_profile_id(profile_id, "runtime_budget_profiles profile id", errors)
+        valid_profile_id = _runtime_profile_id(
+            profile_id, "runtime_budget_profiles profile id", errors
+        )
         if valid_profile_id is None:
             continue
         if not isinstance(raw_profile, dict):
@@ -176,7 +187,11 @@ def startup_probes(value: Any, errors: list[str]) -> list[dict[str, Any]] | None
         if not isinstance(label, str) or not label:
             errors.append(f"{prefix}.label must be a non-empty string")
         command = raw.get("command")
-        if not isinstance(command, list) or not command or not all(isinstance(item, str) and item for item in command):
+        if (
+            not isinstance(command, list)
+            or not command
+            or not all(isinstance(item, str) and item for item in command)
+        ):
             errors.append(f"{prefix}.command must be a non-empty list of strings")
         probe_class = raw.get("class")
         if probe_class not in {"standing", "release"}:
@@ -235,18 +250,8 @@ TEST_FILE_DISCOVERY_KNOWN_KEYS = {"command", "patterns", "patterns_mode"}
 TEST_FILE_DISCOVERY_MODES = {"extend", "replace"}
 
 
-def test_file_discovery(value: Any, errors: list[str], warnings: list[str]) -> dict[str, Any] | None:
-    """Validate the adapter-owned test-file discovery block.
-
-    File discovery is the consuming repo's contract, not the portable skill
-    body's: the precedence the inventory applies is a non-empty `command` (the
-    repo's authoritative test-surface lister, consumed verbatim) first, then
-    `patterns` (extend or replace the built-in defaults), then the built-in
-    defaults. An absent block returns None so the inventory keeps its inert
-    default. Only shape is validated here; a declared command's runtime success
-    is proven by the consumer, which surfaces a degraded source rather than
-    silently undercounting.
-    """
+def test_file_discovery(value: Any, errors: Messages, warnings: Messages) -> Data | None:
+    """Validate the adapter-owned test-file discovery block."""
     if value is None:
         return None
     if not isinstance(value, dict):
@@ -257,7 +262,9 @@ def test_file_discovery(value: Any, errors: list[str], warnings: list[str]) -> d
         errors.append("test_file_discovery.command must be a string")
         command = ""
     patterns = value.get("patterns", [])
-    if not isinstance(patterns, list) or not all(isinstance(item, str) and item for item in patterns):
+    if not isinstance(patterns, list) or not all(
+        isinstance(item, str) and item for item in patterns
+    ):
         errors.append("test_file_discovery.patterns must be a list of non-empty strings")
         patterns = []
     patterns_mode = value.get("patterns_mode", "extend")
@@ -275,17 +282,8 @@ LINT_IGNORE_DIRECTIVE_KNOWN_KEYS = {"tool", "suffixes", "pattern", "scope"}
 LINT_IGNORE_DIRECTIVE_SCOPES = {"inline", "file", "leading"}
 
 
-def lint_ignore_discovery(value: Any, errors: list[str], warnings: list[str]) -> dict[str, Any] | None:
-    """Validate adapter-declared lint-suppression directive matchers.
-
-    Suppression detection is language-syntax-specific, so a repo whose linters
-    live outside the built-in py/js/ts set declares each directive's `suffixes`,
-    `pattern` (a regex, ideally with a `(?P<codes>...)` group), and optional
-    `scope` (inline/file/leading, default leading). Absent block returns None so
-    the inventory keeps only the built-in matchers. Shape and regex-compilability
-    are validated here; whether a pattern truly matches the repo's linters is the
-    consumer's proof.
-    """
+def lint_ignore_discovery(value: Any, errors: Messages, warnings: Messages) -> Data | None:
+    """Validate adapter-declared lint-suppression directive matchers."""
     if value is None:
         return None
     if not isinstance(value, dict):
@@ -300,7 +298,9 @@ def lint_ignore_discovery(value: Any, errors: list[str], warnings: list[str]) ->
         raw_directives = []
     validated: list[dict[str, Any]] = []
     for index, directive in enumerate(raw_directives):
-        parsed = _validate_lint_directive(directive, f"lint_ignore_discovery.directives[{index}]", errors, warnings)
+        parsed = _validate_lint_directive(
+            directive, f"lint_ignore_discovery.directives[{index}]", errors, warnings
+        )
         if parsed is not None:
             validated.append(parsed)
     return {"directives": validated}
@@ -316,7 +316,11 @@ def _validate_lint_directive(
     if not isinstance(tool, str) or not tool:
         errors.append(f"{prefix}.tool must be a non-empty string")
     suffixes = directive.get("suffixes")
-    if not isinstance(suffixes, list) or not suffixes or not all(isinstance(item, str) and item.startswith(".") for item in suffixes):
+    if (
+        not isinstance(suffixes, list)
+        or not suffixes
+        or not all(isinstance(item, str) and item.startswith(".") for item in suffixes)
+    ):
         errors.append(f"{prefix}.suffixes must be a non-empty list of dot-prefixed extensions")
     pattern = directive.get("pattern")
     if not isinstance(pattern, str) or not pattern:

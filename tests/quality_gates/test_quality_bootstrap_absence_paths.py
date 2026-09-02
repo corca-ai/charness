@@ -154,6 +154,22 @@ def test_declared_absence_marks_the_phantom_paths_it_does_not_claim(tmp_path: Pa
     assert any("do not go looking for them" in w for w in resolved["warnings"])
 
 
+def test_declared_universes_absence_marks_phantom_patterns(tmp_path: Path) -> None:
+    repo = seed_quality_repo(tmp_path)
+    _adapter(repo).write_text(
+        "version: 1\nrepo: demo\noutput_dir: charness-artifacts/quality\n"
+        "deliberately_absent:\n  universes: this repo declares no quality file families\n",
+        encoding="utf-8",
+    )
+
+    resolved = load_quality_adapter_permissive(repo)
+    unasserted = resolved["data"]["deliberately_absent_unasserted_paths"]
+
+    assert unasserted["universes.python_sources[0]"] == "scripts/*.py"
+    assert unasserted["universes.specdown_config"] == "specdown.json"
+    assert any("universes" in warning for warning in resolved["warnings"])
+
+
 def test_is_deliberately_absent_is_the_single_call_a_consumer_makes(tmp_path: Path) -> None:
     repo = seed_quality_repo(tmp_path)
     _adapter(repo).write_text(

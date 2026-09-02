@@ -825,3 +825,76 @@ regenerable_facts:
       quotes a measured figure as the evidence behind a guideline.
     skills/public/release/references/adapter-contract.md: >-
       pins the version an adapter schema field landed in.
+universes:
+  # Gate scan universes (#769). Each sub-key is a file family; the owning gate
+  # labels are named beside it. A declared family that matches nothing refuses;
+  # an undeclared family falls back to the shipped default for the same family.
+  pytest_targets:            # pytest, pytest-release, check-test-completeness
+    - tests/quality_gates
+    - tests/control_plane
+    - tests/test_*.py
+    - tests/charness_cli
+    - tests/coverage_debt
+  python_sources:            # py-compile, ruff, check-python-lengths, check-python-runtime-inheritance
+    - scripts/*.py
+    - scripts/**/*.py
+    - skills/public/*/scripts/*.py
+    - skills/public/*/scripts/**/*.py
+    - skills/support/*/scripts/*.py
+    - skills/support/*/scripts/**/*.py
+    - skills/shared/scripts/*.py
+    - skills/shared/scripts/**/*.py
+    - skills/support/*/vendor/*.py
+  shell_sources:             # check-shell
+    - "*.sh"
+    - scripts/*.sh
+    - tests/**/*.sh
+    - .githooks/*
+  test_roots:                # check-test-production-ratio
+    - tests
+  doc_surfaces:              # check-doc-links, docs-graph, doc-duplicates
+    - README.md
+    - AGENTS.md
+    - docs/**/*.md
+    - presets/**/*.md
+    - profiles/**/*.md
+    - skills/public/**/*.md
+    - skills/support/**/*.md
+    - skills/shared/**/*.md
+  artifact_roots:            # check-spec-evidence-durability, check-artifact-referents, validate-critique-artifacts, validate-ideation-artifact, validate-lesson-ledger
+    spec: charness-artifacts/spec
+    quality: charness-artifacts/quality
+    release: charness-artifacts/release
+    dogfood: charness-artifacts/dogfood
+    debug: charness-artifacts/debug
+    premortem: charness-artifacts/premortem
+    design-studies: charness-artifacts/design-studies
+    goals: charness-artifacts/goals
+    critique: charness-artifacts/critique
+    retro: charness-artifacts/retro
+    probe: charness-artifacts/probe
+    issues: charness-artifacts/issues
+    release-review: charness-artifacts/release-review
+  scanner_globs:             # inventory-gitignore-scan-hygiene
+    - skills/public/quality/scripts/*.py
+    - skills/public/quality/scripts/**/*.py
+    - skills/public/quality/references/*.py
+    - skills/public/quality/references/**/*.py
+    - scripts/*inventory*.py
+    - scripts/**/*inventory*.py
+    - scripts/*quality*.py
+    - scripts/**/*quality*.py
+    - scripts/*scan*.py
+    - scripts/**/*scan*.py
+  mutation_pool:             # release-changed-line-coverage
+    - charness
+    - runtime_bootstrap.py
+    - skill_runtime_bootstrap.py
+    - scripts/*.py
+    - scripts/**/*.py
+    - skills/public/*/scripts/*.py
+    - skills/public/*/scripts/**/*.py
+    - skills/support/*/scripts/*.py
+    - skills/support/*/scripts/**/*.py
+  specdown_config: specdown.json   # specdown
+  secrets_config: .gitleaks.toml   # check-secrets

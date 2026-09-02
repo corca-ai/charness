@@ -42,6 +42,57 @@ gate_design_review_globs: []
 canonical_markdown_surfaces:
   - AGENTS.md
   - CLAUDE.md
+universes:
+  # pytest, pytest-release, check-test-completeness
+  pytest_targets:
+    - tests
+  # py-compile, ruff, check-python-lengths, check-python-runtime-inheritance
+  python_sources:
+    - src/*.py
+    - src/**/*.py
+  # check-shell
+  shell_sources:
+    - '*.sh'
+    - scripts/*.sh
+    - tests/**/*.sh
+  # check-test-production-ratio
+  test_roots:
+    - tests
+  # check-doc-links, docs-graph, doc-duplicates
+  doc_surfaces:
+    - README.md
+    - AGENTS.md
+    - docs/**/*.md
+  # check-spec-evidence-durability, check-artifact-referents,
+  # validate-critique-artifacts, validate-ideation-artifact, validate-lesson-ledger
+  artifact_roots:
+    spec: artifacts/spec
+    quality: artifacts/quality
+    release: artifacts/release
+    dogfood: artifacts/dogfood
+    debug: artifacts/debug
+    premortem: artifacts/premortem
+    design-studies: artifacts/design-studies
+    goals: artifacts/goals
+    critique: artifacts/critique
+    retro: artifacts/retro
+    probe: artifacts/probe
+    issues: artifacts/issues
+    release-review: artifacts/release-review
+  # inventory-gitignore-scan-hygiene
+  scanner_globs:
+    - src/**/*.py
+  # inventory-ci-local-gate-parity
+  ci_gate_patterns:
+    - '\bnpm\s+run\s+verify\b'
+    - '\bmake\s+verify\b'
+  # release-changed-line-coverage
+  mutation_pool:
+    - src/**/*.py
+  # specdown
+  specdown_config: specdown.json
+  # check-secrets
+  secrets_config: .gitleaks.toml
 skill_ergonomics_skill_paths: []
 skill_ergonomics_runtime_install_skill_paths: []
 vendored_paths: []
