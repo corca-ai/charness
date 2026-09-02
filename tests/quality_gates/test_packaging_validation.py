@@ -15,8 +15,8 @@ import scripts.check_consumer_validator_catalog as consumer_validator_catalog_mo
 import scripts.export_plugin as export_plugin_module
 import scripts.packaging_lib as packaging_lib
 import scripts.sync_root_plugin_manifests as sync_root_plugin_manifests_module
-import tools.validate_packaging as validate_packaging_module
-import tools.validate_packaging_install_surface as validate_packaging_install_surface_module
+import scripts.validate_packaging as validate_packaging_module
+import scripts.validate_packaging_install_surface as validate_packaging_install_surface_module
 from tests.repo_copy import clone_seeded_charness_repo
 from tests.script_main import run_loaded_script_main
 
@@ -440,7 +440,7 @@ def test_validate_packaging_install_surface_bootstraps_repo_imports(tmp_path: Pa
         [
             "python3",
             "-m",
-            "tools.validate_packaging_install_surface",
+            "scripts.validate_packaging_install_surface",
             "--repo-root",
             str(ROOT),
         ],
@@ -557,7 +557,7 @@ def test_export_plugin_materializes_codex_and_claude_layouts(tmp_path: Path) -> 
     assert exported_helper_script.is_file()
     assert not exported_tools.exists()
     assert not (exported_scripts / "validate_skills.py").exists()
-    assert not (exported_scripts / "validate_packaging.py").exists()
+    assert (exported_scripts / "validate_packaging.py").exists()  # export machinery ships
     assert (exported_scripts / "public_skill_dogfood_lib.py").is_file()
     assert (
         claude_root
@@ -684,7 +684,7 @@ def test_install_surface_names_the_parser_adapter_lib_loads_by_path(
     The export byte comparison is covered by the release-marked end-to-end tests below.
     Patch it here so this standing test remains narrowly about the required parser file.
     """
-    from tools import validate_packaging_install_surface as surface
+    from scripts import validate_packaging_install_surface as surface
 
     required: list[str] = []
     root = Path(__file__).resolve().parents[2]

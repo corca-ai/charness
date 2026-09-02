@@ -32,7 +32,7 @@ from .support import ROOT
 _MODULES = {
     name: load_script_module(name.removesuffix(".py").replace("/", "_"), ROOT / name)
     for name in (
-        "tools/validate_packaging.py",
+        "scripts/validate_packaging.py",
         "tools/check_bootstrap_shim_consistency.py",
         "scripts/validate_critique_artifacts.py",
         "scripts/validate_retro_artifact.py",
@@ -82,7 +82,7 @@ def _empty_root(tmp_path: Path) -> Path:
 def test_zero_scope_scan_refuses(tmp_path: Path) -> None:
     root = str(_empty_root(tmp_path))
     cases = (
-        ("tools/validate_packaging.py", "no packaging manifests found"),
+        ("scripts/validate_packaging.py", "no packaging manifests found"),
         ("tools/check_bootstrap_shim_consistency.py", "nothing was compared"),
         ("tools/check_skill_bootstrap_vars.py", "no public/support SKILL.md files found"),
         ("scripts/check_test_repo_copy_invariants.py", "no test Python files found"),

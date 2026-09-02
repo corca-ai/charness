@@ -443,3 +443,11 @@ validators:
     consumer_facing: false
     decision: exclude
     reason: "host support validator, not a consumer-authored artifact contract"
+  - path: scripts/validate_packaging.py
+    consumer_facing: false
+    decision: exclude
+    reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
+  - path: scripts/validate_packaging_install_surface.py
+    consumer_facing: false
+    decision: exclude
+    reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"

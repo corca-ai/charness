@@ -64,7 +64,7 @@ Read first:
 Useful local commands:
 
 ```bash
-python3 -m tools.validate_packaging --repo-root .
+python3 scripts/validate_packaging.py --repo-root .
 python3 scripts/sync_root_plugin_manifests.py --repo-root .
 charness doctor
 charness update all

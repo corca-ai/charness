@@ -28,7 +28,7 @@
       ],
       "verify_commands": [
         "python3 scripts/validate_packaging.py --repo-root .",
-        "python3 scripts/validate_packaging_committed.py --repo-root ."
+        "python3 -m tools.validate_packaging_committed --repo-root ."
       ],
       "notes": [
         "Edit the repo-owned source path, not the materialized plugin export.",
@@ -198,7 +198,7 @@
       ],
       "sync_commands": [],
       "verify_commands": [
-        "python3 scripts/validate_skills.py --repo-root .",
+        "python3 -m tools.validate_skills --repo-root .",
         "python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py",
         "python3 scripts/check_skill_ownership_overlap.py --repo-root .",
         "python3 scripts/validate_skill_ergonomics.py --repo-root ."
@@ -275,13 +275,13 @@
         "docs/public-skill-validation.json",
         "docs/public-skill-validation.md",
         "scripts/public_skill_validation_lib.py",
-        "scripts/validate_public_skill_validation.py",
-        "scripts/suggest_public_skill_validation.py"
+        "tools/validate_public_skill_validation.py",
+        "tools/suggest_public_skill_validation.py"
       ],
       "derived_paths": [],
       "sync_commands": [],
       "verify_commands": [
-        "python3 scripts/validate_public_skill_validation.py --repo-root ."
+        "python3 -m tools.validate_public_skill_validation --repo-root ."
       ],
       "notes": [
         "New, renamed, or reclassified public skills must be reflected in `docs/public-skill-validation.json` before closeout."
@@ -297,12 +297,12 @@
         "docs/public-skill-dogfood.md",
         "scripts/public_skill_dogfood_lib.py",
         "scripts/suggest_public_skill_dogfood.py",
-        "scripts/validate_public_skill_dogfood.py"
+        "tools/validate_public_skill_dogfood.py"
       ],
       "derived_paths": [],
       "sync_commands": [],
       "verify_commands": [
-        "python3 scripts/validate_public_skill_dogfood.py --repo-root ."
+        "python3 -m tools.validate_public_skill_dogfood --repo-root ."
       ],
       "notes": [
         "When a reviewed consumer dogfood case drifts from current skill contracts, refresh the scaffold first and only then update the checked-in review observations."
@@ -321,8 +321,8 @@
       ],
       "sync_commands": [],
       "verify_commands": [
-        "python3 scripts/validate_profiles.py --repo-root .",
-        "python3 scripts/validate_presets.py --repo-root ."
+        "python3 -m tools.validate_profiles --repo-root .",
+        "python3 -m tools.validate_presets --repo-root ."
       ],
       "notes": [
         "Do not leave packaged defaults pointing at missing artifacts."
@@ -422,7 +422,7 @@
       "derived_paths": [],
       "sync_commands": [],
       "verify_commands": [
-        "python3 scripts/validate_surfaces.py --repo-root ."
+        "python3 -m tools.validate_surfaces --repo-root ."
       ],
       "notes": [
         "Keep the surfaces manifest aligned with real repo-owned source and derived obligations."
@@ -540,7 +540,7 @@
         "python3 scripts/check_github_actions.py --repo-root .",
         "python3 scripts/validate_adapters.py --repo-root .",
         "python3 scripts/validate_packaging.py --repo-root .",
-        "python3 scripts/validate_packaging_committed.py --repo-root ."
+        "python3 -m tools.validate_packaging_committed --repo-root ."
       ],
       "notes": [
         "Keep workflow behavior, adapter commands, runner config, and exported helpers aligned.",
@@ -657,7 +657,7 @@
       "derived_paths": [],
       "sync_commands": [],
       "verify_commands": [
-        "python3 scripts/check_quality_tool_fixtures.py --repo-root ."
+        "python3 -m tools.check_quality_tool_fixtures --repo-root ."
       ],
       "notes": [
         "The verify command proves each fixture is internally consistent with the streams checked in beside it. It does NOT re-run the external tool and does NOT claim the repo routes that tool to a verdict.",
@@ -791,7 +791,7 @@
       ],
       "sync_commands": [],
       "verify_commands": [
-        "python3 scripts/validate_integrations.py --repo-root .",
+        "python3 -m tools.validate_integrations --repo-root .",
         "python3 scripts/sync_support.py --repo-root .",
         "python3 scripts/update_tools.py --repo-root ."
       ],
@@ -818,7 +818,7 @@
       ],
       "sync_commands": [],
       "verify_commands": [
-        "python3 scripts/validate_integrations.py --repo-root .",
+        "python3 -m tools.validate_integrations --repo-root .",
         "python3 scripts/sync_support.py --repo-root .",
         "python3 scripts/update_tools.py --repo-root ."
       ],
@@ -865,7 +865,7 @@
       "verify_commands": [
         "./scripts/check-python-lint.sh",
         "python3 scripts/check_code_lengths.py --repo-root . --require-git-file-listing",
-        "python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support",
+        "python3 -m tools.validate_attention_state_visibility --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support",
         "python3 scripts/check_test_repo_copy_invariants.py --repo-root .",
         "python3 scripts/check_subprocess_form.py --repo-root . --require-git-file-listing",
         "./scripts/check-shell.sh",
@@ -885,7 +885,7 @@
       "description": "Advisory-interpretation contract meta-validator (#330): the inference-layer surface registry plus every registered Python/prose declaration and its paired consumer reference.",
       "source_paths": [
         ".agents/inference-interpretation-surfaces.json",
-        "scripts/validate_inference_interpretation.py",
+        "tools/validate_inference_interpretation.py",
         "skills/shared/references/advisory-interpretation-contract.md",
         "skills/public/quality/scripts/inventory_nose_clones.py",
         "skills/public/quality/scripts/inventory_skill_ergonomics.py",
@@ -901,7 +901,7 @@
       "derived_paths": [],
       "sync_commands": [],
       "verify_commands": [
-        "python3 scripts/validate_inference_interpretation.py --repo-root . --require-git-file-listing"
+        "python3 -m tools.validate_inference_interpretation --repo-root . --require-git-file-listing"
       ],
       "notes": [
         "When a new inference-layer surface is added, register it in .agents/inference-interpretation-surfaces.json AND add its declaration file to source_paths here so the contract re-verifies at slice closeout (#330).",

@@ -23,7 +23,7 @@ minimal Grok Build plugin layouts.
 - source schema: [packaging/plugin.schema.json](../packaging/plugin.schema.json)
 - bootstrap runtime contract: [packaging/bootstrap-python.json](../packaging/bootstrap-python.json)
 - bootstrap runtime requirements: [packaging/bootstrap-requirements.txt](../packaging/bootstrap-requirements.txt)
-- validation entrypoint: [tools/validate_packaging.py](../tools/validate_packaging.py)
+- validation entrypoint: [scripts/validate_packaging.py](../scripts/validate_packaging.py)
 - export entrypoint: [scripts/export_plugin.py](../scripts/export_plugin.py)
 
 The shared packaging manifest is authoritative for:

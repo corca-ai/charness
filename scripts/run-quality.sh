@@ -1013,7 +1013,7 @@ queue_selected "validate-profiles" python3 -m tools.validate_profiles --repo-roo
 queue_selected "validate-presets" python3 -m tools.validate_presets --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "validate-adapters" python3 scripts/validate_adapters.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "validate-integrations" python3 -m tools.validate_integrations --repo-root "$REPO_ROOT"
-queue_selected "validate-packaging" python3 -m tools.validate_packaging --repo-root "$REPO_ROOT"
+queue_selected "validate-packaging" python3 scripts/validate_packaging.py --repo-root "$REPO_ROOT"
 # Checked-in export drift is a release-boundary concern, but remains available for
 # a focused diagnostic without widening ordinary full runs.
 if [[ "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" == "1" ]] || label_is_explicitly_selected "validate-packaging-committed"; then

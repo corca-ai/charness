@@ -111,7 +111,7 @@ def expect_adapter_bootstrap(
 def scenario_skill_package_valid(root: Path) -> None:
     fixture = root / "evals" / "fixtures" / "skill-valid"
     result = run_command(
-        [sys.executable, "scripts/validate_skills.py", "--repo-root", str(fixture)], cwd=root
+        [sys.executable, "-m", "tools.validate_skills", "--repo-root", str(fixture)], cwd=root
     )
     expect_success(result, "skill-valid fixture")
 
@@ -119,7 +119,7 @@ def scenario_skill_package_valid(root: Path) -> None:
 def scenario_profile_valid(root: Path) -> None:
     fixture = root / "evals" / "fixtures" / "profile-valid"
     result = run_command(
-        [sys.executable, "scripts/validate_profiles.py", "--repo-root", str(fixture)], cwd=root
+        [sys.executable, "-m", "tools.validate_profiles", "--repo-root", str(fixture)], cwd=root
     )
     expect_success(result, "profile-valid fixture")
 
@@ -316,7 +316,7 @@ def scenario_setup_operator_acceptance_synthesis(root: Path) -> None:
 
 def scenario_representative_skill_contracts(root: Path) -> None:
     result = run_command(
-        [sys.executable, "scripts/check_skill_contracts.py", "--repo-root", str(root)], cwd=root
+        [sys.executable, "-m", "tools.check_skill_contracts", "--repo-root", str(root)], cwd=root
     )
     expect_success(result, "representative skill contracts")
 
