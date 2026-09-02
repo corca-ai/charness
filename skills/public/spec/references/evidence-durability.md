@@ -71,6 +71,18 @@ only for prose that honestly describes reproduction, not for sneaking durable
 claims past a checker. The keyword is matched case-insensitively, but the HTML
 comment delimiters are required so it stays invisible when rendered.
 
+## Frozen Records Are Counted, Not Rewritten
+
+Two kinds of artifact are exempt from enforcement and reported as a count
+instead. Artifacts in the later-added families whose filename dates them
+before the enforcement anchor are history. A Goal Draft whose exact bytes a
+sibling `<stem>.binding.json` hashes under `draft.sha256` is frozen by the
+Goal Run it identifies: rewriting it to satisfy this check would break that
+run's identity, which is the same inversion the anchor refuses. The binding
+exemption holds only while the bytes on disk still hash to what the binding
+froze; a draft edited after binding is enforced again. Neither exemption is
+an allowlist or an author-written date.
+
 ## Failure Mode This Closes
 
 Without this contract, a syntactic link checker can be satisfied by stripping

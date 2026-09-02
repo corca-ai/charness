@@ -82,7 +82,9 @@ def test_citation_grammar_is_judged_in_one_ignore_query(tmp_path: Path) -> None:
 @pytest.mark.slow_corpus
 def test_real_repo_passes(tmp_path: Path) -> None:
     repo_root = Path(__file__).resolve().parents[2]
-    result = run_script("scripts/gates/check_spec_evidence_durability.py", "--repo-root", str(repo_root))
+    result = run_script(
+        "scripts/gates/check_spec_evidence_durability.py", "--repo-root", str(repo_root)
+    )
     assert result.returncode == 0, result.stderr
 
 
@@ -115,9 +117,7 @@ def test_main_batches_all_citation_paths_into_one_git_ignore_query(
         return set(paths)
 
     monkeypatch.setattr(gate, "git_check_ignore", all_ignored)
-    monkeypatch.setattr(
-        "sys.argv", ["check_spec_evidence_durability.py", "--repo-root", str(repo)]
-    )
+    monkeypatch.setattr("sys.argv", ["check_spec_evidence_durability.py", "--repo-root", str(repo)])
 
     assert gate.main() == 1
     assert len(calls) == 1
@@ -135,6 +135,22 @@ def test_main_batches_all_citation_paths_into_one_git_ignore_query(
 # edited to fit a gate, which is the inversion the gate exists to prevent -- so
 # history is counted, and new artifacts are bound.
 # --------------------------------------------------------------------------- #
+
+
+def _sha256(path: Path) -> str:
+    import hashlib
+
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _write_binding(draft: Path, kind: str, sha256: str) -> None:
+    import json
+
+    binding = draft.with_name(draft.name[: -len(".md")] + ".binding.json")
+    binding.write_text(
+        json.dumps({"kind": kind, "draft": {"path": draft.name, "sha256": sha256}}),
+        encoding="utf-8",
+    )
 
 
 def _late_doc(repo: Path, family: str, name: str) -> Path:
@@ -173,9 +189,26 @@ def test_late_family_enforcement_and_grandfathering_share_one_ignore_query(
         "# Demo\n\n- Proof: `artifacts/eval-summary.json` <!-- reproduction-source -->\n",
         encoding="utf-8",
     )
+    # A Goal Draft whose exact bytes an immutable binding hashes is frozen: counted,
+    # not enforced. The same draft edited after binding (stale hash), a binding of
+    # another kind, and an unreadable binding are all enforced again.
+    bound = _late_doc(repo, "goals", "2999-01-01-bound.md")
+    _write_binding(bound, gate.GOAL_BINDING_KIND, _sha256(bound))
+    stale = _late_doc(repo, "goals", "2999-01-01-stale-binding.md")
+    _write_binding(stale, gate.GOAL_BINDING_KIND, "0" * 64)
+    other_kind = _late_doc(repo, "goals", "2999-01-01-other-kind.md")
+    _write_binding(other_kind, "charness.something-else/v1", _sha256(other_kind))
+    unreadable = _late_doc(repo, "goals", "2999-01-01-unreadable-binding.md")
+    unreadable.with_name("2999-01-01-unreadable-binding.binding.json").write_text(
+        "{not json", encoding="utf-8"
+    )
 
     result = run_script("scripts/gates/check_spec_evidence_durability.py", "--repo-root", str(repo))
     assert result.returncode == 1
+    assert "2999-01-01-bound.md" not in result.stderr
+    assert "2999-01-01-stale-binding.md" in result.stderr
+    assert "2999-01-01-other-kind.md" in result.stderr
+    assert "2999-01-01-unreadable-binding.md" in result.stderr
     for family in families:
         assert f"charness-artifacts/{family}/2999-01-01-wired.md" in result.stderr, family
     assert "some-review-packet.md" in result.stderr
@@ -185,6 +218,7 @@ def test_late_family_enforcement_and_grandfathering_share_one_ignore_query(
     assert "2020-01-02-b.md" not in result.stderr
     assert "2020-01-01-demo.md" not in result.stderr
     assert "2999-01-01-marked.md" not in result.stderr
-    assert "3 citation(s) to gitignored targets remain" in result.stdout
+    assert "4 citation(s) to gitignored targets remain" in result.stdout
     assert "whose FILENAME date precedes" in result.stdout
+    assert "whose exact bytes a sibling Goal Binding hashes" in result.stdout
     assert "whatever its body says -- is enforced" in result.stdout

@@ -8,7 +8,6 @@ import re
 import shlex
 import sys
 import tempfile
-from datetime import date
 from pathlib import Path
 
 
@@ -46,6 +45,15 @@ iter_doc_lines = _markdown_doc_scan.iter_doc_lines
 _scope = import_repo_module(__file__, "scripts.review.critique_enforcement_scope")
 _subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard.run_process
+#: WHICH late-family artifacts this gate binds -- the date anchor, the Goal
+#: Binding channel, and the advisory that counts what is frozen -- is one
+#: question, owned beside the gate so the gate stays the citation scanner.
+_scope_rules = import_repo_module(__file__, "scripts.gates_support.evidence_durability_scope")
+ENFORCED_FROM = _scope_rules.ENFORCED_FROM
+GOAL_BINDING_KIND = _scope_rules.GOAL_BINDING_KIND
+binding_freezes = _scope_rules.binding_freezes
+is_enforced_late_doc = _scope_rules.is_enforced_late_doc
+grandfathered_advisory = _scope_rules.grandfathered_advisory
 
 PRIMARY_ARTIFACT_FAMILIES = (
     "spec",
@@ -78,11 +86,6 @@ DOC_GLOBS = tuple(
 LATE_DOC_GLOBS = tuple(
     f"{DEFAULT_ARTIFACT_ROOTS[family]}/**/*.md" for family in LATE_ARTIFACT_FAMILIES
 )
-#: The date this widening landed. A doc in `LATE_DOC_GLOBS` is enforced when its
-#: FILENAME dates it on or after this; earlier ones are grandfathered. A doc whose
-#: filename carries no readable date is enforced whatever its body says -- see
-#: `is_enforced_late_doc` for why only that channel grandfathers.
-ENFORCED_FROM = date(2026, 8, 22)
 
 
 def _adapter_owned_default(repo_root: Path, family: str) -> str:
@@ -385,75 +388,6 @@ def _relative_or_none(root: Path, path: Path) -> Path | None:
         return None
 
 
-def is_enforced_late_doc(doc: Path, text: str) -> bool:
-    """Whether a `LATE_DOC_GLOBS` artifact is inside the enforced window.
-
-    Delegates to `critique_enforcement_scope.observed_date`, this repo's ONE
-    owner of "the artifact's effective date for grandfathering": the LATER of the
-    in-body `Date:` line and the leading `YYYY-MM-DD` of the filename. Not
-    mtime and not commit date -- either of those moves when a frozen record is
-    touched for an unrelated reason, and the record would drift into enforcement
-    without its content changing.
-
-    **An UNDATABLE doc is ENFORCED, not exempt**, and that direction is the whole
-    correctness of this function. The first cut read it the other way, and a
-    fresh-eye round found the hole: 68 checked-in artifacts in these families
-    carry no parseable date, 64 of them in `critique/` and `retro/`, and they are
-    overwhelmingly one-shot `*-packet.md` review artifacts -- the files that carry
-    the MOST run-output citations, undated by this repo's own naming convention.
-    So the exemption was not date-bounded debt that shrinks as history recedes; it
-    was an unbounded hole that GROWS with every new packet, opened by omitting a
-    filename convention nothing validates. One live violation was already sitting
-    in it.
-
-    That reading is not a novel judgement -- it is the rule this repo already
-    wrote down twice, after measuring the same mistake:
-    `critique_enforcement_scope.observed_date`'s own docstring says callers "must
-    NOT treat `None` as fail-open by default", and `validate_critique_artifacts`
-    records that its first cut exempted undated artifacts and "handed back the
-    whole of C4 through the one input the rule names as never fail-open".
-
-    There is deliberately NO allowlist. Fail-closed leaves exactly three citations
-    to resolve across all 68 filename-undated docs, and each is a genuine
-    reproduction source that the `<!-- reproduction-source -->` marker already
-    exists to label. An exemption list would be larger than the problem.
-
-    **Only the FILENAME channel grandfathers, and `text` is deliberately unused
-    for that decision.** The first fail-closed cut delegated to
-    `observed_date`, which is `max(body_date, filename_date)` -- and a round-2
-    reviewer showed that repair carried a narrowed form of the class it fixed.
-    `observed_date`'s safety argument is corroboration: when both channels parse,
-    an artifact is exempt only if they agree it is old. Its own docstring records
-    the residual -- "an undated filename with a back-dated body is therefore still
-    exempt" -- and mitigates it with "the scaffold always emits both".
-
-    That mitigation inverts on THIS corpus. The population here is *defined* by
-    having no filename date, so the author-written body line is not a corroborating
-    channel, it is the only one. One line, `Date: 2020-01-01`, in the first five
-    lines of a new review packet bought a permanent exemption. Four checked-in docs
-    already take their date from the body alone, one of them `critique/latest.md` --
-    a rolling pointer whose content is replaced while its body date is
-    author-maintained, which is exactly the grows-not-shrinks shape the fail-closed
-    repair was raised about.
-
-    So the delegation is kept for what it is good at and dropped where its argument
-    does not hold: `date_from_filename` is a name nobody edits while rewriting a
-    doc's body, and an artifact that wants grandfathering must be NAMED old. This
-    also sidesteps a second pre-existing hole the reviewer found in the body
-    channel -- `date_from_body` does not strip display fences, so a packet that
-    merely QUOTES another artifact's `Date:` header reads the quotation as its own
-    claim. That is filed rather than fixed here; this gate simply stops depending
-    on it.
-
-    `text` stays in the signature because a future channel (a front-matter field, a
-    committed-date corroboration) belongs here and not at the call site.
-    """
-    observed = _scope.date_from_filename(doc)
-    if observed is None:
-        return True
-    return observed >= ENFORCED_FROM
-
-
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
@@ -527,34 +461,6 @@ def main() -> int:
     if advisory:
         print(advisory)
     return 0
-
-
-def grandfathered_advisory(grandfathered: int) -> str | None:
-    """The excluded-citation count, described as the population it actually is.
-
-    Reported, never silent: a gate that quietly excludes part of its own scope
-    reads as "covered everything" when it did not.
-
-    The wording is load-bearing and an earlier cut got it wrong in a way a fresh
-    eye caught. It said the excluded citations "remain in artifacts dated before
-    <date>" and that "new artifacts in those families are enforced" -- and both
-    clauses were false for the undated subset, which was neither dated-before
-    anything nor enforced when new. That merged two populations with opposite
-    half-lives (one shrinking as history recedes, one growing with every new
-    packet) into a single number nobody could read as either. Undated docs are
-    now enforced, so the count describes ONE population again and the sentence
-    can say what it is.
-    """
-    if not grandfathered:
-        return None
-    return (
-        f"ADVISORY (evidence durability): {grandfathered} citation(s) to gitignored "
-        f"targets remain in artifacts whose FILENAME date precedes {ENFORCED_FROM.isoformat()}; "
-        "they are frozen records and are counted, not rewritten. Every artifact in "
-        "those families whose filename dates it on or after that -- and every "
-        "artifact whose FILENAME carries no readable date at all, whatever its body "
-        "says -- is enforced."
-    )
 
 
 if __name__ == "__main__":
