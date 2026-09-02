@@ -12,6 +12,7 @@ entry from the one under test.
 
 from __future__ import annotations
 
+import importlib
 import subprocess
 import sys
 from pathlib import Path
@@ -24,15 +25,16 @@ from tests.script_main import load_script_module, run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[2]
 
-EXPORT_LIB = load_script_module(
-    "scripts.export_self_sufficiency_lib", ROOT / "scripts" / "export_self_sufficiency_lib.py"
-)
-ARTIFACT_PREFLIGHT = load_script_module(
-    "check_artifact_surface_preflight", ROOT / "scripts" / "check_artifact_surface_preflight.py"
-)
-SKILL_PREFLIGHT = load_script_module(
-    "check_skill_surface_preflight", ROOT / "scripts" / "check_skill_surface_preflight.py"
-)
+# These three are imported by NAME through the same sys.path entry the rest of the
+# suite uses. Loading them by path under the same bare name would REBIND
+# sys.modules to a second copy at collection time, and every worker collects this
+# file, so a monkeypatch another test lands on the shared copy would miss the one
+# the code under test imports (test_artifact_validator_units.register_surface).
+EXPORT_LIB = importlib.import_module("scripts.export_self_sufficiency_lib")
+if str(ROOT / "scripts") not in sys.path:
+    sys.path.insert(0, str(ROOT / "scripts"))
+ARTIFACT_PREFLIGHT = importlib.import_module("check_artifact_surface_preflight")
+SKILL_PREFLIGHT = importlib.import_module("check_skill_surface_preflight")
 
 NARRATIVE_GATE = load_script_module(
     "publish_release_narrative_gate_batch6",
