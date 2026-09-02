@@ -36,13 +36,13 @@ _script_root = _script_root_from_file()
 if str(_script_root) not in sys.path:
     sys.path.insert(0, str(_script_root))
 
-from scripts import check_consumer_validator_catalog  # noqa: E402
 from scripts.adapters.capability_catalog_artifact import (  # noqa: E402
     persist_catalog,
     read_only_result,
 )
 from scripts.adapters.capability_catalog_resolver import resolve_skill_path  # noqa: E402
 from scripts.adapters.capability_catalog_sources import build_inventory  # noqa: E402
+from scripts.gates import check_consumer_validator_catalog  # noqa: E402
 from scripts.yaml_output import emit_yaml  # noqa: E402
 
 

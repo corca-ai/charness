@@ -18,7 +18,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
-from scripts.lessons import recent_lessons_lib as lib
+from scripts.lessons import recent_lessons_lib as lib  # noqa: E402
 
 RETRO_DIR = "charness-artifacts/retro"
 

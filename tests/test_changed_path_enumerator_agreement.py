@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from scripts import git_status_snapshot as status
 from scripts.adapters import surfaces_lib
+from scripts.core import git_status_snapshot as status
 from scripts.review import reviewed_input_identity
 
 

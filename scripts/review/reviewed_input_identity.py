@@ -133,7 +133,10 @@ def _load_review_sibling(module_stem: str):
     return _load_sibling(module_stem, anchor_file=__file__)
 
 
-_checkout = _load_review_sibling("git_checkout")
+from scripts.core import (
+    git_checkout as _checkout,  # noqa: E402  (moved to core; not a review sibling)
+)
+
 _path_selection = _load_review_sibling("reviewed_input_path_selection")
 _changed_path_owner = _path_selection.changed_path_owner
 _auto_paths = _path_selection.auto_paths

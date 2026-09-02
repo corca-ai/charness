@@ -36,7 +36,7 @@ from scripts.core.repo_layout import (  # noqa: E402
     support_capability_schema_path,
 )
 from scripts.core.repo_path_display import display_path  # noqa: E402
-from scripts.runtime_bootstrap import (
+from scripts.runtime_bootstrap import (  # noqa: E402
     import_repo_module,  # noqa: E402
     repo_root_from_script,  # noqa: E402
 )

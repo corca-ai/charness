@@ -125,7 +125,7 @@ def test_a_pre_move_reference_is_grandfathered_but_a_new_one_blocks(tmp_path: Pa
         artifact = tmp_path / "charness-artifacts" / "goals" / f"{artifact_date}-path.md"
         artifact.parent.mkdir(parents=True, exist_ok=True)
         artifact.write_text(
-            "Disposition: applied: scripts/artifact_referents.py now owns it\n",
+            "Disposition: applied: scripts/artifacts/artifact_referents.py now owns it\n",
             encoding="utf-8",
         )
         result = run_script(str(GATE), "--repo-root", str(tmp_path), "--path", str(artifact))

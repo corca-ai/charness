@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from scripts import validate_retro_artifact as retro_validator
+from scripts.gates import validate_retro_artifact as retro_validator
 from scripts.lessons import init_lesson_ledger
 from tests.quality_gates.support import ROOT, run_script
 from tests.script_loader import load_script_module
