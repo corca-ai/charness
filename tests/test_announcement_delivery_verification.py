@@ -4,6 +4,7 @@ optional adapter-declared readback probe (rung-2 observer, P4) for
 writes to a system this repo does not control. `none` and `release-notes`
 stay outside this floor.
 """
+
 from __future__ import annotations
 
 import json
@@ -77,7 +78,11 @@ def test_resolve_manual_disposition_returns_none_without_status() -> None:
 
 def test_resolve_manual_disposition_defaults_channel_and_keeps_reason() -> None:
     record = resolve_manual_disposition(status="skipped", channel="", reason="no probe declared")
-    assert record == {"channel": "human-observation", "status": "skipped", "reason": "no probe declared"}
+    assert record == {
+        "channel": "human-observation",
+        "status": "skipped",
+        "reason": "no probe declared",
+    }
 
 
 @pytest.mark.parametrize("status", STATUSES_REQUIRING_REASON)
@@ -116,7 +121,9 @@ def test_evaluate_delivery_kind_agreement_reports_disagreement() -> None:
         recorded_kind="none", adapter_delivery_kind="human-backend", adapter_resolved=True
     )
     assert check == {
-        "adapter_resolved": True, "adapter_delivery_kind": "human-backend", "agrees_with_recorded_kind": False,
+        "adapter_resolved": True,
+        "adapter_delivery_kind": "human-backend",
+        "agrees_with_recorded_kind": False,
     }
 
 
@@ -133,7 +140,9 @@ def test_fail_delivery_kind_mismatch_names_both_values() -> None:
 
 def test_render_readback_probe_command_substitutes_placeholders() -> None:
     rendered = render_readback_probe_command(
-        "check {delivery_target} {delivery_handle}", delivery_target="#eng", delivery_handle="123.456"
+        "check {delivery_target} {delivery_handle}",
+        delivery_target="#eng",
+        delivery_handle="123.456",
     )
     assert rendered == "check #eng 123.456"
 
@@ -152,7 +161,12 @@ def test_run_readback_probe_confirms_on_zero_exit() -> None:
         repo_root=Path("."),
         run_shell=fake_run_shell,
     )
-    assert record == {"channel": "adapter-probe", "command": "probe #eng", "status": "confirmed", "returncode": 0}
+    assert record == {
+        "channel": "adapter-probe",
+        "command": "probe #eng",
+        "status": "confirmed",
+        "returncode": 0,
+    }
     assert calls == ["probe #eng"]
 
 
@@ -191,14 +205,19 @@ def _run(monkeypatch, capsys, *args: str):
             returncode = 1
             stderr_suffix = f"{exc.code}\n"
     captured = capsys.readouterr()
-    return SimpleNamespace(returncode=returncode, stdout=captured.out, stderr=captured.err + stderr_suffix)
+    return SimpleNamespace(
+        returncode=returncode, stdout=captured.out, stderr=captured.err + stderr_suffix
+    )
 
 
 def _record_args(repo: Path, artifact: Path, *extra: str) -> list[str]:
     return [
-        "--repo-root", str(repo),
-        "--head-commit", "abc123",
-        "--artifact-path", str(artifact),
+        "--repo-root",
+        str(repo),
+        "--head-commit",
+        "abc123",
+        "--artifact-path",
+        str(artifact),
         *extra,
     ]
 
@@ -212,14 +231,21 @@ def _prepare_artifact(tmp_path: Path) -> tuple[Path, Path]:
 
 
 def _read_record(repo: Path) -> dict:
-    return json.loads((repo / ".charness" / "announcement" / "announcements.jsonl").read_text(encoding="utf-8"))
+    return json.loads(
+        (repo / ".charness" / "announcement" / "announcements.jsonl").read_text(encoding="utf-8")
+    )
 
 
-def test_human_backend_delivery_without_verification_refuses_naming_statuses(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_human_backend_delivery_without_verification_refuses_naming_statuses(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo, artifact = _prepare_artifact(tmp_path)
     result = _run(
-        monkeypatch, capsys,
-        *_record_args(repo, artifact, "--delivery-kind", "human-backend", "--delivery-target", "#eng"),
+        monkeypatch,
+        capsys,
+        *_record_args(
+            repo, artifact, "--delivery-kind", "human-backend", "--delivery-target", "#eng"
+        ),
     )
     assert result.returncode != 0
     for status in DELIVERY_VERIFICATION_STATUSES:
@@ -228,16 +254,24 @@ def test_human_backend_delivery_without_verification_refuses_naming_statuses(tmp
 
 
 @pytest.mark.parametrize("status", DELIVERY_VERIFICATION_STATUSES)
-def test_human_backend_delivery_accepts_each_typed_status(tmp_path: Path, monkeypatch, capsys, status: str) -> None:
+def test_human_backend_delivery_accepts_each_typed_status(
+    tmp_path: Path, monkeypatch, capsys, status: str
+) -> None:
     repo, artifact = _prepare_artifact(tmp_path)
     result = _run(
-        monkeypatch, capsys,
+        monkeypatch,
+        capsys,
         *_record_args(
-            repo, artifact,
-            "--delivery-kind", "human-backend",
-            "--delivery-target", "#eng",
-            "--verification-status", status,
-            "--verification-reason", "manual check",
+            repo,
+            artifact,
+            "--delivery-kind",
+            "human-backend",
+            "--delivery-target",
+            "#eng",
+            "--verification-status",
+            status,
+            "--verification-reason",
+            "manual check",
         ),
     )
     assert result.returncode == 0, result.stderr
@@ -246,14 +280,20 @@ def test_human_backend_delivery_accepts_each_typed_status(tmp_path: Path, monkey
     assert record["verification"]["reason"] == "manual check"
 
 
-def test_human_backend_delivery_rejects_untyped_verification_status(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_human_backend_delivery_rejects_untyped_verification_status(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo, artifact = _prepare_artifact(tmp_path)
     result = _run(
-        monkeypatch, capsys,
+        monkeypatch,
+        capsys,
         *_record_args(
-            repo, artifact,
-            "--delivery-kind", "human-backend",
-            "--verification-status", "looks-fine",
+            repo,
+            artifact,
+            "--delivery-kind",
+            "human-backend",
+            "--verification-status",
+            "looks-fine",
         ),
     )
     assert result.returncode != 0
@@ -261,43 +301,69 @@ def test_human_backend_delivery_rejects_untyped_verification_status(tmp_path: Pa
         assert status in result.stderr
 
 
-def test_adapter_declared_probe_runs_and_its_verdict_becomes_verification(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_adapter_declared_probe_runs_and_its_verdict_becomes_verification(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo, artifact = _prepare_artifact(tmp_path)
     calls: list[str] = []
 
     def fake_run_readback_probe(*, probe_template, delivery_target, delivery_handle, repo_root):
         calls.append(probe_template)
-        return {"channel": "adapter-probe", "command": "rendered", "status": "confirmed", "returncode": 0}
+        return {
+            "channel": "adapter-probe",
+            "command": "rendered",
+            "status": "confirmed",
+            "returncode": 0,
+        }
 
     monkeypatch.setattr(ANNOUNCEMENT_RECORD, "run_readback_probe", fake_run_readback_probe)
     result = _run(
-        monkeypatch, capsys,
+        monkeypatch,
+        capsys,
         *_record_args(
-            repo, artifact,
-            "--delivery-kind", "human-backend",
-            "--delivery-target", "#eng",
-            "--delivery-handle", "ts-1",
-            "--readback-probe-template", "check {delivery_target} {delivery_handle}",
+            repo,
+            artifact,
+            "--delivery-kind",
+            "human-backend",
+            "--delivery-target",
+            "#eng",
+            "--delivery-handle",
+            "ts-1",
+            "--readback-probe-template",
+            "check {delivery_target} {delivery_handle}",
         ),
     )
     assert result.returncode == 0, result.stderr
     assert calls == ["check {delivery_target} {delivery_handle}"]
     record = _read_record(repo)
-    assert record["verification"] == {"channel": "adapter-probe", "command": "rendered", "status": "confirmed", "returncode": 0}
+    assert record["verification"] == {
+        "channel": "adapter-probe",
+        "command": "rendered",
+        "status": "confirmed",
+        "returncode": 0,
+    }
 
 
-def test_probe_seam_actually_shells_out_and_substitutes_placeholders(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_probe_seam_actually_shells_out_and_substitutes_placeholders(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     # No mocking: exercises the real subprocess default run_shell end to end,
     # proving placeholder substitution happens before the shell sees the command.
     repo, artifact = _prepare_artifact(tmp_path)
     result = _run(
-        monkeypatch, capsys,
+        monkeypatch,
+        capsys,
         *_record_args(
-            repo, artifact,
-            "--delivery-kind", "human-backend",
-            "--delivery-target", "T1",
-            "--delivery-handle", "H1",
-            "--readback-probe-template", 'test "{delivery_target}" = "T1" -a "{delivery_handle}" = "H1"',
+            repo,
+            artifact,
+            "--delivery-kind",
+            "human-backend",
+            "--delivery-target",
+            "T1",
+            "--delivery-handle",
+            "H1",
+            "--readback-probe-template",
+            'test "{delivery_target}" = "T1" -a "{delivery_handle}" = "H1"',
         ),
     )
     assert result.returncode == 0, result.stderr
@@ -307,7 +373,9 @@ def test_probe_seam_actually_shells_out_and_substitutes_placeholders(tmp_path: P
     assert "T1" in record["verification"]["command"]
 
 
-def test_readback_probe_takes_priority_over_manual_status(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_readback_probe_takes_priority_over_manual_status(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo, artifact = _prepare_artifact(tmp_path)
 
     def fake_run_readback_probe(*, probe_template, delivery_target, delivery_handle, repo_root):
@@ -315,12 +383,17 @@ def test_readback_probe_takes_priority_over_manual_status(tmp_path: Path, monkey
 
     monkeypatch.setattr(ANNOUNCEMENT_RECORD, "run_readback_probe", fake_run_readback_probe)
     result = _run(
-        monkeypatch, capsys,
+        monkeypatch,
+        capsys,
         *_record_args(
-            repo, artifact,
-            "--delivery-kind", "human-backend",
-            "--readback-probe-template", "check",
-            "--verification-status", "confirmed",
+            repo,
+            artifact,
+            "--delivery-kind",
+            "human-backend",
+            "--readback-probe-template",
+            "check",
+            "--verification-status",
+            "confirmed",
         ),
     )
     assert result.returncode == 0, result.stderr
@@ -346,13 +419,17 @@ def test_cli_normalizes_delivery_kind_case(tmp_path: Path, monkeypatch, capsys) 
     for raw, expected in (("Human-Backend", "human-backend"), ("NONE", "none")):
         repo, artifact = _prepare_artifact(tmp_path / raw)
         extra = ["--verification-status", "confirmed"] if expected == "human-backend" else []
-        result = _run(monkeypatch, capsys, *_record_args(repo, artifact, "--delivery-kind", raw, *extra))
+        result = _run(
+            monkeypatch, capsys, *_record_args(repo, artifact, "--delivery-kind", raw, *extra)
+        )
         assert result.returncode == 0, result.stderr
         record = _read_record(repo)
         assert record["delivery_kind"] == expected
 
 
-def test_cli_refuses_when_delivery_kind_disagrees_with_human_backend_adapter(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_cli_refuses_when_delivery_kind_disagrees_with_human_backend_adapter(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo, artifact = _prepare_artifact(tmp_path)
     _write_adapter(repo, "human-backend")
     result = _run(monkeypatch, capsys, *_record_args(repo, artifact, "--delivery-kind", "none"))
@@ -362,25 +439,35 @@ def test_cli_refuses_when_delivery_kind_disagrees_with_human_backend_adapter(tmp
     assert not (repo / ".charness" / "announcement" / "announcements.jsonl").exists()
 
 
-def test_cli_accepts_matching_human_backend_adapter_and_records_agreement(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_cli_accepts_matching_human_backend_adapter_and_records_agreement(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo, artifact = _prepare_artifact(tmp_path)
     _write_adapter(repo, "human-backend")
     result = _run(
-        monkeypatch, capsys,
+        monkeypatch,
+        capsys,
         *_record_args(
-            repo, artifact,
-            "--delivery-kind", "human-backend",
-            "--verification-status", "confirmed",
+            repo,
+            artifact,
+            "--delivery-kind",
+            "human-backend",
+            "--verification-status",
+            "confirmed",
         ),
     )
     assert result.returncode == 0, result.stderr
     record = _read_record(repo)
     assert record["delivery_kind_check"] == {
-        "adapter_resolved": True, "adapter_delivery_kind": "human-backend", "agrees_with_recorded_kind": True,
+        "adapter_resolved": True,
+        "adapter_delivery_kind": "human-backend",
+        "agrees_with_recorded_kind": True,
     }
 
 
-def test_cli_does_not_enforce_agreement_when_adapter_kind_is_not_human_backend(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_cli_does_not_enforce_agreement_when_adapter_kind_is_not_human_backend(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo, artifact = _prepare_artifact(tmp_path)
     _write_adapter(repo, "release-notes")
     # A legitimate draft-only finalization even though the adapter's declared
@@ -392,40 +479,60 @@ def test_cli_does_not_enforce_agreement_when_adapter_kind_is_not_human_backend(t
     assert record["delivery_kind_check"]["adapter_delivery_kind"] == "release-notes"
 
 
-def test_cli_falls_back_to_trust_when_adapter_cannot_be_resolved(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_cli_falls_back_to_trust_when_adapter_cannot_be_resolved(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo, artifact = _prepare_artifact(tmp_path)
 
     def raising_load_announcement_adapter(repo_root):
         raise RuntimeError("simulated adapter resolution failure")
 
-    monkeypatch.setattr(ANNOUNCEMENT_RECORD, "load_announcement_adapter", raising_load_announcement_adapter)
+    monkeypatch.setattr(
+        ANNOUNCEMENT_RECORD, "load_announcement_adapter", raising_load_announcement_adapter
+    )
     result = _run(
-        monkeypatch, capsys,
-        *_record_args(repo, artifact, "--delivery-kind", "human-backend", "--verification-status", "confirmed"),
+        monkeypatch,
+        capsys,
+        *_record_args(
+            repo, artifact, "--delivery-kind", "human-backend", "--verification-status", "confirmed"
+        ),
     )
     assert result.returncode == 0, result.stderr
     record = _read_record(repo)
-    assert record["delivery_kind_check"] == {"adapter_resolved": False, "trust": "cli-choices-validated"}
+    assert record["delivery_kind_check"] == {
+        "adapter_resolved": False,
+        "trust": "cli-choices-validated",
+    }
 
 
 @pytest.mark.parametrize("status", STATUSES_REQUIRING_REASON)
-def test_cli_refuses_status_without_reason_and_accepts_with_reason(tmp_path: Path, monkeypatch, capsys, status: str) -> None:
+def test_cli_refuses_status_without_reason_and_accepts_with_reason(
+    tmp_path: Path, monkeypatch, capsys, status: str
+) -> None:
     repo, artifact = _prepare_artifact(tmp_path)
     refused = _run(
-        monkeypatch, capsys,
-        *_record_args(repo, artifact, "--delivery-kind", "human-backend", "--verification-status", status),
+        monkeypatch,
+        capsys,
+        *_record_args(
+            repo, artifact, "--delivery-kind", "human-backend", "--verification-status", status
+        ),
     )
     assert refused.returncode != 0
     assert "--verification-reason" in refused.stderr
     assert not (repo / ".charness" / "announcement" / "announcements.jsonl").exists()
 
     accepted = _run(
-        monkeypatch, capsys,
+        monkeypatch,
+        capsys,
         *_record_args(
-            repo, artifact,
-            "--delivery-kind", "human-backend",
-            "--verification-status", status,
-            "--verification-reason", "explicit reason",
+            repo,
+            artifact,
+            "--delivery-kind",
+            "human-backend",
+            "--verification-status",
+            status,
+            "--verification-reason",
+            "explicit reason",
         ),
     )
     assert accepted.returncode == 0, accepted.stderr
@@ -433,10 +540,14 @@ def test_cli_refuses_status_without_reason_and_accepts_with_reason(tmp_path: Pat
     assert record["verification"]["reason"] == "explicit reason"
 
 
-def test_draft_only_and_release_notes_do_not_require_verification(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_draft_only_and_release_notes_do_not_require_verification(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     for delivery_kind in ("none", "release-notes"):
         repo, artifact = _prepare_artifact(tmp_path / delivery_kind)
-        result = _run(monkeypatch, capsys, *_record_args(repo, artifact, "--delivery-kind", delivery_kind))
+        result = _run(
+            monkeypatch, capsys, *_record_args(repo, artifact, "--delivery-kind", delivery_kind)
+        )
         assert result.returncode == 0, result.stderr
         record = _read_record(repo)
         assert record["verification"] is None
@@ -445,14 +556,21 @@ def test_draft_only_and_release_notes_do_not_require_verification(tmp_path: Path
 def test_schema_round_trip_with_delivery_handle(tmp_path: Path, monkeypatch, capsys) -> None:
     repo, artifact = _prepare_artifact(tmp_path)
     result = _run(
-        monkeypatch, capsys,
+        monkeypatch,
+        capsys,
         *_record_args(
-            repo, artifact,
-            "--delivery-kind", "human-backend",
-            "--delivery-target", "#eng",
-            "--delivery-handle", "1700000000.123456",
-            "--verification-status", "confirmed",
-            "--verification-channel", "adapter-probe",
+            repo,
+            artifact,
+            "--delivery-kind",
+            "human-backend",
+            "--delivery-target",
+            "#eng",
+            "--delivery-handle",
+            "1700000000.123456",
+            "--verification-status",
+            "confirmed",
+            "--verification-channel",
+            "adapter-probe",
         ),
     )
     assert result.returncode == 0, result.stderr
@@ -460,33 +578,52 @@ def test_schema_round_trip_with_delivery_handle(tmp_path: Path, monkeypatch, cap
     assert record["delivery_handle"] == "1700000000.123456"
     assert record["verification"] == {"channel": "adapter-probe", "status": "confirmed"}
     assert set(record) == {
-        "recorded_at", "head_commit", "delivery_kind", "delivery_target", "delivery_handle",
-        "artifact_path", "artifact_path_provenance", "commits", "verification", "delivery_kind_check",
+        "recorded_at",
+        "head_commit",
+        "delivery_kind",
+        "delivery_target",
+        "delivery_handle",
+        "artifact_path",
+        "artifact_path_provenance",
+        "commits",
+        "verification",
+        "delivery_kind_check",
     }
 
 
 # --- _default_run_shell timeout handling -----------------------------------
 
 
-def test_default_run_shell_returns_completed_process_on_timeout(tmp_path: Path, monkeypatch) -> None:
-    # PROBE_TIMEOUT_SECONDS is 120s -- too long to actually wait on. Raising
-    # subprocess.TimeoutExpired directly from the patched `subprocess.run`
-    # forces the except branch without ever sleeping.
-    def fake_run(*_args, **_kwargs):
-        raise subprocess.TimeoutExpired(cmd="sleep 999", timeout=1, output="partial out", stderr="partial err")
+def test_default_run_shell_returns_completed_process_on_timeout(
+    tmp_path: Path, monkeypatch
+) -> None:
+    # PROBE_TIMEOUT_SECONDS is 120s -- too long to actually wait on. Return the
+    # guard's timeout result directly, without ever sleeping; the guard owns the
+    # timeout-as-result conversion and its stderr marker.
+    def fake_run(command, **_kwargs):
+        return subprocess.CompletedProcess(
+            command,
+            124,
+            "partial out",
+            "timed out after 120s while running `sleep 999`",
+        )
 
-    monkeypatch.setattr(verification_lib.subprocess, "run", fake_run)
+    monkeypatch.setattr(verification_lib, "run_process", fake_run)
     result = verification_lib._default_run_shell("sleep 999", cwd=tmp_path)
     assert result.returncode == 124
     assert result.args == "sleep 999"
     assert result.stdout == "partial out"
-    assert result.stderr == f"partial err\ntimed out after {verification_lib.PROBE_TIMEOUT_SECONDS}s"
+    assert result.stderr == (
+        f"timed out after {verification_lib.PROBE_TIMEOUT_SECONDS:g}s while running `sleep 999`"
+    )
 
 
 # --- record_announcement.py bootstrap shim ----------------------------------
 
 
-def test_record_announcement_shim_not_found_raises_import_error(tmp_path: Path, monkeypatch) -> None:
+def test_record_announcement_shim_not_found_raises_import_error(
+    tmp_path: Path, monkeypatch
+) -> None:
     # Mirrors tests/test_adapter_shim_inprocess_coverage.py's shim-not-found
     # forcing technique. record_announcement.py is a skill CLI, not one of the
     # named resolver scripts that test's filename allowlist discovers, so its

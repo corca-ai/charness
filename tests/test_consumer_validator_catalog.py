@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import runpy
+import shutil
 import sys
 from pathlib import Path
 
@@ -8,13 +9,26 @@ import pytest
 import yaml
 
 from scripts import check_consumer_validator_catalog as catalog_check
+from scripts import packaging_lib
 from tests.quality_gates.git_fixture_support import init_git_repo
 from tests.script_main import run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def _fixture_repo(tmp_path: Path, *, candidates: tuple[str, ...] = ("scripts/check_demo.py",)) -> Path:
+def _export_live_catalog_repo(tmp_path: Path) -> Path:
+    repo = tmp_path / "live-repo"
+    source_catalog = repo / catalog_check.DEFAULT_CATALOG_REL
+    source_catalog.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(ROOT / catalog_check.DEFAULT_CATALOG_REL, source_catalog)
+    manifest = packaging_lib.load_manifest(ROOT, "charness")
+    packaging_lib.export_plugin_tree(ROOT, repo / "plugins" / "charness", manifest)
+    return repo
+
+
+def _fixture_repo(
+    tmp_path: Path, *, candidates: tuple[str, ...] = ("scripts/check_demo.py",)
+) -> Path:
     repo = tmp_path / "repo"
     package_root = repo / "plugins" / "charness"
     for relative in candidates:
@@ -91,7 +105,7 @@ def _write_catalog(repo: Path, entries: list[dict[str, object]]) -> Path:
     return path
 
 
-def test_the_discovery_predicate_is_positional_free_and_lost_nothing() -> None:
+def test_the_discovery_predicate_is_positional_free_and_lost_nothing(tmp_path: Path) -> None:
     """Capability-equality replay for the prefix -> token-anywhere conversion.
 
     The goal that made this change requires, before any enumeration becomes a
@@ -105,7 +119,7 @@ def test_the_discovery_predicate_is_positional_free_and_lost_nothing() -> None:
     which the prefix-only predicate never discovered, so it needed no catalog
     decision and nothing said so.
     """
-    package_root = ROOT / "plugins" / "charness"
+    package_root = _export_live_catalog_repo(tmp_path) / "plugins" / "charness"
     old_predicate = sorted(
         path.relative_to(package_root).as_posix()
         for path in package_root.rglob("*.py")
@@ -181,7 +195,7 @@ def test_the_scanner_exclusion_list_is_exactly_the_checker_itself(tmp_path: Path
     ), "the scanner may exclude only itself; a new exclusion shrinks the enforced set"
 
 
-def test_the_catalog_reports_what_its_predicate_did_not_admit() -> None:
+def test_the_catalog_reports_what_its_predicate_did_not_admit(tmp_path: Path) -> None:
     """A green here must not read as coverage of the whole package.
 
     `packaged_validator_count` counts what the predicate ADMITTED. On its own it
@@ -190,7 +204,7 @@ def test_the_catalog_reports_what_its_predicate_did_not_admit() -> None:
     now says so in its own output, which is the difference between a green that
     means "checked" and one that cannot tell "checked" from "never looked".
     """
-    report = catalog_check.validate_catalog(ROOT)
+    report = catalog_check.validate_catalog(_export_live_catalog_repo(tmp_path))
 
     assert report["packaged_module_count"] > report["packaged_validator_count"]
     assert report["uncovered_module_count"] > 0, (
@@ -237,8 +251,8 @@ def test_the_catalog_reports_what_its_predicate_did_not_admit() -> None:
     assert len(report["candidate_predicate"]) == len(catalog_check.CANDIDATE_TOKENS)
 
 
-def test_live_catalog_has_a_decision_for_every_packaged_candidate() -> None:
-    report = catalog_check.validate_catalog(ROOT)
+def test_live_catalog_has_a_decision_for_every_packaged_candidate(tmp_path: Path) -> None:
+    report = catalog_check.validate_catalog(_export_live_catalog_repo(tmp_path))
 
     assert report["status"] == "pass"
     assert "scripts/validate_adapters.py" not in report["consumer_facing_validators"]
@@ -252,7 +266,9 @@ def test_live_catalog_has_a_decision_for_every_packaged_candidate() -> None:
 
 
 def test_new_packaged_validator_cannot_stay_silent(tmp_path: Path) -> None:
-    repo = _fixture_repo(tmp_path, candidates=("scripts/check_demo.py", "skills/demo/validate_new.py"))
+    repo = _fixture_repo(
+        tmp_path, candidates=("scripts/check_demo.py", "skills/demo/validate_new.py")
+    )
     _write_catalog(repo, [_entry("scripts/check_demo.py")])
 
     with pytest.raises(catalog_check.CatalogError, match="missing an explicit catalog decision"):
@@ -361,7 +377,10 @@ def test_catalog_must_explain_the_self_scanner_exclusion(tmp_path: Path) -> None
 
 def test_report_lists_only_explicit_consumer_facing_paths(tmp_path: Path) -> None:
     repo = _fixture_repo(tmp_path, candidates=("scripts/check_demo.py", "scripts/validate_demo.py"))
-    _write_catalog(repo, [_entry("scripts/check_demo.py"), _entry("scripts/validate_demo.py", consumer_facing=True)])
+    _write_catalog(
+        repo,
+        [_entry("scripts/check_demo.py"), _entry("scripts/validate_demo.py", consumer_facing=True)],
+    )
 
     report = catalog_check.validate_catalog(repo)
 
@@ -416,7 +435,9 @@ def test_cli_main_reports_catalog_failure_without_traceback(tmp_path: Path) -> N
     assert "catalog is missing" in result.stderr
 
 
-def test_script_entrypoint_calls_main_when_loaded_as_main(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_script_entrypoint_calls_main_when_loaded_as_main(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     repo = _fixture_repo(tmp_path)
     _write_catalog(repo, [_entry("scripts/check_demo.py")])
     monkeypatch.setattr(
@@ -426,7 +447,9 @@ def test_script_entrypoint_calls_main_when_loaded_as_main(tmp_path: Path, monkey
     )
 
     with pytest.raises(SystemExit) as raised:
-        runpy.run_path(str(ROOT / "scripts/check_consumer_validator_catalog.py"), run_name="__main__")
+        runpy.run_path(
+            str(ROOT / "scripts/check_consumer_validator_catalog.py"), run_name="__main__"
+        )
 
     assert raised.value.code == 0
 
@@ -516,7 +539,11 @@ def _valid_header() -> dict[str, object]:
         ),
         (
             lambda value: value.update(
-                consumer_contract={"source": "packaged", "selection_field": "", "no_substitute": "y"}
+                consumer_contract={
+                    "source": "packaged",
+                    "selection_field": "",
+                    "no_substitute": "y",
+                }
             ),
             "selection_field",
         ),
@@ -531,7 +558,9 @@ def test_header_rejects_each_untrusted_shape(mutate, message: str) -> None:
         catalog_check._validate_catalog_header(header, Path("catalog.yaml"), "plugins/charness")
 
 
-def test_loader_and_discovery_failures_are_attributed(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_loader_and_discovery_failures_are_attributed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     with pytest.raises(catalog_check.CatalogError, match="packaged plugin root is missing"):
         catalog_check.discover_packaged_validators(tmp_path / "missing")
 
@@ -541,7 +570,11 @@ def test_loader_and_discovery_failures_are_attributed(tmp_path: Path, monkeypatc
     catalog_path = tmp_path / "catalog.yaml"
     catalog_path.write_text("placeholder", encoding="utf-8")
     for failure in (OSError("read failed"), ValueError("bad yaml"), TypeError("wrong yaml")):
-        monkeypatch.setattr(catalog_check, "load_yaml_file", lambda _path, failure=failure: (_ for _ in ()).throw(failure))
+        monkeypatch.setattr(
+            catalog_check,
+            "load_yaml_file",
+            lambda _path, failure=failure: (_ for _ in ()).throw(failure),
+        )
         with pytest.raises(catalog_check.CatalogError, match="could not read catalog"):
             catalog_check._load_catalog(catalog_path)
 
@@ -555,7 +588,15 @@ def test_loader_and_discovery_failures_are_attributed(tmp_path: Path, monkeypatc
     [
         ([], "must be a mapping"),
         ({"path": "../escape"}, "normalized relative POSIX"),
-        ({"path": "scripts/check_demo.py", "consumer_facing": False, "decision": "unknown", "reason": "x"}, "decision"),
+        (
+            {
+                "path": "scripts/check_demo.py",
+                "consumer_facing": False,
+                "decision": "unknown",
+                "reason": "x",
+            },
+            "decision",
+        ),
         (
             {
                 "path": "scripts/check_demo.py",
@@ -625,7 +666,11 @@ def _write_adoption(repo: Path, entries: list[dict[str, object]]) -> Path:
         + "".join(
             f"  - id: {entry['id']}\n"
             + (f"    wired: {str(entry['wired']).lower()}\n" if "wired" in entry else "")
-            + (f"    opt_out_reason: {entry['opt_out_reason']}\n" if "opt_out_reason" in entry else "")
+            + (
+                f"    opt_out_reason: {entry['opt_out_reason']}\n"
+                if "opt_out_reason" in entry
+                else ""
+            )
             for entry in entries
         ),
         encoding="utf-8",
@@ -694,7 +739,7 @@ def test_staged_adoption_reports_outside_root_and_git_errors(tmp_path: Path, mon
     def fail_git(*_args: object, **_kwargs: object) -> object:
         raise OSError("git unavailable")
 
-    monkeypatch.setattr(catalog_check.subprocess, "run", fail_git)
+    monkeypatch.setattr(catalog_check, "run_process", fail_git)
     with pytest.raises(catalog_check.CatalogError, match="could not verify staged"):
         catalog_check._require_staged_adoption(repo, adoption)
 
@@ -707,7 +752,9 @@ def test_staged_adoption_reports_outside_root_and_git_errors(tmp_path: Path, mon
         {"id": "check-demo", "wired": False},
     ],
 )
-def test_adoption_rejects_ambiguous_or_false_wiring(tmp_path: Path, entry: dict[str, object]) -> None:
+def test_adoption_rejects_ambiguous_or_false_wiring(
+    tmp_path: Path, entry: dict[str, object]
+) -> None:
     repo = _fixture_repo(tmp_path)
     catalog_entry = _entry("scripts/check_demo.py", consumer_facing=True)
     _write_catalog(repo, [catalog_entry])
@@ -725,7 +772,12 @@ def test_adoption_rejects_ambiguous_or_false_wiring(tmp_path: Path, entry: dict[
     ("mutation", "message"),
     [
         (lambda text: text.replace("schema_version: 1", "schema_version: 2"), "schema_version"),
-        (lambda text: text.replace("catalog_id: consumer-validator-catalog", "catalog_id: other"), "catalog_id"),
+        (
+            lambda text: text.replace(
+                "catalog_id: consumer-validator-catalog", "catalog_id: other"
+            ),
+            "catalog_id",
+        ),
         (lambda text: text.replace("validators:\n", "validators: {}\n"), "validators.*list"),
     ],
 )

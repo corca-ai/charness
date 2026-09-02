@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import shlex
 import subprocess
 from pathlib import Path
 
@@ -124,20 +125,21 @@ def test_scan_uses_the_staged_scope_and_reports_tradeoffs(monkeypatch) -> None:
 
 
 def test_batch_blob_reader_uses_one_git_process_for_all_paths(monkeypatch, tmp_path) -> None:
-    calls: list[list[str]] = []
+    calls: list[str] = []
     payload = b"abc\ndefg"
     output = b"one blob 3\nabc\ntwo blob 4\ndefg\n"
 
     def fake_run(command, **kwargs):
         calls.append(command)
-        assert kwargs["input"] == b":tests/test_a.py\n:tests/test_b.py\n"
-        return subprocess.CompletedProcess(command, 0, output, b"")
+        assert kwargs["shell"] is True
+        input_path = Path(shlex.split(command)[-1])
+        assert input_path.read_bytes() == b":tests/test_a.py\n:tests/test_b.py\n"
+        return subprocess.CompletedProcess(command, 0, output.decode(), "")
 
-    monkeypatch.setattr(CHECKER.subprocess, "run", fake_run)
+    monkeypatch.setattr(CHECKER, "run_process", fake_run)
 
-    blobs = CHECKER._staged_blobs(
-        tmp_path, ["tests/test_a.py", "tests/test_b.py"]
-    )
+    blobs = CHECKER._staged_blobs(tmp_path, ["tests/test_a.py", "tests/test_b.py"])
 
     assert blobs == {"tests/test_a.py": payload[:3], "tests/test_b.py": payload[4:]}
-    assert calls == [["git", "cat-file", "--batch"]]
+    assert len(calls) == 1
+    assert shlex.split(calls[0])[:3] == ["git", "cat-file", "--batch"]

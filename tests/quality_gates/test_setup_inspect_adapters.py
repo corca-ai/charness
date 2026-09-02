@@ -89,7 +89,9 @@ def test_setup_inspect_reports_present_worktree_adapter(tmp_path: Path) -> None:
     assert worktree_state["hook_manager_detected"] == "lefthook"
     assert worktree_state["adapter_exists"] is True
 
-    finding_types = {finding["type"] for finding in payload["agent_docs"]["normalization"]["findings"]}
+    finding_types = {
+        finding["type"] for finding in payload["agent_docs"]["normalization"]["findings"]
+    }
     assert "worktree_adapter_missing_for_hook_manager" not in finding_types
 
 
@@ -106,6 +108,7 @@ def test_setup_inspect_reports_no_worktree_finding_without_hook_manager(tmp_path
     # Non-git tmp dir: probe must report `not_a_git_repo`, not silently 0.
     assert worktree_state["worktree_probe_status"] == "not_a_git_repo"
 
+
 def test_setup_inspect_reports_active_worktrees_without_hook_manager(tmp_path: Path) -> None:
     """Multiple worktrees remain a diagnostic finding, not a setup recommendation."""
     repo = tmp_path / "repo"
@@ -120,9 +123,12 @@ def test_setup_inspect_reports_active_worktrees_without_hook_manager(tmp_path: P
     assert worktree_state["worktree_probe_status"] == "ok"
     assert worktree_state["adapter_exists"] is False
 
-    finding_types = {finding["type"] for finding in payload["agent_docs"]["normalization"]["findings"]}
+    finding_types = {
+        finding["type"] for finding in payload["agent_docs"]["normalization"]["findings"]
+    }
     assert "worktree_adapter_missing_for_active_worktrees" in finding_types
     assert "worktree_adapter_missing_for_hook_manager" not in finding_types
+
 
 def _run_inspect_with_env(repo: Path, env: dict[str, str]) -> dict[str, object]:
     return inspect_setup_repo(repo, env=env)
@@ -145,7 +151,9 @@ def test_setup_inspect_emits_probe_unavailable_finding_when_git_is_missing(tmp_p
     assert worktree_state["worktree_probe_status"] == "git_missing"
     assert worktree_state["worktree_count"] == 0
 
-    finding_types = {finding["type"] for finding in payload["agent_docs"]["normalization"]["findings"]}
+    finding_types = {
+        finding["type"] for finding in payload["agent_docs"]["normalization"]["findings"]
+    }
     assert "worktree_probe_unavailable" in finding_types
 
 
@@ -162,12 +170,16 @@ def test_setup_inspect_reports_probe_gap_alongside_hook_manager(tmp_path: Path) 
 
     worktree_state = payload["agent_docs"]["normalization"]["worktree_adapter"]
     assert worktree_state["worktree_probe_status"] == "git_missing"
-    finding_types = {finding["type"] for finding in payload["agent_docs"]["normalization"]["findings"]}
+    finding_types = {
+        finding["type"] for finding in payload["agent_docs"]["normalization"]["findings"]
+    }
     assert "worktree_adapter_missing_for_hook_manager" in finding_types
     assert "worktree_probe_unavailable" in finding_types
 
 
-def test_setup_inspect_reports_both_worktree_signals_without_recommendations(tmp_path: Path) -> None:
+def test_setup_inspect_reports_both_worktree_signals_without_recommendations(
+    tmp_path: Path,
+) -> None:
     """Hook and active-worktree signals are retained as diagnostics only."""
     repo = tmp_path / "repo"
     _seed_minimal_repo_with_adapter(repo)
@@ -180,7 +192,9 @@ def test_setup_inspect_reports_both_worktree_signals_without_recommendations(tmp
     assert worktree_state["hook_manager_detected"] == "lefthook"
     assert worktree_state["worktree_count"] >= 2
 
-    finding_types = {finding["type"] for finding in payload["agent_docs"]["normalization"]["findings"]}
+    finding_types = {
+        finding["type"] for finding in payload["agent_docs"]["normalization"]["findings"]
+    }
     assert finding_types >= {
         "worktree_adapter_missing_for_hook_manager",
         "worktree_adapter_missing_for_active_worktrees",
@@ -201,7 +215,7 @@ def test_probe_active_worktrees_skips_git_spawn_on_non_repo_path(
     def _forbidden(*args: object, **kwargs: object) -> None:
         raise AssertionError("git subprocess must not run for a non-repo path")
 
-    monkeypatch.setattr(setup_adapter_inspect_lib.subprocess, "run", _forbidden)
+    monkeypatch.setattr(setup_adapter_inspect_lib, "run_process", _forbidden)
 
     count, status = setup_adapter_inspect_lib._probe_active_worktrees(tmp_path)
 
@@ -223,7 +237,7 @@ def test_probe_active_worktrees_reports_git_missing_before_repo_check(
     def _forbidden(*args: object, **kwargs: object) -> None:
         raise AssertionError("git subprocess must not run when the binary is missing")
 
-    monkeypatch.setattr(setup_adapter_inspect_lib.subprocess, "run", _forbidden)
+    monkeypatch.setattr(setup_adapter_inspect_lib, "run_process", _forbidden)
 
     count, status = setup_adapter_inspect_lib._probe_active_worktrees(tmp_path)
 
@@ -239,6 +253,7 @@ def test_setup_inspect_reports_setup_adapter_absence(tmp_path: Path) -> None:
     init_state = payload["agent_docs"]["normalization"]["setup_adapter"]
     assert init_state["adapter_exists"] is False
     assert init_state["adapter_path"] is None
+
 
 def test_setup_inspect_reports_present_setup_adapter(tmp_path: Path) -> None:
     repo = tmp_path / "repo"

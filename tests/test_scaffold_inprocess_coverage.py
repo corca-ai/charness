@@ -78,7 +78,9 @@ def _call_validator(module, repo_root: Path) -> str:
 
 
 @pytest.mark.parametrize("slug", SCAFFOLDS)
-def test_scaffold_main_emits_yaml_payload_in_process(slug: str, tmp_path: Path, monkeypatch) -> None:
+def test_scaffold_main_emits_yaml_payload_in_process(
+    slug: str, tmp_path: Path, monkeypatch
+) -> None:
     module = _load_scaffold(slug)
     repo = tmp_path / "consumer"
     repo.mkdir()
@@ -96,7 +98,9 @@ def test_scaffold_main_emits_yaml_payload_in_process(slug: str, tmp_path: Path, 
 
 
 @pytest.mark.parametrize("slug", SCAFFOLDS)
-def test_scaffold_validator_command_repo_local_fallback(slug: str, tmp_path: Path) -> None:
+def test_scaffold_validator_command_repo_local_fallback(
+    slug: str, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """Cover the repo_local fallback: no ancestor scripts/<validator>.py exists.
 
     The subprocess tests always find an ancestor validator (the real repo), so
@@ -107,7 +111,7 @@ def test_scaffold_validator_command_repo_local_fallback(slug: str, tmp_path: Pat
     module = _load_scaffold(slug)
     isolated = tmp_path / "deep" / "nest" / "scaffold.py"
     isolated.parent.mkdir(parents=True)
-    module.__file__ = str(isolated)
+    monkeypatch.setattr(module, "__file__", str(isolated))
 
     validator_names = _expected_validator_names(module)
     assert validator_names
@@ -133,7 +137,9 @@ SCAFFOLDS_WITH_BOOTSTRAP_SHIM = [slug for slug in SCAFFOLDS if slug != "ideation
 
 
 @pytest.mark.parametrize("slug", SCAFFOLDS_WITH_BOOTSTRAP_SHIM)
-def test_scaffold_shim_not_found_raises_import_error(slug: str, tmp_path: Path, monkeypatch) -> None:
+def test_scaffold_shim_not_found_raises_import_error(
+    slug: str, tmp_path: Path, monkeypatch
+) -> None:
     """Cover the canonical bootstrap shim's `raise ImportError` guard (mirrors
     ``tests/test_adapter_shim_inprocess_coverage.py``'s forcing technique). Every
     shim-carrying scaffold has its own copy of ``_load_skill_runtime_bootstrap()``,

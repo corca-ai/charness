@@ -98,7 +98,10 @@ def test_scaffold_rel_binds_the_registry_from_the_scripts_layout(monkeypatch) ->
     registry = artifact_validator._scaffold_rel.__globals__["importlib"].import_module(
         "check_artifact_surface_preflight"
     )
-    assert Path(registry.__file__).resolve() == Path(scripts_dir) / "check_artifact_surface_preflight.py"
+    assert (
+        Path(registry.__file__).resolve()
+        == Path(scripts_dir) / "check_artifact_surface_preflight.py"
+    )
 
 
 # --- check_changed_line_mutation_coverage: fingerprint degrades to "" ----------
@@ -120,7 +123,7 @@ def test_changed_pool_fingerprint_failure_degrades_to_empty(monkeypatch, tmp_pat
     from scripts import changed_line_run_trust as trust
 
     def boom(*_args, **_kwargs):
-        raise subprocess.CalledProcessError(128, ["git"])
+        raise OSError("git unavailable")
 
     monkeypatch.setattr(trust, "changed_pool_fingerprint", boom)
     monkeypatch.setattr(trust, "_resolve_pair", lambda *_a, **_k: ("deadbeef", "deadbeef"))
@@ -404,7 +407,8 @@ def test_source_tree_marker_with_unreadable_manifest_is_not_a_source_tree(tmp_pa
 def test_charness_version_skips_unreadable_and_non_dict_manifests(tmp_path) -> None:
     """Version lookup walks past a corrupt or wrong-shaped manifest to the next one."""
     lib = load_script_module(
-        "helper_provenance_lib_version_degradation_test", ROOT / "scripts" / "helper_provenance_lib.py"
+        "helper_provenance_lib_version_degradation_test",
+        ROOT / "scripts" / "helper_provenance_lib.py",
     )
 
     root = tmp_path / "repo"
@@ -632,6 +636,7 @@ def test_a_scaffold_still_imports_when_the_repo_root_validator_is_absent(
     so a path filter would be undone by the module under test. A finder refuses the one
     name regardless of how the path is arranged, which is the local fact being asserted.
     """
+
     class _Refuse:
         def find_spec(self, name, path=None, target=None):
             if name == validator_module:

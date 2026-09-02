@@ -25,7 +25,8 @@ from types import SimpleNamespace
 import pytest
 import yaml
 
-from scripts import native_gate_lib
+from scripts import native_gate_lib, packaging_lib
+from tests.quality_gates.git_fixture_support import init_git_repo
 from tests.repo_copy import clone_seeded_charness_repo
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -158,6 +159,15 @@ def _tracked_python_paths(repo: Path) -> set[str]:
         and not raw.endswith(b"/__init__.py")
         and (repo / raw.decode()).is_file()
     }
+
+
+def _export_plugin(tmp_path: Path) -> Path:
+    plugin = tmp_path / "plugin"
+    manifest = packaging_lib.load_manifest(ROOT, "charness")
+    packaging_lib.export_plugin_tree(ROOT, plugin, manifest)
+    init_git_repo(plugin)
+    subprocess.run(["git", "add", "-A"], cwd=plugin, check=True, capture_output=True, text=True)
+    return plugin
 
 
 @pytest.mark.release_only
@@ -386,9 +396,11 @@ def test_every_tracked_module_is_either_discovered_or_deliberately_excluded(
     )
 
 
-def test_the_exported_mirror_enumerates_its_own_modules(real_native_core: Path) -> None:
+def test_the_exported_mirror_enumerates_its_own_modules(
+    tmp_path: Path, real_native_core: Path
+) -> None:
     """The real native selection must cover the shipped mirror layout too."""
-    mirror = ROOT / "plugins" / "charness"
+    mirror = _export_plugin(tmp_path)
     tracked = _tracked_python_paths(mirror)
     discovered = {target["path"] for target in _native_standalone_report(mirror)["targets"]}
 
@@ -490,7 +502,7 @@ def test_native_selection_refuses_unexecutable_binary(
     def refuse_to_run(*args: object, **kwargs: object) -> None:
         raise OSError("permission denied")
 
-    monkeypatch.setattr(module.subprocess, "run", refuse_to_run)
+    monkeypatch.setattr(module, "run_process", refuse_to_run)
 
     with pytest.raises(module.NativeSelectionError, match=r"could not execute.*permission denied"):
         module.select_standalone_targets(tmp_path, changed=None)
@@ -506,9 +518,9 @@ def test_native_selection_refuses_invalid_success_json(
         lambda repo: SimpleNamespace(path=tmp_path / "repograph"),
     )
     monkeypatch.setattr(
-        module.subprocess,
-        "run",
-        lambda *args, **kwargs: SimpleNamespace(stdout="{not json}", stderr="", returncode=0),
+        module,
+        "run_process",
+        lambda command, **kwargs: subprocess.CompletedProcess(command, 0, "{not json}", ""),
     )
 
     with pytest.raises(module.NativeSelectionError, match="emitted invalid JSON"):
@@ -525,12 +537,13 @@ def test_native_selection_reports_native_failure_detail(
         lambda repo: SimpleNamespace(path=tmp_path / "repograph"),
     )
     monkeypatch.setattr(
-        module.subprocess,
-        "run",
-        lambda *args, **kwargs: SimpleNamespace(
-            stdout='{"unestablished":[{"detail":"inventory unavailable"}]}',
-            stderr="fallback stderr",
-            returncode=2,
+        module,
+        "run_process",
+        lambda command, **kwargs: subprocess.CompletedProcess(
+            command,
+            2,
+            '{"unestablished":[{"detail":"inventory unavailable"}]}',
+            "fallback stderr",
         ),
     )
 

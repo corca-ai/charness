@@ -5,11 +5,18 @@ from pathlib import Path
 
 import yaml
 
-from tests.quality_gates.support import run_script
+from scripts import packaging_lib
 from tests.script_main import load_script_module, run_loaded_script_main
 
 PLAN = "skills/public/gather/scripts/gather_plan.py"
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def _export_plugin(tmp_path: Path) -> Path:
+    plugin = tmp_path / "plugin"
+    manifest = packaging_lib.load_manifest(ROOT, "charness")
+    packaging_lib.export_plugin_tree(ROOT, plugin, manifest)
+    return plugin
 
 
 def load_plan_module():
@@ -47,8 +54,8 @@ def test_gather_plan_help_describes_all_options() -> None:
 
 
 def test_gather_plan_exposes_twitter_exact_source_contract(tmp_path) -> None:
-    result = run_script(
-        PLAN,
+    result = run_plan(
+        load_plan_module(),
         "--repo-root",
         str(tmp_path),
         "--url",
@@ -87,7 +94,9 @@ def test_gather_plan_helper_fallbacks(monkeypatch) -> None:
         "owner": "support/web-fetch",
         "terminal_verdicts": [],
     }
-    monkeypatch.setattr(module.importlib.util, "spec_from_file_location", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        module.importlib.util, "spec_from_file_location", lambda *_args, **_kwargs: None
+    )
     try:
         module._load_resolve_adapter()
     except ImportError as exc:
@@ -97,8 +106,8 @@ def test_gather_plan_helper_fallbacks(monkeypatch) -> None:
 
 
 def test_gather_plan_prefers_reddit_feed_route(tmp_path) -> None:
-    result = run_script(
-        PLAN,
+    result = run_plan(
+        load_plan_module(),
         "--repo-root",
         str(tmp_path),
         "--url",
@@ -117,7 +126,10 @@ def test_gather_plan_prefers_reddit_feed_route(tmp_path) -> None:
     assert payload["exact_source"]["substitution_policy"] == (
         "preserve_source_url_and_do_not_present_search_results_as_the_source"
     )
-    assert any(read["path"] == "../../support/web-fetch/references/routing-table.md" for read in payload["required_reads"])
+    assert any(
+        read["path"] == "../../support/web-fetch/references/routing-table.md"
+        for read in payload["required_reads"]
+    )
 
 
 def test_gather_plan_redirects_provider_hosts_to_advisers(tmp_path) -> None:
@@ -126,8 +138,13 @@ def test_gather_plan_redirects_provider_hosts_to_advisers(tmp_path) -> None:
     # public fetch. Slack is credentialed org data that public-only gather does not
     # acquire; Google Workspace routes to the workspace path adviser. GitHub/public
     # URLs keep the public-fetch next_action.
-    slack = run_script(
-        PLAN, "--repo-root", str(tmp_path), "--url", "https://acme.slack.com/archives/C0/p1700000000000000"
+    module = load_plan_module()
+    slack = run_plan(
+        module,
+        "--repo-root",
+        str(tmp_path),
+        "--url",
+        "https://acme.slack.com/archives/C0/p1700000000000000",
     )
     assert slack.returncode == 0, slack.stderr
     slack_payload = yaml.safe_load(slack.stdout)
@@ -137,16 +154,19 @@ def test_gather_plan_redirects_provider_hosts_to_advisers(tmp_path) -> None:
     assert "command" not in slack_payload["next_action"]
     assert "capability/connector" in slack_payload["next_action"]["redirect"]
 
-    gdoc = run_script(
-        PLAN, "--repo-root", str(tmp_path), "--url", "https://docs.google.com/document/d/abc/edit"
+    gdoc = run_plan(
+        module, "--repo-root", str(tmp_path), "--url", "https://docs.google.com/document/d/abc/edit"
     )
     assert gdoc.returncode == 0, gdoc.stderr
     gdoc_payload = yaml.safe_load(gdoc.stdout)
     assert gdoc_payload["source_owner"]["source"] == "google_workspace"
-    assert gdoc_payload["next_action"]["command"][1] == "$SKILL_DIR/scripts/advise_google_workspace_path.py"
+    assert (
+        gdoc_payload["next_action"]["command"][1]
+        == "$SKILL_DIR/scripts/advise_google_workspace_path.py"
+    )
 
-    public = run_script(
-        PLAN, "--repo-root", str(tmp_path), "--url", "https://docs.python.org/3/library/json.html"
+    public = run_plan(
+        module, "--repo-root", str(tmp_path), "--url", "https://docs.python.org/3/library/json.html"
     )
     public_payload = yaml.safe_load(public.stdout)
     assert public_payload["source_owner"] is None
@@ -156,10 +176,11 @@ def test_gather_plan_redirects_provider_hosts_to_advisers(tmp_path) -> None:
 def test_gather_plan_resolves_support_route_in_exported_plugin_layout(tmp_path: Path) -> None:
     user_repo = tmp_path / "user_repo"
     user_repo.mkdir()
+    plugin = _export_plugin(tmp_path)
 
     plugin_plan = load_script_module(
         "exported_gather_plan_under_test",
-        ROOT / "plugins" / "charness" / "skills" / "gather" / "scripts" / "gather_plan.py",
+        plugin / "skills" / "gather" / "scripts" / "gather_plan.py",
     )
     result = run_plan(
         plugin_plan,
@@ -182,10 +203,11 @@ def test_exported_gather_plan_honors_github_adapter_mode(tmp_path: Path) -> None
         "version: 1\nrepo: demo\ngather_provider:\n  github:\n    mode: host-mediated\n",
         encoding="utf-8",
     )
+    plugin = _export_plugin(tmp_path)
 
     plugin_plan = load_script_module(
         "exported_gather_plan_github_mode_under_test",
-        ROOT / "plugins" / "charness" / "skills" / "gather" / "scripts" / "gather_plan.py",
+        plugin / "skills" / "gather" / "scripts" / "gather_plan.py",
     )
     result = run_plan(
         plugin_plan,

@@ -8,6 +8,7 @@ failure THIS gate could introduce is the same shape one level up -- passing when
 it observed nothing at all. So the not-run paths get more coverage than the
 happy path.
 """
+
 from __future__ import annotations
 
 import ast
@@ -42,7 +43,7 @@ _ORPHAN_OUTPUT = (
     "// orphan\n"
     "// why: no resolved links connect these pages to the wiki graph.\n"
     "// fix: add a contextual link to or from a related page.\n"
-    "// example: add \"Compare with [[Related page]] ...\" from the orphan.\n"
+    '// example: add "Compare with [[Related page]] ..." from the orphan.\n'
     "[[agent-task-envelope]]: `charness task` provides a small repo-local contract\n"
     "[[proof-semantics-adapter]]: The portable Charness residual ledger\n"
     "// link_only_line\n"
@@ -61,13 +62,17 @@ def _patch_awiki(
 def test_a_connected_graph_passes(monkeypatch: pytest.MonkeyPatch) -> None:
     # The captured `ok` line omits `orphans`/`islands`, so a gate that required
     # them present would report UNPROVEN forever on a healthy repo.
-    assert "orphans=" not in _CLEAN_OUTPUT, "the captured passing line is expected to omit the counts"
+    assert "orphans=" not in _CLEAN_OUTPUT, (
+        "the captured passing line is expected to omit the counts"
+    )
     _patch_awiki(monkeypatch, _CLEAN_OUTPUT, returncode=0)
     result = _gate.evaluate(ROOT)
     assert result["status"] == "pass"
 
 
-def test_an_empty_scan_root_is_not_run_rather_than_a_vacuous_pass(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_an_empty_scan_root_is_not_run_rather_than_a_vacuous_pass(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     # CAPTURED: an empty root prints `ok ... documents=0 orphan_rate=0.0000` and
     # EXITS 0. An empty graph is trivially connected, so every ratio reads clean.
     # Without the documents floor, a consuming repo whose docs live elsewhere gets
@@ -79,7 +84,9 @@ def test_an_empty_scan_root_is_not_run_rather_than_a_vacuous_pass(monkeypatch: p
     assert "no graph to judge" in result["reason"]
 
 
-def test_a_zero_document_scan_with_explicit_counts_is_still_not_run(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_a_zero_document_scan_with_explicit_counts_is_still_not_run(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     # The case the documents floor uniquely catches. With explicit `orphans=0
     # islands=0` the run skips the missing-metrics branch entirely and would
     # compute `failures={}` -> pass, so the floor has to run FIRST. The captured
@@ -107,7 +114,9 @@ def test_an_unexpected_awiki_exit_code_is_not_run(monkeypatch: pytest.MonkeyPatc
     assert "did not complete a scan" in result["reason"]
 
 
-def test_a_crash_reports_not_run_rather_than_failing_the_docs_graph(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_a_crash_reports_not_run_rather_than_failing_the_docs_graph(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     # An uncaught exception exits 1, which the runner renders as FAIL -- the gate
     # asserting a broken docs graph on a run where it observed nothing.
     def _boom(_repo_root, _scan_root):
@@ -495,10 +504,14 @@ def test_a_repo_without_a_ratchet_record_inherits_the_strict_default(
 @pytest.mark.parametrize(
     ("rows", "why"),
     [
-        ("| 2026-08-15 | 0 | founding |\n| 2026-08-20 | 99999 | recalibrated |\n",
-         "a raised row must refuse the whole record, not become the bar"),
-        ("| 2026-08-15 | 10 | founding |\n| 2026-08-16 | 11 | crept |\n",
-         "even a one-line creep is a raise"),
+        (
+            "| 2026-08-15 | 0 | founding |\n| 2026-08-20 | 99999 | recalibrated |\n",
+            "a raised row must refuse the whole record, not become the bar",
+        ),
+        (
+            "| 2026-08-15 | 10 | founding |\n| 2026-08-16 | 11 | crept |\n",
+            "even a one-line creep is a raise",
+        ),
     ],
 )
 def test_an_increasing_ratchet_record_is_refused_by_the_gate_itself(
@@ -619,7 +632,9 @@ def test_a_missing_binary_is_not_run_rather_than_a_pass(monkeypatch: pytest.Monk
     assert "are not zero" in result["reason"]
 
 
-def test_an_unparseable_summary_is_not_run_rather_than_a_pass(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_an_unparseable_summary_is_not_run_rather_than_a_pass(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     # The format is not a declared stable interface upstream. A version bump that
     # changes it must report UNPROVEN; resolving to a pass is how this gate would
     # start lying while looking green.
@@ -762,7 +777,10 @@ def test_the_live_repo_lane_runs_and_reports_a_real_verdict() -> None:
         pytest.skip("awiki is not installed on this machine; the lane reports UNPROVEN there")
     proc = subprocess.run(
         ["python3", GATE, "--repo-root", str(ROOT)],
-        cwd=ROOT, check=False, capture_output=True, text=True,
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
     )
     assert proc.returncode in {0, 1}, proc.stdout + proc.stderr
     payload = yaml.safe_load(proc.stdout)
@@ -771,7 +789,9 @@ def test_the_live_repo_lane_runs_and_reports_a_real_verdict() -> None:
     assert payload["did_not_judge"]
 
 
-def test_an_ok_verdict_contradicted_by_its_own_ratios_is_not_run(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_an_ok_verdict_contradicted_by_its_own_ratios_is_not_run(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     # The counts are absent, so the pass is read off awiki's `ok` token -- but only
     # when the ratios corroborate it. A summary that says `ok` while reporting a
     # non-zero orphan rate is contradictory, and picking the convenient half is how
@@ -872,7 +892,9 @@ def test_the_gate_does_not_print_a_live_link_only_count() -> None:
     )
 
 
-def test_the_not_run_verdict_is_rendered_and_exits_unestablished(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_the_not_run_verdict_is_rendered_and_exits_unestablished(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     # The not-run RENDERING and its exit code, not just the dict. This is the
     # operator-facing half: the runner prints this line and reads that byte, and a
     # not-run that rendered as nothing would be indistinguishable from a pass.
@@ -917,6 +939,9 @@ def _stub_awiki(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, script: str) ->
     return binary
 
 
+@pytest.mark.boundary_contract(
+    reason="prove the docs gate passes its declared argv and cwd to the external awiki binary"
+)
 def test_run_awiki_invokes_the_binary_with_the_argv_and_cwd_the_gate_declares(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -946,18 +971,22 @@ def test_run_awiki_invokes_the_binary_with_the_argv_and_cwd_the_gate_declares(
     assert output == "out\n\nerr\n"
 
 
+@pytest.mark.boundary_contract(
+    reason="prove the docs gate converts an external awiki timeout into its declared result"
+)
 def test_a_hung_awiki_times_out_rather_than_hanging_the_whole_quality_run(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     # The declared reason `AWIKI_TIMEOUT_SECONDS` exists, executed for the first time.
-    # `evaluate` already renders a raised TimeoutExpired as NOT-RUN; what was never
-    # proven is that the timeout FIRES, so the guard the comment promises was resting
-    # on a keyword argument nothing had exercised.
+    # `evaluate` renders the guard's timeout result as NOT-RUN; what was never proven
+    # is that the timeout FIRES, so the guard the comment promises was resting on a
+    # keyword argument nothing had exercised.
     _stub_awiki(tmp_path, monkeypatch, "#!/bin/sh\nsleep 30\n")
     monkeypatch.setattr(_gate, "AWIKI_TIMEOUT_SECONDS", 0.25)
 
-    with pytest.raises(subprocess.TimeoutExpired):
-        _gate._run_awiki(tmp_path, "docs/wiki")
+    returncode, output = _gate._run_awiki(tmp_path, "docs/wiki")
+    assert returncode == 124
+    assert "timed out after 0.25s" in output
 
 
 def test_main_exits_nonzero_on_fail_and_zero_on_pass(monkeypatch: pytest.MonkeyPatch) -> None:

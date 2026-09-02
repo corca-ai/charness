@@ -44,6 +44,11 @@ def _assert_changed_path_agreement(
         )
 
 
+pytestmark = pytest.mark.boundary_contract(
+    reason="exercise changed-path consumers against a real Git repository"
+)
+
+
 def test_identity_and_surfaces_use_one_changed_path_owner() -> None:
     assert reviewed_input_identity._changed_path_owner is surfaces_lib
 
@@ -154,10 +159,10 @@ def test_collect_changed_paths_replaces_three_git_processes_with_one_status_snap
 
     def counting_run(command, *args, **kwargs):
         calls.append(list(command))
-        return subprocess.CompletedProcess(command, 0, b"? changed.txt\0", b"")
+        return subprocess.CompletedProcess(command, 0, "? changed.txt\0", "")
 
     monkeypatch.setattr(status, "discoverable", lambda _root: True)
-    monkeypatch.setattr(subprocess, "run", counting_run)
+    monkeypatch.setattr(status, "run_process", counting_run)
 
     assert surfaces_lib.collect_changed_paths(tmp_path) == ["changed.txt"]
     assert calls == [["git", *status.status_args()]]

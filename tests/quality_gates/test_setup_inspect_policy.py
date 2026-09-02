@@ -26,7 +26,10 @@ def test_setup_inspect_reports_core_and_conditional_surfaces(tmp_path: Path) -> 
     assert payload["repo_mode"] == "PARTIAL"
     assert payload["partial_kind"] == "targeted_missing_surface"
     assert payload["missing_surfaces"] == ["docs_index"]
-    assert payload["conditional_surfaces"]["roadmap"]["applicability"] == "unproven — operator decision"
+    assert (
+        payload["conditional_surfaces"]["roadmap"]["applicability"]
+        == "unproven — operator decision"
+    )
     assert payload["conditional_surfaces"]["operator_acceptance"]["activation"] == (
         "a real install, deployment, or takeover path exists"
     )
@@ -79,7 +82,10 @@ def test_setup_inspect_keeps_setup_mutation_approval_enabled(tmp_path: Path) -> 
 
     assert payload["adapter"]["valid"] is False
     assert payload["profile"]["approval_required"] is True
-    assert any("approval_required must remain true" in item["message"] for item in payload["adapter"]["warnings"])
+    assert any(
+        "approval_required must remain true" in item["message"]
+        for item in payload["adapter"]["warnings"]
+    )
 
 
 def test_setup_inspect_binds_docs_inventory_to_plan_identity(tmp_path: Path) -> None:
@@ -195,7 +201,7 @@ def test_detect_hook_policy_skips_git_spawn_on_non_repo_path(
     def _forbidden(*args: object, **kwargs: object) -> None:
         raise AssertionError("git subprocess must not run for a non-repo path")
 
-    monkeypatch.setattr(setup_inspect_quality_lib.subprocess, "run", _forbidden)
+    monkeypatch.setattr(setup_inspect_quality_lib, "run_process", _forbidden)
 
     result = setup_inspect_quality_lib._detect_hook_policy(tmp_path, {})
 

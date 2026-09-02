@@ -9,6 +9,7 @@ import pytest
 import yaml
 
 from runtime_bootstrap import import_repo_module
+from scripts.subprocess_guard import PhaseOutcome
 
 ROOT = Path(__file__).resolve().parents[1]
 PERSIST = import_repo_module(
@@ -146,7 +147,9 @@ def _run(
     return SimpleNamespace(returncode=returncode, stdout=captured.out, stderr=captured.err)
 
 
-def test_persist_debug_artifact_validates_the_exact_scaffold_path(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_persist_debug_artifact_validates_the_exact_scaffold_path(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = _repo(tmp_path)
     scaffold = SCAFFOLD.payload_for(repo, title=None)
     result = _run(
@@ -165,7 +168,9 @@ def test_persist_debug_artifact_validates_the_exact_scaffold_path(tmp_path: Path
     assert f"--paths {scaffold['write_artifact_path']}" in payload["validation"]["command"]
 
 
-def test_persist_debug_artifact_keeps_broad_index_as_a_separate_audit(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_persist_debug_artifact_keeps_broad_index_as_a_separate_audit(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = _repo(tmp_path)
     # An unrelated historical record may retain schema debt. Authoring the new
     # record must still prove the exact path; the broad index remains a later
@@ -189,7 +194,9 @@ def test_persist_debug_artifact_keeps_broad_index_as_a_separate_audit(tmp_path: 
         VALIDATOR.main()
 
 
-def test_persist_debug_artifact_unknown_enum_is_incomplete_and_rolls_back(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_persist_debug_artifact_unknown_enum_is_incomplete_and_rolls_back(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = _repo(tmp_path)
     prior = _valid_current_artifact()
     target = repo / "charness-artifacts/debug/latest.md"
@@ -211,7 +218,9 @@ def test_persist_debug_artifact_unknown_enum_is_incomplete_and_rolls_back(tmp_pa
     assert target.read_text(encoding="utf-8") == prior
 
 
-def test_persist_debug_artifact_refuses_new_invalid_record_before_index_audit(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_persist_debug_artifact_refuses_new_invalid_record_before_index_audit(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = _repo(tmp_path)
     result = _run(
         repo,
@@ -226,7 +235,9 @@ def test_persist_debug_artifact_refuses_new_invalid_record_before_index_audit(tm
     assert not (repo / "charness-artifacts/debug/latest.md").exists()
 
 
-@pytest.mark.parametrize("failure", [FileNotFoundError("missing validator"), subprocess.TimeoutExpired("validator", 1)])
+@pytest.mark.parametrize(
+    "failure", [FileNotFoundError("missing validator"), subprocess.TimeoutExpired("validator", 1)]
+)
 def test_persist_debug_artifact_rolls_back_validator_infrastructure_failure(
     tmp_path: Path, monkeypatch, capsys, failure: Exception
 ) -> None:
@@ -235,10 +246,21 @@ def test_persist_debug_artifact_rolls_back_validator_infrastructure_failure(
     prior = _valid_current_artifact()
     target.write_text(prior, encoding="utf-8")
 
-    def fail(*_args, **_kwargs):
+    def fail(command, **_kwargs):
+        if isinstance(failure, subprocess.TimeoutExpired):
+            return PhaseOutcome(
+                args=command,
+                phase="debug-artifact-validator",
+                display="validator",
+                returncode=124,
+                stdout="partial out",
+                stderr="timed out after 60s while running `validator`",
+                elapsed_seconds=60.0,
+                timed_out=True,
+            )
         raise failure
 
-    monkeypatch.setattr(PERSIST._persistence.subprocess, "run", fail)
+    monkeypatch.setattr(PERSIST._persistence, "run_monitored_phase", fail)
     result = _run(repo, prior, monkeypatch=monkeypatch, capsys=capsys)
     assert result.returncode == 1
     payload = yaml.safe_load(result.stdout)

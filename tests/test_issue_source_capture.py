@@ -19,6 +19,7 @@ import pytest
 import yaml
 
 import scripts.issue_source_capture_lib as capture_lib
+from scripts import packaging_lib
 from scripts.capture_issue_source import resolve_adapter_module, run_capture
 from scripts.issue_source_capture_lib import (
     CaptureRefusal,
@@ -51,6 +52,13 @@ CAPABILITY = {
 }
 
 
+def _export_plugin(tmp_path: Path) -> Path:
+    plugin = tmp_path / "plugin"
+    manifest = packaging_lib.load_manifest(REPO_ROOT, "charness")
+    packaging_lib.export_plugin_tree(REPO_ROOT, plugin, manifest)
+    return plugin
+
+
 def _page(nodes, *, total, has_next, cursor, issue=True):
     payload = {
         "data": {
@@ -76,7 +84,12 @@ def _page(nodes, *, total, has_next, cursor, issue=True):
 
 
 def _node(node_id: str, body: str = "text"):
-    return {"id": node_id, "body": body, "createdAt": "2026-01-01T00:00:00Z", "author": {"login": "a"}}
+    return {
+        "id": node_id,
+        "body": body,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "author": {"login": "a"},
+    }
 
 
 def _runner(responses, *, exit_code: int = 0, calls: list | None = None):
@@ -200,7 +213,10 @@ def test_absent_issue_is_refused_rather_than_captured_as_empty() -> None:
 def test_backend_failure_and_non_json_are_refusals() -> None:
     with pytest.raises(CaptureRefusal) as failure:
         capture_issue(
-            repo="corca-ai/charness", number=514, backend=GH_BACKEND, capability=CAPABILITY,
+            repo="corca-ai/charness",
+            number=514,
+            backend=GH_BACKEND,
+            capability=CAPABILITY,
             runner=_runner([""], exit_code=1),
         )
     assert failure.value.reason == "backend_error"
@@ -220,8 +236,11 @@ def test_comment_node_without_an_id_is_refused() -> None:
 def test_non_cursor_enumeration_is_refused_rather_than_approximated() -> None:
     with pytest.raises(CaptureRefusal) as excinfo:
         capture_issue(
-            repo="corca-ai/charness", number=514, backend=GH_BACKEND,
-            capability=dict(CAPABILITY, enumeration="page"), runner=_runner([]),
+            repo="corca-ai/charness",
+            number=514,
+            backend=GH_BACKEND,
+            capability=dict(CAPABILITY, enumeration="page"),
+            runner=_runner([]),
         )
 
     assert excinfo.value.reason == "unsupported_enumeration"
@@ -238,7 +257,9 @@ def test_declared_command_template_is_rendered_with_capture_placeholders() -> No
     backend = {
         "id": "acme",
         "binary": "acme",
-        "commands": {"source_capture": ["issues", "read", "{owner}/{name}", "{number}", "--after", "{after}"]},
+        "commands": {
+            "source_capture": ["issues", "read", "{owner}/{name}", "{number}", "--after", "{after}"]
+        },
     }
 
     argv = build_page_argv(backend, "corca-ai/charness", 518, 50, "CUR")
@@ -250,13 +271,16 @@ def test_duplicate_or_empty_issue_number_requests_are_refused() -> None:
     for numbers, reason in (([], "empty_request"), ([514, 514], "duplicate_request")):
         with pytest.raises(CaptureRefusal) as excinfo:
             capture_issues(
-                repo="corca-ai/charness", numbers=numbers, backend=GH_BACKEND,
-                capability=CAPABILITY, runner=_runner([]),
+                repo="corca-ai/charness",
+                numbers=numbers,
+                backend=GH_BACKEND,
+                capability=CAPABILITY,
+                runner=_runner([]),
             )
         assert excinfo.value.reason == reason
 
 
-def test_resolver_is_loaded_from_the_root_and_installed_plugin_layouts() -> None:
+def test_resolver_is_loaded_from_the_root_and_installed_plugin_layouts(tmp_path: Path) -> None:
     """The installed copy must resolve its OWN sibling resolver.
 
     Root layout keeps the resolver under `skills/public/issue/`; the exported plugin
@@ -267,7 +291,7 @@ def test_resolver_is_loaded_from_the_root_and_installed_plugin_layouts() -> None
     root_module = resolve_adapter_module(REPO_ROOT)
     assert callable(root_module.load_adapter)
 
-    plugin_root = REPO_ROOT / "plugins" / "charness"
+    plugin_root = _export_plugin(tmp_path)
     assert (plugin_root / "skills" / "issue" / "scripts" / "resolve_adapter.py").is_file()
     assert callable(resolve_adapter_module(plugin_root).load_adapter)
 
@@ -304,7 +328,10 @@ def test_adapter_identity_records_which_backend_produced_the_capture(tmp_path: P
     snapshot = tmp_path / "source.json"
 
     run_capture(
-        repo_root=tmp_path, repo="corca-ai/charness", numbers=[514], snapshot_path=snapshot,
+        repo_root=tmp_path,
+        repo="corca-ai/charness",
+        numbers=[514],
+        snapshot_path=snapshot,
         runner=_runner([_page([], total=0, has_next=False, cursor=None)]),
     )
 
@@ -332,8 +359,11 @@ def test_a_backend_that_cannot_declare_its_enumeration_refuses_only_capture(tmp_
 
     with pytest.raises(CaptureRefusal) as excinfo:
         run_capture(
-            repo_root=tmp_path, repo="corca-ai/charness", numbers=[514],
-            snapshot_path=tmp_path / "source.json", runner=_runner([]),
+            repo_root=tmp_path,
+            repo="corca-ai/charness",
+            numbers=[514],
+            snapshot_path=tmp_path / "source.json",
+            runner=_runner([]),
         )
 
     assert excinfo.value.reason == "unsupported_capability"
@@ -373,8 +403,11 @@ def test_an_invalid_adapter_refuses_before_any_backend_request(tmp_path: Path) -
 
     with pytest.raises(CaptureRefusal) as excinfo:
         run_capture(
-            repo_root=repo_root, repo="corca-ai/charness", numbers=[514],
-            snapshot_path=repo_root / "source.json", runner=_runner([]),
+            repo_root=repo_root,
+            repo="corca-ai/charness",
+            numbers=[514],
+            snapshot_path=repo_root / "source.json",
+            runner=_runner([]),
         )
 
     assert excinfo.value.reason == "invalid_adapter"
@@ -395,16 +428,22 @@ def test_a_resolver_that_reports_no_capture_capability_refuses(
     """
     stub = SimpleNamespace(
         load_adapter=lambda repo_root: {
-            "valid": True, "errors": [], "path": None, "found": True,
+            "valid": True,
+            "errors": [],
+            "path": None,
+            "found": True,
             "data": {"issue_backend": GH_BACKEND},
         }
     )
     monkeypatch.setattr(capture_module, "resolve_adapter_module", lambda *_, **__: stub)
 
     with pytest.raises(CaptureRefusal) as excinfo:
-        run_capture(
-            repo_root=tmp_path, repo="corca-ai/charness", numbers=[514],
-            snapshot_path=tmp_path / "source.json", runner=_runner([]),
+        capture_module.run_capture(
+            repo_root=tmp_path,
+            repo="corca-ai/charness",
+            numbers=[514],
+            snapshot_path=tmp_path / "source.json",
+            runner=_runner([]),
         )
 
     assert excinfo.value.reason == "missing_capability"
@@ -434,8 +473,16 @@ def test_cli_resolves_a_relative_snapshot_against_the_repo_root_it_was_given(
     )
 
     code = _run_main(
-        ["--repo-root", str(repo_root), "--repo", "corca-ai/charness",
-         "--numbers", "514", "--snapshot", "spec/source.json"],
+        [
+            "--repo-root",
+            str(repo_root),
+            "--repo",
+            "corca-ai/charness",
+            "--numbers",
+            "514",
+            "--snapshot",
+            "spec/source.json",
+        ],
         monkeypatch,
     )
 
@@ -462,8 +509,17 @@ def test_cli_renders_a_refusal_as_nonzero_json_and_writes_no_snapshot(
     repo_root = _adapter_repo(tmp_path, "issue_backend:\n  id: acme\n  binary: acme\n")
 
     code = _run_main(
-        ["--repo-root", str(repo_root), "--repo", "corca-ai/charness",
-         "--numbers", "514", "515", "--snapshot", str(repo_root / "spec" / "source.json")],
+        [
+            "--repo-root",
+            str(repo_root),
+            "--repo",
+            "corca-ai/charness",
+            "--numbers",
+            "514",
+            "515",
+            "--snapshot",
+            str(repo_root / "spec" / "source.json"),
+        ],
         monkeypatch,
     )
 
@@ -476,6 +532,9 @@ def test_cli_renders_a_refusal_as_nonzero_json_and_writes_no_snapshot(
     assert not (repo_root / "spec").exists()
 
 
+@pytest.mark.boundary_contract(
+    reason="prove the issue backend runner preserves a child process exit and text output"
+)
 def test_run_gh_reports_the_exit_code_and_output_instead_of_raising() -> None:
     """The default runner must hand a failing backend call back as data.
 
@@ -689,10 +748,14 @@ def test_clause_ids_move_when_comments_reorder_so_pointers_cannot_be_reassigned(
     were positional, swapping two comments would leave every id resolving — to
     different text.
     """
+
     def inventory(order):
         issues = [
             {
-                "number": 1, "title": "t", "state": "OPEN", "body": "body clause",
+                "number": 1,
+                "title": "t",
+                "state": "OPEN",
+                "body": "body clause",
                 "comment_total_count": 2,
                 "comments": [
                     {"id": node, "body": f"clause from {node}", "created_at": "", "author": ""}
@@ -710,6 +773,7 @@ def test_clause_ids_move_when_comments_reorder_so_pointers_cannot_be_reassigned(
     # Same content, same clause id is NOT the guarantee: the snapshot digest is a
     # frozen component, so every id in a re-captured changed source is different.
     assert clause_inventory_identity(forward) == clause_inventory_identity(inventory(["c1", "c2"]))
+
     # Assert on the INDIVIDUAL ids, not only the aggregate identity. The aggregate
     # differs under reordering even for a purely positional `unit|ordinal` scheme,
     # because the unit list itself reorders — so the aggregate assertion alone would
@@ -718,7 +782,9 @@ def test_clause_ids_move_when_comments_reorder_so_pointers_cannot_be_reassigned(
     # apart from `c2`'s.
     def clause_id(inv, unit_suffix):
         unit = next(
-            unit for unit in inv["issues"][0]["source_units"] if unit["source_unit_id"].endswith(unit_suffix)
+            unit
+            for unit in inv["issues"][0]["source_units"]
+            if unit["source_unit_id"].endswith(unit_suffix)
         )
         return unit["clauses"][0]["source_clause_id"]
 
@@ -731,10 +797,20 @@ def test_editing_one_clause_changes_its_id_at_a_fixed_unit_and_ordinal() -> None
     Unit and ordinal are held constant and only the text changes. A positional scheme
     would return the same id for both and this is the assertion that catches it.
     """
+
     def first_clause_id(body: str) -> str:
         document = build_source_document(
             "o/n",
-            [{"number": 1, "title": "", "state": "", "body": body, "comment_total_count": 0, "comments": []}],
+            [
+                {
+                    "number": 1,
+                    "title": "",
+                    "state": "",
+                    "body": body,
+                    "comment_total_count": 0,
+                    "comments": [],
+                }
+            ],
         )
         inventory = build_clause_inventory(document)
         return inventory["issues"][0]["source_units"][0]["clauses"][0]["source_clause_id"]
@@ -748,7 +824,10 @@ def test_identical_text_in_two_different_units_gets_different_ids() -> None:
         "o/n",
         [
             {
-                "number": 1, "title": "", "state": "", "body": "- same words",
+                "number": 1,
+                "title": "",
+                "state": "",
+                "body": "- same words",
                 "comment_total_count": 1,
                 "comments": [{"id": "c1", "body": "- same words", "created_at": "", "author": ""}],
             }
@@ -760,7 +839,9 @@ def test_identical_text_in_two_different_units_gets_different_ids() -> None:
 
 
 def test_fenced_evidence_is_one_clause_so_quoted_bullets_are_not_criteria() -> None:
-    clauses = split_clauses("intro line\n\n```\n- not a criterion\n- also not\n```\n\n- a real bullet")
+    clauses = split_clauses(
+        "intro line\n\n```\n- not a criterion\n- also not\n```\n\n- a real bullet"
+    )
 
     assert len(clauses) == 3
     assert clauses[1].startswith("```")
@@ -833,10 +914,20 @@ def test_rewrapping_a_bullet_does_not_change_its_clause_digest() -> None:
     If every reflow invalidated the inventory, operators would re-freeze reflexively
     and the staleness check would stop meaning anything.
     """
+
     def digest(text: str) -> str:
         document = build_source_document(
             "o/n",
-            [{"number": 1, "title": "", "state": "", "body": text, "comment_total_count": 0, "comments": []}],
+            [
+                {
+                    "number": 1,
+                    "title": "",
+                    "state": "",
+                    "body": text,
+                    "comment_total_count": 0,
+                    "comments": [],
+                }
+            ],
         )
         inventory = build_clause_inventory(document)
         return inventory["issues"][0]["source_units"][0]["clauses"][0]["clause_digest"]
@@ -855,17 +946,32 @@ def test_a_backend_that_returns_a_different_issue_is_refused(tmp_path: Path) -> 
     Found by the delegated resolution critique of the fix for the unreachable
     `missing_issue` guard: the comment left behind claimed this comparison existed.
     """
-    payload = json.dumps({
-        "data": {"repository": {"issue": {
-            "number": 999, "title": "other", "body": "- a criterion", "state": "OPEN",
-            "url": "u",
-            "comments": {"totalCount": 0, "pageInfo": {"hasNextPage": False, "endCursor": None}, "nodes": []},
-        }}}
-    })
+    payload = json.dumps(
+        {
+            "data": {
+                "repository": {
+                    "issue": {
+                        "number": 999,
+                        "title": "other",
+                        "body": "- a criterion",
+                        "state": "OPEN",
+                        "url": "u",
+                        "comments": {
+                            "totalCount": 0,
+                            "pageInfo": {"hasNextPage": False, "endCursor": None},
+                            "nodes": [],
+                        },
+                    }
+                }
+            }
+        }
+    )
     with pytest.raises(CaptureRefusal) as excinfo:
         capture_issue(
-            repo="corca-ai/charness", number=514,
-            backend={"id": "gh", "binary": "gh", "commands": None}, capability=CAPABILITY,
+            repo="corca-ai/charness",
+            number=514,
+            backend={"id": "gh", "binary": "gh", "commands": None},
+            capability=CAPABILITY,
             runner=lambda argv: subprocess.CompletedProcess(argv, 0, payload, ""),
         )
     assert excinfo.value.code == "wrong_issue"

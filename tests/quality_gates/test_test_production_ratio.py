@@ -3,9 +3,9 @@ from __future__ import annotations
 import importlib.util
 import json
 import os
+import subprocess
 import sys
 from pathlib import Path
-from types import SimpleNamespace
 
 import pytest
 import yaml
@@ -64,7 +64,9 @@ def test_ratio_gate_stays_advisory_in_the_runner() -> None:
     `release-changed-line-coverage`. This is that missing pin.
     """
 
-    invocation = _ratio_invocation((ROOT / "scripts" / "run-quality.sh").read_text(encoding="utf-8"))
+    invocation = _ratio_invocation(
+        (ROOT / "scripts" / "run-quality.sh").read_text(encoding="utf-8")
+    )
     assert "--advisory" in invocation, (
         "check-test-production-ratio must stay advisory in run-quality.sh: a whole-repo "
         "LOC ratio is a smell sensor, not a release contract, and as a hard block it "
@@ -99,7 +101,7 @@ def test_surface_buckets_include_executable_languages_and_exclude_fixtures(tmp_p
         "pub fn app() -> bool {\n    true\n}\n", encoding="utf-8"
     )
     (repo / "native" / "demo" / "build.rs").write_text(
-        "fn main() {\n    println!(\"build\");\n}\n", encoding="utf-8"
+        'fn main() {\n    println!("build");\n}\n', encoding="utf-8"
     )
     (repo / "native" / "demo" / "tests" / "integration.rs").write_text(
         "#[test]\nfn app_works() {\n    assert!(true);\n}\n", encoding="utf-8"
@@ -241,9 +243,9 @@ def test_python_shebang_probe_returns_false_without_interpreter(tmp_path: Path) 
 
 def test_tokei_code_rejects_invalid_json(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setattr(
-        RATIO.subprocess,
-        "run",
-        lambda *args, **kwargs: SimpleNamespace(returncode=0, stdout="not json", stderr=""),
+        RATIO,
+        "run_process",
+        lambda command, **kwargs: subprocess.CompletedProcess(command, 0, "not json", ""),
     )
 
     with pytest.raises(RATIO.TokeiUnavailableError, match="tokei returned invalid JSON"):
@@ -252,12 +254,15 @@ def test_tokei_code_rejects_invalid_json(tmp_path: Path, monkeypatch) -> None:
 
 def test_tokei_code_returns_empty_for_missing_language(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setattr(
-        RATIO.subprocess,
-        "run",
-        lambda *args, **kwargs: SimpleNamespace(returncode=0, stdout="{}", stderr=""),
+        RATIO,
+        "run_process",
+        lambda command, **kwargs: subprocess.CompletedProcess(command, 0, "{}", ""),
     )
 
-    assert RATIO._tokei_code([tmp_path / "app.py"], language="Python", repo_root=tmp_path) == (0, set())
+    assert RATIO._tokei_code([tmp_path / "app.py"], language="Python", repo_root=tmp_path) == (
+        0,
+        set(),
+    )
 
 
 def test_tokei_code_rejects_malformed_reports(tmp_path: Path, monkeypatch) -> None:
@@ -267,10 +272,10 @@ def test_tokei_code_rejects_malformed_reports(tmp_path: Path, monkeypatch) -> No
     )
     for payload, message in cases:
         monkeypatch.setattr(
-            RATIO.subprocess,
-            "run",
-            lambda *args, captured=payload, **kwargs: SimpleNamespace(
-                returncode=0, stdout=json.dumps(captured), stderr=""
+            RATIO,
+            "run_process",
+            lambda command, captured=payload, **kwargs: subprocess.CompletedProcess(
+                command, 0, json.dumps(captured), ""
             ),
         )
         with pytest.raises(RATIO.TokeiUnavailableError, match=message):
@@ -279,12 +284,13 @@ def test_tokei_code_rejects_malformed_reports(tmp_path: Path, monkeypatch) -> No
 
 def test_tokei_code_resolves_relative_report_path(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setattr(
-        RATIO.subprocess,
-        "run",
-        lambda *args, **kwargs: SimpleNamespace(
-            returncode=0,
-            stdout=json.dumps({"Python": {"code": 3, "reports": [{"name": "app.py"}]}}),
-            stderr="",
+        RATIO,
+        "run_process",
+        lambda command, **kwargs: subprocess.CompletedProcess(
+            command,
+            0,
+            json.dumps({"Python": {"code": 3, "reports": [{"name": "app.py"}]}}),
+            "",
         ),
     )
     path = tmp_path / "app.py"
@@ -324,7 +330,9 @@ def test_test_production_ratio_fails_above_max() -> None:
     assert "exceeds max" in result.stdout
 
 
-def test_test_production_ratio_advisory_warns_above_max_without_blocking(monkeypatch, capsys) -> None:
+def test_test_production_ratio_advisory_warns_above_max_without_blocking(
+    monkeypatch, capsys
+) -> None:
     # --advisory demotes the over-threshold block to a non-blocking WARN posture
     # (north-star P1: a LOC ratio is a smell sensor, not an irreversible-boundary
     # contract). The WARN: prefix is what run-quality.sh:294 surfaces non-blocking.
@@ -332,8 +340,16 @@ def test_test_production_ratio_advisory_warns_above_max_without_blocking(monkeyp
     # run_script: a second exit-contract subprocess assertion would flip this test
     # file to a keep-boundary in inventory_boundary_bypass and trip its ratchet.
     monkeypatch.setattr(
-        sys, "argv",
-        ["check_test_production_ratio.py", "--repo-root", str(ROOT), "--max-ratio", "0.01", "--advisory"],
+        sys,
+        "argv",
+        [
+            "check_test_production_ratio.py",
+            "--repo-root",
+            str(ROOT),
+            "--max-ratio",
+            "0.01",
+            "--advisory",
+        ],
     )
 
     rc = RATIO.main()
@@ -405,7 +421,9 @@ def test_splitlines_ratio_ignores_gitignored_python_files(tmp_path: Path) -> Non
     assert summary["source_lines"] == 1
 
 
-def test_cli_under_threshold_returns_zero_on_synthetic_repo(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_cli_under_threshold_returns_zero_on_synthetic_repo(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     # The under-threshold rc-0 main() branch previously had no synthetic fixture
     # (only the live repo exercised it, and the live ratio can sit over the
     # threshold); the other two main() ratio branches (blocking over-threshold

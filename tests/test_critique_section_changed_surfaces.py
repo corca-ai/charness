@@ -6,12 +6,15 @@ producer. These tests run `render_critique_section_changed_surfaces.py` directly
 and own one question: whether the rendered listing tells a reviewer what actually
 happened to each path.
 """
+
 from __future__ import annotations
 
 import json
 import subprocess
 import sys
 from pathlib import Path
+
+import pytest
 
 from scripts import git_status_snapshot as status
 from scripts import render_critique_section_changed_surfaces as producer_module
@@ -20,6 +23,9 @@ from tests.quality_gates.support import run_script
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 PRODUCER = "scripts/render_critique_section_changed_surfaces.py"
+pytestmark = pytest.mark.boundary_contract(
+    reason="observe the changed-surface producer's real Git snapshot boundary"
+)
 
 
 def _run_git(repo: Path, *args: str) -> None:
@@ -197,11 +203,11 @@ def test_working_tree_producer_replaces_five_git_processes_with_one_snapshot(
             (
                 b"1 .M N... 100644 100644 100644 " + oid + b" " + oid + b" kept.md\0"
                 b"1 D. N... 100644 000000 000000 " + oid + b" " + (b"0" * 40) + b" removed.md\0"
-            ),
-            b"",
+            ).decode(),
+            "",
         )
 
-    monkeypatch.setattr(subprocess, "run", counting_run)
+    monkeypatch.setattr(status, "run_process", counting_run)
     monkeypatch.setattr(
         sys,
         "argv",
@@ -231,14 +237,15 @@ def test_changed_ref_producer_replaces_two_diffs_with_one_name_status_pass(
     _run_git(repo, "add", "-A")
     _run_git(repo, "commit", "-m", "remove one, edit one")
 
-    real_run = subprocess.run
+    surfaces = producer_module._scripts_surfaces_lib_module
+    real_run = surfaces.run_process
     calls: list[list[str]] = []
 
-    def counting_run(command, *args, **kwargs):
+    def counting_run(command, **kwargs):
         calls.append(list(command))
-        return real_run(command, *args, **kwargs)
+        return real_run(command, **kwargs)
 
-    monkeypatch.setattr(subprocess, "run", counting_run)
+    monkeypatch.setattr(surfaces, "run_process", counting_run)
     monkeypatch.setattr(
         sys,
         "argv",

@@ -11,11 +11,14 @@ whole-corpus command for a single authored artifact; scoping that command then m
 named path that resolved to nothing exit 0 having validated nothing; and keying the
 ruleset on the filename gave one file two verdicts depending on which name reached it.
 """
+
 from __future__ import annotations
 
 import importlib.util
 import sys
 from pathlib import Path
+
+from tests.script_main import run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -38,7 +41,6 @@ def _load_sibling():
 
 
 _RULES = _load_sibling()
-run_script = _RULES.run_script
 seed_repo = _RULES.seed_repo
 valid_current_artifact = _RULES.valid_current_artifact
 
@@ -50,10 +52,20 @@ def _load_validator(name: str):
     (`_owned_prefix`, `_current_pointer`) that no public surface exposes, and a shared
     module object would let one test's probe change another's answer.
     """
-    spec = importlib.util.spec_from_file_location(name, ROOT / "scripts" / "validate_debug_artifact.py")
+    spec = importlib.util.spec_from_file_location(
+        name, ROOT / "scripts" / "validate_debug_artifact.py"
+    )
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def _run_validator(*args: str):
+    return run_loaded_script_main(
+        "validate_debug_artifact.py",
+        _load_validator("validate_debug_artifact_cli_under_test"),
+        *args,
+    )
 
 
 def test_a_scoped_run_isolates_a_fresh_artifact_from_legacy_corpus_debt(tmp_path: Path) -> None:
@@ -75,35 +87,43 @@ def test_a_scoped_run_isolates_a_fresh_artifact_from_legacy_corpus_debt(tmp_path
     fresh = debug_dir / "2026-08-17-debug-review.md"
     fresh.write_text(valid_current_artifact(), encoding="utf-8")
     legacy = debug_dir / "2026-01-02-legacy-shape.md"
-    legacy.write_text("# Legacy\nDate: 2026-01-02\n\n## Problem\n\nno other sections\n", encoding="utf-8")
+    legacy.write_text(
+        "# Legacy\nDate: 2026-01-02\n\n## Problem\n\nno other sections\n", encoding="utf-8"
+    )
 
     # Whole corpus: red, and correctly so -- the legacy record IS out of schema.
-    corpus = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo), "--all")
+    corpus = _run_validator("--repo-root", str(repo), "--all")
     assert corpus.returncode == 1
     assert "2026-01-02-legacy-shape.md" in corpus.stdout + corpus.stderr
 
     # Scoped to the artifact just authored: green, and it does NOT reach the legacy record.
-    scoped = run_script(
-        "scripts/validate_debug_artifact.py",
-        "--repo-root", str(repo),
-        "--paths", "charness-artifacts/debug/2026-08-17-debug-review.md",
+    scoped = _run_validator(
+        "--repo-root",
+        str(repo),
+        "--paths",
+        "charness-artifacts/debug/2026-08-17-debug-review.md",
     )
     assert scoped.returncode == 0, scoped.stdout + scoped.stderr
     assert "2026-01-02-legacy-shape.md" not in scoped.stdout + scoped.stderr
 
     # And a scoped run still REFUSES a malformed artifact -- scoping narrows the
     # population, never the rules. Without this the fix could be "always pass".
-    fresh.write_text("# Broken\nDate: 2026-08-17\n\n## Problem\n\nmissing the rest\n", encoding="utf-8")
-    scoped_broken = run_script(
-        "scripts/validate_debug_artifact.py",
-        "--repo-root", str(repo),
-        "--paths", "charness-artifacts/debug/2026-08-17-debug-review.md",
+    fresh.write_text(
+        "# Broken\nDate: 2026-08-17\n\n## Problem\n\nmissing the rest\n", encoding="utf-8"
+    )
+    scoped_broken = _run_validator(
+        "--repo-root",
+        str(repo),
+        "--paths",
+        "charness-artifacts/debug/2026-08-17-debug-review.md",
     )
     assert scoped_broken.returncode == 1
     assert "2026-08-17-debug-review.md" in scoped_broken.stdout + scoped_broken.stderr
 
 
-def test_a_named_debug_path_that_resolves_to_nothing_refuses_instead_of_passing(tmp_path: Path) -> None:
+def test_a_named_debug_path_that_resolves_to_nothing_refuses_instead_of_passing(
+    tmp_path: Path,
+) -> None:
     """Scoping without an owned prefix is a silent pass, which is worse than no scoping.
 
     `unresolvable_named_paths` owns nothing unless the validator declares a prefix, and
@@ -116,25 +136,25 @@ def test_a_named_debug_path_that_resolves_to_nothing_refuses_instead_of_passing(
     """
     repo = seed_repo(tmp_path, valid_current_artifact())
 
-    missing = run_script(
-        "scripts/validate_debug_artifact.py",
-        "--repo-root", str(repo),
-        "--paths", "charness-artifacts/debug/2026-08-17-never-written.md",
+    missing = _run_validator(
+        "--repo-root",
+        str(repo),
+        "--paths",
+        "charness-artifacts/debug/2026-08-17-never-written.md",
     )
     assert missing.returncode == 1
     assert "resolve to nothing" in missing.stdout + missing.stderr
 
     # The two no-ops the refusal must NOT swallow, both load-bearing because `--paths` is
     # fed by tools passing a slice of the changed set.
-    unowned = run_script(
-        "scripts/validate_debug_artifact.py", "--repo-root", str(repo), "--paths", "docs/index.md"
-    )
+    unowned = _run_validator("--repo-root", str(repo), "--paths", "docs/index.md")
     assert unowned.returncode == 0, unowned.stdout + unowned.stderr
 
-    real = run_script(
-        "scripts/validate_debug_artifact.py",
-        "--repo-root", str(repo),
-        "--paths", "charness-artifacts/debug/latest.md",
+    real = _run_validator(
+        "--repo-root",
+        str(repo),
+        "--paths",
+        "charness-artifacts/debug/latest.md",
     )
     assert real.returncode == 0, real.stdout + real.stderr
 
@@ -149,12 +169,15 @@ def test_the_owned_prefix_comes_from_the_adapter_not_a_literal(tmp_path: Path) -
     (repo / ".agents" / "debug-adapter.yaml").write_text(
         "version: 1\nrepo: demo\nlanguage: en\noutput_dir: artifacts/debugs\n", encoding="utf-8"
     )
-    (repo / "artifacts" / "debugs" / "latest.md").write_text(valid_current_artifact(), encoding="utf-8")
+    (repo / "artifacts" / "debugs" / "latest.md").write_text(
+        valid_current_artifact(), encoding="utf-8"
+    )
 
-    missing = run_script(
-        "scripts/validate_debug_artifact.py",
-        "--repo-root", str(repo),
-        "--paths", "artifacts/debugs/2026-08-17-never-written.md",
+    missing = _run_validator(
+        "--repo-root",
+        str(repo),
+        "--paths",
+        "artifacts/debugs/2026-08-17-never-written.md",
     )
     assert missing.returncode == 1, missing.stdout + missing.stderr
     assert "resolve to nothing" in missing.stdout + missing.stderr
@@ -189,13 +212,17 @@ def test_the_same_bytes_get_the_same_verdict_under_either_name(tmp_path: Path) -
     (debug_dir / "latest.md").unlink()
     (debug_dir / "latest.md").symlink_to(record.name)
 
-    by_pointer = run_script(
-        "scripts/validate_debug_artifact.py", "--repo-root", str(repo),
-        "--paths", "charness-artifacts/debug/latest.md",
+    by_pointer = _run_validator(
+        "--repo-root",
+        str(repo),
+        "--paths",
+        "charness-artifacts/debug/latest.md",
     )
-    by_target = run_script(
-        "scripts/validate_debug_artifact.py", "--repo-root", str(repo),
-        "--paths", "charness-artifacts/debug/2026-08-17-debug-review.md",
+    by_target = _run_validator(
+        "--repo-root",
+        str(repo),
+        "--paths",
+        "charness-artifacts/debug/2026-08-17-debug-review.md",
     )
     assert by_pointer.returncode == 1, by_pointer.stdout + by_pointer.stderr
     assert by_target.returncode == by_pointer.returncode, (
@@ -208,9 +235,11 @@ def test_the_same_bytes_get_the_same_verdict_under_either_name(tmp_path: Path) -
     # widens strictness to the current artifact's other name, not to the whole corpus.
     unreferenced = debug_dir / "2026-01-02-old-record.md"
     unreferenced.write_text(_strict_only_violation(valid_current_artifact()), encoding="utf-8")
-    legacy = run_script(
-        "scripts/validate_debug_artifact.py", "--repo-root", str(repo),
-        "--paths", "charness-artifacts/debug/2026-01-02-old-record.md",
+    legacy = _run_validator(
+        "--repo-root",
+        str(repo),
+        "--paths",
+        "charness-artifacts/debug/2026-01-02-old-record.md",
     )
     assert legacy.returncode == 0, legacy.stdout + legacy.stderr
 
@@ -244,9 +273,11 @@ def test_an_adapter_typo_does_not_silently_disarm_the_refusal(tmp_path: Path) ->
     assert module._current_pointer(repo) is not None
 
     # End to end, which is where the regression was invisible: the refusal still fires.
-    missing = run_script(
-        "scripts/validate_debug_artifact.py", "--repo-root", str(repo),
-        "--paths", "charness-artifacts/debug/2026-08-17-never-written.md",
+    missing = _run_validator(
+        "--repo-root",
+        str(repo),
+        "--paths",
+        "charness-artifacts/debug/2026-08-17-never-written.md",
     )
     assert missing.returncode == 1, missing.stdout + missing.stderr
     assert "resolve to nothing" in missing.stdout + missing.stderr
@@ -269,8 +300,10 @@ def test_an_unspeakable_version_refuses_before_it_can_mis_scope(tmp_path: Path) 
     )
     assert module._unspeakable_adapter_version(repo) is not None
 
-    refused = run_script(
-        "scripts/validate_debug_artifact.py", "--repo-root", str(repo), "--all",
+    refused = _run_validator(
+        "--repo-root",
+        str(repo),
+        "--all",
     )
     combined = refused.stdout + refused.stderr
     assert refused.returncode == 1, combined
@@ -315,13 +348,17 @@ def test_a_copy_layout_pointer_gets_the_same_verdict_as_its_record(tmp_path: Pat
     (debug_dir / "latest.md").write_text(body, encoding="utf-8")
     assert not (debug_dir / "latest.md").is_symlink(), "premise: the copy layout"
 
-    by_pointer = run_script(
-        "scripts/validate_debug_artifact.py", "--repo-root", str(repo),
-        "--paths", "charness-artifacts/debug/latest.md",
+    by_pointer = _run_validator(
+        "--repo-root",
+        str(repo),
+        "--paths",
+        "charness-artifacts/debug/latest.md",
     )
-    by_record = run_script(
-        "scripts/validate_debug_artifact.py", "--repo-root", str(repo),
-        "--paths", "charness-artifacts/debug/2026-08-17-debug-review.md",
+    by_record = _run_validator(
+        "--repo-root",
+        str(repo),
+        "--paths",
+        "charness-artifacts/debug/2026-08-17-debug-review.md",
     )
     assert by_pointer.returncode == 1, by_pointer.stdout + by_pointer.stderr
     assert by_record.returncode == by_pointer.returncode, (
@@ -333,10 +370,14 @@ def test_a_copy_layout_pointer_gets_the_same_verdict_as_its_record(tmp_path: Pat
     # A record whose bytes DIFFER from the pointer stays legacy: the copy arm keys on
     # identity, not on living in the same directory.
     other = debug_dir / "2026-01-02-unrelated.md"
-    other.write_text(_strict_only_violation(valid_current_artifact()) + "\nextra\n", encoding="utf-8")
-    unrelated = run_script(
-        "scripts/validate_debug_artifact.py", "--repo-root", str(repo),
-        "--paths", "charness-artifacts/debug/2026-01-02-unrelated.md",
+    other.write_text(
+        _strict_only_violation(valid_current_artifact()) + "\nextra\n", encoding="utf-8"
+    )
+    unrelated = _run_validator(
+        "--repo-root",
+        str(repo),
+        "--paths",
+        "charness-artifacts/debug/2026-01-02-unrelated.md",
     )
     assert unrelated.returncode == 0, unrelated.stdout + unrelated.stderr
 
@@ -357,9 +398,11 @@ def test_a_looping_current_pointer_renders_a_verdict_instead_of_crashing(tmp_pat
     (debug_dir / "latest.md").symlink_to("loop-b.md")
     (debug_dir / "loop-b.md").symlink_to("latest.md")
 
-    result = run_script(
-        "scripts/validate_debug_artifact.py", "--repo-root", str(repo),
-        "--paths", "charness-artifacts/debug/2026-08-17-debug-review.md",
+    result = _run_validator(
+        "--repo-root",
+        str(repo),
+        "--paths",
+        "charness-artifacts/debug/2026-08-17-debug-review.md",
     )
     assert "Traceback" not in result.stderr, result.stderr
     assert "RuntimeError" not in result.stderr, result.stderr
@@ -367,7 +410,6 @@ def test_a_looping_current_pointer_renders_a_verdict_instead_of_crashing(tmp_pat
     # a dated record. Unprovable-therefore-legacy is the honest arm here -- the strict
     # schema is claimed by the pointer, and the pointer is unreadable.
     assert result.returncode == 0, result.stdout + result.stderr
-
 
 
 def test_role_falls_back_to_the_filename_when_no_pointer_is_known(tmp_path: Path) -> None:
@@ -420,20 +462,21 @@ def test_a_missing_git_binary_refuses_rather_than_crashing(tmp_path: Path) -> No
     finally:
         sys.path.pop(0)
 
-    real_run = module.subprocess.run
+    real_run = module.run_process
 
     def no_git(cmd, *args, **kwargs):
         if cmd and cmd[0] == "git":
             raise FileNotFoundError(2, "No such file or directory", "git")
         return real_run(cmd, *args, **kwargs)
 
-    module.subprocess.run = no_git
+    module.run_process = no_git
     try:
         refused = module.unresolvable_named_paths(
-            tmp_path, ["charness-artifacts/debug/never-written.md"],
+            tmp_path,
+            ["charness-artifacts/debug/never-written.md"],
             owned_prefix="charness-artifacts/debug/",
         )
     finally:
-        module.subprocess.run = real_run
+        module.run_process = real_run
 
     assert refused == ["charness-artifacts/debug/never-written.md"]

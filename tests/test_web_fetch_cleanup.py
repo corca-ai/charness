@@ -18,7 +18,7 @@ from tests.script_main import load_script_module, run_loaded_script_main
 ROOT = Path(__file__).resolve().parents[1]
 WEB_FETCH_SCRIPTS = ROOT / "skills" / "support" / "web-fetch" / "scripts"
 GATHER_SCRIPTS = ROOT / "skills" / "public" / "gather" / "scripts"
-SPA_HTML = "<html><body><div id=\"root\"></div></body></html>"
+SPA_HTML = '<html><body><div id="root"></div></body></html>'
 # Hang backstop for the SIGTERM-mid-render test's readiness wait, NOT the bar it
 # measures -- that is the child's process state (see the comment at the wait loop).
 # Sized an order of magnitude above the observed cost of reaching the browser stage
@@ -35,7 +35,9 @@ def _run_acquire(*args: str, env: dict[str, str] | None = None):
     return run_loaded_script_main("acquire_public_url.py", _ACQUIRE, *args, env=env)
 
 
-def _make_logging_agent_browser(bin_dir: Path, log_path: Path, *, render_fails: bool = False) -> None:
+def _make_logging_agent_browser(
+    bin_dir: Path, log_path: Path, *, render_fails: bool = False
+) -> None:
     render = (
         '  *"get text body"*) printf "boom\\n" >&2; exit 1 ;;'
         if render_fails
@@ -67,10 +69,18 @@ def _bundle_yaml_output(root: Path) -> None:
     shutil.copy2(ROOT / "scripts" / "yaml_output.py", scripts_dir / "yaml_output.py")
 
 
+def _bundle_subprocess_guard(root: Path) -> None:
+    scripts_dir = root / "scripts"
+    scripts_dir.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(ROOT / "scripts" / "subprocess_guard.py", scripts_dir / "subprocess_guard.py")
+
+
 def _close_was_attempted(log_path: Path) -> bool:
     if not log_path.is_file():
         return False
-    return any(line.strip().endswith("close") for line in log_path.read_text(encoding="utf-8").splitlines())
+    return any(
+        line.strip().endswith("close") for line in log_path.read_text(encoding="utf-8").splitlines()
+    )
 
 
 def test_acquire_attempts_close_on_render_success(tmp_path: Path) -> None:
@@ -84,11 +94,16 @@ def test_acquire_attempts_close_on_render_success(tmp_path: Path) -> None:
     env["PATH"] = f"{bin_dir}:{env['PATH']}"
     env["CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS"] = "1"
     result = _run_acquire(
-        "--url", "https://example.com/app",
-        "--repo-root", str(ROOT),
-        "--direct-response-file", str(direct),
-        "--expect-text", "target proof",
-        "--browser-mode", "auto",
+        "--url",
+        "https://example.com/app",
+        "--repo-root",
+        str(ROOT),
+        "--direct-response-file",
+        str(direct),
+        "--expect-text",
+        "target proof",
+        "--browser-mode",
+        "auto",
         env=env,
     )
     assert result.returncode == 0, result.stderr
@@ -108,11 +123,16 @@ def test_acquire_attempts_close_on_render_failure(tmp_path: Path) -> None:
     env["PATH"] = f"{bin_dir}:{env['PATH']}"
     env["CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS"] = "1"
     result = _run_acquire(
-        "--url", "https://example.com/app",
-        "--repo-root", str(ROOT),
-        "--direct-response-file", str(direct),
-        "--expect-text", "target proof",
-        "--browser-mode", "auto",
+        "--url",
+        "https://example.com/app",
+        "--repo-root",
+        str(ROOT),
+        "--direct-response-file",
+        str(direct),
+        "--expect-text",
+        "target proof",
+        "--browser-mode",
+        "auto",
         env=env,
     )
     assert result.returncode == 0, result.stderr
@@ -132,11 +152,12 @@ def test_acquire_guard_unavailable_is_fail_visible(tmp_path: Path) -> None:
     # surfaced as `guard_unavailable` degraded, never as a clean success (#302).
     iso = tmp_path / "iso" / "webfetch"
     shutil.copytree(WEB_FETCH_SCRIPTS, iso, ignore=REPO_COPY_IGNORE)
-    # The layout must be missing the GUARD specifically, not missing everything: the
-    # shared YAML renderer is acquire's only output channel, so a tree that cannot
-    # reach `scripts/yaml_output.py` produces no payload to judge at all. Ship it
-    # (and only it) so `guard_unavailable` is what the fixture actually isolates.
+    # The layout must be missing the runtime guard specifically, not missing every
+    # guard: the shared process guard is needed for the browser probe, and the YAML
+    # renderer is acquire's output channel. Ship those two dependencies so
+    # `guard_unavailable` isolates only the post-close runtime proof.
     _bundle_yaml_output(iso.parent)
+    _bundle_subprocess_guard(iso.parent)
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     log = tmp_path / "calls.log"
@@ -151,11 +172,16 @@ def test_acquire_guard_unavailable_is_fail_visible(tmp_path: Path) -> None:
         [
             sys.executable,
             str(iso / "acquire_public_url.py"),
-            "--url", "https://example.com/app",
-            "--repo-root", str(user_repo),
-            "--direct-response-file", str(direct),
-            "--expect-text", "target proof",
-            "--browser-mode", "auto",
+            "--url",
+            "https://example.com/app",
+            "--repo-root",
+            str(user_repo),
+            "--direct-response-file",
+            str(direct),
+            "--expect-text",
+            "target proof",
+            "--browser-mode",
+            "auto",
         ],
         cwd=tmp_path,
         check=False,
@@ -182,12 +208,16 @@ def test_gather_reaches_acquire_and_bundled_guard_in_exported_layout(tmp_path: P
     plugin = tmp_path / "plugin"
     (plugin / "skills" / "gather").mkdir(parents=True)
     (plugin / "scripts").mkdir(parents=True)
-    shutil.copytree(GATHER_SCRIPTS, plugin / "skills" / "gather" / "scripts", ignore=REPO_COPY_IGNORE)
-    shutil.copytree(WEB_FETCH_SCRIPTS, plugin / "support" / "web-fetch" / "scripts", ignore=REPO_COPY_IGNORE)
-    # The exported plugin root carries the shared YAML renderer next to the bundled
-    # guard; without it acquire has no stdout channel and the layout would prove
-    # nothing about reachability.
+    shutil.copytree(
+        GATHER_SCRIPTS, plugin / "skills" / "gather" / "scripts", ignore=REPO_COPY_IGNORE
+    )
+    shutil.copytree(
+        WEB_FETCH_SCRIPTS, plugin / "support" / "web-fetch" / "scripts", ignore=REPO_COPY_IGNORE
+    )
+    # The exported plugin root carries the shared YAML renderer and process guard;
+    # without them acquire has no stdout channel or browser-probe implementation.
     _bundle_yaml_output(plugin)
+    _bundle_subprocess_guard(plugin)
     # A bundled guard that FAILS proves it was actually run (reached), not skipped.
     (plugin / "scripts" / "agent_browser_runtime_guard.py").write_text(
         "#!/usr/bin/env python3\nimport sys\nprint('reparented chromium residue remains', file=sys.stderr)\nsys.exit(1)\n",
@@ -207,11 +237,16 @@ def test_gather_reaches_acquire_and_bundled_guard_in_exported_layout(tmp_path: P
         [
             sys.executable,
             str(plugin / "skills" / "gather" / "scripts" / "gather_public_url.py"),
-            "--url", "https://example.com/app",
-            "--repo-root", str(user_repo),
-            "--direct-response-file", str(direct),
-            "--expect-text", "target proof",
-            "--browser-mode", "auto",
+            "--url",
+            "https://example.com/app",
+            "--repo-root",
+            str(user_repo),
+            "--direct-response-file",
+            str(direct),
+            "--expect-text",
+            "target proof",
+            "--browser-mode",
+            "auto",
         ],
         cwd=tmp_path,
         check=False,
@@ -223,7 +258,11 @@ def test_gather_reaches_acquire_and_bundled_guard_in_exported_layout(tmp_path: P
     payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "degraded"
     assert payload["acquisition_disposition"] == "degraded"
-    render = next(a for a in payload["acquisition"]["attempts"] if a["stage_id"] == "agent-browser-render-recon")
+    render = next(
+        a
+        for a in payload["acquisition"]["attempts"]
+        if a["stage_id"] == "agent-browser-render-recon"
+    )
     assert render["details"]["cleanup"] == "failed"
     assert "reparented chromium residue remains" in render["error"]
 
@@ -232,7 +271,7 @@ def test_acquire_public_url_degrades_when_agent_browser_close_fails(tmp_path: Pa
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     (bin_dir / "agent-browser").write_text(
-        "#!/bin/sh\ncase \"$*\" in\n"
+        '#!/bin/sh\ncase "$*" in\n'
         "  *\"get text body\"*) printf 'rendered target proof from browser\\n' ;;\n"
         "  *\"close\"*) printf 'close failed\\n' >&2; exit 1 ;;\n"
         "  *) exit 0 ;;\nesac\n",
@@ -240,21 +279,30 @@ def test_acquire_public_url_degrades_when_agent_browser_close_fails(tmp_path: Pa
     )
     (bin_dir / "agent-browser").chmod(0o755)
     direct = tmp_path / "direct.html"
-    direct.write_text("<html><body><div id=\"root\"></div></body></html>", encoding="utf-8")
+    direct.write_text('<html><body><div id="root"></div></body></html>', encoding="utf-8")
     env = os.environ.copy()
     env["PATH"] = f"{bin_dir}:{env['PATH']}"
     result = _run_acquire(
-        "--url", "https://example.com/app",
-        "--repo-root", str(ROOT),
-        "--direct-response-file", str(direct),
-        "--expect-text", "target proof",
-        "--browser-mode", "auto",
+        "--url",
+        "https://example.com/app",
+        "--repo-root",
+        str(ROOT),
+        "--direct-response-file",
+        str(direct),
+        "--expect-text",
+        "target proof",
+        "--browser-mode",
+        "auto",
         env=env,
     )
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
     assert payload["disposition"] == "degraded"
-    attempt = next(attempt for attempt in payload["attempts"] if attempt["stage_id"] == "agent-browser-render-recon")
+    attempt = next(
+        attempt
+        for attempt in payload["attempts"]
+        if attempt["stage_id"] == "agent-browser-render-recon"
+    )
     assert attempt["status"] == "error"
     assert attempt["details"]["cleanup"] == "failed"
 
@@ -279,11 +327,16 @@ def test_acquire_preserves_render_error_when_cleanup_also_fails(tmp_path: Path) 
     env = os.environ.copy()
     env["PATH"] = f"{bin_dir}:{env['PATH']}"
     result = _run_acquire(
-        "--url", "https://example.com/app",
-        "--repo-root", str(repo),
-        "--direct-response-file", str(direct),
-        "--expect-text", "target proof",
-        "--browser-mode", "auto",
+        "--url",
+        "https://example.com/app",
+        "--repo-root",
+        str(repo),
+        "--direct-response-file",
+        str(direct),
+        "--expect-text",
+        "target proof",
+        "--browser-mode",
+        "auto",
         env=env,
     )
     assert result.returncode == 0, result.stderr
@@ -302,7 +355,7 @@ def test_acquire_public_url_degrades_when_close_leaves_dirty_runtime(tmp_path: P
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     (bin_dir / "agent-browser").write_text(
-        "#!/bin/sh\ncase \"$*\" in\n"
+        '#!/bin/sh\ncase "$*" in\n'
         "  *\"get text body\"*) printf 'rendered target proof from browser\\n' ;;\n"
         "  *) exit 0 ;;\nesac\n",
         encoding="utf-8",
@@ -315,23 +368,32 @@ def test_acquire_public_url_degrades_when_close_leaves_dirty_runtime(tmp_path: P
         encoding="utf-8",
     )
     direct = tmp_path / "direct.html"
-    direct.write_text("<html><body><div id=\"root\"></div></body></html>", encoding="utf-8")
+    direct.write_text('<html><body><div id="root"></div></body></html>', encoding="utf-8")
     env = os.environ.copy()
     env["PATH"] = f"{bin_dir}:{env['PATH']}"
 
     result = _run_acquire(
-        "--url", "https://example.com/app",
-        "--repo-root", str(repo),
-        "--direct-response-file", str(direct),
-        "--expect-text", "target proof",
-        "--browser-mode", "auto",
+        "--url",
+        "https://example.com/app",
+        "--repo-root",
+        str(repo),
+        "--direct-response-file",
+        str(direct),
+        "--expect-text",
+        "target proof",
+        "--browser-mode",
+        "auto",
         env=env,
     )
 
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
     assert payload["disposition"] == "degraded"
-    attempt = next(attempt for attempt in payload["attempts"] if attempt["stage_id"] == "agent-browser-render-recon")
+    attempt = next(
+        attempt
+        for attempt in payload["attempts"]
+        if attempt["stage_id"] == "agent-browser-render-recon"
+    )
     assert attempt["status"] == "error"
     assert attempt["details"]["cleanup"] == "failed"
     assert "orphan daemon remains" in attempt["error"]
@@ -365,11 +427,16 @@ def test_acquire_closes_session_on_sigterm_mid_render(tmp_path: Path) -> None:
         [
             sys.executable,
             str(WEB_FETCH_SCRIPTS / "acquire_public_url.py"),
-            "--url", "https://example.com/app",
-            "--repo-root", str(ROOT),
-            "--direct-response-file", str(direct),
-            "--expect-text", "target proof",
-            "--browser-mode", "auto",
+            "--url",
+            "https://example.com/app",
+            "--repo-root",
+            str(ROOT),
+            "--direct-response-file",
+            str(direct),
+            "--expect-text",
+            "target proof",
+            "--browser-mode",
+            "auto",
         ],
         cwd=tmp_path,
         env=env,
@@ -404,7 +471,9 @@ def test_acquire_closes_session_on_sigterm_mid_render(tmp_path: Path) -> None:
         # instead of common and silent.
         deadline = time.monotonic() + _HANG_BACKSTOP_SECONDS
         while time.monotonic() < deadline:
-            if log.is_file() and any(" open " in line for line in log.read_text(encoding="utf-8").splitlines()):
+            if log.is_file() and any(
+                " open " in line for line in log.read_text(encoding="utf-8").splitlines()
+            ):
                 break
             if proc.poll() is not None:
                 stdout, stderr = proc.communicate()
@@ -437,7 +506,9 @@ def test_teardown_no_session_is_idempotent_noop(monkeypatch) -> None:
     def _must_not_be_called(*_args, **_kwargs):
         raise AssertionError("_close_cleanup_error must not run when no session is registered")
 
-    monkeypatch.setattr(_ACQUIRE.browser_fallback_stages, "_close_cleanup_error", _must_not_be_called)
+    monkeypatch.setattr(
+        _ACQUIRE.browser_fallback_stages, "_close_cleanup_error", _must_not_be_called
+    )
     _ACQUIRE._teardown_live_session()
     _ACQUIRE._teardown_live_session()
 
@@ -448,7 +519,9 @@ def test_teardown_no_session_is_idempotent_noop(monkeypatch) -> None:
         return None
 
     monkeypatch.setattr(_ACQUIRE.browser_fallback_stages, "_close_cleanup_error", _recorder)
-    _ACQUIRE._register_live_session(SimpleNamespace(url="https://example.com/app", timeout=20, repo_root=ROOT))
+    _ACQUIRE._register_live_session(
+        SimpleNamespace(url="https://example.com/app", timeout=20, repo_root=ROOT)
+    )
     _ACQUIRE._teardown_live_session()
     _ACQUIRE._teardown_live_session()
     assert len(calls) == 1
@@ -459,12 +532,17 @@ def test_signal_handler_runs_teardown_then_reraises_default(monkeypatch) -> None
     # restored and the signal re-raised so the exit disposition is unchanged.
     calls: list[object] = []
     monkeypatch.setattr(
-        _ACQUIRE.browser_fallback_stages, "_close_cleanup_error",
+        _ACQUIRE.browser_fallback_stages,
+        "_close_cleanup_error",
         lambda *args, **kwargs: calls.append("close"),
     )
-    monkeypatch.setattr(_ACQUIRE.signal, "signal", lambda signum, action: calls.append(("sig", signum, action)))
+    monkeypatch.setattr(
+        _ACQUIRE.signal, "signal", lambda signum, action: calls.append(("sig", signum, action))
+    )
     monkeypatch.setattr(_ACQUIRE.os, "kill", lambda pid, signum: calls.append(("kill", signum)))
-    _ACQUIRE._register_live_session(SimpleNamespace(url="https://example.com/app", timeout=20, repo_root=ROOT))
+    _ACQUIRE._register_live_session(
+        SimpleNamespace(url="https://example.com/app", timeout=20, repo_root=ROOT)
+    )
 
     _ACQUIRE._handle_teardown_signal(signal.SIGTERM, None)
 
@@ -481,6 +559,8 @@ def test_teardown_swallows_close_errors(monkeypatch) -> None:
         raise RuntimeError("close chain failed")
 
     monkeypatch.setattr(_ACQUIRE.browser_fallback_stages, "_close_cleanup_error", _boom)
-    _ACQUIRE._register_live_session(SimpleNamespace(url="https://example.com/app", timeout=20, repo_root=ROOT))
+    _ACQUIRE._register_live_session(
+        SimpleNamespace(url="https://example.com/app", timeout=20, repo_root=ROOT)
+    )
     _ACQUIRE._teardown_live_session()
     assert _ACQUIRE._LIVE_BROWSER_SESSION is None

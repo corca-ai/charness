@@ -15,7 +15,6 @@ narrowest one that reaches it.
 from __future__ import annotations
 
 import signal
-import subprocess
 import sys
 from pathlib import Path
 
@@ -139,7 +138,7 @@ def test_git_output_returns_none_when_git_cannot_be_run(tmp_path: Path, monkeypa
     def explode(*_args, **_kwargs):
         raise FileNotFoundError("git")
 
-    monkeypatch.setattr(checks.subprocess, "run", explode)
+    monkeypatch.setattr(checks, "run_process", explode)
 
     assert checks._git_output(tmp_path, "rev-parse", "--git-dir") is None
 
@@ -168,9 +167,13 @@ def test_worktree_doctor_main_runs_and_its_require_isolation_flag_parses(
     monkeypatch.setattr(
         sys, "argv", ["worktree_doctor", "--repo-root", str(tmp_path), "--require-isolation"]
     )
-    monkeypatch.setattr(doctor, "run_doctor", lambda repo_root, *, require_isolation: (
-        seen.update(require_isolation=require_isolation) or {"status": "fail"}
-    ))
+    monkeypatch.setattr(
+        doctor,
+        "run_doctor",
+        lambda repo_root, *, require_isolation: (
+            seen.update(require_isolation=require_isolation) or {"status": "fail"}
+        ),
+    )
 
     assert doctor.main() == 1, "a non-PASS payload must exit non-zero"
     assert seen["require_isolation"] is True
@@ -204,8 +207,6 @@ def test_the_gate_cli_module_puts_the_repo_root_on_the_path_when_absent(monkeypa
 
 @pytest.mark.parametrize("module_name", ["scripts.worktree_doctor_checks"])
 def test_subprocess_is_reachable_for_the_arms_above(module_name: str) -> None:
-    """Guards the fakes: if these modules stopped importing `subprocess`, the
-    monkeypatch above would bind nothing and its test would pass asserting
-    nothing — the unread-alias trap this repo has hit before."""
+    """Guards the fake seam: the module must bind the shared process primitive."""
     module = import_repo_module(_ANCHOR, module_name)
-    assert module.subprocess is subprocess
+    assert callable(module.run_process)

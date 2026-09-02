@@ -8,6 +8,7 @@ it selects. Both were unbindable in either substrate before 2026-08-30, and the
 repairs produced most of that day's reviewer findings, so their controls are
 kept together where the next reader will look for them.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -19,6 +20,10 @@ import pytest
 
 from scripts.critique_packet_lib import build_reviewed_input_identity
 from scripts.reviewed_input_verification import verify_reviewed_input_identity
+
+pytestmark = pytest.mark.boundary_contract(
+    reason="exercise reviewed-input identity against real Git submodule boundaries"
+)
 
 
 def _run_git(repo: Path, *args: str) -> None:
@@ -66,6 +71,8 @@ def test_a_refreshed_current_pointer_is_bound_by_its_link_payload(tmp_path: Path
     assert pointer in identity["reviewed_paths"]
     assert pointer not in identity["auto_excluded_paths"]
     assert verify_reviewed_input_identity(tmp_path, identity) == (True, "current")
+
+
 def test_retargeting_the_current_pointer_stales_the_verdict(tmp_path: Path) -> None:
     """The discriminator the fresh-eye review demanded.
 
@@ -87,17 +94,23 @@ def test_retargeting_the_current_pointer_stales_the_verdict(tmp_path: Path) -> N
 
     ok, reason = verify_reviewed_input_identity(tmp_path, identity)
     assert (ok, reason) == (False, "declared reviewed inputs are stale")
+
+
 def test_the_current_pointer_filename_matches_its_owning_module(tmp_path: Path) -> None:
     """The restated constant must not drift from `artifact_naming_lib`."""
     from scripts.artifact_naming_lib import CURRENT_POINTER_FILENAME as OWNED
     from scripts.reviewed_input_identity import CURRENT_POINTER_FILENAME as RESTATED
 
     assert RESTATED == OWNED
+
+
 def _submodule_repo(tmp_path: Path) -> Path:
     from tests.quality_gates.repo_shapes import install_submodule_repo
 
     repo, _upstream = install_submodule_repo(tmp_path / "repo")
     return repo
+
+
 def test_a_working_tree_submodule_binds_its_commit_not_the_index_stage(tmp_path: Path) -> None:
     """`ls-files -s` prints `<mode> <object> <stage>`; `ls-tree` prints `<mode> <type> <object>`.
 
@@ -116,6 +129,8 @@ def test_a_working_tree_submodule_binds_its_commit_not_the_index_stage(tmp_path:
     entry = next(e for e in identity["reviewed_content"] if e["path"] == "sub")
     assert entry["content_sha256"] == hashlib.sha256(b"gitlink\0" + recorded.encode()).hexdigest()
     assert entry["content_sha256"] != hashlib.sha256(b"gitlink\0" + b"0").hexdigest()
+
+
 def test_a_removed_submodule_binds_its_preimage_commit(tmp_path: Path) -> None:
     """`git show <ref>:<path>` cannot read a gitlink, so a REMOVED submodule fell
     through both the deletion fallback and the gitlink binder and refused."""
@@ -131,6 +146,8 @@ def test_a_removed_submodule_binds_its_preimage_commit(tmp_path: Path) -> None:
     entry = next(e for e in identity["reviewed_content"] if e["path"] == "sub")
     assert entry["disposition"] == "deleted"
     assert entry["content_sha256"] == hashlib.sha256(b"gitlink\0" + before.encode()).hexdigest()
+
+
 def test_editing_the_record_a_pointer_selects_stales_the_verdict(tmp_path: Path) -> None:
     """Binding only `readlink` caught a retarget but not a rewrite in place.
 
@@ -150,6 +167,8 @@ def test_editing_the_record_a_pointer_selects_stales_the_verdict(tmp_path: Path)
 
     ok, reason = verify_reviewed_input_identity(tmp_path, identity)
     assert (ok, reason) == (False, "declared reviewed inputs are stale")
+
+
 def test_a_current_pointer_escaping_the_repo_root_is_refused(tmp_path: Path) -> None:
     """Skipping `_checked_path` for pointers also skipped its boundary check."""
     _init_identity_repo(tmp_path)
@@ -162,6 +181,8 @@ def test_a_current_pointer_escaping_the_repo_root_is_refused(tmp_path: Path) -> 
 
     with pytest.raises(ValueError, match="resolving outside repo root"):
         build_reviewed_input_identity(repo_root=tmp_path)
+
+
 def test_moving_a_submodule_head_without_staging_stales_the_verdict(tmp_path: Path) -> None:
     """A reviewer reads the working tree, so bind what is CHECKED OUT.
 
@@ -171,9 +192,7 @@ def test_moving_a_submodule_head_without_staging_stales_the_verdict(tmp_path: Pa
     its digest, so no other field could compensate.
     """
     repo = _submodule_repo(tmp_path)
-    identity = build_reviewed_input_identity(
-        repo_root=repo, reviewed_paths=[".gitmodules", "sub"]
-    )
+    identity = build_reviewed_input_identity(repo_root=repo, reviewed_paths=[".gitmodules", "sub"])
     assert verify_reviewed_input_identity(repo, identity) == (True, "current")
 
     upstream = tmp_path / "upstream"
@@ -184,6 +203,8 @@ def test_moving_a_submodule_head_without_staging_stales_the_verdict(tmp_path: Pa
 
     ok, reason = verify_reviewed_input_identity(repo, identity)
     assert (ok, reason) == (False, "declared reviewed inputs are stale")
+
+
 def test_an_uninitialised_submodule_does_not_bind_the_superproject_head(tmp_path: Path) -> None:
     """Git repository discovery walks UPWARD.
 
@@ -196,7 +217,8 @@ def test_an_uninitialised_submodule_does_not_bind_the_superproject_head(tmp_path
     clone = tmp_path / "clone"
     subprocess.run(
         ["git", "-c", "protocol.file.allow=always", "clone", "-q", str(origin), str(clone)],
-        check=True, capture_output=True,
+        check=True,
+        capture_output=True,
     )
     assert not (clone / "sub" / ".git").exists(), "fixture must leave the submodule uninitialised"
     index_entry = subprocess.run(
@@ -206,13 +228,17 @@ def test_an_uninitialised_submodule_does_not_bind_the_superproject_head(tmp_path
         ["git", "rev-parse", "HEAD"], cwd=clone, capture_output=True, text=True
     ).stdout.strip()
 
-    identity = build_reviewed_input_identity(
-        repo_root=clone, reviewed_paths=[".gitmodules", "sub"]
-    )
+    identity = build_reviewed_input_identity(repo_root=clone, reviewed_paths=[".gitmodules", "sub"])
 
     entry = next(e for e in identity["reviewed_content"] if e["path"] == "sub")
-    assert entry["content_sha256"] == hashlib.sha256(b"gitlink\0" + index_entry.encode()).hexdigest()
-    assert entry["content_sha256"] != hashlib.sha256(b"gitlink\0" + superproject.encode()).hexdigest()
+    assert (
+        entry["content_sha256"] == hashlib.sha256(b"gitlink\0" + index_entry.encode()).hexdigest()
+    )
+    assert (
+        entry["content_sha256"] != hashlib.sha256(b"gitlink\0" + superproject.encode()).hexdigest()
+    )
+
+
 def test_a_submodule_removed_from_disk_does_not_crash_identity_construction(
     tmp_path: Path,
 ) -> None:
@@ -228,11 +254,14 @@ def test_a_submodule_removed_from_disk_does_not_crash_identity_construction(
     clone = tmp_path / "clone"
     subprocess.run(
         ["git", "-c", "protocol.file.allow=always", "clone", "-q", str(origin), str(clone)],
-        check=True, capture_output=True,
+        check=True,
+        capture_output=True,
     )
     subprocess.run(
         ["git", "-c", "protocol.file.allow=always", "submodule", "update", "--init", "-q"],
-        cwd=clone, check=True, capture_output=True,
+        cwd=clone,
+        check=True,
+        capture_output=True,
     )
     index_entry = subprocess.run(
         ["git", "ls-files", "-s", "--", "sub"], cwd=clone, capture_output=True, text=True
@@ -240,17 +269,19 @@ def test_a_submodule_removed_from_disk_does_not_crash_identity_construction(
     shutil.rmtree(clone / "sub")
 
     # Nothing about the removed submodule changes before the re-verify below,
-    identity = build_reviewed_input_identity(
-        repo_root=clone, reviewed_paths=["sub"]
-    )
+    identity = build_reviewed_input_identity(repo_root=clone, reviewed_paths=["sub"])
 
     entry = next(e for e in identity["reviewed_content"] if e["path"] == "sub")
-    assert entry["content_sha256"] == hashlib.sha256(b"gitlink\0" + index_entry.encode()).hexdigest()
+    assert (
+        entry["content_sha256"] == hashlib.sha256(b"gitlink\0" + index_entry.encode()).hexdigest()
+    )
     # An index gitlink survives its checkout being deleted, so binding it without
     # a disposition marked a REMOVED submodule undeleted, and restoring the
     # checkout then left that verdict `current`.
     assert entry["disposition"] == "deleted"
     assert verify_reviewed_input_identity(clone, identity) == (True, "current")
+
+
 def test_an_unreadable_pointer_target_refuses_instead_of_hashing_a_constant(
     tmp_path: Path,
 ) -> None:
@@ -305,7 +336,7 @@ def test_a_non_absence_oserror_is_not_treated_as_a_missing_checkout(
         ).stdout.split()[1]
     )
 
-    real_run = subprocess.run
+    real_run = nonblob.run_process
 
     def deny_inside_submodule(*args, **kwargs):
         cwd = str(kwargs.get("cwd", ""))
@@ -313,10 +344,12 @@ def test_a_non_absence_oserror_is_not_treated_as_a_missing_checkout(
             raise PermissionError(13, "permission denied")
         return real_run(*args, **kwargs)
 
-    monkeypatch.setattr(nonblob.subprocess, "run", deny_inside_submodule)
+    monkeypatch.setattr(nonblob, "run_process", deny_inside_submodule)
 
     with pytest.raises(PermissionError):
         build_reviewed_input_identity(repo_root=repo, reviewed_paths=[".gitmodules", "sub"])
+
+
 def test_a_gitlink_path_replaced_by_an_external_symlink_refuses(tmp_path: Path) -> None:
     """`_review_paths` skips `_checked_path` whenever a gitlink is recognised.
 
@@ -346,9 +379,12 @@ def test_a_gitlink_path_replaced_by_an_external_symlink_refuses(tmp_path: Path) 
     with pytest.raises(ValueError, match="is a symlink; declare the target file explicitly"):
         build_reviewed_input_identity(repo_root=repo, reviewed_paths=["sub"])
     # The discriminator: the external HEAD must appear nowhere in a captured identity.
-    assert external_head != subprocess.run(
-        ["git", "rev-parse", "HEAD"], cwd=repo, capture_output=True, text=True
-    ).stdout.strip()
+    assert (
+        external_head
+        != subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=repo, capture_output=True, text=True
+        ).stdout.strip()
+    )
 
 
 def test_a_dirty_submodule_refuses_rather_than_binding_only_its_head(tmp_path: Path) -> None:
@@ -362,9 +398,7 @@ def test_a_dirty_submodule_refuses_rather_than_binding_only_its_head(tmp_path: P
     """
     repo = _submodule_repo(tmp_path)
     # The submodule is still clean and unmoved between build and this immediate
-    identity = build_reviewed_input_identity(
-        repo_root=repo, reviewed_paths=["sub"]
-    )
+    identity = build_reviewed_input_identity(repo_root=repo, reviewed_paths=["sub"])
     assert verify_reviewed_input_identity(repo, identity) == (True, "current")
 
     (repo / "sub" / "f.txt").write_text("edited inside the submodule\n", encoding="utf-8")
@@ -394,7 +428,9 @@ def test_a_staged_submodule_removal_is_deleted_even_with_its_checkout_retained(
 
     entry = next(e for e in identity["reviewed_content"] if e["path"] == "sub")
     assert entry["disposition"] == "deleted"
-    assert entry["content_sha256"] == hashlib.sha256(b"gitlink\0" + head_gitlink.encode()).hexdigest()
+    assert (
+        entry["content_sha256"] == hashlib.sha256(b"gitlink\0" + head_gitlink.encode()).hexdigest()
+    )
 
 
 def test_a_failed_cleanliness_check_refuses_rather_than_reading_as_clean(
@@ -410,22 +446,17 @@ def test_a_failed_cleanliness_check_refuses_rather_than_reading_as_clean(
     from scripts import reviewed_input_nonblob as nonblob
 
     repo = _submodule_repo(tmp_path)
-    real_run = subprocess.run
+    real_run = nonblob.run_process
 
-    class _NonZero:
-        returncode = 1
-        stdout = b""
-        stderr = b"fatal: cannot read the index"
-
-    def fail_status(*args, **kwargs):
+    def fail_status(command, **kwargs):
         # A NONZERO EXIT, not a raised OSError: the narrowed catch propagates a
         # raise, so `None` -- the value that used to read as clean -- is only
         # produced by git running and failing.
-        if "status" in args[0]:
-            return _NonZero()
-        return real_run(*args, **kwargs)
+        if "status" in command:
+            return subprocess.CompletedProcess(command, 1, "", "fatal: cannot read the index")
+        return real_run(command, **kwargs)
 
-    monkeypatch.setattr(nonblob.subprocess, "run", fail_status)
+    monkeypatch.setattr(nonblob, "run_process", fail_status)
 
     with pytest.raises(ValueError, match="cleanliness could not be established"):
         nonblob._gitlink_commit(repo, "sub", None)

@@ -207,15 +207,15 @@ def test_ledger_validator_exercises_replay_refusal_paths(tmp_path: Path, monkeyp
             summary_path=path.parent / "recent-lessons.md",
         )
     monkeypatch.setattr(
-        ledger.subprocess,
-        "run",
+        ledger,
+        "run_process",
         lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0, "{", ""),
     )
     with pytest.raises(ValueError, match="committed ledger is invalid JSON"):
         ledger._committed_state(tmp_path, path)
     monkeypatch.setattr(
-        ledger.subprocess,
-        "run",
+        ledger,
+        "run_process",
         lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0, json.dumps({}), ""),
     )
     with pytest.raises(ValueError, match="unrecognized shape"):
@@ -224,10 +224,19 @@ def test_ledger_validator_exercises_replay_refusal_paths(tmp_path: Path, monkeyp
     # over a ledger a newer tool committed, because `lessons` is derived and not
     # prefix-protected, so the downgrade would pass every remaining check.
     monkeypatch.setattr(
-        ledger.subprocess,
-        "run",
+        ledger,
+        "run_process",
         lambda *_args, **_kwargs: subprocess.CompletedProcess(
-            [], 0, json.dumps({"kind": ledger.KIND, "transitions": [], "schema_version": ledger.SCHEMA_VERSION + 1}), ""
+            [],
+            0,
+            json.dumps(
+                {
+                    "kind": ledger.KIND,
+                    "transitions": [],
+                    "schema_version": ledger.SCHEMA_VERSION + 1,
+                }
+            ),
+            "",
         ),
     )
     with pytest.raises(ValueError, match="newer than this tool"):
@@ -242,14 +251,15 @@ def test_ledger_validator_exercises_replay_refusal_paths(tmp_path: Path, monkeyp
         "lessons": {},
     }
     monkeypatch.setattr(
-        ledger.subprocess,
-        "run", lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0, json.dumps(current), "")
+        ledger,
+        "run_process",
+        lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0, json.dumps(current), ""),
     )
     assert ledger._committed_state(tmp_path, path) == ([], [], ledger.ACTIVE_LESSON_BUDGET, [])
     unsupported = {**current, "schema_version": ledger.SCHEMA_VERSION - 2}
     monkeypatch.setattr(
-        ledger.subprocess,
-        "run",
+        ledger,
+        "run_process",
         lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0, json.dumps(unsupported), ""),
     )
     with pytest.raises(ValueError, match="unsupported schema version"):
@@ -258,8 +268,8 @@ def test_ledger_validator_exercises_replay_refusal_paths(tmp_path: Path, monkeyp
     # silently treated as older -- with its OWN message, because "newer than this
     # tool" is false for a missing version and was pinned that way until round 2.
     monkeypatch.setattr(
-        ledger.subprocess,
-        "run",
+        ledger,
+        "run_process",
         lambda *_args, **_kwargs: subprocess.CompletedProcess(
             [], 0, json.dumps({**current, "schema_version": "7"}), ""
         ),
@@ -267,8 +277,8 @@ def test_ledger_validator_exercises_replay_refusal_paths(tmp_path: Path, monkeyp
     with pytest.raises(ValueError, match="non-integer schema_version"):
         ledger._committed_state(tmp_path, path)
     monkeypatch.setattr(
-        ledger.subprocess,
-        "run",
+        ledger,
+        "run_process",
         lambda *_args, **_kwargs: subprocess.CompletedProcess(
             [], 0, json.dumps({k: v for k, v in current.items() if k != "schema_version"}), ""
         ),
@@ -277,8 +287,8 @@ def test_ledger_validator_exercises_replay_refusal_paths(tmp_path: Path, monkeyp
         ledger._committed_state(tmp_path, path)
     # Missing append-only list: refused, and the message names what it checks.
     monkeypatch.setattr(
-        ledger.subprocess,
-        "run",
+        ledger,
+        "run_process",
         lambda *_args, **_kwargs: subprocess.CompletedProcess(
             [], 0, json.dumps({k: v for k, v in current.items() if k != "score_events"}), ""
         ),

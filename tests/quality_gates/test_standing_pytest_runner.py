@@ -211,10 +211,10 @@ def test_standing_pytest_default_basetemp_uses_user_and_time(tmp_path: Path, mon
     repo = tmp_path / "repo"
     repo.mkdir()
     monkeypatch.setattr(
-        basetemp_lib.subprocess,
-        "run",
-        lambda *args, **kwargs: subprocess.CompletedProcess(
-            args=[], returncode=0, stdout="alice\n"
+        basetemp_lib,
+        "run_process",
+        lambda command, **kwargs: subprocess.CompletedProcess(
+            args=command, returncode=0, stdout="alice\n", stderr=""
         ),
     )
     monkeypatch.setattr(basetemp_lib.time, "time_ns", lambda: 123)
