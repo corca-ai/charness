@@ -24,27 +24,33 @@ def run_retro_resolve_adapter(monkeypatch, capsys, *args: str) -> SimpleNamespac
     return SimpleNamespace(returncode=code, stdout=captured.out, stderr=captured.err)
 
 
-def test_retro_adapter_exposes_recent_lessons_summary_path(monkeypatch, capsys) -> None:
+def test_retro_adapter_declares_the_ledger_as_this_repo_s_lesson_surface(
+    monkeypatch, capsys
+) -> None:
     result = run_retro_resolve_adapter(monkeypatch, capsys, "--repo-root", str(ROOT))
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
-    assert payload["data"]["summary_path"] == "charness-artifacts/retro/recent-lessons.md"
+    assert payload["data"]["summary_path"] is None
 
 
-def test_retro_memory_surfaces_reference_recent_lessons_digest() -> None:
+def test_retro_memory_surfaces_the_ledger_and_selection_index() -> None:
     skill_text = (ROOT / "skills" / "public" / "retro" / "SKILL.md").read_text(encoding="utf-8")
     contract_text = (
         ROOT / "skills" / "public" / "retro" / "references" / "adapter-contract.md"
     ).read_text(encoding="utf-8")
-    lessons_text = (ROOT / "charness-artifacts" / "retro" / "recent-lessons.md").read_text(encoding="utf-8")
+    ledger_text = (ROOT / "charness-artifacts" / "retro" / "lesson-ledger.json").read_text(
+        encoding="utf-8"
+    )
+    index_text = (ROOT / "charness-artifacts" / "retro" / "lesson-selection-index.json").read_text(
+        encoding="utf-8"
+    )
 
     assert "charness-artifacts/" in AGENTS
     assert "summary_path" in skill_text
     assert "summary_path" in contract_text
-    assert "Repeat Traps" in lessons_text
-    assert "Next-Time Checklist" in lessons_text
-    assert "## Sources" in lessons_text
-    assert "charness-artifacts/retro/" in lessons_text
+    assert '"kind": "charness.lesson-ledger"' in ledger_text
+    assert '"kind": "retro-lesson-selection-index"' in index_text
+    assert "ledger" in skill_text
 
 
 def test_agents_keeps_dogfood_detail_in_development_doc() -> None:
@@ -67,6 +73,7 @@ def test_agents_carries_only_the_compact_parallel_routing_cue() -> None:
     asserted against `docs/parallel-execution.md` (which declares itself the owner)
     and refused in the router.
     """
+
     # Both pages hard-wrap prose, so a phrase straddles a newline in whichever
     # page happens to break there. Matching the raw text made the assertion a
     # test of the wrap column rather than of where the rule lives.

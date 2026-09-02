@@ -192,7 +192,7 @@
       "prompt": "Run a short retro on this slice and persist the repeat trap if the workflow should have caught it.",
       "acceptance_evidence": [
         "routes the prompt to `retro` instead of an adjacent public skill",
-        "names or refreshes `charness-artifacts/retro/recent-lessons.md` when the skill persists durable state",
+        "names or refreshes the adapter-declared lesson digest when the skill persists durable state",
         "produces an output that a maintainer could review directly without re-deriving the whole request",
         "classifies a transferable lesson as repo-local or a portable candidate with abstract pattern, evidence, consumer shape, destination, and one first-prompt acceptance claim"
       ]

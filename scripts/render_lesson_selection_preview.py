@@ -12,6 +12,7 @@ from yaml_output import emit_yaml
 ROOT = repo_root_from_script(__file__)
 _preview = import_repo_module(__file__, "scripts.lesson_selection_preview_lib")
 build_lesson_selection_preview = _preview.build_lesson_selection_preview
+_retro = import_repo_module(__file__, "scripts.retro_output_dir_lib")
 
 
 def main() -> int:
@@ -22,8 +23,8 @@ def main() -> int:
     root = args.repo_root.resolve()
     preview = build_lesson_selection_preview(
         repo_root=root,
-        output_dir=root / "charness-artifacts/retro",
-        summary_path=root / "charness-artifacts/retro/recent-lessons.md",
+        output_dir=_retro.retro_output_dir(root),
+        summary_path=_retro.retro_summary_path(root),
         seed=args.seed,
     )
     # The payload is deliberately just the projection. It is useful for an agent

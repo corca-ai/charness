@@ -2,7 +2,7 @@
 """Pre-cut lossless + contract-safe check for public/support SKILL.md body edits.
 
 Before a skill-body cut lands, two questions must be answered *before* a late gate
-rejects the edit (the WS-B instrument gap from recent-lessons):
+rejects the edit (the WS-B instrument gap from the lesson digest):
 
 - contract-safe: does the cut remove a phrase that a CORE/PACKAGE contract or a
   ``tests/`` literal pins? Removing a pinned phrase deterministically breaks a
@@ -26,6 +26,7 @@ Exit status: 1 when any BLOCK (contract or test pin) is present; 0 otherwise
 (reference-home gaps are REVIEW-only and do not fail the command). Use ``--strict``
 to also fail on REVIEW items when a caller wants the stricter gate.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -269,9 +270,7 @@ def build_report(
     else:
         deleted = []
     for rel in deleted:
-        findings = deletion_findings(
-            repo_root, rel, test_roots, removed=removed_map.get(rel)
-        )
+        findings = deletion_findings(repo_root, rel, test_roots, removed=removed_map.get(rel))
         blocks = [f for f in findings if f["severity"] == "block"]
         reviews = [f for f in findings if f["severity"] == "review"]
         skills.append(

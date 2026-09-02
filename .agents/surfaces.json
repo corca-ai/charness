@@ -707,7 +707,7 @@
         "python3 scripts/build_retro_lesson_selection_index.py --repo-root . --check"
       ],
       "notes": [
-        "The index is advisory source-linked selection evidence; it must not replace dated retro artifacts or make `recent-lessons.md` opaque.",
+        "The index is advisory source-linked selection evidence; it must not replace dated retro artifacts or make the ledger opaque; this repository declares no digest (`summary_path: null`, #774).",
         "Retro prepare_packet emits durable `*-packet.json` / `*-packet.md` pairs; JSON must parse, while packet Markdown is covered by the existing retro `*.md` source pattern."
       ]
     },
@@ -736,7 +736,7 @@
       ],
       "notes": [
         "The ledger checker remains the focused quality gate because every score and seed reconstructs against the retro corpus.",
-        "Achieve reads the precomputed recent-lessons digest or selection index; no session or contract-register state is part of lesson pickup."
+        "Achieve reads the ledger selection preview, or a declared recent-lessons digest in a consumer that keeps one; no session or contract-register state is part of lesson pickup."
       ]
     },
     {

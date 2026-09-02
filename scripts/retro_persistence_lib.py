@@ -350,7 +350,13 @@ def persist_retro_artifact(
         result.update(goal_identity)
     result["goal_lineage"] = goal_lineage
 
-    if summary_path is not None and artifact_path.resolve() != summary_path.resolve():
+    if (
+        summary_path is None
+        and artifact_path.resolve() != output_dir.resolve() / "recent-lessons.md"
+    ):
+        index_path = _run_index_builder(repo_root, output_dir)
+        result["lesson_selection_index_path"] = str(index_path.relative_to(repo_root))
+    elif summary_path is not None and artifact_path.resolve() != summary_path.resolve():
         digest = build_indexed_recent_lessons(
             repo_root=repo_root, output_dir=output_dir, summary_path=summary_path
         )

@@ -4,7 +4,8 @@ language: en
 output_dir: charness-artifacts/retro
 preset_id: portable-defaults
 customized_from: portable-defaults
-summary_path: charness-artifacts/retro/recent-lessons.md
+# This repository keeps one lesson surface, the ledger and its selection index (#774).
+summary_path: null
 evidence_paths:
   - charness-artifacts/debug
   - charness-artifacts/quality/latest.md

@@ -14,9 +14,9 @@ recur in another skill, script, doc, or workflow — add an opt-in
 single-session waste with no plausible siblings uses the short-circuit instead.
 
 The scan lives in the per-session retro artifact written by
-`scripts/persist_retro_artifact.py`. Do NOT add it to
-`<repo-root>/charness-artifacts/retro/recent-lessons.md` (a generated digest refreshed from
-the selection index — hand edits are reverted) or to the selection index JSON.
+`scripts/persist_retro_artifact.py`. Do NOT add it to a configured lesson digest
+(a generated projection refreshed from the selection index — hand edits are
+reverted) or to the selection index JSON.
 
 ## Schema
 

@@ -68,7 +68,9 @@ def load_retro_adapter(repo_root: Path) -> dict:
     resolver_path = _retro_resolver_path(repo_root)
     if resolver_path is None:
         raise FileNotFoundError("no retro resolve_adapter.py reachable")
-    return load_path_module("retro_validator_resolve_adapter", resolver_path).load_adapter(repo_root)
+    return load_path_module("retro_validator_resolve_adapter", resolver_path).load_adapter(
+        repo_root
+    )
 
 
 def retro_artifact_prefix(repo_root: Path) -> str:
@@ -119,13 +121,15 @@ def retro_output_dir(repo_root: Path) -> Path:
     return repo_root.resolve() / PurePosixPath(retro_artifact_prefix(repo_root).rstrip("/"))
 
 
-def retro_summary_path(repo_root: Path) -> Path:
-    """Return the adapter-declared summary path, with the default as fallback."""
+def retro_summary_path(repo_root: Path) -> Path | None:
+    """Return the adapter-declared summary path, preserving an explicit opt-out."""
     try:
         data = load_retro_adapter(repo_root).get("data", {})
     except (FileNotFoundError, OSError, ValueError, KeyError, TypeError):
         data = {}
     summary = data.get("summary_path")
+    if summary is None and "summary_path" in data:
+        return None
     if isinstance(summary, str) and summary.strip():
         candidate = PurePosixPath(summary.strip())
         if not candidate.is_absolute() and ".." not in candidate.parts:

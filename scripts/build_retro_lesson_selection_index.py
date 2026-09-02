@@ -16,6 +16,8 @@ build_lesson_selection_index = _recent_lessons_module.build_lesson_selection_ind
 check_lesson_selection_index = _recent_lessons_module.check_lesson_selection_index
 lesson_selection_index_path = _recent_lessons_module.lesson_selection_index_path
 write_lesson_selection_index = _recent_lessons_module.write_lesson_selection_index
+_lesson_ledger_module = import_repo_module(__file__, "scripts.lesson_ledger_lib")
+validate_lesson_ledger = _lesson_ledger_module.validate_lesson_ledger
 
 
 def _resolver_path(repo_root: Path) -> Path:
@@ -57,7 +59,9 @@ def _load_retro_paths(repo_root: Path) -> tuple[Path, Path | None]:
     adapter = module.load_adapter(repo_root)
     data = adapter["data"]
     summary_rel = data.get("summary_path")
-    return repo_root / data["output_dir"], repo_root / summary_rel if isinstance(summary_rel, str) else None
+    return repo_root / data["output_dir"], repo_root / summary_rel if isinstance(
+        summary_rel, str
+    ) else None
 
 
 def _relative(repo_root: Path, path: Path) -> str:
@@ -74,12 +78,9 @@ def main() -> int:
     repo_root = args.repo_root.resolve()
     output_dir, summary_path = _load_retro_paths(repo_root)
     index_path = lesson_selection_index_path(output_dir)
-    if summary_path is None:
-        if args.check:
-            check_lesson_selection_index(repo_root, output_dir, None)
-        emit_yaml({"status": "disabled", "projection": "disabled"})
-        return 0
-    payload = build_lesson_selection_index(repo_root=repo_root, output_dir=output_dir, summary_path=summary_path)
+    payload = build_lesson_selection_index(
+        repo_root=repo_root, output_dir=output_dir, summary_path=summary_path
+    )
 
     def _index_result(status: str) -> dict:
         """One shape for both verdicts of one command.
@@ -105,6 +106,12 @@ def main() -> int:
         emit_yaml(_index_result("written"))
         return 0
     if args.check:
+        if summary_path is None:
+            validate_lesson_ledger(
+                repo_root=repo_root,
+                output_dir=output_dir,
+                summary_path=None,
+            )
         check_lesson_selection_index(repo_root, output_dir, summary_path)
         emit_yaml(_index_result("validated"))
         return 0

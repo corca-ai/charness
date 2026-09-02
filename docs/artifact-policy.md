@@ -293,9 +293,7 @@ the write site — so drift is caught whatever caused it: a foreign or stale
 harness copy, a partial edit, a bad merge, a hand-edit of a generated surface.
 The gated ones today are the
 [retro lesson-selection index](../charness-artifacts/retro/lesson-selection-index.json)
-and its rendered [recent lessons](../charness-artifacts/retro/recent-lessons.md)
-digest (both at
-[recent_lessons_lib.py](../scripts/recent_lessons_lib.py)), and the
+and the ledger-backed preview that reads it, and the
 [debug seam-risk index](../charness-artifacts/debug/seam-risk-index.json).
 
 Across the artifact families a foreign or stale harness copy can write —

@@ -66,7 +66,7 @@
         "projection",
         "status"
       ],
-      "rationale": "`disabled` is the retro adapter's declared `summary_path: null` opt-out reaching this producer, not a failure and not a silent skip. A consumer whose lesson ledger is its only lesson surface asked for no Markdown projection, so there is no index to build; the command says so in its terminal payload rather than writing one or printing a clean verdict over a projection the repository declined. `--check` still runs the checker first, so a disabled projection cannot hide a stale index."
+      "rationale": "`summary_path: null` disables only the optional Markdown digest, not the source-linked selection index. The command writes or validates that index and, on `--check`, validates the ledger before comparing index bytes; the ledger-only lesson surface therefore remains fully checked without creating a second projection."
     },
     "scripts/check_cli_skill_surface.py": {
       "states": [

@@ -74,7 +74,9 @@ def pick_latest_retro_markdown(output_dir: Path, summary_path: Path | None) -> P
     ]
     if not candidates:
         raise FileNotFoundError(f"No retro markdown artifacts found under {output_dir}")
-    return max(candidates, key=lambda path: (path.stat().st_mtime, _date_token(path.name), path.name))
+    return max(
+        candidates, key=lambda path: (path.stat().st_mtime, _date_token(path.name), path.name)
+    )
 
 
 def _date_token(name: str) -> str:
@@ -243,7 +245,9 @@ def _parse_retro_artifacts(artifacts: list[Path]) -> tuple[list[dict[str, Any]],
     return parsed_artifacts, max(dated_values) if dated_values else None
 
 
-def _collect_lesson_candidates(repo_root: Path, parsed_artifacts: list[dict[str, Any]]) -> dict[tuple[str, str], dict[str, Any]]:
+def _collect_lesson_candidates(
+    repo_root: Path, parsed_artifacts: list[dict[str, Any]]
+) -> dict[tuple[str, str], dict[str, Any]]:
     candidates: dict[tuple[str, str], dict[str, Any]] = {}
     for artifact in parsed_artifacts:
         artifact_path = artifact["path"]
@@ -254,7 +258,11 @@ def _collect_lesson_candidates(repo_root: Path, parsed_artifacts: list[dict[str,
             if section_name == "Context" and not items and sections.get(section_name):
                 items = [_first_sentence(sections[section_name])]
             for raw_item in items:
-                lesson = _clean_next_improvement(raw_item) if section_name == "Next Improvements" else raw_item
+                lesson = (
+                    _clean_next_improvement(raw_item)
+                    if section_name == "Next Improvements"
+                    else raw_item
+                )
                 if not lesson:
                     continue
                 lesson_class = recurrence_class(lesson)
@@ -294,7 +302,9 @@ def _collect_lesson_candidates(repo_root: Path, parsed_artifacts: list[dict[str,
     return candidates
 
 
-def _candidate_entry(kind: str, normalized_key: str, entry: dict[str, Any], as_of: date | None) -> dict[str, Any]:  # noqa: PLR0914
+def _candidate_entry(
+    kind: str, normalized_key: str, entry: dict[str, Any], as_of: date | None
+) -> dict[str, Any]:  # noqa: PLR0914
     source_dates = [_parse_date(source.get("date")) for source in entry["sources"]]
     latest_date = max((value for value in source_dates if value is not None), default=None)
     latest_date_text = latest_date.isoformat() if latest_date else None
@@ -343,11 +353,15 @@ def _candidate_entry(kind: str, normalized_key: str, entry: dict[str, Any], as_o
         "recency_weight": round(recency_weight, 4),
         "alpha": round(alpha, 4),
         "selection_weight": round(selection_weight, 4),
-        "sources": sorted(entry["sources"], key=lambda source: (source.get("date") or "", source["artifact_path"])),
+        "sources": sorted(
+            entry["sources"], key=lambda source: (source.get("date") or "", source["artifact_path"])
+        ),
     }
 
 
-def _ranked_candidate_entries(candidates: dict[tuple[str, str], dict[str, Any]], as_of: date | None) -> list[dict[str, Any]]:
+def _ranked_candidate_entries(
+    candidates: dict[tuple[str, str], dict[str, Any]], as_of: date | None
+) -> list[dict[str, Any]]:
     entries: list[dict[str, Any]] = []
     for (key_head, key_tail), entry in candidates.items():
         # For a class-keyed candidate the tuple head is the literal "class", not a
@@ -404,12 +418,9 @@ def lesson_selection_index_text(payload: dict[str, Any]) -> str:
     return json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
 
 
-def write_lesson_selection_index(repo_root: Path, output_dir: Path, summary_path: Path | None) -> Path:
-    if summary_path is None:
-        raise ValueError(
-            "cannot write the retro lesson selection index when the retro adapter "
-            "declares `summary_path: null`; the lesson projection is disabled"
-        )
+def write_lesson_selection_index(
+    repo_root: Path, output_dir: Path, summary_path: Path | None
+) -> Path:
     # The write boundary of the index the four failed publishes corrupted: an
     # An installed-plugin copy of this module once emitted an older schema into a
     # source tree whose own gate then rejected it. Guarding the writer rather than
@@ -418,16 +429,20 @@ def write_lesson_selection_index(repo_root: Path, output_dir: Path, summary_path
     from scripts.helper_provenance_lib import require_repo_local_helper
 
     require_repo_local_helper(__file__, repo_root)
-    payload = build_lesson_selection_index(repo_root=repo_root, output_dir=output_dir, summary_path=summary_path)
+    payload = build_lesson_selection_index(
+        repo_root=repo_root, output_dir=output_dir, summary_path=summary_path
+    )
     index_path = lesson_selection_index_path(output_dir)
     index_path.write_text(lesson_selection_index_text(payload), encoding="utf-8")
     return index_path
 
 
-def check_lesson_selection_index(repo_root: Path, output_dir: Path, summary_path: Path | None) -> None:
-    if summary_path is None:
-        return
-    payload = build_lesson_selection_index(repo_root=repo_root, output_dir=output_dir, summary_path=summary_path)
+def check_lesson_selection_index(
+    repo_root: Path, output_dir: Path, summary_path: Path | None
+) -> None:
+    payload = build_lesson_selection_index(
+        repo_root=repo_root, output_dir=output_dir, summary_path=summary_path
+    )
     index_path = lesson_selection_index_path(output_dir)
     expected = lesson_selection_index_text(payload)
     write_command = index_build_command(repo_root, "--write")
@@ -438,7 +453,11 @@ def check_lesson_selection_index(repo_root: Path, output_dir: Path, summary_path
         )
     if index_path.read_text(encoding="utf-8") != expected:
         raise ValueError(stale_index_message(str(index_path.relative_to(repo_root)), repo_root))
-    expected_digest = build_indexed_recent_lessons(repo_root=repo_root, output_dir=output_dir, summary_path=summary_path)
+    if summary_path is None:
+        return
+    expected_digest = build_indexed_recent_lessons(
+        repo_root=repo_root, output_dir=output_dir, summary_path=summary_path
+    )
     if not summary_path.is_file():
         raise FileNotFoundError(
             f"missing recent lessons digest `{summary_path.relative_to(repo_root)}`; "
@@ -490,26 +509,40 @@ def build_indexed_recent_lessons(
             "cannot build recent retro lessons when the retro adapter declares "
             "`summary_path: null`; the lesson projection is disabled"
         )
-    index_payload = build_lesson_selection_index(repo_root=repo_root, output_dir=output_dir, summary_path=summary_path)
+    index_payload = build_lesson_selection_index(
+        repo_root=repo_root, output_dir=output_dir, summary_path=summary_path
+    )
     current_focus = _select_digest_candidates(index_payload, "current_focus")
     repeat_traps = _select_digest_candidates(index_payload, "repeat_trap")
     next_checklist = _select_digest_candidates(index_payload, "next_improvement")
-    source_paths = sorted({source["artifact_path"] for entry in current_focus + repeat_traps + next_checklist for source in entry["sources"]})
+    source_paths = sorted(
+        {
+            source["artifact_path"]
+            for entry in current_focus + repeat_traps + next_checklist
+            for source in entry["sources"]
+        }
+    )
 
     summary_lines = [
         "# Recent Retro Lessons",
         "",
         "## Current Focus",
         "",
-        *_render_candidate_lines(current_focus, "No current focus bullets found in retro lesson index."),
+        *_render_candidate_lines(
+            current_focus, "No current focus bullets found in retro lesson index."
+        ),
         "",
         "## Repeat Traps",
         "",
-        *_render_candidate_lines(repeat_traps, "No repeat traps extracted from retro lesson index."),
+        *_render_candidate_lines(
+            repeat_traps, "No repeat traps extracted from retro lesson index."
+        ),
         "",
         "## Next-Time Checklist",
         "",
-        *_render_candidate_lines(next_checklist, "No next improvements extracted from retro lesson index."),
+        *_render_candidate_lines(
+            next_checklist, "No next improvements extracted from retro lesson index."
+        ),
         "",
         "## Selection Policy",
         "",
@@ -542,7 +575,10 @@ def build_recent_lessons(source_path: Path, *, repo_root: Path) -> RecentLessons
     if not current_focus and sections.get("Context"):
         current_focus = [_first_sentence(sections["Context"])]
     repeat_traps = _bullet_items(sections.get("Waste", ""))[:4]
-    next_checklist = [_clean_next_improvement(item) for item in _bullet_items(sections.get("Next Improvements", ""))[:5]]
+    next_checklist = [
+        _clean_next_improvement(item)
+        for item in _bullet_items(sections.get("Next Improvements", ""))[:5]
+    ]
 
     summary_lines = [
         "# Recent Retro Lessons",
@@ -550,11 +586,18 @@ def build_recent_lessons(source_path: Path, *, repo_root: Path) -> RecentLessons
         "## Current Focus",
         "",
     ]
-    summary_lines.extend(f"- {item}" for item in current_focus or ["No current focus bullets found in source retro."])
+    summary_lines.extend(
+        f"- {item}" for item in current_focus or ["No current focus bullets found in source retro."]
+    )
     summary_lines.extend(["", "## Repeat Traps", ""])
-    summary_lines.extend(f"- {item}" for item in repeat_traps or ["No repeat traps extracted from source retro."])
+    summary_lines.extend(
+        f"- {item}" for item in repeat_traps or ["No repeat traps extracted from source retro."]
+    )
     summary_lines.extend(["", "## Next-Time Checklist", ""])
-    summary_lines.extend(f"- {item}" for item in next_checklist or ["No next improvements extracted from source retro."])
+    summary_lines.extend(
+        f"- {item}"
+        for item in next_checklist or ["No next improvements extracted from source retro."]
+    )
     summary_lines.extend(
         [
             "",

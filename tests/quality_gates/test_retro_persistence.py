@@ -753,8 +753,12 @@ def test_persist_writes_no_digest_when_the_projection_is_disabled(
     payload = yaml.safe_load(result.stdout)
     assert payload["artifact_path"] == "charness-artifacts/retro/session-2026-04-14.md"
     assert (output_dir / "session-2026-04-14.md").is_file()
-    # The declined surfaces: no digest, and no selection index derived from one.
+    # The digest is declined, but the source-linked selection index remains current.
     assert not (output_dir / "recent-lessons.md").exists()
+    assert (output_dir / "lesson-selection-index.json").is_file()
+    assert payload["lesson_selection_index_path"] == (
+        "charness-artifacts/retro/lesson-selection-index.json"
+    )
     assert payload.get("summary_refreshed") is not True
 
 

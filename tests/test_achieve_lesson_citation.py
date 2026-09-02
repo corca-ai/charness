@@ -17,6 +17,7 @@ def test_achieve_keeps_one_optional_lesson_memory_surface() -> None:
     achieve = _normalized(ACHIEVE)
 
     assert "one bounded advisory projection" in achieve
-    assert "recent-lessons.md" in achieve
+    assert "ledger selection preview" in achieve
+    assert "consumer adapter declares a digest" in achieve
     assert "Missing lesson context never blocks pickup" in achieve
     assert "neither rebuilds the ledger nor records session continuity" in achieve

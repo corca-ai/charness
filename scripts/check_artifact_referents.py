@@ -328,7 +328,7 @@ def audit_file(
     # typed, so an undatable artifact carrying one is fail-closed. A commit SHA
     # is different in kind: it can be correct when written and STOP resolving
     # later, when a branch is squashed, a worktree is pruned, or history is
-    # rewritten. Blocking an undated rolling digest (`recent-lessons.md`) for
+    # rewritten. Blocking an undated rolling lesson digest for
     # citing a commit that has since been rebased away would be punishing an
     # author for a change made after they wrote it -- and the remedy a blocking
     # gate pushes toward is editing a frozen record so a checker goes green,

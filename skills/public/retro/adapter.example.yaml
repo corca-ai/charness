@@ -4,6 +4,7 @@ language: en
 output_dir: charness-artifacts/retro
 preset_id: portable-defaults
 customized_from: portable-defaults
+# Optional compact lesson digest; use `null` when the ledger is the only surface.
 summary_path: charness-artifacts/retro/recent-lessons.md
 evidence_paths: []
 metrics_commands: []

@@ -71,10 +71,10 @@ managed parent cursor, then reads only the cursor's next open child. It returns
 `verified-read` or a typed refusal. It never falls back to local artifact state,
 reconciles the graph, or mutates provider state.
 
-The same read returns one bounded advisory projection from
-`<repo-root>/charness-artifacts/retro/recent-lessons.md`. Missing lesson context
-never blocks pickup, and Achieve neither rebuilds the ledger nor records session
-continuity.
+The same read returns one bounded advisory projection from the ledger selection
+preview. When a consumer adapter declares a digest, pickup keeps that digest as
+the fallback. Missing lesson context never blocks pickup, and Achieve neither
+rebuilds the ledger nor records session continuity.
 
 Use the issue-owned Goal Run bootstrap, sync, and close commands for provider
 establishment, graph repair, mutation, and closeout. Achieve does not duplicate

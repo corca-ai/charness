@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
@@ -89,7 +90,11 @@ def test_build_retro_lesson_selection_index_writes_source_linked_candidates(tmp_
     assert index["kind"] == "retro-lesson-selection-index"
     assert index["selection_policy"]["advisory"] is True
     assert index["selection_policy"]["alpha_t"] == "alpha_base * min(1, source_count / warmup_n)"
-    repeated = next(item for item in index["candidates"] if item["lesson"] == "Plugin export was verified too late.")
+    repeated = next(
+        item
+        for item in index["candidates"]
+        if item["lesson"] == "Plugin export was verified too late."
+    )
     assert repeated["kind"] == "repeat_trap"
     assert repeated["source_count"] == 2
     assert repeated["latest_source_path"] == "charness-artifacts/retro/2026-04-15-new.md"
@@ -115,28 +120,48 @@ def test_build_retro_lesson_selection_index_check_rejects_stale_index(tmp_path: 
     )
 
 
-def test_build_retro_lesson_selection_index_preserves_a_disabled_projection(tmp_path: Path) -> None:
+def test_build_retro_lesson_selection_index_keeps_the_ledger_and_index_when_digest_is_disabled(
+    tmp_path: Path,
+) -> None:
+    empty_ledger = {
+        "kind": "charness.lesson-ledger",
+        "schema_version": 9,
+        "transitions": [],
+        "active_lesson_budget": 50,
+        "lifecycle_events": [],
+        "score_events": [],
+        "lessons": {},
+    }
     repo = (
         Repo()
         .file(
             ".agents/retro-adapter.yaml",
             "version: 1\nrepo: demo\noutput_dir: charness-artifacts/retro\nsummary_path: null\n",
         )
+        .file(
+            "charness-artifacts/retro/lesson-ledger.json",
+            json.dumps(empty_ledger),
+        )
         .build(tmp_path)
     )
 
     write_result = run_at(repo, BUILD_INDEX, "--write").ok()
-    assert yaml.safe_load(write_result.proc.stdout) == {
-        "status": "disabled",
-        "projection": "disabled",
-    }
-    assert not (repo / "charness-artifacts" / "retro" / "lesson-selection-index.json").exists()
+    written = yaml.safe_load(write_result.proc.stdout)
+    assert written["status"] == "written"
+    assert written["index_path"] == "charness-artifacts/retro/lesson-selection-index.json"
+    assert written["source_artifact_count"] == 0
+    assert written["candidate_count"] == 0
+    assert (repo / "charness-artifacts" / "retro" / "lesson-selection-index.json").exists()
 
     check_result = run_at(repo, BUILD_INDEX, "--check").ok()
-    assert yaml.safe_load(check_result.proc.stdout) == {
-        "status": "disabled",
-        "projection": "disabled",
-    }
+    checked = yaml.safe_load(check_result.proc.stdout)
+    assert checked["status"] == "validated"
+    assert checked["index_path"] == written["index_path"]
+
+    (repo / "charness-artifacts" / "retro" / "lesson-ledger.json").write_text("{", encoding="utf-8")
+    run_at(repo, BUILD_INDEX, "--check", real_process=True).failed(1).stderr_has(
+        "lesson ledger invalid"
+    )
 
 
 def test_build_retro_lesson_selection_index_check_rejects_stale_digest(tmp_path: Path) -> None:
@@ -205,7 +230,9 @@ def _staleable_repo(tmp_path: Path, *, name: str) -> Path:
         )
     ).build(tmp_path, name=name)
     run_at(repo, BUILD_INDEX, "--write").ok()
-    (repo / "charness-artifacts" / "retro" / "lesson-selection-index.json").write_text("{}\n", encoding="utf-8")
+    (repo / "charness-artifacts" / "retro" / "lesson-selection-index.json").write_text(
+        "{}\n", encoding="utf-8"
+    )
     return repo
 
 
@@ -219,7 +246,9 @@ def _stale_index_message(repo: Path) -> str:
     return str(excinfo.value)
 
 
-def test_stale_index_refusal_names_a_command_a_consuming_repo_can_actually_run(tmp_path: Path) -> None:
+def test_stale_index_refusal_names_a_command_a_consuming_repo_can_actually_run(
+    tmp_path: Path,
+) -> None:
     """#632: the refusal named `scripts/…` and `skills/public/retro/…` unconditionally.
 
     A consuming repo has neither, so the only way forward was the installed copy the
@@ -232,7 +261,9 @@ def test_stale_index_refusal_names_a_command_a_consuming_repo_can_actually_run(t
 
     message = _stale_index_message(repo)
 
-    cited = [word for word in message.split() if word.endswith("build_retro_lesson_selection_index.py")]
+    cited = [
+        word for word in message.split() if word.endswith("build_retro_lesson_selection_index.py")
+    ]
     assert cited, message
     assert Path(cited[0]).is_file(), message
     assert "carries no" in message
@@ -266,10 +297,15 @@ def test_stale_index_refusal_keeps_the_foreign_copy_warning_for_a_repo_that_owns
     # The TARGET repo's own builder, spelled absolutely because the operator's cwd is
     # not that tree: a relative `scripts/...` beside an absolute `--repo-root` would
     # run THIS checkout's builder against a different one.
-    assert f"python3 {repo}/scripts/{lesson_command_citation.INDEX_SCRIPT_NAME} --repo-root {repo} --write" in message
+    assert (
+        f"python3 {repo}/scripts/{lesson_command_citation.INDEX_SCRIPT_NAME} --repo-root {repo} --write"
+        in message
+    )
 
 
-def test_digest_refusal_resolves_the_refresh_script_against_a_tree_that_has_it(tmp_path: Path) -> None:
+def test_digest_refusal_resolves_the_refresh_script_against_a_tree_that_has_it(
+    tmp_path: Path,
+) -> None:
     """The second failure in #632: `skills/public/retro/` exists in neither tree there.
 
     The export flattens it to `skills/retro/`, so the hard-coded source spelling was

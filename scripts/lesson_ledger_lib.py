@@ -131,7 +131,9 @@ def _nonblank(value: Any) -> bool:
     return isinstance(value, str) and bool(value.strip())
 
 
-def candidate_sources(repo_root: Path, output_dir: Path, summary_path: Path) -> dict[str, set[str]]:
+def candidate_sources(
+    repo_root: Path, output_dir: Path, summary_path: Path | None
+) -> dict[str, set[str]]:
     index = build_lesson_selection_index(
         repo_root=repo_root, output_dir=output_dir, summary_path=summary_path
     )
@@ -378,7 +380,7 @@ def _replay_scores(
 
 
 def replay_validated_ledger_payload(
-    *, repo_root: Path, output_dir: Path, summary_path: Path, path: Path, payload: Any
+    *, repo_root: Path, output_dir: Path, summary_path: Path | None, path: Path, payload: Any
 ) -> dict[str, dict[str, Any]]:
     payload, _ = migrate_ledger_payload(payload)
     if (
@@ -447,7 +449,7 @@ def replay_validated_ledger_payload(
 
 
 def validate_lesson_ledger(
-    *, repo_root: Path, output_dir: Path, summary_path: Path
+    *, repo_root: Path, output_dir: Path, summary_path: Path | None
 ) -> dict[str, Any]:
     path = lesson_ledger_path(output_dir)
     if not path.is_file():

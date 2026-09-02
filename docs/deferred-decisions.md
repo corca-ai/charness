@@ -325,7 +325,7 @@ the evidence is sufficient for the boundary at hand.
   "Next Improvement" that never became a contract.
 - Why now: the lineage is concrete rather than hypothetical. The correct spawn
   shape was recorded in [2026-06-20-north-star-phase4-boundary-non-terminality.md](../charness-artifacts/retro/2026-06-20-north-star-phase4-boundary-non-terminality.md)
-  (`:36-41`, `:89-91`), aged out of [recent-lessons.md](../charness-artifacts/retro/recent-lessons.md)
+  (`:36-41`, `:89-91`), aged out of the former compact lesson digest
   (generated from [lesson-selection-index.json](../charness-artifacts/retro/lesson-selection-index.json) under a 14-day recency
   half-life), and two later sessions re-derived a wrong attribution
   ("host-runtime behavior, not repo fixable") instead of running the cheap
@@ -337,8 +337,7 @@ the evidence is sufficient for the boundary at hand.
   validator-post-hoc-churn reflex. The decay mechanism stays live for every
   other current Next Improvement, which is the accepted residual.
 - Impact surfaces: [build_retro_lesson_selection_index.py](../scripts/build_retro_lesson_selection_index.py),
-  [lesson-selection-index.json](../charness-artifacts/retro/lesson-selection-index.json),
-  [recent-lessons.md](../charness-artifacts/retro/recent-lessons.md), the `retro` skill.
+  [lesson-selection-index.json](../charness-artifacts/retro/lesson-selection-index.json), the `retro` skill.
 - Reopen trigger: a third recurrence of any lesson previously recorded in a retro
   and since decayed, or a session that re-derives a wrong attribution the repo
   already refuted.

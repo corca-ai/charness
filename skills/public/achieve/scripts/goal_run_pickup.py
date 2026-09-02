@@ -13,7 +13,14 @@ from typing import Any
 
 
 def _load_skill_runtime_bootstrap():
-    bootstrap = next((ancestor / "skill_runtime_bootstrap.py" for ancestor in Path(__file__).resolve().parents if (ancestor / "skill_runtime_bootstrap.py").is_file()), None)
+    bootstrap = next(
+        (
+            ancestor / "skill_runtime_bootstrap.py"
+            for ancestor in Path(__file__).resolve().parents
+            if (ancestor / "skill_runtime_bootstrap.py").is_file()
+        ),
+        None,
+    )
     if bootstrap is None:
         raise ImportError("skill_runtime_bootstrap.py not found")
     return SimpleNamespace(**runpy.run_path(str(bootstrap)))
@@ -24,6 +31,12 @@ _SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 run_process = _SKILL_RUNTIME.load_repo_module_from_skill_script(
     __file__, "scripts.subprocess_guard"
 ).run_process
+_retro_paths = _SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.retro_output_dir_lib"
+)
+_lesson_preview = _SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.lesson_selection_preview_lib"
+)
 
 _SCRIPT_DIR = Path(__file__).resolve().parent
 if str(_SCRIPT_DIR) not in sys.path:
@@ -86,10 +99,15 @@ def _achieve_script(name: str) -> Path:
     raise PickupError("runtime-unavailable", f"achieve skill file not found: {name}.py")
 
 
-def _read_lesson_projection(repo_root: Path) -> dict[str, Any]:
-    """Read one bounded, advisory projection without rebuilding lesson state."""
-    relative = Path("charness-artifacts/retro/recent-lessons.md")
-    path = repo_root / relative
+def _bounded_lesson(text: str) -> str:
+    lesson = " ".join(text.split())
+    if len(lesson) > _LESSON_MAX_CHARS:
+        return lesson[: _LESSON_MAX_CHARS - 1].rstrip() + "…"
+    return lesson
+
+
+def _read_lesson_digest(path: Path, repo_root: Path) -> dict[str, Any]:
+    relative = path.relative_to(repo_root)
     base: dict[str, Any] = {
         "source": str(relative),
         "selection": "first-item-per-section",
@@ -111,9 +129,7 @@ def _read_lesson_projection(repo_root: Path) -> dict[str, Any]:
             and not any(entry["section"] == current for entry in selected)
         ):
             lesson = " ".join(part.strip() for part in item if part.strip())
-            if len(lesson) > _LESSON_MAX_CHARS:
-                lesson = lesson[: _LESSON_MAX_CHARS - 1].rstrip() + "…"
-            selected.append({"section": current, "lesson": lesson})
+            selected.append({"section": current, "lesson": _bounded_lesson(lesson)})
         item = []
 
     for line in lines:
@@ -129,6 +145,49 @@ def _read_lesson_projection(repo_root: Path) -> dict[str, Any]:
     if not selected:
         return {**base, "status": "unavailable", "reason": "projection-empty"}
     return {**base, "status": "selected", "items": selected, "item_count": len(selected)}
+
+
+def _read_lesson_preview(repo_root: Path, output_dir: Path) -> dict[str, Any]:
+    index_path = output_dir / "lesson-selection-index.json"
+    base: dict[str, Any] = {
+        "source": str(index_path.relative_to(repo_root)),
+        "selection": "bounded-ledger-preview",
+    }
+    try:
+        preview = _lesson_preview.build_lesson_selection_preview(
+            repo_root=repo_root,
+            output_dir=output_dir,
+            summary_path=None,
+            seed="goal-run-pickup",
+        )
+        raw_items = preview.get("items")
+        if not isinstance(raw_items, list):
+            return {**base, "status": "unavailable", "reason": "preview-items-invalid"}
+        selected = [
+            {"lesson": _bounded_lesson(item["lesson"])}
+            for item in raw_items[: len(_LESSON_SECTIONS)]
+            if isinstance(item, dict)
+            and isinstance(item.get("lesson"), str)
+            and item["lesson"].strip()
+        ]
+    except (KeyError, OSError, TypeError, UnicodeError, ValueError) as exc:
+        return {**base, "status": "unavailable", "reason": type(exc).__name__}
+    if not selected:
+        return {**base, "status": "unavailable", "reason": "projection-empty"}
+    return {**base, "status": "selected", "items": selected, "item_count": len(selected)}
+
+
+def _read_lesson_projection(repo_root: Path) -> dict[str, Any]:
+    """Read one bounded, advisory digest or ledger preview without writing state."""
+    try:
+        output_dir = _retro_paths.retro_output_dir(repo_root)
+        summary_path = _retro_paths.retro_summary_path(repo_root)
+    except (FileNotFoundError, KeyError, OSError, TypeError, ValueError):
+        output_dir = repo_root / "charness-artifacts/retro"
+        summary_path = output_dir / "recent-lessons.md"
+    if summary_path is None:
+        return _read_lesson_preview(repo_root, output_dir)
+    return _read_lesson_digest(summary_path, repo_root)
 
 
 def _resolve_repository(repo_root: Path, adapter: dict[str, Any], runtime: Any) -> dict[str, str]:

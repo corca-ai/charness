@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -219,6 +220,58 @@ def test_missing_lesson_projection_is_advisory(tmp_path: Path) -> None:
     result = pickup._read_lesson_projection(tmp_path)
 
     assert result["status"] == "unavailable"
+
+
+def test_seeded_digest_adapter_keeps_the_existing_pickup_projection(tmp_path: Path) -> None:
+    (tmp_path / ".agents").mkdir(parents=True)
+    (tmp_path / ".agents" / "retro-adapter.yaml").write_text(
+        "version: 1\nrepo: consumer\nsummary_path: docs/lessons.md\n",
+        encoding="utf-8",
+    )
+    digest = tmp_path / "docs" / "lessons.md"
+    digest.parent.mkdir(parents=True)
+    digest.write_text(
+        "# Recent Lessons\n\n"
+        "## Current Focus\n\n- configured current focus\n\n"
+        "## Repeat Traps\n\n- configured repeat trap\n\n"
+        "## Next-Time Checklist\n\n- configured next step\n",
+        encoding="utf-8",
+    )
+
+    result = pickup._read_lesson_projection(tmp_path)
+
+    assert result == {
+        "source": "docs/lessons.md",
+        "selection": "first-item-per-section",
+        "status": "selected",
+        "items": [
+            {"section": "Current Focus", "lesson": "configured current focus"},
+            {"section": "Repeat Traps", "lesson": "configured repeat trap"},
+            {"section": "Next-Time Checklist", "lesson": "configured next step"},
+        ],
+        "item_count": 3,
+    }
+
+
+def test_ledger_only_adapter_reads_the_bounded_selection_preview(tmp_path: Path) -> None:
+    (tmp_path / ".agents").mkdir(parents=True)
+    (tmp_path / ".agents" / "retro-adapter.yaml").write_text(
+        "version: 1\nrepo: consumer\nsummary_path: null\n",
+        encoding="utf-8",
+    )
+    shutil.copytree(
+        ROOT / "charness-artifacts" / "retro",
+        tmp_path / "charness-artifacts" / "retro",
+    )
+
+    result = pickup._read_lesson_projection(tmp_path)
+
+    assert result["source"] == "charness-artifacts/retro/lesson-selection-index.json"
+    assert result["selection"] == "bounded-ledger-preview"
+    assert result["status"] == "selected"
+    assert result["item_count"] == len(pickup._LESSON_SECTIONS)
+    assert all(len(item["lesson"]) <= pickup._LESSON_MAX_CHARS for item in result["items"])
+    assert not (tmp_path / "charness-artifacts" / "retro" / "recent-lessons.md").exists()
 
 
 def test_pickup_refuses_closed_parent_before_binding_or_mutation(

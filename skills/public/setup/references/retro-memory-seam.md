@@ -6,12 +6,13 @@ chat-only retros.
 ## Goal
 
 Give future sessions one stable place to read the latest recurring traps without
-forcing a full retro every time.
+forcing a full retro every time. A compact Markdown digest is optional; a repo
+that keeps its ledger as the sole lesson surface may declare `summary_path: null`.
 
 ## Seeded Files
 
 - `<repo-root>/.agents/retro-adapter.yaml`
-- `<repo-root>/charness-artifacts/retro/recent-lessons.md`
+- `<repo-root>/charness-artifacts/retro/recent-lessons.md` (optional digest)
 
 ## Preferred Path
 
@@ -26,9 +27,10 @@ This seeds:
 - `summary_path: charness-artifacts/retro/recent-lessons.md`
 - empty `evidence_paths` and `metrics_commands` that the repo can tighten later
 
-The lesson ledger remains a separate optional memory/selection surface. Setup does
-not emit session receipts, inject session context, or create a retro-disposition
-continuity obligation.
+The lesson ledger remains a separate optional memory/selection surface. A repo
+that keeps the ledger as its only lesson surface may declare `summary_path: null`.
+Setup does not emit session receipts, inject session context, or create a
+retro-disposition continuity obligation.
 
 ## Guardrails
 

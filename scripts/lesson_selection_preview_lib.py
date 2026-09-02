@@ -30,7 +30,9 @@ def _fail(message: str) -> None:
     raise ValueError(f"lesson selection preview invalid: {message}")
 
 
-def _load_validated_ledger(repo_root: Path, output_dir: Path, summary_path: Path) -> dict[str, Any]:
+def _load_validated_ledger(
+    repo_root: Path, output_dir: Path, summary_path: Path | None
+) -> dict[str, Any]:
     validate_lesson_ledger(repo_root=repo_root, output_dir=output_dir, summary_path=summary_path)
     payload = json.loads(lesson_ledger_path(output_dir).read_text(encoding="utf-8"))
     if not isinstance(payload, dict) or not isinstance(payload.get("lessons"), dict):
@@ -121,19 +123,27 @@ def _shuffled_items(seed: str, rows: list[dict[str, Any]]) -> list[dict[str, str
         return digest, row["lesson_id"]
 
     return [
-        {"lesson_id": row["lesson_id"], "lesson": row["lesson"], "latest_source_path": row["latest_source_path"]}
+        {
+            "lesson_id": row["lesson_id"],
+            "lesson": row["lesson"],
+            "latest_source_path": row["latest_source_path"],
+        }
         for row in sorted(rows, key=key)
     ]
 
 
-def build_lesson_selection_preview(*, repo_root: Path, output_dir: Path, summary_path: Path, seed: str) -> dict[str, Any]:
+def build_lesson_selection_preview(
+    *, repo_root: Path, output_dir: Path, summary_path: Path | None, seed: str
+) -> dict[str, Any]:
     """Return a flat, deterministic preview without recording a shown set."""
     if not isinstance(seed, str) or not seed:
         _fail("seed must be a non-empty string")
     check_lesson_selection_index(repo_root, output_dir, summary_path)
     ledger = _load_validated_ledger(repo_root, output_dir, summary_path)
     rows = _candidate_rows(
-        build_lesson_selection_index(repo_root=repo_root, output_dir=output_dir, summary_path=summary_path),
+        build_lesson_selection_index(
+            repo_root=repo_root, output_dir=output_dir, summary_path=summary_path
+        ),
         ledger["lessons"],
     )
     selected_ids: set[str] = set()

@@ -20,7 +20,7 @@ def _build(seed: str = "stable-preview-seed") -> dict:
     return preview.build_lesson_selection_preview(
         repo_root=ROOT,
         output_dir=RETRO_DIR,
-        summary_path=RETRO_DIR / "recent-lessons.md",
+        summary_path=None,
         seed=seed,
     )
 
@@ -97,7 +97,7 @@ def test_preview_uses_only_active_first_nine_and_real_archive_slot(monkeypatch) 
     result = preview.build_lesson_selection_preview(
         repo_root=ROOT,
         output_dir=RETRO_DIR,
-        summary_path=RETRO_DIR / "recent-lessons.md",
+        summary_path=None,
         seed="archive-proof",
     )
 
@@ -209,7 +209,7 @@ def test_a_legacy_schema_consumer_can_preview_without_its_ledger_changing(tmp_pa
     output_dir = tmp_path / "charness-artifacts" / "retro"
     (tmp_path / ".agents").mkdir(parents=True)
     (tmp_path / ".agents" / "retro-adapter.yaml").write_text(
-        "version: 1\nrepo: consumer\n", encoding="utf-8"
+        "version: 1\nrepo: consumer\nsummary_path: null\n", encoding="utf-8"
     )
     shutil.copytree(RETRO_DIR, output_dir)
     result = run_index_builder(
@@ -229,7 +229,7 @@ def test_a_legacy_schema_consumer_can_preview_without_its_ledger_changing(tmp_pa
     rendered = preview.build_lesson_selection_preview(
         repo_root=tmp_path,
         output_dir=output_dir,
-        summary_path=output_dir / "recent-lessons.md",
+        summary_path=None,
         seed="probe",
     )
 
