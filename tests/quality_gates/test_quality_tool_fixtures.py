@@ -23,7 +23,7 @@ from tests.script_loader import load_script_module
 
 from .support import ROOT, run_script
 
-SCRIPT = ROOT / "scripts" / "check_quality_tool_fixtures.py"
+SCRIPT = ROOT / "tools" / "check_quality_tool_fixtures.py"
 EMPTY_SHA256 = hashlib.sha256(b"").hexdigest()
 RECORD = {
     "tool": "awiki",
@@ -61,7 +61,8 @@ def test_the_quality_runner_queues_this_gate_in_the_default_battery() -> None:
     assert [row["command"] for row in matches] == [
         [
             "python3",
-            "scripts/check_quality_tool_fixtures.py",
+            "-m",
+            "tools.check_quality_tool_fixtures",
             "--repo-root",
             "$REPO_ROOT",
         ]
@@ -243,7 +244,7 @@ def test_containment_is_exercised_in_process(tmp_path: Path) -> None:
     """
     module = load_script_module(
         "check_quality_tool_fixtures_under_test",
-        ROOT / "scripts" / "check_quality_tool_fixtures.py",
+        ROOT / "tools" / "check_quality_tool_fixtures.py",
     )
     fixtures = tmp_path / "charness-artifacts" / "quality" / "fixtures"
     fixtures.mkdir(parents=True)
@@ -348,7 +349,7 @@ def test_a_refused_comparison_is_never_counted_as_one(tmp_path: Path) -> None:
     report."""
     module = load_script_module(
         "check_quality_tool_fixtures_compare_count",
-        ROOT / "scripts" / "check_quality_tool_fixtures.py",
+        ROOT / "tools" / "check_quality_tool_fixtures.py",
     )
     directory = _fixture_dir(tmp_path)
     (directory / "out.txt").write_text("captured\n", encoding="utf-8")

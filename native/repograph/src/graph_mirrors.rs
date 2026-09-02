@@ -97,12 +97,12 @@ pub const MIRROR_RULES: &[MirrorRuleSpec] = &[
         subtractive: false,
     },
     MirrorRuleSpec {
-        id: "scripts-subtract-source-only",
+        id: "scripts-copy",
         source: "scripts/*",
         destination: "plugins/charness/scripts/*",
-        transform: MirrorTransform::FilteredCopy,
+        transform: MirrorTransform::Verbatim,
         content_transformed: false,
-        subtractive: true,
+        subtractive: false,
     },
     MirrorRuleSpec {
         id: "runtime-bootstrap-shim",
@@ -145,12 +145,6 @@ pub const MIRROR_RULES: &[MirrorRuleSpec] = &[
         content_transformed: false,
         subtractive: false,
     },
-];
-
-pub const SOURCE_ONLY_PLUGIN_SCRIPTS: &[&str] = &[
-    "suggest_public_skill_validation.py",
-    "validate_public_skill_dogfood.py",
-    "validate_public_skill_validation.py",
 ];
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -386,14 +380,11 @@ fn map_source(path: &str, manifest: &MirrorManifest) -> Option<MirrorPair> {
         ));
     }
     if let Some(name) = path.strip_prefix("scripts/") {
-        if SOURCE_ONLY_PLUGIN_SCRIPTS.contains(&name) {
-            return None;
-        }
         return Some(mapped(
-            "scripts-subtract-source-only",
+            "scripts-copy",
             Some(path),
             format!("{plugin}/scripts/{name}"),
-            MirrorTransform::FilteredCopy,
+            MirrorTransform::Verbatim,
             false,
         ));
     }
@@ -473,8 +464,7 @@ fn is_intentionally_excluded(path: &str, manifest: &MirrorManifest) -> bool {
         return skill_id == "generated"
             || manifest.upstream_consumed_support_ids.contains(skill_id);
     }
-    path.strip_prefix("scripts/")
-        .is_some_and(|name| SOURCE_ONLY_PLUGIN_SCRIPTS.contains(&name))
+    false
 }
 
 fn unmodeled(path: &str, detail: &str) -> Unestablished {
@@ -497,7 +487,7 @@ mod tests {
             "README.md".to_string(),
             "skills/public/demo/SKILL.md".to_string(),
             "scripts/helper.py".to_string(),
-            "scripts/suggest_public_skill_validation.py".to_string(),
+            "tools/suggest_public_skill_validation.py".to_string(),
         ];
         let snapshot = selected.iter().cloned().collect();
         let result = derive_mirrors(&selected, &snapshot, &manifest);
@@ -506,12 +496,15 @@ mod tests {
                 && pair.destination == "plugins/charness/skills/demo/SKILL.md"
         }));
         assert!(result.pairs.iter().any(|pair| {
-            pair.rule_id == "scripts-subtract-source-only"
-                && pair.source.as_deref() == Some("scripts/helper.py")
+            pair.rule_id == "scripts-copy" && pair.source.as_deref() == Some("scripts/helper.py")
         }));
-        assert!(!result.pairs.iter().any(
-            |pair| pair.source.as_deref() == Some("scripts/suggest_public_skill_validation.py")
-        ));
+        assert!(
+            !result
+                .pairs
+                .iter()
+                .any(|pair| pair.source.as_deref()
+                    == Some("tools/suggest_public_skill_validation.py"))
+        );
     }
 
     #[test]

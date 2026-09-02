@@ -8,8 +8,8 @@ from pathlib import Path
 import pytest
 import yaml
 
-from scripts import validate_quality_reference_catalog as catalog_validator
-from scripts.validate_quality_reference_catalog import (
+from tools import validate_quality_reference_catalog as catalog_validator
+from tools.validate_quality_reference_catalog import (
     ValidationError,
     validate_quality_reference_catalog,
 )
@@ -65,6 +65,7 @@ def test_quality_run_plan_main_emits_yaml_detail_in_process(
     assert PLAN.main() == 0
     assert yaml.safe_load(capsys.readouterr().out) == plan
 
+
 @pytest.mark.parametrize(
     ("loader_name", "adjacent_name"),
     [
@@ -82,9 +83,7 @@ def test_quality_run_plan_fails_loudly_when_adjacent_module_is_not_loadable(
             return None
         return real_spec_from_file_location(name, path)
 
-    monkeypatch.setattr(
-        PLAN.importlib.util, "spec_from_file_location", missing_adjacent_spec
-    )
+    monkeypatch.setattr(PLAN.importlib.util, "spec_from_file_location", missing_adjacent_spec)
 
     with pytest.raises(ImportError, match=rf"{adjacent_name} not loadable beside"):
         getattr(PLAN, loader_name)()
@@ -115,7 +114,8 @@ def test_quality_run_plan_excludes_skill_refs_when_repo_has_no_skills(tmp_path: 
     assert any(
         read["path"] == "references/quality-lenses.md"
         and read["why"]
-        and read["size_bytes"] == (ROOT / "skills/public/quality/references/quality-lenses.md").stat().st_size
+        and read["size_bytes"]
+        == (ROOT / "skills/public/quality/references/quality-lenses.md").stat().st_size
         for read in reads
     )
     assert plan["declaration_lifecycle"]["status"] == "not-configured"
@@ -224,12 +224,16 @@ def test_quality_run_plan_routes_declared_commands_and_surfaces_without_claiming
         "support_skill",
         "AGENTS.md",
     }
-    assert next(row for row in lifecycle["surfaces"] if row["surface"] == "web_app")[
-        "routing_state"
-    ] == "partial"
-    assert next(row for row in lifecycle["surfaces"] if row["surface"] == "support_skill")[
-        "routing_state"
-    ] == "routed"
+    assert (
+        next(row for row in lifecycle["surfaces"] if row["surface"] == "web_app")["routing_state"]
+        == "partial"
+    )
+    assert (
+        next(row for row in lifecycle["surfaces"] if row["surface"] == "support_skill")[
+            "routing_state"
+        ]
+        == "routed"
+    )
     packet_commands = {packet["command"] for packet in plan["gate_packets"]}
     assert "npm run quality:report" in packet_commands
     assert "npm audit" in packet_commands
@@ -239,9 +243,7 @@ def test_quality_run_plan_routes_declared_commands_and_surfaces_without_claiming
     assert any("declared-only" in barrier for barrier in plan["phase_barriers"])
     available_packet_ids = {packet["id"] for packet in plan["gate_packets"]}
     referenced_packet_ids = {
-        packet_id
-        for row in lifecycle["surfaces"]
-        for packet_id in row.get("packet_ids", [])
+        packet_id for row in lifecycle["surfaces"] for packet_id in row.get("packet_ids", [])
     }
     assert referenced_packet_ids <= available_packet_ids
 
@@ -258,9 +260,7 @@ def test_quality_run_plan_surface_reuses_reconciled_catalog_packet_id(
         raw, [{"id": "existing", "command": "same-command"}]
     )
 
-    surfaces, _surface_packets = lifecycle_module._surface_rows(
-        tmp_path, raw, [], command_rows
-    )
+    surfaces, _surface_packets = lifecycle_module._surface_rows(tmp_path, raw, [], command_rows)
 
     assert packets == []
     assert command_rows[0]["packet_id"] == "existing"
@@ -337,9 +337,7 @@ def test_quality_run_plan_does_not_route_commands_from_invalid_adapter(tmp_path:
     lifecycle = plan["declaration_lifecycle"]
     assert lifecycle["status"] == "invalid"
     assert lifecycle["adapter"]["errors"] == ["version must be 1"]
-    assert "destructive-command" not in {
-        packet["command"] for packet in plan["gate_packets"]
-    }
+    assert "destructive-command" not in {packet["command"] for packet in plan["gate_packets"]}
 
 
 def test_quality_run_plan_resolves_target_skill_for_structural_review(tmp_path: Path) -> None:
@@ -420,13 +418,13 @@ def test_quality_run_plan_lists_all_on_demand_reference_triggers(tmp_path: Path)
     # decays into the thing it replaced.
     #
     # Deliberately NOT "every on-demand read has a trigger": that cannot fail here, because
-    # scripts/validate_quality_reference_catalog.py:65-66 already raises on an on-demand
+    # tools/validate_quality_reference_catalog.py:65-66 already raises on an on-demand
     # reference without a `trigger`, and it is queued at run-quality.sh:721.
     # 2026-09-02: 35 -> 34 when #768 retired references/boundary-bypass-ratchet.md.
     assert len(triggers) >= 34
     # This one CAN fail, and nothing else holds it. The map is keyed by path
     # (plan_quality_run.py:304-308) while the catalog validator assigns `paths[path] = role`
-    # (scripts/validate_quality_reference_catalog.py:67) with no duplicate check -- so two entries
+    # (tools/validate_quality_reference_catalog.py:67) with no duplicate check -- so two entries
     # sharing a path pass validation and then collapse into one key here. Exact under additions.
     assert len(triggers) == len(plan["on_demand_reads"])
     assert "references/adapter-contract.md" in triggers
@@ -443,8 +441,7 @@ def test_quality_run_plan_lists_all_on_demand_reference_triggers(tmp_path: Path)
     assert "references/maintainer-local-enforcement.md" in triggers
     assert "references/inventory-dispatch.md" in triggers
     assert any(
-        read["path"] == "references/dup-ratchet.md"
-        and "scanner skew" in read["trigger"]
+        read["path"] == "references/dup-ratchet.md" and "scanner skew" in read["trigger"]
         for read in plan["on_demand_reads"]
     )
 
@@ -494,7 +491,7 @@ def test_quality_run_plan_brief_carries_demoted_primer_discipline(tmp_path: Path
     assert all(area.get("detail_refs") for area in idp["areas"])
 
 
-def test_quality_run_plan_brief_standing_maintainer_prompt_without_final_gate(tmp_path: Path) -> None:
+def test_human_prompt_without_final_gate(tmp_path: Path) -> None:
     repo = tmp_path / "app"
     repo.mkdir()
 
@@ -546,12 +543,14 @@ def test_quality_run_plan_human_output_lists_reference_and_gate_packets() -> Non
                         "packet_id": "skill-ergonomics",
                     }
                 ],
-                "gaps": [
-                    {"kind": "preset_requirement_missing", "detail": "typescript-quality"}
-                ],
+                "gaps": [{"kind": "preset_requirement_missing", "detail": "typescript-quality"}],
             },
             "required_reads": [
-                {"path": "references/quality-lenses.md", "why": "judge the report", "size_bytes": 42},
+                {
+                    "path": "references/quality-lenses.md",
+                    "why": "judge the report",
+                    "size_bytes": 42,
+                },
                 {
                     "path": "references/missing.md",
                     "why": "show an unavailable measurement",
@@ -618,10 +617,7 @@ def test_quality_run_plan_human_output_lists_reference_and_gate_packets() -> Non
     ) in text
     assert "command review_commands: routed / not-run / npm run ui" in text
     assert "surface web_app: partial / adapter-review-1" in text
-    assert (
-        "skill path skills/public/quality/SKILL.md: resolved / skill-ergonomics"
-        in text
-    )
+    assert "skill path skills/public/quality/SKILL.md: resolved / skill-ergonomics" in text
     assert "GAP preset_requirement_missing: typescript-quality" in text
     assert "gate states: healthy, weak, missing, deferred" in text
     assert "weak also = costly or redundant" in text
@@ -635,7 +631,7 @@ def test_quality_run_plan_human_output_lists_reference_and_gate_packets() -> Non
     assert "- on_demand_reads: open only from concrete findings" in text
 
 
-def test_quality_run_plan_yaml_loader_fails_loudly_without_repo_adapter(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_yaml_loader_requires_repo_adapter(monkeypatch: pytest.MonkeyPatch) -> None:
     class NoAdapterAncestor:
         def __truediv__(self, _part: str) -> NoAdapterAncestor:
             return self
@@ -707,9 +703,18 @@ def test_quality_run_plan_yaml_emitter_fails_loudly_without_renderer(
     [
         ({}, "`references` must be a list"),
         ({"references": ["bad"]}, "reference #1 must be a mapping"),
-        ({"references": [{"path": "references/nope.txt", "role": "required-primer"}]}, "needs a markdown `path`"),
-        ({"references": [{"path": "references/nope.md", "role": "mystery"}]}, "unknown role `mystery`"),
-        ({"references": [{"path": "references/nope.md", "role": "required-primer"}]}, "needs `why`"),
+        (
+            {"references": [{"path": "references/nope.txt", "role": "required-primer"}]},
+            "needs a markdown `path`",
+        ),
+        (
+            {"references": [{"path": "references/nope.md", "role": "mystery"}]},
+            "unknown role `mystery`",
+        ),
+        (
+            {"references": [{"path": "references/nope.md", "role": "required-primer"}]},
+            "needs `why`",
+        ),
         ({"references": [{"path": "references/nope.md", "role": "on-demand"}]}, "needs `trigger`"),
     ],
 )
@@ -745,7 +750,9 @@ def test_quality_reference_catalog_cli_main_reports_success(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    monkeypatch.setattr(sys, "argv", ["validate_quality_reference_catalog.py", "--repo-root", str(ROOT)])
+    monkeypatch.setattr(
+        sys, "argv", ["validate_quality_reference_catalog.py", "--repo-root", str(ROOT)]
+    )
 
     assert catalog_validator.main() == 0
     assert "Validated quality reference catalog/index parity." in capsys.readouterr().out
@@ -763,7 +770,9 @@ def test_quality_reference_catalog_script_entry_reports_validation_error(
     )
 
     with pytest.raises(SystemExit) as exc_info:
-        runpy.run_path(str(ROOT / "scripts" / "validate_quality_reference_catalog.py"), run_name="__main__")
+        runpy.run_path(
+            str(ROOT / "tools" / "validate_quality_reference_catalog.py"), run_name="__main__"
+        )
 
     assert exc_info.value.code == 1
     assert "missing quality reference index" in capsys.readouterr().err
@@ -820,7 +829,9 @@ def test_quality_reference_catalog_rejects_missing_referenced_file(tmp_path: Pat
         validate_quality_reference_catalog(tmp_path)
 
 
-def test_quality_reference_catalog_validator_rejects_index_only_review_detail(tmp_path: Path) -> None:
+def test_quality_reference_catalog_validator_rejects_index_only_review_detail(
+    tmp_path: Path,
+) -> None:
     repo = tmp_path / "repo"
     quality_refs = repo / "skills" / "public" / "quality" / "references"
     quality_refs.mkdir(parents=True)

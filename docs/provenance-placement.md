@@ -55,7 +55,7 @@ The policy does **not** blanket-strip refs. The doc classes, strictest first:
   Provenance for exported guidance lives in the commit message and the
   goal/critique/retro record, never in the package. Skill packages are
   enforced blocking by `validate_skill_ergonomics`; the remaining exported
-  surfaces are scanned by the advisory [`check_public_doc_coupling.py`](../scripts/check_public_doc_coupling.py)
+  surfaces are scanned by the advisory [`check_public_doc_coupling.py`](../tools/check_public_doc_coupling.py)
   (`check-public-doc-coupling` in the quality gate). External tool versions
   are not self-version pins and stay legitimate.
 - **Standing-rule docs** — their job is to state timeless rules/contracts (the

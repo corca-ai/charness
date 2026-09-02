@@ -90,7 +90,9 @@ def find_coupling(repo_root: Path, *, require_git: bool = False) -> list[dict[st
     lib = _load_text_quality_lib()
 
     def anchor_match(line: str) -> bool:
-        return bool(lib.ISSUE_ANCHOR_RE.search(line)) and not lib.is_allowed_issue_anchor_context(line)
+        return bool(lib.ISSUE_ANCHOR_RE.search(line)) and not lib.is_allowed_issue_anchor_context(
+            line
+        )
 
     findings = _line_findings(
         repo_root, ANCHOR_PATTERNS, "issue_anchor", anchor_match, require_git=require_git

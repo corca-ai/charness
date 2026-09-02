@@ -9,9 +9,9 @@ import yaml
 
 from .support import run_script
 
-coupling_gate = importlib.import_module("scripts.check_public_doc_coupling")
+coupling_gate = importlib.import_module("tools.check_public_doc_coupling")
 
-SCRIPT = "scripts/check_public_doc_coupling.py"
+SCRIPT = "tools/check_public_doc_coupling.py"
 
 
 def run_public_doc_coupling(monkeypatch, capsys, *args: str) -> SimpleNamespace:
@@ -41,7 +41,9 @@ def test_clean_tree_reports_clean_and_exits_zero(tmp_path: Path) -> None:
     assert "exported reusable guidance is clean" in payload["advisory"]
 
 
-def test_issue_anchor_in_shared_reference_is_advisory_flagged(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_issue_anchor_in_shared_reference_is_advisory_flagged(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = _seed_repo(tmp_path)
     (repo / "skills" / "shared" / "references" / "coupled.md").write_text(
         "This rule exists because of (#999) and stays portable.\n", encoding="utf-8"
@@ -55,7 +57,9 @@ def test_issue_anchor_in_shared_reference_is_advisory_flagged(tmp_path: Path, mo
     ]
 
 
-def test_self_version_pin_flagged_but_external_versions_pass(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_self_version_pin_flagged_but_external_versions_pass(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = _seed_repo(tmp_path)
     (repo / "skills" / "public" / "demo" / "references" / "pins.md").write_text(
         "Since v0.41.0 the helper exists.\n"

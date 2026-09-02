@@ -1,4 +1,5 @@
 """Reconcile quality-adapter declarations with planner routing, without running them."""
+
 from __future__ import annotations
 
 import importlib
@@ -14,9 +15,12 @@ COMMAND_FIELDS = (
     "review_commands",
     "security_commands",
 )
+
+
 def _repo_module(name: str):
     for ancestor in Path(__file__).resolve().parents:
-        if (ancestor / "scripts" / f"{name.rsplit('.', 1)[-1]}.py").is_file():
+        module_root = name.split(".", 1)[0] if "." in name else "scripts"
+        if (ancestor / module_root / f"{name.rsplit('.', 1)[-1]}.py").is_file():
             root = str(ancestor)
             if root not in sys.path:
                 sys.path.insert(0, root)
@@ -41,7 +45,9 @@ def _preset_contract(repo_root: Path, preset: object) -> dict[str, Any]:
     return _PRESET_RECONCILIATION.preset_contract(repo_root, preset, _repo_module)
 
 
-def _preset_rows(repo_root: Path, raw: dict[str, Any]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+def _preset_rows(
+    repo_root: Path, raw: dict[str, Any]
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     return _PRESET_RECONCILIATION.preset_rows(repo_root, raw, _repo_module)
 
 
@@ -49,7 +55,9 @@ def _load_catalog_applicability():
     path = Path(__file__).resolve().parent / "quality_catalog_gate_applicability.py"
     spec = importlib.util.spec_from_file_location("quality_catalog_gate_applicability", path)
     if spec is None or spec.loader is None:
-        raise ImportError("quality_catalog_gate_applicability.py not loadable beside quality_declaration_lifecycle.py")
+        raise ImportError(
+            "quality_catalog_gate_applicability.py not loadable beside quality_declaration_lifecycle.py"
+        )
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -59,7 +67,9 @@ def _load_skill_scope():
     path = Path(__file__).resolve().parent / "quality_skill_scope.py"
     spec = importlib.util.spec_from_file_location("quality_skill_scope", path)
     if spec is None or spec.loader is None:
-        raise ImportError("quality_skill_scope.py not loadable beside quality_declaration_lifecycle.py")
+        raise ImportError(
+            "quality_skill_scope.py not loadable beside quality_declaration_lifecycle.py"
+        )
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -147,7 +157,11 @@ def _surface_rows(
     rows: list[dict[str, Any]] = []
     packets: list[dict[str, Any]] = []
     probes = raw.get("cli_skill_surface_probe_commands")
-    probe_commands = [item for item in probes if isinstance(item, str) and item] if isinstance(probes, list) else []
+    probe_commands = (
+        [item for item in probes if isinstance(item, str) and item]
+        if isinstance(probes, list)
+        else []
+    )
     for index, command in enumerate(probe_commands, 1):
         packets.append(
             _packet(
@@ -190,7 +204,9 @@ def _surface_rows(
         )
 
     docs = raw.get("canonical_markdown_surfaces")
-    doc_paths = [item for item in docs if isinstance(item, str) and item] if isinstance(docs, list) else []
+    doc_paths = (
+        [item for item in docs if isinstance(item, str) and item] if isinstance(docs, list) else []
+    )
     if doc_paths:
         command = 'python3 "$SKILL_DIR/scripts/inventory_entrypoint_docs_ergonomics.py" --repo-root . --summary'
         command += "".join(f" --doc-path {shlex.quote(path)}" for path in doc_paths)
@@ -252,7 +268,10 @@ def build_declaration_lifecycle(
     if adapter.get("valid") is not True:
         report["status"] = "invalid"
         report["gaps"].append(
-            {"kind": "invalid_adapter", "detail": "repair adapter errors before trusting declared routes"}
+            {
+                "kind": "invalid_adapter",
+                "detail": "repair adapter errors before trusting declared routes",
+            }
         )
         return report, []
     path = adapter.get("path")
@@ -265,8 +284,8 @@ def build_declaration_lifecycle(
     report["gaps"].extend(preset_gaps)
 
     if adapter.get("found"):
-        applicable_catalog_gates, unavailable_catalog_gates = _CATALOG_APPLICABILITY.applicable_catalog_gates(
-            repo_root, raw, catalog_gates
+        applicable_catalog_gates, unavailable_catalog_gates = (
+            _CATALOG_APPLICABILITY.applicable_catalog_gates(repo_root, raw, catalog_gates)
         )
     else:
         applicable_catalog_gates, unavailable_catalog_gates = catalog_gates, []
@@ -280,9 +299,7 @@ def build_declaration_lifecycle(
         )
 
     declared_skill_paths = _declared_skill_paths(repo_root, raw)
-    skills, skill_scope_source = _effective_skill_paths(
-        skills, declared_skill_paths, raw
-    )
+    skills, skill_scope_source = _effective_skill_paths(skills, declared_skill_paths, raw)
     report["skill_scope_source"] = skill_scope_source
     report["skills"] = [
         {
@@ -294,15 +311,16 @@ def build_declaration_lifecycle(
         for path in skills
     ]
     command_rows, command_packets = _declared_commands(raw, applicable_catalog_gates)
-    surface_rows, surface_packets = _surface_rows(
-        repo_root, raw, skills, command_rows
-    )
+    surface_rows, surface_packets = _surface_rows(repo_root, raw, skills, command_rows)
     report["commands"] = command_rows
     report["surfaces"] = surface_rows
     report["declared_skill_paths"] = declared_skill_paths
     for row in [*surface_rows, *report["declared_skill_paths"]]:
         routing_state = row.get("routing_state")
-        if routing_state in {"partial", "unreachable"} or row.get("target_state") in {"unreachable", "missing"}:
+        if routing_state in {"partial", "unreachable"} or row.get("target_state") in {
+            "unreachable",
+            "missing",
+        }:
             report["gaps"].append(
                 {
                     "kind": (
@@ -316,8 +334,6 @@ def build_declaration_lifecycle(
     if report["gaps"]:
         report["status"] = "action-required"
     report["applicable_catalog_gate_ids"] = [
-        str(gate["id"])
-        for gate in applicable_catalog_gates
-        if isinstance(gate.get("id"), str)
+        str(gate["id"]) for gate in applicable_catalog_gates if isinstance(gate.get("id"), str)
     ]
     return report, [*command_packets, *surface_packets]

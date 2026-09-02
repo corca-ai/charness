@@ -10,9 +10,9 @@ from pathlib import Path
 import pytest
 
 from scripts import validate_adapters as VALIDATE_ADAPTERS
-from scripts import validate_presets as VALIDATE_PRESETS
-from scripts import validate_profiles as VALIDATE_PROFILES
 from tests.quality_gates.repo_shapes import install_committed_repo
+from tools import validate_presets as VALIDATE_PRESETS
+from tools import validate_profiles as VALIDATE_PROFILES
 
 from .support import run_script
 
@@ -172,7 +172,7 @@ def test_validate_presets_ignores_gitignored_files(tmp_path: Path) -> None:
         "# Missing frontmatter on ignored file.\n", encoding="utf-8"
     )
 
-    result = run_script("scripts/validate_presets.py", "--repo-root", str(repo))
+    result = run_script("tools/validate_presets.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 
 
@@ -280,7 +280,7 @@ def test_validate_profiles_rejects_unknown_smoke_scenario(tmp_path: Path) -> Non
         ),
         encoding="utf-8",
     )
-    result = run_script("scripts/validate_profiles.py", "--repo-root", str(repo))
+    result = run_script("tools/validate_profiles.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "unknown eval scenario `not-a-real-scenario`" in result.stderr
 
@@ -308,7 +308,7 @@ def test_validate_profiles_rejects_missing_extends_reference(tmp_path: Path) -> 
         ),
         encoding="utf-8",
     )
-    result = run_script("scripts/validate_profiles.py", "--repo-root", str(repo))
+    result = run_script("tools/validate_profiles.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "extends[]` references missing artifact `missing-base`" in result.stderr
 
@@ -338,7 +338,7 @@ def test_validate_profiles_rejects_unknown_top_level_field(tmp_path: Path) -> No
         ),
         encoding="utf-8",
     )
-    result = run_script("scripts/validate_profiles.py", "--repo-root", str(repo))
+    result = run_script("tools/validate_profiles.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "Additional properties are not allowed" in result.stderr
 
@@ -370,7 +370,7 @@ def test_validate_profiles_ignores_gitignored_profiles(tmp_path: Path) -> None:
         '{"profile_id":"generated-bad"}\n', encoding="utf-8"
     )
 
-    result = run_script("scripts/validate_profiles.py", "--repo-root", str(repo))
+    result = run_script("tools/validate_profiles.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 
 

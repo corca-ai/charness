@@ -11,7 +11,7 @@ Profiles define default bundles. They are not separate skills.
 
 **No profile instances are checked in.** The schema and this contract are kept;
 the instances are not, because nothing consumes them. No runtime reads a profile
-to activate a bundle — [`validate_profiles.py`](../scripts/validate_profiles.py) only checks that referenced files
+to activate a bundle — the authoring repository's `<authoring-repo>/tools/validate_profiles.py` only checks that referenced files
 exist, so four instances (`constitutional`, `collaboration`,
 `engineering-quality`, `meta-builder`) shipped a declarative promise no code
 kept, while six public skills belonged to no profile and nothing noticed.

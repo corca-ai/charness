@@ -10,9 +10,13 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-_scripts_public_skill_dogfood_lib_module = import_repo_module(__file__, "scripts.public_skill_dogfood_lib")
+_scripts_public_skill_dogfood_lib_module = import_repo_module(
+    __file__, "scripts.public_skill_dogfood_lib"
+)
 DOGFOOD_PATH = _scripts_public_skill_dogfood_lib_module.DOGFOOD_PATH
-_scripts_public_skill_dogfood_validation_lib_module = import_repo_module(__file__, "scripts.public_skill_dogfood_validation_lib")
+_scripts_public_skill_dogfood_validation_lib_module = import_repo_module(
+    __file__, "tools.public_skill_dogfood_validation_lib"
+)
 ValidationError = _scripts_public_skill_dogfood_validation_lib_module.ValidationError
 load_registry = _scripts_public_skill_dogfood_validation_lib_module.load_registry
 validate_registry = _scripts_public_skill_dogfood_validation_lib_module.validate_registry

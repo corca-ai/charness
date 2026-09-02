@@ -21,7 +21,7 @@ from yaml_output import emit_yaml
 
 _ROOT = Path(__file__).resolve().parents[1]
 _LISTING = import_repo_module(__file__, "scripts.repo_file_listing")
-_SKILL_REFS = import_repo_module(__file__, "scripts.inventory_skill_script_references")
+_SKILL_REFS = import_repo_module(__file__, "tools.inventory_skill_script_references")
 _EXPORT = import_repo_module(__file__, "scripts.export_self_sufficiency_lib")
 
 NODE_GLOBS = (
@@ -252,11 +252,18 @@ def _text_targets(text: str, nodes: dict[str, Path]) -> set[str]:
         .replace("./tools/", "tools/")
         .replace("./skills/", "skills/")
     )
-    return {
+    targets = {
         target
         for token in _PATH_RE.findall(text)
         if (target := _path_target(token, nodes)) is not None
     }
+    for module in re.findall(
+        r"\b(?:python3|python)\s+-m\s+((?:scripts|tools)\.[A-Za-z0-9_]+)", text
+    ):
+        target = _module_target(module, nodes)
+        if target:
+            targets.add(target)
+    return targets
 
 
 def _relative_targets(source: str, text: str, nodes: dict[str, Path]) -> set[str]:
@@ -304,7 +311,11 @@ def _read_text(path: Path) -> str:
 def _seed_intrinsic_edges(nodes: dict[str, Path]) -> dict[str, set[str]]:
     edges: dict[str, set[str]] = defaultdict(set)
     for relative, path in nodes.items():
-        if relative.startswith("skills/"):
+        if relative == "tools/__init__.py":
+            # The empty package marker is required by the tools module carrier;
+            # it is not itself a runnable or referenceable gate.
+            edges[relative].add("surface")
+        elif relative.startswith("skills/"):
             edges[relative].add("skill")
         elif not relative.endswith((".py", ".sh")):
             edges[relative].add("surface")

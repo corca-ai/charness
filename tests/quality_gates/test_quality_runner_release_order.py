@@ -48,13 +48,13 @@ def _release_fixture(
         repo / "bin" / "python3",
         "#!/usr/bin/env bash\n"
         "set -euo pipefail\n"
-        "if [[ \"${1:-}\" == \"-m\" && \"${2:-}\" == \"pytest\" ]]; then\n"
+        'if [[ "${1:-}" == "-m" && "${2:-}" == "pytest" ]]; then\n'
         "  printf '%s\\n' pytest-release >> \"$ORDER_LOG\"\n"
-        "  if [[ \"${QUALITY_FAIL_LABEL:-}\" == \"pytest-release\" ]]; then exit 1; fi\n"
+        '  if [[ "${QUALITY_FAIL_LABEL:-}" == "pytest-release" ]]; then exit 1; fi\n'
         "  exit 0\n"
-        f"fi\nexec {shlex.quote(sys.executable)} \"$@\"\n",
+        f'fi\nexec {shlex.quote(sys.executable)} "$@"\n',
     )
-    write_executable(repo / "scripts" / "validate_skills.py", _append_event_script("validate-skills"))
+    write_executable(repo / "tools" / "validate_skills.py", _append_event_script("validate-skills"))
     write_executable(
         repo / "skills" / "public" / "quality" / "scripts" / "check_runtime_budget.py",
         _append_event_script("check-runtime-budget"),
@@ -232,9 +232,7 @@ def test_release_refuses_unknown_non_claim_label(
     assert "unsupported --non-claim label mutation" in result.stderr
 
 
-def test_release_refuses_a_label_filter(
-    tmp_path: Path, seeded_quality_runner_repo: Path
-) -> None:
+def test_release_refuses_a_label_filter(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
     repo, env, _event_log = _release_fixture(tmp_path, seeded_quality_runner_repo)
     env["CHARNESS_QUALITY_LABELS"] = "pytest-release"
 

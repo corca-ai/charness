@@ -10,7 +10,9 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-_scripts_public_skill_validation_lib_module = import_repo_module(__file__, "scripts.public_skill_validation_lib")
+_scripts_public_skill_validation_lib_module = import_repo_module(
+    __file__, "scripts.public_skill_validation_lib"
+)
 POLICY_PATH = _scripts_public_skill_validation_lib_module.POLICY_PATH
 ValidationError = _scripts_public_skill_validation_lib_module.ValidationError
 load_policy = _scripts_public_skill_validation_lib_module.load_policy
@@ -24,13 +26,19 @@ def validate_adapter_requirement(repo_root: Path, skill_id: str, *, required: bo
 
     if required:
         if not adapter_example.is_file():
-            raise ValidationError(f"{skill_root / 'SKILL.md'}: adapter-required skill is missing `adapter.example.yaml`")
+            raise ValidationError(
+                f"{skill_root / 'SKILL.md'}: adapter-required skill is missing `adapter.example.yaml`"
+            )
         if not resolve_script.is_file():
-            raise ValidationError(f"{skill_root / 'SKILL.md'}: adapter-required skill is missing `scripts/resolve_adapter.py`")
+            raise ValidationError(
+                f"{skill_root / 'SKILL.md'}: adapter-required skill is missing `scripts/resolve_adapter.py`"
+            )
         return
 
     if adapter_example.exists():
-        raise ValidationError(f"{skill_root / 'SKILL.md'}: adapter-free skill should not ship `adapter.example.yaml`")
+        raise ValidationError(
+            f"{skill_root / 'SKILL.md'}: adapter-free skill should not ship `adapter.example.yaml`"
+        )
     if resolve_script.exists():
         raise ValidationError(
             f"{skill_root / 'SKILL.md'}: adapter-free skill should not ship `scripts/resolve_adapter.py`"
@@ -63,7 +71,7 @@ if __name__ == "__main__":
         sys.exit(main())
     except ValidationError as exc:
         print(
-            f"{exc}\nRun `python3 scripts/suggest_public_skill_validation.py --repo-root .` for bucket choices.",
+            f"{exc}\nRun `python3 -m tools.suggest_public_skill_validation --repo-root .` for bucket choices.",
             file=sys.stderr,
         )
         sys.exit(1)

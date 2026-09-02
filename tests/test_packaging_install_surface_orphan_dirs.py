@@ -4,7 +4,7 @@ from pathlib import Path
 
 from runtime_bootstrap import import_repo_module
 
-_module = import_repo_module(__file__, "scripts.validate_packaging_install_surface")
+_module = import_repo_module(__file__, "tools.validate_packaging_install_surface")
 validate_exported_public_skills = _module.validate_exported_public_skills
 validate_exported_support_assets = _module.validate_exported_support_assets
 

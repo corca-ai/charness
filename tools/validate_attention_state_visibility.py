@@ -23,7 +23,7 @@ from typing import Any
 from yaml_output import emit_yaml
 
 DEFAULT_DECLARATION_PATH = "skills/public/quality/references/attention-state-visibility.json"
-DEFAULT_SCAN_ROOTS = ("scripts", "skills/public", "skills/shared", "skills/support")
+DEFAULT_SCAN_ROOTS = ("scripts", "tools", "skills/public", "skills/shared", "skills/support")
 PLUGIN_DECLARATION_PATH = "skills/quality/references/attention-state-visibility.json"
 ATTENTION_TERMS = (
     "no_adapter",
@@ -36,7 +36,7 @@ ATTENTION_TERMS = (
     "prose_review_status",
 )
 EXCLUDED_PATHS = {
-    "scripts/validate_attention_state_visibility.py",
+    "tools/validate_attention_state_visibility.py",
 }
 ALLOWED_VISIBILITY = {
     "artifact_visible",
@@ -115,7 +115,7 @@ def _is_status_value(value: str, term: str) -> bool:
             continue  # a phrase, not a state token
         value_parts = [part for part in _TOKEN_SPLIT.split(stripped) if part]
         for index in range(len(value_parts) - len(term_parts) + 1):
-            if value_parts[index:index + len(term_parts)] == term_parts:
+            if value_parts[index : index + len(term_parts)] == term_parts:
                 return True
     return False
 
@@ -134,7 +134,11 @@ def _docstring_nodes(tree: ast.AST) -> set[int]:
         if not body:
             continue
         first = body[0]
-        if isinstance(first, ast.Expr) and isinstance(first.value, ast.Constant) and isinstance(first.value.value, str):
+        if (
+            isinstance(first, ast.Expr)
+            and isinstance(first.value, ast.Constant)
+            and isinstance(first.value.value, str)
+        ):
             marked.add(id(first.value))
     return marked
 
@@ -147,7 +151,11 @@ def _string_constants(path: Path) -> list[str]:
     docstrings = _docstring_nodes(tree)
     values: list[str] = []
     for node in ast.walk(tree):
-        if isinstance(node, ast.Constant) and isinstance(node.value, str) and id(node) not in docstrings:
+        if (
+            isinstance(node, ast.Constant)
+            and isinstance(node.value, str)
+            and id(node) not in docstrings
+        ):
             values.append(node.value)
     return values
 
@@ -172,10 +180,12 @@ def _sibling_support_root(repo_root: Path) -> Path:
 def default_scan_roots(repo_root: Path) -> list[ScanRoot]:
     roots = [_scan_root(repo_root, Path("scripts"))]
     if (repo_root / "skills" / "public").is_dir() or (repo_root / "skills" / "support").is_dir():
-        roots.extend([
-            _scan_root(repo_root, Path("skills/public")),
-            _scan_root(repo_root, Path("skills/support")),
-        ])
+        roots.extend(
+            [
+                _scan_root(repo_root, Path("skills/public")),
+                _scan_root(repo_root, Path("skills/support")),
+            ]
+        )
         if (repo_root / "skills" / "shared").is_dir():
             # `skills/shared` carries repo-owned helpers with real attention states --
             # the reviewer-result diagnostic floor counts `skipped_oversized_records`
@@ -248,10 +258,13 @@ def detect_attention_states(
             if relative in EXCLUDED_PATHS or "__pycache__" in path.parts:
                 continue
             constants = _string_constants(path)
-            hits = sorted({
-                term for term in ATTENTION_TERMS
-                if any(_is_status_value(value, term) for value in constants)
-            })
+            hits = sorted(
+                {
+                    term
+                    for term in ATTENTION_TERMS
+                    if any(_is_status_value(value, term) for value in constants)
+                }
+            )
             if hits:
                 key = declaration_key(relative)
                 if key in detected and source_paths[key] != relative:
@@ -314,7 +327,9 @@ def validate_declaration(
             failures.append(f"{path}: visibility must be a non-empty string list.")
         unknown_visibility = sorted(set(visibility) - ALLOWED_VISIBILITY)
         if unknown_visibility:
-            failures.append(f"{path}: unknown visibility value(s): {', '.join(unknown_visibility)}.")
+            failures.append(
+                f"{path}: unknown visibility value(s): {', '.join(unknown_visibility)}."
+            )
         rationale = entry.get("rationale")
         if not isinstance(rationale, str) or not rationale.strip():
             failures.append(f"{path}: rationale must be a non-empty string.")
@@ -346,7 +361,9 @@ def main() -> int:
     except ValueError as exc:
         print(str(exc), file=sys.stderr)
         return 1
-    failures, raw = validate_declaration(repo_root, declaration_path, detected, source_paths, source_files)
+    failures, raw = validate_declaration(
+        repo_root, declaration_path, detected, source_paths, source_files
+    )
     payload = {
         "declaration_path": _portable_path(repo_root, declaration_path),
         "scan_roots": [
@@ -358,7 +375,9 @@ def main() -> int:
         ],
         "attention_terms": list(ATTENTION_TERMS),
         "detected_file_count": len(detected),
-        "declared_file_count": len(raw.get("files", {})) if isinstance(raw.get("files"), dict) else 0,
+        "declared_file_count": len(raw.get("files", {}))
+        if isinstance(raw.get("files"), dict)
+        else 0,
         "detected": detected,
         "source_paths": source_paths,
         "failures": failures,

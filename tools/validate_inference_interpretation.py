@@ -75,7 +75,10 @@ def load_registry(path: Path) -> dict | None:
         "registry `leak_scan.exclude_prefixes` must be a list of non-empty strings",
     )
     surfaces = raw.get("surfaces")
-    _require(isinstance(surfaces, list) and bool(surfaces), "registry `surfaces` must be a non-empty list")
+    _require(
+        isinstance(surfaces, list) and bool(surfaces),
+        "registry `surfaces` must be a non-empty list",
+    )
     seen: set[str] = set()
     for index, surface in enumerate(surfaces):
         _validate_surface_shape(surface, index, seen)
@@ -86,7 +89,10 @@ def _validate_surface_shape(surface: object, index: int, seen: set[str]) -> None
     field = f"surfaces[{index}]"
     _require(isinstance(surface, dict), f"`{field}` must be an object")
     surface_id = surface.get("surface_id")
-    _require(isinstance(surface_id, str) and bool(surface_id), f"`{field}.surface_id` must be a non-empty string")
+    _require(
+        isinstance(surface_id, str) and bool(surface_id),
+        f"`{field}.surface_id` must be a non-empty string",
+    )
     _require(surface_id not in seen, f"duplicate surface_id `{surface_id}`")
     seen.add(surface_id)
     kind = surface.get("kind")
@@ -98,13 +104,16 @@ def _validate_surface_shape(surface: object, index: int, seen: set[str]) -> None
         )
     if kind == "python":
         _require(
-            isinstance(surface.get("declaration_symbol"), str) and bool(surface.get("declaration_symbol")),
+            isinstance(surface.get("declaration_symbol"), str)
+            and bool(surface.get("declaration_symbol")),
             f"`{field}.declaration_symbol` must be a non-empty string for a python surface",
         )
     else:  # prose
         anchors = surface.get("prose_anchors")
         _require(
-            isinstance(anchors, list) and bool(anchors) and all(isinstance(a, str) and a for a in anchors),
+            isinstance(anchors, list)
+            and bool(anchors)
+            and all(isinstance(a, str) and a for a in anchors),
             f"`{field}.prose_anchors` must be a non-empty list of non-empty strings for a prose surface",
         )
 
@@ -151,7 +160,11 @@ def find_declaration_dicts(source: str) -> list[tuple[str | None, dict[str, str 
         if assigned is None:
             continue
         names, dict_node = assigned
-        keys = {k.value for k in dict_node.keys if isinstance(k, ast.Constant) and isinstance(k.value, str)}
+        keys = {
+            k.value
+            for k in dict_node.keys
+            if isinstance(k, ast.Constant) and isinstance(k.value, str)
+        }
         if not set(CONTRACT_FIELDS) <= keys:
             continue
         found.append((names[0] if names else None, _field_values(dict_node)))
@@ -248,8 +261,14 @@ def _check_prose_surface(repo_root: Path, surface: dict) -> list[str]:
     return errors
 
 
-def evaluate(repo_root: Path, registry: dict | None, registry_path: Path, *, require_git: bool) -> tuple[int, list[str]]:
-    exclude_prefixes = registry["leak_scan"]["exclude_prefixes"] if registry else ["plugins/", "mutants/", "tests/"]
+def evaluate(
+    repo_root: Path, registry: dict | None, registry_path: Path, *, require_git: bool
+) -> tuple[int, list[str]]:
+    exclude_prefixes = (
+        registry["leak_scan"]["exclude_prefixes"]
+        if registry
+        else ["plugins/", "mutants/", "tests/"]
+    )
     skipped_paths: list[str] = []
     found = scan_repo_declarations(
         repo_root,

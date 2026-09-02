@@ -179,7 +179,7 @@ def _install_inventory_declaration_phase_probe(repo: Path) -> Path:
     events = repo / "phase-events.jsonl"
     event_literal = repr(str(events))
     write_executable(
-        repo / "scripts" / "validate_skills.py",
+        repo / "tools" / "validate_skills.py",
         "\n".join(
             [
                 "#!/usr/bin/env python3",
@@ -196,7 +196,7 @@ def _install_inventory_declaration_phase_probe(repo: Path) -> Path:
         ),
     )
     write_executable(
-        repo / "scripts" / "validate_inventory_consumption_declaration.py",
+        repo / "tools" / "validate_inventory_consumption_declaration.py",
         "\n".join(
             [
                 "#!/usr/bin/env python3",
@@ -482,7 +482,7 @@ def test_the_regime_reaches_gates_that_record_their_own_samples(
     _capture_run_quality_runtime_records(repo)
     observed = repo / "gate-seen-regime.txt"
     write_executable(
-        repo / "scripts" / "validate_skills.py",
+        repo / "tools" / "validate_skills.py",
         "\n".join(
             [
                 "#!/usr/bin/env python3",

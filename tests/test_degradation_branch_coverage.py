@@ -460,7 +460,7 @@ def test_attention_scan_roots_include_skills_shared_when_present(tmp_path) -> No
     """
     gate = load_script_module(
         "validate_attention_state_visibility_degradation_test",
-        ROOT / "scripts" / "validate_attention_state_visibility.py",
+        ROOT / "tools" / "validate_attention_state_visibility.py",
     )
 
     repo = tmp_path / "repo"

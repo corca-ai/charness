@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Cheap pre-edit preflight for public/support skill-surface edits."""
+
 from __future__ import annotations
 
 import argparse
@@ -82,7 +83,9 @@ def _skill_context(repo_root: Path, target: Path) -> dict[str, Any]:
     rel = _repo_relative(repo_root, target)
     parts = rel.parts
     if len(parts) < 4 or parts[0] != "skills" or parts[1] not in {"public", "support"}:
-        raise PreflightError("target must live under skills/public/<skill>/ or skills/support/<skill>/")
+        raise PreflightError(
+            "target must live under skills/public/<skill>/ or skills/support/<skill>/"
+        )
 
     skill_kind = parts[1]
     skill_id = parts[2]
@@ -260,7 +263,7 @@ def _couplings(target_kind: str, skill_kind: str) -> list[dict[str, str]]:
         {
             "id": "validate_skills",
             "message": "Skill package shape, SKILL.md total line ceiling, references listings, and portability checks.",
-            "command": "python3 scripts/validate_skills.py --repo-root .",
+            "command": "python3 -m tools.validate_skills --repo-root .",
         },
         {
             "id": "markdown_inline_code",
@@ -285,7 +288,7 @@ def _couplings(target_kind: str, skill_kind: str) -> list[dict[str, str]]:
         {
             "id": "attention_state",
             "message": "A new exit-zero attention term in a package script must be declared in attention-state-visibility.json.",
-            "command": "python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support",
+            "command": "python3 -m tools.validate_attention_state_visibility --repo-root . --scan-root scripts --scan-root tools --scan-root skills --scan-root-map ../charness-support=skills/support",
         },
     ]
     if skill_kind == "public":
@@ -325,18 +328,27 @@ def _check_commands(repo_root: Path) -> list[tuple[str, list[str]]]:
     """
     root = str(repo_root)
     return [
-        ("validate_skills", ["python3", "scripts/validate_skills.py", "--repo-root", root]),
-        ("validate_skill_ergonomics", ["python3", "scripts/validate_skill_ergonomics.py", "--repo-root", root]),
-        ("check_skill_ownership_overlap", ["python3", "scripts/check_skill_ownership_overlap.py", "--repo-root", root]),
+        ("validate_skills", ["python3", "-m", "tools.validate_skills", "--repo-root", root]),
+        (
+            "validate_skill_ergonomics",
+            ["python3", "scripts/validate_skill_ergonomics.py", "--repo-root", root],
+        ),
+        (
+            "check_skill_ownership_overlap",
+            ["python3", "scripts/check_skill_ownership_overlap.py", "--repo-root", root],
+        ),
         (
             "validate_attention_state_visibility",
             [
                 "python3",
-                "scripts/validate_attention_state_visibility.py",
+                "-m",
+                "tools.validate_attention_state_visibility",
                 "--repo-root",
                 root,
                 "--scan-root",
                 "scripts",
+                "--scan-root",
+                "tools",
                 "--scan-root",
                 "skills",
                 "--scan-root-map",
@@ -360,14 +372,18 @@ def _check_result(check_id: str, command: list[str], completed) -> dict[str, Any
 
 def _run_checks(repo_root: Path) -> list[dict[str, Any]]:
     commands = _check_commands(repo_root)
-    completed = run_processes_in_order([command for _check_id, command in commands], cwd=repo_root, timeout_seconds=None)
+    completed = run_processes_in_order(
+        [command for _check_id, command in commands], cwd=repo_root, timeout_seconds=None
+    )
     return [
         _check_result(check_id, command, result)
         for (check_id, command), result in zip(commands, completed, strict=True)
     ]
 
 
-def build_report(repo_root: Path, target_arg: str, preview_delta: int, run_checks: bool) -> dict[str, Any]:
+def build_report(
+    repo_root: Path, target_arg: str, preview_delta: int, run_checks: bool
+) -> dict[str, Any]:
     target, rel_target = _resolve_target(repo_root, target_arg)
     context = _skill_context(repo_root, target)
     skill_md = context["skill_md"]
@@ -377,13 +393,11 @@ def build_report(repo_root: Path, target_arg: str, preview_delta: int, run_check
     skill_preview = preview_delta if context["target_kind"] == "skill_core" else 0
     headroom = {
         "skill_md_total": _headroom(len(text.splitlines()), MAX_SKILL_MD_LINES, skill_preview),
-        "core_nonempty": _headroom(_core_nonempty_lines(text), MAX_CORE_NONEMPTY_LINES, skill_preview),
+        "core_nonempty": _headroom(
+            _core_nonempty_lines(text), MAX_CORE_NONEMPTY_LINES, skill_preview
+        ),
     }
-    blockers = [
-        name
-        for name, row in headroom.items()
-        if row["blocked"]
-    ]
+    blockers = [name for name, row in headroom.items() if row["blocked"]]
     warnings: list[dict[str, str]] = []
     current_total = headroom["skill_md_total"]["current"]
     if current_total >= NEAR_CAP_WARN_LINES:
@@ -450,7 +464,9 @@ def preflight_payload(report: dict[str, Any]) -> dict[str, Any]:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
-    parser.add_argument("--path", help="Skill SKILL.md or references/*.md path (single-surface preflight)")
+    parser.add_argument(
+        "--path", help="Skill SKILL.md or references/*.md path (single-surface preflight)"
+    )
     parser.add_argument(
         "--changed-skill-md",
         nargs="*",
@@ -461,8 +477,12 @@ def main() -> int:
         nargs="*",
         help="Skill-package file paths to scan for disallowed issue anchors at edit time",
     )
-    parser.add_argument("--preview-delta", type=int, default=0, help="Planned added lines for this target")
-    parser.add_argument("--run-checks", action="store_true", help="Run targeted read-only validators now")
+    parser.add_argument(
+        "--preview-delta", type=int, default=0, help="Planned added lines for this target"
+    )
+    parser.add_argument(
+        "--run-checks", action="store_true", help="Run targeted read-only validators now"
+    )
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()

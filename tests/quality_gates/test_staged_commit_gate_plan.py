@@ -317,7 +317,8 @@ def test_leak_scan_inference_interpretation_fires_across_full_scan_domain() -> N
     assert gate is not None
     assert gate.argv == (
         "python3",
-        "scripts/validate_inference_interpretation.py",
+        "-m",
+        "tools.validate_inference_interpretation",
         "--repo-root",
         str(ROOT),
         "--require-git-file-listing",
@@ -402,7 +403,7 @@ def test_quality_reference_catalog_parity_fires_for_quality_reference_surface() 
         ["skills/public/quality/references/security-npm.md"]
     )
     assert "validate-quality-reference-catalog" in _labels(
-        ["scripts/validate_quality_reference_catalog.py"]
+        ["tools/validate_quality_reference_catalog.py"]
     )
     assert "validate-quality-reference-catalog" not in _labels(
         ["skills/public/debug/references/index.md"]

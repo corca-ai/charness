@@ -105,8 +105,18 @@ def run_script(
             return subprocess.CompletedProcess(
                 [sys.executable, *args], result.returncode, result.stdout, result.stderr
             )
+    command = list(args)
+    if script is not None:
+        try:
+            resolved_script = script.resolve()
+        except OSError:
+            resolved_script = script
+        if script.parts[:1] == ("tools",) or (
+            resolved_script.parent.name == "tools" and resolved_script.suffix == ".py"
+        ):
+            command = ["-m", f"tools.{resolved_script.stem}", *args[1:]]
     return subprocess.run(
-        [sys.executable, *args],
+        [sys.executable, *command],
         cwd=cwd or ROOT,
         check=False,
         capture_output=True,
@@ -345,6 +355,33 @@ QUALITY_PYTHON_STUBS = (
     ("release-changed-line-coverage", "release_changed_line_coverage.py"),
     ("run-evals", "run_evals.py"),
 )
+QUALITY_TOOL_PYTHON_FILENAMES = frozenset(
+    {
+        "validate_skills.py",
+        "validate_quality_reference_catalog.py",
+        "check_quality_tool_fixtures.py",
+        "validate_surfaces.py",
+        "validate_inference_interpretation.py",
+        "validate_public_skill_validation.py",
+        "validate_public_skill_dogfood.py",
+        "validate_profiles.py",
+        "validate_presets.py",
+        "validate_integrations.py",
+        "validate_packaging.py",
+        "validate_packaging_committed.py",
+        "validate_attention_state_visibility.py",
+        "validate_inventory_consumption_declaration.py",
+        "check_inventory_declaration_coverage.py",
+        "inventory_skill_script_references.py",
+        "check_unreferenced_scripts.py",
+        "validate_quality_closeout_contract.py",
+        "check_skill_contracts.py",
+        "check_skill_bootstrap_vars.py",
+        "check_bootstrap_shim_consistency.py",
+        "check_public_doc_coupling.py",
+        "check_references_link_inventory.py",
+    }
+)
 QUALITY_RUNTIME_STUBS = (
     ("dead-code-advisory", "run_dead_code_advisory.py"),
     ("measure-startup-probes", "measure_startup_probes.py"),
@@ -545,10 +582,12 @@ def seed_agent_browser_runtime_guard_stub(target_dir: Path) -> None:
 def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
     repo = tmp_path / "repo"
     scripts_dir = repo / "scripts"
+    tools_dir = repo / "tools"
     hooks_dir = repo / ".githooks"
     bin_dir = repo / "bin"
     quality_scripts_dir = repo / "skills" / "public" / "quality" / "scripts"
     scripts_dir.mkdir(parents=True)
+    tools_dir.mkdir()
     hooks_dir.mkdir()
     bin_dir.mkdir()
     quality_scripts_dir.mkdir(parents=True)
@@ -571,6 +610,7 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
     # Seed the real file so these tests exercise runner behavior instead of an
     # incomplete synthetic checkout.
     shutil.copy2(ROOT / ".githooks" / "runtime-env.sh", hooks_dir / "runtime-env.sh")
+    shutil.copy2(ROOT / "tools" / "__init__.py", tools_dir / "__init__.py")
     shutil.copy2(ROOT / "scripts" / "proof_receipt.py", scripts_dir / "proof_receipt.py")
     (scripts_dir / "proof_receipt.py").chmod(0o755)
     shutil.copy2(
@@ -631,7 +671,22 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
         + "\n",
         encoding="utf-8",
     )
-    seed_quality_python_stubs(scripts_dir, QUALITY_PYTHON_STUBS)
+    seed_quality_python_stubs(
+        scripts_dir,
+        tuple(
+            (label, filename)
+            for label, filename in QUALITY_PYTHON_STUBS
+            if filename not in QUALITY_TOOL_PYTHON_FILENAMES
+        ),
+    )
+    seed_quality_python_stubs(
+        tools_dir,
+        tuple(
+            (label, filename)
+            for label, filename in QUALITY_PYTHON_STUBS
+            if filename in QUALITY_TOOL_PYTHON_FILENAMES
+        ),
+    )
     seed_quality_python_stubs(quality_scripts_dir, QUALITY_RUNTIME_STUBS)
     seed_quality_runtime_recorder(scripts_dir)
     seed_agent_browser_runtime_guard_stub(scripts_dir)

@@ -88,7 +88,9 @@ def validate_config_layers(manifest: dict[str, object], path: Path) -> None:
     if not isinstance(requirements, dict):
         requirements = {}
     if "grant" in layer_types and not requirements.get("grant_ids"):
-        raise ValidationError(f"{path}: grant config layer requires capability_requirements.grant_ids")
+        raise ValidationError(
+            f"{path}: grant config layer requires capability_requirements.grant_ids"
+        )
     if "env" in layer_types and not requirements.get("env_vars"):
         raise ValidationError(f"{path}: env config layer requires capability_requirements.env_vars")
 
@@ -168,7 +170,9 @@ def detect_help_prose_healthcheck(manifest: dict[str, object], path: Path) -> st
         return None
     commands = healthcheck.get("commands")
     criteria = healthcheck.get("success_criteria")
-    if not isinstance(commands, list) or not any(isinstance(command, str) and HELP_COMMAND_RE.search(command) for command in commands):
+    if not isinstance(commands, list) or not any(
+        isinstance(command, str) and HELP_COMMAND_RE.search(command) for command in commands
+    ):
         return None
     if not isinstance(criteria, list):
         return None
@@ -176,7 +180,9 @@ def detect_help_prose_healthcheck(manifest: dict[str, object], path: Path) -> st
     for criterion in criteria:
         if not isinstance(criterion, str):
             continue
-        if not (criterion.startswith("stdout_contains:") or criterion.startswith("stderr_contains:")):
+        if not (
+            criterion.startswith("stdout_contains:") or criterion.startswith("stderr_contains:")
+        ):
             continue
         expected = criterion.split(":", 1)[1].strip()
         if " " in expected and len(expected) > 10:
@@ -224,7 +230,8 @@ def main() -> int:
         owned_manifest_paths = [
             path
             for path in sorted((repo_root / "integrations" / "tools").glob("*.json"))
-            if path.name not in {"manifest.schema.json", "dependencies.json", "dependencies.schema.json"}
+            if path.name
+            not in {"manifest.schema.json", "dependencies.json", "dependencies.schema.json"}
         ]
         if not owned_manifest_paths:
             # Every per-manifest and per-capability rule below iterates a hardcoded
@@ -245,7 +252,9 @@ def main() -> int:
             advisory = detect_help_prose_healthcheck(manifest, manifest_path)
             if advisory is not None:
                 advisories.append(advisory)
-            advisory = detect_missing_intent_triggers_for_external_binary_with_skill(manifest, manifest_path)
+            advisory = detect_missing_intent_triggers_for_external_binary_with_skill(
+                manifest, manifest_path
+            )
             if advisory is not None:
                 advisories.append(advisory)
         for capability_path in sorted((repo_root / "skills" / "support").glob("*/capability.json")):
@@ -304,7 +313,9 @@ def main() -> int:
             validated_lock_count += 1
         dependencies = load_dependencies(repo_root)
         if dependencies is not None:
-            known_ids = {manifest["tool_id"] for manifest in load_manifests_for_discovery(repo_root)}
+            known_ids = {
+                manifest["tool_id"] for manifest in load_manifests_for_discovery(repo_root)
+            }
             unknown = [tid for tid in dependencies["tool_dependencies"] if tid not in known_ids]
             if unknown:
                 rendered = ", ".join(f"`{tid}`" for tid in unknown)

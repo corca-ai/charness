@@ -11,6 +11,7 @@ Fixtures here are built from the advisory's own shipped constants and are
 cross-checked against its shipped regex before use: a fixture spelled the way
 the matcher wants is precisely how this class hides.
 """
+
 from __future__ import annotations
 
 import collections
@@ -25,7 +26,7 @@ import yaml
 from tests.script_main import load_script_module, run_loaded_script_main
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-SCRIPT_PATH = REPO_ROOT / "scripts" / "inventory_skill_script_references.py"
+SCRIPT_PATH = REPO_ROOT / "tools" / "inventory_skill_script_references.py"
 
 inventory_module = load_script_module("inventory_skill_script_references", SCRIPT_PATH)
 
@@ -135,12 +136,11 @@ def test_shipped_layout_findings_never_grow() -> None:
     assert len(shipped) > 100
     observed = collections.Counter((row["doc"], row["reference"]) for row in findings)
     excess = {
-        key: count
-        for key, count in observed.items()
-        if count > KNOWN_SHIPPED_FINDINGS.get(key, 0)
+        key: count for key, count in observed.items() if count > KNOWN_SHIPPED_FINDINGS.get(key, 0)
     }
-    assert not excess, "new or multiplied shipped-layout reference(s) that cannot run:\n" + _describe(
-        [row for row in findings if (row["doc"], row["reference"]) in excess]
+    assert not excess, (
+        "new or multiplied shipped-layout reference(s) that cannot run:\n"
+        + _describe([row for row in findings if (row["doc"], row["reference"]) in excess])
     )
 
 
@@ -291,7 +291,14 @@ def test_the_documented_command_actually_runs_as_a_command(tmp_path: Path) -> No
     )
 
     result = subprocess.run(
-        [sys.executable, str(SCRIPT_PATH), "--repo-root", str(tmp_path)],
+        [
+            sys.executable,
+            "-m",
+            "tools.inventory_skill_script_references",
+            "--repo-root",
+            str(tmp_path),
+        ],
+        cwd=REPO_ROOT,
         capture_output=True,
         text=True,
         check=False,
@@ -356,7 +363,9 @@ def test_the_authoring_marker_resolves_for_every_shipped_package_shape(tmp_path:
         target.mkdir(parents=True)
         (target / "DOC.md").write_text(f"# D\n\n{line}", encoding="utf-8")
 
-    shapes = {pkg.root.name: pkg.authoring_root for pkg in inventory_module.iter_skill_packages(tmp_path)}
+    shapes = {
+        pkg.root.name: pkg.authoring_root for pkg in inventory_module.iter_skill_packages(tmp_path)
+    }
     assert shapes == {"one": plugin, "two": plugin, "shared": plugin}
 
     rows = inventory_module.classify_references(tmp_path)
@@ -369,7 +378,9 @@ def test_the_authoring_marker_resolves_docs_and_artifacts_in_both_layouts(tmp_pa
     (tmp_path / "docs").mkdir()
     (tmp_path / "docs" / "design-north-star.md").write_text("# North Star\n", encoding="utf-8")
     (tmp_path / "charness-artifacts" / "spec").mkdir(parents=True)
-    (tmp_path / "charness-artifacts" / "spec" / "ledger.md").write_text("# Ledger\n", encoding="utf-8")
+    (tmp_path / "charness-artifacts" / "spec" / "ledger.md").write_text(
+        "# Ledger\n", encoding="utf-8"
+    )
     source_doc = _package(tmp_path, "skills/public/demo") / "SKILL.md"
     source_doc.write_text(
         "# Demo\n\n"
@@ -387,7 +398,9 @@ def test_the_authoring_marker_resolves_docs_and_artifacts_in_both_layouts(tmp_pa
         if row["form"] == "authoring-repo"
     ]
     assert len(rows) == 6
-    resolved = [row for row in rows if row["reference"].endswith(("design-north-star.md", "ledger.md"))]
+    resolved = [
+        row for row in rows if row["reference"].endswith(("design-north-star.md", "ledger.md"))
+    ]
     missing = [row for row in rows if row["reference"].endswith("missing.md")]
     assert {row["status"] for row in resolved} == {inventory_module.AUTHORING_MARKED}
     assert len(missing) == 2
@@ -599,8 +612,7 @@ def test_clean_output_reports_the_layout_split_and_the_unverifiable_count(tmp_pa
     # reads as "every reference is fine".
     assert payload["denominator"]["by_layout"] == {"authoring": 1, "shipped": 1}
     assert any(
-        "shipped reference(s) resolve only against a consuming" in note
-        for note in payload["notes"]
+        "shipped reference(s) resolve only against a consuming" in note for note in payload["notes"]
     )
 
 
@@ -744,7 +756,11 @@ def test_strict_passes_when_nothing_is_broken(tmp_path: Path) -> None:
     )
 
     result = run_loaded_script_main(
-        "inventory_skill_script_references", inventory_module, "--repo-root", str(tmp_path), "--strict"
+        "inventory_skill_script_references",
+        inventory_module,
+        "--repo-root",
+        str(tmp_path),
+        "--strict",
     )
     assert result.returncode == 0
 
@@ -800,7 +816,9 @@ def test_a_plugin_dir_reference_is_resolved_against_the_shipped_package(tmp_path
     repo = tmp_path / "repo"
     package = repo / "skills" / "public" / "demo"
     (package / "references").mkdir(parents=True)
-    (package / "SKILL.md").write_text("---\nname: demo\ndescription: d\n---\n\n# Demo\n", encoding="utf-8")
+    (package / "SKILL.md").write_text(
+        "---\nname: demo\ndescription: d\n---\n\n# Demo\n", encoding="utf-8"
+    )
     (package / "references" / "note.md").write_text(
         "Run `<plugin-dir>/scripts/real.py`.\n\nAlso `<plugin-dir>/scripts/vanished.py`.\n",
         encoding="utf-8",
@@ -810,11 +828,11 @@ def test_a_plugin_dir_reference_is_resolved_against_the_shipped_package(tmp_path
     (shipped / "real.py").write_text("# ships\n", encoding="utf-8")
 
     rows = [
-        row
-        for row in inventory_module.classify_references(repo)
-        if row["form"] == "plugin-dir"
+        row for row in inventory_module.classify_references(repo) if row["form"] == "plugin-dir"
     ]
 
     by_reference = {row["reference"]: row for row in rows}
-    assert by_reference["<plugin-dir>/scripts/real.py"]["status"] == inventory_module.AUTHORING_MARKED
+    assert (
+        by_reference["<plugin-dir>/scripts/real.py"]["status"] == inventory_module.AUTHORING_MARKED
+    )
     assert by_reference["<plugin-dir>/scripts/vanished.py"]["status"] == inventory_module.UNRESOLVED

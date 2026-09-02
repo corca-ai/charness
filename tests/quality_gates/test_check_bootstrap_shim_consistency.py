@@ -8,9 +8,9 @@ import yaml
 
 from .support import run_script
 
-shim_gate = importlib.import_module("scripts.check_bootstrap_shim_consistency")
+shim_gate = importlib.import_module("tools.check_bootstrap_shim_consistency")
 
-SCRIPT = "scripts/check_bootstrap_shim_consistency.py"
+SCRIPT = "tools/check_bootstrap_shim_consistency.py"
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 DRIFTED_SHIM = (FIXTURES / "drifted_skill_runtime_bootstrap.py.txt").read_text(encoding="utf-8")
 HEADER = "import runpy\nfrom pathlib import Path\nfrom types import SimpleNamespace\n\n\n"
@@ -129,9 +129,9 @@ def test_normalized_setup_helper_still_bootstraps() -> None:
 # `skills/public/quality/scripts/inventory_empty_scope_honesty.py`.
 HEADER_WITHOUT_RUNPY = "from pathlib import Path\nfrom types import SimpleNamespace\n\n\n"
 SHIM_WORKING_AROUND_MISSING_IMPORT = (
-    'def _load_skill_runtime_bootstrap():\n'
+    "def _load_skill_runtime_bootstrap():\n"
     '    bootstrap = next((ancestor / "skill_runtime_bootstrap.py" for ancestor in Path(__file__).resolve().parents if (ancestor / "skill_runtime_bootstrap.py").is_file()), None)\n'
-    '    if bootstrap is None:\n'
+    "    if bootstrap is None:\n"
     '        raise ImportError("skill_runtime_bootstrap.py not found")\n'
     '    return SimpleNamespace(**__import__("runpy").run_path(str(bootstrap)))\n'
 )

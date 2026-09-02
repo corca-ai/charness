@@ -38,6 +38,7 @@ Refusals, each for an escape that was observed rather than imagined:
   class it fixed. The count of comparisons is now the thing both the refusal and the
   success line are keyed on.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -120,12 +121,12 @@ def _problems(repo_root: Path, fixture: Path) -> tuple[list[str], int, int]:
             # A fixture that records no stream is fine. One that names a stream file and
             # no digest leaves that file unpinned, which is the mirror of the vacuous skip.
             if stream_rel:
-                found.append(f"{rel}: {path_key} is set but {digest_key} is absent, so nothing pins it")
+                found.append(
+                    f"{rel}: {path_key} is set but {digest_key} is absent, so nothing pins it"
+                )
             continue
         if not isinstance(recorded, str) or SHA256_RE.fullmatch(recorded) is None:
-            found.append(
-                f"{rel}: {digest_key} is not 64 lowercase hex characters ({recorded!r})"
-            )
+            found.append(f"{rel}: {digest_key} is not 64 lowercase hex characters ({recorded!r})")
             continue
         if not stream_rel:
             # An empty stream needs no file, but the digest must then BE the empty digest.
@@ -146,7 +147,9 @@ def _problems(repo_root: Path, fixture: Path) -> tuple[list[str], int, int]:
             continue
         actual = hashlib.sha256(contained.read_bytes()).hexdigest()
         if actual != recorded:
-            found.append(f"{rel}: {digest_key} drift -- recorded {recorded}, {stream_rel} hashes to {actual}")
+            found.append(
+                f"{rel}: {digest_key} drift -- recorded {recorded}, {stream_rel} hashes to {actual}"
+            )
             continue
         checked += 1
         file_backed += 1

@@ -192,7 +192,7 @@ diffs) can declare them explicitly:
 integrations/tools/dependencies.json
 ```
 
-Schema (validated by [`validate_integrations.py`](../scripts/validate_integrations.py)):
+Schema (validated by [`validate_integrations.py`](../tools/validate_integrations.py)):
 
 ```json
 {

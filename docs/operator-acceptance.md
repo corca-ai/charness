@@ -64,7 +64,7 @@ Read first:
 Useful local commands:
 
 ```bash
-python3 scripts/validate_packaging.py --repo-root .
+python3 -m tools.validate_packaging --repo-root .
 python3 scripts/sync_root_plugin_manifests.py --repo-root .
 charness doctor
 charness update all
@@ -124,9 +124,9 @@ Read first:
 - [skills/public/create-skill/SKILL.md](../skills/public/create-skill/SKILL.md) — the portable skill authoring workflow and its bootstrap reads.
 - [skills/public/spec/SKILL.md](../skills/public/spec/SKILL.md) — the implementation-contract workflow and its bootstrap reads.
 - [docs/public-skill-dogfood.md](./public-skill-dogfood.md) — human-readable contract for the reviewed consumer-prompt registry.
-- [scripts/check_skill_contracts.py](../scripts/check_skill_contracts.py) — pinned SKILL.md contract phrases and the pin-deletion discipline.
+- [tools/check_skill_contracts.py](../tools/check_skill_contracts.py) — pinned SKILL.md contract phrases and the pin-deletion discipline.
 - [scripts/run_evals.py](../scripts/run_evals.py) — runner for the repo-owned deterministic skill and adapter scenarios.
-- [scripts/validate_public_skill_dogfood.py](../scripts/validate_public_skill_dogfood.py) — validator entrypoint for the dogfood registry JSON.
+- [tools/validate_public_skill_dogfood.py](../tools/validate_public_skill_dogfood.py) — validator entrypoint for the dogfood registry JSON.
 
 Acceptance:
 

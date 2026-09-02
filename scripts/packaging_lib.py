@@ -10,7 +10,7 @@ from pathlib import Path
 from runtime_bootstrap import import_repo_module, load_path_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
-VALIDATE_PACKAGING_PATH = REPO_ROOT / "scripts" / "validate_packaging.py"
+VALIDATE_PACKAGING_PATH = REPO_ROOT / "tools" / "validate_packaging.py"
 VALIDATE_PACKAGING = load_path_module("validate_packaging", VALIDATE_PACKAGING_PATH)
 _scripts_surfaces_lib_module = import_repo_module(__file__, "scripts.surfaces_lib")
 SURFACES_PATH = _scripts_surfaces_lib_module.SURFACES_PATH
@@ -36,6 +36,7 @@ PLUGIN_README_SOURCE_ONLY_PREFIXES = (
     "./evals/",
     "./packaging/",
     "./plugins/",
+    "./tools/",
     "./tests/",
 )
 

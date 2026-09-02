@@ -228,12 +228,8 @@ REPRESENTATIVE_CONTRACTS: dict[str, tuple[str, ...]] = {
 }
 
 FORBIDDEN_SNIPPETS: dict[str, tuple[str, ...]] = {
-    "skills/public/critique/SKILL.md": (
-        "short bounded local pass",
-    ),
-    "skills/public/release/SKILL.md": (
-        "local critique",
-    ),
+    "skills/public/critique/SKILL.md": ("short bounded local pass",),
+    "skills/public/release/SKILL.md": ("local critique",),
 }
 
 
@@ -323,7 +319,9 @@ def _validate_contract(
     forbidden: bool,
     message: str,
 ) -> None:
-    _assert_snippet_membership(path, text_loader(path), snippets, forbidden=forbidden, message=message)
+    _assert_snippet_membership(
+        path, text_loader(path), snippets, forbidden=forbidden, message=message
+    )
 
 
 def main() -> int:

@@ -13,7 +13,7 @@ markdown file stays as the human-readable narrative and rationale layer for the
 same assignments. Reviewed consumer-dogfood cases live in
 [docs/public-skill-dogfood.json](./public-skill-dogfood.json).
 When a new public skill is missing from the policy, run
-`python3 scripts/suggest_public_skill_validation.py --repo-root .` to list the
+`python3 -m tools.suggest_public_skill_validation --repo-root .` to list the
 bucket choices before editing the JSON.
 
 ## Purpose

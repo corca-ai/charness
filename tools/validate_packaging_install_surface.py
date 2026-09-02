@@ -10,7 +10,7 @@ from typing import Callable
 
 try:
     from runtime_bootstrap import import_repo_module
-except ModuleNotFoundError:  # imported as scripts.validate_packaging_install_surface
+except ModuleNotFoundError:  # imported as tools.validate_packaging_install_surface
     from scripts.runtime_bootstrap import import_repo_module
 
 _skill_iter_module = import_repo_module(__file__, "scripts.skill_iter")
@@ -214,7 +214,7 @@ def validate_materialized_plugin_export_matches_generated(
 
 
 _IMPORT_SMOKE_SCRIPT = (
-    Path(__file__).resolve().parent / "templates" / "plugin_import_smoke.py.txt"
+    Path(__file__).resolve().parents[1] / "scripts" / "templates" / "plugin_import_smoke.py.txt"
 ).read_text(encoding="utf-8")
 
 

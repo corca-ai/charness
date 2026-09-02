@@ -15,8 +15,8 @@ import scripts.check_consumer_validator_catalog as consumer_validator_catalog_mo
 import scripts.export_plugin as export_plugin_module
 import scripts.packaging_lib as packaging_lib
 import scripts.sync_root_plugin_manifests as sync_root_plugin_manifests_module
-import scripts.validate_packaging as validate_packaging_module
-import scripts.validate_packaging_install_surface as validate_packaging_install_surface_module
+import tools.validate_packaging as validate_packaging_module
+import tools.validate_packaging_install_surface as validate_packaging_install_surface_module
 from tests.repo_copy import clone_seeded_charness_repo
 from tests.script_main import run_loaded_script_main
 
@@ -360,9 +360,7 @@ def test_validate_packaging_committed_accepts_clean_head(
 ) -> None:
     repo = make_clean_git_repo(tmp_path, seeded_charness_git_repo)
 
-    result = run_script(
-        "scripts/validate_packaging_committed.py", "--repo-root", str(repo), cwd=repo
-    )
+    result = run_script("tools/validate_packaging_committed.py", "--repo-root", str(repo), cwd=repo)
     assert result.returncode == 0, result.stderr
 
 
@@ -441,11 +439,12 @@ def test_validate_packaging_install_surface_bootstraps_repo_imports(tmp_path: Pa
     result = subprocess.run(
         [
             "python3",
-            str(ROOT / "scripts" / "validate_packaging_install_surface.py"),
+            "-m",
+            "tools.validate_packaging_install_surface",
             "--repo-root",
             str(ROOT),
         ],
-        cwd=tmp_path,
+        cwd=ROOT,
         env=env,
         capture_output=True,
         text=True,
@@ -546,6 +545,7 @@ def test_export_plugin_materializes_codex_and_claude_layouts(tmp_path: Path) -> 
     exported_specdown = claude_root / "plugins" / "charness" / "support" / "specdown" / "SKILL.md"
     exported_helper_script = claude_root / "plugins" / "charness" / "scripts" / "adapter_lib.py"
     exported_scripts = claude_root / "plugins" / "charness" / "scripts"
+    exported_tools = claude_root / "plugins" / "charness" / "tools"
     assert claude_manifest.is_file()
     assert exported_readme.is_file()
     assert exported_profiles.is_dir()
@@ -555,9 +555,9 @@ def test_export_plugin_materializes_codex_and_claude_layouts(tmp_path: Path) -> 
     assert not exported_agent_browser.exists()
     assert not exported_specdown.exists()
     assert exported_helper_script.is_file()
-    assert all(
-        not (exported_scripts / name).exists() for name in packaging_lib.SOURCE_ONLY_PLUGIN_SCRIPTS
-    )
+    assert not exported_tools.exists()
+    assert not (exported_scripts / "validate_skills.py").exists()
+    assert not (exported_scripts / "validate_packaging.py").exists()
     assert (exported_scripts / "public_skill_dogfood_lib.py").is_file()
     assert (
         claude_root
@@ -597,7 +597,7 @@ def test_export_plugin_materializes_codex_and_claude_layouts(tmp_path: Path) -> 
     )
 
     validate_exported_skills = run_script(
-        "scripts/validate_skills.py",
+        "tools/validate_skills.py",
         "--repo-root",
         str(claude_root / "plugins" / "charness"),
     )
@@ -684,7 +684,7 @@ def test_install_surface_names_the_parser_adapter_lib_loads_by_path(
     The export byte comparison is covered by the release-marked end-to-end tests below.
     Patch it here so this standing test remains narrowly about the required parser file.
     """
-    from scripts import validate_packaging_install_surface as surface
+    from tools import validate_packaging_install_surface as surface
 
     required: list[str] = []
     root = Path(__file__).resolve().parents[2]

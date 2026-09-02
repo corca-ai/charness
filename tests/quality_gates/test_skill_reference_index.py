@@ -3,8 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 
 from scripts import check_skill_surface_preflight as preflight
-from scripts import validate_skills
 from skills.public.quality.scripts import inventory_skill_ergonomics
+from tools import validate_skills
 
 from .support import ROOT
 
@@ -95,9 +95,8 @@ def test_inventory_reports_reference_mentioned_only_in_index_prose(
     _write_indexed_skill(
         repo,
         index_text=(
-            "# Reference Index\n\n"
-            "This prose mentions `references/note.md` without listing it.\n"
-        )
+            "# Reference Index\n\nThis prose mentions `references/note.md` without listing it.\n"
+        ),
     )
 
     skill = _first_skill_from_inventory(repo)
@@ -152,7 +151,9 @@ def test_achieve_root_uses_reference_index_with_core_headroom() -> None:
     report = preflight.build_report(ROOT, str(skill_path), 0, False)
 
     assert "- `references/index.md`" in skill_text
-    assert report["headroom"]["core_nonempty"]["remaining"] >= preflight.CORE_NONEMPTY_HEADROOM_BUFFER
+    assert (
+        report["headroom"]["core_nonempty"]["remaining"] >= preflight.CORE_NONEMPTY_HEADROOM_BUFFER
+    )
     for reference in (
         "references/lifecycle.md",
         "references/goal-artifact.md",

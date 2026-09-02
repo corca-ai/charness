@@ -20,7 +20,7 @@ import pytest
 
 from .support import ROOT
 
-META = importlib.import_module("scripts.validate_inference_interpretation")
+META = importlib.import_module("tools.validate_inference_interpretation")
 FIELDS = META.CONTRACT_FIELDS
 
 

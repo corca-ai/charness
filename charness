@@ -1251,7 +1251,12 @@ def ensure_checkout(repo_root: Path, *, managed: bool, repo_url: str, allow_clon
 
 def invoke_repo_script(repo_root: Path, relative_script: str, *script_args: str) -> str:
     python_executable = resolve_repo_python(repo_root)
-    result = run([python_executable, relative_script, *script_args], cwd=repo_root)
+    script_path = Path(relative_script)
+    if script_path.parts[:1] == ("tools",):
+        command = [python_executable, "-m", script_path.with_suffix("").as_posix().replace("/", ".")]
+    else:
+        command = [python_executable, relative_script]
+    result = run([*command, *script_args], cwd=repo_root)
     expect_success(result, f"`{relative_script}` in `{repo_root}`")
     return result.stdout.strip()
 
@@ -2595,7 +2600,7 @@ def install_surface(
     cli_path: Path | None,
     update: bool,
 ) -> dict[str, object]:
-    invoke_repo_script(repo_root, "scripts/validate_packaging.py", "--repo-root", str(repo_root))
+    invoke_repo_script(repo_root, "tools/validate_packaging.py", "--repo-root", str(repo_root))
     invoke_repo_script(repo_root, "scripts/sync_root_plugin_manifests.py", "--repo-root", str(repo_root))
     install_output = invoke_repo_script(
         repo_root,

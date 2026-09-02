@@ -21,7 +21,7 @@ stays as the short human-readable contract for the same reviewed cases.
 
 - `build_matrix` selects requested cases from this registry; it does not infer
   prompts or acceptance evidence from skill metadata, adapters, or artifacts
-- [`validate_public_skill_dogfood.py`](../scripts/validate_public_skill_dogfood.py) preserves the registry schema, known-skill
+- [`validate_public_skill_dogfood.py`](../tools/validate_public_skill_dogfood.py) preserves the registry schema, known-skill
   checks, and required reviewed-skill coverage
 - this registry is operator-reviewed consumer evidence, not a claim that
   `charness` already has fully automated prompt-routing evaluation

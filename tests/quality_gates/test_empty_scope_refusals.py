@@ -32,19 +32,19 @@ from .support import ROOT
 _MODULES = {
     name: load_script_module(name.removesuffix(".py").replace("/", "_"), ROOT / name)
     for name in (
-        "scripts/validate_packaging.py",
-        "scripts/check_bootstrap_shim_consistency.py",
+        "tools/validate_packaging.py",
+        "tools/check_bootstrap_shim_consistency.py",
         "scripts/validate_critique_artifacts.py",
         "scripts/validate_retro_artifact.py",
         "scripts/validate_ideation_artifact.py",
         "scripts/check_mutation_run_proof.py",
         "scripts/check_code_lengths.py",
         "scripts/check_python_runtime_inheritance.py",
-        "scripts/check_skill_bootstrap_vars.py",
+        "tools/check_skill_bootstrap_vars.py",
         "scripts/check_skill_cut_safety.py",
         "scripts/check_skill_surface_preflight.py",
         "scripts/check_test_repo_copy_invariants.py",
-        "scripts/validate_integrations.py",
+        "tools/validate_integrations.py",
         "skills/public/quality/scripts/inventory_ci_local_gate_parity.py",
         "scripts/check_coverage.py",
     )
@@ -82,11 +82,11 @@ def _empty_root(tmp_path: Path) -> Path:
 def test_zero_scope_scan_refuses(tmp_path: Path) -> None:
     root = str(_empty_root(tmp_path))
     cases = (
-        ("scripts/validate_packaging.py", "no packaging manifests found"),
-        ("scripts/check_bootstrap_shim_consistency.py", "nothing was compared"),
-        ("scripts/check_skill_bootstrap_vars.py", "no public/support SKILL.md files found"),
+        ("tools/validate_packaging.py", "no packaging manifests found"),
+        ("tools/check_bootstrap_shim_consistency.py", "nothing was compared"),
+        ("tools/check_skill_bootstrap_vars.py", "no public/support SKILL.md files found"),
         ("scripts/check_test_repo_copy_invariants.py", "no test Python files found"),
-        ("scripts/validate_integrations.py", "no integration manifests found"),
+        ("tools/validate_integrations.py", "no integration manifests found"),
     )
     for script, expected_fragment in cases:
         result = run_gate(script, "--repo-root", root)
@@ -110,7 +110,7 @@ def test_validate_integrations_zero_locks_is_the_sanctioned_discovered_empty_pas
     monkeypatch.setenv("CHARNESS_DISABLE_PLUGIN_FALLBACK_MANIFESTS", "1")
     repo = seed_control_plane_repo(tmp_path)
 
-    result = run_gate("scripts/validate_integrations.py", "--repo-root", str(repo))
+    result = run_gate("tools/validate_integrations.py", "--repo-root", str(repo))
 
     assert result.returncode == 0, result.stdout + result.stderr
     assert "0 lock files" in result.stdout
@@ -120,7 +120,7 @@ def test_bootstrap_shim_payload_names_the_empty_scope(tmp_path: Path) -> None:
     """The payload consumer must see a state distinct from `ok`, not `ok` with a
     zero count it has to notice on its own."""
     result = run_gate(
-        "scripts/check_bootstrap_shim_consistency.py", "--repo-root", str(_empty_root(tmp_path))
+        "tools/check_bootstrap_shim_consistency.py", "--repo-root", str(_empty_root(tmp_path))
     )
     payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "empty-scope"

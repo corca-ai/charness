@@ -35,7 +35,11 @@ def _require_string(value: object, *, field: str) -> str:
 
 
 def _require_string_list(value: object, *, field: str) -> list[str]:
-    if not isinstance(value, list) or not value or not all(isinstance(item, str) and item.strip() for item in value):
+    if (
+        not isinstance(value, list)
+        or not value
+        or not all(isinstance(item, str) and item.strip() for item in value)
+    ):
         raise ValidationError(f"{field} must be a non-empty list of strings")
     return value
 
@@ -88,7 +92,9 @@ def _validate_required_review_coverage(
 
     for skill_id in review_required_skills:
         if skill_id not in all_skills:
-            raise ValidationError(f"{DOGFOOD_PATH}: `review_required_skills` references unknown public skill `{skill_id}`")
+            raise ValidationError(
+                f"{DOGFOOD_PATH}: `review_required_skills` references unknown public skill `{skill_id}`"
+            )
 
 
 def validate_registry(data: dict[str, object], repo_root: Path) -> dict[str, object]:
@@ -96,8 +102,12 @@ def validate_registry(data: dict[str, object], repo_root: Path) -> dict[str, obj
         raise ValidationError(f"{DOGFOOD_PATH}: schema_version must be 1")
 
     raw_required = data.get("review_required_skills")
-    if not isinstance(raw_required, list) or not all(isinstance(item, str) for item in raw_required):
-        raise ValidationError(f"{DOGFOOD_PATH}: `review_required_skills` must be a list of skill ids")
+    if not isinstance(raw_required, list) or not all(
+        isinstance(item, str) for item in raw_required
+    ):
+        raise ValidationError(
+            f"{DOGFOOD_PATH}: `review_required_skills` must be a list of skill ids"
+        )
     review_required_skills = sorted(raw_required)
 
     raw_cases = data.get("cases")

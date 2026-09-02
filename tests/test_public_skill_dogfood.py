@@ -8,13 +8,13 @@ import pytest
 import yaml
 
 from scripts.public_skill_dogfood_lib import build_matrix
-from scripts.public_skill_dogfood_validation_lib import (
+from scripts.public_skill_validation_lib import ValidationError as PolicyValidationError
+from tests.script_main import load_script_module, run_loaded_script_main
+from tools.public_skill_dogfood_validation_lib import (
     ValidationError,
     load_registry,
     validate_registry,
 )
-from scripts.public_skill_validation_lib import ValidationError as PolicyValidationError
-from tests.script_main import load_script_module, run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[1]
 _suggest_public_skill_dogfood = load_script_module(
@@ -25,7 +25,9 @@ _suggest_public_skill_dogfood = load_script_module(
 
 def run_suggest_public_skill_dogfood(monkeypatch, capsys, *args: str) -> SimpleNamespace:
     del monkeypatch, capsys
-    result = run_loaded_script_main("suggest_public_skill_dogfood.py", _suggest_public_skill_dogfood, *args)
+    result = run_loaded_script_main(
+        "suggest_public_skill_dogfood.py", _suggest_public_skill_dogfood, *args
+    )
     return SimpleNamespace(returncode=result.returncode, stdout=result.stdout, stderr=result.stderr)
 
 
@@ -111,7 +113,9 @@ def test_validate_public_skill_dogfood_passes_for_current_real_registry() -> Non
     validate_registry(load_registry(ROOT), ROOT)
 
 
-def test_validate_public_skill_dogfood_accepts_registry_owned_prompt_and_evidence(tmp_path: Path) -> None:
+def test_validate_public_skill_dogfood_accepts_registry_owned_prompt_and_evidence(
+    tmp_path: Path,
+) -> None:
     repo = seed_repo(tmp_path)
     seed_skill(repo, "demo", description="Improve the demo skill first.")
     registry = base_registry(repo)
@@ -122,7 +126,9 @@ def test_validate_public_skill_dogfood_accepts_registry_owned_prompt_and_evidenc
     assert validate_registry(load_registry(repo), repo)["cases"] == registry["cases"]
 
 
-def test_validate_public_skill_dogfood_requires_reviewed_case_for_required_skill(tmp_path: Path) -> None:
+def test_validate_public_skill_dogfood_requires_reviewed_case_for_required_skill(
+    tmp_path: Path,
+) -> None:
     repo = seed_repo(tmp_path)
     seed_skill(repo, "demo", description="Improve the demo skill first.")
     registry = base_registry(repo)
@@ -147,7 +153,9 @@ def test_validate_public_skill_dogfood_rejects_historical_case_fields(tmp_path: 
         validate_registry(load_registry(repo), repo)
 
 
-def test_suggest_public_skill_dogfood_cli_emits_requested_matrix(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_suggest_public_skill_dogfood_cli_emits_requested_matrix(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = seed_repo(tmp_path)
     seed_skill(repo, "demo", description="Improve the demo skill first.")
     write_registry(repo, base_registry(repo))
@@ -227,7 +235,9 @@ def test_suggest_public_skill_dogfood_cli_covers_json_human_and_unknown_paths(
     assert "Unknown public skill id(s): `missing`" in unknown_result.stderr
 
 
-def test_suggest_cli_uses_registry_owned_prompt_without_warning(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_suggest_cli_uses_registry_owned_prompt_without_warning(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = seed_repo(tmp_path)
     seed_skill(repo, "demo", description="Improve the demo skill first.")
     registry = base_registry(repo)

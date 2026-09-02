@@ -15,8 +15,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from scripts import validate_inventory_consumption_declaration as declaration
 from tests.quality_gates.support import run_script
+from tools import validate_inventory_consumption_declaration as declaration
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts" / "validate_inventory_consumption.py"

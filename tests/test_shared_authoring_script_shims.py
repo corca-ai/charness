@@ -10,6 +10,7 @@ and nowhere else, silently, behind `2>/dev/null || true`.
 These tests pin the shared resolution logic, every shim built on it, and the
 prose that names them.
 """
+
 from __future__ import annotations
 
 import subprocess
@@ -35,12 +36,7 @@ mirror_shim_lib = load_script_module(
 
 # Every shim, and the call site whose prose must name it.
 SHIMS = {
-    "plan_risk_interrupt.py": (
-        REPO_ROOT / "skills" / "public" / "spec" / "SKILL.md",
-    ),
-    "validate_skills.py": (
-        REPO_ROOT / "skills" / "shared" / "references" / "binary-preflight.md",
-    ),
+    "plan_risk_interrupt.py": (REPO_ROOT / "skills" / "public" / "spec" / "SKILL.md",),
 }
 
 
@@ -49,9 +45,7 @@ SHIMS = {
     ("scripts_dir", "expected_target_dir"),
     [
         pytest.param(SHARED_SCRIPTS, REPO_ROOT / "scripts", id="authoring"),
-        pytest.param(
-            MIRROR_SCRIPTS, REPO_ROOT / "plugins" / "charness" / "scripts", id="shipped"
-        ),
+        pytest.param(MIRROR_SCRIPTS, REPO_ROOT / "plugins" / "charness" / "scripts", id="shipped"),
     ],
 )
 def test_each_shim_resolves_to_its_OWN_tree(
@@ -73,7 +67,12 @@ def test_each_shim_resolves_to_its_OWN_tree(
     assert lib._MAX_ANCESTORS == shim_lib._MAX_ANCESTORS, "mirror shim logic drifted from source"
     located = lib.locate(name, caller)
     assert located.resolve() != caller.resolve()
-    assert located.resolve() == (expected_target_dir / name).resolve()
+    target_dir = (
+        REPO_ROOT / "tools"
+        if name == "validate_skills.py" and scripts_dir == SHARED_SCRIPTS
+        else expected_target_dir
+    )
+    assert located.resolve() == (target_dir / name).resolve()
 
 
 def test_the_walk_is_bounded_and_cannot_reach_an_unrelated_scripts_dir(tmp_path: Path) -> None:
@@ -116,7 +115,8 @@ def test_a_failing_target_reports_its_own_verdict_not_a_traceback(tmp_path: Path
     (package / "SKILL.md").write_text("---\nname: broken\n---\n\n# Broken\n", encoding="utf-8")
 
     result = subprocess.run(
-        [sys.executable, str(SHARED_SCRIPTS / "validate_skills.py"), "--repo-root", str(tmp_path)],
+        [sys.executable, "-m", "tools.validate_skills", "--repo-root", str(tmp_path)],
+        cwd=REPO_ROOT,
         capture_output=True,
         text=True,
         check=False,
@@ -162,7 +162,9 @@ def test_every_shim_answers_help_in_both_layouts(name: str, scripts_dir: Path) -
 @pytest.mark.boundary_contract(
     reason="the planner shim must run as the installed standalone command"
 )
-def test_the_planner_shim_degrades_gracefully_where_no_debug_artifact_exists(tmp_path: Path) -> None:
+def test_the_planner_shim_degrades_gracefully_where_no_debug_artifact_exists(
+    tmp_path: Path,
+) -> None:
     """A consuming repo's shape: the command must run, not just resolve."""
     (tmp_path / ".agents").mkdir()
     result = subprocess.run(
@@ -205,4 +207,6 @@ def test_the_call_sites_name_a_path_that_resolves_in_both_layouts(name: str) -> 
             assert "2>/dev/null" not in line, f"{call_site}: stderr swallow hides a missing file"
             # The shims ship mode 100644, so a bare path is `permission denied`.
             # Naming a command that cannot run is the very class #477 filed.
-            assert "python3 " in line, f"{call_site}: names a non-executable path with no interpreter"
+            assert "python3 " in line, (
+                f"{call_site}: names a non-executable path with no interpreter"
+            )

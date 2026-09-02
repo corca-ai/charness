@@ -11,7 +11,7 @@ def test_check_skill_contracts_rejects_missing_required_snippet(tmp_path: Path) 
     quality_skill_dir = repo / "skills" / "public" / "quality"
     quality_skill_dir.mkdir(parents=True)
 
-    module_path = ROOT / "scripts" / "check_skill_contracts.py"
+    module_path = ROOT / "tools" / "check_skill_contracts.py"
     spec = importlib.util.spec_from_file_location("check_skill_contracts_test_module", module_path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -24,18 +24,20 @@ def test_check_skill_contracts_rejects_missing_required_snippet(tmp_path: Path) 
         target.write_text((ROOT / rel_path).read_text(encoding="utf-8"), encoding="utf-8")
 
     (quality_skill_dir / "SKILL.md").write_text(
-        "---\nname: quality\ndescription: \"demo\"\n---\n\n# Quality\n",
+        '---\nname: quality\ndescription: "demo"\n---\n\n# Quality\n',
         encoding="utf-8",
     )
 
-    result = run_script("scripts/check_skill_contracts.py", "--repo-root", str(repo))
+    result = run_script("tools/check_skill_contracts.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "missing required core contract snippet" in result.stderr
 
 
 def test_check_skill_contracts_pins_current_critique_contract() -> None:
-    module_path = ROOT / "scripts" / "check_skill_contracts.py"
-    spec = importlib.util.spec_from_file_location("check_skill_contracts_critique_pin_test", module_path)
+    module_path = ROOT / "tools" / "check_skill_contracts.py"
+    spec = importlib.util.spec_from_file_location(
+        "check_skill_contracts_critique_pin_test", module_path
+    )
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -51,7 +53,7 @@ def test_check_skill_contracts_allows_reference_level_package_contract(tmp_path:
     (skill_dir / "references").mkdir(parents=True)
     skill_path = skill_dir / "SKILL.md"
     skill_path.write_text(
-        "---\nname: demo\ndescription: \"demo\"\n---\n\n# Demo\n\nCore promise.\n",
+        '---\nname: demo\ndescription: "demo"\n---\n\n# Demo\n\nCore promise.\n',
         encoding="utf-8",
     )
     (skill_dir / "references" / "details.md").write_text(
@@ -59,8 +61,10 @@ def test_check_skill_contracts_allows_reference_level_package_contract(tmp_path:
         encoding="utf-8",
     )
 
-    module_path = ROOT / "scripts" / "check_skill_contracts.py"
-    spec = importlib.util.spec_from_file_location("check_skill_contracts_reference_test", module_path)
+    module_path = ROOT / "tools" / "check_skill_contracts.py"
+    spec = importlib.util.spec_from_file_location(
+        "check_skill_contracts_reference_test", module_path
+    )
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -75,7 +79,7 @@ def test_check_skill_contracts_uses_declared_active_package_sources(tmp_path: Pa
     (skill_dir / "scripts").mkdir()
     skill_path = skill_dir / "SKILL.md"
     skill_path.write_text(
-        "---\nname: demo\ndescription: \"demo\"\n---\n\n# Demo\n",
+        '---\nname: demo\ndescription: "demo"\n---\n\n# Demo\n',
         encoding="utf-8",
     )
     (skill_dir / "references" / "active.md").write_text(
@@ -91,8 +95,10 @@ def test_check_skill_contracts_uses_declared_active_package_sources(tmp_path: Pa
         encoding="utf-8",
     )
 
-    module_path = ROOT / "scripts" / "check_skill_contracts.py"
-    spec = importlib.util.spec_from_file_location("check_skill_contracts_active_sources_test", module_path)
+    module_path = ROOT / "tools" / "check_skill_contracts.py"
+    spec = importlib.util.spec_from_file_location(
+        "check_skill_contracts_active_sources_test", module_path
+    )
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -127,7 +133,7 @@ def test_check_skill_contracts_keeps_core_contract_in_skill_body(tmp_path: Path)
     (skill_dir / "references").mkdir(parents=True)
     skill_path = skill_dir / "SKILL.md"
     skill_path.write_text(
-        "---\nname: demo\ndescription: \"demo\"\n---\n\n# Demo\n",
+        '---\nname: demo\ndescription: "demo"\n---\n\n# Demo\n',
         encoding="utf-8",
     )
     (skill_dir / "references" / "details.md").write_text(
@@ -135,7 +141,7 @@ def test_check_skill_contracts_keeps_core_contract_in_skill_body(tmp_path: Path)
         encoding="utf-8",
     )
 
-    module_path = ROOT / "scripts" / "check_skill_contracts.py"
+    module_path = ROOT / "tools" / "check_skill_contracts.py"
     spec = importlib.util.spec_from_file_location("check_skill_contracts_core_test", module_path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -146,15 +152,19 @@ def test_check_skill_contracts_keeps_core_contract_in_skill_body(tmp_path: Path)
     except module.ValidationError as exc:
         assert "missing required core contract snippet" in str(exc)
     else:
-        raise AssertionError("expected core-only contract to fail when it only appears in references")
+        raise AssertionError(
+            "expected core-only contract to fail when it only appears in references"
+        )
 
 
 def test_check_skill_contracts_ignores_markdown_line_wrapping(tmp_path: Path) -> None:
     skill_path = tmp_path / "SKILL.md"
     skill_path.write_text("Core promise spans\nmultiple lines.\n", encoding="utf-8")
 
-    module_path = ROOT / "scripts" / "check_skill_contracts.py"
-    spec = importlib.util.spec_from_file_location("check_skill_contracts_wrapping_test", module_path)
+    module_path = ROOT / "tools" / "check_skill_contracts.py"
+    spec = importlib.util.spec_from_file_location(
+        "check_skill_contracts_wrapping_test", module_path
+    )
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -172,12 +182,14 @@ def test_check_skill_contracts_ignores_markdown_line_wrapping(tmp_path: Path) ->
 def test_check_skill_contracts_forbidden_snippets_fail_in_skill_body(tmp_path: Path) -> None:
     skill_path = tmp_path / "SKILL.md"
     skill_path.write_text(
-        "---\nname: demo\ndescription: \"demo\"\n---\n\n# Demo\n\nForbidden promise.\n",
+        '---\nname: demo\ndescription: "demo"\n---\n\n# Demo\n\nForbidden promise.\n',
         encoding="utf-8",
     )
 
-    module_path = ROOT / "scripts" / "check_skill_contracts.py"
-    spec = importlib.util.spec_from_file_location("check_skill_contracts_forbidden_test", module_path)
+    module_path = ROOT / "tools" / "check_skill_contracts.py"
+    spec = importlib.util.spec_from_file_location(
+        "check_skill_contracts_forbidden_test", module_path
+    )
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -196,15 +208,17 @@ def test_check_skill_contracts_ignores_non_text_reference_artifacts(tmp_path: Pa
     (skill_dir / "references" / "__pycache__").mkdir(parents=True)
     skill_path = skill_dir / "SKILL.md"
     skill_path.write_text(
-        "---\nname: demo\ndescription: \"demo\"\n---\n\n# Demo\n",
+        '---\nname: demo\ndescription: "demo"\n---\n\n# Demo\n',
         encoding="utf-8",
     )
     (skill_dir / "references" / "__pycache__" / "details.pyc").write_bytes(
         b"Reference-level package promise."
     )
 
-    module_path = ROOT / "scripts" / "check_skill_contracts.py"
-    spec = importlib.util.spec_from_file_location("check_skill_contracts_non_text_test", module_path)
+    module_path = ROOT / "tools" / "check_skill_contracts.py"
+    spec = importlib.util.spec_from_file_location(
+        "check_skill_contracts_non_text_test", module_path
+    )
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)

@@ -8,8 +8,8 @@ import yaml
 
 from scripts import capability_catalog as CAPABILITY_CATALOG
 from scripts.operator_acceptance_lib import SHARED_START_CANDIDATES, synthesize_operator_acceptance
-from scripts.validate_quality_closeout_contract import validate_quality_closeout_contract
 from tests.script_loader import load_script_module
+from tools.validate_quality_closeout_contract import validate_quality_closeout_contract
 
 from .support import ROOT
 
@@ -37,7 +37,9 @@ PLAN_RELEASE_RUN = load_script_module(
 
 def test_release_current_release_reports_packaging_version(monkeypatch, capsys) -> None:
     payload = CURRENT_RELEASE.build_payload(ROOT)
-    expected = json.loads((ROOT / "packaging" / "charness.json").read_text(encoding="utf-8"))["version"]
+    expected = json.loads((ROOT / "packaging" / "charness.json").read_text(encoding="utf-8"))[
+        "version"
+    ]
     assert payload["package_id"] == "charness"
     assert payload["surface_versions"]["packaging_manifest"] == expected
     assert payload["materialized_plugin_root"].endswith("plugins/charness")
@@ -153,7 +155,9 @@ def test_release_run_planner_sets_its_own_timeout_budget(tmp_path: Path, monkeyp
     )
 
 
-def test_setup_synthesize_operator_acceptance_outputs_tiered_draft(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_setup_synthesize_operator_acceptance_outputs_tiered_draft(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = tmp_path / "repo"
     (repo / "docs" / "specs").mkdir(parents=True)
     (repo / "scripts").mkdir(parents=True)
@@ -161,7 +165,9 @@ def test_setup_synthesize_operator_acceptance_outputs_tiered_draft(tmp_path: Pat
     (repo / "docs" / "index.md").write_text("# Docs\n", encoding="utf-8")
     (repo / "docs" / "roadmap.md").write_text("# Roadmap\n", encoding="utf-8")
     (repo / "pyproject.toml").write_text("[project]\nname='demo'\n", encoding="utf-8")
-    (repo / "scripts" / "run-quality.sh").write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+    (repo / "scripts" / "run-quality.sh").write_text(
+        "#!/usr/bin/env bash\nexit 0\n", encoding="utf-8"
+    )
     (repo / "docs" / "specs" / "demo.spec.md").write_text(
         "\n".join(
             [
@@ -195,9 +201,14 @@ def test_setup_synthesize_operator_acceptance_outputs_tiered_draft(tmp_path: Pat
         write=False,
         force=False,
     )
-    assert payload["shared_start_commands"] == [command for command, _path in SHARED_START_CANDIDATES]
+    assert payload["shared_start_commands"] == [
+        command for command, _path in SHARED_START_CANDIDATES
+    ]
     assert payload["acceptance_buckets"]["cheap_first"][0]["commands"] == "./scripts/run-quality.sh"
-    assert "gh workflow run release.yml" in payload["acceptance_buckets"]["external_or_costly"][0]["commands"]
+    assert (
+        "gh workflow run release.yml"
+        in payload["acceptance_buckets"]["external_or_costly"][0]["commands"]
+    )
     assert payload["acceptance_buckets"]["human_judgment"][0]["source_path"] == "docs/index.md"
     assert "## Cheap First" in payload["markdown"]
     assert "## External Or Costly Checks" in payload["markdown"]
@@ -214,11 +225,16 @@ def test_setup_synthesize_operator_acceptance_outputs_tiered_draft(tmp_path: Pat
     )
     SYNTHESIZE_OPERATOR_ACCEPTANCE.main()
     cli_payload = yaml.safe_load(capsys.readouterr().out)
-    assert cli_payload["acceptance_buckets"]["cheap_first"][0]["commands"] == "./scripts/run-quality.sh"
+    assert (
+        cli_payload["acceptance_buckets"]["cheap_first"][0]["commands"]
+        == "./scripts/run-quality.sh"
+    )
     assert "## Environment Prerequisites" in cli_payload["markdown"]
 
 
-def test_capability_catalog_lists_adapter_configured_trusted_roots(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_capability_catalog_lists_adapter_configured_trusted_roots(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = tmp_path / "repo"
     local_skill_dir = repo / "skills" / "public" / "local-demo"
     trusted_skill_dir = repo / "vendor" / "trusted-skills" / "trusted-demo"
@@ -228,11 +244,29 @@ def test_capability_catalog_lists_adapter_configured_trusted_roots(tmp_path: Pat
     adapter_dir.mkdir(parents=True)
 
     (local_skill_dir / "SKILL.md").write_text(
-        "\n".join(["---", "name: local-demo", 'description: "Local demo skill."', "---", "", "# Local Demo"]),
+        "\n".join(
+            [
+                "---",
+                "name: local-demo",
+                'description: "Local demo skill."',
+                "---",
+                "",
+                "# Local Demo",
+            ]
+        ),
         encoding="utf-8",
     )
     (trusted_skill_dir / "SKILL.md").write_text(
-        "\n".join(["---", "name: trusted-demo", 'description: "Trusted demo skill."', "---", "", "# Trusted Demo"]),
+        "\n".join(
+            [
+                "---",
+                "name: trusted-demo",
+                'description: "Trusted demo skill."',
+                "---",
+                "",
+                "# Trusted Demo",
+            ]
+        ),
         encoding="utf-8",
     )
     (adapter_dir / "capability-catalog-adapter.yaml").write_text(
@@ -257,7 +291,9 @@ def test_capability_catalog_lists_adapter_configured_trusted_roots(tmp_path: Pat
     assert payload["trusted_skills"][0]["id"] == "trusted-demo"
 
 
-def test_impl_survey_reports_broken_preferred_skill_symlink(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_impl_survey_reports_broken_preferred_skill_symlink(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = tmp_path / "repo"
     adapter_dir = repo / ".agents"
     skills_dir = adapter_dir / "skills"

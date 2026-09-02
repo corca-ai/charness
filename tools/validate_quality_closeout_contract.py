@@ -44,8 +44,18 @@ def validate_quality_closeout_contract(repo_root: Path) -> None:
         "must not suppress inline prompt/content inventory",
         "prompt asset root boundary",
     )
-    for section in ("## Weak", "## Missing", "## Advisory", "## Delegated Review", "## Recommended Next Quality Moves"):
-        require_text(artifact_validator_path, f'"{section}"', f"quality artifact section requirement {section}")
+    for section in (
+        "## Weak",
+        "## Missing",
+        "## Advisory",
+        "## Delegated Review",
+        "## Recommended Next Quality Moves",
+    ):
+        require_text(
+            artifact_validator_path,
+            f'"{section}"',
+            f"quality artifact section requirement {section}",
+        )
 
 
 def main() -> int:

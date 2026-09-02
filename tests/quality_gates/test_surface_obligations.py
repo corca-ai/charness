@@ -9,8 +9,8 @@ from types import SimpleNamespace
 
 import yaml
 
-from scripts import validate_surfaces
 from scripts.surfaces_lib import SurfaceError, load_surfaces
+from tools import validate_surfaces
 
 from .seeding_support import write_json, write_surface
 from .support import ROOT, run_script
@@ -47,10 +47,9 @@ def test_check_changed_surfaces_reports_expected_obligations_for_readme() -> Non
     assert "materialized-plugin-export" in surface_ids
     assert "repo-markdown" in surface_ids
     assert "python3 scripts/sync_root_plugin_manifests.py --repo-root ." in payload["sync_commands"]
-    assert "python3 scripts/validate_packaging.py --repo-root ." in payload["verify_commands"]
+    assert "python3 -m tools.validate_packaging --repo-root ." in payload["verify_commands"]
     assert (
-        "python3 scripts/validate_packaging_committed.py --repo-root ."
-        in payload["verify_commands"]
+        "python3 -m tools.validate_packaging_committed --repo-root ." in payload["verify_commands"]
     )
     assert "./scripts/check-docs.sh" in payload["verify_commands"]
 
@@ -261,8 +260,8 @@ def test_select_verifiers_returns_smallest_repo_owned_bundle_for_readme() -> Non
         "reason_surface_ids": ["materialized-plugin-export"],
     }
     verify_commands = {item["command"] for item in recommendations if item["phase"] == "verify"}
-    assert "python3 scripts/validate_packaging.py --repo-root ." in verify_commands
-    assert "python3 scripts/validate_packaging_committed.py --repo-root ." in verify_commands
+    assert "python3 -m tools.validate_packaging --repo-root ." in verify_commands
+    assert "python3 -m tools.validate_packaging_committed --repo-root ." in verify_commands
     assert "./scripts/check-docs.sh" in verify_commands
 
 
@@ -279,9 +278,9 @@ def test_select_verifiers_includes_public_skill_policy_for_public_skill_changes(
     verify_commands = {
         item["command"] for item in payload["recommended_commands"] if item["phase"] == "verify"
     }
-    assert "python3 scripts/validate_skills.py --repo-root ." in verify_commands
-    assert "python3 scripts/validate_public_skill_validation.py --repo-root ." in verify_commands
-    assert "python3 scripts/validate_public_skill_dogfood.py --repo-root ." in verify_commands
+    assert "python3 -m tools.validate_skills --repo-root ." in verify_commands
+    assert "python3 -m tools.validate_public_skill_validation --repo-root ." in verify_commands
+    assert "python3 -m tools.validate_public_skill_dogfood --repo-root ." in verify_commands
 
 
 def test_select_verifiers_includes_public_skill_policy_for_policy_json_changes() -> None:
@@ -297,7 +296,7 @@ def test_select_verifiers_includes_public_skill_policy_for_policy_json_changes()
     verify_commands = {
         item["command"] for item in payload["recommended_commands"] if item["phase"] == "verify"
     }
-    assert "python3 scripts/validate_public_skill_validation.py --repo-root ." in verify_commands
+    assert "python3 -m tools.validate_public_skill_validation --repo-root ." in verify_commands
 
 
 def test_select_verifiers_includes_public_skill_dogfood_for_registry_changes() -> None:
@@ -313,7 +312,7 @@ def test_select_verifiers_includes_public_skill_dogfood_for_registry_changes() -
     verify_commands = {
         item["command"] for item in payload["recommended_commands"] if item["phase"] == "verify"
     }
-    assert "python3 scripts/validate_public_skill_dogfood.py --repo-root ." in verify_commands
+    assert "python3 -m tools.validate_public_skill_dogfood --repo-root ." in verify_commands
 
 
 def test_select_verifiers_reports_missing_bundle_for_unmatched_paths() -> None:

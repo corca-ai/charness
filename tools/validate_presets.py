@@ -81,9 +81,19 @@ def validate_reconciliation_frontmatter(data: dict[str, object]) -> None:
     if "reconciliation" not in data:
         return
     reconciliation = data.get("reconciliation")
-    required = reconciliation.get("required_adapter_commands") if isinstance(reconciliation, dict) else None
-    if not isinstance(required, list) or not required or not all(isinstance(item, str) and item.strip() for item in required):
-        raise ValidationError("reconciliation.required_adapter_commands must be a non-empty string list")
+    required = (
+        reconciliation.get("required_adapter_commands")
+        if isinstance(reconciliation, dict)
+        else None
+    )
+    if (
+        not isinstance(required, list)
+        or not required
+        or not all(isinstance(item, str) and item.strip() for item in required)
+    ):
+        raise ValidationError(
+            "reconciliation.required_adapter_commands must be a non-empty string list"
+        )
 
 
 def validate_quoted_string(field: str, value: str) -> None:
@@ -122,7 +132,9 @@ def validate_preset(path: Path) -> dict[str, object]:
     if install_scope == "organization" and preset_kind != "product-slice":
         raise ValidationError("organization-scope presets must use `preset_kind: product-slice`")
     if preset_kind == "product-slice" and "## Exposure Contract" not in contents:
-        raise ValidationError("product-slice presets must include an `## Exposure Contract` section")
+        raise ValidationError(
+            "product-slice presets must include an `## Exposure Contract` section"
+        )
     return structured_data
 
 

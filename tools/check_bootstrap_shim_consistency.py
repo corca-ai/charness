@@ -230,7 +230,7 @@ def main() -> int:
         ]
     elif status == "drift":
         payload["remedies"] = [
-            "Run: python3 scripts/check_bootstrap_shim_consistency.py --repo-root . --fix",
+            "Run: python3 -m tools.check_bootstrap_shim_consistency --repo-root . --fix",
             "To evolve the shim deliberately, edit CANONICAL_SHIM in this gate first, then --fix to propagate.",
         ]
     emit_yaml(payload)

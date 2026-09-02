@@ -10,7 +10,9 @@ from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-_scripts_public_skill_validation_lib_module = import_repo_module(__file__, "scripts.public_skill_validation_lib")
+_scripts_public_skill_validation_lib_module = import_repo_module(
+    __file__, "scripts.public_skill_validation_lib"
+)
 POLICY_PATH = _scripts_public_skill_validation_lib_module.POLICY_PATH
 VALID_ADAPTER_REQUIREMENTS = _scripts_public_skill_validation_lib_module.VALID_ADAPTER_REQUIREMENTS
 VALID_FALLBACK_POLICIES = _scripts_public_skill_validation_lib_module.VALID_FALLBACK_POLICIES
@@ -30,9 +32,7 @@ def build_report(repo_root: Path) -> dict[str, object]:
         else {}
     )
     fallback_policy = (
-        policy.get("fallback_policy")
-        if isinstance(policy.get("fallback_policy"), dict)
-        else {}
+        policy.get("fallback_policy") if isinstance(policy.get("fallback_policy"), dict) else {}
     )
     missing_tiers = partition_missing_skills(
         {category: list(tiers.get(category, [])) for category in VALID_TIERS},
@@ -46,10 +46,7 @@ def build_report(repo_root: Path) -> dict[str, object]:
         all_skills=all_skills,
     )
     missing_fallback_policy = partition_missing_skills(
-        {
-            category: list(fallback_policy.get(category, []))
-            for category in VALID_FALLBACK_POLICIES
-        },
+        {category: list(fallback_policy.get(category, [])) for category in VALID_FALLBACK_POLICIES},
         all_skills=all_skills,
     )
     missing_skills = sorted(
@@ -76,8 +73,7 @@ def build_report(repo_root: Path) -> dict[str, object]:
                     if skill_id in missing_adapter_requirements
                     else [],
                     "fallback_policy": [
-                        f"fallback_policy.{category}"
-                        for category in VALID_FALLBACK_POLICIES
+                        f"fallback_policy.{category}" for category in VALID_FALLBACK_POLICIES
                     ]
                     if skill_id in missing_fallback_policy
                     else [],

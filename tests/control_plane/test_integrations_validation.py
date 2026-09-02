@@ -11,25 +11,29 @@ import yaml
 
 import scripts.doctor as doctor_module
 import scripts.install_tools as install_tools_module
-import scripts.validate_integrations as validate_integrations_module
+import tools.validate_integrations as validate_integrations_module
 from scripts.control_plane_lib import load_capabilities
 from scripts.doctor import inspect_manifest
 from scripts.sync_support import sync_one
-from scripts.validate_integrations import (
+from tests.dsl import Repo
+from tests.repo_copy import clone_seeded_charness_repo
+from tests.script_main import run_loaded_script_main
+from tools.validate_integrations import (
     ValidationError,
     validate_access_mode_order,
     validate_capability_requirements,
     validate_config_layers,
     validate_support_install_entrypoint,
 )
-from tests.dsl import Repo
-from tests.repo_copy import clone_seeded_charness_repo
-from tests.script_main import run_loaded_script_main
 
 from .support import ROOT, run_script, seed_control_plane_repo
 
-MANIFEST_SCHEMA = (ROOT / "integrations" / "tools" / "manifest.schema.json").read_text(encoding="utf-8")
-DEPENDENCIES_SCHEMA = (ROOT / "integrations" / "tools" / "dependencies.schema.json").read_text(encoding="utf-8")
+MANIFEST_SCHEMA = (ROOT / "integrations" / "tools" / "manifest.schema.json").read_text(
+    encoding="utf-8"
+)
+DEPENDENCIES_SCHEMA = (ROOT / "integrations" / "tools" / "dependencies.schema.json").read_text(
+    encoding="utf-8"
+)
 
 
 def write_manifest_schema(repo: Path) -> Path:
@@ -122,7 +126,10 @@ def test_validate_integrations_rejects_invalid_local_wrapper(tmp_path: Path) -> 
                     "upstream_repo": "example/bad",
                     "homepage": "https://example.com/bad",
                     "lifecycle": {
-                        "install": {"mode": "manual", "install_url": "https://example.com/bad/install"},
+                        "install": {
+                            "mode": "manual",
+                            "install_url": "https://example.com/bad/install",
+                        },
                         "update": {"mode": "manual"},
                     },
                     "checks": {
@@ -151,7 +158,9 @@ def test_validate_integrations_rejects_invalid_local_wrapper(tmp_path: Path) -> 
     assert "local_wrapper requires wrapper_skill_id" in result.stderr
 
 
-def test_validate_integrations_requires_install_entrypoint_for_support_backed_tools(tmp_path: Path) -> None:
+def test_validate_integrations_requires_install_entrypoint_for_support_backed_tools(
+    tmp_path: Path,
+) -> None:
     repo = tmp_path / "repo"
     tools_dir = write_manifest_schema(repo)
     (tools_dir / "missing-install-url.json").write_text(
@@ -212,7 +221,9 @@ def test_validate_integrations_rejects_unsorted_access_modes(tmp_path: Path) -> 
         validate_access_mode_order(read_manifest(manifest_path), manifest_path)
 
 
-def test_validate_integrations_requires_capability_requirements_for_grant_and_env(tmp_path: Path) -> None:
+def test_validate_integrations_requires_capability_requirements_for_grant_and_env(
+    tmp_path: Path,
+) -> None:
     repo = tmp_path / "repo"
     tools_dir = write_manifest_schema(repo)
     (tools_dir / "grant-env.json").write_text(
@@ -236,7 +247,9 @@ def test_validate_integrations_requires_capability_requirements_for_grant_and_en
         encoding="utf-8",
     )
     manifest_path = tools_dir / "grant-env.json"
-    with pytest.raises(ValidationError, match="grant access requires capability_requirements.grant_ids"):
+    with pytest.raises(
+        ValidationError, match="grant access requires capability_requirements.grant_ids"
+    ):
         validate_capability_requirements(read_manifest(manifest_path), manifest_path)
 
 
@@ -258,10 +271,21 @@ def test_validate_integrations_rejects_unsorted_config_layers(tmp_path: Path) ->
                     "healthcheck": {"commands": ["true"], "success_criteria": ["exit_code:0"]},
                 },
                 "access_modes": ["grant", "env", "degraded"],
-                "capability_requirements": {"grant_ids": ["demo.grant"], "env_vars": ["DEMO_TOKEN"]},
+                "capability_requirements": {
+                    "grant_ids": ["demo.grant"],
+                    "env_vars": ["DEMO_TOKEN"],
+                },
                 "config_layers": [
-                    {"layer_id": "env-fallback", "layer_type": "env", "summary": "Use env fallback."},
-                    {"layer_id": "grant-first", "layer_type": "grant", "summary": "Use runtime grant first."},
+                    {
+                        "layer_id": "env-fallback",
+                        "layer_type": "env",
+                        "summary": "Use env fallback.",
+                    },
+                    {
+                        "layer_id": "grant-first",
+                        "layer_type": "grant",
+                        "summary": "Use runtime grant first.",
+                    },
                 ],
                 "version_expectation": {"policy": "advisory", "constraint": "latest"},
             }
@@ -273,7 +297,9 @@ def test_validate_integrations_rejects_unsorted_config_layers(tmp_path: Path) ->
         validate_config_layers(read_manifest(manifest_path), manifest_path)
 
 
-def test_doctor_detects_missing_materialized_support_from_previous_sync(tmp_path: Path, monkeypatch) -> None:
+def test_doctor_detects_missing_materialized_support_from_previous_sync(
+    tmp_path: Path, monkeypatch
+) -> None:
     repo = seed_control_plane_repo(tmp_path)
     plugin_root = tmp_path / "plugin"
     monkeypatch.setenv("CHARNESS_CACHE_HOME", str(tmp_path / "cache-home"))
@@ -288,11 +314,19 @@ def test_doctor_detects_missing_materialized_support_from_previous_sync(tmp_path
     assert doctor_payload["support_sync"]["status"] == "missing"
     assert doctor_payload["support_sync"]["missing_paths"] == ["support/demo-tool-wrapper"]
     assert doctor_payload["support_sync"]["action_required"] is True
-    assert doctor_payload["support_sync"]["suggested_command"] == "charness tool sync-support demo-tool"
-    assert "Previously materialized support skill paths are missing." in doctor_payload["next_steps"][0]
+    assert (
+        doctor_payload["support_sync"]["suggested_command"]
+        == "charness tool sync-support demo-tool"
+    )
+    assert (
+        "Previously materialized support skill paths are missing."
+        in doctor_payload["next_steps"][0]
+    )
 
 
-def test_doctor_missing_manual_tool_is_advisory_exit_zero_for_script_and_cli(tmp_path: Path) -> None:
+def test_doctor_missing_manual_tool_is_advisory_exit_zero_for_script_and_cli(
+    tmp_path: Path,
+) -> None:
     repo = seed_control_plane_repo(tmp_path)
     (repo / "bin" / "demo-tool").unlink()
 
@@ -332,7 +366,9 @@ def test_doctor_missing_advisory_script_tool_is_exit_zero(tmp_path: Path) -> Non
     assert doctor_payload[0]["doctor_disposition"] == "advisory-install-needed"
 
 
-def test_doctor_reuses_package_manager_prefix_probe_for_batch(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_doctor_reuses_package_manager_prefix_probe_for_batch(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = seed_control_plane_repo(tmp_path)
     monkeypatch.setenv("CHARNESS_DISABLE_PLUGIN_FALLBACK_MANIFESTS", "1")
     manifest_path = repo / "integrations" / "tools" / "demo-tool.json"
@@ -363,7 +399,9 @@ def test_doctor_reuses_package_manager_prefix_probe_for_batch(tmp_path: Path, mo
 
 
 def test_defuddle_manifest_missing_binary_is_advisory() -> None:
-    manifest = json.loads((ROOT / "integrations" / "tools" / "defuddle.json").read_text(encoding="utf-8"))
+    manifest = json.loads(
+        (ROOT / "integrations" / "tools" / "defuddle.json").read_text(encoding="utf-8")
+    )
 
     assert manifest["doctor_policy"] == "advisory"
     assert "degraded" in manifest["access_modes"]
@@ -401,7 +439,9 @@ def test_nose_stays_blocking_because_it_has_no_degraded_path() -> None:
     that expectation was unreachable at the tag and is now covered by the executable
     doctor assertions below.
     """
-    manifest = json.loads((ROOT / "integrations" / "tools" / "nose.json").read_text(encoding="utf-8"))
+    manifest = json.loads(
+        (ROOT / "integrations" / "tools" / "nose.json").read_text(encoding="utf-8")
+    )
 
     assert manifest["doctor_policy"] == "required"
     assert "degraded" not in manifest["access_modes"]
@@ -471,7 +511,9 @@ def test_doctor_accepts_manifest_without_healthcheck(tmp_path: Path, monkeypatch
     )
     assert validate.returncode == 0, validate.stderr
 
-    payload = inspect_manifest(repo, load_capabilities(repo)[0], write=False, skip_release_probe=True)
+    payload = inspect_manifest(
+        repo, load_capabilities(repo)[0], write=False, skip_release_probe=True
+    )
     assert payload["doctor_status"] == "ok"
     assert payload["healthcheck"]["ok"] is True
     assert payload["healthcheck"]["status"] == "not-configured"
@@ -501,7 +543,9 @@ def test_doctor_reports_not_ready_when_readiness_check_fails(tmp_path: Path, mon
     monkeypatch.setenv("CHARNESS_DISABLE_PLUGIN_FALLBACK_MANIFESTS", "1")
     (repo / ".demo-ready").unlink()
 
-    doctor_payload = inspect_manifest(repo, load_capabilities(repo)[0], write=True, skip_release_probe=False)
+    doctor_payload = inspect_manifest(
+        repo, load_capabilities(repo)[0], write=True, skip_release_probe=False
+    )
     assert doctor_payload["doctor_status"] == "not-ready"
     payload = doctor_payload["readiness"]
     assert payload["ok"] is False
@@ -520,7 +564,9 @@ def test_doctor_reports_not_ready_when_readiness_check_fails(tmp_path: Path, mon
 # the measured cost and the rejected alternative. The decision previously lived
 # only in this comment while the guard forbade it, so the guard failed for a week
 # behind a skipped broad gate. Change one and the other refuses.
-def test_tool_doctor_cli_returns_nonzero_for_blocking_disposition(tmp_path: Path, seeded_charness_repo: Path) -> None:
+def test_tool_doctor_cli_returns_nonzero_for_blocking_disposition(
+    tmp_path: Path, seeded_charness_repo: Path
+) -> None:
     repo = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
     tools_dir = repo / "integrations" / "tools"
     for manifest_path in tools_dir.glob("*.json"):
@@ -557,20 +603,28 @@ def test_tool_doctor_cli_returns_nonzero_for_blocking_disposition(tmp_path: Path
     assert demo_doctor["doctor_disposition"] == "blocking-failure"
 
 
-def test_doctor_skip_release_probe_preserves_local_readiness_without_release_lookup(tmp_path: Path, monkeypatch) -> None:
+def test_doctor_skip_release_probe_preserves_local_readiness_without_release_lookup(
+    tmp_path: Path, monkeypatch
+) -> None:
     repo = seed_control_plane_repo(tmp_path)
     monkeypatch.setenv("CHARNESS_DISABLE_PLUGIN_FALLBACK_MANIFESTS", "1")
     manifest_path = repo / "integrations" / "tools" / "demo-tool.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     manifest["homepage"] = "https://github.com/example/demo-tool"
     manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
-    monkeypatch.setenv("CHARNESS_RELEASE_PROBE_FIXTURES", str(tmp_path / "missing-release-fixtures.json"))
+    monkeypatch.setenv(
+        "CHARNESS_RELEASE_PROBE_FIXTURES", str(tmp_path / "missing-release-fixtures.json")
+    )
 
-    doctor_payload = inspect_manifest(repo, load_capabilities(repo)[0], write=True, skip_release_probe=True)
+    doctor_payload = inspect_manifest(
+        repo, load_capabilities(repo)[0], write=True, skip_release_probe=True
+    )
     assert doctor_payload["doctor_status"] == "ok"
     assert doctor_payload["readiness"]["ok"] is True
     assert "release" not in doctor_payload
-    lock_payload = json.loads((repo / "integrations" / "locks" / "demo-tool.json").read_text(encoding="utf-8"))
+    lock_payload = json.loads(
+        (repo / "integrations" / "locks" / "demo-tool.json").read_text(encoding="utf-8")
+    )
     assert lock_payload["doctor"]["doctor_status"] == "ok"
     assert "release" not in lock_payload
 
@@ -587,7 +641,17 @@ def test_doctor_reads_support_owned_capability_metadata(tmp_path: Path, monkeypa
         encoding="utf-8",
     )
     (support_dir / "SKILL.md").write_text(
-        "\n".join(["---", "name: gather-slack", 'description: "Slack runtime."', "---", "", "# Gather Slack"]) + "\n",
+        "\n".join(
+            [
+                "---",
+                "name: gather-slack",
+                'description: "Slack runtime."',
+                "---",
+                "",
+                "# Gather Slack",
+            ]
+        )
+        + "\n",
         encoding="utf-8",
     )
     (support_dir / "capability.json").write_text(
@@ -605,12 +669,26 @@ def test_doctor_reads_support_owned_capability_metadata(tmp_path: Path, monkeypa
                     "healthcheck": {"commands": ["true"], "success_criteria": ["exit_code:0"]},
                 },
                 "access_modes": ["grant", "env", "degraded"],
-                "capability_requirements": {"grant_ids": ["slack.history"], "env_vars": ["SLACK_BOT_TOKEN"]},
+                "capability_requirements": {
+                    "grant_ids": ["slack.history"],
+                    "env_vars": ["SLACK_BOT_TOKEN"],
+                },
                 "config_layers": [
-                    {"layer_id": "slack-grant", "layer_type": "grant", "summary": "Prefer runtime grant first."},
+                    {
+                        "layer_id": "slack-grant",
+                        "layer_type": "grant",
+                        "summary": "Prefer runtime grant first.",
+                    },
                     {"layer_id": "slack-env", "layer_type": "env", "summary": "Fallback to env."},
                 ],
-                "readiness_checks": [{"check_id": "slack-ready", "summary": "Slack runtime is ready.", "commands": ["true"], "success_criteria": ["exit_code:0"]}],
+                "readiness_checks": [
+                    {
+                        "check_id": "slack-ready",
+                        "summary": "Slack runtime is ready.",
+                        "commands": ["true"],
+                        "success_criteria": ["exit_code:0"],
+                    }
+                ],
                 "version_expectation": {"policy": "advisory", "constraint": "local"},
             },
             indent=2,
@@ -619,12 +697,16 @@ def test_doctor_reads_support_owned_capability_metadata(tmp_path: Path, monkeypa
         encoding="utf-8",
     )
 
-    payload = inspect_manifest(repo, load_capabilities(repo)[0], write=True, skip_release_probe=False)
+    payload = inspect_manifest(
+        repo, load_capabilities(repo)[0], write=True, skip_release_probe=False
+    )
     assert payload["tool_id"] == "gather-slack"
     assert payload["kind"] == "support_runtime"
     assert payload["support_state"] == "native-support"
     assert payload["support_discovery"]["status"] == "native"
-    assert payload["support_discovery"]["support_skill_path"] == "skills/support/gather-slack/SKILL.md"
+    assert (
+        payload["support_discovery"]["support_skill_path"] == "skills/support/gather-slack/SKILL.md"
+    )
     assert payload["doctor_status"] == "ok"
     assert payload["access_modes"] == ["grant", "env", "degraded"]
 
@@ -728,7 +810,9 @@ def test_install_tools_add_dependency_creates_and_extends_dependencies_file(tmp_
     assert deps_after == deps
 
 
-def test_validate_integrations_refuses_a_lock_pointing_at_a_non_owner_json_file(tmp_path: Path) -> None:
+def test_validate_integrations_refuses_a_lock_pointing_at_a_non_owner_json_file(
+    tmp_path: Path,
+) -> None:
     """Existing + parseable is not the same question as "is this the lock's owner".
 
     The lock schema constrains `manifest_path` to any non-empty string, so a stale
@@ -750,7 +834,9 @@ def test_validate_integrations_refuses_a_lock_pointing_at_a_non_owner_json_file(
     assert "not a discovered tool manifest or support capability" in result.stderr
 
 
-def test_validate_integrations_refuses_a_lock_whose_tool_id_names_another_owner(tmp_path: Path) -> None:
+def test_validate_integrations_refuses_a_lock_whose_tool_id_names_another_owner(
+    tmp_path: Path,
+) -> None:
     """A lock must not claim an identity its referenced manifest does not declare."""
     repo = seed_control_plane_repo(tmp_path)
     lock_path = write_lock(repo, tool_id="not-the-demo-tool")

@@ -30,7 +30,7 @@ def _assert_external_failure_recovery(repo: Path, label: str) -> None:
 
 def _stub_gate(repo: Path, script: str, exit_code: int, message: str) -> None:
     write_executable(
-        repo / "scripts" / script,
+        repo / "tools" / script,
         f"#!/usr/bin/env python3\nimport sys\nprint({message!r})\nsys.exit({exit_code})\n",
     )
 

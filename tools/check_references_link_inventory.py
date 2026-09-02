@@ -87,24 +87,28 @@ def scan_file(path: Path, repo_root: Path) -> dict[str, object]:
             in_bullet = True
             kind = classify_bullet(stripped)
             if kind == "workflow_prose":
-                findings.append({
-                    "path": rel,
-                    "line": idx + 1,
-                    "type": "bullet_without_link_or_path",
-                    "snippet": stripped[:120],
-                })
+                findings.append(
+                    {
+                        "path": rel,
+                        "line": idx + 1,
+                        "type": "bullet_without_link_or_path",
+                        "snippet": stripped[:120],
+                    }
+                )
             continue
         if stripped.startswith("#"):
             in_bullet = False
             continue
         if in_bullet and raw.startswith(("  ", "\t")):
             continue
-        findings.append({
-            "path": rel,
-            "line": idx + 1,
-            "type": "non_bullet_prose",
-            "snippet": stripped[:120],
-        })
+        findings.append(
+            {
+                "path": rel,
+                "line": idx + 1,
+                "type": "non_bullet_prose",
+                "snippet": stripped[:120],
+            }
+        )
     return {"path": rel, "has_references_section": True, "findings": findings}
 
 
@@ -127,7 +131,9 @@ def main() -> int:
     payload = {
         "repo_root": str(repo_root),
         "target_globs": globs,
-        "files_with_references_section": sum(1 for entry in inspected if entry["has_references_section"]),
+        "files_with_references_section": sum(
+            1 for entry in inspected if entry["has_references_section"]
+        ),
         "flagged_file_count": len(flagged),
         "flagged_files": flagged,
     }

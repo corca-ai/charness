@@ -12,7 +12,7 @@ still matches by accident) or fail with no clear root cause.
 
 Only entries with `non_headline_fields` non-empty are executed; opted-out
 entries (empty list + `opt_out_reason`) are skipped here — coverage is owned
-by scripts/check_inventory_declaration_coverage.py.
+by tools/check_inventory_declaration_coverage.py.
 """
 
 from __future__ import annotations
@@ -30,7 +30,7 @@ import yaml
 
 try:
     from runtime_bootstrap import load_path_module
-except ModuleNotFoundError:  # imported as scripts.validate_inventory_consumption_declaration
+except ModuleNotFoundError:  # imported as tools.validate_inventory_consumption_declaration
     from scripts.runtime_bootstrap import load_path_module
 
 DEFAULT_CONSUMER_FIELDS_PATH = "skills/public/quality/references/inventory-consumer-fields.json"

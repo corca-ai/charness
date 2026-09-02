@@ -80,7 +80,7 @@ def _normalize_authoring_path(raw: str) -> str | None:
     value = value.split("::", 1)[0].split("#", 1)[0].strip()
     repo_root_absolute = value.startswith("<repo-root>/")
     if repo_root_absolute:
-        value = value[len("<repo-root>/"):]
+        value = value[len("<repo-root>/") :]
     if value.startswith("./"):
         value = value[2:]
     if "<" in value or ">" in value:
@@ -118,7 +118,9 @@ def _is_author_only_cite(path: str) -> bool:
 
 
 def find_author_repo_cite_errors(markdown_path: Path, contents: str) -> list[str]:
-    if markdown_path.as_posix().endswith("skills/public/create-skill/references/portable-authoring.md"):
+    if markdown_path.as_posix().endswith(
+        "skills/public/create-skill/references/portable-authoring.md"
+    ):
         return []
     lines = contents.splitlines()
     visible_lines = _unfenced_line_numbers(lines)

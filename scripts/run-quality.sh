@@ -988,10 +988,10 @@ if agent_browser_runtime_gate_enabled "agent-browser-runtime-baseline"; then
   fi
 fi
 
-queue_selected "validate-skills" python3 scripts/validate_skills.py --repo-root "$REPO_ROOT"
-queue_selected "validate-quality-reference-catalog" python3 scripts/validate_quality_reference_catalog.py --repo-root "$REPO_ROOT"
+queue_selected "validate-skills" python3 -m tools.validate_skills --repo-root "$REPO_ROOT"
+queue_selected "validate-quality-reference-catalog" python3 -m tools.validate_quality_reference_catalog --repo-root "$REPO_ROOT"
 queue_selected "validate-skill-ergonomics" python3 scripts/validate_skill_ergonomics.py --repo-root "$REPO_ROOT"
-queue_selected "quality-tool-fixtures" python3 scripts/check_quality_tool_fixtures.py --repo-root "$REPO_ROOT"
+queue_selected "quality-tool-fixtures" python3 -m tools.check_quality_tool_fixtures --repo-root "$REPO_ROOT"
 # Dead-code advisory (vulture-backed): DEFAULT-OFF opt-in. Two full vulture passes
 # are slow and the findings need per-item triage, so it never runs in the default
 # battery and never blocks (advisory only — the script always exits 0 and surfaces an
@@ -1005,28 +1005,28 @@ if [[ "${CHARNESS_QUALITY_DEAD_CODE:-0}" == "1" ]] || label_is_explicitly_select
   queue_timed "dead-code-advisory" python3 skills/public/quality/scripts/run_dead_code_advisory.py --repo-root "$REPO_ROOT"
 fi
 queue_selected "check-cli-skill-surface" python3 scripts/check_cli_skill_surface.py --repo-root "$REPO_ROOT" --run-probes
-queue_selected "validate-surfaces" python3 scripts/validate_surfaces.py --repo-root "$REPO_ROOT"
-queue_selected "validate-inference-interpretation" python3 scripts/validate_inference_interpretation.py --repo-root "$REPO_ROOT" --require-git-file-listing
-queue_selected "validate-public-skill-validation" python3 scripts/validate_public_skill_validation.py --repo-root "$REPO_ROOT"
-queue_selected "validate-public-skill-dogfood" python3 scripts/validate_public_skill_dogfood.py --repo-root "$REPO_ROOT"
-queue_selected "validate-profiles" python3 scripts/validate_profiles.py --repo-root "$REPO_ROOT" --require-git-file-listing
-queue_selected "validate-presets" python3 scripts/validate_presets.py --repo-root "$REPO_ROOT" --require-git-file-listing
+queue_selected "validate-surfaces" python3 -m tools.validate_surfaces --repo-root "$REPO_ROOT"
+queue_selected "validate-inference-interpretation" python3 -m tools.validate_inference_interpretation --repo-root "$REPO_ROOT" --require-git-file-listing
+queue_selected "validate-public-skill-validation" python3 -m tools.validate_public_skill_validation --repo-root "$REPO_ROOT"
+queue_selected "validate-public-skill-dogfood" python3 -m tools.validate_public_skill_dogfood --repo-root "$REPO_ROOT"
+queue_selected "validate-profiles" python3 -m tools.validate_profiles --repo-root "$REPO_ROOT" --require-git-file-listing
+queue_selected "validate-presets" python3 -m tools.validate_presets --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "validate-adapters" python3 scripts/validate_adapters.py --repo-root "$REPO_ROOT" --require-git-file-listing
-queue_selected "validate-integrations" python3 scripts/validate_integrations.py --repo-root "$REPO_ROOT"
-queue_selected "validate-packaging" python3 scripts/validate_packaging.py --repo-root "$REPO_ROOT"
+queue_selected "validate-integrations" python3 -m tools.validate_integrations --repo-root "$REPO_ROOT"
+queue_selected "validate-packaging" python3 -m tools.validate_packaging --repo-root "$REPO_ROOT"
 # Checked-in export drift is a release-boundary concern, but remains available for
 # a focused diagnostic without widening ordinary full runs.
 if [[ "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" == "1" ]] || label_is_explicitly_selected "validate-packaging-committed"; then
-  queue_selected "validate-packaging-committed" python3 scripts/validate_packaging_committed.py --repo-root "$REPO_ROOT"
+  queue_selected "validate-packaging-committed" python3 -m tools.validate_packaging_committed --repo-root "$REPO_ROOT"
 fi
 queue_selected "validate-debug-artifact" python3 scripts/validate_debug_artifact.py --repo-root "$REPO_ROOT"
 queue_selected "validate-debug-seam-index" python3 scripts/build_debug_seam_risk_index.py --repo-root "$REPO_ROOT" --check
 queue_selected "validate-retro-lesson-index" python3 scripts/build_retro_lesson_selection_index.py --repo-root "$REPO_ROOT" --check
 queue_selected "validate-lesson-ledger" python3 scripts/check_lesson_ledger.py --repo-root "$REPO_ROOT"
 queue_selected "validate-quality-artifact" python3 scripts/validate_quality_artifact.py --repo-root "$REPO_ROOT"
-queue_selected "validate-attention-state-visibility" python3 scripts/validate_attention_state_visibility.py --repo-root "$REPO_ROOT" --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support
+queue_selected "validate-attention-state-visibility" python3 -m tools.validate_attention_state_visibility --repo-root "$REPO_ROOT" --scan-root scripts --scan-root tools --scan-root skills --scan-root-map ../charness-support=skills/support
 queue_selected "validate-inventory-consumption" python3 scripts/validate_inventory_consumption.py --repo-root "$REPO_ROOT"
-queue_selected "check-inventory-declaration-coverage" python3 scripts/check_inventory_declaration_coverage.py --repo-root "$REPO_ROOT"
+queue_selected "check-inventory-declaration-coverage" python3 -m tools.check_inventory_declaration_coverage --repo-root "$REPO_ROOT"
 # BLOCKING by operator decision (2026-08-02), promoted after one advisory run:
 # a documented command that cannot run is a wrong answer that escapes silently.
 # NOT because false positives are impossible -- the promoting slice shipped two,
@@ -1034,9 +1034,9 @@ queue_selected "check-inventory-declaration-coverage" python3 scripts/check_inve
 # defect for `<repo-root>/`, which names the reader's tree). Both are repaired
 # and pinned. `--strict` refuses on findings and on unreadable docs; without it
 # the same command stays a read-only inventory.
-queue_selected "inventory-skill-script-references" python3 scripts/inventory_skill_script_references.py --repo-root "$REPO_ROOT" --strict
-queue_selected "check-unreferenced-scripts" python3 scripts/check_unreferenced_scripts.py --repo-root "$REPO_ROOT" --strict
-queue_selected "validate-quality-closeout-contract" python3 scripts/validate_quality_closeout_contract.py --repo-root "$REPO_ROOT"
+queue_selected "inventory-skill-script-references" python3 -m tools.inventory_skill_script_references --repo-root "$REPO_ROOT" --strict
+queue_selected "check-unreferenced-scripts" python3 -m tools.check_unreferenced_scripts --repo-root "$REPO_ROOT" --strict
+queue_selected "validate-quality-closeout-contract" python3 -m tools.validate_quality_closeout_contract --repo-root "$REPO_ROOT"
 # Resolve the release/change range once. The release-final changed-line producer
 # receives this explicit SHA, and the critique probe shares the same range. The
 # empty value remains an honest no-verdict input for a checkout without origin/main.
@@ -1068,10 +1068,10 @@ queue_selected "check-python-lengths" python3 scripts/check_code_lengths.py --re
 queue_selected "check-python-filenames" python3 scripts/check_python_filenames.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "check-python-runtime-inheritance" python3 scripts/check_python_runtime_inheritance.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "check-subprocess-form" python3 scripts/check_subprocess_form.py --repo-root "$REPO_ROOT" --require-git-file-listing
-queue_selected "check-skill-contracts" python3 scripts/check_skill_contracts.py --repo-root "$REPO_ROOT"
-queue_selected "check-skill-bootstrap-vars" python3 scripts/check_skill_bootstrap_vars.py --repo-root "$REPO_ROOT" --require-git-file-listing
-queue_selected "check-bootstrap-shim-consistency" python3 scripts/check_bootstrap_shim_consistency.py --repo-root "$REPO_ROOT" --require-git-file-listing
-queue_selected "check-public-doc-coupling" python3 scripts/check_public_doc_coupling.py --repo-root "$REPO_ROOT" --require-git-file-listing
+queue_selected "check-skill-contracts" python3 -m tools.check_skill_contracts --repo-root "$REPO_ROOT"
+queue_selected "check-skill-bootstrap-vars" python3 -m tools.check_skill_bootstrap_vars --repo-root "$REPO_ROOT" --require-git-file-listing
+queue_selected "check-bootstrap-shim-consistency" python3 -m tools.check_bootstrap_shim_consistency --repo-root "$REPO_ROOT" --require-git-file-listing
+queue_selected "check-public-doc-coupling" python3 -m tools.check_public_doc_coupling --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "check-regenerable-facts" python3 skills/public/quality/scripts/check_regenerable_facts.py --repo-root "$REPO_ROOT"
 queue_selected "check-timing-layer-completeness" python3 scripts/check_timing_layer_completeness.py --repo-root "$REPO_ROOT"
 # Sibling of the line above: both reconcile a declaration against the label set
@@ -1129,7 +1129,7 @@ queue_selected "check-documented-command-flags" python3 scripts/check_documented
 queue_selected "check-documented-subcommands" python3 scripts/check_documented_subcommands.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "check-spec-evidence-durability" python3 scripts/check_spec_evidence_durability.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "check-artifact-referents" python3 scripts/check_artifact_referents.py --repo-root "$REPO_ROOT"
-queue_selected "check-references-link-inventory" python3 scripts/check_references_link_inventory.py --repo-root "$REPO_ROOT" --require-git-file-listing
+queue_selected "check-references-link-inventory" python3 -m tools.check_references_link_inventory --repo-root "$REPO_ROOT" --require-git-file-listing
 
 # No barrier here: `flush_phase` is not fail-fast (every phase runs regardless of
 # an earlier failure), so a barrier between independent gates buys output grouping
@@ -1245,7 +1245,7 @@ queue_selected "doc-duplicates" python3 skills/public/quality/scripts/inventory_
 
 flush_phase || OVERALL_RC=$?
 
-queue_selected "validate-inventory-consumption-declaration" python3 scripts/validate_inventory_consumption_declaration.py --repo-root "$REPO_ROOT"
+queue_selected "validate-inventory-consumption-declaration" python3 -m tools.validate_inventory_consumption_declaration --repo-root "$REPO_ROOT"
 flush_phase || OVERALL_RC=$?
 
 # Boy-scout duplicate ratchet (item 5, slice 2). Runs in the broad path only (this

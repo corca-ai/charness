@@ -16,6 +16,7 @@ resolved ONCE in code with tests instead of once per call site in prose.
 This module is the shared half. Each shim is a few lines naming its target, so
 adding one does not copy this resolution logic again.
 """
+
 from __future__ import annotations
 
 import runpy
@@ -29,6 +30,7 @@ from pathlib import Path
 # found there -- a consumer plausibly owns a `validate_skills.py`, and running
 # their file is worse than the FileNotFoundError this promises.
 _MAX_ANCESTORS = 5
+_TARGET_ROOTS = {"validate_skills.py": "tools"}
 
 
 def locate(name: str, caller: Path) -> Path:
@@ -41,12 +43,13 @@ def locate(name: str, caller: Path) -> Path:
     walk finds itself and recurses until the interpreter dies.
     """
     origin = caller.resolve()
+    target_root = _TARGET_ROOTS.get(name, "scripts")
     for ancestor in list(origin.parents)[:_MAX_ANCESTORS]:
-        candidate = ancestor / "scripts" / name
+        candidate = ancestor / target_root / name
         if candidate.is_file() and candidate.resolve() != origin:
             return candidate
     raise FileNotFoundError(
-        f"no ancestor of {origin} within {_MAX_ANCESTORS} levels contains scripts/{name}; "
+        f"no ancestor of {origin} within {_MAX_ANCESTORS} levels contains {target_root}/{name}; "
         "this shim must ship alongside the authoring-repo script it fronts"
     )
 
@@ -78,8 +81,9 @@ def run(name: str, caller: str) -> int:
     """
     script_path = locate(name, Path(caller))
     script_dir = str(script_path.parent)
-    if script_dir not in sys.path:
-        sys.path.insert(0, script_dir)
+    for import_root in (script_dir, str(script_path.parent.parent)):
+        if import_root not in sys.path:
+            sys.path.insert(0, import_root)
     try:
         runpy.run_path(str(script_path), run_name="__main__")
     except SystemExit as exc:

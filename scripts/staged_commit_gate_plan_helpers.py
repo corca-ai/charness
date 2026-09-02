@@ -71,7 +71,7 @@ def timing_pull_gate(repo_root: Path, label: str, script: str, *args: str) -> li
     """Return a pulled timing-layer guard only when the repo owns the script."""
     if not (repo_root / script).is_file():
         return []
-    return [GateCommand(label, ("python3", script, *args))]
+    return [GateCommand(label, _script_argv(script, *args))]
 
 
 def provenance_contract_self_test_gate(repo_root: Path) -> list[GateCommand]:
@@ -93,10 +93,29 @@ def provenance_contract_self_test_gate(repo_root: Path) -> list[GateCommand]:
 
 
 def present_gate(repo_root: Path, label: str, script: str, *args: str) -> list[GateCommand]:
-    """A `scripts/<script>` gate, scheduled only while that script is on disk."""
-    if not (repo_root / "scripts" / script).exists():
+    """A repo-owned gate, scheduled only while its script is on disk.
+
+    ``tools/`` modules have one supported carrier: ``python3 -m tools.<name>``.
+    Keeping that rule here prevents the staged planner from reintroducing a
+    path-based invocation when a moved gate is pulled to the commit boundary.
+    """
+    script_path = Path(script)
+    path = (
+        repo_root / script_path
+        if script_path.parts[:1] == ("tools",)
+        else repo_root / "scripts" / script
+    )
+    if not path.exists():
         return []
-    return [GateCommand(label, ("python3", f"scripts/{script}", *args))]
+    return [GateCommand(label, _script_argv(script, *args))]
+
+
+def _script_argv(script: str, *args: str) -> tuple[str, ...]:
+    script_path = Path(script)
+    if script_path.parts[:1] == ("tools",):
+        module = script_path.with_suffix("").as_posix().replace("/", ".")
+        return ("python3", "-m", module, *args)
+    return ("python3", script, *args)
 
 
 _INDEX_HYGIENE_GATES = (

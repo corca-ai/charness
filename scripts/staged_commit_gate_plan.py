@@ -81,7 +81,7 @@ def _timing_layer_gates(
             _timing_pull_gate(
                 repo_root,
                 "check-skill-contracts",
-                "scripts/check_skill_contracts.py",
+                "tools/check_skill_contracts.py",
                 "--repo-root",
                 str(repo_root),
             )
@@ -90,7 +90,7 @@ def _timing_layer_gates(
             _timing_pull_gate(
                 repo_root,
                 "check-skill-bootstrap-vars",
-                "scripts/check_skill_bootstrap_vars.py",
+                "tools/check_skill_bootstrap_vars.py",
                 "--repo-root",
                 str(repo_root),
                 "--require-git-file-listing",
@@ -103,7 +103,7 @@ def _timing_layer_gates(
             _timing_pull_gate(
                 repo_root,
                 "validate-surfaces",
-                "scripts/validate_surfaces.py",
+                "tools/validate_surfaces.py",
                 "--repo-root",
                 str(repo_root),
             )
@@ -158,7 +158,7 @@ def _timing_layer_gates(
         }
         or path.startswith("plugins/charness/scripts/")
         or (
-            path.startswith(("scripts/", "skills/public/", "plugins/charness/"))
+            path.startswith(("scripts/", "tools/", "skills/public/", "plugins/charness/"))
             # The CHECKER's own predicate, imported rather than restated. This line
             # used to spell `startswith(("check_", "validate_"))`, and when the
             # catalog's discovery predicate became position-independent this copy
@@ -185,7 +185,7 @@ def _timing_layer_gates(
             )
         )
     if any(
-        path == "scripts/validate_quality_reference_catalog.py"
+        path == "tools/validate_quality_reference_catalog.py"
         or path.startswith("skills/public/quality/references/")
         for path in present
     ):
@@ -195,7 +195,7 @@ def _timing_layer_gates(
             _timing_pull_gate(
                 repo_root,
                 "validate-quality-reference-catalog",
-                "scripts/validate_quality_reference_catalog.py",
+                "tools/validate_quality_reference_catalog.py",
                 "--repo-root",
                 str(repo_root),
             )
@@ -256,7 +256,7 @@ def _touches_current_pointer_freshness_surface(paths: list[str]) -> bool:
     }
     return any(
         path in exact
-        or (path.startswith("scripts/") and path.endswith(".py"))
+        or (path.startswith(("scripts/", "tools/")) and path.endswith(".py"))
         or path.startswith("integrations/tools/")
         for path in paths
     )
@@ -322,21 +322,22 @@ def _leak_scan_gates(repo_root: Path, paths: list[str]) -> list[GateCommand]:
             _timing_pull_gate(
                 repo_root,
                 "validate-inference-interpretation",
-                "scripts/validate_inference_interpretation.py",
+                "tools/validate_inference_interpretation.py",
                 "--repo-root",
                 str(repo_root),
                 "--require-git-file-listing",
             )
         )
     if any(
-        path.endswith(".py") and (path.startswith("scripts/") or path.startswith("skills/"))
+        path.endswith(".py")
+        and (path.startswith(("scripts/", "tools/")) or path.startswith("skills/"))
         for path in paths
     ):
         gates.extend(
             _timing_pull_gate(
                 repo_root,
                 "check-bootstrap-shim-consistency",
-                "scripts/check_bootstrap_shim_consistency.py",
+                "tools/check_bootstrap_shim_consistency.py",
                 "--repo-root",
                 str(repo_root),
                 "--require-git-file-listing",
@@ -350,7 +351,7 @@ def _leak_scan_gates(repo_root: Path, paths: list[str]) -> list[GateCommand]:
             _timing_pull_gate(
                 repo_root,
                 "check-inventory-declaration-coverage",
-                "scripts/check_inventory_declaration_coverage.py",
+                "tools/check_inventory_declaration_coverage.py",
                 "--repo-root",
                 str(repo_root),
             )
@@ -408,18 +409,21 @@ def staged_commit_gate_plan(
         )
 
     if any(
-        path.endswith(".py") and (path.startswith("scripts/") or path.startswith("skills/"))
+        path.endswith(".py")
+        and (path.startswith(("scripts/", "tools/")) or path.startswith("skills/"))
         for path in paths
     ):
         plan.extend(
             _plan_helpers.present_gate(
                 repo_root,
                 "validate-attention-state-visibility",
-                "validate_attention_state_visibility.py",
+                "tools/validate_attention_state_visibility.py",
                 "--repo-root",
                 str(repo_root),
                 "--scan-root",
                 "scripts",
+                "--scan-root",
+                "tools",
                 "--scan-root",
                 "skills",
                 "--scan-root-map",
@@ -433,7 +437,11 @@ def staged_commit_gate_plan(
     if _any_starts(paths, "skills/"):
         plan.extend(
             _plan_helpers.present_gate(
-                repo_root, "validate-skills", "validate_skills.py", "--repo-root", str(repo_root)
+                repo_root,
+                "validate-skills",
+                "tools/validate_skills.py",
+                "--repo-root",
+                str(repo_root),
             )
         )
         plan.extend(
@@ -446,7 +454,7 @@ def staged_commit_gate_plan(
             _plan_helpers.present_gate(
                 repo_root,
                 "validate-profiles",
-                "validate_profiles.py",
+                "tools/validate_profiles.py",
                 "--repo-root",
                 str(repo_root),
             )
@@ -464,7 +472,11 @@ def staged_commit_gate_plan(
     if _any_starts(paths, "presets/"):
         plan.extend(
             _plan_helpers.present_gate(
-                repo_root, "validate-presets", "validate_presets.py", "--repo-root", str(repo_root)
+                repo_root,
+                "validate-presets",
+                "tools/validate_presets.py",
+                "--repo-root",
+                str(repo_root),
             )
         )
     if _any_starts(paths, "integrations/"):
@@ -472,7 +484,7 @@ def staged_commit_gate_plan(
             _plan_helpers.present_gate(
                 repo_root,
                 "validate-integrations",
-                "validate_integrations.py",
+                "tools/validate_integrations.py",
                 "--repo-root",
                 str(repo_root),
             )
@@ -549,7 +561,7 @@ def staged_commit_gate_plan(
         if path.endswith(".py")
         and not path.endswith("__init__.py")
         and (
-            path.startswith("scripts/")
+            path.startswith(("scripts/", "tools/"))
             or path.startswith("skills/")
             # Repo-ROOT modules too. `runtime_bootstrap.py` and `skill_runtime_bootstrap.py`
             # are imported by 135 scripts and are the family `SCAN_PATTERNS`'s first entry

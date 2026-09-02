@@ -10,7 +10,7 @@ from tests.script_main import load_script_module, run_loaded_script_main
 from .support import ROOT
 
 _MODULE = load_script_module(
-    "check_unreferenced_scripts", ROOT / "scripts" / "check_unreferenced_scripts.py"
+    "check_unreferenced_scripts", ROOT / "tools" / "check_unreferenced_scripts.py"
 )
 
 

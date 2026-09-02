@@ -10,7 +10,7 @@ DISCIPLINE_DOC = ROOT / "docs" / "implementation-discipline.md"
 
 
 def _attention_terms() -> tuple[str, ...]:
-    path = ROOT / "scripts" / "validate_attention_state_visibility.py"
+    path = ROOT / "tools" / "validate_attention_state_visibility.py"
     spec = importlib.util.spec_from_file_location("validate_attention_state_visibility", path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)

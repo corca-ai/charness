@@ -16,7 +16,7 @@ Read this alongside the headroom and skill-surface preflight bullets in
 
 ## Attention-state banned vocabulary
 
-[validate_attention_state_visibility.py](../scripts/validate_attention_state_visibility.py)
+[validate_attention_state_visibility.py](../tools/validate_attention_state_visibility.py)
 scans Python **string constants** under `scripts/` and `skills/` for exit-zero
 attention-state terms, and reads them as STATUS VALUES rather than as words. A
 term counts when it is token-shaped — the whole value (`"skipped"`), one part of
@@ -222,7 +222,7 @@ These are **not** synonyms, and the distinction is load-bearing.
   from here by definition, so it is exempt from resolution — **with one
   decidable exception**: when the named script is sitting in a skill package of
   *this* tree, the consumer-tree prefix is wrong no matter whose tree it is, and
-  [inventory_skill_script_references.py](../scripts/inventory_skill_script_references.py)
+  [inventory_skill_script_references.py](../tools/inventory_skill_script_references.py)
   refuses it. That is the counted defect this whole convention exists to stop,
   and it is the only shape of `<repo-root>/` that can fail a gate. Absence alone
   never fails — a skill may correctly say "point your gate at
@@ -231,7 +231,7 @@ These are **not** synonyms, and the distinction is load-bearing.
   reference is genuinely ambiguous, and ambiguous is not blockable.
 - `<authoring-repo>/` means *the charness repo itself* — "this is mine, not
   yours". It IS verifiable here, and
-  [inventory_skill_script_references.py](../scripts/inventory_skill_script_references.py)
+  [inventory_skill_script_references.py](../tools/inventory_skill_script_references.py)
   resolves it rather than waving it through.
 
 Why the split exists: 13 shipped commands accumulated undetected because a

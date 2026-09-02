@@ -65,9 +65,9 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_command_plan_preflight",
         ROOT / "scripts" / "command_plan_preflight.py",
     ),
-    "scripts/check_bootstrap_shim_consistency.py": (
+    "tools/check_bootstrap_shim_consistency.py": (
         "tests.quality_gates.support_check_bootstrap_shim_consistency",
-        ROOT / "scripts" / "check_bootstrap_shim_consistency.py",
+        ROOT / "tools" / "check_bootstrap_shim_consistency.py",
     ),
     "skills/shared/scripts/reviewer_boundary_fingerprint.py": (
         "tests.quality_gates.support_reviewer_boundary_fingerprint",
@@ -105,9 +105,9 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_check_issue_closeout_commit_msg",
         ROOT / "scripts" / "check_issue_closeout_commit_msg.py",
     ),
-    "scripts/validate_skills.py": (
+    "tools/validate_skills.py": (
         "tests.quality_gates.support_validate_skills",
-        ROOT / "scripts" / "validate_skills.py",
+        ROOT / "tools" / "validate_skills.py",
     ),
     "scripts/check_spec_evidence_durability.py": (
         "tests.quality_gates.support_check_spec_evidence_durability",
@@ -141,9 +141,9 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_validate_quality_artifact",
         ROOT / "scripts" / "validate_quality_artifact.py",
     ),
-    "scripts/check_quality_tool_fixtures.py": (
+    "tools/check_quality_tool_fixtures.py": (
         "tests.quality_gates.support_check_quality_tool_fixtures",
-        ROOT / "scripts" / "check_quality_tool_fixtures.py",
+        ROOT / "tools" / "check_quality_tool_fixtures.py",
     ),
     "scripts/quality_label_universe.py": (
         "tests.quality_gates.support_quality_label_universe",
@@ -373,9 +373,9 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_gather_public_url",
         ROOT / "skills" / "public" / "gather" / "scripts" / "gather_public_url.py",
     ),
-    "scripts/validate_attention_state_visibility.py": (
+    "tools/validate_attention_state_visibility.py": (
         "tests.quality_gates.support_validate_attention_state_visibility",
-        ROOT / "scripts" / "validate_attention_state_visibility.py",
+        ROOT / "tools" / "validate_attention_state_visibility.py",
     ),
     "scripts/check_doc_links.py": (
         "tests.quality_gates.support_check_doc_links",
@@ -405,9 +405,9 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_check_current_pointer_writes",
         ROOT / "scripts" / "check_current_pointer_writes.py",
     ),
-    "scripts/validate_profiles.py": (
+    "tools/validate_profiles.py": (
         "tests.quality_gates.support_validate_profiles",
-        ROOT / "scripts" / "validate_profiles.py",
+        ROOT / "tools" / "validate_profiles.py",
     ),
     "scripts/check_supply_chain.py": (
         "tests.quality_gates.support_check_supply_chain",
@@ -445,9 +445,9 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_check_plugin_doc_links",
         ROOT / "scripts" / "check_plugin_doc_links.py",
     ),
-    "scripts/check_public_doc_coupling.py": (
+    "tools/check_public_doc_coupling.py": (
         "tests.quality_gates.support_check_public_doc_coupling",
-        ROOT / "scripts" / "check_public_doc_coupling.py",
+        ROOT / "tools" / "check_public_doc_coupling.py",
     ),
     "scripts/check_staged_reversion.py": (
         "tests.quality_gates.support_check_staged_reversion",
@@ -501,9 +501,9 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_narrative_review_adapter",
         ROOT / "skills" / "public" / "narrative" / "scripts" / "review_adapter.py",
     ),
-    "scripts/validate_presets.py": (
+    "tools/validate_presets.py": (
         "tests.quality_gates.support_validate_presets",
-        ROOT / "scripts" / "validate_presets.py",
+        ROOT / "tools" / "validate_presets.py",
     ),
     "scripts/release_changed_line_coverage.py": (
         "tests.quality_gates.support_release_changed_line_coverage",
@@ -521,9 +521,9 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_setup_inspect_repo_cli",
         ROOT / "skills" / "public" / "setup" / "scripts" / "inspect_repo.py",
     ),
-    "scripts/check_skill_contracts.py": (
+    "tools/check_skill_contracts.py": (
         "tests.quality_gates.support_check_skill_contracts",
-        ROOT / "scripts" / "check_skill_contracts.py",
+        ROOT / "tools" / "check_skill_contracts.py",
     ),
     **{
         f"skills/public/{skill}/scripts/resolve_adapter.py": (
@@ -549,6 +549,14 @@ _IN_PROCESS_SCRIPT_MODULES = {
         )
     },
 }
+
+for _tool_path in sorted((ROOT / "tools").glob("*.py")):
+    if _tool_path.name == "__init__.py":
+        continue
+    _IN_PROCESS_SCRIPT_MODULES.setdefault(
+        f"tools/{_tool_path.name}",
+        (f"tests.quality_gates.support_tool_{_tool_path.stem}", _tool_path),
+    )
 
 
 def _repo_script_key(script: Path) -> str | None:

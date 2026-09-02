@@ -9,7 +9,7 @@ import yaml
 from .support import run_script
 
 ROOT = Path(__file__).resolve().parents[2]
-SCRIPT = ROOT / "scripts" / "validate_attention_state_visibility.py"
+SCRIPT = ROOT / "tools" / "validate_attention_state_visibility.py"
 
 
 def _run(repo: Path, declaration: Path, scan_root: Path) -> subprocess.CompletedProcess[str]:
@@ -73,9 +73,9 @@ def test_fails_when_declared_states_drift(tmp_path: Path) -> None:
     assert result.returncode == 1
     payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "invalid"
-    assert any(
-        "do not match detected states" in failure for failure in payload["failures"]
-    ), payload["failures"]
+    assert any("do not match detected states" in failure for failure in payload["failures"]), (
+        payload["failures"]
+    )
 
 
 def test_fails_when_evidence_terms_are_missing(tmp_path: Path) -> None:
@@ -101,9 +101,9 @@ def test_fails_when_evidence_terms_are_missing(tmp_path: Path) -> None:
     assert result.returncode == 1
     payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "invalid"
-    assert any(
-        "evidence_terms missing" in failure for failure in payload["failures"]
-    ), payload["failures"]
+    assert any("evidence_terms missing" in failure for failure in payload["failures"]), payload[
+        "failures"
+    ]
 
 
 def test_passes_with_declared_visibility(tmp_path: Path) -> None:
@@ -145,7 +145,9 @@ def test_default_paths_support_exported_plugin_layout(tmp_path: Path) -> None:
     support_dir.mkdir(parents=True)
     declaration_dir.mkdir(parents=True)
     (script_dir / "root_helper.py").write_text("print('WARNING: no_adapter')\n", encoding="utf-8")
-    (quality_dir / "skill_helper.py").write_text("print('ADVISORY: prose_review_status')\n", encoding="utf-8")
+    (quality_dir / "skill_helper.py").write_text(
+        "print('ADVISORY: prose_review_status')\n", encoding="utf-8"
+    )
     # A real status VALUE, not the phrase "disabled by config": this test is about
     # path resolution in the exported layout, and its fixture should carry the
     # thing the gate looks for rather than prose that happens to use the word.
@@ -256,8 +258,7 @@ def test_a_status_next_to_a_docstring_still_fires(tmp_path: Path) -> None:
     # Control, so the docstring exclusion cannot be read as "this file is exempt".
     module = tmp_path / "helper.py"
     module.write_text(
-        '"""Rows are skipped when malformed."""\n\n'
-        'STATE = "skipped"\n',
+        '"""Rows are skipped when malformed."""\n\nSTATE = "skipped"\n',
         encoding="utf-8",
     )
     constants = _gate._string_constants(module)

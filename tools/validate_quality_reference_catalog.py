@@ -100,10 +100,14 @@ def validate_quality_reference_catalog(repo_root: Path) -> None:
     missing_from_index = sorted(catalog_paths - index_paths)
     if missing_from_catalog:
         formatted = ", ".join(f"`{path}`" for path in missing_from_catalog)
-        raise ValidationError(f"{CATALOG_PATH}: index reference(s) missing from catalog: {formatted}")
+        raise ValidationError(
+            f"{CATALOG_PATH}: index reference(s) missing from catalog: {formatted}"
+        )
     if missing_from_index:
         formatted = ", ".join(f"`{path}`" for path in missing_from_index)
-        raise ValidationError(f"{INDEX_PATH}: catalog reference(s) missing from index sections: {formatted}")
+        raise ValidationError(
+            f"{INDEX_PATH}: catalog reference(s) missing from index sections: {formatted}"
+        )
     role_mismatches = sorted(
         (path, catalog_roles[path], sorted(index_roles[path]))
         for path in index_paths & catalog_paths

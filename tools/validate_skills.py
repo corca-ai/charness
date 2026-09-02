@@ -14,7 +14,7 @@ REPO_ROOT = repo_root_from_script(__file__)
 _scripts_skill_markdown_lib_module = import_repo_module(__file__, "scripts.skill_markdown_lib")
 count_fence_blocks = _scripts_skill_markdown_lib_module.count_fence_blocks
 extract_h2_section_lines = _scripts_skill_markdown_lib_module.extract_h2_section_lines
-_scripts_skill_portability_lib_module = import_repo_module(__file__, "scripts.skill_portability_lib")
+_scripts_skill_portability_lib_module = import_repo_module(__file__, "tools.skill_portability_lib")
 find_portability_errors = _scripts_skill_portability_lib_module.find_portability_errors
 find_author_repo_cite_errors = _scripts_skill_portability_lib_module.find_author_repo_cite_errors
 REQUIRED_FRONTMATTER_KEYS = ("name", "description")
@@ -24,20 +24,13 @@ MAX_PUBLIC_FENCE_BLOCKS_WITHOUT_SCRIPTS = 2
 
 # CHARNESS_BASELINE: commands a public skill may call in its Bootstrap block
 # without declaring them. See skills/shared/references/binary-preflight.md.
-CHARNESS_BASELINE = frozenset({
-    "sh", "bash", "dash", "zsh",
-    "if", "then", "else", "elif", "fi", "for", "while", "until",
-    "do", "done", "case", "esac", "in", "function", "select",
-    "git", "python", "python3",
-    "sed", "find", "awk", "grep", "cut", "tr", "sort", "uniq", "wc",
-    "head", "tail", "diff", "cmp", "paste", "join", "tee", "xargs", "seq",
-    "echo", "cat", "ls", "mkdir", "rmdir", "cp", "mv", "rm", "ln", "touch",
-    "pwd", "printf", "true", "false", "test", "expr", "date", "env",
-    "basename", "dirname", "readlink", "realpath", "sleep",
-    "command", "type", "which", "read", "exit", "return", "set", "unset",
-    "export", "eval", "trap", "source", "local", "shift", "getopts",
-    "[", "]", "[[", "]]", ":",
-})
+CHARNESS_BASELINE = frozenset(
+    "sh bash dash zsh if then else elif fi for while until do done case esac in function select "
+    "git python python3 sed find awk grep cut tr sort uniq wc head tail diff cmp paste join tee xargs seq "
+    "echo cat ls mkdir rmdir cp mv rm ln touch pwd printf true false test expr date env basename dirname "
+    "readlink realpath sleep command type which read exit return set unset export eval trap source local shift "
+    "getopts [ ] [[ ]] :".split()
+)
 
 BOOTSTRAP_HEADING_RE = re.compile(r"^##\s+Bootstrap\s*$")
 NEXT_SECTION_RE = re.compile(r"^##\s+\S")
@@ -46,9 +39,7 @@ FENCE_CLOSE_RE = re.compile(r"^```\s*$")
 REQUIRED_TOOLS_RE = re.compile(r"^\s*#\s*Required Tools:\s*(.+?)\s*$")
 ENV_ASSIGN_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=")
 SCRIPT_EXTENSION_RE = re.compile(r"\.(sh|bash|zsh|py|js|ts|rb|pl|lua|rs|go|json|yaml|yml|md)$")
-BACKTICK_REL_PATH_RE = re.compile(
-    r"`((?:(?:\.\./)+[A-Za-z0-9._/-]+|references|scripts)/[^`]+)`"
-)
+BACKTICK_REL_PATH_RE = re.compile(r"`((?:(?:\.\./)+[A-Za-z0-9._/-]+|references|scripts)/[^`]+)`")
 REFERENCE_LIST_ITEM_RE = re.compile(r"^\s*-\s+`(references/[A-Za-z0-9._/-]+)`(?:\s|$)")
 REDIRECT_PREFIX_RE = re.compile(r"^[0-9]*[<>&]")
 NUMERIC_RE = re.compile(r"^[0-9]+$")
@@ -57,6 +48,7 @@ COMMAND_SEPARATORS = frozenset({"|", "||", "&&", ";", "&"})
 
 class ValidationError(Exception):
     pass
+
 
 def extract_frontmatter(contents: str) -> list[str]:
     lines = contents.splitlines()
@@ -71,6 +63,8 @@ def extract_frontmatter(contents: str) -> list[str]:
             return frontmatter
         frontmatter.append(line)
     raise ValidationError("frontmatter is missing closing --- delimiter")
+
+
 def parse_frontmatter(path: Path) -> dict[str, str]:
     contents = path.read_text(encoding="utf-8")
     lines = extract_frontmatter(contents)
@@ -92,11 +86,15 @@ def parse_frontmatter(path: Path) -> dict[str, str]:
         if key not in data:
             raise ValidationError(f"missing field `{key}`")
     return data
+
+
 def validate_quoted_string(field: str, value: str) -> None:
     if len(value) < 2 or not (value.startswith('"') and value.endswith('"')):
         raise ValidationError(
             f"`{field}` must be double-quoted so standard YAML parsers accept punctuation safely"
         )
+
+
 def validate_frontmatter(path: Path) -> None:
     data = parse_frontmatter(path)
     name = data["name"]
@@ -106,6 +104,8 @@ def validate_frontmatter(path: Path) -> None:
         raise ValidationError(f"`name` must match directory name `{path.parent.name}`")
 
     validate_quoted_string("description", data["description"])
+
+
 def extract_bootstrap_fences(contents: str) -> list[tuple[int, list[str]]]:
     """Return `(first_line_index, lines_inside_fence)` tuples for the fenced
     code blocks under the `## Bootstrap` heading. Line indices are 1-based.
@@ -136,11 +136,15 @@ def extract_bootstrap_fences(contents: str) -> list[tuple[int, list[str]]]:
         else:
             i += 1
     return fences
+
+
 def tokenize_shell_line(line: str) -> list[str]:
     try:
         return shlex.split(line, comments=False, posix=True)
     except ValueError:
         return line.split()
+
+
 def classify_command_token(tok: str) -> str | None:
     """Return a baseline-comparable command name, or None for non-commands."""
     if not tok:
@@ -160,6 +164,8 @@ def classify_command_token(tok: str) -> str | None:
             return None
         return base or None
     return tok
+
+
 def non_baseline_commands_in_line(line: str) -> set[str]:
     tokens = tokenize_shell_line(line)
     if not tokens:
@@ -177,6 +183,8 @@ def non_baseline_commands_in_line(line: str) -> set[str]:
         if tok in COMMAND_SEPARATORS:
             expect_command = True
     return non_base
+
+
 def has_swallow_pattern(line: str) -> bool:
     """Detect `2>/dev/null` or `|| true` / `|| :` shell-operator swallows."""
     if "2>/dev/null" in line:
@@ -205,9 +213,7 @@ def validate_bootstrap_binary_preflight(contents: str) -> None:
             declaration_match = REQUIRED_TOOLS_RE.match(raw)
             if declaration_match:
                 declared.update(
-                    tool.strip()
-                    for tool in declaration_match.group(1).split(",")
-                    if tool.strip()
+                    tool.strip() for tool in declaration_match.group(1).split(",") if tool.strip()
                 )
                 continue
             stripped = raw.strip()
@@ -262,9 +268,7 @@ def validate_portable_skill_invocations(root: Path, skill_dir: Path, contents: s
 def validate_author_repo_cites(markdown_path: Path, contents: str) -> None:
     errors = find_author_repo_cite_errors(markdown_path, contents)
     if errors:
-        raise ValidationError(
-            "; ".join(f"{markdown_path.name}: {error}" for error in errors)
-        )
+        raise ValidationError("; ".join(f"{markdown_path.name}: {error}" for error in errors))
 
 
 def validate_public_portability(root: Path, skill_dir: Path, skill_md: Path, contents: str) -> None:
@@ -302,11 +306,7 @@ def validate_referenced_paths(root: Path, skill_dir: Path, markdown_path: Path) 
 
 
 def listed_reference_paths_from_lines(lines: list[str]) -> set[str]:
-    return {
-        match.group(1)
-        for line in lines
-        if (match := REFERENCE_LIST_ITEM_RE.match(line))
-    }
+    return {match.group(1) for line in lines if (match := REFERENCE_LIST_ITEM_RE.match(line))}
 
 
 def listed_reference_paths(skill_dir: Path, skill_md_contents: str) -> set[str]:
@@ -332,9 +332,7 @@ def validate_reference_inventory(skill_dir: Path, contents: str) -> Path:
     references_dir = skill_dir / "references"
     if references_dir.exists():
         existing_reference_paths = {
-            str(path.relative_to(skill_dir))
-            for path in references_dir.iterdir()
-            if path.is_file()
+            str(path.relative_to(skill_dir)) for path in references_dir.iterdir() if path.is_file()
         }
         missing_reference_listings = sorted(existing_reference_paths - listed_reference_paths_set)
         if missing_reference_listings:
@@ -376,7 +374,11 @@ def validate_support_files(root: Path, skill_dir: Path, kind: str) -> None:
         if not resolver.is_file():
             raise ValidationError("scripts/resolve_adapter.py is missing")
 
-    if kind == "public" and bootstrap_fence_blocks > MAX_PUBLIC_FENCE_BLOCKS_WITHOUT_SCRIPTS and not has_scripts_dir:
+    if (
+        kind == "public"
+        and bootstrap_fence_blocks > MAX_PUBLIC_FENCE_BLOCKS_WITHOUT_SCRIPTS
+        and not has_scripts_dir
+    ):
         raise ValidationError(
             "public SKILL.md Bootstrap with 3+ fenced examples should move repeated ritual into `scripts/`; "
             "add a helper script or collapse the Bootstrap examples"
@@ -395,6 +397,7 @@ SKILL_ROOTS = (
 def _resolved_skill_root(root: Path, kind: str, rel_root: Path) -> Path:
     if kind == "support":
         from scripts.repo_layout import support_dir
+
         return support_dir(root)
     return root / rel_root
 

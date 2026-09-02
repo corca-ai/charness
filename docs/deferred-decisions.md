@@ -61,7 +61,7 @@ the evidence is sufficient for the boundary at hand.
 - Question: Which shared packaging manifest is canonical for Claude/Codex dual support?
 - Current choice: [`packaging/charness.json`](../packaging/charness.json) stays the single source of truth.
 - Why now: This is already how the checked-in plugin install surface and root marketplace files are generated and validated.
-- Impact surfaces: [`docs/host-packaging.md`](./host-packaging.md), [`scripts/sync_root_plugin_manifests.py`](../scripts/sync_root_plugin_manifests.py), [`scripts/validate_packaging.py`](../scripts/validate_packaging.py)
+- Impact surfaces: [`docs/host-packaging.md`](./host-packaging.md), [`scripts/sync_root_plugin_manifests.py`](../scripts/sync_root_plugin_manifests.py), [`tools/validate_packaging.py`](../tools/validate_packaging.py)
 - Reopen trigger: If host-specific metadata can no longer be represented as generated output from one shared manifest.
 
 ### D3. Packaging Version Ownership
@@ -85,7 +85,7 @@ the evidence is sufficient for the boundary at hand.
 - Question: Promote `extends` into merged-bundle runtime behavior now?
 - Current choice: Keep `extends` as constrained metadata seam; no broad merged-bundle runtime expansion in this phase.
 - Why now: Avoids broad behavior complexity before evaluator integration.
-- Impact surfaces: [`profiles/profile.schema.json`](../profiles/profile.schema.json), [`scripts/validate_profiles.py`](../scripts/validate_profiles.py)
+- Impact surfaces: [`profiles/profile.schema.json`](../profiles/profile.schema.json), [`tools/validate_profiles.py`](../tools/validate_profiles.py)
 - Reopen trigger: If real profile composition demand appears in downstream consumer repos.
 
 ### D6. Integration Capability Depth
@@ -93,7 +93,7 @@ the evidence is sufficient for the boundary at hand.
 - Question: How deep should capability grants/authenticated binary/env fallback go beyond metadata?
 - Current choice: Keep metadata + validation contracts (`access_modes`, `capability_requirements`, `readiness_checks`, `config_layers`) without automating secretful runtime orchestration in `charness`.
 - Why now: Matches host-neutral product boundary.
-- Impact surfaces: [`integrations/tools/manifest.schema.json`](../integrations/tools/manifest.schema.json), [`scripts/validate_integrations.py`](../scripts/validate_integrations.py), [`scripts/doctor.py`](../scripts/doctor.py)
+- Impact surfaces: [`integrations/tools/manifest.schema.json`](../integrations/tools/manifest.schema.json), [`tools/validate_integrations.py`](../tools/validate_integrations.py), [`scripts/doctor.py`](../scripts/doctor.py)
 - Reopen trigger: If multiple consumers need standardized executable orchestration beyond current manifest metadata.
 
 ### D7. `official` Terminology in Discovery Policy
@@ -109,7 +109,7 @@ the evidence is sufficient for the boundary at hand.
 - Question: Allow richer inheritance vs flattened bundles?
 - Current choice: Favor flattened effective bundles for execution, with minimal inheritance metadata retained for authoring convenience only.
 - Why now: Predictable runtime behavior beats expressive inheritance at this stage.
-- Impact surfaces: `profiles/*.json`, [`scripts/validate_profiles.py`](../scripts/validate_profiles.py), profile docs
+- Impact surfaces: `profiles/*.json`, [`tools/validate_profiles.py`](../tools/validate_profiles.py), profile docs
 - Reopen trigger: If flattening causes repeated maintenance burden across real consumer profiles.
 
 ### D9. Preset Contract Format
@@ -117,7 +117,7 @@ the evidence is sufficient for the boundary at hand.
 - Question: Move presets to JSON schema now or keep markdown-first catalog?
 - Current choice: Keep markdown-first preset contract with required frontmatter until first downstream organization preset matures.
 - Why now: Current preset surface is maintainer-oriented and stable with markdown validation.
-- Impact surfaces: `presets/*.md`, [`scripts/validate_presets.py`](../scripts/validate_presets.py)
+- Impact surfaces: `presets/*.md`, [`tools/validate_presets.py`](../tools/validate_presets.py)
 - Reopen trigger: If org-install preset scale needs stronger machine-only schema guarantees.
 
 ### D10. `ideation` Core Boundary
