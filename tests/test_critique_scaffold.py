@@ -197,8 +197,8 @@ def test_scaffold_surfaced_enums_match_validator_frozensets(tmp_path: Path) -> N
     future change adds/renames a validator enum without updating the scaffold (or
     vice versa), this test fails instead of an author hitting a validate->fix
     round-trip on a value the scaffold told them was allowed."""
-    from scripts import critique_reviewer_evidence as reviewer_shape
-    from scripts import validate_critique_artifacts as validator
+    from scripts.review import critique_reviewer_evidence as reviewer_shape
+    from scripts.review import validate_critique_artifacts as validator
 
     result = run_script(SCAFFOLD, "--repo-root", str(tmp_path))
     assert result.returncode == 0, result.stderr

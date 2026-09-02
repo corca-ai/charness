@@ -3,7 +3,7 @@ from __future__ import annotations
 import yaml
 
 from scripts.adapter_lib import load_yaml_file
-from scripts.critique_adapter_lib import validate_adapter_data
+from scripts.review.critique_adapter_lib import validate_adapter_data
 
 from .support import ROOT, run_script
 

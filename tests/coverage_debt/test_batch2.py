@@ -356,7 +356,7 @@ def test_the_closeout_refusal_lib_still_emits_refusals_in_the_flat_layout(
         monkeypatch.delitem(sys.modules, name)
 
     spec = importlib.util.spec_from_file_location(
-        "coverage_debt_flat_closeout_refusal_lib", ROOT / "scripts" / "closeout_refusal_lib.py"
+        "coverage_debt_flat_closeout_refusal_lib", ROOT / "scripts" / "review" / "closeout_refusal_lib.py"
     )
     assert spec is not None and spec.loader is not None
     flat = importlib.util.module_from_spec(spec)

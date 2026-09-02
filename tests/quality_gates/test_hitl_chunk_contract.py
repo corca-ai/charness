@@ -24,7 +24,7 @@ CHECK_MODULE = load_script_module(
 
 
 def _load_hitl_lib():
-    module_path = ROOT / "scripts" / "hitl_review_artifact_lib.py"
+    module_path = ROOT / "scripts" / "review" / "hitl_review_artifact_lib.py"
     return load_module("hitl_review_artifact_lib", module_path)
 
 

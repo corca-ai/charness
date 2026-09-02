@@ -5,15 +5,29 @@ from __future__ import annotations
 from datetime import date
 from pathlib import Path
 
-from runtime_bootstrap import import_repo_module
 
-_identity = import_repo_module(__file__, "scripts.reviewed_input_verification")
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
+
+_identity = import_repo_module(__file__, "scripts.review.reviewed_input_verification")
 _artifact_validator = import_repo_module(__file__, "scripts.artifact_validator")
 ValidationError = _artifact_validator.ValidationError
 # One definition, shared with the validator. Two copies of this regex existed and
 # both missed the bullet form the corpus writes, so "is this critique packet-bound"
 # had two answers that could drift independently.
-_scope = import_repo_module(__file__, "scripts.critique_enforcement_scope")
+_scope = import_repo_module(__file__, "scripts.review.critique_enforcement_scope")
 _sections = import_repo_module(__file__, "scripts.core.markdown_sections")
 PACKET_CONSUMED_RE = _scope.PACKET_CONSUMED_RE
 packet_consumed = _scope.packet_consumed

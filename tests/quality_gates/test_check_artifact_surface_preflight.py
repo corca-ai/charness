@@ -128,8 +128,8 @@ def test_changed_artifacts_groups_by_validator_and_passes(monkeypatch) -> None:
     assert report["status"] == "ok"
     # two owning validators (critique + ideation); the critique one carries both paths
     checked = {row["validator"]: row["paths"] for row in report["checked"]}
-    assert "scripts/validate_critique_artifacts.py" in checked
-    assert checked["scripts/validate_critique_artifacts.py"] == [
+    assert "scripts/review/validate_critique_artifacts.py" in checked
+    assert checked["scripts/review/validate_critique_artifacts.py"] == [
         "charness-artifacts/critique/a.md",
         "charness-artifacts/critique/b.md",
         "charness-artifacts/critique/release-packet.md",
@@ -158,7 +158,7 @@ def test_changed_artifacts_blocks_when_owning_validator_fails(monkeypatch) -> No
         ["charness-artifacts/critique/bad.md", "charness-artifacts/ideation/ok.md"],
     )
     assert report["status"] == "blocked"
-    assert report["blocked"] == ["scripts/validate_critique_artifacts.py"]
+    assert report["blocked"] == ["scripts/review/validate_critique_artifacts.py"]
 
 
 def test_changed_artifacts_skips_author_time_only_surfaces(monkeypatch) -> None:
@@ -460,7 +460,7 @@ def test_changed_artifacts_report_carries_the_verdict_and_the_blocked_remedy() -
         "status": "ok",
         "checked": [
             {
-                "validator": "scripts/validate_critique_artifacts.py",
+                "validator": "scripts/review/validate_critique_artifacts.py",
                 "paths": ["a.md"],
                 "returncode": 0,
                 "stdout": "",
@@ -479,7 +479,7 @@ def test_changed_artifacts_report_carries_the_verdict_and_the_blocked_remedy() -
         "status": "blocked",
         "checked": [
             {
-                "validator": "scripts/validate_critique_artifacts.py",
+                "validator": "scripts/review/validate_critique_artifacts.py",
                 "paths": ["bad.md"],
                 "returncode": 1,
                 "stdout": "",
@@ -508,10 +508,10 @@ def test_main_changed_artifacts_emits_the_blocked_report(monkeypatch, capsys) ->
     """
     blocked = {
         "status": "blocked",
-        "blocked": ["scripts/validate_critique_artifacts.py"],
+        "blocked": ["scripts/review/validate_critique_artifacts.py"],
         "checked": [
             {
-                "validator": "scripts/validate_critique_artifacts.py",
+                "validator": "scripts/review/validate_critique_artifacts.py",
                 "paths": ["bad.md"],
                 "returncode": 1,
                 "stdout": "",
@@ -526,7 +526,7 @@ def test_main_changed_artifacts_emits_the_blocked_report(monkeypatch, capsys) ->
     assert preflight.main() == 1
     payload = yaml.safe_load(capsys.readouterr().out)
     assert payload["status"] == "blocked"
-    assert payload["blocked"] == ["scripts/validate_critique_artifacts.py"]
+    assert payload["blocked"] == ["scripts/review/validate_critique_artifacts.py"]
     # The `[BLOCK]` marker and the echoed stderr the text arm printed, on the payload.
     assert payload["checked"][0]["returncode"] == 1
     assert payload["checked"][0]["stderr"] == "boom"

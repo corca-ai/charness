@@ -33,7 +33,7 @@ string_field_state = _scripts_adapter_lib_module.string_field_state
 declared_fields_after_version_check = _scripts_adapter_lib_module.declared_fields_after_version_check
 optional_string_list = _scripts_adapter_lib_module.optional_string_list
 _scripts_critique_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(
-    __file__, "scripts.critique_adapter_lib"
+    __file__, "scripts.review.critique_adapter_lib"
 )
 
 STRING_FIELDS = (

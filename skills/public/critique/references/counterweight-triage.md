@@ -95,7 +95,7 @@ Field grammar:
   `Counterweight Triage` sections still own the longer narrative.
 
 The section is opt-in. Critique runs that produce only prose stay
-back-compatible. When the section is present, `<plugin-dir>/scripts/validate_critique_artifacts.py`
+back-compatible. When the section is present, `<plugin-dir>/scripts/review/validate_critique_artifacts.py`
 fails on unknown enum values, missing required fields, or duplicate ids so
 the caller can rely on the schema instead of re-parsing prose.
 

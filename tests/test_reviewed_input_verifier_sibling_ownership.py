@@ -13,7 +13,7 @@ import types
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-VERIFIER = ROOT / "scripts" / "reviewed_input_verification.py"
+VERIFIER = ROOT / "scripts" / "review" / "reviewed_input_verification.py"
 
 
 def _load_by_path():
@@ -24,17 +24,17 @@ def _load_by_path():
 
 
 def test_a_consumer_module_of_the_same_name_cannot_substitute_the_owner(monkeypatch) -> None:
-    """A preloaded `scripts.reviewed_input_identity` used to win outright.
+    """A preloaded `scripts.review.reviewed_input_identity` used to win outright.
 
     The verifier tried the package import BEFORE its file-relative fallback, so a
     consumer repo carrying its own module of that name supplied the constants and
     the reconstruction the packet verdict rests on. A fresh-eye review proved the
     substitution by preloading a synthetic module.
     """
-    fake = types.ModuleType("scripts.reviewed_input_identity")
+    fake = types.ModuleType("scripts.review.reviewed_input_identity")
     fake.ALGORITHM = "consumer-owned"
-    fake.__file__ = "/tmp/definitely-not-charness/scripts/reviewed_input_identity.py"
-    monkeypatch.setitem(sys.modules, "scripts.reviewed_input_identity", fake)
+    fake.__file__ = "/tmp/definitely-not-charness/scripts/review/reviewed_input_identity.py"
+    monkeypatch.setitem(sys.modules, "scripts.review.reviewed_input_identity", fake)
 
     module = _load_by_path()
 
@@ -49,7 +49,7 @@ def test_an_already_imported_owner_is_reused_when_it_is_the_same_file() -> None:
     would stop being authoritative under monkeypatch — the same import-time
     aliasing defect this split already had to undo once.
     """
-    from scripts import reviewed_input_identity as owner
+    from scripts.review import reviewed_input_identity as owner
 
     module = _load_by_path()
 
@@ -58,7 +58,7 @@ def test_an_already_imported_owner_is_reused_when_it_is_the_same_file() -> None:
 
 def test_the_verifier_resolves_its_own_adjacent_sibling(monkeypatch) -> None:
     """With nothing preloaded, the answer still comes from the file's directory."""
-    monkeypatch.delitem(sys.modules, "scripts.reviewed_input_identity", raising=False)
+    monkeypatch.delitem(sys.modules, "scripts.review.reviewed_input_identity", raising=False)
 
     module = _load_by_path()
 
@@ -72,19 +72,19 @@ def test_the_owner_is_the_same_object_whichever_module_loads_first(monkeypatch) 
 
     The first cut of the substitution fix reused an already-imported owner but
     fell back to a by-path load when the canonical name was unbound — so loading
-    the verifier BEFORE `scripts.reviewed_input_identity` produced a second module
+    the verifier BEFORE `scripts.review.reviewed_input_identity` produced a second module
     object, and patching either left the other stale. That traded one
     ambient-state dependency for another; a full-suite run caught it.
     """
-    monkeypatch.delitem(sys.modules, "scripts.reviewed_input_identity", raising=False)
+    monkeypatch.delitem(sys.modules, "scripts.review.reviewed_input_identity", raising=False)
 
     verifier_first = _load_by_path()
-    from scripts import reviewed_input_identity as owner
+    from scripts.review import reviewed_input_identity as owner
 
     assert verifier_first._identity is owner
 
 
-IDENTITY = ROOT / "scripts" / "reviewed_input_identity.py"
+IDENTITY = ROOT / "scripts" / "review" / "reviewed_input_identity.py"
 
 
 def _load_identity_by_path():
@@ -101,12 +101,12 @@ def test_a_consumer_module_cannot_substitute_the_nonblob_binder(monkeypatch) -> 
     name, and an import-order-dependent second object — so the third application
     is written against both from the start rather than after a review finds them.
     """
-    fake = types.ModuleType("scripts.reviewed_input_nonblob")
+    fake = types.ModuleType("scripts.review.reviewed_input_nonblob")
     fake.CURRENT_POINTER_FILENAME = "consumer-owned.md"
     fake._current_pointer_payload = lambda *_a, **_k: None
     fake._gitlink_sha256 = lambda *_a, **_k: None
-    fake.__file__ = "/tmp/definitely-not-charness/scripts/reviewed_input_nonblob.py"
-    monkeypatch.setitem(sys.modules, "scripts.reviewed_input_nonblob", fake)
+    fake.__file__ = "/tmp/definitely-not-charness/scripts/review/reviewed_input_nonblob.py"
+    monkeypatch.setitem(sys.modules, "scripts.review.reviewed_input_nonblob", fake)
 
     module = _load_identity_by_path()
 
@@ -114,15 +114,15 @@ def test_a_consumer_module_cannot_substitute_the_nonblob_binder(monkeypatch) -> 
 
 
 def test_the_nonblob_owner_is_the_same_object_whichever_loads_first(monkeypatch) -> None:
-    monkeypatch.delitem(sys.modules, "scripts.reviewed_input_nonblob", raising=False)
+    monkeypatch.delitem(sys.modules, "scripts.review.reviewed_input_nonblob", raising=False)
 
     identity_first = _load_identity_by_path()
-    from scripts import reviewed_input_nonblob as owner
+    from scripts.review import reviewed_input_nonblob as owner
 
     assert identity_first._nonblob is owner
 
 
-def test_identity_resolves_the_adjacent_changed_path_owner(monkeypatch) -> None:
+def test_identity_resolves_the_repository_changed_path_owner(monkeypatch) -> None:
     """A consumer's same-named module cannot replace the changed-path owner."""
     fake = types.ModuleType("scripts.surfaces_lib")
     fake.__file__ = "/tmp/consumer/scripts/surfaces_lib.py"
@@ -131,18 +131,18 @@ def test_identity_resolves_the_adjacent_changed_path_owner(monkeypatch) -> None:
     module = _load_identity_by_path()
 
     assert Path(module._changed_path_owner.__file__).resolve() == (
-        IDENTITY.with_name("surfaces_lib.py").resolve()
-    )
+        ROOT / "scripts" / "surfaces_lib.py"
+    ).resolve()
 
 
 def test_a_consumer_module_cannot_substitute_the_path_selection_owner(monkeypatch) -> None:
-    fake = types.ModuleType("scripts.reviewed_input_path_selection")
+    fake = types.ModuleType("scripts.review.reviewed_input_path_selection")
     fake.changed_path_owner = types.SimpleNamespace(__file__="/tmp/consumer/surfaces_lib.py")
     fake.auto_paths = lambda *_args: ["consumer-owned"]
     fake.lexical_path = Path
     fake.checked_path = lambda root, path: root / path
-    fake.__file__ = "/tmp/consumer/scripts/reviewed_input_path_selection.py"
-    monkeypatch.setitem(sys.modules, "scripts.reviewed_input_path_selection", fake)
+    fake.__file__ = "/tmp/consumer/scripts/review/reviewed_input_path_selection.py"
+    monkeypatch.setitem(sys.modules, "scripts.review.reviewed_input_path_selection", fake)
 
     module = _load_identity_by_path()
 
@@ -152,10 +152,10 @@ def test_a_consumer_module_cannot_substitute_the_path_selection_owner(monkeypatc
 
 
 def test_a_consumer_module_cannot_substitute_the_range_owner(monkeypatch) -> None:
-    fake = types.ModuleType("scripts.reviewed_input_range")
-    fake.__file__ = "/tmp/consumer/scripts/reviewed_input_range.py"
+    fake = types.ModuleType("scripts.review.reviewed_input_range")
+    fake.__file__ = "/tmp/consumer/scripts/review/reviewed_input_range.py"
     fake.range_endpoints = lambda *_args: (None, "consumer-owned")
-    monkeypatch.setitem(sys.modules, "scripts.reviewed_input_range", fake)
+    monkeypatch.setitem(sys.modules, "scripts.review.reviewed_input_range", fake)
 
     module = _load_identity_by_path()
 
@@ -165,10 +165,10 @@ def test_a_consumer_module_cannot_substitute_the_range_owner(monkeypatch) -> Non
 
 
 def test_a_consumer_module_cannot_substitute_the_worktree_owner(monkeypatch) -> None:
-    fake = types.ModuleType("scripts.reviewed_input_worktree")
-    fake.__file__ = "/tmp/consumer/scripts/reviewed_input_worktree.py"
+    fake = types.ModuleType("scripts.review.reviewed_input_worktree")
+    fake.__file__ = "/tmp/consumer/scripts/review/reviewed_input_worktree.py"
     fake.capture = lambda *_args: None
-    monkeypatch.setitem(sys.modules, "scripts.reviewed_input_worktree", fake)
+    monkeypatch.setitem(sys.modules, "scripts.review.reviewed_input_worktree", fake)
 
     module = _load_identity_by_path()
 

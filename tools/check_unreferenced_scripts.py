@@ -205,12 +205,6 @@ def _import_targets(path: Path, tree: ast.AST, nodes: dict[str, Path]) -> set[st
                     target = _path_target(f"{module}/{alias.name}.py", nodes)
                     if target:
                         targets.add(target)
-            elif module.startswith(("scripts.", "tools.")):
-                package_path = module.replace(".", "/")
-                for alias in node.names:
-                    target = _path_target(f"{package_path}/{alias.name}.py", nodes)
-                    if target:
-                        targets.add(target)
             elif module and "." not in module:
                 target = _path_target(f"{Path(relative).parent}/{module}.py", nodes)
                 if target:
@@ -318,12 +312,9 @@ def _read_text(path: Path) -> str:
 def _seed_intrinsic_edges(nodes: dict[str, Path]) -> dict[str, set[str]]:
     edges: dict[str, set[str]] = defaultdict(set)
     for relative, path in nodes.items():
-        if relative == "tools/__init__.py" or (
-            relative.startswith("scripts/") and Path(relative).name == "__init__.py"
-        ):
-            # The empty package marker is required by the tools module carrier;
-            # it is not itself a runnable or referenceable gate. The same holds
-            # for concept-package markers under scripts/.
+        if relative.startswith(("scripts/", "tools/")) and path.name == "__init__.py":
+            # Package markers are required by their module carriers; they are not
+            # themselves runnable or referenceable gates.
             edges[relative].add("surface")
         elif relative.startswith("skills/"):
             edges[relative].add("skill")

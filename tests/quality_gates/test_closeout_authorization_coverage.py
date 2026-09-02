@@ -73,7 +73,7 @@ def _null_spec(_name, _location):
     return None
 
 
-# --- the shared refusal shape (scripts/closeout_refusal_lib.py) -----------------
+# --- the shared refusal shape (scripts/review/closeout_refusal_lib.py) -----------------
 
 
 def test_a_lane_refusal_names_itself_on_both_channels_and_exits_nonzero(
@@ -142,7 +142,7 @@ def test_an_undeclared_exception_keeps_its_traceback_instead_of_becoming_a_refus
     refusal channel is noisy and start reading past it — and the one refusal that
     mattered would be read past with the rest.
     """
-    refusal_lib = _load(SCRIPTS / "closeout_refusal_lib.py", "coverage_refusal_lib")
+    refusal_lib = _load(SCRIPTS / "review" / "closeout_refusal_lib.py", "coverage_refusal_lib")
 
     def _boom() -> dict:
         raise ValueError("not a declared refusal")

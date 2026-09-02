@@ -18,8 +18,8 @@ from pathlib import Path
 
 import pytest
 
-from scripts.critique_packet_lib import build_reviewed_input_identity
-from scripts.reviewed_input_verification import verify_reviewed_input_identity
+from scripts.review.critique_packet_lib import build_reviewed_input_identity
+from scripts.review.reviewed_input_verification import verify_reviewed_input_identity
 
 pytestmark = pytest.mark.boundary_contract(
     reason="exercise reviewed-input identity against real Git submodule boundaries"
@@ -99,7 +99,7 @@ def test_retargeting_the_current_pointer_stales_the_verdict(tmp_path: Path) -> N
 def test_the_current_pointer_filename_matches_its_owning_module(tmp_path: Path) -> None:
     """The restated constant must not drift from `artifact_naming_lib`."""
     from scripts.artifact_naming_lib import CURRENT_POINTER_FILENAME as OWNED
-    from scripts.reviewed_input_identity import CURRENT_POINTER_FILENAME as RESTATED
+    from scripts.review.reviewed_input_identity import CURRENT_POINTER_FILENAME as RESTATED
 
     assert RESTATED == OWNED
 
@@ -317,7 +317,7 @@ def test_a_non_absence_oserror_is_not_treated_as_a_missing_checkout(
     consumer is invoked, so this exercises the false-`current` scenario itself
     rather than only proving that an exception escapes a private helper.
     """
-    from scripts import reviewed_input_nonblob as nonblob
+    from scripts.review import reviewed_input_nonblob as nonblob
 
     repo = _submodule_repo(tmp_path)
     upstream = tmp_path / "upstream"
@@ -373,7 +373,7 @@ def test_a_gitlink_path_replaced_by_an_external_symlink_refuses(tmp_path: Path) 
     shutil.rmtree(repo / "sub")
     (repo / "sub").symlink_to(external)
 
-    from scripts import reviewed_input_nonblob as nonblob
+    from scripts.review import reviewed_input_nonblob as nonblob
 
     assert nonblob._gitlink_commit(repo, "sub", None) is None
     with pytest.raises(ValueError, match="is a symlink; declare the target file explicitly"):
@@ -443,7 +443,7 @@ def test_a_failed_cleanliness_check_refuses_rather_than_reading_as_clean(
     second time in this one function, after a blanket `except OSError` did it
     around the HEAD lookup.
     """
-    from scripts import reviewed_input_nonblob as nonblob
+    from scripts.review import reviewed_input_nonblob as nonblob
 
     repo = _submodule_repo(tmp_path)
     real_run = nonblob.run_process

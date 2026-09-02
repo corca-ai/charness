@@ -6,10 +6,10 @@ from pathlib import Path
 
 import pytest
 
-from scripts import reviewed_input_identity as identity_lib
-from scripts import reviewed_input_verification as verification_lib
 from scripts.core.git_status_snapshot import parse as parse_status
-from scripts.reviewed_input_worktree import WorkingTreeSnapshot
+from scripts.review import reviewed_input_identity as identity_lib
+from scripts.review import reviewed_input_verification as verification_lib
+from scripts.review.reviewed_input_worktree import WorkingTreeSnapshot
 from tests.quality_gates.repo_shapes import install_two_commit_repo
 
 

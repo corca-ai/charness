@@ -52,13 +52,13 @@ import json
 from pathlib import Path
 from typing import Any
 
-from scripts.closeout_refusal_lib import RefusalError
 from scripts.issue_source_normalize_lib import (
     build_clause_inventory,
     clause_inventory_identity,
     sha256_payload,
     sha256_text,
 )
+from scripts.review.closeout_refusal_lib import RefusalError
 
 SNAPSHOT_SCHEMA = "issue-source-snapshot/v1"
 CAPTURE_RECEIPT_SCHEMA = "issue-source-capture-receipt/v1"

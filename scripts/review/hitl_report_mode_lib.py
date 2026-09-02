@@ -8,7 +8,21 @@ from string import Template
 from typing import Any
 from urllib.parse import urlparse
 
-from scripts.hitl_adaptive_queue_lib import (
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.review.hitl_adaptive_queue_lib import (  # noqa: E402
     first_int,
     first_string,
     item_uses_adaptive_metadata,
@@ -22,7 +36,19 @@ from scripts.hitl_adaptive_queue_lib import (
 )
 
 TABLE_ROW_LIMIT = 4
-HTML_TEMPLATE = Template((Path(__file__).resolve().parent / "templates" / "hitl_report.html").read_text(encoding="utf-8"))
+_SCRIPT_ROOT = next(
+    (
+        ancestor
+        for ancestor in Path(__file__).resolve().parents
+        if (ancestor / "scripts" / "adapter_lib.py").is_file()
+    ),
+    None,
+)
+if _SCRIPT_ROOT is None:
+    raise ImportError(f"Unable to resolve repository root from {__file__}")
+HTML_TEMPLATE = Template(
+    (_SCRIPT_ROOT / "scripts" / "templates" / "hitl_report.html").read_text(encoding="utf-8")
+)
 
 
 class ReportModeError(Exception):

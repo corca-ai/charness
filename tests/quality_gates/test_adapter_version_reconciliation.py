@@ -67,7 +67,7 @@ sys.path.insert(0, str(ROOT))
 # as its denominator", the denominator had rotted with nothing to catch it.
 SITES: tuple[tuple[str, str, str], ...] = (
     ("announcement", "scripts/announcement_adapter_lib.py", "validate_announcement_adapter_data"),
-    ("critique", "scripts/critique_adapter_lib.py", "validate_adapter_data"),
+    ("critique", "scripts/review/critique_adapter_lib.py", "validate_adapter_data"),
     ("narrative", "scripts/narrative_adapter_lib.py", "validate_narrative_adapter_data"),
     ("proof_semantics", "scripts/proof_semantics_adapter_lib.py", "validate_adapter_data"),
     ("simple_skill", "scripts/simple_skill_adapter_lib.py", "validate_simple_adapter_data"),

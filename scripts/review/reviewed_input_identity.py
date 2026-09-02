@@ -10,6 +10,20 @@ import sys
 from pathlib import Path
 from typing import Any
 
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
 try:
     from scripts.core.subprocess_guard import run_process
 except ModuleNotFoundError:  # loaded as a standalone sibling module
@@ -115,14 +129,18 @@ except ModuleNotFoundError:  # invoked as `python3 scripts/<name>.py`
     _sibling_loader_spec.loader.exec_module(_sibling_loader)
     _load_sibling = _sibling_loader.load_sibling
 
-_checkout = _load_sibling("git_checkout")
-_path_selection = _load_sibling("reviewed_input_path_selection")
+def _load_review_sibling(module_stem: str):
+    return _load_sibling(module_stem, anchor_file=__file__)
+
+
+_checkout = _load_review_sibling("git_checkout")
+_path_selection = _load_review_sibling("reviewed_input_path_selection")
 _changed_path_owner = _path_selection.changed_path_owner
 _auto_paths = _path_selection.auto_paths
 _lexical_path = _path_selection.lexical_path
 _checked_path = _path_selection.checked_path
-_range = _load_sibling("reviewed_input_range")
-_worktree = _load_sibling("reviewed_input_worktree")
+_range = _load_review_sibling("reviewed_input_range")
+_worktree = _load_review_sibling("reviewed_input_worktree")
 WorkingTreeSnapshot = _worktree.WorkingTreeSnapshot
 _worktree_content_sha256 = _worktree.content_sha256
 
@@ -131,7 +149,7 @@ def _working_tree_snapshot(repo_root: Path) -> WorkingTreeSnapshot:
     return _worktree.capture(repo_root, _git_bytes)
 
 
-_nonblob = _load_sibling("reviewed_input_nonblob")
+_nonblob = _load_review_sibling("reviewed_input_nonblob")
 _current_pointer_payload = _nonblob._current_pointer_payload
 _gitlink_sha256 = _nonblob._gitlink_sha256
 _gitlink_snapshot_for_paths = _nonblob._gitlink_snapshot_for_paths

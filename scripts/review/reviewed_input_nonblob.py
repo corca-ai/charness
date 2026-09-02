@@ -1,6 +1,6 @@
 """What a path binds when its content is NOT file bytes.
 
-Split from `scripts/reviewed_input_identity.py`, which owns assembling an
+Split from `scripts/review/reviewed_input_identity.py`, which owns assembling an
 identity from a repository. Two path kinds answer "what did I read" with
 something other than a blob, and both were unbindable before:
 
@@ -21,6 +21,20 @@ import hashlib
 import os
 import tempfile
 from pathlib import Path
+
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
 
 try:
     from scripts.core.subprocess_guard import run_process

@@ -44,7 +44,7 @@ from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script 
 REPO_ROOT = repo_root_from_script(__file__)
 _crosswalk = import_repo_module(__file__, "scripts.evidence_boundary_crosswalk")
 _freeze_lib = import_repo_module(__file__, "scripts.issue_source_freeze_lib")
-_refusal_lib = import_repo_module(__file__, "scripts.closeout_refusal_lib")
+_refusal_lib = import_repo_module(__file__, "scripts.review.closeout_refusal_lib")
 
 CrosswalkError = _crosswalk.CrosswalkError
 DEFAULT_CROSSWALK_PATH = _crosswalk.DEFAULT_CROSSWALK_PATH

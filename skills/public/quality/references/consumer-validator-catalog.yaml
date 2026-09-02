@@ -249,7 +249,7 @@ validators:
     consumer_facing: false
     decision: exclude
     reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
-  - path: scripts/validate_critique_artifacts.py
+  - path: scripts/review/validate_critique_artifacts.py
     id: critique-artifact
     consumer_facing: true
     decision: publish
@@ -257,7 +257,7 @@ validators:
     adoption_policy: wire-or-opt-out
     reason: "consumer-facing artifact or closeout contract; the packaged path is the source of truth for consuming repositories"
     purpose: "validates a consumer-authored critique artifact"
-    invocation: "python3 <plugin-root>/scripts/validate_critique_artifacts.py"
+    invocation: "python3 <plugin-root>/scripts/review/validate_critique_artifacts.py"
   - path: scripts/gates/validate_debug_artifact.py
     id: debug-artifact
     consumer_facing: true

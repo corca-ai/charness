@@ -9,7 +9,7 @@ from .support import ROOT, run_script
 # — the #386 same-observer rubber stamp in file form, reproduced in file
 # validator terms). Enforced for artifacts dated on/after
 # `FRESH_EYE_PRESENCE_RULE_DATE` (2026-07-05); a dated artifact before that is
-# grandfathered — see `scripts/validate_critique_artifacts.py`'s module comment
+# grandfathered — see `scripts/review/validate_critique_artifacts.py`'s module comment
 # for the established `RULE_DATE = landing_day + 1` precedent this mirrors. An
 # UNDATABLE artifact is NOT fail-open by default (a second adversarial pass
 # found the first cut's fail-open-on-`None` treated "no date" as a permanent
@@ -31,7 +31,7 @@ def test_critique_artifact_validator_rejects_missing_fresh_eye_line_post_cutoff(
     )
 
     result = run_script(
-        "scripts/validate_critique_artifacts.py",
+        "scripts/review/validate_critique_artifacts.py",
         "--repo-root",
         str(repo),
         "--paths",
@@ -57,7 +57,7 @@ def test_critique_artifact_validator_rejects_untyped_fresh_eye_value_post_cutoff
     )
 
     result = run_script(
-        "scripts/validate_critique_artifacts.py",
+        "scripts/review/validate_critique_artifacts.py",
         "--repo-root",
         str(repo),
         "--paths",
@@ -91,7 +91,7 @@ def test_critique_artifact_validator_rejects_typed_value_with_unedited_todo_rema
     )
 
     result = run_script(
-        "scripts/validate_critique_artifacts.py",
+        "scripts/review/validate_critique_artifacts.py",
         "--repo-root",
         str(repo),
         "--paths",
@@ -129,7 +129,7 @@ def test_critique_artifact_validator_accepts_parent_delegated_post_cutoff(
     )
 
     result = run_script(
-        "scripts/validate_critique_artifacts.py",
+        "scripts/review/validate_critique_artifacts.py",
         "--repo-root",
         str(repo),
         "--paths",
@@ -153,7 +153,7 @@ def test_critique_artifact_validator_accepts_nested_delegated_post_cutoff(
     )
 
     result = run_script(
-        "scripts/validate_critique_artifacts.py",
+        "scripts/review/validate_critique_artifacts.py",
         "--repo-root",
         str(repo),
         "--paths",
@@ -184,7 +184,7 @@ def test_critique_artifact_validator_accepts_blocked_with_signal_post_cutoff(
     )
 
     result = run_script(
-        "scripts/validate_critique_artifacts.py",
+        "scripts/review/validate_critique_artifacts.py",
         "--repo-root",
         str(repo),
         "--paths",
@@ -213,7 +213,7 @@ def test_critique_artifact_validator_accepts_round_cap_as_explicit_non_approval(
     )
 
     result = run_script(
-        "scripts/validate_critique_artifacts.py",
+        "scripts/review/validate_critique_artifacts.py",
         "--repo-root",
         str(repo),
         "--paths",
@@ -237,7 +237,7 @@ def test_critique_artifact_validator_grandfathers_missing_line_on_landing_day(
     )
 
     result = run_script(
-        "scripts/validate_critique_artifacts.py",
+        "scripts/review/validate_critique_artifacts.py",
         "--repo-root",
         str(repo),
         "--paths",
@@ -264,7 +264,7 @@ def test_critique_artifact_validator_fails_closed_for_new_undatable_artifact(
     )
 
     result = run_script(
-        "scripts/validate_critique_artifacts.py",
+        "scripts/review/validate_critique_artifacts.py",
         "--repo-root",
         str(repo),
         "--paths",
@@ -305,7 +305,7 @@ def test_this_floor_has_no_undatable_exemption_and_needs_none(tmp_path: Path) ->
         encoding="utf-8",
     )
     packet_result = run_script(
-        "scripts/validate_critique_artifacts.py", "--repo-root", str(repo),
+        "scripts/review/validate_critique_artifacts.py", "--repo-root", str(repo),
         "--paths", "charness-artifacts/critique/release-0-55-1-packet.md",
     )
     assert packet_result.returncode == 0, packet_result.stderr
@@ -314,7 +314,7 @@ def test_this_floor_has_no_undatable_exemption_and_needs_none(tmp_path: Path) ->
     # undatable buys nothing, which is what the allowlist appeared to be about.
     (critiques / "release-0-55-1-packet.md").write_text("\n".join(no_fresh_eye), encoding="utf-8")
     enforced = run_script(
-        "scripts/validate_critique_artifacts.py", "--repo-root", str(repo),
+        "scripts/review/validate_critique_artifacts.py", "--repo-root", str(repo),
         "--paths", "charness-artifacts/critique/release-0-55-1-packet.md",
     )
     assert enforced.returncode == 1
@@ -343,7 +343,7 @@ def test_critique_scaffold_default_stub_fails_validation_post_cutoff(
     artifact.write_text(template, encoding="utf-8")
 
     result = run_script(
-        "scripts/validate_critique_artifacts.py",
+        "scripts/review/validate_critique_artifacts.py",
         "--repo-root",
         str(repo),
         "--paths",
@@ -361,7 +361,7 @@ def test_live_corpus_critique_artifacts_pass_whole_tree_validation() -> None:
     `validate-critique-artifacts` step does, over every checked artifact."""
     repo_root = Path(__file__).resolve().parents[2]
     result = run_script(
-        "scripts/validate_critique_artifacts.py",
+        "scripts/review/validate_critique_artifacts.py",
         "--repo-root",
         str(repo_root),
         "--all",

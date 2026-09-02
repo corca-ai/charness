@@ -18,14 +18,14 @@ from pathlib import Path
 import pytest
 import yaml
 
-from scripts.critique_packet_lib import (
+from scripts.review.critique_packet_lib import (
     build_reviewed_input_identity,
 )
-from scripts.reviewed_input_verification import verify_reviewed_input_identity
-from scripts.validate_critique_artifacts import (
+from scripts.review.reviewed_input_verification import verify_reviewed_input_identity
+from scripts.review.validate_critique_artifacts import (
     ValidationError as CritiqueValidationError,
 )
-from scripts.validate_critique_artifacts import (
+from scripts.review.validate_critique_artifacts import (
     validate_reviewed_input_binding,
 )
 from tests.quality_gates.support import run_script
@@ -66,7 +66,7 @@ def _cached_seed_identity() -> dict:
 
 def _empty_identity() -> dict:
     """Build a deliberately empty binding without invoking repository capture."""
-    from scripts.reviewed_input_identity import _with_identity_digest
+    from scripts.review.reviewed_input_identity import _with_identity_digest
 
     return _with_identity_digest(
         {
@@ -600,7 +600,7 @@ def test_a_zero_path_binding_is_refused_even_when_currency_is_disabled(
     packet_bytes = json.dumps(packet).encode("utf-8")
     packet_path.write_bytes(packet_bytes)
 
-    from scripts.reviewed_input_verification import verify_packet_binding
+    from scripts.review.reviewed_input_verification import verify_packet_binding
 
     for check_current in (True, False):
         ok, reason = verify_packet_binding(
@@ -633,7 +633,7 @@ def test_a_populated_binding_still_passes_integrity_only_mode(tmp_path: Path) ->
     packet_bytes = json.dumps(packet).encode("utf-8")
     (packet_dir / "ok.json").write_bytes(packet_bytes)
 
-    from scripts.reviewed_input_verification import verify_packet_binding
+    from scripts.review.reviewed_input_verification import verify_packet_binding
 
     ok, reason = verify_packet_binding(
         repo_root=tmp_path,
@@ -697,7 +697,7 @@ def test_an_unreadable_present_file_refuses_instead_of_reading_as_deleted(
     on a file still sitting there with unreadable, changed contents — capture and
     verification agreeing on bytes neither read.
     """
-    from scripts.reviewed_input_identity import _working_tree_digest
+    from scripts.review.reviewed_input_identity import _working_tree_digest
 
     _init_identity_repo(tmp_path)
     target = tmp_path / "reviewed.txt"
@@ -718,7 +718,7 @@ def test_a_deleted_path_binds_its_recorded_mode_not_only_its_bytes(tmp_path: Pat
     to a deleted path verified as current — and the working-tree substrate drops
     the staged/unstaged patch hashes from its digest, so nothing else carried it.
     """
-    from scripts.reviewed_input_identity import _working_tree_digest
+    from scripts.review.reviewed_input_identity import _working_tree_digest
 
     _init_identity_repo(tmp_path)
     (tmp_path / "s.sh").write_text("#!/bin/sh\n", encoding="utf-8")

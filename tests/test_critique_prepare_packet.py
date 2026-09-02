@@ -9,12 +9,13 @@ from pathlib import Path
 
 import yaml
 
-from scripts.critique_adapter_lib import (
+from scripts.gates_support.prepare_packet_markdown_kind import prepare_packet_markdown_kind
+from scripts.review.critique_adapter_lib import (
     adapter_has_sections,
     load_adapter,
     validate_adapter_data,
 )
-from scripts.critique_packet_lib import (
+from scripts.review.critique_packet_lib import (
     PACKET_KIND,
     PACKET_VERSION,
     build_packet,
@@ -24,19 +25,18 @@ from scripts.critique_packet_lib import (
     reviewer_tier_evidence,
     write_packet,
 )
-from scripts.gates_support.prepare_packet_markdown_kind import prepare_packet_markdown_kind
-from scripts.reviewed_input_verification import verify_reviewed_input_identity
-from scripts.surfaces_lib import collect_changed_paths_for_ref
-from scripts.validate_critique_artifacts import (
+from scripts.review.reviewed_input_verification import verify_reviewed_input_identity
+from scripts.review.validate_critique_artifacts import (
     CRITIQUE_PREPARE_PACKET_TITLE_RE,
     validate_critique_artifact,
 )
-from scripts.validate_critique_artifacts import (
+from scripts.review.validate_critique_artifacts import (
     ValidationError as CritiqueValidationError,
 )
-from scripts.validate_critique_artifacts import (
+from scripts.review.validate_critique_artifacts import (
     candidate_paths as critique_candidate_paths,
 )
+from scripts.surfaces_lib import collect_changed_paths_for_ref
 from tests.quality_gates.repo_shapes import install_two_commit_repo
 from tests.quality_gates.support import run_script
 from tests.reviewed_input_identity_fixtures import repo_seed as identity_repo_seed
@@ -763,7 +763,7 @@ def test_prepare_packet_markdown_kind_accepts_sequence_lines_only_for_matching_t
 
 
 def _two_commit_prepare_repo(tmp_path: Path) -> Path:
-    producer = REPO_ROOT / "scripts/render_critique_section_changed_surfaces.py"
+    producer = REPO_ROOT / "scripts/review/render_critique_section_changed_surfaces.py"
     install_two_commit_repo(
         tmp_path,
         {

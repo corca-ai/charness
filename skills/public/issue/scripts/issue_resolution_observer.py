@@ -14,7 +14,7 @@ def _load_critique_shape():
     """Load the package-owned reviewer-tier shape used by critique producers."""
     here = Path(__file__).resolve()
     for ancestor in here.parents:
-        candidate = ancestor / "scripts" / "critique_reviewer_evidence.py"
+        candidate = ancestor / "scripts" / "review" / "critique_reviewer_evidence.py"
         if not candidate.is_file():
             continue
         if str(ancestor) not in sys.path:
@@ -24,7 +24,7 @@ def _load_critique_shape():
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
             return module
-    raise ImportError("scripts/critique_reviewer_evidence.py not found")
+    raise ImportError("scripts/review/critique_reviewer_evidence.py not found")
 
 
 def _load_shared_helper():

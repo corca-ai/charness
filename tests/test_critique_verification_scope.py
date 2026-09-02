@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from scripts.artifact_validator import ValidationError
-from scripts.critique_verification_scope import validate
+from scripts.review.critique_verification_scope import validate
 from skills.public.critique.scripts.verification_retry import build_retry_key
 
 _IDENTITIES = {

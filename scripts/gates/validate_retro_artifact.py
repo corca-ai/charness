@@ -29,7 +29,7 @@ _scripts_artifact_validator_module = import_repo_module(__file__, "scripts.artif
 _prepare_packet_markdown_kind = import_repo_module(__file__, "scripts.gates_support.prepare_packet_markdown_kind")
 # One home for "what date does this artifact grandfather on" across every dated
 # artifact family; see `_retro_observed_date`.
-_enforcement_scope = import_repo_module(__file__, "scripts.critique_enforcement_scope")
+_enforcement_scope = import_repo_module(__file__, "scripts.review.critique_enforcement_scope")
 # One home for "the lines of a markdown section", shared with the critique and
 # ideation validators.
 _sections = import_repo_module(__file__, "scripts.core.markdown_sections")

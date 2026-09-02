@@ -7,8 +7,8 @@ from pathlib import Path
 import pytest
 import yaml
 
-from scripts import critique_enforcement_scope as _scope
-from scripts import critique_reviewer_evidence as _evidence
+from scripts.review import critique_enforcement_scope as _scope
+from scripts.review import critique_reviewer_evidence as _evidence
 
 from .support import ROOT, run_script
 
@@ -23,7 +23,7 @@ from .support import ROOT, run_script
 # construction, so the surface every other closeout leans on could report clean
 # having evaluated almost nothing.
 
-VALIDATOR = "scripts/validate_critique_artifacts.py"
+VALIDATOR = "scripts/review/validate_critique_artifacts.py"
 
 _TIER_BLOCK = """## Reviewer Tier Evidence
 

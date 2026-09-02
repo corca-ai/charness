@@ -82,7 +82,7 @@ def test_moment_and_tracked_membership_project_from_injected_facts(
     view = FactsCheckout(tmp_path, status=snapshot, files=[tracked])
     assert checkout_view.path_is_tracked(view, "scripts/edited.py") is True
     assert checkout_view.path_is_tracked(view, "scripts/new.py") is False
-    from scripts.reviewed_input_worktree import WorkingTreeSnapshot
+    from scripts.review.reviewed_input_worktree import WorkingTreeSnapshot
 
     tree = WorkingTreeSnapshot.from_status(snapshot)
     assert tree.branch_oid == "a" * 40

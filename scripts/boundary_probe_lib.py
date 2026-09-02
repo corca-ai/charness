@@ -31,14 +31,14 @@ from pathlib import Path
 from runtime_bootstrap import import_repo_module
 
 _surfaces_lib = import_repo_module(__file__, "scripts.surfaces_lib")
-_critique_adapter_lib = import_repo_module(__file__, "scripts.critique_adapter_lib")
+_critique_adapter_lib = import_repo_module(__file__, "scripts.review.critique_adapter_lib")
 _adapter_lib = import_repo_module(__file__, "scripts.adapter_lib")
 
 BOUNDARY_GLOBS_KEY = "boundary_cross_surface_globs"
 BOUNDARY_SURFACES_KEY = "boundary_cross_surface_surfaces"
 
 # The probe's typed outcome vocabulary (#622). Deliberately the SAME three words
-# `scripts/critique_enforcement_scope.py` already uses for `CrossSurfaceScope` and the
+# `scripts/review/critique_enforcement_scope.py` already uses for `CrossSurfaceScope` and the
 # boundary probes use for typed evaluation scope -- a fourth private spelling
 # of "we could not tell" is how the concept drifts back apart.
 #

@@ -30,7 +30,7 @@ except ModuleNotFoundError:
 MAX_SEMANTIC_INPUT_BYTES = 1024 * 1024
 MAX_PREIMAGE_BYTES = MAX_SEMANTIC_INPUT_BYTES
 
-#: The two framings `scripts/reviewed_input_identity.py` binds a deletion under, one per
+#: The two framings `scripts/review/reviewed_input_identity.py` binds a deletion under, one per
 #: substrate. They are NOT the same, and reading them as one is what broke this file:
 #:
 #:   working tree  `_recorded_blob_digest`  -> sha256(b"file\0" + mode_tag + blob)

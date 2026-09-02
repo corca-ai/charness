@@ -49,7 +49,7 @@ packet_sections:
   - id: changed-files-and-owning-surfaces
     title: Changed Files And Owning Surfaces
     content_kind: script
-    command: "python3 scripts/render_critique_section_changed_surfaces.py"
+    command: "python3 scripts/review/render_critique_section_changed_surfaces.py"
 auto_session_trigger_surfaces: []
 auto_session_trigger_path_globs: []
 ```

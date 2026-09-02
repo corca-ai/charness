@@ -226,7 +226,7 @@ def test_critique_artifact_validator_rejects_missing_explicit_allowance_blocker(
     )
 
     result = run_script(
-        "scripts/validate_critique_artifacts.py",
+        "scripts/review/validate_critique_artifacts.py",
         "--repo-root",
         str(repo),
         "--paths",
@@ -266,7 +266,7 @@ def test_critique_artifact_validator_allows_parent_delegated_artifact_with_block
     )
 
     result = run_script(
-        "scripts/validate_critique_artifacts.py",
+        "scripts/review/validate_critique_artifacts.py",
         "--repo-root",
         str(repo),
         "--paths",
@@ -290,7 +290,7 @@ def test_critique_artifact_validator_requires_reviewer_tier_evidence_for_parent_
     )
 
     result = run_script(
-        "scripts/validate_critique_artifacts.py",
+        "scripts/review/validate_critique_artifacts.py",
         "--repo-root",
         str(repo),
         "--paths",
@@ -321,7 +321,7 @@ def test_critique_artifact_validator_requires_reviewer_tier_evidence_when_packet
     )
 
     result = run_script(
-        "scripts/validate_critique_artifacts.py",
+        "scripts/review/validate_critique_artifacts.py",
         "--repo-root",
         str(repo),
         "--paths",
@@ -347,7 +347,7 @@ def test_critique_artifact_validator_accepts_concrete_blocked_signal(tmp_path: P
     )
 
     result = run_script(
-        "scripts/validate_critique_artifacts.py",
+        "scripts/review/validate_critique_artifacts.py",
         "--repo-root",
         str(repo),
         "--paths",
@@ -377,7 +377,7 @@ def test_critique_artifact_validator_accepts_reviewer_tier_evidence(tmp_path: Pa
     )
 
     result = run_script(
-        "scripts/validate_critique_artifacts.py",
+        "scripts/review/validate_critique_artifacts.py",
         "--repo-root",
         str(repo),
         "--all",
@@ -407,7 +407,7 @@ def test_critique_artifact_validator_rejects_applied_without_host_confirmation(
     )
 
     result = run_script(
-        "scripts/validate_critique_artifacts.py",
+        "scripts/review/validate_critique_artifacts.py",
         "--repo-root",
         str(repo),
         "--all",
@@ -434,7 +434,7 @@ def test_critique_artifact_validator_accepts_signal_section_with_body(tmp_path: 
     )
 
     result = run_script(
-        "scripts/validate_critique_artifacts.py",
+        "scripts/review/validate_critique_artifacts.py",
         "--repo-root",
         str(repo),
         "--paths",
@@ -462,7 +462,7 @@ def test_critique_artifact_validator_rejects_empty_signal_section(tmp_path: Path
     )
 
     result = run_script(
-        "scripts/validate_critique_artifacts.py",
+        "scripts/review/validate_critique_artifacts.py",
         "--repo-root",
         str(repo),
         "--paths",
@@ -492,7 +492,7 @@ def test_critique_artifact_validator_rejects_marker_only_signal_section(tmp_path
     )
 
     result = run_script(
-        "scripts/validate_critique_artifacts.py",
+        "scripts/review/validate_critique_artifacts.py",
         "--repo-root",
         str(repo),
         "--paths",
@@ -517,7 +517,7 @@ def test_critique_artifact_validator_fails_closed_when_changed_path_discovery_fa
         "",
     )
 
-    result = run_script("scripts/validate_critique_artifacts.py", "--repo-root", str(repo))
+    result = run_script("scripts/review/validate_critique_artifacts.py", "--repo-root", str(repo))
 
     assert result.returncode == 1
     assert "critique artifact changed-path discovery failed" in result.stderr
@@ -561,7 +561,7 @@ def test_validate_critique_structured_findings_accepts_well_formed_block(tmp_pat
         + "\n"
     )
     _seed_structured_critique(repo, body)
-    result = run_script("scripts/validate_critique_artifacts.py", "--repo-root", str(repo), "--all")
+    result = run_script("scripts/review/validate_critique_artifacts.py", "--repo-root", str(repo), "--all")
     assert result.returncode == 0, result.stderr
 
 
@@ -575,7 +575,7 @@ def test_validate_critique_structured_findings_rejects_unknown_bin(tmp_path: Pat
         + "\n"
     )
     _seed_structured_critique(repo, body)
-    result = run_script("scripts/validate_critique_artifacts.py", "--repo-root", str(repo), "--all")
+    result = run_script("scripts/review/validate_critique_artifacts.py", "--repo-root", str(repo), "--all")
     assert result.returncode == 1
     assert "unknown bin" in result.stderr
 
@@ -590,7 +590,7 @@ def test_validate_critique_structured_findings_rejects_missing_field(tmp_path: P
         + "\n"
     )
     _seed_structured_critique(repo, body)
-    result = run_script("scripts/validate_critique_artifacts.py", "--repo-root", str(repo), "--all")
+    result = run_script("scripts/review/validate_critique_artifacts.py", "--repo-root", str(repo), "--all")
     assert result.returncode == 1
     assert "missing required field `ref`" in result.stderr
 
@@ -606,7 +606,7 @@ def test_validate_critique_structured_findings_rejects_duplicate_id(tmp_path: Pa
         + "\n"
     )
     _seed_structured_critique(repo, body)
-    result = run_script("scripts/validate_critique_artifacts.py", "--repo-root", str(repo), "--all")
+    result = run_script("scripts/review/validate_critique_artifacts.py", "--repo-root", str(repo), "--all")
     assert result.returncode == 1
     assert "duplicate id" in result.stderr
 
@@ -615,7 +615,7 @@ def test_validate_critique_structured_findings_section_is_opt_in(tmp_path: Path)
     repo = tmp_path / "repo"
     body = _STRUCTURED_PRELUDE + "## Findings\n\n- prose only\n"
     _seed_structured_critique(repo, body)
-    result = run_script("scripts/validate_critique_artifacts.py", "--repo-root", str(repo), "--all")
+    result = run_script("scripts/review/validate_critique_artifacts.py", "--repo-root", str(repo), "--all")
     assert result.returncode == 0, result.stderr
 
 
@@ -629,7 +629,7 @@ def test_validate_critique_structured_findings_rejects_file_issue_without_follow
         + "\n"
     )
     _seed_structured_critique(repo, body)
-    result = run_script("scripts/validate_critique_artifacts.py", "--repo-root", str(repo), "--all")
+    result = run_script("scripts/review/validate_critique_artifacts.py", "--repo-root", str(repo), "--all")
     assert result.returncode == 1
     assert "file-issue" in result.stderr
     assert "follow-up:" in result.stderr
@@ -645,7 +645,7 @@ def test_validate_critique_structured_findings_accepts_file_issue_with_followup(
         + "\n"
     )
     _seed_structured_critique(repo, body)
-    result = run_script("scripts/validate_critique_artifacts.py", "--repo-root", str(repo), "--all")
+    result = run_script("scripts/review/validate_critique_artifacts.py", "--repo-root", str(repo), "--all")
     assert result.returncode == 0, result.stderr
 
 
@@ -659,7 +659,7 @@ def test_validate_critique_structured_findings_rejects_bare_deferred_followup(tm
         + "\n"
     )
     _seed_structured_critique(repo, body)
-    result = run_script("scripts/validate_critique_artifacts.py", "--repo-root", str(repo), "--all")
+    result = run_script("scripts/review/validate_critique_artifacts.py", "--repo-root", str(repo), "--all")
     assert result.returncode == 1
     # Pin the rejection to the structured-findings check (`follow-up:`), so a
     # future regression to `_STRUCTURED_PRELUDE`'s boundary section — which also

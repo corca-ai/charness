@@ -572,7 +572,7 @@
       "derived_paths": [],
       "sync_commands": [],
       "verify_commands": [
-        "python3 scripts/validate_critique_artifacts.py --repo-root . --all"
+        "python3 scripts/review/validate_critique_artifacts.py --repo-root . --all"
       ],
       "notes": [
         "Task-completing repo work keeps the critique packet and satisfaction signal durable."

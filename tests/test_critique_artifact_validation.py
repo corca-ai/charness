@@ -75,7 +75,7 @@ def test_live_agents_md_does_not_claim_the_legacy_delegation_contract() -> None:
     the retired repo-mandated fresh-eye marker. That keeps the test tied to the
     live root contract instead of preserving an obsolete ceremony by fixture.
     """
-    validator = _load_module("scripts/validate_critique_artifacts.py", "_vca_real")
+    validator = _load_module("scripts/review/validate_critique_artifacts.py", "_vca_real")
     assert validator.has_repo_delegation_contract(ROOT) is False
 
 
@@ -89,7 +89,7 @@ def test_both_readers_of_the_delegation_contract_agree_on_this_repo() -> None:
     and for that window one reader said this repo had adopted the contract and
     the other said it had not.
     """
-    validator = _load_module("scripts/validate_critique_artifacts.py", "_vca_parity")
+    validator = _load_module("scripts/review/validate_critique_artifacts.py", "_vca_parity")
     observer = _load_module("skills/public/issue/scripts/issue_critique_observer.py", "_ico_parity")
     assert validator.DELEGATION_CONTRACT_MARKERS == observer.DELEGATION_CONTRACT_MARKERS
     assert validator.has_repo_delegation_contract(ROOT) == observer.repo_requires_delegated_observer(ROOT)
@@ -105,7 +105,7 @@ def test_delegation_contract_absent_repo_is_not_held_to_it(tmp_path: Path) -> No
     AGENTS.md at all returns at the `is_file()` guard without reaching the
     matcher, so on its own it pins nothing about this change.
     """
-    validator = _load_module("scripts/validate_critique_artifacts.py", "_vca_absent")
+    validator = _load_module("scripts/review/validate_critique_artifacts.py", "_vca_absent")
     agents = tmp_path / "AGENTS.md"
     assert validator.has_repo_delegation_contract(tmp_path) is False  # no file at all
     agents.write_text("# Some repo\n\nNo delegation contract here.\n", encoding="utf-8")
@@ -129,7 +129,7 @@ def test_delegation_contract_matches_through_inline_markup(tmp_path: Path) -> No
     aggressive and also collapses whitespace (`subagentdelegation` no longer
     contains `subagent delegation`). The negative cases above can do neither.
     """
-    validator = _load_module("scripts/validate_critique_artifacts.py", "_vca_markup")
+    validator = _load_module("scripts/review/validate_critique_artifacts.py", "_vca_markup")
     (tmp_path / "AGENTS.md").write_text(
         "# Repo\n\n## **Subagent** _Delegation_\n\n"
         "- Repo-mandated bounded fresh-eye subagent reviews are **already delegated** by contract.\n",
@@ -146,7 +146,7 @@ def test_delegation_contract_unreadable_agents_md_is_not_adopted(tmp_path: Path)
     OSError instead -- which is not a ValidationError, so the run's handler would
     not render it as a validation failure at all.
     """
-    validator = _load_module("scripts/validate_critique_artifacts.py", "_vca_unreadable")
+    validator = _load_module("scripts/review/validate_critique_artifacts.py", "_vca_unreadable")
     agents = tmp_path / "AGENTS.md"
     agents.write_text("## Subagent Delegation\n", encoding="utf-8")
     agents.chmod(0o000)
@@ -161,7 +161,7 @@ def test_delegation_contract_unreadable_agents_md_is_not_adopted(tmp_path: Path)
 def test_validate_critique_artifact_fail_fast_stops_at_first_violation(tmp_path: Path) -> None:
     repo = seed_repo(tmp_path, _multi_violation_artifact())
     result = run_script(
-        str(ROOT / "scripts" / "validate_critique_artifacts.py"),
+        str(ROOT / "scripts" / "review" / "validate_critique_artifacts.py"),
         "--repo-root",
         str(repo),
         "--paths",
@@ -178,7 +178,7 @@ def test_validate_critique_artifact_default_mode_lists_every_violation(tmp_path:
     # D28 polarity unification: one-pass is now the DEFAULT here too.
     repo = seed_repo(tmp_path, _multi_violation_artifact())
     result = run_script(
-        str(ROOT / "scripts" / "validate_critique_artifacts.py"),
+        str(ROOT / "scripts" / "review" / "validate_critique_artifacts.py"),
         "--repo-root",
         str(repo),
         "--paths",
@@ -201,7 +201,7 @@ def test_empty_artifact_set_does_not_run_the_cross_surface_probe(tmp_path: Path)
     """
     repo = install_committed_repo(tmp_path / "repo", {"README.md": "seed\n"}, message="init")
     result = run_script(
-        str(ROOT / "scripts" / "validate_critique_artifacts.py"),
+        str(ROOT / "scripts" / "review" / "validate_critique_artifacts.py"),
         "--repo-root",
         str(repo),
         "--changed-ref",

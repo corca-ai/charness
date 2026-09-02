@@ -27,7 +27,6 @@ from pathlib import Path
 from typing import Any, Callable
 
 from runtime_bootstrap import import_repo_module
-from scripts.closeout_refusal_lib import RefusalError
 from scripts.issue_source_normalize_lib import (
     build_clause_inventory,
     build_source_document,
@@ -35,6 +34,7 @@ from scripts.issue_source_normalize_lib import (
     sha256_payload,
     sha256_text,
 )
+from scripts.review.closeout_refusal_lib import RefusalError
 
 _subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard.run_process

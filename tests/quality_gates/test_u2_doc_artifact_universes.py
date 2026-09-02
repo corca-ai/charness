@@ -217,7 +217,7 @@ def test_artifact_referents_uses_declared_roots_and_keeps_local_context_charness
 def test_critique_default_is_derived_from_critique_adapter_and_refuses_empty(
     tmp_path: Path, monkeypatch
 ) -> None:
-    gate = _load("scripts/validate_critique_artifacts.py", "u2_validate_critique")
+    gate = _load("scripts/review/validate_critique_artifacts.py", "u2_validate_critique")
     repo = install_committed_repo(
         tmp_path / "seeded",
         {

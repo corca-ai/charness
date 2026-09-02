@@ -40,7 +40,7 @@ _MODULES = {
         "skills/public/quality/scripts/inventory_doc_duplicates.py",
         "scripts/gates/check_spec_evidence_durability.py",
         "scripts/gates/check_artifact_referents.py",
-        "scripts/validate_critique_artifacts.py",
+        "scripts/review/validate_critique_artifacts.py",
         "scripts/gates/validate_retro_artifact.py",
         "scripts/gates/validate_ideation_artifact.py",
         "scripts/check_lesson_ledger.py",
@@ -136,7 +136,7 @@ def test_declared_u2_universes_refuse_when_empty(tmp_path: Path) -> None:
         (
             "artifact_roots",
             "critique",
-            "scripts/validate_critique_artifacts.py",
+            "scripts/review/validate_critique_artifacts.py",
             ("--all",),
         ),
         (
@@ -206,7 +206,7 @@ def test_named_path_that_resolves_to_nothing_refuses(tmp_path: Path) -> None:
     and exited 0. Only paths the validator OWNS are judged: a changed path from
     another family is the tool saying "none of this is yours"."""
     cases = (
-        ("scripts/validate_critique_artifacts.py", "charness-artifacts/critique/typo.md"),
+        ("scripts/review/validate_critique_artifacts.py", "charness-artifacts/critique/typo.md"),
         ("scripts/gates/validate_retro_artifact.py", "charness-artifacts/retro/typo.md"),
         ("scripts/gates/validate_ideation_artifact.py", "charness-artifacts/ideation/typo.md"),
     )
@@ -219,7 +219,7 @@ def test_named_path_that_resolves_to_nothing_refuses(tmp_path: Path) -> None:
 
 def test_named_critique_path_traversal_refuses(tmp_path: Path) -> None:
     result = run_gate(
-        "scripts/validate_critique_artifacts.py",
+        "scripts/review/validate_critique_artifacts.py",
         "--repo-root",
         str(tmp_path),
         "--paths",
@@ -235,7 +235,7 @@ def test_named_path_from_another_family_is_not_this_validator_business(tmp_path:
     exists, or every commit fails every family's validator."""
     (tmp_path / "charness-artifacts/critique").mkdir(parents=True)
     result = run_gate(
-        "scripts/validate_critique_artifacts.py",
+        "scripts/review/validate_critique_artifacts.py",
         "--repo-root",
         str(tmp_path),
         "--paths",
@@ -256,7 +256,7 @@ def test_named_path_the_validator_filters_out_still_passes(tmp_path: Path) -> No
         encoding="utf-8",
     )
     result = run_gate(
-        "scripts/validate_critique_artifacts.py",
+        "scripts/review/validate_critique_artifacts.py",
         "--repo-root",
         str(tmp_path),
         "--paths",
@@ -277,7 +277,7 @@ def test_named_path_deleted_by_this_change_still_passes(tmp_path: Path) -> None:
     _git(repo, "rm", "-q", "charness-artifacts/critique/2026-07-27-old.md")
 
     result = run_gate(
-        "scripts/validate_critique_artifacts.py",
+        "scripts/review/validate_critique_artifacts.py",
         "--repo-root",
         str(repo),
         "--paths",
@@ -291,7 +291,7 @@ def test_discovered_empty_set_stays_a_cheap_pass(tmp_path: Path) -> None:
     common commit touches no artifact of a given family — and must not become a
     failure, or every commit pays for every family."""
     repo = _seeded_repo(tmp_path)
-    result = run_gate("scripts/validate_critique_artifacts.py", "--repo-root", str(repo))
+    result = run_gate("scripts/review/validate_critique_artifacts.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stdout + result.stderr
 
 

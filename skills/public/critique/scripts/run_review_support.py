@@ -148,7 +148,7 @@ def repo_path(
     The symlink refusal is right for files the runner reads or writes — a packet
     or manifest behind a link could be swapped underneath it. It is wrong for a
     DECLARED reviewed path, whose symlink policy belongs to
-    `scripts/reviewed_input_identity.py`: that owner binds a current pointer by
+    `scripts/review/reviewed_input_identity.py`: that owner binds a current pointer by
     link payload and refuses every other symlink. Applying this rule there made
     the runner refuse inputs the identity had just been taught to bind, which is
     the same two-owners-one-question shape the identity repairs were about.

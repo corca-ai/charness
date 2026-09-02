@@ -368,7 +368,7 @@ output_dir: charness-artifacts/retro
 def test_retro_prepare_packet_changed_ref_reaches_default_surface_producer(tmp_path: Path) -> None:
     from tests.quality_gates.repo_shapes import install_two_commit_repo
 
-    producer = ROOT / "scripts/render_critique_section_changed_surfaces.py"
+    producer = ROOT / "scripts/review/render_critique_section_changed_surfaces.py"
     install_two_commit_repo(
         tmp_path,
         {

@@ -16,8 +16,22 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from runtime_bootstrap import import_repo_module
-from scripts.critique_adapter_lib import adapter_has_sections
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.review.critique_adapter_lib import adapter_has_sections  # noqa: E402
+from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
 
 _subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_monitored_phase = _subprocess_guard.run_monitored_phase
@@ -26,14 +40,14 @@ PACKET_KIND = "charness.critique_prepare_packet"
 PACKET_VERSION = 1
 PRODUCER_TIMEOUT_SECONDS = 60
 DEFAULT_REVIEWER_TIER = "high-leverage"
-_reviewed_input_identity = import_repo_module(__file__, "scripts.reviewed_input_identity")
+_reviewed_input_identity = import_repo_module(__file__, "scripts.review.reviewed_input_identity")
 build_reviewed_input_identity = _reviewed_input_identity.build_reviewed_input_identity
-_reviewed_input_verification = import_repo_module(__file__, "scripts.reviewed_input_verification")
+_reviewed_input_verification = import_repo_module(__file__, "scripts.review.reviewed_input_verification")
 packet_file_sha256 = _reviewed_input_verification.packet_file_sha256
 SUBSTRATE_WORKING_TREE = _reviewed_input_identity.SUBSTRATE_WORKING_TREE
 SUBSTRATE_COMMITTED_REF = _reviewed_input_identity.SUBSTRATE_COMMITTED_REF
 ReviewedInputError = _reviewed_input_identity.ReviewedInputError
-_reviewer_shape = import_repo_module(__file__, "scripts.critique_reviewer_evidence")
+_reviewer_shape = import_repo_module(__file__, "scripts.review.critique_reviewer_evidence")
 DEFAULT_REVIEWER_EXECUTION_MODE = _reviewer_shape.DEFAULT_REVIEWER_EXECUTION_MODE
 REVIEWER_EXECUTION_MODE_VALUES = _reviewer_shape.REVIEWER_EXECUTION_MODE_VALUES
 

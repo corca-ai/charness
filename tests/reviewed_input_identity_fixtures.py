@@ -18,7 +18,7 @@ def _build_seed(seed_root: Path) -> None:
     # Git's read commands may take optional index locks, so consumers must never
     # run identity capture against the shared repository. Capture once while the
     # seed builder owns it; later workers read immutable bytes or copy the repo.
-    from scripts.reviewed_input_identity import build_reviewed_input_identity
+    from scripts.review.reviewed_input_identity import build_reviewed_input_identity
 
     identity = build_reviewed_input_identity(
         repo_root=repo,

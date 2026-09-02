@@ -24,20 +24,20 @@ from pathlib import Path
 
 import pytest
 
-from scripts.core import git_checkout as checkout
-from scripts.core import git_status_snapshot as status_snapshot
 from scripts import (
+    checkout_view,
     lesson_ledger_lib,
     setup_inspect_quality_lib,
     sibling_module_loader,
     task_run,
     task_run_git,
 )
+from scripts import git_checkout as checkout
+from scripts import git_status_snapshot as status_snapshot
 from scripts import prepush_quality_receipt as receipt
-from scripts import reviewed_input_identity as reviewed_identity
-from scripts import reviewed_input_nonblob as reviewed_nonblob
-from scripts import reviewed_input_worktree as reviewed_worktree
-from scripts.worktree import checkout_view
+from scripts.review import reviewed_input_identity as reviewed_identity
+from scripts.review import reviewed_input_nonblob as reviewed_nonblob
+from scripts.review import reviewed_input_worktree as reviewed_worktree
 from tests.quality_gates.repo_shapes import install_committed_repo
 from tests.script_loader import load_script_module
 
@@ -790,7 +790,7 @@ def test_the_identity_builder_binds_the_sibling_loader_flat(
     before = set(sys.modules)
     try:
         module = load_script_module(
-            "reviewed_input_identity_flat_batch7", ROOT / "scripts/reviewed_input_identity.py"
+            "reviewed_input_identity_flat_batch7", ROOT / "scripts/review/reviewed_input_identity.py"
         )
 
         assert module._load_sibling.__module__ == "sibling_module_loader"

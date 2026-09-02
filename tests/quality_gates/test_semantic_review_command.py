@@ -732,7 +732,7 @@ def test_the_deleted_preimage_digest_matches_the_binder_across_the_skill_boundar
     hardcodes the framing goes green with the checker against a binder that has moved on,
     which is the failure it is here to catch.
     """
-    from scripts import reviewed_input_identity as binder
+    from scripts.review import reviewed_input_identity as binder
 
     spec = importlib.util.spec_from_file_location(
         "semantic_review_input_drift",

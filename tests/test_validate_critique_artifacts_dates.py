@@ -1,5 +1,5 @@
 """In-process coverage for the critique-artifact date fallbacks
-(`scripts/validate_critique_artifacts.py`). ``tests/test_critique_artifact_validation.py``
+(`scripts/review/validate_critique_artifacts.py`). ``tests/test_critique_artifact_validation.py``
 and the ``quality_gates`` critique suites drive this module through the CLI helper,
 so this file attributes the date-parsing lines directly
 inside its date-parsing helpers. Both ``_date_from_filename`` and
@@ -18,7 +18,7 @@ from tests.script_main import load_script_module
 ROOT = Path(__file__).resolve().parents[1]
 vca = load_script_module(
     "validate_critique_artifacts_dates_under_test",
-    ROOT / "scripts" / "validate_critique_artifacts.py",
+    ROOT / "scripts" / "review" / "validate_critique_artifacts.py",
 )
 
 
@@ -79,7 +79,7 @@ def test_c6_worktree_scope_arms_the_cross_surface_tooth(tmp_path: Path, monkeypa
     guard against "configured but handed nothing" reading as a clean miss.
     """
     scope = load_script_module(
-        "critique_enforcement_scope_dates_under_test", ROOT / "scripts" / "critique_enforcement_scope.py"
+        "critique_enforcement_scope_dates_under_test", ROOT / "scripts" / "review" / "critique_enforcement_scope.py"
     )
     probe = load_script_module(
         "boundary_probe_lib_dates_under_test", ROOT / "scripts" / "boundary_probe_lib.py"
@@ -136,7 +136,7 @@ def test_an_empty_resolved_scope_is_not_established_even_with_the_flag(
     produces on a base-less host, which is why it is the one pinned.
     """
     scope = load_script_module(
-        "critique_enforcement_scope_dates_under_test", ROOT / "scripts" / "critique_enforcement_scope.py"
+        "critique_enforcement_scope_dates_under_test", ROOT / "scripts" / "review" / "critique_enforcement_scope.py"
     )
     probe = load_script_module(
         "boundary_probe_lib_dates_under_test", ROOT / "scripts" / "boundary_probe_lib.py"
@@ -166,7 +166,7 @@ def test_the_empty_worktree_scope_note_states_its_real_cause() -> None:
     the worktree were both supplied, the probe ran, and the union was empty.
     """
     scope = load_script_module(
-        "critique_enforcement_scope_note_dates_under_test", ROOT / "scripts" / "critique_enforcement_scope.py"
+        "critique_enforcement_scope_note_dates_under_test", ROOT / "scripts" / "review" / "critique_enforcement_scope.py"
     )
 
     empty_with_worktree = scope.CrossSurfaceScope(

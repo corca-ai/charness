@@ -256,7 +256,7 @@
       ],
       "rationale": "Tool lifecycle payloads distinguish an absent optional healthcheck from a successful healthcheck with explicit status and skipped fields."
     },
-    "scripts/critique_enforcement_scope.py": {
+    "scripts/review/critique_enforcement_scope.py": {
       "states": [
         "disabled",
         "not_configured"

@@ -35,7 +35,7 @@ REPO_ROOT = repo_root_from_script(__file__)
 _scripts_adapter_lib_module = import_repo_module(__file__, "scripts.adapter_lib")
 load_yaml_file = _scripts_adapter_lib_module.load_yaml_file
 validate_adapter_version = _scripts_adapter_lib_module.validate_adapter_version
-_scripts_critique_adapter_lib_module = import_repo_module(__file__, "scripts.critique_adapter_lib")
+_scripts_critique_adapter_lib_module = import_repo_module(__file__, "scripts.review.critique_adapter_lib")
 load_critique_adapter = _scripts_critique_adapter_lib_module.load_adapter
 
 

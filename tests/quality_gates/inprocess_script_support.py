@@ -121,9 +121,9 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_check_changed_line_coverage",
         ROOT / "skills" / "public" / "quality" / "scripts" / "check_changed_line_coverage.py",
     ),
-    "scripts/validate_critique_artifacts.py": (
+    "scripts/review/validate_critique_artifacts.py": (
         "tests.quality_gates.support_validate_critique_artifacts",
-        ROOT / "scripts" / "validate_critique_artifacts.py",
+        ROOT / "scripts" / "review" / "validate_critique_artifacts.py",
     ),
     "skills/public/quality/scripts/check_runtime_budget.py": (
         "tests.quality_gates.support_check_runtime_budget",
@@ -337,9 +337,9 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_upsert_goal",
         ROOT / "skills" / "public" / "achieve" / "scripts" / "upsert_goal.py",
     ),
-    "scripts/render_critique_section_changed_surfaces.py": (
+    "scripts/review/render_critique_section_changed_surfaces.py": (
         "tests.quality_gates.support_render_critique_section_changed_surfaces",
-        ROOT / "scripts" / "render_critique_section_changed_surfaces.py",
+        ROOT / "scripts" / "review" / "render_critique_section_changed_surfaces.py",
     ),
     "scripts/gates/measure_evidence_residual.py": (
         "tests.quality_gates.support_measure_evidence_residual",

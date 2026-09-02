@@ -8,12 +8,26 @@ from datetime import date
 from functools import partial
 from pathlib import Path
 
-from runtime_bootstrap import import_repo_module, repo_root_from_script
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script  # noqa: E402
 
 REPO_ROOT = repo_root_from_script(__file__)
 
 _artifact_validator = import_repo_module(__file__, "scripts.artifact_validator")
-_adversarial_evidence = import_repo_module(__file__, "scripts.adversarial_evidence")
+_adversarial_evidence = import_repo_module(__file__, "scripts.review.adversarial_evidence")
 ValidationError = _artifact_validator.ValidationError
 report_validation_failure = _artifact_validator.report_validation_failure
 git_changed_paths = _artifact_validator.git_changed_paths
@@ -28,19 +42,19 @@ validate_adversarial_evidence = partial(
 
 # Cross-surface probe (#408): consulted only when --changed-ref/--changed-path is passed.
 _boundary_probe_lib = import_repo_module(__file__, "scripts.boundary_probe_lib")
-_critique_adapter_lib = import_repo_module(__file__, "scripts.critique_adapter_lib")
-_reviewed_input_binding = import_repo_module(__file__, "scripts.critique_reviewed_input_binding")
-_reviewer_evidence = import_repo_module(__file__, "scripts.critique_reviewer_evidence")
+_critique_adapter_lib = import_repo_module(__file__, "scripts.review.critique_adapter_lib")
+_reviewed_input_binding = import_repo_module(__file__, "scripts.review.critique_reviewed_input_binding")
+_reviewer_evidence = import_repo_module(__file__, "scripts.review.critique_reviewer_evidence")
 # The enforcement-scope concept (which floor was live, over what) lives in one
 # module rather than as conditions scattered across this file's use sites.
-_scope = import_repo_module(__file__, "scripts.critique_enforcement_scope")
+_scope = import_repo_module(__file__, "scripts.review.critique_enforcement_scope")
 # One home for "the lines of a markdown section": this file carried three copies of
 # the same heading walk, each with a slightly different heading matcher.
 _sections = import_repo_module(__file__, "scripts.core.markdown_sections")
 # The required-fields / unique-id / typed-enum loop over a structured-entry
 # section, shared with the ideation `## Structured Questions` floor.
-_structured_findings = import_repo_module(__file__, "scripts.critique_structured_findings")
-_verification_scope = import_repo_module(__file__, "scripts.critique_verification_scope")
+_structured_findings = import_repo_module(__file__, "scripts.review.critique_structured_findings")
+_verification_scope = import_repo_module(__file__, "scripts.review.critique_verification_scope")
 _critique_universe = import_repo_module(__file__, "scripts.critique_artifact_universe")
 __getattr__ = _critique_universe.__getattribute__
 PACKET_CONSUMED_RE = _scope.PACKET_CONSUMED_RE

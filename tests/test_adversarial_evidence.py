@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.adversarial_evidence import EvidenceValidationError, validate
+from scripts.review.adversarial_evidence import EvidenceValidationError, validate
 from tests.script_main import load_script_module, run_loaded_script_main
 
 REPO_ROOT = Path(__file__).resolve().parents[1]

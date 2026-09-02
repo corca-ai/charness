@@ -45,7 +45,7 @@ _CLASSIFICATION_RE = re.compile(
     r"(?P<classification>bug|feature|deferred-work|question|decision-needed|consolidated)\s*$"
 )
 try:
-    from scripts.closeout_message_claims import (
+    from scripts.review.closeout_message_claims import (
         _close_keyword_numbers,
         _close_keyword_scan_text,
         _strip_commit_comments,

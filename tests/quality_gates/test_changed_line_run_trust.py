@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from scripts.gates_support import changed_line_run_trust as trust
 from scripts.core.git_status_snapshot import parse as parse_status
+from scripts.gates_support import changed_line_run_trust as trust
 from scripts.worktree.checkout_view import FactsCheckout
 
 

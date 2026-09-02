@@ -52,7 +52,7 @@ from skill_runtime_bootstrap import load_repo_module_from_skill_script  # noqa: 
 REPO_ROOT = repo_root_from_script(__file__)
 _path_portability = import_repo_module(__file__, "scripts.core.path_portability_lib")
 _artifact_run_scope = import_repo_module(__file__, "scripts.artifact_run_scope")
-_critique_paths = import_repo_module(__file__, "scripts.critique_artifact_paths")
+_critique_paths = import_repo_module(__file__, "scripts.review.critique_artifact_paths")
 _shape_source = import_repo_module(__file__, "scripts.artifact_shape_source")
 safe_repo_relative_path = _artifact_run_scope.safe_repo_relative_path
 is_critique_round_record = _critique_paths.is_critique_round_record
@@ -107,7 +107,7 @@ REGISTRY: tuple[Surface, ...] = (
     Surface(
         "critique",
         "charness-artifacts/critique/",
-        "scripts/validate_critique_artifacts.py",
+        "scripts/review/validate_critique_artifacts.py",
         "skills/public/critique/scripts/scaffold_critique_artifact.py",
         None,
         True,

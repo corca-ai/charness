@@ -56,7 +56,7 @@ _run_scope = import_repo_module(__file__, "scripts.artifact_run_scope")
 ValidationError = _run_scope.ValidationError
 _violation_report = import_repo_module(__file__, "scripts.artifact_violation_report")
 _scaffold_rel = _violation_report._scaffold_rel
-_enforcement_scope = import_repo_module(__file__, "scripts.critique_enforcement_scope")
+_enforcement_scope = import_repo_module(__file__, "scripts.review.critique_enforcement_scope")
 
 
 def artifact_words(lines: Sequence[str]) -> int:

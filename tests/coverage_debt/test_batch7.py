@@ -44,10 +44,10 @@ from scripts import (
     surfaces_lib,
     task_run_state,
 )
-from scripts.gates_support import classify_t_signal as t_signal
+from scripts import premise_git_snapshot as premise_snapshot
 from scripts.core import git_checkout as checkout
 from scripts.core import git_status_snapshot as status_snapshot
-from scripts import premise_git_snapshot as premise_snapshot
+from scripts.gates_support import classify_t_signal as t_signal
 from scripts.hooks import check_staged_worktree_consistency as staged_consistency
 from scripts.mutation import mutation_changed_files_lib
 from scripts.worktree import checkout_view, worktree_cleanup_lib

@@ -23,10 +23,10 @@ _adapter_version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
 )
 _scaffold_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.core.scaffold_artifact_lib")
 _reviewer_shape = SKILL_RUNTIME.load_repo_module_from_skill_script(
-    __file__, "scripts.critique_reviewer_evidence"
+    __file__, "scripts.review.critique_reviewer_evidence"
 )
 
-# The critique validator (scripts/validate_critique_artifacts.py) is opt-in but
+# The critique validator (scripts/review/validate_critique_artifacts.py) is opt-in but
 # enforces real schemas when their sections appear: `## Structured Findings`
 # enums/follow-ups, `## Reviewer Tier Evidence` fields/host-exposure-state, and
 # (once dated on/after their enforce-from dates) a `Fresh-eye satisfaction:` line
@@ -44,7 +44,7 @@ _reviewer_shape = SKILL_RUNTIME.load_repo_module_from_skill_script(
 # Allowed enum values the critique validator enforces, surfaced at author time so
 # substituting a value picks from the valid set instead of inventing one that only
 # fails at validate-time. These MUST stay equal to the validator's frozensets
-# (scripts/validate_critique_artifacts.py: STRUCTURED_BINS / STRUCTURED_EVIDENCE /
+# (scripts/review/validate_critique_artifacts.py: STRUCTURED_BINS / STRUCTURED_EVIDENCE /
 # STRUCTURED_ACTIONS / REVIEWER_TIER_HOST_STATES); a drift test pins the equality so
 # this legend cannot silently diverge from the enforced contract.
 ALLOWED_BINS = ("act-before-ship", "bundle-anyway", "over-worry", "valid-but-defer")
@@ -81,7 +81,10 @@ ALLOWED_BOUNDARY_VERDICTS = ("single-surface", "owned-correctly", "moved-to-owne
 # Verification-scope values are validated when the scaffolded section is present.
 ALLOWED_FAILURE_CLASSIFICATIONS = ("scope-too-broad", "verifier-defect", "subject-defect", "none")
 ALLOWED_RETRY_DISPOSITIONS = ("first-attempt", "retry-new-identity", "stop-no-progress", "non-claim")
-VALIDATOR_SCRIPT_NAMES = ("validate_critique_artifacts.py", "validate-critique-artifacts.py")
+VALIDATOR_SCRIPT_NAMES = (
+    "review/validate_critique_artifacts.py",
+    "review/validate-critique-artifacts.py",
+)
 
 
 def allowed_enums() -> dict[str, object]:

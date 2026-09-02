@@ -9,8 +9,15 @@ from pathlib import Path
 
 
 def _load_changed_path_owner():
-    """Load the adjacent surface module even when this file is loaded by path."""
-    sibling = Path(__file__).resolve().with_name("surfaces_lib.py")
+    """Load the tree's surface owner even when this file is loaded by path."""
+    script_path = Path(__file__).resolve()
+    root = next(
+        (ancestor for ancestor in script_path.parents if (ancestor / "scripts" / "adapter_lib.py").is_file()),
+        None,
+    )
+    if root is None:
+        raise ImportError(f"Unable to resolve repository root from {script_path}")
+    sibling = root / "scripts" / "surfaces_lib.py"
     canonical = "scripts.surfaces_lib"
     loaded = sys.modules.get(canonical)
     if loaded is not None and Path(getattr(loaded, "__file__", "")).resolve() == sibling:

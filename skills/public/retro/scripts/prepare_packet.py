@@ -24,7 +24,7 @@ def _load_skill_runtime_bootstrap():
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 _packet_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(
-    __file__, "scripts.critique_packet_lib"
+    __file__, "scripts.review.critique_packet_lib"
 )
 yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 load_adapter = _resolve_adapter.load_adapter

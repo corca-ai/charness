@@ -28,8 +28,11 @@ from pathlib import Path
 
 import pytest
 
-from scripts.critique_reviewer_evidence import DELIVERY_STATE_RULE_DATE, validate_delivery_state
-from scripts.validate_critique_artifacts import (
+from scripts.review.critique_reviewer_evidence import (
+    DELIVERY_STATE_RULE_DATE,
+    validate_delivery_state,
+)
+from scripts.review.validate_critique_artifacts import (
     BOUNDARY_LEGACY_UNDATABLE_CRITIQUE_ARTIFACTS,
     ValidationError,
     _opens_with_typed_value,

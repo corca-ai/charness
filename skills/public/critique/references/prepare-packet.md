@@ -309,7 +309,7 @@ serves as the contract reference example:
   when provided, list each changed path and the surfaces (from
   `<repo-root>/.agents/surfaces.json`) that own or derive from it.
   Producer:
-  `python3 scripts/render_critique_section_changed_surfaces.py`.
+  `python3 scripts/review/render_critique_section_changed_surfaces.py`.
 
 Consumers add more sections in their own `<repo-root>/.agents/critique-adapter.yaml`.
 
@@ -374,7 +374,7 @@ The runner validates each declared section before invoking it:
 
 Adapter validation is wired into the shared `validate_adapters.py`:
 `<repo-root>/.agents/critique-adapter.yaml` is parsed by
-`<plugin-dir>/scripts/critique_adapter_lib.py`'s `load_adapter` so a malformed adapter
+`<plugin-dir>/scripts/review/critique_adapter_lib.py`'s `load_adapter` so a malformed adapter
 (missing required fields, dual-content fields, kind/field mismatch,
 duplicate section ids) fails the standing adapter gate before the
 runner ever spawns a producer process. The producer

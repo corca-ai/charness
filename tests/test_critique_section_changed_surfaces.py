@@ -16,13 +16,13 @@ from pathlib import Path
 
 import pytest
 
-from scripts import render_critique_section_changed_surfaces as producer_module
-from scripts.core import git_status_snapshot as status
+from scripts import git_status_snapshot as status
+from scripts.review import render_critique_section_changed_surfaces as producer_module
 from tests.quality_gates.repo_shapes import install_two_commit_repo, replace_with_committed_repo
 from tests.quality_gates.support import run_script
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-PRODUCER = "scripts/render_critique_section_changed_surfaces.py"
+PRODUCER = "scripts/review/render_critique_section_changed_surfaces.py"
 pytestmark = pytest.mark.boundary_contract(
     reason="observe the changed-surface producer's real Git snapshot boundary"
 )

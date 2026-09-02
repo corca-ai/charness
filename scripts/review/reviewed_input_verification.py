@@ -1,6 +1,6 @@
 """Verifying a RECORDED reviewed-input identity, as opposed to building one.
 
-Split from `scripts/reviewed_input_identity.py`, which owns production: git
+Split from `scripts/review/reviewed_input_identity.py`, which owns production: git
 enumeration, range resolution, path checking, and content digests. This module
 owns the other half — deciding whether a binding that was already written down
 still holds, and whether a critique artifact declares one at all.
@@ -22,12 +22,25 @@ from pathlib import Path
 from typing import Any
 
 
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
 def _load_identity():
     """The identity module ADJACENT to this file, never one that merely shares its name.
 
     Order matters and it used to be backwards. Trying `from scripts import
     reviewed_input_identity` first let any already-importable module of that name
-    win -- including a consumer repo's own `scripts/reviewed_input_identity.py` --
+    win -- including a consumer repo's own `scripts/review/reviewed_input_identity.py` --
     even though this verifier had itself been loaded by file path precisely
     because there is no trustworthy package context there. A fresh-eye review
     proved the substitution by preloading a synthetic module and watching the
@@ -39,7 +52,7 @@ def _load_identity():
     monkeypatch exactly the way an import-time alias did.
     """
     sibling = Path(__file__).resolve().with_name("reviewed_input_identity.py")
-    canonical = "scripts.reviewed_input_identity"
+    canonical = "scripts.review.reviewed_input_identity"
     loaded = sys.modules.get(canonical)
     loaded_file = getattr(loaded, "__file__", None)
     if loaded_file is not None and Path(loaded_file).resolve() == sibling:
@@ -62,7 +75,7 @@ def _load_identity():
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
             return module
-    from scripts import reviewed_input_identity as module  # noqa: PLC0415
+    from scripts.review import reviewed_input_identity as module  # noqa: PLC0415
 
     return module
 

@@ -42,7 +42,7 @@ from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 _freeze_lib = import_repo_module(__file__, "scripts.issue_source_freeze_lib")
-_refusal_lib = import_repo_module(__file__, "scripts.closeout_refusal_lib")
+_refusal_lib = import_repo_module(__file__, "scripts.review.closeout_refusal_lib")
 
 CROSSWALK_SCHEMA = "evidence-boundary-crosswalk/v1"
 DEFAULT_CROSSWALK_PATH = "charness-artifacts/spec/2026-08-07-evidence-boundary-crosswalk.json"

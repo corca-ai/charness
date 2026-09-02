@@ -9,17 +9,17 @@ from runtime_bootstrap import import_repo_module
 
 _artifact_validator = import_repo_module(__file__, "scripts.artifact_validator")
 ValidationError = _artifact_validator.ValidationError
-_critique_adapter = import_repo_module(__file__, "scripts.critique_adapter_lib")
+_critique_adapter = import_repo_module(__file__, "scripts.review.critique_adapter_lib")
 load_critique_adapter = _critique_adapter.load_adapter
 _quality_adapter = import_repo_module(__file__, "scripts.quality_adapter_lib")
 load_quality_adapter = _quality_adapter.load_quality_adapter
 _quality_universes = import_repo_module(__file__, "scripts.quality_universes_lib")
-_critique_paths = import_repo_module(__file__, "scripts.critique_artifact_paths")
+_critique_paths = import_repo_module(__file__, "scripts.review.critique_artifact_paths")
 _prepare_packet = import_repo_module(__file__, "scripts.gates_support.prepare_packet_markdown_kind")
 file_is_prepare_packet_markdown_kind = _prepare_packet.file_is_prepare_packet_markdown_kind
 CRITIQUE_ARTIFACT_PREFIX = _critique_paths.CRITIQUE_ARTIFACT_PREFIX
 STRUCTURED_FINDINGS_HEADING = import_repo_module(
-    __file__, "scripts.critique_structured_findings"
+    __file__, "scripts.review.critique_structured_findings"
 ).STRUCTURED_FINDINGS_HEADING
 DEFAULT_ARTIFACT_ROOTS = _quality_universes.DEFAULT_ARTIFACT_ROOTS
 matching_files = _quality_universes.matching_files

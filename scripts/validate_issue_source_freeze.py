@@ -24,7 +24,7 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 REPO_ROOT = repo_root_from_script(__file__)
 
 _freeze_lib = import_repo_module(__file__, "scripts.issue_source_freeze_lib")
-_refusal_lib = import_repo_module(__file__, "scripts.closeout_refusal_lib")
+_refusal_lib = import_repo_module(__file__, "scripts.review.closeout_refusal_lib")
 CAPTURE_RECEIPT_SCHEMA = _freeze_lib.CAPTURE_RECEIPT_SCHEMA
 FREEZE_RECEIPT_SCHEMA = _freeze_lib.FREEZE_RECEIPT_SCHEMA
 INSPECTION_SCHEMA = _freeze_lib.INSPECTION_SCHEMA

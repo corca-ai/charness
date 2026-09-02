@@ -36,7 +36,7 @@ DEFAULT_ARTIFACT_ROOTS = _quality_universes.DEFAULT_ARTIFACT_ROOTS
 matching_files = _quality_universes.matching_files
 refuse_if_declared_and_empty = _quality_universes.refuse_if_declared_and_empty
 resolve_universe = _quality_universes.resolve_universe
-_critique_adapter = import_repo_module(__file__, "scripts.critique_adapter_lib")
+_critique_adapter = import_repo_module(__file__, "scripts.review.critique_adapter_lib")
 load_critique_adapter = _critique_adapter.load_adapter
 _retro_index = import_repo_module(__file__, "scripts.build_retro_lesson_selection_index")
 load_retro_paths = _retro_index._load_retro_paths
@@ -45,7 +45,7 @@ iter_doc_lines = _markdown_doc_scan.iter_doc_lines
 #: The repo's ONE owner of an artifact's effective grandfathering date. Imported
 #: rather than reimplemented: a second date reader on a second proof surface is
 #: how the two would come to disagree about which artifacts a floor binds.
-_scope = import_repo_module(__file__, "scripts.critique_enforcement_scope")
+_scope = import_repo_module(__file__, "scripts.review.critique_enforcement_scope")
 _subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard.run_process
 

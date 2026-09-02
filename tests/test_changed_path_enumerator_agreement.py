@@ -7,8 +7,9 @@ from pathlib import Path
 
 import pytest
 
-from scripts import reviewed_input_identity, surfaces_lib
-from scripts.core import git_status_snapshot as status
+from scripts import git_status_snapshot as status
+from scripts import surfaces_lib
+from scripts.review import reviewed_input_identity
 
 
 def _git(repo: Path, *args: str) -> None:

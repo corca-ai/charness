@@ -29,7 +29,7 @@ build_snapshot_and_receipt = _capture_lib.build_snapshot_and_receipt
 capture_issues = _capture_lib.capture_issues
 run_gh = _capture_lib.run_gh
 
-_refusal_lib = import_repo_module(__file__, "scripts.closeout_refusal_lib")
+_refusal_lib = import_repo_module(__file__, "scripts.review.closeout_refusal_lib")
 _normalize_lib = import_repo_module(__file__, "scripts.issue_source_normalize_lib")
 canonical_json = _normalize_lib.canonical_json
 sha256_text = _normalize_lib.sha256_text

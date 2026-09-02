@@ -24,8 +24,8 @@ def _load(relative: str, name: str):
     return load_script_module(name, ROOT / relative)
 
 
-CRITIQUE_EVIDENCE_PATH = ROOT / "scripts/critique_reviewer_evidence.py"
-CRITIQUE_EVIDENCE = _load("scripts/critique_reviewer_evidence.py", "gaps_critique_evidence")
+CRITIQUE_EVIDENCE_PATH = ROOT / "scripts/review/critique_reviewer_evidence.py"
+CRITIQUE_EVIDENCE = _load("scripts/review/critique_reviewer_evidence.py", "gaps_critique_evidence")
 OBSERVER_PATH = ROOT / "skills/public/issue/scripts/issue_critique_observer.py"
 OBSERVER = _load("skills/public/issue/scripts/issue_critique_observer.py", "gaps_observer")
 OBSERVER_SUPPORT = _load(

@@ -21,7 +21,7 @@ import sys
 from pathlib import Path
 
 
-def load_sibling(module_stem: str):
+def load_sibling(module_stem: str, *, anchor_file: str | Path | None = None):
     """Resolve an adjacent owner independently of consumer package state.
 
     Order is load-bearing: preferring the package import would let any
@@ -30,8 +30,24 @@ def load_sibling(module_stem: str):
     who imported first. Both were real defects here, one found by a fresh-eye
     review and one by the full suite.
     """
-    sibling = Path(__file__).resolve().with_name(f"{module_stem}.py")
-    canonical = f"scripts.{module_stem}"
+    anchor = Path(anchor_file or __file__).resolve()
+    root = next(
+        (
+            ancestor
+            for ancestor in anchor.parents
+            if (ancestor / "scripts" / "adapter_lib.py").is_file()
+        ),
+        None,
+    )
+    sibling = anchor.with_name(f"{module_stem}.py")
+    if not sibling.is_file() and root is not None:
+        sibling = root / "scripts" / f"{module_stem}.py"
+    if root is None:
+        canonical = f"scripts.{module_stem}"
+    else:
+        package_dir = sibling.parent.relative_to(root / "scripts")
+        prefix = ".".join(("scripts", *package_dir.parts))
+        canonical = f"{prefix}.{module_stem}"
     loaded = sys.modules.get(canonical)
     loaded_file = getattr(loaded, "__file__", None)
     if loaded_file is not None and Path(loaded_file).resolve() == sibling:

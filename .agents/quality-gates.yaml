@@ -352,7 +352,7 @@ phases:
   - label: validate-critique-artifacts
     command:
     - python3
-    - scripts/validate_critique_artifacts.py
+    - scripts/review/validate_critique_artifacts.py
     - --repo-root
     - $REPO_ROOT
     - --changed-ref

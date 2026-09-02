@@ -43,7 +43,7 @@ def _resolver_path(repo_root: Path) -> Path:
 _debug_resolve_adapter = load_path_module("debug_resolve_adapter", _resolver_path(REPO_ROOT))
 load_adapter = _debug_resolve_adapter.load_adapter
 _scripts_artifact_validator_module = import_repo_module(__file__, "scripts.artifact_validator")
-_adversarial_evidence = import_repo_module(__file__, "scripts.adversarial_evidence")
+_adversarial_evidence = import_repo_module(__file__, "scripts.review.adversarial_evidence")
 # The #548 SINGLE OWNER of what a current pointer resolves to. Imported rather than
 # re-derived: five private copies of this rule were consolidated into it precisely
 # because nothing forced them to agree, and the role test below is where a seventh

@@ -21,21 +21,21 @@ from pathlib import Path
 import pytest
 
 from runtime_bootstrap import import_repo_module
-from scripts import adversarial_evidence as adversarial
 from scripts import capability_catalog_resolver as catalog_resolver
-from scripts import critique_packet_lib as critique_packet
-from scripts import reviewed_input_identity as reviewed_identity
-from scripts import reviewed_input_verification as reviewed_verification
 from scripts import staged_commit_gate_plan_helpers as staged_helpers
+from scripts.review import adversarial_evidence as adversarial
+from scripts.review import critique_packet_lib as critique_packet
+from scripts.review import reviewed_input_identity as reviewed_identity
+from scripts.review import reviewed_input_verification as reviewed_verification
 
 ROOT = Path(__file__).resolve().parents[1]
 
 _MUTATION_SOURCES = (
     "charness",
-    "scripts/adversarial_evidence.py",
+    "scripts/review/adversarial_evidence.py",
     "scripts/capability_catalog_resolver.py",
-    "scripts/critique_packet_lib.py",
-    "scripts/reviewed_input_identity.py",
+    "scripts/review/critique_packet_lib.py",
+    "scripts/review/reviewed_input_identity.py",
     "scripts/staged_commit_gate_plan_helpers.py",
     "skills/public/critique/scripts/prepare_packet.py",
     "skills/public/debug/scripts/persist_debug_artifact.py",
