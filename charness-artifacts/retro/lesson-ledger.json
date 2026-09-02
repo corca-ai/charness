@@ -283,6 +283,18 @@
       "transition_id": "seed-verification-shape-mismatch",
       "lesson_id": "verification-shape-mismatch",
       "source_retro": "charness-artifacts/retro/2026-09-02-session-retro.md"
+    },
+    {
+      "sequence": 48,
+      "transition_id": "seed-layout-oracle-duplication",
+      "lesson_id": "layout-oracle-duplication",
+      "source_retro": "charness-artifacts/retro/2026-09-03-session-retro.md"
+    },
+    {
+      "sequence": 49,
+      "transition_id": "seed-sweep-overreach",
+      "lesson_id": "sweep-overreach",
+      "source_retro": "charness-artifacts/retro/2026-09-03-session-retro.md"
     }
   ],
   "score_events": [
@@ -1848,6 +1860,36 @@
     "verification-shape-mismatch": {
       "source_retro": "charness-artifacts/retro/2026-09-02-session-retro.md",
       "transition_id": "seed-verification-shape-mismatch",
+      "score_total": 0,
+      "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "layout-oracle-duplication": {
+      "source_retro": "charness-artifacts/retro/2026-09-03-session-retro.md",
+      "transition_id": "seed-layout-oracle-duplication",
+      "score_total": 0,
+      "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "sweep-overreach": {
+      "source_retro": "charness-artifacts/retro/2026-09-03-session-retro.md",
+      "transition_id": "seed-sweep-overreach",
       "score_total": 0,
       "score_count": 0,
       "outcome_counts": {

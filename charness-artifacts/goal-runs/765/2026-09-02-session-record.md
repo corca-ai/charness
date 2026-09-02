@@ -179,6 +179,46 @@ classes seeded, one RCA event). Lane worktrees are all removed.
    lane brief should cite rows and treat the 22 conditional `ship` rows as
    the design's centre. Then #770, #772.
 
+## Next session, in order (written at the end of the third session)
+
+State at the end of the third session: `origin/main` = local `main`
+(`834c8de3a`), nothing unpushed, tree clean. #768, #774, #769, #770 are all
+CLOSED with `verify-closeout` = `verified`; cursor at #772
+(`integrated-closeout`, progress 8/1/9 revision 7). Retro:
+`charness-artifacts/retro/2026-09-03-session-retro.md` (two new classes
+seeded: `layout-oracle-duplication`, `sweep-overreach`; one RCA event). The
+push clone `/tmp/charness-push-770-b` can be deleted. The section "Next
+session, in order (written at the end of the second session)" below is
+history; do not follow it.
+
+1. Read the ledger preview once (`--seed goal-765-session4`) and the
+   2026-09-03 retro's Next Improvements. Confirm the tree: regenerate the
+   mirror (`python3 scripts/plugin_export/sync_root_plugin_manifests.py
+   --repo-root .`), then `python3 scripts/gates_support/run_standing_pytest.py
+   --repo-root .` and `./scripts/run-quality.sh --full --read-only`. Only
+   those two are "green"; a family rerun locates, it never claims.
+2. #772 owned scope, from `bodies/integrated-closeout.md`: (a) the live
+   install proof on a throwaway repo using the recipe in `briefs/map-772.md`
+   section 3 (`charness doctor`, `charness update`, one `quality` run, no
+   reference to the source repo's `tools/` or `run-quality.sh`), artifact
+   naming the export commit; (b) `./scripts/run-quality.sh --release` green
+   with the skip list read; (c) the distinct-observer review of the export
+   boundary and gate classification is already recorded
+   (`charness-artifacts/critique/2026-09-02-769-export-boundary.md`); cite it,
+   do not redo it unless the install proof changes the boundary.
+3. Fold in the two deferred critique items before the install proof: F9
+   (exported `run-quality.sh` cannot target a consumer; the consumer route is
+   the planner over the consumer's declared list) and F10 (the exported-copy
+   test seeds a narrower shape than a real install; the live proof is the
+   evidence). Both anchors are in the critique artifact lines 115 to 116.
+4. The retro's resolver follow-up (four flat-or-packaged lookups onto one
+   resolver beside `scripts/core/repo_layout.py`) is a #772 brief item if a
+   lane runs; otherwise it is a parent slice after the install proof.
+5. Close #772 with the same carrier (`Closes #772`, feature, template
+   `git show 7f4bcf835 -s`), push from a clean clone, `verify-closeout`, then
+   the parent: `issue_tool.py goal-run-close` only after exact readback;
+   never `gh issue close` on #765.
+
 ## Third session, 2026-09-02
 
 Steps 1 and 2 of "Next session, in order" are done.
