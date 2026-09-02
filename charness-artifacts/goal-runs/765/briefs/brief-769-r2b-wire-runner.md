@@ -37,11 +37,28 @@ Design:
    the `timing_layer` field (`python3 scripts/render_validator_timing_layers.py --check`
    or the name R1 chose); `check_timing_layer_completeness` compares the
    rendered table to the file.
-5. The mirror regeneration lands as the engine preamble R2a wrote, on by
-   default, with `--no-sync-mirror` to skip; `--read-only` does not skip it
-   (`plugins/` is gitignored, so read-only's promise about tracked artifacts
-   holds); say so in `docs/development.md` "Verification and export" in one
-   sentence.
+5. Mirror preamble, corrected by the design critique
+   (`charness-artifacts/goal-runs/765/briefs/design-critique-769.md` items 1
+   and 2): `sync_root_plugin_manifests.py:78-83` also rewrites the TRACKED
+   marketplace manifests, so under `--read-only` (the pre-push hook's mode)
+   the preamble must not write. Rule: in a writing mode, regenerate; under
+   `--read-only`, export to a tempdir and compare (the
+   `validate_packaging.py --validate-export` shape) and refuse with the
+   regenerate command when stale. Guard on `packaging/charness.json` present
+   AND the resolved plugin root gitignored, never on a bare `plugins/`
+   directory (a consumer's own `plugins/` must never be removed). Also move
+   the nine tests map-769-runner section 6 lists, which compare the on-disk
+   mirror byte for byte, onto ONE session-scoped fixture in
+   `tests/quality_gates/support.py` (or `tests/conftest.py`) that exports to a
+   tempdir once, so the standing pytest no longer depends on the on-disk
+   mirror. Say both rules in `docs/development.md` "Verification and export".
+5b. Schema verbs the critique found missing (items 5 to 8): `any_of:`,
+   `release: true`, `prior_phases_green: true`, `non_claim_absent: <name>`,
+   `env: {VAR: nonempty}`; `opt-in` = env OR explicit name ignoring the
+   allowlist, and the match counter increments only when named; the engine
+   enumerates every `$`-token in the rows and refuses an undeclared
+   `runner_variables` entry at load time. The standing parity test compares
+   (label, argv) pairs, not label sets. Pin each with a test.
 6. `.githooks/pre-push` `DOCS_ONLY_LABELS` (`:97`) reads the `docs_only`
    rows from the data file through the engine (`--print-docs-only-labels`)
    instead of its literal.
