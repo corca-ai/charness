@@ -57,6 +57,7 @@ from __future__ import annotations
 import argparse
 import contextlib
 import glob as globlib
+import importlib.util
 import io
 import runpy
 import shutil
@@ -64,7 +65,7 @@ import sys
 import tempfile
 import traceback
 from pathlib import Path
-from types import SimpleNamespace
+from types import ModuleType, SimpleNamespace
 from typing import Any
 
 
@@ -164,20 +165,42 @@ def classify(returncode: int | None, output: str) -> tuple[str, str | None]:
     return "prose-only", None
 
 
+def _load_path_module(module_name: str, module_path: Path) -> ModuleType:
+    """Import one repo-owned detector from its path without spawning it.
+
+    The skill runtime bootstrap keeps its own path loader private, and widening
+    that contract for one probe is more surface than this inventory needs.
+    """
+    spec = importlib.util.spec_from_file_location(module_name, module_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Unable to load {module_path}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
 def probe_detector(repo_root: Path, script: str, empty_repo: Path) -> dict[str, Any]:
     # The detector is repo-owned Python, so importing its CLI keeps this inventory
     # in-process. The timeout budget remains part of the reported contract, but an
     # in-process call cannot be pre-empted without introducing the process boundary
-    # this migration removes.
-    module = SKILL_RUNTIME.load_path_module(f"empty_scope_{Path(script).stem}", repo_root / script)
+    # this migration removes. Everything a child interpreter would give the
+    # detector is emulated here: argv is swapped BEFORE the import (a detector may
+    # parse at module level), the script's own directory leads sys.path (bare
+    # sibling imports), and import-time output and exits are captured.
+    script_path = repo_root / script
     stdout = io.StringIO()
     stderr = io.StringIO()
     previous_argv = sys.argv
+    previous_path = list(sys.path)
     try:
         sys.argv = [script, "--repo-root", str(empty_repo)]
+        sys.path.insert(0, str(script_path.parent))
         with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
             try:
-                result = module.main()
+                module = _load_path_module(f"empty_scope_{script_path.stem}", script_path)
+                main = getattr(module, "main", None)
+                result = main() if callable(main) else 0
                 returncode = result if isinstance(result, int) else 0
             except SystemExit as exc:
                 returncode = exc.code if isinstance(exc.code, int) else 1
@@ -186,6 +209,7 @@ def probe_detector(repo_root: Path, script: str, empty_repo: Path) -> dict[str, 
                 returncode = 1
     finally:
         sys.argv = previous_argv
+        sys.path[:] = previous_path
     output = stdout.getvalue() + stderr.getvalue()
     bucket, evidence = classify(returncode, output)
     return {
