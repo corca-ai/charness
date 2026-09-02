@@ -194,23 +194,8 @@ def test_check_shell_fails_when_file_discovery_is_partial(tmp_path: Path) -> Non
     bin_dir.mkdir()
     shellcheck_called = repo / "shellcheck-called"
     write_executable(
-        bin_dir / "find",
-        "\n".join(
-            [
-                "#!/usr/bin/env bash",
-                "set -euo pipefail",
-                'if [[ "$1" == "." ]]; then',
-                '  echo "./root.sh"',
-                "  exit 0",
-                "fi",
-                'if [[ "$1" == "scripts" ]]; then',
-                '  echo "forced find failure" >&2',
-                "  exit 42",
-                "fi",
-                'exec /usr/bin/find "$@"',
-                "",
-            ]
-        ),
+        bin_dir / "python3",
+        "#!/usr/bin/env bash\necho 'forced universe resolution failure' >&2\nexit 42\n",
     )
     write_executable(
         bin_dir / "shellcheck",
@@ -228,11 +213,10 @@ def test_check_shell_fails_when_file_discovery_is_partial(tmp_path: Path) -> Non
     result = run_shell_script(script_path, cwd=repo, env=env)
 
     assert result.returncode == 1
-    assert "check-shell: shell file discovery failed." in result.stderr
-    assert "command: { find . -maxdepth 1 -type f -name '*.sh'" in result.stderr
+    assert "check-shell: shell universe resolution failed." in result.stderr
+    assert "--key shell_sources --gate-label check-shell --format lines" in result.stderr
     assert "exit_code: 42" in result.stderr
-    assert "./root.sh" in result.stderr
-    assert "forced find failure" in result.stderr
+    assert "forced universe resolution failure" in result.stderr
     assert not shellcheck_called.exists()
 
 
@@ -243,19 +227,8 @@ def test_check_shell_fails_when_root_file_discovery_fails(tmp_path: Path) -> Non
     bin_dir.mkdir()
     shellcheck_called = repo / "shellcheck-called"
     write_executable(
-        bin_dir / "find",
-        "\n".join(
-            [
-                "#!/usr/bin/env bash",
-                "set -euo pipefail",
-                'if [[ "$1" == "." ]]; then',
-                '  echo "forced root find failure" >&2',
-                "  exit 42",
-                "fi",
-                'exec /usr/bin/find "$@"',
-                "",
-            ]
-        ),
+        bin_dir / "python3",
+        "#!/usr/bin/env bash\necho 'forced root universe failure' >&2\nexit 42\n",
     )
     write_executable(
         bin_dir / "shellcheck",
@@ -273,19 +246,20 @@ def test_check_shell_fails_when_root_file_discovery_fails(tmp_path: Path) -> Non
     result = run_shell_script(script_path, cwd=repo, env=env)
 
     assert result.returncode == 1
-    assert "check-shell: shell file discovery failed." in result.stderr
+    assert "check-shell: shell universe resolution failed." in result.stderr
+    assert "--key shell_sources --gate-label check-shell --format lines" in result.stderr
     assert "exit_code: 42" in result.stderr
-    assert "forced root find failure" in result.stderr
+    assert "forced root universe failure" in result.stderr
     assert not shellcheck_called.exists()
 
 
 def test_check_shell_skips_shellcheck_when_successful_discovery_is_empty(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    script_path = _copy_script(repo, "check-shell.sh")
+    repo.mkdir()
+    script_path = ROOT / "scripts" / "check-shell.sh"
     bin_dir = repo / "bin"
     bin_dir.mkdir()
     shellcheck_called = repo / "shellcheck-called"
-    write_executable(bin_dir / "find", "#!/usr/bin/env bash\nexit 0\n")
     write_executable(
         bin_dir / "shellcheck",
         "\n".join(
@@ -298,16 +272,17 @@ def test_check_shell_skips_shellcheck_when_successful_discovery_is_empty(tmp_pat
         ),
     )
 
-    env = dict(PATH=f"{bin_dir}:/usr/bin:/bin")
+    env = dict(PATH=f"{bin_dir}:/usr/bin:/bin", CHARNESS_REPO_ROOT=str(repo))
     result = run_shell_script(script_path, cwd=repo, env=env)
 
     assert result.returncode == 0, result.stderr
     assert not shellcheck_called.exists()
+    assert "discovered empty shell_sources universe" in result.stdout
 
 
 def test_check_shell_treats_missing_githooks_as_optional(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    script_path = _copy_script(repo, "check-shell.sh")
+    _copy_script(repo, "check-shell.sh")
     bin_dir = repo / "bin"
     bin_dir.mkdir()
     output_path = repo / "shellcheck-args.txt"
@@ -316,8 +291,12 @@ def test_check_shell_treats_missing_githooks_as_optional(tmp_path: Path) -> None
         '#!/usr/bin/env bash\nprintf \'%s\\n\' "$@" > "$TEST_OUTPUT"\n',
     )
 
-    env = dict(PATH=f"{bin_dir}:/usr/bin:/bin", TEST_OUTPUT=str(output_path))
-    result = run_shell_script(script_path, cwd=repo, env=env)
+    env = dict(
+        PATH=f"{bin_dir}:/usr/bin:/bin",
+        TEST_OUTPUT=str(output_path),
+        CHARNESS_REPO_ROOT=str(repo),
+    )
+    result = run_shell_script(ROOT / "scripts" / "check-shell.sh", cwd=repo, env=env)
 
     assert result.returncode == 0, result.stderr
     args = output_path.read_text(encoding="utf-8").splitlines()
@@ -326,7 +305,7 @@ def test_check_shell_treats_missing_githooks_as_optional(tmp_path: Path) -> None
 
 def test_check_shell_discovers_nested_test_fixtures(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    script_path = _copy_script(repo, "check-shell.sh")
+    _copy_script(repo, "check-shell.sh")
     fixture = repo / "tests" / "fixtures" / "fake-tool.sh"
     fixture.parent.mkdir(parents=True)
     fixture.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
@@ -339,9 +318,13 @@ def test_check_shell_discovers_nested_test_fixtures(tmp_path: Path) -> None:
     )
 
     result = run_shell_script(
-        script_path,
+        ROOT / "scripts" / "check-shell.sh",
         cwd=repo,
-        env=dict(PATH=f"{bin_dir}:/usr/bin:/bin", TEST_OUTPUT=str(output_path)),
+        env=dict(
+            PATH=f"{bin_dir}:/usr/bin:/bin",
+            TEST_OUTPUT=str(output_path),
+            CHARNESS_REPO_ROOT=str(repo),
+        ),
     )
 
     assert result.returncode == 0, result.stderr
