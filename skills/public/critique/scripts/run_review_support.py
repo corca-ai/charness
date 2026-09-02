@@ -197,14 +197,14 @@ def relative(root: Path, path: Path) -> str:
 
 def load_goal_lineage(root: Path, path_value: str | None, *, reason: str) -> dict[str, Any]:
     """Load one full evidence identity, or record an explicit standalone run."""
-    candidates: list[Path] = [root / "scripts" / "goal_lineage.py"]
+    candidates: list[Path] = [root / "scripts" / "issue" / "goal_lineage.py"]
     here = Path(__file__).resolve()
     candidates.extend(
-        ancestor / "scripts" / "goal_lineage.py" for ancestor in (here, *here.parents)
+        ancestor / "scripts" / "issue" / "goal_lineage.py" for ancestor in (here, *here.parents)
     )
     lineage_path = next((candidate for candidate in candidates if candidate.is_file()), None)
     if lineage_path is None:
-        raise RunReviewError("runtime-unavailable", "scripts/goal_lineage.py is not available")
+        raise RunReviewError("runtime-unavailable", "scripts/issue/goal_lineage.py is not available")
     module = load_module(lineage_path, "charness_run_review_goal_lineage")
     try:
         if path_value is None:

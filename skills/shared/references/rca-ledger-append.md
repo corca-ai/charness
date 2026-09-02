@@ -9,7 +9,7 @@ depends on closeout discipline), not gate-enforced.
 ## When This Applies
 
 This step is **repo-gated, not consumer-facing**. It applies only in a repo that
-maintains the conversion ledger — both `<repo-root>/scripts/record_rca_event.py`
+maintains the conversion ledger — both `<repo-root>/scripts/issue/record_rca_event.py`
 and `<repo-root>/charness-artifacts/metrics/rca-ledger.jsonl` exist (Charness's
 own self-development dogfood). In any other repo, including consumer installs of
 the public skills, this step is a **silent no-op**: do not create the script, the
@@ -38,7 +38,7 @@ bar, `event_kind` rules, and the tie-break default) are owned by the
 **classification rubric** in
 `<authoring-repo>/charness-artifacts/spec/rca-conversion-ledger.md`. Read
 it before recording; this reference does not restate or extend it. The closed
-enums are owned by `<plugin-dir>/scripts/rca_event.schema.json`.
+enums are owned by `<plugin-dir>/scripts/issue/rca_event.schema.json`.
 
 Field guidance for the recorder flags:
 
@@ -66,7 +66,7 @@ suppress the event.
 ## How
 
 ```bash
-python3 <plugin-dir>/scripts/record_rca_event.py \
+python3 <plugin-dir>/scripts/issue/record_rca_event.py \
   --source <debug|issue|retro> --event-kind <bug|repeated_correction|weak_proof> \
   --class-key <short-opaque-class> [--converted --durable-kind <kind>] \
   [--caught-by <agent|human|gate>] [--ref <issue|sha|path>] [--note "<summary>"]
@@ -74,4 +74,4 @@ python3 <plugin-dir>/scripts/record_rca_event.py \
 
 The committed ledger is durable repo state: commit the appended line with the
 work it records, in the same closeout. Check the running figure any time with
-`python3 <plugin-dir>/scripts/aggregate_rca_ledger.py`.
+`python3 <plugin-dir>/scripts/issue/aggregate_rca_ledger.py`.

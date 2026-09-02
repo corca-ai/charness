@@ -149,7 +149,7 @@ def test_the_t_signal_cli_prints_a_classification_and_exits_zero_without_git(tmp
 
 
 # --------------------------------------------------------------------------
-# scripts/record_rca_event.py
+# scripts/issue/record_rca_event.py
 # --------------------------------------------------------------------------
 
 
@@ -163,7 +163,7 @@ class _BlockScriptsPackage:
 
 
 def test_the_rca_recorder_loads_when_run_as_a_plain_script(monkeypatch: pytest.MonkeyPatch) -> None:
-    """`python3 scripts/record_rca_event.py` puts `scripts/` on the path, not the repo root.
+    """`python3 scripts/issue/record_rca_event.py` puts `scripts/` on the path, not the repo root.
 
     In that layout `from scripts import ...` cannot resolve, and the fallback arm
     is the ONLY thing that binds the ledger library and both YAML helpers. A
@@ -178,18 +178,20 @@ def test_the_rca_recorder_loads_when_run_as_a_plain_script(monkeypatch: pytest.M
     monkeypatch.setattr(sys, "meta_path", [_BlockScriptsPackage()] + sys.meta_path)
     for name in [name for name in sys.modules if name == "scripts" or name.startswith("scripts.")]:
         monkeypatch.delitem(sys.modules, name)
-    monkeypatch.syspath_prepend(str(ROOT / "scripts"))
+    monkeypatch.syspath_prepend(str(ROOT / "scripts" / "issue"))
 
     before = set(sys.modules)
     try:
-        module = load_script_module("record_rca_event_no_package", ROOT / "scripts" / "record_rca_event.py")
+        module = load_script_module(
+            "record_rca_event_no_package", ROOT / "scripts" / "issue" / "record_rca_event.py"
+        )
 
         # What THIS module bound, not whether `scripts` happens to be importable in
         # this interpreter. The global probe (`pytest.raises(ImportError)` around
-        # `import scripts.rca_ledger_lib`) passed in isolation and failed in the full
+        # `import scripts.issue.rca_ledger_lib`) passed in isolation and failed in the full
         # suite: whether some other test has left the package reachable is not a fact
         # about the layout under test, and asserting it made a correct fallback red.
-        # `lib.__name__` is the discriminator: the try arm binds `scripts.rca_ledger_lib`
+        # `lib.__name__` is the discriminator: the try arm binds `scripts.issue.rca_ledger_lib`
         # and the fallback binds the bare sibling. `render_yaml.__module__` is NOT usable
         # here -- the repo's bootstrap aliases the two module names, so the same function
         # object carries `scripts.yaml_output` either way.

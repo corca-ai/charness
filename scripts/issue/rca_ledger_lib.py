@@ -13,7 +13,7 @@ def _portable_path(repo_root: Path, path: Path) -> str:
     except ValueError:
         return str(path)
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+REPO_ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_PATH = Path(__file__).resolve().parent / "rca_event.schema.json"
 LEDGER_PATH = Path("charness-artifacts/metrics/rca-ledger.jsonl")
 IDEMPOTENCY_FIELDS = ("source", "event_kind", "class_key")

@@ -48,23 +48,23 @@
       "description": "Committed RCA conversion ledger events and the validator/aggregator that keep the JSONL metric well-formed.",
       "source_paths": [
         "charness-artifacts/metrics/rca-ledger.jsonl",
-        "scripts/record_rca_event.py",
-        "scripts/validate_rca_ledger.py",
-        "scripts/aggregate_rca_ledger.py",
-        "scripts/rca_ledger_lib.py",
-        "scripts/rca_event.schema.json"
+        "scripts/issue/record_rca_event.py",
+        "scripts/issue/validate_rca_ledger.py",
+        "scripts/issue/aggregate_rca_ledger.py",
+        "scripts/issue/rca_ledger_lib.py",
+        "scripts/issue/rca_event.schema.json"
       ],
       "derived_paths": [
-        "plugins/charness/scripts/record_rca_event.py",
-        "plugins/charness/scripts/validate_rca_ledger.py",
-        "plugins/charness/scripts/aggregate_rca_ledger.py",
-        "plugins/charness/scripts/rca_ledger_lib.py",
-        "plugins/charness/scripts/rca_event.schema.json"
+        "plugins/charness/scripts/issue/record_rca_event.py",
+        "plugins/charness/scripts/issue/validate_rca_ledger.py",
+        "plugins/charness/scripts/issue/aggregate_rca_ledger.py",
+        "plugins/charness/scripts/issue/rca_ledger_lib.py",
+        "plugins/charness/scripts/issue/rca_event.schema.json"
       ],
       "sync_commands": [],
       "verify_commands": [
-        "python3 scripts/validate_rca_ledger.py --repo-root .",
-        "python3 scripts/aggregate_rca_ledger.py --repo-root ."
+        "python3 scripts/issue/validate_rca_ledger.py --repo-root .",
+        "python3 scripts/issue/aggregate_rca_ledger.py --repo-root ."
       ],
       "notes": [
         "Commit live non-seed closeout events with the work that produced them; do not rewrite historical duplicates."

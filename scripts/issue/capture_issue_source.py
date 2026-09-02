@@ -8,7 +8,7 @@ comment set is complete, so letting it write the snapshot would put an unprovabl
 capture underneath every criterion id derived from it.
 
 Usage:
-    python3 scripts/capture_issue_source.py --repo corca-ai/charness \\
+    python3 scripts/issue/capture_issue_source.py --repo corca-ai/charness \\
         --numbers 514 515 518 \\
         --snapshot charness-artifacts/spec/2026-08-07-issue-514-515-518-source.json
 """
@@ -19,18 +19,36 @@ import argparse
 import json
 from pathlib import Path
 
-from runtime_bootstrap import import_repo_module, load_path_module, repo_root_from_script
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import (  # noqa: E402
+    import_repo_module,
+    load_path_module,
+    repo_root_from_script,
+)
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-_capture_lib = import_repo_module(__file__, "scripts.issue_source_capture_lib")
+_capture_lib = import_repo_module(__file__, "scripts.issue.issue_source_capture_lib")
 CaptureRefusal = _capture_lib.CaptureRefusal
 build_snapshot_and_receipt = _capture_lib.build_snapshot_and_receipt
 capture_issues = _capture_lib.capture_issues
 run_gh = _capture_lib.run_gh
 
 _refusal_lib = import_repo_module(__file__, "scripts.review.closeout_refusal_lib")
-_normalize_lib = import_repo_module(__file__, "scripts.issue_source_normalize_lib")
+_normalize_lib = import_repo_module(__file__, "scripts.issue.issue_source_normalize_lib")
 canonical_json = _normalize_lib.canonical_json
 sha256_text = _normalize_lib.sha256_text
 

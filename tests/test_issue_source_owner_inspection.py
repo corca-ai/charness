@@ -19,14 +19,14 @@ from pathlib import Path
 
 import pytest
 
-from scripts.issue_source_freeze_lib import (
+from scripts.issue.issue_source_freeze_lib import (
     INSPECTION_SCHEMA,
     FreezeError,
     load_inspection,
     verify_inspection,
     verify_locators,
 )
-from scripts.validate_issue_source_freeze import preflight, run_refreeze, stamp_inspection
+from scripts.issue.validate_issue_source_freeze import preflight, run_refreeze, stamp_inspection
 from tests.test_issue_source_freeze import (
     FREEZE_REL,
     SNAPSHOT_REL,

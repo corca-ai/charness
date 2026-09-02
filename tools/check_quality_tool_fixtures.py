@@ -25,7 +25,7 @@ Refusals, each for an escape that was observed rather than imagined:
 - `path escapes the fixture directory`: `stdout_path` comes from a file under review, so
   it is untrusted. `repo_root / "/tmp/out"` is `/tmp/out`, and `../` escapes upward --
   either would let a fixture "verify" against a file nobody reviewed.
-  `scripts/issue_source_freeze_lib.py` already refuses this for the same reason on the
+  `scripts/issue/issue_source_freeze_lib.py` already refuses this for the same reason on the
   same kind of input; this is that idiom, applied here.
 - `digest_drift`: the stream file no longer hashes to what the fixture recorded.
 - `nothing was compared`: the refusal above used to key on how many fixture FILES exist,

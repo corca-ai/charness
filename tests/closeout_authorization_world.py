@@ -13,8 +13,8 @@ import json
 import subprocess
 from pathlib import Path
 
-from scripts.issue_source_capture_lib import build_snapshot_and_receipt, capture_issues
-from scripts.validate_issue_source_freeze import run_freeze, stamp_inspection
+from scripts.issue.issue_source_capture_lib import build_snapshot_and_receipt, capture_issues
+from scripts.issue.validate_issue_source_freeze import run_freeze, stamp_inspection
 
 PROTECTED = (514, 515, 518)
 CROSSWALK_REL = "charness-artifacts/spec/2026-08-07-evidence-boundary-crosswalk.json"

@@ -19,10 +19,10 @@ from pathlib import Path
 import pytest
 import yaml
 
-from scripts.issue_source_capture_lib import build_snapshot_and_receipt, capture_issues
-from scripts.issue_source_freeze_lib import _RECEIPT_IDENTITY_EXCLUDED, FreezeError
-from scripts.issue_source_normalize_lib import sha256_payload, sha256_text
-from scripts.validate_issue_source_freeze import (
+from scripts.issue.issue_source_capture_lib import build_snapshot_and_receipt, capture_issues
+from scripts.issue.issue_source_freeze_lib import _RECEIPT_IDENTITY_EXCLUDED, FreezeError
+from scripts.issue.issue_source_normalize_lib import sha256_payload, sha256_text
+from scripts.issue.validate_issue_source_freeze import (
     main,
     run_freeze,
     run_refreeze,
@@ -997,6 +997,9 @@ def test_the_script_entrypoint_propagates_the_refusal_exit_code(tmp_path: Path, 
     monkeypatch.setattr(sys, "argv", ["validate_issue_source_freeze.py", *_cli_args(tmp_path, "validate")])
 
     with pytest.raises(SystemExit) as excinfo:
-        runpy.run_path(str(REPO_ROOT / "scripts" / "validate_issue_source_freeze.py"), run_name="__main__")
+        runpy.run_path(
+            str(REPO_ROOT / "scripts" / "issue" / "validate_issue_source_freeze.py"),
+            run_name="__main__",
+        )
 
     assert excinfo.value.code == 1

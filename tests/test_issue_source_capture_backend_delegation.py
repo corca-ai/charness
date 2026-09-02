@@ -28,7 +28,7 @@ def test_the_capture_allowlist_is_derived_from_the_substitutions_not_restated() 
     allowlist closes. Deriving removes the failure mode instead of testing for it — and this
     pin fails if someone re-introduces the second copy.
     """
-    from scripts.issue_source_capture_lib import (
+    from scripts.issue.issue_source_capture_lib import (
         SOURCE_CAPTURE_PLACEHOLDERS,
         capture_subs,
     )
@@ -48,7 +48,7 @@ def test_the_backend_owner_loader_is_exercised_not_re_implemented() -> None:
     or with the refusal misspelled — a second copy of the rule under test, inside the slice
     about copies of a rule.
     """
-    import scripts.issue_source_capture_lib as lib
+    import scripts.issue.issue_source_capture_lib as lib
 
     lib._ISSUE_BACKEND_OWNER = None
     owner = lib._issue_backend_owner()
@@ -65,7 +65,7 @@ def test_the_loader_refuses_a_missing_owner_with_its_own_typed_code(monkeypatch)
     `invalid_capture_command` — sending an operator to the adapter file for what is a broken
     install. The code has to reach the caller intact or it is decoration.
     """
-    import scripts.issue_source_capture_lib as lib
+    import scripts.issue.issue_source_capture_lib as lib
 
     monkeypatch.setattr(lib, "_ISSUE_BACKEND_OWNER", None)
     monkeypatch.setattr(Path, "is_file", lambda self: False)
@@ -90,9 +90,9 @@ def test_the_exported_mirror_can_reach_its_own_backend_owner() -> None:
     reachable from the mirror's own location.
     """
     root = Path(__file__).resolve().parent.parent
-    mirror = root / "plugins/charness/scripts/issue_source_capture_lib.py"
+    mirror = root / "plugins/charness/scripts/issue/issue_source_capture_lib.py"
     assert mirror.is_file(), mirror
-    package_root = mirror.parent.parent
+    package_root = mirror.parent.parent.parent
     assert (package_root / "skills/issue/scripts/issue_backend.py").is_file()
     assert not (package_root / "skills/public/issue/scripts/issue_backend.py").exists(), (
         "the installed layout gained a `public` tree; the loader's candidate order needs review"
@@ -100,7 +100,7 @@ def test_the_exported_mirror_can_reach_its_own_backend_owner() -> None:
     # Assert the SOURCE, not only the mirror. A mutation that drops a layout from the source
     # leaves the generated mirror stale until the next sync, so a mirror-only assertion passes
     # over a broken source — measured: this pin SURVIVED that exact mutant before this line.
-    source = root / "scripts/issue_source_capture_lib.py"
+    source = root / "scripts/issue/issue_source_capture_lib.py"
     for path in (source, mirror):
         text = path.read_text(encoding="utf-8")
         assert "skills/public/issue/scripts/issue_backend.py" in text, path
@@ -117,7 +117,7 @@ def test_a_capture_template_that_names_no_repository_is_refused() -> None:
     the vocabulary lives. Both real spellings resolve; a template naming neither is refused
     before the backend is reached.
     """
-    from scripts.issue_source_capture_lib import CaptureRefusal, build_page_argv
+    from scripts.issue.issue_source_capture_lib import CaptureRefusal, build_page_argv
 
     def argv(parts):
         return build_page_argv(
@@ -142,7 +142,7 @@ def test_a_brace_bearing_capture_template_refuses_typed_rather_than_escaping() -
     the exact defect class the consolidation was filed to remove, re-created by the branch the
     consolidation added.
     """
-    from scripts.issue_source_capture_lib import CaptureRefusal, build_page_argv
+    from scripts.issue.issue_source_capture_lib import CaptureRefusal, build_page_argv
 
     backend = {
         "id": "acme",

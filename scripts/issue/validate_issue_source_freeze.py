@@ -6,7 +6,7 @@ together. `validate` proves that bind still holds AND that the snapshot is
 re-derivable from the captured raw responses — a hand-authored or edited snapshot
 fails there, not at a schema check it would happily pass.
 
-    python3 scripts/validate_issue_source_freeze.py validate --repo-root . \\
+    python3 scripts/issue/validate_issue_source_freeze.py validate --repo-root . \\
         --snapshot charness-artifacts/spec/2026-08-07-issue-514-515-518-source.json \\
         --inspection charness-artifacts/spec/2026-08-07-issue-514-515-518-owner-inspection.json \\
         --freeze-receipt charness-artifacts/spec/2026-08-07-issue-514-515-518-freeze-receipt.json \\
@@ -19,11 +19,25 @@ import argparse
 import json
 from pathlib import Path
 
-from runtime_bootstrap import import_repo_module, repo_root_from_script
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script  # noqa: E402
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-_freeze_lib = import_repo_module(__file__, "scripts.issue_source_freeze_lib")
+_freeze_lib = import_repo_module(__file__, "scripts.issue.issue_source_freeze_lib")
 _refusal_lib = import_repo_module(__file__, "scripts.review.closeout_refusal_lib")
 CAPTURE_RECEIPT_SCHEMA = _freeze_lib.CAPTURE_RECEIPT_SCHEMA
 FREEZE_RECEIPT_SCHEMA = _freeze_lib.FREEZE_RECEIPT_SCHEMA

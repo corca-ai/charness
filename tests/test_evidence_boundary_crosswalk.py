@@ -28,8 +28,8 @@ from scripts.evidence.evidence_boundary_crosswalk import (
 from scripts.evidence.evidence_boundary_crosswalk import main as crosswalk_main
 from scripts.gates.validate_evidence_boundary_crosswalk import main as validate_main
 from scripts.gates.validate_evidence_boundary_crosswalk import run as validate_crosswalk
-from scripts.issue_source_capture_lib import build_snapshot_and_receipt, capture_issues
-from scripts.validate_issue_source_freeze import run_freeze, stamp_inspection
+from scripts.issue.issue_source_capture_lib import build_snapshot_and_receipt, capture_issues
+from scripts.issue.validate_issue_source_freeze import run_freeze, stamp_inspection
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 CROSSWALK_REL = "spec/crosswalk.json"

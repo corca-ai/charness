@@ -245,7 +245,7 @@ Choosing between them, in one question: **who evaluates this path?**
 
 - The reader, against their own tree → `<repo-root>/`. Example:
   [rca-ledger-append.md](../skills/shared/references/rca-ledger-append.md) gates a step on whether
-  `<repo-root>/scripts/record_rca_event.py` exists; for a consumer that
+  `<repo-root>/scripts/issue/record_rca_event.py` exists; for a consumer that
   correctly evaluates false and the step is a documented no-op.
 - Nobody — the sentence is describing what charness ships → `<authoring-repo>/`.
   Example: "`charness` wraps that path explicitly in

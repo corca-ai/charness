@@ -26,20 +26,34 @@ import subprocess
 from pathlib import Path
 from typing import Any, Callable
 
-from runtime_bootstrap import import_repo_module
-from scripts.issue_source_normalize_lib import (
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.issue.issue_source_normalize_lib import (  # noqa: E402
     build_clause_inventory,
     build_source_document,
     clause_inventory_identity,
     sha256_payload,
     sha256_text,
 )
-from scripts.review.closeout_refusal_lib import RefusalError
+from scripts.review.closeout_refusal_lib import RefusalError  # noqa: E402
+from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
 
 _subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard.run_process
 
-CAPTURE_TOOL = "scripts/capture_issue_source.py"
+CAPTURE_TOOL = "scripts/issue/capture_issue_source.py"
 CAPTURE_TIMEOUT_SECONDS = 120
 
 GRAPHQL_QUERY = """
@@ -123,7 +137,7 @@ def _issue_backend_owner():
         import importlib.util
         from pathlib import Path as _Path
 
-        package_root = _Path(__file__).resolve().parent.parent
+        package_root = _Path(__file__).resolve().parents[2]
         candidates = [
             package_root / "skills/public/issue/scripts/issue_backend.py",
             package_root / "skills/issue/scripts/issue_backend.py",

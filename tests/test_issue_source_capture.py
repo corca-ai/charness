@@ -18,27 +18,28 @@ from types import SimpleNamespace
 import pytest
 import yaml
 
-import scripts.issue_source_capture_lib as capture_lib
-from scripts.capture_issue_source import resolve_adapter_module, run_capture
-from scripts.issue_source_capture_lib import (
+import scripts.issue.issue_source_capture_lib as capture_lib
+from scripts import packaging_lib
+from scripts.issue.capture_issue_source import resolve_adapter_module, run_capture
+from scripts.issue.issue_source_capture_lib import (
     CaptureRefusal,
     build_page_argv,
     capture_issue,
     capture_issues,
     run_gh,
 )
-from scripts.issue_source_normalize_lib import (
+from scripts.issue.issue_source_normalize_lib import (
     build_clause_inventory,
     build_source_document,
     clause_inventory_identity,
     split_clauses,
 )
-from scripts.plugin_export import packaging_lib
 from tests.script_main import load_script_module
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 capture_module = load_script_module(
-    "capture_issue_source_under_test", REPO_ROOT / "scripts" / "capture_issue_source.py"
+    "capture_issue_source_under_test",
+    REPO_ROOT / "scripts" / "issue" / "capture_issue_source.py",
 )
 GH_BACKEND = {"id": "gh", "binary": "gh", "commands": None}
 CAPABILITY = {

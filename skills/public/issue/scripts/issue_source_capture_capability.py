@@ -3,7 +3,7 @@
 Split out of `resolve_adapter.py` as its own cohesive unit rather than spilled into a
 generic `_lib` companion: this is one named capability with its own contract, defaults,
 and refusal semantics, and it is consumed by exactly one caller outside the resolver
-(`scripts/capture_issue_source.py`).
+(`scripts/issue/capture_issue_source.py`).
 
 The contract answers a question `issue view` cannot: *is this capture complete?* A
 backend proves that only by naming how it enumerates (cursor or page), how many items

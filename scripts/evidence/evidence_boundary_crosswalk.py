@@ -55,7 +55,7 @@ from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script 
 from scripts.yaml_output import emit_yaml  # noqa: E402
 
 REPO_ROOT = repo_root_from_script(__file__)
-_freeze_lib = import_repo_module(__file__, "scripts.issue_source_freeze_lib")
+_freeze_lib = import_repo_module(__file__, "scripts.issue.issue_source_freeze_lib")
 _refusal_lib = import_repo_module(__file__, "scripts.review.closeout_refusal_lib")
 
 CROSSWALK_SCHEMA = "evidence-boundary-crosswalk/v1"

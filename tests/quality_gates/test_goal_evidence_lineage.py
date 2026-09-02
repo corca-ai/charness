@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
-SCRIPT = ROOT / "scripts/goal_lineage.py"
+SCRIPT = ROOT / "scripts/issue/goal_lineage.py"
 
 
 def _load():

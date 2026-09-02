@@ -52,13 +52,27 @@ import json
 from pathlib import Path
 from typing import Any
 
-from scripts.issue_source_normalize_lib import (
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.issue.issue_source_normalize_lib import (  # noqa: E402
     build_clause_inventory,
     clause_inventory_identity,
     sha256_payload,
     sha256_text,
 )
-from scripts.review.closeout_refusal_lib import RefusalError
+from scripts.review.closeout_refusal_lib import RefusalError  # noqa: E402
 
 SNAPSHOT_SCHEMA = "issue-source-snapshot/v1"
 CAPTURE_RECEIPT_SCHEMA = "issue-source-capture-receipt/v1"
@@ -245,7 +259,7 @@ def _require_contained(repo_root: Path, rel: str, raw_dir: str | None) -> None:
 
 def verify_capture(repo_root: Path, snapshot: dict[str, Any], receipt: dict[str, Any]) -> dict[str, Any]:
     """Re-derive the snapshot from captured raw responses and compare."""
-    from scripts.issue_source_normalize_lib import build_source_document
+    from scripts.issue.issue_source_normalize_lib import build_source_document
 
     expected_identity = sha256_payload(
         {key: value for key, value in receipt.items() if key not in _RECEIPT_IDENTITY_EXCLUDED}

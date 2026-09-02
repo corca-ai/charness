@@ -5,7 +5,7 @@ from pathlib import Path
 
 import yaml
 
-from scripts import rca_ledger_lib as lib
+from scripts.issue import rca_ledger_lib as lib
 from tests.rca_ledger_helpers import (
     COMMITTED_LEDGER,
     ROOT,
@@ -420,7 +420,7 @@ def test_ac5_round_trip_independent_of_product_telemetry(tmp_path: Path) -> None
     # the spec-blessed reuse, not coupling.
     forbidden = ("emit_product_telemetry", ".charness/telemetry", "product_telemetry.jsonl")
     for name in ("record_rca_event.py", "validate_rca_ledger.py", "aggregate_rca_ledger.py", "rca_ledger_lib.py"):
-        source = (ROOT / "scripts" / name).read_text(encoding="utf-8")
+        source = (ROOT / "scripts" / "issue" / name).read_text(encoding="utf-8")
         for token in forbidden:
             assert token not in source, f"{name} references adapter machinery: {token}"
     assert callable(lib.portable_path)  # the spec-blessed helper reuse resolves at runtime
@@ -501,7 +501,7 @@ SKILL_SOURCE_FLAGS = {
 def test_slice2_append_reference_is_presence_gated_and_rubric_anchored() -> None:
     text = APPEND_REFERENCE.read_text(encoding="utf-8")
     # presence gate keeps the public-skill change a no-op for consumer repos
-    assert "scripts/record_rca_event.py" in text
+    assert "scripts/issue/record_rca_event.py" in text
     assert "silent no-op" in text
     # judgment calls defer to the rubric instead of being restated/extended here
     assert "rca-conversion-ledger.md" in text

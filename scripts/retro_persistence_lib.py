@@ -11,7 +11,7 @@ from typing import Any
 
 from scripts.artifacts.artifact_naming_lib import dated_artifact_filename
 from scripts.core.helper_provenance_lib import require_repo_local_helper
-from scripts.goal_lineage import (
+from scripts.issue.goal_lineage import (
     LineageError,
     load_goal_lineage_file,
     not_goal_bound_lineage,

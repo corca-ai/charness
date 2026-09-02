@@ -53,7 +53,7 @@ def test_a_path_outside_repo_and_support_is_returned_unchanged(tmp_path: Path) -
 
 # --- a typed capture refusal is not re-wrapped as a config error -------------
 
-_capture = import_repo_module(__file__, "scripts.issue_source_capture_lib")
+_capture = import_repo_module(__file__, "scripts.issue.issue_source_capture_lib")
 
 
 def _with_owner(owner: object) -> list[str]:

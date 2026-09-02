@@ -7,7 +7,7 @@ import os
 import subprocess
 from pathlib import Path
 
-from scripts import aggregate_rca_ledger, record_rca_event, validate_rca_ledger
+from scripts.issue import aggregate_rca_ledger, record_rca_event, validate_rca_ledger
 
 ROOT = Path(__file__).resolve().parents[1]
 COMMITTED_LEDGER = ROOT / "charness-artifacts" / "metrics" / "rca-ledger.jsonl"

@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.goal_lineage import LineageError, load_goal_lineage_file, not_goal_bound_lineage
+from scripts.issue.goal_lineage import LineageError, load_goal_lineage_file, not_goal_bound_lineage
 
 
 def _sha(path: Path) -> str:
