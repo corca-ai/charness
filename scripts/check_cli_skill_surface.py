@@ -6,8 +6,6 @@ import argparse
 import fnmatch
 import os
 import shlex
-import signal
-import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -15,6 +13,8 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_monitored_phase = _subprocess_guard.run_monitored_phase
 REQUIRED_PRODUCT_SURFACES = {"installable_cli", "bundled_skill"}
 DEFAULT_COMMAND_DOCS = (".agents/command-docs.yaml",)
 DEFAULT_CHANGE_GLOBS = (
@@ -29,11 +29,8 @@ DEFAULT_CHANGE_GLOBS = (
     ".agents/command-docs.yaml",
 )
 DEFAULT_PROBE_TIMEOUT_SECONDS = 20.0
-TIMEOUT_EXIT_CODE = 124
 PROBE_ATTEMPTS = 2
-DRAIN_TIMEOUT_SECONDS = 5.0
 PROBE_TIMEOUT_ENV = "CHARNESS_CLI_SKILL_SURFACE_PROBE_TIMEOUT_SECONDS"
-DRAIN_TIMEOUT_ENV = "CHARNESS_CLI_SKILL_SURFACE_DRAIN_TIMEOUT_SECONDS"
 _adapter_lib = import_repo_module(__file__, "scripts.adapter_lib")
 load_yaml_file = _adapter_lib.load_yaml_file
 validate_adapter_version = _adapter_lib.validate_adapter_version
@@ -43,7 +40,11 @@ unsafe_agent_browser_probe_reason = _agent_browser_probe_policy.unsafe_agent_bro
 
 def _string_list(data: dict[str, Any], field: str) -> list[str]:
     value = data.get(field)
-    return list(value) if isinstance(value, list) and all(isinstance(item, str) for item in value) else []
+    return (
+        list(value)
+        if isinstance(value, list) and all(isinstance(item, str) for item in value)
+        else []
+    )
 
 
 def _load_adapter(repo_root: Path, adapter_path: Path) -> tuple[dict[str, Any], list[str]]:
@@ -98,10 +99,16 @@ def _has_root_executable(repo_root: Path) -> bool:
 
 
 def _has_cli_marker(repo_root: Path, data: dict[str, Any]) -> bool:
-    return bool(_probe_commands(data)) or bool(_existing_docs(_command_doc_paths(repo_root, data))) or _has_root_executable(repo_root)
+    return (
+        bool(_probe_commands(data))
+        or bool(_existing_docs(_command_doc_paths(repo_root, data)))
+        or _has_root_executable(repo_root)
+    )
 
 
-def _product_surface_source(repo_root: Path, data: dict[str, Any], skills: list[Path]) -> str | None:
+def _product_surface_source(
+    repo_root: Path, data: dict[str, Any], skills: list[Path]
+) -> str | None:
     if _required(data):
         return "declared"
     if skills and _has_cli_marker(repo_root, data):
@@ -151,96 +158,22 @@ def _probe_timeout_seconds() -> float:
     return _positive_timeout_seconds(PROBE_TIMEOUT_ENV, DEFAULT_PROBE_TIMEOUT_SECONDS)
 
 
-def _drain_timeout_seconds() -> float:
-    return _positive_timeout_seconds(DRAIN_TIMEOUT_ENV, DRAIN_TIMEOUT_SECONDS)
-
-
-def _decoded(value: object) -> str:
-    if isinstance(value, bytes):
-        return value.decode("utf-8", "replace")
-    return value if isinstance(value, str) else ""
-
-
-def _kill_group_and_drain(process: subprocess.Popen[str]) -> tuple[str, str]:
-    """Kill the probe's whole process group, then drain under its own deadline.
-
-    A bare `subprocess.run(..., timeout=)` kills only the DIRECT child and then
-    drains with no deadline at all, so a surviving grandchild holding the
-    inherited pipes hangs the drain forever -- and `run-quality.sh` puts no wall
-    clock around a queued label, so nothing above would recover. `doctor.py`
-    shells out per capability, so grandchildren are the normal case here, not an
-    exotic one.
-    """
-    # Signal the group by the child's OWN pid, never by `os.getpgid(child)`.
-    # `start_new_session=True` makes the child its own group leader, so the two
-    # are equal in the normal case -- but `getpgid` returns the SHARED group the
-    # moment that flag stops applying, and killpg on it SIGKILLs the whole
-    # quality run: every sibling check, the runner, and the shell. Measured, not
-    # theorised: a mutant flipping that flag did exactly that three times during
-    # this slice, each time killing the sweep mid-run and leaving the tree
-    # mutated. This narrows the blast radius; it does not prove one, and it
-    # rests on `start_new_session` holding. If that flag ever stops applying,
-    # a recycled pid could still name a stranger group, and no test here can
-    # construct that state -- untestable, not observed-absent.
-    try:
-        os.killpg(process.pid, signal.SIGKILL)
-    except (ProcessLookupError, PermissionError, OSError):
-        process.kill()
-    try:
-        return process.communicate(timeout=_drain_timeout_seconds())
-    except subprocess.TimeoutExpired as exc:
-        # Keep what the pipe already yielded. `TimeoutExpired` carries every byte
-        # read so far -- INCLUDING the bytes the probe-deadline `communicate`
-        # consumed, because the resumed call reuses the same buffers -- so
-        # returning empty strings here would discard the partial verdict this
-        # whole repair exists to preserve, one call deeper than the defect it
-        # replaced. Bytes even in text mode: CPython joins raw chunks and only
-        # decodes on the success path.
-        return _decoded(exc.output), _decoded(exc.stderr)
-    finally:
-        # killpg can succeed WITHOUT reaching the direct child (a probe that
-        # re-parents its own group), and then `Popen.__exit__` would call an
-        # unbounded `wait()` on a live child -- B2's hang, narrowed but not
-        # closed. Killing the child outright is the containment. UNPROVEN by
-        # test: a mutation sweep confirmed this line can be deleted with the
-        # suite green, because no fixture constructs a probe that re-parents
-        # its own group. Kept as cheap defence, not claimed as covered.
-        process.kill()
-
-
 def _attempt_probe(repo_root: Path, command: str, timeout_seconds: float) -> dict[str, object]:
     """Run `command` once in its own process group."""
-    with subprocess.Popen(
+    outcome = run_monitored_phase(
         shlex.split(command),
         cwd=repo_root,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-        start_new_session=True,
-    ) as process:
-        try:
-            stdout, stderr = process.communicate(timeout=timeout_seconds)
-        except subprocess.TimeoutExpired:
-            # The deadline can expire with a verdict ALREADY PRODUCED and merely
-            # unread -- a child that exited while a grandchild still held the
-            # pipe. So keep whatever was captured instead of discarding it: the
-            # honest claim is that this run did not OBSERVE a verdict, which is
-            # weaker than saying the command never rendered one.
-            stdout, stderr = _kill_group_and_drain(process)
-            return {
-                "command": command,
-                "returncode": TIMEOUT_EXIT_CODE,
-                "stdout_preview": (stdout or "")[:400],
-                "stderr_preview": (stderr or "")[:400],
-                "timed_out": True,
-            }
-        return {
-            "command": command,
-            "returncode": process.returncode,
-            "stdout_preview": stdout[:400],
-            "stderr_preview": stderr[:400],
-            "timed_out": False,
-        }
+        phase="cli-skill-surface-probe",
+        timeout_seconds=timeout_seconds,
+        display=command,
+    )
+    return {
+        "command": command,
+        "returncode": outcome.returncode,
+        "stdout_preview": outcome.stdout[:400],
+        "stderr_preview": outcome.stderr[:400],
+        "timed_out": outcome.timed_out,
+    }
 
 
 def _run_probe(repo_root: Path, command: str) -> dict[str, object]:
@@ -271,20 +204,32 @@ def _adapter_weaknesses(data: dict[str, Any], *, source: str, skills: list[Path]
     weaknesses: list[str] = []
     if source == "inferred":
         for surface in sorted(REQUIRED_PRODUCT_SURFACES - declared):
-            weaknesses.append(f"adapter does not declare `{surface}` in product_surfaces despite detected CLI plus skill shape")
+            weaknesses.append(
+                f"adapter does not declare `{surface}` in product_surfaces despite detected CLI plus skill shape"
+            )
     if not _string_list(data, "cli_skill_surface_probe_commands"):
-        weaknesses.append("cli_skill_surface_probe_commands is empty for a CLI plus bundled-skill surface")
+        weaknesses.append(
+            "cli_skill_surface_probe_commands is empty for a CLI plus bundled-skill surface"
+        )
     if not _string_list(data, "cli_skill_surface_command_docs"):
-        weaknesses.append("cli_skill_surface_command_docs is empty; using default command-doc discovery only")
+        weaknesses.append(
+            "cli_skill_surface_command_docs is empty; using default command-doc discovery only"
+        )
     if skills and not _string_list(data, "cli_skill_surface_skill_paths"):
-        weaknesses.append("cli_skill_surface_skill_paths is empty; using common skill layout discovery only")
+        weaknesses.append(
+            "cli_skill_surface_skill_paths is empty; using common skill layout discovery only"
+        )
     globs = _string_list(data, "cli_skill_surface_change_globs")
     if not globs:
-        weaknesses.append("cli_skill_surface_change_globs is empty; using default broad change globs")
+        weaknesses.append(
+            "cli_skill_surface_change_globs is empty; using default broad change globs"
+        )
     elif not any(fnmatch.fnmatch("skills/public/demo/SKILL.md", pattern) for pattern in globs):
         weaknesses.append("cli_skill_surface_change_globs does not match common public skill paths")
     elif not any(fnmatch.fnmatch("plugins/demo/SKILL.md", pattern) for pattern in globs):
-        weaknesses.append("cli_skill_surface_change_globs does not match common plugin export paths")
+        weaknesses.append(
+            "cli_skill_surface_change_globs does not match common plugin export paths"
+        )
     return weaknesses
 
 
@@ -320,7 +265,10 @@ def build_payload(
             "adapter_weaknesses": [],
         }
     if not _relevant_change(data, changed_paths):
-        return {"status": "skipped", "reason": "no CLI, skill, plugin, package, or install-surface change matched"}
+        return {
+            "status": "skipped",
+            "reason": "no CLI, skill, plugin, package, or install-surface change matched",
+        }
 
     probes = _probe_commands(data)
     docs = _existing_docs(_command_doc_paths(repo_root, data))
@@ -329,9 +277,13 @@ def build_payload(
     if not skills:
         blockers.append("No bundled public/support skill path was available to inspect.")
     if not docs and not any("--help" in command for command in probes):
-        blockers.append("No command-docs file or `--help` probe delegates broad command discovery to the binary.")
+        blockers.append(
+            "No command-docs file or `--help` probe delegates broad command discovery to the binary."
+        )
     if not any(("doctor" in command or "--version" in command) for command in probes):
-        blockers.append("No doctor/readiness or version probe demonstrates installable CLI readiness.")
+        blockers.append(
+            "No doctor/readiness or version probe demonstrates installable CLI readiness."
+        )
     # `--json` stays in this list even though THIS repo retired it on 2026-08-14: the
     # gate also judges consuming repos, whose CLIs are not bound by that decision. But
     # a migrated repo can no longer satisfy the heuristic through that token, so the
@@ -364,7 +316,9 @@ def build_payload(
                 f"readiness is unobserved, not failing"
             )
         elif result["returncode"] != 0:
-            blockers.append(f"CLI plus skill probe failed: `{result['command']}` exited {result['returncode']}")
+            blockers.append(
+                f"CLI plus skill probe failed: `{result['command']}` exited {result['returncode']}"
+            )
 
     findings = [
         {

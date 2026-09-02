@@ -5,12 +5,14 @@ from __future__ import annotations
 import argparse
 import json
 import shutil
-import subprocess
 import tempfile
 from pathlib import Path
 
-from runtime_bootstrap import repo_root_from_script
+from runtime_bootstrap import import_repo_module, repo_root_from_script
 from yaml_output import emit_yaml
+
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_process = _subprocess_guard.run_process
 
 try:
     from scripts.repo_file_listing import iter_matching_repo_files, iter_repo_files
@@ -95,12 +97,12 @@ def _is_python_shebang(path: Path) -> bool:
         return False
     interpreter = interpreter_parts[0]
     if Path(interpreter).name == "env":
-        interpreter = next(
-            (part for part in interpreter_parts[1:] if not part.startswith("-")), ""
-        )
+        interpreter = next((part for part in interpreter_parts[1:] if not part.startswith("-")), "")
     interpreter_name = Path(interpreter).name.lower()
     version = interpreter_name.removeprefix("python")
-    return interpreter_name.startswith("python") and (not version or version.replace(".", "").isdigit())
+    return interpreter_name.startswith("python") and (
+        not version or version.replace(".", "").isdigit()
+    )
 
 
 def _surface_files(repo_root: Path, *, require_git: bool = False) -> dict[str, list[Path]]:
@@ -158,9 +160,7 @@ def _surface_files(repo_root: Path, *, require_git: bool = False) -> dict[str, l
             and relative_parts[2] == "src"
             and path.suffix == ".rs"
         ) or (
-            len(relative_parts) == 3
-            and relative_parts[0] == "native"
-            and path.name == "build.rs"
+            len(relative_parts) == 3 and relative_parts[0] == "native" and path.name == "build.rs"
         ):
             surface["rust"].append(path)
     return {bucket: sorted(paths) for bucket, paths in surface.items()}
@@ -205,9 +205,7 @@ def _splitlines_summary(repo_root: Path, *, require_git: bool = False) -> dict[s
         "test_file_count": sum(len(surface_files[bucket]) for bucket in SURFACE_BUCKETS[4:]),
         "surface_breakdown": line_counts,
         "surface_file_buckets": _surface_file_names(surface_files, repo_root),
-        "skipped_paths": sorted(
-            path.relative_to(repo_root).as_posix() for path in skipped_paths
-        ),
+        "skipped_paths": sorted(path.relative_to(repo_root).as_posix() for path in skipped_paths),
     }
 
 
@@ -232,7 +230,7 @@ def _tokei_code(paths: list[Path], *, language: str, repo_root: Path) -> tuple[i
         "--hidden",
         *(str(path) for path in paths),
     ]
-    completed = subprocess.run(cmd, cwd=repo_root, capture_output=True, text=True, check=False)
+    completed = run_process(cmd, cwd=repo_root, timeout_seconds=None)
     if completed.returncode != 0:
         raise TokeiUnavailableError(
             f"tokei exited with status {completed.returncode}: {completed.stderr.strip()}"
@@ -336,7 +334,9 @@ def _resolve_engine(engine: str) -> tuple[str, str]:
     return engine, "explicit"
 
 
-def summarize(repo_root: Path, *, engine: str = "auto", require_git: bool = False) -> dict[str, object]:
+def summarize(
+    repo_root: Path, *, engine: str = "auto", require_git: bool = False
+) -> dict[str, object]:
     resolved_engine, engine_selection = _resolve_engine(engine)
     if resolved_engine == "tokei":
         counts = _tokei_summary(repo_root, require_git=require_git)

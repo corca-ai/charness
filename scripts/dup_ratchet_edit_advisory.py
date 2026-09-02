@@ -40,6 +40,11 @@ try:
 except ModuleNotFoundError:  # invoked as `python3 scripts/dup_ratchet_edit_advisory.py`
     from git_checkout import head_oid_from_files
 
+from runtime_bootstrap import import_repo_module
+
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_process = _subprocess_guard.run_process
+
 #: Fallback when the adapter cannot be read. Kept identical to the shipped
 #: `.agents/quality-adapter.yaml` `dup_ratchet.scope_paths` default.
 DEFAULT_SCOPE_PATHS = ("scripts", "skills/public", "skills/support")
@@ -155,10 +160,8 @@ def _git(repo_root: Path, *args: str) -> subprocess.CompletedProcess[str] | None
     """
 
     try:
-        return subprocess.run(
-            ["git", *args], cwd=repo_root, capture_output=True, text=True, timeout=10
-        )
-    except (OSError, subprocess.SubprocessError):
+        return run_process(["git", *args], cwd=repo_root, timeout_seconds=10)
+    except OSError:
         return None
 
 
@@ -283,7 +286,9 @@ def advisory_message(relpath: str, added: int) -> str:
     )
 
 
-def advisory_state(repo_root: Path, relpath: str, *, threshold: int = DEFAULT_ADDED_LINE_THRESHOLD) -> dict:
+def advisory_state(
+    repo_root: Path, relpath: str, *, threshold: int = DEFAULT_ADDED_LINE_THRESHOLD
+) -> dict:
     """Structured form of the same decision, for tests and callers that want the why."""
 
     roots = scope_paths(repo_root)

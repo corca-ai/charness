@@ -5,8 +5,9 @@ from __future__ import annotations
 import argparse
 import json
 import re
-import subprocess
+import shlex
 import sys
+import tempfile
 from datetime import date
 from pathlib import Path
 
@@ -23,6 +24,8 @@ iter_doc_lines = _markdown_doc_scan.iter_doc_lines
 #: rather than reimplemented: a second date reader on a second proof surface is
 #: how the two would come to disagree about which artifacts a floor binds.
 _scope = import_repo_module(__file__, "scripts.critique_enforcement_scope")
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_process = _subprocess_guard.run_process
 
 DOC_GLOBS = (
     "charness-artifacts/spec/**/*.md",
@@ -137,21 +140,24 @@ def git_check_ignore(root: Path, paths: list[Path]) -> set[Path] | None:
             continue
     if not rel_inputs:
         return set()
-    result = subprocess.run(
-        ["git", "check-ignore", "--stdin", "-z"],
-        cwd=root,
-        input="\0".join(rel_inputs).encode("utf-8") + b"\0",
-        capture_output=True,
-        check=False,
-    )
+    request = "\0".join(rel_inputs).encode("utf-8") + b"\0"
+    with tempfile.NamedTemporaryFile() as input_file:
+        input_file.write(request)
+        input_file.flush()
+        result = run_process(
+            f"git check-ignore --stdin -z < {shlex.quote(input_file.name)}",
+            cwd=root,
+            shell=True,
+            timeout_seconds=None,
+        )
     if result.returncode not in (0, 1):
-        rendered = result.stderr.decode("utf-8", errors="replace").strip()
+        rendered = result.stderr.strip()
         if "not a git repository" in rendered.lower():
             return None
         raise ValidationError(f"git check-ignore failed: {rendered or 'unknown error'}")
     ignored: set[Path] = set()
-    for raw in result.stdout.split(b"\0"):
-        token = raw.decode("utf-8", errors="replace").strip()
+    for raw in result.stdout.split("\0"):
+        token = raw.strip()
         if not token:
             continue
         ignored.add((root / token).resolve())
@@ -191,9 +197,7 @@ def iter_citation_lines(doc: Path) -> list[tuple[int, str, list[str]]]:
     return out
 
 
-def citation_candidates(
-    root: Path, doc: Path
-) -> dict[Path, list[tuple[int, str]]]:
+def citation_candidates(root: Path, doc: Path) -> dict[Path, list[tuple[int, str]]]:
     citation_lines = iter_citation_lines(doc)
     if not citation_lines:
         return {}
@@ -221,9 +225,7 @@ def violations_for_doc(
     if not candidates_by_path:
         return []
     ignored = (
-        git_check_ignore(root, list(candidates_by_path))
-        if ignored_paths is None
-        else ignored_paths
+        git_check_ignore(root, list(candidates_by_path)) if ignored_paths is None else ignored_paths
     )
     if ignored is None or not ignored:
         return []
@@ -309,7 +311,11 @@ def under_generated_export(root: Path, path: Path) -> bool:
         if (relative := _relative_or_none(root, export_root)) is not None and relative.parts
     }
     relative_path = _relative_or_none(root, path)
-    return relative_path is not None and bool(relative_path.parts) and relative_path.parts[0] in generated_tops
+    return (
+        relative_path is not None
+        and bool(relative_path.parts)
+        and relative_path.parts[0] in generated_tops
+    )
 
 
 def _relative_or_none(root: Path, path: Path) -> Path | None:
@@ -412,9 +418,7 @@ def main() -> int:
         require_git=args.require_git_file_listing,
         snapshot=snapshot,
     )
-    candidates_by_doc = {
-        doc: citation_candidates(root, doc) for doc in [*docs, *late_docs]
-    }
+    candidates_by_doc = {doc: citation_candidates(root, doc) for doc in [*docs, *late_docs]}
     all_candidate_paths = sorted(
         {path for candidates in candidates_by_doc.values() for path in candidates}
     )
@@ -455,9 +459,7 @@ def main() -> int:
         if advisory:
             print(advisory)
         return 1
-    print(
-        f"Validated spec evidence durability across {len(docs) + len(late_docs)} doc(s)."
-    )
+    print(f"Validated spec evidence durability across {len(docs) + len(late_docs)} doc(s).")
     if advisory:
         print(advisory)
     return 0

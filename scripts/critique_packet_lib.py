@@ -12,13 +12,15 @@ from __future__ import annotations
 import json
 import os
 import shlex
-import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 from runtime_bootstrap import import_repo_module
 from scripts.critique_adapter_lib import adapter_has_sections
+
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_monitored_phase = _subprocess_guard.run_monitored_phase
 
 PACKET_KIND = "charness.critique_prepare_packet"
 PACKET_VERSION = 1
@@ -44,7 +46,9 @@ def changed_ref_targets(
     return [value for value in (changed_ref, commit, changed_range) if value]
 
 
-def parse_changed_ref(parser: Any, *, changed_ref: str | None, commit: str | None, changed_range: str | None) -> str | None:
+def parse_changed_ref(
+    parser: Any, *, changed_ref: str | None, commit: str | None, changed_range: str | None
+) -> str | None:
     """Resolve the three CLI aliases and report mutually-exclusive use once."""
 
     targets = changed_ref_targets(
@@ -113,18 +117,16 @@ def _run_command(
     else:
         env.pop(changed_ref_env_var, None)
     try:
-        result = subprocess.run(
+        result = run_monitored_phase(
             shlex.split(command),
             cwd=repo_root,
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=PRODUCER_TIMEOUT_SECONDS,
+            phase="critique-packet-producer",
+            timeout_seconds=PRODUCER_TIMEOUT_SECONDS,
             env=env,
         )
     except FileNotFoundError as exc:
         return "", [f"command not found: {exc}"], False
-    except subprocess.TimeoutExpired:
+    if result.timed_out:
         return "", [f"command timed out after {PRODUCER_TIMEOUT_SECONDS}s"], False
     if result.returncode != 0:
         errors = [f"exit code {result.returncode}"]
@@ -208,10 +210,7 @@ def _scope_metadata(
                 f"critique adapter `{adapter_name}` declares no packet_sections; "
                 "the packet carries no semantic review input"
             ),
-            "remedy": (
-                f"Declare at least one packet_sections entry in `{adapter_name}` "
-                "and rerun"
-            ),
+            "remedy": (f"Declare at least one packet_sections entry in `{adapter_name}` and rerun"),
         }
 
     if not any(_section_has_content(section) for section in sections):
@@ -259,12 +258,9 @@ def build_packet(
         for section in sections_decl
     ]
     if packet_kind == PACKET_KIND:
-        scope_metadata = _scope_metadata(
-            adapter=adapter, repo_root=repo_root, sections=sections
-        )
-        all_ok = (
-            scope_metadata.get("scope_status") == "populated"
-            and all(section["ok"] for section in sections)
+        scope_metadata = _scope_metadata(adapter=adapter, repo_root=repo_root, sections=sections)
+        all_ok = scope_metadata.get("scope_status") == "populated" and all(
+            section["ok"] for section in sections
         )
     else:
         # The shared builder also serves retro packets, whose adapter has a
@@ -408,8 +404,10 @@ def render_markdown(packet: dict[str, Any], verification_command: str | None = N
         )
         lines.append("")
         return "\n".join(lines)
-    lines.append("Read this packet first. Then judge what the deterministic surface "
-                 "leaves uncovered before broad repo sampling.")
+    lines.append(
+        "Read this packet first. Then judge what the deterministic surface "
+        "leaves uncovered before broad repo sampling."
+    )
     lines.append("")
     for section in packet["sections"]:
         lines.append(f"## {section['title']}")
@@ -456,9 +454,7 @@ def render_reviewer_tier_evidence(raw: object) -> list[str]:
     ]
 
 
-def write_packet(
-    packet: dict[str, Any], *, output_dir: Path, slug: str
-) -> tuple[Path, Path]:
+def write_packet(packet: dict[str, Any], *, output_dir: Path, slug: str) -> tuple[Path, Path]:
     output_dir.mkdir(parents=True, exist_ok=True)
     json_path = output_dir / f"{slug}-packet.json"
     md_path = output_dir / f"{slug}-packet.md"

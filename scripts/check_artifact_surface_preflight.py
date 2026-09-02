@@ -16,17 +16,24 @@ authoring family. Each surface declares a *shape source* — a ``scaffold`` scri
 dispatcher reads shape from that source; it adds no new shape requirement and
 changes no validator verdict.
 """
+
 from __future__ import annotations
 
 import argparse
+import contextlib
+import inspect
+import io
 import json
+import os
 import subprocess
 import sys
+import traceback
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
+from skill_runtime_bootstrap import load_repo_module_from_skill_script
 from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
@@ -35,6 +42,7 @@ _artifact_run_scope = import_repo_module(__file__, "scripts.artifact_run_scope")
 _critique_paths = import_repo_module(__file__, "scripts.critique_artifact_paths")
 safe_repo_relative_path = _artifact_run_scope.safe_repo_relative_path
 is_critique_round_record = _critique_paths.is_critique_round_record
+
 
 @dataclass(frozen=True)
 class Surface:
@@ -46,12 +54,16 @@ class Surface:
     commit_boundary: bool  # relocate the validator's verdict to the commit gate
     note: str
     paths_arg: bool = True  # validator accepts --paths; False => validate-all default
-    artifact_path_arg: bool = False  # validator accepts --artifact-path: judge THIS draft, not the adapter default
+    artifact_path_arg: bool = (
+        False  # validator accepts --artifact-path: judge THIS draft, not the adapter default
+    )
     owner: str | None = None  # override for the validator=None owner line
-    shape_command: tuple[str, ...] | None = None  # skill-script argv that prints the enforced shape (run with --stub for a starter); rendered from the owning validator's live constants
+    shape_command: tuple[str, ...] | None = (
+        None  # skill-script argv that prints the enforced shape (run with --stub for a starter); rendered from the owning validator's live constants
+    )
 
     def excludes(self, rel: str) -> bool:
-        tail = rel[len(self.prefix or ""):]
+        tail = rel[len(self.prefix or "") :]
         # Critique round records are append-only evidence consumed by the next
         # review round, not hand-authored critique decisions. Their writer owns
         # a different shape and the critique validator must not reinterpret them
@@ -79,24 +91,30 @@ class Surface:
 # and charness-artifacts/spec/artifact-shape-preflight-coverage.md.
 REGISTRY: tuple[Surface, ...] = (
     Surface(
-        "critique", "charness-artifacts/critique/",
+        "critique",
+        "charness-artifacts/critique/",
         "scripts/validate_critique_artifacts.py",
         "skills/public/critique/scripts/scaffold_critique_artifact.py",
-        None, True,
+        None,
+        True,
         "Hand-authored critique record; `## Reviewer Tier Evidence` + `## Structured Findings` enforced when present.",
     ),
     Surface(
-        "ideation", "charness-artifacts/ideation/",
+        "ideation",
+        "charness-artifacts/ideation/",
         "scripts/validate_ideation_artifact.py",
         "skills/public/ideation/scripts/scaffold_ideation_artifact.py",
-        None, True,
+        None,
+        True,
         "Hand-authored ideation record; `## Structured Questions` enforced when present.",
     ),
     Surface(
-        "retro", "charness-artifacts/retro/",
+        "retro",
+        "charness-artifacts/retro/",
         "scripts/validate_retro_artifact.py",
         "skills/public/retro/scripts/scaffold_retro_artifact.py",
-        None, True,
+        None,
+        True,
         "Hand-authored session retro; `## Next Improvements` disposition form enforced.",
     ),
     # closeout-draft: the GitHub-issue closeout surface the authoring-preflight class
@@ -105,7 +123,12 @@ REGISTRY: tuple[Surface, ...] = (
     # `--repo/--number/--classification/--carrier` command, not just a path); the
     # shape is rendered live from the verifier's constants, never re-declared.
     Surface(
-        "closeout-draft", None, None, None, None, False,
+        "closeout-draft",
+        None,
+        None,
+        None,
+        None,
+        False,
         "GitHub-issue closeout-draft body shape (bug-only resolution_critique + `tool signal:`, "
         "carrier-body source = commit message for direct-commit, per-classification "
         "ledger fields, close keyword); rendered live from `validate-closeout-draft`'s "
@@ -125,17 +148,21 @@ REGISTRY: tuple[Surface, ...] = (
     # peers. This is the surface whose shape was previously discoverable only at the
     # RELEASE gate, which is where the #454 session spent ~10 round trips learning it.
     Surface(
-        "debug", "charness-artifacts/debug/",
+        "debug",
+        "charness-artifacts/debug/",
         "scripts/validate_debug_artifact.py",
         "skills/public/debug/scripts/scaffold_debug_artifact.py",
-        None, True,
+        None,
+        True,
         "Hand-authored debug artifact; required sections + seam-risk/interrupt prefixed values + cross-file sibling marker.",
     ),
     Surface(
-        "quality", "charness-artifacts/quality/",
+        "quality",
+        "charness-artifacts/quality/",
         "scripts/validate_quality_artifact.py",
         "skills/public/quality/scripts/scaffold_quality_artifact.py",
-        None, False,
+        None,
+        False,
         "Hand-authored quality artifact; required sections + runtime-signal/delegated-review shape.",
         artifact_path_arg=True,
         paths_arg=False,
@@ -165,8 +192,47 @@ def surface_for_type(artifact_type: str) -> Surface | None:
     return next((s for s in REGISTRY if s.artifact_type == artifact_type), None)
 
 
-def _run(repo_root: Path, argv: list[str]) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(argv, cwd=repo_root, check=False, capture_output=True, text=True)
+def _load_repo_script(script: Path):
+    relative = script.resolve().relative_to(REPO_ROOT.resolve())
+    module_name = ".".join(relative.with_suffix("").parts)
+    if relative.parts[0] == "scripts":
+        return import_repo_module(script, module_name)
+    return load_repo_module_from_skill_script(script, module_name)
+
+
+def _run_repo_script(
+    repo_root: Path, script: Path, args: list[str]
+) -> subprocess.CompletedProcess[str]:
+    """Run a repo-owned script's main in-process while retaining its CLI result shape."""
+    stdout = io.StringIO()
+    stderr = io.StringIO()
+    previous_argv = sys.argv
+    previous_cwd = Path.cwd()
+    argv = [str(script), *args]
+    try:
+        module = _load_repo_script(script)
+        os.chdir(repo_root)
+        sys.argv = argv
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            main = module.main
+            if inspect.signature(main).parameters:
+                returncode = main(args)
+            else:
+                returncode = main()
+    except SystemExit as exc:
+        returncode = exc.code if isinstance(exc.code, int) else 1
+    except Exception:
+        returncode = 1
+        traceback.print_exc(file=stderr)
+    finally:
+        sys.argv = previous_argv
+        os.chdir(previous_cwd)
+    return subprocess.CompletedProcess(
+        argv,
+        int(returncode or 0),
+        stdout.getvalue(),
+        stderr.getvalue(),
+    )
 
 
 def _resolve_shape_source(raw: str) -> tuple[Path | None, str | None]:
@@ -180,7 +246,9 @@ def _resolve_shape_source(raw: str) -> tuple[Path | None, str | None]:
     """
     candidates: list[tuple[str, Path]] = [("canonical", REPO_ROOT / raw)]
     if raw.startswith("skills/public/"):
-        candidates.append(("flattened-installed", REPO_ROOT / "skills" / raw.removeprefix("skills/public/")))
+        candidates.append(
+            ("flattened-installed", REPO_ROOT / "skills" / raw.removeprefix("skills/public/"))
+        )
     existing = [(label, candidate) for label, candidate in candidates if candidate.is_file()]
     candidate_text = "; ".join(f"{label}={candidate}" for label, candidate in candidates)
     if len(existing) == 1:
@@ -216,10 +284,10 @@ def _run_shape_command(repo_root: Path, surface: Surface, *, stub: bool) -> tupl
             f"(could not render shape source {surface.shape_command[0]}: {error})",
             1,
         )
-    argv = ["python3", str(source), *surface.shape_command[1:], "--repo-root", str(repo_root)]
+    script_args = [*surface.shape_command[1:], "--repo-root", str(repo_root)]
     if stub:
-        argv.append("--stub")
-    proc = _run(repo_root, argv)
+        script_args.append("--stub")
+    proc = _run_repo_script(repo_root, source, script_args)
     if proc.returncode == 0 and proc.stdout.strip():
         return proc.stdout, 0
     return (
@@ -271,7 +339,7 @@ def _run_scaffold_template(repo_root: Path, scaffold: str) -> tuple[str, int]:
     source, error = _resolve_shape_source(scaffold)
     if source is None:
         return f"(could not render scaffold {scaffold}: {error})", 1
-    proc = _run(repo_root, ["python3", str(source), "--repo-root", str(repo_root)])
+    proc = _run_repo_script(repo_root, source, ["--repo-root", str(repo_root)])
     if proc.returncode != 0 or not proc.stdout.strip():
         return f"(could not render scaffold {scaffold}: {proc.stderr.strip() or 'no output'})", 1
     payload = _parse_structured_stdout(proc.stdout)
@@ -353,21 +421,24 @@ def describe(repo_root: Path, surface: Surface, *, target_rel: str | None) -> st
     if surface.validator:
         # Adapter-scoped validators validate-all (no --paths); prefix validators
         # take --paths for a changed-scoped verdict.
-        argv = ["python3", surface.validator, "--repo-root", str(repo_root)]
+        validator_args = ["--repo-root", str(repo_root)]
         cmd = f"python3 {surface.validator} --repo-root ."
         # See CROSS_SURFACE_RESIDUAL below: deliberately no `--include-worktree`.
         if surface.paths_arg and target_rel:
-            argv += ["--paths", target_rel]
+            validator_args += ["--paths", target_rel]
             cmd += f" --paths {target_rel}"
         elif surface.artifact_path_arg and target_rel:
             # Without this the adapter-scoped validators run validate-all against the
             # POINTER target, so the verdict was about a different file than the one
             # the author is holding -- and it printed PASS.
-            argv += ["--artifact-path", target_rel]
+            validator_args += ["--artifact-path", target_rel]
             cmd += f" --artifact-path {target_rel}"
         out.append(f"owning validator: {cmd}")
         if target_rel and (repo_root / target_rel).is_file():
-            proc = _run(repo_root, argv)
+            validator_path = REPO_ROOT / surface.validator
+            if not validator_path.is_file():
+                validator_path = repo_root / surface.validator
+            proc = _run_repo_script(repo_root, validator_path, validator_args)
             verdict = "PASS" if proc.returncode == 0 else "FAIL"
             scoped = surface.paths_arg or surface.artifact_path_arg
             scope = target_rel if scoped else f"{surface.artifact_type} surface (validate-all)"
@@ -421,14 +492,16 @@ def changed_artifacts(repo_root: Path, paths: list[str]) -> dict[str, Any]:
         return {
             "status": "blocked",
             "blocked": ["path-resolution"],
-            "checked": [{
-                "artifact_type": "path-resolution",
-                "validator": "repo-relative-path-contract",
-                "paths": invalid_paths,
-                "returncode": 2,
-                "stdout": "",
-                "stderr": detail,
-            }],
+            "checked": [
+                {
+                    "artifact_type": "path-resolution",
+                    "validator": "repo-relative-path-contract",
+                    "paths": invalid_paths,
+                    "returncode": 2,
+                    "stdout": "",
+                    "stderr": detail,
+                }
+            ],
             "path_error": detail,
         }
     for raw in paths:
@@ -441,18 +514,24 @@ def changed_artifacts(repo_root: Path, paths: list[str]) -> dict[str, Any]:
     results: list[dict[str, Any]] = []
     for artifact_type in sorted(groups):
         surface, group = groups[artifact_type]
-        proc = _run(
+        validator_path = REPO_ROOT / surface.validator
+        if not validator_path.is_file():
+            validator_path = repo_root / surface.validator
+        proc = _run_repo_script(
             repo_root,
-            ["python3", _validator_argv_path(surface.validator), "--repo-root", str(repo_root), "--paths", *sorted(group)],
+            validator_path,
+            ["--repo-root", str(repo_root), "--paths", *sorted(group)],
         )
-        results.append({
-            "artifact_type": artifact_type,
-            "validator": surface.validator,
-            "paths": sorted(group),
-            "returncode": proc.returncode,
-            "stdout": proc.stdout,
-            "stderr": proc.stderr,
-        })
+        results.append(
+            {
+                "artifact_type": artifact_type,
+                "validator": surface.validator,
+                "paths": sorted(group),
+                "returncode": proc.returncode,
+                "stdout": proc.stdout,
+                "stderr": proc.stderr,
+            }
+        )
     blocked = [r["validator"] for r in results if r["returncode"] != 0]
     return {"status": "blocked" if blocked else "ok", "blocked": blocked, "checked": results}
 
@@ -481,8 +560,16 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--path", help="Artifact path to surface required shape for")
     parser.add_argument("--type", dest="artifact_type", help="Artifact type (see the registry)")
-    parser.add_argument("--emit-stub", action="store_true", help="Emit a starter stub via the owning scaffold or shape source")
-    parser.add_argument("--changed-artifacts", nargs="*", help="Commit-boundary: relocate owning validator verdicts for these paths")
+    parser.add_argument(
+        "--emit-stub",
+        action="store_true",
+        help="Emit a starter stub via the owning scaffold or shape source",
+    )
+    parser.add_argument(
+        "--changed-artifacts",
+        nargs="*",
+        help="Commit-boundary: relocate owning validator verdicts for these paths",
+    )
     args = parser.parse_args()
     repo_root = args.repo_root.resolve()
 
@@ -500,7 +587,10 @@ def main() -> int:
         parser.error("one of --path, --type, or --changed-artifacts is required")
     if surface is None:
         known = ", ".join(s.artifact_type for s in REGISTRY)
-        print(f"artifact-surface-preflight: no registered surface for {args.artifact_type or target_rel}; known: {known}", file=sys.stderr)
+        print(
+            f"artifact-surface-preflight: no registered surface for {args.artifact_type or target_rel}; known: {known}",
+            file=sys.stderr,
+        )
         return 2
 
     if args.emit_stub:

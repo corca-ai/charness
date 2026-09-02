@@ -5,20 +5,23 @@ from __future__ import annotations
 import os
 import shlex
 import shutil
-import subprocess
 from pathlib import Path
 from typing import Any
+
+from runtime_bootstrap import import_repo_module
+
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_process = _subprocess_guard.run_process
 
 PACKAGE_MANAGER_KEYS = ("npm", "cargo", "go")
 
 
 def _run_command(command: list[str]) -> str | None:
     try:
-        completed = subprocess.run(
+        completed = run_process(
             command,
-            check=False,
-            capture_output=True,
-            text=True,
+            cwd=Path.cwd(),
+            timeout_seconds=None,
         )
     except OSError:
         return None
@@ -62,7 +65,9 @@ def detect_package_manager_prefixes() -> dict[str, str]:
     return prefixes
 
 
-def _path_matches_manager(binary_path: Path, resolved_path: Path, manager: str, prefix: Path) -> bool:
+def _path_matches_manager(
+    binary_path: Path, resolved_path: Path, manager: str, prefix: Path
+) -> bool:
     candidates = [binary_path, resolved_path]
     if manager == "npm":
         expected_roots = [prefix / "bin", prefix / "lib" / "node_modules"]
@@ -102,7 +107,9 @@ def detect_install_provenance(
             "update_supported": False,
         }
 
-    available_prefixes = available_prefixes if available_prefixes is not None else detect_package_manager_prefixes()
+    available_prefixes = (
+        available_prefixes if available_prefixes is not None else detect_package_manager_prefixes()
+    )
     binary_path_string = shutil.which(binary_name)
     if binary_path_string is None:
         return {
@@ -162,7 +169,9 @@ def detect_install_provenance(
     }
 
 
-def package_manager_update_action(manifest: dict[str, Any], provenance: dict[str, Any]) -> dict[str, Any] | None:
+def package_manager_update_action(
+    manifest: dict[str, Any], provenance: dict[str, Any]
+) -> dict[str, Any] | None:
     if provenance.get("status") != "detected":
         return None
     manager = provenance.get("install_method")

@@ -5,10 +5,14 @@ from __future__ import annotations
 
 import argparse
 import re
-import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+
+from runtime_bootstrap import import_repo_module
+
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_process = _subprocess_guard.run_process
 
 try:
     from scripts.repo_file_listing import RepoFileSnapshot
@@ -41,12 +45,11 @@ class Finding:
         }
 
 
-def _git(repo_root: Path, *args: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
+def _git(repo_root: Path, *args: str):
+    return run_process(
         ["git", "-C", str(repo_root), *args],
-        check=False,
-        capture_output=True,
-        text=True,
+        cwd=repo_root,
+        timeout_seconds=None,
     )
 
 
@@ -78,8 +81,10 @@ def symbol_variants(symbol: str) -> list[str]:
         variants.add(" ".join(word.capitalize() for word in words))
         variants.add("-".join(word.capitalize() for word in words))
         if words[0] in {"non", "pre", "post"} and len(words) > 2:
-            variants.add(f"{words[0]}-{ ' '.join(words[1:]) }")
-            variants.add(f"{words[0].capitalize()}-{ ' '.join(word.capitalize() for word in words[1:]) }")
+            variants.add(f"{words[0]}-{' '.join(words[1:])}")
+            variants.add(
+                f"{words[0].capitalize()}-{' '.join(word.capitalize() for word in words[1:])}"
+            )
     return sorted(variant for variant in variants if variant)
 
 
@@ -155,8 +160,18 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--repo-root", type=Path, default=Path("."))
     parser.add_argument("--scan-root", action="append", default=[])
-    parser.add_argument("--symbol", action="append", default=None, help="Also scan for an explicitly named deleted symbol.")
-    parser.add_argument("--concept", action="append", default=None, help="Also scan for an explicitly named deleted concept.")
+    parser.add_argument(
+        "--symbol",
+        action="append",
+        default=None,
+        help="Also scan for an explicitly named deleted symbol.",
+    )
+    parser.add_argument(
+        "--concept",
+        action="append",
+        default=None,
+        help="Also scan for an explicitly named deleted concept.",
+    )
     args = parser.parse_args(argv)
 
     findings = find_residue(

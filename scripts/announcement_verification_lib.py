@@ -9,15 +9,26 @@ floor / rung-2 distinct-channel observer split
 (`skills/public/release/scripts/publish_release_post_create.py`), reusing its
 verdict vocabulary so the same status means the same thing everywhere.
 """
+
 from __future__ import annotations
 
 import subprocess
 from pathlib import Path
 from typing import Any
 
+from runtime_bootstrap import import_repo_module
+
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_process = _subprocess_guard.run_process
+
 # Reuses the release skill's rung-2 verdict vocabulary verbatim: a
 # `confirmed`, or a typed non-`verified` disposition -- never absent.
-DELIVERY_VERIFICATION_STATUSES = ("confirmed", "not-confirmed", "blocked-needs-capability", "skipped")
+DELIVERY_VERIFICATION_STATUSES = (
+    "confirmed",
+    "not-confirmed",
+    "blocked-needs-capability",
+    "skipped",
+)
 
 EXTERNAL_WRITE_DELIVERY_KIND = "human-backend"
 PROBE_TIMEOUT_SECONDS = 120
@@ -87,30 +98,25 @@ def fail_delivery_kind_mismatch(*, recorded_kind: str, adapter_delivery_kind: st
     )
 
 
-def render_readback_probe_command(template: str, *, delivery_target: str, delivery_handle: str) -> str:
-    return template.replace("{delivery_target}", delivery_target).replace("{delivery_handle}", delivery_handle)
+def render_readback_probe_command(
+    template: str, *, delivery_target: str, delivery_handle: str
+) -> str:
+    return template.replace("{delivery_target}", delivery_target).replace(
+        "{delivery_handle}", delivery_handle
+    )
 
 
-def _default_run_shell(command: str, *, cwd: Path, check: bool = False) -> subprocess.CompletedProcess[str]:
+def _default_run_shell(
+    command: str, *, cwd: Path, check: bool = False
+) -> subprocess.CompletedProcess[str]:
     del check  # signature parity with the release skill's run_shell; probes never abort the record
-    try:
-        return subprocess.run(
-            command,
-            cwd=cwd,
-            shell=True,
-            executable="/bin/bash",
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=PROBE_TIMEOUT_SECONDS,
-        )
-    except subprocess.TimeoutExpired as exc:
-        return subprocess.CompletedProcess(
-            args=command,
-            returncode=124,
-            stdout=exc.stdout or "",
-            stderr=(exc.stderr or "") + f"\ntimed out after {PROBE_TIMEOUT_SECONDS}s",
-        )
+    return run_process(
+        command,
+        cwd=cwd,
+        shell=True,
+        executable="/bin/bash",
+        timeout_seconds=PROBE_TIMEOUT_SECONDS,
+    )
 
 
 def run_readback_probe(

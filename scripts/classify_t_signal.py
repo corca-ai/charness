@@ -17,8 +17,11 @@ import sys
 from pathlib import Path
 from typing import Iterable
 
-from runtime_bootstrap import repo_root_from_script
+from runtime_bootstrap import import_repo_module, repo_root_from_script
 from yaml_output import emit_yaml
+
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_process = _subprocess_guard.run_process
 
 CONFIDENCE_RANK = {"low": 1, "medium": 2, "high": 3}
 
@@ -44,16 +47,16 @@ DEFERRED_DECISION_HEADING_RE = re.compile(r"^## (D\d+)\b")
 
 
 def _run_git(repo_root: Path, *args: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
+    return run_process(
         ["git", *args],
         cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=True,
+        timeout_seconds=None,
     )
 
 
-def _commit_metadata_snapshot(repo_root: Path, head_sha: str | None) -> tuple[str, str | None, str] | None:
+def _commit_metadata_snapshot(
+    repo_root: Path, head_sha: str | None
+) -> tuple[str, str | None, str] | None:
     target = head_sha or "HEAD"
     result = _run_git(repo_root, "log", "-1", "--format=%H%x00%P%x00%B%x00", target)
     if result.returncode != 0:
@@ -97,7 +100,9 @@ def _diff_kind_for(status: str) -> str:
     return "modified"
 
 
-def _filter(entries: Iterable[tuple[str, str]], *, statuses: set[str] | None, predicate) -> list[tuple[str, str]]:
+def _filter(
+    entries: Iterable[tuple[str, str]], *, statuses: set[str] | None, predicate
+) -> list[tuple[str, str]]:
     matched: list[tuple[str, str]] = []
     for status, path in entries:
         if statuses is not None and status not in statuses:
@@ -129,7 +134,9 @@ def _deferred_decision_added(repo_root: Path, parent_sha: str, head_sha: str) ->
     return bool(after - before)
 
 
-def _candidate(rule_id: str, t_status: str, confidence: str, diff_kind: str, paths: list[str], head_sha: str) -> dict:
+def _candidate(
+    rule_id: str, t_status: str, confidence: str, diff_kind: str, paths: list[str], head_sha: str
+) -> dict:
     return {
         "rule_id": rule_id,
         "t_status": t_status,

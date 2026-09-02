@@ -27,10 +27,16 @@ against the tracker: a network call would make a proof surface non-hermetic and
 fail closed on an airgapped run, and the defect that actually shipped was a
 literal `#N`, not a plausible-but-wrong number.
 """
+
 from __future__ import annotations
 
 import re
 from pathlib import Path
+
+from runtime_bootstrap import import_repo_module
+
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_process = _subprocess_guard.run_process
 
 #: `issue #123` / `tracked issue: #123` / `issue 123`.
 #:
@@ -41,16 +47,13 @@ from pathlib import Path
 #: authors learn to skip, which would reproduce the very problem it exists to
 #: fix, so the narrow form is deliberate: `#N` is still caught, because it has
 #: the `#`.
-ISSUE_REF_RE = re.compile(
-    r"\bissue[:\s]+(?:#([A-Za-z0-9_<>-]+)|(\d+)\b)", re.IGNORECASE
-)
+ISSUE_REF_RE = re.compile(r"\bissue[:\s]+(?:#([A-Za-z0-9_<>-]+)|(\d+)\b)", re.IGNORECASE)
 
 
 #: A repo-relative path mentioned in a disposition. Requires a directory
 #: separator and a file extension so ordinary prose is not mistaken for a path;
 #: bare filenames are handled below.
 PATH_RE = re.compile(r"\b((?:[\w.-]+/)+[\w.-]+\.[A-Za-z0-9]{1,6})\b")
-
 
 
 def issue_refs(text: str) -> list[str]:
@@ -112,9 +115,9 @@ def is_placeholder_line(text: str) -> bool:
         # LINE, which never began with the placeholder -- a comment describing
         # behaviour the code did not have, on a proof surface.
         inline = list(INLINE_DISPOSITION_RE.finditer(text))
-        head = text[inline[-1].end():] if inline else text
+        head = text[inline[-1].end() :] if inline else text
     else:
-        head = text[match.end():]
+        head = text[match.end() :]
     # Only the FIRST clause of the value can be a placeholder; a later sentence
     # is separate prose.
     first_clause = re.split(r"[.;]", head, maxsplit=1)[0]
@@ -161,7 +164,7 @@ def missing_paths(text: str, repo_root: Path) -> list[str]:
         # `://` never fired. Look at what PRECEDES the match instead. Without
         # this, every external link in a disposition is reported as a missing
         # file, which is the false-positive class that makes a gate ignorable.
-        if "://" in text[max(0, match.start() - 8):match.start()]:
+        if "://" in text[max(0, match.start() - 8) : match.start()]:
             continue
         if not (repo_root / candidate).exists():
             missing.append(candidate)
@@ -235,15 +238,12 @@ def sha_candidates(text: str) -> list[str]:
     """
     out = []
     uuid_spans = [match.span() for match in UUID_RE.finditer(text)]
-    content_digest_spans = [
-        match.span(1) for match in TYPED_CONTENT_DIGEST_RE.finditer(text)
-    ]
+    content_digest_spans = [match.span(1) for match in TYPED_CONTENT_DIGEST_RE.finditer(text)]
     for match in SHA_RE.finditer(text):
         if any(start <= match.start() and match.end() <= end for start, end in uuid_spans):
             continue
         if any(
-            start <= match.start() and match.end() <= end
-            for start, end in content_digest_spans
+            start <= match.start() and match.end() <= end for start, end in content_digest_spans
         ):
             continue
         token = match.group(1)
@@ -280,12 +280,11 @@ def reachable_head_commits(repo_root: Path) -> set[str]:
     A shallow repository cannot disprove older reachability, so it is reported
     as unestablished instead of producing false missing-history findings.
     """
-    import subprocess
-
     try:
-        shallow = subprocess.run(
+        shallow = run_process(
             ["git", "-C", str(repo_root), "rev-parse", "--is-shallow-repository"],
-            capture_output=True, text=True, timeout=10,
+            cwd=repo_root,
+            timeout_seconds=10,
         )
         if shallow.returncode != 0:
             raise ResolverUnavailable(
@@ -295,11 +294,12 @@ def reachable_head_commits(repo_root: Path) -> set[str]:
             raise ResolverUnavailable(
                 "repository history is shallow; missing ancestry cannot be disproved"
             )
-        result = subprocess.run(
+        result = run_process(
             ["git", "-C", str(repo_root), "rev-list", "HEAD"],
-            capture_output=True, text=True, timeout=30,
+            cwd=repo_root,
+            timeout_seconds=30,
         )
-    except (OSError, subprocess.SubprocessError) as exc:
+    except OSError as exc:
         raise ResolverUnavailable(f"git could not be run: {exc}") from exc
     if result.returncode != 0:
         raise ResolverUnavailable(
@@ -364,7 +364,7 @@ def documents_the_vocabulary(text: str) -> bool:
     # angle-bracket token anywhere -- `<ref>`, `<repo-root>`, `<path>`, all
     # ordinary repo idiom -- exempted the line.
     match = _LEADING_DISPOSITION_RE.match(text)
-    value = text[match.end():] if match else text
+    value = text[match.end() :] if match else text
     forms = len({m.group(0).strip("`").lower() for m in _VOCAB_RE.finditer(value)})
     has_slot = _SLOT_RE.search(value) is not None
 
@@ -395,23 +395,27 @@ def check_disposition_referents(text: str, repo_root: Path) -> list[dict[str, st
     # 1's blanket early-return also exempted a documentation line naming a
     # DELETED file -- a wider exemption than its own justification.
     documenting = documents_the_vocabulary(text)
-    for ref in ([] if documenting else bad_issue_refs(text)):
-        findings.append({
-            "kind": "unresolvable-issue-ref",
-            "token": ref,
-            "detail": (
-                f"`issue #{ref}` does not name an issue. A disposition's whole job is to "
-                "point somewhere; a placeholder is a disposition that resolves to nothing "
-                "while passing every form check."
-            ),
-        })
+    for ref in [] if documenting else bad_issue_refs(text):
+        findings.append(
+            {
+                "kind": "unresolvable-issue-ref",
+                "token": ref,
+                "detail": (
+                    f"`issue #{ref}` does not name an issue. A disposition's whole job is to "
+                    "point somewhere; a placeholder is a disposition that resolves to nothing "
+                    "while passing every form check."
+                ),
+            }
+        )
     for path in missing_paths(text, repo_root):
-        findings.append({
-            "kind": "missing-path-referent",
-            "token": path,
-            "detail": (
-                f"`{path}` does not exist. A disposition naming a file that is not there "
-                "reads as applied and is not."
-            ),
-        })
+        findings.append(
+            {
+                "kind": "missing-path-referent",
+                "token": path,
+                "detail": (
+                    f"`{path}` does not exist. A disposition naming a file that is not there "
+                    "reads as applied and is not."
+                ),
+            }
+        )
     return findings

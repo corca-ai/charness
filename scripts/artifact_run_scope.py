@@ -15,14 +15,17 @@ pins.
 
 from __future__ import annotations
 
-import subprocess
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from pathlib import Path, PureWindowsPath
 from typing import Any
 
+from runtime_bootstrap import import_repo_module
 from scripts.checkout_view import GitCheckout
 from scripts.git_status_snapshot import GitStatusError
+
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_process = _subprocess_guard.run_process
 
 
 class ValidationError(Exception):
@@ -52,12 +55,10 @@ def safe_repo_relative_path(raw: str) -> str | None:
 
 def _git_paths(repo_root: Path, args: list[str], *, artifact_label: str) -> list[str]:
     command = ["git", *args]
-    result = subprocess.run(
+    result = run_process(
         command,
         cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=True,
+        timeout_seconds=None,
     )
     if result.returncode != 0:
         detail = (result.stderr or result.stdout).strip()
@@ -85,7 +86,9 @@ def git_changed_paths(repo_root: Path, *, artifact_label: str) -> list[str]:
 
 def add_changed_artifact_args(parser, *, default_repo_root: Path, all_help: str) -> None:
     parser.add_argument("--repo-root", type=Path, default=default_repo_root)
-    parser.add_argument("--paths", nargs="*", help="Explicit repo-relative paths. Defaults to changed paths.")
+    parser.add_argument(
+        "--paths", nargs="*", help="Explicit repo-relative paths. Defaults to changed paths."
+    )
     parser.add_argument("--all", action="store_true", help=all_help)
 
 
@@ -133,7 +136,9 @@ def resolve_artifact_override(args, repo_root: Path, adapter_relative: str) -> P
     return override if override.is_absolute() else repo_root / override
 
 
-def selected_changed_paths(args, repo_root: Path, *, changed_paths_fn: Callable[[Path], list[str]]) -> list[str]:
+def selected_changed_paths(
+    args, repo_root: Path, *, changed_paths_fn: Callable[[Path], list[str]]
+) -> list[str]:
     return [] if args.all else args.paths if args.paths is not None else changed_paths_fn(repo_root)
 
 
@@ -186,9 +191,12 @@ def unresolvable_named_paths(
     if not unsafe and not missing:
         return []
     deleted: set[str] = set()
-    for args in (["ls-files", "--deleted", "-z"], ["diff", "--cached", "--name-only", "--diff-filter=D", "-z"]):
+    for args in (
+        ["ls-files", "--deleted", "-z"],
+        ["diff", "--cached", "--name-only", "--diff-filter=D", "-z"],
+    ):
         try:
-            result = subprocess.run(["git", *args], cwd=repo_root, check=False, capture_output=True)
+            result = run_process(["git", *args], cwd=repo_root, timeout_seconds=None)
         except OSError:
             # No git binary, or it cannot be executed here. Same disposition as a git
             # that ran and failed: no KNOWN deletions, so a named path that is missing
@@ -196,7 +204,5 @@ def unresolvable_named_paths(
             # is passing a run that validated nothing.
             continue
         if result.returncode == 0:
-            deleted.update(
-                entry for entry in result.stdout.decode("utf-8", errors="surrogateescape").split("\0") if entry
-            )
+            deleted.update(entry for entry in result.stdout.split("\0") if entry)
     return unsafe + [path for path in missing if path not in deleted]

@@ -8,12 +8,15 @@ this snapshot; they do not parse status records.
 from __future__ import annotations
 
 import re
-import subprocess
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Callable, NamedTuple
 
+from runtime_bootstrap import import_repo_module
 from scripts.git_checkout import discoverable
+
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_process = _subprocess_guard.run_process
 
 _GIT_OID_RE = re.compile(r"^(?:[0-9a-fA-F]{40}|[0-9a-fA-F]{64})$")
 GitBytes = Callable[..., bytes]
@@ -144,9 +147,7 @@ def _fixed_record(kind: str, record: bytes, splits: int, path_index: int) -> Git
     )
 
 
-def _parse_entry(
-    record: bytes, records: list[bytes], index: int
-) -> tuple[GitStatusRecord, int]:
+def _parse_entry(record: bytes, records: list[bytes], index: int) -> tuple[GitStatusRecord, int]:
     if record.startswith(b"? "):
         return GitStatusRecord("untracked", "", _nul_path(record[2:])), index
     if record.startswith(b"! "):
@@ -206,22 +207,19 @@ def capture(
     env: Mapping[str, str] | None = None,
     git_bytes: GitBytes | None = None,
 ) -> GitStatusSnapshot:
-    args = status_args(
-        ignored=ignored, branch=branch, untracked=untracked, no_renames=no_renames
-    )
+    args = status_args(ignored=ignored, branch=branch, untracked=untracked, no_renames=no_renames)
     if git_bytes is not None:
         payload = git_bytes(repo_root, *args)
         return parse(payload if isinstance(payload, bytes) else payload.encode("utf-8"))
     if not discoverable(repo_root):
         raise GitStatusError("not a git repository (Git discovery preflight)")
-    result = subprocess.run(
+    result = run_process(
         ["git", *args],
         cwd=repo_root,
         env=None if env is None else dict(env),
-        capture_output=True,
-        check=False,
+        timeout_seconds=None,
     )
     if result.returncode != 0:
-        detail = result.stderr.decode("utf-8", errors="replace").strip() or "git status failed"
+        detail = result.stderr.strip() or "git status failed"
         raise GitStatusError(detail)
-    return parse(result.stdout)
+    return parse(result.stdout.encode("utf-8"))

@@ -4,11 +4,14 @@
 from __future__ import annotations
 
 import argparse
-import subprocess
 import sys
 from pathlib import Path
 
+from runtime_bootstrap import import_repo_module
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
+_mutation_score = import_repo_module(__file__, "scripts.check_mutation_score")
+_js_mutation_score = import_repo_module(__file__, "scripts.check_js_mutation_score")
 
 
 def parse_args() -> argparse.Namespace:
@@ -17,16 +20,20 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def run(command: list[str], repo_root: Path) -> int:
-    completed = subprocess.run(command, cwd=repo_root, check=False)
-    return completed.returncode
+def run(module, repo_root: Path) -> int:
+    previous_argv = sys.argv
+    sys.argv = [str(module.__file__), "--repo-root", str(repo_root)]
+    try:
+        return int(module.main())
+    finally:
+        sys.argv = previous_argv
 
 
 def main() -> int:
     args = parse_args()
     repo_root = args.repo_root.resolve()
-    cosmic_rc = run([sys.executable, "scripts/check_mutation_score.py", "--repo-root", str(repo_root)], repo_root)
-    js_rc = run([sys.executable, "scripts/check_js_mutation_score.py", "--repo-root", str(repo_root)], repo_root)
+    cosmic_rc = run(_mutation_score, repo_root)
+    js_rc = run(_js_mutation_score, repo_root)
     return cosmic_rc or js_rc
 
 

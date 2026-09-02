@@ -23,7 +23,6 @@ import fnmatch
 import json
 import os
 import re
-import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -32,6 +31,8 @@ from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 _path_portability = import_repo_module(__file__, "scripts.path_portability_lib")
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_process = _subprocess_guard.run_process
 PLAN_VERSION = 1
 TARGET_TOKEN_PREFIX = "{target:"
 TARGET_TOKEN_SUFFIX = "}"
@@ -82,12 +83,10 @@ def _load_plan(root: Path, plan_path: Path) -> tuple[dict[str, Any] | None, list
 
 def _repo_files(root: Path) -> tuple[list[str], dict[str, Any] | None]:
     try:
-        result = subprocess.run(
+        result = run_process(
             ["rg", "--files", "--hidden", "--glob", "!.git/**"],
             cwd=root,
-            capture_output=True,
-            text=True,
-            check=False,
+            timeout_seconds=None,
         )
     except OSError as exc:
         return [], _error("rg-unavailable", f"could not run rg --files: {exc}")
@@ -98,7 +97,9 @@ def _repo_files(root: Path) -> tuple[list[str], dict[str, Any] | None]:
             exit_code=result.returncode,
             stderr=result.stderr.strip(),
         )
-    return [line.strip().removeprefix("./") for line in result.stdout.splitlines() if line.strip()], None
+    return [
+        line.strip().removeprefix("./") for line in result.stdout.splitlines() if line.strip()
+    ], None
 
 
 def _target_matches(query: str, files: list[str]) -> list[str]:
@@ -180,20 +181,26 @@ def _verify_refs(root: Path, raw_refs: Any) -> tuple[list[dict[str, Any]], list[
     if not isinstance(raw_refs, list):
         return observations, [_error("plan-shape", "refs must be a list")]
     for item in raw_refs:
-        if not isinstance(item, dict) or not isinstance(item.get("id"), str) or not isinstance(item.get("ref"), str):
+        if (
+            not isinstance(item, dict)
+            or not isinstance(item.get("id"), str)
+            or not isinstance(item.get("ref"), str)
+        ):
             errors.append(_error("ref-shape", "each ref needs string id and ref fields"))
             continue
         ref_id = item["id"]
         ref = item["ref"]
-        result = subprocess.run(
+        result = run_process(
             ["git", "rev-parse", "--verify", "--quiet", f"{ref}^{{commit}}"],
             cwd=root,
-            capture_output=True,
-            text=True,
-            check=False,
+            timeout_seconds=None,
         )
         resolved = result.stdout.strip()
-        observation = {"id": ref_id, "ref": ref, "status": "pass" if result.returncode == 0 else "fail"}
+        observation = {
+            "id": ref_id,
+            "ref": ref,
+            "status": "pass" if result.returncode == 0 else "fail",
+        }
         if result.returncode == 0 and resolved:
             observation["resolved_commit"] = resolved
             observations.append(observation)
@@ -229,8 +236,14 @@ def _expand_token(token: str, targets: dict[str, str]) -> tuple[str | None, dict
     return expanded, None
 
 
-def _expand_argv(raw_argv: Any, targets: dict[str, str]) -> tuple[list[str] | None, list[dict[str, Any]]]:
-    if not isinstance(raw_argv, list) or not raw_argv or not all(isinstance(token, str) for token in raw_argv):
+def _expand_argv(
+    raw_argv: Any, targets: dict[str, str]
+) -> tuple[list[str] | None, list[dict[str, Any]]]:
+    if (
+        not isinstance(raw_argv, list)
+        or not raw_argv
+        or not all(isinstance(token, str) for token in raw_argv)
+    ):
         return None, [_error("command-shape", "argv must be a non-empty list of strings")]
     expanded: list[str] = []
     errors: list[dict[str, Any]] = []
@@ -255,7 +268,9 @@ def _target_tokens(raw_argv: Any) -> list[str]:
     ]
 
 
-def _standalone_target_token_errors(command_id: str, surface: str, raw_argv: Any) -> list[dict[str, Any]]:
+def _standalone_target_token_errors(
+    command_id: str, surface: str, raw_argv: Any
+) -> list[dict[str, Any]]:
     if not isinstance(raw_argv, list):
         return []
     for token in raw_argv:
@@ -298,9 +313,13 @@ def _validate_owner_binding(
     target explicitly rather than quietly weakening this binding.
     """
     if not isinstance(owner_target, str) or not owner_target:
-        return [_error("owner-binding", f"{command_id}: owner_target must be a non-empty target id")]
+        return [
+            _error("owner-binding", f"{command_id}: owner_target must be a non-empty target id")
+        ]
     if owner_target not in targets:
-        return [_error("owner-binding", f"{command_id}: owner_target is unresolved: {owner_target}")]
+        return [
+            _error("owner-binding", f"{command_id}: owner_target is unresolved: {owner_target}")
+        ]
     argv_token_errors = _standalone_target_token_errors(command_id, "argv", raw_argv)
     if argv_token_errors:
         return argv_token_errors
@@ -349,7 +368,9 @@ def _planned_flags(argv: list[str]) -> list[str]:
     return list(dict.fromkeys(flags))
 
 
-def _probe_command(root: Path, item: Any, targets: dict[str, str]) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+def _probe_command(
+    root: Path, item: Any, targets: dict[str, str]
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     if not isinstance(item, dict):
         return {}, [_error("command-shape", "each command must be an object")]
     command_id = item.get("id")
@@ -357,7 +378,9 @@ def _probe_command(root: Path, item: Any, targets: dict[str, str]) -> tuple[dict
         return {}, [_error("command-shape", "command id must be a non-empty string")]
     raw_argv = item.get("argv")
     raw_help = item.get("help_argv")
-    binding_errors = _validate_owner_binding(command_id, item.get("owner_target"), raw_argv, raw_help, targets)
+    binding_errors = _validate_owner_binding(
+        command_id, item.get("owner_target"), raw_argv, raw_help, targets
+    )
     if binding_errors:
         return {"id": command_id, "status": "fail"}, binding_errors
     argv, errors = _expand_argv(raw_argv, targets)
@@ -373,16 +396,13 @@ def _probe_command(root: Path, item: Any, targets: dict[str, str]) -> tuple[dict
             _error("help-probe-shape", f"{command_id}: help_argv must include --help")
         ]
     try:
-        result = subprocess.run(
+        result = run_process(
             help_argv,
             cwd=root,
             env={**os.environ, "COLUMNS": "200", "LC_ALL": "C", "LANG": "C"},
-            capture_output=True,
-            text=True,
-            check=False,
-            timeout=HELP_TIMEOUT_SECONDS,
+            timeout_seconds=HELP_TIMEOUT_SECONDS,
         )
-    except (OSError, subprocess.TimeoutExpired) as exc:
+    except OSError as exc:
         return {"id": command_id, "status": "fail", "argv": argv, "help_argv": help_argv}, [
             _error("help-probe-failed", f"{command_id}: --help probe failed: {exc}")
         ]
@@ -436,7 +456,12 @@ def build_report(root: Path, plan_path: Path) -> dict[str, Any]:
     if plan is None:
         return {"status": "refused", "exit_code": 2, "errors": errors}
     if errors:
-        return {"status": "refused", "exit_code": 2, "plan": _repo_relative(root, plan_path), "errors": errors}
+        return {
+            "status": "refused",
+            "exit_code": 2,
+            "plan": _repo_relative(root, plan_path),
+            "errors": errors,
+        }
     resolved_targets, target_errors = _resolve_targets(root, plan.get("targets"))
     ref_observations, ref_errors = _verify_refs(root, plan.get("refs"))
     errors.extend(target_errors)
@@ -493,8 +518,12 @@ def main(argv: list[str] | None = None) -> int:
         root = args.repo_root.resolve()
         plan_path = args.plan if args.plan.is_absolute() else root / args.plan
         report = build_report(root, plan_path)
-    except (OSError, ValueError, subprocess.SubprocessError) as exc:
-        report = {"status": "refused", "exit_code": 2, "errors": [_error("preflight-error", str(exc))]}
+    except (OSError, ValueError) as exc:
+        report = {
+            "status": "refused",
+            "exit_code": 2,
+            "errors": [_error("preflight-error", str(exc))],
+        }
     emit_yaml(report)
     return int(report["exit_code"])
 

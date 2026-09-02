@@ -16,12 +16,18 @@ only with hard correctness guarantees:
   ``CHARNESS_FORCE_FULL_GATE=1`` env var at the hook layer; the classifier
   surfaces ``force_full_gate_env`` in its report for legibility.
 """
+
 from __future__ import annotations
 
 import re
-import subprocess
 from pathlib import Path
+from subprocess import CalledProcessError
 from typing import Any
+
+from runtime_bootstrap import import_repo_module
+
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_process = _subprocess_guard.run_process
 
 # Generated plugin export surfaces. Any change here unconditionally forces a
 # full gate. This is the slice-7 stop condition.
@@ -99,9 +105,7 @@ def classify(changed_paths: list[str]) -> dict[str, Any]:
     unconditional_hits = [path for path in paths if _is_unconditional(path)]
     full_gate_hints = [path for path in paths if _matches_full_gate_hint(path)]
     non_allowlist = [
-        path
-        for path in paths
-        if not _is_docs_artifact(path) and not _is_unconditional(path)
+        path for path in paths if not _is_docs_artifact(path) and not _is_unconditional(path)
     ]
 
     if not paths:
@@ -175,41 +179,41 @@ def resolve_diff_range(repo_root: Path, remote: str = "origin") -> str | None:
     ``<remote-sha>..<local-sha>`` pair git supplies on stdin.
     """
     try:
-        branch = subprocess.run(
+        branch_result = run_process(
             ["git", "rev-parse", "--abbrev-ref", "HEAD"],
             cwd=repo_root,
-            check=True,
-            capture_output=True,
-            text=True,
-            timeout=5,
-        ).stdout.strip()
-    except (subprocess.CalledProcessError, subprocess.TimeoutExpired, OSError):
+            timeout_seconds=5,
+        )
+    except OSError:
         return None
+    if branch_result.returncode != 0:
+        return None
+    branch = branch_result.stdout.strip()
     if not branch or branch == "HEAD":
         return None
     upstream = f"{remote}/{branch}"
     try:
-        subprocess.run(
+        upstream_result = run_process(
             ["git", "rev-parse", "--verify", upstream],
             cwd=repo_root,
-            check=True,
-            capture_output=True,
-            text=True,
-            timeout=5,
+            timeout_seconds=5,
         )
-    except (subprocess.CalledProcessError, subprocess.TimeoutExpired, OSError):
+    except OSError:
+        return None
+    if upstream_result.returncode != 0:
         return None
     return f"{upstream}..HEAD"
 
 
 def changed_paths_from_git(repo_root: Path, diff_range: str) -> list[str]:
     """Return the list of paths changed in ``diff_range`` via ``git diff --name-only``."""
-    result = subprocess.run(
+    result = run_process(
         ["git", "diff", "--name-only", diff_range],
         cwd=repo_root,
-        check=True,
-        capture_output=True,
-        text=True,
-        timeout=10,
+        timeout_seconds=10,
     )
+    if result.returncode != 0:
+        raise CalledProcessError(
+            result.returncode, result.args, output=result.stdout, stderr=result.stderr
+        )
     return [line.strip() for line in result.stdout.splitlines() if line.strip()]

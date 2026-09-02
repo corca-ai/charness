@@ -33,15 +33,17 @@ frozen artifacts are reported and never rewritten -- editing a frozen retro so a
 checker goes green is evidence edited to fit a gate, which this repo has had to
 correct on more than one floor.
 """
+
 from __future__ import annotations
 
 import argparse
 import hashlib
 import json
-import subprocess
 import sys
 from datetime import date
 from pathlib import Path
+
+from runtime_bootstrap import import_repo_module
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
@@ -61,6 +63,9 @@ from scripts.artifact_referents import (  # noqa: E402
 from scripts.critique_enforcement_scope import date_from_filename  # noqa: E402
 from scripts.repo_path_display import display_path as _display_path  # noqa: E402
 
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_process = _subprocess_guard.run_process
+
 #: One Git reachability query per SHA per artifact would be thousands of
 #: subprocesses across
 #: the corpus. Same SHA, same answer, so resolve each once per run.
@@ -74,9 +79,7 @@ def _cached_commit_reachable(sha: str, repo_root: Path) -> bool:
         root_key = str(repo_root)
         if root_key not in _HEAD_COMMITS_CACHE:
             _HEAD_COMMITS_CACHE[root_key] = reachable_head_commits(repo_root)
-        _SHA_CACHE[key] = commit_identity_in_ancestry(
-            sha, _HEAD_COMMITS_CACHE[root_key]
-        )
+        _SHA_CACHE[key] = commit_identity_in_ancestry(sha, _HEAD_COMMITS_CACHE[root_key])
     return _SHA_CACHE[key]
 
 
@@ -102,32 +105,43 @@ def load_local_context_declarations(
     display = _display_path(path, repo_root)
     worktree_bytes = path.read_bytes()
     try:
-        staged = subprocess.run(
+        staged = run_process(
             ["git", "-C", str(repo_root), "show", f":{LOCAL_CONTEXT_DECLARATIONS}"],
-            capture_output=True, timeout=10,
+            cwd=repo_root,
+            timeout_seconds=10,
         )
-    except (OSError, subprocess.SubprocessError) as exc:
+    except OSError as exc:
         staged = None
         binding_error = str(exc)
     else:
-        binding_error = (staged.stderr or b"").decode("utf-8", errors="replace").strip()
-    if staged is None or staged.returncode != 0 or staged.stdout != worktree_bytes:
-        return [], [{
-            "file": display, "line": 1, "enforced": True,
-            "kind": "unbound-local-context-declaration", "token": display,
-            "detail": (
-                "the declaration must exactly match the Git index candidate; untracked or "
-                f"unstaged exception bytes are not reviewable ({binding_error or 'byte mismatch'})"
-            ),
-        }]
+        binding_error = (staged.stderr or "").strip()
+    if staged is None or staged.returncode != 0 or staged.stdout.encode("utf-8") != worktree_bytes:
+        return [], [
+            {
+                "file": display,
+                "line": 1,
+                "enforced": True,
+                "kind": "unbound-local-context-declaration",
+                "token": display,
+                "detail": (
+                    "the declaration must exactly match the Git index candidate; untracked or "
+                    f"unstaged exception bytes are not reviewable ({binding_error or 'byte mismatch'})"
+                ),
+            }
+        ]
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, UnicodeError, json.JSONDecodeError) as exc:
-        return [], [{
-            "file": display, "line": 1, "enforced": True,
-            "kind": "malformed-local-context-declaration", "token": display,
-            "detail": f"local-context declarations are unreadable: {exc}",
-        }]
+        return [], [
+            {
+                "file": display,
+                "line": 1,
+                "enforced": True,
+                "kind": "malformed-local-context-declaration",
+                "token": display,
+                "detail": f"local-context declarations are unreadable: {exc}",
+            }
+        ]
     if not isinstance(payload, list):
         payload = [payload]
         top_level_error = True
@@ -165,31 +179,46 @@ def load_local_context_declarations(
             or not isinstance(reason, str)
             or not reason.strip()
         ):
-            defects.append({
-                "file": display, "line": index, "enforced": True,
-                "kind": "malformed-local-context-declaration",
-                "token": str(token or index),
-                "detail": (
-                    "each declaration must contain exactly artifact, line, token, line_sha256, "
-                    "and a nonempty reason; artifact must be repo-relative, line positive, "
-                    "token one complete Git SHA candidate, and line_sha256 lowercase SHA-256"
-                ),
-            })
+            defects.append(
+                {
+                    "file": display,
+                    "line": index,
+                    "enforced": True,
+                    "kind": "malformed-local-context-declaration",
+                    "token": str(token or index),
+                    "detail": (
+                        "each declaration must contain exactly artifact, line, token, line_sha256, "
+                        "and a nonempty reason; artifact must be repo-relative, line positive, "
+                        "token one complete Git SHA candidate, and line_sha256 lowercase SHA-256"
+                    ),
+                }
+            )
             continue
         identity = (artifact, line, token)
         if identity in seen:
-            defects.append({
-                "file": display, "line": index, "enforced": True,
-                "kind": "duplicate-local-context-declaration", "token": token,
-                "detail": "duplicate declarations create two owners for one exception",
-            })
+            defects.append(
+                {
+                    "file": display,
+                    "line": index,
+                    "enforced": True,
+                    "kind": "duplicate-local-context-declaration",
+                    "token": token,
+                    "detail": "duplicate declarations create two owners for one exception",
+                }
+            )
             continue
         seen.add(identity)
-        valid.append({
-            "artifact": artifact, "line": line, "token": token,
-            "line_sha256": fingerprint, "reason": reason.strip(),
-        })
+        valid.append(
+            {
+                "artifact": artifact,
+                "line": line,
+                "token": token,
+                "line_sha256": fingerprint,
+                "reason": reason.strip(),
+            }
+        )
     return valid, defects
+
 
 #: Artifacts dated from here forward are ENFORCED. Earlier ones are counted and
 #: reported. This is the date the gate landed.
@@ -207,6 +236,7 @@ SCANNED_GLOBS = (
 # grows and the other silently degrades" -- adding a keyword here would have
 # quietly reverted the library's value-scoping to whole-line behaviour,
 # reintroducing the M2 and M3 evasions at once.
+
 
 def is_enforced(path: Path) -> bool:
     """Enforced unless the filename carries a readable date BEFORE the cutoff.
@@ -242,7 +272,6 @@ def disposition_lines(text: str) -> list[tuple[int, str]]:
     return out
 
 
-
 def audit_file(
     path: Path,
     repo_root: Path,
@@ -268,25 +297,29 @@ def audit_file(
     for number, line in disposition_lines(text):
         scope["dispositions"] += 1
         for finding in check_disposition_referents(line, repo_root):
-            findings.append({
-                "file": _display_path(path, repo_root),
-                "line": number,
-                "enforced": enforced,
-                **finding,
-            })
+            findings.append(
+                {
+                    "file": _display_path(path, repo_root),
+                    "line": number,
+                    "enforced": enforced,
+                    **finding,
+                }
+            )
     for finding in inconsistent_quantities(text):
         first = finding["sites"][0]["line"] if finding["sites"] else 1
-        findings.append({
-            "file": _display_path(path, repo_root),
-            "line": first,
-            # Self-consistency is enforced wherever markers are USED. There is no
-            # grandfathering question: an artifact with no `{{q:}}` markers cannot
-            # produce a finding, so this can never fire on frozen history.
-            "enforced": True,
-            "kind": finding["kind"],
-            "token": str(finding["id"]),
-            "detail": str(finding["detail"]),
-        })
+        findings.append(
+            {
+                "file": _display_path(path, repo_root),
+                "line": first,
+                # Self-consistency is enforced wherever markers are USED. There is no
+                # grandfathering question: an artifact with no `{{q:}}` markers cannot
+                # produce a finding, so this can never fire on frozen history.
+                "enforced": True,
+                "kind": finding["kind"],
+                "token": str(finding["id"]),
+                "detail": str(finding["detail"]),
+            }
+        )
 
     # SHA enforcement is DATED, never fail-closed-on-undatable, and that
     # asymmetry with the disposition rung above is deliberate.
@@ -326,25 +359,28 @@ def audit_file(
             reason = declared.get(declaration_key)
             if reason is not None:
                 matched_declarations.add(declaration_key)
-            findings.append({
-                "file": display_path,
-                "line": number,
-                "enforced": sha_enforced and reason is None,
-                "declared_local": reason is not None,
-                "kind": (
-                    "declared-local-commit-ref" if reason is not None
-                    else "non-durable-commit-ref"
-                ),
-                "token": sha,
-                "detail": (
-                    f"`{sha}` is not reachable from the reviewed HEAD. "
-                    + (
-                        f"Intentional local authoring context is declared: {reason}"
+            findings.append(
+                {
+                    "file": display_path,
+                    "line": number,
+                    "enforced": sha_enforced and reason is None,
+                    "declared_local": reason is not None,
+                    "kind": (
+                        "declared-local-commit-ref"
                         if reason is not None
-                        else "An object visible only in an authoring clone is not durable evidence."
-                    )
-                ),
-            })
+                        else "non-durable-commit-ref"
+                    ),
+                    "token": sha,
+                    "detail": (
+                        f"`{sha}` is not reachable from the reviewed HEAD. "
+                        + (
+                            f"Intentional local authoring context is declared: {reason}"
+                            if reason is not None
+                            else "An object visible only in an authoring clone is not durable evidence."
+                        )
+                    ),
+                }
+            )
     return findings
 
 
@@ -352,7 +388,9 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--repo-root", default=".", help="Repo root that owns charness-artifacts/")
     parser.add_argument(
-        "--path", action="append", default=[],
+        "--path",
+        action="append",
+        default=[],
         help="Audit only these files (repeatable); defaults to the scanned globs",
     )
     args = parser.parse_args()
@@ -366,7 +404,9 @@ def main() -> int:
     declarations, declaration_defects = load_local_context_declarations(repo_root)
     declared = {
         (
-            str(item["artifact"]), int(item["line"]), str(item["token"]),
+            str(item["artifact"]),
+            int(item["line"]),
+            str(item["token"]),
             str(item["line_sha256"]),
         ): str(item["reason"])
         for item in declarations
@@ -374,7 +414,9 @@ def main() -> int:
     matched_declarations: set[tuple[str, int, str, str]] = set()
     findings: list[dict[str, object]] = list(declaration_defects)
     scope: dict[str, int] = {
-        "dispositions": 0, "shas_resolved": 0, "sha_resolver_unavailable": 0,
+        "dispositions": 0,
+        "shas_resolved": 0,
+        "sha_resolver_unavailable": 0,
     }
     unreadable: list[str] = []
     for target in targets:
@@ -396,15 +438,19 @@ def main() -> int:
         # longer belong to the scanned globs.
         in_scope = artifact in target_names if args.path else True
         if in_scope and key not in matched_declarations:
-            findings.append({
-                "file": str(LOCAL_CONTEXT_DECLARATIONS), "line": 1,
-                "enforced": True, "kind": "stale-local-context-declaration",
-                "token": token,
-                "detail": (
-                    f"{artifact}:{line} no longer produces the declared non-durable SHA finding; "
-                    f"remove or correct this one-time declaration ({reason})"
-                ),
-            })
+            findings.append(
+                {
+                    "file": str(LOCAL_CONTEXT_DECLARATIONS),
+                    "line": 1,
+                    "enforced": True,
+                    "kind": "stale-local-context-declaration",
+                    "token": token,
+                    "detail": (
+                        f"{artifact}:{line} no longer produces the declared non-durable SHA finding; "
+                        f"remove or correct this one-time declaration ({reason})"
+                    ),
+                }
+            )
 
     #: "ran, established nothing" -- the runner's own byte for a lane that could
     #: not judge part of its scope. Opted into per label in run-quality.sh.
@@ -412,9 +458,7 @@ def main() -> int:
 
     blocking = [f for f in findings if f["enforced"]]
     declared_local = [f for f in findings if f.get("declared_local")]
-    grandfathered = [
-        f for f in findings if not f["enforced"] and not f.get("declared_local")
-    ]
+    grandfathered = [f for f in findings if not f["enforced"] and not f.get("declared_local")]
     empty_corpus = not args.path and not targets
     status = "blocked" if (blocking or unreadable or empty_corpus) else "clean"
     report = {
@@ -456,15 +500,23 @@ def main() -> int:
     if report["unreadable"]:
         print(f"UNREADABLE (input error, not a pass): {', '.join(report['unreadable'])}")
     if report["empty_corpus"]:
-        print("EMPTY CORPUS: the scanned globs matched nothing — a clean verdict here "
-              "would mean the gate found nothing to look at, not that nothing was wrong")
+        print(
+            "EMPTY CORPUS: the scanned globs matched nothing — a clean verdict here "
+            "would mean the gate found nothing to look at, not that nothing was wrong"
+        )
     print(f"status: {report['status']}")
     for finding in blocking:
-        print(f"- [blocking] {finding['file']}:{finding['line']} {finding['kind']}: {finding['detail']}")
+        print(
+            f"- [blocking] {finding['file']}:{finding['line']} {finding['kind']}: {finding['detail']}"
+        )
     for finding in grandfathered:
-        print(f"- [grandfathered] {finding['file']}:{finding['line']} {finding['kind']}: `{finding['token']}`")
+        print(
+            f"- [grandfathered] {finding['file']}:{finding['line']} {finding['kind']}: `{finding['token']}`"
+        )
     for finding in declared_local:
-        print(f"- [declared-local] {finding['file']}:{finding['line']} {finding['kind']}: {finding['detail']}")
+        print(
+            f"- [declared-local] {finding['file']}:{finding['line']} {finding['kind']}: {finding['detail']}"
+        )
 
     # Derived from `status`, NOT recomputed from `blocking`. An earlier version
     # returned `1 if blocking else 0` while `status` also accounted for unreadable

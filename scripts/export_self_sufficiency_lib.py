@@ -246,9 +246,7 @@ def unshipped_path_findings(
 #: How an exported doc/adapter spells a command a consumer should run. The
 #: `$SKILL_DIR` form is the export's own 100+-site convention; a script named
 #: this way is a surface a consumer is TOLD to execute.
-DOCUMENTED_ENTRYPOINT_RE = re.compile(
-    r"(?:\$SKILL_DIR|\$\{SKILL_DIR\})/scripts/([a-z0-9_]+\.py)"
-)
+DOCUMENTED_ENTRYPOINT_RE = re.compile(r"(?:\$SKILL_DIR|\$\{SKILL_DIR\})/scripts/([a-z0-9_]+\.py)")
 _ENTRYPOINT_DOC_SUFFIXES = (".md", ".yaml", ".yml", ".json")
 
 
@@ -290,7 +288,8 @@ GENERATED_FILE_MARKER = "generated_file: true"
 #: Two different reasons live here and the difference matters:
 #:
 #: 1. CONSUMER-OWNED values a consumer replaces with their own command.
-#: 2. EXECUTED values run by `subprocess.run(shlex.split(command))`. `<plugin-dir>/`
+#: 2. EXECUTED values run by the subprocess runner after `shlex.split(command)`.
+#: `<plugin-dir>/`
 #:    is a DOC placeholder that no runtime substitutes -- `check_plugin_dir_references`
 #:    says so in its own docstring -- so applying the remedy to an executed field
 #:    converts a working command into `can't open file`. The first build of this arm
@@ -521,9 +520,7 @@ def _local_module_names(export_root: Path) -> set[str]:
     instance blinded the arm to another."""
     names = {path.stem for path in export_root.rglob("*.py")}
     names.update(
-        entry.name
-        for entry in export_root.iterdir()
-        if entry.is_dir() and any(entry.rglob("*.py"))
+        entry.name for entry in export_root.iterdir() if entry.is_dir() and any(entry.rglob("*.py"))
     )
     return names
 

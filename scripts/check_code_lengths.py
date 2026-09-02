@@ -5,7 +5,6 @@ from __future__ import annotations
 import argparse
 import json
 import shutil
-import subprocess
 import sys
 from pathlib import Path
 
@@ -16,6 +15,8 @@ REPO_ROOT = repo_root_from_script(__file__)
 
 _scripts_repo_file_listing_module = import_repo_module(__file__, "scripts.repo_file_listing")
 iter_matching_repo_files = _scripts_repo_file_listing_module.iter_matching_repo_files
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_process = _subprocess_guard.run_process
 
 REPO_SCRIPT_FILE_MAX = 480
 SHELL_FILE_MAX = 205
@@ -134,11 +135,10 @@ def tokei_code_counts(paths: list[Path]) -> dict[Path, int]:
             "fall back to physical splitlines totals."
         )
     requested = {path.resolve(): path for path in paths}
-    completed = subprocess.run(
+    completed = run_process(
         ["tokei", "--output", "json", "--types", "Python,Rust", *[str(path) for path in paths]],
-        check=False,
-        capture_output=True,
-        text=True,
+        cwd=REPO_ROOT,
+        timeout_seconds=None,
     )
     if completed.returncode != 0:
         raise TokeiError(

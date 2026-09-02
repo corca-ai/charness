@@ -20,19 +20,21 @@ caller can gate on it. The substring/path heuristic can over-report, so the
 default stays advisory per the proportionality guidance in
 docs/authoring-preflight.md.
 """
+
 from __future__ import annotations
 
 import argparse
 import ast
-import subprocess
 import sys
 from pathlib import Path
 from typing import Any
 
-from runtime_bootstrap import repo_root_from_script
+from runtime_bootstrap import import_repo_module, repo_root_from_script
 from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_process = _subprocess_guard.run_process
 
 # Prose pins copy a human phrase; require length + whitespace so identifiers,
 # short tokens, and bare paths do not masquerade as prose matches.
@@ -41,12 +43,10 @@ DOC_SUFFIXES = (".md",)
 
 
 def _git(repo_root: Path, *args: str) -> str | None:
-    result = subprocess.run(
+    result = run_process(
         ["git", *args],
         cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=True,
+        timeout_seconds=None,
     )
     return result.stdout if result.returncode == 0 else None
 

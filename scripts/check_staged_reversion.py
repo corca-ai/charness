@@ -60,6 +60,7 @@ import os
 import subprocess
 import sys
 from dataclasses import dataclass
+from pathlib import Path
 
 try:
     from scripts.yaml_output import emit_yaml
@@ -71,17 +72,21 @@ try:
 except ModuleNotFoundError:
     from env_bypass import env_bypass_enabled
 
+from runtime_bootstrap import import_repo_module
+
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_process = _subprocess_guard.run_process
+
 _ENV_BYPASS = "CHARNESS_ALLOW_STAGED_REVERSION"
 _GITLINK_MODE = "160000"
 
 
 def _git(repo_root: str, *args: str) -> "subprocess.CompletedProcess[str]":
     """Run a read-only git command in ``repo_root`` and capture text output."""
-    return subprocess.run(
+    return run_process(
         ["git", "-C", repo_root, *args],
-        check=False,
-        capture_output=True,
-        text=True,
+        cwd=Path(repo_root),
+        timeout_seconds=None,
     )
 
 
@@ -114,16 +119,16 @@ def _staged_raw_diff(repo_root: str) -> list[dict[str, object]]:
         # short hash git itself may lengthen later as the repo grows), and an
         # abbreviated `head_blob` compared against `_worktree_blob`'s full
         # `hash-object` output never matches even when the content is identical.
-        proc = _git(repo_root, "-c", "core.abbrev=no", "diff", "--cached", "--raw", "-z", "--no-renames")
+        proc = _git(
+            repo_root, "-c", "core.abbrev=no", "diff", "--cached", "--raw", "-z", "--no-renames"
+        )
     except OSError as exc:  # git absent, repo_root unusable as cwd, ...
         raise RuntimeError(f"git diff --cached failed: {exc}") from exc
     if proc.returncode != 0:
         # First stderr line only: git appends a full usage dump for some
         # failures, which would bury the gate's own message.
         reason = next((ln for ln in proc.stderr.splitlines() if ln.strip()), "")
-        raise RuntimeError(
-            reason.strip() or f"git diff --cached --raw exited {proc.returncode}"
-        )
+        raise RuntimeError(reason.strip() or f"git diff --cached --raw exited {proc.returncode}")
     records = [r for r in proc.stdout.split("\0") if r]
     entries: list[dict[str, object]] = []
     index = 0
@@ -233,9 +238,7 @@ def classify_reversion(
         return Finding(
             path=path,
             case=(
-                "staged-deletion-phantom"
-                if index_blob is None
-                else "modified-reversion-phantom"
+                "staged-deletion-phantom" if index_blob is None else "modified-reversion-phantom"
             ),
             head_blob=head_blob,
             index_blob=index_blob,

@@ -11,8 +11,11 @@ import subprocess
 import sys
 from pathlib import Path
 
-from runtime_bootstrap import runtime_root
+from runtime_bootstrap import import_repo_module, runtime_root
 from yaml_output import emit_yaml
+
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_process = _subprocess_guard.run_process
 
 
 class BootstrapRuntimeError(Exception):
@@ -30,12 +33,10 @@ def run_command(command: list[str], *, cwd: Path | None = None) -> subprocess.Co
     # to another checkout's external bootstrap runtime.
     env.pop("PYTHONPATH", None)
     env.pop("PYTHONHOME", None)
-    return subprocess.run(
+    return run_process(
         command,
-        cwd=cwd,
-        check=False,
-        capture_output=True,
-        text=True,
+        cwd=cwd or Path.cwd(),
+        timeout_seconds=None,
         env=env,
     )
 
@@ -77,10 +78,14 @@ def validate_contract(contract: dict[str, object], contract_path: Path) -> dict[
         raise BootstrapRuntimeError(f"`{contract_path}` must declare `requirements_file`")
     required_modules = contract.get("required_modules")
     if not isinstance(required_modules, list) or not required_modules:
-        raise BootstrapRuntimeError(f"`{contract_path}` must declare a non-empty `required_modules` list")
+        raise BootstrapRuntimeError(
+            f"`{contract_path}` must declare a non-empty `required_modules` list"
+        )
     for index, module_name in enumerate(required_modules):
         if not isinstance(module_name, str) or not module_name:
-            raise BootstrapRuntimeError(f"`{contract_path}` has invalid `required_modules[{index}]`")
+            raise BootstrapRuntimeError(
+                f"`{contract_path}` has invalid `required_modules[{index}]`"
+            )
     return {
         "min_version": min_version,
         "runtime_dir": runtime_dir,
@@ -124,15 +129,25 @@ def python_info(python_cmd: str) -> dict[str, object]:
     try:
         payload = json.loads(result.stdout)
     except json.JSONDecodeError as exc:
-        raise BootstrapRuntimeError(f"`{python_cmd}` interpreter probe returned invalid JSON") from exc
+        raise BootstrapRuntimeError(
+            f"`{python_cmd}` interpreter probe returned invalid JSON"
+        ) from exc
     if not isinstance(payload, dict):
         raise BootstrapRuntimeError(f"`{python_cmd}` interpreter probe returned an invalid payload")
     executable = payload.get("executable")
     version = payload.get("version")
     if not isinstance(executable, str) or not executable:
-        raise BootstrapRuntimeError(f"`{python_cmd}` interpreter probe did not report an executable path")
-    if not isinstance(version, list) or len(version) != 3 or not all(isinstance(part, int) for part in version):
-        raise BootstrapRuntimeError(f"`{python_cmd}` interpreter probe did not report a valid version")
+        raise BootstrapRuntimeError(
+            f"`{python_cmd}` interpreter probe did not report an executable path"
+        )
+    if (
+        not isinstance(version, list)
+        or len(version) != 3
+        or not all(isinstance(part, int) for part in version)
+    ):
+        raise BootstrapRuntimeError(
+            f"`{python_cmd}` interpreter probe did not report a valid version"
+        )
     return {"executable": executable, "version": tuple(version)}
 
 
@@ -194,7 +209,9 @@ def install_requirements(python_path: Path, requirements_path: Path, target_dir:
             str(requirements_path),
         ]
     )
-    expect_success(result, f"`{python_path}` bootstrap dependency install from `{requirements_path}`")
+    expect_success(
+        result, f"`{python_path}` bootstrap dependency install from `{requirements_path}`"
+    )
 
 
 def write_launcher(launcher_path: Path, base_python: str, target_dir: Path) -> None:
@@ -204,8 +221,8 @@ def write_launcher(launcher_path: Path, base_python: str, target_dir: Path) -> N
             "\r\n".join(
                 [
                     "@echo off",
-                    f"set \"PYTHONPATH={target_dir}\"",
-                    f"\"{base_python}\" %*",
+                    f'set "PYTHONPATH={target_dir}"',
+                    f'"{base_python}" %*',
                     "",
                 ]
             ),
@@ -218,7 +235,7 @@ def write_launcher(launcher_path: Path, base_python: str, target_dir: Path) -> N
                     "#!/bin/sh",
                     f"PYTHONPATH={shlex.quote(str(target_dir))}",
                     "export PYTHONPATH",
-                    f"exec {shlex.quote(base_python)} \"$@\"",
+                    f'exec {shlex.quote(base_python)} "$@"',
                     "",
                 ]
             ),
@@ -234,8 +251,14 @@ def ensure_bootstrap_runtime(
     contract_path: Path | None = None,
 ) -> dict[str, object]:
     repo_root = repo_root.resolve()
-    resolved_contract_path = contract_path.resolve() if contract_path is not None else (repo_root / "packaging" / "bootstrap-python.json")
-    contract = validate_contract(load_contract(repo_root, resolved_contract_path), resolved_contract_path)
+    resolved_contract_path = (
+        contract_path.resolve()
+        if contract_path is not None
+        else (repo_root / "packaging" / "bootstrap-python.json")
+    )
+    contract = validate_contract(
+        load_contract(repo_root, resolved_contract_path), resolved_contract_path
+    )
     info = python_info(base_python)
     minimum = parse_min_version(contract["min_version"])
     ensure_min_version(info, minimum)
@@ -264,7 +287,9 @@ def ensure_bootstrap_runtime(
         shutil.rmtree(packages_dir)
         write_launcher(python_path, str(info["executable"]), packages_dir)
 
-    if not modules_available(python_path, required_modules) and not modules_available(base_python_path, required_modules):
+    if not modules_available(python_path, required_modules) and not modules_available(
+        base_python_path, required_modules
+    ):
         install_requirements(Path(str(info["executable"])), requirements_path, packages_dir)
         write_launcher(python_path, str(info["executable"]), packages_dir)
         installed = True

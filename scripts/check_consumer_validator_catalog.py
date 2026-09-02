@@ -18,7 +18,6 @@ from __future__ import annotations
 import argparse
 import re
 import shlex
-import subprocess
 import sys
 from pathlib import Path, PurePosixPath
 from typing import Any
@@ -67,6 +66,8 @@ _adapter_lib = import_repo_module(__file__, "scripts.adapter_lib")
 load_yaml_file = _adapter_lib.load_yaml_file
 _yaml_output = import_repo_module(__file__, "scripts.yaml_output")
 emit_yaml = _yaml_output.emit_yaml
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_process = _subprocess_guard.run_process
 
 
 class CatalogError(ValueError):
@@ -164,12 +165,7 @@ def _required_text(value: Any, *, field: str, where: str) -> str:
 def _relative_catalog_path(value: Any, *, where: str) -> str:
     path = _required_text(value, field="path", where=where)
     parsed = PurePosixPath(path)
-    if (
-        parsed.is_absolute()
-        or ".." in parsed.parts
-        or "\\" in path
-        or parsed.as_posix() != path
-    ):
+    if parsed.is_absolute() or ".." in parsed.parts or "\\" in path or parsed.as_posix() != path:
         raise CatalogError(f"{where}: `path` must be a normalized relative POSIX path")
     return path
 
@@ -268,9 +264,7 @@ def _validate_entry(
         raise CatalogError(f"{where} ({path}): `consumer_facing` must be an explicit boolean")
     decision = entry.get("decision")
     if decision not in DECISIONS:
-        raise CatalogError(
-            f"{where} ({path}): `decision` must be one of {sorted(DECISIONS)}"
-        )
+        raise CatalogError(f"{where} ({path}): `decision` must be one of {sorted(DECISIONS)}")
     expected_decision = "publish" if consumer_facing else "exclude"
     if decision != expected_decision:
         raise CatalogError(
@@ -282,16 +276,12 @@ def _validate_entry(
     if consumer_facing:
         validator_id = _required_text(entry.get("id"), field="id", where=entry_where)
         if not STABLE_ID_RE.fullmatch(validator_id):
-            raise CatalogError(
-                f"{entry_where}: `id` must be a stable lower-kebab-case identifier"
-            )
+            raise CatalogError(f"{entry_where}: `id` must be a stable lower-kebab-case identifier")
         if any(item.get("id") == validator_id for item in declared.values()):
             raise CatalogError(f"{entry_where}: duplicate validator id `{validator_id}`")
         _required_text(entry.get("artifact_type"), field="artifact_type", where=entry_where)
         if entry.get("adoption_policy") != ADOPTION_POLICY:
-            raise CatalogError(
-                f"{entry_where}: `adoption_policy` must be `{ADOPTION_POLICY}`"
-            )
+            raise CatalogError(f"{entry_where}: `adoption_policy` must be `{ADOPTION_POLICY}`")
         _required_text(entry.get("purpose"), field="purpose", where=entry_where)
         invocation = _required_text(entry.get("invocation"), field="invocation", where=entry_where)
         expected_command = f"<plugin-root>/{path}"
@@ -348,11 +338,19 @@ def _require_staged_adoption(repo_root: Path, path: Path) -> None:
     except ValueError as exc:
         raise CatalogError(f"{path}: adoption declaration must be inside the repo root") from exc
     try:
-        staged = subprocess.run(
-            ["git", "-C", str(repo_root), "ls-files", "--cached", "--error-unmatch", "--", relative],
-            capture_output=True,
-            text=True,
-            check=False,
+        staged = run_process(
+            [
+                "git",
+                "-C",
+                str(repo_root),
+                "ls-files",
+                "--cached",
+                "--error-unmatch",
+                "--",
+                relative,
+            ],
+            cwd=repo_root,
+            timeout_seconds=None,
         )
     except OSError as exc:
         raise CatalogError(f"{path}: could not verify staged adoption declaration: {exc}") from exc

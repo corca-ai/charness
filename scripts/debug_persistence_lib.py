@@ -5,12 +5,17 @@ first shape checker for a record just authored, so this helper writes through
 the exact scaffold-selected path, runs that path through the strict validator,
 and rolls the write back when the validator refuses it.
 """
+
 from __future__ import annotations
 
 import shlex
-import subprocess
 from pathlib import Path
 from typing import Any
+
+from runtime_bootstrap import import_repo_module
+
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_monitored_phase = _subprocess_guard.run_monitored_phase
 
 VALIDATOR_TIMEOUT_SECONDS = 60.0
 
@@ -51,15 +56,13 @@ def persist_debug_artifact(
     target.write_text(markdown_text.rstrip() + "\n", encoding="utf-8")
     command = shlex.split(validator_command)
     try:
-        completed = subprocess.run(
+        completed = run_monitored_phase(
             command,
             cwd=root,
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=VALIDATOR_TIMEOUT_SECONDS,
+            phase="debug-artifact-validator",
+            timeout_seconds=VALIDATOR_TIMEOUT_SECONDS,
         )
-    except (OSError, subprocess.TimeoutExpired) as exc:
+    except OSError as exc:
         _rollback(target, previous)
         return {
             "action": "refused",
@@ -73,6 +76,23 @@ def persist_debug_artifact(
                 "stderr": getattr(exc, "stderr", "") or "",
                 "path": relative,
                 "error_type": type(exc).__name__,
+            },
+            "reason": "debug artifact validator did not complete; write was rolled back",
+        }
+    if completed.timed_out:
+        _rollback(target, previous)
+        return {
+            "action": "refused",
+            "artifact_path": relative,
+            "status": "incomplete",
+            "validated": False,
+            "validation": {
+                "command": validator_command,
+                "returncode": None,
+                "stdout": completed.stdout,
+                "stderr": completed.stderr,
+                "path": relative,
+                "error_type": "TimeoutExpired",
             },
             "reason": "debug artifact validator did not complete; write was rolled back",
         }

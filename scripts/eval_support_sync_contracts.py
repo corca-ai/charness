@@ -3,11 +3,16 @@
 from __future__ import annotations
 
 import argparse
-import subprocess
+import contextlib
+import io
 import sys
 from pathlib import Path
 
 import yaml
+
+from runtime_bootstrap import import_repo_module
+
+_sync_support = import_repo_module(__file__, "scripts.sync_support")
 
 
 class EvalError(Exception):
@@ -20,26 +25,27 @@ def main() -> int:
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
-    result = subprocess.run(
-        [
-            "python3",
-            "scripts/sync_support.py",
-            "--repo-root",
-            str(repo_root),
-            "--tool-id",
-            "agent-browser",
-            "--tool-id",
-            "specdown",
-        ],
-        cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    if result.returncode != 0:
-        raise EvalError(result.stderr or "support-sync dry-run failed")
+    previous_argv = sys.argv
+    sys.argv = [
+        str(Path(_sync_support.__file__)),
+        "--repo-root",
+        str(repo_root),
+        "--tool-id",
+        "agent-browser",
+        "--tool-id",
+        "specdown",
+    ]
+    stdout = io.StringIO()
+    stderr = io.StringIO()
+    try:
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            returncode = int(_sync_support.main())
+    finally:
+        sys.argv = previous_argv
+    if returncode != 0:
+        raise EvalError(stderr.getvalue() or "support-sync dry-run failed")
 
-    payload = yaml.safe_load(result.stdout)
+    payload = yaml.safe_load(stdout.getvalue())
     if len(payload) != 2:
         raise EvalError(f"unexpected payload {payload!r}")
 

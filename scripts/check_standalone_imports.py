@@ -50,13 +50,13 @@ deliberate -- a changed module that cannot be imported at all is a defect of the
 not an environment quirk -- but it is a new requirement on the environment, not a free
 check.
 """
+
 from __future__ import annotations
 
 import argparse
 import concurrent.futures
 import json
 import re
-import subprocess
 import sys
 from pathlib import Path
 
@@ -67,6 +67,8 @@ REPO_ROOT = repo_root_from_script(__file__)
 
 native_gate_lib = import_repo_module(__file__, "scripts.native_gate_lib")
 NativeGateError = native_gate_lib.NativeGateError
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_process = _subprocess_guard.run_process
 
 # floor-addition-restraint: BLOCKING, deliberately, against this repo's default of
 # preferring an advisory on first sight.
@@ -142,8 +144,7 @@ def _validate_selection_document(document: object) -> dict:
         raise NativeSelectionError("native standalone-targets did not emit a JSON object")
     if document.get("schema") != "repograph.standalone_targets.v1":
         raise NativeSelectionError(
-            "native standalone-targets emitted an unexpected schema: "
-            f"{document.get('schema')!r}"
+            f"native standalone-targets emitted an unexpected schema: {document.get('schema')!r}"
         )
     targets = document.get("targets")
     if not isinstance(targets, list):
@@ -179,12 +180,10 @@ def select_standalone_targets(repo_root: Path, *, changed: list[Path] | None) ->
     if changed is not None:
         command.extend(["--changed", *(str(path) for path in changed)])
     try:
-        result = subprocess.run(
+        result = run_process(
             command,
             cwd=repo_root,
-            capture_output=True,
-            text=True,
-            check=False,
+            timeout_seconds=None,
         )
     except OSError as exc:
         raise NativeSelectionError(
@@ -216,15 +215,12 @@ def probe_module(repo_root: Path, target: dict, *, timeout: int = 60) -> dict:
     for shape_data in target["shapes"]:
         shape = shape_data["shape"]
         code = shape_data["command"]
-        try:
-            result = subprocess.run(
-                [sys.executable, "-c", code],
-                cwd=repo_root,
-                capture_output=True,
-                text=True,
-                timeout=timeout,
-            )
-        except subprocess.TimeoutExpired:
+        result = run_process(
+            [sys.executable, "-c", code],
+            cwd=repo_root,
+            timeout_seconds=timeout,
+        )
+        if result.returncode == _subprocess_guard.TIMEOUT_EXIT_CODE:
             # Try the remaining shapes rather than returning. A `scripts/` module whose
             # PACKAGE-shape import hangs still deserves its legitimate direct shape; the
             # early return refused a module on the strength of the wrong loader.

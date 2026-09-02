@@ -21,8 +21,13 @@ from __future__ import annotations
 
 import argparse
 import re
-import subprocess
 import sys
+from pathlib import Path
+
+from runtime_bootstrap import import_repo_module
+
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_process = _subprocess_guard.run_process
 
 _INVALID_SUFFIX = ".invalid"
 _EMAIL_RE = re.compile(r"<([^<>]*)>")
@@ -34,11 +39,10 @@ _IDENT_VARS: tuple[tuple[str, str], ...] = (
 
 def _git_var(repo_root: str, name: str) -> str | None:
     """Resolve one effective identity via `git var`, or None if git cannot."""
-    proc = subprocess.run(
+    proc = run_process(
         ["git", "-C", repo_root, "var", name],
-        check=False,
-        capture_output=True,
-        text=True,
+        cwd=Path(repo_root),
+        timeout_seconds=None,
     )
     if proc.returncode != 0 or not proc.stdout.strip():
         return None
@@ -109,7 +113,9 @@ def main(argv: list[str] | None = None) -> int:
         # `git var` could not resolve either identity (e.g. a fresh environment
         # with no user.email set at all). That is git's own failure mode to
         # surface at commit time -- this gate must not add a new one.
-        print("check-git-identity: unresolvable (git could not resolve an identity; not blocked here)")
+        print(
+            "check-git-identity: unresolvable (git could not resolve an identity; not blocked here)"
+        )
         return 0
 
     print("check-git-identity: clean (no .invalid effective commit identity)")

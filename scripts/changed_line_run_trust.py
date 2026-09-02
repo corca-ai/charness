@@ -24,14 +24,15 @@ Three ways it is not, each with its own answer:
 The gate imports these back under its own names, so existing callers and tests keep
 working against the surface they already reference.
 """
+
 from __future__ import annotations
 
 import re
-import subprocess
 import sys
 from pathlib import Path
 from typing import NamedTuple
 
+from runtime_bootstrap import import_repo_module
 from scripts.subprocess_only_coverage_advisory import advisory_scope_line, advisory_stderr_line
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -42,6 +43,9 @@ from scripts.checkout_view import CheckoutView, GitCheckout  # noqa: E402
 from scripts.git_status_snapshot import GitStatusError  # noqa: E402
 from scripts.git_status_snapshot import parse as parse_git_status  # noqa: E402
 from scripts.mutation_changed_files_lib import changed_pool_fingerprint  # noqa: E402
+
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_process = _subprocess_guard.run_process
 
 _GIT_OID_RE = re.compile(r"^(?:[0-9a-fA-F]{40}|[0-9a-fA-F]{64})$")
 
@@ -55,7 +59,7 @@ def _git_lines_or_none(repo_root: Path, args: list[str]) -> list[str] | None:
     could not be inspected rendered a clean verdict.
     """
     try:
-        result = subprocess.run(["git", *args], cwd=repo_root, capture_output=True, text=True)
+        result = run_process(["git", *args], cwd=repo_root, timeout_seconds=None)
     except OSError:
         return None
     if result.returncode != 0:
@@ -304,7 +308,7 @@ def _pin_run_state(
         head_commit = [pair[1]] if pair is not None else []
     try:
         fingerprint = changed_pool_fingerprint(repo_root, base_sha, checkout=checkout)
-    except (subprocess.CalledProcessError, OSError):
+    except OSError:
         fingerprint = ""
     return {
         "resolved_head_sha": resolved[0] if resolved else head_sha,
@@ -313,7 +317,9 @@ def _pin_run_state(
     }
 
 
-def run_state_drift(repo_root: Path, base_sha: str, head_sha: str, pinned: dict[str, str]) -> str | None:
+def run_state_drift(
+    repo_root: Path, base_sha: str, head_sha: str, pinned: dict[str, str]
+) -> str | None:
     """Re-read the pinned state at the end; describe any drift, else None.
 
     A commit (or a worktree edit to a changed pool file) landing WHILE the probe

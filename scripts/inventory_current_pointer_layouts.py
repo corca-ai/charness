@@ -2,18 +2,16 @@
 from __future__ import annotations
 
 import argparse
-import subprocess
 from dataclasses import asdict, dataclass
 from datetime import date
 from pathlib import Path
 from typing import Any
 
-import yaml
-
 from runtime_bootstrap import import_repo_module
 from yaml_output import emit_yaml
 
 _scaffold_artifact_lib = import_repo_module(__file__, "scripts.scaffold_artifact_lib")
+_resolver = import_repo_module(__file__, "scripts.resolve_artifact_path")
 
 
 @dataclass(frozen=True)
@@ -38,10 +36,18 @@ def _skill_ids(repo_root: Path, selected: list[str] | None) -> list[str]:
     if selected:
         return sorted(set(selected))
     skills_root = repo_root / "skills" / "public"
-    skill_ids = {path.name for path in skills_root.iterdir() if path.is_dir()} if skills_root.is_dir() else set()
+    skill_ids = (
+        {path.name for path in skills_root.iterdir() if path.is_dir()}
+        if skills_root.is_dir()
+        else set()
+    )
     artifact_root = repo_root / "charness-artifacts"
     artifact_ids = (
-        {path.parent.name for path in artifact_root.glob("*/latest.md") if path.is_file() or path.is_symlink()}
+        {
+            path.parent.name
+            for path in artifact_root.glob("*/latest.md")
+            if path.is_file() or path.is_symlink()
+        }
         if artifact_root.is_dir()
         else set()
     )
@@ -62,37 +68,19 @@ def _discovery_source(repo_root: Path, skill_id: str) -> str:
     return "selected"
 
 
-def _run_resolver(repo_root: Path, skill_id: str, day: date) -> tuple[dict[str, Any] | None, str | None]:
-    script = Path(__file__).resolve().parent / "resolve_artifact_path.py"
-    completed = subprocess.run(
-        [
-            "python3",
-            str(script),
-            "--repo-root",
-            str(repo_root),
-            "--skill-id",
-            skill_id,
-            "--slug",
-            "current-pointer-audit",
-            "--intent",
-            "current",
-            "--date",
-            day.isoformat(),
-        ],
-        cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    if completed.returncode != 0:
-        return None, completed.stderr.strip() or completed.stdout.strip() or "resolver failed"
-    # `resolve_artifact_path.py` is repo-owned, so its stdout is YAML.
+def _run_resolver(
+    repo_root: Path, skill_id: str, day: date
+) -> tuple[dict[str, Any] | None, str | None]:
     try:
-        payload = yaml.safe_load(completed.stdout)
-    except yaml.YAMLError as exc:
-        return None, f"resolver returned invalid YAML: {exc}"
-    if not isinstance(payload, dict):
-        return None, "resolver returned a non-mapping payload"
+        payload = _resolver.payload_for(
+            repo_root,
+            skill_id,
+            "current-pointer-audit",
+            intent="current",
+            artifact_date=day,
+        )
+    except (OSError, SystemExit, ValueError) as exc:
+        return None, str(exc) or "resolver failed"
     return payload, None
 
 
@@ -140,13 +128,16 @@ def _fallback_pointer_state(repo_root: Path, artifact_path: str | None) -> dict[
 
 def _unresolved_status(error: str | None) -> tuple[str, str]:
     if error and (
-        "No skill adapter resolver found" in error or "adapter data must include output_dir" in error
+        "No skill adapter resolver found" in error
+        or "adapter data must include output_dir" in error
     ):
         return "adapter_unmanaged", "adapter_unmanaged"
     return "unresolved", "resolver_error"
 
 
-def inventory(repo_root: Path, *, selected: list[str] | None = None, day: date | None = None) -> list[LayoutItem]:
+def inventory(
+    repo_root: Path, *, selected: list[str] | None = None, day: date | None = None
+) -> list[LayoutItem]:
     artifact_date = day or date.today()
     items: list[LayoutItem] = []
     for skill_id in _skill_ids(repo_root, selected):
@@ -168,16 +159,24 @@ def inventory(repo_root: Path, *, selected: list[str] | None = None, day: date |
                     write_artifact_path=None,
                     write_artifact_role=None,
                     record_artifact_supported=None,
-                    current_pointer_is_symlink=_optional_bool(pointer_state["current_pointer_is_symlink"]),
-                    current_pointer_target_path=_string(pointer_state["current_pointer_target_path"]),
-                    current_pointer_target_exists=_optional_bool(pointer_state["current_pointer_target_exists"]),
+                    current_pointer_is_symlink=_optional_bool(
+                        pointer_state["current_pointer_is_symlink"]
+                    ),
+                    current_pointer_target_path=_string(
+                        pointer_state["current_pointer_target_path"]
+                    ),
+                    current_pointer_target_exists=_optional_bool(
+                        pointer_state["current_pointer_target_exists"]
+                    ),
                     on_disk_layout=layout,
                     discovery_source=discovery_source,
                     resolver_error=error,
                 )
             )
             continue
-        artifact_path = _string(payload.get("artifact_path")) or _string(payload.get("current_artifact_path"))
+        artifact_path = _string(payload.get("artifact_path")) or _string(
+            payload.get("current_artifact_path")
+        )
         items.append(
             LayoutItem(
                 skill_id=skill_id,
@@ -188,9 +187,13 @@ def inventory(repo_root: Path, *, selected: list[str] | None = None, day: date |
                 write_artifact_path=_string(payload.get("write_artifact_path")),
                 write_artifact_role=_string(payload.get("write_artifact_role")),
                 record_artifact_supported=_optional_bool(payload.get("record_artifact_supported")),
-                current_pointer_is_symlink=_optional_bool(payload.get("current_pointer_is_symlink")),
+                current_pointer_is_symlink=_optional_bool(
+                    payload.get("current_pointer_is_symlink")
+                ),
                 current_pointer_target_path=_string(payload.get("current_pointer_target_path")),
-                current_pointer_target_exists=_optional_bool(payload.get("current_pointer_target_exists")),
+                current_pointer_target_exists=_optional_bool(
+                    payload.get("current_pointer_target_exists")
+                ),
                 on_disk_layout=_path_layout(repo_root, artifact_path),
                 discovery_source=discovery_source,
             )
@@ -216,7 +219,9 @@ def _summary(items: list[LayoutItem]) -> dict[str, int]:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
-    parser.add_argument("--skill-id", action="append", help="Limit inventory to one skill id; repeatable.")
+    parser.add_argument(
+        "--skill-id", action="append", help="Limit inventory to one skill id; repeatable."
+    )
     parser.add_argument("--date", help="ISO date used for resolver payloads.")
     parser.add_argument("--require-resolved", action="store_true")
     args = parser.parse_args()

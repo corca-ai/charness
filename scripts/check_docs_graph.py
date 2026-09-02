@@ -29,19 +29,21 @@ gate is silent by construction:
 3. It NAMES what it did not judge on every run, including the passing one, so a
    green here is never read as a clean docs verdict.
 """
+
 from __future__ import annotations
 
 import argparse
 import re
 import shutil
-import subprocess
 import sys
 from pathlib import Path
 
-from runtime_bootstrap import repo_root_from_script
+from runtime_bootstrap import import_repo_module, repo_root_from_script
 from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_monitored_phase = _subprocess_guard.run_monitored_phase
 
 # The runner's shared "analyzed nothing, so this is not a pass" byte. It renders
 # as UNPROVEN in the quality summary rather than as a silent success.
@@ -95,7 +97,9 @@ DEFAULT_LINK_ONLY_LINES_BAR = 0
 _RATCHET_DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
 # A GFM header row or its `| --- |` separator: skipped as structure rather than
 # refused as a malformed data row.
-_RATCHET_HEADER_OR_SEPARATOR = re.compile(r"^\|?[\s:|-]*\|[\s:|-]*$|^\|?\s*date\s*\|", re.IGNORECASE)
+_RATCHET_HEADER_OR_SEPARATOR = re.compile(
+    r"^\|?[\s:|-]*\|[\s:|-]*$|^\|?\s*date\s*\|", re.IGNORECASE
+)
 # The metrics this gate JUDGES, each against the bar it may not exceed.
 # `link_only_lines` carries the EXPORTED default; `resolve_bars` replaces it with
 # the repo's own recorded bar when a ratchet record is present. Kept as a plain
@@ -156,15 +160,13 @@ AWIKI_TIMEOUT_SECONDS = 120
 
 
 def _run_awiki(repo_root: Path, scan_root: str) -> tuple[int, str]:
-    proc = subprocess.run(
+    outcome = run_monitored_phase(
         ["awiki", "lint", "-root", scan_root, "-recursive"],
         cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=True,
-        timeout=AWIKI_TIMEOUT_SECONDS,
+        phase="docs-graph-awiki",
+        timeout_seconds=AWIKI_TIMEOUT_SECONDS,
     )
-    return proc.returncode, f"{proc.stdout}\n{proc.stderr}"
+    return outcome.returncode, f"{outcome.stdout}\n{outcome.stderr}"
 
 
 def parse_summary(output: str) -> tuple[str, dict[str, float]] | None:
@@ -457,10 +459,7 @@ def _evaluate(repo_root: Path, scan_root: str, bars: dict[str, int]) -> dict[str
         "failures": failures,
         # Both failing metrics name their pages. Naming only orphans left an
         # islands-only failure reporting a bare count.
-        "named": {
-            metric: named_pages(output, BLOCK_FOR_METRIC[metric])
-            for metric in failures
-        },
+        "named": {metric: named_pages(output, BLOCK_FOR_METRIC[metric]) for metric in failures},
     }
 
 
@@ -521,10 +520,14 @@ def assert_metric_tables_complete(
     metrics: tuple[str, ...] = GATED_METRICS,
     tables: dict[str, dict[str, str]] | None = None,
 ) -> None:
-    missing = missing_metric_table_entries(metrics, tables if tables is not None else _METRIC_TABLES)
+    missing = missing_metric_table_entries(
+        metrics, tables if tables is not None else _METRIC_TABLES
+    )
     if not missing:
         return
-    detail = "; ".join(f"{metric}: missing from {', '.join(names)}" for metric, names in sorted(missing.items()))
+    detail = "; ".join(
+        f"{metric}: missing from {', '.join(names)}" for metric, names in sorted(missing.items())
+    )
     raise RuntimeError(
         f"check_docs_graph is misconfigured: {detail}. A gated metric without these entries "
         "reports NOT-RUN on the failure it should have named, or crashes in the renderer. "

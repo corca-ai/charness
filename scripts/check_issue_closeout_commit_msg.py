@@ -1,14 +1,19 @@
 #!/usr/bin/env python3
 """Block issue-closeout artifacts whose commit message is not the carrier."""
+
 from __future__ import annotations
 
 import argparse
 import importlib.util
 import re
-import subprocess
 import sys
 from pathlib import Path
 from typing import Any
+
+from runtime_bootstrap import import_repo_module
+
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_process = _subprocess_guard.run_process
 
 try:
     from scripts.yaml_output import emit_yaml
@@ -81,8 +86,8 @@ def _load_issue_verify_closeout():
     return module
 
 
-def _run_git(repo_root: Path, *args: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(["git", *args], cwd=repo_root, check=False, capture_output=True, text=True)
+def _run_git(repo_root: Path, *args: str):
+    return run_process(["git", *args], cwd=repo_root, timeout_seconds=None)
 
 
 def _staged_paths(repo_root: Path) -> list[str]:
@@ -97,14 +102,6 @@ def _staged_file(repo_root: Path, path: str) -> str:
     if result.returncode != 0:
         raise RuntimeError(result.stderr.strip() or f"failed to read staged file {path}")
     return result.stdout
-
-
-
-
-
-
-
-
 
 
 def _issue_closeout_artifacts(
@@ -132,7 +129,10 @@ def _issue_closeout_artifacts(
         if not (path.startswith("charness-artifacts/issue/") and path.endswith(".md")):
             continue
         body = "\n".join(strip_code_fences(read_file(repo_root, path)))
-        qualified = sorted({(repo, number) for repo, number in iter_refs(body)}, key=lambda item: (item[0] or "", item[1]))
+        qualified = sorted(
+            {(repo, number) for repo, number in iter_refs(body)},
+            key=lambda item: (item[0] or "", item[1]),
+        )
         numbers = sorted({number for _repo, number in qualified})
         if not numbers:
             continue
@@ -211,7 +211,9 @@ def _bare_classification(body: str, strip_code_fences: Any = None) -> str:
     return "bug"
 
 
-def _pause_brief_reports(pause_briefs: list[dict[str, Any]], verify_module: Any) -> list[dict[str, Any]]:
+def _pause_brief_reports(
+    pause_briefs: list[dict[str, Any]], verify_module: Any
+) -> list[dict[str, Any]]:
     """Light-path reports for pausing resolution briefs (#444).
 
     A pausing brief is persisted pause state, not a closeout carrier: at pause
@@ -320,7 +322,9 @@ def evaluate(
     # before the sanitized carrier file is written. The temp file is this carrier's
     # first side effect, and an authorization check placed after it would be checking a
     # state it had already changed. Targets are normalized in memory only.
-    authorization = _AUTHZ.authorize_commit_carrier(repo_root, message_qualified, artifacts, bare_numbers)
+    authorization = _AUTHZ.authorize_commit_carrier(
+        repo_root, message_qualified, artifacts, bare_numbers
+    )
     # Dropped only AFTER authorization has consumed it: this is internal scratch, not
     # part of the report, but authorization is the one reader that needs it.
     for artifact in artifacts + pause_briefs:
@@ -495,9 +499,7 @@ def report_payload(report: dict[str, Any]) -> dict[str, Any]:
     unsatisfiable = set(report.get("unsatisfiable_close_numbers") or [])
     if unsatisfiable & {n for item in failing for n in (item.get("missing_close_keywords") or [])}:
         payload["unsatisfiable_close_note"] = _UNSATISFIABLE_CLOSE_NOTE
-    if any(
-        (item.get("hotl_dispositions") or {}).get("undispositioned") for item in failing
-    ):
+    if any((item.get("hotl_dispositions") or {}).get("undispositioned") for item in failing):
         payload["hotl_requirement"] = _HOTL_REQUIREMENT
     return payload
 

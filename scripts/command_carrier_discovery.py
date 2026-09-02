@@ -106,10 +106,22 @@ ARGV_INTERPRETER_WORDS = frozenset({"python", "python3", "bash", "sh", "zsh", "-
 # Node kinds an argv element is never one of. Rendering them as a placeholder
 # without descending keeps the whole-repo scan from re-walking every nested
 # literal once per enclosing node.
-ARGV_OPAQUE_NODES = (ast.List, ast.Tuple, ast.Set, ast.Dict, ast.ListComp, ast.SetComp, ast.DictComp, ast.GeneratorExp, ast.Lambda)
+ARGV_OPAQUE_NODES = (
+    ast.List,
+    ast.Tuple,
+    ast.Set,
+    ast.Dict,
+    ast.ListComp,
+    ast.SetComp,
+    ast.DictComp,
+    ast.GeneratorExp,
+    ast.Lambda,
+)
 
 
-def iter_scanned_files(root: Path, *, require_git: bool = False) -> Iterator[tuple[Path, Iterator[tuple[int, str]]]]:
+def iter_scanned_files(
+    root: Path, *, require_git: bool = False
+) -> Iterator[tuple[Path, Iterator[tuple[int, str]]]]:
     """Yield ``(path, carriers)`` for every surface that STORES an invocation here.
 
     Three families, and the split is about where the command lives, not about file
@@ -167,7 +179,9 @@ def iter_command_carriers(doc: Path) -> Iterator[tuple[int, str]]:
         if pending_lineno is not None and lineno != previous_lineno + 1:
             yield pending_lineno, pending_text
             pending_lineno = None
-        if span_lineno is not None and (in_fence or lineno != previous_lineno + 1 or not line.strip()):
+        if span_lineno is not None and (
+            in_fence or lineno != previous_lineno + 1 or not line.strip()
+        ):
             yield span_lineno, span_text
             span_lineno = None
         previous_lineno = lineno
@@ -216,7 +230,9 @@ def iter_config_carriers(path: Path) -> Iterator[tuple[int, str]]:
     `inventory_nose_clones.py --repo-root . --json` residue was matched, tokenized,
     and silently judged flagless.
     """
-    for lineno, line in enumerate(path.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
+    for lineno, line in enumerate(
+        path.read_text(encoding="utf-8", errors="replace").splitlines(), 1
+    ):
         spans = [span.group(1) for span in BACKTICK_CONTENT_RE.finditer(line)]
         if spans:
             yield from ((lineno, span) for span in spans)
@@ -227,7 +243,7 @@ def iter_config_carriers(path: Path) -> Iterator[tuple[int, str]]:
 def iter_argv_carriers(source: Path) -> Iterator[tuple[int, str]]:
     """Yield ``(lineno, text)`` for each ARGV SEQUENCE a Python file builds.
 
-    The list/tuple handed to `subprocess.run`, and the positional arguments of a
+    The list/tuple handed to the subprocess runner, and the positional arguments of a
     test's `run_script(...)` helper, are the same flag claim a doc makes -- and
     the one this gate could not read. `draft_dup_ratchet_triage.py` builds two
     such lists, both passing a `--json` its callee had stopped accepting, and its
@@ -235,7 +251,7 @@ def iter_argv_carriers(source: Path) -> Iterator[tuple[int, str]]:
 
     Every list, tuple, and call argument list is rendered; the ones that do not
     look like argv are dropped by `_render_argv`. Keyword arguments are not
-    rendered: `subprocess.run(cmd, check=True)` puts argv in a positional and
+    rendered: a subprocess runner call with `check=True` puts argv in a positional and
     configuration in the keywords, so reading keywords would add noise and no
     claim.
     """
@@ -337,7 +353,9 @@ def _render_head_element(element: ast.expr) -> str:
     scripts = {
         node.value
         for node in ast.walk(element)
-        if isinstance(node, ast.Constant) and isinstance(node.value, str) and node.value.endswith(".py")
+        if isinstance(node, ast.Constant)
+        and isinstance(node.value, str)
+        and node.value.endswith(".py")
     }
     return scripts.pop() if len(scripts) == 1 else ARGV_PLACEHOLDER
 

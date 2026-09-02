@@ -21,12 +21,17 @@ from __future__ import annotations
 import argparse
 import ast
 import re
-import subprocess
+import shlex
 import sys
+import tempfile
 from pathlib import Path
 from typing import Iterable
 
+from runtime_bootstrap import import_repo_module
 from yaml_output import emit_yaml
+
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_process = _subprocess_guard.run_process
 
 SCHEMA_VERSION = "charness.quality.staged_test_boundary_advisory.v1"
 BOUNDARY_MARKER = "boundary_contract"
@@ -51,7 +56,7 @@ def _is_test_path(path: str) -> bool:
 
 
 def _staged_diff(repo_root: Path) -> bytes:
-    result = subprocess.run(
+    result = run_process(
         [
             "git",
             "diff",
@@ -64,13 +69,12 @@ def _staged_diff(repo_root: Path) -> bytes:
             "tests",
         ],
         cwd=repo_root,
-        check=False,
-        capture_output=True,
+        timeout_seconds=None,
     )
     if result.returncode != 0:
-        detail = result.stderr.decode("utf-8", errors="replace").strip()
+        detail = result.stderr.strip()
         raise RuntimeError(f"git diff --cached failed: {detail or result.returncode}")
-    return result.stdout
+    return result.stdout.encode("utf-8")
 
 
 def _changed_ranges(diff: bytes) -> dict[str, list[tuple[int, int]]]:
@@ -96,30 +100,33 @@ def _staged_blobs(repo_root: Path, paths: Iterable[str]) -> dict[str, bytes]:
     if not selected:
         return {}
     request = b"".join(f":{path}\n".encode("utf-8", errors="surrogateescape") for path in selected)
-    result = subprocess.run(
-        ["git", "cat-file", "--batch"],
-        cwd=repo_root,
-        input=request,
-        check=False,
-        capture_output=True,
-    )
+    with tempfile.NamedTemporaryFile() as input_file:
+        input_file.write(request)
+        input_file.flush()
+        result = run_process(
+            f"git cat-file --batch < {shlex.quote(input_file.name)}",
+            cwd=repo_root,
+            shell=True,
+            timeout_seconds=None,
+        )
     if result.returncode != 0:
-        detail = result.stderr.decode("utf-8", errors="replace").strip()
+        detail = result.stderr.strip()
         raise RuntimeError(f"git cat-file --batch failed: {detail or result.returncode}")
+    output = result.stdout.encode("utf-8")
     blobs: dict[str, bytes] = {}
     cursor = 0
     for path in selected:
-        header_end = result.stdout.find(b"\n", cursor)
+        header_end = output.find(b"\n", cursor)
         if header_end < 0:
             raise RuntimeError("git cat-file --batch returned a truncated header")
-        header = result.stdout[cursor:header_end].decode("utf-8", errors="replace").split()
+        header = output[cursor:header_end].decode("utf-8", errors="replace").split()
         cursor = header_end + 1
         if len(header) >= 3 and header[1] == "blob":
             size = int(header[2])
             end = cursor + size
-            blobs[path] = result.stdout[cursor:end]
+            blobs[path] = output[cursor:end]
             cursor = end
-            if result.stdout[cursor : cursor + 1] == b"\n":
+            if output[cursor : cursor + 1] == b"\n":
                 cursor += 1
     return blobs
 
@@ -134,7 +141,11 @@ def _call_name(node: ast.AST) -> str:
 
 
 def _literal_strings(node: ast.AST) -> list[str]:
-    return [child.value for child in ast.walk(node) if isinstance(child, ast.Constant) and isinstance(child.value, str)]
+    return [
+        child.value
+        for child in ast.walk(node)
+        if isinstance(child, ast.Constant) and isinstance(child.value, str)
+    ]
 
 
 def _record_module_import(
@@ -198,7 +209,11 @@ def _process_kind(name: str, aliases: tuple[set[str], set[str], set[str], set[st
         return "direct-process-spawn"
     if root in multiprocessing_modules and attr in {"Process", "ProcessPoolExecutor"}:
         return "direct-process-spawn"
-    if name.endswith(".ProcessPoolExecutor") or name.endswith(".create_subprocess_exec") or name.endswith(".create_subprocess_shell"):
+    if (
+        name.endswith(".ProcessPoolExecutor")
+        or name.endswith(".create_subprocess_exec")
+        or name.endswith(".create_subprocess_shell")
+    ):
         return "direct-process-spawn"
     return None
 
@@ -234,7 +249,11 @@ def _marker(node: ast.AST) -> tuple[bool, str | None]:
     if name != marker_name:
         return False, None
     if isinstance(node, ast.Call):
-        positional = [arg.value for arg in node.args if isinstance(arg, ast.Constant) and isinstance(arg.value, str)]
+        positional = [
+            arg.value
+            for arg in node.args
+            if isinstance(arg, ast.Constant) and isinstance(arg.value, str)
+        ]
         keyword = next(
             (
                 item.value.value
@@ -250,7 +269,9 @@ def _marker(node: ast.AST) -> tuple[bool, str | None]:
     return True, None
 
 
-def _scope_markers(node: ast.AST, parents: dict[ast.AST, ast.AST], module_reasons: list[str], module_seen: bool) -> tuple[bool, list[str]]:
+def _scope_markers(
+    node: ast.AST, parents: dict[ast.AST, ast.AST], module_reasons: list[str], module_seen: bool
+) -> tuple[bool, list[str]]:
     seen = module_seen
     reasons = list(module_reasons)
     current: ast.AST | None = node
@@ -280,7 +301,9 @@ def _analyze_source(path: str, source: bytes, changed: list[tuple[int, int]]) ->
         if not isinstance(statement, (ast.Assign, ast.AnnAssign)):
             continue
         targets = statement.targets if isinstance(statement, ast.Assign) else [statement.target]
-        if not any(isinstance(target, ast.Name) and target.id == "pytestmark" for target in targets):
+        if not any(
+            isinstance(target, ast.Name) and target.id == "pytestmark" for target in targets
+        ):
             continue
         for candidate in ast.walk(statement.value):
             found, reason = _marker(candidate)
@@ -297,7 +320,9 @@ def _analyze_source(path: str, source: bytes, changed: list[tuple[int, int]]) ->
             continue
         process_kind = _process_kind(_call_name(node.func), aliases)
         operations = _git_operations(node, process_kind)
-        kinds = ([process_kind] if process_kind else []) + (["git-repository-construction"] if operations else [])
+        kinds = ([process_kind] if process_kind else []) + (
+            ["git-repository-construction"] if operations else []
+        )
         if not kinds:
             continue
         seen, reasons = _scope_markers(node, parents, module_reasons, module_seen)
@@ -373,7 +398,9 @@ def main() -> int:
             "undeclared_call_count": 0,
             "findings": [],
             "warnings": [f"staged boundary advisory unavailable: {exc}"],
-            "notes": ["The advisory degraded to silence; the full boundary-bypass ratchet remains authoritative."],
+            "notes": [
+                "The advisory degraded to silence; the full boundary-bypass ratchet remains authoritative."
+            ],
         }
     emit_yaml(payload)
     if payload["warnings"]:

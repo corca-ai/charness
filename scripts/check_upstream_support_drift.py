@@ -21,7 +21,6 @@ import argparse
 import json
 import os
 import shutil
-import subprocess
 import sys
 import urllib.error
 import urllib.parse
@@ -29,10 +28,12 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
-from runtime_bootstrap import repo_root_from_script
+from runtime_bootstrap import import_repo_module, repo_root_from_script
 from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_monitored_phase = _subprocess_guard.run_monitored_phase
 GITHUB_CONTENTS_TEMPLATE = "https://api.github.com/repos/{repo}/contents/{path}?ref={ref}"
 PROBE_TIMEOUT_SECONDS = 10
 
@@ -53,18 +54,16 @@ def _gh_probe(repo: str, ref: str, path: str) -> dict[str, Any] | None:
     if shutil.which("gh") is None:
         return None
     api_path = f"/repos/{repo}/contents/{urllib.parse.quote(path)}?ref={urllib.parse.quote(ref)}"
-    try:
-        # subprocess.run inherits the parent env so gh's own keyring auth
-        # (`gh auth status`) and GH_TOKEN/GITHUB_TOKEN both flow through.
-        completed = subprocess.run(
-            ["gh", "api", api_path],
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=PROBE_TIMEOUT_SECONDS,
-        )
-    except subprocess.TimeoutExpired as exc:
-        return {"status": "error", "reason": "gh-timeout", "error": str(exc)}
+    # The guard inherits the parent env so gh's own keyring auth (`gh auth status`)
+    # and GH_TOKEN/GITHUB_TOKEN both flow through.
+    completed = run_monitored_phase(
+        ["gh", "api", api_path],
+        cwd=Path.cwd(),
+        phase="upstream-support-gh",
+        timeout_seconds=PROBE_TIMEOUT_SECONDS,
+    )
+    if completed.timed_out:
+        return {"status": "error", "reason": "gh-timeout", "error": completed.stderr}
     if completed.returncode == 0:
         return {"status": "exists"}
     # gh 2.x emits stderr like `gh: Not Found (HTTP 404)` for missing paths and
@@ -115,7 +114,11 @@ def probe_path(repo: str, ref: str, path: str) -> dict[str, Any]:
         if fixture == "missing":
             return {"status": "missing"}
         if fixture.startswith("error:"):
-            return {"status": "error", "reason": fixture.split(":", 1)[1] or "fixture-error", "error": fixture}
+            return {
+                "status": "error",
+                "reason": fixture.split(":", 1)[1] or "fixture-error",
+                "error": fixture,
+            }
         return {"status": "error", "reason": "fixture-unknown", "error": fixture}
     gh_result = _gh_probe(repo, ref, path)
     if gh_result is not None:
@@ -126,7 +129,11 @@ def probe_path(repo: str, ref: str, path: str) -> dict[str, Any]:
 def collect_targets(repo_root: Path) -> list[dict[str, Any]]:
     targets: list[dict[str, Any]] = []
     for manifest_path in sorted((repo_root / "integrations" / "tools").glob("*.json")):
-        if manifest_path.name in {"manifest.schema.json", "dependencies.json", "dependencies.schema.json"}:
+        if manifest_path.name in {
+            "manifest.schema.json",
+            "dependencies.json",
+            "dependencies.schema.json",
+        }:
             continue
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         source = manifest.get("support_skill_source")

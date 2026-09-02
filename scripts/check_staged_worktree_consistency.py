@@ -18,10 +18,10 @@ one is invisible to the intersection below -- see `find_stale_staged` -- and it
 is the same defect, at full strength: every worktree-walking gate validates the
 on-disk copy and prints `ok`, and the commit removes the file from the tree.
 """
+
 from __future__ import annotations
 
 import argparse
-import subprocess
 import sys
 from collections.abc import Callable
 from pathlib import Path
@@ -42,6 +42,7 @@ if __package__ in (None, ""):  # `python3 scripts/<name>.py`, not `-m scripts.<n
     # spellings at once.
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from runtime_bootstrap import import_repo_module
 from scripts.env_bypass import env_bypass_enabled
 from scripts.git_status_snapshot import (
     GitStatusError,
@@ -49,6 +50,9 @@ from scripts.git_status_snapshot import (
 )
 from scripts.git_status_snapshot import parse as parse_git_status
 from scripts.git_status_snapshot import status_args as git_status_args
+
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_process = _subprocess_guard.run_process
 
 ALLOW_ENV = "CHARNESS_ALLOW_PARTIAL_STAGE"
 _STATUS_CODES = frozenset(".MTADRCU")
@@ -77,8 +81,7 @@ def _index_sides(snapshot: GitStatusSnapshot) -> tuple[set[str], set[str], set[s
             raise RuntimeError("git status reported a rename despite --no-renames")
         if record.kind in {"untracked", "ignored"}:
             raise RuntimeError(
-                "git status enumerated untracked or ignored paths despite "
-                "--untracked-files=no"
+                "git status enumerated untracked or ignored paths despite --untracked-files=no"
             )
         xy = record.xy
         if (
@@ -101,11 +104,10 @@ def _index_sides(snapshot: GitStatusSnapshot) -> tuple[set[str], set[str], set[s
 def _status_paths(repo_root: Path) -> tuple[set[str], set[str], set[str]]:
     """Return staged, unstaged, and post-index tracked paths from one status read."""
     try:
-        result = subprocess.run(
+        result = run_process(
             ["git", *_STAGED_STATUS_ARGS],
             cwd=repo_root,
-            capture_output=True,
-            check=False,
+            timeout_seconds=None,
         )
     except OSError as exc:  # git absent, cwd unusable
         raise RuntimeError(f"git status: {exc}") from exc
@@ -198,18 +200,14 @@ def classify_stale(
     # closes, found by the round that read the repair.
     folded = {path.casefold() for path in staged & tracked}
     orphaned = {
-        path
-        for path in staged - tracked
-        if path.casefold() not in folded and present(path)
+        path for path in staged - tracked if path.casefold() not in folded and present(path)
     }
     return staged & unstaged, orphaned
 
 
 def _classify_stale(repo_root: Path) -> tuple[set[str], set[str]]:
     staged, unstaged, tracked = _status_paths(repo_root)
-    return classify_stale(
-        staged, unstaged, tracked, present=lambda path: _on_disk(repo_root, path)
-    )
+    return classify_stale(staged, unstaged, tracked, present=lambda path: _on_disk(repo_root, path))
 
 
 def _remedy_lines(paths: list[str], render, *, cap: int = 10) -> str:
@@ -290,9 +288,7 @@ def main(argv: list[str] | None = None) -> int:
                 ],
             )
         )
-    sys.stderr.write(
-        f"\n({ALLOW_ENV}=1 also allows a deliberate partial (`git add -p`) commit.)\n"
-    )
+    sys.stderr.write(f"\n({ALLOW_ENV}=1 also allows a deliberate partial (`git add -p`) commit.)\n")
     return 1
 
 

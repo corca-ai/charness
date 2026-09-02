@@ -48,11 +48,14 @@ from __future__ import annotations
 import argparse
 import json
 import re
-import subprocess
 import sys
 from pathlib import Path
 
+from runtime_bootstrap import import_repo_module
 from yaml_output import emit_yaml
+
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_process = _subprocess_guard.run_process
 
 CLASS_KEY = "mutation-dispatch-no-base-sha-false-proof"
 SUPPORTED_CHANGED_LINE_PROOF_PATHS = [
@@ -109,7 +112,9 @@ def classify_run_proof(
                 class_hit=True,
             )
         if event == "pull_request":
-            return refuse("pull_request runs in dry-run mode and produces no mutation verdict at all")
+            return refuse(
+                "pull_request runs in dry-run mode and produces no mutation verdict at all"
+            )
         if not base:
             return refuse(
                 "no base_sha evidence: the changed-line classifier only runs over a real "
@@ -151,7 +156,9 @@ def classify_run_proof(
             "--run-id or --event; with neither, there is nothing to judge"
         )
     verdict["provable"] = True
-    verdict["reason"] = "score/survivor path runs in full mode for schedule and workflow_dispatch events"
+    verdict["reason"] = (
+        "score/survivor path runs in full mode for schedule and workflow_dispatch events"
+    )
     return verdict
 
 
@@ -226,7 +233,7 @@ def facts_from_run(run_id: str, repo: str | None) -> dict[str, str | None]:
     command = ["gh", "run", "view", run_id, "--json", "event,conclusion"]
     if repo:
         command[3:3] = ["--repo", repo]
-    result = subprocess.run(command, capture_output=True, text=True)
+    result = run_process(command, cwd=Path.cwd(), timeout_seconds=None)
     if result.returncode != 0:
         raise RuntimeError(f"gh run view failed: {result.stderr.strip()}")
     payload = json.loads(result.stdout)
@@ -238,12 +245,24 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         description="Refuse citing a mutation run as proof of a claim its trigger cannot evaluate."
     )
     parser.add_argument("--claim", required=True, choices=["changed-line", "score"])
-    parser.add_argument("--event", default=None, choices=["schedule", "workflow_dispatch", "pull_request"])
-    parser.add_argument("--base-sha", default=None, help="Base SHA the run analyzed; empty means none.")
-    parser.add_argument("--conclusion", default=None, help="Run conclusion when known (e.g. success).")
-    parser.add_argument("--sample-manifest", type=Path, default=None, help="Downloaded sample.json or sample.md.")
-    parser.add_argument("--run-id", default=None, help="Resolve event/conclusion via `gh run view`.")
-    parser.add_argument("--repo", default=None, help="org/repo for --run-id (defaults to the cwd repo).")
+    parser.add_argument(
+        "--event", default=None, choices=["schedule", "workflow_dispatch", "pull_request"]
+    )
+    parser.add_argument(
+        "--base-sha", default=None, help="Base SHA the run analyzed; empty means none."
+    )
+    parser.add_argument(
+        "--conclusion", default=None, help="Run conclusion when known (e.g. success)."
+    )
+    parser.add_argument(
+        "--sample-manifest", type=Path, default=None, help="Downloaded sample.json or sample.md."
+    )
+    parser.add_argument(
+        "--run-id", default=None, help="Resolve event/conclusion via `gh run view`."
+    )
+    parser.add_argument(
+        "--repo", default=None, help="org/repo for --run-id (defaults to the cwd repo)."
+    )
     return parser.parse_args(argv)
 
 
@@ -290,7 +309,10 @@ def main(argv: list[str] | None = None) -> int:
         print(f"could not resolve run facts: {error}", file=sys.stderr)
         return 1
     verdict = classify_run_proof(
-        args.claim, event=event, base_sha=base_sha, conclusion=conclusion,
+        args.claim,
+        event=event,
+        base_sha=base_sha,
+        conclusion=conclusion,
         changed_pool_files=changed_pool_files,
     )
     if verdict.get("provable") and verdict.get("conclusion_established") is False:
@@ -331,7 +353,11 @@ def main(argv: list[str] | None = None) -> int:
     if "class_key" in verdict:
         refusal.append(f"This is the {CLASS_KEY} false-proof class.")
     if args.claim == "changed-line":
-        refusal.append("Supported changed-line proof paths: " + "; ".join(SUPPORTED_CHANGED_LINE_PROOF_PATHS) + ".")
+        refusal.append(
+            "Supported changed-line proof paths: "
+            + "; ".join(SUPPORTED_CHANGED_LINE_PROOF_PATHS)
+            + "."
+        )
     print("\n".join(refusal), file=sys.stderr)
     return 1
 

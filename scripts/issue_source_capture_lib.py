@@ -23,8 +23,10 @@ from __future__ import annotations
 
 import json
 import subprocess
+from pathlib import Path
 from typing import Any, Callable
 
+from runtime_bootstrap import import_repo_module
 from scripts.closeout_refusal_lib import RefusalError
 from scripts.issue_source_normalize_lib import (
     build_clause_inventory,
@@ -33,6 +35,9 @@ from scripts.issue_source_normalize_lib import (
     sha256_payload,
     sha256_text,
 )
+
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_process = _subprocess_guard.run_process
 
 CAPTURE_TOOL = "scripts/capture_issue_source.py"
 CAPTURE_TIMEOUT_SECONDS = 120
@@ -127,8 +132,7 @@ def _issue_backend_owner():
         if source is None:
             raise CaptureRefusal(
                 "issue_backend_owner_missing",
-                "cannot load the tracker backend owner; looked in "
-                f"{[str(c) for c in candidates]}",
+                f"cannot load the tracker backend owner; looked in {[str(c) for c in candidates]}",
             )
         spec = importlib.util.spec_from_file_location("_capture_issue_backend", source)
         if spec is None or spec.loader is None:  # pragma: no cover - import machinery guard
@@ -152,8 +156,10 @@ class CaptureRefusal(RefusalError):
 
 
 def run_gh(argv: list[str]) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        argv, check=False, capture_output=True, text=True, timeout=CAPTURE_TIMEOUT_SECONDS
+    return run_process(
+        argv,
+        cwd=Path.cwd(),
+        timeout_seconds=CAPTURE_TIMEOUT_SECONDS,
     )
 
 
@@ -191,10 +197,19 @@ def build_page_argv(
                 f"issue_backend.id={backend.get('id')} has no commands.source_capture template",
             )
         argv = [
-            binary, "api", "graphql",
-            "-f", f"query={GRAPHQL_QUERY}",
-            "-F", f"owner={owner}", "-F", f"name={name}",
-            "-F", f"number={number}", "-F", f"first={page_size}",
+            binary,
+            "api",
+            "graphql",
+            "-f",
+            f"query={GRAPHQL_QUERY}",
+            "-F",
+            f"owner={owner}",
+            "-F",
+            f"name={name}",
+            "-F",
+            f"number={number}",
+            "-F",
+            f"first={page_size}",
         ]
         if after is not None:
             argv.extend(["-F", f"after={after}"])
@@ -217,9 +232,7 @@ def build_page_argv(
     # closeout authorization reads, so it is the same severity class as the tracker's own state
     # lookup, and the same rule: `(repo, number)` is the identity.
     spelled = {
-        match
-        for part in template
-        for match in _issue_backend_owner().PLACEHOLDER_RE.findall(part)
+        match for part in template for match in _issue_backend_owner().PLACEHOLDER_RE.findall(part)
     }
     if not any(required <= spelled for required in SOURCE_CAPTURE_REPO_IDENTITY):
         raise CaptureRefusal(
@@ -290,7 +303,9 @@ def _page_comments(payload: Any, page_index: int, capability: dict[str, Any]) ->
         )
     nodes = comments.get("nodes")
     if not isinstance(nodes, list):
-        raise CaptureRefusal("unknown_enumeration", f"page {page_index} returned no comment nodes list")
+        raise CaptureRefusal(
+            "unknown_enumeration", f"page {page_index} returned no comment nodes list"
+        )
     return {
         "nodes": nodes,
         "has_next": bool(page_info[has_next_field]),
@@ -335,7 +350,9 @@ def capture_issue(
         payload = _parse_json(raw, page_index)
         issue = _require(payload, "data.repository.issue", page_index)
         if issue is None:
-            raise CaptureRefusal("missing_issue", f"{repo}#{number} was not returned by the backend")
+            raise CaptureRefusal(
+                "missing_issue", f"{repo}#{number} was not returned by the backend"
+            )
         # The backend's OWN number, not the one we asked for. Without this the returned
         # payload is stamped with the REQUESTED number at the bottom of this function, so a
         # backend that answers #999 to a request for #514 yields a snapshot labelled #514
@@ -423,7 +440,9 @@ def _parse_json(raw: str, page_index: int) -> Any:
     try:
         return json.loads(raw)
     except ValueError as exc:
-        raise CaptureRefusal("invalid_json", f"page {page_index} response was not JSON: {exc}") from exc
+        raise CaptureRefusal(
+            "invalid_json", f"page {page_index} response was not JSON: {exc}"
+        ) from exc
 
 
 def capture_issues(
@@ -492,7 +511,10 @@ def build_snapshot_and_receipt(
         for page in issue["pages"]:
             rel = f"{raw_dir_rel}/issue-{issue['number']}-page-{page['page_index']}.json"
             raw_files[rel] = page["raw_response"]
-            pages.append({key: value for key, value in page.items() if key != "raw_response"} | {"raw_response_path": rel})
+            pages.append(
+                {key: value for key, value in page.items() if key != "raw_response"}
+                | {"raw_response_path": rel}
+            )
         issue_receipts.append(
             {
                 "number": issue["number"],

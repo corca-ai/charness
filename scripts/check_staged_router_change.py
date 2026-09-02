@@ -43,8 +43,8 @@ from __future__ import annotations
 
 import argparse
 import os
-import subprocess
 import sys
+from pathlib import Path
 
 try:
     from scripts.yaml_output import emit_yaml
@@ -55,6 +55,11 @@ try:
     from scripts.env_bypass import env_bypass_enabled
 except ModuleNotFoundError:
     from env_bypass import env_bypass_enabled
+
+from runtime_bootstrap import import_repo_module
+
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_process = _subprocess_guard.run_process
 
 _ENV_BYPASS = "CHARNESS_ALLOW_ROUTER_CHANGE"
 
@@ -72,11 +77,10 @@ def _staged_paths(repo_root: str) -> list[str]:
     would render a clean verdict over a scope this gate never read.
     """
     try:
-        proc = subprocess.run(
+        proc = run_process(
             ["git", "-C", repo_root, "diff", "--cached", "--name-only", "-z"],
-            check=False,
-            capture_output=True,
-            text=True,
+            cwd=Path(repo_root),
+            timeout_seconds=None,
         )
     except OSError as exc:  # git absent, repo_root unusable as cwd, ...
         raise RuntimeError(f"git diff --cached failed: {exc}") from exc

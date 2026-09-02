@@ -4,13 +4,16 @@ from __future__ import annotations
 
 import copy
 import json
-import subprocess
 from pathlib import Path
 from typing import Any
 
+from runtime_bootstrap import import_repo_module
 from scripts import lesson_score_outcome_lib as outcome_lib
 from scripts.git_checkout import head_oid_from_files
 from scripts.recent_lessons_lib import build_lesson_selection_index
+
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_process = _subprocess_guard.run_process
 
 LEDGER_FILENAME = "lesson-ledger.json"
 KIND = "charness.lesson-ledger"
@@ -128,9 +131,7 @@ def _nonblank(value: Any) -> bool:
     return isinstance(value, str) and bool(value.strip())
 
 
-def candidate_sources(
-    repo_root: Path, output_dir: Path, summary_path: Path
-) -> dict[str, set[str]]:
+def candidate_sources(repo_root: Path, output_dir: Path, summary_path: Path) -> dict[str, set[str]]:
     index = build_lesson_selection_index(
         repo_root=repo_root, output_dir=output_dir, summary_path=summary_path
     )
@@ -143,7 +144,9 @@ def candidate_sources(
     }
 
 
-_COMMITTED_LEDGER_CACHE: dict[tuple[str, str, str], tuple[list[Any], list[Any], int, list[Any]] | None] = {}
+_COMMITTED_LEDGER_CACHE: dict[
+    tuple[str, str, str], tuple[list[Any], list[Any], int, list[Any]] | None
+] = {}
 
 
 def _committed_state(
@@ -154,12 +157,10 @@ def _committed_state(
     cache_key = (str(repo_root.resolve()), relative, head) if head else None
     if cache_key is not None and cache_key in _COMMITTED_LEDGER_CACHE:
         return _COMMITTED_LEDGER_CACHE[cache_key]
-    result = subprocess.run(
+    result = run_process(
         ["git", "show", f"HEAD:{relative}"],
         cwd=repo_root,
-        text=True,
-        capture_output=True,
-        check=False,
+        timeout_seconds=None,
     )
     if result.returncode:
         return None
@@ -191,10 +192,7 @@ def _committed_state(
             f"this writer only accepts v{SCHEMA_VERSION}"
         )
     if committed_version == PREVIOUS_SCHEMA_VERSION:
-        if (
-            set(previous) == V8_TOP_LEVEL_KEYS
-            and isinstance(previous.get("score_events"), list)
-        ):
+        if set(previous) == V8_TOP_LEVEL_KEYS and isinstance(previous.get("score_events"), list):
             payload = (
                 previous["transitions"],
                 previous["score_events"],
@@ -316,7 +314,9 @@ def _replay_lifecycle(
         current = replayed[lesson_id]["state"]
         next_state = LIFECYCLE_TRANSITIONS.get((action, current))
         if next_state is None:
-            legal = sorted(f"{move} a lesson in state `{state}`" for move, state in LIFECYCLE_TRANSITIONS)
+            legal = sorted(
+                f"{move} a lesson in state `{state}`" for move, state in LIFECYCLE_TRANSITIONS
+            )
             _fail(
                 f"lifecycle event `{event_id}` cannot {action} lesson in state `{current}`; the only "
                 f"legal moves are {legal}"
@@ -401,15 +401,13 @@ def replay_validated_ledger_payload(
             "active_lesson_budget",
         )
     )
-    if (
-        not all(
-            isinstance(value, expected)
-            for value, expected in (
-                (transitions, list),
-                (events, list),
-                (lessons, dict),
-                (lifecycle_events, list),
-            )
+    if not all(
+        isinstance(value, expected)
+        for value, expected in (
+            (transitions, list),
+            (events, list),
+            (lessons, dict),
+            (lifecycle_events, list),
         )
     ):
         _fail("ledger has invalid containers")
@@ -485,8 +483,6 @@ def validate_lesson_ledger(
         "transition_count": len(payload["transitions"]),
         "score_event_count": len(payload["score_events"]),
         "lifecycle_event_count": len(payload["lifecycle_events"]),
-        "active_lesson_count": sum(
-            lesson["state"] == "active" for lesson in replayed.values()
-        ),
+        "active_lesson_count": sum(lesson["state"] == "active" for lesson in replayed.values()),
         "path": str(path.relative_to(repo_root)),
     }
