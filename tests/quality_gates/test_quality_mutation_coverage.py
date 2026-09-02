@@ -35,12 +35,24 @@ def test_coverage_runtime_files_are_namespaced_by_report(tmp_path: Path) -> None
 
 
 def test_coverage_run_command_wraps_pytest_module_command(tmp_path: Path) -> None:
-    command = coverage_run_command("python3 -m pytest -q tests/control_plane", tmp_path / ".coverage")
+    command = coverage_run_command(
+        "python3 -m pytest -q tests/control_plane", tmp_path / ".coverage"
+    )
 
-    assert command[:6] == ["python3", "-m", "coverage", "run", "--data-file", str(tmp_path / ".coverage")]
+    assert command[:6] == [
+        "python3",
+        "-m",
+        "coverage",
+        "run",
+        "--data-file",
+        str(tmp_path / ".coverage"),
+    ]
     assert command[6:] == ["-m", "pytest", "-q", "tests/control_plane"]
 
 
+@pytest.mark.boundary_contract(
+    reason="prove coverage crosses the repository test's real Python child-process boundary"
+)
 def test_mutation_coverage_tracks_python_subprocesses(tmp_path: Path) -> None:
     pytest.importorskip("coverage", reason="coverage package required for mutation coverage probe")
     repo = tmp_path / "repo"

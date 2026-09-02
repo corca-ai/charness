@@ -15,6 +15,7 @@ reading rather than the ratchet's current verdict.
 from __future__ import annotations
 
 import sys
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -28,24 +29,26 @@ TRIAGE = load_script_module(
     ROOT / "skills/public/quality/scripts/draft_dup_ratchet_triage.py",
 )
 
-RATCHET_ARGV = [
-    sys.executable,
-    "skills/public/quality/scripts/check_dup_ratchet.py",
-    "--repo-root",
-    ".",
-    "--detail",
-]
+RATCHET_SCRIPT = Path("skills/public/quality/scripts/check_dup_ratchet.py")
+RATCHET_ARGS = ["--repo-root", ".", "--detail"]
 
 
 def _recorded_producer(returncode: int, stdout: str, *, stderr: str = "", log: list | None = None):
-    """Stand in for the module's `subprocess`, returning one recorded producer result."""
+    """Stand in for the loaded producer module, returning one recorded result."""
 
-    def run(cmd, **_kwargs):
+    def main(argv):
         if log is not None:
-            log.append(list(cmd))
-        return SimpleNamespace(returncode=returncode, stdout=stdout, stderr=stderr)
+            log.append(list(argv))
+        print(stdout, end="")
+        if stderr:
+            print(stderr, end="", file=sys.stderr)
+        return returncode
 
-    return SimpleNamespace(run=run)
+    return SimpleNamespace(main=main)
+
+
+def _patch_recorded_producer(monkeypatch: pytest.MonkeyPatch, producer) -> None:
+    monkeypatch.setattr(TRIAGE.SKILL_RUNTIME, "load_local_skill_module", lambda *_args: producer)
 
 
 def test_a_hard_blocking_producer_is_read_rather_than_treated_as_a_failure(
@@ -57,14 +60,16 @@ def test_a_hard_blocking_producer_is_read_rather_than_treated_as_a_failure(
     drafter unusable in the only situation it exists for.
     """
     calls: list = []
-    monkeypatch.setattr(
-        TRIAGE,
-        "subprocess",
+    _patch_recorded_producer(
+        monkeypatch,
         _recorded_producer(1, "status: hard-block\nnew_code_families: [fam1]\n", log=calls),
     )
 
-    assert TRIAGE._run_detail(RATCHET_ARGV) == {"status": "hard-block", "new_code_families": ["fam1"]}
-    assert calls == [RATCHET_ARGV]
+    assert TRIAGE._run_detail(RATCHET_SCRIPT, RATCHET_ARGS) == {
+        "status": "hard-block",
+        "new_code_families": ["fam1"],
+    }
+    assert calls == [RATCHET_ARGS]
 
 
 def test_a_producer_that_crashed_is_named_with_its_own_stderr(
@@ -76,12 +81,12 @@ def test_a_producer_that_crashed_is_named_with_its_own_stderr(
     family list, which the unestablished-reason guard would then report as the
     ratchet's shape rather than as the crash it actually is.
     """
-    monkeypatch.setattr(
-        TRIAGE, "subprocess", _recorded_producer(2, "", stderr="adapter file is unreadable\n")
+    _patch_recorded_producer(
+        monkeypatch, _recorded_producer(2, "", stderr="adapter file is unreadable\n")
     )
 
     with pytest.raises(RuntimeError) as excinfo:
-        TRIAGE._run_detail(RATCHET_ARGV)
+        TRIAGE._run_detail(RATCHET_SCRIPT, RATCHET_ARGS)
 
     assert "rc=2" in str(excinfo.value)
     assert "adapter file is unreadable" in str(excinfo.value)
@@ -96,12 +101,12 @@ def test_an_unreadable_producer_payload_names_the_command_it_came_from(
     mapping" leaves the operator guessing which of them misbehaved, and the injected
     `--ratchet-report` / `--code-inventory` files at least name themselves.
     """
-    monkeypatch.setattr(TRIAGE, "subprocess", _recorded_producer(0, "- one\n- two\n"))
+    _patch_recorded_producer(monkeypatch, _recorded_producer(0, "- one\n- two\n"))
 
     with pytest.raises(RuntimeError) as excinfo:
-        TRIAGE._run_detail(RATCHET_ARGV)
+        TRIAGE._run_detail(RATCHET_SCRIPT, RATCHET_ARGS)
 
-    assert str(excinfo.value).startswith(" ".join(RATCHET_ARGV))
+    assert str(excinfo.value).startswith(" ".join([str(RATCHET_SCRIPT), *RATCHET_ARGS]))
     assert "not a mapping" in str(excinfo.value)
 
 
@@ -116,7 +121,9 @@ def test_a_yaml_payload_with_no_pyyaml_to_read_it_names_the_remedy(
     monkeypatch.setitem(sys.modules, "yaml", None)
 
     with pytest.raises(RuntimeError) as excinfo:
-        TRIAGE._parse_detail_payload("status: hard-block\nnew_code_families: []\n", "probe --detail")
+        TRIAGE._parse_detail_payload(
+            "status: hard-block\nnew_code_families: []\n", "probe --detail"
+        )
 
     message = str(excinfo.value)
     assert "probe --detail" in message

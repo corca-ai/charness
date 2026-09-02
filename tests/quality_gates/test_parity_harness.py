@@ -47,6 +47,7 @@ def write_review_snapshot(repo: Path, *, captured: dict[str, str] | None = None)
     snapshot_path.write_text(json.dumps(snapshot), encoding="utf-8")
     return snapshot_path
 
+
 _parity = import_repo_module(ROOT / "scripts/parity_harness.py", "scripts.parity_harness")
 
 # The real narrowing this harness exists for, reduced to its two versions.
@@ -55,24 +56,27 @@ _parity = import_repo_module(ROOT / "scripts/parity_harness.py", "scripts.parity
 # was the round-1 repair for a false positive, and it opened a false negative that
 # no existing test covered -- because nothing had ever named "wrapped links" as a
 # property. Built from the shipped defect, not from an invented one.
-BASELINE_SCAN = '''
+BASELINE_SCAN = """
 import re
 LINK_RE = re.compile(r"\\[[^\\]]+\\]\\(([^)]+)\\)")
 
 def scan(lines):
     text = "\\n".join(lines)
     return LINK_RE.findall(text)
-'''
+"""
 
-REPAIRED_SCAN = '''
+REPAIRED_SCAN = """
 import re
 LINK_RE = re.compile(r"\\[[^\\]]+\\]\\(([^)]+)\\)")
 
 def scan(lines):
     return [target for line in lines for target in LINK_RE.findall(line)]
-'''
+"""
 
-WRAPPED_LINK = ["See the [agent assessment", "invariant](../../../scripts/runtime_bootstrap.py) for the rule."]
+WRAPPED_LINK = [
+    "See the [agent assessment",
+    "invariant](../../../scripts/runtime_bootstrap.py) for the rule.",
+]
 
 
 def test_the_real_narrowing_is_reported_as_repair_shaped() -> None:
@@ -106,16 +110,27 @@ def test_an_unwrapped_link_does_not_diverge() -> None:
 
 def test_a_new_function_is_not_repair_shaped() -> None:
     """A function with no prior behaviour has no complement to preserve."""
-    assert _parity.repair_shaped_functions("def a():\n    return 1\n", "def a():\n    return 1\n\ndef b():\n    return 2\n") == []
+    assert (
+        _parity.repair_shaped_functions(
+            "def a():\n    return 1\n", "def a():\n    return 1\n\ndef b():\n    return 2\n"
+        )
+        == []
+    )
 
 
 def test_a_changed_signature_is_not_repair_shaped() -> None:
     """A changed signature is LOUD — every caller is forced to update, so the radius gets walked."""
-    assert _parity.repair_shaped_functions("def a(x):\n    return x\n", "def a(x, y):\n    return x\n") == []
+    assert (
+        _parity.repair_shaped_functions("def a(x):\n    return x\n", "def a(x, y):\n    return x\n")
+        == []
+    )
 
 
 def test_an_unchanged_function_is_not_repair_shaped() -> None:
-    assert _parity.repair_shaped_functions("def a(x):\n    return x\n", "def a(x):\n    return x\n") == []
+    assert (
+        _parity.repair_shaped_functions("def a(x):\n    return x\n", "def a(x):\n    return x\n")
+        == []
+    )
 
 
 def test_a_nested_helper_is_reported_together_with_its_enclosing_function() -> None:
@@ -136,7 +151,9 @@ def test_a_raise_becoming_a_return_is_a_divergence_not_a_crash() -> None:
     baseline = _parity.load_module_from_source(
         "def check(v):\n    raise ValueError('refused')\n", "parity_baseline_raise"
     )
-    current = _parity.load_module_from_source("def check(v):\n    return None\n", "parity_current_raise")
+    current = _parity.load_module_from_source(
+        "def check(v):\n    return None\n", "parity_current_raise"
+    )
 
     divergences = _parity.compare_callables(baseline.check, current.check, [(1,)])
 
@@ -197,7 +214,10 @@ def test_the_snapshot_captures_python_source_so_a_repair_has_a_baseline(tmp_path
     target.write_text("def verdict(x):\n    return bool(x)\n", encoding="utf-8")
 
     snapshot = run_script(
-        "skills/shared/scripts/reviewer_boundary_fingerprint.py", "snapshot", "--repo-root", str(repo)
+        "skills/shared/scripts/reviewer_boundary_fingerprint.py",
+        "snapshot",
+        "--repo-root",
+        str(repo),
     )
     assert snapshot.returncode == 0, snapshot.stderr
 
@@ -223,7 +243,12 @@ def test_verify_does_not_overwrite_the_captured_baseline(tmp_path: Path) -> None
     target = repo / "scripts" / "gate.py"
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text("def verdict(x):\n    return bool(x)\n", encoding="utf-8")
-    run_script("skills/shared/scripts/reviewer_boundary_fingerprint.py", "snapshot", "--repo-root", str(repo))
+    run_script(
+        "skills/shared/scripts/reviewer_boundary_fingerprint.py",
+        "snapshot",
+        "--repo-root",
+        str(repo),
+    )
 
     target.write_text("def verdict(x):\n    return False\n", encoding="utf-8")
     run_script(
@@ -279,7 +304,9 @@ def test_two_different_generators_are_not_reported_as_identical() -> None:
     yields = _parity.load_module_from_source(
         "def gen(n):\n    for i in range(n):\n        yield i\n", "parity_gen_yields"
     )
-    empty = _parity.load_module_from_source("def gen(n):\n    return\n    yield\n", "parity_gen_empty")
+    empty = _parity.load_module_from_source(
+        "def gen(n):\n    return\n    yield\n", "parity_gen_empty"
+    )
 
     assert len(_parity.compare_callables(yields.gen, empty.gen, [(3,)])) == 1
     same = _parity.load_module_from_source(
@@ -404,7 +431,9 @@ def test_a_destroyed_baseline_is_reported_as_lost_not_as_never_captured(tmp_path
         blob.unlink()
     target.write_text("def verdict(x):\n    return False\n", encoding="utf-8")
 
-    payload = yaml.safe_load(run_script("scripts/parity_harness.py", "--repo-root", str(repo)).stdout)
+    payload = yaml.safe_load(
+        run_script("scripts/parity_harness.py", "--repo-root", str(repo)).stdout
+    )
 
     assert "LOST baseline" in payload["uncomparable"]["scripts/gate.py"]
 
@@ -428,7 +457,9 @@ def test_a_returned_file_handle_is_not_consumed_or_collapsed() -> None:
 def test_hex_returning_functions_are_still_compared() -> None:
     """Normalising every `0x…` token erased legitimate hex DATA, not just addresses."""
     baseline = _parity.load_module_from_source("def fmt(n):\n    return hex(n)\n", "parity_hex_a")
-    current = _parity.load_module_from_source("def fmt(n):\n    return hex(n * 2)\n", "parity_hex_b")
+    current = _parity.load_module_from_source(
+        "def fmt(n):\n    return hex(n * 2)\n", "parity_hex_b"
+    )
 
     assert len(_parity.compare_callables(baseline.fmt, current.fmt, [(42,)])) == 1
 
@@ -462,13 +493,19 @@ def test_a_renamed_file_keeps_both_sides_so_its_baseline_is_findable(tmp_path: P
     """
     repo = seeded_repo(tmp_path / "repo")
     (repo / "scripts").mkdir(parents=True, exist_ok=True)
-    (repo / "scripts" / "old.py").write_text("def verdict(x):\n    return bool(x)\n", encoding="utf-8")
+    (repo / "scripts" / "old.py").write_text(
+        "def verdict(x):\n    return bool(x)\n", encoding="utf-8"
+    )
     subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True)
     subprocess.run(
         ["git", "-c", "user.email=a@b", "-c", "user.name=a", "commit", "-m", "ship"],
-        cwd=repo, check=True, capture_output=True,
+        cwd=repo,
+        check=True,
+        capture_output=True,
     )
-    subprocess.run(["git", "mv", "scripts/old.py", "scripts/new.py"], cwd=repo, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "mv", "scripts/old.py", "scripts/new.py"], cwd=repo, check=True, capture_output=True
+    )
 
     paths = _parity.changed_python_paths(repo)
 
@@ -544,7 +581,8 @@ def test_an_endless_generator_is_truncated_at_the_cap(monkeypatch) -> None:
     """The cap bounds ITEMS, which is what stops an infinite generator hanging the run."""
     monkeypatch.setattr(_parity, "ITERATOR_MATERIALISE_CAP", 5)
     endless = _parity.load_module_from_source(
-        "def gen():\n    n = 0\n    while True:\n        yield n\n        n += 1\n", "parity_endless"
+        "def gen():\n    n = 0\n    while True:\n        yield n\n        n += 1\n",
+        "parity_endless",
     )
 
     rendered = _parity.outcome(endless.gen, ())
@@ -563,7 +601,9 @@ def test_an_unreadable_worktree_path_is_uncomparable_not_clean(tmp_path: Path) -
     subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True)
     subprocess.run(
         ["git", "-c", "user.email=a@b", "-c", "user.name=a", "commit", "-m", "add"],
-        cwd=repo, check=True, capture_output=True,
+        cwd=repo,
+        check=True,
+        capture_output=True,
     )
     (repo / "scripts" / "gone.py").unlink()
 
@@ -572,7 +612,9 @@ def test_an_unreadable_worktree_path_is_uncomparable_not_clean(tmp_path: Path) -
     assert "scripts/gone.py" in report["uncomparable"]
 
 
-def test_the_cli_prints_both_branches_against_a_committed_ref(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_the_cli_prints_both_branches_against_a_committed_ref(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     """The payload has a clean branch and a repairs branch; both carry the skipped label.
 
     The retired rendering said "No repair-shaped function changes" or named the
@@ -589,7 +631,9 @@ def test_the_cli_prints_both_branches_against_a_committed_ref(tmp_path: Path, mo
     subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True)
     subprocess.run(
         ["git", "-c", "user.email=a@b", "-c", "user.name=a", "commit", "-m", "ship"],
-        cwd=repo, check=True, capture_output=True,
+        cwd=repo,
+        check=True,
+        capture_output=True,
     )
 
     code, clean = _run_cli(monkeypatch, capsys, "--repo-root", str(repo), "--against", "HEAD")
@@ -621,11 +665,11 @@ def test_a_snapshot_that_is_not_an_object_is_discarded(tmp_path: Path) -> None:
 def test_a_truncated_status_field_is_skipped(tmp_path: Path, monkeypatch) -> None:
     """`git status -z` fields shorter than `XY path` carry no path to keep."""
 
-    class _Proc:
-        returncode = 0
-        stdout = "??\0 M scripts/real.py\0"
-
-    monkeypatch.setattr(_parity.subprocess, "run", lambda *a, **k: _Proc())
+    monkeypatch.setattr(
+        _parity,
+        "run_process",
+        lambda *a, **k: subprocess.CompletedProcess(a[0], 0, "??\0 M scripts/real.py\0", ""),
+    )
 
     assert _parity.changed_python_paths(tmp_path) == ["scripts/real.py"]
 
@@ -641,13 +685,20 @@ def test_the_entrypoint_reports_a_parity_error_on_stderr(tmp_path: Path) -> None
     subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True)
     subprocess.run(
         ["git", "-c", "user.email=a@b", "-c", "user.name=a", "commit", "-m", "ship"],
-        cwd=repo, check=True, capture_output=True,
+        cwd=repo,
+        check=True,
+        capture_output=True,
     )
     (repo / "scripts" / "broken.py").write_text("def broken(:\n", encoding="utf-8")
 
     result = run_script(
-        "scripts/parity_harness.py", "--repo-root", str(repo), "--against", "HEAD",
-        "--paths", "scripts/broken.py",
+        "scripts/parity_harness.py",
+        "--repo-root",
+        str(repo),
+        "--against",
+        "HEAD",
+        "--paths",
+        "scripts/broken.py",
         real_process=True,
     )
 

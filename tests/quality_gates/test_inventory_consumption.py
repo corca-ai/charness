@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 import subprocess
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -28,17 +29,17 @@ def _run(repo_root: Path) -> subprocess.CompletedProcess[str]:
 def test_declaration_runner_rejects_non_yaml_inventory_output(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    def main():
+        print("items: [unterminated")
+        return 0
+
     monkeypatch.setattr(
-        declaration.subprocess,
-        "run",
-        lambda *_args, **_kwargs: subprocess.CompletedProcess(
-            [], 0, "items: [unterminated", ""
-        ),
+        declaration,
+        "load_path_module",
+        lambda *_args: SimpleNamespace(main=main),
     )
 
-    payload, error = declaration._run_inventory(
-        tmp_path / "inventory_example.py", tmp_path
-    )
+    payload, error = declaration._run_inventory(tmp_path / "inventory_example.py", tmp_path)
 
     assert payload is None
     assert error is not None and error.startswith("non-YAML stdout:")
@@ -307,11 +308,7 @@ def test_artifact_predating_contract_start_is_skipped(tmp_path: Path) -> None:
 
 
 def test_no_commands_run_section_means_nothing_to_enforce(tmp_path: Path) -> None:
-    artifact = (
-        "# Quality Review\n"
-        "## Healthy\n- everything fine.\n"
-        "## History\n"
-    )
+    artifact = "# Quality Review\n## Healthy\n- everything fine.\n## History\n"
     repo = _seed_repo(tmp_path, artifact_body=artifact, consumer_fields=_DEFAULT_DECLARATION)
 
     result = _run(repo)

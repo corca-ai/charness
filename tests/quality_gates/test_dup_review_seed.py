@@ -40,12 +40,18 @@ def _code_family(identity: str, files: list[str]) -> dict:
 # classify
 # --------------------------------------------------------------------------- #
 def test_classify_all_portable_is_intentional() -> None:
-    files = ["skills/public/achieve/scripts/resolve_adapter.py", "skills/public/impl/scripts/resolve_adapter.py"]
+    files = [
+        "skills/public/achieve/scripts/resolve_adapter.py",
+        "skills/public/impl/scripts/resolve_adapter.py",
+    ]
     assert lib.classify(files) == "intentional"
 
 
 def test_classify_mixed_is_unreviewed() -> None:
-    files = ["skills/public/achieve/scripts/resolve_adapter.py", "skills/public/quality/scripts/real_logic.py"]
+    files = [
+        "skills/public/achieve/scripts/resolve_adapter.py",
+        "skills/public/quality/scripts/real_logic.py",
+    ]
     assert lib.classify(files) == "unreviewed"
 
 
@@ -83,7 +89,13 @@ def test_build_review_preserves_existing_classifications() -> None:
         "schemaVersion": lib.SCHEMA_VERSION,
         "fixable_ceiling": 1,
         "entries": [
-            {"id": "realdup", "surface": "code", "class": "fixable", "note": "operator", "reviewed_at": "2026-06-10"},
+            {
+                "id": "realdup",
+                "surface": "code",
+                "class": "fixable",
+                "note": "operator",
+                "reviewed_at": "2026-06-10",
+            },
         ],
     }
     # The same family reappears in the inventory; the operator's 'fixable' must win
@@ -100,7 +112,9 @@ def test_build_review_preserves_existing_classifications() -> None:
 # validate_review
 # --------------------------------------------------------------------------- #
 def test_validate_review_accepts_well_formed() -> None:
-    review = lib.build_review({}, [_code_family("p", ["a/init_adapter.py"])], [], reviewed_at="2026-06-19")
+    review = lib.build_review(
+        {}, [_code_family("p", ["a/init_adapter.py"])], [], reviewed_at="2026-06-19"
+    )
     assert lib.validate_review(review) == []
 
 
@@ -134,12 +148,32 @@ def _write_inventory(path: Path, families: list[dict]) -> Path:
     return path
 
 
+def _recorded_inventory(monkeypatch, *, returncode: int, stdout: str, stderr: str = "") -> None:
+    def main():
+        print(stdout, end="")
+        if stderr:
+            print(stderr, end="", file=sys.stderr)
+        return returncode
+
+    monkeypatch.setattr(
+        seed._SKILL_RUNTIME,
+        "load_local_skill_module",
+        lambda *_args: SimpleNamespace(main=main),
+    )
+
+
 def test_build_result_consumes_injected_inventories(tmp_path: Path) -> None:
-    code_json = _write_inventory(tmp_path / "code.json", [_code_family("fid1", ["a/resolve_adapter.py", "b/resolve_adapter.py"])])
+    code_json = _write_inventory(
+        tmp_path / "code.json",
+        [_code_family("fid1", ["a/resolve_adapter.py", "b/resolve_adapter.py"])],
+    )
     doc_json = _write_inventory(tmp_path / "doc.json", [{"signature": "docsig"}])
     args = SimpleNamespace(
-        repo_root=tmp_path, output="charness-artifacts/quality/dup-review.json",
-        code_inventory=code_json, doc_inventory=doc_json, reviewed_at="2026-06-19",
+        repo_root=tmp_path,
+        output="charness-artifacts/quality/dup-review.json",
+        code_inventory=code_json,
+        doc_inventory=doc_json,
+        reviewed_at="2026-06-19",
     )
     result = seed.build_result(args)
     assert result["code_family_count"] == 1
@@ -160,15 +194,29 @@ def test_seed_bootstrap_import_error_guard(tmp_path: Path, monkeypatch) -> None:
 # CLI: real entrypoint (write + dry-run) via subprocess
 # --------------------------------------------------------------------------- #
 def test_seed_cli_writes_overlay(tmp_path: Path) -> None:
-    code_json = _write_inventory(tmp_path / "code.json", [_code_family("fid1", ["a/init_adapter.py", "b/init_adapter.py"])])
+    code_json = _write_inventory(
+        tmp_path / "code.json", [_code_family("fid1", ["a/init_adapter.py", "b/init_adapter.py"])]
+    )
     doc_json = _write_inventory(tmp_path / "doc.json", [])
     result = run_script(
-        str(SEED_SCRIPT), "--repo-root", str(tmp_path),
-        "--code-inventory", str(code_json), "--doc-inventory", str(doc_json),
-        "--reviewed-at", "2026-06-19", "--write", cwd=ROOT,
+        str(SEED_SCRIPT),
+        "--repo-root",
+        str(tmp_path),
+        "--code-inventory",
+        str(code_json),
+        "--doc-inventory",
+        str(doc_json),
+        "--reviewed-at",
+        "2026-06-19",
+        "--write",
+        cwd=ROOT,
     )
     assert result.returncode == 0, result.stderr
-    overlay = json.loads((tmp_path / "charness-artifacts" / "quality" / "dup-review.json").read_text(encoding="utf-8"))
+    overlay = json.loads(
+        (tmp_path / "charness-artifacts" / "quality" / "dup-review.json").read_text(
+            encoding="utf-8"
+        )
+    )
     assert overlay["schemaVersion"] == lib.SCHEMA_VERSION
     assert lib.validate_review(overlay) == []
     assert any(e["id"] == "fid1" and e["class"] == "intentional" for e in overlay["entries"])
@@ -178,9 +226,16 @@ def test_seed_cli_dry_run_does_not_write(tmp_path: Path) -> None:
     code_json = _write_inventory(tmp_path / "code.json", [])
     doc_json = _write_inventory(tmp_path / "doc.json", [])
     result = run_script(
-        str(SEED_SCRIPT), "--repo-root", str(tmp_path),
-        "--code-inventory", str(code_json), "--doc-inventory", str(doc_json),
-        "--reviewed-at", "2026-06-19", cwd=ROOT,
+        str(SEED_SCRIPT),
+        "--repo-root",
+        str(tmp_path),
+        "--code-inventory",
+        str(code_json),
+        "--doc-inventory",
+        str(doc_json),
+        "--reviewed-at",
+        "2026-06-19",
+        cwd=ROOT,
     )
     assert result.returncode == 0, result.stderr
     assert "previewed" in result.stdout
@@ -199,7 +254,9 @@ def test_validate_review_flags_non_string_note_and_reviewed_at() -> None:
     bad = {
         "schemaVersion": lib.SCHEMA_VERSION,
         "fixable_ceiling": 0,
-        "entries": [{"id": "x", "surface": "code", "class": "intentional", "note": 5, "reviewed_at": 9}],
+        "entries": [
+            {"id": "x", "surface": "code", "class": "intentional", "note": 5, "reviewed_at": 9}
+        ],
     }
     errors = " ".join(lib.validate_review(bad))
     assert "note" in errors and "reviewed_at" in errors
@@ -209,7 +266,9 @@ def test_validate_review_flags_empty_id() -> None:
     bad = {
         "schemaVersion": lib.SCHEMA_VERSION,
         "fixable_ceiling": 0,
-        "entries": [{"id": "", "surface": "code", "class": "intentional", "note": "n", "reviewed_at": "d"}],
+        "entries": [
+            {"id": "", "surface": "code", "class": "intentional", "note": "n", "reviewed_at": "d"}
+        ],
     }
     assert any("id must be a non-empty string" in e for e in lib.validate_review(bad))
 
@@ -228,7 +287,9 @@ def test_families_from_payload_separates_declared_empty_from_unestablished() -> 
     # corpus that was never scanned (the twin of dup_ratchet_scan's sweep S29 fix).
     assert seed._families_from_payload(json.dumps({"families": []}), "src") == ([], None)
     assert seed._families_from_payload(json.dumps({"families": [{"family_id": "x"}]}), "src") == (
-        [{"family_id": "x"}], None)
+        [{"family_id": "x"}],
+        None,
+    )
     for text, fragment in (
         ("[not: yaml", "did not emit YAML"),
         ("", "produced no output"),
@@ -243,13 +304,8 @@ def test_families_from_payload_separates_declared_empty_from_unestablished() -> 
 
 
 def test_run_inventory_parses_subprocess(monkeypatch, tmp_path: Path) -> None:
-    import subprocess
-
     families = [{"family_id": "z", "sample_locations": []}]
-    monkeypatch.setattr(
-        seed.subprocess, "run",
-        lambda *a, **k: subprocess.CompletedProcess(a[0], 0, json.dumps({"families": families}), ""),
-    )
+    _recorded_inventory(monkeypatch, returncode=0, stdout=json.dumps({"families": families}))
     assert seed._run_inventory(tmp_path / "x.py", tmp_path) == (families, None)
 
 
@@ -259,11 +315,11 @@ def test_run_inventory_refuses_a_nonzero_exit(monkeypatch, tmp_path: Path) -> No
     # `inventory_doc_duplicates` exits 1 only under `--require-nose`, which this caller does
     # not pass), and the reachable crash prints nothing, which the blank-output row covers.
     # The check exists so a future nonzero exit cannot seed as if it had scanned.
-    import subprocess
-
-    monkeypatch.setattr(
-        seed.subprocess, "run",
-        lambda *a, **k: subprocess.CompletedProcess(a[0], 3, json.dumps({"families": []}), "traceback"),
+    _recorded_inventory(
+        monkeypatch,
+        returncode=3,
+        stdout=json.dumps({"families": []}),
+        stderr="traceback",
     )
     families, reason = seed._run_inventory(tmp_path / "x.py", tmp_path)
     assert families == [] and reason is not None and "exited 3" in reason
@@ -282,14 +338,27 @@ def test_load_existing_reads_valid_and_refuses_corrupt(tmp_path: Path) -> None:
 
 
 def test_main_refuses_to_reseed_over_a_corrupt_overlay(tmp_path: Path, monkeypatch, capsys) -> None:
-    code_json = _write_inventory(tmp_path / "code.json", [_code_family("mid", ["a/x.py", "b/x.py"])])
+    code_json = _write_inventory(
+        tmp_path / "code.json", [_code_family("mid", ["a/x.py", "b/x.py"])]
+    )
     doc_json = _write_inventory(tmp_path / "doc.json", [])
     overlay = tmp_path / "dup-review.json"
     overlay.write_text('{"entries": [{"surface": "code",', encoding="utf-8")  # truncated mid-write
     monkeypatch.setattr(
-        seed.sys, "argv",
-        ["seed_dup_review.py", "--repo-root", str(tmp_path), "--output", "dup-review.json",
-         "--code-inventory", str(code_json), "--doc-inventory", str(doc_json), "--write"],
+        seed.sys,
+        "argv",
+        [
+            "seed_dup_review.py",
+            "--repo-root",
+            str(tmp_path),
+            "--output",
+            "dup-review.json",
+            "--code-inventory",
+            str(code_json),
+            "--doc-inventory",
+            str(doc_json),
+            "--write",
+        ],
     )
     assert seed.main() == 1
     assert "refused" in capsys.readouterr().err
@@ -297,13 +366,26 @@ def test_main_refuses_to_reseed_over_a_corrupt_overlay(tmp_path: Path, monkeypat
 
 
 def test_main_inprocess_write(tmp_path: Path, monkeypatch, capsys) -> None:
-    code_json = _write_inventory(tmp_path / "code.json", [_code_family("mid", ["a/resolve_adapter.py", "b/resolve_adapter.py"])])
+    code_json = _write_inventory(
+        tmp_path / "code.json",
+        [_code_family("mid", ["a/resolve_adapter.py", "b/resolve_adapter.py"])],
+    )
     doc_json = _write_inventory(tmp_path / "doc.json", [])
     monkeypatch.setattr(
-        sys, "argv",
-        ["seed", "--repo-root", str(tmp_path), "--code-inventory", str(code_json),
-         "--doc-inventory", str(doc_json),
-         "--reviewed-at", "2026-06-19", "--write"],
+        sys,
+        "argv",
+        [
+            "seed",
+            "--repo-root",
+            str(tmp_path),
+            "--code-inventory",
+            str(code_json),
+            "--doc-inventory",
+            str(doc_json),
+            "--reviewed-at",
+            "2026-06-19",
+            "--write",
+        ],
     )
     assert seed.main() == 0
     assert "1 code" in capsys.readouterr().out
@@ -314,9 +396,19 @@ def test_main_inprocess_dry_run_human(tmp_path: Path, monkeypatch, capsys) -> No
     code_json = _write_inventory(tmp_path / "code.json", [])
     doc_json = _write_inventory(tmp_path / "doc.json", [])
     monkeypatch.setattr(
-        sys, "argv",
-        ["seed", "--repo-root", str(tmp_path), "--code-inventory", str(code_json),
-         "--doc-inventory", str(doc_json), "--reviewed-at", "2026-06-19"],
+        sys,
+        "argv",
+        [
+            "seed",
+            "--repo-root",
+            str(tmp_path),
+            "--code-inventory",
+            str(code_json),
+            "--doc-inventory",
+            str(doc_json),
+            "--reviewed-at",
+            "2026-06-19",
+        ],
     )
     assert seed.main() == 0
     assert "previewed" in capsys.readouterr().out
@@ -327,9 +419,19 @@ def test_main_inprocess_invalid_overlay_exits_one(tmp_path: Path, monkeypatch, c
     doc_json = _write_inventory(tmp_path / "doc.json", [])
     monkeypatch.setattr(seed.dup_review, "validate_review", lambda _review: ["forced error"])
     monkeypatch.setattr(
-        sys, "argv",
-        ["seed", "--repo-root", str(tmp_path), "--code-inventory", str(code_json),
-         "--doc-inventory", str(doc_json), "--reviewed-at", "2026-06-19"],
+        sys,
+        "argv",
+        [
+            "seed",
+            "--repo-root",
+            str(tmp_path),
+            "--code-inventory",
+            str(code_json),
+            "--doc-inventory",
+            str(doc_json),
+            "--reviewed-at",
+            "2026-06-19",
+        ],
     )
     assert seed.main() == 1
     assert "invalid overlay" in capsys.readouterr().err
@@ -348,7 +450,9 @@ def test_families_reports_an_unreadable_injected_inventory_as_a_reason(tmp_path:
     assert reason is not None and "cannot read" in reason and str(unreadable) in reason
 
 
-def test_load_existing_refuses_a_parseable_overlay_that_lost_its_entries_list(tmp_path: Path) -> None:
+def test_load_existing_refuses_a_parseable_overlay_that_lost_its_entries_list(
+    tmp_path: Path,
+) -> None:
     # Unparseable is not the only unreadable: a payload that PARSES but is a list, a
     # scalar, or a dict whose `entries` key was renamed yields zero prior entries
     # through a successful parse — the same silent wipe, one branch over.
@@ -374,9 +478,19 @@ def test_main_refusal_names_the_unreadable_input(tmp_path: Path, monkeypatch, ca
     # name is the same class this suite exists to refuse.
     doc_json = _write_inventory(tmp_path / "doc.json", [])
     monkeypatch.setattr(
-        sys, "argv",
-        ["seed", "--repo-root", str(tmp_path), "--code-inventory", str(unreadable),
-         "--doc-inventory", str(doc_json), "--reviewed-at", "2026-06-19"],
+        sys,
+        "argv",
+        [
+            "seed",
+            "--repo-root",
+            str(tmp_path),
+            "--code-inventory",
+            str(unreadable),
+            "--doc-inventory",
+            str(doc_json),
+            "--reviewed-at",
+            "2026-06-19",
+        ],
     )
 
     assert seed.main() == 1
@@ -394,7 +508,9 @@ def test_main_help_documents_repo_root(monkeypatch, capsys) -> None:
         seed.main()
     assert exc_info.value.code == 0
     output = capsys.readouterr().out
-    expected = {"--repo-root": "Repository root whose duplicate inventories and overlay should be managed"}
+    expected = {
+        "--repo-root": "Repository root whose duplicate inventories and overlay should be managed"
+    }
     for option, fragment in expected.items():
         match = re.search(rf"^  {re.escape(option)}\b.*$", output, re.MULTILINE)
         assert match, f"missing help option: {option}"

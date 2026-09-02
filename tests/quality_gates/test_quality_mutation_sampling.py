@@ -56,7 +56,7 @@ def test_list_changed_returns_stripped_paths_from_git_diff(
         ]
         return subprocess.CompletedProcess(command, 0, " scripts/a.py \n\nscripts/b.py\n", "")
 
-    monkeypatch.setattr(sample_mutation_files.subprocess, "run", succeed_diff)
+    monkeypatch.setattr(sample_mutation_files, "run_process", succeed_diff)
 
     assert list_changed(ROOT, "base-sha", "") == ["scripts/a.py", "scripts/b.py"]
 
@@ -65,7 +65,7 @@ def test_list_changed_skips_git_when_base_sha_is_empty(monkeypatch: pytest.Monke
     def fail_if_called(*_args: object, **_kwargs: object) -> subprocess.CompletedProcess[str]:
         raise AssertionError("git diff should not run without a base sha")
 
-    monkeypatch.setattr(sample_mutation_files.subprocess, "run", fail_if_called)
+    monkeypatch.setattr(sample_mutation_files, "run_process", fail_if_called)
 
     assert list_changed(ROOT, "", "head-sha") == []
 
@@ -76,21 +76,16 @@ def test_list_changed_returns_empty_for_empty_successful_diff(
     def empty_diff(command: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
         return subprocess.CompletedProcess(command, 0, "\n", "")
 
-    monkeypatch.setattr(sample_mutation_files.subprocess, "run", empty_diff)
+    monkeypatch.setattr(sample_mutation_files, "run_process", empty_diff)
 
     assert list_changed(ROOT, "base-sha", "head-sha") == []
 
 
 def test_list_changed_fails_closed_when_git_diff_fails(monkeypatch: pytest.MonkeyPatch) -> None:
     def fail_diff(command: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
-        raise subprocess.CalledProcessError(
-            42,
-            command,
-            output="partial stdout",
-            stderr="forced diff failure",
-        )
+        return subprocess.CompletedProcess(command, 42, "partial stdout", "forced diff failure")
 
-    monkeypatch.setattr(sample_mutation_files.subprocess, "run", fail_diff)
+    monkeypatch.setattr(sample_mutation_files, "run_process", fail_diff)
 
     with pytest.raises(SystemExit) as exc_info:
         list_changed(ROOT, "base-sha", "head-sha")

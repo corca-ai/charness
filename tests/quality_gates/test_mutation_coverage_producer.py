@@ -216,8 +216,9 @@ def test_combine_export_preserves_all_include_paths_in_coverage_argv(
 
     def fake_run(command, **kwargs):
         commands.append(command)
+        return subprocess.CompletedProcess(command, 0, "", "")
 
-    monkeypatch.setattr(sampling.subprocess, "run", fake_run)
+    monkeypatch.setattr(sampling, "run_process", fake_run)
     sampling.combine_and_export_coverage(
         tmp_path,
         tmp_path / "coverage.rc",

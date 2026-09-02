@@ -3,11 +3,14 @@ from __future__ import annotations
 import json
 import stat
 import subprocess
+import sys
 from pathlib import Path
 
+import pytest
 import yaml
 
 from .release_publish_fixtures import (
+    PUBLISH_CLI,
     REPO_ROOT,
     _release_env,
     _run_publish_patch,
@@ -16,12 +19,7 @@ from .release_publish_fixtures import (
 from .seeding_support import load_module
 
 ROLLBACK_PATH = (
-    REPO_ROOT
-    / "skills"
-    / "public"
-    / "release"
-    / "scripts"
-    / "publish_release_rollback.py"
+    REPO_ROOT / "skills" / "public" / "release" / "scripts" / "publish_release_rollback.py"
 )
 
 
@@ -46,7 +44,18 @@ def _failure_payload(stderr: str) -> dict:
     return yaml.safe_load(stderr.split(start, 1)[1].split(end, 1)[0].strip())
 
 
-def test_precommit_quality_failure_restores_clean_retryable_worktree(tmp_path: Path) -> None:
+def test_precommit_quality_failure_restores_clean_retryable_worktree(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    original_print_failure_payload = PUBLISH_CLI._release_runtime.print_failure_payload
+
+    def print_failure_payload(*args, **kwargs):
+        kwargs["stream"] = sys.stderr
+        return original_print_failure_payload(*args, **kwargs)
+
+    monkeypatch.setattr(
+        PUBLISH_CLI._release_runtime, "print_failure_payload", print_failure_payload
+    )
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     quality_script = repo / "scripts" / "run-quality.sh"
     quality_script.write_text(
@@ -84,7 +93,10 @@ def test_precommit_quality_failure_restores_clean_retryable_worktree(tmp_path: P
     assert record["status"] == "persisted"
     record_path = Path(record["path"])
     record_payload = yaml.safe_load(record_path.read_text(encoding="utf-8"))
-    assert record_payload["release_failure"]["detail"] == "raw exception text omitted from durable local state"
+    assert (
+        record_payload["release_failure"]["detail"]
+        == "raw exception text omitted from durable local state"
+    )
     assert "error" not in record_payload["release_failure"]
     assert stat.S_IMODE(record_path.stat().st_mode) == 0o600
     assert stat.S_IMODE(record_path.parent.stat().st_mode) == 0o700
@@ -220,10 +232,12 @@ def test_rollback_refuses_after_head_moves(tmp_path: Path) -> None:
 
 def test_snapshot_refuses_dirty_input_and_rejects_escaping_paths(tmp_path: Path) -> None:
     rollback = _load_rollback()
-    responses = iter([
-        subprocess.CompletedProcess([], 0, stdout="abc123\n"),
-        subprocess.CompletedProcess([], 0, stdout=" M dirty.txt\n"),
-    ])
+    responses = iter(
+        [
+            subprocess.CompletedProcess([], 0, stdout="abc123\n"),
+            subprocess.CompletedProcess([], 0, stdout=" M dirty.txt\n"),
+        ]
+    )
 
     def run_command(_args, *, cwd):
         assert cwd == tmp_path

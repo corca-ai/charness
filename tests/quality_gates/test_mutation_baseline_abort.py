@@ -30,6 +30,7 @@ from scripts.mutation_baseline_abort_lib import (
     read_baseline_abort_marker,
     write_baseline_abort_marker,
 )
+from scripts.mutation_sampling_lib import CoverageCommandError
 from scripts.sample_mutation_files import select_eligible_for_mutation
 from tests.script_main import run_loaded_script_main
 
@@ -156,11 +157,11 @@ def test_select_eligible_writes_marker_and_names_nodeid_on_baseline_failure(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     def fake_run_test_coverage(repo_root, test_command, coverage_json, **_kwargs):
-        raise subprocess.CalledProcessError(
+        raise CoverageCommandError(
             1,
             test_command,
-            output="...\nFAILED tests/x.py::test_y - AssertionError: boom\n2 failed\n",
-            stderr="",
+            "...\nFAILED tests/x.py::test_y - AssertionError: boom\n2 failed\n",
+            "",
         )
 
     monkeypatch.setattr(sample_mutation_files, "run_test_coverage", fake_run_test_coverage)
@@ -190,9 +191,7 @@ def test_select_eligible_writes_log_tail_when_no_nodeids_parsed(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     def fake_run_test_coverage(repo_root, test_command, coverage_json, **_kwargs):
-        raise subprocess.CalledProcessError(
-            2, test_command, output="collection error: ModuleNotFoundError\n", stderr=""
-        )
+        raise CoverageCommandError(2, test_command, "collection error: ModuleNotFoundError\n", "")
 
     monkeypatch.setattr(sample_mutation_files, "run_test_coverage", fake_run_test_coverage)
     marker_path = tmp_path / "reports" / "mutation" / "baseline-abort.json"

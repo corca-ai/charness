@@ -14,6 +14,7 @@ from pathlib import Path
 import pytest
 
 from runtime_bootstrap import import_repo_module
+from scripts.subprocess_guard import PhaseOutcome
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts" / "mutate_and_restore.py"
@@ -199,12 +200,12 @@ def test_recovery_state_dir_handles_git_exec_failure_and_relative_git_dir(
     def unavailable(*_args, **_kwargs):
         raise OSError("git unavailable")
 
-    monkeypatch.setattr(mr.subprocess, "run", unavailable)
+    monkeypatch.setattr(mr, "run_process", unavailable)
     assert mr.recovery_state_dir(tmp_path) == tmp_path / ".charness" / "mutation-recovery"
 
     monkeypatch.setenv("GIT_DIR", str(tmp_path / ".git"))
     completed = subprocess.CompletedProcess(["git"], 0, ".git\n", "")
-    monkeypatch.setattr(mr.subprocess, "run", lambda *_args, **_kwargs: completed)
+    monkeypatch.setattr(mr, "run_process", lambda *_args, **_kwargs: completed)
     assert (
         mr.recovery_state_dir(tmp_path)
         == (tmp_path / ".git" / "charness-mutation-recovery").resolve()
@@ -588,25 +589,16 @@ def test_stop_process_group_refuses_unsafe_handles_missing_and_escalates(
 def test_run_mutation_command_kills_an_unattached_child_after_bad_marker(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    class Process:
-        returncode = None
-        killed = False
-        waited = False
-
-        def poll(self):
-            return None
-
-        def kill(self):
-            self.killed = True
-
-        def wait(self):
-            self.waited = True
-
     _repo, _target, recovery, journal_id, _original, _mutated = _seed_recovery(
         tmp_path, "bad-child"
     )
-    process = Process()
-    monkeypatch.setattr(mr.subprocess, "Popen", lambda *_args, **_kwargs: process)
+    calls: list[tuple[list[str], dict]] = []
+
+    def fake_phase(command, **kwargs):
+        calls.append((command, kwargs))
+        return PhaseOutcome(command, "mutated-test", "", 0, "", "", 0.0, False)
+
+    monkeypatch.setattr(mr, "run_monitored_phase", fake_phase)
     recovery.child_marker.write_text("invalid", encoding="utf-8")
     monkeypatch.setattr(
         recovery,
@@ -616,7 +608,12 @@ def test_run_mutation_command_kills_an_unattached_child_after_bad_marker(
 
     with pytest.raises(RuntimeError, match="attach failed"):
         mr.run_mutation_command(["ignored"], tmp_path, recovery, journal_id)
-    assert process.killed and process.waited
+    assert calls and calls[0][1] == {
+        "cwd": tmp_path,
+        "phase": "mutated-test",
+        "timeout_seconds": None,
+        "capture": True,
+    }
     assert not recovery.child_marker.exists()
 
 

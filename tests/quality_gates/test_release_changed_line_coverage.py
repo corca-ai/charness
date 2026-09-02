@@ -14,6 +14,7 @@ import json
 import os
 import shlex
 import subprocess
+import sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -23,10 +24,6 @@ import yaml
 from .support import ROOT, run_script
 
 SCRIPT = "scripts/release_changed_line_coverage.py"
-
-pytestmark = pytest.mark.boundary_contract(
-    reason="prove the focused release coverage command executes its real standing pytest child and reports release-only selection"
-)
 
 
 @pytest.fixture()
@@ -81,12 +78,12 @@ def test_no_base_sha_is_a_no_verdict_not_a_pass(gate, monkeypatch, capsys) -> No
 
 
 def test_a_dead_producer_is_a_no_verdict_not_a_pass(gate, monkeypatch, capsys) -> None:
-    import subprocess
-
     monkeypatch.setattr(gate._suggest, "build_recommendation", lambda *_a, **_k: _recommendation())
 
     def _boom(*_args, **_kwargs):
-        raise subprocess.CalledProcessError(1, "pytest")
+        error = RuntimeError("producer failed")
+        error.returncode = 1  # type: ignore[attr-defined]
+        raise error
 
     monkeypatch.setattr(gate._producer, "produce_command_coverage", _boom)
 
@@ -183,6 +180,9 @@ def test_focused_command_is_instrumentable_and_keeps_broad_marker_policy(gate) -
     assert gate._producer.is_instrumentable_pytest_command(command)
 
 
+@pytest.mark.boundary_contract(
+    reason="prove the focused release command excludes release-only tests at its real pytest process boundary"
+)
 @pytest.mark.slow_corpus
 def test_focused_command_excludes_a_release_only_execution_path(gate, tmp_path) -> None:
     """Execute the real child command, not only its token shape.
@@ -224,8 +224,6 @@ def test_focused_command_is_none_when_no_test_is_mapped(gate) -> None:
 
 
 def test_focused_producer_exports_only_mapped_changed_files(gate, monkeypatch) -> None:
-    import subprocess
-
     captured: dict = {}
     monkeypatch.setattr(
         gate._suggest,
@@ -244,11 +242,16 @@ def test_focused_producer_exports_only_mapped_changed_files(gate, monkeypatch) -
     monkeypatch.setattr(gate._producer, "produce_command_coverage", fake_produce)
     monkeypatch.setattr(Path, "is_file", lambda _self: True)
 
-    def fake_consumer(argv, **_kwargs):
-        captured["consumer_argv"] = argv
-        return subprocess.CompletedProcess(argv, 0, json.dumps({"ok": True, "blocking": []}), "")
+    def fake_consumer_main():
+        captured["consumer_argv"] = [sys.executable, *sys.argv]
+        print(json.dumps({"ok": True, "blocking": []}))
+        return 0
 
-    monkeypatch.setattr(gate.subprocess, "run", fake_consumer)
+    monkeypatch.setattr(
+        gate,
+        "import_repo_module",
+        lambda *_args: SimpleNamespace(main=fake_consumer_main),
+    )
 
     assert gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40]) == 0
     assert captured["include_paths"] == ["scripts/mapped.py"]
@@ -281,9 +284,7 @@ def test_run_command_surfaces_stdout_on_failure(gate, tmp_path, capsys) -> None:
     """pytest reports failures on STDOUT. Surfacing only stderr left the operator with
     `the producer failed (exit 1)` and no failing test name — and a gate whose failure
     cannot be diagnosed is a gate that gets disabled."""
-    import subprocess
-
-    with pytest.raises(subprocess.CalledProcessError):
+    with pytest.raises(RuntimeError):
         gate._run_command(tmp_path, "echo FAILED_TEST_MARKER_ON_STDOUT; exit 1", "verify")
 
     assert "FAILED_TEST_MARKER_ON_STDOUT" in capsys.readouterr().err
@@ -385,8 +386,6 @@ def test_the_focused_coverage_path_is_not_the_canonical_mutation_artifact(gate) 
 # predecessor did and exactly why it was walked past eight times.
 # --------------------------------------------------------------------------- #
 def _blocking_consumer_stub(gate, monkeypatch, consumer_payload: dict, returncode: int = 0):
-    import subprocess
-
     monkeypatch.setattr(gate._suggest, "build_recommendation", lambda *_a, **_k: _recommendation())
     monkeypatch.setattr(
         gate._producer,
@@ -394,12 +393,15 @@ def _blocking_consumer_stub(gate, monkeypatch, consumer_payload: dict, returncod
         lambda *_a, **_k: {"returncode": 0, "produced_mutation_coverage": True},
     )
     monkeypatch.setattr(Path, "is_file", lambda _self: True)
+
+    def fake_consumer_main():
+        print(json.dumps(consumer_payload))
+        return returncode
+
     monkeypatch.setattr(
-        gate.subprocess,
-        "run",
-        lambda *_a, **_k: subprocess.CompletedProcess(
-            [], returncode, json.dumps(consumer_payload), ""
-        ),
+        gate,
+        "import_repo_module",
+        lambda *_args: SimpleNamespace(main=fake_consumer_main),
     )
 
 
@@ -638,10 +640,15 @@ def test_an_unreadable_consumer_payload_refuses_end_to_end(gate, monkeypatch, ca
     nothing. Reached through `main` rather than the classifier alone: the classifier
     returning `no-verdict` is worthless if `main` still returns the consumer's 0."""
     _blocking_consumer_stub(gate, monkeypatch, {}, returncode=0)
+
+    def unreadable_consumer_main():
+        print("<html>not json</html>")
+        return 0
+
     monkeypatch.setattr(
-        gate.subprocess,
-        "run",
-        lambda *_a, **_k: SimpleNamespace(returncode=0, stdout="<html>not json</html>", stderr=""),
+        gate,
+        "import_repo_module",
+        lambda *_args: SimpleNamespace(main=unreadable_consumer_main),
     )
 
     assert gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40]) == gate.NO_VERDICT_EXIT
@@ -673,10 +680,15 @@ def test_an_unreadable_consumer_payload_stays_a_no_verdict_even_on_exit_three(
     unreadable result as a bounded, non-blocking "ran, established nothing": the same
     exit-code-stands-for-nothing equivalence this lane exists to break, one layer in."""
     _blocking_consumer_stub(gate, monkeypatch, {}, returncode=3)
+
+    def unreadable_consumer_main():
+        print("not json at all")
+        return 3
+
     monkeypatch.setattr(
-        gate.subprocess,
-        "run",
-        lambda *_a, **_k: __import__("subprocess").CompletedProcess([], 3, "not json at all", ""),
+        gate,
+        "import_repo_module",
+        lambda *_args: SimpleNamespace(main=unreadable_consumer_main),
     )
 
     code = gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40])

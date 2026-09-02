@@ -922,9 +922,11 @@ def test_a_bare_interactive_run_is_a_no_verdict_rather_than_no_refs(
 
 def test_a_git_timeout_is_a_no_verdict_not_a_pass(repo: Path, monkeypatch) -> None:
     def timeout(*_args, **_kwargs):
-        raise subprocess.TimeoutExpired(cmd="git rev-list", timeout=SCAN.GIT_TIMEOUT_SECONDS)
+        return subprocess.CompletedProcess(
+            ["git", "rev-list"], SCAN.GIT_TIMEOUT_SECONDS, "", "timed out"
+        )
 
-    monkeypatch.setattr(SCAN.subprocess, "run", timeout)
+    monkeypatch.setattr(SCAN, "run_process", timeout)
     with pytest.raises(SCAN.RangeUnreadable) as excinfo:
         SCAN.range_commits(repo, "HEAD", "HEAD~1")
 

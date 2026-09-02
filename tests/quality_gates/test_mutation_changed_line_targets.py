@@ -9,6 +9,7 @@ from pathlib import Path
 import pytest
 
 import scripts.mutation_changed_files_lib as mutation_changed_files_lib
+import scripts.mutation_changed_line_diff as mutation_changed_line_diff
 from scripts.mutation_changed_files_lib import changed_line_scope_gap_targets
 from scripts.sample_mutation_files import write_manifest
 
@@ -19,7 +20,9 @@ def test_changed_line_scope_gap_targets_include_source_text(
 ) -> None:
     target = tmp_path / "scripts" / "demo.py"
     target.parent.mkdir(parents=True)
-    target.write_text("def covered():\n    return 1\n\ndef gap():\n    return 2\n", encoding="utf-8")
+    target.write_text(
+        "def covered():\n    return 1\n\ndef gap():\n    return 2\n", encoding="utf-8"
+    )
     monkeypatch.setattr(
         mutation_changed_files_lib,
         "changed_line_numbers",
@@ -48,7 +51,9 @@ def test_changed_line_scope_gap_targets_include_source_text(
     }
 
 
-def test_changed_line_numbers_for_paths_batches_normal_paths(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_changed_line_numbers_for_paths_batches_normal_paths(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     calls: list[list[str]] = []
 
     def fake_run(command, **_kwargs):
@@ -65,7 +70,7 @@ def test_changed_line_numbers_for_paths_batches_normal_paths(monkeypatch: pytest
         )
         return subprocess.CompletedProcess(command, 0, output, "")
 
-    monkeypatch.setattr(mutation_changed_files_lib.subprocess, "run", fake_run)
+    monkeypatch.setattr(mutation_changed_line_diff, "run_process", fake_run)
     changed = mutation_changed_files_lib.changed_line_numbers_for_paths(
         Path("/repo"), "a" * 40, "b" * 40, ["scripts/foo.py", "scripts/bar.py"]
     )
@@ -88,7 +93,7 @@ def test_changed_line_numbers_reuses_immutable_range_result(
             "",
         )
 
-    monkeypatch.setattr(mutation_changed_files_lib.subprocess, "run", fake_run)
+    monkeypatch.setattr(mutation_changed_files_lib, "run_process", fake_run)
     args = (Path("/repo"), "c" * 40, "d" * 40, "scripts/foo.py")
     assert mutation_changed_files_lib.changed_line_numbers(*args) == {2}
     assert mutation_changed_files_lib.changed_line_numbers(*args) == {2}

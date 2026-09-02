@@ -259,7 +259,7 @@ def test_build_mutation_line_coverage_uses_statement_spans(
     work_db.use_db = fake_use_db
     monkeypatch.setitem(sys.modules, "cosmic_ray", cosmic_ray)
     monkeypatch.setitem(sys.modules, "cosmic_ray.work_db", work_db)
-    monkeypatch.setattr(mutation_sampling_lib.subprocess, "run", fake_run)
+    monkeypatch.setattr(mutation_sampling_lib, "run_process", fake_run)
 
     coverage = build_mutation_line_coverage(
         repo,

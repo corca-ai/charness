@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import json
-import subprocess
 from pathlib import Path
 from typing import Callable
 
 import pytest
 
 from scripts import native_gate_lib
+from scripts.subprocess_guard import PhaseOutcome
 
 from .support import write_executable
 
@@ -33,6 +33,19 @@ def _fake_which(monkeypatch: pytest.MonkeyPatch, resolver: Callable[[str], str |
     monkeypatch.setattr(native_gate_lib.shutil, "which", resolver)
 
 
+def _phase_outcome(command: list[str], *, returncode: int = 0, **kwargs: object) -> PhaseOutcome:
+    return PhaseOutcome(
+        command,
+        str(kwargs.get("phase", "native-build")),
+        str(kwargs.get("display") or " ".join(command)),
+        returncode,
+        "",
+        "",
+        0.0,
+        False,
+    )
+
+
 def _no_cargo_no_installed(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     """Neither `repograph` nor `cargo` is reachable, and no cargo bin dir exists."""
     _fake_which(monkeypatch, lambda _name: None)
@@ -51,7 +64,9 @@ def test_override_beats_dev_tree(tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     assert dev_tree.is_file()
 
 
-def test_override_must_name_an_existing_file(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_override_must_name_an_existing_file(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     repo = _repo(tmp_path, with_source=True)
     monkeypatch.setenv("CHARNESS_NATIVE_CORE", str(tmp_path / "missing-repograph"))
 
@@ -135,9 +150,9 @@ def test_unbuilt_crate_is_built_and_the_build_is_announced_first(
     def fake_run(command, **kwargs):
         calls.append({"command": command, "cwd": kwargs.get("cwd")})
         _binary(binary)
-        return subprocess.CompletedProcess(command, 0)
+        return _phase_outcome(command, **kwargs)
 
-    monkeypatch.setattr(native_gate_lib.subprocess, "run", fake_run)
+    monkeypatch.setattr(native_gate_lib, "run_monitored_phase", fake_run)
 
     resolved = native_gate_lib.resolve_native_core(repo)
 
@@ -166,9 +181,9 @@ def test_source_newer_than_binary_triggers_an_announced_rebuild(
     monkeypatch.delenv("CHARNESS_NATIVE_CORE", raising=False)
     _fake_which(monkeypatch, lambda name: "/usr/bin/cargo" if name == "cargo" else None)
     monkeypatch.setattr(
-        native_gate_lib.subprocess,
-        "run",
-        lambda command, **kwargs: subprocess.CompletedProcess(command, 0),
+        native_gate_lib,
+        "run_monitored_phase",
+        lambda command, **kwargs: _phase_outcome(command, **kwargs),
     )
 
     resolved = native_gate_lib.resolve_native_core(repo)
@@ -192,8 +207,8 @@ def test_fresh_binary_is_not_rebuilt(tmp_path: Path, monkeypatch: pytest.MonkeyP
     os.utime(binary, (source_mtime + 60, source_mtime + 60))
     monkeypatch.delenv("CHARNESS_NATIVE_CORE", raising=False)
     monkeypatch.setattr(
-        native_gate_lib.subprocess,
-        "run",
+        native_gate_lib,
+        "run_monitored_phase",
         lambda *_args, **_kwargs: pytest.fail("a fresh binary must not be rebuilt"),
     )
 
@@ -231,9 +246,9 @@ def test_failed_build_does_not_fall_through_to_an_installed_binary(
         lambda name: "/usr/bin/cargo" if name == "cargo" else str(installed),
     )
     monkeypatch.setattr(
-        native_gate_lib.subprocess,
-        "run",
-        lambda command, **kwargs: subprocess.CompletedProcess(command, 101),
+        native_gate_lib,
+        "run_monitored_phase",
+        lambda command, **kwargs: _phase_outcome(command, returncode=101, **kwargs),
     )
 
     with pytest.raises(native_gate_lib.NativeGateError) as raised:
@@ -251,9 +266,9 @@ def test_cargo_success_without_a_binary_is_refused(
     monkeypatch.delenv("CHARNESS_NATIVE_CORE", raising=False)
     _fake_which(monkeypatch, lambda name: "/usr/bin/cargo" if name == "cargo" else None)
     monkeypatch.setattr(
-        native_gate_lib.subprocess,
-        "run",
-        lambda command, **kwargs: subprocess.CompletedProcess(command, 0),
+        native_gate_lib,
+        "run_monitored_phase",
+        lambda command, **kwargs: _phase_outcome(command, **kwargs),
     )
 
     with pytest.raises(native_gate_lib.NativeGateError, match="produced no binary"):
@@ -324,9 +339,9 @@ def test_probe_reports_resolution_without_running_child(
     fake = _fake_repograph(tmp_path / "bin" / "repograph")
     marker = tmp_path / "ran"
     fake.write_text(
-        fake.read_text(encoding="utf-8").replace(
-            "payload = {", f"Path({str(marker)!r}).touch()\npayload = {{"
-        ).replace("import os", "import os\nfrom pathlib import Path"),
+        fake.read_text(encoding="utf-8")
+        .replace("payload = {", f"Path({str(marker)!r}).touch()\npayload = {{")
+        .replace("import os", "import os\nfrom pathlib import Path"),
         encoding="utf-8",
     )
     fake.chmod(0o755)
@@ -376,7 +391,9 @@ def test_an_unreadable_source_file_does_not_abort_the_staleness_walk(
     assert native_gate_lib.dev_tree_staleness(crate, binary) is None
 
 
-def test_an_unstattable_binary_is_treated_as_stale(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_an_unstattable_binary_is_treated_as_stale(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """Unknown freshness resolves toward rebuilding, never toward trusting.
 
     The alternative -- treating an unreadable binary as fresh -- is the silent

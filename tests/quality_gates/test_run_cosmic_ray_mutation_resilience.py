@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import signal
 import subprocess
 import sys
@@ -29,13 +30,31 @@ RCRM = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(RCRM)
 
 
+def _phase_outcome(
+    command, *, returncode: int = 0, stdout: str = "", stderr: str = "", timed_out: bool = False
+):
+    return RCRM._guard.PhaseOutcome(
+        command,
+        "test-phase",
+        " ".join(command) if isinstance(command, list) else str(command),
+        returncode,
+        stdout,
+        stderr,
+        0.01,
+        timed_out,
+    )
+
+
 def test_exec_clean_completion_returns_zero_returncode(tmp_path: Path) -> None:
     config = tmp_path / "cosmic-ray.toml"
     session = tmp_path / "session.sqlite"
     config.touch()
 
-    with patch.object(RCRM.subprocess, "run") as run_mock:
-        run_mock.return_value = subprocess.CompletedProcess(args=[], returncode=0)
+    with patch.object(
+        RCRM._guard,
+        "run_monitored_phase",
+        return_value=_phase_outcome([]),
+    ):
         timed_out, returncode = RCRM._run_exec_with_timeout(config, session, tmp_path, 60)
 
     assert timed_out is False
@@ -47,8 +66,11 @@ def test_exec_timeout_returns_sentinel_returncode(tmp_path: Path) -> None:
     session = tmp_path / "session.sqlite"
     config.touch()
 
-    with patch.object(RCRM.subprocess, "run") as run_mock:
-        run_mock.side_effect = subprocess.TimeoutExpired(cmd=[], timeout=60)
+    with patch.object(
+        RCRM._guard,
+        "run_monitored_phase",
+        return_value=_phase_outcome([], returncode=124, timed_out=True),
+    ):
         timed_out, returncode = RCRM._run_exec_with_timeout(config, session, tmp_path, 60)
 
     assert timed_out is True
@@ -61,8 +83,11 @@ def test_exec_crash_returns_real_returncode_no_exception(tmp_path: Path) -> None
     session = tmp_path / "session.sqlite"
     config.touch()
 
-    with patch.object(RCRM.subprocess, "run") as run_mock:
-        run_mock.return_value = subprocess.CompletedProcess(args=[], returncode=2)
+    with patch.object(
+        RCRM._guard,
+        "run_monitored_phase",
+        return_value=_phase_outcome([], returncode=2),
+    ):
         timed_out, returncode = RCRM._run_exec_with_timeout(config, session, tmp_path, 60)
 
     assert timed_out is False
@@ -74,11 +99,11 @@ def test_dump_session_atomic_rename_on_success(tmp_path: Path) -> None:
     session = tmp_path / "session.sqlite"
     dump_path = tmp_path / "dump.jsonl"
 
-    def fake_run(cmd, cwd, check, stdout, text):
-        stdout.write('[{"work": 1}, {"result": 2}]\n')
-        return subprocess.CompletedProcess(args=cmd, returncode=0)
+    def fake_run(cmd, **_kwargs):
+        os.write(1, b'[{"work": 1}, {"result": 2}]\n')
+        return _phase_outcome(cmd)
 
-    with patch.object(RCRM.subprocess, "run", side_effect=fake_run):
+    with patch.object(RCRM._guard, "run_monitored_phase", side_effect=fake_run):
         rc = RCRM._dump_session(session, dump_path, tmp_path)
 
     assert rc == 0
@@ -93,11 +118,11 @@ def test_dump_session_leaves_partial_on_crash(tmp_path: Path) -> None:
     dump_path = tmp_path / "dump.jsonl"
     dump_path.write_text("previous-good-content\n", encoding="utf-8")
 
-    def fake_run(cmd, cwd, check, stdout, text):
-        stdout.write("oops-")  # partial stream
-        return subprocess.CompletedProcess(args=cmd, returncode=3)
+    def fake_run(cmd, **_kwargs):
+        os.write(1, b"oops-")  # partial stream
+        return _phase_outcome(cmd, returncode=3)
 
-    with patch.object(RCRM.subprocess, "run", side_effect=fake_run):
+    with patch.object(RCRM._guard, "run_monitored_phase", side_effect=fake_run):
         rc = RCRM._dump_session(session, dump_path, tmp_path)
 
     assert rc == 3
@@ -192,14 +217,14 @@ def test_restore_module_paths_reverts_mutated_file(tmp_path: Path) -> None:
 
 
 def test_restore_module_paths_noop_on_empty(tmp_path: Path) -> None:
-    with patch.object(RCRM.subprocess, "run") as run_mock:
+    with patch.object(RCRM._guard, "run_process") as run_mock:
         RCRM._restore_module_paths([], tmp_path)
     run_mock.assert_not_called()
 
 
 def test_restore_module_paths_best_effort_when_git_missing(tmp_path: Path) -> None:
     # git absent → log and skip, never raise (so a working run is not broken).
-    with patch.object(RCRM.subprocess, "run", side_effect=FileNotFoundError):
+    with patch.object(RCRM._guard, "run_process", side_effect=FileNotFoundError):
         RCRM._restore_module_paths([tmp_path / "mod.py"], tmp_path)
 
 
@@ -211,7 +236,7 @@ def test_restore_module_paths_continues_past_one_file_failure(tmp_path: Path) ->
         rc = 1 if cmd[-1].endswith("a.py") else 0
         return subprocess.CompletedProcess(args=cmd, returncode=rc, stderr="boom")
 
-    with patch.object(RCRM.subprocess, "run", side_effect=fake_run):
+    with patch.object(RCRM._guard, "run_process", side_effect=fake_run):
         RCRM._restore_module_paths([tmp_path / "a.py", tmp_path / "b.py"], tmp_path)
 
     # One file failing does not abort the rest.
@@ -364,39 +389,16 @@ def test_main_dry_run_does_not_restore(tmp_path: Path) -> None:
     restore_mock.assert_not_called()
 
 
-def _fake_popen(lines: list[str], returncode: int):
-    """A `Popen` stand-in whose stdout is iterable, matching the streaming reader.
-
-    `_run_baseline` streams AND accumulates on purpose: `cosmic-ray baseline` runs
-    the whole unmutated suite with no internal timeout, so a job killed at its
-    ceiling would emit nothing under buffering. A `capture_output` fake would not
-    exercise that, so this one iterates.
-    """
-
-    class _Proc:
-        def __init__(self) -> None:
-            self.stdout = iter(lines)
-
-        def __enter__(self):
-            return self
-
-        def __exit__(self, *exc):
-            return False
-
-        def wait(self) -> int:
-            return returncode
-
-    return lambda *args, **kwargs: _Proc()
-
-
-def test_baseline_streams_every_line_and_returns_on_success(
-    tmp_path: Path, capsys
-) -> None:
+def test_baseline_streams_every_line_and_returns_on_success(tmp_path: Path, capsys) -> None:
     config = tmp_path / "cosmic-ray.toml"
     config.touch()
     marker = tmp_path / "abort.json"
 
-    with patch.object(RCRM.subprocess, "Popen", _fake_popen(["a\n", "b\n"], 0)):
+    with patch.object(
+        RCRM._guard,
+        "run_monitored_phase",
+        return_value=_phase_outcome(["cosmic-ray", "baseline"], stdout="a\nb\n"),
+    ):
         RCRM._run_baseline(config, tmp_path, marker_path=marker)
 
     out = capsys.readouterr().out
@@ -412,10 +414,14 @@ def test_baseline_failure_writes_the_abort_marker_and_raises(tmp_path: Path) -> 
     config.touch()
     marker = tmp_path / "abort.json"
 
-    with patch.object(RCRM.subprocess, "Popen", _fake_popen(["boom\n"], 3)):
+    with patch.object(
+        RCRM._guard,
+        "run_monitored_phase",
+        return_value=_phase_outcome(["cosmic-ray", "baseline"], returncode=3, stdout="boom\n"),
+    ):
         try:
             RCRM._run_baseline(config, tmp_path, marker_path=marker)
-        except subprocess.CalledProcessError as exc:
+        except RCRM._CommandFailure as exc:
             assert exc.returncode == 3
             assert exc.output == "boom\n"
         else:
@@ -437,7 +443,7 @@ def test_baseline_names_a_missing_executable_instead_of_crashing(tmp_path: Path)
     def _raise(*args, **kwargs):
         raise FileNotFoundError(2, "no such file")
 
-    with patch.object(RCRM.subprocess, "Popen", _raise):
+    with patch.object(RCRM._guard, "run_monitored_phase", _raise):
         try:
             RCRM._run_baseline(config, tmp_path, marker_path=tmp_path / "m.json")
         except SystemExit as exc:

@@ -6,7 +6,7 @@ from textwrap import dedent
 
 import pytest
 
-from scripts.mutation_sampling_lib import run_test_coverage
+from scripts.mutation_sampling_lib import CoverageCommandError, run_test_coverage
 
 
 def test_mutation_coverage_ignores_deleted_sources_outside_repo(tmp_path: Path) -> None:
@@ -50,8 +50,6 @@ def test_mutation_coverage_ignores_deleted_sources_outside_repo(tmp_path: Path) 
 
 def test_run_test_coverage_failure_raises_with_captured_output(tmp_path: Path) -> None:
     pytest.importorskip("coverage", reason="coverage package required for mutation coverage probe")
-    import subprocess
-
     repo = tmp_path / "repo"
     test_file = repo / "tests" / "test_failing_target.py"
     test_file.parent.mkdir(parents=True)
@@ -61,7 +59,7 @@ def test_run_test_coverage_failure_raises_with_captured_output(tmp_path: Path) -
     )
 
     coverage_json = repo / "reports" / "mutation" / "coverage.json"
-    with pytest.raises(subprocess.CalledProcessError) as excinfo:
+    with pytest.raises(CoverageCommandError) as excinfo:
         run_test_coverage(repo, "python3 -m pytest -q tests/test_failing_target.py", coverage_json)
 
     combined = f"{excinfo.value.output or ''}{excinfo.value.stderr or ''}"

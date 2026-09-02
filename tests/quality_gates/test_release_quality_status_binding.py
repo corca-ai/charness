@@ -23,6 +23,7 @@ It took THREE attempts to repair, which is why it has a test:
 There are five writers across four modules. Patching call sites was always going
 to lose that race, and these tests pin the owner rather than the callers.
 """
+
 from __future__ import annotations
 
 import json
@@ -88,7 +89,8 @@ def test_an_explicit_argument_still_wins(artifact, monkeypatch) -> None:
     """One caller legitimately says the gate is QUEUED, before it has run. The
     payload must not overwrite a caller that knows better."""
     seen = _rendered(
-        artifact, monkeypatch,
+        artifact,
+        monkeypatch,
         {"quality_status": "exited 0 in 181.0s"},
         quality_status="is queued for this publish attempt",
     )
@@ -204,6 +206,10 @@ def test_release_quality_seals_a_semantic_one_push_receipt(tmp_path: Path) -> No
         ROOT / "scripts" / "prepush_quality_receipt.py",
         repo / "scripts" / "prepush_quality_receipt.py",
     )
+    shutil.copy2(
+        ROOT / "scripts" / "subprocess_guard.py",
+        repo / "scripts" / "subprocess_guard.py",
+    )
     (repo / "plugins" / "charness" / "plugin.txt").write_text("v1\n", encoding="utf-8")
     replace_with_committed_repo(repo, message="seed")
 
@@ -264,8 +270,11 @@ def test_release_quality_seals_a_semantic_one_push_receipt(tmp_path: Path) -> No
 
     receipt = json.loads(sealed.read_text(encoding="utf-8"))
     assert receipt["status"] == "pass"
-    assert receipt["verified_head"] == subprocess.run(
-        ["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True
-    ).stdout.strip()
+    assert (
+        receipt["verified_head"]
+        == subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True
+        ).stdout.strip()
+    )
     assert receipt["materialized_root"] == "plugins/charness"
     assert payload["quality_status"].startswith("exited 0")
