@@ -11,16 +11,6 @@ security and supply chain, skill drift, runtime risk, and operator sustainabilit
 Gates are evidence, not the judgment. Length, duplicate, and pressure heuristics are smell sensors; the first quality move is usually to delete, merge, split ownership, extract a helper, or narrow an interface. A gate earns its cost from
 the claim and its affected consumers.
 
-## Fast path
-
-Quality is not a request to run every available check. For a narrow question or
-ordinary implementation, inspect the affected owner, run the smallest focused
-check that answers the question, and stop. Do not invoke the planner, broad
-suite, mutation, artifact scaffold, dogfood, or fresh-eye review merely because
-`quality` was selected. Expand only when the claim crosses a release,
-proof-surface, external, security, or genuinely repo-wide boundary, and state
-the additional claim each expanded check buys.
-
 ## Consumer-repo health
 
 When this skill is used in a consuming repository, the primary quality question
@@ -40,6 +30,27 @@ names what disappears and why, what remains sufficient, and what risk the
 non-claim leaves. A green result from a duplicate gate is not evidence that the
 duplicate belongs in the repository.
 
+## What this skill does not run
+
+These authoring-repo-only checks are not consumer-repo health gates:
+
+- packaging and export;
+- skill contracts;
+- presets, profiles, and integrations; and
+- this repo's pointer freshness.
+
+They live in the authoring repository's `tools/`.
+
+## Fast path
+
+Quality is not a request to run every available check. For a narrow question or
+ordinary implementation, inspect the affected owner, run the smallest focused
+check that answers the question, and stop. Do not invoke the planner, broad
+suite, mutation, artifact scaffold, dogfood, or fresh-eye review merely because
+`quality` was selected. Expand only when the claim crosses a release,
+proof-surface, external, security, or genuinely repo-wide boundary, and state
+the additional claim each expanded check buys.
+
 ## Bootstrap
 
 For a repo-wide question or an adapter/gate change, resolve `$SKILL_DIR` per
@@ -50,6 +61,7 @@ when a selected command actually needs the binary.
 
 ```bash
 # Required Tools: rg
+# First consumer declaration: set `universes:` for this repository's file families.
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 python3 "$SKILL_DIR/scripts/bootstrap_adapter.py" --repo-root .
 python3 "$SKILL_DIR/scripts/plan_quality_run.py" --repo-root .

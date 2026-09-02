@@ -66,13 +66,9 @@ validators:
     reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
   - path: scripts/check_closeout_classification_parity.py
     id: closeout-classification-parity
-    consumer_facing: true
-    decision: publish
-    artifact_type: issue-closeout-classification
-    adoption_policy: wire-or-opt-out
-    reason: "consumer-facing artifact or closeout contract; the packaged path is the source of truth for consuming repositories"
-    purpose: "checks the issue-closeout classification vocabulary consumed by a repo"
-    invocation: "python3 <plugin-root>/scripts/check_closeout_classification_parity.py"
+    consumer_facing: false
+    decision: exclude
+    reason: "authoring-repo closeout classification gate, not a consumer-authored artifact contract"
   - path: scripts/check_command_docs.py
     consumer_facing: false
     decision: exclude

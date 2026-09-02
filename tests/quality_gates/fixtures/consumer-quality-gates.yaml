@@ -1,0 +1,13 @@
+schema: charness/quality-gates/v1
+phases:
+- id: consumer
+  gates:
+  - label: consumer-pytest
+    command: python3 -m pytest tests
+    lane: ship
+  - label: authoring-catalog
+    command: python3 -m tools.validate_quality_reference_catalog
+    lane: tools
+  - label: authoring-scan
+    command: python3 tools/check_internal.py
+    lane: standard

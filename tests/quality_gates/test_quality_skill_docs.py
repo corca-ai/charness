@@ -10,6 +10,9 @@ DISPATCH = (
     ROOT / "skills" / "public" / "quality" / "references" / "inventory-dispatch.md"
 ).read_text(encoding="utf-8")
 QUALITY_SKILL = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
+QUALITY_ADAPTER_EXAMPLE = (
+    ROOT / "skills" / "public" / "quality" / "adapter.example.yaml"
+).read_text(encoding="utf-8")
 CREATE_CLI_QUALITY_GATES = (
     ROOT / "skills" / "public" / "create-cli" / "references" / "quality-gates.md"
 ).read_text(encoding="utf-8")
@@ -97,12 +100,45 @@ def test_quality_runner_has_no_retired_usage_episode_gates() -> None:
 def test_quality_skill_makes_consumer_gate_reduction_a_primary_move() -> None:
     quality = QUALITY_SKILL.lower()
 
+    assert quality.index("## consumer-repo health") < quality.index("## fast path")
     assert "consuming repository" in quality
     assert "existing gates, hooks, validators, wrappers, mirrors" in quality
     assert "delete or merge a duplicate" in quality
     assert "move an expensive confidence check to ci or an explicit release phase" in quality
     assert "leave an explicit non-claim" in quality
     assert "before proposing a new rule" in quality
+
+
+def test_quality_skill_declares_the_consumer_boundary_and_example_universes() -> None:
+    quality = QUALITY_SKILL.lower()
+
+    assert "first consumer declaration" in quality
+    assert "`universes:`" in quality
+    for repo_only_class in (
+        "packaging",
+        "export",
+        "skill contracts",
+        "presets",
+        "profiles",
+        "integrations",
+        "pointer freshness",
+    ):
+        assert repo_only_class in quality
+    assert "authoring repository's `tools/`" in quality
+
+    assert "universes:" in QUALITY_ADAPTER_EXAMPLE
+    assert "- src/*.py" in QUALITY_ADAPTER_EXAMPLE
+    assert "- src/**/*.py" in QUALITY_ADAPTER_EXAMPLE
+    for charness_only_key in (
+        "preset_id:",
+        "adapter_review_sources:",
+        "acknowledged_recommendations:",
+        "gate_design_review_globs:",
+        "skill_ergonomics_gate_rules:",
+        "runtime_profile_default:",
+        "mutation_testing:",
+    ):
+        assert charness_only_key not in QUALITY_ADAPTER_EXAMPLE
 
 
 def test_quality_skill_carries_lint_ignore_lens() -> None:

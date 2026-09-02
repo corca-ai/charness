@@ -46,3 +46,7 @@ Use charness to initialize this repo.
 That prompt routes to [setup](./skills/public/setup/SKILL.md), which inspects the
 repository's current operating surfaces, proposes the appropriate setup plan,
 and requires approval before writing changes.
+
+## Skills
+
+- [Quality](./skills/public/quality/SKILL.md) — inspect and improve a consumer repository's health.

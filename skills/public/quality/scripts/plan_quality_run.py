@@ -16,6 +16,7 @@ SKILL_ROOT = Path(__file__).resolve().parents[1]
 ENVELOPE = SimpleNamespace(
     **runpy.run_path(str(Path(__file__).resolve().parents[3] / "shared" / "scripts" / "run_plan_envelope.py"))
 )
+DECLARED_GATE_SOURCE = runpy.run_path(str(Path(__file__).resolve().parent / "quality_declared_gate_source.py"))
 
 
 def _load_declaration_lifecycle():
@@ -61,10 +62,6 @@ def _emit_yaml(payload: dict[str, Any]) -> None:
             emit_yaml(payload)
             return
     raise RuntimeError("scripts/yaml_output.py not found")
-
-
-def _catalog() -> dict[str, Any]:
-    return _load_yaml_file(CATALOG_PATH)
 
 
 def _measure_required_read(ref: dict[str, Any]) -> dict[str, Any]:
@@ -299,11 +296,12 @@ def _structural_review_packet(repo_root: Path, skills: list[str], target_skill: 
 
 def build_plan(repo_root: Path, *, target_skill: str | None = None) -> dict[str, Any]:
     discovered_skills = _skill_paths(repo_root)
-    catalog = _catalog()
+    catalog = _load_yaml_file(CATALOG_PATH)
     references = catalog.get("references", [])
-    gates = catalog.get("gates", [])
+    catalog_gates = catalog.get("gates", [])
+    declared_gates = DECLARED_GATE_SOURCE["read_consumer_gate_packets"](repo_root, _load_yaml_file)
     declaration_lifecycle, adapter_packets = _load_declaration_lifecycle().build_declaration_lifecycle(
-        repo_root, skills=discovered_skills, catalog_gates=gates
+        repo_root, skills=discovered_skills, catalog_gates=catalog_gates
     )
     skills = [
         row["path"]
@@ -313,8 +311,19 @@ def build_plan(repo_root: Path, *, target_skill: str | None = None) -> dict[str,
     skills_in_scope = bool(skills)
     adapter = declaration_lifecycle.get("adapter") or {}
     applicable_gate_ids = declaration_lifecycle.get("applicable_catalog_gate_ids")
+    gates = list(catalog_gates)
     if adapter.get("found") and adapter.get("valid") and isinstance(applicable_gate_ids, list):
         gates = [gate for gate in gates if gate.get("id") in applicable_gate_ids]
+    if declared_gates is not None:
+        referenced_packet_ids = {
+            packet_id
+            for row in declaration_lifecycle.get("surfaces", [])
+            if isinstance(row, dict)
+            for packet_id in row.get("packet_ids", [])
+            if isinstance(packet_id, str)
+        }
+        gates = [gate for gate in gates if gate.get("id") in referenced_packet_ids]
+        gates = [*gates, *declared_gates]
     gates = [*gates, *adapter_packets]
     required_reads = [
         _measure_required_read(ref)

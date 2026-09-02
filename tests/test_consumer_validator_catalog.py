@@ -256,6 +256,7 @@ def test_live_catalog_has_a_decision_for_every_packaged_candidate(tmp_path: Path
 
     assert report["status"] == "pass"
     assert "scripts/validate_adapters.py" not in report["consumer_facing_validators"]
+    assert "scripts/check_closeout_classification_parity.py" not in report["consumer_facing_validators"]
     assert "quality-artifact" in report["consumer_validator_ids"]
     quality = next(
         entry for entry in report["consumer_validator_entries"] if entry["id"] == "quality-artifact"
