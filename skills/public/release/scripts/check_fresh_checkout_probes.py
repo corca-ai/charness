@@ -34,6 +34,7 @@ CALLER's spend to authorize (``--run-probes``; the release publish helper does i
 before tag push), so a status listing never shells out to adapter-declared
 commands a consumer repo wrote.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -46,13 +47,23 @@ from typing import Any
 
 
 def _load_skill_runtime_bootstrap():
-    bootstrap = next((ancestor / "skill_runtime_bootstrap.py" for ancestor in Path(__file__).resolve().parents if (ancestor / "skill_runtime_bootstrap.py").is_file()), None)
+    bootstrap = next(
+        (
+            ancestor / "skill_runtime_bootstrap.py"
+            for ancestor in Path(__file__).resolve().parents
+            if (ancestor / "skill_runtime_bootstrap.py").is_file()
+        ),
+        None,
+    )
     if bootstrap is None:
         raise ImportError("skill_runtime_bootstrap.py not found")
     return SimpleNamespace(**runpy.run_path(str(bootstrap)))
 
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
+run_process = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.subprocess_guard"
+).run_process
 yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 _resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter.load_adapter
@@ -67,22 +78,7 @@ UNESTABLISHED_EXIT = 3
 
 
 def _run(command: list[str], *, cwd: Path) -> subprocess.CompletedProcess[str]:
-    try:
-        return subprocess.run(
-            command,
-            cwd=cwd,
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=GIT_TIMEOUT_SECONDS,
-        )
-    except subprocess.TimeoutExpired as exc:
-        return subprocess.CompletedProcess(
-            command,
-            124,
-            str(exc.stdout or ""),
-            f"timed out after {GIT_TIMEOUT_SECONDS}s",
-        )
+    return run_process(command, cwd=cwd, timeout_seconds=GIT_TIMEOUT_SECONDS)
 
 
 def _current_branch(repo_root: Path) -> str | None:
@@ -92,24 +88,13 @@ def _current_branch(repo_root: Path) -> str | None:
 
 
 def _run_shell(command: str, *, cwd: Path) -> dict[str, object]:
-    try:
-        result = subprocess.run(
-            command,
-            cwd=cwd,
-            shell=True,
-            executable="/bin/bash",
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=FRESH_CHECKOUT_PROBE_TIMEOUT_SECONDS,
-        )
-    except subprocess.TimeoutExpired as exc:
-        result = subprocess.CompletedProcess(
-            command,
-            124,
-            str(exc.stdout or ""),
-            f"timed out after {FRESH_CHECKOUT_PROBE_TIMEOUT_SECONDS}s",
-        )
+    result = run_process(
+        command,
+        cwd=cwd,
+        shell=True,
+        executable="/bin/bash",
+        timeout_seconds=FRESH_CHECKOUT_PROBE_TIMEOUT_SECONDS,
+    )
     return {
         "command": command,
         "returncode": result.returncode,
@@ -172,7 +157,9 @@ def build_payload(repo_root: Path, *, run_probes: bool) -> dict[str, Any]:
                 "reason": "fresh checkout probes require a named branch",
                 "fresh_checkout_probes": probes,
                 "probe_results": [],
-                "blockers": ["fresh checkout probes require a named branch; detached HEAD is not supported"],
+                "blockers": [
+                    "fresh checkout probes require a named branch; detached HEAD is not supported"
+                ],
             }
         clone_command.extend(["--branch", branch])
         clone_command.extend([repo_root.resolve().as_uri(), str(clone_path)])
@@ -223,9 +210,20 @@ def main() -> int:
         label="release fresh checkout probes", default_seconds=0
     )
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root used to resolve the release adapter")
-    parser.add_argument("--run-probes", action="store_true", help="Clone the repo into a temp dir and execute the declared probes")
-    parser.add_argument("--detail", action="store_true", help="Emit the full fresh-checkout probe payload as YAML")
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        required=True,
+        help="Repo root used to resolve the release adapter",
+    )
+    parser.add_argument(
+        "--run-probes",
+        action="store_true",
+        help="Clone the repo into a temp dir and execute the declared probes",
+    )
+    parser.add_argument(
+        "--detail", action="store_true", help="Emit the full fresh-checkout probe payload as YAML"
+    )
     try:
         args = parser.parse_args()
         payload = build_payload(args.repo_root.resolve(), run_probes=args.run_probes)

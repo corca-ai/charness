@@ -8,11 +8,14 @@ adjacent support module.
 
 from __future__ import annotations
 
+import contextlib
+import io
 import json
-import subprocess
+import runpy
 import sys
 import uuid
 from pathlib import Path
+from types import SimpleNamespace
 
 try:
     from reviewer_capability import load_capability_file
@@ -68,6 +71,20 @@ except ImportError:
     )
 
 
+def _runtime():
+    bootstrap = next(
+        (
+            ancestor / "scripts" / "runtime_bootstrap.py"
+            for ancestor in Path(__file__).resolve().parents
+            if (ancestor / "scripts" / "runtime_bootstrap.py").is_file()
+        ),
+        None,
+    )
+    if bootstrap is None:
+        raise ImportError("runtime_bootstrap.py not found")
+    return SimpleNamespace(**runpy.run_path(str(bootstrap)))
+
+
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     repo_root = args.repo_root.resolve()
@@ -105,11 +122,22 @@ def main(argv: list[str] | None = None) -> int:
         stderr_path = _repo_path(repo_root, args.stderr_file or Path(f"{output_path}.stderr"))
         producer_run_id = args.run_id or uuid.uuid4().hex
         if _sha256(schema) != _sha256(DEFAULT_SCHEMA):
-            raise ValueError("file-backed reviewer runner requires the canonical bounded-review result schema")
-        launch_capability = load_capability_file(capability_file, attempt_id=args.attempt_id, require_ready=True)
+            raise ValueError(
+                "file-backed reviewer runner requires the canonical bounded-review result schema"
+            )
+        launch_capability = load_capability_file(
+            capability_file, attempt_id=args.attempt_id, require_ready=True
+        )
         all_paths = (
-            prompt, capability_file, schema, ledger_path, output_path, receipt_path,
-            report_target, stdout_path, stderr_path,
+            prompt,
+            capability_file,
+            schema,
+            ledger_path,
+            output_path,
+            receipt_path,
+            report_target,
+            stdout_path,
+            stderr_path,
         )
         for path in all_paths:
             try:
@@ -119,11 +147,14 @@ def main(argv: list[str] | None = None) -> int:
         if len({str(path) for path in all_paths}) != len(all_paths):
             raise ValueError("runner input and output paths must resolve to distinct files")
         stale_targets = [
-            path for path in (output_path, receipt_path, report_target, stdout_path, stderr_path)
+            path
+            for path in (output_path, receipt_path, report_target, stdout_path, stderr_path)
             if path is not None and path.exists()
         ]
         if stale_targets:
-            raise ValueError("refusing stale runner artifacts: " + ", ".join(str(path) for path in stale_targets))
+            raise ValueError(
+                "refusing stale runner artifacts: " + ", ".join(str(path) for path in stale_targets)
+            )
         prompt_sha = _sha256(prompt)
         schema_sha = _sha256(schema)
         with ledger_lock(ledger_path):
@@ -152,24 +183,45 @@ def main(argv: list[str] | None = None) -> int:
             )
             _write(ledger_path, ledger)
 
-        worker_command = [
-            sys.executable, str(WORKER), "--backend", backend, "--workspace", str(repo_root),
-            "--prompt-file", str(prompt), "--schema-file", str(schema),
-            "--capability-file", str(capability_file), "--output-file", str(output_path),
-            "--receipt-file", str(receipt_path), "--execution-mode", mode,
-            "--attempt-id", args.attempt_id, "--scope", args.scope,
-            "--packet-identity", args.packet_identity,
-            "--reviewed-input-identity", args.reviewed_input_identity,
-            "--parent-receipt-identity", args.parent_receipt_identity,
+        worker_argv = [
+            "--backend",
+            backend,
+            "--workspace",
+            str(repo_root),
+            "--prompt-file",
+            str(prompt),
+            "--schema-file",
+            str(schema),
+            "--capability-file",
+            str(capability_file),
+            "--output-file",
+            str(output_path),
+            "--receipt-file",
+            str(receipt_path),
+            "--execution-mode",
+            mode,
+            "--attempt-id",
+            args.attempt_id,
+            "--scope",
+            args.scope,
+            "--packet-identity",
+            args.packet_identity,
+            "--reviewed-input-identity",
+            args.reviewed_input_identity,
+            "--parent-receipt-identity",
+            args.parent_receipt_identity,
         ]
-        worker_command.extend(["--boundary-mode", boundary_mode])
+        worker_argv.extend(["--boundary-mode", boundary_mode])
         if boundary_fingerprint is not None:
-            worker_command.extend(["--boundary-fingerprint", boundary_fingerprint])
-        worker_command.extend(["--stdout-file", str(stdout_path), "--stderr-file", str(stderr_path)])
-        worker_command.extend(["--timeout-seconds", str(timeout), "--run-id", producer_run_id])
-        worker = subprocess.run(worker_command, cwd=repo_root, check=False, capture_output=True, text=True)
-        if worker.stderr:
-            sys.stderr.write(worker.stderr)
+            worker_argv.extend(["--boundary-fingerprint", boundary_fingerprint])
+        worker_argv.extend(["--stdout-file", str(stdout_path), "--stderr-file", str(stderr_path)])
+        worker_argv.extend(["--timeout-seconds", str(timeout), "--run-id", producer_run_id])
+        worker_module = _runtime().load_path_module("charness_reviewer_worker_in_process", WORKER)
+        worker_stderr = io.StringIO()
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(worker_stderr):
+            worker_returncode = worker_module.main(worker_argv)
+        if worker_stderr.getvalue():
+            sys.stderr.write(worker_stderr.getvalue())
 
         report = finalize_attempt(
             receipt_path=receipt_path,
@@ -184,7 +236,7 @@ def main(argv: list[str] | None = None) -> int:
         )
         _atomic_write_yaml(report_target, report)
         emit_yaml(report)
-        return 0 if worker.returncode == 0 and report["approval_eligible"] else 1
+        return 0 if worker_returncode == 0 and report["approval_eligible"] else 1
     except (OSError, ValueError, KeyError, json.JSONDecodeError, ReportError) as exc:
         if report_target is not None and not report_target.exists():
             try:

@@ -5,10 +5,10 @@ from __future__ import annotations
 import argparse
 import hashlib
 import os
-import subprocess
-import sys
+import runpy
 import tempfile
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 import yaml
@@ -18,9 +18,10 @@ def package_root() -> Path:
     """Find the source or installed plugin root from this module's location."""
     for candidate in Path(__file__).resolve().parents:
         has_schema = (
-            (candidate / "shared/references/bounded-review-result.schema.json").is_file()
-            or (candidate / "skills/shared/references/bounded-review-result.schema.json").is_file()
-        )
+            candidate / "shared/references/bounded-review-result.schema.json"
+        ).is_file() or (
+            candidate / "skills/shared/references/bounded-review-result.schema.json"
+        ).is_file()
         if has_schema and (
             (candidate / "skills/public/critique/scripts/resolve_adapter.py").is_file()
             or (candidate / "skills/critique/scripts/resolve_adapter.py").is_file()
@@ -45,6 +46,20 @@ def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def _runtime():
+    bootstrap = next(
+        (
+            ancestor / "scripts" / "runtime_bootstrap.py"
+            for ancestor in Path(__file__).resolve().parents
+            if (ancestor / "scripts" / "runtime_bootstrap.py").is_file()
+        ),
+        None,
+    )
+    if bootstrap is None:
+        raise ImportError("runtime_bootstrap.py not found")
+    return SimpleNamespace(**runpy.run_path(str(bootstrap)))
+
+
 def repo_path(repo_root: Path, value: Path) -> Path:
     """Resolve runner paths against the explicit repo root, never launch cwd."""
     return (value if value.is_absolute() else repo_root / value).resolve()
@@ -52,7 +67,9 @@ def repo_path(repo_root: Path, value: Path) -> Path:
 
 def atomic_write_yaml(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    fd, temporary_name = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".pending", dir=path.parent)
+    fd, temporary_name = tempfile.mkstemp(
+        prefix=f".{path.name}.", suffix=".pending", dir=path.parent
+    )
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as handle:
             handle.write(yaml.safe_dump(payload, sort_keys=False))
@@ -75,13 +92,8 @@ def adapter(repo_root: Path) -> dict[str, Any]:
     resolver = next((path for path in adapter_scripts if path.is_file()), None)
     if resolver is None:
         raise ValueError("cannot locate critique adapter resolver in the installed package")
-    result = subprocess.run(
-        [sys.executable, str(resolver), "--repo-root", str(repo_root)],
-        cwd=repo_root, capture_output=True, text=True, check=False,
-    )
-    if result.returncode != 0:
-        raise ValueError(result.stderr.strip() or "critique adapter resolution failed")
-    payload = yaml.safe_load(result.stdout) or {}
+    resolver_module = _runtime().load_path_module("charness_reviewer_resolve_adapter", resolver)
+    payload = resolver_module.load_adapter(repo_root) or {}
     if not isinstance(payload, dict) or payload.get("valid") is not True:
         raise ValueError("critique adapter is invalid")
     return payload
@@ -98,7 +110,9 @@ def parser() -> argparse.ArgumentParser:
     result.add_argument("--attempt-id", required=True)
     result.add_argument("--parent-receipt-identity", required=True)
     result.add_argument("--boundary-fingerprint")
-    result.add_argument("--boundary-mode", choices=("read-only-worker", "shared-tree-fingerprint"), default=None)
+    result.add_argument(
+        "--boundary-mode", choices=("read-only-worker", "shared-tree-fingerprint"), default=None
+    )
     result.add_argument("--ledger-file", type=Path, required=True)
     result.add_argument("--output-file", type=Path, required=True)
     result.add_argument("--receipt-file", type=Path, required=True)
@@ -133,12 +147,18 @@ def select_runner(args: argparse.Namespace, repo_root: Path) -> tuple[str, str |
             )
         backend = configured_backend
     configured_timeout = runner.get("timeout_seconds")
-    if configured_timeout is not None and args.timeout_seconds is not None and args.timeout_seconds != configured_timeout:
+    if (
+        configured_timeout is not None
+        and args.timeout_seconds is not None
+        and args.timeout_seconds != configured_timeout
+    ):
         raise ValueError(
             f"adapter reviewer_runner.timeout_seconds={configured_timeout!r} is authoritative; "
             f"caller requested {args.timeout_seconds!r}"
         )
-    timeout = configured_timeout if configured_timeout is not None else (
-        args.timeout_seconds if args.timeout_seconds is not None else 900
+    timeout = (
+        configured_timeout
+        if configured_timeout is not None
+        else (args.timeout_seconds if args.timeout_seconds is not None else 900)
     )
     return configured_mode, backend, timeout

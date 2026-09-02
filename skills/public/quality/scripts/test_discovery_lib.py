@@ -9,12 +9,14 @@ surface is surfaced as degraded rather than silently substituting the defaults â
 the exact silent-undercount class the adapter seam exists to remove. The
 built-in globs stay here only as the zero-config default.
 """
+
 from __future__ import annotations
 
-import subprocess
 import sys
 from pathlib import Path
 from typing import Any
+
+from scripts.subprocess_guard import run_process
 
 
 def _ensure_scripts_package() -> None:
@@ -31,8 +33,18 @@ _ensure_scripts_package()
 from scripts.repo_file_listing import RepoFileSnapshot  # noqa: E402
 
 IGNORED_DIRS = {
-    ".artifacts", ".charness", ".git", ".hg", ".mypy_cache", ".pytest_cache",
-    ".ruff_cache", ".venv", "charness-artifacts", "mutants", "node_modules", "vendor",
+    ".artifacts",
+    ".charness",
+    ".git",
+    ".hg",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".venv",
+    "charness-artifacts",
+    "mutants",
+    "node_modules",
+    "vendor",
 }
 # discovery-boundary: adapter-owned default â€” consumers override this surface via the adapter `test_file_discovery` command/patterns; this list is only the zero-config fallback.
 TEST_FILE_PATTERNS = (
@@ -49,7 +61,9 @@ TEST_FILE_PATTERNS = (
     ":(glob)**/*.spec.ts",
     ":(glob)**/*.spec.tsx",
 )
-FALLBACK_TEST_FILE_PATTERNS = tuple(pattern.removeprefix(":(glob)**/") for pattern in TEST_FILE_PATTERNS)
+FALLBACK_TEST_FILE_PATTERNS = tuple(
+    pattern.removeprefix(":(glob)**/") for pattern in TEST_FILE_PATTERNS
+)
 DEFAULT_TEST_DISCOVERY: dict[str, Any] = {"command": "", "patterns": [], "patterns_mode": "extend"}
 DISCOVERY_COMMAND_TIMEOUT_SECONDS = 30
 
@@ -59,7 +73,11 @@ def _is_ignored(path: Path) -> bool:
 
 
 def _effective_patterns(discovery: dict[str, Any]) -> tuple[tuple[str, ...], tuple[str, ...]]:
-    patterns = [pattern for pattern in (discovery.get("patterns") or []) if isinstance(pattern, str) and pattern]
+    patterns = [
+        pattern
+        for pattern in (discovery.get("patterns") or [])
+        if isinstance(pattern, str) and pattern
+    ]
     if not patterns:
         return TEST_FILE_PATTERNS, FALLBACK_TEST_FILE_PATTERNS
     adapter_glob = tuple(f":(glob)**/{pattern}" for pattern in patterns)
@@ -75,12 +93,14 @@ def _discover_by_patterns(
     _ = patterns
     listed = RepoFileSnapshot(repo_root).list_files(include_untracked=True)
     if listed is None:
-        return sorted({
-            path
-            for pattern in fallback_patterns
-            for path in repo_root.rglob(pattern)
-            if path.is_file() and not _is_ignored(path.relative_to(repo_root))
-        })
+        return sorted(
+            {
+                path
+                for pattern in fallback_patterns
+                for path in repo_root.rglob(pattern)
+                if path.is_file() and not _is_ignored(path.relative_to(repo_root))
+            }
+        )
     allowed = {path for path in listed if path.is_file()}
     found: list[Path] = []
     seen: set[Path] = set()
@@ -94,17 +114,13 @@ def _discover_by_patterns(
 
 def _discover_by_command(repo_root: Path, command: str) -> tuple[list[Path] | None, str | None]:
     try:
-        result = subprocess.run(
+        result = run_process(
             command,
             cwd=repo_root,
             shell=True,
-            check=False,
-            capture_output=True,
-            text=True,
-            errors="replace",  # a lister emitting non-UTF-8 must degrade, never crash
-            timeout=DISCOVERY_COMMAND_TIMEOUT_SECONDS,
+            timeout_seconds=DISCOVERY_COMMAND_TIMEOUT_SECONDS,
         )
-    except (OSError, subprocess.SubprocessError) as exc:
+    except OSError as exc:
         return None, f"{type(exc).__name__}: {exc}"
     if result.returncode != 0:
         detail = (result.stderr or result.stdout or "").strip().splitlines()
@@ -125,7 +141,9 @@ def _discover_by_command(repo_root: Path, command: str) -> tuple[list[Path] | No
     return sorted(files), None
 
 
-def resolve_test_files(repo_root: Path, discovery: dict[str, Any] | None) -> tuple[list[Path], dict[str, Any]]:
+def resolve_test_files(
+    repo_root: Path, discovery: dict[str, Any] | None
+) -> tuple[list[Path], dict[str, Any]]:
     """Return the discovered test files plus a provenance record.
 
     The provenance record names the resolved `source` (`command` /
@@ -137,13 +155,22 @@ def resolve_test_files(repo_root: Path, discovery: dict[str, Any] | None) -> tup
     config = {**DEFAULT_TEST_DISCOVERY, **(discovery or {})}
     command = (config.get("command") or "").strip()
     patterns_declared = bool(
-        [pattern for pattern in (config.get("patterns") or []) if isinstance(pattern, str) and pattern]
+        [
+            pattern
+            for pattern in (config.get("patterns") or [])
+            if isinstance(pattern, str) and pattern
+        ]
     )
     patterns_source = "adapter-patterns" if patterns_declared else "default"
     if command:
         files, error = _discover_by_command(repo_root, command)
         if files:
-            return files, {"source": "command", "command_status": "ok", "degraded": False, "error": None}
+            return files, {
+                "source": "command",
+                "command_status": "ok",
+                "degraded": False,
+                "error": None,
+            }
         if files is not None:
             # Exited 0 but resolved no test files: an authoritative lister that
             # returns an empty surface is a degraded measurement, not a clean

@@ -9,7 +9,14 @@ from types import SimpleNamespace
 
 
 def _load_skill_runtime_bootstrap():
-    bootstrap = next((ancestor / "skill_runtime_bootstrap.py" for ancestor in Path(__file__).resolve().parents if (ancestor / "skill_runtime_bootstrap.py").is_file()), None)
+    bootstrap = next(
+        (
+            ancestor / "skill_runtime_bootstrap.py"
+            for ancestor in Path(__file__).resolve().parents
+            if (ancestor / "skill_runtime_bootstrap.py").is_file()
+        ),
+        None,
+    )
     if bootstrap is None:
         raise ImportError("skill_runtime_bootstrap.py not found")
     return SimpleNamespace(**runpy.run_path(str(bootstrap)))
@@ -22,15 +29,23 @@ _adapter_version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
     __file__, "scripts.adapter_version_verdict"
 )
 yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
+run_process = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.subprocess_guard"
+).run_process
 
 
 def _run_git(repo_root: Path, *args: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(["git", *args], cwd=repo_root, capture_output=True, text=True, check=False)
+    return run_process(["git", *args], cwd=repo_root, timeout_seconds=None)
 
 
 def _git_freshness(repo_root: Path, remote_name: str) -> dict[str, object]:
     if not (repo_root / ".git").exists():
-        return {"status": "not-git", "remote_name": remote_name, "ahead_count": 0, "ahead_examples": []}
+        return {
+            "status": "not-git",
+            "remote_name": remote_name,
+            "ahead_count": 0,
+            "ahead_examples": [],
+        }
 
     remote_result = _run_git(repo_root, "remote", "get-url", remote_name)
     if remote_result.returncode != 0:
@@ -42,8 +57,14 @@ def _git_freshness(repo_root: Path, remote_name: str) -> dict[str, object]:
             "detail": (remote_result.stderr or remote_result.stdout).strip(),
         }
 
-    upstream_result = _run_git(repo_root, "rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{upstream}")
-    upstream_ref = upstream_result.stdout.strip() if upstream_result.returncode == 0 and upstream_result.stdout.strip() else f"{remote_name}/main"
+    upstream_result = _run_git(
+        repo_root, "rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{upstream}"
+    )
+    upstream_ref = (
+        upstream_result.stdout.strip()
+        if upstream_result.returncode == 0 and upstream_result.stdout.strip()
+        else f"{remote_name}/main"
+    )
 
     count_result = _run_git(repo_root, "rev-list", "--count", f"HEAD..{upstream_ref}")
     if count_result.returncode != 0:
@@ -79,7 +100,12 @@ def _status_lines(repo_root: Path, paths: list[str]) -> list[str]:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root to map narrative source documents in")
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        required=True,
+        help="Repo root to map narrative source documents in",
+    )
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()

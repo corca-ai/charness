@@ -7,7 +7,6 @@ without subprocess plumbing.
 from __future__ import annotations
 
 import json
-import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -25,7 +24,11 @@ def _ensure_scripts_package() -> None:
 
 
 _ensure_scripts_package()
+from scripts import subprocess_guard as _subprocess_guard  # noqa: E402
 from scripts.git_checkout import discoverable as _git_metadata_is_discoverable  # noqa: E402
+from scripts.subprocess_guard import run_process  # noqa: E402
+
+subprocess = _subprocess_guard.subprocess
 
 PACKAGE_MANAGER_PRIORITY: tuple[tuple[str, str], ...] = (
     ("pnpm-lock.yaml", "pnpm"),
@@ -49,7 +52,9 @@ INSTALL_HOOKS_MISSING_TEMPLATE = Template(
 INSTALL_HOOKS_DETECTED_TEMPLATE = Template(
     (TEMPLATE_DIR / "worktree_install_hooks_detected.yaml.txt").read_text(encoding="utf-8")
 )
-DOCTOR_DEFAULT_TEMPLATE = Template((TEMPLATE_DIR / "worktree_doctor_default.yaml.txt").read_text(encoding="utf-8"))
+DOCTOR_DEFAULT_TEMPLATE = Template(
+    (TEMPLATE_DIR / "worktree_doctor_default.yaml.txt").read_text(encoding="utf-8")
+)
 DOCTOR_LEFTHOOK_TEMPLATE = Template(
     (TEMPLATE_DIR / "worktree_doctor_lefthook.yaml.txt").read_text(encoding="utf-8")
 )
@@ -113,15 +118,12 @@ def _git_config(repo_root: Path, key: str) -> str | None:
     if not _git_metadata_is_discoverable(repo_root):
         return None
     try:
-        result = subprocess.run(
+        result = run_process(
             ["git", "config", "--get", key],
             cwd=repo_root,
-            capture_output=True,
-            text=True,
-            check=False,
-            timeout=5,
+            timeout_seconds=5,
         )
-    except (OSError, subprocess.TimeoutExpired):
+    except OSError:
         return None
     if result.returncode != 0:
         return None
@@ -218,7 +220,9 @@ def _install_deps_argv(detection: WorktreeAdapterDetection) -> tuple[str, ...] |
     if pm == "yarn":
         # Yarn 2+ (Berry) renamed --frozen-lockfile to --immutable and rejects
         # the legacy flag outright; Yarn 1 (classic) still uses the old flag.
-        flag = "--immutable" if detection.package_manager_variant == "berry" else "--frozen-lockfile"
+        flag = (
+            "--immutable" if detection.package_manager_variant == "berry" else "--frozen-lockfile"
+        )
         return ("yarn", "install", flag)
     if pm == "bun":
         return ("bun", "install", "--frozen-lockfile")

@@ -11,16 +11,20 @@ import json
 import os
 import re
 import shutil
-import subprocess
 from pathlib import Path
 from typing import Any
+
+from scripts import subprocess_guard as _subprocess_guard
+from scripts.subprocess_guard import run_process
+
+subprocess = _subprocess_guard.subprocess
 
 VERSION_TIMEOUT_SECONDS = 30
 NOSE_TIMEOUT_SECONDS = 180
 _VERSION_RE = re.compile(r"(\d+)\.(\d+)\.(\d+)")
 
 
-def _completed_result(completed: subprocess.CompletedProcess[str], **extra: Any) -> dict[str, Any]:
+def _completed_result(completed, **extra: Any) -> dict[str, Any]:
     """Normalize fields shared by every completed Nose subprocess."""
     result = {
         "status": "ok" if completed.returncode == 0 else "error",
@@ -32,7 +36,7 @@ def _completed_result(completed: subprocess.CompletedProcess[str], **extra: Any)
     return result
 
 
-def _unreadable_result(completed: subprocess.CompletedProcess[str], error_kind: str, **extra: Any) -> dict[str, Any]:
+def _unreadable_result(completed, error_kind: str, **extra: Any) -> dict[str, Any]:
     """A completed run whose stdout carries no readable report. ``status`` is forced to
     ``error`` regardless of the exit code — an exit-0 run that printed nothing readable is
     still a run whose report the caller must not treat as a result — so no consumer can
@@ -58,14 +62,19 @@ def parse_nose_version(text: str) -> tuple[int, int, int] | None:
 def probe_nose_version(nose_bin: str) -> dict[str, Any]:
     """Best-effort ``nose --version`` result, including a normalized version."""
     try:
-        completed = subprocess.run(
-            [nose_bin, "--version"], check=False, capture_output=True, text=True,
-            timeout=VERSION_TIMEOUT_SECONDS,
+        completed = run_process(
+            [nose_bin, "--version"], cwd=Path.cwd(), timeout_seconds=VERSION_TIMEOUT_SECONDS
         )
-    except subprocess.TimeoutExpired:
-        return {"status": "error", "exit_code": 124, "stdout": "", "stderr": "", "version": None}
     except OSError:
         return {"status": "error", "exit_code": 1, "stdout": "", "stderr": "", "version": None}
+    if completed.returncode == 124 and completed.stderr.startswith("timed out after "):
+        return {
+            "status": "error",
+            "exit_code": 124,
+            "stdout": completed.stdout,
+            "stderr": "",
+            "version": None,
+        }
     return _completed_result(completed, version=parse_nose_version(completed.stdout or ""))
 
 
@@ -74,7 +83,9 @@ def version_text(version: tuple[int, int, int] | None) -> str:
     return ".".join(str(part) for part in version) if version is not None else ""
 
 
-def run_json_query(repo_root: Path, command: list[str], *, timeout: int = NOSE_TIMEOUT_SECONDS) -> dict[str, Any]:
+def run_json_query(
+    repo_root: Path, command: list[str], *, timeout: int = NOSE_TIMEOUT_SECONDS
+) -> dict[str, Any]:
     """Run a JSON-emitting Nose command with a stable raw transport contract.
 
     ``payload`` is present whenever stdout parses, even for a nonzero exit. This
@@ -85,19 +96,25 @@ def run_json_query(repo_root: Path, command: list[str], *, timeout: int = NOSE_T
     whenever ``status`` is ``ok``.
     """
     try:
-        completed = subprocess.run(
-            command, cwd=repo_root, check=False, capture_output=True, text=True,
-            timeout=timeout,
-        )
-    except subprocess.TimeoutExpired as exc:
-        return {
-            "status": "error", "exit_code": 124, "stdout": str(exc.stdout or ""),
-            "stderr": "", "payload": None, "error_kind": "timeout",
-        }
+        completed = run_process(command, cwd=repo_root, timeout_seconds=timeout)
     except OSError as exc:
         return {
-            "status": "error", "exit_code": 1, "stdout": "", "stderr": "",
-            "payload": None, "error_kind": "oserror", "error": str(exc),
+            "status": "error",
+            "exit_code": 1,
+            "stdout": "",
+            "stderr": "",
+            "payload": None,
+            "error_kind": "oserror",
+            "error": str(exc),
+        }
+    if completed.returncode == 124 and completed.stderr.startswith("timed out after "):
+        return {
+            "status": "error",
+            "exit_code": 124,
+            "stdout": completed.stdout,
+            "stderr": "",
+            "payload": None,
+            "error_kind": "timeout",
         }
     if not completed.stdout.strip():
         # No output is NOT an empty result set: a `--format json` query always emits a

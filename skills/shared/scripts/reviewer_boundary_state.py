@@ -12,9 +12,11 @@ stays testable without a repo and this side stays the only place that shells out
 
 from __future__ import annotations
 
+import base64
+import binascii
 import hashlib
 import os
-import subprocess
+import shlex
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -34,6 +36,7 @@ _ensure_scripts_package()
 from scripts.git_checkout import head_oid_from_files  # noqa: E402
 from scripts.git_status_snapshot import parse as parse_git_status  # noqa: E402
 from scripts.git_status_snapshot import status_args as git_status_args  # noqa: E402
+from scripts.subprocess_guard import run_process  # noqa: E402
 
 
 class FingerprintError(Exception):
@@ -43,12 +46,10 @@ class FingerprintError(Exception):
 def _git_text(repo_root: str, *args: str) -> str:
     # surrogateescape keeps non-UTF8 filenames representable instead of
     # crashing the rail with UnicodeDecodeError (fail-closed must stay JSON).
-    proc = subprocess.run(
+    proc = run_process(
         ["git", "-C", repo_root, *args],
-        check=False,
-        capture_output=True,
-        text=True,
-        errors="surrogateescape",
+        cwd=Path.cwd(),
+        timeout_seconds=None,
     )
     if proc.returncode != 0:
         raise FingerprintError(f"git {' '.join(args)} failed: {proc.stderr.strip()}")
@@ -56,12 +57,18 @@ def _git_text(repo_root: str, *args: str) -> str:
 
 
 def _git_bytes(repo_root: str, *args: str) -> bytes:
-    proc = subprocess.run(["git", "-C", repo_root, *args], check=False, capture_output=True)
+    command = ["git", "-C", repo_root, *args]
+    proc = run_process(
+        ["bash", "-o", "pipefail", "-c", f"{shlex.join(command)} | base64"],
+        cwd=Path.cwd(),
+        timeout_seconds=None,
+    )
     if proc.returncode != 0:
-        raise FingerprintError(
-            f"git {' '.join(args)} failed: {proc.stderr.decode(errors='replace').strip()}"
-        )
-    return proc.stdout
+        raise FingerprintError(f"git {' '.join(args)} failed: {proc.stderr.strip()}")
+    try:
+        return base64.b64decode(proc.stdout)
+    except (ValueError, binascii.Error) as exc:
+        raise FingerprintError(f"git {' '.join(args)} returned malformed encoded output") from exc
 
 
 def _status_payload(repo_root: str) -> bytes:
@@ -119,7 +126,10 @@ def _hash_worktree(repo_root: str, path: str) -> str:
     full = os.path.join(repo_root, path)
     try:
         if os.path.islink(full):
-            return "symlink:" + hashlib.sha256(os.readlink(full).encode(errors="surrogateescape")).hexdigest()
+            return (
+                "symlink:"
+                + hashlib.sha256(os.readlink(full).encode(errors="surrogateescape")).hexdigest()
+            )
         with open(full, "rb") as handle:
             body = handle.read()
     except OSError:
@@ -212,7 +222,9 @@ def new_window(window_id: str | None = None) -> dict:
     }
 
 
-def build_snapshot(repo_root: str, window: dict | None = None, snapshot_dir: str | None = None) -> dict:
+def build_snapshot(
+    repo_root: str, window: dict | None = None, snapshot_dir: str | None = None
+) -> dict:
     payload = _status_payload(repo_root)
     snapshot = parse_git_status(payload)
     entries = _status_entries_from_payload(payload)

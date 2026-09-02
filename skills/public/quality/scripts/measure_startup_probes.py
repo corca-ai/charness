@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """Measure adapter-owned startup probes for agent-facing or installable CLIs."""
+
 from __future__ import annotations
 
 import argparse
+import contextlib
+import io
 import runpy
 import statistics
 import subprocess
@@ -18,13 +21,23 @@ from summary_output_lib import add_output_args, bounded_list, emit_selected  # n
 
 
 def _load_skill_runtime_bootstrap():
-    bootstrap = next((ancestor / "skill_runtime_bootstrap.py" for ancestor in Path(__file__).resolve().parents if (ancestor / "skill_runtime_bootstrap.py").is_file()), None)
+    bootstrap = next(
+        (
+            ancestor / "skill_runtime_bootstrap.py"
+            for ancestor in Path(__file__).resolve().parents
+            if (ancestor / "skill_runtime_bootstrap.py").is_file()
+        ),
+        None,
+    )
     if bootstrap is None:
         raise ImportError("skill_runtime_bootstrap.py not found")
     return SimpleNamespace(**runpy.run_path(str(bootstrap)))
 
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
+run_process = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.subprocess_guard"
+).run_process
 _resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter_module.load_adapter
 _adapter_version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
@@ -46,8 +59,19 @@ def _record_runtime_script_path(repo_root: Path) -> Path:
 
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--repo-root", type=Path, default=Path.cwd(), help="Repo root whose adapter-declared startup probes should be measured")
-    parser.add_argument("--class", dest="probe_class", choices=("standing", "release", "all"), default="all", help="Probe class to run (standing, release, or all)")
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        default=Path.cwd(),
+        help="Repo root whose adapter-declared startup probes should be measured",
+    )
+    parser.add_argument(
+        "--class",
+        dest="probe_class",
+        choices=("standing", "release", "all"),
+        default="all",
+        help="Probe class to run (standing, release, or all)",
+    )
     add_output_args(
         parser,
         summary_help="Emit compact YAML startup-probe status and failure counts",
@@ -83,28 +107,31 @@ def _record_runtime_signal(
     timestamp = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     script_path = _record_runtime_script_path(repo_root)
     command = [
-            "python3",
-            str(script_path),
-            "--repo-root",
-            str(repo_root),
-            "--label",
-            label,
-            "--elapsed-ms",
-            str(elapsed_ms),
-            "--status",
-            status,
-            "--timestamp",
-            timestamp,
-        ]
+        "--repo-root",
+        str(repo_root),
+        "--label",
+        label,
+        "--elapsed-ms",
+        str(elapsed_ms),
+        "--status",
+        status,
+        "--timestamp",
+        timestamp,
+    ]
     if state_root is not None:
         command.extend(("--state-root", str(state_root)))
-    subprocess.run(
-        command,
-        cwd=repo_root,
-        check=True,
-        capture_output=True,
-        text=True,
+    recorder = SKILL_RUNTIME.load_repo_module_from_skill_script(
+        __file__, "scripts.record_quality_runtime"
     )
+    previous_argv = sys.argv
+    try:
+        sys.argv = [str(script_path), *command]
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+            returncode = recorder.main()
+    finally:
+        sys.argv = previous_argv
+    if returncode != 0:
+        raise RuntimeError(f"record_quality_runtime exited with status {returncode}")
 
 
 def _timeout_seconds(probe: dict[str, Any]) -> float:
@@ -124,21 +151,14 @@ def _measure_probe(
 ) -> dict[str, Any]:
     elapsed_samples: list[int] = []
     last_result: subprocess.CompletedProcess[str] | None = None
-    timeout_error: subprocess.TimeoutExpired[str] | None = None
+    timeout_error = False
     timeout_seconds = _timeout_seconds(probe)
     for _ in range(int(probe["samples"])):
         start_ns = time.perf_counter_ns()
-        try:
-            result = subprocess.run(
-                list(probe["command"]),
-                cwd=repo_root,
-                check=False,
-                capture_output=True,
-                text=True,
-                timeout=timeout_seconds,
-            )
-        except subprocess.TimeoutExpired as exc:
-            timeout_error = exc
+        result = run_process(list(probe["command"]), cwd=repo_root, timeout_seconds=timeout_seconds)
+        timed_out = result.returncode == 124 and result.stderr.startswith("timed out after ")
+        if timed_out:
+            timeout_error = True
             elapsed_samples.append(int((time.perf_counter_ns() - start_ns) / 1_000_000))
             break
         elapsed_ms = int((time.perf_counter_ns() - start_ns) / 1_000_000)
@@ -147,7 +167,13 @@ def _measure_probe(
         if result.returncode != 0:
             break
     latest_elapsed_ms = elapsed_samples[-1]
-    status = "command-timeout" if timeout_error else "ok" if last_result and last_result.returncode == 0 else "command-failed"
+    status = (
+        "command-timeout"
+        if timeout_error
+        else "ok"
+        if last_result and last_result.returncode == 0
+        else "command-failed"
+    )
     if record_runtime_signals:
         _record_runtime_signal(
             repo_root,
@@ -172,8 +198,8 @@ def _measure_probe(
     }
     if timeout_error:
         payload["returncode"] = 124
-        payload["stdout"] = timeout_error.stdout or ""
-        payload["stderr"] = timeout_error.stderr or ""
+        payload["stdout"] = result.stdout or ""
+        payload["stderr"] = ""
     elif last_result and last_result.returncode != 0:
         payload["returncode"] = last_result.returncode
         payload["stdout"] = last_result.stdout

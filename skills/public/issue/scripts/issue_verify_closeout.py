@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import runpy
-import subprocess
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
+
+from scripts.subprocess_guard import run_process
 
 _PROOF_MISMATCH = None
 
@@ -12,7 +13,11 @@ _PROOF_MISMATCH = None
 def _resolve_bootstrap() -> Path | None:
     """The nearest ``skill_runtime_bootstrap.py`` above this file, or ``None``."""
     return next(
-        (a / "skill_runtime_bootstrap.py" for a in Path(__file__).resolve().parents if (a / "skill_runtime_bootstrap.py").is_file()),
+        (
+            a / "skill_runtime_bootstrap.py"
+            for a in Path(__file__).resolve().parents
+            if (a / "skill_runtime_bootstrap.py").is_file()
+        ),
         None,
     )
 
@@ -28,7 +33,9 @@ def _load_proof_mismatch():
         if bootstrap is None:
             raise ImportError("skill_runtime_bootstrap.py not found")
         runtime = SimpleNamespace(**runpy.run_path(str(bootstrap)))
-        _PROOF_MISMATCH = runtime.load_repo_module_from_skill_script(__file__, "scripts.proof_mismatch")
+        _PROOF_MISMATCH = runtime.load_repo_module_from_skill_script(
+            __file__, "scripts.proof_mismatch"
+        )
     return _PROOF_MISMATCH
 
 
@@ -71,7 +78,9 @@ def _fold_proof_mismatch(result: dict[str, Any], repo_root: Path, body: str) -> 
     sync_confirmation_line(result)
 
 
-_load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_import.py"))["sibling_loader"](__file__)
+_load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_import.py"))[
+    "sibling_loader"
+](__file__)
 ISSUE_CLOSE = _load_local("issue_close", "issue_verify_issue_close")
 _BODY = _load_local("issue_verify_closeout_body")
 # The rung-1 floors moved to their own module when the body reader hit its length
@@ -93,7 +102,12 @@ CARRIERS = ("direct-commit", "pr-body", "manual-fallback")
 # still refused it, so the only path that worked was the commit hook inferring
 # `bug` and demanding the very repair claims the disposition exists to forbid.
 CLASSIFICATIONS = (
-    "bug", "feature", "deferred-work", "question", "decision-needed", "consolidated",
+    "bug",
+    "feature",
+    "deferred-work",
+    "question",
+    "decision-needed",
+    "consolidated",
 )
 MANUAL_FALLBACK_REASONS = (
     "auto-close-unsupported",
@@ -123,26 +137,17 @@ review_advisory_for_classification = _FLOORS.review_advisory_for_classification
 strip_code_fences = _BODY._strip_code_fences
 
 
-def _read_carrier_body(repo_root: Path, *, carrier: str, commit_ref: str | None, body_file: Path | None) -> str:
+def _read_carrier_body(
+    repo_root: Path, *, carrier: str, commit_ref: str | None, body_file: Path | None
+) -> str:
     if carrier == "direct-commit":
         if not commit_ref:
             raise RuntimeError("direct-commit carrier requires --commit-ref")
-        try:
-            result = subprocess.run(
-                ["git", "show", "-s", "--format=%B", commit_ref],
-                cwd=repo_root,
-                check=False,
-                capture_output=True,
-                text=True,
-                timeout=GIT_TIMEOUT_SECONDS,
-            )
-        except subprocess.TimeoutExpired as exc:
-            result = subprocess.CompletedProcess(
-                ["git", "show", "-s", "--format=%B", commit_ref],
-                124,
-                str(exc.stdout or ""),
-                f"timed out after {GIT_TIMEOUT_SECONDS}s",
-            )
+        result = run_process(
+            ["git", "show", "-s", "--format=%B", commit_ref],
+            cwd=repo_root,
+            timeout_seconds=GIT_TIMEOUT_SECONDS,
+        )
         if result.returncode != 0:
             raise RuntimeError(
                 f"unable to read commit body for {commit_ref!r}: {result.stderr.strip()!r}"
@@ -170,8 +175,12 @@ def _manual_comment_found(body: str, state_payload: dict[str, Any]) -> bool:
 
 
 def _validate_verify_inputs(
-    *, numbers: list[int], classification: str, carrier: str,
-    manual_fallback_reason: str | None, expect_state: str | None,
+    *,
+    numbers: list[int],
+    classification: str,
+    carrier: str,
+    manual_fallback_reason: str | None,
+    expect_state: str | None,
 ) -> None:
     if not numbers:
         raise RuntimeError("verify-closeout requires at least one --number")
@@ -190,7 +199,9 @@ def _validate_verify_inputs(
         raise RuntimeError("final closeout verification requires --expect-state CLOSED")
 
 
-def _authorization_record(repo_root: Path, repo: str, numbers: list[int], carrier: str) -> dict[str, Any]:
+def _authorization_record(
+    repo_root: Path, repo: str, numbers: list[int], carrier: str
+) -> dict[str, Any]:
     """Attach the authorization record WITHOUT gating on it. Deliberate asymmetry.
 
     Every pre-close ingress refuses on this record. This one does not, and the reason
@@ -205,14 +216,25 @@ def _authorization_record(repo_root: Path, repo: str, numbers: list[int], carrie
     """
     bootstrap = _resolve_bootstrap()
     if bootstrap is None:
-        return {"applies": False, "authorized": True, "crosswalk_status": "authorization_module_unavailable"}
+        return {
+            "applies": False,
+            "authorized": True,
+            "crosswalk_status": "authorization_module_unavailable",
+        }
     runtime = SimpleNamespace(**runpy.run_path(str(bootstrap)))
     module = runtime.load_local_skill_module(__file__, "issue_closeout_authorization")
     record = module.authorize(
-        invoked_targets=[{"repository": repo, "issue_number": number, "source": f"verify:{carrier}"} for number in numbers],
-        carrier_targets=[], carrier_source=f"verify-readback:{carrier}", repo_root=repo_root,
+        invoked_targets=[
+            {"repository": repo, "issue_number": number, "source": f"verify:{carrier}"}
+            for number in numbers
+        ],
+        carrier_targets=[],
+        carrier_source=f"verify-readback:{carrier}",
+        repo_root=repo_root,
     )
-    record["gating"] = "reported-only: a post-publication readback cannot prevent a close that already happened"
+    record["gating"] = (
+        "reported-only: a post-publication readback cannot prevent a close that already happened"
+    )
     return record
 
 
@@ -225,7 +247,6 @@ def _ledger_field_reasons(body: str, missing_fields: list[str]) -> list[str]:
         if reason:
             reasons.append(f"{finding_id}: {reason}")
     return reasons
-
 
 
 def verify_closeout(
@@ -242,10 +263,15 @@ def verify_closeout(
     expect_state: str | None = None,
 ) -> dict[str, Any]:
     _validate_verify_inputs(
-        numbers=numbers, classification=classification, carrier=carrier,
-        manual_fallback_reason=manual_fallback_reason, expect_state=expect_state,
+        numbers=numbers,
+        classification=classification,
+        carrier=carrier,
+        manual_fallback_reason=manual_fallback_reason,
+        expect_state=expect_state,
     )
-    body = _read_carrier_body(repo_root, carrier=carrier, commit_ref=commit_ref, body_file=body_file)
+    body = _read_carrier_body(
+        repo_root, carrier=carrier, commit_ref=commit_ref, body_file=body_file
+    )
     resolution_critique_check = _CRITIQUE.check_resolution_critique(
         repo_root=repo_root,
         body=body,
@@ -253,7 +279,9 @@ def verify_closeout(
         numbers=numbers,
         repository=repo,
     )
-    missing_close_keywords = [] if carrier == "manual-fallback" else _missing_close_keywords(body, numbers, repo)
+    missing_close_keywords = (
+        [] if carrier == "manual-fallback" else _missing_close_keywords(body, numbers, repo)
+    )
     # The carrier is threaded because `consolidated` must refuse the AUTO-CLOSE
     # carriers: GitHub renders a keyword close as `completed`, with no reason argv
     # to intercept, which asserts the repair a consolidated close refuses.
@@ -271,7 +299,10 @@ def verify_closeout(
         numbers=numbers,
         destinations=_consolidated.destinations("\n".join(strip_code_fences(body))),
         fetch=lambda dest: _view_issue_state(
-            repo_root, repo=repo, number=dest, backend=backend,
+            repo_root,
+            repo=repo,
+            number=dest,
+            backend=backend,
             json_fields="number,state,url,body",
         ),
         applies=classification == _consolidated.CLASSIFICATION,
@@ -291,11 +322,14 @@ def verify_closeout(
     if expect_state is not None:
         expected = expect_state.upper()
         for number in numbers:
-            json_fields = "number,state,url,comments" if carrier == "manual-fallback" else "number,state,url"
+            json_fields = (
+                "number,state,url,comments" if carrier == "manual-fallback" else "number,state,url"
+            )
             state_payload = _view_issue_state(
                 repo_root, repo=repo, number=number, backend=backend, json_fields=json_fields
             )
             verified_state.append(state_payload)
+
             # Three facts are checked against one answer -- the issue's number, the issue's
             # REPOSITORY, and its state -- and each records the same mismatch shape. Built by
             # one helper rather than three literal dicts: the duplicate ratchet caught the
@@ -338,7 +372,9 @@ def verify_closeout(
         and hotl_dispositions["ok"]
         and ai_provenance["ok"]
     )
-    status = "verified" if ok and expect_state is not None else "carrier_verified" if ok else "failed"
+    status = (
+        "verified" if ok and expect_state is not None else "carrier_verified" if ok else "failed"
+    )
     # Additive migration: the bare status tokens sound terminal,
     # but each is only this observer's checks passing over its channel.
     # `confirmation` names observer/channel/scope so downstream handoffs render

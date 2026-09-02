@@ -11,15 +11,38 @@ Every failure here RAISES rather than returning a degraded payload. A state read
 did not happen must never be indistinguishable from a state read that came back
 clean; the callers turn the raise into a typed refusal.
 """
+
 from __future__ import annotations
 
 import json
 import runpy
-import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
-_load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_import.py"))["sibling_loader"](__file__)
+try:
+    from scripts import subprocess_guard as _subprocess_guard
+    from scripts.subprocess_guard import run_process
+except ModuleNotFoundError:
+    _scripts_dir = next(
+        (
+            ancestor / "scripts"
+            for ancestor in (Path(__file__).resolve(), *Path(__file__).resolve().parents)
+            if (ancestor / "scripts" / "subprocess_guard.py").is_file()
+        ),
+        None,
+    )
+    if _scripts_dir is None:
+        raise
+    sys.path.insert(0, str(_scripts_dir))
+    import subprocess_guard as _subprocess_guard
+    from subprocess_guard import run_process
+
+subprocess = _subprocess_guard.subprocess
+
+_load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_import.py"))[
+    "sibling_loader"
+](__file__)
 _ISSUE_CLOSE = None
 
 
@@ -62,23 +85,11 @@ def view_issue_state(
         json_fields=json_fields,
     )
     try:
-        result = subprocess.run(
-            argv,
-            cwd=repo_root,
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=_issue_close().BACKEND_TIMEOUT_SECONDS,
+        result = run_process(
+            argv, cwd=repo_root, timeout_seconds=_issue_close().BACKEND_TIMEOUT_SECONDS
         )
     except OSError as exc:
         raise RuntimeError(f"issue state verification command failed to start: {exc}") from exc
-    except subprocess.TimeoutExpired as exc:
-        result = subprocess.CompletedProcess(
-            argv,
-            124,
-            str(exc.stdout or ""),
-            f"timed out after {_issue_close().BACKEND_TIMEOUT_SECONDS}s",
-        )
     if result.returncode != 0:
         raise RuntimeError(
             f"issue state verification failed for {repo}#{number}: "
@@ -89,5 +100,3 @@ def view_issue_state(
     except Exception as exc:
         raise RuntimeError(f"issue state verification returned invalid JSON: {exc}") from exc
     return payload
-
-

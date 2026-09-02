@@ -14,14 +14,16 @@ coverage.py statement reader (`mutation_sampling_lib`); only the eligible-file
 source and the fingerprint pool become glob-driven so consuming repos inherit
 the gate without the charness mutation-runner wiring.
 """
+
 from __future__ import annotations
 
 import hashlib
 import re
-import subprocess
 from functools import lru_cache
 from pathlib import Path
 from typing import Callable, NamedTuple
+
+from scripts.subprocess_guard import run_process
 
 
 class GitUnavailable(RuntimeError):
@@ -38,8 +40,10 @@ def _git_lines(repo_root: Path, args: list[str]) -> list[str]:
     # `-c core.quotePath=false` because git otherwise C-quotes non-ASCII paths
     # (`"src/f\303\266.py"`), which never match the glob-derived eligible set.
     try:
-        result = subprocess.run(
-            ["git", "-c", "core.quotePath=false", *args], cwd=repo_root, capture_output=True, text=True
+        result = run_process(
+            ["git", "-c", "core.quotePath=false", *args],
+            cwd=repo_root,
+            timeout_seconds=None,
         )
     except OSError as exc:  # pragma: no cover - exercised via GitUnavailable below
         raise GitUnavailable(f"could not run `git {' '.join(args)}`: {exc}") from exc
@@ -84,7 +88,9 @@ def _matches(rel: str, globs: list[str]) -> bool:
     return any(_glob_regex(pattern).match(rel) for pattern in globs)
 
 
-def eligible(rel_paths: list[str], eligible_globs: list[str], exclude_globs: list[str]) -> list[str]:
+def eligible(
+    rel_paths: list[str], eligible_globs: list[str], exclude_globs: list[str]
+) -> list[str]:
     """Filter repo-relative paths to the configured eligible set minus excludes."""
     return sorted(
         rel
@@ -94,7 +100,11 @@ def eligible(rel_paths: list[str], eligible_globs: list[str], exclude_globs: lis
 
 
 def changed_eligible(
-    repo_root: Path, base_sha: str, head_sha: str, eligible_globs: list[str], exclude_globs: list[str]
+    repo_root: Path,
+    base_sha: str,
+    head_sha: str,
+    eligible_globs: list[str],
+    exclude_globs: list[str],
 ) -> list[str]:
     # Two-dot base..head for the change-set (what to judge); the fingerprint pool
     # below uses base->worktree on purpose. The split mirrors the active gate.
@@ -264,11 +274,24 @@ def run_gate(
     coverage_rel = str(config.get("coverage_json") or "")
     base = {"inert": False, "blocking": [], "base_sha": base_sha, "head_sha": head_sha}
     if not eligible_globs:
-        return {"ok": True, **base, "inert": True, "reason": "eligible_globs empty: gate inert (opted out)"}
+        return {
+            "ok": True,
+            **base,
+            "inert": True,
+            "reason": "eligible_globs empty: gate inert (opted out)",
+        }
     if not base_sha:
-        return {"ok": True, **base, "reason": "no base_sha: changed-line classifier is non-blocking (matches workflow_dispatch)"}
+        return {
+            "ok": True,
+            **base,
+            "reason": "no base_sha: changed-line classifier is non-blocking (matches workflow_dispatch)",
+        }
     if not coverage_rel:
-        return {"ok": True, **base, "reason": "no coverage_json configured: gate skipped (non-blocking)"}
+        return {
+            "ok": True,
+            **base,
+            "reason": "no coverage_json configured: gate skipped (non-blocking)",
+        }
     scope = resolve_head_scope(repo_root, head_sha)
     # `_head_scope` is a private, non-YAML-safe passenger: `run()` pops it back off
     # before the report is ever emitted. It exists so a caller that also needs
@@ -279,18 +302,32 @@ def run_gate(
         # Could-not-look, not nothing-found — the same distinction the changed-set
         # arm below draws. `ok: False`, because a head this gate cannot resolve is
         # not a range it may quietly decline to judge.
-        return {"ok": False, **base, "unestablished": True, "reason": f"could not establish the analyzed head: {scope.error}"}
+        return {
+            "ok": False,
+            **base,
+            "unestablished": True,
+            "reason": f"could not establish the analyzed head: {scope.error}",
+        }
     try:
         changed = changed_eligible(repo_root, base_sha, head_sha, eligible_globs, exclude_globs)
     except GitUnavailable as exc:
         # NOT `ok: True`. The gate could not read the range, so it has no standing
         # to report an empty one -- the shape that let an unresolvable base_sha
         # pass as "nothing changed" while the classifier never ran.
-        return {"ok": False, **base, "unestablished": True, "reason": f"could not establish the changed set: {exc}"}
+        return {
+            "ok": False,
+            **base,
+            "unestablished": True,
+            "reason": f"could not establish the changed set: {exc}",
+        }
     if scope.mismatch and changed:
         return _scope_mismatch_report(base, changed, scope.mismatch)
     if not changed:
-        empty: dict[str, object] = {"ok": True, **base, "reason": "no eligible changed files in this range"}
+        empty: dict[str, object] = {
+            "ok": True,
+            **base,
+            "reason": "no eligible changed files in this range",
+        }
         if scope.mismatch:
             # Exit stays 0 -- the range honestly changed no eligible file, and
             # refusing an empty scope is the incoherent blocker the sibling names
@@ -301,25 +338,51 @@ def run_gate(
         return empty
     coverage_json = repo_root / coverage_rel
     if not coverage_json.is_file():
-        return {"ok": True, **base, "changed_pool_files": changed,
-                "reason": f"no coverage source at {coverage_rel}: gate skipped (non-blocking). Produce it in the full/scheduled run and reuse it here."}
+        return {
+            "ok": True,
+            **base,
+            "changed_pool_files": changed,
+            "reason": f"no coverage source at {coverage_rel}: gate skipped (non-blocking). Produce it in the full/scheduled run and reuse it here.",
+        }
     marker = marker_path(coverage_json)
     recorded = marker.read_text(encoding="utf-8").strip() if marker.is_file() else None
     try:
-        current = fingerprint(repo_root, base_sha, changed_pool_vs_base(repo_root, base_sha, eligible_globs, exclude_globs))
+        current = fingerprint(
+            repo_root,
+            base_sha,
+            changed_pool_vs_base(repo_root, base_sha, eligible_globs, exclude_globs),
+        )
     except GitUnavailable as exc:
-        return {"ok": False, **base, "changed_pool_files": changed, "unestablished": True,
-                "reason": f"could not establish the coverage-freshness fingerprint: {exc}"}
+        return {
+            "ok": False,
+            **base,
+            "changed_pool_files": changed,
+            "unestablished": True,
+            "reason": f"could not establish the coverage-freshness fingerprint: {exc}",
+        }
     if recorded is None or recorded != current:
-        return {"ok": True, **base, "changed_pool_files": changed,
-                "reason": f"coverage source is stale (marker {recorded or 'absent'} != current {current}): gate skipped (non-blocking). Re-produce coverage for this range."}
+        return {
+            "ok": True,
+            **base,
+            "changed_pool_files": changed,
+            "reason": f"coverage source is stale (marker {recorded or 'absent'} != current {current}): gate skipped (non-blocking). Re-produce coverage for this range.",
+        }
     statement_lines = load_statement_lines(repo_root, coverage_json)
     blocking = classify(
-        repo_root=repo_root, base_sha=base_sha, head_sha=head_sha,
-        changed_before_coverage=changed, statement_lines=statement_lines, coverage_enabled=True,
+        repo_root=repo_root,
+        base_sha=base_sha,
+        head_sha=head_sha,
+        changed_before_coverage=changed,
+        statement_lines=statement_lines,
+        coverage_enabled=True,
     )
-    return {"ok": not blocking, **base, "blocking": blocking, "changed_pool_files": changed,
-            "coverage_json": coverage_rel}
+    return {
+        "ok": not blocking,
+        **base,
+        "blocking": blocking,
+        "changed_pool_files": changed,
+        "coverage_json": coverage_rel,
+    }
 
 
 def stamp_marker(

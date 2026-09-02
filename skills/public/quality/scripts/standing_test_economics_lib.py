@@ -3,10 +3,11 @@ from __future__ import annotations
 import json
 import re
 import stat
-import subprocess
 import sys
 from pathlib import Path
 from typing import Any
+
+from scripts.subprocess_guard import run_process
 
 sys.path.append(str(Path(__file__).resolve().parent))
 _DISCOVERY = __import__("standing_gate_discovery_lib")
@@ -57,34 +58,45 @@ def _iter_child_stats(path: Path):
 
 
 def _iter_child_dirs(path: Path) -> list[Path]:
-    return [child for child, child_stat in _iter_child_stats(path) if stat.S_ISDIR(child_stat.st_mode)]
+    return [
+        child for child, child_stat in _iter_child_stats(path) if stat.S_ISDIR(child_stat.st_mode)
+    ]
 
 
 def _runner_snippets(repo_root: Path) -> list[dict[str, str]]:
     surfaces = discover_surfaces(repo_root)
-    snippets = [item for item in iter_snippets(surfaces) if any(token in item["snippet"] for token in ("pytest", "node --test", "vitest", "jest", "cargo test", "go test"))]
+    snippets = [
+        item
+        for item in iter_snippets(surfaces)
+        if any(
+            token in item["snippet"]
+            for token in ("pytest", "node --test", "vitest", "jest", "cargo test", "go test")
+        )
+    ]
     package_path = repo_root / "package.json"
     if package_path.is_file():
         payload = json.loads(package_path.read_text(encoding="utf-8"))
         scripts = payload.get("scripts", {}) if isinstance(payload, dict) else {}
         if isinstance(scripts, dict):
             for name, command in scripts.items():
-                if isinstance(name, str) and isinstance(command, str) and ("test" in name or NODE_TEST_RE.search(command)):
-                    snippets.append({"path": "package.json", "origin": f"script:{name}", "snippet": command})
+                if (
+                    isinstance(name, str)
+                    and isinstance(command, str)
+                    and ("test" in name or NODE_TEST_RE.search(command))
+                ):
+                    snippets.append(
+                        {"path": "package.json", "origin": f"script:{name}", "snippet": command}
+                    )
     return snippets
 
 
 def _du_bytes(path: Path, *args: str) -> int | None:
     try:
-        result = subprocess.run(
-            ["du", *args, str(path)],
-            check=True,
-            capture_output=True,
-            text=True,
-            timeout=10,
-        )
+        result = run_process(["du", *args, str(path)], cwd=Path.cwd(), timeout_seconds=10)
+        if result.returncode != 0:
+            return None
         return int(result.stdout.split()[0])
-    except (OSError, subprocess.SubprocessError, ValueError, IndexError):
+    except (OSError, ValueError, IndexError):
         return None
 
 
@@ -105,8 +117,12 @@ def _dir_usage(path: Path) -> dict[str, int]:
     apparent = _du_bytes(path, "-sb")
     disk = _du_bytes(path, "-sB1")
     return {
-        "bytes": apparent if apparent is not None else sum(item.st_size for item in _iter_file_stats(path)),
-        "disk_bytes": disk if disk is not None else sum(item.st_blocks * 512 for item in _iter_file_stats(path)),
+        "bytes": apparent
+        if apparent is not None
+        else sum(item.st_size for item in _iter_file_stats(path)),
+        "disk_bytes": disk
+        if disk is not None
+        else sum(item.st_blocks * 512 for item in _iter_file_stats(path)),
     }
 
 
@@ -144,6 +160,7 @@ def _attach_usage_totals(
         item["bytes"] = usage["bytes"]
         item["disk_bytes"] = usage["disk_bytes"]
     return usages
+
 
 # The `du`-backed quick scan, its retry policy, and its failure taxonomy live in
 # their own module. Re-exported under the historical private names so existing
@@ -252,7 +269,9 @@ def inventory(repo_root: Path, discovery: dict[str, Any] | None = None) -> dict[
                 "recommended_action": "Measure file count, runner startup, and per-file isolation before pruning tests.",
             }
         )
-    if node_test_snippets and not any("--experimental-test-isolation=none" in item["snippet"] for item in node_test_snippets):
+    if node_test_snippets and not any(
+        "--experimental-test-isolation=none" in item["snippet"] for item in node_test_snippets
+    ):
         findings.append(
             {
                 "type": "node_test_isolation_unknown",
@@ -262,7 +281,10 @@ def inventory(repo_root: Path, discovery: dict[str, Any] | None = None) -> dict[
                 "recommended_action": "Compare the standing command with an explicit shared-process or isolated runner mode, then keep the cheapest honest layer.",
             }
         )
-    if sum(count for ext, count in by_extension.items() if ext in TRANSPILE_EXTENSIONS) and ts_loader_snippets:
+    if (
+        sum(count for ext, count in by_extension.items() if ext in TRANSPILE_EXTENSIONS)
+        and ts_loader_snippets
+    ):
         findings.append(
             {
                 "type": "transpiler_startup_surface",
@@ -324,10 +346,22 @@ def inventory(repo_root: Path, discovery: dict[str, Any] | None = None) -> dict[
         "nested_cli_standing_or_mixed_files": nested_cli_standing_or_mixed_files,
         "subprocess_settlement": {
             "seam_count": len(settlement_seams),
-            "deadline_counts": {state: sum(item["deadline"] == state for item in settlement_seams) for state in ("present", "absent", "unknown")},
-            "lifecycle_counts": {state: sum(item["lifecycle"] == state for item in settlement_seams) for state in ("finite", "until_interrupted", "unknown")},
-            "process_tree_termination_counts": {state: sum(item["process_tree_termination"] == state for item in settlement_seams) for state in ("owned", "not_owned", "unknown")},
-            "output_bounding_counts": {state: sum(item["output_bounding"] == state for item in settlement_seams) for state in ("bounded", "unbounded", "unknown")},
+            "deadline_counts": {
+                state: sum(item["deadline"] == state for item in settlement_seams)
+                for state in ("present", "absent", "unknown")
+            },
+            "lifecycle_counts": {
+                state: sum(item["lifecycle"] == state for item in settlement_seams)
+                for state in ("finite", "until_interrupted", "unknown")
+            },
+            "process_tree_termination_counts": {
+                state: sum(item["process_tree_termination"] == state for item in settlement_seams)
+                for state in ("owned", "not_owned", "unknown")
+            },
+            "output_bounding_counts": {
+                state: sum(item["output_bounding"] == state for item in settlement_seams)
+                for state in ("bounded", "unbounded", "unknown")
+            },
             "seams": settlement_seams,
         },
         "pytest_temp_footprint": pytest_temp,

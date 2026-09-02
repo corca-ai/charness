@@ -5,11 +5,15 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
-import subprocess
 import sys
 import tempfile
 import xml.etree.ElementTree as ET
 from pathlib import Path
+
+from scripts import subprocess_guard as _subprocess_guard
+from scripts.subprocess_guard import run_process
+
+subprocess = _subprocess_guard.subprocess
 
 
 def _load_contract_module(repo_root: Path):
@@ -46,8 +50,10 @@ def _junit_fixture_status(xml_path: Path, stdout: str) -> tuple[str, str | None]
         root = ET.parse(xml_path).getroot()
     except (ET.ParseError, OSError) as exc:
         return "missing-result", f"JUnit result is unreadable: {exc}"
+
     def local(tag: str) -> str:
         return tag.rsplit("}", 1)[-1]
+
     cases = [element for element in root.iter() if local(element.tag) == "testcase"]
     if not cases:
         return "zero-tests", "JUnit result contained no testcases"
@@ -115,24 +121,20 @@ def main() -> int:
         for contract in module.CONTRACTS:
             with tempfile.TemporaryDirectory(prefix="charness-provenance-") as temp_dir:
                 junit_path = Path(temp_dir) / "pytest.xml"
-                try:
-                    result = subprocess.run(
-                        [
-                            sys.executable,
-                            "-m",
-                            "pytest",
-                            "-q",
-                            "-rxX",
-                            f"--junitxml={junit_path}",
-                            contract.negative_fixture,
-                        ],
-                        cwd=repo_root,
-                        capture_output=True,
-                        text=True,
-                        check=False,
-                        timeout=60,
-                    )
-                except subprocess.TimeoutExpired as exc:
+                result = run_process(
+                    [
+                        sys.executable,
+                        "-m",
+                        "pytest",
+                        "-q",
+                        "-rxX",
+                        f"--junitxml={junit_path}",
+                        contract.negative_fixture,
+                    ],
+                    cwd=repo_root,
+                    timeout_seconds=60,
+                )
+                if result.returncode == 124 and result.stderr.startswith("timed out after "):
                     fixture_results.append(
                         {
                             "contract_id": contract.contract_id,
@@ -143,7 +145,7 @@ def main() -> int:
                     )
                     errors.append(
                         f"{contract.contract_id} fixture timed out ({contract.negative_fixture}): "
-                        f"{exc}"
+                        f"{result.stderr.strip()}"
                     )
                     continue
                 status, detail = _junit_fixture_status(junit_path, result.stdout)
@@ -152,7 +154,9 @@ def main() -> int:
                         "contract_id": contract.contract_id,
                         "fixture": contract.negative_fixture,
                         "returncode": result.returncode,
-                        "status": status if result.returncode == 0 or status != "passed" else "failed",
+                        "status": status
+                        if result.returncode == 0 or status != "passed"
+                        else "failed",
                     }
                 )
                 if result.returncode or status != "passed":

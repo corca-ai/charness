@@ -51,28 +51,41 @@ Blind class, stated before the first acceptance test rather than after:
 - It runs each detector once, in this repository's environment. A detector whose
   behaviour depends on installed tooling is judged on whether that tooling is here.
 """
+
 from __future__ import annotations
 
 import argparse
+import contextlib
 import glob as globlib
+import io
 import runpy
 import shutil
-import subprocess
 import sys
 import tempfile
+import traceback
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
 
 
 def _load_skill_runtime_bootstrap():
-    bootstrap = next((ancestor / "skill_runtime_bootstrap.py" for ancestor in Path(__file__).resolve().parents if (ancestor / "skill_runtime_bootstrap.py").is_file()), None)
+    bootstrap = next(
+        (
+            ancestor / "skill_runtime_bootstrap.py"
+            for ancestor in Path(__file__).resolve().parents
+            if (ancestor / "skill_runtime_bootstrap.py").is_file()
+        ),
+        None,
+    )
     if bootstrap is None:
         raise ImportError("skill_runtime_bootstrap.py not found")
     return SimpleNamespace(**runpy.run_path(str(bootstrap)))
 
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
+run_process = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.subprocess_guard"
+).run_process
 REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from summary_output_lib import add_output_args, emit_selected  # noqa: E402
@@ -152,19 +165,28 @@ def classify(returncode: int | None, output: str) -> tuple[str, str | None]:
 
 
 def probe_detector(repo_root: Path, script: str, empty_repo: Path) -> dict[str, Any]:
+    # The detector is repo-owned Python, so importing its CLI keeps this inventory
+    # in-process. The timeout budget remains part of the reported contract, but an
+    # in-process call cannot be pre-empted without introducing the process boundary
+    # this migration removes.
+    module = SKILL_RUNTIME.load_path_module(f"empty_scope_{Path(script).stem}", repo_root / script)
+    stdout = io.StringIO()
+    stderr = io.StringIO()
+    previous_argv = sys.argv
     try:
-        completed = subprocess.run(
-            [sys.executable, script, "--repo-root", str(empty_repo)],
-            cwd=repo_root,
-            capture_output=True,
-            timeout=PROBE_TIMEOUT_SECONDS,
-            text=True,
-            errors="replace",
-        )
-        returncode: int | None = completed.returncode
-        output = completed.stdout + completed.stderr
-    except subprocess.TimeoutExpired:
-        returncode, output = None, ""
+        sys.argv = [script, "--repo-root", str(empty_repo)]
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            try:
+                result = module.main()
+                returncode = result if isinstance(result, int) else 0
+            except SystemExit as exc:
+                returncode = exc.code if isinstance(exc.code, int) else 1
+            except Exception:
+                traceback.print_exc()
+                returncode = 1
+    finally:
+        sys.argv = previous_argv
+    output = stdout.getvalue() + stderr.getvalue()
     bucket, evidence = classify(returncode, output)
     return {
         "detector": script,
@@ -185,7 +207,9 @@ def _empty_git_dir() -> Path:
     if cached is not None:
         return cached
     root = Path(tempfile.mkdtemp(prefix="charness-empty-git-"))
-    subprocess.run(["git", "init", "-q"], cwd=root, check=True, capture_output=True)
+    result = run_process(["git", "init", "-q"], cwd=root, timeout_seconds=None)
+    if result.returncode != 0:
+        raise RuntimeError(result.stderr.strip() or "git init failed")
     seed = root / ".git"
     _empty_git_dir._seed = seed  # type: ignore[attr-defined]
     return seed
@@ -258,7 +282,9 @@ def main() -> int:
         report = build_report(root, empty_repo_parent=Path(tmpdir))
     if not emit_selected(report, args, summarize=summarize):
         counts = report["counts"]
-        print(f"empty-scope honesty: {report['detectors_discovered']} detector(s) probed over an empty repo.")
+        print(
+            f"empty-scope honesty: {report['detectors_discovered']} detector(s) probed over an empty repo."
+        )
         for bucket in sorted(counts):
             print(f"  {bucket}: {counts[bucket]}")
     offenders = [f for f in report["findings"] if f["bucket"] == "positive-verdict-over-zero"]

@@ -10,10 +10,11 @@ loud in repo docs and gate descriptions.
 from __future__ import annotations
 
 import re
-import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+
+from scripts.subprocess_guard import run_process
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 SPECS_DIR = REPO_ROOT / "specs"
@@ -61,12 +62,10 @@ def extract_references(spec_path: Path) -> tuple[list[Reference], list[str]]:
 
 
 def target_collects(target: str) -> tuple[bool, str]:
-    proc = subprocess.run(
-        ["python3", "-m", "pytest", "--collect-only", "-q", target],
+    proc = run_process(
+        [sys.executable, "-m", "pytest", "--collect-only", "-q", target],
         cwd=REPO_ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
+        timeout_seconds=None,
     )
     output = (proc.stdout + proc.stderr).strip()
     if proc.returncode != 0 or "no tests collected" in output:

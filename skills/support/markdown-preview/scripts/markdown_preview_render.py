@@ -13,6 +13,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from scripts.subprocess_guard import run_process
+
 
 def _load_markdown_preview_lib() -> Any:
     module_path = Path(__file__).resolve().with_name("markdown_preview_lib.py")
@@ -29,7 +31,6 @@ _LIB = _load_markdown_preview_lib()
 PreviewConfig = _LIB.PreviewConfig
 artifact_stem = _LIB.artifact_stem
 DEFAULT_BACKEND_TIMEOUT_SECONDS = 20.0
-TIMEOUT_EXIT_CODE = 124
 
 
 def _backend_timeout_seconds() -> float:
@@ -51,14 +52,12 @@ def _timeout_error(command: list[str], timeout_seconds: float) -> str:
 def _backend_version(backend: str) -> str | None:
     timeout_seconds = _backend_timeout_seconds()
     try:
-        completed = subprocess.run(
-            [backend, "--version"],
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=timeout_seconds,
+        completed = run_process(
+            [backend, "--version"], cwd=Path.cwd(), timeout_seconds=timeout_seconds
         )
-    except (FileNotFoundError, subprocess.TimeoutExpired):
+    except FileNotFoundError:
+        return None
+    if completed.returncode == 124 and completed.stderr.startswith("timed out after "):
         return None
     if completed.returncode != 0:
         return None
@@ -67,89 +66,64 @@ def _backend_version(backend: str) -> str | None:
 
 def _git_head(repo_root: Path) -> str | None:
     git = shutil.which("git") or next(
-        (str(candidate) for candidate in (Path("/usr/bin/git"), Path("/opt/homebrew/bin/git")) if candidate.is_file()),
+        (
+            str(candidate)
+            for candidate in (Path("/usr/bin/git"), Path("/opt/homebrew/bin/git"))
+            if candidate.is_file()
+        ),
         None,
     )
     if git is None:
         return None
     try:
-        completed = subprocess.run(
-            [git, "rev-parse", "HEAD"], cwd=repo_root, check=False, capture_output=True, text=True
-        )
+        completed = run_process([git, "rev-parse", "HEAD"], cwd=repo_root, timeout_seconds=None)
     except FileNotFoundError:
         return None
     return completed.stdout.strip() if completed.returncode == 0 else None
 
 
-def _run_glow(path: Path, width: int, *, stdout_path: Path | None = None) -> subprocess.CompletedProcess[str]:
-    stdout = subprocess.PIPE
-    stdout_handle = None
+def _run_glow(
+    path: Path, width: int, *, stdout_path: Path | None = None
+) -> subprocess.CompletedProcess[str]:
     command = ["glow", "-w", str(width), str(path)]
     timeout_seconds = _backend_timeout_seconds()
+    completed = run_process(command, cwd=Path.cwd(), timeout_seconds=timeout_seconds)
     if stdout_path is not None:
-        stdout_handle = stdout_path.open("w", encoding="utf-8")
-        stdout = stdout_handle
-    try:
-        return subprocess.run(
-            command,
-            check=False,
-            stdout=stdout,
-            stderr=subprocess.PIPE,
-            text=True,
-            timeout=timeout_seconds,
-        )
-    except subprocess.TimeoutExpired:
-        return subprocess.CompletedProcess(
-            command,
-            TIMEOUT_EXIT_CODE,
-            "",
-            _timeout_error(command, timeout_seconds),
-        )
-    finally:
-        if stdout_handle is not None:
-            stdout_handle.close()
+        stdout_path.write_text(completed.stdout, encoding="utf-8")
+    return completed
 
 
 def _render_with_glow(path: Path, width: int) -> tuple[str | None, str | None]:
     command = ["glow", "-w", str(width), str(path)]
     timeout_seconds = _backend_timeout_seconds()
-    try:
-        # glow's terminal renderer emits only a blank line when its stdout is a
-        # pipe. Release/doctor probes intentionally capture child output, so a
-        # healthy backend would otherwise look broken at that boundary. util-
-        # linux `script -qec` supplies a PTY without making the caller
-        # interactive. Other `script` implementations use different flags; a
-        # nonzero PTY probe is treated as unsupported and falls back to glow's
-        # direct invocation, preserving the normal backend error semantics.
-        script_path = shutil.which("script") if not sys.stdout.isatty() else None
-        if script_path:
-            try:
-                completed = subprocess.run(
-                    [script_path, "-qec", shlex.join(command), "/dev/null"],
-                    check=False,
-                    capture_output=True,
-                    text=True,
-                    timeout=timeout_seconds,
-                )
-            except FileNotFoundError:
-                completed = None
-            if completed is None or completed.returncode != 0:
-                completed = subprocess.run(
-                    command,
-                    check=False,
-                    capture_output=True,
-                    text=True,
-                    timeout=timeout_seconds,
-                )
-        else:
-            completed = subprocess.run(
-                command,
-                check=False,
-                capture_output=True,
-                text=True,
-                timeout=timeout_seconds,
+    # glow's terminal renderer emits only a blank line when its stdout is a
+    # pipe. Release/doctor probes intentionally capture child output, so a
+    # healthy backend would otherwise look broken at that boundary. util-
+    # linux `script -qec` supplies a PTY without making the caller
+    # interactive. Other `script` implementations use different flags; a
+    # nonzero PTY probe is treated as unsupported and falls back to glow's
+    # direct invocation, preserving the normal backend error semantics.
+    script_path = shutil.which("script") if not sys.stdout.isatty() else None
+    if script_path:
+        try:
+            completed = run_process(
+                [script_path, "-qec", shlex.join(command), "/dev/null"],
+                cwd=Path.cwd(),
+                timeout_seconds=timeout_seconds,
             )
-    except subprocess.TimeoutExpired:
+        except FileNotFoundError:
+            completed = None
+        if (
+            completed is not None
+            and completed.returncode == 124
+            and completed.stderr.startswith("timed out after ")
+        ):
+            return None, _timeout_error(command, timeout_seconds)
+        if completed is None or completed.returncode != 0:
+            completed = run_process(command, cwd=Path.cwd(), timeout_seconds=timeout_seconds)
+    else:
+        completed = run_process(command, cwd=Path.cwd(), timeout_seconds=timeout_seconds)
+    if completed.returncode == 124 and completed.stderr.startswith("timed out after "):
         return None, _timeout_error(command, timeout_seconds)
     source_non_empty = bool(path.read_text(encoding="utf-8").strip())
     if completed.returncode == 0 and (completed.stdout.strip() or not source_non_empty):
@@ -169,7 +143,11 @@ def _render_with_glow(path: Path, width: int) -> tuple[str | None, str | None]:
 
 def check_backend(backend: str) -> dict[str, str | bool]:
     if backend != "glow":
-        return {"available": False, "status": "backend-error", "reason": f"unsupported backend `{backend}`"}
+        return {
+            "available": False,
+            "status": "backend-error",
+            "reason": f"unsupported backend `{backend}`",
+        }
     if shutil.which(backend) is None:
         return {"available": False, "status": "missing", "reason": f"{backend} not found on PATH"}
     with tempfile.TemporaryDirectory() as tmp_dir:
@@ -178,11 +156,19 @@ def check_backend(backend: str) -> dict[str, str | bool]:
         rendered, reason = _render_with_glow(sample, 80)
     if rendered is not None and rendered.strip():
         return {"available": True, "status": "healthy", "reason": ""}
-    return {"available": True, "status": "backend-error", "reason": reason or "backend produced unusable output"}
+    return {
+        "available": True,
+        "status": "backend-error",
+        "reason": reason or "backend produced unusable output",
+    }
 
 
 def _fallback_text(path: Path, *, backend: str, reason: str, repo_root: Path, status: str) -> str:
-    title = "MARKDOWN PREVIEW BACKEND ERROR" if status == "backend-error" else "MARKDOWN PREVIEW DEGRADED"
+    title = (
+        "MARKDOWN PREVIEW BACKEND ERROR"
+        if status == "backend-error"
+        else "MARKDOWN PREVIEW DEGRADED"
+    )
     return "\n".join(
         [
             title,
@@ -280,5 +266,7 @@ def render_targets(repo_root: Path, config: PreviewConfig, targets: list[Path]) 
         "previews": previews,
         "warnings": warnings,
     }
-    _write_artifact(artifact_dir / "manifest.json", json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
+    _write_artifact(
+        artifact_dir / "manifest.json", json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
+    )
     return payload

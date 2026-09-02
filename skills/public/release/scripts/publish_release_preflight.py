@@ -4,11 +4,15 @@ import importlib.util
 import json
 import re
 import runpy
-import subprocess
 import sys
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, Callable
+
+from scripts import subprocess_guard as _subprocess_guard
+from scripts.subprocess_guard import run_process
+
+subprocess = _subprocess_guard.subprocess
 
 CRITIQUE_ARTIFACT_PREFIX = "charness-artifacts/critique/"
 SEMVER_PIN_RE = re.compile(
@@ -42,7 +46,9 @@ validate_critique_artifact_arg = _arg_guards["validate_critique_artifact_arg"]
 validate_bump_rationale_arg = _arg_guards["validate_bump_rationale_arg"]
 # One owner for the record-sentinel rule. This path is rendered into the release record as
 # `## Review Proof` on every write, including the published one.
-_claims_review = runpy.run_path(str(Path(__file__).resolve().with_name("publish_release_claims_review.py")))
+_claims_review = runpy.run_path(
+    str(Path(__file__).resolve().with_name("publish_release_claims_review.py"))
+)
 
 
 def _version_pins(text: str) -> list[str]:
@@ -79,13 +85,11 @@ def _load_shared_closeout_helper() -> Any:
     )
 
 
-
 def _resolve_git_ident(repo_root: Path, var_name: str) -> str | None:
-    proc = subprocess.run(
+    proc = run_process(
         ["git", "-C", str(repo_root), "var", var_name],
-        check=False,
-        capture_output=True,
-        text=True,
+        cwd=repo_root,
+        timeout_seconds=None,
     )
     if proc.returncode != 0 or not proc.stdout.strip():
         return None

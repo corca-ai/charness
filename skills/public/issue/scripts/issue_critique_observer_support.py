@@ -9,9 +9,30 @@ from __future__ import annotations
 
 import json
 import re
-import subprocess
+import sys
 from datetime import date
 from pathlib import Path
+
+try:
+    from scripts import subprocess_guard as _subprocess_guard
+    from scripts.subprocess_guard import run_process
+except ModuleNotFoundError:
+    _scripts_dir = next(
+        (
+            ancestor / "scripts"
+            for ancestor in (Path(__file__).resolve(), *Path(__file__).resolve().parents)
+            if (ancestor / "scripts" / "subprocess_guard.py").is_file()
+        ),
+        None,
+    )
+    if _scripts_dir is None:
+        raise
+    if str(_scripts_dir) not in sys.path:
+        sys.path.insert(0, str(_scripts_dir))
+    import subprocess_guard as _subprocess_guard
+    from subprocess_guard import run_process
+
+subprocess = _subprocess_guard.subprocess
 
 OBSERVER_RULE_DATE = date(2026, 7, 5)
 _DATE_RE = re.compile(r"(?P<date>\d{4}-\d{2}-\d{2})")
@@ -53,30 +74,29 @@ def _tracked_before_rule(path: Path, repo_root: Path) -> bool:
         relative = candidate.relative_to(root)
         if not _path_is_tracked(root, relative.as_posix()):
             return False
-        result = subprocess.run(
+        result = run_process(
             ["git", "log", "-1", "--format=%cI", "--", relative.as_posix()],
             cwd=root,
-            check=True,
-            capture_output=True,
-            text=True,
+            timeout_seconds=None,
         )
+        if result.returncode != 0:
+            return False
         committed = result.stdout.strip()[:10]
         if not committed or date.fromisoformat(committed) >= OBSERVER_RULE_DATE:
             return False
-        committed_bytes = subprocess.run(
+        committed_result = run_process(
             ["git", "show", f"HEAD:{relative.as_posix()}"],
             cwd=root,
-            check=True,
-            capture_output=True,
-        ).stdout
-        return candidate.read_bytes() == committed_bytes
-    except (OSError, subprocess.SubprocessError, ValueError):
+            timeout_seconds=None,
+        )
+        if committed_result.returncode != 0:
+            return False
+        return candidate.read_bytes() == committed_result.stdout.encode("utf-8")
+    except (OSError, ValueError):
         return False
 
 
-def predates_typed_contract(
-    path: Path, text: str, *, repo_root: Path | None = None
-) -> bool:
+def predates_typed_contract(path: Path, text: str, *, repo_root: Path | None = None) -> bool:
     """Whether an unchanged tracked artifact predates the typed contract."""
     observed = artifact_observed_date(path, text)
     if observed is None or observed >= OBSERVER_RULE_DATE:
@@ -149,9 +169,7 @@ def _delegation_record_state(repo_root: Path) -> tuple[str | None, list[str] | N
     return decision, scopes
 
 
-def _record_grants_scope(
-    decision: str | None, scopes: list[str] | None, scope: str
-) -> bool:
+def _record_grants_scope(decision: str | None, scopes: list[str] | None, scope: str) -> bool:
     if decision != "granted":
         return False
     return scopes is None or scope.strip().lower() in scopes

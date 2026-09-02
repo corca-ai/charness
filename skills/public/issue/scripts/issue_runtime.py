@@ -3,11 +3,14 @@ from __future__ import annotations
 import json
 import re
 import runpy
-import subprocess
 from pathlib import Path
 from typing import Any
 
-_load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_import.py"))["sibling_loader"](__file__)
+from scripts.subprocess_guard import run_process
+
+_load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_import.py"))[
+    "sibling_loader"
+](__file__)
 _resolve_op = _load_local("issue_backend", "issue_runtime_backend").resolve_op
 
 REMOTE_PATTERNS = (
@@ -32,13 +35,10 @@ def parse_remote_url(value: str) -> tuple[str, str] | None:
 
 
 def git_remote_url(repo_root: Path, remote_name: str) -> str | None:
-    result = subprocess.run(
+    result = run_process(
         ["git", "config", "--get", f"remote.{remote_name}.url"],
         cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=True,
-        timeout=GIT_TIMEOUT_SECONDS,
+        timeout_seconds=GIT_TIMEOUT_SECONDS,
     )
     if result.returncode != 0:
         return None
@@ -58,7 +58,9 @@ def parse_target(value: str, default_org: str, *, source_prefix: str) -> tuple[s
     raise ValueError("target must be empty, repo, or org/repo")
 
 
-def resolve_target(repo_root: Path, target: str | None, adapter_data: dict[str, Any]) -> dict[str, Any]:
+def resolve_target(
+    repo_root: Path, target: str | None, adapter_data: dict[str, Any]
+) -> dict[str, Any]:
     default_org = str(adapter_data["default_org"])
     remote_name = str(adapter_data["remote_name"])
     if target and target.strip():
@@ -126,24 +128,29 @@ def is_selector(value: str) -> bool:
 
 
 def _backend_json(argv: list[str]) -> Any:
-    try:
-        result = subprocess.run(
-            argv,
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=BACKEND_TIMEOUT_SECONDS,
-        )
-    except subprocess.TimeoutExpired as exc:
-        raise RuntimeError(f"{argv[0]} command timed out after {BACKEND_TIMEOUT_SECONDS}s") from exc
+    result = run_process(argv, cwd=Path.cwd(), timeout_seconds=BACKEND_TIMEOUT_SECONDS)
     if result.returncode != 0:
-        raise RuntimeError(result.stderr.strip() or result.stdout.strip() or f"{argv[0]} command failed")
+        raise RuntimeError(
+            result.stderr.strip() or result.stdout.strip() or f"{argv[0]} command failed"
+        )
     return json.loads(result.stdout or "null")
 
 
 GH_NEWEST_OPEN_ARGS = [
-    "search", "issues", "--repo", "{repo}", "--state", "open", "--limit", "1",
-    "--json", "number,title,createdAt,url,state", "--sort", "created", "--order", "desc",
+    "search",
+    "issues",
+    "--repo",
+    "{repo}",
+    "--state",
+    "open",
+    "--limit",
+    "1",
+    "--json",
+    "number,title,createdAt,url,state",
+    "--sort",
+    "created",
+    "--order",
+    "desc",
 ]
 
 

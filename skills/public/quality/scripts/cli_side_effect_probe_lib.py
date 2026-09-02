@@ -3,10 +3,14 @@ from __future__ import annotations
 import hashlib
 import json
 import shlex
-import subprocess
 import sys
 from pathlib import Path
 from typing import Any
+
+from scripts import subprocess_guard as _subprocess_guard
+from scripts.subprocess_guard import run_process
+
+subprocess = _subprocess_guard.subprocess
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from git_inventory_lib import (  # noqa: E402
@@ -14,7 +18,11 @@ from git_inventory_lib import (  # noqa: E402
     visible_repo_files,
 )
 
-DEFAULT_PATTERNS = [".agents/cli-side-effect-probes.json", "**/cli-side-effect-probes.json", "**/*side-effect-probes*.json"]
+DEFAULT_PATTERNS = [
+    ".agents/cli-side-effect-probes.json",
+    "**/cli-side-effect-probes.json",
+    "**/*side-effect-probes*.json",
+]
 DEFAULT_PROBE_TIMEOUT_SECONDS = 20
 
 
@@ -22,7 +30,9 @@ def _load_json(path: Path) -> Any:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def _filter_path(repo_root: Path, path: Path, visible: set[Path] | None, seen: set[Path], vendored_filter) -> bool:
+def _filter_path(
+    repo_root: Path, path: Path, visible: set[Path] | None, seen: set[Path], vendored_filter
+) -> bool:
     if not path.is_file() or path in seen:
         return False
     if visible is not None and path not in visible:
@@ -63,7 +73,9 @@ def _non_empty_string(entry: dict[str, Any], key: str) -> str:
 
 def _positive_int(entry: dict[str, Any], key: str, default: int) -> int:
     value = entry.get(key)
-    return value if isinstance(value, int) and not isinstance(value, bool) and value > 0 else default
+    return (
+        value if isinstance(value, int) and not isinstance(value, bool) and value > 0 else default
+    )
 
 
 def _finding(
@@ -76,7 +88,14 @@ def _finding(
     **extra: object,
 ) -> dict[str, object]:
     rendered_path = str(path.relative_to(repo_root)) if path else "<missing>"
-    return {"type": finding_type, "path": rendered_path, "entry_index": index, "command": command, "suggestion": suggestion, **extra}
+    return {
+        "type": finding_type,
+        "path": rendered_path,
+        "entry_index": index,
+        "command": command,
+        "suggestion": suggestion,
+        **extra,
+    }
 
 
 def _resolve_watch_path(repo_root: Path, watch_path: str) -> Path:
@@ -112,7 +131,10 @@ def _snapshot_one(path: Path) -> object:
 
 
 def _snapshot(repo_root: Path, watch_paths: list[str]) -> dict[str, object]:
-    return {watch_path: _snapshot_one(_resolve_watch_path(repo_root, watch_path)) for watch_path in watch_paths}
+    return {
+        watch_path: _snapshot_one(_resolve_watch_path(repo_root, watch_path))
+        for watch_path in watch_paths
+    }
 
 
 def _probe_commands(entry: dict[str, Any]) -> list[tuple[str, str, bool]]:
@@ -131,36 +153,77 @@ def _probe_commands(entry: dict[str, Any]) -> list[tuple[str, str, bool]]:
     return probes
 
 
-def _run_probes(repo_root: Path, path: Path, index: int, entry: dict[str, Any]) -> list[dict[str, object]]:
+def _run_probes(
+    repo_root: Path, path: Path, index: int, entry: dict[str, Any]
+) -> list[dict[str, object]]:
     command = _non_empty_string(entry, "command")
     watch_paths = _string_list(entry, "side_effect_watch_paths")
     findings: list[dict[str, object]] = []
     timeout_seconds = _positive_int(entry, "probe_timeout_seconds", DEFAULT_PROBE_TIMEOUT_SECONDS)
     if not entry.get("safe_to_execute"):
-        return [_finding(repo_root, path, index, command, "mutating_command_execution_not_enabled", "Set safe_to_execute only for sandboxed probe fixtures whose side effects are watched.")]
+        return [
+            _finding(
+                repo_root,
+                path,
+                index,
+                command,
+                "mutating_command_execution_not_enabled",
+                "Set safe_to_execute only for sandboxed probe fixtures whose side effects are watched.",
+            )
+        ]
     for probe_type, probe_command, expect_failure in _probe_commands(entry):
         before = _snapshot(repo_root, watch_paths)
-        try:
-            result = subprocess.run(
-                shlex.split(probe_command),
-                cwd=repo_root,
-                check=False,
-                capture_output=True,
-                text=True,
-                timeout=timeout_seconds,
+        result = run_process(
+            shlex.split(probe_command), cwd=repo_root, timeout_seconds=timeout_seconds
+        )
+        if result.returncode == 124 and result.stderr.startswith("timed out after "):
+            findings.append(
+                _finding(
+                    repo_root,
+                    path,
+                    index,
+                    command,
+                    "probe_timed_out",
+                    "Give executable CLI side-effect probes a bounded fixture command that returns quickly.",
+                    probe_type=probe_type,
+                    probe_command=probe_command,
+                    timeout_seconds=timeout_seconds,
+                )
             )
-        except subprocess.TimeoutExpired:
-            findings.append(_finding(repo_root, path, index, command, "probe_timed_out", "Give executable CLI side-effect probes a bounded fixture command that returns quickly.", probe_type=probe_type, probe_command=probe_command, timeout_seconds=timeout_seconds))
             continue
         after = _snapshot(repo_root, watch_paths)
         if before != after:
-            findings.append(_finding(repo_root, path, index, command, "probe_changed_side_effect_watch", "Fix the probe so it rejects or previews before mutating watched state.", probe_type=probe_type, probe_command=probe_command))
+            findings.append(
+                _finding(
+                    repo_root,
+                    path,
+                    index,
+                    command,
+                    "probe_changed_side_effect_watch",
+                    "Fix the probe so it rejects or previews before mutating watched state.",
+                    probe_type=probe_type,
+                    probe_command=probe_command,
+                )
+            )
         if expect_failure and result.returncode == 0:
-            findings.append(_finding(repo_root, path, index, command, "option_like_positional_probe_did_not_fail", "Option-looking positional probes should reject before mutation.", probe_type=probe_type, probe_command=probe_command))
+            findings.append(
+                _finding(
+                    repo_root,
+                    path,
+                    index,
+                    command,
+                    "option_like_positional_probe_did_not_fail",
+                    "Option-looking positional probes should reject before mutation.",
+                    probe_type=probe_type,
+                    probe_command=probe_command,
+                )
+            )
     return findings
 
 
-def inspect_command(repo_root: Path, path: Path, index: int, entry: dict[str, Any], *, execute_probes: bool) -> dict[str, object]:
+def inspect_command(
+    repo_root: Path, path: Path, index: int, entry: dict[str, Any], *, execute_probes: bool
+) -> dict[str, object]:
     command = _non_empty_string(entry, "command")
     findings: list[dict[str, object]] = []
     mutating = bool(entry.get("mutating"))
@@ -172,15 +235,55 @@ def inspect_command(repo_root: Path, path: Path, index: int, entry: dict[str, An
     dry_run_waiver = _non_empty_string(entry, "dry_run_waiver")
 
     if not command:
-        findings.append(_finding(repo_root, path, index, command, "missing_command", "Declare the command string."))
+        findings.append(
+            _finding(
+                repo_root, path, index, command, "missing_command", "Declare the command string."
+            )
+        )
     if mutating and not help_probe:
-        findings.append(_finding(repo_root, path, index, command, "mutating_command_missing_help_probe", "Probe `<command> --help` and assert no side effects."))
+        findings.append(
+            _finding(
+                repo_root,
+                path,
+                index,
+                command,
+                "mutating_command_missing_help_probe",
+                "Probe `<command> --help` and assert no side effects.",
+            )
+        )
     if mutating and positional_args and not _string_list(entry, "option_like_positional_probes"):
-        findings.append(_finding(repo_root, path, index, command, "mutating_command_missing_option_like_positional_probe", "Probe option-looking positional values and assert rejection before mutation."))
+        findings.append(
+            _finding(
+                repo_root,
+                path,
+                index,
+                command,
+                "mutating_command_missing_option_like_positional_probe",
+                "Probe option-looking positional values and assert rejection before mutation.",
+            )
+        )
     if mutating and not dry_run_probe and not plan_probe and not dry_run_waiver:
-        findings.append(_finding(repo_root, path, index, command, "mutating_command_missing_dry_run_or_plan", "Add a dry-run/plan probe or a concrete waiver."))
+        findings.append(
+            _finding(
+                repo_root,
+                path,
+                index,
+                command,
+                "mutating_command_missing_dry_run_or_plan",
+                "Add a dry-run/plan probe or a concrete waiver.",
+            )
+        )
     if mutating and not watch_paths:
-        findings.append(_finding(repo_root, path, index, command, "mutating_command_missing_side_effect_watch", "Declare filesystem, service, or command-runner side-effect watch points."))
+        findings.append(
+            _finding(
+                repo_root,
+                path,
+                index,
+                command,
+                "mutating_command_missing_side_effect_watch",
+                "Declare filesystem, service, or command-runner side-effect watch points.",
+            )
+        )
     if mutating and execute_probes and not findings:
         findings.extend(_run_probes(repo_root, path, index, entry))
     return {"command": command, "mutating": mutating, "findings": findings}
@@ -195,7 +298,12 @@ def inventory_contract(repo_root: Path, path: Path, *, execute_probes: bool) -> 
         if isinstance(entry, dict)
     ]
     findings = [finding for command in commands for finding in command["findings"]]
-    return {"path": str(path.relative_to(repo_root)), "command_count": len(commands), "commands": commands, "findings": findings}
+    return {
+        "path": str(path.relative_to(repo_root)),
+        "command_count": len(commands),
+        "commands": commands,
+        "findings": findings,
+    }
 
 
 def build_inventory(
@@ -212,14 +320,37 @@ def build_inventory(
         if contract_paths
         else default_paths(repo_root, vendored_filter=vendored_filter, snapshot=snapshot)
     )
-    contracts = [inventory_contract(repo_root, path, execute_probes=execute_probes) for path in paths]
+    contracts = [
+        inventory_contract(repo_root, path, execute_probes=execute_probes) for path in paths
+    ]
     findings = [finding for contract in contracts for finding in contract["findings"]]
     if not contracts:
-        findings.append(_finding(repo_root, None, -1, "", "cli_side_effect_probe_contract_missing", "Add a cli-side-effect-probes.json contract for mutating operator CLI commands."))
+        findings.append(
+            _finding(
+                repo_root,
+                None,
+                -1,
+                "",
+                "cli_side_effect_probe_contract_missing",
+                "Add a cli-side-effect-probes.json contract for mutating operator CLI commands.",
+            )
+        )
     if contracts:
         status: dict[str, str] = {"status": "clean"}
     elif requested:
-        status = {"status": "clean", "reason": "Explicit --contract-file arguments yielded no readable files."}
+        status = {
+            "status": "clean",
+            "reason": "Explicit --contract-file arguments yielded no readable files.",
+        }
     else:
-        status = {"status": "unconfigured", "reason": "No cli-side-effect-probes.json contract file was discovered. Provide --contract-file or commit a contract under repo-visible paths such as .agents/cli-side-effect-probes.json."}
-    return {"repo_root": str(repo_root), "execute_probes": execute_probes, **status, "contracts": contracts, "findings": findings}
+        status = {
+            "status": "unconfigured",
+            "reason": "No cli-side-effect-probes.json contract file was discovered. Provide --contract-file or commit a contract under repo-visible paths such as .agents/cli-side-effect-probes.json.",
+        }
+    return {
+        "repo_root": str(repo_root),
+        "execute_probes": execute_probes,
+        **status,
+        "contracts": contracts,
+        "findings": findings,
+    }

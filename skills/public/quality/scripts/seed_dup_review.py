@@ -18,11 +18,13 @@ sibling inventory scripts are run with their default baseline behavior.
 from __future__ import annotations
 
 import argparse
+import contextlib
 import datetime
+import io
 import json
 import runpy
-import subprocess
 import sys
+import traceback
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -30,7 +32,14 @@ import yaml
 
 
 def _load_skill_runtime_bootstrap():
-    bootstrap = next((ancestor / "skill_runtime_bootstrap.py" for ancestor in Path(__file__).resolve().parents if (ancestor / "skill_runtime_bootstrap.py").is_file()), None)
+    bootstrap = next(
+        (
+            ancestor / "skill_runtime_bootstrap.py"
+            for ancestor in Path(__file__).resolve().parents
+            if (ancestor / "skill_runtime_bootstrap.py").is_file()
+        ),
+        None,
+    )
     if bootstrap is None:
         raise ImportError("skill_runtime_bootstrap.py not found")
     return SimpleNamespace(**runpy.run_path(str(bootstrap)))
@@ -83,21 +92,32 @@ def _families_from_payload(text: str, source: str) -> tuple[list[dict], str | No
 
 
 def _run_inventory(script: Path, repo_root: Path) -> tuple[list[dict], str | None]:
-    completed = subprocess.run(
-        [sys.executable, str(script), "--repo-root", str(repo_root), "--detail"],
-        cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    families, reason = _families_from_payload(completed.stdout, script.name)
+    module = _SKILL_RUNTIME.load_local_skill_module(__file__, script.stem)
+    stdout = io.StringIO()
+    stderr = io.StringIO()
+    previous_argv = sys.argv
+    try:
+        sys.argv = [str(script), "--repo-root", str(repo_root), "--detail"]
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            try:
+                returncode = module.main()
+            except SystemExit as exc:
+                returncode = exc.code if isinstance(exc.code, int) else 1
+            except Exception:
+                traceback.print_exc()
+                returncode = 1
+    finally:
+        sys.argv = previous_argv
+    families, reason = _families_from_payload(stdout.getvalue(), script.name)
     # The return code was read by nothing: a producer that died mid-run still seeded.
-    if reason is None and completed.returncode != 0:
-        return [], f"{script.name} exited {completed.returncode}: {completed.stderr.strip()[:160]}"
+    if reason is None and returncode != 0:
+        return [], f"{script.name} exited {returncode}: {stderr.getvalue().strip()[:160]}"
     return families, reason
 
 
-def _families(inventory_json: Path | None, script: Path, repo_root: Path) -> tuple[list[dict], str | None]:
+def _families(
+    inventory_json: Path | None, script: Path, repo_root: Path
+) -> tuple[list[dict], str | None]:
     if inventory_json is not None:
         try:
             text = inventory_json.read_text(encoding="utf-8")
@@ -146,7 +166,9 @@ def build_result(args: argparse.Namespace) -> dict:
             "doc_family_count": len(doc_families),
             "unestablished_reasons": unestablished,
         }
-    review = dup_review.build_review(existing, code_families, doc_families, reviewed_at=args.reviewed_at)
+    review = dup_review.build_review(
+        existing, code_families, doc_families, reviewed_at=args.reviewed_at
+    )
     return {
         "ok": True,
         "review": review,
@@ -159,12 +181,35 @@ def build_result(args: argparse.Namespace) -> dict:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--repo-root", type=Path, required=True, help="Repository root whose duplicate inventories and overlay should be managed")
-    parser.add_argument("--output", default=DEFAULT_OUTPUT_REL, help=f"Overlay path (repo-relative; default {DEFAULT_OUTPUT_REL}).")
-    parser.add_argument("--code-inventory", type=Path, help="Pre-collected inventory_nose_clones structured file (else the script is run).")
-    parser.add_argument("--doc-inventory", type=Path, help="Pre-collected inventory_doc_duplicates structured file (else the script is run).")
-    parser.add_argument("--reviewed-at", default=datetime.date.today().isoformat(), help="ISO date stamp for newly auto-seeded entries (default today).")
-    parser.add_argument("--write", action="store_true", help="Write the overlay to --output (else dry-run preview).")
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        required=True,
+        help="Repository root whose duplicate inventories and overlay should be managed",
+    )
+    parser.add_argument(
+        "--output",
+        default=DEFAULT_OUTPUT_REL,
+        help=f"Overlay path (repo-relative; default {DEFAULT_OUTPUT_REL}).",
+    )
+    parser.add_argument(
+        "--code-inventory",
+        type=Path,
+        help="Pre-collected inventory_nose_clones structured file (else the script is run).",
+    )
+    parser.add_argument(
+        "--doc-inventory",
+        type=Path,
+        help="Pre-collected inventory_doc_duplicates structured file (else the script is run).",
+    )
+    parser.add_argument(
+        "--reviewed-at",
+        default=datetime.date.today().isoformat(),
+        help="ISO date stamp for newly auto-seeded entries (default today).",
+    )
+    parser.add_argument(
+        "--write", action="store_true", help="Write the overlay to --output (else dry-run preview)."
+    )
     args = parser.parse_args()
 
     result = build_result(args)
@@ -183,7 +228,10 @@ def main() -> int:
     if args.write:
         out = Path(result["output_path"])
         out.parent.mkdir(parents=True, exist_ok=True)
-        out.write_text(json.dumps(review, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        out.write_text(
+            json.dumps(review, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
     action = "wrote" if args.write else "previewed (dry-run; pass --write to persist)"
     print(
         f"dup-review {action}: {len(review['entries'])} classified entries "

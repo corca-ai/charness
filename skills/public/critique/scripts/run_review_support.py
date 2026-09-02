@@ -10,13 +10,28 @@ import os
 import re
 import shutil
 import signal
-import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 
 import yaml
+
+try:
+    from scripts.subprocess_guard import run_monitored_phase, run_process
+except ModuleNotFoundError:
+    _scripts_dir = next(
+        (
+            ancestor / "scripts"
+            for ancestor in (Path(__file__).resolve(), *Path(__file__).resolve().parents)
+            if (ancestor / "scripts" / "subprocess_guard.py").is_file()
+        ),
+        None,
+    )
+    if _scripts_dir is None:
+        raise
+    sys.path.insert(0, str(_scripts_dir))
+    from subprocess_guard import run_monitored_phase, run_process
 
 
 class RunReviewError(ValueError):
@@ -65,7 +80,9 @@ def package_paths(script_dir: Path) -> dict[str, Path]:
     )
     schema = next((path for path in schema_candidates if path.is_file()), None)
     if schema is None:
-        raise RunReviewError("runtime-unavailable", "cannot locate canonical reviewer result schema")
+        raise RunReviewError(
+            "runtime-unavailable", "cannot locate canonical reviewer result schema"
+        )
     return {
         "runner": shared / "run_reviewer_worker.py",
         "capability": shared / "reviewer_capability.py",
@@ -149,7 +166,9 @@ def repo_path(
     try:
         candidate.relative_to(root.resolve())
     except ValueError as exc:
-        raise RunReviewError("path-invalid", f"{label} resolves outside --repo-root: {value}") from exc
+        raise RunReviewError(
+            "path-invalid", f"{label} resolves outside --repo-root: {value}"
+        ) from exc
     if require_file and not candidate.is_file():
         raise RunReviewError("path-missing", f"{label} does not point to a file: {value}")
     # An allowed symlink is returned UNRESOLVED. `.resolve()` follows the link, so
@@ -180,7 +199,9 @@ def load_goal_lineage(root: Path, path_value: str | None, *, reason: str) -> dic
     """Load one full evidence identity, or record an explicit standalone run."""
     candidates: list[Path] = [root / "scripts" / "goal_lineage.py"]
     here = Path(__file__).resolve()
-    candidates.extend(ancestor / "scripts" / "goal_lineage.py" for ancestor in (here, *here.parents))
+    candidates.extend(
+        ancestor / "scripts" / "goal_lineage.py" for ancestor in (here, *here.parents)
+    )
     lineage_path = next((candidate for candidate in candidates if candidate.is_file()), None)
     if lineage_path is None:
         raise RunReviewError("runtime-unavailable", "scripts/goal_lineage.py is not available")
@@ -206,33 +227,38 @@ def attempt_id(value: str | None) -> str:
 
 def run_command(command: list[str], *, root: Path, timeout: float = 60.0) -> tuple[int, str, str]:
     try:
-        result = subprocess.run(
-            command,
-            cwd=root,
-            capture_output=True,
-            text=True,
-            check=False,
-            timeout=timeout,
-        )
-    except (OSError, subprocess.TimeoutExpired) as exc:
-        raise RunReviewError("runner-invalid", f"command could not complete: {' '.join(command)}: {exc}") from exc
+        result = run_process(command, cwd=root, timeout_seconds=timeout)
+    except OSError as exc:
+        raise RunReviewError(
+            "runner-invalid", f"command could not complete: {' '.join(command)}: {exc}"
+        ) from exc
     return result.returncode, result.stdout, result.stderr
 
 
 def resolve_adapter(root: Path, resolver: Path) -> dict[str, Any]:
-    code, stdout, stderr = run_command([sys.executable, str(resolver), "--repo-root", str(root)], root=root)
-    payload = yaml_payload(stdout, label="critique adapter resolver")
-    if code != 0 or payload.get("valid") is not True:
-        raise RunReviewError("adapter-invalid", "critique adapter is invalid", details={"adapter": payload, "stderr": stderr})
+    try:
+        module = load_module(resolver, "charness_run_review_resolve_adapter")
+        payload = module.load_adapter(root)
+    except Exception as exc:
+        raise RunReviewError(
+            "adapter-invalid", f"critique adapter could not be resolved: {exc}"
+        ) from exc
+    if not isinstance(payload, dict) or payload.get("valid") is not True:
+        details = {"adapter": payload} if isinstance(payload, dict) else {}
+        raise RunReviewError("adapter-invalid", "critique adapter is invalid", details=details)
     return payload
 
 
-def select_backend(adapter: dict[str, Any], requested: str | None, *, dry_run: bool) -> tuple[str | None, int]:
+def select_backend(
+    adapter: dict[str, Any], requested: str | None, *, dry_run: bool
+) -> tuple[str | None, int]:
     data = adapter.get("data")
     runner = data.get("reviewer_runner") if isinstance(data, dict) else None
     runner = runner if isinstance(runner, dict) else {}
     if runner.get("mode", "file-backed-worker") != "file-backed-worker":
-        raise RunReviewError("typed-subagent-selected", "adapter selected typed-subagent; use the host spawn branch")
+        raise RunReviewError(
+            "typed-subagent-selected", "adapter selected typed-subagent; use the host spawn branch"
+        )
     configured = runner.get("backend", "host-defaulted")
     if requested is not None and configured != "host-defaulted" and requested != configured:
         raise RunReviewError("runner-invalid", f"adapter backend {configured!r} is authoritative")
@@ -247,10 +273,14 @@ def select_backend(adapter: dict[str, Any], requested: str | None, *, dry_run: b
     elif shutil.which("claude"):
         backend = "claude_p"
     else:
-        raise RunReviewError("backend-unavailable", "host-defaulted adapter has no codex or claude executable")
+        raise RunReviewError(
+            "backend-unavailable", "host-defaulted adapter has no codex or claude executable"
+        )
     timeout = runner.get("timeout_seconds", 900)
     if type(timeout) is not int or timeout <= 0:
-        raise RunReviewError("adapter-invalid", "reviewer_runner.timeout_seconds must be a positive integer")
+        raise RunReviewError(
+            "adapter-invalid", "reviewer_runner.timeout_seconds must be a positive integer"
+        )
     return backend, timeout
 
 
@@ -259,92 +289,60 @@ def new_run_dir(root: Path, attempt: str) -> Path:
     try:
         run_dir.relative_to(root.resolve())
     except ValueError as exc:
-        raise RunReviewError("path-invalid", "derived reviewer run directory escaped repository root") from exc
+        raise RunReviewError(
+            "path-invalid", "derived reviewer run directory escaped repository root"
+        ) from exc
     if run_dir.exists() or run_dir.is_symlink():
-        raise RunReviewError("stale-artifact-refused", f"refusing to overwrite existing reviewer run: {run_dir}")
+        raise RunReviewError(
+            "stale-artifact-refused", f"refusing to overwrite existing reviewer run: {run_dir}"
+        )
     run_dir.mkdir(parents=True)
     return run_dir
-
-
-def stop_group(process: subprocess.Popen[Any]) -> None:
-    if process.poll() is not None:
-        return
-    try:
-        if os.name == "posix":
-            os.killpg(os.getpgid(process.pid), signal.SIGTERM)
-        else:
-            process.terminate()
-    except ProcessLookupError:
-        pass
-    try:
-        process.wait(timeout=5)
-        return
-    except subprocess.TimeoutExpired:
-        pass
-    try:
-        if os.name == "posix":
-            os.killpg(os.getpgid(process.pid), signal.SIGKILL)
-        else:
-            process.kill()
-    except ProcessLookupError:
-        pass
-    try:
-        process.wait(timeout=5)
-    except subprocess.TimeoutExpired:
-        pass
-
-
-def install_runner_handlers(process: subprocess.Popen[Any]) -> dict[int, Any]:
-    """Make an interrupted wrapper reap its canonical runner process group."""
-    previous: dict[int, Any] = {}
-
-    def interrupt(_signum: int, _frame: Any) -> None:
-        raise KeyboardInterrupt
-
-    for signum in (signal.SIGTERM, signal.SIGINT):
-        try:
-            previous[signum] = signal.signal(signum, interrupt)
-        except (ValueError, OSError):
-            continue
-    return previous
-
-
-def restore_runner_handlers(previous: dict[int, Any]) -> None:
-    for signum, handler in previous.items():
-        try:
-            signal.signal(signum, handler)
-        except (ValueError, OSError):
-            pass
 
 
 def run_runner(
     command: list[str], *, root: Path, stdout_path: Path, stderr_path: Path, timeout: int
 ) -> tuple[int | None, str, bool, str | None]:
     grace = max(2.0, min(30.0, timeout * 0.25))
+    previous: dict[int, object] = {}
+
+    def interrupt(_signum: int, _frame: object) -> None:
+        raise KeyboardInterrupt
+
     try:
-        with stdout_path.open("wb") as stdout, stderr_path.open("wb") as stderr:
-            process = subprocess.Popen(
-                command,
-                cwd=root,
-                stdout=stdout,
-                stderr=stderr,
-                start_new_session=(os.name == "posix"),
-                creationflags=getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0) if os.name == "nt" else 0,
-            )
-            previous_handlers = install_runner_handlers(process)
+        for signum in (signal.SIGTERM, signal.SIGINT):
             try:
-                returncode = process.wait(timeout=timeout + grace)
-                return returncode, "runner-completed", True, None
-            except subprocess.TimeoutExpired:
-                stop_group(process)
-                return 124, "runner-timeout", True, f"canonical runner exceeded {timeout + grace:g} seconds"
-            except KeyboardInterrupt:
-                stop_group(process)
-                return 130, "runner-interrupted", True, "canonical runner interrupted; worker group terminated"
-            finally:
-                restore_runner_handlers(previous_handlers)
+                previous[signum] = signal.signal(signum, interrupt)
+            except (ValueError, OSError):
+                continue
+        outcome = run_monitored_phase(
+            command, cwd=root, phase="critique-review-runner", timeout_seconds=timeout + grace
+        )
+        stdout_path.write_text(outcome.stdout, encoding="utf-8")
+        stderr_path.write_text(outcome.stderr, encoding="utf-8")
+        if outcome.timed_out:
+            return (
+                124,
+                "runner-timeout",
+                True,
+                f"canonical runner exceeded {timeout + grace:g} seconds",
+            )
+        return outcome.returncode, "runner-completed", True, None
+    except KeyboardInterrupt:
+        return (
+            130,
+            "runner-interrupted",
+            True,
+            "canonical runner interrupted; worker group terminated",
+        )
     except OSError as exc:
         return None, "runner-invalid", False, str(exc)
+    finally:
+        for signum, handler in previous.items():
+            try:
+                signal.signal(signum, handler)
+            except (ValueError, OSError):
+                pass
 
 
 def load_mapping(path: Path) -> dict[str, Any] | None:
@@ -383,5 +381,10 @@ def classify_runner_output(
 ) -> tuple[int | None, str, bool, str | None]:
     payload = load_mapping(path)
     if isinstance(payload, dict) and payload.get("status") == "runner-invalid":
-        return returncode, "runner-invalid", False, str(payload.get("error") or error or "canonical runner refused the run")
+        return (
+            returncode,
+            "runner-invalid",
+            False,
+            str(payload.get("error") or error or "canonical runner refused the run"),
+        )
     return returncode, status, started, error

@@ -6,10 +6,11 @@ import argparse
 import re
 import runpy
 import shutil
-import subprocess
 from collections import Counter
 from pathlib import Path
 from types import SimpleNamespace
+
+from scripts.subprocess_guard import run_process
 
 _summary_output = SimpleNamespace(
     **runpy.run_path(str(Path(__file__).with_name("summary_output_lib.py")))
@@ -43,7 +44,9 @@ NON_PYTHON_SOURCE_SUFFIXES = frozenset(
 )
 
 
-def git_visible_python_paths(repo_root: Path, roots: tuple[str, ...], *, snapshot=None) -> list[str]:
+def git_visible_python_paths(
+    repo_root: Path, roots: tuple[str, ...], *, snapshot=None
+) -> list[str]:
     listed = visible_repo_files(repo_root, snapshot=snapshot)
     if listed is None:
         return [root for root in roots if (repo_root / root).exists()]
@@ -57,7 +60,9 @@ def git_visible_python_paths(repo_root: Path, roots: tuple[str, ...], *, snapsho
     return sorted(selected)
 
 
-def git_visible_non_python_sources(repo_root: Path, roots: tuple[str, ...] | None = None, *, snapshot=None) -> list[str]:
+def git_visible_non_python_sources(
+    repo_root: Path, roots: tuple[str, ...] | None = None, *, snapshot=None
+) -> list[str]:
     listed = visible_repo_files(repo_root, snapshot=snapshot)
     if listed is None:
         return []
@@ -84,7 +89,11 @@ def classify_finding(
     unused_name = name_match.group("name") if name_match else ""
     lower_path = path.lower()
     lower_name = unused_name.lower()
-    in_tests = lower_path.startswith("tests/") or "/tests/" in lower_path or lower_path.endswith("conftest.py")
+    in_tests = (
+        lower_path.startswith("tests/")
+        or "/tests/" in lower_path
+        or lower_path.endswith("conftest.py")
+    )
     if unused_name in LIKELY_CONVENTION_NAMES:
         return "likely_framework_convention"
     roles = source_roles or {}
@@ -99,7 +108,9 @@ def classify_finding(
         return "likely_mock_protocol"
     if in_tests and unused_kind in {"attribute", "method", "property"}:
         return "likely_test_protocol"
-    if any(term in lower_name or term in lower_path for term in TEST_PROTOCOL_TERMS) and unused_kind in {
+    if any(
+        term in lower_name or term in lower_path for term in TEST_PROTOCOL_TERMS
+    ) and unused_kind in {
         "attribute",
         "method",
         "property",
@@ -182,7 +193,9 @@ def classification_counts(findings: list[dict[str, object]]) -> dict[str, int]:
 def summarize_run(run: dict[str, object], *, sample_limit: int) -> dict[str, object]:
     findings = list(run.get("findings", []))
     review_candidates = [
-        finding for finding in findings if isinstance(finding, dict) and finding.get("classification") == "review_candidate"
+        finding
+        for finding in findings
+        if isinstance(finding, dict) and finding.get("classification") == "review_candidate"
     ][:sample_limit]
     return {
         "confidence": run.get("confidence"),
@@ -220,26 +233,15 @@ def run_vulture(repo_root: Path, paths: list[str], *, confidence: int) -> dict[s
             "stderr": "vulture is not installed",
         }
     command = ["vulture", *paths, "--min-confidence", str(confidence), "--sort-by-size"]
-    try:
-        completed = subprocess.run(
-            command,
-            cwd=repo_root,
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=VULTURE_TIMEOUT_SECONDS,
-        )
-    except subprocess.TimeoutExpired as exc:
-        completed = subprocess.CompletedProcess(
-            command,
-            124,
-            str(exc.stdout or ""),
-            f"timed out after {VULTURE_TIMEOUT_SECONDS}s",
-        )
+    completed = run_process(command, cwd=repo_root, timeout_seconds=VULTURE_TIMEOUT_SECONDS)
     findings = parse_findings(completed.stdout, repo_root=repo_root, scan_paths=paths)
     return {
         "confidence": confidence,
-        "status": "findings" if completed.returncode == 3 else "clean" if completed.returncode == 0 else "error",
+        "status": "findings"
+        if completed.returncode == 3
+        else "clean"
+        if completed.returncode == 0
+        else "error",
         "command": " ".join(command),
         "exit_code": completed.returncode,
         "findings": findings,
@@ -262,10 +264,30 @@ def not_applicable_run(confidence: int) -> dict[str, object]:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root for the vulture-backed dead-code advisory scan")
-    parser.add_argument("--path", action="append", default=[], help="Repo-relative path to scan for dead code (repeatable; defaults applied if omitted)")
-    parser.add_argument("--primary-confidence", type=int, default=80, help="vulture --min-confidence for the high-confidence primary pass")
-    parser.add_argument("--sweep-confidence", type=int, default=60, help="vulture --min-confidence for the lower-confidence sweep pass")
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        required=True,
+        help="Repo root for the vulture-backed dead-code advisory scan",
+    )
+    parser.add_argument(
+        "--path",
+        action="append",
+        default=[],
+        help="Repo-relative path to scan for dead code (repeatable; defaults applied if omitted)",
+    )
+    parser.add_argument(
+        "--primary-confidence",
+        type=int,
+        default=80,
+        help="vulture --min-confidence for the high-confidence primary pass",
+    )
+    parser.add_argument(
+        "--sweep-confidence",
+        type=int,
+        default=60,
+        help="vulture --min-confidence for the lower-confidence sweep pass",
+    )
     _summary_output.add_output_args(
         parser,
         summary_help="Emit compact YAML counts and samples instead of full vulture commands",
@@ -329,15 +351,21 @@ def main() -> int:
             f"finding(s) of {len(sweep['findings'])} total for separate triage (advisory only, never blocks)."
         )
     if not applicable:
-        print("NOT APPLICABLE: no Git-visible Python files matched the requested roots; no dead-code verdict was produced.")
+        print(
+            "NOT APPLICABLE: no Git-visible Python files matched the requested roots; no dead-code verdict was produced."
+        )
     elif non_python_sources:
         print(
             f"PARTIAL: vulture covers {len(paths)} Python file(s), not "
             f"{len(non_python_sources)} Git-visible non-Python source file(s); "
             "no repo-wide dead-code verdict was produced."
         )
-    print(f"Primary Python scope ({args.primary_confidence}%): {primary['status']} ({len(primary['findings'])} findings)")
-    print(f"Sweep Python scope ({args.sweep_confidence}%): {sweep['status']} ({len(sweep['findings'])} findings)")
+    print(
+        f"Primary Python scope ({args.primary_confidence}%): {primary['status']} ({len(primary['findings'])} findings)"
+    )
+    print(
+        f"Sweep Python scope ({args.sweep_confidence}%): {sweep['status']} ({len(sweep['findings'])} findings)"
+    )
     # `.get`: the vulture-missing run dict has no `classification_counts` key (only
     # the ran-clean/findings/error dicts do). Keying it directly here crashed the human
     # path (exit 1) when vulture was absent, so an opted-in advisory gate falsely turned
@@ -348,10 +376,15 @@ def main() -> int:
         print(f"Sweep classifications: {counts}")
     ordered = sorted(
         sweep["findings"],
-        key=lambda finding: (0 if finding["classification"] == "review_candidate" else 1, str(finding["classification"])),
+        key=lambda finding: (
+            0 if finding["classification"] == "review_candidate" else 1,
+            str(finding["classification"]),
+        ),
     )
     for finding in ordered:
-        print(f"{finding['path']}:{finding['line']} {finding['message']} [{finding['classification']}]")
+        print(
+            f"{finding['path']}:{finding['line']} {finding['message']} [{finding['classification']}]"
+        )
     return 0
 
 

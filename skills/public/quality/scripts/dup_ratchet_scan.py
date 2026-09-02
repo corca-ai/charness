@@ -17,10 +17,12 @@ directly, or they are computed from injected raw ``locations``.
 
 from __future__ import annotations
 
+import contextlib
+import io
 import json
 import runpy
-import subprocess
 import sys
+import traceback
 from collections.abc import Callable
 from pathlib import Path
 from types import SimpleNamespace
@@ -29,7 +31,14 @@ import yaml
 
 
 def _load_skill_runtime_bootstrap():
-    bootstrap = next((ancestor / "skill_runtime_bootstrap.py" for ancestor in Path(__file__).resolve().parents if (ancestor / "skill_runtime_bootstrap.py").is_file()), None)
+    bootstrap = next(
+        (
+            ancestor / "skill_runtime_bootstrap.py"
+            for ancestor in Path(__file__).resolve().parents
+            if (ancestor / "skill_runtime_bootstrap.py").is_file()
+        ),
+        None,
+    )
     if bootstrap is None:
         raise ImportError("skill_runtime_bootstrap.py not found")
     return SimpleNamespace(**runpy.run_path(str(bootstrap)))
@@ -103,7 +112,9 @@ def families_from_text(text: str | None) -> list | None:
     return families if isinstance(families, list) else None
 
 
-def scan_families(repo_root: Path, scope_paths: list[str]) -> tuple[list[dict] | None, str | None, str]:
+def scan_families(
+    repo_root: Path, scope_paths: list[str]
+) -> tuple[list[dict] | None, str | None, str]:
     """Shared leaf: one full ``nose query`` scan over ``scope_paths``, returning the
     raw family dicts (each already carrying nose_report_lib's stamped
     ``family_fingerprint`` / ``family_member_hashes``, plus ``locations`` for a
@@ -120,8 +131,13 @@ def scan_families(repo_root: Path, scope_paths: list[str]) -> tuple[list[dict] |
     # independent content fingerprint (slice 4); the gate keys newness on that, not the
     # offset/path-folding family_id (resolves D30).
     result = _nose_report.collect_families(
-        repo_root, nose_bin, paths, mode=_inventory.DEFAULT_MODE,
-        min_size=FULL_SCAN_MIN_SIZE, top=FULL_SCAN_TOP, sort="extractability",
+        repo_root,
+        nose_bin,
+        paths,
+        mode=_inventory.DEFAULT_MODE,
+        min_size=FULL_SCAN_MIN_SIZE,
+        top=FULL_SCAN_TOP,
+        sort="extractability",
     )
     live_version = result.get("tool_version", "")
     if result.get("status") == "error":
@@ -141,13 +157,21 @@ def family_member_spans(family: dict) -> list[dict]:
         if not isinstance(location, dict):
             continue
         file, start, end = location.get("file"), location.get("start"), location.get("end")
-        if isinstance(file, str) and file and isinstance(start, int) and isinstance(end, int) \
-                and not isinstance(start, bool) and not isinstance(end, bool):
+        if (
+            isinstance(file, str)
+            and file
+            and isinstance(start, int)
+            and isinstance(end, int)
+            and not isinstance(start, bool)
+            and not isinstance(end, bool)
+        ):
             spans.append({"file": file, "start": start, "end": end})
     return spans
 
 
-def scan_code_members(repo_root: Path, scope_paths: list[str]) -> tuple[dict[str, list[str]], dict[str, list[dict]], str | None, str]:
+def scan_code_members(
+    repo_root: Path, scope_paths: list[str]
+) -> tuple[dict[str, list[str]], dict[str, list[dict]], str | None, str]:
     """Real (non-injected) code-family scan, returning ``({fingerprint: member_hashes},
     {fingerprint: member_spans}, reason, live_version)``. Schema v3 stores the
     per-family member hashes in the gate baseline; the CLI's reduction pre-pass diffs
@@ -160,8 +184,10 @@ def scan_code_members(repo_root: Path, scope_paths: list[str]) -> tuple[dict[str
     if reason:
         return {}, {}, reason, live_version
     missing = [
-        fam for fam in families
-        if not fam.get("family_fingerprint") or not isinstance(fam.get("family_member_hashes"), list)
+        fam
+        for fam in families
+        if not fam.get("family_fingerprint")
+        or not isinstance(fam.get("family_member_hashes"), list)
     ]
     if missing:
         return (
@@ -173,11 +199,13 @@ def scan_code_members(repo_root: Path, scope_paths: list[str]) -> tuple[dict[str
         )
     members = {
         str(fam["family_fingerprint"]): [str(h) for h in fam["family_member_hashes"]]
-        for fam in families if fam.get("family_fingerprint")
+        for fam in families
+        if fam.get("family_fingerprint")
     }
     spans = {
         str(fam["family_fingerprint"]): family_member_spans(fam)
-        for fam in families if fam.get("family_fingerprint")
+        for fam in families
+        if fam.get("family_fingerprint")
     }
     return members, spans, None, live_version
 
@@ -198,7 +226,9 @@ def payload_string_field(text: str | None, field: str) -> str:
     return value if isinstance(value, str) else ""
 
 
-def code_family_members(args, repo_root: Path, scope_paths: list[str]) -> tuple[dict[str, list[str]], dict[str, list[dict]], str | None, str]:
+def code_family_members(
+    args, repo_root: Path, scope_paths: list[str]
+) -> tuple[dict[str, list[str]], dict[str, list[dict]], str | None, str]:
     """The injected-inventory test seam (``--code-inventory``) mirrors the CLI:
     an injected family carries `family_member_hashes` directly, else it is computed
     from injected raw `locations`. A family missing both stays unrepresented — the
@@ -238,11 +268,22 @@ def code_family_members(args, repo_root: Path, scope_paths: list[str]) -> tuple[
 
 
 def run_doc_inventory(repo_root: Path) -> str:
-    completed = subprocess.run(
-        [sys.executable, str(DOC_INVENTORY), "--repo-root", str(repo_root), "--detail"],
-        cwd=repo_root, check=False, capture_output=True, text=True,
-    )
-    return completed.stdout
+    module = SKILL_RUNTIME.load_local_skill_module(__file__, "inventory_doc_duplicates")
+    stdout = io.StringIO()
+    stderr = io.StringIO()
+    previous_argv = sys.argv
+    try:
+        sys.argv = [str(DOC_INVENTORY), "--repo-root", str(repo_root), "--detail"]
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            try:
+                module.main()
+            except SystemExit:
+                pass
+            except Exception:
+                traceback.print_exc()
+    finally:
+        sys.argv = previous_argv
+    return stdout.getvalue()
 
 
 def doc_drift_signatures(args, repo_root: Path) -> tuple[set[str], str | None]:
@@ -274,15 +315,21 @@ def doc_drift_signatures(args, repo_root: Path) -> tuple[set[str], str | None]:
         # the doc-side twin of the S27 truncated-view trap.
         return set(), "doc inventory payload declares no families list"
     signatures = {
-        fam["signature"] for fam in families
+        fam["signature"]
+        for fam in families
         if isinstance(fam, dict) and isinstance(fam.get("signature"), str) and fam.get("signature")
     }
     return signatures, None
 
 
 def live_scan_for_rebaseline(
-    repo_root: Path, config: dict, args, *, default_baseline_rel: str,
-    fail_status: str, fail_prefix: str,
+    repo_root: Path,
+    config: dict,
+    args,
+    *,
+    default_baseline_rel: str,
+    fail_status: str,
+    fail_prefix: str,
 ) -> tuple[str, dict, str, dict | None]:
     """Shared preamble of the gate's --write-baseline and scoped-accept paths:
     resolve the adapter paths, run the live scan, and typed-fail on a scan reason."""
@@ -292,16 +339,28 @@ def live_scan_for_rebaseline(
     # Preserve the path evidence alongside the historical tuple return shape so
     # callers and consumer fixtures remain compatible while new baselines can
     # carry stable lineage bindings.
-    setattr(args, "_live_member_paths", {
-        fingerprint: sorted({
-            str(span["file"]).replace("\\", "/")
-            for span in family_spans
-            if isinstance(span, dict) and isinstance(span.get("file"), str) and span.get("file")
-        })
-        for fingerprint, family_spans in spans.items()
-    })
+    setattr(
+        args,
+        "_live_member_paths",
+        {
+            fingerprint: sorted(
+                {
+                    str(span["file"]).replace("\\", "/")
+                    for span in family_spans
+                    if isinstance(span, dict)
+                    and isinstance(span.get("file"), str)
+                    and span.get("file")
+                }
+            )
+            for fingerprint, family_spans in spans.items()
+        },
+    )
     error = None
     if reason:
-        error = {"ok": False, "inert": False, "status": fail_status,
-                 "messages": [f"{fail_prefix}: {reason}"]}
+        error = {
+            "ok": False,
+            "inert": False,
+            "status": fail_status,
+            "messages": [f"{fail_prefix}: {reason}"],
+        }
     return baseline_rel, members, live_version, error

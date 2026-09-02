@@ -11,11 +11,28 @@ from __future__ import annotations
 import getpass
 import os
 import re
-import subprocess
 import tempfile
 import time
 from pathlib import Path
 from typing import Any
+
+from scripts import subprocess_guard as _subprocess_guard
+
+_guard_run_process = _subprocess_guard.run_process
+subprocess = _subprocess_guard.subprocess
+
+
+def run_process(*args, **kwargs):
+    """Keep the old module-local injection seam while delegating to the guard."""
+    if subprocess is _subprocess_guard.subprocess:
+        return _guard_run_process(*args, **kwargs)
+    original = _subprocess_guard.subprocess
+    _subprocess_guard.subprocess = subprocess
+    try:
+        return _guard_run_process(*args, **kwargs)
+    finally:
+        _subprocess_guard.subprocess = original
+
 
 # Recognize both pytest's own numbered session dirs (`pytest-<n>`) and the standing
 # runner's explicit basetemp (`charness-run-<time_ns>`, deliberately not named
@@ -51,7 +68,13 @@ DU_CAPABILITY_GAP_REASONS = frozenset({"du_missing", "du_not_executable", "du_un
 # stderr said. A wording this list gets wrong therefore costs a less precise
 # `reason` string, not a lost measurement -- which is the only honest place to
 # leave an inference that cannot be probed from the hosts available.
-DU_USAGE_ERROR_TOKENS = ("unrecognized option", "invalid option", "illegal option", "unknown option", "usage:")
+DU_USAGE_ERROR_TOKENS = (
+    "unrecognized option",
+    "invalid option",
+    "illegal option",
+    "unknown option",
+    "usage:",
+)
 
 #: Ordered `du` invocations to try, with the multiplier that turns their sizes into
 #: bytes. `-B1` reports exact bytes and is GNU-only; `-k` is in POSIX, BusyBox
@@ -102,14 +125,14 @@ def du_bytes_many(paths: list[Path], *args: str) -> dict[Path, int]:
     if not paths:
         return {}
     try:
-        result = subprocess.run(
+        result = run_process(
             ["du", *args, *(str(path) for path in paths)],
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=10,
+            cwd=Path.cwd(),
+            timeout_seconds=10,
         )
-    except (OSError, subprocess.SubprocessError):
+        if result.returncode == 124 and result.stderr.startswith("timed out after "):
+            return {}
+    except OSError:
         return {}
     values: dict[Path, int] = {}
     for line in result.stdout.splitlines():
@@ -144,22 +167,21 @@ def du_scan_once(
     defaults to the GNU byte-exact form so existing callers are unchanged.
     """
     try:
-        result = subprocess.run(
+        result = run_process(
             ["du", "-d", "4", *options, str(root)],
-            capture_output=True,
-            text=True,
-            timeout=timeout,
+            cwd=root,
+            timeout_seconds=timeout,
         )
     except FileNotFoundError:
         return None, "du_missing"
     except PermissionError:
         return None, "du_not_executable"
-    except subprocess.TimeoutExpired:
-        return None, "du_timeout"
-    except OSError:
-        return None, "du_oserror"
     except subprocess.SubprocessError:
         return None, "du_subprocess_error"
+    except OSError:
+        return None, "du_oserror"
+    if result.returncode == 124 and result.stderr.startswith("timed out after "):
+        return None, "du_timeout"
     if result.returncode == 0:
         return result, ""
     if _du_usage_error(result.stderr):

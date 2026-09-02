@@ -3,37 +3,36 @@ from __future__ import annotations
 import hashlib
 import os
 import re
-import subprocess
+import shlex
 from pathlib import Path
+
+from scripts.subprocess_guard import run_process
 
 _FULL_OBJECT_ID_RE = re.compile(r"^[0-9a-f]+$")
 _RESOLVED_OBJECT_ID_RE = re.compile(r"^[0-9a-f]{40}(?:[0-9a-f]{24})?$")
 
 
 def _git(repo_root: Path, *args: str, text: bool = True, input_data=None):
-    result = subprocess.run(
-        ["git", *args],
-        cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=text,
-        input=input_data,
-    )
+    command: list[str] = ["git", *args]
+    if input_data is not None:
+        if not isinstance(input_data, str):
+            raise ValueError("git input must be text")
+        command_text = f"printf '%s' {shlex.quote(input_data)} | {shlex.join(command)}"
+        result = run_process(command_text, cwd=repo_root, shell=True, timeout_seconds=None)
+    else:
+        result = run_process(command, cwd=repo_root, timeout_seconds=None)
     if result.returncode != 0:
-        stderr = result.stderr if text else os.fsdecode(result.stderr)
         raise ValueError(
-            f"git {' '.join(args)} failed\nexit_code: {result.returncode}\n{stderr.strip()}"
+            f"git {' '.join(args)} failed\nexit_code: {result.returncode}\n{result.stderr.strip()}"
         )
-    return result.stdout
+    return result.stdout if text else result.stdout.encode("utf-8")
 
 
 def resolve_full_commit(repo_root: Path, ref: str) -> str:
     return _git(repo_root, "rev-parse", "--verify", f"{ref}^{{commit}}").strip()
 
 
-def _resolve_release_commits(
-    repo_root: Path, base_ref: str, head_ref: str
-) -> tuple[str, str]:
+def _resolve_release_commits(repo_root: Path, base_ref: str, head_ref: str) -> tuple[str, str]:
     refs = (("base", base_ref), ("head", head_ref))
     expressions = [f"{ref}^{{commit}}" for _, ref in refs]
     output = _git(
@@ -50,8 +49,7 @@ def _resolve_release_commits(
     for index, (label, ref) in enumerate(refs):
         if index >= len(records):
             raise ValueError(
-                f"could not resolve {label} ref {ref!r}: "
-                "git cat-file returned missing output"
+                f"could not resolve {label} ref {ref!r}: git cat-file returned missing output"
             )
         fields = records[index].split()
         if (
@@ -80,14 +78,12 @@ def path_list_sha256(paths: list[str]) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
-def _collect_resolved_range(
-    repo_root: Path, base_sha: str, head_sha: str
-) -> dict[str, object]:
+def _collect_resolved_range(repo_root: Path, base_sha: str, head_sha: str) -> dict[str, object]:
     changed_range = f"{base_sha}..{head_sha}"
-    raw_paths = _git(
-        repo_root, "diff", "--name-only", "-z", changed_range, text=False
+    raw_paths = _git(repo_root, "diff", "--name-only", "-z", changed_range, text=False)
+    encoded_paths = (
+        raw_paths[:-1].split(b"\0") if raw_paths.endswith(b"\0") else raw_paths.split(b"\0")
     )
-    encoded_paths = raw_paths[:-1].split(b"\0") if raw_paths.endswith(b"\0") else raw_paths.split(b"\0")
     paths = [os.fsdecode(path) for path in encoded_paths if path]
     return {
         "base_sha": base_sha,
@@ -100,23 +96,19 @@ def _collect_resolved_range(
 
 def collect_immutable_range(repo_root: Path, changed_range: str) -> dict[str, object]:
     endpoints = changed_range.split("..")
-    if len(endpoints) != 2 or not all(
-        _FULL_OBJECT_ID_RE.fullmatch(item) for item in endpoints
-    ):
-        raise ValueError(
-            "--changed-range requires immutable full lowercase object IDs: BASE..HEAD"
-        )
+    if len(endpoints) != 2 or not all(_FULL_OBJECT_ID_RE.fullmatch(item) for item in endpoints):
+        raise ValueError("--changed-range requires immutable full lowercase object IDs: BASE..HEAD")
     base_sha, head_sha = endpoints
     if (
         resolve_full_commit(repo_root, base_sha) != base_sha
         or resolve_full_commit(repo_root, head_sha) != head_sha
     ):
-        raise ValueError(
-            "--changed-range requires immutable full lowercase object IDs: BASE..HEAD"
-        )
+        raise ValueError("--changed-range requires immutable full lowercase object IDs: BASE..HEAD")
     return _collect_resolved_range(repo_root, base_sha, head_sha)
 
 
-def collect_release_delta(repo_root: Path, base_ref: str, head_ref: str = "HEAD") -> dict[str, object]:
+def collect_release_delta(
+    repo_root: Path, base_ref: str, head_ref: str = "HEAD"
+) -> dict[str, object]:
     base_sha, head_sha = _resolve_release_commits(repo_root, base_ref, head_ref)
     return _collect_resolved_range(repo_root, base_sha, head_sha)

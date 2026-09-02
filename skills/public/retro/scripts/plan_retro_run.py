@@ -14,7 +14,6 @@ from __future__ import annotations
 
 import argparse
 import runpy
-import subprocess
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
@@ -38,16 +37,38 @@ SYSTEM_IMPROVING_PREFIXES = (
 MAX_RECENT_COMMITS = 5
 
 ON_DEMAND_REFERENCE_READS = (
-    ("references/section-guide.md", "for claim-strength tags, the gate-baseline-runtime rule, and per-decision fields"),
-    ("references/phase-aware-efficiency.md", "before token, tool-call, broad-exploration, or efficiency waste claims"),
-    ("references/waste-sibling-scan.md", "when a lesson names a transferable waste pattern (opt-in Sibling Search)"),
-    ("references/trigger-and-persistence.md", "for the full auto-trigger/skip taxonomy beyond the inlined Persisted rule"),
-    ("references/prepare-packet.md", "when the adapter declares packet_sections and a prepare packet is produced"),
+    (
+        "references/section-guide.md",
+        "for claim-strength tags, the gate-baseline-runtime rule, and per-decision fields",
+    ),
+    (
+        "references/phase-aware-efficiency.md",
+        "before token, tool-call, broad-exploration, or efficiency waste claims",
+    ),
+    (
+        "references/waste-sibling-scan.md",
+        "when a lesson names a transferable waste pattern (opt-in Sibling Search)",
+    ),
+    (
+        "references/trigger-and-persistence.md",
+        "for the full auto-trigger/skip taxonomy beyond the inlined Persisted rule",
+    ),
+    (
+        "references/prepare-packet.md",
+        "when the adapter declares packet_sections and a prepare packet is produced",
+    ),
 )
 
 
 def _load_skill_runtime_bootstrap():
-    bootstrap = next((ancestor / "skill_runtime_bootstrap.py" for ancestor in Path(__file__).resolve().parents if (ancestor / "skill_runtime_bootstrap.py").is_file()), None)
+    bootstrap = next(
+        (
+            ancestor / "skill_runtime_bootstrap.py"
+            for ancestor in Path(__file__).resolve().parents
+            if (ancestor / "skill_runtime_bootstrap.py").is_file()
+        ),
+        None,
+    )
     if bootstrap is None:
         raise ImportError("skill_runtime_bootstrap.py not found")
     return SimpleNamespace(**runpy.run_path(str(bootstrap)))
@@ -55,6 +76,12 @@ def _load_skill_runtime_bootstrap():
 
 SKILL_ROOT = Path(__file__).resolve().parents[1]
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
+subprocess = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.subprocess_guard"
+).subprocess
+run_process = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.subprocess_guard"
+).run_process
 yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 scaffold_retro_artifact = SKILL_RUNTIME.load_local_skill_module(__file__, "scaffold_retro_artifact")
@@ -64,7 +91,9 @@ _artifact_summary = _state._artifact_summary
 _gate_builder = SKILL_RUNTIME.load_local_skill_module(__file__, "retro_plan_gates")
 _trigger = SKILL_RUNTIME.load_local_skill_module(__file__, "retro_plan_trigger")
 ENVELOPE = SimpleNamespace(
-    **runpy.run_path(str(Path(__file__).resolve().parents[3] / "shared" / "scripts" / "run_plan_envelope.py"))
+    **runpy.run_path(
+        str(Path(__file__).resolve().parents[3] / "shared" / "scripts" / "run_plan_envelope.py")
+    )
 )
 
 
@@ -90,7 +119,9 @@ def _repo_evidence_read(repo_root: Path, path: str) -> dict[str, Any]:
     )
     candidate = repo_root / path
     item["available"] = candidate.exists()
-    item["path_kind"] = "directory" if candidate.is_dir() else "file" if candidate.is_file() else "missing"
+    item["path_kind"] = (
+        "directory" if candidate.is_dir() else "file" if candidate.is_file() else "missing"
+    )
     return item
 
 
@@ -125,12 +156,10 @@ def _skill_script_command(rel_path: str, *args: str) -> dict[str, Any]:
 
 def _recent_commit_paths(repo_root: Path, limit: int) -> list[str]:
     try:
-        result = subprocess.run(
+        result = run_process(
             ["git", "log", f"-n{limit}", "--name-only", "--pretty=format:"],
             cwd=repo_root,
-            check=False,
-            capture_output=True,
-            text=True,
+            timeout_seconds=None,
         )
     except (OSError, ValueError):
         return []
@@ -211,12 +240,33 @@ def _required_reads(
     reads.append(_read("references/expert-lens.md", "reference", lens_brief["why"], base="skill"))
 
     if artifact["exists"]:
-        reads.append(_read(artifact["path"], "artifact", "today's retro already started; continue it", base="repo"))
+        reads.append(
+            _read(
+                artifact["path"],
+                "artifact",
+                "today's retro already started; continue it",
+                base="repo",
+            )
+        )
     else:
-        reads.append(_read("scripts/scaffold_retro_artifact.py", "script", "no retro artifact yet; scaffold before writing", base="skill"))
+        reads.append(
+            _read(
+                "scripts/scaffold_retro_artifact.py",
+                "script",
+                "no retro artifact yet; scaffold before writing",
+                base="skill",
+            )
+        )
 
     if not adapter.get("found") or not adapter.get("valid") or adapter.get("errors"):
-        reads.append(_read("references/adapter-contract.md", "reference", "adapter is missing or invalid; repair before relying on adapter paths", base="skill"))
+        reads.append(
+            _read(
+                "references/adapter-contract.md",
+                "reference",
+                "adapter is missing or invalid; repair before relying on adapter paths",
+                base="skill",
+            )
+        )
 
     already_named = {str(item["path"]) for item in reads}
     for evidence_path in adapter["data"].get("evidence_paths", []):
@@ -226,7 +276,14 @@ def _required_reads(
             already_named.add(path)
     summary_path = str(adapter["data"].get("summary_path") or "")
     if summary_path and (repo_root / summary_path).is_file():
-        reads.append(_read(summary_path, "artifact", "recent-lessons digest to compare this retro's window against", base="repo"))
+        reads.append(
+            _read(
+                summary_path,
+                "artifact",
+                "recent-lessons digest to compare this retro's window against",
+                base="repo",
+            )
+        )
     return reads
 
 
@@ -244,7 +301,11 @@ def _repo_module_payload(module_name: str, build, *, fallback: dict[str, Any]) -
         module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, module_name)
         return {**build(module), "available": True}
     except Exception as exc:  # host layout / import surface, never a verdict
-        return {**fallback, "available": False, "unavailable_reason": f"{type(exc).__name__}: {exc}"}
+        return {
+            **fallback,
+            "available": False,
+            "unavailable_reason": f"{type(exc).__name__}: {exc}",
+        }
 
 
 def _date_activated_rules(repo_root: Path) -> dict[str, Any]:
@@ -286,8 +347,12 @@ def build_plan(
     work_paths, work_paths_source = _work_paths(repo_root, changed_paths)
     work_class = _classify_work_class(work_paths)
     lens_brief = _lens_brief(work_class)
-    artifact.update(scaffold_retro_artifact._scaffold_lib.write_target_facts(repo_root, artifact["path"]))
-    auto_trigger_args, auto_trigger_scope = _trigger.auto_trigger_scope(work_paths, work_paths_source)
+    artifact.update(
+        scaffold_retro_artifact._scaffold_lib.write_target_facts(repo_root, artifact["path"])
+    )
+    auto_trigger_args, auto_trigger_scope = _trigger.auto_trigger_scope(
+        work_paths, work_paths_source
+    )
     gate_packets = _gate_builder.build_gate_packets(
         repo_root,
         adapter,
@@ -343,18 +408,24 @@ def build_plan(
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Plan a retro run before gathering evidence and writing the artifact.")
+    parser = argparse.ArgumentParser(
+        description="Plan a retro run before gathering evidence and writing the artifact."
+    )
     parser.add_argument(
         "--repo-root",
         type=Path,
         default=Path.cwd(),
         help="Repository root used to resolve adapter state, artifacts, and changed paths.",
     )
-    parser.add_argument("--changed-paths", nargs="*", help="Explicit paths for work-class classification (defaults to working tree, then recent commits)")
+    parser.add_argument(
+        "--changed-paths",
+        nargs="*",
+        help="Explicit paths for work-class classification (defaults to working tree, then recent commits)",
+    )
     args = parser.parse_args()
     payload = build_plan(
         args.repo_root.resolve(),
-                changed_paths=args.changed_paths,
+        changed_paths=args.changed_paths,
     )
     yaml_output.emit_yaml(payload)
     return 0 if payload["ok"] else 1

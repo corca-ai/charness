@@ -16,9 +16,10 @@ blocks on a phantom.
 
 from __future__ import annotations
 
-import subprocess
 import sys
 from pathlib import Path
+
+from scripts.subprocess_guard import run_process
 
 
 def _ensure_scripts_package() -> None:
@@ -43,7 +44,7 @@ def _git_output(repo_root: Path, args: list[str]) -> tuple[int, str]:
     if not _git_metadata_is_discoverable(repo_root):
         return 1, ""
     try:
-        result = subprocess.run(["git", *args], cwd=repo_root, capture_output=True, text=True)
+        result = run_process(["git", *args], cwd=repo_root, timeout_seconds=None)
     except OSError:
         return 1, ""
     return result.returncode, result.stdout.strip()
@@ -79,7 +80,9 @@ def stagnation_commits(repo_root: Path, anchor: str | None, head: str = "HEAD") 
         return None
 
 
-def _anchor_progress(repo_root: Path, anchor: str | None, head: str = "HEAD") -> tuple[bool, int | None]:
+def _anchor_progress(
+    repo_root: Path, anchor: str | None, head: str = "HEAD"
+) -> tuple[bool, int | None]:
     """Resolve ancestry and distance in one revision walk.
 
     ``merge-base --is-ancestor`` followed by ``rev-list --count`` walked the

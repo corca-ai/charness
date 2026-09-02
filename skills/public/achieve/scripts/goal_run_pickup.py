@@ -6,7 +6,6 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import runpy
-import subprocess
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -22,6 +21,9 @@ def _load_skill_runtime_bootstrap():
 
 _SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _SKILL_RUNTIME.repo_root_from_skill_script(__file__)
+run_process = _SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.subprocess_guard"
+).run_process
 
 _SCRIPT_DIR = Path(__file__).resolve().parent
 if str(_SCRIPT_DIR) not in sys.path:
@@ -138,9 +140,7 @@ def _resolve_repository(repo_root: Path, adapter: dict[str, Any], runtime: Any) 
         )
         return {"full_name": f"{owner}/{repo}", "source": "adapter-default-repo"}
     remote_name = str(data.get("remote_name") or "origin")
-    names = subprocess.run(
-        ["git", "remote"], cwd=repo_root, check=False, capture_output=True, text=True, timeout=10
-    ).stdout.splitlines()
+    names = run_process(["git", "remote"], cwd=repo_root, timeout_seconds=10).stdout.splitlines()
     urls: list[tuple[str, str]] = []
     ordered = [remote_name] + [name for name in names if name != remote_name]
     for name in ordered:

@@ -18,13 +18,15 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+from scripts.subprocess_guard import run_process
+
 BACKEND_TIMEOUT_SECONDS = 60
 BACKEND_PROBE_TIMEOUT_SECONDS = 60
 PLACEHOLDER_RE = re.compile(r"\{([a-z_]+)\}")
 
-_load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_import.py"))["sibling_loader"](
-    __file__
-)
+_load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_import.py"))[
+    "sibling_loader"
+](__file__)
 IDENTITY = _load_local("issue_identity", "issue_backend_identity")
 answer_repo = IDENTITY.answer_repo
 issue_identity_mismatches = IDENTITY.issue_identity_mismatches
@@ -39,20 +41,7 @@ def run_backend(argv: list[str]) -> subprocess.CompletedProcess[str]:
     quoting layer to corrupt it.
     """
     try:
-        return subprocess.run(
-            argv,
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=BACKEND_TIMEOUT_SECONDS,
-        )
-    except subprocess.TimeoutExpired as exc:
-        return subprocess.CompletedProcess(
-            argv,
-            124,
-            str(exc.stdout or ""),
-            f"timed out after {BACKEND_TIMEOUT_SECONDS}s",
-        )
+        return run_process(argv, cwd=Path.cwd(), timeout_seconds=BACKEND_TIMEOUT_SECONDS)
     except OSError as exc:
         return subprocess.CompletedProcess(argv, 127, "", str(exc))
 
@@ -233,20 +222,9 @@ def try_resolve_op(
 
 
 def run_probe(binary: str, args: list[str]) -> dict[str, Any]:
-    try:
-        result = subprocess.run(
-            [binary, *args],
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=BACKEND_PROBE_TIMEOUT_SECONDS,
-        )
-    except subprocess.TimeoutExpired as exc:
-        return {
-            "exit_code": 124,
-            "stdout": str(exc.stdout or "").strip(),
-            "stderr": f"timed out after {BACKEND_PROBE_TIMEOUT_SECONDS}s",
-        }
+    result = run_process(
+        [binary, *args], cwd=Path.cwd(), timeout_seconds=BACKEND_PROBE_TIMEOUT_SECONDS
+    )
     return {
         "exit_code": result.returncode,
         "stdout": result.stdout.strip(),

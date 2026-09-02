@@ -1,25 +1,22 @@
 from __future__ import annotations
 
 import re
-import subprocess
 from pathlib import Path
 from typing import Any, Callable
 
-RELEASE_ADAPTER_CANDIDATES = (
-    ".agents/release-adapter.yaml",
-)
+from scripts.subprocess_guard import run_process
+
+RELEASE_ADAPTER_CANDIDATES = (".agents/release-adapter.yaml",)
 FRESH_CHECKOUT_FIELDS = {"fresh_checkout_probes"}
 BACKEND_FIELDS = {"release_backend"}
 UPDATE_TEXT_FIELDS = {"update_instructions"}
 
 
 def _git_stdout(repo_root: Path, args: list[str]) -> tuple[int, str]:
-    result = subprocess.run(
+    result = run_process(
         ["git", *args],
         cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=True,
+        timeout_seconds=None,
     )
     return result.returncode, result.stdout
 
@@ -87,9 +84,14 @@ def release_adapter_preflight_payload(
         changed_fields.update(_changed_adapter_fields(repo_root, previous_ref, adapter_path))
     commands = []
     if (repo_root / "skills/public/release/scripts/resolve_adapter.py").is_file():
-        commands.append(["python3", "skills/public/release/scripts/resolve_adapter.py", "--repo-root", "."])
+        commands.append(
+            ["python3", "skills/public/release/scripts/resolve_adapter.py", "--repo-root", "."]
+        )
     field_set = set(changed_fields)
-    if field_set & FRESH_CHECKOUT_FIELDS and (repo_root / "tests/quality_gates/test_release_backend.py").is_file():
+    if (
+        field_set & FRESH_CHECKOUT_FIELDS
+        and (repo_root / "tests/quality_gates/test_release_backend.py").is_file()
+    ):
         commands.append(
             [
                 "pytest",
@@ -98,9 +100,15 @@ def release_adapter_preflight_payload(
                 "-q",
             ]
         )
-    if field_set & BACKEND_FIELDS and (repo_root / "tests/quality_gates/test_release_backend.py").is_file():
+    if (
+        field_set & BACKEND_FIELDS
+        and (repo_root / "tests/quality_gates/test_release_backend.py").is_file()
+    ):
         commands.append(["pytest", "tests/quality_gates/test_release_backend.py", "-q"])
-    if field_set & UPDATE_TEXT_FIELDS and (repo_root / "tests/quality_gates/test_release_narrative_audit.py").is_file():
+    if (
+        field_set & UPDATE_TEXT_FIELDS
+        and (repo_root / "tests/quality_gates/test_release_narrative_audit.py").is_file()
+    ):
         commands.append(["pytest", "tests/quality_gates/test_release_narrative_audit.py", "-q"])
     if not commands:
         return {

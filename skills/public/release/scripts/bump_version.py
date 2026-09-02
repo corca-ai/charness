@@ -5,27 +5,37 @@ import argparse
 import json
 import re
 import runpy
-import subprocess
 from pathlib import Path
 from types import SimpleNamespace
 
 
 def _load_skill_runtime_bootstrap():
-    bootstrap = next((ancestor / "skill_runtime_bootstrap.py" for ancestor in Path(__file__).resolve().parents if (ancestor / "skill_runtime_bootstrap.py").is_file()), None)
+    bootstrap = next(
+        (
+            ancestor / "skill_runtime_bootstrap.py"
+            for ancestor in Path(__file__).resolve().parents
+            if (ancestor / "skill_runtime_bootstrap.py").is_file()
+        ),
+        None,
+    )
     if bootstrap is None:
         raise ImportError("skill_runtime_bootstrap.py not found")
     return SimpleNamespace(**runpy.run_path(str(bootstrap)))
 
+
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
-
-
+run_process = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.subprocess_guard"
+).run_process
 
 
 _resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter_module.load_adapter
 command_script_target = _resolve_adapter_module.command_script_target
-_yaml_output_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
+_yaml_output_module = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.yaml_output"
+)
 emit_yaml = _yaml_output_module.emit_yaml
 
 VERSION_RE = re.compile(r"^(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)(?:-[0-9A-Za-z.-]+)?$")
@@ -56,28 +66,19 @@ def write_packaging_version(manifest_path: Path, new_version: str) -> str:
     data["version"] = new_version
     data["claude"]["manifest"]["version"] = new_version
     data["codex"]["manifest"]["version"] = new_version
-    manifest_path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    manifest_path.write_text(
+        json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
     return old_version
 
 
 def run_sync(repo_root: Path, command: str) -> None:
-    try:
-        result = subprocess.run(
-            command,
-            cwd=repo_root,
-            shell=True,
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=SYNC_TIMEOUT_SECONDS,
-        )
-    except subprocess.TimeoutExpired as exc:
-        result = subprocess.CompletedProcess(
-            command,
-            124,
-            str(exc.stdout or ""),
-            f"timed out after {SYNC_TIMEOUT_SECONDS}s",
-        )
+    result = run_process(
+        command,
+        cwd=repo_root,
+        shell=True,
+        timeout_seconds=SYNC_TIMEOUT_SECONDS,
+    )
     if result.returncode != 0:
         raise SystemExit(
             f"sync_command failed with {result.returncode}\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}"
@@ -86,9 +87,16 @@ def run_sync(repo_root: Path, command: str) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root used to resolve the release adapter")
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        required=True,
+        help="Repo root used to resolve the release adapter",
+    )
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument("--part", choices=("patch", "minor", "major"), help="Semver component to bump")
+    group.add_argument(
+        "--part", choices=("patch", "minor", "major"), help="Semver component to bump"
+    )
     group.add_argument("--set-version", help="Explicit version string to set (overrides --part)")
     args = parser.parse_args()
 

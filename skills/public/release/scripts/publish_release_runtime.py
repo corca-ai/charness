@@ -3,12 +3,12 @@ from __future__ import annotations
 import hashlib
 import os
 import re
-import subprocess
 import sys
 import time
 from pathlib import Path
 from typing import Any, Callable, TextIO, TypeVar
 
+from scripts.subprocess_guard import run_process
 from scripts.yaml_output import render_yaml as _render_yaml
 
 T = TypeVar("T")
@@ -82,7 +82,9 @@ def print_failure_payload(
 
 
 def _compact_error(error: BaseException, *, limit: int = 240) -> str:
-    summary = next((line.strip() for line in str(error).splitlines() if line.strip()), type(error).__name__)
+    summary = next(
+        (line.strip() for line in str(error).splitlines() if line.strip()), type(error).__name__
+    )
     return summary if len(summary) <= limit else summary[: limit - 1] + "…"
 
 
@@ -109,13 +111,16 @@ def _record_creation_order_ns(path: Path) -> int:
 
 
 def _git_common_dir_via_git(repo_root: Path) -> Path:
-    git_common = subprocess.run(
+    git_common_result = run_process(
         ["git", "rev-parse", "--git-common-dir"],
         cwd=repo_root,
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout.strip()
+        timeout_seconds=None,
+    )
+    if git_common_result.returncode != 0:
+        raise RuntimeError(
+            f"git rev-parse --git-common-dir failed: {git_common_result.stderr.strip()}"
+        )
+    git_common = git_common_result.stdout.strip()
     common_dir = Path(git_common)
     if not common_dir.is_absolute():
         common_dir = repo_root / common_dir

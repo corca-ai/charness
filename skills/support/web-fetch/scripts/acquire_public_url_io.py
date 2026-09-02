@@ -1,10 +1,34 @@
 from __future__ import annotations
 
-import subprocess
 from pathlib import Path
 from typing import Sequence
 
 from url_reader import read_url
+
+try:
+    from scripts import subprocess_guard as _subprocess_guard
+except ModuleNotFoundError:
+    _scripts_dir = next(
+        (
+            ancestor / "scripts"
+            for ancestor in (Path(__file__).resolve(), *Path(__file__).resolve().parents)
+            if (ancestor / "scripts" / "subprocess_guard.py").is_file()
+        ),
+        None,
+    )
+    if _scripts_dir is None:
+        _subprocess_guard = None
+    else:
+        import sys
+
+        sys.path.insert(0, str(_scripts_dir))
+        import subprocess_guard as _subprocess_guard
+
+run_process = _subprocess_guard.run_process if _subprocess_guard is not None else None
+
+# Retain the module-level test seam while the actual spawn remains owned by the
+# guard. Both names reference the same standard-library module object.
+subprocess = _subprocess_guard.subprocess if _subprocess_guard is not None else None
 
 HTML_ACCEPT = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
 MARKDOWN_ACCEPT = "text/markdown"
@@ -30,13 +54,13 @@ def read_direct(
 
 
 def run_command(command: Sequence[str], *, timeout: int) -> tuple[str, str | None]:
+    if run_process is None:
+        return "", "guard_unavailable:subprocess_guard.py not reachable"
     try:
-        completed = subprocess.run(
+        completed = run_process(
             list(command),
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=timeout,
+            cwd=Path.cwd(),
+            timeout_seconds=timeout,
         )
     except Exception as exc:
         return "", f"{type(exc).__name__}:{str(exc)[:200]}"

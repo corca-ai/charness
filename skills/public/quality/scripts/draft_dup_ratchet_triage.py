@@ -10,14 +10,35 @@ inventory commands.
 from __future__ import annotations
 
 import argparse
+import contextlib
+import io
 import json
-import subprocess
+import runpy
 import sys
+import traceback
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from summary_output_lib import emit_yaml  # noqa: E402
+
+
+def _load_skill_runtime_bootstrap():
+    bootstrap = next(
+        (
+            ancestor / "skill_runtime_bootstrap.py"
+            for ancestor in Path(__file__).resolve().parents
+            if (ancestor / "skill_runtime_bootstrap.py").is_file()
+        ),
+        None,
+    )
+    if bootstrap is None:
+        raise ImportError("skill_runtime_bootstrap.py not found")
+    return SimpleNamespace(**runpy.run_path(str(bootstrap)))
+
+
+SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 
 
 def _load_detail(path: Path) -> dict[str, Any]:
@@ -28,11 +49,28 @@ def _load_detail(path: Path) -> dict[str, Any]:
     return _parse_detail_payload(raw.decode("utf-8"), str(path))
 
 
-def _run_detail(cmd: list[str]) -> dict[str, Any]:
-    result = subprocess.run(cmd, check=False, capture_output=True, text=True)
-    if result.returncode not in (0, 1):
-        raise RuntimeError(f"{' '.join(cmd)} failed (rc={result.returncode}): {result.stderr.strip()}")
-    return _parse_detail_payload(result.stdout, " ".join(cmd))
+def _run_detail(script: Path, argv: list[str]) -> dict[str, Any]:
+    module = SKILL_RUNTIME.load_local_skill_module(__file__, script.stem)
+    stdout = io.StringIO()
+    stderr = io.StringIO()
+    previous_argv = sys.argv
+    try:
+        sys.argv = [str(script), *argv]
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            try:
+                returncode = (
+                    module.main(argv) if script.stem == "check_dup_ratchet" else module.main()
+                )
+            except SystemExit as exc:
+                returncode = exc.code if isinstance(exc.code, int) else 1
+            except Exception:
+                traceback.print_exc()
+                returncode = 1
+    finally:
+        sys.argv = previous_argv
+    if returncode not in (0, 1):
+        raise RuntimeError(f"{script} failed (rc={returncode}): {stderr.getvalue().strip()}")
+    return _parse_detail_payload(stdout.getvalue(), " ".join([str(script), *argv]))
 
 
 def _parse_detail_payload(text: str, source: str) -> dict[str, Any]:
@@ -124,7 +162,10 @@ def suggest_action(family: dict[str, Any]) -> tuple[str, str]:
     if not isinstance(shared_lines, int) or isinstance(shared_lines, bool):
         shared_lines = None
     if not files:
-        return "review-needed", "no sampled member locations in the inventory record; inspect the family before classifying"
+        return (
+            "review-needed",
+            "no sampled member locations in the inventory record; inspect the family before classifying",
+        )
     if _same_file(files):
         return "extract", "all sampled spans are in one file; look for a local helper first"
     if basenames <= {"resolve_adapter.py", "init_adapter.py"}:
@@ -146,7 +187,10 @@ def suggest_action(family: dict[str, Any]) -> tuple[str, str]:
             )
         return "intentional", "portable per-skill adapter/bootstrap copies are expected"
     if shared_lines is None:
-        return "review-needed", "the inventory record carries no shared_lines span size; inspect the family before classifying"
+        return (
+            "review-needed",
+            "the inventory record carries no shared_lines span size; inspect the family before classifying",
+        )
     if _same_directory(files) and shared_lines >= 8:
         return "extract", "sampled spans share an owning directory and enough common body"
     if shared_lines <= 5:
@@ -198,7 +242,9 @@ def _inventory_by_id(inventory: dict[str, Any]) -> dict[str, dict[str, Any]]:
     return result
 
 
-UNEVALUATED_RATCHET_STATUSES = frozenset({"adapter-invalid", "inert", "write-baseline-failed", "baseline-written"})
+UNEVALUATED_RATCHET_STATUSES = frozenset(
+    {"adapter-invalid", "inert", "write-baseline-failed", "baseline-written"}
+)
 
 
 def unestablished_ratchet_reason(ratchet: dict[str, Any]) -> str | None:
@@ -219,16 +265,22 @@ def unestablished_ratchet_reason(ratchet: dict[str, Any]) -> str | None:
     """
     status = ratchet.get("status")
     if status in UNEVALUATED_RATCHET_STATUSES:
-        return (f"the ratchet report never evaluated the gate (status={status!r}); nothing was "
-                "triaged because the gate rendered no family set")
+        return (
+            f"the ratchet report never evaluated the gate (status={status!r}); nothing was "
+            "triaged because the gate rendered no family set"
+        )
     if not isinstance(ratchet.get("new_code_families"), list):
-        return (f"the ratchet report declares no new_code_families list (status={status!r}); "
-                "nothing was triaged because the gate rendered no family set")
+        return (
+            f"the ratchet report declares no new_code_families list (status={status!r}); "
+            "nothing was triaged because the gate rendered no family set"
+        )
     degraded_reasons = ratchet.get("degraded_reasons")
     if isinstance(degraded_reasons, list) and degraded_reasons:
         joined = "; ".join(str(reason) for reason in degraded_reasons)
-        return (f"the ratchet report is DEGRADED ({joined}); its code family set is unestablished, "
-                "so this packet is not evidence that there is nothing to triage")
+        return (
+            f"the ratchet report is DEGRADED ({joined}); its code family set is unestablished, "
+            "so this packet is not evidence that there is nothing to triage"
+        )
     return None
 
 
@@ -242,7 +294,9 @@ def build_report(ratchet: dict[str, Any], inventory: dict[str, Any]) -> dict[str
             "missing_from_inventory": [],
             # Whatever the degraded payload DID name is still listed, so the refusal hides
             # nothing the operator could have acted on.
-            "families": [summarize_family(family) for family in _named_families(ratchet, inventory)],
+            "families": [
+                summarize_family(family) for family in _named_families(ratchet, inventory)
+            ],
             "unestablished_reason": unestablished,
             "non_claim": "Suggestions are triage hints only; the operator still owns extraction vs intentional classification.",
         }
@@ -273,34 +327,39 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=Path("."),
         help="Repository root used to locate ratchet and inventory inputs.",
     )
-    parser.add_argument("--ratchet-report", type=Path, help="Existing check_dup_ratchet --detail payload.")
-    parser.add_argument("--code-inventory", type=Path, help="Existing inventory_nose_clones --detail payload.")
+    parser.add_argument(
+        "--ratchet-report", type=Path, help="Existing check_dup_ratchet --detail payload."
+    )
+    parser.add_argument(
+        "--code-inventory", type=Path, help="Existing inventory_nose_clones --detail payload."
+    )
     return parser.parse_args(argv)
 
 
 def run(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = args.repo_root.resolve()
-    ratchet = _load_detail(args.ratchet_report) if args.ratchet_report else _run_detail(
-        [
-            sys.executable,
-            str(repo_root / "skills/public/quality/scripts/check_dup_ratchet.py"),
-            "--repo-root",
-            str(repo_root),
-            "--detail",
-        ]
+    ratchet_script = repo_root / "skills/public/quality/scripts/check_dup_ratchet.py"
+    inventory_script = repo_root / "skills/public/quality/scripts/inventory_nose_clones.py"
+    ratchet = (
+        _load_detail(args.ratchet_report)
+        if args.ratchet_report
+        else _run_detail(ratchet_script, ["--repo-root", str(repo_root), "--detail"])
     )
-    inventory = _load_detail(args.code_inventory) if args.code_inventory else _run_detail(
-        [
-            sys.executable,
-            str(repo_root / "skills/public/quality/scripts/inventory_nose_clones.py"),
-            "--repo-root",
-            str(repo_root),
-            "--detail",
-            "--top",
-            "1000000",
-            "--baseline",
-            str(repo_root / ".charness/nonexistent-nose-baseline.json"),
-        ]
+    inventory = (
+        _load_detail(args.code_inventory)
+        if args.code_inventory
+        else _run_detail(
+            inventory_script,
+            [
+                "--repo-root",
+                str(repo_root),
+                "--detail",
+                "--top",
+                "1000000",
+                "--baseline",
+                str(repo_root / ".charness/nonexistent-nose-baseline.json"),
+            ],
+        )
     )
     return build_report(ratchet, inventory)
 

@@ -5,9 +5,13 @@ from __future__ import annotations
 import argparse
 import json
 import shutil
-import subprocess
 import sys
 from pathlib import Path
+
+from scripts import subprocess_guard as _subprocess_guard
+from scripts.subprocess_guard import run_process
+
+subprocess = _subprocess_guard.subprocess
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from summary_output_lib import add_output_args, emit_selected  # noqa: E402
@@ -33,14 +37,10 @@ def _tokei_version() -> str | None:
     if shutil.which("tokei") is None:
         return None
     try:
-        completed = subprocess.run(
-            ["tokei", "--version"],
-            capture_output=True,
-            text=True,
-            check=False,
-            timeout=TOKEI_VERSION_TIMEOUT_SECONDS,
+        completed = run_process(
+            ["tokei", "--version"], cwd=Path.cwd(), timeout_seconds=TOKEI_VERSION_TIMEOUT_SECONDS
         )
-    except subprocess.TimeoutExpired:
+    except OSError:
         return None
     if completed.returncode != 0:
         return None
@@ -52,21 +52,7 @@ def _run_tokei(repo_root: Path, excludes: list[str]) -> dict:
     for name in excludes:
         cmd.extend(["--exclude", name])
     cmd.append(str(repo_root))
-    try:
-        completed = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            check=False,
-            timeout=TOKEI_SCAN_TIMEOUT_SECONDS,
-        )
-    except subprocess.TimeoutExpired as exc:
-        completed = subprocess.CompletedProcess(
-            cmd,
-            124,
-            str(exc.stdout or ""),
-            f"timed out after {TOKEI_SCAN_TIMEOUT_SECONDS}s",
-        )
+    completed = run_process(cmd, cwd=repo_root, timeout_seconds=TOKEI_SCAN_TIMEOUT_SECONDS)
     if completed.returncode != 0:
         raise RuntimeError(
             f"tokei exited with status {completed.returncode}: {completed.stderr.strip()}"
@@ -192,7 +178,12 @@ def summarize(payload: dict) -> dict:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root for the tokei-backed SLOC inventory")
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        required=True,
+        help="Repo root for the tokei-backed SLOC inventory",
+    )
     parser.add_argument(
         "--exclude",
         action="append",

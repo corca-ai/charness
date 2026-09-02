@@ -7,9 +7,25 @@ import base64
 import hashlib
 import json
 import re
-import subprocess
+import sys
 from pathlib import Path
 from typing import Any
+
+try:
+    from scripts.subprocess_guard import run_process
+except ModuleNotFoundError:
+    _scripts_dir = next(
+        (
+            ancestor / "scripts"
+            for ancestor in (Path(__file__).resolve(), *Path(__file__).resolve().parents)
+            if (ancestor / "scripts" / "subprocess_guard.py").is_file()
+        ),
+        None,
+    )
+    if _scripts_dir is None:
+        raise
+    sys.path.insert(0, str(_scripts_dir))
+    from subprocess_guard import run_process
 
 MAX_SEMANTIC_INPUT_BYTES = 1024 * 1024
 MAX_PREIMAGE_BYTES = MAX_SEMANTIC_INPUT_BYTES
@@ -87,8 +103,8 @@ def semantic_review_paths(packet: dict[str, Any]) -> tuple[list[str], list[str]]
 
 
 def _git_bytes(root: Path, *args: str) -> bytes | None:
-    result = subprocess.run(["git", *args], cwd=root, check=False, capture_output=True)
-    return result.stdout if result.returncode == 0 else None
+    result = run_process(["git", *args], cwd=root, timeout_seconds=None)
+    return result.stdout.encode("utf-8") if result.returncode == 0 else None
 
 
 def _preimage_digests(identity: dict[str, Any]):
@@ -107,12 +123,18 @@ def _preimage_sources(root: Path, identity: dict[str, Any]) -> list[tuple[str, t
     changed_ref = identity.get("changed_ref")
     if mode == "committed-ref" and isinstance(changed_ref, str) and changed_ref:
         resolved = identity.get("resolved_changed_ref")
-        refs = [ref for ref in resolved if isinstance(ref, str) and ref] if isinstance(resolved, list) else []
+        refs = (
+            [ref for ref in resolved if isinstance(ref, str) and ref]
+            if isinstance(resolved, list)
+            else []
+        )
         if len(refs) >= 2:
             return [(f"{refs[0]}:{{path}}", ("show", f"{refs[0]}:{{path}}"))]
         target = refs[-1] if refs else changed_ref
         parents = _git_bytes(root, "rev-list", "--parents", "-n", "1", target)
-        parent_refs = parents.decode("utf-8", errors="surrogateescape").split()[1:] if parents else []
+        parent_refs = (
+            parents.decode("utf-8", errors="surrogateescape").split()[1:] if parents else []
+        )
         return [(f"{parent}:{{path}}", ("show", f"{parent}:{{path}}")) for parent in parent_refs]
     return [
         ("index:{path}", ("show", ":{path}")),
@@ -238,9 +260,7 @@ def _prompt_content(content: bytes) -> tuple[str, str]:
         return "base64", base64.b64encode(content).decode("ascii")
 
 
-def materialize_semantic_input(
-    root: Path, packet: dict[str, Any], run_dir: Path
-) -> dict[str, Any]:
+def materialize_semantic_input(root: Path, packet: dict[str, Any], run_dir: Path) -> dict[str, Any]:
     """Carry all reviewed bytes into backend-independent semantic input."""
     identity = packet.get("reviewed_input_identity")
     if not isinstance(identity, dict):
@@ -298,17 +318,19 @@ def materialize_semantic_input(
                 details={"path": path, "carrier": carrier.as_posix()},
             )
         encoding, prompt_content = _prompt_content(content)
-        entries.append({
-            "path": path,
-            "disposition": disposition,
-            "carrier_path": carrier.relative_to(root).as_posix(),
-            "content_sha256": expected,
-            "carrier_sha256": carrier_sha256,
-            "source": source,
-            "size_bytes": len(content),
-            "prompt_encoding": encoding,
-            "prompt_content": prompt_content,
-        })
+        entries.append(
+            {
+                "path": path,
+                "disposition": disposition,
+                "carrier_path": carrier.relative_to(root).as_posix(),
+                "content_sha256": expected,
+                "carrier_sha256": carrier_sha256,
+                "source": source,
+                "size_bytes": len(content),
+                "prompt_encoding": encoding,
+                "prompt_content": prompt_content,
+            }
+        )
     manifest = carrier_dir / "manifest.json"
     manifest.write_text(
         json.dumps(
@@ -320,7 +342,8 @@ def materialize_semantic_input(
                 ],
             },
             indent=2,
-        ) + "\n",
+        )
+        + "\n",
         encoding="utf-8",
     )
     manifest.chmod(0o444)

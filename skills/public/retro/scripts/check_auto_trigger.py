@@ -31,48 +31,70 @@ from __future__ import annotations
 import argparse
 import fnmatch
 import runpy
-import subprocess
 import sys
 from pathlib import Path
 from types import SimpleNamespace
 
 
 def _load_skill_runtime_bootstrap():
-    bootstrap = next((ancestor / "skill_runtime_bootstrap.py" for ancestor in Path(__file__).resolve().parents if (ancestor / "skill_runtime_bootstrap.py").is_file()), None)
+    bootstrap = next(
+        (
+            ancestor / "skill_runtime_bootstrap.py"
+            for ancestor in Path(__file__).resolve().parents
+            if (ancestor / "skill_runtime_bootstrap.py").is_file()
+        ),
+        None,
+    )
     if bootstrap is None:
         raise ImportError("skill_runtime_bootstrap.py not found")
     return SimpleNamespace(**runpy.run_path(str(bootstrap)))
 
+
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
-
-
-
-
-
+run_process = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.subprocess_guard"
+).run_process
 
 
 _resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter_module.load_adapter
 
-_scripts_surfaces_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.surfaces_lib")
+_scripts_surfaces_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.surfaces_lib"
+)
 collect_changed_paths = _scripts_surfaces_lib_module.collect_changed_paths
 load_surfaces = _scripts_surfaces_lib_module.load_surfaces
 match_surfaces = _scripts_surfaces_lib_module.match_surfaces
 resolve_trigger_surfaces = _scripts_surfaces_lib_module.resolve_trigger_surfaces
 SurfaceError = _scripts_surfaces_lib_module.SurfaceError
 
-_yaml_output_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
+_yaml_output_module = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.yaml_output"
+)
 render_yaml = _yaml_output_module.render_yaml
 emit_yaml = _yaml_output_module.emit_yaml
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root to scan for auto-retro trigger surfaces and path globs")
-    parser.add_argument("--paths", nargs="*", help="Changed paths to evaluate against trigger surfaces (defaults to git diff)")
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        required=True,
+        help="Repo root to scan for auto-retro trigger surfaces and path globs",
+    )
+    parser.add_argument(
+        "--paths",
+        nargs="*",
+        help="Changed paths to evaluate against trigger surfaces (defaults to git diff)",
+    )
     parser.add_argument("--base-ref", help="Base git ref for explicit commit-range path discovery")
-    parser.add_argument("--head-ref", default="HEAD", help="Head git ref for --base-ref path discovery (default: HEAD)")
+    parser.add_argument(
+        "--head-ref",
+        default="HEAD",
+        help="Head git ref for --base-ref path discovery (default: HEAD)",
+    )
     return parser.parse_args()
 
 
@@ -97,7 +119,9 @@ UNDETERMINED_EXIT = 3
 # original name, which its own call sites below still use. The marker constant is NOT
 # re-exported: nothing referenced it outside the deleted function body, and a name kept
 # "for callers" that has no caller is the shape this repo keeps filing.
-_scripts_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_lib")
+_scripts_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.adapter_lib"
+)
 adapter_unreadable_reasons = _scripts_adapter_lib_module.unreadable_reasons
 
 
@@ -130,7 +154,9 @@ def no_config_payload(paths: list[str], adapter: dict[str, object]) -> dict[str,
             "path_hits": [],
             "suggested_mode": None,
             "configuration_status": (
-                "intentional-empty" if intentional_empty else unconfigured_status(adapter, unreadable)
+                "intentional-empty"
+                if intentional_empty
+                else unconfigured_status(adapter, unreadable)
             ),
             "field_state": {
                 "auto_session_trigger_surfaces": surface_state,
@@ -186,12 +212,10 @@ def surface_error_payload(error: str) -> dict[str, object]:
 
 
 def collect_range_paths(repo_root: Path, *, base_ref: str, head_ref: str) -> list[str]:
-    result = subprocess.run(
+    result = run_process(
         ["git", "diff", "--name-only", f"{base_ref}..{head_ref}"],
         cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=True,
+        timeout_seconds=None,
     )
     if result.returncode != 0:
         raise SurfaceError(
@@ -205,9 +229,7 @@ def collect_range_paths(repo_root: Path, *, base_ref: str, head_ref: str) -> lis
     return [line for line in result.stdout.splitlines() if line.strip()]
 
 
-def broken_trigger_config_payload(
-    unresolved: list[str], manifest_path: str
-) -> dict[str, object]:
+def broken_trigger_config_payload(unresolved: list[str], manifest_path: str) -> dict[str, object]:
     return {
         "state": STATE_NOT_ESTABLISHED,
         "configuration_status": "broken",
@@ -318,7 +340,9 @@ def build_payload(
     undetermined.extend(adapter_unreadable_reasons(adapter))
     established = triggered or not undetermined
 
-    payload: dict[str, object] = {"state": STATE_EVALUATED if established else STATE_NOT_ESTABLISHED}
+    payload: dict[str, object] = {
+        "state": STATE_EVALUATED if established else STATE_NOT_ESTABLISHED
+    }
     if established:
         payload["triggered"] = triggered
     payload.update(

@@ -4,21 +4,29 @@ from __future__ import annotations
 import argparse
 import json
 import runpy
-import subprocess
 from pathlib import Path
 from types import SimpleNamespace
 
 
 def _load_skill_runtime_bootstrap():
-    bootstrap = next((ancestor / "skill_runtime_bootstrap.py" for ancestor in Path(__file__).resolve().parents if (ancestor / "skill_runtime_bootstrap.py").is_file()), None)
+    bootstrap = next(
+        (
+            ancestor / "skill_runtime_bootstrap.py"
+            for ancestor in Path(__file__).resolve().parents
+            if (ancestor / "skill_runtime_bootstrap.py").is_file()
+        ),
+        None,
+    )
     if bootstrap is None:
         raise ImportError("skill_runtime_bootstrap.py not found")
     return SimpleNamespace(**runpy.run_path(str(bootstrap)))
 
+
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
-
-
+run_process = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.subprocess_guard"
+).run_process
 
 
 _resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
@@ -26,9 +34,13 @@ load_adapter = _resolve_adapter_module.load_adapter
 _adapter_version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
     __file__, "scripts.adapter_version_verdict"
 )
-_fresh_checkout_module = SKILL_RUNTIME.load_local_skill_module(__file__, "check_fresh_checkout_probes")
+_fresh_checkout_module = SKILL_RUNTIME.load_local_skill_module(
+    __file__, "check_fresh_checkout_probes"
+)
 build_fresh_checkout_payload = _fresh_checkout_module.build_payload
-_yaml_output_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
+_yaml_output_module = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.yaml_output"
+)
 emit_yaml = _yaml_output_module.emit_yaml
 
 
@@ -84,12 +96,10 @@ def _marketplace_versions(repo_root: Path, package_id: str) -> dict[str, str | N
 
 
 def _git_status(repo_root: Path) -> list[str]:
-    result = subprocess.run(
+    result = run_process(
         ["git", "status", "--short"],
         cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=True,
+        timeout_seconds=None,
     )
     if result.returncode != 0:
         return []
@@ -130,9 +140,7 @@ def _absence_verdict(
     required = [s for s in declared if s in declarable]
     unpublished = [s for s in declared_unpublished if s in declarable]
     absent_declarable = [s for s in absent if s in declarable]
-    undeclared_absent = [
-        s for s in absent_declarable if s not in required and s not in unpublished
-    ]
+    undeclared_absent = [s for s in absent_declarable if s not in required and s not in unpublished]
     warnings: list[str] = []
     # Both fields warn on an unreadable name. A silently discarded
     # `unpublished_release_surfaces: [codex-plugin]` (hyphen) opts out of nothing and
@@ -160,8 +168,10 @@ def _absence_verdict(
             "unpublished_release_surfaces": unpublished,
             "undeclared_absent_surfaces": undeclared_absent,
             "absence_corroboration": (
-                "not-applicable" if not absent_declarable
-                else "uncorroborated" if undeclared_absent
+                "not-applicable"
+                if not absent_declarable
+                else "uncorroborated"
+                if undeclared_absent
                 else "declared"
             ),
         },
@@ -231,6 +241,7 @@ def build_payload(repo_root: Path) -> dict[str, object]:
     # not anyone declares it, so accepting the declaration would be a silent no-op that
     # reads like it was honored.
     declarable = (*versioned_surfaces, *presence_surfaces)
+
     # A surface whose version is None is one nothing read a version out of: the file is
     # missing, unreadable, or has no `version`. The drift loop below used to skip those
     # (it needed `actual is not None`), so a codex plugin.json that a failed sync never
@@ -265,7 +276,8 @@ def build_payload(repo_root: Path) -> dict[str, object]:
     # of it. Building it from the `None` test would report a file that is right on disk as
     # absent, in the one field named for the distinction `_state` exists to make.
     absent = [
-        s for s in all_surfaces
+        s
+        for s in all_surfaces
         if payload["surface_versions"].get(s) is None and _state(s) == "absent"
     ]
     if expected is None and _state("packaging_manifest") == "absent":
@@ -318,7 +330,12 @@ def build_payload(repo_root: Path) -> dict[str, object]:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root used to resolve the release adapter")
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        required=True,
+        help="Repo root used to resolve the release adapter",
+    )
     args = parser.parse_args()
     emit_yaml(build_payload(args.repo_root.resolve()))
 

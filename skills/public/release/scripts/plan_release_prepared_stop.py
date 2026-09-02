@@ -13,19 +13,19 @@ worst honest outcome is "no prepared stop detected", and a crash in a planner is
 less useful than that. `plan_release_run_packets.py` turns these observations into the
 resume packets; this module only observes.
 """
+
 from __future__ import annotations
 
-import subprocess
 from pathlib import Path, PurePosixPath
 from typing import Any
+
+from scripts.subprocess_guard import run_process
 
 RELEASE_RECORD_FILENAME = "latest.md"
 
 
 def git(repo_root: Path, args: list[str]) -> tuple[int, str]:
-    result = subprocess.run(
-        ["git", "-C", str(repo_root), *args], check=False, capture_output=True, text=True
-    )
+    result = run_process(["git", "-C", str(repo_root), *args], cwd=repo_root, timeout_seconds=None)
     return result.returncode, result.stdout
 
 

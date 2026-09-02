@@ -36,9 +36,10 @@ from __future__ import annotations
 
 import fnmatch
 import re
-import subprocess
 import sys
 from pathlib import Path
+
+from scripts.subprocess_guard import run_process
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from git_inventory_lib import visible_repo_files  # noqa: E402
@@ -82,7 +83,10 @@ PATTERNS = (
         "carry `git describe --tags --abbrev=0`, or link the release artifact",
     ),
     (
-        re.compile(r"\b(?=[0-9a-f]{7,40}\b)(?=[0-9a-f]*[a-f])(?=[0-9a-f]*\d)[0-9a-f]{7,40}\b", re.IGNORECASE),
+        re.compile(
+            r"\b(?=[0-9a-f]{7,40}\b)(?=[0-9a-f]*[a-f])(?=[0-9a-f]*\d)[0-9a-f]{7,40}\b",
+            re.IGNORECASE,
+        ),
         "a commit sha",
         "carry `git rev-parse --short HEAD`, or link the commit",
     ),
@@ -132,7 +136,7 @@ def scan_text(text: str) -> list[tuple[int, str, str, str]]:
 def staged_paths(repo_root: Path) -> list[str]:
     """Return paths present in the staged diff, or raise an actionable error."""
     try:
-        completed = subprocess.run(
+        completed = run_process(
             [
                 "git",
                 "-C",
@@ -143,9 +147,8 @@ def staged_paths(repo_root: Path) -> list[str]:
                 "--diff-filter=ACMRTUXBD",
                 "-z",
             ],
-            capture_output=True,
-            text=True,
-            check=False,
+            cwd=repo_root,
+            timeout_seconds=None,
         )
     except OSError as exc:
         raise RuntimeError(f"could not inspect staged paths: {type(exc).__name__}: {exc}") from exc
@@ -260,7 +263,9 @@ def scan_repo(repo_root: Path, adapter: dict | None = None) -> dict:
             exempted.append({"path": rel, "reason": reason})
             continue
         checked += 1
-        for lineno, literal, label, remedy in scan_text(path.read_text(encoding="utf-8", errors="ignore")):
+        for lineno, literal, label, remedy in scan_text(
+            path.read_text(encoding="utf-8", errors="ignore")
+        ):
             findings.append(
                 {"path": rel, "line": lineno, "literal": literal, "label": label, "remedy": remedy}
             )
@@ -299,15 +304,15 @@ def staged_blob_text(repo_root: Path, rel: str) -> str:
     unstaged repair, or report a line number that exists in no commit. `git show
     :<path>` is the index copy by definition.
     """
-    completed = subprocess.run(
+    completed = run_process(
         ["git", "-C", str(repo_root), "show", f":{rel}"],
-        capture_output=True,
-        check=False,
+        cwd=repo_root,
+        timeout_seconds=None,
     )
     if completed.returncode:
-        detail = completed.stderr.decode("utf-8", "replace").strip() or f"git exited {completed.returncode}"
+        detail = completed.stderr.strip() or f"git exited {completed.returncode}"
         raise RuntimeError(f"could not read the staged copy of {rel}: {detail}")
-    return completed.stdout.decode("utf-8", "ignore")
+    return completed.stdout
 
 
 def scan_paths(

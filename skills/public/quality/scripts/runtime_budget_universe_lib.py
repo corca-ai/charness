@@ -6,13 +6,18 @@ adapter command therefore owns that discovery and emits one label per line.
 This reader only reconciles the result with the adapter's budget union; it
 never infers whether a conditional label actually ran.
 """
+
 from __future__ import annotations
 
-import subprocess
 from pathlib import Path
 from typing import Any
 
 from runtime_profile_lib import budgeted_label_union
+
+from scripts import subprocess_guard as _subprocess_guard
+from scripts.subprocess_guard import run_process
+
+subprocess = _subprocess_guard.subprocess
 
 COMMAND_TIMEOUT_SECONDS = 30
 
@@ -47,12 +52,16 @@ def _parse_labels(stdout: str) -> tuple[list[str], list[str]]:
         if not label:
             continue
         if label in seen:
-            errors.append(f"runtime_budget_universe.command emitted duplicate label `{label}` on line {line_number}")
+            errors.append(
+                f"runtime_budget_universe.command emitted duplicate label `{label}` on line {line_number}"
+            )
             continue
         seen.add(label)
         labels.append(label)
     if not labels:
-        errors.append("runtime_budget_universe.command emitted no labels; the runner universe is not established")
+        errors.append(
+            "runtime_budget_universe.command emitted no labels; the runner universe is not established"
+        )
     return sorted(labels), errors
 
 
@@ -91,17 +100,13 @@ def read(
         )
     command = command.strip()
     try:
-        result = subprocess.run(
+        result = run_process(
             command,
             cwd=repo_root,
             shell=True,
-            check=False,
-            capture_output=True,
-            text=True,
-            errors="replace",
-            timeout=COMMAND_TIMEOUT_SECONDS,
+            timeout_seconds=COMMAND_TIMEOUT_SECONDS,
         )
-    except (OSError, subprocess.SubprocessError) as exc:
+    except OSError as exc:
         return _result(
             configured=True,
             status="unestablished",
@@ -133,8 +138,7 @@ def read(
     mismatch_errors = []
     if missing:
         mismatch_errors.append(
-            "runtime_budget_universe is missing budgeted label(s): "
-            + ", ".join(missing)
+            "runtime_budget_universe is missing budgeted label(s): " + ", ".join(missing)
         )
     return _result(
         configured=True,

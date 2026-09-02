@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
 import hashlib
+import io
 import runpy
-import subprocess
 import sys
 from pathlib import Path
 from urllib.parse import unquote, urlparse
@@ -52,8 +53,12 @@ except ModuleNotFoundError as exc:
     ) from exc
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-SUPPORT_ACQUIRE = SCRIPT_DIR.parents[2] / "support" / "web-fetch" / "scripts" / "acquire_public_url.py"
-SUPPORT_ROUTE = SCRIPT_DIR.parents[2] / "support" / "web-fetch" / "scripts" / "route_public_fetch.py"
+SUPPORT_ACQUIRE = (
+    SCRIPT_DIR.parents[2] / "support" / "web-fetch" / "scripts" / "acquire_public_url.py"
+)
+SUPPORT_ROUTE = (
+    SCRIPT_DIR.parents[2] / "support" / "web-fetch" / "scripts" / "route_public_fetch.py"
+)
 WRITE_RECORD = SCRIPT_DIR / "write_record.py"
 
 
@@ -77,23 +82,85 @@ if str(SCRIPT_DIR) not in sys.path:
 
 import gather_record_rendering  # noqa: E402
 
+try:
+    from scripts import subprocess_guard as _subprocess_guard  # noqa: E402
+except ModuleNotFoundError:
+    _scripts_dir = next(
+        (
+            ancestor / "scripts"
+            for ancestor in (Path(__file__).resolve(), *Path(__file__).resolve().parents)
+            if (ancestor / "scripts" / "subprocess_guard.py").is_file()
+        ),
+        None,
+    )
+    if _scripts_dir is None:
+        _subprocess_guard = None
+    else:
+        sys.path.insert(0, str(_scripts_dir))
+        import subprocess_guard as _subprocess_guard  # noqa: E402
+
+run_process = _subprocess_guard.run_process if _subprocess_guard is not None else None
+
 _content_persistence = gather_record_rendering.content_persistence
 _render_record = gather_record_rendering.render_record
 _trace_payload = gather_record_rendering.trace_payload
 
 
 def _run_json(command: list[str], *, input_text: str | None = None) -> dict[str, object]:
-    completed = subprocess.run(
-        command,
-        check=False,
-        capture_output=True,
-        text=True,
-        input=input_text,
-    )
-    if completed.returncode != 0:
-        raise SystemExit(completed.stderr.strip() or completed.stdout.strip() or f"command failed: {command!r}")
+    self_script = Path(command[1]) if len(command) > 1 and command[0] == sys.executable else None
+    if self_script is not None and self_script.resolve() in {
+        SUPPORT_ACQUIRE.resolve(),
+        WRITE_RECORD.resolve(),
+    }:
+        sibling_dir = str(self_script.resolve().parent)
+        added_sibling_dir = sibling_dir not in sys.path
+        if added_sibling_dir:
+            sys.path.insert(0, sibling_dir)
+        try:
+            module = runpy.run_path(str(self_script))
+        except Exception as exc:
+            if added_sibling_dir:
+                sys.path.remove(sibling_dir)
+            raise SystemExit(str(exc)) from exc
+        old_argv = sys.argv
+        old_stdin = sys.stdin
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+        sys.argv = [str(self_script), *command[2:]]
+        try:
+            with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+                if input_text is not None:
+                    sys.stdin = io.StringIO(input_text)
+                code = module["main"]()
+        except SystemExit as exc:
+            code = exc.code if isinstance(exc.code, int) else 1
+        finally:
+            sys.argv = old_argv
+            sys.stdin = old_stdin
+            if added_sibling_dir:
+                sys.path.remove(sibling_dir)
+        completed_stdout = stdout.getvalue()
+        completed_stderr = stderr.getvalue()
+        if code:
+            raise SystemExit(
+                completed_stderr.strip()
+                or completed_stdout.strip()
+                or f"command failed: {command!r}"
+            )
+        raw_stdout = completed_stdout
+    else:
+        if run_process is None:
+            raise SystemExit("guard_unavailable:subprocess_guard.py not reachable")
+        completed = run_process(command, cwd=Path.cwd(), timeout_seconds=None)
+        if completed.returncode != 0:
+            raise SystemExit(
+                completed.stderr.strip()
+                or completed.stdout.strip()
+                or f"command failed: {command!r}"
+            )
+        raw_stdout = completed.stdout
     try:
-        payload = yaml.safe_load(completed.stdout)
+        payload = yaml.safe_load(raw_stdout)
     except yaml.YAMLError as exc:
         raise SystemExit(f"command did not emit a readable payload: {command!r}") from exc
     if not isinstance(payload, dict):
@@ -156,9 +223,11 @@ def _build_acquire_cmd(args: argparse.Namespace) -> list[str]:
 
 def _is_youtube_acquisition(acquisition: dict[str, object]) -> bool:
     route = acquisition.get("route")
-    return isinstance(route, dict) and route.get("route_id") == "yt-dlp-metadata" and str(
-        acquisition.get("source_identity", "")
-    ).startswith("youtube-")
+    return (
+        isinstance(route, dict)
+        and route.get("route_id") == "yt-dlp-metadata"
+        and str(acquisition.get("source_identity", "")).startswith("youtube-")
+    )
 
 
 def _is_exact_source_terminal_record(acquisition: dict[str, object]) -> bool:
@@ -174,7 +243,11 @@ def _is_exact_source_terminal_record(acquisition: dict[str, object]) -> bool:
         if not isinstance(attempt, dict) or attempt.get("stage_id") != "domain-specific-route":
             continue
         details = attempt.get("details")
-        if isinstance(details, dict) and details.get("endpoint") and details.get("requested_status_id"):
+        if (
+            isinstance(details, dict)
+            and details.get("endpoint")
+            and details.get("requested_status_id")
+        ):
             return True
     return False
 
@@ -200,33 +273,103 @@ def _acquisition_summary(
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Gather an arbitrary public URL through support/web-fetch.")
+    parser = argparse.ArgumentParser(
+        description="Gather an arbitrary public URL through support/web-fetch."
+    )
     parser.add_argument("--url", required=True, help="Public URL to gather")
-    parser.add_argument("--repo-root", type=Path, default=Path.cwd(), help="Repo root where the gathered URL record should be written")
-    parser.add_argument("--slug", default=None, help="Slug for the dated record (auto-derived from URL when omitted)")
-    parser.add_argument("--date", default=None, help="Record date in YYYY-MM-DD (defaults to today UTC)")
-    parser.add_argument("--intent", choices=("single", "collect"), default="single", help="single = one durable record; collect = bulk crawl session")
-    parser.add_argument("--browser-mode", choices=("auto", "off", "always"), default="auto", help="When to use a browser fallback")
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        default=Path.cwd(),
+        help="Repo root where the gathered URL record should be written",
+    )
+    parser.add_argument(
+        "--slug",
+        default=None,
+        help="Slug for the dated record (auto-derived from URL when omitted)",
+    )
+    parser.add_argument(
+        "--date", default=None, help="Record date in YYYY-MM-DD (defaults to today UTC)"
+    )
+    parser.add_argument(
+        "--intent",
+        choices=("single", "collect"),
+        default="single",
+        help="single = one durable record; collect = bulk crawl session",
+    )
+    parser.add_argument(
+        "--browser-mode",
+        choices=("auto", "off", "always"),
+        default="auto",
+        help="When to use a browser fallback",
+    )
     parser.add_argument("--timeout", type=int, default=20, help="Per-stage timeout in seconds")
-    parser.add_argument("--direct-response-file", type=Path, help="Pre-captured direct response file to seed the acquisition")
-    parser.add_argument("--domain-route-response-file", type=Path, help="JSON map seeding the domain-specific route; missing seeded endpoints do not fetch live unless --live-domain-route is set")
-    parser.add_argument("--live-domain-route", action="store_true", help="Allow live fetch for seeded-missing exact-source/domain-specific endpoints when the route supports it")
-    parser.add_argument("--expect-text", action="append", default=[], help="Required substring in the response (repeatable)")
-    parser.add_argument("--expect-regex", action="append", default=[], help="Required regex pattern in the response (repeatable)")
-    parser.add_argument("--expect-json-field", action="append", default=[], help="Required JSON field path in the response (repeatable)")
-    parser.add_argument("--persist-extracted-content", action="store_true", help="Persist extracted page content in the record")
-    parser.add_argument("--max-extracted-content-chars", type=_positive_int, default=200_000, help="Maximum chars of extracted content to persist")
-    parser.add_argument("--execute", action="store_true", help="Write the record (otherwise dry-run)")
+    parser.add_argument(
+        "--direct-response-file",
+        type=Path,
+        help="Pre-captured direct response file to seed the acquisition",
+    )
+    parser.add_argument(
+        "--domain-route-response-file",
+        type=Path,
+        help="JSON map seeding the domain-specific route; missing seeded endpoints do not fetch live unless --live-domain-route is set",
+    )
+    parser.add_argument(
+        "--live-domain-route",
+        action="store_true",
+        help="Allow live fetch for seeded-missing exact-source/domain-specific endpoints when the route supports it",
+    )
+    parser.add_argument(
+        "--expect-text",
+        action="append",
+        default=[],
+        help="Required substring in the response (repeatable)",
+    )
+    parser.add_argument(
+        "--expect-regex",
+        action="append",
+        default=[],
+        help="Required regex pattern in the response (repeatable)",
+    )
+    parser.add_argument(
+        "--expect-json-field",
+        action="append",
+        default=[],
+        help="Required JSON field path in the response (repeatable)",
+    )
+    parser.add_argument(
+        "--persist-extracted-content",
+        action="store_true",
+        help="Persist extracted page content in the record",
+    )
+    parser.add_argument(
+        "--max-extracted-content-chars",
+        type=_positive_int,
+        default=200_000,
+        help="Maximum chars of extracted content to persist",
+    )
+    parser.add_argument(
+        "--execute", action="store_true", help="Write the record (otherwise dry-run)"
+    )
     args = parser.parse_args()
 
     acquisition = _run_json(_build_acquire_cmd(args))
     acquisition_disposition = str(acquisition.get("disposition", "unknown"))
     final_status = str(acquisition.get("final_status", "unknown"))
     final_confidence = str(acquisition.get("final_confidence", "none"))
-    content_persistence = _content_persistence(acquisition, requested=args.persist_extracted_content)
-    should_write_partial = _is_youtube_acquisition(acquisition) and acquisition_disposition in {"blocked", "degraded"}
+    content_persistence = _content_persistence(
+        acquisition, requested=args.persist_extracted_content
+    )
+    should_write_partial = _is_youtube_acquisition(acquisition) and acquisition_disposition in {
+        "blocked",
+        "degraded",
+    }
     should_write_terminal = _is_exact_source_terminal_record(acquisition)
-    if acquisition_disposition != "success" and not should_write_partial and not should_write_terminal:
+    if (
+        acquisition_disposition != "success"
+        and not should_write_partial
+        and not should_write_terminal
+    ):
         payload = {
             "status": "degraded" if acquisition_disposition == "degraded" else "blocked",
             "reason": f"acquisition-{acquisition_disposition}",

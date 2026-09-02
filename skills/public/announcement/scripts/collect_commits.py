@@ -5,20 +5,31 @@ import argparse
 import json
 import re
 import runpy
-import subprocess
 from pathlib import Path
 from types import SimpleNamespace
 
 
 def _load_skill_runtime_bootstrap():
-    bootstrap = next((ancestor / "skill_runtime_bootstrap.py" for ancestor in Path(__file__).resolve().parents if (ancestor / "skill_runtime_bootstrap.py").is_file()), None)
+    bootstrap = next(
+        (
+            ancestor / "skill_runtime_bootstrap.py"
+            for ancestor in Path(__file__).resolve().parents
+            if (ancestor / "skill_runtime_bootstrap.py").is_file()
+        ),
+        None,
+    )
     if bootstrap is None:
         raise ImportError("skill_runtime_bootstrap.py not found")
     return SimpleNamespace(**runpy.run_path(str(bootstrap)))
 
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
-emit_yaml = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output").emit_yaml
+emit_yaml = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.yaml_output"
+).emit_yaml
+run_process = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.subprocess_guard"
+).run_process
 
 TRAILER_RE = re.compile(r"^(?P<key>[A-Za-z][A-Za-z0-9-]*):\s*(?P<value>.+)$")
 CLOSING_RE = re.compile(
@@ -32,13 +43,7 @@ MAX_CLOSING_REFERENCES = 20
 
 
 def git(*args: str, repo_root: Path) -> str:
-    completed = subprocess.run(
-        ["git", *args],
-        cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    completed = run_process(["git", *args], cwd=repo_root, timeout_seconds=None)
     if completed.returncode != 0:
         raise SystemExit(completed.stderr.strip() or f"git {' '.join(args)} failed")
     return completed.stdout
@@ -181,9 +186,24 @@ def collect_commits(
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root whose git log and announcement record are scanned for new commits")
-    parser.add_argument("--limit", type=int, default=12, help="Maximum commits to inspect when no previous announcement head is recorded")
-    parser.add_argument("--body-limit", type=int, default=1200, help="Maximum commit-body characters to retain before truncation")
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        required=True,
+        help="Repo root whose git log and announcement record are scanned for new commits",
+    )
+    parser.add_argument(
+        "--limit",
+        type=int,
+        default=12,
+        help="Maximum commits to inspect when no previous announcement head is recorded",
+    )
+    parser.add_argument(
+        "--body-limit",
+        type=int,
+        default=1200,
+        help="Maximum commit-body characters to retain before truncation",
+    )
     parser.add_argument(
         "--fanout-hint",
         action="store_true",
